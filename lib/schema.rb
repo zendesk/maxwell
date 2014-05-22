@@ -2,6 +2,8 @@ require 'yaml'
 DATA_DIR=File.expand_path(File.dirname(__FILE__) + "/../data")
 
 class Schema
+  attr_reader :db
+
   def initialize(connection, db_name, schema=nil)
     @db = db_name
     @cx = connection
