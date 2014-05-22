@@ -1,11 +1,20 @@
+require 'yaml'
+DATA_DIR=File.expand_path(File.dirname(__FILE__) + "/../data")
+
 class Schema
-  def initialize(connection, db_name)
+  def initialize(connection, db_name, schema=nil)
     @db = db_name
     @cx = connection
+    @schema = schema
   end
 
   def fetch
+    return @schema if @schema
+
     @schema = {}
+
+    binlog_info
+
     tables = @cx.query("show tables from #{@db}")
     tables.each do |row|
       table = row.values.first
@@ -24,5 +33,32 @@ class Schema
       end
     end
     @schema
+  end
+
+  def binlog_info
+    @binlog_info ||= begin
+      res = @cx.query("SHOW MASTER STATUS")
+      row = res.first
+      {file: row['File'], pos: row['Position']}
+    end
+  end
+
+  def save
+    fetch
+    fname = self.class.schema_fname(@db, @binlog_info[:file], @binlog_info[:pos])
+    File.open(fname, "w+") do |f|
+      f.write(@schema.to_yaml)
+    end
+  end
+
+  def self.schema_fname(db, logfile, pos)
+    DATA_DIR + "/" + [db, logfile, pos].join('-') + ".yaml"
+  end
+
+  def self.load(db, logfile, pos)
+    fname = schema_fname(db, logfile, pos)
+    return nil unless File.exist?(fname)
+    schema = YAML.load(File.read(fname))
+    new(nil, db, schema)
   end
 end

@@ -16,4 +16,18 @@ describe "Schema" do
                               :numeric_scale=>0, :character_set_name=>nil, :collation_name=>nil, :column_type=>"int(10)"}
     end
   end
+
+  describe "save" do
+    it "dumps the schema to a file" do
+      @schema.save
+    end
+  end
+
+  describe "load" do
+    it "loads the dumped schema" do
+      @schema.save
+      new_schema = Schema.load("shard_1", @schema.binlog_info[:file], @schema.binlog_info[:pos])
+      new_schema.fetch.should == @schema.fetch
+    end
+  end
 end
