@@ -1,6 +1,7 @@
 require 'mysql_binlog'
 
 class NoSuchFileError < StandardError ; end
+class SchemaChangedError < StandardError ; end
 
 class BinlogDir
   def initialize(dir, schema)
@@ -42,18 +43,64 @@ class BinlogDir
     end
   end
 
+  def verify_table_schema!(columns, table)
+    tcolumns = table[:columns]
+    if columns.size != tcolumns.size
+      raise SchemaChangedError.new("expected #{columns.size} columns but got #{tcolumns.size} columns")
+    end
+
+    columns.zip(tcolumns) do |c, t|
+      eq = case c[:data_type]
+      when 'bigint'
+        t[:type] == :longlong
+      when 'int'
+        t[:type] == :long
+      when 'tinyint'
+        t[:type] == :tiny
+      when 'datetime'
+        t[:type] == :datetime
+      when 'text'
+        t[:type] == :blob
+      when 'varchar', 'float', 'timestamp'
+        t[:type].to_s == c[:data_type]
+      else
+        raise "unknown columns type #{c[:data_type]}"
+      end
+
+      if !eq
+        msg = "expected column #{c[:ordinal_position]} (#{c[:column_name]})? to be a #{c[:data_type]}, "
+        msg += "instead saw a #{t[:type]}"
+        raise SchemaChangedError.new(msg)
+      end
+    end
+    true
+  end
+
   def reformat_row_event(e)
     ev = e[:event]
     table = ev[:table]
     columns = @schema.fetch[table[:table]]
-    raise "Table #{table[:table]} not found in schema!" unless columns
+
+    raise SchemaChangeError.new("Table #{table[:table]} not found in schema!") unless columns
+    verify_table_schema!(columns, table)
+
+
     ev[:row_image].map do |h|
       image = (e[:type] == :delete_rows_event) ? h[:before] : h[:after]
-      image.inject({}) do |accum, c|
+
+      row = image.inject({}) do |accum, c|
         idx = c.keys.first
         val = c.values.first
         accum[columns[idx][:column_name]] = val
         accum
+      end
+      case e[:type]
+      when :write_rows_event
+        {:type => 'insert', :row => row}
+      when :update_rows_event
+        {:type => 'update', :row => row}
+      when :delete_rows_event
+        {:type => 'delete', :id => row['id']}
       end
     end
   end
