@@ -7,7 +7,7 @@ describe "the api" do
   include Rack::Test::Methods
 
   def app
-    Sinatra::Application
+    Web
   end
 
   describe "/mark_binlog_top" do

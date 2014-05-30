@@ -10,8 +10,8 @@ require 'lib/config'
 class Web < Sinatra::Base
   set :config, BinlogConfig.new
 
-  def require_params(*params)
-    missing = params.select { |p| !params[p] }
+  def require_params(*required)
+    missing = required.select { |p| !params[p] }
     if missing.any?
       status 422
       body(err: "Please provide the following parameter(s): #{mising.join(',')}")
@@ -42,13 +42,35 @@ class Web < Sinatra::Base
   # begin playing the binlog from a specified position.
   # The position *must* be one returned from mark_binlog_top
   #
-  # required parameters: account_id, database, start_file, start_pos
+  # required parameters: account_id, db, start_file, start_pos
   # optional paramerers: end_file, end_pos
   #
   get "/binlog_events" do
+    return unless require_params(:account_id, :db, :start_file, :start_pos)
+    schema = Schema.load(params[:db], params[:start_file], params[:start_pos].to_i)
 
+    if schema.nil?
+      status 404
+      body({err: "No stored schema found for #{params[:start_file]}:#{params[:start_pos]} -- call mark_binlog_top"})
+      return
+    end
 
+    begin
+      b = BinlogDir.new(settings.config.binlog_dir, schema)
+      events = []
+
+      filter = { account_id: params[:account_id].to_i }
+      start_info = { file: params[:start_file], pos: params[:start_pos] }
+      if params[:end_file] && params[:end_pos]
+        end_info = {file: params[:end_file], pos: params[:end_pos]}
+      end
+
+      next_pos = b.read_binlog(filter, start_info, end_info, 1000) do |event|
+
+      end
+    rescue SchemaChangedError => e
+
+    end
   end
-
-
+end
 

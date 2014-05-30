@@ -12,8 +12,8 @@ describe "Schema" do
 
       schema["sharded"].should_not be_nil
       schema["sharded"].first.should == {:column_name=>"id", :ordinal_position=>1, :column_default=>nil, :is_nullable=>"NO",
-                              :data_type=>"int", :character_maximum_length=>nil, :character_octet_length=>nil, :numeric_precision=>10,
-                              :numeric_scale=>0, :character_set_name=>nil, :collation_name=>nil, :column_type=>"int(10)"}
+                              :data_type=>"bigint", :character_maximum_length=>nil, :character_octet_length=>nil, :numeric_precision=>19,
+                              :numeric_scale=>0, :character_set_name=>nil, :collation_name=>nil, :column_type=>"bigint(20)"}
     end
   end
 
