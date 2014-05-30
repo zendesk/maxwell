@@ -13,15 +13,16 @@ describe "BinlogDir" do
   end
 
   def get_events(filter, start_at, end_at)
-    @events = []
+    events = []
     @binlog_dir.read_binlog(filter, start_at, end_at)  do |event|
-      @events << event
+      events << event
     end
-    @events.flatten!
+    events
   end
+
   describe "read_binlog" do
     before do
-      get_events({}, @start_position, get_master_position)
+      @events = get_events({}, @start_position, get_master_position)
     end
 
     it "yields some events" do
@@ -29,7 +30,7 @@ describe "BinlogDir" do
     end
 
     it "specifies the type of event" do
-      @events.map { |e| e[:type] }.sort.uniq.should == ['delete', 'insert', 'update']
+      @events.map(&:type).sort.uniq.should == ['delete', 'insert', 'update']
     end
 
     expected_row =
@@ -44,25 +45,27 @@ describe "BinlogDir" do
         "float_field" => 1.3300000429153442,
         "timestamp_field" => 315561600
       }
-    it "provides the full row for inserts" do
-      expected = {:type => 'insert', :row => expected_row}
-
-      @events.should include(expected)
+    it "provides inserts" do
+      e = @events.detect { |e| e.type == 'insert' && e.attrs == expected_row}
+      e.should_not be_nil
     end
 
-    it "provides the full row for updates" do
-      expected = {:type => 'update', :row => expected_row.merge("status_id" => 1)}
-      @events.should include(expected)
+    it "provides updates" do
+      e = @events.detect { |e| e.type == 'update' && e.attrs == expected_row.merge("status_id" => 1) }
+      e.should_not be_nil
     end
 
-    it "provides the id for deletes" do
-      @events.should include(:type => 'delete', :id => 2)
+    it "provides deletes" do
+      e = @events.detect { |e| e.type == 'delete' && e.attrs['id'] == 2 }
+      e.should_not be_nil
     end
 
     it "stops at the specified position" do
       position = get_master_position
       $mysql_master.connection.query("DELETE from sharded where id = 1")
-      get_events({}, @start_position, position).should_not include(:type => 'delete', :id => 1)
+      events = get_events({}, @start_position, position)
+      e = events.detect { |e| e.type == 'delete' && e.attrs['id'] == 1 }
+      e.should be_nil
     end
 
     it "returns the next position in the file" do

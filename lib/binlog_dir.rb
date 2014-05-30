@@ -1,4 +1,5 @@
 require 'mysql_binlog'
+require 'lib/binlog_event'
 
 class NoSuchFileError < StandardError ; end
 class SchemaChangedError < StandardError ; end
@@ -43,12 +44,23 @@ class BinlogDir
       if [:write_rows_event, :update_rows_event, :delete_rows_event].include?(event[:type])
         next unless event[:event][:table][:db] == @schema.db
 
-        yield reformat_row_event(event)
-        event_count += 1
+        row_events = reformat_binlog_event(event)
+        row_events.each do |r|
+          next unless attrs_match_filter?(r[:row], filter)
+
+          yield(BinlogEvent.new(r[:type], r[:row]))
+          event_count += 1
+        end
       end
     end
 
     next_position
+  end
+
+  def attrs_match_filter?(attrs, filter)
+    filter.all? do |key, value|
+      attrs[key] == value
+    end
   end
 
   def verify_table_schema!(columns, table)
@@ -84,7 +96,7 @@ class BinlogDir
     true
   end
 
-  def reformat_row_event(e)
+  def reformat_binlog_event(e)
     ev = e[:event]
     table = ev[:table]
     columns = @schema.fetch[table[:table]]
@@ -102,14 +114,15 @@ class BinlogDir
         accum[columns[idx][:column_name]] = val
         accum
       end
-      case e[:type]
+      type = case e[:type]
       when :write_rows_event
-        {:type => 'insert', :row => row}
+        'insert'
       when :update_rows_event
-        {:type => 'update', :row => row}
+        'update'
       when :delete_rows_event
-        {:type => 'delete', :id => row['id']}
+        'delete'
       end
+      {:type => type, :row => row}
     end
   end
 end
