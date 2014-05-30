@@ -12,13 +12,16 @@ describe "BinlogDir" do
     generate_binlog_events
   end
 
+  def get_events(filter, start_at, end_at)
+    @events = []
+    @binlog_dir.read_binlog(filter, start_at, end_at)  do |event|
+      @events << event
+    end
+    @events.flatten!
+  end
   describe "read_binlog" do
     before do
-      @events = []
-      @binlog_dir.read_binlog({}, @start_position, get_master_position) do |event|
-        @events << event
-      end
-      @events.flatten!
+      get_events({}, @start_position, get_master_position)
     end
 
     it "yields some events" do
@@ -54,6 +57,20 @@ describe "BinlogDir" do
 
     it "provides the id for deletes" do
       @events.should include(:type => 'delete', :id => 2)
+    end
+
+    it "stops at the specified position" do
+      position = get_master_position
+      $mysql_master.connection.query("DELETE from sharded where id = 1")
+      get_events({}, @start_position, position).should_not include(:type => 'delete', :id => 1)
+    end
+
+    it "returns the next position in the file" do
+      position = get_master_position
+      $mysql_master.connection.query("DELETE from sharded where id = 1")
+      res = @binlog_dir.read_binlog({}, @start_position, position) {}
+
+      res[:pos].should be >= position[:pos]
     end
   end
 

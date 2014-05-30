@@ -4,6 +4,8 @@ class NoSuchFileError < StandardError ; end
 class SchemaChangedError < StandardError ; end
 
 class BinlogDir
+  attr_reader :next_position
+
   def initialize(dir, schema)
     @dir = dir
     @schema = schema
@@ -30,17 +32,23 @@ class BinlogDir
     event_count = 0
     column_hash = @schema.fetch
 
+    next_position = nil
     binlog.each_event do |event|
-      return if max_events && event_count > max_events
+      next_position = {file: event[:filename], pos: event[:header][:next_position]}
+      break if event[:filename] == to_file && event[:position] >= to_pos
+      break if max_events && event_count > max_events
+
       next if event[:filename] == from_file && event[:position] < from_pos
 
       if [:write_rows_event, :update_rows_event, :delete_rows_event].include?(event[:type])
         next unless event[:event][:table][:db] == @schema.db
 
         yield reformat_row_event(event)
+        event_count += 1
       end
-      event_count += 1
     end
+
+    next_position
   end
 
   def verify_table_schema!(columns, table)
