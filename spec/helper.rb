@@ -1,6 +1,6 @@
 require 'bundler/setup'
 require 'mysql_isolated_server'
-require 'debugger'
+require 'byebug'
 $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 
 def insert_row(table, attrs)
