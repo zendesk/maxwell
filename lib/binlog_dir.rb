@@ -20,6 +20,26 @@ class BinlogDir
     raise NoSuchFileError.new("#{@dir}/#{file} not found!") unless exists?(file)
   end
 
+  # read an event from the binlog, transforming into a BinlogEvent.  Here's what a sample row looks like.
+  #
+  # { :type     => :delete_rows_event,
+  #   :filename => "master.000002", :position=>565,
+  #   :header   => {:timestamp => 1401826508, :event_type => :delete_rows_event, :server_id => 1358271033, :event_length => 94, :next_position => 659, :flags => []},
+  #   :event    => {:table => {:db => "shard_1", :table => "sharded",
+  #                             :columns => [
+  #                               {:type=>:timestamp, :nullable=>false, :metadata=>nil},
+  #                               {:type => :long, :nullable => false, :metadata => nil}
+  #                             ]},
+  #                 :flags => [:stmt_end],
+  #                 :row_image => [ {:before => [{0 => "1979-10-01 00:00:00"}, {1 => 12341234}]} ]  # multiple rows can be in one event.
+  #                                                                                                 # depending on the event type we can get the
+  #                                                                                                 # value of the row before and/or after the transaction
+  #                                                                                                 # why the columns are in such a bizarre format, I do not know.
+  #                }
+  # }
+  #
+  #
+  #
   def read_binlog(filter, from, to, max_events=nil)
     from_file = from.fetch(:file)
     from_pos  = from.fetch(:pos)
@@ -48,7 +68,7 @@ class BinlogDir
         row_events.each do |r|
           next unless attrs_match_filter?(r[:row], filter)
 
-          yield(BinlogEvent.new(r[:type], r[:row]))
+          yield(BinlogEvent.new(r[:type], event[:event][:table][:table], r[:row], r[:columns]))
           event_count += 1
         end
       end
@@ -122,7 +142,8 @@ class BinlogDir
       when :delete_rows_event
         'delete'
       end
-      {:type => type, :row => row}
+      row_columns = columns.map { |c| c[:column_name].to_s }
+      {:type => type, :row => row, :columns => row_columns }
     end
   end
 end

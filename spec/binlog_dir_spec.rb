@@ -1,3 +1,5 @@
+# encoding: ascii-8bit
+
 require_relative 'helper'
 require 'lib/binlog_dir'
 require 'lib/schema'
@@ -46,13 +48,13 @@ describe "BinlogDir" do
         "timestamp_field" => 315561600
       }
     it "provides inserts" do
-      e = @events.detect { |e| e.type == 'insert' && e.attrs == expected_row}
-      e.should_not be_nil
+      inserts = @events.select { |e| e.type == 'insert' }
+      inserts.map(&:attrs).should include(expected_row)
     end
 
     it "provides updates" do
-      e = @events.detect { |e| e.type == 'update' && e.attrs == expected_row.merge("status_id" => 1) }
-      e.should_not be_nil
+      updates = @events.select { |e| e.type == 'update' }
+      updates.map(&:attrs).should include(expected_row.merge("status_id" => 1, "text_field" => "Updated Text"))
     end
 
     it "provides deletes" do
@@ -74,6 +76,32 @@ describe "BinlogDir" do
       res = @binlog_dir.read_binlog({}, @start_position, position) {}
 
       res[:pos].should be >= position[:pos]
+    end
+
+    describe "BinglogEvent#to_sql" do
+      before do
+        @sql = @events.map(&:to_sql)
+      end
+
+      it "maps inserts into REPLACE statements" do
+        @sql.should include(
+          "REPLACE INTO `sharded` " +
+          "(id, account_id, nice_id, status_id, date_field, text_field, latin1_field, utf8_field, float_field, timestamp_field) " +
+          "VALUES (1, 1, 1, 2, '1979-10-01 00:00:00', 'Some Text', 'FooBar\xE4', 'FooBar\xC3\xA4', 1.3300000429153442, 315561600)"
+        )
+      end
+
+      it "maps updates into REPLACE statements" do
+        @sql.should include(
+          "REPLACE INTO `sharded` " +
+          "(id, account_id, nice_id, status_id, date_field, text_field, latin1_field, utf8_field, float_field, timestamp_field) " +
+          "VALUES (1, 1, 1, 1, '1979-10-01 00:00:00', 'Updated Text', 'FooBar\xE4', 'FooBar\xC3\xA4', 1.3300000429153442, 315561600)"
+        )
+      end
+
+      it "maps deletes into DELETE statements" do
+        @sql.should include("DELETE FROM `sharded` WHERE id = 2")
+      end
     end
   end
 
@@ -97,7 +125,6 @@ describe "BinlogDir" do
     it "should crash" do
       expect { @binlog_dir.read_binlog({}, @start_position, get_master_position) {} }.to raise_error
     end
-
   end
 end
 

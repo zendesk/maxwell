@@ -65,8 +65,9 @@ class Web < Sinatra::Base
         end_info = {file: params[:end_file], pos: params[:end_pos]}
       end
 
+      body = ""
       next_pos = b.read_binlog(filter, start_info, end_info, 1000) do |event|
-
+        body += event.to_sql + "\n"
       end
     rescue SchemaChangedError => e
 

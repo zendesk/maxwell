@@ -47,7 +47,7 @@ def generate_binlog_events
 
   $mysql_master.connection.query("FLUSH LOGS")
 
-  $mysql_master.connection.query("UPDATE sharded set status_id = 1, timestamp_field=timestamp_field where id = 1")
+  $mysql_master.connection.query("UPDATE sharded set status_id = 1, text_field = 'Updated Text', timestamp_field=timestamp_field where id = 1")
   $mysql_master.connection.query("DELETE FROM sharded where nice_id = 2")
 end
 
