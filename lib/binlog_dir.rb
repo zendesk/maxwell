@@ -43,11 +43,14 @@ class BinlogDir
   def read_binlog(filter, from, to, max_events=nil)
     from_file = from.fetch(:file)
     from_pos  = from.fetch(:pos)
-    to_file   = to.fetch(:file)
-    to_pos    = to.fetch(:pos)
-
     raise_unless_exists(from_file)
-    raise_unless_exists(to_file)
+
+    if to
+      to_file   = to.fetch(:file)
+      to_pos    = to.fetch(:pos)
+      raise_unless_exists(to_file)
+    end
+
     binlog = MysqlBinlog::Binlog.new(MysqlBinlog::BinlogFileReader.new(File.join(@dir, from_file)))
 
     event_count = 0
@@ -56,7 +59,7 @@ class BinlogDir
     next_position = nil
     binlog.each_event do |event|
       next_position = {file: event[:filename], pos: event[:header][:next_position]}
-      break if event[:filename] == to_file && event[:position] >= to_pos
+      break if to_file && to_pos && event[:filename] == to_file && event[:position] >= to_pos
       break if max_events && event_count > max_events
 
       next if event[:filename] == from_file && event[:position] < from_pos
