@@ -15,11 +15,11 @@ describe "BinlogDir" do
   end
 
   def get_events(filter, start_at, end_at)
-    events = []
-    @binlog_dir.read_binlog(filter, start_at, end_at)  do |event|
-      events << event
+    [].tap do |events|
+      @binlog_dir.read_binlog(filter, start_at, end_at)  do |event|
+        events << event
+      end
     end
-    events
   end
 
   describe "read_binlog" do
