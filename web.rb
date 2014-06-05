@@ -7,8 +7,13 @@ require 'lib/schema'
 require 'lib/binlog_dir'
 require 'lib/config'
 
+set :run, false
+
 class Web < Sinatra::Base
   set :config, BinlogConfig.new
+  set :server, 'puma'
+  set :port, settings.config.api_port
+  set :run, false
 
   def require_params(*required)
     missing = required.select { |p| !params[p] }
@@ -28,7 +33,7 @@ class Web < Sinatra::Base
   # capture the schema at a position.
   #
   # return both the schema and the current position of the binlog for future requests
-  # required parameter: database
+  # required parameter: db
   get "/mark_binlog_top" do
     return unless require_params(:db)
 
@@ -56,22 +61,23 @@ class Web < Sinatra::Base
     end
 
     begin
-      b = BinlogDir.new(settings.config.binlog_dir, schema)
+      filter = { account_id: params[:account_id].to_i }
+      start_info = { file: params[:start_file], pos: params[:start_pos].to_i }
+      if params[:end_file] && params[:end_pos]
+        end_info = {file: params[:end_file], pos: params[:end_pos].to_i}
+      end
+
+      d = BinlogDir.new(settings.config.binlog_dir, schema)
+      b = ""
       events = []
 
-      filter = { account_id: params[:account_id].to_i }
-      start_info = { file: params[:start_file], pos: params[:start_pos] }
-      if params[:end_file] && params[:end_pos]
-        end_info = {file: params[:end_file], pos: params[:end_pos]}
-      end
-
-      body = ""
-      next_pos = b.read_binlog(filter, start_info, end_info, 1000) do |event|
-        body += event.to_sql + "\n"
+      next_pos = d.read_binlog(filter, start_info, end_info, 1000) do |event|
+        b += event.to_sql + "\n"
       end
     rescue SchemaChangedError => e
-
     end
+    body b
   end
 end
 
+Web.run!
