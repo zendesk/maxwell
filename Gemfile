@@ -1,11 +1,10 @@
 source 'https://rubygems.org'
 
 gem "sinatra"
-gem "mysql_binlog", :path => "~/src/mysql_binlog"
+gem "rack-test"
+gem "puma"
 gem "rake"
 gem "rspec"
-gem "rack-test"
-gem "mysql_isolated_server"
-gem "byebug"
-gem "puma"
-gem "stackprof"
+gem "mysql_isolated_server", '~> 0.3'
+gem "ruby-debug"
+gem "mysql_binlog", :path => "~/src/mysql_binlog"
