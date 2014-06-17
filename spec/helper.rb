@@ -1,6 +1,10 @@
+# encoding: utf-8
 require 'bundler/setup'
+require_relative "../lib/setup_java"
+
 require 'mysql_isolated_server'
-require 'debugger'
+require 'ruby-debug'
+
 $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
 
 def insert_row(table, attrs)
@@ -12,6 +16,8 @@ def insert_row(table, attrs)
       "'" + $mysql_master.connection.escape(v) + "'"
     when Fixnum
       v
+    when Time
+      "'" + v.strftime("%Y-%m-%d %H:%M:%S") + "'"
     else
       "'" + $mysql_master.connection.escape(v.to_s) + "'"
     end
@@ -55,14 +61,10 @@ def get_master_position
   {file: row['File'], pos: row['Position']}
 end
 
-$mysql_master = MysqlIsolatedServer.new
-$mysql_binlog_dir = $mysql_master.base + "/binlogs"
-Dir.mkdir($mysql_binlog_dir)
-
-$mysql_master.params = "--log-bin=#{$mysql_binlog_dir}/master --binlog_format=row"
-$mysql_master.boot!
-
+Thread.abort_on_exception = true
+$mysql_master = MysqlIsolatedServer.thread_boot("--log-bin=binlogs/master", "--", "--binlog_format=row")
 $mysql_initial_binlog_pos = get_master_position
+$mysql_binlog_dir = $mysql_master.base + "/mysqld/binlogs"
 
 $mysql_master.connection.query "CREATE DATABASE shard_1"
 
