@@ -21,26 +21,32 @@ class BinlogDir
   end
 
   # read an event from the binlog, transforming into a BinlogEvent.  Here's what a sample row looks like.
-  #
-  # { :type     => :delete_rows_event,
-  #   :filename => "master.000002", :position=>565,
-  #   :header   => {:timestamp => 1401826508, :event_type => :delete_rows_event, :server_id => 1358271033, :event_length => 94, :next_position => 659, :flags => []},
-  #   :event    => {:table => {:db => "shard_1", :table => "sharded",
-  #                             :columns => [
-  #                               {:type=>:timestamp, :nullable=>false, :metadata=>nil},
-  #                               {:type => :long, :nullable => false, :metadata => nil}
-  #                             ]},
-  #                 :flags => [:stmt_end],
-  #                 :row_image => [ {:before => [{0 => "1979-10-01 00:00:00"}, {1 => 12341234}]} ]  # multiple rows can be in one event.
-  #                                                                                                 # depending on the event type we can get the
-  #                                                                                                 # value of the row before and/or after the transaction
-  #                                                                                                 # why the columns are in such a bizarre format, I do not know.
-  #                }
-  # }
-  #
-  #
-  #
-  def read_binlog(filter, from, to, max_events=nil)
+
+  java_import 'com.zendesk.exodus.ExodusParser'
+  java_import 'com.google.code.or.common.util.MySQLConstants'
+  java_import 'java.text.SimpleDateFormat'
+
+  COLUMN_TYPES = MySQLConstants.constants.inject({}) do |h, c|
+    c = c.to_s
+    next h unless c.to_s =~ /^TYPE_(.*)$/
+    val = MySQLConstants.const_get(c)
+    h[val] = $1.downcase.to_sym
+    h
+  end
+
+  EVENT_TYPES = {
+    MySQLConstants::WRITE_ROWS_EVENT => :insert,
+    MySQLConstants::UPDATE_ROWS_EVENT => :update,
+    MySQLConstants::DELETE_ROWS_EVENT => :delete
+  }
+
+  def read_binlog(filter, from, to, max_rows=nil)
+    filter = filter.inject({}) do |h, arr|
+      k, v = *arr
+      h[k.to_s] = v
+      h
+    end
+    puts filter.inspect
     from_file = from.fetch(:file)
     from_pos  = from.fetch(:pos)
     raise_unless_exists(from_file)
@@ -51,33 +57,81 @@ class BinlogDir
       raise_unless_exists(to_file)
     end
 
-    binlog = MysqlBinlog::Binlog.new(MysqlBinlog::BinlogFileReader.new(File.join(@dir, from_file)))
+    parser = ExodusParser.new(@dir, from_file)
+    parser.start_position = from_pos
+    # TODO stop positions, file rotation
 
-    event_count = 0
+    row_count = 0
+    # this is the schema that was fetched at the top of the entire process -- the "binlog start position"
     column_hash = @schema.fetch
-
     next_position = nil
-    binlog.each_event do |event|
-      next_position = {file: event[:filename], pos: event[:header][:next_position]}
-      break if to_file && to_pos && event[:filename] == to_file && event[:position] >= to_pos
-      break if max_events && event_count > max_events
+    table_map_cache = {}
 
-      next if event[:filename] == from_file && event[:position] < from_pos
+    while e = parser.getEvent()
+      next_position = {file: "foo", pos: e.header.next_position}
 
-      if [:write_rows_event, :update_rows_event, :delete_rows_event].include?(event[:type])
-        next unless event[:event][:table][:db] == @schema.db
+      case e.header.event_type
+      when MySQLConstants::TABLE_MAP_EVENT
+        if table_map_cache[e.table_id]
+          raise "table map changed!" if table_map_event_to_hash(e) != table_map_cache[e.table_id]
+        else
+          #puts @schema.db
+          #puts e.database_name.to_string
+          #puts
+          next if e.database_name.to_string != @schema.db
+          table_map_cache[e.table_id] = table_map_event_to_hash(e)
+        end
+      when MySQLConstants::WRITE_ROWS_EVENT, MySQLConstants::UPDATE_ROWS_EVENT, MySQLConstants::DELETE_ROWS_EVENT
+        table_schema = table_map_cache[e.table_id]
+        next unless table_schema
 
-        row_events = reformat_binlog_event(event)
-        row_events.each do |r|
-          next unless attrs_match_filter?(r[:row], filter)
-
-          yield(BinlogEvent.new(r[:type], event[:event][:table][:table], r[:row], r[:columns]))
-          event_count += 1
+        # TODO: database filter
+        reformat_binlog_event(e, table_schema) do |attributes|
+          next unless attrs_match_filter?(attributes, filter)
+          yield(BinlogEvent.new(EVENT_TYPES[e.header.event_type], table_schema[:name], attributes, table_schema[:column_names]))
+          row_count += 1
         end
       end
     end
-
+    break if max_rows && row_count > max_rows
     next_position
+  end
+
+  def reformat_binlog_event(e, schema, &block)
+    e.rows.each do |r|
+      i = 0
+      if e.header.event_type == MySQLConstants::UPDATE_ROWS_EVENT
+        r = r.after # we don't care about the past.  livin' for today.
+      end
+      attrs = r.columns.inject({}) do |h, c|
+        schema_column = schema[:columns][i]
+
+        if c.value.nil?
+          h[schema_column[:name]] = nil
+          i += 1
+          next h
+        end
+
+        val = case schema_column[:type]
+        when :tiny, :short, :long, :longlong, :int24, :float
+          c.value
+        when :tiny_blob, :medium_blob, :long_blob
+          c.value.to_s
+        when :datetime, :timestamp
+          @df ||= SimpleDateFormat.new("yyyy-MM-dd HH:mm:ss")
+          @df.format(c.value)
+        when :varchar
+          c.value.to_s
+        else
+          debugger
+          raise schema[:columns][i].inspect + " not supported!"
+        end
+        h[schema_column[:name]] = val
+        i += 1
+        h
+      end
+      yield attrs
+    end
   end
 
   def attrs_match_filter?(attrs, filter)
@@ -86,24 +140,48 @@ class BinlogDir
     end
   end
 
-  def verify_table_schema!(columns, table)
-    tcolumns = table[:columns]
-    if columns.size != tcolumns.size
-      raise SchemaChangedError.new("expected #{columns.size} columns but got #{tcolumns.size} columns")
+  def table_map_event_to_hash(e)
+    md = e.get_column_metadata
+
+    h = {}
+    h[:name] = e.table_name.to_string
+    h[:database] = e.database_name.to_string
+    h[:columns] = []
+
+    captured_schema = @schema.fetch[h[:name]]
+
+    e.column_types.each_with_index do |type, i|
+      column = {}
+      type = 255 + type if type < 0
+      column[:type] = COLUMN_TYPES[type]
+      h[:columns] << {:type => column[:type], :metadata => md.metadata(i), :position => i, :name => captured_schema[i][:column_name]}
+    end
+    verify_table_schema!(captured_schema, h)
+    h[:column_names] = h[:columns].map { |c| c[:name] }
+    h
+  end
+
+  def verify_table_schema!(expected_columns, table)
+    name, tcolumns = table.values_at(:name, :columns)
+
+    if expected_columns.size != tcolumns.size
+      raise SchemaChangedError.new("expected #{expected_columns.size} columns in #{table[:name]} but got #{tcolumns.size} columns")
     end
 
-    columns.zip(tcolumns) do |c, t|
+    expected_columns.zip(tcolumns) do |c, t|
       eq = case c[:data_type]
       when 'bigint'
         t[:type] == :longlong
       when 'int'
         t[:type] == :long
+      when 'smallint'
+        t[:type] == :short
       when 'tinyint'
         t[:type] == :tiny
       when 'datetime'
         t[:type] == :datetime
       when 'text'
-        t[:type] == :blob
+        t[:type] == :long_blob
       when 'varchar', 'float', 'timestamp'
         t[:type].to_s == c[:data_type]
       else
@@ -111,42 +189,11 @@ class BinlogDir
       end
 
       if !eq
-        msg = "expected column #{c[:ordinal_position]} (#{c[:column_name]})? to be a #{c[:data_type]}, "
+        msg = "in `#{table[:name]}`, expected column ##{c[:ordinal_position]} (`#{c[:column_name]}`?) to be a #{c[:data_type]}, "
         msg += "instead saw a #{t[:type]}"
         raise SchemaChangedError.new(msg)
       end
     end
     true
-  end
-
-  def reformat_binlog_event(e)
-    ev = e[:event]
-    table = ev[:table]
-    columns = @schema.fetch[table[:table]]
-
-    raise SchemaChangeError.new("Table #{table[:table]} not found in schema!") unless columns
-    verify_table_schema!(columns, table)
-
-
-    ev[:row_image].map do |h|
-      image = (e[:type] == :delete_rows_event) ? h[:before] : h[:after]
-
-      row = image.inject({}) do |accum, c|
-        idx = c.keys.first
-        val = c.values.first
-        accum[columns[idx][:column_name]] = val
-        accum
-      end
-      type = case e[:type]
-      when :write_rows_event
-        'insert'
-      when :update_rows_event
-        'update'
-      when :delete_rows_event
-        'delete'
-      end
-      row_columns = columns.map { |c| c[:column_name].to_s }
-      {:type => type, :row => row, :columns => row_columns }
-    end
   end
 end

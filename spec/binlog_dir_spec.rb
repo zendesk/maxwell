@@ -32,7 +32,7 @@ describe "BinlogDir" do
     end
 
     it "specifies the type of event" do
-      @events.map(&:type).sort.uniq.should == ['delete', 'insert', 'update']
+      @events.map(&:type).sort.uniq.should == [:delete, :insert, :update]
     end
 
     expected_row =
@@ -48,17 +48,17 @@ describe "BinlogDir" do
         "timestamp_field" => 315561600
       }
     it "provides inserts" do
-      inserts = @events.select { |e| e.type == 'insert' }
+      inserts = @events.select { |e| e.type == :insert }
       inserts.map(&:attrs).should include(expected_row)
     end
 
     it "provides updates" do
-      updates = @events.select { |e| e.type == 'update' }
+      updates = @events.select { |e| e.type == :update }
       updates.map(&:attrs).should include(expected_row.merge("status_id" => 1, "text_field" => "Updated Text"))
     end
 
     it "provides deletes" do
-      e = @events.detect { |e| e.type == 'delete' && e.attrs['id'] == 2 }
+      e = @events.detect { |e| e.type == :delete && e.attrs['id'] == 2 }
       e.should_not be_nil
     end
 
@@ -66,7 +66,7 @@ describe "BinlogDir" do
       position = get_master_position
       $mysql_master.connection.query("DELETE from sharded where id = 1")
       events = get_events({}, @start_position, position)
-      e = events.detect { |e| e.type == 'delete' && e.attrs['id'] == 1 }
+      e = events.detect { |e| e.type == :delete && e.attrs['id'] == 1 }
       e.should be_nil
     end
 

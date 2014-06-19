@@ -1,15 +1,16 @@
 class BinlogEvent
+  java_import "org.apache.commons.lang.StringEscapeUtils"
   attr_reader :type, :attrs
 
-  def initialize(type, table, attrs, columns)
+  def initialize(type, table, attrs, column_names)
     @type = type
     @table = table
     @attrs = attrs
-    @columns = columns
+    @column_names = column_names
   end
 
   def to_sql
-    if @type == 'delete'
+    if @type == :delete
       delete_to_sql
     else
       replace_to_sql
@@ -23,17 +24,19 @@ class BinlogEvent
   def escape(s)
     case s
     when String
-      "'" + Mysql2::Client.escape(s) + "'"
+      "'" + StringEscapeUtils.escapeSql(s) + "'"
+    when nil
+      'NULL'
     else
       s.to_s
     end
   end
 
   def replace_to_sql
-    values = @columns.map do |c|
+    values = @column_names.map do |c|
       escape(@attrs[c.to_s])
     end
-    columns = @columns.join(", ")
+    columns = @column_names.join(", ")
     "REPLACE INTO `#{@table}` (#{columns}) VALUES (" + values.join(", ") + ")"
   end
 end

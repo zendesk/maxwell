@@ -89,6 +89,11 @@ Dir.glob(File.dirname(__FILE__) + "/sql/*.sql").each do |fname|
   $mysql_master.connection.query File.read(fname)
 end
 
+class Object
+  def my_methods
+    (methods - Object.methods).sort
+  end
+end
 
 generate_binlog_events
 
