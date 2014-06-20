@@ -8,10 +8,10 @@ import com.google.code.or.common.glossary.Row;
 
 public class ExodusRowFilter {
 	private long value;
-	private long tableId;
+	private int tableId;
 	private int colPosition;
 
-	public ExodusRowFilter(long tableId, int colPosition, long value) {
+	public ExodusRowFilter(int tableId, int colPosition, long value) {
 		this.tableId = tableId;
 		this.colPosition = colPosition;
 		this.value = value;
@@ -22,7 +22,7 @@ public class ExodusRowFilter {
 		return false;
 	}
 
-	public long getTableId() {
+	public int getTableId() {
 		// TODO Auto-generated method stub
 		return tableId;
 	}

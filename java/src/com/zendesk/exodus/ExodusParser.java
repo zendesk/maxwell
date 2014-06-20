@@ -6,7 +6,9 @@ import com.google.code.or.binlog.BinlogEventV4Header;
 import com.google.code.or.binlog.BinlogParser;
 import com.google.code.or.binlog.BinlogParserContext;
 import com.google.code.or.binlog.impl.FileBasedBinlogParser;
+import com.google.code.or.binlog.impl.event.AbstractRowEvent;
 import com.google.code.or.binlog.impl.event.RotateEvent;
+import com.google.code.or.binlog.impl.event.WriteRowsEvent;
 import com.google.code.or.binlog.impl.parser.DeleteRowsEventParser;
 import com.google.code.or.binlog.impl.parser.DeleteRowsEventV2Parser;
 import com.google.code.or.binlog.impl.parser.FormatDescriptionEventParser;
@@ -92,8 +94,8 @@ public class ExodusParser {
 	}
 
 	public void addRowFilter(ExodusRowFilter f) {
-		rowFilters.set(f.getTableId(), f);
-	}
+		this.rowFilters.put(f.getTableId(), f);
+	}	
 	
 	public BinlogEventV4 getEvent() throws Exception {
 		BinlogEventV4 event;
@@ -110,6 +112,7 @@ public class ExodusParser {
 			event = queue.poll(100, TimeUnit.MILLISECONDS);
 			if (event != null) { 
 				if ( event instanceof RotateEvent ) {
+					System.out.println("Got a rotate event.");
 					RotateEvent r = (RotateEvent) event;
 					initParser(r.getBinlogFileName().toString(), r.getBinlogPosition());
 					this.parser.start();   
@@ -175,11 +178,16 @@ public class ExodusParser {
 	public static void main(String args[]) throws Exception {
 		int count = 0 ;
 		BinlogEventV4 e;
-		ExodusParser p = new ExodusParser("/opt/local/var/db/mysql5", "master.000004");
+		ExodusParser p = new ExodusParser("/opt/local/var/db/mysql5", "master.000007");
 		Date start = new Date();
 		ExodusRowFilter f = new ExodusRowFilter(1, 3, 1);
 		p.addRowFilter(f);
 		while ((e = p.getEvent()) != null) {
+			if ( e instanceof AbstractRowEvent ) {
+				String s = ExodusAbstractRowsEvent.buildEvent((AbstractRowEvent) e, "nothing", "(foo,foo)", 1).toSql();
+				System.out.println(s);
+			}
+			
 			count++;
 			if ( count % 1000 == 0 ) {
 				Date d = new Date();
