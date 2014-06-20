@@ -34,30 +34,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-class ExodusParserListener implements com.google.code.or.binlog.BinlogParserListener {
-	protected AtomicBoolean running;
-	public ExodusParserListener(AtomicBoolean running) {
-		this.running = running;
-	}
 
-	public boolean isRunning() { 
-		return this.running.get();
-	}
-	public void onStart(BinlogParser parser) { 
-		System.out.println("parser for " + ((FileBasedBinlogParser) parser).getBinlogFileName() + " started.");
-		this.running.set(true);
-	}
-
-	public void onStop(BinlogParser parser) { 
-		System.out.println("parser for " +  ((FileBasedBinlogParser) parser).getBinlogFileName() + " stopped.");
-		this.running.set(false);
-	}
-
-	public void onException(BinlogParser parser, Exception eception) {
-	}
-
-
-}
 public class ExodusParser {
 	
 	String filePath, fileName;
@@ -80,7 +57,6 @@ public class ExodusParser {
 
 	protected FileBasedBinlogParser parser;
 	protected ExodusBinlogEventListener binlogEventListener;
-	private ExodusParserListener parserListener;
 	private Map<Integer, ExodusRowFilter> rowFilters = new HashMap<Integer, ExodusRowFilter>();
 	
 
@@ -90,7 +66,6 @@ public class ExodusParser {
 		this.startPosition = 4;
 		
 		this.binlogEventListener = new ExodusBinlogEventListener(queue);
-		this.parserListener = new ExodusParserListener(this.running);
 	}
 
 	public void addRowFilter(ExodusRowFilter f) {
@@ -102,9 +77,6 @@ public class ExodusParser {
 
 		if (parser == null) {
 			initParser(fileName, startPosition);
-		}
-
-		if (!parser.isRunning()) {
 			parser.start();
 		}
 
@@ -112,6 +84,9 @@ public class ExodusParser {
 			event = queue.poll(100, TimeUnit.MILLISECONDS);
 			if (event != null) { 
 				if ( event instanceof RotateEvent ) {
+					// we throw out the old parser and let it stop.  It will (erroneously) stop us.  
+					// I think there's a small race surface still, if we get this rotate event, and 
+					// then the old parser calls stop, we could go down. 
 					System.out.println("Got a rotate event.");
 					RotateEvent r = (RotateEvent) event;
 					initParser(r.getBinlogFileName().toString(), r.getBinlogPosition());
@@ -121,7 +96,7 @@ public class ExodusParser {
 					return event;
 				}
 			}
-			if (this.running.get() == false) { return null; }
+			if (!this.parser.isRunning()) { return null; }
 		}
 	}
 
@@ -156,7 +131,6 @@ public class ExodusParser {
 		
 		bp.setEventListener(this.binlogEventListener);
 				
-		bp.addParserListener(this.parserListener);
 		bp.setEventFilter(new BinlogEventFilter() { 
 			public boolean accepts(BinlogEventV4Header header, BinlogParserContext context) { 
 				int eventType = header.getEventType();
