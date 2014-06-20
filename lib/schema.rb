@@ -27,7 +27,7 @@ class Schema
         c = col.inject({}) do |accum, array|
           k, v = *array
           k = k.downcase.to_sym
-          next accum if [:table_catalog, :table_schema, :table_name, :column_key, :extra, :privileges, :column_comment].include?(k)
+          next accum if [:table_catalog, :table_schema, :table_name, :column_key, :extra, :privileges, :column_comment, :column_key].include?(k)
           accum[k] = v
           accum
         end

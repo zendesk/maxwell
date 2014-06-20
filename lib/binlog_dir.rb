@@ -177,7 +177,7 @@ class BinlogDir
       h[:filter] = nil
     end
 
-    h[:id_offset] = h[:columns].find_index { |i| i == 'id' }
+    h[:id_offset] = h[:columns].find_index { |c| c[:column_key] == 'PRI' }
     h[:column_names] = "(" + h[:columns].map { |c| c[:name] }.join(",") + ")"
     h
   end
