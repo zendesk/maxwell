@@ -25,6 +25,7 @@ class BinlogDir
   java_import 'com.zendesk.exodus.ExodusParser'
   java_import 'com.google.code.or.common.util.MySQLConstants'
   java_import 'java.text.SimpleDateFormat'
+  java_import 'com.zendesk.exodus.ExodusAbstractRowsEvent'
 
   COLUMN_TYPES = MySQLConstants.constants.inject({}) do |h, c|
     c = c.to_s
@@ -40,13 +41,13 @@ class BinlogDir
     MySQLConstants::DELETE_ROWS_EVENT => :delete
   }
 
-  def read_binlog(filter, from, to, max_rows=nil)
+  def read_binlog(filter, from, to, max_rows=nil, &block)
     filter = filter.inject({}) do |h, arr|
       k, v = *arr
       h[k.to_s] = v
       h
     end
-    puts filter.inspect
+
     from_file = from.fetch(:file)
     from_pos  = from.fetch(:pos)
     raise_unless_exists(from_file)
@@ -59,7 +60,7 @@ class BinlogDir
 
     parser = ExodusParser.new(@dir, from_file)
     parser.start_position = from_pos
-    # TODO stop positions, file rotation
+    # TODO stop positions
 
     row_count = 0
     # this is the schema that was fetched at the top of the entire process -- the "binlog start position"
@@ -73,65 +74,68 @@ class BinlogDir
       case e.header.event_type
       when MySQLConstants::TABLE_MAP_EVENT
         if table_map_cache[e.table_id]
-          raise "table map changed!" if table_map_event_to_hash(e) != table_map_cache[e.table_id]
+          #raise "table map changed!" if table_map_event_to_hash(e, filter) != table_map_cache[e.table_id]
         else
-          #puts @schema.db
-          #puts e.database_name.to_string
-          #puts
           next if e.database_name.to_string != @schema.db
-          table_map_cache[e.table_id] = table_map_event_to_hash(e)
+          table_map_cache[e.table_id] = table_map_event_to_hash(e, filter)
         end
       when MySQLConstants::WRITE_ROWS_EVENT, MySQLConstants::UPDATE_ROWS_EVENT, MySQLConstants::DELETE_ROWS_EVENT
         table_schema = table_map_cache[e.table_id]
         next unless table_schema
-
-        # TODO: database filter
-        reformat_binlog_event(e, table_schema) do |attributes|
-          next unless attrs_match_filter?(attributes, filter)
-          yield(BinlogEvent.new(EVENT_TYPES[e.header.event_type], table_schema[:name], attributes, table_schema[:column_names]))
-          row_count += 1
-        end
+        yield ExodusAbstractRowsEvent.build_event(e, table_schema[:name], table_schema[:column_names], table_schema[:id_offset])
       end
     end
     break if max_rows && row_count > max_rows
     next_position
   end
 
+  def date_format(date)
+    return nil if date.nil?
+    @df ||= SimpleDateFormat.new("yyyy-MM-dd HH:mm:ss")
+    @df.format(date)
+  end
+
   def reformat_binlog_event(e, schema, &block)
+    return [] if schema[:filter] && schema[:filter] == :reject
+
+    res = []
     e.rows.each do |r|
-      i = 0
       if e.header.event_type == MySQLConstants::UPDATE_ROWS_EVENT
         r = r.after # we don't care about the past.  livin' for today.
       end
-      attrs = r.columns.inject({}) do |h, c|
+
+      if schema[:filter]
+        next unless schema[:filter].all? do |pos, val|
+          r.columns[pos].value == val
+        end
+      end
+
+      attrs = {}
+      r.columns.each_with_index do |c, i|
         schema_column = schema[:columns][i]
 
         if c.value.nil?
-          h[schema_column[:name]] = nil
-          i += 1
-          next h
+          attrs[schema_column[:name]] = nil
+          next
         end
 
         val = case schema_column[:type]
         when :tiny, :short, :long, :longlong, :int24, :float
           c.value
-        when :tiny_blob, :medium_blob, :long_blob
+        when :tiny_blob, :medium_blob, :long_blob, :varchar
           c.value.to_s
         when :datetime, :timestamp
-          @df ||= SimpleDateFormat.new("yyyy-MM-dd HH:mm:ss")
-          @df.format(c.value)
-        when :varchar
-          c.value.to_s
+          date_format(c.value)
         else
           debugger
           raise schema[:columns][i].inspect + " not supported!"
         end
-        h[schema_column[:name]] = val
-        i += 1
-        h
+        attrs[schema_column[:name]] = val
       end
-      yield attrs
+
+      res << attrs
     end
+    res
   end
 
   def attrs_match_filter?(attrs, filter)
@@ -140,7 +144,7 @@ class BinlogDir
     end
   end
 
-  def table_map_event_to_hash(e)
+  def table_map_event_to_hash(e, filter)
     md = e.get_column_metadata
 
     h = {}
@@ -157,7 +161,24 @@ class BinlogDir
       h[:columns] << {:type => column[:type], :metadata => md.metadata(i), :position => i, :name => captured_schema[i][:column_name]}
     end
     verify_table_schema!(captured_schema, h)
-    h[:column_names] = h[:columns].map { |c| c[:name] }
+
+    if filter && filter.any?
+      h[:filter] = []
+
+      filter.each do |k, v|
+        c = h[:columns].detect { |c| c[:name] == k }
+        if c
+          h[:filter] << [c[:position], v]
+        end
+      end
+
+      h[:filter] = :reject if h[:filter].empty? # table didn't contain the filter columns.  reject all rows.
+    else
+      h[:filter] = nil
+    end
+
+    h[:id_offset] = h[:columns].find_index { |i| i == 'id' }
+    h[:column_names] = "(" + h[:columns].map { |c| c[:name] }.join(",") + ")"
     h
   end
 
@@ -180,12 +201,14 @@ class BinlogDir
         t[:type] == :tiny
       when 'datetime'
         t[:type] == :datetime
-      when 'text'
+      when 'text', 'mediumtext'
         t[:type] == :long_blob
       when 'varchar', 'float', 'timestamp'
         t[:type].to_s == c[:data_type]
+      when 'date'
+        t[:type] == :date
       else
-        raise "unknown columns type #{c[:data_type]}"
+        raise "unknown columns type '#{c[:data_type]}' (#{t[:type]})?"
       end
 
       if !eq
