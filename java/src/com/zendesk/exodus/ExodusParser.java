@@ -1,30 +1,12 @@
 package com.zendesk.exodus;
-import com.google.code.or.OpenParser;
 import com.google.code.or.binlog.BinlogEventFilter;
 import com.google.code.or.binlog.BinlogEventV4;
 import com.google.code.or.binlog.BinlogEventV4Header;
-import com.google.code.or.binlog.BinlogParser;
 import com.google.code.or.binlog.BinlogParserContext;
 import com.google.code.or.binlog.impl.FileBasedBinlogParser;
 import com.google.code.or.binlog.impl.event.AbstractRowEvent;
 import com.google.code.or.binlog.impl.event.RotateEvent;
-import com.google.code.or.binlog.impl.event.WriteRowsEvent;
-import com.google.code.or.binlog.impl.parser.DeleteRowsEventParser;
-import com.google.code.or.binlog.impl.parser.DeleteRowsEventV2Parser;
-import com.google.code.or.binlog.impl.parser.FormatDescriptionEventParser;
-import com.google.code.or.binlog.impl.parser.IncidentEventParser;
-import com.google.code.or.binlog.impl.parser.IntvarEventParser;
-import com.google.code.or.binlog.impl.parser.QueryEventParser;
-import com.google.code.or.binlog.impl.parser.RandEventParser;
-import com.google.code.or.binlog.impl.parser.RotateEventParser;
-import com.google.code.or.binlog.impl.parser.StopEventParser;
-import com.google.code.or.binlog.impl.parser.TableMapEventParser;
-import com.google.code.or.binlog.impl.parser.UpdateRowsEventParser;
-import com.google.code.or.binlog.impl.parser.UpdateRowsEventV2Parser;
-import com.google.code.or.binlog.impl.parser.UserVarEventParser;
-import com.google.code.or.binlog.impl.parser.WriteRowsEventParser;
-import com.google.code.or.binlog.impl.parser.WriteRowsEventV2Parser;
-import com.google.code.or.binlog.impl.parser.XidEventParser;
+import com.google.code.or.binlog.impl.parser.*;
 import com.google.code.or.common.util.MySQLConstants;
 
 import java.util.Date;
@@ -32,7 +14,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 
 public class ExodusParser {
@@ -52,7 +33,6 @@ public class ExodusParser {
 		this.startPosition = pos;
 	}
 	
-	private final AtomicBoolean running = new AtomicBoolean(true);
 	private LinkedBlockingQueue<BinlogEventV4> queue =  new LinkedBlockingQueue<BinlogEventV4>(100);
 
 	protected FileBasedBinlogParser parser;

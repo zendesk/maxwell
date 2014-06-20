@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.google.code.or.binlog.impl.event.WriteRowsEvent;
 import com.google.code.or.common.glossary.Row;
-import com.google.code.or.common.util.MySQLConstants;
 
 
 public class ExodusWriteRowsEvent extends ExodusAbstractRowsEvent {

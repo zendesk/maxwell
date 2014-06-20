@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.code.or.binlog.impl.event.UpdateRowsEvent;
-import com.google.code.or.binlog.impl.event.WriteRowsEvent;
 import com.google.code.or.common.glossary.Pair;
 import com.google.code.or.common.glossary.Row;
 

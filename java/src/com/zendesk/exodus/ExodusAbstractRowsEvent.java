@@ -97,7 +97,6 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 			sql.append("\t(");
 			for(Iterator<Column> iter = row.getColumns().iterator(); iter.hasNext(); ) { 
 				Column c = iter.next();
-				Object v = c.getValue();
 				
 				sql.append(columnToSql(c));
 				
