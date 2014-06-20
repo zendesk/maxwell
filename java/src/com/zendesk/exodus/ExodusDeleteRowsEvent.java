@@ -36,6 +36,7 @@ public class ExodusDeleteRowsEvent extends ExodusAbstractRowsEvent {
 			if ( rowIter.hasNext() ) 
 				s.append(",");
 		}
+		s.append(")");
 		return s.toString();
 	}
 }
