@@ -9,8 +9,8 @@ import com.google.code.or.common.glossary.Row;
 
 public class ExodusUpdateRowsEvent extends ExodusAbstractRowsEvent {
 	private UpdateRowsEvent event;
-	public ExodusUpdateRowsEvent(UpdateRowsEvent e, String tableName, String columnNames) {
-		super(e, tableName, columnNames);
+	public ExodusUpdateRowsEvent(UpdateRowsEvent e, String tableName, String[] columnNames, String[] columnEncodings) {
+		super(e, tableName, columnNames, columnEncodings);
 		this.event = e;
 	}
 	@Override
@@ -26,5 +26,8 @@ public class ExodusUpdateRowsEvent extends ExodusAbstractRowsEvent {
 	public String sqlOperationString() {
 		return "REPLACE INTO ";
 	}
-
+	@Override
+	public String getType() {
+		return "update";
+	}
 }

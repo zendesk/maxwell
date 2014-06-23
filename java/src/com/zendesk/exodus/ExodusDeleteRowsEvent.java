@@ -15,8 +15,9 @@ public class ExodusDeleteRowsEvent extends ExodusAbstractRowsEvent {
 		return event.getRows();
 	}
 
+
 	public ExodusDeleteRowsEvent(DeleteRowsEvent e, String tableName, int idColumnPosition) {
-		super(e, tableName, null);
+		super(e, tableName, null, null);
 		this.event = e;
 		this.idColumnPosition = idColumnPosition;
 	}
@@ -29,7 +30,7 @@ public class ExodusDeleteRowsEvent extends ExodusAbstractRowsEvent {
 	@Override
 	public String toSql() {
 		StringBuilder s = new StringBuilder();
-		s.append("DELETE FROM " + this.tableName + " WHERE id in (");
+		s.append("DELETE FROM `" + this.tableName + "` WHERE id in (");
 
 		for(Iterator<Row> rowIter = getRows().iterator(); rowIter.hasNext(); ) {
 			s.append(rowIter.next().getColumns().get(idColumnPosition).toString());
@@ -38,5 +39,10 @@ public class ExodusDeleteRowsEvent extends ExodusAbstractRowsEvent {
 		}
 		s.append(")");
 		return s.toString();
+	}
+
+	@Override
+	public String getType() {
+		return "delete";
 	}
 }

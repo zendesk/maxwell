@@ -82,7 +82,7 @@ class BinlogDir
       when MySQLConstants::WRITE_ROWS_EVENT, MySQLConstants::UPDATE_ROWS_EVENT, MySQLConstants::DELETE_ROWS_EVENT
         table_schema = table_map_cache[e.table_id]
         next unless table_schema
-        yield ExodusAbstractRowsEvent.build_event(e, table_schema[:name], table_schema[:column_names], table_schema[:id_offset])
+        yield ExodusAbstractRowsEvent.build_event(e, table_schema[:name], table_schema[:column_names], table_schema[:column_encodings], table_schema[:id_offset])
       end
     end
     break if max_rows && row_count > max_rows
@@ -127,7 +127,6 @@ class BinlogDir
         when :datetime, :timestamp
           date_format(c.value)
         else
-          debugger
           raise schema[:columns][i].inspect + " not supported!"
         end
         attrs[schema_column[:name]] = val
@@ -158,7 +157,13 @@ class BinlogDir
       column = {}
       type = 255 + type if type < 0
       column[:type] = COLUMN_TYPES[type]
-      h[:columns] << {:type => column[:type], :metadata => md.metadata(i), :position => i, :name => captured_schema[i][:column_name]}
+      h[:columns] << {
+        :type => column[:type],
+        :metadata => md.metadata(i),
+        :position => i,
+        :name => captured_schema[i][:column_name],
+        :character_set => captured_schema[i][:character_set_name]
+      }
     end
     verify_table_schema!(captured_schema, h)
 
@@ -178,7 +183,8 @@ class BinlogDir
     end
 
     h[:id_offset] = h[:columns].find_index { |c| c[:column_key] == 'PRI' }
-    h[:column_names] = "(" + h[:columns].map { |c| c[:name] }.join(",") + ")"
+    h[:column_names] = h[:columns].map { |c| c[:name] }
+    h[:column_encodings]  = h[:columns].map { |c| c[:character_set] }
     h
   end
 
