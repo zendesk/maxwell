@@ -1,10 +1,15 @@
 package com.zendesk.exodus;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
 
 import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.codec.binary.Hex;
 
 import com.google.code.or.binlog.impl.event.AbstractRowEvent;
 import com.google.code.or.binlog.impl.event.DeleteRowsEvent;
@@ -16,13 +21,36 @@ import com.google.code.or.common.glossary.column.*;
 import com.google.code.or.common.util.MySQLConstants;
 
 public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
-	private static final SimpleDateFormat dateTimeFormatter = new SimpleDateFormat("''yyyy-MM-dd HH:mm:ss''");
-	private static final SimpleDateFormat dateFormatter     = new SimpleDateFormat("''yyyy-MM-dd''");
-	private AbstractRowEvent event;
-	private String columnNames;
-	protected String tableName;
+	private static final TimeZone tz = TimeZone.getTimeZone("UTC");
 	
-	public ExodusAbstractRowsEvent(AbstractRowEvent e, String tableName, String columnNames) {
+	
+	private static SimpleDateFormat dateTimeFormatter;
+	private static SimpleDateFormat dateFormatter;
+	
+	protected static SimpleDateFormat getDateTimeFormatter() {
+		if ( dateTimeFormatter == null ) {
+			dateTimeFormatter = new SimpleDateFormat("''yyyy-MM-dd HH:mm:ss''");
+			dateTimeFormatter.setTimeZone(tz);
+		}
+		return dateTimeFormatter;
+	}
+	
+	protected static SimpleDateFormat getDateFormatter() {
+		if ( dateFormatter == null ) {
+			dateFormatter = new SimpleDateFormat("''yyyy-MM-dd''");
+			dateFormatter.setTimeZone(tz);
+		}
+		return dateFormatter;
+	}
+	
+	
+	private AbstractRowEvent event;
+	private String[] columnNames;
+	private String[] columnEncodings;
+	protected String tableName;
+
+	
+	public ExodusAbstractRowsEvent(AbstractRowEvent e, String tableName, String[] columnNames, String[] columnEncodings) {
 		this.tableId = e.getTableId();
 		this.event = e;
 		this.header = e.getHeader();
@@ -62,12 +90,12 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 			
 		} else if ( c instanceof DateColumn ||
 				    c instanceof YearColumn ) {
-			return dateFormatter.format(c.getValue());
+			return getDateFormatter().format(c.getValue());
 		} else if ( c instanceof Datetime2Column ||
 				    c instanceof DatetimeColumn ||
 				    c instanceof Timestamp2Column ||
 				    c instanceof TimestampColumn ) {
-			return dateTimeFormatter.format(c.getValue());
+			return getDateTimeFormatter().format(c.getValue());
 		} else if ( c instanceof Int24Column || 
 				c instanceof LongColumn || 
 			    c instanceof LongLongColumn  ||
