@@ -9,11 +9,15 @@ import com.google.code.or.binlog.impl.event.RotateEvent;
 import com.google.code.or.binlog.impl.parser.*;
 import com.google.code.or.common.util.MySQLConstants;
 
+import java.io.File;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class ExodusParser {
@@ -45,6 +49,7 @@ public class ExodusParser {
 		this.fileName = fileName;
 		this.startPosition = 4;
 		
+		TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 		this.binlogEventListener = new ExodusBinlogEventListener(queue);
 	}
 
@@ -64,20 +69,45 @@ public class ExodusParser {
 			event = queue.poll(100, TimeUnit.MILLISECONDS);
 			if (event != null) { 
 				if ( event instanceof RotateEvent ) {
-					// we throw out the old parser and let it stop.  It will (erroneously) stop us.  
-					// I think there's a small race surface still, if we get this rotate event, and 
-					// then the old parser calls stop, we could go down. 
-					System.out.println("Got a rotate event.");
 					RotateEvent r = (RotateEvent) event;
+					// we throw out the old parser and boot a new one. 
 					initParser(r.getBinlogFileName().toString(), r.getBinlogPosition());
 					this.parser.start();   
-					continue;
 				} else {
 					return event;
 				}
-			}
-			if (!this.parser.isRunning()) { return null; }
+			} else {
+				if (!this.parser.isRunning()) {
+					/* parser stopped and the queue is empty.
+					   Likely that we've simply hit the end, but another possibility
+					   is that the server crashed and never inserted the "rotate" event in
+				       the logs.  Let's test for that. */
+					
+					String nextFile = findNextBinlogFile(this.fileName);
+					if (nextFile == null)
+						return null; 
+					else {
+						initParser(nextFile, 4);
+						this.parser.start();
+					}
+				}
+			}		
 		}
+	}
+
+	private String findNextBinlogFile(String fileName) {
+		Pattern p = Pattern.compile("(.*)\\.(\\d+)");
+		Matcher m = p.matcher(fileName);
+		if ( !m.matches() )
+			return null;
+		
+		Integer nextInt = Integer.valueOf(m.group(2)) + 1;
+		String testFile = m.group(1) + "." + String.format("%06d", nextInt);
+		File f = new File(this.filePath + "/" + testFile);
+		if ( f.exists() )
+			return testFile;
+		else
+			return null;
 	}
 
 	protected FileBasedBinlogParser getDefaultBinlogParser() throws Exception {
@@ -138,7 +168,17 @@ public class ExodusParser {
 		p.addRowFilter(f);
 		while ((e = p.getEvent()) != null) {
 			if ( e instanceof AbstractRowEvent ) {
-				String s = ExodusAbstractRowsEvent.buildEvent((AbstractRowEvent) e, "nothing", "(foo,foo)", 1).toSql();
+				String columns[] = new String[2];
+				
+				columns[0] = "foo";
+				columns[1] = "bar";
+				
+				String encodings[] = new String[100];
+				for (int i = 0 ; i < 100; i++) {
+					encodings[i] = "utf8";
+				}
+				
+				String s = ExodusAbstractRowsEvent.buildEvent((AbstractRowEvent) e, "nothing", columns, encodings, 1).toSql();
 				System.out.println(s);
 			}
 			
