@@ -14,13 +14,18 @@ public class ExodusWriteRowsEvent extends ExodusAbstractRowsEvent {
 		return event.getRows();
 	}
 
-	public ExodusWriteRowsEvent(WriteRowsEvent e, String tableName, String columnNames) {
-		super(e, tableName, columnNames);
+	public ExodusWriteRowsEvent(WriteRowsEvent e, String tableName, String[] columnNames, String[] columnEncodings) {
+		super(e, tableName, columnNames, columnEncodings);
 		this.event = e;
 	}
 
 	@Override
 	public String sqlOperationString() {
 		return "REPLACE INTO ";
+	}
+
+	@Override
+	public String getType() {
+		return "insert";
 	}
 }

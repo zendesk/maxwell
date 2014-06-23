@@ -22,9 +22,29 @@ describe "BinlogDir" do
     end
   end
 
+  def map_to_hashes(events)
+    events.map { |e| e.row_attributes_as_sql.to_a.map { |h| h.to_hash }  }.flatten
+  end
+
+  def hex_string(str)
+    "x'" + str.each_byte.map { |b| b.to_s(16) }.join + "'"
+  end
+
   describe "read_binlog" do
     before do
       @events = get_events({}, @start_position, get_master_position)
+      @expected_row =
+        { "id" => "1",
+          "account_id" => "1",
+          "nice_id" => "1",
+          "status_id" => "2",
+          "date_field" => "'1979-10-01 00:00:00'",
+          "text_field" => "'Some Text'",
+          "latin1_field" => hex_string("FooBar\xE4"),
+          "utf8_field" => "'FooBarä'".force_encoding("utf-8"),
+          "float_field" => "1.33",
+          "timestamp_field" => "'1980-01-01 00:00:00'"
+        }
     end
 
     it "yields some events" do
@@ -32,34 +52,21 @@ describe "BinlogDir" do
     end
 
     it "specifies the type of event" do
-      @events.map(&:type).sort.uniq.should == [:delete, :insert, :update]
+      @events.map(&:type).sort.uniq.should == ['delete', 'insert', 'update']
     end
 
-    expected_row =
-      { "id" => 1,
-        "account_id" => 1,
-        "nice_id" => 1,
-        "status_id" => 2,
-        "date_field" => "1979-10-01 00:00:00",
-        "text_field" => "Some Text",
-        "latin1_field" => "FooBar\xE4".force_encoding("ASCII-8BIT"),
-        "utf8_field" => "FooBar\xC3\xA4".force_encoding("ASCII-8BIT"),
-        "float_field" => 1.3300000429153442,
-        "timestamp_field" => 315561600
-      }
     it "provides inserts" do
-      inserts = @events.select { |e| e.type == :insert }
-      inserts.map(&:attrs).should include(expected_row)
+      inserts = @events.select { |e| e.type == 'insert' }
+      map_to_hashes(inserts).should include(@expected_row)
     end
 
     it "provides updates" do
-      updates = @events.select { |e| e.type == :update }
-      updates.map(&:attrs).should include(expected_row.merge("status_id" => 1, "text_field" => "Updated Text"))
+      updates = @events.select { |e| e.type == 'update' }
+      map_to_hashes(updates).should include(@expected_row.merge("status_id" => '1', "text_field" => "'Updated Text'"))
     end
 
     it "provides deletes" do
-      e = @events.detect { |e| e.type == :delete && e.attrs['id'] == 2 }
-      e.should_not be_nil
+      @events.map(&:to_sql).should include("DELETE FROM `sharded` WHERE id in (2)")
     end
 
     it "stops at the specified position" do
@@ -87,7 +94,7 @@ describe "BinlogDir" do
         @sql.should include(
           "REPLACE INTO `sharded` " +
           "(id, account_id, nice_id, status_id, date_field, text_field, latin1_field, utf8_field, float_field, timestamp_field) " +
-          "VALUES (1, 1, 1, 2, '1979-10-01 00:00:00', 'Some Text', 'FooBar\xE4', 'FooBar\xC3\xA4', 1.3300000429153442, 315561600)"
+          "VALUES (1,1,1,2,'1979-10-01 00:00:00','Some Text',#{hex_string("FooBar\xE4")},'FooBar\xC3\xA4',1.33,'1980-01-01 00:00:00')".force_encoding('utf-8')
         )
       end
 
@@ -95,12 +102,12 @@ describe "BinlogDir" do
         @sql.should include(
           "REPLACE INTO `sharded` " +
           "(id, account_id, nice_id, status_id, date_field, text_field, latin1_field, utf8_field, float_field, timestamp_field) " +
-          "VALUES (1, 1, 1, 1, '1979-10-01 00:00:00', 'Updated Text', 'FooBar\xE4', 'FooBar\xC3\xA4', 1.3300000429153442, 315561600)"
+          "VALUES (1,1,1,1,'1979-10-01 00:00:00','Updated Text',#{hex_string("FooBar\xE4")},'FooBar\xC3\xA4',1.33,'1980-01-01 00:00:00')".force_encoding('utf-8')
         )
       end
 
       it "maps deletes into DELETE statements" do
-        @sql.should include("DELETE FROM `sharded` WHERE id = 2")
+        @sql.should include("DELETE FROM `sharded` WHERE id in (2)")
       end
     end
   end
