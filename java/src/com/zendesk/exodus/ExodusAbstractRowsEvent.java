@@ -134,7 +134,10 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 	public abstract String sqlOperationString();
 
 	private String quoteString(String s) {
-		return "'" + StringEscapeUtils.escapeSql(s) + "'";
+		String escaped = StringEscapeUtils.escapeSql(s);
+		escaped = escaped.replaceAll("\n", "\\\\n");
+		escaped = escaped.replaceAll("\r", "\\\\r");
+		return "'" + escaped + "'";
 	}
 	private String columnToSql(Column c, String encoding) {
 		if ( c instanceof NullColumn ) {
