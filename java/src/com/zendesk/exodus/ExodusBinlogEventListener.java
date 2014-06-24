@@ -11,11 +11,11 @@ class ExodusBinlogEventListener implements BinlogEventListener {
 		this.queue = q;
 	}
 	public void onEvents(BinlogEventV4 event) {
-		int enqueued = 0;
-		while (enqueued == 0) {
+		boolean enqueued = false;
+		while (enqueued == false) {
 			try {
 				queue.put(event);
-				enqueued = 1;
+				enqueued = true;
 			} catch (InterruptedException e) {
 			}
 
