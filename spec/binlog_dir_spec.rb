@@ -109,6 +109,22 @@ describe "BinlogDir" do
       it "maps deletes into DELETE statements" do
         @sql.should include("DELETE FROM `sharded` WHERE id in (2)")
       end
+
+      it "filters out rows that don't match the filter" do
+        insert_row('sharded',
+          account_id: 2,
+          nice_id: 2,
+          status_id: 2,
+          date_field: Time.parse("1979-10-01"),
+          text_field: "Filtered row",
+          latin1_field: "FooBar".force_encoding('ISO-8859-1'),
+          utf8_field: "FooBar".encode('utf-8'),
+          float_field:  1.33333333333,
+          timestamp_field: Time.parse("1980-01-01")
+        )
+        events = get_events({}, @start_position, get_master_position)
+        events.map { |r| r.to_sql('account_id' => 2) }.compact.size.should == 1
+      end
     end
   end
 

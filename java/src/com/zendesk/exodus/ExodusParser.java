@@ -168,6 +168,7 @@ public class ExodusParser {
 		p.addRowFilter(f);
 		while ((e = p.getEvent()) != null) {
 			if ( e instanceof AbstractRowEvent ) {
+				HashMap<String, Object> filter = new HashMap<String, Object>();
 				String columns[] = new String[2];
 				
 				columns[0] = "foo";
@@ -178,7 +179,7 @@ public class ExodusParser {
 					encodings[i] = "utf8";
 				}
 				
-				String s = ExodusAbstractRowsEvent.buildEvent((AbstractRowEvent) e, "nothing", columns, encodings, 1).toSql();
+				String s = ExodusAbstractRowsEvent.buildEvent((AbstractRowEvent) e, "nothing", columns, encodings, 1).toSql(filter);
 				System.out.println(s);
 			}
 			

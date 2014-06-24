@@ -63,13 +63,16 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 	
 	private Column findColumn(String name, Row r) {
 		for(int i = 0; i < this.columnNames.length; i++ ) {
-			if ( this.columnNames[i] == name )
+			if ( this.columnNames[i].equals(name) )
 				return r.getColumns().get(i);
 		}
 		return null;
 	}
 
 	private boolean rowMatchesFilter(Row r, Map<String, Object> filter) {
+		if ( filter == null )
+			return true;
+		
 		for (Map.Entry<String, Object> entry : filter.entrySet()) {
 			String key = entry.getKey();
 			Object value = entry.getValue();
@@ -78,22 +81,36 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 			if ( col == null )
 				return false;
 
-			if ( value instanceof Integer) {
-				if ( col.getValue() != value )
-					return false;
-			}
+			if ( value instanceof Long ) {
+				long v = ((Long) value).longValue();
+				if ( col instanceof LongLongColumn ) {
+					Long l = ((LongLongColumn) col).getValue();
+					if ( v != l ) {
+						return false;
+					}
+				} else if ( col instanceof LongColumn ||
+						col instanceof Int24Column ||
+						col instanceof ShortColumn ||
+						col instanceof TinyColumn ) {
+					Integer i = ((LongColumn) col).getValue();
+					
+					if ( v != i ) {
+						return false;
+					}
+				}
+			} 
 		}
 		return true;
 		
 	}
-	public boolean filteredRows(Map<String, Object> filter) {
+	public List<Row> filteredRows(Map<String, Object> filter) {
 		ArrayList<Row> res = new ArrayList<Row>();
 		
 		for(Row row : this.getRows()) {
 			if ( rowMatchesFilter(row, filter))
 				res.add(row);
 		}
-		return true;
+		return res;
 	}
 	
 	public static ExodusAbstractRowsEvent buildEvent(
@@ -105,7 +122,7 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 		case MySQLConstants.UPDATE_ROWS_EVENT:
 			return new ExodusUpdateRowsEvent((UpdateRowsEvent) e, tableName, columnNames, columnEncodings);
 		case MySQLConstants.DELETE_ROWS_EVENT:
-			return new ExodusDeleteRowsEvent((DeleteRowsEvent) e, tableName, idColumnOffset);
+			return new ExodusDeleteRowsEvent((DeleteRowsEvent) e, tableName, columnNames, idColumnOffset);
 		}
 		return null;
 	}
@@ -167,14 +184,9 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 		}
 		return rows;
 	}
-
-	public String toSql() {
-		StringBuilder sql = new StringBuilder();
-		List<Row> rows = getRows();
-		
-		sql.append(sqlOperationString());
-		sql.append("`" + tableName + "`");
-		
+	
+	private void appendColumnNames(StringBuilder sql)
+	{
 		sql.append(" (");
 		
 		for(int i = 0 ; i < columnNames.length; i++) {
@@ -183,6 +195,20 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 				sql.append(", ");
 		}
 		sql.append(")");
+		
+	}
+
+	public String toSql(Map<String, Object> filter) {
+		StringBuilder sql = new StringBuilder();
+		List<Row> rows = filteredRows(filter);
+		
+		if ( rows.isEmpty() )
+			return null;
+		
+		sql.append(sqlOperationString());
+		sql.append("`" + tableName + "`");
+		
+		appendColumnNames(sql);
 		
 		sql.append(" VALUES ");
 		
@@ -210,5 +236,9 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 		}
 		
 		return sql.toString();
+	}
+	
+	public String toSql() {
+		return this.toSql(null);
 	}
 }

@@ -2,6 +2,7 @@ package com.zendesk.exodus;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import com.google.code.or.binlog.impl.event.DeleteRowsEvent;
 import com.google.code.or.common.glossary.Row;
@@ -16,8 +17,8 @@ public class ExodusDeleteRowsEvent extends ExodusAbstractRowsEvent {
 	}
 
 
-	public ExodusDeleteRowsEvent(DeleteRowsEvent e, String tableName, int idColumnPosition) {
-		super(e, tableName, null, null);
+	public ExodusDeleteRowsEvent(DeleteRowsEvent e, String tableName, String [] columnNames, int idColumnPosition) {
+		super(e, tableName, columnNames, null);
 		this.event = e;
 		this.idColumnPosition = idColumnPosition;
 	}
@@ -28,7 +29,13 @@ public class ExodusDeleteRowsEvent extends ExodusAbstractRowsEvent {
 	}
 	
 	@Override
-	public String toSql() {
+	public String toSql(Map <String, Object> filter) {
+		List<Row> rows = filteredRows(filter);
+		
+		if ( rows.isEmpty()) {
+			return null;
+		}
+		
 		StringBuilder s = new StringBuilder();
 		s.append("DELETE FROM `" + this.tableName + "` WHERE id in (");
 
