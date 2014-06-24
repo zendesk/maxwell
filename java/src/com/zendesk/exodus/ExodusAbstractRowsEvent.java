@@ -68,13 +68,30 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 		}
 		return null;
 	}
-	
-	public boolean matchesFilter(Map<String, Object> filter) {
+
+	private boolean rowMatchesFilter(Row r, Map<String, Object> filter) {
 		for (Map.Entry<String, Object> entry : filter.entrySet()) {
-		    String key = entry.getKey();
-		    Object value = entry.getValue();
-   
-		    
+			String key = entry.getKey();
+			Object value = entry.getValue();
+			Column col = findColumn(key, r);
+			
+			if ( col == null )
+				return false;
+
+			if ( value instanceof Integer) {
+				if ( col.getValue() != value )
+					return false;
+			}
+		}
+		return true;
+		
+	}
+	public boolean filteredRows(Map<String, Object> filter) {
+		ArrayList<Row> res = new ArrayList<Row>();
+		
+		for(Row row : this.getRows()) {
+			if ( rowMatchesFilter(row, filter))
+				res.add(row);
 		}
 		return true;
 	}
