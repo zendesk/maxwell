@@ -1,4 +1,5 @@
-require 'mysql2'
+require 'lib/jdbc_connection'
+
 class BinlogConfig
   BINLOG_SERVICE_CONFIG = File.join(File.dirname(__FILE__) + "/../config/exodus_binlog_service.yml")
 
@@ -10,7 +11,7 @@ class BinlogConfig
   end
 
   def mysql_connection
-    @mysql_connection ||= Mysql2::Client.new(username: config['mysql']['username'], password: config['mysql']['password'])
+    @mysql_connection ||= WrappedJDBCConnection.new(username: config['mysql']['username'], password: config['mysql']['password'])
   end
 
   def api_port
