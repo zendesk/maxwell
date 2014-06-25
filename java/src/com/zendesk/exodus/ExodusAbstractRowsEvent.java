@@ -11,6 +11,7 @@ import java.util.TimeZone;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.codec.binary.Hex;
 
+import com.google.code.or.binlog.BinlogEventV4Header;
 import com.google.code.or.binlog.impl.event.AbstractRowEvent;
 import com.google.code.or.binlog.impl.event.DeleteRowsEvent;
 import com.google.code.or.binlog.impl.event.UpdateRowsEvent;
@@ -59,6 +60,18 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 		this.columnEncodings = columnEncodings;
 	}
 	
+	public BinlogEventV4Header getHeader() {
+		return event.getHeader();
+	}
+
+	public String getBinlogFilename() {
+		return event.getBinlogFilename();
+	}
+
+	public void setBinlogFilename(String binlogFilename) {
+		event.setBinlogFilename(binlogFilename);
+	}
+
 	public abstract String getType();
 	
 	private Column findColumn(String name, Row r) {
