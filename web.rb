@@ -3,6 +3,7 @@ $LOAD_PATH << File.expand_path(File.dirname(__FILE__))
 
 require 'sinatra'
 require 'json'
+require 'lib/setup_java'
 require 'lib/schema'
 require 'lib/binlog_dir'
 require 'lib/config'
@@ -56,27 +57,34 @@ class Web < Sinatra::Base
 
     if schema.nil?
       status 404
-      body({err: "No stored schema found for #{params[:start_file]}:#{params[:start_pos]} -- call mark_binlog_top"})
+      body({err: "No stored schema found for #{params[:start_file]}:#{params[:start_pos]} -- call mark_binlog_top",
+            type: "no_stored_schema"}.to_json)
       return
     end
 
     begin
-      filter = { account_id: params[:account_id].to_i }
+      sql = []
       start_info = { file: params[:start_file], pos: params[:start_pos].to_i }
+
       if params[:end_file] && params[:end_pos]
         end_info = {file: params[:end_file], pos: params[:end_pos].to_i}
       end
 
       d = BinlogDir.new(settings.config.binlog_dir, schema)
-      b = ""
-      events = []
 
+      filter = { 'account_id' => params[:account_id].to_i }
       next_pos = d.read_binlog(filter, start_info, end_info, 1000) do |event|
-        b += event.to_sql + "\n"
+        s = event.to_sql(filter)
+        sql << s if s
       end
+
+      status 200
+      body({next_pos: next_pos, sql: sql}.to_json)
+
     rescue SchemaChangedError => e
+      status 500
+      body({err: e.message, type: 'schema_changed'}.to_json)
     end
-    body b
   end
 end
 
