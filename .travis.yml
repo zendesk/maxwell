@@ -1,0 +1,5 @@
+rvm:
+  - jruby-19mode
+jdk:
+  - openjdk7
+script: "bundle exec rake spec"
