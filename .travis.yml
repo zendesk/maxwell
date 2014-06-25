@@ -2,4 +2,7 @@ rvm:
   - jruby-19mode
 jdk:
   - openjdk7
+before_script:
+  - "rvm 1.8.7 do gem install mysql2"
+  - "cp config/exodus_binlog_service.yml.example config/exodus_binlog_service.yml"
 script: "bundle exec rake spec"
