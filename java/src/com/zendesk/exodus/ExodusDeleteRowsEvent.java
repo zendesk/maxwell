@@ -9,7 +9,7 @@ import com.google.code.or.common.glossary.Row;
 
 public class ExodusDeleteRowsEvent extends ExodusAbstractRowsEvent {
 	private final DeleteRowsEvent event;
-	private int idColumnPosition;
+	private final int idColumnPosition;
 
 	@Override
 	public List<Row> getRows() {
@@ -27,21 +27,21 @@ public class ExodusDeleteRowsEvent extends ExodusAbstractRowsEvent {
 	public String sqlOperationString() {
 		return null;
 	}
-	
+
 	@Override
 	public String toSql(Map <String, Object> filter) {
 		List<Row> rows = filteredRows(filter);
-		
+
 		if ( rows.isEmpty()) {
 			return null;
 		}
-		
+
 		StringBuilder s = new StringBuilder();
 		s.append("DELETE FROM `" + this.tableName + "` WHERE id in (");
 
 		for(Iterator<Row> rowIter = getRows().iterator(); rowIter.hasNext(); ) {
 			s.append(rowIter.next().getColumns().get(idColumnPosition).toString());
-			if ( rowIter.hasNext() ) 
+			if ( rowIter.hasNext() )
 				s.append(",");
 		}
 		s.append(")");

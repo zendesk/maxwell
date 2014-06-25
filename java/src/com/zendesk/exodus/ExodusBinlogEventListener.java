@@ -6,7 +6,7 @@ import com.google.code.or.binlog.BinlogEventListener;
 import com.google.code.or.binlog.BinlogEventV4;
 
 class ExodusBinlogEventListener implements BinlogEventListener {
-	private BlockingQueue<BinlogEventV4> queue; 
+	private final BlockingQueue<BinlogEventV4> queue;
 	public ExodusBinlogEventListener(BlockingQueue<BinlogEventV4> q) {
 		this.queue = q;
 	}
