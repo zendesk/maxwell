@@ -1,5 +1,4 @@
 require 'mysql_binlog'
-require 'lib/binlog_event'
 
 class NoSuchFileError < StandardError ; end
 class SchemaChangedError < StandardError ; end
@@ -23,9 +22,8 @@ class BinlogDir
   # read an event from the binlog, transforming into a BinlogEvent.  Here's what a sample row looks like.
 
   java_import 'com.zendesk.exodus.ExodusParser'
-  java_import 'com.google.code.or.common.util.MySQLConstants'
-  java_import 'java.text.SimpleDateFormat'
   java_import 'com.zendesk.exodus.ExodusAbstractRowsEvent'
+  java_import 'com.google.code.or.common.util.MySQLConstants'
 
   COLUMN_TYPES = MySQLConstants.constants.inject({}) do |h, c|
     c = c.to_s
@@ -89,59 +87,6 @@ class BinlogDir
     next_position
   end
 
-  def date_format(date)
-    return nil if date.nil?
-    @df ||= SimpleDateFormat.new("yyyy-MM-dd HH:mm:ss")
-    @df.format(date)
-  end
-
-  def reformat_binlog_event(e, schema, &block)
-    return [] if schema[:filter] && schema[:filter] == :reject
-
-    res = []
-    e.rows.each do |r|
-      if e.header.event_type == MySQLConstants::UPDATE_ROWS_EVENT
-        r = r.after # we don't care about the past.  livin' for today.
-      end
-
-      if schema[:filter]
-        next unless schema[:filter].all? do |pos, val|
-          r.columns[pos].value == val
-        end
-      end
-
-      attrs = {}
-      r.columns.each_with_index do |c, i|
-        schema_column = schema[:columns][i]
-
-        if c.value.nil?
-          attrs[schema_column[:name]] = nil
-          next
-        end
-
-        val = case schema_column[:type]
-        when :tiny, :short, :long, :longlong, :int24, :float
-          c.value
-        when :tiny_blob, :medium_blob, :long_blob, :varchar
-          c.value.to_s
-        when :datetime, :timestamp
-          date_format(c.value)
-        else
-          raise schema[:columns][i].inspect + " not supported!"
-        end
-        attrs[schema_column[:name]] = val
-      end
-
-      res << attrs
-    end
-    res
-  end
-
-  def attrs_match_filter?(attrs, filter)
-    filter.all? do |key, value|
-      attrs[key] == value
-    end
-  end
 
   def table_map_event_to_hash(e, filter)
     md = e.get_column_metadata
@@ -174,22 +119,8 @@ class BinlogDir
         :character_set => captured_schema[i][:character_set_name]
       }
     end
+
     verify_table_schema!(captured_schema, h)
-
-    if filter && filter.any?
-      h[:filter] = []
-
-      filter.each do |k, v|
-        c = h[:columns].detect { |c| c[:name] == k }
-        if c
-          h[:filter] << [c[:position], v]
-        end
-      end
-
-      h[:filter] = :reject if h[:filter].empty? # table didn't contain the filter columns.  reject all rows.
-    else
-      h[:filter] = nil
-    end
 
     h[:id_offset] = h[:columns].find_index { |c| c[:column_key] == 'PRI' }
     h[:column_names] = h[:columns].map { |c| c[:name] }
