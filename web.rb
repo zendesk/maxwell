@@ -88,4 +88,6 @@ class Web < Sinatra::Base
   end
 end
 
-Web.run!
+if __FILE__ == $0
+  Web.run!
+end
