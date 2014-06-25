@@ -3,16 +3,12 @@ PATH
   specs:
     mysql_binlog (0.3.2)
 
-PATH
-  remote: ~/src/mysql_isolated_server
-  specs:
-    mysql_isolated_server (0.3.1)
-
 GEM
   remote: https://rubygems.org/
   specs:
     columnize (0.8.9)
     diff-lcs (1.2.5)
+    mysql_isolated_server (0.3.2)
     puma (2.8.2-java)
       rack (>= 1.1, < 2.0)
     rack (1.5.2)
@@ -48,7 +44,7 @@ PLATFORMS
 
 DEPENDENCIES
   mysql_binlog!
-  mysql_isolated_server!
+  mysql_isolated_server (~> 0.3)
   puma
   rack-test
   rake
