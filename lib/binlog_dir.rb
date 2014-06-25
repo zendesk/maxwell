@@ -153,6 +153,15 @@ class BinlogDir
 
     captured_schema = @schema.fetch[h[:name]]
 
+    if captured_schema.nil?
+      raise SchemaChangedError.new("Could not find #{h[:name]} in stored schema!")
+    end
+
+    if e.column_types.size != captured_schema.size
+      msg = "expected #{captured_schema.size} columns in #{h[:name]} but got #{e.column_types.size} columns"
+      raise SchemaChangedError.new(msg)
+    end
+
     e.column_types.each_with_index do |type, i|
       column = {}
       type = 255 + type if type < 0
@@ -191,9 +200,6 @@ class BinlogDir
   def verify_table_schema!(expected_columns, table)
     name, tcolumns = table.values_at(:name, :columns)
 
-    if expected_columns.size != tcolumns.size
-      raise SchemaChangedError.new("expected #{expected_columns.size} columns in #{table[:name]} but got #{tcolumns.size} columns")
-    end
 
     expected_columns.zip(tcolumns) do |c, t|
       eq = case c[:data_type]
