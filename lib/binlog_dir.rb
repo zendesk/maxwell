@@ -1,5 +1,3 @@
-require 'mysql_binlog'
-
 class NoSuchFileError < StandardError ; end
 class SchemaChangedError < StandardError ; end
 
@@ -19,8 +17,6 @@ class BinlogDir
     raise NoSuchFileError.new("#{@dir}/#{file} not found!") unless exists?(file)
   end
 
-  # read an event from the binlog, transforming into a BinlogEvent.  Here's what a sample row looks like.
-
   java_import 'com.zendesk.exodus.ExodusParser'
   java_import 'com.zendesk.exodus.ExodusAbstractRowsEvent'
   java_import 'com.google.code.or.common.util.MySQLConstants'
@@ -32,12 +28,6 @@ class BinlogDir
     h[val] = $1.downcase.to_sym
     h
   end
-
-  EVENT_TYPES = {
-    MySQLConstants::WRITE_ROWS_EVENT => :insert,
-    MySQLConstants::UPDATE_ROWS_EVENT => :update,
-    MySQLConstants::DELETE_ROWS_EVENT => :delete
-  }
 
   def read_binlog(filter, from, to, max_rows=nil, &block)
     filter = filter.inject({}) do |h, arr|
