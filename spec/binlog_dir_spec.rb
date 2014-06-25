@@ -135,7 +135,7 @@ describe "BinlogDir" do
     end
 
     it "should crash" do
-      expect { @binlog_dir.read_binlog({}, @start_position, get_master_position) }.to raise_error
+      expect { @binlog_dir.read_binlog({}, @start_position, get_master_position) {} }.to raise_error(SchemaChangedError)
     end
   end
 
@@ -146,7 +146,18 @@ describe "BinlogDir" do
     end
 
     it "should crash" do
-      expect { @binlog_dir.read_binlog({}, @start_position, get_master_position) {} }.to raise_error
+      expect { @binlog_dir.read_binlog({}, @start_position, get_master_position) {} }.to raise_error(SchemaChangedError)
+    end
+  end
+
+  describe "when a table is added mid-stream" do
+    before do
+      $mysql_master.connection.query("CREATE TABLE surprise ( id int(10) PRIMARY KEY AUTO_INCREMENT, account_id int(10) )")
+      insert_row("surprise", account_id: 1)
+    end
+
+    it "should crash" do
+      expect { @binlog_dir.read_binlog({}, @start_position, get_master_position) {} }.to raise_error(SchemaChangedError)
     end
   end
 end
