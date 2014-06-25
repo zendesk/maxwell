@@ -31,7 +31,7 @@ class WrappedJDBCConnection
         col_name = meta_data.get_column_label(col)
         col_value = rs.get_object(col) # of meta_data.get_column_type(col)
 
-        row[col_name] = col_value if col_value # skip if nil
+        row[col_name] = col_value
       end
 
       rows << row
