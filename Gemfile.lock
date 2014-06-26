@@ -1,15 +1,12 @@
-GIT
-  remote: https://github.com/osheroff/mysql_isolated_server.git
-  revision: cadf74034b96998483e4cef42fb115c3938c69c5
-  ref: travis
-  specs:
-    mysql_isolated_server (0.3.2)
-
 GEM
   remote: https://rubygems.org/
   specs:
     columnize (0.8.9)
     diff-lcs (1.2.5)
+    linecache (0.46-java)
+    mysql_isolated_server (0.3.3)
+    puma (2.8.2)
+      rack (>= 1.1, < 2.0)
     puma (2.8.2-java)
       rack (>= 1.1, < 2.0)
     rack (1.5.2)
@@ -33,6 +30,8 @@ GEM
     ruby-debug (0.10.4)
       columnize (>= 0.1)
       ruby-debug-base (~> 0.10.4.0)
+    ruby-debug-base (0.10.4)
+      linecache (>= 0.3)
     ruby-debug-base (0.10.4-java)
     sinatra (1.4.5)
       rack (~> 1.4)
@@ -44,7 +43,7 @@ PLATFORMS
   java
 
 DEPENDENCIES
-  mysql_isolated_server!
+  mysql_isolated_server (~> 0.3)
   puma
   rack-test
   rake
