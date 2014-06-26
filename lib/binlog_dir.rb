@@ -57,7 +57,7 @@ class BinlogDir
     table_map_cache = {}
 
     while e = parser.getEvent()
-      next_position = {file: "foo", pos: e.header.next_position}
+      next_position = {file: e.binlog_filename, pos: e.header.next_position}
 
       case e.header.event_type
       when MySQLConstants::TABLE_MAP_EVENT

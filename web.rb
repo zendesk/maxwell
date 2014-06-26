@@ -20,7 +20,7 @@ class Web < Sinatra::Base
     missing = required.select { |p| !params[p] }
     if missing.any?
       status 422
-      body(err: "Please provide the following parameter(s): #{mising.join(',')}")
+      body({err: "Please provide the following parameter(s): #{missing.join(',')}"}.to_json)
       false
     else
       true
