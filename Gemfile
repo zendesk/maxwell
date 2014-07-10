@@ -1,7 +1,9 @@
 source 'https://rubygems.org'
 
 gem "sinatra"
-gem "mysql_binlog"
+gem "rack-test"
+gem "puma"
+gem "rake"
 gem "rspec"
-gem "mysql_isolated_server", :path => "~/src/mysql_isolated_server"
-gem "debugger"
+gem "mysql_isolated_server", '~> 0.3'
+gem "ruby-debug"
