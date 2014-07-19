@@ -23,10 +23,10 @@ class BinlogConfig
   end
 
   def mysql_connection
-    @mysql_connection ||= WrappedJDBCConnection.new(username: config['mysql']['username'],
-                                                    password: config['mysql']['password'],
-                                                    host: config['mysql']['host'],
-                                                    port: config['mysql']['port'])
+    WrappedJDBCConnection.new(username: config['mysql']['username'],
+                              password: config['mysql']['password'],
+                              host: config['mysql']['host'],
+                              port: config['mysql']['port'])
   end
 
   def api_port
