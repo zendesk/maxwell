@@ -156,6 +156,10 @@ describe "BinlogDir" do
       insert_row("surprise", account_id: 1)
     end
 
+    after do
+      $mysql_master.connection.query("DROP TABLE surprise")
+    end
+
     it "should crash" do
       expect { @binlog_dir.read_binlog({}, @start_position, get_master_position) {} }.to raise_error(SchemaChangedError)
     end
