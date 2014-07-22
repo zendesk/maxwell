@@ -29,7 +29,7 @@ class BinlogDir
     h
   end
 
-  def read_binlog(filter, from, to, max_rows=nil, &block)
+  def read_binlog(filter, from, to, max_events=nil, &block)
     filter = filter.inject({}) do |h, arr|
       k, v = *arr
       h[k.to_s] = v
@@ -50,7 +50,7 @@ class BinlogDir
     parser.start_position = from_pos
     # TODO stop positions
 
-    row_count = 0
+    event_count = 0
     # this is the schema that was fetched at the top of the entire process -- the "binlog start position"
     column_hash = @schema.fetch
     next_position = nil
@@ -68,12 +68,14 @@ class BinlogDir
           table_map_cache[e.table_id] = table_map_event_to_hash(e, filter)
         end
       when MySQLConstants::WRITE_ROWS_EVENT, MySQLConstants::UPDATE_ROWS_EVENT, MySQLConstants::DELETE_ROWS_EVENT
+        event_count += 1
+
         table_schema = table_map_cache[e.table_id]
         next unless table_schema
         yield ExodusAbstractRowsEvent.build_event(e, table_schema[:name], table_schema[:column_names], table_schema[:column_encodings], table_schema[:id_offset])
       end
+      break if max_events && event_count >= max_events
     end
-    break if max_rows && row_count > max_rows
     next_position
   end
 
