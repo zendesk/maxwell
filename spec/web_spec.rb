@@ -76,6 +76,27 @@ describe "the api" do
         expect(json['next_pos']['file']).to eq('master.000002')
         expect(json['next_pos']['pos']).to be_a_kind_of(Fixnum)
       end
+
+      it "returns the number of events processed" do
+        json = JSON.parse(last_response.body)
+        expect(json['processed']).to be_a_kind_of(Fixnum)
+      end
+    end
+
+    describe "when called with max_events" do
+      before do
+        reset_master
+        get '/mark_binlog_top?account_id=1&db=shard_1'
+        json = JSON.parse(last_response.body)
+        file, pos = json['file'], json['pos']
+        generate_binlog_events
+        get('/binlog_events', account_id: 1, db: 'shard_1', start_file: file, start_pos: pos, max_events: 2)
+      end
+
+      it "will only process that many events" do
+        json = JSON.parse(last_response.body)
+        expect(json['processed']).to eq(2)
+      end
     end
   end
 end

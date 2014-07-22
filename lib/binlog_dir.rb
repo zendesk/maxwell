@@ -76,6 +76,7 @@ class BinlogDir
       end
       break if max_events && event_count >= max_events
     end
+    next_position[:processed] = event_count
     next_position
   end
 
