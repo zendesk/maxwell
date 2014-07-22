@@ -14,9 +14,9 @@ describe "BinlogDir" do
     generate_binlog_events
   end
 
-  def get_events(filter, start_at, end_at)
+  def get_events(filter, start_at, end_at, max_events=nil)
     [].tap do |events|
-      @binlog_dir.read_binlog(filter, start_at, end_at)  do |event|
+      @binlog_dir.read_binlog(filter, start_at, end_at, max_events)  do |event|
         events << event
       end
     end
@@ -83,6 +83,11 @@ describe "BinlogDir" do
       res = @binlog_dir.read_binlog({}, @start_position, position) {}
 
       res[:pos].should be >= position[:pos]
+    end
+
+    it "stops after processing max_events" do
+      @events = get_events({}, @start_position, get_master_position, 1)
+      @events.size.should == 1
     end
 
     describe "BinglogEvent#to_sql" do

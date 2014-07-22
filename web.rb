@@ -73,13 +73,16 @@ class Web < Sinatra::Base
       d = BinlogDir.new(settings.config.binlog_dir, schema)
 
       filter = { 'account_id' => params[:account_id].to_i }
-      next_pos = d.read_binlog(filter, start_info, end_info, 1000) do |event|
+      info = d.read_binlog(filter, start_info, end_info, params[:max_events] ? params[:max_events].to_i : nil) do |event|
         s = event.to_sql(filter)
         sql << s if s
       end
 
+      next_pos = {file: info[:file], pos: info[:pos]}
+      processed = info[:processed]
+
       status 200
-      body({next_pos: next_pos, sql: sql}.to_json)
+      body({next_pos: next_pos, processed: info[:processed], sql: sql}.to_json)
 
     rescue SchemaChangedError => e
       status 500
