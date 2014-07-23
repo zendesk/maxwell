@@ -208,7 +208,7 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 		sql.append(" (");
 
 		for(int i = 0 ; i < columnNames.length; i++) {
-			sql.append(columnNames[i]);
+			sql.append("`" + columnNames[i] + "`");
 			if ( i < columnNames.length - 1 )
 				sql.append(", ");
 		}
