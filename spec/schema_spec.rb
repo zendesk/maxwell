@@ -26,7 +26,7 @@ describe "Schema" do
   describe "load" do
     it "loads the dumped schema" do
       @schema.save
-      new_schema = Schema.load("shard_1", @schema.binlog_info[:file], @schema.binlog_info[:pos])
+      new_schema = Schema.load(@schema.filename)
       new_schema.fetch.should == @schema.fetch
     end
   end

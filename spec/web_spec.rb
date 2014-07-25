@@ -37,6 +37,10 @@ describe "the api" do
       expect(@json['file']).to be_a_kind_of(String)
       expect(@json['pos']).to be_a_kind_of(Fixnum)
     end
+
+    it "returns a token to be stored and passed in future reqs" do
+      expect(@json['schema_token']).to be_a_kind_of(String)
+    end
   end
 
   describe "/binlog_events" do
@@ -44,11 +48,11 @@ describe "the api" do
       get '/binlog_events'
       expect(last_response.status).to eq(422)
       body = JSON.parse(last_response.body)
-      expect(body).to eq('err' => 'Please provide the following parameter(s): account_id,db,start_file,start_pos')
+      expect(body).to eq('err' => 'Please provide the following parameter(s): account_id,db,schema_token,start_file,start_pos')
     end
 
     it "404s when you fail to call /mark_binlog_top" do
-      get '/binlog_events?account_id=1&db=shard_1&start_file=foo&start_pos=43'
+      get '/binlog_events?account_id=1&db=shard_1&start_file=foo&start_pos=43&schema_token=abc'
       expect(last_response.status).to eq(404)
     end
 
@@ -57,9 +61,9 @@ describe "the api" do
         reset_master
         get '/mark_binlog_top?account_id=1&db=shard_1'
         json = JSON.parse(last_response.body)
-        file, pos = json['file'], json['pos']
+        file, pos, token = json.values_at('file', 'pos', 'schema_token')
         generate_binlog_events
-        get('/binlog_events', account_id: 1, db: 'shard_1', start_file: file, start_pos: pos)
+        get('/binlog_events', account_id: 1, db: 'shard_1', start_file: file, start_pos: pos, schema_token: token)
       end
 
       it "returns 200" do
@@ -88,9 +92,9 @@ describe "the api" do
         reset_master
         get '/mark_binlog_top?account_id=1&db=shard_1'
         json = JSON.parse(last_response.body)
-        file, pos = json['file'], json['pos']
+        file, pos, token = json.values_at('file', 'pos', 'schema_token')
         generate_binlog_events
-        get('/binlog_events', account_id: 1, db: 'shard_1', start_file: file, start_pos: pos, max_events: 2)
+        get('/binlog_events', account_id: 1, db: 'shard_1', start_file: file, start_pos: pos, schema_token: token, max_events: 2)
       end
 
       it "will only process that many events" do
