@@ -39,25 +39,33 @@ class Web < Sinatra::Base
     return unless require_params(:db)
 
     schema = Schema.new(settings.config.mysql_connection, params[:db])
-    s = schema.fetch
+    schema.fetch
     schema.save
+
+    ret = {
+      file:            schema.binlog_info[:file],
+      pos:             schema.binlog_info[:pos],
+      schema_token:    schema.filename,
+      schema:          schema.fetch
+    }
+
+    body ret.to_json
     status 200
-    body schema.binlog_info.merge(schema: s).to_json
   end
 
   # begin playing the binlog from a specified position.
   # The position *must* be one returned from mark_binlog_top
   #
-  # required parameters: account_id, db, start_file, start_pos
+  # required parameters: account_id, db, schema_token, start_file, start_pos
   # optional paramerers: end_file, end_pos
   #
   get "/binlog_events" do
-    return unless require_params(:account_id, :db, :start_file, :start_pos)
-    schema = Schema.load(params[:db], params[:start_file], params[:start_pos].to_i)
+    return unless require_params(:account_id, :db, :schema_token, :start_file, :start_pos)
+    schema = Schema.load(params[:schema_token])
 
     if schema.nil?
       status 404
-      body({err: "No stored schema found for #{params[:start_file]}:#{params[:start_pos]} -- call mark_binlog_top",
+      body({err: "No stored schema found for token #{params[:schema_token]} -- call mark_binlog_top",
             type: "no_stored_schema"}.to_json)
       return
     end

@@ -47,20 +47,30 @@ class Schema
 
   def save
     fetch
-    fname = self.class.schema_fname(@db, @binlog_info[:file], @binlog_info[:pos])
-    File.open(fname, "w+") do |f|
+
+    File.open(fullpath, "w+") do |f|
       f.write(@schema.to_yaml)
     end
   end
 
-  def self.schema_fname(db, logfile, pos)
-    DATA_DIR + "/" + [db, logfile, pos].join('-') + ".yaml"
+  def filename
+    self.class.schema_fname(@db, @binlog_info[:file], @binlog_info[:pos])
   end
 
-  def self.load(db, logfile, pos)
-    fname = schema_fname(db, logfile, pos)
-    return nil unless File.exist?(fname)
-    schema = YAML.load(File.read(fname))
+  def fullpath
+    DATA_DIR + "/" + filename
+  end
+
+  def self.schema_fname(db, logfile, pos)
+    [db, logfile, pos].join('--') + ".yaml"
+  end
+
+  def self.load(token)
+    path = DATA_DIR + "/" + token
+    db, logfile, pos = token.split("--")
+
+    return nil unless File.exist?(path)
+    schema = YAML.load(File.read(path))
     new(nil, db, schema)
   end
 end
