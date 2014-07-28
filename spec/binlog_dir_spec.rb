@@ -16,7 +16,7 @@ describe "BinlogDir" do
 
   def get_events(filter, start_at, end_at, max_events=nil)
     [].tap do |events|
-      @binlog_dir.read_binlog(filter, start_at, end_at, max_events)  do |event|
+      @binlog_dir.read_binlog(filter, start_at, end_at, max_events: max_events)  do |event|
         events << event
       end
     end
