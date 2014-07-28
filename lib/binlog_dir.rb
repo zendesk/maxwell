@@ -29,7 +29,7 @@ class BinlogDir
     h
   end
 
-  def read_binlog(filter, from, to, max_events=nil, &block)
+  def read_binlog(filter, from, to, options = {}, &block)
     filter = filter.inject({}) do |h, arr|
       k, v = *arr
       h[k.to_s] = v
@@ -45,6 +45,9 @@ class BinlogDir
       to_pos    = to.fetch(:pos)
       raise_unless_exists(to_file)
     end
+
+    max_events = options[:max_events]
+    exclude_tables = options[:exclude_tables] || []
 
     parser = ExodusParser.new(@dir, from_file)
     parser.start_position = from_pos
@@ -72,7 +75,8 @@ class BinlogDir
 
         table_schema = table_map_cache[e.table_id]
         next unless table_schema
-        yield ExodusAbstractRowsEvent.build_event(e, table_schema[:name], table_schema[:column_names], table_schema[:column_encodings], table_schema[:id_offset])
+        next if exclude_tables.include?(table_schema[:name])
+        yield ExodusAbstractRowsEvent.build_event(e, *table_schema.values_at(:name, :column_names, :column_encodings, :id_offset))
       end
       break if max_events && event_count >= max_events
     end
