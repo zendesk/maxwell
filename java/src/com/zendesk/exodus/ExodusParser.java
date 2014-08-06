@@ -35,7 +35,7 @@ public class ExodusParser {
 		this.startPosition = pos;
 	}
 
-	private final LinkedBlockingQueue<BinlogEventV4> queue =  new LinkedBlockingQueue<BinlogEventV4>(100);
+	private final LinkedBlockingQueue<BinlogEventV4> queue =  new LinkedBlockingQueue<BinlogEventV4>(20);
 
 	protected FileBasedBinlogParser parser;
 	protected ExodusBinlogEventListener binlogEventListener;
