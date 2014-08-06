@@ -151,6 +151,14 @@ public class ExodusParser {
 		this.parser = bp;
 	}
 
+	public void stop() {
+		this.binlogEventListener.stop();
+		try {
+			this.parser.stop(200, TimeUnit.MILLISECONDS);
+		} catch (Exception e) {
+		}
+	}
+
 	public static void main(String args[]) throws Exception {
 		int count = 0 ;
 		BinlogEventV4 e;
