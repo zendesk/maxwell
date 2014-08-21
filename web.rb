@@ -14,6 +14,7 @@ class Web < Sinatra::Base
   set :config, BinlogConfig.new
   set :server, 'puma'
   set :port, settings.config.api_port
+  set :bind, '0.0.0.0'
   set :run, false
 
   def require_params(*required)
