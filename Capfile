@@ -13,6 +13,7 @@ namespace :deploy do
     config_files.each do |file|
       run "ln -nfs #{deploy_to}/config/#{file} #{release_path}/config/"
     end
+    run "ln -nfs #{deploy_to}/data #{release_path}/data"
   end
 
   task :stop do
