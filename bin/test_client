@@ -20,11 +20,12 @@ when "mark"
   json = Net::HTTP.get(URI("http://localhost:5056/mark_binlog_top?db=#{database}"))
   response = JSON.parse(json)
 
-  File.write(STATE_FILE, {file: response['file'], pos: response['pos']}.to_json)
+  File.write(STATE_FILE, {file: response['file'], pos: response['pos'], schema_token: response['schema_token']}.to_json)
 when "replay"
   binlog_pos = JSON.parse(File.read(STATE_FILE))
   query = URI.encode_www_form(start_file: binlog_pos['file'], 
                               start_pos: binlog_pos['pos'],
+                              schema_token: binlog_pos['schema_token'],
                               db: database,
                               account_id: account)
 
