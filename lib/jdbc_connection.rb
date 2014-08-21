@@ -11,7 +11,7 @@ class WrappedJDBCConnection
     pass = options[:password] || ''
 
 
-    @cx ||= DriverManager.get_connection("jdbc:mysql://#{host}:#{port}/mysql", user, pass)
+    @cx ||= DriverManager.get_connection("jdbc:mysql://#{host}:#{port}", user, pass)
   end
 
   def query(sql)
