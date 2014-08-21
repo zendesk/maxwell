@@ -1,4 +1,5 @@
-require "java"
+require "lib/setup_java"
+
 java_import "java.sql.DriverManager"
 java_import "org.apache.commons.lang.StringEscapeUtils"
 
@@ -6,11 +7,11 @@ class WrappedJDBCConnection
   def initialize(options = {})
     host = options[:host] || 'localhost'
     port = options[:port] || 3306
-    user = options[:user] || 'root'
-    pass = options[:pass] || ''
+    user = options[:username] || 'root'
+    pass = options[:password] || ''
 
 
-    @cx ||= DriverManager.get_connection("jdbc:mysql://#{host}:#{port}/mysql", user, pass)
+    @cx ||= DriverManager.get_connection("jdbc:mysql://#{host}:#{port}", user, pass)
   end
 
   def query(sql)

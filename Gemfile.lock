@@ -1,10 +1,35 @@
+GIT
+  remote: git@github.com:zendesk/zendesk_deployment.git
+  revision: 415eb3e0478939aecd99fd9cf1f95271e4a147c2
+  ref: v1.12.2
+  specs:
+    zendesk_deployment (1.12.2)
+      capistrano (< 3.0.0)
+      deep_merge
+
 GEM
   remote: https://rubygems.org/
   specs:
+    capistrano (2.15.5)
+      highline
+      net-scp (>= 1.0.0)
+      net-sftp (>= 2.0.0)
+      net-ssh (>= 2.0.14)
+      net-ssh-gateway (>= 1.1.0)
     columnize (0.8.9)
+    deep_merge (1.0.1)
     diff-lcs (1.2.5)
-    linecache (0.46-java)
+    highline (1.6.21)
+    linecache (0.46)
+      rbx-require-relative (> 0.0.4)
     mysql_isolated_server (0.3.3)
+    net-scp (1.2.1)
+      net-ssh (>= 2.6.5)
+    net-sftp (2.1.2)
+      net-ssh (>= 2.6.5)
+    net-ssh (2.9.1)
+    net-ssh-gateway (1.2.0)
+      net-ssh (>= 2.6.5)
     puma (2.8.2)
       rack (>= 1.1, < 2.0)
     puma (2.8.2-java)
@@ -15,6 +40,7 @@ GEM
     rack-test (0.6.2)
       rack (>= 1.0)
     rake (10.3.2)
+    rbx-require-relative (0.0.9)
     rspec (3.0.0)
       rspec-core (~> 3.0.0)
       rspec-expectations (~> 3.0.0)
@@ -41,6 +67,7 @@ GEM
 
 PLATFORMS
   java
+  ruby
 
 DEPENDENCIES
   mysql_isolated_server (~> 0.3)
@@ -50,3 +77,4 @@ DEPENDENCIES
   rspec
   ruby-debug
   sinatra
+  zendesk_deployment!
