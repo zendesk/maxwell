@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+require 'bundler/setup'
+$LOAD_PATH << File.dirname(__FILE__) + "/.."
+require 'irb'
+require 'lib/setup_java'
+require 'lib/jdbc_connection'
+require 'lib/binlog_dir'
+require 'lib/schema'
+IRB.start
