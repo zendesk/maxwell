@@ -7,6 +7,6 @@ gem "rake"
 gem "rspec"
 gem "mysql_isolated_server", '~> 0.3'
 
-group :development do
+group :test do
   gem "ruby-debug"
 end
