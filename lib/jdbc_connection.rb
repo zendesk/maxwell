@@ -1,4 +1,5 @@
-require "java"
+require "lib/setup_java"
+
 java_import "java.sql.DriverManager"
 java_import "org.apache.commons.lang.StringEscapeUtils"
 
