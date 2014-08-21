@@ -1,4 +1,5 @@
 require 'lib/jdbc_connection'
+require 'yaml'
 
 class BinlogConfig
   BINLOG_SERVICE_CONFIG = File.join(File.dirname(__FILE__) + "/../config/exodus_binlog_service.yml")
