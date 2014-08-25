@@ -56,8 +56,9 @@ class BinlogDir
     event_count = 0
     # this is the schema that was fetched at the top of the entire process -- the "binlog start position"
     column_hash = @schema.fetch
-    next_position = nil
     table_map_cache = {}
+
+    next_position = {file: from_file, pos: from_pos}
 
     while e = parser.getEvent()
       next_position = {file: e.binlog_filename, pos: e.header.next_position}
