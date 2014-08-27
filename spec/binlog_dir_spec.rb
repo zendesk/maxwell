@@ -144,6 +144,17 @@ describe "BinlogDir" do
     end
   end
 
+  describe "when given an EOF master binlog position" do
+    before do
+      @pos = get_master_position
+      @ret = @binlog_dir.read_binlog({}, @pos, @pos) {}
+    end
+
+    it "returns the input position" do
+      expect(@ret).to eq(@pos.merge(:processed => 0))
+    end
+  end
+
   describe "what happens when a column is dropped and then added?" do
     before do
       $mysql_master.connection.query("ALTER TABLE sharded add column unexpected int(11), drop column status_id")
