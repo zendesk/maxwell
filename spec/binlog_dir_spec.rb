@@ -14,9 +14,9 @@ describe "BinlogDir" do
     generate_binlog_events
   end
 
-  def get_events(filter, start_at, end_at, max_events=nil)
+  def get_events(filter, start_at, end_at, options = {})
     [].tap do |events|
-      @binlog_dir.read_binlog(filter, start_at, end_at, max_events: max_events)  do |event|
+      @binlog_dir.read_binlog(filter, start_at, end_at, options)  do |event|
         events << event
       end
     end
@@ -86,7 +86,7 @@ describe "BinlogDir" do
     end
 
     it "stops after processing max_events" do
-      @events = get_events({}, @start_position, get_master_position, 1)
+      @events = get_events({}, @start_position, get_master_position, max_events: 1)
       @events.size.should == 1
     end
 
@@ -178,6 +178,17 @@ describe "BinlogDir" do
 
     it "should crash" do
       expect { @binlog_dir.read_binlog({}, @start_position, get_master_position) {} }.to raise_error(SchemaChangedError)
+    end
+  end
+
+  describe "exclude_tables" do
+    before do
+      $mysql_master.connection.query("INSERT INTO minimal set id = 12, account_id = 123")
+    end
+
+    it "should not include excluded tables" do
+      events = get_events({}, @start_position, get_master_position, exclude_tables: ['minimal'])
+      expect(events.map(&:to_sql).join("\n")).to_not match(/minimal/)
     end
   end
 end
