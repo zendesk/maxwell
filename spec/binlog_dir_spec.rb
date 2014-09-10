@@ -43,7 +43,8 @@ describe "BinlogDir" do
           "latin1_field" => hex_string("FooBar\xE4"),
           "utf8_field" => "'FooBarä'".force_encoding("utf-8"),
           "float_field" => "1.33",
-          "timestamp_field" => "'1980-01-01 00:00:00'"
+          "timestamp_field" => "'1980-01-01 00:00:00'",
+          "decimal_field" => "8.6210000"
         }
     end
 
@@ -98,16 +99,16 @@ describe "BinlogDir" do
       it "maps inserts into REPLACE statements" do
         @sql.should include(
           "REPLACE INTO `sharded` " +
-          "(`id`, `account_id`, `nice_id`, `status_id`, `date_field`, `text_field`, `latin1_field`, `utf8_field`, `float_field`, `timestamp_field`) " +
-          "VALUES (1,1,1,2,'1979-10-01 00:00:00','Some Text',#{hex_string("FooBar\xE4")},'FooBar\xC3\xA4',1.33,'1980-01-01 00:00:00')".force_encoding('utf-8')
+          "(`id`, `account_id`, `nice_id`, `status_id`, `date_field`, `text_field`, `latin1_field`, `utf8_field`, `float_field`, `timestamp_field`, `decimal_field`) " +
+          "VALUES (1,1,1,2,'1979-10-01 00:00:00','Some Text',#{hex_string("FooBar\xE4")},'FooBar\xC3\xA4',1.33,'1980-01-01 00:00:00',8.6210000)".force_encoding('utf-8')
         )
       end
 
       it "maps updates into REPLACE statements" do
         @sql.should include(
           "REPLACE INTO `sharded` " +
-          "(`id`, `account_id`, `nice_id`, `status_id`, `date_field`, `text_field`, `latin1_field`, `utf8_field`, `float_field`, `timestamp_field`) " +
-          "VALUES (1,1,1,1,'1979-10-01 00:00:00','Updated Text',#{hex_string("FooBar\xE4")},'FooBar\xC3\xA4',1.33,'1980-01-01 00:00:00')".force_encoding('utf-8')
+          "(`id`, `account_id`, `nice_id`, `status_id`, `date_field`, `text_field`, `latin1_field`, `utf8_field`, `float_field`, `timestamp_field`, `decimal_field`) " +
+          "VALUES (1,1,1,1,'1979-10-01 00:00:00','Updated Text',#{hex_string("FooBar\xE4")},'FooBar\xC3\xA4',1.33,'1980-01-01 00:00:00',8.6210000)".force_encoding('utf-8')
         )
       end
 
