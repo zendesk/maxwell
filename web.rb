@@ -16,6 +16,7 @@ class Web < Sinatra::Base
   set :port, settings.config.api_port
   set :bind, '0.0.0.0'
   set :run, false
+  set :show_exceptions, false
 
   def require_params(*required)
     missing = required.select { |p| !params[p] }
@@ -30,6 +31,12 @@ class Web < Sinatra::Base
 
   before do
     content_type :json
+  end
+
+  error do
+    e = env['sinatra.error']
+    status 500
+    body({err: e.message, type: e.class.name, backtrace: e.backtrace}.to_json)
   end
 
   # capture the schema at a position.
