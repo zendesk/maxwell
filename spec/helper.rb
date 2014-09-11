@@ -36,7 +36,8 @@ def generate_binlog_events
     latin1_field: "FooBarä".encode('ISO-8859-1'),
     utf8_field: "FooBarä",
     float_field:  1.33333333333,
-    timestamp_field: Time.parse("1980-01-01")
+    timestamp_field: Time.parse("1980-01-01"),
+    decimal_field: 8.621
   )
 
   insert_row('sharded',
@@ -48,7 +49,8 @@ def generate_binlog_events
     latin1_field: "FooBarä".encode('ISO-8859-1'),
     utf8_field: "FooBarä",
     float_field:  1.33333333333,
-    timestamp_field: Time.parse("1980-01-01")
+    timestamp_field: Time.parse("1980-01-01"),
+    decimal_field: 8.621
   )
 
   $mysql_master.connection.query("FLUSH LOGS")

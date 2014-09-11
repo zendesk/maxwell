@@ -183,7 +183,10 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 			    c instanceof DoubleColumn ||
 			    c instanceof FloatColumn ) {
 			return c.getValue().toString();
-		} else {
+		} else if ( c instanceof DecimalColumn ) {
+			DecimalColumn dc = (DecimalColumn) c;
+			return dc.getValue().toEngineeringString();
+	    } else {
 			return null;
 		}
 
