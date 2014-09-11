@@ -109,7 +109,7 @@ class BinlogDir
 
     e.column_types.each_with_index do |type, i|
       column = {}
-      type = 255 + type if type < 0
+      type = 256 + type if type < 0
       column[:type] = COLUMN_TYPES[type]
       h[:columns] << {
         :type => column[:type],
@@ -145,11 +145,13 @@ class BinlogDir
       when 'datetime'
         t[:type] == :datetime
       when 'text', 'mediumtext'
-        t[:type] == :long_blob
+        t[:type] == :blob
       when 'varchar', 'float', 'timestamp'
         t[:type].to_s == c[:data_type]
       when 'date'
         t[:type] == :date
+      when 'decimal'
+        t[:type] == :decimal || t[:type] == :newdecimal
       else
         raise "unknown columns type '#{c[:data_type]}' (#{t[:type]})?"
       end

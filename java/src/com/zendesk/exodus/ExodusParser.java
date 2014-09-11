@@ -162,7 +162,7 @@ public class ExodusParser {
 	public static void main(String args[]) throws Exception {
 		int count = 0 ;
 		BinlogEventV4 e;
-		ExodusParser p = new ExodusParser("/opt/local/var/db/mysql5", "master.000007");
+		ExodusParser p = new ExodusParser("/tmp/mysql_isolated20140910-31805-5kjqzr/mysqld/binlogs/", "master.000001");
 		Date start = new Date();
 
 		while ((e = p.getEvent()) != null) {
