@@ -22,6 +22,12 @@ describe "BinlogDir" do
     end
   end
 
+  def events_for(options = {}, &block)
+    start_pos = get_master_position
+    yield
+    get_events(start_pos, get_master_position, options)
+  end
+
   def map_to_hashes(events)
     events.map { |e| e.row_attributes_as_sql.to_a.map { |h| h.to_hash }  }.flatten
   end
@@ -71,9 +77,12 @@ describe "BinlogDir" do
     end
 
     it "stops at the specified position" do
-      position = get_master_position
+      stop_position = get_master_position
+
+      # is after stop_position, should not be included
       $mysql_master.connection.query("DELETE from sharded where id = 1")
-      events = get_events(@start_position, position)
+
+      events = get_events(@start_position, stop_position)
       e = events.detect { |e| e.type == :delete && e.attrs['id'] == 1 }
       e.should be_nil
     end
@@ -131,6 +140,14 @@ describe "BinlogDir" do
         events = get_events(@start_position, get_master_position)
         events.map { |r| r.to_sql('account_id' => 2) }.compact.size.should == 1
       end
+
+      it "puts multiple statements on the same line" do
+        events = events_for do
+          $mysql_master.connection.query("insert into minimal (account_id, text_field) VALUES (1, 'a'), (1, 'b')")
+        end
+        e = events.first
+        e.to_sql.should_not include("\n")
+      end
     end
   end
 
@@ -183,12 +200,10 @@ describe "BinlogDir" do
   end
 
   describe "exclude_tables" do
-    before do
-      $mysql_master.connection.query("INSERT INTO minimal set id = 12, account_id = 123")
-    end
-
     it "should not include excluded tables" do
-      events = get_events(@start_position, get_master_position, exclude_tables: ['minimal'])
+      events = events_for(exclude_tables: ['minimal']) do
+        $mysql_master.connection.query("INSERT INTO minimal set id = 12, account_id = 123")
+      end
       expect(events.map(&:to_sql).join("\n")).to_not match(/minimal/)
     end
   end

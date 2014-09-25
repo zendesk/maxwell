@@ -250,7 +250,7 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 				i++;
 			}
 			if ( rowIter.hasNext() ) {
-				sql.append("),\n");
+				sql.append("),");
 			} else {
 				sql.append(")");
 			}
