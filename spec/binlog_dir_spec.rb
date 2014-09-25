@@ -14,9 +14,9 @@ describe "BinlogDir" do
     generate_binlog_events
   end
 
-  def get_events(filter, start_at, end_at, options = {})
+  def get_events(start_at, end_at, options = {})
     [].tap do |events|
-      @binlog_dir.read_binlog(filter, start_at, end_at, options)  do |event|
+      @binlog_dir.read_binlog(start_at, end_at, options)  do |event|
         events << event
       end
     end
@@ -32,7 +32,7 @@ describe "BinlogDir" do
 
   describe "read_binlog" do
     before do
-      @events = get_events({}, @start_position, get_master_position)
+      @events = get_events(@start_position, get_master_position)
       @expected_row =
         { "id" => "1",
           "account_id" => "1",
@@ -73,7 +73,7 @@ describe "BinlogDir" do
     it "stops at the specified position" do
       position = get_master_position
       $mysql_master.connection.query("DELETE from sharded where id = 1")
-      events = get_events({}, @start_position, position)
+      events = get_events(@start_position, position)
       e = events.detect { |e| e.type == :delete && e.attrs['id'] == 1 }
       e.should be_nil
     end
@@ -81,13 +81,13 @@ describe "BinlogDir" do
     it "returns the next position in the file" do
       position = get_master_position
       $mysql_master.connection.query("DELETE from sharded where id = 1")
-      res = @binlog_dir.read_binlog({}, @start_position, position) {}
+      res = @binlog_dir.read_binlog(@start_position, position) {}
 
       res[:pos].should be >= position[:pos]
     end
 
     it "stops after processing max_events" do
-      @events = get_events({}, @start_position, get_master_position, max_events: 1)
+      @events = get_events(@start_position, get_master_position, max_events: 1)
       @events.size.should == 1
     end
 
@@ -128,7 +128,7 @@ describe "BinlogDir" do
           float_field:  1.33333333333,
           timestamp_field: Time.parse("1980-01-01")
         )
-        events = get_events({}, @start_position, get_master_position)
+        events = get_events(@start_position, get_master_position)
         events.map { |r| r.to_sql('account_id' => 2) }.compact.size.should == 1
       end
     end
@@ -141,14 +141,14 @@ describe "BinlogDir" do
     end
 
     it "should crash" do
-      expect { @binlog_dir.read_binlog({}, @start_position, get_master_position) {} }.to raise_error(SchemaChangedError)
+      expect { @binlog_dir.read_binlog(@start_position, get_master_position) {} }.to raise_error(SchemaChangedError)
     end
   end
 
   describe "when given an EOF master binlog position" do
     before do
       @pos = get_master_position
-      @ret = @binlog_dir.read_binlog({}, @pos, @pos) {}
+      @ret = @binlog_dir.read_binlog(@pos, @pos) {}
     end
 
     it "returns the input position" do
@@ -163,7 +163,7 @@ describe "BinlogDir" do
     end
 
     it "should crash" do
-      expect { @binlog_dir.read_binlog({}, @start_position, get_master_position) {} }.to raise_error(SchemaChangedError)
+      expect { @binlog_dir.read_binlog(@start_position, get_master_position) {} }.to raise_error(SchemaChangedError)
     end
   end
 
@@ -178,7 +178,7 @@ describe "BinlogDir" do
     end
 
     it "should crash" do
-      expect { @binlog_dir.read_binlog({}, @start_position, get_master_position) {} }.to raise_error(SchemaChangedError)
+      expect { @binlog_dir.read_binlog(@start_position, get_master_position) {} }.to raise_error(SchemaChangedError)
     end
   end
 
@@ -188,7 +188,7 @@ describe "BinlogDir" do
     end
 
     it "should not include excluded tables" do
-      events = get_events({}, @start_position, get_master_position, exclude_tables: ['minimal'])
+      events = get_events(@start_position, get_master_position, exclude_tables: ['minimal'])
       expect(events.map(&:to_sql).join("\n")).to_not match(/minimal/)
     end
   end
