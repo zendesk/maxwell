@@ -93,7 +93,7 @@ class Web < Sinatra::Base
       options[:max_events] = params[:max_events].to_i if params[:max_events]
       options[:exclude_tables] = params[:exclude_tables] ? params[:exclude_tables].split(',') : nil
 
-      info = d.read_binlog(filter, start_info, end_info, options) do |event|
+      info = d.read_binlog(start_info, end_info, options) do |event|
         s = event.to_sql(filter)
         sql << s if s
       end

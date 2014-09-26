@@ -29,13 +29,7 @@ class BinlogDir
     h
   end
 
-  def read_binlog(filter, from, to, options = {}, &block)
-    filter = filter.inject({}) do |h, arr|
-      k, v = *arr
-      h[k.to_s] = v
-      h
-    end
-
+  def read_binlog(from, to, options = {}, &block)
     from_file = from.fetch(:file)
     from_pos  = from.fetch(:pos)
     raise_unless_exists(from_file)
@@ -69,7 +63,7 @@ class BinlogDir
           #raise "table map changed!" if table_map_event_to_hash(e, filter) != table_map_cache[e.table_id]
         else
           next if e.database_name.to_string != @schema.db
-          table_map_cache[e.table_id] = table_map_event_to_hash(e, filter)
+          table_map_cache[e.table_id] = table_map_event_to_hash(e)
         end
       when MySQLConstants::WRITE_ROWS_EVENT, MySQLConstants::UPDATE_ROWS_EVENT, MySQLConstants::DELETE_ROWS_EVENT
         event_count += 1
@@ -88,7 +82,7 @@ class BinlogDir
   end
 
 
-  def table_map_event_to_hash(e, filter)
+  def table_map_event_to_hash(e)
     md = e.get_column_metadata
 
     h = {}
