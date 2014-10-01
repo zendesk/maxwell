@@ -148,6 +148,16 @@ describe "BinlogDir" do
         e = events.first
         e.to_sql.should_not include("\n")
       end
+
+      it "deals with mediumints" do
+        events = events_for do
+          insert_row('mediumints',
+            account_id: 1,
+            medium: 2,
+          )
+        end
+        map_to_hashes(events).should eq([{"id" =>  "1", "account_id" => "1", "medium" => "2"}])
+      end
     end
   end
 
