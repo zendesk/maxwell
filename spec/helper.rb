@@ -78,6 +78,12 @@ def get_master_position
   {file: row['File'], pos: row['Position']}
 end
 
+RSpec.configure do |config|
+  config.expect_with :rspec do |c|
+    c.syntax = [:should, :expect]
+  end
+end
+
 Thread.abort_on_exception = true
 $mysql_master = MysqlIsolatedServer.thread_boot("--log-bin=binlogs/master", "--", "--binlog_format=row")
 $mysql_initial_binlog_pos = get_master_position

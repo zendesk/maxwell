@@ -17,8 +17,8 @@ public class ExodusDeleteRowsEvent extends ExodusAbstractRowsEvent {
 	}
 
 
-	public ExodusDeleteRowsEvent(DeleteRowsEvent e, String tableName, String [] columnNames, int idColumnPosition) {
-		super(e, tableName, columnNames, null);
+	public ExodusDeleteRowsEvent(DeleteRowsEvent e, String tableName, ExodusColumnSchemaDef[] columns, int idColumnPosition) {
+		super(e, tableName, columns);
 		this.event = e;
 		this.idColumnPosition = idColumnPosition;
 	}

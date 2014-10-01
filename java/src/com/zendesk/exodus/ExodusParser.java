@@ -162,23 +162,23 @@ public class ExodusParser {
 	public static void main(String args[]) throws Exception {
 		int count = 0 ;
 		BinlogEventV4 e;
-		ExodusParser p = new ExodusParser("/tmp/mysql_isolated20140910-31805-5kjqzr/mysqld/binlogs/", "master.000001");
+		ExodusParser p = new ExodusParser("/opt/local/var/db/mysql5", "master.000001");
 		Date start = new Date();
 
 		while ((e = p.getEvent()) != null) {
 			if ( e instanceof AbstractRowEvent ) {
 				HashMap<String, Object> filter = new HashMap<String, Object>();
-				String columns[] = new String[2];
+				ExodusColumnSchemaDef columns[] = new ExodusColumnSchemaDef[2];
 
-				columns[0] = "foo";
-				columns[1] = "bar";
+				columns[0] = new ExodusColumnSchemaDef("foo", "utf8", false);
+				columns[1] = new ExodusColumnSchemaDef("bar", "utf8", true);
 
 				String encodings[] = new String[100];
 				for (int i = 0 ; i < 100; i++) {
 					encodings[i] = "utf8";
 				}
 
-				String s = ExodusAbstractRowsEvent.buildEvent((AbstractRowEvent) e, "nothing", columns, encodings, 1).toSql(filter);
+				String s = ExodusAbstractRowsEvent.buildEvent((AbstractRowEvent) e, "nothing", columns, 1).toSql(filter);
 				System.out.println(s);
 			}
 
