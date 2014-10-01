@@ -1,7 +1,7 @@
 package com.zendesk.exodus;
 
-public class ExodusColumnSchemaDef {
-	public ExodusColumnSchemaDef(String name, String encoding, Boolean unsigned) {
+public class ExodusColumnInfo {
+	public ExodusColumnInfo(String name, String encoding, Boolean unsigned) {
 		this.name = name;
 		this.encoding = encoding;
 		this.unsigned = unsigned;

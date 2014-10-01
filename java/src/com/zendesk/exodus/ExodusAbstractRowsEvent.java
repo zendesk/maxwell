@@ -47,9 +47,9 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 	private final AbstractRowEvent event;
 	protected String tableName;
 
-	private final ExodusColumnSchemaDef[] columns;
+	private final ExodusColumnInfo[] columns;
 
-	public ExodusAbstractRowsEvent(AbstractRowEvent e, String tableName, ExodusColumnSchemaDef[] columns) {
+	public ExodusAbstractRowsEvent(AbstractRowEvent e, String tableName, ExodusColumnInfo[] columns) {
 		this.tableId = e.getTableId();
 		this.event = e;
 		this.header = e.getHeader();
@@ -127,7 +127,7 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 	}
 
 	public static ExodusAbstractRowsEvent buildEvent(AbstractRowEvent e,
-			String tableName, ExodusColumnSchemaDef[] columns, int idColumnOffset) {
+			String tableName, ExodusColumnInfo[] columns, int idColumnOffset) {
 		switch(e.getHeader().getEventType()) {
 		case MySQLConstants.WRITE_ROWS_EVENT:
 			return new ExodusWriteRowsEvent((WriteRowsEvent) e, tableName, columns);

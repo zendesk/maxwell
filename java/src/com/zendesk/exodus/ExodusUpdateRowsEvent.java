@@ -9,7 +9,7 @@ import com.google.code.or.common.glossary.Row;
 
 public class ExodusUpdateRowsEvent extends ExodusAbstractRowsEvent {
 	private final UpdateRowsEvent event;
-	public ExodusUpdateRowsEvent(UpdateRowsEvent e, String tableName, ExodusColumnSchemaDef[] columns) {
+	public ExodusUpdateRowsEvent(UpdateRowsEvent e, String tableName, ExodusColumnInfo[] columns) {
 		super(e, tableName, columns);
 		this.event = e;
 	}

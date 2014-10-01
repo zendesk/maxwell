@@ -14,7 +14,7 @@ public class ExodusWriteRowsEvent extends ExodusAbstractRowsEvent {
 		return event.getRows();
 	}
 
-	public ExodusWriteRowsEvent(WriteRowsEvent e, String tableName, ExodusColumnSchemaDef[] columns) {
+	public ExodusWriteRowsEvent(WriteRowsEvent e, String tableName, ExodusColumnInfo[] columns) {
 		super(e, tableName, columns);
 		this.event = e;
 	}

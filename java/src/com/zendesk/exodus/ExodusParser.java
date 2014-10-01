@@ -168,10 +168,10 @@ public class ExodusParser {
 		while ((e = p.getEvent()) != null) {
 			if ( e instanceof AbstractRowEvent ) {
 				HashMap<String, Object> filter = new HashMap<String, Object>();
-				ExodusColumnSchemaDef columns[] = new ExodusColumnSchemaDef[2];
+				ExodusColumnInfo columns[] = new ExodusColumnInfo[2];
 
-				columns[0] = new ExodusColumnSchemaDef("foo", "utf8", false);
-				columns[1] = new ExodusColumnSchemaDef("bar", "utf8", true);
+				columns[0] = new ExodusColumnInfo("foo", "utf8", false);
+				columns[1] = new ExodusColumnInfo("bar", "utf8", true);
 
 				String encodings[] = new String[100];
 				for (int i = 0 ; i < 100; i++) {

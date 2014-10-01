@@ -19,7 +19,7 @@ class BinlogDir
 
   java_import 'com.zendesk.exodus.ExodusParser'
   java_import 'com.zendesk.exodus.ExodusAbstractRowsEvent'
-  java_import 'com.zendesk.exodus.ExodusColumnSchemaDef'
+  java_import 'com.zendesk.exodus.ExodusColumnInfo'
   java_import 'com.google.code.or.common.util.MySQLConstants'
 
   COLUMN_TYPES = MySQLConstants.constants.inject({}) do |h, c|
@@ -119,7 +119,7 @@ class BinlogDir
 
     h[:id_offset] = h[:columns].find_index { |c| c[:column_key] == 'PRI' }
     h[:exodus_columns] = h[:columns].map do |c|
-      ExodusColumnSchemaDef.new(c[:name], c[:character_set], false)
+      ExodusColumnInfo.new(c[:name], c[:character_set], false)
     end
     h
   end
