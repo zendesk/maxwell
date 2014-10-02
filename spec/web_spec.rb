@@ -30,7 +30,7 @@ describe "the api" do
 
     it "returns the current schema" do
       expect(@json).to_not be_nil
-      expect(@json['schema'].keys).to eq(['mediumints', 'minimal', 'sharded'])
+      expect(@json['schema'].keys).to eq(['ints', 'mediumints', 'minimal', 'sharded'])
     end
 
     it "returns the current position" do
