@@ -8,9 +8,9 @@ import com.google.code.or.common.glossary.Pair;
 import com.google.code.or.common.glossary.Row;
 
 public class ExodusUpdateRowsEvent extends ExodusAbstractRowsEvent {
-	private UpdateRowsEvent event;
-	public ExodusUpdateRowsEvent(UpdateRowsEvent e, String tableName, String[] columnNames, String[] columnEncodings) {
-		super(e, tableName, columnNames, columnEncodings);
+	private final UpdateRowsEvent event;
+	public ExodusUpdateRowsEvent(UpdateRowsEvent e, String tableName, ExodusColumnInfo[] columns) {
+		super(e, tableName, columns);
 		this.event = e;
 	}
 	@Override

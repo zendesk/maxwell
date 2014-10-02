@@ -45,17 +45,16 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 
 
 	private final AbstractRowEvent event;
-	private final String[] columnNames;
-	private final String[] columnEncodings;
 	protected String tableName;
 
-	public ExodusAbstractRowsEvent(AbstractRowEvent e, String tableName, String[] columnNames, String[] columnEncodings) {
+	private final ExodusColumnInfo[] columns;
+
+	public ExodusAbstractRowsEvent(AbstractRowEvent e, String tableName, ExodusColumnInfo[] columns) {
 		this.tableId = e.getTableId();
 		this.event = e;
 		this.header = e.getHeader();
 		this.tableName = tableName;
-		this.columnNames = columnNames;
-		this.columnEncodings = columnEncodings;
+		this.columns = columns;
 	}
 
 	@Override
@@ -76,8 +75,8 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 	public abstract String getType();
 
 	private Column findColumn(String name, Row r) {
-		for(int i = 0; i < this.columnNames.length; i++ ) {
-			if ( this.columnNames[i].equals(name) )
+		for(int i = 0; i < this.columns.length; i++ ) {
+			if ( this.columns[i].getName().equals(name) )
 				return r.getColumns().get(i);
 		}
 		return null;
@@ -127,16 +126,15 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 		return res;
 	}
 
-	public static ExodusAbstractRowsEvent buildEvent(
-			AbstractRowEvent e,
-			String tableName, String[] columnNames, String[] columnEncodings, int idColumnOffset) {
+	public static ExodusAbstractRowsEvent buildEvent(AbstractRowEvent e,
+			String tableName, ExodusColumnInfo[] columns, int idColumnOffset) {
 		switch(e.getHeader().getEventType()) {
 		case MySQLConstants.WRITE_ROWS_EVENT:
-			return new ExodusWriteRowsEvent((WriteRowsEvent) e, tableName, columnNames, columnEncodings);
+			return new ExodusWriteRowsEvent((WriteRowsEvent) e, tableName, columns);
 		case MySQLConstants.UPDATE_ROWS_EVENT:
-			return new ExodusUpdateRowsEvent((UpdateRowsEvent) e, tableName, columnNames, columnEncodings);
+			return new ExodusUpdateRowsEvent((UpdateRowsEvent) e, tableName, columns);
 		case MySQLConstants.DELETE_ROWS_EVENT:
-			return new ExodusDeleteRowsEvent((DeleteRowsEvent) e, tableName, columnNames, idColumnOffset);
+			return new ExodusDeleteRowsEvent((DeleteRowsEvent) e, tableName, columns, idColumnOffset);
 		}
 		return null;
 	}
@@ -198,8 +196,8 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 
 		for (Row r : getRows()) {
 			HashMap<String, String> map = new HashMap<String, String>();
-			for (int i = 0 ; i < columnNames.length; i++ ) {
-				map.put(columnNames[i], columnToSql(r.getColumns().get(i), columnEncodings[i]));
+			for (int i = 0 ; i < columns.length; i++ ) {
+				map.put(columns[i].getName(), columnToSql(r.getColumns().get(i), columns[i].getEncoding()));
 			}
 			rows.add(map);
 		}
@@ -210,9 +208,9 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 	{
 		sql.append(" (");
 
-		for(int i = 0 ; i < columnNames.length; i++) {
-			sql.append("`" + columnNames[i] + "`");
-			if ( i < columnNames.length - 1 )
+		for(int i = 0 ; i < columns.length; i++) {
+			sql.append("`" + columns[i].getName() + "`");
+			if ( i < columns.length - 1 )
 				sql.append(", ");
 		}
 		sql.append(")");
@@ -242,7 +240,7 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 			for(Iterator<Column> iter = row.getColumns().iterator(); iter.hasNext(); ) {
 				Column c = iter.next();
 
-				sql.append(columnToSql(c, columnEncodings[i]));
+				sql.append(columnToSql(c, columns[i].getEncoding()));
 
 				if (iter.hasNext())
 					sql.append(",");

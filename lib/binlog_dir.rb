@@ -19,6 +19,7 @@ class BinlogDir
 
   java_import 'com.zendesk.exodus.ExodusParser'
   java_import 'com.zendesk.exodus.ExodusAbstractRowsEvent'
+  java_import 'com.zendesk.exodus.ExodusColumnInfo'
   java_import 'com.google.code.or.common.util.MySQLConstants'
 
   COLUMN_TYPES = MySQLConstants.constants.inject({}) do |h, c|
@@ -71,7 +72,7 @@ class BinlogDir
         table_schema = table_map_cache[e.table_id]
         next unless table_schema
         next if exclude_tables.include?(table_schema[:name])
-        yield ExodusAbstractRowsEvent.build_event(e, *table_schema.values_at(:name, :column_names, :column_encodings, :id_offset))
+        yield ExodusAbstractRowsEvent.build_event(e, *table_schema.values_at(:name, :exodus_columns, :id_offset))
       end
       break if max_events && event_count >= max_events
     end
@@ -117,8 +118,9 @@ class BinlogDir
     verify_table_schema!(captured_schema, h)
 
     h[:id_offset] = h[:columns].find_index { |c| c[:column_key] == 'PRI' }
-    h[:column_names] = h[:columns].map { |c| c[:name] }
-    h[:column_encodings]  = h[:columns].map { |c| c[:character_set] }
+    h[:exodus_columns] = h[:columns].map do |c|
+      ExodusColumnInfo.new(c[:name], c[:character_set], false)
+    end
     h
   end
 
