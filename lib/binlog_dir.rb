@@ -134,6 +134,8 @@ class BinlogDir
         t[:type] == :long
       when 'smallint'
         t[:type] == :short
+      when 'mediumint'
+        t[:type] == :int24
       when 'tinyint'
         t[:type] == :tiny
       when 'datetime'
