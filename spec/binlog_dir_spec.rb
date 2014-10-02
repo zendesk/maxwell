@@ -36,6 +36,13 @@ describe "BinlogDir" do
     "x'" + str.each_byte.map { |b| b.to_s(16) }.join + "'"
   end
 
+  def stringify_event(h)
+    h.keys.each do |key|
+      h[key.to_s] = h.delete(key).to_s
+    end
+    h
+  end
+
   describe "read_binlog" do
     before do
       @events = get_events(@start_position, get_master_position)
@@ -157,6 +164,22 @@ describe "BinlogDir" do
           )
         end
         map_to_hashes(events).should eq([{"id" =>  "1", "account_id" => "1", "medium" => "2"}])
+      end
+
+      context "unsigned integers" do
+        it "interprets it properly" do
+          row = {
+              i64: (2**64) - 1,
+              i32: (2**32) - 1,
+              i24: (2**24) - 1,
+              i16: (2**16) - 1,
+              i8:  (2**8) - 1
+          }
+          events = events_for do
+            insert_row('ints', row)
+          end
+          map_to_hashes(events).should eq([stringify_event(row).merge("id" => "1")])
+        end
       end
     end
   end

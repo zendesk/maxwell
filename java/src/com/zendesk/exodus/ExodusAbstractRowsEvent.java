@@ -1,5 +1,6 @@
 package com.zendesk.exodus;
 
+import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +19,7 @@ import com.google.code.or.binlog.impl.event.UpdateRowsEvent;
 import com.google.code.or.binlog.impl.event.WriteRowsEvent;
 import com.google.code.or.common.glossary.Column;
 import com.google.code.or.common.glossary.Row;
+import com.google.code.or.common.glossary.UnsignedLong;
 import com.google.code.or.common.glossary.column.*;
 import com.google.code.or.common.util.MySQLConstants;
 
@@ -152,13 +154,54 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 		escaped = escaped.replaceAll("\r", "\\\\r");
 		return "'" + escaped + "'";
 	}
-	private String columnToSql(Column c, String encoding) {
+
+
+	private long wrapInt(Integer i, int wrap_value) {
+		if ( i < 0 )
+			return wrap_value + i;
+		else
+			return i;
+	}
+	private final BigInteger longlong_max = BigInteger.ONE.shiftLeft(64);
+
+	private String formatInteger(Column c, ExodusColumnInfo ec) {
+		if (!ec.getUnsigned()) {
+			return c.getValue().toString();
+		}
+
+		long res = 0;
+		if ( c instanceof TinyColumn ) {
+			Integer i = ((TinyColumn) c).getValue();
+			res = wrapInt(i, 1 << 8);
+		} else if ( c instanceof ShortColumn ) {
+			Integer i = ((ShortColumn) c).getValue();
+			res = wrapInt(i, 1 << 16);
+		} else if ( c instanceof Int24Column ) {
+			Integer i = ((Int24Column) c).getValue();
+			res = wrapInt(i, 1 << 24);
+		} else if ( c instanceof LongColumn ) {
+			Integer i = ((LongColumn) c).getValue();
+			if ( i < 0 )
+				res = (1L << 32) + i;
+			else
+				res = i;
+		} else if ( c instanceof LongLongColumn ) {
+			Long l = ((LongLongColumn) c).getValue();
+			if ( l < 0 ) {
+				return longlong_max.add(BigInteger.valueOf(l)).toString();
+			} else {
+				res = l;
+			}
+		}
+		return Long.valueOf(res).toString();
+	}
+	private String columnToSql(Column c, ExodusColumnInfo ec) {
 		if ( c instanceof NullColumn ) {
 			return "NULL";
 		} else if ( c instanceof BlobColumn ||
-				c instanceof StringColumn ) {
+				    c instanceof StringColumn ) {
 			byte[] b = (byte[]) c.getValue();
-			if ( encoding.equals("utf8") ) {
+			if ( ec.getEncoding().equals("utf8") ) {
 				String s = new String(b);
 				return quoteString(s);
 			} else {
@@ -173,13 +216,14 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 				    c instanceof Timestamp2Column ||
 				    c instanceof TimestampColumn ) {
 			return getDateTimeFormatter().format(c.getValue());
-		} else if ( c instanceof Int24Column ||
-				c instanceof LongColumn ||
-			    c instanceof LongLongColumn  ||
-			    c instanceof ShortColumn ||
-			    c instanceof TinyColumn ||
-			    c instanceof DoubleColumn ||
-			    c instanceof FloatColumn ) {
+		} else if ( c instanceof TinyColumn ||
+				    c instanceof ShortColumn ||
+				    c instanceof Int24Column ||
+				    c instanceof LongColumn ||
+				    c instanceof LongLongColumn ) {
+			return formatInteger(c, ec);
+		} else if ( c instanceof DoubleColumn ||
+			        c instanceof FloatColumn ) {
 			return c.getValue().toString();
 		} else if ( c instanceof DecimalColumn ) {
 			DecimalColumn dc = (DecimalColumn) c;
@@ -197,7 +241,7 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 		for (Row r : getRows()) {
 			HashMap<String, String> map = new HashMap<String, String>();
 			for (int i = 0 ; i < columns.length; i++ ) {
-				map.put(columns[i].getName(), columnToSql(r.getColumns().get(i), columns[i].getEncoding()));
+				map.put(columns[i].getName(), columnToSql(r.getColumns().get(i), columns[i]));
 			}
 			rows.add(map);
 		}
@@ -240,7 +284,7 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 			for(Iterator<Column> iter = row.getColumns().iterator(); iter.hasNext(); ) {
 				Column c = iter.next();
 
-				sql.append(columnToSql(c, columns[i].getEncoding()));
+				sql.append(columnToSql(c, columns[i]));
 
 				if (iter.hasNext())
 					sql.append(",");
