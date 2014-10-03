@@ -64,6 +64,7 @@ class BinlogDir
           #raise "table map changed!" if table_map_event_to_hash(e, filter) != table_map_cache[e.table_id]
         else
           next if e.database_name.to_string != @schema.db
+          next if exclude_tables.include?(e.table_name.to_string)
           table_map_cache[e.table_id] = table_map_event_to_hash(e)
         end
       when MySQLConstants::WRITE_ROWS_EVENT, MySQLConstants::UPDATE_ROWS_EVENT, MySQLConstants::DELETE_ROWS_EVENT
