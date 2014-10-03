@@ -111,7 +111,8 @@ class BinlogDir
         :metadata => md.metadata(i),
         :position => i,
         :name => captured_schema[i][:column_name],
-        :character_set => captured_schema[i][:character_set_name]
+        :character_set => captured_schema[i][:character_set_name],
+        :is_unsigned => !!(captured_schema[i][:column_type] =~ /unsigned/i)
       }
     end
 
@@ -119,7 +120,7 @@ class BinlogDir
 
     h[:id_offset] = h[:columns].find_index { |c| c[:column_key] == 'PRI' }
     h[:exodus_columns] = h[:columns].map do |c|
-      ExodusColumnInfo.new(c[:name], c[:character_set], false)
+      ExodusColumnInfo.new(c[:name], c[:character_set], c[:is_unsigned])
     end
     h
   end
