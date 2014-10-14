@@ -43,6 +43,18 @@ describe "the api" do
     end
   end
 
+  describe "/schema" do
+    before do
+      get "/schema?db=shard_1"
+      @json = JSON.parse(last_response.body)
+    end
+
+    it "returns the current schema" do
+      expect(@json).to_not be_nil
+      expect(@json['schema'].keys).to eq(['ints', 'mediumints', 'minimal', 'sharded'])
+    end
+  end
+
   describe "/binlog_events" do
     it "422s without 4 required parameters" do
       get '/binlog_events'
