@@ -24,10 +24,19 @@ describe "Schema" do
   end
 
   describe "load" do
+    before { @schema.save }
     it "loads the dumped schema" do
-      @schema.save
       new_schema = Schema.load(@schema.filename)
       new_schema.fetch.should == @schema.fetch
+    end
+
+    it "keeps a small cache" do
+      new_schema = Schema.load(@schema.filename)
+      new_schema.fetch.should == @schema.fetch
+
+      File.unlink(DATA_DIR + "/" + @schema.filename)
+      cached_schema = Schema.load(@schema.filename)
+      cached_schema.should == new_schema
     end
   end
 end
