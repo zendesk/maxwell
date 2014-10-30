@@ -10,6 +10,10 @@ GIT
 GEM
   remote: https://rubygems.org/
   specs:
+    airbrake (4.1.0)
+      builder
+      multi_json
+    builder (3.2.2)
     capistrano (2.15.5)
       highline
       net-scp (>= 1.0.0)
@@ -22,6 +26,7 @@ GEM
     highline (1.6.21)
     linecache (0.46)
       rbx-require-relative (> 0.0.4)
+    multi_json (1.10.1)
     mysql_isolated_server (0.3.3)
     net-scp (1.2.1)
       net-ssh (>= 2.6.5)
@@ -30,6 +35,7 @@ GEM
     net-ssh (2.9.1)
     net-ssh-gateway (1.2.0)
       net-ssh (>= 2.6.5)
+    newrelic_rpm (3.9.6.257)
     puma (2.8.2)
       rack (>= 1.1, < 2.0)
     puma (2.8.2-java)
@@ -70,7 +76,9 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  airbrake (~> 4.0)
   mysql_isolated_server (~> 0.3)
+  newrelic_rpm (~> 3.9)
   puma
   rack-test
   rake

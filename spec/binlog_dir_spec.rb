@@ -14,11 +14,12 @@ describe "BinlogDir" do
     generate_binlog_events
   end
 
-  def get_events(start_at, end_at, options = {})
+  def get_events(start_at, end_at, options = {}, output = {})
     [].tap do |events|
-      @binlog_dir.read_binlog(start_at, end_at, options)  do |event|
+      ret = @binlog_dir.read_binlog(start_at, end_at, options)  do |event|
         events << event
       end
+      output.merge!(ret)
     end
   end
 
@@ -105,6 +106,23 @@ describe "BinlogDir" do
     it "stops after processing max_events" do
       @events = get_events(@start_position, get_master_position, max_events: 1)
       @events.size.should == 1
+    end
+
+    it "only stops on a table_map_event" do
+      output = {}
+      start_pos = get_master_position
+
+      insert_row('minimal', account_id: 1, text_field: 'a')
+      # trigger the bug we're testing by having the event limit get reached on an ignored row
+      insert_row('mediumints', account_id: 1, medium: 2)
+      insert_row('minimal', account_id: 1, text_field: 'b')
+
+      events = get_events(start_pos, get_master_position, {max_events: 2, exclude_tables: ['mediumints']}, output)
+      events.size.should == 1
+      output[:processed].should == 2
+
+      events = get_events(output, get_master_position, {max_events: 1, exclude_tables: ['mediumints']}, output)
+      events.size.should == 1
     end
 
     describe "BinglogEvent#to_sql" do

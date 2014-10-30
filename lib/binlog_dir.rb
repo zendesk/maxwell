@@ -56,10 +56,12 @@ class BinlogDir
     next_position = {file: from_file, pos: from_pos}
 
     while e = parser.getEvent()
-      next_position = {file: e.binlog_filename, pos: e.header.next_position}
 
       case e.header.event_type
       when MySQLConstants::TABLE_MAP_EVENT
+        break if max_events && event_count >= max_events
+
+
         if table_map_cache[e.table_id]
           #raise "table map changed!" if table_map_event_to_hash(e, filter) != table_map_cache[e.table_id]
         else
@@ -71,11 +73,12 @@ class BinlogDir
         event_count += 1
 
         table_schema = table_map_cache[e.table_id]
-        next unless table_schema
-        next if exclude_tables.include?(table_schema[:name])
-        yield ExodusAbstractRowsEvent.build_event(e, *table_schema.values_at(:name, :exodus_columns, :id_offset))
+        if table_schema && !exclude_tables.include?(table_schema[:name])
+          yield ExodusAbstractRowsEvent.build_event(e, *table_schema.values_at(:name, :exodus_columns, :id_offset))
+        end
       end
-      break if max_events && event_count >= max_events
+
+      next_position = {file: e.binlog_filename, pos: e.header.next_position}
     end
 
     parser.stop()

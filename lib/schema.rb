@@ -1,4 +1,6 @@
 require 'yaml'
+require 'monitor'
+
 DATA_DIR=File.expand_path(File.dirname(__FILE__) + "/../data")
 
 class Schema
@@ -65,12 +67,30 @@ class Schema
     [db, logfile, pos].join('--') + ".yaml"
   end
 
-  def self.load(token)
-    path = DATA_DIR + "/" + token
-    db, logfile, pos = token.split("--")
+  @schema_cache = {}
+  @schema_cache.extend(MonitorMixin)
+  MAX_SCHEMAS = 15
 
-    return nil unless File.exist?(path)
-    schema = YAML.load(File.read(path))
-    new(nil, db, schema)
+  def self.memory_cache(token)
+    @schema_cache.synchronize do
+      if @schema_cache[token]
+        return @schema_cache[token]
+      else
+        @schema_cache[token] = yield
+        @schema_cache.delete(@schema_cache.keys.first) while @schema_cache.size > MAX_SCHEMAS
+        return @schema_cache[token]
+      end
+    end
+  end
+
+  def self.load(token)
+    memory_cache(token) do
+      path = DATA_DIR + "/" + token
+      db, logfile, pos = token.split("--")
+
+      return nil unless File.exist?(path)
+      schema = YAML.load(File.read(path))
+      new(nil, db, schema)
+    end
   end
 end
