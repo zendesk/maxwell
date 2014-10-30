@@ -61,6 +61,16 @@ class Web < Sinatra::Base
     status 200
   end
 
+  # get the current schema.  no need to save it away for later.
+  get "/schema" do
+    return unless require_params(:db)
+
+    schema = Schema.new(settings.config.mysql_connection, params[:db])
+
+    body({schema: schema.fetch}.to_json)
+    status 200
+  end
+
   # begin playing the binlog from a specified position.
   # The position *must* be one returned from mark_binlog_top
   #
