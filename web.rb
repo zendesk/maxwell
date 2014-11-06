@@ -39,6 +39,11 @@ class Web < Sinatra::Base
     body({err: e.message, type: e.class.name, backtrace: e.backtrace}.to_json)
   end
 
+  get "/ping" do
+    body({status: 'ok'}.to_json)
+    status 200
+  end
+
   # capture the schema at a position.
   #
   # return both the schema and the current position of the binlog for future requests

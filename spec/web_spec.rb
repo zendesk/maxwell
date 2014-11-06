@@ -18,6 +18,14 @@ describe "the api" do
     Web.new
   end
 
+  describe "/ping" do
+    it "returns ok" do
+      get "/ping"
+      expect(last_response).to be_ok
+      expect(JSON.parse(last_response.body)).to eq("status" => "ok")
+    end
+  end
+
   describe "/mark_binlog_top" do
     before do
       get "/mark_binlog_top?db=shard_1"
