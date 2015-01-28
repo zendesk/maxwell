@@ -27,7 +27,7 @@ public class Table {
 			String colName    = r.getString("COLUMN_NAME");
 			String colType    = r.getString("DATA_TYPE");
 			String colEnc     = r.getString("CHARACTER_SET_NAME");
-			int colPos        = r.getInt("ORDINAL_POSITION");
+			int colPos        = r.getInt("ORDINAL_POSITION") - 1;
 			boolean colSigned = !r.getString("COLUMN_TYPE").matches(" unsigned$");
 
 

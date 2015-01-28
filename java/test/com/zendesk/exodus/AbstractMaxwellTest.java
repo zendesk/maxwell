@@ -39,6 +39,9 @@ public class AbstractMaxwellTest {
 		));
 
 		for ( File file: new File(getSQLDir()).listFiles()) {
+			if ( !file.getName().endsWith(".sql"))
+				continue;
+
 			byte[] sql = Files.readAllBytes(file.toPath());
 			String s = new String(sql);
 			if ( s != null ) {

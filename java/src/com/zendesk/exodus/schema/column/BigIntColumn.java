@@ -1,5 +1,7 @@
 package com.zendesk.exodus.schema.column;
 
+import com.google.code.or.common.util.MySQLConstants;
+
 public class BigIntColumn extends Column {
 	private final boolean signed;
 
@@ -8,4 +10,8 @@ public class BigIntColumn extends Column {
 		this.signed = signed;
 	}
 
+	@Override
+	public boolean matchesMysqlType(int type) {
+		return type == MySQLConstants.TYPE_LONGLONG;
+	}
 }

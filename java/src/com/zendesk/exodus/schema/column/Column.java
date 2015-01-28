@@ -5,19 +5,17 @@ import com.google.code.or.common.util.MySQLConstants;
 public abstract class Column {
 	private final String tableName;
 	private final String name;
-	private final int type;
+	private final String type;
 	private final int pos;
 
 	public Column(String tableName, String name, String type, int pos) {
 		this.tableName = tableName;
 		this.name = name;
-		this.type = castToMysqlType(type);
+		this.type = type;
 		this.pos = pos;
 	}
 
-	private int castToMysqlType(String Type) {
-		return 0;
-	}
+	public abstract boolean matchesMysqlType(int type);
 
 	public static Column build(String tableName, String name, String encoding, String type, int pos, boolean signed) {
 		switch(type) {
@@ -116,7 +114,7 @@ public abstract class Column {
 		return tableName;
 	}
 
-	public int getType() {
+	public String getType() {
 		return type;
 	}
 

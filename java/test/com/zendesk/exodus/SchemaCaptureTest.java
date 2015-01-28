@@ -1,7 +1,8 @@
 package com.zendesk.exodus;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -10,6 +11,10 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.hamcrest.CoreMatchers.*;
+
+import com.cedarsoftware.util.io.JsonWriter;
+import com.google.code.or.common.util.MySQLConstants;
 import com.zendesk.exodus.schema.Database;
 import com.zendesk.exodus.schema.Schema;
 import com.zendesk.exodus.schema.SchemaCapturer;
@@ -61,10 +66,21 @@ public class SchemaCaptureTest extends AbstractMaxwellTest {
 
 		columns = sharded.getColumnList().toArray(new Column[0]);
 
-		assert(columns[0] != null);
-		assert(columns[0] instanceof IntColumn);
-
+		assertThat(columns[0], notNullValue());
+		assertThat(columns[0], instanceOf(BigIntColumn.class));
+		assertThat(columns[0].getName(), is("id"));
 		assertEquals(0, columns[0].getPos());
 
+		assertTrue(columns[0].matchesMysqlType(MySQLConstants.TYPE_LONGLONG));
+		assertFalse(columns[0].matchesMysqlType(MySQLConstants.TYPE_DECIMAL));
+
+		assertThat(columns[1], allOf(notNullValue(), instanceOf(IntColumn.class)));
+		assertThat(columns[1].getName(), is("account_id"));
+	}
+
+	@Test
+	public void testJSON() throws SQLException, IOException {
+		Schema s = capturer.capture();
+		System.out.println(JsonWriter.objectToJson(s));
 	}
 }
