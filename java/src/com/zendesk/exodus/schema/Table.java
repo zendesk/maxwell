@@ -41,4 +41,8 @@ public class Table {
 	public List<AbstractColumn> getColumnList() {
 		return columnList;
 	}
+
+	public String getName() {
+		return this.name;
+	}
 }

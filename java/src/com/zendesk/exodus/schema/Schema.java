@@ -20,4 +20,14 @@ public class Schema {
 		}
 		return names;
 	}
+
+	public Database findDatabase(String string) {
+		for ( Database d: this.databases ) {
+			if ( d.getName().equals(string) ) {
+				return d;
+			}
+		}
+
+		return null;
+	}
 }
