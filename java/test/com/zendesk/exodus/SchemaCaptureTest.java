@@ -57,9 +57,9 @@ public class SchemaCaptureTest extends AbstractMaxwellTest {
 		Table sharded = s.findDatabase("shard_1").findTable("sharded");
 		assert(sharded != null);
 
-		AbstractColumn columns[];
+		Column columns[];
 
-		columns = sharded.getColumnList().toArray(new AbstractColumn[0]);
+		columns = sharded.getColumnList().toArray(new Column[0]);
 
 		assert(columns[0] != null);
 		assert(columns[0] instanceof IntColumn);

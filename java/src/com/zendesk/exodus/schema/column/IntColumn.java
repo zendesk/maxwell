@@ -1,7 +1,7 @@
 package com.zendesk.exodus.schema.column;
 
 
-public class IntColumn extends AbstractColumn {
+public class IntColumn extends Column {
 	private final boolean signed;
 
 	public IntColumn(String tableName, String name, String type, int pos, boolean signed) {

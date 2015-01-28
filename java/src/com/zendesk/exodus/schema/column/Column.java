@@ -2,13 +2,13 @@ package com.zendesk.exodus.schema.column;
 
 import com.google.code.or.common.util.MySQLConstants;
 
-public abstract class AbstractColumn {
+public abstract class Column {
 	private final String tableName;
 	private final String name;
 	private final int type;
 	private final int pos;
 
-	public AbstractColumn(String tableName, String name, String type, int pos) {
+	public Column(String tableName, String name, String type, int pos) {
 		this.tableName = tableName;
 		this.name = name;
 		this.type = castToMysqlType(type);
@@ -19,7 +19,7 @@ public abstract class AbstractColumn {
 		return 0;
 	}
 
-	public static AbstractColumn build(String tableName, String name, String encoding, String type, int pos, boolean signed) {
+	public static Column build(String tableName, String name, String encoding, String type, int pos, boolean signed) {
 		switch(type) {
 		case "tinyint":
 		case "smallint":

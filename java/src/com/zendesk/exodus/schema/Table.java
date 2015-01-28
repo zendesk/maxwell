@@ -5,10 +5,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.zendesk.exodus.schema.column.AbstractColumn;
+import com.zendesk.exodus.schema.column.Column;
 
 public class Table {
-	private List<AbstractColumn> columnList;
+	private List<Column> columnList;
 	private final String name;
 
 	public Table(String name) {
@@ -20,8 +20,8 @@ public class Table {
 		this.columnList = buildColumnsFromResultSet(r);
 	}
 
-	private List<AbstractColumn> buildColumnsFromResultSet(ResultSet r) throws SQLException {
-		List<AbstractColumn> columns = new ArrayList<AbstractColumn>();
+	private List<Column> buildColumnsFromResultSet(ResultSet r) throws SQLException {
+		List<Column> columns = new ArrayList<Column>();
 
 		while(r.next()) {
 			String colName    = r.getString("COLUMN_NAME");
@@ -31,14 +31,14 @@ public class Table {
 			boolean colSigned = !r.getString("COLUMN_TYPE").matches(" unsigned$");
 
 
-			columns.add(AbstractColumn.build(this.name, colName, colEnc, colType, colPos, colSigned));
+			columns.add(Column.build(this.name, colName, colEnc, colType, colPos, colSigned));
 		}
 
 		return columns;
 
 	}
 
-	public List<AbstractColumn> getColumnList() {
+	public List<Column> getColumnList() {
 		return columnList;
 	}
 
