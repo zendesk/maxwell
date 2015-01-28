@@ -1,44 +1,64 @@
 package com.zendesk.exodus.schema;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class SchemaCapturer {
-	private final String[] alwaysExclude = {"information_schema", "mysql", "test"};
 	private final Connection connection;
+
+	private final String[] alwaysExclude = {"performance_schema", "information_schema", "mysql", "test"};
 	private final HashSet<String> excludeDatabases;
 
-	public SchemaCapturer(Connection c) {
-		this.excludeDatabases = new HashSet<String>();
+	private final PreparedStatement infoSchemaStmt;
+	private final String INFORMATION_SCHEMA_SQL =
+			"SELECT * FROM `information_schema`.`COLUMNS` WHERE `TABLE_SCHEMA` = ? AND `TABLE_NAME` = ?";
 
+	public SchemaCapturer(Connection c) throws SQLException {
+		this.excludeDatabases = new HashSet<String>();
 		this.connection = c;
+		this.infoSchemaStmt = connection.prepareStatement(INFORMATION_SCHEMA_SQL);
 
 		for (String s : alwaysExclude) {
-			excludeDatabases.add(s);
+			this.excludeDatabases.add(s);
 		}
 	}
 
-	public SchemaCapturer(Connection c, String[] exclude) {
+	public SchemaCapturer(Connection c, String[] excludeDBs) throws SQLException {
 		this(c);
 
-		for (String s: exclude) {
-			excludeDatabases.add(s);
+		for (String s: excludeDBs) {
+			this.excludeDatabases.add(s);
 		}
 	}
 
 	public Schema capture() throws SQLException {
-		for ( String db : selectFirst("show databases")) {
-			String showTableSQL = "show tables from " + db;
+		ArrayList<Database> databases = new ArrayList<Database>();
+		for ( String dbName : selectFirst("show databases")) {
+			if ( excludeDatabases.contains(dbName) )
+				continue;
+
+			String showTableSQL = "show tables from " + dbName;
+
+			ArrayList<Table> tables = new ArrayList<Table>();
+
 			for ( String table : selectFirst(showTableSQL) ) {
-				System.out.println("gots " + db + ":" + table);
+				tables.add(captureTable(dbName, table));
 			}
+			databases.add(new Database(dbName, tables));
 		}
-		return new Schema();
+		return new Schema(databases);
+	}
+
+
+	private Table captureTable(String dbName, String tableName) throws SQLException {
+		infoSchemaStmt.setString(1, dbName);
+		infoSchemaStmt.setString(2, tableName);
+		return new Table(tableName, infoSchemaStmt.executeQuery());
 	}
 
 

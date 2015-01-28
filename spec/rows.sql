@@ -3,3 +3,6 @@ INSERT into sharded set account_id = 1, nice_id = 2, status_id = 2, date_field =
 FLUSH LOGS
 UPDATE sharded set status_id = 1, text_field = 'Updated Text', timestamp_field=timestamp_field where id = 1
 DELETE FROM sharded where nice_id = 2
+
+DROP DATABASE IF EXISTS `shard_2`
+CREATE DATABASE `shard_2`

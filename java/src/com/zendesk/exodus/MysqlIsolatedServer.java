@@ -42,6 +42,9 @@ public class MysqlIsolatedServer {
 
 	public void executeList(List<String> queries) throws SQLException {
 		for (String q: queries) {
+			if ( q.matches("^\\s*$") )
+				continue;
+
 			getConnection().createStatement().executeUpdate(q);
 		}
 	}
