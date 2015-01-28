@@ -2,7 +2,8 @@
 require 'bundler/setup'
 require_relative "../lib/setup_java"
 
-require 'mysql_isolated_server'
+require 'isolated_server'
+require 'isolated_server/mysql'
 require 'ruby-debug'
 
 $LOAD_PATH << File.expand_path(File.dirname(__FILE__) + "/..")
@@ -21,7 +22,9 @@ def insert_row(table, attrs)
     else
       "'" + $mysql_master.connection.escape(v.to_s) + "'"
     end
-  }.join(',')
+  }
+
+  values = values.join(',')
   $mysql_master.connection.query("INSERT INTO #{table} (#{columns}) values(#{values})")
 end
 
@@ -85,7 +88,7 @@ RSpec.configure do |config|
 end
 
 Thread.abort_on_exception = true
-$mysql_master = MysqlIsolatedServer.thread_boot("--log-bin=binlogs/master", "--", "--binlog_format=row")
+$mysql_master = IsolatedServer::Mysql.thread_boot("--log-bin=binlogs/master", "--", "--binlog_format=row")
 $mysql_initial_binlog_pos = get_master_position
 $mysql_binlog_dir = $mysql_master.base + "/mysqld/binlogs"
 
