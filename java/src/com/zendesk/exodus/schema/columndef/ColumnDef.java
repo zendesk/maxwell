@@ -1,14 +1,14 @@
-package com.zendesk.exodus.schema.column;
+package com.zendesk.exodus.schema.columndef;
 
 import com.google.code.or.common.util.MySQLConstants;
 
-public abstract class Column {
+public abstract class ColumnDef {
 	private final String tableName;
 	private final String name;
 	private final String type;
 	private final int pos;
 
-	public Column(String tableName, String name, String type, int pos) {
+	public ColumnDef(String tableName, String name, String type, int pos) {
 		this.tableName = tableName;
 		this.name = name;
 		this.type = type;
@@ -17,35 +17,35 @@ public abstract class Column {
 
 	public abstract boolean matchesMysqlType(int type);
 
-	public static Column build(String tableName, String name, String encoding, String type, int pos, boolean signed) {
+	public static ColumnDef build(String tableName, String name, String encoding, String type, int pos, boolean signed) {
 		switch(type) {
 		case "tinyint":
 		case "smallint":
 		case "mediumint":
 		case "int":
-			return new IntColumn(tableName, name, type, pos, signed);
+			return new IntColumnDef(tableName, name, type, pos, signed);
 		case "bigint":
-			return new BigIntColumn(tableName, name, type, pos, signed);
+			return new BigIntColumnDef(tableName, name, type, pos, signed);
 		case "tinytext":
 		case "text":
 		case "mediumtext":
 		case "longtext":
 		case "varchar":
 		case "char":
-			return new StringColumn(tableName, name, type, pos, encoding);
+			return new StringColumnDef(tableName, name, type, pos, encoding);
 		case "tinyblob":
 		case "blob":
 		case "mediumblob":
 		case "longblob":
-			return new StringColumn(tableName, name, type, pos, "BINARYSOMETHING");
+			return new StringColumnDef(tableName, name, type, pos, "BINARYSOMETHING");
 		case "float":
 		case "double":
-			return new FloatColumn(tableName, name, type, pos);
+			return new FloatColumnDef(tableName, name, type, pos);
 		case "decimal":
-			return new DecimalColumn(tableName, name, type, pos);
+			return new DecimalColumnDef(tableName, name, type, pos);
 		case "datetime":
 		case "timestamp":
-			return new DateTimeColumn(tableName, name, type, pos);
+			return new DateTimeColumnDef(tableName, name, type, pos);
 		case "date":
 		case "time":
 		case "bit":

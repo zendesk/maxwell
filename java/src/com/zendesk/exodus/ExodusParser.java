@@ -8,6 +8,7 @@ import com.google.code.or.binlog.impl.event.AbstractRowEvent;
 import com.google.code.or.binlog.impl.event.RotateEvent;
 import com.google.code.or.binlog.impl.parser.*;
 import com.google.code.or.common.util.MySQLConstants;
+import com.zendesk.exodus.schema.Schema;
 
 import java.io.File;
 import java.util.Date;
@@ -22,6 +23,7 @@ public class ExodusParser {
 
 	String filePath, fileName;
 	private long startPosition;
+	private Schema schema;
 
 	public String getFilePath() {
 		return filePath;
@@ -134,6 +136,7 @@ public class ExodusParser {
 		bp.setEventListener(this.binlogEventListener);
 
 		bp.setEventFilter(new BinlogEventFilter() {
+			@Override
 			public boolean accepts(BinlogEventV4Header header, BinlogParserContext context) {
 				int eventType = header.getEventType();
 				return eventType == MySQLConstants.WRITE_ROWS_EVENT ||
@@ -159,35 +162,12 @@ public class ExodusParser {
 		}
 	}
 
-	public static void main(String args[]) throws Exception {
-		int count = 0 ;
-		BinlogEventV4 e;
-		ExodusParser p = new ExodusParser("/opt/local/var/db/mysql5", "master.000001");
-		Date start = new Date();
+	public Schema getSchema() {
+		return schema;
+	}
 
-		while ((e = p.getEvent()) != null) {
-			if ( e instanceof AbstractRowEvent ) {
-				HashMap<String, Object> filter = new HashMap<String, Object>();
-				ExodusColumnInfo columns[] = new ExodusColumnInfo[2];
-
-				columns[0] = new ExodusColumnInfo("foo", "utf8", false);
-				columns[1] = new ExodusColumnInfo("bar", "utf8", true);
-
-				String encodings[] = new String[100];
-				for (int i = 0 ; i < 100; i++) {
-					encodings[i] = "utf8";
-				}
-
-				String s = ExodusAbstractRowsEvent.buildEvent((AbstractRowEvent) e, "nothing", columns, 1).toSql(filter);
-				System.out.println(s);
-			}
-
-			count++;
-			if ( count % 1000 == 0 ) {
-				Date d = new Date();
-				System.out.println("did " + Integer.toString(count) + " at " + (d.getTime() - start.getTime()) );
-			}
-		}
+	public void setSchema(Schema schema) {
+		this.schema = schema;
 	}
 }
 

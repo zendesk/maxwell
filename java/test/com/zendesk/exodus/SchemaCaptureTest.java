@@ -19,7 +19,7 @@ import com.zendesk.exodus.schema.Database;
 import com.zendesk.exodus.schema.Schema;
 import com.zendesk.exodus.schema.SchemaCapturer;
 import com.zendesk.exodus.schema.Table;
-import com.zendesk.exodus.schema.column.*;
+import com.zendesk.exodus.schema.columndef.*;
 
 public class SchemaCaptureTest extends AbstractMaxwellTest {
 	private SchemaCapturer capturer;
@@ -62,19 +62,19 @@ public class SchemaCaptureTest extends AbstractMaxwellTest {
 		Table sharded = s.findDatabase("shard_1").findTable("sharded");
 		assert(sharded != null);
 
-		Column columns[];
+		ColumnDef columns[];
 
-		columns = sharded.getColumnList().toArray(new Column[0]);
+		columns = sharded.getColumnList().toArray(new ColumnDef[0]);
 
 		assertThat(columns[0], notNullValue());
-		assertThat(columns[0], instanceOf(BigIntColumn.class));
+		assertThat(columns[0], instanceOf(BigIntColumnDef.class));
 		assertThat(columns[0].getName(), is("id"));
 		assertEquals(0, columns[0].getPos());
 
 		assertTrue(columns[0].matchesMysqlType(MySQLConstants.TYPE_LONGLONG));
 		assertFalse(columns[0].matchesMysqlType(MySQLConstants.TYPE_DECIMAL));
 
-		assertThat(columns[1], allOf(notNullValue(), instanceOf(IntColumn.class)));
+		assertThat(columns[1], allOf(notNullValue(), instanceOf(IntColumnDef.class)));
 		assertThat(columns[1].getName(), is("account_id"));
 	}
 

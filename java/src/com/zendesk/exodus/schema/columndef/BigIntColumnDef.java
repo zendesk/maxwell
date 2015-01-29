@@ -1,11 +1,11 @@
-package com.zendesk.exodus.schema.column;
+package com.zendesk.exodus.schema.columndef;
 
 import com.google.code.or.common.util.MySQLConstants;
 
-public class BigIntColumn extends Column {
+public class BigIntColumnDef extends ColumnDef {
 	private final boolean signed;
 
-	public BigIntColumn(String tableName, String name, String type, int pos, boolean signed) {
+	public BigIntColumnDef(String tableName, String name, String type, int pos, boolean signed) {
 		super(tableName, name, type, pos);
 		this.signed = signed;
 	}

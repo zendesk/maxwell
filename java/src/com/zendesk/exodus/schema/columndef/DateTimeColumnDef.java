@@ -1,9 +1,9 @@
-package com.zendesk.exodus.schema.column;
+package com.zendesk.exodus.schema.columndef;
 
 import com.google.code.or.common.util.MySQLConstants;
 
-public class DateTimeColumn extends Column {
-	public DateTimeColumn(String tableName, String name, String type, int pos) {
+public class DateTimeColumnDef extends ColumnDef {
+	public DateTimeColumnDef(String tableName, String name, String type, int pos) {
 		super(tableName, name, type, pos);
 	}
 

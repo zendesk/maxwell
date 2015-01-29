@@ -22,6 +22,7 @@ import com.google.code.or.common.glossary.Row;
 import com.google.code.or.common.glossary.UnsignedLong;
 import com.google.code.or.common.glossary.column.*;
 import com.google.code.or.common.util.MySQLConstants;
+import com.zendesk.exodus.schema.Table;
 
 public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 	private static final TimeZone tz = TimeZone.getTimeZone("UTC");
@@ -47,16 +48,13 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 
 
 	private final AbstractRowEvent event;
-	protected String tableName;
+	private final Table table;
 
-	private final ExodusColumnInfo[] columns;
-
-	public ExodusAbstractRowsEvent(AbstractRowEvent e, String tableName, ExodusColumnInfo[] columns) {
+	public ExodusAbstractRowsEvent(AbstractRowEvent e, Table table) {
 		this.tableId = e.getTableId();
 		this.event = e;
 		this.header = e.getHeader();
-		this.tableName = tableName;
-		this.columns = columns;
+		this.table = table;
 	}
 
 	@Override

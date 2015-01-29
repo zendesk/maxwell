@@ -1,13 +1,13 @@
-package com.zendesk.exodus.schema.column;
+package com.zendesk.exodus.schema.columndef;
 
 import com.google.code.or.common.util.MySQLConstants;
 
 
-public class IntColumn extends Column {
+public class IntColumnDef extends ColumnDef {
 	private final int bits;
 	private final boolean signed;
 
-	public IntColumn(String tableName, String name, String type, int pos, boolean signed) {
+	public IntColumnDef(String tableName, String name, String type, int pos, boolean signed) {
 		super(tableName, name, type, pos);
 		this.signed = signed;
 		this.bits = bitsFromType(type);

@@ -1,10 +1,10 @@
-package com.zendesk.exodus.schema.column;
+package com.zendesk.exodus.schema.columndef;
 
 import com.google.code.or.common.util.MySQLConstants;
 
-public class FloatColumn extends Column {
+public class FloatColumnDef extends ColumnDef {
 
-	public FloatColumn(String tableName, String name, String type, int pos) {
+	public FloatColumnDef(String tableName, String name, String type, int pos) {
 		super(tableName, name, type, pos);
 	}
 

@@ -1,10 +1,10 @@
-package com.zendesk.exodus.schema.column;
+package com.zendesk.exodus.schema.columndef;
 
 import com.google.code.or.common.util.MySQLConstants;
 
-public class DecimalColumn extends Column {
+public class DecimalColumnDef extends ColumnDef {
 
-	public DecimalColumn(String tableName, String name, String type, int pos) {
+	public DecimalColumnDef(String tableName, String name, String type, int pos) {
 		super(tableName, name, type, pos);
 	}
 

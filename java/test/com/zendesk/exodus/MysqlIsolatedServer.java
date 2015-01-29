@@ -10,9 +10,9 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-
 public class MysqlIsolatedServer {
 	private Connection connection;
+	private String baseDir;
 
 	public void boot() throws IOException, SQLException {
         final String dir = System.getProperty("user.dir");
@@ -28,7 +28,7 @@ public class MysqlIsolatedServer {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(pStdout));
 
 		String[] tmpDirSplit = reader.readLine().split(": ");
-		String tmpDir = tmpDirSplit[tmpDirSplit.length - 1];
+		this.baseDir = tmpDirSplit[tmpDirSplit.length - 1];
 
 		String[] portSplit = reader.readLine().split(": ");
 		String port = portSplit[portSplit.length - 1];
@@ -47,5 +47,9 @@ public class MysqlIsolatedServer {
 
 			getConnection().createStatement().executeUpdate(q);
 		}
+	}
+
+	public String getBaseDir() {
+		return baseDir;
 	}
 }
