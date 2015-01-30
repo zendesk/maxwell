@@ -1,5 +1,7 @@
 package com.zendesk.exodus.schema.columndef;
 
+import java.math.BigDecimal;
+
 import com.google.code.or.common.util.MySQLConstants;
 
 public class DecimalColumnDef extends ColumnDef {
@@ -13,4 +15,10 @@ public class DecimalColumnDef extends ColumnDef {
 		return type == MySQLConstants.TYPE_DECIMAL;
 	}
 
+	@Override
+	public String toSQL(Object value) {
+		BigDecimal d = (BigDecimal) value;
+
+		return d.toEngineeringString();
+	}
 }

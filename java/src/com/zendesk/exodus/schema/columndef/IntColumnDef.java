@@ -13,6 +13,25 @@ public class IntColumnDef extends ColumnDef {
 		this.bits = bitsFromType(type);
 	}
 
+
+	private long castUnsigned(Integer i, long max_value) {
+		if ( i < 0 )
+			return max_value + i;
+		else
+			return i;
+	}
+
+	@Override
+	public String toSQL(Object value) {
+		Integer i = (Integer) value;
+
+		if (signed)
+			return value.toString();
+
+		long res = castUnsigned(i, 1L << this.bits);
+		return Long.valueOf(res).toString();
+	}
+
 	@Override
 	public boolean matchesMysqlType(int type) {
 		switch(this.bits) {
@@ -43,6 +62,5 @@ public class IntColumnDef extends ColumnDef {
 			return 0;
 		}
 	}
-
 
 }

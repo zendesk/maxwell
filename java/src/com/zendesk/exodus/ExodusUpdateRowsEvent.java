@@ -6,11 +6,13 @@ import java.util.List;
 import com.google.code.or.binlog.impl.event.UpdateRowsEvent;
 import com.google.code.or.common.glossary.Pair;
 import com.google.code.or.common.glossary.Row;
+import com.zendesk.exodus.schema.Table;
 
 public class ExodusUpdateRowsEvent extends ExodusAbstractRowsEvent {
 	private final UpdateRowsEvent event;
-	public ExodusUpdateRowsEvent(UpdateRowsEvent e, String tableName, ExodusColumnInfo[] columns) {
-		super(e, tableName, columns);
+
+	public ExodusUpdateRowsEvent(UpdateRowsEvent e, Table t) {
+		super(e, t);
 		this.event = e;
 	}
 	@Override

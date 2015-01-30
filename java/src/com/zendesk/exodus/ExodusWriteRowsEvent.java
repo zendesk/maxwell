@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.google.code.or.binlog.impl.event.WriteRowsEvent;
 import com.google.code.or.common.glossary.Row;
+import com.zendesk.exodus.schema.Table;
 
 
 public class ExodusWriteRowsEvent extends ExodusAbstractRowsEvent {
@@ -14,8 +15,8 @@ public class ExodusWriteRowsEvent extends ExodusAbstractRowsEvent {
 		return event.getRows();
 	}
 
-	public ExodusWriteRowsEvent(WriteRowsEvent e, String tableName, ExodusColumnInfo[] columns) {
-		super(e, tableName, columns);
+	public ExodusWriteRowsEvent(WriteRowsEvent e, Table t) {
+		super(e, t);
 		this.event = e;
 	}
 

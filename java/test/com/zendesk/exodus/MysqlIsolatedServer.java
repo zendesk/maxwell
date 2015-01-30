@@ -18,7 +18,7 @@ public class MysqlIsolatedServer {
         final String dir = System.getProperty("user.dir");
 
         System.out.println(dir + "/mysql_isolated_server/bin/boot_isolated_mysql_server");
-		ProcessBuilder pb = new ProcessBuilder(dir + "/mysql_isolated_server/bin/boot_isolated_mysql_server");
+		ProcessBuilder pb = new ProcessBuilder(dir + "/mysql_isolated_server/bin/boot_isolated_mysql_server", "--", "--binlog_format=row");
 		Map<String, String> env = pb.environment();
 
 		env.put("PATH", env.get("PATH") + ":/opt/local/bin");

@@ -4,23 +4,22 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.google.code.or.binlog.impl.event.AbstractRowEvent;
 import com.google.code.or.binlog.impl.event.DeleteRowsEvent;
 import com.google.code.or.common.glossary.Row;
+import com.zendesk.exodus.schema.Table;
 
 public class ExodusDeleteRowsEvent extends ExodusAbstractRowsEvent {
 	private final DeleteRowsEvent event;
-	private final int idColumnPosition;
+
+	public ExodusDeleteRowsEvent(AbstractRowEvent e, Table table) {
+		super(e, table);
+		this.event = (DeleteRowsEvent) e;
+	}
 
 	@Override
 	public List<Row> getRows() {
 		return event.getRows();
-	}
-
-
-	public ExodusDeleteRowsEvent(DeleteRowsEvent e, String tableName, ExodusColumnInfo[] columns, int idColumnPosition) {
-		super(e, tableName, columns);
-		this.event = e;
-		this.idColumnPosition = idColumnPosition;
 	}
 
 	@Override
@@ -37,10 +36,11 @@ public class ExodusDeleteRowsEvent extends ExodusAbstractRowsEvent {
 		}
 
 		StringBuilder s = new StringBuilder();
-		s.append("DELETE FROM `" + this.tableName + "` WHERE id in (");
+		s.append("DELETE FROM `" + this.table.getName() + "` WHERE id in (");
 
 		for(Iterator<Row> rowIter = getRows().iterator(); rowIter.hasNext(); ) {
-			s.append(rowIter.next().getColumns().get(idColumnPosition).toString());
+			int pkIndex = this.table.getPKIndex();
+			s.append(rowIter.next().getColumns().get(pkIndex).toString());
 			if ( rowIter.hasNext() )
 				s.append(",");
 		}

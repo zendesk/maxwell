@@ -9,6 +9,7 @@ import com.zendesk.exodus.schema.columndef.ColumnDef;
 
 public class Table {
 	private List<ColumnDef> columnList;
+	private int pkIndex;
 	private final String name;
 
 	public Table(String name) {
@@ -21,6 +22,7 @@ public class Table {
 	}
 
 	private List<ColumnDef> buildColumnsFromResultSet(ResultSet r) throws SQLException {
+		int i = 0;
 		List<ColumnDef> columns = new ArrayList<ColumnDef>();
 
 		while(r.next()) {
@@ -30,12 +32,15 @@ public class Table {
 			int colPos        = r.getInt("ORDINAL_POSITION") - 1;
 			boolean colSigned = !r.getString("COLUMN_TYPE").matches(" unsigned$");
 
+			// todo: compound PKs, mebbe
+			if ( r.getString("COLUMN_KEY").equals("PRI") )
+				this.pkIndex = i;
 
 			columns.add(ColumnDef.build(this.name, colName, colEnc, colType, colPos, colSigned));
+			i++;
 		}
 
 		return columns;
-
 	}
 
 	public List<ColumnDef> getColumnList() {
@@ -44,5 +49,20 @@ public class Table {
 
 	public String getName() {
 		return this.name;
+	}
+
+	public int findColumnIndex(String name) {
+		int i = 0;
+		for(ColumnDef c : columnList) {
+			if ( c.getName().equals(name) )
+				return i;
+			i++;
+
+		}
+		return -1;
+	}
+
+	public int getPKIndex() {
+		return this.pkIndex;
 	}
 }

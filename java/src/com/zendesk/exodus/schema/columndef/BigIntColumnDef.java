@@ -1,8 +1,11 @@
 package com.zendesk.exodus.schema.columndef;
 
+import java.math.BigInteger;
+
 import com.google.code.or.common.util.MySQLConstants;
 
 public class BigIntColumnDef extends ColumnDef {
+	private final BigInteger longlong_max = BigInteger.ONE.shiftLeft(64);
 	private final boolean signed;
 
 	public BigIntColumnDef(String tableName, String name, String type, int pos, boolean signed) {
@@ -13,5 +16,14 @@ public class BigIntColumnDef extends ColumnDef {
 	@Override
 	public boolean matchesMysqlType(int type) {
 		return type == MySQLConstants.TYPE_LONGLONG;
+	}
+
+	@Override
+	public String toSQL(Object value) {
+        Long l = (Long)value;
+        if ( l < 0 && !signed )
+        	return longlong_max.add(BigInteger.valueOf(l)).toString();
+        else
+            return Long.valueOf(l).toString();
 	}
 }

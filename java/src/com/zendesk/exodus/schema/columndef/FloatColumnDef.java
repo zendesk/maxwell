@@ -15,4 +15,9 @@ public class FloatColumnDef extends ColumnDef {
 		else
 			return type == MySQLConstants.TYPE_DOUBLE;
 	}
+
+	@Override
+	public String toSQL(Object value) {
+		return value.toString();
+	}
 }

@@ -5,14 +5,21 @@ import com.google.code.or.binlog.BinlogEventV4Header;
 import com.google.code.or.binlog.BinlogParserContext;
 import com.google.code.or.binlog.impl.FileBasedBinlogParser;
 import com.google.code.or.binlog.impl.event.AbstractRowEvent;
+import com.google.code.or.binlog.impl.event.DeleteRowsEvent;
 import com.google.code.or.binlog.impl.event.RotateEvent;
+import com.google.code.or.binlog.impl.event.TableMapEvent;
+import com.google.code.or.binlog.impl.event.UpdateRowsEvent;
+import com.google.code.or.binlog.impl.event.WriteRowsEvent;
 import com.google.code.or.binlog.impl.parser.*;
 import com.google.code.or.common.util.MySQLConstants;
+import com.zendesk.exodus.schema.Database;
 import com.zendesk.exodus.schema.Schema;
+import com.zendesk.exodus.schema.Table;
 
 import java.io.File;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -33,7 +40,7 @@ public class ExodusParser {
 		return fileName;
 	}
 
-	public void setStartPosition(long pos) {
+	public void setStartOffset(long pos) {
 		this.startPosition = pos;
 	}
 
@@ -51,7 +58,78 @@ public class ExodusParser {
 		this.binlogEventListener = new ExodusBinlogEventListener(queue);
 	}
 
-	public BinlogEventV4 getEvent() throws Exception {
+	private ExodusAbstractRowsEvent processRowsEvent(AbstractRowEvent e) {
+		ExodusAbstractRowsEvent ew;
+		Table table;
+
+		table = getTableForId(e.getTableId());
+		if ( table == null ) {
+			// TODO: richer error
+			throw new RuntimeException("couldn't find table in cache for " + e.getTableId());
+		}
+
+		switch (e.getHeader().getEventType()) {
+        case MySQLConstants.WRITE_ROWS_EVENT:
+        	ew = new ExodusWriteRowsEvent((WriteRowsEvent) e, table);
+        	break;
+        case MySQLConstants.UPDATE_ROWS_EVENT:
+        	ew = new ExodusUpdateRowsEvent((UpdateRowsEvent) e, table);
+        	break;
+        case MySQLConstants.DELETE_ROWS_EVENT:
+        	ew = new ExodusDeleteRowsEvent(e, table);
+        	break;
+        default:
+        	return null;
+		}
+		return ew;
+
+	}
+
+	public ExodusAbstractRowsEvent getEvent() throws Exception {
+        BinlogEventV4 v4Event;
+		while (true) {
+			v4Event = getBinlogEvent();
+
+			if ( v4Event == null )
+				return null;
+
+			switch(v4Event.getHeader().getEventType()) {
+			case MySQLConstants.WRITE_ROWS_EVENT:
+			case MySQLConstants.UPDATE_ROWS_EVENT:
+			case MySQLConstants.DELETE_ROWS_EVENT:
+				return processRowsEvent((AbstractRowEvent) v4Event);
+				// TODO: check filter before returning anything.
+			case MySQLConstants.TABLE_MAP_EVENT:
+				processTableMapEvent((TableMapEvent) v4Event);
+			}
+		}
+	}
+
+	private final HashMap<Long,Table> tableMapCache = new HashMap<>();
+
+	// open-replicator keeps a very similar cache, but we can't get access to it.
+	private void processTableMapEvent(TableMapEvent event) {
+		Long tableId = event.getTableId();
+		if ( !tableMapCache.containsKey(tableId) ) {
+			String dbName = new String(event.getDatabaseName().getValue());
+			String tblName = new String(event.getTableName().getValue());
+			Database db = schema.findDatabase(dbName);
+			if ( db == null )
+				throw new RuntimeException("Couldn't find database " + dbName);
+
+			Table tbl = db.findTable(tblName);
+			if ( tbl == null )
+				throw new RuntimeException("Couldn't find table " + tblName);
+
+			tableMapCache.put(tableId, tbl);
+		}
+	}
+
+	private Table getTableForId(Long tableId) {
+		return tableMapCache.get(tableId);
+	}
+
+	private BinlogEventV4 getBinlogEvent() throws Exception {
 		BinlogEventV4 event;
 
 		if (parser == null) {
