@@ -44,6 +44,15 @@ public class SchemaCaptureTest extends AbstractMaxwellTest {
 	}
 
 	@Test
+	public void testOneDatabase() throws SQLException {
+		SchemaCapturer sc = new SchemaCapturer(server.getConnection(), "shard_1");
+		Schema s = sc.capture();
+
+		String dbs = StringUtils.join(s.getDatabaseNames().iterator(), ":");
+		assertEquals("shard_1", dbs);
+	}
+
+	@Test
 	public void testTables() throws SQLException {
 		Schema s = capturer.capture();
 

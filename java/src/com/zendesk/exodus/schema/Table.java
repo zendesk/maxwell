@@ -11,13 +11,15 @@ public class Table {
 	private List<ColumnDef> columnList;
 	private int pkIndex;
 	private final String name;
+	private final String database;
 
-	public Table(String name) {
+	public Table(String dbName, String name) {
+		this.database = dbName;
 		this.name = name;
 	}
 
-	public Table(String name, ResultSet r) throws SQLException {
-		this(name);
+	public Table(String dbName, String name, ResultSet r) throws SQLException {
+		this(dbName, name);
 		this.columnList = buildColumnsFromResultSet(r);
 	}
 
@@ -64,5 +66,9 @@ public class Table {
 
 	public int getPKIndex() {
 		return this.pkIndex;
+	}
+
+	public String getDatabase() {
+		return database;
 	}
 }

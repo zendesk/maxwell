@@ -13,6 +13,7 @@ public class SchemaCapturer {
 
 	private final String[] alwaysExclude = {"performance_schema", "information_schema", "mysql", "test"};
 	private final HashSet<String> excludeDatabases;
+	private final HashSet<String> includeDatabases;
 
 	private final PreparedStatement infoSchemaStmt;
 	private final String INFORMATION_SCHEMA_SQL =
@@ -20,6 +21,7 @@ public class SchemaCapturer {
 
 	public SchemaCapturer(Connection c) throws SQLException {
 		this.excludeDatabases = new HashSet<String>();
+		this.includeDatabases = new HashSet<String>();
 		this.connection = c;
 		this.infoSchemaStmt = connection.prepareStatement(INFORMATION_SCHEMA_SQL);
 
@@ -28,17 +30,17 @@ public class SchemaCapturer {
 		}
 	}
 
-	public SchemaCapturer(Connection c, String[] excludeDBs) throws SQLException {
+	public SchemaCapturer(Connection c, String dbName) throws SQLException {
 		this(c);
-
-		for (String s: excludeDBs) {
-			this.excludeDatabases.add(s);
-		}
+		this.includeDatabases.add(dbName);
 	}
 
 	public Schema capture() throws SQLException {
 		ArrayList<Database> databases = new ArrayList<Database>();
 		for ( String dbName : selectFirst("show databases")) {
+			if ( includeDatabases.size() > 0 && !includeDatabases.contains(dbName))
+				continue;
+
 			if ( excludeDatabases.contains(dbName) )
 				continue;
 
@@ -58,7 +60,7 @@ public class SchemaCapturer {
 	private Table captureTable(String dbName, String tableName) throws SQLException {
 		infoSchemaStmt.setString(1, dbName);
 		infoSchemaStmt.setString(2, tableName);
-		return new Table(tableName, infoSchemaStmt.executeQuery());
+		return new Table(dbName, tableName, infoSchemaStmt.executeQuery());
 	}
 
 

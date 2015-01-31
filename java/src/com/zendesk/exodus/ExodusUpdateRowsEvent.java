@@ -11,8 +11,8 @@ import com.zendesk.exodus.schema.Table;
 public class ExodusUpdateRowsEvent extends ExodusAbstractRowsEvent {
 	private final UpdateRowsEvent event;
 
-	public ExodusUpdateRowsEvent(UpdateRowsEvent e, Table t) {
-		super(e, t);
+	public ExodusUpdateRowsEvent(UpdateRowsEvent e, Table t, ExodusFilter f) {
+		super(e, t, f);
 		this.event = e;
 	}
 	@Override

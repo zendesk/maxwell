@@ -4,6 +4,7 @@ import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
@@ -22,19 +23,25 @@ import com.zendesk.exodus.schema.columndef.ColumnDef;
 public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 	private static final TimeZone tz = TimeZone.getTimeZone("UTC");
 
+	private final ExodusFilter filter;
 	private final AbstractRowEvent event;
 	protected final Table table;
 
-	public ExodusAbstractRowsEvent(AbstractRowEvent e, Table table) {
+	public ExodusAbstractRowsEvent(AbstractRowEvent e, Table table, ExodusFilter f) {
 		this.tableId = e.getTableId();
 		this.event = e;
 		this.header = e.getHeader();
 		this.table = table;
+		this.filter = f;
 	}
 
 	@Override
 	public BinlogEventV4Header getHeader() {
 		return event.getHeader();
+	}
+
+	public Table getTable() {
+		return table;
 	}
 
 	@Override
@@ -47,58 +54,21 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 		event.setBinlogFilename(binlogFilename);
 	}
 
+	public boolean matchesFilter() {
+		if ( filter == null )
+			return true;
+
+		return filter.matches(this);
+	}
+
 	public abstract String getType();
 
-	private Column findColumn(String name, Row r) {
+	public Column findColumn(String name, Row r) {
 		int i = table.findColumnIndex(name);
 		if ( i > 0 )
 			return r.getColumns().get(i);
 		else
 			return null;
-	}
-
-	private boolean rowMatchesFilter(Row r, Map<String, Object> filter) {
-		if ( filter == null )
-			return true;
-
-		for (Map.Entry<String, Object> entry : filter.entrySet()) {
-			String key = entry.getKey();
-			Object value = entry.getValue();
-			Column col = findColumn(key, r);
-
-			if ( col == null )
-				return false;
-
-			if ( value instanceof Long ) {
-				long v = ((Long) value).longValue();
-				if ( col instanceof LongLongColumn ) {
-					Long l = ((LongLongColumn) col).getValue();
-					if ( v != l ) {
-						return false;
-					}
-				} else if ( col instanceof LongColumn ||
-						col instanceof Int24Column ||
-						col instanceof ShortColumn ||
-						col instanceof TinyColumn ) {
-					Integer i = ((LongColumn) col).getValue();
-
-					if ( v != i ) {
-						return false;
-					}
-				}
-			}
-		}
-		return true;
-
-	}
-	public List<Row> filteredRows(Map<String, Object> filter) {
-		ArrayList<Row> res = new ArrayList<Row>();
-
-		for(Row row : this.getRows()) {
-			if ( rowMatchesFilter(row, filter))
-				res.add(row);
-		}
-		return res;
 	}
 
 	@Override
@@ -108,6 +78,26 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 
 	public abstract List<Row> getRows();
 	public abstract String sqlOperationString();
+
+	private LinkedList<Row> filteredRows;
+	private boolean performedFilter = false;
+
+	protected List<Row> filteredRows() {
+		if ( this.filter == null )
+			return getRows();
+
+		if ( performedFilter )
+			return filteredRows;
+
+		filteredRows = new LinkedList<>();
+		for ( Row r : getRows()) {
+			if ( this.filter.matchesRow(this, r) )
+				filteredRows.add(r);
+		}
+		performedFilter = true;
+
+		return filteredRows;
+	}
 
 	private void appendColumnNames(StringBuilder sql)
 	{
@@ -124,7 +114,7 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 
 	public String toSql(Map<String, Object> filter) {
 		StringBuilder sql = new StringBuilder();
-		List<Row> rows = filteredRows(filter);
+		List<Row> rows = filteredRows();
 
 		if ( rows.isEmpty() )
 			return null;
@@ -169,5 +159,13 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 
 	public String toSql() {
 		return this.toSql(null);
+	}
+
+	public List<Map<String, Object>> jsonMaps() {
+		List<Map<String, Object>> list = new ArrayList<>();
+
+
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

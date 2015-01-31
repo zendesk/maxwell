@@ -17,47 +17,34 @@ import com.zendesk.exodus.schema.SchemaCapturer;
 import static org.hamcrest.CoreMatchers.*;
 
 public class ExodusParserTest extends AbstractMaxwellTest {
-	private SchemaCapturer capturer;
-	private Schema schema;
-	private ExodusParser parser;
-
-	@Before
-	public void setUp() throws Exception {
-		this.capturer = new SchemaCapturer(server.getConnection());
-	}
-
-	private List<ExodusAbstractRowsEvent>getRowsForSQL(String queries[]) throws Exception {
-		BinlogPosition start = BinlogPosition.capture(server.getConnection());
-		ExodusParser p = new ExodusParser(server.getBaseDir() + "/mysqld", start.getFile());
-		ArrayList<ExodusAbstractRowsEvent> list = new ArrayList<>();
-
-		p.setSchema(capturer.capture());
-
-        server.executeList(Arrays.asList(queries));
-
-        p.setStartOffset(start.getOffset());
-
-        ExodusAbstractRowsEvent e;
-        while ( (e = p.getEvent()) != null )
-        	list.add(e);
-
-        return list;
-
-	}
-
-	@Override
-	@After
-	public void tearDown() throws Exception {
-		super.tearDown();
-	}
-
 	@Test
 	public void testGetEvent() throws Exception {
 		List<ExodusAbstractRowsEvent> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
-		list = getRowsForSQL(input);
+		list = getRowsForSQL(input, null);
 		assertThat(list.size(), is(1));
 		assertThat(list.get(0).toSql(), is("REPLACE INTO `minimal` (`id`, `account_id`, `text_field`) VALUES (1,1,'hello')"));
 	}
 
+	@Test
+	public void testRowFilter() throws Exception {
+		List<ExodusAbstractRowsEvent> list;
+		String input[] = {"insert into minimal set account_id = 1, text_field='hello'",
+						  "insert into minimal set account_id = 2, text_field='goodbye'"};
+
+		list = getRowsForSQL(input, null);
+		assertThat(list.size(), is(2));
+
+		ExodusFilter filter = new ExodusFilter();
+		filter.addRowConstraint("account_id", 2);
+
+		list = getRowsForSQL(input, filter);
+		assertThat(list.size(), is(1));
+
+		System.out.println(list.get(0).toSql());
+
+		//Map<String, Object> jsonMap = list.get(0).jsonMaps().get(0);
+
+		//assertThat(jsonMap.get("account_id"), is(2));
+	}
 }

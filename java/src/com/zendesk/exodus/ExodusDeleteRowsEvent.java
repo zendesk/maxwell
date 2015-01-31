@@ -2,8 +2,6 @@ package com.zendesk.exodus;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-
 import com.google.code.or.binlog.impl.event.AbstractRowEvent;
 import com.google.code.or.binlog.impl.event.DeleteRowsEvent;
 import com.google.code.or.common.glossary.Row;
@@ -12,8 +10,8 @@ import com.zendesk.exodus.schema.Table;
 public class ExodusDeleteRowsEvent extends ExodusAbstractRowsEvent {
 	private final DeleteRowsEvent event;
 
-	public ExodusDeleteRowsEvent(AbstractRowEvent e, Table table) {
-		super(e, table);
+	public ExodusDeleteRowsEvent(AbstractRowEvent e, Table table, ExodusFilter f) {
+		super(e, table, f);
 		this.event = (DeleteRowsEvent) e;
 	}
 
@@ -28,8 +26,8 @@ public class ExodusDeleteRowsEvent extends ExodusAbstractRowsEvent {
 	}
 
 	@Override
-	public String toSql(Map <String, Object> filter) {
-		List<Row> rows = filteredRows(filter);
+	public String toSql() {
+		List<Row> rows = getRows();
 
 		if ( rows.isEmpty()) {
 			return null;

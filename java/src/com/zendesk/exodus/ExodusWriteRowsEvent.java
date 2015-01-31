@@ -15,8 +15,8 @@ public class ExodusWriteRowsEvent extends ExodusAbstractRowsEvent {
 		return event.getRows();
 	}
 
-	public ExodusWriteRowsEvent(WriteRowsEvent e, Table t) {
-		super(e, t);
+	public ExodusWriteRowsEvent(WriteRowsEvent e, Table t, ExodusFilter f) {
+		super(e, t, f);
 		this.event = e;
 	}
 

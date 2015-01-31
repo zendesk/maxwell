@@ -1,48 +1,30 @@
 package com.zendesk.exodus;
-import com.google.code.or.binlog.BinlogEventFilter;
-import com.google.code.or.binlog.BinlogEventV4;
-import com.google.code.or.binlog.BinlogEventV4Header;
-import com.google.code.or.binlog.BinlogParserContext;
-import com.google.code.or.binlog.impl.FileBasedBinlogParser;
-import com.google.code.or.binlog.impl.event.AbstractRowEvent;
-import com.google.code.or.binlog.impl.event.DeleteRowsEvent;
-import com.google.code.or.binlog.impl.event.RotateEvent;
-import com.google.code.or.binlog.impl.event.TableMapEvent;
-import com.google.code.or.binlog.impl.event.UpdateRowsEvent;
-import com.google.code.or.binlog.impl.event.WriteRowsEvent;
-import com.google.code.or.binlog.impl.parser.*;
-import com.google.code.or.common.util.MySQLConstants;
-import com.zendesk.exodus.schema.Database;
-import com.zendesk.exodus.schema.Schema;
-import com.zendesk.exodus.schema.Table;
-
 import java.io.File;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ExodusParser {
+import com.google.code.or.binlog.BinlogEventFilter;
+import com.google.code.or.binlog.BinlogEventV4;
+import com.google.code.or.binlog.BinlogEventV4Header;
+import com.google.code.or.binlog.BinlogParserContext;
+import com.google.code.or.binlog.impl.FileBasedBinlogParser;
+import com.google.code.or.binlog.impl.event.*;
+import com.google.code.or.binlog.impl.parser.*;
+import com.google.code.or.common.util.MySQLConstants;
+import com.zendesk.exodus.schema.Database;
+import com.zendesk.exodus.schema.Schema;
+import com.zendesk.exodus.schema.Table;
 
+public class ExodusParser {
 	String filePath, fileName;
+	private long rowEventsProcessed;
 	private long startPosition;
 	private Schema schema;
-
-	public String getFilePath() {
-		return filePath;
-	}
-
-	public String getFileName() {
-		return fileName;
-	}
-
-	public void setStartOffset(long pos) {
-		this.startPosition = pos;
-	}
+	private ExodusFilter filter;
 
 	private final LinkedBlockingQueue<BinlogEventV4> queue =  new LinkedBlockingQueue<BinlogEventV4>(20);
 
@@ -70,13 +52,13 @@ public class ExodusParser {
 
 		switch (e.getHeader().getEventType()) {
         case MySQLConstants.WRITE_ROWS_EVENT:
-        	ew = new ExodusWriteRowsEvent((WriteRowsEvent) e, table);
+        	ew = new ExodusWriteRowsEvent((WriteRowsEvent) e, table, filter);
         	break;
         case MySQLConstants.UPDATE_ROWS_EVENT:
-        	ew = new ExodusUpdateRowsEvent((UpdateRowsEvent) e, table);
+        	ew = new ExodusUpdateRowsEvent((UpdateRowsEvent) e, table, filter);
         	break;
         case MySQLConstants.DELETE_ROWS_EVENT:
-        	ew = new ExodusDeleteRowsEvent(e, table);
+        	ew = new ExodusDeleteRowsEvent(e, table, filter);
         	break;
         default:
         	return null;
@@ -85,8 +67,9 @@ public class ExodusParser {
 
 	}
 
-	public ExodusAbstractRowsEvent getEvent() throws Exception {
+	public ExodusAbstractRowsEvent getEvent(boolean stopAtNextTableMap) throws Exception {
         BinlogEventV4 v4Event;
+        ExodusAbstractRowsEvent event;
 		while (true) {
 			v4Event = getBinlogEvent();
 
@@ -97,12 +80,23 @@ public class ExodusParser {
 			case MySQLConstants.WRITE_ROWS_EVENT:
 			case MySQLConstants.UPDATE_ROWS_EVENT:
 			case MySQLConstants.DELETE_ROWS_EVENT:
-				return processRowsEvent((AbstractRowEvent) v4Event);
-				// TODO: check filter before returning anything.
+				rowEventsProcessed++;
+				event = processRowsEvent((AbstractRowEvent) v4Event);
+				if ( event.matchesFilter() )
+					return event;
+				break;
 			case MySQLConstants.TABLE_MAP_EVENT:
+				if ( stopAtNextTableMap)
+					return null;
+
 				processTableMapEvent((TableMapEvent) v4Event);
+				break;
 			}
 		}
+	}
+
+	public ExodusAbstractRowsEvent getEvent() throws Exception {
+		return getEvent(false);
 	}
 
 	private final HashMap<Long,Table> tableMapCache = new HashMap<>();
@@ -246,6 +240,30 @@ public class ExodusParser {
 
 	public void setSchema(Schema schema) {
 		this.schema = schema;
+	}
+
+	public long getRowEventsProcessed() {
+		return rowEventsProcessed;
+	}
+
+	public void resetRowEventsProcessed() {
+		rowEventsProcessed = 0;
+	}
+
+	public String getFilePath() {
+		return filePath;
+	}
+
+	public String getFileName() {
+		return fileName;
+	}
+
+	public void setStartOffset(long pos) {
+		this.startPosition = pos;
+	}
+
+	public void setFilter(ExodusFilter filter) {
+		this.filter = filter;
 	}
 }
 

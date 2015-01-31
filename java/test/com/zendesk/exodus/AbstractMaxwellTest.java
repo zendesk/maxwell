@@ -16,6 +16,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.zendesk.exodus.schema.SchemaCapturer;
+
 public class AbstractMaxwellTest {
 	protected static MysqlIsolatedServer server;
 
@@ -65,6 +67,27 @@ public class AbstractMaxwellTest {
 	public void setupMysql() throws SQLException, IOException, InterruptedException {
 		resetMaster();
 		generateBinlogEvents();
+	}
+
+	protected List<ExodusAbstractRowsEvent>getRowsForSQL(String queries[], ExodusFilter filter) throws Exception {
+		BinlogPosition start = BinlogPosition.capture(server.getConnection());
+		ExodusParser p = new ExodusParser(server.getBaseDir() + "/mysqld", start.getFile());
+		SchemaCapturer capturer = new SchemaCapturer(server.getConnection());
+
+		ArrayList<ExodusAbstractRowsEvent> list = new ArrayList<>();
+
+		p.setSchema(capturer.capture());
+		p.setFilter(filter);
+
+        server.executeList(Arrays.asList(queries));
+
+        p.setStartOffset(start.getOffset());
+
+        ExodusAbstractRowsEvent e;
+        while ( (e = p.getEvent()) != null )
+        	list.add(e);
+
+        return list;
 	}
 
 
