@@ -18,7 +18,7 @@ public class DateTimeColumnDef extends ColumnDef {
 
 	protected static SimpleDateFormat getDateTimeFormatter() {
 		if ( dateTimeFormatter == null ) {
-			dateTimeFormatter = new SimpleDateFormat("''yyyy-MM-dd HH:mm:ss''");
+			dateTimeFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			dateTimeFormatter.setTimeZone(tz);
 		}
 		return dateTimeFormatter;
@@ -36,13 +36,23 @@ public class DateTimeColumnDef extends ColumnDef {
 		}
 	}
 
-	@Override
-	public String toSQL(Object value) {
+	private String formatValue(Object value) {
 		if ( value instanceof Date )
 			return getDateTimeFormatter().format((Date) value);
 		else if ( value instanceof Timestamp )
 			return getDateTimeFormatter().format((Timestamp) value);
 		else
 			return "";
+	}
+
+	@Override
+	public String toSQL(Object value) {
+		return "'" + formatValue(value) + "'";
+	}
+
+
+	@Override
+	public Object asJSON(Object value) {
+		return formatValue(value);
 	}
 }

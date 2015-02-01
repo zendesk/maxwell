@@ -114,6 +114,19 @@ public class ColumnDefTest {
 	}
 
 	@Test
+	public void TestStringAsJSON() {
+		byte input[] = new byte[4];
+		input[0] = Byte.valueOf((byte) 169);
+		input[1] = Byte.valueOf((byte) 169);
+		input[2] = Byte.valueOf((byte) 169);
+		input[3] = Byte.valueOf((byte) 169);
+
+		ColumnDef d = ColumnDef.build("foo", "bar", "latin1", "varchar", 1, false);
+
+		assertThat((String) d.asJSON(input), is("©©©©"));
+	}
+
+	@Test
 	public void TestFloat() {
 		ColumnDef d = build("float", true);
 		assertThat(d, instanceOf(FloatColumnDef.class));

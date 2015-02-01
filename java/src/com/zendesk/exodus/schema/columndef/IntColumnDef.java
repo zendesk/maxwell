@@ -21,15 +21,24 @@ public class IntColumnDef extends ColumnDef {
 			return i;
 	}
 
-	@Override
-	public String toSQL(Object value) {
+	private Long toLong(Object value) {
 		Integer i = (Integer) value;
 
 		if (signed)
-			return value.toString();
+			return Long.valueOf(i);
 
 		long res = castUnsigned(i, 1L << this.bits);
-		return Long.valueOf(res).toString();
+		return Long.valueOf(res);
+
+	}
+	@Override
+	public String toSQL(Object value) {
+		return toLong(value).toString();
+	}
+
+	@Override
+	public Object asJSON(Object value) {
+		return toLong(value);
 	}
 
 	@Override

@@ -1,5 +1,7 @@
 package com.zendesk.exodus.schema.columndef;
 
+import java.nio.charset.Charset;
+
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.StringEscapeUtils;
 
@@ -33,6 +35,24 @@ public class StringColumnDef extends ColumnDef {
         } else {
         	return "x'" +  Hex.encodeHexString( b ) + "'";
         }
+	}
+
+	// this could obviously be more complete.
+	private Charset charsetForEncoding() {
+		switch(encoding) {
+		case "utf8": case "utf8mb4":
+			return Charset.forName("UTF-8");
+		case "latin1":
+			return Charset.forName("ISO-8859-1");
+		default:
+			return null;
+		}
+	}
+	@Override
+	public Object asJSON(Object value) {
+		byte[] b = (byte[])value;
+
+		return new String(b, charsetForEncoding());
 	}
 
 	private String quoteString(String s) {

@@ -57,6 +57,9 @@ public class ExodusFilter {
 	public boolean matchesRow(ExodusAbstractRowsEvent e, Row r) {
 		for (Map.Entry<String, Integer> entry : rowFilter.entrySet()) {
 			Column c = e.findColumn(entry.getKey(), r);
+			if ( c == null )
+				return false;
+
 			if ( (Integer) c.getValue() != entry.getValue() ) {
 				return false;
 			}

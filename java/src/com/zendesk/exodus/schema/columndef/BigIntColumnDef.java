@@ -18,12 +18,20 @@ public class BigIntColumnDef extends ColumnDef {
 		return type == MySQLConstants.TYPE_LONGLONG;
 	}
 
-	@Override
-	public String toSQL(Object value) {
+	private Object toNumeric(Object value) {
         Long l = (Long)value;
         if ( l < 0 && !signed )
-        	return longlong_max.add(BigInteger.valueOf(l)).toString();
+        	return longlong_max.add(BigInteger.valueOf(l));
         else
-            return Long.valueOf(l).toString();
+            return Long.valueOf(l);
+	}
+	@Override
+	public String toSQL(Object value) {
+		return toNumeric(value).toString();
+	}
+
+	@Override
+	public Object asJSON(Object value) {
+		return toNumeric(value);
 	}
 }

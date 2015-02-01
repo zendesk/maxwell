@@ -3,6 +3,7 @@ package com.zendesk.exodus;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,8 +22,6 @@ import com.zendesk.exodus.schema.Table;
 import com.zendesk.exodus.schema.columndef.ColumnDef;
 
 public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
-	private static final TimeZone tz = TimeZone.getTimeZone("UTC");
-
 	private final ExodusFilter filter;
 	private final AbstractRowEvent event;
 	protected final Table table;
@@ -112,7 +111,7 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 		sql.append(")");
 	}
 
-	public String toSql(Map<String, Object> filter) {
+	public String toSQL() {
 		StringBuilder sql = new StringBuilder();
 		List<Row> rows = filteredRows();
 
@@ -140,7 +139,6 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 				Column c = colIter.next();
 				ColumnDef d = defIter.next();
 
-
 				sql.append(d.toSQL(c.getValue()));
 
 				 if (colIter.hasNext())
@@ -157,15 +155,25 @@ public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
 		return sql.toString();
 	}
 
-	public String toSql() {
-		return this.toSql(null);
-	}
-
+	// the equivalent of "asJSON" -- convert the row to an array of
+	// hashes
 	public List<Map<String, Object>> jsonMaps() {
 		List<Map<String, Object>> list = new ArrayList<>();
 
+		for ( Row r : filteredRows()) {
+			HashMap<String, Object> rowMap = new HashMap<>();
+			Iterator<Column> colIter = r.getColumns().iterator();
+			Iterator<ColumnDef> defIter = table.getColumnList().iterator();
 
-		// TODO Auto-generated method stub
-		return null;
+			while ( colIter.hasNext() && defIter.hasNext() ) {
+				Column c = colIter.next();
+				ColumnDef d = defIter.next();
+
+				rowMap.put(d.getName(), d.asJSON(c.getValue()));
+			}
+			list.add(rowMap);
+		}
+
+		return list;
 	}
 }

@@ -16,7 +16,7 @@ public class DateColumnDef extends ColumnDef {
 
 	protected static SimpleDateFormat getDateFormatter() {
 		if ( dateFormatter == null ) {
-			dateFormatter = new SimpleDateFormat("''yyyy-MM-dd''");
+			dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
 			dateFormatter.setTimeZone(tz);
 		}
 		return dateFormatter;
@@ -28,8 +28,17 @@ public class DateColumnDef extends ColumnDef {
 		return type == MySQLConstants.TYPE_DATE;
 	}
 
+	private String formatDate(Object value) {
+		return getDateFormatter().format((Date) value);
+	}
+
 	@Override
 	public String toSQL(Object value) {
-		return getDateFormatter().format((Date) value);
+		return "''" + formatDate(value) + "''";
+	}
+
+	@Override
+	public Object asJSON(Object value) {
+		return formatDate(value);
 	}
 }

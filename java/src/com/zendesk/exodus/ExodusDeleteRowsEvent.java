@@ -26,7 +26,7 @@ public class ExodusDeleteRowsEvent extends ExodusAbstractRowsEvent {
 	}
 
 	@Override
-	public String toSql() {
+	public String toSQL() {
 		List<Row> rows = getRows();
 
 		if ( rows.isEmpty()) {

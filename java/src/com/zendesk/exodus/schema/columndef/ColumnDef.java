@@ -15,6 +15,9 @@ public abstract class ColumnDef {
 
 	public abstract boolean matchesMysqlType(int type);
 	public abstract String toSQL(Object value);
+	public Object asJSON(Object value) {
+		return value;
+	}
 
 	public static ColumnDef build(String tableName, String name, String encoding, String type, int pos, boolean signed) {
 		switch(type) {
@@ -71,4 +74,5 @@ public abstract class ColumnDef {
 	public int getPos() {
 		return pos;
 	}
+
 }
