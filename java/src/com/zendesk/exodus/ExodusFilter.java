@@ -19,14 +19,14 @@ public class ExodusFilter {
 		includeDatabases.add(dbName);
 	}
 
-	public void excludeDatabass(String dbName) {
+	public void excludeDatabase(String dbName) {
 		throwUnlessEmpty(includeDatabases, "database");
 		excludeDatabases.add(dbName);
 	}
 
 	public void includeTable(String tblName) {
 		throwUnlessEmpty(excludeTables, "table");
-		includeDatabases.add(tblName);
+		includeTables.add(tblName);
 	}
 
 	public void excludeTable(String tblName) {

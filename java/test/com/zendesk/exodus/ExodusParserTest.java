@@ -43,11 +43,10 @@ public class ExodusParserTest extends AbstractMaxwellTest {
 		list = getRowsForSQL(filter, input);
 		assertThat(list.size(), is(1));
 
-		System.out.println(list.get(0).toSQL());
-
 		Map<String, Object> jsonMap = list.get(0).jsonMaps().get(0);
 
 		assertThat((Long) jsonMap.get("account_id"), is(2L));
+		assertThat((String) jsonMap.get("text_field"), is("goodbye"));
 	}
 
 	@Test
@@ -64,8 +63,8 @@ public class ExodusParserTest extends AbstractMaxwellTest {
 	}
 
 	static String createDBs[] = {
-		"CREATE database foo",
-		"CREATE table foo.bars ( id int(11) auto_increment not null, something text, primary key (id) )",
+		"CREATE database if not exists foo",
+		"CREATE table if not exists foo.bars ( id int(11) auto_increment not null, something text, primary key (id) )",
 	};
 
 	static String insertSQL[] = {
@@ -89,5 +88,51 @@ public class ExodusParserTest extends AbstractMaxwellTest {
 		list = getRowsForSQL(filter, insertSQL);
 		assertThat(list.size(), is(1));
 		assertThat(list.get(0).getTable().getName(), is("minimal"));
+	}
+
+	@Test
+	public void testExcludeDB() throws Exception {
+		ExodusAbstractRowsEvent e;
+		List<ExodusAbstractRowsEvent> list;
+
+		ExodusFilter filter = new ExodusFilter();
+		filter.excludeDatabase("shard_1");
+		list = getRowsForSQL(filter, insertSQL, createDBs);
+		assertThat(list.size(), is(1));
+
+		e = list.get(0);
+		assertThat(e.getTable().getName(), is("bars"));
+	}
+
+	@Test
+	public void testIncludeTable() throws Exception {
+		ExodusAbstractRowsEvent e;
+		List<ExodusAbstractRowsEvent> list;
+
+		ExodusFilter filter = new ExodusFilter();
+		filter.includeTable("minimal");
+
+		list = getRowsForSQL(filter, insertSQL, createDBs);
+
+		assertThat(list.size(), is(1));
+
+		e = list.get(0);
+		assertThat(e.getTable().getName(), is("minimal"));
+	}
+
+	@Test
+	public void testExcludeTable() throws Exception {
+		ExodusAbstractRowsEvent e;
+		List<ExodusAbstractRowsEvent> list;
+
+		ExodusFilter filter = new ExodusFilter();
+		filter.excludeTable("minimal");
+
+		list = getRowsForSQL(filter, insertSQL, createDBs);
+
+		assertThat(list.size(), is(1));
+
+		e = list.get(0);
+		assertThat(e.getTable().getName(), is("bars"));
 	}
 }
