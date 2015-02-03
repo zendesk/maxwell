@@ -165,4 +165,32 @@ public class DDLParserTest {
 		assertThat(a.columnMods.get(0).name, is("m"));
 		assertThat(a.columnMods.get(1).name, is("p"));
 	}
+
+	@Test
+	public void testMultipleColumnWithParens() {
+		TableAlter a = parseAlter("alter table bar add column (m int(11) unsigned not null, p varchar(255))");
+		assertThat(a.columnMods.size(), is(2));
+		assertThat(a.columnMods.get(0).name, is("m"));
+		assertThat(a.columnMods.get(1).name, is("p"));
+	}
+
+	@Test
+	public void AddIndexParsing() {
+		String testSQL[] = {
+	       "alter table t add index `foo` using btree (`a`, `cd`) key_block_size=123",
+	       "alter table t add key bar (d)",
+	       "alter table t add constraint `foo` primary key using btree (id)",
+	       "alter table t add primary key (`id`)",
+	       "alter table t add constraint unique key (`id`)",
+	       "alter table t add fulltext key (`id`)",
+	       "alter table t add spatial key (`id`)"
+		};
+
+		for ( String s : testSQL ) {
+			TableAlter a = parseAlter(s);
+			assertThat("Expected " + s + "to parse", a, not(nullValue()));
+		}
+
+	}
+
 }

@@ -8,12 +8,17 @@ alter_tbl_preamble: ALTER alter_flags? TABLE table_name;
 alter_flags: (ONLINE | OFFLINE | IGNORE);
 
 alter_specifications: alter_specification (',' alter_specification)*;
-alter_specification: add_column;
+alter_specification: add_column
+                     | add_column_parens
+                     | ignored_alter_specifications
+                     ; 
                 //   | add_column_parens
                  //  | add_index
                   // | add_constraint;
                    
 add_column: ADD COLUMN? column_definition col_position?;
+add_column_parens: ADD COLUMN? '(' column_definition (',' column_definition)* ')';
+
 col_position: FIRST | (AFTER id);
 
 column_definition:
@@ -33,23 +38,23 @@ data_type:
 	
 // from http://dev.mysql.com/doc/refman/5.1/en/create-table.html
 generic_type: // types from which we're going to ignore any flags/length ars
-	  col_type=(BIT | BINARY) LENGTH?
+	  col_type=(BIT | BINARY) length?
 	| col_type=(DATE | TIME | TIMESTAMP | DATETIME | YEAR | TINYBLOB | MEDIUMBLOB | LONGBLOB | BLOB )
-	| col_type=VARBINARY LENGTH
+	| col_type=VARBINARY length
 	;
 
 signed_type: // we need the UNSIGNED flag here
       col_type=(TINYINT | SMALLINT | MEDIUMINT | INT | INTEGER | BIGINT )   
-                LENGTH? 
+                length? 
                 int_flags*
     | col_type=(REAL | DOUBLE | FLOAT | DECIMAL | NUMERIC)
-    		    DECIMAL_LENGTH?
+    		    decimal_length?
 			    int_flags*
     ;
 
 string_type: // getting the encoding here 
 	  col_type=(CHAR | VARCHAR)
-	           LENGTH?
+	           length?
 	           charset_def?
     | col_type=(TINYTEXT | TEXT | MEDIUMTEXT | LONGTEXT) 
   		        charset_def?
@@ -71,12 +76,32 @@ column_options:
 ;
 
 
+
 nullability: (NOT NULL | NULL);
 default_value: DEFAULT (literal | NULL);
 
-LENGTH: '(' [0-9]+ ')';
+ignored_alter_specifications:
+	  ADD index_or_key id_name? index_type? index_column_list index_options*
+    | ADD index_constraint? PRIMARY KEY index_type? index_column_list index_options*
+    | ADD index_constraint? UNIQUE index_or_key id_name? index_type? index_column_list index_options*
+    | ADD (FULLTEXT | SPATIAL) index_or_key id_name? index_column_list index_options*
+    | ADD index_constraint? FOREIGN KEY id_name? index_column_list
+    ; 
+    
+index_or_key: (INDEX|KEY);
+index_constraint: (CONSTRAINT id?);
+id_name: id;
+index_type: USING (BTREE | HASH);
+index_options: 
+	( KEY_BLOCK_SIZE '=' INTEGER_LITERAL )
+	| index_type
+	| WITH PARSER id // no idea if 'parser_name' is an id.  seems like a decent assumption.
+	; 
+index_column_list: '(' id ( ',' id )* ')';
+
+length: '(' INTEGER_LITERAL ')';
 int_flags: ( UNSIGNED | ZEROFILL );
-DECIMAL_LENGTH: '(' [0-9]+ ',' [0-9]+ ')';
+decimal_length: '(' INTEGER_LITERAL ',' INTEGER_LITERAL ')';
 	 
 engine_statement: ENGINE '=' IDENT;
 
@@ -84,3 +109,5 @@ table_name: id
 		    | id '.' id;
 
 id: ( IDENT | QUOTED_IDENT );
+
+

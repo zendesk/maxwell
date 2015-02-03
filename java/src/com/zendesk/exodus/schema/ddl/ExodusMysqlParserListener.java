@@ -1,5 +1,6 @@
 package com.zendesk.exodus.schema.ddl;
 
+import java.util.LinkedList;
 import java.util.List;
 
 import org.antlr.v4.runtime.tree.ErrorNode;
@@ -9,7 +10,6 @@ import com.zendesk.exodus.schema.ddl.mysqlParser.Add_columnContext;
 import com.zendesk.exodus.schema.ddl.mysqlParser.Alter_tbl_preambleContext;
 import com.zendesk.exodus.schema.ddl.mysqlParser.Charset_defContext;
 import com.zendesk.exodus.schema.ddl.mysqlParser.Col_positionContext;
-import com.zendesk.exodus.schema.ddl.mysqlParser.Column_definitionContext;
 import com.zendesk.exodus.schema.ddl.mysqlParser.Data_typeContext;
 import com.zendesk.exodus.schema.ddl.mysqlParser.Int_flagsContext;
 
@@ -57,7 +57,7 @@ class ExodusSQLSyntaxRrror extends RuntimeException {
 
 public class ExodusMysqlParserListener extends mysqlBaseListener {
 	private TableAlter alterStatement;
-	private ColumnDef columnDef;
+	private final LinkedList<ColumnDef> columnDefs = new LinkedList<>();
 
 	public TableAlter getAlterStatement() {
 		return alterStatement;
@@ -128,7 +128,13 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 			}
 		}
 
-		this.columnDef = ColumnDef.build(alterStatement.tableName, name, colEncoding, colType.toLowerCase(), -1, signed);
+		ColumnDef c = ColumnDef.build(alterStatement.tableName,
+					                   name,
+					                   colEncoding,
+					                   colType.toLowerCase(),
+					                   -1,
+					                   signed);
+		this.columnDefs.add(c);
 	}
 
 	@Override
@@ -145,6 +151,16 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 			}
 		}
 
-		alterStatement.columnMods.add(new AddColumnMod(this.columnDef.getName(), this.columnDef, p));
+		ColumnDef c = this.columnDefs.removeFirst();
+		alterStatement.columnMods.add(new AddColumnMod(c.getName(), c, p));
 	}
+
+	@Override public void exitAdd_column_parens(mysqlParser.Add_column_parensContext ctx) {
+		while ( this.columnDefs.size() > 0 ) {
+			ColumnDef c = this.columnDefs.removeFirst();
+			// unable to choose a position in this form
+			alterStatement.columnMods.add(new AddColumnMod(c.getName(), c, new ColumnPosition()));
+		}
+	}
+
 }

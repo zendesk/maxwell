@@ -68,8 +68,30 @@ DEFAULT
 STORAGE
 DISK
 MEMORY
+
+CONSTRAINT
+WITH
+PARSER
+KEY_BLOCK_SIZE
+USING
+BTREE
+HASH
+INDEX
+KEY
+FULLTEXT
+SPATIAL
+FOREIGN
 )
 
-tokens.select { |t| !t.empty? }.sort.uniq.each do |t|
-  puts "%s: %s;" % [t, t.split(//).map { |c| c == "_" ? "'_'" : c }.join(' ')]
+File.open(File.dirname(__FILE__) + "/mysql_literal_tokens.g4", "w+") do |f|
+  f.puts("lexer grammar mysql_literal_tokens;")
+  f.puts
+  
+  tokens.select { |t| !t.empty? }.sort.uniq.each do |t|
+    f.puts "%s: %s;" % [t, t.split(//).map { |c| c == "_" ? "'_'" : c }.join(' ')]
+  end
+  
+  ('A'..'Z').map do |letter|
+    f.puts("fragment %s: [%s%s];" % [letter, letter, letter.downcase]);
+  end 
 end
