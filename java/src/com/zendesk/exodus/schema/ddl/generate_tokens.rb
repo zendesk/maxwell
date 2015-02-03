@@ -55,8 +55,21 @@ SET
 NOT
 NULL
 DEFAULT
+
+AUTO_INCREMENT
+UNIQUE
+PRIMARY
+KEY
+COMMENT
+COLUMN_FORMAT
+FIXED
+DYNAMIC
+DEFAULT
+STORAGE
+DISK
+MEMORY
 )
 
 tokens.select { |t| !t.empty? }.sort.uniq.each do |t|
-  puts "%s: %s;" % [t, t.split(//).join(' ')]
+  puts "%s: %s;" % [t, t.split(//).map { |c| c == "_" ? "'_'" : c }.join(' ')]
 end

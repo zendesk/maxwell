@@ -1,24 +1,15 @@
 package com.zendesk.exodus.schema.ddl;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.antlr.runtime.Token;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.TerminalNode;
-import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.RuleContext;
-import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.antlr.v4.runtime.tree.ErrorNode;
 
 import com.zendesk.exodus.schema.columndef.ColumnDef;
-import com.zendesk.exodus.schema.columndef.StringColumnDef;
 import com.zendesk.exodus.schema.ddl.mysqlParser.Add_columnContext;
 import com.zendesk.exodus.schema.ddl.mysqlParser.Alter_tbl_preambleContext;
 import com.zendesk.exodus.schema.ddl.mysqlParser.Charset_defContext;
 import com.zendesk.exodus.schema.ddl.mysqlParser.Col_positionContext;
 import com.zendesk.exodus.schema.ddl.mysqlParser.Data_typeContext;
-import com.zendesk.exodus.schema.ddl.mysqlParser.Column_definitionContext;
 import com.zendesk.exodus.schema.ddl.mysqlParser.Int_flagsContext;
 
 abstract class ColumnMod {
@@ -79,6 +70,7 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 	@Override
 	public void visitErrorNode(ErrorNode node) {
 		this.alterStatement = null;
+		System.out.println(node.getParent().getText());
 		throw new ExodusSQLSyntaxRrror(node.getText());
 	}
 
@@ -90,11 +82,11 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 	public void exitAlter_tbl_preamble(Alter_tbl_preambleContext ctx) {
 		alterStatement = new TableAlter(currentDatabase);
 
-		if ( ctx.table_name().ID().size() > 1 ) {
-			alterStatement.database  = unquote(ctx.table_name().ID(0).getText());
-			alterStatement.tableName = unquote(ctx.table_name().ID(1).getText());
+		if ( ctx.table_name().id().size() > 1 ) {
+			alterStatement.database  = unquote(ctx.table_name().id(0).getText());
+			alterStatement.tableName = unquote(ctx.table_name().id(1).getText());
 		} else {
-			alterStatement.tableName = unquote(ctx.table_name().ID(0).getText());
+			alterStatement.tableName = unquote(ctx.table_name().id(0).getText());
 		}
 		System.out.println(alterStatement);
 	}
@@ -115,22 +107,17 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 		boolean signed = true;
 		Data_typeContext dctx = ctx.column_definition().data_type();
 
-		if ( dctx.bit_type() != null ) {
-			colType = dctx.bit_type().col_type.getText();
-		} else if ( dctx.int_type() != null ) {
-			colType = dctx.int_type().col_type.getText();
-			signed = isSigned(dctx.int_type().int_flags());
-		} else if ( dctx.decimal_type() != null ) {
-			colType = dctx.decimal_type().col_type.getText();
-			signed = isSigned(dctx.decimal_type().int_flags());
-		} else if ( dctx.binary_type() != null ) {
-			colType = dctx.binary_type().col_type.getText();
+		if ( dctx.generic_type() != null ) {
+			colType = dctx.generic_type().col_type.getText();
+		} else if ( dctx.signed_type() != null ) {
+			colType = dctx.signed_type().col_type.getText();
+			signed = isSigned(dctx.signed_type().int_flags());
 		} else if ( dctx.string_type() != null ) {
 			colType = dctx.string_type().col_type.getText();
 
 			Charset_defContext charsetDef = dctx.string_type().charset_def();
 			if ( charsetDef != null && charsetDef.character_set(0) != null ) {
-				colEncoding = charsetDef.character_set(0).getText();
+				colEncoding = charsetDef.character_set(0).IDENT().getText();
 			} else {
 				// BIG TODO: default to database,table,encodings
 				colEncoding = "utf8";
@@ -148,7 +135,7 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 				p.position = ColumnPosition.Position.FIRST;
 			} else if ( pctx.AFTER() != null ) {
 				p.position = ColumnPosition.Position.AFTER;
-				p.afterColumn = unquote(pctx.ID().getText());
+				p.afterColumn = unquote(pctx.id().getText());
 			}
 		}
 

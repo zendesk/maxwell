@@ -14,6 +14,7 @@ import org.junit.Test;
 
 import com.zendesk.exodus.schema.columndef.BigIntColumnDef;
 import com.zendesk.exodus.schema.columndef.IntColumnDef;
+import com.zendesk.exodus.schema.columndef.StringColumnDef;
 
 import ch.qos.logback.core.subst.Token;
 
@@ -80,7 +81,7 @@ public class DDLParserTest {
 	}
 
 	@Test
-	public void testColumnTypes_1() {
+	public void testIntColumnTypes_1() {
 		TableAlter a = parseAlter("alter table foo add column `int` int(11) unsigned not null AFTER `afterCol`");
 
 		AddColumnMod m = (AddColumnMod) a.columnMods.get(0);
@@ -94,7 +95,7 @@ public class DDLParserTest {
 	}
 
 	@Test
-	public void testColumnTypes_2() {
+	public void testIntColumnTypes_2() {
 		TableAlter a = parseAlter("alter table `fie` add column baz bigINT null");
 
 		AddColumnMod m = (AddColumnMod) a.columnMods.get(0);
@@ -105,5 +106,63 @@ public class DDLParserTest {
 		assertThat(b.getType(), is("bigint"));
 		assertThat(b.getSigned(), is(true));
 		assertThat(b.getName(), is("baz"));
+	}
+
+	@Test
+	public void testVarchar() {
+		TableAlter a = parseAlter("alter table no.no add column mocha varchar(255) character set latin1 not null");
+
+		AddColumnMod m = (AddColumnMod) a.columnMods.get(0);
+		assertThat(m.name, is("mocha"));
+		assertThat(m.definition.getTableName(), is("no"));
+
+		StringColumnDef b = (StringColumnDef) m.definition;
+		assertThat(b.getType(), is("varchar"));
+		assertThat(b.getEncoding(), is("latin1"));
+	}
+
+	@Test
+	public void testText() {
+		TableAlter a = parseAlter("alter table no.no add column mocha TEXT character set utf8 collate utf8_foo");
+
+		AddColumnMod m = (AddColumnMod) a.columnMods.get(0);
+		StringColumnDef b = (StringColumnDef) m.definition;
+		assertThat(b.getType(), is("text"));
+		assertThat(b.getEncoding(), is("utf8"));
+	}
+
+	@Test
+	public void testDefault() {
+		TableAlter a = parseAlter("alter table no.no add column mocha TEXT default 'hello'''''");
+
+		AddColumnMod m = (AddColumnMod) a.columnMods.get(0);
+		StringColumnDef b = (StringColumnDef) m.definition;
+		assertThat(b.getType(), is("text"));
+		assertThat(b.getEncoding(), is("utf8"));
+	}
+
+	@Test
+	public void testLots() {
+		TableAlter a = parseAlter("alter table bar add column m TEXT character set utf8 "
+				+ "default null "
+				+ "auto_increment "
+				+ "unique key "
+				+ "primary key "
+				+ "comment 'bar' "
+				+ "column_format fixed "
+				+ "storage disk");
+
+		AddColumnMod m = (AddColumnMod) a.columnMods.get(0);
+		StringColumnDef b = (StringColumnDef) m.definition;
+		assertThat(b.getType(), is("text"));
+		assertThat(b.getEncoding(), is("utf8"));
+	}
+
+	@Test
+	public void testMultipleColumns() {
+		TableAlter a = parseAlter("alter table bar add column m int(11) unsigned not null, add p varchar(255)");
+		assertThat(a.columnMods.size(), is(2));
+		assertThat(a.columnMods.get(0).name, is("m"));
+		assertThat(a.columnMods.get(1).name, is("p"));
 	}
 }
