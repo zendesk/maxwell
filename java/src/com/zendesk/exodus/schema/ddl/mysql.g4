@@ -1,71 +1,72 @@
 grammar mysql;
+import mysql_literal_tokens, mysql_idents;
 
 parse: alter_tbl_statement EOF;
 alter_tbl_statement: alter_tbl_preamble alter_specifications (engine_statement)?;
+
+alter_tbl_preamble: ALTER alter_flags? TABLE table_name;
+alter_flags: (ONLINE | OFFLINE | IGNORE);
+
 alter_specifications: alter_specification (',' alter_specification)*;
 alter_specification: add_column;
                 //   | add_column_parens
                  //  | add_index
                   // | add_constraint;
                    
-add_column: ADD COLUMN? col_name col_definition col_position?;
-col_definition: 'text';
+add_column: ADD COLUMN? col_name column_definition col_position?;
 col_position: FIRST | (AFTER ID);
 col_name: ID;
-                   
-                   
-alter_tbl_preamble: ALTER alter_flags? TABLE table_name;
-alter_flags: (ONLINE | OFFLINE | IGNORE);
-engine_statement: ENGINE '=' IDENT;
 
-ADD: A D D;
-AFTER: A F T E R;
-ALTER: A L T E R;
-COLUMN: C O L U M N;
-FIRST: F I R S T;
-TABLE: T A B L E;
-ONLINE: O N L I N E;
-OFFLINE: O F F L I N E;
-IGNORE: I G N O R E;
-ENGINE: E N G I N E;
+column_definition:
+	data_type 
+	(nullability)?
+	;
+
+data_type:
+	bit_type 
+	| int_type
+	| decimal_type
+	| flat_type
+	| binary_type
+	| varbinary_type
+	| string_type
+//	| enum_type
+//	| set_type
+	;
+		
+
+bit_type:        col_type=BIT LENGTH?;
+int_type:        col_type=(TINYINT | SMALLINT | MEDIUMINT | INT | INTEGER | BIGINT )   
+			     LENGTH?
+			     int_flags*
+			     ;
+decimal_type:    col_type=(REAL | DOUBLE | FLOAT | DECIMAL | NUMERIC)
+			     DECIMAL_LENGTH?
+			     int_flags*
+			     ; 
+
+flat_type:       col_type=(DATE | TIME | TIMESTAMP | DATETIME | YEAR | TINYBLOB | MEDIUMBLOB | LONGBLOB | BLOB );
+string_type:     col_type=(CHAR | VARCHAR | TINYTEXT | TEXT | MEDIUMTEXT | LONGTEXT) 
+			     charset_def?
+			     ;
+binary_type:     col_type=BINARY LENGTH?;
+varbinary_type:  col_type=VARBINARY LENGTH;
+
+
+charset_def: (character_set | collation)+;
+
+character_set: CHARACTER SET IDENT;
+collation: COLLATE IDENT;
+
+nullability: (NOT NULL | NULL);
+
+LENGTH: '(' [0-9]+ ')';
+int_flags: ( UNSIGNED | ZEROFILL );
+DECIMAL_LENGTH: '(' [0-9]+ ',' [0-9]+ ')';
+	 
+engine_statement: ENGINE '=' IDENT;
 
 table_name: ID
 		    | ID '.' ID;
-	
-ID: IDENT | QUOTED_IDENT;
 
-IDENT: (UNQUOTED_CHAR)+;
-UNQUOTED_CHAR: [0-9a-zA-Z\u0080-\u00FF$_];
-
-QUOTED_IDENT: '`' QUOTED_CHAR+? '`';
-
-fragment QUOTED_CHAR: ~('/' | '\\' | '.' | '`');
-fragment A:('a'|'A');
-fragment B:('b'|'B');
-fragment C:('c'|'C');
-fragment D:('d'|'D');
-fragment E:('e'|'E');
-fragment F:('f'|'F');
-fragment G:('g'|'G');
-fragment H:('h'|'H');
-fragment I:('i'|'I');
-fragment J:('j'|'J');
-fragment K:('k'|'K');
-fragment L:('l'|'L');
-fragment M:('m'|'M');
-fragment N:('n'|'N');
-fragment O:('o'|'O');
-fragment P:('p'|'P');
-fragment Q:('q'|'Q');
-fragment R:('r'|'R');
-fragment S:('s'|'S');
-fragment T:('t'|'T');
-fragment U:('u'|'U');
-fragment V:('v'|'V');
-fragment W:('w'|'W');
-fragment X:('x'|'X');
-fragment Y:('y'|'Y');
-fragment Z:('z'|'Z');
-
-
-WS  :   [ \t\n\r]+ -> skip ;
+// WS  :   [ \t\n\r]+ -> skip ;

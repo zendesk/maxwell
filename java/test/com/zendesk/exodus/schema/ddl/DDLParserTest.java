@@ -1,12 +1,10 @@
 package com.zendesk.exodus.schema.ddl;
 
-import static org.junit.Assert.*;
-
-import java.io.IOException;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.junit.After;
@@ -14,9 +12,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.zendesk.exodus.schema.ddl.ColumnPosition.Position;
+import com.zendesk.exodus.schema.columndef.BigIntColumnDef;
+import com.zendesk.exodus.schema.columndef.IntColumnDef;
 
-import static org.hamcrest.CoreMatchers.*;
+import ch.qos.logback.core.subst.Token;
 
 public class DDLParserTest {
 
@@ -37,6 +36,9 @@ public class DDLParserTest {
 		mysqlLexer lexer = new mysqlLexer(input);
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
 
+		for ( org.antlr.v4.runtime.Token t : tokens.getTokens()) {
+			System.out.println(t.toString());
+		}
 		// create a parser that feeds off the tokens buffer
 		mysqlParser parser = new mysqlParser(tokens);
 
@@ -46,6 +48,7 @@ public class DDLParserTest {
 		ParseTree tree = parser.parse();
 
 		ParseTreeWalker.DEFAULT.walk(listener, tree);
+		System.out.println(tree.toStringTree(parser));
 
 		return(listener.getAlterStatement());
 	}
@@ -74,5 +77,33 @@ public class DDLParserTest {
 
 		assertThat(m.position.position, is(ColumnPosition.Position.AFTER));
 		assertThat(m.position.afterColumn, is("afterCol"));
+	}
+
+	@Test
+	public void testColumnTypes_1() {
+		TableAlter a = parseAlter("alter table foo add column `int` int(11) unsigned not null AFTER `afterCol`");
+
+		AddColumnMod m = (AddColumnMod) a.columnMods.get(0);
+		assertThat(m.name, is("int"));
+
+		assertThat(m.definition, instanceOf(IntColumnDef.class));
+		IntColumnDef i = (IntColumnDef) m.definition;
+		assertThat(i.getName(), is("int"));
+		assertThat(i.getType(), is("int"));
+		assertThat(i.getSigned(), is(false));
+	}
+
+	@Test
+	public void testColumnTypes_2() {
+		TableAlter a = parseAlter("alter table `fie` add column baz bigINT null");
+
+		AddColumnMod m = (AddColumnMod) a.columnMods.get(0);
+		assertThat(m.name, is("baz"));
+		assertThat(m.definition.getTableName(), is("fie"));
+
+		BigIntColumnDef b = (BigIntColumnDef) m.definition;
+		assertThat(b.getType(), is("bigint"));
+		assertThat(b.getSigned(), is(true));
+		assertThat(b.getName(), is("baz"));
 	}
 }

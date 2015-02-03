@@ -34,4 +34,8 @@ public class BigIntColumnDef extends ColumnDef {
 	public Object asJSON(Object value) {
 		return toNumeric(value);
 	}
+
+	public Boolean getSigned() {
+		return signed;
+	}
 }

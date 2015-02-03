@@ -72,4 +72,9 @@ public class IntColumnDef extends ColumnDef {
 		}
 	}
 
+
+	public boolean getSigned() {
+		return signed;
+	}
+
 }
