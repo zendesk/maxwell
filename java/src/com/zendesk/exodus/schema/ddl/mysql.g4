@@ -13,14 +13,15 @@ alter_specification: add_column;
                  //  | add_index
                   // | add_constraint;
                    
-add_column: ADD COLUMN? col_name column_definition col_position?;
+add_column: ADD COLUMN? column_definition col_position?;
 col_position: FIRST | (AFTER id);
-col_name: id;
 
 column_definition:
+	col_name=id
 	data_type 
 	(column_options)*
 	;
+
 
 data_type:
     generic_type
@@ -29,7 +30,8 @@ data_type:
 //	| enum_type
 //	| set_type
 	;
-
+	
+// from http://dev.mysql.com/doc/refman/5.1/en/create-table.html
 generic_type: // types from which we're going to ignore any flags/length ars
 	  col_type=(BIT | BINARY) LENGTH?
 	| col_type=(DATE | TIME | TIMESTAMP | DATETIME | YEAR | TINYBLOB | MEDIUMBLOB | LONGBLOB | BLOB )

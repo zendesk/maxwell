@@ -9,6 +9,7 @@ import com.zendesk.exodus.schema.ddl.mysqlParser.Add_columnContext;
 import com.zendesk.exodus.schema.ddl.mysqlParser.Alter_tbl_preambleContext;
 import com.zendesk.exodus.schema.ddl.mysqlParser.Charset_defContext;
 import com.zendesk.exodus.schema.ddl.mysqlParser.Col_positionContext;
+import com.zendesk.exodus.schema.ddl.mysqlParser.Column_definitionContext;
 import com.zendesk.exodus.schema.ddl.mysqlParser.Data_typeContext;
 import com.zendesk.exodus.schema.ddl.mysqlParser.Int_flagsContext;
 
@@ -56,6 +57,7 @@ class ExodusSQLSyntaxRrror extends RuntimeException {
 
 public class ExodusMysqlParserListener extends mysqlBaseListener {
 	private TableAlter alterStatement;
+	private ColumnDef columnDef;
 
 	public TableAlter getAlterStatement() {
 		return alterStatement;
@@ -101,11 +103,13 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 	}
 
 	@Override
-	public void exitAdd_column(Add_columnContext ctx) {
-		String name = unquote(ctx.col_name().getText());
+	public void exitColumn_definition(mysqlParser.Column_definitionContext ctx) {
 		String colType = null, colEncoding = null;
 		boolean signed = true;
-		Data_typeContext dctx = ctx.column_definition().data_type();
+
+		String name = unquote(ctx.col_name.getText());
+
+		Data_typeContext dctx = ctx.data_type();
 
 		if ( dctx.generic_type() != null ) {
 			colType = dctx.generic_type().col_type.getText();
@@ -124,9 +128,11 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 			}
 		}
 
+		this.columnDef = ColumnDef.build(alterStatement.tableName, name, colEncoding, colType.toLowerCase(), -1, signed);
+	}
 
-		ColumnDef def = ColumnDef.build(alterStatement.tableName, name, colEncoding, colType.toLowerCase(), -1, signed);
-
+	@Override
+	public void exitAdd_column(Add_columnContext ctx) {
 		ColumnPosition p = new ColumnPosition();
 
 		Col_positionContext pctx = ctx.col_position();
@@ -139,7 +145,6 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 			}
 		}
 
-		System.out.println(ctx.column_definition().toStringTree());
-		alterStatement.columnMods.add(new AddColumnMod(name, def, p));
+		alterStatement.columnMods.add(new AddColumnMod(this.columnDef.getName(), this.columnDef, p));
 	}
 }
