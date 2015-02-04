@@ -64,6 +64,7 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 	}
 
 	private final String currentDatabase;
+	private ColumnPosition columnPosition;
 
 	ExodusMysqlParserListener(String currentDatabase)  {
 		this.currentDatabase = currentDatabase;
@@ -137,29 +138,53 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 		this.columnDefs.add(c);
 	}
 
+
 	@Override
 	public void exitAdd_column(Add_columnContext ctx) {
-		ColumnPosition p = new ColumnPosition();
-
-		Col_positionContext pctx = ctx.col_position();
-		if ( pctx != null ) {
-			if ( pctx.FIRST() != null ) {
-				p.position = ColumnPosition.Position.FIRST;
-			} else if ( pctx.AFTER() != null ) {
-				p.position = ColumnPosition.Position.AFTER;
-				p.afterColumn = unquote(pctx.id().getText());
-			}
-		}
+		ColumnPosition p = this.columnPosition;
+		this.columnPosition = null;
 
 		ColumnDef c = this.columnDefs.removeFirst();
 		alterStatement.columnMods.add(new AddColumnMod(c.getName(), c, p));
+
 	}
 
-	@Override public void exitAdd_column_parens(mysqlParser.Add_column_parensContext ctx) {
+	@Override
+	public void exitAdd_column_parens(mysqlParser.Add_column_parensContext ctx) {
 		while ( this.columnDefs.size() > 0 ) {
 			ColumnDef c = this.columnDefs.removeFirst();
 			// unable to choose a position in this form
-			alterStatement.columnMods.add(new AddColumnMod(c.getName(), c, new ColumnPosition()));
+			alterStatement.columnMods.add(new AddColumnMod(c.getName(), c, null));
+		}
+	}
+
+
+	@Override
+	public void exitChange_column(mysqlParser.Change_columnContext ctx) {
+		ColumnPosition p = this.columnPosition;
+		this.columnPosition = null;
+
+		String oldColumnName = unquote(ctx.old_col_name().getText());
+
+		ColumnDef c = this.columnDefs.removeFirst();
+		alterStatement.columnMods.add(new RemoveColumnMod(oldColumnName));
+		alterStatement.columnMods.add(new AddColumnMod(c.getName(), c, p));
+	}
+
+
+	@Override
+	public void exitDrop_column(mysqlParser.Drop_columnContext ctx) {
+		alterStatement.columnMods.add(new RemoveColumnMod(unquote(ctx.old_col_name().getText())));
+	}
+
+	@Override public void exitCol_position(mysqlParser.Col_positionContext ctx) {
+		this.columnPosition = new ColumnPosition();
+
+		if ( ctx.FIRST() != null ) {
+			this.columnPosition.position = ColumnPosition.Position.FIRST;
+		} else if ( ctx.AFTER() != null ) {
+			this.columnPosition.position = ColumnPosition.Position.AFTER;
+			this.columnPosition.afterColumn = unquote(ctx.id().getText());
 		}
 	}
 

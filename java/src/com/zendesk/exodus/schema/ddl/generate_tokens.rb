@@ -3,6 +3,7 @@ ADD
 AFTER
 ALTER
 BIT
+CHANGE
 COLLATE
 COLUMN
 ENGINE
@@ -83,6 +84,10 @@ SPATIAL
 FOREIGN
 
 DROP
+
+DISABLE
+ENABLE
+KEYS
 )
 
 File.open(File.dirname(__FILE__) + "/mysql_literal_tokens.g4", "w+") do |f|

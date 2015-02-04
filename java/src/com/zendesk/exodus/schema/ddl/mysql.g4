@@ -10,6 +10,8 @@ alter_flags: (ONLINE | OFFLINE | IGNORE);
 alter_specifications: alter_specification (',' alter_specification)*;
 alter_specification: add_column
                      | add_column_parens
+                     | change_column
+                     | drop_column
                      | ignored_alter_specifications
                      ; 
                 //   | add_column_parens
@@ -18,15 +20,17 @@ alter_specification: add_column
                    
 add_column: ADD COLUMN? column_definition col_position?;
 add_column_parens: ADD COLUMN? '(' column_definition (',' column_definition)* ')';
+change_column: CHANGE COLUMN? old_col_name column_definition col_position?;
+drop_column: DROP COLUMN? old_col_name;
 
 col_position: FIRST | (AFTER id);
-
 column_definition:
 	col_name=id
 	data_type 
 	(column_options)*
 	;
 
+old_col_name: id;
 
 data_type:
     generic_type

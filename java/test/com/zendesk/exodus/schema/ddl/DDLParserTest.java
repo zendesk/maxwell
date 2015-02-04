@@ -188,7 +188,10 @@ public class DDLParserTest {
 	       "alter table t alter column `foo` SET DEFAULT 1.2",
 	       "alter table t alter column `foo` SET DEFAULT 'foo'",
 	       "alter table t alter column `foo` drop default",
-
+	       "alter table t DROP PRIMARY KEY",
+	       "alter table t drop index `foo`",
+	       "alter table t disable keys",
+	       "alter table t enable keys"
 		};
 
 		for ( String s : testSQL ) {
@@ -196,6 +199,38 @@ public class DDLParserTest {
 			assertThat("Expected " + s + "to parse", a, not(nullValue()));
 		}
 
+	}
+
+	@Test
+	public void testChangeColumn() {
+		AddColumnMod add;
+		RemoveColumnMod remove;
+		TableAlter a = parseAlter("alter table c CHANGE column `foo` bar int(20) unsigned default 'foo' not null");
+
+		assertThat(a.columnMods.size(), is(2));
+
+		assertThat(a.columnMods.get(0), instanceOf(RemoveColumnMod.class));
+		assertThat(a.columnMods.get(1), instanceOf(AddColumnMod.class));
+
+		remove = (RemoveColumnMod) a.columnMods.get(0);
+		add = (AddColumnMod) a.columnMods.get(1);
+
+		assertThat(remove.name, is("foo"));
+		assertThat(add.name, is("bar"));
+	}
+
+	@Test
+	public void testDropColumn() {
+		RemoveColumnMod remove;
+		TableAlter a = parseAlter("alter table c drop column `drop`");
+
+		assertThat(a.columnMods.size(), is(1));
+
+		assertThat(a.columnMods.get(0), instanceOf(RemoveColumnMod.class));
+
+		remove = (RemoveColumnMod) a.columnMods.get(0);
+
+		assertThat(remove.name, is("drop"));
 	}
 
 }
