@@ -1,6 +1,9 @@
 grammar mysql_idents;
 
+id: ( IDENT | QUOTED_IDENT );
 literal: (INTEGER_LITERAL | STRING_LITERAL | FLOAT_LITERAL);
+charset_name: (IDENT | STRING_LITERAL);
+
 STRING_LITERAL: TICK ('\\\'' | '\'\'' | ~('\''))* TICK;
 
 FLOAT_LITERAL: DIGIT* '.' DIGIT+;

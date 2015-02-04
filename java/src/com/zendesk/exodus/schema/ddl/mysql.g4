@@ -1,5 +1,5 @@
 grammar mysql;
-import mysql_literal_tokens, mysql_idents;
+import mysql_literal_tokens, mysql_idents, column_definitions;
 
 parse: alter_tbl_statement EOF;
 alter_tbl_statement: alter_tbl_preamble alter_specifications (engine_statement)?;
@@ -33,67 +33,7 @@ default_character_set: DEFAULT? charset_token '=' charset_name ( COLLATE '=' (ID
 /* it's not documented, but either "charset 'utf8'" or "character set 'utf8'" is valid. */
 charset_token: (CHARSET | (CHARACTER SET));
 
-col_position: FIRST | (AFTER id);
-column_definition:
-	col_name=id
-	data_type 
-	(column_options)*
-	;
-
 old_col_name: id;
-
-data_type:
-    generic_type
-    | signed_type
-    | string_type
-//	| enum_type
-//	| set_type
-	;
-	
-// from http://dev.mysql.com/doc/refman/5.1/en/create-table.html
-generic_type: // types from which we're going to ignore any flags/length 
-	  col_type=(BIT | BINARY) length?
-	| col_type=(DATE | TIME | TIMESTAMP | DATETIME | YEAR | TINYBLOB | MEDIUMBLOB | LONGBLOB | BLOB )
-	| col_type=VARBINARY length
-	;
-
-signed_type: // we need the UNSIGNED flag here
-      col_type=(TINYINT | SMALLINT | MEDIUMINT | INT | INTEGER | BIGINT )   
-                length? 
-                int_flags*
-    | col_type=(REAL | DOUBLE | FLOAT | DECIMAL | NUMERIC)
-    		    decimal_length?
-			    int_flags*
-    ;
-
-string_type: // getting the encoding here 
-	  col_type=(CHAR | VARCHAR)
-	           length?
-	           charset_def?
-    | col_type=(TINYTEXT | TEXT | MEDIUMTEXT | LONGTEXT) 
-  		        charset_def?
-	  ;
-
-charset_def: (character_set | collation)+;
-
-character_set: CHARACTER SET charset_name;
-charset_name: (IDENT | STRING_LITERAL);
-
-collation: COLLATE (IDENT | STRING_LITERAL);
-
-column_options:
-	  nullability
-	| default_value
-	| (AUTO_INCREMENT)
-	| (UNIQUE | PRIMARY)? KEY 
-	| COMMENT STRING_LITERAL
-	| COLUMN_FORMAT (FIXED|DYNAMIC|DEFAULT)
-	| STORAGE (DISK|MEMORY|DEFAULT)
-;
-
-
-nullability: (NOT NULL | NULL);
-default_value: DEFAULT (literal | NULL);
 
 
 ignored_alter_specifications:
@@ -140,10 +80,6 @@ index_options:
 index_column_list: '(' id_list ')';
 id_list: id (',' id )*; 
 
-length: '(' INTEGER_LITERAL ')';
-int_flags: ( UNSIGNED | ZEROFILL );
-decimal_length: '(' INTEGER_LITERAL ',' INTEGER_LITERAL ')';
-	 
 engine_statement: ENGINE '=' IDENT;
 
 db_name: id '.';
@@ -151,6 +87,5 @@ table_name: (db_name id)
 			| id
 			;
 
-id: ( IDENT | QUOTED_IDENT );
 
 
