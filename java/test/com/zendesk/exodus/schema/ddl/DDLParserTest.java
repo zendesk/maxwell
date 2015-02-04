@@ -123,7 +123,7 @@ public class DDLParserTest {
 
 	@Test
 	public void testText() {
-		TableAlter a = parseAlter("alter table no.no add column mocha TEXT character set utf8 collate utf8_foo");
+		TableAlter a = parseAlter("alter table no.no add column mocha TEXT character set 'utf8' collate 'utf8_foo'");
 
 		AddColumnMod m = (AddColumnMod) a.columnMods.get(0);
 		StringColumnDef b = (StringColumnDef) m.definition;
@@ -191,7 +191,8 @@ public class DDLParserTest {
 	       "alter table t DROP PRIMARY KEY",
 	       "alter table t drop index `foo`",
 	       "alter table t disable keys",
-	       "alter table t enable keys"
+	       "alter table t enable keys",
+	       "alter table t order by `foor`, bar"
 		};
 
 		for ( String s : testSQL ) {
@@ -203,21 +204,31 @@ public class DDLParserTest {
 
 	@Test
 	public void testChangeColumn() {
-		AddColumnMod add;
-		RemoveColumnMod remove;
 		TableAlter a = parseAlter("alter table c CHANGE column `foo` bar int(20) unsigned default 'foo' not null");
 
-		assertThat(a.columnMods.size(), is(2));
+		assertThat(a.columnMods.size(), is(1));
+		assertThat(a.columnMods.get(0), instanceOf(ChangeColumnMod.class));
 
-		assertThat(a.columnMods.get(0), instanceOf(RemoveColumnMod.class));
-		assertThat(a.columnMods.get(1), instanceOf(AddColumnMod.class));
-
-		remove = (RemoveColumnMod) a.columnMods.get(0);
-		add = (AddColumnMod) a.columnMods.get(1);
-
-		assertThat(remove.name, is("foo"));
-		assertThat(add.name, is("bar"));
+		ChangeColumnMod c = (ChangeColumnMod) a.columnMods.get(0);
+		assertThat(c.name, is("foo"));
+		assertThat(c.definition.getName(), is("bar"));
+		assertThat(c.definition.getType(), is("int"));
 	}
+
+	@Test
+	public void testModifyColumn() {
+		TableAlter a = parseAlter("alter table c MODIFY column `foo` int(20) unsigned default 'foo' not null");
+
+		assertThat(a.columnMods.size(), is(1));
+		assertThat(a.columnMods.get(0), instanceOf(ChangeColumnMod.class));
+
+		ChangeColumnMod c = (ChangeColumnMod) a.columnMods.get(0);
+		assertThat(c.name, is("foo"));
+		assertThat(c.definition.getName(), is("foo"));
+
+		assertThat(c.definition.getType(), is("int"));
+	}
+
 
 	@Test
 	public void testDropColumn() {
@@ -233,4 +244,27 @@ public class DDLParserTest {
 		assertThat(remove.name, is("drop"));
 	}
 
+	@Test
+	public void testRenameTable() {
+		TableAlter a = parseAlter("alter table c rename to `foo`");
+
+		assertThat(a.newTableName, is("foo"));
+
+		a = parseAlter("alter table c rename to `foo`.`bar`");
+		assertThat(a.newDatabase, is("foo"));
+		assertThat(a.newTableName, is("bar"));
+	}
+
+
+	@Test
+	public void testConvertCharset() {
+		TableAlter a = parseAlter("alter table c convert to character set 'latin1'");
+		assertThat(a.convertCharset, is("latin1"));
+
+		a = parseAlter("alter table c charset=utf8");
+		assertThat(a.defaultCharset, is("utf8"));
+
+		a = parseAlter("alter table c character set = 'utf8'");
+		assertThat(a.defaultCharset, is("utf8"));
+	}
 }

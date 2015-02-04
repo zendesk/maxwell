@@ -10,6 +10,7 @@ ENGINE
 FIRST
 IGNORE
 MEDIUMINT
+MODIFY
 ONLINE
 OFFLINE
 SMALLINT
@@ -88,6 +89,18 @@ DROP
 DISABLE
 ENABLE
 KEYS
+
+RENAME
+TO
+AS
+
+ORDER
+BY
+
+CONVERT
+CHARSET
+
+
 )
 
 File.open(File.dirname(__FILE__) + "/mysql_literal_tokens.g4", "w+") do |f|

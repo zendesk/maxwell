@@ -9,9 +9,9 @@ import com.zendesk.exodus.schema.columndef.ColumnDef;
 import com.zendesk.exodus.schema.ddl.mysqlParser.Add_columnContext;
 import com.zendesk.exodus.schema.ddl.mysqlParser.Alter_tbl_preambleContext;
 import com.zendesk.exodus.schema.ddl.mysqlParser.Charset_defContext;
-import com.zendesk.exodus.schema.ddl.mysqlParser.Col_positionContext;
 import com.zendesk.exodus.schema.ddl.mysqlParser.Data_typeContext;
 import com.zendesk.exodus.schema.ddl.mysqlParser.Int_flagsContext;
+import com.zendesk.exodus.schema.ddl.mysqlParser.Table_nameContext;
 
 abstract class ColumnMod {
 	public String name;
@@ -37,6 +37,17 @@ class AddColumnMod extends ColumnMod {
 	public ColumnPosition position;
 
 	public AddColumnMod(String name, ColumnDef d, ColumnPosition position) {
+		super(name);
+		this.definition = d;
+		this.position = position;
+	}
+}
+
+class ChangeColumnMod extends ColumnMod {
+	public ColumnDef definition;
+	public ColumnPosition position;
+
+	public ChangeColumnMod(String name, ColumnDef d, ColumnPosition position ) {
 		super(name);
 		this.definition = d;
 		this.position = position;
@@ -70,6 +81,26 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 		this.currentDatabase = currentDatabase;
 	}
 
+	private String unquote(String ident) {
+		return ident.replaceAll("^`", "").replaceAll("`$", "");
+	}
+
+	private String unquote_literal(String ident) {
+		return ident.replaceAll("^'", "").replaceAll("'$", "");
+	}
+
+	private String getDB(Table_nameContext t) {
+		if ( t.db_name() != null )
+			return unquote(t.db_name().id().getText());
+		else
+			return null;
+	}
+
+	private String getTable(Table_nameContext t) {
+		return unquote(t.id().getText());
+	}
+
+
 	@Override
 	public void visitErrorNode(ErrorNode node) {
 		this.alterStatement = null;
@@ -77,20 +108,13 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 		throw new ExodusSQLSyntaxRrror(node.getText());
 	}
 
-	private String unquote(String ident) {
-		return ident.replaceAll("^`", "").replaceAll("`$", "");
-	}
-
 	@Override
 	public void exitAlter_tbl_preamble(Alter_tbl_preambleContext ctx) {
 		alterStatement = new TableAlter(currentDatabase);
 
-		if ( ctx.table_name().id().size() > 1 ) {
-			alterStatement.database  = unquote(ctx.table_name().id(0).getText());
-			alterStatement.tableName = unquote(ctx.table_name().id(1).getText());
-		} else {
-			alterStatement.tableName = unquote(ctx.table_name().id(0).getText());
-		}
+		alterStatement.database  = getDB(ctx.table_name());
+		alterStatement.tableName = getTable(ctx.table_name());
+
 		System.out.println(alterStatement);
 	}
 
@@ -122,7 +146,7 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 
 			Charset_defContext charsetDef = dctx.string_type().charset_def();
 			if ( charsetDef != null && charsetDef.character_set(0) != null ) {
-				colEncoding = charsetDef.character_set(0).IDENT().getText();
+				colEncoding = unquote_literal(charsetDef.character_set(0).charset_name().getText());
 			} else {
 				// BIG TODO: default to database,table,encodings
 				colEncoding = "utf8";
@@ -139,14 +163,18 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 	}
 
 
-	@Override
-	public void exitAdd_column(Add_columnContext ctx) {
+	private ColumnPosition getColumnPosition() {
+		// any time there's a possibility of a column position, we'll
+		// want to clear it out so we don't re-use it next time.  visitors might be better in this case.
 		ColumnPosition p = this.columnPosition;
 		this.columnPosition = null;
+		return p;
+	}
 
+	@Override
+	public void exitAdd_column(Add_columnContext ctx) {
 		ColumnDef c = this.columnDefs.removeFirst();
-		alterStatement.columnMods.add(new AddColumnMod(c.getName(), c, p));
-
+		alterStatement.columnMods.add(new AddColumnMod(c.getName(), c, getColumnPosition()));
 	}
 
 	@Override
@@ -161,16 +189,18 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 
 	@Override
 	public void exitChange_column(mysqlParser.Change_columnContext ctx) {
-		ColumnPosition p = this.columnPosition;
-		this.columnPosition = null;
-
 		String oldColumnName = unquote(ctx.old_col_name().getText());
 
 		ColumnDef c = this.columnDefs.removeFirst();
-		alterStatement.columnMods.add(new RemoveColumnMod(oldColumnName));
-		alterStatement.columnMods.add(new AddColumnMod(c.getName(), c, p));
+		alterStatement.columnMods.add(new ChangeColumnMod(oldColumnName, c, getColumnPosition()));
 	}
 
+	//@Override
+	@Override
+	public void exitModify_column(mysqlParser.Modify_columnContext ctx) {
+		ColumnDef c = this.columnDefs.removeFirst();
+		alterStatement.columnMods.add(new ChangeColumnMod(c.getName(), c, getColumnPosition()));
+	}
 
 	@Override
 	public void exitDrop_column(mysqlParser.Drop_columnContext ctx) {
@@ -188,4 +218,17 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 		}
 	}
 
+	@Override
+	public void exitRename_table(mysqlParser.Rename_tableContext ctx) {
+		alterStatement.newTableName = getTable(ctx.table_name());
+		alterStatement.newDatabase  = getDB(ctx.table_name());
+	}
+	@Override
+	public void exitConvert_to_character_set(mysqlParser.Convert_to_character_setContext ctx) {
+		alterStatement.convertCharset = unquote_literal(ctx.charset_name().getText());
+	}
+
+	@Override public void exitDefault_character_set(mysqlParser.Default_character_setContext ctx) {
+		alterStatement.defaultCharset = unquote_literal(ctx.charset_name().getText());
+	}
 }
