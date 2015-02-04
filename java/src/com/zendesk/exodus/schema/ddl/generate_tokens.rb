@@ -81,6 +81,8 @@ KEY
 FULLTEXT
 SPATIAL
 FOREIGN
+
+DROP
 )
 
 File.open(File.dirname(__FILE__) + "/mysql_literal_tokens.g4", "w+") do |f|

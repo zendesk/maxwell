@@ -72,7 +72,7 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 	@Override
 	public void visitErrorNode(ErrorNode node) {
 		this.alterStatement = null;
-		System.out.println(node.getParent().getText());
+		System.out.println(node.getParent().toStringTree(new mysqlParser(null)));
 		throw new ExodusSQLSyntaxRrror(node.getText());
 	}
 

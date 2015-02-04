@@ -2,8 +2,10 @@ grammar mysql_idents;
 
 literal: (INTEGER_LITERAL | STRING_LITERAL | FLOAT_LITERAL);
 STRING_LITERAL: TICK ('\\\'' | '\'\'' | ~('\''))* TICK;
-INTEGER_LITERAL: DIGIT+;
+
 FLOAT_LITERAL: DIGIT* '.' DIGIT+;
+
+INTEGER_LITERAL: DIGIT+;
 
 fragment TICK: '\'';
 

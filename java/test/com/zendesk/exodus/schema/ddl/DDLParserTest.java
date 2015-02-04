@@ -175,7 +175,7 @@ public class DDLParserTest {
 	}
 
 	@Test
-	public void AddIndexParsing() {
+	public void testParsingSomeAlters() {
 		String testSQL[] = {
 	       "alter table t add index `foo` using btree (`a`, `cd`) key_block_size=123",
 	       "alter table t add key bar (d)",
@@ -183,7 +183,12 @@ public class DDLParserTest {
 	       "alter table t add primary key (`id`)",
 	       "alter table t add constraint unique key (`id`)",
 	       "alter table t add fulltext key (`id`)",
-	       "alter table t add spatial key (`id`)"
+	       "alter table t add spatial key (`id`)",
+	       "alter table t alter column `foo` SET DEFAULT 112312",
+	       "alter table t alter column `foo` SET DEFAULT 1.2",
+	       "alter table t alter column `foo` SET DEFAULT 'foo'",
+	       "alter table t alter column `foo` drop default",
+
 		};
 
 		for ( String s : testSQL ) {

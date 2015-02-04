@@ -80,12 +80,14 @@ column_options:
 nullability: (NOT NULL | NULL);
 default_value: DEFAULT (literal | NULL);
 
+
 ignored_alter_specifications:
 	  ADD index_or_key id_name? index_type? index_column_list index_options*
     | ADD index_constraint? PRIMARY KEY index_type? index_column_list index_options*
     | ADD index_constraint? UNIQUE index_or_key id_name? index_type? index_column_list index_options*
     | ADD (FULLTEXT | SPATIAL) index_or_key id_name? index_column_list index_options*
     | ADD index_constraint? FOREIGN KEY id_name? index_column_list
+    | ALTER COLUMN? id ((SET DEFAULT literal) | (DROP DEFAULT))
     ; 
     
 index_or_key: (INDEX|KEY);
