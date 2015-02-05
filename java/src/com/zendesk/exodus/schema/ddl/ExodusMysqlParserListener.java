@@ -95,13 +95,13 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 
 	private String getDB(Table_nameContext t) {
 		if ( t.db_name() != null )
-			return unquote(t.db_name().id().getText());
+			return unquote(t.db_name().name().getText());
 		else
 			return null;
 	}
 
 	private String getTable(Table_nameContext t) {
-		return unquote(t.id().getText());
+		return unquote(t.name().getText());
 	}
 
 

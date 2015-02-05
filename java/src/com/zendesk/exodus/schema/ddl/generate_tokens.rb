@@ -1,3 +1,7 @@
+#!/usr/bin/env ruby
+
+require 'mysql2'
+
 tokens = %w(
 ADD
 AFTER
@@ -108,15 +112,40 @@ CHARSET
 
 )
 
+tokens_allowed_in_names = []
+
+tokens = tokens.select { |t| !t.empty? }.sort.uniq
+
+$connection = Mysql2::Client.new(:database => 'test')
+
+def discover_token_availability(tokens, array, sql)
+  tokens.each do |token|
+    begin
+      $connection.query(sql % token)
+      array.push(token)
+    rescue Mysql2::Error => e
+      if e.message !~ /You have an error in your SQL syntax/
+        array.push(token)
+      end
+    end
+  end
+end
+
+$connection.query("CREATE TABLE if not exists column_test ( id int(11) )")
+discover_token_availability(tokens, tokens_allowed_in_names, "ALTER TABLE column_test add column %s int(11)");
+
+
 File.open(File.dirname(__FILE__) + "/mysql_literal_tokens.g4", "w+") do |f|
-  f.puts("lexer grammar mysql_literal_tokens;")
+  f.puts("grammar mysql_literal_tokens;")
   f.puts
-  
+  f.puts("tokens_available_for_names: (%s);" % tokens_allowed_in_names.join(" | "))
+  f.puts
+
   tokens.select { |t| !t.empty? }.sort.uniq.each do |t|
     f.puts "%s: %s;" % [t, t.split(//).map { |c| c == "_" ? "'_'" : c }.join(' ')]
   end
-  
+
   ('A'..'Z').map do |letter|
     f.puts("fragment %s: [%s%s];" % [letter, letter, letter.downcase]);
-  end 
+  end
 end

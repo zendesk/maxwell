@@ -58,16 +58,16 @@ default_character_set: DEFAULT? charset_token '=' charset_name ( COLLATE '=' (ID
 /* it's not documented, but either "charset 'utf8'" or "character set 'utf8'" is valid. */
 charset_token: (CHARSET | (CHARACTER SET));
 
-old_col_name: id;
+old_col_name: name;
 
 ignored_alter_specifications:
 	  ADD index_definition
-    | ALTER COLUMN? id ((SET DEFAULT literal) | (DROP DEFAULT))
+    | ALTER COLUMN? name ((SET DEFAULT literal) | (DROP DEFAULT))
     | DROP PRIMARY KEY
     | DROP INDEX index_name
     | DISABLE KEYS
     | ENABLE KEYS
-    | ORDER BY id_list
+    | ORDER BY name_list
     /* 
      I'm also leaving out the following from the alter table definition because who cares:
      | DISCARD TABLESPACE
@@ -110,23 +110,24 @@ index_type_5:
 	
  
 index_or_key: (INDEX|KEY);
-index_constraint: (CONSTRAINT id?);
-index_name: id;
+index_constraint: (CONSTRAINT name?);
+index_name: name;
 index_type: USING (BTREE | HASH);
 index_options: 
 	( KEY_BLOCK_SIZE '=' INTEGER_LITERAL )
 	| index_type
-	| WITH PARSER id // no idea if 'parser_name' is an id.  seems like a decent assumption.
+	| WITH PARSER name // no idea if 'parser_name' is an id.  seems like a decent assumption.
 	; 
-index_column_list: '(' id_list ')';
-id_list: id (',' id )*; 
+index_column_list: '(' name_list ')';
+name_list: name (',' name )*; 
 
 engine_statement: ENGINE '=' IDENT;
 
-db_name: id '.';
-table_name: (db_name id)
-			| id
+db_name: name '.';
+table_name: (db_name name)
+			| name
 			;
 
+name: id | tokens_available_for_names;
 
 
