@@ -64,6 +64,7 @@ class ExodusSQLSyntaxRrror extends RuntimeException {
 }
 
 public class ExodusMysqlParserListener extends mysqlBaseListener {
+	private String tableName;
 	private TableAlter alterStatement;
 	private TableCreate createStatement;
 	private final String currentDatabase;
@@ -129,10 +130,11 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 
 	@Override
 	public void exitAlter_tbl_preamble(Alter_tbl_preambleContext ctx) {
+
 		alterStatement = new TableAlter(currentDatabase);
 
 		alterStatement.database  = getDB(ctx.table_name());
-		alterStatement.tableName = getTable(ctx.table_name());
+		this.tableName = alterStatement.tableName = getTable(ctx.table_name());
 
 		System.out.println(alterStatement);
 	}
@@ -192,6 +194,18 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 	}
 
 	@Override
+	public void exitCreate_tbl_preamble(Create_tbl_preambleContext ctx) {
+		this.createStatement = new TableCreate();
+		this.createStatement.database  = getDB(ctx.table_name());
+		this.tableName = this.createStatement.tableName = getTable(ctx.table_name());
+	}
+
+	@Override
+	public void exitCreate_specifications(Create_specificationsContext ctx) {
+		this.createStatement.columns.addAll(this.columnDefs);
+	}
+
+	@Override
 	public void exitColumn_definition(mysqlParser.Column_definitionContext ctx) {
 		String colType = null, colEncoding = null;
 		boolean signed = true;
@@ -217,7 +231,7 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 			}
 		}
 
-		ColumnDef c = ColumnDef.build(alterStatement.tableName,
+		ColumnDef c = ColumnDef.build(this.tableName,
 					                   name,
 					                   colEncoding,
 					                   colType.toLowerCase(),

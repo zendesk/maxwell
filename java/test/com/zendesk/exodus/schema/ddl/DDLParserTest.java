@@ -273,4 +273,28 @@ public class DDLParserTest {
 		a = parseAlter("alter table c character set = 'utf8'");
 		assertThat(a.defaultCharset, is("utf8"));
 	}
+
+	@Test
+	public void testCreateTable() {
+		TableCreate c = parseCreate("CREATE TABLE `foo` ( id int(11) auto_increment not null, `textcol` mediumtext character set 'utf8' not null )");
+
+		assertThat(c.database,  is(nullValue()));
+		assertThat(c.tableName, is("foo"));
+		assertThat(c.columns.size(), is(2));
+		assertThat(c.columns.get(0).getName(), is("id"));
+		assertThat(c.columns.get(1).getName(), is("textcol"));
+	}
+
+	@Test
+	public void testCreateTableWithIndexes() {
+		TableCreate c = parseCreate(
+				"CREATE TABLE `bar`.`foo` ("
+			  	  + "id int(11) auto_increment PRIMARY KEY, "
+				  + "dt datetime, "
+				  + "KEY `index_on_datetime` (dt), "
+				  + "KEY (`something else`), "
+				  + "INDEX USING BTREE (yet_again)"
+				+ ")");
+		assertThat(c, not(nullValue()));
+	}
 }
