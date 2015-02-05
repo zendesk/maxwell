@@ -6,12 +6,7 @@ import java.util.List;
 import org.antlr.v4.runtime.tree.ErrorNode;
 
 import com.zendesk.exodus.schema.columndef.ColumnDef;
-import com.zendesk.exodus.schema.ddl.mysqlParser.Add_columnContext;
-import com.zendesk.exodus.schema.ddl.mysqlParser.Alter_tbl_preambleContext;
-import com.zendesk.exodus.schema.ddl.mysqlParser.Charset_defContext;
-import com.zendesk.exodus.schema.ddl.mysqlParser.Data_typeContext;
-import com.zendesk.exodus.schema.ddl.mysqlParser.Int_flagsContext;
-import com.zendesk.exodus.schema.ddl.mysqlParser.Table_nameContext;
+import com.zendesk.exodus.schema.ddl.mysqlParser.*;
 
 abstract class ColumnMod {
 	public String name;
@@ -61,6 +56,8 @@ class RemoveColumnMod extends ColumnMod {
 }
 
 class ExodusSQLSyntaxRrror extends RuntimeException {
+	private static final long serialVersionUID = 140545518818187219L;
+
 	public ExodusSQLSyntaxRrror(String message) {
 		super(message);
 	}
@@ -68,14 +65,20 @@ class ExodusSQLSyntaxRrror extends RuntimeException {
 
 public class ExodusMysqlParserListener extends mysqlBaseListener {
 	private TableAlter alterStatement;
+	private TableCreate createStatement;
+	private final String currentDatabase;
+	private ColumnPosition columnPosition;
+
+
 	private final LinkedList<ColumnDef> columnDefs = new LinkedList<>();
 
 	public TableAlter getAlterStatement() {
 		return alterStatement;
 	}
 
-	private final String currentDatabase;
-	private ColumnPosition columnPosition;
+	public TableCreate getCreateStatement() {
+		return createStatement;
+	}
 
 	ExodusMysqlParserListener(String currentDatabase)  {
 		this.currentDatabase = currentDatabase;
@@ -107,6 +110,22 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 		System.out.println(node.getParent().toStringTree(new mysqlParser(null)));
 		throw new ExodusSQLSyntaxRrror(node.getText());
 	}
+	private boolean isSigned(List<Int_flagsContext> flags) {
+		for ( Int_flagsContext flag : flags ) {
+			if ( flag.UNSIGNED() != null ) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private ColumnPosition getColumnPosition() {
+		// any time there's a possibility of a column position, we'll
+		// want to clear it out so we don't re-use it next time.  visitors might be better in this case.
+		ColumnPosition p = this.columnPosition;
+		this.columnPosition = null;
+		return p;
+	}
 
 	@Override
 	public void exitAlter_tbl_preamble(Alter_tbl_preambleContext ctx) {
@@ -118,13 +137,58 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 		System.out.println(alterStatement);
 	}
 
-	private boolean isSigned(List<Int_flagsContext> flags) {
-		for ( Int_flagsContext flag : flags ) {
-			if ( flag.UNSIGNED() != null ) {
-				return false;
-			}
+	@Override
+	public void exitAdd_column(Add_columnContext ctx) {
+		ColumnDef c = this.columnDefs.removeFirst();
+		alterStatement.columnMods.add(new AddColumnMod(c.getName(), c, getColumnPosition()));
+	}
+	@Override
+	public void exitAdd_column_parens(mysqlParser.Add_column_parensContext ctx) {
+		while ( this.columnDefs.size() > 0 ) {
+			ColumnDef c = this.columnDefs.removeFirst();
+			// unable to choose a position in this form
+			alterStatement.columnMods.add(new AddColumnMod(c.getName(), c, null));
 		}
-		return true;
+	}
+	@Override
+	public void exitChange_column(mysqlParser.Change_columnContext ctx) {
+		String oldColumnName = unquote(ctx.old_col_name().getText());
+
+		ColumnDef c = this.columnDefs.removeFirst();
+		alterStatement.columnMods.add(new ChangeColumnMod(oldColumnName, c, getColumnPosition()));
+	}
+	@Override
+	public void exitModify_column(mysqlParser.Modify_columnContext ctx) {
+		ColumnDef c = this.columnDefs.removeFirst();
+		alterStatement.columnMods.add(new ChangeColumnMod(c.getName(), c, getColumnPosition()));
+	}
+	@Override
+	public void exitDrop_column(mysqlParser.Drop_columnContext ctx) {
+		alterStatement.columnMods.add(new RemoveColumnMod(unquote(ctx.old_col_name().getText())));
+	}
+	@Override
+	public void exitCol_position(mysqlParser.Col_positionContext ctx) {
+		this.columnPosition = new ColumnPosition();
+
+		if ( ctx.FIRST() != null ) {
+			this.columnPosition.position = ColumnPosition.Position.FIRST;
+		} else if ( ctx.AFTER() != null ) {
+			this.columnPosition.position = ColumnPosition.Position.AFTER;
+			this.columnPosition.afterColumn = unquote(ctx.id().getText());
+		}
+	}
+	@Override
+	public void exitRename_table(mysqlParser.Rename_tableContext ctx) {
+		alterStatement.newTableName = getTable(ctx.table_name());
+		alterStatement.newDatabase  = getDB(ctx.table_name());
+	}
+	@Override
+	public void exitConvert_to_character_set(mysqlParser.Convert_to_character_setContext ctx) {
+		alterStatement.convertCharset = unquote_literal(ctx.charset_name().getText());
+	}
+	@Override
+	public void exitDefault_character_set(mysqlParser.Default_character_setContext ctx) {
+		alterStatement.defaultCharset = unquote_literal(ctx.charset_name().getText());
 	}
 
 	@Override
@@ -162,73 +226,4 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 		this.columnDefs.add(c);
 	}
 
-
-	private ColumnPosition getColumnPosition() {
-		// any time there's a possibility of a column position, we'll
-		// want to clear it out so we don't re-use it next time.  visitors might be better in this case.
-		ColumnPosition p = this.columnPosition;
-		this.columnPosition = null;
-		return p;
-	}
-
-	@Override
-	public void exitAdd_column(Add_columnContext ctx) {
-		ColumnDef c = this.columnDefs.removeFirst();
-		alterStatement.columnMods.add(new AddColumnMod(c.getName(), c, getColumnPosition()));
-	}
-
-	@Override
-	public void exitAdd_column_parens(mysqlParser.Add_column_parensContext ctx) {
-		while ( this.columnDefs.size() > 0 ) {
-			ColumnDef c = this.columnDefs.removeFirst();
-			// unable to choose a position in this form
-			alterStatement.columnMods.add(new AddColumnMod(c.getName(), c, null));
-		}
-	}
-
-
-	@Override
-	public void exitChange_column(mysqlParser.Change_columnContext ctx) {
-		String oldColumnName = unquote(ctx.old_col_name().getText());
-
-		ColumnDef c = this.columnDefs.removeFirst();
-		alterStatement.columnMods.add(new ChangeColumnMod(oldColumnName, c, getColumnPosition()));
-	}
-
-	//@Override
-	@Override
-	public void exitModify_column(mysqlParser.Modify_columnContext ctx) {
-		ColumnDef c = this.columnDefs.removeFirst();
-		alterStatement.columnMods.add(new ChangeColumnMod(c.getName(), c, getColumnPosition()));
-	}
-
-	@Override
-	public void exitDrop_column(mysqlParser.Drop_columnContext ctx) {
-		alterStatement.columnMods.add(new RemoveColumnMod(unquote(ctx.old_col_name().getText())));
-	}
-
-	@Override public void exitCol_position(mysqlParser.Col_positionContext ctx) {
-		this.columnPosition = new ColumnPosition();
-
-		if ( ctx.FIRST() != null ) {
-			this.columnPosition.position = ColumnPosition.Position.FIRST;
-		} else if ( ctx.AFTER() != null ) {
-			this.columnPosition.position = ColumnPosition.Position.AFTER;
-			this.columnPosition.afterColumn = unquote(ctx.id().getText());
-		}
-	}
-
-	@Override
-	public void exitRename_table(mysqlParser.Rename_tableContext ctx) {
-		alterStatement.newTableName = getTable(ctx.table_name());
-		alterStatement.newDatabase  = getDB(ctx.table_name());
-	}
-	@Override
-	public void exitConvert_to_character_set(mysqlParser.Convert_to_character_setContext ctx) {
-		alterStatement.convertCharset = unquote_literal(ctx.charset_name().getText());
-	}
-
-	@Override public void exitDefault_character_set(mysqlParser.Default_character_setContext ctx) {
-		alterStatement.defaultCharset = unquote_literal(ctx.charset_name().getText());
-	}
 }
