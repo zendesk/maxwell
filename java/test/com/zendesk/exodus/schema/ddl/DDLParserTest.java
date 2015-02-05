@@ -297,4 +297,17 @@ public class DDLParserTest {
 				+ ")");
 		assertThat(c, not(nullValue()));
 	}
+
+	@Test
+	public void testCreateTableWithOptions() {
+		TableCreate c = parseCreate(
+				"CREATE TABLE `bar`.`foo` ("
+			  	  + "id int(11) auto_increment PRIMARY KEY"
+				+ ") "
+			  	+ "ENGINE=innodb "
+				+ "CHARACTER SET='latin1 "
+			  	+ "ROW_FORMAT=FIXED"
+		);
+		assertThat(c, not(nullValue()));
+	}
 }

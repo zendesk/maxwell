@@ -1,5 +1,5 @@
 grammar mysql;
-import mysql_literal_tokens, mysql_idents, column_definitions;
+import mysql_literal_tokens, mysql_idents, column_definitions, table_creation_options;
 
 parse: statement
        EOF;
@@ -11,13 +11,13 @@ statement:
 create_tbl_statement: 
     create_tbl_preamble 
     ( 
-      ( create_specifications table_options* )
+      ( create_specifications table_creation_options* )
       | create_like_tbl
     );
     
 
 create_tbl_preamble: CREATE TEMPORARY? TABLE (IF NOT EXISTS)? table_name;
-create_specifications: '(' create_specification (',' create_specification)+ ')'; 
+create_specifications: '(' create_specification (',' create_specification)* ')'; 
 
 create_specification: 
 	column_definition 
@@ -25,8 +25,6 @@ create_specification:
 		
 
 create_like_tbl: LIKE table_name;
-
-table_options: IDENT;
 
 alter_tbl_statement: alter_tbl_preamble alter_specifications (engine_statement)?;
 
