@@ -16,8 +16,6 @@ import com.zendesk.exodus.schema.columndef.BigIntColumnDef;
 import com.zendesk.exodus.schema.columndef.IntColumnDef;
 import com.zendesk.exodus.schema.columndef.StringColumnDef;
 
-import ch.qos.logback.core.subst.Token;
-
 public class DDLParserTest {
 
 	@BeforeClass
@@ -32,8 +30,8 @@ public class DDLParserTest {
 	public void tearDown() throws Exception {
 	}
 
-	private TableAlter parseAlter(String testAlter) {
-		ANTLRInputStream input = new ANTLRInputStream(testAlter);
+	private ExodusMysqlParserListener parse(String sql) {
+		ANTLRInputStream input = new ANTLRInputStream(sql);
 		mysqlLexer lexer = new mysqlLexer(input);
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
 
@@ -45,13 +43,21 @@ public class DDLParserTest {
 
 		ExodusMysqlParserListener listener = new ExodusMysqlParserListener("default_db");
 
-		System.out.println("Running parse on " + testAlter);
+		System.out.println("Running parse on " + sql);
 		ParseTree tree = parser.parse();
 
 		ParseTreeWalker.DEFAULT.walk(listener, tree);
 		System.out.println(tree.toStringTree(parser));
 
-		return(listener.getAlterStatement());
+		return(listener);
+	}
+
+	private TableAlter parseAlter(String testAlter) {
+		return parse(testAlter).getAlterStatement();
+	}
+
+	private TableCreate parseCreate(String testCreate) {
+		return parse(testCreate).getCreateStatement();
 	}
 
 	@Test

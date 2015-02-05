@@ -1,12 +1,37 @@
 grammar mysql;
 import mysql_literal_tokens, mysql_idents, column_definitions;
 
-parse: alter_tbl_statement EOF;
+parse: statement
+       EOF;
+
+statement:
+	alter_tbl_statement 
+    | create_tbl_statement;
+
+create_tbl_statement: 
+    create_tbl_preamble 
+    ( 
+      ( create_specifications table_options* )
+      | create_like_tbl
+    );
+    
+
+create_tbl_preamble: CREATE TEMPORARY? TABLE (IF NOT EXISTS)? table_name;
+create_specifications: '(' create_specification (',' create_specification)+ ')'; 
+
+create_specification: 
+	column_definition 
+	| index_definition;
+		
+
+create_like_tbl: LIKE table_name;
+
+table_options: IDENT;
+
 alter_tbl_statement: alter_tbl_preamble alter_specifications (engine_statement)?;
 
 alter_tbl_preamble: ALTER alter_flags? TABLE table_name;
 alter_flags: (ONLINE | OFFLINE | IGNORE);
-
 
 alter_specifications: alter_specification (',' alter_specification)*;
 alter_specification: add_column
@@ -35,13 +60,8 @@ charset_token: (CHARSET | (CHARACTER SET));
 
 old_col_name: id;
 
-
 ignored_alter_specifications:
-	  ADD index_or_key index_name? index_type? index_column_list index_options*
-    | ADD index_constraint? PRIMARY KEY index_type? index_column_list index_options*
-    | ADD index_constraint? UNIQUE index_or_key index_name? index_type? index_column_list index_options*
-    | ADD (FULLTEXT | SPATIAL) index_or_key index_name? index_column_list index_options*
-    | ADD index_constraint? FOREIGN KEY index_name? index_column_list
+	  ADD index_definition
     | ALTER COLUMN? id ((SET DEFAULT literal) | (DROP DEFAULT))
     | DROP PRIMARY KEY
     | DROP INDEX index_name
@@ -67,7 +87,28 @@ ignored_alter_specifications:
      because who cares.
      */
     ; 
-    
+
+index_definition:
+	(index_type_1 | index_type_2 | index_type_3 | index_type_4 | index_type_5 );
+	
+index_type_1:
+	index_or_key index_name? index_type? index_column_list index_options*;
+
+index_type_2:
+	index_constraint? PRIMARY KEY index_type? index_column_list index_options*;
+
+index_type_3:	
+	index_constraint? UNIQUE index_or_key index_name? index_type? index_column_list index_options*;
+
+index_type_4:
+	(FULLTEXT | SPATIAL) index_or_key index_name? index_column_list index_options*;
+	
+index_type_5:
+	index_constraint? FOREIGN KEY index_name? index_column_list;
+	
+// TODO: foreign key references.  goddamn.
+	
+ 
 index_or_key: (INDEX|KEY);
 index_constraint: (CONSTRAINT id?);
 index_name: id;
