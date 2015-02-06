@@ -3,9 +3,9 @@ package com.zendesk.exodus.schema.columndef;
 import com.google.code.or.common.util.MySQLConstants;
 
 
+
 public class IntColumnDef extends ColumnDef {
 	private final int bits;
-	private final boolean signed;
 
 	public IntColumnDef(String tableName, String name, String type, int pos, boolean signed) {
 		super(tableName, name, type, pos);

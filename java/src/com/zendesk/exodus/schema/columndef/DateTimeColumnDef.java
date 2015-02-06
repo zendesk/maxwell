@@ -8,7 +8,6 @@ import java.util.TimeZone;
 import com.google.code.or.common.util.MySQLConstants;
 
 public class DateTimeColumnDef extends ColumnDef {
-
 	public DateTimeColumnDef(String tableName, String name, String type, int pos) {
 		super(tableName, name, type, pos);
 	}

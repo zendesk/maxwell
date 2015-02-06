@@ -1,22 +1,12 @@
 package com.zendesk.exodus;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-
-import com.google.code.or.binlog.BinlogEventV4;
-import com.zendesk.exodus.schema.Schema;
-import com.zendesk.exodus.schema.SchemaCapturer;
-
-import static org.hamcrest.CoreMatchers.*;
 
 public class ExodusParserTest extends AbstractMaxwellTest {
 	@Test

@@ -1,24 +1,29 @@
 package com.zendesk.exodus;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
-import java.nio.charset.Charset;
-import java.text.DateFormat;
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.sql.Timestamp;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.google.code.or.common.util.MySQLConstants;
-import com.zendesk.exodus.schema.columndef.*;
-
-import static org.hamcrest.CoreMatchers.*;
+import com.zendesk.exodus.schema.columndef.BigIntColumnDef;
+import com.zendesk.exodus.schema.columndef.ColumnDef;
+import com.zendesk.exodus.schema.columndef.DateColumnDef;
+import com.zendesk.exodus.schema.columndef.DateTimeColumnDef;
+import com.zendesk.exodus.schema.columndef.FloatColumnDef;
+import com.zendesk.exodus.schema.columndef.IntColumnDef;
+import com.zendesk.exodus.schema.columndef.StringColumnDef;
 
 public class ColumnDefTest {
 	private ColumnDef build(String type, boolean signed) {

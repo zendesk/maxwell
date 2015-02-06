@@ -52,12 +52,12 @@ public class DDLParserTest {
 		return(listener);
 	}
 
-	private TableAlter parseAlter(String testAlter) {
-		return parse(testAlter).getAlterStatement();
+	private TableAlter parseAlter(String sql) {
+		return (TableAlter) parse(sql).getSchemaChange();
 	}
 
-	private TableCreate parseCreate(String testCreate) {
-		return parse(testCreate).getCreateStatement();
+	private TableCreate parseCreate(String sql) {
+		return (TableCreate) parse(sql).getSchemaChange();
 	}
 
 	@Test
@@ -305,7 +305,7 @@ public class DDLParserTest {
 			  	  + "id int(11) auto_increment PRIMARY KEY"
 				+ ") "
 			  	+ "ENGINE=innodb "
-				+ "CHARACTER SET='latin1 "
+				+ "CHARACTER SET='latin1' "
 			  	+ "ROW_FORMAT=FIXED"
 		);
 		assertThat(c, not(nullValue()));

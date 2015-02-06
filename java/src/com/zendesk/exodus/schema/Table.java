@@ -10,8 +10,10 @@ import com.zendesk.exodus.schema.columndef.ColumnDef;
 public class Table {
 	private List<ColumnDef> columnList;
 	private int pkIndex;
-	private final String name;
-	private final String database;
+	private String name;
+
+	private String database;
+
 
 	public Table(String dbName, String name) {
 		this.database = dbName;
@@ -21,6 +23,11 @@ public class Table {
 	public Table(String dbName, String name, ResultSet r) throws SQLException {
 		this(dbName, name);
 		this.columnList = buildColumnsFromResultSet(r);
+	}
+
+	public Table(String dbName, String name, List<ColumnDef> list) {
+		this(dbName, name);
+		this.columnList = list;
 	}
 
 	private List<ColumnDef> buildColumnsFromResultSet(ResultSet r) throws SQLException {
@@ -70,5 +77,20 @@ public class Table {
 
 	public String getDatabase() {
 		return database;
+	}
+
+	public Table copy() {
+		ArrayList<ColumnDef> list = new ArrayList<>();
+
+		for ( ColumnDef c : columnList ) {
+			list.add(c.copy());
+		}
+
+		return new Table(database, name, list);
+	}
+
+	public void rename(String dbName, String tableName) {
+		this.database = dbName;
+		this.name = tableName;
 	}
 }

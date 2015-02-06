@@ -1,7 +1,10 @@
 package com.zendesk.exodus.schema;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.cedarsoftware.util.io.JsonWriter;
 
 public class Schema {
 	private final ArrayList<Database> databases;
@@ -29,5 +32,23 @@ public class Schema {
 		}
 
 		return null;
+	}
+
+	public Schema copy() {
+		ArrayList<Database> newDBs = new ArrayList<>();
+		for ( Database d : this.databases ) {
+			newDBs.add(d.copy());
+		}
+
+		return new Schema(newDBs);
+	}
+
+	public String toJSON() throws IOException {
+		return JsonWriter.objectToJson(this);
+	}
+
+	public boolean equals(Schema that) throws IOException {
+		// sheepish grin.  shit works and because who cares.
+		return this.toJSON().equals(that.toJSON());
 	}
 }

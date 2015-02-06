@@ -8,8 +8,6 @@ import org.apache.commons.lang.StringEscapeUtils;
 import com.google.code.or.common.util.MySQLConstants;
 
 public class StringColumnDef extends ColumnDef {
-	private final String encoding;
-
 	public StringColumnDef(String tableName, String name, String type, int pos, String encoding) {
 		super(tableName, name, type, pos);
 		this.encoding = encoding;

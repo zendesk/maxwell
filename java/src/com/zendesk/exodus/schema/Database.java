@@ -36,4 +36,12 @@ public class Database {
 		}
 		return null;
 	}
+
+	public Database copy() {
+		ArrayList<Table> list = new ArrayList<>();
+		for ( Table t: this.tableList ) {
+			list.add(t.copy());
+		}
+		return new Database(this.name, list);
+	}
 }

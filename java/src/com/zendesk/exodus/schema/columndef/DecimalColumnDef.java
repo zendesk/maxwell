@@ -5,7 +5,6 @@ import java.math.BigDecimal;
 import com.google.code.or.common.util.MySQLConstants;
 
 public class DecimalColumnDef extends ColumnDef {
-
 	public DecimalColumnDef(String tableName, String name, String type, int pos) {
 		super(tableName, name, type, pos);
 	}

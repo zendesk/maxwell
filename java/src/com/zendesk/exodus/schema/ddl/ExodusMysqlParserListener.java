@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.antlr.v4.runtime.tree.ErrorNode;
 
+import com.zendesk.exodus.schema.Table;
 import com.zendesk.exodus.schema.columndef.ColumnDef;
 import com.zendesk.exodus.schema.ddl.mysqlParser.*;
 
@@ -14,6 +15,17 @@ abstract class ColumnMod {
 	public ColumnMod(String name) {
 		this.name = name;
 	}
+
+	protected int originalIndex(Table table) throws SchemaSyncError {
+		int originalIndex = table.findColumnIndex(name);
+
+		if ( originalIndex == -1 )
+			throw new SchemaSyncError("Could not find column " + name + " in " + table.getName());
+
+		return originalIndex;
+	}
+
+	public abstract void apply(Table table) throws SchemaSyncError;
 }
 
 class ColumnPosition {
@@ -24,6 +36,25 @@ class ColumnPosition {
 
 	public ColumnPosition() {
 		position = Position.DEFAULT;
+	}
+
+	public int index(Table t, Integer defaultIndex) throws SchemaSyncError {
+		switch(position) {
+		case FIRST:
+			return 0;
+		case DEFAULT:
+			if ( defaultIndex != null )
+				return defaultIndex;
+			else
+				return t.getColumnList().size();
+
+		case AFTER:
+			int afterIdx = t.findColumnIndex(afterColumn);
+			if ( afterIdx == -1 )
+				throw new SchemaSyncError("Could not find column " + afterColumn + " (needed in AFTER statement)");
+			return afterIdx + 1;
+		}
+		return -1;
 	}
 }
 
@@ -36,6 +67,12 @@ class AddColumnMod extends ColumnMod {
 		this.definition = d;
 		this.position = position;
 	}
+
+	@Override
+	public void apply(Table table) throws SchemaSyncError {
+		List<ColumnDef> colList = table.getColumnList();
+		colList.add(position.index(table, null), this.definition);
+	}
 }
 
 class ChangeColumnMod extends ColumnMod {
@@ -47,11 +84,24 @@ class ChangeColumnMod extends ColumnMod {
 		this.definition = d;
 		this.position = position;
 	}
+
+	@Override
+	public void apply(Table table) throws SchemaSyncError {
+		int idx = originalIndex(table);
+		List<ColumnDef> colList = table.getColumnList();
+		colList.remove(idx);
+		colList.add(position.index(table, idx), this.definition);
+	}
 }
 
 class RemoveColumnMod extends ColumnMod {
 	public RemoveColumnMod(String name) {
 		super(name);
+	}
+
+	@Override
+	public void apply(Table table) throws SchemaSyncError {
+		table.getColumnList().remove(originalIndex(table));
 	}
 }
 
@@ -65,21 +115,19 @@ class ExodusSQLSyntaxRrror extends RuntimeException {
 
 public class ExodusMysqlParserListener extends mysqlBaseListener {
 	private String tableName;
-	private TableAlter alterStatement;
-	private TableCreate createStatement;
+	private SchemaChange schemaChange;
 	private final String currentDatabase;
 	private ColumnPosition columnPosition;
 
+	public SchemaChange getSchemaChange() {
+		return schemaChange;
+	}
+
+	private TableAlter alterStatement() {
+		return ((TableAlter) schemaChange);
+	};
 
 	private final LinkedList<ColumnDef> columnDefs = new LinkedList<>();
-
-	public TableAlter getAlterStatement() {
-		return alterStatement;
-	}
-
-	public TableCreate getCreateStatement() {
-		return createStatement;
-	}
 
 	ExodusMysqlParserListener(String currentDatabase)  {
 		this.currentDatabase = currentDatabase;
@@ -107,7 +155,7 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 
 	@Override
 	public void visitErrorNode(ErrorNode node) {
-		this.alterStatement = null;
+		this.schemaChange = null;
 		System.out.println(node.getParent().toStringTree(new mysqlParser(null)));
 		throw new ExodusSQLSyntaxRrror(node.getText());
 	}
@@ -125,31 +173,35 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 		// want to clear it out so we don't re-use it next time.  visitors might be better in this case.
 		ColumnPosition p = this.columnPosition;
 		this.columnPosition = null;
-		return p;
+
+		if ( p == null )
+			return new ColumnPosition();
+		else
+			return p;
 	}
 
 	@Override
 	public void exitAlter_tbl_preamble(Alter_tbl_preambleContext ctx) {
+		TableAlter alterStatement = new TableAlter(currentDatabase);
 
-		alterStatement = new TableAlter(currentDatabase);
-
-		alterStatement.database  = getDB(ctx.table_name());
+		alterStatement.dbName  = getDB(ctx.table_name());
 		this.tableName = alterStatement.tableName = getTable(ctx.table_name());
 
+		this.schemaChange = alterStatement;
 		System.out.println(alterStatement);
 	}
 
 	@Override
 	public void exitAdd_column(Add_columnContext ctx) {
 		ColumnDef c = this.columnDefs.removeFirst();
-		alterStatement.columnMods.add(new AddColumnMod(c.getName(), c, getColumnPosition()));
+		alterStatement().columnMods.add(new AddColumnMod(c.getName(), c, getColumnPosition()));
 	}
 	@Override
 	public void exitAdd_column_parens(mysqlParser.Add_column_parensContext ctx) {
 		while ( this.columnDefs.size() > 0 ) {
 			ColumnDef c = this.columnDefs.removeFirst();
 			// unable to choose a position in this form
-			alterStatement.columnMods.add(new AddColumnMod(c.getName(), c, null));
+			alterStatement().columnMods.add(new AddColumnMod(c.getName(), c, null));
 		}
 	}
 	@Override
@@ -157,16 +209,16 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 		String oldColumnName = unquote(ctx.old_col_name().getText());
 
 		ColumnDef c = this.columnDefs.removeFirst();
-		alterStatement.columnMods.add(new ChangeColumnMod(oldColumnName, c, getColumnPosition()));
+		alterStatement().columnMods.add(new ChangeColumnMod(oldColumnName, c, getColumnPosition()));
 	}
 	@Override
 	public void exitModify_column(mysqlParser.Modify_columnContext ctx) {
 		ColumnDef c = this.columnDefs.removeFirst();
-		alterStatement.columnMods.add(new ChangeColumnMod(c.getName(), c, getColumnPosition()));
+		alterStatement().columnMods.add(new ChangeColumnMod(c.getName(), c, getColumnPosition()));
 	}
 	@Override
 	public void exitDrop_column(mysqlParser.Drop_columnContext ctx) {
-		alterStatement.columnMods.add(new RemoveColumnMod(unquote(ctx.old_col_name().getText())));
+		alterStatement().columnMods.add(new RemoveColumnMod(unquote(ctx.old_col_name().getText())));
 	}
 	@Override
 	public void exitCol_position(mysqlParser.Col_positionContext ctx) {
@@ -181,28 +233,30 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 	}
 	@Override
 	public void exitRename_table(mysqlParser.Rename_tableContext ctx) {
-		alterStatement.newTableName = getTable(ctx.table_name());
-		alterStatement.newDatabase  = getDB(ctx.table_name());
+		alterStatement().newTableName = getTable(ctx.table_name());
+		alterStatement().newDatabase  = getDB(ctx.table_name());
 	}
 	@Override
 	public void exitConvert_to_character_set(mysqlParser.Convert_to_character_setContext ctx) {
-		alterStatement.convertCharset = unquote_literal(ctx.charset_name().getText());
+		alterStatement().convertCharset = unquote_literal(ctx.charset_name().getText());
 	}
 	@Override
 	public void exitDefault_character_set(mysqlParser.Default_character_setContext ctx) {
-		alterStatement.defaultCharset = unquote_literal(ctx.charset_name().getText());
+		alterStatement().defaultCharset = unquote_literal(ctx.charset_name().getText());
 	}
 
 	@Override
 	public void exitCreate_tbl_preamble(Create_tbl_preambleContext ctx) {
-		this.createStatement = new TableCreate();
-		this.createStatement.database  = getDB(ctx.table_name());
-		this.tableName = this.createStatement.tableName = getTable(ctx.table_name());
+		TableCreate createStatement = new TableCreate();
+		createStatement.database  = getDB(ctx.table_name());
+		this.tableName = createStatement.tableName = getTable(ctx.table_name());
+
+		this.schemaChange = createStatement;
 	}
 
 	@Override
 	public void exitCreate_specifications(Create_specificationsContext ctx) {
-		this.createStatement.columns.addAll(this.columnDefs);
+		((TableCreate) schemaChange).columns.addAll(this.columnDefs);
 	}
 
 	@Override

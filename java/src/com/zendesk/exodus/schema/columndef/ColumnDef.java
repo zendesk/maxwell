@@ -5,18 +5,26 @@ public abstract class ColumnDef {
 	protected final String name;
 	protected final String type;
 	private final int pos;
+	public boolean signed;
+	public String encoding;
 
 	public ColumnDef(String tableName, String name, String type, int pos) {
 		this.tableName = tableName;
 		this.name = name;
 		this.type = type;
 		this.pos = pos;
+		this.signed = false;
 	}
 
 	public abstract boolean matchesMysqlType(int type);
 	public abstract String toSQL(Object value);
+
 	public Object asJSON(Object value) {
 		return value;
+	}
+
+	public ColumnDef copy() {
+		return build(this.tableName, this.name, this.encoding, this.type, this.pos, this.signed);
 	}
 
 	public static ColumnDef build(String tableName, String name, String encoding, String type, int pos, boolean signed) {
@@ -74,5 +82,6 @@ public abstract class ColumnDef {
 	public int getPos() {
 		return pos;
 	}
+
 
 }

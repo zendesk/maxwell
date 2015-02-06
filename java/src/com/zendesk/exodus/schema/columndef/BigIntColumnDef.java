@@ -6,7 +6,6 @@ import com.google.code.or.common.util.MySQLConstants;
 
 public class BigIntColumnDef extends ColumnDef {
 	private final BigInteger longlong_max = BigInteger.ONE.shiftLeft(64);
-	private final boolean signed;
 
 	public BigIntColumnDef(String tableName, String name, String type, int pos, boolean signed) {
 		super(tableName, name, type, pos);
