@@ -6,7 +6,9 @@ import static org.junit.Assert.assertThat;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,15 +35,13 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 		server.executeList(Arrays.asList(alters));
 
 		for ( String alter : alters) {
-			SchemaChange.parse(alter).apply("shard_1", topSchema);
+			topSchema = SchemaChange.parse(alter).apply("shard_1", topSchema);
 		}
 
 		Schema bottomSchema = capturer.capture();
 
-		for ( String diff : topSchema.diff(bottomSchema, "post-alter schema")) {
-			System.out.println(diff);
-		}
-		assertThat(bottomSchema.toJSON(), is(topSchema.toJSON()));
+		List<String> diff = topSchema.diff(bottomSchema, "post-alter schema");
+		assertThat(StringUtils.join(diff.iterator(), "\n"), diff.size(), is(0));
 
 	}
 
@@ -51,7 +51,8 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 		String sql[] = {
 			"create table shard_1.testAlter ( id int(11) unsigned default 1, str varchar(255) )",
 			"alter table shard_1.testAlter add column barbar tinyint",
-			"alter table shard_1.testAlter rename to shard_1.`freedonia`"
+			"alter table shard_1.testAlter rename to shard_1.`freedonia`",
+			"rename table shard_1.freedonia to shard_1.ducksoup"
 		};
 		testIntegration(sql);
 	}

@@ -19,15 +19,16 @@ public class TableCreate extends SchemaChange {
 
 	@Override
 	Schema apply(String currentDatabase, Schema originalSchema) throws SchemaSyncError {
+		Schema newSchema = originalSchema.copy();
 		String db = database == null ? currentDatabase : database;
 
-		Database d = originalSchema.findDatabase(db);
+		Database d = newSchema.findDatabase(db);
 		if ( d == null )
 			throw new SchemaSyncError("Couldn't find database " + d);
 
 		Table t = new Table(db, this.tableName, this.columns);
 		d.getTableList().add(t);
 
-		return null;
+		return newSchema;
 	}
 }

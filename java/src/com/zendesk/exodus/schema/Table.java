@@ -28,6 +28,7 @@ public class Table {
 	public Table(String dbName, String name, List<ColumnDef> list) {
 		this(dbName, name);
 		this.columnList = list;
+		renumberColumns();
 	}
 
 	private List<ColumnDef> buildColumnsFromResultSet(ResultSet r) throws SQLException {
@@ -117,6 +118,12 @@ public class Table {
 									  + " vs "
 									  + other.getType()
 									  + " in " + nameB);
+				} else if ( column.getPos() != other.getPos() ) {
+					diffs.add(colName + "has a position mismatch, "
+									  + column.getPos()
+									  + " vs "
+									  + other.getPos()
+									  + " in " + nameB);
 				}
 			}
 		}
@@ -129,5 +136,21 @@ public class Table {
 	public void diff(List<String> diffs, Table other, String nameA, String nameB) {
 		diffColumnList(diffs, this, other, nameA, nameB);
 		diffColumnList(diffs, other, this, nameB, nameA);
+	}
+
+	private void renumberColumns() {
+		int i = 0 ;
+		for ( ColumnDef c : columnList ) {
+			c.setPos(i++);
+		}
+	}
+	public void addColumn(int index, ColumnDef definition) {
+		this.columnList.add(index, definition);
+		renumberColumns();
+	}
+
+	public void removeColumn(int idx) {
+		this.columnList.remove(idx);
+		renumberColumns();
 	}
 }

@@ -9,25 +9,6 @@ import com.zendesk.exodus.schema.Table;
 import com.zendesk.exodus.schema.columndef.ColumnDef;
 import com.zendesk.exodus.schema.ddl.mysqlParser.*;
 
-abstract class ColumnMod {
-	public String name;
-
-	public ColumnMod(String name) {
-		this.name = name;
-	}
-
-	protected int originalIndex(Table table) throws SchemaSyncError {
-		int originalIndex = table.findColumnIndex(name);
-
-		if ( originalIndex == -1 )
-			throw new SchemaSyncError("Could not find column " + name + " in " + table.getName());
-
-		return originalIndex;
-	}
-
-	public abstract void apply(Table table) throws SchemaSyncError;
-}
-
 class ColumnPosition {
 	enum Position { FIRST, AFTER, DEFAULT };
 
@@ -55,53 +36,6 @@ class ColumnPosition {
 			return afterIdx + 1;
 		}
 		return -1;
-	}
-}
-
-class AddColumnMod extends ColumnMod {
-	public ColumnDef definition;
-	public ColumnPosition position;
-
-	public AddColumnMod(String name, ColumnDef d, ColumnPosition position) {
-		super(name);
-		this.definition = d;
-		this.position = position;
-	}
-
-	@Override
-	public void apply(Table table) throws SchemaSyncError {
-		List<ColumnDef> colList = table.getColumnList();
-		colList.add(position.index(table, null), this.definition);
-	}
-}
-
-class ChangeColumnMod extends ColumnMod {
-	public ColumnDef definition;
-	public ColumnPosition position;
-
-	public ChangeColumnMod(String name, ColumnDef d, ColumnPosition position ) {
-		super(name);
-		this.definition = d;
-		this.position = position;
-	}
-
-	@Override
-	public void apply(Table table) throws SchemaSyncError {
-		int idx = originalIndex(table);
-		List<ColumnDef> colList = table.getColumnList();
-		colList.remove(idx);
-		colList.add(position.index(table, idx), this.definition);
-	}
-}
-
-class RemoveColumnMod extends ColumnMod {
-	public RemoveColumnMod(String name) {
-		super(name);
-	}
-
-	@Override
-	public void apply(Table table) throws SchemaSyncError {
-		table.getColumnList().remove(originalIndex(table));
 	}
 }
 

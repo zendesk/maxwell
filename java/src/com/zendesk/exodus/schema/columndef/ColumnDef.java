@@ -4,7 +4,7 @@ public abstract class ColumnDef {
 	protected final String tableName;
 	protected final String name;
 	protected final String type;
-	private final int pos;
+	private int pos;
 	public boolean signed;
 	public String encoding;
 
@@ -83,5 +83,7 @@ public abstract class ColumnDef {
 		return pos;
 	}
 
-
+	public void setPos(int i) {
+		this.pos = i;
+	}
 }
