@@ -44,4 +44,19 @@ public class Database {
 		}
 		return new Database(this.name, list);
 	}
+
+	private void diffTableList(List<String> diffs, Database a, Database b, String nameA, String nameB) {
+		for ( Table t : a.getTableList() ) {
+			Table other = b.findTable(t.getName());
+			if ( other == null )
+				diffs.add("database " + a.getName() + " did not contain table " + t.getName() + " in " + nameB);
+			else
+				t.diff(diffs, other, nameA, nameB);
+		}
+	}
+
+	public void diff(List<String> diffs, Database other, String nameA, String nameB) {
+		diffTableList(diffs, this, other, nameA, nameB);
+		diffTableList(diffs, other, this, nameB, nameA);
+	}
 }

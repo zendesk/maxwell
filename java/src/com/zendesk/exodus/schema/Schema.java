@@ -48,7 +48,26 @@ public class Schema {
 	}
 
 	public boolean equals(Schema that) throws IOException {
-		// sheepish grin.  shit works and because who cares.
 		return this.toJSON().equals(that.toJSON());
+	}
+
+	private void diffDBList(List<String> diff, Schema a, Schema b, String nameA, String nameB) {
+		for ( Database d : a.databases ) {
+			Database matchingDB = b.findDatabase(d.getName());
+
+			if ( matchingDB == null )
+				diff.add("-- Database " + d.getName() + "did not exist in " + nameB);
+			else
+				d.diff(diff, matchingDB, nameA, nameB);
+		}
+
+	}
+
+	public List<String> diff(Schema that, String thatName) {
+		List<String> diff = new ArrayList<>();
+
+		diffDBList(diff, this, that, "original", thatName);
+		diffDBList(diff, that, this, thatName, "original");
+		return diff;
 	}
 }

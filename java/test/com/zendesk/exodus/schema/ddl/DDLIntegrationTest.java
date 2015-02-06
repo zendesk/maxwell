@@ -36,9 +36,11 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 			SchemaChange.parse(alter).apply("shard_1", topSchema);
 		}
 
-
 		Schema bottomSchema = capturer.capture();
 
+		for ( String diff : topSchema.diff(bottomSchema, "post-alter schema")) {
+			System.out.println(diff);
+		}
 		assertThat(bottomSchema.toJSON(), is(topSchema.toJSON()));
 
 	}
@@ -47,9 +49,9 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 	@Test
 	public void testAlter() throws SQLException, SchemaSyncError, IOException {
 		String sql[] = {
-			"create table testAlter ( id int(11) unsigned default 1, str varchar(255) )",
-			"alter table testAlter add column barbar tinyint",
-			"alter table testAlter rename to `freedonia`"
+			"create table shard_1.testAlter ( id int(11) unsigned default 1, str varchar(255) )",
+			"alter table shard_1.testAlter add column barbar tinyint",
+			"alter table shard_1.testAlter rename to shard_1.`freedonia`"
 		};
 		testIntegration(sql);
 	}

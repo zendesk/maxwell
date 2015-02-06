@@ -71,6 +71,16 @@ public class Table {
 		return -1;
 	}
 
+	private ColumnDef findColumn(String name) {
+		for (ColumnDef c : columnList )  {
+			if ( c.getName().equals(name) )
+				return c;
+		}
+
+		return null;
+	}
+
+
 	public int getPKIndex() {
 		return this.pkIndex;
 	}
@@ -92,5 +102,32 @@ public class Table {
 	public void rename(String dbName, String tableName) {
 		this.database = dbName;
 		this.name = tableName;
+	}
+
+	private void diffColumnList(List<String> diffs, Table a, Table b, String nameA, String nameB) {
+		for ( ColumnDef column : a.getColumnList() ) {
+			ColumnDef other = b.findColumn(column.getName());
+			if ( other == null )
+				diffs.add(b.fullName() + " is missing column " + column.getName() + " in " + nameB);
+			else {
+                String colName = a.fullName() + ".`" + column.getName() + "` ";
+				if ( !column.getType().equals(other.getType()) ) {
+					diffs.add(colName + "has a type mismatch, "
+									  + column.getType()
+									  + " vs "
+									  + other.getType()
+									  + " in " + nameB);
+				}
+			}
+		}
+	}
+
+	public String fullName() {
+		return "`" + this.database + "`." + this.name + "`";
+	}
+
+	public void diff(List<String> diffs, Table other, String nameA, String nameB) {
+		diffColumnList(diffs, this, other, nameA, nameB);
+		diffColumnList(diffs, other, this, nameB, nameA);
 	}
 }
