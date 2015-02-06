@@ -52,7 +52,9 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 			"create table shard_1.testAlter ( id int(11) unsigned default 1, str varchar(255) )",
 			"alter table shard_1.testAlter add column barbar tinyint",
 			"alter table shard_1.testAlter rename to shard_1.`freedonia`",
-			"rename table shard_1.freedonia to shard_1.ducksoup"
+			"rename table shard_1.`freedonia` to shard_1.ducksoup, shard_1.ducksoup to shard_1.`nananana`",
+			"alter table shard_1.nananana drop column barbar"
+
 		};
 		testIntegration(sql);
 	}

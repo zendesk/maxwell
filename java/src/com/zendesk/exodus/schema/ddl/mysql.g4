@@ -6,7 +6,8 @@ parse: statement
 
 statement:
 	alter_tbl_statement 
-    | create_tbl_statement;
+    | create_tbl_statement
+    | rename_tbl_statement;
 
 create_tbl_statement: 
     create_tbl_preamble 
@@ -25,6 +26,9 @@ create_specification:
 		
 
 create_like_tbl: LIKE table_name;
+
+rename_tbl_statement: RENAME TABLE rename_tbl_spec (',' rename_tbl_spec)*;
+rename_tbl_spec: table_name TO table_name;
 
 alter_tbl_statement: alter_tbl_preamble alter_specifications (engine_statement)?;
 

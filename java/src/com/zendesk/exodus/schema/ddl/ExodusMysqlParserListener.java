@@ -7,6 +7,7 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 
 import com.zendesk.exodus.schema.Table;
 import com.zendesk.exodus.schema.columndef.ColumnDef;
+import com.zendesk.exodus.schema.ddl.mysqlParser.Table_nameContext;
 import com.zendesk.exodus.schema.ddl.mysqlParser.*;
 
 class ColumnPosition {
@@ -228,4 +229,17 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 		this.columnDefs.add(c);
 	}
 
+
+	@Override
+	public void enterRename_tbl_statement(mysqlParser.Rename_tbl_statementContext ctx) {
+		this.schemaChange = new TableRenames();
+	}
+
+	@Override
+	public void exitRename_tbl_spec(mysqlParser.Rename_tbl_specContext ctx) {
+		Table_nameContext oldTableContext = ctx.table_name(0);
+		Table_nameContext newTableContext = ctx.table_name(1);
+
+		((TableRenames) this.schemaChange).addAlter(getDB(oldTableContext), getTable(oldTableContext), getDB(newTableContext), getTable(newTableContext));
+	}
 }
