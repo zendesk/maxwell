@@ -35,26 +35,28 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 		server.executeList(Arrays.asList(alters));
 
 		for ( String alter : alters) {
-			topSchema = SchemaChange.parse(alter).apply("shard_1", topSchema);
+			topSchema = SchemaChange.parse("shard_1", alter).apply(topSchema);
 		}
 
 		Schema bottomSchema = capturer.capture();
 
-		List<String> diff = topSchema.diff(bottomSchema, "post-alter schema");
+		List<String> diff = topSchema.diff(bottomSchema, "play-along schema", "recaptured schema");
 		assertThat(StringUtils.join(diff.iterator(), "\n"), diff.size(), is(0));
 
 	}
 
 
 	@Test
-	public void testAlter() throws SQLException, SchemaSyncError, IOException {
+	public void testAlter() throws SQLException, SchemaSyncError, IOException, InterruptedException {
 		String sql[] = {
 			"create table shard_1.testAlter ( id int(11) unsigned default 1, str varchar(255) )",
 			"alter table shard_1.testAlter add column barbar tinyint",
 			"alter table shard_1.testAlter rename to shard_1.`freedonia`",
 			"rename table shard_1.`freedonia` to shard_1.ducksoup, shard_1.ducksoup to shard_1.`nananana`",
-			"alter table shard_1.nananana drop column barbar"
+			"alter table shard_1.nananana drop column barbar",
 
+			"create table shard_2.weird_rename ( str mediumtext )",
+			"alter table shard_2.weird_rename rename to lowball" // renames to shard_1.lowball
 		};
 		testIntegration(sql);
 	}

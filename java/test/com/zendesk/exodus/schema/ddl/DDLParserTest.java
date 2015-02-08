@@ -278,8 +278,9 @@ public class DDLParserTest {
 	public void testCreateTable() {
 		TableCreate c = parseCreate("CREATE TABLE `foo` ( id int(11) auto_increment not null, `textcol` mediumtext character set 'utf8' not null )");
 
-		assertThat(c.database,  is(nullValue()));
+		assertThat(c.dbName,  is("default_db"));
 		assertThat(c.tableName, is("foo"));
+
 		assertThat(c.columns.size(), is(2));
 		assertThat(c.columns.get(0).getName(), is("id"));
 		assertThat(c.columns.get(1).getName(), is("textcol"));

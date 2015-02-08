@@ -33,6 +33,7 @@ public class AbstractMaxwellTest {
 
 	private void resetMaster() throws SQLException, IOException {
 		List<String> queries = new ArrayList<String>(Arrays.asList(
+				"CREATE DATABASE if not exists shard_2",
 				"DROP DATABASE if exists shard_1",
 				"CREATE DATABASE shard_1",
 				"USE shard_1"

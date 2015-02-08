@@ -8,15 +8,15 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import com.zendesk.exodus.schema.Schema;
 
 public abstract class SchemaChange {
-	abstract Schema apply(String currentDatabase, Schema originalSchema) throws SchemaSyncError;
+	abstract Schema apply(Schema originalSchema) throws SchemaSyncError;
 
-	static SchemaChange parse(String sql) {
+	static SchemaChange parse(String currentDB, String sql) {
 		ANTLRInputStream input = new ANTLRInputStream(sql);
 		mysqlLexer lexer = new mysqlLexer(input);
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
 		mysqlParser parser = new mysqlParser(tokens);
 
-		ExodusMysqlParserListener listener = new ExodusMysqlParserListener("default_db");
+		ExodusMysqlParserListener listener = new ExodusMysqlParserListener(currentDB);
 
 		System.out.println("Running parse on " + sql);
 		ParseTree tree = parser.parse();

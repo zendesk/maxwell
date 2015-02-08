@@ -12,17 +12,16 @@ public class TableRenames extends SchemaChange {
 	}
 
 	public void addAlter(String oldDatabase, String oldTableName, String newDatabase, String newTableName) {
-		TableAlter a = new TableAlter(oldDatabase);
-		a.tableName = oldTableName;
+		TableAlter a = new TableAlter(oldDatabase, oldTableName);
 		a.newDatabase = newDatabase;
 		a.newTableName = newTableName;
 		alters.add(a);
 	}
 
 	@Override
-	Schema apply(String currentDatabase, Schema schema) throws SchemaSyncError {
+	Schema apply(Schema schema) throws SchemaSyncError {
 		for ( TableAlter a : alters ) {
-			schema = a.apply(currentDatabase, schema);
+			schema = a.apply(schema);
 		}
 		return schema;
 	}

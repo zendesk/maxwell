@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.antlr.v4.runtime.tree.ErrorNode;
 
-import com.zendesk.exodus.schema.Table;
 import com.zendesk.exodus.schema.columndef.ColumnDef;
 import com.zendesk.exodus.schema.ddl.mysqlParser.Table_nameContext;
 import com.zendesk.exodus.schema.ddl.mysqlParser.*;
@@ -50,7 +49,7 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 		if ( t.db_name() != null )
 			return unquote(t.db_name().name().getText());
 		else
-			return null;
+			return currentDatabase;
 	}
 
 	private String getTable(Table_nameContext t) {
@@ -87,10 +86,11 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 
 	@Override
 	public void exitAlter_tbl_preamble(Alter_tbl_preambleContext ctx) {
-		TableAlter alterStatement = new TableAlter(currentDatabase);
+		String dbName = getDB(ctx.table_name());
+		String tableName = getTable(ctx.table_name());
 
-		alterStatement.dbName  = getDB(ctx.table_name());
-		this.tableName = alterStatement.tableName = getTable(ctx.table_name());
+		TableAlter alterStatement = new TableAlter(dbName, tableName);
+		this.tableName = alterStatement.tableName;
 
 		this.schemaChange = alterStatement;
 		System.out.println(alterStatement);
@@ -152,9 +152,11 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 
 	@Override
 	public void exitCreate_tbl_preamble(Create_tbl_preambleContext ctx) {
-		TableCreate createStatement = new TableCreate();
-		createStatement.database  = getDB(ctx.table_name());
-		this.tableName = createStatement.tableName = getTable(ctx.table_name());
+		String dbName = getDB(ctx.table_name());
+		String tblName = getTable(ctx.table_name());
+
+		TableCreate createStatement = new TableCreate(dbName, tblName);
+		this.tableName = createStatement.tableName;
 
 		this.schemaChange = createStatement;
 	}

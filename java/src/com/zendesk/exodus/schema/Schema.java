@@ -51,23 +51,23 @@ public class Schema {
 		return this.toJSON().equals(that.toJSON());
 	}
 
-	private void diffDBList(List<String> diff, Schema a, Schema b, String nameA, String nameB) {
+	private void diffDBList(List<String> diff, Schema a, Schema b, String nameA, String nameB, boolean recurse) {
 		for ( Database d : a.databases ) {
 			Database matchingDB = b.findDatabase(d.getName());
 
 			if ( matchingDB == null )
 				diff.add("-- Database " + d.getName() + "did not exist in " + nameB);
-			else
+			else if ( recurse )
 				d.diff(diff, matchingDB, nameA, nameB);
 		}
 
 	}
 
-	public List<String> diff(Schema that, String thatName) {
+	public List<String> diff(Schema that, String thisName, String thatName) {
 		List<String> diff = new ArrayList<>();
 
-		diffDBList(diff, this, that, "original", thatName);
-		diffDBList(diff, that, this, thatName, "original");
+		diffDBList(diff, this, that, thisName, thatName, true);
+		diffDBList(diff, that, this, thatName, thisName, false);
 		return diff;
 	}
 }

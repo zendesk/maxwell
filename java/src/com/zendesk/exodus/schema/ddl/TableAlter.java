@@ -22,8 +22,9 @@ public class TableAlter extends SchemaChange {
 	public String defaultCharset;
 
 
-	public TableAlter(String database) {
+	public TableAlter(String database, String tableName) {
 		this.dbName = database;
+		this.tableName = tableName;
 		this.columnMods = new ArrayList<>();
 	}
 
@@ -33,31 +34,30 @@ public class TableAlter extends SchemaChange {
 	}
 
 	@Override
-	Schema apply(String currentDatabase, Schema originalSchema) throws SchemaSyncError {
-		String db;
+	Schema apply(Schema originalSchema) throws SchemaSyncError {
 		Schema newSchema = originalSchema.copy();
 
 		// if no explicit database was specified, use the current database
-		db = dbName == null ? currentDatabase : dbName;
-		Database database = newSchema.findDatabase(db);
+		Database database = newSchema.findDatabase(this.dbName);
 
 		if ( database == null )
-			throw new SchemaSyncError("Couldn't find database " + db);
+			throw new SchemaSyncError("Couldn't find database " + this.dbName);
 
 		Table table = database.findTable(tableName);
 
 		if ( table == null )
 			throw new SchemaSyncError("Couldn't find table " + tableName);
 
-		if ( newTableName != null ) {
-			if ( newDatabase != null ) {
-				table.rename(newDatabase, newTableName);
-			} else {
-				// weird, but this is how it works; if you're in the 'test' database
-				// and say "alter table `mysql`.`bar` rename to `baz`
-				// your table ends up in the 'test' database.
-				table.rename(currentDatabase, newTableName);
+		if ( newTableName != null && newDatabase != null ) {
+			if ( ! newDatabase.equals(table.getDatabase()) ) {
+				Database destDB = newSchema.findDatabase(this.newDatabase);
+				if ( destDB == null )
+					throw new SchemaSyncError("Couldn't find database " + this.dbName);
+
+				database.getTableList().remove(table);
+				destDB.getTableList().add(table);
 			}
+			table.rename(newDatabase, newTableName);
 		}
 
 		for (ColumnMod mod : columnMods) {
