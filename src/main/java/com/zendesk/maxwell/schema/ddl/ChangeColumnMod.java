@@ -1,7 +1,7 @@
-package com.zendesk.exodus.schema.ddl;
+package com.zendesk.maxwell.schema.ddl;
 
-import com.zendesk.exodus.schema.Table;
-import com.zendesk.exodus.schema.columndef.ColumnDef;
+import com.zendesk.maxwell.schema.Table;
+import com.zendesk.maxwell.schema.columndef.ColumnDef;
 
 class ChangeColumnMod extends ColumnMod {
 	public ColumnDef definition;

@@ -1,11 +1,11 @@
-package com.zendesk.exodus.schema;
+package com.zendesk.maxwell.schema;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.zendesk.exodus.schema.columndef.ColumnDef;
+import com.zendesk.maxwell.schema.columndef.ColumnDef;
 
 public class Table {
 	private List<ColumnDef> columnList;

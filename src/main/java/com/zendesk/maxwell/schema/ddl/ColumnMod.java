@@ -1,6 +1,6 @@
-package com.zendesk.exodus.schema.ddl;
+package com.zendesk.maxwell.schema.ddl;
 
-import com.zendesk.exodus.schema.Table;
+import com.zendesk.maxwell.schema.Table;
 
 abstract class ColumnMod {
 	public String name;

@@ -1,4 +1,4 @@
-package com.zendesk.exodus;
+package com.zendesk.maxwell;
 
 import static org.junit.Assert.*;
 
@@ -15,11 +15,11 @@ import static org.hamcrest.CoreMatchers.*;
 
 import com.cedarsoftware.util.io.JsonWriter;
 import com.google.code.or.common.util.MySQLConstants;
-import com.zendesk.exodus.schema.Database;
-import com.zendesk.exodus.schema.Schema;
-import com.zendesk.exodus.schema.SchemaCapturer;
-import com.zendesk.exodus.schema.Table;
-import com.zendesk.exodus.schema.columndef.*;
+import com.zendesk.maxwell.schema.Database;
+import com.zendesk.maxwell.schema.Schema;
+import com.zendesk.maxwell.schema.SchemaCapturer;
+import com.zendesk.maxwell.schema.Table;
+import com.zendesk.maxwell.schema.columndef.*;
 
 public class SchemaCaptureTest extends AbstractMaxwellTest {
 	private SchemaCapturer capturer;

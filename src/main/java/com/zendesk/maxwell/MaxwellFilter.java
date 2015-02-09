@@ -1,4 +1,4 @@
-package com.zendesk.exodus;
+package com.zendesk.maxwell;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -7,7 +7,7 @@ import java.util.Map;
 import com.google.code.or.common.glossary.Column;
 import com.google.code.or.common.glossary.Row;
 
-public class ExodusFilter {
+public class MaxwellFilter {
 	private final HashSet<String> includeDatabases = new HashSet<>();
 	private final HashSet<String> excludeDatabases = new HashSet<>();
 	private final HashSet<String> includeTables    = new HashSet<>();
@@ -54,7 +54,7 @@ public class ExodusFilter {
 		}
 	}
 
-	public boolean matchesRow(ExodusAbstractRowsEvent e, Row r) {
+	public boolean matchesRow(MaxwellAbstractRowsEvent e, Row r) {
 		for (Map.Entry<String, Integer> entry : rowFilter.entrySet()) {
 			Column c = e.findColumn(entry.getKey(), r);
 			if ( c == null )
@@ -67,7 +67,7 @@ public class ExodusFilter {
 		return true;
 	}
 
-	private boolean matchesAnyRows(ExodusAbstractRowsEvent e) {
+	private boolean matchesAnyRows(MaxwellAbstractRowsEvent e) {
 		for (Row r : e.getRows()) {
 			if ( matchesRow(e, r) )
 				return true;
@@ -75,7 +75,7 @@ public class ExodusFilter {
 		return false;
 	}
 
-	public boolean matches(ExodusAbstractRowsEvent e) {
+	public boolean matches(MaxwellAbstractRowsEvent e) {
 		return matchesDatabase(e.getTable().getDatabase())
 		    && matchesTable(e.getTable().getName())
 		    && matchesAnyRows(e);

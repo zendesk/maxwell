@@ -1,4 +1,4 @@
-package com.zendesk.exodus.schema.ddl;
+package com.zendesk.maxwell.schema.ddl;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -13,9 +13,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.zendesk.exodus.AbstractMaxwellTest;
-import com.zendesk.exodus.schema.Schema;
-import com.zendesk.exodus.schema.SchemaCapturer;
+import com.zendesk.maxwell.AbstractMaxwellTest;
+import com.zendesk.maxwell.schema.Schema;
+import com.zendesk.maxwell.schema.SchemaCapturer;
 
 public class DDLIntegrationTest extends AbstractMaxwellTest {
 	@Before

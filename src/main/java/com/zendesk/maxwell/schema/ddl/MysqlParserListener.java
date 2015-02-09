@@ -1,4 +1,4 @@
-package com.zendesk.exodus.schema.ddl;
+package com.zendesk.maxwell.schema.ddl;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -6,19 +6,19 @@ import java.util.List;
 
 import org.antlr.v4.runtime.tree.ErrorNode;
 
-import com.zendesk.exodus.schema.columndef.ColumnDef;
-import com.zendesk.exodus.schema.ddl.mysqlParser.Table_nameContext;
-import com.zendesk.exodus.schema.ddl.mysqlParser.*;
+import com.zendesk.maxwell.schema.columndef.ColumnDef;
+import com.zendesk.maxwell.schema.ddl.mysqlParser.Table_nameContext;
+import com.zendesk.maxwell.schema.ddl.mysqlParser.*;
 
-class ExodusSQLSyntaxRrror extends RuntimeException {
+class MaxwellSQLSyntaxRrror extends RuntimeException {
 	private static final long serialVersionUID = 140545518818187219L;
 
-	public ExodusSQLSyntaxRrror(String message) {
+	public MaxwellSQLSyntaxRrror(String message) {
 		super(message);
 	}
 }
 
-public class ExodusMysqlParserListener extends mysqlBaseListener {
+public class MaxwellMysqlParserListener extends mysqlBaseListener {
 	private String tableName;
 	private final ArrayList<SchemaChange> schemaChanges;
 	private final String currentDatabase;
@@ -30,7 +30,7 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 
 	private final LinkedList<ColumnDef> columnDefs = new LinkedList<>();
 
-	ExodusMysqlParserListener(String currentDatabase)  {
+	MaxwellMysqlParserListener(String currentDatabase)  {
 		this.schemaChanges = new ArrayList<>();
 		this.currentDatabase = currentDatabase;
 	}
@@ -63,7 +63,7 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 	public void visitErrorNode(ErrorNode node) {
 		this.schemaChanges.clear();
 		System.out.println(node.getParent().toStringTree(new mysqlParser(null)));
-		throw new ExodusSQLSyntaxRrror(node.getText());
+		throw new MaxwellSQLSyntaxRrror(node.getText());
 	}
 	private boolean isSigned(List<Int_flagsContext> flags) {
 		for ( Int_flagsContext flag : flags ) {

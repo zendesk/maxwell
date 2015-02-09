@@ -1,4 +1,4 @@
-package com.zendesk.exodus;
+package com.zendesk.maxwell;
 
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
@@ -18,15 +18,15 @@ import com.google.code.or.binlog.impl.event.AbstractRowEvent;
 import com.google.code.or.common.glossary.Column;
 import com.google.code.or.common.glossary.Row;
 import com.google.code.or.common.glossary.column.*;
-import com.zendesk.exodus.schema.Table;
-import com.zendesk.exodus.schema.columndef.ColumnDef;
+import com.zendesk.maxwell.schema.Table;
+import com.zendesk.maxwell.schema.columndef.ColumnDef;
 
-public abstract class ExodusAbstractRowsEvent extends AbstractRowEvent {
-	private final ExodusFilter filter;
+public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
+	private final MaxwellFilter filter;
 	private final AbstractRowEvent event;
 	protected final Table table;
 
-	public ExodusAbstractRowsEvent(AbstractRowEvent e, Table table, ExodusFilter f) {
+	public MaxwellAbstractRowsEvent(AbstractRowEvent e, Table table, ExodusFilter f) {
 		this.tableId = e.getTableId();
 		this.event = e;
 		this.header = e.getHeader();

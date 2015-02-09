@@ -1,16 +1,16 @@
-package com.zendesk.exodus;
+package com.zendesk.maxwell;
 
 import java.util.Iterator;
 import java.util.List;
 import com.google.code.or.binlog.impl.event.AbstractRowEvent;
 import com.google.code.or.binlog.impl.event.DeleteRowsEvent;
 import com.google.code.or.common.glossary.Row;
-import com.zendesk.exodus.schema.Table;
+import com.zendesk.maxwell.schema.Table;
 
-public class ExodusDeleteRowsEvent extends ExodusAbstractRowsEvent {
+public class MaxwellDeleteRowsEvent extends ExodusAbstractRowsEvent {
 	private final DeleteRowsEvent event;
 
-	public ExodusDeleteRowsEvent(AbstractRowEvent e, Table table, ExodusFilter f) {
+	public MaxwellDeleteRowsEvent(AbstractRowEvent e, Table table, ExodusFilter f) {
 		super(e, table, f);
 		this.event = (DeleteRowsEvent) e;
 	}

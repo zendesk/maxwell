@@ -1,4 +1,4 @@
-package com.zendesk.exodus.schema.ddl;
+package com.zendesk.maxwell.schema.ddl;
 
 import java.util.List;
 
@@ -7,9 +7,9 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
-import com.zendesk.exodus.schema.Database;
-import com.zendesk.exodus.schema.Schema;
-import com.zendesk.exodus.schema.Table;
+import com.zendesk.maxwell.schema.Database;
+import com.zendesk.maxwell.schema.Schema;
+import com.zendesk.maxwell.schema.Table;
 
 public abstract class SchemaChange {
 	abstract Schema apply(Schema originalSchema) throws SchemaSyncError;
@@ -43,7 +43,7 @@ public abstract class SchemaChange {
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
 		mysqlParser parser = new mysqlParser(tokens);
 
-		ExodusMysqlParserListener listener = new ExodusMysqlParserListener(currentDB);
+		MaxwellMysqlParserListener listener = new ExodusMysqlParserListener(currentDB);
 
 		System.out.println("Running parse on " + sql);
 		ParseTree tree = parser.parse();

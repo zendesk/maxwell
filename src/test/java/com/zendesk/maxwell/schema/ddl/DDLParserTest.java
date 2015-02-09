@@ -1,4 +1,4 @@
-package com.zendesk.exodus.schema.ddl;
+package com.zendesk.maxwell.schema.ddl;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
@@ -14,9 +14,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.zendesk.exodus.schema.columndef.BigIntColumnDef;
-import com.zendesk.exodus.schema.columndef.IntColumnDef;
-import com.zendesk.exodus.schema.columndef.StringColumnDef;
+import com.zendesk.maxwell.schema.columndef.BigIntColumnDef;
+import com.zendesk.maxwell.schema.columndef.IntColumnDef;
+import com.zendesk.maxwell.schema.columndef.StringColumnDef;
 
 public class DDLParserTest {
 
@@ -32,7 +32,7 @@ public class DDLParserTest {
 	public void tearDown() throws Exception {
 	}
 
-	private ExodusMysqlParserListener parse(String sql) {
+	private MaxwellMysqlParserListener parse(String sql) {
 		ANTLRInputStream input = new ANTLRInputStream(sql);
 		mysqlLexer lexer = new mysqlLexer(input);
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
@@ -43,7 +43,7 @@ public class DDLParserTest {
 		// create a parser that feeds off the tokens buffer
 		mysqlParser parser = new mysqlParser(tokens);
 
-		ExodusMysqlParserListener listener = new ExodusMysqlParserListener("default_db");
+		MaxwellMysqlParserListener listener = new ExodusMysqlParserListener("default_db");
 
 		System.out.println("Running parse on " + sql);
 		ParseTree tree = parser.parse();
@@ -64,11 +64,11 @@ public class DDLParserTest {
 
 	@Test
 	public void testBasic() {
-		ExodusSQLSyntaxRrror e = null;
+		MaxwellSQLSyntaxRrror e = null;
 		assertThat(parseAlter("ALTER TABLE `foo` ADD col1 text"), is(not(nullValue())));
 		try {
 			parseAlter("ALTER TABLE foolkj `foo` lkjlkj");
-		} catch ( ExodusSQLSyntaxRrror err ) {
+		} catch ( MaxwellSQLSyntaxRrror err ) {
 			e = err;
 		}
 		assertThat(e, is(not(nullValue())));

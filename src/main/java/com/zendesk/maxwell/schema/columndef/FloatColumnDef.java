@@ -1,4 +1,4 @@
-package com.zendesk.exodus.schema.columndef;
+package com.zendesk.maxwell.schema.columndef;
 
 import com.google.code.or.common.util.MySQLConstants;
 

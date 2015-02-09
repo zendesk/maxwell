@@ -17,8 +17,8 @@ class BinlogDir
     raise NoSuchFileError.new("#{@dir}/#{file} not found!") unless exists?(file)
   end
 
-  java_import 'com.zendesk.exodus.ExodusParser'
-  java_import 'com.zendesk.exodus.ExodusRowFilter'
+  java_import 'com.zendesk.maxwell.MaxwellParser'
+  java_import 'com.zendesk.maxwell.MaxwellRowFilter'
 
   def read_binlog(from, to, options = {}, &block)
     from_file = from.fetch(:file)
@@ -34,10 +34,10 @@ class BinlogDir
     max_events = options[:max_events]
     exclude_tables = options[:exclude_tables] || []
 
-    parser = ExodusParser.new(@dir, from_file)
+    parser = MaxwellParser.new(@dir, from_file)
     parser.start_position = from_pos
 
-    filter = ExodusRowFilter.new
+    filter = MaxwellRowFilter.new
 
 
     # this is the schema that was fetched at the top of the entire process -- the "binlog start position"

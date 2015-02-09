@@ -1,4 +1,4 @@
-package com.zendesk.exodus.schema;
+package com.zendesk.maxwell.schema;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

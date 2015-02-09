@@ -1,4 +1,4 @@
-package com.zendesk.exodus;
+package com.zendesk.maxwell;
 import java.io.File;
 import java.util.HashMap;
 import java.util.TimeZone;
@@ -15,33 +15,33 @@ import com.google.code.or.binlog.impl.FileBasedBinlogParser;
 import com.google.code.or.binlog.impl.event.*;
 import com.google.code.or.binlog.impl.parser.*;
 import com.google.code.or.common.util.MySQLConstants;
-import com.zendesk.exodus.schema.Database;
-import com.zendesk.exodus.schema.Schema;
-import com.zendesk.exodus.schema.Table;
+import com.zendesk.maxwell.schema.Database;
+import com.zendesk.maxwell.schema.Schema;
+import com.zendesk.maxwell.schema.Table;
 
-public class ExodusParser {
+public class MaxwellParser {
 	String filePath, fileName;
 	private long rowEventsProcessed;
 	private long startPosition;
 	private Schema schema;
-	private ExodusFilter filter;
+	private MaxwellFilter filter;
 
 	private final LinkedBlockingQueue<BinlogEventV4> queue =  new LinkedBlockingQueue<BinlogEventV4>(20);
 
 	protected FileBasedBinlogParser parser;
-	protected ExodusBinlogEventListener binlogEventListener;
+	protected MaxwellBinlogEventListener binlogEventListener;
 
-	public ExodusParser(String filePath, String fileName) throws Exception {
+	public MaxwellParser(String filePath, String fileName) throws Exception {
 		this.filePath = filePath;
 		this.fileName = fileName;
 		this.startPosition = 4;
 
 		TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
-		this.binlogEventListener = new ExodusBinlogEventListener(queue);
+		this.binlogEventListener = new MaxwellBinlogEventListener(queue);
 	}
 
-	private ExodusAbstractRowsEvent processRowsEvent(AbstractRowEvent e) {
-		ExodusAbstractRowsEvent ew;
+	private MaxwellAbstractRowsEvent processRowsEvent(AbstractRowEvent e) {
+		MaxwellAbstractRowsEvent ew;
 		Table table;
 
 		table = getTableForId(e.getTableId());
@@ -52,13 +52,13 @@ public class ExodusParser {
 
 		switch (e.getHeader().getEventType()) {
         case MySQLConstants.WRITE_ROWS_EVENT:
-        	ew = new ExodusWriteRowsEvent((WriteRowsEvent) e, table, filter);
+        	ew = new MaxwellWriteRowsEvent((WriteRowsEvent) e, table, filter);
         	break;
         case MySQLConstants.UPDATE_ROWS_EVENT:
-        	ew = new ExodusUpdateRowsEvent((UpdateRowsEvent) e, table, filter);
+        	ew = new MaxwellUpdateRowsEvent((UpdateRowsEvent) e, table, filter);
         	break;
         case MySQLConstants.DELETE_ROWS_EVENT:
-        	ew = new ExodusDeleteRowsEvent(e, table, filter);
+        	ew = new MaxwellDeleteRowsEvent(e, table, filter);
         	break;
         default:
         	return null;
@@ -67,9 +67,9 @@ public class ExodusParser {
 
 	}
 
-	public ExodusAbstractRowsEvent getEvent(boolean stopAtNextTableMap) throws Exception {
+	public MaxwellAbstractRowsEvent getEvent(boolean stopAtNextTableMap) throws Exception {
         BinlogEventV4 v4Event;
-        ExodusAbstractRowsEvent event;
+        MaxwellAbstractRowsEvent event;
 		while (true) {
 			v4Event = getBinlogEvent();
 
@@ -95,7 +95,7 @@ public class ExodusParser {
 		}
 	}
 
-	public ExodusAbstractRowsEvent getEvent() throws Exception {
+	public MaxwellAbstractRowsEvent getEvent() throws Exception {
 		return getEvent(false);
 	}
 
@@ -268,7 +268,7 @@ public class ExodusParser {
 		this.startPosition = pos;
 	}
 
-	public void setFilter(ExodusFilter filter) {
+	public void setFilter(MaxwellFilter filter) {
 		this.filter = filter;
 	}
 }

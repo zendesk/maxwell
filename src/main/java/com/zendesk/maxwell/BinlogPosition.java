@@ -1,4 +1,4 @@
-package com.zendesk.exodus;
+package com.zendesk.maxwell;
 
 import java.sql.Connection;
 import java.sql.ResultSet;

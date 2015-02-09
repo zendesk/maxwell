@@ -1,4 +1,4 @@
-package com.zendesk.exodus;
+package com.zendesk.maxwell;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -17,13 +17,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.code.or.common.util.MySQLConstants;
-import com.zendesk.exodus.schema.columndef.BigIntColumnDef;
-import com.zendesk.exodus.schema.columndef.ColumnDef;
-import com.zendesk.exodus.schema.columndef.DateColumnDef;
-import com.zendesk.exodus.schema.columndef.DateTimeColumnDef;
-import com.zendesk.exodus.schema.columndef.FloatColumnDef;
-import com.zendesk.exodus.schema.columndef.IntColumnDef;
-import com.zendesk.exodus.schema.columndef.StringColumnDef;
+import com.zendesk.maxwell.schema.columndef.BigIntColumnDef;
+import com.zendesk.maxwell.schema.columndef.ColumnDef;
+import com.zendesk.maxwell.schema.columndef.DateColumnDef;
+import com.zendesk.maxwell.schema.columndef.DateTimeColumnDef;
+import com.zendesk.maxwell.schema.columndef.FloatColumnDef;
+import com.zendesk.maxwell.schema.columndef.IntColumnDef;
+import com.zendesk.maxwell.schema.columndef.StringColumnDef;
 
 public class ColumnDefTest {
 	private ColumnDef build(String type, boolean signed) {

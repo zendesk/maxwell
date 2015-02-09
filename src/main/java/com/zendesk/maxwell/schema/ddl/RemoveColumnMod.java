@@ -1,6 +1,6 @@
-package com.zendesk.exodus.schema.ddl;
+package com.zendesk.maxwell.schema.ddl;
 
-import com.zendesk.exodus.schema.Table;
+import com.zendesk.maxwell.schema.Table;
 
 class RemoveColumnMod extends ColumnMod {
 	public RemoveColumnMod(String name) {

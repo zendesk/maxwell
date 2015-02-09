@@ -1,4 +1,4 @@
-package com.zendesk.exodus;
+package com.zendesk.maxwell;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,7 +14,7 @@ import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import com.zendesk.exodus.schema.SchemaCapturer;
+import com.zendesk.maxwell.schema.SchemaCapturer;
 
 public class AbstractMaxwellTest {
 	protected static MysqlIsolatedServer server;
@@ -68,9 +68,9 @@ public class AbstractMaxwellTest {
 		generateBinlogEvents();
 	}
 
-	protected List<ExodusAbstractRowsEvent>getRowsForSQL(ExodusFilter filter, String queries[], String before[]) throws Exception {
+	protected List<MaxwellAbstractRowsEvent>getRowsForSQL(ExodusFilter filter, String queries[], String before[]) throws Exception {
 		BinlogPosition start = BinlogPosition.capture(server.getConnection());
-		ExodusParser p = new ExodusParser(server.getBaseDir() + "/mysqld", start.getFile());
+		MaxwellParser p = new ExodusParser(server.getBaseDir() + "/mysqld", start.getFile());
 		SchemaCapturer capturer = new SchemaCapturer(server.getConnection());
 
 
@@ -85,8 +85,8 @@ public class AbstractMaxwellTest {
 
         p.setStartOffset(start.getOffset());
 
-		ArrayList<ExodusAbstractRowsEvent> list = new ArrayList<>();
-        ExodusAbstractRowsEvent e;
+		ArrayList<MaxwellAbstractRowsEvent> list = new ArrayList<>();
+        MaxwellAbstractRowsEvent e;
 
         while ( (e = p.getEvent()) != null )
         	list.add(e);
@@ -94,7 +94,7 @@ public class AbstractMaxwellTest {
         return list;
 	}
 
-	protected List<ExodusAbstractRowsEvent>getRowsForSQL(ExodusFilter filter, String queries[]) throws Exception {
+	protected List<MaxwellAbstractRowsEvent>getRowsForSQL(ExodusFilter filter, String queries[]) throws Exception {
 		return getRowsForSQL(filter, queries, null);
 	}
 

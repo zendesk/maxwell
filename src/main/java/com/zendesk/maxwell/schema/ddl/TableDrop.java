@@ -1,8 +1,8 @@
-package com.zendesk.exodus.schema.ddl;
+package com.zendesk.maxwell.schema.ddl;
 
-import com.zendesk.exodus.schema.Database;
-import com.zendesk.exodus.schema.Schema;
-import com.zendesk.exodus.schema.Table;
+import com.zendesk.maxwell.schema.Database;
+import com.zendesk.maxwell.schema.Schema;
+import com.zendesk.maxwell.schema.Table;
 
 public class TableDrop extends SchemaChange {
 	private final String dbName;

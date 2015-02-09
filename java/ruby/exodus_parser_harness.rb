@@ -9,10 +9,10 @@ end
 
 #require_relative '../target/exodus-open-replicator-0.0.1.jar'
 #require_relative '../target/exodus-open-replicator-0.0.1.jar'
-java_import 'com.zendesk.exodus.ExodusParser'
+java_import 'com.zendesk.maxwell.MaxwellParser'
 
 
-p = ExodusParser.new('/opt/local/var/db/mysql5', 'master.000004')
+p = MaxwellParser.new('/opt/local/var/db/mysql5', 'master.000004')
 puts "entering getEvent"
 count = 0
 while (e = p.getEvent())

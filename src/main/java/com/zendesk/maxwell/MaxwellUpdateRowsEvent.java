@@ -1,4 +1,4 @@
-package com.zendesk.exodus;
+package com.zendesk.maxwell;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,12 +6,12 @@ import java.util.List;
 import com.google.code.or.binlog.impl.event.UpdateRowsEvent;
 import com.google.code.or.common.glossary.Pair;
 import com.google.code.or.common.glossary.Row;
-import com.zendesk.exodus.schema.Table;
+import com.zendesk.maxwell.schema.Table;
 
-public class ExodusUpdateRowsEvent extends ExodusAbstractRowsEvent {
+public class MaxwellUpdateRowsEvent extends ExodusAbstractRowsEvent {
 	private final UpdateRowsEvent event;
 
-	public ExodusUpdateRowsEvent(UpdateRowsEvent e, Table t, ExodusFilter f) {
+	public MaxwellUpdateRowsEvent(UpdateRowsEvent e, Table t, ExodusFilter f) {
 		super(e, t, f);
 		this.event = e;
 	}

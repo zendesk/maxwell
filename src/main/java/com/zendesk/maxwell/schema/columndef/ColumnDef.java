@@ -1,4 +1,4 @@
-package com.zendesk.exodus.schema.columndef;
+package com.zendesk.maxwell.schema.columndef;
 
 public abstract class ColumnDef {
 	protected final String tableName;

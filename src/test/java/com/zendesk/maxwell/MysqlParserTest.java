@@ -1,4 +1,4 @@
-package com.zendesk.exodus;
+package com.zendesk.maxwell;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -8,10 +8,10 @@ import java.util.Map;
 
 import org.junit.Test;
 
-public class ExodusParserTest extends AbstractMaxwellTest {
+public class MaxwellParserTest extends AbstractMaxwellTest {
 	@Test
 	public void testGetEvent() throws Exception {
-		List<ExodusAbstractRowsEvent> list;
+		List<MaxwellAbstractRowsEvent> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
 		list = getRowsForSQL(null, input);
 		assertThat(list.size(), is(1));
@@ -20,14 +20,14 @@ public class ExodusParserTest extends AbstractMaxwellTest {
 
 	@Test
 	public void testRowFilter() throws Exception {
-		List<ExodusAbstractRowsEvent> list;
+		List<MaxwellAbstractRowsEvent> list;
 		String input[] = {"insert into minimal set account_id = 1, text_field='hello'",
 						  "insert into minimal set account_id = 2, text_field='goodbye'"};
 
 		list = getRowsForSQL(null, input);
 		assertThat(list.size(), is(2));
 
-		ExodusFilter filter = new ExodusFilter();
+		MaxwellFilter filter = new ExodusFilter();
 		filter.addRowConstraint("account_id", 2);
 
 		list = getRowsForSQL(filter, input);
@@ -41,11 +41,11 @@ public class ExodusParserTest extends AbstractMaxwellTest {
 
 	@Test
 	public void testRowFilterOnNonExistantFields() throws Exception {
-		List<ExodusAbstractRowsEvent> list;
+		List<MaxwellAbstractRowsEvent> list;
 		String input[] = {"insert into minimal set account_id = 1, text_field='hello'",
 						  "insert into minimal set account_id = 2, text_field='goodbye'"};
 
-		ExodusFilter filter = new ExodusFilter();
+		MaxwellFilter filter = new ExodusFilter();
 		filter.addRowConstraint("piggypiggy", 2);
 
 		list = getRowsForSQL(filter, input);
@@ -64,10 +64,10 @@ public class ExodusParserTest extends AbstractMaxwellTest {
 
 	@Test
 	public void testIncludeDB() throws Exception {
-		ExodusAbstractRowsEvent e;
-		List<ExodusAbstractRowsEvent> list;
+		MaxwellAbstractRowsEvent e;
+		List<MaxwellAbstractRowsEvent> list;
 
-		ExodusFilter filter = new ExodusFilter();
+		MaxwellFilter filter = new ExodusFilter();
 
 		list = getRowsForSQL(filter, insertSQL, createDBs);
 		assertThat(list.size(), is(2));
@@ -82,10 +82,10 @@ public class ExodusParserTest extends AbstractMaxwellTest {
 
 	@Test
 	public void testExcludeDB() throws Exception {
-		ExodusAbstractRowsEvent e;
-		List<ExodusAbstractRowsEvent> list;
+		MaxwellAbstractRowsEvent e;
+		List<MaxwellAbstractRowsEvent> list;
 
-		ExodusFilter filter = new ExodusFilter();
+		MaxwellFilter filter = new ExodusFilter();
 		filter.excludeDatabase("shard_1");
 		list = getRowsForSQL(filter, insertSQL, createDBs);
 		assertThat(list.size(), is(1));
@@ -96,10 +96,10 @@ public class ExodusParserTest extends AbstractMaxwellTest {
 
 	@Test
 	public void testIncludeTable() throws Exception {
-		ExodusAbstractRowsEvent e;
-		List<ExodusAbstractRowsEvent> list;
+		MaxwellAbstractRowsEvent e;
+		List<MaxwellAbstractRowsEvent> list;
 
-		ExodusFilter filter = new ExodusFilter();
+		MaxwellFilter filter = new ExodusFilter();
 		filter.includeTable("minimal");
 
 		list = getRowsForSQL(filter, insertSQL, createDBs);
@@ -112,10 +112,10 @@ public class ExodusParserTest extends AbstractMaxwellTest {
 
 	@Test
 	public void testExcludeTable() throws Exception {
-		ExodusAbstractRowsEvent e;
-		List<ExodusAbstractRowsEvent> list;
+		MaxwellAbstractRowsEvent e;
+		List<MaxwellAbstractRowsEvent> list;
 
-		ExodusFilter filter = new ExodusFilter();
+		MaxwellFilter filter = new ExodusFilter();
 		filter.excludeTable("minimal");
 
 		list = getRowsForSQL(filter, insertSQL, createDBs);

@@ -1,13 +1,13 @@
-package com.zendesk.exodus;
+package com.zendesk.maxwell;
 
 import java.util.List;
 
 import com.google.code.or.binlog.impl.event.WriteRowsEvent;
 import com.google.code.or.common.glossary.Row;
-import com.zendesk.exodus.schema.Table;
+import com.zendesk.maxwell.schema.Table;
 
 
-public class ExodusWriteRowsEvent extends ExodusAbstractRowsEvent {
+public class MaxwellWriteRowsEvent extends ExodusAbstractRowsEvent {
 	private final WriteRowsEvent event;
 
 	@Override
@@ -15,7 +15,7 @@ public class ExodusWriteRowsEvent extends ExodusAbstractRowsEvent {
 		return event.getRows();
 	}
 
-	public ExodusWriteRowsEvent(WriteRowsEvent e, Table t, ExodusFilter f) {
+	public MaxwellWriteRowsEvent(WriteRowsEvent e, Table t, ExodusFilter f) {
 		super(e, t, f);
 		this.event = e;
 	}
