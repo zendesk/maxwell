@@ -8,7 +8,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
-public class MaxwellParserTest extends AbstractMaxwellTest {
+public class MysqlParserTest extends AbstractMaxwellTest {
 	@Test
 	public void testGetEvent() throws Exception {
 		List<MaxwellAbstractRowsEvent> list;

@@ -18,7 +18,7 @@ class MaxwellSQLSyntaxRrror extends RuntimeException {
 	}
 }
 
-public class MaxwellMysqlParserListener extends mysqlBaseListener {
+public class MysqlParserListener extends mysqlBaseListener {
 	private String tableName;
 	private final ArrayList<SchemaChange> schemaChanges;
 	private final String currentDatabase;
@@ -30,7 +30,7 @@ public class MaxwellMysqlParserListener extends mysqlBaseListener {
 
 	private final LinkedList<ColumnDef> columnDefs = new LinkedList<>();
 
-	MaxwellMysqlParserListener(String currentDatabase)  {
+	MysqlParserListener(String currentDatabase)  {
 		this.schemaChanges = new ArrayList<>();
 		this.currentDatabase = currentDatabase;
 	}

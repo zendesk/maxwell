@@ -1,23 +1,16 @@
 package com.zendesk.maxwell;
 
-import java.math.BigInteger;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
-
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang.StringEscapeUtils;
 
 import com.google.code.or.binlog.BinlogEventV4Header;
 import com.google.code.or.binlog.impl.event.AbstractRowEvent;
 import com.google.code.or.common.glossary.Column;
 import com.google.code.or.common.glossary.Row;
-import com.google.code.or.common.glossary.column.*;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
 

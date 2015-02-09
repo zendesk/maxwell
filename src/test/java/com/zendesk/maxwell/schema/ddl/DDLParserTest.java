@@ -32,7 +32,7 @@ public class DDLParserTest {
 	public void tearDown() throws Exception {
 	}
 
-	private MaxwellMysqlParserListener parse(String sql) {
+	private MysqlParserListener parse(String sql) {
 		ANTLRInputStream input = new ANTLRInputStream(sql);
 		mysqlLexer lexer = new mysqlLexer(input);
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
@@ -43,7 +43,7 @@ public class DDLParserTest {
 		// create a parser that feeds off the tokens buffer
 		mysqlParser parser = new mysqlParser(tokens);
 
-		MaxwellMysqlParserListener listener = new MaxwellMysqlParserListener("default_db");
+		MysqlParserListener listener = new MysqlParserListener("default_db");
 
 		System.out.println("Running parse on " + sql);
 		ParseTree tree = parser.parse();
@@ -316,7 +316,7 @@ public class DDLParserTest {
 
 	@Test
 	public void testDropTable() {
-		List<SchemaChange> changes = parse("DROP TABLE IF NOT exists `foo`.bar, `bar`.baz").getSchemaChanges();
+		List<SchemaChange> changes = parse("DROP TABLE IF exists `foo`.bar, `bar`.baz").getSchemaChanges();
 
 
 
