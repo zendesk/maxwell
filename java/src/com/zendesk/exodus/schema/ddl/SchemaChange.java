@@ -24,7 +24,7 @@ public abstract class SchemaChange {
 		ParseTreeWalker.DEFAULT.walk(listener, tree);
 		System.out.println(tree.toStringTree(parser));
 
-		return listener.getSchemaChange();
+		return listener.getSchemaChanges();
 	}
 
 }

@@ -3,6 +3,8 @@ package com.zendesk.exodus.schema.ddl;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
+import java.util.List;
+
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -53,11 +55,11 @@ public class DDLParserTest {
 	}
 
 	private TableAlter parseAlter(String sql) {
-		return (TableAlter) parse(sql).getSchemaChange();
+		return (TableAlter) parse(sql).getSchemaChanges().get(0);
 	}
 
 	private TableCreate parseCreate(String sql) {
-		return (TableCreate) parse(sql).getSchemaChange();
+		return (TableCreate) parse(sql).getSchemaChanges().get(0);
 	}
 
 	@Test
@@ -310,5 +312,13 @@ public class DDLParserTest {
 			  	+ "ROW_FORMAT=FIXED"
 		);
 		assertThat(c, not(nullValue()));
+	}
+
+	@Test
+	public void testDropTable() {
+		List<SchemaChange> changes = parse("DROP TABLE IF NOT exists `foo`.bar, `bar`.baz").getSchemaChanges();
+
+
+
 	}
 }

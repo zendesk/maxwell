@@ -1,5 +1,6 @@
 package com.zendesk.exodus.schema.ddl;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -19,21 +20,18 @@ class ExodusSQLSyntaxRrror extends RuntimeException {
 
 public class ExodusMysqlParserListener extends mysqlBaseListener {
 	private String tableName;
-	private SchemaChange schemaChange;
+	private final ArrayList<SchemaChange> schemaChanges;
 	private final String currentDatabase;
 	private ColumnPosition columnPosition;
 
-	public SchemaChange getSchemaChange() {
-		return schemaChange;
+	public List<SchemaChange> getSchemaChanges() {
+		return schemaChanges;
 	}
-
-	private TableAlter alterStatement() {
-		return ((TableAlter) schemaChange);
-	};
 
 	private final LinkedList<ColumnDef> columnDefs = new LinkedList<>();
 
 	ExodusMysqlParserListener(String currentDatabase)  {
+		this.schemaChanges = new ArrayList<>();
 		this.currentDatabase = currentDatabase;
 	}
 
@@ -56,10 +54,14 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 		return unquote(t.name().getText());
 	}
 
+	private TableAlter alterStatement() {
+		return (TableAlter)schemaChanges.get(0);
+	}
+
 
 	@Override
 	public void visitErrorNode(ErrorNode node) {
-		this.schemaChange = null;
+		this.schemaChanges.clear();
 		System.out.println(node.getParent().toStringTree(new mysqlParser(null)));
 		throw new ExodusSQLSyntaxRrror(node.getText());
 	}
@@ -92,7 +94,7 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 		TableAlter alterStatement = new TableAlter(dbName, tableName);
 		this.tableName = alterStatement.tableName;
 
-		this.schemaChange = alterStatement;
+		this.schemaChanges.add(alterStatement);
 		System.out.println(alterStatement);
 	}
 
@@ -158,12 +160,20 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 		TableCreate createStatement = new TableCreate(dbName, tblName);
 		this.tableName = createStatement.tableName;
 
-		this.schemaChange = createStatement;
+		this.schemaChanges.add(createStatement);
 	}
 
 	@Override
 	public void exitCreate_specifications(Create_specificationsContext ctx) {
-		((TableCreate) schemaChange).columns.addAll(this.columnDefs);
+		TableCreate tableCreate = (TableCreate) schemaChanges.get(0);
+		tableCreate.columns.addAll(this.columnDefs);
+	}
+
+	@Override
+	public void exitDrop_table(mysqlParser.Drop_tableContext ctx) {
+		for ( Table_nameContext t : ctx.table_name()) {
+			schemaChanges.add(new TableDrop(getDB(t), getTable(t)));
+		}
 	}
 
 	@Override
@@ -203,15 +213,13 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 
 
 	@Override
-	public void enterRename_table(Rename_tableContext ctx) {
-		this.schemaChange = new TableRenames();
-	}
-
-	@Override
 	public void exitRename_table_spec(Rename_table_specContext ctx) {
 		Table_nameContext oldTableContext = ctx.table_name(0);
 		Table_nameContext newTableContext = ctx.table_name(1);
 
-		((TableRenames) this.schemaChange).addAlter(getDB(oldTableContext), getTable(oldTableContext), getDB(newTableContext), getTable(newTableContext));
+		TableAlter t = new TableAlter(getDB(oldTableContext), getTable(oldTableContext));
+		t.newDatabase  = getDB(newTableContext);
+		t.newTableName = getTable(newTableContext);
+		this.schemaChanges.add(t);
 	}
 }
