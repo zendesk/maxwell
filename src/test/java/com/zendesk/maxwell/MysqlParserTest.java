@@ -27,7 +27,7 @@ public class MaxwellParserTest extends AbstractMaxwellTest {
 		list = getRowsForSQL(null, input);
 		assertThat(list.size(), is(2));
 
-		MaxwellFilter filter = new ExodusFilter();
+		MaxwellFilter filter = new MaxwellFilter();
 		filter.addRowConstraint("account_id", 2);
 
 		list = getRowsForSQL(filter, input);
@@ -45,7 +45,7 @@ public class MaxwellParserTest extends AbstractMaxwellTest {
 		String input[] = {"insert into minimal set account_id = 1, text_field='hello'",
 						  "insert into minimal set account_id = 2, text_field='goodbye'"};
 
-		MaxwellFilter filter = new ExodusFilter();
+		MaxwellFilter filter = new MaxwellFilter();
 		filter.addRowConstraint("piggypiggy", 2);
 
 		list = getRowsForSQL(filter, input);
@@ -67,7 +67,7 @@ public class MaxwellParserTest extends AbstractMaxwellTest {
 		MaxwellAbstractRowsEvent e;
 		List<MaxwellAbstractRowsEvent> list;
 
-		MaxwellFilter filter = new ExodusFilter();
+		MaxwellFilter filter = new MaxwellFilter();
 
 		list = getRowsForSQL(filter, insertSQL, createDBs);
 		assertThat(list.size(), is(2));
@@ -85,7 +85,7 @@ public class MaxwellParserTest extends AbstractMaxwellTest {
 		MaxwellAbstractRowsEvent e;
 		List<MaxwellAbstractRowsEvent> list;
 
-		MaxwellFilter filter = new ExodusFilter();
+		MaxwellFilter filter = new MaxwellFilter();
 		filter.excludeDatabase("shard_1");
 		list = getRowsForSQL(filter, insertSQL, createDBs);
 		assertThat(list.size(), is(1));
@@ -99,7 +99,7 @@ public class MaxwellParserTest extends AbstractMaxwellTest {
 		MaxwellAbstractRowsEvent e;
 		List<MaxwellAbstractRowsEvent> list;
 
-		MaxwellFilter filter = new ExodusFilter();
+		MaxwellFilter filter = new MaxwellFilter();
 		filter.includeTable("minimal");
 
 		list = getRowsForSQL(filter, insertSQL, createDBs);
@@ -115,7 +115,7 @@ public class MaxwellParserTest extends AbstractMaxwellTest {
 		MaxwellAbstractRowsEvent e;
 		List<MaxwellAbstractRowsEvent> list;
 
-		MaxwellFilter filter = new ExodusFilter();
+		MaxwellFilter filter = new MaxwellFilter();
 		filter.excludeTable("minimal");
 
 		list = getRowsForSQL(filter, insertSQL, createDBs);

@@ -26,7 +26,7 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 	private final AbstractRowEvent event;
 	protected final Table table;
 
-	public MaxwellAbstractRowsEvent(AbstractRowEvent e, Table table, ExodusFilter f) {
+	public MaxwellAbstractRowsEvent(AbstractRowEvent e, Table table, MaxwellFilter f) {
 		this.tableId = e.getTableId();
 		this.event = e;
 		this.header = e.getHeader();

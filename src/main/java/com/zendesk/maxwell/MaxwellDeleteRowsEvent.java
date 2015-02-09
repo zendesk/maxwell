@@ -7,10 +7,10 @@ import com.google.code.or.binlog.impl.event.DeleteRowsEvent;
 import com.google.code.or.common.glossary.Row;
 import com.zendesk.maxwell.schema.Table;
 
-public class MaxwellDeleteRowsEvent extends ExodusAbstractRowsEvent {
+public class MaxwellDeleteRowsEvent extends MaxwellAbstractRowsEvent {
 	private final DeleteRowsEvent event;
 
-	public MaxwellDeleteRowsEvent(AbstractRowEvent e, Table table, ExodusFilter f) {
+	public MaxwellDeleteRowsEvent(AbstractRowEvent e, Table table, MaxwellFilter f) {
 		super(e, table, f);
 		this.event = (DeleteRowsEvent) e;
 	}

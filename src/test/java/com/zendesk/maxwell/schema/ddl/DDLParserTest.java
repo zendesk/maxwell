@@ -43,7 +43,7 @@ public class DDLParserTest {
 		// create a parser that feeds off the tokens buffer
 		mysqlParser parser = new mysqlParser(tokens);
 
-		MaxwellMysqlParserListener listener = new ExodusMysqlParserListener("default_db");
+		MaxwellMysqlParserListener listener = new MaxwellMysqlParserListener("default_db");
 
 		System.out.println("Running parse on " + sql);
 		ParseTree tree = parser.parse();

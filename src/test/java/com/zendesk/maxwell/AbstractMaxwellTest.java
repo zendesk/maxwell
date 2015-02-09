@@ -68,9 +68,9 @@ public class AbstractMaxwellTest {
 		generateBinlogEvents();
 	}
 
-	protected List<MaxwellAbstractRowsEvent>getRowsForSQL(ExodusFilter filter, String queries[], String before[]) throws Exception {
+	protected List<MaxwellAbstractRowsEvent>getRowsForSQL(MaxwellFilter filter, String queries[], String before[]) throws Exception {
 		BinlogPosition start = BinlogPosition.capture(server.getConnection());
-		MaxwellParser p = new ExodusParser(server.getBaseDir() + "/mysqld", start.getFile());
+		MaxwellParser p = new MaxwellParser(server.getBaseDir() + "/mysqld", start.getFile());
 		SchemaCapturer capturer = new SchemaCapturer(server.getConnection());
 
 
@@ -94,7 +94,7 @@ public class AbstractMaxwellTest {
         return list;
 	}
 
-	protected List<MaxwellAbstractRowsEvent>getRowsForSQL(ExodusFilter filter, String queries[]) throws Exception {
+	protected List<MaxwellAbstractRowsEvent>getRowsForSQL(MaxwellFilter filter, String queries[]) throws Exception {
 		return getRowsForSQL(filter, queries, null);
 	}
 

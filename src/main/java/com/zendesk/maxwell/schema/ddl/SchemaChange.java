@@ -43,7 +43,7 @@ public abstract class SchemaChange {
 		CommonTokenStream tokens = new CommonTokenStream(lexer);
 		mysqlParser parser = new mysqlParser(tokens);
 
-		MaxwellMysqlParserListener listener = new ExodusMysqlParserListener(currentDB);
+		MaxwellMysqlParserListener listener = new MaxwellMysqlParserListener(currentDB);
 
 		System.out.println("Running parse on " + sql);
 		ParseTree tree = parser.parse();

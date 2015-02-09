@@ -7,7 +7,7 @@ import com.google.code.or.common.glossary.Row;
 import com.zendesk.maxwell.schema.Table;
 
 
-public class MaxwellWriteRowsEvent extends ExodusAbstractRowsEvent {
+public class MaxwellWriteRowsEvent extends MaxwellAbstractRowsEvent {
 	private final WriteRowsEvent event;
 
 	@Override
@@ -15,7 +15,7 @@ public class MaxwellWriteRowsEvent extends ExodusAbstractRowsEvent {
 		return event.getRows();
 	}
 
-	public MaxwellWriteRowsEvent(WriteRowsEvent e, Table t, ExodusFilter f) {
+	public MaxwellWriteRowsEvent(WriteRowsEvent e, Table t, MaxwellFilter f) {
 		super(e, t, f);
 		this.event = e;
 	}
