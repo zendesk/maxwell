@@ -136,6 +136,9 @@ MEMORY
 
 ROW_FORMAT
 UNION
+
+RESTRICT
+CASCADE
 )
 
 tokens_allowed_in_names = []

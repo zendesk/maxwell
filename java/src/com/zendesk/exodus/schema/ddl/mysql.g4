@@ -7,6 +7,7 @@ parse: statement
 statement:
 	alter_table 
     | create_table
+    | drop_table
     | rename_table;
 
 create_table: 
@@ -26,6 +27,9 @@ create_specification:
 		
 
 create_like_tbl: LIKE table_name;
+
+drop_table: DROP TEMPORARY? TABLE (IF EXISTS)? table_name (',' table_name)* drop_table_options*;
+drop_table_options: (RESTRICT | CASCADE);
 
 rename_table: RENAME TABLE rename_table_spec (',' rename_table_spec)*;
 rename_table_spec: table_name TO table_name;
