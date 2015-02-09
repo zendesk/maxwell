@@ -5,8 +5,8 @@ import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.Table;
 
 public class TableDrop extends SchemaChange {
-	private final String dbName;
-	private final String tableName;
+	final String dbName;
+	final String tableName;
 
 	public TableDrop(String dbName, String tableName) {
 		this.dbName = dbName;

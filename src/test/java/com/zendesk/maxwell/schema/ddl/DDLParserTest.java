@@ -317,8 +317,11 @@ public class DDLParserTest {
 	@Test
 	public void testDropTable() {
 		List<SchemaChange> changes = parse("DROP TABLE IF exists `foo`.bar, `bar`.baz").getSchemaChanges();
+		assertThat(changes.size(), is(2));
 
-
+		TableDrop d = (TableDrop) changes.get(0);
+		assertThat(d.tableName, is("bar"));
+		assertThat(d.dbName, is("foo"));
 
 	}
 }
