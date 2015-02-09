@@ -20,7 +20,7 @@ public class TableCreate extends SchemaChange {
 	}
 
 	@Override
-	Schema apply(Schema originalSchema) throws SchemaSyncError {
+	public Schema apply(Schema originalSchema) throws SchemaSyncError {
 		Schema newSchema = originalSchema.copy();
 
 		Database d = newSchema.findDatabase(this.dbName);

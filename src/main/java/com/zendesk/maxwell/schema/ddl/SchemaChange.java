@@ -12,7 +12,7 @@ import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.Table;
 
 public abstract class SchemaChange {
-	abstract Schema apply(Schema originalSchema) throws SchemaSyncError;
+	public abstract Schema apply(Schema originalSchema) throws SchemaSyncError;
 
 	protected Database findDatabase(Schema schema, String dbName) throws SchemaSyncError {
 		Database database = schema.findDatabase(dbName);
@@ -37,7 +37,7 @@ public abstract class SchemaChange {
 	}
 
 
-	static List<SchemaChange> parse(String currentDB, String sql) {
+	public static List<SchemaChange> parse(String currentDB, String sql) {
 		ANTLRInputStream input = new ANTLRInputStream(sql);
 		mysqlLexer lexer = new mysqlLexer(input);
 		CommonTokenStream tokens = new CommonTokenStream(lexer);

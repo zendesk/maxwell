@@ -6,11 +6,6 @@ import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.Table;
 
-class SchemaSyncError extends Exception {
-	public SchemaSyncError (String message) { super(message); }
-	private static final long serialVersionUID = 1L;
-}
-
 public class TableAlter extends SchemaChange {
 	public String dbName;
 	public String tableName;
@@ -34,7 +29,7 @@ public class TableAlter extends SchemaChange {
 	}
 
 	@Override
-	Schema apply(Schema originalSchema) throws SchemaSyncError {
+	public Schema apply(Schema originalSchema) throws SchemaSyncError {
 		Schema newSchema = originalSchema.copy();
 
 		Database database = findDatabase(newSchema, this.dbName);

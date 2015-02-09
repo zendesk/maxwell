@@ -1,6 +1,7 @@
 package com.zendesk.maxwell;
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -18,6 +19,8 @@ import com.google.code.or.common.util.MySQLConstants;
 import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.Table;
+import com.zendesk.maxwell.schema.ddl.SchemaChange;
+import com.zendesk.maxwell.schema.ddl.SchemaSyncError;
 
 public class MaxwellParser {
 	String filePath, fileName;
@@ -31,10 +34,11 @@ public class MaxwellParser {
 	protected FileBasedBinlogParser parser;
 	protected MaxwellBinlogEventListener binlogEventListener;
 
-	public MaxwellParser(String filePath, String fileName) throws Exception {
+	public MaxwellParser(String filePath, String fileName, Schema currentSchema) throws Exception {
 		this.filePath = filePath;
 		this.fileName = fileName;
 		this.startPosition = 4;
+		this.schema = currentSchema;
 
 		TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 		this.binlogEventListener = new MaxwellBinlogEventListener(queue);
@@ -91,6 +95,8 @@ public class MaxwellParser {
 
 				processTableMapEvent((TableMapEvent) v4Event);
 				break;
+			case MySQLConstants.QUERY_EVENT:
+				processQueryEvent((QueryEvent) v4Event);
 			}
 		}
 	}
@@ -101,6 +107,17 @@ public class MaxwellParser {
 
 	private final HashMap<Long,Table> tableMapCache = new HashMap<>();
 
+	private void processQueryEvent(QueryEvent event) throws SchemaSyncError {
+		// get encoding of the alter event somehow; or just fuck it.
+		String dbName = event.getDatabaseName().toString();
+		String sql = event.getSql().toString();
+
+		List<SchemaChange> changes = SchemaChange.parse(dbName, sql);
+		for ( SchemaChange change : changes ) {
+			this.schema = change.apply(this.schema);
+		}
+
+	}
 	// open-replicator keeps a very similar cache, but we can't get access to it.
 	private void processTableMapEvent(TableMapEvent event) {
 		Long tableId = event.getTableId();

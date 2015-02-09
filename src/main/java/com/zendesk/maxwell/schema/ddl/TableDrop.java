@@ -13,7 +13,7 @@ public class TableDrop extends SchemaChange {
 		this.tableName = tableName;
 	}
 	@Override
-	Schema apply(Schema originalSchema) throws SchemaSyncError {
+	public Schema apply(Schema originalSchema) throws SchemaSyncError {
 		Schema newSchema = originalSchema.copy();
 
 		Database d = findDatabase(newSchema, this.dbName);

@@ -70,7 +70,6 @@ public class AbstractMaxwellTest {
 
 	protected List<MaxwellAbstractRowsEvent>getRowsForSQL(MaxwellFilter filter, String queries[], String before[]) throws Exception {
 		BinlogPosition start = BinlogPosition.capture(server.getConnection());
-		MaxwellParser p = new MaxwellParser(server.getBaseDir() + "/mysqld", start.getFile());
 		SchemaCapturer capturer = new SchemaCapturer(server.getConnection());
 
 
@@ -78,7 +77,7 @@ public class AbstractMaxwellTest {
 			server.executeList(Arrays.asList(before));
 		}
 
-		p.setSchema(capturer.capture());
+		MaxwellParser p = new MaxwellParser(server.getBaseDir() + "/mysqld", start.getFile(), capturer.capture());
 		p.setFilter(filter);
 
         server.executeList(Arrays.asList(queries));
