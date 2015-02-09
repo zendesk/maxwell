@@ -211,14 +211,20 @@ public class ExodusParser {
 			@Override
 			public boolean accepts(BinlogEventV4Header header, BinlogParserContext context) {
 				int eventType = header.getEventType();
-				return eventType == MySQLConstants.WRITE_ROWS_EVENT ||
-						eventType == MySQLConstants.WRITE_ROWS_EVENT_V2 ||
-						eventType == MySQLConstants.UPDATE_ROWS_EVENT ||
-						eventType == MySQLConstants.UPDATE_ROWS_EVENT_V2 ||
-						eventType == MySQLConstants.DELETE_ROWS_EVENT ||
-						eventType == MySQLConstants.DELETE_ROWS_EVENT_V2 ||
-						eventType == MySQLConstants.TABLE_MAP_EVENT ||
-						eventType == MySQLConstants.ROTATE_EVENT;
+				switch(eventType) {
+				case MySQLConstants.WRITE_ROWS_EVENT:
+				case MySQLConstants.WRITE_ROWS_EVENT_V2:
+				case MySQLConstants.UPDATE_ROWS_EVENT:
+				case MySQLConstants.UPDATE_ROWS_EVENT_V2:
+				case MySQLConstants.DELETE_ROWS_EVENT:
+				case MySQLConstants.DELETE_ROWS_EVENT_V2:
+				case MySQLConstants.TABLE_MAP_EVENT:
+				case MySQLConstants.ROTATE_EVENT:
+				case MySQLConstants.QUERY_EVENT:
+					return true;
+				default:
+					return false;
+				}
 			}
 		});
 		this.fileName = fileName;
