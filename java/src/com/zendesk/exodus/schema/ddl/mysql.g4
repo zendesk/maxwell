@@ -5,19 +5,19 @@ parse: statement
        EOF;
 
 statement:
-	alter_tbl_statement 
-    | create_tbl_statement
-    | rename_tbl_statement;
+	alter_table 
+    | create_table
+    | rename_table;
 
-create_tbl_statement: 
-    create_tbl_preamble 
+create_table: 
+    create_table_preamble 
     ( 
       ( create_specifications table_creation_options* )
       | create_like_tbl
     );
     
 
-create_tbl_preamble: CREATE TEMPORARY? TABLE (IF NOT EXISTS)? table_name;
+create_table_preamble: CREATE TEMPORARY? TABLE (IF NOT EXISTS)? table_name;
 create_specifications: '(' create_specification (',' create_specification)* ')'; 
 
 create_specification: 
@@ -27,12 +27,12 @@ create_specification:
 
 create_like_tbl: LIKE table_name;
 
-rename_tbl_statement: RENAME TABLE rename_tbl_spec (',' rename_tbl_spec)*;
-rename_tbl_spec: table_name TO table_name;
+rename_table: RENAME TABLE rename_table_spec (',' rename_table_spec)*;
+rename_table_spec: table_name TO table_name;
 
-alter_tbl_statement: alter_tbl_preamble alter_specifications (engine_statement)?;
+alter_table: alter_table_preamble alter_specifications (engine_statement)?;
 
-alter_tbl_preamble: ALTER alter_flags? TABLE table_name;
+alter_table_preamble: ALTER alter_flags? TABLE table_name;
 alter_flags: (ONLINE | OFFLINE | IGNORE);
 
 alter_specifications: alter_specification (',' alter_specification)*;
@@ -42,7 +42,7 @@ alter_specification: add_column
                      | modify_column
                      | drop_column
                      | ignored_alter_specifications
-                     | rename_table
+                     | alter_rename_table
                      | convert_to_character_set
                      | default_character_set
                      ; 
@@ -52,7 +52,7 @@ add_column_parens: ADD COLUMN? '(' column_definition (',' column_definition)* ')
 change_column: CHANGE COLUMN? old_col_name column_definition col_position?;
 modify_column: MODIFY COLUMN? column_definition col_position?;
 drop_column: DROP COLUMN? old_col_name;
-rename_table: RENAME (TO | AS) table_name;
+alter_rename_table: RENAME (TO | AS) table_name;
 
 convert_to_character_set: CONVERT TO charset_token charset_name collation?;
 default_character_set: DEFAULT? charset_token '=' charset_name ( COLLATE '=' (IDENT | STRING_LITERAL) )?;

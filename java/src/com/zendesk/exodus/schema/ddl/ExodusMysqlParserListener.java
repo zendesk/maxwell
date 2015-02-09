@@ -85,7 +85,7 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 	}
 
 	@Override
-	public void exitAlter_tbl_preamble(Alter_tbl_preambleContext ctx) {
+	public void exitAlter_table_preamble(Alter_table_preambleContext ctx) {
 		String dbName = getDB(ctx.table_name());
 		String tableName = getTable(ctx.table_name());
 
@@ -137,7 +137,7 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 		}
 	}
 	@Override
-	public void exitRename_table(mysqlParser.Rename_tableContext ctx) {
+	public void exitAlter_rename_table(Alter_rename_tableContext ctx) {
 		alterStatement().newTableName = getTable(ctx.table_name());
 		alterStatement().newDatabase  = getDB(ctx.table_name());
 	}
@@ -151,7 +151,7 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 	}
 
 	@Override
-	public void exitCreate_tbl_preamble(Create_tbl_preambleContext ctx) {
+	public void exitCreate_table_preamble(Create_table_preambleContext ctx) {
 		String dbName = getDB(ctx.table_name());
 		String tblName = getTable(ctx.table_name());
 
@@ -203,12 +203,12 @@ public class ExodusMysqlParserListener extends mysqlBaseListener {
 
 
 	@Override
-	public void enterRename_tbl_statement(mysqlParser.Rename_tbl_statementContext ctx) {
+	public void enterRename_table(Rename_tableContext ctx) {
 		this.schemaChange = new TableRenames();
 	}
 
 	@Override
-	public void exitRename_tbl_spec(mysqlParser.Rename_tbl_specContext ctx) {
+	public void exitRename_table_spec(Rename_table_specContext ctx) {
 		Table_nameContext oldTableContext = ctx.table_name(0);
 		Table_nameContext newTableContext = ctx.table_name(1);
 

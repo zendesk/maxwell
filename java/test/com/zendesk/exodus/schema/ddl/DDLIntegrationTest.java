@@ -56,7 +56,11 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 			"alter table shard_1.nananana drop column barbar",
 
 			"create table shard_2.weird_rename ( str mediumtext )",
-			"alter table shard_2.weird_rename rename to lowball" // renames to shard_1.lowball
+			"alter table shard_2.weird_rename rename to lowball", // renames to shard_1.lowball
+
+			"create table shard_1.testDrop ( id int(11) )",
+			"drop table shard_1.testDrop"
+
 		};
 		testIntegration(sql);
 	}
