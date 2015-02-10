@@ -14,21 +14,29 @@ import com.zendesk.maxwell.schema.Table;
 public abstract class SchemaChange {
 	public abstract Schema apply(Schema originalSchema) throws SchemaSyncError;
 
-	protected Database findDatabase(Schema schema, String dbName) throws SchemaSyncError {
+	protected Database findDatabase(Schema schema, String dbName, boolean ignoreMissing) throws SchemaSyncError {
 		Database database = schema.findDatabase(dbName);
 
-		if ( database == null )
+		if ( database == null && !ignoreMissing )
 			throw new SchemaSyncError("Couldn't find database " + dbName);
 
 		return database;
 	}
 
-	protected Table findTable(Database d, String tableName) throws SchemaSyncError {
+	protected Database findDatabase(Schema schema, String dbName) throws SchemaSyncError {
+		return findDatabase(schema, dbName, false);
+	}
+
+	protected Table findTable(Database d, String tableName, boolean ignoreMissing) throws SchemaSyncError {
 		Table table = d.findTable(tableName);
 
-		if ( table == null )
+		if ( table == null && !ignoreMissing )
 			throw new SchemaSyncError("Couldn't find table " + d.getName() + "." + tableName);
 		return table;
+	}
+
+	protected Table findTable(Database d, String tableName) throws SchemaSyncError {
+		return findTable(d, tableName, false);
 	}
 
 	protected Table findTable(Schema schema, String dbName, String tableName) throws SchemaSyncError {

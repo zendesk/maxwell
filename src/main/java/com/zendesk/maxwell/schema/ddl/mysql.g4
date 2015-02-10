@@ -28,7 +28,7 @@ create_specification:
 
 create_like_tbl: LIKE table_name;
 
-drop_table: DROP TEMPORARY? TABLE (IF EXISTS)? table_name (',' table_name)* drop_table_options*;
+drop_table: DROP TEMPORARY? TABLE if_exists? table_name (',' table_name)* drop_table_options*;
 drop_table_options: (RESTRICT | CASCADE);
 
 rename_table: RENAME TABLE rename_table_spec (',' rename_table_spec)*;
@@ -114,7 +114,6 @@ index_type_5:
 	
 // TODO: foreign key references.  goddamn.
 	
- 
 index_or_key: (INDEX|KEY);
 index_constraint: (CONSTRAINT name?);
 index_name: name;
@@ -128,6 +127,9 @@ index_column_list: '(' name_list ')';
 name_list: name (',' name )*; 
 
 engine_statement: ENGINE '=' IDENT;
+
+if_exists: IF EXISTS;
+if_not_exists: IF NOT EXISTS; 
 
 db_name: name '.';
 table_name: (db_name name)

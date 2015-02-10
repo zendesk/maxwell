@@ -171,8 +171,9 @@ public class MysqlParserListener extends mysqlBaseListener {
 
 	@Override
 	public void exitDrop_table(mysqlParser.Drop_tableContext ctx) {
+		boolean ifExists = ctx.if_exists() != null;
 		for ( Table_nameContext t : ctx.table_name()) {
-			schemaChanges.add(new TableDrop(getDB(t), getTable(t)));
+			schemaChanges.add(new TableDrop(getDB(t), getTable(t), ifExists));
 		}
 	}
 
