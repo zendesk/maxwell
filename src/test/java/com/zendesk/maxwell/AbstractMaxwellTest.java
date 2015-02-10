@@ -27,7 +27,7 @@ public class AbstractMaxwellTest {
 
 	private String getSQLDir() {
 		 final String dir = System.getProperty("user.dir");
-		 return dir + "/../spec/sql";
+		 return dir + "/src/test/resources/sql/schema/";
 	}
 
 
@@ -56,7 +56,7 @@ public class AbstractMaxwellTest {
 	}
 
 	private void generateBinlogEvents() throws IOException, SQLException {
-		Path p = Paths.get(System.getProperty("user.dir") + "/../spec/rows.sql");
+		Path p = Paths.get(System.getProperty("user.dir") + "/src/test/resources/sql/rows/rows.sql");
 		List<String>sql = Files.readAllLines(p, Charset.forName("UTF-8"));
 
 		server.executeList(sql);
