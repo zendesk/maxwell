@@ -13,6 +13,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="target/generated-sources/antlr4"/>
+	<classpathentry kind="src" path="src/test/resources"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
 		<attributes>
 			<attribute name="maven.pomderived" value="true"/>
