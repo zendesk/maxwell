@@ -25,9 +25,9 @@ public class AbstractMaxwellTest {
 		server.boot();
 	}
 
-	private String getSQLDir() {
+	public String getSQLDir() {
 		 final String dir = System.getProperty("user.dir");
-		 return dir + "/src/test/resources/sql/schema/";
+		 return dir + "/src/test/resources/sql/";
 	}
 
 
@@ -39,7 +39,7 @@ public class AbstractMaxwellTest {
 				"USE shard_1"
 		));
 
-		for ( File file: new File(getSQLDir()).listFiles()) {
+		for ( File file: new File(getSQLDir() + "/schema").listFiles()) {
 			if ( !file.getName().endsWith(".sql"))
 				continue;
 
@@ -56,7 +56,7 @@ public class AbstractMaxwellTest {
 	}
 
 	private void generateBinlogEvents() throws IOException, SQLException {
-		Path p = Paths.get(System.getProperty("user.dir") + "/src/test/resources/sql/rows/rows.sql");
+		Path p = Paths.get(getSQLDir() + "/rows/rows.sql");
 		List<String>sql = Files.readAllLines(p, Charset.forName("UTF-8"));
 
 		server.executeList(sql);

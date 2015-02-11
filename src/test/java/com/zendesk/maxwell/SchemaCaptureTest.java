@@ -2,7 +2,6 @@ package com.zendesk.maxwell;
 
 import static org.junit.Assert.*;
 
-import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -84,11 +83,5 @@ public class SchemaCaptureTest extends AbstractMaxwellTest {
 
 		assertThat(columns[1], allOf(notNullValue(), instanceOf(IntColumnDef.class)));
 		assertThat(columns[1].getName(), is("account_id"));
-	}
-
-	@Test
-	public void testJSON() throws SQLException, IOException {
-		Schema s = capturer.capture();
-		System.out.println(JsonWriter.objectToJson(s));
 	}
 }

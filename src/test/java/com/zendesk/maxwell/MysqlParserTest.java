@@ -133,5 +133,86 @@ public class MysqlParserTest extends AbstractMaxwellTest {
 		assertThat(e.getTable().getName(), is("bars"));
 	}
 
+	String testAlterSQL[] = {
+			"insert into minimal set account_id = 1, text_field='hello'",
+			"ALTER table minimal drop column text_field",
+			"insert into minimal set account_id = 2",
+			"ALTER table minimal add column new_text_field varchar(255)",
+			"insert into minimal set account_id = 2, new_text_field='hihihi'",
+
+	};
+	@Test
+	public void testAlterTable() throws Exception {
+		MaxwellAbstractRowsEvent e;
+		List<MaxwellAbstractRowsEvent> list;
+
+		list = getRowsForSQL(null, testAlterSQL, null);
+
+		e = list.get(0);
+		assertThat(e.getTable().getName(), is("minimal"));
+	}
+
+	private void runJSONTest(List<String> sql, List<JSONObject> json) throws Exception {
+		List<JSONObject> eventJSON = new ArrayList<>();
+		List<JSONObject> matched = new ArrayList<>();
+		List<MaxwellAbstractRowsEvent> events = getRowsForSQL(null, sql.toArray(new String[0]));
+
+		for ( MaxwellAbstractRowsEvent e : events ) {
+			for ( JSONObject a : e.toJSONObjectList() ) {
+				eventJSON.add(a);
+
+				for ( JSONObject b : json ) {
+					if ( JSONCompare.compare(a.toString(), b.toString()) )
+						matched.add(b);
+				}
+			}
+		}
+
+		for ( JSONObject j : matched ) {
+			json.remove(j);
+		}
+
+		if ( json.size() > 0 ) {
+			String msg = "Did not find: \n" +
+						 StringUtils.join(json.iterator(), "\n") +
+						 "\n\n in : " +
+						 StringUtils.join(eventJSON.iterator(), "\n");
+			assertThat(msg, false, is(true));
+
+		}
+	}
+
+	private void runJSONTestFile(File file) throws Exception {
+		ArrayList<JSONObject> jsonAsserts = new ArrayList<>();
+		ArrayList<String> inputSQL  = new ArrayList<>();
+		BufferedReader reader = new BufferedReader(new FileReader(file));
+
+		while ( reader.ready() ) {
+			String line = reader.readLine();
+			if ( line.matches("^\\s*$")) {
+				continue;
+			} else if ( line.matches("^\\s*\\-\\>\\s*\\{.*") ) {
+				line = line.replaceAll("^\\s*\\-\\>\\s*", "");
+				jsonAsserts.add(new JSONObject(line));
+				System.out.println("added json assert: " + line);
+			} else {
+				inputSQL.add(line);
+				System.out.println("added sql statement: " + line);
+			}
+		}
+		reader.close();
+
+	    runJSONTest(inputSQL, jsonAsserts);
+	}
+	@Test
+	public void testRunJSONTests() throws Exception {
+
+		for ( File file: new File(getSQLDir() + "/json").listFiles()) {
+			if ( !file.getName().startsWith("test"))
+				continue;
+
+			runJSONTestFile(file);
+		}
+	}
 
 }

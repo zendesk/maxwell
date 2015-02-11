@@ -1,0 +1,25 @@
+CREATE DATABASE `test_db_1`
+CREATE DATABASE if not exists `test_db_1`
+CREATE TABLE `test_db_1`.`test_table` ( id bigint(20) not null auto_increment primary key, textcol mediumtext character set 'utf8' )
+use test_db_1
+insert into test_table set textcol='test_col_1'
+
+->  {"type": "insert", "data": { "id": 1, "textcol": "test_col_1"} }
+
+insert into test_table set textcol='test_col_2'
+
+->  {"type": "insert", "data": { "id": 2, "textcol": "test_col_2"} }
+
+alter table test_table add column `datecol` datetime NULL default null AFTER id
+
+insert into test_table set textcol='test_col_2', datecol='1979-10-01 00:00:00'
+
+-> {"type": "insert", "data": { "id": 3, "textcol": "test_col_2", "datecol": "1979-10-01 00:00:00"} }
+
+update test_table set textcol='test_col_5' where id = 1
+
+-> {"type": "update", "data": {"id": 1, "textcol": "test_col_5"} }
+
+delete from test_table where id = 2;
+
+-> {"type": "delete", "data": {"id": 2, "textcol": "test_col_2"} }
