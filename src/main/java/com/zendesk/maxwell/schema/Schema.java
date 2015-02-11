@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.cedarsoftware.util.io.JsonWriter;
-
 public class Schema {
 	private final ArrayList<Database> databases;
 
@@ -44,7 +42,7 @@ public class Schema {
 	}
 
 	public String toJSON() throws IOException {
-		return JsonWriter.objectToJson(this);
+		return null;
 	}
 
 	public boolean equals(Schema that) throws IOException {

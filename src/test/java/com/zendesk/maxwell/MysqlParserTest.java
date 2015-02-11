@@ -3,9 +3,16 @@ package com.zendesk.maxwell;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.abego.treelayout.internal.util.java.lang.string.StringUtil;
+import org.apache.commons.lang.StringUtils;
+import org.json.JSONObject;
 import org.junit.Test;
 
 public class MysqlParserTest extends AbstractMaxwellTest {

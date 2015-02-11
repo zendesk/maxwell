@@ -13,7 +13,6 @@ import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.*;
 
-import com.cedarsoftware.util.io.JsonWriter;
 import com.google.code.or.common.util.MySQLConstants;
 import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
