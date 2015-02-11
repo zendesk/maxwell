@@ -54,7 +54,7 @@ public class Schema {
 			Database matchingDB = b.findDatabase(d.getName());
 
 			if ( matchingDB == null )
-				diff.add("-- Database " + d.getName() + "did not exist in " + nameB);
+				diff.add("-- Database " + d.getName() + " did not exist in " + nameB);
 			else if ( recurse )
 				d.diff(diff, matchingDB, nameA, nameB);
 		}

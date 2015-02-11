@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.abego.treelayout.internal.util.java.lang.string.StringUtil;
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONObject;
 import org.junit.Test;

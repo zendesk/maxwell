@@ -79,4 +79,14 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 		testIntegration(sql);
 	}
 
+	@Test
+	public void testCreateAndDropDatabase() throws Exception {
+		String sql[] = {
+			"create DATABASE test_db default character set='utf8'",
+			"create DATABASE test_db_2",
+			"drop DATABASE test_db"
+		};
+
+		testIntegration(sql);
+	}
 }

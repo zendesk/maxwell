@@ -181,6 +181,14 @@ public class MysqlParserListener extends mysqlBaseListener {
 	}
 
 	@Override
+	public void exitDrop_database(mysqlParser.Drop_databaseContext ctx) {
+		boolean ifExists = ctx.if_exists() != null;
+		String dbName = unquote(ctx.name().getText());
+		schemaChanges.add(new DatabaseDrop(dbName, ifExists));
+	}
+
+
+	@Override
 	public void exitColumn_definition(mysqlParser.Column_definitionContext ctx) {
 		String colType = null, colEncoding = null;
 		boolean signed = true;

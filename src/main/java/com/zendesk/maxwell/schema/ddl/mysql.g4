@@ -8,10 +8,13 @@ statement:
 	alter_table 
 	| create_database
     | create_table
+    | drop_database
     | drop_table
     | rename_table
     | BEGIN
     ;
+
+
 
 create_database:
 	CREATE DATABASE if_not_exists? name (default_character_set | default_collate)*;
@@ -33,6 +36,8 @@ create_specification:
 		
 
 create_like_tbl: LIKE table_name;
+
+drop_database: DROP (DATABASE | SCHEMA) if_exists? name;
 
 drop_table: DROP TEMPORARY? TABLE if_exists? table_name (',' table_name)* drop_table_options*;
 drop_table_options: (RESTRICT | CASCADE);

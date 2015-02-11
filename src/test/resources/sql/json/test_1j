@@ -23,3 +23,5 @@ update test_table set textcol='test_col_5' where id = 1
 delete from test_table where id = 2;
 
 -> {"type": "delete", "data": {"id": 2, "textcol": "test_col_2"} }
+
+DROP DATABASE `test_db_1`;
