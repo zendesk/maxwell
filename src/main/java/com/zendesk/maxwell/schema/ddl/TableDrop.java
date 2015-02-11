@@ -20,7 +20,7 @@ public class TableDrop extends SchemaChange {
 
 		Database d = findDatabase(newSchema, this.dbName, ifExists);
 
-		// it's perfectly legal to say drop table `random_garbage_db`.`random_garbage_table`
+		// it's perfectly legal to say drop table if exists `random_garbage_db`.`random_garbage_table`
 		if ( d == null && ifExists)
 			return newSchema;
 

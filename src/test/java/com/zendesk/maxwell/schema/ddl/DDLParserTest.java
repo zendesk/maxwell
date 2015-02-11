@@ -324,4 +324,12 @@ public class DDLParserTest {
 		assertThat(d.dbName, is("foo"));
 
 	}
+
+	@Test
+	public void testCreateDatabase() {
+		List<SchemaChange> changes = parse("CREATE DATABASE if not exists `foo` default character set='latin1'").getSchemaChanges();
+		DatabaseCreate create = (DatabaseCreate) changes.get(0);
+		assertThat(create.dbName, is("foo"));
+		assertThat(create.encoding, is("latin1"));
+	}
 }

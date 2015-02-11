@@ -6,10 +6,16 @@ parse: statement
 
 statement:
 	alter_table 
+	| create_database
     | create_table
     | drop_table
-    | rename_table;
+    | rename_table
+    | BEGIN
+    ;
 
+create_database:
+	CREATE DATABASE if_not_exists? name (default_character_set | default_collate)*;
+	
 create_table: 
     create_table_preamble 
     ( 
@@ -49,6 +55,7 @@ alter_specification: add_column
                      | alter_rename_table
                      | convert_to_character_set
                      | default_character_set
+                     | default_collate
                      ; 
                    
 add_column: ADD COLUMN? column_definition col_position?;
@@ -59,7 +66,8 @@ drop_column: DROP COLUMN? old_col_name;
 alter_rename_table: RENAME (TO | AS) table_name;
 
 convert_to_character_set: CONVERT TO charset_token charset_name collation?;
-default_character_set: DEFAULT? charset_token '=' charset_name ( COLLATE '=' (IDENT | STRING_LITERAL) )?;
+default_character_set: DEFAULT? charset_token '=' charset_name;
+default_collate: DEFAULT? COLLATE '=' (IDENT | STRING_LITERAL)?;
 
 /* it's not documented, but either "charset 'utf8'" or "character set 'utf8'" is valid. */
 charset_token: (CHARSET | (CHARACTER SET));

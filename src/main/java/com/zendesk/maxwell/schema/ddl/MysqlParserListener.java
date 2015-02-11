@@ -7,7 +7,6 @@ import java.util.List;
 import org.antlr.v4.runtime.tree.ErrorNode;
 
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
-import com.zendesk.maxwell.schema.ddl.mysqlParser.Table_nameContext;
 import com.zendesk.maxwell.schema.ddl.mysqlParser.*;
 
 class MaxwellSQLSyntaxRrror extends RuntimeException {
@@ -147,9 +146,13 @@ public class MysqlParserListener extends mysqlBaseListener {
 	public void exitConvert_to_character_set(mysqlParser.Convert_to_character_setContext ctx) {
 		alterStatement().convertCharset = unquote_literal(ctx.charset_name().getText());
 	}
+
 	@Override
 	public void exitDefault_character_set(mysqlParser.Default_character_setContext ctx) {
-		alterStatement().defaultCharset = unquote_literal(ctx.charset_name().getText());
+		// definitely hacky here; showing the fallacy of trying to mix and match listener
+		// style parsing with more visitor-y stuff (in the exit nodes)
+		if ( ctx.parent instanceof Alter_specificationContext )
+			alterStatement().defaultCharset = unquote_literal(ctx.charset_name().getText());
 	}
 
 	@Override
@@ -222,5 +225,17 @@ public class MysqlParserListener extends mysqlBaseListener {
 		t.newDatabase  = getDB(newTableContext);
 		t.newTableName = getTable(newTableContext);
 		this.schemaChanges.add(t);
+	}
+
+	@Override
+	public void exitCreate_database(mysqlParser.Create_databaseContext ctx) {
+		String dbName = unquote(ctx.name().getText());
+		boolean ifNotExists = ctx.if_not_exists() != null;
+		String encoding = null;
+		if ( ctx.default_character_set().size() > 0 ) {
+			encoding = unquote_literal(ctx.default_character_set().get(0).charset_name().getText());
+		}
+
+		this.schemaChanges.add(new DatabaseCreate(dbName, ifNotExists, encoding));
 	}
 }
