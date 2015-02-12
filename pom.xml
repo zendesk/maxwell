@@ -2,12 +2,12 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>exodus-open-replicator</groupId>
-  <artifactId>exodus-open-replicator</artifactId>
+  <groupId>com.zendesk</groupId>
+  <artifactId>maxwell</artifactId>
   <version>0.0.1</version>
   <packaging>jar</packaging>
 
-  <name>exodus-open-replicator</name>
+  <name>maxwell</name>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -18,6 +18,8 @@
       <groupId>open-replicator</groupId>
       <artifactId>open-replicator</artifactId>
       <version>1.0.7</version>
+      <scope>system</scope>
+      <systemPath>${project.basedir}/src/main/resources/open-replicator-1.0.7.jar</systemPath>
     </dependency>
     <dependency>
       <groupId>mysql</groupId>
