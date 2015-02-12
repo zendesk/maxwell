@@ -36,9 +36,19 @@ public class MysqlIsolatedServer {
 			if ( s == null || s.equals("UP.") )
 				break;
 			mysqlOut.add(s);
-                        System.out.println(s);
+			System.out.println(s);
 		}
+
 		System.out.println(mysqlOut);
+
+		if ( mysqlOut.size() == 0 ) {
+			String errLine;
+			BufferedReader stderrReader = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+
+			while ( (errLine = stderrReader.readLine()) != null )
+				System.out.println("mysql isolated error: " + errLine);
+		}
+
 
 		String[] tmpDirSplit = mysqlOut.get(0).split(": ");
 
