@@ -23,10 +23,14 @@ public class MysqlIsolatedServer {
 		env.put("PATH", env.get("PATH") + ":/opt/local/bin");
 
 		Process p = pb.start();
+		System.out.println(pb.command());
 		InputStream pStdout = p.getInputStream();
+
 		BufferedReader reader = new BufferedReader(new InputStreamReader(pStdout));
 
 		String[] tmpDirSplit = reader.readLine().split(": ");
+
+		System.out.println(tmpDirSplit[0]);
 		this.baseDir = tmpDirSplit[tmpDirSplit.length - 1];
 
 		String[] portSplit = reader.readLine().split(": ");

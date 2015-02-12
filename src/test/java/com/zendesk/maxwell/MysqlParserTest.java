@@ -8,11 +8,11 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONObject;
 import org.junit.Test;
+
+import com.zendesk.maxwell.MaxwellAbstractRowsEvent.RowMap;
 
 public class MysqlParserTest extends AbstractMaxwellTest {
 	@Test
@@ -39,10 +39,10 @@ public class MysqlParserTest extends AbstractMaxwellTest {
 		list = getRowsForSQL(filter, input);
 		assertThat(list.size(), is(1));
 
-		Map<String, Object> jsonMap = list.get(0).jsonMaps().get(0);
+		RowMap jsonMap = list.get(0).jsonMaps().get(0);
 
-		assertThat((Long) jsonMap.get("account_id"), is(2L));
-		assertThat((String) jsonMap.get("text_field"), is("goodbye"));
+		assertThat((Long) jsonMap.data().get("account_id"), is(2L));
+		assertThat((String) jsonMap.data().get("text_field"), is("goodbye"));
 	}
 
 	@Test

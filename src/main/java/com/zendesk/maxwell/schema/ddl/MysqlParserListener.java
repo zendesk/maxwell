@@ -9,6 +9,9 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
 import com.zendesk.maxwell.schema.ddl.mysqlParser.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 class MaxwellSQLSyntaxRrror extends RuntimeException {
 	private static final long serialVersionUID = 140545518818187219L;
 
@@ -17,7 +20,10 @@ class MaxwellSQLSyntaxRrror extends RuntimeException {
 	}
 }
 
+
 public class MysqlParserListener extends mysqlBaseListener {
+    final Logger LOGGER = LoggerFactory.getLogger(MysqlParserListener.class);
+
 	private String tableName;
 	private final ArrayList<SchemaChange> schemaChanges;
 	private final String currentDatabase;
@@ -61,7 +67,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 	@Override
 	public void visitErrorNode(ErrorNode node) {
 		this.schemaChanges.clear();
-		System.out.println(node.getParent().toStringTree(new mysqlParser(null)));
+		LOGGER.error(node.getParent().toStringTree(new mysqlParser(null)));
 		throw new MaxwellSQLSyntaxRrror(node.getText());
 	}
 	private boolean isSigned(List<Int_flagsContext> flags) {
@@ -94,7 +100,6 @@ public class MysqlParserListener extends mysqlBaseListener {
 		this.tableName = alterStatement.tableName;
 
 		this.schemaChanges.add(alterStatement);
-		System.out.println(alterStatement);
 	}
 
 	@Override

@@ -32,34 +32,16 @@ public class DDLParserTest {
 	public void tearDown() throws Exception {
 	}
 
-	private MysqlParserListener parse(String sql) {
-		ANTLRInputStream input = new ANTLRInputStream(sql);
-		mysqlLexer lexer = new mysqlLexer(input);
-		CommonTokenStream tokens = new CommonTokenStream(lexer);
-
-		for ( org.antlr.v4.runtime.Token t : tokens.getTokens()) {
-			System.out.println(t.toString());
-		}
-		// create a parser that feeds off the tokens buffer
-		mysqlParser parser = new mysqlParser(tokens);
-
-		MysqlParserListener listener = new MysqlParserListener("default_db");
-
-		System.out.println("Running parse on " + sql);
-		ParseTree tree = parser.parse();
-
-		ParseTreeWalker.DEFAULT.walk(listener, tree);
-		System.out.println(tree.toStringTree(parser));
-
-		return(listener);
+	private List<SchemaChange> parse(String sql) {
+		return SchemaChange.parse("default_db", sql);
 	}
 
 	private TableAlter parseAlter(String sql) {
-		return (TableAlter) parse(sql).getSchemaChanges().get(0);
+		return (TableAlter) parse(sql).get(0);
 	}
 
 	private TableCreate parseCreate(String sql) {
-		return (TableCreate) parse(sql).getSchemaChanges().get(0);
+		return (TableCreate) parse(sql).get(0);
 	}
 
 	@Test
@@ -316,7 +298,7 @@ public class DDLParserTest {
 
 	@Test
 	public void testDropTable() {
-		List<SchemaChange> changes = parse("DROP TABLE IF exists `foo`.bar, `bar`.baz").getSchemaChanges();
+		List<SchemaChange> changes = parse("DROP TABLE IF exists `foo`.bar, `bar`.baz");
 		assertThat(changes.size(), is(2));
 
 		TableDrop d = (TableDrop) changes.get(0);
@@ -327,7 +309,7 @@ public class DDLParserTest {
 
 	@Test
 	public void testCreateDatabase() {
-		List<SchemaChange> changes = parse("CREATE DATABASE if not exists `foo` default character set='latin1'").getSchemaChanges();
+		List<SchemaChange> changes = parse("CREATE DATABASE if not exists `foo` default character set='latin1'");
 		DatabaseCreate create = (DatabaseCreate) changes.get(0);
 		assertThat(create.dbName, is("foo"));
 		assertThat(create.encoding, is("latin1"));

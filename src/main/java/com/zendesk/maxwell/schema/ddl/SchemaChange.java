@@ -6,12 +6,16 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.Table;
 
 public abstract class SchemaChange {
+    final static Logger LOGGER = LoggerFactory.getLogger(SchemaChange.class);
+
 	public abstract Schema apply(Schema originalSchema) throws SchemaSyncError;
 
 	protected Database findDatabase(Schema schema, String dbName, boolean ignoreMissing) throws SchemaSyncError {
@@ -53,11 +57,11 @@ public abstract class SchemaChange {
 
 		MysqlParserListener listener = new MysqlParserListener(currentDB);
 
-		System.out.println("Running parse on " + sql);
+		LOGGER.debug("SQL_PARSE <- \"" + sql + "\"");
 		ParseTree tree = parser.parse();
 
 		ParseTreeWalker.DEFAULT.walk(listener, tree);
-		System.out.println(tree.toStringTree(parser));
+		LOGGER.debug("SQL_PARSE ->   " + tree.toStringTree(parser));
 
 		return listener.getSchemaChanges();
 	}

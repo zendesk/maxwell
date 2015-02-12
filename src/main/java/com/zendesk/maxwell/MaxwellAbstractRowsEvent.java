@@ -162,6 +162,11 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 		}
 
 		@SuppressWarnings("unchecked")
+		public Map<String, Object> data() {
+			return (Map<String, Object>) this.get("data");
+		}
+
+		@SuppressWarnings("unchecked")
 		private HashMap<String, Object> getDataHash() {
 			return (HashMap<String, Object>) this.get("data");
 		}
