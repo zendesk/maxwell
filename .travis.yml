@@ -1,1 +1,2 @@
+before_script: "git submodule update"
 language: java
