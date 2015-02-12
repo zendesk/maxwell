@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -28,12 +29,23 @@ public class MysqlIsolatedServer {
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(pStdout));
 
-		String[] tmpDirSplit = reader.readLine().split(": ");
+		ArrayList<String> mysqlOut = new ArrayList<>();
+
+		while ( true ) {
+			String s = reader.readLine();
+			if ( s == null || s.equals("UP.") )
+				break;
+			mysqlOut.add(s);
+                        System.out.println(s);
+		}
+		System.out.println(mysqlOut);
+
+		String[] tmpDirSplit = mysqlOut.get(0).split(": ");
 
 		System.out.println(tmpDirSplit[0]);
 		this.baseDir = tmpDirSplit[tmpDirSplit.length - 1];
 
-		String[] portSplit = reader.readLine().split(": ");
+		String[] portSplit = mysqlOut.get(1).split(": ");
 		String port = portSplit[portSplit.length - 1];
 
 		this.connection = DriverManager.getConnection("jdbc:mysql://127.0.0.1:" + port + "/mysql", "root", "");
