@@ -128,7 +128,6 @@ public class DDLParserTest {
 		AddColumnMod m = (AddColumnMod) a.columnMods.get(0);
 		StringColumnDef b = (StringColumnDef) m.definition;
 		assertThat(b.getType(), is("text"));
-		assertThat(b.getEncoding(), is("utf8"));
 	}
 
 	@Test

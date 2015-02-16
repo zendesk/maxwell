@@ -79,13 +79,10 @@ public class SchemaStore {
 				position.getOffset(), 1);
 
 		for (Database d : schema.getDatabases()) {
-			Integer dbId = executeInsert(databaseInsert, schemaId, d.getName(),
-					"database_encoding");
+			Integer dbId = executeInsert(databaseInsert, schemaId, d.getName(), d.getEncoding());
 
 			for (Table t : d.getTableList()) {
-				Integer tableId = executeInsert(tableInsert, schemaId, dbId,
-						t.getName(), "table_encoding");
-
+				Integer tableId = executeInsert(tableInsert, schemaId, dbId, t.getName(), t.getEncoding());
 				for (ColumnDef c : t.getColumnList()) {
 					executeInsert(columnInsert, schemaId, tableId, c.getName(),
 							c.getEncoding(), c.getType(), c.getSigned() ? 1 : 0);

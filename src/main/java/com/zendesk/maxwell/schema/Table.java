@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
+import com.zendesk.maxwell.schema.columndef.StringColumnDef;
 
 public class Table {
 	private List<ColumnDef> columnList;
@@ -33,9 +34,7 @@ public class Table {
 	}
 
 	public Table(String name, List<ColumnDef> list) {
-		this(null, name);
-		this.columnList = list;
-		renumberColumns();
+		this(null, name, list);
 	}
 
 	public Table(Database d, String name, String encoding, List<ColumnDef> list) {
@@ -159,6 +158,15 @@ public class Table {
 			c.setPos(i++);
 		}
 	}
+
+	public void setDefaultColumnEncodings() {
+		for ( ColumnDef c : columnList ) {
+			if ( c instanceof StringColumnDef ) {
+				((StringColumnDef) c).setDefaultEncoding(this.getEncoding());
+			}
+		}
+	}
+
 	public void addColumn(int index, ColumnDef definition) {
 		this.columnList.add(index, definition);
 		renumberColumns();

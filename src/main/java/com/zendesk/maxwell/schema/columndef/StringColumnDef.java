@@ -13,8 +13,9 @@ public class StringColumnDef extends ColumnDef {
 		this.encoding = encoding;
 	}
 
-	public String getEncoding() {
-		return encoding;
+	public void setDefaultEncoding(String e) {
+		if ( this.encoding == null )
+		  this.encoding = e;
 	}
 
 	@Override

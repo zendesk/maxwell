@@ -4,14 +4,13 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.List;
 
-import org.junit.After;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.*;
-
 
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
@@ -35,6 +34,7 @@ public class SchemaStoreTest extends AbstractMaxwellTest {
 		this.schemaStore.save();
 
 		SchemaStore restoredSchema = SchemaStore.restore(server.getConnection(), binlogPosition);
-		assertThat(restoredSchema.getSchema().diff(this.schema, "captured schema", "restored schema").size(), is(0));
+		List<String> diff = this.schema.diff(restoredSchema.getSchema(), "captured schema", "restored schema");
+		assertThat(StringUtils.join(diff, "\n"), diff.size(), is(0));
 	}
 }

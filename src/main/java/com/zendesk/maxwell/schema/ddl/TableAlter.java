@@ -51,6 +51,8 @@ public class TableAlter extends SchemaChange {
 			mod.apply(table);
 		}
 
+		table.setDefaultColumnEncodings();
+
 		return newSchema;
 	}
 }
