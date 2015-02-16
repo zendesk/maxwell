@@ -22,8 +22,13 @@ public class SchemaStoreTest extends AbstractMaxwellTest {
 	private BinlogPosition binlogPosition;
 	private SchemaStore schemaStore;
 
+	String schemaSQL[] = {
+		"CREATE TABLE shard_1.latin1 (id int(11), str1 varchar(255), str2 varchar(255) character set 'utf8') charset = 'latin1'"
+	};
+
 	@Before
 	public void setUp() throws Exception {
+		server.executeList(schemaSQL);
 		this.schema = new SchemaCapturer(server.getConnection()).capture();
 		this.binlogPosition = BinlogPosition.capture(server.getConnection());
 		this.schemaStore = new SchemaStore(server.getConnection(), this.schema, binlogPosition);

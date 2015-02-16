@@ -151,16 +151,17 @@ public class SchemaStore {
 
 		while (tRS.next()) {
 			String tName = tRS.getString("name");
+			String tEncoding = tRS.getString("encoding");
 			int tID = tRS.getInt("id");
 
-			d.addTable(restoreTable(tName, tID));
+			d.addTable(restoreTable(d, tName, tID, tEncoding));
 		}
 		return d;
 	}
 
-	private Table restoreTable(String name, int id) throws SQLException {
+	private Table restoreTable(Database d, String name, int id, String encoding) throws SQLException {
 		Statement s = connection.createStatement();
-		Table t = new Table(name, new ArrayList<ColumnDef>());
+		Table t = new Table(d, name, encoding, new ArrayList<ColumnDef>());
 
 		ResultSet cRS = s.executeQuery("SELECT * from `maxwell`.`columns` where table_id = " + id + " ORDER by id");
 
