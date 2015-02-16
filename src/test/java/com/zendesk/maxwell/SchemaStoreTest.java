@@ -37,5 +37,4 @@ public class SchemaStoreTest extends AbstractMaxwellTest {
 		SchemaStore restoredSchema = SchemaStore.restore(server.getConnection(), binlogPosition);
 		assertThat(restoredSchema.getSchema().diff(this.schema, "captured schema", "restored schema").size(), is(0));
 	}
-
 }

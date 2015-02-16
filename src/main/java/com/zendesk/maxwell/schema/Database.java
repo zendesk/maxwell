@@ -61,7 +61,12 @@ public class Database {
 	}
 
 	public String getEncoding() {
-		return encoding;
+		if ( encoding == null ) {
+			// TODO: return server-default encoding
+			return "";
+		} else {
+		    return encoding;
+		}
 	}
 
 	public String getName() {

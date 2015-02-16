@@ -27,7 +27,7 @@ table_creation_options:
 creation_engine: ENGINE '=' string;
 creation_auto_increment: AUTO_INCREMENT '=' integer;
 creation_avg_row_length: AVG_ROW_LENGTH '=' integer;
-creation_character_set: DEFAULT? CHARACTER SET '=' charset_name;
+creation_character_set: DEFAULT? ((CHARACTER SET) | CHARSET) '='? charset_name;
 creation_checksum:  CHECKSUM '=' integer;
 creation_collation: DEFAULT? COLLATE '=' string;
 creation_comment: COMMENT '=' STRING_LITERAL;

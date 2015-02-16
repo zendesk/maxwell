@@ -15,10 +15,6 @@ public class Table {
 	private Database database;
 	private String encoding;
 
-	public String getEncoding() {
-		return encoding;
-	}
-
 	public Table(Database d, String name) {
 		this.database = d;
 		this.name = name;
@@ -42,6 +38,11 @@ public class Table {
 		renumberColumns();
 	}
 
+	public Table(Database d, String name, String encoding, List<ColumnDef> list) {
+		this(d, name, list);
+		this.encoding = encoding;
+	}
+
 	private List<ColumnDef> buildColumnsFromResultSet(ResultSet r) throws SQLException {
 		int i = 0;
 		List<ColumnDef> columns = new ArrayList<ColumnDef>();
@@ -53,7 +54,6 @@ public class Table {
 			int colPos        = r.getInt("ORDINAL_POSITION") - 1;
 			boolean colSigned = !r.getString("COLUMN_TYPE").matches(" unsigned$");
 
-			// todo: compound PKs, mebbe
 			if ( r.getString("COLUMN_KEY").equals("PRI") )
 				this.pkIndex = i;
 
@@ -108,7 +108,7 @@ public class Table {
 			list.add(c.copy());
 		}
 
-		return new Table(database, name, list);
+		return new Table(database, name, encoding, list);
 	}
 
 	public void rename(String tableName) {
@@ -144,6 +144,11 @@ public class Table {
 	}
 
 	public void diff(List<String> diffs, Table other, String nameA, String nameB) {
+		if ( !this.getEncoding().equals(other.getEncoding()) ) {
+			diffs.add(this.fullName() + " differs in encoding: "
+					  + nameA + " is " + this.getEncoding() + " but "
+					  + nameB + " is " + other.getEncoding());
+		}
 		diffColumnList(diffs, this, other, nameA, nameB);
 		diffColumnList(diffs, other, this, nameB, nameA);
 	}
@@ -167,4 +172,13 @@ public class Table {
 	public void setDatabase(Database database) {
 		this.database = database;
 	}
+
+	public String getEncoding() {
+		if ( encoding == null ) {
+			return this.database.getEncoding();
+		} else {
+		    return encoding;
+		}
+	}
+
 }
