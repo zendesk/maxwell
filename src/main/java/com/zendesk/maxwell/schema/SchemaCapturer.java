@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 
 public class SchemaCapturer {
 	private final Connection connection;
@@ -37,40 +36,50 @@ public class SchemaCapturer {
 
 	public Schema capture() throws SQLException {
 		ArrayList<Database> databases = new ArrayList<Database>();
-		for ( String dbName : selectFirst("show databases")) {
+		ResultSet rs = connection.createStatement().executeQuery("SELECT * from INFORMATION_SCHEMA.SCHEMATA");
+
+		while ( rs.next() ) {
+			String dbName = rs.getString("SCHEMA_NAME");
+			String encoding = rs.getString("DEFAULT_CHARACTER_SET_NAME");
+
 			if ( includeDatabases.size() > 0 && !includeDatabases.contains(dbName))
 				continue;
 
 			if ( excludeDatabases.contains(dbName) )
 				continue;
 
-			String showTableSQL = "show tables from " + dbName;
-
-			ArrayList<Table> tables = new ArrayList<Table>();
-
-			for ( String table : selectFirst(showTableSQL) ) {
-				tables.add(captureTable(dbName, table));
-			}
-			databases.add(new Database(dbName, tables));
+			databases.add(captureDatabase(dbName, encoding));
 		}
+
 		return new Schema(databases);
 	}
 
+	private static final String tblSQL =
+			  "SELECT TABLES.TABLE_NAME, CCSA.CHARACTER_SET_NAME "
+			+ "FROM INFORMATION_SCHEMA.TABLES "
+			+ "JOIN  information_schema.COLLATION_CHARACTER_SET_APPLICABILITY AS CCSA"
+			+ " ON TABLES.TABLE_COLLATION = CCSA.COLLATION_NAME WHERE TABLES.TABLE_SCHEMA = ?";
 
-	private Table captureTable(String dbName, String tableName) throws SQLException {
-		infoSchemaStmt.setString(1, dbName);
-		infoSchemaStmt.setString(2, tableName);
-		return new Table(dbName, tableName, infoSchemaStmt.executeQuery());
+
+	private Database captureDatabase(String dbName, String dbEncoding) throws SQLException {
+		PreparedStatement p = connection.prepareStatement(tblSQL);
+
+		p.setString(1, dbName);
+		ResultSet rs = p.executeQuery();
+
+		Database db = new Database(dbName, dbEncoding);
+
+		while ( rs.next() ) {
+			db.addTable(captureTable(db, rs.getString("TABLE_NAME"), rs.getString("CHARACTER_SET_NAME")));
+		}
+
+		return db;
 	}
 
 
-	private List<String> selectFirst(String sql) throws SQLException {
-		ResultSet rs = connection.createStatement().executeQuery(sql);
-		ArrayList<String> list = new ArrayList<String>();
-
-		while (rs.next()) {
-			list.add(rs.getString(1));
-		}
-		return list;
+	private Table captureTable(Database db, String tableName, String encoding) throws SQLException {
+		infoSchemaStmt.setString(1, db.getName());
+		infoSchemaStmt.setString(2, tableName);
+		return new Table(db, tableName, encoding, infoSchemaStmt.executeQuery());
 	}
 }
