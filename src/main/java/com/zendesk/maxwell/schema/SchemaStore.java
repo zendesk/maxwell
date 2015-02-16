@@ -142,13 +142,13 @@ public class SchemaStore {
 		ResultSet dbRS = p.executeQuery();
 
 		while (dbRS.next()) {
-			this.schema.getDatabases().add(restoreDatabase(dbRS.getInt("id"), dbRS.getString("name")));
+			this.schema.getDatabases().add(restoreDatabase(dbRS.getInt("id"), dbRS.getString("name"), dbRS.getString("encoding")));
 		}
 	}
 
-	private Database restoreDatabase(int id, String name) throws SQLException {
+	private Database restoreDatabase(int id, String name, String encoding) throws SQLException {
 		Statement s = connection.createStatement();
-		Database d = new Database(name, new ArrayList<Table>());
+		Database d = new Database(name, encoding);
 
 		ResultSet tRS = s.executeQuery("SELECT * from `maxwell`.`tables` where database_id = " + id + " ORDER by id");
 
@@ -156,14 +156,14 @@ public class SchemaStore {
 			String tName = tRS.getString("name");
 			int tID = tRS.getInt("id");
 
-			d.getTableList().add(restoreTable(name, tName, tID));
+			d.addTable(restoreTable(tName, tID));
 		}
 		return d;
 	}
 
-	private Table restoreTable(String dbName, String name, int id) throws SQLException {
+	private Table restoreTable(String name, int id) throws SQLException {
 		Statement s = connection.createStatement();
-		Table t = new Table(dbName, name, new ArrayList<ColumnDef>());
+		Table t = new Table(name, new ArrayList<ColumnDef>());
 
 		ResultSet cRS = s.executeQuery("SELECT * from `maxwell`.`columns` where table_id = " + id + " ORDER by id");
 

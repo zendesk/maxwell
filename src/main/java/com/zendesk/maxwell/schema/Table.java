@@ -12,21 +12,32 @@ public class Table {
 	private int pkIndex;
 	private String name;
 
-	private String database;
+	private Database database;
+	private String encoding;
 
+	public String getEncoding() {
+		return encoding;
+	}
 
-	public Table(String dbName, String name) {
-		this.database = dbName;
+	public Table(Database d, String name) {
+		this.database = d;
 		this.name = name;
 	}
 
-	public Table(String dbName, String name, ResultSet r) throws SQLException {
-		this(dbName, name);
+	public Table(Database d, String name, String encoding, ResultSet r) throws SQLException {
+		this(d, name);
+		this.encoding = encoding;
 		this.columnList = buildColumnsFromResultSet(r);
 	}
 
-	public Table(String dbName, String name, List<ColumnDef> list) {
-		this(dbName, name);
+	public Table(Database d, String name, List<ColumnDef> list) {
+		this(d, name);
+		this.columnList = list;
+		renumberColumns();
+	}
+
+	public Table(String name, List<ColumnDef> list) {
+		this(null, name);
 		this.columnList = list;
 		renumberColumns();
 	}
@@ -86,7 +97,7 @@ public class Table {
 		return this.pkIndex;
 	}
 
-	public String getDatabase() {
+	public Database getDatabase() {
 		return database;
 	}
 
@@ -100,8 +111,7 @@ public class Table {
 		return new Table(database, name, list);
 	}
 
-	public void rename(String dbName, String tableName) {
-		this.database = dbName;
+	public void rename(String tableName) {
 		this.name = tableName;
 	}
 
@@ -130,7 +140,7 @@ public class Table {
 	}
 
 	public String fullName() {
-		return "`" + this.database + "`." + this.name + "`";
+		return "`" + this.database.getName() + "`." + this.name + "`";
 	}
 
 	public void diff(List<String> diffs, Table other, String nameA, String nameB) {
@@ -152,5 +162,9 @@ public class Table {
 	public void removeColumn(int idx) {
 		this.columnList.remove(idx);
 		renumberColumns();
+	}
+
+	public void setDatabase(Database database) {
+		this.database = database;
 	}
 }

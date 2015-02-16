@@ -27,8 +27,8 @@ public class TableCreate extends SchemaChange {
 		if ( d == null )
 			throw new SchemaSyncError("Couldn't find database " + this.dbName);
 
-		Table t = new Table(dbName, this.tableName, this.columns);
-		d.getTableList().add(t);
+		Table t = new Table(this.tableName, this.columns);
+		d.addTable(t);
 
 		return newSchema;
 	}

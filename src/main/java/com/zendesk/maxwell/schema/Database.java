@@ -5,23 +5,20 @@ import java.util.List;
 
 public class Database {
 	private final String name;
-
-	public String getName() {
-		return name;
-	}
-
-	public List<Table> getTableList() {
-		return tableList;
-	}
-
 	private final List<Table> tableList;
+	private final String encoding;
 
-	public Database(String name, List<Table> tables) {
+	public Database(String name, List<Table> tables, String encoding) {
 		this.name = name;
 		if ( tables == null )
 			this.tableList = new ArrayList<>();
 		else
 			this.tableList = tables;
+		this.encoding = encoding;
+	}
+
+	public Database(String name, String encoding) {
+		this(name, null, encoding);
 	}
 
 	public List<String> getTableNames() {
@@ -41,11 +38,11 @@ public class Database {
 	}
 
 	public Database copy() {
-		ArrayList<Table> list = new ArrayList<>();
+		Database d = new Database(this.name, this.encoding);
 		for ( Table t: this.tableList ) {
-			list.add(t.copy());
+			d.addTable(t.copy());
 		}
-		return new Database(this.name, list);
+		return d;
 	}
 
 	private void diffTableList(List<String> diffs, Database a, Database b, String nameA, String nameB, boolean recurse) {
@@ -61,5 +58,22 @@ public class Database {
 	public void diff(List<String> diffs, Database other, String nameA, String nameB) {
 		diffTableList(diffs, this, other, nameA, nameB, true);
 		diffTableList(diffs, other, this, nameB, nameA, false);
+	}
+
+	public String getEncoding() {
+		return encoding;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public List<Table> getTableList() {
+		return tableList;
+	}
+
+	public void addTable(Table table) {
+		table.setDatabase(this);
+		this.tableList.add(table);
 	}
 }
