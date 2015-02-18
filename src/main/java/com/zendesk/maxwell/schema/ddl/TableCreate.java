@@ -27,9 +27,7 @@ public class TableCreate extends SchemaChange {
 		if ( d == null )
 			throw new SchemaSyncError("Couldn't find database " + this.dbName);
 
-		Table t = new Table(d, this.tableName, this.encoding, this.columns);
-
-		d.addTable(t);
+		Table t = d.buildTable(this.tableName, this.encoding, this.columns);
 		t.setDefaultColumnEncodings();
 
 		return newSchema;

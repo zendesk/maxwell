@@ -3,6 +3,8 @@ package com.zendesk.maxwell.schema;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.zendesk.maxwell.schema.columndef.ColumnDef;
+
 public class Database {
 	private final String name;
 	private final List<Table> tableList;
@@ -80,5 +82,15 @@ public class Database {
 	public void addTable(Table table) {
 		table.setDatabase(this);
 		this.tableList.add(table);
+	}
+
+	public Table buildTable(String name, String encoding, List<ColumnDef> list) {
+		Table t = new Table(this, name, encoding, list);
+		this.tableList.add(t);
+		return t;
+	}
+
+	public Table buildTable(String name, String encoding) {
+		return buildTable(name, encoding, new ArrayList<ColumnDef>());
 	}
 }

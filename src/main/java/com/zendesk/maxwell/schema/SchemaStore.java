@@ -154,14 +154,14 @@ public class SchemaStore {
 			String tEncoding = tRS.getString("encoding");
 			int tID = tRS.getInt("id");
 
-			d.addTable(restoreTable(d, tName, tID, tEncoding));
+			restoreTable(d, tName, tID, tEncoding);
 		}
 		return d;
 	}
 
-	private Table restoreTable(Database d, String name, int id, String encoding) throws SQLException {
+	private void restoreTable(Database d, String name, int id, String encoding) throws SQLException {
 		Statement s = connection.createStatement();
-		Table t = new Table(d, name, encoding, new ArrayList<ColumnDef>());
+		Table t = d.buildTable(name, encoding);
 
 		ResultSet cRS = s.executeQuery("SELECT * from `maxwell`.`columns` where table_id = " + id + " ORDER by id");
 
@@ -173,7 +173,6 @@ public class SchemaStore {
 					cRS.getInt("is_signed") == 1);
 			t.getColumnList().add(c);
 		}
-		return t;
 	}
 
 	private ResultSet findSchemaID(BinlogPosition targetPosition)

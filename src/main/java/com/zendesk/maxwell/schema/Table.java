@@ -1,7 +1,5 @@
 package com.zendesk.maxwell.schema;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,58 +7,19 @@ import com.zendesk.maxwell.schema.columndef.ColumnDef;
 import com.zendesk.maxwell.schema.columndef.StringColumnDef;
 
 public class Table {
-	private List<ColumnDef> columnList;
-	private int pkIndex;
+	private final List<ColumnDef> columnList;
+	int pkIndex;
 	private String name;
 
 	private Database database;
-	private String encoding;
-
-	public Table(Database d, String name) {
-		this.database = d;
-		this.name = name;
-	}
-
-	public Table(Database d, String name, String encoding, ResultSet r) throws SQLException {
-		this(d, name);
-		this.encoding = encoding;
-		this.columnList = buildColumnsFromResultSet(r);
-	}
-
-	public Table(Database d, String name, List<ColumnDef> list) {
-		this(d, name);
-		this.columnList = list;
-		renumberColumns();
-	}
-
-	public Table(String name, List<ColumnDef> list) {
-		this(null, name, list);
-	}
+	private final String encoding;
 
 	public Table(Database d, String name, String encoding, List<ColumnDef> list) {
-		this(d, name, list);
+		this.database = d;
+		this.name = name;
 		this.encoding = encoding;
-	}
-
-	private List<ColumnDef> buildColumnsFromResultSet(ResultSet r) throws SQLException {
-		int i = 0;
-		List<ColumnDef> columns = new ArrayList<ColumnDef>();
-
-		while(r.next()) {
-			String colName    = r.getString("COLUMN_NAME");
-			String colType    = r.getString("DATA_TYPE");
-			String colEnc     = r.getString("CHARACTER_SET_NAME");
-			int colPos        = r.getInt("ORDINAL_POSITION") - 1;
-			boolean colSigned = !r.getString("COLUMN_TYPE").matches(" unsigned$");
-
-			if ( r.getString("COLUMN_KEY").equals("PRI") )
-				this.pkIndex = i;
-
-			columns.add(ColumnDef.build(this.name, colName, colEnc, colType, colPos, colSigned));
-			i++;
-		}
-
-		return columns;
+		this.columnList = list;
+		renumberColumns();
 	}
 
 	public List<ColumnDef> getColumnList() {

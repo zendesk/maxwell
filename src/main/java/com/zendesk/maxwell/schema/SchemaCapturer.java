@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import com.zendesk.maxwell.schema.columndef.ColumnDef;
+
 public class SchemaCapturer {
 	private final Connection connection;
 
@@ -70,16 +72,32 @@ public class SchemaCapturer {
 		Database db = new Database(dbName, dbEncoding);
 
 		while ( rs.next() ) {
-			db.addTable(captureTable(db, rs.getString("TABLE_NAME"), rs.getString("CHARACTER_SET_NAME")));
+			Table t = db.buildTable(rs.getString("TABLE_NAME"), rs.getString("CHARACTER_SET_NAME"));
+			captureTable(t);
 		}
 
 		return db;
 	}
 
 
-	private Table captureTable(Database db, String tableName, String encoding) throws SQLException {
-		infoSchemaStmt.setString(1, db.getName());
-		infoSchemaStmt.setString(2, tableName);
-		return new Table(db, tableName, encoding, infoSchemaStmt.executeQuery());
+	private void captureTable(Table t) throws SQLException {
+		int i = 0;
+		infoSchemaStmt.setString(1, t.getDatabase().getName());
+		infoSchemaStmt.setString(2, t.getName());
+		ResultSet r = infoSchemaStmt.executeQuery();
+
+		while(r.next()) {
+			String colName    = r.getString("COLUMN_NAME");
+			String colType    = r.getString("DATA_TYPE");
+			String colEnc     = r.getString("CHARACTER_SET_NAME");
+			int colPos        = r.getInt("ORDINAL_POSITION") - 1;
+			boolean colSigned = !r.getString("COLUMN_TYPE").matches(" unsigned$");
+
+			if ( r.getString("COLUMN_KEY").equals("PRI") )
+				t.pkIndex = i;
+
+			t.getColumnList().add(ColumnDef.build(t.getName(), colName, colEnc, colType, colPos, colSigned));
+			i++;
+		}
 	}
 }
