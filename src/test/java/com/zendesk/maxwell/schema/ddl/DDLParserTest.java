@@ -46,11 +46,11 @@ public class DDLParserTest {
 
 	@Test
 	public void testBasic() {
-		MaxwellSQLSyntaxRrror e = null;
+		MaxwellSQLSyntaxError e = null;
 		assertThat(parseAlter("ALTER TABLE `foo` ADD col1 text"), is(not(nullValue())));
 		try {
 			parseAlter("ALTER TABLE foolkj `foo` lkjlkj");
-		} catch ( MaxwellSQLSyntaxRrror err ) {
+		} catch ( MaxwellSQLSyntaxError err ) {
 			e = err;
 		}
 		assertThat(e, is(not(nullValue())));
@@ -177,6 +177,7 @@ public class DDLParserTest {
 	       "alter table t alter column `foo` SET DEFAULT 1.2",
 	       "alter table t alter column `foo` SET DEFAULT 'foo'",
 	       "alter table t alter column `foo` drop default",
+	       "alter table t CHARACTER SET latin1 COLLATE = 'utf8'",
 	       "alter table t DROP PRIMARY KEY",
 	       "alter table t drop index `foo`",
 	       "alter table t disable keys",

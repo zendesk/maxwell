@@ -32,8 +32,16 @@ public class TableAlter extends SchemaChange {
 	public Schema apply(Schema originalSchema) throws SchemaSyncError {
 		Schema newSchema = originalSchema.copy();
 
-		Database database = findDatabase(newSchema, this.dbName);
-		Table table = findTable(database, this.tableName);
+		Database database = newSchema.findDatabase(this.dbName);
+		if ( database == null ) {
+			throw new SchemaSyncError("Couldn't find database: " + this.dbName);
+		}
+
+		Table table = database.findTable(this.tableName);
+		if ( table == null ) {
+			throw new SchemaSyncError("Couldn't find table: " + this.dbName + "." + this.tableName);
+		}
+
 
 
 		if ( newTableName != null && newDatabase != null ) {
