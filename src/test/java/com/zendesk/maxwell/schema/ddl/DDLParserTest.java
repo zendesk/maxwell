@@ -297,6 +297,17 @@ public class DDLParserTest {
 	}
 
 	@Test
+	public void testCreateTableLikeTable() {
+		TableCreate c = parseCreate("CREATE TABLE `foo` LIKE `bar`.`baz`");
+
+		assertThat(c, not(nullValue()));
+		assertThat(c.tableName, is("foo"));
+
+		assertThat(c.likeDB,    is("bar"));
+		assertThat(c.likeTable, is("baz"));
+	}
+
+	@Test
 	public void testDropTable() {
 		List<SchemaChange> changes = parse("DROP TABLE IF exists `foo`.bar, `bar`.baz");
 		assertThat(changes.size(), is(2));
@@ -314,4 +325,5 @@ public class DDLParserTest {
 		assertThat(create.dbName, is("foo"));
 		assertThat(create.encoding, is("latin1"));
 	}
+
 }

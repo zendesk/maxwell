@@ -93,6 +93,18 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 	}
 
 	@Test
+	public void testCreateTableLike() throws Exception {
+		String sql[] = {
+			"create TABLE `source_tbl` ( str varchar(255) character set latin1, redrum bigint(20) unsigned ) default charset 'latin1'",
+			"create TABLE `dest_tbl` like `source_tbl`",
+			"create database test_like default charset 'utf8'",
+			"create table `test_like`.`foo` LIKE `shard_1`.`source_tbl`"
+		};
+
+		testIntegration(sql);
+	}
+
+	@Test
 	public void testDatabaseEncoding() throws SQLException, SchemaSyncError, IOException {
 		String sql[] = {
 		   "create DATABASE test_latin1 character set='latin1'",
