@@ -22,7 +22,7 @@ public class DatabaseCreate extends SchemaChange {
 			if ( ifNotExists )
 				return originalSchema;
 			else
-			    throw new SchemaSyncError("Unexpectedly asked to create existing database " + dbName);
+				throw new SchemaSyncError("Unexpectedly asked to create existing database " + dbName);
 		}
 
 		Schema newSchema = originalSchema.copy();
