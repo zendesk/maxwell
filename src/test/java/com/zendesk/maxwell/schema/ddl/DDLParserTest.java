@@ -178,6 +178,7 @@ public class DDLParserTest {
 	       "alter table t alter column `foo` SET DEFAULT 1.2",
 	       "alter table t alter column `foo` SET DEFAULT 'foo'",
 	       "alter table t alter column `foo` drop default",
+	       "alter table t CHARACTER SET latin1 COLLATE = 'utf8'",
 	       "alter table t DROP PRIMARY KEY",
 	       "alter table t drop index `foo`",
 	       "alter table t disable keys",
