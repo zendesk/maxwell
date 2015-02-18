@@ -12,10 +12,10 @@ import com.zendesk.maxwell.schema.ddl.mysqlParser.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class MaxwellSQLSyntaxRrror extends RuntimeException {
+class MaxwellSQLSyntaxError extends RuntimeException {
 	private static final long serialVersionUID = 140545518818187219L;
 
-	public MaxwellSQLSyntaxRrror(String message) {
+	public MaxwellSQLSyntaxError(String message) {
 		super(message);
 	}
 }
@@ -68,7 +68,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 	public void visitErrorNode(ErrorNode node) {
 		this.schemaChanges.clear();
 		LOGGER.error(node.getParent().toStringTree(new mysqlParser(null)));
-		throw new MaxwellSQLSyntaxRrror(node.getText());
+		throw new MaxwellSQLSyntaxError(node.getText());
 	}
 	private boolean isSigned(List<Int_flagsContext> flags) {
 		for ( Int_flagsContext flag : flags ) {
