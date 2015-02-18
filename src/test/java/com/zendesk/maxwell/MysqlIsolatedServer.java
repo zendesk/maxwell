@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -23,13 +24,38 @@ public class MysqlIsolatedServer {
 		env.put("PATH", env.get("PATH") + ":/opt/local/bin");
 
 		Process p = pb.start();
+		System.out.println(pb.command());
 		InputStream pStdout = p.getInputStream();
+
 		BufferedReader reader = new BufferedReader(new InputStreamReader(pStdout));
 
-		String[] tmpDirSplit = reader.readLine().split(": ");
+		ArrayList<String> mysqlOut = new ArrayList<>();
+
+		while ( true ) {
+			String s = reader.readLine();
+			if ( s == null || s.equals("UP.") )
+				break;
+			mysqlOut.add(s);
+			System.out.println(s);
+		}
+
+		System.out.println(mysqlOut);
+
+		if ( mysqlOut.size() == 0 ) {
+			String errLine;
+			BufferedReader stderrReader = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+
+			while ( (errLine = stderrReader.readLine()) != null )
+				System.out.println("mysql isolated error: " + errLine);
+		}
+
+
+		String[] tmpDirSplit = mysqlOut.get(0).split(": ");
+
+		System.out.println(tmpDirSplit[0]);
 		this.baseDir = tmpDirSplit[tmpDirSplit.length - 1];
 
-		String[] portSplit = reader.readLine().split(": ");
+		String[] portSplit = mysqlOut.get(1).split(": ");
 		String port = portSplit[portSplit.length - 1];
 
 		this.connection = DriverManager.getConnection("jdbc:mysql://127.0.0.1:" + port + "/mysql", "root", "");

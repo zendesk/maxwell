@@ -55,7 +55,7 @@ column_options:
 
 charset_def: (character_set | collation)+;
 character_set: CHARACTER SET charset_name;
-collation: COLLATE (IDENT | STRING_LITERAL);
+collation: COLLATE '='? (IDENT | STRING_LITERAL);
 
 
 nullability: (NOT NULL | NULL);

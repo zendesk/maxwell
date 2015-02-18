@@ -68,4 +68,26 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 		testIntegration(sql);
 	}
 
+	@Test
+	public void testDrop() throws SQLException, SchemaSyncError, IOException, InterruptedException {
+		String sql[] = {
+			"create table shard_1.testAlter ( id int(11) unsigned default 1, str varchar(255) )",
+			"drop table if exists lasdkjflaskd.laskdjflaskdj",
+			"drop table shard_1.testAlter"
+		};
+
+		testIntegration(sql);
+	}
+
+	@Test
+	public void testCreateAndDropDatabase() throws Exception {
+		String sql[] = {
+			"create DATABASE test_db default character set='utf8'",
+			"create DATABASE if not exists test_db",
+			"create DATABASE test_db_2",
+			"drop DATABASE test_db"
+		};
+
+		testIntegration(sql);
+	}
 }

@@ -1,11 +1,15 @@
 package com.zendesk.maxwell;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import com.google.code.or.binlog.BinlogEventV4Header;
 import com.google.code.or.binlog.impl.event.AbstractRowEvent;
@@ -148,25 +152,69 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 		return sql.toString();
 	}
 
+	class RowMap extends HashMap<String, Object> {
+		public RowMap() {
+			this.put("data", new HashMap<String, Object>());
+		}
+
+		public void setRowType(String type) {
+			this.put("type", type);
+		}
+
+		@SuppressWarnings("unchecked")
+		public Map<String, Object> data() {
+			return (Map<String, Object>) this.get("data");
+		}
+
+		@SuppressWarnings("unchecked")
+		private HashMap<String, Object> getDataHash() {
+			return (HashMap<String, Object>) this.get("data");
+		}
+		public void setColumn(String key, Object value) {
+			getDataHash().put(key, value);
+		}
+	}
 	// the equivalent of "asJSON" -- convert the row to an array of
 	// hashes
-	public List<Map<String, Object>> jsonMaps() {
-		List<Map<String, Object>> list = new ArrayList<>();
+	public List<RowMap> jsonMaps() {
+		List<RowMap> list = new ArrayList<>();
 
 		for ( Row r : filteredRows()) {
-			HashMap<String, Object> rowMap = new HashMap<>();
+			RowMap rowMap = new RowMap();
 			Iterator<Column> colIter = r.getColumns().iterator();
 			Iterator<ColumnDef> defIter = table.getColumnList().iterator();
 
+			rowMap.setRowType(getType());
 			while ( colIter.hasNext() && defIter.hasNext() ) {
 				Column c = colIter.next();
 				ColumnDef d = defIter.next();
 
-				rowMap.put(d.getName(), d.asJSON(c.getValue()));
+				Object value = c.getValue();
+				if ( value != null )
+					value = d.asJSON(value);
+
+				rowMap.setColumn(d.getName(), value);
 			}
 			list.add(rowMap);
 		}
 
 		return list;
+	}
+
+	public List<JSONObject> toJSONObjectList() {
+		ArrayList<JSONObject> a = new ArrayList<>();
+		for ( Map<String, Object> row : jsonMaps() ) {
+			a.add(new JSONObject(row));
+		}
+		return a;
+	}
+
+	// tbd -- is an array of rows really best?
+	public String toJSON() throws IOException {
+		JSONArray a = new JSONArray();
+		for ( Map<String, Object> row : jsonMaps() ) {
+			a.put(new JSONObject(row));
+		}
+		return a.toString();
 	}
 }

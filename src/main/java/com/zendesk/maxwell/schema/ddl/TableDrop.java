@@ -7,17 +7,32 @@ import com.zendesk.maxwell.schema.Table;
 public class TableDrop extends SchemaChange {
 	final String dbName;
 	final String tableName;
+	final boolean ifExists;
 
-	public TableDrop(String dbName, String tableName) {
+	public TableDrop(String dbName, String tableName, boolean ifExists) {
 		this.dbName = dbName;
 		this.tableName = tableName;
+		this.ifExists = ifExists;
 	}
 	@Override
 	public Schema apply(Schema originalSchema) throws SchemaSyncError {
 		Schema newSchema = originalSchema.copy();
 
-		Database d = findDatabase(newSchema, this.dbName);
-		Table t = findTable(d, this.tableName);
+		Database d = newSchema.findDatabase(this.dbName);
+
+		// it's perfectly legal to say drop table if exists `random_garbage_db`.`random_garbage_table`
+		if ( d == null && ifExists)
+			return newSchema;
+
+		Table t = d.findTable(this.tableName);
+
+		if ( t == null ) {
+			if ( ifExists ) { // DROP TABLE IF NOT EXISTS ; ignore missing tables
+				return newSchema;
+			} else {
+				throw new SchemaSyncError("Can't drop non-existant table: " + this.dbName + "." + this.tableName);
+			}
+		}
 
 		d.getTableList().remove(t);
 		return newSchema;

@@ -6,36 +6,17 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.Table;
 
 public abstract class SchemaChange {
+    final static Logger LOGGER = LoggerFactory.getLogger(SchemaChange.class);
+
 	public abstract Schema apply(Schema originalSchema) throws SchemaSyncError;
-
-	protected Database findDatabase(Schema schema, String dbName) throws SchemaSyncError {
-		Database database = schema.findDatabase(dbName);
-
-		if ( database == null )
-			throw new SchemaSyncError("Couldn't find database " + dbName);
-
-		return database;
-	}
-
-	protected Table findTable(Database d, String tableName) throws SchemaSyncError {
-		Table table = d.findTable(tableName);
-
-		if ( table == null )
-			throw new SchemaSyncError("Couldn't find table " + d.getName() + "." + tableName);
-		return table;
-	}
-
-	protected Table findTable(Schema schema, String dbName, String tableName) throws SchemaSyncError {
-		Database d = findDatabase(schema, dbName);
-		return findTable(d, tableName);
-	}
-
 
 	public static List<SchemaChange> parse(String currentDB, String sql) {
 		ANTLRInputStream input = new ANTLRInputStream(sql);
@@ -45,11 +26,11 @@ public abstract class SchemaChange {
 
 		MysqlParserListener listener = new MysqlParserListener(currentDB);
 
-		System.out.println("Running parse on " + sql);
+		LOGGER.debug("SQL_PARSE <- \"" + sql + "\"");
 		ParseTree tree = parser.parse();
 
 		ParseTreeWalker.DEFAULT.walk(listener, tree);
-		System.out.println(tree.toStringTree(parser));
+		LOGGER.debug("SQL_PARSE ->   " + tree.toStringTree(parser));
 
 		return listener.getSchemaChanges();
 	}

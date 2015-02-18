@@ -16,9 +16,12 @@ public class Database {
 
 	private final List<Table> tableList;
 
-	Database(String name, List<Table> tables) {
+	public Database(String name, List<Table> tables) {
 		this.name = name;
-		this.tableList = tables;
+		if ( tables == null )
+			this.tableList = new ArrayList<>();
+		else
+			this.tableList = tables;
 	}
 
 	public List<String> getTableNames() {

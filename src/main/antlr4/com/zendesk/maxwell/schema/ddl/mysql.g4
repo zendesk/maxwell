@@ -6,10 +6,19 @@ parse: statement
 
 statement:
 	alter_table 
+	| create_database
     | create_table
+    | drop_database
     | drop_table
-    | rename_table;
+    | rename_table
+    | BEGIN
+    ;
 
+
+
+create_database:
+	CREATE DATABASE if_not_exists? name (default_character_set | default_collate)*;
+	
 create_table: 
     create_table_preamble 
     ( 
@@ -28,7 +37,9 @@ create_specification:
 
 create_like_tbl: LIKE table_name;
 
-drop_table: DROP TEMPORARY? TABLE (IF EXISTS)? table_name (',' table_name)* drop_table_options*;
+drop_database: DROP (DATABASE | SCHEMA) if_exists? name;
+
+drop_table: DROP TEMPORARY? TABLE if_exists? table_name (',' table_name)* drop_table_options*;
 drop_table_options: (RESTRICT | CASCADE);
 
 rename_table: RENAME TABLE rename_table_spec (',' rename_table_spec)*;
@@ -59,7 +70,8 @@ drop_column: DROP COLUMN? old_col_name;
 alter_rename_table: RENAME (TO | AS) table_name;
 
 convert_to_character_set: CONVERT TO charset_token charset_name collation?;
-default_character_set: DEFAULT? charset_token '=' charset_name ( COLLATE '=' (IDENT | STRING_LITERAL) )?;
+default_character_set: DEFAULT? charset_token '='? charset_name collation?;
+default_collate: DEFAULT? collation;
 
 /* it's not documented, but either "charset 'utf8'" or "character set 'utf8'" is valid. */
 charset_token: (CHARSET | (CHARACTER SET));
@@ -114,7 +126,6 @@ index_type_5:
 	
 // TODO: foreign key references.  goddamn.
 	
- 
 index_or_key: (INDEX|KEY);
 index_constraint: (CONSTRAINT name?);
 index_name: name;
@@ -128,6 +139,9 @@ index_column_list: '(' name_list ')';
 name_list: name (',' name )*; 
 
 engine_statement: ENGINE '=' IDENT;
+
+if_exists: IF EXISTS;
+if_not_exists: IF NOT EXISTS; 
 
 db_name: name '.';
 table_name: (db_name name)

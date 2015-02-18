@@ -32,43 +32,25 @@ public class DDLParserTest {
 	public void tearDown() throws Exception {
 	}
 
-	private MysqlParserListener parse(String sql) {
-		ANTLRInputStream input = new ANTLRInputStream(sql);
-		mysqlLexer lexer = new mysqlLexer(input);
-		CommonTokenStream tokens = new CommonTokenStream(lexer);
-
-		for ( org.antlr.v4.runtime.Token t : tokens.getTokens()) {
-			System.out.println(t.toString());
-		}
-		// create a parser that feeds off the tokens buffer
-		mysqlParser parser = new mysqlParser(tokens);
-
-		MysqlParserListener listener = new MysqlParserListener("default_db");
-
-		System.out.println("Running parse on " + sql);
-		ParseTree tree = parser.parse();
-
-		ParseTreeWalker.DEFAULT.walk(listener, tree);
-		System.out.println(tree.toStringTree(parser));
-
-		return(listener);
+	private List<SchemaChange> parse(String sql) {
+		return SchemaChange.parse("default_db", sql);
 	}
 
 	private TableAlter parseAlter(String sql) {
-		return (TableAlter) parse(sql).getSchemaChanges().get(0);
+		return (TableAlter) parse(sql).get(0);
 	}
 
 	private TableCreate parseCreate(String sql) {
-		return (TableCreate) parse(sql).getSchemaChanges().get(0);
+		return (TableCreate) parse(sql).get(0);
 	}
 
 	@Test
 	public void testBasic() {
-		MaxwellSQLSyntaxRrror e = null;
+		MaxwellSQLSyntaxError e = null;
 		assertThat(parseAlter("ALTER TABLE `foo` ADD col1 text"), is(not(nullValue())));
 		try {
 			parseAlter("ALTER TABLE foolkj `foo` lkjlkj");
-		} catch ( MaxwellSQLSyntaxRrror err ) {
+		} catch ( MaxwellSQLSyntaxError err ) {
 			e = err;
 		}
 		assertThat(e, is(not(nullValue())));
@@ -196,6 +178,7 @@ public class DDLParserTest {
 	       "alter table t alter column `foo` SET DEFAULT 1.2",
 	       "alter table t alter column `foo` SET DEFAULT 'foo'",
 	       "alter table t alter column `foo` drop default",
+	       "alter table t CHARACTER SET latin1 COLLATE = 'utf8'",
 	       "alter table t DROP PRIMARY KEY",
 	       "alter table t drop index `foo`",
 	       "alter table t disable keys",
@@ -316,12 +299,20 @@ public class DDLParserTest {
 
 	@Test
 	public void testDropTable() {
-		List<SchemaChange> changes = parse("DROP TABLE IF exists `foo`.bar, `bar`.baz").getSchemaChanges();
+		List<SchemaChange> changes = parse("DROP TABLE IF exists `foo`.bar, `bar`.baz");
 		assertThat(changes.size(), is(2));
 
 		TableDrop d = (TableDrop) changes.get(0);
 		assertThat(d.tableName, is("bar"));
 		assertThat(d.dbName, is("foo"));
 
+	}
+
+	@Test
+	public void testCreateDatabase() {
+		List<SchemaChange> changes = parse("CREATE DATABASE if not exists `foo` default character set='latin1'");
+		DatabaseCreate create = (DatabaseCreate) changes.get(0);
+		assertThat(create.dbName, is("foo"));
+		assertThat(create.encoding, is("latin1"));
 	}
 }

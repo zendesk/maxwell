@@ -7,18 +7,23 @@ import java.util.List;
 import org.antlr.v4.runtime.tree.ErrorNode;
 
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
-import com.zendesk.maxwell.schema.ddl.mysqlParser.Table_nameContext;
 import com.zendesk.maxwell.schema.ddl.mysqlParser.*;
 
-class MaxwellSQLSyntaxRrror extends RuntimeException {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+class MaxwellSQLSyntaxError extends RuntimeException {
 	private static final long serialVersionUID = 140545518818187219L;
 
-	public MaxwellSQLSyntaxRrror(String message) {
+	public MaxwellSQLSyntaxError(String message) {
 		super(message);
 	}
 }
 
+
 public class MysqlParserListener extends mysqlBaseListener {
+    final Logger LOGGER = LoggerFactory.getLogger(MysqlParserListener.class);
+
 	private String tableName;
 	private final ArrayList<SchemaChange> schemaChanges;
 	private final String currentDatabase;
@@ -62,8 +67,8 @@ public class MysqlParserListener extends mysqlBaseListener {
 	@Override
 	public void visitErrorNode(ErrorNode node) {
 		this.schemaChanges.clear();
-		System.out.println(node.getParent().toStringTree(new mysqlParser(null)));
-		throw new MaxwellSQLSyntaxRrror(node.getText());
+		LOGGER.error(node.getParent().toStringTree(new mysqlParser(null)));
+		throw new MaxwellSQLSyntaxError(node.getText());
 	}
 	private boolean isSigned(List<Int_flagsContext> flags) {
 		for ( Int_flagsContext flag : flags ) {
@@ -95,7 +100,6 @@ public class MysqlParserListener extends mysqlBaseListener {
 		this.tableName = alterStatement.tableName;
 
 		this.schemaChanges.add(alterStatement);
-		System.out.println(alterStatement);
 	}
 
 	@Override
@@ -147,9 +151,13 @@ public class MysqlParserListener extends mysqlBaseListener {
 	public void exitConvert_to_character_set(mysqlParser.Convert_to_character_setContext ctx) {
 		alterStatement().convertCharset = unquote_literal(ctx.charset_name().getText());
 	}
+
 	@Override
 	public void exitDefault_character_set(mysqlParser.Default_character_setContext ctx) {
-		alterStatement().defaultCharset = unquote_literal(ctx.charset_name().getText());
+		// definitely hacky here; showing the fallacy of trying to mix and match listener
+		// style parsing with more visitor-y stuff (in the exit nodes)
+		if ( ctx.parent instanceof Alter_specificationContext )
+			alterStatement().defaultCharset = unquote_literal(ctx.charset_name().getText());
 	}
 
 	@Override
@@ -171,10 +179,19 @@ public class MysqlParserListener extends mysqlBaseListener {
 
 	@Override
 	public void exitDrop_table(mysqlParser.Drop_tableContext ctx) {
+		boolean ifExists = ctx.if_exists() != null;
 		for ( Table_nameContext t : ctx.table_name()) {
-			schemaChanges.add(new TableDrop(getDB(t), getTable(t)));
+			schemaChanges.add(new TableDrop(getDB(t), getTable(t), ifExists));
 		}
 	}
+
+	@Override
+	public void exitDrop_database(mysqlParser.Drop_databaseContext ctx) {
+		boolean ifExists = ctx.if_exists() != null;
+		String dbName = unquote(ctx.name().getText());
+		schemaChanges.add(new DatabaseDrop(dbName, ifExists));
+	}
+
 
 	@Override
 	public void exitColumn_definition(mysqlParser.Column_definitionContext ctx) {
@@ -221,5 +238,17 @@ public class MysqlParserListener extends mysqlBaseListener {
 		t.newDatabase  = getDB(newTableContext);
 		t.newTableName = getTable(newTableContext);
 		this.schemaChanges.add(t);
+	}
+
+	@Override
+	public void exitCreate_database(mysqlParser.Create_databaseContext ctx) {
+		String dbName = unquote(ctx.name().getText());
+		boolean ifNotExists = ctx.if_not_exists() != null;
+		String encoding = null;
+		if ( ctx.default_character_set().size() > 0 ) {
+			encoding = unquote_literal(ctx.default_character_set().get(0).charset_name().getText());
+		}
+
+		this.schemaChanges.add(new DatabaseCreate(dbName, ifNotExists, encoding));
 	}
 }
