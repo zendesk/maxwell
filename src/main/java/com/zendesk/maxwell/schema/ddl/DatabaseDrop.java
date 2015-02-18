@@ -15,10 +15,15 @@ public class DatabaseDrop extends SchemaChange {
 	@Override
 	public Schema apply(Schema originalSchema) throws SchemaSyncError {
 		Schema newSchema = originalSchema.copy();
-		Database database = findDatabase(newSchema, dbName, ifExists);
 
-		if ( database == null && !ifExists ) {
-			throw new SchemaSyncError("Can't drop missing database: " + dbName);
+		Database database = newSchema.findDatabase(dbName);
+
+		if ( database == null ) {
+			if ( ifExists ) { // ignore missing databases
+				return newSchema;
+			} else {
+				throw new SchemaSyncError("Can't drop missing database: " + dbName);
+			}
 		}
 
 		newSchema.getDatabases().remove(database);
