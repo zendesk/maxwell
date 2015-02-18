@@ -18,8 +18,11 @@ public class DatabaseCreate extends SchemaChange {
 	public Schema apply(Schema originalSchema) throws SchemaSyncError {
 		Database database = originalSchema.findDatabase(dbName);
 
-		if ( database != null && !ifNotExists) {
-			throw new SchemaSyncError("Unexpectedly asked to create existing database " + dbName);
+		if ( database != null ) {
+			if ( ifNotExists )
+				return originalSchema;
+			else
+			    throw new SchemaSyncError("Unexpectedly asked to create existing database " + dbName);
 		}
 
 		Schema newSchema = originalSchema.copy();
