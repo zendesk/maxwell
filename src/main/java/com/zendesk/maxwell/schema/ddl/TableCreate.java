@@ -31,8 +31,14 @@ public class TableCreate extends SchemaChange {
 			throw new SchemaSyncError("Couldn't find database " + this.dbName);
 
 		if ( likeDB != null && likeTable != null ) {
-			Database sourceDB = findDatabase(newSchema, likeDB);
-			Table sourceTable = findTable(sourceDB, likeTable);
+			Database sourceDB = newSchema.findDatabase(likeDB);
+
+			if ( sourceDB == null )
+				throw new SchemaSyncError("Couldn't find database " + likeDB);
+
+			Table sourceTable = sourceDB.findTable(likeTable);
+			if ( sourceTable == null )
+				throw new SchemaSyncError("Couldn't find table " + likeDB + "." + sourceTable);
 
 			Table t = sourceTable.copy();
 			t.rename(this.tableName);
