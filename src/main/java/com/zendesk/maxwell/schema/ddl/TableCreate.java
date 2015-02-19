@@ -31,23 +31,27 @@ public class TableCreate extends SchemaChange {
 			throw new SchemaSyncError("Couldn't find database " + this.dbName);
 
 		if ( likeDB != null && likeTable != null ) {
-			Database sourceDB = newSchema.findDatabase(likeDB);
-
-			if ( sourceDB == null )
-				throw new SchemaSyncError("Couldn't find database " + likeDB);
-
-			Table sourceTable = sourceDB.findTable(likeTable);
-			if ( sourceTable == null )
-				throw new SchemaSyncError("Couldn't find table " + likeDB + "." + sourceTable);
-
-			Table t = sourceTable.copy();
-			t.rename(this.tableName);
-			d.addTable(t);
+			applyCreateLike(newSchema, d);
 		} else {
 			Table t = d.buildTable(this.tableName, this.encoding, this.columns);
 			t.setDefaultColumnEncodings();
 		}
 
 		return newSchema;
+	}
+
+	private void applyCreateLike(Schema newSchema, Database d) throws SchemaSyncError {
+		Database sourceDB = newSchema.findDatabase(likeDB);
+
+		if ( sourceDB == null )
+			throw new SchemaSyncError("Couldn't find database " + likeDB);
+
+		Table sourceTable = sourceDB.findTable(likeTable);
+		if ( sourceTable == null )
+			throw new SchemaSyncError("Couldn't find table " + likeDB + "." + sourceTable);
+
+		Table t = sourceTable.copy();
+		t.rename(this.tableName);
+		d.addTable(t);
 	}
 }
