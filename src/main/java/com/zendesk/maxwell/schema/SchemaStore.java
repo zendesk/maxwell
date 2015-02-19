@@ -187,12 +187,14 @@ public class SchemaStore {
 
 	private ResultSet findSchemaID(BinlogPosition targetPosition)
 			throws SQLException {
-		PreparedStatement s = connection
-				.prepareStatement("SELECT * from `maxwell`.`schemas` where binlog_file <= ? and binlog_position <= ? "
-						+ "ORDER BY id desc limit 1");
+		PreparedStatement s = connection.prepareStatement(
+			"SELECT * from `maxwell`.`schemas` "
+			+ "WHERE (binlog_file < ?) OR (binlog_file = ? and binlog_position <= ?) "
+			+ "ORDER BY id desc limit 1");
 
 		s.setString(1, targetPosition.getFile());
-		s.setInt(2, targetPosition.getOffset());
+		s.setString(2, targetPosition.getFile());
+		s.setInt(3, targetPosition.getOffset());
 
 		ResultSet rs = s.executeQuery();
 		if (rs.next()) {
