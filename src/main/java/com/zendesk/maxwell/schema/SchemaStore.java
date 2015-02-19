@@ -75,6 +75,16 @@ public class SchemaStore {
 		if (this.schema == null)
 			throw new RuntimeException("Uninitialized schema!");
 
+		try {
+			connection.setAutoCommit(false);
+			saveSchema();
+			connection.commit();
+		} finally {
+			connection.setAutoCommit(true);
+		}
+	}
+
+	private void saveSchema() throws SQLException {
 		Integer schemaId = executeInsert(schemaInsert, position.getFile(),
 				position.getOffset(), 1);
 
