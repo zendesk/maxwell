@@ -1,56 +1,25 @@
 package com.zendesk.maxwell.schema;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
+import com.zendesk.maxwell.schema.columndef.StringColumnDef;
 
 public class Table {
-	private List<ColumnDef> columnList;
-	private int pkIndex;
+	private final List<ColumnDef> columnList;
+	int pkIndex;
 	private String name;
 
-	private String database;
+	private Database database;
+	private final String encoding;
 
-
-	public Table(String dbName, String name) {
-		this.database = dbName;
+	public Table(Database d, String name, String encoding, List<ColumnDef> list) {
+		this.database = d;
 		this.name = name;
-	}
-
-	public Table(String dbName, String name, ResultSet r) throws SQLException {
-		this(dbName, name);
-		this.columnList = buildColumnsFromResultSet(r);
-	}
-
-	public Table(String dbName, String name, List<ColumnDef> list) {
-		this(dbName, name);
+		this.encoding = encoding;
 		this.columnList = list;
 		renumberColumns();
-	}
-
-	private List<ColumnDef> buildColumnsFromResultSet(ResultSet r) throws SQLException {
-		int i = 0;
-		List<ColumnDef> columns = new ArrayList<ColumnDef>();
-
-		while(r.next()) {
-			String colName    = r.getString("COLUMN_NAME");
-			String colType    = r.getString("DATA_TYPE");
-			String colEnc     = r.getString("CHARACTER_SET_NAME");
-			int colPos        = r.getInt("ORDINAL_POSITION") - 1;
-			boolean colSigned = !r.getString("COLUMN_TYPE").matches(" unsigned$");
-
-			// todo: compound PKs, mebbe
-			if ( r.getString("COLUMN_KEY").equals("PRI") )
-				this.pkIndex = i;
-
-			columns.add(ColumnDef.build(this.name, colName, colEnc, colType, colPos, colSigned));
-			i++;
-		}
-
-		return columns;
 	}
 
 	public List<ColumnDef> getColumnList() {
@@ -86,7 +55,7 @@ public class Table {
 		return this.pkIndex;
 	}
 
-	public String getDatabase() {
+	public Database getDatabase() {
 		return database;
 	}
 
@@ -97,11 +66,10 @@ public class Table {
 			list.add(c.copy());
 		}
 
-		return new Table(database, name, list);
+		return new Table(database, name, encoding, list);
 	}
 
-	public void rename(String dbName, String tableName) {
-		this.database = dbName;
+	public void rename(String tableName) {
 		this.name = tableName;
 	}
 
@@ -130,10 +98,15 @@ public class Table {
 	}
 
 	public String fullName() {
-		return "`" + this.database + "`." + this.name + "`";
+		return "`" + this.database.getName() + "`." + this.name + "`";
 	}
 
 	public void diff(List<String> diffs, Table other, String nameA, String nameB) {
+		if ( !this.getEncoding().equals(other.getEncoding()) ) {
+			diffs.add(this.fullName() + " differs in encoding: "
+					  + nameA + " is " + this.getEncoding() + " but "
+					  + nameB + " is " + other.getEncoding());
+		}
 		diffColumnList(diffs, this, other, nameA, nameB);
 		diffColumnList(diffs, other, this, nameB, nameA);
 	}
@@ -144,6 +117,15 @@ public class Table {
 			c.setPos(i++);
 		}
 	}
+
+	public void setDefaultColumnEncodings() {
+		for ( ColumnDef c : columnList ) {
+			if ( c instanceof StringColumnDef ) {
+				((StringColumnDef) c).setDefaultEncoding(this.getEncoding());
+			}
+		}
+	}
+
 	public void addColumn(int index, ColumnDef definition) {
 		this.columnList.add(index, definition);
 		renumberColumns();
@@ -153,4 +135,17 @@ public class Table {
 		this.columnList.remove(idx);
 		renumberColumns();
 	}
+
+	public void setDatabase(Database database) {
+		this.database = database;
+	}
+
+	public String getEncoding() {
+		if ( encoding == null ) {
+			return this.database.getEncoding();
+		} else {
+		    return encoding;
+		}
+	}
+
 }

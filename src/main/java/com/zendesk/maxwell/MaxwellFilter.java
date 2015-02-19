@@ -76,7 +76,7 @@ public class MaxwellFilter {
 	}
 
 	public boolean matches(MaxwellAbstractRowsEvent e) {
-		return matchesDatabase(e.getTable().getDatabase())
+		return matchesDatabase(e.getTable().getDatabase().getName())
 		    && matchesTable(e.getTable().getName())
 		    && matchesAnyRows(e);
 	}

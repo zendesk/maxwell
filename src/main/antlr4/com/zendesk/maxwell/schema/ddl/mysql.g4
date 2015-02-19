@@ -21,7 +21,7 @@ create_database:
 	
 create_table: 
     create_table_preamble 
-    ( 
+    (
       ( create_specifications table_creation_options* )
       | create_like_tbl
     );

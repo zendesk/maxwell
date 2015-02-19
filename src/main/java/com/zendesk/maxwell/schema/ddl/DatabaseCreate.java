@@ -26,7 +26,7 @@ public class DatabaseCreate extends SchemaChange {
 		}
 
 		Schema newSchema = originalSchema.copy();
-		database = new Database(dbName, null);
+		database = new Database(dbName, encoding);
 
 		newSchema.getDatabases().add(database);
 		return newSchema;

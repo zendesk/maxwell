@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -72,6 +73,10 @@ public class MysqlIsolatedServer {
 
 			getConnection().createStatement().executeUpdate(q);
 		}
+	}
+
+	public void executeList(String[] schemaSQL) throws SQLException {
+		executeList(Arrays.asList(schemaSQL));
 	}
 
 	public String getBaseDir() {

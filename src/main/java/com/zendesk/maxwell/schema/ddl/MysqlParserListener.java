@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ErrorNode;
 
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
@@ -70,6 +71,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 		LOGGER.error(node.getParent().toStringTree(new mysqlParser(null)));
 		throw new MaxwellSQLSyntaxError(node.getText());
 	}
+
 	private boolean isSigned(List<Int_flagsContext> flags) {
 		for ( Int_flagsContext flag : flags ) {
 			if ( flag.UNSIGNED() != null ) {
@@ -178,6 +180,12 @@ public class MysqlParserListener extends mysqlBaseListener {
 	}
 
 	@Override
+	public void exitCreation_character_set(Creation_character_setContext ctx) {
+		TableCreate tableCreate = (TableCreate) schemaChanges.get(0);
+		tableCreate.encoding = unquote_literal(ctx.charset_name().getText());
+	}
+
+	@Override
 	public void exitDrop_table(mysqlParser.Drop_tableContext ctx) {
 		boolean ifExists = ctx.if_exists() != null;
 		for ( Table_nameContext t : ctx.table_name()) {
@@ -213,9 +221,6 @@ public class MysqlParserListener extends mysqlBaseListener {
 			Charset_defContext charsetDef = dctx.string_type().charset_def();
 			if ( charsetDef != null && charsetDef.character_set(0) != null ) {
 				colEncoding = unquote_literal(charsetDef.character_set(0).charset_name().getText());
-			} else {
-				// BIG TODO: default to database,table,encodings
-				colEncoding = "utf8";
 			}
 		}
 

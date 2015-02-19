@@ -43,21 +43,23 @@ public class TableAlter extends SchemaChange {
 		}
 
 
-		if ( newTableName != null && newDatabase != null ) {
-			if ( ! newDatabase.equals(table.getDatabase()) ) {
-				Database destDB = newSchema.findDatabase(this.newDatabase);
-				if ( destDB == null )
-					throw new SchemaSyncError("Couldn't find database " + this.dbName);
 
-				database.getTableList().remove(table);
-				destDB.getTableList().add(table);
-			}
-			table.rename(newDatabase, newTableName);
+		if ( newTableName != null && newDatabase != null ) {
+			Database destDB = newSchema.findDatabase(this.newDatabase);
+			if ( destDB == null )
+				throw new SchemaSyncError("Couldn't find database " + this.dbName);
+
+			table.rename(newTableName);
+
+			database.getTableList().remove(table);
+			destDB.addTable(table);
 		}
 
 		for (ColumnMod mod : columnMods) {
 			mod.apply(table);
 		}
+
+		table.setDefaultColumnEncodings();
 
 		return newSchema;
 	}

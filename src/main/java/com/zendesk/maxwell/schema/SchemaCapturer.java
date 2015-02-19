@@ -6,7 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
+
+import com.zendesk.maxwell.schema.columndef.ColumnDef;
 
 public class SchemaCapturer {
 	private final Connection connection;
@@ -37,40 +38,66 @@ public class SchemaCapturer {
 
 	public Schema capture() throws SQLException {
 		ArrayList<Database> databases = new ArrayList<Database>();
-		for ( String dbName : selectFirst("show databases")) {
+		ResultSet rs = connection.createStatement().executeQuery("SELECT * from INFORMATION_SCHEMA.SCHEMATA");
+
+		while ( rs.next() ) {
+			String dbName = rs.getString("SCHEMA_NAME");
+			String encoding = rs.getString("DEFAULT_CHARACTER_SET_NAME");
+
 			if ( includeDatabases.size() > 0 && !includeDatabases.contains(dbName))
 				continue;
 
 			if ( excludeDatabases.contains(dbName) )
 				continue;
 
-			String showTableSQL = "show tables from " + dbName;
-
-			ArrayList<Table> tables = new ArrayList<Table>();
-
-			for ( String table : selectFirst(showTableSQL) ) {
-				tables.add(captureTable(dbName, table));
-			}
-			databases.add(new Database(dbName, tables));
+			databases.add(captureDatabase(dbName, encoding));
 		}
+
 		return new Schema(databases);
 	}
 
+	private static final String tblSQL =
+			  "SELECT TABLES.TABLE_NAME, CCSA.CHARACTER_SET_NAME "
+			+ "FROM INFORMATION_SCHEMA.TABLES "
+			+ "JOIN  information_schema.COLLATION_CHARACTER_SET_APPLICABILITY AS CCSA"
+			+ " ON TABLES.TABLE_COLLATION = CCSA.COLLATION_NAME WHERE TABLES.TABLE_SCHEMA = ?";
 
-	private Table captureTable(String dbName, String tableName) throws SQLException {
-		infoSchemaStmt.setString(1, dbName);
-		infoSchemaStmt.setString(2, tableName);
-		return new Table(dbName, tableName, infoSchemaStmt.executeQuery());
+
+	private Database captureDatabase(String dbName, String dbEncoding) throws SQLException {
+		PreparedStatement p = connection.prepareStatement(tblSQL);
+
+		p.setString(1, dbName);
+		ResultSet rs = p.executeQuery();
+
+		Database db = new Database(dbName, dbEncoding);
+
+		while ( rs.next() ) {
+			Table t = db.buildTable(rs.getString("TABLE_NAME"), rs.getString("CHARACTER_SET_NAME"));
+			captureTable(t);
+		}
+
+		return db;
 	}
 
 
-	private List<String> selectFirst(String sql) throws SQLException {
-		ResultSet rs = connection.createStatement().executeQuery(sql);
-		ArrayList<String> list = new ArrayList<String>();
+	private void captureTable(Table t) throws SQLException {
+		int i = 0;
+		infoSchemaStmt.setString(1, t.getDatabase().getName());
+		infoSchemaStmt.setString(2, t.getName());
+		ResultSet r = infoSchemaStmt.executeQuery();
 
-		while (rs.next()) {
-			list.add(rs.getString(1));
+		while(r.next()) {
+			String colName    = r.getString("COLUMN_NAME");
+			String colType    = r.getString("DATA_TYPE");
+			String colEnc     = r.getString("CHARACTER_SET_NAME");
+			int colPos        = r.getInt("ORDINAL_POSITION") - 1;
+			boolean colSigned = !r.getString("COLUMN_TYPE").matches(" unsigned$");
+
+			if ( r.getString("COLUMN_KEY").equals("PRI") )
+				t.pkIndex = i;
+
+			t.getColumnList().add(ColumnDef.build(t.getName(), colName, colEnc, colType, colPos, colSigned));
+			i++;
 		}
-		return list;
 	}
 }

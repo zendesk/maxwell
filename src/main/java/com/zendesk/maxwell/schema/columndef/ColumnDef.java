@@ -86,4 +86,12 @@ public abstract class ColumnDef {
 	public void setPos(int i) {
 		this.pos = i;
 	}
+
+	public String getEncoding() {
+		return this.encoding;
+	}
+
+	public boolean getSigned() {
+		return this.signed;
+	}
 }

@@ -28,7 +28,7 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 		super.tearDown();
 	}
 
-	private void testIntegration(String alters[]) throws SQLException, SchemaSyncError, IOException {
+	private Schema testIntegration(String alters[]) throws SQLException, SchemaSyncError, IOException {
 		SchemaCapturer capturer = new SchemaCapturer(server.getConnection());
 		Schema topSchema = capturer.capture();
 
@@ -43,9 +43,10 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 
 		Schema bottomSchema = capturer.capture();
 
-		List<String> diff = topSchema.diff(bottomSchema, "play-along schema", "recaptured schema");
+		List<String> diff = topSchema.diff(bottomSchema, "followed schema", "recaptured schema");
 		assertThat(StringUtils.join(diff.iterator(), "\n"), diff.size(), is(0));
 
+		return topSchema;
 	}
 
 
@@ -86,6 +87,19 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 			"create DATABASE if not exists test_db",
 			"create DATABASE test_db_2",
 			"drop DATABASE test_db"
+		};
+
+		testIntegration(sql);
+	}
+
+	@Test
+	public void testDatabaseEncoding() throws SQLException, SchemaSyncError, IOException {
+		String sql[] = {
+		   "create DATABASE test_latin1 character set='latin1'",
+		   "create TABLE `test_latin1`.`latin1_table` ( id int(11) unsigned, str varchar(255) )",
+		   "create TABLE `test_latin1`.`utf8_table` ( id int(11) unsigned, "
+		     + "str_utf8 varchar(255), "
+		     + "str_latin1 varchar(255) character set latin1) charset 'utf8'"
 		};
 
 		testIntegration(sql);
