@@ -44,8 +44,8 @@ public class TableCreate extends SchemaChange {
 			t.rename(this.tableName);
 			d.addTable(t);
 		} else {
-		    Table t = d.buildTable(this.tableName, this.encoding, this.columns);
-		    t.setDefaultColumnEncodings();
+			Table t = d.buildTable(this.tableName, this.encoding, this.columns);
+			t.setDefaultColumnEncodings();
 		}
 
 		return newSchema;
