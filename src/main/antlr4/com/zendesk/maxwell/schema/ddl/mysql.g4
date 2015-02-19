@@ -26,7 +26,7 @@ create_table:
       | create_like_tbl
     );
     
-
+// TODO: support if-not-exists
 create_table_preamble: CREATE TEMPORARY? TABLE (IF NOT EXISTS)? table_name;
 create_specifications: '(' create_specification (',' create_specification)* ')'; 
 
@@ -143,8 +143,8 @@ engine_statement: ENGINE '=' IDENT;
 if_exists: IF EXISTS;
 if_not_exists: IF NOT EXISTS; 
 
-db_name: name '.';
-table_name: (db_name name)
+db_name: name;
+table_name: (db_name '.' name)
 			| name
 			;
 

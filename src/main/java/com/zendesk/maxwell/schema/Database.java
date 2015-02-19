@@ -85,6 +85,9 @@ public class Database {
 	}
 
 	public Table buildTable(String name, String encoding, List<ColumnDef> list) {
+		if ( encoding == null )
+			encoding = getEncoding(); // inherit database's default encoding
+
 		Table t = new Table(this, name, encoding, list);
 		this.tableList.add(t);
 		return t;

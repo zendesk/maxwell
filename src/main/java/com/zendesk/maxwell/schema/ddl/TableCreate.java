@@ -13,6 +13,9 @@ public class TableCreate extends SchemaChange {
 	public ArrayList<ColumnDef> columns;
 	public String encoding;
 
+	public String likeDB;
+	public String likeTable;
+
 	public TableCreate (String dbName, String tableName) {
 		this.dbName = dbName;
 		this.tableName = tableName;
@@ -27,9 +30,28 @@ public class TableCreate extends SchemaChange {
 		if ( d == null )
 			throw new SchemaSyncError("Couldn't find database " + this.dbName);
 
-		Table t = d.buildTable(this.tableName, this.encoding, this.columns);
-		t.setDefaultColumnEncodings();
+		if ( likeDB != null && likeTable != null ) {
+			applyCreateLike(newSchema, d);
+		} else {
+			Table t = d.buildTable(this.tableName, this.encoding, this.columns);
+			t.setDefaultColumnEncodings();
+		}
 
 		return newSchema;
+	}
+
+	private void applyCreateLike(Schema newSchema, Database d) throws SchemaSyncError {
+		Database sourceDB = newSchema.findDatabase(likeDB);
+
+		if ( sourceDB == null )
+			throw new SchemaSyncError("Couldn't find database " + likeDB);
+
+		Table sourceTable = sourceDB.findTable(likeTable);
+		if ( sourceTable == null )
+			throw new SchemaSyncError("Couldn't find table " + likeDB + "." + sourceTable);
+
+		Table t = sourceTable.copy();
+		t.rename(this.tableName);
+		d.addTable(t);
 	}
 }

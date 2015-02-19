@@ -51,7 +51,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 
 	private String getDB(Table_nameContext t) {
 		if ( t.db_name() != null )
-			return unquote(t.db_name().name().getText());
+			return unquote(t.db_name().getText());
 		else
 			return currentDatabase;
 	}
@@ -109,6 +109,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 		ColumnDef c = this.columnDefs.removeFirst();
 		alterStatement().columnMods.add(new AddColumnMod(c.getName(), c, getColumnPosition()));
 	}
+
 	@Override
 	public void exitAdd_column_parens(mysqlParser.Add_column_parensContext ctx) {
 		while ( this.columnDefs.size() > 0 ) {
@@ -171,6 +172,13 @@ public class MysqlParserListener extends mysqlBaseListener {
 		this.tableName = createStatement.tableName;
 
 		this.schemaChanges.add(createStatement);
+	}
+
+	@Override
+	public void exitCreate_like_tbl(Create_like_tblContext ctx) {
+		TableCreate tableCreate = (TableCreate) schemaChanges.get(0);
+		tableCreate.likeDB    = getDB(ctx.table_name());
+		tableCreate.likeTable = getTable(ctx.table_name());
 	}
 
 	@Override
