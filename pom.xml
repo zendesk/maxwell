@@ -16,13 +16,6 @@
 
   <dependencies>
     <dependency>
-      <groupId>open-replicator</groupId>
-      <artifactId>open-replicator</artifactId>
-      <version>1.0.7</version>
-      <scope>system</scope>
-      <systemPath>${project.basedir}/src/main/resources/open-replicator-1.0.7.jar</systemPath>
-    </dependency>
-    <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
       <version>5.1.6</version>
@@ -57,6 +50,7 @@
     	<groupId>junit</groupId>
     	<artifactId>junit</artifactId>
     	<version>4.12</version>
+    	<scope>test</scope>
     </dependency>
     <dependency>
     	<groupId>org.apache.logging.log4j</groupId>
@@ -72,6 +66,11 @@
     	<groupId>org.apache.logging.log4j</groupId>
     	<artifactId>log4j-slf4j-impl</artifactId>
     	<version>2.1</version>
+    </dependency>
+    <dependency>
+    	<groupId>com.zendesk</groupId>
+    	<artifactId>open-replicator</artifactId>
+    	<version>1.1.1</version>
     </dependency>
   </dependencies>
 
@@ -94,6 +93,24 @@
             <id>antlr</id>
             <goals>
               <goal>antlr4</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>2.5.3</version>
+        <configuration>
+          <descriptors>
+            <descriptor>src/main/assembly/assembly.xml</descriptor>
+          </descriptors>
+        </configuration>
+        <executions>
+          <execution>
+            <id>make-assembly</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
             </goals>
           </execution>
         </executions>

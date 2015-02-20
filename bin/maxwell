@@ -1,0 +1,17 @@
+#!/bin/bash
+
+base_dir=$(dirname $0)/..
+
+for file in target/maxwell-*/*/lib/*.jar
+do
+  CLASSPATH=$CLASSPATH:$file
+done
+
+if [ -z "$JAVA_HOME" ]; then
+  JAVA="java"
+else
+  JAVA="$JAVA_HOME/bin/java"
+fi
+
+exec $JAVA -cp $CLASSPATH com.zendesk.maxwell.Maxwell "$@"
+

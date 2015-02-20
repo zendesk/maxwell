@@ -195,22 +195,22 @@ public class MaxwellParser {
 
 	protected FileBasedBinlogParser getDefaultBinlogParser() throws Exception {
 		final FileBasedBinlogParser r = new FileBasedBinlogParser();
-		r.registgerEventParser(new StopEventParser());
-		r.registgerEventParser(new RotateEventParser());
-		r.registgerEventParser(new IntvarEventParser());
-		r.registgerEventParser(new XidEventParser());
-		r.registgerEventParser(new RandEventParser());
-		r.registgerEventParser(new QueryEventParser());
-		r.registgerEventParser(new UserVarEventParser());
-		r.registgerEventParser(new IncidentEventParser());
-		r.registgerEventParser(new TableMapEventParser());
-		r.registgerEventParser(new WriteRowsEventParser());
-		r.registgerEventParser(new UpdateRowsEventParser());
-		r.registgerEventParser(new DeleteRowsEventParser());
-		r.registgerEventParser(new WriteRowsEventV2Parser());
-		r.registgerEventParser(new UpdateRowsEventV2Parser());
-		r.registgerEventParser(new DeleteRowsEventV2Parser());
-		r.registgerEventParser(new FormatDescriptionEventParser());
+		r.registerEventParser(new StopEventParser());
+		r.registerEventParser(new RotateEventParser());
+		r.registerEventParser(new IntvarEventParser());
+		r.registerEventParser(new XidEventParser());
+		r.registerEventParser(new RandEventParser());
+		r.registerEventParser(new QueryEventParser());
+		r.registerEventParser(new UserVarEventParser());
+		r.registerEventParser(new IncidentEventParser());
+		r.registerEventParser(new TableMapEventParser());
+		r.registerEventParser(new WriteRowsEventParser());
+		r.registerEventParser(new UpdateRowsEventParser());
+		r.registerEventParser(new DeleteRowsEventParser());
+		r.registerEventParser(new WriteRowsEventV2Parser());
+		r.registerEventParser(new UpdateRowsEventV2Parser());
+		r.registerEventParser(new DeleteRowsEventV2Parser());
+		r.registerEventParser(new FormatDescriptionEventParser());
 
 		return r;
 	}
