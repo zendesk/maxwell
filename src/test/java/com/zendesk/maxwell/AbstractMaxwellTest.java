@@ -53,7 +53,6 @@ public class AbstractMaxwellTest {
 		queries.add("RESET MASTER");
 
 		server.executeList(queries);
-        System.out.println("HERHEHREEHE1");
 	}
 
 	private void generateBinlogEvents() throws IOException, SQLException {
@@ -93,9 +92,7 @@ public class AbstractMaxwellTest {
         while ( (e = p.getEvent()) != null )
         	list.add(e);
 
-        System.out.println("stopping parser...");
         p.stop();
-        System.out.println("stopped.");
 
         return list;
 	}

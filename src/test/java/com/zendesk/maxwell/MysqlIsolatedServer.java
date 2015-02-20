@@ -26,7 +26,6 @@ public class MysqlIsolatedServer {
 		env.put("PATH", env.get("PATH") + ":/opt/local/bin");
 
 		Process p = pb.start();
-		System.out.println(pb.command());
 		InputStream pStdout = p.getInputStream();
 
 		BufferedReader reader = new BufferedReader(new InputStreamReader(pStdout));
@@ -38,10 +37,7 @@ public class MysqlIsolatedServer {
 			if ( s == null || s.equals("UP.") )
 				break;
 			mysqlOut.add(s);
-			System.out.println(s);
 		}
-
-		System.out.println(mysqlOut);
 
 		if ( mysqlOut.size() == 0 ) {
 			String errLine;
@@ -54,11 +50,11 @@ public class MysqlIsolatedServer {
 
 		String[] tmpDirSplit = mysqlOut.get(0).split(": ");
 
-		System.out.println(tmpDirSplit[0]);
 		this.baseDir = tmpDirSplit[tmpDirSplit.length - 1];
 
 		String[] portSplit = mysqlOut.get(1).split(": ");
 		String port = portSplit[portSplit.length - 1];
+		System.out.println("Booted mysql server on port: " + port);
 
 		this.port = Integer.valueOf(port);
 
