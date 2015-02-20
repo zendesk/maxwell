@@ -34,6 +34,8 @@ public class MaxwellParser {
 	protected FileBasedBinlogParser parser;
 	protected MaxwellBinlogEventListener binlogEventListener;
 
+	private final MaxwellTableCache tableCache = new MaxwellTableCache();
+
 	public MaxwellParser(String filePath, String fileName, Schema currentSchema) throws Exception {
 		this.filePath = filePath;
 		this.fileName = fileName;
@@ -48,7 +50,8 @@ public class MaxwellParser {
 		MaxwellAbstractRowsEvent ew;
 		Table table;
 
-		table = getTableForId(e.getTableId());
+		table = tableCache.getTable(e.getTableId());
+
 		if ( table == null ) {
 			// TODO: richer error
 			throw new RuntimeException("couldn't find table in cache for " + e.getTableId());
@@ -93,7 +96,7 @@ public class MaxwellParser {
 				if ( stopAtNextTableMap)
 					return null;
 
-				processTableMapEvent((TableMapEvent) v4Event);
+				tableCache.processEvent(this.schema, (TableMapEvent) v4Event);
 				break;
 			case MySQLConstants.QUERY_EVENT:
 				processQueryEvent((QueryEvent) v4Event);
@@ -105,8 +108,6 @@ public class MaxwellParser {
 		return getEvent(false);
 	}
 
-	private final HashMap<Long,Table> tableMapCache = new HashMap<>();
-
 	private void processQueryEvent(QueryEvent event) throws SchemaSyncError {
 		// get encoding of the alter event somehow; or just fuck it.
 		String dbName = event.getDatabaseName().toString();
@@ -117,27 +118,9 @@ public class MaxwellParser {
 			this.schema = change.apply(this.schema);
 		}
 
-	}
-	// open-replicator keeps a very similar cache, but we can't get access to it.
-	private void processTableMapEvent(TableMapEvent event) {
-		Long tableId = event.getTableId();
-		if ( !tableMapCache.containsKey(tableId) ) {
-			String dbName = new String(event.getDatabaseName().getValue());
-			String tblName = new String(event.getTableName().getValue());
-			Database db = schema.findDatabase(dbName);
-			if ( db == null )
-				throw new RuntimeException("Couldn't find database " + dbName);
-
-			Table tbl = db.findTable(tblName);
-			if ( tbl == null )
-				throw new RuntimeException("Couldn't find table " + tblName);
-
-			tableMapCache.put(tableId, tbl);
+		if ( changes.size() > 0 ) {
+			tableCache.clear();
 		}
-	}
-
-	private Table getTableForId(Long tableId) {
-		return tableMapCache.get(tableId);
 	}
 
 	private BinlogEventV4 getBinlogEvent() throws Exception {
