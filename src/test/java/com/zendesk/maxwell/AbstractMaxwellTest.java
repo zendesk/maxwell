@@ -53,6 +53,7 @@ public class AbstractMaxwellTest {
 		queries.add("RESET MASTER");
 
 		server.executeList(queries);
+        System.out.println("HERHEHREEHE1");
 	}
 
 	private void generateBinlogEvents() throws IOException, SQLException {
@@ -77,18 +78,24 @@ public class AbstractMaxwellTest {
 			server.executeList(Arrays.asList(before));
 		}
 
-		MaxwellParser p = new MaxwellParser(server.getBaseDir() + "/mysqld", start.getFile(), capturer.capture());
+		MaxwellParser p = new MaxwellParser(capturer.capture());
+		p.setPort(server.getPort());
 		p.setFilter(filter);
 
         server.executeList(Arrays.asList(queries));
 
-        p.setStartOffset(start.getOffset());
+        p.setBinlogPosition(start);
+        p.start();
 
 		ArrayList<MaxwellAbstractRowsEvent> list = new ArrayList<>();
         MaxwellAbstractRowsEvent e;
 
         while ( (e = p.getEvent()) != null )
         	list.add(e);
+
+        System.out.println("stopping parser...");
+        p.stop();
+        System.out.println("stopped.");
 
         return list;
 	}

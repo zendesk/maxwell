@@ -15,6 +15,7 @@ import java.util.Map;
 public class MysqlIsolatedServer {
 	private Connection connection;
 	private String baseDir;
+	private int port;
 
 	public void boot() throws IOException, SQLException {
         final String dir = System.getProperty("user.dir");
@@ -59,7 +60,11 @@ public class MysqlIsolatedServer {
 		String[] portSplit = mysqlOut.get(1).split(": ");
 		String port = portSplit[portSplit.length - 1];
 
+		this.port = Integer.valueOf(port);
+
 		this.connection = DriverManager.getConnection("jdbc:mysql://127.0.0.1:" + port + "/mysql", "root", "");
+		this.connection.createStatement().executeUpdate("GRANT REPLICATION SLAVE on *.* to 'maxwell'@'127.0.0.1' IDENTIFIED BY 'maxwell'");
+		this.connection.createStatement().executeUpdate("GRANT ALL on `maxwell`.* to 'maxwell'@'127.0.0.1'");
 	}
 
 	public Connection getConnection() {
@@ -81,5 +86,9 @@ public class MysqlIsolatedServer {
 
 	public String getBaseDir() {
 		return baseDir;
+	}
+
+	public int getPort() {
+		return port;
 	}
 }
