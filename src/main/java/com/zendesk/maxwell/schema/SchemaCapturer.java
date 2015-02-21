@@ -7,12 +7,16 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
 
 public class SchemaCapturer {
 	private final Connection connection;
+	static final Logger LOGGER = LoggerFactory.getLogger(SchemaStore.class);
 
-	private final String[] alwaysExclude = {"performance_schema", "information_schema", "mysql", "test"};
+	private final String[] alwaysExclude = {"performance_schema", "information_schema", "mysql", "maxwell"};
 	private final HashSet<String> excludeDatabases;
 	private final HashSet<String> includeDatabases;
 
@@ -37,7 +41,10 @@ public class SchemaCapturer {
 	}
 
 	public Schema capture() throws SQLException {
+		LOGGER.debug("Capturing schema");
 		ArrayList<Database> databases = new ArrayList<Database>();
+
+
 		ResultSet rs = connection.createStatement().executeQuery("SELECT * from INFORMATION_SCHEMA.SCHEMATA");
 
 		while ( rs.next() ) {
@@ -53,7 +60,14 @@ public class SchemaCapturer {
 			databases.add(captureDatabase(dbName, encoding));
 		}
 
-		return new Schema(databases);
+		LOGGER.debug("Finished capturing schema");
+		return new Schema(databases, captureDefaultEncoding());
+	}
+
+	private String captureDefaultEncoding() throws SQLException {
+		ResultSet rs = connection.createStatement().executeQuery("select @@character_set_server");
+		rs.next();
+		return rs.getString("@@character_set_server");
 	}
 
 	private static final String tblSQL =

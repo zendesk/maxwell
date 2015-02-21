@@ -31,7 +31,7 @@ public class SchemaStore {
 		this.connection = connection;
 		this.schemaInsert = connection
 				.prepareStatement(
-						"INSERT INTO `maxwell`.`schemas` SET binlog_file = ?, binlog_position = ?, server_id = ?",
+						"INSERT INTO `maxwell`.`schemas` SET binlog_file = ?, binlog_position = ?, server_id = ?, encoding = ?",
 						Statement.RETURN_GENERATED_KEYS);
 		this.databaseInsert = connection
 				.prepareStatement(
@@ -86,7 +86,7 @@ public class SchemaStore {
 
 	private void saveSchema() throws SQLException {
 		Integer schemaId = executeInsert(schemaInsert, position.getFile(),
-				position.getOffset(), 1);
+				position.getOffset(), 1, schema.getEncoding());
 
 		for (Database d : schema.getDatabases()) {
 			Integer dbId = executeInsert(databaseInsert, schemaId, d.getName(), d.getEncoding());
@@ -132,7 +132,7 @@ public class SchemaStore {
 	private void restoreFrom(BinlogPosition targetPosition)
 			throws SQLException, SchemaSyncError {
 		PreparedStatement p;
-		ResultSet schemaRS = findSchemaID(targetPosition);
+		ResultSet schemaRS = findSchema(targetPosition);
 
 		if (schemaRS == null)
 			throw new SchemaSyncError("Could not find schema for "
@@ -140,7 +140,7 @@ public class SchemaStore {
 					+ targetPosition.getOffset());
 
 		ArrayList<Database> databases = new ArrayList<>();
-		this.schema = new Schema(databases);
+		this.schema = new Schema(databases, schemaRS.getString("encoding"));
 		this.position = new BinlogPosition(schemaRS.getInt("binlog_position"),
 				schemaRS.getString("binlog_file"));
 
@@ -185,7 +185,7 @@ public class SchemaStore {
 		}
 	}
 
-	private ResultSet findSchemaID(BinlogPosition targetPosition)
+	private ResultSet findSchema(BinlogPosition targetPosition)
 			throws SQLException {
 		PreparedStatement s = connection.prepareStatement(
 			"SELECT * from `maxwell`.`schemas` "
