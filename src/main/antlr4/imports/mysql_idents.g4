@@ -1,5 +1,8 @@
 grammar mysql_idents;
 
+import mysql_literal_tokens;
+
+name: ( id | tokens_available_for_names );
 id: ( IDENT | QUOTED_IDENT );
 literal: (INTEGER_LITERAL | STRING_LITERAL | FLOAT_LITERAL);
 string: (IDENT | STRING_LITERAL);

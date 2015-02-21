@@ -3,7 +3,7 @@ import mysql_literal_tokens, mysql_idents;
 
 
 column_definition:
-	col_name=id
+	col_name=name
 	data_type 
 	(column_options)*
 	;
