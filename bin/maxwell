@@ -2,6 +2,8 @@
 
 base_dir=$(dirname $0)/..
 
+CLASSPATH=$CLASSPATH:$base_dir/target/classes
+
 for file in target/maxwell-*/*/lib/*.jar
 do
   CLASSPATH=$CLASSPATH:$file

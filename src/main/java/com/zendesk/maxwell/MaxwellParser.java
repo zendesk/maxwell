@@ -68,7 +68,11 @@ public class MaxwellParser {
 		MaxwellAbstractRowsEvent event;
 
 		this.start();
-		while ( (event = getEvent()) != null ) {
+
+		for(;;) {
+			event = getEvent();
+			if ( event == null )
+				continue;
 			System.out.println(event.toJSON());
 		}
 	}
