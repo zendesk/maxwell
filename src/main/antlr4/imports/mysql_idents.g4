@@ -9,6 +9,8 @@ string: (IDENT | STRING_LITERAL);
 integer: INTEGER_LITERAL;
 charset_name: (IDENT | STRING_LITERAL);
 
+SQL_COMMENT: '/*' (.)*? '*/' -> skip;
+
 STRING_LITERAL: TICK ('\\\'' | '\'\'' | ~('\''))* TICK;
 
 FLOAT_LITERAL: DIGIT* '.' DIGIT+;
