@@ -16,7 +16,7 @@ public class SchemaCapturer {
 	private final Connection connection;
 	static final Logger LOGGER = LoggerFactory.getLogger(SchemaStore.class);
 
-	private final String[] alwaysExclude = {"performance_schema", "information_schema", "mysql", "maxwell"};
+	private final String[] alwaysExclude = {"performance_schema", "information_schema", "mysql"};
 	private final HashSet<String> excludeDatabases;
 	private final HashSet<String> includeDatabases;
 

@@ -1,4 +1,7 @@
 package com.zendesk.maxwell;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -7,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import com.google.code.or.OpenReplicator;
 import com.google.code.or.binlog.BinlogEventV4;
 import com.google.code.or.binlog.impl.FileBasedBinlogParser;
+import com.google.code.or.binlog.impl.event.AbstractBinlogEventV4;
 import com.google.code.or.binlog.impl.event.AbstractRowEvent;
 import com.google.code.or.binlog.impl.event.QueryEvent;
 import com.google.code.or.binlog.impl.event.TableMapEvent;
@@ -14,6 +18,7 @@ import com.google.code.or.binlog.impl.event.UpdateRowsEvent;
 import com.google.code.or.binlog.impl.event.WriteRowsEvent;
 import com.google.code.or.common.util.MySQLConstants;
 import com.zendesk.maxwell.schema.Schema;
+import com.zendesk.maxwell.schema.SchemaStore;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.ddl.SchemaChange;
 import com.zendesk.maxwell.schema.ddl.SchemaSyncError;
@@ -31,6 +36,7 @@ public class MaxwellParser {
 
 	private final MaxwellTableCache tableCache = new MaxwellTableCache();
 	private final OpenReplicator replicator;
+	private MaxwellConfig config;
 
 	public MaxwellParser(Schema currentSchema) throws Exception {
 		this.schema = currentSchema;
@@ -51,6 +57,15 @@ public class MaxwellParser {
 		this.replicator.setBinlogPosition(p.getOffset());
 	}
 
+	public void setConfig(MaxwellConfig c) throws FileNotFoundException, IOException {
+		this.replicator.setHost(c.mysqlHost);
+		this.replicator.setUser(c.mysqlUser);
+		this.replicator.setPassword(c.mysqlPassword);
+		this.replicator.setPort(c.mysqlPort);
+		this.config = c;
+		setBinlogPosition(c.getInitialPosition());
+	}
+
 	public void setPort(int port) {
 		this.replicator.setPort(port);
 	}
@@ -64,6 +79,7 @@ public class MaxwellParser {
 		this.replicator.stop(5, TimeUnit.SECONDS);
 	}
 
+
 	public void run() throws Exception {
 		MaxwellAbstractRowsEvent event;
 
@@ -73,19 +89,31 @@ public class MaxwellParser {
 			event = getEvent();
 			if ( event == null )
 				continue;
+
 			System.out.println(event.toJSON());
+
+			// TODO:  this isn't quite right: we need to only stop on table map events,
+			// although it's unclear to me whether you can have two row events in a row.
+			// I think maybe you can.
+
+			BinlogPosition p = eventBinlogPosition(event);
+			this.config.setInitialPosition(p);
 		}
 	}
 
-	private MaxwellAbstractRowsEvent processRowsEvent(AbstractRowEvent e) {
+	private BinlogPosition eventBinlogPosition(AbstractBinlogEventV4 event) {
+		BinlogPosition p = new BinlogPosition(event.getHeader().getNextPosition(), event.getBinlogFilename());
+		return p;
+	}
+
+	private MaxwellAbstractRowsEvent processRowsEvent(AbstractRowEvent e) throws SchemaSyncError {
 		MaxwellAbstractRowsEvent ew;
 		Table table;
 
 		table = tableCache.getTable(e.getTableId());
 
 		if ( table == null ) {
-			// TODO: richer error
-			throw new RuntimeException("couldn't find table in cache for " + e.getTableId());
+			throw new SchemaSyncError("couldn't find table in cache for table id: " + e.getTableId());
 		}
 
 		switch (e.getHeader().getEventType()) {
@@ -139,7 +167,7 @@ public class MaxwellParser {
 		return getEvent(false);
 	}
 
-	private void processQueryEvent(QueryEvent event) throws SchemaSyncError {
+	private void processQueryEvent(QueryEvent event) throws SchemaSyncError, SQLException, IOException {
 		// get encoding of the alter event somehow; or just fuck it.
 		String dbName = event.getDatabaseName().toString();
 		String sql = event.getSql().toString();
@@ -151,6 +179,8 @@ public class MaxwellParser {
 
 		if ( changes.size() > 0 ) {
 			tableCache.clear();
+			BinlogPosition p = eventBinlogPosition(event);
+			new SchemaStore(this.config.getMasterConnection(), schema, p).save();
 		}
 	}
 

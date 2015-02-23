@@ -5,27 +5,22 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class BinlogPosition {
-	private final int offset;
+	private final long offset;
 	private final String file;
 
-	public BinlogPosition(int offset, String file) {
-		this.offset = offset;
+	public BinlogPosition(long l, String file) {
+		this.offset = l;
 		this.file = file;
 	}
 
-	public static BinlogPosition capture(Connection c) {
+	public static BinlogPosition capture(Connection c) throws SQLException {
 		ResultSet rs;
-		try {
-			rs = c.createStatement().executeQuery("SHOW MASTER STATUS");
-			rs.next();
-            return new BinlogPosition(rs.getInt("Position"), rs.getString("File"));
-		} catch (SQLException e) {
-			// TODO be smart about permission denied here
-			return null;
-		}
+		rs = c.createStatement().executeQuery("SHOW MASTER STATUS");
+		rs.next();
+		return new BinlogPosition(rs.getInt("Position"), rs.getString("File"));
 	}
 
-	public int getOffset() {
+	public long getOffset() {
 		return offset;
 	}
 

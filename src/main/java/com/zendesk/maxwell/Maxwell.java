@@ -10,28 +10,40 @@ import com.zendesk.maxwell.schema.SchemaCapturer;
 import com.zendesk.maxwell.schema.SchemaStore;
 
 public class Maxwell {
-	private Connection connection;
-	private BinlogPosition initialPosition;
 	private Schema schema;
+	private MaxwellConfig config;
 
 	private void initFirstRun() throws SQLException, IOException {
-		this.initialPosition = BinlogPosition.capture(connection);
+		Connection connection = this.config.getMasterConnection();
+
+		SchemaStore.createMaxwellSchema(connection);
 
 		SchemaCapturer capturer = new SchemaCapturer(connection);
 		this.schema = capturer.capture();
 
-		SchemaStore store = new SchemaStore(this.connection, this.schema, this.initialPosition);
+		BinlogPosition pos = BinlogPosition.capture(connection);
+		SchemaStore store = new SchemaStore(connection, this.schema, pos);
 		store.save();
+
+		this.config.setInitialPosition(pos);
 	}
 
 	private void run(String[] args) throws Exception {
-		this.connection = DriverManager.getConnection("jdbc:mysql://127.0.0.1:" + 3306 + "/mysql", "root", "");
-		if ( true ) {
+		if ( args.length < 1 ) {
+			System.err.println("Usage: bin/maxwell config.properties");
+			System.exit(1);
+		}
+
+		this.config = MaxwellConfig.fromPropfile(args[0]);
+		if ( this.config.getInitialPosition() != null ) {
+			SchemaStore store = SchemaStore.restore(this.config.getMasterConnection(), this.config.getInitialPosition());
+			this.schema = store.getSchema();
+		} else {
 			initFirstRun();
 		}
 
 		MaxwellParser p = new MaxwellParser(this.schema);
-		p.setBinlogPosition(this.initialPosition);
+		p.setConfig(this.config);
 		p.run();
 
 	}
@@ -40,8 +52,8 @@ public class Maxwell {
 		try {
 			new Maxwell().run(args);
 		} catch ( Exception e ) {
-			System.out.println("Got exception!");
-			System.out.println(e);
+			e.printStackTrace();
+			System.exit(1);
 		}
 	}
 }
