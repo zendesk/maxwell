@@ -209,7 +209,7 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 	public List<JSONObject> toJSONObjectList() {
 		ArrayList<JSONObject> a = new ArrayList<>();
 		for ( Map<String, Object> row : jsonMaps() ) {
-			a.add(new JSONObject(row));
+			a.add(new MaxwellJSONObject(row));
 		}
 		return a;
 	}
@@ -218,7 +218,7 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 	public String toJSON() throws IOException {
 		JSONArray a = new JSONArray();
 		for ( Map<String, Object> row : jsonMaps() ) {
-			a.put(new JSONObject(row));
+			a.put(new MaxwellJSONObject(row));
 		}
 		return a.toString();
 	}
