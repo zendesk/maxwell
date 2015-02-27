@@ -14,8 +14,7 @@ data_type:
     generic_type
     | signed_type
     | string_type
-//	| enum_type
-//	| set_type
+	| enumerated_type
 	;
 	
 // from http://dev.mysql.com/doc/refman/5.1/en/create-table.html
@@ -42,6 +41,12 @@ string_type: // getting the encoding here
   		        charset_def?
 	  ;
 
+enumerated_type:
+	  col_type=(ENUM | SET)
+	  '(' enumerated_values ')'
+	  charset_def? 
+	  ;
+
 column_options:
 	  nullability
 	| default_value
@@ -52,6 +57,8 @@ column_options:
 	| STORAGE (DISK|MEMORY|DEFAULT)
 ;
 
+enumerated_values: enum_value (',' enum_value)*;
+enum_value: STRING_LITERAL;
 
 charset_def: (character_set | collation)+;
 character_set: ((CHARACTER SET) | CHARSET) charset_name;

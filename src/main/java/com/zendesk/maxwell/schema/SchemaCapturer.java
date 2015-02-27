@@ -6,7 +6,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,6 +104,7 @@ public class SchemaCapturer {
 		ResultSet r = infoSchemaStmt.executeQuery();
 
 		while(r.next()) {
+			String[] enumValues = null;
 			String colName    = r.getString("COLUMN_NAME");
 			String colType    = r.getString("DATA_TYPE");
 			String colEnc     = r.getString("CHARACTER_SET_NAME");
@@ -110,7 +114,19 @@ public class SchemaCapturer {
 			if ( r.getString("COLUMN_KEY").equals("PRI") )
 				t.pkIndex = i;
 
-			t.getColumnList().add(ColumnDef.build(t.getName(), colName, colEnc, colType, colPos, colSigned));
+			if ( colType.equals("enum") || colType.equals("set")) {
+				String expandedType = r.getString("COLUMN_TYPE");
+
+				Matcher matcher = Pattern.compile("(enum|set)\\((.*)\\)").matcher(expandedType);
+				matcher.matches(); // why do you tease me so.
+
+				enumValues = StringUtils.split(matcher.group(1), ",");
+				for(int j=0 ; j < enumValues.length; j++) {
+					enumValues[j] = enumValues[j].substring(1, enumValues[j].length() - 1);
+				}
+			}
+
+			t.getColumnList().add(ColumnDef.build(t.getName(), colName, colEnc, colType, colPos, colSigned, enumValues));
 			i++;
 		}
 	}

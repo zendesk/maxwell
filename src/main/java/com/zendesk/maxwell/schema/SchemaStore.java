@@ -192,7 +192,8 @@ public class SchemaStore {
 			ColumnDef c = ColumnDef.build(t.getName(),
 					cRS.getString("name"), cRS.getString("encoding"),
 					cRS.getString("coltype"), i++,
-					cRS.getInt("is_signed") == 1);
+					cRS.getInt("is_signed") == 1,
+					null);
 			t.getColumnList().add(c);
 		}
 	}
