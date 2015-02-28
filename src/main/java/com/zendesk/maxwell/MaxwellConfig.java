@@ -68,8 +68,6 @@ public class MaxwellConfig {
 		config.mysqlPort     = Integer.valueOf(p.getProperty("port", "3306"));
 
 		config.currentPositionFile = p.getProperty("position_file", "maxwell.position");
-
-		System.out.println(config.mysqlPassword);
 		return config;
 	}
 }

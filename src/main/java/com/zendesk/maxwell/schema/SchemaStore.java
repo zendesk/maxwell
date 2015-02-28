@@ -164,6 +164,8 @@ public class SchemaStore {
 		this.position = new BinlogPosition(schemaRS.getInt("binlog_position"),
 				schemaRS.getString("binlog_file"));
 
+		LOGGER.info("Restoring schema id " + schemaRS.getInt("id") + " (last modified at " + this.position + ")");
+
 		p = connection.prepareStatement("SELECT * from `maxwell`.`databases` where schema_id = ? ORDER by id");
 		p.setInt(1, schemaRS.getInt("id"));
 		ResultSet dbRS = p.executeQuery();
@@ -212,6 +214,7 @@ public class SchemaStore {
 
 	private ResultSet findSchema(BinlogPosition targetPosition)
 			throws SQLException {
+		LOGGER.debug("looking to restore schema at target position " + targetPosition);
 		PreparedStatement s = connection.prepareStatement(
 			"SELECT * from `maxwell`.`schemas` "
 			+ "WHERE (binlog_file < ?) OR (binlog_file = ? and binlog_position <= ?) "
