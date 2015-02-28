@@ -43,7 +43,8 @@ public class SchemaStore {
 						Statement.RETURN_GENERATED_KEYS);
 		this.columnInsert = connection
 				.prepareStatement(
-						"INSERT INTO `maxwell`.`columns` SET schema_id = ?, table_id = ?, name = ?, encoding=?, coltype=?, is_signed=?",
+						"INSERT INTO `maxwell`.`columns` SET schema_id = ?, table_id = ?, "
+					  + "name = ?, encoding=?, coltype=?, is_signed=?, enum_values=?",
 						Statement.RETURN_GENERATED_KEYS);
 	}
 
@@ -92,8 +93,15 @@ public class SchemaStore {
 			for (Table t : d.getTableList()) {
 				Integer tableId = executeInsert(tableInsert, schemaId, dbId, t.getName(), t.getEncoding());
 				for (ColumnDef c : t.getColumnList()) {
+					String [] enumValues = c.getEnumValues();
+					String enumValuesSQL = null;
+
+					if ( enumValues != null ) {
+						enumValuesSQL = StringUtils.join(enumValues, ",");
+					}
+
 					executeInsert(columnInsert, schemaId, tableId, c.getName(),
-							c.getEncoding(), c.getType(), c.getSigned() ? 1 : 0);
+							c.getEncoding(), c.getType(), c.getSigned() ? 1 : 0, enumValuesSQL);
 				}
 			}
 		}
@@ -189,11 +197,15 @@ public class SchemaStore {
 
 		int i = 0;
 		while (cRS.next()) {
+			String[] enumValues = null;
+			if ( cRS.getString("enum_values") != null )
+				enumValues = StringUtils.split(cRS.getString("enum_values"), ",");
+
 			ColumnDef c = ColumnDef.build(t.getName(),
 					cRS.getString("name"), cRS.getString("encoding"),
 					cRS.getString("coltype"), i++,
 					cRS.getInt("is_signed") == 1,
-					null);
+					enumValues);
 			t.getColumnList().add(c);
 		}
 	}

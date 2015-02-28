@@ -19,7 +19,7 @@ public class SetColumnDef extends ColumnDef {
 
 	@Override
 	public String toSQL(Object value) {
-		return "'" + asList(value) + "'";
+		return "'" + StringUtils.join(asList(value), "'") + "'";
 	}
 
 	@Override

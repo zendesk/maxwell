@@ -117,17 +117,23 @@ public class SchemaCapturer {
 			if ( colType.equals("enum") || colType.equals("set")) {
 				String expandedType = r.getString("COLUMN_TYPE");
 
-				Matcher matcher = Pattern.compile("(enum|set)\\((.*)\\)").matcher(expandedType);
-				matcher.matches(); // why do you tease me so.
-
-				enumValues = StringUtils.split(matcher.group(1), ",");
-				for(int j=0 ; j < enumValues.length; j++) {
-					enumValues[j] = enumValues[j].substring(1, enumValues[j].length() - 1);
-				}
+				enumValues = extractEnumValues(expandedType);
 			}
 
 			t.getColumnList().add(ColumnDef.build(t.getName(), colName, colEnc, colType, colPos, colSigned, enumValues));
 			i++;
 		}
+	}
+
+	private static String[] extractEnumValues(String expandedType) {
+		String[] enumValues;
+		Matcher matcher = Pattern.compile("(enum|set)\\((.*)\\)").matcher(expandedType);
+		matcher.matches(); // why do you tease me so.
+
+		enumValues = StringUtils.split(matcher.group(2), ",");
+		for(int j=0 ; j < enumValues.length; j++) {
+			enumValues[j] = enumValues[j].substring(1, enumValues[j].length() - 1);
+		}
+		return enumValues;
 	}
 }

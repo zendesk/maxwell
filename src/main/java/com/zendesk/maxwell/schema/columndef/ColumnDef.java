@@ -1,5 +1,7 @@
 package com.zendesk.maxwell.schema.columndef;
 
+import org.apache.commons.lang.StringUtils;
+
 public abstract class ColumnDef {
 	protected final String tableName;
 	protected final String name;
@@ -99,4 +101,9 @@ public abstract class ColumnDef {
 	public boolean getSigned() {
 		return this.signed;
 	}
+
+	public String[] getEnumValues() {
+		return enumValues;
+	}
+
 }
