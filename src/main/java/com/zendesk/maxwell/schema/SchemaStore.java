@@ -31,7 +31,7 @@ public class SchemaStore {
 		this.connection = connection;
 		this.schemaInsert = connection
 				.prepareStatement(
-						"INSERT INTO `maxwell`.`schemas` SET binlog_file = ?, binlog_position = ?, server_id = ?",
+						"INSERT INTO `maxwell`.`schemas` SET binlog_file = ?, binlog_position = ?, server_id = ?, encoding = ?",
 						Statement.RETURN_GENERATED_KEYS);
 		this.databaseInsert = connection
 				.prepareStatement(
@@ -47,8 +47,7 @@ public class SchemaStore {
 						Statement.RETURN_GENERATED_KEYS);
 	}
 
-	public SchemaStore(Connection connection, Schema schema,
-			BinlogPosition position) throws SQLException {
+	public SchemaStore(Connection connection, Schema schema, BinlogPosition position) throws SQLException {
 		this(connection);
 		this.schema = schema;
 		this.position = position;
@@ -70,8 +69,6 @@ public class SchemaStore {
 	}
 
 	public void save() throws SQLException, IOException {
-		createStoreDatabase();
-
 		if (this.schema == null)
 			throw new RuntimeException("Uninitialized schema!");
 
@@ -84,9 +81,10 @@ public class SchemaStore {
 		}
 	}
 
+
 	private void saveSchema() throws SQLException {
 		Integer schemaId = executeInsert(schemaInsert, position.getFile(),
-				position.getOffset(), 1);
+				position.getOffset(), 1, schema.getEncoding());
 
 		for (Database d : schema.getDatabases()) {
 			Integer dbId = executeInsert(databaseInsert, schemaId, d.getName(), d.getEncoding());
@@ -101,8 +99,22 @@ public class SchemaStore {
 		}
 	}
 
-	private void createStoreDatabase() throws SQLException, IOException {
-		InputStream schemaSQL = getClass().getResourceAsStream(
+	public static void createMaxwellSchema(Connection connection) throws SQLException, IOException {
+		if ( SchemaStore.storeDatabaseExists(connection) )
+			return;
+
+		SchemaStore.createStoreDatabase(connection);
+
+	}
+	private static boolean storeDatabaseExists(Connection connection) throws SQLException {
+		Statement s = connection.createStatement();
+		ResultSet rs = s.executeQuery("show databases like 'maxwell'");
+
+		return rs.next();
+	}
+
+	private static void createStoreDatabase(Connection connection) throws SQLException, IOException {
+		InputStream schemaSQL = SchemaStore.class.getResourceAsStream(
 				"/sql/maxwell_schema.sql");
 		BufferedReader r = new BufferedReader(new InputStreamReader(schemaSQL));
 		String sql = "", line;
@@ -116,7 +128,7 @@ public class SchemaStore {
 			if (statement.length() == 0)
 				continue;
 
-			this.connection.createStatement().execute(statement);
+			connection.createStatement().execute(statement);
 		}
 	}
 
@@ -132,7 +144,7 @@ public class SchemaStore {
 	private void restoreFrom(BinlogPosition targetPosition)
 			throws SQLException, SchemaSyncError {
 		PreparedStatement p;
-		ResultSet schemaRS = findSchemaID(targetPosition);
+		ResultSet schemaRS = findSchema(targetPosition);
 
 		if (schemaRS == null)
 			throw new SchemaSyncError("Could not find schema for "
@@ -140,7 +152,7 @@ public class SchemaStore {
 					+ targetPosition.getOffset());
 
 		ArrayList<Database> databases = new ArrayList<>();
-		this.schema = new Schema(databases);
+		this.schema = new Schema(databases, schemaRS.getString("encoding"));
 		this.position = new BinlogPosition(schemaRS.getInt("binlog_position"),
 				schemaRS.getString("binlog_file"));
 
@@ -185,7 +197,7 @@ public class SchemaStore {
 		}
 	}
 
-	private ResultSet findSchemaID(BinlogPosition targetPosition)
+	private ResultSet findSchema(BinlogPosition targetPosition)
 			throws SQLException {
 		PreparedStatement s = connection.prepareStatement(
 			"SELECT * from `maxwell`.`schemas` "
@@ -194,7 +206,7 @@ public class SchemaStore {
 
 		s.setString(1, targetPosition.getFile());
 		s.setString(2, targetPosition.getFile());
-		s.setInt(3, targetPosition.getOffset());
+		s.setLong(3, targetPosition.getOffset());
 
 		ResultSet rs = s.executeQuery();
 		if (rs.next()) {
@@ -206,4 +218,5 @@ public class SchemaStore {
 	public Schema getSchema() {
 		return this.schema;
 	}
+
 }

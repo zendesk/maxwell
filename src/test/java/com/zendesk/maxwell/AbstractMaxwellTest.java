@@ -14,7 +14,9 @@ import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+
 import com.zendesk.maxwell.schema.SchemaCapturer;
+import com.zendesk.maxwell.schema.SchemaStore;
 
 public class AbstractMaxwellTest {
 	protected static MysqlIsolatedServer server;
@@ -23,6 +25,7 @@ public class AbstractMaxwellTest {
 	public static void setUpBeforeClass() throws Exception {
 		server = new MysqlIsolatedServer();
 		server.boot();
+		SchemaStore.createMaxwellSchema(server.getConnection());
 	}
 
 	public String getSQLDir() {
@@ -77,18 +80,34 @@ public class AbstractMaxwellTest {
 			server.executeList(Arrays.asList(before));
 		}
 
-		MaxwellParser p = new MaxwellParser(server.getBaseDir() + "/mysqld", start.getFile(), capturer.capture());
+		MaxwellParser p = new MaxwellParser(capturer.capture());
+		MaxwellConfig config = new MaxwellConfig();
+
+		config.mysqlHost = "127.0.0.1";
+		config.mysqlPort = server.getPort();
+		config.mysqlUser = "maxwell";
+		config.mysqlPassword = "maxwell";
+		config.currentPositionFile = "/tmp/maxwell.position";
+		config.setInitialPosition(start);
+
+		p.setConfig(config);
+
 		p.setFilter(filter);
 
         server.executeList(Arrays.asList(queries));
 
-        p.setStartOffset(start.getOffset());
+        p.start();
 
 		ArrayList<MaxwellAbstractRowsEvent> list = new ArrayList<>();
         MaxwellAbstractRowsEvent e;
 
-        while ( (e = p.getEvent()) != null )
-        	list.add(e);
+        while ( (e = p.getEvent()) != null ) {
+			if ( !e.getTable().getDatabase().getName().equals("maxwell")) {
+				list.add(e);
+			}
+        }
+
+        p.stop();
 
         return list;
 	}

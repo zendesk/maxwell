@@ -16,6 +16,7 @@ statement:
 
 
 
+
 create_database:
 	CREATE DATABASE if_not_exists? name (default_character_set | default_collate)*;
 	
@@ -147,7 +148,4 @@ db_name: name;
 table_name: (db_name '.' name)
 			| name
 			;
-
-name: id | tokens_available_for_names;
-
 

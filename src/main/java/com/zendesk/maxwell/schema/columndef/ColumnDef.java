@@ -61,7 +61,7 @@ public abstract class ColumnDef {
 		case "year":
 			return new YearColumnDef(tableName, name, type, pos);
 		case "time":
-		case "bit":
+			return new TimeColumnDef(tableName, name, type, pos);
 		default:
 			throw new IllegalArgumentException("unsupported column type " + type);
 		}

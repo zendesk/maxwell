@@ -1,23 +1,24 @@
 package com.zendesk.maxwell;
-import java.io.File;
-import java.util.HashMap;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import com.google.code.or.binlog.BinlogEventFilter;
+import com.google.code.or.OpenReplicator;
 import com.google.code.or.binlog.BinlogEventV4;
-import com.google.code.or.binlog.BinlogEventV4Header;
-import com.google.code.or.binlog.BinlogParserContext;
 import com.google.code.or.binlog.impl.FileBasedBinlogParser;
-import com.google.code.or.binlog.impl.event.*;
-import com.google.code.or.binlog.impl.parser.*;
+import com.google.code.or.binlog.impl.event.AbstractBinlogEventV4;
+import com.google.code.or.binlog.impl.event.AbstractRowEvent;
+import com.google.code.or.binlog.impl.event.QueryEvent;
+import com.google.code.or.binlog.impl.event.TableMapEvent;
+import com.google.code.or.binlog.impl.event.UpdateRowsEvent;
+import com.google.code.or.binlog.impl.event.WriteRowsEvent;
 import com.google.code.or.common.util.MySQLConstants;
-import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
+import com.zendesk.maxwell.schema.SchemaStore;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.ddl.SchemaChange;
 import com.zendesk.maxwell.schema.ddl.SchemaSyncError;
@@ -25,7 +26,6 @@ import com.zendesk.maxwell.schema.ddl.SchemaSyncError;
 public class MaxwellParser {
 	String filePath, fileName;
 	private long rowEventsProcessed;
-	private long startPosition;
 	private Schema schema;
 	private MaxwellFilter filter;
 
@@ -34,24 +34,83 @@ public class MaxwellParser {
 	protected FileBasedBinlogParser parser;
 	protected MaxwellBinlogEventListener binlogEventListener;
 
-	public MaxwellParser(String filePath, String fileName, Schema currentSchema) throws Exception {
-		this.filePath = filePath;
-		this.fileName = fileName;
-		this.startPosition = 4;
+	private final MaxwellTableCache tableCache = new MaxwellTableCache();
+	private final OpenReplicator replicator;
+	private MaxwellConfig config;
+
+	public MaxwellParser(Schema currentSchema) throws Exception {
 		this.schema = currentSchema;
 
 		TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 		this.binlogEventListener = new MaxwellBinlogEventListener(queue);
+
+		this.replicator = new OpenReplicator();
+
+		this.replicator.setBinlogEventListener(this.binlogEventListener);
 	}
 
-	private MaxwellAbstractRowsEvent processRowsEvent(AbstractRowEvent e) {
+	public void setBinlogPosition(BinlogPosition p) {
+		this.replicator.setBinlogFileName(p.getFile());
+		this.replicator.setBinlogPosition(p.getOffset());
+	}
+
+	public void setConfig(MaxwellConfig c) throws FileNotFoundException, IOException {
+		this.replicator.setHost(c.mysqlHost);
+		this.replicator.setUser(c.mysqlUser);
+		this.replicator.setPassword(c.mysqlPassword);
+		this.replicator.setPort(c.mysqlPort);
+		this.config = c;
+		setBinlogPosition(c.getInitialPosition());
+	}
+
+	public void setPort(int port) {
+		this.replicator.setPort(port);
+	}
+
+	public void start() throws Exception {
+		this.replicator.start();
+	}
+
+	public void stop() throws Exception {
+		this.binlogEventListener.stop();
+		this.replicator.stop(5, TimeUnit.SECONDS);
+	}
+
+
+	public void run() throws Exception {
+		MaxwellAbstractRowsEvent event;
+
+		this.start();
+
+		for(;;) {
+			event = getEvent();
+			if ( event == null )
+				continue;
+
+			System.out.println(event.toJSON());
+
+			// TODO:  this isn't quite right: we need to only stop on table map events,
+			// although it's unclear to me whether you can have two row events in a row.
+			// I think maybe you can.
+
+			BinlogPosition p = eventBinlogPosition(event);
+			this.config.setInitialPosition(p);
+		}
+	}
+
+	private BinlogPosition eventBinlogPosition(AbstractBinlogEventV4 event) {
+		BinlogPosition p = new BinlogPosition(event.getHeader().getNextPosition(), event.getBinlogFilename());
+		return p;
+	}
+
+	private MaxwellAbstractRowsEvent processRowsEvent(AbstractRowEvent e) throws SchemaSyncError {
 		MaxwellAbstractRowsEvent ew;
 		Table table;
 
-		table = getTableForId(e.getTableId());
+		table = tableCache.getTable(e.getTableId());
+
 		if ( table == null ) {
-			// TODO: richer error
-			throw new RuntimeException("couldn't find table in cache for " + e.getTableId());
+			throw new SchemaSyncError("couldn't find table in cache for table id: " + e.getTableId());
 		}
 
 		switch (e.getHeader().getEventType()) {
@@ -75,7 +134,7 @@ public class MaxwellParser {
         BinlogEventV4 v4Event;
         MaxwellAbstractRowsEvent event;
 		while (true) {
-			v4Event = getBinlogEvent();
+			v4Event = queue.poll(100, TimeUnit.MILLISECONDS);
 
 			if ( v4Event == null )
 				return null;
@@ -93,7 +152,7 @@ public class MaxwellParser {
 				if ( stopAtNextTableMap)
 					return null;
 
-				processTableMapEvent((TableMapEvent) v4Event);
+				tableCache.processEvent(this.schema, (TableMapEvent) v4Event);
 				break;
 			case MySQLConstants.QUERY_EVENT:
 				processQueryEvent((QueryEvent) v4Event);
@@ -105,9 +164,7 @@ public class MaxwellParser {
 		return getEvent(false);
 	}
 
-	private final HashMap<Long,Table> tableMapCache = new HashMap<>();
-
-	private void processQueryEvent(QueryEvent event) throws SchemaSyncError {
+	private void processQueryEvent(QueryEvent event) throws SchemaSyncError, SQLException, IOException {
 		// get encoding of the alter event somehow; or just fuck it.
 		String dbName = event.getDatabaseName().toString();
 		String sql = event.getSql().toString();
@@ -117,143 +174,10 @@ public class MaxwellParser {
 			this.schema = change.apply(this.schema);
 		}
 
-	}
-	// open-replicator keeps a very similar cache, but we can't get access to it.
-	private void processTableMapEvent(TableMapEvent event) {
-		Long tableId = event.getTableId();
-		if ( !tableMapCache.containsKey(tableId) ) {
-			String dbName = new String(event.getDatabaseName().getValue());
-			String tblName = new String(event.getTableName().getValue());
-			Database db = schema.findDatabase(dbName);
-			if ( db == null )
-				throw new RuntimeException("Couldn't find database " + dbName);
-
-			Table tbl = db.findTable(tblName);
-			if ( tbl == null )
-				throw new RuntimeException("Couldn't find table " + tblName);
-
-			tableMapCache.put(tableId, tbl);
-		}
-	}
-
-	private Table getTableForId(Long tableId) {
-		return tableMapCache.get(tableId);
-	}
-
-	private BinlogEventV4 getBinlogEvent() throws Exception {
-		BinlogEventV4 event;
-
-		if (parser == null) {
-			initParser(fileName, startPosition);
-			parser.start();
-		}
-
-		while (true) {
-			event = queue.poll(100, TimeUnit.MILLISECONDS);
-			if (event != null) {
-				if ( event instanceof RotateEvent ) {
-					RotateEvent r = (RotateEvent) event;
-					// we throw out the old parser and boot a new one.
-					initParser(r.getBinlogFileName().toString(), r.getBinlogPosition());
-					this.parser.start();
-				} else {
-					return event;
-				}
-			} else {
-				if (!this.parser.isRunning()) {
-					/* parser stopped and the queue is empty.
-					   Likely that we've simply hit the end, but another possibility
-					   is that the server crashed and never inserted the "rotate" event in
-				       the logs.  Let's test for that. */
-
-					String nextFile = findNextBinlogFile(this.fileName);
-					if (nextFile == null)
-						return null;
-					else {
-						initParser(nextFile, 4);
-						this.parser.start();
-					}
-				}
-			}
-		}
-	}
-
-	private String findNextBinlogFile(String fileName) {
-		Pattern p = Pattern.compile("(.*)\\.(\\d+)");
-		Matcher m = p.matcher(fileName);
-		if ( !m.matches() )
-			return null;
-
-		Integer nextInt = Integer.valueOf(m.group(2)) + 1;
-		String testFile = m.group(1) + "." + String.format("%06d", nextInt);
-		File f = new File(this.filePath + "/" + testFile);
-		if ( f.exists() )
-			return testFile;
-		else
-			return null;
-	}
-
-	protected FileBasedBinlogParser getDefaultBinlogParser() throws Exception {
-		final FileBasedBinlogParser r = new FileBasedBinlogParser();
-		r.registgerEventParser(new StopEventParser());
-		r.registgerEventParser(new RotateEventParser());
-		r.registgerEventParser(new IntvarEventParser());
-		r.registgerEventParser(new XidEventParser());
-		r.registgerEventParser(new RandEventParser());
-		r.registgerEventParser(new QueryEventParser());
-		r.registgerEventParser(new UserVarEventParser());
-		r.registgerEventParser(new IncidentEventParser());
-		r.registgerEventParser(new TableMapEventParser());
-		r.registgerEventParser(new WriteRowsEventParser());
-		r.registgerEventParser(new UpdateRowsEventParser());
-		r.registgerEventParser(new DeleteRowsEventParser());
-		r.registgerEventParser(new WriteRowsEventV2Parser());
-		r.registgerEventParser(new UpdateRowsEventV2Parser());
-		r.registgerEventParser(new DeleteRowsEventV2Parser());
-		r.registgerEventParser(new FormatDescriptionEventParser());
-
-		return r;
-	}
-
-	private void initParser(String fileName, long position) throws Exception {
-		FileBasedBinlogParser bp = getDefaultBinlogParser();
-
-		bp.setStartPosition(position);
-		bp.setBinlogFileName(fileName);
-		bp.setBinlogFilePath(filePath);
-
-		bp.setEventListener(this.binlogEventListener);
-
-		bp.setEventFilter(new BinlogEventFilter() {
-			@Override
-			public boolean accepts(BinlogEventV4Header header, BinlogParserContext context) {
-				int eventType = header.getEventType();
-				switch(eventType) {
-				case MySQLConstants.WRITE_ROWS_EVENT:
-				case MySQLConstants.WRITE_ROWS_EVENT_V2:
-				case MySQLConstants.UPDATE_ROWS_EVENT:
-				case MySQLConstants.UPDATE_ROWS_EVENT_V2:
-				case MySQLConstants.DELETE_ROWS_EVENT:
-				case MySQLConstants.DELETE_ROWS_EVENT_V2:
-				case MySQLConstants.TABLE_MAP_EVENT:
-				case MySQLConstants.ROTATE_EVENT:
-				case MySQLConstants.QUERY_EVENT:
-					return true;
-				default:
-					return false;
-				}
-			}
-		});
-		this.fileName = fileName;
-		this.startPosition = position;
-		this.parser = bp;
-	}
-
-	public void stop() {
-		this.binlogEventListener.stop();
-		try {
-			this.parser.stop(200, TimeUnit.MILLISECONDS);
-		} catch (Exception e) {
+		if ( changes.size() > 0 ) {
+			tableCache.clear();
+			BinlogPosition p = eventBinlogPosition(event);
+			new SchemaStore(this.config.getMasterConnection(), schema, p).save();
 		}
 	}
 
@@ -279,10 +203,6 @@ public class MaxwellParser {
 
 	public String getFileName() {
 		return fileName;
-	}
-
-	public void setStartOffset(long pos) {
-		this.startPosition = pos;
 	}
 
 	public void setFilter(MaxwellFilter filter) {

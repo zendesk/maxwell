@@ -6,8 +6,10 @@ import java.util.List;
 
 public class Schema {
 	private final ArrayList<Database> databases;
+	private final String encoding;
 
-	public Schema(ArrayList<Database> databases) {
+	public Schema(ArrayList<Database> databases, String encoding) {
+		this.encoding = encoding;
 		this.databases = databases;
 	}
 
@@ -38,15 +40,7 @@ public class Schema {
 			newDBs.add(d.copy());
 		}
 
-		return new Schema(newDBs);
-	}
-
-	public String toJSON() throws IOException {
-		return null;
-	}
-
-	public boolean equals(Schema that) throws IOException {
-		return this.toJSON().equals(that.toJSON());
+		return new Schema(newDBs, this.encoding);
 	}
 
 	private void diffDBList(List<String> diff, Schema a, Schema b, String nameA, String nameB, boolean recurse) {
@@ -68,4 +62,9 @@ public class Schema {
 		diffDBList(diff, that, this, thatName, thisName, false);
 		return diff;
 	}
+
+	public String getEncoding() {
+		return encoding;
+	}
+
 }

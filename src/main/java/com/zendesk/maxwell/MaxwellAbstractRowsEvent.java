@@ -173,6 +173,10 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 		public void setColumn(String key, Object value) {
 			getDataHash().put(key, value);
 		}
+
+		public void setTable(String name) {
+			this.put("table", name);
+		}
 	}
 	// the equivalent of "asJSON" -- convert the row to an array of
 	// hashes
@@ -185,6 +189,7 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 			Iterator<ColumnDef> defIter = table.getColumnList().iterator();
 
 			rowMap.setRowType(getType());
+			rowMap.setTable(getTable().getName());
 			while ( colIter.hasNext() && defIter.hasNext() ) {
 				Column c = colIter.next();
 				ColumnDef d = defIter.next();
@@ -204,7 +209,7 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 	public List<JSONObject> toJSONObjectList() {
 		ArrayList<JSONObject> a = new ArrayList<>();
 		for ( Map<String, Object> row : jsonMaps() ) {
-			a.add(new JSONObject(row));
+			a.add(new MaxwellJSONObject(row));
 		}
 		return a;
 	}
@@ -213,7 +218,7 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 	public String toJSON() throws IOException {
 		JSONArray a = new JSONArray();
 		for ( Map<String, Object> row : jsonMaps() ) {
-			a.put(new JSONObject(row));
+			a.put(new MaxwellJSONObject(row));
 		}
 		return a.toString();
 	}

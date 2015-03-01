@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS `maxwell`.`schemas` (
   id int unsigned auto_increment NOT NULL primary key,
   binlog_file varchar(255),
 	binlog_position int unsigned,
-  server_id int unsigned
+  server_id int unsigned,
+  encoding varchar(255)
 );
 
 CREATE TABLE IF NOT EXISTS `maxwell`.`databases` (

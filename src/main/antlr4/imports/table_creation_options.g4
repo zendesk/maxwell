@@ -21,7 +21,7 @@ table_creation_options:
 	| creation_password
 	| creation_row_format
 	| creation_tablespace
-	| creation_union;	
+	| creation_union;
 
 
 creation_engine: ENGINE '=' string;
@@ -43,4 +43,4 @@ creation_pack_keys: PACK_KEYS '=' (integer | DEFAULT);
 creation_password: PASSWORD '=' STRING_LITERAL;
 creation_row_format: ROW_FORMAT '=' (DEFAULT | DEFAULT | DYNAMIC | FIXED | COMPRESSED | REDUNDANT | COMPACT);
 creation_tablespace: TABLESPACE string (STORAGE (DISK | MEMORY | DEFAULT))?;
-creation_union: UNION '=' id (',' id)*;
+creation_union: UNION '=' name (',' name)*;

@@ -24,6 +24,7 @@ public class SchemaCaptureTest extends AbstractMaxwellTest {
 
 	@Before
 	public void setUp() throws Exception {
+		server.getConnection().createStatement().executeUpdate("CREATE DATABASE if not exists test");
 		this.capturer = new SchemaCapturer(server.getConnection());
 	}
 
@@ -38,7 +39,7 @@ public class SchemaCaptureTest extends AbstractMaxwellTest {
 		Schema s = capturer.capture();
 		String dbs = StringUtils.join(s.getDatabaseNames().iterator(), ":");
 
-		assertEquals("shard_1:shard_2", dbs);
+		assertEquals("maxwell:shard_1:shard_2:test", dbs);
 	}
 
 	@Test
