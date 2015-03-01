@@ -46,9 +46,6 @@ public class MaxwellParser {
 
 		this.replicator = new OpenReplicator();
 
-		this.replicator.setHost("127.0.0.1");
-		this.replicator.setUser("maxwell");
-		this.replicator.setPassword("maxwell");
 		this.replicator.setBinlogEventListener(this.binlogEventListener);
 	}
 
