@@ -1,7 +1,10 @@
 package com.zendesk.maxwell.schema;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
 import com.zendesk.maxwell.schema.columndef.StringColumnDef;
@@ -92,6 +95,13 @@ public class Table {
 									  + " vs "
 									  + other.getPos()
 									  + " in " + nameB);
+				} else if ( !Arrays.deepEquals(column.getEnumValues(), other.getEnumValues()) ) {
+					diffs.add(colName + "has an enum value mismatch, "
+									  + StringUtils.join(column.getEnumValues(), ",")
+									  + " vs "
+									  + StringUtils.join(other.getEnumValues(), ",")
+									  + " in " + nameB);
+
 				}
 			}
 		}

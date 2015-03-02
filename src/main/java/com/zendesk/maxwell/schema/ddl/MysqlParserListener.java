@@ -8,6 +8,7 @@ import org.antlr.v4.runtime.misc.NotNull;
 import org.antlr.v4.runtime.tree.ErrorNode;
 
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
+import com.zendesk.maxwell.schema.ddl.mysqlParser.Enum_valueContext;
 import com.zendesk.maxwell.schema.ddl.mysqlParser.*;
 
 import org.slf4j.Logger;
@@ -64,6 +65,13 @@ public class MysqlParserListener extends mysqlBaseListener {
 		return (TableAlter)schemaChanges.get(0);
 	}
 
+	private String getEncoding(Charset_defContext ctx) {
+		if ( ctx != null && ctx.character_set(0) != null ) {
+			return unquote_literal(ctx.character_set(0).charset_name().getText());
+		} else {
+			return null;
+		}
+	}
 
 	@Override
 	public void visitErrorNode(ErrorNode node) {
@@ -212,6 +220,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 	@Override
 	public void exitColumn_definition(mysqlParser.Column_definitionContext ctx) {
 		String colType = null, colEncoding = null;
+		String[] enumValues = null;
 		boolean signed = true;
 
 		String name = unquote(ctx.col_name.getText());
@@ -225,10 +234,17 @@ public class MysqlParserListener extends mysqlBaseListener {
 			signed = isSigned(dctx.signed_type().int_flags());
 		} else if ( dctx.string_type() != null ) {
 			colType = dctx.string_type().col_type.getText();
+			colEncoding = getEncoding(dctx.string_type().charset_def());
+		} else if ( dctx.enumerated_type() != null ) {
+			List<Enum_valueContext> valueList = dctx.enumerated_type().enumerated_values().enum_value();
 
-			Charset_defContext charsetDef = dctx.string_type().charset_def();
-			if ( charsetDef != null && charsetDef.character_set(0) != null ) {
-				colEncoding = unquote_literal(charsetDef.character_set(0).charset_name().getText());
+			colType = dctx.enumerated_type().col_type.getText();
+			colEncoding = getEncoding(dctx.enumerated_type().charset_def());
+			enumValues = new String[valueList.size()];
+
+			int i = 0;
+			for ( Enum_valueContext v : valueList ) {
+				enumValues[i++] = unquote_literal(v.getText());
 			}
 		}
 
@@ -237,7 +253,8 @@ public class MysqlParserListener extends mysqlBaseListener {
 					                   colEncoding,
 					                   colType.toLowerCase(),
 					                   -1,
-					                   signed);
+					                   signed,
+					                   enumValues);
 		this.columnDefs.add(c);
 	}
 

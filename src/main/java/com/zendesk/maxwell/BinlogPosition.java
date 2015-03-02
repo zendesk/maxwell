@@ -27,4 +27,9 @@ public class BinlogPosition {
 	public String getFile() {
 		return file;
 	}
+
+	@Override
+	public String toString() {
+		return "BinlogPosition[" + file + ":" + offset + "]";
+	}
 }

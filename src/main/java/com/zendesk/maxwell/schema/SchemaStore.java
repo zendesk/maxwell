@@ -43,7 +43,8 @@ public class SchemaStore {
 						Statement.RETURN_GENERATED_KEYS);
 		this.columnInsert = connection
 				.prepareStatement(
-						"INSERT INTO `maxwell`.`columns` SET schema_id = ?, table_id = ?, name = ?, encoding=?, coltype=?, is_signed=?",
+						"INSERT INTO `maxwell`.`columns` SET schema_id = ?, table_id = ?, "
+					  + "name = ?, encoding=?, coltype=?, is_signed=?, enum_values=?",
 						Statement.RETURN_GENERATED_KEYS);
 	}
 
@@ -92,8 +93,15 @@ public class SchemaStore {
 			for (Table t : d.getTableList()) {
 				Integer tableId = executeInsert(tableInsert, schemaId, dbId, t.getName(), t.getEncoding());
 				for (ColumnDef c : t.getColumnList()) {
+					String [] enumValues = c.getEnumValues();
+					String enumValuesSQL = null;
+
+					if ( enumValues != null ) {
+						enumValuesSQL = StringUtils.join(enumValues, ",");
+					}
+
 					executeInsert(columnInsert, schemaId, tableId, c.getName(),
-							c.getEncoding(), c.getType(), c.getSigned() ? 1 : 0);
+							c.getEncoding(), c.getType(), c.getSigned() ? 1 : 0, enumValuesSQL);
 				}
 			}
 		}
@@ -156,6 +164,8 @@ public class SchemaStore {
 		this.position = new BinlogPosition(schemaRS.getInt("binlog_position"),
 				schemaRS.getString("binlog_file"));
 
+		LOGGER.info("Restoring schema id " + schemaRS.getInt("id") + " (last modified at " + this.position + ")");
+
 		p = connection.prepareStatement("SELECT * from `maxwell`.`databases` where schema_id = ? ORDER by id");
 		p.setInt(1, schemaRS.getInt("id"));
 		ResultSet dbRS = p.executeQuery();
@@ -189,16 +199,22 @@ public class SchemaStore {
 
 		int i = 0;
 		while (cRS.next()) {
+			String[] enumValues = null;
+			if ( cRS.getString("enum_values") != null )
+				enumValues = StringUtils.split(cRS.getString("enum_values"), ",");
+
 			ColumnDef c = ColumnDef.build(t.getName(),
 					cRS.getString("name"), cRS.getString("encoding"),
 					cRS.getString("coltype"), i++,
-					cRS.getInt("is_signed") == 1);
+					cRS.getInt("is_signed") == 1,
+					enumValues);
 			t.getColumnList().add(c);
 		}
 	}
 
 	private ResultSet findSchema(BinlogPosition targetPosition)
 			throws SQLException {
+		LOGGER.debug("looking to restore schema at target position " + targetPosition);
 		PreparedStatement s = connection.prepareStatement(
 			"SELECT * from `maxwell`.`schemas` "
 			+ "WHERE (binlog_file < ?) OR (binlog_file = ? and binlog_position <= ?) "

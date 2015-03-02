@@ -2,8 +2,10 @@ package com.zendesk.maxwell;
 
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
@@ -12,6 +14,7 @@ import com.zendesk.maxwell.schema.SchemaStore;
 public class Maxwell {
 	private Schema schema;
 	private MaxwellConfig config;
+	static final Logger LOGGER = LoggerFactory.getLogger(SchemaStore.class);
 
 	private void initFirstRun() throws SQLException, IOException {
 		Connection connection = this.config.getMasterConnection();
@@ -36,6 +39,7 @@ public class Maxwell {
 
 		this.config = MaxwellConfig.fromPropfile(args[0]);
 		if ( this.config.getInitialPosition() != null ) {
+			LOGGER.info("Maxwell is booting, starting at " + this.config.getInitialPosition());
 			SchemaStore store = SchemaStore.restore(this.config.getMasterConnection(), this.config.getInitialPosition());
 			this.schema = store.getSchema();
 		} else {

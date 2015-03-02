@@ -34,6 +34,7 @@ CREATE TABLE IF NOT EXISTS `maxwell`.`columns` (
   encoding    varchar(255),
   coltype     varchar(255),
   is_signed   tinyint(1) unsigned,
+  enum_values text,
   index (schema_id),
   index (table_id)
 );

@@ -1,9 +1,12 @@
 package com.zendesk.maxwell.schema.columndef;
 
+import org.apache.commons.lang.StringUtils;
+
 public abstract class ColumnDef {
 	protected final String tableName;
 	protected final String name;
 	protected final String type;
+	protected String[] enumValues;
 	private int pos;
 	public boolean signed;
 	public String encoding;
@@ -24,10 +27,10 @@ public abstract class ColumnDef {
 	}
 
 	public ColumnDef copy() {
-		return build(this.tableName, this.name, this.encoding, this.type, this.pos, this.signed);
+		return build(this.tableName, this.name, this.encoding, this.type, this.pos, this.signed, this.enumValues);
 	}
 
-	public static ColumnDef build(String tableName, String name, String encoding, String type, int pos, boolean signed) {
+	public static ColumnDef build(String tableName, String name, String encoding, String type, int pos, boolean signed, String enumValues[]) {
 		switch(type) {
 		case "tinyint":
 		case "smallint":
@@ -62,6 +65,10 @@ public abstract class ColumnDef {
 			return new YearColumnDef(tableName, name, type, pos);
 		case "time":
 			return new TimeColumnDef(tableName, name, type, pos);
+		case "enum":
+			return new EnumColumnDef(tableName, name, type, pos, enumValues);
+		case "set":
+			return new SetColumnDef(tableName, name, type, pos, enumValues);
 		default:
 			throw new IllegalArgumentException("unsupported column type " + type);
 		}
@@ -94,4 +101,9 @@ public abstract class ColumnDef {
 	public boolean getSigned() {
 		return this.signed;
 	}
+
+	public String[] getEnumValues() {
+		return enumValues;
+	}
+
 }
