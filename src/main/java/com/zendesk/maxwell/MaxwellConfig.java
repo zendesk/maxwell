@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Enumeration;
 import java.util.Properties;
 
 public class MaxwellConfig {
@@ -19,6 +20,7 @@ public class MaxwellConfig {
 	public String currentPositionFile;
 
 	private BinlogPosition initialPosition;
+	private Properties kafkaProperties;
 
 	public Connection getMasterConnection() throws SQLException {
 		return DriverManager.getConnection("jdbc:mysql://" + mysqlHost + ":" + mysqlPort, mysqlUser, mysqlPassword);
@@ -68,6 +70,18 @@ public class MaxwellConfig {
 		config.mysqlPort     = Integer.valueOf(p.getProperty("port", "3306"));
 
 		config.currentPositionFile = p.getProperty("position_file", "maxwell.position");
+		config.kafkaProperties = new Properties();
+
+		for ( Enumeration<Object> e = p.keys(); e.hasMoreElements(); ) {
+			String k = (String) e.nextElement();
+			if ( k.startsWith("kafka.")) {
+				config.kafkaProperties.setProperty(k.replace("kafka.", ""), p.getProperty(k));
+			}
+		}
 		return config;
+	}
+
+	public Properties getKafkaProperties() {
+		return this.kafkaProperties;
 	}
 }
