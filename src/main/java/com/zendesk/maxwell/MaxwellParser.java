@@ -77,6 +77,8 @@ public class MaxwellParser {
 	}
 
 
+
+
 	public void run() throws Exception {
 		MaxwellAbstractRowsEvent event;
 
@@ -170,6 +172,10 @@ public class MaxwellParser {
 		String sql = event.getSql().toString();
 
 		List<SchemaChange> changes = SchemaChange.parse(dbName, sql);
+
+		if ( changes == null )
+			return;
+
 		for ( SchemaChange change : changes ) {
 			this.schema = change.apply(this.schema);
 		}
