@@ -24,8 +24,8 @@ public class SchemaStore {
 	private Schema schema;
 	private BinlogPosition position;
 	static final Logger LOGGER = LoggerFactory.getLogger(SchemaStore.class);
-	private final PreparedStatement schemaInsert, databaseInsert, tableInsert,
-			columnInsert;
+	private final PreparedStatement schemaInsert, databaseInsert, tableInsert;
+	private final String columnInsertSQL;
 
 	public SchemaStore(Connection connection) throws SQLException {
 		this.connection = connection;
@@ -41,11 +41,8 @@ public class SchemaStore {
 				.prepareStatement(
 						"INSERT INTO `maxwell`.`tables` SET schema_id = ?, database_id = ?, name = ?, encoding=?",
 						Statement.RETURN_GENERATED_KEYS);
-		this.columnInsert = connection
-				.prepareStatement(
-						"INSERT INTO `maxwell`.`columns` SET schema_id = ?, table_id = ?, "
-					  + "name = ?, encoding=?, coltype=?, is_signed=?, enum_values=?",
-						Statement.RETURN_GENERATED_KEYS);
+		this.columnInsertSQL = "INSERT INTO `maxwell`.`columns` (schema_id, table_id, name, encoding, coltype, is_signed, enum_values) "
+				+ " VALUES (?, ?, ?, ?, ?, ?, ?)";
 	}
 
 	public SchemaStore(Connection connection, Schema schema, BinlogPosition position) throws SQLException {
@@ -87,11 +84,15 @@ public class SchemaStore {
 		Integer schemaId = executeInsert(schemaInsert, position.getFile(),
 				position.getOffset(), 1, schema.getEncoding());
 
+		ArrayList<Object> columnData = new ArrayList<Object>();
+
 		for (Database d : schema.getDatabases()) {
 			Integer dbId = executeInsert(databaseInsert, schemaId, d.getName(), d.getEncoding());
 
 			for (Table t : d.getTableList()) {
 				Integer tableId = executeInsert(tableInsert, schemaId, dbId, t.getName(), t.getEncoding());
+
+
 				for (ColumnDef c : t.getColumnList()) {
 					String [] enumValues = c.getEnumValues();
 					String enumValuesSQL = null;
@@ -100,11 +101,38 @@ public class SchemaStore {
 						enumValuesSQL = StringUtils.join(enumValues, ",");
 					}
 
-					executeInsert(columnInsert, schemaId, tableId, c.getName(),
-							c.getEncoding(), c.getType(), c.getSigned() ? 1 : 0, enumValuesSQL);
+					columnData.add(schemaId);
+					columnData.add(tableId);
+					columnData.add(c.getName());
+					columnData.add(c.getEncoding());
+					columnData.add(c.getType());
+					columnData.add(c.getSigned() ? 1 : 0);
+					columnData.add(enumValuesSQL);
 				}
+
+				if ( columnData.size() > 1000 )
+					executeColumnInsert(columnData);
+
 			}
 		}
+		executeColumnInsert(columnData);
+	}
+
+	private void executeColumnInsert(ArrayList<Object> columnData) throws SQLException {
+		String insertColumnSQL = this.columnInsertSQL;
+
+		for (int i=1; i < columnData.size() / 7; i++) {
+			insertColumnSQL = insertColumnSQL + ", (?, ?, ?, ?, ?, ?, ?)";
+		}
+
+		PreparedStatement columnInsert = connection.prepareStatement(insertColumnSQL);
+		int i = 1;
+
+		for (Object o : columnData)
+			columnInsert.setObject(i++,  o);
+
+		columnInsert.execute();
+		columnData.clear();
 	}
 
 	public static void createMaxwellSchema(Connection connection) throws SQLException, IOException {
