@@ -47,7 +47,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 	}
 
 	private String unquote_literal(String ident) {
-		return ident.replaceAll("^'", "").replaceAll("'$", "");
+		return unquote(ident.replaceAll("^'", "").replaceAll("'$", ""));
 	}
 
 	private String getDB(Table_nameContext t) {
