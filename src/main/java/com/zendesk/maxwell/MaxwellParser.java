@@ -17,6 +17,7 @@ import com.google.code.or.binlog.impl.event.TableMapEvent;
 import com.google.code.or.binlog.impl.event.UpdateRowsEvent;
 import com.google.code.or.binlog.impl.event.WriteRowsEvent;
 import com.google.code.or.common.util.MySQLConstants;
+import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaStore;
 import com.zendesk.maxwell.schema.Table;
@@ -37,8 +38,9 @@ public class MaxwellParser {
 	private final MaxwellTableCache tableCache = new MaxwellTableCache();
 	private final OpenReplicator replicator;
 	private MaxwellConfig config;
+	private final AbstractProducer producer;
 
-	public MaxwellParser(Schema currentSchema) throws Exception {
+	public MaxwellParser(Schema currentSchema, AbstractProducer producer) throws Exception {
 		this.schema = currentSchema;
 
 		TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
@@ -47,6 +49,7 @@ public class MaxwellParser {
 		this.replicator = new OpenReplicator();
 
 		this.replicator.setBinlogEventListener(this.binlogEventListener);
+		this.producer = producer;
 	}
 
 	public void setBinlogPosition(BinlogPosition p) {
@@ -89,7 +92,7 @@ public class MaxwellParser {
 			if ( event == null )
 				continue;
 
-			System.out.println(event.toJSON());
+			producer.push(event);
 
 			// TODO:  this isn't quite right: we need to only stop on table map events,
 			// although it's unclear to me whether you can have two row events in a row.

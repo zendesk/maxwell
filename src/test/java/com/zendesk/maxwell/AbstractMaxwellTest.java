@@ -80,7 +80,7 @@ public class AbstractMaxwellTest {
 			server.executeList(Arrays.asList(before));
 		}
 
-		MaxwellParser p = new MaxwellParser(capturer.capture());
+		MaxwellParser p = new MaxwellParser(capturer.capture(), null);
 		MaxwellConfig config = new MaxwellConfig();
 
 		config.mysqlHost = "127.0.0.1";

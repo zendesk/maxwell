@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
 import com.zendesk.maxwell.schema.SchemaStore;
@@ -32,12 +33,8 @@ public class Maxwell {
 	}
 
 	private void run(String[] args) throws Exception {
-		if ( args.length < 1 ) {
-			System.err.println("Usage: bin/maxwell config.properties");
-			System.exit(1);
-		}
+		this.config = MaxwellConfig.buildConfig("config.properties", args);
 
-		this.config = MaxwellConfig.fromPropfile(args[0]);
 		if ( this.config.getInitialPosition() != null ) {
 			LOGGER.info("Maxwell is booting, starting at " + this.config.getInitialPosition());
 			SchemaStore store = SchemaStore.restore(this.config.getMasterConnection(), this.config.getInitialPosition());
@@ -46,7 +43,9 @@ public class Maxwell {
 			initFirstRun();
 		}
 
-		MaxwellParser p = new MaxwellParser(this.schema);
+		AbstractProducer producer = this.config.getProducer();
+
+		MaxwellParser p = new MaxwellParser(this.schema, producer);
 		p.setConfig(this.config);
 		p.run();
 
