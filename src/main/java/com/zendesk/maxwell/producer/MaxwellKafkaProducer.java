@@ -37,7 +37,6 @@ class KafkaCallback implements Callback {
             }
 		}
 	}
-
 }
 public class MaxwellKafkaProducer extends AbstractProducer {
 	private final KafkaProducer<byte[], byte[]> kafka;
