@@ -1,6 +1,8 @@
 package com.zendesk.maxwell.schema.ddl;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -18,21 +20,36 @@ public abstract class SchemaChange {
 
 	public abstract Schema apply(Schema originalSchema) throws SchemaSyncError;
 
+	private static final Set<String> SQL_BLACKLIST = new HashSet<String>();
+	static {
+		SQL_BLACKLIST.add("BEGIN");
+		SQL_BLACKLIST.add("COMMIT");
+
+	}
+
 	public static List<SchemaChange> parse(String currentDB, String sql) {
-		ANTLRInputStream input = new ANTLRInputStream(sql);
-		mysqlLexer lexer = new mysqlLexer(input);
-		CommonTokenStream tokens = new CommonTokenStream(lexer);
-		mysqlParser parser = new mysqlParser(tokens);
+		if ( SQL_BLACKLIST.contains(sql))
+			return null;
 
-		MysqlParserListener listener = new MysqlParserListener(currentDB);
+		try {
+			ANTLRInputStream input = new ANTLRInputStream(sql);
+			mysqlLexer lexer = new mysqlLexer(input);
+			CommonTokenStream tokens = new CommonTokenStream(lexer);
+			mysqlParser parser = new mysqlParser(tokens);
 
-		LOGGER.debug("SQL_PARSE <- \"" + sql + "\"");
-		ParseTree tree = parser.parse();
+			MysqlParserListener listener = new MysqlParserListener(currentDB);
 
-		ParseTreeWalker.DEFAULT.walk(listener, tree);
-		LOGGER.debug("SQL_PARSE ->   " + tree.toStringTree(parser));
+			LOGGER.debug("SQL_PARSE <- \"" + sql + "\"");
+			ParseTree tree = parser.parse();
 
-		return listener.getSchemaChanges();
+			ParseTreeWalker.DEFAULT.walk(listener, tree);
+			LOGGER.debug("SQL_PARSE ->   " + tree.toStringTree(parser));
+			return listener.getSchemaChanges();
+		} catch ( MaxwellSQLSyntaxError e) {
+			LOGGER.error("Error parsing SQL: '" + sql + "'");
+			throw (e);
+		}
+
 	}
 
 }

@@ -36,8 +36,10 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 
 		for ( String alterSQL : alters) {
 			List<SchemaChange> changes = SchemaChange.parse("shard_1", alterSQL);
-			for ( SchemaChange change : changes ) {
-				topSchema = change.apply(topSchema);
+			if ( changes != null ) {
+				for ( SchemaChange change : changes ) {
+					topSchema = change.apply(topSchema);
+				}
 			}
 		}
 
