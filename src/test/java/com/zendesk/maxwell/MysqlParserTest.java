@@ -39,10 +39,10 @@ public class MysqlParserTest extends AbstractMaxwellTest {
 		list = getRowsForSQL(filter, input);
 		assertThat(list.size(), is(1));
 
-		RowMap jsonMap = list.get(0).jsonMaps().get(0);
+		RowMap jsonMap = list.get(0).jsonMap();
 
-		assertThat((Long) jsonMap.data().get("account_id"), is(2L));
-		assertThat((String) jsonMap.data().get("text_field"), is("goodbye"));
+		assertThat((Long) jsonMap.data().get(0).get("account_id"), is(2L));
+		assertThat((String) jsonMap.data().get(0).get("text_field"), is("goodbye"));
 	}
 
 	@Test
@@ -151,29 +151,29 @@ public class MysqlParserTest extends AbstractMaxwellTest {
 		assertThat(e.getTable().getName(), is("minimal"));
 	}
 
-	private void runJSONTest(List<String> sql, List<JSONObject> json) throws Exception {
+	private void runJSONTest(List<String> sql, List<JSONObject> assertJSON) throws Exception {
 		List<JSONObject> eventJSON = new ArrayList<>();
 		List<JSONObject> matched = new ArrayList<>();
 		List<MaxwellAbstractRowsEvent> events = getRowsForSQL(null, sql.toArray(new String[0]));
 
 		for ( MaxwellAbstractRowsEvent e : events ) {
-			for ( JSONObject a : e.toJSONObjectList() ) {
-				eventJSON.add(a);
+			JSONObject a = e.toJSONObject();
 
-				for ( JSONObject b : json ) {
-					if ( JSONCompare.compare(a.toString(), b.toString()) )
-						matched.add(b);
-				}
+			eventJSON.add(a);
+
+			for ( JSONObject b : assertJSON ) {
+				if ( JSONCompare.compare(a.toString(), b.toString()) )
+					matched.add(b);
 			}
 		}
 
 		for ( JSONObject j : matched ) {
-			json.remove(j);
+			assertJSON.remove(j);
 		}
 
-		if ( json.size() > 0 ) {
+		if ( assertJSON.size() > 0 ) {
 			String msg = "Did not find: \n" +
-						 StringUtils.join(json.iterator(), "\n") +
+						 StringUtils.join(assertJSON.iterator(), "\n") +
 						 "\n\n in : " +
 						 StringUtils.join(eventJSON.iterator(), "\n");
 			assertThat(msg, false, is(true));
