@@ -7,8 +7,10 @@ import java.util.Set;
 
 import org.json.JSONObject;
 
+import com.zendesk.maxwell.MaxwellAbstractRowsEvent.RowMap;
+
 public class MaxwellJSONObject extends JSONObject {
-	public MaxwellJSONObject(Map<String, Object> map) {
+	public MaxwellJSONObject(RowMap map) {
 		super(map);
 	}
 

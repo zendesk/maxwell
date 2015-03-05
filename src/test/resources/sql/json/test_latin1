@@ -2,4 +2,4 @@ CREATE DATABASE `test_latin1` default charset 'latin1'
 create table `test_latin1`.`latin1` ( textcol text )
 use test_latin1
 insert into `latin1` set `textcol` = 'áááááááá';
--> {"table": "latin1", "type": "insert", "data": {"textcol": "áááááááá"}}
+-> {"table": "latin1", "type": "insert", "data": [ {"textcol": "áááááááá"} ] }

@@ -4,24 +4,24 @@ CREATE TABLE `test_db_1`.`test_table` ( id bigint(20) not null auto_increment pr
 use test_db_1
 insert into test_table set textcol='test_col_1'
 
-->  {"table": "test_table", "type": "insert", "data": { "id": 1, "textcol": "test_col_1"} }
+->  {"table": "test_table", "type": "insert", "data": [ {"id": 1, "textcol": "test_col_1"} ] }
 
 insert into test_table set textcol='test_col_2'
 
-->  {"table": "test_table", "type": "insert", "data": { "id": 2, "textcol": "test_col_2"} }
+->  {"table": "test_table", "type": "insert", "data": [ { "id": 2, "textcol": "test_col_2"} ] }
 
 alter table test_table add column `datecol` datetime NULL default null AFTER id
 
 insert into test_table set textcol='test_col_2', datecol='1979-10-01 00:00:00'
 
--> {"table": "test_table", "type": "insert", "data": { "id": 3, "textcol": "test_col_2", "datecol": "1979-10-01 00:00:00"} }
+-> {"table": "test_table", "type": "insert", "data": [ { "id": 3, "textcol": "test_col_2", "datecol": "1979-10-01 00:00:00"} ] }
 
 update test_table set textcol='test_col_5' where id = 1
 
--> {"table": "test_table", "type": "update", "data": {"id": 1, "textcol": "test_col_5"} }
+-> {"table": "test_table", "type": "update", "data": [ {"id": 1, "textcol": "test_col_5"} ] }
 
-delete from test_table where id = 2;
+delete from test_table;
 
--> {"table": "test_table", "type": "delete", "data": {"id": 2, "textcol": "test_col_2"} }
+-> {"table": "test_table", "type": "delete", "data": [  {"id": 1, "textcol": "test_col_5"}, {"id": 2, "textcol": "test_col_2"}, { "id": 3, "textcol": "test_col_2", "datecol": "1979-10-01 00:00:00"} ] }
 
 DROP DATABASE `test_db_1`;
