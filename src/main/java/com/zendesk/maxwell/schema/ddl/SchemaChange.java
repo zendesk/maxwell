@@ -11,9 +11,7 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
-import com.zendesk.maxwell.schema.Table;
 
 public abstract class SchemaChange {
     final static Logger LOGGER = LoggerFactory.getLogger(SchemaChange.class);

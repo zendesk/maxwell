@@ -1,8 +1,6 @@
 package com.zendesk.maxwell;
 
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
 
 import org.json.JSONObject;
@@ -15,7 +13,7 @@ public class MaxwellJSONObject extends JSONObject {
 	}
 
 	@Override
-	public Set keySet() {
+	public Set<String> keySet() {
 		LinkedHashSet<String> set = new LinkedHashSet<>();
 
 		set.add("table");
