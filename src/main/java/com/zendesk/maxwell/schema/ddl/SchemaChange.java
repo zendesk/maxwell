@@ -3,6 +3,7 @@ package com.zendesk.maxwell.schema.ddl;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -18,16 +19,27 @@ public abstract class SchemaChange {
 
 	public abstract Schema apply(Schema originalSchema) throws SchemaSyncError;
 
-	private static final Set<String> SQL_BLACKLIST = new HashSet<String>();
-	static {
-		SQL_BLACKLIST.add("BEGIN");
-		SQL_BLACKLIST.add("COMMIT");
+	private static final Set<Pattern> SQL_BLACKLIST = new HashSet<Pattern>();
 
+	static {
+		SQL_BLACKLIST.add(Pattern.compile("^BEGIN", Pattern.CASE_INSENSITIVE));
+		SQL_BLACKLIST.add(Pattern.compile("^COMMIT", Pattern.CASE_INSENSITIVE));
+		SQL_BLACKLIST.add(Pattern.compile("^GRANT", Pattern.CASE_INSENSITIVE));
+	}
+
+	private static boolean matchesBlacklist(String sql) {
+		for ( Pattern p : SQL_BLACKLIST ) {
+			if ( p.matcher(sql).find() )
+				return true;
+		}
+
+		return false;
 	}
 
 	public static List<SchemaChange> parse(String currentDB, String sql) {
-		if ( SQL_BLACKLIST.contains(sql))
+		if ( matchesBlacklist(sql) ) {
 			return null;
+		}
 
 		try {
 			ANTLRInputStream input = new ANTLRInputStream(sql);
