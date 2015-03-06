@@ -115,7 +115,8 @@ public class SchemaStore {
 
 			}
 		}
-		executeColumnInsert(columnData);
+		if ( columnData.size() > 0 )
+			executeColumnInsert(columnData);
 	}
 
 	private void executeColumnInsert(ArrayList<Object> columnData) throws SQLException {

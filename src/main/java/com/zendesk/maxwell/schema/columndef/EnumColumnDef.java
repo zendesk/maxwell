@@ -24,6 +24,11 @@ public class EnumColumnDef extends ColumnDef {
 	}
 
 	private String asString(Object value) {
-		return enumValues[((Integer) value) - 1];
+		Integer i = (Integer) value;
+
+		if ( i == 0 )
+			return null;
+		else
+			return enumValues[((Integer) value) - 1];
 	}
 }
