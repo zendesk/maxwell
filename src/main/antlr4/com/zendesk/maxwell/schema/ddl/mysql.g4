@@ -74,6 +74,7 @@ convert_to_character_set: CONVERT TO charset_token charset_name collation?;
 default_character_set: DEFAULT? charset_token '='? charset_name collation?;
 default_collate: DEFAULT? collation;
 
+
 /* it's not documented, but either "charset 'utf8'" or "character set 'utf8'" is valid. */
 charset_token: (CHARSET | (CHARACTER SET));
 
@@ -123,7 +124,7 @@ index_type_4:
 	(FULLTEXT | SPATIAL) index_or_key index_name? index_column_list index_options*;
 	
 index_type_5:
-	index_constraint? FOREIGN KEY index_name? index_column_list;
+	index_constraint? FOREIGN KEY index_name? index_column_list reference_definition;
 	
 // TODO: foreign key references.  goddamn.
 	
@@ -136,6 +137,28 @@ index_options:
 	| index_type
 	| WITH PARSER name // no idea if 'parser_name' is an id.  seems like a decent assumption.
 	; 
+	
+reference_definition: 
+	REFERENCES table_name 
+	index_column_list 
+	reference_definition_match? 
+	reference_definition_on_delete? 
+	reference_definition_on_update?
+	;
+	
+reference_definition_match:
+	(MATCH FULL | MATCH PARTIAL | MATCH SIMPLE)
+	;
+
+reference_definition_on_delete:
+	ON DELETE reference_option;
+	
+reference_definition_on_update:
+	ON UPDATE reference_option;
+	
+reference_option:
+	(RESTRICT | CASCADE | SET NULL | NO ACTION);
+
 index_column_list: '(' name_list ')';
 name_list: name (',' name )*; 
 
