@@ -28,7 +28,7 @@ public class MaxwellConfig {
 
 	private BinlogPosition initialPosition;
 	private Properties kafkaProperties;
-	private String producer;
+	private String producerType;
 	private String outputFile;
 
 	public Connection getMasterConnection() throws SQLException {
@@ -85,7 +85,7 @@ public class MaxwellConfig {
 		if ( options.has("port"))
 			this.mysqlPort = Integer.valueOf((String) options.valueOf("port"));
 		if ( options.has("producer"))
-			this.producer = (String) options.valueOf("producer");
+			this.producerType = (String) options.valueOf("producer");
 	}
 
 	private void parseFile(String filename) throws IOException {
@@ -105,7 +105,7 @@ public class MaxwellConfig {
 
 		this.currentPositionFile = p.getProperty("position_file");
 		this.kafkaProperties = new Properties();
-		this.producer      = p.getProperty("producer");
+		this.producerType      = p.getProperty("producer");
 		this.outputFile      = p.getProperty("output_file");
 
 		for ( Enumeration<Object> e = p.keys(); e.hasMoreElements(); ) {
@@ -128,8 +128,8 @@ public class MaxwellConfig {
 	}
 
 	private void setDefaults() {
-		if ( this.producer == null )
-			this.producer = "stdout";
+		if ( this.producerType == null )
+			this.producerType = "stdout";
 		if ( this.currentPositionFile == null )
 			this.currentPositionFile = "maxwell.position";
 		if ( this.mysqlPort == null )
@@ -141,7 +141,7 @@ public class MaxwellConfig {
 	}
 
 	public AbstractProducer getProducer() throws IOException {
-		switch ( this.producer ) {
+		switch ( this.producerType ) {
 		case "file":
 			return new FileProducer(this, this.outputFile);
 		case "kafka":
