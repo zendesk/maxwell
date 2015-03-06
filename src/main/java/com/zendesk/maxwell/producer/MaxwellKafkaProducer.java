@@ -12,7 +12,6 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
-import org.apache.kafka.common.serialization.Serializer;
 
 class KafkaCallback implements Callback {
 	private final MaxwellConfig config;
@@ -26,15 +25,15 @@ class KafkaCallback implements Callback {
 	@Override
 	public void onCompletion(RecordMetadata md, Exception e) {
 		if ( e != null ) {
-            e.printStackTrace();
+			e.printStackTrace();
 		} else {
-            System.out.println("The offset of the record we just sent is: " + md.offset());
-            try {
-            	config.setInitialPosition(new BinlogPosition(event.getHeader().getNextPosition(), event.getBinlogFilename()));
-            } catch (IOException e1) {
-            	// TODO Auto-generated catch block
-            	e1.printStackTrace();
-            }
+			System.out.println("The offset of the record we just sent is: " + md.offset());
+			try {
+				config.setInitialPosition(new BinlogPosition(event.getHeader().getNextPosition(), event.getBinlogFilename()));
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 		}
 	}
 
