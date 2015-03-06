@@ -20,6 +20,8 @@
       <directory>${project.basedir}</directory>
       <outputDirectory>/</outputDirectory>
       <includes>
+        <include>bin/*</include>
+        <include>config.properties.example</include>
         <include>README*</include>
         <include>LICENSE*</include>
         <include>NOTICE*</include>
