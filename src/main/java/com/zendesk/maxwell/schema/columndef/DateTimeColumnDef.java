@@ -36,13 +36,27 @@ public class DateTimeColumnDef extends ColumnDef {
 	}
 
 	private String formatValue(Object value) {
-		if ( value instanceof Date )
+		if ( value instanceof Long && getType().equals("datetime") )
+			return formatLong((Long) value);
+		else if ( value instanceof Date )
 			return getDateTimeFormatter().format((Date) value);
 		else if ( value instanceof Timestamp )
 			return getDateTimeFormatter().format((Timestamp) value);
 		else
 			return "";
 	}
+
+	private String formatLong(Long value) {
+		final int second = (int)(value % 100); value /= 100;
+		final int minute = (int)(value % 100); value /= 100;
+		final int hour = (int)(value % 100); value /= 100;
+		final int day = (int)(value % 100); value /= 100;
+		final int month = (int)(value % 100);
+		final int year = (int)(value / 100);
+
+		return String.format("%04d-%02d-%02d %02d:%02d:%02d",  year, month, day, hour, minute, second);
+	}
+
 
 	@Override
 	public String toSQL(Object value) {
