@@ -4,11 +4,11 @@
 
   <groupId>com.zendesk</groupId>
   <artifactId>maxwell</artifactId>
-  <version>0.1.1</version>
+  <version>0.1.2</version>
   <packaging>jar</packaging>
 
   <name>maxwell</name>
-  <description>a little glueware jar</description>
+  <description>Maxwell's daemon.  Watches mysql, outputs to JSON.</description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
