@@ -18,8 +18,8 @@ mysql> GRANT ALL on maxwell.* to 'maxwell'@'%' identified by 'XXXXXX';
 mysql> GRANT SELECT on *.* to 'maxwell'@'%';
 mysql> GRANT REPLICATION CLIENT ON *.* TO 'maxwell'@'%;
 
-curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.1.2/maxwell-0.1.2.tar.gz  | tar zxvf -
-cd maxwell-0.1.2
+curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.1.3/maxwell-0.1.3.tar.gz  | tar zxvf -
+cd maxwell-0.1.3
 bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' --producer=stdout
 
 ```
