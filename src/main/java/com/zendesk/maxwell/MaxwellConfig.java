@@ -27,9 +27,13 @@ public class MaxwellConfig {
 	public String currentPositionFile;
 
 	private BinlogPosition initialPosition;
-	private Properties kafkaProperties;
+	private final Properties kafkaProperties;
 	private String producerType;
 	private String outputFile;
+
+	public MaxwellConfig() {
+		this.kafkaProperties = new Properties();
+	}
 
 	public Connection getMasterConnection() throws SQLException {
 		return DriverManager.getConnection("jdbc:mysql://" + mysqlHost + ":" + mysqlPort, mysqlUser, mysqlPassword);
@@ -108,7 +112,6 @@ public class MaxwellConfig {
 		this.mysqlPort     = Integer.valueOf(p.getProperty("port", "3306"));
 
 		this.currentPositionFile = p.getProperty("position_file");
-		this.kafkaProperties = new Properties();
 		this.producerType      = p.getProperty("producer");
 		this.outputFile      = p.getProperty("output_file");
 
