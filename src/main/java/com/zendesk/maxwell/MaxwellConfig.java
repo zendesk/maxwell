@@ -77,6 +77,7 @@ public class MaxwellConfig {
 		parser.accepts( "user" ).withRequiredArg();
 		parser.accepts( "port" ).withRequiredArg();
 		parser.accepts( "producer" ).withRequiredArg();
+		parser.accepts( "position_file" ).withRequiredArg();
 		parser.accepts( "kafka.bootstrap.servers" ).withRequiredArg();
 
 		OptionSet options = parser.parse(argv);
@@ -91,6 +92,8 @@ public class MaxwellConfig {
 			this.mysqlPort = Integer.valueOf((String) options.valueOf("port"));
 		if ( options.has("producer"))
 			this.producerType = (String) options.valueOf("producer");
+		if ( options.has("position_file"))
+			this.currentPositionFile = (String) options.valueOf("position_file");
 
 		if ( options.has("kafka.bootstrap.servers"))
 			this.kafkaProperties.setProperty("bootstrap.servers", (String) options.valueOf("kafka.bootstrap.servers"));
