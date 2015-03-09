@@ -27,9 +27,13 @@ public class MaxwellConfig {
 	public String currentPositionFile;
 
 	private BinlogPosition initialPosition;
-	private Properties kafkaProperties;
+	private final Properties kafkaProperties;
 	private String producerType;
 	private String outputFile;
+
+	public MaxwellConfig() {
+		this.kafkaProperties = new Properties();
+	}
 
 	public Connection getMasterConnection() throws SQLException {
 		return DriverManager.getConnection("jdbc:mysql://" + mysqlHost + ":" + mysqlPort, mysqlUser, mysqlPassword);
@@ -73,6 +77,7 @@ public class MaxwellConfig {
 		parser.accepts( "user" ).withRequiredArg();
 		parser.accepts( "port" ).withRequiredArg();
 		parser.accepts( "producer" ).withRequiredArg();
+		parser.accepts( "kafka.bootstrap.servers" ).withRequiredArg();
 
 		OptionSet options = parser.parse(argv);
 
@@ -86,6 +91,9 @@ public class MaxwellConfig {
 			this.mysqlPort = Integer.valueOf((String) options.valueOf("port"));
 		if ( options.has("producer"))
 			this.producerType = (String) options.valueOf("producer");
+
+		if ( options.has("kafka.bootstrap.servers"))
+			this.kafkaProperties.setProperty("bootstrap.servers", (String) options.valueOf("kafka.bootstrap.servers"));
 	}
 
 	private void parseFile(String filename) throws IOException {
@@ -104,7 +112,6 @@ public class MaxwellConfig {
 		this.mysqlPort     = Integer.valueOf(p.getProperty("port", "3306"));
 
 		this.currentPositionFile = p.getProperty("position_file");
-		this.kafkaProperties = new Properties();
 		this.producerType      = p.getProperty("producer");
 		this.outputFile      = p.getProperty("output_file");
 
