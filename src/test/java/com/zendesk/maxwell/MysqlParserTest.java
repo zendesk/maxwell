@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -181,7 +182,8 @@ public class MysqlParserTest extends AbstractMaxwellTest {
 		}
 	}
 
-	private void runJSONTestFile(File file) throws Exception {
+	private void runJSONTestFile(String fname) throws Exception {
+		File file = new File(fname);
 		ArrayList<JSONObject> jsonAsserts = new ArrayList<>();
 		ArrayList<String> inputSQL  = new ArrayList<>();
 		BufferedReader reader = new BufferedReader(new FileReader(file));
@@ -203,15 +205,34 @@ public class MysqlParserTest extends AbstractMaxwellTest {
 
 	    runJSONTest(inputSQL, jsonAsserts);
 	}
+
 	@Test
-	public void testRunJSONTests() throws Exception {
-
-		for ( File file: new File(getSQLDir() + "/json").listFiles()) {
-			if ( !file.getName().startsWith("test"))
-				continue;
-
-			runJSONTestFile(file);
-		}
+	public void testRunMainJSONTest() throws Exception {
+		runJSONTestFile(getSQLDir() + "/json/test_1j");
 	}
 
+	@Test
+	public void testCreateLikeJSON() throws Exception {
+		runJSONTestFile(getSQLDir() + "/json/test_create_like");
+	}
+
+	@Test
+	public void testEnumJSON() throws Exception {
+		runJSONTestFile(getSQLDir() + "/json/test_enum");
+	}
+
+	@Test
+	public void testLatin1JSON() throws Exception {
+		runJSONTestFile(getSQLDir() + "/json/test_latin1");
+	}
+
+	@Test
+	public void testSetJSON() throws Exception {
+		runJSONTestFile(getSQLDir() + "/json/test_set");
+	}
+
+	@Test
+	public void testZeroCreatedAtJSON() throws Exception {
+		runJSONTestFile(getSQLDir() + "/json/test_zero_created_at");
+	}
 }

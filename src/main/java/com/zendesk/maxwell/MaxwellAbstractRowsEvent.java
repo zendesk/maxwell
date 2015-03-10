@@ -14,6 +14,7 @@ import com.google.code.or.binlog.BinlogEventV4Header;
 import com.google.code.or.binlog.impl.event.AbstractRowEvent;
 import com.google.code.or.common.glossary.Column;
 import com.google.code.or.common.glossary.Row;
+import com.google.code.or.common.glossary.column.DatetimeColumn;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
 
@@ -178,6 +179,7 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 	// the equivalent of "asJSON" -- convert the row to an array of
 	// hashes
 	public RowMap jsonMap() {
+		Object value;
 		RowMap rowMap = new RowMap();
 
 		rowMap.setRowType(getType());
@@ -192,7 +194,11 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 				Column c = colIter.next();
 				ColumnDef d = defIter.next();
 
-				Object value = c.getValue();
+				if ( c instanceof DatetimeColumn )
+					value = ((DatetimeColumn) c).getLongValue();
+				else
+					value = c.getValue();
+
 				if ( value != null )
 					value = d.asJSON(value);
 
