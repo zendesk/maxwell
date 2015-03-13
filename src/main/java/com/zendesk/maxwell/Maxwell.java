@@ -20,8 +20,7 @@ public class Maxwell {
 	private void initFirstRun() throws SQLException, IOException {
 		Connection connection = this.config.getMasterConnection();
 
-		SchemaStore.createMaxwellSchema(connection);
-
+		LOGGER.info("Maxwell is capturing initial schema");
 		SchemaCapturer capturer = new SchemaCapturer(connection);
 		this.schema = capturer.capture();
 
@@ -34,6 +33,8 @@ public class Maxwell {
 
 	private void run(String[] args) throws Exception {
 		this.config = MaxwellConfig.buildConfig("config.properties", args);
+
+		SchemaStore.createMaxwellSchema(this.config.getMasterConnection());
 
 		if ( this.config.getInitialPosition() != null ) {
 			LOGGER.info("Maxwell is booting, starting at " + this.config.getInitialPosition());
