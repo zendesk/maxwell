@@ -25,7 +25,7 @@ public class AbstractMaxwellTest {
 	public static void setUpBeforeClass() throws Exception {
 		server = new MysqlIsolatedServer();
 		server.boot();
-		SchemaStore.createMaxwellSchema(server.getConnection());
+		SchemaStore.ensureMaxwellSchema(server.getConnection());
 	}
 
 	public String getSQLDir() {

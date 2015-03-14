@@ -34,7 +34,7 @@ public class Maxwell {
 	private void run(String[] args) throws Exception {
 		this.config = MaxwellConfig.buildConfig("config.properties", args);
 
-		SchemaStore.createMaxwellSchema(this.config.getMasterConnection());
+		SchemaStore.ensureMaxwellSchema(this.config.getMasterConnection());
 
 		if ( this.config.getInitialPosition() != null ) {
 			LOGGER.info("Maxwell is booting, starting at " + this.config.getInitialPosition());
