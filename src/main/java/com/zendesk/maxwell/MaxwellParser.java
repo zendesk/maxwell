@@ -57,7 +57,7 @@ public class MaxwellParser {
 		this.replicator.setBinlogPosition(p.getOffset());
 	}
 
-	public void setConfig(MaxwellConfig c) throws FileNotFoundException, IOException {
+	public void setConfig(MaxwellConfig c) throws FileNotFoundException, IOException, SQLException {
 		this.replicator.setHost(c.mysqlHost);
 		this.replicator.setUser(c.mysqlUser);
 		this.replicator.setPassword(c.mysqlPassword);
@@ -92,15 +92,21 @@ public class MaxwellParser {
 			if ( event == null )
 				continue;
 
-			producer.push(event);
+			if ( !skipEvent(event)) {
+				producer.push(event);
 
-			// TODO:  this isn't quite right: we need to only stop on table map events,
-			// although it's unclear to me whether you can have two row events in a row.
-			// I think maybe you can.
+				// TODO:  this isn't quite right: we need to only stop on table map events,
+				// although it's unclear to me whether you can have two row events in a row.
+				// I think maybe you can.
 
-			BinlogPosition p = eventBinlogPosition(event);
-			this.config.setInitialPosition(p);
+				BinlogPosition p = eventBinlogPosition(event);
+				this.config.setInitialPosition(p);
+			}
 		}
+	}
+
+	private boolean skipEvent(MaxwellAbstractRowsEvent event) {
+		return event.getTable().getDatabase().getName().equals("maxwell");
 	}
 
 	private BinlogPosition eventBinlogPosition(AbstractBinlogEventV4 event) {

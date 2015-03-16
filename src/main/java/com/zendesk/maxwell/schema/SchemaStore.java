@@ -136,7 +136,7 @@ public class SchemaStore {
 		columnData.clear();
 	}
 
-	public static void createMaxwellSchema(Connection connection) throws SQLException, IOException {
+	public static void ensureMaxwellSchema(Connection connection) throws SQLException, IOException {
 		if ( SchemaStore.storeDatabaseExists(connection) )
 			return;
 

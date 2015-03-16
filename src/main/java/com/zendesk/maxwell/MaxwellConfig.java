@@ -3,10 +3,10 @@ package com.zendesk.maxwell;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.Properties;
@@ -17,6 +17,7 @@ import joptsimple.OptionSet;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.producer.FileProducer;
 import com.zendesk.maxwell.producer.MaxwellKafkaProducer;
+import com.zendesk.maxwell.schema.SchemaPosition;
 
 public class MaxwellConfig {
 	public String  mysqlHost;
@@ -30,44 +31,31 @@ public class MaxwellConfig {
 	private final Properties kafkaProperties;
 	private String producerType;
 	private String outputFile;
+	private Long serverID;
+	private Connection connection;
 
 	public MaxwellConfig() {
 		this.kafkaProperties = new Properties();
 	}
 
 	public Connection getMasterConnection() throws SQLException {
-		return DriverManager.getConnection("jdbc:mysql://" + mysqlHost + ":" + mysqlPort, mysqlUser, mysqlPassword);
+		if ( this.connection != null )
+			return this.connection;
+
+		this.connection = DriverManager.getConnection("jdbc:mysql://" + mysqlHost + ":" + mysqlPort, mysqlUser, mysqlPassword);
+		return this.connection;
 	}
 
-	public BinlogPosition getInitialPosition() throws FileNotFoundException, IOException {
+	public BinlogPosition getInitialPosition() throws FileNotFoundException, IOException, SQLException {
 		if ( this.initialPosition != null )
 			return this.initialPosition;
 
-		File f = new File(this.currentPositionFile);
-		if ( !f.exists() ) {
-			return null;
-		} else {
-			Properties p = new Properties();
-			p.load(new FileReader(f));
-
-			this.initialPosition = new BinlogPosition(Integer.valueOf((String) p.get("offset")), p.getProperty("file"));
-			return this.initialPosition;
-		}
+		this.initialPosition = SchemaPosition.get(this.getMasterConnection(), this.getServerID());
+		return this.initialPosition;
 	}
 
-	public void setInitialPosition(BinlogPosition position) throws IOException {
-		Properties p = new Properties();
-		p.setProperty("offset", String.valueOf(position.getOffset()));
-		p.setProperty("file", position.getFile());
-
-		File f = new File(this.currentPositionFile);
-		FileWriter fw = new FileWriter(f);
-		try {
-			p.store(fw, "");
-			this.initialPosition = position;
-		} finally {
-			fw.close();
-		}
+	public void setInitialPosition(BinlogPosition position) throws IOException, SQLException {
+		SchemaPosition.set(this.getMasterConnection(), this.getServerID(), position);
 	}
 
 	private void parseOptions(String [] argv) {
@@ -108,13 +96,11 @@ public class MaxwellConfig {
 		FileReader reader = new FileReader(file);
 		p.load(reader);
 
-
 		this.mysqlHost     = p.getProperty("host", "127.0.0.1");
 		this.mysqlPassword = p.getProperty("password");
 		this.mysqlUser     = p.getProperty("user");
 		this.mysqlPort     = Integer.valueOf(p.getProperty("port", "3306"));
 
-		this.currentPositionFile = p.getProperty("position_file");
 		this.producerType      = p.getProperty("producer");
 		this.outputFile      = p.getProperty("output_file");
 
@@ -161,4 +147,17 @@ public class MaxwellConfig {
 			return new StdoutProducer(this);
 		}
 	}
+
+	public Long getServerID() throws SQLException {
+		if ( this.serverID != null)
+			return this.serverID;
+
+		ResultSet rs = this.getMasterConnection().createStatement().executeQuery("SELECT @@server_id as server_id");
+		if ( !rs.next() ) {
+			throw new RuntimeException("Could not retrieve server_id!");
+		}
+		this.serverID = rs.getLong("server_id");
+		return this.serverID;
+	}
+
 }

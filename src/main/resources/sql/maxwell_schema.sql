@@ -38,3 +38,9 @@ CREATE TABLE IF NOT EXISTS `maxwell`.`columns` (
   index (schema_id),
   index (table_id)
 );
+
+CREATE TABLE IF NOT EXISTS `maxwell`.`positions` (
+  server_id int unsigned not null primary key,
+  binlog_file varchar(255),
+  binlog_position int unsigned
+);
