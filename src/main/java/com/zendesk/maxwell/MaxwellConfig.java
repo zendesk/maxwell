@@ -49,7 +49,7 @@ public class MaxwellConfig {
 
 	private SchemaPosition getSchemaPosition() throws SQLException {
 		if ( this.schemaPosition == null ) {
-			this.schemaPosition = new SchemaPosition(this.connection, this.getServerID());
+			this.schemaPosition = new SchemaPosition(this.getMasterConnection(), this.getServerID());
 			this.schemaPosition.start();
 		}
 		return this.schemaPosition;

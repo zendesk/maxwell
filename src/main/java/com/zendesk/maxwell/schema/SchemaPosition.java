@@ -58,7 +58,7 @@ public class SchemaPosition implements Runnable {
 				+ "binlog_file = ?, "
 				+ "binlog_position = ? "
 				+ "ON DUPLICATE KEY UPDATE binlog_file=?, binlog_position=?";
-		PreparedStatement s = connection.prepareStatement(sql);
+		PreparedStatement s = this.connection.prepareStatement(sql);
 
 		LOGGER.debug("Writing initial position: " + newPosition);
 		s.setLong(1, serverID);
@@ -75,7 +75,7 @@ public class SchemaPosition implements Runnable {
 	}
 
 	public BinlogPosition get() throws SQLException {
-		PreparedStatement s = connection.prepareStatement("SELECT * from `maxwell`.`positions` where server_id = ?");
+		PreparedStatement s = this.connection.prepareStatement("SELECT * from `maxwell`.`positions` where server_id = ?");
 		s.setLong(1, serverID);
 
 		ResultSet rs = s.executeQuery();
