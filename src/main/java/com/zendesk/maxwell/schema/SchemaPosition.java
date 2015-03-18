@@ -91,6 +91,10 @@ public class SchemaPosition implements Runnable {
 	}
 
 	public BinlogPosition get() throws SQLException {
+		BinlogPosition p = position.get();
+		if ( p != null )
+			return p;
+
 		PreparedStatement s = this.connection.prepareStatement("SELECT * from `maxwell`.`positions` where server_id = ?");
 		s.setLong(1, serverID);
 
