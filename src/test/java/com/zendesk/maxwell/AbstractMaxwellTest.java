@@ -108,6 +108,7 @@ public class AbstractMaxwellTest {
         }
 
         p.stop();
+        config.terminate();
 
         return list;
 	}

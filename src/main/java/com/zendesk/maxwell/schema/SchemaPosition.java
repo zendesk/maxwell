@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.Logger;
@@ -17,23 +18,38 @@ public class SchemaPosition implements Runnable {
 	private final Long serverID;
 	private BinlogPosition lastPosition;
 	private final AtomicReference<BinlogPosition> position;
+	private final AtomicBoolean run;
+	private Thread thread;
 
 	public SchemaPosition(Connection c, Long serverID) {
 		this.connection = c;
 		this.serverID = serverID;
 		this.lastPosition = null;
 		this.position = new AtomicReference<>();
+		this.run = new AtomicBoolean(false);
 	}
 
-	public Thread start() {
-		Thread t = new Thread(this, "Position Flush Thread");
-		t.start();
-		return t;
+	public void start() {
+		this.thread = new Thread(this, "Position Flush Thread");
+		this.run.set(true);
+		thread.start();
+	}
+
+	public void stop() {
+		this.run.set(false);
+
+		thread.interrupt();
+
+		while ( thread.isAlive() ) {
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) { }
+		}
 	}
 
 	@Override
 	public void run() {
-		while ( true ) {
+		while ( true && run.get() ) {
 			BinlogPosition newPosition = position.get();
 
 			if ( newPosition != null && !newPosition.equals(lastPosition) ) {
