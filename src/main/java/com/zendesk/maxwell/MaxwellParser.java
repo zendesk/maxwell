@@ -80,8 +80,6 @@ public class MaxwellParser {
 	}
 
 
-
-
 	public void run() throws Exception {
 		MaxwellAbstractRowsEvent event;
 

@@ -33,6 +33,7 @@ public class MaxwellConfig {
 	private String outputFile;
 	private Long serverID;
 	private Connection connection;
+	private SchemaPosition schemaPosition;
 
 	public MaxwellConfig() {
 		this.kafkaProperties = new Properties();
@@ -46,16 +47,24 @@ public class MaxwellConfig {
 		return this.connection;
 	}
 
+	private SchemaPosition getSchemaPosition() throws SQLException {
+		if ( this.schemaPosition == null ) {
+			this.schemaPosition = new SchemaPosition(this.connection, this.getServerID());
+			this.schemaPosition.start();
+		}
+		return this.schemaPosition;
+	}
+
 	public BinlogPosition getInitialPosition() throws FileNotFoundException, IOException, SQLException {
 		if ( this.initialPosition != null )
 			return this.initialPosition;
 
-		this.initialPosition = SchemaPosition.get(this.getMasterConnection(), this.getServerID());
+		this.initialPosition = getSchemaPosition().get();
 		return this.initialPosition;
 	}
 
 	public void setInitialPosition(BinlogPosition position) throws IOException, SQLException {
-		SchemaPosition.set(this.getMasterConnection(), this.getServerID(), position);
+		this.getSchemaPosition().set(position);
 	}
 
 	private void parseOptions(String [] argv) {
