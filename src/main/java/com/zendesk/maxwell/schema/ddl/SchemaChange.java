@@ -25,6 +25,7 @@ public abstract class SchemaChange {
 		SQL_BLACKLIST.add(Pattern.compile("^BEGIN", Pattern.CASE_INSENSITIVE));
 		SQL_BLACKLIST.add(Pattern.compile("^COMMIT", Pattern.CASE_INSENSITIVE));
 		SQL_BLACKLIST.add(Pattern.compile("^GRANT", Pattern.CASE_INSENSITIVE));
+		SQL_BLACKLIST.add(Pattern.compile("^(ALTER|CREATE|DROP)\\s+(FUNCTION|PROCEDURE|VIEW|INDEX|TRIGGER)", Pattern.CASE_INSENSITIVE));
 	}
 
 	private static boolean matchesBlacklist(String sql) {
