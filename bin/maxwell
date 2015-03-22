@@ -15,5 +15,7 @@ else
   JAVA="$JAVA_HOME/bin/java"
 fi
 
+export LANG="en_US.UTF-8"
+
 exec $JAVA -cp $CLASSPATH com.zendesk.maxwell.Maxwell "$@"
 
