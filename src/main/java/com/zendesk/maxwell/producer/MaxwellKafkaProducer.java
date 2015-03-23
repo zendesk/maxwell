@@ -52,6 +52,10 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	public MaxwellKafkaProducer(MaxwellConfig config, Properties kafkaProperties) {
 		super(config);
 
+		if ( !kafkaProperties.containsKey("compression.type") ) {
+			kafkaProperties.setProperty("compression.type", "gzip"); // enable gzip compression by default
+		}
+
 		this.kafka = new KafkaProducer<>(kafkaProperties, new ByteArraySerializer(), new ByteArraySerializer());
 	}
 
