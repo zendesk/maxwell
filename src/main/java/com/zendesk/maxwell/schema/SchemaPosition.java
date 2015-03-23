@@ -45,6 +45,12 @@ public class SchemaPosition implements Runnable {
 				Thread.sleep(10);
 			} catch (InterruptedException e) { }
 		}
+
+		try {
+			this.connection.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -53,37 +59,39 @@ public class SchemaPosition implements Runnable {
 			BinlogPosition newPosition = position.get();
 
 			if ( newPosition != null && !newPosition.equals(lastPosition) ) {
-				try {
-					store(newPosition);
-					lastPosition = newPosition;
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
+				store(newPosition);
+				lastPosition = newPosition;
 			}
 
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) { }
 		}
+
+		store(position.get());
 	}
 
 
-	private void store(BinlogPosition newPosition) throws SQLException {
+	private void store(BinlogPosition newPosition) {
 		String sql = "INSERT INTO `maxwell`.`positions` set "
 				+ "server_id = ?, "
 				+ "binlog_file = ?, "
 				+ "binlog_position = ? "
 				+ "ON DUPLICATE KEY UPDATE binlog_file=?, binlog_position=?";
-		PreparedStatement s = this.connection.prepareStatement(sql);
+		try {
+			PreparedStatement s = this.connection.prepareStatement(sql);
 
-		LOGGER.debug("Writing initial position: " + newPosition);
-		s.setLong(1, serverID);
-		s.setString(2, newPosition.getFile());
-		s.setLong(3, newPosition.getOffset());
-		s.setString(4, newPosition.getFile());
-		s.setLong(5, newPosition.getOffset());
+			LOGGER.debug("Writing initial position: " + newPosition);
+			s.setLong(1, serverID);
+			s.setString(2, newPosition.getFile());
+			s.setLong(3, newPosition.getOffset());
+			s.setString(4, newPosition.getFile());
+			s.setLong(5, newPosition.getOffset());
 
-		s.execute();
+			s.execute();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public void set(BinlogPosition p) {
