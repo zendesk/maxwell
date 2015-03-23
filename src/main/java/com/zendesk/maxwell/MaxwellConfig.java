@@ -39,11 +39,15 @@ public class MaxwellConfig {
 		this.kafkaProperties = new Properties();
 	}
 
+	private Connection newMasterConnection() throws SQLException {
+		return DriverManager.getConnection("jdbc:mysql://" + mysqlHost + ":" + mysqlPort, mysqlUser, mysqlPassword);
+	}
+
 	public Connection getMasterConnection() throws SQLException {
 		if ( this.connection != null )
 			return this.connection;
 
-		this.connection = DriverManager.getConnection("jdbc:mysql://" + mysqlHost + ":" + mysqlPort, mysqlUser, mysqlPassword);
+		this.connection = newMasterConnection();
 		return this.connection;
 	}
 
@@ -59,7 +63,7 @@ public class MaxwellConfig {
 
 	private SchemaPosition getSchemaPosition() throws SQLException {
 		if ( this.schemaPosition == null ) {
-			this.schemaPosition = new SchemaPosition(this.getMasterConnection(), this.getServerID());
+			this.schemaPosition = new SchemaPosition(this.newMasterConnection(), this.getServerID());
 			this.schemaPosition.start();
 		}
 		return this.schemaPosition;
