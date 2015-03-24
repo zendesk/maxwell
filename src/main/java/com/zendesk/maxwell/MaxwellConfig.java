@@ -77,7 +77,7 @@ public class MaxwellConfig {
 		return this.initialPosition;
 	}
 
-	public void setInitialPosition(BinlogPosition position) throws IOException, SQLException {
+	public void setInitialPosition(BinlogPosition position) throws SQLException {
 		this.getSchemaPosition().set(position);
 	}
 
@@ -182,5 +182,4 @@ public class MaxwellConfig {
 		this.serverID = rs.getLong("server_id");
 		return this.serverID;
 	}
-
 }
