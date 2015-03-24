@@ -92,10 +92,7 @@ public class MaxwellParser {
 
 			if ( !skipEvent(event)) {
 				producer.push(event);
-
-				// TODO:  this isn't quite right: we need to only stop on table map events
-
-				BinlogPosition p = eventBinlogPosition(event);
+				// TODO:  we need to tell the producer to only store a stop-event on table-maps
 			}
 		}
 	}
