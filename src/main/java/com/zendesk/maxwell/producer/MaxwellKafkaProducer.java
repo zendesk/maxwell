@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import com.zendesk.maxwell.BinlogPosition;
 import com.zendesk.maxwell.MaxwellAbstractRowsEvent;
 import com.zendesk.maxwell.MaxwellConfig;
 
@@ -31,14 +30,13 @@ class KafkaCallback implements Callback {
 			e.printStackTrace();
 		} else {
 			try {
-				BinlogPosition p = new BinlogPosition(event.getHeader().getNextPosition(), event.getBinlogFilename());
 				if ( LOGGER.isDebugEnabled()) {
 					LOGGER.debug("-> " + md.topic() + ":" + md.offset());
 					LOGGER.debug("   " + event.toJSON());
-					LOGGER.debug("   " + p);
+					LOGGER.debug("   " + event.getBinlogPosition());
 					LOGGER.debug("");
 				}
-				config.setInitialPosition(p);
+				config.setInitialPosition(event.getBinlogPosition());
 			} catch (IOException | SQLException e1) {
 				e1.printStackTrace();
 			}
