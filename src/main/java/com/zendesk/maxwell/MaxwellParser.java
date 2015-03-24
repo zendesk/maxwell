@@ -7,6 +7,9 @@ import java.util.TimeZone;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.code.or.OpenReplicator;
 import com.google.code.or.binlog.BinlogEventV4;
 import com.google.code.or.binlog.impl.FileBasedBinlogParser;
@@ -39,6 +42,8 @@ public class MaxwellParser {
 	private final OpenReplicator replicator;
 	private MaxwellConfig config;
 	private final AbstractProducer producer;
+
+	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellParser.class);
 
 	public MaxwellParser(Schema currentSchema, AbstractProducer producer) throws Exception {
 		this.schema = currentSchema;
@@ -184,6 +189,7 @@ public class MaxwellParser {
 		if ( changes.size() > 0 ) {
 			tableCache.clear();
 			BinlogPosition p = eventBinlogPosition(event);
+			LOGGER.info("storing schema @" + p + " after applying'" + sql + "'");
 			new SchemaStore(this.config.getMasterConnection(), schema, p).save();
 		}
 	}
