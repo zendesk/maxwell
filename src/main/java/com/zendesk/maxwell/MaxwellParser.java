@@ -93,12 +93,9 @@ public class MaxwellParser {
 			if ( !skipEvent(event)) {
 				producer.push(event);
 
-				// TODO:  this isn't quite right: we need to only stop on table map events,
-				// although it's unclear to me whether you can have two row events in a row.
-				// I think maybe you can.
+				// TODO:  this isn't quite right: we need to only stop on table map events
 
 				BinlogPosition p = eventBinlogPosition(event);
-				this.config.setInitialPosition(p);
 			}
 		}
 	}
