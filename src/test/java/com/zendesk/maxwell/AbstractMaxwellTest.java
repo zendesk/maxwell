@@ -87,7 +87,6 @@ public class AbstractMaxwellTest {
 		config.mysqlPort = server.getPort();
 		config.mysqlUser = "maxwell";
 		config.mysqlPassword = "maxwell";
-		config.currentPositionFile = "/tmp/maxwell.position";
 		config.setInitialPosition(start);
 
 		p.setConfig(config);
