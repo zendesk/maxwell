@@ -93,12 +93,16 @@ public class MaxwellConfig {
 		parser.accepts( "port", "mysql port" ).withRequiredArg();
 		parser.accepts( "producer", "producer type: stdout|file|kafka" ).withRequiredArg();
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
+		parser.accepts( "help", "display help").forHelp();
 		parser.formatHelpWith(new BuiltinHelpFormatter(160, 4));
 		return parser;
 	}
 
 	private void parseOptions(String [] argv) {
 		OptionSet options = getOptionParser().parse(argv);
+
+		if ( options.has("help") )
+			usage("Help for Maxwell:");
 
 		if ( options.has("host"))
 			this.mysqlHost = (String) options.valueOf("host");
