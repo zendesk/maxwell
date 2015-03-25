@@ -16,7 +16,7 @@ this will start a Maxwell's daemon for you to play around with:
 ```
 mysql> GRANT ALL on maxwell.* to 'maxwell'@'%' identified by 'XXXXXX';
 mysql> GRANT SELECT on *.* to 'maxwell'@'%';
-mysql> GRANT REPLICATION CLIENT ON *.* TO 'maxwell'@'%;
+mysql> GRANT REPLICATION CLIENT ON *.* TO 'maxwell'@'%';
 
 curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.4.0/maxwell-0.4.0.tar.gz  | tar zxvf -
 cd maxwell-0.4.0
