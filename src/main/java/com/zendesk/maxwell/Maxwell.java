@@ -15,7 +15,7 @@ import com.zendesk.maxwell.schema.SchemaStore;
 public class Maxwell {
 	private Schema schema;
 	private MaxwellConfig config;
-	static final Logger LOGGER = LoggerFactory.getLogger(SchemaStore.class);
+	static final Logger LOGGER = LoggerFactory.getLogger(Maxwell.class);
 
 	private void initFirstRun(Connection connection) throws SQLException, IOException {
 		LOGGER.info("Maxwell is capturing initial schema");
@@ -42,6 +42,10 @@ public class Maxwell {
 			} else {
 				initFirstRun(connection);
 			}
+		} catch ( SQLException e ) {
+			LOGGER.error("Failed to connect to mysql server @ " + this.config.getConnectionURI());
+			LOGGER.error(e.getLocalizedMessage());
+			return;
 		}
 
 		AbstractProducer producer = this.config.getProducer();

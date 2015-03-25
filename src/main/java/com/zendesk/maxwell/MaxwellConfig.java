@@ -10,7 +10,11 @@ import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import snaq.db.ConnectionPool;
+import joptsimple.BuiltinHelpFormatter;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
@@ -20,12 +24,12 @@ import com.zendesk.maxwell.producer.MaxwellKafkaProducer;
 import com.zendesk.maxwell.schema.SchemaPosition;
 
 public class MaxwellConfig {
+	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfig.class);
+
 	public String  mysqlHost;
 	public Integer mysqlPort;
 	public String  mysqlUser;
 	public String  mysqlPassword;
-
-	public String currentPositionFile;
 
 	private BinlogPosition initialPosition;
 	private final Properties kafkaProperties;
@@ -42,12 +46,15 @@ public class MaxwellConfig {
 		this.mysqlPassword = null;
 	}
 
+	public String getConnectionURI() {
+		return "jdbc:mysql://" + mysqlHost + ":" + mysqlPort;
+	}
+
 	public ConnectionPool getConnectionPool() {
 		if ( this.connectionPool != null )
 			return this.connectionPool;
 
-		String uri = "jdbc:mysql://" + mysqlHost + ":" + mysqlPort;
-		this.connectionPool = new ConnectionPool("MaxwellConnectionPool", 10, 0, 10, uri, mysqlUser, mysqlPassword);
+		this.connectionPool = new ConnectionPool("MaxwellConnectionPool", 10, 0, 10, getConnectionURI(), mysqlUser, mysqlPassword);
 		return this.connectionPool;
 	}
 
@@ -78,17 +85,20 @@ public class MaxwellConfig {
 		this.getSchemaPosition().set(position);
 	}
 
-	private void parseOptions(String [] argv) {
+	private OptionParser getOptionParser() {
 		OptionParser parser = new OptionParser();
-		parser.accepts( "host" ).withRequiredArg();
-		parser.accepts( "password" ).withRequiredArg();
-		parser.accepts( "user" ).withRequiredArg();
-		parser.accepts( "port" ).withRequiredArg();
-		parser.accepts( "producer" ).withRequiredArg();
-		parser.accepts( "position_file" ).withRequiredArg();
-		parser.accepts( "kafka.bootstrap.servers" ).withRequiredArg();
+		parser.accepts( "host", "mysql host" ).withRequiredArg();
+		parser.accepts( "user", "mysql username" ).withRequiredArg();
+		parser.accepts( "password", "mysql password" ).withRequiredArg();
+		parser.accepts( "port", "mysql port" ).withRequiredArg();
+		parser.accepts( "producer", "producer type: stdout|file|kafka" ).withRequiredArg();
+		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
+		parser.formatHelpWith(new BuiltinHelpFormatter(160, 4));
+		return parser;
+	}
 
-		OptionSet options = parser.parse(argv);
+	private void parseOptions(String [] argv) {
+		OptionSet options = getOptionParser().parse(argv);
 
 		if ( options.has("host"))
 			this.mysqlHost = (String) options.valueOf("host");
@@ -100,8 +110,6 @@ public class MaxwellConfig {
 			this.mysqlPort = Integer.valueOf((String) options.valueOf("port"));
 		if ( options.has("producer"))
 			this.producerType = (String) options.valueOf("producer");
-		if ( options.has("position_file"))
-			this.currentPositionFile = (String) options.valueOf("position_file");
 
 		if ( options.has("kafka.bootstrap.servers"))
 			this.kafkaProperties.setProperty("bootstrap.servers", (String) options.valueOf("kafka.bootstrap.servers"));
@@ -144,12 +152,35 @@ public class MaxwellConfig {
 	}
 
 	private void setDefaults() {
-		if ( this.producerType == null )
+		if ( this.producerType == null ) {
 			this.producerType = "stdout";
-		if ( this.currentPositionFile == null )
-			this.currentPositionFile = "maxwell.position";
+		} else if ( this.producerType.equals("kafka")
+				&& !this.kafkaProperties.containsKey("bootstrap.servers")) {
+			usage("You must specify kafka.bootstrap.servers for the kafka producer!");
+		}
+
 		if ( this.mysqlPort == null )
 			this.mysqlPort = 3306;
+
+		if ( this.mysqlHost == null ) {
+			LOGGER.warn("mysql host not specified, defaulting to localhost");
+			this.mysqlHost = "localhost";
+		}
+
+		if ( this.mysqlPassword == null ) {
+			usage("mysql password not given!");
+		}
+
+	}
+
+	private void usage(String string) {
+		System.out.println(string);
+		System.out.println();
+		try {
+			getOptionParser().printHelpOn(System.out);
+			System.exit(1);
+		} catch (IOException e) {
+		}
 	}
 
 	public Properties getKafkaProperties() {
@@ -181,4 +212,5 @@ public class MaxwellConfig {
 			return this.serverID;
 		}
 	}
+
 }
