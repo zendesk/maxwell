@@ -5,12 +5,12 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.Properties;
 
+import snaq.db.ConnectionPool;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
@@ -32,38 +32,35 @@ public class MaxwellConfig {
 	private String producerType;
 	private String outputFile;
 	private Long serverID;
-	private Connection connection;
 	private SchemaPosition schemaPosition;
+
+	private ConnectionPool connectionPool;
 
 	public MaxwellConfig() {
 		this.kafkaProperties = new Properties();
+		this.mysqlUser = null;
+		this.mysqlPassword = null;
 	}
 
-	private Connection newMasterConnection() throws SQLException {
-		return DriverManager.getConnection("jdbc:mysql://" + mysqlHost + ":" + mysqlPort, mysqlUser, mysqlPassword);
-	}
+	public ConnectionPool getConnectionPool() {
+		if ( this.connectionPool != null )
+			return this.connectionPool;
 
-	public Connection getMasterConnection() throws SQLException {
-		if ( this.connection != null )
-			return this.connection;
-
-		this.connection = newMasterConnection();
-		return this.connection;
+		String uri = "jdbc:mysql://" + mysqlHost + ":" + mysqlPort;
+		this.connectionPool = new ConnectionPool("MaxwellConnectionPool", 10, 0, 10, uri, mysqlUser, mysqlPassword);
+		return this.connectionPool;
 	}
 
 	public void terminate() {
-		try {
-			this.connection.close();
-		} catch (SQLException e) {
-		}
-		this.connection = null;
 		this.schemaPosition.stop();
 		this.schemaPosition = null;
+		this.connectionPool.release();
+		this.connectionPool = null;
 	}
 
 	private SchemaPosition getSchemaPosition() throws SQLException {
 		if ( this.schemaPosition == null ) {
-			this.schemaPosition = new SchemaPosition(this.newMasterConnection(), this.getServerID());
+			this.schemaPosition = new SchemaPosition(this.getConnectionPool(), this.getServerID());
 			this.schemaPosition.start();
 		}
 		return this.schemaPosition;
@@ -175,11 +172,13 @@ public class MaxwellConfig {
 		if ( this.serverID != null)
 			return this.serverID;
 
-		ResultSet rs = this.getMasterConnection().createStatement().executeQuery("SELECT @@server_id as server_id");
-		if ( !rs.next() ) {
-			throw new RuntimeException("Could not retrieve server_id!");
+		try ( Connection c = getConnectionPool().getConnection() ) {
+			ResultSet rs = c.createStatement().executeQuery("SELECT @@server_id as server_id");
+			if ( !rs.next() ) {
+				throw new RuntimeException("Could not retrieve server_id!");
+			}
+			this.serverID = rs.getLong("server_id");
+			return this.serverID;
 		}
-		this.serverID = rs.getLong("server_id");
-		return this.serverID;
 	}
 }

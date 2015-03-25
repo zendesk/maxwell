@@ -45,7 +45,7 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 		return event.getBinlogFilename();
 	}
 
-	public BinlogPosition getBinlogPosition() {
+	public BinlogPosition getNextBinlogPosition() {
 		return new BinlogPosition(getHeader().getNextPosition(), getBinlogFilename());
 	}
 

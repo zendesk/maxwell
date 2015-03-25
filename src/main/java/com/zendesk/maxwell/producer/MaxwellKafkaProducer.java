@@ -33,10 +33,10 @@ class KafkaCallback implements Callback {
 				if ( LOGGER.isDebugEnabled()) {
 					LOGGER.debug("-> " + md.topic() + ":" + md.offset());
 					LOGGER.debug("   " + event.toJSON());
-					LOGGER.debug("   " + event.getBinlogPosition());
+					LOGGER.debug("   " + event.getNextBinlogPosition());
 					LOGGER.debug("");
 				}
-				config.setInitialPosition(event.getBinlogPosition());
+				config.setInitialPosition(event.getNextBinlogPosition());
 			} catch (IOException | SQLException e1) {
 				e1.printStackTrace();
 			}

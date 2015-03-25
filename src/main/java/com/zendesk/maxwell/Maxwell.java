@@ -17,9 +17,7 @@ public class Maxwell {
 	private MaxwellConfig config;
 	static final Logger LOGGER = LoggerFactory.getLogger(SchemaStore.class);
 
-	private void initFirstRun() throws SQLException, IOException {
-		Connection connection = this.config.getMasterConnection();
-
+	private void initFirstRun(Connection connection) throws SQLException, IOException {
 		LOGGER.info("Maxwell is capturing initial schema");
 		SchemaCapturer capturer = new SchemaCapturer(connection);
 		this.schema = capturer.capture();
@@ -34,14 +32,16 @@ public class Maxwell {
 	private void run(String[] args) throws Exception {
 		this.config = MaxwellConfig.buildConfig("config.properties", args);
 
-		SchemaStore.ensureMaxwellSchema(this.config.getMasterConnection());
+		try ( Connection connection = this.config.getConnectionPool().getConnection() ) {
+			SchemaStore.ensureMaxwellSchema(connection);
 
-		if ( this.config.getInitialPosition() != null ) {
-			LOGGER.info("Maxwell is booting, starting at " + this.config.getInitialPosition());
-			SchemaStore store = SchemaStore.restore(this.config.getMasterConnection(), this.config.getInitialPosition());
-			this.schema = store.getSchema();
-		} else {
-			initFirstRun();
+			if ( this.config.getInitialPosition() != null ) {
+				LOGGER.info("Maxwell is booting, starting at " + this.config.getInitialPosition());
+				SchemaStore store = SchemaStore.restore(connection, this.config.getInitialPosition());
+				this.schema = store.getSchema();
+			} else {
+				initFirstRun(connection);
+			}
 		}
 
 		AbstractProducer producer = this.config.getProducer();

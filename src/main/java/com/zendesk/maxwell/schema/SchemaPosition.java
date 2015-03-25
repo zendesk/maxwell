@@ -10,19 +10,22 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import snaq.db.ConnectionPool;
+
 import com.zendesk.maxwell.BinlogPosition;
 
+// todo: rename something better
 public class SchemaPosition implements Runnable {
 	static final Logger LOGGER = LoggerFactory.getLogger(SchemaPosition.class);
-	private final Connection connection;
 	private final Long serverID;
 	private BinlogPosition lastPosition;
 	private final AtomicReference<BinlogPosition> position;
 	private final AtomicBoolean run;
 	private Thread thread;
+	private final ConnectionPool connectionPool;
 
-	public SchemaPosition(Connection c, Long serverID) {
-		this.connection = c;
+	public SchemaPosition(ConnectionPool pool, Long serverID) {
+		this.connectionPool = pool;
 		this.serverID = serverID;
 		this.lastPosition = null;
 		this.position = new AtomicReference<>();
@@ -44,12 +47,6 @@ public class SchemaPosition implements Runnable {
 			try {
 				Thread.sleep(10);
 			} catch (InterruptedException e) { }
-		}
-
-		try {
-			this.connection.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
 		}
 	}
 
@@ -78,8 +75,8 @@ public class SchemaPosition implements Runnable {
 				+ "binlog_file = ?, "
 				+ "binlog_position = ? "
 				+ "ON DUPLICATE KEY UPDATE binlog_file=?, binlog_position=?";
-		try {
-			PreparedStatement s = this.connection.prepareStatement(sql);
+		try(Connection c = connectionPool.getConnection() ){
+			PreparedStatement s = c.prepareStatement(sql);
 
 			LOGGER.debug("Writing initial position: " + newPosition);
 			s.setLong(1, serverID);
@@ -103,13 +100,15 @@ public class SchemaPosition implements Runnable {
 		if ( p != null )
 			return p;
 
-		PreparedStatement s = this.connection.prepareStatement("SELECT * from `maxwell`.`positions` where server_id = ?");
-		s.setLong(1, serverID);
+		try ( Connection c = connectionPool.getConnection() ) {
+			PreparedStatement s = c.prepareStatement("SELECT * from `maxwell`.`positions` where server_id = ?");
+			s.setLong(1, serverID);
 
-		ResultSet rs = s.executeQuery();
-		if ( !rs.next() )
-			return null;
+			ResultSet rs = s.executeQuery();
+			if ( !rs.next() )
+				return null;
 
-		return new BinlogPosition(rs.getLong("binlog_position"), rs.getString("binlog_file"));
+			return new BinlogPosition(rs.getLong("binlog_position"), rs.getString("binlog_file"));
+		}
 	}
 }
