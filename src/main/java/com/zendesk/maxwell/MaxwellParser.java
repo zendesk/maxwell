@@ -1,6 +1,7 @@
 package com.zendesk.maxwell;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.TimeZone;
@@ -189,8 +190,10 @@ public class MaxwellParser {
 		if ( changes.size() > 0 ) {
 			tableCache.clear();
 			BinlogPosition p = eventBinlogPosition(event);
-			LOGGER.info("storing schema @" + p + " after applying'" + sql + "'");
-			new SchemaStore(this.config.getMasterConnection(), schema, p).save();
+			LOGGER.info("storing schema @" + p + " after applying \"" + sql.replace('\n',' ') + "\"");
+			try ( Connection c = this.config.getConnectionPool().getConnection() ) {
+				new SchemaStore(c, schema, p).save();
+			}
 		}
 	}
 
