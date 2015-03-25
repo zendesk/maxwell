@@ -9,7 +9,7 @@
     <Root level="debug">
       <AppenderRef ref="Console"/>
     </Root>
-   <Logger name="snaq.db.ConnectionPool.MaxwellConnectionPool" level="info">
+   <Logger name="snaq.db.ConnectionPool.MaxwellConnectionPool" level="warn" additivity="false">
       <AppenderRef ref="Console"/>
     </Logger>
   </Loggers>
