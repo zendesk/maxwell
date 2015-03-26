@@ -2,7 +2,7 @@
 <tr>
 <td width=300>
   <img alt="The Daemon, maybe" width=300
-       src="https://raw.githubusercontent.com/zendesk/maxwell/img/cyberiad_1.jpg">
+       src="https://raw.githubusercontent.com/zendesk/maxwell/master/img/cyberiad_1.jpg">
 </td>
 <td style="vertical-align: top; font-size: 130%; padding-left: 15px;">
 <h3 style="font-weight: bold; margin-top: 5px;">Maxwell = Mysql + Kafka</h3>
