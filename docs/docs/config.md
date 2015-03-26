@@ -13,3 +13,9 @@ option        | description
 --host        | mysql host
 --port        | mysql port
 
+
+<script>
+  jQuery(document).ready(function () {
+    jQuery("table").addClass("table table-condensed table-bordered table-hover");
+  });
+</script>
