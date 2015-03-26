@@ -61,13 +61,13 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	}
 
 	public String kafkaKey(MaxwellAbstractRowsEvent e) {
-		String db = e.getTable().getDatabase().getName();
+		String db = e.getDatabase().getName();
 		String table = e.getTable().getName();
 		return db + "/" + table;
 	}
 
 	public int kafkaPartition(MaxwellAbstractRowsEvent e){
-		String db = e.getTable().getDatabase().getName();
+		String db = e.getDatabase().getName();
 		return Math.abs(db.hashCode() % numPartitions);
 	}
 
