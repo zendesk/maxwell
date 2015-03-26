@@ -1,4 +1,6 @@
+<div style="float: left">
 <img alt="The Daemon, maybe" src="/img/cyberiad_1.jpg?raw=true" style="float: left; height: 300px; padding-right: 30px;">
+</div>
 <h3 style="margin-top: -10px; font-weight: bold">Maxwell = Mysql + Kafka</h3>
 
 This is Maxwell's daemon, an application that reads MySQL binlogs and writes changed rows to Kafka as JSON.
