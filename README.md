@@ -1,5 +1,5 @@
-<div style="float: left">
-<img alt="The Daemon, maybe" src="/img/cyberiad_1.jpg?raw=true" style="float: left; height: 300px; padding-right: 30px;">
+<div>
+<img alt="The Daemon, maybe" align="left" src="/img/cyberiad_1.jpg?raw=true" style="float: left; height: 300px; padding-right: 30px;">
 </div>
 <h3 style="margin-top: -10px; font-weight: bold">Maxwell = Mysql + Kafka</h3>
 
@@ -13,7 +13,10 @@ It's working at the same goals as mypipe and databus, but differentiates itself 
 
 Maxwell is intended as a source for event-based readers, eg various ETL applications, search indexing,
 stat emitters.
-<br style="clear:both"/>
+
+<hr>
+
+<div class="clearfix">
 
 ```
 mysql> insert into test.maxwell set id = 11, daemon = 'firebus!  firebus!';
@@ -21,3 +24,4 @@ mysql> insert into test.maxwell set id = 11, daemon = 'firebus!  firebus!';
 {"table":"maxwell","type":"insert","data":[{"id":11,"daemon":"firebus!  firebus!"}]}
 ```
 
+</div>
