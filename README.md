@@ -1,6 +1,6 @@
 <table>
 <tr>
-<td width=250>
+<td width=200>
   <img alt="The Daemon, maybe" width=300
        src="https://raw.githubusercontent.com/zendesk/maxwell/master/img/cyberiad_1.jpg">
 </td>
