@@ -15,6 +15,7 @@ import com.google.code.or.binlog.impl.event.AbstractRowEvent;
 import com.google.code.or.common.glossary.Column;
 import com.google.code.or.common.glossary.Row;
 import com.google.code.or.common.glossary.column.DatetimeColumn;
+import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
 
@@ -22,12 +23,14 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 	private final MaxwellFilter filter;
 	private final AbstractRowEvent event;
 	protected final Table table;
+	protected final Database database;
 
 	public MaxwellAbstractRowsEvent(AbstractRowEvent e, Table table, MaxwellFilter f) {
 		this.tableId = e.getTableId();
 		this.event = e;
 		this.header = e.getHeader();
 		this.table = table;
+		this.database = table.getDatabase();
 		this.filter = f;
 	}
 
@@ -38,6 +41,10 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 
 	public Table getTable() {
 		return table;
+	}
+
+	public Database getDatabase() {
+		return database;
 	}
 
 	@Override
@@ -179,6 +186,10 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 		public void setTable(String name) {
 			this.put("table", name);
 		}
+
+		public void setDatabase(String name) {
+			this.put("database", name);
+		}
 	}
 	// the equivalent of "asJSON" -- convert the row to an array of
 	// hashes
@@ -188,6 +199,7 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 
 		rowMap.setRowType(getType());
 		rowMap.setTable(getTable().getName());
+		rowMap.setDatabase(getDatabase().getName());
 
 		for ( Row r : filteredRows()) {
 			Iterator<Column> colIter = r.getColumns().iterator();
