@@ -6,12 +6,38 @@ Maxwell can be configured by command line or a java "properties" file.
 
 ### Command line options
 
-option        | description
-------------- | -----------
---user        | mysql username
---password    | mysql password
---host        | mysql host
---port        | mysql port
+option                          | description
+------------------------------- | -----------
+--user USER                     | mysql username
+--password PASSWORD             | mysql password
+--host HOST                     | mysql host
+--port PORT                     | mysql port
+--producer stdout,kafka         | where shall we send these rows, sir?
+--kafka.bootstrap.servers       | list of kafka nodes, listed as HOST:PORT[,HOST:PORT]
+
+### Configuration file options
+
+If maxwell finds the file "config.properties" in $PWD it will use it.
+
+option                        | description
+----------------------------- | -----------
+user=USER                     | mysql username
+password=PASSWORD             | mysql password
+host=HOST                     | mysql host
+port=PORT                     | mysql port
+producer=stdout,kafka,        | where shall we send these rows, sir?
+kafka.*=XXX                   | any options prefixed with 'kafka.' will be passed into the kafak proucer library
+
+
+### Kafka options
+
+Any options in the configuration file prefixed with "kafka." have that prefix stripped off, and passed directly
+into the "new producer" configuration, as desribed here: [http://kafka.apache.org/documentation.html#newproducerconfigs](http://kafka.apache.org/documentation.html#newproducerconfigs)
+
+Maxwell sets the following options by default, but you can override them in config.properties.
+
+- (kafka.)acks = 1
+- (kafka.)compression.type = gzip
 
 
 <script>
