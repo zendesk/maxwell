@@ -26,13 +26,13 @@ password=PASSWORD             | mysql password
 host=HOST                     | mysql host
 port=PORT                     | mysql port
 producer=stdout,kafka,        | where shall we send these rows, sir?
-kafka.*=XXX                   | any options prefixed with 'kafka.' will be passed into the kafak proucer library
+kafka.*=XXX                   | any options prefixed with 'kafka.' will be passed into the kafka producer library
 
 
 ### Kafka options
 
 Any options in the configuration file prefixed with "kafka." have that prefix stripped off, and passed directly
-into the "new producer" configuration, as desribed here: [http://kafka.apache.org/documentation.html#newproducerconfigs](http://kafka.apache.org/documentation.html#newproducerconfigs)
+into the "new producer" configuration, as described here: [http://kafka.apache.org/documentation.html#newproducerconfigs](http://kafka.apache.org/documentation.html#newproducerconfigs)
 
 Maxwell sets the following options by default, but you can override them in config.properties.
 

@@ -1,10 +1,11 @@
 <table>
 <tr>
 <td width=300>
-<img alt="The Daemon, maybe" width=300 src="/img/cyberiad_1.jpg?raw=true" style="float: left; height: 300px; padding-right: 30px;">
+  <img alt="The Daemon, maybe" width=300
+       src="https://raw.githubusercontent.com/zendesk/maxwell/ben/docs/img/cyberiad_1.jpg">
 </td>
-<td style="vertical-align: top">
-<h3 style="margin-top: -10px; font-weight: bold">Maxwell = Mysql + Kafka</h3>
+<td style="vertical-align: top; font-size: 130%; padding-left: 15px;">
+<h3 style="font-weight: bold; margin-top: 5px;">Maxwell = Mysql + Kafka</h3>
 
 This is Maxwell's daemon, an application that reads MySQL binlogs and writes changed rows to Kafka as JSON.
 It's working at the same goals as mypipe and databus, but differentiates itself with these feautures:
