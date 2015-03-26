@@ -32,6 +32,7 @@ class KafkaCallback implements Callback {
 			try {
 				if ( LOGGER.isDebugEnabled()) {
 					LOGGER.debug("-> " + md.topic() + ":" + md.offset());
+					LOGGER.debug("    partition:" + md.partition());
 					LOGGER.debug("   " + event.toJSON());
 					LOGGER.debug("   " + event.getNextBinlogPosition());
 					LOGGER.debug("");
@@ -46,6 +47,7 @@ class KafkaCallback implements Callback {
 public class MaxwellKafkaProducer extends AbstractProducer {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
 	private final KafkaProducer<byte[], byte[]> kafka;
+	private final int numPartitions;
 
 	public MaxwellKafkaProducer(MaxwellConfig config, Properties kafkaProperties) {
 		super(config);
@@ -55,15 +57,23 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		}
 
 		this.kafka = new KafkaProducer<>(kafkaProperties, new ByteArraySerializer(), new ByteArraySerializer());
+		this.numPartitions = kafka.partitionsFor("maxwell").size();
 	}
 
-	private String kafkaTopic(MaxwellAbstractRowsEvent e) {
-		return e.getTable().getDatabase().getName();
+	public String kafkaKey(MaxwellAbstractRowsEvent e) {
+		String db = e.getTable().getDatabase().getName();
+		String table = e.getTable().getName();
+		return db + "/" + table;
+	}
+
+	public int kafkaPartition(MaxwellAbstractRowsEvent e){
+		String db = e.getTable().getDatabase().getName();
+		return Math.abs(db.hashCode() % numPartitions);
 	}
 
 	@Override
 	public void push(MaxwellAbstractRowsEvent e) throws Exception {
-		ProducerRecord<byte[], byte[]> record = new ProducerRecord<>(kafkaTopic(e), e.toJSON().getBytes());
+		ProducerRecord<byte[], byte[]> record = new ProducerRecord<>("maxwell", kafkaPartition(e), kafkaKey(e).getBytes(), e.toJSON().getBytes());
 
 		kafka.send(record, new KafkaCallback(e, this.config));
 	}
