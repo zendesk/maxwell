@@ -1,0 +1,8 @@
+site_name: Maxwell
+theme_dir: theme
+theme: Yeti
+pages:
+- [index.md, Maxwell]
+- [quickstart.md, Quick Start]
+- [config.md, Configuration]
+- [dataformat.md, Data Format]
