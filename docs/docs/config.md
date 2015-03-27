@@ -14,7 +14,7 @@ option                          | description
 --port PORT                     | mysql port
 --producer stdout,kafka         | where shall we send these rows, sir?
 --kafka.bootstrap.servers       | list of kafka nodes, listed as HOST:PORT[,HOST:PORT]
-
+--kafka.maxwell.topic           | provide a topic for maxwell to write to. Default will be "maxwell".
 ### Configuration file options
 
 If maxwell finds the file "config.properties" in $PWD it will use it.
@@ -26,7 +26,8 @@ password=PASSWORD             | mysql password
 host=HOST                     | mysql host
 port=PORT                     | mysql port
 producer=stdout,kafka,        | where shall we send these rows, sir?
-kafka.*=XXX                   | any options prefixed with 'kafka.' will be passed into the kafka producer library
+kafka.maxwell.topic           | provide a topic for maxwell to write to. Default will be "maxwell".
+kafka.*=XXX                   | any other options prefixed with 'kafka.' will be passed into the kafka producer library
 
 
 ### Kafka options
@@ -38,6 +39,10 @@ Maxwell sets the following options by default, but you can override them in conf
 
 - (kafka.)acks = 1
 - (kafka.)compression.type = gzip
+
+# Topic creation and partitioning
+
+Maxwell by default writes to the "maxwell" topic and if Kafka is set to autocreate topics on write, this will create the topic with exactly one partition. If you need more control, you can precreate the topic with enough partitions. Maxwell translates the database name into a partition number before writing to kafka. To have maximum parallelism, use as many partitions as you have databases.
 
 
 <script>
