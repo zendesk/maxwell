@@ -1,0 +1,4 @@
+#!/bin/bash
+
+GITROOT=$(dirname $0)/..
+(cd $GITROOT && git subtree push origin --prefix docs/site gh-pages)
