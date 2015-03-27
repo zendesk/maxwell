@@ -93,6 +93,7 @@ public class MaxwellConfig {
 		parser.accepts( "port", "mysql port" ).withRequiredArg();
 		parser.accepts( "producer", "producer type: stdout|file|kafka" ).withRequiredArg();
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
+		parser.accepts( "kafka.maxwell.topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
 		parser.accepts( "help", "display help").forHelp();
 		parser.formatHelpWith(new BuiltinHelpFormatter(160, 4));
 		return parser;
@@ -117,6 +118,9 @@ public class MaxwellConfig {
 
 		if ( options.has("kafka.bootstrap.servers"))
 			this.kafkaProperties.setProperty("bootstrap.servers", (String) options.valueOf("kafka.bootstrap.servers"));
+
+		if ( options.has("kafka.maxwell.topic"))
+			this.kafkaProperties.setProperty("maxwell.topic", (String) options.valueOf("kafka.maxwell.topic"));
 	}
 
 	private void parseFile(String filename) throws IOException {

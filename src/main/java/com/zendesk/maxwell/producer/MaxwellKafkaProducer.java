@@ -47,17 +47,27 @@ class KafkaCallback implements Callback {
 public class MaxwellKafkaProducer extends AbstractProducer {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
 	private final KafkaProducer<byte[], byte[]> kafka;
+	private final String topic;
 	private final int numPartitions;
 
 	public MaxwellKafkaProducer(MaxwellConfig config, Properties kafkaProperties) {
 		super(config);
+
+		LOGGER.debug(kafkaProperties.toString());
+		// is maxwell.topic, so we don't clash on some kafka param in future
+		if (!kafkaProperties.containsKey("maxwell.topic")) {
+			topic = "maxwell"; //default
+		} else {
+			topic = kafkaProperties.getProperty("maxwell.topic");
+			kafkaProperties.remove("maxwell.topic");
+		}
 
 		if ( !kafkaProperties.containsKey("compression.type") ) {
 			kafkaProperties.setProperty("compression.type", "gzip"); // enable gzip compression by default
 		}
 
 		this.kafka = new KafkaProducer<>(kafkaProperties, new ByteArraySerializer(), new ByteArraySerializer());
-		this.numPartitions = kafka.partitionsFor("maxwell").size();
+		this.numPartitions = kafka.partitionsFor(topic).size(); //returns 1 for new topics
 	}
 
 	public String kafkaKey(MaxwellAbstractRowsEvent e) {
@@ -73,7 +83,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 
 	@Override
 	public void push(MaxwellAbstractRowsEvent e) throws Exception {
-		ProducerRecord<byte[], byte[]> record = new ProducerRecord<>("maxwell", kafkaPartition(e), kafkaKey(e).getBytes(), e.toJSON().getBytes());
+		ProducerRecord<byte[], byte[]> record = new ProducerRecord<>(topic, kafkaPartition(e), kafkaKey(e).getBytes(), e.toJSON().getBytes());
 
 		kafka.send(record, new KafkaCallback(e, this.config));
 	}
