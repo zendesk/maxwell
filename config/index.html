@@ -63,13 +63,12 @@
                       <li class="toctree-l3"><a href="#configuration-file-options">Configuration file options</a></li>
                       
                   
-                      <li class="toctree-l3"><a href="#kafka-options">Kafka options</a></li>
-                      
-                  
-                      <li class="toctree-l3"><a href="#topic-and-partitioning">Topic and partitioning</a></li>
-                      
-                  
                   </ul>
+              
+          </li>
+        
+          <li >
+              <a href="../kafka">Kafka</a>
               
           </li>
         
@@ -120,7 +119,7 @@
 <td>list of kafka nodes, listed as HOST:PORT[,HOST:PORT]</td>
 </tr>
 <tr>
-<td>--kafka.maxwell.topic</td>
+<td>--kafka_topic</td>
 <td>provide a topic for maxwell to write to. Default will be "maxwell".</td>
 </tr>
 </tbody>
@@ -156,29 +155,15 @@
 <td>where shall we send these rows, sir?</td>
 </tr>
 <tr>
-<td>kafka.maxwell.topic</td>
-<td>provide a topic for maxwell to write to. Default will be "maxwell".</td>
+<td>kafka.*=XXX</td>
+<td>any options prefixed with 'kafka.' will be passed into the kafka producer library</td>
 </tr>
 <tr>
-<td>kafka.*=XXX</td>
-<td>any other options prefixed with 'kafka.' will be passed into the kafka producer library</td>
+<td>kafka_topic</td>
+<td>provide a topic for maxwell to write to. Default will be "maxwell".</td>
 </tr>
 </tbody>
 </table>
-<h3 id="kafka-options">Kafka options</h3>
-<p>Any options in the configuration file prefixed with <code>kafka.</code> have that prefix stripped off, and passed directly
-into the "new producer" configuration, as described here: <a href="http://kafka.apache.org/documentation.html#newproducerconfigs">http://kafka.apache.org/documentation.html#newproducerconfigs</a></p>
-<p>Maxwell sets the following options by default, but you can override them in <code>config.properties</code>.</p>
-<ul>
-<li>(kafka.)acks = 1</li>
-<li>(kafka.)compression.type = gzip</li>
-</ul>
-<h3 id="topic-and-partitioning">Topic and partitioning</h3>
-<p>Maxwell by default writes to the "maxwell" topic and if Kafka is set to autocreate topics on write, this will create the topic with exactly one partition.</p>
-<p>If you need more control, you can precreate the topic with enough partitions and provide the topic name to maxwell using <code>--kafka.maxwell.topic</code> option.</p>
-<p>Maxwell translates the database name into a partition number before writing to kafka. To have maximum parallelism, use as many partitions as you have databases.</p>
-<p>The details of how to create a topic can be found here:</p>
-<p><a href="http://kafka.apache.org/documentation.html#quickstart">http://kafka.apache.org/documentation.html#quickstart</a></p>
 <script>
   jQuery(document).ready(function () {
     jQuery("table").addClass("table table-condensed table-bordered table-hover");
