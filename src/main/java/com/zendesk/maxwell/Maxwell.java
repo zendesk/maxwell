@@ -12,13 +12,14 @@ import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
 import com.zendesk.maxwell.schema.SchemaStore;
+import com.zendesk.maxwell.schema.ddl.SchemaSyncError;
 
 public class Maxwell {
 	private Schema schema;
 	private MaxwellConfig config;
 	static final Logger LOGGER = LoggerFactory.getLogger(Maxwell.class);
 
-	private void initFirstRun(Connection connection) throws SQLException, IOException {
+	private void initFirstRun(Connection connection) throws SQLException, IOException, SchemaSyncError {
 		LOGGER.info("Maxwell is capturing initial schema");
 		SchemaCapturer capturer = new SchemaCapturer(connection);
 		this.schema = capturer.capture();
