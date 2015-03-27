@@ -31,8 +31,7 @@ class KafkaCallback implements Callback {
 		} else {
 			try {
 				if ( LOGGER.isDebugEnabled()) {
-					LOGGER.debug("-> " + md.topic() + ":" + md.offset());
-					LOGGER.debug("    partition:" + md.partition());
+					LOGGER.debug("->  topic:" + md.topic() + ", partition:" +md.partition() + ", offset:" + md.offset());
 					LOGGER.debug("   " + event.toJSON());
 					LOGGER.debug("   " + event.getNextBinlogPosition());
 					LOGGER.debug("");
@@ -45,7 +44,6 @@ class KafkaCallback implements Callback {
 	}
 }
 public class MaxwellKafkaProducer extends AbstractProducer {
-	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
 	private final KafkaProducer<byte[], byte[]> kafka;
 	private final String topic;
 	private final int numPartitions;
@@ -53,7 +51,6 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	public MaxwellKafkaProducer(MaxwellConfig config, Properties kafkaProperties) {
 		super(config);
 
-		LOGGER.debug(kafkaProperties.toString());
 		// is maxwell.topic, so we don't clash on some kafka param in future
 		if (!kafkaProperties.containsKey("maxwell.topic")) {
 			topic = "maxwell"; //default
