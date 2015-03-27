@@ -1,0 +1,4 @@
+#!/bin/bash
+mkdocs build --clean
+cp CNAME site
+
