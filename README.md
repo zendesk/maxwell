@@ -15,7 +15,7 @@ stat emitters.
 ```
 mysql> insert into test.maxwell set id = 11, daemon = 'firebus!  firebus!';
 (maxwell)
-{"table":"maxwell","type":"insert","data":[{"id":11,"daemon":"firebus!  firebus!"}]}
+{"database":"test","table":"maxwell","type":"insert","data":[{"id":11,"daemon":"firebus!  firebus!"}]}
 ```
 
 <script>

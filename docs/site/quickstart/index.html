@@ -21,6 +21,7 @@
             <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
             <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
         <![endif]-->
+        <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
     </head>
 
     <body>
@@ -51,7 +52,10 @@
               
                   <ul class="nav">
                   
-                      <li class="toctree-l3"><a href="#grant-replication-permissions">Grant replication permissions</a></li>
+                      <li class="toctree-l3"><a href="#row-based-replication">Row based replication</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#grant-permissions">Grant permissions</a></li>
                       
                   
                       <li class="toctree-l3"><a href="#install-maxwell">Install maxwell</a></li>
@@ -63,13 +67,22 @@
                       <li class="toctree-l3"><a href="#run-with-kafka-producer">Run with kafka producer</a></li>
                       
                   
-                      <li class="toctree-l3"><a href="#about-the-maxwell-database">about the maxwell database</a></li>
-                      
-                  
-                      <li class="toctree-l3"><a href="#kafka">Kafka</a></li>
-                      
-                  
                   </ul>
+              
+          </li>
+        
+          <li >
+              <a href="../config">Configuration</a>
+              
+          </li>
+        
+          <li >
+              <a href="../kafka">Kafka</a>
+              
+          </li>
+        
+          <li >
+              <a href="../dataformat">Data Format</a>
               
           </li>
         
@@ -77,11 +90,18 @@
 </div></div>
             <div class="col-md-9" role="main">
 
-<h3 id="grant-replication-permissions">Grant replication permissions</h3>
-<p>First, grant maxwell some permissions on your mysql server:</p>
+<h3 id="row-based-replication">Row based replication</h3>
+<p>Maxwell can only operate if row-based replication is on.</p>
+<pre><code>$ vi my.cnf
+
+[mysqld]
+log-bin=master
+binlog_format=row
+</code></pre>
+
+<h3 id="grant-permissions">Grant permissions</h3>
 <pre><code>mysql&gt; GRANT ALL on maxwell.* to 'maxwell'@'%' identified by 'XXXXXX';
-mysql&gt; GRANT SELECT on *.* to 'maxwell'@'%';
-mysql&gt; GRANT REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'maxwell'@'%';
+mysql&gt; GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE on *.* to 'maxwell'@'%';
 </code></pre>
 
 <h3 id="install-maxwell">Install maxwell</h3>
@@ -91,16 +111,11 @@ mysql&gt; GRANT REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'maxwell'@'%';
 </code></pre>
 
 <h3 id="run-with-stdout-producer">Run with stdout producer</h3>
+<p>Useful for smoke-testing the thing.</p>
 <pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' --producer=stdout
 </code></pre>
 
-<h3 id="run-with-kafka-producer">Run with kafka producer</h3>
-<p>Boot kafka as described here:  (http://kafka.apache.org/07/quickstart.html)[http://kafka.apache.org/07/quickstart.html]</p>
-<p>Or without output sent to Kafka:</p>
-<pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' --producer=kafka --kafka.bootstrap.servers=localhost:9092
-</code></pre>
-
-<p>If all goes well you'll see data you inserted being written from Maxwell:</p>
+<p>If all goes well you'll see maxwell replaying your inserts:</p>
 <pre><code>mysql&gt; insert into test.maxwell set id = 5, daemon = 'firebus!  firebus!';
 Query OK, 1 row affected (0.04 sec)
 
@@ -108,18 +123,18 @@ Query OK, 1 row affected (0.04 sec)
 {&quot;table&quot;:&quot;maxwell&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;data&quot;:[{&quot;id&quot;:5,&quot;daemon&quot;:&quot;firebus!  firebus!&quot;}]}
 </code></pre>
 
-<h3 id="about-the-maxwell-database">about the maxwell database</h3>
-<p>On its first run, maxwell will create the <code>maxwell</code> database, which it uses to store schema versions
-at points in time.  Most of the tables store schema snapshots at various points in time, but <code>maxwell.positions</code>
-stores Maxwell's offset into the master's binlog.</p>
-<h3 id="kafka">Kafka</h3>
-<p>One of the</p>
+<h3 id="run-with-kafka-producer">Run with kafka producer</h3>
+<p>Boot kafka as described here:  <a href="http://kafka.apache.org/07/quickstart.html">http://kafka.apache.org/07/quickstart.html</a>, then:</p>
+<pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
+   --producer=kafka --kafka.bootstrap.servers=localhost:9092
+</code></pre>
+
+<p>This will start writing to the topic "maxwell".</p>
 </div>
         </div>
 
         
 
-        <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
         <script src="../js/bootstrap-3.0.3.min.js"></script>
         <script src="../js/prettify-1.0.min.js"></script>
         <script src="../js/base.js"></script>

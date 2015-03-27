@@ -55,3 +55,5 @@ Boot kafka as described here:  [http://kafka.apache.org/07/quickstart.html](http
 bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
    --producer=kafka --kafka.bootstrap.servers=localhost:9092
 ```
+
+This will start writing to the topic "maxwell".

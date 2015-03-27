@@ -16,6 +16,7 @@ public class MaxwellJSONObject extends JSONObject {
 	public Set<String> keySet() {
 		LinkedHashSet<String> set = new LinkedHashSet<>();
 
+		set.add("database");
 		set.add("table");
 		set.add("type");
 		set.add("data");

@@ -5,4 +5,5 @@ pages:
 - [index.md, Maxwell]
 - [quickstart.md, Quick Start]
 - [config.md, Configuration]
+- [kafka.md, Kafka]
 - [dataformat.md, Data Format]

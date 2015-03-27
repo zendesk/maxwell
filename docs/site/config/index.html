@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+
+        <title>Configuration - Maxwell</title>
+
+        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../css/font-awesome-4.0.3.css" rel="stylesheet">
+        <link href="../css/prettify-1.0.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+        <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Main title -->
+            <a class="navbar-brand" href="..">Maxwell</a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+        </div>
+    </div>
+</div>
+
+        <div class="container">
+            <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        <li class="">
+          <a href="/">Maxwell</a>
+        </li>
+        
+          <li >
+              <a href="../quickstart">Quick Start</a>
+              
+          </li>
+        
+          <li class="active">
+              <a href=".">Configuration</a>
+              
+                  <ul class="nav">
+                  
+                      <li class="toctree-l3"><a href="#command-line-options">Command line options</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#configuration-file-options">Configuration file options</a></li>
+                      
+                  
+                  </ul>
+              
+          </li>
+        
+          <li >
+              <a href="../kafka">Kafka</a>
+              
+          </li>
+        
+          <li >
+              <a href="../dataformat">Data Format</a>
+              
+          </li>
+        
+    </ul>
+</div></div>
+            <div class="col-md-9" role="main">
+
+<div class="content-title">Maxwell configuration</div>
+
+<hr />
+<p>Maxwell can be configured by command line or a java "properties" file.</p>
+<h3 id="command-line-options">Command line options</h3>
+<table>
+<thead>
+<tr>
+<th>option</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>--user USER</td>
+<td>mysql username</td>
+</tr>
+<tr>
+<td>--password PASSWORD</td>
+<td>mysql password</td>
+</tr>
+<tr>
+<td>--host HOST</td>
+<td>mysql host</td>
+</tr>
+<tr>
+<td>--port PORT</td>
+<td>mysql port</td>
+</tr>
+<tr>
+<td>--producer stdout,kafka</td>
+<td>where shall we send these rows, sir?</td>
+</tr>
+<tr>
+<td>--kafka.bootstrap.servers</td>
+<td>list of kafka nodes, listed as HOST:PORT[,HOST:PORT]</td>
+</tr>
+<tr>
+<td>--kafka_topic</td>
+<td>provide a topic for maxwell to write to. Default will be "maxwell".</td>
+</tr>
+</tbody>
+</table>
+<h3 id="configuration-file-options">Configuration file options</h3>
+<p>If maxwell finds the file <code>config.properties</code> in $PWD it will use it.</p>
+<table>
+<thead>
+<tr>
+<th>option</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>user=USER</td>
+<td>mysql username</td>
+</tr>
+<tr>
+<td>password=PASSWORD</td>
+<td>mysql password</td>
+</tr>
+<tr>
+<td>host=HOST</td>
+<td>mysql host</td>
+</tr>
+<tr>
+<td>port=PORT</td>
+<td>mysql port</td>
+</tr>
+<tr>
+<td>producer=stdout,kafka,</td>
+<td>where shall we send these rows, sir?</td>
+</tr>
+<tr>
+<td>kafka.*=XXX</td>
+<td>any options prefixed with 'kafka.' will be passed into the kafka producer library</td>
+</tr>
+<tr>
+<td>kafka_topic</td>
+<td>provide a topic for maxwell to write to. Default will be "maxwell".</td>
+</tr>
+</tbody>
+</table>
+<script>
+  jQuery(document).ready(function () {
+    jQuery("table").addClass("table table-condensed table-bordered table-hover");
+  });
+</script>
+
+</div>
+        </div>
+
+        
+
+        <script src="../js/bootstrap-3.0.3.min.js"></script>
+        <script src="../js/prettify-1.0.min.js"></script>
+        <script src="../js/base.js"></script>
+    </body>
+</html>
