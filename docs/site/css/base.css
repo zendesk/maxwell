@@ -10,6 +10,10 @@ div.col-md-3 {
     padding-left: 0;
 }
 
+div.col-md-9 > ul {
+  overflow: hidden;
+}
+
 div.source-links {
     float: right;
 }
@@ -100,9 +104,13 @@ div.source-links {
 }
 
 pre {
-  margin-bottom: 40px;
+  margin-bottom: 30px;
 }
 
 .container {
   margin-left: 50px;
+}
+
+.content-title {
+  font-size: 150%;
 }
