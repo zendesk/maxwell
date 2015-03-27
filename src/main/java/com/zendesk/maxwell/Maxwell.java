@@ -31,36 +31,11 @@ public class Maxwell {
 		this.config.setInitialPosition(pos);
 	}
 
-	private void ensureRowReplicationOn(Connection c) throws SQLException, MaxwellCompatibilityError {
-		ResultSet rs;
-		String status, checked;
-		String usage = " Ensure mysql row-format binlog is setup.";
-		rs = c.createStatement().executeQuery("SHOW VARIABLES LIKE 'log_bin'");
-		if (!rs.next())
-			throw new MaxwellCompatibilityError("Error checking log_bin state." + usage);
-		status = rs.getString("Value");
-		checked = rs.getString("Variable_name");
-		LOGGER.info("Checking Binlog configuration: " + checked + " : " + status);
-		if(!checked.equals("log_bin") || !status.equals("ON")) {
-			throw new MaxwellCompatibilityError("log_bin status is not ON." + usage);
-		}
-
-		rs = c.createStatement().executeQuery("SHOW VARIABLES LIKE 'binlog_format'");
-		if(!rs.next())
-			throw new MaxwellCompatibilityError("Cannot check binlog_format" + usage);
-		status = rs.getString("Value");
-		checked = rs.getString("Variable_name");
-		LOGGER.info("Checking Binlog configuration: " + checked + " : " + status);
-		if(!checked.equals("binlog_format") || !status.equals("ROW")) {
-			throw new MaxwellCompatibilityError("binlog_format is not ROW." + usage);
-		}
-	}
-
 	private void run(String[] args) throws Exception {
 		this.config = MaxwellConfig.buildConfig("config.properties", args);
 
 		try ( Connection connection = this.config.getConnectionPool().getConnection() ) {
-			ensureRowReplicationOn(connection);
+			MaxwellMysqlStatus.ensureMysqlState(connection);
 			SchemaStore.ensureMaxwellSchema(connection);
 
 			if ( this.config.getInitialPosition() != null ) {
