@@ -8,6 +8,7 @@ import org.apache.commons.lang.StringUtils;
 
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
 import com.zendesk.maxwell.schema.columndef.StringColumnDef;
+import com.zendesk.maxwell.schema.ddl.SchemaSyncError;
 
 public class Table {
 	private final List<ColumnDef> columnList;
@@ -16,6 +17,8 @@ public class Table {
 
 	private Database database;
 	private final String encoding;
+	private List<Integer> pkIndexes;
+	private List<String> pkColumnNames;
 
 	public Table(Database d, String name, String encoding, List<ColumnDef> list) {
 		this.database = d;
@@ -158,4 +161,22 @@ public class Table {
 		}
 	}
 
+	public List<String> getPK() {
+		return this.pkColumnNames;
+	}
+
+	public void setPK(List<String> pkColumnNames) throws SchemaSyncError {
+		this.pkColumnNames = pkColumnNames;
+		this.pkIndexes = new ArrayList<>();
+
+		for ( String name : pkColumnNames ) {
+			Integer i = findColumnIndex(name);
+
+			if ( i == -1 ) {
+				throw new SchemaSyncError("Couldn't find primary key '" + name + "' in table '" + name + "'");
+			}
+
+			pkIndexes.add(i);
+		}
+	}
 }
