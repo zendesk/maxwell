@@ -33,6 +33,7 @@ public class MaxwellConfig {
 
 	private BinlogPosition initialPosition;
 	private final Properties kafkaProperties;
+	private String kafkaTopic;
 	private String producerType;
 	private String outputFile;
 	private Long serverID;
@@ -93,7 +94,7 @@ public class MaxwellConfig {
 		parser.accepts( "port", "mysql port" ).withRequiredArg();
 		parser.accepts( "producer", "producer type: stdout|file|kafka" ).withRequiredArg();
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
-		parser.accepts( "kafka.maxwell.topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
+		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
 		parser.accepts( "help", "display help").forHelp();
 		parser.formatHelpWith(new BuiltinHelpFormatter(160, 4));
 		return parser;
@@ -119,8 +120,8 @@ public class MaxwellConfig {
 		if ( options.has("kafka.bootstrap.servers"))
 			this.kafkaProperties.setProperty("bootstrap.servers", (String) options.valueOf("kafka.bootstrap.servers"));
 
-		if ( options.has("kafka.maxwell.topic"))
-			this.kafkaProperties.setProperty("maxwell.topic", (String) options.valueOf("kafka.maxwell.topic"));
+		if ( options.has("kafka_topic"))
+			this.kafkaTopic = (String) options.valueOf("kafka_topic");
 	}
 
 	private void parseFile(String filename) throws IOException {
@@ -137,8 +138,9 @@ public class MaxwellConfig {
 		this.mysqlUser     = p.getProperty("user");
 		this.mysqlPort     = Integer.valueOf(p.getProperty("port", "3306"));
 
-		this.producerType      = p.getProperty("producer");
+		this.producerType    = p.getProperty("producer");
 		this.outputFile      = p.getProperty("output_file");
+		this.kafkaTopic      = p.getProperty("kafka_topic");
 
 		for ( Enumeration<Object> e = p.keys(); e.hasMoreElements(); ) {
 			String k = (String) e.nextElement();
@@ -200,7 +202,7 @@ public class MaxwellConfig {
 		case "file":
 			return new FileProducer(this, this.outputFile);
 		case "kafka":
-			return new MaxwellKafkaProducer(this, this.kafkaProperties);
+			return new MaxwellKafkaProducer(this, this.kafkaProperties, this.kafkaTopic);
 		case "stdout":
 		default:
 			return new StdoutProducer(this);

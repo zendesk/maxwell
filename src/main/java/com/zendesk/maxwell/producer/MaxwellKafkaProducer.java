@@ -48,16 +48,10 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	private final String topic;
 	private final int numPartitions;
 
-	public MaxwellKafkaProducer(MaxwellConfig config, Properties kafkaProperties) {
+	public MaxwellKafkaProducer(MaxwellConfig config, Properties kafkaProperties, String kafkaTopic) {
 		super(config);
 
-		// is maxwell.topic, so we don't clash on some kafka param in future
-		if (!kafkaProperties.containsKey("maxwell.topic")) {
-			topic = "maxwell"; //default
-		} else {
-			topic = kafkaProperties.getProperty("maxwell.topic");
-			kafkaProperties.remove("maxwell.topic");
-		}
+		topic = (kafkaTopic == null) ? "maxwell": kafkaTopic;
 
 		if ( !kafkaProperties.containsKey("compression.type") ) {
 			kafkaProperties.setProperty("compression.type", "gzip"); // enable gzip compression by default
