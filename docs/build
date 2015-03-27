@@ -1,4 +1,4 @@
 #!/bin/bash
-mkdocs build --clean
-cp CNAME site
+(cd $(dirname $0) && mkdocs build --clean && cp CNAME site)
+git status
 
