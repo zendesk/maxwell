@@ -42,8 +42,11 @@ Maxwell sets the following options by default, but you can override them in conf
 
 # Topic creation and partitioning
 
-Maxwell by default writes to the "maxwell" topic and if Kafka is set to autocreate topics on write, this will create the topic with exactly one partition. If you need more control, you can precreate the topic with enough partitions. Maxwell translates the database name into a partition number before writing to kafka. To have maximum parallelism, use as many partitions as you have databases.
+Maxwell by default writes to the "maxwell" topic and if Kafka is set to autocreate topics on write, this will create the topic with exactly one partition.
 
+If you need more control, you can precreate the topic with enough partitions. Maxwell translates the database name into a partition number before writing to kafka. To have maximum parallelism, use as many partitions as you have databases.
+
+The details of how to create a topic can be found here: [http://kafka.apache.org/documentation.html#quickstart](http://kafka.apache.org/documentation.html#quickstart)
 
 <script>
   jQuery(document).ready(function () {
