@@ -33,7 +33,7 @@ public class TableCreate extends SchemaChange {
 		if ( likeDB != null && likeTable != null ) {
 			applyCreateLike(newSchema, d);
 		} else {
-			Table t = d.buildTable(this.tableName, this.encoding, this.columns);
+			Table t = d.buildTable(this.tableName, this.encoding, this.columns, null);
 			t.setDefaultColumnEncodings();
 		}
 

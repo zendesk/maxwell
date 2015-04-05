@@ -8,7 +8,6 @@ import org.apache.commons.lang.StringUtils;
 
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
 import com.zendesk.maxwell.schema.columndef.StringColumnDef;
-import com.zendesk.maxwell.schema.ddl.SchemaSyncError;
 
 public class Table {
 	private final List<ColumnDef> columnList;
@@ -20,11 +19,12 @@ public class Table {
 	private List<Integer> pkIndexes;
 	private List<String> pkColumnNames;
 
-	public Table(Database d, String name, String encoding, List<ColumnDef> list) {
+	public Table(Database d, String name, String encoding, List<ColumnDef> list, List<String> pks) {
 		this.database = d;
 		this.name = name;
 		this.encoding = encoding;
 		this.columnList = list;
+		this.setPK(pks);
 		renumberColumns();
 	}
 
@@ -72,7 +72,7 @@ public class Table {
 			list.add(c.copy());
 		}
 
-		return new Table(database, name, encoding, list);
+		return new Table(database, name, encoding, list, pkColumnNames);
 	}
 
 	public void rename(String tableName) {
@@ -165,18 +165,29 @@ public class Table {
 		return this.pkColumnNames;
 	}
 
-	public void setPK(List<String> pkColumnNames) throws SchemaSyncError {
+	public Object getPKString() {
+		if ( this.pkColumnNames != null )
+			return StringUtils.join(pkColumnNames.iterator(), ",");
+		else
+			return null;
+	}
+
+	public void setPK(List<String> pkColumnNames) {
 		this.pkColumnNames = pkColumnNames;
 		this.pkIndexes = new ArrayList<>();
+
+		if ( pkColumnNames == null )
+			return;
 
 		for ( String name : pkColumnNames ) {
 			Integer i = findColumnIndex(name);
 
 			if ( i == -1 ) {
-				throw new SchemaSyncError("Couldn't find primary key '" + name + "' in table '" + name + "'");
+				throw new RuntimeException("Couldn't find primary key '" + name + "' in table '" + name + "'");
 			}
 
 			pkIndexes.add(i);
 		}
 	}
+
 }
