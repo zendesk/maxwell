@@ -17,7 +17,6 @@ import static org.hamcrest.CoreMatchers.*;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
 import com.zendesk.maxwell.schema.SchemaStore;
-import com.zendesk.maxwell.schema.SchemaStoreMigrations;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.ddl.SchemaSyncError;
 
@@ -61,47 +60,5 @@ public class SchemaStoreTest extends AbstractMaxwellTest {
 		assertThat(t.getPK().get(0), is("col2"));
 		assertThat(t.getPK().get(1), is("col3"));
 		assertThat(t.getPK().get(2), is("id"));
-	}
-
-	@Test
-	public void testUpgradePK() throws Exception {
-		this.schemaStore.save();
-
-		Statement s = server.getConnection().createStatement();
-		// pretend the column never existed
-		s.execute("alter table maxwell.tables drop column pk");
-		s.execute("delete from maxwell.columns where name='pk'");
-
-
-		new SchemaStoreMigrations(server.getConnection()).upgrade();
-
-		ResultSet rs = s.executeQuery("select * from maxwell.tables where name='pks' order by id desc limit 1");
-		assertThat(rs.next(), is(true));
-
-		assertThat(rs.getString("pk"), is("col2,col3,id"));
-	}
-
-	@Test
-	public void testUpgradeGoneWrong() throws SQLException {
-		SchemaSyncError e = null;
-
-		this.schemaStore.save();
-
-		Statement s = server.getConnection().createStatement();
-		// pretend the column never existed
-		s.execute("alter table maxwell.tables drop column pk");
-		s.execute("delete from maxwell.columns where name='pk'");
-
-		s.execute("alter table shard_1.pks add column unexpected varchar(255)");
-
-		try {
-			new SchemaStoreMigrations(server.getConnection()).upgrade();
-		} catch ( SchemaSyncError ex ) {
-			e = ex;
-		}
-		assertThat(e, not(nullValue()));
-		assertThat(e.getMessage(), containsString("unexpected"));
-
-		s.execute("alter table maxwell.tables add column pk varchar(1024)");
 	}
 }

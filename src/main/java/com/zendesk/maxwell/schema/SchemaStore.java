@@ -141,13 +141,9 @@ public class SchemaStore {
 	}
 
 	public static void ensureMaxwellSchema(Connection connection) throws SQLException, IOException, SchemaSyncError {
-		if ( SchemaStore.storeDatabaseExists(connection) ) {
-			new SchemaStoreMigrations(connection).upgrade();
-			return;
+		if ( !SchemaStore.storeDatabaseExists(connection) ) {
+			SchemaStore.createStoreDatabase(connection);
 		}
-
-		SchemaStore.createStoreDatabase(connection);
-
 	}
 	private static boolean storeDatabaseExists(Connection connection) throws SQLException {
 		Statement s = connection.createStatement();
@@ -222,10 +218,7 @@ public class SchemaStore {
 		while (tRS.next()) {
 			String tName = tRS.getString("name");
 			String tEncoding = tRS.getString("encoding");
-			String tPKs = null;
-			try {
-				tPKs = tRS.getString("pk");
-			} catch ( SQLException e ) {}
+			String tPKs = tRS.getString("pk");
 
 			int tID = tRS.getInt("id");
 
