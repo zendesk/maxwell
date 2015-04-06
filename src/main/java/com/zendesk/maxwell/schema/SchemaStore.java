@@ -10,6 +10,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -23,6 +25,8 @@ public class SchemaStore {
 	private final Connection connection;
 	private Schema schema;
 	private BinlogPosition position;
+	private Long schema_id;
+
 	static final Logger LOGGER = LoggerFactory.getLogger(SchemaStore.class);
 	private final PreparedStatement schemaInsert, databaseInsert, tableInsert;
 	private final String columnInsertSQL;
@@ -39,7 +43,7 @@ public class SchemaStore {
 						Statement.RETURN_GENERATED_KEYS);
 		this.tableInsert = connection
 				.prepareStatement(
-						"INSERT INTO `maxwell`.`tables` SET schema_id = ?, database_id = ?, name = ?, encoding=?",
+						"INSERT INTO `maxwell`.`tables` SET schema_id = ?, database_id = ?, name = ?, encoding=?, pk=?",
 						Statement.RETURN_GENERATED_KEYS);
 		this.columnInsertSQL = "INSERT INTO `maxwell`.`columns` (schema_id, table_id, name, encoding, coltype, is_signed, enum_values) "
 				+ " VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -66,7 +70,7 @@ public class SchemaStore {
 			return null;
 	}
 
-	public void save() throws SQLException, IOException {
+	public void save() throws SQLException {
 		if (this.schema == null)
 			throw new RuntimeException("Uninitialized schema!");
 
@@ -80,7 +84,7 @@ public class SchemaStore {
 	}
 
 
-	private void saveSchema() throws SQLException {
+	public void saveSchema() throws SQLException {
 		Integer schemaId = executeInsert(schemaInsert, position.getFile(),
 				position.getOffset(), 1, schema.getEncoding());
 
@@ -90,7 +94,7 @@ public class SchemaStore {
 			Integer dbId = executeInsert(databaseInsert, schemaId, d.getName(), d.getEncoding());
 
 			for (Table t : d.getTableList()) {
-				Integer tableId = executeInsert(tableInsert, schemaId, dbId, t.getName(), t.getEncoding());
+				Integer tableId = executeInsert(tableInsert, schemaId, dbId, t.getName(), t.getEncoding(), t.getPKString());
 
 
 				for (ColumnDef c : t.getColumnList()) {
@@ -136,12 +140,10 @@ public class SchemaStore {
 		columnData.clear();
 	}
 
-	public static void ensureMaxwellSchema(Connection connection) throws SQLException, IOException {
-		if ( SchemaStore.storeDatabaseExists(connection) )
-			return;
-
-		SchemaStore.createStoreDatabase(connection);
-
+	public static void ensureMaxwellSchema(Connection connection) throws SQLException, IOException, SchemaSyncError {
+		if ( !SchemaStore.storeDatabaseExists(connection) ) {
+			SchemaStore.createStoreDatabase(connection);
+		}
 	}
 	private static boolean storeDatabaseExists(Connection connection) throws SQLException {
 		Statement s = connection.createStatement();
@@ -195,8 +197,11 @@ public class SchemaStore {
 
 		LOGGER.info("Restoring schema id " + schemaRS.getInt("id") + " (last modified at " + this.position + ")");
 
+		this.schema_id = schemaRS.getLong("id");
+
 		p = connection.prepareStatement("SELECT * from `maxwell`.`databases` where schema_id = ? ORDER by id");
-		p.setInt(1, schemaRS.getInt("id"));
+		p.setLong(1, this.schema_id);
+
 		ResultSet dbRS = p.executeQuery();
 
 		while (dbRS.next()) {
@@ -213,15 +218,18 @@ public class SchemaStore {
 		while (tRS.next()) {
 			String tName = tRS.getString("name");
 			String tEncoding = tRS.getString("encoding");
+			String tPKs = tRS.getString("pk");
+
 			int tID = tRS.getInt("id");
 
-			restoreTable(d, tName, tID, tEncoding);
+			restoreTable(d, tName, tID, tEncoding, tPKs);
 		}
 		return d;
 	}
 
-	private void restoreTable(Database d, String name, int id, String encoding) throws SQLException {
+	private void restoreTable(Database d, String name, int id, String encoding, String pks) throws SQLException {
 		Statement s = connection.createStatement();
+
 		Table t = d.buildTable(name, encoding);
 
 		ResultSet cRS = s.executeQuery("SELECT * from `maxwell`.`columns` where table_id = " + id + " ORDER by id");
@@ -239,6 +247,12 @@ public class SchemaStore {
 					enumValues);
 			t.getColumnList().add(c);
 		}
+
+		if ( pks != null ) {
+			List<String> pkList = Arrays.asList(StringUtils.split(pks, ','));
+			t.setPK(pkList);
+		}
+
 	}
 
 	private ResultSet findSchema(BinlogPosition targetPosition)
@@ -263,5 +277,29 @@ public class SchemaStore {
 	public Schema getSchema() {
 		return this.schema;
 	}
+
+	public void setSchema(Schema s) {
+		this.schema = s;
+	}
+
+	public void destroy() throws SQLException {
+		if ( this.schema_id == null ) {
+			throw new RuntimeException("Can't destroy uninitialized schema!");
+		}
+
+		String[] tables = { "databases", "tables", "columns" };
+
+		connection.createStatement().execute("delete from maxwell.schemas where id = " + schema_id);
+		for ( String tName : tables ) {
+            connection.createStatement().execute(
+            		"delete from maxwell." + tName + " where schema_id = " + schema_id
+            );
+		}
+	}
+
+	public BinlogPosition getBinlogPosition() {
+		return this.position;
+	}
+
 
 }

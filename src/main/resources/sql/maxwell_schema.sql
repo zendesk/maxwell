@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS `maxwell`.`tables` (
   database_id int unsigned,
   name      varchar(255),
   encoding  varchar(255),
+  pk        varchar(1024) charset 'utf8',
   index (schema_id),
   index (database_id)
 );

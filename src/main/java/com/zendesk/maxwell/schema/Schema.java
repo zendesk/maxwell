@@ -62,6 +62,10 @@ public class Schema {
 		return diff;
 	}
 
+	public boolean equals(Schema that) {
+		return diff(that, "a", "b").size() == 0;
+	}
+
 	public String getEncoding() {
 		return encoding;
 	}
