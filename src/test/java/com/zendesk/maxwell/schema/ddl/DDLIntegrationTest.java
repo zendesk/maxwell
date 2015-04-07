@@ -118,4 +118,15 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 
 		testIntegration(sql);
 	}
+
+	@Test
+	public void testPKs() throws SQLException, SchemaSyncError, IOException {
+		String sql[] = {
+		   "create TABLE `test_pks` ( id int(11) unsigned primary KEY, str varchar(255) )",
+		   "create TABLE `test_pks_2` ( id int(11) unsigned, str varchar(255), primary key(id, str) )"
+		};
+
+		testIntegration(sql);
+	}
+
 }

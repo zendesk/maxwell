@@ -47,15 +47,19 @@ enumerated_type:
 	  charset_def? 
 	  ;
 
+
 column_options:
 	  nullability
 	| default_value
+	| primary_key
+	| UNIQUE KEY 
 	| (AUTO_INCREMENT)
-	| (UNIQUE | PRIMARY)? KEY 
 	| COMMENT STRING_LITERAL
 	| COLUMN_FORMAT (FIXED|DYNAMIC|DEFAULT)
 	| STORAGE (DISK|MEMORY|DEFAULT)
 ;
+
+primary_key: PRIMARY KEY;
 
 enumerated_values: enum_value (',' enum_value)*;
 enum_value: STRING_LITERAL;
