@@ -2,6 +2,7 @@ CREATE DATABASE `test_db_1`
 CREATE DATABASE if not exists `test_db_1`
 CREATE TABLE `test_db_1`.`test_table` ( id bigint(20) not null auto_increment primary key, textcol mediumtext character set 'utf8' )
 CREATE INDEX `foo` on `test_db_1`.`test_table` (`id`);
+CREATE UNIQUE INDEX `foojj` on `test_db_1`.`test_table` (`id`);
 use test_db_1
 insert into test_table set textcol='test_col_1'
 
