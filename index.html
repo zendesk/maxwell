@@ -9,7 +9,7 @@
         
         <link rel="shortcut icon" href="./img/favicon.ico">
 
-        <title>Maxwell</title>
+        <title>Maxwell's Daemon</title>
 
         <link href="./css/bootstrap-custom.min.css" rel="stylesheet">
         <link href="./css/font-awesome-4.0.3.css" rel="stylesheet">
@@ -31,7 +31,7 @@
         <!-- Collapsed navigation -->
         <div class="navbar-header">
             <!-- Main title -->
-            <a class="navbar-brand" href=".">Maxwell</a>
+            <a class="navbar-brand" href=".">Maxwell's Daemon</a>
         </div>
 
         <!-- Expanded navigation -->
@@ -40,11 +40,12 @@
     </div>
 </div>
 
+        <a href="https://github.com/zendesk/maxwell"><img style="position: absolute; top: 0; right: 0; border: 0; z-index: 1031;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
         <div class="container">
             <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
         <li class="active">
-          <a href="/">Maxwell</a>
+          <a href="/">Overview</a>
         </li>
         
           <li >
@@ -73,12 +74,15 @@
 
 <h3 id="maxwell-header" style="margin-top: -10px; font-weight: bold">Maxwell = Mysql + Kafka</h3>
 
-<p>This is Maxwell's daemon, an application that reads MySQL binlogs and writes changed rows to Kafka as JSON.
-It's working at the same goals as mypipe and databus, but differentiates itself with these feautures:</p>
+<p>This is Maxwell's daemon, an application that reads MySQL binlogs and writes row updates to Kafka as JSON.
+It's playing in the same space as <a href="https://github.com/mardambey/mypipe">mypipe</a> and <a href="http://data.linkedin.com/projects/databus">databus</a>,
+but differentiates itself with these features:</p>
 <ul>
 <li>Works with an unpatched mysql</li>
-<li>Follows all ALTER statements, which allows Maxwell to always output correct JSON</li>
+<li>Parses ALTER/CREATE/DROP table statements, which allows Maxwell to always have a correct view of the mysql schema</li>
+<li>Stores its replication position and needed data within the mysql server itself</li>
 <li>Requires no external dependencies (save Kafka, if used)</li>
+<li>Eschews the complexity of Avro for plain old JSON.</li>
 <li>Minimal setup</li>
 </ul>
 <p>Maxwell is intended as a source for event-based readers, eg various ETL applications, search indexing,
