@@ -4,9 +4,9 @@ This is Maxwell's daemon, an application that reads MySQL binlogs and writes row
 It's playing in the same space as [mypipe](https://github.com/mardambey/mypipe) and [databus](http://data.linkedin.com/projects/databus),
 but differentiates itself with these feautures:
 
-- Works with an unpatched mysql (databus doesn't)
-- Parses ALTER/CREATE/DROP table statements, which allows Maxwell to always have a correct view of the mysql schema (mypipe doesn't)
-- Stores its position and needed data within the mysql server itself
+- Works with an unpatched mysql
+- Parses ALTER/CREATE/DROP table statements, which allows Maxwell to always have a correct view of the mysql schema
+- Stores its replication position and needed data within the mysql server itself
 - Requires no external dependencies (save Kafka, if used)
 - Eschews the complexity of Avro for plain old JSON.
 - Minimal setup
