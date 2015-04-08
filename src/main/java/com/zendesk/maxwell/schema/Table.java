@@ -152,6 +152,10 @@ public class Table {
 		renumberColumns();
 	}
 
+	public void addColumn(ColumnDef defintion) {
+		addColumn(this.columnList.size(), defintion);
+	}
+
 	public void removeColumn(int idx) {
 		this.columnList.remove(idx);
 		renumberColumns();
@@ -182,20 +186,5 @@ public class Table {
 
 	public void setPKList(List<String> pkColumnNames) {
 		this.pkColumnNames = pkColumnNames;
-		this.pkIndexes = new ArrayList<>();
-
-		if ( pkColumnNames == null )
-			return;
-
-		for ( String name : pkColumnNames ) {
-			Integer i = findColumnIndex(name);
-
-			if ( i == -1 ) {
-				throw new RuntimeException("Couldn't find primary key '" + name + "' in table '" + name + "'");
-			}
-
-			pkIndexes.add(i);
-		}
 	}
-
 }

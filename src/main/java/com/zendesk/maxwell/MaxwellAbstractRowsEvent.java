@@ -229,7 +229,6 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 		return new MaxwellJSONObject(jsonMap());
 	}
 
-	// tbd -- is an array of rows really best?
 	public String toJSON() throws IOException {
 		return toJSONObject().toString();
 	}
