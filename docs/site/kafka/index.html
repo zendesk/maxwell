@@ -9,7 +9,7 @@
         
         <link rel="shortcut icon" href="../img/favicon.ico">
 
-        <title>Kafka - Maxwell</title>
+        <title>Kafka - Maxwell's Daemon</title>
 
         <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
         <link href="../css/font-awesome-4.0.3.css" rel="stylesheet">
@@ -31,7 +31,7 @@
         <!-- Collapsed navigation -->
         <div class="navbar-header">
             <!-- Main title -->
-            <a class="navbar-brand" href="..">Maxwell</a>
+            <a class="navbar-brand" href="..">Maxwell's Daemon</a>
         </div>
 
         <!-- Expanded navigation -->
@@ -40,11 +40,12 @@
     </div>
 </div>
 
+        <a href="https://github.com/zendesk/maxwell"><img style="position: absolute; top: 0; right: 0; border: 0; z-index: 1031;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
         <div class="container">
             <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
         <li class="">
-          <a href="/">Maxwell</a>
+          <a href="/">Overview</a>
         </li>
         
           <li >
@@ -82,22 +83,24 @@
             <div class="col-md-9" role="main">
 
 <h3 id="kafka-options">Kafka options</h3>
-<p>Any options in the configuration file prefixed with <code>kafka.</code> have that prefix stripped off, and passed directly
-into the "new producer" configuration, as described here: <a href="http://kafka.apache.org/documentation.html#newproducerconfigs">http://kafka.apache.org/documentation.html#newproducerconfigs</a></p>
-<p>Maxwell sets the following options by default, but you can override them in <code>config.properties</code>.</p>
+<p>Any options given to Maxwell that are prefixed with <code>kafka.</code> will be passed directly into the Kafka producer configuration
+(with <code>kafka.</code> stripped off).  We use the "new producer" configuration, as described here:
+<a href="http://kafka.apache.org/documentation.html#newproducerconfigs">http://kafka.apache.org/documentation.html#newproducerconfigs</a></p>
+<p>Maxwell sets the following Kafka options by default, but you can override them in <code>config.properties</code>.</p>
 <ul>
-<li>(kafka.)acks = 1</li>
-<li>(kafka.)compression.type = gzip</li>
+<li>kafka.acks = 1</li>
+<li>kafka.compression.type = gzip</li>
 </ul>
+<p>Maxwell writes to a kafka topic named "maxwell" by default.  This can be changed with the <code>kafka_topic</code> option.</p>
 <h3 id="topic-and-partitioning">Topic and partitioning</h3>
-<p>Maxwell will write to the topic <code>maxwell</code> by default.  If Kafka is set to auto-create topics on write, this will create the topic with exactly one partition.</p>
-<p>If you need more control, you can create the topic with enough partitions and provide the topic name to maxwell using <code>--kafka_topic</code> option.
-The details of how to create a topic can be found here:</p>
-<p><a href="http://kafka.apache.org/documentation.html#quickstart">http://kafka.apache.org/documentation.html#quickstart</a></p>
-<p>Maxwell translates the database name into a partition number before writing to kafka. Maxwell uses a simple bit of translation to get the partition number:</p>
-<pre><code>Math.abs(dbName.hashCode() % numPartitions);
+<p>Maxwell enforces ordering on events within a logical mysql database (but not within a mysql server).  We enforce
+this ordering by choosing a kafka partition based on an event's database name (<code>dbName.hashCode() % numPartitions</code>).
+This means that you should create a kafka topic for Maxwell with at least as many partitions as you have logical databases:</p>
+<pre><code>bin/kafka-topics.sh --zookeeper ZK_HOST:2181 --create \
+                    --topic maxwell --partitions 20 --replication-factor 2
 </code></pre>
-<p>To have maximum parallelism while consuming, use as many partitions as you have databases.</p>
+
+<p><a href="http://kafka.apache.org/documentation.html#quickstart">http://kafka.apache.org/documentation.html#quickstart</a></p>
 <script>
   jQuery(document).ready(function () {
     jQuery("table").addClass("table table-condensed table-bordered table-hover");
