@@ -108,7 +108,8 @@ mysql&gt; GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE on *.* to 'maxwell
 <h3 id="install-maxwell">Install maxwell</h3>
 <p>You'll need a version 7 of a JVM.</p>
 <pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.5.0/maxwell-0.5.0.tar.gz \
-       | tar zxvf - cd maxwell-0.5.0
+       | tar zxvf -
+cd maxwell-0.5.0
 </code></pre>
 
 <h3 id="run-with-stdout-producer">Run with stdout producer</h3>
