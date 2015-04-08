@@ -9,7 +9,9 @@ public class StdoutProducer extends AbstractProducer {
 
 	@Override
 	public void push(MaxwellAbstractRowsEvent e) throws Exception {
-		System.out.println(e.toJSON());
+		for ( String json : e.toJSONStrings() ) {
+			System.out.println(json);
+		}
 		this.config.setInitialPosition(e.getNextBinlogPosition());
 	}
 }
