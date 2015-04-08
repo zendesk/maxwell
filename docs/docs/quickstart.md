@@ -23,8 +23,8 @@ mysql> GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE on *.* to 'maxwell'@'
 You'll need a version 7 of a JVM.
 
 ```
-curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.4.0/maxwell-0.4.0.tar.gz \
-       | tar zxvf - cd maxwell-0.4.0
+curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.5.0/maxwell-0.5.0.tar.gz \
+       | tar zxvf - cd maxwell-0.5.0
 ```
 
 
