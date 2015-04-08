@@ -126,8 +126,6 @@ index_type_4:
 index_type_5:
 	index_constraint? FOREIGN KEY index_name? index_column_list reference_definition;
 	
-// TODO: foreign key references.  goddamn.
-	
 index_or_key: (INDEX|KEY);
 index_constraint: (CONSTRAINT name?);
 index_name: name;
