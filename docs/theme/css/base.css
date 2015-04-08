@@ -51,14 +51,12 @@ div.source-links {
 .bs-sidebar .nav > li > a:hover,
 .bs-sidebar .nav > li > a:focus {
     text-decoration: none;
-    border-right: 1px solid;
 }
 .bs-sidebar .nav > .active > a,
 .bs-sidebar .nav > .active:hover > a,
 .bs-sidebar .nav > .active:focus > a {
     font-weight: bold;
     background-color: transparent;
-    border-right: 1px solid;
 }
 
 /* Nav: second level (shown on .active) */
@@ -99,7 +97,7 @@ div.source-links {
     /* Widen the fixed sidebar again */
     .bs-sidebar.affix-bottom,
     .bs-sidebar.affix {
-        width: 263px;
+        width: 233px;
     }
 }
 
