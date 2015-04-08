@@ -1,8 +1,8 @@
-site_name: Maxwell
+site_name: Maxwell's Daemon
 theme_dir: theme
 theme: Yeti
 pages:
-- [index.md, Maxwell]
+- [index.md, Overview]
 - [quickstart.md, Quick Start]
 - [config.md, Configuration]
 - [kafka.md, Kafka]

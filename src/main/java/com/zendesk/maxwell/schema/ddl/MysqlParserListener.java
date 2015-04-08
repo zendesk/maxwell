@@ -41,6 +41,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 	private ArrayList<String> pkColumns;
 
 	MysqlParserListener(String currentDatabase)  {
+		this.pkColumns = null; // null indicates no change in primary keys
 		this.schemaChanges = new ArrayList<>();
 		this.currentDatabase = currentDatabase;
 	}
