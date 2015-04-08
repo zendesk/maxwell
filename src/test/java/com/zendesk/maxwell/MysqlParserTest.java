@@ -40,10 +40,10 @@ public class MysqlParserTest extends AbstractMaxwellTest {
 		list = getRowsForSQL(filter, input);
 		assertThat(list.size(), is(1));
 
-		RowMap jsonMap = list.get(0).jsonMap();
+		RowMap jsonMap = list.get(0).jsonMaps().get(0);
 
-		assertThat((Long) jsonMap.data().get(0).get("account_id"), is(2L));
-		assertThat((String) jsonMap.data().get(0).get("text_field"), is("goodbye"));
+		assertThat((Long) jsonMap.getData("account_id"), is(2L));
+		assertThat((String) jsonMap.getData("text_field"), is("goodbye"));
 	}
 
 	@Test
@@ -158,13 +158,13 @@ public class MysqlParserTest extends AbstractMaxwellTest {
 		List<MaxwellAbstractRowsEvent> events = getRowsForSQL(null, sql.toArray(new String[0]));
 
 		for ( MaxwellAbstractRowsEvent e : events ) {
-			JSONObject a = e.toJSONObject();
+			for ( JSONObject a : e.toJSONObjects() ) {
+				eventJSON.add(a);
 
-			eventJSON.add(a);
-
-			for ( JSONObject b : assertJSON ) {
-				if ( JSONCompare.compare(a.toString(), b.toString()) )
-					matched.add(b);
+				for ( JSONObject b : assertJSON ) {
+					if ( JSONCompare.compare(a.toString(), b.toString()) )
+						matched.add(b);
+				}
 			}
 		}
 

@@ -164,23 +164,19 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 	}
 
 	class RowMap extends HashMap<String, Object> {
+		private final HashMap<String, Object> data;
+
 		public RowMap() {
-			this.put("data", new ArrayList<HashMap<String, Object>>());
+			this.data = new HashMap<String, Object>();
+			this.put("data", this.data);
 		}
 
 		public void setRowType(String type) {
 			this.put("type", type);
 		}
 
-		@SuppressWarnings("unchecked")
-		public List<Map<String, Object>> data() {
-			return (List<Map<String, Object>>) this.get("data");
-		}
-
-		public Map<String, Object> addRow() {
-			Map<String, Object> row = new HashMap<String, Object>();
-			this.data().add(row);
-			return row;
+		public void putData(String key, Object value) {
+			this.data.put(key,  value);
 		}
 
 		public void setTable(String name) {
@@ -190,22 +186,25 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 		public void setDatabase(String name) {
 			this.put("database", name);
 		}
+
+		public Object getData(String string) {
+			return this.data.get(string);
+		}
 	}
-	// the equivalent of "asJSON" -- convert the row to an array of
-	// hashes
-	public RowMap jsonMap() {
+
+	public List<RowMap> jsonMaps() {
+		ArrayList<RowMap> list = new ArrayList<>();
 		Object value;
-		RowMap rowMap = new RowMap();
-
-		rowMap.setRowType(getType());
-		rowMap.setTable(getTable().getName());
-		rowMap.setDatabase(getDatabase().getName());
-
 		for ( Row r : filteredRows()) {
+			RowMap rowMap = new RowMap();
+
+			rowMap.setRowType(getType());
+			rowMap.setTable(getTable().getName());
+			rowMap.setDatabase(getDatabase().getName());
+
 			Iterator<Column> colIter = r.getColumns().iterator();
 			Iterator<ColumnDef> defIter = table.getColumnList().iterator();
 
-			Map<String, Object> jsonRow = rowMap.addRow();
 			while ( colIter.hasNext() && defIter.hasNext() ) {
 				Column c = colIter.next();
 				ColumnDef d = defIter.next();
@@ -218,19 +217,29 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 				if ( value != null )
 					value = d.asJSON(value);
 
-				jsonRow.put(d.getName(), value);
+				rowMap.putData(d.getName(), value);
 			}
+			list.add(rowMap);
 		}
 
-		return rowMap;
+		return list;
 	}
 
-	public JSONObject toJSONObject() {
-		return new MaxwellJSONObject(jsonMap());
+	public List<JSONObject> toJSONObjects() {
+		ArrayList<JSONObject> list = new ArrayList<>();
+
+		for ( RowMap map : jsonMaps() ) {
+			list.add(new MaxwellJSONObject(map));
+		}
+		return list;
 	}
 
-	// tbd -- is an array of rows really best?
-	public String toJSON() throws IOException {
-		return toJSONObject().toString();
+	public List<String> toJSONStrings() {
+		ArrayList<String> list = new ArrayList<>();
+
+		for ( RowMap map : jsonMaps() ) {
+			list.add(new MaxwellJSONObject(map).toString());
+		}
+		return list;
 	}
 }

@@ -19,9 +19,11 @@ public class FileProducer extends AbstractProducer {
 
 	@Override
 	public void push(MaxwellAbstractRowsEvent e) throws Exception {
-		this.fileWriter.write(e.toJSON());
-		this.fileWriter.write('\n');
-		this.fileWriter.flush();
+		for (String json : e.toJSONStrings() ) {
+			this.fileWriter.write(json);
+			this.fileWriter.write('\n');
+			this.fileWriter.flush();
+		}
 		this.onComplete(e);
 		config.setInitialPosition(e.getNextBinlogPosition());
 	}
