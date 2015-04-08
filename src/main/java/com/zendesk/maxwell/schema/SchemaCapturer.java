@@ -141,7 +141,7 @@ public class SchemaCapturer {
 		while ( rs.next() ) {
 			l.add(rs.getString("column_name"));
 		}
-		t.setPK(l);
+		t.setPKList(l);
 	}
 
 	private static String[] extractEnumValues(String expandedType) {

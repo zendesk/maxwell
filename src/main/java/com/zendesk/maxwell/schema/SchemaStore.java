@@ -250,7 +250,7 @@ public class SchemaStore {
 
 		if ( pks != null ) {
 			List<String> pkList = Arrays.asList(StringUtils.split(pks, ','));
-			t.setPK(pkList);
+			t.setPKList(pkList);
 		}
 
 	}

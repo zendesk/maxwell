@@ -55,10 +55,10 @@ public class SchemaStoreTest extends AbstractMaxwellTest {
 		SchemaStore restoredSchema = SchemaStore.restore(server.getConnection(), binlogPosition);
 		Table t = restoredSchema.getSchema().findDatabase("shard_1").findTable("pks");
 
-		assertThat(t.getPK(), is(not(nullValue())));
-		assertThat(t.getPK().size(), is(3));
-		assertThat(t.getPK().get(0), is("col2"));
-		assertThat(t.getPK().get(1), is("col3"));
-		assertThat(t.getPK().get(2), is("id"));
+		assertThat(t.getPKList(), is(not(nullValue())));
+		assertThat(t.getPKList().size(), is(3));
+		assertThat(t.getPKList().get(0), is("col2"));
+		assertThat(t.getPKList().get(1), is("col3"));
+		assertThat(t.getPKList().get(2), is("id"));
 	}
 }

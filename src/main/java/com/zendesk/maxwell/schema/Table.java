@@ -26,7 +26,7 @@ public class Table {
 		this.columnList = list;
 		if ( pks == null )
 			pks = new ArrayList<String>();
-		this.setPK(pks);
+		this.setPKList(pks);
 		renumberColumns();
 	}
 
@@ -169,7 +169,7 @@ public class Table {
 		}
 	}
 
-	public List<String> getPK() {
+	public List<String> getPKList() {
 		return this.pkColumnNames;
 	}
 
@@ -180,7 +180,7 @@ public class Table {
 			return null;
 	}
 
-	public void setPK(List<String> pkColumnNames) {
+	public void setPKList(List<String> pkColumnNames) {
 		this.pkColumnNames = pkColumnNames;
 		this.pkIndexes = new ArrayList<>();
 
