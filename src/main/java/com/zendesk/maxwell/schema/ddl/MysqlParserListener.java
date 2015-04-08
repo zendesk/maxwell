@@ -7,7 +7,9 @@ import java.util.List;
 import org.antlr.v4.runtime.tree.ErrorNode;
 
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
+import com.zendesk.maxwell.schema.ddl.mysqlParser.Column_optionsContext;
 import com.zendesk.maxwell.schema.ddl.mysqlParser.Enum_valueContext;
+import com.zendesk.maxwell.schema.ddl.mysqlParser.NameContext;
 import com.zendesk.maxwell.schema.ddl.mysqlParser.*;
 
 import org.slf4j.Logger;
@@ -36,7 +38,10 @@ public class MysqlParserListener extends mysqlBaseListener {
 
 	private final LinkedList<ColumnDef> columnDefs = new LinkedList<>();
 
+	private ArrayList<String> pkColumns;
+
 	MysqlParserListener(String currentDatabase)  {
+		this.pkColumns = null; // null indicates no change in primary keys
 		this.schemaChanges = new ArrayList<>();
 		this.currentDatabase = currentDatabase;
 	}
@@ -109,6 +114,11 @@ public class MysqlParserListener extends mysqlBaseListener {
 		this.tableName = alterStatement.tableName;
 
 		this.schemaChanges.add(alterStatement);
+	}
+
+	// After we're done parsing the whole alter
+	@Override public void exitAlter_table(mysqlParser.Alter_tableContext ctx) {
+		alterStatement().pks = this.pkColumns;
 	}
 
 	@Override
@@ -192,6 +202,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 	public void exitCreate_specifications(Create_specificationsContext ctx) {
 		TableCreate tableCreate = (TableCreate) schemaChanges.get(0);
 		tableCreate.columns.addAll(this.columnDefs);
+		tableCreate.pks = this.pkColumns;
 	}
 
 	@Override
@@ -215,6 +226,12 @@ public class MysqlParserListener extends mysqlBaseListener {
 		schemaChanges.add(new DatabaseDrop(dbName, ifExists));
 	}
 
+	@Override public void exitIndex_type_pk(mysqlParser.Index_type_pkContext ctx) {
+		this.pkColumns = new ArrayList<>();
+		for ( NameContext n : ctx.index_column_list().name_list().name() ) {
+			this.pkColumns.add(unquote(n.getText()));
+		}
+	}
 
 	@Override
 	public void exitColumn_definition(mysqlParser.Column_definitionContext ctx) {
@@ -246,7 +263,6 @@ public class MysqlParserListener extends mysqlBaseListener {
 				enumValues[i++] = unquote_literal(v.getText());
 			}
 		}
-
 		ColumnDef c = ColumnDef.build(this.tableName,
 					                   name,
 					                   colEncoding,
@@ -254,7 +270,15 @@ public class MysqlParserListener extends mysqlBaseListener {
 					                   -1,
 					                   signed,
 					                   enumValues);
+
 		this.columnDefs.add(c);
+
+		for ( Column_optionsContext opt : ctx.column_options() ) {
+			if ( opt.primary_key() != null ) {
+				this.pkColumns = new ArrayList<>();
+				this.pkColumns.add(name);
+			}
+		}
 	}
 
 

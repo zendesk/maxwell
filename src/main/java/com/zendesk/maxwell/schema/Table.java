@@ -24,6 +24,8 @@ public class Table {
 		this.name = name;
 		this.encoding = encoding;
 		this.columnList = list;
+		if ( pks == null )
+			pks = new ArrayList<String>();
 		this.setPK(pks);
 		renumberColumns();
 	}
@@ -120,6 +122,12 @@ public class Table {
 					  + nameA + " is " + this.getEncoding() + " but "
 					  + nameB + " is " + other.getEncoding());
 		}
+
+		if ( !this.getPKString().equals(other.getPKString())) {
+			diffs.add(this.fullName() + " differs in PKs: "
+					  + nameA + " is " + this.getPKString() + " but "
+					  + nameB + " is " + other.getPKString());
+		}
 		diffColumnList(diffs, this, other, nameA, nameB);
 		diffColumnList(diffs, other, this, nameB, nameA);
 	}
@@ -165,7 +173,7 @@ public class Table {
 		return this.pkColumnNames;
 	}
 
-	public Object getPKString() {
+	public String getPKString() {
 		if ( this.pkColumnNames != null )
 			return StringUtils.join(pkColumnNames.iterator(), ",");
 		else
