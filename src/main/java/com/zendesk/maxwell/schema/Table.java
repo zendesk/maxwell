@@ -43,6 +43,9 @@ public class Table {
 	}
 
 	private void initColumnOffsetMap() {
+		if ( this.columnOffsetMap != null )
+			return;
+
 		this.columnOffsetMap = new HashMap<>();
 		int i = 0;
 
