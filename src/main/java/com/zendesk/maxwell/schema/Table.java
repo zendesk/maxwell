@@ -2,6 +2,7 @@ package com.zendesk.maxwell.schema;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -16,17 +17,20 @@ public class Table {
 
 	private Database database;
 	private final String encoding;
-	private List<Integer> pkIndexes;
 	private List<String> pkColumnNames;
+	private HashMap<String, Integer> columnOffsetMap;
 
 	public Table(Database d, String name, String encoding, List<ColumnDef> list, List<String> pks) {
 		this.database = d;
 		this.name = name;
 		this.encoding = encoding;
 		this.columnList = list;
+
 		if ( pks == null )
 			pks = new ArrayList<String>();
-		this.setPK(pks);
+
+		this.setPKList(pks);
+
 		renumberColumns();
 	}
 
@@ -38,15 +42,26 @@ public class Table {
 		return this.name;
 	}
 
-	public int findColumnIndex(String name) {
-		int i = 0;
-		for(ColumnDef c : columnList) {
-			if ( c.getName().equals(name) )
-				return i;
-			i++;
+	private void initColumnOffsetMap() {
+		if ( this.columnOffsetMap != null )
+			return;
 
+		this.columnOffsetMap = new HashMap<>();
+		int i = 0;
+
+		for(ColumnDef c : columnList) {
+			this.columnOffsetMap.put(c.getName(), i++);
 		}
-		return -1;
+	}
+
+	public int findColumnIndex(String name) {
+		initColumnOffsetMap();
+
+		if ( this.columnOffsetMap.containsKey(name) ) {
+			return this.columnOffsetMap.get(name);
+		} else {
+			return -1;
+		}
 	}
 
 	private ColumnDef findColumn(String name) {
@@ -149,11 +164,17 @@ public class Table {
 
 	public void addColumn(int index, ColumnDef definition) {
 		this.columnList.add(index, definition);
+		this.columnOffsetMap = null;
 		renumberColumns();
+	}
+
+	public void addColumn(ColumnDef defintion) {
+		addColumn(this.columnList.size(), defintion);
 	}
 
 	public void removeColumn(int idx) {
 		this.columnList.remove(idx);
+		this.columnOffsetMap = null;
 		renumberColumns();
 	}
 
@@ -169,7 +190,7 @@ public class Table {
 		}
 	}
 
-	public List<String> getPK() {
+	public List<String> getPKList() {
 		return this.pkColumnNames;
 	}
 
@@ -180,22 +201,7 @@ public class Table {
 			return null;
 	}
 
-	public void setPK(List<String> pkColumnNames) {
+	public void setPKList(List<String> pkColumnNames) {
 		this.pkColumnNames = pkColumnNames;
-		this.pkIndexes = new ArrayList<>();
-
-		if ( pkColumnNames == null )
-			return;
-
-		for ( String name : pkColumnNames ) {
-			Integer i = findColumnIndex(name);
-
-			if ( i == -1 ) {
-				throw new RuntimeException("Couldn't find primary key '" + name + "' in table '" + name + "'");
-			}
-
-			pkIndexes.add(i);
-		}
 	}
-
 }

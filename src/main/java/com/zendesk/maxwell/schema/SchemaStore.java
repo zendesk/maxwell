@@ -245,12 +245,12 @@ public class SchemaStore {
 					cRS.getString("coltype"), i++,
 					cRS.getInt("is_signed") == 1,
 					enumValues);
-			t.getColumnList().add(c);
+			t.addColumn(c);
 		}
 
 		if ( pks != null ) {
 			List<String> pkList = Arrays.asList(StringUtils.split(pks, ','));
-			t.setPK(pkList);
+			t.setPKList(pkList);
 		}
 
 	}

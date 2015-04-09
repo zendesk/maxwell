@@ -92,7 +92,7 @@ public class SchemaCaptureTest extends AbstractMaxwellTest {
 		Schema s = capturer.capture();
 
 		Table sharded = s.findDatabase("shard_1").findTable("sharded");
-		List<String> pk = sharded.getPK();
+		List<String> pk = sharded.getPKList();
 		assertThat(pk, notNullValue());
 		assertThat(pk.size(), is(2));
 		assertThat(pk.get(0), is("id"));

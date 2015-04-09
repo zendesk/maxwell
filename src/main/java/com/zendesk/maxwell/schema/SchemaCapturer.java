@@ -120,7 +120,7 @@ public class SchemaCapturer {
 				enumValues = extractEnumValues(expandedType);
 			}
 
-			t.getColumnList().add(ColumnDef.build(t.getName(), colName, colEnc, colType, colPos, colSigned, enumValues));
+			t.addColumn(ColumnDef.build(t.getName(), colName, colEnc, colType, colPos, colSigned, enumValues));
 			i++;
 		}
 		captureTablePK(t);
@@ -141,7 +141,7 @@ public class SchemaCapturer {
 		while ( rs.next() ) {
 			l.add(rs.getString("column_name"));
 		}
-		t.setPK(l);
+		t.setPKList(l);
 	}
 
 	private static String[] extractEnumValues(String expandedType) {
