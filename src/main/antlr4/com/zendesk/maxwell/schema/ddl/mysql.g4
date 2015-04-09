@@ -57,6 +57,7 @@ alter_specification: add_column
                      | change_column
                      | modify_column
                      | drop_column
+                     | drop_primary_key
                      | ignored_alter_specifications
                      | alter_rename_table
                      | convert_to_character_set
@@ -69,6 +70,7 @@ change_column: CHANGE COLUMN? old_col_name column_definition col_position?;
 modify_column: MODIFY COLUMN? column_definition col_position?;
 drop_column: DROP COLUMN? old_col_name;
 alter_rename_table: RENAME (TO | AS) table_name;
+drop_primary_key: DROP PRIMARY KEY;
 
 convert_to_character_set: CONVERT TO charset_token charset_name collation?;
 default_character_set: DEFAULT? charset_token '='? charset_name collation?;
@@ -83,7 +85,6 @@ old_col_name: name;
 ignored_alter_specifications:
 	  ADD index_definition
     | ALTER COLUMN? name ((SET DEFAULT literal) | (DROP DEFAULT))
-    | DROP PRIMARY KEY
     | DROP INDEX index_name
     | DISABLE KEYS
     | ENABLE KEYS

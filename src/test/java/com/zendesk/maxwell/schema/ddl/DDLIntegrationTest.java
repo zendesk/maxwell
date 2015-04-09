@@ -125,7 +125,9 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 		   "create TABLE `test_pks` ( id int(11) unsigned primary KEY, str varchar(255) )",
 		   "create TABLE `test_pks_2` ( id int(11) unsigned, str varchar(255), primary key(id, str) )",
 		   "create TABLE `test_pks_3` ( id int(11) unsigned primary KEY, str varchar(255) )",
-		   "alter TABLE `test_pks_3` drop primary key, add primary key(str)"
+		   "create TABLE `test_pks_4` ( id int(11) unsigned primary KEY, str varchar(255) )",
+		   "alter TABLE `test_pks_3` drop primary key, add primary key(str)",
+		   "alter TABLE `test_pks_4` drop primary key"
 		};
 
 		testIntegration(sql);
