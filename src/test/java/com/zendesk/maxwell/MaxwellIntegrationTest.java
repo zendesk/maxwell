@@ -15,7 +15,7 @@ import org.junit.Test;
 
 import com.zendesk.maxwell.MaxwellAbstractRowsEvent.RowMap;
 
-public class MysqlParserTest extends AbstractMaxwellTest {
+public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 	@Test
 	public void testGetEvent() throws Exception {
 		List<MaxwellAbstractRowsEvent> list;
