@@ -226,11 +226,16 @@ public class MysqlParserListener extends mysqlBaseListener {
 		schemaChanges.add(new DatabaseDrop(dbName, ifExists));
 	}
 
-	@Override public void exitIndex_type_pk(mysqlParser.Index_type_pkContext ctx) {
+	@Override
+	public void exitIndex_type_pk(mysqlParser.Index_type_pkContext ctx) {
 		this.pkColumns = new ArrayList<>();
 		for ( NameContext n : ctx.index_column_list().name_list().name() ) {
 			this.pkColumns.add(unquote(n.getText()));
 		}
+	}
+
+	@Override public void exitDrop_primary_key(mysqlParser.Drop_primary_keyContext ctx) {
+		this.pkColumns = new ArrayList<>();
 	}
 
 	@Override
