@@ -24,6 +24,7 @@ public abstract class SchemaChange {
 	static {
 		SQL_BLACKLIST.add(Pattern.compile("^BEGIN", Pattern.CASE_INSENSITIVE));
 		SQL_BLACKLIST.add(Pattern.compile("^COMMIT", Pattern.CASE_INSENSITIVE));
+		SQL_BLACKLIST.add(Pattern.compile("^FLUSH", Pattern.CASE_INSENSITIVE));
 		SQL_BLACKLIST.add(Pattern.compile("^GRANT", Pattern.CASE_INSENSITIVE));
 		SQL_BLACKLIST.add(Pattern.compile("^(ALTER|CREATE|DROP)\\s+(FUNCTION|PROCEDURE|VIEW|TRIGGER)", Pattern.CASE_INSENSITIVE));
 		SQL_BLACKLIST.add(Pattern.compile("^(ALTER|CREATE|DROP)\\s+((ONLINE|OFFLINE|UNIQUE|FULLTEXT|SPATIAL)\\s+)*(INDEX)", Pattern.CASE_INSENSITIVE));
