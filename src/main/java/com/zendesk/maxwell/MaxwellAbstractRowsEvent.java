@@ -247,29 +247,30 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 	public List<String> getPKStrings() {
 		ArrayList<String> list = new ArrayList<>();
 
-		String pkString = "db:" + table.getDatabase().getName() + "/"
-				        + "tbl:" + table.getName() + "/";
-
 		for ( Row r : filteredRows()) {
-			list.add(pkString + getPKStringForRow(r));
+			list.add(new MaxwelllPKJSONObject(table.getDatabase().getName(),
+										      table.getName(),
+										      getPKMapForRow(r)).toString());
 		}
+
 		return list;
 	}
 
-	private String getPKStringForRow(Row r) {
-		if ( table.getPKList().isEmpty() )
-			return "_uuid: " + java.util.UUID.randomUUID().toString();
+	private Map<String, Object> getPKMapForRow(Row r) {
+		HashMap<String, Object> map = new HashMap<>();
 
-		ArrayList<String> pkValueList = new ArrayList<>();
+		if ( table.getPKList().isEmpty() ) {
+			map.put("_uuid", java.util.UUID.randomUUID().toString());
+		}
+
 		for ( String pk : table.getPKList() ) {
 			int idx = table.findColumnIndex(pk);
 
 			Column column = r.getColumns().get(idx);
 			ColumnDef def = table.getColumnList().get(idx);
 
-
-			pkValueList.add(def.getName() + ":" + def.asJSON(column.getValue()).toString());
+			map.put(pk, def.asJSON(column.getValue()));
 		}
-		return StringUtils.join(pkValueList, "/");
+		return map;
 	}
 }

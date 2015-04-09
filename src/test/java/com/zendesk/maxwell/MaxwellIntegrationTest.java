@@ -29,9 +29,10 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 	public void testPrimaryKeyStrings() throws Exception {
 		List<MaxwellAbstractRowsEvent> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
+		String expectedJSON = "{\"database\":\"shard_1\",\"table\":\"minimal\",\"pk.id\":1,\"pk.text_field\":\"hello\"}";
 		list = getRowsForSQL(null, input);
 		assertThat(list.size(), is(1));
-		assertThat(StringUtils.join(list.get(0).getPKStrings(), ""), is("db:shard_1/tbl:minimal/id:1/text_field:hello"));
+		assertThat(StringUtils.join(list.get(0).getPKStrings(), ""), is(expectedJSON));
 	}
 
 	@Test
