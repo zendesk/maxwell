@@ -66,6 +66,9 @@
                       <li class="toctree-l3"><a href="#kafka-options">Kafka options</a></li>
                       
                   
+                      <li class="toctree-l3"><a href="#kafka-key">Kafka key</a></li>
+                      
+                  
                       <li class="toctree-l3"><a href="#topic-and-partitioning">Topic and partitioning</a></li>
                       
                   
@@ -92,6 +95,14 @@
 <li>kafka.compression.type = gzip</li>
 </ul>
 <p>Maxwell writes to a kafka topic named "maxwell" by default.  This can be changed with the <code>kafka_topic</code> option.</p>
+<h3 id="kafka-key">Kafka key</h3>
+<p>Maxwell generates keys for its Kafka messages based upon a mysql row's primary key:</p>
+<pre><code>db:test_db/tbl:test_tbl/id:93/id_2:17910090
+</code></pre>
+
+<p>This key is designed to co-operate with Kafka's log compaction, which will save the last-known
+value for a key, allowing Maxwell's Kafka stream to retain the last-known value for a row and act
+as a source of truth.</p>
 <h3 id="topic-and-partitioning">Topic and partitioning</h3>
 <p>Maxwell enforces ordering on events within a logical mysql database (but not within a mysql server).  We enforce
 this ordering by choosing a kafka partition based on an event's database name (<code>dbName.hashCode() % numPartitions</code>).

@@ -11,6 +11,18 @@ Maxwell sets the following Kafka options by default, but you can override them i
 
 Maxwell writes to a kafka topic named "maxwell" by default.  This can be changed with the `kafka_topic` option.
 
+### Kafka key
+
+Maxwell generates keys for its Kafka messages based upon a mysql row's primary key:
+
+```
+db:test_db/tbl:test_tbl/id:93/id_2:17910090
+```
+
+This key is designed to co-operate with Kafka's log compaction, which will save the last-known
+value for a key, allowing Maxwell's Kafka stream to retain the last-known value for a row and act
+as a source of truth.
+
 ### Topic and partitioning
 
 Maxwell enforces ordering on events within a logical mysql database (but not within a mysql server).  We enforce

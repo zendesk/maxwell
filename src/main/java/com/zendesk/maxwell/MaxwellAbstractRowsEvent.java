@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.json.JSONObject;
 
 import com.google.code.or.binlog.BinlogEventV4Header;
@@ -241,5 +242,35 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 			list.add(new MaxwellJSONObject(map).toString());
 		}
 		return list;
+	}
+
+	public List<String> getPKStrings() {
+		ArrayList<String> list = new ArrayList<>();
+
+		for ( Row r : filteredRows()) {
+			list.add(new MaxwelllPKJSONObject(table.getDatabase().getName(),
+										      table.getName(),
+										      getPKMapForRow(r)).toString());
+		}
+
+		return list;
+	}
+
+	private Map<String, Object> getPKMapForRow(Row r) {
+		HashMap<String, Object> map = new HashMap<>();
+
+		if ( table.getPKList().isEmpty() ) {
+			map.put("_uuid", java.util.UUID.randomUUID().toString());
+		}
+
+		for ( String pk : table.getPKList() ) {
+			int idx = table.findColumnIndex(pk);
+
+			Column column = r.getColumns().get(idx);
+			ColumnDef def = table.getColumnList().get(idx);
+
+			map.put(pk, def.asJSON(column.getValue()));
+		}
+		return map;
 	}
 }
