@@ -21,11 +21,13 @@ class KafkaCallback implements Callback {
 	private final MaxwellConfig config;
 	private final MaxwellAbstractRowsEvent event;
 	private final String json;
+	private final String key;
 	private final boolean lastRowInEvent;
 
-	public KafkaCallback(MaxwellAbstractRowsEvent e, MaxwellConfig c, String json, boolean lastRowInEvent) {
+	public KafkaCallback(MaxwellAbstractRowsEvent e, MaxwellConfig c, String key, String json, boolean lastRowInEvent) {
 		this.config = c;
 		this.event = e;
+		this.key = key;
 		this.json = json;
 		this.lastRowInEvent = lastRowInEvent;
 	}
@@ -37,7 +39,7 @@ class KafkaCallback implements Callback {
 		} else {
 			try {
 				if ( LOGGER.isDebugEnabled()) {
-					LOGGER.debug("->  topic:" + md.topic() + ", partition:" +md.partition() + ", offset:" + md.offset());
+					LOGGER.debug("->  key:" + key + ", partition:" +md.partition() + ", offset:" + md.offset());
 					LOGGER.debug("   " + this.json);
 					LOGGER.debug("   " + event.getNextBinlogPosition());
 					LOGGER.debug("");
@@ -69,12 +71,6 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		this.numPartitions = kafka.partitionsFor(topic).size(); //returns 1 for new topics
 	}
 
-	public String kafkaKey(MaxwellAbstractRowsEvent e) {
-		String db = e.getDatabase().getName();
-		String table = e.getTable().getName();
-		return db + "/" + table;
-	}
-
 	public int kafkaPartition(MaxwellAbstractRowsEvent e){
 		String db = e.getDatabase().getName();
 		return Math.abs(db.hashCode() % numPartitions);
@@ -83,12 +79,16 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	@Override
 	public void push(MaxwellAbstractRowsEvent e) throws Exception {
 		Iterator<String> i = e.toJSONStrings().iterator();
-		while ( i.hasNext() ) {
-			String json = i.next();
-			ProducerRecord<byte[], byte[]> record =
-					new ProducerRecord<>(topic, kafkaPartition(e), kafkaKey(e).getBytes(), json.getBytes());
+		Iterator<String> j = e.getPKStrings().iterator();
 
-			kafka.send(record, new KafkaCallback(e, this.config, json, !i.hasNext()));
+		while ( i.hasNext() && j.hasNext() ) {
+			String json = i.next();
+			String key = j.next();
+
+			ProducerRecord<byte[], byte[]> record =
+					new ProducerRecord<>(topic, kafkaPartition(e), key.getBytes(), json.getBytes());
+
+			kafka.send(record, new KafkaCallback(e, this.config, key, json, !i.hasNext()));
 		}
 
 	}
