@@ -193,6 +193,20 @@ public class DDLParserTest {
 	}
 
 	@Test
+	public void testSQLBlacklist() {
+		String testSQL[] = {
+			"ALTER DEFINER=foo VIEW",
+			"CREATE VIEW foo",
+			"CREATE TRIGGER foo",
+			"CREATE DEFINER=`dba`@`localhost` TRIGGER `pt_osc_zd_shard485_prod_cf_values_del` ... "
+		};
+
+		for ( String s : testSQL ) {
+			assertThat(SchemaChange.parse("default_db", s), is(nullValue()));
+		}
+	}
+
+	@Test
 	public void testChangeColumn() {
 		TableAlter a = parseAlter("alter table c CHANGE column `foo` bar int(20) unsigned default 'foo' not null");
 
