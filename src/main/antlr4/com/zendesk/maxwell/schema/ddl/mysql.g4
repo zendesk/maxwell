@@ -88,7 +88,7 @@ ignored_alter_specifications:
     | DROP INDEX index_name
     | DISABLE KEYS
     | ENABLE KEYS
-    | ORDER BY name_list
+    | ORDER BY index_columns
     /* 
      I'm also leaving out the following from the alter table definition because who cares:
      | DISCARD TABLESPACE
@@ -137,6 +137,14 @@ index_options:
 	| WITH PARSER name // no idea if 'parser_name' is an id.  seems like a decent assumption.
 	; 
 	
+index_column_list: '(' index_columns ')';
+index_columns: index_column (',' index_column )*; 
+index_column: name index_column_partial_def?;
+index_column_partial_def: '(' index_column_partial_length ')';
+index_column_partial_length: INTEGER_LITERAL+;
+
+
+
 reference_definition: 
 	REFERENCES table_name 
 	index_column_list 
@@ -157,9 +165,6 @@ reference_definition_on_update:
 	
 reference_option:
 	(RESTRICT | CASCADE | SET NULL | NO ACTION);
-
-index_column_list: '(' name_list ')';
-name_list: name (',' name )*; 
 
 engine_statement: ENGINE '=' IDENT;
 
