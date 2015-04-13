@@ -181,7 +181,8 @@ public class DDLParserTest {
 	       "alter table t drop index `foo`",
 	       "alter table t disable keys",
 	       "alter table t enable keys",
-	       "alter table t order by `foor`, bar"
+	       "alter table t order by `foor`, bar",
+	       "alter table tester add index (whatever(20), `f,` (2))"
 		};
 
 		for ( String s : testSQL ) {

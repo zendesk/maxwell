@@ -9,6 +9,7 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
 import com.zendesk.maxwell.schema.ddl.mysqlParser.Column_optionsContext;
 import com.zendesk.maxwell.schema.ddl.mysqlParser.Enum_valueContext;
+import com.zendesk.maxwell.schema.ddl.mysqlParser.Index_columnContext;
 import com.zendesk.maxwell.schema.ddl.mysqlParser.NameContext;
 import com.zendesk.maxwell.schema.ddl.mysqlParser.*;
 
@@ -229,7 +230,8 @@ public class MysqlParserListener extends mysqlBaseListener {
 	@Override
 	public void exitIndex_type_pk(mysqlParser.Index_type_pkContext ctx) {
 		this.pkColumns = new ArrayList<>();
-		for ( NameContext n : ctx.index_column_list().name_list().name() ) {
+		for (  Index_columnContext column : ctx.index_column_list().index_columns().index_column() ) {
+			NameContext n = column.name();
 			this.pkColumns.add(unquote(n.getText()));
 		}
 	}
