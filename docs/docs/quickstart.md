@@ -44,7 +44,7 @@ mysql> insert into test.maxwell set id = 5, daemon = 'firebus!  firebus!';
 Query OK, 1 row affected (0.04 sec)
 
 (maxwell)
-{"table":"maxwell","type":"insert","data":[{"id":5,"daemon":"firebus!  firebus!"}]}
+{"table":"maxwell","type":"insert","data":{"id":5,"daemon":"firebus!  firebus!"}}
 ```
 
 

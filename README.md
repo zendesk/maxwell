@@ -23,7 +23,7 @@ mysql> insert into test.maxwell set id = 11, daemon = 'firebus!  firebus!';
  "database":"test",
  "table":"maxwell",
  "type":"insert",
- "data":[{"id":11,"daemon":"firebus!  firebus!"}]
+ "data":{"id":11,"daemon":"firebus!  firebus!"}
 }
 ```
 

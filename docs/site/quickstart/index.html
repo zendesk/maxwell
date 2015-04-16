@@ -107,9 +107,9 @@ mysql&gt; GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE on *.* to 'maxwell
 
 <h3 id="install-maxwell">Install maxwell</h3>
 <p>You'll need a version 7 of a JVM.</p>
-<pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.6.0/maxwell-0.6.0.tar.gz \
+<pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.6.3/maxwell-0.6.3.tar.gz \
        | tar zxvf -
-cd maxwell-0.6.0
+cd maxwell-0.6.3
 </code></pre>
 
 <h3 id="run-with-stdout-producer">Run with stdout producer</h3>
@@ -122,7 +122,7 @@ cd maxwell-0.6.0
 Query OK, 1 row affected (0.04 sec)
 
 (maxwell)
-{&quot;table&quot;:&quot;maxwell&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;data&quot;:[{&quot;id&quot;:5,&quot;daemon&quot;:&quot;firebus!  firebus!&quot;}]}
+{&quot;table&quot;:&quot;maxwell&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;data&quot;:{&quot;id&quot;:5,&quot;daemon&quot;:&quot;firebus!  firebus!&quot;}}
 </code></pre>
 
 <h3 id="run-with-kafka-producer">Run with kafka producer</h3>
