@@ -1,13 +1,13 @@
 package com.zendesk.maxwell.producer;
 
 import com.zendesk.maxwell.MaxwellAbstractRowsEvent;
-import com.zendesk.maxwell.MaxwellConfig;
+import com.zendesk.maxwell.MaxwellContext;
 
 public abstract class AbstractProducer {
-	protected final MaxwellConfig config;
+	protected final MaxwellContext context;
 
-	public AbstractProducer(MaxwellConfig config) {
-		this.config = config;
+	public AbstractProducer(MaxwellContext context) {
+		this.context = context;
 	}
 	abstract public void push(MaxwellAbstractRowsEvent e) throws Exception;
 

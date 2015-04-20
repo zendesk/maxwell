@@ -5,14 +5,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import com.zendesk.maxwell.MaxwellAbstractRowsEvent;
-import com.zendesk.maxwell.MaxwellConfig;
+import com.zendesk.maxwell.MaxwellContext;
 
 public class FileProducer extends AbstractProducer {
 	private final File file;
 	private final FileWriter fileWriter;
 
-	public FileProducer(MaxwellConfig config, String filename) throws IOException {
-		super(config);
+	public FileProducer(MaxwellContext context, String filename) throws IOException {
+		super(context);
 		this.file = new File(filename);
 		this.fileWriter = new FileWriter(this.file, true);
 	}
@@ -25,6 +25,6 @@ public class FileProducer extends AbstractProducer {
 			this.fileWriter.flush();
 		}
 		this.onComplete(e);
-		config.setInitialPosition(e.getNextBinlogPosition());
+		context.setInitialPosition(e.getNextBinlogPosition());
 	}
 }

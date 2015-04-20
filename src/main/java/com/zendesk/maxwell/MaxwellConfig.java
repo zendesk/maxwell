@@ -1,27 +1,21 @@
 package com.zendesk.maxwell;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.Properties;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import snaq.db.ConnectionPool;
 import joptsimple.BuiltinHelpFormatter;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.producer.FileProducer;
 import com.zendesk.maxwell.producer.MaxwellKafkaProducer;
-import com.zendesk.maxwell.schema.SchemaPosition;
 
 public class MaxwellConfig {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfig.class);
@@ -31,15 +25,11 @@ public class MaxwellConfig {
 	public String  mysqlUser;
 	public String  mysqlPassword;
 
-	private BinlogPosition initialPosition;
-	private final Properties kafkaProperties;
-	private String kafkaTopic;
-	private String producerType;
-	private String outputFile;
-	private Long serverID;
-	private SchemaPosition schemaPosition;
+	public final Properties kafkaProperties;
+	public String kafkaTopic;
+	public String producerType;
+	public String outputFile;
 
-	private ConnectionPool connectionPool;
 
 	public MaxwellConfig() {
 		this.kafkaProperties = new Properties();
@@ -51,40 +41,6 @@ public class MaxwellConfig {
 		return "jdbc:mysql://" + mysqlHost + ":" + mysqlPort;
 	}
 
-	public ConnectionPool getConnectionPool() {
-		if ( this.connectionPool != null )
-			return this.connectionPool;
-
-		this.connectionPool = new ConnectionPool("MaxwellConnectionPool", 10, 0, 10, getConnectionURI(), mysqlUser, mysqlPassword);
-		return this.connectionPool;
-	}
-
-	public void terminate() {
-		this.schemaPosition.stop();
-		this.schemaPosition = null;
-		this.connectionPool.release();
-		this.connectionPool = null;
-	}
-
-	private SchemaPosition getSchemaPosition() throws SQLException {
-		if ( this.schemaPosition == null ) {
-			this.schemaPosition = new SchemaPosition(this.getConnectionPool(), this.getServerID());
-			this.schemaPosition.start();
-		}
-		return this.schemaPosition;
-	}
-
-	public BinlogPosition getInitialPosition() throws FileNotFoundException, IOException, SQLException {
-		if ( this.initialPosition != null )
-			return this.initialPosition;
-
-		this.initialPosition = getSchemaPosition().get();
-		return this.initialPosition;
-	}
-
-	public void setInitialPosition(BinlogPosition position) throws SQLException {
-		this.getSchemaPosition().set(position);
-	}
 
 	private OptionParser getOptionParser() {
 		OptionParser parser = new OptionParser();
@@ -196,31 +152,4 @@ public class MaxwellConfig {
 	public Properties getKafkaProperties() {
 		return this.kafkaProperties;
 	}
-
-	public AbstractProducer getProducer() throws IOException {
-		switch ( this.producerType ) {
-		case "file":
-			return new FileProducer(this, this.outputFile);
-		case "kafka":
-			return new MaxwellKafkaProducer(this, this.kafkaProperties, this.kafkaTopic);
-		case "stdout":
-		default:
-			return new StdoutProducer(this);
-		}
-	}
-
-	public Long getServerID() throws SQLException {
-		if ( this.serverID != null)
-			return this.serverID;
-
-		try ( Connection c = getConnectionPool().getConnection() ) {
-			ResultSet rs = c.createStatement().executeQuery("SELECT @@server_id as server_id");
-			if ( !rs.next() ) {
-				throw new RuntimeException("Could not retrieve server_id!");
-			}
-			this.serverID = rs.getLong("server_id");
-			return this.serverID;
-		}
-	}
-
 }
