@@ -2,7 +2,6 @@ package com.zendesk.maxwell;
 
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.slf4j.Logger;
@@ -17,6 +16,7 @@ import com.zendesk.maxwell.schema.ddl.SchemaSyncError;
 public class Maxwell {
 	private Schema schema;
 	private MaxwellConfig config;
+	private MaxwellContext context;
 	static final Logger LOGGER = LoggerFactory.getLogger(Maxwell.class);
 
 	private void initFirstRun(Connection connection) throws SQLException, IOException, SchemaSyncError {
@@ -28,19 +28,20 @@ public class Maxwell {
 		SchemaStore store = new SchemaStore(connection, this.schema, pos);
 		store.save();
 
-		this.config.setInitialPosition(pos);
+		this.context.setInitialPosition(pos);
 	}
 
 	private void run(String[] args) throws Exception {
 		this.config = MaxwellConfig.buildConfig("config.properties", args);
+		this.context = new MaxwellContext(this.config);
 
-		try ( Connection connection = this.config.getConnectionPool().getConnection() ) {
+		try ( Connection connection = this.context.getConnectionPool().getConnection() ) {
 			MaxwellMysqlStatus.ensureMysqlState(connection);
 			SchemaStore.ensureMaxwellSchema(connection);
 
-			if ( this.config.getInitialPosition() != null ) {
-				LOGGER.info("Maxwell is booting, starting at " + this.config.getInitialPosition());
-				SchemaStore store = SchemaStore.restore(connection, this.config.getInitialPosition());
+			if ( this.context.getInitialPosition() != null ) {
+				LOGGER.info("Maxwell is booting, starting at " + this.context.getInitialPosition());
+				SchemaStore store = SchemaStore.restore(connection, this.context.getInitialPosition());
 				this.schema = store.getSchema();
 			} else {
 				initFirstRun(connection);
@@ -51,10 +52,9 @@ public class Maxwell {
 			return;
 		}
 
-		AbstractProducer producer = this.config.getProducer();
+		AbstractProducer producer = this.context.getProducer();
 
-		MaxwellParser p = new MaxwellParser(this.schema, producer);
-		p.setConfig(this.config);
+		MaxwellParser p = new MaxwellParser(this.schema, producer, this.context, this.context.getInitialPosition());
 		p.run();
 
 	}

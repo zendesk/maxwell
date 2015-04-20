@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.Properties;
 
 import com.zendesk.maxwell.MaxwellAbstractRowsEvent;
-import com.zendesk.maxwell.MaxwellConfig;
+import com.zendesk.maxwell.MaxwellContext;
 
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -18,14 +18,14 @@ import org.slf4j.LoggerFactory;
 
 class KafkaCallback implements Callback {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
-	private final MaxwellConfig config;
+	private final MaxwellContext context;
 	private final MaxwellAbstractRowsEvent event;
 	private final String json;
 	private final String key;
 	private final boolean lastRowInEvent;
 
-	public KafkaCallback(MaxwellAbstractRowsEvent e, MaxwellConfig c, String key, String json, boolean lastRowInEvent) {
-		this.config = c;
+	public KafkaCallback(MaxwellAbstractRowsEvent e, MaxwellContext c, String key, String json, boolean lastRowInEvent) {
+		this.context = c;
 		this.event = e;
 		this.key = key;
 		this.json = json;
@@ -45,7 +45,7 @@ class KafkaCallback implements Callback {
 					LOGGER.debug("");
 				}
 				if ( this.lastRowInEvent ) {
-					config.setInitialPosition(event.getNextBinlogPosition());
+					context.setInitialPosition(event.getNextBinlogPosition());
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
@@ -58,8 +58,8 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	private final String topic;
 	private final int numPartitions;
 
-	public MaxwellKafkaProducer(MaxwellConfig config, Properties kafkaProperties, String kafkaTopic) {
-		super(config);
+	public MaxwellKafkaProducer(MaxwellContext context, Properties kafkaProperties, String kafkaTopic) {
+		super(context);
 
 		topic = (kafkaTopic == null) ? "maxwell": kafkaTopic;
 
@@ -88,7 +88,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 			ProducerRecord<byte[], byte[]> record =
 					new ProducerRecord<>(topic, kafkaPartition(e), key.getBytes(), json.getBytes());
 
-			kafka.send(record, new KafkaCallback(e, this.config, key, json, !i.hasNext()));
+			kafka.send(record, new KafkaCallback(e, this.context, key, json, !i.hasNext()));
 		}
 
 	}

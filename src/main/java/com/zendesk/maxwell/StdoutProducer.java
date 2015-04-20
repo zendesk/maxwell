@@ -3,8 +3,8 @@ package com.zendesk.maxwell;
 import com.zendesk.maxwell.producer.AbstractProducer;
 
 public class StdoutProducer extends AbstractProducer {
-	public StdoutProducer(MaxwellConfig config) {
-		super(config);
+	public StdoutProducer(MaxwellContext context) {
+		super(context);
 	}
 
 	@Override
@@ -12,6 +12,6 @@ public class StdoutProducer extends AbstractProducer {
 		for ( String json : e.toJSONStrings() ) {
 			System.out.println(json);
 		}
-		this.config.setInitialPosition(e.getNextBinlogPosition());
+		this.context.setInitialPosition(e.getNextBinlogPosition());
 	}
 }

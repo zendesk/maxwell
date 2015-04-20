@@ -80,16 +80,16 @@ public class AbstractMaxwellTest {
 			server.executeList(Arrays.asList(before));
 		}
 
-		MaxwellParser p = new MaxwellParser(capturer.capture(), null);
 		MaxwellConfig config = new MaxwellConfig();
 
 		config.mysqlHost = "127.0.0.1";
 		config.mysqlPort = server.getPort();
 		config.mysqlUser = "maxwell";
 		config.mysqlPassword = "maxwell";
-		config.setInitialPosition(start);
 
-		p.setConfig(config);
+		MaxwellContext context = new MaxwellContext(config);
+
+		MaxwellParser p = new MaxwellParser(capturer.capture(), null, context, start);
 
 		p.setFilter(filter);
 
@@ -107,7 +107,7 @@ public class AbstractMaxwellTest {
         }
 
         p.stop();
-        config.terminate();
+        context.terminate();
 
         return list;
 	}

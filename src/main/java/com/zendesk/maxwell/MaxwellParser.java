@@ -1,5 +1,5 @@
 package com.zendesk.maxwell;
-import java.io.FileNotFoundException;
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -41,35 +41,34 @@ public class MaxwellParser {
 
 	private final MaxwellTableCache tableCache = new MaxwellTableCache();
 	private final OpenReplicator replicator;
-	private MaxwellConfig config;
+	private final MaxwellContext context;
 	private final AbstractProducer producer;
 
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellParser.class);
 
-	public MaxwellParser(Schema currentSchema, AbstractProducer producer) throws Exception {
+	public MaxwellParser(Schema currentSchema, AbstractProducer producer, MaxwellContext ctx, BinlogPosition start) throws Exception {
 		this.schema = currentSchema;
 
 		TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 		this.binlogEventListener = new MaxwellBinlogEventListener(queue);
 
 		this.replicator = new OpenReplicator();
-
 		this.replicator.setBinlogEventListener(this.binlogEventListener);
+
+		this.replicator.setHost(ctx.getConfig().mysqlHost);
+		this.replicator.setUser(ctx.getConfig().mysqlUser);
+		this.replicator.setPassword(ctx.getConfig().mysqlPassword);
+		this.replicator.setPort(ctx.getConfig().mysqlPort);
+
 		this.producer = producer;
+
+		this.context = ctx;
+		this.setBinlogPosition(start);
 	}
 
 	public void setBinlogPosition(BinlogPosition p) {
 		this.replicator.setBinlogFileName(p.getFile());
 		this.replicator.setBinlogPosition(p.getOffset());
-	}
-
-	public void setConfig(MaxwellConfig c) throws FileNotFoundException, IOException, SQLException {
-		this.replicator.setHost(c.mysqlHost);
-		this.replicator.setUser(c.mysqlUser);
-		this.replicator.setPassword(c.mysqlPassword);
-		this.replicator.setPort(c.mysqlPort);
-		this.config = c;
-		setBinlogPosition(c.getInitialPosition());
 	}
 
 	public void setPort(int port) {
@@ -191,7 +190,7 @@ public class MaxwellParser {
 			tableCache.clear();
 			BinlogPosition p = eventBinlogPosition(event);
 			LOGGER.info("storing schema @" + p + " after applying \"" + sql.replace('\n',' ') + "\"");
-			try ( Connection c = this.config.getConnectionPool().getConnection() ) {
+			try ( Connection c = this.context.getConnectionPool().getConnection() ) {
 				new SchemaStore(c, schema, p).save();
 			}
 		}
