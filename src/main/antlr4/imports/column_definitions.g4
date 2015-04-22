@@ -5,7 +5,7 @@ import mysql_literal_tokens, mysql_idents;
 column_definition:
 	col_name=name
 	data_type 
-	(column_options)*
+	column_options*
 	;
 
 col_position: FIRST | (AFTER id);
@@ -16,6 +16,7 @@ data_type:
     | string_type
 	| enumerated_type
 	;
+
 	
 // from http://dev.mysql.com/doc/refman/5.1/en/create-table.html
 generic_type: // types from which we're going to ignore any flags/length 
@@ -52,8 +53,9 @@ column_options:
 	  nullability
 	| default_value
 	| primary_key
+	| ON UPDATE CURRENT_TIMESTAMP
 	| UNIQUE KEY 
-	| (AUTO_INCREMENT)
+	| AUTO_INCREMENT
 	| COMMENT STRING_LITERAL
 	| COLUMN_FORMAT (FIXED|DYNAMIC|DEFAULT)
 	| STORAGE (DISK|MEMORY|DEFAULT)
@@ -69,7 +71,7 @@ character_set: ((CHARACTER SET) | CHARSET) charset_name;
 collation: COLLATE '='? (IDENT | STRING_LITERAL | QUOTED_IDENT);
 
 nullability: (NOT NULL | NULL);
-default_value: DEFAULT (literal | NULL);
+default_value: DEFAULT (literal | NULL | CURRENT_TIMESTAMP);
 length: '(' INTEGER_LITERAL ')';
 int_flags: ( UNSIGNED | ZEROFILL );
 decimal_length: '(' INTEGER_LITERAL ',' INTEGER_LITERAL ')';

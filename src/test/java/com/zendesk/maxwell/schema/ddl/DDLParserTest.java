@@ -346,4 +346,10 @@ public class DDLParserTest {
 		assertThat(changes.size(), is(1));
 	}
 
+	@Test
+	public void testCurrentTimestamp() {
+		List<SchemaChange> changes = parse("CREATE TABLE `foo` ( `id` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP )");
+		assertThat(changes.size(), is(1));
+	}
+
 }
