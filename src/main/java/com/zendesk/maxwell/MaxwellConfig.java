@@ -25,7 +25,7 @@ public class MaxwellConfig {
 	public String kafkaTopic;
 	public String producerType;
 	public String outputFile;
-
+	public String log_level;
 
 	public MaxwellConfig() {
 		this.kafkaProperties = new Properties();
@@ -40,6 +40,7 @@ public class MaxwellConfig {
 
 	private OptionParser getOptionParser() {
 		OptionParser parser = new OptionParser();
+		parser.accepts( "log_level", "log level, one of DEBUG|INFO|WARN|ERROR" ).withRequiredArg();
 		parser.accepts( "host", "mysql host" ).withRequiredArg();
 		parser.accepts( "user", "mysql username" ).withRequiredArg();
 		parser.accepts( "password", "mysql password" ).withRequiredArg();
@@ -52,12 +53,22 @@ public class MaxwellConfig {
 		return parser;
 	}
 
+	private String parseLogLevel(String level) {
+		level = level.toLowerCase();
+		if ( !( level.equals("debug") || level.equals("info") || level.equals("warn") || level.equals("error")))
+			usage("unknown log level: " + level);
+		return level;
+	}
+
 	private void parseOptions(String [] argv) {
 		OptionSet options = getOptionParser().parse(argv);
 
 		if ( options.has("help") )
 			usage("Help for Maxwell:");
 
+		if ( options.has("log_level")) {
+			this.log_level = parseLogLevel((String) options.valueOf("log_level"));
+		}
 		if ( options.has("host"))
 			this.mysqlHost = (String) options.valueOf("host");
 		if ( options.has("password"))
@@ -93,6 +104,9 @@ public class MaxwellConfig {
 		this.producerType    = p.getProperty("producer");
 		this.outputFile      = p.getProperty("output_file");
 		this.kafkaTopic      = p.getProperty("kafka_topic");
+
+		if ( p.containsKey("log_level") )
+			this.log_level = parseLogLevel(p.getProperty("log_level"));
 
 		for ( Enumeration<Object> e = p.keys(); e.hasMoreElements(); ) {
 			String k = (String) e.nextElement();
