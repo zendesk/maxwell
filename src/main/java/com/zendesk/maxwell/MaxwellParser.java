@@ -193,6 +193,7 @@ public class MaxwellParser {
 			try ( Connection c = this.context.getConnectionPool().getConnection() ) {
 				new SchemaStore(c, schema, p).save();
 			}
+			this.context.setInitialPositionSync(p);
 		}
 	}
 

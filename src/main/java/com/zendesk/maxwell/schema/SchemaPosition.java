@@ -18,8 +18,8 @@ import com.zendesk.maxwell.BinlogPosition;
 public class SchemaPosition implements Runnable {
 	static final Logger LOGGER = LoggerFactory.getLogger(SchemaPosition.class);
 	private final Long serverID;
-	private BinlogPosition lastPosition;
 	private final AtomicReference<BinlogPosition> position;
+	private final AtomicReference<BinlogPosition> storedPosition;
 	private final AtomicBoolean run;
 	private Thread thread;
 	private final ConnectionPool connectionPool;
@@ -27,8 +27,8 @@ public class SchemaPosition implements Runnable {
 	public SchemaPosition(ConnectionPool pool, Long serverID) {
 		this.connectionPool = pool;
 		this.serverID = serverID;
-		this.lastPosition = null;
 		this.position = new AtomicReference<>();
+		this.storedPosition = new AtomicReference<>();
 		this.run = new AtomicBoolean(false);
 	}
 
@@ -55,9 +55,8 @@ public class SchemaPosition implements Runnable {
 		while ( true && run.get() ) {
 			BinlogPosition newPosition = position.get();
 
-			if ( newPosition != null && !newPosition.equals(lastPosition) ) {
+			if ( newPosition != null && newPosition.newerThan(storedPosition.get()) ) {
 				store(newPosition);
-				lastPosition = newPosition;
 			}
 
 			try {
@@ -70,6 +69,9 @@ public class SchemaPosition implements Runnable {
 
 
 	private void store(BinlogPosition newPosition) {
+		if ( newPosition == null )
+			return;
+
 		String sql = "INSERT INTO `maxwell`.`positions` set "
 				+ "server_id = ?, "
 				+ "binlog_file = ?, "
@@ -78,7 +80,7 @@ public class SchemaPosition implements Runnable {
 		try(Connection c = connectionPool.getConnection() ){
 			PreparedStatement s = c.prepareStatement(sql);
 
-			LOGGER.debug("Writing initial position: " + newPosition);
+			LOGGER.debug("Writing binlog position to maxwell.positions: " + newPosition);
 			s.setLong(1, serverID);
 			s.setString(2, newPosition.getFile());
 			s.setLong(3, newPosition.getOffset());
@@ -86,6 +88,7 @@ public class SchemaPosition implements Runnable {
 			s.setLong(5, newPosition.getOffset());
 
 			s.execute();
+			storedPosition.set(newPosition);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -93,6 +96,21 @@ public class SchemaPosition implements Runnable {
 
 	public void set(BinlogPosition p) {
 		position.set(p);
+	}
+
+	public void setSync(BinlogPosition p) {
+		LOGGER.debug("syncing binlog position: " + p);
+		position.set(p);
+		thread.interrupt();
+		while ( true ) {
+			BinlogPosition s = storedPosition.get();
+			if ( p.newerThan(s) ) {
+				System.out.println("sleeping, waiting... ");
+				try { Thread.sleep(50); } catch (InterruptedException e) { }
+			} else {
+				break;
+			}
+		}
 	}
 
 	public BinlogPosition get() throws SQLException {
@@ -111,4 +129,5 @@ public class SchemaPosition implements Runnable {
 			return new BinlogPosition(rs.getLong("binlog_position"), rs.getString("binlog_file"));
 		}
 	}
+
 }

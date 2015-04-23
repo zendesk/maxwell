@@ -60,6 +60,10 @@ public class MaxwellContext {
 		this.getSchemaPosition().set(position);
 	}
 
+	public void setInitialPositionSync(BinlogPosition position) throws SQLException {
+		this.getSchemaPosition().setSync(position);
+	}
+
 	public Long getServerID() throws SQLException {
 		if ( this.serverID != null)
 			return this.serverID;
@@ -85,4 +89,5 @@ public class MaxwellContext {
 			return new StdoutProducer(this);
 		}
 	}
+
 }

@@ -39,6 +39,13 @@ public class Maxwell {
 
 		this.context = new MaxwellContext(this.config);
 
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				context.terminate();
+			}
+		});
+
 		try ( Connection connection = this.context.getConnectionPool().getConnection() ) {
 			MaxwellMysqlStatus.ensureMysqlState(connection);
 			SchemaStore.ensureMaxwellSchema(connection);
