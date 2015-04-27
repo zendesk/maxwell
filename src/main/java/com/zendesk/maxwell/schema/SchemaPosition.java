@@ -101,11 +101,10 @@ public class SchemaPosition implements Runnable {
 	public void setSync(BinlogPosition p) {
 		LOGGER.debug("syncing binlog position: " + p);
 		position.set(p);
-		thread.interrupt();
 		while ( true ) {
+			thread.interrupt();
 			BinlogPosition s = storedPosition.get();
 			if ( p.newerThan(s) ) {
-				System.out.println("sleeping, waiting... ");
 				try { Thread.sleep(50); } catch (InterruptedException e) { }
 			} else {
 				break;
