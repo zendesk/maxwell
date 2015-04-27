@@ -33,7 +33,18 @@ public class Maxwell {
 
 	private void run(String[] args) throws Exception {
 		this.config = MaxwellConfig.buildConfig("config.properties", args);
+
+		if ( this.config.log_level != null )
+			MaxwellLogging.setLevel(this.config.log_level);
+
 		this.context = new MaxwellContext(this.config);
+
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				context.terminate();
+			}
+		});
 
 		try ( Connection connection = this.context.getConnectionPool().getConnection() ) {
 			MaxwellMysqlStatus.ensureMysqlState(connection);
