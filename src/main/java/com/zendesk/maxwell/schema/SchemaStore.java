@@ -22,6 +22,7 @@ import com.zendesk.maxwell.schema.columndef.ColumnDef;
 import com.zendesk.maxwell.schema.ddl.SchemaSyncError;
 
 public class SchemaStore {
+	private final int SCHEMAS_TO_KEEP = 5;
 	private final Connection connection;
 	private Schema schema;
 	private BinlogPosition position;
@@ -55,7 +56,12 @@ public class SchemaStore {
 		this.position = position;
 	}
 
-	private static Integer executeInsert(PreparedStatement preparedStatement,
+	public SchemaStore(Connection connection, Long schema_id) throws SQLException {
+		this(connection);
+		this.schema_id = schema_id;
+	}
+
+	private static Long executeInsert(PreparedStatement preparedStatement,
 			Object... values) throws SQLException {
 		for (int i = 0; i < values.length; i++) {
 			preparedStatement.setObject(i + 1, values[i]);
@@ -65,7 +71,7 @@ public class SchemaStore {
 		ResultSet rs = preparedStatement.getGeneratedKeys();
 
 		if (rs.next()) {
-			return rs.getInt(1);
+			return rs.getLong(1);
 		} else
 			return null;
 	}
@@ -76,25 +82,29 @@ public class SchemaStore {
 
 		try {
 			connection.setAutoCommit(false);
-			saveSchema();
+			this.schema_id = saveSchema();
 			connection.commit();
 		} finally {
 			connection.setAutoCommit(true);
 		}
+
+		if ( this.schema_id != null ) {
+			deleteOldSchemas(schema_id);
+		}
 	}
 
 
-	public void saveSchema() throws SQLException {
-		Integer schemaId = executeInsert(schemaInsert, position.getFile(),
+	public Long saveSchema() throws SQLException {
+		Long schemaId = executeInsert(schemaInsert, position.getFile(),
 				position.getOffset(), 1, schema.getEncoding());
 
 		ArrayList<Object> columnData = new ArrayList<Object>();
 
 		for (Database d : schema.getDatabases()) {
-			Integer dbId = executeInsert(databaseInsert, schemaId, d.getName(), d.getEncoding());
+			Long dbId = executeInsert(databaseInsert, schemaId, d.getName(), d.getEncoding());
 
 			for (Table t : d.getTableList()) {
-				Integer tableId = executeInsert(tableInsert, schemaId, dbId, t.getName(), t.getEncoding(), t.getPKString());
+				Long tableId = executeInsert(tableInsert, schemaId, dbId, t.getName(), t.getEncoding(), t.getPKString());
 
 
 				for (ColumnDef c : t.getColumnList()) {
@@ -121,6 +131,8 @@ public class SchemaStore {
 		}
 		if ( columnData.size() > 0 )
 			executeColumnInsert(columnData);
+
+		return schemaId;
 	}
 
 	private void executeColumnInsert(ArrayList<Object> columnData) throws SQLException {
@@ -297,9 +309,23 @@ public class SchemaStore {
 		}
 	}
 
+	public boolean schemaExists(long schema_id) throws SQLException {
+		if ( this.schema_id == null )
+			return false;
+
+		ResultSet rs = connection.createStatement().executeQuery("select id from maxwell.schemas where id = " + schema_id);
+		return rs.next();
+	}
+
 	public BinlogPosition getBinlogPosition() {
 		return this.position;
 	}
 
+	private void deleteOldSchemas(Long currentSchemaId) throws SQLException {
+		Long toDelete = currentSchemaId - SCHEMAS_TO_KEEP;
+		while ( toDelete > 0 && schemaExists(toDelete) ) {
+			new SchemaStore(connection, toDelete).destroy();
+		}
+	}
 
 }
