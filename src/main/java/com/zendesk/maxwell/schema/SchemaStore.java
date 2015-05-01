@@ -325,6 +325,7 @@ public class SchemaStore {
 		Long toDelete = currentSchemaId - SCHEMAS_TO_KEEP;
 		while ( toDelete > 0 && schemaExists(toDelete) ) {
 			new SchemaStore(connection, toDelete).destroy();
+			toDelete--;
 		}
 	}
 
