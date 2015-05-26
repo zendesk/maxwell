@@ -66,8 +66,10 @@ public class Table {
 	}
 
 	private ColumnDef findColumn(String name) {
+		String lcName = name.toLowerCase();
+
 		for (ColumnDef c : columnList )  {
-			if ( c.getName().equalsIgnoreCase(name) )
+			if ( c.getName().equals(lcName) )
 				return c;
 		}
 

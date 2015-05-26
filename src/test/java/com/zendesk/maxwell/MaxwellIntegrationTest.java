@@ -245,4 +245,9 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 	public void testZeroCreatedAtJSON() throws Exception {
 		runJSONTestFile(getSQLDir() + "/json/test_zero_created_at");
 	}
+
+	@Test
+	public void testCaseSensitivity() throws Exception {
+		runJSONTestFile(getSQLDir() + "/json/test_case_insensitive");
+	}
 }
