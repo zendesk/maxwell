@@ -32,6 +32,7 @@ public abstract class SchemaChange {
 
 		SQL_BLACKLIST.add(Pattern.compile("^(ALTER|CREATE|DROP)\\s+((ONLINE|OFFLINE|UNIQUE|FULLTEXT|SPATIAL)\\s+)*(INDEX)", Pattern.CASE_INSENSITIVE));
 		SQL_BLACKLIST.add(Pattern.compile("^ANALYZE\\s+TABLE", Pattern.CASE_INSENSITIVE));
+		SQL_BLACKLIST.add(Pattern.compile("^SET\\s+PASSWORD", Pattern.CASE_INSENSITIVE));
 	}
 
 	private static boolean matchesBlacklist(String sql) {
