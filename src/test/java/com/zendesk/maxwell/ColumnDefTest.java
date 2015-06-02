@@ -119,6 +119,18 @@ public class ColumnDefTest {
 	}
 
 	@Test
+	public void TestAsciiString() {
+		byte input[] = new byte[4];
+		input[0] = Byte.valueOf((byte) 126);
+		input[1] = Byte.valueOf((byte) 126);
+		input[2] = Byte.valueOf((byte) 126);
+		input[3] = Byte.valueOf((byte) 126);
+
+		ColumnDef d = ColumnDef.build("foo", "bar", "ascii", "varchar", 1, false, null);
+		assertThat((String) d.asJSON(input), is("~~~~"));
+	}
+
+	@Test
 	public void TestStringAsJSON() {
 		byte input[] = new byte[4];
 		input[0] = Byte.valueOf((byte) 169);
