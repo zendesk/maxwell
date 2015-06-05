@@ -41,7 +41,7 @@ public class StringColumnDef extends ColumnDef {
 		switch(encoding) {
 		case "utf8": case "utf8mb4":
 			return Charset.forName("UTF-8");
-		case "latin1":
+		case "latin1": case "ascii":
 			return Charset.forName("ISO-8859-1");
 		default:
 			return null;
