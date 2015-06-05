@@ -22,7 +22,7 @@ public class Table {
 
 	public Table(Database d, String name, String encoding, List<ColumnDef> list, List<String> pks) {
 		this.database = d;
-		this.name = name;
+		this.name = name.toLowerCase();
 		this.encoding = encoding;
 		this.columnList = list;
 
@@ -50,23 +50,26 @@ public class Table {
 		int i = 0;
 
 		for(ColumnDef c : columnList) {
-			this.columnOffsetMap.put(c.getName(), i++);
+			this.columnOffsetMap.put(c.getName().toLowerCase(), i++);
 		}
 	}
 
 	public int findColumnIndex(String name) {
+		String lcName = name.toLowerCase();
 		initColumnOffsetMap();
 
-		if ( this.columnOffsetMap.containsKey(name) ) {
-			return this.columnOffsetMap.get(name);
+		if ( this.columnOffsetMap.containsKey(lcName) ) {
+			return this.columnOffsetMap.get(lcName);
 		} else {
 			return -1;
 		}
 	}
 
 	private ColumnDef findColumn(String name) {
+		String lcName = name.toLowerCase();
+
 		for (ColumnDef c : columnList )  {
-			if ( c.getName().equals(name) )
+			if ( c.getName().equals(lcName) )
 				return c;
 		}
 

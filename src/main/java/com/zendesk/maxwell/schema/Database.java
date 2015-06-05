@@ -11,7 +11,7 @@ public class Database {
 	private final String encoding;
 
 	public Database(String name, List<Table> tables, String encoding) {
-		this.name = name;
+		this.name = name.toLowerCase();
 		if ( tables == null )
 			this.tableList = new ArrayList<>();
 		else
@@ -33,7 +33,7 @@ public class Database {
 
 	public Table findTable(String name) {
 		for ( Table t: this.tableList ) {
-			if ( t.getName().equals(name))
+			if ( t.getName().equalsIgnoreCase(name))
 				return t;
 		}
 		return null;
