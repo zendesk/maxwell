@@ -31,8 +31,8 @@ public class Maxwell {
 		this.context.setInitialPosition(pos);
 	}
 
-	private void run(String[] args) throws Exception {
-		this.config = MaxwellConfig.buildConfig("config.properties", args);
+	private void run(String[] argv) throws Exception {
+		this.config = new MaxwellConfig(argv);
 
 		if ( this.config.log_level != null )
 			MaxwellLogging.setLevel(this.config.log_level);

@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 public class MaxwellConfig {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfig.class);
+	static final String DEFAULT_CONFIG_FILE = "config.properties";
 
 	public String  mysqlHost;
 	public Integer mysqlPort;
@@ -27,19 +28,24 @@ public class MaxwellConfig {
 	public String outputFile;
 	public String log_level;
 
-	public MaxwellConfig() {
+	public MaxwellConfig() { // argv is only null in tests
 		this.kafkaProperties = new Properties();
-		this.mysqlUser = null;
-		this.mysqlPassword = null;
 	}
+
+	public MaxwellConfig(String argv[]) {
+		this();
+		this.parse(argv);
+		this.setDefaults();
+	}
+
 
 	public String getConnectionURI() {
 		return "jdbc:mysql://" + mysqlHost + ":" + mysqlPort;
 	}
 
-
 	private OptionParser getOptionParser() {
 		OptionParser parser = new OptionParser();
+		parser.accepts( "config", "location of config file" ).withRequiredArg();
 		parser.accepts( "log_level", "log level, one of DEBUG|INFO|WARN|ERROR" ).withRequiredArg();
 		parser.accepts( "host", "mysql host" ).withRequiredArg();
 		parser.accepts( "user", "mysql username" ).withRequiredArg();
@@ -60,8 +66,14 @@ public class MaxwellConfig {
 		return level;
 	}
 
-	private void parseOptions(String [] argv) {
+	private void parse(String [] argv) {
 		OptionSet options = getOptionParser().parse(argv);
+
+		if ( options.has("config") ) {
+			parseFile((String) options.valueOf("config"), true);
+		} else {
+			parseFile(DEFAULT_CONFIG_FILE, false);
+		}
 
 		if ( options.has("help") )
 			usage("Help for Maxwell:");
@@ -87,14 +99,34 @@ public class MaxwellConfig {
 			this.kafkaTopic = (String) options.valueOf("kafka_topic");
 	}
 
-	private void parseFile(String filename) throws IOException {
-		Properties p = new Properties();
-		File file = new File(filename);
-		if ( !file.exists() )
-			return;
+	private Properties readPropertiesFile(String filename, Boolean abortOnMissing) {
+		Properties p = null;
+		try {
+			File file = new File(filename);
+			if ( !file.exists() ) {
+				if ( abortOnMissing ) {
+					System.err.println("Couldn't find config file: " + filename);
+					System.exit(1);
+				} else {
+					return null;
+				}
+			}
 
-		FileReader reader = new FileReader(file);
-		p.load(reader);
+			FileReader reader = new FileReader(file);
+			p = new Properties();
+			p.load(reader);
+		} catch ( IOException e ) {
+			System.err.println("Couldn't read config file: " + e);
+			System.exit(1);
+		}
+		return p;
+	}
+
+	private void parseFile(String filename, Boolean abortOnMissing) {
+		Properties p = readPropertiesFile(filename, abortOnMissing);
+
+		if ( p == null )
+			return;
 
 		this.mysqlHost     = p.getProperty("host", "127.0.0.1");
 		this.mysqlPassword = p.getProperty("password");
@@ -115,16 +147,6 @@ public class MaxwellConfig {
 			}
 		}
 
-	}
-
-	public static MaxwellConfig buildConfig(String filename, String [] argv) throws IOException {
-		MaxwellConfig config = new MaxwellConfig();
-
-		config.parseFile(filename);
-		config.parseOptions(argv);
-		config.setDefaults();
-
-		return config;
 	}
 
 	private void setDefaults() {
@@ -150,10 +172,10 @@ public class MaxwellConfig {
 	}
 
 	private void usage(String string) {
-		System.out.println(string);
-		System.out.println();
+		System.err.println(string);
+		System.err.println();
 		try {
-			getOptionParser().printHelpOn(System.out);
+			getOptionParser().printHelpOn(System.err);
 			System.exit(1);
 		} catch (IOException e) {
 		}
