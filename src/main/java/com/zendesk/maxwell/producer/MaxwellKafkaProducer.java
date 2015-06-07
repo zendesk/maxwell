@@ -53,7 +53,12 @@ class KafkaCallback implements Callback {
 		}
 	}
 }
+
 public class MaxwellKafkaProducer extends AbstractProducer {
+	static final Object KAFKA_DEFAULTS[] = {
+		"compression.type", "gzip",
+		"metadata.fetch.timeout.ms", 5000
+	};
 	private final KafkaProducer<byte[], byte[]> kafka;
 	private final String topic;
 	private final int numPartitions;
@@ -63,10 +68,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 
 		topic = (kafkaTopic == null) ? "maxwell": kafkaTopic;
 
-		if ( !kafkaProperties.containsKey("compression.type") ) {
-			kafkaProperties.setProperty("compression.type", "gzip"); // enable gzip compression by default
-		}
-
+		this.setDefaults(kafkaProperties);
 		this.kafka = new KafkaProducer<>(kafkaProperties, new ByteArraySerializer(), new ByteArraySerializer());
 		this.numPartitions = kafka.partitionsFor(topic).size(); //returns 1 for new topics
 	}
@@ -93,4 +95,14 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 
 	}
 
+	private void setDefaults(Properties p) {
+		for(int i=0 ; i < KAFKA_DEFAULTS.length; i += 2) {
+			String key = (String) KAFKA_DEFAULTS[i];
+			Object val = KAFKA_DEFAULTS[i + 1];
+
+			if ( !p.containsKey(key)) {
+				p.put(key, val);
+			}
+		}
+	}
 }
