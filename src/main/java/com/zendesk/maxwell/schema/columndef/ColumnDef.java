@@ -29,6 +29,8 @@ public abstract class ColumnDef {
 	}
 
 	public static ColumnDef build(String tableName, String name, String encoding, String type, int pos, boolean signed, String enumValues[]) {
+		type = unalias_type(type);
+
 		switch(type) {
 		case "tinyint":
 		case "smallint":
@@ -69,6 +71,24 @@ public abstract class ColumnDef {
 			return new SetColumnDef(tableName, name, type, pos, enumValues);
 		default:
 			throw new IllegalArgumentException("unsupported column type " + type);
+		}
+	}
+
+	static private String unalias_type(String type) {
+		switch(type) {
+			case "int1":
+				return "tinyint";
+			case "int2":
+				return "smallint";
+			case "int3":
+				return "mediumint";
+			case "int4":
+			case "integer":
+				return "int";
+			case "int8":
+				return "bigint";
+			default:
+				return type;
 		}
 	}
 

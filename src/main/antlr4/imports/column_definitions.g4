@@ -26,7 +26,7 @@ generic_type: // types from which we're going to ignore any flags/length
 	;
 
 signed_type: // we need the UNSIGNED flag here
-      col_type=(TINYINT | SMALLINT | MEDIUMINT | INT | INTEGER | BIGINT )   
+      col_type=(TINYINT | INT1 | SMALLINT | INT2 | MEDIUMINT | INT3 | INT | INTEGER | INT4 | BIGINT | INT8 )
                 length? 
                 int_flags*
     | col_type=(REAL | DOUBLE | FLOAT | DECIMAL | NUMERIC)
@@ -75,3 +75,4 @@ default_value: DEFAULT (literal | NULL | CURRENT_TIMESTAMP);
 length: '(' INTEGER_LITERAL ')';
 int_flags: ( UNSIGNED | ZEROFILL );
 decimal_length: '(' INTEGER_LITERAL ',' INTEGER_LITERAL ')';
+
