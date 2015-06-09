@@ -20,6 +20,11 @@ import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
 
+// the main wrapper for a raw (AbstractRowEvent) binlog event.
+// decorates the event with metadata info from Table,
+// filters rows using the passed in MaxwellFilter,
+// and ultimately outputs arrays of json objects representing each row.
+
 public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 	private final MaxwellFilter filter;
 	private final AbstractRowEvent event;
@@ -188,6 +193,10 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 			this.put("database", name);
 		}
 
+		public void setTimestamp(Long l) {
+			this.put("ts", l);
+		}
+
 		public Object getData(String string) {
 			return this.data.get(string);
 		}
@@ -202,6 +211,7 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 			rowMap.setRowType(getType());
 			rowMap.setTable(getTable().getName());
 			rowMap.setDatabase(getDatabase().getName());
+			rowMap.setTimestamp(getHeader().getTimestamp() / 1000);
 
 			Iterator<Column> colIter = r.getColumns().iterator();
 			Iterator<ColumnDef> defIter = table.getColumnList().iterator();

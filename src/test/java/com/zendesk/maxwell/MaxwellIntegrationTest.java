@@ -169,6 +169,10 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 
 		for ( MaxwellAbstractRowsEvent e : events ) {
 			for ( JSONObject a : e.toJSONObjects() ) {
+				// undo maxwell's fancy ordering stuff -- it's preventing us from removing the ts column.
+				a = new JSONObject(a.toString());
+				a.remove("ts");
+
 				eventJSON.add(a);
 
 				for ( JSONObject b : assertJSON ) {
