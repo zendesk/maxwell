@@ -24,9 +24,9 @@ mysql> GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE on *.* to 'maxwell'@'
 You'll need a version 7 of a JVM.
 
 ```
-curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.7.2/maxwell-0.7.2.tar.gz \
+curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.8.0/maxwell-0.8.0.tar.gz \
        | tar zxvf -
-cd maxwell-0.7.2
+cd maxwell-0.8.0
 ```
 
 
@@ -45,7 +45,7 @@ mysql> insert into test.maxwell set id = 5, daemon = 'firebus!  firebus!';
 Query OK, 1 row affected (0.04 sec)
 
 (maxwell)
-{"table":"maxwell","type":"insert","data":{"id":5,"daemon":"firebus!  firebus!"}}
+{"table":"maxwell","type":"insert","data":{"id":5,"daemon":"firebus!  firebus!"},"ts": 123456789}
 ```
 
 
