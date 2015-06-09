@@ -189,6 +189,16 @@ File.open(File.dirname(__FILE__) + "/mysql_literal_tokens.g4", "w+") do |f|
   f.puts("tokens_available_for_names: (%s);" % tokens_allowed_in_names.join(" | "))
   f.puts
 
+  f.puts <<-EOL
+
+INT1: I N T '1';
+INT2: I N T '2';
+INT3: I N T '3';
+INT4: I N T '4';
+INT8: I N T '8';
+
+  EOL
+
   tokens.select { |t| !t.empty? }.sort.uniq.each do |t|
     f.puts "%s: %s;" % [t, t.split(//).map { |c| c == "_" ? "'_'" : c }.join(' ')]
   end

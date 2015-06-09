@@ -133,4 +133,18 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 		testIntegration(sql);
 	}
 
+	@Test
+	public void testIntX() throws Exception {
+		String sql[] = {
+			"create TABLE `test_int1` ( id int1 )",
+			"create TABLE `test_int2` ( id INT2 )",
+			"create TABLE `test_int3` ( id int3 )",
+			"create TABLE `test_int4` ( id int4 )",
+			"create TABLE `test_int8` ( id int8 )"
+		};
+
+		testIntegration(sql);
+
+	}
+
 }

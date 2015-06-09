@@ -73,6 +73,7 @@ public class IntColumnDef extends ColumnDef {
 	}
 
 
+	@Override
 	public boolean getSigned() {
 		return signed;
 	}
