@@ -18,6 +18,7 @@ class MaxwellBinlogEventListener implements BinlogEventListener {
 		mustStop.set(true);
 	}
 
+	@Override
 	public void onEvents(BinlogEventV4 event) {
 		while (mustStop.get() != true) {
 			try {
