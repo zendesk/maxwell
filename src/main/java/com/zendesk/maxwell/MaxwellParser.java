@@ -92,13 +92,23 @@ public class MaxwellParser {
 
 		for(;;) {
 			event = getEvent();
+
+			if ( !replicator.isRunning() ) {
+				LOGGER.warn("open-replicator stopped at position " + replicator.getBinlogFileName() + ":" + replicator.getBinlogPosition() + " -- restarting");
+				replicator.start();
+			}
+
 			if ( event == null )
 				continue;
 
 			if ( !skipEvent(event)) {
 				producer.push(event);
-				// TODO:  we need to tell the producer to only store a stop-event on table-maps
+				// TODO:  we need to tell the producer to only store a stop-event on table-maps; otherwise we can end up
+				// in the middle of multiple row events, which is a bug.
 			}
+
+			replicator.setBinlogFileName(event.getBinlogFilename());
+			replicator.setBinlogPosition(event.getHeader().getNextPosition());
 		}
 	}
 
