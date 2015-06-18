@@ -158,6 +158,9 @@ SET
 NULL
 NO
 ACTION
+
+BOOL
+BOOLEAN
 )
 
 tokens_allowed_in_names = []

@@ -21,9 +21,10 @@ data_type:
 // from http://dev.mysql.com/doc/refman/5.1/en/create-table.html
 generic_type: // types from which we're going to ignore any flags/length 
 	  col_type=(BIT | BINARY | YEAR) length?
-	| col_type=(DATE | TIME | TIMESTAMP | DATETIME | TINYBLOB | MEDIUMBLOB | LONGBLOB | BLOB )
+	| col_type=(DATE | TIME | TIMESTAMP | DATETIME | TINYBLOB | MEDIUMBLOB | LONGBLOB | BLOB |  BOOLEAN | BOOL )
 	| col_type=VARBINARY length
 	;
+
 
 signed_type: // we need the UNSIGNED flag here
       col_type=(TINYINT | INT1 | SMALLINT | INT2 | MEDIUMINT | INT3 | INT | INTEGER | INT4 | BIGINT | INT8 )

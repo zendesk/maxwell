@@ -154,4 +154,13 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 
 		testIntegration(sql);
 	}
+
+	@Test
+	public void testBooleans() throws Exception {
+		String sql[] = {
+			"create TABLE `test_boolean` ( b1 bool, b2 boolean )"
+		};
+
+		testIntegration(sql);
+	}
 }

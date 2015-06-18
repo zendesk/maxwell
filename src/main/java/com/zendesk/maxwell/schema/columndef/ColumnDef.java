@@ -32,6 +32,10 @@ public abstract class ColumnDef {
 		type = unalias_type(type);
 
 		switch(type) {
+		case "bool":
+		case "boolean":
+			type = "tinyint";
+			// fallthrough
 		case "tinyint":
 		case "smallint":
 		case "mediumint":
