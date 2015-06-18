@@ -10,6 +10,7 @@ $ vi my.cnf
 server-id=1
 log-bin=master
 binlog_format=row
+binlog_checksum=NONE # if on mysql > 5.6.6.  we will support checksums at some point.
 ```
 
 ### Grant permissions
@@ -24,9 +25,9 @@ mysql> GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE on *.* to 'maxwell'@'
 You'll need a version 7 of a JVM.
 
 ```
-curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.8.0/maxwell-0.8.0.tar.gz \
+curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.8.1/maxwell-0.8.1.tar.gz \
        | tar zxvf -
-cd maxwell-0.8.0
+cd maxwell-0.8.1
 ```
 
 
