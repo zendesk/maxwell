@@ -55,6 +55,9 @@ public abstract class ColumnDef {
 		case "mediumblob":
 		case "longblob":
 			return new StringColumnDef(tableName, name, type, pos, "binary");
+		case "real":
+			type = "double";
+			// fall through
 		case "float":
 		case "double":
 			return new FloatColumnDef(tableName, name, type, pos);
