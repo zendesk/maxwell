@@ -10,6 +10,7 @@ $ vi my.cnf
 server-id=1
 log-bin=master
 binlog_format=row
+binlog_checksum=NONE # if on mysql > 5.6.6.  we will support checksums at some point.
 ```
 
 ### Grant permissions

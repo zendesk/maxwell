@@ -16,10 +16,14 @@ import com.google.code.or.binlog.BinlogEventV4;
 import com.google.code.or.binlog.impl.FileBasedBinlogParser;
 import com.google.code.or.binlog.impl.event.AbstractBinlogEventV4;
 import com.google.code.or.binlog.impl.event.AbstractRowEvent;
+import com.google.code.or.binlog.impl.event.DeleteRowsEvent;
+import com.google.code.or.binlog.impl.event.DeleteRowsEventV2;
 import com.google.code.or.binlog.impl.event.QueryEvent;
 import com.google.code.or.binlog.impl.event.TableMapEvent;
 import com.google.code.or.binlog.impl.event.UpdateRowsEvent;
+import com.google.code.or.binlog.impl.event.UpdateRowsEventV2;
 import com.google.code.or.binlog.impl.event.WriteRowsEvent;
+import com.google.code.or.binlog.impl.event.WriteRowsEventV2;
 import com.google.code.or.common.util.MySQLConstants;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Schema;
@@ -135,11 +139,20 @@ public class MaxwellParser {
         case MySQLConstants.WRITE_ROWS_EVENT:
         	ew = new MaxwellWriteRowsEvent((WriteRowsEvent) e, table, filter);
         	break;
+        case MySQLConstants.WRITE_ROWS_EVENT_V2:
+        	ew = new MaxwellWriteRowsEvent((WriteRowsEventV2) e, table, filter);
+        	break;
         case MySQLConstants.UPDATE_ROWS_EVENT:
         	ew = new MaxwellUpdateRowsEvent((UpdateRowsEvent) e, table, filter);
         	break;
+        case MySQLConstants.UPDATE_ROWS_EVENT_V2:
+        	ew = new MaxwellUpdateRowsEvent((UpdateRowsEventV2) e, table, filter);
+        	break;
         case MySQLConstants.DELETE_ROWS_EVENT:
-        	ew = new MaxwellDeleteRowsEvent(e, table, filter);
+        	ew = new MaxwellDeleteRowsEvent((DeleteRowsEvent) e, table, filter);
+        	break;
+        case MySQLConstants.DELETE_ROWS_EVENT_V2:
+        	ew = new MaxwellDeleteRowsEvent((DeleteRowsEventV2) e, table, filter);
         	break;
         default:
         	return null;
@@ -159,8 +172,11 @@ public class MaxwellParser {
 
 			switch(v4Event.getHeader().getEventType()) {
 			case MySQLConstants.WRITE_ROWS_EVENT:
+			case MySQLConstants.WRITE_ROWS_EVENT_V2:
 			case MySQLConstants.UPDATE_ROWS_EVENT:
+			case MySQLConstants.UPDATE_ROWS_EVENT_V2:
 			case MySQLConstants.DELETE_ROWS_EVENT:
+			case MySQLConstants.DELETE_ROWS_EVENT_V2:
 				rowEventsProcessed++;
 				event = processRowsEvent((AbstractRowEvent) v4Event);
 				if ( event.matchesFilter() )
