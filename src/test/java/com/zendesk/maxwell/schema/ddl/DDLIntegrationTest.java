@@ -144,7 +144,14 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 		};
 
 		testIntegration(sql);
-
 	}
 
+	@Test
+	public void testYearWithLength() throws Exception {
+		String sql[] = {
+			"create TABLE `test_year` ( id year(4) )"
+		};
+
+		testIntegration(sql);
+	}
 }

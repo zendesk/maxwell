@@ -20,8 +20,8 @@ data_type:
 	
 // from http://dev.mysql.com/doc/refman/5.1/en/create-table.html
 generic_type: // types from which we're going to ignore any flags/length 
-	  col_type=(BIT | BINARY) length?
-	| col_type=(DATE | TIME | TIMESTAMP | DATETIME | YEAR | TINYBLOB | MEDIUMBLOB | LONGBLOB | BLOB )
+	  col_type=(BIT | BINARY | YEAR) length?
+	| col_type=(DATE | TIME | TIMESTAMP | DATETIME | TINYBLOB | MEDIUMBLOB | LONGBLOB | BLOB )
 	| col_type=VARBINARY length
 	;
 
