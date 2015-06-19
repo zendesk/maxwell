@@ -55,18 +55,21 @@ public class Table {
 	}
 
 	public int findColumnIndex(String name) {
+		String lcName = name.toLowerCase();
 		initColumnOffsetMap();
 
-		if ( this.columnOffsetMap.containsKey(name) ) {
-			return this.columnOffsetMap.get(name);
+		if ( this.columnOffsetMap.containsKey(lcName) ) {
+			return this.columnOffsetMap.get(lcName);
 		} else {
 			return -1;
 		}
 	}
 
 	private ColumnDef findColumn(String name) {
+		String lcName = name.toLowerCase();
+
 		for (ColumnDef c : columnList )  {
-			if ( c.getName().equals(name) )
+			if ( c.getName().equals(lcName) )
 				return c;
 		}
 

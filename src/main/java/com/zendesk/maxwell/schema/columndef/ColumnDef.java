@@ -11,7 +11,7 @@ public abstract class ColumnDef {
 
 	public ColumnDef(String tableName, String name, String type, int pos) {
 		this.tableName = tableName;
-		this.name = name;
+		this.name = name.toLowerCase();
 		this.type = type;
 		this.pos = pos;
 		this.signed = false;
