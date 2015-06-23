@@ -18,6 +18,12 @@ binlog_checksum=NONE # if on mysql > 5.6.6.  we will support checksums at some p
 ```
 mysql> GRANT ALL on maxwell.* to 'maxwell'@'%' identified by 'XXXXXX';
 mysql> GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE on *.* to 'maxwell'@'%';
+
+# or for running maxwell locally:
+
+mysql> GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE on *.* to 'maxwell'@'localhost' identified by 'XXXXXX';
+mysql> GRANT ALL on maxwell.* to 'maxwell'@'localhost';
+
 ```
 
 ### Install maxwell
