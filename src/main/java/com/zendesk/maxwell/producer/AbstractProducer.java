@@ -11,7 +11,5 @@ public abstract class AbstractProducer {
 	}
 	abstract public void push(MaxwellAbstractRowsEvent e) throws Exception;
 
-	public void onComplete(MaxwellAbstractRowsEvent e) {
-		System.out.println("processed " + e.getBinlogFilename() + ":" + e.getHeader().getPosition());
-	}
+	public void onComplete(MaxwellAbstractRowsEvent e) { }
 }
