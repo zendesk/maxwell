@@ -49,6 +49,7 @@ public class MaxwellConfig {
 		parser.accepts( "log_level", "log level, one of DEBUG|INFO|WARN|ERROR" ).withRequiredArg();
 		parser.accepts( "host", "mysql host" ).withRequiredArg();
 		parser.accepts( "user", "mysql username" ).withRequiredArg();
+		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
 		parser.accepts( "password", "mysql password" ).withRequiredArg();
 		parser.accepts( "port", "mysql port" ).withRequiredArg();
 		parser.accepts( "producer", "producer type: stdout|file|kafka" ).withRequiredArg();
@@ -97,6 +98,9 @@ public class MaxwellConfig {
 
 		if ( options.has("kafka_topic"))
 			this.kafkaTopic = (String) options.valueOf("kafka_topic");
+
+		if ( options.has("output_file"))
+			this.outputFile = (String) options.valueOf("output_file");
 	}
 
 	private Properties readPropertiesFile(String filename, Boolean abortOnMissing) {
@@ -155,6 +159,9 @@ public class MaxwellConfig {
 		} else if ( this.producerType.equals("kafka")
 				&& !this.kafkaProperties.containsKey("bootstrap.servers")) {
 			usage("You must specify kafka.bootstrap.servers for the kafka producer!");
+		} else if ( this.producerType.equals("file")
+				&& this.outputFile == null) {
+			usage("please specify --output_file=FILE to use the file producer");
 		}
 
 		if ( this.mysqlPort == null )
