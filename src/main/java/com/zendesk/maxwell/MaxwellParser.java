@@ -64,6 +64,8 @@ public class MaxwellParser {
 		this.replicator.setPassword(ctx.getConfig().mysqlPassword);
 		this.replicator.setPort(ctx.getConfig().mysqlPort);
 
+		this.replicator.setLevel2BufferSize(50 * 1024 * 1024);
+
 		this.producer = producer;
 
 		this.context = ctx;
