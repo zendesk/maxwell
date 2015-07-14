@@ -20,7 +20,8 @@ public class MysqlIsolatedServer {
 	public void boot() throws IOException, SQLException {
         final String dir = System.getProperty("user.dir");
 
-		ProcessBuilder pb = new ProcessBuilder(dir + "/src/test/mysql_isolated_server/bin/boot_isolated_mysql_server", "--", "--binlog_format=row");
+		ProcessBuilder pb = new ProcessBuilder(dir + "/src/test/mysql_isolated_server/bin/boot_isolated_mysql_server",
+												"--", "--binlog_format=row", "--innodb_flush_log_at_trx_commit=1");
 		Map<String, String> env = pb.environment();
 
 		env.put("PATH", env.get("PATH") + ":/opt/local/bin");
