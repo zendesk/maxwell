@@ -13,6 +13,8 @@ import joptsimple.OptionSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.zendesk.maxwell.schema.SchemaStore;
+
 public class MaxwellConfig {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfig.class);
 	static final String DEFAULT_CONFIG_FILE = "config.properties";
@@ -27,6 +29,8 @@ public class MaxwellConfig {
 	public String producerType;
 	public String outputFile;
 	public String log_level;
+
+	public Integer maxSchemas;
 
 	public MaxwellConfig() { // argv is only null in tests
 		this.kafkaProperties = new Properties();
@@ -55,6 +59,7 @@ public class MaxwellConfig {
 		parser.accepts( "producer", "producer type: stdout|file|kafka" ).withRequiredArg();
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
+		parser.accepts( "max_schemas", "how many old schema definitions maxwell should keep around.  default: 5").withOptionalArg();
 		parser.accepts( "help", "display help").forHelp();
 		parser.formatHelpWith(new BuiltinHelpFormatter(160, 4));
 		return parser;
@@ -101,6 +106,9 @@ public class MaxwellConfig {
 
 		if ( options.has("output_file"))
 			this.outputFile = (String) options.valueOf("output_file");
+
+		if ( options.has("max_schemas"))
+			this.maxSchemas = Integer.valueOf((String)options.valueOf("max_schemas"));
 	}
 
 	private Properties readPropertiesFile(String filename, Boolean abortOnMissing) {
@@ -141,6 +149,10 @@ public class MaxwellConfig {
 		this.outputFile      = p.getProperty("output_file");
 		this.kafkaTopic      = p.getProperty("kafka_topic");
 
+		String maxSchemaString = p.getProperty("max_schemas");
+		if (maxSchemaString != null)
+			this.maxSchemas      = Integer.valueOf(maxSchemaString);
+
 		if ( p.containsKey("log_level") )
 			this.log_level = parseLogLevel(p.getProperty("log_level"));
 
@@ -175,6 +187,9 @@ public class MaxwellConfig {
 		if ( this.mysqlPassword == null ) {
 			usage("mysql password not given!");
 		}
+
+		if ( this.maxSchemas != null )
+			SchemaStore.setMaxSchemas(this.maxSchemas);
 
 	}
 

@@ -22,7 +22,8 @@ import com.zendesk.maxwell.schema.columndef.ColumnDef;
 import com.zendesk.maxwell.schema.ddl.SchemaSyncError;
 
 public class SchemaStore {
-	private final int SCHEMAS_TO_KEEP = 5;
+	private static int maxSchemas = 5;
+
 	private final Connection connection;
 	private Schema schema;
 	private BinlogPosition position;
@@ -59,6 +60,14 @@ public class SchemaStore {
 	public SchemaStore(Connection connection, Long schema_id) throws SQLException {
 		this(connection);
 		this.schema_id = schema_id;
+	}
+
+	public static int getMaxSchemas() {
+		return maxSchemas;
+	}
+
+	public static void setMaxSchemas(int maxSchemas) {
+		SchemaStore.maxSchemas = maxSchemas;
 	}
 
 	private static Long executeInsert(PreparedStatement preparedStatement,
@@ -322,7 +331,10 @@ public class SchemaStore {
 	}
 
 	private void deleteOldSchemas(Long currentSchemaId) throws SQLException {
-		Long toDelete = currentSchemaId - SCHEMAS_TO_KEEP;
+		if ( maxSchemas <= 0  )
+			return;
+
+		Long toDelete = currentSchemaId - maxSchemas; // start with the highest numbered ID to delete, work downwards until we run out
 		while ( toDelete > 0 && schemaExists(toDelete) ) {
 			new SchemaStore(connection, toDelete).destroy();
 			toDelete--;
