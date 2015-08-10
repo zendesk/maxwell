@@ -219,7 +219,7 @@ public class MaxwellParser {
 			BinlogPosition p = eventBinlogPosition(event);
 			LOGGER.info("storing schema @" + p + " after applying \"" + sql.replace('\n',' ') + "\"");
 			try ( Connection c = this.context.getConnectionPool().getConnection() ) {
-				new SchemaStore(c, schema, p).save();
+				new SchemaStore(c, this.context.getServerID(), schema, p).save();
 			}
 			this.context.setInitialPositionSync(p);
 		}

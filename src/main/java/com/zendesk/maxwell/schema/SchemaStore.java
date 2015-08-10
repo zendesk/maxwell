@@ -29,11 +29,18 @@ public class SchemaStore {
 	private BinlogPosition position;
 	private Long schema_id;
 
+	public Long getSchemaID() {
+		return schema_id;
+	}
+
 	static final Logger LOGGER = LoggerFactory.getLogger(SchemaStore.class);
 	private final PreparedStatement schemaInsert, databaseInsert, tableInsert;
 	private final String columnInsertSQL;
 
-	public SchemaStore(Connection connection) throws SQLException {
+	private final Long serverID;
+
+	public SchemaStore(Connection connection, Long serverID) throws SQLException {
+		this.serverID = serverID;
 		this.connection = connection;
 		this.schemaInsert = connection
 				.prepareStatement(
@@ -51,14 +58,14 @@ public class SchemaStore {
 				+ " VALUES (?, ?, ?, ?, ?, ?, ?)";
 	}
 
-	public SchemaStore(Connection connection, Schema schema, BinlogPosition position) throws SQLException {
-		this(connection);
+	public SchemaStore(Connection connection, Long serverID, Schema schema, BinlogPosition position) throws SQLException {
+		this(connection, serverID);
 		this.schema = schema;
 		this.position = position;
 	}
 
-	public SchemaStore(Connection connection, Long schema_id) throws SQLException {
-		this(connection);
+	public SchemaStore(Connection connection, Long serverID, Long schema_id) throws SQLException {
+		this(connection, serverID);
 		this.schema_id = schema_id;
 	}
 
@@ -105,7 +112,7 @@ public class SchemaStore {
 
 	public Long saveSchema() throws SQLException {
 		Long schemaId = executeInsert(schemaInsert, position.getFile(),
-				position.getOffset(), 1, schema.getEncoding());
+				position.getOffset(), serverID, schema.getEncoding());
 
 		ArrayList<Object> columnData = new ArrayList<Object>();
 
@@ -192,9 +199,8 @@ public class SchemaStore {
 		}
 	}
 
-	public static SchemaStore restore(Connection connection,
-			BinlogPosition targetPosition) throws SQLException, SchemaSyncError {
-		SchemaStore s = new SchemaStore(connection);
+	public static SchemaStore restore(Connection connection, Long serverId, BinlogPosition targetPosition) throws SQLException, SchemaSyncError {
+		SchemaStore s = new SchemaStore(connection, serverId);
 
 		s.restoreFrom(targetPosition);
 
@@ -204,12 +210,23 @@ public class SchemaStore {
 	private void restoreFrom(BinlogPosition targetPosition)
 			throws SQLException, SchemaSyncError {
 		PreparedStatement p;
-		ResultSet schemaRS = findSchema(targetPosition);
+		boolean shouldResave = false;
+		ResultSet schemaRS = findSchema(targetPosition, this.serverID);
 
-		if (schemaRS == null)
-			throw new SchemaSyncError("Could not find schema for "
-					+ targetPosition.getFile() + ":"
-					+ targetPosition.getOffset());
+		if (schemaRS == null) {
+			// old versions of Maxwell had a bug where they set every server_id to 1.
+			// try to upgrade.
+
+			LOGGER.info("found schema with server_id == 1, re-saving...");
+			schemaRS = findSchema(targetPosition, 1L);
+
+			if ( schemaRS == null )
+				throw new SchemaSyncError("Could not find schema for "
+						+ targetPosition.getFile() + ":"
+						+ targetPosition.getOffset());
+
+			shouldResave = true;
+		}
 
 		ArrayList<Database> databases = new ArrayList<>();
 		this.schema = new Schema(databases, schemaRS.getString("encoding"));
@@ -228,6 +245,9 @@ public class SchemaStore {
 		while (dbRS.next()) {
 			this.schema.getDatabases().add(restoreDatabase(dbRS.getInt("id"), dbRS.getString("name"), dbRS.getString("encoding")));
 		}
+
+		if ( shouldResave )
+			this.schema_id = saveSchema();
 	}
 
 	private Database restoreDatabase(int id, String name, String encoding) throws SQLException {
@@ -276,17 +296,18 @@ public class SchemaStore {
 
 	}
 
-	private ResultSet findSchema(BinlogPosition targetPosition)
+	private ResultSet findSchema(BinlogPosition targetPosition, Long serverID)
 			throws SQLException {
 		LOGGER.debug("looking to restore schema at target position " + targetPosition);
 		PreparedStatement s = connection.prepareStatement(
 			"SELECT * from `maxwell`.`schemas` "
-			+ "WHERE (binlog_file < ?) OR (binlog_file = ? and binlog_position <= ?) "
+			+ "WHERE (binlog_file < ?) OR (binlog_file = ? and binlog_position <= ?) AND server_id = ? "
 			+ "ORDER BY id desc limit 1");
 
 		s.setString(1, targetPosition.getFile());
 		s.setString(2, targetPosition.getFile());
 		s.setLong(3, targetPosition.getOffset());
+		s.setLong(4, serverID);
 
 		ResultSet rs = s.executeQuery();
 		if (rs.next()) {
@@ -336,7 +357,7 @@ public class SchemaStore {
 
 		Long toDelete = currentSchemaId - maxSchemas; // start with the highest numbered ID to delete, work downwards until we run out
 		while ( toDelete > 0 && schemaExists(toDelete) ) {
-			new SchemaStore(connection, toDelete).destroy();
+			new SchemaStore(connection, serverID, toDelete).destroy();
 			toDelete--;
 		}
 	}
