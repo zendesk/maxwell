@@ -23,6 +23,9 @@ public class MaxwellJSONObject extends JSONObject {
 		set.add("data");
 		set.add("ts");
 
+		if ( has("xid") )
+			set.add("xid");
+
 		return set;
 	}
 }

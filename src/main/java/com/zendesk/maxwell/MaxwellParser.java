@@ -3,27 +3,20 @@ package com.zendesk.maxwell;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import com.google.code.or.binlog.impl.event.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.code.or.OpenReplicator;
 import com.google.code.or.binlog.BinlogEventV4;
 import com.google.code.or.binlog.impl.FileBasedBinlogParser;
-import com.google.code.or.binlog.impl.event.AbstractBinlogEventV4;
-import com.google.code.or.binlog.impl.event.AbstractRowEvent;
-import com.google.code.or.binlog.impl.event.DeleteRowsEvent;
-import com.google.code.or.binlog.impl.event.DeleteRowsEventV2;
-import com.google.code.or.binlog.impl.event.QueryEvent;
-import com.google.code.or.binlog.impl.event.TableMapEvent;
-import com.google.code.or.binlog.impl.event.UpdateRowsEvent;
-import com.google.code.or.binlog.impl.event.UpdateRowsEventV2;
-import com.google.code.or.binlog.impl.event.WriteRowsEvent;
-import com.google.code.or.binlog.impl.event.WriteRowsEventV2;
 import com.google.code.or.common.util.MySQLConstants;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Schema;
@@ -163,41 +156,93 @@ public class MaxwellParser {
 
 	}
 
-	public MaxwellAbstractRowsEvent getEvent(boolean stopAtNextTableMap) throws Exception {
-        BinlogEventV4 v4Event;
-        MaxwellAbstractRowsEvent event;
-		while (true) {
-			v4Event = queue.poll(100, TimeUnit.MILLISECONDS);
+	private LinkedList<MaxwellAbstractRowsEvent> getTransactionEvents() throws Exception {
+		BinlogEventV4 v4Event;
+		MaxwellAbstractRowsEvent event;
 
-			if ( v4Event == null )
-				return null;
+		LinkedList<MaxwellAbstractRowsEvent> list = new LinkedList<>();
+
+		// currently to satisfy the test interface, the contract is to return null
+		// if the queue is empty.  should probably just replace this with an optional timeout...
+
+		while ( true ) {
+			v4Event = queue.poll(100, TimeUnit.MILLISECONDS);
+			if (v4Event == null)
+				continue;
 
 			switch(v4Event.getHeader().getEventType()) {
-			case MySQLConstants.WRITE_ROWS_EVENT:
-			case MySQLConstants.WRITE_ROWS_EVENT_V2:
-			case MySQLConstants.UPDATE_ROWS_EVENT:
-			case MySQLConstants.UPDATE_ROWS_EVENT_V2:
-			case MySQLConstants.DELETE_ROWS_EVENT:
-			case MySQLConstants.DELETE_ROWS_EVENT_V2:
-				rowEventsProcessed++;
-				event = processRowsEvent((AbstractRowEvent) v4Event);
-				if ( event.matchesFilter() )
-					return event;
-				break;
-			case MySQLConstants.TABLE_MAP_EVENT:
-				if ( stopAtNextTableMap)
-					return null;
+				case MySQLConstants.WRITE_ROWS_EVENT:
+				case MySQLConstants.WRITE_ROWS_EVENT_V2:
+				case MySQLConstants.UPDATE_ROWS_EVENT:
+				case MySQLConstants.UPDATE_ROWS_EVENT_V2:
+				case MySQLConstants.DELETE_ROWS_EVENT:
+				case MySQLConstants.DELETE_ROWS_EVENT_V2:
+					rowEventsProcessed++;
+					event = processRowsEvent((AbstractRowEvent) v4Event);
+					if ( event.matchesFilter() )
+						list.add(event);
+					break;
+				case MySQLConstants.TABLE_MAP_EVENT:
+					tableCache.processEvent(this.schema, (TableMapEvent) v4Event);
+					break;
+				case MySQLConstants.QUERY_EVENT:
+					QueryEvent qe = (QueryEvent) v4Event;
+					qe.getSql().getValue().toString();
 
-				tableCache.processEvent(this.schema, (TableMapEvent) v4Event);
-				break;
-			case MySQLConstants.QUERY_EVENT:
-				processQueryEvent((QueryEvent) v4Event);
+					processQueryEvent((QueryEvent) v4Event);
+					break;
+				case MySQLConstants.XID_EVENT:
+					XidEvent xe = (XidEvent) v4Event;
+					for ( MaxwellAbstractRowsEvent e : list )
+						e.setXid(xe.getXid());
+
+					return list;
 			}
 		}
 	}
 
+	private LinkedList<MaxwellAbstractRowsEvent> txBuffer;
+
 	public MaxwellAbstractRowsEvent getEvent() throws Exception {
-		return getEvent(false);
+		BinlogEventV4 v4Event;
+		MaxwellAbstractRowsEvent event;
+
+		while ( true ) {
+			if ( txBuffer != null && !txBuffer.isEmpty() ) {
+				return txBuffer.removeFirst();
+			}
+
+			v4Event = queue.poll(100, TimeUnit.MILLISECONDS);
+
+			if (v4Event == null) return null;
+
+			switch (v4Event.getHeader().getEventType()) {
+				case MySQLConstants.WRITE_ROWS_EVENT:
+				case MySQLConstants.WRITE_ROWS_EVENT_V2:
+				case MySQLConstants.UPDATE_ROWS_EVENT:
+				case MySQLConstants.UPDATE_ROWS_EVENT_V2:
+				case MySQLConstants.DELETE_ROWS_EVENT:
+				case MySQLConstants.DELETE_ROWS_EVENT_V2:
+					LOGGER.error("Got an unexpected row-event: " + v4Event);
+					break;
+				case MySQLConstants.TABLE_MAP_EVENT:
+					tableCache.processEvent(this.schema, (TableMapEvent) v4Event);
+					break;
+				case MySQLConstants.QUERY_EVENT:
+					QueryEvent qe = (QueryEvent) v4Event;
+					if (qe.getSql().toString().equals("BEGIN"))
+						txBuffer = getTransactionEvents();
+					else
+						processQueryEvent((QueryEvent) v4Event);
+					break;
+				case MySQLConstants.XID_EVENT:
+					XidEvent xe = (XidEvent) v4Event;
+					LOGGER.debug("got xid event: " + xe.toString());
+					break;
+				default:
+					break;
+			}
+		}
 	}
 
 	private void processQueryEvent(QueryEvent event) throws SchemaSyncError, SQLException, IOException {

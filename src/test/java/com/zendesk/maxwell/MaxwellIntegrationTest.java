@@ -1,7 +1,8 @@
 package com.zendesk.maxwell;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -149,8 +150,8 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 			"insert into minimal set account_id = 2",
 			"ALTER table minimal add column new_text_field varchar(255)",
 			"insert into minimal set account_id = 2, new_text_field='hihihi'",
-
 	};
+
 	@Test
 	public void testAlterTable() throws Exception {
 		MaxwellAbstractRowsEvent e;
@@ -161,6 +162,40 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 		e = list.get(0);
 		assertThat(e.getTable().getName(), is("minimal"));
 	}
+
+	String testTransactions[] = {
+			"BEGIN",
+			"insert into minimal set account_id = 1, text_field = 's'",
+			"insert into minimal set account_id = 2, text_field = 's'",
+			"COMMIT",
+			"BEGIN",
+			"insert into minimal set account_id = 3, text_field = 's'",
+			"insert into minimal set account_id = 4, text_field = 's'",
+			"COMMIT"
+	};
+
+	@Test
+	public void testTransactionID() throws Exception {
+		List<MaxwellAbstractRowsEvent> list;
+
+		server.getConnection().setAutoCommit(false);
+		list = getRowsForSQL(null, testTransactions, null);
+
+		for ( MaxwellAbstractRowsEvent e : list ) {
+			List<JSONObject> objects = e.toJSONObjects();
+
+			Long lastXID = null;
+
+			for ( JSONObject j : objects ) {
+				assertTrue(j.has("xid"));
+
+				if ( lastXID != null )
+					assertEquals(lastXID.longValue(), j.getLong("xid"));
+				lastXID = j.getLong("xid");
+			}
+		}
+	}
+
 
 	private void runJSONTest(List<String> sql, List<JSONObject> assertJSON) throws Exception {
 		List<JSONObject> eventJSON = new ArrayList<>();

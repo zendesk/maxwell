@@ -28,6 +28,9 @@ import com.zendesk.maxwell.schema.columndef.ColumnDef;
 public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 	private final MaxwellFilter filter;
 	private final AbstractRowEvent event;
+
+	private Long xid;
+
 	protected final Table table;
 	protected final Database database;
 
@@ -83,6 +86,15 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 		else
 			return null;
 	}
+
+	public Long getXid() {
+		return xid;
+	}
+
+	public void setXid(Long xid) {
+		this.xid = xid;
+	}
+
 
 	@Override
 	public String toString() {
@@ -197,6 +209,10 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 			this.put("ts", l);
 		}
 
+		public void setXid(Long xid) {
+			this.put("xid", xid);
+		}
+
 		public Object getData(String string) {
 			return this.data.get(string);
 		}
@@ -212,6 +228,7 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 			rowMap.setTable(getTable().getName());
 			rowMap.setDatabase(getDatabase().getName());
 			rowMap.setTimestamp(getHeader().getTimestamp() / 1000);
+			rowMap.setXid(getXid());
 
 			Iterator<Column> colIter = r.getColumns().iterator();
 			Iterator<ColumnDef> defIter = table.getColumnList().iterator();
