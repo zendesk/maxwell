@@ -26,6 +26,9 @@ public class MaxwellJSONObject extends JSONObject {
 		if ( has("xid") )
 			set.add("xid");
 
+		if ( has("commit") && getBoolean("commit"))
+			set.add("commit");
+
 		return set;
 	}
 }

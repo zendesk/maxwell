@@ -196,6 +196,8 @@ public class MaxwellParser {
 					for ( MaxwellAbstractRowsEvent e : list )
 						e.setXid(xe.getXid());
 
+					list.getLast().setCommit(true);
+
 					return list;
 			}
 		}
@@ -234,10 +236,6 @@ public class MaxwellParser {
 						txBuffer = getTransactionEvents();
 					else
 						processQueryEvent((QueryEvent) v4Event);
-					break;
-				case MySQLConstants.XID_EVENT:
-					XidEvent xe = (XidEvent) v4Event;
-					LOGGER.debug("got xid event: " + xe.toString());
 					break;
 				default:
 					break;

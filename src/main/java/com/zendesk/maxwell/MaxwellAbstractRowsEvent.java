@@ -30,6 +30,7 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 	private final AbstractRowEvent event;
 
 	private Long xid;
+	private boolean commit; // whether this row ends the transaction
 
 	protected final Table table;
 	protected final Database database;
@@ -40,6 +41,8 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 		this.header = e.getHeader();
 		this.table = table;
 		this.database = table.getDatabase();
+		this.commit = false;
+		this.xid = null;
 		this.filter = f;
 	}
 
@@ -93,6 +96,14 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 
 	public void setXid(Long xid) {
 		this.xid = xid;
+	}
+
+	public boolean isCommit() {
+		return commit;
+	}
+
+	public void setCommit(boolean commit) {
+		this.commit = commit;
 	}
 
 
@@ -213,6 +224,11 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 			this.put("xid", xid);
 		}
 
+		public void setCommit(boolean commit) {
+			if ( commit )
+				this.put("commit", commit);
+		}
+
 		public Object getData(String string) {
 			return this.data.get(string);
 		}
@@ -221,7 +237,8 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 	public List<RowMap> jsonMaps() {
 		ArrayList<RowMap> list = new ArrayList<>();
 		Object value;
-		for ( Row r : filteredRows()) {
+		for ( Iterator<Row> ri = filteredRows().iterator() ; ri.hasNext(); ) {
+			Row r = ri.next();
 			RowMap rowMap = new RowMap();
 
 			rowMap.setRowType(getType());
@@ -229,6 +246,7 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 			rowMap.setDatabase(getDatabase().getName());
 			rowMap.setTimestamp(getHeader().getTimestamp() / 1000);
 			rowMap.setXid(getXid());
+			rowMap.setCommit(isCommit() && !ri.hasNext());
 
 			Iterator<Column> colIter = r.getColumns().iterator();
 			Iterator<ColumnDef> defIter = table.getColumnList().iterator();

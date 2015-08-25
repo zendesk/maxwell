@@ -169,8 +169,7 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 			"insert into minimal set account_id = 2, text_field = 's'",
 			"COMMIT",
 			"BEGIN",
-			"insert into minimal set account_id = 3, text_field = 's'",
-			"insert into minimal set account_id = 4, text_field = 's'",
+			"insert into minimal (account_id, text_field) values (3, 's'), (4, 's')",
 			"COMMIT"
 	};
 
@@ -181,19 +180,21 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 		server.getConnection().setAutoCommit(false);
 		list = getRowsForSQL(null, testTransactions, null);
 
+		ArrayList<JSONObject> objects = new ArrayList<>();
 		for ( MaxwellAbstractRowsEvent e : list ) {
-			List<JSONObject> objects = e.toJSONObjects();
-
-			Long lastXID = null;
-
-			for ( JSONObject j : objects ) {
+			for ( JSONObject j : e.toJSONObjects() ) {
 				assertTrue(j.has("xid"));
-
-				if ( lastXID != null )
-					assertEquals(lastXID.longValue(), j.getLong("xid"));
-				lastXID = j.getLong("xid");
+				objects.add(j);
 			}
 		}
+		assertEquals(4, objects.size());
+
+		assertEquals(objects.get(0).get("xid"), objects.get(1).get("xid"));
+		assertFalse(objects.get(0).has("commit"));
+		assertTrue(objects.get(1).has("commit"));
+
+		assertFalse(objects.get(2).has("commit"));
+		assertTrue(objects.get(3).has("commit"));
 	}
 
 
