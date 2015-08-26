@@ -4,3 +4,4 @@ config/*.yml
 /config.properties
 /maxwell.position
 /.idea
+/*.iml
