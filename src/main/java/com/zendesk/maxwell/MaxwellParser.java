@@ -126,34 +126,33 @@ public class MaxwellParser {
 
 		table = tableCache.getTable(e.getTableId());
 
-		if ( table == null ) {
+		if (table == null) {
 			throw new SchemaSyncError("couldn't find table in cache for table id: " + e.getTableId());
 		}
 
 		switch (e.getHeader().getEventType()) {
-        case MySQLConstants.WRITE_ROWS_EVENT:
-        	ew = new MaxwellWriteRowsEvent((WriteRowsEvent) e, table, filter);
-        	break;
-        case MySQLConstants.WRITE_ROWS_EVENT_V2:
-        	ew = new MaxwellWriteRowsEvent((WriteRowsEventV2) e, table, filter);
-        	break;
-        case MySQLConstants.UPDATE_ROWS_EVENT:
-        	ew = new MaxwellUpdateRowsEvent((UpdateRowsEvent) e, table, filter);
-        	break;
-        case MySQLConstants.UPDATE_ROWS_EVENT_V2:
-        	ew = new MaxwellUpdateRowsEvent((UpdateRowsEventV2) e, table, filter);
-        	break;
-        case MySQLConstants.DELETE_ROWS_EVENT:
-        	ew = new MaxwellDeleteRowsEvent((DeleteRowsEvent) e, table, filter);
-        	break;
-        case MySQLConstants.DELETE_ROWS_EVENT_V2:
-        	ew = new MaxwellDeleteRowsEvent((DeleteRowsEventV2) e, table, filter);
-        	break;
-        default:
-        	return null;
+			case MySQLConstants.WRITE_ROWS_EVENT:
+				ew = new MaxwellWriteRowsEvent((WriteRowsEvent) e, table, filter);
+				break;
+			case MySQLConstants.WRITE_ROWS_EVENT_V2:
+				ew = new MaxwellWriteRowsEvent((WriteRowsEventV2) e, table, filter);
+				break;
+			case MySQLConstants.UPDATE_ROWS_EVENT:
+				ew = new MaxwellUpdateRowsEvent((UpdateRowsEvent) e, table, filter);
+				break;
+			case MySQLConstants.UPDATE_ROWS_EVENT_V2:
+				ew = new MaxwellUpdateRowsEvent((UpdateRowsEventV2) e, table, filter);
+				break;
+			case MySQLConstants.DELETE_ROWS_EVENT:
+				ew = new MaxwellDeleteRowsEvent((DeleteRowsEvent) e, table, filter);
+				break;
+			case MySQLConstants.DELETE_ROWS_EVENT_V2:
+				ew = new MaxwellDeleteRowsEvent((DeleteRowsEventV2) e, table, filter);
+				break;
+			default:
+				return null;
 		}
 		return ew;
-
 	}
 
 	private LinkedList<MaxwellAbstractRowsEvent> getTransactionEvents() throws Exception {
