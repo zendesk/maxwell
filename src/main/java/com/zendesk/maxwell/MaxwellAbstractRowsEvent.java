@@ -30,7 +30,7 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 	private final AbstractRowEvent event;
 
 	private Long xid;
-	private boolean commit; // whether this row ends the transaction
+	private boolean txCommit; // whether this row ends the transaction
 
 	protected final Table table;
 	protected final Database database;
@@ -41,7 +41,7 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 		this.header = e.getHeader();
 		this.table = table;
 		this.database = table.getDatabase();
-		this.commit = false;
+		this.txCommit = false;
 		this.xid = null;
 		this.filter = f;
 	}
@@ -98,12 +98,8 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 		this.xid = xid;
 	}
 
-	public boolean isCommit() {
-		return commit;
-	}
-
-	public void setCommit(boolean commit) {
-		this.commit = commit;
+	public void setTXCommit() {
+		this.txCommit = true;
 	}
 
 
@@ -224,9 +220,8 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 			this.put("xid", xid);
 		}
 
-		public void setCommit(boolean commit) {
-			if ( commit )
-				this.put("commit", commit);
+		public void setTXCommit() {
+			this.put("commit", true);
 		}
 
 		public Object getData(String string) {
@@ -246,7 +241,10 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 			rowMap.setDatabase(getDatabase().getName());
 			rowMap.setTimestamp(getHeader().getTimestamp() / 1000);
 			rowMap.setXid(getXid());
-			rowMap.setCommit(isCommit() && !ri.hasNext());
+
+			// only set commit: true on the last row of the last event of the transaction
+			if ( this.txCommit && !ri.hasNext() )
+				rowMap.setTXCommit();
 
 			Iterator<Column> colIter = r.getColumns().iterator();
 			Iterator<ColumnDef> defIter = table.getColumnList().iterator();

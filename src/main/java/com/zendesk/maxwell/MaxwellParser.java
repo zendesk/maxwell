@@ -197,7 +197,7 @@ public class MaxwellParser {
 						e.setXid(xe.getXid());
 
 					if ( !list.isEmpty() )
-						list.getLast().setCommit(true);
+						list.getLast().setTXCommit();
 
 					return list;
 			}
