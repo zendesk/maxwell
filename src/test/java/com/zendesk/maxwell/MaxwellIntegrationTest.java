@@ -177,25 +177,30 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 	public void testTransactionID() throws Exception {
 		List<MaxwellAbstractRowsEvent> list;
 
-		server.getConnection().setAutoCommit(false);
-		list = getRowsForSQL(null, testTransactions, null);
+		try {
+			server.getConnection().setAutoCommit(false);
+			list = getRowsForSQL(null, testTransactions, null);
 
-		ArrayList<JSONObject> objects = new ArrayList<>();
-		for ( MaxwellAbstractRowsEvent e : list ) {
-			for ( JSONObject j : e.toJSONObjects() ) {
-				assertTrue(j.has("xid"));
-				objects.add(j);
+			ArrayList<JSONObject> objects = new ArrayList<>();
+			for (MaxwellAbstractRowsEvent e : list) {
+				for (JSONObject j : e.toJSONObjects()) {
+					assertTrue(j.has("xid"));
+					objects.add(j);
+				}
 			}
+			assertEquals(4, objects.size());
+
+			assertEquals(objects.get(0).get("xid"), objects.get(1).get("xid"));
+			assertFalse(objects.get(0).has("commit"));
+			assertTrue(objects.get(1).has("commit"));
+
+			assertFalse(objects.get(2).has("commit"));
+			assertTrue(objects.get(3).has("commit"));
+		} finally {
+			server.getConnection().setAutoCommit(true);
 		}
-		assertEquals(4, objects.size());
-
-		assertEquals(objects.get(0).get("xid"), objects.get(1).get("xid"));
-		assertFalse(objects.get(0).has("commit"));
-		assertTrue(objects.get(1).has("commit"));
-
-		assertFalse(objects.get(2).has("commit"));
-		assertTrue(objects.get(3).has("commit"));
 	}
+
 
 
 	private void runJSONTest(List<String> sql, List<JSONObject> assertJSON) throws Exception {
@@ -208,6 +213,8 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 				// undo maxwell's fancy ordering stuff -- it's preventing us from removing the ts column.
 				a = new JSONObject(a.toString());
 				a.remove("ts");
+				a.remove("xid");
+				a.remove("commit");
 
 				eventJSON.add(a);
 

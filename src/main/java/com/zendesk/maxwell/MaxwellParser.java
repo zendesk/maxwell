@@ -178,6 +178,7 @@ public class MaxwellParser {
 				case MySQLConstants.DELETE_ROWS_EVENT_V2:
 					rowEventsProcessed++;
 					event = processRowsEvent((AbstractRowEvent) v4Event);
+
 					if ( event.matchesFilter() )
 						list.add(event);
 					break;
@@ -186,16 +187,17 @@ public class MaxwellParser {
 					break;
 				case MySQLConstants.QUERY_EVENT:
 					QueryEvent qe = (QueryEvent) v4Event;
-					qe.getSql().getValue().toString();
-
-					processQueryEvent((QueryEvent) v4Event);
-					break;
+					// TODO: need to handle this case.
+					// The MySQL guys say some storage engines will output a "COMMIT" QUERY_EVENT at the
+					// end of the stream.
+					throw new RuntimeException("Unhandled QueryEvent: " + qe);
 				case MySQLConstants.XID_EVENT:
 					XidEvent xe = (XidEvent) v4Event;
 					for ( MaxwellAbstractRowsEvent e : list )
 						e.setXid(xe.getXid());
 
-					list.getLast().setCommit(true);
+					if ( !list.isEmpty() )
+						list.getLast().setCommit(true);
 
 					return list;
 			}
