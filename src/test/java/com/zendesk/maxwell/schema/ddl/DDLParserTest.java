@@ -358,4 +358,9 @@ public class DDLParserTest {
 		assertThat(changes.size(), is(1));
 	}
 
+	@Test
+	public void testBinaryChar() {
+		List<SchemaChange> changes = parse("CREATE TABLE `foo` ( `id` char(16) BINARY character set 'utf8' )");
+		assertThat(changes.size(), is(1));
+	}
 }

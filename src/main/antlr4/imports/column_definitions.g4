@@ -38,8 +38,10 @@ signed_type: // we need the UNSIGNED flag here
 string_type: // getting the encoding here 
 	  col_type=(CHAR | VARCHAR)
 	           length?
+	           BINARY?
 	           charset_def?
-    | col_type=(TINYTEXT | TEXT | MEDIUMTEXT | LONGTEXT) 
+    | col_type=(TINYTEXT | TEXT | MEDIUMTEXT | LONGTEXT)
+    			BINARY?
   		        charset_def?
 	  ;
 
