@@ -1,7 +1,8 @@
 package com.zendesk.maxwell;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -149,8 +150,8 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 			"insert into minimal set account_id = 2",
 			"ALTER table minimal add column new_text_field varchar(255)",
 			"insert into minimal set account_id = 2, new_text_field='hihihi'",
-
 	};
+
 	@Test
 	public void testAlterTable() throws Exception {
 		MaxwellAbstractRowsEvent e;
@@ -162,6 +163,46 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 		assertThat(e.getTable().getName(), is("minimal"));
 	}
 
+	String testTransactions[] = {
+			"BEGIN",
+			"insert into minimal set account_id = 1, text_field = 's'",
+			"insert into minimal set account_id = 2, text_field = 's'",
+			"COMMIT",
+			"BEGIN",
+			"insert into minimal (account_id, text_field) values (3, 's'), (4, 's')",
+			"COMMIT"
+	};
+
+	@Test
+	public void testTransactionID() throws Exception {
+		List<MaxwellAbstractRowsEvent> list;
+
+		try {
+			server.getConnection().setAutoCommit(false);
+			list = getRowsForSQL(null, testTransactions, null);
+
+			ArrayList<JSONObject> objects = new ArrayList<>();
+			for (MaxwellAbstractRowsEvent e : list) {
+				for (JSONObject j : e.toJSONObjects()) {
+					assertTrue(j.has("xid"));
+					objects.add(j);
+				}
+			}
+			assertEquals(4, objects.size());
+
+			assertEquals(objects.get(0).get("xid"), objects.get(1).get("xid"));
+			assertFalse(objects.get(0).has("commit"));
+			assertTrue(objects.get(1).has("commit"));
+
+			assertFalse(objects.get(2).has("commit"));
+			assertTrue(objects.get(3).has("commit"));
+		} finally {
+			server.getConnection().setAutoCommit(true);
+		}
+	}
+
+
+
 	private void runJSONTest(List<String> sql, List<JSONObject> assertJSON) throws Exception {
 		List<JSONObject> eventJSON = new ArrayList<>();
 		List<JSONObject> matched = new ArrayList<>();
@@ -172,6 +213,8 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 				// undo maxwell's fancy ordering stuff -- it's preventing us from removing the ts column.
 				a = new JSONObject(a.toString());
 				a.remove("ts");
+				a.remove("xid");
+				a.remove("commit");
 
 				eventJSON.add(a);
 

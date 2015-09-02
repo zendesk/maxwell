@@ -3,27 +3,20 @@ package com.zendesk.maxwell;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import com.google.code.or.binlog.impl.event.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.code.or.OpenReplicator;
 import com.google.code.or.binlog.BinlogEventV4;
 import com.google.code.or.binlog.impl.FileBasedBinlogParser;
-import com.google.code.or.binlog.impl.event.AbstractBinlogEventV4;
-import com.google.code.or.binlog.impl.event.AbstractRowEvent;
-import com.google.code.or.binlog.impl.event.DeleteRowsEvent;
-import com.google.code.or.binlog.impl.event.DeleteRowsEventV2;
-import com.google.code.or.binlog.impl.event.QueryEvent;
-import com.google.code.or.binlog.impl.event.TableMapEvent;
-import com.google.code.or.binlog.impl.event.UpdateRowsEvent;
-import com.google.code.or.binlog.impl.event.UpdateRowsEventV2;
-import com.google.code.or.binlog.impl.event.WriteRowsEvent;
-import com.google.code.or.binlog.impl.event.WriteRowsEventV2;
 import com.google.code.or.common.util.MySQLConstants;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Schema;
@@ -133,71 +126,122 @@ public class MaxwellParser {
 
 		table = tableCache.getTable(e.getTableId());
 
-		if ( table == null ) {
+		if (table == null) {
 			throw new SchemaSyncError("couldn't find table in cache for table id: " + e.getTableId());
 		}
 
 		switch (e.getHeader().getEventType()) {
-        case MySQLConstants.WRITE_ROWS_EVENT:
-        	ew = new MaxwellWriteRowsEvent((WriteRowsEvent) e, table, filter);
-        	break;
-        case MySQLConstants.WRITE_ROWS_EVENT_V2:
-        	ew = new MaxwellWriteRowsEvent((WriteRowsEventV2) e, table, filter);
-        	break;
-        case MySQLConstants.UPDATE_ROWS_EVENT:
-        	ew = new MaxwellUpdateRowsEvent((UpdateRowsEvent) e, table, filter);
-        	break;
-        case MySQLConstants.UPDATE_ROWS_EVENT_V2:
-        	ew = new MaxwellUpdateRowsEvent((UpdateRowsEventV2) e, table, filter);
-        	break;
-        case MySQLConstants.DELETE_ROWS_EVENT:
-        	ew = new MaxwellDeleteRowsEvent((DeleteRowsEvent) e, table, filter);
-        	break;
-        case MySQLConstants.DELETE_ROWS_EVENT_V2:
-        	ew = new MaxwellDeleteRowsEvent((DeleteRowsEventV2) e, table, filter);
-        	break;
-        default:
-        	return null;
+			case MySQLConstants.WRITE_ROWS_EVENT:
+				ew = new MaxwellWriteRowsEvent((WriteRowsEvent) e, table, filter);
+				break;
+			case MySQLConstants.WRITE_ROWS_EVENT_V2:
+				ew = new MaxwellWriteRowsEvent((WriteRowsEventV2) e, table, filter);
+				break;
+			case MySQLConstants.UPDATE_ROWS_EVENT:
+				ew = new MaxwellUpdateRowsEvent((UpdateRowsEvent) e, table, filter);
+				break;
+			case MySQLConstants.UPDATE_ROWS_EVENT_V2:
+				ew = new MaxwellUpdateRowsEvent((UpdateRowsEventV2) e, table, filter);
+				break;
+			case MySQLConstants.DELETE_ROWS_EVENT:
+				ew = new MaxwellDeleteRowsEvent((DeleteRowsEvent) e, table, filter);
+				break;
+			case MySQLConstants.DELETE_ROWS_EVENT_V2:
+				ew = new MaxwellDeleteRowsEvent((DeleteRowsEventV2) e, table, filter);
+				break;
+			default:
+				return null;
 		}
 		return ew;
-
 	}
 
-	public MaxwellAbstractRowsEvent getEvent(boolean stopAtNextTableMap) throws Exception {
-        BinlogEventV4 v4Event;
-        MaxwellAbstractRowsEvent event;
-		while (true) {
-			v4Event = queue.poll(100, TimeUnit.MILLISECONDS);
+	private LinkedList<MaxwellAbstractRowsEvent> getTransactionEvents() throws Exception {
+		BinlogEventV4 v4Event;
+		MaxwellAbstractRowsEvent event;
 
-			if ( v4Event == null )
-				return null;
+		LinkedList<MaxwellAbstractRowsEvent> list = new LinkedList<>();
+
+		// currently to satisfy the test interface, the contract is to return null
+		// if the queue is empty.  should probably just replace this with an optional timeout...
+
+		while ( true ) {
+			v4Event = queue.poll(100, TimeUnit.MILLISECONDS);
+			if (v4Event == null)
+				continue;
 
 			switch(v4Event.getHeader().getEventType()) {
-			case MySQLConstants.WRITE_ROWS_EVENT:
-			case MySQLConstants.WRITE_ROWS_EVENT_V2:
-			case MySQLConstants.UPDATE_ROWS_EVENT:
-			case MySQLConstants.UPDATE_ROWS_EVENT_V2:
-			case MySQLConstants.DELETE_ROWS_EVENT:
-			case MySQLConstants.DELETE_ROWS_EVENT_V2:
-				rowEventsProcessed++;
-				event = processRowsEvent((AbstractRowEvent) v4Event);
-				if ( event.matchesFilter() )
-					return event;
-				break;
-			case MySQLConstants.TABLE_MAP_EVENT:
-				if ( stopAtNextTableMap)
-					return null;
+				case MySQLConstants.WRITE_ROWS_EVENT:
+				case MySQLConstants.WRITE_ROWS_EVENT_V2:
+				case MySQLConstants.UPDATE_ROWS_EVENT:
+				case MySQLConstants.UPDATE_ROWS_EVENT_V2:
+				case MySQLConstants.DELETE_ROWS_EVENT:
+				case MySQLConstants.DELETE_ROWS_EVENT_V2:
+					rowEventsProcessed++;
+					event = processRowsEvent((AbstractRowEvent) v4Event);
 
-				tableCache.processEvent(this.schema, (TableMapEvent) v4Event);
-				break;
-			case MySQLConstants.QUERY_EVENT:
-				processQueryEvent((QueryEvent) v4Event);
+					if ( event.matchesFilter() )
+						list.add(event);
+					break;
+				case MySQLConstants.TABLE_MAP_EVENT:
+					tableCache.processEvent(this.schema, (TableMapEvent) v4Event);
+					break;
+				case MySQLConstants.QUERY_EVENT:
+					QueryEvent qe = (QueryEvent) v4Event;
+					// TODO: need to handle this case.
+					// The MySQL guys say some storage engines will output a "COMMIT" QUERY_EVENT at the
+					// end of the stream.
+					throw new RuntimeException("Unhandled QueryEvent: " + qe);
+				case MySQLConstants.XID_EVENT:
+					XidEvent xe = (XidEvent) v4Event;
+					for ( MaxwellAbstractRowsEvent e : list )
+						e.setXid(xe.getXid());
+
+					if ( !list.isEmpty() )
+						list.getLast().setTXCommit();
+
+					return list;
 			}
 		}
 	}
 
+	private LinkedList<MaxwellAbstractRowsEvent> txBuffer;
+
 	public MaxwellAbstractRowsEvent getEvent() throws Exception {
-		return getEvent(false);
+		BinlogEventV4 v4Event;
+		MaxwellAbstractRowsEvent event;
+
+		while ( true ) {
+			if ( txBuffer != null && !txBuffer.isEmpty() ) {
+				return txBuffer.removeFirst();
+			}
+
+			v4Event = queue.poll(100, TimeUnit.MILLISECONDS);
+
+			if (v4Event == null) return null;
+
+			switch (v4Event.getHeader().getEventType()) {
+				case MySQLConstants.WRITE_ROWS_EVENT:
+				case MySQLConstants.WRITE_ROWS_EVENT_V2:
+				case MySQLConstants.UPDATE_ROWS_EVENT:
+				case MySQLConstants.UPDATE_ROWS_EVENT_V2:
+				case MySQLConstants.DELETE_ROWS_EVENT:
+				case MySQLConstants.DELETE_ROWS_EVENT_V2:
+					LOGGER.error("Got an unexpected row-event: " + v4Event);
+					break;
+				case MySQLConstants.TABLE_MAP_EVENT:
+					tableCache.processEvent(this.schema, (TableMapEvent) v4Event);
+					break;
+				case MySQLConstants.QUERY_EVENT:
+					QueryEvent qe = (QueryEvent) v4Event;
+					if (qe.getSql().toString().equals("BEGIN"))
+						txBuffer = getTransactionEvents();
+					else
+						processQueryEvent((QueryEvent) v4Event);
+					break;
+				default:
+					break;
+			}
+		}
 	}
 
 	private void processQueryEvent(QueryEvent event) throws SchemaSyncError, SQLException, IOException {
