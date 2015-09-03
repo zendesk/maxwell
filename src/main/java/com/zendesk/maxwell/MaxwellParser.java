@@ -188,7 +188,7 @@ public class MaxwellParser {
 				case MySQLConstants.QUERY_EVENT:
 					QueryEvent qe = (QueryEvent) v4Event;
 
-					if ( qe.getSql().toString() == "COMMIT" ) {
+					if ( qe.getSql().toString().equals("COMMIT") ) {
 						// some storage engines(?) will output a "COMMIT" QUERY_EVENT instead of a XID_EVENT.
 						// not sure exactly how to trigger this.
 						if ( !list.isEmpty() )
