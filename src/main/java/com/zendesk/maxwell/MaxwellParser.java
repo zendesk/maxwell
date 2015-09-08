@@ -201,6 +201,8 @@ public class MaxwellParser {
 					} else {
 						LOGGER.warn("Unhandled QueryEvent inside transaction: " + qe);
 					}
+
+					break;
 				case MySQLConstants.XID_EVENT:
 					XidEvent xe = (XidEvent) v4Event;
 					for ( MaxwellAbstractRowsEvent e : list )
