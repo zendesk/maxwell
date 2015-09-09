@@ -77,5 +77,5 @@ nullability: (NOT NULL | NULL);
 default_value: DEFAULT (literal | NULL | CURRENT_TIMESTAMP);
 length: '(' INTEGER_LITERAL ')';
 int_flags: ( UNSIGNED | ZEROFILL );
-decimal_length: '(' INTEGER_LITERAL ',' INTEGER_LITERAL ')';
+decimal_length: '(' INTEGER_LITERAL ( ',' INTEGER_LITERAL )? ')';
 
