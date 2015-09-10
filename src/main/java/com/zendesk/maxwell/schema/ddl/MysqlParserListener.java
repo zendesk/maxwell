@@ -244,6 +244,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 	public void exitColumn_definition(mysqlParser.Column_definitionContext ctx) {
 		String colType = null, colEncoding = null;
 		String[] enumValues = null;
+		List<Column_optionsContext> colOptions = null;
 		boolean signed = true;
 
 		String name = unquote(ctx.col_name.getText());
@@ -252,17 +253,21 @@ public class MysqlParserListener extends mysqlBaseListener {
 
 		if ( dctx.generic_type() != null ) {
 			colType = dctx.generic_type().col_type.getText();
+			colOptions = dctx.generic_type().column_options();
 		} else if ( dctx.signed_type() != null ) {
 			colType = dctx.signed_type().col_type.getText();
 			signed = isSigned(dctx.signed_type().int_flags());
+			colOptions = dctx.signed_type().column_options();
 		} else if ( dctx.string_type() != null ) {
 			colType = dctx.string_type().col_type.getText();
-			colEncoding = getEncoding(dctx.string_type().charset_def());
+			colEncoding = getEncoding(dctx.string_type().charset_def(0));
+			colOptions = dctx.string_type().column_options();
 		} else if ( dctx.enumerated_type() != null ) {
 			List<Enum_valueContext> valueList = dctx.enumerated_type().enumerated_values().enum_value();
 
 			colType = dctx.enumerated_type().col_type.getText();
-			colEncoding = getEncoding(dctx.enumerated_type().charset_def());
+			colEncoding = getEncoding(dctx.enumerated_type().charset_def(0));
+			colOptions = dctx.enumerated_type().column_options();
 			enumValues = new String[valueList.size()];
 
 			int i = 0;
@@ -280,10 +285,12 @@ public class MysqlParserListener extends mysqlBaseListener {
 
 		this.columnDefs.add(c);
 
-		for ( Column_optionsContext opt : ctx.column_options() ) {
-			if ( opt.primary_key() != null ) {
-				this.pkColumns = new ArrayList<>();
-				this.pkColumns.add(name);
+		if ( colOptions != null ) {
+			for (Column_optionsContext opt : colOptions) {
+				if (opt.primary_key() != null) {
+					this.pkColumns = new ArrayList<>();
+					this.pkColumns.add(name);
+				}
 			}
 		}
 	}
