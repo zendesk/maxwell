@@ -54,6 +54,8 @@ public abstract class ColumnDef {
 		case "blob":
 		case "mediumblob":
 		case "longblob":
+		case "binary":
+		case "varbinary":
 			return new StringColumnDef(tableName, name, type, pos, "binary");
 		case "real":
 		case "numeric":
