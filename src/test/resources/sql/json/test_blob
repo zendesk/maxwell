@@ -1,0 +1,6 @@
+create database blob_db;
+use blob_db;
+create table test_blob(id int(10) unsigned not null auto_increment primary key, blob_field blob);
+insert into test_blob set blob_field=x'00010203';
+  -> {database:"blob_db", table: "test_blob", type: "insert", data: {"id": 1, blob_field: "AAECAw"} }
+

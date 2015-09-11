@@ -2,6 +2,7 @@ package com.zendesk.maxwell.schema.columndef;
 
 import java.nio.charset.Charset;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.StringEscapeUtils;
 
@@ -51,7 +52,11 @@ public class StringColumnDef extends ColumnDef {
 	public Object asJSON(Object value) {
 		byte[] b = (byte[])value;
 
-		return new String(b, charsetForEncoding());
+		if ( encoding.equals("binary") ) {
+			return Base64.encodeBase64URLSafeString(b);
+		} else {
+			return new String(b, charsetForEncoding());
+		}
 	}
 
 	private String quoteString(String s) {
