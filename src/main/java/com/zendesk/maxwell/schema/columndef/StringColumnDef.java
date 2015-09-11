@@ -53,7 +53,7 @@ public class StringColumnDef extends ColumnDef {
 		byte[] b = (byte[])value;
 
 		if ( encoding.equals("binary") ) {
-			return Base64.encodeBase64URLSafeString(b);
+			return Base64.encodeBase64String(b);
 		} else {
 			return new String(b, charsetForEncoding());
 		}
