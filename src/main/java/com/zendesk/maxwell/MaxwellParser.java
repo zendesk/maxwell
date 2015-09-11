@@ -201,8 +201,10 @@ public class MaxwellParser {
 				if (max_tries > 0) {
 					max_tries--;
 					continue;
-				} else
+				} else {
+					System.out.println("maxwell didn't reach the position requested.");
 					return;
+				}
 			}
 			c.consume(e);
 
