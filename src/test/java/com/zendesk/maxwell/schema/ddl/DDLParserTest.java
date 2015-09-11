@@ -381,4 +381,13 @@ public class DDLParserTest {
 		List<SchemaChange> changes = parse("CREATE TABLE `foo` ( `id` char(16) BINARY character set 'utf8' )");
 		assertThat(changes.size(), is(1));
 	}
+
+	@Test
+	public void testCharsetPositionIndependence() {
+		TableCreate create = parseCreate("CREATE TABLE `foo` (id varchar(1) NOT NULL character set 'foo')");
+		assertThat(create.columns.get(0).encoding, is("foo"));
+
+		create = parseCreate("CREATE TABLE `foo` (id varchar(1) character set 'foo' NOT NULL)");
+		assertThat(create.columns.get(0).encoding, is("foo"));
+	}
 }
