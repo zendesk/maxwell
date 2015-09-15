@@ -202,7 +202,7 @@ public class MaxwellParser {
 					max_tries--;
 					continue;
 				} else {
-					System.out.println("maxwell didn't reach the position requested.");
+					LOGGER.error("maxwell didn't reach the position requested.");
 					return;
 				}
 			}
