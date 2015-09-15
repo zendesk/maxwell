@@ -28,6 +28,10 @@ import com.zendesk.maxwell.schema.columndef.ColumnDef;
 public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 	private final MaxwellFilter filter;
 	private final AbstractRowEvent event;
+
+	private Long xid;
+	private boolean txCommit; // whether this row ends the transaction
+
 	protected final Table table;
 	protected final Database database;
 
@@ -37,6 +41,8 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 		this.header = e.getHeader();
 		this.table = table;
 		this.database = table.getDatabase();
+		this.txCommit = false;
+		this.xid = null;
 		this.filter = f;
 	}
 
@@ -83,6 +89,19 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 		else
 			return null;
 	}
+
+	public Long getXid() {
+		return xid;
+	}
+
+	public void setXid(Long xid) {
+		this.xid = xid;
+	}
+
+	public void setTXCommit() {
+		this.txCommit = true;
+	}
+
 
 	@Override
 	public String toString() {
@@ -197,6 +216,14 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 			this.put("ts", l);
 		}
 
+		public void setXid(Long xid) {
+			this.put("xid", xid);
+		}
+
+		public void setTXCommit() {
+			this.put("commit", true);
+		}
+
 		public Object getData(String string) {
 			return this.data.get(string);
 		}
@@ -205,13 +232,19 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 	public List<RowMap> jsonMaps() {
 		ArrayList<RowMap> list = new ArrayList<>();
 		Object value;
-		for ( Row r : filteredRows()) {
+		for ( Iterator<Row> ri = filteredRows().iterator() ; ri.hasNext(); ) {
+			Row r = ri.next();
 			RowMap rowMap = new RowMap();
 
 			rowMap.setRowType(getType());
 			rowMap.setTable(getTable().getName());
 			rowMap.setDatabase(getDatabase().getName());
 			rowMap.setTimestamp(getHeader().getTimestamp() / 1000);
+			rowMap.setXid(getXid());
+
+			// only set commit: true on the last row of the last event of the transaction
+			if ( this.txCommit && !ri.hasNext() )
+				rowMap.setTXCommit();
 
 			Iterator<Column> colIter = r.getColumns().iterator();
 			Iterator<ColumnDef> defIter = table.getColumnList().iterator();
