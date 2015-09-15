@@ -311,6 +311,24 @@ public class DDLParserTest {
 	}
 
 	@Test
+	public void testDecimalWithSingleDigitPrecsion() {
+		TableCreate c = parseCreate( "CREATE TABLE test.chk (  group_name DECIMAL(8) NOT NULL)  ");
+		assertThat(c, not(nullValue()));
+	}
+
+	@Test
+	public void testDecimalWithDoubleDigitPrecision() {
+		TableCreate c = parseCreate( "CREATE TABLE test.chk (  group_name DECIMAL(8, 2) NOT NULL)  ");
+		assertThat(c, not(nullValue()));
+	}
+
+	@Test
+	public void testNumericType() {
+		TableCreate c = parseCreate( "CREATE TABLE test.chk (  group_name NUMERIC(8) NOT NULL)  ");
+		assertThat(c, not(nullValue()));
+	}
+
+	@Test
 	public void testCreateTableLikeTable() {
 		TableCreate c = parseCreate("CREATE TABLE `foo` LIKE `bar`.`baz`");
 
@@ -358,4 +376,18 @@ public class DDLParserTest {
 		assertThat(changes.size(), is(1));
 	}
 
+	@Test
+	public void testBinaryChar() {
+		List<SchemaChange> changes = parse("CREATE TABLE `foo` ( `id` char(16) BINARY character set 'utf8' )");
+		assertThat(changes.size(), is(1));
+	}
+
+	@Test
+	public void testCharsetPositionIndependence() {
+		TableCreate create = parseCreate("CREATE TABLE `foo` (id varchar(1) NOT NULL character set 'foo')");
+		assertThat(create.columns.get(0).encoding, is("foo"));
+
+		create = parseCreate("CREATE TABLE `foo` (id varchar(1) character set 'foo' NOT NULL)");
+		assertThat(create.columns.get(0).encoding, is("foo"));
+	}
 }

@@ -5,7 +5,6 @@ import mysql_literal_tokens, mysql_idents;
 column_definition:
 	col_name=name
 	data_type 
-	column_options*
 	;
 
 col_position: FIRST | (AFTER id);
@@ -18,11 +17,11 @@ data_type:
 	;
 
 	
-// from http://dev.mysql.com/doc/refman/5.1/en/create-table.html
-generic_type: // types from which we're going to ignore any flags/length 
-	  col_type=(BIT | BINARY | YEAR) length?
-	| col_type=(DATE | TIME | TIMESTAMP | DATETIME | TINYBLOB | MEDIUMBLOB | LONGBLOB | BLOB |  BOOLEAN | BOOL )
-	| col_type=VARBINARY length
+// all from http://dev.mysql.com/doc/refman/5.1/en/create-table.html
+generic_type:
+	  col_type=(BIT | BINARY | YEAR) length? column_options*
+	| col_type=(DATE | TIME | TIMESTAMP | DATETIME | TINYBLOB | MEDIUMBLOB | LONGBLOB | BLOB |  BOOLEAN | BOOL ) column_options*
+	| col_type=VARBINARY length column_options*
 	;
 
 
@@ -30,23 +29,27 @@ signed_type: // we need the UNSIGNED flag here
       col_type=(TINYINT | INT1 | SMALLINT | INT2 | MEDIUMINT | INT3 | INT | INTEGER | INT4 | BIGINT | INT8 )
                 length? 
                 int_flags*
+                column_options*
     | col_type=(REAL | DOUBLE | FLOAT | DECIMAL | NUMERIC)
     		    decimal_length?
-			    int_flags*
+    		    int_flags*
+    		    column_options*
     ;
 
 string_type: // getting the encoding here 
 	  col_type=(CHAR | VARCHAR)
 	           length?
-	           charset_def?
-    | col_type=(TINYTEXT | TEXT | MEDIUMTEXT | LONGTEXT) 
-  		        charset_def?
+	           BINARY?
+	           (charset_def | column_options)*
+    | col_type=(TINYTEXT | TEXT | MEDIUMTEXT | LONGTEXT)
+               BINARY?
+               (charset_def | column_options)*
 	  ;
 
 enumerated_type:
 	  col_type=(ENUM | SET)
 	  '(' enumerated_values ')'
-	  charset_def? 
+	   (charset_def | column_options)*
 	  ;
 
 
@@ -75,5 +78,5 @@ nullability: (NOT NULL | NULL);
 default_value: DEFAULT (literal | NULL | CURRENT_TIMESTAMP);
 length: '(' INTEGER_LITERAL ')';
 int_flags: ( UNSIGNED | ZEROFILL );
-decimal_length: '(' INTEGER_LITERAL ',' INTEGER_LITERAL ')';
+decimal_length: '(' INTEGER_LITERAL ( ',' INTEGER_LITERAL )? ')';
 
