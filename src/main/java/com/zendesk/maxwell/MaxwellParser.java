@@ -210,8 +210,8 @@ public class MaxwellParser {
 		BinlogEventV4 v4Event;
 		MaxwellAbstractRowsEvent event;
 
-		while ( true ) {
-			if ( txBuffer != null && !txBuffer.isEmpty() ) {
+		while (true) {
+			if (txBuffer != null && !txBuffer.isEmpty()) {
 				return txBuffer.removeFirst();
 			}
 
@@ -241,6 +241,26 @@ public class MaxwellParser {
 				default:
 					break;
 			}
+		}
+	}
+
+	public void getEvents(EventConsumer c, BinlogPosition endPosition) throws Exception {
+		int max_tries = 10;
+		while ( true ) {
+			MaxwellAbstractRowsEvent e = getEvent();
+			if (e == null) {
+				if (max_tries > 0) {
+					max_tries--;
+					continue;
+				} else {
+					LOGGER.error("maxwell didn't reach the position requested.");
+					return;
+				}
+			}
+			c.consume(e);
+
+			if ( eventBinlogPosition(e).newerThan(endPosition) )
+				return;
 		}
 	}
 
@@ -296,6 +316,7 @@ public class MaxwellParser {
 	public void setFilter(MaxwellFilter filter) {
 		this.filter = filter;
 	}
+
 }
 
 

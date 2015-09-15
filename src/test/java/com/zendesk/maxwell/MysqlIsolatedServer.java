@@ -1,5 +1,9 @@
 package com.zendesk.maxwell;
 
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,6 +21,7 @@ public class MysqlIsolatedServer {
 	private String baseDir;
 	private int port;
 
+	static final Logger LOGGER = LoggerFactory.getLogger(MysqlIsolatedServer.class);
 	public void boot() throws IOException, SQLException {
         final String dir = System.getProperty("user.dir");
 
@@ -24,6 +29,7 @@ public class MysqlIsolatedServer {
 												"--", "--binlog_format=row", "--innodb_flush_log_at_trx_commit=1");
 		Map<String, String> env = pb.environment();
 
+		LOGGER.debug("Booting server: " + StringUtils.join(pb.command(), " "));
 		env.put("PATH", env.get("PATH") + ":/opt/local/bin");
 
 		Process p = pb.start();
