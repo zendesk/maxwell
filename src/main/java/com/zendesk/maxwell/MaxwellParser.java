@@ -187,10 +187,22 @@ public class MaxwellParser {
 					break;
 				case MySQLConstants.QUERY_EVENT:
 					QueryEvent qe = (QueryEvent) v4Event;
-					// TODO: need to handle this case.
-					// The MySQL guys say some storage engines will output a "COMMIT" QUERY_EVENT at the
-					// end of the stream.
-					throw new RuntimeException("Unhandled QueryEvent: " + qe);
+					String sql = qe.getSql().toString();
+
+					if ( sql.equals("COMMIT") ) {
+						// some storage engines(?) will output a "COMMIT" QUERY_EVENT instead of a XID_EVENT.
+						// not sure exactly how to trigger this.
+						if ( !list.isEmpty() )
+							list.getLast().setTXCommit();
+
+						return list;
+					} else if ( sql.toUpperCase().startsWith("SAVEPOINT")) {
+						LOGGER.info("Ignoring SAVEPOINT in transaction: " + qe);
+					} else {
+						LOGGER.warn("Unhandled QueryEvent inside transaction: " + qe);
+					}
+
+					break;
 				case MySQLConstants.XID_EVENT:
 					XidEvent xe = (XidEvent) v4Event;
 					for ( MaxwellAbstractRowsEvent e : list )

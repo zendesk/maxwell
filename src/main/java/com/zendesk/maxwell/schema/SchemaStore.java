@@ -217,7 +217,6 @@ public class SchemaStore {
 			// old versions of Maxwell had a bug where they set every server_id to 1.
 			// try to upgrade.
 
-			LOGGER.info("found schema with server_id == 1, re-saving...");
 			schemaRS = findSchema(targetPosition, 1L);
 
 			if ( schemaRS == null )
@@ -225,6 +224,7 @@ public class SchemaStore {
 						+ targetPosition.getFile() + ":"
 						+ targetPosition.getOffset());
 
+			LOGGER.info("found schema with server_id == 1, re-saving...");
 			shouldResave = true;
 		}
 
