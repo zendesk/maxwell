@@ -163,7 +163,7 @@ public class MaxwellParser {
 
 	}
 
-	public MaxwellAbstractRowsEvent getEvent(boolean stopAtNextTableMap) throws Exception {
+	public MaxwellAbstractRowsEvent getEvent() throws Exception {
         BinlogEventV4 v4Event;
         MaxwellAbstractRowsEvent event;
 		while (true) {
@@ -185,9 +185,6 @@ public class MaxwellParser {
 					return event;
 				break;
 			case MySQLConstants.TABLE_MAP_EVENT:
-				if ( stopAtNextTableMap)
-					return null;
-
 				tableCache.processEvent(this.schema, (TableMapEvent) v4Event);
 				break;
 			case MySQLConstants.QUERY_EVENT:
@@ -196,8 +193,24 @@ public class MaxwellParser {
 		}
 	}
 
-	public MaxwellAbstractRowsEvent getEvent() throws Exception {
-		return getEvent(false);
+	public void getEvents(EventConsumer c, BinlogPosition endPosition) throws Exception {
+		int max_tries = 10;
+		while ( true ) {
+			MaxwellAbstractRowsEvent e = getEvent();
+			if (e == null) {
+				if (max_tries > 0) {
+					max_tries--;
+					continue;
+				} else {
+					LOGGER.error("maxwell didn't reach the position requested.");
+					return;
+				}
+			}
+			c.consume(e);
+
+			if ( eventBinlogPosition(e).newerThan(endPosition) )
+				return;
+		}
 	}
 
 	private void processQueryEvent(QueryEvent event) throws SchemaSyncError, SQLException, IOException {
@@ -252,6 +265,7 @@ public class MaxwellParser {
 	public void setFilter(MaxwellFilter filter) {
 		this.filter = filter;
 	}
+
 }
 
 

@@ -93,23 +93,28 @@ public class AbstractMaxwellTest {
 
 		p.setFilter(filter);
 
-        server.executeList(Arrays.asList(queries));
+		server.executeList(Arrays.asList(queries));
 
-        p.start();
+		BinlogPosition endPosition = BinlogPosition.capture(server.getConnection());
 
-		ArrayList<MaxwellAbstractRowsEvent> list = new ArrayList<>();
-        MaxwellAbstractRowsEvent e;
+		p.start();
 
-        while ( (e = p.getEvent()) != null ) {
-			if ( !e.getTable().getDatabase().getName().equals("maxwell")) {
-				list.add(e);
+		final ArrayList<MaxwellAbstractRowsEvent> list = new ArrayList<>();
+		MaxwellAbstractRowsEvent e;
+
+		p.getEvents(new EventConsumer() {
+			@Override
+			void consume(MaxwellAbstractRowsEvent e) {
+				if (!e.getTable().getDatabase().getName().equals("maxwell")) {
+					list.add(e);
+				}
 			}
-        }
+		}, endPosition);
 
-        p.stop();
-        context.terminate();
+		p.stop();
+		context.terminate();
 
-        return list;
+		return list;
 	}
 
 	protected List<MaxwellAbstractRowsEvent>getRowsForSQL(MaxwellFilter filter, String queries[]) throws Exception {
