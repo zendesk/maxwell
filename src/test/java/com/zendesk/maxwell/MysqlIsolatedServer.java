@@ -17,8 +17,8 @@ import java.util.List;
 import java.util.Map;
 
 public class MysqlIsolatedServer {
-	private Connection connection;
-	private String baseDir;
+	public static final Long SERVER_ID = 123123L;
+	private Connection connection; private String baseDir;
 	private int port;
 
 	static final Logger LOGGER = LoggerFactory.getLogger(MysqlIsolatedServer.class);
@@ -26,7 +26,7 @@ public class MysqlIsolatedServer {
         final String dir = System.getProperty("user.dir");
 
 		ProcessBuilder pb = new ProcessBuilder(dir + "/src/test/mysql_isolated_server/bin/boot_isolated_mysql_server",
-												"--", "--binlog_format=row", "--innodb_flush_log_at_trx_commit=1");
+												"--", "--binlog_format=row", "--innodb_flush_log_at_trx_commit=1", "--server_id=" + SERVER_ID);
 		Map<String, String> env = pb.environment();
 
 		LOGGER.debug("Booting server: " + StringUtils.join(pb.command(), " "));

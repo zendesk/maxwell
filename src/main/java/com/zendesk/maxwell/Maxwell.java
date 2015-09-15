@@ -25,7 +25,7 @@ public class Maxwell {
 		this.schema = capturer.capture();
 
 		BinlogPosition pos = BinlogPosition.capture(connection);
-		SchemaStore store = new SchemaStore(connection, this.schema, pos);
+		SchemaStore store = new SchemaStore(connection, this.context.getServerID(), this.schema, pos);
 		store.save();
 
 		this.context.setInitialPosition(pos);
@@ -52,7 +52,7 @@ public class Maxwell {
 
 			if ( this.context.getInitialPosition() != null ) {
 				LOGGER.info("Maxwell is booting, starting at " + this.context.getInitialPosition());
-				SchemaStore store = SchemaStore.restore(connection, this.context.getInitialPosition());
+				SchemaStore store = SchemaStore.restore(connection, this.context.getServerID(), this.context.getInitialPosition());
 				this.schema = store.getSchema();
 			} else {
 				initFirstRun(connection);
