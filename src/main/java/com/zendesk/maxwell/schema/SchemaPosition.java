@@ -52,7 +52,7 @@ public class SchemaPosition implements Runnable {
 
 	@Override
 	public void run() {
-		while ( true && run.get() ) {
+		while ( run.get() ) {
 			BinlogPosition newPosition = position.get();
 
 			if ( newPosition != null && newPosition.newerThan(storedPosition.get()) ) {
