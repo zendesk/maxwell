@@ -6,3 +6,4 @@ config/*.yml
 /.idea
 /*.iml
 .*.sw*
+.DS_Store
