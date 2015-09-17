@@ -362,24 +362,4 @@ public class SchemaStore {
 		}
 	}
 
-	/*
-		for the time being, when we detect other schemas we will simply wipe them down.
-		in the future, this is our moment to pick up where the master left off.
-	*/
-	public static void handleMasterChange(Connection c, Long serverID) throws SQLException {
-		PreparedStatement s = c.prepareStatement(
-				"SELECT id from `maxwell`.`schemas` WHERE server_id != ?"
-		);
-
-		s.setLong(1, serverID);
-		ResultSet rs = s.executeQuery();
-
-		while ( rs.next() ) {
-			Long schemaID = rs.getLong("id");
-			LOGGER.info("maxwell detected schema " + schemaID + " from different server_id.  deleting...");
-			new SchemaStore(c, null, schemaID).destroy();
-		}
-
-		c.createStatement().execute("delete from `maxwell`.`positions` where server_id != " + serverID);
-	}
 }
