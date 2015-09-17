@@ -48,6 +48,7 @@ public class MaxwellContext {
 		return this.schemaPosition;
 	}
 
+
 	public BinlogPosition getInitialPosition() throws FileNotFoundException, IOException, SQLException {
 		if ( this.initialPosition != null )
 			return this.initialPosition;
@@ -62,6 +63,16 @@ public class MaxwellContext {
 
 	public void setInitialPositionSync(BinlogPosition position) throws SQLException {
 		this.getSchemaPosition().setSync(position);
+	}
+
+	public void ensurePositionThread() throws SQLException {
+		if ( this.schemaPosition == null )
+			return;
+
+		SQLException e = this.schemaPosition.getException();
+		if ( e != null ) {
+			throw (e);
+		}
 	}
 
 	public Long getServerID() throws SQLException {

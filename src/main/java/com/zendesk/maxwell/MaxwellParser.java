@@ -97,13 +97,13 @@ public class MaxwellParser {
 				replicator.start();
 			}
 
+			context.ensurePositionThread();
+
 			if ( event == null )
 				continue;
 
 			if ( !skipEvent(event)) {
 				producer.push(event);
-				// TODO:  we need to tell the producer to only store a stop-event on table-maps; otherwise we can end up
-				// in the middle of multiple row events, which is a bug.
 			}
 
 			replicator.setBinlogFileName(event.getBinlogFilename());
@@ -277,7 +277,7 @@ public class MaxwellParser {
 	}
 
 	private void processQueryEvent(QueryEvent event) throws SchemaSyncError, SQLException, IOException {
-		// get encoding of the alter event somehow; or just fuck it.
+		// get encoding of the alter event somehow? or just fuck it.
 		String dbName = event.getDatabaseName().toString();
 		String sql = event.getSql().toString();
 

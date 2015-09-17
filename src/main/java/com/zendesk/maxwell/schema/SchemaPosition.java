@@ -23,12 +23,14 @@ public class SchemaPosition implements Runnable {
 	private final AtomicBoolean run;
 	private Thread thread;
 	private final ConnectionPool connectionPool;
+	private SQLException exception;
 
 	public SchemaPosition(ConnectionPool pool, Long serverID) {
 		this.connectionPool = pool;
 		this.serverID = serverID;
 		this.position = new AtomicReference<>();
 		this.storedPosition = new AtomicReference<>();
+		this.exception = null;
 		this.run = new AtomicBoolean(false);
 	}
 
@@ -52,7 +54,7 @@ public class SchemaPosition implements Runnable {
 
 	@Override
 	public void run() {
-		while ( run.get() ) {
+		while ( run.get() && this.exception == null ) {
 			BinlogPosition newPosition = position.get();
 
 			if ( newPosition != null && newPosition.newerThan(storedPosition.get()) ) {
@@ -64,7 +66,8 @@ public class SchemaPosition implements Runnable {
 			} catch (InterruptedException e) { }
 		}
 
-		store(position.get());
+		if ( this.exception != null )
+			store(position.get());
 	}
 
 
@@ -89,8 +92,10 @@ public class SchemaPosition implements Runnable {
 
 			s.execute();
 			storedPosition.set(newPosition);
-		} catch (SQLException e) {
-			e.printStackTrace();
+		} catch ( SQLException e ) {
+			LOGGER.error("received SQLException while trying to save to maxwell.positions: ");
+			LOGGER.error(e.getLocalizedMessage());
+			this.exception = e;
 		}
 	}
 
@@ -98,7 +103,7 @@ public class SchemaPosition implements Runnable {
 		position.set(p);
 	}
 
-	public void setSync(BinlogPosition p) {
+	public void setSync(BinlogPosition p) throws SQLException {
 		LOGGER.debug("syncing binlog position: " + p);
 		position.set(p);
 		while ( true ) {
@@ -106,6 +111,8 @@ public class SchemaPosition implements Runnable {
 			BinlogPosition s = storedPosition.get();
 			if ( p.newerThan(s) ) {
 				try { Thread.sleep(50); } catch (InterruptedException e) { }
+				if ( exception != null )
+					throw(exception);
 			} else {
 				break;
 			}
@@ -129,4 +136,7 @@ public class SchemaPosition implements Runnable {
 		}
 	}
 
+	public SQLException getException() {
+		return this.exception;
+	}
 }
