@@ -5,3 +5,4 @@ config/*.yml
 /maxwell.position
 /.idea
 /*.iml
+.*.sw*
