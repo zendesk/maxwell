@@ -301,7 +301,7 @@ public class SchemaStore {
 		LOGGER.debug("looking to restore schema at target position " + targetPosition);
 		PreparedStatement s = connection.prepareStatement(
 			"SELECT * from `maxwell`.`schemas` "
-			+ "WHERE (binlog_file < ?) OR (binlog_file = ? and binlog_position <= ?) AND server_id = ? "
+			+ "WHERE ((binlog_file < ?) OR (binlog_file = ? and binlog_position <= ?)) AND server_id = ? "
 			+ "ORDER BY id desc limit 1");
 
 		s.setString(1, targetPosition.getFile());
