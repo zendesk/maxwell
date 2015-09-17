@@ -6,3 +6,4 @@ pages:
   - 'Configuration': 'config.md'
   - 'Kafka': 'kafka.md'
   - 'Data Format': 'dataformat.md'
+  - 'Compat / Caveats': 'compat.md'

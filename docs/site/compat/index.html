@@ -9,7 +9,7 @@
         
         <link rel="shortcut icon" href="../img/favicon.ico">
 
-        <title>Data Format</title>
+        <title>Compat / Caveats</title>
 
         <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
         <link href="../css/font-awesome-4.0.3.css" rel="stylesheet">
@@ -65,29 +65,26 @@
               
           </li>
         
-          <li class="active">
-              <a href="./">Data Format</a>
-              
-                  <ul class="nav">
-                  
-                      <li class="toctree-l3"><a href="#strings-varchar-text">strings (varchar, text)</a></li>
-                      
-                  
-                      <li class="toctree-l3"><a href="#blob-binary-encoded-strings">blob (+ binary encoded strings)</a></li>
-                      
-                  
-                      <li class="toctree-l3"><a href="#datetime">datetime</a></li>
-                      
-                  
-                      <li class="toctree-l3"><a href="#sets">sets</a></li>
-                      
-                  
-                  </ul>
+          <li >
+              <a href="../dataformat/">Data Format</a>
               
           </li>
         
-          <li >
-              <a href="../compat/">Compat / Caveats</a>
+          <li class="active">
+              <a href="./">Compat / Caveats</a>
+              
+                  <ul class="nav">
+                  
+                      <li class="toctree-l3"><a href="#requirements">Requirements:</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#unsupported">Unsupported</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#master-recovery">Master recovery</a></li>
+                      
+                  
+                  </ul>
               
           </li>
         
@@ -95,34 +92,23 @@
 </div></div>
             <div class="col-md-9" role="main">
 
-<div class="content-title">How Maxwell munges various datatypes</div>
+<div class="content-title">Maxwell Compatibility</div>
 
-<hr />
-<h4 id="strings-varchar-text">strings (varchar, text)</h4>
-<p>Maxwell currently supports latin1 and utf-8 columns, and will convert both to UTF-8 before outputting as JSON.</p>
-<hr />
-<h4 id="blob-binary-encoded-strings">blob (+ binary encoded strings)</h4>
-<p>Maxell will base64 encode BLOB, BINARY and VARBINARY columns (as well as varchar/string columns with a BINARY encoding).</p>
-<hr />
-<h4 id="datetime">datetime</h4>
-<p>Datetime columns are output as "YYYY-MM-DD hh:mm::ss" strings.  Note that mysql
-has no problem storing invalid datetimes like "0000-00-00 00:00:00", and
-Maxwell chooses to reproduce these invalid datetimes faithfully,
-for lack of something better to do.</p>
-<pre><code>mysql&gt;    create table test_datetime ( id int(11), dtcol datetime );
-mysql&gt;    insert into test_datetime set dtcol='0000-00-00 00:00:00';
-
-&lt;maxwell  {&quot;table&quot;:&quot;test_datetime&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;data&quot;:{&quot;dtcol&quot;:&quot;0000-00-00 00:00:00&quot;}}
-</code></pre>
-
-<hr />
-<h4 id="sets">sets</h4>
-<p>output as JSON arrays.</p>
-<pre><code>mysql&gt;   create table test_sets ( id int(11), setcol set('a_val', 'b_val', 'c_val') );
-mysql&gt;   insert into test_sets set setcol = 'b_val,c_val';
-
-&lt;maxwell {&quot;table&quot;:&quot;test_sets&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;data&quot;:{&quot;setcol&quot;:[&quot;b_val&quot;,&quot;c_val&quot;]}}
-</code></pre></div>
+<h3 id="requirements">Requirements:</h3>
+<ul>
+<li>JRE 7 or above</li>
+<li>mysql 5.1, 5.5, 5.6</li>
+<li>kafka 0.8.2 or greater</li>
+</ul>
+<h3 id="unsupported">Unsupported</h3>
+<ul>
+<li>Mysql 5.7 is untested with Maxwell, and in particular GTID replication is unsupported as of yet.</li>
+<li><code>binlog_row_image=MINIMAL</code> is not supported and will break Maxwell in a variety of amusing ways.</li>
+</ul>
+<h3 id="master-recovery">Master recovery</h3>
+<p>Currently Maxwell is not very smart about master recovery or detecting a promoted slave; if it determines
+that the server_id has changed between runs, Maxwell will simply delete its old schema cache and binlog position
+and start again.  We plan on improving this situation in 0.12.</p></div>
         </div>
 
         

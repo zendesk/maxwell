@@ -10,8 +10,7 @@ Maxwell currently supports latin1 and utf-8 columns, and will convert both to UT
 
 #### blob (+ binary encoded strings)
 
-Not currently well-supported.  The plan of record is to covert blobs to Base64 strings, and to leave hints
-in the JSON that they're blobs.  One strong argument for getting avro schemas supported, I guess.
+Maxell will base64 encode BLOB, BINARY and VARBINARY columns (as well as varchar/string columns with a BINARY encoding).
 
 ***
 
