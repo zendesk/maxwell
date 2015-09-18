@@ -90,7 +90,8 @@ public class SchemaStoreTest extends AbstractMaxwellTest {
 		SchemaStore.handleMasterChange(server.getConnection(), 123456L);
 
 		ResultSet rs = server.getConnection().createStatement().executeQuery("SELECT * from `maxwell`.`schemas`");
-		assertThat(rs.next(), is(false));
+		assertThat(rs.next(), is(true));
+		assertThat(rs.getBoolean("deleted"), is(true));
 
 		rs = server.getConnection().createStatement().executeQuery("SELECT * from `maxwell`.`positions`");
 		assertThat(rs.next(), is(false));
