@@ -6,6 +6,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -76,5 +77,22 @@ public class SchemaStoreTest extends AbstractMaxwellTest {
 		assertThat(restoredSchema.getSchema().equals(this.schemaStore.getSchema()), is(true));
 		assertThat(restoredSchema.getSchemaID(), is(badSchemaID + 1));
 
+	}
+
+	@Test
+	public void testMasterChange() throws Exception {
+		this.schema = new SchemaCapturer(server.getConnection()).capture();
+		this.binlogPosition = BinlogPosition.capture(server.getConnection());
+		this.schemaStore = new SchemaStore(server.getConnection(), 5551234L, this.schema, binlogPosition);
+
+		this.schemaStore.save();
+
+		SchemaStore.handleMasterChange(server.getConnection(), 123456L);
+
+		ResultSet rs = server.getConnection().createStatement().executeQuery("SELECT * from `maxwell`.`schemas`");
+		assertThat(rs.next(), is(false));
+
+		rs = server.getConnection().createStatement().executeQuery("SELECT * from `maxwell`.`positions`");
+		assertThat(rs.next(), is(false));
 	}
 }
