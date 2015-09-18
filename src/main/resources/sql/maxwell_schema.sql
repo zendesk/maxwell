@@ -3,9 +3,10 @@ CREATE DATABASE IF NOT EXISTS `maxwell`;
 CREATE TABLE IF NOT EXISTS `maxwell`.`schemas` (
   id int unsigned auto_increment NOT NULL primary key,
   binlog_file varchar(255),
-	binlog_position int unsigned,
+  binlog_position int unsigned,
   server_id int unsigned,
-  encoding varchar(255)
+  encoding varchar(255),
+  deleted tinyint(1) not null default 0
 );
 
 CREATE TABLE IF NOT EXISTS `maxwell`.`databases` (

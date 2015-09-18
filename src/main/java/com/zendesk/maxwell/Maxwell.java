@@ -48,7 +48,11 @@ public class Maxwell {
 
 		try ( Connection connection = this.context.getConnectionPool().getConnection() ) {
 			MaxwellMysqlStatus.ensureMysqlState(connection);
+
 			SchemaStore.ensureMaxwellSchema(connection);
+			SchemaStore.upgradeSchemaStoreSchema(connection);
+
+			SchemaStore.handleMasterChange(connection, context.getServerID());
 
 			if ( this.context.getInitialPosition() != null ) {
 				LOGGER.info("Maxwell is booting, starting at " + this.context.getInitialPosition());

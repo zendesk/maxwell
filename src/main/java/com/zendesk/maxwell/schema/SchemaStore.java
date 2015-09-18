@@ -9,9 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -301,7 +299,8 @@ public class SchemaStore {
 		LOGGER.debug("looking to restore schema at target position " + targetPosition);
 		PreparedStatement s = connection.prepareStatement(
 			"SELECT * from `maxwell`.`schemas` "
-			+ "WHERE ((binlog_file < ?) OR (binlog_file = ? and binlog_position <= ?)) AND server_id = ? "
+			+ "WHERE deleted = 0 "
+			+ "AND ((binlog_file < ?) OR (binlog_file = ? and binlog_position <= ?)) AND server_id = ? "
 			+ "ORDER BY id desc limit 1");
 
 		s.setString(1, targetPosition.getFile());
@@ -324,10 +323,20 @@ public class SchemaStore {
 		this.schema = s;
 	}
 
-	public void destroy() throws SQLException {
+	private void ensureSchemaID() {
 		if ( this.schema_id == null ) {
 			throw new RuntimeException("Can't destroy uninitialized schema!");
 		}
+	}
+
+	public void delete() throws SQLException {
+		ensureSchemaID();
+
+		connection.createStatement().execute("update `maxwell`.`schemas` set deleted = 1 where id = " + schema_id);
+	}
+
+	public void destroy() throws SQLException {
+		ensureSchemaID();
 
 		String[] tables = { "databases", "tables", "columns" };
 
@@ -357,9 +366,50 @@ public class SchemaStore {
 
 		Long toDelete = currentSchemaId - maxSchemas; // start with the highest numbered ID to delete, work downwards until we run out
 		while ( toDelete > 0 && schemaExists(toDelete) ) {
-			new SchemaStore(connection, serverID, toDelete).destroy();
+			new SchemaStore(connection, serverID, toDelete).delete();
 			toDelete--;
 		}
 	}
 
+	/*
+		for the time being, when we detect other schemas we will simply wipe them down.
+		in the future, this is our moment to pick up where the master left off.
+	*/
+	public static void handleMasterChange(Connection c, Long serverID) throws SQLException {
+		PreparedStatement s = c.prepareStatement(
+				"SELECT id from `maxwell`.`schemas` WHERE server_id != ? and deleted = 0"
+		);
+
+		s.setLong(1, serverID);
+		ResultSet rs = s.executeQuery();
+
+		while ( rs.next() ) {
+			Long schemaID = rs.getLong("id");
+			LOGGER.info("maxwell detected schema " + schemaID + " from different server_id.  deleting...");
+			new SchemaStore(c, null, schemaID).delete();
+		}
+
+		c.createStatement().execute("delete from `maxwell`.`positions` where server_id != " + serverID);
+	}
+
+	private static Map<String, String> getTableColumns(String table, Connection c) throws SQLException {
+		HashMap<String, String> map = new HashMap<>();
+
+		ResultSet rs = c.createStatement().executeQuery("show columns from `maxwell`.`" + table + "`");
+		while (rs.next()) {
+			map.put(rs.getString("Field"), rs.getString("Type"));
+		}
+		return map;
+	}
+
+	private static void performAlter(Connection c, String sql) throws SQLException {
+		LOGGER.info("Maxwell is upgrading its own schema...");
+		LOGGER.info(sql);
+		c.createStatement().execute(sql);
+	}
+
+	public static void upgradeSchemaStoreSchema(Connection c) throws SQLException {
+		if ( !getTableColumns("schemas", c).containsKey("deleted") )
+			performAlter(c, "alter table maxwell.schemas add column deleted tinyint(1) not null default 0");
+	}
 }
