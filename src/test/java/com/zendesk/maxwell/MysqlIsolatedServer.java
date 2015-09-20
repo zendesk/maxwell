@@ -22,6 +22,7 @@ public class MysqlIsolatedServer {
 	public static final Long SERVER_ID = 123123L;
 	private Connection connection; private String baseDir;
 	private int port;
+	private int serverPid;
 
 	static final Logger LOGGER = LoggerFactory.getLogger(MysqlIsolatedServer.class);
 	public void boot() throws IOException, SQLException, InterruptedException {
@@ -43,6 +44,7 @@ public class MysqlIsolatedServer {
 		try {
 			JSONObject output = new JSONObject(json);
 			this.port = output.getInt("port");
+			this.serverPid = output.getInt("server_pid");
 			outputFile = output.getString("output");
 		} catch ( JSONException e ) {
 			LOGGER.error("got exception while parsing " + json, e);
@@ -75,5 +77,11 @@ public class MysqlIsolatedServer {
 
 	public int getPort() {
 		return port;
+	}
+
+	public void shutDown() {
+		try {
+			Runtime.getRuntime().exec("kill " + this.serverPid);
+		} catch ( IOException e ) {}
 	}
 }

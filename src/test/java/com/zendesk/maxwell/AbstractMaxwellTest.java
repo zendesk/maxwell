@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
@@ -27,6 +28,11 @@ public class AbstractMaxwellTest {
 		server.boot();
 
 		SchemaStore.ensureMaxwellSchema(server.getConnection());
+	}
+
+	@AfterClass
+	public static void teardownServer() {
+		server.shutDown();
 	}
 
 	public String getSQLDir() {
