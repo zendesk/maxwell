@@ -5,6 +5,7 @@ PLATFORM=${_PLATFORM/ /-}
 
 OS=`uname -s | tr '[:upper:]' '[:lower:]'`
 
+THIS_URL="https://raw.githubusercontent.com/osheroff/onetimeserver/master/onetimeserver"
 WRAPPER_URL="https://raw.githubusercontent.com/osheroff/onetimeserver/master/wrapper/wrapper.c"
 ONETIMESERVER_URL="https://raw.githubusercontent.com/osheroff/onetimeserver-binaries/master/onetimeserver-go/$OS/onetimeserver-go"
 CACHE_DIR=$HOME/.onetimeserver/$PLATFORM
@@ -19,7 +20,8 @@ do
   case $1 in
     update)
       rm -Rf $CACHE_DIR/*
-      echo "cache cleared, next run will update"
+      curl "$THIS_URL" > $0
+      echo "onetimeserver updated"
       exit
       ;;
     --mysql-version=*)
