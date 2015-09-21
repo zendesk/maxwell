@@ -28,11 +28,7 @@ public class MysqlIsolatedServer {
 	public void boot() throws IOException, SQLException, InterruptedException {
         final String dir = System.getProperty("user.dir");
 
-		String mysqlVersion = System.getenv("MYSQL_VERSION");
-		if ( mysqlVersion == null )
-			mysqlVersion = "5.5";
-
-		ProcessBuilder pb = new ProcessBuilder(dir + "/src/test/onetimeserver", "--debug", "--mysql-version=" + mysqlVersion,
+		ProcessBuilder pb = new ProcessBuilder(dir + "/src/test/onetimeserver", "--debug", "--mysql-version=" + this.getVersion(),
 												"--log-bin=master", "--binlog_format=row", "--innodb_flush_log_at_trx_commit=1", "--server_id=" + SERVER_ID);
 		LOGGER.debug("booting onetimeserver: " + StringUtils.join(pb.command(), " "));
 		Process p = pb.start();
@@ -102,5 +98,11 @@ public class MysqlIsolatedServer {
 		try {
 			Runtime.getRuntime().exec("kill " + this.serverPid);
 		} catch ( IOException e ) {}
+	}
+
+	public String getVersion() {
+		String mysqlVersion = System.getenv("MYSQL_VERSION");
+		return mysqlVersion == null ? "5.5" : mysqlVersion;
+
 	}
 }
