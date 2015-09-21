@@ -53,14 +53,29 @@ cd $CACHE_DIR
 
 if ! [ -f $CACHE_DIR/wrapper ]
 then
+  if [ "$DEBUG" == "-debug" ]
+  then
+    echo "downloading and compiling wrapper from $WRAPPER_URL" 1>&2
+  fi
+
   curl -s "$WRAPPER_URL" > $CACHE_DIR/wrapper.c
   gcc -g -O2 $CACHE_DIR/wrapper.c -o $CACHE_DIR/wrapper
 fi
 
 if ! [ -f $CACHE_DIR/onetimeserver-go ]
 then
+  if [ "$DEBUG" == "-debug" ]
+  then
+    echo "downloading main util from $ONETIMESERVER_URL" 1>&2
+  fi
+
   curl -s $ONETIMESERVER_URL > $CACHE_DIR/onetimeserver-go
   chmod +x $CACHE_DIR/onetimeserver-go
+fi
+
+if [ "$DEBUG" == "-debug" ]
+then
+  echo "exec: " $CACHE_DIR/wrapper $DEBUG $MYSQL_VERSION -ppid $PPID -type mysql -- $EXTRA_ARGS 1>&2
 fi
 
 exec $CACHE_DIR/wrapper $DEBUG $MYSQL_VERSION -ppid $PPID -type mysql -- $EXTRA_ARGS
