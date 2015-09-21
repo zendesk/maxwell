@@ -32,13 +32,32 @@ public class MysqlIsolatedServer {
 		if ( mysqlVersion == null )
 			mysqlVersion = "5.5";
 
-		ProcessBuilder pb = new ProcessBuilder(dir + "/src/test/onetimeserver", "--mysql-version=" + mysqlVersion,
+		ProcessBuilder pb = new ProcessBuilder(dir + "/src/test/onetimeserver", "--debug", "--mysql-version=" + mysqlVersion,
 												"--log-bin=master", "--binlog_format=row", "--innodb_flush_log_at_trx_commit=1", "--server_id=" + SERVER_ID);
 		LOGGER.debug("booting onetimeserver: " + StringUtils.join(pb.command(), " "));
 		Process p = pb.start();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
 		p.waitFor();
+
+		final BufferedReader errReader = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+
+		new Thread() {
+			@Override
+			public void run() {
+				while (true) {
+					String l = null;
+					try {
+						l = errReader.readLine();
+					} catch ( IOException e) {};
+
+					if (l == null)
+						break;
+					System.err.println(l);
+				}
+			}
+		}.start();
+
 		String json = reader.readLine();
 		String outputFile = null;
 		try {
