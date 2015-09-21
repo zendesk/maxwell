@@ -1,6 +1,5 @@
 <h3 id="maxwell-header" style="margin-top: -10px; font-weight: bold">Maxwell = Mysql + Kafka</h3>
 
-
 This is Maxwell's daemon, an application that reads MySQL binlogs and writes row updates to Kafka as JSON.
 It's playing in the same space as [mypipe](https://github.com/mardambey/mypipe) and [databus](http://data.linkedin.com/projects/databus),
 but differentiates itself with these features:
