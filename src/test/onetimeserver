@@ -1,0 +1,81 @@
+#!/bin/bash
+
+_PLATFORM=`uname -sm`
+PLATFORM=${_PLATFORM/ /-}
+
+OS=`uname -s | tr '[:upper:]' '[:lower:]'`
+
+THIS_URL="https://raw.githubusercontent.com/osheroff/onetimeserver/master/onetimeserver"
+WRAPPER_URL="https://raw.githubusercontent.com/osheroff/onetimeserver/master/wrapper/wrapper.c"
+ONETIMESERVER_URL="https://raw.githubusercontent.com/osheroff/onetimeserver-binaries/master/onetimeserver-go/$OS/onetimeserver-go"
+CACHE_DIR=$HOME/.onetimeserver/$PLATFORM
+
+function usage() {
+  echo "usage: onetimeserver [--mysql-version=VERSION|-m VERSION] [-v|--verbose] [mysql_args...]"
+  echo "       onetimeserver update"
+}
+
+while [[ $# > 0 ]]
+do
+  case $1 in
+    update)
+      rm -Rf $CACHE_DIR/*
+      curl "$THIS_URL" > $0
+      echo "onetimeserver updated"
+      exit
+      ;;
+    --mysql-version=*)
+      MYSQL_VERSION="-mysql-version ${1#*=}"
+      ;;
+    -m)
+      shift
+      MYSQL_VERSION="-mysql-version $1"
+      ;;
+    -d|--debug)
+      DEBUG="-debug"
+      ;;
+    -h|--help)
+      usage
+      exit
+      ;;
+    *)
+      EXTRA_ARGS="$EXTRA_ARGS $1"
+      ;;
+  esac
+  shift
+
+done
+
+mkdir -p $CACHE_DIR
+
+
+cd $CACHE_DIR
+
+if ! [ -f $CACHE_DIR/wrapper ]
+then
+  if [ "$DEBUG" == "-debug" ]
+  then
+    echo "downloading and compiling wrapper from $WRAPPER_URL" 1>&2
+  fi
+
+  curl -s "$WRAPPER_URL" > $CACHE_DIR/wrapper.c
+  gcc -g -O2 $CACHE_DIR/wrapper.c -o $CACHE_DIR/wrapper
+fi
+
+if ! [ -f $CACHE_DIR/onetimeserver-go ]
+then
+  if [ "$DEBUG" == "-debug" ]
+  then
+    echo "downloading main util from $ONETIMESERVER_URL" 1>&2
+  fi
+
+  curl -s $ONETIMESERVER_URL > $CACHE_DIR/onetimeserver-go
+  chmod +x $CACHE_DIR/onetimeserver-go
+fi
+
+if [ "$DEBUG" == "-debug" ]
+then
+  echo "exec: " $CACHE_DIR/wrapper $DEBUG $MYSQL_VERSION -ppid $PPID -type mysql -- $EXTRA_ARGS 1>&2
+fi
+
+exec $CACHE_DIR/wrapper $DEBUG $MYSQL_VERSION -ppid $PPID -type mysql -- $EXTRA_ARGS

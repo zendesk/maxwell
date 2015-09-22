@@ -1,3 +1,0 @@
-[submodule "java/mysql_isolated_server"]
-	path = src/test/mysql_isolated_server
-	url = https://github.com/osheroff/mysql_isolated_server.git
