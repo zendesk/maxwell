@@ -39,13 +39,6 @@ public class Maxwell {
 
 		this.context = new MaxwellContext(this.config);
 
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			@Override
-			public void run() {
-				context.terminate();
-			}
-		});
-
 		try ( Connection connection = this.context.getConnectionPool().getConnection() ) {
 			MaxwellMysqlStatus.ensureMysqlState(connection);
 
@@ -69,7 +62,16 @@ public class Maxwell {
 
 		AbstractProducer producer = this.context.getProducer();
 
-		MaxwellParser p = new MaxwellParser(this.schema, producer, this.context, this.context.getInitialPosition());
+		final MaxwellParser p = new MaxwellParser(this.schema, producer, this.context, this.context.getInitialPosition());
+
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				context.terminate();
+				p.stop();
+			}
+		});
+
 		p.run();
 
 	}

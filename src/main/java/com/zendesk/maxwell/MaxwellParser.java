@@ -41,6 +41,8 @@ public class MaxwellParser {
 	private final MaxwellContext context;
 	private final AbstractProducer producer;
 
+	private volatile boolean shouldStop = false, isRunning = false;
+
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellParser.class);
 
 	public MaxwellParser(Schema currentSchema, AbstractProducer producer, MaxwellContext ctx, BinlogPosition start) throws Exception {
@@ -78,18 +80,48 @@ public class MaxwellParser {
 		this.replicator.start();
 	}
 
-	public void stop() throws Exception {
+	public void stop() {
+		// note: we use stderr in this function as LOGGER.err() oftentimes
+		// won't flush in time, and we lose the messages.
+
 		this.binlogEventListener.stop();
-		this.replicator.stop(5, TimeUnit.SECONDS);
+		try {
+			this.replicator.stop(5, TimeUnit.SECONDS);
+		} catch ( Exception e ) {
+			System.err.println("Got exception while shutting down replicator: " + e);
+		}
+
+
+		if ( this.replicator.isRunning() ) {
+			System.err.println("Maxwell' replicator thread wouldn't die, but we're exiting anyway.");
+		}
+
+		this.shouldStop = true;
+
+		/* another 5s timeout */
+		for ( int i = 0; i < 50 && this.isRunning; i++ ) {
+			try {
+				Thread.sleep(100);
+			} catch ( InterruptedException e) {}
+		}
+		if ( this.isRunning ) {
+			System.err.println("Maxwell's main thread didn't die, but we had to go anyway.");
+		}
+
+		System.err.flush();
 	}
+
+
 
 
 	public void run() throws Exception {
 		MaxwellAbstractRowsEvent event;
 
 		this.start();
+		this.isRunning = true;
+		this.shouldStop = false;
 
-		for(;;) {
+		while ( !this.shouldStop ) {
 			event = getEvent();
 
 			if ( !replicator.isRunning() ) {
@@ -109,6 +141,8 @@ public class MaxwellParser {
 			replicator.setBinlogFileName(event.getBinlogFilename());
 			replicator.setBinlogPosition(event.getHeader().getNextPosition());
 		}
+
+		this.isRunning = false;
 	}
 
 	private boolean skipEvent(MaxwellAbstractRowsEvent event) {
