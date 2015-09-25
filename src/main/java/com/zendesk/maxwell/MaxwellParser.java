@@ -84,21 +84,8 @@ public class MaxwellParser {
 		// note: we use stderr in this function as LOGGER.err() oftentimes
 		// won't flush in time, and we lose the messages.
 
-		this.binlogEventListener.stop();
-		try {
-			this.replicator.stop(5, TimeUnit.SECONDS);
-		} catch ( Exception e ) {
-			System.err.println("Got exception while shutting down replicator: " + e);
-		}
-
-
-		if ( this.replicator.isRunning() ) {
-			System.err.println("Maxwell' replicator thread wouldn't die, but we're exiting anyway.");
-		}
-
 		this.shouldStop = true;
-
-		/* another 5s timeout */
+		/*  5s timeout */
 		for ( int i = 0; i < 50 && this.isRunning; i++ ) {
 			try {
 				Thread.sleep(100);
@@ -107,6 +94,19 @@ public class MaxwellParser {
 		if ( this.isRunning ) {
 			System.err.println("Maxwell's main thread didn't die, but we had to go anyway.");
 		}
+
+		this.binlogEventListener.stop();
+
+		try {
+			this.replicator.stop(5, TimeUnit.SECONDS);
+		} catch ( Exception e ) {
+			System.err.println("Got exception while shutting down replicator: " + e);
+		}
+
+		if ( this.replicator.isRunning() ) {
+			System.err.println("Maxwell' replicator thread wouldn't die, but we're exiting anyway.");
+		}
+
 
 		System.err.flush();
 	}
