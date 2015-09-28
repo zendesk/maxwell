@@ -3,6 +3,7 @@ package com.zendesk.maxwell;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +69,11 @@ public class Maxwell {
 			@Override
 			public void run() {
 				context.terminate();
-				p.stop();
+				try {
+					p.stop();
+				} catch (TimeoutException e) {
+					System.err.println("Timed out trying to shutdown maxwell parser thread.");
+				}
 			}
 		});
 

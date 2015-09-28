@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import com.google.code.or.binlog.impl.event.*;
 import org.slf4j.Logger;
@@ -33,11 +34,10 @@ public class MaxwellParser {
 
 	private final LinkedBlockingQueue<BinlogEventV4> queue = new LinkedBlockingQueue<BinlogEventV4>(20);
 
-	protected FileBasedBinlogParser parser;
 	protected MaxwellBinlogEventListener binlogEventListener;
 
 	private final MaxwellTableCache tableCache = new MaxwellTableCache();
-	private final OpenReplicator replicator;
+	protected final OpenReplicator replicator;
 	private final MaxwellContext context;
 	private final AbstractProducer producer;
 
@@ -81,11 +81,11 @@ public class MaxwellParser {
 		this.replicator.start();
 	}
 
-	public void stop() {
+	public void stop() throws TimeoutException {
 		stop(5000);
 	}
 
-	public void stop(long timeoutMS) {
+	public void stop(long timeoutMS) throws TimeoutException {
 		// note: we use stderr in this function as it's LOGGER.err() oftentimes
 		// won't flush in time, and we lose the messages.
 		long left = 0;
@@ -95,10 +95,8 @@ public class MaxwellParser {
 			try { Thread.sleep(100); } catch (InterruptedException e) {
 		}
 
-		if( this.runState != RunState.STOPPED ) {
-			System.err.println("Maxwell's main thread didn't die, but we had to go anyway.");
-			System.err.flush();
-		}
+		if( this.runState != RunState.STOPPED )
+			throw new TimeoutException("Maxwell's main parser thread didn't die after " + timeoutMS + "ms.");
 	}
 
 	public void run() throws Exception {
@@ -192,7 +190,7 @@ public class MaxwellParser {
 		// if the queue is empty.  should probably just replace this with an optional timeout...
 
 		while ( true ) {
-			v4Event = queue.poll(100, TimeUnit.MILLISECONDS);
+			v4Event = pollV4EventFromQueue();
 			if (v4Event == null)
 				continue;
 
@@ -254,7 +252,7 @@ public class MaxwellParser {
 				return txBuffer.removeFirst();
 			}
 
-			v4Event = queue.poll(100, TimeUnit.MILLISECONDS);
+			v4Event = pollV4EventFromQueue();
 
 			if (v4Event == null) return null;
 
@@ -283,25 +281,10 @@ public class MaxwellParser {
 		}
 	}
 
-	public void getEvents(EventConsumer c, BinlogPosition endPosition) throws Exception {
-		int max_tries = 10;
-		while ( true ) {
-			MaxwellAbstractRowsEvent e = getEvent();
-			if (e == null) {
-				if (max_tries > 0) {
-					max_tries--;
-					continue;
-				} else {
-					LOGGER.error("maxwell didn't reach the position requested.");
-					return;
-				}
-			}
-			c.consume(e);
-
-			if ( eventBinlogPosition(e).newerThan(endPosition) )
-				return;
-		}
+	protected BinlogEventV4 pollV4EventFromQueue() throws InterruptedException {
+		return queue.poll(100, TimeUnit.MILLISECONDS);
 	}
+
 
 	private void processQueryEvent(QueryEvent event) throws SchemaSyncError, SQLException, IOException {
 		// get encoding of the alter event somehow? or just fuck it.
