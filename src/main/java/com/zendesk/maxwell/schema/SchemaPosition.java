@@ -66,8 +66,9 @@ public class SchemaPosition implements Runnable {
 			} catch (InterruptedException e) { }
 		}
 
-		if ( this.exception != null )
+		if ( exception == null ) {
 			store(position.get());
+		}
 	}
 
 

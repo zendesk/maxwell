@@ -68,12 +68,12 @@ public class Maxwell {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
-				context.terminate();
 				try {
 					p.stop();
 				} catch (TimeoutException e) {
 					System.err.println("Timed out trying to shutdown maxwell parser thread.");
 				}
+				context.terminate();
 			}
 		});
 
