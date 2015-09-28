@@ -126,14 +126,14 @@ public class MaxwellParser {
 			replicator.setBinlogPosition(event.getHeader().getNextPosition());
 		}
 
-		this.runState = RunState.STOPPED;
-
 		try {
 			this.binlogEventListener.stop();
 			this.replicator.stop(5, TimeUnit.SECONDS);
 		} catch ( Exception e ) {
 			LOGGER.error("Got exception while shutting down replicator: " + e);
 		}
+
+		this.runState = RunState.STOPPED;
 	}
 
 	private boolean skipEvent(MaxwellAbstractRowsEvent event) {
