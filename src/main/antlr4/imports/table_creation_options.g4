@@ -1,7 +1,7 @@
 grammar table_creation_options;
 import mysql_literal_tokens, mysql_idents;
 
-table_creation_options:
+table_creation_option:
 	  creation_engine
 	| creation_auto_increment
 	| creation_avg_row_length

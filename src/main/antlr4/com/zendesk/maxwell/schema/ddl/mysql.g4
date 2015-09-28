@@ -23,7 +23,7 @@ create_database:
 create_table: 
     create_table_preamble 
     (
-      ( create_specifications table_creation_options* )
+        create_specifications ( table_creation_option ','? )*
       | create_like_tbl
     );
     
@@ -45,12 +45,13 @@ drop_table_options: (RESTRICT | CASCADE);
 rename_table: RENAME TABLE rename_table_spec (',' rename_table_spec)*;
 rename_table_spec: table_name TO table_name;
 
-alter_table: alter_table_preamble alter_specifications (engine_statement)?;
+alter_table: alter_table_preamble alter_specifications;
 
 alter_table_preamble: ALTER alter_flags? TABLE table_name;
 alter_flags: (ONLINE | OFFLINE | IGNORE);
 
 alter_specifications: alter_specification (',' alter_specification)*;
+
 alter_specification: add_column
                      | add_column_parens
                      | change_column
@@ -61,6 +62,7 @@ alter_specification: add_column
                      | alter_rename_table
                      | convert_to_character_set
                      | default_character_set
+                     | table_creation_option+
                      ; 
                    
 add_column: ADD COLUMN? column_definition col_position?;

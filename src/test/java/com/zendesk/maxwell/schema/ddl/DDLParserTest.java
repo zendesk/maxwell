@@ -165,29 +165,33 @@ public class DDLParserTest {
 	@Test
 	public void testParsingSomeAlters() {
 		String testSQL[] = {
-	       "alter table t add index `foo` using btree (`a`, `cd`) key_block_size=123",
-	       "alter table t add key bar (d)",
-	       "alter table t add constraint `foo` primary key using btree (id)",
-	       "alter table t add primary key (`id`)",
-	       "alter table t add constraint unique key (`id`)",
-	       "alter table t add fulltext key (`id`)",
-	       "alter table t add spatial key (`id`)",
-	       "alter table t alter column `foo` SET DEFAULT 112312",
-	       "alter table t alter column `foo` SET DEFAULT 1.2",
-	       "alter table t alter column `foo` SET DEFAULT 'foo'",
-	       "alter table t alter column `foo` drop default",
-	       "alter table t CHARACTER SET latin1 COLLATE = 'utf8'",
-	       "alter table t DROP PRIMARY KEY",
-	       "alter table t drop index `foo`",
-	       "alter table t disable keys",
-	       "alter table t enable keys",
-	       "alter table t order by `foor`, bar",
-	       "alter table tester add index (whatever(20), `f,` (2))"
+			"alter table t add index `foo` using btree (`a`, `cd`) key_block_size=123",
+			"alter table t add key bar (d)",
+			"alter table t add constraint `foo` primary key using btree (id)",
+			"alter table t add primary key (`id`)",
+			"alter table t add constraint unique key (`id`)",
+			"alter table t add fulltext key (`id`)",
+			"alter table t add spatial key (`id`)",
+			"alter table t alter column `foo` SET DEFAULT 112312",
+			"alter table t alter column `foo` SET DEFAULT 1.2",
+			"alter table t alter column `foo` SET DEFAULT 'foo'",
+			"alter table t alter column `foo` drop default",
+			"alter table t CHARACTER SET latin1 COLLATE = 'utf8'",
+			"alter table t DROP PRIMARY KEY",
+			"alter table t drop index `foo`",
+			"alter table t disable keys",
+			"alter table t enable keys",
+			"alter table t order by `foor`, bar",
+			"alter table tester add index (whatever(20), `f,` (2))",
+			"create table t ( id int ) engine = innodb, auto_increment = 5",
+			"alter table t engine=innodb",
+			"alter table t auto_increment =5",
+			"alter table t add column `foo` int, auto_increment = 5 engine=innodb, modify column bar int"
 		};
 
 		for ( String s : testSQL ) {
-			TableAlter a = parseAlter(s);
-			assertThat("Expected " + s + "to parse", a, not(nullValue()));
+			SchemaChange parsed = parse(s).get(0);
+			assertThat("Expected " + s + "to parse", parsed, not(nullValue()));
 		}
 
 	}
