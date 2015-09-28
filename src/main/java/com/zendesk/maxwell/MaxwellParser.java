@@ -99,11 +99,8 @@ public class MaxwellParser {
 			throw new TimeoutException("Maxwell's main parser thread didn't die after " + timeoutMS + "ms.");
 	}
 
-	public void run() throws Exception {
+	private void doRun() throws Exception {
 		MaxwellAbstractRowsEvent event;
-
-		this.start();
-		this.runState = RunState.RUNNING;
 
 		while ( this.runState == RunState.RUNNING ) {
 			event = getEvent();
@@ -134,6 +131,17 @@ public class MaxwellParser {
 		}
 
 		this.runState = RunState.STOPPED;
+	}
+
+	public void run() throws Exception {
+		this.start();
+		this.runState = RunState.RUNNING;
+
+		try {
+			doRun();
+		} finally {
+			this.runState = RunState.STOPPED;
+		}
 	}
 
 	private boolean skipEvent(MaxwellAbstractRowsEvent event) {
