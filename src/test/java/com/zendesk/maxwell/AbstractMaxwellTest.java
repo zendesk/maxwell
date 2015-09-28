@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.zendesk.maxwell.schema.Schema;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -96,15 +97,16 @@ public class AbstractMaxwellTest {
 
 		MaxwellContext context = new MaxwellContext(config);
 
-		MaxwellParser p = new MaxwellParser(capturer.capture(), null, context, start);
-
-		p.setFilter(filter);
+		Schema initialSchema = capturer.capture();
 
 		server.executeList(Arrays.asList(queries));
 
 		BinlogPosition endPosition = BinlogPosition.capture(server.getConnection());
 
-		p.start();
+		TestMaxwellParser p = new TestMaxwellParser(initialSchema,  null, context, start, endPosition);
+
+		p.setFilter(filter);
+
 
 		final ArrayList<MaxwellAbstractRowsEvent> list = new ArrayList<>();
 		MaxwellAbstractRowsEvent e;
@@ -116,9 +118,8 @@ public class AbstractMaxwellTest {
 					list.add(e);
 				}
 			}
-		}, endPosition);
+		});
 
-		p.stop();
 		context.terminate();
 
 		return list;

@@ -28,7 +28,7 @@ public class MysqlIsolatedServer {
 	public void boot() throws IOException, SQLException, InterruptedException {
         final String dir = System.getProperty("user.dir");
 
-		ProcessBuilder pb = new ProcessBuilder(dir + "/src/test/onetimeserver", "--debug", "--mysql-version=" + this.getVersion(),
+		ProcessBuilder pb = new ProcessBuilder(dir + "/src/test/onetimeserver", "--mysql-version=" + this.getVersion(),
 												"--log-bin=master", "--binlog_format=row", "--innodb_flush_log_at_trx_commit=1", "--server_id=" + SERVER_ID);
 		LOGGER.debug("booting onetimeserver: " + StringUtils.join(pb.command(), " "));
 		Process p = pb.start();

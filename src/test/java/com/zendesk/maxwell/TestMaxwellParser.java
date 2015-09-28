@@ -1,0 +1,67 @@
+package com.zendesk.maxwell;
+
+import com.google.code.or.binlog.BinlogEventV4;
+import com.zendesk.maxwell.producer.AbstractProducer;
+import com.zendesk.maxwell.schema.Schema;
+
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Created by ben on 9/28/15.
+ */
+public class TestMaxwellParser extends MaxwellParser {
+	private final BinlogPosition stopAt;
+	private boolean shouldStop;
+
+	public TestMaxwellParser(Schema currentSchema,
+					  AbstractProducer producer,
+					  MaxwellContext ctx,
+					  BinlogPosition start,
+					  BinlogPosition stop) throws Exception {
+		super(currentSchema, producer, ctx, start);
+		LOGGER.debug("TestMaxwellParser initialized from " + start + " to " + stop);
+		this.stopAt = stop;
+	}
+
+	public void getEvents(EventConsumer c) throws Exception {
+		int max_tries = 100;
+		shouldStop = false;
+
+		this.replicator.start();
+
+		while ( !shouldStop ) {
+			MaxwellAbstractRowsEvent e = getEvent();
+			if (e == null) {
+				if (max_tries > 0) {
+					max_tries--;
+					continue;
+				} else {
+					hardStop();
+					return;
+				}
+			}
+			c.consume(e);
+		}
+
+		hardStop();
+		LOGGER.debug("exiting getEvents loop");
+	}
+
+	private void hardStop() throws Exception {
+		this.binlogEventListener.stop();
+		this.replicator.stop(5, TimeUnit.SECONDS);
+	}
+
+	@Override
+	protected BinlogEventV4 pollV4EventFromQueue() throws InterruptedException
+	{
+		BinlogEventV4 v4 = super.pollV4EventFromQueue();
+		if ( v4 != null && v4.getHeader().getNextPosition() >= this.stopAt.getOffset() ) {
+			LOGGER.debug("stopping getEvents loop");
+			shouldStop = true;
+		}
+
+		LOGGER.debug("got event: " + v4);
+		return v4;
+	}
+}

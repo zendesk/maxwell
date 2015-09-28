@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import com.google.code.or.binlog.impl.event.*;
 import org.slf4j.Logger;
@@ -31,15 +32,17 @@ public class MaxwellParser {
 	private Schema schema;
 	private MaxwellFilter filter;
 
-	private final LinkedBlockingQueue<BinlogEventV4> queue =  new LinkedBlockingQueue<BinlogEventV4>(20);
+	private final LinkedBlockingQueue<BinlogEventV4> queue = new LinkedBlockingQueue<BinlogEventV4>(20);
 
-	protected FileBasedBinlogParser parser;
 	protected MaxwellBinlogEventListener binlogEventListener;
 
 	private final MaxwellTableCache tableCache = new MaxwellTableCache();
-	private final OpenReplicator replicator;
+	protected final OpenReplicator replicator;
 	private final MaxwellContext context;
 	private final AbstractProducer producer;
+
+	private enum RunState { STOPPED, RUNNING, REQUEST_STOP };
+	private volatile RunState runState;
 
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellParser.class);
 
@@ -78,18 +81,31 @@ public class MaxwellParser {
 		this.replicator.start();
 	}
 
-	public void stop() throws Exception {
-		this.binlogEventListener.stop();
-		this.replicator.stop(5, TimeUnit.SECONDS);
+	public void stop() throws TimeoutException {
+		stop(5000);
 	}
 
+	public void stop(long timeoutMS) throws TimeoutException {
+		// note: we use stderr in this function as it's LOGGER.err() oftentimes
+		// won't flush in time, and we lose the messages.
+		long left = 0;
+		this.runState = RunState.REQUEST_STOP;
+
+		for (left = timeoutMS; left > 0 && this.runState == RunState.REQUEST_STOP; left -= 100)
+			try { Thread.sleep(100); } catch (InterruptedException e) {
+		}
+
+		if( this.runState != RunState.STOPPED )
+			throw new TimeoutException("Maxwell's main parser thread didn't die after " + timeoutMS + "ms.");
+	}
 
 	public void run() throws Exception {
 		MaxwellAbstractRowsEvent event;
 
 		this.start();
+		this.runState = RunState.RUNNING;
 
-		for(;;) {
+		while ( this.runState == RunState.RUNNING ) {
 			event = getEvent();
 
 			if ( !replicator.isRunning() ) {
@@ -109,6 +125,15 @@ public class MaxwellParser {
 			replicator.setBinlogFileName(event.getBinlogFilename());
 			replicator.setBinlogPosition(event.getHeader().getNextPosition());
 		}
+
+		try {
+			this.binlogEventListener.stop();
+			this.replicator.stop(5, TimeUnit.SECONDS);
+		} catch ( Exception e ) {
+			LOGGER.error("Got exception while shutting down replicator: " + e);
+		}
+
+		this.runState = RunState.STOPPED;
 	}
 
 	private boolean skipEvent(MaxwellAbstractRowsEvent event) {
@@ -165,7 +190,7 @@ public class MaxwellParser {
 		// if the queue is empty.  should probably just replace this with an optional timeout...
 
 		while ( true ) {
-			v4Event = queue.poll(100, TimeUnit.MILLISECONDS);
+			v4Event = pollV4EventFromQueue();
 			if (v4Event == null)
 				continue;
 
@@ -227,7 +252,7 @@ public class MaxwellParser {
 				return txBuffer.removeFirst();
 			}
 
-			v4Event = queue.poll(100, TimeUnit.MILLISECONDS);
+			v4Event = pollV4EventFromQueue();
 
 			if (v4Event == null) return null;
 
@@ -256,25 +281,10 @@ public class MaxwellParser {
 		}
 	}
 
-	public void getEvents(EventConsumer c, BinlogPosition endPosition) throws Exception {
-		int max_tries = 10;
-		while ( true ) {
-			MaxwellAbstractRowsEvent e = getEvent();
-			if (e == null) {
-				if (max_tries > 0) {
-					max_tries--;
-					continue;
-				} else {
-					LOGGER.error("maxwell didn't reach the position requested.");
-					return;
-				}
-			}
-			c.consume(e);
-
-			if ( eventBinlogPosition(e).newerThan(endPosition) )
-				return;
-		}
+	protected BinlogEventV4 pollV4EventFromQueue() throws InterruptedException {
+		return queue.poll(100, TimeUnit.MILLISECONDS);
 	}
+
 
 	private void processQueryEvent(QueryEvent event) throws SchemaSyncError, SQLException, IOException {
 		// get encoding of the alter event somehow? or just fuck it.

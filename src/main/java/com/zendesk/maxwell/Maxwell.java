@@ -3,6 +3,7 @@ package com.zendesk.maxwell;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,13 +40,6 @@ public class Maxwell {
 
 		this.context = new MaxwellContext(this.config);
 
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			@Override
-			public void run() {
-				context.terminate();
-			}
-		});
-
 		try ( Connection connection = this.context.getConnectionPool().getConnection() ) {
 			MaxwellMysqlStatus.ensureMysqlState(connection);
 
@@ -69,7 +63,20 @@ public class Maxwell {
 
 		AbstractProducer producer = this.context.getProducer();
 
-		MaxwellParser p = new MaxwellParser(this.schema, producer, this.context, this.context.getInitialPosition());
+		final MaxwellParser p = new MaxwellParser(this.schema, producer, this.context, this.context.getInitialPosition());
+
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				context.terminate();
+				try {
+					p.stop();
+				} catch (TimeoutException e) {
+					System.err.println("Timed out trying to shutdown maxwell parser thread.");
+				}
+			}
+		});
+
 		p.run();
 
 	}
