@@ -56,11 +56,16 @@ public class MaxwellContext {
 		return this.initialPosition;
 	}
 
-	public void setInitialPosition(BinlogPosition position) throws SQLException {
+	public void setPosition(MaxwellAbstractRowsEvent e) throws SQLException {
+		if ( e.isTXCommit() ) {
+			this.setPosition(e.getNextBinlogPosition());
+		}
+	}
+	public void setPosition(BinlogPosition position) throws SQLException {
 		this.getSchemaPosition().set(position);
 	}
 
-	public void setInitialPositionSync(BinlogPosition position) throws SQLException {
+	public void setPositionSync(BinlogPosition position) throws SQLException {
 		this.getSchemaPosition().setSync(position);
 	}
 

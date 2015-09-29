@@ -24,6 +24,7 @@ public class FileProducer extends AbstractProducer {
 			this.fileWriter.write('\n');
 			this.fileWriter.flush();
 		}
-		context.setInitialPosition(e.getNextBinlogPosition());
+
+		context.setPosition(e);
 	}
 }

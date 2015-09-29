@@ -45,7 +45,7 @@ class KafkaCallback implements Callback {
 					LOGGER.debug("");
 				}
 				if ( this.lastRowInEvent ) {
-					context.setInitialPosition(event.getNextBinlogPosition());
+					context.setPosition(event);
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
@@ -60,13 +60,16 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		"metadata.fetch.timeout.ms", 5000
 	};
 	private final KafkaProducer<byte[], byte[]> kafka;
-	private final String topic;
+	private String topic;
 	private final int numPartitions;
 
 	public MaxwellKafkaProducer(MaxwellContext context, Properties kafkaProperties, String kafkaTopic) {
 		super(context);
 
-		topic = (kafkaTopic == null) ? "maxwell": kafkaTopic;
+		this.topic = kafkaTopic;
+		if ( this.topic == null ) {
+			this.topic = "maxwell";
+		}
 
 		this.setDefaults(kafkaProperties);
 		this.kafka = new KafkaProducer<>(kafkaProperties, new ByteArraySerializer(), new ByteArraySerializer());
