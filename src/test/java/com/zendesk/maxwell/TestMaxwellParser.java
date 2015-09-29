@@ -44,7 +44,6 @@ public class TestMaxwellParser extends MaxwellParser {
 		}
 
 		hardStop();
-		LOGGER.debug("exiting getEvents loop");
 	}
 
 	private void hardStop() throws Exception {
@@ -57,11 +56,9 @@ public class TestMaxwellParser extends MaxwellParser {
 	{
 		BinlogEventV4 v4 = super.pollV4EventFromQueue();
 		if ( v4 != null && v4.getHeader().getNextPosition() >= this.stopAt.getOffset() ) {
-			LOGGER.debug("stopping getEvents loop");
 			shouldStop = true;
 		}
 
-		LOGGER.debug("got event: " + v4);
 		return v4;
 	}
 }
