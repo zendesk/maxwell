@@ -102,6 +102,10 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 		this.txCommit = true;
 	}
 
+	public boolean isTXCommit() {
+		return txCommit;
+	}
+
 
 	@Override
 	public String toString() {

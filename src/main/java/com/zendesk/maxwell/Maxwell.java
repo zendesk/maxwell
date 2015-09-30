@@ -29,7 +29,7 @@ public class Maxwell {
 		SchemaStore store = new SchemaStore(connection, this.context.getServerID(), this.schema, pos);
 		store.save();
 
-		this.context.setInitialPosition(pos);
+		this.context.setPosition(pos);
 	}
 
 	private void run(String[] argv) throws Exception {

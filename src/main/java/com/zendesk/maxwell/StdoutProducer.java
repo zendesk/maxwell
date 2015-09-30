@@ -12,6 +12,6 @@ public class StdoutProducer extends AbstractProducer {
 		for ( String json : e.toJSONStrings() ) {
 			System.out.println(json);
 		}
-		this.context.setInitialPosition(e.getNextBinlogPosition());
+		this.context.setPosition(e);
 	}
 }

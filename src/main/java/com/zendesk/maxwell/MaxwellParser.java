@@ -99,16 +99,18 @@ public class MaxwellParser {
 			throw new TimeoutException("Maxwell's main parser thread didn't die after " + timeoutMS + "ms.");
 	}
 
+	private void ensureReplicatorThread() throws Exception {
+		if ( !replicator.isRunning() ) {
+			LOGGER.warn("open-replicator stopped at position " + replicator.getBinlogFileName() + ":" + replicator.getBinlogPosition() + " -- restarting");
+			replicator.start();
+		}
+	}
+
 	private void doRun() throws Exception {
 		MaxwellAbstractRowsEvent event;
 
 		while ( this.runState == RunState.RUNNING ) {
 			event = getEvent();
-
-			if ( !replicator.isRunning() ) {
-				LOGGER.warn("open-replicator stopped at position " + replicator.getBinlogFileName() + ":" + replicator.getBinlogPosition() + " -- restarting");
-				replicator.start();
-			}
 
 			context.ensurePositionThread();
 
@@ -118,9 +120,6 @@ public class MaxwellParser {
 			if ( !skipEvent(event)) {
 				producer.push(event);
 			}
-
-			replicator.setBinlogFileName(event.getBinlogFilename());
-			replicator.setBinlogPosition(event.getHeader().getNextPosition());
 		}
 
 		try {
@@ -199,8 +198,10 @@ public class MaxwellParser {
 
 		while ( true ) {
 			v4Event = pollV4EventFromQueue();
-			if (v4Event == null)
+			if (v4Event == null) {
+				ensureReplicatorThread();
 				continue;
+			}
 
 			switch(v4Event.getHeader().getEventType()) {
 				case MySQLConstants.WRITE_ROWS_EVENT:
@@ -214,6 +215,9 @@ public class MaxwellParser {
 
 					if ( event.matchesFilter() )
 						list.add(event);
+
+					setReplicatorPosition(event);
+
 					break;
 				case MySQLConstants.TABLE_MAP_EVENT:
 					tableCache.processEvent(this.schema, (TableMapEvent) v4Event);
@@ -262,7 +266,10 @@ public class MaxwellParser {
 
 			v4Event = pollV4EventFromQueue();
 
-			if (v4Event == null) return null;
+			if (v4Event == null) {
+				ensureReplicatorThread();
+				return null;
+			}
 
 			switch (v4Event.getHeader().getEventType()) {
 				case MySQLConstants.WRITE_ROWS_EVENT:
@@ -286,6 +293,8 @@ public class MaxwellParser {
 				default:
 					break;
 			}
+
+			setReplicatorPosition((AbstractBinlogEventV4) v4Event);
 		}
 	}
 
@@ -315,7 +324,7 @@ public class MaxwellParser {
 			try ( Connection c = this.context.getConnectionPool().getConnection() ) {
 				new SchemaStore(c, this.context.getServerID(), schema, p).save();
 			}
-			this.context.setInitialPositionSync(p);
+			this.context.setPositionSync(p);
 		}
 	}
 
@@ -347,6 +356,10 @@ public class MaxwellParser {
 		this.filter = filter;
 	}
 
+	private void setReplicatorPosition(AbstractBinlogEventV4 e) {
+		replicator.setBinlogFileName(e.getBinlogFilename());
+		replicator.setBinlogPosition(e.getHeader().getNextPosition());
+	}
 }
 
 
