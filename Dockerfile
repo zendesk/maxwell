@@ -1,4 +1,4 @@
-FROM jacobat/ruby:2.1.5-3
+FROM docker-registry.zende.sk/zendesk/ruby:2.1.6
 
 RUN apt-get update && apt-get install -y openjdk-7-jre curl
 
@@ -6,8 +6,7 @@ RUN mkdir /app
 WORKDIR /app
 
 RUN curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.11.4/maxwell-0.11.4.tar.gz | tar zxvf -
-
-WORKDIR /app/maxwell-0.11.4
+RUN mv maxwell-*/* .
 
 ADD REVISION /
 
