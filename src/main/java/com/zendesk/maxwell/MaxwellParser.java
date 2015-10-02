@@ -41,9 +41,6 @@ public class MaxwellParser {
 	private final MaxwellContext context;
 	private final AbstractProducer producer;
 
-	private enum RunState { STOPPED, RUNNING, REQUEST_STOP };
-	private volatile RunState runState;
-
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellParser.class);
 
 	public MaxwellParser(Schema currentSchema, AbstractProducer producer, MaxwellContext ctx, BinlogPosition start) throws Exception {
@@ -79,24 +76,6 @@ public class MaxwellParser {
 
 	public void start() throws Exception {
 		this.replicator.start();
-	}
-
-	public void stop() throws TimeoutException {
-		stop(5000);
-	}
-
-	public void stop(long timeoutMS) throws TimeoutException {
-		// note: we use stderr in this function as it's LOGGER.err() oftentimes
-		// won't flush in time, and we lose the messages.
-		long left = 0;
-		this.runState = RunState.REQUEST_STOP;
-
-		for (left = timeoutMS; left > 0 && this.runState == RunState.REQUEST_STOP; left -= 100)
-			try { Thread.sleep(100); } catch (InterruptedException e) {
-		}
-
-		if( this.runState != RunState.STOPPED )
-			throw new TimeoutException("Maxwell's main parser thread didn't die after " + timeoutMS + "ms.");
 	}
 
 	private void ensureReplicatorThread() throws Exception {
