@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.TimeoutException;
 
+import com.djdch.log4j.StaticShutdownCallbackRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,6 +75,7 @@ public class Maxwell {
 					System.err.println("Timed out trying to shutdown maxwell parser thread.");
 				}
 				context.terminate();
+				StaticShutdownCallbackRegistry.invoke();
 			}
 		});
 
