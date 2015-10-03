@@ -26,7 +26,7 @@ import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.ddl.SchemaChange;
 import com.zendesk.maxwell.schema.ddl.SchemaSyncError;
 
-public class MaxwellParser {
+public class MaxwellParser extends RunLoopProcess {
 	String filePath, fileName;
 	private long rowEventsProcessed;
 	private Schema schema;
@@ -74,10 +74,6 @@ public class MaxwellParser {
 		this.replicator.setPort(port);
 	}
 
-	public void start() throws Exception {
-		this.replicator.start();
-	}
-
 	private void ensureReplicatorThread() throws Exception {
 		if ( !replicator.isRunning() ) {
 			LOGGER.warn("open-replicator stopped at position " + replicator.getBinlogFileName() + ":" + replicator.getBinlogPosition() + " -- restarting");
@@ -85,42 +81,32 @@ public class MaxwellParser {
 		}
 	}
 
-	private void doRun() throws Exception {
+	@Override
+	protected void beforeStart() throws Exception {
+		this.replicator.start();
+	}
+
+	public void work() throws Exception {
 		MaxwellAbstractRowsEvent event;
 
-		while ( this.runState == RunState.RUNNING ) {
-			event = getEvent();
+		event = getEvent();
 
-			context.ensurePositionThread();
+		context.ensurePositionThread();
 
-			if ( event == null )
-				continue;
+		if (event == null)
+			return;
 
-			if ( !skipEvent(event)) {
-				producer.push(event);
-			}
-		}
-
-		try {
-			this.binlogEventListener.stop();
-			this.replicator.stop(5, TimeUnit.SECONDS);
-		} catch ( Exception e ) {
-			LOGGER.error("Got exception while shutting down replicator: " + e);
-		}
-
-		this.runState = RunState.STOPPED;
-	}
-
-	public void run() throws Exception {
-		this.start();
-		this.runState = RunState.RUNNING;
-
-		try {
-			doRun();
-		} finally {
-			this.runState = RunState.STOPPED;
+		if (!skipEvent(event)) {
+			producer.push(event);
 		}
 	}
+
+	@Override
+	protected void beforeStop() throws Exception {
+		this.binlogEventListener.stop();
+		this.replicator.stop(5, TimeUnit.SECONDS);
+	}
+
 
 	private boolean skipEvent(MaxwellAbstractRowsEvent event) {
 		return event.getTable().getDatabase().getName().equals("maxwell");

@@ -70,7 +70,7 @@ public class Maxwell {
 			@Override
 			public void run() {
 				try {
-					p.stop();
+					p.stopLoop();
 				} catch (TimeoutException e) {
 					System.err.println("Timed out trying to shutdown maxwell parser thread.");
 				}
@@ -79,7 +79,7 @@ public class Maxwell {
 			}
 		});
 
-		p.run();
+		p.runLoop();
 
 	}
 
