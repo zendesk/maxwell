@@ -5,13 +5,18 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.concurrent.TimeoutException;
 
 import com.zendesk.maxwell.producer.*;
 import com.zendesk.maxwell.schema.SchemaPosition;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import snaq.db.ConnectionPool;
 
 public class MaxwellContext {
+	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellContext.class);
+
 	private final ConnectionPool connectionPool;
 	private final MaxwellConfig config;
 	private SchemaPosition schemaPosition;
@@ -34,7 +39,11 @@ public class MaxwellContext {
 
 	public void terminate() {
 		if ( this.schemaPosition != null ) {
-			this.schemaPosition.stop();
+			try {
+				this.schemaPosition.stopLoop();
+			} catch (TimeoutException e) {
+				LOGGER.error("got timeout trying to shutdown schemaPosition thread.");
+			}
 		}
 		this.connectionPool.release();
 	}

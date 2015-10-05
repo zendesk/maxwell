@@ -3,7 +3,6 @@ package com.zendesk.maxwell;
 import java.util.Iterator;
 import java.util.List;
 
-import com.google.code.or.binlog.impl.event.AbstractRowEvent;
 import com.google.code.or.binlog.impl.event.DeleteRowsEvent;
 import com.google.code.or.binlog.impl.event.DeleteRowsEventV2;
 import com.google.code.or.common.glossary.Row;

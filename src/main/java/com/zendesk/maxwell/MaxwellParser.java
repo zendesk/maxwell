@@ -26,7 +26,7 @@ import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.ddl.SchemaChange;
 import com.zendesk.maxwell.schema.ddl.SchemaSyncError;
 
-public class MaxwellParser {
+public class MaxwellParser extends RunLoopProcess {
 	String filePath, fileName;
 	private long rowEventsProcessed;
 	private Schema schema;
@@ -40,9 +40,6 @@ public class MaxwellParser {
 	protected final OpenReplicator replicator;
 	private final MaxwellContext context;
 	private final AbstractProducer producer;
-
-	private enum RunState { STOPPED, RUNNING, REQUEST_STOP };
-	private volatile RunState runState;
 
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellParser.class);
 
@@ -77,28 +74,6 @@ public class MaxwellParser {
 		this.replicator.setPort(port);
 	}
 
-	public void start() throws Exception {
-		this.replicator.start();
-	}
-
-	public void stop() throws TimeoutException {
-		stop(5000);
-	}
-
-	public void stop(long timeoutMS) throws TimeoutException {
-		// note: we use stderr in this function as it's LOGGER.err() oftentimes
-		// won't flush in time, and we lose the messages.
-		long left = 0;
-		this.runState = RunState.REQUEST_STOP;
-
-		for (left = timeoutMS; left > 0 && this.runState == RunState.REQUEST_STOP; left -= 100)
-			try { Thread.sleep(100); } catch (InterruptedException e) {
-		}
-
-		if( this.runState != RunState.STOPPED )
-			throw new TimeoutException("Maxwell's main parser thread didn't die after " + timeoutMS + "ms.");
-	}
-
 	private void ensureReplicatorThread() throws Exception {
 		if ( !replicator.isRunning() ) {
 			LOGGER.warn("open-replicator stopped at position " + replicator.getBinlogFileName() + ":" + replicator.getBinlogPosition() + " -- restarting");
@@ -106,42 +81,32 @@ public class MaxwellParser {
 		}
 	}
 
-	private void doRun() throws Exception {
+	@Override
+	protected void beforeStart() throws Exception {
+		this.replicator.start();
+	}
+
+	public void work() throws Exception {
 		MaxwellAbstractRowsEvent event;
 
-		while ( this.runState == RunState.RUNNING ) {
-			event = getEvent();
+		event = getEvent();
 
-			context.ensurePositionThread();
+		context.ensurePositionThread();
 
-			if ( event == null )
-				continue;
+		if (event == null)
+			return;
 
-			if ( !skipEvent(event)) {
-				producer.push(event);
-			}
-		}
-
-		try {
-			this.binlogEventListener.stop();
-			this.replicator.stop(5, TimeUnit.SECONDS);
-		} catch ( Exception e ) {
-			LOGGER.error("Got exception while shutting down replicator: " + e);
-		}
-
-		this.runState = RunState.STOPPED;
-	}
-
-	public void run() throws Exception {
-		this.start();
-		this.runState = RunState.RUNNING;
-
-		try {
-			doRun();
-		} finally {
-			this.runState = RunState.STOPPED;
+		if (!skipEvent(event)) {
+			producer.push(event);
 		}
 	}
+
+	@Override
+	protected void beforeStop() throws Exception {
+		this.binlogEventListener.stop();
+		this.replicator.stop(5, TimeUnit.SECONDS);
+	}
+
 
 	private boolean skipEvent(MaxwellAbstractRowsEvent event) {
 		return event.getTable().getDatabase().getName().equals("maxwell");

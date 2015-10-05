@@ -4,18 +4,20 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.zendesk.maxwell.BinlogPosition;
+import com.zendesk.maxwell.RunLoopProcess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import snaq.db.ConnectionPool;
 
-import com.zendesk.maxwell.BinlogPosition;
 
 // todo: rename something better
-public class SchemaPosition implements Runnable {
+public class SchemaPosition extends RunLoopProcess implements Runnable {
 	static final Logger LOGGER = LoggerFactory.getLogger(SchemaPosition.class);
 	private final Long serverID;
 	private final AtomicReference<BinlogPosition> position;
@@ -36,39 +38,46 @@ public class SchemaPosition implements Runnable {
 
 	public void start() {
 		this.thread = new Thread(this, "Position Flush Thread");
-		this.run.set(true);
 		thread.start();
 	}
 
-	public void stop() {
-		this.run.set(false);
-
+	public void stopLoop() throws TimeoutException {
+		this.requestStop();
 		thread.interrupt();
+		super.stopLoop();
+	}
 
-		while ( thread.isAlive() ) {
-			try {
-				Thread.sleep(10);
-			} catch (InterruptedException e) { }
+	@Override
+	protected void beforeStop() {
+		if ( exception == null ) {
+			LOGGER.info("Storing final position: " + position.get());
+			store(position.get());
 		}
 	}
 
 	@Override
 	public void run() {
-		while ( run.get() && this.exception == null ) {
-			BinlogPosition newPosition = position.get();
+		try {
+			runLoop();
+		} catch ( Exception e ) {
+			// this code should never be hit.  There is, I suppose,
+			// a design flaw in my code, but at a certain point
+			// the whole inheritance + exception handling thing
+			// just started to drive me nuts.
+			LOGGER.error("Hit unexpected exception in SchemaPosition thread: " + e);
+		}
+	}
 
-			if ( newPosition != null && newPosition.newerThan(storedPosition.get()) ) {
-				store(newPosition);
-			}
+	public void work() throws Exception {
+		BinlogPosition newPosition = position.get();
 
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) { }
+		if ( newPosition != null && newPosition.newerThan(storedPosition.get()) ) {
+			store(newPosition);
 		}
 
-		if ( exception == null ) {
-			store(position.get());
-		}
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) { }
 	}
 
 
@@ -96,6 +105,7 @@ public class SchemaPosition implements Runnable {
 		} catch ( SQLException e ) {
 			LOGGER.error("received SQLException while trying to save to maxwell.positions: ");
 			LOGGER.error(e.getLocalizedMessage());
+			this.requestStop();
 			this.exception = e;
 		}
 	}
@@ -140,4 +150,5 @@ public class SchemaPosition implements Runnable {
 	public SQLException getException() {
 		return this.exception;
 	}
+
 }

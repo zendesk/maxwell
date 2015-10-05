@@ -82,6 +82,11 @@
     	<artifactId>dbpool</artifactId>
     	<version>7.0-jdk7</version>
     </dependency>
+    <dependency>
+        <groupId>com.djdch.log4j</groupId>
+        <artifactId>log4j-staticshutdown</artifactId>
+        <version>1.1.0</version>
+    </dependency>
   </dependencies>
 
   <build>
