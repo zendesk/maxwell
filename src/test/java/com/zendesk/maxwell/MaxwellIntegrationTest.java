@@ -303,4 +303,14 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 	public void testBlob() throws Exception {
 		runJSONTestFile(getSQLDir() + "/json/test_blob");
 	}
+
+	@Test
+	public void testBit() throws Exception {
+		runJSONTestFile(getSQLDir() + "/json/test_bit");
+	}
+
+	@Test
+	public void testBignum() throws Exception {
+		runJSONTestFile(getSQLDir() + "/json/test_bignum");
+	}
 }

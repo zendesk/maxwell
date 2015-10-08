@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import com.google.code.or.common.glossary.column.BitColumn;
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONObject;
 
@@ -257,10 +258,11 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 				Column c = colIter.next();
 				ColumnDef d = defIter.next();
 
-				if ( c instanceof DatetimeColumn )
+				if (c instanceof DatetimeColumn) {
 					value = ((DatetimeColumn) c).getLongValue();
-				else
+				} else {
 					value = c.getValue();
+				}
 
 				if ( value != null )
 					value = d.asJSON(value);
