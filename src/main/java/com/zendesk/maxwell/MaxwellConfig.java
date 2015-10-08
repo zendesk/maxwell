@@ -23,7 +23,7 @@ public class MaxwellConfig {
 	public Integer mysqlPort;
 	public String  mysqlUser;
 	public String  mysqlPassword;
-
+    public String include_databases,exclude_databases,include_tables,exclude_tables;
 	public final Properties kafkaProperties;
 	public String kafkaTopic;
 	public String producerType;
@@ -60,6 +60,11 @@ public class MaxwellConfig {
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
 		parser.accepts( "max_schemas", "how many old schema definitions maxwell should keep around.  default: 5").withOptionalArg();
+		parser.accepts( "include_databases", "include thes databases, formatted as include_databases=db1,db2").withOptionalArg();
+		parser.accepts( "exclude_databases", "exclude thes databases, formatted as exclude_databases=db1,db2").withOptionalArg();
+		parser.accepts( "include_tables", "include thes tables, formatted as include_tables=db1,db2").withOptionalArg();
+		parser.accepts( "exclude_tables", "exclude thes tables, formatted as exclude_tables=tb1,tb2").withOptionalArg();
+		
 		parser.accepts( "help", "display help").forHelp();
 		parser.formatHelpWith(new BuiltinHelpFormatter(160, 4));
 		return parser;
@@ -109,6 +114,19 @@ public class MaxwellConfig {
 
 		if ( options.has("max_schemas"))
 			this.maxSchemas = Integer.valueOf((String)options.valueOf("max_schemas"));
+		if ( options.has("include_databases"))
+			this.include_databases = (String) options.valueOf("include_databases");
+		
+		if ( options.has("exclude_databases"))
+			this.exclude_databases = (String) options.valueOf("exclude_databases");		
+
+		if ( options.has("include_tables"))
+			this.include_tables = (String) options.valueOf("include_tables");
+		
+		if ( options.has("exclude_tables"))
+			this.exclude_tables = (String) options.valueOf("exclude_tables");
+		
+		
 	}
 
 	private Properties readPropertiesFile(String filename, Boolean abortOnMissing) {
@@ -148,6 +166,10 @@ public class MaxwellConfig {
 		this.producerType    = p.getProperty("producer");
 		this.outputFile      = p.getProperty("output_file");
 		this.kafkaTopic      = p.getProperty("kafka_topic");
+		this.include_databases   = p.getProperty("include_databases");
+		this.exclude_databases   = p.getProperty("exclude_databases");
+		this.include_tables   = p.getProperty("include_tables");
+		this.exclude_tables   = p.getProperty("exclude_tables");
 
 		String maxSchemaString = p.getProperty("max_schemas");
 		if (maxSchemaString != null)
@@ -190,6 +212,17 @@ public class MaxwellConfig {
 
 		if ( this.maxSchemas != null )
 			SchemaStore.setMaxSchemas(this.maxSchemas);
+		if ( this.include_databases == null )
+			this.include_databases = "";
+
+		if ( this.exclude_databases == null )
+			this.exclude_databases = "";
+
+		if ( this.include_tables == null )
+			this.include_tables = "";
+
+		if ( this.exclude_tables == null )
+			this.exclude_tables = "";
 
 	}
 
