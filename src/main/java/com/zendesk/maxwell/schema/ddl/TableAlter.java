@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.schema.ddl;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
@@ -15,6 +16,7 @@ public class TableAlter extends SchemaChange {
 
 	public String convertCharset;
 	public String defaultCharset;
+	public List<String> pks;
 
 
 	public TableAlter(String database, String tableName) {
@@ -43,7 +45,6 @@ public class TableAlter extends SchemaChange {
 		}
 
 
-
 		if ( newTableName != null && newDatabase != null ) {
 			Database destDB = newSchema.findDatabase(this.newDatabase);
 			if ( destDB == null )
@@ -59,6 +60,9 @@ public class TableAlter extends SchemaChange {
 			mod.apply(table);
 		}
 
+		if ( this.pks != null ) {
+			table.setPKList(this.pks);
+		}
 		table.setDefaultColumnEncodings();
 
 		return newSchema;

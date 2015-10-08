@@ -84,16 +84,20 @@ public class Database {
 		this.tableList.add(table);
 	}
 
-	public Table buildTable(String name, String encoding, List<ColumnDef> list) {
+	public Table buildTable(String name, String encoding, List<ColumnDef> list, List<String> pks) {
 		if ( encoding == null )
 			encoding = getEncoding(); // inherit database's default encoding
 
-		Table t = new Table(this, name, encoding, list);
+		Table t = new Table(this, name, encoding, list, pks);
 		this.tableList.add(t);
 		return t;
 	}
 
+	public Table buildTable(String name, String encoding, List<String> pks) {
+		return buildTable(name, encoding, null, pks);
+	}
+
 	public Table buildTable(String name, String encoding) {
-		return buildTable(name, encoding, new ArrayList<ColumnDef>());
+		return buildTable(name, encoding, new ArrayList<ColumnDef>(), null);
 	}
 }

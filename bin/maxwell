@@ -2,9 +2,9 @@
 
 base_dir=$(dirname $0)/..
 
-CLASSPATH=$CLASSPATH:$base_dir/target/classes
+CLASSPATH=$CLASSPATH:$base_dir/target/classes:../open-replicator/target/classes
 
-for file in target/maxwell-*/*/lib/*.jar lib/*.jar
+for file in $base_dir/target/maxwell-*/*/lib/*.jar lib/*.jar
 do
   CLASSPATH=$CLASSPATH:$file
 done
@@ -15,5 +15,7 @@ else
   JAVA="$JAVA_HOME/bin/java"
 fi
 
-exec $JAVA -cp $CLASSPATH com.zendesk.maxwell.Maxwell "$@"
+export LANG="en_US.UTF-8"
+
+exec $JAVA -Dlog4j.shutdownCallbackRegistry=com.djdch.log4j.StaticShutdownCallbackRegistry -cp $CLASSPATH com.zendesk.maxwell.Maxwell "$@"
 

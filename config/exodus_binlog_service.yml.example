@@ -1,5 +1,0 @@
-binlog_dir: /opt/local/var/db/mysql5
-mysql: 
-  username: root
-  password: 
-port: 5056

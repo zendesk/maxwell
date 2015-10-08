@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="./img/favicon.ico">
+
+        <title>Maxwell's Daemon</title>
+
+        <link href="./css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="./css/font-awesome-4.0.3.css" rel="stylesheet">
+        <link href="./css/prettify-1.0.css" rel="stylesheet">
+        <link href="./css/base.css" rel="stylesheet">
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+        <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Main title -->
+            <a class="navbar-brand" href=".">Maxwell's Daemon</a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+        </div>
+    </div>
+</div>
+
+        <a href="https://github.com/zendesk/maxwell"><img style="position: absolute; top: 0; right: 0; border: 0; z-index: 1031;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
+        <div class="container">
+            <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        
+          <li class="active">
+              <a href=".">Overview</a>
+              
+                  <ul class="nav">
+                  
+                  </ul>
+              
+          </li>
+        
+          <li >
+              <a href="quickstart/">Quick Start</a>
+              
+          </li>
+        
+          <li >
+              <a href="config/">Configuration</a>
+              
+          </li>
+        
+          <li >
+              <a href="kafka/">Kafka</a>
+              
+          </li>
+        
+          <li >
+              <a href="dataformat/">Data Format</a>
+              
+          </li>
+        
+          <li >
+              <a href="compat/">Compat / Caveats</a>
+              
+          </li>
+        
+    </ul>
+</div></div>
+            <div class="col-md-9" role="main">
+
+<h3 id="maxwell-header" style="margin-top: -10px; font-weight: bold">Maxwell = Mysql + Kafka</h3>
+
+<p>This is Maxwell's daemon, an application that reads MySQL binlogs and writes row updates to Kafka as JSON.
+It's playing in the same space as <a href="https://github.com/mardambey/mypipe">mypipe</a> and <a href="http://data.linkedin.com/projects/databus">databus</a>,
+but differentiates itself with these features:</p>
+<ul>
+<li>Works with an unpatched mysql</li>
+<li>Parses ALTER/CREATE/DROP table statements, which allows Maxwell to always have a correct view of the mysql schema</li>
+<li>Stores its replication position and needed data within the mysql server itself</li>
+<li>Requires no external dependencies (save Kafka, if used)</li>
+<li>Eschews the complexity of Avro for plain old JSON.</li>
+<li>Minimal setup</li>
+</ul>
+<p>Maxwell is intended as a source for event-based readers, eg various ETL applications, search indexing,
+stat emitters.
+<br style="clear:both"/></p>
+<pre><code>mysql&gt; insert into test.maxwell set id = 11, daemon = 'firebus!  firebus!';
+
+(maxwell)
+{
+ &quot;database&quot;:&quot;test&quot;,
+ &quot;table&quot;:&quot;maxwell&quot;,
+ &quot;type&quot;:&quot;insert&quot;,
+ &quot;data&quot;:{&quot;id&quot;:11,&quot;daemon&quot;:&quot;firebus!  firebus!&quot;}
+}
+</code></pre>
+
+<script>
+  jQuery(document).ready(function () {
+    jQuery("#maxwell-header").append(
+      jQuery("<img alt='The Daemon, maybe' src='/img/cyberiad_1.jpg' style='float: left; height: 300px; padding-right: 30px;'>")
+
+    )
+  });
+</script></div>
+        </div>
+
+        
+
+        <script src="./js/bootstrap-3.0.3.min.js"></script>
+        <script src="./js/prettify-1.0.min.js"></script>
+        <script src="./js/base.js"></script>
+    </body>
+</html>

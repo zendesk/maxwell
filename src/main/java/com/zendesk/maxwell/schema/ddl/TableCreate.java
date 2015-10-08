@@ -11,6 +11,7 @@ public class TableCreate extends SchemaChange {
 	public String dbName;
 	public String tableName;
 	public ArrayList<ColumnDef> columns;
+	public ArrayList<String> pks;
 	public String encoding;
 
 	public String likeDB;
@@ -20,6 +21,7 @@ public class TableCreate extends SchemaChange {
 		this.dbName = dbName;
 		this.tableName = tableName;
 		this.columns = new ArrayList<>();
+		this.pks = new ArrayList<>();
 	}
 
 	@Override
@@ -33,7 +35,7 @@ public class TableCreate extends SchemaChange {
 		if ( likeDB != null && likeTable != null ) {
 			applyCreateLike(newSchema, d);
 		} else {
-			Table t = d.buildTable(this.tableName, this.encoding, this.columns);
+			Table t = d.buildTable(this.tableName, this.encoding, this.columns, this.pks);
 			t.setDefaultColumnEncodings();
 		}
 

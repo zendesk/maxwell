@@ -11,7 +11,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.zendesk.maxwell.schema.Schema;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
@@ -25,7 +27,13 @@ public class AbstractMaxwellTest {
 	public static void setUpBeforeClass() throws Exception {
 		server = new MysqlIsolatedServer();
 		server.boot();
-		SchemaStore.createMaxwellSchema(server.getConnection());
+
+		SchemaStore.ensureMaxwellSchema(server.getConnection());
+	}
+
+	@AfterClass
+	public static void teardownServer() {
+		server.shutDown();
 	}
 
 	public String getSQLDir() {
@@ -80,36 +88,41 @@ public class AbstractMaxwellTest {
 			server.executeList(Arrays.asList(before));
 		}
 
-		MaxwellParser p = new MaxwellParser(capturer.capture(), null);
 		MaxwellConfig config = new MaxwellConfig();
 
 		config.mysqlHost = "127.0.0.1";
 		config.mysqlPort = server.getPort();
 		config.mysqlUser = "maxwell";
 		config.mysqlPassword = "maxwell";
-		config.currentPositionFile = "/tmp/maxwell.position";
-		config.setInitialPosition(start);
 
-		p.setConfig(config);
+		MaxwellContext context = new MaxwellContext(config);
+
+		Schema initialSchema = capturer.capture();
+
+		server.executeList(Arrays.asList(queries));
+
+		BinlogPosition endPosition = BinlogPosition.capture(server.getConnection());
+
+		TestMaxwellParser p = new TestMaxwellParser(initialSchema,  null, context, start, endPosition);
 
 		p.setFilter(filter);
 
-        server.executeList(Arrays.asList(queries));
 
-        p.start();
+		final ArrayList<MaxwellAbstractRowsEvent> list = new ArrayList<>();
+		MaxwellAbstractRowsEvent e;
 
-		ArrayList<MaxwellAbstractRowsEvent> list = new ArrayList<>();
-        MaxwellAbstractRowsEvent e;
-
-        while ( (e = p.getEvent()) != null ) {
-			if ( !e.getTable().getDatabase().getName().equals("maxwell")) {
-				list.add(e);
+		p.getEvents(new EventConsumer() {
+			@Override
+			void consume(MaxwellAbstractRowsEvent e) {
+				if (!e.getTable().getDatabase().getName().equals("maxwell")) {
+					list.add(e);
+				}
 			}
-        }
+		});
 
-        p.stop();
+		context.terminate();
 
-        return list;
+		return list;
 	}
 
 	protected List<MaxwellAbstractRowsEvent>getRowsForSQL(MaxwellFilter filter, String queries[]) throws Exception {

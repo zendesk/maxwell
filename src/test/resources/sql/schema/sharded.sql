@@ -10,5 +10,5 @@ CREATE TABLE `sharded` (
   `float_field` float(5,2),
   `timestamp_field` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `decimal_field` decimal(12,7),
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`, `account_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8

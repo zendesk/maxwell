@@ -32,4 +32,18 @@ public class BinlogPosition {
 	public String toString() {
 		return "BinlogPosition[" + file + ":" + offset + "]";
 	}
+
+	public boolean newerThan(BinlogPosition other) {
+		if ( other == null )
+			return true;
+
+		int cmp = this.file.compareTo(other.file);
+		if ( cmp > 0 ) {
+			return true;
+		} else if ( cmp == 0 ) {
+			return this.offset > other.offset;
+		} else {
+			return false;
+		}
+	}
 }

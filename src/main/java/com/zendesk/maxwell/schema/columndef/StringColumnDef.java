@@ -2,6 +2,7 @@ package com.zendesk.maxwell.schema.columndef;
 
 import java.nio.charset.Charset;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang.StringEscapeUtils;
 
@@ -41,7 +42,7 @@ public class StringColumnDef extends ColumnDef {
 		switch(encoding) {
 		case "utf8": case "utf8mb4":
 			return Charset.forName("UTF-8");
-		case "latin1":
+		case "latin1": case "ascii":
 			return Charset.forName("ISO-8859-1");
 		default:
 			return null;
@@ -51,7 +52,11 @@ public class StringColumnDef extends ColumnDef {
 	public Object asJSON(Object value) {
 		byte[] b = (byte[])value;
 
-		return new String(b, charsetForEncoding());
+		if ( encoding.equals("binary") ) {
+			return Base64.encodeBase64String(b);
+		} else {
+			return new String(b, charsetForEncoding());
+		}
 	}
 
 	private String quoteString(String s) {

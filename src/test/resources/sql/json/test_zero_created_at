@@ -1,0 +1,7 @@
+CREATE DATABASE `cdb`
+create table `cdb`.`ca` ( id int(11) auto_increment not null primary key, datecol datetime NOT NULL default 0, ch varchar(255));
+insert into cdb.ca set ch='a';
+-> {"database":"cdb", "table": "ca", "type": "insert", "data":  {"id": 1, "ch": "a", "datecol": "0000-00-00 00:00:00"}  }
+insert into cdb.ca set ch='a', datecol = '0003-00-00 00:00:01';
+-> {"database":"cdb", "table": "ca", "type": "insert", "data":  {"id": 2, "ch": "a", "datecol": "0003-00-00 00:00:01"}  }
+

@@ -1,34 +1,38 @@
-# Maxwell's daemon
+<h3 id="maxwell-header" style="margin-top: -10px; font-weight: bold">Maxwell = Mysql + Kafka</h3>
 
-This is Maxwell's daemon, an application that processes MySQL binlogs and outputs the changesets as JSON to Kafka.
-It's conceptually similar to databus and mypipe, but it can:
 
-- follow schema changes coming down the replication stream
-- output the changed rows as JSON (should we support avro?  I dunno.)
-- recover the binlog position where it left off.
+This is Maxwell's daemon, an application that reads MySQL binlogs and writes row updates to Kafka as JSON.
+It's playing in the same space as [mypipe](https://github.com/mardambey/mypipe) and [databus](http://data.linkedin.com/projects/databus),
+but differentiates itself with these features:
 
-It's intended as an ETL tool and as a source for event-based services.
+- Works with an unpatched mysql
+- Parses ALTER/CREATE/DROP table statements, which allows Maxwell to always have a correct view of the mysql schema
+- Stores its replication position and needed data within the mysql server itself
+- Requires no external dependencies (save Kafka, if used)
+- Eschews the complexity of Avro for plain old JSON.
+- Minimal setup
 
-## quickstart
-
-this will start a Maxwell's daemon for you to play around with:
-
-```
-mysql> GRANT ALL on maxwell.* to 'maxwell'@'%' identified by 'XXXXXX';
-mysql> GRANT SELECT on *.* to 'maxwell'@'%';
-mysql> GRANT REPLICATION CLIENT ON *.* TO 'maxwell'@'%;
-
-curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.1.3/maxwell-0.1.3.tar.gz  | tar zxvf -
-cd maxwell-0.1.3
-bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' --producer=stdout
+Maxwell is intended as a source for event-based readers, eg various ETL applications, search indexing,
+stat emitters.
+<br style="clear:both"/>
 
 ```
+mysql> insert into test.maxwell set id = 11, daemon = 'firebus!  firebus!';
 
-## something actually useful
-
+(maxwell)
+{
+ "database":"test",
+ "table":"maxwell",
+ "type":"insert",
+ "data":{"id":11,"daemon":"firebus!  firebus!"}
+}
 ```
-cp config.properties.example config.properties
-# edit config.properties
-bin/maxwell
-```
 
+<script>
+  jQuery(document).ready(function () {
+    jQuery("#maxwell-header").append(
+      jQuery("<img alt='The Daemon, maybe' src='/img/cyberiad_1.jpg' style='float: left; height: 300px; padding-right: 30px;'>")
+
+    )
+  });
+</script>

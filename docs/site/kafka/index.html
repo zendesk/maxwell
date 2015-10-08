@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+
+        <title>Kafka - Maxwell's Daemon</title>
+
+        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../css/font-awesome-4.0.3.css" rel="stylesheet">
+        <link href="../css/prettify-1.0.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+        <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Main title -->
+            <a class="navbar-brand" href="..">Maxwell's Daemon</a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+        </div>
+    </div>
+</div>
+
+        <a href="https://github.com/zendesk/maxwell"><img style="position: absolute; top: 0; right: 0; border: 0; z-index: 1031;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
+        <div class="container">
+            <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        
+          <li >
+              <a href="..">Overview</a>
+              
+          </li>
+        
+          <li >
+              <a href="../quickstart/">Quick Start</a>
+              
+          </li>
+        
+          <li >
+              <a href="../config/">Configuration</a>
+              
+          </li>
+        
+          <li class="active">
+              <a href="./">Kafka</a>
+              
+                  <ul class="nav">
+                  
+                      <li class="toctree-l3"><a href="#kafka-options">Kafka options</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#kafka-key">Kafka key</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#topic-and-partitioning">Topic and partitioning</a></li>
+                      
+                  
+                  </ul>
+              
+          </li>
+        
+          <li >
+              <a href="../dataformat/">Data Format</a>
+              
+          </li>
+        
+          <li >
+              <a href="../compat/">Compat / Caveats</a>
+              
+          </li>
+        
+    </ul>
+</div></div>
+            <div class="col-md-9" role="main">
+
+<h3 id="kafka-options">Kafka options</h3>
+<p>Any options given to Maxwell that are prefixed with <code>kafka.</code> will be passed directly into the Kafka producer configuration
+(with <code>kafka.</code> stripped off).  We use the "new producer" configuration, as described here:
+<a href="http://kafka.apache.org/documentation.html#newproducerconfigs">http://kafka.apache.org/documentation.html#newproducerconfigs</a></p>
+<p>Maxwell sets the following Kafka options by default, but you can override them in <code>config.properties</code>.</p>
+<ul>
+<li>kafka.acks = 1</li>
+<li>kafka.compression.type = gzip</li>
+</ul>
+<p>Maxwell writes to a kafka topic named "maxwell" by default.  This can be changed with the <code>kafka_topic</code> option.</p>
+<h3 id="kafka-key">Kafka key</h3>
+<p>Maxwell generates keys for its Kafka messages based upon a mysql row's primary key:</p>
+<pre><code>db:test_db/tbl:test_tbl/id:93/id_2:17910090
+</code></pre>
+
+<p>This key is designed to co-operate with Kafka's log compaction, which will save the last-known
+value for a key, allowing Maxwell's Kafka stream to retain the last-known value for a row and act
+as a source of truth.</p>
+<h3 id="topic-and-partitioning">Topic and partitioning</h3>
+<p>Maxwell enforces ordering on events within a logical mysql database (but not within a mysql server).  We enforce
+this ordering by choosing a kafka partition based on an event's database name (<code>dbName.hashCode() % numPartitions</code>).
+This means that you should create a kafka topic for Maxwell with at least as many partitions as you have logical databases:</p>
+<pre><code>bin/kafka-topics.sh --zookeeper ZK_HOST:2181 --create \
+                    --topic maxwell --partitions 20 --replication-factor 2
+</code></pre>
+
+<p><a href="http://kafka.apache.org/documentation.html#quickstart">http://kafka.apache.org/documentation.html#quickstart</a></p>
+<script>
+  jQuery(document).ready(function () {
+    jQuery("table").addClass("table table-condensed table-bordered table-hover");
+  });
+</script></div>
+        </div>
+
+        
+
+        <script src="../js/bootstrap-3.0.3.min.js"></script>
+        <script src="../js/prettify-1.0.min.js"></script>
+        <script src="../js/base.js"></script>
+    </body>
+</html>

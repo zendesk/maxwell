@@ -1,0 +1,9 @@
+site_name: Maxwell's Daemon
+theme_dir: theme
+pages:
+  - 'Overview': 'index.md'
+  - 'Quick Start': 'quickstart.md'
+  - 'Configuration': 'config.md'
+  - 'Kafka': 'kafka.md'
+  - 'Data Format': 'dataformat.md'
+  - 'Compat / Caveats': 'compat.md'

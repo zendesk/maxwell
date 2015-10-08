@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN">
   <Appenders>
-    <Console name="Console" target="SYSTEM_OUT">
+    <Console name="Console" target="SYSTEM_ERR">
       <PatternLayout pattern="%d{HH:mm:ss,SSS} %-5level %logger{1} - %msg%n"/>
     </Console>
   </Appenders>
@@ -9,5 +9,8 @@
     <Root level="debug">
       <AppenderRef ref="Console"/>
     </Root>
+   <Logger name="snaq.db.ConnectionPool.MaxwellConnectionPool" level="off" additivity="false">
+      <AppenderRef ref="Console"/>
+    </Logger>
   </Loggers>
 </Configuration>

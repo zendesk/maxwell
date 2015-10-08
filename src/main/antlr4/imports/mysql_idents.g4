@@ -10,6 +10,7 @@ integer: INTEGER_LITERAL;
 charset_name: (IDENT | STRING_LITERAL | QUOTED_IDENT);
 
 SQL_COMMENT: '/*' (.)*? '*/' -> skip;
+SQL_LINE_COMMENT: ('#' | '--') (~'\n')* ('\n' | EOF) -> skip;
 
 STRING_LITERAL: TICK ('\\\'' | '\'\'' | ~('\''))* TICK;
 

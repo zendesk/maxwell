@@ -165,30 +165,49 @@ public class DDLParserTest {
 	@Test
 	public void testParsingSomeAlters() {
 		String testSQL[] = {
-	       "alter table t add index `foo` using btree (`a`, `cd`) key_block_size=123",
-	       "alter table t add key bar (d)",
-	       "alter table t add constraint `foo` primary key using btree (id)",
-	       "alter table t add primary key (`id`)",
-	       "alter table t add constraint unique key (`id`)",
-	       "alter table t add fulltext key (`id`)",
-	       "alter table t add spatial key (`id`)",
-	       "alter table t alter column `foo` SET DEFAULT 112312",
-	       "alter table t alter column `foo` SET DEFAULT 1.2",
-	       "alter table t alter column `foo` SET DEFAULT 'foo'",
-	       "alter table t alter column `foo` drop default",
-	       "alter table t CHARACTER SET latin1 COLLATE = 'utf8'",
-	       "alter table t DROP PRIMARY KEY",
-	       "alter table t drop index `foo`",
-	       "alter table t disable keys",
-	       "alter table t enable keys",
-	       "alter table t order by `foor`, bar"
+			"alter table t add index `foo` using btree (`a`, `cd`) key_block_size=123",
+			"alter table t add key bar (d)",
+			"alter table t add constraint `foo` primary key using btree (id)",
+			"alter table t add primary key (`id`)",
+			"alter table t add constraint unique key (`id`)",
+			"alter table t add fulltext key (`id`)",
+			"alter table t add spatial key (`id`)",
+			"alter table t alter column `foo` SET DEFAULT 112312",
+			"alter table t alter column `foo` SET DEFAULT 1.2",
+			"alter table t alter column `foo` SET DEFAULT 'foo'",
+			"alter table t alter column `foo` drop default",
+			"alter table t CHARACTER SET latin1 COLLATE = 'utf8'",
+			"alter table t DROP PRIMARY KEY",
+			"alter table t drop index `foo`",
+			"alter table t disable keys",
+			"alter table t enable keys",
+			"alter table t order by `foor`, bar",
+			"alter table tester add index (whatever(20), `f,` (2))",
+			"create table t ( id int ) engine = innodb, auto_increment = 5",
+			"alter table t engine=innodb",
+			"alter table t auto_increment =5",
+			"alter table t add column `foo` int, auto_increment = 5 engine=innodb, modify column bar int"
 		};
 
 		for ( String s : testSQL ) {
-			TableAlter a = parseAlter(s);
-			assertThat("Expected " + s + "to parse", a, not(nullValue()));
+			SchemaChange parsed = parse(s).get(0);
+			assertThat("Expected " + s + "to parse", parsed, not(nullValue()));
 		}
 
+	}
+
+	@Test
+	public void testSQLBlacklist() {
+		String testSQL[] = {
+			"ALTER DEFINER=foo VIEW",
+			"CREATE VIEW foo",
+			"CREATE TRIGGER foo",
+			"CREATE DEFINER=`dba`@`localhost` TRIGGER `pt_osc_zd_shard485_prod_cf_values_del` ... "
+		};
+
+		for ( String s : testSQL ) {
+			assertThat(SchemaChange.parse("default_db", s), is(nullValue()));
+		}
 	}
 
 	@Test
@@ -296,6 +315,24 @@ public class DDLParserTest {
 	}
 
 	@Test
+	public void testDecimalWithSingleDigitPrecsion() {
+		TableCreate c = parseCreate( "CREATE TABLE test.chk (  group_name DECIMAL(8) NOT NULL)  ");
+		assertThat(c, not(nullValue()));
+	}
+
+	@Test
+	public void testDecimalWithDoubleDigitPrecision() {
+		TableCreate c = parseCreate( "CREATE TABLE test.chk (  group_name DECIMAL(8, 2) NOT NULL)  ");
+		assertThat(c, not(nullValue()));
+	}
+
+	@Test
+	public void testNumericType() {
+		TableCreate c = parseCreate( "CREATE TABLE test.chk (  group_name NUMERIC(8) NOT NULL)  ");
+		assertThat(c, not(nullValue()));
+	}
+
+	@Test
 	public void testCreateTableLikeTable() {
 		TableCreate c = parseCreate("CREATE TABLE `foo` LIKE `bar`.`baz`");
 
@@ -331,4 +368,30 @@ public class DDLParserTest {
 		assertThat(changes.size(), is(1));
 	}
 
+	@Test
+	public void testCommentSyntax2() {
+		List<SchemaChange> changes = parse("CREATE DATABASE if not exists `foo` -- inline comment!\n default character # another one\nset='latin1' --one at the end");
+		assertThat(changes.size(), is(1));
+	}
+
+	@Test
+	public void testCurrentTimestamp() {
+		List<SchemaChange> changes = parse("CREATE TABLE `foo` ( `id` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP )");
+		assertThat(changes.size(), is(1));
+	}
+
+	@Test
+	public void testBinaryChar() {
+		List<SchemaChange> changes = parse("CREATE TABLE `foo` ( `id` char(16) BINARY character set 'utf8' )");
+		assertThat(changes.size(), is(1));
+	}
+
+	@Test
+	public void testCharsetPositionIndependence() {
+		TableCreate create = parseCreate("CREATE TABLE `foo` (id varchar(1) NOT NULL character set 'foo')");
+		assertThat(create.columns.get(0).encoding, is("foo"));
+
+		create = parseCreate("CREATE TABLE `foo` (id varchar(1) character set 'foo' NOT NULL)");
+		assertThat(create.columns.get(0).encoding, is("foo"));
+	}
 }

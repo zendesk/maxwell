@@ -2,6 +2,7 @@ package com.zendesk.maxwell.schema;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -16,12 +17,20 @@ public class Table {
 
 	private Database database;
 	private final String encoding;
+	private List<String> pkColumnNames;
+	private HashMap<String, Integer> columnOffsetMap;
 
-	public Table(Database d, String name, String encoding, List<ColumnDef> list) {
+	public Table(Database d, String name, String encoding, List<ColumnDef> list, List<String> pks) {
 		this.database = d;
 		this.name = name;
 		this.encoding = encoding;
 		this.columnList = list;
+
+		if ( pks == null )
+			pks = new ArrayList<String>();
+
+		this.setPKList(pks);
+
 		renumberColumns();
 	}
 
@@ -33,20 +42,34 @@ public class Table {
 		return this.name;
 	}
 
-	public int findColumnIndex(String name) {
-		int i = 0;
-		for(ColumnDef c : columnList) {
-			if ( c.getName().equals(name) )
-				return i;
-			i++;
+	private void initColumnOffsetMap() {
+		if ( this.columnOffsetMap != null )
+			return;
 
+		this.columnOffsetMap = new HashMap<>();
+		int i = 0;
+
+		for(ColumnDef c : columnList) {
+			this.columnOffsetMap.put(c.getName(), i++);
 		}
-		return -1;
+	}
+
+	public int findColumnIndex(String name) {
+		String lcName = name.toLowerCase();
+		initColumnOffsetMap();
+
+		if ( this.columnOffsetMap.containsKey(lcName) ) {
+			return this.columnOffsetMap.get(lcName);
+		} else {
+			return -1;
+		}
 	}
 
 	private ColumnDef findColumn(String name) {
+		String lcName = name.toLowerCase();
+
 		for (ColumnDef c : columnList )  {
-			if ( c.getName().equals(name) )
+			if ( c.getName().equals(lcName) )
 				return c;
 		}
 
@@ -69,7 +92,7 @@ public class Table {
 			list.add(c.copy());
 		}
 
-		return new Table(database, name, encoding, list);
+		return new Table(database, name, encoding, list, pkColumnNames);
 	}
 
 	public void rename(String tableName) {
@@ -117,6 +140,12 @@ public class Table {
 					  + nameA + " is " + this.getEncoding() + " but "
 					  + nameB + " is " + other.getEncoding());
 		}
+
+		if ( !this.getPKString().equals(other.getPKString())) {
+			diffs.add(this.fullName() + " differs in PKs: "
+					  + nameA + " is " + this.getPKString() + " but "
+					  + nameB + " is " + other.getPKString());
+		}
 		diffColumnList(diffs, this, other, nameA, nameB);
 		diffColumnList(diffs, other, this, nameB, nameA);
 	}
@@ -138,11 +167,17 @@ public class Table {
 
 	public void addColumn(int index, ColumnDef definition) {
 		this.columnList.add(index, definition);
+		this.columnOffsetMap = null;
 		renumberColumns();
+	}
+
+	public void addColumn(ColumnDef defintion) {
+		addColumn(this.columnList.size(), defintion);
 	}
 
 	public void removeColumn(int idx) {
 		this.columnList.remove(idx);
+		this.columnOffsetMap = null;
 		renumberColumns();
 	}
 
@@ -158,4 +193,18 @@ public class Table {
 		}
 	}
 
+	public List<String> getPKList() {
+		return this.pkColumnNames;
+	}
+
+	public String getPKString() {
+		if ( this.pkColumnNames != null )
+			return StringUtils.join(pkColumnNames.iterator(), ",");
+		else
+			return null;
+	}
+
+	public void setPKList(List<String> pkColumnNames) {
+		this.pkColumnNames = pkColumnNames;
+	}
 }

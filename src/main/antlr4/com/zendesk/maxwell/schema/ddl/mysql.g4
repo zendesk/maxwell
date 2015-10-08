@@ -23,11 +23,10 @@ create_database:
 create_table: 
     create_table_preamble 
     (
-      ( create_specifications table_creation_options* )
+        create_specifications ( table_creation_option ','? )*
       | create_like_tbl
     );
     
-// TODO: support if-not-exists
 create_table_preamble: CREATE TEMPORARY? TABLE (IF NOT EXISTS)? table_name;
 create_specifications: '(' create_specification (',' create_specification)* ')'; 
 
@@ -46,21 +45,24 @@ drop_table_options: (RESTRICT | CASCADE);
 rename_table: RENAME TABLE rename_table_spec (',' rename_table_spec)*;
 rename_table_spec: table_name TO table_name;
 
-alter_table: alter_table_preamble alter_specifications (engine_statement)?;
+alter_table: alter_table_preamble alter_specifications;
 
 alter_table_preamble: ALTER alter_flags? TABLE table_name;
 alter_flags: (ONLINE | OFFLINE | IGNORE);
 
 alter_specifications: alter_specification (',' alter_specification)*;
+
 alter_specification: add_column
                      | add_column_parens
                      | change_column
                      | modify_column
                      | drop_column
+                     | drop_primary_key
                      | ignored_alter_specifications
                      | alter_rename_table
                      | convert_to_character_set
                      | default_character_set
+                     | table_creation_option+
                      ; 
                    
 add_column: ADD COLUMN? column_definition col_position?;
@@ -69,10 +71,12 @@ change_column: CHANGE COLUMN? old_col_name column_definition col_position?;
 modify_column: MODIFY COLUMN? column_definition col_position?;
 drop_column: DROP COLUMN? old_col_name;
 alter_rename_table: RENAME (TO | AS) table_name;
+drop_primary_key: DROP PRIMARY KEY;
 
 convert_to_character_set: CONVERT TO charset_token charset_name collation?;
 default_character_set: DEFAULT? charset_token '='? charset_name collation?;
 default_collate: DEFAULT? collation;
+
 
 /* it's not documented, but either "charset 'utf8'" or "character set 'utf8'" is valid. */
 charset_token: (CHARSET | (CHARACTER SET));
@@ -82,11 +86,10 @@ old_col_name: name;
 ignored_alter_specifications:
 	  ADD index_definition
     | ALTER COLUMN? name ((SET DEFAULT literal) | (DROP DEFAULT))
-    | DROP PRIMARY KEY
     | DROP INDEX index_name
     | DISABLE KEYS
     | ENABLE KEYS
-    | ORDER BY name_list
+    | ORDER BY index_columns
     /* 
      I'm also leaving out the following from the alter table definition because who cares:
      | DISCARD TABLESPACE
@@ -108,12 +111,12 @@ ignored_alter_specifications:
     ; 
 
 index_definition:
-	(index_type_1 | index_type_2 | index_type_3 | index_type_4 | index_type_5 );
+	(index_type_1 | index_type_pk | index_type_3 | index_type_4 | index_type_5 );
 	
 index_type_1:
 	index_or_key index_name? index_type? index_column_list index_options*;
 
-index_type_2:
+index_type_pk:
 	index_constraint? PRIMARY KEY index_type? index_column_list index_options*;
 
 index_type_3:	
@@ -123,9 +126,7 @@ index_type_4:
 	(FULLTEXT | SPATIAL) index_or_key index_name? index_column_list index_options*;
 	
 index_type_5:
-	index_constraint? FOREIGN KEY index_name? index_column_list;
-	
-// TODO: foreign key references.  goddamn.
+	index_constraint? FOREIGN KEY index_name? index_column_list reference_definition;
 	
 index_or_key: (INDEX|KEY);
 index_constraint: (CONSTRAINT name?);
@@ -136,8 +137,35 @@ index_options:
 	| index_type
 	| WITH PARSER name // no idea if 'parser_name' is an id.  seems like a decent assumption.
 	; 
-index_column_list: '(' name_list ')';
-name_list: name (',' name )*; 
+	
+index_column_list: '(' index_columns ')';
+index_columns: index_column (',' index_column )*; 
+index_column: name index_column_partial_def?;
+index_column_partial_def: '(' index_column_partial_length ')';
+index_column_partial_length: INTEGER_LITERAL+;
+
+
+
+reference_definition: 
+	REFERENCES table_name 
+	index_column_list 
+	reference_definition_match? 
+	reference_definition_on_delete? 
+	reference_definition_on_update?
+	;
+	
+reference_definition_match:
+	(MATCH FULL | MATCH PARTIAL | MATCH SIMPLE)
+	;
+
+reference_definition_on_delete:
+	ON DELETE reference_option;
+	
+reference_definition_on_update:
+	ON UPDATE reference_option;
+	
+reference_option:
+	(RESTRICT | CASCADE | SET NULL | NO ACTION);
 
 engine_statement: ENGINE '=' IDENT;
 

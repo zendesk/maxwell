@@ -118,4 +118,58 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 
 		testIntegration(sql);
 	}
+
+	@Test
+	public void testPKs() throws SQLException, SchemaSyncError, IOException {
+		String sql[] = {
+		   "create TABLE `test_pks` ( id int(11) unsigned primary KEY, str varchar(255) )",
+		   "create TABLE `test_pks_2` ( id int(11) unsigned, str varchar(255), primary key(id, str) )",
+		   "create TABLE `test_pks_3` ( id int(11) unsigned primary KEY, str varchar(255) )",
+		   "create TABLE `test_pks_4` ( id int(11) unsigned primary KEY, str varchar(255) )",
+		   "alter TABLE `test_pks_3` drop primary key, add primary key(str)",
+		   "alter TABLE `test_pks_4` drop primary key"
+		};
+
+		testIntegration(sql);
+	}
+
+	@Test
+	public void testIntX() throws Exception {
+		String sql[] = {
+			"create TABLE `test_int1` ( id int1 )",
+			"create TABLE `test_int2` ( id INT2 )",
+			"create TABLE `test_int3` ( id int3 )",
+			"create TABLE `test_int4` ( id int4 )",
+			"create TABLE `test_int8` ( id int8 )"
+		};
+
+		testIntegration(sql);
+	}
+
+	@Test
+	public void testYearWithLength() throws Exception {
+		String sql[] = {
+			"create TABLE `test_year` ( id year(4) )"
+		};
+
+		testIntegration(sql);
+	}
+
+	@Test
+	public void testBooleans() throws Exception {
+		String sql[] = {
+			"create TABLE `test_boolean` ( b1 bool, b2 boolean )"
+		};
+
+		testIntegration(sql);
+	}
+
+	@Test
+	public void testReals() throws Exception {
+		String sql[] = {
+			"create TABLE `test_reals` ( r1 REAL, b2 REAL (2,2) )"
+		};
+
+		testIntegration(sql);
+	}
 }

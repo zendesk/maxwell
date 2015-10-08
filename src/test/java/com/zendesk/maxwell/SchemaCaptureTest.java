@@ -18,6 +18,7 @@ import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.*;
+import com.zendesk.maxwell.schema.ddl.SchemaSyncError;
 
 public class SchemaCaptureTest extends AbstractMaxwellTest {
 	private SchemaCapturer capturer;
@@ -35,7 +36,7 @@ public class SchemaCaptureTest extends AbstractMaxwellTest {
 	}
 
 	@Test
-	public void testDatabases() throws SQLException {
+	public void testDatabases() throws SQLException, SchemaSyncError {
 		Schema s = capturer.capture();
 		String dbs = StringUtils.join(s.getDatabaseNames().iterator(), ":");
 
@@ -43,7 +44,7 @@ public class SchemaCaptureTest extends AbstractMaxwellTest {
 	}
 
 	@Test
-	public void testOneDatabase() throws SQLException {
+	public void testOneDatabase() throws SQLException, SchemaSyncError {
 		SchemaCapturer sc = new SchemaCapturer(server.getConnection(), "shard_1");
 		Schema s = sc.capture();
 
@@ -52,7 +53,7 @@ public class SchemaCaptureTest extends AbstractMaxwellTest {
 	}
 
 	@Test
-	public void testTables() throws SQLException {
+	public void testTables() throws SQLException, SchemaSyncError {
 		Schema s = capturer.capture();
 
 		Database shard1DB = s.findDatabase("shard_1");
@@ -64,7 +65,7 @@ public class SchemaCaptureTest extends AbstractMaxwellTest {
 	}
 
 	@Test
-	public void testColumns() throws SQLException {
+	public void testColumns() throws SQLException, SchemaSyncError {
 		Schema s = capturer.capture();
 
 		Table sharded = s.findDatabase("shard_1").findTable("sharded");
@@ -84,5 +85,17 @@ public class SchemaCaptureTest extends AbstractMaxwellTest {
 
 		assertThat(columns[1], allOf(notNullValue(), instanceOf(IntColumnDef.class)));
 		assertThat(columns[1].getName(), is("account_id"));
+	}
+
+	@Test
+	public void testPKs() throws SQLException, SchemaSyncError {
+		Schema s = capturer.capture();
+
+		Table sharded = s.findDatabase("shard_1").findTable("sharded");
+		List<String> pk = sharded.getPKList();
+		assertThat(pk, notNullValue());
+		assertThat(pk.size(), is(2));
+		assertThat(pk.get(0), is("id"));
+		assertThat(pk.get(1), is("account_id"));
 	}
 }

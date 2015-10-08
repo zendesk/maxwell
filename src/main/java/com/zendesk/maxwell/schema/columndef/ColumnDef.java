@@ -1,7 +1,5 @@
 package com.zendesk.maxwell.schema.columndef;
 
-import org.apache.commons.lang.StringUtils;
-
 public abstract class ColumnDef {
 	protected final String tableName;
 	protected final String name;
@@ -13,7 +11,7 @@ public abstract class ColumnDef {
 
 	public ColumnDef(String tableName, String name, String type, int pos) {
 		this.tableName = tableName;
-		this.name = name;
+		this.name = name.toLowerCase();
 		this.type = type;
 		this.pos = pos;
 		this.signed = false;
@@ -31,7 +29,13 @@ public abstract class ColumnDef {
 	}
 
 	public static ColumnDef build(String tableName, String name, String encoding, String type, int pos, boolean signed, String enumValues[]) {
+		type = unalias_type(type);
+
 		switch(type) {
+		case "bool":
+		case "boolean":
+			type = "tinyint";
+			// fallthrough
 		case "tinyint":
 		case "smallint":
 		case "mediumint":
@@ -50,7 +54,13 @@ public abstract class ColumnDef {
 		case "blob":
 		case "mediumblob":
 		case "longblob":
+		case "binary":
+		case "varbinary":
 			return new StringColumnDef(tableName, name, type, pos, "binary");
+		case "real":
+		case "numeric":
+			type = "double";
+			// fall through
 		case "float":
 		case "double":
 			return new FloatColumnDef(tableName, name, type, pos);
@@ -69,8 +79,28 @@ public abstract class ColumnDef {
 			return new EnumColumnDef(tableName, name, type, pos, enumValues);
 		case "set":
 			return new SetColumnDef(tableName, name, type, pos, enumValues);
+		case "bit":
+			return new BitColumnDef(tableName, name, type, pos);
 		default:
 			throw new IllegalArgumentException("unsupported column type " + type);
+		}
+	}
+
+	static private String unalias_type(String type) {
+		switch(type) {
+			case "int1":
+				return "tinyint";
+			case "int2":
+				return "smallint";
+			case "int3":
+				return "mediumint";
+			case "int4":
+			case "integer":
+				return "int";
+			case "int8":
+				return "bigint";
+			default:
+				return type;
 		}
 	}
 

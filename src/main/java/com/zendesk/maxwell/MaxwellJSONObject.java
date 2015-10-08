@@ -12,13 +12,22 @@ public class MaxwellJSONObject extends JSONObject {
 		super(map);
 	}
 
+	// this preserves the key's output order.  vanity, I know, but nice.
 	@Override
 	public Set<String> keySet() {
 		LinkedHashSet<String> set = new LinkedHashSet<>();
 
+		set.add("database");
 		set.add("table");
 		set.add("type");
 		set.add("data");
+		set.add("ts");
+
+		if ( has("xid") )
+			set.add("xid");
+
+		if ( has("commit") && getBoolean("commit"))
+			set.add("commit");
 
 		return set;
 	}
