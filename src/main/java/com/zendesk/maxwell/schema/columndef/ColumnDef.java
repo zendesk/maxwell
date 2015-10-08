@@ -79,6 +79,8 @@ public abstract class ColumnDef {
 			return new EnumColumnDef(tableName, name, type, pos, enumValues);
 		case "set":
 			return new SetColumnDef(tableName, name, type, pos, enumValues);
+		case "bit":
+			return new BitColumnDef(tableName,name, type, pos);
 		default:
 			throw new IllegalArgumentException("unsupported column type " + type);
 		}
