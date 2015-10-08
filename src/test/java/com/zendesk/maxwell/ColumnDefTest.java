@@ -12,18 +12,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import com.zendesk.maxwell.schema.columndef.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.google.code.or.common.util.MySQLConstants;
-import com.zendesk.maxwell.schema.columndef.BigIntColumnDef;
-import com.zendesk.maxwell.schema.columndef.ColumnDef;
-import com.zendesk.maxwell.schema.columndef.DateColumnDef;
-import com.zendesk.maxwell.schema.columndef.DateTimeColumnDef;
-import com.zendesk.maxwell.schema.columndef.FloatColumnDef;
-import com.zendesk.maxwell.schema.columndef.IntColumnDef;
-import com.zendesk.maxwell.schema.columndef.StringColumnDef;
 
 public class ColumnDefTest {
 	private ColumnDef build(String type, boolean signed) {
@@ -99,7 +93,17 @@ public class ColumnDefTest {
 		d = build("bigint", false);
 		assertThat(d.toSQL(Long.valueOf(-10)), is("18446744073709551606"));
 	}
+	@Test
+	public void testBit() {
+		ColumnDef d = build("bit", true);
 
+		assertThat(d, instanceOf(BitColumnDef.class));
+		assertThat(d.toSQL(Byte.parseByte("01011010",2)), is("Z"));
+		assertThat(d.toSQL(Byte.parseByte("01100001",2)), is("a"));
+
+		d = build("bit", false);
+		assertThat(d.toSQL(Byte.parseByte("00110000",2)), is("0"));
+	}
 	@Test
 	public void testUTF8String() {
 		ColumnDef d = ColumnDef.build("foo", "bar", "utf8", "varchar", 1, false, null);
