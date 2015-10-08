@@ -103,7 +103,7 @@ public class AbstractMaxwellTest {
 
 		BinlogPosition endPosition = BinlogPosition.capture(server.getConnection());
 
-		TestMaxwellParser p = new TestMaxwellParser(initialSchema,  null, context, start, endPosition);
+		TestMaxwellReplicator p = new TestMaxwellReplicator(initialSchema,  null, context, start, endPosition);
 
 		p.setFilter(filter);
 
