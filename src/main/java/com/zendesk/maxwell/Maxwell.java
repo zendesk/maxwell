@@ -33,6 +33,48 @@ public class Maxwell {
 		this.context.setPosition(pos);
 	}
 
+	private void setupFilter(MaxwellFilter filter,MaxwellConfig config){
+		if (! config.include_databases.isEmpty()){
+			while (config.include_databases.contains(",")) {
+				filter.includeDatabase(config.include_databases.substring(0, config.include_databases.indexOf(",")));
+				config.include_databases = config.include_databases.substring(config.include_databases.indexOf(",") + 1);
+			}
+			if (!config.include_databases.isEmpty()) {
+				filter.includeDatabase(config.include_databases);
+			}
+		}
+		if (! config.include_tables.isEmpty()){
+			while (config.include_tables.contains(",")) {
+				filter.includeTable(config.include_tables.substring(0, config.include_tables.indexOf(",")));
+				config.include_tables = config.include_tables.substring(config.include_tables.indexOf(",") + 1);
+			}
+			if (!config.include_tables.isEmpty()) {
+				filter.includeTable(config.include_tables);
+			}
+		}
+		
+		if (! config.exclude_databases.isEmpty()){
+			while (config.exclude_databases.contains(",")) {
+				filter.excludeDatabase(config.exclude_databases.substring(0, config.exclude_databases.indexOf(",")));
+				config.exclude_databases = config.exclude_databases.substring(config.exclude_databases.indexOf(",") + 1);
+			}
+			if (!config.exclude_databases.isEmpty()) {
+				filter.excludeDatabase(config.exclude_databases);
+			}
+		}
+		if (! config.exclude_tables.isEmpty()){
+			while (config.exclude_tables.contains(",")) {
+				filter.excludeTable(config.exclude_tables.substring(0, config.exclude_tables.indexOf(",")));
+				config.exclude_tables = config.exclude_tables.substring(config.exclude_tables.indexOf(",") + 1);
+			}
+			if (!config.exclude_tables.isEmpty()) {
+				filter.excludeTable(config.exclude_tables);
+			}
+		}
+		
+		
+	}
+	
 	private void run(String[] argv) throws Exception {
 		this.config = new MaxwellConfig(argv);
 
@@ -66,6 +108,10 @@ public class Maxwell {
 
 		final MaxwellReplicator p = new MaxwellReplicator(this.schema, producer, this.context, this.context.getInitialPosition());
 
+		MaxwellFilter filter = new MaxwellFilter();
+		setupFilter(filter, config);
+		p.setFilter(filter);
+		
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
