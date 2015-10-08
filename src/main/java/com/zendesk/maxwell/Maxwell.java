@@ -64,7 +64,7 @@ public class Maxwell {
 
 		AbstractProducer producer = this.context.getProducer();
 
-		final MaxwellParser p = new MaxwellParser(this.schema, producer, this.context, this.context.getInitialPosition());
+		final MaxwellReplicator p = new MaxwellReplicator(this.schema, producer, this.context, this.context.getInitialPosition());
 
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override

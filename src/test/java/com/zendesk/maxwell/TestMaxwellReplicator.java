@@ -9,17 +9,17 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by ben on 9/28/15.
  */
-public class TestMaxwellParser extends MaxwellParser {
+public class TestMaxwellReplicator extends MaxwellReplicator {
 	private final BinlogPosition stopAt;
 	private boolean shouldStop;
 
-	public TestMaxwellParser(Schema currentSchema,
-					  AbstractProducer producer,
-					  MaxwellContext ctx,
-					  BinlogPosition start,
-					  BinlogPosition stop) throws Exception {
+	public TestMaxwellReplicator(Schema currentSchema,
+								 AbstractProducer producer,
+								 MaxwellContext ctx,
+								 BinlogPosition start,
+								 BinlogPosition stop) throws Exception {
 		super(currentSchema, producer, ctx, start);
-		LOGGER.debug("TestMaxwellParser initialized from " + start + " to " + stop);
+		LOGGER.debug("TestMaxwellReplicator initialized from " + start + " to " + stop);
 		this.stopAt = stop;
 	}
 

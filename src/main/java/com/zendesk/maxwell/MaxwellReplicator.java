@@ -3,13 +3,11 @@ package com.zendesk.maxwell;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import com.google.code.or.binlog.impl.event.*;
 import org.slf4j.Logger;
@@ -17,7 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.code.or.OpenReplicator;
 import com.google.code.or.binlog.BinlogEventV4;
-import com.google.code.or.binlog.impl.FileBasedBinlogParser;
 import com.google.code.or.common.util.MySQLConstants;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Schema;
@@ -26,7 +23,7 @@ import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.ddl.SchemaChange;
 import com.zendesk.maxwell.schema.ddl.SchemaSyncError;
 
-public class MaxwellParser extends RunLoopProcess {
+public class MaxwellReplicator extends RunLoopProcess {
 	String filePath, fileName;
 	private long rowEventsProcessed;
 	private Schema schema;
@@ -41,9 +38,9 @@ public class MaxwellParser extends RunLoopProcess {
 	private final MaxwellContext context;
 	private final AbstractProducer producer;
 
-	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellParser.class);
+	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellReplicator.class);
 
-	public MaxwellParser(Schema currentSchema, AbstractProducer producer, MaxwellContext ctx, BinlogPosition start) throws Exception {
+	public MaxwellReplicator(Schema currentSchema, AbstractProducer producer, MaxwellContext ctx, BinlogPosition start) throws Exception {
 		this.schema = currentSchema;
 
 		TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
