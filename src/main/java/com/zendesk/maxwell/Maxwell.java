@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.TimeoutException;
-
 import com.djdch.log4j.StaticShutdownCallbackRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,44 +34,25 @@ public class Maxwell {
 
 	private void setupFilter(MaxwellFilter filter,MaxwellConfig config){
 		if (! config.include_databases.isEmpty()){
-			while (config.include_databases.contains(",")) {
-				filter.includeDatabase(config.include_databases.substring(0, config.include_databases.indexOf(",")));
-				config.include_databases = config.include_databases.substring(config.include_databases.indexOf(",") + 1);
-			}
-			if (!config.include_databases.isEmpty()) {
-				filter.includeDatabase(config.include_databases);
-			}
+			for(String result: config.include_databases.split(",")) {
+				filter.includeDatabase(result);
+				}
 		}
 		if (! config.include_tables.isEmpty()){
-			while (config.include_tables.contains(",")) {
-				filter.includeTable(config.include_tables.substring(0, config.include_tables.indexOf(",")));
-				config.include_tables = config.include_tables.substring(config.include_tables.indexOf(",") + 1);
-			}
-			if (!config.include_tables.isEmpty()) {
-				filter.includeTable(config.include_tables);
-			}
+			for(String result: config.include_tables.split(",")) {
+				filter.includeTable(result);
+			}		
 		}
-		
 		if (! config.exclude_databases.isEmpty()){
-			while (config.exclude_databases.contains(",")) {
-				filter.excludeDatabase(config.exclude_databases.substring(0, config.exclude_databases.indexOf(",")));
-				config.exclude_databases = config.exclude_databases.substring(config.exclude_databases.indexOf(",") + 1);
-			}
-			if (!config.exclude_databases.isEmpty()) {
-				filter.excludeDatabase(config.exclude_databases);
+			for(String result: config.exclude_databases.split(",")) {
+				filter.excludeDatabase(result);
 			}
 		}
 		if (! config.exclude_tables.isEmpty()){
-			while (config.exclude_tables.contains(",")) {
-				filter.excludeTable(config.exclude_tables.substring(0, config.exclude_tables.indexOf(",")));
-				config.exclude_tables = config.exclude_tables.substring(config.exclude_tables.indexOf(",") + 1);
-			}
-			if (!config.exclude_tables.isEmpty()) {
-				filter.excludeTable(config.exclude_tables);
+		for(String result:config.exclude_tables.split(",")) {
+				filter.excludeTable(result);		
 			}
 		}
-		
-		
 	}
 	
 	private void run(String[] argv) throws Exception {
@@ -106,7 +86,7 @@ public class Maxwell {
 
 		AbstractProducer producer = this.context.getProducer();
 
-		final MaxwellParser p = new MaxwellParser(this.schema, producer, this.context, this.context.getInitialPosition());
+		final MaxwellReplicator p = new MaxwellReplicator(this.schema, producer, this.context, this.context.getInitialPosition());
 		
 		MaxwellFilter filter = new MaxwellFilter();
 		setupFilter(filter, config);

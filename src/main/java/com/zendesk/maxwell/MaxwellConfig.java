@@ -23,7 +23,7 @@ public class MaxwellConfig {
 	public Integer mysqlPort;
 	public String  mysqlUser;
 	public String  mysqlPassword;
-    public String include_databases,exclude_databases,include_tables,exclude_tables;
+	public String include_databases,exclude_databases,include_tables,exclude_tables;
 	public final Properties kafkaProperties;
 	public String kafkaTopic;
 	public String producerType;
