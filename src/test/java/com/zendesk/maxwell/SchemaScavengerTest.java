@@ -55,20 +55,10 @@ public class SchemaScavengerTest extends AbstractMaxwellTest {
 	}
 
 	@Test
-	public void testDeleteSomeRows() throws Exception {
+	public void testDelete() throws Exception {
 		Long initialCount = countSchemaRows();
 		this.schemaStore.delete();
-		scavenger.deleteBatch(2);
-		assertThat(countSchemaRows(), is(initialCount - 2));
-		assertThat(getCount("select count(*) from maxwell.schemas"), is(1L));
-	}
-
-	@Test
-	public void testDeleteAllRows() throws Exception {
-		Long initialCount = countSchemaRows();
-		this.schemaStore.delete();
-		for ( int i = 0 ; i < (initialCount / 5 + 1) ; i++ )
-			scavenger.deleteBatch(5);
+		scavenger.deleteSchemas(20000L);
 
 		assertThat(countSchemaRows(), is(0L));
 		assertThat(getCount("select count(*) from maxwell.schemas"), is(0L));

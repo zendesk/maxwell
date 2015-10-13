@@ -13,7 +13,7 @@ import java.util.List;
 
 public class SchemaScavenger extends RunLoopProcess implements Runnable {
 	static final Logger LOGGER = LoggerFactory.getLogger(SchemaStore.class);
-	private static final int MAX_ROWS_PER_SECOND = 500;
+	private static final long MAX_ROWS_PER_SECOND = 500;
 	private final ConnectionPool connectionPool;
 
 	public SchemaScavenger(ConnectionPool pool) {
@@ -23,7 +23,7 @@ public class SchemaScavenger extends RunLoopProcess implements Runnable {
 	private List<Long> getDeletedSchemas() throws SQLException {
 		ArrayList<Long> list = new ArrayList<>();
 		try ( Connection connection = connectionPool.getConnection() ) {
-			ResultSet rs = connection.createStatement().executeQuery("select id from `maxwell`.`schemas` where deleted = 1");
+			ResultSet rs = connection.createStatement().executeQuery("select id from `maxwell`.`schemas` where deleted = 1 LIMIT 100");
 
 			while ( rs.next() ) {
 				list.add(rs.getLong("id"));
@@ -33,51 +33,42 @@ public class SchemaScavenger extends RunLoopProcess implements Runnable {
 		return list;
 	}
 
-	private long deleteRows(Long id, String tName, Long maxToDelete) throws SQLException {
-		try ( Connection connection = connectionPool.getConnection() ) {
-			long nDeleted = connection.createStatement().executeUpdate(
-				"DELETE FROM maxwell." + tName +
-					" WHERE schema_id = " + id +
-					" LIMIT " + maxToDelete
-			);
-			if (nDeleted > 0) {
-				LOGGER.debug("deleted " + nDeleted + " rows from maxwell." + tName + " schema: " + id);
-			}
-			return nDeleted;
-		}
-	}
-
-	private void deleteSchema(Long id) throws SQLException {
-		try ( Connection connection = connectionPool.getConnection() ) {
-			connection.createStatement().execute("delete from `maxwell`.`schemas` where id = " + id);
-		}
-	}
-
-	public void deleteBatch(long toDelete) throws SQLException {
+	public void deleteSchema(Long id, Long maxRowsPerSecond) throws SQLException {
 		String[] tables = { "columns", "tables", "databases" };
 
-		List<Long> schemaIds = getDeletedSchemas();
+		try ( Connection connection = connectionPool.getConnection() ) {
+			connection.createStatement().execute("delete from `maxwell`.`schemas` where id = " + id);
 
-		for ( Long id : schemaIds) {
-			boolean finishedDelete = false;
+			for ( String tName : tables ) {
+				for (;;) {
+					long nDeleted = connection.createStatement().executeUpdate(
+						"DELETE FROM maxwell." + tName +
+							" WHERE schema_id = " + id +
+							" LIMIT " + maxRowsPerSecond
+					);
 
-			while ( toDelete > 0 && !finishedDelete ) {
-				for ( String tName : tables ) {
-					long deleted = deleteRows(id, tName, toDelete);
+					if (isStopRequested())
+						return;
 
-					if (tName.equals("databases") && deleted < toDelete) {
-						deleteSchema(id);
-						finishedDelete = true;
-					}
-					toDelete -= deleted;
+					if (nDeleted == 0)
+						break;
+
+					LOGGER.debug("deleted " + nDeleted + " rows from maxwell." + tName + " schema: " + id);
+					try { Thread.sleep(1000); } catch (InterruptedException e) { }
 				}
 			}
 		}
 	}
 
+	public void deleteSchemas(Long maxRowsPerSecond) throws SQLException {
+		for ( Long id : getDeletedSchemas() ) {
+			deleteSchema(id, maxRowsPerSecond);
+		}
+	}
+
 	@Override
 	protected void work() throws Exception {
-		deleteBatch(MAX_ROWS_PER_SECOND);
+		deleteSchemas(MAX_ROWS_PER_SECOND);
 		try { Thread.sleep(1000); } catch ( InterruptedException e ) {}
 	}
 

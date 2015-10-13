@@ -14,6 +14,10 @@ abstract public class RunLoopProcess {
 		this.runState = RunState.REQUEST_STOP;
 	}
 
+	protected boolean isStopRequested() {
+		return this.runState == RunState.REQUEST_STOP;
+	}
+
 	public boolean runLoop() throws Exception {
 		if ( this.runState != RunState.STOPPED )
 			return false;
