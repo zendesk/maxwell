@@ -11,7 +11,7 @@ ADD bin /app/bin
 ADD .settings /app/.settings
 ADD pom.xml /app/
 
-RUN mvn package
+RUN mvn package -Dmaven.test.skip=true
 
 ADD REVISION /
 
