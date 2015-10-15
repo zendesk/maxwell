@@ -1,12 +1,17 @@
 FROM docker-registry.zende.sk/zendesk/ruby:2.1.6
 
-RUN apt-get update && apt-get install -y openjdk-7-jre curl
+RUN apt-get update && apt-get install -y openjdk-7-jdk curl
+RUN apt-get install -y maven make build-essential -y
 
 RUN mkdir /app
 WORKDIR /app
 
-RUN curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.11.4/maxwell-0.11.4.tar.gz | tar zxvf -
-RUN mv maxwell-*/* .
+ADD src /app/src
+ADD bin /app/bin
+ADD .settings /app/.settings
+ADD pom.xml /app/
+
+RUN mvn package
 
 ADD REVISION /
 
