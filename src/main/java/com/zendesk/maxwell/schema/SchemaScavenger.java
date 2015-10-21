@@ -37,8 +37,6 @@ public class SchemaScavenger extends RunLoopProcess implements Runnable {
 		String[] tables = { "columns", "tables", "databases" };
 
 		try ( Connection connection = connectionPool.getConnection() ) {
-			connection.createStatement().execute("delete from `maxwell`.`schemas` where id = " + id);
-
 			for ( String tName : tables ) {
 				for (;;) {
 					long nDeleted = connection.createStatement().executeUpdate(
@@ -55,8 +53,13 @@ public class SchemaScavenger extends RunLoopProcess implements Runnable {
 
 					LOGGER.debug("deleted " + nDeleted + " rows from maxwell." + tName + " schema: " + id);
 					try { Thread.sleep(1000); } catch (InterruptedException e) { }
+
+					if (isStopRequested())
+						return;
 				}
 			}
+
+			connection.createStatement().execute("delete from `maxwell`.`schemas` where id = " + id);
 		}
 	}
 
