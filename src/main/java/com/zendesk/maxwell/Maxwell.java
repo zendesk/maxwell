@@ -79,6 +79,7 @@ public class Maxwell {
 			}
 		});
 
+		this.context.start();
 		p.runLoop();
 
 	}

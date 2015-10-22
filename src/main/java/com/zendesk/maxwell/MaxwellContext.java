@@ -10,6 +10,7 @@ import java.util.concurrent.TimeoutException;
 import com.zendesk.maxwell.producer.*;
 import com.zendesk.maxwell.schema.SchemaPosition;
 
+import com.zendesk.maxwell.schema.SchemaScavenger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import snaq.db.ConnectionPool;
@@ -35,6 +36,11 @@ public class MaxwellContext {
 
 	public ConnectionPool getConnectionPool() {
 		return this.connectionPool;
+	}
+
+	public void start() {
+		SchemaScavenger s = new SchemaScavenger(this.connectionPool);
+		new Thread(s).start();
 	}
 
 	public void terminate() {
