@@ -1,13 +1,14 @@
 package com.zendesk.maxwell;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.io.StringWriter;
+import java.util.*;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.code.or.common.glossary.column.BitColumn;
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONObject;
@@ -196,6 +197,22 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 	class RowMap extends HashMap<String, Object> {
 		private final HashMap<String, Object> data;
 
+		@Override
+		public Set<String> keySet() {
+			LinkedHashSet<String> set = new LinkedHashSet<>();
+			set.add("database");
+			set.add("table");
+			set.add("type");
+			set.add("ts");
+
+			if ( this.containsKey("xid") )
+				set.add("xid");
+
+			if ( this.containsKey("commit") && (boolean) this.get("commit") == true)
+				set.add("commit");
+
+			return set;
+		}
 		public RowMap() {
 			this.data = new HashMap<String, Object>();
 			this.put("data", this.data);
@@ -287,9 +304,33 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 	public List<String> toJSONStrings() {
 		ArrayList<String> list = new ArrayList<>();
 
-		for ( RowMap map : jsonMaps() ) {
-			list.add(new MaxwellJSONObject(map).toString());
-		}
+
+		JsonFactory factory  = new JsonFactory();
+		ByteArrayOutputStream b = new ByteArrayOutputStream();
+
+		try {
+			JsonGenerator g = factory.createGenerator(b);
+
+			for ( RowMap map : jsonMaps() ) {
+				g.writeStartObject();
+				for ( String key: map.keySet() ) {
+					g.writeObjectField(key, map.get(key));
+				}
+
+				g.writeObjectFieldStart("data");
+				for ( String key: map.data.keySet() ) {
+					g.writeObjectField(key, map.getData(key));
+
+				}
+				g.writeEndObject();
+				g.writeEndObject();
+				g.flush();
+				list.add(b.toString());
+				b.reset();
+			}
+		} catch ( IOException e ) {};
+
+
 		return list;
 	}
 
