@@ -9,7 +9,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONObject;
 import org.junit.Test;
@@ -181,21 +184,22 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 			server.getConnection().setAutoCommit(false);
 			list = getRowsForSQL(null, testTransactions, null);
 
-			ArrayList<JSONObject> objects = new ArrayList<>();
+			ArrayList<Map<String, Object>> objects = new ArrayList<>();
 			for (MaxwellAbstractRowsEvent e : list) {
-				for (JSONObject j : e.toJSONObjects()) {
-					assertTrue(j.has("xid"));
-					objects.add(j);
+				for ( String s : e.toJSONStrings() ) {
+					Map<String, Object> m = new ObjectMapper().readValue(s, Map.class);
+					assertTrue(m.containsKey("xid"));
+					objects.add(m);
 				}
 			}
 			assertEquals(4, objects.size());
 
 			assertEquals(objects.get(0).get("xid"), objects.get(1).get("xid"));
-			assertFalse(objects.get(0).has("commit"));
-			assertTrue(objects.get(1).has("commit"));
+			assertFalse(objects.get(0).containsKey("commit"));
+			assertTrue(objects.get(1).containsKey("commit"));
 
-			assertFalse(objects.get(2).has("commit"));
-			assertTrue(objects.get(3).has("commit"));
+			assertFalse(objects.get(2).containsKey("commit"));
+			assertTrue(objects.get(3).containsKey("commit"));
 		} finally {
 			server.getConnection().setAutoCommit(true);
 		}
@@ -203,29 +207,29 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 
 
 
-	private void runJSONTest(List<String> sql, List<JSONObject> assertJSON) throws Exception {
-		List<JSONObject> eventJSON = new ArrayList<>();
-		List<JSONObject> matched = new ArrayList<>();
+	private void runJSONTest(List<String> sql, List<Map<String, Object>> assertJSON) throws Exception {
+		ObjectMapper mapper = new ObjectMapper();
+		List<Map<String, Object>> eventJSON = new ArrayList<>();
+		List<Map<String, Object>> matched = new ArrayList<>();
 		List<MaxwellAbstractRowsEvent> events = getRowsForSQL(null, sql.toArray(new String[0]));
 
 		for ( MaxwellAbstractRowsEvent e : events ) {
-			for ( JSONObject a : e.toJSONObjects() ) {
-				// undo maxwell's fancy ordering stuff -- it's preventing us from removing the ts column.
-				a = new JSONObject(a.toString());
-				a.remove("ts");
-				a.remove("xid");
-				a.remove("commit");
+			for ( String s : e.toJSONStrings() ) {
+				Map r = mapper.readValue(s, Map.class);
+				r.remove("ts");
+				r.remove("xid");
+				r.remove("commit");
 
-				eventJSON.add(a);
+				eventJSON.add(r);
 
-				for ( JSONObject b : assertJSON ) {
-					if ( JSONCompare.compare(a.toString(), b.toString()) )
+				for ( Map b : assertJSON ) {
+					if ( r.equals(b) )
 						matched.add(b);
 				}
 			}
 		}
 
-		for ( JSONObject j : matched ) {
+		for ( Map j : matched ) {
 			assertJSON.remove(j);
 		}
 
@@ -241,9 +245,12 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 
 	private void runJSONTestFile(String fname) throws Exception {
 		File file = new File(fname);
-		ArrayList<JSONObject> jsonAsserts = new ArrayList<>();
+		ArrayList<Map<String, Object>> jsonAsserts = new ArrayList<>();
 		ArrayList<String> inputSQL  = new ArrayList<>();
 		BufferedReader reader = new BufferedReader(new FileReader(file));
+		ObjectMapper mapper = new ObjectMapper();
+
+		mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
 
 		while ( reader.ready() ) {
 			String line = reader.readLine();
@@ -251,7 +258,8 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 				continue;
 			} else if ( line.matches("^\\s*\\-\\>\\s*\\{.*") ) {
 				line = line.replaceAll("^\\s*\\-\\>\\s*", "");
-				jsonAsserts.add(new JSONObject(line));
+
+				jsonAsserts.add(mapper.readValue(line, Map.class));
 				System.out.println("added json assert: " + line);
 			} else {
 				inputSQL.add(line);

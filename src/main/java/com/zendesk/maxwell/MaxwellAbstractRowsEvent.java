@@ -292,44 +292,58 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 		return list;
 	}
 
-	public List<JSONObject> toJSONObjects() {
-		ArrayList<JSONObject> list = new ArrayList<>();
+	static final JsonFactory factory = new JsonFactory();
 
-		for ( RowMap map : jsonMaps() ) {
-			list.add(new MaxwellJSONObject(map));
+	private JsonGenerator createJSONGenerator(ByteArrayOutputStream b) {
+		try {
+			return factory.createGenerator(b);
+		} catch (IOException e) {
 		}
-		return list;
+		return null;
+	}
+
+	private void rowMapToJSON(JsonGenerator g, RowMap map) throws IOException {
+		g.writeStartObject(); // {
+
+		for ( String key: map.keySet() ) {
+			g.writeObjectField(key, map.get(key)); // type: "insert"
+		}
+
+		g.writeObjectFieldStart("data");
+		for ( String key: map.data.keySet() ) {
+			Object data = map.getData(key);
+
+			if ( data != null ) {
+				if ( data instanceof List ) { // sets come back from .asJSON as lists, and jackson can't deal.
+					List<String> stringList = (List<String>) data;
+
+					g.writeArrayFieldStart(key);
+					for ( String s : stringList )  {
+						g.writeString(s);
+					}
+					g.writeEndArray();
+				} else {
+					g.writeObjectField(key, data);
+				}
+			}
+		}
+		g.writeEndObject();
+		g.writeEndObject();
 	}
 
 	public List<String> toJSONStrings() {
 		ArrayList<String> list = new ArrayList<>();
 
+		for ( RowMap map : jsonMaps() ) {
+			ByteArrayOutputStream b = new ByteArrayOutputStream();
+			JsonGenerator g = createJSONGenerator(b);
 
-		JsonFactory factory  = new JsonFactory();
-		ByteArrayOutputStream b = new ByteArrayOutputStream();
-
-		try {
-			JsonGenerator g = factory.createGenerator(b);
-
-			for ( RowMap map : jsonMaps() ) {
-				g.writeStartObject();
-				for ( String key: map.keySet() ) {
-					g.writeObjectField(key, map.get(key));
-				}
-
-				g.writeObjectFieldStart("data");
-				for ( String key: map.data.keySet() ) {
-					g.writeObjectField(key, map.getData(key));
-
-				}
-				g.writeEndObject();
-				g.writeEndObject();
+			try {
+				rowMapToJSON(g, map);
 				g.flush();
 				list.add(b.toString());
-				b.reset();
-			}
-		} catch ( IOException e ) {};
-
+			} catch ( IOException e ) { /* never gonna happen. */ }
+		}
 
 		return list;
 	}
