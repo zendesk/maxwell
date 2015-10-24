@@ -35,6 +35,13 @@ public class ProfilerProducer extends AbstractProducer {
 				long elapsed = System.currentTimeMillis() - this.startTime;
 				System.out.println("rows per second: " + (count * 1000) / elapsed);
 			}
+
+			if ( this.count % 1000000 == 0 ) {
+				System.out.println("resetting statistics.");
+				this.count = 0;
+				this.startTime = System.currentTimeMillis();
+			}
+
 		}
 
 		this.context.setPosition(e);
