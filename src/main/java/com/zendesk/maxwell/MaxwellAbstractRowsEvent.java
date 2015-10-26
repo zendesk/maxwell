@@ -343,8 +343,7 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 				g.flush();
 				list.add(b.toString());
 			} catch ( IOException e ) {
-				LOGGER.error("Caught IOException while generating JSON: " + e);
-				e.printStackTrace();
+				LOGGER.error("Caught IOException while generating JSON: " + e, e);
 			}
 		}
 
