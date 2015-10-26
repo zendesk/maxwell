@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.concurrent.TimeoutException;
 
 import com.zendesk.maxwell.producer.*;
+import com.zendesk.maxwell.schema.ReadOnlySchemaPosition;
 import com.zendesk.maxwell.schema.SchemaPosition;
 
 import com.zendesk.maxwell.schema.SchemaScavenger;
@@ -28,6 +29,9 @@ public class MaxwellContext {
 		this.config = config;
 		this.connectionPool = new ConnectionPool("MaxwellConnectionPool", 10, 0, 10,
 				config.getConnectionURI(), config.mysqlUser, config.mysqlPassword);
+
+		if ( this.config.initPosition != null )
+			this.initialPosition = this.config.initPosition;
 	}
 
 	public MaxwellConfig getConfig() {
@@ -56,7 +60,12 @@ public class MaxwellContext {
 
 	private SchemaPosition getSchemaPosition() throws SQLException {
 		if ( this.schemaPosition == null ) {
-			this.schemaPosition = new SchemaPosition(this.getConnectionPool(), this.getServerID());
+			if ( this.getConfig().replayMode ) {
+				this.schemaPosition = new ReadOnlySchemaPosition(this.getConnectionPool(), this.getServerID());
+			} else {
+				this.schemaPosition = new SchemaPosition(this.getConnectionPool(), this.getServerID());
+			}
+
 			this.schemaPosition.start();
 		}
 		return this.schemaPosition;
@@ -122,4 +131,7 @@ public class MaxwellContext {
 		}
 	}
 
+	public boolean getReplayMode() {
+		return this.config.replayMode;
+	}
 }

@@ -279,7 +279,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 			this.schema = change.apply(this.schema);
 		}
 
-		if ( changes.size() > 0 ) {
+		if ( changes.size() > 0 && !this.context.getReplayMode() ) {
 			tableCache.clear();
 			BinlogPosition p = eventBinlogPosition(event);
 			LOGGER.info("storing schema @" + p + " after applying \"" + sql.replace('\n',' ') + "\"");
