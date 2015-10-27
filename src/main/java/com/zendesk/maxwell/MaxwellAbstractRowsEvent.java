@@ -1,13 +1,14 @@
 package com.zendesk.maxwell;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.io.StringWriter;
+import java.util.*;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.code.or.common.glossary.column.BitColumn;
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONObject;
@@ -20,6 +21,8 @@ import com.google.code.or.common.glossary.column.DatetimeColumn;
 import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // the main wrapper for a raw (AbstractRowEvent) binlog event.
 // decorates the event with metadata info from Table,
@@ -27,6 +30,7 @@ import com.zendesk.maxwell.schema.columndef.ColumnDef;
 // and ultimately outputs arrays of json objects representing each row.
 
 public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
+	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellAbstractRowsEvent.class);
 	private final MaxwellFilter filter;
 	private final AbstractRowEvent event;
 
@@ -275,21 +279,74 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 		return list;
 	}
 
-	public List<JSONObject> toJSONObjects() {
-		ArrayList<JSONObject> list = new ArrayList<>();
+	private static final JsonFactory jsonFactory = new JsonFactory();
 
-		for ( RowMap map : jsonMaps() ) {
-			list.add(new MaxwellJSONObject(map));
+	private JsonGenerator createJSONGenerator(ByteArrayOutputStream b) {
+		try {
+			return jsonFactory.createGenerator(b);
+		} catch (IOException e) {
+			LOGGER.error("Caught exception while creating JSON generator: " + e);
 		}
-		return list;
+		return null;
+	}
+
+	private final static String[] keyOrder = {"database", "table", "type", "ts"};
+
+	private void rowMapToJSON(JsonGenerator g, RowMap map) throws IOException {
+		g.writeStartObject(); // {
+
+		for ( String key: keyOrder ) {
+			g.writeObjectField(key, map.get(key)); // type: "insert"
+		}
+
+		if ( map.containsKey("xid") )
+			g.writeObjectField("xid", map.get("xid"));
+
+		if ( map.containsKey("commit") && (boolean) map.get("commit") == true)
+			g.writeBooleanField("commit", true);
+
+		g.writeObjectFieldStart("data");
+		for ( String key: map.data.keySet() ) {
+			Object data = map.getData(key);
+
+			if ( data == null )
+				continue;
+
+			if ( data instanceof List ) { // sets come back from .asJSON as lists, and jackson can't deal.
+				List<String> stringList = (List<String>) data;
+
+				g.writeArrayFieldStart(key);
+				for ( String s : stringList )  {
+					g.writeString(s);
+				}
+				g.writeEndArray();
+			} else {
+				g.writeObjectField(key, data);
+			}
+		}
+		g.writeEndObject(); // end of 'data: { }'
+
+		g.writeEndObject();
 	}
 
 	public List<String> toJSONStrings() {
 		ArrayList<String> list = new ArrayList<>();
+		ByteArrayOutputStream b = new ByteArrayOutputStream();
+		JsonGenerator g = createJSONGenerator(b);
+
+		g.setRootValueSeparator(null);
 
 		for ( RowMap map : jsonMaps() ) {
-			list.add(new MaxwellJSONObject(map).toString());
+			try {
+				rowMapToJSON(g, map);
+				b.reset();
+				g.flush();
+				list.add(b.toString());
+			} catch ( IOException e ) {
+				LOGGER.error("Caught IOException while generating JSON: " + e, e);
+			}
 		}
+
 		return list;
 	}
 

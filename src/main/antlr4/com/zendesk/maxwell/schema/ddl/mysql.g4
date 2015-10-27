@@ -1,7 +1,7 @@
 grammar mysql;
 import mysql_literal_tokens, mysql_idents, column_definitions, table_creation_options;
 
-parse: statement
+parse: statement?
        EOF;
 
 statement:
