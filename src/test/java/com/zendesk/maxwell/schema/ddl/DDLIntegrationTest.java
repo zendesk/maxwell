@@ -111,7 +111,7 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 	public void testCreateIfNotExists() throws Exception {
 		String sql[] = {
 				"create TABLE IF NOT EXISTS `duplicateTable` (id int(11) unsigned primary KEY)",
-				"create TABLE IF NOT EXISTS `duplicateTable` (id int(11) unsigned primary KEY)",
+				"create TABLE IF NOT EXISTS `duplicateTable` ( str varchar(255) )",
 		};
 
 		testIntegration(sql);
