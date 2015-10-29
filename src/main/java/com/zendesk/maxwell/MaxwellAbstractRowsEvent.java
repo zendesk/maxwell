@@ -339,9 +339,9 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 		for ( RowMap map : jsonMaps() ) {
 			try {
 				rowMapToJSON(g, map);
-				b.reset();
 				g.flush();
 				list.add(b.toString());
+				b.reset();
 			} catch ( IOException e ) {
 				LOGGER.error("Caught IOException while generating JSON: " + e, e);
 			}
