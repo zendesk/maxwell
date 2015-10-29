@@ -31,7 +31,7 @@ mysql> insert into test.maxwell set id = 11, daemon = 'firebus!  firebus!';
 <script>
   jQuery(document).ready(function () {
     jQuery("#maxwell-header").append(
-      jQuery("<img alt='The Daemon, maybe' src='/img/cyberiad_1.jpg' style='float: left; height: 300px; padding-right: 30px;'>")
+      jQuery("<img alt='The Daemon, maybe' src='./img/cyberiad_1.jpg' style='float: left; height: 300px; padding-right: 30px;'>")
 
     )
   });
