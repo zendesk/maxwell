@@ -13,5 +13,4 @@ then
 fi
 
 git grep -lF $CURRENT_REV | grep -v search_index.json | xargs sed -ie "s|$CURRENT_REV|$1|g"
-
-
+docs/build
