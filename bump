@@ -1,0 +1,17 @@
+#!/bin/bash
+
+if [ "$1" == "" ]
+then
+  echo "Usage: $0 VERSION" && exit 0
+fi
+
+CURRENT_REV=`grep '<version>' pom.xml | head -n1 | perl -ne '/([\d\.]+)/; print $1'`
+
+if [ "$CURRENT_REV" == "" ]
+then
+  echo "Couldn't get CURRENT_REV" && exit 1
+fi
+
+git grep -lF $CURRENT_REV | grep -v search_index.json | xargs sed -ie "s|$CURRENT_REV|$1|g"
+
+
