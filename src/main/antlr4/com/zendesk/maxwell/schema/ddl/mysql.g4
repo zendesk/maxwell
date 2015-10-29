@@ -27,7 +27,7 @@ create_table:
       | create_like_tbl
     );
     
-create_table_preamble: CREATE TEMPORARY? TABLE (IF NOT EXISTS)? table_name;
+create_table_preamble: CREATE TEMPORARY? TABLE if_not_exists? table_name;
 create_specifications: '(' create_specification (',' create_specification)* ')'; 
 
 create_specification: 

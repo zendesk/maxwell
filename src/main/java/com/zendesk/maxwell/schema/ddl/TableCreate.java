@@ -16,10 +16,12 @@ public class TableCreate extends SchemaChange {
 
 	public String likeDB;
 	public String likeTable;
+	private final boolean ifNotExists;
 
-	public TableCreate (String dbName, String tableName) {
+	public TableCreate (String dbName, String tableName, boolean ifNotExists) {
 		this.dbName = dbName;
 		this.tableName = tableName;
+		this.ifNotExists = ifNotExists;
 		this.columns = new ArrayList<>();
 		this.pks = new ArrayList<>();
 	}
@@ -37,7 +39,11 @@ public class TableCreate extends SchemaChange {
 		} else {
 			Table existingTable = d.findTable(this.tableName);
 			if (existingTable != null) {
-				return originalSchema;
+				if (ifNotExists) {
+					return originalSchema;
+				} else {
+					throw new SchemaSyncError("Unexpectedly asked to create existing table " + this.tableName);
+				}
 			}
 			Table t = d.buildTable(this.tableName, this.encoding, this.columns, this.pks);
 			t.setDefaultColumnEncodings();
