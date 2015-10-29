@@ -50,7 +50,7 @@ public class TableCreate extends SchemaChange {
 
 		Table sourceTable = sourceDB.findTable(likeTable);
 		if ( sourceTable == null )
-			throw new SchemaSyncError("Couldn't find table " + likeDB + "." + sourceTable);
+			throw new SchemaSyncError("Couldn't find table " + likeDB + "." + likeTable);
 
 		Table t = sourceTable.copy();
 		t.rename(this.tableName);
