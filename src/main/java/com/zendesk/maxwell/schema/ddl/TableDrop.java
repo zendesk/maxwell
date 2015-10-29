@@ -24,11 +24,11 @@ public class TableDrop extends SchemaChange {
 		Table t = null;
 		if (d != null) {
 			t = d.findTable(this.tableName);
-		} 
+		}
 
 		if ( t == null ) {
 			if ( ifExists ) { // DROP TABLE IF NOT EXISTS ; ignore missing tables
-				return newSchema;
+				return originalSchema;
 			} else {
 				throw new SchemaSyncError("Can't drop non-existant table: " + this.dbName + "." + this.tableName);
 			}
