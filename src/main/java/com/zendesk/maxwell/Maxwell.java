@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.TimeoutException;
-
 import com.djdch.log4j.StaticShutdownCallbackRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +32,29 @@ public class Maxwell {
 		this.context.setPosition(pos);
 	}
 
+	private void setupFilter(MaxwellFilter filter,MaxwellConfig config){
+		if (! config.include_databases.isEmpty()){
+			for(String result: config.include_databases.split(",")) {
+				filter.includeDatabase(result);
+				}
+		}
+		if (! config.include_tables.isEmpty()){
+			for(String result: config.include_tables.split(",")) {
+				filter.includeTable(result);
+			}		
+		}
+		if (! config.exclude_databases.isEmpty()){
+			for(String result: config.exclude_databases.split(",")) {
+				filter.excludeDatabase(result);
+			}
+		}
+		if (! config.exclude_tables.isEmpty()){
+		for(String result:config.exclude_tables.split(",")) {
+				filter.excludeTable(result);		
+			}
+		}
+	}
+	
 	private void run(String[] argv) throws Exception {
 		this.config = new MaxwellConfig(argv);
 
@@ -65,7 +87,11 @@ public class Maxwell {
 		AbstractProducer producer = this.context.getProducer();
 
 		final MaxwellReplicator p = new MaxwellReplicator(this.schema, producer, this.context, this.context.getInitialPosition());
-
+		
+		MaxwellFilter filter = new MaxwellFilter();
+		setupFilter(filter, config);
+		p.setFilter(filter);
+		
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
