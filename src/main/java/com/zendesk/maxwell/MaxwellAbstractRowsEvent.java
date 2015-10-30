@@ -279,18 +279,18 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 		return list;
 	}
 
-	static final JsonFactory factory = new JsonFactory();
+	private static final JsonFactory jsonFactory = new JsonFactory();
 
 	private JsonGenerator createJSONGenerator(ByteArrayOutputStream b) {
 		try {
-			return factory.createGenerator(b);
+			return jsonFactory.createGenerator(b);
 		} catch (IOException e) {
 			LOGGER.error("Caught exception while creating JSON generator: " + e);
 		}
 		return null;
 	}
 
-	static String[] keyOrder = {"database", "table", "type", "ts"};
+	private final static String[] keyOrder = {"database", "table", "type", "ts"};
 
 	private void rowMapToJSON(JsonGenerator g, RowMap map) throws IOException {
 		g.writeStartObject(); // {
@@ -339,12 +339,11 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 		for ( RowMap map : jsonMaps() ) {
 			try {
 				rowMapToJSON(g, map);
-				b.reset();
 				g.flush();
 				list.add(b.toString());
+				b.reset();
 			} catch ( IOException e ) {
-				LOGGER.error("Caught IOException while generating JSON: " + e);
-				e.printStackTrace();
+				LOGGER.error("Caught IOException while generating JSON: " + e, e);
 			}
 		}
 

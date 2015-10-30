@@ -21,14 +21,14 @@ public class TableDrop extends SchemaChange {
 		Database d = newSchema.findDatabase(this.dbName);
 
 		// it's perfectly legal to say drop table if exists `random_garbage_db`.`random_garbage_table`
-		if ( d == null && ifExists)
-			return newSchema;
-
-		Table t = d.findTable(this.tableName);
+		Table t = null;
+		if (d != null) {
+			t = d.findTable(this.tableName);
+		}
 
 		if ( t == null ) {
 			if ( ifExists ) { // DROP TABLE IF NOT EXISTS ; ignore missing tables
-				return newSchema;
+				return originalSchema;
 			} else {
 				throw new SchemaSyncError("Can't drop non-existant table: " + this.dbName + "." + this.tableName);
 			}

@@ -106,6 +106,17 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 		testIntegration(sql);
 	}
 
+
+	@Test
+	public void testCreateIfNotExists() throws Exception {
+		String sql[] = {
+				"create TABLE IF NOT EXISTS `duplicateTable` (id int(11) unsigned primary KEY)",
+				"create TABLE IF NOT EXISTS `duplicateTable` ( str varchar(255) )",
+		};
+
+		testIntegration(sql);
+	}
+
 	@Test
 	public void testDatabaseEncoding() throws SQLException, SchemaSyncError, IOException {
 		String sql[] = {

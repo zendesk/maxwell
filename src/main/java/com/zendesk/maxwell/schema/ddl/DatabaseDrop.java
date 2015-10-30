@@ -20,7 +20,7 @@ public class DatabaseDrop extends SchemaChange {
 
 		if ( database == null ) {
 			if ( ifExists ) { // ignore missing databases
-				return newSchema;
+				return originalSchema;
 			} else {
 				throw new SchemaSyncError("Can't drop missing database: " + dbName);
 			}
