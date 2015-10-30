@@ -31,9 +31,12 @@ public class MaxwellConfig {
 	public String log_level;
 
 	public Integer maxSchemas;
+	public BinlogPosition initPosition;
+	public boolean replayMode;
 
 	public MaxwellConfig() { // argv is only null in tests
 		this.kafkaProperties = new Properties();
+		this.replayMode = false;
 	}
 
 	public MaxwellConfig(String argv[]) {
@@ -60,6 +63,8 @@ public class MaxwellConfig {
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
 		parser.accepts( "max_schemas", "how many old schema definitions maxwell should keep around.  default: 5").withOptionalArg();
+		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION").withRequiredArg();
+		parser.accepts( "replay", "replay mode, don't store any information to the server");
 		parser.accepts( "help", "display help").forHelp();
 		parser.formatHelpWith(new BuiltinHelpFormatter(160, 4));
 		return parser;
@@ -109,6 +114,27 @@ public class MaxwellConfig {
 
 		if ( options.has("max_schemas"))
 			this.maxSchemas = Integer.valueOf((String)options.valueOf("max_schemas"));
+
+		if ( options.has("init_position")) {
+			String initPosition = (String) options.valueOf("init_position");
+			String[] initPositionSplit = initPosition.split(":");
+
+			if ( initPositionSplit.length != 2 )
+				usage("Invalid init_position: " + initPosition);
+
+			Long pos = 0L;
+			try {
+				pos = Long.valueOf(initPositionSplit[1]);
+			} catch ( NumberFormatException e ) {
+				usage("Invalid init_position: " + initPosition);
+			}
+
+			this.initPosition = new BinlogPosition(pos, initPositionSplit[0]);
+		}
+
+		if ( options.has("replay")) {
+			this.replayMode = true;
+		}
 	}
 
 	private Properties readPropertiesFile(String filename, Boolean abortOnMissing) {

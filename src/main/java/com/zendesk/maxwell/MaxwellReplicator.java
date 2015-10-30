@@ -280,8 +280,9 @@ public class MaxwellReplicator extends RunLoopProcess {
 			updatedSchema = change.apply(updatedSchema);
 		}
 
-		if ( changes.size() > 0 && updatedSchema != this.schema) {
+		if ( changes.size() > 0 && !this.context.getReplayMode() && updatedSchema != this.schema) {
 			this.schema = updatedSchema;
+
 			tableCache.clear();
 			BinlogPosition p = eventBinlogPosition(event);
 			LOGGER.info("storing schema @" + p + " after applying \"" + sql.replace('\n',' ') + "\"");
