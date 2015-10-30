@@ -60,9 +60,18 @@ public class MaxwellFilter {
 			if ( c == null )
 				return false;
 
-			if ( (Integer) c.getValue() != entry.getValue() ) {
+			if ( c.getValue() == entry.getValue() ) {
+				continue; // null or same instance
+			}
+
+			if ( c.getValue() == null || entry.getValue() == null ) {
+				return false; // one side is null
+			}
+
+			if ( !c.getValue().equals(entry.getValue())) {
 				return false;
 			}
+
 		}
 		return true;
 	}
