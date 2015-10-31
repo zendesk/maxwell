@@ -239,18 +239,6 @@ public class MaxwellConfig {
 
 		if ( this.maxSchemas != null )
 			SchemaStore.setMaxSchemas(this.maxSchemas);
-		if ( this.include_databases == null )
-			this.include_databases = "";
-
-		if ( this.exclude_databases == null )
-			this.exclude_databases = "";
-
-		if ( this.include_tables == null )
-			this.include_tables = "";
-
-		if ( this.exclude_tables == null )
-			this.exclude_tables = "";
-
 	}
 
 	private void usage(String string) {

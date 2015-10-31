@@ -131,6 +131,14 @@ public class MaxwellContext {
 		}
 	}
 
+	public MaxwellFilter buildFilter() throws MaxwellInvalidFilterException {
+		return new MaxwellFilter(config.include_databases,
+			config.exclude_databases,
+			config.include_tables,
+			config.exclude_tables);
+	}
+
+
 	public boolean getReplayMode() {
 		return this.config.replayMode;
 	}

@@ -32,28 +32,6 @@ public class Maxwell {
 		this.context.setPosition(pos);
 	}
 
-	private void setupFilter(MaxwellFilter filter, MaxwellConfig config) {
-		if (!config.include_databases.isEmpty()) {
-			for ( String d : config.include_databases.split(",") )
-				filter.includeDatabase(d);
-		}
-
-		if (!config.exclude_databases.isEmpty()) {
-			for (String d : config.exclude_databases.split(","))
-				filter.excludeDatabase(d);
-		}
-
-		if (!config.include_tables.isEmpty()) {
-			for ( String t : config.include_tables.split(",") )
-				filter.includeTable(t);
-		}
-		
-		if (!config.exclude_tables.isEmpty()) {
-			for (String t : config.exclude_tables.split(","))
-				filter.excludeTable(t);
-		}
-	}
-	
 	private void run(String[] argv) throws Exception {
 		this.config = new MaxwellConfig(argv);
 
@@ -87,10 +65,13 @@ public class Maxwell {
 
 		final MaxwellReplicator p = new MaxwellReplicator(this.schema, producer, this.context, this.context.getInitialPosition());
 
-		MaxwellFilter filter = new MaxwellFilter();
-		setupFilter(filter, config);
-		p.setFilter(filter);
-		
+		try {
+			p.setFilter(context.buildFilter());
+		} catch (MaxwellInvalidFilterException e) {
+			LOGGER.error("Invalid maxwell filter", e);
+			System.exit(1);
+		}
+
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
