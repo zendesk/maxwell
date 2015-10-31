@@ -132,10 +132,10 @@ public class MaxwellContext {
 	}
 
 	public MaxwellFilter buildFilter() throws MaxwellInvalidFilterException {
-		return new MaxwellFilter(config.include_databases,
-			config.exclude_databases,
-			config.include_tables,
-			config.exclude_tables);
+		return new MaxwellFilter(config.includeDatabases,
+			config.excludeDatabases,
+			config.includeTables,
+			config.excludeTables);
 	}
 
 
