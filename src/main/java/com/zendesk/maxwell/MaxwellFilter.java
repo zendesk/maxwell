@@ -62,13 +62,14 @@ public class MaxwellFilter {
 	}
 
 	private Pattern compile(String name) throws MaxwellInvalidFilterException {
+		name = name.trim();
 		if ( name.startsWith("/") ) {
 			if ( !name.endsWith("/") ) {
 				throw new MaxwellInvalidFilterException("Invalid regular expression: " + name);
 			}
 			return Pattern.compile(name.substring(1, name.length() - 1));
 		} else {
-			return Pattern.compile("^" + name.trim() + "$");
+			return Pattern.compile("^" + name + "$");
 		}
 
 	}
