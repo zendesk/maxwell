@@ -68,10 +68,10 @@ public class MaxwellConfig {
 		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION").withRequiredArg();
 		parser.accepts( "replay", "replay mode, don't store any information to the server");
 
-		parser.accepts( "includeDatabases", "include thes databases, formatted as includeDatabases=db1,db2").withOptionalArg();
-		parser.accepts( "excludeDatabases", "exclude thes databases, formatted as excludeDatabases=db1,db2").withOptionalArg();
-		parser.accepts( "includeTables", "include thes tables, formatted as includeTables=db1,db2").withOptionalArg();
-		parser.accepts( "excludeTables", "exclude thes tables, formatted as excludeTables=tb1,tb2").withOptionalArg();
+		parser.accepts( "includeDatabases", "include these databases, formatted as includeDatabases=db1,db2").withOptionalArg();
+		parser.accepts( "excludeDatabases", "exclude these databases, formatted as excludeDatabases=db1,db2").withOptionalArg();
+		parser.accepts( "includeTables", "include these tables, formatted as includeTables=db1,db2").withOptionalArg();
+		parser.accepts( "excludeTables", "exclude these tables, formatted as excludeTables=tb1,tb2").withOptionalArg();
 		parser.accepts( "help", "display help").forHelp();
 		parser.formatHelpWith(new BuiltinHelpFormatter(160, 4));
 		return parser;
