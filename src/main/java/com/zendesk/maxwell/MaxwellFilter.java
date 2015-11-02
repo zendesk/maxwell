@@ -82,7 +82,10 @@ public class MaxwellFilter {
 		if ( includeList.size() > 0 ) {
 			boolean found = false;
 			for ( Pattern p : includeList ) {
-				found = found || p.matcher(name).find();
+				found = p.matcher(name).find();
+
+				if ( found )
+					break;
 			}
 			if ( !found )
 				return false;
