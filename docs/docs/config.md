@@ -49,12 +49,12 @@ Maxwell will send an update for a given row to its producer.  All the options ta
 which may either be a literal table/database name, given as `option=name`, or a regular expression,
 given as `option=/regex/`.  The options are evaluated as follows:
 
-1. only accept databases in `include_dbs`
+1. only accept databases in `include_dbs` if non-empty
 1. reject databases in `exclude_dbs`
-1. only accept tables in `include_tables`
+1. only accept tables in `include_tables` if non-empty
 1. reject tables in `exclude_tables`
 
-So an example like `--include_dbs=/foo.*/ --exclude_tables=bar` will match `footy.baz` but not `footz.bar`.
+So an example like `--include_dbs=/foo.*/ --exclude_tables=bar` will include `footy.zab` and exclude `footy.bar`
 
 
 <script>
