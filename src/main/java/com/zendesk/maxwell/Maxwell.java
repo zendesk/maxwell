@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.TimeoutException;
-
 import com.djdch.log4j.StaticShutdownCallbackRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +64,13 @@ public class Maxwell {
 		AbstractProducer producer = this.context.getProducer();
 
 		final MaxwellReplicator p = new MaxwellReplicator(this.schema, producer, this.context, this.context.getInitialPosition());
+
+		try {
+			p.setFilter(context.buildFilter());
+		} catch (MaxwellInvalidFilterException e) {
+			LOGGER.error("Invalid maxwell filter", e);
+			System.exit(1);
+		}
 
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override

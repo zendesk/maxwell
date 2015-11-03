@@ -23,7 +23,7 @@ public class MaxwellConfig {
 	public Integer mysqlPort;
 	public String  mysqlUser;
 	public String  mysqlPassword;
-
+	public String  includeDatabases, excludeDatabases, includeTables, excludeTables;
 	public final Properties kafkaProperties;
 	public String kafkaTopic;
 	public String producerType;
@@ -60,11 +60,18 @@ public class MaxwellConfig {
 		parser.accepts( "password", "mysql password" ).withRequiredArg();
 		parser.accepts( "port", "mysql port" ).withRequiredArg();
 		parser.accepts( "producer", "producer type: stdout|file|kafka" ).withRequiredArg();
+
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
+
 		parser.accepts( "max_schemas", "how many old schema definitions maxwell should keep around.  default: 5").withOptionalArg();
 		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION").withRequiredArg();
 		parser.accepts( "replay", "replay mode, don't store any information to the server");
+
+		parser.accepts( "include_dbs", "include these databases, formatted as include_dbs=db1,db2").withOptionalArg();
+		parser.accepts( "exclude_dbs", "exclude these databases, formatted as exclude_dbs=db1,db2").withOptionalArg();
+		parser.accepts( "include_tables", "include these tables, formatted as include_tables=db1,db2").withOptionalArg();
+		parser.accepts( "exclude_tables", "exclude these tables, formatted as exclude_tables=tb1,tb2").withOptionalArg();
 		parser.accepts( "help", "display help").forHelp();
 		parser.formatHelpWith(new BuiltinHelpFormatter(160, 4));
 		return parser;
@@ -135,6 +142,18 @@ public class MaxwellConfig {
 		if ( options.has("replay")) {
 			this.replayMode = true;
 		}
+
+		if ( options.has("include_dbs"))
+			this.includeDatabases = (String) options.valueOf("include_dbs");
+		
+		if ( options.has("exclude_dbs"))
+			this.excludeDatabases = (String) options.valueOf("exclude_dbs");
+
+		if ( options.has("include_tables"))
+			this.includeTables = (String) options.valueOf("include_tables");
+		
+		if ( options.has("exclude_tables"))
+			this.excludeTables = (String) options.valueOf("exclude_tables");
 	}
 
 	private Properties readPropertiesFile(String filename, Boolean abortOnMissing) {
@@ -174,6 +193,10 @@ public class MaxwellConfig {
 		this.producerType    = p.getProperty("producer");
 		this.outputFile      = p.getProperty("output_file");
 		this.kafkaTopic      = p.getProperty("kafka_topic");
+		this.includeDatabases = p.getProperty("include_dbs");
+		this.excludeDatabases = p.getProperty("exclude_dbs");
+		this.includeTables = p.getProperty("include_tables");
+		this.excludeTables = p.getProperty("exclude_tables");
 
 		String maxSchemaString = p.getProperty("max_schemas");
 		if (maxSchemaString != null)
@@ -216,7 +239,6 @@ public class MaxwellConfig {
 
 		if ( this.maxSchemas != null )
 			SchemaStore.setMaxSchemas(this.maxSchemas);
-
 	}
 
 	private void usage(String string) {
