@@ -63,7 +63,10 @@
                       <li class="toctree-l3"><a href="#command-line-options">Command line options</a></li>
                       
                   
-                      <li class="toctree-l3"><a href="#configuration-file-options">Configuration file options</a></li>
+                      <li class="toctree-l3"><a href="#configuration-file">Configuration file</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#row-filters">row filters</a></li>
                       
                   
                   </ul>
@@ -103,6 +106,14 @@
 </thead>
 <tbody>
 <tr>
+<td>--config FILE</td>
+<td>location of <code>config.properties</code> file</td>
+</tr>
+<tr>
+<td>--log_level DEBUG</td>
+<td>INFO</td>
+</tr>
+<tr>
 <td>--user USER</td>
 <td>mysql username</td>
 </tr>
@@ -119,59 +130,74 @@
 <td>mysql port</td>
 </tr>
 <tr>
-<td>--producer stdout,kafka</td>
-<td>where shall we send these rows, sir?</td>
+<td>--producer stdout,kafka,file,profiler</td>
+<td>what type of producer to use.  default: stdout</td>
+</tr>
+<tr>
+<td>--output_file</td>
+<td>path of the file for the 'file' producer to write to</td>
+</tr>
+<tr>
+<td>--include_dbs PATTERN</td>
+<td>only send updates from these databases</td>
+</tr>
+<tr>
+<td>--exclude_dbs PATTERN</td>
+<td>ignore updates from these databases</td>
+</tr>
+<tr>
+<td>--include_tables PATTERN</td>
+<td>only send updates from tables named like PATTERN</td>
+</tr>
+<tr>
+<td>--exclude_tables PATTERN</td>
+<td>ignore updates from tables named like PATTERN</td>
 </tr>
 <tr>
 <td>--kafka.bootstrap.servers</td>
-<td>list of kafka nodes, listed as HOST:PORT[,HOST:PORT]</td>
+<td>list of kafka brokers, listed as HOST:PORT[,HOST:PORT].</td>
 </tr>
 <tr>
 <td>--kafka_topic</td>
 <td>provide a topic for maxwell to write to. Default will be "maxwell".</td>
 </tr>
-</tbody>
-</table>
-<h3 id="configuration-file-options">Configuration file options</h3>
-<p>If maxwell finds the file <code>config.properties</code> in $PWD it will use it.</p>
-<table>
-<thead>
 <tr>
-<th>option</th>
-<th>description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>user=USER</td>
-<td>mysql username</td>
+<td>--max_schemas</td>
+<td>how many old schemas maxwell should leave lying around in maxwell.schemas.  default: 5</td>
 </tr>
 <tr>
-<td>password=PASSWORD</td>
-<td>mysql password</td>
+<td>--init_position FILE:POSITION</td>
+<td>ignore the information in maxwell.positions and start at the given binlog position.  Not available in config.properties.</td>
 </tr>
 <tr>
-<td>host=HOST</td>
-<td>mysql host</td>
-</tr>
-<tr>
-<td>port=PORT</td>
-<td>mysql port</td>
-</tr>
-<tr>
-<td>producer=stdout,kafka,</td>
-<td>where shall we send these rows, sir?</td>
-</tr>
-<tr>
-<td>kafka.*=XXX</td>
-<td>any options prefixed with 'kafka.' will be passed into the kafka producer library</td>
-</tr>
-<tr>
-<td>kafka_topic</td>
-<td>provide a topic for maxwell to write to. Default will be "maxwell".</td>
+<td>--replay</td>
+<td>enabled maxwell's read-only "replay" mode.  Not available in config.properties.</td>
 </tr>
 </tbody>
 </table>
+<h3 id="configuration-file">Configuration file</h3>
+<p>If maxwell finds the file <code>config.properties</code> in $PWD it will use it.  Any
+command line options (except init_position and replay) may be given as
+"key=value" pairs.</p>
+<p>Additionally, any configuration file options prefixed with 'kafka.' will be
+passed into the kafka producer library, after having 'kafka.' stripped off the
+front of the key.  So, for example if config.properties contains</p>
+<pre><code>kafka.batch.size=16384
+</code></pre>
+
+<p>Maxwell will send <code>batch.size=16384</code> to the kafka producer library.</p>
+<h3 id="row-filters">row filters</h3>
+<p>The options <code>include_dbs</code>, <code>exclude_dbs</code>, <code>include_tables</code>, and <code>exclude_tables</code> control whether
+Maxwell will send an update for a given row to its producer.  All the options take a single value PATTERN,
+which may either be a literal table/database name, given as <code>option=name</code>, or a regular expression,
+given as <code>option=/regex/</code>.  The options are evaluated as follows:</p>
+<ol>
+<li>only accept databases in <code>include_dbs</code> if non-empty</li>
+<li>reject databases in <code>exclude_dbs</code></li>
+<li>only accept tables in <code>include_tables</code> if non-empty</li>
+<li>reject tables in <code>exclude_tables</code></li>
+</ol>
+<p>So an example like <code>--include_dbs=/foo.*/ --exclude_tables=bar</code> will include <code>footy.zab</code> and exclude <code>footy.bar</code></p>
 <script>
   jQuery(document).ready(function () {
     jQuery("table").addClass("table table-condensed table-bordered table-hover");
