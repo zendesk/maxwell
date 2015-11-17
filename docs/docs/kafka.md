@@ -13,10 +13,10 @@ Maxwell writes to a kafka topic named "maxwell" by default.  This can be changed
 
 ### Kafka key
 
-Maxwell generates keys for its Kafka messages based upon a mysql row's primary key:
+Maxwell generates keys for its Kafka messages based upon a mysql row's primary key in JSON format:
 
 ```
-db:test_db/tbl:test_tbl/id:93/id_2:17910090
+{ "database":"test_tb","table":"test_tbl","pk.id":4,"pk.part2":"hello"}
 ```
 
 This key is designed to co-operate with Kafka's log compaction, which will save the last-known
