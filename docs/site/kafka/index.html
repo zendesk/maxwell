@@ -103,8 +103,8 @@
 </ul>
 <p>Maxwell writes to a kafka topic named "maxwell" by default.  This can be changed with the <code>kafka_topic</code> option.</p>
 <h3 id="kafka-key">Kafka key</h3>
-<p>Maxwell generates keys for its Kafka messages based upon a mysql row's primary key:</p>
-<pre><code>db:test_db/tbl:test_tbl/id:93/id_2:17910090
+<p>Maxwell generates keys for its Kafka messages based upon a mysql row's primary key in JSON format:</p>
+<pre><code>{ &quot;database&quot;:&quot;test_tb&quot;,&quot;table&quot;:&quot;test_tbl&quot;,&quot;pk.id&quot;:4,&quot;pk.part2&quot;:&quot;hello&quot;}
 </code></pre>
 
 <p>This key is designed to co-operate with Kafka's log compaction, which will save the last-known

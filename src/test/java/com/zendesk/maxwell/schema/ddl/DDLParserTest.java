@@ -1,13 +1,11 @@
 package com.zendesk.maxwell.schema.ddl;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
 import java.util.List;
 
+import org.antlr.v4.runtime.misc.NotNull;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -393,5 +391,13 @@ public class DDLParserTest {
 
 		create = parseCreate("CREATE TABLE `foo` (id varchar(1) character set 'foo' NOT NULL)");
 		assertThat(create.columns.get(0).encoding, is("foo"));
+	}
+
+	@Test
+	public void testCreateTableNamedPrimaryKey() {
+		/* not documented, but accepted and ignored to name the primary key. */
+		TableCreate create = parseCreate("CREATE TABLE db (foo char(60) binary DEFAULT '' NOT NULL, PRIMARY KEY Host (foo,Db,User))");
+		assertThat(create, is(notNullValue()));
+		assertThat(create.pks.size(), is(3));
 	}
 }
