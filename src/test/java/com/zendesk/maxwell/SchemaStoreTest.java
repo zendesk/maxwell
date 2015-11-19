@@ -12,6 +12,7 @@ import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
 import com.zendesk.maxwell.schema.SchemaStore;
@@ -92,5 +93,14 @@ public class SchemaStoreTest extends AbstractMaxwellTest {
 
 		rs = server.getConnection().createStatement().executeQuery("SELECT * from `maxwell`.`positions`");
 		assertThat(rs.next(), is(false));
+	}
+
+	@Test
+	public void testRestoreMysqlDb() throws Exception {
+		Database db = this.schema.findDatabase("mysql");
+		this.schema.getDatabases().remove(db);
+		this.schemaStore.save();
+		SchemaStore restoredSchema = SchemaStore.restore(server.getConnection(), server.SERVER_ID, this.binlogPosition);
+		assertThat(restoredSchema.getSchema().findDatabase("mysql"), is(not(nullValue())));
 	}
 }
