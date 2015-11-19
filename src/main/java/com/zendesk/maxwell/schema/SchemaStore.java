@@ -277,7 +277,7 @@ public class SchemaStore {
 		while (cRS.next()) {
 			String[] enumValues = null;
 			if ( cRS.getString("enum_values") != null )
-				enumValues = StringUtils.split(cRS.getString("enum_values"), ",");
+				enumValues = StringUtils.splitByWholeSeparatorPreserveAllTokens(cRS.getString("enum_values"), ",");
 
 			ColumnDef c = ColumnDef.build(t.getName(),
 					cRS.getString("name"), cRS.getString("encoding"),
