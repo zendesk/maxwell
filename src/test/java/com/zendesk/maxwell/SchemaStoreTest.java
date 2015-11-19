@@ -1,8 +1,6 @@
 package com.zendesk.maxwell;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
@@ -74,9 +72,8 @@ public class SchemaStoreTest extends AbstractMaxwellTest {
 
 		SchemaStore restoredSchema = SchemaStore.restore(server.getConnection(), server.SERVER_ID, binlogPosition);
 
-		assertThat(restoredSchema.getSchema().equals(this.schemaStore.getSchema()), is(true));
-		assertThat(restoredSchema.getSchemaID(), is(badSchemaID + 1));
-
+		List<String> diffs = restoredSchema.getSchema().diff(this.schemaStore.getSchema(), "restored", "captured");
+		assert diffs.isEmpty() : "Expected empty schema diff, got" + diffs;
 	}
 
 	@Test
