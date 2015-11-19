@@ -22,7 +22,7 @@ public class SchemaCapturer {
 	static final Logger LOGGER = LoggerFactory.getLogger(SchemaStore.class);
 
 	public static final HashSet<String> IGNORED_DATABASES = new HashSet<String>(
-		Arrays.asList(new String[] {"performance_schema", "information_schema", "mysql"})
+		Arrays.asList(new String[] {"performance_schema", "information_schema"})
 	);
 
 	private final HashSet<String> includeDatabases;

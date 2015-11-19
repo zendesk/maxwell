@@ -40,7 +40,7 @@ public class SchemaCaptureTest extends AbstractMaxwellTest {
 		Schema s = capturer.capture();
 		String dbs = StringUtils.join(s.getDatabaseNames().iterator(), ":");
 
-		assertEquals("maxwell:shard_1:shard_2:test", dbs);
+		assertEquals("maxwell:mysql:shard_1:shard_2:test", dbs);
 	}
 
 	@Test
