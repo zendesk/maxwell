@@ -33,6 +33,10 @@ public class Schema {
 		return null;
 	}
 
+	public void addDatabase(Database d) {
+		this.databases.add(d);
+	}
+
 	public Schema copy() {
 		ArrayList<Database> newDBs = new ArrayList<>();
 		for ( Database d : this.databases ) {

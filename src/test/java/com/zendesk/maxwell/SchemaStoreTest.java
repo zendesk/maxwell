@@ -1,8 +1,6 @@
 package com.zendesk.maxwell;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
@@ -14,6 +12,7 @@ import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
 import com.zendesk.maxwell.schema.SchemaStore;
@@ -74,9 +73,8 @@ public class SchemaStoreTest extends AbstractMaxwellTest {
 
 		SchemaStore restoredSchema = SchemaStore.restore(server.getConnection(), server.SERVER_ID, binlogPosition);
 
-		assertThat(restoredSchema.getSchema().equals(this.schemaStore.getSchema()), is(true));
-		assertThat(restoredSchema.getSchemaID(), is(badSchemaID + 1));
-
+		List<String> diffs = restoredSchema.getSchema().diff(this.schemaStore.getSchema(), "restored", "captured");
+		assert diffs.isEmpty() : "Expected empty schema diff, got" + diffs;
 	}
 
 	@Test
@@ -95,5 +93,14 @@ public class SchemaStoreTest extends AbstractMaxwellTest {
 
 		rs = server.getConnection().createStatement().executeQuery("SELECT * from `maxwell`.`positions`");
 		assertThat(rs.next(), is(false));
+	}
+
+	@Test
+	public void testRestoreMysqlDb() throws Exception {
+		Database db = this.schema.findDatabase("mysql");
+		this.schema.getDatabases().remove(db);
+		this.schemaStore.save();
+		SchemaStore restoredSchema = SchemaStore.restore(server.getConnection(), server.SERVER_ID, this.binlogPosition);
+		assertThat(restoredSchema.getSchema().findDatabase("mysql"), is(not(nullValue())));
 	}
 }

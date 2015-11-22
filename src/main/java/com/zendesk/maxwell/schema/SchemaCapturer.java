@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,8 +21,10 @@ public class SchemaCapturer {
 	private final Connection connection;
 	static final Logger LOGGER = LoggerFactory.getLogger(SchemaStore.class);
 
-	private final String[] alwaysExclude = {"performance_schema", "information_schema", "mysql"};
-	private final HashSet<String> excludeDatabases;
+	public static final HashSet<String> IGNORED_DATABASES = new HashSet<String>(
+		Arrays.asList(new String[] {"performance_schema", "information_schema"})
+	);
+
 	private final HashSet<String> includeDatabases;
 
 	private final PreparedStatement infoSchemaStmt;
@@ -29,14 +32,9 @@ public class SchemaCapturer {
 			"SELECT * FROM `information_schema`.`COLUMNS` WHERE `TABLE_SCHEMA` = ? AND `TABLE_NAME` = ?";
 
 	public SchemaCapturer(Connection c) throws SQLException {
-		this.excludeDatabases = new HashSet<String>();
 		this.includeDatabases = new HashSet<String>();
 		this.connection = c;
 		this.infoSchemaStmt = connection.prepareStatement(INFORMATION_SCHEMA_SQL);
-
-		for (String s : alwaysExclude) {
-			this.excludeDatabases.add(s);
-		}
 	}
 
 	public SchemaCapturer(Connection c, String dbName) throws SQLException {
@@ -58,7 +56,7 @@ public class SchemaCapturer {
 			if ( includeDatabases.size() > 0 && !includeDatabases.contains(dbName))
 				continue;
 
-			if ( excludeDatabases.contains(dbName) )
+			if ( IGNORED_DATABASES.contains(dbName) )
 				continue;
 
 			databases.add(captureDatabase(dbName, encoding));
