@@ -3,13 +3,13 @@ package com.zendesk.maxwell;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import com.google.code.or.binlog.impl.event.*;
+import com.zendesk.maxwell.util.ListWithDiskBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +24,7 @@ import com.zendesk.maxwell.schema.ddl.SchemaChange;
 import com.zendesk.maxwell.schema.ddl.SchemaSyncError;
 
 public class MaxwellReplicator extends RunLoopProcess {
+	private final long MAX_TX_ELEMENTS = 10000;
 	String filePath, fileName;
 	private long rowEventsProcessed;
 	private Schema schema;
@@ -152,11 +153,11 @@ public class MaxwellReplicator extends RunLoopProcess {
 		return ew;
 	}
 
-	private LinkedList<MaxwellAbstractRowsEvent> getTransactionEvents() throws Exception {
+	private DiskOverflowList<MaxwellAbstractRowsEvent> getTransactionEvents() throws Exception {
 		BinlogEventV4 v4Event;
 		MaxwellAbstractRowsEvent event;
 
-		LinkedList<MaxwellAbstractRowsEvent> list = new LinkedList<>();
+		DiskOverflowList<MaxwellAbstractRowsEvent> list = new DiskOverflowList<>(MAX_TX_ELEMENTS);
 
 		// currently to satisfy the test interface, the contract is to return null
 		// if the queue is empty.  should probably just replace this with an optional timeout...
@@ -218,7 +219,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 		}
 	}
 
-	private LinkedList<MaxwellAbstractRowsEvent> txBuffer;
+	private DiskOverflowList<MaxwellAbstractRowsEvent> txBuffer;
 
 	public MaxwellAbstractRowsEvent getEvent() throws Exception {
 		BinlogEventV4 v4Event;
