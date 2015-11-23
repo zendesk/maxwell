@@ -175,7 +175,7 @@ public class ColumnDefTest {
 		assertTrue(d.matchesMysqlType(MySQLConstants.TYPE_DATE));
 
 		Date date = new GregorianCalendar(1979, 10, 1).getTime();
-		assertThat(d.toSQL(date), is("''1979-11-01''"));
+		assertThat(d.toSQL(date), is("'1979-11-01'"));
 	}
 
 	public void TestDateTime() throws ParseException {
@@ -184,10 +184,10 @@ public class ColumnDefTest {
 
 		assertTrue(d.matchesMysqlType(MySQLConstants.TYPE_DATE));
 
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-        Date date = simpleDateFormat.parse("1979-10-01 19:19:19");
-        assertThat(d.toSQL(date), is("'1979-10-01 19:19:19'"));
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+		Date date = simpleDateFormat.parse("1979-10-01 19:19:19");
+		assertThat(d.toSQL(date), is("'1979-10-01 19:19:19'"));
 	}
 
 	@Test
