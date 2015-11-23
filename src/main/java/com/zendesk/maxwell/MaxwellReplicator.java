@@ -280,14 +280,17 @@ public class MaxwellReplicator extends RunLoopProcess {
 			updatedSchema = change.apply(updatedSchema);
 		}
 
-		if ( changes.size() > 0 && !this.context.getReplayMode() && updatedSchema != this.schema) {
+		if ( changes.size() > 0 && updatedSchema != this.schema) {
 			this.schema = updatedSchema;
-
 			tableCache.clear();
+
 			BinlogPosition p = eventBinlogPosition(event);
-			LOGGER.info("storing schema @" + p + " after applying \"" + sql.replace('\n',' ') + "\"");
-			try ( Connection c = this.context.getConnectionPool().getConnection() ) {
-				new SchemaStore(c, this.context.getServerID(), schema, p).save();
+
+			if ( !this.context.getReplayMode() ) {
+				LOGGER.info("storing schema @" + p + " after applying \"" + sql.replace('\n', ' ') + "\"");
+				try (Connection c = this.context.getConnectionPool().getConnection()) {
+					new SchemaStore(c, this.context.getServerID(), schema, p).save();
+				}
 			}
 			this.context.setPositionSync(p);
 		}
