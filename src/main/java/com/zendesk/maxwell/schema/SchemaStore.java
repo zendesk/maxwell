@@ -235,14 +235,6 @@ public class SchemaStore {
 
 		this.schema_id = schemaRS.getLong("id");
 
-		if ( this.schema.findDatabase("mysql") == null ) {
-			LOGGER.info("Could not find mysql db, adding it to schema");
-			SchemaCapturer sc = new SchemaCapturer(connection, "mysql");
-			Database db = sc.capture().findDatabase("mysql");
-			this.schema.addDatabase(db);
-			shouldResave = true;
-		}
-
 		p = connection.prepareStatement("SELECT * from `maxwell`.`databases` where schema_id = ? ORDER by id");
 		p.setLong(1, this.schema_id);
 
@@ -250,6 +242,14 @@ public class SchemaStore {
 
 		while (dbRS.next()) {
 			this.schema.getDatabases().add(restoreDatabase(dbRS.getInt("id"), dbRS.getString("name"), dbRS.getString("encoding")));
+		}
+
+		if ( this.schema.findDatabase("mysql") == null ) {
+			LOGGER.info("Could not find mysql db, adding it to schema");
+			SchemaCapturer sc = new SchemaCapturer(connection, "mysql");
+			Database db = sc.capture().findDatabase("mysql");
+			this.schema.addDatabase(db);
+			shouldResave = true;
 		}
 
 		if ( shouldResave )
