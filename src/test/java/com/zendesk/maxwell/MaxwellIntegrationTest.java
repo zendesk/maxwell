@@ -16,8 +16,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 
-import com.zendesk.maxwell.MaxwellAbstractRowsEvent.RowMap;
-
 public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 	public static final TypeReference<Map<String, Object>> MAP_STRING_OBJECT_REF = new TypeReference<Map<String, Object>>() {};
 
