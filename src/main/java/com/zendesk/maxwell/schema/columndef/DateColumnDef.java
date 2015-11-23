@@ -34,7 +34,7 @@ public class DateColumnDef extends ColumnDef {
 
 	@Override
 	public String toSQL(Object value) {
-		return "''" + formatDate(value) + "''";
+		return "'" + formatDate(value) + "'";
 	}
 
 	@Override

@@ -11,6 +11,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 import org.junit.After;
 import org.junit.Before;
@@ -154,6 +155,7 @@ public class ColumnDefTest {
 		assertThat(d.toSQL(Float.valueOf(1.2f)), is("1.2"));
 	}
 
+	@Test
 	public void TestDouble() {
 		ColumnDef d = build("double", true);
 		assertThat(d, instanceOf(FloatColumnDef.class));
@@ -165,6 +167,7 @@ public class ColumnDefTest {
 		assertThat(d.toSQL(Double.valueOf(Double.MAX_VALUE)), is(maxDouble));
 	}
 
+	@Test
 	public void TestDate() {
 		ColumnDef d = build("date", true);
 		assertThat(d, instanceOf(DateColumnDef.class));
@@ -172,7 +175,7 @@ public class ColumnDefTest {
 		assertTrue(d.matchesMysqlType(MySQLConstants.TYPE_DATE));
 
 		Date date = new GregorianCalendar(1979, 10, 1).getTime();
-		assertThat(d.toSQL(date), is("1979-10-01"));
+		assertThat(d.toSQL(date), is("'1979-11-01'"));
 	}
 
 	public void TestDateTime() throws ParseException {
@@ -181,17 +184,20 @@ public class ColumnDefTest {
 
 		assertTrue(d.matchesMysqlType(MySQLConstants.TYPE_DATE));
 
-		Date date = new SimpleDateFormat().parse("1979-10-01 19:19:19");
+		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+		Date date = simpleDateFormat.parse("1979-10-01 19:19:19");
 		assertThat(d.toSQL(date), is("'1979-10-01 19:19:19'"));
 	}
 
+	@Test
 	public void TestTimestamp() throws ParseException {
 		ColumnDef d = build("timestamp", true);
 		assertThat(d, instanceOf(DateTimeColumnDef.class));
 
 		assertTrue(d.matchesMysqlType(MySQLConstants.TYPE_TIMESTAMP));
 
-		Timestamp t = new Timestamp(284066359);
+		Timestamp t = new Timestamp(307653559000L);
 		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19'"));
 	}
 
