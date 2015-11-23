@@ -6,15 +6,20 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-public class RowMap extends HashMap<String, Object> {
+public class RowMap {
 	static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
+
+	private String rowType;
+	private String database;
+	private String table;
+	private Long timestamp;
+	private Long xid;
+	private boolean txCommit;
+
 	private final HashMap<String, Object> data;
 
 	private static final JsonFactory jsonFactory = new JsonFactory();
@@ -46,25 +51,23 @@ public class RowMap extends HashMap<String, Object> {
 
 	public RowMap() {
 		this.data = new HashMap<>();
-		this.put("data", this.data);
 	}
-
 
 	public String toJSON() throws IOException {
 		JsonGenerator g = jsonGeneratorThreadLocal.get();
 
 		g.writeStartObject(); // start of row {
 
-		g.writeStringField("database", (String) this.get("database"));
-		g.writeStringField("table", (String) this.get("table"));
-		g.writeStringField("type", (String) this.get("type"));
-		g.writeNumberField("ts", (Long) this.get("ts"));
+		g.writeStringField("database", this.database);
+		g.writeStringField("table", this.table);
+		g.writeStringField("type", this.rowType);
+		g.writeNumberField("ts", this.timestamp);
 
-		/* TODO: allow xid and commit to be configurable */
-		if ( this.containsKey("xid") )
-			g.writeObjectField("xid", this.get("xid"));
+		/* TODO: allow xid and commit to be configurable in the output */
+		if ( this.xid != null )
+			g.writeNumberField("xid", this.xid);
 
-		if ( this.containsKey("commit") && (boolean) this.get("commit") == true)
+		if ( this.txCommit )
 			g.writeBooleanField("commit", true);
 
 		g.writeObjectFieldStart("data"); // start of data: {
@@ -100,7 +103,7 @@ public class RowMap extends HashMap<String, Object> {
 
 
 	public void setRowType(String type) {
-		this.put("type", type);
+		this.rowType = type;
 	}
 
 	public Object getData(String key) {
@@ -112,23 +115,23 @@ public class RowMap extends HashMap<String, Object> {
 	}
 
 	public void setTable(String name) {
-		this.put("table", name);
+		this.table = name;
 	}
 
 	public void setDatabase(String name) {
-		this.put("database", name);
+		this.database = name;
 	}
 
 	public void setTimestamp(Long l) {
-		this.put("ts", l);
+		this.timestamp = l;
 	}
 
 	public void setXid(Long xid) {
-		this.put("xid", xid);
+		this.xid = xid;
 	}
 
 	public void setTXCommit() {
-		this.put("commit", true);
+		this.txCommit = true;
 	}
 
 	public Set<String> dataKeySet() {
