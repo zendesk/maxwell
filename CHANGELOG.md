@@ -1,5 +1,11 @@
 # Maxwell changelog
 
+## [v0.14.4](https://github.com/zendesk/maxwell/releases/tag/v0.14.4): "You'd think we'd be at 1.0 by now, wouldn't you?"
+
+- fixes parsing of "mysql comments" (`/*! .. */`)
+- More performance improvements, another 10% in a tight loop.
+
+
 ## [v0.14.3](https://github.com/zendesk/maxwell/releases/tag/v0.14.3): "Peanuts.  My girlfriend thinks about peanuts."
 
 - fixes a regression in 0.14.2 that creates duplicate copies of the "mysql" database in the schema.
@@ -158,4 +164,85 @@ Also, vanchi is so paranoid he's worried immediately about this.
 ## [v0.8.1](https://github.com/zendesk/maxwell/releases/tag/v0.8.1): "Pascal says Bonjour"
 
 - minor bugfix release around mysql connections going away.
+
+## [v0.8.0](https://github.com/zendesk/maxwell/releases/tag/v0.8.0): the cat never shuts up
+
+- add "ts" field to row output
+- add --config option for passing a different config file
+- support int1, int2, int4, int8 columns
+
+
+## [v0.7.2](https://github.com/zendesk/maxwell/releases/tag/v0.7.2): "all the sql ladies"
+
+- handle inline sql comments
+- ignore more user management SQL
+
+## [v0.7.1](https://github.com/zendesk/maxwell/releases/tag/v0.7.1): "not hoarders"
+
+- only keep 5 most recent schemas
+
+## [v0.7.0](https://github.com/zendesk/maxwell/releases/tag/v0.7.0): 0.7.0, "alameda"
+
+- handle CURRENT_TIMESTAMP parsing properly
+- better binlog position sync behavior
+
+## [v0.6.3](https://github.com/zendesk/maxwell/releases/tag/v0.6.3): 0.6.3
+
+- better blacklist for CREATE TRIGGER
+
+## [v0.6.2](https://github.com/zendesk/maxwell/releases/tag/v0.6.2): v0.6.2
+
+- maxwell now ignores SAVEPOINT statements.
+
+## [v0.6.1](https://github.com/zendesk/maxwell/releases/tag/v0.6.1): v0.6.1
+
+- fixes a bug with parsing length-limited indexes.
+
+## [v0.6.0](https://github.com/zendesk/maxwell/releases/tag/v0.6.0): kafkakafkakafa
+
+Version 0.6.0 has Maxwell outputting a JSON kafka key, so that one can use Kafka's neat "store the last copy of a key" retention policy.  It also fixes a couple of bugs in the query parsing path.
+
+## [v0.5.0](https://github.com/zendesk/maxwell/releases/tag/v0.5.0): 0.5.0 -- "People who put commas in column names deserve undefined behavior"
+
+- maxwell now captures primary keys on tables.  We'll use this to form kafka key names later.
+- maxwell now outputs to a single topic, hashing the data by database name to keep a database's updates in order.
+
+## [v0.4.0](https://github.com/zendesk/maxwell/releases/tag/v0.4.0): 0.4.0, "unboxed cat"
+
+v0.4.0 fixes some bugs with long-lived mysql connections by adding connection pooling support.
+
+## [v0.3.0](https://github.com/zendesk/maxwell/releases/tag/v0.3.0): 0.3.0
+
+This version fixes a fairly nasty bug in which the binlog-position flush thread was sharing a connection with the rest of the system, leading to crashes. 
+
+It also enables kafka gzip compression by default.
+
+## [v0.2.2](https://github.com/zendesk/maxwell/releases/tag/v0.2.2): 0.2.2
+
+Version 0.2.2 sets up the LANG environment variable, which fixes a bug in utf-8 handling. 
+
+## [v0.2.1](https://github.com/zendesk/maxwell/releases/tag/v0.2.1): v0.2.1
+
+version 0.2.1 makes Maxwell ignore CREATE INDEX ddl statements and others.
+
+## [v0.2.0](https://github.com/zendesk/maxwell/releases/tag/v0.2.0): 0.2.0
+
+This release gets Maxwell storing the last-written binlog position inside the mysql master itself. 
+
+## [v0.1.4](https://github.com/zendesk/maxwell/releases/tag/v0.1.4): 0.1.4
+
+support --position_file param
+
+## [v0.1.3](https://github.com/zendesk/maxwell/releases/tag/v0.1.3): 0.1.3
+
+Adds kafka command line options.
+
+## [v0.1.1](https://github.com/zendesk/maxwell/releases/tag/v0.1.1): 0.1.1
+
+v0.1.1, a small bugfix release. 
+
+## [v0.1](https://github.com/zendesk/maxwell/releases/tag/v0.1): 0.1
+
+This is the first possible release of Maxwell that might work.  It includes some exceedingly basic kafka support, and JSON output of binlog deltas.
+
 
