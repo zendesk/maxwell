@@ -12,5 +12,5 @@ then
   echo "Couldn't get CURRENT_REV" && exit 1
 fi
 
-git grep -lF $CURRENT_REV | grep -v search_index.json | xargs sed -i -e"s|$CURRENT_REV|$1|g"
+git grep -lF $CURRENT_REV | grep -v search_index.json | grep -v CHANGELOG.md | xargs perl -i -npe "s|$CURRENT_REV|$1|g"
 docs/build
