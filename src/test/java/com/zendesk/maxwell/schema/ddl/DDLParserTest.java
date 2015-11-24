@@ -400,4 +400,14 @@ public class DDLParserTest {
 		assertThat(create, is(notNullValue()));
 		assertThat(create.pks.size(), is(3));
 	}
+
+	@Test
+	public void testCommentsThatAreNotComments() {
+		TableCreate create = parseCreate("CREATE TABLE /*! IF NOT EXISTS */ foo (id int primary key)");
+		assertThat(create, is(notNullValue()));
+		assertThat(create.ifNotExists, is(true));
+
+
+
+	}
 }

@@ -9,7 +9,11 @@ string: (IDENT | STRING_LITERAL);
 integer: INTEGER_LITERAL;
 charset_name: (IDENT | STRING_LITERAL | QUOTED_IDENT);
 
-SQL_COMMENT: '/*' (.)*? '*/' -> skip;
+SQL_UPGRADE_COMMENT: '/*!' [0-9]* -> skip;
+SQL_UPGRADE_ENDCOMMENT: '*/' -> skip;
+
+SQL_COMMENT: '/*' ~'!' (.)*? '*/' -> skip;
+
 SQL_LINE_COMMENT: ('#' | '--') (~'\n')* ('\n' | EOF) -> skip;
 
 STRING_LITERAL: TICK ('\\\'' | '\'\'' | ~('\''))* TICK;

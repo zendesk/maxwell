@@ -16,7 +16,7 @@ public class TableCreate extends SchemaChange {
 
 	public String likeDB;
 	public String likeTable;
-	private final boolean ifNotExists;
+	public final boolean ifNotExists;
 
 	public TableCreate (String dbName, String tableName, boolean ifNotExists) {
 		this.dbName = dbName;
