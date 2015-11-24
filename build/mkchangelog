@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+
+require 'bundler/setup'
+require 'octokit'
+
+client = Octokit::Client.new(:netrc => true)
+releases = client.releases('zendesk/maxwell')
+
+puts "# Maxwell changelog"
+puts
+
+releases.each do |r|
+  out = <<-EOL
+## [%{tag_name}](%{html_url}): %{munged_name}
+
+%{body}
+  EOL
+
+  r[:munged_name] = r[:name].gsub(/^(\S+)\s+(.*)/, '\2')
+  puts out.strip % r
+  puts
+end
+
+
