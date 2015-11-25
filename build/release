@@ -1,0 +1,50 @@
+#!/usr/bin/env ruby
+
+require 'bundler/setup'
+require 'octokit'
+
+REPO="zendesk/maxwell"
+
+BINDIR=File.dirname(__FILE__)
+
+if !( ($version = ARGV[0]) && $version =~ /\d+\.\d+\.\d+/)
+  message =  "usage: #{$0} VERSION\n"
+  message += "  (current version is " + `#{BINDIR}/current_rev` + ")"
+  abort(message)
+end
+
+puts "Releasing version: #{$version}"
+
+def do_system(cmd, *args)
+  system(cmd, *args)
+  abort "command #{cmd} #{args.join(' ')} failed" unless $?.success?
+end
+
+do_system(BINDIR + "/bump", $version)
+do_system("mvn clean package")
+
+commit_template = Tempfile.new('maxwell_build')
+commit_template.write <<-EOL
+v#{$version}, "pithy title here"
+
+- list changes
+EOL
+commit_template.close
+
+do_system("git commit -av -t #{commit_template.path}")
+do_system("git tag v#{$version}")
+do_system("git push")
+do_system("git push --tags")
+
+release_title = `git show -s HEAD --format='%s'`
+release_body = `git show -s HEAD --format='%b'`
+
+puts "title: #{release_title}"
+puts "body: #{release_body}"
+
+client = Octokit::Client.new(netrc: true)
+
+release = client.create_release(REPO, 'v' + $version, name: release_title, body: release_body)
+client.upload_asset(release.url, BINDIR + "/../target/maxwell-#{$version}.tar.gz")
+
+
