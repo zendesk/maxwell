@@ -406,8 +406,11 @@ public class DDLParserTest {
 		TableCreate create = parseCreate("CREATE TABLE /*! IF NOT EXISTS */ foo (id int primary key)");
 		assertThat(create, is(notNullValue()));
 		assertThat(create.ifNotExists, is(true));
+	}
 
-
-
+	@Test
+	public void testBinaryColumnDefaults() {
+		assertThat(parseCreate("CREATE TABLE foo (id boolean default true)"), is(notNullValue()));
+		assertThat(parseCreate("CREATE TABLE foo (id boolean default false)"), is(notNullValue()));
 	}
 }

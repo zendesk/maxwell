@@ -75,7 +75,7 @@ character_set: ((CHARACTER SET) | CHARSET) charset_name;
 collation: COLLATE '='? (IDENT | STRING_LITERAL | QUOTED_IDENT);
 
 nullability: (NOT NULL | NULL);
-default_value: DEFAULT (literal | NULL | CURRENT_TIMESTAMP);
+default_value: DEFAULT (literal | NULL | CURRENT_TIMESTAMP | TRUE | FALSE);
 length: '(' INTEGER_LITERAL ')';
 int_flags: ( UNSIGNED | ZEROFILL );
 decimal_length: '(' INTEGER_LITERAL ( ',' INTEGER_LITERAL )? ')';

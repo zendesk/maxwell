@@ -161,6 +161,8 @@ ACTION
 
 BOOL
 BOOLEAN
+TRUE
+FALSE
 )
 
 tokens_allowed_in_names = []
