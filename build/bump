@@ -5,7 +5,10 @@ then
   echo "Usage: $0 VERSION" && exit 0
 fi
 
-CURRENT_REV=`grep '<version>' pom.xml | head -n1 | perl -ne '/([\d\.]+)/; print $1'`
+DIR=`dirname $0`
+cd $DIR/..
+
+CURRENT_REV=`build/current_rev`
 
 if [ "$CURRENT_REV" == "" ]
 then

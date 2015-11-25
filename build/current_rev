@@ -1,0 +1,4 @@
+#!/bin/bash
+
+POM=`dirname $0`/../pom.xml
+grep '<version>' $POM | head -n1 | perl -ne '/([\d\.]+)/; print $1'
