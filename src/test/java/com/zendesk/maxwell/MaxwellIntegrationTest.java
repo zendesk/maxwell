@@ -300,7 +300,7 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 
 	@Test
 	public void testZeroCreatedAtJSON() throws Exception {
-		if ( server.getVersion().equals("5.5") ) // 5.6 not yet supported.
+		if ( server.getVersion().equals("5.5") ) // 5.6 not yet supported for this test
 			runJSONTestFile(getSQLDir() + "/json/test_zero_created_at");
 	}
 
@@ -322,5 +322,11 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 	@Test
 	public void testBignum() throws Exception {
 		runJSONTestFile(getSQLDir() + "/json/test_bignum");
+	}
+
+	@Test
+	public void testTime() throws Exception {
+		if ( server.getVersion().equals("5.6") )
+			runJSONTestFile(getSQLDir() + "/json/test_time");
 	}
 }

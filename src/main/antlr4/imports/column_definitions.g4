@@ -19,8 +19,8 @@ data_type:
 	
 // all from http://dev.mysql.com/doc/refman/5.1/en/create-table.html
 generic_type:
-	  col_type=(BIT | BINARY | YEAR) length? column_options*
-	| col_type=(DATE | TIME | TIMESTAMP | DATETIME | TINYBLOB | MEDIUMBLOB | LONGBLOB | BLOB |  BOOLEAN | BOOL ) column_options*
+	  col_type=(BIT | BINARY | YEAR | TIME | TIMESTAMP | DATETIME) length? column_options*
+	| col_type=(DATE | TINYBLOB | MEDIUMBLOB | LONGBLOB | BLOB |  BOOLEAN | BOOL ) column_options*
 	| col_type=VARBINARY length column_options*
 	;
 
