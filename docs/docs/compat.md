@@ -15,6 +15,9 @@
 
 Currently Maxwell is not very smart about master recovery or detecting a promoted slave; if it determines
 that the server_id has changed between runs, Maxwell will simply delete its old schema cache and binlog position
-and start again.  We plan on improving this situation in 0.12.
+and start again.  We plan on improving master recovery in future releases.
+
+If you know the starting position of your new master, you can start the new Maxwell process with the
+`--init_position` flag, which will ensure that no gap appears in a master failover.
 
 
