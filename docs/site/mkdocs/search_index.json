@@ -27,7 +27,7 @@
         }, 
         {
             "location": "/compat/", 
-            "text": "Maxwell Compatibility\n\n\n\nRequirements:\n\n\n\n\nJRE 7 or above\n\n\nmysql 5.1, 5.5, 5.6\n\n\nkafka 0.8.2 or greater\n\n\n\n\nUnsupported\n\n\n\n\nMysql 5.7 is untested with Maxwell, and in particular GTID replication is unsupported as of yet.\n\n\nbinlog_row_image=MINIMAL\n is not supported and will break Maxwell in a variety of amusing ways.\n\n\n\n\nMaster recovery\n\n\nCurrently Maxwell is not very smart about master recovery or detecting a promoted slave; if it determines\nthat the server_id has changed between runs, Maxwell will simply delete its old schema cache and binlog position\nand start again.  We plan on improving this situation in 0.12.", 
+            "text": "Maxwell Compatibility\n\n\n\nRequirements:\n\n\n\n\nJRE 7 or above\n\n\nmysql 5.1, 5.5, 5.6\n\n\nkafka 0.8.2 or greater\n\n\n\n\nUnsupported\n\n\n\n\nMysql 5.7 is untested with Maxwell, and in particular GTID replication is unsupported as of yet.\n\n\nbinlog_row_image=MINIMAL\n is not supported and will break Maxwell in a variety of amusing ways.\n\n\n\n\nMaster recovery\n\n\nCurrently Maxwell is not very smart about master recovery or detecting a promoted slave; if it determines\nthat the server_id has changed between runs, Maxwell will simply delete its old schema cache and binlog position\nand start again.  We plan on improving master recovery in future releases.\n\n\nIf you know the starting position of your new master, you can start the new Maxwell process with the\n\n--init_position\n flag, which will ensure that no gap appears in a master failover.", 
             "title": "Compat / Caveats"
         }
     ]
