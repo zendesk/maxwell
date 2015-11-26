@@ -62,6 +62,32 @@ public class RowMap {
 		this.pkColumns = pkColumns;
 	}
 
+	public String pkToJson() throws IOException {
+		JsonGenerator g = jsonGeneratorThreadLocal.get();
+
+		g.writeStartObject(); // start of row {
+
+		g.writeStringField("database", database);
+		g.writeStringField("table", table);
+
+		if (pkColumns.isEmpty()) {
+			g.writeStringField("_uuid", UUID.randomUUID().toString());
+		} else {
+			for (String pk : pkColumns) {
+				Object pkValue = null;
+				if ( data.containsKey(pk) )
+					pkValue = data.get(pk);
+
+				g.writeObjectField("pk." + pk, pkValue);
+			}
+		}
+
+		g.writeEndObject(); // end of 'data: { }'
+		g.flush();
+		return jsonFromStream();
+	}
+
+
 	public String toJSON() throws IOException {
 		JsonGenerator g = jsonGeneratorThreadLocal.get();
 
@@ -104,31 +130,6 @@ public class RowMap {
 		g.writeEndObject(); // end of row
 		g.flush();
 
-		return jsonFromStream();
-	}
-
-	public String pkToJson() throws IOException {
-		JsonGenerator g = jsonGeneratorThreadLocal.get();
-
-		g.writeStartObject(); // start of row {
-
-		g.writeStringField("database", database);
-		g.writeStringField("table", table);
-
-		if (pkColumns.isEmpty()) {
-			g.writeStringField("_uuid", UUID.randomUUID().toString());
-		} else {
-			for (String pk : pkColumns) {
-				Object pkValue = null;
-				if ( data.containsKey(pk) )
-					pkValue = data.get(pk);
-
-				g.writeObjectField("pk." + pk, pkValue);
-			}
-		}
-
-		g.writeEndObject(); // end of 'data: { }'
-		g.flush();
 		return jsonFromStream();
 	}
 
