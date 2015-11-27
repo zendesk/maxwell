@@ -209,7 +209,8 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 					getTable().getName(),
 					getHeader().getTimestamp() / 1000,
 					getXid(),
-					table.getPKList());
+					table.getPKList(),
+					this.getNextBinlogPosition());
 
 			// only set commit: true on the last row of the last event of the transaction
 			if ( this.txCommit && !ri.hasNext() )

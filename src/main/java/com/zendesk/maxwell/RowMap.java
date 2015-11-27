@@ -20,6 +20,7 @@ public class RowMap {
 	private final String table;
 	private final Long timestamp;
 	private final Long xid;
+	private final BinlogPosition nextPosition;
 	private boolean txCommit;
 
 	private final HashMap<String, Object> data;
@@ -52,13 +53,14 @@ public class RowMap {
 			};
 
 
-	public RowMap(String type, String database, String table, Long timestamp, Long xid, List<String> pkColumns) {
+	public RowMap(String type, String database, String table, Long timestamp, Long xid, List<String> pkColumns, BinlogPosition nextPosition) {
 		this.rowType = type;
 		this.database = database;
 		this.table = table;
 		this.timestamp = timestamp;
 		this.xid = xid;
 		this.data = new HashMap<>();
+		this.nextPosition = nextPosition;
 		this.pkColumns = pkColumns;
 	}
 
