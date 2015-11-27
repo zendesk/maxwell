@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y openjdk-7-jre curl
 RUN mkdir /app
 WORKDIR /app
 
-RUN curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.14.5/maxwell-0.14.5.tar.gz \
+RUN curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.14.6/maxwell-0.14.6.tar.gz \
   | tar --strip-components=1 -zxvf -
 
 ADD REVISION /
