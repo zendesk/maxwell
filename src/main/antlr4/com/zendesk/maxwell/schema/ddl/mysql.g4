@@ -14,11 +14,8 @@ statement:
     | BEGIN
     ;
 
-
-
-
 create_database:
-	CREATE DATABASE if_not_exists? name (default_character_set | default_collate)*;
+	CREATE (DATABASE | SCHEMA) if_not_exists? name (default_character_set | default_collate)*;
 	
 create_table: 
     create_table_preamble 

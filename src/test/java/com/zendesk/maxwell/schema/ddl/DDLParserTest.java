@@ -361,6 +361,13 @@ public class DDLParserTest {
 	}
 
 	@Test
+	public void testCreateSchema() {
+		List<SchemaChange> changes = parse("CREATE SCHEMA if not exists `foo`");
+		DatabaseCreate create = (DatabaseCreate) changes.get(0);
+		assertThat(create.dbName, is("foo"));
+	}
+
+	@Test
 	public void testCommentSyntax() {
 		List<SchemaChange> changes = parse("CREATE DATABASE if not exists `foo` default character set='latin1' /* generate by server */");
 		assertThat(changes.size(), is(1));

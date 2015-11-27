@@ -47,4 +47,4 @@ client = Octokit::Client.new(netrc: true)
 release = client.create_release(REPO, 'v' + $version, name: release_title, body: release_body)
 client.upload_asset(release.url, BINDIR + "/../target/maxwell-#{$version}.tar.gz")
 
-
+do_system(BINDIR + "/../docs/push")
