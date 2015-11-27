@@ -94,8 +94,11 @@ public class MaxwellReplicator extends RunLoopProcess {
 			return;
 
 		if (!skipEvent(event)) {
-			producer.push(event);
+			for ( RowMap r : event.jsonMaps() )
+				producer.push(r);
 		}
+
+
 	}
 
 	@Override

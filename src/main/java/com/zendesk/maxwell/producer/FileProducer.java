@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import com.zendesk.maxwell.MaxwellAbstractRowsEvent;
 import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.RowMap;
 
 public class FileProducer extends AbstractProducer {
 	private final File file;
@@ -18,13 +19,11 @@ public class FileProducer extends AbstractProducer {
 	}
 
 	@Override
-	public void push(MaxwellAbstractRowsEvent e) throws Exception {
-		for (String json : e.toJSONStrings() ) {
-			this.fileWriter.write(json);
-			this.fileWriter.write('\n');
-			this.fileWriter.flush();
-		}
+	public void push(RowMap r) throws Exception {
+		this.fileWriter.write(r.toJSON());
+		this.fileWriter.write('\n');
+		this.fileWriter.flush();
 
-		context.setPosition(e);
+		context.setPosition(r);
 	}
 }

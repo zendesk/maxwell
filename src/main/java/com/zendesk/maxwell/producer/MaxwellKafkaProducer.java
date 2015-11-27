@@ -8,28 +8,28 @@ import java.util.Properties;
 import com.zendesk.maxwell.MaxwellAbstractRowsEvent;
 import com.zendesk.maxwell.MaxwellContext;
 
+import com.zendesk.maxwell.RowMap;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class KafkaCallback implements Callback {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
 	private final MaxwellContext context;
-	private final MaxwellAbstractRowsEvent event;
+	private final RowMap rowMap;
 	private final String json;
 	private final String key;
-	private final boolean lastRowInEvent;
 
-	public KafkaCallback(MaxwellAbstractRowsEvent e, MaxwellContext c, String key, String json, boolean lastRowInEvent) {
+	public KafkaCallback(RowMap r, MaxwellContext c, String key, String json) {
 		this.context = c;
-		this.event = e;
+		this.rowMap= r;
 		this.key = key;
 		this.json = json;
-		this.lastRowInEvent = lastRowInEvent;
 	}
 
 	@Override
@@ -41,11 +41,11 @@ class KafkaCallback implements Callback {
 				if ( LOGGER.isDebugEnabled()) {
 					LOGGER.debug("->  key:" + key + ", partition:" +md.partition() + ", offset:" + md.offset());
 					LOGGER.debug("   " + this.json);
-					LOGGER.debug("   " + event.getNextBinlogPosition());
+					LOGGER.debug("   " + rowMap.getPosition());
 					LOGGER.debug("");
 				}
-				if ( this.lastRowInEvent ) {
-					context.setPosition(event);
+				if ( rowMap.isTXCommit() ) {
+					context.setPosition(rowMap.getPosition());
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
@@ -59,7 +59,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		"compression.type", "gzip",
 		"metadata.fetch.timeout.ms", 5000
 	};
-	private final KafkaProducer<byte[], byte[]> kafka;
+	private final KafkaProducer<String, String> kafka;
 	private String topic;
 	private final int numPartitions;
 
@@ -72,30 +72,23 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		}
 
 		this.setDefaults(kafkaProperties);
-		this.kafka = new KafkaProducer<>(kafkaProperties, new ByteArraySerializer(), new ByteArraySerializer());
+		this.kafka = new KafkaProducer<>(kafkaProperties, new StringSerializer(), new StringSerializer());
 		this.numPartitions = kafka.partitionsFor(topic).size(); //returns 1 for new topics
 	}
 
-	public int kafkaPartition(MaxwellAbstractRowsEvent e){
-		String db = e.getDatabase().getName();
+	public int kafkaPartition(RowMap r) {
+		String db = r.getDatabase();
 		return Math.abs(db.hashCode() % numPartitions);
 	}
 
 	@Override
-	public void push(MaxwellAbstractRowsEvent e) throws Exception {
-		Iterator<String> i = e.toJSONStrings().iterator();
-		Iterator<String> j = e.getPKStrings().iterator();
+	public void push(RowMap r) throws Exception {
+		String key = r.pkToJson();
+		String value = r.toJSON();
+		ProducerRecord<String, String> record =
+				new ProducerRecord<>(topic, kafkaPartition(r), r.pkToJson(), r.toJSON());
 
-		while ( i.hasNext() && j.hasNext() ) {
-			String json = i.next();
-			String key = j.next();
-
-			ProducerRecord<byte[], byte[]> record =
-					new ProducerRecord<>(topic, kafkaPartition(e), key.getBytes(), json.getBytes());
-
-			kafka.send(record, new KafkaCallback(e, this.context, key, json, !i.hasNext()));
-		}
-
+		kafka.send(record, new KafkaCallback(r, this.context, key, value));
 	}
 
 	private void setDefaults(Properties p) {

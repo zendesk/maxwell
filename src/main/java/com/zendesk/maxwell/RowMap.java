@@ -52,7 +52,6 @@ public class RowMap {
 				}
 			};
 
-
 	public RowMap(String type, String database, String table, Long timestamp, Long xid, List<String> pkColumns, BinlogPosition nextPosition) {
 		this.rowType = type;
 		this.database = database;
@@ -150,11 +149,19 @@ public class RowMap {
 		this.data.put(key,  value);
 	}
 
+	public BinlogPosition getPosition() {
+		return nextPosition;
+	}
+
 	public void setTXCommit() {
 		this.txCommit = true;
 	}
 
-	public Set<String> dataKeySet() {
-		return this.data.keySet();
+	public boolean isTXCommit() {
+		return this.txCommit;
+	}
+
+	public String getDatabase() {
+		return database;
 	}
 }
