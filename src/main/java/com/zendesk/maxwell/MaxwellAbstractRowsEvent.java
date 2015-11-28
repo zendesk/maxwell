@@ -208,7 +208,6 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 					getDatabase().getName(),
 					getTable().getName(),
 					getHeader().getTimestamp() / 1000,
-					getXid(),
 					table.getPKList(),
 					this.getNextBinlogPosition());
 

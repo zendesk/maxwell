@@ -85,18 +85,15 @@ public class MaxwellReplicator extends RunLoopProcess {
 	}
 
 	public void work() throws Exception {
-		MaxwellAbstractRowsEvent event;
-
-		event = getEvent();
+		RowMap row = getRow();
 
 		context.ensurePositionThread();
 
-		if (event == null)
+		if (row == null)
 			return;
 
-		if (!skipEvent(event)) {
-			for ( RowMap r : event.jsonMaps() )
-				producer.push(r);
+		if (!skipRow(row)) {
+			producer.push(row);
 		}
 
 
@@ -109,8 +106,8 @@ public class MaxwellReplicator extends RunLoopProcess {
 	}
 
 
-	private boolean skipEvent(MaxwellAbstractRowsEvent event) {
-		return event.getTable().getDatabase().getName().equals("maxwell");
+	private boolean skipRow(RowMap row) {
+		return row.getDatabase().equals("maxwell");
 	}
 
 	private BinlogPosition eventBinlogPosition(AbstractBinlogEventV4 event) {
@@ -153,11 +150,11 @@ public class MaxwellReplicator extends RunLoopProcess {
 		return ew;
 	}
 
-	private DiskOverflowList<MaxwellAbstractRowsEvent> getTransactionEvents() throws Exception {
+	private RowMapBuffer getTransactionEvents() throws Exception {
 		BinlogEventV4 v4Event;
 		MaxwellAbstractRowsEvent event;
 
-		DiskOverflowList<MaxwellAbstractRowsEvent> list = new DiskOverflowList<>(MAX_TX_ELEMENTS);
+		RowMapBuffer list = new RowMapBuffer(MAX_TX_ELEMENTS);
 
 		// currently to satisfy the test interface, the contract is to return null
 		// if the queue is empty.  should probably just replace this with an optional timeout...
@@ -179,8 +176,10 @@ public class MaxwellReplicator extends RunLoopProcess {
 					rowEventsProcessed++;
 					event = processRowsEvent((AbstractRowEvent) v4Event);
 
-					if ( event.matchesFilter() )
-						list.add(event);
+					if ( event.matchesFilter() ) {
+						for ( RowMap r : event.jsonMaps() )
+							list.add(r);
+					}
 
 					setReplicatorPosition(event);
 
@@ -208,8 +207,8 @@ public class MaxwellReplicator extends RunLoopProcess {
 					break;
 				case MySQLConstants.XID_EVENT:
 					XidEvent xe = (XidEvent) v4Event;
-					for ( MaxwellAbstractRowsEvent e : list )
-						e.setXid(xe.getXid());
+
+					list.setXid(xe.getXid());
 
 					if ( !list.isEmpty() )
 						list.getLast().setTXCommit();
@@ -219,15 +218,15 @@ public class MaxwellReplicator extends RunLoopProcess {
 		}
 	}
 
-	private DiskOverflowList<MaxwellAbstractRowsEvent> txBuffer;
+	private RowMapBuffer rowBuffer;
 
-	public MaxwellAbstractRowsEvent getEvent() throws Exception {
+	public RowMap getRow() throws Exception {
 		BinlogEventV4 v4Event;
-		MaxwellAbstractRowsEvent event;
+		RowMap row;
 
 		while (true) {
-			if (txBuffer != null && !txBuffer.isEmpty()) {
-				return txBuffer.removeFirst();
+			if (rowBuffer != null && !rowBuffer.isEmpty()) {
+				return rowBuffer.removeFirst();
 			}
 
 			v4Event = pollV4EventFromQueue();
@@ -252,7 +251,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 				case MySQLConstants.QUERY_EVENT:
 					QueryEvent qe = (QueryEvent) v4Event;
 					if (qe.getSql().toString().equals("BEGIN"))
-						txBuffer = getTransactionEvents();
+						rowBuffer = getTransactionEvents();
 					else
 						processQueryEvent((QueryEvent) v4Event);
 					break;

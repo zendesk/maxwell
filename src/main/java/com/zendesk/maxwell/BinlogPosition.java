@@ -1,10 +1,11 @@
 package com.zendesk.maxwell;
 
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class BinlogPosition {
+public class BinlogPosition implements Serializable {
 	private final long offset;
 	private final String file;
 
