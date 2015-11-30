@@ -1,11 +1,10 @@
 package com.zendesk.maxwell.producer;
 
-import com.zendesk.maxwell.MaxwellAbstractRowsEvent;
 import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.RowMap;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 
 public class ProfilerProducer extends AbstractProducer {
 	private long count;
@@ -19,7 +18,7 @@ public class ProfilerProducer extends AbstractProducer {
 	}
 
 	@Override
-	public void push(MaxwellAbstractRowsEvent e) throws Exception {
+	public void push(RowMap r) throws Exception {
 		if ( this.nullOutputStream == null ) {
 			this.nullOutputStream = new FileOutputStream(new File("/dev/null"));
 		}
@@ -27,23 +26,21 @@ public class ProfilerProducer extends AbstractProducer {
 		if ( this.startTime == 0)
 			this.startTime = System.currentTimeMillis();
 
-		for ( String json : e.toJSONStrings() ) {
-			nullOutputStream.write(json.getBytes());
 
-			this.count++;
-			if ( this.count % 10000 == 0 ) {
-				long elapsed = System.currentTimeMillis() - this.startTime;
-				System.out.println("rows per second: " + (count * 1000) / elapsed);
-			}
+		nullOutputStream.write(r.toJSON().getBytes());
 
-			if ( this.count % 1000000 == 0 ) {
-				System.out.println("resetting statistics.");
-				this.count = 0;
-				this.startTime = System.currentTimeMillis();
-			}
-
+		this.count++;
+		if ( this.count % 10000 == 0 ) {
+			long elapsed = System.currentTimeMillis() - this.startTime;
+			System.out.println("rows per second: " + (count * 1000) / elapsed);
 		}
 
-		this.context.setPosition(e);
+		if ( this.count % 1000000 == 0 ) {
+			System.out.println("resetting statistics.");
+			this.count = 0;
+			this.startTime = System.currentTimeMillis();
+		}
+
+		this.context.setPosition(r);
 	}
 }

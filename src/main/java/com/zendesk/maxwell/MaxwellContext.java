@@ -80,11 +80,11 @@ public class MaxwellContext {
 		return this.initialPosition;
 	}
 
-	public void setPosition(MaxwellAbstractRowsEvent e) throws SQLException {
-		if ( e.isTXCommit() ) {
-			this.setPosition(e.getNextBinlogPosition());
-		}
+	public void setPosition(RowMap r) throws SQLException {
+		if ( r.isTXCommit() )
+			this.setPosition(r.getPosition());
 	}
+
 	public void setPosition(BinlogPosition position) throws SQLException {
 		this.getSchemaPosition().set(position);
 	}
@@ -142,4 +142,5 @@ public class MaxwellContext {
 	public boolean getReplayMode() {
 		return this.config.replayMode;
 	}
+
 }

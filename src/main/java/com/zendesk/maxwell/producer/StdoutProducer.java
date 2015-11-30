@@ -2,6 +2,7 @@ package com.zendesk.maxwell.producer;
 
 import com.zendesk.maxwell.MaxwellAbstractRowsEvent;
 import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.RowMap;
 import com.zendesk.maxwell.producer.AbstractProducer;
 
 public class StdoutProducer extends AbstractProducer {
@@ -10,10 +11,8 @@ public class StdoutProducer extends AbstractProducer {
 	}
 
 	@Override
-	public void push(MaxwellAbstractRowsEvent e) throws Exception {
-		for ( String json : e.toJSONStrings() ) {
-			System.out.println(json);
-		}
-		this.context.setPosition(e);
+	public void push(RowMap r) throws Exception {
+		System.out.println(r.toJSON());
+		this.context.setPosition(r);
 	}
 }
