@@ -178,11 +178,12 @@ public class ColumnDefTest {
 		assertThat(d.toSQL(date), is("'1979-11-01'"));
 	}
 
+	@Test
 	public void TestDateTime() throws ParseException {
 		ColumnDef d = build("datetime", true);
 		assertThat(d, instanceOf(DateTimeColumnDef.class));
 
-		assertTrue(d.matchesMysqlType(MySQLConstants.TYPE_DATE));
+		assertTrue(d.matchesMysqlType(MySQLConstants.TYPE_DATETIME));
 
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
