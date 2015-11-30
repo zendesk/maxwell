@@ -202,13 +202,14 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 		Object value;
 		for ( Iterator<Row> ri = filteredRows().iterator() ; ri.hasNext(); ) {
 			Row r = ri.next();
-			RowMap rowMap = new RowMap();
 
-			rowMap.setRowType(getType());
-			rowMap.setTable(getTable().getName());
-			rowMap.setDatabase(getDatabase().getName());
-			rowMap.setTimestamp(getHeader().getTimestamp() / 1000);
-			rowMap.setXid(getXid());
+			RowMap rowMap = new RowMap(
+					getType(),
+					getDatabase().getName(),
+					getTable().getName(),
+					getHeader().getTimestamp() / 1000,
+					getXid(),
+					table.getPKList());
 
 			// only set commit: true on the last row of the last event of the transaction
 			if ( this.txCommit && !ri.hasNext() )
@@ -266,30 +267,14 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 	public List<String> getPKStrings() {
 		ArrayList<String> list = new ArrayList<>();
 
-		for ( Row r : filteredRows()) {
-			list.add(new MaxwelllPKJSONObject(table.getDatabase().getName(),
-										      table.getName(),
-										      getPKMapForRow(r)).toString());
+		for ( RowMap r : jsonMaps() ) {
+			try {
+				list.add(r.pkToJson());
+			} catch (IOException e) {
+				LOGGER.error("Caught IOException while generating JSON: " + e, e);
+			}
 		}
 
 		return list;
-	}
-
-	private Map<String, Object> getPKMapForRow(Row r) {
-		HashMap<String, Object> map = new HashMap<>();
-
-		if ( table.getPKList().isEmpty() ) {
-			map.put("_uuid", java.util.UUID.randomUUID().toString());
-		}
-
-		for ( String pk : table.getPKList() ) {
-			int idx = table.findColumnIndex(pk);
-
-			Column column = r.getColumns().get(idx);
-			ColumnDef def = table.getColumnList().get(idx);
-
-			map.put(pk, def.asJSON(column.getValue()));
-		}
-		return map;
 	}
 }

@@ -1,6 +1,7 @@
 package com.zendesk.maxwell;
 
 import com.fasterxml.jackson.core.*;
+import com.google.code.or.common.glossary.Column;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,18 +10,20 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 public class RowMap {
 	static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
 
-	private String rowType;
-	private String database;
-	private String table;
-	private Long timestamp;
-	private Long xid;
+	private final String rowType;
+	private final String database;
+	private final String table;
+	private final Long timestamp;
+	private final Long xid;
 	private boolean txCommit;
 
 	private final HashMap<String, Object> data;
+	private final List<String> pkColumns;
 
 	private static final JsonFactory jsonFactory = new JsonFactory();
 
@@ -49,9 +52,41 @@ public class RowMap {
 			};
 
 
-	public RowMap() {
+	public RowMap(String type, String database, String table, Long timestamp, Long xid, List<String> pkColumns) {
+		this.rowType = type;
+		this.database = database;
+		this.table = table;
+		this.timestamp = timestamp;
+		this.xid = xid;
 		this.data = new HashMap<>();
+		this.pkColumns = pkColumns;
 	}
+
+	public String pkToJson() throws IOException {
+		JsonGenerator g = jsonGeneratorThreadLocal.get();
+
+		g.writeStartObject(); // start of row {
+
+		g.writeStringField("database", database);
+		g.writeStringField("table", table);
+
+		if (pkColumns.isEmpty()) {
+			g.writeStringField("_uuid", UUID.randomUUID().toString());
+		} else {
+			for (String pk : pkColumns) {
+				Object pkValue = null;
+				if ( data.containsKey(pk) )
+					pkValue = data.get(pk);
+
+				g.writeObjectField("pk." + pk, pkValue);
+			}
+		}
+
+		g.writeEndObject(); // end of 'data: { }'
+		g.flush();
+		return jsonFromStream();
+	}
+
 
 	public String toJSON() throws IOException {
 		JsonGenerator g = jsonGeneratorThreadLocal.get();
@@ -95,15 +130,14 @@ public class RowMap {
 		g.writeEndObject(); // end of row
 		g.flush();
 
+		return jsonFromStream();
+	}
+
+	private String jsonFromStream() {
 		ByteArrayOutputStream b = byteArrayThreadLocal.get();
 		String s = b.toString();
 		b.reset();
 		return s;
-	}
-
-
-	public void setRowType(String type) {
-		this.rowType = type;
 	}
 
 	public Object getData(String key) {
@@ -112,22 +146,6 @@ public class RowMap {
 
 	public void putData(String key, Object value) {
 		this.data.put(key,  value);
-	}
-
-	public void setTable(String name) {
-		this.table = name;
-	}
-
-	public void setDatabase(String name) {
-		this.database = name;
-	}
-
-	public void setTimestamp(Long l) {
-		this.timestamp = l;
-	}
-
-	public void setXid(Long xid) {
-		this.xid = xid;
 	}
 
 	public void setTXCommit() {
