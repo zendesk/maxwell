@@ -1,5 +1,19 @@
 # Maxwell changelog
 
+## [v0.14.6](https://github.com/zendesk/maxwell/releases/tag/v0.14.6): "It's about being American.  Sort of."
+
+
+- fix TIME column support
+- fix parsing on millisecond precision column defintions
+- fix CREATE SCHEMA parsing
+
+
+## [v0.14.5](https://github.com/zendesk/maxwell/releases/tag/v0.14.5): "false is the new true"
+
+
+- handle BOOLEAN columns with true/false defaults
+
+
 ## [v0.14.4](https://github.com/zendesk/maxwell/releases/tag/v0.14.4): "You'd think we'd be at 1.0 by now, wouldn't you?"
 
 - fixes parsing of "mysql comments" (`/*! .. */`)
