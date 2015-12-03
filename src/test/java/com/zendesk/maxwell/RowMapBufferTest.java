@@ -18,6 +18,7 @@ public class RowMapBufferTest {
 		buffer.add(new RowMap("insert", "foo", "bar", 3L, new ArrayList<String>(), new BinlogPosition(3, "mysql.1")));
 
 		assertThat(buffer.size(), is(3L));
+		assertThat(buffer.inMemorySize(), is(2L));
 
 		assertThat(buffer.removeFirst().getTimestamp(), is(1L));
 		assertThat(buffer.removeFirst().getTimestamp(), is(2L));

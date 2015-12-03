@@ -106,7 +106,6 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 
 	@Test
 	public void testExcludeDB() throws Exception {
-		MaxwellAbstractRowsEvent e;
 		List<RowMap> list;
 
 		MaxwellFilter filter = new MaxwellFilter();
@@ -119,7 +118,6 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 
 	@Test
 	public void testIncludeTable() throws Exception {
-		MaxwellAbstractRowsEvent e;
 		List<RowMap> list;
 
 		MaxwellFilter filter = new MaxwellFilter();
@@ -134,7 +132,6 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 
 	@Test
 	public void testExcludeTable() throws Exception {
-		MaxwellAbstractRowsEvent e;
 		List<RowMap> list;
 
 		MaxwellFilter filter = new MaxwellFilter();
@@ -157,7 +154,6 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 
 	@Test
 	public void testAlterTable() throws Exception {
-		MaxwellAbstractRowsEvent e;
 		List<RowMap> list;
 
 		list = getRowsForSQL(null, testAlterSQL, null);
