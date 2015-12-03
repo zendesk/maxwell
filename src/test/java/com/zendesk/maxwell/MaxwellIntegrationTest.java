@@ -21,26 +21,25 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 
 	@Test
 	public void testGetEvent() throws Exception {
-		List<MaxwellAbstractRowsEvent> list;
-		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
+		List<RowMap> list;
+		String input[] = {"insert into minimal set account_id = 1, text_field='hello'"};
 		list = getRowsForSQL(null, input);
 		assertThat(list.size(), is(1));
-		assertThat(list.get(0).toSQL(), is("REPLACE INTO `minimal` (`id`, `account_id`, `text_field`) VALUES (1,1,'hello')"));
 	}
 
 	@Test
 	public void testPrimaryKeyStrings() throws Exception {
-		List<MaxwellAbstractRowsEvent> list;
+		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
 		String expectedJSON = "{\"database\":\"shard_1\",\"table\":\"minimal\",\"pk.id\":1,\"pk.text_field\":\"hello\"}";
 		list = getRowsForSQL(null, input);
 		assertThat(list.size(), is(1));
-		assertThat(StringUtils.join(list.get(0).getPKStrings(), ""), is(expectedJSON));
+		assertThat(list.get(0).pkToJson(), is(expectedJSON));
 	}
 
 	@Test
 	public void testRowFilter() throws Exception {
-		List<MaxwellAbstractRowsEvent> list;
+		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id = 1000, text_field='hello'",
 						  "insert into minimal set account_id = 2000, text_field='goodbye'"};
 
@@ -48,14 +47,16 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 		assertThat(list.size(), is(2));
 
 		MaxwellFilter filter = new MaxwellFilter();
+
 		@SuppressWarnings("UnnecessaryBoxing")
 		Integer filterValue = new Integer(2000); // make sure we're using a different instance of the filter value
+
 		filter.addRowConstraint("account_id", filterValue);
 
 		list = getRowsForSQL(filter, input);
 		assertThat(list.size(), is(1));
 
-		RowMap jsonMap = list.get(0).jsonMaps().get(0);
+		RowMap jsonMap = list.get(0);
 
 		assertThat((Long) jsonMap.getData("account_id"), is(2000L));
 		assertThat((String) jsonMap.getData("text_field"), is("goodbye"));
@@ -63,7 +64,7 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 
 	@Test
 	public void testRowFilterOnNonExistentFields() throws Exception {
-		List<MaxwellAbstractRowsEvent> list;
+		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id = 1000, text_field='hello'",
 						  "insert into minimal set account_id = 2000, text_field='goodbye'"};
 
@@ -86,40 +87,38 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 
 	@Test
 	public void testIncludeDB() throws Exception {
-		MaxwellAbstractRowsEvent e;
-		List<MaxwellAbstractRowsEvent> list;
+		List<RowMap> list;
+		RowMap r;
 
 		MaxwellFilter filter = new MaxwellFilter();
 
 		list = getRowsForSQL(filter, insertSQL, createDBs);
 		assertThat(list.size(), is(2));
-		e = list.get(0);
-		assertThat(e.getTable().getName(), is("bars"));
+
+		r = list.get(0);
+		assertThat(r.getTable(), is("bars"));
 
 		filter.includeDatabase("shard_1");
 		list = getRowsForSQL(filter, insertSQL);
 		assertThat(list.size(), is(1));
-		assertThat(list.get(0).getTable().getName(), is("minimal"));
+		assertThat(list.get(0).getTable(), is("minimal"));
 	}
 
 	@Test
 	public void testExcludeDB() throws Exception {
-		MaxwellAbstractRowsEvent e;
-		List<MaxwellAbstractRowsEvent> list;
+		List<RowMap> list;
 
 		MaxwellFilter filter = new MaxwellFilter();
 		filter.excludeDatabase("shard_1");
 		list = getRowsForSQL(filter, insertSQL, createDBs);
 		assertThat(list.size(), is(1));
 
-		e = list.get(0);
-		assertThat(e.getTable().getName(), is("bars"));
+		assertThat(list.get(0).getTable(), is("bars"));
 	}
 
 	@Test
 	public void testIncludeTable() throws Exception {
-		MaxwellAbstractRowsEvent e;
-		List<MaxwellAbstractRowsEvent> list;
+		List<RowMap> list;
 
 		MaxwellFilter filter = new MaxwellFilter();
 		filter.includeTable("minimal");
@@ -128,14 +127,12 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 
 		assertThat(list.size(), is(1));
 
-		e = list.get(0);
-		assertThat(e.getTable().getName(), is("minimal"));
+		assertThat(list.get(0).getTable(), is("minimal"));
 	}
 
 	@Test
 	public void testExcludeTable() throws Exception {
-		MaxwellAbstractRowsEvent e;
-		List<MaxwellAbstractRowsEvent> list;
+		List<RowMap> list;
 
 		MaxwellFilter filter = new MaxwellFilter();
 		filter.excludeTable("minimal");
@@ -144,8 +141,7 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 
 		assertThat(list.size(), is(1));
 
-		e = list.get(0);
-		assertThat(e.getTable().getName(), is("bars"));
+		assertThat(list.get(0).getTable(), is("bars"));
 	}
 
 	String testAlterSQL[] = {
@@ -158,13 +154,24 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 
 	@Test
 	public void testAlterTable() throws Exception {
-		MaxwellAbstractRowsEvent e;
-		List<MaxwellAbstractRowsEvent> list;
+		List<RowMap> list;
 
 		list = getRowsForSQL(null, testAlterSQL, null);
 
-		e = list.get(0);
-		assertThat(e.getTable().getName(), is("minimal"));
+		assertThat(list.get(0).getTable(), is("minimal"));
+	}
+
+	@Test
+	public void testMyISAMCommit() throws Exception {
+		String sql[] = {
+				"CREATE TABLE myisam_test ( id int ) engine=myisam",
+				"insert into myisam_test (id) values (1), (2), (3)"
+
+		};
+
+		List<RowMap> list = getRowsForSQL(null, sql, null);
+		assertThat(list.size(), is(3));
+		assertThat(list.get(2).isTXCommit(), is(true));
 	}
 
 	String testTransactions[] = {
@@ -179,63 +186,59 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 
 	@Test
 	public void testTransactionID() throws Exception {
-		List<MaxwellAbstractRowsEvent> list;
+		List<RowMap> list;
 
 		try {
 			server.getConnection().setAutoCommit(false);
 			list = getRowsForSQL(null, testTransactions, null);
 
-			ArrayList<Map<String, Object>> objects = new ArrayList<>();
-			for (MaxwellAbstractRowsEvent e : list) {
-				for ( String s : e.toJSONStrings() ) {
-					Map<String, Object> m = new ObjectMapper().readValue(s, MAP_STRING_OBJECT_REF);
-					assertTrue(m.containsKey("xid"));
-					objects.add(m);
-				}
+			assertEquals(4, list.size());
+			for ( RowMap r : list ) {
+				assertNotNull(r.getXid());
 			}
-			assertEquals(4, objects.size());
 
-			assertEquals(objects.get(0).get("xid"), objects.get(1).get("xid"));
-			assertFalse(objects.get(0).containsKey("commit"));
-			assertTrue(objects.get(1).containsKey("commit"));
+			assertEquals(list.get(0).getXid(), list.get(1).getXid());
+			assertFalse(list.get(0).isTXCommit());
+			assertTrue(list.get(1).isTXCommit());
 
-			assertFalse(objects.get(2).containsKey("commit"));
-			assertTrue(objects.get(3).containsKey("commit"));
+			assertFalse(list.get(2).isTXCommit());
+			assertTrue(list.get(3).isTXCommit());
 		} finally {
 			server.getConnection().setAutoCommit(true);
 		}
 	}
 
 
-	private void runJSONTest(List<String> sql, List<Map<String, Object>> assertJSON) throws Exception {
+	private void runJSONTest(List<String> sql, List<Map<String, Object>> expectedJSON) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
 		List<Map<String, Object>> eventJSON = new ArrayList<>();
 		List<Map<String, Object>> matched = new ArrayList<>();
-		List<MaxwellAbstractRowsEvent> events = getRowsForSQL(null, sql.toArray(new String[sql.size()]));
+		List<RowMap> rows = getRowsForSQL(null, sql.toArray(new String[sql.size()]));
 
-		for ( MaxwellAbstractRowsEvent e : events ) {
-			for ( String s : e.toJSONStrings() ) {
-				Map<String, Object> r = mapper.readValue(s, MAP_STRING_OBJECT_REF);
-				r.remove("ts");
-				r.remove("xid");
-				r.remove("commit");
+		for ( RowMap r : rows ) {
+			String s = r.toJSON();
 
-				eventJSON.add(r);
+			Map<String, Object> outputMap = mapper.readValue(s, MAP_STRING_OBJECT_REF);
 
-				for ( Map<String, Object> b : assertJSON ) {
-					if ( r.equals(b) )
-						matched.add(b);
-				}
+			outputMap.remove("ts");
+			outputMap.remove("xid");
+			outputMap.remove("commit");
+
+			eventJSON.add(outputMap);
+
+			for ( Map<String, Object> b : expectedJSON ) {
+				if ( outputMap.equals(b) )
+					matched.add(b);
 			}
 		}
 
 		for ( Map j : matched ) {
-			assertJSON.remove(j);
+			expectedJSON.remove(j);
 		}
 
-		if ( assertJSON.size() > 0 ) {
+		if ( expectedJSON.size() > 0 ) {
 			String msg = "Did not find: \n" +
-						 StringUtils.join(assertJSON.iterator(), "\n") +
+						 StringUtils.join(expectedJSON.iterator(), "\n") +
 						 "\n\n in : " +
 						 StringUtils.join(eventJSON.iterator(), "\n");
 			assertThat(msg, false, is(true));

@@ -7,20 +7,22 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public class RowMap {
+public class RowMap implements Serializable {
 	static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
 
 	private final String rowType;
 	private final String database;
 	private final String table;
 	private final Long timestamp;
-	private final Long xid;
 	private final BinlogPosition nextPosition;
+
+	private Long xid;
 	private boolean txCommit;
 
 	private final HashMap<String, Object> data;
@@ -52,12 +54,11 @@ public class RowMap {
 				}
 			};
 
-	public RowMap(String type, String database, String table, Long timestamp, Long xid, List<String> pkColumns, BinlogPosition nextPosition) {
+	public RowMap(String type, String database, String table, Long timestamp, List<String> pkColumns, BinlogPosition nextPosition) {
 		this.rowType = type;
 		this.database = database;
 		this.table = table;
 		this.timestamp = timestamp;
-		this.xid = xid;
 		this.data = new HashMap<>();
 		this.nextPosition = nextPosition;
 		this.pkColumns = pkColumns;
@@ -153,6 +154,14 @@ public class RowMap {
 		return nextPosition;
 	}
 
+	public Long getXid() {
+		return xid;
+	}
+
+	public void setXid(Long xid) {
+		this.xid = xid;
+	}
+
 	public void setTXCommit() {
 		this.txCommit = true;
 	}
@@ -163,5 +172,13 @@ public class RowMap {
 
 	public String getDatabase() {
 		return database;
+	}
+
+	public String getTable() {
+		return table;
+	}
+
+	public Long getTimestamp() {
+		return timestamp;
 	}
 }
