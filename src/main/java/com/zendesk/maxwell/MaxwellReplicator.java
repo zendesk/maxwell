@@ -9,7 +9,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import com.google.code.or.binlog.impl.event.*;
-import com.zendesk.maxwell.util.ListWithDiskBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

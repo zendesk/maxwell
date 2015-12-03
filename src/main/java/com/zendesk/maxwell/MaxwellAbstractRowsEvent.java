@@ -2,16 +2,7 @@ package com.zendesk.maxwell;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.util.*;
-
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.code.or.common.glossary.column.BitColumn;
-import org.apache.commons.lang.StringUtils;
-import org.json.JSONObject;
 
 import com.google.code.or.binlog.BinlogEventV4Header;
 import com.google.code.or.binlog.impl.event.AbstractRowEvent;
@@ -34,9 +25,6 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 	private final MaxwellFilter filter;
 	private final AbstractRowEvent event;
 
-	private Long xid;
-	private boolean txCommit; // whether this row ends the transaction
-
 	protected final Table table;
 	protected final Database database;
 
@@ -46,8 +34,6 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 		this.header = e.getHeader();
 		this.table = table;
 		this.database = table.getDatabase();
-		this.txCommit = false;
-		this.xid = null;
 		this.filter = f;
 	}
 
@@ -94,23 +80,6 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 		else
 			return null;
 	}
-
-	public Long getXid() {
-		return xid;
-	}
-
-	public void setXid(Long xid) {
-		this.xid = xid;
-	}
-
-	public void setTXCommit() {
-		this.txCommit = true;
-	}
-
-	public boolean isTXCommit() {
-		return txCommit;
-	}
-
 
 	@Override
 	public String toString() {
@@ -211,10 +180,6 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 					table.getPKList(),
 					this.getNextBinlogPosition());
 
-			// only set commit: true on the last row of the last event of the transaction
-			if ( this.txCommit && !ri.hasNext() )
-				rowMap.setTXCommit();
-
 			Iterator<Column> colIter = r.getColumns().iterator();
 			Iterator<ColumnDef> defIter = table.getColumnList().iterator();
 
@@ -234,45 +199,6 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 				rowMap.putData(d.getName(), value);
 			}
 			list.add(rowMap);
-		}
-
-		return list;
-	}
-
-	private static final JsonFactory jsonFactory = new JsonFactory();
-
-	private JsonGenerator createJSONGenerator(ByteArrayOutputStream b) {
-		try {
-			return jsonFactory.createGenerator(b);
-		} catch (IOException e) {
-			LOGGER.error("Caught exception while creating JSON generator: " + e);
-		}
-		return null;
-	}
-
-	public List<String> toJSONStrings() {
-		ArrayList<String> list = new ArrayList<>();
-
-		for ( RowMap map : jsonMaps() ) {
-			try {
-				list.add(map.toJSON());
-			} catch ( IOException e ) {
-				LOGGER.error("Caught IOException while generating JSON: " + e, e);
-			}
-		}
-
-		return list;
-	}
-
-	public List<String> getPKStrings() {
-		ArrayList<String> list = new ArrayList<>();
-
-		for ( RowMap r : jsonMaps() ) {
-			try {
-				list.add(r.pkToJson());
-			} catch (IOException e) {
-				LOGGER.error("Caught IOException while generating JSON: " + e, e);
-			}
 		}
 
 		return list;
