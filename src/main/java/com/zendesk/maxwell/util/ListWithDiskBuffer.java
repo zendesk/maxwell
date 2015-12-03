@@ -44,7 +44,7 @@ public class ListWithDiskBuffer<T extends Serializable> {
 	}
 
 	public boolean isEmpty() {
-		return this.size() > 0;
+		return this.size() == 0;
 	}
 
 	public T getLast() {
