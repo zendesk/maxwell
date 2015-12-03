@@ -161,6 +161,19 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 		assertThat(list.get(0).getTable(), is("minimal"));
 	}
 
+	@Test
+	public void testMyISAMCommit() throws Exception {
+		String sql[] = {
+				"CREATE TABLE myisam_test ( id int ) engine=myisam",
+				"insert into myisam_test (id) values (1), (2), (3)"
+
+		};
+
+		List<RowMap> list = getRowsForSQL(null, sql, null);
+		assertThat(list.size(), is(3));
+		assertThat(list.get(2).isTXCommit(), is(true));
+	}
+
 	String testTransactions[] = {
 			"BEGIN",
 			"insert into minimal set account_id = 1, text_field = 's'",

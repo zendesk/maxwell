@@ -191,8 +191,8 @@ public class MaxwellReplicator extends RunLoopProcess {
 					String sql = qe.getSql().toString();
 
 					if ( sql.equals("COMMIT") ) {
-						// some storage engines(?) will output a "COMMIT" QUERY_EVENT instead of a XID_EVENT.
-						// not sure exactly how to trigger this.
+						// MyISAM will output a "COMMIT" QUERY_EVENT instead of a XID_EVENT.
+						// There's no transaction ID but we can still set "commit: true"
 						if ( !buffer.isEmpty() )
 							buffer.getLast().setTXCommit();
 
