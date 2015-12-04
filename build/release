@@ -7,9 +7,11 @@ REPO="zendesk/maxwell"
 
 BINDIR=File.dirname(__FILE__)
 
+CURRENT_REV=`#{BINDIR}/current_rev`
+
 if !( ($version = ARGV[0]) && $version =~ /\d+\.\d+\.\d+/)
   message =  "usage: #{$0} VERSION\n"
-  message += "  (current version is " + `#{BINDIR}/current_rev` + ")"
+  message += "  (current version is #{CURRENT_REV})"
   abort(message)
 end
 
@@ -29,6 +31,9 @@ v#{$version}, "pithy title here"
 
 - list changes
 EOL
+
+commit_template.write(`git lg v#{CURRENT_REV}`.split("\n").map { |l| "# " + l })
+
 commit_template.close
 
 do_system("git commit -av -t #{commit_template.path}")
