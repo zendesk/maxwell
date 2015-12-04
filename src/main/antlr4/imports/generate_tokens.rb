@@ -163,6 +163,15 @@ BOOL
 BOOLEAN
 TRUE
 FALSE
+
+ALGORITHM
+COPY
+INPLACE
+
+LOCK
+EXCLUSIVE
+NONE
+SHARED
 )
 
 tokens_allowed_in_names = []
