@@ -5,8 +5,10 @@ import java.util.List;
 
 import com.google.code.or.binlog.impl.event.UpdateRowsEvent;
 import com.google.code.or.binlog.impl.event.UpdateRowsEventV2;
+import com.google.code.or.common.glossary.Column;
 import com.google.code.or.common.glossary.Pair;
 import com.google.code.or.common.glossary.Row;
+import com.google.code.or.common.glossary.column.BitColumn;
 import com.zendesk.maxwell.schema.Table;
 
 public class MaxwellUpdateRowsEvent extends MaxwellAbstractRowsEvent {
@@ -31,11 +33,53 @@ public class MaxwellUpdateRowsEvent extends MaxwellAbstractRowsEvent {
 		this.event = e;
 	}
 
+	private boolean hasUnsetColumns() {
+		for ( int i = 0 ; i < event.getColumnCount().intValue(); i++ ) {
+			if ( !event.getUsedColumnsAfter().get(i) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+
 	@Override
 	public List<Row> getRows() {
 		ArrayList<Row> result = new ArrayList<Row>();
+
+		int nColumns = event.getColumnCount().intValue();
+		boolean hasUnset = hasUnsetColumns();
+
+		BitColumn usedBefore = event.getUsedColumnsBefore();
+		BitColumn usedAfter  = event.getUsedColumnsAfter();
+
 		for (Pair<Row> p : event.getRows()) {
-			result.add(p.getAfter());
+			if ( hasUnset ) {
+				int beforeIdx = 0;
+				int afterIdx = 0;
+				List<Column> beforeColumns = p.getBefore().getColumns();
+				List<Column> afterColumns  = p.getAfter().getColumns();
+
+				List<Column> c = new ArrayList<Column>(nColumns);
+
+				for ( int i = 0 ; i < nColumns; i++ ) {
+					if ( usedAfter.get(i) )
+						c.add(afterColumns.get(afterIdx));
+					else if ( usedBefore.get(i) )
+						c.add(beforeColumns.get(beforeIdx));
+					else
+						c.add(null);
+
+					if ( usedAfter.get(i) )
+						afterIdx++;
+
+					if ( usedBefore.get(i) )
+						beforeIdx++;
+				}
+				result.add(new Row(c));
+			} else {
+				result.add(p.getAfter());
+			}
 		}
 
 		return result;

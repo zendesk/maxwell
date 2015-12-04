@@ -67,12 +67,15 @@ public class MysqlIsolatedServer {
 		}
 
 
-		this.connection = DriverManager.getConnection("jdbc:mysql://127.0.0.1:" + port + "/mysql", "root", "");
+		resetConnection();
 		this.connection.createStatement().executeUpdate("GRANT REPLICATION SLAVE on *.* to 'maxwell'@'127.0.0.1' IDENTIFIED BY 'maxwell'");
 		this.connection.createStatement().executeUpdate("GRANT ALL on `maxwell`.* to 'maxwell'@'127.0.0.1'");
 		LOGGER.debug("booted at port " + this.port + ", outputting to file " + outputFile);
 	}
 
+	public void resetConnection() throws SQLException {
+		this.connection = DriverManager.getConnection("jdbc:mysql://127.0.0.1:" + port + "/mysql", "root", "");
+	}
 	public Connection getConnection() {
 		return connection;
 	}
