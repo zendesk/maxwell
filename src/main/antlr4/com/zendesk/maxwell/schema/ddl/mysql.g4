@@ -105,6 +105,8 @@ ignored_alter_specifications:
      
      because who cares.
      */
+     | ALGORITHM '='? algorithm_type
+     | LOCK '='? lock_type
     ; 
 
 index_definition:
@@ -141,7 +143,8 @@ index_column: name index_column_partial_def?;
 index_column_partial_def: '(' index_column_partial_length ')';
 index_column_partial_length: INTEGER_LITERAL+;
 
-
+algorithm_type: DEFAULT | INPLACE | COPY;
+lock_type: DEFAULT | NONE | SHARED | EXCLUSIVE;
 
 reference_definition: 
 	REFERENCES table_name 
