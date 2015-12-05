@@ -174,6 +174,9 @@ LOCK
 EXCLUSIVE
 NONE
 SHARED
+
+UPGRADE
+NAME
 )
 
 tokens_allowed_in_names = []
