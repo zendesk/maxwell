@@ -72,7 +72,6 @@ enum_value: STRING_LITERAL;
 
 charset_def: (character_set | collation)+;
 character_set: ((CHARACTER SET) | CHARSET) charset_name;
-collation: COLLATE '='? (IDENT | STRING_LITERAL | QUOTED_IDENT);
 
 nullability: (NOT NULL | NULL);
 default_value: DEFAULT (literal | NULL | CURRENT_TIMESTAMP | TRUE | FALSE);
