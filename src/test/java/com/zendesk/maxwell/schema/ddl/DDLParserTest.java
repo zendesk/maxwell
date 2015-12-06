@@ -207,7 +207,10 @@ public class DDLParserTest {
 			"ALTER DEFINER=foo VIEW",
 			"CREATE VIEW foo",
 			"CREATE TRIGGER foo",
-			"CREATE DEFINER=`dba`@`localhost` TRIGGER `pt_osc_zd_shard485_prod_cf_values_del` ... "
+			"CREATE DEFINER=`dba`@`localhost` TRIGGER `pt_osc_zd_shard485_prod_cf_values_del` ... ",
+			"ALTER ALGORITHM = UNDEFINED DEFINER='view'@'localhost' SQL SECURITY DEFINER VIEW `fooview` as (SELECT * FROM FOO)",
+			"CREATE OR REPLACE ALGORITHM = MERGE DEFINER = `maxwell`@`localhost` SQL SECURITY INVOKER "
+				+ "VIEW view_name [(alskdj lk jdlfka j dlkjd lk"
 		};
 
 		for ( String s : testSQL ) {
