@@ -134,14 +134,16 @@ index_type: USING (BTREE | HASH);
 index_options: 
 	( KEY_BLOCK_SIZE '=' INTEGER_LITERAL )
 	| index_type
-	| WITH PARSER name // no idea if 'parser_name' is an id.  seems like a decent assumption.
-	; 
+	| WITH PARSER name
+	| COMMENT STRING_LITERAL
+	;
 	
 index_column_list: '(' index_columns ')';
 index_columns: index_column (',' index_column )*; 
-index_column: name index_column_partial_def?;
+index_column: name index_column_partial_def? index_column_asc_or_desc?;
 index_column_partial_def: '(' index_column_partial_length ')';
 index_column_partial_length: INTEGER_LITERAL+;
+index_column_asc_or_desc: ASC | DESC;
 
 algorithm_type: DEFAULT | INPLACE | COPY;
 lock_type: DEFAULT | NONE | SHARED | EXCLUSIVE;
