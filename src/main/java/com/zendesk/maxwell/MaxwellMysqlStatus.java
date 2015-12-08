@@ -41,6 +41,8 @@ public class MaxwellMysqlStatus {
 
 
 	private void ensureRowImageFormat() throws SQLException, MaxwellCompatibilityError {
+		if ( true ) return;
+
 		String rowImageFormat = getVariableState("binlog_row_image", false);
 		if ( rowImageFormat == null ) // only present in mysql 5.6+
 			return;

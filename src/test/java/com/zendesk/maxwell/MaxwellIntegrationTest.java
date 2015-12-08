@@ -208,6 +208,31 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 		}
 	}
 
+	@Test
+	public void testRunMinimalBinlog() throws Exception {
+		if ( server.getVersion().equals("5.5") )
+			return;
+
+		String input[] = {
+				"USE shard_1",
+				"insert into minimal set account_id = 1000, text_field='hello'",
+				"update minimal set text_field = 'goodbye' where account_id = 1000",
+				"delete from minimal where account_id = 1000"
+		};
+
+		try {
+			server.getConnection().createStatement().execute("set global binlog_row_image='minimal'");
+			server.resetConnection(); // only new connections pick up the binlog setting
+
+			List<RowMap> list = getRowsForSQL(null, input, null);
+
+			assert(list.get(2) != null);
+		} finally {
+			server.getConnection().createStatement().execute("set global binlog_row_image='full'");
+			server.resetConnection();
+		}
+	}
+
 
 	private void runJSONTest(List<String> sql, List<Map<String, Object>> expectedJSON) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();

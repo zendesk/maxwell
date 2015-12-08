@@ -169,6 +169,7 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 	public List<RowMap> jsonMaps() {
 		ArrayList<RowMap> list = new ArrayList<>();
 		Object value;
+
 		for ( Iterator<Row> ri = filteredRows().iterator() ; ri.hasNext(); ) {
 			Row r = ri.next();
 
@@ -187,7 +188,9 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 				Column c = colIter.next();
 				ColumnDef d = defIter.next();
 
-				if (c instanceof DatetimeColumn) {
+				if ( c == null ) {
+					continue;
+				} else if (c instanceof DatetimeColumn) {
 					value = ((DatetimeColumn) c).getLongValue();
 				} else {
 					value = c.getValue();
