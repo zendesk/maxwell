@@ -176,6 +176,12 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 				this.getNextBinlogPosition());
 	}
 
+	protected Object valueForJson(Column c) {
+		if (c instanceof DatetimeColumn)
+			return ((DatetimeColumn) c).getLongValue();
+		return c.getValue();
+	}
+
 	public List<RowMap> jsonMaps() {
 		ArrayList<RowMap> list = new ArrayList<>();
 		Object value;
@@ -191,11 +197,7 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 				Column c = colIter.next();
 				ColumnDef d = defIter.next();
 
-				if (c instanceof DatetimeColumn) {
-					value = ((DatetimeColumn) c).getLongValue();
-				} else {
-					value = c.getValue();
-				}
+				value = valueForJson(c);
 
 				if ( value != null )
 					value = d.asJSON(value);

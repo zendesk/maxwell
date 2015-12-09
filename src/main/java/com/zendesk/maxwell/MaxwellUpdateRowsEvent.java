@@ -92,17 +92,9 @@ public class MaxwellUpdateRowsEvent extends MaxwellAbstractRowsEvent {
 				ColumnDef d = defIter.next();
 				Column b = befIter.next();
 
-				if ( a instanceof DatetimeColumn) {
-					avalue = ((DatetimeColumn) a).getLongValue();
-				} else {
-					avalue = a.getValue();
-				}
+				avalue = valueForJson(afterColumn);
 
-				if ( b instanceof DatetimeColumn) {
-					bvalue = ((DatetimeColumn) b).getLongValue();
-				} else {
-					bvalue = b.getValue();
-				}
+				bvalue = valueForJson(beforeColumn);
 
 				if (avalue != null) {
 					avalue = d.asJSON(avalue);
