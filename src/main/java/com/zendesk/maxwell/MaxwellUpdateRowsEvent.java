@@ -88,25 +88,25 @@ public class MaxwellUpdateRowsEvent extends MaxwellAbstractRowsEvent {
 			Iterator<Column> befIter = before.getColumns().iterator();
 			Iterator<ColumnDef> defIter = table.getColumnList().iterator();
 			while ( aftIter.hasNext() && defIter.hasNext() && befIter.hasNext() ) {
-				Column a = aftIter.next();
-				ColumnDef d = defIter.next();
-				Column b = befIter.next();
+				Column afterColumn = aftIter.next();
+				ColumnDef columnDef = defIter.next();
+				Column beforeColumn = befIter.next();
 
 				avalue = valueForJson(afterColumn);
 
 				bvalue = valueForJson(beforeColumn);
 
 				if (avalue != null) {
-					avalue = d.asJSON(avalue);
-					if ( !avalue.equals(d.asJSON(bvalue)) ) {
-						bvalue = bvalue != null ? d.asJSON(bvalue) : bvalue;
-						rowMap.putOldData(d.getName(), bvalue);
+					avalue = columnDef.asJSON(avalue);
+					if ( !avalue.equals(columnDef.asJSON(bvalue)) ) {
+						bvalue = bvalue != null ? columnDef.asJSON(bvalue) : bvalue;
+						rowMap.putOldData(columnDef.getName(), bvalue);
 					}
 				} else if (bvalue != null) {
-					bvalue = d.asJSON(bvalue);
-					rowMap.putOldData(d.getName(), bvalue);
+					bvalue = columnDef.asJSON(bvalue);
+					rowMap.putOldData(columnDef.getName(), bvalue);
 				}
-				rowMap.putData(d.getName(), avalue);
+				rowMap.putData(columnDef.getName(), avalue);
 			}
 			list.add(rowMap);
 		}
