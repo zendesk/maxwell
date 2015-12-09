@@ -82,13 +82,7 @@ public class MaxwellUpdateRowsEvent extends MaxwellAbstractRowsEvent {
 			Row after = rowpair.getAfter();
 			Row before = rowpair.getBefore();
 
-			RowMap rowMap = new RowMap(
-					getType(),
-					getDatabase().getName(),
-					getTable().getName(),
-					getHeader().getTimestamp() / 1000,
-					table.getPKList(),
-					this.getNextBinlogPosition());
+			RowMap rowMap = buildRowMap();
 
 			Iterator<Column> aftIter = after.getColumns().iterator();
 			Iterator<Column> befIter = before.getColumns().iterator();

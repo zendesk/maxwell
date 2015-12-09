@@ -166,19 +166,23 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 		return sql.toString();
 	}
 
+	protected RowMap buildRowMap() {
+		return new RowMap(
+				getType(),
+				getDatabase().getName(),
+				getTable().getName(),
+				getHeader().getTimestamp() / 1000,
+				table.getPKList(),
+				this.getNextBinlogPosition());
+	}
+
 	public List<RowMap> jsonMaps() {
 		ArrayList<RowMap> list = new ArrayList<>();
 		Object value;
 		for ( Iterator<Row> ri = filteredRows().iterator() ; ri.hasNext(); ) {
 			Row r = ri.next();
 
-			RowMap rowMap = new RowMap(
-					getType(),
-					getDatabase().getName(),
-					getTable().getName(),
-					getHeader().getTimestamp() / 1000,
-					table.getPKList(),
-					this.getNextBinlogPosition());
+			RowMap rowMap = buildRowMap();
 
 			Iterator<Column> colIter = r.getColumns().iterator();
 			Iterator<ColumnDef> defIter = table.getColumnList().iterator();
