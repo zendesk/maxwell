@@ -26,6 +26,7 @@ public class RowMap implements Serializable {
 	private boolean txCommit;
 
 	private final HashMap<String, Object> data;
+	private final HashMap<String, Object> oldData;
 	private final List<String> pkColumns;
 
 	private static final JsonFactory jsonFactory = new JsonFactory();
@@ -60,6 +61,7 @@ public class RowMap implements Serializable {
 		this.table = table;
 		this.timestamp = timestamp;
 		this.data = new HashMap<>();
+		this.oldData = new HashMap<>();
 		this.nextPosition = nextPosition;
 		this.pkColumns = pkColumns;
 	}
@@ -128,7 +130,31 @@ public class RowMap implements Serializable {
 				g.writeObjectField(key, data);
 			}
 		}
+
 		g.writeEndObject(); // end of 'data: { }'
+
+		if ( !this.oldData.isEmpty()) {
+			g.writeObjectFieldStart("old"); // start of old: {
+			for (String key : this.oldData.keySet()) {
+				Object data = this.oldData.get(key);
+				//if (data == null)
+				//	continue;
+
+				if (data instanceof List) {
+					List<String> stringList = (List<String>) data;
+
+					g.writeArrayFieldStart(key);
+					for (String s : stringList) {
+						g.writeString(s);
+					}
+					g.writeEndArray();
+				} else {
+					g.writeObjectField(key, data);
+				}
+			}
+			g.writeEndObject(); // end of 'old: { }'
+		}
+
 		g.writeEndObject(); // end of row
 		g.flush();
 
@@ -148,6 +174,14 @@ public class RowMap implements Serializable {
 
 	public void putData(String key, Object value) {
 		this.data.put(key,  value);
+	}
+
+	public Object getOldData(String key) {
+		return this.oldData.get(key);
+	}
+
+	public void putOldData(String key, Object value) {
+		this.oldData.put(key,  value);
 	}
 
 	public BinlogPosition getPosition() {
