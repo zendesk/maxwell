@@ -2,12 +2,16 @@ package com.zendesk.maxwell;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.*;
 
 import com.google.code.or.binlog.impl.event.UpdateRowsEvent;
 import com.google.code.or.binlog.impl.event.UpdateRowsEventV2;
+import com.google.code.or.common.glossary.Column;
 import com.google.code.or.common.glossary.Pair;
 import com.google.code.or.common.glossary.Row;
+import com.google.code.or.common.glossary.column.DatetimeColumn;
 import com.zendesk.maxwell.schema.Table;
+import com.zendesk.maxwell.schema.columndef.ColumnDef;
 
 public class MaxwellUpdateRowsEvent extends MaxwellAbstractRowsEvent {
 	private final UpdateRowsEvent event;
@@ -66,5 +70,61 @@ public class MaxwellUpdateRowsEvent extends MaxwellAbstractRowsEvent {
 		}
 		performedBeforeAndAfterFilter = true;
 		return filteredRowsBeforeAndAfter;
+	}
+
+	@Override
+	public List<RowMap> jsonMaps() {
+		ArrayList<RowMap> list = new ArrayList<>();
+		Object avalue;
+		Object bvalue;
+		for (Iterator<Pair<Row>> p = filteredRowsBeforeAndAfter().iterator(); p.hasNext(); ) {
+			Pair<Row> rowpair = p.next();
+			Row after = rowpair.getAfter();
+			Row before = rowpair.getBefore();
+
+			RowMap rowMap = new RowMap(
+					getType(),
+					getDatabase().getName(),
+					getTable().getName(),
+					getHeader().getTimestamp() / 1000,
+					table.getPKList(),
+					this.getNextBinlogPosition());
+
+			Iterator<Column> aftIter = after.getColumns().iterator();
+			Iterator<Column> befIter = before.getColumns().iterator();
+			Iterator<ColumnDef> defIter = table.getColumnList().iterator();
+			while ( aftIter.hasNext() && defIter.hasNext() && befIter.hasNext() ) {
+				Column a = aftIter.next();
+				ColumnDef d = defIter.next();
+				Column b = befIter.next();
+
+				if ( a instanceof DatetimeColumn) {
+					avalue = ((DatetimeColumn) a).getLongValue();
+				} else {
+					avalue = a.getValue();
+				}
+
+				if ( b instanceof DatetimeColumn) {
+					bvalue = ((DatetimeColumn) b).getLongValue();
+				} else {
+					bvalue = b.getValue();
+				}
+
+				if (avalue != null) {
+					avalue = d.asJSON(avalue);
+					if ( !avalue.equals(d.asJSON(bvalue)) ) {
+						bvalue = bvalue != null ? d.asJSON(bvalue) : bvalue;
+						rowMap.putOldData(d.getName(), bvalue);
+					}
+				} else if (bvalue != null) {
+					bvalue = d.asJSON(bvalue);
+					rowMap.putOldData(d.getName(), bvalue);
+				}
+				rowMap.putData(d.getName(), avalue);
+			}
+			list.add(rowMap);
+		}
+
+		return list;
 	}
 }
