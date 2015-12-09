@@ -77,10 +77,9 @@ public class MaxwellUpdateRowsEvent extends MaxwellAbstractRowsEvent {
 		ArrayList<RowMap> list = new ArrayList<>();
 		Object avalue;
 		Object bvalue;
-		for (Iterator<Pair<Row>> p = filteredRowsBeforeAndAfter().iterator(); p.hasNext(); ) {
-			Pair<Row> rowpair = p.next();
-			Row after = rowpair.getAfter();
-			Row before = rowpair.getBefore();
+		for (Pair<Row> p : filteredRowsBeforeAndAfter() ) {
+			Row after = p.getAfter();
+			Row before = p.getBefore();
 
 			RowMap rowMap = buildRowMap();
 
