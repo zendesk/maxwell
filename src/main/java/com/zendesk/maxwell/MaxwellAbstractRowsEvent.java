@@ -22,11 +22,11 @@ import org.slf4j.LoggerFactory;
 
 public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellAbstractRowsEvent.class);
-	private final MaxwellFilter filter;
 	private final AbstractRowEvent event;
 
 	protected final Table table;
 	protected final Database database;
+	protected final MaxwellFilter filter;
 
 	public MaxwellAbstractRowsEvent(AbstractRowEvent e, Table table, MaxwellFilter f) {
 		this.tableId = e.getTableId();
