@@ -36,7 +36,7 @@ public class ListWithDiskBuffer<T extends Serializable> {
 			}
 
 			if ( elementsInFile == 0 )
-				LOGGER.info("Overflowed in-memory buffer, spilling over into " + file);
+				LOGGER.debug("Overflowed in-memory buffer, spilling over into " + file);
 
 			os.writeObject(this.list.removeFirst());
 			elementsInFile++;
