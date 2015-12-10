@@ -37,6 +37,7 @@ public abstract class SchemaChange {
 		SQL_BLACKLIST.add(Pattern.compile("^(CREATE|DROP|RENAME)\\s+USER", Pattern.CASE_INSENSITIVE));
 
 		SQL_BLACKLIST.add(Pattern.compile("^TRUNCATE\\s+", Pattern.CASE_INSENSITIVE));
+		SQL_BLACKLIST.add(Pattern.compile("^OPTIMIZE\\s+", Pattern.CASE_INSENSITIVE));
 	}
 
 	private static boolean matchesBlacklist(String sql) {
