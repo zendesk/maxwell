@@ -75,8 +75,8 @@ public class MaxwellUpdateRowsEvent extends MaxwellAbstractRowsEvent {
 	@Override
 	public List<RowMap> jsonMaps() {
 		ArrayList<RowMap> list = new ArrayList<>();
-		Object avalue;
-		Object bvalue;
+		Object afterValue;
+		Object beforeValue;
 		for (Pair<Row> p : filteredRowsBeforeAndAfter() ) {
 			Row after = p.getAfter();
 			Row before = p.getBefore();
@@ -91,21 +91,28 @@ public class MaxwellUpdateRowsEvent extends MaxwellAbstractRowsEvent {
 				ColumnDef columnDef = defIter.next();
 				Column beforeColumn = befIter.next();
 
-				avalue = valueForJson(afterColumn);
-
-				bvalue = valueForJson(beforeColumn);
-
-				if (avalue != null) {
-					avalue = columnDef.asJSON(avalue);
-					if ( !avalue.equals(columnDef.asJSON(bvalue)) ) {
-						bvalue = bvalue != null ? columnDef.asJSON(bvalue) : bvalue;
-						rowMap.putOldData(columnDef.getName(), bvalue);
-					}
-				} else if (bvalue != null) {
-					bvalue = columnDef.asJSON(bvalue);
-					rowMap.putOldData(columnDef.getName(), bvalue);
+				afterValue = valueForJson(afterColumn);
+				if ( afterValue != null ) {
+					afterValue = columnDef.asJSON(afterValue);
 				}
-				rowMap.putData(columnDef.getName(), avalue);
+
+				beforeValue = valueForJson(beforeColumn);
+				if ( beforeValue != null) {
+					beforeValue = columnDef.asJSON(beforeValue);
+				}
+
+				if ( afterValue != null && beforeValue != null ) {
+					//afterValue = columnDef.asJSON(afterValue);
+					if ( !afterValue.equals(beforeValue) ) {//afterValue is different from beforeValue so log beforeValue
+						rowMap.putOldData(columnDef.getName(), beforeValue);
+					}
+				} else if ( beforeValue != null ) {//beforeValue is not null afterValue is null so log beforeValue
+					rowMap.putOldData(columnDef.getName(), beforeValue);
+				} else if ( afterValue != null ) {//beforeValue is null afterValue is not null so log beforeValue
+					rowMap.putOldData(columnDef.getName(), beforeValue);
+				}
+
+				rowMap.putData(columnDef.getName(), afterValue);
 			}
 			list.add(rowMap);
 		}
