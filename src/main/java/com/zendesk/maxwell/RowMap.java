@@ -74,6 +74,9 @@ public class RowMap implements Serializable {
 		g.writeStringField("database", database);
 		g.writeStringField("table", table);
 
+		if ( this.txCommit )
+			g.writeBooleanField("commit", true);
+
 		if (pkColumns.isEmpty()) {
 			g.writeStringField("_uuid", UUID.randomUUID().toString());
 		} else {
