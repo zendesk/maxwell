@@ -101,14 +101,7 @@ public class MaxwellUpdateRowsEvent extends MaxwellAbstractRowsEvent {
 					beforeValue = columnDef.asJSON(beforeValue);
 				}
 
-				if ( afterValue != null && beforeValue != null ) {
-					//afterValue = columnDef.asJSON(afterValue);
-					if ( !afterValue.equals(beforeValue) ) {//afterValue is different from beforeValue so log beforeValue
-						rowMap.putOldData(columnDef.getName(), beforeValue);
-					}
-				} else if ( beforeValue != null ) {//beforeValue is not null afterValue is null so log beforeValue
-					rowMap.putOldData(columnDef.getName(), beforeValue);
-				} else if ( afterValue != null ) {//beforeValue is null afterValue is not null so log beforeValue
+				if ( !Objects.equals(afterValue,beforeValue) ) {//afterValue is different from beforeValue so log beforeValue
 					rowMap.putOldData(columnDef.getName(), beforeValue);
 				}
 
