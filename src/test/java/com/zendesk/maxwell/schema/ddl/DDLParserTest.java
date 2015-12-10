@@ -207,7 +207,10 @@ public class DDLParserTest {
 			"ALTER DEFINER=foo VIEW",
 			"CREATE VIEW foo",
 			"CREATE TRIGGER foo",
-			"CREATE DEFINER=`dba`@`localhost` TRIGGER `pt_osc_zd_shard485_prod_cf_values_del` ... "
+			"CREATE DEFINER=`dba`@`localhost` TRIGGER `pt_osc_zd_shard485_prod_cf_values_del` ... ",
+			"CREATE EVENT foo ",
+			"DROP EVENT foo bar"
+
 		};
 
 		for ( String s : testSQL ) {
