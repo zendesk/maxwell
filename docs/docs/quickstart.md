@@ -30,9 +30,9 @@ mysql> GRANT ALL on maxwell.* to 'maxwell'@'localhost';
 You'll need a version 7 of a JVM.
 
 ```
-curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.15.0-RC1/maxwell-0.15.0-RC1.tar.gz \
+curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.16.0-RC1/maxwell-0.16.0-RC1.tar.gz \
        | tar zxvf -
-cd maxwell-0.15.0-RC1
+cd maxwell-0.16.0-RC1
 ```
 
 
