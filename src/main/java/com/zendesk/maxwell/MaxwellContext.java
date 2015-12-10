@@ -173,6 +173,18 @@ public class MaxwellContext {
 		}
 	}
 
+	public AbstractBootstrapper getBootstrapper() throws IOException {
+		switch ( this.config.bootstrapperType ) {
+			case "async":
+				return new AsynchronousBootstrapper(this);
+			case "sync":
+				return new SynchronousBootstrapper(this);
+			default:
+				return new NoOpBootstrapper(this);
+		}
+
+	}
+
 	public MaxwellFilter buildFilter() throws MaxwellInvalidFilterException {
 		return new MaxwellFilter(config.includeDatabases,
 			config.excludeDatabases,

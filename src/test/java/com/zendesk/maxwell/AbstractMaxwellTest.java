@@ -6,11 +6,13 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Schema;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -22,6 +24,7 @@ import com.zendesk.maxwell.schema.SchemaStore;
 
 public class AbstractMaxwellTest {
 	protected static MysqlIsolatedServer server;
+	protected Schema schema;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -34,6 +37,15 @@ public class AbstractMaxwellTest {
 	@AfterClass
 	public static void teardownServer() {
 		server.shutDown();
+	}
+
+	public static String removeTimeStampsAndIds(String json) {
+		json = json.replaceAll("\"ts\":[0-9]+", "\"ts\":0");
+		json = json.replaceAll("\"started_at\":\"[^\"]+\"", "\"started_at\":\"\"");
+		json = json.replaceAll("\"completed_at\":\"[^\"]+\"", "\"completed_at\":\"\"");
+		json = json.replaceAll("\"id\":[0-9]+", "\"id\":0");
+		json = json.replaceAll("\"xid\":[0-9]+", "\"xid\":0");
+		return json;
 	}
 
 	public String getSQLDir() {
@@ -92,6 +104,8 @@ public class AbstractMaxwellTest {
 		config.maxwellMysql.user = "maxwell";
 		config.maxwellMysql.password = "maxwell";
 
+		config.bootstrapperBatchFetchSize = 64;
+
 		config.initPosition = p;
 
 		return new MaxwellContext(config);
@@ -105,7 +119,7 @@ public class AbstractMaxwellTest {
 		return buildContext(null);
 	}
 
-	protected List<RowMap>getRowsForSQL(MysqlIsolatedServer mysql, MaxwellFilter filter, String queries[], String before[]) throws Exception {
+	protected List<RowMap>getRowsForSQL(MysqlIsolatedServer mysql, MaxwellFilter filter, String queries[], String before[], final boolean excludeMaxwellRows) throws Exception {
 		BinlogPosition start = BinlogPosition.capture(mysql.getConnection());
 		MaxwellContext context = buildContext(mysql.getPort(), null);
 		SchemaCapturer capturer = new SchemaCapturer(mysql.getConnection(), context.getCaseSensitivity());
@@ -121,21 +135,40 @@ public class AbstractMaxwellTest {
 
 		BinlogPosition endPosition = BinlogPosition.capture(mysql.getConnection());
 
-		TestMaxwellReplicator p = new TestMaxwellReplicator(initialSchema,  null, context, start, endPosition);
-
-		p.setFilter(filter);
-
-
 		final ArrayList<RowMap> list = new ArrayList<>();
 
-		p.getEvents(new RowConsumer() {
+		AbstractProducer producer = new AbstractProducer(context) {
 			@Override
-			void consume(RowMap r) {
-				if (!r.getDatabase().equals("maxwell")) {
+			public void push(RowMap r) {
+				if ( !excludeMaxwellRows || !r.getDatabase().equals("maxwell") ) {
 					list.add(r);
 				}
 			}
-		});
+		};
+
+		AsynchronousBootstrapper bootstrapper = new AsynchronousBootstrapper(context) {
+			@Override
+			protected SynchronousBootstrapper getSynchronousBootstrapper() {
+				return new SynchronousBootstrapper(context) {
+					@Override
+					protected Connection getConnection() throws SQLException {
+						return server.getNewConnection();
+					}
+				};
+			}
+		};
+
+		TestMaxwellReplicator p = new TestMaxwellReplicator(initialSchema, producer, bootstrapper, context, start, endPosition);
+
+		p.setFilter(filter);
+
+		p.getEvents(producer);
+
+		schema = p.schema;
+
+		p.stopLoop();
+
+		bootstrapper.join();
 
 		context.terminate();
 
@@ -143,11 +176,11 @@ public class AbstractMaxwellTest {
 	}
 
 	protected List<RowMap>getRowsForSQL(MaxwellFilter filter, String queries[], String before[]) throws Exception {
-		return getRowsForSQL(server, filter, queries, before);
+		return getRowsForSQL(server, filter, queries, before, true);
 	}
 
 	protected List<RowMap>getRowsForSQL(MaxwellFilter filter, String queries[]) throws Exception {
-		return getRowsForSQL(filter, queries, null);
+		return getRowsForSQL(server, filter, queries, null, true);
 	}
 
 	@After

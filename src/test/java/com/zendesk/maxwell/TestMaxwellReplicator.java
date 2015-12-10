@@ -15,23 +15,24 @@ public class TestMaxwellReplicator extends MaxwellReplicator {
 
 	public TestMaxwellReplicator(Schema currentSchema,
 								 AbstractProducer producer,
+								 AbstractBootstrapper bootstrapper,
 								 MaxwellContext ctx,
 								 BinlogPosition start,
 								 BinlogPosition stop) throws Exception {
-		super(currentSchema, producer, ctx, start);
+		super(currentSchema, producer, bootstrapper, ctx, start);
 		LOGGER.debug("TestMaxwellReplicator initialized from " + start + " to " + stop);
 		this.stopAt = stop;
 	}
 
-	public void getEvents(RowConsumer consumer) throws Exception {
+	public void getEvents(AbstractProducer producer) throws Exception {
 		int max_tries = 100;
 		shouldStop = false;
 
 		this.replicator.start();
 
 		while ( true ) {
-			RowMap r = getRow();
-			if (r == null) {
+			RowMap row = getRow();
+			if (row == null) {
 				if ( shouldStop ) {
 					hardStop();
 					return;
@@ -45,7 +46,11 @@ public class TestMaxwellReplicator extends MaxwellReplicator {
 					return;
 				}
 			}
-			consumer.consume(r);
+			if ( !bootstrapper.shouldSkip(row) && !isMaxwellRow(row) ) {
+				producer.push(row);
+			} else {
+				bootstrapper.work(row, schema, this.producer, replicator);
+			}
 		}
 	}
 

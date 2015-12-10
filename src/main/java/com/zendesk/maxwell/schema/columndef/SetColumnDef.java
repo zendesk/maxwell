@@ -1,6 +1,9 @@
 package com.zendesk.maxwell.schema.columndef;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -25,6 +28,11 @@ public class SetColumnDef extends ColumnDef {
 	@Override
 	public Object asJSON(Object value) {
 		return asList(value);
+	}
+
+	@Override
+	public Object getObjectFromResultSet(ResultSet resultSet, int columnIndex) throws SQLException {
+		return Arrays.asList(resultSet.getString(columnIndex).split(","));
 	}
 
 	private ArrayList<String> asList(Object value) {

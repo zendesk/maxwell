@@ -1,5 +1,8 @@
 package com.zendesk.maxwell.schema.columndef;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 public abstract class ColumnDef {
 	protected final String tableName;
 	protected final String name;
@@ -189,4 +192,5 @@ public abstract class ColumnDef {
 		return enumValues;
 	}
 
+	public abstract Object getObjectFromResultSet(ResultSet resultSet, int columnIndex) throws SQLException;
 }

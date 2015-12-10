@@ -2,6 +2,8 @@ package com.zendesk.maxwell.schema.columndef;
 
 import com.google.code.or.common.util.MySQLConstants;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 
 public class IntColumnDef extends ColumnDef {
@@ -76,6 +78,11 @@ public class IntColumnDef extends ColumnDef {
 	@Override
 	public boolean getSigned() {
 		return signed;
+	}
+
+	@Override
+	public Object getObjectFromResultSet(ResultSet resultSet, int columnIndex) throws SQLException {
+		return resultSet.getInt(columnIndex);
 	}
 
 }

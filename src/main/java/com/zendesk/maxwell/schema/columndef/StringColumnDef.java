@@ -1,6 +1,8 @@
 package com.zendesk.maxwell.schema.columndef;
 
 import java.nio.charset.Charset;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
@@ -63,6 +65,15 @@ public class StringColumnDef extends ColumnDef {
 			return Base64.encodeBase64String(b);
 		} else {
 			return new String(b, charsetForEncoding());
+		}
+	}
+
+	@Override
+	public Object getObjectFromResultSet(ResultSet resultSet, int columnIndex) throws SQLException {
+		if ( encoding.equals("binary") ) {
+			return Base64.encodeBase64String(resultSet.getBytes(columnIndex));
+		} else {
+			return resultSet.getString(columnIndex);
 		}
 	}
 

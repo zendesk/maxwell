@@ -1,8 +1,9 @@
 package com.zendesk.maxwell.schema.columndef;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.TimeZone;
 
 import com.google.code.or.common.util.MySQLConstants;
 
@@ -12,12 +13,10 @@ public class DateColumnDef extends ColumnDef {
 	}
 
 	private static SimpleDateFormat dateFormatter;
-	private static final TimeZone tz = TimeZone.getTimeZone("UTC");
 
 	protected static SimpleDateFormat getDateFormatter() {
 		if ( dateFormatter == null ) {
 			dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
-			dateFormatter.setTimeZone(tz);
 		}
 		return dateFormatter;
 	}
@@ -40,5 +39,10 @@ public class DateColumnDef extends ColumnDef {
 	@Override
 	public Object asJSON(Object value) {
 		return formatDate(value);
+	}
+
+	@Override
+	public Object getObjectFromResultSet(ResultSet resultSet, int columnIndex) throws SQLException {
+		return resultSet.getString(columnIndex);
 	}
 }
