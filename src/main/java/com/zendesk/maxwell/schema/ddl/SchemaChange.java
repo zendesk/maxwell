@@ -36,6 +36,7 @@ public abstract class SchemaChange {
 		SQL_BLACKLIST.add(Pattern.compile("^SET\\s+PASSWORD", Pattern.CASE_INSENSITIVE));
 		SQL_BLACKLIST.add(Pattern.compile("^(CREATE|DROP|RENAME)\\s+USER", Pattern.CASE_INSENSITIVE));
 
+		SQL_BLACKLIST.add(Pattern.compile("^CREATE\\s+TEMPORARY\\s+TABLE", Pattern.CASE_INSENSITIVE));
 		SQL_BLACKLIST.add(Pattern.compile("^TRUNCATE\\s+", Pattern.CASE_INSENSITIVE));
 	}
 
