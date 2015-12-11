@@ -37,6 +37,9 @@ table_creation_option:
 	| creation_pack_keys
 	| creation_password
 	| creation_row_format
+	| creation_stats_auto_recalc
+	| creation_stats_persistent
+	| creation_stats_sample_pages
 	| creation_tablespace
 	| creation_union;
 
@@ -59,5 +62,8 @@ creation_min_rows: MIN_ROWS '='? integer;
 creation_pack_keys: PACK_KEYS '='? (integer | DEFAULT);
 creation_password: PASSWORD '='? string_literal;
 creation_row_format: ROW_FORMAT '='? (DEFAULT | DEFAULT | DYNAMIC | FIXED | COMPRESSED | REDUNDANT | COMPACT);
+creation_stats_auto_recalc: STATS_AUTO_RECALC '='? (DEFAULT | INTEGER_LITERAL);
+creation_stats_persistent: STATS_PERSISTENT '='? (DEFAULT | INTEGER_LITERAL);
+creation_stats_sample_pages: STATS_SAMPLE_PAGES '='? INTEGER_LITERAL;
 creation_tablespace: TABLESPACE string (STORAGE (DISK | MEMORY | DEFAULT))?;
 creation_union: UNION '=' name (',' name)*;
