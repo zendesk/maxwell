@@ -194,7 +194,10 @@ public class DDLParserTest {
 			"alter table t add column `foo` int,  ALGORITHM=copy",
 			"alter table t add column `foo` int, algorithm copy",
 			"alter table t add column `foo` int, algorithm copy, lock shared",
-			"alter table t add column `foo` int, algorithm copy, lock=exclusive"
+			"alter table t add column `foo` int, algorithm copy, lock=exclusive",
+			"create table t (id int) engine=memory",
+			"CREATE TABLE `t1` (id int, UNIQUE `int` (`int`))",
+			"create table t2 (b varchar(10) not null unique) engine=MyISAM"
 		};
 
 		for ( String s : testSQL ) {
@@ -211,8 +214,9 @@ public class DDLParserTest {
 			"CREATE VIEW foo",
 			"CREATE TRIGGER foo",
 			"CREATE DEFINER=`dba`@`localhost` TRIGGER `pt_osc_zd_shard485_prod_cf_values_del` ... ",
-			"ALTER ALGORITHM = UNDEFINED DEFINER='view'@'localhost' SQL SECURITY DEFINER VIEW `fooview` as (SELECT * FROM FOO)",
-			"CREATE OR REPLACE ALGORITHM = MERGE DEFINER = `maxwell`@`localhost` SQL SECURITY INVOKER "
+			"CREATE EVENT foo ",
+			"DROP EVENT foo bar",
+			"ALTER ALGORITHM = UNDEFINED DEFINER='view'@'localhost' SQL SECURITY DEFINER VIEW `fooview` as (SELECT * FROM FOO)"
 				+ "VIEW view_name [(alskdj lk jdlfka j dlkjd lk",
 			"CREATE TEMPORARY TABLE 172898_16841_transmem SELECT t.* FROM map.transmem AS t"
 		};

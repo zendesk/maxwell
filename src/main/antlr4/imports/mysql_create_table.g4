@@ -41,7 +41,7 @@ table_creation_option:
 	| creation_union;
 
 
-creation_engine: ENGINE '='? string;
+creation_engine: ENGINE '='? (string | MEMORY);
 creation_auto_increment: AUTO_INCREMENT '='? integer;
 creation_avg_row_length: AVG_ROW_LENGTH '='? integer;
 creation_character_set: DEFAULT? ((CHARACTER SET) | CHARSET) '='? charset_name;
