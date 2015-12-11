@@ -207,7 +207,8 @@ public class DDLParserTest {
 			"ALTER DEFINER=foo VIEW",
 			"CREATE VIEW foo",
 			"CREATE TRIGGER foo",
-			"CREATE DEFINER=`dba`@`localhost` TRIGGER `pt_osc_zd_shard485_prod_cf_values_del` ... "
+			"CREATE DEFINER=`dba`@`localhost` TRIGGER `pt_osc_zd_shard485_prod_cf_values_del` ... ",
+			"CREATE TEMPORARY TABLE 172898_16841_transmem SELECT t.* FROM map.transmem AS t"
 		};
 
 		for ( String s : testSQL ) {
