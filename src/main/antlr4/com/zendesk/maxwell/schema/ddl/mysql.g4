@@ -3,6 +3,7 @@ grammar mysql;
 import mysql_literal_tokens,
        mysql_idents,
        mysql_alter_table,
+       mysql_alter_database
        mysql_create_database,
        mysql_create_table,
        mysql_drop,
@@ -15,6 +16,7 @@ parse: statement?
 statement:
     alter_table
   | alter_view
+  | alter_database
   | create_database
   | create_table
   | create_view

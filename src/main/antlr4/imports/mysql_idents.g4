@@ -18,6 +18,8 @@ integer: INTEGER_LITERAL;
 charset_name: (IDENT | STRING_LITERAL | QUOTED_IDENT);
 
 default_character_set: DEFAULT? charset_token '='? charset_name collation?;
+default_collation: DEFAULT? collation;
+
 // it's not documented, but either "charset 'utf8'" or "character set 'utf8'" is valid.
 charset_token: (CHARSET | (CHARACTER SET));
 collation: COLLATE '='? (IDENT | STRING_LITERAL | QUOTED_IDENT);

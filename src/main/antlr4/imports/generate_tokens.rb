@@ -186,6 +186,9 @@ CURRENT_USER
 SQL
 SECURITY
 INVOKER
+
+UPGRADE
+NAME
 )
 
 tokens_allowed_in_names = []
