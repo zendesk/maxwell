@@ -31,14 +31,19 @@ public class ListWithDiskBuffer<T extends Serializable> {
 			if ( file == null ) {
 				file = File.createTempFile("maxwell", "events");
 				file.deleteOnExit();
-				os = new ObjectOutputStream(new FileOutputStream(file));
-				is = new ObjectInputStream(new FileInputStream(file));
+				os = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
 			}
 
 			if ( elementsInFile == 0 )
 				LOGGER.debug("Overflowed in-memory buffer, spilling over into " + file);
 
-			os.writeObject(this.list.removeFirst());
+			os.writeUnshared(this.list.removeFirst());
+
+			if ( is == null && os != null ) {
+				os.flush();
+				is = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
+			}
+
 			elementsInFile++;
 		}
 	}
@@ -53,7 +58,7 @@ public class ListWithDiskBuffer<T extends Serializable> {
 
 	public T removeFirst() throws IOException, ClassNotFoundException {
 		if ( elementsInFile > 0 && is != null ) {
-			T element = (T) is.readObject();
+			T element = (T) is.readUnshared();
 			elementsInFile--;
 			return element;
 		} else {

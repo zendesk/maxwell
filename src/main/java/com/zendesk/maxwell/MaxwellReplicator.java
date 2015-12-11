@@ -155,11 +155,11 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 		RowMapBuffer buffer = new RowMapBuffer(MAX_TX_ELEMENTS);
 
-		// currently to satisfy the test interface, the contract is to return null
-		// if the queue is empty.  should probably just replace this with an optional timeout...
-
 		while ( true ) {
 			v4Event = pollV4EventFromQueue();
+
+			// currently to satisfy the test interface, the contract is to return null
+			// if the queue is empty.  should probably just replace this with an optional timeout...
 			if (v4Event == null) {
 				ensureReplicatorThread();
 				continue;
