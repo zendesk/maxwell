@@ -193,7 +193,8 @@ public class DDLParserTest {
 			"alter table t add column `foo` int, algorithm copy, lock shared",
 			"alter table t add column `foo` int, algorithm copy, lock=exclusive",
 			"create table t (id int) engine=memory",
-			"CREATE TABLE `t1` (id int, UNIQUE `int` (`int`))"
+			"CREATE TABLE `t1` (id int, UNIQUE `int` (`int`))",
+			"create table t2 (b varchar(10) not null unique) engine=MyISAM"
 		};
 
 		for ( String s : testSQL ) {
