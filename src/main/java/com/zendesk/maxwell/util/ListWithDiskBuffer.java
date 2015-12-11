@@ -39,11 +39,6 @@ public class ListWithDiskBuffer<T extends Serializable> {
 
 			os.writeUnshared(this.list.removeFirst());
 
-			if ( is == null && os != null ) {
-				os.flush();
-				is = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
-			}
-
 			elementsInFile++;
 		}
 	}
@@ -57,7 +52,12 @@ public class ListWithDiskBuffer<T extends Serializable> {
 	}
 
 	public T removeFirst() throws IOException, ClassNotFoundException {
-		if ( elementsInFile > 0 && is != null ) {
+		if ( elementsInFile > 0 ) {
+			if ( is == null ) {
+				os.flush();
+				is = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
+			}
+
 			T element = (T) is.readUnshared();
 			elementsInFile--;
 			return element;
