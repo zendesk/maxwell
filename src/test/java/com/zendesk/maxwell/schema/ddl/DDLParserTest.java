@@ -163,6 +163,9 @@ public class DDLParserTest {
 	@Test
 	public void testParsingSomeAlters() {
 		String testSQL[] = {
+			"alter database d DEFAULT CHARACTER SET = 'utf8'",
+			"alter database d UPGRADE DATA DIRECTORY NAME",
+			"alter schema d COLLATE foo",
 			"alter table t add index `foo` using btree (`a`, `cd`) key_block_size=123",
 			"alter table t add key bar (d)",
 			"alter table t add constraint `foo` primary key using btree (id)",

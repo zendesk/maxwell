@@ -8,7 +8,7 @@ import com.zendesk.maxwell.schema.columndef.ColumnDef;
 public class Database {
 	private final String name;
 	private final List<Table> tableList;
-	private final String encoding;
+	private String encoding;
 
 	public Database(String name, List<Table> tables, String encoding) {
 		this.name = name;
@@ -71,6 +71,10 @@ public class Database {
 		}
 	}
 
+	public void setEncoding(String encoding) {
+		this.encoding = encoding;
+	}
+
 	public String getName() {
 		return name;
 	}
@@ -100,4 +104,5 @@ public class Database {
 	public Table buildTable(String name, String encoding) {
 		return buildTable(name, encoding, new ArrayList<ColumnDef>(), null);
 	}
+
 }
