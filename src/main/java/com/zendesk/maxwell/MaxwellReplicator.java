@@ -3,7 +3,6 @@ package com.zendesk.maxwell;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -24,6 +23,7 @@ import com.zendesk.maxwell.schema.ddl.SchemaChange;
 import com.zendesk.maxwell.schema.ddl.SchemaSyncError;
 
 public class MaxwellReplicator extends RunLoopProcess {
+	private final long MAX_TX_ELEMENTS = 10000;
 	String filePath, fileName;
 	private long rowEventsProcessed;
 	private Schema schema;
@@ -84,18 +84,15 @@ public class MaxwellReplicator extends RunLoopProcess {
 	}
 
 	public void work() throws Exception {
-		MaxwellAbstractRowsEvent event;
-
-		event = getEvent();
+		RowMap row = getRow();
 
 		context.ensurePositionThread();
 
-		if (event == null)
+		if (row == null)
 			return;
 
-		if (!skipEvent(event)) {
-			for ( RowMap r : event.jsonMaps() )
-				producer.push(r);
+		if (!skipRow(row)) {
+			producer.push(row);
 		}
 
 
@@ -108,8 +105,8 @@ public class MaxwellReplicator extends RunLoopProcess {
 	}
 
 
-	private boolean skipEvent(MaxwellAbstractRowsEvent event) {
-		return event.getTable().getDatabase().getName().equals("maxwell");
+	private boolean skipRow(RowMap row) {
+		return row.getDatabase().equals("maxwell");
 	}
 
 	private BinlogPosition eventBinlogPosition(AbstractBinlogEventV4 event) {
@@ -152,11 +149,11 @@ public class MaxwellReplicator extends RunLoopProcess {
 		return ew;
 	}
 
-	private LinkedList<MaxwellAbstractRowsEvent> getTransactionEvents() throws Exception {
+	private RowMapBuffer getTransactionRows() throws Exception {
 		BinlogEventV4 v4Event;
 		MaxwellAbstractRowsEvent event;
 
-		LinkedList<MaxwellAbstractRowsEvent> list = new LinkedList<>();
+		RowMapBuffer buffer = new RowMapBuffer(MAX_TX_ELEMENTS);
 
 		// currently to satisfy the test interface, the contract is to return null
 		// if the queue is empty.  should probably just replace this with an optional timeout...
@@ -178,8 +175,10 @@ public class MaxwellReplicator extends RunLoopProcess {
 					rowEventsProcessed++;
 					event = processRowsEvent((AbstractRowEvent) v4Event);
 
-					if ( event.matchesFilter() )
-						list.add(event);
+					if ( event.matchesFilter() ) {
+						for ( RowMap r : event.jsonMaps() )
+							buffer.add(r);
+					}
 
 					setReplicatorPosition(event);
 
@@ -192,12 +191,12 @@ public class MaxwellReplicator extends RunLoopProcess {
 					String sql = qe.getSql().toString();
 
 					if ( sql.equals("COMMIT") ) {
-						// some storage engines(?) will output a "COMMIT" QUERY_EVENT instead of a XID_EVENT.
-						// not sure exactly how to trigger this.
-						if ( !list.isEmpty() )
-							list.getLast().setTXCommit();
+						// MyISAM will output a "COMMIT" QUERY_EVENT instead of a XID_EVENT.
+						// There's no transaction ID but we can still set "commit: true"
+						if ( !buffer.isEmpty() )
+							buffer.getLast().setTXCommit();
 
-						return list;
+						return buffer;
 					} else if ( sql.toUpperCase().startsWith("SAVEPOINT")) {
 						LOGGER.info("Ignoring SAVEPOINT in transaction: " + qe);
 					} else {
@@ -207,26 +206,25 @@ public class MaxwellReplicator extends RunLoopProcess {
 					break;
 				case MySQLConstants.XID_EVENT:
 					XidEvent xe = (XidEvent) v4Event;
-					for ( MaxwellAbstractRowsEvent e : list )
-						e.setXid(xe.getXid());
 
-					if ( !list.isEmpty() )
-						list.getLast().setTXCommit();
+					buffer.setXid(xe.getXid());
 
-					return list;
+					if ( !buffer.isEmpty() )
+						buffer.getLast().setTXCommit();
+
+					return buffer;
 			}
 		}
 	}
 
-	private LinkedList<MaxwellAbstractRowsEvent> txBuffer;
+	private RowMapBuffer rowBuffer;
 
-	public MaxwellAbstractRowsEvent getEvent() throws Exception {
+	public RowMap getRow() throws Exception {
 		BinlogEventV4 v4Event;
-		MaxwellAbstractRowsEvent event;
 
 		while (true) {
-			if (txBuffer != null && !txBuffer.isEmpty()) {
-				return txBuffer.removeFirst();
+			if (rowBuffer != null && !rowBuffer.isEmpty()) {
+				return rowBuffer.removeFirst();
 			}
 
 			v4Event = pollV4EventFromQueue();
@@ -251,7 +249,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 				case MySQLConstants.QUERY_EVENT:
 					QueryEvent qe = (QueryEvent) v4Event;
 					if (qe.getSql().toString().equals("BEGIN"))
-						txBuffer = getTransactionEvents();
+						rowBuffer = getTransactionRows();
 					else
 						processQueryEvent((QueryEvent) v4Event);
 					break;
@@ -311,22 +309,6 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 	public void setSchema(Schema schema) {
 		this.schema = schema;
-	}
-
-	public long getRowEventsProcessed() {
-		return rowEventsProcessed;
-	}
-
-	public void resetRowEventsProcessed() {
-		rowEventsProcessed = 0;
-	}
-
-	public String getFilePath() {
-		return filePath;
-	}
-
-	public String getFileName() {
-		return fileName;
 	}
 
 	public void setFilter(MaxwellFilter filter) {

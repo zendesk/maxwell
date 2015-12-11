@@ -39,4 +39,10 @@
       <outputDirectory>docs</outputDirectory>
     </fileSet>
   </fileSets>
+  <files>
+    <file>
+      <source>src/main/resources/log4j2.xml</source>
+      <outputDirectory>/</outputDirectory>
+    </file>
+  </files>
 </assembly>

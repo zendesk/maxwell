@@ -90,7 +90,7 @@ public class AbstractMaxwellTest {
 		return new MaxwellContext(config);
 	}
 
-	protected List<MaxwellAbstractRowsEvent>getRowsForSQL(MaxwellFilter filter, String queries[], String before[]) throws Exception {
+	protected List<RowMap>getRowsForSQL(MaxwellFilter filter, String queries[], String before[]) throws Exception {
 		BinlogPosition start = BinlogPosition.capture(server.getConnection());
 		SchemaCapturer capturer = new SchemaCapturer(server.getConnection());
 
@@ -111,14 +111,13 @@ public class AbstractMaxwellTest {
 		p.setFilter(filter);
 
 
-		final ArrayList<MaxwellAbstractRowsEvent> list = new ArrayList<>();
-		MaxwellAbstractRowsEvent e;
+		final ArrayList<RowMap> list = new ArrayList<>();
 
-		p.getEvents(new EventConsumer() {
+		p.getEvents(new RowConsumer() {
 			@Override
-			void consume(MaxwellAbstractRowsEvent e) {
-				if (!e.getTable().getDatabase().getName().equals("maxwell")) {
-					list.add(e);
+			void consume(RowMap r) {
+				if (!r.getDatabase().equals("maxwell")) {
+					list.add(r);
 				}
 			}
 		});
@@ -128,7 +127,7 @@ public class AbstractMaxwellTest {
 		return list;
 	}
 
-	protected List<MaxwellAbstractRowsEvent>getRowsForSQL(MaxwellFilter filter, String queries[]) throws Exception {
+	protected List<RowMap>getRowsForSQL(MaxwellFilter filter, String queries[]) throws Exception {
 		return getRowsForSQL(filter, queries, null);
 	}
 

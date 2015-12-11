@@ -23,15 +23,20 @@ public class TestMaxwellReplicator extends MaxwellReplicator {
 		this.stopAt = stop;
 	}
 
-	public void getEvents(EventConsumer c) throws Exception {
+	public void getEvents(RowConsumer consumer) throws Exception {
 		int max_tries = 100;
 		shouldStop = false;
 
 		this.replicator.start();
 
-		while ( !shouldStop ) {
-			MaxwellAbstractRowsEvent e = getEvent();
-			if (e == null) {
+		while ( true ) {
+			RowMap r = getRow();
+			if (r == null) {
+				if ( shouldStop ) {
+					hardStop();
+					return;
+				}
+
 				if (max_tries > 0) {
 					max_tries--;
 					continue;
@@ -40,10 +45,8 @@ public class TestMaxwellReplicator extends MaxwellReplicator {
 					return;
 				}
 			}
-			c.consume(e);
+			consumer.consume(r);
 		}
-
-		hardStop();
 	}
 
 	private void hardStop() throws Exception {

@@ -7,23 +7,26 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public class RowMap {
+public class RowMap implements Serializable {
 	static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
 
 	private final String rowType;
 	private final String database;
 	private final String table;
 	private final Long timestamp;
-	private final Long xid;
 	private final BinlogPosition nextPosition;
+
+	private Long xid;
 	private boolean txCommit;
 
 	private final HashMap<String, Object> data;
+	private final HashMap<String, Object> oldData;
 	private final List<String> pkColumns;
 
 	private static final JsonFactory jsonFactory = new JsonFactory();
@@ -52,13 +55,13 @@ public class RowMap {
 				}
 			};
 
-	public RowMap(String type, String database, String table, Long timestamp, Long xid, List<String> pkColumns, BinlogPosition nextPosition) {
+	public RowMap(String type, String database, String table, Long timestamp, List<String> pkColumns, BinlogPosition nextPosition) {
 		this.rowType = type;
 		this.database = database;
 		this.table = table;
 		this.timestamp = timestamp;
-		this.xid = xid;
 		this.data = new HashMap<>();
+		this.oldData = new HashMap<>();
 		this.nextPosition = nextPosition;
 		this.pkColumns = pkColumns;
 	}
@@ -88,6 +91,33 @@ public class RowMap {
 		return jsonFromStream();
 	}
 
+	private void writeMapToJSON(String jsonMapName, HashMap<String, Object> data, boolean includeNullField) throws IOException {
+		JsonGenerator generator = jsonGeneratorThreadLocal.get();
+		generator.writeObjectFieldStart(jsonMapName); // start of jsonMapName: {
+
+		/* TODO: maintain ordering of fields in column order */
+		for ( String key: data.keySet() ) {
+			Object value = data.get(key);
+
+			if ( value == null && !includeNullField)
+				continue;
+
+			if ( value instanceof List) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
+				List<String> stringList = (List<String>) value;
+
+				generator.writeArrayFieldStart(key);
+				for ( String s : stringList )  {
+					generator.writeString(s);
+				}
+				generator.writeEndArray();
+			} else {
+				generator.writeObjectField(key, value);
+			}
+		}
+
+		generator.writeEndObject(); // end of 'jsonMapName: { }'
+		return;
+	}
 
 	public String toJSON() throws IOException {
 		JsonGenerator g = jsonGeneratorThreadLocal.get();
@@ -106,28 +136,12 @@ public class RowMap {
 		if ( this.txCommit )
 			g.writeBooleanField("commit", true);
 
-		g.writeObjectFieldStart("data"); // start of data: {
+		writeMapToJSON("data", this.data, false);
 
-		/* TODO: maintain ordering of fields in column order */
-		for ( String key: this.data.keySet() ) {
-			Object data = this.data.get(key);
-
-			if ( data == null )
-				continue;
-
-			if ( data instanceof List) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
-				List<String> stringList = (List<String>) data;
-
-				g.writeArrayFieldStart(key);
-				for ( String s : stringList )  {
-					g.writeString(s);
-				}
-				g.writeEndArray();
-			} else {
-				g.writeObjectField(key, data);
-			}
+		if ( !this.oldData.isEmpty()) {
+			writeMapToJSON("old", this.oldData, true);
 		}
-		g.writeEndObject(); // end of 'data: { }'
+
 		g.writeEndObject(); // end of row
 		g.flush();
 
@@ -149,8 +163,24 @@ public class RowMap {
 		this.data.put(key,  value);
 	}
 
+	public Object getOldData(String key) {
+		return this.oldData.get(key);
+	}
+
+	public void putOldData(String key, Object value) {
+		this.oldData.put(key,  value);
+	}
+
 	public BinlogPosition getPosition() {
 		return nextPosition;
+	}
+
+	public Long getXid() {
+		return xid;
+	}
+
+	public void setXid(Long xid) {
+		this.xid = xid;
 	}
 
 	public void setTXCommit() {
@@ -163,5 +193,13 @@ public class RowMap {
 
 	public String getDatabase() {
 		return database;
+	}
+
+	public String getTable() {
+		return table;
+	}
+
+	public Long getTimestamp() {
+		return timestamp;
 	}
 }

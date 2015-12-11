@@ -1,5 +1,22 @@
-grammar table_creation_options;
-import mysql_literal_tokens, mysql_idents;
+grammar mysql_create_table;
+
+import mysql_literal_tokens, mysql_idents, mysql_indices;
+
+create_table:
+  create_table_preamble
+  (
+    create_specifications ( table_creation_option ','? )*
+    | create_like_tbl
+  );
+
+create_table_preamble: CREATE TEMPORARY? TABLE if_not_exists? table_name;
+create_specifications: '(' create_specification (',' create_specification)* ')';
+
+create_specification:
+  column_definition
+  | index_definition;
+
+create_like_tbl: LIKE table_name;
 
 table_creation_option:
 	  creation_engine

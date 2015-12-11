@@ -169,6 +169,9 @@ public class DDLParserTest {
 			"alter table t add primary key (`id`)",
 			"alter table t add constraint unique key (`id`)",
 			"alter table t add fulltext key (`id`)",
+			"alter table t add index foo (a desc)",
+			"alter table t add index foo (a asc)",
+			"alter table t add index foo (a) COMMENT 'hello world'",
 			"alter table t add spatial key (`id`)",
 			"alter table t alter column `foo` SET DEFAULT 112312",
 			"alter table t alter column `foo` SET DEFAULT 1.2",
@@ -184,7 +187,11 @@ public class DDLParserTest {
 			"create table t ( id int ) engine = innodb, auto_increment = 5",
 			"alter table t engine=innodb",
 			"alter table t auto_increment =5",
-			"alter table t add column `foo` int, auto_increment = 5 engine=innodb, modify column bar int"
+			"alter table t add column `foo` int, auto_increment = 5 engine=innodb, modify column bar int",
+			"alter table t add column `foo` int,  ALGORITHM=copy",
+			"alter table t add column `foo` int, algorithm copy",
+			"alter table t add column `foo` int, algorithm copy, lock shared",
+			"alter table t add column `foo` int, algorithm copy, lock=exclusive"
 		};
 
 		for ( String s : testSQL ) {

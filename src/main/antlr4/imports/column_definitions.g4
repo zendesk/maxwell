@@ -4,22 +4,22 @@ import mysql_literal_tokens, mysql_idents;
 
 column_definition:
 	col_name=name
-	data_type 
+	data_type
 	;
 
 col_position: FIRST | (AFTER id);
 
 data_type:
     generic_type
-    | signed_type
-    | string_type
+  | signed_type
+  | string_type
 	| enumerated_type
 	;
 
-	
+
 // all from http://dev.mysql.com/doc/refman/5.1/en/create-table.html
 generic_type:
-	  col_type=(BIT | BINARY | YEAR | TIME | TIMESTAMP | DATETIME) length? column_options*
+    col_type=(BIT | BINARY | YEAR | TIME | TIMESTAMP | DATETIME) length? column_options*
 	| col_type=(DATE | TINYBLOB | MEDIUMBLOB | LONGBLOB | BLOB |  BOOLEAN | BOOL ) column_options*
 	| col_type=VARBINARY length column_options*
 	;
@@ -27,7 +27,7 @@ generic_type:
 
 signed_type: // we need the UNSIGNED flag here
       col_type=(TINYINT | INT1 | SMALLINT | INT2 | MEDIUMINT | INT3 | INT | INTEGER | INT4 | BIGINT | INT8 )
-                length? 
+                length?
                 int_flags*
                 column_options*
     | col_type=(REAL | DOUBLE | FLOAT | DECIMAL | NUMERIC)
@@ -36,7 +36,7 @@ signed_type: // we need the UNSIGNED flag here
     		    column_options*
     ;
 
-string_type: // getting the encoding here 
+string_type: // getting the encoding here
 	  col_type=(CHAR | VARCHAR)
 	           length?
 	           BINARY?
@@ -58,7 +58,7 @@ column_options:
 	| default_value
 	| primary_key
 	| ON UPDATE CURRENT_TIMESTAMP
-	| UNIQUE KEY 
+	| UNIQUE KEY
 	| AUTO_INCREMENT
 	| COMMENT STRING_LITERAL
 	| COLUMN_FORMAT (FIXED|DYNAMIC|DEFAULT)
@@ -72,7 +72,6 @@ enum_value: STRING_LITERAL;
 
 charset_def: (character_set | collation)+;
 character_set: ((CHARACTER SET) | CHARSET) charset_name;
-collation: COLLATE '='? (IDENT | STRING_LITERAL | QUOTED_IDENT);
 
 nullability: (NOT NULL | NULL);
 default_value: DEFAULT (literal | NULL | CURRENT_TIMESTAMP | TRUE | FALSE);
