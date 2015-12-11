@@ -6,6 +6,10 @@ db_name: name;
 table_name: (db_name '.' name)
             | name
             ;
+
+user: user_token ('@' user_token)?;
+user_token: (IDENT | QUOTED_IDENT | STRING_LITERAL);
+
 name: ( id | tokens_available_for_names );
 id: ( IDENT | QUOTED_IDENT );
 literal: (INTEGER_LITERAL | STRING_LITERAL | FLOAT_LITERAL);
