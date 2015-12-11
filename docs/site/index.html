@@ -99,15 +99,30 @@ but differentiates itself with these features:</p>
 <p>Maxwell is intended as a source for event-based readers, eg various ETL applications, search indexing,
 stat emitters.
 <br style="clear:both"/></p>
-<pre><code>mysql&gt; insert into test.maxwell set id = 11, daemon = 'firebus!  firebus!';
+<pre><code>mysql&gt; insert into `test`.`maxwell` set id = 1, daemon = 'Stanlislaw Lem';
 
-(maxwell)
-{
- &quot;database&quot;:&quot;test&quot;,
- &quot;table&quot;:&quot;maxwell&quot;,
- &quot;type&quot;:&quot;insert&quot;,
- &quot;data&quot;:{&quot;id&quot;:11,&quot;daemon&quot;:&quot;firebus!  firebus!&quot;}
-}
+&lt;- {
+     &quot;database&quot;:&quot;test&quot;,
+     &quot;table&quot;:&quot;maxwell&quot;,
+     &quot;type&quot;:&quot;insert&quot;,
+     &quot;ts&quot;:1449786310,
+     &quot;xid&quot;:940753,
+     &quot;commit&quot;:true,
+     &quot;data&quot;:{ &quot;id&quot;:1, &quot;daemon&quot;: &quot;Stanlislaw Lem&quot; }
+   }
+
+mysql&gt; update test.maxwell set id = 11, daemon = 'firebus!  firebus!';
+
+&lt;- {
+     &quot;database&quot;:&quot;test&quot;,
+     &quot;table&quot;:&quot;maxwell&quot;,
+     &quot;type&quot;:&quot;update&quot;,
+     &quot;ts&quot;:1449786341,
+     &quot;xid&quot;:940786,
+     &quot;commit&quot;:true,
+     &quot;data&quot;:{&quot;id&quot;:11, &quot;daemon&quot;:&quot;Firebus!  Firebus!&quot;},
+     &quot;old&quot;:{&quot;id&quot;:1, &quot;daemon&quot;:&quot;Stanlislaw Lem&quot;}
+   }
 </code></pre>
 
 <script>

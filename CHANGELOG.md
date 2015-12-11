@@ -1,5 +1,25 @@
 # Maxwell changelog
 
+## [v0.16.0](https://github.com/zendesk/maxwell/releases/tag/v0.16.0): "Kristian Kaufmann's version"
+
+
+Version 0.16.0 introduces a feature where UPDATE statements will now
+show both the new row image and the old values of the fields that
+changed.  Thanks @kristiankaufmann
+
+
+## [v0.15.0](https://github.com/zendesk/maxwell/releases/tag/v0.15.0): "the littlest little city"
+
+- fix a parse problem with indices ordered by ASC/DESC
+
+
+## [v0.15.0-RC1](https://github.com/zendesk/maxwell/releases/tag/v0.15.0-RC1): "it's later than you think"
+
+
+- large transactions now buffer to disk instead of crushing maxwell.
+- support ALGORITHM=[algo], LOCK=[lock] for 5.6 alters
+
+
 ## [v0.14.6](https://github.com/zendesk/maxwell/releases/tag/v0.14.6): "It's about being American.  Sort of."
 
 

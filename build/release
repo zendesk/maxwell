@@ -17,40 +17,65 @@ end
 
 puts "Releasing version: #{$version}"
 
+if ( $command = ARGV[1] )
+  unless ["bump", "build", "tag", "release"].include?($command)
+    abort("unknown subcommand: #{$command}")
+  end
+end
+
 def do_system(cmd, *args)
   system(cmd, *args)
   abort "command #{cmd} #{args.join(' ')} failed" unless $?.success?
 end
 
-do_system(BINDIR + "/bump", $version)
-do_system("mvn clean package")
+def bump
+  do_system(BINDIR + "/bump", $version)
+end
 
-commit_template = Tempfile.new('maxwell_build')
-commit_template.write <<-EOL
-v#{$version}, "pithy title here"
-- list changes
+def build
+  do_system("mvn clean package")
 
-EOL
+  commit_template = Tempfile.new('maxwell_build')
+  commit_template.write <<-EOL
+  v#{$version}, "pithy title here"
+  - list changes
 
-git_log = "git log --pretty=format:'%h -%d %s %cr <%an>' --abbrev-commit --date=relative v#{CURRENT_REV}..HEAD"
+  EOL
 
-commit_template.write(`#{git_log}`.gsub(/^/, '# '))
-commit_template.close
+  git_log = "git log --pretty=format:'%h -%d %s %cr <%an>' --abbrev-commit --date=relative v#{CURRENT_REV}..HEAD"
 
-do_system("git commit -av -t #{commit_template.path}")
-do_system("git tag v#{$version}")
-do_system("git push")
-do_system("git push --tags")
+  commit_template.write(`#{git_log}`.gsub(/^/, '# '))
+  commit_template.close
 
-release_title = `git show -s HEAD --format='%s'`
-release_body = `git show -s HEAD --format='%b'`
+  do_system("git commit -av -t #{commit_template.path}")
+  do_system("git push")
+end
 
-puts "title: #{release_title}"
-puts "body: #{release_body}"
+def tag
+  do_system("git tag v#{$version}")
+  do_system("git push --tags")
+end
 
-client = Octokit::Client.new(netrc: true)
+def release
+  release_title = `git show -s HEAD --format='%s'`
+  release_body = `git show -s HEAD --format='%b'`
 
-release = client.create_release(REPO, 'v' + $version, name: release_title, body: release_body)
-client.upload_asset(release.url, BINDIR + "/../target/maxwell-#{$version}.tar.gz")
+  puts "title: #{release_title}"
+  puts "body: #{release_body}"
 
-do_system(BINDIR + "/../docs/push")
+  client = Octokit::Client.new(netrc: true)
+
+  release = client.create_release(REPO, 'v' + $version, name: release_title, body: release_body)
+  client.upload_asset(release.url, BINDIR + "/../target/maxwell-#{$version}.tar.gz")
+  do_system(BINDIR + "/../docs/push")
+end
+
+if $command
+  send($command)
+else
+  bump
+  build
+  tag
+  release
+end
+

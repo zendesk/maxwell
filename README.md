@@ -17,15 +17,30 @@ stat emitters.
 <br style="clear:both"/>
 
 ```
-mysql> insert into test.maxwell set id = 11, daemon = 'firebus!  firebus!';
+mysql> insert into `test`.`maxwell` set id = 1, daemon = 'Stanlislaw Lem';
 
-(maxwell)
-{
- "database":"test",
- "table":"maxwell",
- "type":"insert",
- "data":{"id":11,"daemon":"firebus!  firebus!"}
-}
+<- {
+     "database":"test",
+     "table":"maxwell",
+     "type":"insert",
+     "ts":1449786310,
+     "xid":940753,
+     "commit":true,
+     "data":{ "id":1, "daemon": "Stanlislaw Lem" }
+   }
+
+mysql> update test.maxwell set id = 11, daemon = 'firebus!  firebus!';
+
+<- {
+     "database":"test",
+     "table":"maxwell",
+     "type":"update",
+     "ts":1449786341,
+     "xid":940786,
+     "commit":true,
+     "data":{"id":11, "daemon":"Firebus!  Firebus!"},
+     "old":{"id":1, "daemon":"Stanlislaw Lem"}
+   }
 ```
 
 <script>
