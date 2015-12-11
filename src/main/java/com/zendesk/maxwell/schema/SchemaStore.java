@@ -1,9 +1,10 @@
 package com.zendesk.maxwell.schema;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -82,12 +83,12 @@ public class SchemaStore {
 		}
 		preparedStatement.executeUpdate();
 
-		ResultSet rs = preparedStatement.getGeneratedKeys();
-
-		if (rs.next()) {
-			return rs.getLong(1);
-		} else
-			return null;
+		try (ResultSet rs = preparedStatement.getGeneratedKeys()) {
+			if (rs.next()) {
+				return rs.getLong(1);
+			} else
+				return null;
+		}
 	}
 
 	public void save() throws SQLException {
@@ -156,14 +157,15 @@ public class SchemaStore {
 			insertColumnSQL = insertColumnSQL + ", (?, ?, ?, ?, ?, ?, ?)";
 		}
 
-		PreparedStatement columnInsert = connection.prepareStatement(insertColumnSQL);
-		int i = 1;
+		try (PreparedStatement columnInsert = connection.prepareStatement(insertColumnSQL)) {
+			int i = 1;
 
-		for (Object o : columnData)
-			columnInsert.setObject(i++,  o);
+			for (Object o : columnData)
+				columnInsert.setObject(i++, o);
 
-		columnInsert.execute();
-		columnData.clear();
+			columnInsert.execute();
+			columnData.clear();
+		}
 	}
 
 	public static void ensureMaxwellSchema(Connection connection) throws SQLException, IOException, SchemaSyncError {
@@ -172,22 +174,17 @@ public class SchemaStore {
 		}
 	}
 	private static boolean storeDatabaseExists(Connection connection) throws SQLException {
-		Statement s = connection.createStatement();
-		ResultSet rs = s.executeQuery("show databases like 'maxwell'");
-
-		return rs.next();
+		try (Statement s = connection.createStatement();
+			 ResultSet rs = s.executeQuery("show databases like 'maxwell'")) {
+			return rs.next();
+		}
 	}
 
 	private static void createStoreDatabase(Connection connection) throws SQLException, IOException {
-		InputStream schemaSQL = SchemaStore.class.getResourceAsStream(
-				"/sql/maxwell_schema.sql");
-		BufferedReader r = new BufferedReader(new InputStreamReader(schemaSQL));
-		String sql = "", line;
-
+		
 		LOGGER.info("Creating maxwell database");
-		while ((line = r.readLine()) != null) {
-			sql += line + "\n";
-		}
+		Path input = Paths.get("src/main/resources/sql/maxwell_schema.sql");
+		String sql = StringUtils.join(Files.readAllLines(input, Charset.defaultCharset()), "\n");
 
 		for (String statement : StringUtils.splitByWholeSeparator(sql, "\n\n")) {
 			if (statement.length() == 0)
@@ -199,9 +196,7 @@ public class SchemaStore {
 
 	public static SchemaStore restore(Connection connection, Long serverId, BinlogPosition targetPosition) throws SQLException, SchemaSyncError {
 		SchemaStore s = new SchemaStore(connection, serverId);
-
 		s.restoreFrom(targetPosition);
-
 		return s;
 	}
 
@@ -260,67 +255,72 @@ public class SchemaStore {
 		Statement s = connection.createStatement();
 		Database d = new Database(name, encoding);
 
-		ResultSet tRS = s.executeQuery("SELECT * from `maxwell`.`tables` where database_id = " + id + " ORDER by id");
+		try (ResultSet tRS = s
+				.executeQuery("SELECT * from `maxwell`.`tables` where database_id = " + id + " ORDER by id")) {
 
-		while (tRS.next()) {
-			String tName = tRS.getString("name");
-			String tEncoding = tRS.getString("encoding");
-			String tPKs = tRS.getString("pk");
+			while (tRS.next()) {
+				String tName = tRS.getString("name");
+				String tEncoding = tRS.getString("encoding");
+				String tPKs = tRS.getString("pk");
 
-			int tID = tRS.getInt("id");
+				int tID = tRS.getInt("id");
 
-			restoreTable(d, tName, tID, tEncoding, tPKs);
+				restoreTable(d, tName, tID, tEncoding, tPKs);
+			}
 		}
 		return d;
 	}
 
 	private void restoreTable(Database d, String name, int id, String encoding, String pks) throws SQLException {
-		Statement s = connection.createStatement();
+		try (Statement s = connection.createStatement()) {
 
-		Table t = d.buildTable(name, encoding);
+			Table t = d.buildTable(name, encoding);
 
-		ResultSet cRS = s.executeQuery("SELECT * from `maxwell`.`columns` where table_id = " + id + " ORDER by id");
+			try (ResultSet cRS = s
+					.executeQuery("SELECT * from `maxwell`.`columns` where table_id = " + id + " ORDER by id")) {
 
-		int i = 0;
-		while (cRS.next()) {
-			String[] enumValues = null;
-			if ( cRS.getString("enum_values") != null )
-				enumValues = StringUtils.splitByWholeSeparatorPreserveAllTokens(cRS.getString("enum_values"), ",");
+				int i = 0;
+				while (cRS.next()) {
+					String[] enumValues = null;
+					if (cRS.getString("enum_values") != null)
+						enumValues = StringUtils.splitByWholeSeparatorPreserveAllTokens(cRS.getString("enum_values"),
+								",");
 
-			ColumnDef c = ColumnDef.build(t.getName(),
-					cRS.getString("name"), cRS.getString("encoding"),
-					cRS.getString("coltype"), i++,
-					cRS.getInt("is_signed") == 1,
-					enumValues);
-			t.addColumn(c);
+					ColumnDef c = ColumnDef.build(t.getName(), cRS.getString("name"), cRS.getString("encoding"),
+							cRS.getString("coltype"), i++, cRS.getInt("is_signed") == 1, enumValues);
+					t.addColumn(c);
+				}
+			}
+
+			if (pks != null) {
+				List<String> pkList = Arrays.asList(StringUtils.split(pks, ','));
+				t.setPKList(pkList);
+			}
 		}
-
-		if ( pks != null ) {
-			List<String> pkList = Arrays.asList(StringUtils.split(pks, ','));
-			t.setPKList(pkList);
-		}
-
 	}
 
 	private ResultSet findSchema(BinlogPosition targetPosition, Long serverID)
 			throws SQLException {
 		LOGGER.debug("looking to restore schema at target position " + targetPosition);
-		PreparedStatement s = connection.prepareStatement(
-			"SELECT * from `maxwell`.`schemas` "
-			+ "WHERE deleted = 0 "
-			+ "AND ((binlog_file < ?) OR (binlog_file = ? and binlog_position <= ?)) AND server_id = ? "
-			+ "ORDER BY id desc limit 1");
+		try (PreparedStatement s = connection
+				.prepareStatement("SELECT * from `maxwell`.`schemas` " 
+		                + "WHERE deleted = 0 "
+						+ "AND ((binlog_file < ?) OR (binlog_file = ? and binlog_position <= ?)) AND server_id = ? "
+						+ "ORDER BY id desc limit 1")) {
 
-		s.setString(1, targetPosition.getFile());
-		s.setString(2, targetPosition.getFile());
-		s.setLong(3, targetPosition.getOffset());
-		s.setLong(4, serverID);
+			s.setString(1, targetPosition.getFile());
+			s.setString(2, targetPosition.getFile());
+			s.setLong(3, targetPosition.getOffset());
+			s.setLong(4, serverID);
 
-		ResultSet rs = s.executeQuery();
-		if (rs.next()) {
-			return rs;
-		} else
-			return null;
+			try (ResultSet rs = s.executeQuery()) {
+				if (rs.next()) {
+					return rs;
+				} else {
+					return null;
+				}
+			}
+		}
 	}
 
 	public Schema getSchema() {
@@ -360,8 +360,10 @@ public class SchemaStore {
 		if ( this.schema_id == null )
 			return false;
 
-		ResultSet rs = connection.createStatement().executeQuery("select id from maxwell.schemas where id = " + schema_id);
-		return rs.next();
+		try (ResultSet rs = connection.createStatement()
+				.executeQuery("select id from maxwell.schemas where id = " + schema_id)) {
+			return rs.next();
+		}
 	}
 
 	public BinlogPosition getBinlogPosition() {
@@ -384,28 +386,28 @@ public class SchemaStore {
 		in the future, this is our moment to pick up where the master left off.
 	*/
 	public static void handleMasterChange(Connection c, Long serverID) throws SQLException {
-		PreparedStatement s = c.prepareStatement(
-				"SELECT id from `maxwell`.`schemas` WHERE server_id != ? and deleted = 0"
-		);
+		try (PreparedStatement s = c
+				.prepareStatement("SELECT id from `maxwell`.`schemas` WHERE server_id != ? and deleted = 0")) {
 
-		s.setLong(1, serverID);
-		ResultSet rs = s.executeQuery();
-
-		while ( rs.next() ) {
-			Long schemaID = rs.getLong("id");
-			LOGGER.info("maxwell detected schema " + schemaID + " from different server_id.  deleting...");
-			new SchemaStore(c, null, schemaID).delete();
+			s.setLong(1, serverID);
+			try (ResultSet rs = s.executeQuery()) {
+				while (rs.next()) {
+					Long schemaID = rs.getLong("id");
+					LOGGER.info("maxwell detected schema " + schemaID + " from different server_id.  deleting...");
+					new SchemaStore(c, null, schemaID).delete();
+				}
+			}
+			c.createStatement().execute("delete from `maxwell`.`positions` where server_id != " + serverID);
 		}
-
-		c.createStatement().execute("delete from `maxwell`.`positions` where server_id != " + serverID);
 	}
 
 	private static Map<String, String> getTableColumns(String table, Connection c) throws SQLException {
 		HashMap<String, String> map = new HashMap<>();
 
-		ResultSet rs = c.createStatement().executeQuery("show columns from `maxwell`.`" + table + "`");
-		while (rs.next()) {
-			map.put(rs.getString("Field"), rs.getString("Type"));
+		try (ResultSet rs = c.createStatement().executeQuery("show columns from `maxwell`.`" + table + "`")) {
+			while (rs.next()) {
+				map.put(rs.getString("Field"), rs.getString("Type"));
+			}
 		}
 		return map;
 	}
