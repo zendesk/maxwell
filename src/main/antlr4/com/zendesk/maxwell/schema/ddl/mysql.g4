@@ -3,7 +3,7 @@ grammar mysql;
 import mysql_literal_tokens,
        mysql_idents,
        mysql_alter_table,
-       mysql_alter_database
+       mysql_alter_database,
        mysql_create_database,
        mysql_create_table,
        mysql_drop,
