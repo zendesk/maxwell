@@ -1,3 +1,4 @@
+set global binlog_row_image = 'minimal'
 CREATE DATABASE `test_db_1`
 CREATE DATABASE if not exists `test_db_1`
 CREATE TABLE `test_db_1`.`test_table` ( id bigint(20) not null auto_increment primary key, textcol mediumtext character set 'utf8' )
@@ -20,29 +21,13 @@ insert into test_table set textcol='test_col_2', datecol='1979-10-01 00:00:00'
 
 update test_table set textcol='test_col_5' where id = 1
 
--> {"database": "test_db_1", "table": "test_table", "type": "update", "data": {"id": 1, "textcol": "test_col_5"}, "old": {"textcol": "test_col_1"} }
-
-update test_table set datecol='1979-10-01 00:00:00' where id = 1
-
--> {"database": "test_db_1", "table": "test_table", "type": "update", "data": {"id": 1, "textcol": "test_col_5", "datecol": "1979-10-01 00:00:00" }, "old": {"datecol": null} }
-
-alter table test_table add column `dummycol` mediumint(10) default 10 AFTER id
-
-update test_table set dummycol=5 where id = 1
-
--> {"database": "test_db_1", "table": "test_table", "type": "update", "data": {"id": 1, "textcol": "test_col_5", "datecol": "1979-10-01 00:00:00", "dummycol": 5}, "old": {"dummycol": 10} }
-
-alter table test_table drop column `dummycol`
-
-update test_table set datecol='1970-01-01 00:00:00' where id = 1
-
--> {"database": "test_db_1", "table": "test_table", "type": "update", "data": {"id": 1, "textcol": "test_col_5", "datecol": "1970-01-01 00:00:00" }, "old": {"datecol": "1979-10-01 00:00:00"} }
+-> {"database": "test_db_1", "table": "test_table", "type": "update", "data": {"id": 1, "textcol": "test_col_5"}  }
 
 delete from test_table;
 
 /*!40000 ALTER TABLE `test_db_1`.`test_table` ENABLE KEYS */
 
--> {"database": "test_db_1", "table": "test_table", "type": "delete", "data": {"id": 1, "textcol": "test_col_5", "datecol":"1970-01-01 00:00:00"} }
+-> {"database": "test_db_1", "table": "test_table", "type": "delete", "data": {"id": 1, "textcol": "test_col_5"} }
 -> {"database": "test_db_1", "table": "test_table", "type": "delete", "data": {"id": 2, "textcol": "test_col_2"} }
 -> {"database": "test_db_1", "table": "test_table", "type": "delete", "data": {"id": 3, "textcol": "test_col_2", "datecol": "1979-10-01 00:00:00"} }
 

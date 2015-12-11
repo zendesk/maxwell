@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.slf4j.Logger;
@@ -28,7 +29,8 @@ public abstract class SchemaChange {
 		SQL_BLACKLIST.add(Pattern.compile("^GRANT", Pattern.CASE_INSENSITIVE));
 		SQL_BLACKLIST.add(Pattern.compile("^REVOKE\\s+", Pattern.CASE_INSENSITIVE));
 		SQL_BLACKLIST.add(Pattern.compile("^SAVEPOINT", Pattern.CASE_INSENSITIVE));
-		SQL_BLACKLIST.add(Pattern.compile("^(ALTER|CREATE)\\s+(DEFINER=[^\\s]+\\s+)?(EVENT|FUNCTION|TRIGGER|PROCEDURE|VIEW)", Pattern.CASE_INSENSITIVE));
+
+		SQL_BLACKLIST.add(Pattern.compile("^(ALTER|CREATE)\\s+(DEFINER=[^\\s]+\\s+)?(EVENT|FUNCTION|TRIGGER|PROCEDURE)", Pattern.CASE_INSENSITIVE));
 		SQL_BLACKLIST.add(Pattern.compile("^DROP\\s+(EVENT|FUNCTION|TRIGGER|PROCEDURE|VIEW)", Pattern.CASE_INSENSITIVE));
 
 		SQL_BLACKLIST.add(Pattern.compile("^(ALTER|CREATE|DROP)\\s+((ONLINE|OFFLINE|UNIQUE|FULLTEXT|SPATIAL)\\s+)*(INDEX)", Pattern.CASE_INSENSITIVE));
@@ -36,6 +38,7 @@ public abstract class SchemaChange {
 		SQL_BLACKLIST.add(Pattern.compile("^SET\\s+PASSWORD", Pattern.CASE_INSENSITIVE));
 		SQL_BLACKLIST.add(Pattern.compile("^(CREATE|DROP|RENAME)\\s+USER", Pattern.CASE_INSENSITIVE));
 
+		SQL_BLACKLIST.add(Pattern.compile("^CREATE\\s+TEMPORARY\\s+TABLE", Pattern.CASE_INSENSITIVE));
 		SQL_BLACKLIST.add(Pattern.compile("^TRUNCATE\\s+", Pattern.CASE_INSENSITIVE));
 		SQL_BLACKLIST.add(Pattern.compile("^OPTIMIZE\\s+", Pattern.CASE_INSENSITIVE));
 	}
@@ -57,8 +60,11 @@ public abstract class SchemaChange {
 		try {
 			ANTLRInputStream input = new ANTLRInputStream(sql);
 			mysqlLexer lexer = new mysqlLexer(input);
+			lexer.removeErrorListeners();
+
 			CommonTokenStream tokens = new CommonTokenStream(lexer);
 			mysqlParser parser = new mysqlParser(tokens);
+			parser.removeErrorListeners();
 
 			MysqlParserListener listener = new MysqlParserListener(currentDB);
 
@@ -68,6 +74,9 @@ public abstract class SchemaChange {
 			ParseTreeWalker.DEFAULT.walk(listener, tree);
 			LOGGER.debug("SQL_PARSE ->   " + tree.toStringTree(parser));
 			return listener.getSchemaChanges();
+		} catch ( ParseCancellationException e ) {
+			LOGGER.debug("Parse cancelled: " + e);
+			return null;
 		} catch ( MaxwellSQLSyntaxError e) {
 			LOGGER.error("Error parsing SQL: '" + sql + "'");
 			throw (e);

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.antlr.v4.runtime.tree.ErrorNode;
 
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
@@ -81,7 +82,9 @@ public class MysqlParserListener extends mysqlBaseListener {
 	@Override
 	public void visitErrorNode(ErrorNode node) {
 		this.schemaChanges.clear();
-		LOGGER.error(node.getParent().toStringTree(new mysqlParser(null)));
+
+		String error = node.getParent().toStringTree(new mysqlParser(null));
+		LOGGER.error(error);
 		throw new MaxwellSQLSyntaxError(node.getText());
 	}
 
@@ -107,6 +110,21 @@ public class MysqlParserListener extends mysqlBaseListener {
 	}
 
 	@Override
+	public void exitAlter_database(Alter_databaseContext ctx) {
+		String dbName = unquote(ctx.name().getText());
+		DatabaseAlter alter = new DatabaseAlter(dbName);
+
+
+
+		List<Default_character_setContext> charSet = ctx.alter_database_definition().default_character_set();
+		if ( charSet.size() > 0 ) {
+			alter.characterSet = unquote_literal(charSet.get(0).getText());
+		}
+
+		this.schemaChanges.add(alter);
+	}
+
+	@Override
 	public void exitAlter_table_preamble(Alter_table_preambleContext ctx) {
 		String dbName = getDB(ctx.table_name());
 		String tableName = getTable(ctx.table_name());
@@ -120,6 +138,16 @@ public class MysqlParserListener extends mysqlBaseListener {
 	// After we're done parsing the whole alter
 	@Override public void exitAlter_table(mysqlParser.Alter_tableContext ctx) {
 		alterStatement().pks = this.pkColumns;
+	}
+
+	@Override
+	public void enterAlter_view(Alter_viewContext ctx) {
+		throw new ParseCancellationException("Not finishing parse of ALTER VIEW");
+	}
+
+	@Override
+	public void enterCreate_view(Create_viewContext ctx) {
+		throw new ParseCancellationException("Not finishing parse of CREATE VIEW");
 	}
 
 	@Override
