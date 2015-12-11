@@ -26,6 +26,7 @@ public class RowMap implements Serializable {
 	private boolean txCommit;
 
 	private final HashMap<String, Object> data;
+	private final HashMap<String, Object> oldData;
 	private final List<String> pkColumns;
 
 	private static final JsonFactory jsonFactory = new JsonFactory();
@@ -60,6 +61,7 @@ public class RowMap implements Serializable {
 		this.table = table;
 		this.timestamp = timestamp;
 		this.data = new HashMap<>();
+		this.oldData = new HashMap<>();
 		this.nextPosition = nextPosition;
 		this.pkColumns = pkColumns;
 	}
@@ -89,6 +91,33 @@ public class RowMap implements Serializable {
 		return jsonFromStream();
 	}
 
+	private void writeMapToJSON(String jsonMapName, HashMap<String, Object> data, boolean includeNullField) throws IOException {
+		JsonGenerator generator = jsonGeneratorThreadLocal.get();
+		generator.writeObjectFieldStart(jsonMapName); // start of jsonMapName: {
+
+		/* TODO: maintain ordering of fields in column order */
+		for ( String key: data.keySet() ) {
+			Object value = data.get(key);
+
+			if ( value == null && !includeNullField)
+				continue;
+
+			if ( value instanceof List) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
+				List<String> stringList = (List<String>) value;
+
+				generator.writeArrayFieldStart(key);
+				for ( String s : stringList )  {
+					generator.writeString(s);
+				}
+				generator.writeEndArray();
+			} else {
+				generator.writeObjectField(key, value);
+			}
+		}
+
+		generator.writeEndObject(); // end of 'jsonMapName: { }'
+		return;
+	}
 
 	public String toJSON() throws IOException {
 		JsonGenerator g = jsonGeneratorThreadLocal.get();
@@ -107,28 +136,12 @@ public class RowMap implements Serializable {
 		if ( this.txCommit )
 			g.writeBooleanField("commit", true);
 
-		g.writeObjectFieldStart("data"); // start of data: {
+		writeMapToJSON("data", this.data, false);
 
-		/* TODO: maintain ordering of fields in column order */
-		for ( String key: this.data.keySet() ) {
-			Object data = this.data.get(key);
-
-			if ( data == null )
-				continue;
-
-			if ( data instanceof List) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
-				List<String> stringList = (List<String>) data;
-
-				g.writeArrayFieldStart(key);
-				for ( String s : stringList )  {
-					g.writeString(s);
-				}
-				g.writeEndArray();
-			} else {
-				g.writeObjectField(key, data);
-			}
+		if ( !this.oldData.isEmpty()) {
+			writeMapToJSON("old", this.oldData, true);
 		}
-		g.writeEndObject(); // end of 'data: { }'
+
 		g.writeEndObject(); // end of row
 		g.flush();
 
@@ -148,6 +161,14 @@ public class RowMap implements Serializable {
 
 	public void putData(String key, Object value) {
 		this.data.put(key,  value);
+	}
+
+	public Object getOldData(String key) {
+		return this.oldData.get(key);
+	}
+
+	public void putOldData(String key, Object value) {
+		this.oldData.put(key,  value);
 	}
 
 	public BinlogPosition getPosition() {
