@@ -287,6 +287,11 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 	}
 
 	@Test
+	public void testCreateSelectJSON() throws Exception {
+		runJSONTestFile(getSQLDir() + "/json/test_create_select");
+	}
+
+	@Test
 	public void testEnumJSON() throws Exception {
 		runJSONTestFile(getSQLDir() + "/json/test_enum");
 	}
