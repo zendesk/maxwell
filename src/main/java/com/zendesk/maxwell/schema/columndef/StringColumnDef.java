@@ -28,13 +28,13 @@ public class StringColumnDef extends ColumnDef {
 
 	@Override
 	public String toSQL(Object value) {
-        byte[] b = (byte[]) value;
+		byte[] b = (byte[]) value;
 
-        if ( getEncoding().equals("utf8") || getEncoding().equals("utf8mb4")) {
-        	return quoteString(new String(b));
-        } else {
-        	return "x'" +  Hex.encodeHexString( b ) + "'";
-        }
+		if ( getEncoding().equals("utf8") || getEncoding().equals("utf8mb4")) {
+			return quoteString(new String(b));
+		} else {
+			return "x'" +  Hex.encodeHexString( b ) + "'";
+		}
 	}
 
 	// this could obviously be more complete.
