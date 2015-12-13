@@ -6,6 +6,7 @@ import java.util.List;
 import com.google.code.or.binlog.impl.event.DeleteRowsEvent;
 import com.google.code.or.binlog.impl.event.DeleteRowsEventV2;
 import com.google.code.or.common.glossary.Row;
+import com.google.code.or.common.glossary.column.BitColumn;
 import com.zendesk.maxwell.schema.Table;
 
 public class MaxwellDeleteRowsEvent extends MaxwellAbstractRowsEvent {
@@ -59,6 +60,11 @@ public class MaxwellDeleteRowsEvent extends MaxwellAbstractRowsEvent {
 		}
 		s.append(")");
 		return s.toString();
+	}
+
+	@Override
+	protected BitColumn getUsedColumns() {
+		return event.getUsedColumns();
 	}
 
 	@Override

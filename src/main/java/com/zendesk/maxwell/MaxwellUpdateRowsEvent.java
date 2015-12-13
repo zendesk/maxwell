@@ -9,7 +9,7 @@ import com.google.code.or.binlog.impl.event.UpdateRowsEventV2;
 import com.google.code.or.common.glossary.Column;
 import com.google.code.or.common.glossary.Pair;
 import com.google.code.or.common.glossary.Row;
-import com.google.code.or.common.glossary.column.DatetimeColumn;
+import com.google.code.or.common.glossary.column.BitColumn;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
 
@@ -35,15 +35,16 @@ public class MaxwellUpdateRowsEvent extends MaxwellAbstractRowsEvent {
 		this.event = e;
 	}
 
+
 	@Override
-	public List<Row> getRows() {
+	public List<Row> getRows() { // only for filterRows() at the moment.  need to refactor that.
 		ArrayList<Row> result = new ArrayList<Row>();
 		for (Pair<Row> p : event.getRows()) {
 			result.add(p.getAfter());
 		}
-
 		return result;
 	}
+
 	@Override
 	public String sqlOperationString() {
 		return "REPLACE INTO ";
@@ -75,41 +76,37 @@ public class MaxwellUpdateRowsEvent extends MaxwellAbstractRowsEvent {
 	@Override
 	public List<RowMap> jsonMaps() {
 		ArrayList<RowMap> list = new ArrayList<>();
-		Object afterValue;
-		Object beforeValue;
 		for (Pair<Row> p : filteredRowsBeforeAndAfter() ) {
 			Row after = p.getAfter();
 			Row before = p.getBefore();
 
 			RowMap rowMap = buildRowMap();
 
-			Iterator<Column> aftIter = after.getColumns().iterator();
-			Iterator<Column> befIter = before.getColumns().iterator();
-			Iterator<ColumnDef> defIter = table.getColumnList().iterator();
-			while ( aftIter.hasNext() && defIter.hasNext() && befIter.hasNext() ) {
-				Column afterColumn = aftIter.next();
-				ColumnDef columnDef = defIter.next();
-				Column beforeColumn = befIter.next();
+			for ( ColumnWithDefinition cd : new ColumnWithDefinitionList(table, after, event.getUsedColumnsAfter())) {
+				rowMap.putData(cd.definition.getName(), cd.asJSON());
+			}
 
-				afterValue = valueForJson(afterColumn);
-				if ( afterValue != null ) {
-					afterValue = columnDef.asJSON(afterValue);
+			for ( ColumnWithDefinition cd : new ColumnWithDefinitionList(table, before, event.getUsedColumnsBefore())) {
+				String name = cd.definition.getName();
+				Object beforeValue = cd.asJSON();
+
+				if (!rowMap.hasData(name)) {
+					// running in MINIMAL binlog row image mode.  Fill in after with before
+					rowMap.putData(name, beforeValue);
+				} else {
+					if (!Objects.equals(rowMap.getData(name), beforeValue)) {
+						rowMap.putOldData(name, beforeValue);
+					}
 				}
-
-				beforeValue = valueForJson(beforeColumn);
-				if ( beforeValue != null) {
-					beforeValue = columnDef.asJSON(beforeValue);
-				}
-
-				if ( !Objects.equals(afterValue,beforeValue) ) {//afterValue is different from beforeValue so log beforeValue
-					rowMap.putOldData(columnDef.getName(), beforeValue);
-				}
-
-				rowMap.putData(columnDef.getName(), afterValue);
 			}
 			list.add(rowMap);
 		}
 
 		return list;
+	}
+
+	@Override
+	protected BitColumn getUsedColumns() {
+		return event.getUsedColumnsAfter(); // not actually used, since we override jsonMaps()
 	}
 }
