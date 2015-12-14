@@ -37,9 +37,12 @@ public class ListWithDiskBuffer<T extends Serializable> {
 			if ( elementsInFile == 0 )
 				LOGGER.debug("Overflowed in-memory buffer, spilling over into " + file);
 
-			os.writeUnshared(this.list.removeFirst());
+			os.writeObject(this.list.removeFirst());
 
 			elementsInFile++;
+
+			if ( elementsInFile % maxInMemoryElements == 0 )
+				os.reset(); // flush ObjectOutputStream caches
 		}
 	}
 
@@ -58,7 +61,7 @@ public class ListWithDiskBuffer<T extends Serializable> {
 				is = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
 			}
 
-			T element = (T) is.readUnshared();
+			T element = (T) is.readObject();
 			elementsInFile--;
 			return element;
 		} else {
