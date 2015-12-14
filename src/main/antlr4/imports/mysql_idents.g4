@@ -10,9 +10,14 @@ table_name: (db_name '.' name)
 user: user_token ('@' user_token)?;
 user_token: (IDENT | QUOTED_IDENT | STRING_LITERAL);
 
-name: ( id | tokens_available_for_names );
+name: ( id | tokens_available_for_names | INTEGER_LITERAL);
 id: ( IDENT | QUOTED_IDENT );
-literal: (INTEGER_LITERAL | STRING_LITERAL | FLOAT_LITERAL);
+literal: (float_literal | integer_literal | string_literal);
+
+float_literal: INTEGER_LITERAL? '.' INTEGER_LITERAL;
+integer_literal: INTEGER_LITERAL;
+string_literal: STRING_LITERAL;
+
 string: (IDENT | STRING_LITERAL);
 integer: INTEGER_LITERAL;
 charset_name: (IDENT | STRING_LITERAL | QUOTED_IDENT);
@@ -34,8 +39,6 @@ SQL_COMMENT: '/*' ~'!' (.)*? '*/' -> skip;
 SQL_LINE_COMMENT: ('#' | '--') (~'\n')* ('\n' | EOF) -> skip;
 
 STRING_LITERAL: TICK ('\\\'' | '\'\'' | ~('\''))* TICK;
-
-FLOAT_LITERAL: DIGIT* '.' DIGIT+;
 
 INTEGER_LITERAL: DIGIT+;
 
