@@ -194,4 +194,14 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 
 		testIntegration(sql);
 	}
+
+	@Test
+	public void testNumericNames() throws Exception {
+		String sql[] = {
+			"create TABLE shard_1.20151214_foo ( r1 REAL, b2 REAL (2,2) )",
+			"create TABLE shard_1.20151214 ( r1 REAL, b2 REAL (2,2) )"
+		};
+
+		testIntegration(sql);
+	}
 }
