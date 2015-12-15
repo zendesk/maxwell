@@ -43,6 +43,8 @@ public class ColumnWithDefinitionList implements Iterable<ColumnWithDefinition> 
 			return columnIterator.hasNext();
 		}
 
+		@Override
+		public void remove() { throw new UnsupportedOperationException(); }
 
 		@Override
 		public ColumnWithDefinition next() {
