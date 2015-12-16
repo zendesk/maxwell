@@ -91,7 +91,14 @@ public class MaxwellUpdateRowsEvent extends MaxwellAbstractRowsEvent {
 				Object beforeValue = cd.asJSON();
 
 				if (!rowMap.hasData(name)) {
-					// running in MINIMAL binlog row image mode.  Fill in after with before
+					/*
+					   If we find a column in the BEFORE image that's *not* present in the AFTER image,
+					   we're running in binlog_row_image = MINIMAL.  In this case, the BEFORE image acts
+					   as a sort of WHERE clause to update rows with the new values (present in the AFTER image).
+
+					   In order to reconstruct as much of the row as posssible, here we fill in
+					   missing data in the rowMap with values from the BEFORE image
+					 */
 					rowMap.putData(name, beforeValue);
 				} else {
 					if (!Objects.equals(rowMap.getData(name), beforeValue)) {
