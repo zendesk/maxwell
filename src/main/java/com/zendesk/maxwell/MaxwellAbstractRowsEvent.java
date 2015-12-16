@@ -8,6 +8,7 @@ import com.google.code.or.binlog.BinlogEventV4Header;
 import com.google.code.or.binlog.impl.event.AbstractRowEvent;
 import com.google.code.or.common.glossary.Column;
 import com.google.code.or.common.glossary.Row;
+import com.google.code.or.common.glossary.column.BitColumn;
 import com.google.code.or.common.glossary.column.DatetimeColumn;
 import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Table;
@@ -176,37 +177,23 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 				this.getNextBinlogPosition());
 	}
 
-	protected Object valueForJson(Column c) {
-		if (c instanceof DatetimeColumn)
-			return ((DatetimeColumn) c).getLongValue();
-		return c.getValue();
-	}
 
 	public List<RowMap> jsonMaps() {
 		ArrayList<RowMap> list = new ArrayList<>();
-		Object value;
+
 		for ( Iterator<Row> ri = filteredRows().iterator() ; ri.hasNext(); ) {
 			Row r = ri.next();
 
 			RowMap rowMap = buildRowMap();
 
-			Iterator<Column> colIter = r.getColumns().iterator();
-			Iterator<ColumnDef> defIter = table.getColumnList().iterator();
+			for ( ColumnWithDefinition cd : new ColumnWithDefinitionList(table, r, getUsedColumns()) )
+				rowMap.putData(cd.definition.getName(), cd.asJSON());
 
-			while ( colIter.hasNext() && defIter.hasNext() ) {
-				Column c = colIter.next();
-				ColumnDef d = defIter.next();
-
-				value = valueForJson(c);
-
-				if ( value != null )
-					value = d.asJSON(value);
-
-				rowMap.putData(d.getName(), value);
-			}
 			list.add(rowMap);
 		}
 
 		return list;
 	}
+
+	protected abstract BitColumn getUsedColumns();
 }
