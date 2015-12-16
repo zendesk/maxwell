@@ -49,7 +49,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 	}
 
 	private String unquote(String ident) {
-		return ident.replaceAll("^`", "").replaceAll("`$", "");
+		return ident.replaceFirst("^`", "").replaceFirst("`$", "");
 	}
 
 	private String unquote_literal(String ident) {

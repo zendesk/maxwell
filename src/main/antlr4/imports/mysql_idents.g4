@@ -47,8 +47,7 @@ fragment TICK: '\'';
 fragment UNQUOTED_CHAR: [0-9a-zA-Z\u0080-\u00FF$_];
 IDENT: (UNQUOTED_CHAR)+;
 
-fragment QUOTED_CHAR: ~('/' | '\\' | '.' | '`');
-QUOTED_IDENT: '`' QUOTED_CHAR+? '`';
+QUOTED_IDENT: '`' (~'`')+? '`';
 
 fragment DIGIT: [0-9];
 WS  :   [ \t\n\r]+ -> skip ;
