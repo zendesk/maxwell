@@ -353,4 +353,9 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 		if ( server.getVersion().equals("5.6") )
 			runJSONTestFile(getSQLDir() + "/json/test_time");
 	}
+
+	@Test
+	public void testUCS2() throws Exception {
+		runJSONTestFile(getSQLDir() + "/json/test_ucs2");
+	}
 }
