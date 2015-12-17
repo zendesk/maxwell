@@ -6,11 +6,11 @@ ul.nav li.main {
     font-weight: bold;
 }
 
-div.col-md-3 {
+div.col-md-2 {
     padding-left: 0;
 }
 
-div.col-md-9 > ul {
+div.col-md-10 > ul {
   overflow: hidden;
 }
 
@@ -82,7 +82,7 @@ div.source-links {
     }
     .bs-sidebar.affix {
         position: fixed; /* Undo the static from mobile first approach */
-        top: 80px;
+        top: 65px;
     }
     .bs-sidebar.affix-bottom {
         position: absolute; /* Undo the static from mobile first approach */
@@ -97,7 +97,7 @@ div.source-links {
     /* Widen the fixed sidebar again */
     .bs-sidebar.affix-bottom,
     .bs-sidebar.affix {
-        width: 233px;
+        width: 190px;
     }
 }
 
@@ -111,4 +111,14 @@ pre {
 
 .content-title {
   font-size: 150%;
+}
+
+h3 {
+  margin-bottom: 5px;
+  margin-top: 0px;
+}
+
+hr {
+  margin-top:5px;
+  margin-bottom: 10px;
 }
