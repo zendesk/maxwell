@@ -42,7 +42,7 @@
 
         <a href="https://github.com/zendesk/maxwell"><img style="position: absolute; top: 0; right: 0; border: 0; z-index: 1031;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
         <div class="container">
-            <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+            <div class="col-md-2"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
         
           <li >
@@ -58,13 +58,13 @@
                       <li class="toctree-l3"><a href="#row-based-replication">Row based replication</a></li>
                       
                   
-                      <li class="toctree-l3"><a href="#grant-permissions">Grant permissions</a></li>
+                      <li class="toctree-l3"><a href="#mysql-permissions">Mysql permissions</a></li>
                       
                   
-                      <li class="toctree-l3"><a href="#install-maxwell">Install maxwell</a></li>
+                      <li class="toctree-l3"><a href="#download">Download</a></li>
                       
                   
-                      <li class="toctree-l3"><a href="#run-with-stdout-producer">Run with stdout producer</a></li>
+                      <li class="toctree-l3"><a href="#stdout-producer">STDOUT producer</a></li>
                       
                   
                       <li class="toctree-l3"><a href="#run-with-kafka-producer">Run with kafka producer</a></li>
@@ -96,9 +96,10 @@
         
     </ul>
 </div></div>
-            <div class="col-md-9" role="main">
+            <div class="col-md-10" role="main">
 
 <h3 id="row-based-replication">Row based replication</h3>
+<hr />
 <p>Maxwell can only operate if row-based replication is on.</p>
 <pre><code>$ vi my.cnf
 
@@ -108,7 +109,13 @@ log-bin=master
 binlog_format=row
 </code></pre>
 
-<h3 id="grant-permissions">Grant permissions</h3>
+<p>Or on a running server:</p>
+<pre><code>mysql&gt; set global binlog_row_image=FULL;
+</code></pre>
+
+<h3 id="mysql-permissions">Mysql permissions</h3>
+<hr />
+<p>Maxwell stores all the state it needs within the mysql server itself, in a database called <code>maxwell</code>.</p>
 <pre><code>mysql&gt; GRANT ALL on maxwell.* to 'maxwell'@'%' identified by 'XXXXXX';
 mysql&gt; GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE on *.* to 'maxwell'@'%';
 
@@ -119,14 +126,16 @@ mysql&gt; GRANT ALL on maxwell.* to 'maxwell'@'localhost';
 
 </code></pre>
 
-<h3 id="install-maxwell">Install maxwell</h3>
+<h3 id="download">Download</h3>
+<hr />
 <p>You'll need a version 7 of a JVM.</p>
 <pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.16.2-RC1/maxwell-0.16.2-RC1.tar.gz \
        | tar zxvf -
 cd maxwell-0.16.2-RC1
 </code></pre>
 
-<h3 id="run-with-stdout-producer">Run with stdout producer</h3>
+<h3 id="stdout-producer">STDOUT producer</h3>
+<hr />
 <p>Useful for smoke-testing the thing.</p>
 <pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' --producer=stdout
 </code></pre>
