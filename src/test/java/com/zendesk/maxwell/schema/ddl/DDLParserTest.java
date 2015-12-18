@@ -3,8 +3,12 @@ package com.zendesk.maxwell.schema.ddl;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 
+import com.zendesk.maxwell.AbstractMaxwellTest;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.junit.After;
 import org.junit.Before;
@@ -16,17 +20,9 @@ import com.zendesk.maxwell.schema.columndef.IntColumnDef;
 import com.zendesk.maxwell.schema.columndef.StringColumnDef;
 
 public class DDLParserTest {
-
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-	}
-
-	@Before
-	public void setUp() throws Exception {
-	}
-
-	@After
-	public void tearDown() throws Exception {
+	public String getSQLDir() {
+		final String dir = System.getProperty("user.dir");
+		return dir + "/src/test/resources/sql/";
 	}
 
 	private List<SchemaChange> parse(String sql) {
@@ -439,5 +435,13 @@ public class DDLParserTest {
 	public void testBinaryColumnDefaults() {
 		assertThat(parseCreate("CREATE TABLE foo (id boolean default true)"), is(notNullValue()));
 		assertThat(parseCreate("CREATE TABLE foo (id boolean default false)"), is(notNullValue()));
+	}
+
+	@Test
+	public void testAltersFromMysqlTest() throws Exception {
+		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test.sql"));
+		for ( String sql: lines ) {
+			parse(sql);
+		}
 	}
 }
