@@ -4,6 +4,8 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
@@ -439,8 +441,8 @@ public class DDLParserTest {
 	}
 
 	@Test
-	public void testAltersFromMysqlTest() throws Exception {
-		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test.sql"));
+	public void testMysqlTestSQL() throws Exception {
+		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test.sql"), Charset.defaultCharset());
 		for ( String sql: lines ) {
 			parse(sql);
 		}
