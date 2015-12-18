@@ -89,6 +89,12 @@ public abstract class ColumnDef {
 		}
 
 		switch(type) {
+			case "character":
+			case "nchar":
+				return "char";
+			case "nvarchar":
+			case "varying":
+				return "varchar";
 			case "bool":
 			case "boolean":
 			case "int1":

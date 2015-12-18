@@ -296,6 +296,10 @@ public class MysqlParserListener extends mysqlBaseListener {
 		} else if ( dctx.string_type() != null ) {
 			colType = dctx.string_type().col_type.getText();
 			colEncoding = getEncoding(dctx.string_type().string_column_options());
+
+			if ( dctx.string_type().utf8 ) // forced into UTF-8 by NATIONAL-fu
+				colEncoding = "utf8";
+
 			colOptions = dctx.string_type().column_options();
 			longStringFlag = (dctx.string_type().long_flag() != null);
 		} else if ( dctx.enumerated_type() != null ) {

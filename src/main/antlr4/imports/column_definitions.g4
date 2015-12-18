@@ -40,17 +40,18 @@ signed_type: // we need the UNSIGNED flag here
 		column_options*
     ;
 
-string_type: // getting the encoding here
-      col_type=(CHAR | VARCHAR)
-               length?
-               (column_options | string_column_options)*
-    | col_type=(TINYTEXT | TEXT | MEDIUMTEXT | LONGTEXT)
-               (column_options | string_column_options)*
+string_type locals [Boolean utf8 = false]:
+      (NATIONAL {$utf8=true;})?
+      col_type=(CHAR | CHARACTER | VARCHAR) length?  (column_options | string_column_options)*
+    | (NATIONAL {$utf8=true;})?
+      (CHARACTER|CHAR) col_type=VARYING length (string_column_options | column_options)*
+    | col_type=(NCHAR | NVARCHAR) length? (string_column_options | column_options)* {$utf8=true;}
+    | NCHAR col_type=VARCHAR length? (column_options | string_column_options)* {$utf8=true;}
+    | col_type=(TINYTEXT | TEXT | MEDIUMTEXT | LONGTEXT) (column_options | string_column_options)*
     | long_flag col_type=(VARCHAR | BINARY) (column_options | string_column_options)*
     | long_flag col_type=VARBINARY column_options*
     | col_type=LONG (column_options | string_column_options)*
     ;
-
 
 long_flag: LONG;
 
