@@ -20,6 +20,7 @@ public class MaxwellContext {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellContext.class);
 
 	private final ConnectionPool connectionPool;
+	private final ConnectionPool schemaConnectionPool;
 	private final MaxwellConfig config;
 	private SchemaPosition schemaPosition;
 	private Long serverID;
@@ -29,6 +30,9 @@ public class MaxwellContext {
 		this.config = config;
 		this.connectionPool = new ConnectionPool("MaxwellConnectionPool", 10, 0, 10,
 				config.getConnectionURI(), config.mysqlUser, config.mysqlPassword);
+
+		this.schemaConnectionPool = new ConnectionPool("SchemaConnectionPool", 10, 0, 10,
+				config.getSchemaConnectionURI(), config.mysqlSchemaUser, config.mysqlSchemaPassword);
 
 		if ( this.config.initPosition != null )
 			this.initialPosition = this.config.initPosition;
@@ -42,8 +46,10 @@ public class MaxwellContext {
 		return this.connectionPool;
 	}
 
+	public ConnectionPool getSchemaConnectionPool() { return this.schemaConnectionPool;}
+
 	public void start() {
-		SchemaScavenger s = new SchemaScavenger(this.connectionPool);
+		SchemaScavenger s = new SchemaScavenger(this.schemaConnectionPool);
 		new Thread(s).start();
 	}
 
@@ -56,14 +62,15 @@ public class MaxwellContext {
 			}
 		}
 		this.connectionPool.release();
+		this.schemaConnectionPool.release();
 	}
 
 	private SchemaPosition getSchemaPosition() throws SQLException {
 		if ( this.schemaPosition == null ) {
 			if ( this.getConfig().replayMode ) {
-				this.schemaPosition = new ReadOnlySchemaPosition(this.getConnectionPool(), this.getServerID());
+				this.schemaPosition = new ReadOnlySchemaPosition(this.getSchemaConnectionPool(), this.getServerID());
 			} else {
-				this.schemaPosition = new SchemaPosition(this.getConnectionPool(), this.getServerID());
+				this.schemaPosition = new SchemaPosition(this.getSchemaConnectionPool(), this.getServerID());
 			}
 
 			this.schemaPosition.start();
