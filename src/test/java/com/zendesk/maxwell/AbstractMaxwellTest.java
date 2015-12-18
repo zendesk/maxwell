@@ -87,6 +87,11 @@ public class AbstractMaxwellTest {
 		config.mysqlUser = "maxwell";
 		config.mysqlPassword = "maxwell";
 
+		config.mysqlSchemaHost = "127.0.0.1";
+		config.mysqlSchemaPort = server.getPort();
+		config.mysqlSchemaUser = "maxwell";
+		config.mysqlSchemaPassword = "maxwell";
+
 		return new MaxwellContext(config);
 	}
 

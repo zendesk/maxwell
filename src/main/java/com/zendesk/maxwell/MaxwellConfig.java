@@ -23,6 +23,12 @@ public class MaxwellConfig {
 	public Integer mysqlPort;
 	public String  mysqlUser;
 	public String  mysqlPassword;
+
+	public String mysqlSchemaHost;
+	public Integer mysqlSchemaPort;
+	public String  mysqlSchemaUser;
+	public String  mysqlSchemaPassword;
+
 	public String  includeDatabases, excludeDatabases, includeTables, excludeTables;
 	public final Properties kafkaProperties;
 	public String kafkaTopic;
@@ -50,6 +56,12 @@ public class MaxwellConfig {
 		return "jdbc:mysql://" + mysqlHost + ":" + mysqlPort;
 	}
 
+	public String getSchemaConnectionURI() {
+		LOGGER.warn("mysql schema host: " + this.mysqlSchemaHost + " port: " + mysqlSchemaPort.toString());
+		return "jdbc:mysql://" + mysqlSchemaHost + ":" + mysqlSchemaPort;
+	}
+
+
 	private OptionParser getOptionParser() {
 		OptionParser parser = new OptionParser();
 		parser.accepts( "config", "location of config file" ).withRequiredArg();
@@ -59,6 +71,12 @@ public class MaxwellConfig {
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
 		parser.accepts( "password", "mysql password" ).withRequiredArg();
 		parser.accepts( "port", "mysql port" ).withRequiredArg();
+
+		parser.accepts( "schema_host", "mysql host" ).withRequiredArg();
+		parser.accepts( "schema_user", "mysql username" ).withRequiredArg();
+		parser.accepts( "schema_password", "mysql password" ).withRequiredArg();
+		parser.accepts( "schema_port", "mysql port" ).withRequiredArg();
+
 		parser.accepts( "producer", "producer type: stdout|file|kafka" ).withRequiredArg();
 
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
@@ -107,6 +125,16 @@ public class MaxwellConfig {
 			this.mysqlUser = (String) options.valueOf("user");
 		if ( options.has("port"))
 			this.mysqlPort = Integer.valueOf((String) options.valueOf("port"));
+
+		if ( options.has("schema_host"))
+			this.mysqlSchemaHost = (String) options.valueOf("schema_host");
+		if ( options.has("schema_password"))
+			this.mysqlSchemaPassword = (String) options.valueOf("schema_password");
+		if ( options.has("schema_user"))
+			this.mysqlSchemaUser = (String) options.valueOf("schema_user");
+		if ( options.has("schema_port"))
+			this.mysqlSchemaPort = Integer.valueOf((String) options.valueOf("schema_port"));
+
 		if ( options.has("producer"))
 			this.producerType = (String) options.valueOf("producer");
 
@@ -189,6 +217,11 @@ public class MaxwellConfig {
 		this.mysqlPassword = p.getProperty("password");
 		this.mysqlUser     = p.getProperty("user");
 		this.mysqlPort     = Integer.valueOf(p.getProperty("port", "3306"));
+
+		this.mysqlSchemaHost     = p.getProperty("schema_host", this.mysqlHost);
+		this.mysqlPassword = p.getProperty("schema_password", this.mysqlPassword);
+		this.mysqlUser     = p.getProperty("schema_user", this.mysqlUser);
+		this.mysqlPort     = Integer.valueOf(p.getProperty("schema_port", p.getProperty("port", "3306")));
 
 		this.producerType    = p.getProperty("producer");
 		this.outputFile      = p.getProperty("output_file");
