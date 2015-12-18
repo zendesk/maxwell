@@ -69,6 +69,7 @@ column_options:
 	| primary_key
 	| ON UPDATE ( CURRENT_TIMESTAMP | now_function )
 	| UNIQUE KEY?
+	| KEY
 	| AUTO_INCREMENT
 	| COMMENT STRING_LITERAL
 	| COLUMN_FORMAT (FIXED|DYNAMIC|DEFAULT)
