@@ -453,7 +453,7 @@ public class DDLParserTest {
 		FileOutputStream problems = new FileOutputStream(new File(getSQLDir() + "/ddl/mysql-test-errors.sql"));
 
 		List<String> assertions = new ArrayList<>();
-		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test.sql"));
+		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test.sql"), Charset.defaultCharset());
 		for ( String sql: lines ) {
 			try {
 				parse(sql);
