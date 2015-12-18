@@ -20,13 +20,13 @@ public class Maxwell {
 	private MaxwellContext context;
 	static final Logger LOGGER = LoggerFactory.getLogger(Maxwell.class);
 
-	private void initFirstRun(Connection connection) throws SQLException, IOException, SchemaSyncError {
+	private void initFirstRun(Connection connection, Connection schemaConnection) throws SQLException, IOException, SchemaSyncError {
 		LOGGER.info("Maxwell is capturing initial schema");
 		SchemaCapturer capturer = new SchemaCapturer(connection);
 		this.schema = capturer.capture();
 
 		BinlogPosition pos = BinlogPosition.capture(connection);
-		SchemaStore store = new SchemaStore(connection, this.context.getServerID(), this.schema, pos);
+		SchemaStore store = new SchemaStore(schemaConnection, this.context.getServerID(), this.schema, pos);
 		store.save();
 
 		this.context.setPosition(pos);
@@ -40,22 +40,23 @@ public class Maxwell {
 
 		this.context = new MaxwellContext(this.config);
 
-		try ( Connection connection = this.context.getConnectionPool().getConnection() ) {
+		try ( Connection connection = this.context.getConnectionPool().getConnection(); Connection schemaConnection = context.getSchemaConnectionPool().getConnection() ) {
 			MaxwellMysqlStatus.ensureMysqlState(connection);
+			MaxwellMysqlStatus.ensureMysqlSchemaState(schemaConnection);
 
-			SchemaStore.ensureMaxwellSchema(connection);
-			SchemaStore.upgradeSchemaStoreSchema(connection);
+			SchemaStore.ensureMaxwellSchema(schemaConnection);
+			SchemaStore.upgradeSchemaStoreSchema(schemaConnection);
 
-			SchemaStore.handleMasterChange(connection, context.getServerID());
+			SchemaStore.handleMasterChange(schemaConnection, context.getServerID());
 
 			if ( this.context.getInitialPosition() != null ) {
 				String producerClass = this.context.getProducer().getClass().getSimpleName();
 
 				LOGGER.info("Maxwell is booting (" + producerClass + "), starting at " + this.context.getInitialPosition());
-				SchemaStore store = SchemaStore.restore(connection, this.context.getServerID(), this.context.getInitialPosition());
+				SchemaStore store = SchemaStore.restore(schemaConnection, this.context.getServerID(), this.context.getInitialPosition());
 				this.schema = store.getSchema();
 			} else {
-				initFirstRun(connection);
+				initFirstRun(connection, schemaConnection);
 			}
 		} catch ( SQLException e ) {
 			LOGGER.error("Failed to connect to mysql server @ " + this.config.getConnectionURI());
