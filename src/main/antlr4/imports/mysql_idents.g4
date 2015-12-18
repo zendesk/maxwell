@@ -20,7 +20,7 @@ string_literal: STRING_LITERAL;
 
 string: (IDENT | STRING_LITERAL);
 integer: INTEGER_LITERAL;
-charset_name: (IDENT | STRING_LITERAL | QUOTED_IDENT);
+charset_name: (IDENT | STRING_LITERAL | QUOTED_IDENT | BINARY);
 
 default_character_set: DEFAULT? charset_token '='? charset_name collation?;
 default_collation: DEFAULT? collation;
@@ -38,13 +38,13 @@ SQL_COMMENT: '/*' ~'!' (.)*? '*/' -> skip;
 
 SQL_LINE_COMMENT: ('#' | '--') (~'\n')* ('\n' | EOF) -> skip;
 
-STRING_LITERAL: TICK ('\\\'' | '\'\'' | ~('\''))* TICK;
+STRING_LITERAL: [a-zA-Z]? TICK ('\\\'' | '\'\'' | ~('\''))* TICK;
 
 INTEGER_LITERAL: DIGIT+;
 
 fragment TICK: '\'';
 
-fragment UNQUOTED_CHAR: [0-9a-zA-Z\u0080-\u00FF$_];
+fragment UNQUOTED_CHAR: [0-9a-zA-Z\u0080-\uFFFF$_];
 IDENT: (UNQUOTED_CHAR)+;
 
 QUOTED_IDENT: '`' (~'`')+? '`';
