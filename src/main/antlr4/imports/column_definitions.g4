@@ -61,7 +61,7 @@ column_options:
 	  nullability
 	| default_value
 	| primary_key
-	| ON UPDATE CURRENT_TIMESTAMP
+	| ON UPDATE ( CURRENT_TIMESTAMP | now_function )
 	| UNIQUE KEY?
 	| AUTO_INCREMENT
 	| COMMENT STRING_LITERAL
@@ -78,8 +78,9 @@ charset_def: (character_set | collation)+;
 character_set: ((CHARACTER SET) | CHARSET) charset_name;
 
 nullability: (NOT NULL | NULL);
-default_value: DEFAULT (literal | NULL | CURRENT_TIMESTAMP | TRUE | FALSE);
+default_value: DEFAULT (literal | NULL | CURRENT_TIMESTAMP | now_function | TRUE | FALSE );
 length: '(' INTEGER_LITERAL ')';
 int_flags: ( UNSIGNED | ZEROFILL );
 decimal_length: '(' INTEGER_LITERAL ( ',' INTEGER_LITERAL )? ')';
 
+now_function: NOW '(' ')';
