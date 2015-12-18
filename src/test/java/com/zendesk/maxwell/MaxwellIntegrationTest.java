@@ -208,6 +208,22 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 		}
 	}
 
+	@Test
+	public void testRunMinimalBinlog() throws Exception {
+		if ( server.getVersion().equals("5.5") )
+			return;
+
+		try {
+			server.getConnection().createStatement().execute("set global binlog_row_image='minimal'");
+			server.resetConnection(); // only new connections pick up the binlog setting
+
+			runJSONTestFile(getSQLDir() + "/json/test_minimal");
+		} finally {
+			server.getConnection().createStatement().execute("set global binlog_row_image='full'");
+			server.resetConnection();
+		}
+	}
+
 
 	private void runJSONTest(List<String> sql, List<Map<String, Object>> expectedJSON) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
@@ -287,6 +303,11 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 	}
 
 	@Test
+	public void testCreateSelectJSON() throws Exception {
+		runJSONTestFile(getSQLDir() + "/json/test_create_select");
+	}
+
+	@Test
 	public void testEnumJSON() throws Exception {
 		runJSONTestFile(getSQLDir() + "/json/test_enum");
 	}
@@ -331,5 +352,10 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 	public void testTime() throws Exception {
 		if ( server.getVersion().equals("5.6") )
 			runJSONTestFile(getSQLDir() + "/json/test_time");
+	}
+
+	@Test
+	public void testUCS2() throws Exception {
+		runJSONTestFile(getSQLDir() + "/json/test_ucs2");
 	}
 }

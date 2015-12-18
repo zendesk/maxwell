@@ -49,7 +49,9 @@ public class Maxwell {
 			SchemaStore.handleMasterChange(connection, context.getServerID());
 
 			if ( this.context.getInitialPosition() != null ) {
-				LOGGER.info("Maxwell is booting, starting at " + this.context.getInitialPosition());
+				String producerClass = this.context.getProducer().getClass().getSimpleName();
+
+				LOGGER.info("Maxwell is booting (" + producerClass + "), starting at " + this.context.getInitialPosition());
 				SchemaStore store = SchemaStore.restore(connection, this.context.getServerID(), this.context.getInitialPosition());
 				this.schema = store.getSchema();
 			} else {

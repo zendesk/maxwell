@@ -5,8 +5,10 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 import com.google.code.or.binlog.impl.event.*;
 import org.slf4j.Logger;
@@ -29,7 +31,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 	private Schema schema;
 	private MaxwellFilter filter;
 
-	private final LinkedBlockingQueue<BinlogEventV4> queue = new LinkedBlockingQueue<BinlogEventV4>(20);
+	private final LinkedBlockingDeque<BinlogEventV4> queue = new LinkedBlockingDeque<>(20);
 
 	protected MaxwellBinlogEventListener binlogEventListener;
 
@@ -149,17 +151,20 @@ public class MaxwellReplicator extends RunLoopProcess {
 		return ew;
 	}
 
+	private static Pattern createTablePattern =
+			Pattern.compile("^CREATE\\s+TABLE", Pattern.CASE_INSENSITIVE);
+
 	private RowMapBuffer getTransactionRows() throws Exception {
 		BinlogEventV4 v4Event;
 		MaxwellAbstractRowsEvent event;
 
 		RowMapBuffer buffer = new RowMapBuffer(MAX_TX_ELEMENTS);
 
-		// currently to satisfy the test interface, the contract is to return null
-		// if the queue is empty.  should probably just replace this with an optional timeout...
-
 		while ( true ) {
 			v4Event = pollV4EventFromQueue();
+
+			// currently to satisfy the test interface, the contract is to return null
+			// if the queue is empty.  should probably just replace this with an optional timeout...
 			if (v4Event == null) {
 				ensureReplicatorThread();
 				continue;
@@ -199,6 +204,12 @@ public class MaxwellReplicator extends RunLoopProcess {
 						return buffer;
 					} else if ( sql.toUpperCase().startsWith("SAVEPOINT")) {
 						LOGGER.info("Ignoring SAVEPOINT in transaction: " + qe);
+					} else if ( createTablePattern.matcher(sql).find() ) {
+						// CREATE TABLE `foo` SELECT * FROM `bar` will put a CREATE TABLE
+						// inside a transaction.  Note that this could, in rare cases, lead
+						// to us starting on a WRITE_ROWS event -- we sync the schema position somewhere
+						// kinda unsafe.
+						processQueryEvent(qe);
 					} else {
 						LOGGER.warn("Unhandled QueryEvent inside transaction: " + qe);
 					}
@@ -241,7 +252,10 @@ public class MaxwellReplicator extends RunLoopProcess {
 				case MySQLConstants.UPDATE_ROWS_EVENT_V2:
 				case MySQLConstants.DELETE_ROWS_EVENT:
 				case MySQLConstants.DELETE_ROWS_EVENT_V2:
-					LOGGER.error("Got an unexpected row-event: " + v4Event);
+					LOGGER.warn("Started replication stream outside of transaction.  This shouldn't normally happen.");
+
+					queue.offerFirst(v4Event);
+					rowBuffer = getTransactionRows();
 					break;
 				case MySQLConstants.TABLE_MAP_EVENT:
 					tableCache.processEvent(this.schema, (TableMapEvent) v4Event);

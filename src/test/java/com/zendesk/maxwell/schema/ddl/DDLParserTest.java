@@ -163,6 +163,9 @@ public class DDLParserTest {
 	@Test
 	public void testParsingSomeAlters() {
 		String testSQL[] = {
+			"alter database d DEFAULT CHARACTER SET = 'utf8'",
+			"alter database d UPGRADE DATA DIRECTORY NAME",
+			"alter schema d COLLATE foo",
 			"alter table t add index `foo` using btree (`a`, `cd`) key_block_size=123",
 			"alter table t add key bar (d)",
 			"alter table t add constraint `foo` primary key using btree (id)",
@@ -191,7 +194,13 @@ public class DDLParserTest {
 			"alter table t add column `foo` int,  ALGORITHM=copy",
 			"alter table t add column `foo` int, algorithm copy",
 			"alter table t add column `foo` int, algorithm copy, lock shared",
-			"alter table t add column `foo` int, algorithm copy, lock=exclusive"
+			"alter table t add column `foo` int, algorithm copy, lock=exclusive",
+			"create table t (id int) engine=memory",
+			"CREATE TABLE `t1` (id int, UNIQUE `int` (`int`))",
+			"create table t2 (b varchar(10) not null unique) engine=MyISAM",
+			"create TABLE shard_1.20151214foo ( r1 REAL, b2 REAL (2,2) )",
+			"create TABLE shard_1.20151214 ( r1 REAL, b2 REAL (2,2) )",
+			"create table `shard1.foo` ( `id.foo` int )"
 		};
 
 		for ( String s : testSQL ) {
@@ -207,7 +216,12 @@ public class DDLParserTest {
 			"ALTER DEFINER=foo VIEW",
 			"CREATE VIEW foo",
 			"CREATE TRIGGER foo",
-			"CREATE DEFINER=`dba`@`localhost` TRIGGER `pt_osc_zd_shard485_prod_cf_values_del` ... "
+			"CREATE DEFINER=`dba`@`localhost` TRIGGER `pt_osc_zd_shard485_prod_cf_values_del` ... ",
+			"CREATE EVENT foo ",
+			"DROP EVENT foo bar",
+			"ALTER ALGORITHM = UNDEFINED DEFINER='view'@'localhost' SQL SECURITY DEFINER VIEW `fooview` as (SELECT * FROM FOO)"
+				+ "VIEW view_name [(alskdj lk jdlfka j dlkjd lk",
+			"CREATE TEMPORARY TABLE 172898_16841_transmem SELECT t.* FROM map.transmem AS t"
 		};
 
 		for ( String s : testSQL ) {

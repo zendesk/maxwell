@@ -12,10 +12,10 @@ index_type_pk:
   index_constraint? PRIMARY KEY (index_type | index_name)* index_column_list index_options*;
 
 index_type_3:
-  index_constraint? UNIQUE index_or_key index_name? index_type? index_column_list index_options*;
+  index_constraint? UNIQUE index_or_key? index_name? index_type? index_column_list index_options*;
 
 index_type_4:
-  (FULLTEXT | SPATIAL) index_or_key index_name? index_column_list index_options*;
+  (FULLTEXT | SPATIAL) index_or_key? index_name? index_column_list index_options*;
 
 index_type_5:
   index_constraint? FOREIGN KEY index_name? index_column_list reference_definition;
