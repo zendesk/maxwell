@@ -52,9 +52,15 @@ public class MaxwellMysqlStatus {
 	public static void ensureMysqlState(Connection c) throws SQLException, MaxwellCompatibilityError {
 		MaxwellMysqlStatus m = new MaxwellMysqlStatus(c);
 
-		m.ensureVariableState("read_only", "OFF");
+		//m.ensureVariableState("read_only", "OFF");
 		m.ensureVariableState("log_bin", "ON");
 		m.ensureVariableState("binlog_format", "ROW");
 		m.ensureRowImageFormat();
+	}
+
+	public static void ensureMysqlSchemaState(Connection c) throws SQLException, MaxwellCompatibilityError {
+		MaxwellMysqlStatus m = new MaxwellMysqlStatus(c);
+
+		m.ensureVariableState("read_only", "OFF");
 	}
 }
