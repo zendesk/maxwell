@@ -30,10 +30,14 @@ signed_type: // we need the UNSIGNED flag here
                 length?
                 int_flags*
                 column_options*
-    | col_type=(REAL | DOUBLE | FLOAT | DECIMAL | NUMERIC)
+    | col_type=(REAL | FLOAT | DECIMAL | NUMERIC)
     		    decimal_length?
     		    int_flags*
     		    column_options*
+    | col_type=DOUBLE PRECISION?
+		decimal_length?
+		int_flags*
+		column_options*
     ;
 
 string_type: // getting the encoding here
