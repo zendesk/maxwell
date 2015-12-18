@@ -8,7 +8,11 @@ import org.apache.commons.lang.StringEscapeUtils;
 
 import com.google.code.or.common.util.MySQLConstants;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class StringColumnDef extends ColumnDef {
+	static final Logger LOGGER = LoggerFactory.getLogger(StringColumnDef.class);
 	public StringColumnDef(String tableName, String name, String type, int pos, String encoding) {
 		super(tableName, name, type, pos);
 		this.encoding = encoding;
@@ -39,12 +43,15 @@ public class StringColumnDef extends ColumnDef {
 
 	// this could obviously be more complete.
 	private Charset charsetForEncoding() {
-		switch(encoding) {
+		switch(encoding.toLowerCase()) {
 		case "utf8": case "utf8mb4":
 			return Charset.forName("UTF-8");
 		case "latin1": case "ascii":
 			return Charset.forName("ISO-8859-1");
+		case "ucs2":
+			return Charset.forName("UTF-16");
 		default:
+			LOGGER.warn("warning: unhandled character set '" + encoding + "'");
 			return null;
 		}
 	}

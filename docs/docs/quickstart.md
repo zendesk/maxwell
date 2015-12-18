@@ -1,7 +1,6 @@
 ### Row based replication
-
+***
 Maxwell can only operate if row-based replication is on.
-
 
 ```
 $ vi my.cnf
@@ -12,8 +11,16 @@ log-bin=master
 binlog_format=row
 ```
 
-### Grant permissions
+Or on a running server:
 
+```
+mysql> set global binlog_row_image=FULL;
+```
+
+
+### Mysql permissions
+***
+Maxwell stores all the state it needs within the mysql server itself, in a database called `maxwell`.
 ```
 mysql> GRANT ALL on maxwell.* to 'maxwell'@'%' identified by 'XXXXXX';
 mysql> GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE on *.* to 'maxwell'@'%';
@@ -25,19 +32,19 @@ mysql> GRANT ALL on maxwell.* to 'maxwell'@'localhost';
 
 ```
 
-### Install maxwell
-
+### Download
+***
 You'll need a version 7 of a JVM.
 
 ```
-curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.16.1-RC1/maxwell-0.16.1-RC1.tar.gz \
+curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.16.2-RC1/maxwell-0.16.2-RC1.tar.gz \
        | tar zxvf -
-cd maxwell-0.16.1-RC1
+cd maxwell-0.16.2-RC1
 ```
 
 
-### Run with stdout producer
-
+### STDOUT producer
+***
 Useful for smoke-testing the thing.
 
 ```
