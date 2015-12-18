@@ -71,12 +71,17 @@ public class MysqlParserListener extends mysqlBaseListener {
 		return (TableAlter)schemaChanges.get(0);
 	}
 
-	private String getEncoding(Charset_defContext ctx) {
-		if ( ctx != null && ctx.character_set(0) != null ) {
-			return unquote_literal(ctx.character_set(0).charset_name().getText());
-		} else {
-			return null;
+	private String getEncoding(List<String_column_optionsContext> list) {
+		for ( String_column_optionsContext ctx : list ) {
+			if ( ctx.charset_def() != null ) {
+				if ( ctx.charset_def().ASCII() != null ) {
+					return "latin1";
+				} else {
+					return unquote_literal(ctx.charset_def().character_set().charset_name().getText());
+				}
+			}
 		}
+		return null;
 	}
 
 	@Override
@@ -290,14 +295,14 @@ public class MysqlParserListener extends mysqlBaseListener {
 			colOptions = dctx.signed_type().column_options();
 		} else if ( dctx.string_type() != null ) {
 			colType = dctx.string_type().col_type.getText();
-			colEncoding = getEncoding(dctx.string_type().charset_def(0));
+			colEncoding = getEncoding(dctx.string_type().string_column_options());
 			colOptions = dctx.string_type().column_options();
 			longStringFlag = (dctx.string_type().long_flag() != null);
 		} else if ( dctx.enumerated_type() != null ) {
 			List<Enum_valueContext> valueList = dctx.enumerated_type().enumerated_values().enum_value();
 
 			colType = dctx.enumerated_type().col_type.getText();
-			colEncoding = getEncoding(dctx.enumerated_type().charset_def(0));
+			colEncoding = getEncoding(dctx.enumerated_type().string_column_options());
 			colOptions = dctx.enumerated_type().column_options();
 			enumValues = new String[valueList.size()];
 

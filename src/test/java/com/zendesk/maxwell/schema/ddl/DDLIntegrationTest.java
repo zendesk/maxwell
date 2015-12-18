@@ -216,4 +216,12 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 		testIntegration(sql);
 	}
 
+	@Test
+	public void testASCIIEncoding() throws Exception {
+		String sql[] = {
+			"create TABLE t1( a varchar(255) ASCII, b enum('a', 'b') ASCII )"
+		};
+
+		testIntegration(sql);
+	}
 }
