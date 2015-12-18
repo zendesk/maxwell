@@ -29,13 +29,7 @@ public abstract class ColumnDef {
 	}
 
 	public static ColumnDef build(String tableName, String name, String encoding, String type, int pos, boolean signed, String enumValues[]) {
-		type = unalias_type(type);
-
 		switch(type) {
-		case "bool":
-		case "boolean":
-			type = "tinyint";
-			// fallthrough
 		case "tinyint":
 		case "smallint":
 		case "mediumint":
@@ -57,10 +51,6 @@ public abstract class ColumnDef {
 		case "binary":
 		case "varbinary":
 			return new StringColumnDef(tableName, name, type, pos, "binary");
-		case "real":
-		case "numeric":
-			type = "double";
-			// fall through
 		case "float":
 		case "double":
 			return new FloatColumnDef(tableName, name, type, pos);
@@ -86,8 +76,21 @@ public abstract class ColumnDef {
 		}
 	}
 
-	static private String unalias_type(String type) {
+	static public String unalias_type(String type, boolean longStringFlag) {
+		if ( longStringFlag ) {
+			switch (type) {
+				case "varchar":
+					return "mediumtext";
+				case "varbinary":
+					return "mediumblob";
+				case "binary":
+					return "mediumtext";
+			}
+		}
+
 		switch(type) {
+			case "bool":
+			case "boolean":
 			case "int1":
 				return "tinyint";
 			case "int2":
@@ -99,6 +102,9 @@ public abstract class ColumnDef {
 				return "int";
 			case "int8":
 				return "bigint";
+			case "real":
+			case "numeric":
+				return "double";
 			default:
 				return type;
 		}

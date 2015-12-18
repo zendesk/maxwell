@@ -44,7 +44,11 @@ string_type: // getting the encoding here
     | col_type=(TINYTEXT | TEXT | MEDIUMTEXT | LONGTEXT)
                BINARY?
                (charset_def | column_options)*
+    | long_flag col_type=VARCHAR BINARY? (charset_def | column_options)*
+    | long_flag col_type=(BINARY|VARBINARY) (charset_def | column_options)*
 	  ;
+
+long_flag: LONG;
 
 enumerated_type:
 	  col_type=(ENUM | SET)
