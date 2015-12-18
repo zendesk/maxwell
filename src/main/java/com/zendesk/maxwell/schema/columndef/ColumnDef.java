@@ -105,6 +105,8 @@ public abstract class ColumnDef {
 			case "real":
 			case "numeric":
 				return "double";
+			case "long":
+				return "mediumtext";
 			default:
 				return type;
 		}

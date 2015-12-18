@@ -210,7 +210,8 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 		String sql[] = {
 			"create TABLE t1( a long varchar character set 'utf8' )",
 			"create TABLE t2( a long varbinary )",
-			"create TABLE t3( a long binary character set 'latin1' default NULL )"
+			"create TABLE t3( a long binary character set 'latin1' default NULL )",
+			"create table t4( a long )"
 		};
 
 		testIntegration(sql);

@@ -48,6 +48,7 @@ string_type: // getting the encoding here
                (column_options | string_column_options)*
     | long_flag col_type=(VARCHAR | BINARY) (column_options | string_column_options)*
     | long_flag col_type=VARBINARY column_options*
+    | col_type=LONG (column_options | string_column_options)*
     ;
 
 
