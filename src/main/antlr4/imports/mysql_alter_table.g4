@@ -41,6 +41,7 @@ ignored_alter_specifications:
     | DISABLE KEYS
     | ENABLE KEYS
     | ORDER BY index_columns
+    | FORCE
     /*
      I'm also leaving out the following from the alter table definition because who cares:
      | DISCARD TABLESPACE
