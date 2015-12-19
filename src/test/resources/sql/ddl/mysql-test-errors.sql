@@ -1,6 +1,3 @@
-ALTER TABLE  `t+1` RENAME `t+2`
-ALTER TABLE T1 RENAME T2
-ALTER TABLE T2 RENAME T3
 ALTER TABLE TableA ADD PARTITION (PARTITION PartE VALUES IN (13))
 ALTER TABLE TableA ADD PARTITION (PARTITION PartE VALUES LESS THAN (MAXVALUE))
 ALTER TABLE TableA ADD PARTITION (PARTITION partE VALUES IN (16), PARTITION Partf VALUES IN (19), PARTITION PartG VALUES IN (22))
@@ -15,8 +12,6 @@ ALTER TABLE TableA REORGANIZE PARTITION partB,Partc,PartD,PartE INTO (PARTITION 
 ALTER TABLE TableA REORGANIZE PARTITION parta,partB INTO (PARTITION partB  COMMENT="Previusly named parta", PARTITION parta  COMMENT="Previusly named partB")
 ALTER TABLE TableA REORGANIZE PARTITION parta,partB,Partc INTO (PARTITION Partc VALUES IN (1,7)  COMMENT = "Mix 1 of old parta and Partc", PARTITION parta VALUES IN (3,9)  COMMENT = "Mix 2 of old parta and Partc", PARTITION partB VALUES IN (4,8)  COMMENT = "Mix 3 of old parta and Partc")
 ALTER TABLE TableB REMOVE PARTITIONING
-ALTER TABLE `#sql2`      RENAME `@0023sql-2`
-ALTER TABLE `@0023sql1`  RENAME `#sql-1`
 ALTER TABLE `test`.`bug47205` FORCE
 ALTER TABLE bug47205 FORCE
 ALTER TABLE emp REORGANIZE PARTITION northeast INTO ( PARTITION east VALUES LESS THAN (25) DATA DIRECTORY = '/Users/ben/src/mysql-server/mysql-test/var/tmp/alt_dir_east'     INDEX DIRECTORY = '/Users/ben/src/mysql-server/mysql-test/var/tmp/alt_dir_east'     (SUBPARTITION e0, SUBPARTITION e1), PARTITION north VALUES LESS THAN (50) DATA DIRECTORY = '/Users/ben/src/mysql-server/mysql-test/var/tmp/alt_dir_north'     INDEX DIRECTORY = '/Users/ben/src/mysql-server/mysql-test/var/tmp/alt_dir_north'     (SUBPARTITION n0, SUBPARTITION n1) )
@@ -51,7 +46,6 @@ ALTER TABLE t1 ANALYZE PARTITION ALL
 ALTER TABLE t1 ANALYZE PARTITION MAX
 ALTER TABLE t1 ANALYZE PARTITION p0
 ALTER TABLE t1 ANALYZE PARTITION p1
-ALTER TABLE t1 CHANGE int_field unsigned_int_field INTEGER UNSIGNED NOT NULL, RENAME t2
 ALTER TABLE t1 CHANGE ucs2_f ucs2_f CHAR(32) UNICODE NOT NULL
 ALTER TABLE t1 COALESCE PARTITION 1
 ALTER TABLE t1 COALESCE PARTITION 13
@@ -86,7 +80,6 @@ ALTER TABLE t1 REBUILD PARTITION all
 ALTER TABLE t1 REBUILD PARTITION p0
 ALTER TABLE t1 REBUILD PARTITION pNamed1,p5
 ALTER TABLE t1 REMOVE PARTITIONING
-ALTER TABLE t1 RENAME t2
 ALTER TABLE t1 REORGANIZE PARTITION
 ALTER TABLE t1 REORGANIZE PARTITION hour_003, hour_004 INTO (PARTITION oldest VALUES LESS THAN (4))
 ALTER TABLE t1 REORGANIZE PARTITION p0 INTO (PARTITION pHidden)
@@ -130,7 +123,6 @@ ALTER TABLE t2 EXCHANGE PARTITION p1 WITH TABLE t1
 ALTER TABLE t2 FORCE
 ALTER TABLE t2 PARTITION BY RANGE (UNIX_TIMESTAMP(a)) (PARTITION `p0` VALUES LESS THAN (0), PARTITION `p-2000` VALUES LESS THAN (UNIX_TIMESTAMP('2000-01-01')), PARTITION `p-2011-MSK` VALUES LESS THAN (UNIX_TIMESTAMP('2011-03-26 23:00:00')), PARTITION `p-2011-MSD-1` VALUES LESS THAN (UNIX_TIMESTAMP('2011-10-29 22:00:00')), PARTITION `p-2011-MSD-2` VALUES LESS THAN (UNIX_TIMESTAMP('2011-10-29 23:00:00')), PARTITION `p-2012-MSK-1` VALUES LESS THAN (UNIX_TIMESTAMP('2011-10-30 00:00:00')), PARTITION `p-2012-MSK-2` VALUES LESS THAN (UNIX_TIMESTAMP('2012-03-24 23:00:00')), PARTITION `pEnd` VALUES LESS THAN (UNIX_TIMESTAMP('2038-01-19 03:14:07')), PARTITION `pMax` VALUES LESS THAN MAXVALUE)
 ALTER TABLE t2 REMOVE PARTITIONING
-ALTER TABLE t2 RENAME t1
 ALTER TABLE t2 TRUNCATE PARTITION `p10-99`, `p0-9`, `p100-99999`
 ALTER TABLE t2 TRUNCATE PARTITION p1
 ALTER TABLE t4 PARTITION BY HASH (a) PARTITIONS 5
@@ -855,7 +847,6 @@ alter table bug19145a alter column e set default null
 alter table bug19145a alter column s set default null
 alter table bug19145b alter column e set default null
 alter table bug19145b alter column s set default null
-alter table mysqltest.t1 rename t1
 alter table t1 ENGINE = MyISAM PARTITION BY RANGE (int_column) subpartition by key (char_column) subpartitions 2 (PARTITION p1 VALUES LESS THAN (5))
 alter table t1 REORGANIZE partition p1 INTO (partition p11 values in (1,2), partition p12 values in (3,4))
 alter table t1 REORGANIZE partition p11, p12 INTO (partition p1 values in (1,2,3,4))
@@ -883,9 +874,6 @@ alter table t1 partition by range (year(c)) (partition p5 values less than (2000
 alter table t1 partition by range columns(b,a) (partition p0 values less than (1,2), partition p1 values less than (3,3), partition p2 values less than (9,5))
 alter table t1 rebuild partition p1
 alter table t1 remove partitioning
-alter table t1 rename mysqltest.t1
-alter table t1 rename t2
-alter table t1 rename t2, add c char(10), comment "no comment"
 alter table t1 reorganize partition p1 into ( partition p0 values less than (4), partition p1 values less than (100))
 alter table t1 reorganize partition p1 into (partition p1 values less than (3))
 alter table t1 reorganize partition p1 into (partition p11 values less than (2,2), partition p12 values less than (3,3))
@@ -914,7 +902,6 @@ alter table t11 partition by range(yearweek(col1)-200600)  (partition p0 values 
 alter table t11 reorganize partition p0,p1 into (partition s1 values less than maxvalue)
 alter table t11 reorganize partition s1 into (partition p0 values less than (15), partition p1 values less than maxvalue)
 alter table t2 drop partition p0
-alter table t2 rename t1, add c char(10) comment "no comment"
 alter table t22 drop partition p0
 alter table t22 partition by list(abs(col1))  (partition p0 values in (0,1,2,3,4,5,6,7,8,9,10), partition p1 values in (11,12,13,14,15,16,17,18,19,20), partition p2 values in (21,22,23,24,25,26,27,28,29,30), partition p3 values in (31,32,33,34,35,36,37,38,39,40), partition p4 values in (41,42,43,44,45,46,47,48,49,50), partition p5 values in (51,52,53,54,55,56,57,58,59,60) )
 alter table t22 partition by list(day(col1))  (partition p0 values in (0,1,2,3,4,5,6,7,8,9,10), partition p1 values in (11,12,13,14,15,16,17,18,19,20), partition p2 values in (21,22,23,24,25,26,27,28,29,30), partition p3 values in (31,32,33,34,35,36,37,38,39,40), partition p4 values in (41,42,43,44,45,46,47,48,49,50), partition p5 values in (51,52,53,54,55,56,57,58,59,60) )
@@ -933,7 +920,6 @@ alter table t22 partition by list(time_to_sec(col1)-(time_to_sec(col1)-20))  (pa
 alter table t22 partition by list(weekday(col1))  (partition p0 values in (0,1,2,3,4,5,6,7,8,9,10), partition p1 values in (11,12,13,14,15,16,17,18,19,20), partition p2 values in (21,22,23,24,25,26,27,28,29,30), partition p3 values in (31,32,33,34,35,36,37,38,39,40), partition p4 values in (41,42,43,44,45,46,47,48,49,50), partition p5 values in (51,52,53,54,55,56,57,58,59,60) )
 alter table t22 partition by list(year(col1)-1990)  (partition p0 values in (0,1,2,3,4,5,6,7,8,9,10), partition p1 values in (11,12,13,14,15,16,17,18,19,20), partition p2 values in (21,22,23,24,25,26,27,28,29,30), partition p3 values in (31,32,33,34,35,36,37,38,39,40), partition p4 values in (41,42,43,44,45,46,47,48,49,50), partition p5 values in (51,52,53,54,55,56,57,58,59,60) )
 alter table t22 partition by list(yearweek(col1)-200600)  (partition p0 values in (0,1,2,3,4,5,6,7,8,9,10), partition p1 values in (11,12,13,14,15,16,17,18,19,20), partition p2 values in (21,22,23,24,25,26,27,28,29,30), partition p3 values in (31,32,33,34,35,36,37,38,39,40), partition p4 values in (41,42,43,44,45,46,47,48,49,50), partition p5 values in (51,52,53,54,55,56,57,58,59,60) )
-alter table t3 rename t4
 alter table t33 partition by hash(abs(col1))
 alter table t33 partition by hash(day(col1))
 alter table t33 partition by hash(dayofmonth(col1))
@@ -1043,11 +1029,7 @@ alter table t66 reorganize partition s1 into (partition p0 values less than (tim
 alter table t66 reorganize partition s1 into (partition p0 values less than (weekday('2006-10-14')), partition p1 values less than maxvalue)
 alter table t66 reorganize partition s1 into (partition p0 values less than (year('2005-10-14')-1990), partition p1 values less than maxvalue)
 alter table t66 reorganize partition s1 into (partition p0 values less than (yearweek('2006-10-14')-200600), partition p1 values less than maxvalue)
-alter table t8 rename t7
-alter table t9 rename mysqltest.t9
-alter table t9 rename t8, add column d int not null
 alter table table_24562 order by table_24562.subsection ASC, table_24562.section DESC
-alter table test.t1 rename test.t1
 create table b15776 (data blob(2147483647))
 create table b15776 (data blob(2147483648))
 create table b15776 (data blob(4294967294))

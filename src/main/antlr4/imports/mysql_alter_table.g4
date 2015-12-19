@@ -32,7 +32,7 @@ drop_column: DROP COLUMN? old_col_name;
 modify_column: MODIFY COLUMN? column_definition col_position?;
 drop_key: DROP (INDEX|KEY) IDENT;
 drop_primary_key: DROP PRIMARY KEY;
-alter_rename_table: RENAME (TO | AS) table_name;
+alter_rename_table: RENAME (TO | AS)? table_name;
 convert_to_character_set: CONVERT TO charset_token charset_name collation?;
 ignored_alter_specifications:
     ADD index_definition
