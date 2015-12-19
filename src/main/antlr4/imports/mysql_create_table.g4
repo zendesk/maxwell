@@ -16,7 +16,7 @@ create_specification:
   column_definition
   | index_definition;
 
-create_like_tbl: LIKE table_name;
+create_like_tbl: '('? LIKE table_name ')'?;
 
 table_creation_option:
 	  creation_engine
