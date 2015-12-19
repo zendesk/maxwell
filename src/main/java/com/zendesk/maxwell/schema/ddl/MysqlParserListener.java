@@ -193,7 +193,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 			this.columnPosition.position = ColumnPosition.Position.FIRST;
 		} else if ( ctx.AFTER() != null ) {
 			this.columnPosition.position = ColumnPosition.Position.AFTER;
-			this.columnPosition.afterColumn = unquote(ctx.id().getText());
+			this.columnPosition.afterColumn = unquote(ctx.name().getText());
 		}
 	}
 	@Override
