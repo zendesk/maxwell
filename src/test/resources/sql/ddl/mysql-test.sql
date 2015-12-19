@@ -1,7 +1,3 @@
-+v
-\A$3mCxTOqFbuvm4Qj/oF/eiKS0od/aurx1B8CuQatr9m0'
-(
-/* GROUP BY clause */ create table columns (col int key)
 /*!50001 DROP VIEW IF EXISTS `v1`*/
 /*!50001 DROP VIEW IF EXISTS `v2`*/
 /*!50001 DROP VIEW IF EXISTS `v3`*/

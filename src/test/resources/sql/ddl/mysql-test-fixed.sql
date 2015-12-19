@@ -1,4 +1,3 @@
-/* GROUP BY clause */ create table columns (col int key)
 ALTER TABLE innodb_index_stats STATS_PERSISTENT=0
 ALTER TABLE innodb_table_stats STATS_PERSISTENT=0
 ALTER TABLE slave_master_info STATS_PERSISTENT=0
