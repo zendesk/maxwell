@@ -48,7 +48,8 @@ fragment DBL: '"';
 fragment UNQUOTED_CHAR: [0-9a-zA-Z\u0080-\uFFFF$_];
 IDENT: (UNQUOTED_CHAR)+;
 
-QUOTED_IDENT: '`' (~'`')+? '`';
+fragment BACKTICK: '`';
+QUOTED_IDENT: BACKTICK (('``') | ~('`'))+ BACKTICK;
 
 fragment DIGIT: [0-9];
 WS  :   [ \t\n\r]+ -> skip ;
