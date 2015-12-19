@@ -71,7 +71,7 @@ column_options:
 	| UNIQUE KEY?
 	| KEY
 	| AUTO_INCREMENT
-	| COMMENT STRING_LITERAL
+	| COMMENT string_literal
 	| COLUMN_FORMAT (FIXED|DYNAMIC|DEFAULT)
 	| STORAGE (DISK|MEMORY|DEFAULT)
 ;
@@ -79,7 +79,7 @@ column_options:
 primary_key: PRIMARY KEY;
 
 enumerated_values: enum_value (',' enum_value)*;
-enum_value: STRING_LITERAL;
+enum_value: string_literal;
 
 charset_def: character_set | ASCII;
 character_set: ((CHARACTER SET) | CHARSET) charset_name;
