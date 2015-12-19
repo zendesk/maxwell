@@ -855,28 +855,8 @@ CREATE TABLE tsp (a INT, b VARCHAR(55), PRIMARY KEY (a)) DATA DIRECTORY = '/User
 CREATE TABLE tsp (a INT, b VARCHAR(55), PRIMARY KEY (a)) ENGINE = MYISAM PARTITION BY RANGE (a) SUBPARTITION BY HASH(a) (PARTITION p0 VALUES LESS THAN (10) (SUBPARTITION sp00, SUBPARTITION sp01, SUBPARTITION sp02, SUBPARTITION sp03, SUBPARTITION sp04), PARTITION p1 VALUES LESS THAN (100) (SUBPARTITION sp10, SUBPARTITION sp11, SUBPARTITION sp12, SUBPARTITION sp13, SUBPARTITION sp14), PARTITION p2 VALUES LESS THAN (1000) (SUBPARTITION sp20, SUBPARTITION sp21, SUBPARTITION sp22, SUBPARTITION sp23, SUBPARTITION sp24))
 CREATE TABLE tsp (a INT, b VARCHAR(55), PRIMARY KEY (a)) ENGINE = MyISAM PARTITION BY RANGE (a) SUBPARTITION BY HASH(a) (PARTITION p0 VALUES LESS THAN (100) (SUBPARTITION sp0, SUBPARTITION sp1), PARTITION p1 VALUES LESS THAN MAXVALUE (SUBPARTITION sp2, SUBPARTITION sp3))
 DELETE FROM trans
-FROM t1
-H$TZdOuMsICLGFZf5jLWok8LFJ/oA4TM.zFaKbjObwYJ.'
-INSERT INTO db1.trans (a) VALUES (1)
-INSERT INTO t1 SELECT * FROM t2 WHERE GET_LOCK('Bug#34306', 120)
-INSERT INTO t1 VALUES (1),(2)
-INSERT INTO t1 VALUES (1),(2),(3),(4),(5)
-INSERT INTO t1 VALUES(1)
-INSERT INTO t1 VALUES(10)
-INSERT INTO t2 ( NEXT_T ) VALUES ( 1 )
-INSERT INTO t2 SELECT * FROM t1
-INSERT INTO t2 VALUES (1),(2),(3)
-INSERT INTO t2 VALUES (3)
-INSERT INTO t2 VALUES (4)
-INSERT INTO t2 VALUES(2)
-INSERT INTO t3 SELECT * FROM t1
-INSERT INTO test_suppressions (pattern) VALUES ( NAME_CONST('pattern',_latin1'Unsafe statement written to the binary log using statement format since BINLOG_FORMAT = STATEMENT' COLLATE 'latin1_swedish_ci'))
 RI#O\$/tS8Pi8k9EFgfatdOZOPIa.q8k8d.G.eqjk42DQcXS2'
 ROLLBACK
-UPDATE t1 SET b = 12 WHERE a % 2 = 0
-UPDATE t1 SET b = 13 WHERE a IN (2,4,6,8,10,12,14,16,18,20,22,24,26) = 0
-UPDATE t1 SET b = 14 WHERE a IN (2,4,6,8) = 0
-UPDATE t1 SET b = 15 WHERE a % 2 = 0
 alter table bug19145a alter column e set default null
 alter table bug19145a alter column s set default null
 alter table bug19145b alter column e set default null
@@ -1519,41 +1499,5 @@ create table test.no_index_tab ( a varchar(255) not null, b int not null) engine
 create table test.no_index_tab ( a varchar(255) not null, b int not null) engine = merge union = (test.no_index_tab_1,test.no_index_tab_2) insert_method = first
 create table tm(a int) engine=merge union=(t1, t2)
 delete from t2 where (1) in (select * from t1)
-insert into db2.t1 values (1)
-insert into my_bh_table(a) select Master_log_pos from mysql.slave_master_info
-insert into my_bh_table(a) select Relay_log_pos from mysql.slave_relay_log_info
-insert into my_bh_table(a) select Relay_log_pos from mysql.slave_worker_info
-insert into my_bh_table(a) select id from information_schema.processlist
-insert into my_bh_table(a) select thread_id from mysql.general_log
-insert into my_bh_table(a) select thread_id from mysql.slow_log
-insert into my_bh_table(a) select thread_id from performance_schema.threads
-insert into my_bh_table(a) values (1000), (2000), (3000)
-insert into my_non_tx_table(a) select Master_log_pos from mysql.slave_master_info
-insert into my_non_tx_table(a) select Relay_log_pos from mysql.slave_relay_log_info
-insert into my_non_tx_table(a) select Relay_log_pos from mysql.slave_worker_info
-insert into my_non_tx_table(a) select id from information_schema.processlist
-insert into my_non_tx_table(a) select thread_id from mysql.general_log
-insert into my_non_tx_table(a) select thread_id from mysql.slow_log
-insert into my_non_tx_table(a) select thread_id from performance_schema.threads
-insert into my_non_tx_table(a) values (1000), (2000), (3000)
-insert into my_tx_table(a) select Master_log_pos from mysql.slave_master_info
-insert into my_tx_table(a) select Relay_log_pos from mysql.slave_relay_log_info
-insert into my_tx_table(a) select Relay_log_pos from mysql.slave_worker_info
-insert into my_tx_table(a) select id from information_schema.processlist
-insert into my_tx_table(a) select thread_id from mysql.general_log
-insert into my_tx_table(a) select thread_id from mysql.slow_log
-insert into my_tx_table(a) select thread_id from performance_schema.threads
-insert into my_tx_table(a) values (1000), (2000), (3000)
-insert into t1 (code, name) values (3, 'Jeremy'), (4, 'Matt')
-insert into t1 values (1)
-insert into t1 values (1),(2),(3),(4),(5),(6),(7)
-insert into t1 values (1,1),(1,2),(1,3),(3,1),(3,2),(3,3),(3,1),(3,2),(3,3),(2,1),(2,2),(2,3)
-insert into t2 select * from t1
-insert into t2 set a=((1) in (select * from t1))
-insert into t2 values ("Ada")
-insert t1 values (1, "aaa", "bbb"), (NULL, "", "ccccc"), (0, NULL, "")
 replace t2 select * from t1
 replace t2 set a=((1) in (select * from t1))
-update t1 set a=a+10+b where a=1 order by b
-update t1 set b=(@tmp:=@tmp+1) order by a
-update t2 set a=a+1 where (1) in (select * from t1)
