@@ -39,15 +39,10 @@ CREATE TABLE gis_multi_polygon  (fid INTEGER PRIMARY KEY AUTO_INCREMENT, g MULTI
 CREATE TABLE gis_point  (fid INTEGER PRIMARY KEY AUTO_INCREMENT, g POINT)
 CREATE TABLE gis_polygon   (fid INTEGER PRIMARY KEY AUTO_INCREMENT, g POLYGON)
 CREATE TABLE help_relation (   help_topic_id    int unsigned not null references help_topic,   help_keyword_id  int unsigned not null references help_keyword,   primary key      (help_keyword_id, help_topic_id) ) engine=MyISAM CHARACTER SET utf8   comment='keyword-topic relation'
-CREATE TABLE m1 (c1 INT) ENGINE=MRG_MyISAM UNION=(t1,t2) INSERT_METHOD=LAST
-CREATE TABLE m1(a INT) engine=merge union(t1)
-CREATE TABLE m2 (c1 INT) ENGINE=MRG_MyISAM UNION=(t1,t2) INSERT_METHOD=LAST
-CREATE TABLE mm1(a CHAR(9),b INT,KEY(b),KEY(a)) ENGINE=MERGE  UNION=(t1,t2)
 CREATE TABLE res_6_408002_1(f1 CHAR(3), f2 TEXT(25), f3 DATE, f4 INT) ENGINE = MyISAM
 CREATE TABLE res_6_408002_2(f1 CHAR(3), f2 TEXT(25), f3 DATE, f4 INT) ENGINE = MyISAM
 CREATE TABLE result (f1 text(200), f2 char(20))
 CREATE TABLE t ( id INT AUTO_INCREMENT PRIMARY KEY, c TEXT(30) )
-CREATE TABLE t0 (a INT) ENGINE=MERGE UNION(t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15,t16,t17,t18,t19,t20,t21,t22,t23,t24,t25,t26,t27,t28,t29,t30,t31,t32,t33,t34,t35,t36,t37,t38,t39,t40,t41,t42,t43,t44,t45,t46,t47,t48,t49,t50,t51,t52,t53,t54,t55,t56,t57,t58,t59,t60,t61,t62,t63,t64,t65,t66,t67,t68,t69,t70,t71,t72,t73,t74,t75,t76,t77,t78,t79,t80,t81,t82,t83,t84,t85,t86,t87,t88,t89,t90,t91,t92,t93,t94,t95,t96,t97,t98,t99,t100,t101,t102,t103,t104,t105,t106,t107,t108,t109,t110,t111,t112,t113,t114,t115,t116,t117,t118,t119,t120,t121,t122,t123,t124,t125,t126,t127,t128,t129,t130,t131,t132,t133,t134,t135,t136,t137,t138,t139,t140,t141,t142,t143,t144,t145,t146,t147,t148,t149,t150,t151,t152,t153,t154,t155,t156,t157,t158,t159,t160,t161,t162,t163,t164,t165,t166,t167,t168,t169,t170,t171,t172,t173,t174,t175,t176,t177,t178,t179,t180,t181,t182,t183,t184,t185,t186,t187,t188,t189,t190,t191,t192,t193,t194,t195,t196,t197,t198,t199,t200,t201,t202,t203,t204,t205,t206,t207,t208,t209,t210,t211,t212,t213,t214,t215,t216,t217,t218,t219,t220,t221,t222,t223,t224,t225,t226,t227,t228,t229,t230,t231,t232,t233,t234,t235,t236,t237,t238,t239,t240,t241,t242,t243,t244,t245,t246,t247,t248,t249,t250,t251,t252,t253,t254,t255)
 CREATE TABLE t1 ( a INTEGER PRIMARY KEY AUTO_INCREMENT, gp  point, ln  linestring, pg  polygon, mp  multipoint, mln multilinestring, mpg multipolygon, gc  geometrycollection, gm  geometry )
 CREATE TABLE t1 ( a TIMESTAMP(2) NOT NULL DEFAULT CURRENT_TIMESTAMP(2) ON UPDATE CURRENT_TIMESTAMP(2), b DATETIME(2) DEFAULT CURRENT_TIMESTAMP(2) )
 CREATE TABLE t1 ( a TIMESTAMP(2) ON UPDATE CURRENT_TIMESTAMP(2), b DATETIME(2) ON UPDATE CURRENT_TIMESTAMP(2), c INT)
@@ -103,9 +98,7 @@ CREATE TABLE t2 (line LINESTRING NOT NULL) engine=myisam
 CREATE TABLE t2 (p POINT, INDEX(p))
 CREATE TABLE t2(b1 INT, b2 INT, INDEX (b1, b2), CONSTRAINT A1 FOREIGN KEY (b1, b2) REFERENCES t1(a1, a2) ON UPDATE CASCADE ON DELETE NO ACTION) ENGINE=INNODB
 CREATE TABLE t3(b1 INT, b2 INT, INDEX t3_indx (b1, b2), CONSTRAINT A2 FOREIGN KEY (b1, b2) REFERENCES t2(b1, b2) ON UPDATE SET NULL ON DELETE RESTRICT) ENGINE=INNODB
-CREATE TABLE t4 (c1 varchar(100)) ENGINE=MRG_MYISAM UNION=(t1,t2) INSERT_METHOD=LAST
 CREATE TABLE t4(b1 INT, b2 INT, UNIQUE KEY t4_ukey (b1, b2), CONSTRAINT A3 FOREIGN KEY (b1, b2) REFERENCES t3(b1, b2) ON UPDATE NO ACTION ON DELETE SET NULL) ENGINE=INNODB
-CREATE TABLE t5 (c1 varchar(100)) ENGINE=MRG_MYISAM UNION=(t1,t3) INSERT_METHOD=LAST
 CREATE TABLE t5(b1 INT, b2 INT, INDEX (b1, b2), CONSTRAINT A4 FOREIGN KEY (b1, b2) REFERENCES t4(b1, b2) ON UPDATE RESTRICT ON DELETE CASCADE) ENGINE=INNODB
 CREATE TABLE test.t1_1 (f1 BIGINT, f2 TEXT, f2x TEXT, f3 CHAR(10), f3x CHAR(10), f4 BIGINT, f4x BIGINT, f5 POINT, f5x POINT NOT NULL) DEFAULT CHARACTER SET latin1 COLLATE latin1_swedish_ci ENGINE = MyISAM
 DELETE FROM trans
@@ -123,11 +116,8 @@ create table b15776 (data blob(2147483648))
 create table b15776 (data blob(4294967294))
 create table b15776 (data blob(4294967295))
 create table res_t21(name text(10), surname blob(20), age_averylongfieldname_averylongname_1234569 smallint)
-create table t00 (a int) engine=MERGE UNION=(t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15,t16,t17,t18,t19,t20,t21,t22,t23,t24,t25,t26,t27,t28,t29,t30,t31,t32,t33,t34,t35,t36,t37,t38,t39,t40,t41,t42,t43,t44,t45,t46,t47,t48,t49,t50,t51,t52,t53,t54,t55,t56,t57,t58,t59,t60,t61,t62,t63,t64,t65,t66,t67,t68,t69,t70,t71,t72,t73,t74,t75,t76,t77,t78,t79,t80,t81,t82,t83,t84,t85,t86,t87,t88,t89,t90,t91,t92,t93,t94,t95,t96,t97,t98,t99,t100,t101,t102,t103,t104,t105,t106,t107,t108,t109,t110,t111,t112,t113,t114,t115,t116,t117,t118,t119,t120,t121,t122,t123,t124,t125,t126,t127,t128,t129,t130,t131,t132,t133,t134,t135,t136,t137,t138,t139,t140,t141,t142,t143,t144,t145,t146,t147,t148,t149,t150,t151,t152,t153,t154,t155,t156,t157,t158,t159,t160,t161,t162,t163,t164,t165,t166,t167,t168,t169,t170,t171,t172,t173,t174,t175,t176,t177,t178,t179,t180,t181,t182,t183,t184,t185,t186,t187,t188,t189,t190,t191,t192,t193,t194,t195,t196,t197,t198,t199,t200,t201,t202,t203,t204,t205,t206,t207,t208,t209,t210,t211,t212,t213,t214,t215,t216,t217,t218,t219,t220,t221,t222,t223,t224,t225,t226,t227,t228,t229,t230,t231,t232,t233,t234,t235,t236,t237,t238,t239,t240,t241,t242,t243,t244,t245,t246,t247,t248,t249,t250,t251,t252,t253,t254,t255,t256,t257) INSERT_METHOD=FIRST
 create table t1 ( a int, b blob(10), c blob(10), filler blob(10), primary key(a, b(2)), unique key (a, c(2)) ) character set utf8 engine = MyISAM
 create table t1 ( a int, b text(10), c text(10), filler text(10), primary key(a, b(2)), unique key (a, c(2)) ) character set utf8 engine = MyISAM
-create table t1 ( a int, b varchar(30), primary key(a) ) ENGINE = MERGE UNION=(t1_1,t1_2) INSERT_METHOD=FIRST
-create table t1 ( a int, b varchar(30), primary key(a) ) ENGINE = MERGE UNION=(t1_1,t1_2) INSERT_METHOD=LAST
 create table t1 ( min_num   dec(6,6)     default .000001)
 create table t1 ( min_num   dec(6,6)     default 0.000001)
 create table t1 ("t1 column" int)
@@ -153,11 +143,9 @@ create table t1_1025 (a1 blob(1025), a2 blob(1025))
 create table t1_16 (a1 blob(16), a2 blob(16))
 create table t1_512 (a1 blob(512), a2 blob(512))
 create table t1_513 (a1 blob(513), a2 blob(513))
-create table t1_mrg (a int) union (t1) engine=merge
 create table t1bb (a1 bit(3), a2 blob(3))
 create table t2 ( a int, b blob(10), c blob(10), filler blob(10), primary key(a, b(2)), unique key (a, c(2)) ) character set ucs2 engine = MyISAM
 create table t2 ( a int, b text(10), c text(10), filler text(10), primary key(a, b(2)), unique key (a, c(2)) ) character set ucs2 engine = MyISAM
-create table t2 ( a varchar(10) not null primary key ) engine=merge union=(t1)
 create table t2 as select * from t1
 create table t2(test.t2.name int)
 create table t2_1024 (b1 blob(1024), b2 blob(1024))
@@ -166,8 +154,6 @@ create table t2_16 (b1 blob(16), b2 blob(16))
 create table t2_512 (b1 blob(512), b2 blob(512))
 create table t2_513 (b1 blob(513), b2 blob(513))
 create table t2bb (b1 bit(3), b2 blob(3))
-create table t3 ( a int, b int, filler1 char(200), filler2 char(200), key(a),key(b) ) engine=merge union=(t1,t2)
-create table t3 (a int not null) engine=MERGE UNION=(t1,t2) INSERT_METHOD=FIRST
 create table t3 (a long, b long byte)
 create table t3 (a varchar(256) unicode)
 create table t3_1024 (c1 blob(1024), c2 blob(1024))
@@ -175,10 +161,7 @@ create table t3_1025 (c1 blob(1025), c2 blob(1025))
 create table t3_16 (c1 blob(16), c2 blob(16))
 create table t3_512 (c1 blob(512), c2 blob(512))
 create table t3_513 (c1 blob(513), c2 blob(513))
-create table t9 ( c1  tinyint, c2  smallint, c3  mediumint, c4  int, c5  integer, c6  bigint, c7  float, c8  double, c9  double precision, c10 real, c11 decimal(7, 4), c12 numeric(8, 4), c13 date, c14 datetime, c15 timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, c16 time, c17 year, c18 tinyint, c19 bool, c20 char, c21 char(10), c22 varchar(30), c23 tinyblob, c24 tinytext, c25 blob, c26 text, c27 mediumblob, c28 mediumtext, c29 longblob, c30 longtext, c31 enum('one', 'two', 'three'), c32 set('monday', 'tuesday', 'wednesday'), primary key(c1) )  ENGINE = MERGE UNION=(t9_1,t9_2) INSERT_METHOD=FIRST
-create table t9 ( c1  tinyint, c2  smallint, c3  mediumint, c4  int, c5  integer, c6  bigint, c7  float, c8  double, c9  double precision, c10 real, c11 decimal(7, 4), c12 numeric(8, 4), c13 date, c14 datetime, c15 timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, c16 time, c17 year, c18 tinyint, c19 bool, c20 char, c21 char(10), c22 varchar(30), c23 tinyblob, c24 tinytext, c25 blob, c26 text, c27 mediumblob, c28 mediumtext, c29 longblob, c30 longtext, c31 enum('one', 'two', 'three'), c32 set('monday', 'tuesday', 'wednesday'), primary key(c1) )  ENGINE = MERGE UNION=(t9_1,t9_2) INSERT_METHOD=LAST
 create table test.no_index_tab ( a varchar(255) not null, b int not null) engine = merge union = (test.no_index_tab_1,test.no_index_tab_2) insert_method = first
-create table tm(a int) engine=merge union=(t1, t2)
 delete from t2 where (1) in (select * from t1)
 replace t2 select * from t1
 replace t2 set a=((1) in (select * from t1))
