@@ -206,6 +206,8 @@ LONG
 STATS_AUTO_RECALC
 STATS_PERSISTENT
 STATS_SAMPLE_PAGES
+
+FORCE
 )
 
 tokens_allowed_in_names = []

@@ -14,6 +14,9 @@ alter_view:
 create_view:
   CREATE (OR REPLACE)? view_options* VIEW name;
 
+drop_view:
+  DROP VIEW (IF EXISTS)? name (',' name)* (RESTRICT | CASCADE)?;
+
 view_options:
     ALGORITHM '=' (UNDEFINED | MERGE | TEMPTABLE)
   | DEFINER '=' (user | CURRENT_USER)
