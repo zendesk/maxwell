@@ -64,7 +64,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		Table table = findTable(tableName, database);
 		BinlogPosition position = new BinlogPosition(replicator.getBinlogPosition(), replicator.getBinlogFileName());
 		producer.push(startBootstrapRow);
-		producer.push(replicationStreamBootstrapStartRow(table, position));
+		producer.push(bootstrapStartRowMap(table, position));
 		LOGGER.info(String.format("bootstrapping started for %s.%s, binlog position is %s", databaseName, tableName, position.toString()));
 		try ( Connection connection = getConnection() ) {
 			setBootstrapRowToStarted(startBootstrapRow, connection);
@@ -105,15 +105,15 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		return context.getConnectionPool().getConnection();
 	}
 
-	private RowMap replicationStreamBootstrapStartRow(Table table, BinlogPosition position) {
-		return replicationStreamBootstrapRow("bootstrap-start", table, position);
+	private RowMap bootstrapStartRowMap(Table table, BinlogPosition position) {
+		return bootstrapEventRowMap("bootstrap-start", table, position);
 	}
 
-	private RowMap replicationStreamBootstrapCompletedRow(Table table, BinlogPosition position) {
-		return replicationStreamBootstrapRow("bootstrap-complete", table, position);
+	private RowMap bootstrapCompleteRowMap(Table table, BinlogPosition position) {
+		return bootstrapEventRowMap("bootstrap-complete", table, position);
 	}
 
-	private RowMap replicationStreamBootstrapRow(String type, Table table, BinlogPosition position) {
+	private RowMap bootstrapEventRowMap(String type, Table table, BinlogPosition position) {
 		return new RowMap(
 				type,
 				table.getDatabase().getName(),
@@ -132,7 +132,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		Table table = findTable(tableName, database);
 		BinlogPosition position = new BinlogPosition(replicator.getBinlogPosition(), replicator.getBinlogFileName());
 		producer.push(completeBootstrapRow);
-		producer.push(replicationStreamBootstrapCompletedRow(table, position));
+		producer.push(bootstrapCompleteRowMap(table, position));
 		LOGGER.info(String.format("bootstrapping ended for %s.%s", databaseName, tableName));
 	}
 
