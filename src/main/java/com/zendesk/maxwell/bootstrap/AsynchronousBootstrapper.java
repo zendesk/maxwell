@@ -75,14 +75,12 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 
 	@Override
 	public void startBootstrap(final RowMap bootstrapStartRow, final AbstractProducer producer, final MaxwellReplicator replicator) throws Exception {
-		queueRow(bootstrapStartRow);
 		if (thread == null) {
-			final RowMap row = bootstrappedRow = queue.remove();
 			thread = new Thread(new Runnable() {
 				@Override
 				public void run() {
 					try {
-						synchronousBootstrapper.startBootstrap(row, producer, replicator);
+						synchronousBootstrapper.startBootstrap(bootstrapStartRow, producer, replicator);
 					} catch ( Exception e ) {
 						e.printStackTrace();
 						System.exit(1);
@@ -90,6 +88,8 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 				}
 			});
 			thread.start();
+		} else {
+			queueRow(bootstrapStartRow);
 		}
 	}
 
