@@ -1,5 +1,6 @@
-package com.zendesk.maxwell;
+package com.zendesk.maxwell.bootstrap;
 
+import com.zendesk.maxwell.MaxwellLogging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import snaq.db.ConnectionPool;

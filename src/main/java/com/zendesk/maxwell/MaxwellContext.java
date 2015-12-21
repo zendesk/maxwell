@@ -7,6 +7,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.concurrent.TimeoutException;
 
+import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
+import com.zendesk.maxwell.bootstrap.AsynchronousBootstrapper;
+import com.zendesk.maxwell.bootstrap.NoOpBootstrapper;
+import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
 import com.zendesk.maxwell.producer.*;
 import com.zendesk.maxwell.schema.ReadOnlySchemaPosition;
 import com.zendesk.maxwell.schema.SchemaPosition;

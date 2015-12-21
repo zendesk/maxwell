@@ -1,6 +1,7 @@
 package com.zendesk.maxwell;
 
 import com.google.code.or.binlog.BinlogEventV4;
+import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Schema;
 

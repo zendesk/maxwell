@@ -1,6 +1,7 @@
-package com.zendesk.maxwell;
+package com.zendesk.maxwell.bootstrap;
 
 import com.google.code.or.OpenReplicator;
+import com.zendesk.maxwell.*;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Schema;
 import org.slf4j.Logger;
@@ -16,7 +17,7 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellReplicator.class);
 
 	private Thread thread = null;
-	private Queue<RowMap> queue = new LinkedList<>();
+	private Queue<RowMap > queue = new LinkedList<>();
 	private RowMap bootstrappedRow = null;
 	private RowMapBufferByTable skippedRows = null;
 	private SynchronousBootstrapper synchronousBootstrapper = getSynchronousBootstrapper();

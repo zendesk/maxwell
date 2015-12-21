@@ -1,6 +1,10 @@
-package com.zendesk.maxwell;
+package com.zendesk.maxwell.bootstrap;
 
 import com.google.code.or.OpenReplicator;
+import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.MaxwellReplicator;
+import com.zendesk.maxwell.RowMap;
+import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Schema;
 import org.slf4j.Logger;

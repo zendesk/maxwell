@@ -1,4 +1,4 @@
-package com.zendesk.maxwell;
+package com.zendesk.maxwell.bootstrap;
 
 import joptsimple.BuiltinHelpFormatter;
 import joptsimple.OptionParser;
@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Properties;
 
 public class MaxwellBootstrapConfig {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellBootstrapConfig.class);
