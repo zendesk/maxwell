@@ -1,10 +1,9 @@
 package com.zendesk.maxwell.bootstrap;
 
-import com.google.code.or.OpenReplicator;
 import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.MaxwellReplicator;
 import com.zendesk.maxwell.RowMap;
 import com.zendesk.maxwell.producer.AbstractProducer;
-import com.zendesk.maxwell.schema.Schema;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -23,17 +22,17 @@ public abstract class AbstractBootstrapper {
 
 	abstract public boolean shouldSkip(RowMap row) throws SQLException, IOException;
 
-	abstract public void startBootstrap(RowMap startBootstrapRow, Schema schema, AbstractProducer producer, OpenReplicator replicator) throws Exception;
+	abstract public void startBootstrap(RowMap startBootstrapRow, AbstractProducer producer, MaxwellReplicator replicator) throws Exception;
 
-	abstract public void completeBootstrap(RowMap completeBootstrapRow, Schema schema, AbstractProducer producer, OpenReplicator replicator) throws Exception;
+	abstract public void completeBootstrap(RowMap completeBootstrapRow, AbstractProducer producer, MaxwellReplicator replicator) throws Exception;
 
-	public abstract void resume(Schema schema, AbstractProducer producer, OpenReplicator p) throws Exception;
+	public abstract void resume(AbstractProducer producer, MaxwellReplicator replicator) throws Exception;
 
-	public void work(RowMap row, Schema schema, AbstractProducer producer, OpenReplicator replicator) throws Exception {
+	public void work(RowMap row, AbstractProducer producer, MaxwellReplicator replicator) throws Exception {
 	 	if ( isStartBootstrapRow(row) ) {
-			startBootstrap(row, schema, producer, replicator);
+			startBootstrap(row, producer, replicator);
 		} else if ( isCompleteBootstrapRow(row) ) {
-			completeBootstrap(row, schema, producer, replicator);
+			completeBootstrap(row, producer, replicator);
 		}
 	}
 }

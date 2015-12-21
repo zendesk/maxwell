@@ -74,7 +74,7 @@ public class Maxwell {
 
 		final MaxwellReplicator p = new MaxwellReplicator(this.schema, producer, bootstrapper, this.context, this.context.getInitialPosition());
 
-		bootstrapper.resume(this.schema, producer, p.getOpenReplicator());
+		bootstrapper.resume(producer, p);
 
 		try {
 			p.setFilter(context.buildFilter());

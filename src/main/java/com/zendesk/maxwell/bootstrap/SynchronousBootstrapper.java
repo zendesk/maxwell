@@ -56,13 +56,15 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	@Override
-	public void startBootstrap(RowMap startBootstrapRow, Schema schema, AbstractProducer producer, OpenReplicator replicator) throws Exception {
+	public void startBootstrap(RowMap startBootstrapRow, AbstractProducer producer, MaxwellReplicator replicator) throws Exception {
 		String databaseName = ( String ) startBootstrapRow.getData("database_name");
 		String tableName = ( String ) startBootstrapRow.getData("table_name");
 		LOGGER.debug(String.format("bootstrapping request for %s.%s", databaseName, tableName));
+		Schema schema = replicator.getSchema();
 		Database database = findDatabase(schema, databaseName);
 		Table table = findTable(tableName, database);
-		BinlogPosition position = new BinlogPosition(replicator.getBinlogPosition(), replicator.getBinlogFileName());
+		OpenReplicator openReplicator = replicator.getOpenReplicator();
+		BinlogPosition position = new BinlogPosition(openReplicator.getBinlogPosition(), openReplicator.getBinlogFileName());
 		producer.push(startBootstrapRow);
 		producer.push(bootstrapStartRowMap(table, position));
 		LOGGER.info(String.format("bootstrapping started for %s.%s, binlog position is %s", databaseName, tableName, position.toString()));
@@ -124,20 +126,21 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	@Override
-	public void completeBootstrap(RowMap completeBootstrapRow, Schema schema, AbstractProducer producer, OpenReplicator replicator) throws Exception {
+	public void completeBootstrap(RowMap completeBootstrapRow, AbstractProducer producer, MaxwellReplicator replicator) throws Exception {
 		String databaseName = ( String ) completeBootstrapRow.getData("database_name");
 		String tableName = ( String ) completeBootstrapRow.getData("table_name");
-		Database database = findDatabase(schema, databaseName);
-		ensureTable(tableName, findDatabase(schema, databaseName));
+		Database database = findDatabase(replicator.getSchema(), databaseName);
+		ensureTable(tableName, database);
 		Table table = findTable(tableName, database);
-		BinlogPosition position = new BinlogPosition(replicator.getBinlogPosition(), replicator.getBinlogFileName());
+		OpenReplicator openReplicator = replicator.getOpenReplicator();
+		BinlogPosition position = new BinlogPosition(openReplicator.getBinlogPosition(), openReplicator.getBinlogFileName());
 		producer.push(completeBootstrapRow);
 		producer.push(bootstrapCompleteRowMap(table, position));
 		LOGGER.info(String.format("bootstrapping ended for %s.%s", databaseName, tableName));
 	}
 
 	@Override
-	public void resume(Schema schema, AbstractProducer producer, OpenReplicator replicator) throws Exception {
+	public void resume(AbstractProducer producer, MaxwellReplicator replicator) throws Exception {
 		try ( Connection connection = context.getConnectionPool().getConnection() ) {
 			// This update resets all rows of incomplete bootstraps to their original state.
 			// These updates are treated as fresh bootstrap requests and trigger a restart

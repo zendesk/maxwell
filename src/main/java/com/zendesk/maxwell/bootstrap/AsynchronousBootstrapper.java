@@ -1,9 +1,7 @@
 package com.zendesk.maxwell.bootstrap;
 
-import com.google.code.or.OpenReplicator;
 import com.zendesk.maxwell.*;
 import com.zendesk.maxwell.producer.AbstractProducer;
-import com.zendesk.maxwell.schema.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,7 +71,7 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	@Override
-	public void startBootstrap(final RowMap startBootstrapRow, final Schema schema, final AbstractProducer producer, final OpenReplicator replicator) throws Exception {
+	public void startBootstrap(final RowMap startBootstrapRow, final AbstractProducer producer, final MaxwellReplicator replicator) throws Exception {
 		queueRow(startBootstrapRow);
 		if (thread == null) {
 			final RowMap row = bootstrappedRow = queue.remove();
@@ -81,7 +79,7 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 				@Override
 				public void run() {
 					try {
-						synchronousBootstrapper.startBootstrap(row, schema, producer, replicator);
+						synchronousBootstrapper.startBootstrap(row, producer, replicator);
 					} catch ( Exception e ) {
 						e.printStackTrace();
 						System.exit(1);
@@ -100,12 +98,12 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	@Override
-	public void completeBootstrap(RowMap completeBootstrapRow, Schema schema, AbstractProducer producer, OpenReplicator replicator) throws Exception {
+	public void completeBootstrap(RowMap completeBootstrapRow, AbstractProducer producer, MaxwellReplicator replicator) throws Exception {
 		String databaseName = ( String ) completeBootstrapRow.getData("database_name");
 		String tableName = ( String ) completeBootstrapRow.getData("table_name");
 		try {
 			replaySkippedRows(databaseName, tableName, producer);
-			synchronousBootstrapper.completeBootstrap(completeBootstrapRow, schema, producer, replicator);
+			synchronousBootstrapper.completeBootstrap(completeBootstrapRow, producer, replicator);
 			LOGGER.info(String.format("async bootstrapping ended for %s.%s", databaseName, tableName));
 		} catch ( Exception e ) {
 			e.printStackTrace();
@@ -115,7 +113,7 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 			bootstrappedRow = null;
 		}
 		if ( !queue.isEmpty() ) {
-			startBootstrap(queue.remove(), schema, producer, replicator);
+			startBootstrap(queue.remove(), producer, replicator);
 		}
 	}
 
@@ -129,8 +127,8 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	@Override
-	public void resume(Schema schema, AbstractProducer producer, OpenReplicator replicator) throws Exception {
-		synchronousBootstrapper.resume(schema, producer, replicator);
+	public void resume(AbstractProducer producer, MaxwellReplicator replicator) throws Exception {
+		synchronousBootstrapper.resume(producer, replicator);
 	}
 
 	public void join() throws InterruptedException {

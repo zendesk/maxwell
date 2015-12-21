@@ -108,7 +108,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 		if ( !bootstrapper.shouldSkip(row) && !isMaxwellRow(row) ) {
 			producer.push(row);
 		} else {
-			bootstrapper.work(row, schema, producer, replicator);
+			bootstrapper.work(row, producer, this);
 		}
 
 	}

@@ -1,12 +1,9 @@
 package com.zendesk.maxwell.bootstrap;
 
-import com.google.code.or.OpenReplicator;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.MaxwellReplicator;
 import com.zendesk.maxwell.RowMap;
-import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
-import com.zendesk.maxwell.schema.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,12 +34,12 @@ public class NoOpBootstrapper extends AbstractBootstrapper {
 	}
 
 	@Override
-	public void startBootstrap(RowMap startBootstrapRow, Schema schema, AbstractProducer producer, OpenReplicator replicator) throws Exception {}
+	public void startBootstrap(RowMap startBootstrapRow, AbstractProducer producer, MaxwellReplicator replicator) throws Exception {}
 
 	@Override
-	public void completeBootstrap(RowMap completeBootstrapRow, Schema schema, AbstractProducer producer, OpenReplicator replicator) throws Exception {}
+	public void completeBootstrap(RowMap completeBootstrapRow, AbstractProducer producer, MaxwellReplicator replicator) throws Exception {}
 
 	@Override
-	public void resume(Schema schema, AbstractProducer producer, OpenReplicator p) throws Exception {}
+	public void resume(AbstractProducer producer, MaxwellReplicator replicator) throws Exception {}
 
 }

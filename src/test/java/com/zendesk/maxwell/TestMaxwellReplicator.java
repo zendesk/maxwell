@@ -50,7 +50,7 @@ public class TestMaxwellReplicator extends MaxwellReplicator {
 			if ( !bootstrapper.shouldSkip(row) && !isMaxwellRow(row) ) {
 				producer.push(row);
 			} else {
-				bootstrapper.work(row, schema, this.producer, replicator);
+				bootstrapper.work(row, this.producer, this);
 			}
 		}
 	}
