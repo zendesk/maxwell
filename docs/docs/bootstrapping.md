@@ -24,6 +24,13 @@ Alternatively you can insert a row in the `maxwell-bootstrap` table to trigger a
 mysql> insert into maxwell.bootstrap (database_name, table_name) values ('fooDB', 'barTable');
 ```
 
+### Async vs Sync bootstrapping
+
+The Maxwell replicator is single threaded; events are captured by one thread from the binlog and replicated to Kafka one message at a time.
+When running Maxwell with `--bootstrapper=sync`, the same thread is used to do bootstrapping, meaning that all binlog events are blocked until bootstrapping is complete.
+Running Maxwell with `--bootstrapper=async` however, will make Maxwell spawn a separate thread for bootstrapping.
+In this async mode, non-bootstrapped tables are replicated as normal by the main thread, while the binlog events for bootstrapped tables are queued and sent to the replication stream at the end of the bootstrap process.
+
 ### Bootstrapping Data Format
 
 * a bootstrap starts with a document with `type = "bootstrap-start"`
