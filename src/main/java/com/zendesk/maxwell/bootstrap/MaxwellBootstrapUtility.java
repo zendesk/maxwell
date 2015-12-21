@@ -138,7 +138,9 @@ public class MaxwellBootstrapUtility {
 
 	private void displayLine(String line) {
 		if ( console != null ) {
-			System.out.print("\u001b[2K\u001b[G" + line);
+			String ansiClearLine = "\u001b[2K";
+			String ansiMoveCursorToColumnZero = "\u001b[G";
+			System.out.print(ansiClearLine + ansiMoveCursorToColumnZero + line);
 			System.out.flush();
 		}
 	}
