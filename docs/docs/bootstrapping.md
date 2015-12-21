@@ -44,14 +44,14 @@ mysql> create table barTable(txt varchar(255));
 mysql> insert into barTable (txt) values ("hello"), ("bootstrapping!");
 mysql> insert into maxwell.bootstrap (database_name, table_name) values ("fooDb", "barTable");
 ```
-And here's the corresponding replication stream output of table `fooDB`:
+Corresponding replication stream output of table `fooDB`:
 ```
-{...,"type":"insert","ts":1450557598,"xid":13561,"data":{"txt":"hello"}}
-{...,"type":"insert","ts":1450557598,"xid":13561,"data":{"txt":"bootstrapping!"}}
-{...,"type":"bootstrap-start","ts":1450557744340,"data":{}}
-{...,"type":"insert","ts":1450557744355,"data":{"txt":"hello"}}
-{...,"type":"insert","ts":1450557744356,"data":{"txt":"bootstrapping!"}}
-{...,"type":"bootstrap-complete","ts":1450557744362,"data":{}}
+{"{"database":"fooDb","table":"barTable","type":"insert","ts":1450557598,"xid":13561,"data":{"txt":"hello"}}
+{"{"database":"fooDb","table":"barTable","type":"insert","ts":1450557598,"xid":13561,"data":{"txt":"bootstrapping!"}}
+{"{"database":"fooDb","table":"barTable","type":"bootstrap-start","ts":1450557744340,"data":{}}
+{"{"database":"fooDb","table":"barTable","type":"insert","ts":1450557744355,"data":{"txt":"hello"}}
+{"{"database":"fooDb","table":"barTable","type":"insert","ts":1450557744356,"data":{"txt":"bootstrapping!"}}
+{"{"database":"fooDb","table":"barTable","type":"bootstrap-complete","ts":1450557744362,"data":{}}
 ```
 
 <script>
