@@ -26,10 +26,16 @@ ALTER TABLE t1 DROP KEY s1, ADD KEY(s1(1))
 ALTER TABLE t1 FORCE
 ALTER TABLE t1 MODIFY a DATETIME(6), MODIFY b TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), MODIFY c DATE
 ALTER TABLE t1 RENAME t2
+ALTER TABLE t1 add new_field char(10) default "new" not null, change blob_col new_blob_col varchar(20), change date_field date_field char(10), alter column string set default "newdefault", alter short drop default, DROP INDEX utiny, DROP INDEX ushort, DROP PRIMARY KEY, DROP FOREIGN KEY any_name, ADD INDEX (auto)
+ALTER TABLE t2 DROP FOREIGN KEY fk
+ALTER TABLE t2 DROP FOREIGN KEY t2_ibfk_0
+ALTER TABLE t2 DROP FOREIGN KEY t2_ibfk_1
 ALTER TABLE t2 FORCE
 ALTER TABLE t2 RENAME t1
 ALTER TABLE test_ps_flag STATS_PERSISTENT=1
+ALTER TABLE ti1 DROP FOREIGN KEY fi1
 ALTER TABLE ti1 FORCE
+ALTER TABLE tm1 DROP FOREIGN KEY fm1
 ALTER TABLE tm1 FORCE
 CREATE AGGREGATE FUNCTION avgcost RETURNS REAL SONAME "udf_example.so"
 CREATE AGGREGATE FUNCTION my_median RETURNS INTEGER SONAME "udf_example.so"
@@ -203,6 +209,7 @@ alter table t1 change v v varchar(254), drop key v
 alter table t1 comment "My best table"
 alter table t1 data directory="/Users/ben/src/mysql-server/mysql-test/var/log"
 alter table t1 data directory="/Users/ben/src/mysql-server/mysql-test/var/tmp"
+alter table t1 drop foreign key c2_fk
 alter table t1 drop key a
 alter table t1 drop key aString
 alter table t1 drop key v, add key v (v(30))

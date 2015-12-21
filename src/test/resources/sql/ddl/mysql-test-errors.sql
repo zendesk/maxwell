@@ -8,14 +8,8 @@ ALTER TABLE t1 STORAGE DISK
 ALTER TABLE t1 STORAGE DISK TABLESPACE ts2
 ALTER TABLE t1 STORAGE MEMORY
 ALTER TABLE t1 STORAGE MEMORY TABLESPACE ts
-ALTER TABLE t1 add new_field char(10) default "new" not null, change blob_col new_blob_col varchar(20), change date_field date_field char(10), alter column string set default "newdefault", alter short drop default, DROP INDEX utiny, DROP INDEX ushort, DROP PRIMARY KEY, DROP FOREIGN KEY any_name, ADD INDEX (auto)
-ALTER TABLE t2 DROP FOREIGN KEY fk
-ALTER TABLE t2 DROP FOREIGN KEY t2_ibfk_0
-ALTER TABLE t2 DROP FOREIGN KEY t2_ibfk_1
 ALTER TABLE ti1 CHECKSUM 1
-ALTER TABLE ti1 DROP FOREIGN KEY fi1
 ALTER TABLE tm1 CHECKSUM 1
-ALTER TABLE tm1 DROP FOREIGN KEY fm1
 ALTER USER 'bernt' PASSWORD EXPIRE
 ALTER USER 'u1'@'localhost' PASSWORD EXPIRE
 ALTER USER must_change@localhost PASSWORD EXPIRE
@@ -71,7 +65,6 @@ alter table bug19145a alter column s set default null
 alter table bug19145b alter column e set default null
 alter table bug19145b alter column s set default null
 alter table t1 add f2 enum(0xFFFF)
-alter table t1 drop foreign key c2_fk
 alter table table_24562 order by table_24562.subsection ASC, table_24562.section DESC
 create table b15776 (data blob(2147483647))
 create table b15776 (data blob(2147483648))
