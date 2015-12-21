@@ -180,9 +180,8 @@ public class SchemaStore {
 		return rs.next();
 	}
 
-	private static void createStoreDatabase(Connection connection) throws SQLException, IOException {
-		InputStream schemaSQL = SchemaStore.class.getResourceAsStream(
-				"/sql/maxwell_schema.sql");
+
+	private static void executeSQLInputStream(Connection connection, InputStream schemaSQL) throws SQLException, IOException {
 		BufferedReader r = new BufferedReader(new InputStreamReader(schemaSQL));
 		String sql = "", line;
 
@@ -197,6 +196,11 @@ public class SchemaStore {
 
 			connection.createStatement().execute(statement);
 		}
+	}
+
+	private static void createStoreDatabase(Connection connection) throws SQLException, IOException {
+		executeSQLInputStream(connection, SchemaStore.class.getResourceAsStream("/sql/maxwell_schema.sql"));
+		executeSQLInputStream(connection, SchemaStore.class.getResourceAsStream("/sql/maxwell_schema_bootstrap.sql"));
 	}
 
 	public static SchemaStore restore(Connection connection, MaxwellContext context) throws SQLException, SchemaSyncError {
@@ -412,15 +416,32 @@ public class SchemaStore {
 		return map;
 	}
 
+	private static List<String> getMaxwellTables(Connection c) throws SQLException {
+		ArrayList<String> l = new ArrayList<>();
+
+		ResultSet rs = c.createStatement().executeQuery("show tables from `maxwell`");
+		while (rs.next()) {
+			l.add(rs.getString(1));
+		}
+		return l;
+	}
+
 	private static void performAlter(Connection c, String sql) throws SQLException {
 		LOGGER.info("Maxwell is upgrading its own schema...");
 		LOGGER.info(sql);
 		c.createStatement().execute(sql);
 	}
 
-	public static void upgradeSchemaStoreSchema(Connection c) throws SQLException {
+	public static void upgradeSchemaStoreSchema(Connection c) throws SQLException, IOException {
 		if ( !getTableColumns("schemas", c).containsKey("deleted") )
 			performAlter(c, "alter table maxwell.schemas add column deleted tinyint(1) not null default 0");
+
+		if ( !getMaxwellTables(c).contains("bootstrap") )  {
+			LOGGER.info("adding `maxwell`.`bootstrap` to the schema.");
+			InputStream is = SchemaStore.class.getResourceAsStream("/sql/maxwell_schema_bootstrap.sql");
+			executeSQLInputStream(c, is);
+		}
+
 	}
 
 }
