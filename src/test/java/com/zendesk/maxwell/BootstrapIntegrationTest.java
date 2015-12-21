@@ -27,7 +27,7 @@ public class BootstrapIntegrationTest extends AbstractMaxwellTest {
 		list = getRowsForSQL(null, input, null, false);
 		assertThat(list.size(), is(expectedJSON.length));
 		for (int i = 0; i < expectedJSON.length; ++i) {
-			assertThat(i + " : " + removeTimeStampsAndIds(list.get(i).toJSON()), is(i + " : " + expectedJSON[i]));
+			assertThat(i + " : " + removeTimeStampsAndIdsAndBinlogPositions(list.get(i).toJSON()), is(i + " : " + expectedJSON[i]));
 		}
 	}
 
@@ -55,7 +55,7 @@ public class BootstrapIntegrationTest extends AbstractMaxwellTest {
 		list = getRowsForSQL(null, input, null, false);
 		assertThat(list.size(), is(expectedJSON.length));
 		for (int i = 0; i < expectedJSON.length; ++i) {
-			assertThat(i + " : " + removeTimeStampsAndIds(list.get(i).toJSON()), is(i + " : " + expectedJSON[i]));
+			assertThat(i + " : " + removeTimeStampsAndIdsAndBinlogPositions(list.get(i).toJSON()), is(i + " : " + expectedJSON[i]));
 		}
 	}
 
@@ -175,7 +175,7 @@ public class BootstrapIntegrationTest extends AbstractMaxwellTest {
 		List<RowMap> rows = getRowsForSQL(null, input, null, false);
 		assertThat(rows.size(), is(6));
 		for (int i = 0; i < expectedJSON.length; ++i) {
-			assertThat(i + " : " + removeTimeStampsAndIds(rows.get(i).toJSON()), is(i + " : " + expectedJSON[i]));
+			assertThat(i + " : " + removeTimeStampsAndIdsAndBinlogPositions(rows.get(i).toJSON()), is(i + " : " + expectedJSON[i]));
 		}
 	}
 }

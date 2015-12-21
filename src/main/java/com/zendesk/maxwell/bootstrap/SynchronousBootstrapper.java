@@ -84,20 +84,22 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 				LOGGER.debug("bootstrapping row : " + row.toJSON());
 				producer.push(row);
 				++insertedRows;
-				updateInsertedRowsColumn(insertedRows, startBootstrapRow, connection);
+				updateInsertedRowsColumn(insertedRows, startBootstrapRow, position, connection);
 			}
 			setBootstrapRowToCompleted(insertedRows, startBootstrapRow, connection);
 		}
 	}
 
-	private void updateInsertedRowsColumn(int insertedRows, RowMap startBootstrapRow, Connection connection) throws SQLException {
+	private void updateInsertedRowsColumn(int insertedRows, RowMap startBootstrapRow, BinlogPosition position, Connection connection) throws SQLException {
 		long now = System.currentTimeMillis();
 		if ( now - lastInsertedRowsUpdateTimeMillis > INSERTED_ROWS_UPDATE_PERIOD_MILLIS ) {
 			long rowId = ( long ) startBootstrapRow.getData("id");
-			String sql = "update maxwell.bootstrap set inserted_rows = ? where id = ?";
+			String sql = "update maxwell.bootstrap set inserted_rows = ?, binlog_file = ?, binlog_position = ? where id = ?";
 			PreparedStatement preparedStatement = connection.prepareStatement(sql);
 			preparedStatement.setInt(1, insertedRows);
-			preparedStatement.setLong(2, rowId);
+			preparedStatement.setString(2, position.getFile());
+			preparedStatement.setLong(3, position.getOffset());
+			preparedStatement.setLong(4, rowId);
 			preparedStatement.execute();
 			lastInsertedRowsUpdateTimeMillis = now;
 		}

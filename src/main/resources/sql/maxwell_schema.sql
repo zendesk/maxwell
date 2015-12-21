@@ -55,5 +55,7 @@ CREATE TABLE IF NOT EXISTS `maxwell`.`bootstrap` (
   inserted_rows   int unsigned NOT NULL default 0,
   created_at      DATETIME default NULL,
   started_at      DATETIME default NULL,
-  completed_at    DATETIME default NULL
+  completed_at    DATETIME default NULL,
+  binlog_file varchar(255) default NULL,
+  binlog_position int unsigned default 0
 );
