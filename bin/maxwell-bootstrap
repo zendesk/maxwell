@@ -17,5 +17,5 @@ fi
 
 export LANG="en_US.UTF-8"
 
-exec $JAVA -Dlog4j.shutdownCallbackRegistry=com.djdch.log4j.StaticShutdownCallbackRegistry -cp $CLASSPATH com.zendesk.maxwell.MaxwellBootstrap "$@"
+exec $JAVA -Dlog4j.shutdownCallbackRegistry=com.djdch.log4j.StaticShutdownCallbackRegistry -cp $CLASSPATH com.zendesk.maxwell.MaxwellBootstrapUtility "$@"
 

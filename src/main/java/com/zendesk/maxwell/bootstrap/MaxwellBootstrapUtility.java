@@ -11,8 +11,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class MaxwellBootstrap {
-	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellBootstrap.class);
+public class MaxwellBootstrapUtility {
+	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellBootstrapUtility.class);
 
 	private static final long UPDATE_PERIOD_MILLIS = 250;
 	private static final long DISPLAY_PROGRESS_WARMUP_MILLIS = 5000;
@@ -146,7 +146,7 @@ public class MaxwellBootstrap {
 
 	public static void main(String[] args) {
 		try {
-			new MaxwellBootstrap().run(args);
+			new MaxwellBootstrapUtility().run(args);
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(1);
