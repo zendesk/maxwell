@@ -170,9 +170,9 @@ public class AbstractMaxwellTest {
 
 		schema = p.schema;
 
-		p.stopLoop();
-
 		bootstrapper.join();
+
+		p.stopLoop();
 
 		context.terminate();
 
