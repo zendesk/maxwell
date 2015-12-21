@@ -219,9 +219,9 @@ public class MaxwellConfig {
 		this.mysqlPort     = Integer.valueOf(p.getProperty("port", "3306"));
 
 		this.mysqlSchemaHost     = p.getProperty("schema_host", this.mysqlHost);
-		this.mysqlPassword = p.getProperty("schema_password", this.mysqlPassword);
-		this.mysqlUser     = p.getProperty("schema_user", this.mysqlUser);
-		this.mysqlPort     = Integer.valueOf(p.getProperty("schema_port", p.getProperty("port", "3306")));
+		this.mysqlSchemaPassword = p.getProperty("schema_password", this.mysqlPassword);
+		this.mysqlSchemaUser     = p.getProperty("schema_user", this.mysqlUser);
+		this.mysqlSchemaPort     = Integer.valueOf(p.getProperty("schema_port", p.getProperty("port", "3306")));
 
 		this.producerType    = p.getProperty("producer");
 		this.outputFile      = p.getProperty("output_file");
