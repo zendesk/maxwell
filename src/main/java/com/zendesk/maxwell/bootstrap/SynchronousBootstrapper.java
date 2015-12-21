@@ -68,7 +68,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		LOGGER.info(String.format("bootstrapping started for %s.%s, binlog position is %s", databaseName, tableName, position.toString()));
 		try ( Connection connection = getConnection() ) {
 			setBootstrapRowToStarted(startBootstrapRow, connection);
-			ResultSet resultSet = getAllRows(databaseName, tableName, connection);
+			ResultSet resultSet = getAllRows(databaseName, tableName, schema, connection);
 			int insertedRows = 0;
 			while ( resultSet.next() ) {
 				RowMap row = new RowMap(
@@ -165,9 +165,14 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		findTable(tableName, database);
 	}
 
-	private ResultSet getAllRows(String databaseName, String tableName, Connection connection) throws SQLException, InterruptedException {
+	private ResultSet getAllRows(String databaseName, String tableName, Schema schema, Connection connection) throws SQLException, InterruptedException {
 		Statement statement = createBatchStatement(connection);
-		return statement.executeQuery(String.format("select * from %s.%s", databaseName, tableName));
+		String pk = schema.findDatabase(databaseName).findTable(tableName).getPKString();
+		if ( pk != null ) {
+			return statement.executeQuery(String.format("select * from %s.%s order by %s", databaseName, tableName, pk));
+		} else {
+			return statement.executeQuery(String.format("select * from %s.%s", databaseName, tableName));
+		}
 	}
 
 	private Statement createBatchStatement(Connection connection) throws SQLException, InterruptedException {
