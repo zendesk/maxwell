@@ -76,7 +76,7 @@ public abstract class ColumnDef {
 		}
 	}
 
-	static public String unalias_type(String type, boolean longStringFlag) {
+	static public String unalias_type(String type, boolean longStringFlag, Long columnLength) {
 		if ( longStringFlag ) {
 			switch (type) {
 				case "varchar":
@@ -92,6 +92,19 @@ public abstract class ColumnDef {
 			case "character":
 			case "nchar":
 				return "char";
+			case "text":
+			case "blob":
+				if ( columnLength == null )
+					return type;
+
+				if ( columnLength < (1 << 8) )
+					return "tiny" + type;
+				else if ( columnLength < ( 1 << 16) )
+					return type;
+				else if ( columnLength < ( 1 << 24) )
+					return "medium" + type;
+				else
+					return "long" + type;
 			case "nvarchar":
 			case "varying":
 				return "varchar";

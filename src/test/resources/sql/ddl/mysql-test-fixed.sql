@@ -99,11 +99,16 @@ CREATE TABLE `t2` (   `a` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON 
 CREATE TABLE `t2` (   `t0 + 1` bigint(16) DEFAULT NULL,   `t3 + 1` decimal(18,3) DEFAULT NULL,   `t6 + 1` decimal(21,6) DEFAULT NULL,   `t0 - 1` bigint(16) DEFAULT NULL,   `t3 - 1` decimal(18,3) DEFAULT NULL,   `t6 - 1` decimal(21,6) DEFAULT NULL,   `t0 * 1` bigint(16) DEFAULT NULL,   `t3 * 1` decimal(18,3) DEFAULT NULL,   `t6 * 1` decimal(21,6) DEFAULT NULL,   `t0 / 1` decimal(18,4) DEFAULT NULL,   `t3 / 1` decimal(21,7) DEFAULT NULL,   `t6 / 1` decimal(24,10) DEFAULT NULL,   `TIMESTAMP'2001-01-01 10:10:10' + 1` bigint(16) NOT NULL DEFAULT '0',   `TIMESTAMP'2001-01-01 10:10:10.123' + 1` decimal(18,3) NOT NULL DEFAULT '0.000',   `TIMESTAMP'2001-01-01 10:10:10.123456' + 1` decimal(21,6) NOT NULL DEFAULT '0.000000',   `TIMESTAMP'2001-01-01 10:10:10' - 1` bigint(16) NOT NULL DEFAULT '0',   `TIMESTAMP'2001-01-01 10:10:10.123' - 1` decimal(18,3) NOT NULL DEFAULT '0.000',   `TIMESTAMP'2001-01-01 10:10:10.123456' - 1` decimal(21,6) NOT NULL DEFAULT '0.000000',   `TIMESTAMP'2001-01-01 10:10:10' * 1` bigint(16) NOT NULL DEFAULT '0',   `TIMESTAMP'2001-01-01 10:10:10.123' * 1` decimal(18,3) NOT NULL DEFAULT '0.000',   `TIMESTAMP'2001-01-01 10:10:10.123456' * 1` decimal(21,6) NOT NULL DEFAULT '0.000000',   `TIMESTAMP'2001-01-01 10:10:10' / 1` decimal(18,4) DEFAULT NULL,   `TIMESTAMP'2001-01-01 10:10:10.123' / 1` decimal(21,7) DEFAULT NULL,   `TIMESTAMP'2001-01-01 10:10:10.123456' / 1` decimal(24,10) DEFAULT NULL )
 CREATE TABLE `t2` (   `t0 + 1` bigint(16) NOT NULL DEFAULT '0',   `t3 + 1` decimal(18,3) NOT NULL DEFAULT '0.000',   `t6 + 1` decimal(21,6) NOT NULL DEFAULT '0.000000',   `t0 - 1` bigint(16) NOT NULL DEFAULT '0',   `t3 - 1` decimal(18,3) NOT NULL DEFAULT '0.000',   `t6 - 1` decimal(21,6) NOT NULL DEFAULT '0.000000',   `t0 * 1` bigint(16) NOT NULL DEFAULT '0',   `t3 * 1` decimal(18,3) NOT NULL DEFAULT '0.000',   `t6 * 1` decimal(21,6) NOT NULL DEFAULT '0.000000',   `t0 / 1` decimal(18,4) DEFAULT NULL,   `t3 / 1` decimal(21,7) DEFAULT NULL,   `t6 / 1` decimal(24,10) DEFAULT NULL,   `TIMESTAMP'2001-01-01 10:10:10' + 1` bigint(16) NOT NULL DEFAULT '0',   `TIMESTAMP'2001-01-01 10:10:10.123' + 1` decimal(18,3) NOT NULL DEFAULT '0.000',   `TIMESTAMP'2001-01-01 10:10:10.123456' + 1` decimal(21,6) NOT NULL DEFAULT '0.000000',   `TIMESTAMP'2001-01-01 10:10:10' - 1` bigint(16) NOT NULL DEFAULT '0',   `TIMESTAMP'2001-01-01 10:10:10.123' - 1` decimal(18,3) NOT NULL DEFAULT '0.000',   `TIMESTAMP'2001-01-01 10:10:10.123456' - 1` decimal(21,6) NOT NULL DEFAULT '0.000000',   `TIMESTAMP'2001-01-01 10:10:10' * 1` bigint(16) NOT NULL DEFAULT '0',   `TIMESTAMP'2001-01-01 10:10:10.123' * 1` decimal(18,3) NOT NULL DEFAULT '0.000',   `TIMESTAMP'2001-01-01 10:10:10.123456' * 1` decimal(21,6) NOT NULL DEFAULT '0.000000',   `TIMESTAMP'2001-01-01 10:10:10' / 1` decimal(18,4) DEFAULT NULL,   `TIMESTAMP'2001-01-01 10:10:10.123' / 1` decimal(21,7) DEFAULT NULL,   `TIMESTAMP'2001-01-01 10:10:10.123456' / 1` decimal(24,10) DEFAULT NULL )
 CREATE TABLE `t2` (   `t0 + 1` int(9) DEFAULT NULL,   `t3 + 1` decimal(11,3) DEFAULT NULL,   `t6 + 1` decimal(14,6) DEFAULT NULL,   `t0 - 1` int(9) DEFAULT NULL,   `t3 - 1` decimal(11,3) DEFAULT NULL,   `t6 - 1` decimal(14,6) DEFAULT NULL,   `t0 * 1` int(9) DEFAULT NULL,   `t3 * 1` decimal(11,3) DEFAULT NULL,   `t6 * 1` decimal(14,6) DEFAULT NULL,   `t0 / 1` decimal(11,4) DEFAULT NULL,   `t3 / 1` decimal(14,7) DEFAULT NULL,   `t6 / 1` decimal(17,10) DEFAULT NULL,   `TIME'10:10:10' + 1` int(9) NOT NULL DEFAULT '0',   `TIME'10:10:10.123' + 1` decimal(11,3) NOT NULL DEFAULT '0.000',   `TIME'10:10:10.123456' + 1` decimal(14,6) NOT NULL DEFAULT '0.000000',   `TIME'10:10:10' - 1` int(9) NOT NULL DEFAULT '0',   `TIME'10:10:10.123' - 1` decimal(11,3) NOT NULL DEFAULT '0.000',   `TIME'10:10:10.123456' - 1` decimal(14,6) NOT NULL DEFAULT '0.000000',   `TIME'10:10:10' * 1` int(9) NOT NULL DEFAULT '0',   `TIME'10:10:10.123' * 1` decimal(11,3) NOT NULL DEFAULT '0.000',   `TIME'10:10:10.123456' * 1` decimal(14,6) NOT NULL DEFAULT '0.000000',   `TIME'10:10:10' / 1` decimal(11,4) DEFAULT NULL,   `TIME'10:10:10.123' / 1` decimal(14,7) DEFAULT NULL,   `TIME'10:10:10.123456' / 1` decimal(17,10) DEFAULT NULL )
+CREATE TABLE b15776 (a blob(2147483647), b blob(2147483648), c blob(4294967295), a1 text(2147483647), b1 text(2147483648), c1 text(4294967295) )
 CREATE TABLE events_test.event_log (id int KEY AUTO_INCREMENT, ev_nm char(40), ev_cnt int, ev_tm timestamp) ENGINE=MyISAM
 CREATE TABLE m1 (c1 INT) ENGINE=MRG_MyISAM UNION=(t1,t2) INSERT_METHOD=LAST
 CREATE TABLE m1(a INT) engine=merge union(t1)
 CREATE TABLE m2 (c1 INT) ENGINE=MRG_MyISAM UNION=(t1,t2) INSERT_METHOD=LAST
 CREATE TABLE mm1(a CHAR(9),b INT,KEY(b),KEY(a)) ENGINE=MERGE  UNION=(t1,t2)
+CREATE TABLE res_6_408002_1(f1 CHAR(3), f2 TEXT(25), f3 DATE, f4 INT) ENGINE = MyISAM
+CREATE TABLE res_6_408002_2(f1 CHAR(3), f2 TEXT(25), f3 DATE, f4 INT) ENGINE = MyISAM
+CREATE TABLE result (f1 text(200), f2 char(20))
+CREATE TABLE t ( id INT AUTO_INCREMENT PRIMARY KEY, c TEXT(30) )
 CREATE TABLE t(a INT)ENGINE=InnoDB STATS_PERSISTENT=0
 CREATE TABLE t0 (a INT) ENGINE=MERGE UNION(t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15,t16,t17,t18,t19,t20,t21,t22,t23,t24,t25,t26,t27,t28,t29,t30,t31,t32,t33,t34,t35,t36,t37,t38,t39,t40,t41,t42,t43,t44,t45,t46,t47,t48,t49,t50,t51,t52,t53,t54,t55,t56,t57,t58,t59,t60,t61,t62,t63,t64,t65,t66,t67,t68,t69,t70,t71,t72,t73,t74,t75,t76,t77,t78,t79,t80,t81,t82,t83,t84,t85,t86,t87,t88,t89,t90,t91,t92,t93,t94,t95,t96,t97,t98,t99,t100,t101,t102,t103,t104,t105,t106,t107,t108,t109,t110,t111,t112,t113,t114,t115,t116,t117,t118,t119,t120,t121,t122,t123,t124,t125,t126,t127,t128,t129,t130,t131,t132,t133,t134,t135,t136,t137,t138,t139,t140,t141,t142,t143,t144,t145,t146,t147,t148,t149,t150,t151,t152,t153,t154,t155,t156,t157,t158,t159,t160,t161,t162,t163,t164,t165,t166,t167,t168,t169,t170,t171,t172,t173,t174,t175,t176,t177,t178,t179,t180,t181,t182,t183,t184,t185,t186,t187,t188,t189,t190,t191,t192,t193,t194,t195,t196,t197,t198,t199,t200,t201,t202,t203,t204,t205,t206,t207,t208,t209,t210,t211,t212,t213,t214,t215,t216,t217,t218,t219,t220,t221,t222,t223,t224,t225,t226,t227,t228,t229,t230,t231,t232,t233,t234,t235,t236,t237,t238,t239,t240,t241,t242,t243,t244,t245,t246,t247,t248,t249,t250,t251,t252,t253,t254,t255)
 CREATE TABLE t1 ( a INT KEY,  b INT ) ENGINE = INNODB
@@ -144,6 +149,7 @@ CREATE TABLE t1 (a TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE 
 CREATE TABLE t1 (a TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), b TIMESTAMP(6) NOT NULL DEFAULT '0000-00-00 00:00:00')
 CREATE TABLE t1 (a TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), b TIMESTAMP(6) NOT NULL DEFAULT '0000-00-00 00:00:00', c TIMESTAMP(6) NOT NULL DEFAULT '0000-00-00 00:00:00')
 CREATE TABLE t1 (a TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6))
+CREATE TABLE t1 (a blob, b text, c blob(250), d text(70000), e text(70000000))
 CREATE TABLE t1 (a int AUTO_INCREMENT KEY, b char(30)) ENGINE archive DATA DIRECTORY = '/Users/ben/src/mysql-server/mysql-test/var/tmp/archive'
 CREATE TABLE t1 (a int AUTO_INCREMENT KEY, b char(30)) ENGINE archive DATA DIRECTORY = '/Users/ben/src/mysql-server/mysql-test/var/tmp/archive' INDEX DIRECTORY = '/Users/ben/src/mysql-server/mysql-test/var/tmp/archive'
 CREATE TABLE t1 (a int, b int, PRIMARY KEY (a,b), KEY b (b)) ENGINE=InnoDB STATS_PERSISTENT=0
@@ -238,8 +244,15 @@ create table `#mysql50#abc``def` ( id int )
 create table `mysqlttest\1`.`a\b` (a int)
 create table `t1a``b` (col1 char(2))
 create table `t``1`(a int) engine=myisam
+create table b15776 (data blob(2147483647))
+create table b15776 (data blob(2147483648))
+create table b15776 (data blob(4294967294))
+create table b15776 (data blob(4294967295))
 create table bug20691 ( a set('one', 'two', 'three') not null, b enum('small', 'medium', 'large', 'enormous', 'ellisonego') not null, c time not null, d date not null, e int not null, f long not null, g blob not null, h datetime not null, i decimal not null, x int)
+create table res_t21(name text(10), surname blob(20), age_averylongfieldname_averylongname_1234569 smallint)
 create table t00 (a int) engine=MERGE UNION=(t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15,t16,t17,t18,t19,t20,t21,t22,t23,t24,t25,t26,t27,t28,t29,t30,t31,t32,t33,t34,t35,t36,t37,t38,t39,t40,t41,t42,t43,t44,t45,t46,t47,t48,t49,t50,t51,t52,t53,t54,t55,t56,t57,t58,t59,t60,t61,t62,t63,t64,t65,t66,t67,t68,t69,t70,t71,t72,t73,t74,t75,t76,t77,t78,t79,t80,t81,t82,t83,t84,t85,t86,t87,t88,t89,t90,t91,t92,t93,t94,t95,t96,t97,t98,t99,t100,t101,t102,t103,t104,t105,t106,t107,t108,t109,t110,t111,t112,t113,t114,t115,t116,t117,t118,t119,t120,t121,t122,t123,t124,t125,t126,t127,t128,t129,t130,t131,t132,t133,t134,t135,t136,t137,t138,t139,t140,t141,t142,t143,t144,t145,t146,t147,t148,t149,t150,t151,t152,t153,t154,t155,t156,t157,t158,t159,t160,t161,t162,t163,t164,t165,t166,t167,t168,t169,t170,t171,t172,t173,t174,t175,t176,t177,t178,t179,t180,t181,t182,t183,t184,t185,t186,t187,t188,t189,t190,t191,t192,t193,t194,t195,t196,t197,t198,t199,t200,t201,t202,t203,t204,t205,t206,t207,t208,t209,t210,t211,t212,t213,t214,t215,t216,t217,t218,t219,t220,t221,t222,t223,t224,t225,t226,t227,t228,t229,t230,t231,t232,t233,t234,t235,t236,t237,t238,t239,t240,t241,t242,t243,t244,t245,t246,t247,t248,t249,t250,t251,t252,t253,t254,t255,t256,t257) INSERT_METHOD=FIRST
+create table t1 ( a int, b blob(10), c blob(10), filler blob(10), primary key(a, b(2)), unique key (a, c(2)) ) character set utf8 engine = MyISAM
+create table t1 ( a int, b text(10), c text(10), filler text(10), primary key(a, b(2)), unique key (a, c(2)) ) character set utf8 engine = MyISAM
 create table t1 ( a int, b varchar(30), primary key(a) ) ENGINE = MERGE UNION=(t1_1,t1_2) INSERT_METHOD=FIRST
 create table t1 ( a int, b varchar(30), primary key(a) ) ENGINE = MERGE UNION=(t1_1,t1_2) INSERT_METHOD=LAST
 create table t1 ( type_bool bool not null default 0, type_tiny tinyint not null auto_increment primary key, type_short smallint(3), type_mediumint mediumint, type_bigint bigint, type_decimal decimal(5,2), type_numeric numeric(5,2), empty_char char(0), type_char char(2), type_varchar varchar(10), type_timestamp timestamp not null default current_timestamp on update current_timestamp, type_date date not null default '0000-00-00', type_time time not null default '00:00:00', type_datetime datetime not null default '0000-00-00 00:00:00', type_year year, type_enum enum ('red', 'green', 'blue'), type_set enum ('red', 'green', 'blue'), type_tinyblob tinyblob, type_blob blob, type_medium_blob mediumblob, type_long_blob longblob, index(type_short) ) AVG_ROW_LENGTH=10 CHECKSUM=1 COMMENT="test" ENGINE=MYISAM MIN_ROWS=10 MAX_ROWS=100 PACK_KEYS=1 DELAY_KEY_WRITE=1 ROW_FORMAT=fixed CHARSET=latin1
@@ -263,7 +276,13 @@ create table t1 (f1 int, f2 char(1), primary key(f1,f2)) engine=innodb stats_per
 create table t1 (i int, j int key)
 create table t1 (t text character set utf8, tt tinytext character set utf8, mt mediumtext character set utf8, lt longtext character set utf8, vl varchar(255) character set latin1,vb varchar(255) character set binary,vu varchar(255) character set utf8)
 create table t1 (v varchar(10), c char(10), t text, key(v), key(c), key(t(10))) stats_persistent=0
+create table t1(a int not null, b text(110),primary key(a,b(100))) engine=MyISAM default charset=utf8
 create table t1(f1 varchar(5) key)
+create table t1_1024 (a1 blob(1024), a2 blob(1024))
+create table t1_1025 (a1 blob(1025), a2 blob(1025))
+create table t1_16 (a1 blob(16), a2 blob(16))
+create table t1_512 (a1 blob(512), a2 blob(512))
+create table t1_513 (a1 blob(513), a2 blob(513))
 create table t1_d ( d120 char ascii not null DEFAULT b'101', d136 smallint zerofill not null DEFAULT 999, d144 int zerofill not null DEFAULT 99999, d163 decimal (63,30)) engine=innodb
 create table t1_d ( d120 char ascii not null DEFAULT b'101', d136 smallint zerofill not null DEFAULT 999, d144 int zerofill not null DEFAULT 99999, d163 decimal (63,30)) engine=memory
 create table t1_d ( d120 char ascii not null DEFAULT b'101', d136 smallint zerofill not null DEFAULT 999, d144 int zerofill not null DEFAULT 99999, d163 decimal (63,30)) engine=myisam
@@ -274,10 +293,24 @@ create table t1_mrg (a int) union (t1) engine=merge
 create table t1_u ( u120 char ascii not null DEFAULT b'101', u136 smallint zerofill not null DEFAULT 999, u144 int zerofill not null DEFAULT 99999, u163 decimal (63,30)) engine=innodb
 create table t1_u ( u120 char ascii not null DEFAULT b'101', u136 smallint zerofill not null DEFAULT 999, u144 int zerofill not null DEFAULT 99999, u163 decimal (63,30)) engine=memory
 create table t1_u ( u120 char ascii not null DEFAULT b'101', u136 smallint zerofill not null DEFAULT 999, u144 int zerofill not null DEFAULT 99999, u163 decimal (63,30)) engine=myisam
+create table t1bb (a1 bit(3), a2 blob(3))
+create table t2 ( a int, b blob(10), c blob(10), filler blob(10), primary key(a, b(2)), unique key (a, c(2)) ) character set ucs2 engine = MyISAM
+create table t2 ( a int, b text(10), c text(10), filler text(10), primary key(a, b(2)), unique key (a, c(2)) ) character set ucs2 engine = MyISAM
 create table t2 ( a varchar(10) not null primary key ) engine=merge union=(t1)
+create table t2_1024 (b1 blob(1024), b2 blob(1024))
+create table t2_1025 (b1 blob(1025), b2 blob(1025))
+create table t2_16 (b1 blob(16), b2 blob(16))
+create table t2_512 (b1 blob(512), b2 blob(512))
+create table t2_513 (b1 blob(513), b2 blob(513))
+create table t2bb (b1 bit(3), b2 blob(3))
 create table t3 ( a int, b int, filler1 char(200), filler2 char(200), key(a),key(b) ) engine=merge union=(t1,t2)
 create table t3 (a int not null) engine=MERGE UNION=(t1,t2) INSERT_METHOD=FIRST
 create table t3 (like t1)
+create table t3_1024 (c1 blob(1024), c2 blob(1024))
+create table t3_1025 (c1 blob(1025), c2 blob(1025))
+create table t3_16 (c1 blob(16), c2 blob(16))
+create table t3_512 (c1 blob(512), c2 blob(512))
+create table t3_513 (c1 blob(513), c2 blob(513))
 create table t9  ( c1  tinyint, c2  smallint, c3  mediumint, c4  int, c5  integer, c6  bigint, c7  float, c8  double, c9  double precision, c10 real, c11 decimal(7, 4), c12 numeric(8, 4), c13 date, c14 datetime, c15 timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP  ON UPDATE CURRENT_TIMESTAMP, c16 time, c17 year, c18 tinyint, c19 bool, c20 char, c21 char(10), c22 varchar(30), c23 tinyblob, c24 tinytext, c25 blob, c26 text, c27 mediumblob, c28 mediumtext, c29 longblob, c30 longtext, c31 enum('one', 'two', 'three'), c32 set('monday', 'tuesday', 'wednesday'), primary key(c1) ) engine = 'InnoDB'
 create table t9  ( c1  tinyint, c2  smallint, c3  mediumint, c4  int, c5  integer, c6  bigint, c7  float, c8  double, c9  double precision, c10 real, c11 decimal(7, 4), c12 numeric(8, 4), c13 date, c14 datetime, c15 timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP  ON UPDATE CURRENT_TIMESTAMP, c16 time, c17 year, c18 tinyint, c19 bool, c20 char, c21 char(10), c22 varchar(30), c23 tinyblob, c24 tinytext, c25 blob, c26 text, c27 mediumblob, c28 mediumtext, c29 longblob, c30 longtext, c31 enum('one', 'two', 'three'), c32 set('monday', 'tuesday', 'wednesday'), primary key(c1) ) engine = 'MYISAM'
 create table t9  ( c1  tinyint, c2  smallint, c3  mediumint, c4  int, c5  integer, c6  bigint, c7  float, c8  double, c9  double precision, c10 real, c11 decimal(7, 4), c12 numeric(8, 4), c13 date, c14 datetime, c15 timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP  ON UPDATE CURRENT_TIMESTAMP, c16 time, c17 year, c18 tinyint, c19 bool, c20 char, c21 char(10), c22 varchar(30), c23 varchar(100), c24 varchar(100), c25 varchar(100), c26 varchar(100), c27 varchar(100), c28 varchar(100), c29 varchar(100), c30 varchar(100), c31 enum('one', 'two', 'three'), c32 set('monday', 'tuesday', 'wednesday'), primary key(c1) ) engine = 'HEAP'
