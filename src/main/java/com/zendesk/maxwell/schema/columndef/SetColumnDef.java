@@ -1,7 +1,5 @@
 package com.zendesk.maxwell.schema.columndef;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -30,12 +28,10 @@ public class SetColumnDef extends ColumnDef {
 		return asList(value);
 	}
 
-	@Override
-	public Object getObjectFromResultSet(ResultSet resultSet, int columnIndex) throws SQLException {
-		return Arrays.asList(resultSet.getString(columnIndex).split(","));
-	}
-
 	private ArrayList<String> asList(Object value) {
+		if ( value instanceof String ) {
+			return new ArrayList<>(Arrays.asList((( String ) value).split(",")));
+		}
 		ArrayList<String> values = new ArrayList<>();
 		long v = (Long) value;
 		for(int i = 0; i < enumValues.length; i++) {

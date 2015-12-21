@@ -2,9 +2,6 @@ package com.zendesk.maxwell.schema.columndef;
 
 import com.google.code.or.common.util.MySQLConstants;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 public class EnumColumnDef extends ColumnDef {
 	public EnumColumnDef(String tableName, String name, String type, int pos, String[] enumValues) {
 		super(tableName, name, type, pos);
@@ -26,12 +23,10 @@ public class EnumColumnDef extends ColumnDef {
 		return asString(value);
 	}
 
-	@Override
-	public Object getObjectFromResultSet(ResultSet resultSet, int columnIndex) throws SQLException {
-		return resultSet.getString(columnIndex);
-	}
-
 	private String asString(Object value) {
+		if ( value instanceof String ) {
+			return ( String ) value;
+		}
 		Integer i = (Integer) value;
 
 		if ( i == 0 )

@@ -1,7 +1,5 @@
 package com.zendesk.maxwell.schema.columndef;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Time;
 
 import com.google.code.or.common.util.MySQLConstants;
@@ -27,8 +25,4 @@ public class TimeColumnDef extends ColumnDef {
 		return String.valueOf((Time) value);
 	}
 
-	@Override
-	public Object getObjectFromResultSet(ResultSet resultSet, int columnIndex) throws SQLException {
-		return resultSet.getString(columnIndex);
-	}
 }

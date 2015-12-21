@@ -3,8 +3,6 @@ package com.zendesk.maxwell.schema.columndef;
 import com.google.code.or.common.util.MySQLConstants;
 
 import java.math.BigInteger;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 public class BitColumnDef extends ColumnDef {
 	public BitColumnDef(String tableName, String name, String type, int pos) {
@@ -24,11 +22,6 @@ public class BitColumnDef extends ColumnDef {
 		} else {
 			return bytesToLong(bytes);
 		}
-	}
-
-	@Override
-	public Object getObjectFromResultSet(ResultSet resultSet, int columnIndex) throws SQLException {
-		return asJSON(resultSet.getBytes(columnIndex));
 	}
 
 	private BigInteger bytesToBigInteger(byte[] bytes) {

@@ -1,8 +1,6 @@
 package com.zendesk.maxwell.schema.columndef;
 
 import java.math.BigInteger;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 import com.google.code.or.common.util.MySQLConstants;
 
@@ -20,6 +18,9 @@ public class BigIntColumnDef extends ColumnDef {
 	}
 
 	private Object toNumeric(Object value) {
+        if ( value instanceof BigInteger ) {
+          return value;
+        }
         Long l = (Long)value;
         if ( l < 0 && !signed )
         	return longlong_max.add(BigInteger.valueOf(l));
@@ -36,8 +37,4 @@ public class BigIntColumnDef extends ColumnDef {
 		return toNumeric(value);
 	}
 
-	@Override
-	public Object getObjectFromResultSet(ResultSet resultSet, int columnIndex) throws SQLException {
-		return resultSet.getLong(columnIndex);
-	}
 }

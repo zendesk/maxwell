@@ -2,9 +2,6 @@ package com.zendesk.maxwell.schema.columndef;
 
 import com.google.code.or.common.util.MySQLConstants;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 public class FloatColumnDef extends ColumnDef {
 	public FloatColumnDef(String tableName, String name, String type, int pos) {
 		super(tableName, name, type, pos);
@@ -23,13 +20,4 @@ public class FloatColumnDef extends ColumnDef {
 		return value.toString();
 	}
 
-	@Override
-	public Object getObjectFromResultSet(ResultSet resultSet, int columnIndex) throws SQLException {
-		if ( getType().equals("float") ) {
-			return resultSet.getFloat(columnIndex);
-		} else {
-			return resultSet.getDouble(columnIndex);
-		}
-
-	}
 }

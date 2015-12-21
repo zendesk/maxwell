@@ -1,7 +1,5 @@
 package com.zendesk.maxwell.schema.columndef;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -68,8 +66,4 @@ public class DateTimeColumnDef extends ColumnDef {
 		return formatValue(value);
 	}
 
-	@Override
-	public Object getObjectFromResultSet(ResultSet resultSet, int columnIndex) throws SQLException {
-		return asJSON(resultSet.getObject(columnIndex));
-	}
 }

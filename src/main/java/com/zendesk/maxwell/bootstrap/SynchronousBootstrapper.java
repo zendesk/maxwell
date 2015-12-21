@@ -5,7 +5,6 @@ import com.zendesk.maxwell.BinlogPosition;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.MaxwellReplicator;
 import com.zendesk.maxwell.RowMap;
-import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
@@ -197,7 +196,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		int columnIndex = 1;
 		while ( columnDefinitions.hasNext() ) {
 			ColumnDef columnDefinition = columnDefinitions.next();
-			row.putData(columnDefinition.getName(), columnDefinition.getObjectFromResultSet(resultSet, columnIndex));
+			row.putData(columnDefinition.getName(), columnDefinition.asJSON(resultSet.getObject(columnIndex)));
 			++columnIndex;
 		}
 	}

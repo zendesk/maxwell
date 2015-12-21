@@ -148,8 +148,8 @@ public class BootstrapIntegrationTest extends AbstractMaxwellTest {
 		testColumnType("real", "3.14159", "3.14159");
 		testColumnType("float","3.14159", "3.14159");
 		testColumnType("double","3.14159", "3.14159");
-		testColumnType("numeric(20,10)","3.14159", "3.1415900000", "3.14159");
-		testColumnType("decimal(20,10)","3.14159", "3.1415900000", "3.14159");
+		testColumnType("numeric(20,10)","3.14159", "3.1415900000");
+		testColumnType("decimal(20,10)","3.14159", "3.1415900000");
 		testColumnType("year","2007", "2007");
 	}
 

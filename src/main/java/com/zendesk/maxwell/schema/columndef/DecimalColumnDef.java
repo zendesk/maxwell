@@ -1,8 +1,6 @@
 package com.zendesk.maxwell.schema.columndef;
 
 import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 import com.google.code.or.common.util.MySQLConstants;
 
@@ -23,8 +21,4 @@ public class DecimalColumnDef extends ColumnDef {
 		return d.toEngineeringString();
 	}
 
-	@Override
-	public Object getObjectFromResultSet(ResultSet resultSet, int columnIndex) throws SQLException {
-		return resultSet.getDouble(columnIndex);
-	}
 }

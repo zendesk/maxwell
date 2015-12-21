@@ -2,8 +2,8 @@ package com.zendesk.maxwell.schema.columndef;
 
 import com.google.code.or.common.util.MySQLConstants;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.Date;
+import java.util.Calendar;
 
 public class YearColumnDef extends ColumnDef {
 	public YearColumnDef(String tableName, String name, String type, int pos) {
@@ -16,12 +16,18 @@ public class YearColumnDef extends ColumnDef {
 	}
 
 	@Override
+	public Object asJSON(Object value) {
+		if ( value instanceof Date ) {
+			Calendar calendar = Calendar.getInstance();
+			calendar.setTime(( java.sql.Date ) value);
+			return calendar.get(Calendar.YEAR);
+		}
+		return value;
+	}
+
+	@Override
 	public String toSQL(Object value) {
 		return ((Integer)value).toString();
 	}
 
-	@Override
-	public Object getObjectFromResultSet(ResultSet resultSet, int columnIndex) throws SQLException {
-		return resultSet.getInt(columnIndex);
-	}
 }

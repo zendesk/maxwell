@@ -2,9 +2,6 @@ package com.zendesk.maxwell.schema.columndef;
 
 import com.google.code.or.common.util.MySQLConstants;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 
 public class IntColumnDef extends ColumnDef {
 	private final int bits;
@@ -24,6 +21,15 @@ public class IntColumnDef extends ColumnDef {
 	}
 
 	private Long toLong(Object value) {
+
+		if ( value instanceof Long ) {
+			return ( Long ) value;
+		}
+
+		if ( value instanceof Boolean ) {
+			return ( Boolean ) value ? 1l: 0l;
+		}
+
 		Integer i = (Integer) value;
 
 		if (signed)
@@ -78,11 +84,6 @@ public class IntColumnDef extends ColumnDef {
 	@Override
 	public boolean getSigned() {
 		return signed;
-	}
-
-	@Override
-	public Object getObjectFromResultSet(ResultSet resultSet, int columnIndex) throws SQLException {
-		return resultSet.getInt(columnIndex);
 	}
 
 }

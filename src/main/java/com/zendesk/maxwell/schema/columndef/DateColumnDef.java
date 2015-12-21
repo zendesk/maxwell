@@ -1,7 +1,5 @@
 package com.zendesk.maxwell.schema.columndef;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -41,8 +39,4 @@ public class DateColumnDef extends ColumnDef {
 		return formatDate(value);
 	}
 
-	@Override
-	public Object getObjectFromResultSet(ResultSet resultSet, int columnIndex) throws SQLException {
-		return resultSet.getString(columnIndex);
-	}
 }
