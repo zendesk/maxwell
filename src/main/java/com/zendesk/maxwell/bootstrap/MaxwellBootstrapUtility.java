@@ -36,9 +36,8 @@ public class MaxwellBootstrapUtility {
 						startedTimeMillis = System.currentTimeMillis();
 					}
 				 	insertedRowsCount = getInsertedRowsCount(connection, rowId);
-				} else {
-					isComplete = getIsComplete(connection, rowId);
 				}
+				isComplete = getIsComplete(connection, rowId);
 				displayProgress(rowCount, insertedRowsCount, startedTimeMillis);
 				Thread.sleep(UPDATE_PERIOD_MILLIS);
 			}
