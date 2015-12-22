@@ -271,6 +271,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 
 	@Override
 	public void exitColumn_definition(mysqlParser.Column_definitionContext ctx) {
+		Boolean longStringFlag = false;
 		String colType = null, colEncoding = null;
 		String[] enumValues = null;
 		List<Column_optionsContext> colOptions = null;
@@ -291,6 +292,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 			colType = dctx.string_type().col_type.getText();
 			colEncoding = getEncoding(dctx.string_type().charset_def(0));
 			colOptions = dctx.string_type().column_options();
+			longStringFlag = (dctx.string_type().long_flag() != null);
 		} else if ( dctx.enumerated_type() != null ) {
 			List<Enum_valueContext> valueList = dctx.enumerated_type().enumerated_values().enum_value();
 
@@ -304,6 +306,8 @@ public class MysqlParserListener extends mysqlBaseListener {
 				enumValues[i++] = unquote_literal(v.getText());
 			}
 		}
+
+		colType = ColumnDef.unalias_type(colType.toLowerCase(), longStringFlag);
 		ColumnDef c = ColumnDef.build(this.tableName,
 					                   name,
 					                   colEncoding,

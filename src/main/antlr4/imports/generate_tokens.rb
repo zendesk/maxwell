@@ -189,6 +189,9 @@ INVOKER
 
 UPGRADE
 NAME
+
+NOW
+LONG
 )
 
 tokens_allowed_in_names = []
