@@ -41,7 +41,7 @@ public class AbstractMaxwellTest {
 		server.shutDown();
 	}
 
-	public static String removeTimeStampsAndIdsAndBinlogPositions(String json) {
+	public static String filterJsonForTest(String json) {
 		json = json.replaceAll("\"ts\":[0-9]+", "\"ts\":0");
 		json = json.replaceAll("\"started_at\":\"[^\"]+\"", "\"started_at\":\"\"");
 		json = json.replaceAll("\"completed_at\":\"[^\"]+\"", "\"completed_at\":\"\"");
@@ -49,6 +49,8 @@ public class AbstractMaxwellTest {
 		json = json.replaceAll("\"xid\":[0-9]+", "\"xid\":0");
 		json = json.replaceAll(",\"binlog_position\":[0-9]+", "");
 		json = json.replaceAll(",\"binlog_file\":\"[^\"]+\"", "");
+		json = json.replaceAll(",\"commit\":true", "");
+		json = json.replaceAll(",\"inserted_rows\":[0-9]+", "");
 		return json;
 	}
 

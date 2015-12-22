@@ -2,37 +2,37 @@ package com.zendesk.maxwell;
 
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
 public class BootstrapIntegrationTest extends AbstractMaxwellTest {
-
 	@Test
-		public void testSingleRowBootstrap( ) throws Exception {
+		public void testSingleRowBootstrap() throws Exception {
 		List<RowMap> list;
 		String input[] = {
 			"insert into minimal set account_id = 1, text_field='hello'",
 			"insert into maxwell.bootstrap set database_name = 'shard_1', table_name = 'minimal'"
 		};
 		String expectedJSON[] = {
-			"{\"database\":\"shard_1\",\"table\":\"minimal\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"commit\":true,\"data\":{\"id\":0,\"account_id\":1,\"text_field\":\"hello\"}}",
-			"{\"database\":\"maxwell\",\"table\":\"bootstrap\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"commit\":true,\"data\":{\"id\":0,\"database_name\":\"shard_1\",\"inserted_rows\":0,\"table_name\":\"minimal\",\"is_complete\":0}}",
+			"{\"database\":\"shard_1\",\"table\":\"minimal\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"account_id\":1,\"text_field\":\"hello\"}}",
+			"{\"database\":\"maxwell\",\"table\":\"bootstrap\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"database_name\":\"shard_1\",\"table_name\":\"minimal\",\"is_complete\":0}}",
 			"{\"database\":\"shard_1\",\"table\":\"minimal\",\"type\":\"bootstrap-start\",\"ts\":0,\"data\":{}}",
 			"{\"database\":\"shard_1\",\"table\":\"minimal\",\"type\":\"insert\",\"ts\":0,\"data\":{\"id\":0,\"account_id\":1,\"text_field\":\"hello\"}}",
-			"{\"database\":\"maxwell\",\"table\":\"bootstrap\",\"type\":\"update\",\"ts\":0,\"xid\":0,\"commit\":true,\"data\":{\"id\":0,\"database_name\":\"shard_1\",\"completed_at\":\"\",\"inserted_rows\":1,\"table_name\":\"minimal\",\"started_at\":\"\",\"is_complete\":1},\"old\":{\"completed_at\":null,\"is_complete\":0}}",
+			"{\"database\":\"maxwell\",\"table\":\"bootstrap\",\"type\":\"update\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"database_name\":\"shard_1\",\"completed_at\":\"\",\"table_name\":\"minimal\",\"started_at\":\"\",\"is_complete\":1},\"old\":{\"completed_at\":null,\"is_complete\":0}}",
 			"{\"database\":\"shard_1\",\"table\":\"minimal\",\"type\":\"bootstrap-complete\",\"ts\":0,\"data\":{}}"
 		};
 		list = getRowsForSQL(null, input, null, false);
 		assertThat(list.size(), is(expectedJSON.length));
 		for (int i = 0; i < expectedJSON.length; ++i) {
-			assertThat(i + " : " + removeTimeStampsAndIdsAndBinlogPositions(list.get(i).toJSON()), is(i + " : " + expectedJSON[i]));
+			assertThat(i + " : " + filterJsonForTest(list.get(i).toJSON()), is(i + " : " + expectedJSON[i]));
 		}
 	}
 
 	@Test
-	public void testMultipleRowBootstrap( ) throws Exception {
+	public void testMultipleRowBootstrap() throws Exception {
 		List<RowMap> list;
 		String input[] = {
 			"insert into minimal set account_id = 1, text_field='hello'",
@@ -41,22 +41,100 @@ public class BootstrapIntegrationTest extends AbstractMaxwellTest {
 			"insert into maxwell.bootstrap set database_name = 'shard_1', table_name = 'minimal'"
 		};
 		String expectedJSON[] = {
-			"{\"database\":\"shard_1\",\"table\":\"minimal\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"commit\":true,\"data\":{\"id\":0,\"account_id\":1,\"text_field\":\"hello\"}}",
-			"{\"database\":\"shard_1\",\"table\":\"minimal\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"commit\":true,\"data\":{\"id\":0,\"account_id\":2,\"text_field\":\"bonjour\"}}",
-			"{\"database\":\"shard_1\",\"table\":\"minimal\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"commit\":true,\"data\":{\"id\":0,\"account_id\":3,\"text_field\":\"goeiedag\"}}",
-			"{\"database\":\"maxwell\",\"table\":\"bootstrap\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"commit\":true,\"data\":{\"id\":0,\"database_name\":\"shard_1\",\"inserted_rows\":0,\"table_name\":\"minimal\",\"is_complete\":0}}",
+			"{\"database\":\"shard_1\",\"table\":\"minimal\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"account_id\":1,\"text_field\":\"hello\"}}",
+			"{\"database\":\"shard_1\",\"table\":\"minimal\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"account_id\":2,\"text_field\":\"bonjour\"}}",
+			"{\"database\":\"shard_1\",\"table\":\"minimal\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"account_id\":3,\"text_field\":\"goeiedag\"}}",
+			"{\"database\":\"maxwell\",\"table\":\"bootstrap\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"database_name\":\"shard_1\",\"table_name\":\"minimal\",\"is_complete\":0}}",
 			"{\"database\":\"shard_1\",\"table\":\"minimal\",\"type\":\"bootstrap-start\",\"ts\":0,\"data\":{}}",
 			"{\"database\":\"shard_1\",\"table\":\"minimal\",\"type\":\"insert\",\"ts\":0,\"data\":{\"id\":0,\"account_id\":1,\"text_field\":\"hello\"}}",
 			"{\"database\":\"shard_1\",\"table\":\"minimal\",\"type\":\"insert\",\"ts\":0,\"data\":{\"id\":0,\"account_id\":2,\"text_field\":\"bonjour\"}}",
 			"{\"database\":\"shard_1\",\"table\":\"minimal\",\"type\":\"insert\",\"ts\":0,\"data\":{\"id\":0,\"account_id\":3,\"text_field\":\"goeiedag\"}}",
-			"{\"database\":\"maxwell\",\"table\":\"bootstrap\",\"type\":\"update\",\"ts\":0,\"xid\":0,\"commit\":true,\"data\":{\"id\":0,\"database_name\":\"shard_1\",\"completed_at\":\"\",\"inserted_rows\":3,\"table_name\":\"minimal\",\"started_at\":\"\",\"is_complete\":1},\"old\":{\"completed_at\":null,\"inserted_rows\":1,\"is_complete\":0}}",
+			"{\"database\":\"maxwell\",\"table\":\"bootstrap\",\"type\":\"update\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"database_name\":\"shard_1\",\"completed_at\":\"\",\"table_name\":\"minimal\",\"started_at\":\"\",\"is_complete\":1},\"old\":{\"completed_at\":null,\"is_complete\":0}}",
 			"{\"database\":\"shard_1\",\"table\":\"minimal\",\"type\":\"bootstrap-complete\",\"ts\":0,\"data\":{}}"
 		};
 		list = getRowsForSQL(null, input, null, false);
 		assertThat(list.size(), is(expectedJSON.length));
 		for (int i = 0; i < expectedJSON.length; ++i) {
-			assertThat(i + " : " + removeTimeStampsAndIdsAndBinlogPositions(list.get(i).toJSON()), is(i + " : " + expectedJSON[i]));
+			assertThat(i + " : " + filterJsonForTest(list.get(i).toJSON()), is(i + " : " + expectedJSON[i]));
 		}
+	}
+	
+	@Test
+	public void testMultipleTablesBootstrap() throws Exception {
+		String input[] = {
+				"DROP TABLE IF EXISTS shard_1.table1",
+				"DROP TABLE IF EXISTS shard_1.table2",
+				"DROP TABLE IF EXISTS shard_1.table3",
+				"CREATE TABLE IF NOT EXISTS shard_1.table1 (id int unsigned auto_increment NOT NULL primary key, txt varchar(255))",
+				"CREATE TABLE IF NOT EXISTS shard_1.table2 (id int unsigned auto_increment NOT NULL primary key, txt varchar(255))",
+				"CREATE TABLE IF NOT EXISTS shard_1.table3 (id int unsigned auto_increment NOT NULL primary key, txt varchar(255))",
+				"INSERT INTO shard_1.table1 (txt) values (\"txt1\"), (\"txt2\"), (\"txt3\")",
+				"INSERT INTO shard_1.table2 (txt) values (\"txt4\"), (\"txt5\"), (\"txt6\")",
+				"INSERT INTO shard_1.table3 (txt) values (\"txt7\"), (\"txt8\"), (\"txt9\")",
+				"INSERT INTO maxwell.bootstrap set database_name = 'shard_1', table_name = 'table1'",
+				"INSERT INTO maxwell.bootstrap set database_name = 'shard_1', table_name = 'table2'",
+				"INSERT INTO maxwell.bootstrap set database_name = 'shard_1', table_name = 'table3'"
+		};
+		String expectedJSONArrays[][] = {
+			{
+				"{\"database\":\"shard_1\",\"table\":\"table1\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"txt\":\"txt1\"}}",
+				"{\"database\":\"shard_1\",\"table\":\"table1\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"txt\":\"txt2\"}}",
+				"{\"database\":\"shard_1\",\"table\":\"table1\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"txt\":\"txt3\"}}",
+				"{\"database\":\"shard_1\",\"table\":\"table2\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"txt\":\"txt4\"}}",
+				"{\"database\":\"shard_1\",\"table\":\"table2\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"txt\":\"txt5\"}}",
+				"{\"database\":\"shard_1\",\"table\":\"table2\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"txt\":\"txt6\"}}",
+				"{\"database\":\"shard_1\",\"table\":\"table3\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"txt\":\"txt7\"}}",
+				"{\"database\":\"shard_1\",\"table\":\"table3\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"txt\":\"txt8\"}}",
+				"{\"database\":\"shard_1\",\"table\":\"table3\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"txt\":\"txt9\"}}"
+			},
+			{
+				"{\"database\":\"maxwell\",\"table\":\"bootstrap\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"database_name\":\"shard_1\",\"table_name\":\"table1\",\"is_complete\":0}}",
+				"{\"database\":\"maxwell\",\"table\":\"bootstrap\",\"type\":\"update\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"database_name\":\"shard_1\",\"completed_at\":\"\",\"table_name\":\"table1\",\"started_at\":\"\",\"is_complete\":1},\"old\":{\"completed_at\":null,\"is_complete\":0}}",
+				"{\"database\":\"maxwell\",\"table\":\"bootstrap\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"database_name\":\"shard_1\",\"table_name\":\"table2\",\"is_complete\":0}}",
+				"{\"database\":\"maxwell\",\"table\":\"bootstrap\",\"type\":\"update\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"database_name\":\"shard_1\",\"completed_at\":\"\",\"table_name\":\"table2\",\"started_at\":\"\",\"is_complete\":1},\"old\":{\"completed_at\":null,\"is_complete\":0}}",
+				"{\"database\":\"maxwell\",\"table\":\"bootstrap\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"database_name\":\"shard_1\",\"table_name\":\"table3\",\"is_complete\":0}}",
+				"{\"database\":\"maxwell\",\"table\":\"bootstrap\",\"type\":\"update\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"database_name\":\"shard_1\",\"completed_at\":\"\",\"table_name\":\"table3\",\"started_at\":\"\",\"is_complete\":1},\"old\":{\"completed_at\":null,\"is_complete\":0}}",
+			},
+			{
+				"{\"database\":\"shard_1\",\"table\":\"table1\",\"type\":\"bootstrap-start\",\"ts\":0,\"data\":{}}",
+				"{\"database\":\"shard_1\",\"table\":\"table1\",\"type\":\"insert\",\"ts\":0,\"data\":{\"id\":0,\"txt\":\"txt1\"}}",
+				"{\"database\":\"shard_1\",\"table\":\"table1\",\"type\":\"insert\",\"ts\":0,\"data\":{\"id\":0,\"txt\":\"txt2\"}}",
+				"{\"database\":\"shard_1\",\"table\":\"table1\",\"type\":\"insert\",\"ts\":0,\"data\":{\"id\":0,\"txt\":\"txt3\"}}",
+				"{\"database\":\"shard_1\",\"table\":\"table1\",\"type\":\"bootstrap-complete\",\"ts\":0,\"data\":{}}",
+			},
+			{
+				"{\"database\":\"shard_1\",\"table\":\"table2\",\"type\":\"bootstrap-start\",\"ts\":0,\"data\":{}}",
+				"{\"database\":\"shard_1\",\"table\":\"table2\",\"type\":\"insert\",\"ts\":0,\"data\":{\"id\":0,\"txt\":\"txt4\"}}",
+				"{\"database\":\"shard_1\",\"table\":\"table2\",\"type\":\"insert\",\"ts\":0,\"data\":{\"id\":0,\"txt\":\"txt5\"}}",
+				"{\"database\":\"shard_1\",\"table\":\"table2\",\"type\":\"insert\",\"ts\":0,\"data\":{\"id\":0,\"txt\":\"txt6\"}}",
+				"{\"database\":\"shard_1\",\"table\":\"table2\",\"type\":\"bootstrap-complete\",\"ts\":0,\"data\":{}}",
+			},
+			{
+				"{\"database\":\"shard_1\",\"table\":\"table3\",\"type\":\"bootstrap-start\",\"ts\":0,\"data\":{}}",
+				"{\"database\":\"shard_1\",\"table\":\"table3\",\"type\":\"insert\",\"ts\":0,\"data\":{\"id\":0,\"txt\":\"txt7\"}}",
+				"{\"database\":\"shard_1\",\"table\":\"table3\",\"type\":\"insert\",\"ts\":0,\"data\":{\"id\":0,\"txt\":\"txt8\"}}",
+				"{\"database\":\"shard_1\",\"table\":\"table3\",\"type\":\"insert\",\"ts\":0,\"data\":{\"id\":0,\"txt\":\"txt9\"}}",
+				"{\"database\":\"shard_1\",\"table\":\"table3\",\"type\":\"bootstrap-complete\",\"ts\":0,\"data\":{}}"
+			}
+		};
+		List<RowMap> rowMaps = getRowsForSQL(null, input, null, false);
+		List<String> rowStrings = new ArrayList<>();
+		assertThat(rowMaps.size(), is(30));
+		for (int i = 0; i < rowMaps.size(); ++i) {
+			rowStrings.add(filterJsonForTest(rowMaps.get(i).toJSON()));
+		}
+		for (int i = 0; i < expectedJSONArrays.length; ++i) {
+			String expectedJSON[] = expectedJSONArrays[i];
+			int fromIndex = 0;
+			for (int j = 0; j < expectedJSON.length; ++j) {
+				fromIndex = findFromIndex(fromIndex, expectedJSON[i], rowStrings);
+				assertThat(expectedJSON[i] + " not found!", fromIndex, not(-1));
+			}
+		}
+	}
+
+	private int findFromIndex(int fromIndex, String json, List<String> rows) {
+		return rows.subList(fromIndex, rows.size()).indexOf(json);
 	}
 
 	@Test
@@ -165,17 +243,17 @@ public class BootstrapIntegrationTest extends AbstractMaxwellTest {
 			"INSERT INTO maxwell.bootstrap set database_name = 'shard_1', table_name = 'column_test'"
 		};
 		String expectedJSON[] = {
-			String.format("{\"database\":\"shard_1\",\"table\":\"column_test\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"commit\":true,\"data\":{\"id\":0,\"col\":%s}}", expectedNormalJsonValue),
-			"{\"database\":\"maxwell\",\"table\":\"bootstrap\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"commit\":true,\"data\":{\"id\":0,\"database_name\":\"shard_1\",\"inserted_rows\":0,\"table_name\":\"column_test\",\"is_complete\":0}}",
+			String.format("{\"database\":\"shard_1\",\"table\":\"column_test\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"col\":%s}}", expectedNormalJsonValue),
+			"{\"database\":\"maxwell\",\"table\":\"bootstrap\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"database_name\":\"shard_1\",\"table_name\":\"column_test\",\"is_complete\":0}}",
 			"{\"database\":\"shard_1\",\"table\":\"column_test\",\"type\":\"bootstrap-start\",\"ts\":0,\"data\":{}}",
 			String.format("{\"database\":\"shard_1\",\"table\":\"column_test\",\"type\":\"insert\",\"ts\":0,\"data\":{\"id\":0,\"col\":%s}}", expectedBootstrappedJsonValue),
-			"{\"database\":\"maxwell\",\"table\":\"bootstrap\",\"type\":\"update\",\"ts\":0,\"xid\":0,\"commit\":true,\"data\":{\"id\":0,\"database_name\":\"shard_1\",\"completed_at\":\"\",\"inserted_rows\":1,\"table_name\":\"column_test\",\"started_at\":\"\",\"is_complete\":1},\"old\":{\"completed_at\":null,\"is_complete\":0}}",
+			"{\"database\":\"maxwell\",\"table\":\"bootstrap\",\"type\":\"update\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"database_name\":\"shard_1\",\"completed_at\":\"\",\"table_name\":\"column_test\",\"started_at\":\"\",\"is_complete\":1},\"old\":{\"completed_at\":null,\"is_complete\":0}}",
 			"{\"database\":\"shard_1\",\"table\":\"column_test\",\"type\":\"bootstrap-complete\",\"ts\":0,\"data\":{}}"
 		};
 		List<RowMap> rows = getRowsForSQL(null, input, null, false);
 		assertThat(rows.size(), is(6));
 		for (int i = 0; i < expectedJSON.length; ++i) {
-			assertThat(i + " : " + removeTimeStampsAndIdsAndBinlogPositions(rows.get(i).toJSON()), is(i + " : " + expectedJSON[i]));
+			assertThat(i + " : " + filterJsonForTest(rows.get(i).toJSON()), is(i + " : " + expectedJSON[i]));
 		}
 	}
 }
