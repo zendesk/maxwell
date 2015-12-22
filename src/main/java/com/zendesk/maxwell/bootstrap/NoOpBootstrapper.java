@@ -42,4 +42,9 @@ public class NoOpBootstrapper extends AbstractBootstrapper {
 	@Override
 	public void resume(AbstractProducer producer, MaxwellReplicator replicator) throws Exception {}
 
+	@Override
+	public boolean isRunning( ) {
+		return false;
+	}
+
 }

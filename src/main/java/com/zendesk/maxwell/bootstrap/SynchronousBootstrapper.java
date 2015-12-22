@@ -155,6 +155,11 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		}
 	}
 
+	@Override
+	public boolean isRunning( ) {
+		return false;
+	}
+
 	private Table findTable(String tableName, Database database) {
 		Table table = database.findTable(tableName);
 		if ( table == null )

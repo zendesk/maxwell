@@ -153,5 +153,10 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 			thread.join();
 		}
 	}
+
+	@Override
+	public boolean isRunning() {
+		return thread != null || queue.size() > 0;
+	}
 }
 

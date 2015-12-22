@@ -28,6 +28,8 @@ public abstract class AbstractBootstrapper {
 
 	public abstract void resume(AbstractProducer producer, MaxwellReplicator replicator) throws Exception;
 
+	public abstract boolean isRunning();
+
 	public void work(RowMap row, AbstractProducer producer, MaxwellReplicator replicator) throws Exception {
 	 	if ( isStartBootstrapRow(row) ) {
 			startBootstrap(row, producer, replicator);
