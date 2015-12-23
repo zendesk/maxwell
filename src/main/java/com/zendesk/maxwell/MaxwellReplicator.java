@@ -51,10 +51,10 @@ public class MaxwellReplicator extends RunLoopProcess {
 		this.replicator = new OpenReplicator();
 		this.replicator.setBinlogEventListener(this.binlogEventListener);
 
-		this.replicator.setHost(ctx.getConfig().mysqlHost);
-		this.replicator.setUser(ctx.getConfig().mysqlUser);
-		this.replicator.setPassword(ctx.getConfig().mysqlPassword);
-		this.replicator.setPort(ctx.getConfig().mysqlPort);
+		this.replicator.setHost(ctx.getConfig().replicationMysql.mysqlHost);
+		this.replicator.setUser(ctx.getConfig().replicationMysql.mysqlUser);
+		this.replicator.setPassword(ctx.getConfig().replicationMysql.mysqlPassword);
+		this.replicator.setPort(ctx.getConfig().replicationMysql.mysqlPort);
 
 		this.replicator.setLevel2BufferSize(50 * 1024 * 1024);
 
@@ -309,7 +309,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 		tableCache.clear();
 
 		if ( !this.context.getReplayMode() ) {
-			try (Connection c = this.context.getSchemaConnectionPool().getConnection()) {
+			try (Connection c = this.context.getMaxwellConnectionPool().getConnection()) {
 				new SchemaStore(c, this.context.getServerID(), this.schema, p).save();
 			}
 

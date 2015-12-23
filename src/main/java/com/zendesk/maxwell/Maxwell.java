@@ -40,7 +40,7 @@ public class Maxwell {
 
 		this.context = new MaxwellContext(this.config);
 
-		try ( Connection connection = this.context.getConnectionPool().getConnection(); Connection schemaConnection = context.getSchemaConnectionPool().getConnection() ) {
+		try ( Connection connection = this.context.getReplicationConnectionPool().getConnection(); Connection schemaConnection = context.getMaxwellConnectionPool().getConnection() ) {
 			MaxwellMysqlStatus.ensureMysqlState(connection);
 			MaxwellMysqlStatus.ensureMysqlSchemaState(schemaConnection);
 
@@ -59,7 +59,7 @@ public class Maxwell {
 				initFirstRun(connection, schemaConnection);
 			}
 		} catch ( SQLException e ) {
-			LOGGER.error("Failed to connect to mysql server @ " + this.config.getConnectionURI());
+			LOGGER.error("Failed to connect to mysql server @ " + this.config.replicationMysql.getConnectionURI());
 			LOGGER.error(e.getLocalizedMessage());
 			return;
 		}

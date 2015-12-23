@@ -82,15 +82,15 @@ public class AbstractMaxwellTest {
 	protected MaxwellContext buildContext() {
 		MaxwellConfig config = new MaxwellConfig();
 
-		config.mysqlHost = "127.0.0.1";
-		config.mysqlPort = server.getPort();
-		config.mysqlUser = "maxwell";
-		config.mysqlPassword = "maxwell";
+		config.replicationMysql.mysqlHost = "127.0.0.1";
+		config.replicationMysql.mysqlPort = server.getPort();
+		config.replicationMysql.mysqlUser = "maxwell";
+		config.replicationMysql.mysqlPassword = "maxwell";
 
-		config.mysqlSchemaHost = "127.0.0.1";
-		config.mysqlSchemaPort = server.getPort();
-		config.mysqlSchemaUser = "maxwell";
-		config.mysqlSchemaPassword = "maxwell";
+		config.maxwellMysql.mysqlHost = "127.0.0.1";
+		config.maxwellMysql.mysqlPort = server.getPort();
+		config.maxwellMysql.mysqlUser = "maxwell";
+		config.maxwellMysql.mysqlPassword = "maxwell";
 
 		return new MaxwellContext(config);
 	}

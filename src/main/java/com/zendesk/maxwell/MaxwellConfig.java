@@ -19,15 +19,9 @@ public class MaxwellConfig {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfig.class);
 	static final String DEFAULT_CONFIG_FILE = "config.properties";
 
-	public String  mysqlHost;
-	public Integer mysqlPort;
-	public String  mysqlUser;
-	public String  mysqlPassword;
+	public MaxwellMysqlConfig replicationMysql;
 
-	public String mysqlSchemaHost;
-	public Integer mysqlSchemaPort;
-	public String  mysqlSchemaUser;
-	public String  mysqlSchemaPassword;
+	public MaxwellMysqlConfig maxwellMysql;
 
 	public String  includeDatabases, excludeDatabases, includeTables, excludeTables;
 	public final Properties kafkaProperties;
@@ -43,6 +37,8 @@ public class MaxwellConfig {
 	public MaxwellConfig() { // argv is only null in tests
 		this.kafkaProperties = new Properties();
 		this.replayMode = false;
+		this.replicationMysql = new MaxwellMysqlConfig();
+		this.maxwellMysql = new MaxwellMysqlConfig();
 	}
 
 	public MaxwellConfig(String argv[]) {
@@ -51,31 +47,20 @@ public class MaxwellConfig {
 		this.setDefaults();
 	}
 
-
-	public String getConnectionURI() {
-		return "jdbc:mysql://" + mysqlHost + ":" + mysqlPort;
-	}
-
-	public String getSchemaConnectionURI() {
-		LOGGER.warn("mysql schema host: " + this.mysqlSchemaHost + " port: " + mysqlSchemaPort.toString());
-		return "jdbc:mysql://" + mysqlSchemaHost + ":" + mysqlSchemaPort;
-	}
-
-
 	private OptionParser getOptionParser() {
 		OptionParser parser = new OptionParser();
 		parser.accepts( "config", "location of config file" ).withRequiredArg();
 		parser.accepts( "log_level", "log level, one of DEBUG|INFO|WARN|ERROR" ).withRequiredArg();
-		parser.accepts( "host", "mysql host" ).withRequiredArg();
-		parser.accepts( "user", "mysql username" ).withRequiredArg();
+		parser.accepts( "replication_host", "mysql host to treat as master" ).withRequiredArg();
+		parser.accepts( "replication_user", "mysql username with replication privileges on replication_host" ).withRequiredArg();
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
-		parser.accepts( "password", "mysql password" ).withRequiredArg();
-		parser.accepts( "port", "mysql port" ).withRequiredArg();
+		parser.accepts( "replication_password", "mysql password for replication_user" ).withRequiredArg();
+		parser.accepts( "replication_port", "port for mysql replication_host instance" ).withRequiredArg();
 
-		parser.accepts( "schema_host", "mysql host" ).withRequiredArg();
-		parser.accepts( "schema_user", "mysql username" ).withRequiredArg();
-		parser.accepts( "schema_password", "mysql password" ).withRequiredArg();
-		parser.accepts( "schema_port", "mysql port" ).withRequiredArg();
+		parser.accepts( "host", "mysql host with write access to maxwell database" ).withRequiredArg();
+		parser.accepts( "user", "mysql username with write access to maxwell database on host" ).withRequiredArg();
+		parser.accepts( "password", "mysql password for user on host" ).withRequiredArg();
+		parser.accepts( "port", "mysql port for host" ).withRequiredArg();
 
 		parser.accepts( "producer", "producer type: stdout|file|kafka" ).withRequiredArg();
 
@@ -117,23 +102,35 @@ public class MaxwellConfig {
 		if ( options.has("log_level")) {
 			this.log_level = parseLogLevel((String) options.valueOf("log_level"));
 		}
-		if ( options.has("host"))
-			this.mysqlHost = (String) options.valueOf("host");
-		if ( options.has("password"))
-			this.mysqlPassword = (String) options.valueOf("password");
-		if ( options.has("user"))
-			this.mysqlUser = (String) options.valueOf("user");
-		if ( options.has("port"))
-			this.mysqlPort = Integer.valueOf((String) options.valueOf("port"));
 
-		if ( options.has("schema_host"))
-			this.mysqlSchemaHost = (String) options.valueOf("schema_host");
-		if ( options.has("schema_password"))
-			this.mysqlSchemaPassword = (String) options.valueOf("schema_password");
-		if ( options.has("schema_user"))
-			this.mysqlSchemaUser = (String) options.valueOf("schema_user");
-		if ( options.has("schema_port"))
-			this.mysqlSchemaPort = Integer.valueOf((String) options.valueOf("schema_port"));
+		if ( options.has("host"))
+			this.maxwellMysql.mysqlHost = (String) options.valueOf("host");
+		if ( options.has("password"))
+			this.maxwellMysql.mysqlPassword = (String) options.valueOf("password");
+		if ( options.has("user"))
+			this.maxwellMysql.mysqlUser = (String) options.valueOf("user");
+		if ( options.has("port"))
+			this.maxwellMysql.mysqlPort = Integer.valueOf((String) options.valueOf("port"));
+
+		if ( options.has("replication_host"))
+			this.replicationMysql.mysqlHost = (String) options.valueOf("replication_host");
+
+		if ( options.has("replication_password"))
+			this.replicationMysql.mysqlPassword = (String) options.valueOf("replication_password");
+
+		if ( options.has("replication_user"))
+			this.replicationMysql.mysqlUser = (String) options.valueOf("replication_user");
+
+		if ( options.has("replication_port"))
+			this.replicationMysql.mysqlPort = Integer.valueOf((String) options.valueOf("replication_port"));
+
+		if ( this.replicationMysql.mysqlPassword == null && !options.has("replication_password")) {
+			this.replicationMysql = new MaxwellMysqlConfig(this.maxwellMysql.mysqlHost,
+															this.maxwellMysql.mysqlPort,
+															this.maxwellMysql.mysqlUser,
+															this.maxwellMysql.mysqlPassword);
+		}
+
 
 		if ( options.has("producer"))
 			this.producerType = (String) options.valueOf("producer");
@@ -213,15 +210,16 @@ public class MaxwellConfig {
 		if ( p == null )
 			return;
 
-		this.mysqlHost     = p.getProperty("host", "127.0.0.1");
-		this.mysqlPassword = p.getProperty("password");
-		this.mysqlUser     = p.getProperty("user");
-		this.mysqlPort     = Integer.valueOf(p.getProperty("port", "3306"));
 
-		this.mysqlSchemaHost     = p.getProperty("schema_host", this.mysqlHost);
-		this.mysqlSchemaPassword = p.getProperty("schema_password", this.mysqlPassword);
-		this.mysqlSchemaUser     = p.getProperty("schema_user", this.mysqlUser);
-		this.mysqlSchemaPort     = Integer.valueOf(p.getProperty("schema_port", p.getProperty("port", "3306")));
+		this.maxwellMysql.mysqlHost     = p.getProperty("host", "127.0.0.1");
+		this.maxwellMysql.mysqlPassword = p.getProperty("password");
+		this.maxwellMysql.mysqlUser     = p.getProperty("user");
+		this.maxwellMysql.mysqlPort     = Integer.valueOf(p.getProperty("port", "3306"));
+
+		this.replicationMysql.mysqlHost      = p.getProperty("replication_host");
+		this.replicationMysql.mysqlPassword  = p.getProperty("replication_password");
+		this.replicationMysql.mysqlUser      = p.getProperty("replication_user");
+		this.replicationMysql.mysqlPort      = Integer.valueOf(p.getProperty("replication_port", "3306"));
 
 		this.producerType    = p.getProperty("producer");
 		this.outputFile      = p.getProperty("output_file");
@@ -258,16 +256,27 @@ public class MaxwellConfig {
 			usage("please specify --output_file=FILE to use the file producer");
 		}
 
-		if ( this.mysqlPort == null )
-			this.mysqlPort = 3306;
+		if ( this.maxwellMysql.mysqlPort == null )
+			this.maxwellMysql.mysqlPort = 3306;
 
-		if ( this.mysqlHost == null ) {
-			LOGGER.warn("mysql host not specified, defaulting to localhost");
-			this.mysqlHost = "localhost";
+		if ( this.maxwellMysql.mysqlHost == null ) {
+			LOGGER.warn("maxwell mysql host not specified, defaulting to localhost");
+			this.maxwellMysql.mysqlHost = "localhost";
 		}
 
-		if ( this.mysqlPassword == null ) {
-			usage("mysql password not given!");
+		if ( this.replicationMysql.mysqlPort == null )
+			this.replicationMysql.mysqlPort = 3306;
+
+		if ( this.replicationMysql.mysqlHost == null ) {
+			LOGGER.warn("master mysql host not specified, defaulting to localhost");
+			this.replicationMysql.mysqlHost = "localhost";
+		}
+
+		if ( this.maxwellMysql.mysqlPassword == null )
+			usage("maxwell mysql password not given");
+
+		if ( this.replicationMysql.mysqlPassword == null ) {
+			usage("master mysql password not given!");
 		}
 
 		if ( this.maxSchemas != null )

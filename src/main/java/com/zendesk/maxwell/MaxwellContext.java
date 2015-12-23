@@ -19,8 +19,8 @@ import snaq.db.ConnectionPool;
 public class MaxwellContext {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellContext.class);
 
-	private final ConnectionPool connectionPool;
-	private final ConnectionPool schemaConnectionPool;
+	private final ConnectionPool replicationConnectionPool;
+	private final ConnectionPool maxwellConnectionPool;
 	private final MaxwellConfig config;
 	private SchemaPosition schemaPosition;
 	private Long serverID;
@@ -28,11 +28,16 @@ public class MaxwellContext {
 
 	public MaxwellContext(MaxwellConfig config) {
 		this.config = config;
-		this.connectionPool = new ConnectionPool("MaxwellConnectionPool", 10, 0, 10,
-				config.getConnectionURI(), config.mysqlUser, config.mysqlPassword);
+		this.replicationConnectionPool = new ConnectionPool("ReplicationConnectionPool", 10, 0, 10,
+				config.replicationMysql.getConnectionURI(), config.replicationMysql.mysqlUser, config.replicationMysql.mysqlPassword);
 
-		this.schemaConnectionPool = new ConnectionPool("SchemaConnectionPool", 10, 0, 10,
-				config.getSchemaConnectionURI(), config.mysqlSchemaUser, config.mysqlSchemaPassword);
+
+		if (config.replicationMysql.equals(config.maxwellMysql)) {
+			this.maxwellConnectionPool = this.replicationConnectionPool;
+		} else {
+			this.maxwellConnectionPool = new ConnectionPool("MaxwellConnectionPool", 10, 0, 10,
+					config.maxwellMysql.getConnectionURI(), config.maxwellMysql.mysqlUser, config.maxwellMysql.mysqlPassword);
+		}
 
 		if ( this.config.initPosition != null )
 			this.initialPosition = this.config.initPosition;
@@ -42,14 +47,14 @@ public class MaxwellContext {
 		return this.config;
 	}
 
-	public ConnectionPool getConnectionPool() {
-		return this.connectionPool;
+	public ConnectionPool getReplicationConnectionPool() {
+		return this.replicationConnectionPool;
 	}
 
-	public ConnectionPool getSchemaConnectionPool() { return this.schemaConnectionPool;}
+	public ConnectionPool getMaxwellConnectionPool() { return this.maxwellConnectionPool;}
 
 	public void start() {
-		SchemaScavenger s = new SchemaScavenger(this.schemaConnectionPool);
+		SchemaScavenger s = new SchemaScavenger(this.maxwellConnectionPool);
 		new Thread(s).start();
 	}
 
@@ -61,16 +66,16 @@ public class MaxwellContext {
 				LOGGER.error("got timeout trying to shutdown schemaPosition thread.");
 			}
 		}
-		this.connectionPool.release();
-		this.schemaConnectionPool.release();
+		this.replicationConnectionPool.release();
+		this.maxwellConnectionPool.release();
 	}
 
 	private SchemaPosition getSchemaPosition() throws SQLException {
 		if ( this.schemaPosition == null ) {
 			if ( this.getConfig().replayMode ) {
-				this.schemaPosition = new ReadOnlySchemaPosition(this.getSchemaConnectionPool(), this.getServerID());
+				this.schemaPosition = new ReadOnlySchemaPosition(this.getMaxwellConnectionPool(), this.getServerID());
 			} else {
-				this.schemaPosition = new SchemaPosition(this.getSchemaConnectionPool(), this.getServerID());
+				this.schemaPosition = new SchemaPosition(this.getMaxwellConnectionPool(), this.getServerID());
 			}
 
 			this.schemaPosition.start();
@@ -114,7 +119,7 @@ public class MaxwellContext {
 		if ( this.serverID != null)
 			return this.serverID;
 
-		try ( Connection c = getConnectionPool().getConnection() ) {
+		try ( Connection c = getReplicationConnectionPool().getConnection() ) {
 			ResultSet rs = c.createStatement().executeQuery("SELECT @@server_id as server_id");
 			if ( !rs.next() ) {
 				throw new RuntimeException("Could not retrieve server_id!");
