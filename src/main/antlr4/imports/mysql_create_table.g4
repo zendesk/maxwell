@@ -16,7 +16,7 @@ create_specification:
   column_definition
   | index_definition;
 
-create_like_tbl: LIKE table_name;
+create_like_tbl: '('? LIKE table_name ')'?;
 
 table_creation_option:
 	  creation_engine
@@ -47,17 +47,17 @@ creation_avg_row_length: AVG_ROW_LENGTH '='? integer;
 creation_character_set: DEFAULT? ((CHARACTER SET) | CHARSET) '='? charset_name;
 creation_checksum:  CHECKSUM '=' integer;
 creation_collation: DEFAULT? COLLATE '='? string;
-creation_comment: COMMENT '='? STRING_LITERAL;
-creation_connection: CONNECTION '='? STRING_LITERAL;
-creation_data_directory: DATA DIRECTORY '='? STRING_LITERAL;
+creation_comment: COMMENT '='? string_literal;
+creation_connection: CONNECTION '='? string_literal;
+creation_data_directory: DATA DIRECTORY '='? string_literal;
 creation_delay_key_write: DELAY_KEY_WRITE '='? integer;
-creation_index_directory: INDEX DIRECTORY '='? STRING_LITERAL;
+creation_index_directory: INDEX DIRECTORY '='? string_literal;
 creation_insert_method: INSERT_METHOD '='? (NO | FIRST | LAST);
 creation_key_block_size: KEY_BLOCK_SIZE '='? integer;
 creation_max_rows: MAX_ROWS '='? integer;
 creation_min_rows: MIN_ROWS '='? integer;
 creation_pack_keys: PACK_KEYS '='? (integer | DEFAULT);
-creation_password: PASSWORD '='? STRING_LITERAL;
+creation_password: PASSWORD '='? string_literal;
 creation_row_format: ROW_FORMAT '='? (DEFAULT | DEFAULT | DYNAMIC | FIXED | COMPRESSED | REDUNDANT | COMPACT);
 creation_tablespace: TABLESPACE string (STORAGE (DISK | MEMORY | DEFAULT))?;
 creation_union: UNION '=' name (',' name)*;

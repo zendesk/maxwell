@@ -29,7 +29,7 @@ index_options:
   ( KEY_BLOCK_SIZE '=' INTEGER_LITERAL )
   | index_type
   | WITH PARSER name
-  | COMMENT STRING_LITERAL
+  | COMMENT string_literal
   ;
 
 index_column_list: '(' index_columns ')';
