@@ -38,6 +38,10 @@ SQL_COMMENT: '/*' ~'!' (.)*? '*/' -> skip;
 
 SQL_LINE_COMMENT: ('#' | '--') (~'\n')* ('\n' | EOF) -> skip;
 
+// all of these are greedy matches: we consume double-ticks ('') and escaped tickets (\') as hard as
+// we can, also matching anything that's not a single tick (') character until we hit the tick.  Same thing
+// with DBL_STRING_LITERAL and QUOTED_IDENT.
+
 STRING_LITERAL: [a-zA-Z]? TICK ('\\\'' | '\'\'' | ~('\''))* TICK;
 DBL_STRING_LITERAL: DBL ('""' | ~('"'))+ DBL;
 INTEGER_LITERAL: DIGIT+;
