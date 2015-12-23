@@ -30,32 +30,36 @@ signed_type: // we need the UNSIGNED flag here
                 length?
                 int_flags*
                 column_options*
-    | col_type=(REAL | DOUBLE | FLOAT | DECIMAL | NUMERIC)
+    | col_type=(REAL | FLOAT | DECIMAL | NUMERIC)
     		    decimal_length?
     		    int_flags*
     		    column_options*
+    | col_type=DOUBLE PRECISION?
+		decimal_length?
+		int_flags*
+		column_options*
     ;
 
 string_type: // getting the encoding here
-	  col_type=(CHAR | VARCHAR)
-	           length?
-	           BINARY?
-	           (charset_def | column_options)*
+      col_type=(CHAR | VARCHAR)
+               length?
+               (column_options | string_column_options)*
     | col_type=(TINYTEXT | TEXT | MEDIUMTEXT | LONGTEXT)
-               BINARY?
-               (charset_def | column_options)*
-    | long_flag col_type=VARCHAR BINARY? (charset_def | column_options)*
-    | long_flag col_type=(BINARY|VARBINARY) (charset_def | column_options)*
-	  ;
+               (column_options | string_column_options)*
+    | long_flag col_type=(VARCHAR | BINARY) (column_options | string_column_options)*
+    | long_flag col_type=VARBINARY column_options*
+    ;
+
 
 long_flag: LONG;
 
 enumerated_type:
 	  col_type=(ENUM | SET)
 	  '(' enumerated_values ')'
-	   (charset_def | column_options)*
+	  (column_options | string_column_options)*
 	  ;
 
+string_column_options: charset_def | collation | BINARY;
 
 column_options:
 	  nullability
@@ -74,13 +78,13 @@ primary_key: PRIMARY KEY;
 enumerated_values: enum_value (',' enum_value)*;
 enum_value: STRING_LITERAL;
 
-charset_def: (character_set | collation)+;
+charset_def: character_set | ASCII;
 character_set: ((CHARACTER SET) | CHARSET) charset_name;
 
 nullability: (NOT NULL | NULL);
 default_value: DEFAULT (literal | NULL | CURRENT_TIMESTAMP | now_function | TRUE | FALSE );
 length: '(' INTEGER_LITERAL ')';
-int_flags: ( UNSIGNED | ZEROFILL );
+int_flags: ( SIGNED | UNSIGNED | ZEROFILL );
 decimal_length: '(' INTEGER_LITERAL ( ',' INTEGER_LITERAL )? ')';
 
 now_function: NOW '(' ')';

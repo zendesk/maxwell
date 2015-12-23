@@ -8,14 +8,12 @@ import java.io.FileOutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.zendesk.maxwell.AbstractMaxwellTest;
 import org.antlr.v4.runtime.misc.NotNull;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import com.zendesk.maxwell.schema.columndef.BigIntColumnDef;
 import com.zendesk.maxwell.schema.columndef.IntColumnDef;
@@ -440,11 +438,30 @@ public class DDLParserTest {
 		assertThat(parseCreate("CREATE TABLE foo (id boolean default false)"), is(notNullValue()));
 	}
 
+	@Ignore
 	@Test
 	public void testMysqlTestSQL() throws Exception {
 		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test.sql"), Charset.defaultCharset());
 		for ( String sql: lines ) {
 			parse(sql);
+		}
+	}
+
+	@Ignore
+	@Test
+	public void generateErrorsFile() throws Exception {
+		FileOutputStream problems = new FileOutputStream(new File(getSQLDir() + "/ddl/mysql-test-errors.sql"));
+
+		List<String> assertions = new ArrayList<>();
+		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test.sql"), Charset.defaultCharset());
+		for ( String sql: lines ) {
+			try {
+				parse(sql);
+			} catch ( Exception e) {
+				assertions.add(sql);
+				problems.write((sql + "\n").getBytes());
+				System.err.println(sql);
+			}
 		}
 	}
 }
