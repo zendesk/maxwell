@@ -464,17 +464,21 @@ public class DDLParserTest {
 		FileOutputStream problems = new FileOutputStream(new File(getSQLDir() + "/ddl/mysql-test-errors.sql"));
 		FileOutputStream fixed = new FileOutputStream(new File(getSQLDir() + "/ddl/mysql-test-fixed.sql"));
 
+		int nFixed = 0, nErr = 0;
 		List<String> assertions = new ArrayList<>();
 		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test.sql"), Charset.defaultCharset());
 		for ( String sql: lines ) {
 			try {
 				parse(sql);
+				nFixed++;
 				fixed.write((sql + "\n").getBytes());
 			} catch ( Exception e) {
 				assertions.add(sql);
 				problems.write((sql + "\n").getBytes());
+				nErr++;
 				System.err.println(sql);
 			}
 		}
+		System.out.println(nFixed + " fixed, " + nErr + " remain.");
 	}
 }
