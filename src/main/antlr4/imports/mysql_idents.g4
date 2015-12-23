@@ -38,7 +38,7 @@ SQL_COMMENT: '/*' ~'!' (.)*? '*/' -> skip;
 
 SQL_LINE_COMMENT: ('#' | '--') (~'\n')* ('\n' | EOF) -> skip;
 
-STRING_LITERAL: [a-zA-Z]? TICK ('\\\'' | '\'\'' | ~('\''))* TICK;
+STRING_LITERAL: [bnxBNX]? TICK ('\\\'' | '\'\'' | ~('\''))* TICK;
 
 INTEGER_LITERAL: DIGIT+;
 
