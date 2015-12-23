@@ -246,4 +246,20 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 			") default character set=latin1"
 		);
 	}
+
+	@Test
+	public void testAutosizingColumns() throws Exception {
+		testIntegration("create table t1 ( " +
+			"a text(1), " +
+			"b text(256), " +
+			"c text(65536), " +
+			"d text(16777216), " +
+			"e blob(1), " +
+			"f blob(256), " +
+			"g blob(65536), " +
+			"h blob(16777216), " +
+			"i text, " +
+			"j blob)"
+		);
+	}
 }

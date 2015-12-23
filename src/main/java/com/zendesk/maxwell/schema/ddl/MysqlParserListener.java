@@ -274,8 +274,16 @@ public class MysqlParserListener extends mysqlBaseListener {
 		this.pkColumns = new ArrayList<>();
 	}
 
+	private Long extractColumnLength(LengthContext l) {
+		if ( l == null )
+			return null;
+		else
+			return Long.valueOf(l.INTEGER_LITERAL().getText());
+	}
+
 	@Override
 	public void exitColumn_definition(mysqlParser.Column_definitionContext ctx) {
+		Long columnLength = null;
 		Boolean longStringFlag = false;
 		String colType = null, colEncoding = null;
 		String[] enumValues = null;
@@ -289,6 +297,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 		if ( dctx.generic_type() != null ) {
 			colType = dctx.generic_type().col_type.getText();
 			colOptions = dctx.generic_type().column_options();
+			columnLength = extractColumnLength(dctx.generic_type().length());
 		} else if ( dctx.signed_type() != null ) {
 			colType = dctx.signed_type().col_type.getText();
 			signed = isSigned(dctx.signed_type().int_flags());
@@ -300,6 +309,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 			if ( dctx.string_type().utf8 ) // forced into UTF-8 by NATIONAL-fu
 				colEncoding = "utf8";
 
+			columnLength = extractColumnLength(dctx.string_type().length());
 			colOptions = dctx.string_type().column_options();
 			longStringFlag = (dctx.string_type().long_flag() != null);
 		} else if ( dctx.enumerated_type() != null ) {
@@ -316,7 +326,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 			}
 		}
 
-		colType = ColumnDef.unalias_type(colType.toLowerCase(), longStringFlag);
+		colType = ColumnDef.unalias_type(colType.toLowerCase(), longStringFlag, columnLength);
 		ColumnDef c = ColumnDef.build(this.tableName,
 					                   name,
 					                   colEncoding,
