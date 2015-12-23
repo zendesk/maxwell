@@ -202,6 +202,10 @@ NAME
 
 NOW
 LONG
+
+STATS_AUTO_RECALC
+STATS_PERSISTENT
+STATS_SAMPLE_PAGES
 )
 
 tokens_allowed_in_names = []
