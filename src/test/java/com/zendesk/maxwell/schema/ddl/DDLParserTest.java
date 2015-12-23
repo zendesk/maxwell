@@ -438,10 +438,21 @@ public class DDLParserTest {
 		assertThat(parseCreate("CREATE TABLE foo (id boolean default false)"), is(notNullValue()));
 	}
 
+	@Test
+	public void testMysqlTestFixedSQL() throws Exception {
+		int i = 1;
+		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test-fixed.sql"), Charset.defaultCharset());
+		for ( String sql: lines ) {
+			System.out.println("Line: " + i++);
+			parse(sql);
+		}
+	}
+
 	@Ignore
 	@Test
 	public void testMysqlTestSQL() throws Exception {
-		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test.sql"), Charset.defaultCharset());
+		int i = 1;
+		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test-errors.sql"), Charset.defaultCharset());
 		for ( String sql: lines ) {
 			parse(sql);
 		}
@@ -449,14 +460,16 @@ public class DDLParserTest {
 
 	@Ignore
 	@Test
-	public void generateErrorsFile() throws Exception {
+	public void generateTestFiles() throws Exception {
 		FileOutputStream problems = new FileOutputStream(new File(getSQLDir() + "/ddl/mysql-test-errors.sql"));
+		FileOutputStream fixed = new FileOutputStream(new File(getSQLDir() + "/ddl/mysql-test-fixed.sql"));
 
 		List<String> assertions = new ArrayList<>();
 		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test.sql"), Charset.defaultCharset());
 		for ( String sql: lines ) {
 			try {
 				parse(sql);
+				fixed.write((sql + "\n").getBytes());
 			} catch ( Exception e) {
 				assertions.add(sql);
 				problems.write((sql + "\n").getBytes());
