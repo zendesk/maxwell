@@ -181,7 +181,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 	private ResultSet getAllRows(String databaseName, String tableName, Schema schema, Connection connection) throws SQLException, InterruptedException {
 		Statement statement = createBatchStatement(connection);
 		String pk = schema.findDatabase(databaseName).findTable(tableName).getPKString();
-		if ( pk != null ) {
+		if ( pk != null && !pk.equals("") ) {
 			return statement.executeQuery(String.format("select * from %s.%s order by %s", databaseName, tableName, pk));
 		} else {
 			return statement.executeQuery(String.format("select * from %s.%s", databaseName, tableName));

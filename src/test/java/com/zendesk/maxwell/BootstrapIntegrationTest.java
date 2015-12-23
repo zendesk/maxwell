@@ -58,7 +58,37 @@ public class BootstrapIntegrationTest extends AbstractMaxwellTest {
 			assertThat(i + " : " + filterJsonForTest(list.get(i).toJSON()), is(i + " : " + expectedJSON[i]));
 		}
 	}
-	
+
+	@Test
+	public void testNoPkTableBootstrap() throws Exception {
+		List<RowMap> list;
+		String input[] = {
+				"DROP TABLE IF EXISTS shard_1.table_no_pk",
+				"CREATE TABLE IF NOT EXISTS shard_1.table_no_pk(account_id int unsigned, text_field varchar(255))",
+				"insert into table_no_pk set account_id = 1, text_field='hello'",
+				"insert into table_no_pk set account_id = 2, text_field='bonjour'",
+				"insert into table_no_pk set account_id = 3, text_field='goeiedag'",
+				"insert into maxwell.bootstrap set database_name = 'shard_1', table_name = 'table_no_pk'"
+		};
+		String expectedJSON[] = {
+				"{\"database\":\"shard_1\",\"table\":\"table_no_pk\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"data\":{\"account_id\":1,\"text_field\":\"hello\"}}",
+				"{\"database\":\"shard_1\",\"table\":\"table_no_pk\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"data\":{\"account_id\":2,\"text_field\":\"bonjour\"}}",
+				"{\"database\":\"shard_1\",\"table\":\"table_no_pk\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"data\":{\"account_id\":3,\"text_field\":\"goeiedag\"}}",
+				"{\"database\":\"maxwell\",\"table\":\"bootstrap\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"database_name\":\"shard_1\",\"table_name\":\"table_no_pk\",\"is_complete\":0}}",
+				"{\"database\":\"shard_1\",\"table\":\"table_no_pk\",\"type\":\"bootstrap-start\",\"ts\":0,\"data\":{}}",
+				"{\"database\":\"shard_1\",\"table\":\"table_no_pk\",\"type\":\"insert\",\"ts\":0,\"data\":{\"account_id\":1,\"text_field\":\"hello\"}}",
+				"{\"database\":\"shard_1\",\"table\":\"table_no_pk\",\"type\":\"insert\",\"ts\":0,\"data\":{\"account_id\":2,\"text_field\":\"bonjour\"}}",
+				"{\"database\":\"shard_1\",\"table\":\"table_no_pk\",\"type\":\"insert\",\"ts\":0,\"data\":{\"account_id\":3,\"text_field\":\"goeiedag\"}}",
+				"{\"database\":\"maxwell\",\"table\":\"bootstrap\",\"type\":\"update\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"database_name\":\"shard_1\",\"completed_at\":\"\",\"table_name\":\"table_no_pk\",\"started_at\":\"\",\"is_complete\":1},\"old\":{\"completed_at\":null,\"is_complete\":0}}",
+				"{\"database\":\"shard_1\",\"table\":\"table_no_pk\",\"type\":\"bootstrap-complete\",\"ts\":0,\"data\":{}}"
+		};
+		list = getRowsForSQL(null, input, null, false);
+		assertThat(list.size(), is(expectedJSON.length));
+		for (int i = 0; i < expectedJSON.length; ++i) {
+			assertThat(i + " : " + filterJsonForTest(list.get(i).toJSON()), is(i + " : " + expectedJSON[i]));
+		}
+	}
+
 	@Test
 	public void testMultipleTablesBootstrap() throws Exception {
 		String input[] = {
@@ -66,10 +96,10 @@ public class BootstrapIntegrationTest extends AbstractMaxwellTest {
 				"DROP TABLE IF EXISTS shard_1.table2",
 				"DROP TABLE IF EXISTS shard_1.table3",
 				"CREATE TABLE IF NOT EXISTS shard_1.table1 (id int unsigned auto_increment NOT NULL primary key, txt varchar(255))",
-				"CREATE TABLE IF NOT EXISTS shard_1.table2 (id int unsigned auto_increment NOT NULL primary key, txt varchar(255))",
+				"CREATE TABLE IF NOT EXISTS shard_1.table2 (id int unsigned, txt varchar(255))",
 				"CREATE TABLE IF NOT EXISTS shard_1.table3 (id int unsigned auto_increment NOT NULL primary key, txt varchar(255))",
 				"INSERT INTO shard_1.table1 (txt) values (\"txt1\"), (\"txt2\"), (\"txt3\")",
-				"INSERT INTO shard_1.table2 (txt) values (\"txt4\"), (\"txt5\"), (\"txt6\")",
+				"INSERT INTO shard_1.table2 (id, txt) values (1, \"txt4\"), (2, \"txt5\"), (3, \"txt6\")",
 				"INSERT INTO shard_1.table3 (txt) values (\"txt7\"), (\"txt8\"), (\"txt9\")",
 				"INSERT INTO maxwell.bootstrap set database_name = 'shard_1', table_name = 'table1'",
 				"INSERT INTO maxwell.bootstrap set database_name = 'shard_1', table_name = 'table2'",
