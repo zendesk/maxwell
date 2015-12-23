@@ -33,7 +33,7 @@ public class SchemaScavengerTest extends AbstractMaxwellTest {
 		this.schema = new SchemaCapturer(server.getConnection()).capture();
 		this.binlogPosition = BinlogPosition.capture(server.getConnection());
 
-		this.scavenger = new SchemaScavenger(buildContext().getConnectionPool());
+		this.scavenger = new SchemaScavenger(buildContext().getReplicationConnectionPool());
 
 		this.schemaStore = new SchemaStore(server.getConnection(), MysqlIsolatedServer.SERVER_ID, this.schema, binlogPosition);
 		this.schemaStore.save();
