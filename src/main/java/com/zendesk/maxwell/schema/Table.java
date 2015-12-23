@@ -1,9 +1,6 @@
 package com.zendesk.maxwell.schema;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -124,6 +121,13 @@ public class Table {
 									  + " vs "
 									  + StringUtils.join(other.getEnumValues(), ",")
 									  + " in " + nameB);
+
+				} else if ( !Objects.equals(column.getEncoding(), other.getEncoding()) ) {
+					diffs.add(colName + "has an encoding mismatch, "
+						+ "'" + column.getEncoding() + "'"
+						+ " vs "
+						+ "'" + other.getEncoding() + "'"
+						+ " in " + nameB);
 
 				}
 			}

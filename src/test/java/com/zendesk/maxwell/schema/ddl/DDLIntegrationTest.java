@@ -51,6 +51,10 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 		return topSchema;
 	}
 
+	private Schema testIntegration(String sql) throws Exception {
+		String[] alters = {sql};
+		return testIntegration(alters);
+	}
 
 	@Test
 	public void testAlter() throws SQLException, SchemaSyncError, IOException, InterruptedException {
@@ -210,7 +214,8 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 		String sql[] = {
 			"create TABLE t1( a long varchar character set 'utf8' )",
 			"create TABLE t2( a long varbinary )",
-			"create TABLE t3( a long binary character set 'latin1' default NULL )"
+			"create TABLE t3( a long binary character set 'latin1' default NULL )",
+			"create table t4( a long )"
 		};
 
 		testIntegration(sql);
@@ -223,5 +228,22 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 		};
 
 		testIntegration(sql);
+	}
+
+	@Test
+	public void testNationChar() throws Exception {
+		testIntegration("create table t1 ( a CHAR(10) CHARACTER SET utf8, " +
+			"b NATIONAL CHARACTER(10), " +
+			"c NCHAR(10), " +
+			"d VARCHAR(10) CHARACTER SET utf8, " +
+			"e NATIONAL VARCHAR(10), " +
+			"f NVARCHAR(10), " +
+			"g NCHAR VARCHAR(10), " +
+			"h NATIONAL CHARACTER VARYING(10), " +
+			"i NATIONAL CHAR VARYING(10), " +
+			"j CHARACTER, " +
+			"k CHARACTER VARYING(10)" +
+			") default character set=latin1"
+		);
 	}
 }
