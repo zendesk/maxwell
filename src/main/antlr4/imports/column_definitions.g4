@@ -7,7 +7,7 @@ column_definition:
 	data_type
 	;
 
-col_position: FIRST | (AFTER id);
+col_position: FIRST | (AFTER name);
 
 data_type:
     generic_type
