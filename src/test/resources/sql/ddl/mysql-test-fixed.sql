@@ -11,6 +11,7 @@ ALTER TABLE bug47205 FORCE
 ALTER TABLE event ADD COLUMN originator INT UNSIGNED NOT NULL AFTER comment
 ALTER TABLE innodb_index_stats STATS_PERSISTENT=0
 ALTER TABLE innodb_table_stats STATS_PERSISTENT=0
+ALTER TABLE mysqltest.my_socket_summary ADD COLUMN (n INT AUTO_INCREMENT, PRIMARY KEY(n))
 ALTER TABLE proc ADD character_set_client                      char(32) collate utf8_bin DEFAULT NULL                      AFTER comment
 ALTER TABLE slave_master_info STATS_PERSISTENT=0
 ALTER TABLE slave_relay_log_info STATS_PERSISTENT=0

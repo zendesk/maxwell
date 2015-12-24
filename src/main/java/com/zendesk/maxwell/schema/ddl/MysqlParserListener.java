@@ -166,7 +166,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 		while ( this.columnDefs.size() > 0 ) {
 			ColumnDef c = this.columnDefs.removeFirst();
 			// unable to choose a position in this form
-			alterStatement().columnMods.add(new AddColumnMod(c.getName(), c, null));
+			alterStatement().columnMods.add(new AddColumnMod(c.getName(), c, new ColumnPosition()));
 		}
 	}
 	@Override
