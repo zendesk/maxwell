@@ -19,6 +19,7 @@ ALTER TABLE slave_worker_info STATS_PERSISTENT=0
 ALTER TABLE t DROP KEY b_key
 ALTER TABLE t DROP KEY ba_key
 ALTER TABLE t1 ADD a0 VARCHAR(32), ADD a1 VARCHAR(32), ADD a2 VARCHAR(32), ADD a3 VARCHAR(32),   ADD a4 VARCHAR(32), ADD a5 VARCHAR(32), ADD d0 TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0) ON UPDATE CURRENT_TIMESTAMP(0), ADD d1 TIMESTAMP(1), ADD d2 TIMESTAMP(2), ADD d3 TIMESTAMP(3), ADD d4 TIMESTAMP(4), ADD d5 TIMESTAMP(5), ADD d6 TIMESTAMP(6)
+ALTER TABLE t1 ADD bin_f CHAR(1) BYTE NOT NULL default ''
 ALTER TABLE t1 AVG_ROW_LENGTH=0 CHECKSUM=0 COMMENT="" MIN_ROWS=0 MAX_ROWS=0 PACK_KEYS=DEFAULT DELAY_KEY_WRITE=0 ROW_FORMAT=default
 ALTER TABLE t1 CHANGE int_field unsigned_int_field INTEGER UNSIGNED NOT NULL, RENAME t2
 ALTER TABLE t1 DROP KEY a
@@ -306,6 +307,7 @@ create table t2_513 (b1 blob(513), b2 blob(513))
 create table t2bb (b1 bit(3), b2 blob(3))
 create table t3 ( a int, b int, filler1 char(200), filler2 char(200), key(a),key(b) ) engine=merge union=(t1,t2)
 create table t3 (a int not null) engine=MERGE UNION=(t1,t2) INSERT_METHOD=FIRST
+create table t3 (a long, b long byte)
 create table t3 (like t1)
 create table t3_1024 (c1 blob(1024), c2 blob(1024))
 create table t3_1025 (c1 blob(1025), c2 blob(1025))
