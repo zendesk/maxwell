@@ -1,5 +1,4 @@
 ALTER TABLE t1 ADD b GEOMETRY NOT NULL, ADD SPATIAL INDEX(b)
-ALTER TABLE t1 ADD bin_f CHAR(1) BYTE NOT NULL default ''
 ALTER TABLE t1 ADD c POINT
 ALTER TABLE t1 CHANGE ucs2_f ucs2_f CHAR(32) UNICODE NOT NULL
 ALTER TABLE t1 ORDER BY t1.id, t1.status, t1.type_id, t1.user_id, t1.body
@@ -75,6 +74,5 @@ create table t1(c enum(0x9353,0x9373) character set sjis)
 create table t1(t1.name int)
 create table t2 as select * from t1
 create table t2(test.t2.name int)
-create table t3 (a long, b long byte)
 create table t3 (a varchar(256) unicode)
 create table test.no_index_tab ( a varchar(255) not null, b int not null) engine = merge union = (test.no_index_tab_1,test.no_index_tab_2) insert_method = first

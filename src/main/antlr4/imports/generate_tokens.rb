@@ -208,6 +208,7 @@ STATS_PERSISTENT
 STATS_SAMPLE_PAGES
 
 FORCE
+BYTE
 )
 
 tokens_allowed_in_names = []

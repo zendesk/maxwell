@@ -76,7 +76,33 @@ public abstract class ColumnDef {
 		}
 	}
 
-	static public String unalias_type(String type, boolean longStringFlag, Long columnLength) {
+	static private String charToByteType(String type) {
+		switch (type) {
+			case "char":
+			case "character":
+				return "binary";
+			case "varchar":
+			case "varying":
+				return "varbinary";
+			case "tinytext":
+				return "tinyblob";
+			case "text":
+				return "blob";
+			case "mediumtext":
+				return "mediumblob";
+			case "longtext":
+				return "longblob";
+			case "long":
+				return "mediumblob";
+			default:
+				throw new RuntimeException("Unknown type with BYTE flag: " + type);
+		}
+	}
+
+	static public String unalias_type(String type, boolean longStringFlag, Long columnLength, boolean byteFlagToStringColumn) {
+		if ( byteFlagToStringColumn )
+			type = charToByteType(type);
+
 		if ( longStringFlag ) {
 			switch (type) {
 				case "varchar":

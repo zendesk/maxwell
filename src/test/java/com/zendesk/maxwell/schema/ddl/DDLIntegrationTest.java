@@ -271,4 +271,20 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 			"j blob)"
 		);
 	}
+
+	@Test
+	public void testAutoConvertToByte() throws Exception {
+		testIntegration("create table t1 ( " +
+			"a char(1) byte, " +
+			"b varchar(255) byte, " +
+			"c tinytext byte, " +
+			"d text byte, " +
+			"e mediumtext byte, " +
+			"f longtext byte, " +
+			"g character varying(255) byte, " +
+			"h long byte, " +
+			"i text(234344) byte" +
+			")"
+		);
+	}
 }
