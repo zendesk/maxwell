@@ -79,7 +79,7 @@ public class AbstractMaxwellTest {
 		generateBinlogEvents();
 	}
 
-	protected MaxwellContext buildContext() {
+	protected MaxwellContext buildContext(BinlogPosition p) {
 		MaxwellConfig config = new MaxwellConfig();
 
 		config.mysqlHost = "127.0.0.1";
@@ -87,12 +87,18 @@ public class AbstractMaxwellTest {
 		config.mysqlUser = "maxwell";
 		config.mysqlPassword = "maxwell";
 
+		config.initPosition = p;
+
 		return new MaxwellContext(config);
+	}
+
+	protected MaxwellContext buildContext() {
+		return buildContext(null);
 	}
 
 	protected List<RowMap>getRowsForSQL(MaxwellFilter filter, String queries[], String before[]) throws Exception {
 		BinlogPosition start = BinlogPosition.capture(server.getConnection());
-		SchemaCapturer capturer = new SchemaCapturer(server.getConnection());
+		SchemaCapturer capturer = new SchemaCapturer(server.getConnection(), CaseSensitivity.CASE_SENSITIVE);
 
 		if ( before != null ) {
 			server.executeList(Arrays.asList(before));

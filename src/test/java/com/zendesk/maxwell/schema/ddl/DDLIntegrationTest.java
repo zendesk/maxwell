@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
+import com.zendesk.maxwell.CaseSensitivity;
 import org.apache.commons.lang.StringUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -29,7 +30,7 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 	}
 
 	private Schema testIntegration(String alters[]) throws SQLException, SchemaSyncError, IOException {
-		SchemaCapturer capturer = new SchemaCapturer(server.getConnection());
+		SchemaCapturer capturer = new SchemaCapturer(server.getConnection(), CaseSensitivity.CASE_SENSITIVE);
 		Schema topSchema = capturer.capture();
 
 		server.executeList(Arrays.asList(alters));

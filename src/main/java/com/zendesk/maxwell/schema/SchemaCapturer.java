@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.zendesk.maxwell.CaseSensitivity;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,15 +31,17 @@ public class SchemaCapturer {
 	private final PreparedStatement infoSchemaStmt;
 	private final String INFORMATION_SCHEMA_SQL =
 			"SELECT * FROM `information_schema`.`COLUMNS` WHERE `TABLE_SCHEMA` = ? AND `TABLE_NAME` = ?";
+	private final CaseSensitivity sensitivity;
 
-	public SchemaCapturer(Connection c) throws SQLException {
-		this.includeDatabases = new HashSet<String>();
+	public SchemaCapturer(Connection c, CaseSensitivity sensitivity) throws SQLException {
+		this.includeDatabases = new HashSet<>();
 		this.connection = c;
+		this.sensitivity = sensitivity;
 		this.infoSchemaStmt = connection.prepareStatement(INFORMATION_SCHEMA_SQL);
 	}
 
-	public SchemaCapturer(Connection c, String dbName) throws SQLException {
-		this(c);
+	public SchemaCapturer(Connection c, CaseSensitivity sensitivity, String dbName) throws SQLException {
+		this(c, sensitivity);
 		this.includeDatabases.add(dbName);
 	}
 
@@ -63,7 +66,7 @@ public class SchemaCapturer {
 		}
 
 		LOGGER.debug("Finished capturing schema");
-		return new Schema(databases, captureDefaultEncoding());
+		return new Schema(databases, captureDefaultEncoding(), this.sensitivity);
 	}
 
 	private String captureDefaultEncoding() throws SQLException {

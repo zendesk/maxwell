@@ -1,13 +1,18 @@
 package com.zendesk.maxwell.schema;
 
+import com.zendesk.maxwell.CaseSensitivity;
+import com.zendesk.maxwell.MaxwellContext;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Schema {
 	private final ArrayList<Database> databases;
 	private final String encoding;
+	private final CaseSensitivity sensitivity;
 
-	public Schema(ArrayList<Database> databases, String encoding) {
+	public Schema(ArrayList<Database> databases, String encoding, CaseSensitivity sensitivity) {
+		this.sensitivity = sensitivity;
 		this.encoding = encoding;
 		this.databases = databases;
 	}
@@ -43,7 +48,7 @@ public class Schema {
 			newDBs.add(d.copy());
 		}
 
-		return new Schema(newDBs, this.encoding);
+		return new Schema(newDBs, this.encoding, this.sensitivity);
 	}
 
 	private void diffDBList(List<String> diff, Schema a, Schema b, String nameA, String nameB, boolean recurse) {
