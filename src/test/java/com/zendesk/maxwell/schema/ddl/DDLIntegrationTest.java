@@ -257,6 +257,16 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 	}
 
 	@Test
+	public void testUnicodeKeywork() throws Exception {
+		testIntegration("create table t1 ( a CHAR(10) UNICODE, " +
+				"d VARCHAR(10) UNICODE, " +
+				"h CHARACTER VARYING(10) UNICODE, " +
+				"j CHARACTER UNICODE, " +
+				"k TEXT(20) UNICODE " +
+				") default character set=latin1"
+		);
+	}
+	@Test
 	public void testAutosizingColumns() throws Exception {
 		testIntegration("create table t1 ( " +
 			"a text(1), " +

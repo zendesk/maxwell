@@ -1,6 +1,5 @@
 ALTER TABLE t1 ADD b GEOMETRY NOT NULL, ADD SPATIAL INDEX(b)
 ALTER TABLE t1 ADD c POINT
-ALTER TABLE t1 CHANGE ucs2_f ucs2_f CHAR(32) UNICODE NOT NULL
 ALTER TABLE t1 ORDER BY t1.id, t1.status, t1.type_id, t1.user_id, t1.body
 ALTER TABLE t1 STORAGE DISK
 ALTER TABLE t1 STORAGE DISK TABLESPACE ts2
@@ -29,9 +28,6 @@ CREATE TABLE help_relation (   help_topic_id    int unsigned not null references
 CREATE TABLE t1 ( a INTEGER PRIMARY KEY AUTO_INCREMENT, gp  point, ln  linestring, pg  polygon, mp  multipoint, mln multilinestring, mpg multipolygon, gc  geometrycollection, gm  geometry )
 CREATE TABLE t1 ( c01 BIT, c02 BIT(64), c03 TINYINT, c04 TINYINT UNSIGNED, c05 TINYINT ZEROFILL, c06 BOOL, c07 SMALLINT, c08 SMALLINT UNSIGNED, c09 SMALLINT ZEROFILL, c10 MEDIUMINT, c11 MEDIUMINT UNSIGNED, c12 MEDIUMINT ZEROFILL, c13 INT, c14 INT UNSIGNED, c15 INT ZEROFILL, c16 BIGINT, c17 BIGINT UNSIGNED, c18 BIGINT ZEROFILL, c19 FLOAT, c20 FLOAT UNSIGNED, c21 FLOAT ZEROFILL, c22 DOUBLE, c23 DOUBLE UNSIGNED, c24 DOUBLE ZEROFILL, c25 DECIMAL, c26 DECIMAL UNSIGNED, c27 DECIMAL ZEROFILL,
 CREATE TABLE t1 ( c1 INT, c2 VARCHAR(300), KEY (c1) KEY_BLOCK_SIZE 1024, KEY (c2) KEY_BLOCK_SIZE 8192 )
-CREATE TABLE t1 ( f1 CHAR         UNICODE, f2 CHAR(0)      UNICODE, f3 CHAR(10)     UNICODE, f5 VARCHAR(0)   UNICODE, f6 VARCHAR(255) UNICODE, f7 VARCHAR(260) UNICODE ) ENGINE = MEMORY
-CREATE TABLE t1 ( f1 CHAR         UNICODE, f2 CHAR(0)      UNICODE, f3 CHAR(10)     UNICODE, f5 VARCHAR(0)   UNICODE, f6 VARCHAR(255) UNICODE, f7 VARCHAR(260) UNICODE, f8 TEXT         UNICODE, f9 TINYTEXT     UNICODE, f10 MEDIUMTEXT  UNICODE, f11 LONGTEXT    UNICODE ) ENGINE = InnoDB
-CREATE TABLE t1 ( f1 CHAR         UNICODE, f2 CHAR(0)      UNICODE, f3 CHAR(10)     UNICODE, f5 VARCHAR(0)   UNICODE, f6 VARCHAR(255) UNICODE, f7 VARCHAR(260) UNICODE, f8 TEXT         UNICODE, f9 TINYTEXT     UNICODE, f10 MEDIUMTEXT  UNICODE, f11 LONGTEXT    UNICODE ) ENGINE = MyISAM
 CREATE TABLE t1 ( pk int, a varchar(1), b varchar(4), c tinyblob, d blob, e mediumblob, f longblob, g tinytext, h text, i mediumtext, j longtext, k geometry, PRIMARY KEY (pk) )
 CREATE TABLE t1 (a GEOMETRY)
 CREATE TABLE t1 (line LINESTRING NOT NULL) engine=myisam
@@ -74,5 +70,4 @@ create table t1(c enum(0x9353,0x9373) character set sjis)
 create table t1(t1.name int)
 create table t2 as select * from t1
 create table t2(test.t2.name int)
-create table t3 (a varchar(256) unicode)
 create table test.no_index_tab ( a varchar(255) not null, b int not null) engine = merge union = (test.no_index_tab_1,test.no_index_tab_2) insert_method = first
