@@ -88,6 +88,15 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 	}
 
 	@Test
+	public void testAlterMultipleColumns() throws Exception {
+		String sql[] = {
+			"create table shard_1.test_foo ( id int )",
+			"alter table shard_1.test_foo add column ( a varchar(255), b varchar(255), primary key (a) )"
+		};
+
+		testIntegration(sql);
+	}
+	@Test
 	public void testDrop() throws SQLException, SchemaSyncError, IOException, InterruptedException {
 		String sql[] = {
 			"create table shard_1.testAlter ( id int(11) unsigned default 1, str varchar(255) )",
@@ -249,6 +258,16 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 	}
 
 	@Test
+	public void testUnicodeKeywork() throws Exception {
+		testIntegration("create table t1 ( a CHAR(10) UNICODE, " +
+				"d VARCHAR(10) UNICODE, " +
+				"h CHARACTER VARYING(10) UNICODE, " +
+				"j CHARACTER UNICODE, " +
+				"k TEXT(20) UNICODE " +
+				") default character set=latin1"
+		);
+	}
+	@Test
 	public void testAutosizingColumns() throws Exception {
 		testIntegration("create table t1 ( " +
 			"a text(1), " +
@@ -279,14 +298,29 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 
 	@Test
 	public void testCaseInsensitiveDatabase() throws Exception {
-		if ( buildContext().getCaseSensitivity() != CaseSensitivity.CASE_SENSITIVE ) {
+		if (buildContext().getCaseSensitivity() != CaseSensitivity.CASE_SENSITIVE) {
 			String sql[] = {
-				"create TABLE taybal( a long varchar character set 'utf8' )",
-				"alter table TAYbal add column b int",
-				"drop table TAYBAL"
+					"create TABLE taybal( a long varchar character set 'utf8' )",
+					"alter table TAYbal add column b int",
+					"drop table TAYBAL"
 			};
 
 			testIntegration(sql);
 		}
+	}
+
+	public void testAutoConvertToByte() throws Exception {
+		testIntegration("create table t1 ( " +
+			"a char(1) byte, " +
+			"b varchar(255) byte, " +
+			"c tinytext byte, " +
+			"d text byte, " +
+			"e mediumtext byte, " +
+			"f longtext byte, " +
+			"g character varying(255) byte, " +
+			"h long byte, " +
+			"i text(234344) byte" +
+			")"
+		);
 	}
 }

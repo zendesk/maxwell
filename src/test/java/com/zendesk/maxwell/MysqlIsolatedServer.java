@@ -1,8 +1,8 @@
 package com.zendesk.maxwell;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,6 +14,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class MysqlIsolatedServer {
 	public static final Long SERVER_ID = 123123L;
@@ -22,6 +23,7 @@ public class MysqlIsolatedServer {
 	private int serverPid;
 
 	static final Logger LOGGER = LoggerFactory.getLogger(MysqlIsolatedServer.class);
+	public static final TypeReference<Map<String, Object>> MAP_STRING_OBJECT_REF = new TypeReference<Map<String, Object>>() {};
 
 	public void boot(String xtraParams) throws IOException, SQLException, InterruptedException {
         final String dir = System.getProperty("user.dir");
@@ -64,11 +66,12 @@ public class MysqlIsolatedServer {
 		String json = reader.readLine();
 		String outputFile = null;
 		try {
-			JSONObject output = new JSONObject(json);
-			this.port = output.getInt("port");
-			this.serverPid = output.getInt("server_pid");
-			outputFile = output.getString("output");
-		} catch ( JSONException e ) {
+			ObjectMapper mapper = new ObjectMapper();
+			Map<String, Object> output = mapper.readValue(json, MAP_STRING_OBJECT_REF);
+			this.port = (int) output.get("port");
+			this.serverPid = (int) output.get("server_pid");
+			outputFile = (String) output.get("output");
+		} catch ( Exception e ) {
 			LOGGER.error("got exception while parsing " + json, e);
 			throw(e);
 		}

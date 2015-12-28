@@ -43,16 +43,16 @@ signed_type: // we need the UNSIGNED flag here
 
 string_type locals [Boolean utf8 = false]:
       (NATIONAL {$utf8=true;})?
-      col_type=(CHAR | CHARACTER | VARCHAR) length?  (column_options | string_column_options)*
+      col_type=(CHAR | CHARACTER | VARCHAR) length?  (column_options | string_column_options | BYTE | UNICODE)*
     | (NATIONAL {$utf8=true;})?
-      (CHARACTER|CHAR) col_type=VARYING length (string_column_options | column_options)*
+      (CHARACTER|CHAR) col_type=VARYING length (string_column_options | column_options | BYTE | UNICODE)*
     | col_type=(NCHAR | NVARCHAR) length? (string_column_options | column_options)* {$utf8=true;}
     | NCHAR col_type=VARCHAR length? (column_options | string_column_options)* {$utf8=true;}
-    | col_type=(TINYTEXT | MEDIUMTEXT | LONGTEXT) (column_options | string_column_options)*
-    | col_type=TEXT length? (column_options | string_column_options)*
-    | long_flag col_type=(VARCHAR | BINARY) (column_options | string_column_options)*
+    | col_type=(TINYTEXT | MEDIUMTEXT | LONGTEXT) (column_options | string_column_options | BYTE | UNICODE)*
+    | col_type=TEXT length? (column_options | string_column_options | BYTE | UNICODE)*
+    | long_flag col_type=(VARCHAR | BINARY) (column_options | string_column_options | UNICODE)*
     | long_flag col_type=VARBINARY column_options*
-    | col_type=LONG (column_options | string_column_options)*
+    | col_type=LONG (column_options | string_column_options | BYTE | UNICODE)*
     ;
 
 long_flag: LONG;

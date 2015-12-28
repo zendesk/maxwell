@@ -166,7 +166,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 		while ( this.columnDefs.size() > 0 ) {
 			ColumnDef c = this.columnDefs.removeFirst();
 			// unable to choose a position in this form
-			alterStatement().columnMods.add(new AddColumnMod(c.getName(), c, null));
+			alterStatement().columnMods.add(new AddColumnMod(c.getName(), c, new ColumnPosition()));
 		}
 	}
 	@Override
@@ -289,6 +289,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 		String[] enumValues = null;
 		List<Column_optionsContext> colOptions = null;
 		boolean signed = true;
+		boolean byteFlagToStringColumn = false;
 
 		String name = unquote(ctx.col_name.getText());
 
@@ -309,6 +310,12 @@ public class MysqlParserListener extends mysqlBaseListener {
 			if ( dctx.string_type().utf8 ) // forced into UTF-8 by NATIONAL-fu
 				colEncoding = "utf8";
 
+			if ( dctx.string_type().BYTE().size() > 0 )
+				byteFlagToStringColumn = true;
+
+			if ( dctx.string_type().UNICODE().size() > 0 )
+				colEncoding = "ucs2";
+
 			columnLength = extractColumnLength(dctx.string_type().length());
 			colOptions = dctx.string_type().column_options();
 			longStringFlag = (dctx.string_type().long_flag() != null);
@@ -326,7 +333,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 			}
 		}
 
-		colType = ColumnDef.unalias_type(colType.toLowerCase(), longStringFlag, columnLength);
+		colType = ColumnDef.unalias_type(colType.toLowerCase(), longStringFlag, columnLength, byteFlagToStringColumn);
 		ColumnDef c = ColumnDef.build(this.tableName,
 					                   name,
 					                   colEncoding,

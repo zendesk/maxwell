@@ -25,7 +25,7 @@ alter_specification:
 
 // the various alter_table commands available
 add_column: ADD COLUMN? column_definition col_position?;
-add_column_parens: ADD COLUMN? '(' column_definition (',' column_definition)* ')';
+add_column_parens: ADD COLUMN? '(' (column_definition|index_definition) (',' (column_definition|index_definition))* ')';
 change_column: CHANGE COLUMN? old_col_name column_definition col_position?;
 drop_column: DROP COLUMN? old_col_name;
   old_col_name: name;
