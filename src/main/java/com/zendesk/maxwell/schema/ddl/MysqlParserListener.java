@@ -313,6 +313,9 @@ public class MysqlParserListener extends mysqlBaseListener {
 			if ( dctx.string_type().BYTE().size() > 0 )
 				byteFlagToStringColumn = true;
 
+			if ( dctx.string_type().UNICODE().size() > 0 )
+				colEncoding = "ucs2";
+
 			columnLength = extractColumnLength(dctx.string_type().length());
 			colOptions = dctx.string_type().column_options();
 			longStringFlag = (dctx.string_type().long_flag() != null);
