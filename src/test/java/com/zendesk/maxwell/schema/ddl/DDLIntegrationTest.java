@@ -87,6 +87,15 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 	}
 
 	@Test
+	public void testAlterMultipleColumns() throws Exception {
+		String sql[] = {
+			"create table shard_1.test_foo ( id int )",
+			"alter table shard_1.test_foo add column ( a varchar(255), b varchar(255), primary key (a) )"
+		};
+
+		testIntegration(sql);
+	}
+	@Test
 	public void testDrop() throws SQLException, SchemaSyncError, IOException, InterruptedException {
 		String sql[] = {
 			"create table shard_1.testAlter ( id int(11) unsigned default 1, str varchar(255) )",
