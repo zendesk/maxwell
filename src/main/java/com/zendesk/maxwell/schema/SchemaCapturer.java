@@ -47,7 +47,7 @@ public class SchemaCapturer {
 
 	public Schema capture() throws SQLException, SchemaSyncError {
 		LOGGER.debug("Capturing schema");
-		ArrayList<Database> databases = new ArrayList<Database>();
+		ArrayList<Database> databases = new ArrayList<>();
 
 
 		ResultSet rs = connection.createStatement().executeQuery("SELECT * from INFORMATION_SCHEMA.SCHEMATA");

@@ -1,7 +1,6 @@
 package com.zendesk.maxwell.schema;
 
 import com.zendesk.maxwell.CaseSensitivity;
-import com.zendesk.maxwell.MaxwellContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,10 +10,13 @@ public class Schema {
 	private final String encoding;
 	private final CaseSensitivity sensitivity;
 
-	public Schema(ArrayList<Database> databases, String encoding, CaseSensitivity sensitivity) {
+	public Schema(List<Database> databases, String encoding, CaseSensitivity sensitivity) {
 		this.sensitivity = sensitivity;
 		this.encoding = encoding;
-		this.databases = databases;
+		this.databases = new ArrayList<>();
+
+		for ( Database d : databases )
+			addDatabase(d);
 	}
 
 	public List<Database> getDatabases() { return this.databases; }
@@ -30,8 +32,10 @@ public class Schema {
 
 	public Database findDatabase(String string) {
 		for ( Database d: this.databases ) {
-			if ( d.getName().equals(string) ) {
-				return d;
+			if ( sensitivity == CaseSensitivity.CASE_SENSITIVE ) {
+				if ( d.getName().equals(string) ) return d;
+			} else {
+				if ( d.getName().toLowerCase().equals(string.toLowerCase()) ) return d;
 			}
 		}
 
@@ -39,6 +43,7 @@ public class Schema {
 	}
 
 	public void addDatabase(Database d) {
+		d.setSensitivity(sensitivity);
 		this.databases.add(d);
 	}
 

@@ -243,7 +243,7 @@ public class SchemaStore {
 		ResultSet dbRS = p.executeQuery();
 
 		while (dbRS.next()) {
-			this.schema.getDatabases().add(restoreDatabase(dbRS.getInt("id"), dbRS.getString("name"), dbRS.getString("encoding")));
+			this.schema.addDatabase(restoreDatabase(dbRS.getInt("id"), dbRS.getString("name"), dbRS.getString("encoding")));
 		}
 
 		if ( this.schema.findDatabase("mysql") == null ) {
