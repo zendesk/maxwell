@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.antlr.v4.runtime.TokenStream;
+import org.antlr.v4.runtime.TokenStreamRewriter;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.antlr.v4.runtime.tree.ErrorNode;
 
@@ -25,13 +27,13 @@ class MaxwellSQLSyntaxError extends RuntimeException {
 	}
 }
 
-
 public class MysqlParserListener extends mysqlBaseListener {
     final Logger LOGGER = LoggerFactory.getLogger(MysqlParserListener.class);
 
 	private String tableName;
 	private final ArrayList<SchemaChange> schemaChanges;
 	private final String currentDatabase;
+	private final TokenStream tokenStream;
 	private ColumnPosition columnPosition;
 
 	public List<SchemaChange> getSchemaChanges() {
@@ -42,10 +44,11 @@ public class MysqlParserListener extends mysqlBaseListener {
 
 	private ArrayList<String> pkColumns;
 
-	MysqlParserListener(String currentDatabase)  {
+	MysqlParserListener(String currentDatabase, TokenStream tokenStream)  {
 		this.pkColumns = null; // null indicates no change in primary keys
 		this.schemaChanges = new ArrayList<>();
 		this.currentDatabase = currentDatabase;
+		this.tokenStream = tokenStream;
 	}
 
 	private String unquote(String ident) {
@@ -259,6 +262,39 @@ public class MysqlParserListener extends mysqlBaseListener {
 		boolean ifExists = ctx.if_exists() != null;
 		String dbName = unquote(ctx.name().getText());
 		schemaChanges.add(new DatabaseDrop(dbName, ifExists));
+	}
+
+	private String spliceIndexTypeCheck(int startIndex) {
+		TokenStreamRewriter r = new TokenStreamRewriter(tokenStream);
+		int i = startIndex, parens = 0;
+
+		/* skip until first paren */
+		for ( ; i < tokenStream.size(); i++ )  {
+			if ( tokenStream.get(i).getText().equals("("))
+				break;
+		}
+
+		/* now skip until matching paren */
+		for ( ; i < tokenStream.size(); i++ ) {
+			String tokenText = tokenStream.get(i).getText();
+
+			if ( tokenText.equals("(") )
+				parens++;
+			else if ( tokenText.equals(")") )
+				parens--;
+
+			if ( parens == 0 )
+				break;
+		}
+
+		r.insertBefore(startIndex, "___MAXWELL___");
+		r.delete(startIndex, i);
+		return r.getText();
+	}
+
+	@Override
+	public void enterIndex_type_check(Index_type_checkContext ctx) {
+		throw new ReparseSQLException(spliceIndexTypeCheck(ctx.getStart().getTokenIndex()));
 	}
 
 	@Override

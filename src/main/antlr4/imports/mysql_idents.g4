@@ -31,8 +31,11 @@ collation: COLLATE '='? (IDENT | string_literal | QUOTED_IDENT);
 
 if_not_exists: IF NOT EXISTS;
 
+
 SQL_UPGRADE_COMMENT: '/*!' [0-9]* -> skip;
 SQL_UPGRADE_ENDCOMMENT: '*/' -> skip;
+
+MAXWELL_ELIDED_PARSE_ISSUE: '___MAXWELL___';
 
 SQL_COMMENT: '/*' ~'!' (.)*? '*/' -> skip;
 
@@ -56,4 +59,4 @@ fragment BACKTICK: '`';
 QUOTED_IDENT: BACKTICK (('``') | ~('`'))+ BACKTICK;
 
 fragment DIGIT: [0-9];
-WS  :   [ \t\n\r]+ -> skip ;
+WS  :   [ \t\n\r]+ -> channel(HIDDEN) ;
