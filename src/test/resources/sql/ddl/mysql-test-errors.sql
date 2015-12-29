@@ -12,10 +12,6 @@ CREATE TABLE t2(b1 INT, b2 INT, INDEX (b1, b2), CONSTRAINT A1 FOREIGN KEY (b1, b
 CREATE TABLE t3(b1 INT, b2 INT, INDEX t3_indx (b1, b2), CONSTRAINT A2 FOREIGN KEY (b1, b2) REFERENCES t2(b1, b2) ON UPDATE SET NULL ON DELETE RESTRICT) ENGINE=INNODB
 CREATE TABLE t4(b1 INT, b2 INT, UNIQUE KEY t4_ukey (b1, b2), CONSTRAINT A3 FOREIGN KEY (b1, b2) REFERENCES t3(b1, b2) ON UPDATE NO ACTION ON DELETE SET NULL) ENGINE=INNODB
 CREATE TABLE t5(b1 INT, b2 INT, INDEX (b1, b2), CONSTRAINT A4 FOREIGN KEY (b1, b2) REFERENCES t4(b1, b2) ON UPDATE RESTRICT ON DELETE CASCADE) ENGINE=INNODB
-alter table bug19145a alter column e set default null
-alter table bug19145a alter column s set default null
-alter table bug19145b alter column e set default null
-alter table bug19145b alter column s set default null
 alter table t1 add f2 enum(0xFFFF)
 create table t1 ( min_num   dec(6,6)     default .000001)
 create table t1 ( min_num   dec(6,6)     default 0.000001)

@@ -12,7 +12,7 @@ user_token: (IDENT | QUOTED_IDENT | string_literal);
 
 name: ( id | tokens_available_for_names | INTEGER_LITERAL);
 id: ( IDENT | QUOTED_IDENT );
-literal: (float_literal | integer_literal | string_literal);
+literal: (float_literal | integer_literal | string_literal | NULL);
 
 float_literal: INTEGER_LITERAL? '.' INTEGER_LITERAL;
 integer_literal: INTEGER_LITERAL;
