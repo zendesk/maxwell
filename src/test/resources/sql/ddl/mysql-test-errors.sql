@@ -2,10 +2,6 @@ ALTER TABLE t1 ADD b GEOMETRY NOT NULL, ADD SPATIAL INDEX(b)
 ALTER TABLE t1 ADD c POINT
 ALTER TABLE ti1 CHECKSUM 1
 ALTER TABLE tm1 CHECKSUM 1
-ALTER USER 'bernt' PASSWORD EXPIRE
-ALTER USER 'u1'@'localhost' PASSWORD EXPIRE
-ALTER USER must_change@localhost PASSWORD EXPIRE
-ALTER USER wl6587@localhost PASSWORD EXPIRE
 CREATE TABLE "table_25930_b" (   """blah"" - 1" bigint(12) DEFAULT NULL )
 CREATE TABLE IF NOT EXISTS help_relation ( help_topic_id int unsigned not null references help_topic, help_keyword_id  int unsigned not null references help_keyword, primary key (help_keyword_id, help_topic_id) ) engine=MyISAM CHARACTER SET utf8 comment='keyword-topic relation'
 CREATE TABLE Product_Order (No INT NOT NULL AUTO_INCREMENT, Product_Category INT NOT NULL, Product_Id INT NOT NULL, Customer_Id INT NOT NULL, PRIMARY KEY(No), INDEX (Product_Category, Product_Id), FOREIGN KEY (Product_Category, Product_Id) REFERENCES Product(Category, Id) ON UPDATE CASCADE ON DELETE RESTRICT, INDEX (Customer_Id), FOREIGN KEY (Customer_Id) REFERENCES Customer(Id) ) ENGINE=INNODB
