@@ -439,6 +439,11 @@ public class DDLParserTest {
 	}
 
 	@Test
+	public void testAlterOrderBy() {
+		assertThat(parseAlter("ALTER TABLE t1 ORDER BY t1.id, t1.status, t1.type_id, t1.user_id, t1.body"), is(notNullValue()));
+	}
+
+	@Test
 	public void testMysqlTestFixedSQL() throws Exception {
 		int i = 1;
 		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test-fixed.sql"), Charset.defaultCharset());
