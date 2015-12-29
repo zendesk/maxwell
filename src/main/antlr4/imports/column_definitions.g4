@@ -1,5 +1,6 @@
 grammar column_definitions;
 import mysql_literal_tokens, mysql_idents;
+import mysql_indices; // for REFERENCES
 
 
 column_definition:
@@ -76,6 +77,7 @@ column_options:
 	| COMMENT string_literal
 	| COLUMN_FORMAT (FIXED|DYNAMIC|DEFAULT)
 	| STORAGE (DISK|MEMORY|DEFAULT)
+	| reference_definition
 ;
 
 primary_key: PRIMARY KEY;
