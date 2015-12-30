@@ -32,7 +32,7 @@
     </dependency>
     <dependency>
     	<groupId>org.antlr</groupId>
-    	<artifactId>antlr4</artifactId>
+    	<artifactId>antlr4-runtime</artifactId>
     	<version>4.5</version>
     </dependency>
     <dependency>
@@ -90,6 +90,7 @@
       <dependency>
         <groupId>com.fasterxml.jackson.core</groupId>
         <artifactId>jackson-databind</artifactId>
+        <scope>test</scope>
         <version>2.6.3</version>
       </dependency>
 
