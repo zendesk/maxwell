@@ -22,6 +22,8 @@ data_type:
 generic_type:
     col_type=(BIT | BINARY | BLOB | YEAR | TIME | TIMESTAMP | DATETIME) length? column_options*
 	| col_type=(DATE | TINYBLOB | MEDIUMBLOB | LONGBLOB | BOOLEAN | BOOL ) column_options*
+	| col_type=(GEOMETRY | GEOMETRYCOLLECTION | LINESTRING | MULTILINESTRING
+	             | MULTIPOINT | MULTIPOLYGON | POINT | POLYGON ) column_options*
 	| col_type=VARBINARY length column_options*
 
 	;
