@@ -260,9 +260,9 @@ public class MaxwellConfig {
 			}
 			
 			this.replicationMysql = new MaxwellMysqlConfig(this.maxwellMysql.mysqlHost,
-															this.maxwellMysql.mysqlPort,
-															this.maxwellMysql.mysqlUser,
-															this.maxwellMysql.mysqlPassword);
+									this.maxwellMysql.mysqlPort,
+									this.maxwellMysql.mysqlUser,
+									this.maxwellMysql.mysqlPassword);
 		}
 
 		if ( this.maxSchemas != null )
