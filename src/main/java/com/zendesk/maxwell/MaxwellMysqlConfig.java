@@ -13,9 +13,9 @@ public class MaxwellMysqlConfig {
 	public String mysqlPassword;
 
 	public MaxwellMysqlConfig() {
-		this.mysqlHost = "127.0.0.1";
-		this.mysqlPort = 3306;
-		this.mysqlUser = "maxwell";
+		this.mysqlHost = null;
+		this.mysqlPort = null;
+		this.mysqlUser = null;
 		this.mysqlPassword = null;
 	}
 

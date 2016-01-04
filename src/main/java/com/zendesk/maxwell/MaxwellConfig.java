@@ -103,16 +103,8 @@ public class MaxwellConfig {
 			this.log_level = parseLogLevel((String) options.valueOf("log_level"));
 		}
 
-
-		if ( this.replicationMysql.mysqlPassword == null && !options.has("replication_password")) {
-			this.replicationMysql = new MaxwellMysqlConfig(this.maxwellMysql.mysqlHost,
-															this.maxwellMysql.mysqlPort,
-															this.maxwellMysql.mysqlUser,
-															this.maxwellMysql.mysqlPassword);
-		}
-
 		this.maxwellMysql.parseOptions("", options);
-		
+
 		this.replicationMysql.parseOptions("replication_", options);
 
 		if ( options.has("producer"))
@@ -247,16 +239,28 @@ public class MaxwellConfig {
 			this.maxwellMysql.mysqlHost = "localhost";
 		}
 
+		if ( this.maxwellMysql.mysqlPassword == null )
+			usage("maxwell mysql password not given");
+
 		if ( this.replicationMysql.mysqlPort == null )
 			this.replicationMysql.mysqlPort = 3306;
 
-		if ( this.replicationMysql.mysqlHost == null ) {
-			LOGGER.warn("master mysql host not specified, defaulting to localhost");
-			this.replicationMysql.mysqlHost = "localhost";
+		if ( this.replicationMysql.mysqlHost == null
+				|| this.replicationMysql.mysqlUser == null
+				|| this.replicationMysql.mysqlPassword == null) {
+
+			if (this.replicationMysql.mysqlHost != null
+					|| this.replicationMysql.mysqlUser != null
+					|| this.replicationMysql.mysqlPassword != null) {
+				usage("Specified a replication option but missing one of the following options: replication_host, replication_user, replication_password.");
+			}
+			
+			this.replicationMysql = new MaxwellMysqlConfig(this.maxwellMysql.mysqlHost,
+															this.maxwellMysql.mysqlPort,
+															this.maxwellMysql.mysqlUser,
+															this.maxwellMysql.mysqlPassword);
 		}
 
-		if ( this.maxwellMysql.mysqlPassword == null )
-			usage("maxwell mysql password not given");
 
 		if ( this.replicationMysql.mysqlPassword == null ) {
 			usage("master mysql password not given!");
