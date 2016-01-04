@@ -41,8 +41,8 @@ public class Maxwell {
 		this.context = new MaxwellContext(this.config);
 
 		try ( Connection connection = this.context.getReplicationConnectionPool().getConnection(); Connection schemaConnection = context.getMaxwellConnectionPool().getConnection() ) {
-			MaxwellMysqlStatus.ensureMysqlState(connection);
-			MaxwellMysqlStatus.ensureMysqlSchemaState(schemaConnection);
+			MaxwellMysqlStatus.ensureReplicationMysqlState(connection);
+			MaxwellMysqlStatus.ensureMaxwellMysqlState(schemaConnection);
 
 			SchemaStore.ensureMaxwellSchema(schemaConnection);
 			SchemaStore.upgradeSchemaStoreSchema(schemaConnection);
