@@ -25,7 +25,7 @@ public class MysqlIsolatedServer {
 	static final Logger LOGGER = LoggerFactory.getLogger(MysqlIsolatedServer.class);
 	public static final TypeReference<Map<String, Object>> MAP_STRING_OBJECT_REF = new TypeReference<Map<String, Object>>() {};
 
-	public void boot() throws IOException, SQLException, InterruptedException {
+	public void boot(String xtraParams) throws IOException, SQLException, InterruptedException {
         final String dir = System.getProperty("user.dir");
 
 		ProcessBuilder pb = new ProcessBuilder(
@@ -35,7 +35,8 @@ public class MysqlIsolatedServer {
 				"--binlog_format=row",
 				"--innodb_flush_log_at_trx_commit=1",
 				"--server_id=" + SERVER_ID,
-				"--character-set-server=utf8"
+				"--character-set-server=utf8",
+				xtraParams
 		);
 
 		LOGGER.debug("booting onetimeserver: " + StringUtils.join(pb.command(), " "));
@@ -80,6 +81,10 @@ public class MysqlIsolatedServer {
 		this.connection.createStatement().executeUpdate("GRANT REPLICATION SLAVE on *.* to 'maxwell'@'127.0.0.1' IDENTIFIED BY 'maxwell'");
 		this.connection.createStatement().executeUpdate("GRANT ALL on `maxwell`.* to 'maxwell'@'127.0.0.1'");
 		LOGGER.debug("booted at port " + this.port + ", outputting to file " + outputFile);
+	}
+
+	public void boot() throws Exception {
+		boot("");
 	}
 
 	public void resetConnection() throws SQLException {

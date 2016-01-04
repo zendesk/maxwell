@@ -30,7 +30,7 @@ public class SchemaScavengerTest extends AbstractMaxwellTest {
 	@Before
 	public void setUp() throws Exception {
 		server.executeList(schemaSQL);
-		this.schema = new SchemaCapturer(server.getConnection()).capture();
+		this.schema = new SchemaCapturer(server.getConnection(), CaseSensitivity.CASE_SENSITIVE).capture();
 		this.binlogPosition = BinlogPosition.capture(server.getConnection());
 
 		this.scavenger = new SchemaScavenger(buildContext().getConnectionPool());

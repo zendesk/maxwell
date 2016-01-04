@@ -11,6 +11,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 
+import com.zendesk.maxwell.CaseSensitivity;
+import com.zendesk.maxwell.MaxwellContext;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -197,15 +199,15 @@ public class SchemaStore {
 		}
 	}
 
-	public static SchemaStore restore(Connection connection, Long serverId, BinlogPosition targetPosition) throws SQLException, SchemaSyncError {
-		SchemaStore s = new SchemaStore(connection, serverId);
+	public static SchemaStore restore(Connection connection, MaxwellContext context) throws SQLException, SchemaSyncError {
+		SchemaStore s = new SchemaStore(connection, context.getServerID());
 
-		s.restoreFrom(targetPosition);
+		s.restoreFrom(context.getInitialPosition(), context.getCaseSensitivity());
 
 		return s;
 	}
 
-	private void restoreFrom(BinlogPosition targetPosition)
+	private void restoreFrom(BinlogPosition targetPosition, CaseSensitivity sensitivity)
 			throws SQLException, SchemaSyncError {
 		PreparedStatement p;
 		boolean shouldResave = false;
@@ -227,7 +229,7 @@ public class SchemaStore {
 		}
 
 		ArrayList<Database> databases = new ArrayList<>();
-		this.schema = new Schema(databases, schemaRS.getString("encoding"));
+		this.schema = new Schema(databases, schemaRS.getString("encoding"), sensitivity);
 		this.position = new BinlogPosition(schemaRS.getInt("binlog_position"),
 				schemaRS.getString("binlog_file"));
 
@@ -241,12 +243,12 @@ public class SchemaStore {
 		ResultSet dbRS = p.executeQuery();
 
 		while (dbRS.next()) {
-			this.schema.getDatabases().add(restoreDatabase(dbRS.getInt("id"), dbRS.getString("name"), dbRS.getString("encoding")));
+			this.schema.addDatabase(restoreDatabase(dbRS.getInt("id"), dbRS.getString("name"), dbRS.getString("encoding")));
 		}
 
 		if ( this.schema.findDatabase("mysql") == null ) {
 			LOGGER.info("Could not find mysql db, adding it to schema");
-			SchemaCapturer sc = new SchemaCapturer(connection, "mysql");
+			SchemaCapturer sc = new SchemaCapturer(connection, sensitivity, "mysql");
 			Database db = sc.capture().findDatabase("mysql");
 			this.schema.addDatabase(db);
 			shouldResave = true;
@@ -420,4 +422,5 @@ public class SchemaStore {
 		if ( !getTableColumns("schemas", c).containsKey("deleted") )
 			performAlter(c, "alter table maxwell.schemas add column deleted tinyint(1) not null default 0");
 	}
+
 }

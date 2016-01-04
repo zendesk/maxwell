@@ -3,12 +3,14 @@ package com.zendesk.maxwell.schema;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.zendesk.maxwell.CaseSensitivity;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
 
 public class Database {
 	private final String name;
 	private final List<Table> tableList;
 	private String encoding;
+	private CaseSensitivity sensitivity;
 
 	public Database(String name, List<Table> tables, String encoding) {
 		this.name = name;
@@ -31,9 +33,16 @@ public class Database {
 		return names;
 	}
 
+	private boolean compareTableNames(String a, String b) {
+		if ( sensitivity == CaseSensitivity.CASE_SENSITIVE )
+			return a.equals(b);
+		else
+			return a.toLowerCase().equals(b.toLowerCase());
+	}
+
 	public Table findTable(String name) {
 		for ( Table t: this.tableList ) {
-			if ( t.getName().equals(name))
+			if ( compareTableNames(name, t.getName()))
 				return t;
 		}
 		return null;
@@ -92,17 +101,19 @@ public class Database {
 		if ( encoding == null )
 			encoding = getEncoding(); // inherit database's default encoding
 
+		if ( sensitivity == CaseSensitivity.CONVERT_TO_LOWER )
+			name = name.toLowerCase();
+
 		Table t = new Table(this, name, encoding, list, pks);
 		this.tableList.add(t);
 		return t;
-	}
-
-	public Table buildTable(String name, String encoding, List<String> pks) {
-		return buildTable(name, encoding, null, pks);
 	}
 
 	public Table buildTable(String name, String encoding) {
 		return buildTable(name, encoding, new ArrayList<ColumnDef>(), null);
 	}
 
+	public void setSensitivity(CaseSensitivity sensitivity) {
+		this.sensitivity = sensitivity;
+	}
 }

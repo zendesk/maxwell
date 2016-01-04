@@ -26,7 +26,7 @@ public class SchemaCaptureTest extends AbstractMaxwellTest {
 	@Before
 	public void setUp() throws Exception {
 		server.getConnection().createStatement().executeUpdate("CREATE DATABASE if not exists test");
-		this.capturer = new SchemaCapturer(server.getConnection());
+		this.capturer = new SchemaCapturer(server.getConnection(), CaseSensitivity.CASE_SENSITIVE);
 	}
 
 	@Override
@@ -45,7 +45,7 @@ public class SchemaCaptureTest extends AbstractMaxwellTest {
 
 	@Test
 	public void testOneDatabase() throws SQLException, SchemaSyncError {
-		SchemaCapturer sc = new SchemaCapturer(server.getConnection(), "shard_1");
+		SchemaCapturer sc = new SchemaCapturer(server.getConnection(), CaseSensitivity.CASE_SENSITIVE, "shard_1");
 		Schema s = sc.capture();
 
 		String dbs = StringUtils.join(s.getDatabaseNames().iterator(), ":");

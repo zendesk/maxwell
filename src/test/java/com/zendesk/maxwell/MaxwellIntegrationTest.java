@@ -13,6 +13,7 @@ import java.util.Map;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zendesk.maxwell.schema.SchemaStore;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 
@@ -329,8 +330,21 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 	}
 
 	@Test
-	public void testCaseSensitivity() throws Exception {
-		runJSONTestFile(getSQLDir() + "/json/test_case_insensitive");
+	public void testLowerCasingSensitivity() throws Exception {
+		MysqlIsolatedServer lowerCaseServer = new MysqlIsolatedServer();
+
+
+		lowerCaseServer.boot("--lower-case-table-names=1");
+		SchemaStore.ensureMaxwellSchema(lowerCaseServer.getConnection());
+
+		String[] sql = {
+			"CREATE TABLE TOOTOOTWEE ( id int )",
+			"insert into tootootwee set id = 5"
+		};
+
+		List<RowMap> rows = getRowsForSQL(lowerCaseServer, null, sql, null);
+		assertThat(rows.size(), is(1));
+		assertThat(rows.get(0).getTable(), is("tootootwee"));
 	}
 
 	@Test
@@ -358,4 +372,5 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 	public void testUCS2() throws Exception {
 		runJSONTestFile(getSQLDir() + "/json/test_ucs2");
 	}
+
 }

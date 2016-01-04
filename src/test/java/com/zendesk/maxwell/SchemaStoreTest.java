@@ -29,12 +29,16 @@ public class SchemaStoreTest extends AbstractMaxwellTest {
 		"CREATE TABLE shard_1.enums (id int(11), enum_col enum('foo', 'bar', 'baz'))",
 		"CREATE TABLE shard_1.pks (id int(11), col2 varchar(255), col3 datetime, PRIMARY KEY(col2, col3, id))"
 	};
+	private MaxwellContext context;
 
 	@Before
 	public void setUp() throws Exception {
 		server.executeList(schemaSQL);
-		this.schema = new SchemaCapturer(server.getConnection()).capture();
+
 		this.binlogPosition = BinlogPosition.capture(server.getConnection());
+		this.context = buildContext(binlogPosition);
+
+		this.schema = new SchemaCapturer(server.getConnection(), context.getCaseSensitivity()).capture();
 		this.schemaStore = new SchemaStore(server.getConnection(), MysqlIsolatedServer.SERVER_ID, this.schema, binlogPosition);
 	}
 
@@ -42,7 +46,7 @@ public class SchemaStoreTest extends AbstractMaxwellTest {
 	public void testSave() throws SQLException, IOException, SchemaSyncError {
 		this.schemaStore.save();
 
-		SchemaStore restoredSchema = SchemaStore.restore(server.getConnection(), MysqlIsolatedServer.SERVER_ID, binlogPosition);
+		SchemaStore restoredSchema = SchemaStore.restore(server.getConnection(), context);
 		List<String> diff = this.schema.diff(restoredSchema.getSchema(), "captured schema", "restored schema");
 		assertThat(StringUtils.join(diff, "\n"), diff.size(), is(0));
 	}
@@ -51,7 +55,7 @@ public class SchemaStoreTest extends AbstractMaxwellTest {
 	public void testRestorePK() throws Exception {
 		this.schemaStore.save();
 
-		SchemaStore restoredSchema = SchemaStore.restore(server.getConnection(), MysqlIsolatedServer.SERVER_ID, binlogPosition);
+		SchemaStore restoredSchema = SchemaStore.restore(server.getConnection(), context);
 		Table t = restoredSchema.getSchema().findDatabase("shard_1").findTable("pks");
 
 		assertThat(t.getPKList(), is(not(nullValue())));
@@ -71,7 +75,7 @@ public class SchemaStoreTest extends AbstractMaxwellTest {
 		String updateSQL[] = {"UPDATE maxwell.schemas set server_id = 1"};
 		server.executeList(updateSQL);
 
-		SchemaStore restoredSchema = SchemaStore.restore(server.getConnection(), server.SERVER_ID, binlogPosition);
+		SchemaStore restoredSchema = SchemaStore.restore(server.getConnection(), context);
 
 		List<String> diffs = restoredSchema.getSchema().diff(this.schemaStore.getSchema(), "restored", "captured");
 		assert diffs.isEmpty() : "Expected empty schema diff, got" + diffs;
@@ -79,7 +83,7 @@ public class SchemaStoreTest extends AbstractMaxwellTest {
 
 	@Test
 	public void testMasterChange() throws Exception {
-		this.schema = new SchemaCapturer(server.getConnection()).capture();
+		this.schema = new SchemaCapturer(server.getConnection(), context.getCaseSensitivity()).capture();
 		this.binlogPosition = BinlogPosition.capture(server.getConnection());
 		this.schemaStore = new SchemaStore(server.getConnection(), 5551234L, this.schema, binlogPosition);
 
@@ -100,7 +104,7 @@ public class SchemaStoreTest extends AbstractMaxwellTest {
 		Database db = this.schema.findDatabase("mysql");
 		this.schema.getDatabases().remove(db);
 		this.schemaStore.save();
-		SchemaStore restoredSchema = SchemaStore.restore(server.getConnection(), server.SERVER_ID, this.binlogPosition);
+		SchemaStore restoredSchema = SchemaStore.restore(server.getConnection(), context);
 		assertThat(restoredSchema.getSchema().findDatabase("mysql"), is(not(nullValue())));
 	}
 }
