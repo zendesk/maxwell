@@ -234,6 +234,10 @@ public class MaxwellConfig {
 		if ( this.maxwellMysql.mysqlPort == null )
 			this.maxwellMysql.mysqlPort = 3306;
 
+		if ( this.maxwellMysql.mysqlUser == null) {
+			this.maxwellMysql.mysqlUser = "maxwell";
+		}
+
 		if ( this.maxwellMysql.mysqlHost == null ) {
 			LOGGER.warn("maxwell mysql host not specified, defaulting to localhost");
 			this.maxwellMysql.mysqlHost = "localhost";
