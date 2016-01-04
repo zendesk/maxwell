@@ -265,11 +265,6 @@ public class MaxwellConfig {
 															this.maxwellMysql.mysqlPassword);
 		}
 
-
-		if ( this.replicationMysql.mysqlPassword == null ) {
-			usage("master mysql password not given!");
-		}
-
 		if ( this.maxSchemas != null )
 			SchemaStore.setMaxSchemas(this.maxSchemas);
 	}
