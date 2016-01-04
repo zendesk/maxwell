@@ -103,26 +103,6 @@ public class MaxwellConfig {
 			this.log_level = parseLogLevel((String) options.valueOf("log_level"));
 		}
 
-		if ( options.has("host"))
-			this.maxwellMysql.mysqlHost = (String) options.valueOf("host");
-		if ( options.has("password"))
-			this.maxwellMysql.mysqlPassword = (String) options.valueOf("password");
-		if ( options.has("user"))
-			this.maxwellMysql.mysqlUser = (String) options.valueOf("user");
-		if ( options.has("port"))
-			this.maxwellMysql.mysqlPort = Integer.valueOf((String) options.valueOf("port"));
-
-		if ( options.has("replication_host"))
-			this.replicationMysql.mysqlHost = (String) options.valueOf("replication_host");
-
-		if ( options.has("replication_password"))
-			this.replicationMysql.mysqlPassword = (String) options.valueOf("replication_password");
-
-		if ( options.has("replication_user"))
-			this.replicationMysql.mysqlUser = (String) options.valueOf("replication_user");
-
-		if ( options.has("replication_port"))
-			this.replicationMysql.mysqlPort = Integer.valueOf((String) options.valueOf("replication_port"));
 
 		if ( this.replicationMysql.mysqlPassword == null && !options.has("replication_password")) {
 			this.replicationMysql = new MaxwellMysqlConfig(this.maxwellMysql.mysqlHost,
@@ -131,6 +111,9 @@ public class MaxwellConfig {
 															this.maxwellMysql.mysqlPassword);
 		}
 
+		this.maxwellMysql.parseOptions("", options);
+		
+		this.replicationMysql.parseOptions("replication_", options);
 
 		if ( options.has("producer"))
 			this.producerType = (String) options.valueOf("producer");
