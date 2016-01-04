@@ -30,6 +30,7 @@ public abstract class SchemaChange {
 		SQL_BLACKLIST.add(Pattern.compile("^REVOKE\\s+", Pattern.CASE_INSENSITIVE));
 		SQL_BLACKLIST.add(Pattern.compile("^SAVEPOINT", Pattern.CASE_INSENSITIVE));
 
+		SQL_BLACKLIST.add(Pattern.compile("^CREATE\\s+(AGGREGATE)?\\s+FUNCTION", Pattern.CASE_INSENSITIVE));
 		SQL_BLACKLIST.add(Pattern.compile("^(ALTER|CREATE)\\s+(DEFINER=[^\\s]+\\s+)?(EVENT|FUNCTION|TRIGGER|PROCEDURE)", Pattern.CASE_INSENSITIVE));
 		SQL_BLACKLIST.add(Pattern.compile("^DROP\\s+(EVENT|FUNCTION|TRIGGER|PROCEDURE|VIEW)", Pattern.CASE_INSENSITIVE));
 
@@ -41,6 +42,8 @@ public abstract class SchemaChange {
 		SQL_BLACKLIST.add(Pattern.compile("^CREATE\\s+TEMPORARY\\s+TABLE", Pattern.CASE_INSENSITIVE));
 		SQL_BLACKLIST.add(Pattern.compile("^TRUNCATE\\s+", Pattern.CASE_INSENSITIVE));
 		SQL_BLACKLIST.add(Pattern.compile("^OPTIMIZE\\s+", Pattern.CASE_INSENSITIVE));
+
+		SQL_BLACKLIST.add(Pattern.compile("^REPAIR\\s+", Pattern.CASE_INSENSITIVE));
 	}
 
 	private static boolean matchesBlacklist(String sql) {

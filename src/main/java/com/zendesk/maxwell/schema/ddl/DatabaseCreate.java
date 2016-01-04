@@ -34,8 +34,7 @@ public class DatabaseCreate extends SchemaChange {
 			createEncoding = newSchema.getEncoding();
 
 		database = new Database(dbName, createEncoding);
-
-		newSchema.getDatabases().add(database);
+		newSchema.addDatabase(database);
 		return newSchema;
 	}
 

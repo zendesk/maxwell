@@ -14,6 +14,7 @@ alter_specification:
   | change_column
   | drop_column
   | modify_column
+  | drop_key
   | drop_primary_key
   | alter_rename_table
   | convert_to_character_set
@@ -24,13 +25,14 @@ alter_specification:
 
 // the various alter_table commands available
 add_column: ADD COLUMN? column_definition col_position?;
-add_column_parens: ADD COLUMN? '(' column_definition (',' column_definition)* ')';
+add_column_parens: ADD COLUMN? '(' (column_definition|index_definition) (',' (column_definition|index_definition))* ')';
 change_column: CHANGE COLUMN? old_col_name column_definition col_position?;
 drop_column: DROP COLUMN? old_col_name;
   old_col_name: name;
 modify_column: MODIFY COLUMN? column_definition col_position?;
+drop_key: DROP FOREIGN? (INDEX|KEY) name;
 drop_primary_key: DROP PRIMARY KEY;
-alter_rename_table: RENAME (TO | AS) table_name;
+alter_rename_table: RENAME (TO | AS)? table_name;
 convert_to_character_set: CONVERT TO charset_token charset_name collation?;
 ignored_alter_specifications:
     ADD index_definition
@@ -39,6 +41,7 @@ ignored_alter_specifications:
     | DISABLE KEYS
     | ENABLE KEYS
     | ORDER BY index_columns
+    | FORCE
     /*
      I'm also leaving out the following from the alter table definition because who cares:
      | DISCARD TABLESPACE

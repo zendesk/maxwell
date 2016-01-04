@@ -22,6 +22,7 @@ statement:
   | create_view
   | drop_database
   | drop_table
+  | drop_view
   | rename_table
   | BEGIN
   ;

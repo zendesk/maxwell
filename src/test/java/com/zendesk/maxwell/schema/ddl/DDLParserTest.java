@@ -3,30 +3,26 @@ package com.zendesk.maxwell.schema.ddl;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
+import com.zendesk.maxwell.AbstractMaxwellTest;
 import org.antlr.v4.runtime.misc.NotNull;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import com.zendesk.maxwell.schema.columndef.BigIntColumnDef;
 import com.zendesk.maxwell.schema.columndef.IntColumnDef;
 import com.zendesk.maxwell.schema.columndef.StringColumnDef;
 
 public class DDLParserTest {
-
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-	}
-
-	@Before
-	public void setUp() throws Exception {
-	}
-
-	@After
-	public void tearDown() throws Exception {
+	public String getSQLDir() {
+		final String dir = System.getProperty("user.dir");
+		return dir + "/src/test/resources/sql/";
 	}
 
 	private List<SchemaChange> parse(String sql) {
@@ -440,5 +436,49 @@ public class DDLParserTest {
 	public void testBinaryColumnDefaults() {
 		assertThat(parseCreate("CREATE TABLE foo (id boolean default true)"), is(notNullValue()));
 		assertThat(parseCreate("CREATE TABLE foo (id boolean default false)"), is(notNullValue()));
+	}
+
+	@Test
+	public void testMysqlTestFixedSQL() throws Exception {
+		int i = 1;
+		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test-fixed.sql"), Charset.defaultCharset());
+		for ( String sql: lines ) {
+			System.out.println("Line: " + i++);
+			parse(sql);
+		}
+	}
+
+	@Ignore
+	@Test
+	public void testMysqlTestSQL() throws Exception {
+		int i = 1;
+		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test-errors.sql"), Charset.defaultCharset());
+		for ( String sql: lines ) {
+			parse(sql);
+		}
+	}
+
+	@Ignore
+	@Test
+	public void generateTestFiles() throws Exception {
+		FileOutputStream problems = new FileOutputStream(new File(getSQLDir() + "/ddl/mysql-test-errors.sql"));
+		FileOutputStream fixed = new FileOutputStream(new File(getSQLDir() + "/ddl/mysql-test-fixed.sql"));
+
+		int nFixed = 0, nErr = 0;
+		List<String> assertions = new ArrayList<>();
+		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test.sql"), Charset.defaultCharset());
+		for ( String sql: lines ) {
+			try {
+				parse(sql);
+				nFixed++;
+				fixed.write((sql + "\n").getBytes());
+			} catch ( Exception e) {
+				assertions.add(sql);
+				problems.write((sql + "\n").getBytes());
+				nErr++;
+				System.err.println(sql);
+			}
+		}
+		System.out.println(nFixed + " fixed, " + nErr + " remain.");
 	}
 }

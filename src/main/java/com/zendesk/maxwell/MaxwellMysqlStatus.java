@@ -1,10 +1,14 @@
 package com.zendesk.maxwell;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class MaxwellMysqlStatus {
+	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellMysqlStatus.class);
 	private Connection connection;
 
 	public MaxwellMysqlStatus(Connection c) {
@@ -45,8 +49,10 @@ public class MaxwellMysqlStatus {
 		if ( rowImageFormat == null ) // only present in mysql 5.6+
 			return;
 
-		if ( !rowImageFormat.equals("FULL"))
-			throw new MaxwellCompatibilityError("binlog_row_image must be FULL.");
+		if ( rowImageFormat.equals("MINIMAL") ) {
+			LOGGER.warn("Warning: binlog_row_image is set to MINIMAL.  This may not be what you want.");
+			LOGGER.warn("See http://maxwells-daemon.io/compat for more information.");
+		}
 	}
 
 	public static void ensureMysqlState(Connection c) throws SQLException, MaxwellCompatibilityError {

@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
+import com.zendesk.maxwell.CaseSensitivity;
 import org.apache.commons.lang.StringUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -29,7 +30,7 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 	}
 
 	private Schema testIntegration(String alters[]) throws SQLException, SchemaSyncError, IOException {
-		SchemaCapturer capturer = new SchemaCapturer(server.getConnection());
+		SchemaCapturer capturer = new SchemaCapturer(server.getConnection(), buildContext().getCaseSensitivity());
 		Schema topSchema = capturer.capture();
 
 		server.executeList(Arrays.asList(alters));
@@ -51,6 +52,10 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 		return topSchema;
 	}
 
+	private Schema testIntegration(String sql) throws Exception {
+		String[] alters = {sql};
+		return testIntegration(alters);
+	}
 
 	@Test
 	public void testAlter() throws SQLException, SchemaSyncError, IOException, InterruptedException {
@@ -82,6 +87,15 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 		testIntegration(sql);
 	}
 
+	@Test
+	public void testAlterMultipleColumns() throws Exception {
+		String sql[] = {
+			"create table shard_1.test_foo ( id int )",
+			"alter table shard_1.test_foo add column ( a varchar(255), b varchar(255), primary key (a) )"
+		};
+
+		testIntegration(sql);
+	}
 	@Test
 	public void testDrop() throws SQLException, SchemaSyncError, IOException, InterruptedException {
 		String sql[] = {
@@ -203,5 +217,110 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 		};
 
 		testIntegration(sql);
+	}
+
+	@Test
+	public void testLongStringColumns() throws Exception {
+		String sql[] = {
+			"create TABLE t1( a long varchar character set 'utf8' )",
+			"create TABLE t2( a long varbinary )",
+			"create TABLE t3( a long binary character set 'latin1' default NULL )",
+			"create table t4( a long )"
+		};
+
+		testIntegration(sql);
+	}
+
+	@Test
+	public void testASCIIEncoding() throws Exception {
+		String sql[] = {
+			"create TABLE t1( a varchar(255) ASCII, b enum('a', 'b') ASCII )"
+		};
+
+		testIntegration(sql);
+	}
+
+	@Test
+	public void testNationChar() throws Exception {
+		testIntegration("create table t1 ( a CHAR(10) CHARACTER SET utf8, " +
+			"b NATIONAL CHARACTER(10), " +
+			"c NCHAR(10), " +
+			"d VARCHAR(10) CHARACTER SET utf8, " +
+			"e NATIONAL VARCHAR(10), " +
+			"f NVARCHAR(10), " +
+			"g NCHAR VARCHAR(10), " +
+			"h NATIONAL CHARACTER VARYING(10), " +
+			"i NATIONAL CHAR VARYING(10), " +
+			"j CHARACTER, " +
+			"k CHARACTER VARYING(10)" +
+			") default character set=latin1"
+		);
+	}
+
+	@Test
+	public void testUnicodeKeywork() throws Exception {
+		testIntegration("create table t1 ( a CHAR(10) UNICODE, " +
+				"d VARCHAR(10) UNICODE, " +
+				"h CHARACTER VARYING(10) UNICODE, " +
+				"j CHARACTER UNICODE, " +
+				"k TEXT(20) UNICODE " +
+				") default character set=latin1"
+		);
+	}
+	@Test
+	public void testAutosizingColumns() throws Exception {
+		testIntegration("create table t1 ( " +
+			"a text(1), " +
+			"b text(256), " +
+			"c text(65536), " +
+			"d text(16777216), " +
+			"e blob(1), " +
+			"f blob(256), " +
+			"g blob(65536), " +
+			"h blob(16777216), " +
+			"i text, " +
+			"j blob)"
+		);
+	}
+
+	@Test
+	public void testCaseSensitiveDatabases() throws Exception {
+		if ( buildContext().getCaseSensitivity() == CaseSensitivity.CASE_SENSITIVE ) {
+			String sql[] = {
+				"create TABLE taaaayble( a long varchar character set 'utf8' )",
+				"create TABLE TAAAAYBLE( a long varbinary )",
+				"drop table taaaayble"
+			};
+
+			testIntegration(sql);
+		}
+	}
+
+	@Test
+	public void testCaseInsensitiveDatabase() throws Exception {
+		if (buildContext().getCaseSensitivity() != CaseSensitivity.CASE_SENSITIVE) {
+			String sql[] = {
+					"create TABLE taybal( a long varchar character set 'utf8' )",
+					"alter table TAYbal add column b int",
+					"drop table TAYBAL"
+			};
+
+			testIntegration(sql);
+		}
+	}
+
+	public void testAutoConvertToByte() throws Exception {
+		testIntegration("create table t1 ( " +
+			"a char(1) byte, " +
+			"b varchar(255) byte, " +
+			"c tinytext byte, " +
+			"d text byte, " +
+			"e mediumtext byte, " +
+			"f longtext byte, " +
+			"g character varying(255) byte, " +
+			"h long byte, " +
+			"i text(234344) byte" +
+			")"
+		);
 	}
 }

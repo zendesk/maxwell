@@ -42,7 +42,7 @@
 
         <a href="https://github.com/zendesk/maxwell"><img style="position: absolute; top: 0; right: 0; border: 0; z-index: 1031;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
         <div class="container">
-            <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+            <div class="col-md-2"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
         
           <li >
@@ -63,10 +63,10 @@
                       <li class="toctree-l3"><a href="#command-line-options">Command line options</a></li>
                       
                   
-                      <li class="toctree-l3"><a href="#configuration-file">Configuration file</a></li>
+                      <li class="toctree-l3"><a href="#properties-file">Properties file</a></li>
                       
                   
-                      <li class="toctree-l3"><a href="#row-filters">row filters</a></li>
+                      <li class="toctree-l3"><a href="#filters">Filters</a></li>
                       
                   
                   </ul>
@@ -90,92 +90,110 @@
         
     </ul>
 </div></div>
-            <div class="col-md-9" role="main">
+            <div class="col-md-10" role="main">
 
 <div class="content-title">Maxwell configuration</div>
 
 <hr />
-<p>Maxwell can be configured by command line or a java "properties" file.</p>
 <h3 id="command-line-options">Command line options</h3>
 <table>
 <thead>
 <tr>
 <th>option</th>
 <th>description</th>
+<th>default</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>--config FILE</td>
 <td>location of <code>config.properties</code> file</td>
+<td></td>
 </tr>
 <tr>
-<td>--log_level DEBUG</td>
+<td>--log_level</td>
+<td>log level [DEBUG&#124;INFO &#124;WARN&#124;ERROR</td>
 <td>INFO</td>
 </tr>
 <tr>
 <td>--user USER</td>
 <td>mysql username</td>
+<td></td>
 </tr>
 <tr>
 <td>--password PASSWORD</td>
 <td>mysql password</td>
+<td></td>
 </tr>
 <tr>
 <td>--host HOST</td>
 <td>mysql host</td>
+<td></td>
 </tr>
 <tr>
 <td>--port PORT</td>
 <td>mysql port</td>
+<td></td>
 </tr>
 <tr>
-<td>--producer stdout,kafka,file,profiler</td>
-<td>what type of producer to use.  default: stdout</td>
+<td>--producer PRODUCER</td>
+<td>what type of producer to use: [stdout, kafka, file, profiler]</td>
+<td>stdout</td>
 </tr>
 <tr>
 <td>--output_file</td>
-<td>path of the file for the 'file' producer to write to</td>
+<td>if using the file producer, write JSON rows to this path</td>
+<td></td>
 </tr>
 <tr>
 <td>--include_dbs PATTERN</td>
 <td>only send updates from these databases</td>
+<td></td>
 </tr>
 <tr>
 <td>--exclude_dbs PATTERN</td>
 <td>ignore updates from these databases</td>
+<td></td>
 </tr>
 <tr>
 <td>--include_tables PATTERN</td>
 <td>only send updates from tables named like PATTERN</td>
+<td></td>
 </tr>
 <tr>
 <td>--exclude_tables PATTERN</td>
 <td>ignore updates from tables named like PATTERN</td>
+<td></td>
 </tr>
 <tr>
 <td>--kafka.bootstrap.servers</td>
-<td>list of kafka brokers, listed as HOST:PORT[,HOST:PORT].</td>
+<td>list of kafka brokers, listed as HOST:PORT[,HOST:PORT]</td>
+<td></td>
 </tr>
 <tr>
 <td>--kafka_topic</td>
-<td>provide a topic for maxwell to write to. Default will be "maxwell".</td>
+<td>kafka topic to write to.</td>
+<td>maxwell</td>
 </tr>
 <tr>
 <td>--max_schemas</td>
-<td>how many old schemas maxwell should leave lying around in maxwell.schemas.  default: 5</td>
+<td>how many old schemas maxwell should leave lying around in maxwell.schemas</td>
+<td>5</td>
 </tr>
 <tr>
 <td>--init_position FILE:POSITION</td>
-<td>ignore the information in maxwell.positions and start at the given binlog position.  Not available in config.properties.</td>
+<td>ignore the information in maxwell.positions and start at the given binlog position. Not available in config.properties.</td>
+<td></td>
 </tr>
 <tr>
 <td>--replay</td>
-<td>enabled maxwell's read-only "replay" mode.  Not available in config.properties.</td>
+<td>enable maxwell's read-only "replay" mode.  Not available in config.properties.</td>
+<td></td>
 </tr>
 </tbody>
 </table>
-<h3 id="configuration-file">Configuration file</h3>
+<h3 id="properties-file">Properties file</h3>
+<hr />
 <p>If maxwell finds the file <code>config.properties</code> in $PWD it will use it.  Any
 command line options (except init_position and replay) may be given as
 "key=value" pairs.</p>
@@ -186,7 +204,8 @@ front of the key.  So, for example if config.properties contains</p>
 </code></pre>
 
 <p>Maxwell will send <code>batch.size=16384</code> to the kafka producer library.</p>
-<h3 id="row-filters">row filters</h3>
+<h3 id="filters">Filters</h3>
+<hr />
 <p>The options <code>include_dbs</code>, <code>exclude_dbs</code>, <code>include_tables</code>, and <code>exclude_tables</code> control whether
 Maxwell will send an update for a given row to its producer.  All the options take a single value PATTERN,
 which may either be a literal table/database name, given as <code>option=name</code>, or a regular expression,

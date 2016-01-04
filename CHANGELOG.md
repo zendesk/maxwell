@@ -1,5 +1,28 @@
 # Maxwell changelog
 
+## [v0.16.2](https://github.com/zendesk/maxwell/releases/tag/v0.16.2): "The best laid plans"
+
+
+This is a large-ish bugfix release.
+- Support, with reservations, binlog_row_image=MINIMAL
+- parser bug: handle table names that look like floating points
+- parser bug: fix for entity names that have '.', '\', etc in them
+- handle UPPERCASE encoding names
+- support UCS2 (start trying to operate ok on the mysql-test suite)
+- use ObjectOutputStream.reset to fix memory leaks when buffering to disk
+
+
+## [v0.16.1](https://github.com/zendesk/maxwell/releases/tag/v0.16.1): "me and room service"
+
+
+This is a bug-fix-roundup release:
+- support ALTER DATABASE
+- fix a bunch of parse errors: we've started running mysql-test at
+  maxwell and are fixing up failures.
+- some modifications to the overflow-to-disk logic; we buffer the input
+  and output, and we fix a memory leak
+
+
 ## [v0.16.0](https://github.com/zendesk/maxwell/releases/tag/v0.16.0): "Kristian Kaufmann's version"
 
 

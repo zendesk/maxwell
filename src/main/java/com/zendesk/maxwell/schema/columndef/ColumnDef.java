@@ -29,13 +29,7 @@ public abstract class ColumnDef {
 	}
 
 	public static ColumnDef build(String tableName, String name, String encoding, String type, int pos, boolean signed, String enumValues[]) {
-		type = unalias_type(type);
-
 		switch(type) {
-		case "bool":
-		case "boolean":
-			type = "tinyint";
-			// fallthrough
 		case "tinyint":
 		case "smallint":
 		case "mediumint":
@@ -57,10 +51,6 @@ public abstract class ColumnDef {
 		case "binary":
 		case "varbinary":
 			return new StringColumnDef(tableName, name, type, pos, "binary");
-		case "real":
-		case "numeric":
-			type = "double";
-			// fall through
 		case "float":
 		case "double":
 			return new FloatColumnDef(tableName, name, type, pos);
@@ -86,8 +76,66 @@ public abstract class ColumnDef {
 		}
 	}
 
-	static private String unalias_type(String type) {
+	static private String charToByteType(String type) {
+		switch (type) {
+			case "char":
+			case "character":
+				return "binary";
+			case "varchar":
+			case "varying":
+				return "varbinary";
+			case "tinytext":
+				return "tinyblob";
+			case "text":
+				return "blob";
+			case "mediumtext":
+				return "mediumblob";
+			case "longtext":
+				return "longblob";
+			case "long":
+				return "mediumblob";
+			default:
+				throw new RuntimeException("Unknown type with BYTE flag: " + type);
+		}
+	}
+
+	static public String unalias_type(String type, boolean longStringFlag, Long columnLength, boolean byteFlagToStringColumn) {
+		if ( byteFlagToStringColumn )
+			type = charToByteType(type);
+
+		if ( longStringFlag ) {
+			switch (type) {
+				case "varchar":
+					return "mediumtext";
+				case "varbinary":
+					return "mediumblob";
+				case "binary":
+					return "mediumtext";
+			}
+		}
+
 		switch(type) {
+			case "character":
+			case "nchar":
+				return "char";
+			case "text":
+			case "blob":
+				if ( columnLength == null )
+					return type;
+
+				if ( columnLength < (1 << 8) )
+					return "tiny" + type;
+				else if ( columnLength < ( 1 << 16) )
+					return type;
+				else if ( columnLength < ( 1 << 24) )
+					return "medium" + type;
+				else
+					return "long" + type;
+			case "nvarchar":
+			case "varying":
+				return "varchar";
+			case "bool":
+			case "boolean":
 			case "int1":
 				return "tinyint";
 			case "int2":
@@ -99,6 +147,11 @@ public abstract class ColumnDef {
 				return "int";
 			case "int8":
 				return "bigint";
+			case "real":
+			case "numeric":
+				return "double";
+			case "long":
+				return "mediumtext";
 			default:
 				return type;
 		}

@@ -202,4 +202,8 @@ public class RowMap implements Serializable {
 	public Long getTimestamp() {
 		return timestamp;
 	}
+
+	public boolean hasData(String name) {
+		return this.data.containsKey(name);
+	}
 }

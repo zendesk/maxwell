@@ -7,7 +7,7 @@ column_definition:
 	data_type
 	;
 
-col_position: FIRST | (AFTER id);
+col_position: FIRST | (AFTER name);
 
 data_type:
     generic_type
@@ -19,9 +19,10 @@ data_type:
 
 // all from http://dev.mysql.com/doc/refman/5.1/en/create-table.html
 generic_type:
-    col_type=(BIT | BINARY | YEAR | TIME | TIMESTAMP | DATETIME) length? column_options*
-	| col_type=(DATE | TINYBLOB | MEDIUMBLOB | LONGBLOB | BLOB |  BOOLEAN | BOOL ) column_options*
+    col_type=(BIT | BINARY | BLOB | YEAR | TIME | TIMESTAMP | DATETIME) length? column_options*
+	| col_type=(DATE | TINYBLOB | MEDIUMBLOB | LONGBLOB | BOOLEAN | BOOL ) column_options*
 	| col_type=VARBINARY length column_options*
+
 	;
 
 
@@ -30,37 +31,49 @@ signed_type: // we need the UNSIGNED flag here
                 length?
                 int_flags*
                 column_options*
-    | col_type=(REAL | DOUBLE | FLOAT | DECIMAL | NUMERIC)
+    | col_type=(REAL | FLOAT | DECIMAL | NUMERIC)
     		    decimal_length?
     		    int_flags*
     		    column_options*
+    | col_type=DOUBLE PRECISION?
+		decimal_length?
+		int_flags*
+		column_options*
     ;
 
-string_type: // getting the encoding here
-	  col_type=(CHAR | VARCHAR)
-	           length?
-	           BINARY?
-	           (charset_def | column_options)*
-    | col_type=(TINYTEXT | TEXT | MEDIUMTEXT | LONGTEXT)
-               BINARY?
-               (charset_def | column_options)*
-	  ;
+string_type locals [Boolean utf8 = false]:
+      (NATIONAL {$utf8=true;})?
+      col_type=(CHAR | CHARACTER | VARCHAR) length?  (column_options | string_column_options | BYTE | UNICODE)*
+    | (NATIONAL {$utf8=true;})?
+      (CHARACTER|CHAR) col_type=VARYING length (string_column_options | column_options | BYTE | UNICODE)*
+    | col_type=(NCHAR | NVARCHAR) length? (string_column_options | column_options)* {$utf8=true;}
+    | NCHAR col_type=VARCHAR length? (column_options | string_column_options)* {$utf8=true;}
+    | col_type=(TINYTEXT | MEDIUMTEXT | LONGTEXT) (column_options | string_column_options | BYTE | UNICODE)*
+    | col_type=TEXT length? (column_options | string_column_options | BYTE | UNICODE)*
+    | long_flag col_type=(VARCHAR | BINARY) (column_options | string_column_options | UNICODE)*
+    | long_flag col_type=VARBINARY column_options*
+    | col_type=LONG (column_options | string_column_options | BYTE | UNICODE)*
+    ;
+
+long_flag: LONG;
 
 enumerated_type:
 	  col_type=(ENUM | SET)
 	  '(' enumerated_values ')'
-	   (charset_def | column_options)*
+	  (column_options | string_column_options)*
 	  ;
 
+string_column_options: charset_def | collation | BINARY;
 
 column_options:
 	  nullability
 	| default_value
 	| primary_key
-	| ON UPDATE CURRENT_TIMESTAMP
+	| ON UPDATE ( CURRENT_TIMESTAMP length? | now_function )
 	| UNIQUE KEY?
+	| KEY
 	| AUTO_INCREMENT
-	| COMMENT STRING_LITERAL
+	| COMMENT string_literal
 	| COLUMN_FORMAT (FIXED|DYNAMIC|DEFAULT)
 	| STORAGE (DISK|MEMORY|DEFAULT)
 ;
@@ -68,14 +81,15 @@ column_options:
 primary_key: PRIMARY KEY;
 
 enumerated_values: enum_value (',' enum_value)*;
-enum_value: STRING_LITERAL;
+enum_value: string_literal;
 
-charset_def: (character_set | collation)+;
+charset_def: character_set | ASCII;
 character_set: ((CHARACTER SET) | CHARSET) charset_name;
 
 nullability: (NOT NULL | NULL);
-default_value: DEFAULT (literal | NULL | CURRENT_TIMESTAMP | TRUE | FALSE);
+default_value: DEFAULT (literal | NULL | CURRENT_TIMESTAMP length? | now_function | TRUE | FALSE );
 length: '(' INTEGER_LITERAL ')';
-int_flags: ( UNSIGNED | ZEROFILL );
+int_flags: ( SIGNED | UNSIGNED | ZEROFILL );
 decimal_length: '(' INTEGER_LITERAL ( ',' INTEGER_LITERAL )? ')';
 
+now_function: NOW '(' ')';

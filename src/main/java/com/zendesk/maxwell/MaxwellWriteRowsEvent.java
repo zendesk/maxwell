@@ -5,6 +5,7 @@ import java.util.List;
 import com.google.code.or.binlog.impl.event.WriteRowsEvent;
 import com.google.code.or.binlog.impl.event.WriteRowsEventV2;
 import com.google.code.or.common.glossary.Row;
+import com.google.code.or.common.glossary.column.BitColumn;
 import com.zendesk.maxwell.schema.Table;
 
 
@@ -37,6 +38,11 @@ public class MaxwellWriteRowsEvent extends MaxwellAbstractRowsEvent {
 	@Override
 	public String sqlOperationString() {
 		return "REPLACE INTO ";
+	}
+
+	@Override
+	protected BitColumn getUsedColumns() {
+		return event.getUsedColumns();
 	}
 
 	@Override

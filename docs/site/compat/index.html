@@ -42,7 +42,7 @@
 
         <a href="https://github.com/zendesk/maxwell"><img style="position: absolute; top: 0; right: 0; border: 0; z-index: 1031;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
         <div class="container">
-            <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+            <div class="col-md-2"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
         
           <li >
@@ -81,6 +81,9 @@
                       <li class="toctree-l3"><a href="#unsupported">Unsupported</a></li>
                       
                   
+                      <li class="toctree-l3"><a href="#binlog_row_imageminimal">binlog_row_image=MINIMAL</a></li>
+                      
+                  
                       <li class="toctree-l3"><a href="#master-recovery">Master recovery</a></li>
                       
                   
@@ -90,7 +93,7 @@
         
     </ul>
 </div></div>
-            <div class="col-md-9" role="main">
+            <div class="col-md-10" role="main">
 
 <div class="content-title">Maxwell Compatibility</div>
 
@@ -103,7 +106,16 @@
 <h3 id="unsupported">Unsupported</h3>
 <ul>
 <li>Mysql 5.7 is untested with Maxwell, and in particular GTID replication is unsupported as of yet.</li>
-<li><code>binlog_row_image=MINIMAL</code> is not supported and will break Maxwell in a variety of amusing ways.</li>
+</ul>
+<h3 id="binlog_row_imageminimal">binlog_row_image=MINIMAL</h3>
+<p>As of 0.17.0, Maxwell supports binlog_row_image=MINIMAL, but it may not be what you want.  It will differ
+from normal Maxwell operation in that:</p>
+<ul>
+<li>INSERT statements will no longer output a column's default value</li>
+<li>UPDATE statements will be incomplete; Maxwell outputs as much of the row as given in the binlogs,
+  but <code>data</code> will only include what is needed to perform the update (generally, id columns and changed columns).
+  The <code>old</code> section may or may not be included, depending on the nature of the update.</li>
+<li>DELETE statements will be incomplete; generally they will only include the primary key.</li>
 </ul>
 <h3 id="master-recovery">Master recovery</h3>
 <p>Currently Maxwell is not very smart about master recovery or detecting a promoted slave; if it determines

@@ -71,12 +71,17 @@ public class MysqlParserListener extends mysqlBaseListener {
 		return (TableAlter)schemaChanges.get(0);
 	}
 
-	private String getEncoding(Charset_defContext ctx) {
-		if ( ctx != null && ctx.character_set(0) != null ) {
-			return unquote_literal(ctx.character_set(0).charset_name().getText());
-		} else {
-			return null;
+	private String getEncoding(List<String_column_optionsContext> list) {
+		for ( String_column_optionsContext ctx : list ) {
+			if ( ctx.charset_def() != null ) {
+				if ( ctx.charset_def().ASCII() != null ) {
+					return "latin1";
+				} else {
+					return unquote_literal(ctx.charset_def().character_set().charset_name().getText());
+				}
+			}
 		}
+		return null;
 	}
 
 	@Override
@@ -161,7 +166,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 		while ( this.columnDefs.size() > 0 ) {
 			ColumnDef c = this.columnDefs.removeFirst();
 			// unable to choose a position in this form
-			alterStatement().columnMods.add(new AddColumnMod(c.getName(), c, null));
+			alterStatement().columnMods.add(new AddColumnMod(c.getName(), c, new ColumnPosition()));
 		}
 	}
 	@Override
@@ -188,7 +193,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 			this.columnPosition.position = ColumnPosition.Position.FIRST;
 		} else if ( ctx.AFTER() != null ) {
 			this.columnPosition.position = ColumnPosition.Position.AFTER;
-			this.columnPosition.afterColumn = unquote(ctx.id().getText());
+			this.columnPosition.afterColumn = unquote(ctx.name().getText());
 		}
 	}
 	@Override
@@ -269,12 +274,22 @@ public class MysqlParserListener extends mysqlBaseListener {
 		this.pkColumns = new ArrayList<>();
 	}
 
+	private Long extractColumnLength(LengthContext l) {
+		if ( l == null )
+			return null;
+		else
+			return Long.valueOf(l.INTEGER_LITERAL().getText());
+	}
+
 	@Override
 	public void exitColumn_definition(mysqlParser.Column_definitionContext ctx) {
+		Long columnLength = null;
+		Boolean longStringFlag = false;
 		String colType = null, colEncoding = null;
 		String[] enumValues = null;
 		List<Column_optionsContext> colOptions = null;
 		boolean signed = true;
+		boolean byteFlagToStringColumn = false;
 
 		String name = unquote(ctx.col_name.getText());
 
@@ -283,19 +298,32 @@ public class MysqlParserListener extends mysqlBaseListener {
 		if ( dctx.generic_type() != null ) {
 			colType = dctx.generic_type().col_type.getText();
 			colOptions = dctx.generic_type().column_options();
+			columnLength = extractColumnLength(dctx.generic_type().length());
 		} else if ( dctx.signed_type() != null ) {
 			colType = dctx.signed_type().col_type.getText();
 			signed = isSigned(dctx.signed_type().int_flags());
 			colOptions = dctx.signed_type().column_options();
 		} else if ( dctx.string_type() != null ) {
 			colType = dctx.string_type().col_type.getText();
-			colEncoding = getEncoding(dctx.string_type().charset_def(0));
+			colEncoding = getEncoding(dctx.string_type().string_column_options());
+
+			if ( dctx.string_type().utf8 ) // forced into UTF-8 by NATIONAL-fu
+				colEncoding = "utf8";
+
+			if ( dctx.string_type().BYTE().size() > 0 )
+				byteFlagToStringColumn = true;
+
+			if ( dctx.string_type().UNICODE().size() > 0 )
+				colEncoding = "ucs2";
+
+			columnLength = extractColumnLength(dctx.string_type().length());
 			colOptions = dctx.string_type().column_options();
+			longStringFlag = (dctx.string_type().long_flag() != null);
 		} else if ( dctx.enumerated_type() != null ) {
 			List<Enum_valueContext> valueList = dctx.enumerated_type().enumerated_values().enum_value();
 
 			colType = dctx.enumerated_type().col_type.getText();
-			colEncoding = getEncoding(dctx.enumerated_type().charset_def(0));
+			colEncoding = getEncoding(dctx.enumerated_type().string_column_options());
 			colOptions = dctx.enumerated_type().column_options();
 			enumValues = new String[valueList.size()];
 
@@ -304,6 +332,8 @@ public class MysqlParserListener extends mysqlBaseListener {
 				enumValues[i++] = unquote_literal(v.getText());
 			}
 		}
+
+		colType = ColumnDef.unalias_type(colType.toLowerCase(), longStringFlag, columnLength, byteFlagToStringColumn);
 		ColumnDef c = ColumnDef.build(this.tableName,
 					                   name,
 					                   colEncoding,

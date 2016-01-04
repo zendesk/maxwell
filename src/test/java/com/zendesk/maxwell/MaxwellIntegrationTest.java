@@ -13,6 +13,7 @@ import java.util.Map;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zendesk.maxwell.schema.SchemaStore;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 
@@ -208,6 +209,22 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 		}
 	}
 
+	@Test
+	public void testRunMinimalBinlog() throws Exception {
+		if ( server.getVersion().equals("5.5") )
+			return;
+
+		try {
+			server.getConnection().createStatement().execute("set global binlog_row_image='minimal'");
+			server.resetConnection(); // only new connections pick up the binlog setting
+
+			runJSONTestFile(getSQLDir() + "/json/test_minimal");
+		} finally {
+			server.getConnection().createStatement().execute("set global binlog_row_image='full'");
+			server.resetConnection();
+		}
+	}
+
 
 	private void runJSONTest(List<String> sql, List<Map<String, Object>> expectedJSON) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
@@ -313,8 +330,21 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 	}
 
 	@Test
-	public void testCaseSensitivity() throws Exception {
-		runJSONTestFile(getSQLDir() + "/json/test_case_insensitive");
+	public void testLowerCasingSensitivity() throws Exception {
+		MysqlIsolatedServer lowerCaseServer = new MysqlIsolatedServer();
+
+
+		lowerCaseServer.boot("--lower-case-table-names=1");
+		SchemaStore.ensureMaxwellSchema(lowerCaseServer.getConnection());
+
+		String[] sql = {
+			"CREATE TABLE TOOTOOTWEE ( id int )",
+			"insert into tootootwee set id = 5"
+		};
+
+		List<RowMap> rows = getRowsForSQL(lowerCaseServer, null, sql, null);
+		assertThat(rows.size(), is(1));
+		assertThat(rows.get(0).getTable(), is("tootootwee"));
 	}
 
 	@Test
@@ -337,4 +367,10 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 		if ( server.getVersion().equals("5.6") )
 			runJSONTestFile(getSQLDir() + "/json/test_time");
 	}
+
+	@Test
+	public void testUCS2() throws Exception {
+		runJSONTestFile(getSQLDir() + "/json/test_ucs2");
+	}
+
 }

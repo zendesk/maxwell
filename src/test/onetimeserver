@@ -70,6 +70,15 @@ then
   fi
 
   curl -s $ONETIMESERVER_URL > $CACHE_DIR/onetimeserver-go
+
+  SIZE=`du -k "$CACHE_DIR/onetimeserver-go" | cut -f1`
+  if [ $SIZE -lt 1000 ]
+  then
+    echo "Could not download onetimeserver-go from $ONETIMESERVER_URL" >&2
+    rm -Rf $CACHE_DIR/*
+    exit 1
+  fi
+
   chmod +x $CACHE_DIR/onetimeserver-go
 fi
 

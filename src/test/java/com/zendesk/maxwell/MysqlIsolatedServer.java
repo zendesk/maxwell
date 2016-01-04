@@ -1,19 +1,17 @@
 package com.zendesk.maxwell;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang.StringUtils;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -25,11 +23,22 @@ public class MysqlIsolatedServer {
 	private int serverPid;
 
 	static final Logger LOGGER = LoggerFactory.getLogger(MysqlIsolatedServer.class);
-	public void boot() throws IOException, SQLException, InterruptedException {
+	public static final TypeReference<Map<String, Object>> MAP_STRING_OBJECT_REF = new TypeReference<Map<String, Object>>() {};
+
+	public void boot(String xtraParams) throws IOException, SQLException, InterruptedException {
         final String dir = System.getProperty("user.dir");
 
-		ProcessBuilder pb = new ProcessBuilder(dir + "/src/test/onetimeserver", "--mysql-version=" + this.getVersion(),
-												"--log-bin=master", "--binlog_format=row", "--innodb_flush_log_at_trx_commit=1", "--server_id=" + SERVER_ID);
+		ProcessBuilder pb = new ProcessBuilder(
+				dir + "/src/test/onetimeserver",
+				"--mysql-version=" + this.getVersion(),
+				"--log-bin=master",
+				"--binlog_format=row",
+				"--innodb_flush_log_at_trx_commit=1",
+				"--server_id=" + SERVER_ID,
+				"--character-set-server=utf8",
+				xtraParams
+		);
+
 		LOGGER.debug("booting onetimeserver: " + StringUtils.join(pb.command(), " "));
 		Process p = pb.start();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -57,22 +66,30 @@ public class MysqlIsolatedServer {
 		String json = reader.readLine();
 		String outputFile = null;
 		try {
-			JSONObject output = new JSONObject(json);
-			this.port = output.getInt("port");
-			this.serverPid = output.getInt("server_pid");
-			outputFile = output.getString("output");
-		} catch ( JSONException e ) {
+			ObjectMapper mapper = new ObjectMapper();
+			Map<String, Object> output = mapper.readValue(json, MAP_STRING_OBJECT_REF);
+			this.port = (int) output.get("port");
+			this.serverPid = (int) output.get("server_pid");
+			outputFile = (String) output.get("output");
+		} catch ( Exception e ) {
 			LOGGER.error("got exception while parsing " + json, e);
 			throw(e);
 		}
 
 
-		this.connection = DriverManager.getConnection("jdbc:mysql://127.0.0.1:" + port + "/mysql", "root", "");
+		resetConnection();
 		this.connection.createStatement().executeUpdate("GRANT REPLICATION SLAVE on *.* to 'maxwell'@'127.0.0.1' IDENTIFIED BY 'maxwell'");
 		this.connection.createStatement().executeUpdate("GRANT ALL on `maxwell`.* to 'maxwell'@'127.0.0.1'");
 		LOGGER.debug("booted at port " + this.port + ", outputting to file " + outputFile);
 	}
 
+	public void boot() throws Exception {
+		boot("");
+	}
+
+	public void resetConnection() throws SQLException {
+		this.connection = DriverManager.getConnection("jdbc:mysql://127.0.0.1:" + port + "/mysql", "root", "");
+	}
 	public Connection getConnection() {
 		return connection;
 	}

@@ -22,7 +22,7 @@ public class Maxwell {
 
 	private void initFirstRun(Connection connection, Connection schemaConnection) throws SQLException, IOException, SchemaSyncError {
 		LOGGER.info("Maxwell is capturing initial schema");
-		SchemaCapturer capturer = new SchemaCapturer(connection);
+		SchemaCapturer capturer = new SchemaCapturer(connection, this.context.getCaseSensitivity());
 		this.schema = capturer.capture();
 
 		BinlogPosition pos = BinlogPosition.capture(connection);
@@ -53,7 +53,9 @@ public class Maxwell {
 				String producerClass = this.context.getProducer().getClass().getSimpleName();
 
 				LOGGER.info("Maxwell is booting (" + producerClass + "), starting at " + this.context.getInitialPosition());
-				SchemaStore store = SchemaStore.restore(schemaConnection, this.context.getServerID(), this.context.getInitialPosition());
+
+				SchemaStore store = SchemaStore.restore(schemaConnection, this.context);
+
 				this.schema = store.getSchema();
 			} else {
 				initFirstRun(connection, schemaConnection);

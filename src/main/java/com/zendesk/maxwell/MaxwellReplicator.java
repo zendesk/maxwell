@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import com.google.code.or.binlog.impl.event.*;
+import com.google.code.or.net.TransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,7 +83,18 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 	@Override
 	protected void beforeStart() throws Exception {
-		this.replicator.start();
+		try {
+			this.replicator.start();
+		} catch ( TransportException e ) {
+			switch ( e.getErrorCode() ) {
+				case 1236:
+					LOGGER.error("Missing binlog '" + this.replicator.getBinlogFileName() + "' on " + this.replicator.getHost());
+				default:
+					LOGGER.error("Transport exception #" + e.getErrorCode());
+			}
+
+			throw(e);
+		}
 	}
 
 	public void work() throws Exception {
