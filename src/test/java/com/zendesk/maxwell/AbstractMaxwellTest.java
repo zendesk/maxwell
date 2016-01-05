@@ -182,6 +182,14 @@ public class AbstractMaxwellTest {
 		return list;
 	}
 
+	protected List<RowMap>getRowsForSQL(MaxwellFilter filter, String queries[], String before[], boolean excludeMaxwellRows) throws Exception {
+		return getRowsForSQL(server, filter, queries, before, excludeMaxwellRows);
+	}
+
+	protected List<RowMap>getRowsForSQL(MysqlIsolatedServer mysql, MaxwellFilter filter, String queries[], String before[]) throws Exception {
+		return getRowsForSQL(mysql, filter, queries, before, true);
+	}
+
 	protected List<RowMap>getRowsForSQL(MaxwellFilter filter, String queries[], String before[]) throws Exception {
 		return getRowsForSQL(server, filter, queries, before, true);
 	}
