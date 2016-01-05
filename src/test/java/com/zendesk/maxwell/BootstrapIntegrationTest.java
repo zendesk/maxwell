@@ -2,6 +2,7 @@ package com.zendesk.maxwell;
 
 import org.junit.Test;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -223,6 +224,7 @@ public class BootstrapIntegrationTest extends AbstractMaxwellTest {
 
 	@Test
 	public void testStringTypes( ) throws Exception {
+		String epoch = String.valueOf(new Timestamp(0));  // timezone dependent
 		testColumnType("tinytext", "'hello'", "\"hello\"");
 		testColumnType("text", "'hello'", "\"hello\"");
 		testColumnType("mediumtext","'hello'", "\"hello\"");
@@ -230,8 +232,11 @@ public class BootstrapIntegrationTest extends AbstractMaxwellTest {
 		testColumnType("varchar(10)","'hello'", "\"hello\"");
 		testColumnType("char", "'h'", "\"h\"");
 		testColumnType("date", "'2015-11-07'","\"2015-11-07\"");
+		testColumnType("date", "'0000-00-00'","\"0002-11-30\"", null);
 		testColumnType("datetime", "'2015-11-07 01:02:03'","\"2015-11-07 01:02:03\"");
+		testColumnType("datetime", "'0000-00-00 00:00:00'","\"0000-00-00 00:00:00\"", null);
 		testColumnType("timestamp", "'2015-11-07 01:02:03'","\"2015-11-07 01:02:03\"");
+		testColumnType("timestamp", "'0000-00-00 00:00:00'","\"" + epoch.substring(0, epoch.length() - 2) + "\"", null);
 		testColumnType("set('a', 'b')","'a,b'", "[\"a\",\"b\"]");
 		testColumnType("enum('a', 'b')","'a'", "\"a\"");
 		testColumnType("bit(8)","b'01010101'", "85");
@@ -276,7 +281,9 @@ public class BootstrapIntegrationTest extends AbstractMaxwellTest {
 			String.format("{\"database\":\"shard_1\",\"table\":\"column_test\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"col\":%s}}", expectedNormalJsonValue),
 			"{\"database\":\"maxwell\",\"table\":\"bootstrap\",\"type\":\"insert\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"database_name\":\"shard_1\",\"table_name\":\"column_test\",\"is_complete\":0}}",
 			"{\"database\":\"shard_1\",\"table\":\"column_test\",\"type\":\"bootstrap-start\",\"ts\":0,\"data\":{}}",
-			String.format("{\"database\":\"shard_1\",\"table\":\"column_test\",\"type\":\"insert\",\"ts\":0,\"data\":{\"id\":0,\"col\":%s}}", expectedBootstrappedJsonValue),
+				expectedBootstrappedJsonValue == null ?
+					String.format("{\"database\":\"shard_1\",\"table\":\"column_test\",\"type\":\"insert\",\"ts\":0,\"data\":{\"id\":0}}"):
+					String.format("{\"database\":\"shard_1\",\"table\":\"column_test\",\"type\":\"insert\",\"ts\":0,\"data\":{\"id\":0,\"col\":%s}}", expectedBootstrappedJsonValue),
 			"{\"database\":\"maxwell\",\"table\":\"bootstrap\",\"type\":\"update\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"database_name\":\"shard_1\",\"completed_at\":\"\",\"table_name\":\"column_test\",\"started_at\":\"\",\"is_complete\":1},\"old\":{\"completed_at\":null,\"is_complete\":0}}",
 			"{\"database\":\"shard_1\",\"table\":\"column_test\",\"type\":\"bootstrap-complete\",\"ts\":0,\"data\":{}}"
 		};

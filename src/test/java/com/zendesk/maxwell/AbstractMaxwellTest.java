@@ -51,6 +51,7 @@ public class AbstractMaxwellTest {
 		json = json.replaceAll(",\"binlog_file\":\"[^\"]+\"", "");
 		json = json.replaceAll(",\"commit\":true", "");
 		json = json.replaceAll(",\"inserted_rows\":[0-9]+", "");
+		json = json.replaceAll("0002-11-30 00:00:00", "0000-00-00 00:00:00"); // workaround for discrepancy between MySQL versions
 		return json;
 	}
 

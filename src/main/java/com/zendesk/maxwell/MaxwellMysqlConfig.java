@@ -37,7 +37,7 @@ public class MaxwellMysqlConfig {
 			this.port = Integer.valueOf((String) options.valueOf(prefix + "port"));
 	}
 
-	public String getConnectionURI() { return "jdbc:mysql://" + host + ":" + port + "?" + "useCursorFetch=true";}
+	public String getConnectionURI() { return "jdbc:mysql://" + host + ":" + port + "?" + "useCursorFetch=true&zeroDateTimeBehavior=convertToNull";}
 
 	@Override
 	public boolean equals(Object obj) {
