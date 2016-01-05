@@ -18,16 +18,29 @@ public class MaxwellBootstrapUtility {
 	private static final long DISPLAY_PROGRESS_WARMUP_MILLIS = 5000;
 	private static Console console = System.console();
 
+	private boolean isComplete = false;
+
 	private void run(String[] argv) throws Exception {
 		MaxwellBootstrapConfig config = new MaxwellBootstrapConfig(argv);
 		if ( config.log_level != null ) {
 			MaxwellLogging.setLevel(config.log_level);
 		}
 		ConnectionPool connectionPool = getConnectionPool(config);
-		try ( Connection connection = connectionPool.getConnection() ) {
+		try ( final Connection connection = connectionPool.getConnection() ) {
 			int rowCount = getRowCount(connection, config);
-			long rowId = insertBootstrapStartRow(connection, config);
-			boolean isComplete = false;
+			final long rowId = insertBootstrapStartRow(connection, config);
+			Runtime.getRuntime().addShutdownHook(new Thread() {
+				public void run() {
+					try {
+						if ( !isComplete ) {
+							LOGGER.warn("Bootstrapping cancelled");
+							removeBootstrapRow(connection, rowId);
+						}
+					} catch ( Exception e ) {
+						System.exit(1);
+					}
+				}
+			});
 			int insertedRowsCount = 0;
 			Long startedTimeMillis = null;
 			while ( !isComplete ) {
@@ -35,7 +48,7 @@ public class MaxwellBootstrapUtility {
 					if ( startedTimeMillis == null && insertedRowsCount > 0 ) {
 						startedTimeMillis = System.currentTimeMillis();
 					}
-				 	insertedRowsCount = getInsertedRowsCount(connection, rowId);
+					insertedRowsCount = getInsertedRowsCount(connection, rowId);
 				}
 				isComplete = getIsComplete(connection, rowId);
 				displayProgress(rowCount, insertedRowsCount, startedTimeMillis);
@@ -97,6 +110,14 @@ public class MaxwellBootstrapUtility {
 		ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
 		generatedKeys.next();
 		return generatedKeys.getLong(1);
+	}
+
+	private void removeBootstrapRow(Connection connection, long rowId) throws SQLException {
+		LOGGER.info("deleting bootstrap start row");
+		String sql = "delete from maxwell.bootstrap where id = ?";
+		PreparedStatement preparedStatement = connection.prepareStatement(sql);
+		preparedStatement.setLong(1, rowId);
+		preparedStatement.execute();
 	}
 
 	private void displayProgress(int total, int count, Long startedTimeMillis) {

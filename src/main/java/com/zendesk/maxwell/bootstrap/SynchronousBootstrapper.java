@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.sql.*;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 public class SynchronousBootstrapper extends AbstractBootstrapper {
 
@@ -91,9 +92,12 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 			}
 			setBootstrapRowToCompleted(insertedRows, startBootstrapRow, connection);
 		}
+		catch ( NoSuchElementException e ) {
+			LOGGER.info(String.format("bootstrapping cancelled for %s.%s", databaseName, tableName));
+		}
 	}
 
-	private void updateInsertedRowsColumn(int insertedRows, RowMap startBootstrapRow, BinlogPosition position, Connection connection) throws SQLException {
+	private void updateInsertedRowsColumn(int insertedRows, RowMap startBootstrapRow, BinlogPosition position, Connection connection) throws SQLException, NoSuchElementException {
 		long now = System.currentTimeMillis();
 		if ( now - lastInsertedRowsUpdateTimeMillis > INSERTED_ROWS_UPDATE_PERIOD_MILLIS ) {
 			long rowId = ( long ) startBootstrapRow.getData("id");
@@ -103,7 +107,9 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 			preparedStatement.setString(2, position.getFile());
 			preparedStatement.setLong(3, position.getOffset());
 			preparedStatement.setLong(4, rowId);
-			preparedStatement.execute();
+			if ( preparedStatement.executeUpdate() == 0 ) {
+				throw new NoSuchElementException();
+			}
 			lastInsertedRowsUpdateTimeMillis = now;
 		}
 	}
@@ -194,19 +200,23 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		return statement;
 	}
 
-	private void setBootstrapRowToStarted(RowMap startBootstrapRow, Connection connection) throws SQLException {
+	private void setBootstrapRowToStarted(RowMap startBootstrapRow, Connection connection) throws SQLException, NoSuchElementException {
 		String sql = "update maxwell.bootstrap set started_at=NOW() where id=?";
 		PreparedStatement preparedStatement = connection.prepareStatement(sql);
 		preparedStatement.setLong(1, ( Long ) startBootstrapRow.getData("id"));
-		preparedStatement.execute();
+		if ( preparedStatement.executeUpdate() == 0) {
+			throw new NoSuchElementException();
+		}
 	}
 
-	private void setBootstrapRowToCompleted(int insertedRows, RowMap startBootstrapRow, Connection connection) throws SQLException {
+	private void setBootstrapRowToCompleted(int insertedRows, RowMap startBootstrapRow, Connection connection) throws SQLException, NoSuchElementException {
 		String sql = "update maxwell.bootstrap set is_complete=1, inserted_rows=?, completed_at=NOW() where id=?";
 		PreparedStatement preparedStatement = connection.prepareStatement(sql);
 		preparedStatement.setInt(1, insertedRows);
 		preparedStatement.setLong(2, ( Long ) startBootstrapRow.getData("id"));
-		preparedStatement.execute();
+		if ( preparedStatement.executeUpdate() == 0) {
+			throw new NoSuchElementException();
+		}
 	}
 
 	private void setRowValues(RowMap row, ResultSet resultSet, Table table) throws SQLException, IOException {
