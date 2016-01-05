@@ -92,9 +92,6 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 			}
 			setBootstrapRowToCompleted(insertedRows, startBootstrapRow, connection);
 		}
-		catch ( NoSuchElementException e ) {
-			LOGGER.info(String.format("bootstrapping cancelled for %s.%s", databaseName, tableName));
-		}
 	}
 
 	private void updateInsertedRowsColumn(int insertedRows, RowMap startBootstrapRow, BinlogPosition position, Connection connection) throws SQLException, NoSuchElementException {
@@ -164,6 +161,19 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 	@Override
 	public boolean isRunning( ) {
 		return false;
+	}
+
+	@Override
+	public void work(RowMap row, AbstractProducer producer, MaxwellReplicator replicator) throws Exception {
+		try {
+			if ( isStartBootstrapRow(row) ) {
+				startBootstrap(row, producer, replicator);
+			} else if ( isCompleteBootstrapRow(row) ) {
+				completeBootstrap(row, producer, replicator);
+			}
+		} catch ( NoSuchElementException e ) {
+			LOGGER.info(String.format("bootstrapping cancelled for %s.%s", row.getDatabase(), row.getTable()));
+		}
 	}
 
 	private Table findTable(String tableName, Database database) {

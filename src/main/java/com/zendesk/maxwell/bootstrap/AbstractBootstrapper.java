@@ -30,11 +30,5 @@ public abstract class AbstractBootstrapper {
 
 	public abstract boolean isRunning();
 
-	public void work(RowMap row, AbstractProducer producer, MaxwellReplicator replicator) throws Exception {
-	 	if ( isStartBootstrapRow(row) ) {
-			startBootstrap(row, producer, replicator);
-		} else if ( isCompleteBootstrapRow(row) ) {
-			completeBootstrap(row, producer, replicator);
-		}
-	}
+	public abstract void work(RowMap row, AbstractProducer producer, MaxwellReplicator replicator) throws Exception;
 }

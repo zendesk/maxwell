@@ -47,4 +47,7 @@ public class NoOpBootstrapper extends AbstractBootstrapper {
 		return false;
 	}
 
+	@Override
+	public void work(RowMap row, AbstractProducer producer, MaxwellReplicator replicator) throws Exception {}
+
 }

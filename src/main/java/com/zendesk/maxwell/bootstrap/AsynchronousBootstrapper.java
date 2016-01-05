@@ -11,6 +11,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedList;
+import java.util.NoSuchElementException;
 import java.util.Queue;
 
 public class AsynchronousBootstrapper extends AbstractBootstrapper {
@@ -76,11 +77,15 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 	@Override
 	public void startBootstrap(final RowMap bootstrapStartRow, final AbstractProducer producer, final MaxwellReplicator replicator) throws Exception {
 		if (thread == null) {
+			bootstrappedRow = bootstrapStartRow;
 			thread = new Thread(new Runnable() {
 				@Override
 				public void run() {
 					try {
 						synchronousBootstrapper.startBootstrap(bootstrapStartRow, producer, replicator);
+					} catch ( NoSuchElementException e ) {
+						LOGGER.warn(String.format("async bootstrapping cancelled for table %s.%s", bootstrapStartRow.getDatabase(), bootstrapStartRow.getTable()));
+						cancelBootstrap(bootstrapStartRow, producer, replicator);
 					} catch ( Exception e ) {
 						e.printStackTrace();
 						System.exit(1);
@@ -120,13 +125,28 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 		}
 	}
 
+	public void cancelBootstrap(RowMap bootstrapStartRow, AbstractProducer producer, MaxwellReplicator replicator) {
+		try {
+			String databaseName = ( String ) bootstrapStartRow.getData("database_name");
+			String tableName = ( String ) bootstrapStartRow.getData("table_name");
+			replaySkippedRows(databaseName, tableName, producer, bootstrapStartRow);
+			thread = null;
+			bootstrappedRow = null;
+			if ( !queue.isEmpty() ) {
+				startBootstrap(queue.remove(), producer, replicator);
+			}
+		} catch ( Exception e ) {
+			e.printStackTrace();
+		}
+	}
+
 	private void replaySkippedRows(String databaseName, String tableName, AbstractProducer producer, RowMap bootstrapCompleteRow) throws Exception {
 		BinlogPosition bootstrapStartBinlogPosition = getBootstrapStartBinlogPosition(bootstrapCompleteRow);
 		LOGGER.info("async bootstrapping: replaying " + skippedRows.size(databaseName, tableName) + " skipped rows...");
 		skippedRows.flushToDisk(databaseName, tableName);
 		while ( skippedRows.size(databaseName, tableName) > 0 ) {
 			RowMap row = skippedRows.removeFirst(databaseName, tableName);
-			if ( row.getPosition().newerThan(bootstrapStartBinlogPosition) )
+			if ( bootstrapStartBinlogPosition == null || row.getPosition().newerThan(bootstrapStartBinlogPosition) )
 				producer.push(row);
 		}
 		LOGGER.info("async bootstrapping: replay complete");
@@ -138,8 +158,11 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 			PreparedStatement preparedStatement = connection.prepareStatement(sql);
 			preparedStatement.setLong(1, ( Long ) bootstrapCompleteRow.getData("id"));
 			ResultSet resultSet = preparedStatement.executeQuery();
-			resultSet.next();
-			return new BinlogPosition(resultSet.getLong("binlog_position"), resultSet.getString("binlog_file"));
+			if ( resultSet.next() ) {
+				return new BinlogPosition(resultSet.getLong("binlog_position"), resultSet.getString("binlog_file"));
+			} else {
+				return null;
+			}
 		}
 	}
 
@@ -157,6 +180,15 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 	@Override
 	public boolean isRunning() {
 		return thread != null || queue.size() > 0;
+	}
+
+	@Override
+	public void work(RowMap row, AbstractProducer producer, MaxwellReplicator replicator) throws Exception {
+		if ( isStartBootstrapRow(row) ) {
+			startBootstrap(row, producer, replicator);
+		} else if ( isCompleteBootstrapRow(row) ) {
+			completeBootstrap(row, producer, replicator);
+		}
 	}
 }
 
