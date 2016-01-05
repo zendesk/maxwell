@@ -186,15 +186,15 @@ public class MaxwellConfig {
 			return;
 
 
-		this.maxwellMysql.mysqlHost     = p.getProperty("host", "127.0.0.1");
-		this.maxwellMysql.mysqlPassword = p.getProperty("password");
-		this.maxwellMysql.mysqlUser     = p.getProperty("user");
-		this.maxwellMysql.mysqlPort     = Integer.valueOf(p.getProperty("port", "3306"));
+		this.maxwellMysql.host = p.getProperty("host", "127.0.0.1");
+		this.maxwellMysql.password = p.getProperty("password");
+		this.maxwellMysql.user     = p.getProperty("user");
+		this.maxwellMysql.port = Integer.valueOf(p.getProperty("port", "3306"));
 
-		this.replicationMysql.mysqlHost      = p.getProperty("replication_host");
-		this.replicationMysql.mysqlPassword  = p.getProperty("replication_password");
-		this.replicationMysql.mysqlUser      = p.getProperty("replication_user");
-		this.replicationMysql.mysqlPort      = Integer.valueOf(p.getProperty("replication_port", "3306"));
+		this.replicationMysql.host = p.getProperty("replication_host");
+		this.replicationMysql.password = p.getProperty("replication_password");
+		this.replicationMysql.user      = p.getProperty("replication_user");
+		this.replicationMysql.port = Integer.valueOf(p.getProperty("replication_port", "3306"));
 
 		this.producerType    = p.getProperty("producer");
 		this.outputFile      = p.getProperty("output_file");
@@ -231,38 +231,38 @@ public class MaxwellConfig {
 			usage("please specify --output_file=FILE to use the file producer");
 		}
 
-		if ( this.maxwellMysql.mysqlPort == null )
-			this.maxwellMysql.mysqlPort = 3306;
+		if ( this.maxwellMysql.port == null )
+			this.maxwellMysql.port = 3306;
 
-		if ( this.maxwellMysql.mysqlUser == null) {
-			this.maxwellMysql.mysqlUser = "maxwell";
+		if ( this.maxwellMysql.user == null) {
+			this.maxwellMysql.user = "maxwell";
 		}
 
-		if ( this.maxwellMysql.mysqlHost == null ) {
+		if ( this.maxwellMysql.host == null ) {
 			LOGGER.warn("maxwell mysql host not specified, defaulting to localhost");
-			this.maxwellMysql.mysqlHost = "localhost";
+			this.maxwellMysql.host = "localhost";
 		}
 
-		if ( this.maxwellMysql.mysqlPassword == null )
+		if ( this.maxwellMysql.password == null )
 			usage("maxwell mysql password not given");
 
-		if ( this.replicationMysql.mysqlPort == null )
-			this.replicationMysql.mysqlPort = 3306;
+		if ( this.replicationMysql.port == null )
+			this.replicationMysql.port = 3306;
 
-		if ( this.replicationMysql.mysqlHost == null
-				|| this.replicationMysql.mysqlUser == null
-				|| this.replicationMysql.mysqlPassword == null) {
+		if ( this.replicationMysql.host == null
+				|| this.replicationMysql.user == null
+				|| this.replicationMysql.password == null) {
 
-			if (this.replicationMysql.mysqlHost != null
-					|| this.replicationMysql.mysqlUser != null
-					|| this.replicationMysql.mysqlPassword != null) {
+			if (this.replicationMysql.host != null
+					|| this.replicationMysql.user != null
+					|| this.replicationMysql.password != null) {
 				usage("Specified a replication option but missing one of the following options: replication_host, replication_user, replication_password.");
 			}
 			
-			this.replicationMysql = new MaxwellMysqlConfig(this.maxwellMysql.mysqlHost,
-									this.maxwellMysql.mysqlPort,
-									this.maxwellMysql.mysqlUser,
-									this.maxwellMysql.mysqlPassword);
+			this.replicationMysql = new MaxwellMysqlConfig(this.maxwellMysql.host,
+									this.maxwellMysql.port,
+									this.maxwellMysql.user,
+									this.maxwellMysql.password);
 		}
 
 		if ( this.maxSchemas != null )

@@ -7,45 +7,45 @@ import joptsimple.OptionSet;
  */
 public class MaxwellMysqlConfig {
 
-	public String mysqlHost;
-	public Integer mysqlPort;
-	public String mysqlUser;
-	public String mysqlPassword;
+	public String host;
+	public Integer port;
+	public String user;
+	public String password;
 
 	public MaxwellMysqlConfig() {
-		this.mysqlHost = null;
-		this.mysqlPort = null;
-		this.mysqlUser = null;
-		this.mysqlPassword = null;
+		this.host = null;
+		this.port = null;
+		this.user = null;
+		this.password = null;
 	}
 
 	public MaxwellMysqlConfig(String host, Integer port, String user, String password) {
-		this.mysqlHost = host;
-		this.mysqlPort = port;
-		this.mysqlUser = user;
-		this.mysqlPassword = password;
+		this.host = host;
+		this.port = port;
+		this.user = user;
+		this.password = password;
 	}
 
 	public void parseOptions( String prefix, OptionSet options) {
 		if ( options.has(prefix + "host"))
-			this.mysqlHost = (String) options.valueOf(prefix + "host");
+			this.host = (String) options.valueOf(prefix + "host");
 		if ( options.has(prefix + "password"))
-			this.mysqlPassword = (String) options.valueOf(prefix + "password");
+			this.password = (String) options.valueOf(prefix + "password");
 		if ( options.has(prefix + "user"))
-			this.mysqlUser = (String) options.valueOf(prefix + "user");
+			this.user = (String) options.valueOf(prefix + "user");
 		if ( options.has(prefix + "port"))
-			this.mysqlPort = Integer.valueOf((String) options.valueOf(prefix + "port"));
+			this.port = Integer.valueOf((String) options.valueOf(prefix + "port"));
 	}
 
-	public String getConnectionURI() { return "jdbc:mysql://" + mysqlHost + ":" + mysqlPort;}
+	public String getConnectionURI() { return "jdbc:mysql://" + host + ":" + port;}
 
 	@Override
 	public boolean equals(Object obj) {
 		if (obj.getClass() != this.getClass() ) return false;
 		MaxwellMysqlConfig other = ((MaxwellMysqlConfig) obj);
-		return (this.mysqlHost == other.mysqlHost
-				&& this.mysqlPassword == other.mysqlPassword
-				&& this.mysqlPort == other.mysqlPort
-				&& this.mysqlUser == other.mysqlUser);
+		return (this.host == other.host
+				&& this.password == other.password
+				&& this.port == other.port
+				&& this.user == other.user);
 	}
 }

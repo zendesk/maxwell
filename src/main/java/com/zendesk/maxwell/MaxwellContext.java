@@ -30,14 +30,14 @@ public class MaxwellContext {
 	public MaxwellContext(MaxwellConfig config) {
 		this.config = config;
 		this.replicationConnectionPool = new ConnectionPool("ReplicationConnectionPool", 10, 0, 10,
-				config.replicationMysql.getConnectionURI(), config.replicationMysql.mysqlUser, config.replicationMysql.mysqlPassword);
+				config.replicationMysql.getConnectionURI(), config.replicationMysql.user, config.replicationMysql.password);
 
 
 		if (config.replicationMysql.equals(config.maxwellMysql)) {
 			this.maxwellConnectionPool = this.replicationConnectionPool;
 		} else {
 			this.maxwellConnectionPool = new ConnectionPool("MaxwellConnectionPool", 10, 0, 10,
-					config.maxwellMysql.getConnectionURI(), config.maxwellMysql.mysqlUser, config.maxwellMysql.mysqlPassword);
+					config.maxwellMysql.getConnectionURI(), config.maxwellMysql.user, config.maxwellMysql.password);
 		}
 
 		if ( this.config.initPosition != null )
