@@ -51,11 +51,11 @@ public class MaxwellConfig {
 		OptionParser parser = new OptionParser();
 		parser.accepts( "config", "location of config file" ).withRequiredArg();
 		parser.accepts( "log_level", "log level, one of DEBUG|INFO|WARN|ERROR" ).withRequiredArg();
-		parser.accepts( "replication_host", "mysql host to treat as master" ).withRequiredArg();
-		parser.accepts( "replication_user", "mysql username with replication privileges on replication_host" ).withRequiredArg();
+		parser.accepts( "replication_host", "mysql host to treat as master (if using separate schema and replication servers)" ).withRequiredArg();
+		parser.accepts( "replication_user", "mysql username with replication privileges (if using separate schema and replication servers)" ).withRequiredArg();
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
-		parser.accepts( "replication_password", "mysql password for replication_user" ).withRequiredArg();
-		parser.accepts( "replication_port", "port for mysql replication_host instance" ).withRequiredArg();
+		parser.accepts( "replication_password", "mysql password for replication_user (if using separate schema and replication servers)" ).withRequiredArg();
+		parser.accepts( "replication_port", "port for mysql replication_host (if using separate schema and replication servers)" ).withRequiredArg();
 
 		parser.accepts( "host", "mysql host with write access to maxwell database" ).withRequiredArg();
 		parser.accepts( "user", "mysql username with write access to maxwell database on host" ).withRequiredArg();
