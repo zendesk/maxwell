@@ -21,7 +21,7 @@ public class MaxwellBootstrapUtility {
 	private boolean isComplete = false;
 
 	private void run(String[] argv) throws Exception {
-		MaxwellBootstrapConfig config = new MaxwellBootstrapConfig(argv);
+		MaxwellBootstrapUtilityConfig config = new MaxwellBootstrapUtilityConfig(argv);
 		if ( config.log_level != null ) {
 			MaxwellLogging.setLevel(config.log_level);
 		}
@@ -80,7 +80,7 @@ public class MaxwellBootstrapUtility {
 		return resultSet.getInt(1) == 1;
 	}
 
-	private ConnectionPool getConnectionPool(MaxwellBootstrapConfig config) {
+	private ConnectionPool getConnectionPool(MaxwellBootstrapUtilityConfig config) {
 		String name = "MaxwellBootstrapConnectionPool";
 		int maxPool = 10;
 		int maxSize = 0;
@@ -91,7 +91,7 @@ public class MaxwellBootstrapUtility {
 		return new ConnectionPool(name, maxPool, maxSize, idleTimeout, connectionURI, mysqlUser, mysqlPassword);
 	}
 
-	private int getRowCount(Connection connection, MaxwellBootstrapConfig config) throws SQLException {
+	private int getRowCount(Connection connection, MaxwellBootstrapUtilityConfig config) throws SQLException {
 		LOGGER.info("counting rows");
 		String sql = String.format("select count(*) from %s.%s", config.databaseName, config.tableName);
 		PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -100,7 +100,7 @@ public class MaxwellBootstrapUtility {
 		return resultSet.getInt(1);
 	}
 
-	private long insertBootstrapStartRow(Connection connection, MaxwellBootstrapConfig config) throws SQLException {
+	private long insertBootstrapStartRow(Connection connection, MaxwellBootstrapUtilityConfig config) throws SQLException {
 		LOGGER.info("inserting bootstrap start row");
 		String sql = "insert into maxwell.bootstrap (database_name, table_name) values(?, ?)";
 		PreparedStatement preparedStatement = connection.prepareStatement(sql);

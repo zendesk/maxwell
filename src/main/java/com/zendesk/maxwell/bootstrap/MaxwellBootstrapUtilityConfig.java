@@ -8,8 +8,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-public class MaxwellBootstrapConfig {
-	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellBootstrapConfig.class);
+public class MaxwellBootstrapUtilityConfig {
+	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellBootstrapUtilityConfig.class);
 
 	public String  mysqlHost;
 	public Integer mysqlPort;
@@ -19,7 +19,7 @@ public class MaxwellBootstrapConfig {
 	public String  tableName;
 	public String log_level;
 
-	public MaxwellBootstrapConfig(String argv[]) {
+	public MaxwellBootstrapUtilityConfig(String argv[]) {
 		this.parse(argv);
 		this.setDefaults();
 	}
