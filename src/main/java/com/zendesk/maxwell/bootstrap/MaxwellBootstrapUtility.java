@@ -33,7 +33,8 @@ public class MaxwellBootstrapUtility {
 				public void run() {
 					try {
 						if ( !isComplete ) {
-							LOGGER.warn("Bootstrapping cancelled");
+							displayLine("");
+							LOGGER.warn("bootstrapping cancelled");
 							removeBootstrapRow(connection, rowId);
 						}
 					} catch ( Exception e ) {
@@ -56,7 +57,7 @@ public class MaxwellBootstrapUtility {
 			}
 			displayLine("");
 		} catch ( SQLException e ) {
-			LOGGER.error("Failed to connect to mysql server @ " + config.getConnectionURI());
+			LOGGER.error("failed to connect to mysql server @ " + config.getConnectionURI());
 			LOGGER.error(e.getLocalizedMessage());
 			System.exit(1);
 		}
@@ -122,7 +123,7 @@ public class MaxwellBootstrapUtility {
 
 	private void displayProgress(int total, int count, Long startedTimeMillis) {
 		if ( startedTimeMillis == null ) {
-			displayLine("Waiting for bootstrap to start... ");
+			displayLine("waiting for bootstrap to start... ");
 		}
 		else if ( count < total) {
 			long currentTimeMillis = System.currentTimeMillis();
@@ -132,7 +133,7 @@ public class MaxwellBootstrapUtility {
 			String duration = prettyDuration(remainingMillis, elapsedMillis);
 			displayLine(String.format("%d / %d (%.2f%%) %s", count, total, ( count * 100.0 ) / total, duration));
 		} else {
-			displayLine("Waiting for bootstrap to stop... ");
+			displayLine("waiting for bootstrap to stop... ");
 		}
 	}
 
@@ -172,6 +173,8 @@ public class MaxwellBootstrapUtility {
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(1);
+		} finally {
+			LOGGER.info("done.");
 		}
 	}
 }
