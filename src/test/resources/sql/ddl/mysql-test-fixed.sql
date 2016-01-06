@@ -28,6 +28,7 @@ ALTER TABLE t1 DROP KEY idx
 ALTER TABLE t1 DROP KEY s1, ADD KEY(s1(1))
 ALTER TABLE t1 FORCE
 ALTER TABLE t1 MODIFY a DATETIME(6), MODIFY b TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), MODIFY c DATE
+ALTER TABLE t1 ORDER BY t1.id, t1.status, t1.type_id, t1.user_id, t1.body
 ALTER TABLE t1 RENAME t2
 ALTER TABLE t1 STORAGE DISK
 ALTER TABLE t1 STORAGE DISK TABLESPACE ts2
@@ -249,6 +250,7 @@ alter table t3 rename t4
 alter table t8 rename t7
 alter table t9 rename mysqltest.t9
 alter table t9 rename t8, add column d int not null
+alter table table_24562 order by table_24562.subsection ASC, table_24562.section DESC
 alter table test.t1 rename test.t1
 create database имя_базы_в_кодировке_утф8_длиной_больше_чем_45
 create database това_е_дълго_име_за_база_данни_нали
