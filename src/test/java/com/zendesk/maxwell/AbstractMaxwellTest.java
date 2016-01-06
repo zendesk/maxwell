@@ -86,6 +86,7 @@ public class AbstractMaxwellTest {
 		config.mysqlPort = port;
 		config.mysqlUser = "maxwell";
 		config.mysqlPassword = "maxwell";
+		config.databaseName = "maxwell";
 
 		config.initPosition = p;
 
@@ -122,11 +123,12 @@ public class AbstractMaxwellTest {
 
 
 		final ArrayList<RowMap> list = new ArrayList<>();
+		final String dbName = context.getConfig().databaseName;
 
 		p.getEvents(new RowConsumer() {
 			@Override
 			void consume(RowMap r) {
-				if (!r.getDatabase().equals("maxwell")) {
+				if (!r.getDatabase().equals(dbName)) {
 					list.add(r);
 				}
 			}
