@@ -3,7 +3,7 @@ grammar mysql_indices;
 import mysql_literal_tokens, mysql_idents;
 
 index_definition:
-  (index_type_1 | index_type_pk | index_type_3 | index_type_4 | index_type_5 );
+  (index_type_1 | index_type_pk | index_type_3 | index_type_4 | index_type_5 | index_type_check | index_type_elided );
 
 index_type_1:
   index_or_key index_name? index_type? index_column_list index_options*;
@@ -20,6 +20,11 @@ index_type_4:
 index_type_5:
   index_constraint? FOREIGN KEY index_name? index_column_list reference_definition;
 
+index_type_check:
+  index_constraint? CHECK;
+
+index_type_elided:
+  MAXWELL_ELIDED_PARSE_ISSUE;
 
 index_or_key: (INDEX|KEY);
 index_constraint: (CONSTRAINT name?);
