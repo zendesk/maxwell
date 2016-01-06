@@ -44,7 +44,7 @@ public class MaxwellContext {
 	}
 
 	public void start() {
-		SchemaScavenger s = new SchemaScavenger(this.connectionPool);
+		SchemaScavenger s = new SchemaScavenger(this.connectionPool, this.config.databaseName);
 		new Thread(s).start();
 	}
 

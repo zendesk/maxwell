@@ -15,15 +15,17 @@ public class SchemaScavenger extends RunLoopProcess implements Runnable {
 	static final Logger LOGGER = LoggerFactory.getLogger(SchemaStore.class);
 	private static final long MAX_ROWS_PER_SECOND = 500;
 	private final ConnectionPool connectionPool;
+	private final String schemaDatabaseName;
 
-	public SchemaScavenger(ConnectionPool pool) {
+	public SchemaScavenger(ConnectionPool pool, String dbName) {
 		this.connectionPool = pool;
+		this.schemaDatabaseName = dbName;
 	}
 
 	private List<Long> getDeletedSchemas() throws SQLException {
 		ArrayList<Long> list = new ArrayList<>();
 		try ( Connection connection = connectionPool.getConnection() ) {
-			ResultSet rs = connection.createStatement().executeQuery("select id from `maxwell`.`schemas` where deleted = 1 LIMIT 100");
+			ResultSet rs = connection.createStatement().executeQuery("select id from `" + this.schemaDatabaseName + "`.`schemas` where deleted = 1 LIMIT 100");
 
 			while ( rs.next() ) {
 				list.add(rs.getLong("id"));
@@ -40,8 +42,8 @@ public class SchemaScavenger extends RunLoopProcess implements Runnable {
 			for ( String tName : tables ) {
 				for (;;) {
 					long nDeleted = connection.createStatement().executeUpdate(
-						"DELETE FROM maxwell." + tName +
-							" WHERE schema_id = " + id +
+						"DELETE FROM `"+ this.schemaDatabaseName + "`.`" + tName +
+							"` WHERE schema_id = " + id +
 							" LIMIT " + maxRowsPerSecond
 					);
 
@@ -51,7 +53,7 @@ public class SchemaScavenger extends RunLoopProcess implements Runnable {
 					if (nDeleted == 0)
 						break;
 
-					LOGGER.debug("deleted " + nDeleted + " rows from maxwell." + tName + " schema: " + id);
+					LOGGER.debug("deleted " + nDeleted + " rows from "+ this.schemaDatabaseName + "." + tName + " schema: " + id);
 					try { Thread.sleep(1000); } catch (InterruptedException e) { }
 
 					if (isStopRequested())
@@ -59,7 +61,7 @@ public class SchemaScavenger extends RunLoopProcess implements Runnable {
 				}
 			}
 
-			connection.createStatement().execute("delete from `maxwell`.`schemas` where id = " + id);
+			connection.createStatement().execute("delete from `" + this.schemaDatabaseName + "`.`schemas` where id = " + id);
 		}
 	}
 
