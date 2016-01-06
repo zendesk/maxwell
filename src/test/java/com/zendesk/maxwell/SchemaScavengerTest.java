@@ -35,7 +35,7 @@ public class SchemaScavengerTest extends AbstractMaxwellTest {
 		MaxwellContext context = buildContext();
 		this.scavenger = new SchemaScavenger(context.getConnectionPool(), context.getConfig().databaseName);
 
-		this.schemaStore = new SchemaStore(server.getConnection(), MysqlIsolatedServer.SERVER_ID, this.schema, binlogPosition);
+		this.schemaStore = new SchemaStore(server.getConnection(), MysqlIsolatedServer.SERVER_ID, this.schema, binlogPosition, context.getConfig().databaseName);
 		this.schemaStore.save();
 	}
 

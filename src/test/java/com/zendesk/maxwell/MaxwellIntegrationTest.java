@@ -335,7 +335,7 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 
 
 		lowerCaseServer.boot("--lower-case-table-names=1");
-		SchemaStore.ensureMaxwellSchema(lowerCaseServer.getConnection());
+		SchemaStore.ensureMaxwellSchema(lowerCaseServer.getConnection(), buildContext().getConfig().databaseName);
 
 		String[] sql = {
 			"CREATE TABLE TOOTOOTWEE ( id int )",

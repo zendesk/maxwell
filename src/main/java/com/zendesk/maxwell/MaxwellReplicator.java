@@ -322,7 +322,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 		if ( !this.context.getReplayMode() ) {
 			try (Connection c = this.context.getConnectionPool().getConnection()) {
-				new SchemaStore(c, this.context.getServerID(), this.schema, p).save();
+				new SchemaStore(c, this.context.getServerID(), this.schema, p, this.context.getConfig().databaseName).save();
 			}
 
 			this.context.setPositionSync(p);

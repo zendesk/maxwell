@@ -39,7 +39,7 @@ public class SchemaStoreTest extends AbstractMaxwellTest {
 		this.context = buildContext(binlogPosition);
 
 		this.schema = new SchemaCapturer(server.getConnection(), context.getCaseSensitivity()).capture();
-		this.schemaStore = new SchemaStore(server.getConnection(), MysqlIsolatedServer.SERVER_ID, this.schema, binlogPosition);
+		this.schemaStore = new SchemaStore(server.getConnection(), MysqlIsolatedServer.SERVER_ID, this.schema, binlogPosition, context.getConfig().databaseName);
 	}
 
 	@Test
@@ -85,11 +85,11 @@ public class SchemaStoreTest extends AbstractMaxwellTest {
 	public void testMasterChange() throws Exception {
 		this.schema = new SchemaCapturer(server.getConnection(), context.getCaseSensitivity()).capture();
 		this.binlogPosition = BinlogPosition.capture(server.getConnection());
-		this.schemaStore = new SchemaStore(server.getConnection(), 5551234L, this.schema, binlogPosition);
+		this.schemaStore = new SchemaStore(server.getConnection(), 5551234L, this.schema, binlogPosition, buildContext().getConfig().databaseName);
 
 		this.schemaStore.save();
 
-		SchemaStore.handleMasterChange(server.getConnection(), 123456L);
+		SchemaStore.handleMasterChange(server.getConnection(), 123456L, buildContext().getConfig().databaseName);
 
 		ResultSet rs = server.getConnection().createStatement().executeQuery("SELECT * from `maxwell`.`schemas`");
 		assertThat(rs.next(), is(true));

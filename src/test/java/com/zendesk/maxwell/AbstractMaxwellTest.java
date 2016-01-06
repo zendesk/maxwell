@@ -28,7 +28,7 @@ public class AbstractMaxwellTest {
 		server = new MysqlIsolatedServer();
 		server.boot();
 
-		SchemaStore.ensureMaxwellSchema(server.getConnection());
+		SchemaStore.ensureMaxwellSchema(server.getConnection(), "maxwell");
 	}
 
 	@AfterClass
