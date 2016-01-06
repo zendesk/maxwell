@@ -142,6 +142,16 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 	}
 
 	@Test
+	public void testConstraintCheck() throws Exception {
+		String sql[] = {
+				"create TABLE `t` (id int, CHECK(NOW() is not null and 'lfjd()))()' is not null), c varchar(255))",
+				"create TABLE `t2` (id int, CHECK(NOW() is not null), c varchar(255))",
+				"create table t1 (a int, b int, check (a>b))"
+		};
+
+		testIntegration(sql);
+	}
+	@Test
 	public void testDatabaseEncoding() throws SQLException, SchemaSyncError, IOException {
 		String sql[] = {
 		   "create DATABASE test_latin1 character set='latin1'",

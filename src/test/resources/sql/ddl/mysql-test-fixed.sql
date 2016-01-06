@@ -269,10 +269,12 @@ create table t1 ( a int, b varchar(30), primary key(a) ) ENGINE = MERGE UNION=(t
 create table t1 ( a int, b varchar(30), primary key(a) ) ENGINE = MERGE UNION=(t1_1,t1_2) INSERT_METHOD=LAST
 create table t1 ( type_bool bool not null default 0, type_tiny tinyint not null auto_increment primary key, type_short smallint(3), type_mediumint mediumint, type_bigint bigint, type_decimal decimal(5,2), type_numeric numeric(5,2), empty_char char(0), type_char char(2), type_varchar varchar(10), type_timestamp timestamp not null default current_timestamp on update current_timestamp, type_date date not null default '0000-00-00', type_time time not null default '00:00:00', type_datetime datetime not null default '0000-00-00 00:00:00', type_year year, type_enum enum ('red', 'green', 'blue'), type_set enum ('red', 'green', 'blue'), type_tinyblob tinyblob, type_blob blob, type_medium_blob mediumblob, type_long_blob longblob, index(type_short) ) AVG_ROW_LENGTH=10 CHECKSUM=1 COMMENT="test" ENGINE=MYISAM MIN_ROWS=10 MAX_ROWS=100 PACK_KEYS=1 DELAY_KEY_WRITE=1 ROW_FORMAT=fixed CHARSET=latin1
 create table t1 ( x_bigint BIGINT, x_integer INTEGER, x_smallint SMALLINT, x_decimal DECIMAL(5,3), x_numeric NUMERIC(5,3), x_real REAL, x_float FLOAT, x_double_precision DOUBLE PRECISION )
+create table t1 (a int ,b int, constraint abc check (a>b))
 create table t1 (a int not null auto_increment, primary key (a), t timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, c char(10) default "hello", i int)
 create table t1 (a int not null, b VARCHAR(10), INDEX (b) ) AVG_ROW_LENGTH=10 CHECKSUM=1 COMMENT="test" ENGINE=MYISAM MIN_ROWS=10 MAX_ROWS=100 PACK_KEYS=1 DELAY_KEY_WRITE=1 ROW_FORMAT=fixed
 create table t1 (a int primary key) engine=myisam data directory="/Users/ben/src/mysql-server/mysql-test/var/tmp"       index directory="/Users/ben/src/mysql-server/mysql-test/var/run"
 create table t1 (a int primary key, b int) engine=innodb stats_persistent=0
+create table t1 (a int, b int, check (a>b))
 create table t1 (a int, b varchar(30) default "hello")
 create table t1 (a tinyint not null auto_increment primary key, b char(20) default "default_value")
 create table t1 (a varchar(10), filler char(200), key(a)) charset=binary
