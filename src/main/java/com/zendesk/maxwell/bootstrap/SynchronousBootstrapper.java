@@ -42,8 +42,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		Schema schema = replicator.getSchema();
 		Database database = findDatabase(schema, databaseName);
 		Table table = findTable(tableName, database);
-		OpenReplicator openReplicator = replicator.getOpenReplicator();
-		BinlogPosition position = new BinlogPosition(openReplicator.getBinlogPosition(), openReplicator.getBinlogFileName());
+		BinlogPosition position = startBootstrapRow.getPosition();
 		producer.push(startBootstrapRow);
 		producer.push(bootstrapStartRowMap(table, position));
 		LOGGER.info(String.format("bootstrapping started for %s.%s, binlog position is %s", databaseName, tableName, position.toString()));
@@ -118,8 +117,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		Database database = findDatabase(replicator.getSchema(), databaseName);
 		ensureTable(tableName, database);
 		Table table = findTable(tableName, database);
-		OpenReplicator openReplicator = replicator.getOpenReplicator();
-		BinlogPosition position = new BinlogPosition(openReplicator.getBinlogPosition(), openReplicator.getBinlogFileName());
+		BinlogPosition position = completeBootstrapRow.getPosition();
 		producer.push(completeBootstrapRow);
 		producer.push(bootstrapCompleteRowMap(table, position));
 		LOGGER.info(String.format("bootstrapping ended for %s.%s", databaseName, tableName));
