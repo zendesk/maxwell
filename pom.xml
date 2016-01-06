@@ -70,7 +70,7 @@
     <dependency>
     	<groupId>net.sf.jopt-simple</groupId>
     	<artifactId>jopt-simple</artifactId>
-    	<version>4.9-beta-1</version>
+    	<version>4.9</version>
     </dependency>
     <dependency>
     	<groupId>net.snaq</groupId>

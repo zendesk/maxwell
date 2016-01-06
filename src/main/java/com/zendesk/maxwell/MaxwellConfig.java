@@ -54,12 +54,12 @@ public class MaxwellConfig {
 		parser.accepts( "replication_host", "mysql host to treat as master (if using separate schema and replication servers)" ).withRequiredArg();
 		parser.accepts( "replication_user", "mysql username with replication privileges (if using separate schema and replication servers)" ).withRequiredArg();
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
-		parser.accepts( "replication_password", "mysql password for replication_user (if using separate schema and replication servers)" ).withRequiredArg();
+		parser.accepts( "replication_password", "mysql password for replication_user (if using separate schema and replication servers)" ).withOptionalArg();
 		parser.accepts( "replication_port", "port for mysql replication_host (if using separate schema and replication servers)" ).withRequiredArg();
 
 		parser.accepts( "host", "mysql host with write access to maxwell database" ).withRequiredArg();
 		parser.accepts( "user", "mysql username with write access to maxwell database on host" ).withRequiredArg();
-		parser.accepts( "password", "mysql password for user on host" ).withRequiredArg();
+		parser.accepts( "password", "mysql password for user on host" ).withOptionalArg();
 		parser.accepts( "port", "mysql port for host" ).withRequiredArg();
 
 		parser.accepts( "producer", "producer type: stdout|file|kafka" ).withRequiredArg();
@@ -243,15 +243,11 @@ public class MaxwellConfig {
 			this.maxwellMysql.host = "localhost";
 		}
 
-		if ( this.maxwellMysql.password == null )
-			usage("maxwell mysql password not given");
-
 		if ( this.replicationMysql.port == null )
 			this.replicationMysql.port = 3306;
 
 		if ( this.replicationMysql.host == null
-				|| this.replicationMysql.user == null
-				|| this.replicationMysql.password == null) {
+				|| this.replicationMysql.user == null ) {
 
 			if (this.replicationMysql.host != null
 					|| this.replicationMysql.user != null
