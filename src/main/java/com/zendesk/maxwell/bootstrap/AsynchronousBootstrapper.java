@@ -29,21 +29,6 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 		skippedRows = new RowMapBufferByTable();
 	}
 
-	@Override
-	public boolean isStartBootstrapRow(RowMap row) {
-		return synchronousBootstrapper.isStartBootstrapRow(row);
-	}
-
-	@Override
-	public boolean isCompleteBootstrapRow(RowMap row) {
-		return synchronousBootstrapper.isCompleteBootstrapRow(row);
-	}
-
-	@Override
-	public boolean isBootstrapRow(RowMap row) {
-		return synchronousBootstrapper.isBootstrapRow(row);
-	}
-
 	protected SynchronousBootstrapper getSynchronousBootstrapper( ) {
 		return new SynchronousBootstrapper(context);
 	}

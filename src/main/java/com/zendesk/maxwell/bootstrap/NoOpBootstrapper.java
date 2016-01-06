@@ -14,21 +14,6 @@ public class NoOpBootstrapper extends AbstractBootstrapper {
 	public NoOpBootstrapper(MaxwellContext context) { super( context ); }
 
 	@Override
-	public boolean isStartBootstrapRow(RowMap row) {
-		return false;
-	}
-
-	@Override
-	public boolean isCompleteBootstrapRow(RowMap row) {
-		return false;
-	}
-
-	@Override
-	public boolean isBootstrapRow(RowMap row) {
-		return false;
-	}
-
-	@Override
 	public boolean shouldSkip(RowMap row) {
 		return false;
 	}

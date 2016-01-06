@@ -14,11 +14,24 @@ public abstract class AbstractBootstrapper {
 
 	public AbstractBootstrapper(MaxwellContext context) { this.context = context; }
 
-	abstract public boolean isStartBootstrapRow(RowMap row);
+	public boolean isStartBootstrapRow(RowMap row) {
+		return isBootstrapRow(row) &&
+			row.getData("started_at") == null &&
+			row.getData("completed_at") == null &&
+			( long ) row.getData("is_complete") == 0;
+	}
 
-	abstract public boolean isCompleteBootstrapRow(RowMap row);
+	public boolean isCompleteBootstrapRow(RowMap row) {
+		return isBootstrapRow(row) &&
+			row.getData("started_at") != null &&
+			row.getData("completed_at") != null &&
+			( long ) row.getData("is_complete") == 1;
+	}
 
-	abstract public boolean isBootstrapRow(RowMap row);
+	public boolean isBootstrapRow(RowMap row) {
+		return row.getDatabase().equals("maxwell") &&
+			row.getTable().equals("bootstrap");
+	}
 
 	abstract public boolean shouldSkip(RowMap row) throws SQLException, IOException;
 

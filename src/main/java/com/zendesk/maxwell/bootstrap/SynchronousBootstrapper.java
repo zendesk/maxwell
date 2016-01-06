@@ -28,28 +28,6 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 	public SynchronousBootstrapper(MaxwellContext context) { super(context); }
 
 	@Override
-	public boolean isStartBootstrapRow(RowMap row) {
-		return isBootstrapRow(row) &&
-			row.getData("started_at") == null &&
-			row.getData("completed_at") == null &&
-			( long ) row.getData("is_complete") == 0;
-	}
-
-	@Override
-	public boolean isCompleteBootstrapRow(RowMap row) {
-		return isBootstrapRow(row) &&
-			row.getData("started_at") != null &&
-			row.getData("completed_at") != null &&
-			( long ) row.getData("is_complete") == 1;
-	}
-
-	@Override
-	public boolean isBootstrapRow(RowMap row) {
-		return row.getDatabase().equals("maxwell") &&
-			row.getTable().equals("bootstrap");
-	}
-
-	@Override
 	public boolean shouldSkip(RowMap row) {
 		// the synchronous bootstrapper blocks other incoming messages
 		// to the replication stream so there's nothing to skip
