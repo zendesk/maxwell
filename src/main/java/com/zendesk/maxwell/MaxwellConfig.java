@@ -23,6 +23,7 @@ public class MaxwellConfig {
 	public Integer mysqlPort;
 	public String  mysqlUser;
 	public String  mysqlPassword;
+	public String databaseName;
 	public String  includeDatabases, excludeDatabases, includeTables, excludeTables;
 	public final Properties kafkaProperties;
 	public String kafkaTopic;
@@ -59,6 +60,7 @@ public class MaxwellConfig {
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
 		parser.accepts( "password", "mysql password" ).withRequiredArg();
 		parser.accepts( "port", "mysql port" ).withRequiredArg();
+		parser.accepts( "database", "database name for maxwell state (schema and binlog position)").withRequiredArg();
 		parser.accepts( "producer", "producer type: stdout|file|kafka" ).withRequiredArg();
 
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
@@ -107,6 +109,11 @@ public class MaxwellConfig {
 			this.mysqlUser = (String) options.valueOf("user");
 		if ( options.has("port"))
 			this.mysqlPort = Integer.valueOf((String) options.valueOf("port"));
+
+		if ( options.has("database")) {
+			this.databaseName = (String) options.valueOf("database");
+		}
+
 		if ( options.has("producer"))
 			this.producerType = (String) options.valueOf("producer");
 
@@ -189,6 +196,7 @@ public class MaxwellConfig {
 		this.mysqlPassword = p.getProperty("password");
 		this.mysqlUser     = p.getProperty("user");
 		this.mysqlPort     = Integer.valueOf(p.getProperty("port", "3306"));
+		this.databaseName = p.getProperty("database");
 
 		this.producerType    = p.getProperty("producer");
 		this.outputFile      = p.getProperty("output_file");
@@ -235,6 +243,10 @@ public class MaxwellConfig {
 
 		if ( this.mysqlPassword == null ) {
 			usage("mysql password not given!");
+		}
+
+		if ( this.databaseName == null) {
+			this.databaseName = "maxwell";
 		}
 
 		if ( this.maxSchemas != null )
