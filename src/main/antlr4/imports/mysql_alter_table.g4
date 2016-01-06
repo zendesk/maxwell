@@ -40,7 +40,7 @@ ignored_alter_specifications:
     | DROP INDEX index_name
     | DISABLE KEYS
     | ENABLE KEYS
-    | ORDER BY index_columns
+    | ORDER BY alter_ordering (',' alter_ordering)*
     | FORCE
     /*
      I'm also leaving out the following from the alter table definition because who cares:
@@ -65,3 +65,9 @@ ignored_alter_specifications:
     ;
   algorithm_type: DEFAULT | INPLACE | COPY;
   lock_type: DEFAULT | NONE | SHARED | EXCLUSIVE;
+
+alter_ordering: alter_ordering_column (ASC|DESC)?;
+alter_ordering_column:
+    name '.' name '.' name
+  | name '.' name
+  | name;

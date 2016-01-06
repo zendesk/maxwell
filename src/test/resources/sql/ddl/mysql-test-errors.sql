@@ -1,6 +1,5 @@
 ALTER TABLE t1 ADD b GEOMETRY NOT NULL, ADD SPATIAL INDEX(b)
 ALTER TABLE t1 ADD c POINT
-ALTER TABLE t1 ORDER BY t1.id, t1.status, t1.type_id, t1.user_id, t1.body
 ALTER TABLE ti1 CHECKSUM 1
 ALTER TABLE tm1 CHECKSUM 1
 ALTER USER 'bernt' PASSWORD EXPIRE
@@ -43,7 +42,6 @@ alter table bug19145a alter column s set default null
 alter table bug19145b alter column e set default null
 alter table bug19145b alter column s set default null
 alter table t1 add f2 enum(0xFFFF)
-alter table table_24562 order by table_24562.subsection ASC, table_24562.section DESC
 create table t1 ( min_num   dec(6,6)     default .000001)
 create table t1 ( min_num   dec(6,6)     default 0.000001)
 create table t1 ("t1 column" int)
