@@ -29,6 +29,7 @@ public class MaxwellContext {
 
 	public MaxwellContext(MaxwellConfig config) {
 		this.config = config;
+
 		this.replicationConnectionPool = new ConnectionPool("ReplicationConnectionPool", 10, 0, 10,
 				config.replicationMysql.getConnectionURI(), config.replicationMysql.user, config.replicationMysql.password);
 
@@ -184,4 +185,19 @@ public class MaxwellContext {
 		return this.config.replayMode;
 	}
 
+	private void probePool( ConnectionPool pool, String uri ) throws SQLException {
+		try (Connection c = pool.getConnection()) {
+			c.createStatement().execute("SELECT 1");
+		} catch (SQLException e) {
+			LOGGER.error("Could not connect to " + uri + ": " + e.getLocalizedMessage());
+			throw (e);
+		}
+	}
+
+	public void probeConnections() throws SQLException {
+		probePool(this.maxwellConnectionPool, this.config.maxwellMysql.getConnectionURI());
+
+		if ( this.maxwellConnectionPool != this.replicationConnectionPool )
+			probePool(this.replicationConnectionPool, this.config.replicationMysql.getConnectionURI());
+	}
 }
