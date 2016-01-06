@@ -24,12 +24,14 @@ public class SchemaPosition extends RunLoopProcess implements Runnable {
 	private final AtomicReference<BinlogPosition> storedPosition;
 	private final AtomicBoolean run;
 	private Thread thread;
+	private String schemaDatabaseName;
 	private final ConnectionPool connectionPool;
 	private SQLException exception;
 
-	public SchemaPosition(ConnectionPool pool, Long serverID) {
+	public SchemaPosition(ConnectionPool pool, Long serverID, String dbName) {
 		this.connectionPool = pool;
 		this.serverID = serverID;
+		this.schemaDatabaseName = dbName;
 		this.position = new AtomicReference<>();
 		this.storedPosition = new AtomicReference<>();
 		this.exception = null;
@@ -85,7 +87,7 @@ public class SchemaPosition extends RunLoopProcess implements Runnable {
 		if ( newPosition == null )
 			return;
 
-		String sql = "INSERT INTO `maxwell`.`positions` set "
+		String sql = "INSERT INTO `" + this.schemaDatabaseName + "`.`positions` set "
 				+ "server_id = ?, "
 				+ "binlog_file = ?, "
 				+ "binlog_position = ? "
@@ -93,7 +95,7 @@ public class SchemaPosition extends RunLoopProcess implements Runnable {
 		try(Connection c = connectionPool.getConnection() ){
 			PreparedStatement s = c.prepareStatement(sql);
 
-			LOGGER.debug("Writing binlog position to maxwell.positions: " + newPosition);
+			LOGGER.debug("Writing binlog position to " + this.schemaDatabaseName + ".positions: " + newPosition);
 			s.setLong(1, serverID);
 			s.setString(2, newPosition.getFile());
 			s.setLong(3, newPosition.getOffset());
@@ -103,7 +105,7 @@ public class SchemaPosition extends RunLoopProcess implements Runnable {
 			s.execute();
 			storedPosition.set(newPosition);
 		} catch ( SQLException e ) {
-			LOGGER.error("received SQLException while trying to save to maxwell.positions: ");
+			LOGGER.error("received SQLException while trying to save to " + this.schemaDatabaseName + ".positions: ");
 			LOGGER.error(e.getLocalizedMessage());
 			this.requestStop();
 			this.exception = e;
@@ -136,7 +138,7 @@ public class SchemaPosition extends RunLoopProcess implements Runnable {
 			return p;
 
 		try ( Connection c = connectionPool.getConnection() ) {
-			PreparedStatement s = c.prepareStatement("SELECT * from `maxwell`.`positions` where server_id = ?");
+			PreparedStatement s = c.prepareStatement("SELECT * from `" + this.schemaDatabaseName + "`.`positions` where server_id = ?");
 			s.setLong(1, serverID);
 
 			ResultSet rs = s.executeQuery();

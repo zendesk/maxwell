@@ -62,9 +62,9 @@ public class MaxwellContext {
 	private SchemaPosition getSchemaPosition() throws SQLException {
 		if ( this.schemaPosition == null ) {
 			if ( this.getConfig().replayMode ) {
-				this.schemaPosition = new ReadOnlySchemaPosition(this.getConnectionPool(), this.getServerID());
+				this.schemaPosition = new ReadOnlySchemaPosition(this.getConnectionPool(), this.getServerID(), this.config.databaseName);
 			} else {
-				this.schemaPosition = new SchemaPosition(this.getConnectionPool(), this.getServerID());
+				this.schemaPosition = new SchemaPosition(this.getConnectionPool(), this.getServerID(), this.config.databaseName);
 			}
 
 			this.schemaPosition.start();
