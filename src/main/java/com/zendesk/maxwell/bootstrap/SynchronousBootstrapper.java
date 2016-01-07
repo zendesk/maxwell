@@ -1,6 +1,5 @@
 package com.zendesk.maxwell.bootstrap;
 
-import com.google.code.or.OpenReplicator;
 import com.zendesk.maxwell.BinlogPosition;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.MaxwellReplicator;
@@ -89,7 +88,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	protected Connection getConnection( ) throws SQLException {
-		return context.getConnectionPool().getConnection();
+		return context.getReplicationConnectionPool().getConnection();
 	}
 
 	private RowMap bootstrapStartRowMap(Table table, BinlogPosition position) {
@@ -125,7 +124,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 
 	@Override
 	public void resume(AbstractProducer producer, MaxwellReplicator replicator) throws Exception {
-		try ( Connection connection = context.getConnectionPool().getConnection() ) {
+		try ( Connection connection = context.getMaxwellConnectionPool().getConnection() ) {
 			// This update resets all rows of incomplete bootstraps to their original state.
 			// These updates are treated as fresh bootstrap requests and trigger a restart
 			// of the bootstrap process from the beginning.

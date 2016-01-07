@@ -265,6 +265,10 @@ public class MaxwellConfig {
 			this.maxwellMysql.host = "localhost";
 		}
 
+		if ( this.replicationMysql.host != null && !this.bootstrapperType.equals("none") ) {
+			usage("please specify --bootstrapper=none when specifying a replication host");
+		}
+
 		if ( this.replicationMysql.port == null )
 			this.replicationMysql.port = 3306;
 
