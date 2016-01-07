@@ -19,7 +19,8 @@ import snaq.db.ConnectionPool;
 public class MaxwellContext {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellContext.class);
 
-	private final ConnectionPool connectionPool;
+	private final ConnectionPool replicationConnectionPool;
+	private final ConnectionPool maxwellConnectionPool;
 	private final MaxwellConfig config;
 	private SchemaPosition schemaPosition;
 	private Long serverID;
@@ -28,8 +29,17 @@ public class MaxwellContext {
 
 	public MaxwellContext(MaxwellConfig config) {
 		this.config = config;
-		this.connectionPool = new ConnectionPool("MaxwellConnectionPool", 10, 0, 10,
-				config.getConnectionURI(), config.mysqlUser, config.mysqlPassword);
+
+		this.replicationConnectionPool = new ConnectionPool("ReplicationConnectionPool", 10, 0, 10,
+				config.replicationMysql.getConnectionURI(), config.replicationMysql.user, config.replicationMysql.password);
+
+
+		if (config.replicationMysql.equals(config.maxwellMysql)) {
+			this.maxwellConnectionPool = this.replicationConnectionPool;
+		} else {
+			this.maxwellConnectionPool = new ConnectionPool("MaxwellConnectionPool", 10, 0, 10,
+					config.maxwellMysql.getConnectionURI(), config.maxwellMysql.user, config.maxwellMysql.password);
+		}
 
 		if ( this.config.initPosition != null )
 			this.initialPosition = this.config.initPosition;
@@ -39,12 +49,14 @@ public class MaxwellContext {
 		return this.config;
 	}
 
-	public ConnectionPool getConnectionPool() {
-		return this.connectionPool;
+	public ConnectionPool getReplicationConnectionPool() {
+		return this.replicationConnectionPool;
 	}
 
+	public ConnectionPool getMaxwellConnectionPool() { return this.maxwellConnectionPool;}
+
 	public void start() {
-		SchemaScavenger s = new SchemaScavenger(this.connectionPool);
+		SchemaScavenger s = new SchemaScavenger(this.maxwellConnectionPool);
 		new Thread(s).start();
 	}
 
@@ -56,15 +68,16 @@ public class MaxwellContext {
 				LOGGER.error("got timeout trying to shutdown schemaPosition thread.");
 			}
 		}
-		this.connectionPool.release();
+		this.replicationConnectionPool.release();
+		this.maxwellConnectionPool.release();
 	}
 
 	private SchemaPosition getSchemaPosition() throws SQLException {
 		if ( this.schemaPosition == null ) {
 			if ( this.getConfig().replayMode ) {
-				this.schemaPosition = new ReadOnlySchemaPosition(this.getConnectionPool(), this.getServerID());
+				this.schemaPosition = new ReadOnlySchemaPosition(this.getMaxwellConnectionPool(), this.getServerID());
 			} else {
-				this.schemaPosition = new SchemaPosition(this.getConnectionPool(), this.getServerID());
+				this.schemaPosition = new SchemaPosition(this.getMaxwellConnectionPool(), this.getServerID());
 			}
 
 			this.schemaPosition.start();
@@ -108,7 +121,7 @@ public class MaxwellContext {
 		if ( this.serverID != null)
 			return this.serverID;
 
-		try ( Connection c = getConnectionPool().getConnection() ) {
+		try ( Connection c = getReplicationConnectionPool().getConnection() ) {
 			ResultSet rs = c.createStatement().executeQuery("SELECT @@server_id as server_id");
 			if ( !rs.next() ) {
 				throw new RuntimeException("Could not retrieve server_id!");
@@ -123,7 +136,7 @@ public class MaxwellContext {
 		if ( this.caseSensitivity != null )
 			return this.caseSensitivity;
 
-		try ( Connection c = getConnectionPool().getConnection()) {
+		try ( Connection c = getReplicationConnectionPool().getConnection()) {
 			ResultSet rs = c.createStatement().executeQuery("select @@lower_case_table_names");
 			if ( !rs.next() )
 				throw new RuntimeException("Could not retrieve @@lower_case_table_names!");
@@ -172,4 +185,19 @@ public class MaxwellContext {
 		return this.config.replayMode;
 	}
 
+	private void probePool( ConnectionPool pool, String uri ) throws SQLException {
+		try (Connection c = pool.getConnection()) {
+			c.createStatement().execute("SELECT 1");
+		} catch (SQLException e) {
+			LOGGER.error("Could not connect to " + uri + ": " + e.getLocalizedMessage());
+			throw (e);
+		}
+	}
+
+	public void probeConnections() throws SQLException {
+		probePool(this.maxwellConnectionPool, this.config.maxwellMysql.getConnectionURI());
+
+		if ( this.maxwellConnectionPool != this.replicationConnectionPool )
+			probePool(this.replicationConnectionPool, this.config.replicationMysql.getConnectionURI());
+	}
 }
