@@ -12,5 +12,8 @@
    <Logger name="snaq.db.ConnectionPool.MaxwellConnectionPool" level="off" additivity="false">
       <AppenderRef ref="Console"/>
     </Logger>
+    <Logger name="snaq.db.ConnectionPool.ReplicationConnectionPool" level="off" additivity="false">
+      <AppenderRef ref="Console"/>
+    </Logger>
   </Loggers>
 </Configuration>

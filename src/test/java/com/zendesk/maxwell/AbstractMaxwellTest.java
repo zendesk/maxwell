@@ -82,10 +82,15 @@ public class AbstractMaxwellTest {
 	protected MaxwellContext buildContext(int port, BinlogPosition p) {
 		MaxwellConfig config = new MaxwellConfig();
 
-		config.mysqlHost = "127.0.0.1";
-		config.mysqlPort = port;
-		config.mysqlUser = "maxwell";
-		config.mysqlPassword = "maxwell";
+		config.replicationMysql.host = "127.0.0.1";
+		config.replicationMysql.port = port;
+		config.replicationMysql.user = "maxwell";
+		config.replicationMysql.password = "maxwell";
+
+		config.maxwellMysql.host = "127.0.0.1";
+		config.maxwellMysql.port = port;
+		config.maxwellMysql.user = "maxwell";
+		config.maxwellMysql.password = "maxwell";
 
 		config.initPosition = p;
 
