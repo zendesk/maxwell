@@ -204,6 +204,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 		alterStatement().newTableName = getTable(ctx.table_name());
 		alterStatement().newDatabase  = getDB(ctx.table_name());
 	}
+
 	@Override
 	public void exitConvert_to_character_set(mysqlParser.Convert_to_character_setContext ctx) {
 		alterStatement().convertCharset = unquote_literal(ctx.charset_name().getText());

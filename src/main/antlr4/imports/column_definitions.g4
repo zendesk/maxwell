@@ -89,7 +89,7 @@ charset_def: character_set | ASCII;
 character_set: ((CHARACTER SET) | CHARSET) charset_name;
 
 nullability: (NOT NULL | NULL);
-default_value: DEFAULT (literal | NULL | CURRENT_TIMESTAMP length? | now_function | TRUE | FALSE );
+default_value: DEFAULT (literal | CURRENT_TIMESTAMP length? | now_function);
 length: '(' INTEGER_LITERAL ')';
 int_flags: ( SIGNED | UNSIGNED | ZEROFILL );
 decimal_length: '(' INTEGER_LITERAL ( ',' INTEGER_LITERAL )? ')';
