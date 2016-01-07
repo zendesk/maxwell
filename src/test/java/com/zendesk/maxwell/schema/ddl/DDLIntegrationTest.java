@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
+import com.zendesk.maxwell.CaseSensitivity;
 import org.apache.commons.lang.StringUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -29,7 +30,7 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 	}
 
 	private Schema testIntegration(String alters[]) throws SQLException, SchemaSyncError, IOException {
-		SchemaCapturer capturer = new SchemaCapturer(server.getConnection());
+		SchemaCapturer capturer = new SchemaCapturer(server.getConnection(), buildContext().getCaseSensitivity());
 		Schema topSchema = capturer.capture();
 
 		server.executeList(Arrays.asList(alters));
@@ -293,6 +294,31 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 	}
 
 	@Test
+	public void testCaseSensitiveDatabases() throws Exception {
+		if ( buildContext().getCaseSensitivity() == CaseSensitivity.CASE_SENSITIVE ) {
+			String sql[] = {
+				"create TABLE taaaayble( a long varchar character set 'utf8' )",
+				"create TABLE TAAAAYBLE( a long varbinary )",
+				"drop table taaaayble"
+			};
+
+			testIntegration(sql);
+		}
+	}
+
+	@Test
+	public void testCaseInsensitiveDatabase() throws Exception {
+		if (buildContext().getCaseSensitivity() != CaseSensitivity.CASE_SENSITIVE) {
+			String sql[] = {
+					"create TABLE taybal( a long varchar character set 'utf8' )",
+					"alter table TAYbal add column b int",
+					"drop table TAYBAL"
+			};
+
+			testIntegration(sql);
+		}
+	}
+
 	public void testAutoConvertToByte() throws Exception {
 		testIntegration("create table t1 ( " +
 			"a char(1) byte, " +

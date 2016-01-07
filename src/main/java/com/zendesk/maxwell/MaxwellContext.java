@@ -24,6 +24,7 @@ public class MaxwellContext {
 	private SchemaPosition schemaPosition;
 	private Long serverID;
 	private BinlogPosition initialPosition;
+	private CaseSensitivity caseSensitivity;
 
 	public MaxwellContext(MaxwellConfig config) {
 		this.config = config;
@@ -72,7 +73,7 @@ public class MaxwellContext {
 	}
 
 
-	public BinlogPosition getInitialPosition() throws FileNotFoundException, IOException, SQLException {
+	public BinlogPosition getInitialPosition() throws SQLException {
 		if ( this.initialPosition != null )
 			return this.initialPosition;
 
@@ -114,6 +115,34 @@ public class MaxwellContext {
 			}
 			this.serverID = rs.getLong("server_id");
 			return this.serverID;
+		}
+	}
+
+
+	public CaseSensitivity getCaseSensitivity() throws SQLException {
+		if ( this.caseSensitivity != null )
+			return this.caseSensitivity;
+
+		try ( Connection c = getConnectionPool().getConnection()) {
+			ResultSet rs = c.createStatement().executeQuery("select @@lower_case_table_names");
+			if ( !rs.next() )
+				throw new RuntimeException("Could not retrieve @@lower_case_table_names!");
+
+			int value = rs.getInt(1);
+			switch(value) {
+				case 0:
+					this.caseSensitivity = CaseSensitivity.CASE_SENSITIVE;
+					break;
+				case 1:
+					this.caseSensitivity = CaseSensitivity.CONVERT_TO_LOWER;
+					break;
+				case 2:
+					this.caseSensitivity = CaseSensitivity.CONVERT_ON_COMPARE;
+					break;
+				default:
+					throw new RuntimeException("Unknown value for @@lower_case_table_names: " + value);
+			}
+			return this.caseSensitivity;
 		}
 	}
 

@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.antlr.runtime.tree.RewriteRuleTokenStream;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -84,8 +83,8 @@ public abstract class SchemaChange {
 			try {
 				return parseSQL(currentDB, sql);
 			} catch ( ReparseSQLException e ) {
-				LOGGER.debug("rewrote SQL to " + sql);
 				sql = e.getSQL();
+				LOGGER.debug("rewrote SQL to " + sql);
 				// re-enter loop
 			} catch ( ParseCancellationException e ) {
 				LOGGER.debug("Parse cancelled: " + e);

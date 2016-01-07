@@ -79,32 +79,42 @@ public class AbstractMaxwellTest {
 		generateBinlogEvents();
 	}
 
-	protected MaxwellContext buildContext() {
+	protected MaxwellContext buildContext(int port, BinlogPosition p) {
 		MaxwellConfig config = new MaxwellConfig();
 
 		config.mysqlHost = "127.0.0.1";
-		config.mysqlPort = server.getPort();
+		config.mysqlPort = port;
 		config.mysqlUser = "maxwell";
 		config.mysqlPassword = "maxwell";
+
+		config.initPosition = p;
 
 		return new MaxwellContext(config);
 	}
 
-	protected List<RowMap>getRowsForSQL(MaxwellFilter filter, String queries[], String before[]) throws Exception {
-		BinlogPosition start = BinlogPosition.capture(server.getConnection());
-		SchemaCapturer capturer = new SchemaCapturer(server.getConnection());
+	protected MaxwellContext buildContext(BinlogPosition p) {
+		return buildContext(server.getPort(), p);
+	}
+
+	protected MaxwellContext buildContext() {
+		return buildContext(null);
+	}
+
+	protected List<RowMap>getRowsForSQL(MysqlIsolatedServer mysql, MaxwellFilter filter, String queries[], String before[]) throws Exception {
+		BinlogPosition start = BinlogPosition.capture(mysql.getConnection());
+		MaxwellContext context = buildContext(mysql.getPort(), null);
+		SchemaCapturer capturer = new SchemaCapturer(mysql.getConnection(), context.getCaseSensitivity());
 
 		if ( before != null ) {
-			server.executeList(Arrays.asList(before));
+			mysql.executeList(Arrays.asList(before));
 		}
 
-		MaxwellContext context = buildContext();
 
 		Schema initialSchema = capturer.capture();
 
-		server.executeList(Arrays.asList(queries));
+		mysql.executeList(Arrays.asList(queries));
 
-		BinlogPosition endPosition = BinlogPosition.capture(server.getConnection());
+		BinlogPosition endPosition = BinlogPosition.capture(mysql.getConnection());
 
 		TestMaxwellReplicator p = new TestMaxwellReplicator(initialSchema,  null, context, start, endPosition);
 
@@ -125,6 +135,10 @@ public class AbstractMaxwellTest {
 		context.terminate();
 
 		return list;
+	}
+
+	protected List<RowMap>getRowsForSQL(MaxwellFilter filter, String queries[], String before[]) throws Exception {
+		return getRowsForSQL(server, filter, queries, before);
 	}
 
 	protected List<RowMap>getRowsForSQL(MaxwellFilter filter, String queries[]) throws Exception {

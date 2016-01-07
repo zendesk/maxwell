@@ -40,7 +40,7 @@ table_creation_option:
 	| creation_stats_auto_recalc
 	| creation_stats_persistent
 	| creation_stats_sample_pages
-	| creation_storage_tablespace
+	| creation_storage_option
 	| creation_tablespace
 	| creation_union;
 
@@ -66,6 +66,6 @@ creation_row_format: ROW_FORMAT '='? (DEFAULT | DEFAULT | DYNAMIC | FIXED | COMP
 creation_stats_auto_recalc: STATS_AUTO_RECALC '='? (DEFAULT | INTEGER_LITERAL);
 creation_stats_persistent: STATS_PERSISTENT '='? (DEFAULT | INTEGER_LITERAL);
 creation_stats_sample_pages: STATS_SAMPLE_PAGES '='? INTEGER_LITERAL;
-creation_storage_tablespace: STORAGE (DISK | MEMORY | DEFAULT) TABLESPACE string;
-creation_tablespace: TABLESPACE string (STORAGE (DISK | MEMORY | DEFAULT))?;
+creation_storage_option: STORAGE (DISK | MEMORY | DEFAULT);
+creation_tablespace: TABLESPACE string;
 creation_union: UNION '='? '(' name (',' name)* ')';
