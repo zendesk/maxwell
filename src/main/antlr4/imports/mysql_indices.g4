@@ -3,7 +3,7 @@ grammar mysql_indices;
 import mysql_literal_tokens, mysql_idents;
 
 index_definition:
-  (index_type_1 | index_type_pk | index_type_3 | index_type_4 | index_type_5 | index_type_check | index_type_elided );
+  (index_type_1 | index_type_pk | index_type_3 | index_type_4 | index_type_5 | index_type_check | index_type_elided);
 
 index_type_1:
   index_or_key index_name? index_type? index_column_list index_options*;
@@ -47,7 +47,7 @@ index_column_asc_or_desc: ASC | DESC;
 reference_definition:
   REFERENCES table_name
   index_column_list
-  ( reference_definition_match | reference_definition_on_delete | reference_definition_on_update)*
+  (reference_definition_match | reference_definition_on_delete | reference_definition_on_update)*
   ;
 
 reference_definition_match:
