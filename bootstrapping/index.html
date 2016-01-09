@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+
+        <title>Bootstrapping - Maxwell's Daemon</title>
+
+        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../css/font-awesome-4.0.3.css" rel="stylesheet">
+        <link href="../css/prettify-1.0.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+        <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Main title -->
+            <a class="navbar-brand" href="..">Maxwell's Daemon</a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+        </div>
+    </div>
+</div>
+
+        <a href="https://github.com/zendesk/maxwell"><img style="position: absolute; top: 0; right: 0; border: 0; z-index: 1031;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
+        <div class="container">
+            <div class="col-md-2"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        
+          <li >
+              <a href="..">Overview</a>
+              
+          </li>
+        
+          <li >
+              <a href="../quickstart/">Quick Start</a>
+              
+          </li>
+        
+          <li >
+              <a href="../config/">Configuration</a>
+              
+          </li>
+        
+          <li >
+              <a href="../kafka/">Kafka</a>
+              
+          </li>
+        
+          <li >
+              <a href="../dataformat/">Data Format</a>
+              
+          </li>
+        
+          <li class="active">
+              <a href="./">Bootstrapping</a>
+              
+                  <ul class="nav">
+                  
+                      <li class="toctree-l3"><a href="#using-the-maxwell-bootstrap-utility">Using the maxwell-bootstrap utility</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#using-the-maxwellbootstrap-table">Using the maxwell.bootstrap table</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#async-vs-sync-bootstrapping">Async vs Sync bootstrapping</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#bootstrapping-data-format">Bootstrapping Data Format</a></li>
+                      
+                  
+                  </ul>
+              
+          </li>
+        
+          <li >
+              <a href="../compat/">Compat / Caveats</a>
+              
+          </li>
+        
+    </ul>
+</div></div>
+            <div class="col-md-10" role="main">
+
+<p><em>Maxwell's bootstrapping is available in the 1.0.0-PRE1 release</em></p>
+<h3 id="using-the-maxwell-bootstrap-utility">Using the maxwell-bootstrap utility</h3>
+<p>You can use the <code>maxwell-bootstrap</code> utility to bootstrap tables from the command-line.</p>
+<table>
+<thead>
+<tr>
+<th>option</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>--log_level LOG_LEVEL</td>
+<td>log level (DEBUG, INFO, WARN or ERROR)</td>
+</tr>
+<tr>
+<td>--user USER</td>
+<td>mysql username</td>
+</tr>
+<tr>
+<td>--password PASSWORD</td>
+<td>mysql password</td>
+</tr>
+<tr>
+<td>--host HOST</td>
+<td>mysql host</td>
+</tr>
+<tr>
+<td>--port PORT</td>
+<td>mysql port</td>
+</tr>
+<tr>
+<td>--database DATABASE</td>
+<td>mysql database containing the table to bootstrap</td>
+</tr>
+<tr>
+<td>--table TABLE</td>
+<td>mysql table to bootstrap</td>
+</tr>
+</tbody>
+</table>
+<h3 id="using-the-maxwellbootstrap-table">Using the maxwell.bootstrap table</h3>
+<p>Alternatively you can insert a row in the <code>maxwell-bootstrap</code> table to trigger a bootstrap.</p>
+<pre><code>mysql&gt; insert into maxwell.bootstrap (database_name, table_name) values ('fooDB', 'barTable');
+</code></pre>
+
+<h3 id="async-vs-sync-bootstrapping">Async vs Sync bootstrapping</h3>
+<p>The Maxwell replicator is single threaded; events are captured by one thread from the binlog and replicated to Kafka one message at a time.
+When running Maxwell with <code>--bootstrapper=sync</code>, the same thread is used to do bootstrapping, meaning that all binlog events are blocked until bootstrapping is complete.
+Running Maxwell with <code>--bootstrapper=async</code> however, will make Maxwell spawn a separate thread for bootstrapping.
+In this async mode, non-bootstrapped tables are replicated as normal by the main thread, while the binlog events for bootstrapped tables are queued and sent to the replication stream at the end of the bootstrap process.</p>
+<h3 id="bootstrapping-data-format">Bootstrapping Data Format</h3>
+<ul>
+<li>a bootstrap starts with a document with <code>type = "bootstrap-start"</code></li>
+<li>then documents with <code>type = "insert"</code> (one per row in the table)</li>
+<li>then one document per <code>INSERT</code>, <code>UPDATE</code> or <code>DELETE</code> that occurred since the beginning of bootstrap</li>
+<li>finally a document with <code>type = "bootstrap-complete"</code></li>
+</ul>
+<p>Here's a complete example:</p>
+<pre><code>mysql&gt; create table t(txt varchar(255));
+mysql&gt; insert into t (txt) values (&quot;hello&quot;), (&quot;bootstrap!&quot;);
+mysql&gt; insert into maxwell.bootstrap (database_name, table_name) values (&quot;d&quot;, &quot;t&quot;);
+</code></pre>
+
+<p>Corresponding replication stream output of table <code>fooDB</code>:</p>
+<pre><code>{&quot;database&quot;:&quot;foo&quot;,&quot;table&quot;:&quot;bar&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;ts&quot;:1450557598,&quot;xid&quot;:13,&quot;data&quot;:{&quot;txt&quot;:&quot;hello&quot;}}
+{&quot;database&quot;:&quot;foo&quot;,&quot;table&quot;:&quot;bar&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;ts&quot;:1450557598,&quot;xid&quot;:13,&quot;data&quot;:{&quot;txt&quot;:&quot;bootstrap!&quot;}}
+{&quot;database&quot;:&quot;foo&quot;,&quot;table&quot;:&quot;bar&quot;,&quot;type&quot;:&quot;bootstrap-start&quot;,&quot;ts&quot;:1450557744,&quot;data&quot;:{}}
+{&quot;database&quot;:&quot;foo&quot;,&quot;table&quot;:&quot;bar&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;ts&quot;:1450557744,&quot;data&quot;:{&quot;txt&quot;:&quot;hello&quot;}}
+{&quot;database&quot;:&quot;foo&quot;,&quot;table&quot;:&quot;bar&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;ts&quot;:1450557744,&quot;data&quot;:{&quot;txt&quot;:&quot;bootstrapping!&quot;}}
+{&quot;database&quot;:&quot;foo&quot;,&quot;table&quot;:&quot;bar&quot;,&quot;type&quot;:&quot;bootstrap-complete&quot;,&quot;ts&quot;:1450557744,&quot;data&quot;:{}}
+</code></pre>
+
+<script>
+  jQuery(document).ready(function () {
+    jQuery("table").addClass("table table-condensed table-bordered table-hover");
+  });
+</script></div>
+        </div>
+
+        
+
+        <script src="../js/bootstrap-3.0.3.min.js"></script>
+        <script src="../js/prettify-1.0.min.js"></script>
+        <script src="../js/base.js"></script>
+    </body>
+</html>
