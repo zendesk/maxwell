@@ -197,7 +197,7 @@ public class ColumnDefTest {
 
 		assertTrue(d.matchesMysqlType(MySQLConstants.TYPE_TIMESTAMP));
 
-		Timestamp t = new Timestamp(307653559000L - TimeZone.getDefault().getRawOffset());
+		Timestamp t = new Timestamp(307653559000L - TimeZone.getDefault().getOffset(307653559000L));
 		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19'"));
 	}
 
