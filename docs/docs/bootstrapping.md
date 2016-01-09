@@ -1,7 +1,3 @@
-<div class="content-title">Bootstrapping</div>
-
-***
-
 ### Using the maxwell-bootstrap utility
 
 You can use the `maxwell-bootstrap` utility to bootstrap tables from the command-line.
@@ -41,17 +37,17 @@ In this async mode, non-bootstrapped tables are replicated as normal by the main
 Here's a complete example:
 ```
 mysql> create table t(txt varchar(255));
-mysql> insert into t (txt) values ("hello"), ("bootstrapping!");
+mysql> insert into t (txt) values ("hello"), ("bootstrap!");
 mysql> insert into maxwell.bootstrap (database_name, table_name) values ("d", "t");
 ```
 Corresponding replication stream output of table `fooDB`:
 ```
-{"database":"d","table":"t","type":"insert","ts":1450557598,"xid":13,"data":{"txt":"hello"}}
-{"database":"d","table":"t","type":"insert","ts":1450557598,"xid":13,"data":{"txt":"bootstrapping!"}}
-{"database":"d","table":"t","type":"bootstrap-start","ts":1450557744,"data":{}}
-{"database":"d","table":"t","type":"insert","ts":1450557744355,"data":{"txt":"hello"}}
-{"database":"d","table":"t","type":"insert","ts":1450557744356,"data":{"txt":"bootstrapping!"}}
-{"database":"d","table":"t","type":"bootstrap-complete","ts":1450557744362,"data":{}}
+{"database":"foo","table":"bar","type":"insert","ts":1450557598,"xid":13,"data":{"txt":"hello"}}
+{"database":"foo","table":"bar","type":"insert","ts":1450557598,"xid":13,"data":{"txt":"bootstrap!"}}
+{"database":"foo","table":"bar","type":"bootstrap-start","ts":1450557744,"data":{}}
+{"database":"foo","table":"bar","type":"insert","ts":1450557744,"data":{"txt":"hello"}}
+{"database":"foo","table":"bar","type":"insert","ts":1450557744,"data":{"txt":"bootstrapping!"}}
+{"database":"foo","table":"bar","type":"bootstrap-complete","ts":1450557744,"data":{}}
 ```
 
 <script>
