@@ -97,7 +97,8 @@ public class BootstrapIntegrationTest extends AbstractIntegrationTest {
 		testColumnType("date", "'2015-11-07'","2015-11-07");
 		testColumnType("date", "'0000-00-00'","0002-11-30", null);
 		testColumnType("datetime", "'2015-11-07 01:02:03'","2015-11-07 01:02:03");
-		testColumnType("datetime", "'0000-00-00 00:00:00'","0000-00-00 00:00:00", null);
+		if ( server.getVersion().equals("5.5") )
+			testColumnType("datetime", "'0000-00-00 00:00:00'","0000-00-00 00:00:00", null);
 		testColumnType("timestamp", "'2015-11-07 01:02:03'","2015-11-07 01:02:03");
 		testColumnType("timestamp", "'0000-00-00 00:00:00'","" + epoch.substring(0, epoch.length() - 2) + "", null);
 		testColumnType("enum('a', 'b')","'a'", "a");

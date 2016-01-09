@@ -15,9 +15,6 @@ import java.util.Map;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-/**
- * Created by ben on 1/8/16.
- */
 public class AbstractIntegrationTest extends AbstractMaxwellTest {
 	public static final TypeReference<Map<String, Object>> MAP_STRING_OBJECT_REF = new TypeReference<Map<String, Object>>() {};
 
