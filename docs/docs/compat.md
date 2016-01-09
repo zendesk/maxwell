@@ -1,5 +1,3 @@
-<div class="content-title">Maxwell Compatibility</div>
-
 ### Requirements:
 
 - JRE 7 or above
@@ -9,10 +7,11 @@
 ### Unsupported
 
 - Mysql 5.7 is untested with Maxwell, and in particular GTID replication is unsupported as of yet.
+- Maxwell is incompatible with PARTITION tables, as it is unable to parse the SQL.
 
 ### binlog_row_image=MINIMAL
 
-As of 0.17.0, Maxwell supports binlog_row_image=MINIMAL, but it may not be what you want.  It will differ
+As of 0.16.2, Maxwell supports binlog_row_image=MINIMAL, but it may not be what you want.  It will differ
 from normal Maxwell operation in that:
 
 - INSERT statements will no longer output a column's default value

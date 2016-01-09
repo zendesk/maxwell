@@ -37,9 +37,9 @@ mysql> GRANT ALL on maxwell.* to 'maxwell'@'localhost';
 You'll need a version 7 of a JVM.
 
 ```
-curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.17.0-RC1/maxwell-0.17.0-RC1.tar.gz \
+curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.17.0/maxwell-0.17.0.tar.gz \
        | tar zxvf -
-cd maxwell-0.17.0-RC1
+cd maxwell-0.17.0
 ```
 
 
@@ -72,5 +72,4 @@ bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
 
 This will start writing to the topic "maxwell".
 
-***
 
