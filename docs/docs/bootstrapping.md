@@ -1,3 +1,5 @@
+*Maxwell's bootstrapping is available in the 1.0-PRE1 release*
+
 ### Using the maxwell-bootstrap utility
 
 You can use the `maxwell-bootstrap` utility to bootstrap tables from the command-line.
