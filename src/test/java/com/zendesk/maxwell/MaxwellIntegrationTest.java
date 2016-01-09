@@ -3,23 +3,12 @@ package com.zendesk.maxwell;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zendesk.maxwell.schema.SchemaStore;
-import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 
-public class MaxwellIntegrationTest extends AbstractMaxwellTest {
-	public static final TypeReference<Map<String, Object>> MAP_STRING_OBJECT_REF = new TypeReference<Map<String, Object>>() {};
-
+public class MaxwellIntegrationTest extends AbstractIntegrationTest {
 	@Test
 	public void testGetEvent() throws Exception {
 		List<RowMap> list;
@@ -223,74 +212,6 @@ public class MaxwellIntegrationTest extends AbstractMaxwellTest {
 			server.getConnection().createStatement().execute("set global binlog_row_image='full'");
 			server.resetConnection();
 		}
-	}
-
-
-	private void runJSONTest(List<String> sql, List<Map<String, Object>> expectedJSON) throws Exception {
-		ObjectMapper mapper = new ObjectMapper();
-		List<Map<String, Object>> eventJSON = new ArrayList<>();
-		List<Map<String, Object>> matched = new ArrayList<>();
-		List<RowMap> rows = getRowsForSQL(null, sql.toArray(new String[sql.size()]));
-
-		for ( RowMap r : rows ) {
-			String s = r.toJSON();
-
-			Map<String, Object> outputMap = mapper.readValue(s, MAP_STRING_OBJECT_REF);
-
-			outputMap.remove("ts");
-			outputMap.remove("xid");
-			outputMap.remove("commit");
-
-			eventJSON.add(outputMap);
-
-			for ( Map<String, Object> b : expectedJSON ) {
-				if ( outputMap.equals(b) )
-					matched.add(b);
-			}
-		}
-
-		for ( Map j : matched ) {
-			expectedJSON.remove(j);
-		}
-
-		if ( expectedJSON.size() > 0 ) {
-			String msg = "Did not find: \n" +
-						 StringUtils.join(expectedJSON.iterator(), "\n") +
-						 "\n\n in : " +
-						 StringUtils.join(eventJSON.iterator(), "\n");
-			assertThat(msg, false, is(true));
-
-		}
-	}
-
-	private void runJSONTestFile(String fname) throws Exception {
-		File file = new File(fname);
-		ArrayList<Map<String, Object>> jsonAsserts = new ArrayList<>();
-		ArrayList<String> inputSQL  = new ArrayList<>();
-		BufferedReader reader = new BufferedReader(new FileReader(file));
-		ObjectMapper mapper = new ObjectMapper();
-
-		mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
-
-		while ( reader.ready() ) {
-			String line = reader.readLine();
-			if ( line.matches("^\\s*$")) {
-				continue;
-			}
-
-			if ( line.matches("^\\s*\\->\\s*\\{.*") ) {
-				line = line.replaceAll("^\\s*\\->\\s*", "");
-
-				jsonAsserts.add(mapper.<Map<String, Object>>readValue(line, MAP_STRING_OBJECT_REF));
-				System.out.println("added json assert: " + line);
-			} else {
-				inputSQL.add(line);
-				System.out.println("added sql statement: " + line);
-			}
-		}
-		reader.close();
-
-	    runJSONTest(inputSQL, jsonAsserts);
 	}
 
 	@Test

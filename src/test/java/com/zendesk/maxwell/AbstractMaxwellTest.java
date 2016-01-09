@@ -126,7 +126,7 @@ public class AbstractMaxwellTest {
 		return buildContext(null);
 	}
 
-	protected List<RowMap>getRowsForSQL(MysqlIsolatedServer mysql, MaxwellFilter filter, String queries[], String before[], final boolean excludeMaxwellRows) throws Exception {
+	protected List<RowMap>getRowsForSQL(MysqlIsolatedServer mysql, MaxwellFilter filter, String queries[], String before[]) throws Exception {
 		BinlogPosition start = BinlogPosition.capture(mysql.getConnection());
 		MaxwellContext context = buildContext(mysql.getPort(), null);
 		SchemaCapturer capturer = new SchemaCapturer(mysql.getConnection(), context.getCaseSensitivity());
@@ -147,9 +147,7 @@ public class AbstractMaxwellTest {
 		AbstractProducer producer = new AbstractProducer(context) {
 			@Override
 			public void push(RowMap r) {
-				if ( !excludeMaxwellRows || !r.getDatabase().equals("maxwell") ) {
-					list.add(r);
-				}
+				list.add(r);
 			}
 		};
 
@@ -182,20 +180,12 @@ public class AbstractMaxwellTest {
 		return list;
 	}
 
-	protected List<RowMap>getRowsForSQL(MaxwellFilter filter, String queries[], String before[], boolean excludeMaxwellRows) throws Exception {
-		return getRowsForSQL(server, filter, queries, before, excludeMaxwellRows);
-	}
-
-	protected List<RowMap>getRowsForSQL(MysqlIsolatedServer mysql, MaxwellFilter filter, String queries[], String before[]) throws Exception {
-		return getRowsForSQL(mysql, filter, queries, before, true);
-	}
-
 	protected List<RowMap>getRowsForSQL(MaxwellFilter filter, String queries[], String before[]) throws Exception {
-		return getRowsForSQL(server, filter, queries, before, true);
+		return getRowsForSQL(server, filter, queries, before);
 	}
 
 	protected List<RowMap>getRowsForSQL(MaxwellFilter filter, String queries[]) throws Exception {
-		return getRowsForSQL(server, filter, queries, null, true);
+		return getRowsForSQL(server, filter, queries, null);
 	}
 
 	@After
