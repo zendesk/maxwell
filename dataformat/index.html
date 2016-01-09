@@ -87,6 +87,11 @@
           </li>
         
           <li >
+              <a href="../bootstrapping/">Bootstrapping</a>
+              
+          </li>
+        
+          <li >
               <a href="../compat/">Compat / Caveats</a>
               
           </li>
@@ -95,16 +100,15 @@
 </div></div>
             <div class="col-md-10" role="main">
 
-<div class="content-title">How Maxwell munges various datatypes</div>
+<h4>How Maxwell handles mysql types</h4>
 
-<hr />
-<h4 id="strings-varchar-text">strings (varchar, text)</h4>
+<h3 id="strings-varchar-text">strings (varchar, text)</h3>
 <p>Maxwell currently supports latin1 and utf-8 columns, and will convert both to UTF-8 before outputting as JSON.</p>
 <hr />
-<h4 id="blob-binary-encoded-strings">blob (+ binary encoded strings)</h4>
+<h3 id="blob-binary-encoded-strings">blob (+ binary encoded strings)</h3>
 <p>Maxell will base64 encode BLOB, BINARY and VARBINARY columns (as well as varchar/string columns with a BINARY encoding).</p>
 <hr />
-<h4 id="datetime">datetime</h4>
+<h3 id="datetime">datetime</h3>
 <p>Datetime columns are output as "YYYY-MM-DD hh:mm::ss" strings.  Note that mysql
 has no problem storing invalid datetimes like "0000-00-00 00:00:00", and
 Maxwell chooses to reproduce these invalid datetimes faithfully,
@@ -116,7 +120,7 @@ mysql&gt;    insert into test_datetime set dtcol='0000-00-00 00:00:00';
 </code></pre>
 
 <hr />
-<h4 id="sets">sets</h4>
+<h3 id="sets">sets</h3>
 <p>output as JSON arrays.</p>
 <pre><code>mysql&gt;   create table test_sets ( id int(11), setcol set('a_val', 'b_val', 'c_val') );
 mysql&gt;   insert into test_sets set setcol = 'b_val,c_val';
