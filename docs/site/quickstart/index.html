@@ -67,7 +67,7 @@
                       <li class="toctree-l3"><a href="#stdout-producer">STDOUT producer</a></li>
                       
                   
-                      <li class="toctree-l3"><a href="#run-with-kafka-producer">Run with kafka producer</a></li>
+                      <li class="toctree-l3"><a href="#kafka-producer">Kafka producer</a></li>
                       
                   
                   </ul>
@@ -90,6 +90,11 @@
           </li>
         
           <li >
+              <a href="../bootstrapping/">Bootstrapping</a>
+              
+          </li>
+        
+          <li >
               <a href="../compat/">Compat / Caveats</a>
               
           </li>
@@ -99,7 +104,6 @@
             <div class="col-md-10" role="main">
 
 <h3 id="row-based-replication">Row based replication</h3>
-<hr />
 <p>Maxwell can only operate if row-based replication is on.</p>
 <pre><code>$ vi my.cnf
 
@@ -113,8 +117,9 @@ binlog_format=row
 <pre><code>mysql&gt; set global binlog_row_image=FULL;
 </code></pre>
 
+<p><em>note</em>: When changing the binlog format on a running server, currently connected mysql clients will continue to replication in STATEMENT format --
+in order to change to row-based replication, you must reconnect all active clients to the server.</p>
 <h3 id="mysql-permissions">Mysql permissions</h3>
-<hr />
 <p>Maxwell stores all the state it needs within the mysql server itself, in a database called <code>maxwell</code>.</p>
 <pre><code>mysql&gt; GRANT ALL on maxwell.* to 'maxwell'@'%' identified by 'XXXXXX';
 mysql&gt; GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE on *.* to 'maxwell'@'%';
@@ -127,7 +132,6 @@ mysql&gt; GRANT ALL on maxwell.* to 'maxwell'@'localhost';
 </code></pre>
 
 <h3 id="download">Download</h3>
-<hr />
 <p>You'll need a version 7 of a JVM.</p>
 <pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.17.0-RC1/maxwell-0.17.0-RC1.tar.gz \
        | tar zxvf -
@@ -135,7 +139,6 @@ cd maxwell-0.17.0-RC1
 </code></pre>
 
 <h3 id="stdout-producer">STDOUT producer</h3>
-<hr />
 <p>Useful for smoke-testing the thing.</p>
 <pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' --producer=stdout
 </code></pre>
@@ -148,7 +151,7 @@ Query OK, 1 row affected (0.04 sec)
 {&quot;table&quot;:&quot;maxwell&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;data&quot;:{&quot;id&quot;:5,&quot;daemon&quot;:&quot;firebus!  firebus!&quot;},&quot;ts&quot;: 123456789}
 </code></pre>
 
-<h3 id="run-with-kafka-producer">Run with kafka producer</h3>
+<h3 id="kafka-producer">Kafka producer</h3>
 <p>Boot kafka as described here:  <a href="http://kafka.apache.org/07/quickstart.html">http://kafka.apache.org/07/quickstart.html</a>, then:</p>
 <pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
    --producer=kafka --kafka.bootstrap.servers=localhost:9092

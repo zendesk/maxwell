@@ -84,6 +84,11 @@
           </li>
         
           <li >
+              <a href="../bootstrapping/">Bootstrapping</a>
+              
+          </li>
+        
+          <li >
               <a href="../compat/">Compat / Caveats</a>
               
           </li>
@@ -92,9 +97,6 @@
 </div></div>
             <div class="col-md-10" role="main">
 
-<div class="content-title">Maxwell configuration</div>
-
-<hr />
 <h3 id="command-line-options">Command line options</h3>
 <table>
 <thead>
@@ -116,6 +118,16 @@
 <td>INFO</td>
 </tr>
 <tr>
+<td>&nbsp;</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>--host HOST</td>
+<td>mysql host of schema store</td>
+<td></td>
+</tr>
+<tr>
 <td>--user USER</td>
 <td>mysql username</td>
 <td></td>
@@ -123,16 +135,21 @@
 <tr>
 <td>--password PASSWORD</td>
 <td>mysql password</td>
-<td></td>
-</tr>
-<tr>
-<td>--host HOST</td>
-<td>mysql host</td>
-<td></td>
+<td>(none)</td>
 </tr>
 <tr>
 <td>--port PORT</td>
 <td>mysql port</td>
+<td>3306</td>
+</tr>
+<tr>
+<td>--max_schemas</td>
+<td>how many old schemas maxwell should leave lying around in maxwell.schemas</td>
+<td>5</td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td></td>
 <td></td>
 </tr>
 <tr>
@@ -143,6 +160,46 @@
 <tr>
 <td>--output_file</td>
 <td>if using the file producer, write JSON rows to this path</td>
+<td></td>
+</tr>
+<tr>
+<td>--kafka.bootstrap.servers</td>
+<td>list of kafka brokers, listed as HOST:PORT[,HOST:PORT]</td>
+<td></td>
+</tr>
+<tr>
+<td>--kafka_topic</td>
+<td>kafka topic to write to.</td>
+<td>maxwell</td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>--replication_host</td>
+<td>mysql host to replicate from</td>
+<td>schema-store host</td>
+</tr>
+<tr>
+<td>--replication_password</td>
+<td>password on replication server</td>
+<td>(none)</td>
+</tr>
+<tr>
+<td>--replication_port</td>
+<td>port on replication server</td>
+<td>3306</td>
+</tr>
+<tr>
+<td>--replication_user</td>
+<td>user on replication server</td>
+<td></td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td></td>
 <td></td>
 </tr>
 <tr>
@@ -166,19 +223,24 @@
 <td></td>
 </tr>
 <tr>
-<td>--kafka.bootstrap.servers</td>
-<td>list of kafka brokers, listed as HOST:PORT[,HOST:PORT]</td>
+<td>&nbsp;</td>
+<td></td>
 <td></td>
 </tr>
 <tr>
-<td>--kafka_topic</td>
-<td>kafka topic to write to.</td>
-<td>maxwell</td>
+<td>--bootstrapper</td>
+<td>bootstrapper type: async</td>
+<td>sync</td>
 </tr>
 <tr>
-<td>--max_schemas</td>
-<td>how many old schemas maxwell should leave lying around in maxwell.schemas</td>
-<td>5</td>
+<td>--bootstrapper_fetch_size</td>
+<td>number of rows fetched at a time during bootstrapping.</td>
+<td>64000</td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td></td>
+<td></td>
 </tr>
 <tr>
 <td>--init_position FILE:POSITION</td>
@@ -193,7 +255,6 @@
 </tbody>
 </table>
 <h3 id="properties-file">Properties file</h3>
-<hr />
 <p>If maxwell finds the file <code>config.properties</code> in $PWD it will use it.  Any
 command line options (except init_position and replay) may be given as
 "key=value" pairs.</p>
@@ -203,9 +264,8 @@ front of the key.  So, for example if config.properties contains</p>
 <pre><code>kafka.batch.size=16384
 </code></pre>
 
-<p>Maxwell will send <code>batch.size=16384</code> to the kafka producer library.</p>
+<p>then Maxwell will send <code>batch.size=16384</code> to the kafka producer library.</p>
 <h3 id="filters">Filters</h3>
-<hr />
 <p>The options <code>include_dbs</code>, <code>exclude_dbs</code>, <code>include_tables</code>, and <code>exclude_tables</code> control whether
 Maxwell will send an update for a given row to its producer.  All the options take a single value PATTERN,
 which may either be a literal table/database name, given as <code>option=name</code>, or a regular expression,

@@ -1,4 +1,4 @@
-*Maxwell's bootstrapping is available in the 1.0-PRE1 release*
+*Maxwell's bootstrapping is available in the 1.0.0-PRE1 release*
 
 ### Using the maxwell-bootstrap utility
 
