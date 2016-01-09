@@ -25,7 +25,7 @@ public class BootstrapIntegrationTest extends AbstractMaxwellTest {
 			"{\"database\":\"maxwell\",\"table\":\"bootstrap\",\"type\":\"update\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"database_name\":\"shard_1\",\"completed_at\":\"\",\"table_name\":\"minimal\",\"started_at\":\"\",\"is_complete\":1},\"old\":{\"completed_at\":null,\"is_complete\":0}}",
 			"{\"database\":\"shard_1\",\"table\":\"minimal\",\"type\":\"bootstrap-complete\",\"ts\":0,\"data\":{}}"
 		};
-		list = getRowsForSQL(null, input, null, false);
+		list = getRowsForSQL(null, input, null);
 		assertThat(list.size(), is(expectedJSON.length));
 		for (int i = 0; i < expectedJSON.length; ++i) {
 			assertThat(i + " : " + filterJsonForTest(list.get(i).toJSON()), is(i + " : " + expectedJSON[i]));
@@ -83,7 +83,7 @@ public class BootstrapIntegrationTest extends AbstractMaxwellTest {
 				"{\"database\":\"maxwell\",\"table\":\"bootstrap\",\"type\":\"update\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"database_name\":\"shard_1\",\"completed_at\":\"\",\"table_name\":\"table_no_pk\",\"started_at\":\"\",\"is_complete\":1},\"old\":{\"completed_at\":null,\"is_complete\":0}}",
 				"{\"database\":\"shard_1\",\"table\":\"table_no_pk\",\"type\":\"bootstrap-complete\",\"ts\":0,\"data\":{}}"
 		};
-		list = getRowsForSQL(null, input, null, false);
+		list = getRowsForSQL(null, input, null);
 		assertThat(list.size(), is(expectedJSON.length));
 		for (int i = 0; i < expectedJSON.length; ++i) {
 			assertThat(i + " : " + filterJsonForTest(list.get(i).toJSON()), is(i + " : " + expectedJSON[i]));
@@ -148,7 +148,7 @@ public class BootstrapIntegrationTest extends AbstractMaxwellTest {
 				"{\"database\":\"shard_1\",\"table\":\"table3\",\"type\":\"bootstrap-complete\",\"ts\":0,\"data\":{}}"
 			}
 		};
-		List<RowMap> rowMaps = getRowsForSQL(null, input, null, false);
+		List<RowMap> rowMaps = getRowsForSQL(null, input, null);
 		List<String> rowStrings = new ArrayList<>();
 		assertThat(rowMaps.size(), is(30));
 		for (int i = 0; i < rowMaps.size(); ++i) {
@@ -287,7 +287,7 @@ public class BootstrapIntegrationTest extends AbstractMaxwellTest {
 			"{\"database\":\"maxwell\",\"table\":\"bootstrap\",\"type\":\"update\",\"ts\":0,\"xid\":0,\"data\":{\"id\":0,\"database_name\":\"shard_1\",\"completed_at\":\"\",\"table_name\":\"column_test\",\"started_at\":\"\",\"is_complete\":1},\"old\":{\"completed_at\":null,\"is_complete\":0}}",
 			"{\"database\":\"shard_1\",\"table\":\"column_test\",\"type\":\"bootstrap-complete\",\"ts\":0,\"data\":{}}"
 		};
-		List<RowMap> rows = getRowsForSQL(null, input, null, false);
+		List<RowMap> rows = getRowsForSQL(null, input, null);
 		assertThat(rows.size(), is(6));
 		for (int i = 0; i < expectedJSON.length; ++i) {
 			assertThat(i + " : " + filterJsonForTest(rows.get(i).toJSON()), is(i + " : " + expectedJSON[i]));
