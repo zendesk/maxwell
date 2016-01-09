@@ -40,18 +40,18 @@ In this async mode, non-bootstrapped tables are replicated as normal by the main
 
 Here's a complete example:
 ```
-mysql> create table barTable(txt varchar(255));
-mysql> insert into barTable (txt) values ("hello"), ("bootstrapping!");
-mysql> insert into maxwell.bootstrap (database_name, table_name) values ("fooDb", "barTable");
+mysql> create table t(txt varchar(255));
+mysql> insert into t (txt) values ("hello"), ("bootstrapping!");
+mysql> insert into maxwell.bootstrap (database_name, table_name) values ("d", "t");
 ```
 Corresponding replication stream output of table `fooDB`:
 ```
-{"database":"fooDb","table":"barTable","type":"insert","ts":1450557598,"xid":13561,"data":{"txt":"hello"}}
-{"database":"fooDb","table":"barTable","type":"insert","ts":1450557598,"xid":13561,"data":{"txt":"bootstrapping!"}}
-{"database":"fooDb","table":"barTable","type":"bootstrap-start","ts":1450557744340,"data":{}}
-{"database":"fooDb","table":"barTable","type":"insert","ts":1450557744355,"data":{"txt":"hello"}}
-{"database":"fooDb","table":"barTable","type":"insert","ts":1450557744356,"data":{"txt":"bootstrapping!"}}
-{"database":"fooDb","table":"barTable","type":"bootstrap-complete","ts":1450557744362,"data":{}}
+{"database":"d","table":"t","type":"insert","ts":1450557598,"xid":13,"data":{"txt":"hello"}}
+{"database":"d","table":"t","type":"insert","ts":1450557598,"xid":13,"data":{"txt":"bootstrapping!"}}
+{"database":"d","table":"t","type":"bootstrap-start","ts":1450557744,"data":{}}
+{"database":"d","table":"t","type":"insert","ts":1450557744355,"data":{"txt":"hello"}}
+{"database":"d","table":"t","type":"insert","ts":1450557744356,"data":{"txt":"bootstrapping!"}}
+{"database":"d","table":"t","type":"bootstrap-complete","ts":1450557744362,"data":{}}
 ```
 
 <script>
