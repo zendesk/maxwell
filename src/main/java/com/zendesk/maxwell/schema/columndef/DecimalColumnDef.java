@@ -20,4 +20,5 @@ public class DecimalColumnDef extends ColumnDef {
 
 		return d.toEngineeringString();
 	}
+
 }

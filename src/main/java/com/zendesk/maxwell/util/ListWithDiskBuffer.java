@@ -46,6 +46,11 @@ public class ListWithDiskBuffer<T extends Serializable> {
 		}
 	}
 
+	public void flushToDisk() throws IOException {
+		if ( os != null )
+			os.flush();
+	}
+
 	public boolean isEmpty() {
 		return this.size() == 0;
 	}

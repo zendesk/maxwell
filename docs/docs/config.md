@@ -19,6 +19,8 @@ option                                        | description | default
 --exclude_tables PATTERN                      | ignore updates from tables named like PATTERN |
 --kafka.bootstrap.servers                     | list of kafka brokers, listed as HOST:PORT[,HOST:PORT] |
 --kafka_topic                                 | kafka topic to write to. | maxwell
+--bootstrapper                                | bootstrapper type: async|sync|none. | async
+--bootstrapper_fetch_size                     | number of rows fetched at a time during bootstrapping. | 64000
 --max_schemas                                 | how many old schemas maxwell should leave lying around in maxwell.schemas | 5
 --init_position FILE:POSITION                 | ignore the information in maxwell.positions and start at the given binlog position. Not available in config.properties.
 --replay                                      | enable maxwell's read-only "replay" mode.  Not available in config.properties.

@@ -24,4 +24,5 @@ public class TimeColumnDef extends ColumnDef {
 	public Object asJSON(Object value) {
 		return String.valueOf((Time) value);
 	}
+
 }

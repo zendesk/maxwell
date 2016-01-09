@@ -186,7 +186,6 @@ public class ColumnDefTest {
 		assertTrue(d.matchesMysqlType(MySQLConstants.TYPE_DATETIME));
 
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 		Date date = simpleDateFormat.parse("1979-10-01 19:19:19");
 		assertThat(d.toSQL(date), is("'1979-10-01 19:19:19'"));
 	}
@@ -198,7 +197,7 @@ public class ColumnDefTest {
 
 		assertTrue(d.matchesMysqlType(MySQLConstants.TYPE_TIMESTAMP));
 
-		Timestamp t = new Timestamp(307653559000L);
+		Timestamp t = new Timestamp(307653559000L - TimeZone.getDefault().getRawOffset());
 		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19'"));
 	}
 

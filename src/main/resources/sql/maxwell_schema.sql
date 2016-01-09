@@ -46,3 +46,4 @@ CREATE TABLE IF NOT EXISTS `maxwell`.`positions` (
   binlog_file varchar(255),
   binlog_position int unsigned
 );
+

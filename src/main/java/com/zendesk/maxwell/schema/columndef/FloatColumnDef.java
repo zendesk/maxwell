@@ -9,7 +9,7 @@ public class FloatColumnDef extends ColumnDef {
 
 	@Override
 	public boolean matchesMysqlType(int type) {
-		if ( getType().equals("float"))
+		if ( getType().equals("float") )
 			return type == MySQLConstants.TYPE_FLOAT;
 		else
 			return type == MySQLConstants.TYPE_DOUBLE;
@@ -19,4 +19,5 @@ public class FloatColumnDef extends ColumnDef {
 	public String toSQL(Object value) {
 		return value.toString();
 	}
+
 }

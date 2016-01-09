@@ -3,7 +3,6 @@ package com.zendesk.maxwell.schema.columndef;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.TimeZone;
 
 import com.google.code.or.common.util.MySQLConstants;
 
@@ -13,12 +12,10 @@ public class DateTimeColumnDef extends ColumnDef {
 	}
 
 	private static SimpleDateFormat dateTimeFormatter;
-	private static final TimeZone tz = TimeZone.getTimeZone("UTC");
 
 	protected static SimpleDateFormat getDateTimeFormatter() {
 		if ( dateTimeFormatter == null ) {
 			dateTimeFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			dateTimeFormatter.setTimeZone(tz);
 		}
 		return dateTimeFormatter;
 	}
@@ -38,10 +35,10 @@ public class DateTimeColumnDef extends ColumnDef {
 	private String formatValue(Object value) {
 		if ( value instanceof Long && getType().equals("datetime") )
 			return formatLong((Long) value);
-		else if ( value instanceof Date )
-			return getDateTimeFormatter().format((Date) value);
 		else if ( value instanceof Timestamp )
 			return getDateTimeFormatter().format((Timestamp) value);
+		else if ( value instanceof Date )
+			return getDateTimeFormatter().format((Date) value);
 		else
 			return "";
 	}
@@ -68,4 +65,5 @@ public class DateTimeColumnDef extends ColumnDef {
 	public Object asJSON(Object value) {
 		return formatValue(value);
 	}
+
 }

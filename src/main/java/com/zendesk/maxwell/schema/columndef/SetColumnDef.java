@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.schema.columndef;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -28,6 +29,9 @@ public class SetColumnDef extends ColumnDef {
 	}
 
 	private ArrayList<String> asList(Object value) {
+		if ( value instanceof String ) {
+			return new ArrayList<>(Arrays.asList((( String ) value).split(",")));
+		}
 		ArrayList<String> values = new ArrayList<>();
 		long v = (Long) value;
 		for(int i = 0; i < enumValues.length; i++) {
