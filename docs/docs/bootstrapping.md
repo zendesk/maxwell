@@ -48,10 +48,10 @@ Corresponding replication stream output of table `fooDB`:
 ```
 {"database":"fooDb","table":"barTable","type":"insert","ts":1450557598,"xid":13561,"data":{"txt":"hello"}}
 {"database":"fooDb","table":"barTable","type":"insert","ts":1450557598,"xid":13561,"data":{"txt":"bootstrapping!"}}
-{"database":"fooDb","table":"barTable","type":"bootstrap-start","ts":1450557744340,"data":{}}
-{"database":"fooDb","table":"barTable","type":"insert","ts":1450557744355,"data":{"txt":"hello"}}
-{"database":"fooDb","table":"barTable","type":"insert","ts":1450557744356,"data":{"txt":"bootstrapping!"}}
-{"database":"fooDb","table":"barTable","type":"bootstrap-complete","ts":1450557744362,"data":{}}
+{"database":"fooDb","table":"barTable","type":"bootstrap-start","ts":1450557744,"data":{}}
+{"database":"fooDb","table":"barTable","type":"insert","ts":1450557744,"data":{"txt":"hello"}}
+{"database":"fooDb","table":"barTable","type":"insert","ts":1450557744,"data":{"txt":"bootstrapping!"}}
+{"database":"fooDb","table":"barTable","type":"bootstrap-complete","ts":1450557744,"data":{}}
 ```
 
 <script>

@@ -54,7 +54,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 						"insert",
 						databaseName,
 						tableName,
-						System.currentTimeMillis(),
+						System.currentTimeMillis() / 1000,
 						table.getPKList(),
 						position);
 				setRowValues(row, resultSet, table);
@@ -104,7 +104,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 				type,
 				table.getDatabase().getName(),
 				table.getName(),
-				System.currentTimeMillis(),
+				System.currentTimeMillis() / 1000,
 				table.getPKList(),
 				position);
 	}
