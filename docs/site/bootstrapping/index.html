@@ -100,7 +100,7 @@
 </div></div>
             <div class="col-md-10" role="main">
 
-<p><em>Maxwell's bootstrapping is available in the 1.0.0-PRE1 release</em></p>
+<p><em>Maxwell's bootstrapping is available in the <a href="https://github.com/zendesk/maxwell/releases/tag/v1.0.0-PRE1">1.0.0-PRE1 release</a></em></p>
 <h3 id="using-the-maxwell-bootstrap-utility">Using the maxwell-bootstrap utility</h3>
 <p>You can use the <code>maxwell-bootstrap</code> utility to bootstrap tables from the command-line.</p>
 <table>
@@ -142,7 +142,7 @@
 </tbody>
 </table>
 <h3 id="using-the-maxwellbootstrap-table">Using the maxwell.bootstrap table</h3>
-<p>Alternatively you can insert a row in the <code>maxwell-bootstrap</code> table to trigger a bootstrap.</p>
+<p>Alternatively you can insert a row in the <code>maxwell.bootstrap</code> table to trigger a bootstrap.</p>
 <pre><code>mysql&gt; insert into maxwell.bootstrap (database_name, table_name) values ('fooDB', 'barTable');
 </code></pre>
 
@@ -159,18 +159,18 @@ In this async mode, non-bootstrapped tables are replicated as normal by the main
 <li>finally a document with <code>type = "bootstrap-complete"</code></li>
 </ul>
 <p>Here's a complete example:</p>
-<pre><code>mysql&gt; create table t(txt varchar(255));
-mysql&gt; insert into t (txt) values (&quot;hello&quot;), (&quot;bootstrap!&quot;);
-mysql&gt; insert into maxwell.bootstrap (database_name, table_name) values (&quot;d&quot;, &quot;t&quot;);
+<pre><code>mysql&gt; create table fooDB.barTable(txt varchar(255));
+mysql&gt; insert into fooDB.barTable (txt) values (&quot;hello&quot;), (&quot;bootstrap!&quot;);
+mysql&gt; insert into maxwell.bootstrap (database_name, table_name) values (&quot;fooDB&quot;, &quot;barTable&quot;);
 </code></pre>
 
-<p>Corresponding replication stream output of table <code>fooDB</code>:</p>
-<pre><code>{&quot;database&quot;:&quot;foo&quot;,&quot;table&quot;:&quot;bar&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;ts&quot;:1450557598,&quot;xid&quot;:13,&quot;data&quot;:{&quot;txt&quot;:&quot;hello&quot;}}
-{&quot;database&quot;:&quot;foo&quot;,&quot;table&quot;:&quot;bar&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;ts&quot;:1450557598,&quot;xid&quot;:13,&quot;data&quot;:{&quot;txt&quot;:&quot;bootstrap!&quot;}}
-{&quot;database&quot;:&quot;foo&quot;,&quot;table&quot;:&quot;bar&quot;,&quot;type&quot;:&quot;bootstrap-start&quot;,&quot;ts&quot;:1450557744,&quot;data&quot;:{}}
-{&quot;database&quot;:&quot;foo&quot;,&quot;table&quot;:&quot;bar&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;ts&quot;:1450557744,&quot;data&quot;:{&quot;txt&quot;:&quot;hello&quot;}}
-{&quot;database&quot;:&quot;foo&quot;,&quot;table&quot;:&quot;bar&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;ts&quot;:1450557744,&quot;data&quot;:{&quot;txt&quot;:&quot;bootstrapping!&quot;}}
-{&quot;database&quot;:&quot;foo&quot;,&quot;table&quot;:&quot;bar&quot;,&quot;type&quot;:&quot;bootstrap-complete&quot;,&quot;ts&quot;:1450557744,&quot;data&quot;:{}}
+<p>Corresponding replication stream output of table <code>fooDB.barTable</code>:</p>
+<pre><code>{&quot;database&quot;:&quot;fooDB&quot;,&quot;table&quot;:&quot;barTable&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;ts&quot;:1450557598,&quot;xid&quot;:13,&quot;data&quot;:{&quot;txt&quot;:&quot;hello&quot;}}
+{&quot;database&quot;:&quot;fooDB&quot;,&quot;table&quot;:&quot;barTable&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;ts&quot;:1450557598,&quot;xid&quot;:13,&quot;data&quot;:{&quot;txt&quot;:&quot;bootstrap!&quot;}}
+{&quot;database&quot;:&quot;fooDB&quot;,&quot;table&quot;:&quot;barTable&quot;,&quot;type&quot;:&quot;bootstrap-start&quot;,&quot;ts&quot;:1450557744,&quot;data&quot;:{}}
+{&quot;database&quot;:&quot;fooDB&quot;,&quot;table&quot;:&quot;barTable&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;ts&quot;:1450557744,&quot;data&quot;:{&quot;txt&quot;:&quot;hello&quot;}}
+{&quot;database&quot;:&quot;fooDB&quot;,&quot;table&quot;:&quot;barTable&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;ts&quot;:1450557744,&quot;data&quot;:{&quot;txt&quot;:&quot;bootstrap!&quot;}}
+{&quot;database&quot;:&quot;fooDB&quot;,&quot;table&quot;:&quot;barTable&quot;,&quot;type&quot;:&quot;bootstrap-complete&quot;,&quot;ts&quot;:1450557744,&quot;data&quot;:{}}
 </code></pre>
 
 <script>
