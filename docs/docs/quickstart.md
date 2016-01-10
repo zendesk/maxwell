@@ -1,5 +1,5 @@
 ### Row based replication
-
+***
 Maxwell can only operate if row-based replication is on.
 
 ```
@@ -21,6 +21,7 @@ mysql> set global binlog_row_image=FULL;
 in order to change to row-based replication, you must reconnect all active clients to the server.
 
 ### Mysql permissions
+***
 Maxwell stores all the state it needs within the mysql server itself, in a database called `maxwell`.
 ```
 mysql> GRANT ALL on maxwell.* to 'maxwell'@'%' identified by 'XXXXXX';
@@ -34,6 +35,7 @@ mysql> GRANT ALL on maxwell.* to 'maxwell'@'localhost';
 ```
 
 ### Download
+***
 You'll need a version 7 of a JVM.
 
 ```
@@ -44,6 +46,7 @@ cd maxwell-0.17.0
 
 
 ### STDOUT producer
+***
 Useful for smoke-testing the thing.
 
 ```
@@ -62,7 +65,7 @@ Query OK, 1 row affected (0.04 sec)
 
 
 ### Kafka producer
-
+***
 Boot kafka as described here:  [http://kafka.apache.org/07/quickstart.html](http://kafka.apache.org/07/quickstart.html), then:
 
 ```
