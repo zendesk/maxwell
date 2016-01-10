@@ -1,7 +1,7 @@
 *Maxwell's bootstrapping is available in the [1.0.0-PRE1 release](https://github.com/zendesk/maxwell/releases/tag/v1.0.0-PRE1)*
 
 ### Using the maxwell-bootstrap utility
-
+***
 You can use the `maxwell-bootstrap` utility to bootstrap tables from the command-line.
 
 option                                        | description
@@ -15,7 +15,7 @@ option                                        | description
 --table TABLE                                 | mysql table to bootstrap
 
 ### Using the maxwell.bootstrap table
-
+***
 Alternatively you can insert a row in the `maxwell.bootstrap` table to trigger a bootstrap.
 
 ```
@@ -23,13 +23,14 @@ mysql> insert into maxwell.bootstrap (database_name, table_name) values ('fooDB'
 ```
 
 ### Async vs Sync bootstrapping
-
+***
 The Maxwell replicator is single threaded; events are captured by one thread from the binlog and replicated to Kafka one message at a time.
 When running Maxwell with `--bootstrapper=sync`, the same thread is used to do bootstrapping, meaning that all binlog events are blocked until bootstrapping is complete.
 Running Maxwell with `--bootstrapper=async` however, will make Maxwell spawn a separate thread for bootstrapping.
 In this async mode, non-bootstrapped tables are replicated as normal by the main thread, while the binlog events for bootstrapped tables are queued and sent to the replication stream at the end of the bootstrap process.
 
 ### Bootstrapping Data Format
+***
 
 * a bootstrap starts with a document with `type = "bootstrap-start"`
 * then documents with `type = "insert"` (one per row in the table)

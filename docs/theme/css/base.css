@@ -122,10 +122,10 @@ h3 {
   /* color: #008cba; */
   padding: 8px;
   padding-bottom:2px;
-  margin-bottom: 9px;
+  margin-bottom: 0px;
   margin-top: 20px;
-  border: 0px;
-  border-bottom: 1px solid #BBB;
+  /* border: 0px;
+  border-bottom: 1px solid #BBB; */
   width: 80%;
 }
 
@@ -138,8 +138,12 @@ h3:nth-of-type(1) {
 }
 
 hr {
-  margin-top:5px;
-  margin-bottom: 10px;
+  margin-top:-4px;
+  margin-bottom: 15px;
+  margin-left: 30px;
+  margin-right: 0px;
+  border-color: #788F96;
+  width: 80%;
 }
 
 pre, table {
