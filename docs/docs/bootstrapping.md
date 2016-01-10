@@ -16,7 +16,7 @@ option                                        | description
 
 ### Using the maxwell.bootstrap table
 
-Alternatively you can insert a row in the `maxwell-bootstrap` table to trigger a bootstrap.
+Alternatively you can insert a row in the `maxwell.bootstrap` table to trigger a bootstrap.
 
 ```
 mysql> insert into maxwell.bootstrap (database_name, table_name) values ('fooDB', 'barTable');
@@ -38,18 +38,18 @@ In this async mode, non-bootstrapped tables are replicated as normal by the main
 
 Here's a complete example:
 ```
-mysql> create table t(txt varchar(255));
-mysql> insert into t (txt) values ("hello"), ("bootstrap!");
-mysql> insert into maxwell.bootstrap (database_name, table_name) values ("d", "t");
+mysql> create table fooDB.barTable(txt varchar(255));
+mysql> insert into fooDB.barTable (txt) values ("hello"), ("bootstrap!");
+mysql> insert into maxwell.bootstrap (database_name, table_name) values ("fooDB", "barTable");
 ```
-Corresponding replication stream output of table `fooDB`:
+Corresponding replication stream output of table `fooDB.barTable`:
 ```
-{"database":"foo","table":"bar","type":"insert","ts":1450557598,"xid":13,"data":{"txt":"hello"}}
-{"database":"foo","table":"bar","type":"insert","ts":1450557598,"xid":13,"data":{"txt":"bootstrap!"}}
-{"database":"foo","table":"bar","type":"bootstrap-start","ts":1450557744,"data":{}}
-{"database":"foo","table":"bar","type":"insert","ts":1450557744,"data":{"txt":"hello"}}
-{"database":"foo","table":"bar","type":"insert","ts":1450557744,"data":{"txt":"bootstrapping!"}}
-{"database":"foo","table":"bar","type":"bootstrap-complete","ts":1450557744,"data":{}}
+{"database":"fooDB","table":"barTable","type":"insert","ts":1450557598,"xid":13,"data":{"txt":"hello"}}
+{"database":"fooDB","table":"barTable","type":"insert","ts":1450557598,"xid":13,"data":{"txt":"bootstrap!"}}
+{"database":"fooDB","table":"barTable","type":"bootstrap-start","ts":1450557744,"data":{}}
+{"database":"fooDB","table":"barTable","type":"insert","ts":1450557744,"data":{"txt":"hello"}}
+{"database":"fooDB","table":"barTable","type":"insert","ts":1450557744,"data":{"txt":"bootstrap!"}}
+{"database":"fooDB","table":"barTable","type":"bootstrap-complete","ts":1450557744,"data":{}}
 ```
 
 <script>
