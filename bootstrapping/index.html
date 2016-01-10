@@ -28,19 +28,89 @@
 
         <div class="navbar navbar-default navbar-fixed-top" role="navigation">
     <div class="container">
+
         <!-- Collapsed navigation -->
         <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
             <!-- Main title -->
             <a class="navbar-brand" href="..">Maxwell's Daemon</a>
         </div>
 
         <!-- Expanded navigation -->
         <div class="navbar-collapse collapse">
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+            
+            
+                <li >
+                    <a href="..">Overview</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../quickstart/">Quick Start</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../config/">Configuration</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../kafka/">Kafka</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../dataformat/">Data Format</a>
+                </li>
+            
+            
+            
+                <li class="active">
+                    <a href="./">Bootstrapping</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../compat/">Compat / Caveats</a>
+                </li>
+            
+            
+            </ul>
+
+            <!-- Search, Navigation and Repo links -->
+            <ul class="nav navbar-nav navbar-right">
+                <li >
+                    <a rel="next" href="../dataformat/">
+                        <i class="fa fa-arrow-left"></i> Previous
+                    </a>
+                </li>
+                <li >
+                    <a rel="prev" href="../compat/">
+                        Next <i class="fa fa-arrow-right"></i>
+                    </a>
+                </li>
+                
+            </ul>
         </div>
     </div>
 </div>
 
-        <a href="https://github.com/zendesk/maxwell"><img style="position: absolute; top: 0; right: 0; border: 0; z-index: 1031;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
+        <a href="https://github.com/zendesk/maxwell"><img id="github-banner" style="position: absolute; top: 0; right: 0; border: 0; z-index: 1031;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
         <div class="container">
             <div class="col-md-2"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
@@ -102,6 +172,7 @@
 
 <p><em>Maxwell's bootstrapping is available in the <a href="https://github.com/zendesk/maxwell/releases/tag/v1.0.0-PRE1">1.0.0-PRE1 release</a></em></p>
 <h3 id="using-the-maxwell-bootstrap-utility">Using the maxwell-bootstrap utility</h3>
+<hr />
 <p>You can use the <code>maxwell-bootstrap</code> utility to bootstrap tables from the command-line.</p>
 <table>
 <thead>
@@ -142,16 +213,19 @@
 </tbody>
 </table>
 <h3 id="using-the-maxwellbootstrap-table">Using the maxwell.bootstrap table</h3>
+<hr />
 <p>Alternatively you can insert a row in the <code>maxwell.bootstrap</code> table to trigger a bootstrap.</p>
 <pre><code>mysql&gt; insert into maxwell.bootstrap (database_name, table_name) values ('fooDB', 'barTable');
 </code></pre>
 
 <h3 id="async-vs-sync-bootstrapping">Async vs Sync bootstrapping</h3>
+<hr />
 <p>The Maxwell replicator is single threaded; events are captured by one thread from the binlog and replicated to Kafka one message at a time.
 When running Maxwell with <code>--bootstrapper=sync</code>, the same thread is used to do bootstrapping, meaning that all binlog events are blocked until bootstrapping is complete.
 Running Maxwell with <code>--bootstrapper=async</code> however, will make Maxwell spawn a separate thread for bootstrapping.
 In this async mode, non-bootstrapped tables are replicated as normal by the main thread, while the binlog events for bootstrapped tables are queued and sent to the replication stream at the end of the bootstrap process.</p>
 <h3 id="bootstrapping-data-format">Bootstrapping Data Format</h3>
+<hr />
 <ul>
 <li>a bootstrap starts with a document with <code>type = "bootstrap-start"</code></li>
 <li>then documents with <code>type = "insert"</code> (one per row in the table)</li>
