@@ -1,5 +1,6 @@
-<h3 id="maxwell-header" style="margin-top: -10px; font-weight: bold">Maxwell = Mysql + Kafka</h3>
-
+<div id="maxwell-header">
+  <h2>Maxwell = Mysql + Kafka</h2>
+</div>
 
 This is Maxwell's daemon, an application that reads MySQL binlogs and writes row updates to Kafka as JSON.
 It's playing in the same space as [mypipe](https://github.com/mardambey/mypipe) and [databus](http://data.linkedin.com/projects/databus),
@@ -46,7 +47,7 @@ mysql> update test.maxwell set id = 11, daemon = 'firebus!  firebus!';
 <script>
   jQuery(document).ready(function () {
     jQuery("#maxwell-header").append(
-      jQuery("<img alt='The Daemon, maybe' src='./img/cyberiad_1.jpg' style='float: left; height: 300px; padding-right: 30px;'>")
+      jQuery("<img alt='The Daemon, maybe' src='./img/cyberiad_1.jpg' id='maxwell-daemon-image'>")
 
     )
   });
