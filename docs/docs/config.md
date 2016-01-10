@@ -1,5 +1,5 @@
 ### Command line options
-
+***
 option                                        | description | default
 --------------------------------------------- | ----------- | -------
 --config FILE                                 | location of `config.properties` file |
@@ -33,6 +33,7 @@ option                                        | description | default
 --replay                                      | enable maxwell's read-only "replay" mode.  Not available in config.properties.
 
 ### Properties file
+***
 If maxwell finds the file `config.properties` in $PWD it will use it.  Any
 command line options (except init_position and replay) may be given as
 "key=value" pairs.
@@ -48,6 +49,7 @@ kafka.batch.size=16384
 then Maxwell will send `batch.size=16384` to the kafka producer library.
 
 ### Filters
+***
 The options `include_dbs`, `exclude_dbs`, `include_tables`, and `exclude_tables` control whether
 Maxwell will send an update for a given row to its producer.  All the options take a single value PATTERN,
 which may either be a literal table/database name, given as `option=name`, or a regular expression,

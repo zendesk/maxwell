@@ -1,19 +1,17 @@
-<h4>How Maxwell handles mysql types</h4>
+<h4>How Maxwell translates different mysql types</h4>
 
 ### strings (varchar, text)
-
+***
 Maxwell currently supports latin1 and utf-8 columns, and will convert both to UTF-8 before outputting as JSON.
 
-***
-
 ### blob (+ binary encoded strings)
+***
 
 Maxell will base64 encode BLOB, BINARY and VARBINARY columns (as well as varchar/string columns with a BINARY encoding).
 
-***
 
 ### datetime
-
+***
 Datetime columns are output as "YYYY-MM-DD hh:mm::ss" strings.  Note that mysql
 has no problem storing invalid datetimes like "0000-00-00 00:00:00", and
 Maxwell chooses to reproduce these invalid datetimes faithfully,
@@ -27,9 +25,8 @@ mysql>    insert into test_datetime set dtcol='0000-00-00 00:00:00';
 <maxwell  {"table":"test_datetime","type":"insert","data":{"dtcol":"0000-00-00 00:00:00"}}
 ```
 
-***
-
 ### sets
+***
 
 output as JSON arrays.
 

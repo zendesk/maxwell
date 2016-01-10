@@ -28,19 +28,89 @@
 
         <div class="navbar navbar-default navbar-fixed-top" role="navigation">
     <div class="container">
+
         <!-- Collapsed navigation -->
         <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
             <!-- Main title -->
             <a class="navbar-brand" href="..">Maxwell's Daemon</a>
         </div>
 
         <!-- Expanded navigation -->
         <div class="navbar-collapse collapse">
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+            
+            
+                <li >
+                    <a href="..">Overview</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../quickstart/">Quick Start</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../config/">Configuration</a>
+                </li>
+            
+            
+            
+                <li class="active">
+                    <a href="./">Kafka</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../dataformat/">Data Format</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../bootstrapping/">Bootstrapping</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../compat/">Compat / Caveats</a>
+                </li>
+            
+            
+            </ul>
+
+            <!-- Search, Navigation and Repo links -->
+            <ul class="nav navbar-nav navbar-right">
+                <li >
+                    <a rel="next" href="../config/">
+                        <i class="fa fa-arrow-left"></i> Previous
+                    </a>
+                </li>
+                <li >
+                    <a rel="prev" href="../dataformat/">
+                        Next <i class="fa fa-arrow-right"></i>
+                    </a>
+                </li>
+                
+            </ul>
         </div>
     </div>
 </div>
 
-        <a href="https://github.com/zendesk/maxwell"><img style="position: absolute; top: 0; right: 0; border: 0; z-index: 1031;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
+        <a href="https://github.com/zendesk/maxwell"><img id="github-banner" style="position: absolute; top: 0; right: 0; border: 0; z-index: 1031;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
         <div class="container">
             <div class="col-md-2"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
@@ -71,7 +141,7 @@
                       <li class="toctree-l3"><a href="#kafka-key">Kafka key</a></li>
                       
                   
-                      <li class="toctree-l3"><a href="#topic-and-partitioning">Topic and partitioning</a></li>
+                      <li class="toctree-l3"><a href="#partitioning">Partitioning</a></li>
                       
                   
                   </ul>
@@ -98,6 +168,7 @@
             <div class="col-md-10" role="main">
 
 <h3 id="kafka-options">Kafka options</h3>
+<hr />
 <p>Any options given to Maxwell that are prefixed with <code>kafka.</code> will be passed directly into the Kafka producer configuration
 (with <code>kafka.</code> stripped off).  We use the "new producer" configuration, as described here:
 <a href="http://kafka.apache.org/documentation.html#newproducerconfigs">http://kafka.apache.org/documentation.html#newproducerconfigs</a></p>
@@ -108,6 +179,7 @@
 </ul>
 <p>Maxwell writes to a kafka topic named "maxwell" by default.  This can be changed with the <code>kafka_topic</code> option.</p>
 <h3 id="kafka-key">Kafka key</h3>
+<hr />
 <p>Maxwell generates keys for its Kafka messages based upon a mysql row's primary key in JSON format:</p>
 <pre><code>{ &quot;database&quot;:&quot;test_tb&quot;,&quot;table&quot;:&quot;test_tbl&quot;,&quot;pk.id&quot;:4,&quot;pk.part2&quot;:&quot;hello&quot;}
 </code></pre>
@@ -115,10 +187,14 @@
 <p>This key is designed to co-operate with Kafka's log compaction, which will save the last-known
 value for a key, allowing Maxwell's Kafka stream to retain the last-known value for a row and act
 as a source of truth.</p>
-<h3 id="topic-and-partitioning">Topic and partitioning</h3>
-<p>Maxwell enforces ordering on events within a logical mysql database (but not within a mysql server).  We enforce
-this ordering by choosing a kafka partition based on an event's database name (<code>dbName.hashCode() % numPartitions</code>).
-This means that you should create a kafka topic for Maxwell with at least as many partitions as you have logical databases:</p>
+<h3 id="partitioning">Partitioning</h3>
+<hr />
+<p>A binlog event's partition is chosen by the following:</p>
+<pre><code>  DATABASE_NAME.hash() % TOPIC.NUMBER_OF_PARTITIONS
+</code></pre>
+
+<p>Maxwell will discover the number of partitions in its kafka topic upon boot.  This means that you should pre-create your kafka topics,
+and with at least as many partitions as you have logical databases:</p>
 <pre><code>bin/kafka-topics.sh --zookeeper ZK_HOST:2181 --create \
                     --topic maxwell --partitions 20 --replication-factor 2
 </code></pre>
