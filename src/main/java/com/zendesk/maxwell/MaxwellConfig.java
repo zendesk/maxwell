@@ -67,7 +67,7 @@ public class MaxwellConfig {
 		parser.accepts( "password", "mysql password for user on host" ).withOptionalArg();
 		parser.accepts( "port", "mysql port for host" ).withRequiredArg();
 
-		parser.accepts( "database", "database name for maxwell state (schema and binlog position)").withRequiredArg();
+		parser.accepts( "schema_database", "database name for maxwell state (schema and binlog position)").withRequiredArg();
 
 		parser.accepts( "producer", "producer type: stdout|file|kafka" ).withRequiredArg();
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
@@ -116,8 +116,8 @@ public class MaxwellConfig {
 
 		this.replicationMysql.parseOptions("replication_", options);
 
-		if ( options.has("database")) {
-			this.databaseName = (String) options.valueOf("database");
+		if ( options.has("schema_database")) {
+			this.databaseName = (String) options.valueOf("schema_database");
 		}
 
 		if ( options.has("producer"))
@@ -212,7 +212,7 @@ public class MaxwellConfig {
 		this.replicationMysql.user      = p.getProperty("replication_user");
 		this.replicationMysql.port = Integer.valueOf(p.getProperty("replication_port", "3306"));
 
-		this.databaseName = p.getProperty("database");
+		this.databaseName = p.getProperty("schema_database");
 
 		this.producerType    = p.getProperty("producer");
 		this.bootstrapperType = p.getProperty("bootstrapper");
