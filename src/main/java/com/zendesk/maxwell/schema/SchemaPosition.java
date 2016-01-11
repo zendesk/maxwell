@@ -87,12 +87,13 @@ public class SchemaPosition extends RunLoopProcess implements Runnable {
 		if ( newPosition == null )
 			return;
 
-		String sql = "INSERT INTO `" + this.schemaDatabaseName + "`.`positions` set "
+		String sql = "INSERT INTO `positions` set "
 				+ "server_id = ?, "
 				+ "binlog_file = ?, "
 				+ "binlog_position = ? "
 				+ "ON DUPLICATE KEY UPDATE binlog_file=?, binlog_position=?";
 		try(Connection c = connectionPool.getConnection() ){
+			c.setCatalog(this.schemaDatabaseName);
 			PreparedStatement s = c.prepareStatement(sql);
 
 			LOGGER.debug("Writing binlog position to " + this.schemaDatabaseName + ".positions: " + newPosition);
@@ -138,7 +139,8 @@ public class SchemaPosition extends RunLoopProcess implements Runnable {
 			return p;
 
 		try ( Connection c = connectionPool.getConnection() ) {
-			PreparedStatement s = c.prepareStatement("SELECT * from `" + this.schemaDatabaseName + "`.`positions` where server_id = ?");
+			c.setCatalog(this.schemaDatabaseName);
+			PreparedStatement s = c.prepareStatement("SELECT * from `positions` where server_id = ?");
 			s.setLong(1, serverID);
 
 			ResultSet rs = s.executeQuery();

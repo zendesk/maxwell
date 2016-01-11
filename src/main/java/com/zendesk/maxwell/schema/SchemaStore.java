@@ -43,20 +43,21 @@ public class SchemaStore {
 	public SchemaStore(Connection connection, Long serverID, String dbName) throws SQLException {
 		this.serverID = serverID;
 		this.connection = connection;
+		connection.setCatalog(dbName);
 		this.schemaDatabaseName = dbName;
 		this.schemaInsert = connection
 				.prepareStatement(
-						"INSERT INTO `" + this.schemaDatabaseName + "`.`schemas` SET binlog_file = ?, binlog_position = ?, server_id = ?, encoding = ?",
+						"INSERT INTO `schemas` SET binlog_file = ?, binlog_position = ?, server_id = ?, encoding = ?",
 						Statement.RETURN_GENERATED_KEYS);
 		this.databaseInsert = connection
 				.prepareStatement(
-						"INSERT INTO `" + this.schemaDatabaseName + "`.`databases` SET schema_id = ?, name = ?, encoding=?",
+						"INSERT INTO `databases` SET schema_id = ?, name = ?, encoding=?",
 						Statement.RETURN_GENERATED_KEYS);
 		this.tableInsert = connection
 				.prepareStatement(
-						"INSERT INTO `" + this.schemaDatabaseName + "`.`tables` SET schema_id = ?, database_id = ?, name = ?, encoding=?, pk=?",
+						"INSERT INTO `tables` SET schema_id = ?, database_id = ?, name = ?, encoding=?, pk=?",
 						Statement.RETURN_GENERATED_KEYS);
-		this.columnInsertSQL = "INSERT INTO `" + this.schemaDatabaseName + "`.`columns` (schema_id, table_id, name, encoding, coltype, is_signed, enum_values) "
+		this.columnInsertSQL = "INSERT INTO `columns` (schema_id, table_id, name, encoding, coltype, is_signed, enum_values) "
 				+ " VALUES (?, ?, ?, ?, ?, ?, ?)";
 	}
 
@@ -105,7 +106,6 @@ public class SchemaStore {
 		} finally {
 			connection.setAutoCommit(true);
 		}
-
 		if ( this.schema_id != null ) {
 			deleteOldSchemas(schema_id);
 		}
@@ -183,16 +183,18 @@ public class SchemaStore {
 	}
 
 	private static void createStoreDatabase(Connection connection, String schemaDatabaseName) throws SQLException, IOException {
+		connection.createStatement().execute("CREATE DATABASE IF NOT EXISTS `" + schemaDatabaseName + "`");
+
 		InputStream schemaSQL = SchemaStore.class.getResourceAsStream(
 				"/sql/maxwell_schema.sql");
 		BufferedReader r = new BufferedReader(new InputStreamReader(schemaSQL));
-		String sql = "SET @maxwell_db = '" + schemaDatabaseName + "'\n\n", line;
+		String sql ="", line;
 
 		LOGGER.info("Creating maxwell database");
 		while ((line = r.readLine()) != null) {
 			sql += line + "\n";
 		}
-
+		connection.setCatalog(schemaDatabaseName);
 		for (String statement : StringUtils.splitByWholeSeparator(sql, "\n\n")) {
 			if (statement.length() == 0)
 				continue;
@@ -238,8 +240,8 @@ public class SchemaStore {
 		LOGGER.info("Restoring schema id " + schemaRS.getInt("id") + " (last modified at " + this.position + ")");
 
 		this.schema_id = schemaRS.getLong("id");
-
-		p = connection.prepareStatement("SELECT * from `" + this.schemaDatabaseName + "`.`databases` where schema_id = ? ORDER by id");
+		connection.setCatalog(this.schemaDatabaseName);
+		p = connection.prepareStatement("SELECT * from `databases` where schema_id = ? ORDER by id");
 		p.setLong(1, this.schema_id);
 
 		ResultSet dbRS = p.executeQuery();
@@ -261,10 +263,11 @@ public class SchemaStore {
 	}
 
 	private Database restoreDatabase(int id, String name, String encoding) throws SQLException {
+		connection.setCatalog(this.schemaDatabaseName);
 		Statement s = connection.createStatement();
 		Database d = new Database(name, encoding);
 
-		ResultSet tRS = s.executeQuery("SELECT * from `" + this.schemaDatabaseName + "`.`tables` where database_id = " + id + " ORDER by id");
+		ResultSet tRS = s.executeQuery("SELECT * from `tables` where database_id = " + id + " ORDER by id");
 
 		while (tRS.next()) {
 			String tName = tRS.getString("name");
@@ -279,11 +282,12 @@ public class SchemaStore {
 	}
 
 	private void restoreTable(Database d, String name, int id, String encoding, String pks) throws SQLException {
+		connection.setCatalog(this.schemaDatabaseName);
 		Statement s = connection.createStatement();
 
 		Table t = d.buildTable(name, encoding);
 
-		ResultSet cRS = s.executeQuery("SELECT * from `" + this.schemaDatabaseName + "`.`columns` where table_id = " + id + " ORDER by id");
+		ResultSet cRS = s.executeQuery("SELECT * from `columns` where table_id = " + id + " ORDER by id");
 
 		int i = 0;
 		while (cRS.next()) {
@@ -309,8 +313,9 @@ public class SchemaStore {
 	private ResultSet findSchema(BinlogPosition targetPosition, Long serverID)
 			throws SQLException {
 		LOGGER.debug("looking to restore schema at target position " + targetPosition);
+		connection.setCatalog(this.schemaDatabaseName);
 		PreparedStatement s = connection.prepareStatement(
-			"SELECT * from `" + this.schemaDatabaseName + "`.`schemas` "
+			"SELECT * from `schemas` "
 			+ "WHERE deleted = 0 "
 			+ "AND ((binlog_file < ?) OR (binlog_file = ? and binlog_position <= ?)) AND server_id = ? "
 			+ "ORDER BY id desc limit 1");
@@ -343,19 +348,19 @@ public class SchemaStore {
 
 	public void delete() throws SQLException {
 		ensureSchemaID();
-
-		connection.createStatement().execute("update `" + this.schemaDatabaseName + "`.`schemas` set deleted = 1 where id = " + schema_id);
+		connection.setCatalog(this.schemaDatabaseName);
+		connection.createStatement().execute("update `schemas` set deleted = 1 where id = " + schema_id);
 	}
 
 	public void destroy() throws SQLException {
 		ensureSchemaID();
 
 		String[] tables = { "databases", "tables", "columns" };
-
-		connection.createStatement().execute("delete from `" + this.schemaDatabaseName + "`.`schemas` where id = " + schema_id);
+		connection.setCatalog(this.schemaDatabaseName);
+		connection.createStatement().execute("delete from `schemas` where id = " + schema_id);
 		for ( String tName : tables ) {
             connection.createStatement().execute(
-            		"delete from `" + this.schemaDatabaseName + "`.`" + tName + "` where schema_id = " + schema_id
+            		"delete from `" + tName + "` where schema_id = " + schema_id
             );
 		}
 	}
@@ -363,8 +368,8 @@ public class SchemaStore {
 	public boolean schemaExists(long schema_id) throws SQLException {
 		if ( this.schema_id == null )
 			return false;
-
-		ResultSet rs = connection.createStatement().executeQuery("select id from `" + this.schemaDatabaseName + "`.`schemas` where id = " + schema_id);
+		connection.setCatalog(this.schemaDatabaseName); //This function gets called from
+		ResultSet rs = connection.createStatement().executeQuery("select id from `schemas` where id = " + schema_id);
 		return rs.next();
 	}
 
@@ -376,6 +381,7 @@ public class SchemaStore {
 		if ( maxSchemas <= 0  )
 			return;
 
+		LOGGER.debug("In deleteOldSchemas Current Catalog:" + connection.getCatalog());
 		Long toDelete = currentSchemaId - maxSchemas; // start with the highest numbered ID to delete, work downwards until we run out
 		while ( toDelete > 0 && schemaExists(toDelete) ) {
 			new SchemaStore(connection, serverID, toDelete, this.schemaDatabaseName).delete();
@@ -388,8 +394,9 @@ public class SchemaStore {
 		in the future, this is our moment to pick up where the master left off.
 	*/
 	public static void handleMasterChange(Connection c, Long serverID, String schemaDatabaseName) throws SQLException {
+		c.setCatalog(schemaDatabaseName);
 		PreparedStatement s = c.prepareStatement(
-				"SELECT id from `" + schemaDatabaseName + "`.`schemas` WHERE server_id != ? and deleted = 0"
+				"SELECT id from `schemas` WHERE server_id != ? and deleted = 0"
 		);
 
 		s.setLong(1, serverID);
@@ -401,13 +408,13 @@ public class SchemaStore {
 			new SchemaStore(c, null, schemaID, schemaDatabaseName).delete();
 		}
 
-		c.createStatement().execute("delete from `" + schemaDatabaseName + "`.`positions` where server_id != " + serverID);
+		c.createStatement().execute("delete from `positions` where server_id != " + serverID);
 	}
 
 	private static Map<String, String> getTableColumns(String table, Connection c, String schemaDatabaseName) throws SQLException {
 		HashMap<String, String> map = new HashMap<>();
-
-		ResultSet rs = c.createStatement().executeQuery("show columns from `" + schemaDatabaseName + "`.`" + table + "`");
+		c.setCatalog(schemaDatabaseName);
+		ResultSet rs = c.createStatement().executeQuery("show columns from `" + table + "`");
 		while (rs.next()) {
 			map.put(rs.getString("Field"), rs.getString("Type"));
 		}
@@ -421,8 +428,10 @@ public class SchemaStore {
 	}
 
 	public static void upgradeSchemaStoreSchema(Connection c, String schemaDatabaseName) throws SQLException {
-		if ( !SchemaStore.getTableColumns("schemas", c, schemaDatabaseName).containsKey("deleted") )
-			performAlter(c, "alter table `" + schemaDatabaseName + "`.`schemas` add column deleted tinyint(1) not null default 0");
+		if ( !SchemaStore.getTableColumns("schemas", c, schemaDatabaseName).containsKey("deleted") ) {
+			c.setCatalog(schemaDatabaseName);
+			performAlter(c, "alter table `schemas` add column deleted tinyint(1) not null default 0");
+		}
 	}
 
 }

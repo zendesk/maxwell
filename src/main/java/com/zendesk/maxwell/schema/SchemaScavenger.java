@@ -25,7 +25,8 @@ public class SchemaScavenger extends RunLoopProcess implements Runnable {
 	private List<Long> getDeletedSchemas() throws SQLException {
 		ArrayList<Long> list = new ArrayList<>();
 		try ( Connection connection = connectionPool.getConnection() ) {
-			ResultSet rs = connection.createStatement().executeQuery("select id from `" + this.schemaDatabaseName + "`.`schemas` where deleted = 1 LIMIT 100");
+			connection.setCatalog(this.schemaDatabaseName);
+			ResultSet rs = connection.createStatement().executeQuery("select id from `schemas` where deleted = 1 LIMIT 100");
 
 			while ( rs.next() ) {
 				list.add(rs.getLong("id"));
@@ -39,10 +40,11 @@ public class SchemaScavenger extends RunLoopProcess implements Runnable {
 		String[] tables = { "columns", "tables", "databases" };
 
 		try ( Connection connection = connectionPool.getConnection() ) {
+			connection.setCatalog(this.schemaDatabaseName);
 			for ( String tName : tables ) {
 				for (;;) {
 					long nDeleted = connection.createStatement().executeUpdate(
-						"DELETE FROM `"+ this.schemaDatabaseName + "`.`" + tName +
+						"DELETE FROM `" + tName +
 							"` WHERE schema_id = " + id +
 							" LIMIT " + maxRowsPerSecond
 					);
@@ -61,7 +63,7 @@ public class SchemaScavenger extends RunLoopProcess implements Runnable {
 				}
 			}
 
-			connection.createStatement().execute("delete from `" + this.schemaDatabaseName + "`.`schemas` where id = " + id);
+			connection.createStatement().execute("delete from `schemas` where id = " + id);
 		}
 	}
 

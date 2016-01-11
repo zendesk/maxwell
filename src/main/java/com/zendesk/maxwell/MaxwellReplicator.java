@@ -29,7 +29,6 @@ public class MaxwellReplicator extends RunLoopProcess {
 	private final long MAX_TX_ELEMENTS = 10000;
 	String filePath, fileName;
 	private long rowEventsProcessed;
-	private final String schemaDatabaseName;
 	private Schema schema;
 	private MaxwellFilter filter;
 
@@ -46,7 +45,6 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 	public MaxwellReplicator(Schema currentSchema, AbstractProducer producer, MaxwellContext ctx, BinlogPosition start) throws Exception {
 		this.schema = currentSchema;
-		this.schemaDatabaseName = ctx.getConfig().databaseName;
 
 		TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 		this.binlogEventListener = new MaxwellBinlogEventListener(queue);
@@ -122,7 +120,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 
 	private boolean skipRow(RowMap row) {
-		return row.getDatabase().equals(this.schemaDatabaseName);
+		return row.getDatabase().equals(this.context.getConfig().databaseName);
 	}
 
 	private BinlogPosition eventBinlogPosition(AbstractBinlogEventV4 event) {
@@ -324,6 +322,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 		if ( !this.context.getReplayMode() ) {
 			try (Connection c = this.context.getConnectionPool().getConnection()) {
+				c.setCatalog(this.context.getConfig().databaseName);
 				new SchemaStore(c, this.context.getServerID(), this.schema, p, this.context.getConfig().databaseName).save();
 			}
 
