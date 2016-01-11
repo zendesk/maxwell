@@ -43,6 +43,4 @@ CREATE TABLE IF NOT EXISTS `positions` (
   server_id int unsigned not null primary key,
   binlog_file varchar(255),
   binlog_position int unsigned
-  );
-
-
+  )
