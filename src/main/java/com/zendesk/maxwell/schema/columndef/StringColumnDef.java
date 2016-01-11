@@ -57,8 +57,12 @@ public class StringColumnDef extends ColumnDef {
 	}
 	@Override
 	public Object asJSON(Object value) {
-		byte[] b = (byte[])value;
 
+		if ( value instanceof String ) {
+			return value;
+		}
+
+		byte[] b = (byte[])value;
 		if ( encoding.equals("binary") ) {
 			return Base64.encodeBase64String(b);
 		} else {

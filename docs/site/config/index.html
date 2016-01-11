@@ -11,7 +11,8 @@
 
         <title>Configuration - Maxwell's Daemon</title>
 
-        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/bootstrap-theme.min.css" rel="stylesheet">
         <link href="../css/font-awesome-4.0.3.css" rel="stylesheet">
         <link href="../css/prettify-1.0.css" rel="stylesheet">
         <link href="../css/base.css" rel="stylesheet">
@@ -28,21 +29,91 @@
 
         <div class="navbar navbar-default navbar-fixed-top" role="navigation">
     <div class="container">
+
         <!-- Collapsed navigation -->
         <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
             <!-- Main title -->
             <a class="navbar-brand" href="..">Maxwell's Daemon</a>
         </div>
 
         <!-- Expanded navigation -->
         <div class="navbar-collapse collapse">
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+            
+            
+                <li >
+                    <a href="..">Overview</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../quickstart/">Quick Start</a>
+                </li>
+            
+            
+            
+                <li class="active">
+                    <a href="./">Configuration</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../kafka/">Kafka</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../dataformat/">Data Format</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../bootstrapping/">Bootstrapping</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../compat/">Compat / Caveats</a>
+                </li>
+            
+            
+            </ul>
+
+            <!-- Search, Navigation and Repo links -->
+            <ul class="nav navbar-nav navbar-right">
+                <li >
+                    <a rel="next" href="../quickstart/">
+                        <i class="fa fa-arrow-left"></i> Previous
+                    </a>
+                </li>
+                <li >
+                    <a rel="prev" href="../kafka/">
+                        Next <i class="fa fa-arrow-right"></i>
+                    </a>
+                </li>
+                
+            </ul>
         </div>
     </div>
 </div>
 
-        <a href="https://github.com/zendesk/maxwell"><img style="position: absolute; top: 0; right: 0; border: 0; z-index: 1031;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
+        <a href="https://github.com/zendesk/maxwell"><img id="github-banner" style="position: absolute; top: 0; right: 0; border: 0; z-index: 1031;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
         <div class="container">
-            <div class="col-md-2"><div class="bs-sidebar hidden-print affix well" role="complementary">
+            <div class="col-md-2">&nbsp;<div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
         
           <li >
@@ -84,6 +155,11 @@
           </li>
         
           <li >
+              <a href="../bootstrapping/">Bootstrapping</a>
+              
+          </li>
+        
+          <li >
               <a href="../compat/">Compat / Caveats</a>
               
           </li>
@@ -92,10 +168,8 @@
 </div></div>
             <div class="col-md-10" role="main">
 
-<div class="content-title">Maxwell configuration</div>
-
-<hr />
 <h3 id="command-line-options">Command line options</h3>
+<hr />
 <table>
 <thead>
 <tr>
@@ -116,6 +190,16 @@
 <td>INFO</td>
 </tr>
 <tr>
+<td>&nbsp;</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>--host HOST</td>
+<td>mysql host of schema store</td>
+<td></td>
+</tr>
+<tr>
 <td>--user USER</td>
 <td>mysql username</td>
 <td></td>
@@ -123,16 +207,21 @@
 <tr>
 <td>--password PASSWORD</td>
 <td>mysql password</td>
-<td></td>
-</tr>
-<tr>
-<td>--host HOST</td>
-<td>mysql host</td>
-<td></td>
+<td>(none)</td>
 </tr>
 <tr>
 <td>--port PORT</td>
 <td>mysql port</td>
+<td>3306</td>
+</tr>
+<tr>
+<td>--max_schemas</td>
+<td>how many old schemas maxwell should leave lying around in maxwell.schemas</td>
+<td>5</td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td></td>
 <td></td>
 </tr>
 <tr>
@@ -143,6 +232,46 @@
 <tr>
 <td>--output_file</td>
 <td>if using the file producer, write JSON rows to this path</td>
+<td></td>
+</tr>
+<tr>
+<td>--kafka.bootstrap.servers</td>
+<td>list of kafka brokers, listed as HOST:PORT[,HOST:PORT]</td>
+<td></td>
+</tr>
+<tr>
+<td>--kafka_topic</td>
+<td>kafka topic to write to.</td>
+<td>maxwell</td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>--replication_host</td>
+<td>mysql host to replicate from</td>
+<td>schema-store host</td>
+</tr>
+<tr>
+<td>--replication_password</td>
+<td>password on replication server</td>
+<td>(none)</td>
+</tr>
+<tr>
+<td>--replication_port</td>
+<td>port on replication server</td>
+<td>3306</td>
+</tr>
+<tr>
+<td>--replication_user</td>
+<td>user on replication server</td>
+<td></td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td></td>
 <td></td>
 </tr>
 <tr>
@@ -166,19 +295,24 @@
 <td></td>
 </tr>
 <tr>
-<td>--kafka.bootstrap.servers</td>
-<td>list of kafka brokers, listed as HOST:PORT[,HOST:PORT]</td>
+<td>&nbsp;</td>
+<td></td>
 <td></td>
 </tr>
 <tr>
-<td>--kafka_topic</td>
-<td>kafka topic to write to.</td>
-<td>maxwell</td>
+<td>--bootstrapper</td>
+<td>bootstrapper type: async</td>
+<td>sync</td>
 </tr>
 <tr>
-<td>--max_schemas</td>
-<td>how many old schemas maxwell should leave lying around in maxwell.schemas</td>
-<td>5</td>
+<td>--bootstrapper_fetch_size</td>
+<td>number of rows fetched at a time during bootstrapping.</td>
+<td>64000</td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td></td>
+<td></td>
 </tr>
 <tr>
 <td>--init_position FILE:POSITION</td>
@@ -203,7 +337,7 @@ front of the key.  So, for example if config.properties contains</p>
 <pre><code>kafka.batch.size=16384
 </code></pre>
 
-<p>Maxwell will send <code>batch.size=16384</code> to the kafka producer library.</p>
+<p>then Maxwell will send <code>batch.size=16384</code> to the kafka producer library.</p>
 <h3 id="filters">Filters</h3>
 <hr />
 <p>The options <code>include_dbs</code>, <code>exclude_dbs</code>, <code>include_tables</code>, and <code>exclude_tables</code> control whether

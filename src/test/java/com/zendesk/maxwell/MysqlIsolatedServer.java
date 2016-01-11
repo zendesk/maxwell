@@ -88,8 +88,13 @@ public class MysqlIsolatedServer {
 	}
 
 	public void resetConnection() throws SQLException {
-		this.connection = DriverManager.getConnection("jdbc:mysql://127.0.0.1:" + port + "/mysql", "root", "");
+		this.connection = getNewConnection();
 	}
+
+	public Connection getNewConnection() throws SQLException {
+		return DriverManager.getConnection("jdbc:mysql://127.0.0.1:" + port + "/mysql?useCursorFetch=true&zeroDateTimeBehavior=convertToNull", "root", "");
+	}
+
 	public Connection getConnection() {
 		return connection;
 	}

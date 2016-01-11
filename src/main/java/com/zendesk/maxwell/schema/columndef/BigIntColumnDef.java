@@ -18,6 +18,9 @@ public class BigIntColumnDef extends ColumnDef {
 	}
 
 	private Object toNumeric(Object value) {
+        if ( value instanceof BigInteger ) {
+          return value;
+        }
         Long l = (Long)value;
         if ( l < 0 && !signed )
         	return longlong_max.add(BigInteger.valueOf(l));
@@ -33,4 +36,5 @@ public class BigIntColumnDef extends ColumnDef {
 	public Object asJSON(Object value) {
 		return toNumeric(value);
 	}
+
 }

@@ -6,11 +6,15 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.zendesk.maxwell.bootstrap.AsynchronousBootstrapper;
+import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
+import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Schema;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -22,6 +26,7 @@ import com.zendesk.maxwell.schema.SchemaStore;
 
 public class AbstractMaxwellTest {
 	protected static MysqlIsolatedServer server;
+	protected Schema schema;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -34,6 +39,20 @@ public class AbstractMaxwellTest {
 	@AfterClass
 	public static void teardownServer() {
 		server.shutDown();
+	}
+
+	public static String filterJsonForTest(String json) {
+		json = json.replaceAll("\"ts\":[0-9]+", "\"ts\":0");
+		json = json.replaceAll("\"started_at\":\"[^\"]+\"", "\"started_at\":\"\"");
+		json = json.replaceAll("\"completed_at\":\"[^\"]+\"", "\"completed_at\":\"\"");
+		json = json.replaceAll("\"id\":[0-9]+", "\"id\":0");
+		json = json.replaceAll("\"xid\":[0-9]+", "\"xid\":0");
+		json = json.replaceAll(",\"binlog_position\":[0-9]+", "");
+		json = json.replaceAll(",\"binlog_file\":\"[^\"]+\"", "");
+		json = json.replaceAll(",\"commit\":true", "");
+		json = json.replaceAll(",\"inserted_rows\":[0-9]+", "");
+		json = json.replaceAll("0002-11-30 00:00:00", "0000-00-00 00:00:00"); // workaround for discrepancy between MySQL versions
+		return json;
 	}
 
 	public String getSQLDir() {
@@ -92,6 +111,8 @@ public class AbstractMaxwellTest {
 		config.maxwellMysql.user = "maxwell";
 		config.maxwellMysql.password = "maxwell";
 
+		config.bootstrapperBatchFetchSize = 64;
+
 		config.initPosition = p;
 
 		return new MaxwellContext(config);
@@ -121,21 +142,38 @@ public class AbstractMaxwellTest {
 
 		BinlogPosition endPosition = BinlogPosition.capture(mysql.getConnection());
 
-		TestMaxwellReplicator p = new TestMaxwellReplicator(initialSchema,  null, context, start, endPosition);
+		final ArrayList<RowMap> list = new ArrayList<>();
+
+		AbstractProducer producer = new AbstractProducer(context) {
+			@Override
+			public void push(RowMap r) {
+				list.add(r);
+			}
+		};
+
+		AsynchronousBootstrapper bootstrapper = new AsynchronousBootstrapper(context) {
+			@Override
+			protected SynchronousBootstrapper getSynchronousBootstrapper() {
+				return new SynchronousBootstrapper(context) {
+					@Override
+					protected Connection getConnection() throws SQLException {
+						return server.getNewConnection();
+					}
+				};
+			}
+		};
+
+		TestMaxwellReplicator p = new TestMaxwellReplicator(initialSchema, producer, bootstrapper, context, start, endPosition);
 
 		p.setFilter(filter);
 
+		p.getEvents(producer);
 
-		final ArrayList<RowMap> list = new ArrayList<>();
+		schema = p.schema;
 
-		p.getEvents(new RowConsumer() {
-			@Override
-			void consume(RowMap r) {
-				if (!r.getDatabase().equals("maxwell")) {
-					list.add(r);
-				}
-			}
-		});
+		bootstrapper.join();
+
+		p.stopLoop();
 
 		context.terminate();
 
@@ -147,7 +185,7 @@ public class AbstractMaxwellTest {
 	}
 
 	protected List<RowMap>getRowsForSQL(MaxwellFilter filter, String queries[]) throws Exception {
-		return getRowsForSQL(filter, queries, null);
+		return getRowsForSQL(server, filter, queries, null);
 	}
 
 	@After

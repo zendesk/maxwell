@@ -24,6 +24,9 @@ public class MaxwellConfig {
 	public final Properties kafkaProperties;
 	public String kafkaTopic;
 	public String producerType;
+	public String bootstrapperType;
+	public Integer bootstrapperBatchFetchSize;
+
 	public String outputFile;
 	public String log_level;
 
@@ -66,19 +69,25 @@ public class MaxwellConfig {
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
+
 		parser.accepts( "__separator_4" );
+
+		parser.accepts( "bootstrapper", "bootstrapper type: async|sync|none. default: async" ).withRequiredArg();
+		parser.accepts( "bootstrapper_fetch_size", "number of rows fetched at a time during bootstrapping. default: 64000" ).withRequiredArg();
+
+		parser.accepts( "__separator_5" );
 
 		parser.accepts( "max_schemas", "how many old schema definitions maxwell should keep around.  default: 5").withOptionalArg();
 		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION").withRequiredArg();
 		parser.accepts( "replay", "replay mode, don't store any information to the server");
-		parser.accepts( "__separator_5" );
+		parser.accepts( "__separator_6" );
 
 		parser.accepts( "include_dbs", "include these databases, formatted as include_dbs=db1,db2").withOptionalArg();
 		parser.accepts( "exclude_dbs", "exclude these databases, formatted as exclude_dbs=db1,db2").withOptionalArg();
 		parser.accepts( "include_tables", "include these tables, formatted as include_tables=db1,db2").withOptionalArg();
 		parser.accepts( "exclude_tables", "exclude these tables, formatted as exclude_tables=tb1,tb2").withOptionalArg();
 
-		parser.accepts( "__separator_6" );
+		parser.accepts( "__separator_7" );
 		parser.accepts( "help", "display help").forHelp();
 
 		BuiltinHelpFormatter helpFormatter = new BuiltinHelpFormatter(200, 4) {
@@ -123,6 +132,10 @@ public class MaxwellConfig {
 
 		if ( options.has("producer"))
 			this.producerType = (String) options.valueOf("producer");
+		if ( options.has("bootstrapper"))
+			this.bootstrapperType = (String) options.valueOf("bootstrapper");
+		if ( options.has("bootstrapper_fetch_size"))
+			this.bootstrapperBatchFetchSize = Integer.valueOf((String) options.valueOf("bootstrapper_fetch_size"));
 
 		if ( options.has("kafka.bootstrap.servers"))
 			this.kafkaProperties.setProperty("bootstrap.servers", (String) options.valueOf("kafka.bootstrap.servers"));
@@ -211,6 +224,7 @@ public class MaxwellConfig {
 		this.replicationMysql.port = Integer.valueOf(p.getProperty("replication_port", "3306"));
 
 		this.producerType    = p.getProperty("producer");
+		this.bootstrapperType = p.getProperty("bootstrapper");
 		this.outputFile      = p.getProperty("output_file");
 		this.kafkaTopic      = p.getProperty("kafka_topic");
 		this.includeDatabases = p.getProperty("include_dbs");
@@ -252,9 +266,25 @@ public class MaxwellConfig {
 			this.maxwellMysql.user = "maxwell";
 		}
 
+		if ( this.bootstrapperType == null ) {
+			this.bootstrapperType = "async";
+		} else if ( !this.bootstrapperType.equals("async")
+				&& !this.bootstrapperType.equals("sync")
+				&& !this.bootstrapperType.equals("none") ) {
+			usage("please specify --bootstrapper=async|sync|none");
+		}
+
+		if ( this.bootstrapperBatchFetchSize  == null ) {
+			this.bootstrapperBatchFetchSize = 64000;
+		}
+
 		if ( this.maxwellMysql.host == null ) {
 			LOGGER.warn("maxwell mysql host not specified, defaulting to localhost");
 			this.maxwellMysql.host = "localhost";
+		}
+
+		if ( this.replicationMysql.host != null && !this.bootstrapperType.equals("none") ) {
+			usage("please specify --bootstrapper=none when specifying a replication host");
 		}
 
 		if ( this.replicationMysql.port == null )

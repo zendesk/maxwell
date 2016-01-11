@@ -3,7 +3,6 @@ package com.zendesk.maxwell.schema.columndef;
 import com.google.code.or.common.util.MySQLConstants;
 
 
-
 public class IntColumnDef extends ColumnDef {
 	private final int bits;
 
@@ -22,6 +21,15 @@ public class IntColumnDef extends ColumnDef {
 	}
 
 	private Long toLong(Object value) {
+
+		if ( value instanceof Long ) {
+			return ( Long ) value;
+		}
+
+		if ( value instanceof Boolean ) {
+			return ( Boolean ) value ? 1l: 0l;
+		}
+
 		Integer i = (Integer) value;
 
 		if (signed)

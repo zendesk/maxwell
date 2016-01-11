@@ -24,6 +24,9 @@ public class EnumColumnDef extends ColumnDef {
 	}
 
 	private String asString(Object value) {
+		if ( value instanceof String ) {
+			return ( String ) value;
+		}
 		Integer i = (Integer) value;
 
 		if ( i == 0 )

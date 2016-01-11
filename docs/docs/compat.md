@@ -1,18 +1,17 @@
-<div class="content-title">Maxwell Compatibility</div>
-
 ### Requirements:
-
+***
 - JRE 7 or above
 - mysql 5.1, 5.5, 5.6
 - kafka 0.8.2 or greater
 
-### Unsupported
-
-- Mysql 5.7 is untested with Maxwell, and in particular GTID replication is unsupported as of yet.
+### Unsupported configurations
+***
+- Mysql 5.7 is untested with Maxwell.  GTID replication is known to not function.
+- Maxwell is incompatible with PARTITION tables, as it is unable to parse the SQL.
 
 ### binlog_row_image=MINIMAL
-
-As of 0.17.0, Maxwell supports binlog_row_image=MINIMAL, but it may not be what you want.  It will differ
+***
+As of 0.16.2, Maxwell supports binlog_row_image=MINIMAL, but it may not be what you want.  It will differ
 from normal Maxwell operation in that:
 
 - INSERT statements will no longer output a column's default value
@@ -22,7 +21,7 @@ from normal Maxwell operation in that:
 - DELETE statements will be incomplete; generally they will only include the primary key.
 
 ### Master recovery
-
+***
 Currently Maxwell is not very smart about master recovery or detecting a promoted slave; if it determines
 that the server_id has changed between runs, Maxwell will simply delete its old schema cache and binlog position
 and start again.  We plan on improving master recovery in future releases.
