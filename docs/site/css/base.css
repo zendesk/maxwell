@@ -94,6 +94,14 @@ div.source-links {
     font-size: 80%;
 }
 
+/*
+@media (min-width: 768px) {
+  .navbar-toggle {
+    display: none;
+  }
+}
+*/
+
 /* replace top-nav with side-nav */
 @media (min-width: 992px) {
   .navbar-header {
@@ -125,8 +133,9 @@ div.source-links {
     /* Widen the fixed sidebar */
     .bs-sidebar.affix,
     .bs-sidebar.affix-bottom {
-        width: 263px;
+        width: 160px;
     }
+
     .bs-sidebar.affix {
         position: fixed; /* Undo the static from mobile first approach */
         top: 65px;
@@ -190,14 +199,13 @@ div.source-links {
     }
 }
 
-
-
 .content-title {
   font-size: 150%;
 }
 
 h3:before {
-  content: "\2192  ";
+  content: "\27A1  ";
+  width: 30px;
 }
 
 h3:nth-of-type(1) {
