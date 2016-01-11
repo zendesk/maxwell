@@ -24,6 +24,7 @@ div.source-links {
 
 
 #github-banner { display: none; }
+#home-code { margin: 0px; }
 
 .bs-sidebar {
   display: none;
@@ -35,6 +36,11 @@ div.source-links {
 
 #maxwell-daemon-image {
   display: none;
+}
+
+.home-code {
+  margin: 0px;
+  margin-bottom: 15px;
 }
 
 .container {
@@ -94,6 +100,12 @@ div.source-links {
     font-size: 80%;
 }
 
+h3 {
+  padding-bottom:2px;
+  margin-bottom: 0px;
+  margin-top: 20px;
+}
+
 /*
 @media (min-width: 768px) {
   .navbar-toggle {
@@ -151,26 +163,11 @@ div.source-links {
 
     h3 {
       font-size: 120%;
-      /* text-decoration: underline; */
-      /* font-weight: 400; */
-      /* background-color: rgba(0,0,0,0.05); */
-      /* color: #008cba; */
       padding: 8px;
+      width: 80%;
       padding-bottom:2px;
       margin-bottom: 0px;
       margin-top: 20px;
-      /* border: 0px;
-      border-bottom: 1px solid #BBB; */
-      width: 80%;
-    }
-
-    hr {
-      margin-top:-4px;
-      margin-bottom: 15px;
-      margin-left: 30px;
-      margin-right: 0px;
-      border-color: #788F96;
-      width: 80%;
     }
 
     pre, table {
@@ -197,6 +194,15 @@ div.source-links {
     .bs-sidebar.affix {
         width: 190px;
     }
+}
+
+hr {
+  margin-top:-4px;
+  margin-bottom: 15px;
+  margin-left: 28px;
+  margin-right: 0px;
+  border-color: #788F96;
+  width: 80%;
 }
 
 .content-title {

@@ -15,40 +15,41 @@ but differentiates itself with these features:
 
 Maxwell is intended as a source for event-based readers, eg various ETL applications, search indexing,
 stat emitters.
+
 <br style="clear:both"/>
 
 ```
-mysql> insert into `test`.`maxwell` set id = 1, daemon = 'Stanlislaw Lem';
+  mysql> insert into `test`.`maxwell` set id = 1, daemon = 'Stanlislaw Lem';
+  maxwell: {
+    "database": "test",
+    "table": "maxwell",
+    "type": "insert",
+    "ts": 1449786310,
+    "xid": 940753,
+    "commit": true,
+    "data": { "id":1, "daemon": "Stanlislaw Lem" }
+  }
+```
 
-<- {
-     "database":"test",
-     "table":"maxwell",
-     "type":"insert",
-     "ts":1449786310,
-     "xid":940753,
-     "commit":true,
-     "data":{ "id":1, "daemon": "Stanlislaw Lem" }
-   }
-
-mysql> update test.maxwell set id = 11, daemon = 'firebus!  firebus!';
-
-<- {
-     "database":"test",
-     "table":"maxwell",
-     "type":"update",
-     "ts":1449786341,
-     "xid":940786,
-     "commit":true,
-     "data":{"id":11, "daemon":"Firebus!  Firebus!"},
-     "old":{"id":1, "daemon":"Stanlislaw Lem"}
-   }
+```
+  mysql> update test.maxwell set daemon = 'firebus!  firebus!' where id = 1;
+  maxwell: {
+    "database": "test",
+    "table": "maxwell",
+    "type": "update",
+    "ts": 1449786341,
+    "xid": 940786,
+    "commit": true,
+    "data": {"id":1, "daemon": "Firebus!  Firebus!"},
+    "old":  {"daemon": "Stanlislaw Lem"}
+  }
 ```
 
 <script>
   jQuery(document).ready(function () {
     jQuery("#maxwell-header").append(
       jQuery("<img alt='The Daemon, maybe' src='./img/cyberiad_1.jpg' id='maxwell-daemon-image'>")
-
-    )
+    );
+    jQuery("pre").addClass("home-code");
   });
 </script>
