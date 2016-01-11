@@ -1,5 +1,6 @@
 grammar column_definitions;
 import mysql_literal_tokens, mysql_idents;
+import mysql_indices; // for REFERENCES
 
 
 column_definition:
@@ -76,6 +77,7 @@ column_options:
 	| COMMENT string_literal
 	| COLUMN_FORMAT (FIXED|DYNAMIC|DEFAULT)
 	| STORAGE (DISK|MEMORY|DEFAULT)
+	| reference_definition
 ;
 
 primary_key: PRIMARY KEY;
@@ -87,7 +89,7 @@ charset_def: character_set | ASCII;
 character_set: ((CHARACTER SET) | CHARSET) charset_name;
 
 nullability: (NOT NULL | NULL);
-default_value: DEFAULT (literal | NULL | CURRENT_TIMESTAMP length? | now_function | TRUE | FALSE );
+default_value: DEFAULT (literal | CURRENT_TIMESTAMP length? | now_function);
 length: '(' INTEGER_LITERAL ')';
 int_flags: ( SIGNED | UNSIGNED | ZEROFILL );
 decimal_length: '(' INTEGER_LITERAL ( ',' INTEGER_LITERAL )? ')';

@@ -175,6 +175,7 @@ public class SchemaStore {
 			SchemaStore.createStoreDatabase(connection, schemaDatabaseName);
 		}
 	}
+
 	private static boolean storeDatabaseExists(Connection connection, String schemaDatabaseName) throws SQLException {
 		Statement s = connection.createStatement();
 		ResultSet rs = s.executeQuery("show databases like '" + schemaDatabaseName + "'");
@@ -182,15 +183,13 @@ public class SchemaStore {
 		return rs.next();
 	}
 
-	private static void createStoreDatabase(Connection connection, String schemaDatabaseName) throws SQLException, IOException {
-		connection.createStatement().execute("CREATE DATABASE IF NOT EXISTS `" + schemaDatabaseName + "`");
-
-		InputStream schemaSQL = SchemaStore.class.getResourceAsStream(
-				"/sql/maxwell_schema.sql");
+	private static void executeSQLInputStream(Connection connection, InputStream schemaSQL, String schemaDatabaseName) throws SQLException, IOException {
 		BufferedReader r = new BufferedReader(new InputStreamReader(schemaSQL));
 		String sql ="", line;
 
 		LOGGER.info("Creating maxwell database");
+		connection.createStatement().execute("CREATE DATABASE IF NOT EXISTS `" + schemaDatabaseName + "`");
+
 		while ((line = r.readLine()) != null) {
 			sql += line + "\n";
 		}
@@ -201,6 +200,11 @@ public class SchemaStore {
 
 			connection.createStatement().execute(statement);
 		}
+	}
+
+	private static void createStoreDatabase(Connection connection, String schemaDatabaseName) throws SQLException, IOException {
+		executeSQLInputStream(connection, SchemaStore.class.getResourceAsStream("/sql/maxwell_schema.sql"), schemaDatabaseName);
+		executeSQLInputStream(connection, SchemaStore.class.getResourceAsStream("/sql/maxwell_schema_bootstrap.sql"), schemaDatabaseName);
 	}
 
 	public static SchemaStore restore(Connection connection, MaxwellContext context) throws SQLException, SchemaSyncError {
@@ -421,16 +425,33 @@ public class SchemaStore {
 		return map;
 	}
 
+	private static List<String> getMaxwellTables(Connection c, String schemaDatabaseName) throws SQLException {
+		ArrayList<String> l = new ArrayList<>();
+
+		c.setCatalog(schemaDatabaseName);
+		ResultSet rs = c.createStatement().executeQuery("show tables");
+		while (rs.next()) {
+			l.add(rs.getString(1));
+		}
+		return l;
+	}
+
 	private static void performAlter(Connection c, String sql) throws SQLException {
 		LOGGER.info("Maxwell is upgrading its own schema...");
 		LOGGER.info(sql);
 		c.createStatement().execute(sql);
 	}
 
-	public static void upgradeSchemaStoreSchema(Connection c, String schemaDatabaseName) throws SQLException {
-		if ( !SchemaStore.getTableColumns("schemas", c, schemaDatabaseName).containsKey("deleted") ) {
+	public static void upgradeSchemaStoreSchema(Connection c, String schemaDatabaseName) throws SQLException, IOException {
+		if ( !getTableColumns("schemas", c, schemaDatabaseName).containsKey("deleted") ) {
 			c.setCatalog(schemaDatabaseName);
 			performAlter(c, "alter table `schemas` add column deleted tinyint(1) not null default 0");
+		}
+
+		if ( !getMaxwellTables(c, schemaDatabaseName).contains("bootstrap") )  {
+			LOGGER.info("adding `" + schemaDatabaseName + "`.`bootstrap` to the schema.");
+			InputStream is = SchemaStore.class.getResourceAsStream("/sql/maxwell_schema_bootstrap.sql");
+			executeSQLInputStream(c, is, schemaDatabaseName);
 		}
 	}
 

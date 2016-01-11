@@ -175,6 +175,8 @@ public class DDLParserTest {
 			"alter table t alter column `foo` SET DEFAULT 112312",
 			"alter table t alter column `foo` SET DEFAULT 1.2",
 			"alter table t alter column `foo` SET DEFAULT 'foo'",
+			"alter table t alter column `foo` SET DEFAULT true",
+			"alter table t alter column `foo` SET DEFAULT false",
 			"alter table t alter column `foo` drop default",
 			"alter table t CHARACTER SET latin1 COLLATE = 'utf8'",
 			"alter table t DROP PRIMARY KEY",
@@ -436,6 +438,11 @@ public class DDLParserTest {
 	public void testBinaryColumnDefaults() {
 		assertThat(parseCreate("CREATE TABLE foo (id boolean default true)"), is(notNullValue()));
 		assertThat(parseCreate("CREATE TABLE foo (id boolean default false)"), is(notNullValue()));
+	}
+
+	@Test
+	public void testAlterOrderBy() {
+		assertThat(parseAlter("ALTER TABLE t1 ORDER BY t1.id, t1.status, t1.type_id, t1.user_id, t1.body"), is(notNullValue()));
 	}
 
 	@Test

@@ -11,7 +11,8 @@
 
         <title>Quick Start - Maxwell's Daemon</title>
 
-        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/bootstrap-theme.min.css" rel="stylesheet">
         <link href="../css/font-awesome-4.0.3.css" rel="stylesheet">
         <link href="../css/prettify-1.0.css" rel="stylesheet">
         <link href="../css/base.css" rel="stylesheet">
@@ -28,21 +29,91 @@
 
         <div class="navbar navbar-default navbar-fixed-top" role="navigation">
     <div class="container">
+
         <!-- Collapsed navigation -->
         <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
             <!-- Main title -->
             <a class="navbar-brand" href="..">Maxwell's Daemon</a>
         </div>
 
         <!-- Expanded navigation -->
         <div class="navbar-collapse collapse">
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+            
+            
+                <li >
+                    <a href="..">Overview</a>
+                </li>
+            
+            
+            
+                <li class="active">
+                    <a href="./">Quick Start</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../config/">Configuration</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../kafka/">Kafka</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../dataformat/">Data Format</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../bootstrapping/">Bootstrapping</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../compat/">Compat / Caveats</a>
+                </li>
+            
+            
+            </ul>
+
+            <!-- Search, Navigation and Repo links -->
+            <ul class="nav navbar-nav navbar-right">
+                <li >
+                    <a rel="next" href="..">
+                        <i class="fa fa-arrow-left"></i> Previous
+                    </a>
+                </li>
+                <li >
+                    <a rel="prev" href="../config/">
+                        Next <i class="fa fa-arrow-right"></i>
+                    </a>
+                </li>
+                
+            </ul>
         </div>
     </div>
 </div>
 
-        <a href="https://github.com/zendesk/maxwell"><img style="position: absolute; top: 0; right: 0; border: 0; z-index: 1031;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
+        <a href="https://github.com/zendesk/maxwell"><img id="github-banner" style="position: absolute; top: 0; right: 0; border: 0; z-index: 1031;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
         <div class="container">
-            <div class="col-md-2"><div class="bs-sidebar hidden-print affix well" role="complementary">
+            <div class="col-md-2">&nbsp;<div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
         
           <li >
@@ -67,7 +138,7 @@
                       <li class="toctree-l3"><a href="#stdout-producer">STDOUT producer</a></li>
                       
                   
-                      <li class="toctree-l3"><a href="#run-with-kafka-producer">Run with kafka producer</a></li>
+                      <li class="toctree-l3"><a href="#kafka-producer">Kafka producer</a></li>
                       
                   
                   </ul>
@@ -86,6 +157,11 @@
         
           <li >
               <a href="../dataformat/">Data Format</a>
+              
+          </li>
+        
+          <li >
+              <a href="../bootstrapping/">Bootstrapping</a>
               
           </li>
         
@@ -113,6 +189,8 @@ binlog_format=row
 <pre><code>mysql&gt; set global binlog_row_image=FULL;
 </code></pre>
 
+<p><em>note</em>: When changing the binlog format on a running server, currently connected mysql clients will continue to replication in STATEMENT format --
+in order to change to row-based replication, you must reconnect all active clients to the server.</p>
 <h3 id="mysql-permissions">Mysql permissions</h3>
 <hr />
 <p>Maxwell stores all the state it needs within the mysql server itself, in a database called <code>maxwell</code>.</p>
@@ -129,9 +207,9 @@ mysql&gt; GRANT ALL on maxwell.* to 'maxwell'@'localhost';
 <h3 id="download">Download</h3>
 <hr />
 <p>You'll need a version 7 of a JVM.</p>
-<pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.16.2-RC1/maxwell-0.16.2-RC1.tar.gz \
+<pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.17.0/maxwell-0.17.0.tar.gz \
        | tar zxvf -
-cd maxwell-0.16.2-RC1
+cd maxwell-0.17.0
 </code></pre>
 
 <h3 id="stdout-producer">STDOUT producer</h3>
@@ -148,7 +226,8 @@ Query OK, 1 row affected (0.04 sec)
 {&quot;table&quot;:&quot;maxwell&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;data&quot;:{&quot;id&quot;:5,&quot;daemon&quot;:&quot;firebus!  firebus!&quot;},&quot;ts&quot;: 123456789}
 </code></pre>
 
-<h3 id="run-with-kafka-producer">Run with kafka producer</h3>
+<h3 id="kafka-producer">Kafka producer</h3>
+<hr />
 <p>Boot kafka as described here:  <a href="http://kafka.apache.org/07/quickstart.html">http://kafka.apache.org/07/quickstart.html</a>, then:</p>
 <pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
    --producer=kafka --kafka.bootstrap.servers=localhost:9092

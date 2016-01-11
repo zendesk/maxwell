@@ -17,6 +17,8 @@ Or on a running server:
 mysql> set global binlog_row_image=FULL;
 ```
 
+*note*: When changing the binlog format on a running server, currently connected mysql clients will continue to replication in STATEMENT format --
+in order to change to row-based replication, you must reconnect all active clients to the server.
 
 ### Mysql permissions
 ***
@@ -37,9 +39,9 @@ mysql> GRANT ALL on maxwell.* to 'maxwell'@'localhost';
 You'll need a version 7 of a JVM.
 
 ```
-curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.16.2-RC1/maxwell-0.16.2-RC1.tar.gz \
+curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.17.0/maxwell-0.17.0.tar.gz \
        | tar zxvf -
-cd maxwell-0.16.2-RC1
+cd maxwell-0.17.0
 ```
 
 
@@ -62,8 +64,8 @@ Query OK, 1 row affected (0.04 sec)
 ```
 
 
-### Run with kafka producer
-
+### Kafka producer
+***
 Boot kafka as described here:  [http://kafka.apache.org/07/quickstart.html](http://kafka.apache.org/07/quickstart.html), then:
 
 ```
@@ -72,3 +74,5 @@ bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
 ```
 
 This will start writing to the topic "maxwell".
+
+

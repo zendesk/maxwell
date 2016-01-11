@@ -11,7 +11,8 @@
 
         <title>Compat / Caveats - Maxwell's Daemon</title>
 
-        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/bootstrap-theme.min.css" rel="stylesheet">
         <link href="../css/font-awesome-4.0.3.css" rel="stylesheet">
         <link href="../css/prettify-1.0.css" rel="stylesheet">
         <link href="../css/base.css" rel="stylesheet">
@@ -28,21 +29,91 @@
 
         <div class="navbar navbar-default navbar-fixed-top" role="navigation">
     <div class="container">
+
         <!-- Collapsed navigation -->
         <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
             <!-- Main title -->
             <a class="navbar-brand" href="..">Maxwell's Daemon</a>
         </div>
 
         <!-- Expanded navigation -->
         <div class="navbar-collapse collapse">
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+            
+            
+                <li >
+                    <a href="..">Overview</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../quickstart/">Quick Start</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../config/">Configuration</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../kafka/">Kafka</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../dataformat/">Data Format</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../bootstrapping/">Bootstrapping</a>
+                </li>
+            
+            
+            
+                <li class="active">
+                    <a href="./">Compat / Caveats</a>
+                </li>
+            
+            
+            </ul>
+
+            <!-- Search, Navigation and Repo links -->
+            <ul class="nav navbar-nav navbar-right">
+                <li >
+                    <a rel="next" href="../bootstrapping/">
+                        <i class="fa fa-arrow-left"></i> Previous
+                    </a>
+                </li>
+                <li class="disabled">
+                    <a rel="prev" >
+                        Next <i class="fa fa-arrow-right"></i>
+                    </a>
+                </li>
+                
+            </ul>
         </div>
     </div>
 </div>
 
-        <a href="https://github.com/zendesk/maxwell"><img style="position: absolute; top: 0; right: 0; border: 0; z-index: 1031;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
+        <a href="https://github.com/zendesk/maxwell"><img id="github-banner" style="position: absolute; top: 0; right: 0; border: 0; z-index: 1031;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
         <div class="container">
-            <div class="col-md-2"><div class="bs-sidebar hidden-print affix well" role="complementary">
+            <div class="col-md-2">&nbsp;<div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
         
           <li >
@@ -70,6 +141,11 @@
               
           </li>
         
+          <li >
+              <a href="../bootstrapping/">Bootstrapping</a>
+              
+          </li>
+        
           <li class="active">
               <a href="./">Compat / Caveats</a>
               
@@ -78,7 +154,7 @@
                       <li class="toctree-l3"><a href="#requirements">Requirements:</a></li>
                       
                   
-                      <li class="toctree-l3"><a href="#unsupported">Unsupported</a></li>
+                      <li class="toctree-l3"><a href="#unsupported-configurations">Unsupported configurations</a></li>
                       
                   
                       <li class="toctree-l3"><a href="#binlog_row_imageminimal">binlog_row_image=MINIMAL</a></li>
@@ -95,20 +171,22 @@
 </div></div>
             <div class="col-md-10" role="main">
 
-<div class="content-title">Maxwell Compatibility</div>
-
 <h3 id="requirements">Requirements:</h3>
+<hr />
 <ul>
 <li>JRE 7 or above</li>
 <li>mysql 5.1, 5.5, 5.6</li>
 <li>kafka 0.8.2 or greater</li>
 </ul>
-<h3 id="unsupported">Unsupported</h3>
+<h3 id="unsupported-configurations">Unsupported configurations</h3>
+<hr />
 <ul>
-<li>Mysql 5.7 is untested with Maxwell, and in particular GTID replication is unsupported as of yet.</li>
+<li>Mysql 5.7 is untested with Maxwell.  GTID replication is known to not function.</li>
+<li>Maxwell is incompatible with PARTITION tables, as it is unable to parse the SQL.</li>
 </ul>
 <h3 id="binlog_row_imageminimal">binlog_row_image=MINIMAL</h3>
-<p>As of 0.17.0, Maxwell supports binlog_row_image=MINIMAL, but it may not be what you want.  It will differ
+<hr />
+<p>As of 0.16.2, Maxwell supports binlog_row_image=MINIMAL, but it may not be what you want.  It will differ
 from normal Maxwell operation in that:</p>
 <ul>
 <li>INSERT statements will no longer output a column's default value</li>
@@ -118,6 +196,7 @@ from normal Maxwell operation in that:</p>
 <li>DELETE statements will be incomplete; generally they will only include the primary key.</li>
 </ul>
 <h3 id="master-recovery">Master recovery</h3>
+<hr />
 <p>Currently Maxwell is not very smart about master recovery or detecting a promoted slave; if it determines
 that the server_id has changed between runs, Maxwell will simply delete its old schema cache and binlog position
 and start again.  We plan on improving master recovery in future releases.</p>

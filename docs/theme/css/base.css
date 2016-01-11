@@ -2,6 +2,10 @@ body {
     padding-top: 70px;
 }
 
+h1,h2,h3,h4,h5,h6,body {
+    font-family: "Helvetica Neue","Helvetica","Arial","sans-serif";
+}
+
 ul.nav li.main {
     font-weight: bold;
 }
@@ -18,12 +22,38 @@ div.source-links {
     float: right;
 }
 
-/*
- * Side navigation
- *
- * Scrollspy and affixed enhanced navigation to highlight sections and secondary
- * sections of docs content.
- */
+
+#github-banner { display: none; }
+#home-code { margin: 0px; }
+
+.bs-sidebar {
+  display: none;
+}
+
+#maxwell-header > h2 {
+  margin-top: 0px;
+}
+
+#maxwell-daemon-image {
+  display: none;
+}
+
+.home-code {
+  margin: 0px;
+  margin-bottom: 15px;
+}
+
+.container {
+  padding: 0px;
+}
+
+.navbar-header {
+  padding-left: 15px;
+}
+
+.navbar-collapse ul {
+  padding-left: 15px;
+}
 
 /* By default it's not affixed in mobile views, so undo that */
 .bs-sidebar.affix {
@@ -70,16 +100,54 @@ div.source-links {
     font-size: 80%;
 }
 
-/* Show and affix the side nav when space allows it */
+h3 {
+  padding-bottom:2px;
+  margin-bottom: 0px;
+  margin-top: 20px;
+}
+
+/*
+@media (min-width: 768px) {
+  .navbar-toggle {
+    display: none;
+  }
+}
+*/
+
+/* replace top-nav with side-nav */
 @media (min-width: 992px) {
+  .navbar-header {
+    padding-left: 0px;
+  }
+
+    #maxwell-daemon-image {
+      display: inline;
+      float: left;
+      height: 300px;
+      margin-right: 20px;
+    }
+
+    .bs-sidebar {
+      display: block;
+    }
+
+    .navbar-collapse ul {
+      display: none;
+    }
+
+    .container {
+      margin-left: 50px;
+    }
+
     .bs-sidebar .nav > .active > ul {
         display: block;
     }
     /* Widen the fixed sidebar */
     .bs-sidebar.affix,
     .bs-sidebar.affix-bottom {
-        width: 213px;
+        width: 160px;
     }
+
     .bs-sidebar.affix {
         position: fixed; /* Undo the static from mobile first approach */
         top: 65px;
@@ -92,7 +160,34 @@ div.source-links {
         margin-top: 0;
         margin-bottom: 0;
     }
+
+    h3 {
+      font-size: 120%;
+      padding: 8px;
+      width: 80%;
+      padding-bottom:2px;
+      margin-bottom: 0px;
+      margin-top: 20px;
+    }
+
+    pre, table {
+      font-size: 12px;
+      margin-left: 30px;
+      margin-right: 30px;
+    }
+
+    code {
+      background-color: rgba(0,0,0,0.04);
+      color: #333;
+    }
+
+    p {
+      padding-left: 30px;
+      padding-right: 30px;
+      margin-top: 5px;
+    }
 }
+
 @media (min-width: 1200px) {
     /* Widen the fixed sidebar again */
     .bs-sidebar.affix-bottom,
@@ -101,24 +196,25 @@ div.source-links {
     }
 }
 
-pre {
-  margin-bottom: 30px;
-}
-
-.container {
-  margin-left: 50px;
+hr {
+  margin-top:-4px;
+  margin-bottom: 15px;
+  margin-left: 28px;
+  margin-right: 0px;
+  border-color: #788F96;
+  width: 80%;
 }
 
 .content-title {
   font-size: 150%;
 }
 
-h3 {
-  margin-bottom: 5px;
+h3:before {
+  content: "\27A1  ";
+  width: 30px;
+}
+
+h3:nth-of-type(1) {
   margin-top: 0px;
 }
 
-hr {
-  margin-top:5px;
-  margin-bottom: 10px;
-}

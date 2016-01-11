@@ -5,8 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.antlr.v4.runtime.ANTLRInputStream;
-import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -37,7 +36,7 @@ public abstract class SchemaChange {
 		SQL_BLACKLIST.add(Pattern.compile("^(ALTER|CREATE|DROP)\\s+((ONLINE|OFFLINE|UNIQUE|FULLTEXT|SPATIAL)\\s+)*(INDEX)", Pattern.CASE_INSENSITIVE));
 		SQL_BLACKLIST.add(Pattern.compile("^ANALYZE\\s+TABLE", Pattern.CASE_INSENSITIVE));
 		SQL_BLACKLIST.add(Pattern.compile("^SET\\s+PASSWORD", Pattern.CASE_INSENSITIVE));
-		SQL_BLACKLIST.add(Pattern.compile("^(CREATE|DROP|RENAME)\\s+USER", Pattern.CASE_INSENSITIVE));
+		SQL_BLACKLIST.add(Pattern.compile("^(ALTER|CREATE|DROP|RENAME)\\s+USER", Pattern.CASE_INSENSITIVE));
 
 		SQL_BLACKLIST.add(Pattern.compile("^CREATE\\s+TEMPORARY\\s+TABLE", Pattern.CASE_INSENSITIVE));
 		SQL_BLACKLIST.add(Pattern.compile("^TRUNCATE\\s+", Pattern.CASE_INSENSITIVE));
@@ -55,36 +54,46 @@ public abstract class SchemaChange {
 		return false;
 	}
 
+	private static List<SchemaChange> parseSQL(String currentDB, String sql) {
+		ANTLRInputStream input = new ANTLRInputStream(sql);
+		mysqlLexer lexer = new mysqlLexer(input);
+		lexer.removeErrorListeners();
+
+		TokenStream tokens = new CommonTokenStream(lexer);
+
+		LOGGER.debug("SQL_PARSE <- \"" + sql + "\"");
+		mysqlParser parser = new mysqlParser(tokens);
+		parser.removeErrorListeners();
+
+		MysqlParserListener listener = new MysqlParserListener(currentDB, tokens);
+
+		ParseTree tree = parser.parse();
+
+		ParseTreeWalker.DEFAULT.walk(listener, tree);
+		LOGGER.debug("SQL_PARSE ->   " + tree.toStringTree(parser));
+		return listener.getSchemaChanges();
+	}
+
 	public static List<SchemaChange> parse(String currentDB, String sql) {
 		if ( matchesBlacklist(sql) ) {
 			return null;
 		}
 
-		try {
-			ANTLRInputStream input = new ANTLRInputStream(sql);
-			mysqlLexer lexer = new mysqlLexer(input);
-			lexer.removeErrorListeners();
-
-			CommonTokenStream tokens = new CommonTokenStream(lexer);
-			mysqlParser parser = new mysqlParser(tokens);
-			parser.removeErrorListeners();
-
-			MysqlParserListener listener = new MysqlParserListener(currentDB);
-
-			LOGGER.debug("SQL_PARSE <- \"" + sql + "\"");
-			ParseTree tree = parser.parse();
-
-			ParseTreeWalker.DEFAULT.walk(listener, tree);
-			LOGGER.debug("SQL_PARSE ->   " + tree.toStringTree(parser));
-			return listener.getSchemaChanges();
-		} catch ( ParseCancellationException e ) {
-			LOGGER.debug("Parse cancelled: " + e);
-			return null;
-		} catch ( MaxwellSQLSyntaxError e) {
-			LOGGER.error("Error parsing SQL: '" + sql + "'");
-			throw (e);
+		while ( true ) {
+			try {
+				return parseSQL(currentDB, sql);
+			} catch ( ReparseSQLException e ) {
+				sql = e.getSQL();
+				LOGGER.debug("rewrote SQL to " + sql);
+				// re-enter loop
+			} catch ( ParseCancellationException e ) {
+				LOGGER.debug("Parse cancelled: " + e);
+				return null;
+			} catch ( MaxwellSQLSyntaxError e) {
+				LOGGER.error("Error parsing SQL: '" + sql + "'");
+				throw (e);
+			}
 		}
-
 	}
 
 }

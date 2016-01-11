@@ -11,7 +11,8 @@
 
         <title>Data Format - Maxwell's Daemon</title>
 
-        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/bootstrap-theme.min.css" rel="stylesheet">
         <link href="../css/font-awesome-4.0.3.css" rel="stylesheet">
         <link href="../css/prettify-1.0.css" rel="stylesheet">
         <link href="../css/base.css" rel="stylesheet">
@@ -28,21 +29,91 @@
 
         <div class="navbar navbar-default navbar-fixed-top" role="navigation">
     <div class="container">
+
         <!-- Collapsed navigation -->
         <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
             <!-- Main title -->
             <a class="navbar-brand" href="..">Maxwell's Daemon</a>
         </div>
 
         <!-- Expanded navigation -->
         <div class="navbar-collapse collapse">
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+            
+            
+                <li >
+                    <a href="..">Overview</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../quickstart/">Quick Start</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../config/">Configuration</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../kafka/">Kafka</a>
+                </li>
+            
+            
+            
+                <li class="active">
+                    <a href="./">Data Format</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../bootstrapping/">Bootstrapping</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../compat/">Compat / Caveats</a>
+                </li>
+            
+            
+            </ul>
+
+            <!-- Search, Navigation and Repo links -->
+            <ul class="nav navbar-nav navbar-right">
+                <li >
+                    <a rel="next" href="../kafka/">
+                        <i class="fa fa-arrow-left"></i> Previous
+                    </a>
+                </li>
+                <li >
+                    <a rel="prev" href="../bootstrapping/">
+                        Next <i class="fa fa-arrow-right"></i>
+                    </a>
+                </li>
+                
+            </ul>
         </div>
     </div>
 </div>
 
-        <a href="https://github.com/zendesk/maxwell"><img style="position: absolute; top: 0; right: 0; border: 0; z-index: 1031;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
+        <a href="https://github.com/zendesk/maxwell"><img id="github-banner" style="position: absolute; top: 0; right: 0; border: 0; z-index: 1031;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
         <div class="container">
-            <div class="col-md-2"><div class="bs-sidebar hidden-print affix well" role="complementary">
+            <div class="col-md-2">&nbsp;<div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
         
           <li >
@@ -87,6 +158,11 @@
           </li>
         
           <li >
+              <a href="../bootstrapping/">Bootstrapping</a>
+              
+          </li>
+        
+          <li >
               <a href="../compat/">Compat / Caveats</a>
               
           </li>
@@ -95,16 +171,16 @@
 </div></div>
             <div class="col-md-10" role="main">
 
-<div class="content-title">How Maxwell munges various datatypes</div>
+<h4>How Maxwell translates different mysql types</h4>
 
+<h3 id="strings-varchar-text">strings (varchar, text)</h3>
 <hr />
-<h4 id="strings-varchar-text">strings (varchar, text)</h4>
 <p>Maxwell currently supports latin1 and utf-8 columns, and will convert both to UTF-8 before outputting as JSON.</p>
+<h3 id="blob-binary-encoded-strings">blob (+ binary encoded strings)</h3>
 <hr />
-<h4 id="blob-binary-encoded-strings">blob (+ binary encoded strings)</h4>
 <p>Maxell will base64 encode BLOB, BINARY and VARBINARY columns (as well as varchar/string columns with a BINARY encoding).</p>
+<h3 id="datetime">datetime</h3>
 <hr />
-<h4 id="datetime">datetime</h4>
 <p>Datetime columns are output as "YYYY-MM-DD hh:mm::ss" strings.  Note that mysql
 has no problem storing invalid datetimes like "0000-00-00 00:00:00", and
 Maxwell chooses to reproduce these invalid datetimes faithfully,
@@ -115,8 +191,8 @@ mysql&gt;    insert into test_datetime set dtcol='0000-00-00 00:00:00';
 &lt;maxwell  {&quot;table&quot;:&quot;test_datetime&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;data&quot;:{&quot;dtcol&quot;:&quot;0000-00-00 00:00:00&quot;}}
 </code></pre>
 
+<h3 id="sets">sets</h3>
 <hr />
-<h4 id="sets">sets</h4>
 <p>output as JSON arrays.</p>
 <pre><code>mysql&gt;   create table test_sets ( id int(11), setcol set('a_val', 'b_val', 'c_val') );
 mysql&gt;   insert into test_sets set setcol = 'b_val,c_val';

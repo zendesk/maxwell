@@ -8,6 +8,7 @@ import com.djdch.log4j.StaticShutdownCallbackRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
@@ -20,13 +21,15 @@ public class Maxwell {
 	private MaxwellContext context;
 	static final Logger LOGGER = LoggerFactory.getLogger(Maxwell.class);
 
-	private void initFirstRun(Connection connection) throws SQLException, IOException, SchemaSyncError {
+	private void initFirstRun(Connection connection, Connection schemaConnection) throws SQLException, IOException, SchemaSyncError {
 		LOGGER.info("Maxwell is capturing initial schema");
 		SchemaCapturer capturer = new SchemaCapturer(connection, this.context.getCaseSensitivity());
 		this.schema = capturer.capture();
 
 		BinlogPosition pos = BinlogPosition.capture(connection);
-		SchemaStore store = new SchemaStore(connection, this.context.getServerID(), this.schema, pos, this.config.databaseName);
+
+		SchemaStore store = new SchemaStore(schemaConnection, this.context.getServerID(), this.schema, pos, this.config.databaseName);
+
 		store.save();
 
 		this.context.setPosition(pos);
@@ -39,33 +42,41 @@ public class Maxwell {
 			MaxwellLogging.setLevel(this.config.log_level);
 
 		this.context = new MaxwellContext(this.config);
-		LOGGER.info("Maxwell using " + config.databaseName + " to track schema and position.");
-		try ( Connection connection = this.context.getConnectionPool().getConnection() ) {
-			MaxwellMysqlStatus.ensureMysqlState(connection);
 
-			SchemaStore.ensureMaxwellSchema(connection, this.config.databaseName);
-			SchemaStore.upgradeSchemaStoreSchema(connection, this.config.databaseName);
+		this.context.probeConnections();
 
-			SchemaStore.handleMasterChange(connection, context.getServerID(), this.config.databaseName);
+		try ( Connection connection = this.context.getReplicationConnectionPool().getConnection(); Connection schemaConnection = context.getMaxwellConnectionPool().getConnection() ) {
+			MaxwellMysqlStatus.ensureReplicationMysqlState(connection);
+			MaxwellMysqlStatus.ensureMaxwellMysqlState(schemaConnection);
+
+			SchemaStore.ensureMaxwellSchema(schemaConnection, this.config.databaseName);
+			SchemaStore.upgradeSchemaStoreSchema(schemaConnection, this.config.databaseName);
+
+			SchemaStore.handleMasterChange(schemaConnection, context.getServerID(), this.config.databaseName);
 
 			if ( this.context.getInitialPosition() != null ) {
 				String producerClass = this.context.getProducer().getClass().getSimpleName();
 
 				LOGGER.info("Maxwell is booting (" + producerClass + "), starting at " + this.context.getInitialPosition());
-				SchemaStore store = SchemaStore.restore(connection, this.context);
+
+				SchemaStore store = SchemaStore.restore(schemaConnection, this.context);
+
 				this.schema = store.getSchema();
 			} else {
-				initFirstRun(connection);
+				initFirstRun(connection, schemaConnection);
 			}
 		} catch ( SQLException e ) {
-			LOGGER.error("Failed to connect to mysql server @ " + this.config.getConnectionURI());
+			LOGGER.error("SQLException: " + e.getLocalizedMessage());
 			LOGGER.error(e.getLocalizedMessage());
 			return;
 		}
 
 		AbstractProducer producer = this.context.getProducer();
+		AbstractBootstrapper bootstrapper = this.context.getBootstrapper();
 
-		final MaxwellReplicator p = new MaxwellReplicator(this.schema, producer, this.context, this.context.getInitialPosition());
+		final MaxwellReplicator p = new MaxwellReplicator(this.schema, producer, bootstrapper, this.context, this.context.getInitialPosition());
+
+		bootstrapper.resume(producer, p);
 
 		try {
 			p.setFilter(context.buildFilter());

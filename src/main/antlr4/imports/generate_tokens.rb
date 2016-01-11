@@ -210,6 +210,7 @@ STATS_SAMPLE_PAGES
 FORCE
 BYTE
 UNICODE
+CHECK
 )
 
 tokens_allowed_in_names = []

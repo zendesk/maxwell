@@ -1,6 +1,8 @@
 package com.zendesk.maxwell;
 
 import com.google.code.or.binlog.BinlogEventV4;
+import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
+import com.zendesk.maxwell.bootstrap.AsynchronousBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Schema;
 
@@ -15,23 +17,28 @@ public class TestMaxwellReplicator extends MaxwellReplicator {
 
 	public TestMaxwellReplicator(Schema currentSchema,
 								 AbstractProducer producer,
+								 AbstractBootstrapper bootstrapper,
 								 MaxwellContext ctx,
 								 BinlogPosition start,
 								 BinlogPosition stop) throws Exception {
-		super(currentSchema, producer, ctx, start);
+		super(currentSchema, producer, bootstrapper, ctx, start);
 		LOGGER.debug("TestMaxwellReplicator initialized from " + start + " to " + stop);
 		this.stopAt = stop;
 	}
 
-	public void getEvents(RowConsumer consumer) throws Exception {
+	public void getEvents(AbstractProducer producer) throws Exception {
 		int max_tries = 100;
 		shouldStop = false;
 
 		this.replicator.start();
 
 		while ( true ) {
-			RowMap r = getRow();
-			if (r == null) {
+			RowMap row = getRow();
+			if ( row == null && bootstrapper.isRunning() ) {
+				Thread.sleep(100);
+				continue;
+			}
+			else if ( row == null ) {
 				if ( shouldStop ) {
 					hardStop();
 					return;
@@ -45,7 +52,11 @@ public class TestMaxwellReplicator extends MaxwellReplicator {
 					return;
 				}
 			}
-			consumer.consume(r);
+			if ( !bootstrapper.shouldSkip(row) && !isMaxwellRow(row) ) {
+				producer.push(row);
+			} else {
+				bootstrapper.work(row, this.producer, this);
+			}
 		}
 	}
 

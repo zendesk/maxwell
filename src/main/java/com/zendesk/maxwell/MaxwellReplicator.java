@@ -4,9 +4,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.TimeZone;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -18,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import com.google.code.or.OpenReplicator;
 import com.google.code.or.binlog.BinlogEventV4;
 import com.google.code.or.common.util.MySQLConstants;
+import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaStore;
@@ -29,7 +28,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 	private final long MAX_TX_ELEMENTS = 10000;
 	String filePath, fileName;
 	private long rowEventsProcessed;
-	private Schema schema;
+	protected Schema schema;
 	private MaxwellFilter filter;
 
 	private final LinkedBlockingDeque<BinlogEventV4> queue = new LinkedBlockingDeque<>(20);
@@ -39,27 +38,28 @@ public class MaxwellReplicator extends RunLoopProcess {
 	private final MaxwellTableCache tableCache = new MaxwellTableCache();
 	protected final OpenReplicator replicator;
 	private final MaxwellContext context;
-	private final AbstractProducer producer;
+	protected final AbstractProducer producer;
+	protected final AbstractBootstrapper bootstrapper;
 
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellReplicator.class);
 
-	public MaxwellReplicator(Schema currentSchema, AbstractProducer producer, MaxwellContext ctx, BinlogPosition start) throws Exception {
+	public MaxwellReplicator(Schema currentSchema, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, BinlogPosition start) throws Exception {
 		this.schema = currentSchema;
 
-		TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 		this.binlogEventListener = new MaxwellBinlogEventListener(queue);
 
 		this.replicator = new OpenReplicator();
 		this.replicator.setBinlogEventListener(this.binlogEventListener);
 
-		this.replicator.setHost(ctx.getConfig().mysqlHost);
-		this.replicator.setUser(ctx.getConfig().mysqlUser);
-		this.replicator.setPassword(ctx.getConfig().mysqlPassword);
-		this.replicator.setPort(ctx.getConfig().mysqlPort);
+		this.replicator.setHost(ctx.getConfig().replicationMysql.host);
+		this.replicator.setUser(ctx.getConfig().replicationMysql.user);
+		this.replicator.setPassword(ctx.getConfig().replicationMysql.password);
+		this.replicator.setPort(ctx.getConfig().replicationMysql.port);
 
 		this.replicator.setLevel2BufferSize(50 * 1024 * 1024);
 
 		this.producer = producer;
+		this.bootstrapper = bootstrapper;
 
 		this.context = ctx;
 		this.setBinlogPosition(start);
@@ -105,10 +105,11 @@ public class MaxwellReplicator extends RunLoopProcess {
 		if (row == null)
 			return;
 
-		if (!skipRow(row)) {
+		if ( !bootstrapper.shouldSkip(row) && !isMaxwellRow(row) ) {
 			producer.push(row);
+		} else {
+			bootstrapper.work(row, producer, this);
 		}
-
 
 	}
 
@@ -118,8 +119,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 		this.replicator.stop(5, TimeUnit.SECONDS);
 	}
 
-
-	private boolean skipRow(RowMap row) {
+	protected boolean isMaxwellRow(RowMap row) {
 		return row.getDatabase().equals(this.context.getConfig().databaseName);
 	}
 
@@ -321,7 +321,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 		tableCache.clear();
 
 		if ( !this.context.getReplayMode() ) {
-			try (Connection c = this.context.getConnectionPool().getConnection()) {
+			try (Connection c = this.context.getMaxwellConnectionPool().getConnection()) {
 				c.setCatalog(this.context.getConfig().databaseName);
 				new SchemaStore(c, this.context.getServerID(), this.schema, p, this.context.getConfig().databaseName).save();
 			}
@@ -346,6 +346,11 @@ public class MaxwellReplicator extends RunLoopProcess {
 		replicator.setBinlogFileName(e.getBinlogFilename());
 		replicator.setBinlogPosition(e.getHeader().getNextPosition());
 	}
+
+	public OpenReplicator getOpenReplicator() {
+		return replicator;
+	}
+
 }
 
 

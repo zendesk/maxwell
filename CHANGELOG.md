@@ -1,5 +1,19 @@
 # Maxwell changelog
 
+## [v0.17.0](https://github.com/zendesk/maxwell/releases/tag/v0.17.0): "wrists of William"
+
+
+v0.17 is a large bugfix release with one new feature.
+
+- FEATURE: allow specifying an alternative mysql schema-storage server and
+  replication server
+- BUGFIX: properly handle case-sensitivity by aping the behavior of the
+  master server.  Fixes #230.
+- BUGFIX: parse some forms of CHECK( ... ) statements.  Fixes #203.
+- BUGFIX: many more SQL-parser fixes.  We are mostly through some
+  thousands of lines of SQL produced by mysql-test.
+
+
 ## [v0.16.2](https://github.com/zendesk/maxwell/releases/tag/v0.16.2): "The best laid plans"
 
 
