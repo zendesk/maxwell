@@ -21,7 +21,7 @@ public class MaxwellBootstrapUtility {
 	private boolean isComplete = false;
 
 	private void run(String[] argv) throws Exception {
-		MaxwellBootstrapUtilityConfig config = new MaxwellBootstrapUtilityConfig(argv);
+		final MaxwellBootstrapUtilityConfig config = new MaxwellBootstrapUtilityConfig(argv);
 		if ( config.log_level != null ) {
 			MaxwellLogging.setLevel(config.log_level);
 		}
@@ -35,7 +35,7 @@ public class MaxwellBootstrapUtility {
 						if ( !isComplete ) {
 							displayLine("");
 							LOGGER.warn("bootstrapping cancelled");
-							removeBootstrapRow(connection, rowId);
+							removeBootstrapRow(connection, rowId, config.schemaDatabaseName);
 						}
 					} catch ( Exception e ) {
 						System.exit(1);
@@ -49,9 +49,9 @@ public class MaxwellBootstrapUtility {
 					if ( startedTimeMillis == null && insertedRowsCount > 0 ) {
 						startedTimeMillis = System.currentTimeMillis();
 					}
-					insertedRowsCount = getInsertedRowsCount(connection, rowId);
+					insertedRowsCount = getInsertedRowsCount(connection, rowId, config.schemaDatabaseName);
 				}
-				isComplete = getIsComplete(connection, rowId);
+				isComplete = getIsComplete(connection, rowId, config.schemaDatabaseName);
 				displayProgress(rowCount, insertedRowsCount, startedTimeMillis);
 				Thread.sleep(UPDATE_PERIOD_MILLIS);
 			}
@@ -63,8 +63,9 @@ public class MaxwellBootstrapUtility {
 		}
 	}
 
-	private int getInsertedRowsCount(Connection connection, long rowId) throws SQLException {
-		String sql = "select inserted_rows from maxwell.bootstrap where id = ?";
+	private int getInsertedRowsCount(Connection connection, long rowId, String dbName) throws SQLException {
+		String sql = "select inserted_rows from `bootstrap` where id = ?";
+		connection.setCatalog(dbName);
 		PreparedStatement preparedStatement = connection.prepareStatement(sql);
 		preparedStatement.setLong(1, rowId);
 		ResultSet resultSet = preparedStatement.executeQuery();
@@ -72,8 +73,9 @@ public class MaxwellBootstrapUtility {
 		return resultSet.getInt(1);
 	}
 
-	private boolean getIsComplete(Connection connection, long rowId) throws SQLException {
-		String sql = "select is_complete from maxwell.bootstrap where id = ?";
+	private boolean getIsComplete(Connection connection, long rowId, String dbName) throws SQLException {
+		String sql = "select is_complete from `bootstrap` where id = ?";
+		connection.setCatalog(dbName);
 		PreparedStatement preparedStatement = connection.prepareStatement(sql);
 		preparedStatement.setLong(1, rowId);
 		ResultSet resultSet = preparedStatement.executeQuery();
@@ -103,7 +105,8 @@ public class MaxwellBootstrapUtility {
 
 	private long insertBootstrapStartRow(Connection connection, MaxwellBootstrapUtilityConfig config) throws SQLException {
 		LOGGER.info("inserting bootstrap start row");
-		String sql = "insert into maxwell.bootstrap (database_name, table_name) values(?, ?)";
+		String sql = "insert into `bootstrap` (database_name, table_name) values(?, ?)";
+		connection.setCatalog(config.schemaDatabaseName);
 		PreparedStatement preparedStatement = connection.prepareStatement(sql);
 		preparedStatement.setString(1, config.databaseName);
 		preparedStatement.setString(2, config.tableName);
@@ -113,9 +116,10 @@ public class MaxwellBootstrapUtility {
 		return generatedKeys.getLong(1);
 	}
 
-	private void removeBootstrapRow(Connection connection, long rowId) throws SQLException {
+	private void removeBootstrapRow(Connection connection, long rowId, String dbName) throws SQLException {
 		LOGGER.info("deleting bootstrap start row");
-		String sql = "delete from maxwell.bootstrap where id = ?";
+		String sql = "delete from `bootstrap` where id = ?";
+		connection.setCatalog(dbName);
 		PreparedStatement preparedStatement = connection.prepareStatement(sql);
 		preparedStatement.setLong(1, rowId);
 		preparedStatement.execute();
