@@ -44,6 +44,7 @@ public class MaxwellContext {
 			this.maxwellConnectionPool = new ConnectionPool("MaxwellConnectionPool", 10, 0, 10,
 					config.maxwellMysql.getConnectionURI(), config.maxwellMysql.user, config.maxwellMysql.password);
 		}
+		this.maxwellConnectionPool.setCaching(false);
 
 		if ( this.config.initPosition != null )
 			this.initialPosition = this.config.initPosition;
