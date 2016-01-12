@@ -171,18 +171,6 @@ public class AbstractMaxwellTest {
 
 		p.getEvents(producer);
 
-		/*final ArrayList<RowMap> list = new ArrayList<>();
-		final String dbName = context.getConfig().databaseName;
-
-		p.getEvents(new RowConsumer() {
-			@Override
-			void consume(RowMap r) {
-				if (!r.getDatabase().equals(dbName)) {
-					list.add(r);
-				}
-			}
-		});*/
-
 		schema = p.schema;
 
 		bootstrapper.join();
