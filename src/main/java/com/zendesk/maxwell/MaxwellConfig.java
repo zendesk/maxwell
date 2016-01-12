@@ -3,12 +3,9 @@ package com.zendesk.maxwell;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Enumeration;
-import java.util.Properties;
+import java.util.*;
 
-import joptsimple.BuiltinHelpFormatter;
-import joptsimple.OptionParser;
-import joptsimple.OptionSet;
+import joptsimple.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,39 +50,64 @@ public class MaxwellConfig {
 	}
 
 	private OptionParser getOptionParser() {
-		OptionParser parser = new OptionParser();
+		final OptionParser parser = new OptionParser();
 		parser.accepts( "config", "location of config file" ).withRequiredArg();
 		parser.accepts( "log_level", "log level, one of DEBUG|INFO|WARN|ERROR" ).withRequiredArg();
 
-		parser.accepts( "replication_host", "mysql host to treat as master (if using separate schema and replication servers)" ).withRequiredArg();
-		parser.accepts( "replication_user", "mysql username with replication privileges (if using separate schema and replication servers)" ).withRequiredArg();
-		parser.accepts( "replication_password", "mysql password for replication_user (if using separate schema and replication servers)" ).withOptionalArg();
-		parser.accepts( "replication_port", "port for mysql replication_host (if using separate schema and replication servers)" ).withRequiredArg();
+		parser.accepts( "__separator_1" );
 
 		parser.accepts( "host", "mysql host with write access to maxwell database" ).withRequiredArg();
-		parser.accepts( "user", "mysql username with write access to maxwell database on host" ).withRequiredArg();
-		parser.accepts( "password", "mysql password for user on host" ).withOptionalArg();
-		parser.accepts( "port", "mysql port for host" ).withRequiredArg();
+		parser.accepts( "port", "port for host" ).withRequiredArg();
+		parser.accepts( "user", "username for host" ).withRequiredArg();
+		parser.accepts( "password", "password for host" ).withOptionalArg();
 
-		parser.accepts( "schema_database", "database name for maxwell state (schema and binlog position)").withRequiredArg();
+		parser.accepts( "__separator_2" );
+
+		parser.accepts( "replication_host", "mysql host to replicate from (if using separate schema and replication servers)" ).withRequiredArg();
+		parser.accepts( "replication_user", "username for replication_host" ).withRequiredArg();
+		parser.accepts( "replication_password", "password for replication_host" ).withOptionalArg();
+		parser.accepts( "replication_port", "port for replicattion_host" ).withRequiredArg();
+
+		parser.accepts( "__separator_3" );
 
 		parser.accepts( "producer", "producer type: stdout|file|kafka" ).withRequiredArg();
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
+
+		parser.accepts( "__separator_4" );
+
 		parser.accepts( "bootstrapper", "bootstrapper type: async|sync|none. default: async" ).withRequiredArg();
 		parser.accepts( "bootstrapper_fetch_size", "number of rows fetched at a time during bootstrapping. default: 64000" ).withRequiredArg();
 
+		parser.accepts( "__separator_5" );
+
+		parser.accepts( "schema_database", "database name for maxwell state (schema and binlog position)").withRequiredArg();
 		parser.accepts( "max_schemas", "how many old schema definitions maxwell should keep around.  default: 5").withOptionalArg();
 		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION").withRequiredArg();
 		parser.accepts( "replay", "replay mode, don't store any information to the server");
+
+		parser.accepts( "__separator_6" );
 
 		parser.accepts( "include_dbs", "include these databases, formatted as include_dbs=db1,db2").withOptionalArg();
 		parser.accepts( "exclude_dbs", "exclude these databases, formatted as exclude_dbs=db1,db2").withOptionalArg();
 		parser.accepts( "include_tables", "include these tables, formatted as include_tables=db1,db2").withOptionalArg();
 		parser.accepts( "exclude_tables", "exclude these tables, formatted as exclude_tables=tb1,tb2").withOptionalArg();
+
+		parser.accepts( "__separator_7" );
+
 		parser.accepts( "help", "display help").forHelp();
-		parser.formatHelpWith(new BuiltinHelpFormatter(160, 4));
+
+		BuiltinHelpFormatter helpFormatter = new BuiltinHelpFormatter(200, 4) {
+			@Override
+			public String format(Map<String, ? extends OptionDescriptor> options) {
+				this.addRows(options.values());
+				String output = this.formattedHelpOutput();
+				return output.replaceAll("--__separator_.*", "");
+			}
+		};
+
+		parser.formatHelpWith(helpFormatter);
 		return parser;
 	}
 
