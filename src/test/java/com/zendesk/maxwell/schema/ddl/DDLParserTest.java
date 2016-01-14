@@ -455,6 +455,14 @@ public class DDLParserTest {
 		}
 	}
 
+	@Test
+	public void testMysqlGIS() throws Exception {
+		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test-gis.sql"), Charset.defaultCharset());
+		for ( String sql: lines ) {
+			parse(sql);
+		}
+	}
+
 	@Ignore
 	@Test
 	public void testMysqlTestSQL() throws Exception {
