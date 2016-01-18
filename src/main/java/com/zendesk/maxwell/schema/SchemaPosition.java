@@ -92,8 +92,7 @@ public class SchemaPosition extends RunLoopProcess implements Runnable {
 				+ "binlog_file = ?, "
 				+ "binlog_position = ? "
 				+ "ON DUPLICATE KEY UPDATE binlog_file=?, binlog_position=?";
-		try(Connection c = connectionPool.getConnection() ){
-			c.setCatalog(this.schemaDatabaseName);
+		try(Connection c = getConnection() ){
 			PreparedStatement s = c.prepareStatement(sql);
 
 			LOGGER.debug("Writing binlog position to " + this.schemaDatabaseName + ".positions: " + newPosition);
@@ -138,8 +137,7 @@ public class SchemaPosition extends RunLoopProcess implements Runnable {
 		if ( p != null )
 			return p;
 
-		try ( Connection c = connectionPool.getConnection() ) {
-			c.setCatalog(this.schemaDatabaseName);
+		try ( Connection c = getConnection() ) {
 			PreparedStatement s = c.prepareStatement("SELECT * from `positions` where server_id = ?");
 			s.setLong(1, serverID);
 
@@ -149,6 +147,12 @@ public class SchemaPosition extends RunLoopProcess implements Runnable {
 
 			return new BinlogPosition(rs.getLong("binlog_position"), rs.getString("binlog_file"));
 		}
+	}
+
+	private Connection getConnection() throws SQLException {
+		Connection conn = this.connectionPool.getConnection();
+		conn.setCatalog(this.schemaDatabaseName);
+		return conn;
 	}
 
 	public SQLException getException() {

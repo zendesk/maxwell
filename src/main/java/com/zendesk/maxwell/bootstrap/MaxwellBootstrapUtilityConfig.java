@@ -26,7 +26,7 @@ public class MaxwellBootstrapUtilityConfig {
 	}
 
 	public String getConnectionURI( ) {
-		return "jdbc:mysql://" + mysqlHost + ":" + mysqlPort;
+		return "jdbc:mysql://" + mysqlHost + ":" + mysqlPort + "/" + schemaDatabaseName;
 	}
 
 	private OptionParser getOptionParser() {

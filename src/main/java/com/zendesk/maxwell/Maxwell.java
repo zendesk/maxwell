@@ -50,6 +50,7 @@ public class Maxwell {
 			MaxwellMysqlStatus.ensureMaxwellMysqlState(schemaConnection);
 
 			SchemaStore.ensureMaxwellSchema(schemaConnection, this.config.databaseName);
+			schemaConnection.setCatalog(this.config.databaseName);
 			SchemaStore.upgradeSchemaStoreSchema(schemaConnection, this.config.databaseName);
 
 			SchemaStore.handleMasterChange(schemaConnection, context.getServerID(), this.config.databaseName);

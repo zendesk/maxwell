@@ -22,10 +22,15 @@ public class SchemaScavenger extends RunLoopProcess implements Runnable {
 		this.schemaDatabaseName = dbName;
 	}
 
+	private Connection getConnection() throws SQLException {
+		Connection conn = this.connectionPool.getConnection();
+		conn.setCatalog(this.schemaDatabaseName);
+		return conn;
+	}
+
 	private List<Long> getDeletedSchemas() throws SQLException {
 		ArrayList<Long> list = new ArrayList<>();
-		try ( Connection connection = connectionPool.getConnection() ) {
-			connection.setCatalog(this.schemaDatabaseName);
+		try ( Connection connection = getConnection() ) {
 			ResultSet rs = connection.createStatement().executeQuery("select id from `schemas` where deleted = 1 LIMIT 100");
 
 			while ( rs.next() ) {
@@ -39,8 +44,7 @@ public class SchemaScavenger extends RunLoopProcess implements Runnable {
 	public void deleteSchema(Long id, Long maxRowsPerSecond) throws SQLException {
 		String[] tables = { "columns", "tables", "databases" };
 
-		try ( Connection connection = connectionPool.getConnection() ) {
-			connection.setCatalog(this.schemaDatabaseName);
+		try ( Connection connection = getConnection() ) {
 			for ( String tName : tables ) {
 				for (;;) {
 					long nDeleted = connection.createStatement().executeUpdate(

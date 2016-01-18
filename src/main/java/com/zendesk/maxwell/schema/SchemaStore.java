@@ -43,7 +43,6 @@ public class SchemaStore {
 	public SchemaStore(Connection connection, Long serverID, String dbName) throws SQLException {
 		this.serverID = serverID;
 		this.connection = connection;
-		connection.setCatalog(dbName);
 		this.schemaDatabaseName = dbName;
 		this.schemaInsert = connection
 				.prepareStatement(
@@ -189,11 +188,11 @@ public class SchemaStore {
 
 		LOGGER.info("Creating maxwell database");
 		connection.createStatement().execute("CREATE DATABASE IF NOT EXISTS `" + schemaDatabaseName + "`");
-
+		if (connection.getCatalog() != schemaDatabaseName)
+			connection.setCatalog(schemaDatabaseName);
 		while ((line = r.readLine()) != null) {
 			sql += line + "\n";
 		}
-		connection.setCatalog(schemaDatabaseName);
 		for (String statement : StringUtils.splitByWholeSeparator(sql, "\n\n")) {
 			if (statement.length() == 0)
 				continue;
@@ -244,7 +243,6 @@ public class SchemaStore {
 		LOGGER.info("Restoring schema id " + schemaRS.getInt("id") + " (last modified at " + this.position + ")");
 
 		this.schema_id = schemaRS.getLong("id");
-		connection.setCatalog(this.schemaDatabaseName);
 		p = connection.prepareStatement("SELECT * from `databases` where schema_id = ? ORDER by id");
 		p.setLong(1, this.schema_id);
 
@@ -267,7 +265,6 @@ public class SchemaStore {
 	}
 
 	private Database restoreDatabase(int id, String name, String encoding) throws SQLException {
-		connection.setCatalog(this.schemaDatabaseName);
 		Statement s = connection.createStatement();
 		Database d = new Database(name, encoding);
 
@@ -286,7 +283,6 @@ public class SchemaStore {
 	}
 
 	private void restoreTable(Database d, String name, int id, String encoding, String pks) throws SQLException {
-		connection.setCatalog(this.schemaDatabaseName);
 		Statement s = connection.createStatement();
 
 		Table t = d.buildTable(name, encoding);
@@ -317,7 +313,6 @@ public class SchemaStore {
 	private ResultSet findSchema(BinlogPosition targetPosition, Long serverID)
 			throws SQLException {
 		LOGGER.debug("looking to restore schema at target position " + targetPosition);
-		connection.setCatalog(this.schemaDatabaseName);
 		PreparedStatement s = connection.prepareStatement(
 			"SELECT * from `schemas` "
 			+ "WHERE deleted = 0 "
@@ -352,7 +347,6 @@ public class SchemaStore {
 
 	public void delete() throws SQLException {
 		ensureSchemaID();
-		connection.setCatalog(this.schemaDatabaseName);
 		connection.createStatement().execute("update `schemas` set deleted = 1 where id = " + schema_id);
 	}
 
@@ -360,7 +354,6 @@ public class SchemaStore {
 		ensureSchemaID();
 
 		String[] tables = { "databases", "tables", "columns" };
-		connection.setCatalog(this.schemaDatabaseName);
 		connection.createStatement().execute("delete from `schemas` where id = " + schema_id);
 		for ( String tName : tables ) {
             connection.createStatement().execute(
@@ -372,7 +365,6 @@ public class SchemaStore {
 	public boolean schemaExists(long schema_id) throws SQLException {
 		if ( this.schema_id == null )
 			return false;
-		connection.setCatalog(this.schemaDatabaseName); //This function gets called from
 		ResultSet rs = connection.createStatement().executeQuery("select id from `schemas` where id = " + schema_id);
 		return rs.next();
 	}
@@ -398,7 +390,6 @@ public class SchemaStore {
 		in the future, this is our moment to pick up where the master left off.
 	*/
 	public static void handleMasterChange(Connection c, Long serverID, String schemaDatabaseName) throws SQLException {
-		c.setCatalog(schemaDatabaseName);
 		PreparedStatement s = c.prepareStatement(
 				"SELECT id from `schemas` WHERE server_id != ? and deleted = 0"
 		);
@@ -417,7 +408,6 @@ public class SchemaStore {
 
 	private static Map<String, String> getTableColumns(String table, Connection c, String schemaDatabaseName) throws SQLException {
 		HashMap<String, String> map = new HashMap<>();
-		c.setCatalog(schemaDatabaseName);
 		ResultSet rs = c.createStatement().executeQuery("show columns from `" + table + "`");
 		while (rs.next()) {
 			map.put(rs.getString("Field"), rs.getString("Type"));
@@ -428,7 +418,6 @@ public class SchemaStore {
 	private static List<String> getMaxwellTables(Connection c, String schemaDatabaseName) throws SQLException {
 		ArrayList<String> l = new ArrayList<>();
 
-		c.setCatalog(schemaDatabaseName);
 		ResultSet rs = c.createStatement().executeQuery("show tables");
 		while (rs.next()) {
 			l.add(rs.getString(1));
@@ -444,7 +433,6 @@ public class SchemaStore {
 
 	public static void upgradeSchemaStoreSchema(Connection c, String schemaDatabaseName) throws SQLException, IOException {
 		if ( !getTableColumns("schemas", c, schemaDatabaseName).containsKey("deleted") ) {
-			c.setCatalog(schemaDatabaseName);
 			performAlter(c, "alter table `schemas` add column deleted tinyint(1) not null default 0");
 		}
 

@@ -159,7 +159,9 @@ public class AbstractMaxwellTest {
 				return new SynchronousBootstrapper(context) {
 					@Override
 					protected Connection getConnection() throws SQLException {
-						return server.getNewConnection();
+						Connection conn = server.getNewConnection();
+						conn.setCatalog(context.getConfig().databaseName);
+						return conn;
 					}
 				};
 			}
@@ -188,6 +190,10 @@ public class AbstractMaxwellTest {
 
 	protected List<RowMap>getRowsForSQL(MaxwellFilter filter, String queries[]) throws Exception {
 		return getRowsForSQL(server, filter, queries, null);
+	}
+
+	protected Connection getSchemaConnection() throws SQLException {
+		return server.getConnection(buildContext().getConfig().databaseName);
 	}
 
 	@After

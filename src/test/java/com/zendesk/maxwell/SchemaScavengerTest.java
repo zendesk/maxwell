@@ -10,6 +10,7 @@ import org.junit.Test;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -35,8 +36,9 @@ public class SchemaScavengerTest extends AbstractMaxwellTest {
 		MaxwellContext context = buildContext();
 
 		this.scavenger = new SchemaScavenger(buildContext().getMaxwellConnectionPool(), context.getConfig().databaseName);
-
-		this.schemaStore = new SchemaStore(server.getConnection(), MysqlIsolatedServer.SERVER_ID, this.schema, binlogPosition, context.getConfig().databaseName);
+		Connection conn = server.getConnection();
+		conn.setCatalog(context.getConfig().databaseName);
+		this.schemaStore = new SchemaStore(conn, MysqlIsolatedServer.SERVER_ID, this.schema, binlogPosition, context.getConfig().databaseName);
 
 		this.schemaStore.save();
 	}

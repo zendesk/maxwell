@@ -65,7 +65,6 @@ public class MaxwellBootstrapUtility {
 
 	private int getInsertedRowsCount(Connection connection, long rowId, String dbName) throws SQLException {
 		String sql = "select inserted_rows from `bootstrap` where id = ?";
-		connection.setCatalog(dbName);
 		PreparedStatement preparedStatement = connection.prepareStatement(sql);
 		preparedStatement.setLong(1, rowId);
 		ResultSet resultSet = preparedStatement.executeQuery();
@@ -75,7 +74,6 @@ public class MaxwellBootstrapUtility {
 
 	private boolean getIsComplete(Connection connection, long rowId, String dbName) throws SQLException {
 		String sql = "select is_complete from `bootstrap` where id = ?";
-		connection.setCatalog(dbName);
 		PreparedStatement preparedStatement = connection.prepareStatement(sql);
 		preparedStatement.setLong(1, rowId);
 		ResultSet resultSet = preparedStatement.executeQuery();
@@ -106,7 +104,6 @@ public class MaxwellBootstrapUtility {
 	private long insertBootstrapStartRow(Connection connection, MaxwellBootstrapUtilityConfig config) throws SQLException {
 		LOGGER.info("inserting bootstrap start row");
 		String sql = "insert into `bootstrap` (database_name, table_name) values(?, ?)";
-		connection.setCatalog(config.schemaDatabaseName);
 		PreparedStatement preparedStatement = connection.prepareStatement(sql);
 		preparedStatement.setString(1, config.databaseName);
 		preparedStatement.setString(2, config.tableName);
@@ -119,7 +116,6 @@ public class MaxwellBootstrapUtility {
 	private void removeBootstrapRow(Connection connection, long rowId, String dbName) throws SQLException {
 		LOGGER.info("deleting bootstrap start row");
 		String sql = "delete from `bootstrap` where id = ?";
-		connection.setCatalog(dbName);
 		PreparedStatement preparedStatement = connection.prepareStatement(sql);
 		preparedStatement.setLong(1, rowId);
 		preparedStatement.execute();
