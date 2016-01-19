@@ -5,7 +5,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
-import com.zendesk.maxwell.schema.ddl.mysqlParser;
 import joptsimple.*;
 
 import org.slf4j.Logger;
