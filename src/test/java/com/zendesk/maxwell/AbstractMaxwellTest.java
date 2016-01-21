@@ -192,10 +192,6 @@ public class AbstractMaxwellTest {
 		return getRowsForSQL(server, filter, queries, null);
 	}
 
-	protected Connection getSchemaConnection() throws SQLException {
-		return server.getConnection(buildContext().getConfig().databaseName);
-	}
-
 	@After
 	public void tearDown() throws Exception {
 	}

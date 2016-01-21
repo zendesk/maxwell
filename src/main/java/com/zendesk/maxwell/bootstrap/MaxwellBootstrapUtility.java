@@ -35,7 +35,7 @@ public class MaxwellBootstrapUtility {
 						if ( !isComplete ) {
 							displayLine("");
 							LOGGER.warn("bootstrapping cancelled");
-							removeBootstrapRow(connection, rowId, config.schemaDatabaseName);
+							removeBootstrapRow(connection, rowId);
 						}
 					} catch ( Exception e ) {
 						System.exit(1);
@@ -49,9 +49,9 @@ public class MaxwellBootstrapUtility {
 					if ( startedTimeMillis == null && insertedRowsCount > 0 ) {
 						startedTimeMillis = System.currentTimeMillis();
 					}
-					insertedRowsCount = getInsertedRowsCount(connection, rowId, config.schemaDatabaseName);
+					insertedRowsCount = getInsertedRowsCount(connection, rowId);
 				}
-				isComplete = getIsComplete(connection, rowId, config.schemaDatabaseName);
+				isComplete = getIsComplete(connection, rowId);
 				displayProgress(rowCount, insertedRowsCount, startedTimeMillis);
 				Thread.sleep(UPDATE_PERIOD_MILLIS);
 			}
@@ -63,7 +63,7 @@ public class MaxwellBootstrapUtility {
 		}
 	}
 
-	private int getInsertedRowsCount(Connection connection, long rowId, String dbName) throws SQLException {
+	private int getInsertedRowsCount(Connection connection, long rowId) throws SQLException {
 		String sql = "select inserted_rows from `bootstrap` where id = ?";
 		PreparedStatement preparedStatement = connection.prepareStatement(sql);
 		preparedStatement.setLong(1, rowId);
@@ -72,7 +72,7 @@ public class MaxwellBootstrapUtility {
 		return resultSet.getInt(1);
 	}
 
-	private boolean getIsComplete(Connection connection, long rowId, String dbName) throws SQLException {
+	private boolean getIsComplete(Connection connection, long rowId) throws SQLException {
 		String sql = "select is_complete from `bootstrap` where id = ?";
 		PreparedStatement preparedStatement = connection.prepareStatement(sql);
 		preparedStatement.setLong(1, rowId);
@@ -113,7 +113,7 @@ public class MaxwellBootstrapUtility {
 		return generatedKeys.getLong(1);
 	}
 
-	private void removeBootstrapRow(Connection connection, long rowId, String dbName) throws SQLException {
+	private void removeBootstrapRow(Connection connection, long rowId) throws SQLException {
 		LOGGER.info("deleting bootstrap start row");
 		String sql = "delete from `bootstrap` where id = ?";
 		PreparedStatement preparedStatement = connection.prepareStatement(sql);

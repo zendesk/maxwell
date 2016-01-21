@@ -188,7 +188,7 @@ public class SchemaStore {
 
 		LOGGER.info("Creating maxwell database");
 		connection.createStatement().execute("CREATE DATABASE IF NOT EXISTS `" + schemaDatabaseName + "`");
-		if (connection.getCatalog() != schemaDatabaseName)
+		if (!connection.getCatalog().equals(schemaDatabaseName))
 			connection.setCatalog(schemaDatabaseName);
 		while ((line = r.readLine()) != null) {
 			sql += line + "\n";
@@ -406,7 +406,7 @@ public class SchemaStore {
 		c.createStatement().execute("delete from `positions` where server_id != " + serverID);
 	}
 
-	private static Map<String, String> getTableColumns(String table, Connection c, String schemaDatabaseName) throws SQLException {
+	private static Map<String, String> getTableColumns(String table, Connection c) throws SQLException {
 		HashMap<String, String> map = new HashMap<>();
 		ResultSet rs = c.createStatement().executeQuery("show columns from `" + table + "`");
 		while (rs.next()) {
@@ -415,7 +415,7 @@ public class SchemaStore {
 		return map;
 	}
 
-	private static List<String> getMaxwellTables(Connection c, String schemaDatabaseName) throws SQLException {
+	private static List<String> getMaxwellTables(Connection c) throws SQLException {
 		ArrayList<String> l = new ArrayList<>();
 
 		ResultSet rs = c.createStatement().executeQuery("show tables");
@@ -432,11 +432,11 @@ public class SchemaStore {
 	}
 
 	public static void upgradeSchemaStoreSchema(Connection c, String schemaDatabaseName) throws SQLException, IOException {
-		if ( !getTableColumns("schemas", c, schemaDatabaseName).containsKey("deleted") ) {
+		if ( !getTableColumns("schemas", c).containsKey("deleted") ) {
 			performAlter(c, "alter table `schemas` add column deleted tinyint(1) not null default 0");
 		}
 
-		if ( !getMaxwellTables(c, schemaDatabaseName).contains("bootstrap") )  {
+		if ( !getMaxwellTables(c).contains("bootstrap") )  {
 			LOGGER.info("adding `" + schemaDatabaseName + "`.`bootstrap` to the schema.");
 			InputStream is = SchemaStore.class.getResourceAsStream("/sql/maxwell_schema_bootstrap.sql");
 			executeSQLInputStream(c, is, schemaDatabaseName);
