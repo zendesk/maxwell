@@ -84,26 +84,28 @@ public class SchemaStoreTest extends AbstractMaxwellTest {
 	public void testMasterChange() throws Exception {
 		this.schema = new SchemaCapturer(server.getConnection(), context.getCaseSensitivity()).capture();
 		this.binlogPosition = BinlogPosition.capture(server.getConnection());
-		this.schemaStore = new SchemaStore(server.getConnection(this.buildContext().getConfig().databaseName), 5551234L, this.schema, binlogPosition, buildContext().getConfig().databaseName);
+		String dbName = this.buildContext().getConfig().databaseName;
+		this.schemaStore = new SchemaStore(server.getConnection(dbName), 5551234L, this.schema, binlogPosition, dbName);
 
 		this.schemaStore.save();
 
-		SchemaStore.handleMasterChange(server.getConnection(this.buildContext().getConfig().databaseName), 123456L, buildContext().getConfig().databaseName);
+		SchemaStore.handleMasterChange(server.getConnection(dbName), 123456L, dbName);
 
-		ResultSet rs = server.getConnection(this.buildContext().getConfig().databaseName).createStatement().executeQuery("SELECT * from `schemas`");
+		ResultSet rs = server.getConnection(dbName).createStatement().executeQuery("SELECT * from `schemas`");
 		assertThat(rs.next(), is(true));
 		assertThat(rs.getBoolean("deleted"), is(true));
 
-		rs = server.getConnection(this.buildContext().getConfig().databaseName).createStatement().executeQuery("SELECT * from `positions`");
+		rs = server.getConnection(dbName).createStatement().executeQuery("SELECT * from `positions`");
 		assertThat(rs.next(), is(false));
 	}
 
 	@Test
 	public void testRestoreMysqlDb() throws Exception {
 		Database db = this.schema.findDatabase("mysql");
+		String maxwellDBName = this.buildContext().getConfig().databaseName;
 		this.schema.getDatabases().remove(db);
 		this.schemaStore.save();
-		SchemaStore restoredSchema = SchemaStore.restore(server.getConnection(this.buildContext().getConfig().databaseName), context);
+		SchemaStore restoredSchema = SchemaStore.restore(server.getConnection(maxwellDBName), context);
 		assertThat(restoredSchema.getSchema().findDatabase("mysql"), is(not(nullValue())));
 	}
 }
