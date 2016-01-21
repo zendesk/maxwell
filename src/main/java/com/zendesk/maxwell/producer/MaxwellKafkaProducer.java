@@ -60,6 +60,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		"compression.type", "gzip",
 		"metadata.fetch.timeout.ms", 5000
 	};
+	static final int MURMUR_HASH_SEED = 25342;
 	private final KafkaProducer<String, String> kafka;
 	private String topic;
 	private final int numPartitions;

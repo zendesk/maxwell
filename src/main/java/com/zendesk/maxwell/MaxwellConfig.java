@@ -73,7 +73,6 @@ public class MaxwellConfig {
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
 		parser.accepts( "kafka_partition_by", "database|table|primary_key, kafka producer assigns partition by hashing the specified parameter").withRequiredArg();
 		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning").withRequiredArg();
-		parser.accepts( "kafka_murmur3_seed", "seed for murmur3 hash").withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
 
 		parser.accepts( "__separator_4" );
@@ -154,9 +153,6 @@ public class MaxwellConfig {
 
 		if ( options.has("kafka_partition_hash"))
 			this.kafkaPartitionHash = (String) options.valueOf("kafka_partition_hash");
-
-		if ( options.has("kafka_murmur3_seed"))
-			this.murmur3Seed = Integer.valueOf((String) options.valueOf("kafka_murmur3_seed"));
 
 		if ( options.has("output_file"))
 			this.outputFile = (String) options.valueOf("output_file");
@@ -244,7 +240,6 @@ public class MaxwellConfig {
 		this.kafkaTopic      = p.getProperty("kafka_topic");
 		this.kafkaPartitionHash = p.getProperty("kafka_partition_hash", "default");
 		this.kafkaPartitionKey = p.getProperty("kafka_partition_by", "database");
-		this.murmur3Seed = Integer.valueOf(p.getProperty("kafka_murmur3_seed", "1234"));
 		this.includeDatabases = p.getProperty("include_dbs");
 		this.excludeDatabases = p.getProperty("exclude_dbs");
 		this.includeTables = p.getProperty("include_tables");
