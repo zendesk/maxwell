@@ -49,8 +49,3 @@ public class MaxwellKafkaPartitioner {
 		return Math.abs(hashFunc.hashCode(provider.getHashString(r)) % numPartitions);
 	}
 }
-
-
-
-
-
