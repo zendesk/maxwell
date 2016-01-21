@@ -184,7 +184,7 @@ public class SchemaStore {
 
 	private static void executeSQLInputStream(Connection connection, InputStream schemaSQL, String schemaDatabaseName) throws SQLException, IOException {
 		BufferedReader r = new BufferedReader(new InputStreamReader(schemaSQL));
-		String sql ="", line;
+		String sql = "", line;
 
 		LOGGER.info("Creating maxwell database");
 		connection.createStatement().execute("CREATE DATABASE IF NOT EXISTS `" + schemaDatabaseName + "`");
