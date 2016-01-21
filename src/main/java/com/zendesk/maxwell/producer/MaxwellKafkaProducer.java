@@ -63,7 +63,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	private final KafkaProducer<String, String> kafka;
 	private String topic;
 	private final int numPartitions;
-	private final AbstractPartitioner partitioner;
+	private final MaxwellKafkaPartitioner partitioner;
 
 	public MaxwellKafkaProducer(MaxwellContext context, Properties kafkaProperties, String kafkaTopic) {
 		super(context);
@@ -76,23 +76,10 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		this.setDefaults(kafkaProperties);
 		this.kafka = new KafkaProducer<>(kafkaProperties, new StringSerializer(), new StringSerializer());
 		this.numPartitions = kafka.partitionsFor(topic).size(); //returns 1 for new topics
-		String partitionParams = this.context.getConfig().kafkaPartitionHash + "|" + this.context.getConfig().kafkaPartitionKey;
-		switch (partitionParams) {
-			case "murmur3|database": this.partitioner = new Murmur3KafkaDatabasePartitioner(this.context.getConfig().murmur3Seed);
-				break;
-			case "murmur3|table": this.partitioner = new Murmur3KafkaTablePartitioner(this.context.getConfig().murmur3Seed);
-				break;
-			case "murmur3|primary_key": this.partitioner = new Murmur3KafkaPrimaryKeyPartitioner(this.context.getConfig().murmur3Seed);
-				break;
-			case "default|primary_key": this.partitioner = new MaxwellKafkaPrimaryKeyPartitioner();
-				break;
-			case "default|table": this.partitioner = new MaxwellKafkaTablePartitioner();
-				break;
-			case "default|database":
-			default:
-				this.partitioner = new MaxwellKafkaDatabasePartitioner();
-				break;
-		}
+
+		String hash = context.getConfig().kafkaPartitionHash;
+		String partitionKey = context.getConfig().kafkaPartitionKey;
+		this.partitioner = new MaxwellKafkaPartitioner(hash, partitionKey);
 	}
 
 	@Override
