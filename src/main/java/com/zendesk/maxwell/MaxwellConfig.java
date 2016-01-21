@@ -26,7 +26,6 @@ public class MaxwellConfig {
 	public String producerType;
 	public String kafkaPartitionHash;
 	public String kafkaPartitionKey;
-	public Integer murmur3Seed;
 	public String bootstrapperType;
 	public Integer bootstrapperBatchFetchSize;
 
