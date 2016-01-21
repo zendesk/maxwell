@@ -6,7 +6,6 @@ import static org.junit.Assert.assertThat;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Connection;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
