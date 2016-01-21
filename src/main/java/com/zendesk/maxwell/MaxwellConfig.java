@@ -275,10 +275,6 @@ public class MaxwellConfig {
 				usage("please specify --kafka_partition_hash=default|murmur3");
 			}
 
-			if ( this.kafkaPartitionHash.equals("murmur3") && this.murmur3Seed == null) {
-				this.murmur3Seed = 1234;
-			}
-
 			if ( this.kafkaPartitionKey == null ) {
 				this.kafkaPartitionKey = "database";
 			} else if ( !this.kafkaPartitionKey.equals("database")
