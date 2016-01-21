@@ -21,7 +21,7 @@ public class MaxwellBootstrapUtility {
 	private boolean isComplete = false;
 
 	private void run(String[] argv) throws Exception {
-		final MaxwellBootstrapUtilityConfig config = new MaxwellBootstrapUtilityConfig(argv);
+		MaxwellBootstrapUtilityConfig config = new MaxwellBootstrapUtilityConfig(argv);
 		if ( config.log_level != null ) {
 			MaxwellLogging.setLevel(config.log_level);
 		}
