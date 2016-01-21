@@ -377,7 +377,6 @@ public class SchemaStore {
 		if ( maxSchemas <= 0  )
 			return;
 
-		LOGGER.debug("In deleteOldSchemas Current Catalog:" + connection.getCatalog());
 		Long toDelete = currentSchemaId - maxSchemas; // start with the highest numbered ID to delete, work downwards until we run out
 		while ( toDelete > 0 && schemaExists(toDelete) ) {
 			new SchemaStore(connection, serverID, toDelete, this.schemaDatabaseName).delete();
