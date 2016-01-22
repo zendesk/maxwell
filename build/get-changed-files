@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [ ! -f $1 ]
+then
+  find . -name "$2"
+else
+  find . -name "$2" -mnewer $1
+fi
