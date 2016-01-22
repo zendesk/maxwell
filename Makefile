@@ -12,8 +12,18 @@ compile: .make-classpath
 	mkdir -p target/classes target/generated-sources/annotations
 	${ANTLR} -package com.zendesk.maxwell.schema.ddl \
 		src/main/antlr4/com/zendesk/maxwell/schema/ddl/mysql.g4 -lib src/main/antlr4/imports
-	javac -d target/classes -classpath $(shell cat .make-classpath) ${JAVA_SOURCES} \
+	javac -d target/classes -sourcepath src/main/java:src/main/antlr4 -classpath $(shell cat .make-classpath) ${JAVA_SOURCES} \
 		-s target/generated-sources/annotations -g -nowarn -target 1.7 -source 1.7 -encoding UTF-8
+	touch .make-last-compile
+
+CHANGED_JAVA_SOURCES=$(shell find . -name '*.java' -mnewer .make-last-compile )
+pcompile: .make-classpath
+	mkdir -p target/classes target/generated-sources/annotations
+	${ANTLR} -package com.zendesk.maxwell.schema.ddl \
+		src/main/antlr4/com/zendesk/maxwell/schema/ddl/mysql.g4 -lib src/main/antlr4/imports
+	javac -d target/classes -sourcepath src/main/java:src/main/antlr4 -classpath $(shell cat .make-classpath) ${CHANGED_JAVA_SOURCES} \
+		-s target/generated-sources/annotations -g -nowarn -target 1.7 -source 1.7 -encoding UTF-8
+	touch .make-last-compile
 
 test:
 
