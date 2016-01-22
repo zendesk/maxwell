@@ -14,13 +14,17 @@ endif
 
 CHANGED_JAVA_SOURCES=$(shell build/get-changed-files .make-last-compile '*.java')
 
-compile: .make-classpath antlr
+java: .make-classpath
 ifneq ($(strip $(CHANGED_JAVA_SOURCES)),)
 	mkdir -p target/classes
 	javac -d target/classes -sourcepath src/main/java:src/main/antlr4 -classpath `cat .make-classpath` \
 		-g -nowarn -target 1.7 -source 1.7 -encoding UTF-8 ${CHANGED_JAVA_SOURCES}
-	touch .make-last-compile
 endif
+
+compile:
+	make antlr 
+	make java
+	touch .make-last-compile
 
 test:
 
