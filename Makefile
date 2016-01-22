@@ -4,25 +4,19 @@ all: compile
 	mvn dependency:copy-dependencies
 	mvn dependency:build-classpath | grep -v '^\[' > .make-classpath
 
-JAVA_SOURCES=$(shell find . -name '*.java')
-ANTLR_SOURCES=$(shell find . -name '*.g4')
 ANTLR=java -cp target/dependency/antlr4-4.5.jar org.antlr.v4.Tool
+CHANGED_ANTLR_SOURCES=$(shell build/get-changed-files .make-last-compile '*.g4')
 
-compile: .make-classpath
-	mkdir -p target/classes target/generated-sources/annotations
-	${ANTLR} -package com.zendesk.maxwell.schema.ddl \
-		src/main/antlr4/com/zendesk/maxwell/schema/ddl/mysql.g4 -lib src/main/antlr4/imports
-	javac -d target/classes -sourcepath src/main/java:src/main/antlr4 -classpath $(shell cat .make-classpath) ${JAVA_SOURCES} \
-		-s target/generated-sources/annotations -g -nowarn -target 1.7 -source 1.7 -encoding UTF-8
-	touch .make-last-compile
+antlr:
+ifneq ($(strip $(CHANGED_ANTLR_SOURCES)),)
+	${ANTLR} -package com.zendesk.maxwell.schema.ddl src/main/antlr4/com/zendesk/maxwell/schema/ddl/mysql.g4 -lib src/main/antlr4/imports
+endif
 
-CHANGED_JAVA_SOURCES=$(shell find . -name '*.java' -mnewer .make-last-compile )
-pcompile: .make-classpath
+CHANGED_JAVA_SOURCES=$(shell build/get-changed-files .make-last-compile '*.java')
+compile: .make-classpath antlr
 	mkdir -p target/classes target/generated-sources/annotations
-	${ANTLR} -package com.zendesk.maxwell.schema.ddl \
-		src/main/antlr4/com/zendesk/maxwell/schema/ddl/mysql.g4 -lib src/main/antlr4/imports
-	javac -d target/classes -sourcepath src/main/java:src/main/antlr4 -classpath $(shell cat .make-classpath) ${CHANGED_JAVA_SOURCES} \
-		-s target/generated-sources/annotations -g -nowarn -target 1.7 -source 1.7 -encoding UTF-8
+	javac -d target/classes -sourcepath src/main/java:src/main/antlr4 -classpath `cat .make-classpath` \
+		-g -nowarn -target 1.7 -source 1.7 -encoding UTF-8 ${CHANGED_JAVA_SOURCES}
 	touch .make-last-compile
 
 test:

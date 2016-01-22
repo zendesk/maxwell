@@ -7,6 +7,7 @@ class ChangeColumnMod extends ColumnMod {
 	public ColumnDef definition;
 	public ColumnPosition position;
 
+
 	public ChangeColumnMod(String name, ColumnDef d, ColumnPosition position ) {
 		super(name);
 		this.definition = d;
