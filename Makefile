@@ -18,13 +18,13 @@ java: .make-classpath
 ifneq ($(strip $(CHANGED_JAVA_SOURCES)),)
 	mkdir -p target/classes
 	javac -d target/classes -sourcepath src/main/java:target/generated-sources/src/main/antlr4 -classpath `cat .make-classpath` \
-		-g -nowarn -target 1.7 -source 1.7 -encoding UTF-8 ${CHANGED_JAVA_SOURCES}
+		-g -target 1.7 -source 1.7 -encoding UTF-8 ${CHANGED_JAVA_SOURCES}
 endif
 
 compile:
-	make antlr 
-	make java
-	touch .make-last-compile
+	@make antlr
+	@make java
+	@touch .make-last-compile
 
 clean:
 	rm -f .make-last-compile
