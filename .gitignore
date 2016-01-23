@@ -7,3 +7,6 @@ config/*.yml
 /*.iml
 .*.sw*
 .DS_Store
+.make-classpath
+.make-last-compile
+
