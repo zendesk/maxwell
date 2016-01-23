@@ -10,22 +10,10 @@ import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.antlr.v4.runtime.tree.ErrorNode;
 
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
-import com.zendesk.maxwell.schema.ddl.mysqlParser.Column_optionsContext;
-import com.zendesk.maxwell.schema.ddl.mysqlParser.Enum_valueContext;
-import com.zendesk.maxwell.schema.ddl.mysqlParser.Index_columnContext;
-import com.zendesk.maxwell.schema.ddl.mysqlParser.NameContext;
 import com.zendesk.maxwell.schema.ddl.mysqlParser.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-class MaxwellSQLSyntaxError extends RuntimeException {
-	private static final long serialVersionUID = 140545518818187219L;
-
-	public MaxwellSQLSyntaxError(String message) {
-		super(message);
-	}
-}
 
 public class MysqlParserListener extends mysqlBaseListener {
     final Logger LOGGER = LoggerFactory.getLogger(MysqlParserListener.class);
