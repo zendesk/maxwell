@@ -20,7 +20,7 @@ public class MaxwellConfig {
 
 	public MaxwellMysqlConfig maxwellMysql;
 
-	public String  includeDatabases, excludeDatabases, includeTables, excludeTables;
+	public String  includeDatabases, excludeDatabases, includeTables, excludeTables, blacklistTables;
 	public final Properties kafkaProperties;
 	public String kafkaTopic;
 	public String producerType;
@@ -86,6 +86,7 @@ public class MaxwellConfig {
 		parser.accepts( "exclude_dbs", "exclude these databases, formatted as exclude_dbs=db1,db2").withOptionalArg();
 		parser.accepts( "include_tables", "include these tables, formatted as include_tables=db1,db2").withOptionalArg();
 		parser.accepts( "exclude_tables", "exclude these tables, formatted as exclude_tables=tb1,tb2").withOptionalArg();
+		parser.accepts( "blacklist_tables", "ignore data AND schema changes to these tables, formatted as blacklist_tables=tb1,tb2. See the docs for details before setting this!").withOptionalArg();
 
 		parser.accepts( "__separator_7" );
 		parser.accepts( "help", "display help").forHelp();
@@ -181,6 +182,9 @@ public class MaxwellConfig {
 		
 		if ( options.has("exclude_tables"))
 			this.excludeTables = (String) options.valueOf("exclude_tables");
+
+		if ( options.has("blacklist_tables"))
+			this.blacklistTables = (String) options.valueOf("blacklist_tables");
 	}
 
 	private Properties readPropertiesFile(String filename, Boolean abortOnMissing) {
@@ -231,6 +235,7 @@ public class MaxwellConfig {
 		this.excludeDatabases = p.getProperty("exclude_dbs");
 		this.includeTables = p.getProperty("include_tables");
 		this.excludeTables = p.getProperty("exclude_tables");
+		this.blacklistTables = p.getProperty("blacklist_tables");
 
 		String maxSchemaString = p.getProperty("max_schemas");
 		if (maxSchemaString != null)

@@ -25,6 +25,7 @@ option                                        | description | default
 --exclude_dbs PATTERN                         | ignore updates from these databases |
 --include_tables PATTERN                      | only send updates from tables named like PATTERN |
 --exclude_tables PATTERN                      | ignore updates from tables named like PATTERN |
+--blacklist_tables PATTERN                    | ignore updates AND schema changes from tables named like PATTERN (see warnings below)|
 &nbsp;
 --bootstrapper                                | bootstrapper type: async|sync|none. | async
 --bootstrapper_fetch_size                     | number of rows fetched at a time during bootstrapping. | 64000
@@ -62,6 +63,10 @@ given as `option=/regex/`.  The options are evaluated as follows:
 
 So an example like `--include_dbs=/foo.*/ --exclude_tables=bar` will include `footy.zab` and exclude `footy.bar`
 
+The option `blacklist_tables` controls whether Maxwell will send updates for a table to its producer AND whether
+it captures schema changes for that table. Note that once Maxwell has been running with a table marked as blacklisted,
+you *must* continue to run Maxwell with that table blacklisted or else Maxwell will halt. If you want to stop
+blacklisting a table, you will have to drop the maxwell schema first.
 
 <script>
   jQuery(document).ready(function () {
