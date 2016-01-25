@@ -193,7 +193,8 @@ public class MaxwellContext {
 		return new MaxwellFilter(config.includeDatabases,
 			config.excludeDatabases,
 			config.includeTables,
-			config.excludeTables);
+			config.excludeTables,
+			config.blacklistTables);
 	}
 
 

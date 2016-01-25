@@ -134,7 +134,11 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 		table = tableCache.getTable(e.getTableId());
 
-		if (table == null) {
+		if ( table == null && this.filter.hasTableBlacklist() ) {
+			LOGGER.warn(String.format("couldn't find table in cache for table id: %d, assuming blacklisted table", e.getTableId()));
+			return null;
+		}
+		else if ( table == null ) {
 			throw new SchemaSyncError("couldn't find table in cache for table id: " + e.getTableId());
 		}
 
@@ -192,6 +196,10 @@ public class MaxwellReplicator extends RunLoopProcess {
 					rowEventsProcessed++;
 					event = processRowsEvent((AbstractRowEvent) v4Event);
 
+					if ( event == null ) {
+						continue;
+					}
+
 					if ( event.matchesFilter() ) {
 						for ( RowMap r : event.jsonMaps() )
 							buffer.add(r);
@@ -201,7 +209,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 					break;
 				case MySQLConstants.TABLE_MAP_EVENT:
-					tableCache.processEvent(this.schema, (TableMapEvent) v4Event);
+					tableCache.processEvent(this.schema, this.filter, (TableMapEvent) v4Event);
 					break;
 				case MySQLConstants.QUERY_EVENT:
 					QueryEvent qe = (QueryEvent) v4Event;
@@ -225,7 +233,6 @@ public class MaxwellReplicator extends RunLoopProcess {
 					} else {
 						LOGGER.warn("Unhandled QueryEvent inside transaction: " + qe);
 					}
-
 					break;
 				case MySQLConstants.XID_EVENT:
 					XidEvent xe = (XidEvent) v4Event;
@@ -270,7 +277,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 					rowBuffer = getTransactionRows();
 					break;
 				case MySQLConstants.TABLE_MAP_EVENT:
-					tableCache.processEvent(this.schema, (TableMapEvent) v4Event);
+					tableCache.processEvent(this.schema, this.filter, (TableMapEvent) v4Event);
 					break;
 				case MySQLConstants.QUERY_EVENT:
 					QueryEvent qe = (QueryEvent) v4Event;
@@ -305,7 +312,11 @@ public class MaxwellReplicator extends RunLoopProcess {
 		Schema updatedSchema = this.schema;
 
 		for ( SchemaChange change : changes ) {
-			updatedSchema = change.apply(updatedSchema);
+			if ( !change.isBlacklisted(this.filter) ) {
+				updatedSchema = change.apply(updatedSchema);
+			} else {
+				LOGGER.debug("ignoring blacklisted schema change");
+			}
 		}
 
 		if ( updatedSchema != this.schema) {

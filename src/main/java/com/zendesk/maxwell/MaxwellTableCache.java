@@ -10,7 +10,7 @@ import com.zendesk.maxwell.schema.Table;
 public class MaxwellTableCache {
 	private final HashMap<Long, Table> tableMapCache = new HashMap<>();
 	// open-replicator keeps a very similar cache, but we can't get access to it.
-	public void processEvent(Schema schema, TableMapEvent event) {
+	public void processEvent(Schema schema, MaxwellFilter filter, TableMapEvent event) {
 		Long tableId = event.getTableId();
 		if ( !tableMapCache.containsKey(tableId) ) {
 			String dbName = new String(event.getDatabaseName().getValue());
@@ -20,7 +20,7 @@ public class MaxwellTableCache {
 				throw new RuntimeException("Couldn't find database " + dbName);
 
 			Table tbl = db.findTable(tblName);
-			if ( tbl == null )
+			if ( tbl == null && !filter.isTableBlacklisted(tblName) )
 				throw new RuntimeException("Couldn't find table " + tblName);
 
 			tableMapCache.put(tableId, tbl);
