@@ -157,16 +157,8 @@ public class MaxwellFilter {
 			|| ( matchesDatabase(database) && matchesTable(table) && matchesAnyRows(e) );
 	}
 
-	public boolean isBlacklisted(TableMapEvent e) {
-		return isTableBlacklisted(e.getTableName().toString());
-	}
-
 	public boolean isTableBlacklisted(String tableName) {
 		return ! matchesIncludeExcludeList(emptyList, blacklistTables, tableName);
-	}
-
-	public boolean hasTableBlacklist() {
-		return blacklistTables.size() > 0;
 	}
 
 	private void throwUnlessEmpty(HashSet<String> set, String objType) {

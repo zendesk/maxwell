@@ -66,9 +66,7 @@ So an example like `--include_dbs=/foo.*/ --exclude_tables=bar` will include `fo
 The option `blacklist_tables` controls whether Maxwell will send updates for a table to its producer AND whether
 it captures schema changes for that table. Note that once Maxwell has been running with a table marked as blacklisted,
 you *must* continue to run Maxwell with that table blacklisted or else Maxwell will halt. If you want to stop
-blacklisting a table, you will have to drop the maxwell schema first. Also note that with table blacklisting enabled,
-Maxwell cannot distinguish between row updates for blacklisted tables and row updates for unknown tables; it will just
-assume that all row updates for unknown tables relate to blacklisted tables.
+blacklisting a table, you will have to drop the maxwell schema first.
 
 <script>
   jQuery(document).ready(function () {

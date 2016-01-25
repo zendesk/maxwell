@@ -132,14 +132,17 @@ public class MaxwellReplicator extends RunLoopProcess {
 		MaxwellAbstractRowsEvent ew;
 		Table table;
 
-		table = tableCache.getTable(e.getTableId());
+		long tableId = e.getTableId();
 
-		if ( table == null && this.filter.hasTableBlacklist() ) {
-			LOGGER.warn(String.format("couldn't find table in cache for table id: %d, assuming blacklisted table", e.getTableId()));
+		if ( tableCache.isTableBlacklisted(tableId) ) {
+			LOGGER.debug(String.format("ignoring row event for blacklisted table %s", tableCache.getBlacklistedTableName(tableId)));
 			return null;
 		}
-		else if ( table == null ) {
-			throw new SchemaSyncError("couldn't find table in cache for table id: " + e.getTableId());
+
+		table = tableCache.getTable(tableId);
+
+		if ( table == null ) {
+			throw new SchemaSyncError("couldn't find table in cache for table id: " + tableId);
 		}
 
 		switch (e.getHeader().getEventType()) {
