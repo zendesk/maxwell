@@ -294,4 +294,8 @@ public class MaxwellIntegrationTest extends AbstractIntegrationTest {
 		runJSONTestFile(getSQLDir() + "/json/test_ucs2");
 	}
 
+	@Test
+	public void testGIS() throws Exception {
+		runJSONTestFile(getSQLDir() + "/json/test_gis");
+	}
 }

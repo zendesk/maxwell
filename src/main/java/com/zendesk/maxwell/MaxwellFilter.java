@@ -3,6 +3,7 @@ package com.zendesk.maxwell;
 import java.util.*;
 import java.util.regex.Pattern;
 
+import com.google.code.or.binlog.impl.event.TableMapEvent;
 import com.google.code.or.common.glossary.Column;
 import com.google.code.or.common.glossary.Row;
 
@@ -11,10 +12,12 @@ import com.google.code.or.common.glossary.Row;
 	(includeDatabases.nil? || includeDatabases.include?()
  */
 public class MaxwellFilter {
+	private static final List< Pattern > emptyList = Collections.unmodifiableList(new ArrayList<Pattern>());
 	private final ArrayList<Pattern> includeDatabases = new ArrayList<>();
 	private final ArrayList<Pattern> excludeDatabases = new ArrayList<>();
 	private final ArrayList<Pattern> includeTables = new ArrayList<>();
 	private final ArrayList<Pattern> excludeTables = new ArrayList<>();
+	private final ArrayList<Pattern> blacklistTables = new ArrayList<>();
 
 	private final HashMap<String, Integer> rowFilter = new HashMap<>();
 
@@ -22,7 +25,8 @@ public class MaxwellFilter {
 	public MaxwellFilter(String includeDatabases,
 						 String excludeDatabases,
 						 String includeTables,
-						 String excludeTables) throws MaxwellInvalidFilterException {
+						 String excludeTables,
+						 String blacklistTables) throws MaxwellInvalidFilterException {
 		if ( includeDatabases != null ) {
 			for (String s : includeDatabases.split(","))
 				includeDatabase(s);
@@ -42,6 +46,11 @@ public class MaxwellFilter {
 			for (String s : excludeTables.split(","))
 				excludeTable(s);
 		}
+
+		if ( blacklistTables != null ) {
+			for ( String s : blacklistTables.split(",") )
+				blacklistTable(s);
+		}
 	}
 
 
@@ -59,6 +68,10 @@ public class MaxwellFilter {
 
 	public void excludeTable(String name) throws MaxwellInvalidFilterException {
 		excludeTables.add(compile(name));
+	}
+
+	public void blacklistTable(String name) throws MaxwellInvalidFilterException {
+		blacklistTables.add(compile(name));
 	}
 
 	private Pattern compile(String name) throws MaxwellInvalidFilterException {
@@ -144,6 +157,9 @@ public class MaxwellFilter {
 			|| ( matchesDatabase(database) && matchesTable(table) && matchesAnyRows(e) );
 	}
 
+	public boolean isTableBlacklisted(String tableName) {
+		return ! matchesIncludeExcludeList(emptyList, blacklistTables, tableName);
+	}
 
 	private void throwUnlessEmpty(HashSet<String> set, String objType) {
 		if ( set.size() != 0 ) {
