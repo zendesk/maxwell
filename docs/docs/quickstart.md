@@ -22,7 +22,7 @@ in order to change to row-based replication, you must reconnect all active clien
 
 ### Mysql permissions
 ***
-Maxwell stores all the state it needs within the mysql server itself, in a database called `maxwell`.
+Maxwell stores all the state it needs within the mysql server itself, in the database called specified by the _schema_database_ option. By default the database is named `maxwell`.
 ```
 mysql> GRANT ALL on maxwell.* to 'maxwell'@'%' identified by 'XXXXXX';
 mysql> GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE on *.* to 'maxwell'@'%';
