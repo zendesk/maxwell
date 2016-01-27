@@ -27,7 +27,9 @@ public class Maxwell {
 		this.schema = capturer.capture();
 
 		BinlogPosition pos = BinlogPosition.capture(connection);
-		SchemaStore store = new SchemaStore(schemaConnection, this.context.getServerID(), this.schema, pos);
+
+		SchemaStore store = new SchemaStore(schemaConnection, this.context.getServerID(), this.schema, pos, this.config.databaseName);
+
 		store.save();
 
 		this.context.setPosition(pos);
@@ -47,10 +49,11 @@ public class Maxwell {
 			MaxwellMysqlStatus.ensureReplicationMysqlState(connection);
 			MaxwellMysqlStatus.ensureMaxwellMysqlState(schemaConnection);
 
-			SchemaStore.ensureMaxwellSchema(schemaConnection);
-			SchemaStore.upgradeSchemaStoreSchema(schemaConnection);
+			SchemaStore.ensureMaxwellSchema(schemaConnection, this.config.databaseName);
+			schemaConnection.setCatalog(this.config.databaseName);
+			SchemaStore.upgradeSchemaStoreSchema(schemaConnection, this.config.databaseName);
 
-			SchemaStore.handleMasterChange(schemaConnection, context.getServerID());
+			SchemaStore.handleMasterChange(schemaConnection, context.getServerID(), this.config.databaseName);
 
 			if ( this.context.getInitialPosition() != null ) {
 				String producerClass = this.context.getProducer().getClass().getSimpleName();

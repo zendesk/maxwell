@@ -9,6 +9,7 @@ option                                        | description | default
 --user USER                                   | mysql username |
 --password PASSWORD                           | mysql password | (none)
 --port PORT                                   | mysql port | 3306
+--schema_database                             | database name where maxwell stores schema and state | maxwell
 --max_schemas                                 | how many old schemas maxwell should leave lying around in maxwell.schemas | 5
 &nbsp;
 --producer PRODUCER                           | what type of producer to use: [stdout, kafka, file, profiler] | stdout

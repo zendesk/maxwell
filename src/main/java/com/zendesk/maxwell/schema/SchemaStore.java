@@ -25,6 +25,7 @@ public class SchemaStore {
 	private static int maxSchemas = 5;
 
 	private final Connection connection;
+	private final String schemaDatabaseName;
 	private Schema schema;
 	private BinlogPosition position;
 	private Long schema_id;
@@ -39,33 +40,34 @@ public class SchemaStore {
 
 	private final Long serverID;
 
-	public SchemaStore(Connection connection, Long serverID) throws SQLException {
+	public SchemaStore(Connection connection, Long serverID, String dbName) throws SQLException {
 		this.serverID = serverID;
 		this.connection = connection;
+		this.schemaDatabaseName = dbName;
 		this.schemaInsert = connection
 				.prepareStatement(
-						"INSERT INTO `maxwell`.`schemas` SET binlog_file = ?, binlog_position = ?, server_id = ?, encoding = ?",
+						"INSERT INTO `schemas` SET binlog_file = ?, binlog_position = ?, server_id = ?, encoding = ?",
 						Statement.RETURN_GENERATED_KEYS);
 		this.databaseInsert = connection
 				.prepareStatement(
-						"INSERT INTO `maxwell`.`databases` SET schema_id = ?, name = ?, encoding=?",
+						"INSERT INTO `databases` SET schema_id = ?, name = ?, encoding=?",
 						Statement.RETURN_GENERATED_KEYS);
 		this.tableInsert = connection
 				.prepareStatement(
-						"INSERT INTO `maxwell`.`tables` SET schema_id = ?, database_id = ?, name = ?, encoding=?, pk=?",
+						"INSERT INTO `tables` SET schema_id = ?, database_id = ?, name = ?, encoding=?, pk=?",
 						Statement.RETURN_GENERATED_KEYS);
-		this.columnInsertSQL = "INSERT INTO `maxwell`.`columns` (schema_id, table_id, name, encoding, coltype, is_signed, enum_values) "
+		this.columnInsertSQL = "INSERT INTO `columns` (schema_id, table_id, name, encoding, coltype, is_signed, enum_values) "
 				+ " VALUES (?, ?, ?, ?, ?, ?, ?)";
 	}
 
-	public SchemaStore(Connection connection, Long serverID, Schema schema, BinlogPosition position) throws SQLException {
-		this(connection, serverID);
+	public SchemaStore(Connection connection, Long serverID, Schema schema, BinlogPosition position, String dbName) throws SQLException {
+		this(connection, serverID, dbName);
 		this.schema = schema;
 		this.position = position;
 	}
 
-	public SchemaStore(Connection connection, Long serverID, Long schema_id) throws SQLException {
-		this(connection, serverID);
+	public SchemaStore(Connection connection, Long serverID, Long schema_id, String dbName) throws SQLException {
+		this(connection, serverID, dbName);
 		this.schema_id = schema_id;
 	}
 
@@ -103,7 +105,6 @@ public class SchemaStore {
 		} finally {
 			connection.setAutoCommit(true);
 		}
-
 		if ( this.schema_id != null ) {
 			deleteOldSchemas(schema_id);
 		}
@@ -168,28 +169,30 @@ public class SchemaStore {
 		columnData.clear();
 	}
 
-	public static void ensureMaxwellSchema(Connection connection) throws SQLException, IOException, SchemaSyncError {
-		if ( !SchemaStore.storeDatabaseExists(connection) ) {
-			SchemaStore.createStoreDatabase(connection);
+	public static void ensureMaxwellSchema(Connection connection, String schemaDatabaseName) throws SQLException, IOException, SchemaSyncError {
+		if ( !SchemaStore.storeDatabaseExists(connection, schemaDatabaseName) ) {
+			SchemaStore.createStoreDatabase(connection, schemaDatabaseName);
 		}
 	}
-	private static boolean storeDatabaseExists(Connection connection) throws SQLException {
+
+	private static boolean storeDatabaseExists(Connection connection, String schemaDatabaseName) throws SQLException {
 		Statement s = connection.createStatement();
-		ResultSet rs = s.executeQuery("show databases like 'maxwell'");
+		ResultSet rs = s.executeQuery("show databases like '" + schemaDatabaseName + "'");
 
 		return rs.next();
 	}
 
-
-	private static void executeSQLInputStream(Connection connection, InputStream schemaSQL) throws SQLException, IOException {
+	private static void executeSQLInputStream(Connection connection, InputStream schemaSQL, String schemaDatabaseName) throws SQLException, IOException {
 		BufferedReader r = new BufferedReader(new InputStreamReader(schemaSQL));
 		String sql = "", line;
 
 		LOGGER.info("Creating maxwell database");
+		connection.createStatement().execute("CREATE DATABASE IF NOT EXISTS `" + schemaDatabaseName + "`");
+		if (!connection.getCatalog().equals(schemaDatabaseName))
+			connection.setCatalog(schemaDatabaseName);
 		while ((line = r.readLine()) != null) {
 			sql += line + "\n";
 		}
-
 		for (String statement : StringUtils.splitByWholeSeparator(sql, "\n\n")) {
 			if (statement.length() == 0)
 				continue;
@@ -198,13 +201,13 @@ public class SchemaStore {
 		}
 	}
 
-	private static void createStoreDatabase(Connection connection) throws SQLException, IOException {
-		executeSQLInputStream(connection, SchemaStore.class.getResourceAsStream("/sql/maxwell_schema.sql"));
-		executeSQLInputStream(connection, SchemaStore.class.getResourceAsStream("/sql/maxwell_schema_bootstrap.sql"));
+	private static void createStoreDatabase(Connection connection, String schemaDatabaseName) throws SQLException, IOException {
+		executeSQLInputStream(connection, SchemaStore.class.getResourceAsStream("/sql/maxwell_schema.sql"), schemaDatabaseName);
+		executeSQLInputStream(connection, SchemaStore.class.getResourceAsStream("/sql/maxwell_schema_bootstrap.sql"), schemaDatabaseName);
 	}
 
 	public static SchemaStore restore(Connection connection, MaxwellContext context) throws SQLException, SchemaSyncError {
-		SchemaStore s = new SchemaStore(connection, context.getServerID());
+		SchemaStore s = new SchemaStore(connection, context.getServerID(), context.getConfig().databaseName);
 
 		s.restoreFrom(context.getInitialPosition(), context.getCaseSensitivity());
 
@@ -240,8 +243,7 @@ public class SchemaStore {
 		LOGGER.info("Restoring schema id " + schemaRS.getInt("id") + " (last modified at " + this.position + ")");
 
 		this.schema_id = schemaRS.getLong("id");
-
-		p = connection.prepareStatement("SELECT * from `maxwell`.`databases` where schema_id = ? ORDER by id");
+		p = connection.prepareStatement("SELECT * from `databases` where schema_id = ? ORDER by id");
 		p.setLong(1, this.schema_id);
 
 		ResultSet dbRS = p.executeQuery();
@@ -266,7 +268,7 @@ public class SchemaStore {
 		Statement s = connection.createStatement();
 		Database d = new Database(name, encoding);
 
-		ResultSet tRS = s.executeQuery("SELECT * from `maxwell`.`tables` where database_id = " + id + " ORDER by id");
+		ResultSet tRS = s.executeQuery("SELECT * from `tables` where database_id = " + id + " ORDER by id");
 
 		while (tRS.next()) {
 			String tName = tRS.getString("name");
@@ -285,7 +287,7 @@ public class SchemaStore {
 
 		Table t = d.buildTable(name, encoding);
 
-		ResultSet cRS = s.executeQuery("SELECT * from `maxwell`.`columns` where table_id = " + id + " ORDER by id");
+		ResultSet cRS = s.executeQuery("SELECT * from `columns` where table_id = " + id + " ORDER by id");
 
 		int i = 0;
 		while (cRS.next()) {
@@ -312,7 +314,7 @@ public class SchemaStore {
 			throws SQLException {
 		LOGGER.debug("looking to restore schema at target position " + targetPosition);
 		PreparedStatement s = connection.prepareStatement(
-			"SELECT * from `maxwell`.`schemas` "
+			"SELECT * from `schemas` "
 			+ "WHERE deleted = 0 "
 			+ "AND ((binlog_file < ?) OR (binlog_file = ? and binlog_position <= ?)) AND server_id = ? "
 			+ "ORDER BY id desc limit 1");
@@ -345,19 +347,17 @@ public class SchemaStore {
 
 	public void delete() throws SQLException {
 		ensureSchemaID();
-
-		connection.createStatement().execute("update `maxwell`.`schemas` set deleted = 1 where id = " + schema_id);
+		connection.createStatement().execute("update `schemas` set deleted = 1 where id = " + schema_id);
 	}
 
 	public void destroy() throws SQLException {
 		ensureSchemaID();
 
 		String[] tables = { "databases", "tables", "columns" };
-
-		connection.createStatement().execute("delete from maxwell.schemas where id = " + schema_id);
+		connection.createStatement().execute("delete from `schemas` where id = " + schema_id);
 		for ( String tName : tables ) {
             connection.createStatement().execute(
-            		"delete from maxwell." + tName + " where schema_id = " + schema_id
+            		"delete from `" + tName + "` where schema_id = " + schema_id
             );
 		}
 	}
@@ -365,8 +365,7 @@ public class SchemaStore {
 	public boolean schemaExists(long schema_id) throws SQLException {
 		if ( this.schema_id == null )
 			return false;
-
-		ResultSet rs = connection.createStatement().executeQuery("select id from maxwell.schemas where id = " + schema_id);
+		ResultSet rs = connection.createStatement().executeQuery("select id from `schemas` where id = " + schema_id);
 		return rs.next();
 	}
 
@@ -380,7 +379,7 @@ public class SchemaStore {
 
 		Long toDelete = currentSchemaId - maxSchemas; // start with the highest numbered ID to delete, work downwards until we run out
 		while ( toDelete > 0 && schemaExists(toDelete) ) {
-			new SchemaStore(connection, serverID, toDelete).delete();
+			new SchemaStore(connection, serverID, toDelete, this.schemaDatabaseName).delete();
 			toDelete--;
 		}
 	}
@@ -389,9 +388,9 @@ public class SchemaStore {
 		for the time being, when we detect other schemas we will simply wipe them down.
 		in the future, this is our moment to pick up where the master left off.
 	*/
-	public static void handleMasterChange(Connection c, Long serverID) throws SQLException {
+	public static void handleMasterChange(Connection c, Long serverID, String schemaDatabaseName) throws SQLException {
 		PreparedStatement s = c.prepareStatement(
-				"SELECT id from `maxwell`.`schemas` WHERE server_id != ? and deleted = 0"
+				"SELECT id from `schemas` WHERE server_id != ? and deleted = 0"
 		);
 
 		s.setLong(1, serverID);
@@ -400,16 +399,15 @@ public class SchemaStore {
 		while ( rs.next() ) {
 			Long schemaID = rs.getLong("id");
 			LOGGER.info("maxwell detected schema " + schemaID + " from different server_id.  deleting...");
-			new SchemaStore(c, null, schemaID).delete();
+			new SchemaStore(c, null, schemaID, schemaDatabaseName).delete();
 		}
 
-		c.createStatement().execute("delete from `maxwell`.`positions` where server_id != " + serverID);
+		c.createStatement().execute("delete from `positions` where server_id != " + serverID);
 	}
 
 	private static Map<String, String> getTableColumns(String table, Connection c) throws SQLException {
 		HashMap<String, String> map = new HashMap<>();
-
-		ResultSet rs = c.createStatement().executeQuery("show columns from `maxwell`.`" + table + "`");
+		ResultSet rs = c.createStatement().executeQuery("show columns from `" + table + "`");
 		while (rs.next()) {
 			map.put(rs.getString("Field"), rs.getString("Type"));
 		}
@@ -419,7 +417,7 @@ public class SchemaStore {
 	private static List<String> getMaxwellTables(Connection c) throws SQLException {
 		ArrayList<String> l = new ArrayList<>();
 
-		ResultSet rs = c.createStatement().executeQuery("show tables from `maxwell`");
+		ResultSet rs = c.createStatement().executeQuery("show tables");
 		while (rs.next()) {
 			l.add(rs.getString(1));
 		}
@@ -432,16 +430,16 @@ public class SchemaStore {
 		c.createStatement().execute(sql);
 	}
 
-	public static void upgradeSchemaStoreSchema(Connection c) throws SQLException, IOException {
-		if ( !getTableColumns("schemas", c).containsKey("deleted") )
-			performAlter(c, "alter table maxwell.schemas add column deleted tinyint(1) not null default 0");
-
-		if ( !getMaxwellTables(c).contains("bootstrap") )  {
-			LOGGER.info("adding `maxwell`.`bootstrap` to the schema.");
-			InputStream is = SchemaStore.class.getResourceAsStream("/sql/maxwell_schema_bootstrap.sql");
-			executeSQLInputStream(c, is);
+	public static void upgradeSchemaStoreSchema(Connection c, String schemaDatabaseName) throws SQLException, IOException {
+		if ( !getTableColumns("schemas", c).containsKey("deleted") ) {
+			performAlter(c, "alter table `schemas` add column deleted tinyint(1) not null default 0");
 		}
 
+		if ( !getMaxwellTables(c).contains("bootstrap") )  {
+			LOGGER.info("adding `" + schemaDatabaseName + "`.`bootstrap` to the schema.");
+			InputStream is = SchemaStore.class.getResourceAsStream("/sql/maxwell_schema_bootstrap.sql");
+			executeSQLInputStream(c, is, schemaDatabaseName);
+		}
 	}
 
 }

@@ -33,7 +33,7 @@ public class AbstractMaxwellTest {
 		server = new MysqlIsolatedServer();
 		server.boot();
 
-		SchemaStore.ensureMaxwellSchema(server.getConnection());
+		SchemaStore.ensureMaxwellSchema(server.getConnection(), "maxwell");
 	}
 
 	@AfterClass
@@ -111,6 +111,8 @@ public class AbstractMaxwellTest {
 		config.maxwellMysql.user = "maxwell";
 		config.maxwellMysql.password = "maxwell";
 
+		config.databaseName = "maxwell";
+
 		config.bootstrapperBatchFetchSize = 64;
 
 		config.initPosition = p;
@@ -157,7 +159,9 @@ public class AbstractMaxwellTest {
 				return new SynchronousBootstrapper(context) {
 					@Override
 					protected Connection getConnection() throws SQLException {
-						return server.getNewConnection();
+						Connection conn = server.getNewConnection();
+						conn.setCatalog(context.getConfig().databaseName);
+						return conn;
 					}
 				};
 			}

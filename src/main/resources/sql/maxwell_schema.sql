@@ -1,6 +1,4 @@
-CREATE DATABASE IF NOT EXISTS `maxwell`;
-
-CREATE TABLE IF NOT EXISTS `maxwell`.`schemas` (
+CREATE TABLE IF NOT EXISTS `schemas` (
   id int unsigned auto_increment NOT NULL primary key,
   binlog_file varchar(255),
   binlog_position int unsigned,
@@ -9,7 +7,7 @@ CREATE TABLE IF NOT EXISTS `maxwell`.`schemas` (
   deleted tinyint(1) not null default 0
 );
 
-CREATE TABLE IF NOT EXISTS `maxwell`.`databases` (
+CREATE TABLE IF NOT EXISTS `databases` (
   id        int unsigned auto_increment NOT NULL primary key,
   schema_id int unsigned,
   name      varchar(255),
@@ -17,7 +15,7 @@ CREATE TABLE IF NOT EXISTS `maxwell`.`databases` (
   index (schema_id)
 );
 
-CREATE TABLE IF NOT EXISTS `maxwell`.`tables` (
+CREATE TABLE IF NOT EXISTS `tables` (
   id          int unsigned auto_increment NOT NULL primary key,
   schema_id   int unsigned,
   database_id int unsigned,
@@ -28,7 +26,7 @@ CREATE TABLE IF NOT EXISTS `maxwell`.`tables` (
   index (database_id)
 );
 
-CREATE TABLE IF NOT EXISTS `maxwell`.`columns` (
+CREATE TABLE IF NOT EXISTS `columns` (
   id          int unsigned auto_increment NOT NULL primary key,
   schema_id   int unsigned,
   table_id    int unsigned,
@@ -41,9 +39,8 @@ CREATE TABLE IF NOT EXISTS `maxwell`.`columns` (
   index (table_id)
 );
 
-CREATE TABLE IF NOT EXISTS `maxwell`.`positions` (
+CREATE TABLE IF NOT EXISTS `positions` (
   server_id int unsigned not null primary key,
   binlog_file varchar(255),
   binlog_position int unsigned
 );
-

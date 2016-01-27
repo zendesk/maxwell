@@ -16,8 +16,9 @@ public class MaxwellBootstrapUtilityConfig {
 	public String  mysqlUser;
 	public String  mysqlPassword;
 	public String  databaseName;
+	public String  schemaDatabaseName;
 	public String  tableName;
-	public String log_level;
+	public String  log_level;
 
 	public MaxwellBootstrapUtilityConfig(String argv[]) {
 		this.parse(argv);
@@ -25,7 +26,7 @@ public class MaxwellBootstrapUtilityConfig {
 	}
 
 	public String getConnectionURI( ) {
-		return "jdbc:mysql://" + mysqlHost + ":" + mysqlPort;
+		return "jdbc:mysql://" + mysqlHost + ":" + mysqlPort + "/" + schemaDatabaseName;
 	}
 
 	private OptionParser getOptionParser() {
@@ -35,6 +36,7 @@ public class MaxwellBootstrapUtilityConfig {
 		parser.accepts( "user", "mysql username. default: maxwell" ).withRequiredArg();
 		parser.accepts( "password", "mysql password" ).withRequiredArg();
 		parser.accepts( "port", "mysql port. default: 3306" ).withRequiredArg();
+		parser.accepts( "schema_database", "database that contains maxwell schema and state").withRequiredArg();
 		parser.accepts( "database", "database that contains the table to bootstrap").withRequiredArg();
 		parser.accepts( "table", "table to bootstrap").withRequiredArg();
 		parser.accepts( "help", "display help").forHelp();
@@ -72,6 +74,9 @@ public class MaxwellBootstrapUtilityConfig {
 		if ( options.has("port"))
 			this.mysqlPort = Integer.valueOf((String) options.valueOf("port"));
 
+		if ( options.has("schema_database"))
+			this.schemaDatabaseName = (String) options.valueOf("schema_database");
+
 		if ( options.has("database") )
 			this.databaseName = (String) options.valueOf("database");
 		else
@@ -101,6 +106,10 @@ public class MaxwellBootstrapUtilityConfig {
 
 		if ( this.mysqlPort == null ) {
 			this.mysqlPort = 3306;
+		}
+
+		if ( this.schemaDatabaseName == null) {
+			this.schemaDatabaseName = "maxwell";
 		}
 
 	}

@@ -120,7 +120,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 	}
 
 	protected boolean isMaxwellRow(RowMap row) {
-		return row.getDatabase().equals("maxwell");
+		return row.getDatabase().equals(this.context.getConfig().databaseName);
 	}
 
 	private BinlogPosition eventBinlogPosition(AbstractBinlogEventV4 event) {
@@ -335,8 +335,8 @@ public class MaxwellReplicator extends RunLoopProcess {
 		tableCache.clear();
 
 		if ( !this.context.getReplayMode() ) {
-			try (Connection c = this.context.getMaxwellConnectionPool().getConnection()) {
-				new SchemaStore(c, this.context.getServerID(), this.schema, p).save();
+			try (Connection c = this.context.getMaxwellConnection()) {
+				new SchemaStore(c, this.context.getServerID(), this.schema, p, this.context.getConfig().databaseName).save();
 			}
 
 			this.context.setPositionSync(p);

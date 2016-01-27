@@ -29,7 +29,7 @@ public abstract class AbstractBootstrapper {
 	}
 
 	public boolean isBootstrapRow(RowMap row) {
-		return row.getDatabase().equals("maxwell") &&
+		return row.getDatabase().equals(this.context.getConfig().databaseName) &&
 			row.getTable().equals("bootstrap");
 	}
 

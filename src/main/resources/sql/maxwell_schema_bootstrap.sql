@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS `maxwell`.`bootstrap` (
+CREATE TABLE IF NOT EXISTS `bootstrap` (
   id              int unsigned auto_increment NOT NULL primary key,
   database_name   varchar(255) NOT NULL,
   table_name      varchar(255) NOT NULL,

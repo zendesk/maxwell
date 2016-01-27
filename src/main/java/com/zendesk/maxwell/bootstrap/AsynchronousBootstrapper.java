@@ -138,8 +138,8 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	private BinlogPosition getBootstrapStartBinlogPosition(RowMap bootstrapCompleteRow) throws SQLException {
-		try ( Connection connection = context.getMaxwellConnectionPool().getConnection() ) {
-			String sql = "select * from maxwell.bootstrap where id = ?";
+		try ( Connection connection = context.getMaxwellConnection() ) {
+			String sql = "select * from `bootstrap` where id = ?";
 			PreparedStatement preparedStatement = connection.prepareStatement(sql);
 			preparedStatement.setLong(1, ( Long ) bootstrapCompleteRow.getData("id"));
 			ResultSet resultSet = preparedStatement.executeQuery();
