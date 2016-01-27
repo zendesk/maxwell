@@ -27,6 +27,8 @@ public class MaxwellConfig {
 	public final Properties kafkaProperties;
 	public String kafkaTopic;
 	public String producerType;
+	public String kafkaPartitionHash;
+	public String kafkaPartitionKey;
 	public String bootstrapperType;
 	public Integer bootstrapperBatchFetchSize;
 
@@ -74,6 +76,8 @@ public class MaxwellConfig {
 		parser.accepts( "producer", "producer type: stdout|file|kafka" ).withRequiredArg();
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
+		parser.accepts( "kafka_partition_by", "database|table|primary_key, kafka producer assigns partition by hashing the specified parameter").withRequiredArg();
+		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning").withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
 
 		parser.accepts( "__separator_4" );
@@ -156,6 +160,12 @@ public class MaxwellConfig {
 
 		if ( options.has("kafka_topic"))
 			this.kafkaTopic = (String) options.valueOf("kafka_topic");
+
+		if ( options.has("kafka_partition_by"))
+			this.kafkaPartitionKey = (String) options.valueOf("kafka_partition_by");
+
+		if ( options.has("kafka_partition_hash"))
+			this.kafkaPartitionHash = (String) options.valueOf("kafka_partition_hash");
 
 		if ( options.has("output_file"))
 			this.outputFile = (String) options.valueOf("output_file");
@@ -245,6 +255,8 @@ public class MaxwellConfig {
 		this.bootstrapperType = p.getProperty("bootstrapper");
 		this.outputFile      = p.getProperty("output_file");
 		this.kafkaTopic      = p.getProperty("kafka_topic");
+		this.kafkaPartitionHash = p.getProperty("kafka_partition_hash", "default");
+		this.kafkaPartitionKey = p.getProperty("kafka_partition_by", "database");
 		this.includeDatabases = p.getProperty("include_dbs");
 		this.excludeDatabases = p.getProperty("exclude_dbs");
 		this.includeTables = p.getProperty("include_tables");
@@ -270,9 +282,25 @@ public class MaxwellConfig {
 	private void setDefaults() {
 		if ( this.producerType == null ) {
 			this.producerType = "stdout";
-		} else if ( this.producerType.equals("kafka")
-				&& !this.kafkaProperties.containsKey("bootstrap.servers")) {
-			usage("You must specify kafka.bootstrap.servers for the kafka producer!");
+		} else if ( this.producerType.equals("kafka") ) {
+			if ( !this.kafkaProperties.containsKey("bootstrap.servers") ) {
+				usage("You must specify kafka.bootstrap.servers for the kafka producer!");
+			}
+
+			if ( this.kafkaPartitionHash == null ) {
+				this.kafkaPartitionHash = "default";
+			} else if ( !this.kafkaPartitionHash.equals("default")
+					&& !this.kafkaPartitionHash.equals("murmur3") ) {
+				usage("please specify --kafka_partition_hash=default|murmur3");
+			}
+
+			if ( this.kafkaPartitionKey == null ) {
+				this.kafkaPartitionKey = "database";
+			} else if ( !this.kafkaPartitionKey.equals("database")
+					&& !this.kafkaPartitionKey.equals("table")
+					&& !this.kafkaPartitionKey.equals("primary_key") ) {
+				usage("please specify --kafka_partition_by=database|table|primary_key");
+			}
 		} else if ( this.producerType.equals("file")
 				&& this.outputFile == null) {
 			usage("please specify --output_file=FILE to use the file producer");

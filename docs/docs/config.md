@@ -15,6 +15,8 @@ option                                        | description | default
 --producer PRODUCER                           | what type of producer to use: [stdout, kafka, file, profiler] | stdout
 --output_file                                 | if using the file producer, write JSON rows to this path |
 --kafka.bootstrap.servers                     | list of kafka brokers, listed as HOST:PORT[,HOST:PORT] |
+--kafka_partition_hash                        | which hash function to use: [default, murmur3] | default
+--kafka_partition_by                          | what fields to hash for partition key: [database, table, primary_key] | database
 --kafka_topic                                 | kafka topic to write to. | maxwell
 &nbsp;
 --replication_host                            | mysql host to replicate from | schema-store host

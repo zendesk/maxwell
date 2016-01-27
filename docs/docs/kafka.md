@@ -25,11 +25,15 @@ as a source of truth.
 
 ### Partitioning
 ***
-A binlog event's partition is chosen by the following:
+A binlog event's partition is determined by the selected hash function and hash string as follows
 
 ```
-  DATABASE_NAME.hash() % TOPIC.NUMBER_OF_PARTITIONS
+  HASH_FUNCTION(HASH_STRING) % TOPIC.NUMBER_OF_PARTITIONS
 ```
+
+The HASH_FUNCTION is either java's _hashCode_ or _murmurhash3_. The default HASH_FUNCTION is _hashCode_. Murmurhash3 may be set with the `kafka_partition_hash` option. The seed value for the murmurhash function is hardcoded to 25342 in the MaxwellKafkaPartitioner class.
+ 
+The HASH_STRING may be (_database_, _table_, _primary_key_).  The default HASH_STRING is the _database_. The partitioning field can be configured using the `kafka_partition_by` option.    
 
 Maxwell will discover the number of partitions in its kafka topic upon boot.  This means that you should pre-create your kafka topics,
 and with at least as many partitions as you have logical databases:
