@@ -211,6 +211,7 @@ public class DDLParserTest {
 	@Test
 	public void testSQLBlacklist() {
 		String testSQL[] = {
+			"/*!50003 DROP FUNCTION IF EXISTS `DAY_NAME_FROM_NUMER` */",
 			"ALTER DEFINER=foo VIEW",
 			"CREATE VIEW foo",
 			"CREATE TRIGGER foo",
