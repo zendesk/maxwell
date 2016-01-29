@@ -11,27 +11,27 @@ INSERT INTO shard_1.table3 (txt) values ("txt7"), ("txt8"), ("txt9");
 INSERT INTO maxwell.bootstrap set database_name = 'shard_1', table_name = 'table1';
 INSERT INTO maxwell.bootstrap set database_name = 'shard_1', table_name = 'table2';
 INSERT INTO maxwell.bootstrap set database_name = 'shard_1', table_name = 'table3';
--> { database: "shard_1", table: "table1", type: "insert", data: {id: 1, txt: "txt1"} }
--> { database: "shard_1", table: "table1", type: "insert", data: {id: 2, txt: "txt2"} }
--> { database: "shard_1", table: "table1", type: "insert", data: {id: 3, txt: "txt3"} }
--> { database: "shard_1", table: "table2", type: "insert", data: {id: 1, txt: "txt4"} }
--> { database: "shard_1", table: "table2", type: "insert", data: {id: 2, txt: "txt5"} }
--> { database: "shard_1", table: "table2", type: "insert", data: {id: 3, txt: "txt6"} }
--> { database: "shard_1", table: "table3", type: "insert", data: {id: 1, txt: "txt7"} }
--> { database: "shard_1", table: "table3", type: "insert", data: {id: 2, txt: "txt8"} }
--> { database: "shard_1", table: "table3", type: "insert", data: {id: 3, txt: "txt9"} }
+-> { database: "shard_1", table: "table1", type: "bootstrap-insert", data: {id: 1, txt: "txt1"} }
+-> { database: "shard_1", table: "table1", type: "bootstrap-insert", data: {id: 2, txt: "txt2"} }
+-> { database: "shard_1", table: "table1", type: "bootstrap-insert", data: {id: 3, txt: "txt3"} }
+-> { database: "shard_1", table: "table2", type: "bootstrap-insert", data: {id: 1, txt: "txt4"} }
+-> { database: "shard_1", table: "table2", type: "bootstrap-insert", data: {id: 2, txt: "txt5"} }
+-> { database: "shard_1", table: "table2", type: "bootstrap-insert", data: {id: 3, txt: "txt6"} }
+-> { database: "shard_1", table: "table3", type: "bootstrap-insert", data: {id: 1, txt: "txt7"} }
+-> { database: "shard_1", table: "table3", type: "bootstrap-insert", data: {id: 2, txt: "txt8"} }
+-> { database: "shard_1", table: "table3", type: "bootstrap-insert", data: {id: 3, txt: "txt9"} }
 -> { database: "shard_1", table: "table1", type: "bootstrap-start", data: {} }
--> { database: "shard_1", table: "table1", type: "insert", data: {id: 1, txt: "txt1"} }
--> { database: "shard_1", table: "table1", type: "insert", data: {id: 2, txt: "txt2"} }
--> { database: "shard_1", table: "table1", type: "insert", data: {id: 3, txt: "txt3"} }
+-> { database: "shard_1", table: "table1", type: "bootstrap-insert", data: {id: 1, txt: "txt1"} }
+-> { database: "shard_1", table: "table1", type: "bootstrap-insert", data: {id: 2, txt: "txt2"} }
+-> { database: "shard_1", table: "table1", type: "bootstrap-insert", data: {id: 3, txt: "txt3"} }
 -> { database: "shard_1", table: "table1", type: "bootstrap-complete", data: {} }
 -> { database: "shard_1", table: "table2", type: "bootstrap-start", data: {} }
--> { database: "shard_1", table: "table2", type: "insert", data: {id: 1, txt: "txt4"} }
--> { database: "shard_1", table: "table2", type: "insert", data: {id: 2, txt: "txt5"} }
--> { database: "shard_1", table: "table2", type: "insert", data: {id: 3, txt: "txt6"} }
+-> { database: "shard_1", table: "table2", type: "bootstrap-insert", data: {id: 1, txt: "txt4"} }
+-> { database: "shard_1", table: "table2", type: "bootstrap-insert", data: {id: 2, txt: "txt5"} }
+-> { database: "shard_1", table: "table2", type: "bootstrap-insert", data: {id: 3, txt: "txt6"} }
 -> { database: "shard_1", table: "table2", type: "bootstrap-complete", data: {} }
 -> { database: "shard_1", table: "table3", type: "bootstrap-start", data: {} }
--> { database: "shard_1", table: "table3", type: "insert", data: {id: 1, txt: "txt7"} }
--> { database: "shard_1", table: "table3", type: "insert", data: {id: 2, txt: "txt8"} }
--> { database: "shard_1", table: "table3", type: "insert", data: {id: 3, txt: "txt9"} }
+-> { database: "shard_1", table: "table3", type: "bootstrap-insert", data: {id: 1, txt: "txt7"} }
+-> { database: "shard_1", table: "table3", type: "bootstrap-insert", data: {id: 2, txt: "txt8"} }
+-> { database: "shard_1", table: "table3", type: "bootstrap-insert", data: {id: 3, txt: "txt9"} }
 -> { database: "shard_1", table: "table3", type: "bootstrap-complete", data: {} }

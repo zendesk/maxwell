@@ -6,11 +6,11 @@ insert into table_no_pk set account_id = 2, text_field='bonjour';
 insert into table_no_pk set account_id = 3, text_field='goeiedag';
 insert into maxwell.bootstrap set database_name = 'shard_1', table_name = 'table_no_pk';
 
--> { database: "shard_1", table: "table_no_pk", type: "insert",  data: {account_id: 1, text_field: "hello"} }
--> { database: "shard_1", table: "table_no_pk", type: "insert",  data: {account_id: 2, text_field: "bonjour"} }
--> { database: "shard_1", table: "table_no_pk", type: "insert",  data: {account_id: 3, text_field: "goeiedag"} }
+-> { database: "shard_1", table: "table_no_pk", type: "bootstrap-insert",  data: {account_id: 1, text_field: "hello"} }
+-> { database: "shard_1", table: "table_no_pk", type: "bootstrap-insert",  data: {account_id: 2, text_field: "bonjour"} }
+-> { database: "shard_1", table: "table_no_pk", type: "bootstrap-insert",  data: {account_id: 3, text_field: "goeiedag"} }
 -> { database: "shard_1", table: "table_no_pk", type: "bootstrap-start",  data: {} }
--> { database: "shard_1", table: "table_no_pk", type: "insert",  data: {account_id: 1, text_field: "hello"} }
--> { database: "shard_1", table: "table_no_pk", type: "insert",  data: {account_id: 2, text_field: "bonjour"} }
--> { database: "shard_1", table: "table_no_pk", type: "insert",  data: {account_id: 3, text_field: "goeiedag"} }
+-> { database: "shard_1", table: "table_no_pk", type: "bootstrap-insert",  data: {account_id: 1, text_field: "hello"} }
+-> { database: "shard_1", table: "table_no_pk", type: "bootstrap-insert",  data: {account_id: 2, text_field: "bonjour"} }
+-> { database: "shard_1", table: "table_no_pk", type: "bootstrap-insert",  data: {account_id: 3, text_field: "goeiedag"} }
 -> { database: "shard_1", table: "table_no_pk", type: "bootstrap-complete",  data: {} }

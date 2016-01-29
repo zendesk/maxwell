@@ -51,7 +51,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 			int insertedRows = 0;
 			while ( resultSet.next() ) {
 				RowMap row = new RowMap(
-						"insert",
+						"bootstrap-insert",
 						databaseName,
 						tableName,
 						System.currentTimeMillis() / 1000,

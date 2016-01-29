@@ -48,8 +48,8 @@ Corresponding replication stream output of table `fooDB.barTable`:
 {"database":"fooDB","table":"barTable","type":"insert","ts":1450557598,"xid":13,"data":{"txt":"hello"}}
 {"database":"fooDB","table":"barTable","type":"insert","ts":1450557598,"xid":13,"data":{"txt":"bootstrap!"}}
 {"database":"fooDB","table":"barTable","type":"bootstrap-start","ts":1450557744,"data":{}}
-{"database":"fooDB","table":"barTable","type":"insert","ts":1450557744,"data":{"txt":"hello"}}
-{"database":"fooDB","table":"barTable","type":"insert","ts":1450557744,"data":{"txt":"bootstrap!"}}
+{"database":"fooDB","table":"barTable","type":"bootstrap-insert","ts":1450557744,"data":{"txt":"hello"}}
+{"database":"fooDB","table":"barTable","type":"bootstrap-insert","ts":1450557744,"data":{"txt":"bootstrap!"}}
 {"database":"fooDB","table":"barTable","type":"bootstrap-complete","ts":1450557744,"data":{}}
 ```
 
