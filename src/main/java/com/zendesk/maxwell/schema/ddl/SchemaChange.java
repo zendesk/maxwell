@@ -47,8 +47,10 @@ public abstract class SchemaChange {
 	}
 
 	private static boolean matchesBlacklist(String sql) {
-		for ( Pattern p : SQL_BLACKLIST ) {
-			if ( p.matcher(sql).find() )
+		sql = sql.replaceAll("/\\*!\\d+\\s*(.*)\\*/", "$1");
+
+		for (Pattern p : SQL_BLACKLIST) {
+			if (p.matcher(sql).find())
 				return true;
 		}
 
