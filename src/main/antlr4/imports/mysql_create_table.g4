@@ -50,7 +50,7 @@ creation_auto_increment: AUTO_INCREMENT '='? integer;
 creation_avg_row_length: AVG_ROW_LENGTH '='? integer;
 creation_character_set: DEFAULT? ((CHARACTER SET) | CHARSET) '='? charset_name;
 creation_checksum:  CHECKSUM '=' integer;
-creation_collation: DEFAULT? COLLATE '='? string;
+creation_collation: default_collation;
 creation_comment: COMMENT '='? string_literal;
 creation_connection: CONNECTION '='? string_literal;
 creation_data_directory: DATA DIRECTORY '='? string_literal;
