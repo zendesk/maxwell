@@ -190,10 +190,12 @@ value for a key, allowing Maxwell's Kafka stream to retain the last-known value 
 as a source of truth.</p>
 <h3 id="partitioning">Partitioning</h3>
 <hr />
-<p>A binlog event's partition is chosen by the following:</p>
-<pre><code>  DATABASE_NAME.hash() % TOPIC.NUMBER_OF_PARTITIONS
+<p>A binlog event's partition is determined by the selected hash function and hash string as follows</p>
+<pre><code>  HASH_FUNCTION(HASH_STRING) % TOPIC.NUMBER_OF_PARTITIONS
 </code></pre>
 
+<p>The HASH_FUNCTION is either java's <em>hashCode</em> or <em>murmurhash3</em>. The default HASH_FUNCTION is <em>hashCode</em>. Murmurhash3 may be set with the <code>kafka_partition_hash</code> option. The seed value for the murmurhash function is hardcoded to 25342 in the MaxwellKafkaPartitioner class.</p>
+<p>The HASH_STRING may be (<em>database</em>, <em>table</em>, <em>primary_key</em>).  The default HASH_STRING is the <em>database</em>. The partitioning field can be configured using the <code>kafka_partition_by</code> option.    </p>
 <p>Maxwell will discover the number of partitions in its kafka topic upon boot.  This means that you should pre-create your kafka topics,
 and with at least as many partitions as you have logical databases:</p>
 <pre><code>bin/kafka-topics.sh --zookeeper ZK_HOST:2181 --create \

@@ -171,7 +171,7 @@
 </div></div>
             <div class="col-md-10" role="main">
 
-<p><em>Maxwell's bootstrapping is available in the <a href="https://github.com/zendesk/maxwell/releases/tag/v1.0.0-PRE1">1.0.0-PRE1 release</a></em></p>
+<p><em>Maxwell's bootstrapping is available in the <a href="https://github.com/zendesk/maxwell/releases/tag/v1.0.0-PRE2">1.0.0-PRE2 release</a></em></p>
 <h3 id="using-the-maxwell-bootstrap-utility">Using the maxwell-bootstrap utility</h3>
 <hr />
 <p>You can use the <code>maxwell-bootstrap</code> utility to bootstrap tables from the command-line.</p>
@@ -243,8 +243,8 @@ mysql&gt; insert into maxwell.bootstrap (database_name, table_name) values (&quo
 <pre><code>{&quot;database&quot;:&quot;fooDB&quot;,&quot;table&quot;:&quot;barTable&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;ts&quot;:1450557598,&quot;xid&quot;:13,&quot;data&quot;:{&quot;txt&quot;:&quot;hello&quot;}}
 {&quot;database&quot;:&quot;fooDB&quot;,&quot;table&quot;:&quot;barTable&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;ts&quot;:1450557598,&quot;xid&quot;:13,&quot;data&quot;:{&quot;txt&quot;:&quot;bootstrap!&quot;}}
 {&quot;database&quot;:&quot;fooDB&quot;,&quot;table&quot;:&quot;barTable&quot;,&quot;type&quot;:&quot;bootstrap-start&quot;,&quot;ts&quot;:1450557744,&quot;data&quot;:{}}
-{&quot;database&quot;:&quot;fooDB&quot;,&quot;table&quot;:&quot;barTable&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;ts&quot;:1450557744,&quot;data&quot;:{&quot;txt&quot;:&quot;hello&quot;}}
-{&quot;database&quot;:&quot;fooDB&quot;,&quot;table&quot;:&quot;barTable&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;ts&quot;:1450557744,&quot;data&quot;:{&quot;txt&quot;:&quot;bootstrap!&quot;}}
+{&quot;database&quot;:&quot;fooDB&quot;,&quot;table&quot;:&quot;barTable&quot;,&quot;type&quot;:&quot;bootstrap-insert&quot;,&quot;ts&quot;:1450557744,&quot;data&quot;:{&quot;txt&quot;:&quot;hello&quot;}}
+{&quot;database&quot;:&quot;fooDB&quot;,&quot;table&quot;:&quot;barTable&quot;,&quot;type&quot;:&quot;bootstrap-insert&quot;,&quot;ts&quot;:1450557744,&quot;data&quot;:{&quot;txt&quot;:&quot;bootstrap!&quot;}}
 {&quot;database&quot;:&quot;fooDB&quot;,&quot;table&quot;:&quot;barTable&quot;,&quot;type&quot;:&quot;bootstrap-complete&quot;,&quot;ts&quot;:1450557744,&quot;data&quot;:{}}
 </code></pre>
 
