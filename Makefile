@@ -1,8 +1,10 @@
 all: compile
 
-.make-classpath: pom.xml
+CLASSPATH=target/.make-classpath
+$(CLASSPATH): pom.xml
+	mkdir -p target
 	mvn dependency:copy-dependencies
-	mvn dependency:build-classpath | grep -v '^\[' > .make-classpath
+	mvn dependency:build-classpath | grep -v '^\[' > $(CLASSPATH)
 
 JAVAC=javac
 JAVAC_FLAGS += -d target/classes
@@ -29,7 +31,7 @@ target/.java: $(ANTLR_OUTPUT) $(JAVA_SOURCE)
 	@touch target/.java
 
 compile-java: target/.java
-compile: .make-classpath compile-antlr compile-java
+compile: $(CLASSPATH) compile-antlr compile-java
 
 JAVA_TEST_SOURCE=$(shell find src/test/java -name '*.java')
 target/.java-test: $(JAVA_TEST_SOURCE)
@@ -38,19 +40,17 @@ target/.java-test: $(JAVA_TEST_SOURCE)
 		-g -target 1.7 -source 1.7 -encoding UTF-8 $?
 	@touch target/.java
 
-
-compile-test: .make-classpath compile target/.java-test
-
+compile-test: $(CLASSPATH) compile target/.java-test
 
 clean:
-	rm -f  target/.java target/.java-test .make-classpath
+	rm -f  target/.java target/.java-test
 	rm -rf target/classes
 	rm -rf target/generated-sources
 
 TEST_CLASSES=$(shell build/get-test-classes $@)
 
-test: .make-classpath compile-test
-	java -classpath `cat .make-classpath`:target/classes org.junit.runner.JUnitCore $(TEST_CLASSES)
+test: $(CLASSPATH) compile-test
+	java -classpath `cat $(CLASSPATH)`:target/classes:target/test-classes org.junit.runner.JUnitCore $(TEST_CLASSES)
 
 MAXWELL_VERSION=$(shell build/current_rev)
 
