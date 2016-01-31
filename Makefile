@@ -28,8 +28,8 @@ target/.java: $(ANTLR_OUTPUT) $(JAVA_SOURCE)
 	$(JAVAC) $(JAVAC_FLAGS) $?
 	@touch target/.java
 
-compile-java: .make-classpath target/.java
-compile: compile-antlr compile-java
+compile-java: target/.java
+compile: .make-classpath compile-antlr compile-java
 
 JAVA_TEST_SOURCE=$(shell find src/test/java -name '*.java')
 target/.java-test: $(JAVA_TEST_SOURCE)
@@ -43,7 +43,7 @@ compile-test: .make-classpath compile target/.java-test
 
 
 clean:
-	rm -f target/.java target/.java-test
+	rm -f  target/.java target/.java-test .make-classpath
 	rm -rf target/classes
 	rm -rf target/generated-sources
 
@@ -52,7 +52,13 @@ TEST_CLASSES=$(shell build/get-test-classes $@)
 test: .make-classpath compile-test
 	java -classpath `cat .make-classpath`:target/classes org.junit.runner.JUnitCore $(TEST_CLASSES)
 
+MAXWELL_VERSION=$(shell build/current_rev)
 
-package:
+package: clean all
+	mkdir target/build-jar
+	cp -a target/classes/* src/main/resources/* target/build-jar
+	jar cvf target/maxwell-${MAXWELL_VERSION}.jar -C target/build-jar .
+
+
 
 
