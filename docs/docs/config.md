@@ -9,11 +9,14 @@ option                                        | description | default
 --user USER                                   | mysql username |
 --password PASSWORD                           | mysql password | (none)
 --port PORT                                   | mysql port | 3306
+--schema_database                             | database name where maxwell stores schema and state | maxwell
 --max_schemas                                 | how many old schemas maxwell should leave lying around in maxwell.schemas | 5
 &nbsp;
 --producer PRODUCER                           | what type of producer to use: [stdout, kafka, file, profiler] | stdout
 --output_file                                 | if using the file producer, write JSON rows to this path |
 --kafka.bootstrap.servers                     | list of kafka brokers, listed as HOST:PORT[,HOST:PORT] |
+--kafka_partition_hash                        | which hash function to use: [default, murmur3] | default
+--kafka_partition_by                          | what fields to hash for partition key: [database, table, primary_key] | database
 --kafka_topic                                 | kafka topic to write to. | maxwell
 &nbsp;
 --replication_host                            | mysql host to replicate from | schema-store host
@@ -25,6 +28,7 @@ option                                        | description | default
 --exclude_dbs PATTERN                         | ignore updates from these databases |
 --include_tables PATTERN                      | only send updates from tables named like PATTERN |
 --exclude_tables PATTERN                      | ignore updates from tables named like PATTERN |
+--blacklist_tables PATTERN                    | ignore updates AND schema changes from tables named like PATTERN (see warnings below)|
 &nbsp;
 --bootstrapper                                | bootstrapper type: async|sync|none. | async
 --bootstrapper_fetch_size                     | number of rows fetched at a time during bootstrapping. | 64000
@@ -62,6 +66,10 @@ given as `option=/regex/`.  The options are evaluated as follows:
 
 So an example like `--include_dbs=/foo.*/ --exclude_tables=bar` will include `footy.zab` and exclude `footy.bar`
 
+The option `blacklist_tables` controls whether Maxwell will send updates for a table to its producer AND whether
+it captures schema changes for that table. Note that once Maxwell has been running with a table marked as blacklisted,
+you *must* continue to run Maxwell with that table blacklisted or else Maxwell will halt. If you want to stop
+blacklisting a table, you will have to drop the maxwell schema first.
 
 <script>
   jQuery(document).ready(function () {

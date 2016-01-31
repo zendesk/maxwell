@@ -198,7 +198,8 @@ public class DDLParserTest {
 			"create table t2 (b varchar(10) not null unique) engine=MyISAM",
 			"create TABLE shard_1.20151214foo ( r1 REAL, b2 REAL (2,2) )",
 			"create TABLE shard_1.20151214 ( r1 REAL, b2 REAL (2,2) )",
-			"create table `shard1.foo` ( `id.foo` int )"
+			"create table `shard1.foo` ( `id.foo` int )",
+			"create table `shard1.foo` ( `id.foo` int ) collate = `utf8_bin`"
 		};
 
 		for ( String s : testSQL ) {
@@ -211,6 +212,7 @@ public class DDLParserTest {
 	@Test
 	public void testSQLBlacklist() {
 		String testSQL[] = {
+			"/*!50003 DROP FUNCTION IF EXISTS `DAY_NAME_FROM_NUMER` */",
 			"ALTER DEFINER=foo VIEW",
 			"CREATE VIEW foo",
 			"CREATE TRIGGER foo",

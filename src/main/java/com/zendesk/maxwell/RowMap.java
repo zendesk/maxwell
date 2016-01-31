@@ -91,6 +91,23 @@ public class RowMap implements Serializable {
 		return jsonFromStream();
 	}
 
+	public String pkAsConcatString() {
+		if (pkColumns.isEmpty()) {
+			return database + table;
+		}
+		String keys="";
+		for (String pk : pkColumns) {
+			Object pkValue = null;
+			if (data.containsKey(pk))
+				pkValue = data.get(pk);
+			if (pkValue != null)
+				keys += pkValue.toString();
+		}
+		if (keys.isEmpty())
+			return "None";
+		return keys;
+	}
+
 	private void writeMapToJSON(String jsonMapName, HashMap<String, Object> data, boolean includeNullField) throws IOException {
 		JsonGenerator generator = jsonGeneratorThreadLocal.get();
 		generator.writeObjectFieldStart(jsonMapName); // start of jsonMapName: {

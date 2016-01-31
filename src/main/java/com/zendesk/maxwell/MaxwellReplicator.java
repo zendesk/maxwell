@@ -120,7 +120,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 	}
 
 	protected boolean isMaxwellRow(RowMap row) {
-		return row.getDatabase().equals("maxwell");
+		return row.getDatabase().equals(this.context.getConfig().databaseName);
 	}
 
 	private BinlogPosition eventBinlogPosition(AbstractBinlogEventV4 event) {
@@ -132,10 +132,17 @@ public class MaxwellReplicator extends RunLoopProcess {
 		MaxwellAbstractRowsEvent ew;
 		Table table;
 
-		table = tableCache.getTable(e.getTableId());
+		long tableId = e.getTableId();
 
-		if (table == null) {
-			throw new SchemaSyncError("couldn't find table in cache for table id: " + e.getTableId());
+		if ( tableCache.isTableBlacklisted(tableId) ) {
+			LOGGER.debug(String.format("ignoring row event for blacklisted table %s", tableCache.getBlacklistedTableName(tableId)));
+			return null;
+		}
+
+		table = tableCache.getTable(tableId);
+
+		if ( table == null ) {
+			throw new SchemaSyncError("couldn't find table in cache for table id: " + tableId);
 		}
 
 		switch (e.getHeader().getEventType()) {
@@ -192,6 +199,10 @@ public class MaxwellReplicator extends RunLoopProcess {
 					rowEventsProcessed++;
 					event = processRowsEvent((AbstractRowEvent) v4Event);
 
+					if ( event == null ) {
+						continue;
+					}
+
 					if ( event.matchesFilter() ) {
 						for ( RowMap r : event.jsonMaps() )
 							buffer.add(r);
@@ -201,7 +212,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 					break;
 				case MySQLConstants.TABLE_MAP_EVENT:
-					tableCache.processEvent(this.schema, (TableMapEvent) v4Event);
+					tableCache.processEvent(this.schema, this.filter, (TableMapEvent) v4Event);
 					break;
 				case MySQLConstants.QUERY_EVENT:
 					QueryEvent qe = (QueryEvent) v4Event;
@@ -225,7 +236,6 @@ public class MaxwellReplicator extends RunLoopProcess {
 					} else {
 						LOGGER.warn("Unhandled QueryEvent inside transaction: " + qe);
 					}
-
 					break;
 				case MySQLConstants.XID_EVENT:
 					XidEvent xe = (XidEvent) v4Event;
@@ -270,7 +280,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 					rowBuffer = getTransactionRows();
 					break;
 				case MySQLConstants.TABLE_MAP_EVENT:
-					tableCache.processEvent(this.schema, (TableMapEvent) v4Event);
+					tableCache.processEvent(this.schema, this.filter, (TableMapEvent) v4Event);
 					break;
 				case MySQLConstants.QUERY_EVENT:
 					QueryEvent qe = (QueryEvent) v4Event;
@@ -305,7 +315,11 @@ public class MaxwellReplicator extends RunLoopProcess {
 		Schema updatedSchema = this.schema;
 
 		for ( SchemaChange change : changes ) {
-			updatedSchema = change.apply(updatedSchema);
+			if ( !change.isBlacklisted(this.filter) ) {
+				updatedSchema = change.apply(updatedSchema);
+			} else {
+				LOGGER.debug("ignoring blacklisted schema change");
+			}
 		}
 
 		if ( updatedSchema != this.schema) {
@@ -321,8 +335,8 @@ public class MaxwellReplicator extends RunLoopProcess {
 		tableCache.clear();
 
 		if ( !this.context.getReplayMode() ) {
-			try (Connection c = this.context.getMaxwellConnectionPool().getConnection()) {
-				new SchemaStore(c, this.context.getServerID(), this.schema, p).save();
+			try (Connection c = this.context.getMaxwellConnection()) {
+				new SchemaStore(c, this.context.getServerID(), this.schema, p, this.context.getConfig().databaseName).save();
 			}
 
 			this.context.setPositionSync(p);

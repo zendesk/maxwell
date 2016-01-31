@@ -51,7 +51,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 			int insertedRows = 0;
 			while ( resultSet.next() ) {
 				RowMap row = new RowMap(
-						"insert",
+						"bootstrap-insert",
 						databaseName,
 						tableName,
 						System.currentTimeMillis() / 1000,
@@ -74,7 +74,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		long now = System.currentTimeMillis();
 		if ( now - lastInsertedRowsUpdateTimeMillis > INSERTED_ROWS_UPDATE_PERIOD_MILLIS ) {
 			long rowId = ( long ) startBootstrapRow.getData("id");
-			String sql = "update maxwell.bootstrap set inserted_rows = ?, binlog_file = ?, binlog_position = ? where id = ?";
+			String sql = "update `bootstrap` set inserted_rows = ?, binlog_file = ?, binlog_position = ? where id = ?";
 			PreparedStatement preparedStatement = connection.prepareStatement(sql);
 			preparedStatement.setInt(1, insertedRows);
 			preparedStatement.setString(2, position.getFile());
@@ -87,8 +87,10 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		}
 	}
 
-	protected Connection getConnection( ) throws SQLException {
-		return context.getReplicationConnectionPool().getConnection();
+	protected Connection getConnection() throws SQLException {
+		Connection conn = context.getReplicationConnectionPool().getConnection();
+		conn.setCatalog(context.getConfig().databaseName);
+		return conn;
 	}
 
 	private RowMap bootstrapStartRowMap(Table table, BinlogPosition position) {
@@ -128,7 +130,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 			// This update resets all rows of incomplete bootstraps to their original state.
 			// These updates are treated as fresh bootstrap requests and trigger a restart
 			// of the bootstrap process from the beginning.
-			String sql = "update maxwell.bootstrap set started_at = NULL where is_complete = 0 and started_at is not NULL";
+			String sql = "update `bootstrap` set started_at = NULL where is_complete = 0 and started_at is not NULL";
 			connection.prepareStatement(sql).execute();
 		}
 	}
@@ -186,7 +188,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	private void setBootstrapRowToStarted(RowMap startBootstrapRow, Connection connection) throws SQLException, NoSuchElementException {
-		String sql = "update maxwell.bootstrap set started_at=NOW() where id=?";
+		String sql = "update `bootstrap` set started_at=NOW() where id=?";
 		PreparedStatement preparedStatement = connection.prepareStatement(sql);
 		preparedStatement.setLong(1, ( Long ) startBootstrapRow.getData("id"));
 		if ( preparedStatement.executeUpdate() == 0) {
@@ -195,7 +197,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	private void setBootstrapRowToCompleted(int insertedRows, RowMap startBootstrapRow, Connection connection) throws SQLException, NoSuchElementException {
-		String sql = "update maxwell.bootstrap set is_complete=1, inserted_rows=?, completed_at=NOW() where id=?";
+		String sql = "update `bootstrap` set is_complete=1, inserted_rows=?, completed_at=NOW() where id=?";
 		PreparedStatement preparedStatement = connection.prepareStatement(sql);
 		preparedStatement.setInt(1, insertedRows);
 		preparedStatement.setLong(2, ( Long ) startBootstrapRow.getData("id"));

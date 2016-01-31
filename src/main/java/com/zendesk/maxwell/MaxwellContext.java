@@ -37,13 +37,9 @@ public class MaxwellContext {
 		this.replicationConnectionPool = new ConnectionPool("ReplicationConnectionPool", 10, 0, 10,
 				config.replicationMysql.getConnectionURI(), config.replicationMysql.user, config.replicationMysql.password);
 
-
-		if (config.replicationMysql.equals(config.maxwellMysql)) {
-			this.maxwellConnectionPool = this.replicationConnectionPool;
-		} else {
-			this.maxwellConnectionPool = new ConnectionPool("MaxwellConnectionPool", 10, 0, 10,
+		this.maxwellConnectionPool = new ConnectionPool("MaxwellConnectionPool", 10, 0, 10,
 					config.maxwellMysql.getConnectionURI(), config.maxwellMysql.user, config.maxwellMysql.password);
-		}
+		this.maxwellConnectionPool.setCaching(false);
 
 		if ( this.config.initPosition != null )
 			this.initialPosition = this.config.initPosition;
@@ -57,10 +53,16 @@ public class MaxwellContext {
 		return this.replicationConnectionPool;
 	}
 
-	public ConnectionPool getMaxwellConnectionPool() { return this.maxwellConnectionPool;}
+	public ConnectionPool getMaxwellConnectionPool() { return this.maxwellConnectionPool; }
+
+	public Connection getMaxwellConnection() throws SQLException {
+		Connection conn = this.maxwellConnectionPool.getConnection();
+		conn.setCatalog(config.databaseName);
+		return conn;
+	}
 
 	public void start() {
-		SchemaScavenger s = new SchemaScavenger(this.maxwellConnectionPool);
+		SchemaScavenger s = new SchemaScavenger(this.maxwellConnectionPool, this.config.databaseName);
 		new Thread(s).start();
 	}
 
@@ -79,9 +81,9 @@ public class MaxwellContext {
 	private SchemaPosition getSchemaPosition() throws SQLException {
 		if ( this.schemaPosition == null ) {
 			if ( this.getConfig().replayMode ) {
-				this.schemaPosition = new ReadOnlySchemaPosition(this.getMaxwellConnectionPool(), this.getServerID());
+				this.schemaPosition = new ReadOnlySchemaPosition(this.getMaxwellConnectionPool(), this.getServerID(), this.config.databaseName);
 			} else {
-				this.schemaPosition = new SchemaPosition(this.getMaxwellConnectionPool(), this.getServerID());
+				this.schemaPosition = new SchemaPosition(this.getMaxwellConnectionPool(), this.getServerID(), this.config.databaseName);
 			}
 
 			this.schemaPosition.start();
@@ -193,7 +195,8 @@ public class MaxwellContext {
 		return new MaxwellFilter(config.includeDatabases,
 			config.excludeDatabases,
 			config.includeTables,
-			config.excludeTables);
+			config.excludeTables,
+			config.blacklistTables);
 	}
 
 

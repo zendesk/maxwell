@@ -193,7 +193,7 @@ binlog_format=row
 in order to change to row-based replication, you must reconnect all active clients to the server.</p>
 <h3 id="mysql-permissions">Mysql permissions</h3>
 <hr />
-<p>Maxwell stores all the state it needs within the mysql server itself, in a database called <code>maxwell</code>.</p>
+<p>Maxwell stores all the state it needs within the mysql server itself, in the database called specified by the <em>schema_database</em> option. By default the database is named <code>maxwell</code>.</p>
 <pre><code>mysql&gt; GRANT ALL on maxwell.* to 'maxwell'@'%' identified by 'XXXXXX';
 mysql&gt; GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE on *.* to 'maxwell'@'%';
 

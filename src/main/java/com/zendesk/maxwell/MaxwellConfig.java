@@ -19,11 +19,16 @@ public class MaxwellConfig {
 	public MaxwellMysqlConfig replicationMysql;
 
 	public MaxwellMysqlConfig maxwellMysql;
+	
+	public String databaseName;
 
-	public String  includeDatabases, excludeDatabases, includeTables, excludeTables;
+	public String  includeDatabases, excludeDatabases, includeTables, excludeTables, blacklistTables;
+
 	public final Properties kafkaProperties;
 	public String kafkaTopic;
 	public String producerType;
+	public String kafkaPartitionHash;
+	public String kafkaPartitionKey;
 	public String bootstrapperType;
 	public Integer bootstrapperBatchFetchSize;
 
@@ -51,23 +56,28 @@ public class MaxwellConfig {
 		final OptionParser parser = new OptionParser();
 		parser.accepts( "config", "location of config file" ).withRequiredArg();
 		parser.accepts( "log_level", "log level, one of DEBUG|INFO|WARN|ERROR" ).withRequiredArg();
+
 		parser.accepts( "__separator_1" );
 
 		parser.accepts( "host", "mysql host with write access to maxwell database" ).withRequiredArg();
 		parser.accepts( "port", "port for host" ).withRequiredArg();
 		parser.accepts( "user", "username for host" ).withRequiredArg();
 		parser.accepts( "password", "password for host" ).withOptionalArg();
+
 		parser.accepts( "__separator_2" );
 
 		parser.accepts( "replication_host", "mysql host to replicate from (if using separate schema and replication servers)" ).withRequiredArg();
 		parser.accepts( "replication_user", "username for replication_host" ).withRequiredArg();
 		parser.accepts( "replication_password", "password for replication_host" ).withOptionalArg();
 		parser.accepts( "replication_port", "port for replicattion_host" ).withRequiredArg();
+
 		parser.accepts( "__separator_3" );
 
 		parser.accepts( "producer", "producer type: stdout|file|kafka" ).withRequiredArg();
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
+		parser.accepts( "kafka_partition_by", "database|table|primary_key, kafka producer assigns partition by hashing the specified parameter").withRequiredArg();
+		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning").withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
 
 		parser.accepts( "__separator_4" );
@@ -77,17 +87,21 @@ public class MaxwellConfig {
 
 		parser.accepts( "__separator_5" );
 
+		parser.accepts( "schema_database", "database name for maxwell state (schema and binlog position)").withRequiredArg();
 		parser.accepts( "max_schemas", "how many old schema definitions maxwell should keep around.  default: 5").withOptionalArg();
 		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION").withRequiredArg();
 		parser.accepts( "replay", "replay mode, don't store any information to the server");
+
 		parser.accepts( "__separator_6" );
 
 		parser.accepts( "include_dbs", "include these databases, formatted as include_dbs=db1,db2").withOptionalArg();
 		parser.accepts( "exclude_dbs", "exclude these databases, formatted as exclude_dbs=db1,db2").withOptionalArg();
 		parser.accepts( "include_tables", "include these tables, formatted as include_tables=db1,db2").withOptionalArg();
 		parser.accepts( "exclude_tables", "exclude these tables, formatted as exclude_tables=tb1,tb2").withOptionalArg();
+		parser.accepts( "blacklist_tables", "ignore data AND schema changes to these tables, formatted as blacklist_tables=tb1,tb2. See the docs for details before setting this!").withOptionalArg();
 
 		parser.accepts( "__separator_7" );
+
 		parser.accepts( "help", "display help").forHelp();
 
 		BuiltinHelpFormatter helpFormatter = new BuiltinHelpFormatter(200, 4) {
@@ -130,6 +144,10 @@ public class MaxwellConfig {
 
 		this.replicationMysql.parseOptions("replication_", options);
 
+		if ( options.has("schema_database")) {
+			this.databaseName = (String) options.valueOf("schema_database");
+		}
+
 		if ( options.has("producer"))
 			this.producerType = (String) options.valueOf("producer");
 		if ( options.has("bootstrapper"))
@@ -142,6 +160,12 @@ public class MaxwellConfig {
 
 		if ( options.has("kafka_topic"))
 			this.kafkaTopic = (String) options.valueOf("kafka_topic");
+
+		if ( options.has("kafka_partition_by"))
+			this.kafkaPartitionKey = (String) options.valueOf("kafka_partition_by");
+
+		if ( options.has("kafka_partition_hash"))
+			this.kafkaPartitionHash = (String) options.valueOf("kafka_partition_hash");
 
 		if ( options.has("output_file"))
 			this.outputFile = (String) options.valueOf("output_file");
@@ -181,6 +205,9 @@ public class MaxwellConfig {
 		
 		if ( options.has("exclude_tables"))
 			this.excludeTables = (String) options.valueOf("exclude_tables");
+
+		if ( options.has("blacklist_tables"))
+			this.blacklistTables = (String) options.valueOf("blacklist_tables");
 	}
 
 	private Properties readPropertiesFile(String filename, Boolean abortOnMissing) {
@@ -212,7 +239,6 @@ public class MaxwellConfig {
 		if ( p == null )
 			return;
 
-
 		this.maxwellMysql.host = p.getProperty("host", "127.0.0.1");
 		this.maxwellMysql.password = p.getProperty("password");
 		this.maxwellMysql.user     = p.getProperty("user");
@@ -223,14 +249,19 @@ public class MaxwellConfig {
 		this.replicationMysql.user      = p.getProperty("replication_user");
 		this.replicationMysql.port = Integer.valueOf(p.getProperty("replication_port", "3306"));
 
+		this.databaseName = p.getProperty("schema_database");
+
 		this.producerType    = p.getProperty("producer");
 		this.bootstrapperType = p.getProperty("bootstrapper");
 		this.outputFile      = p.getProperty("output_file");
 		this.kafkaTopic      = p.getProperty("kafka_topic");
+		this.kafkaPartitionHash = p.getProperty("kafka_partition_hash", "default");
+		this.kafkaPartitionKey = p.getProperty("kafka_partition_by", "database");
 		this.includeDatabases = p.getProperty("include_dbs");
 		this.excludeDatabases = p.getProperty("exclude_dbs");
 		this.includeTables = p.getProperty("include_tables");
 		this.excludeTables = p.getProperty("exclude_tables");
+		this.blacklistTables = p.getProperty("blacklist_tables");
 
 		String maxSchemaString = p.getProperty("max_schemas");
 		if (maxSchemaString != null)
@@ -251,9 +282,25 @@ public class MaxwellConfig {
 	private void setDefaults() {
 		if ( this.producerType == null ) {
 			this.producerType = "stdout";
-		} else if ( this.producerType.equals("kafka")
-				&& !this.kafkaProperties.containsKey("bootstrap.servers")) {
-			usage("You must specify kafka.bootstrap.servers for the kafka producer!");
+		} else if ( this.producerType.equals("kafka") ) {
+			if ( !this.kafkaProperties.containsKey("bootstrap.servers") ) {
+				usage("You must specify kafka.bootstrap.servers for the kafka producer!");
+			}
+
+			if ( this.kafkaPartitionHash == null ) {
+				this.kafkaPartitionHash = "default";
+			} else if ( !this.kafkaPartitionHash.equals("default")
+					&& !this.kafkaPartitionHash.equals("murmur3") ) {
+				usage("please specify --kafka_partition_hash=default|murmur3");
+			}
+
+			if ( this.kafkaPartitionKey == null ) {
+				this.kafkaPartitionKey = "database";
+			} else if ( !this.kafkaPartitionKey.equals("database")
+					&& !this.kafkaPartitionKey.equals("table")
+					&& !this.kafkaPartitionKey.equals("primary_key") ) {
+				usage("please specify --kafka_partition_by=database|table|primary_key");
+			}
 		} else if ( this.producerType.equals("file")
 				&& this.outputFile == null) {
 			usage("please specify --output_file=FILE to use the file producer");
@@ -303,6 +350,10 @@ public class MaxwellConfig {
 									this.maxwellMysql.port,
 									this.maxwellMysql.user,
 									this.maxwellMysql.password);
+		}
+
+		if ( this.databaseName == null) {
+			this.databaseName = "maxwell";
 		}
 
 		if ( this.maxSchemas != null )

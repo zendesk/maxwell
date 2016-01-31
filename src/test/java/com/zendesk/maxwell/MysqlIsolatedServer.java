@@ -99,6 +99,12 @@ public class MysqlIsolatedServer {
 		return connection;
 	}
 
+	public Connection getConnection(String defaultDB) throws SQLException {
+		Connection conn = getNewConnection();
+		conn.setCatalog(defaultDB);
+		return conn;
+	}
+
 	public void executeList(List<String> queries) throws SQLException {
 		for (String q: queries) {
 			if ( q.matches("^\\s*$") )

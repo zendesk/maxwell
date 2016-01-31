@@ -256,11 +256,11 @@ public class MaxwellIntegrationTest extends AbstractIntegrationTest {
 
 
 		lowerCaseServer.boot("--lower-case-table-names=1");
-		SchemaStore.ensureMaxwellSchema(lowerCaseServer.getConnection());
+		SchemaStore.ensureMaxwellSchema(lowerCaseServer.getConnection(), buildContext().getConfig().databaseName);
 
 		String[] sql = {
-			"CREATE TABLE TOOTOOTWEE ( id int )",
-			"insert into tootootwee set id = 5"
+			"CREATE TABLE `test`.`TOOTOOTWEE` ( id int )",
+			"insert into `test`.`tootootwee` set id = 5"
 		};
 
 		List<RowMap> rows = getRowsForSQL(lowerCaseServer, null, sql, null);

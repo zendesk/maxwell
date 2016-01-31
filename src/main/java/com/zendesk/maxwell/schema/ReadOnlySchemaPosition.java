@@ -11,8 +11,8 @@ import java.util.concurrent.TimeoutException;
  * useful for "replay" mode.
  */
 public class ReadOnlySchemaPosition extends SchemaPosition {
-	public ReadOnlySchemaPosition(ConnectionPool pool, Long serverID) {
-		super(pool, serverID);
+	public ReadOnlySchemaPosition(ConnectionPool pool, Long serverID, String dbName) {
+		super(pool, serverID, dbName);
 	}
 
 	@Override

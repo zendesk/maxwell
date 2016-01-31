@@ -215,6 +215,11 @@
 <td>3306</td>
 </tr>
 <tr>
+<td>--schema_database</td>
+<td>database name where maxwell stores schema and state</td>
+<td>maxwell</td>
+</tr>
+<tr>
 <td>--max_schemas</td>
 <td>how many old schemas maxwell should leave lying around in maxwell.schemas</td>
 <td>5</td>
@@ -238,6 +243,16 @@
 <td>--kafka.bootstrap.servers</td>
 <td>list of kafka brokers, listed as HOST:PORT[,HOST:PORT]</td>
 <td></td>
+</tr>
+<tr>
+<td>--kafka_partition_hash</td>
+<td>which hash function to use: [default, murmur3]</td>
+<td>default</td>
+</tr>
+<tr>
+<td>--kafka_partition_by</td>
+<td>what fields to hash for partition key: [database, table, primary_key]</td>
+<td>database</td>
 </tr>
 <tr>
 <td>--kafka_topic</td>
@@ -292,6 +307,11 @@
 <tr>
 <td>--exclude_tables PATTERN</td>
 <td>ignore updates from tables named like PATTERN</td>
+<td></td>
+</tr>
+<tr>
+<td>--blacklist_tables PATTERN</td>
+<td>ignore updates AND schema changes from tables named like PATTERN (see warnings below)</td>
 <td></td>
 </tr>
 <tr>
@@ -351,6 +371,10 @@ given as <code>option=/regex/</code>.  The options are evaluated as follows:</p>
 <li>reject tables in <code>exclude_tables</code></li>
 </ol>
 <p>So an example like <code>--include_dbs=/foo.*/ --exclude_tables=bar</code> will include <code>footy.zab</code> and exclude <code>footy.bar</code></p>
+<p>The option <code>blacklist_tables</code> controls whether Maxwell will send updates for a table to its producer AND whether
+it captures schema changes for that table. Note that once Maxwell has been running with a table marked as blacklisted,
+you <em>must</em> continue to run Maxwell with that table blacklisted or else Maxwell will halt. If you want to stop
+blacklisting a table, you will have to drop the maxwell schema first.</p>
 <script>
   jQuery(document).ready(function () {
     jQuery("table").addClass("table table-condensed table-bordered table-hover");
