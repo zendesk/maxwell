@@ -28,6 +28,7 @@ JAVA_SOURCE = $(shell find src/main/java -name '*.java')
 target/.java: $(ANTLR_OUTPUT) $(JAVA_SOURCE)
 	@mkdir -p target/classes
 	$(JAVAC) $(JAVAC_FLAGS) $?
+	cp -a src/main/resources/* target/classes
 	@touch target/.java
 
 compile-java: target/.java
@@ -35,8 +36,9 @@ compile: $(CLASSPATH) compile-antlr compile-java
 
 JAVA_TEST_SOURCE=$(shell find src/test/java -name '*.java')
 target/.java-test: $(JAVA_TEST_SOURCE)
-	@mkdir -p target/classes
-	javac -d target/classes -sourcepath src/main/java:src/test/java:target/generated-sources/src/main/antlr4 -classpath `cat .make-classpath` \
+	@mkdir -p target/test-classes
+	cp -a src/test/resources/* target/test-classes
+	javac -d target/test-classes -sourcepath src/main/java:src/test/java:target/generated-sources/src/main/antlr4 -classpath target/classes:`cat $(CLASSPATH)` \
 		-g -target 1.7 -source 1.7 -encoding UTF-8 $?
 	@touch target/.java
 
@@ -47,6 +49,9 @@ clean:
 	rm -rf target/classes
 	rm -rf target/generated-sources
 
+depclean: clean
+	rm -f $(CLASSPATH)
+
 TEST_CLASSES=$(shell build/get-test-classes $@)
 
 test: $(CLASSPATH) compile-test
@@ -54,10 +59,11 @@ test: $(CLASSPATH) compile-test
 
 MAXWELL_VERSION=$(shell build/current_rev)
 
-package: clean all
+package: depclean all
 	mkdir target/build-jar
-	cp -a target/classes/* src/main/resources/* target/build-jar
-	jar cvf target/maxwell-${MAXWELL_VERSION}.jar -C target/build-jar .
+	jar cvf target/maxwell-${MAXWELL_VERSION}.jar -C target/classes .
+
+
 
 
 
