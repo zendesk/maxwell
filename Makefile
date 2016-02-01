@@ -40,7 +40,7 @@ target/.java-test: $(JAVA_TEST_SOURCE)
 	cp -a src/test/resources/* target/test-classes
 	javac -d target/test-classes -sourcepath src/main/java:src/test/java:target/generated-sources/src/main/antlr4 -classpath target/classes:`cat $(CLASSPATH)` \
 		-g -target 1.7 -source 1.7 -encoding UTF-8 $?
-	@touch target/.java
+	@touch target/.java-test
 
 compile-test: $(CLASSPATH) compile target/.java-test
 
@@ -55,7 +55,7 @@ depclean: clean
 TEST_CLASSES=$(shell build/get-test-classes $@)
 
 test: $(CLASSPATH) compile-test
-	java -classpath `cat $(CLASSPATH)`:target/classes:target/test-classes org.junit.runner.JUnitCore $(TEST_CLASSES)
+	java -classpath `cat $(CLASSPATH)`:target/test-classes:target/classes org.junit.runner.JUnitCore $(TEST_CLASSES)
 
 MAXWELL_VERSION=$(shell build/current_rev)
 
