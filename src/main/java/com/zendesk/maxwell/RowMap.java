@@ -120,11 +120,11 @@ public class RowMap implements Serializable {
 				continue;
 
 			if ( value instanceof List) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
-				List<String> stringList = (List<String>) value;
+				List stringList = (List) value;
 
 				generator.writeArrayFieldStart(key);
-				for ( String s : stringList )  {
-					generator.writeString(s);
+				for ( Object s : stringList )  {
+					generator.writeObject(s);
 				}
 				generator.writeEndArray();
 			} else {

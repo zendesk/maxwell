@@ -452,7 +452,6 @@ public class DDLParserTest {
 		int i = 1;
 		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test-fixed.sql"), Charset.defaultCharset());
 		for ( String sql: lines ) {
-			System.out.println("Line: " + i++);
 			parse(sql);
 		}
 	}

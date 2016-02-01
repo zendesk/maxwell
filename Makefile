@@ -10,7 +10,7 @@ JAVAC=javac
 JAVAC_FLAGS += -d target/classes
 JAVAC_FLAGS += -sourcepath src/main/java:src/test/java:target/generated-sources/src/main/antlr4
 JAVAC_FLAGS += -classpath `cat .make-classpath`
-JAVAC_FLAGS += -g -target 1.7 -source 1.7 -encoding UTF-8 -Xlint:-options
+JAVAC_FLAGS += -g -target 1.7 -source 1.7 -encoding UTF-8 -Xlint:-options -Xlint:unchecked
 
 ANTLR=java -cp target/dependency/antlr4-4.5.jar org.antlr.v4.Tool
 ANTLR_SRC=src/main/antlr4/com/zendesk/maxwell/schema/ddl/mysql.g4

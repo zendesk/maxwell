@@ -10,7 +10,7 @@ import java.util.*;
    a wrapper class for a linked list that will keep N tail elements
    in memory, spilling its head onto disk as needed.
  */
-public class ListWithDiskBuffer<T extends Serializable> {
+public class ListWithDiskBuffer<T> {
 	static final Logger LOGGER = LoggerFactory.getLogger(ListWithDiskBuffer.class);
 	private final long maxInMemoryElements;
 	private final LinkedList<T> list;
@@ -59,15 +59,17 @@ public class ListWithDiskBuffer<T extends Serializable> {
 		return list.getLast();
 	}
 
-	public T removeFirst() throws IOException, ClassNotFoundException {
+	public T removeFirst(Class<T> clazz) throws IOException, ClassNotFoundException {
 		if ( elementsInFile > 0 ) {
 			if ( is == null ) {
 				os.flush();
 				is = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
 			}
 
-			T element = (T) is.readObject();
+			Object object = is.readObject();
+			T element = clazz.cast(object);
 			elementsInFile--;
+
 			return element;
 		} else {
 			return list.removeFirst();
