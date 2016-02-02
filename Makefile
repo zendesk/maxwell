@@ -8,6 +8,8 @@ JAVAC_FLAGS += -sourcepath src/main/java:src/test/java:target/generated-sources/
 JAVAC_FLAGS += -classpath `cat .make-classpath`
 JAVAC_FLAGS += -g -target 1.7 -source 1.7 -encoding UTF-8 -Xlint:-options -Xlint:unchecked
 
+# files that just get copied to the root of the maxwell distro
+DISTFILES=README.md docs/docs/quickstart.md docs/docs/config.md LICENSE src/main/resources/log4j2.xml
 
 CLASSPATH=target/.make-classpath
 
@@ -63,12 +65,31 @@ test: $(CLASSPATH) compile-test
 	java -classpath `cat $(CLASSPATH)`:target/test-classes:target/classes org.junit.runner.JUnitCore $(TEST_CLASSES)
 
 
+PKGNAME=maxwell-${MAXWELL_VERSION}
 MAVEN_DIR=target/classes/META-INF/maven/com.zendesk/maxwell
-package: depclean all
+MAXWELL_JARFILE=target/$(PKGNAME).jar
+
+package-jar: all
+	rm -f ${MAXWELL_JAR}
 	mkdir -p ${MAVEN_DIR}
 	sed -e "s/VERSION/${MAXWELL_VERSION}/" build/pom.properties > ${MAVEN_DIR}/pom.properties
 	cp pom.xml ${MAVEN_DIR}
-	jar cvf target/maxwell-${MAXWELL_VERSION}.jar -C target/classes .
+	jar cvf ${MAXWELL_JARFILE} -C target/classes .
 
+TARDIR=target/$(PKGNAME)
+TARFILE=target/$(PKGNAME).tar.gz
+
+package-tar: $(CLASSPATH)
+	rm -Rf target/dependency
+	mvn dependency:copy-dependencies -DincludeScope=runtime
+	rm -Rf $(TARDIR) $(TARFILE)
+	mkdir $(TARDIR)
+	cp $(DISTFILES) $(TARDIR)
+	cp -a bin $(TARDIR)
+	mkdir $(TARDIR)/lib
+	cp -a $(MAXWELL_JARFILE) target/dependency/* $(TARDIR)/lib
+	tar czvf $(TARFILE) -C target $(PKGNAME)
+
+package: depclean package-jar package-tar
 
 
