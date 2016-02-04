@@ -59,10 +59,13 @@ clean:
 depclean: clean
 	rm -f $(CLASSPATH)
 
-TEST_CLASSES=$(shell build/get-test-classes $@)
+TEST_CLASSES=$(shell build/get-test-classes)
 
 test: $(CLASSPATH) compile-test
 	java -classpath `cat $(CLASSPATH)`:target/test-classes:target/classes org.junit.runner.JUnitCore $(TEST_CLASSES)
+
+test.%: $(CLASSPATH) compile-test
+	java -classpath `cat $(CLASSPATH)`:target/test-classes:target/classes org.junit.runner.JUnitCore $(filter %$(subst test.,,$@),$(TEST_CLASSES))
 
 
 PKGNAME=maxwell-${MAXWELL_VERSION}
