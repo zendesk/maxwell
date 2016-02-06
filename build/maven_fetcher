@@ -1,0 +1,238 @@
+#!/usr/bin/env ruby
+#
+require 'rexml/document'
+require 'optparse'
+require 'uri'
+require 'net/http'
+require 'fileutils'
+
+DEFAULT_REPO="http://repo.maven.apache.org/maven2"
+
+def debug(l)
+  $stdout.puts(l)
+end
+
+module MavenFetcher
+  class Artifact
+    attr_reader :group_id, :artifact_id
+    attr_accessor :version
+
+    def initialize(group_id, artifact_id, version)
+      @group_id = group_id
+      @artifact_id = artifact_id
+      @version = version
+    end
+
+    def key
+      [@group_id, @artifact_id].join("/")
+    end
+
+    def to_s
+      [@group_id, @artifact_id, @version].join("/")
+    end
+
+    def filename(extension)
+      "%s-%s.%s" % [artifact_id, version, extension]
+    end
+
+    def uri(extension)
+      '%s/%s/%s/%s' % [group_id.gsub('.', '/'), artifact_id, version, filename(extension)]
+    end
+
+    def cachefile(extension)
+      File.join(cache_path, filename(extension))
+    end
+
+    def cache_base
+      File.join(ENV['HOME'], '.m2', 'repository')
+    end
+
+    def cache_path
+      File.join(cache_base, *group_id.split('.'), artifact_id, version)
+    end
+  end
+
+  class Scope
+    def initialize(name)
+      @name = name || "compile"
+    end
+
+    def include?(other)
+      case @name
+      when "test"
+        ["test", "compile", "runtime"].include?(other)
+      when "compile"
+        ["compile", "runtime"].include?(other)
+      when "runtime"
+        other == "runtime"
+      end
+    end
+  end
+
+  class Pom
+    def initialize(doc)
+      @doc = doc
+    end
+
+    def to_s
+      @doc.to_s
+    end
+
+    def subst(text)
+      return text if text.nil?
+
+      text.gsub(/\$\{(.*?)\}/) do |_|
+        var = $1
+        case var
+        when "project.version"
+          first_text(@doc.root, "version") || first_text(@doc.root, "parent/version")
+        else
+          raise "unknown variable: #{var}"
+        end
+      end
+    end
+
+    def first_text(root, elname)
+      first = root.elements[elname]
+      return nil unless first
+
+      first && first.text
+    end
+
+    def dependencies(target_scope)
+      @doc.elements.to_a("project/dependencies/dependency").map do |el|
+        next nil if el.elements["optional"]
+
+        dep_scope = first_text(el, "scope") || "compile"
+        next nil unless target_scope.include?(dep_scope)
+
+        group_id    = subst(first_text(el, "groupId"))
+        artifact_id = subst(first_text(el, "artifactId"))
+        version     = subst(first_text(el, "version"))
+
+        Artifact.new(group_id, artifact_id, version)
+      end.compact
+    end
+
+    def self.parse(xml)
+      Pom.new(REXML::Document.new(xml))
+    end
+  end
+
+  class Repo
+    def initialize(url)
+      uri = URI.parse(url)
+      @host = uri.host
+      @base_url = uri.path
+    end
+
+    def get(uri)
+      url = @base_url + "/" + uri
+      resp = Net::HTTP.get_response(@host, url)
+      if resp.code == '404'
+        raise "not found: #{url}"
+      elsif resp.code != '200'
+        raise "got status #{resp.code} hitting #{url}"
+      else
+        resp.body
+      end
+    end
+
+    #
+    # recursively resolve dependencies in a top-down breadth-first fashion.
+    # We do this to make it so the "closest to the top" dependency defines
+    # version.  It's pretty psychotic that this works at all.  Technically there's a concept
+    # of semantic verisoning.  in practice it doesn't appear used at all..?
+    #
+    def resolve(artifacts, scope, depversions = {})
+      new_artifacts = []
+
+      artifacts.each do |a|
+        if depversions[a.key]
+          a.version = depversions[a.key]
+        elsif a.version # ignore deps with no version info
+          depversions[a.key] = a.version
+          new_artifacts << a
+        end
+      end
+
+      return depversions if new_artifacts.empty?
+
+      new_artifact_dependencies = new_artifacts.map do |a|
+        get_pom(a).dependencies(scope)
+      end.flatten
+
+      resolve(new_artifact_dependencies, scope, depversions)
+    end
+
+    # http://repo.maven.apache.org/maven2/mysql/mysql-connector-java/5.1.6/mysql-connector-java-5.1.6.pom
+    def fetch_artifact(artifact, scope)
+      pom = get_pom(artifact)
+      puts resolve(pom.dependencies(scope), Scope.new("compile"))
+    end
+
+    def fetch_pom_deps(pomfile, scope)
+      pom_data = pomfile.read
+      pom = Pom.parse(pom_data)
+      puts resolve(pom.dependencies(scope), Scope.new("compile"))
+    end
+
+    def get_pom(artifact)
+      pom_data = get_pom_from_cache(artifact) || get_pom_from_repo(artifact)
+      Pom.parse(pom_data)
+    end
+
+    def get_pom_from_repo(artifact)
+      pom = get(artifact.uri('pom'))
+
+      if pom
+        FileUtils.mkdir_p(artifact.cache_path)
+        File.write(artifact.cachefile('pom'), pom)
+      end
+
+      pom
+    end
+
+    def get_pom_from_cache(artifact)
+      f = artifact.cachefile('pom')
+      if File.exist?(f) && File.mtime(f) > Time.now - 3000
+        debug("using pom from cache: #{f}")
+        File.read(f)
+      end
+    end
+  end
+end
+
+options = {}
+parser = OptionParser.new do |opts|
+  opts.banner = "Usage: maven_fetcher [options]"
+
+  opts.on("-r", "--repo REPO", "maven repository base url, default is '#{DEFAULT_REPO}'") { |repo| options[:repo] = repo }
+  opts.on("-f", "--fetch ARTIFACT", "fetch a given artifact, named as 'GROUP/ARTIFACT/VERSION'") { |artifact| options[:fetch] = artifact }
+  opts.on("-p", "--pom [POM]", "fetch all dependencies for pom.xml") { |pom| options[:pom] = pom }
+  opts.on("-o", "--output-directory", "Directory to store the jars in") { |dir| options[:output_dir] = dir }
+  opts.on("-s", "--scope SCOPE", "fetch pacakges with this scope.  [compile, runtime, test] Default: compile") { |scope| options[:scope] = scope }
+end
+
+parser.parse!
+
+repo = MavenFetcher::Repo.new(options[:repo] || DEFAULT_REPO)
+scope = MavenFetcher::Scope.new(options[:scope])
+
+if options[:fetch]
+  group_id, artifact_id, version = options[:fetch].split('/')
+  repo.fetch_artifact(MavenFetcher::Artifact.new(group_id, artifact_id, version), scope)
+elsif options.key?(:pom)
+  pom = options[:pom] || 'pom.xml'
+  if !File.exist?(pom)
+    $stderr.puts("could not open file: #{pom}")
+  else
+    repo.fetch_pom_deps(File.open(pom), scope)
+  end
+else
+  puts parser
+  exit 1
+end
+
+
+
