@@ -23,6 +23,14 @@ module MavenFetcher
       @version = version
     end
 
+    def hash
+      key.hash
+    end
+
+    def eql?(other)
+      other.is_a?(Artifact) && other.key == key
+    end
+
     def key
       [@group_id, @artifact_id].join("/")
     end
@@ -70,8 +78,8 @@ module MavenFetcher
   end
 
   class Pom
-    def initialize(doc)
-      @doc = doc
+    def initialize(repo, doc)
+      @doc, @repo = doc, repo
     end
 
     def to_s
@@ -79,8 +87,6 @@ module MavenFetcher
     end
 
     def subst(text)
-      return text if text.nil?
-
       text.gsub(/\$\{(.*?)\}/) do |_|
         var = $1
         case var
@@ -96,7 +102,20 @@ module MavenFetcher
       first = root.elements[elname]
       return nil unless first
 
-      first && first.text
+      subst(first.text)
+    end
+
+    def parent
+      require 'byebug'
+      debugger
+      return nil unless el = @doc.elements["parent"]
+      @parent ||= begin
+        group_id = first_text(el, "groupId")
+        artifact_id = first_text(el, "artifactId")
+        version = first_text(el, "version")
+
+        @repo.get_pom(Artifact.new(group_id, artifact_id, version))
+      end
     end
 
     def dependencies(target_scope)
@@ -106,16 +125,17 @@ module MavenFetcher
         dep_scope = first_text(el, "scope") || "compile"
         next nil unless target_scope.include?(dep_scope)
 
-        group_id    = subst(first_text(el, "groupId"))
-        artifact_id = subst(first_text(el, "artifactId"))
-        version     = subst(first_text(el, "version"))
+        group_id    = first_text(el, "groupId")
+        artifact_id = first_text(el, "artifactId")
+        version     = first_text(el, "version")
+        version   ||= parent.version
 
         Artifact.new(group_id, artifact_id, version)
       end.compact
     end
 
-    def self.parse(xml)
-      Pom.new(REXML::Document.new(xml))
+    def self.parse(xml, repo)
+      Pom.new(REXML::Document.new(xml), repo)
     end
   end
 
@@ -128,6 +148,7 @@ module MavenFetcher
 
     def get(uri)
       url = @base_url + "/" + uri
+      debug("downloading #{url}")
       resp = Net::HTTP.get_response(@host, url)
       if resp.code == '404'
         raise "not found: #{url}"
@@ -144,59 +165,64 @@ module MavenFetcher
     # version.  It's pretty psychotic that this works at all.  Technically there's a concept
     # of semantic verisoning.  in practice it doesn't appear used at all..?
     #
-    def resolve(artifacts, scope, depversions = {})
-      new_artifacts = []
+    def resolve(artifacts, scope, deps = Set.new)
+      new_artifacts = artifacts.to_set - deps
 
-      artifacts.each do |a|
-        if depversions[a.key]
-          a.version = depversions[a.key]
-        elsif a.version # ignore deps with no version info
-          depversions[a.key] = a.version
-          new_artifacts << a
-        end
-      end
-
-      return depversions if new_artifacts.empty?
+      return deps if new_artifacts.empty?
 
       new_artifact_dependencies = new_artifacts.map do |a|
         get_pom(a).dependencies(scope)
-      end.flatten
+      end.flatten.to_set
 
-      resolve(new_artifact_dependencies, scope, depversions)
+      resolve(new_artifact_dependencies, scope, deps | new_artifacts)
     end
 
     # http://repo.maven.apache.org/maven2/mysql/mysql-connector-java/5.1.6/mysql-connector-java-5.1.6.pom
-    def fetch_artifact(artifact, scope)
+    def fetch_artifact(artifact, scope, path)
       pom = get_pom(artifact)
-      puts resolve(pom.dependencies(scope), Scope.new("compile"))
+      deps = resolve(pom.dependencies(scope), Scope.new("compile"))
+      download(deps, path)
     end
 
-    def fetch_pom_deps(pomfile, scope)
+    def fetch_pom_deps(pomfile, scope, path)
       pom_data = pomfile.read
-      pom = Pom.parse(pom_data)
-      puts resolve(pom.dependencies(scope), Scope.new("compile"))
+      pom = Pom.parse(pom_data, self)
+      deps = resolve(pom.dependencies(scope), Scope.new("compile"))
+      download(deps, path)
+    end
+
+    def download(deps, path)
+      FileUtils.mkdir_p(path)
+
+      deps.each do |d, version|
+        jar = File.join(path, d.filename('jar'))
+
+        File.open(jar, 'w+') do |f|
+          f.write(get_file_from_cache(d, 'jar') || get_file_from_repo(d, 'jar'))
+        end
+      end
     end
 
     def get_pom(artifact)
-      pom_data = get_pom_from_cache(artifact) || get_pom_from_repo(artifact)
-      Pom.parse(pom_data)
+      pom_data = get_file_from_cache(artifact, 'pom') || get_file_from_repo(artifact, 'pom')
+      Pom.parse(pom_data, self)
     end
 
-    def get_pom_from_repo(artifact)
-      pom = get(artifact.uri('pom'))
+    def get_file_from_repo(artifact, ext)
+      pom = get(artifact.uri(ext))
 
       if pom
         FileUtils.mkdir_p(artifact.cache_path)
-        File.write(artifact.cachefile('pom'), pom)
+        File.write(artifact.cachefile(ext), pom)
       end
 
       pom
     end
 
-    def get_pom_from_cache(artifact)
-      f = artifact.cachefile('pom')
-      if File.exist?(f) && File.mtime(f) > Time.now - 3000
-        debug("using pom from cache: #{f}")
+    def get_file_from_cache(artifact, ext)
+      f = artifact.cachefile(ext)
+      if File.exist?(f)
+        debug("using file from cache: #{f}")
         File.read(f)
       end
     end
@@ -227,7 +253,7 @@ elsif options.key?(:pom)
   if !File.exist?(pom)
     $stderr.puts("could not open file: #{pom}")
   else
-    repo.fetch_pom_deps(File.open(pom), scope)
+    repo.fetch_pom_deps(File.open(pom), scope, 'target/dependency')
   end
 else
   puts parser
