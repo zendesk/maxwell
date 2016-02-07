@@ -11,14 +11,8 @@ JAVAC_FLAGS += -g -target 1.7 -source 1.7 -encoding UTF-8 -Xlint:-options -Xlint
 # files that just get copied to the root of the maxwell distro
 DISTFILES=README.md docs/docs/quickstart.md docs/docs/config.md LICENSE src/main/resources/log4j2.xml
 
-CLASSPATH=target/.make-classpath
-
-$(CLASSPATH): pom.xml
-	mkdir -p target
-	mvn dependency:copy-dependencies
-	mvn dependency:build-classpath | grep -v '^\[' > $(CLASSPATH)
-
-ANTLR=java -cp target/dependency/antlr4-4.5.jar org.antlr.v4.Tool
+ANTLR_DEPS=$(shell build/maven_fetcher -f org.antlr/antlr4/4.5 -o target/dependency-antlr)
+ANTLR=java -cp $(ANTLR_DEPS) org.antlr.v4.Tool
 ANTLR_SRC=src/main/antlr4/com/zendesk/maxwell/schema/ddl/mysql.g4
 ANTLR_IMPORTS=src/main/antlr4/imports
 ANTLR_DIR=target/generated-sources/src/main/antlr4/com/zendesk/maxwell/schema/ddl
@@ -30,6 +24,7 @@ $(ANTLR_OUTPUT): $(ANTLR_SRC) $(ANTLR_IMPORTS)/*.g4
 compile-antlr: $(ANTLR_OUTPUT)
 
 JAVA_SOURCE = $(shell find src/main/java -name '*.java')
+JAVA_DEPENDS = $(shell  build/maven_fetcher -p -o target/dependency -v)
 
 target/.java: $(ANTLR_OUTPUT) $(JAVA_SOURCE)
 	@mkdir -p target/classes
@@ -38,17 +33,17 @@ target/.java: $(ANTLR_OUTPUT) $(JAVA_SOURCE)
 	@touch target/.java
 
 compile-java: target/.java
-compile: $(CLASSPATH) compile-antlr compile-java
+compile: compile-antlr compile-java
 
 JAVA_TEST_SOURCE=$(shell find src/test/java -name '*.java')
 target/.java-test: $(JAVA_TEST_SOURCE)
 	@mkdir -p target/test-classes
 	cp -a src/test/resources/* target/test-classes
-	javac -d target/test-classes -sourcepath src/main/java:src/test/java:target/generated-sources/src/main/antlr4 -classpath target/classes:`cat $(CLASSPATH)` \
+	javac -d target/test-classes -sourcepath src/main/java:src/test/java:target/generated-sources/src/main/antlr4 -classpath target/classes:$(JAVA_DEPENDS) \
 		-g -target 1.7 -source 1.7 -encoding UTF-8 $?
 	@touch target/.java-test
 
-compile-test: $(CLASSPATH) compile target/.java-test
+compile-test: compile target/.java-test
 
 clean:
 	rm -f  target/.java target/.java-test
@@ -61,10 +56,10 @@ depclean: clean
 
 TEST_CLASSES=$(shell build/get-test-classes)
 
-test: $(CLASSPATH) compile-test
+test: compile-test
 	java -classpath `cat $(CLASSPATH)`:target/test-classes:target/classes org.junit.runner.JUnitCore $(TEST_CLASSES)
 
-test.%: $(CLASSPATH) compile-test
+test.%:  compile-test
 	java -classpath `cat $(CLASSPATH)`:target/test-classes:target/classes org.junit.runner.JUnitCore $(filter %$(subst test.,,$@),$(TEST_CLASSES))
 
 
@@ -82,15 +77,15 @@ package-jar: all
 TARDIR=target/$(PKGNAME)
 TARFILE=target/$(PKGNAME).tar.gz
 
-package-tar: $(CLASSPATH)
-	rm -Rf target/dependency
-	mvn dependency:copy-dependencies -DincludeScope=runtime
+package-tar:
+	rm -Rf target/dependency-build
+	build/maven_fetcher -p -o target/dependency-build -v
 	rm -Rf $(TARDIR) $(TARFILE)
 	mkdir $(TARDIR)
 	cp $(DISTFILES) $(TARDIR)
 	cp -a bin $(TARDIR)
 	mkdir $(TARDIR)/lib
-	cp -a $(MAXWELL_JARFILE) target/dependency/* $(TARDIR)/lib
+	cp -a $(MAXWELL_JARFILE) target/dependency-build/* $(TARDIR)/lib
 	tar czvf $(TARFILE) -C target $(PKGNAME)
 
 package: depclean package-jar package-tar

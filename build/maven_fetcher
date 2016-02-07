@@ -208,7 +208,8 @@ module MavenFetcher
     def fetch_artifact(artifact, scope, path)
       pom = get_pom(artifact)
       deps = resolve(pom.dependencies, scope)
-      download(deps, path)
+      deps << artifact
+      puts download(deps, path).join(':')
     end
 
     def fetch_pom_deps(pomfile, scope, path)
@@ -216,18 +217,20 @@ module MavenFetcher
       pom = Pom.parse(pom_data, self)
 
       deps = resolve(pom.dependencies, scope)
-      download(deps, path)
+      puts download(deps, path).join(':')
     end
 
     def download(deps, path)
       FileUtils.mkdir_p(path)
 
-      deps.each do |d, version|
+      deps.map do |d, version|
         jar = File.join(path, d.filename('jar'))
 
         File.open(jar, 'w+') do |f|
           f.write(get_file_from_cache(d, 'jar') || get_file_from_repo(d, 'jar'))
         end
+
+        jar
       end
     end
 
@@ -258,7 +261,7 @@ module MavenFetcher
 end
 
 def debug(l)
-  $stdout.puts(l) if $verbose
+  $stderr.puts(l) if $verbose
 end
 
 options = {}
@@ -287,7 +290,7 @@ end
 if options[:fetch]
   artifact = MavenFetcher::Artifact.new(*options[:fetch].split('/'))
 
-  repo.fetch_artifact(artifact, scope, output[:output_dir])
+  repo.fetch_artifact(artifact, scope, options[:output_dir])
 elsif options.key?(:pom)
   pom = options[:pom] || 'pom.xml'
   if !File.exist?(pom)
