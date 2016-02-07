@@ -8,10 +8,6 @@ require 'fileutils'
 
 DEFAULT_REPO="http://repo.maven.apache.org/maven2"
 
-def debug(l)
-  $stdout.puts(l)
-end
-
 module MavenFetcher
   class Artifact
     attr_reader :group_id, :artifact_id
@@ -131,7 +127,7 @@ module MavenFetcher
       hash
     end
 
-    # 1 - any higher up version.  2 - the specific version.  3 - the verion from the parent's dep-management section.
+    # 1 - any higher up version.  2 - the specific version.  3 - the version from the parent's dep-management section.
     # TODO: read up on the ordering of 2 and 3.
     def resolve_version(artifact, versions)
       version = versions[artifact.key]
@@ -261,6 +257,10 @@ module MavenFetcher
   end
 end
 
+def debug(l)
+  $stdout.puts(l) if $verbose
+end
+
 options = {}
 parser = OptionParser.new do |opts|
   opts.banner = "Usage: maven_fetcher [options]"
@@ -268,8 +268,9 @@ parser = OptionParser.new do |opts|
   opts.on("-r", "--repo REPO", "maven repository base url, default is '#{DEFAULT_REPO}'") { |repo| options[:repo] = repo }
   opts.on("-f", "--fetch ARTIFACT", "fetch a given artifact, named as 'GROUP/ARTIFACT/VERSION'") { |artifact| options[:fetch] = artifact }
   opts.on("-p", "--pom [POM]", "fetch all dependencies for pom.xml") { |pom| options[:pom] = pom }
-  opts.on("-o", "--output-directory", "Directory to store the jars in") { |dir| options[:output_dir] = dir }
+  opts.on("-o", "--output-directory DIRECTORY", "required.  Directory to store jar files in") { |dir| options[:output_dir] = dir }
   opts.on("-s", "--scope SCOPE", "fetch pacakges with this scope.  [compile, runtime, test] Default: compile") { |scope| options[:scope] = scope }
+  opts.on("-v", "--verbose", "turn on verbose output") { $verbose = true }
 end
 
 parser.parse!
@@ -277,17 +278,25 @@ parser.parse!
 repo = MavenFetcher::Repo.new(options[:repo] || DEFAULT_REPO)
 scope = MavenFetcher::Scope.new(options[:scope])
 
+if !options[:output_dir]
+  puts "Please specify -o"
+  puts parser
+  exit(1)
+end
+
 if options[:fetch]
-  group_id, artifact_id, version = options[:fetch].split('/')
-  repo.fetch_artifact(MavenFetcher::Artifact.new(group_id, artifact_id, version), scope)
+  artifact = MavenFetcher::Artifact.new(*options[:fetch].split('/'))
+
+  repo.fetch_artifact(artifact, scope, output[:output_dir])
 elsif options.key?(:pom)
   pom = options[:pom] || 'pom.xml'
   if !File.exist?(pom)
     $stderr.puts("could not open file: #{pom}")
   else
-    repo.fetch_pom_deps(File.open(pom), scope, 'target/dependency')
+    repo.fetch_pom_deps(File.open(pom), scope, options[:output_dir])
   end
 else
+  puts "Please specify either --fetch or --pom"
   puts parser
   exit 1
 end
