@@ -5,7 +5,6 @@ MAXWELL_VERSION=$(shell build/current_rev)
 JAVAC=javac
 JAVAC_FLAGS += -d target/classes
 JAVAC_FLAGS += -sourcepath src/main/java:src/test/java:target/generated-sources/src/main/antlr4
-JAVAC_FLAGS += -classpath `cat .make-classpath`
 JAVAC_FLAGS += -g -target 1.7 -source 1.7 -encoding UTF-8 -Xlint:-options -Xlint:unchecked
 
 # files that just get copied to the root of the maxwell distro
@@ -24,26 +23,38 @@ $(ANTLR_OUTPUT): $(ANTLR_SRC) $(ANTLR_IMPORTS)/*.g4
 compile-antlr: $(ANTLR_OUTPUT)
 
 JAVA_SOURCE = $(shell find src/main/java -name '*.java')
-JAVA_DEPENDS = $(shell  build/maven_fetcher -p -o target/dependency -v)
+JAVA_DEPENDS = $(shell  build/maven_fetcher -p -o target/dependency)
 
 target/.java: $(ANTLR_OUTPUT) $(JAVA_SOURCE)
 	@mkdir -p target/classes
-	$(JAVAC) $(JAVAC_FLAGS) $?
+	$(JAVAC) -classpath $(JAVA_DEPENDS) $(JAVAC_FLAGS) $?
 	cp -a src/main/resources/* target/classes
 	@touch target/.java
 
 compile-java: target/.java
 compile: compile-antlr compile-java
 
+
+
+JAVA_TEST_DEPENDS = $(shell build/maven_fetcher -p -o target/dependency-test -s test)
 JAVA_TEST_SOURCE=$(shell find src/test/java -name '*.java')
 target/.java-test: $(JAVA_TEST_SOURCE)
 	@mkdir -p target/test-classes
 	cp -a src/test/resources/* target/test-classes
-	javac -d target/test-classes -sourcepath src/main/java:src/test/java:target/generated-sources/src/main/antlr4 -classpath target/classes:$(JAVA_DEPENDS) \
+	javac -d target/test-classes -sourcepath src/main/java:src/test/java:target/generated-sources -classpath target/classes:$(JAVA_TEST_DEPENDS) \
 		-g -target 1.7 -source 1.7 -encoding UTF-8 $?
 	@touch target/.java-test
 
 compile-test: compile target/.java-test
+
+TEST_CLASSES=$(shell build/get-test-classes)
+
+test: compile-test
+	java -classpath $(JAVA_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore $(TEST_CLASSES)
+
+test.%:  compile-test
+	java -classpath $(JAVA_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore $(filter %$(subst test.,,$@),$(TEST_CLASSES))
+
 
 clean:
 	rm -f  target/.java target/.java-test
@@ -53,14 +64,6 @@ clean:
 
 depclean: clean
 	rm -f $(CLASSPATH)
-
-TEST_CLASSES=$(shell build/get-test-classes)
-
-test: compile-test
-	java -classpath `cat $(CLASSPATH)`:target/test-classes:target/classes org.junit.runner.JUnitCore $(TEST_CLASSES)
-
-test.%:  compile-test
-	java -classpath `cat $(CLASSPATH)`:target/test-classes:target/classes org.junit.runner.JUnitCore $(filter %$(subst test.,,$@),$(TEST_CLASSES))
 
 
 PKGNAME=maxwell-${MAXWELL_VERSION}
@@ -79,7 +82,7 @@ TARFILE=target/$(PKGNAME).tar.gz
 
 package-tar:
 	rm -Rf target/dependency-build
-	build/maven_fetcher -p -o target/dependency-build -v
+	build/maven_fetcher -p -o target/dependency-build >/dev/null
 	rm -Rf $(TARDIR) $(TARFILE)
 	mkdir $(TARDIR)
 	cp $(DISTFILES) $(TARDIR)
