@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN">
   <Appenders>
-    <Console name="Console" target="SYSTEM_OUT">
+    <File name="TestLog" fileName="test.log">
       <PatternLayout pattern="%-5level %logger{1} - %msg%n"/>
-    </Console>
+    </File>
   </Appenders>
   <Loggers>
     <Root level="debug">
-      <AppenderRef ref="Console"/>
+      <AppenderRef ref="TestLog"/>
     </Root>
    <Logger name="snaq.db.ConnectionPool.MaxwellConnectionPool" level="off" additivity="false">
-      <AppenderRef ref="Console"/>
+      <AppenderRef ref="TestLog"/>
     </Logger>
     <Logger name="snaq.db.ConnectionPool.ReplicationConnectionPool" level="off" additivity="false">
-      <AppenderRef ref="Console"/>
+      <AppenderRef ref="TestLog"/>
     </Logger>
   </Loggers>
 </Configuration>

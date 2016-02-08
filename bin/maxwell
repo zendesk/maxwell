@@ -4,7 +4,7 @@ base_dir=$(dirname $0)/..
 
 CLASSPATH=$CLASSPATH:$base_dir/target/classes:../open-replicator/target/classes
 
-for file in $base_dir/target/maxwell-*/*/lib/*.jar lib/*.jar
+for file in $base_dir/target/maxwell-*/*/lib/*.jar lib/*.jar target/dependency/*.jar
 do
   CLASSPATH=$CLASSPATH:$file
 done

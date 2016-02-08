@@ -79,10 +79,8 @@ public class AbstractIntegrationTest extends AbstractMaxwellTest {
 				line = line.replaceAll("^\\s*\\->\\s*", "");
 
 				jsonAsserts.add(mapper.<Map<String, Object>>readValue(line, MaxwellIntegrationTest.MAP_STRING_OBJECT_REF));
-				System.out.println("added json assert: " + line);
 			} else {
 				inputSQL.add(line);
-				System.out.println("added sql statement: " + line);
 			}
 		}
 		reader.close();
