@@ -50,7 +50,7 @@ compile-test: compile target/.java-test
 TEST_CLASSES=$(shell build/get-test-classes)
 
 test: compile-test
-	java -classpath $(JAVA_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore $(TEST_CLASSES)
+	java -Xmx128m -classpath $(JAVA_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore $(TEST_CLASSES)
 
 test.%:  compile-test
 	java -classpath $(JAVA_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore $(filter %$(subst test.,,$@),$(TEST_CLASSES))
