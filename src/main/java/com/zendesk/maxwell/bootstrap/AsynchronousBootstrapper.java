@@ -54,8 +54,8 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	private boolean haveSameTable(RowMap row, RowMap bootstrapStartRow) {
-		String databaseName = ( String ) bootstrapStartRow.getData("database_name");
-		String tableName = ( String ) bootstrapStartRow.getData("table_name");
+		String databaseName = bootstrapDatabase(bootstrapStartRow);
+		String tableName = bootstrapTable(bootstrapStartRow);
 		return row.getDatabase().equals(databaseName) && row.getTable().equals(tableName);
 	}
 
@@ -69,7 +69,7 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 					try {
 						synchronousBootstrapper.startBootstrap(bootstrapStartRow, producer, replicator);
 					} catch ( NoSuchElementException e ) {
-						LOGGER.warn(String.format("async bootstrapping cancelled for table %s.%s", bootstrapStartRow.getDatabase(), bootstrapStartRow.getTable()));
+						LOGGER.warn(String.format("async bootstrapping cancelled for table %s.%s", bootstrapDatabase(bootstrapStartRow), bootstrapTable(bootstrapStartRow)));
 						cancelBootstrap(bootstrapStartRow, producer, replicator);
 					} catch ( Exception e ) {
 						e.printStackTrace();
@@ -84,16 +84,15 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	private void queueRow(RowMap row) {
-		String databaseName = ( String ) row.getData("database_name");
-		String tableName = ( String ) row.getData("table_name");
 		queue.add(row);
-		LOGGER.info(String.format("async bootstrapping: queued table %s.%s for bootstrapping", databaseName, tableName));
+		LOGGER.info(String.format("async bootstrapping: queued table %s.%s for bootstrapping", bootstrapDatabase(row), bootstrapTable(row)));
 	}
 
 	@Override
 	public void completeBootstrap(RowMap bootstrapCompleteRow, AbstractProducer producer, MaxwellReplicator replicator) throws Exception {
-		String databaseName = ( String ) bootstrapCompleteRow.getData("database_name");
-		String tableName = ( String ) bootstrapCompleteRow.getData("table_name");
+		String databaseName = bootstrapDatabase(bootstrapCompleteRow);
+		String tableName = bootstrapTable(bootstrapCompleteRow);
+
 		try {
 			replaySkippedRows(databaseName, tableName, producer, bootstrapCompleteRow);
 			synchronousBootstrapper.completeBootstrap(bootstrapCompleteRow, producer, replicator);
@@ -112,9 +111,7 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 
 	public void cancelBootstrap(RowMap bootstrapStartRow, AbstractProducer producer, MaxwellReplicator replicator) {
 		try {
-			String databaseName = ( String ) bootstrapStartRow.getData("database_name");
-			String tableName = ( String ) bootstrapStartRow.getData("table_name");
-			replaySkippedRows(databaseName, tableName, producer, bootstrapStartRow);
+			replaySkippedRows(bootstrapDatabase(bootstrapStartRow), bootstrapTable(bootstrapStartRow), producer, bootstrapStartRow);
 			thread = null;
 			bootstrappedRow = null;
 			if ( !queue.isEmpty() ) {

@@ -35,12 +35,15 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 
 	@Override
 	public void startBootstrap(RowMap startBootstrapRow, AbstractProducer producer, MaxwellReplicator replicator) throws Exception {
-		String databaseName = ( String ) startBootstrapRow.getData("database_name");
-		String tableName = ( String ) startBootstrapRow.getData("table_name");
+		String databaseName = bootstrapDatabase(startBootstrapRow);
+		String tableName = bootstrapTable(startBootstrapRow);
+
 		LOGGER.debug(String.format("bootstrapping request for %s.%s", databaseName, tableName));
+
 		Schema schema = replicator.getSchema();
 		Database database = findDatabase(schema, databaseName);
 		Table table = findTable(tableName, database);
+
 		BinlogPosition position = startBootstrapRow.getPosition();
 		producer.push(startBootstrapRow);
 		producer.push(bootstrapStartRowMap(table, position));
@@ -113,14 +116,17 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 
 	@Override
 	public void completeBootstrap(RowMap completeBootstrapRow, AbstractProducer producer, MaxwellReplicator replicator) throws Exception {
-		String databaseName = ( String ) completeBootstrapRow.getData("database_name");
-		String tableName = ( String ) completeBootstrapRow.getData("table_name");
+		String databaseName = bootstrapDatabase(completeBootstrapRow);
+		String tableName = bootstrapTable(completeBootstrapRow);
+
 		Database database = findDatabase(replicator.getSchema(), databaseName);
 		ensureTable(tableName, database);
 		Table table = findTable(tableName, database);
+
 		BinlogPosition position = completeBootstrapRow.getPosition();
 		producer.push(completeBootstrapRow);
 		producer.push(bootstrapCompleteRowMap(table, position));
+
 		LOGGER.info(String.format("bootstrapping ended for %s.%s", databaseName, tableName));
 	}
 
