@@ -134,9 +134,6 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 	private void parseFile(String filename, boolean abortOnMissing) {
 		Properties p = this.readPropertiesFile(filename, abortOnMissing);
 
-	private void parseFile(String filename, boolean abortOnMissing) {
-		Properties p = this.readPropertiesFile(filename, abortOnMissing);
-
 		if ( p == null )
 			return;
 
