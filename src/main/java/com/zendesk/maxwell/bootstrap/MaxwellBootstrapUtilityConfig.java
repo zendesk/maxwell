@@ -1,14 +1,16 @@
 package com.zendesk.maxwell.bootstrap;
 
-import joptsimple.BuiltinHelpFormatter;
-import joptsimple.OptionParser;
-import joptsimple.OptionSet;
+import joptsimple.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import java.util.Properties;
+import java.util.Map;
 
-public class MaxwellBootstrapUtilityConfig {
+import java.io.IOException;
+import com.zendesk.maxwell.util.AbstractConfig;
+
+public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellBootstrapUtilityConfig.class);
 
 	public String  mysqlHost;
@@ -29,7 +31,7 @@ public class MaxwellBootstrapUtilityConfig {
 		return "jdbc:mysql://" + mysqlHost + ":" + mysqlPort + "/" + schemaDatabaseName;
 	}
 
-	private OptionParser getOptionParser() {
+	protected OptionParser buildOptionParser() {
 		OptionParser parser = new OptionParser();
 		parser.accepts( "log_level", "log level, one of DEBUG|INFO|WARN|ERROR. default: WARN" ).withRequiredArg();
 		parser.accepts( "host", "mysql host. default: localhost").withRequiredArg();
@@ -52,7 +54,13 @@ public class MaxwellBootstrapUtilityConfig {
 	}
 
 	private void parse(String [] argv) {
-		OptionSet options = getOptionParser().parse(argv);
+		OptionSet options = buildOptionParser().parse(argv);
+
+		if ( options.has("config") ) {
+			parseFile((String) options.valueOf("config"), true);
+		} else {
+			parseFile(DEFAULT_CONFIG_FILE, false);
+		}
 
 		if ( options.has("help") )
 			usage("Help for Maxwell Bootstrap Utility:");
@@ -68,8 +76,6 @@ public class MaxwellBootstrapUtilityConfig {
 
 		if ( options.has("password"))
 			this.mysqlPassword = (String) options.valueOf("password");
-		else
-			usage("mysql password not given!");
 
 		if ( options.has("port"))
 			this.mysqlPort = Integer.valueOf((String) options.valueOf("port"));
@@ -86,8 +92,21 @@ public class MaxwellBootstrapUtilityConfig {
 			this.tableName = (String) options.valueOf("table");
 		else
 			usage("please specify a table");
-
 	}
+
+	private void parseFile(String filename, boolean abortOnMissing) {
+		Properties p = this.readPropertiesFile(filename, abortOnMissing);
+
+		if ( p == null )
+			return;
+
+		this.mysqlHost = p.getProperty("host");
+		this.mysqlUser = p.getProperty("user", "maxwell");
+		this.mysqlPort = Integer.valueOf(p.getProperty("port", "3306"));
+		this.mysqlPassword = p.getProperty("password");
+		this.schemaDatabaseName = p.getProperty("schema_database", "maxwell");
+	}
+
 
 	private void setDefaults() {
 
@@ -99,29 +118,5 @@ public class MaxwellBootstrapUtilityConfig {
 			LOGGER.warn("mysql host not specified, defaulting to localhost");
 			this.mysqlHost = "localhost";
 		}
-
-		if ( this.mysqlUser == null ) {
-			this.mysqlUser = "maxwell";
-		}
-
-		if ( this.mysqlPort == null ) {
-			this.mysqlPort = 3306;
-		}
-
-		if ( this.schemaDatabaseName == null) {
-			this.schemaDatabaseName = "maxwell";
-		}
-
 	}
-
-	private void usage(String string) {
-		System.err.println(string);
-		System.err.println();
-		try {
-			getOptionParser().printHelpOn(System.err);
-			System.exit(1);
-		} catch (IOException e) {
-		}
-	}
-
 }
