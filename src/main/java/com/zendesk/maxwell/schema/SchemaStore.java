@@ -440,6 +440,11 @@ public class SchemaStore {
 			InputStream is = SchemaStore.class.getResourceAsStream("/sql/maxwell_schema_bootstrap.sql");
 			executeSQLInputStream(c, is, schemaDatabaseName);
 		}
+
+		if ( !getTableColumns("bootstrap", c).containsKey("total_rows") ) {
+			performAlter(c, "alter table `bootstrap` add column total_rows bigint unsigned not null default 0 after inserted_rows");
+			performAlter(c, "alter table `bootstrap` modify column inserted_rows bigint unsigned not null default 0");
+		}
 	}
 
 }
