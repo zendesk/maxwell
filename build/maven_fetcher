@@ -83,16 +83,19 @@ module MavenFetcher
       @doc.to_s
     end
 
-    def subst(text)
-      text.gsub(/\$\{(.*?)\}/) do |_|
-        var = $1
-        value = case var
+    def get_var(k)
+      @vars    ||= {}
+      @vars[k] ||= case k
         when "project.version"
           first_text(@doc.root, "version") || first_text(@doc.root, "parent/version")
         else
-          first_text(@doc.root, "properties/#{var}")
+          first_text(@doc.root, "properties/#{k}")
         end
+    end
 
+    def subst(text)
+      text.gsub(/\$\{(.*?)\}/) do |_|
+        value = get_var($1)
         raise "unknown variable: #{var}" if value.nil?
         value
       end
@@ -119,12 +122,13 @@ module MavenFetcher
     end
 
     def dependency_management
+      return @dependency_management if @dependency_management
       hash = {}
       @doc.elements.each("project/dependencyManagement/dependencies/dependency") do |dep|
         a = artifact_from_element(dep)
         hash[a.key] = a.version
       end
-      hash
+      @dependency_management = hash
     end
 
     # 1 - any higher up version.  2 - the specific version.  3 - the version from the parent's dep-management section.
@@ -226,9 +230,16 @@ module MavenFetcher
       deps.map do |d, version|
         jar = File.join(path, d.filename('jar'))
 
+        next jar if File.exists?(jar) &&
+                    File.exists?(d.cachefile('jar'))  &&
+                    File.mtime(jar) == File.mtime(d.cachefile('jar'))
+
         File.open(jar, 'w+') do |f|
+          debug("copying into #{jar}")
           f.write(get_file_from_cache(d, 'jar') || get_file_from_repo(d, 'jar'))
         end
+
+        FileUtils.touch jar, :mtime => File.mtime(d.cachefile('jar'))
 
         jar
       end
