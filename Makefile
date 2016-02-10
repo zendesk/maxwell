@@ -71,7 +71,7 @@ MAVEN_DIR=target/classes/META-INF/maven/com.zendesk/maxwell
 MAXWELL_JARFILE=target/$(PKGNAME).jar
 
 package-jar: all
-	rm -f ${MAXWELL_JAR}
+	rm -f ${MAXWELL_JARFILE}
 	mkdir -p ${MAVEN_DIR}
 	sed -e "s/VERSION/${MAXWELL_VERSION}/" build/pom.properties > ${MAVEN_DIR}/pom.properties
 	cp pom.xml ${MAVEN_DIR}
