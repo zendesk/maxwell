@@ -13,7 +13,7 @@ public class DateTimeColumnDef extends ColumnDef {
 
 	private static SimpleDateFormat dateTimeFormatter;
 
-	protected static SimpleDateFormat getDateTimeFormatter() {
+	private static SimpleDateFormat getDateTimeFormatter() {
 		if ( dateTimeFormatter == null ) {
 			dateTimeFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		}
@@ -33,14 +33,17 @@ public class DateTimeColumnDef extends ColumnDef {
 	}
 
 	private String formatValue(Object value) {
-		if ( value instanceof Long && getType().equals("datetime") )
-			return formatLong((Long) value);
-		else if ( value instanceof Timestamp )
-			return getDateTimeFormatter().format((Timestamp) value);
-		else if ( value instanceof Date )
-			return getDateTimeFormatter().format((Date) value);
-		else
-			return "";
+		/* protect against multithreaded access of static dateTimeFormatter */
+		synchronized ( DateTimeColumnDef.class ) {
+			if ( value instanceof Long && getType().equals("datetime") )
+				return formatLong(( Long ) value);
+			else if ( value instanceof Timestamp )
+				return getDateTimeFormatter().format(( Timestamp ) value);
+			else if ( value instanceof Date )
+				return getDateTimeFormatter().format(( Date ) value);
+			else
+				return "";
+		}
 	}
 
 	private String formatLong(Long value) {
