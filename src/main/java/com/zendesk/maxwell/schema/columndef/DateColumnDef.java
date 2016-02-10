@@ -12,7 +12,7 @@ public class DateColumnDef extends ColumnDef {
 
 	private static SimpleDateFormat dateFormatter;
 
-	protected static SimpleDateFormat getDateFormatter() {
+	private static SimpleDateFormat getDateFormatter() {
 		if ( dateFormatter == null ) {
 			dateFormatter = new SimpleDateFormat("yyyy-MM-dd");
 		}
@@ -26,7 +26,10 @@ public class DateColumnDef extends ColumnDef {
 	}
 
 	private String formatDate(Object value) {
-		return getDateFormatter().format((Date) value);
+		/* protect against multithreaded access of static dateFormatter */
+		synchronized ( DateColumnDef.class ) {
+			return getDateFormatter().format((Date) value);
+		}
 	}
 
 	@Override
