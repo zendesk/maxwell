@@ -4,6 +4,7 @@ import mysql_literal_tokens;
 
 db_name: name;
 table_name: (db_name '.' name)
+            | '.' name // *shakes head in sadness*
             | name
             ;
 
