@@ -199,6 +199,8 @@ public class DDLParserTest {
 			"create TABLE shard_1.20151214foo ( r1 REAL, b2 REAL (2,2) )",
 			"create TABLE shard_1.20151214 ( r1 REAL, b2 REAL (2,2) )",
 			"create table `shard1.foo` ( `id.foo` int )",
+			"create table `shard1.foo` ( `id.foo` int ) collate = `utf8_bin`",
+			"ALTER TABLE .`users` CHANGE COLUMN `password` `password` VARCHAR(60) CHARACTER SET 'utf8' COLLATE 'utf8_bin' NULL DEFAULT NULL COMMENT 'Length 60 for Bcrypt'",
 			"create table `shard1.foo` ( `id.foo` int ) collate = `utf8_bin`"
 		};
 
