@@ -4,7 +4,7 @@
 
   <groupId>com.zendesk</groupId>
   <artifactId>maxwell</artifactId>
-  <version>1.0.0-PRE2</version>
+  <version>1.0.0-RC1</version>
   <packaging>jar</packaging>
 
   <name>maxwell</name>

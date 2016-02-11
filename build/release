@@ -33,7 +33,7 @@ def bump
 end
 
 def build
-  do_system("mvn clean package")
+  do_system("make package")
 
   commit_template = Tempfile.new('maxwell_build')
   commit_template.write <<-EOL
