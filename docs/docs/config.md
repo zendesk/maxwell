@@ -5,7 +5,7 @@ option                                        | description | default
 --config FILE                                 | location of `config.properties` file |
 --log_level                                   | log level [DEBUG&#124;INFO &#124;WARN&#124;ERROR | INFO
 &nbsp;
---host HOST                                   | mysql host of schema store|
+--host HOST                                   | mysql host |
 --user USER                                   | mysql username |
 --password PASSWORD                           | mysql password | (none)
 --port PORT                                   | mysql port | 3306
@@ -19,7 +19,7 @@ option                                        | description | default
 --kafka_partition_by                          | what fields to hash for partition key: [database, table, primary_key] | database
 --kafka_topic                                 | kafka topic to write to. | maxwell
 &nbsp;
---replication_host                            | mysql host to replicate from | schema-store host
+--replication_host                            | mysql host to replicate from.  Only specify if different from `host` (see notes) | schema-store host
 --replication_password                        | password on replication server | (none)
 --replication_port                            | port on replication server | 3306
 --replication_user                            | user on replication server
@@ -70,6 +70,18 @@ The option `blacklist_tables` controls whether Maxwell will send updates for a t
 it captures schema changes for that table. Note that once Maxwell has been running with a table marked as blacklisted,
 you *must* continue to run Maxwell with that table blacklisted or else Maxwell will halt. If you want to stop
 blacklisting a table, you will have to drop the maxwell schema first.
+
+### Schema storage host vs replica host
+***
+Maxwell needs two sets of mysql permissions to operate properly: a mysql database in which to store schema snapshots,
+and a mysql host to replicate from.  The recommended configuration is that
+these two functions are provided by a single mysql host.  In this case, just
+specify `host`, `user`, etc.
+
+Some configurations, however, may need to write data to a different server than it replicates from.  In this case,
+the host described by `host`, `user`, ..., will be used to write schema information to, and Maxwell will replicate
+events from the host described by `replication_host`, `replication_user`, ...  Note that bootstrapping is not available
+in this configuration.
 
 <script>
   jQuery(document).ready(function () {
