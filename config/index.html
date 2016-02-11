@@ -140,6 +140,9 @@
                       <li class="toctree-l3"><a href="#filters">Filters</a></li>
                       
                   
+                      <li class="toctree-l3"><a href="#schema-storage-host-vs-replica-host">Schema storage host vs replica host</a></li>
+                      
+                  
                   </ul>
               
           </li>
@@ -196,7 +199,7 @@
 </tr>
 <tr>
 <td>--host HOST</td>
-<td>mysql host of schema store</td>
+<td>mysql host</td>
 <td></td>
 </tr>
 <tr>
@@ -266,7 +269,7 @@
 </tr>
 <tr>
 <td>--replication_host</td>
-<td>mysql host to replicate from</td>
+<td>mysql host to replicate from.  Only specify if different from <code>host</code> (see notes)</td>
 <td>schema-store host</td>
 </tr>
 <tr>
@@ -375,6 +378,16 @@ given as <code>option=/regex/</code>.  The options are evaluated as follows:</p>
 it captures schema changes for that table. Note that once Maxwell has been running with a table marked as blacklisted,
 you <em>must</em> continue to run Maxwell with that table blacklisted or else Maxwell will halt. If you want to stop
 blacklisting a table, you will have to drop the maxwell schema first.</p>
+<h3 id="schema-storage-host-vs-replica-host">Schema storage host vs replica host</h3>
+<hr />
+<p>Maxwell needs two sets of mysql permissions to operate properly: a mysql database in which to store schema snapshots,
+and a mysql host to replicate from.  The recommended configuration is that
+these two functions are provided by a single mysql host.  In this case, just
+specify <code>host</code>, <code>user</code>, etc.</p>
+<p>Some configurations, however, may need to write data to a different server than it replicates from.  In this case,
+the host described by <code>host</code>, <code>user</code>, ..., will be used to write schema information to, and Maxwell will replicate
+events from the host described by <code>replication_host</code>, <code>replication_user</code>, ...  Note that bootstrapping is not available
+in this configuration.</p>
 <script>
   jQuery(document).ready(function () {
     jQuery("table").addClass("table table-condensed table-bordered table-hover");
