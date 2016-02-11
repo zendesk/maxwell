@@ -13,6 +13,9 @@ import java.sql.SQLException;
 
 public class MaxwellBootstrapUtility {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellBootstrapUtility.class);
+	protected class MissingBootstrapRowException extends Exception {
+		MissingBootstrapRowException(Long rowID) { super("Could not find bootstrap row with id: " + rowID); }
+	}
 
 	private static final long UPDATE_PERIOD_MILLIS = 250;
 	private static final long DISPLAY_PROGRESS_WARMUP_MILLIS = 5000;
@@ -22,40 +25,35 @@ public class MaxwellBootstrapUtility {
 
 	private void run(String[] argv) throws Exception {
 		MaxwellBootstrapUtilityConfig config = new MaxwellBootstrapUtilityConfig(argv);
+
 		if ( config.log_level != null ) {
 			MaxwellLogging.setLevel(config.log_level);
 		}
+
 		ConnectionPool connectionPool = getConnectionPool(config);
 		try ( final Connection connection = connectionPool.getConnection() ) {
-			int rowCount = getRowCount(connection, config);
-			final long rowId = insertBootstrapStartRow(connection, config);
-			Runtime.getRuntime().addShutdownHook(new Thread() {
-				public void run() {
-					try {
-						if ( !isComplete ) {
-							displayLine("");
-							LOGGER.warn("bootstrapping cancelled");
-							removeBootstrapRow(connection, rowId);
-						}
-					} catch ( Exception e ) {
-						System.exit(1);
-					}
-				}
-			});
-			int insertedRowsCount = 0;
-			Long startedTimeMillis = null;
-			while ( !isComplete ) {
-				if ( insertedRowsCount < rowCount ) {
-					if ( startedTimeMillis == null && insertedRowsCount > 0 ) {
-						startedTimeMillis = System.currentTimeMillis();
-					}
-					insertedRowsCount = getInsertedRowsCount(connection, rowId);
-				}
-				isComplete = getIsComplete(connection, rowId);
-				displayProgress(rowCount, insertedRowsCount, startedTimeMillis);
-				Thread.sleep(UPDATE_PERIOD_MILLIS);
+			if ( config.abortBootstrapID != null ) {
+				getInsertedRowsCount(connection, config.abortBootstrapID);
+				removeBootstrapRow(connection, config.abortBootstrapID);
+				return;
 			}
-			displayLine("");
+
+			long rowId;
+			if ( config.monitorBootstrapID != null ) {
+				getInsertedRowsCount(connection, config.monitorBootstrapID);
+				rowId = config.monitorBootstrapID;
+			} else {
+				Long totalRows = calculateRowCount(connection, config.databaseName, config.tableName);
+				rowId = insertBootstrapStartRow(connection, config.databaseName, config.tableName, totalRows);
+			}
+
+			try {
+				monitorProgress(connection, rowId);
+			} catch ( MissingBootstrapRowException e ) {
+				LOGGER.error("bootstrap aborted.");
+				Runtime.getRuntime().halt(1);
+			}
+
 		} catch ( SQLException e ) {
 			LOGGER.error("failed to connect to mysql server @ " + config.getConnectionURI());
 			LOGGER.error(e.getLocalizedMessage());
@@ -63,22 +61,69 @@ public class MaxwellBootstrapUtility {
 		}
 	}
 
-	private int getInsertedRowsCount(Connection connection, long rowId) throws SQLException {
+
+	private void monitorProgress(Connection connection, Long rowId) throws SQLException, MissingBootstrapRowException {
+		addMonitorShutdownHook(rowId);
+
+		long rowCount = getTotalRowCount(connection, rowId);
+		long initialRowCount, insertedRowsCount;
+		initialRowCount = getInsertedRowsCount(connection, rowId);
+		Long startedTimeMillis = null;
+
+		insertedRowsCount = initialRowCount;
+		while ( !isComplete ) {
+			if ( insertedRowsCount < rowCount ) {
+				if ( startedTimeMillis == null && insertedRowsCount > 0 ) {
+					startedTimeMillis = System.currentTimeMillis();
+				}
+				insertedRowsCount = getInsertedRowsCount(connection, rowId);
+			}
+			isComplete = getIsComplete(connection, rowId);
+			displayProgress(rowCount, insertedRowsCount, initialRowCount, startedTimeMillis);
+			try {
+				Thread.sleep(UPDATE_PERIOD_MILLIS);
+			} catch ( InterruptedException e) {}
+		}
+		displayLine("");
+	}
+
+	private void addMonitorShutdownHook(final Long rowId) {
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			public void run() {
+				if ( !isComplete && console != null ) {
+					System.out.println("");
+					System.out.println("Exiting monitor.  Bootstrap will continue in the background.");
+					System.out.println("To abort, run maxwell-bootstrap --abort " + rowId);
+					System.out.println("To resume monitoring, run maxwell-bootstrap --monitor " + rowId);
+				}
+			}
+		});
+	}
+
+	private long getInsertedRowsCount(Connection connection, long rowId) throws SQLException, MissingBootstrapRowException {
 		String sql = "select inserted_rows from `bootstrap` where id = ?";
 		PreparedStatement preparedStatement = connection.prepareStatement(sql);
 		preparedStatement.setLong(1, rowId);
 		ResultSet resultSet = preparedStatement.executeQuery();
-		resultSet.next();
-		return resultSet.getInt(1);
+
+		if ( resultSet.next() ) {
+			return resultSet.getLong(1);
+		} else {
+			throw new MissingBootstrapRowException(rowId);
+		}
 	}
 
-	private boolean getIsComplete(Connection connection, long rowId) throws SQLException {
+	private boolean getIsComplete(Connection connection, long rowId) throws SQLException, MissingBootstrapRowException {
 		String sql = "select is_complete from `bootstrap` where id = ?";
 		PreparedStatement preparedStatement = connection.prepareStatement(sql);
 		preparedStatement.setLong(1, rowId);
 		ResultSet resultSet = preparedStatement.executeQuery();
-		resultSet.next();
-		return resultSet.getInt(1) == 1;
+
+		if ( resultSet.next() )  {
+			return resultSet.getInt(1) == 1;
+		} else {
+			throw new MissingBootstrapRowException(rowId);
+		}
 	}
 
 	private ConnectionPool getConnectionPool(MaxwellBootstrapUtilityConfig config) {
@@ -92,21 +137,32 @@ public class MaxwellBootstrapUtility {
 		return new ConnectionPool(name, maxPool, maxSize, idleTimeout, connectionURI, mysqlUser, mysqlPassword);
 	}
 
-	private int getRowCount(Connection connection, MaxwellBootstrapUtilityConfig config) throws SQLException {
+	private Long getTotalRowCount(Connection connection, Long bootstrapRowID) throws SQLException, MissingBootstrapRowException {
+		ResultSet resultSet =
+			connection.createStatement().executeQuery("select total_rows from `bootstrap` where id = " + bootstrapRowID);
+		if ( resultSet.next() ) {
+			return resultSet.getLong(1);
+		} else {
+			throw new MissingBootstrapRowException(bootstrapRowID);
+		}
+	}
+
+	private Long calculateRowCount(Connection connection, String db, String table) throws SQLException {
 		LOGGER.info("counting rows");
-		String sql = String.format("select count(*) from %s.%s", config.databaseName, config.tableName);
+		String sql = String.format("select count(*) from %s.%s", db, table);
 		PreparedStatement preparedStatement = connection.prepareStatement(sql);
 		ResultSet resultSet = preparedStatement.executeQuery();
 		resultSet.next();
-		return resultSet.getInt(1);
+		return resultSet.getLong(1);
 	}
 
-	private long insertBootstrapStartRow(Connection connection, MaxwellBootstrapUtilityConfig config) throws SQLException {
+	private long insertBootstrapStartRow(Connection connection, String db, String table, Long totalRows) throws SQLException {
 		LOGGER.info("inserting bootstrap start row");
-		String sql = "insert into `bootstrap` (database_name, table_name) values(?, ?)";
+		String sql = "insert into `bootstrap` (database_name, table_name, total_rows) values(?, ?, ?)";
 		PreparedStatement preparedStatement = connection.prepareStatement(sql);
-		preparedStatement.setString(1, config.databaseName);
-		preparedStatement.setString(2, config.tableName);
+		preparedStatement.setString(1, db);
+		preparedStatement.setString(2, table);
+		preparedStatement.setLong(3, totalRows);
 		preparedStatement.execute();
 		ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
 		generatedKeys.next();
@@ -121,14 +177,14 @@ public class MaxwellBootstrapUtility {
 		preparedStatement.execute();
 	}
 
-	private void displayProgress(int total, int count, Long startedTimeMillis) {
+	private void displayProgress(long total, long count, long initialCount, Long startedTimeMillis) {
 		if ( startedTimeMillis == null ) {
 			displayLine("waiting for bootstrap to start... ");
 		}
 		else if ( count < total) {
 			long currentTimeMillis = System.currentTimeMillis();
 			long elapsedMillis = currentTimeMillis - startedTimeMillis;
-			long predictedTotalMillis = ( long ) ((elapsedMillis / ( float ) count) * total);
+			long predictedTotalMillis = ( long ) ((elapsedMillis / ( float ) (count - initialCount)) * (total - initialCount));
 			long remainingMillis = predictedTotalMillis - elapsedMillis;
 			String duration = prettyDuration(remainingMillis, elapsedMillis);
 			displayLine(String.format("%d / %d (%.2f%%) %s", count, total, ( count * 100.0 ) / total, duration));

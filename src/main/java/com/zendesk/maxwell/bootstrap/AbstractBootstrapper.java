@@ -33,6 +33,14 @@ public abstract class AbstractBootstrapper {
 			row.getTable().equals("bootstrap");
 	}
 
+	protected String bootstrapDatabase(RowMap rowmap) {
+		return (String) rowmap.getData("database_name");
+	}
+
+	protected String bootstrapTable(RowMap rowmap) {
+		return (String) rowmap.getData("table_name");
+	}
+
 	abstract public boolean shouldSkip(RowMap row) throws SQLException, IOException;
 
 	abstract public void startBootstrap(RowMap startBootstrapRow, AbstractProducer producer, MaxwellReplicator replicator) throws Exception;

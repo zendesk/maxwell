@@ -10,16 +10,16 @@ import joptsimple.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.zendesk.maxwell.util.AbstractConfig;
 import com.zendesk.maxwell.schema.SchemaStore;
 
-public class MaxwellConfig {
+public class MaxwellConfig extends AbstractConfig {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfig.class);
-	static final String DEFAULT_CONFIG_FILE = "config.properties";
 
 	public MaxwellMysqlConfig replicationMysql;
 
 	public MaxwellMysqlConfig maxwellMysql;
-	
+
 	public String databaseName;
 
 	public String  includeDatabases, excludeDatabases, includeTables, excludeTables, blacklistTables;
@@ -52,7 +52,7 @@ public class MaxwellConfig {
 		this.setDefaults();
 	}
 
-	private OptionParser getOptionParser() {
+	protected OptionParser buildOptionParser() {
 		final OptionParser parser = new OptionParser();
 		parser.accepts( "config", "location of config file" ).withRequiredArg();
 		parser.accepts( "log_level", "log level, one of DEBUG|INFO|WARN|ERROR" ).withRequiredArg();
@@ -125,7 +125,7 @@ public class MaxwellConfig {
 	}
 
 	private void parse(String [] argv) {
-		OptionSet options = getOptionParser().parse(argv);
+		OptionSet options = buildOptionParser().parse(argv);
 
 		if ( options.has("config") ) {
 			parseFile((String) options.valueOf("config"), true);
@@ -196,41 +196,18 @@ public class MaxwellConfig {
 
 		if ( options.has("include_dbs"))
 			this.includeDatabases = (String) options.valueOf("include_dbs");
-		
+
 		if ( options.has("exclude_dbs"))
 			this.excludeDatabases = (String) options.valueOf("exclude_dbs");
 
 		if ( options.has("include_tables"))
 			this.includeTables = (String) options.valueOf("include_tables");
-		
+
 		if ( options.has("exclude_tables"))
 			this.excludeTables = (String) options.valueOf("exclude_tables");
 
 		if ( options.has("blacklist_tables"))
 			this.blacklistTables = (String) options.valueOf("blacklist_tables");
-	}
-
-	private Properties readPropertiesFile(String filename, Boolean abortOnMissing) {
-		Properties p = null;
-		try {
-			File file = new File(filename);
-			if ( !file.exists() ) {
-				if ( abortOnMissing ) {
-					System.err.println("Couldn't find config file: " + filename);
-					System.exit(1);
-				} else {
-					return null;
-				}
-			}
-
-			FileReader reader = new FileReader(file);
-			p = new Properties();
-			p.load(reader);
-		} catch ( IOException e ) {
-			System.err.println("Couldn't read config file: " + e);
-			System.exit(1);
-		}
-		return p;
 	}
 
 	private void parseFile(String filename, Boolean abortOnMissing) {
@@ -345,7 +322,7 @@ public class MaxwellConfig {
 					|| this.replicationMysql.password != null) {
 				usage("Specified a replication option but missing one of the following options: replication_host, replication_user, replication_password.");
 			}
-			
+
 			this.replicationMysql = new MaxwellMysqlConfig(this.maxwellMysql.host,
 									this.maxwellMysql.port,
 									this.maxwellMysql.user,
@@ -358,16 +335,6 @@ public class MaxwellConfig {
 
 		if ( this.maxSchemas != null )
 			SchemaStore.setMaxSchemas(this.maxSchemas);
-	}
-
-	private void usage(String string) {
-		System.err.println(string);
-		System.err.println();
-		try {
-			getOptionParser().printHelpOn(System.err);
-			System.exit(1);
-		} catch (IOException e) {
-		}
 	}
 
 	public Properties getKafkaProperties() {
