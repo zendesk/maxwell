@@ -42,7 +42,7 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 		parser.accepts( "table", "table to bootstrap").withRequiredArg();
 		parser.accepts( "__separator_2", "" );
 		parser.accepts( "abort", "bootstrap_id to abort" ).withRequiredArg();
-		parser.accepts( "monitor", "bootstrap_id to abort" ).withRequiredArg();
+		parser.accepts( "monitor", "bootstrap_id to monitor" ).withRequiredArg();
 		parser.accepts( "__separator_3", "" );
 		parser.accepts( "log_level", "log level, one of DEBUG|INFO|WARN|ERROR. default: WARN" ).withRequiredArg();
 		parser.accepts( "host", "mysql host. default: localhost").withRequiredArg();

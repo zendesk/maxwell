@@ -13,6 +13,9 @@ import java.sql.SQLException;
 
 public class MaxwellBootstrapUtility {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellBootstrapUtility.class);
+	protected class MissingBootstrapRowException extends Exception {
+		MissingBootstrapRowException(Long rowID) { super("Could not find bootstrap row with id: " + rowID); }
+	}
 
 	private static final long UPDATE_PERIOD_MILLIS = 250;
 	private static final long DISPLAY_PROGRESS_WARMUP_MILLIS = 5000;
@@ -30,19 +33,26 @@ public class MaxwellBootstrapUtility {
 		ConnectionPool connectionPool = getConnectionPool(config);
 		try ( final Connection connection = connectionPool.getConnection() ) {
 			if ( config.abortBootstrapID != null ) {
+				getInsertedRowsCount(connection, config.abortBootstrapID);
 				removeBootstrapRow(connection, config.abortBootstrapID);
 				return;
 			}
 
 			long rowId;
-			if ( config.monitorBootstrapID != null )
+			if ( config.monitorBootstrapID != null ) {
+				getInsertedRowsCount(connection, config.monitorBootstrapID);
 				rowId = config.monitorBootstrapID;
-			else {
+			} else {
 				Long totalRows = calculateRowCount(connection, config.databaseName, config.tableName);
 				rowId = insertBootstrapStartRow(connection, config.databaseName, config.tableName, totalRows);
 			}
 
-			monitorProgress(connection, rowId);
+			try {
+				monitorProgress(connection, rowId);
+			} catch ( MissingBootstrapRowException e ) {
+				LOGGER.error("bootstrap aborted.");
+				Runtime.getRuntime().halt(1);
+			}
 
 		} catch ( SQLException e ) {
 			LOGGER.error("failed to connect to mysql server @ " + config.getConnectionURI());
@@ -52,7 +62,7 @@ public class MaxwellBootstrapUtility {
 	}
 
 
-	private void monitorProgress(Connection connection, Long rowId) throws SQLException {
+	private void monitorProgress(Connection connection, Long rowId) throws SQLException, MissingBootstrapRowException {
 		addMonitorShutdownHook(rowId);
 
 		long rowCount = getTotalRowCount(connection, rowId);
@@ -90,22 +100,30 @@ public class MaxwellBootstrapUtility {
 		});
 	}
 
-	private long getInsertedRowsCount(Connection connection, long rowId) throws SQLException {
+	private long getInsertedRowsCount(Connection connection, long rowId) throws SQLException, MissingBootstrapRowException {
 		String sql = "select inserted_rows from `bootstrap` where id = ?";
 		PreparedStatement preparedStatement = connection.prepareStatement(sql);
 		preparedStatement.setLong(1, rowId);
 		ResultSet resultSet = preparedStatement.executeQuery();
-		resultSet.next();
-		return resultSet.getLong(1);
+
+		if ( resultSet.next() ) {
+			return resultSet.getLong(1);
+		} else {
+			throw new MissingBootstrapRowException(rowId);
+		}
 	}
 
-	private boolean getIsComplete(Connection connection, long rowId) throws SQLException {
+	private boolean getIsComplete(Connection connection, long rowId) throws SQLException, MissingBootstrapRowException {
 		String sql = "select is_complete from `bootstrap` where id = ?";
 		PreparedStatement preparedStatement = connection.prepareStatement(sql);
 		preparedStatement.setLong(1, rowId);
 		ResultSet resultSet = preparedStatement.executeQuery();
-		resultSet.next();
-		return resultSet.getInt(1) == 1;
+
+		if ( resultSet.next() )  {
+			return resultSet.getInt(1) == 1;
+		} else {
+			throw new MissingBootstrapRowException(rowId);
+		}
 	}
 
 	private ConnectionPool getConnectionPool(MaxwellBootstrapUtilityConfig config) {
@@ -119,11 +137,14 @@ public class MaxwellBootstrapUtility {
 		return new ConnectionPool(name, maxPool, maxSize, idleTimeout, connectionURI, mysqlUser, mysqlPassword);
 	}
 
-	private Long getTotalRowCount(Connection connection, Long bootstrapRowID) throws SQLException {
+	private Long getTotalRowCount(Connection connection, Long bootstrapRowID) throws SQLException, MissingBootstrapRowException {
 		ResultSet resultSet =
 			connection.createStatement().executeQuery("select total_rows from `bootstrap` where id = " + bootstrapRowID);
-		resultSet.next();
-		return resultSet.getLong(1);
+		if ( resultSet.next() ) {
+			return resultSet.getLong(1);
+		} else {
+			throw new MissingBootstrapRowException(bootstrapRowID);
+		}
 	}
 
 	private Long calculateRowCount(Connection connection, String db, String table) throws SQLException {
