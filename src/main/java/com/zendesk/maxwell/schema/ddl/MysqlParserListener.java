@@ -114,7 +114,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 
 		List<Default_character_setContext> charSet = ctx.alter_database_definition().default_character_set();
 		if ( charSet.size() > 0 ) {
-			alter.characterSet = unquote_literal(charSet.get(0).getText());
+			alter.characterSet = unquote_literal(charSet.get(0).charset_name().getText());
 		}
 
 		this.schemaChanges.add(alter);
