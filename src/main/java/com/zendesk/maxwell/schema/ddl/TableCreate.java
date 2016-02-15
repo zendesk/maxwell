@@ -9,7 +9,7 @@ import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
 
 public class TableCreate extends SchemaChange {
-	public String dbName;
+	public String database;
 	public String tableName;
 	public ArrayList<ColumnDef> columns;
 	public ArrayList<String> pks;
@@ -19,8 +19,8 @@ public class TableCreate extends SchemaChange {
 	public String likeTable;
 	public final boolean ifNotExists;
 
-	public TableCreate (String dbName, String tableName, boolean ifNotExists) {
-		this.dbName = dbName;
+	public TableCreate (String database, String tableName, boolean ifNotExists) {
+		this.database = database;
 		this.tableName = tableName;
 		this.ifNotExists = ifNotExists;
 		this.columns = new ArrayList<>();
@@ -31,9 +31,9 @@ public class TableCreate extends SchemaChange {
 	public Schema apply(Schema originalSchema) throws SchemaSyncError {
 		Schema newSchema = originalSchema.copy();
 
-		Database d = newSchema.findDatabase(this.dbName);
+		Database d = newSchema.findDatabase(this.database);
 		if ( d == null )
-			throw new SchemaSyncError("Couldn't find database " + this.dbName);
+			throw new SchemaSyncError("Couldn't find database " + this.database);
 
 		if ( likeDB != null && likeTable != null ) {
 			applyCreateLike(newSchema, d);

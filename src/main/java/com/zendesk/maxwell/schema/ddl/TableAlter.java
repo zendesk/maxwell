@@ -9,7 +9,7 @@ import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.Table;
 
 public class TableAlter extends SchemaChange {
-	public String dbName;
+	public String database;
 	public String tableName;
 	public ArrayList<ColumnMod> columnMods;
 	public String newTableName;
@@ -21,35 +21,35 @@ public class TableAlter extends SchemaChange {
 
 
 	public TableAlter(String database, String tableName) {
-		this.dbName = database;
+		this.database = database;
 		this.tableName = tableName;
 		this.columnMods = new ArrayList<>();
 	}
 
 	@Override
 	public String toString() {
-		return "TableAlter<database: " + dbName + ", table:" + tableName + ">";
+		return "TableAlter<database: " + database + ", table:" + tableName + ">";
 	}
 
 	@Override
 	public Schema apply(Schema originalSchema) throws SchemaSyncError {
 		Schema newSchema = originalSchema.copy();
 
-		Database database = newSchema.findDatabase(this.dbName);
+		Database database = newSchema.findDatabase(this.database);
 		if ( database == null ) {
-			throw new SchemaSyncError("Couldn't find database: " + this.dbName);
+			throw new SchemaSyncError("Couldn't find database: " + this.database);
 		}
 
 		Table table = database.findTable(this.tableName);
 		if ( table == null ) {
-			throw new SchemaSyncError("Couldn't find table: " + this.dbName + "." + this.tableName);
+			throw new SchemaSyncError("Couldn't find table: " + this.database + "." + this.tableName);
 		}
 
 
 		if ( newTableName != null && newDatabase != null ) {
 			Database destDB = newSchema.findDatabase(this.newDatabase);
 			if ( destDB == null )
-				throw new SchemaSyncError("Couldn't find database " + this.dbName);
+				throw new SchemaSyncError("Couldn't find database " + this.database);
 
 			table.rename(newTableName);
 
