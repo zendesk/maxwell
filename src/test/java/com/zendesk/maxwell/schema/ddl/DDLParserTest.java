@@ -15,9 +15,7 @@ import com.zendesk.maxwell.AbstractMaxwellTest;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.junit.*;
 
-import com.zendesk.maxwell.schema.columndef.BigIntColumnDef;
-import com.zendesk.maxwell.schema.columndef.IntColumnDef;
-import com.zendesk.maxwell.schema.columndef.StringColumnDef;
+import com.zendesk.maxwell.schema.columndef.*;
 
 public class DDLParserTest {
 	public String getSQLDir() {
@@ -74,7 +72,7 @@ public class DDLParserTest {
 		IntColumnDef i = (IntColumnDef) m.definition;
 		assertThat(i.getName(), is("int"));
 		assertThat(i.getType(), is("int"));
-		assertThat(i.getSigned(), is(false));
+		assertThat(i.isSigned(), is(false));
 	}
 
 	@Test
@@ -83,11 +81,10 @@ public class DDLParserTest {
 
 		AddColumnMod m = (AddColumnMod) a.columnMods.get(0);
 		assertThat(m.name, is("baz"));
-		assertThat(m.definition.getTableName(), is("fie"));
 
 		BigIntColumnDef b = (BigIntColumnDef) m.definition;
 		assertThat(b.getType(), is("bigint"));
-		assertThat(b.getSigned(), is(true));
+		assertThat(b.isSigned(), is(true));
 		assertThat(b.getName(), is("baz"));
 	}
 
@@ -97,7 +94,6 @@ public class DDLParserTest {
 
 		AddColumnMod m = (AddColumnMod) a.columnMods.get(0);
 		assertThat(m.name, is("mocha"));
-		assertThat(m.definition.getTableName(), is("no"));
 
 		StringColumnDef b = (StringColumnDef) m.definition;
 		assertThat(b.getType(), is("varchar"));
@@ -419,15 +415,20 @@ public class DDLParserTest {
 	@Test
 	public void testCharsetPositionIndependence() {
 		TableCreate create = parseCreate("CREATE TABLE `foo` (id varchar(1) NOT NULL character set 'foo')");
-		assertThat(create.columns.get(0).charset, is("foo"));
+		ColumnDef c = create.columns.get(0);
+		assertThat(c, is(instanceOf(StringColumnDef.class)));
+
+		assertThat(((StringColumnDef) c).getCharset(), is("foo"));
 
 		create = parseCreate("CREATE TABLE `foo` (id varchar(1) character set 'foo' NOT NULL)");
-		assertThat(create.columns.get(0).charset, is("foo"));
+		c = create.columns.get(0);
+		assertThat(c, is(instanceOf(StringColumnDef.class)));
+		assertThat(((StringColumnDef) c).getCharset(), is("foo"));
 	}
 
 	@Test
 	public void testCreateTableNamedPrimaryKey() {
-		/* not documented, but accepted and ignored to name the primary key. */
+		/* not documented, but accepted and ignored to table the primary key. */
 		TableCreate create = parseCreate("CREATE TABLE db (foo char(60) binary DEFAULT '' NOT NULL, PRIMARY KEY Host (foo,Db,User))");
 		assertThat(create, is(notNullValue()));
 		assertThat(create.pks.size(), is(3));

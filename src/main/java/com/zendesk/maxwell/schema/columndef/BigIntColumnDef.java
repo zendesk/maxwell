@@ -7,8 +7,9 @@ import com.google.code.or.common.util.MySQLConstants;
 public class BigIntColumnDef extends ColumnDef {
 	private final BigInteger longlong_max = BigInteger.ONE.shiftLeft(64);
 
-	public BigIntColumnDef(String tableName, String name, String type, int pos, boolean signed) {
-		super(tableName, name, type, pos);
+	protected boolean signed;
+	public BigIntColumnDef(String name, String type, int pos, boolean signed) {
+		super(name, type, pos);
 		this.signed = signed;
 	}
 
@@ -37,4 +38,12 @@ public class BigIntColumnDef extends ColumnDef {
 		return toNumeric(value);
 	}
 
+	@Override
+	public ColumnDef copy() {
+		return new BigIntColumnDef(name, type, pos, signed);
+	}
+
+	public boolean isSigned() {
+		return signed;
+	}
 }
