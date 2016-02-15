@@ -10,7 +10,7 @@ import com.zendesk.maxwell.schema.Table;
 
 public class TableAlter extends SchemaChange {
 	public String database;
-	public String tableName;
+	public String table;
 	public ArrayList<ColumnMod> columnMods;
 	public String newTableName;
 	public String newDatabase;
@@ -20,15 +20,15 @@ public class TableAlter extends SchemaChange {
 	public List<String> pks;
 
 
-	public TableAlter(String database, String tableName) {
+	public TableAlter(String database, String table) {
 		this.database = database;
-		this.tableName = tableName;
+		this.table = table;
 		this.columnMods = new ArrayList<>();
 	}
 
 	@Override
 	public String toString() {
-		return "TableAlter<database: " + database + ", table:" + tableName + ">";
+		return "TableAlter<database: " + database + ", table:" + table + ">";
 	}
 
 	@Override
@@ -40,9 +40,9 @@ public class TableAlter extends SchemaChange {
 			throw new SchemaSyncError("Couldn't find database: " + this.database);
 		}
 
-		Table table = database.findTable(this.tableName);
+		Table table = database.findTable(this.table);
 		if ( table == null ) {
-			throw new SchemaSyncError("Couldn't find table: " + this.database + "." + this.tableName);
+			throw new SchemaSyncError("Couldn't find table: " + this.database + "." + this.table);
 		}
 
 
@@ -74,7 +74,7 @@ public class TableAlter extends SchemaChange {
 		if ( filter == null ) {
 			return false;
 		} else {
-			return filter.isTableBlacklisted(this.tableName);
+			return filter.isTableBlacklisted(this.table);
 		}
 	}
 }

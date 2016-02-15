@@ -304,7 +304,7 @@ public class DDLParserTest {
 		TableCreate c = parseCreate("CREATE TABLE `foo` ( id int(11) auto_increment not null, `textcol` mediumtext character set 'utf8' not null )");
 
 		assertThat(c.database,  is("default_db"));
-		assertThat(c.tableName, is("foo"));
+		assertThat(c.table, is("foo"));
 
 		assertThat(c.columns.size(), is(2));
 		assertThat(c.columns.get(0).getName(), is("id"));
@@ -360,7 +360,7 @@ public class DDLParserTest {
 		TableCreate c = parseCreate("CREATE TABLE `foo` LIKE `bar`.`baz`");
 
 		assertThat(c, not(nullValue()));
-		assertThat(c.tableName, is("foo"));
+		assertThat(c.table, is("foo"));
 
 		assertThat(c.likeDB,    is("bar"));
 		assertThat(c.likeTable, is("baz"));
@@ -372,7 +372,7 @@ public class DDLParserTest {
 		assertThat(changes.size(), is(2));
 
 		TableDrop d = (TableDrop) changes.get(0);
-		assertThat(d.tableName, is("bar"));
+		assertThat(d.table, is("bar"));
 		assertThat(d.database, is("foo"));
 
 	}

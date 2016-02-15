@@ -126,7 +126,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 		String tableName = getTable(ctx.table_name());
 
 		TableAlter alterStatement = new TableAlter(dbName, tableName);
-		this.tableName = alterStatement.tableName;
+		this.tableName = alterStatement.table;
 
 		this.schemaChanges.add(alterStatement);
 	}
@@ -213,7 +213,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 		boolean ifNotExists = ctx.if_not_exists() != null;
 
 		TableCreate createStatement = new TableCreate(dbName, tblName, ifNotExists);
-		this.tableName = createStatement.tableName;
+		this.tableName = createStatement.table;
 
 		this.schemaChanges.add(createStatement);
 	}
