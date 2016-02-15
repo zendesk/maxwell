@@ -13,7 +13,7 @@ public class TableCreate extends SchemaChange {
 	public String tableName;
 	public ArrayList<ColumnDef> columns;
 	public ArrayList<String> pks;
-	public String encoding;
+	public String charset;
 
 	public String likeDB;
 	public String likeTable;
@@ -46,8 +46,8 @@ public class TableCreate extends SchemaChange {
 					throw new SchemaSyncError("Unexpectedly asked to create existing table " + this.tableName);
 				}
 			}
-			Table t = d.buildTable(this.tableName, this.encoding, this.columns, this.pks);
-			t.setDefaultColumnEncodings();
+			Table t = d.buildTable(this.tableName, this.charset, this.columns, this.pks);
+			t.setDefaultColumnCharsets();
 		}
 
 		return newSchema;

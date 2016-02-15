@@ -64,7 +64,7 @@ public class TableAlter extends SchemaChange {
 		if ( this.pks != null ) {
 			table.setPKList(this.pks);
 		}
-		table.setDefaultColumnEncodings();
+		table.setDefaultColumnCharsets();
 
 		return newSchema;
 	}

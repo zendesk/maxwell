@@ -9,20 +9,20 @@ import com.zendesk.maxwell.schema.columndef.ColumnDef;
 public class Database {
 	private final String name;
 	private final List<Table> tableList;
-	private String encoding;
+	private String charset;
 	private CaseSensitivity sensitivity;
 
-	public Database(String name, List<Table> tables, String encoding) {
+	public Database(String name, List<Table> tables, String charset) {
 		this.name = name;
 		if ( tables == null )
 			this.tableList = new ArrayList<>();
 		else
 			this.tableList = tables;
-		this.encoding = encoding;
+		this.charset = charset;
 	}
 
-	public Database(String name, String encoding) {
-		this(name, null, encoding);
+	public Database(String name, String charset) {
+		this(name, null, charset);
 	}
 
 	public List<String> getTableNames() {
@@ -49,7 +49,7 @@ public class Database {
 	}
 
 	public Database copy() {
-		Database d = new Database(this.name, this.encoding);
+		Database d = new Database(this.name, this.charset);
 		for ( Table t: this.tableList ) {
 			d.addTable(t.copy());
 		}
@@ -71,17 +71,17 @@ public class Database {
 		diffTableList(diffs, other, this, nameB, nameA, false);
 	}
 
-	public String getEncoding() {
-		if ( encoding == null ) {
-			// TODO: return server-default encoding
+	public String getCharset() {
+		if ( charset == null ) {
+			// TODO: return server-default charset
 			return "";
 		} else {
-		    return encoding;
+		    return charset;
 		}
 	}
 
-	public void setEncoding(String encoding) {
-		this.encoding = encoding;
+	public void setCharset(String charset) {
+		this.charset = charset;
 	}
 
 	public String getName() {
@@ -97,20 +97,20 @@ public class Database {
 		this.tableList.add(table);
 	}
 
-	public Table buildTable(String name, String encoding, List<ColumnDef> list, List<String> pks) {
-		if ( encoding == null )
-			encoding = getEncoding(); // inherit database's default encoding
+	public Table buildTable(String name, String charset, List<ColumnDef> list, List<String> pks) {
+		if ( charset == null )
+			charset = getCharset(); // inherit database's default charset
 
 		if ( sensitivity == CaseSensitivity.CONVERT_TO_LOWER )
 			name = name.toLowerCase();
 
-		Table t = new Table(this, name, encoding, list, pks);
+		Table t = new Table(this, name, charset, list, pks);
 		this.tableList.add(t);
 		return t;
 	}
 
-	public Table buildTable(String name, String encoding) {
-		return buildTable(name, encoding, new ArrayList<ColumnDef>(), null);
+	public Table buildTable(String name, String charset) {
+		return buildTable(name, charset, new ArrayList<ColumnDef>(), null);
 	}
 
 	public void setSensitivity(CaseSensitivity sensitivity) {

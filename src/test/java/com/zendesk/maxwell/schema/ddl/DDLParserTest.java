@@ -101,7 +101,7 @@ public class DDLParserTest {
 
 		StringColumnDef b = (StringColumnDef) m.definition;
 		assertThat(b.getType(), is("varchar"));
-		assertThat(b.getEncoding(), is("latin1"));
+		assertThat(b.getCharset(), is("latin1"));
 	}
 
 	@Test
@@ -111,7 +111,7 @@ public class DDLParserTest {
 		AddColumnMod m = (AddColumnMod) a.columnMods.get(0);
 		StringColumnDef b = (StringColumnDef) m.definition;
 		assertThat(b.getType(), is("text"));
-		assertThat(b.getEncoding(), is("utf8"));
+		assertThat(b.getCharset(), is("utf8"));
 	}
 
 	@Test
@@ -137,7 +137,7 @@ public class DDLParserTest {
 		AddColumnMod m = (AddColumnMod) a.columnMods.get(0);
 		StringColumnDef b = (StringColumnDef) m.definition;
 		assertThat(b.getType(), is("text"));
-		assertThat(b.getEncoding(), is("utf8"));
+		assertThat(b.getCharset(), is("utf8"));
 	}
 
 	@Test
@@ -382,7 +382,7 @@ public class DDLParserTest {
 		List<SchemaChange> changes = parse("CREATE DATABASE if not exists `foo` default character set='latin1'");
 		DatabaseCreate create = (DatabaseCreate) changes.get(0);
 		assertThat(create.dbName, is("foo"));
-		assertThat(create.encoding, is("latin1"));
+		assertThat(create.charset, is("latin1"));
 	}
 
 	@Test
@@ -419,10 +419,10 @@ public class DDLParserTest {
 	@Test
 	public void testCharsetPositionIndependence() {
 		TableCreate create = parseCreate("CREATE TABLE `foo` (id varchar(1) NOT NULL character set 'foo')");
-		assertThat(create.columns.get(0).encoding, is("foo"));
+		assertThat(create.columns.get(0).charset, is("foo"));
 
 		create = parseCreate("CREATE TABLE `foo` (id varchar(1) character set 'foo' NOT NULL)");
-		assertThat(create.columns.get(0).encoding, is("foo"));
+		assertThat(create.columns.get(0).charset, is("foo"));
 	}
 
 	@Test

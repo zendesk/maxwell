@@ -62,7 +62,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 		return (TableAlter)schemaChanges.get(0);
 	}
 
-	private String getEncoding(List<String_column_optionsContext> list) {
+	private String getCharset(List<String_column_optionsContext> list) {
 		for ( String_column_optionsContext ctx : list ) {
 			if ( ctx.charset_def() != null ) {
 				if ( ctx.charset_def().ASCII() != null ) {
@@ -114,7 +114,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 
 		List<Default_character_setContext> charSet = ctx.alter_database_definition().default_character_set();
 		if ( charSet.size() > 0 ) {
-			alter.characterSet = unquote_literal(charSet.get(0).getText());
+			alter.charset = unquote_literal(charSet.get(0).getText());
 		}
 
 		this.schemaChanges.add(alter);
@@ -235,7 +235,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 	@Override
 	public void exitCreation_character_set(Creation_character_setContext ctx) {
 		TableCreate tableCreate = (TableCreate) schemaChanges.get(0);
-		tableCreate.encoding = unquote_literal(ctx.charset_name().getText());
+		tableCreate.charset = unquote_literal(ctx.charset_name().getText());
 	}
 
 	@Override
@@ -310,7 +310,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 	public void exitColumn_definition(mysqlParser.Column_definitionContext ctx) {
 		Long columnLength = null;
 		Boolean longStringFlag = false;
-		String colType = null, colEncoding = null;
+		String colType = null, colCharset = null;
 		String[] enumValues = null;
 		List<Column_optionsContext> colOptions = null;
 		boolean signed = true;
@@ -330,16 +330,16 @@ public class MysqlParserListener extends mysqlBaseListener {
 			colOptions = dctx.signed_type().column_options();
 		} else if ( dctx.string_type() != null ) {
 			colType = dctx.string_type().col_type.getText();
-			colEncoding = getEncoding(dctx.string_type().string_column_options());
+			colCharset = getCharset(dctx.string_type().string_column_options());
 
 			if ( dctx.string_type().utf8 ) // forced into UTF-8 by NATIONAL-fu
-				colEncoding = "utf8";
+				colCharset = "utf8";
 
 			if ( dctx.string_type().BYTE().size() > 0 )
 				byteFlagToStringColumn = true;
 
 			if ( dctx.string_type().UNICODE().size() > 0 )
-				colEncoding = "ucs2";
+				colCharset = "ucs2";
 
 			columnLength = extractColumnLength(dctx.string_type().length());
 			colOptions = dctx.string_type().column_options();
@@ -348,7 +348,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 			List<Enum_valueContext> valueList = dctx.enumerated_type().enumerated_values().enum_value();
 
 			colType = dctx.enumerated_type().col_type.getText();
-			colEncoding = getEncoding(dctx.enumerated_type().string_column_options());
+			colCharset = getCharset(dctx.enumerated_type().string_column_options());
 			colOptions = dctx.enumerated_type().column_options();
 			enumValues = new String[valueList.size()];
 
@@ -361,7 +361,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 		colType = ColumnDef.unalias_type(colType.toLowerCase(), longStringFlag, columnLength, byteFlagToStringColumn);
 		ColumnDef c = ColumnDef.build(this.tableName,
 					                   name,
-					                   colEncoding,
+					                   colCharset,
 					                   colType.toLowerCase(),
 					                   -1,
 					                   signed,
@@ -395,11 +395,11 @@ public class MysqlParserListener extends mysqlBaseListener {
 	public void exitCreate_database(mysqlParser.Create_databaseContext ctx) {
 		String dbName = unquote(ctx.name().getText());
 		boolean ifNotExists = ctx.if_not_exists() != null;
-		String encoding = null;
+		String charset = null;
 		if ( ctx.default_character_set().size() > 0 ) {
-			encoding = unquote_literal(ctx.default_character_set().get(0).charset_name().getText());
+			charset = unquote_literal(ctx.default_character_set().get(0).charset_name().getText());
 		}
 
-		this.schemaChanges.add(new DatabaseCreate(dbName, ifNotExists, encoding));
+		this.schemaChanges.add(new DatabaseCreate(dbName, ifNotExists, charset));
 	}
 }

@@ -7,12 +7,12 @@ import com.zendesk.maxwell.schema.Schema;
 public class DatabaseCreate extends SchemaChange {
 	public final String dbName;
 	private final boolean ifNotExists;
-	public final String encoding;
+	public final String charset;
 
-	public DatabaseCreate(String dbName, boolean ifNotExists, String encoding) {
+	public DatabaseCreate(String dbName, boolean ifNotExists, String charset) {
 		this.dbName = dbName;
 		this.ifNotExists = ifNotExists;
-		this.encoding = encoding;
+		this.charset = charset;
 	}
 
 	@Override
@@ -28,13 +28,13 @@ public class DatabaseCreate extends SchemaChange {
 
 		Schema newSchema = originalSchema.copy();
 
-		String createEncoding;
-		if ( encoding != null )
-			createEncoding = encoding;
+		String createCharset;
+		if ( charset != null )
+			createCharset = charset;
 		else
-			createEncoding = newSchema.getEncoding();
+			createCharset = newSchema.getCharset();
 
-		database = new Database(dbName, createEncoding);
+		database = new Database(dbName, createCharset);
 		newSchema.addDatabase(database);
 		return newSchema;
 	}
