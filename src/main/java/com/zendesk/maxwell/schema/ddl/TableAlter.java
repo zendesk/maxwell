@@ -7,6 +7,8 @@ import com.zendesk.maxwell.MaxwellFilter;
 import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.Table;
+import com.zendesk.maxwell.schema.columndef.ColumnDef;
+import com.zendesk.maxwell.schema.columndef.StringColumnDef;
 
 public class TableAlter extends SchemaChange {
 	public String database;
@@ -59,6 +61,16 @@ public class TableAlter extends SchemaChange {
 
 		for (ColumnMod mod : columnMods) {
 			mod.apply(table);
+		}
+
+		if ( convertCharset != null ) {
+			for ( ColumnDef c : table.getColumnList() ) {
+				if ( c instanceof StringColumnDef ) {
+					StringColumnDef sc = (StringColumnDef) c;
+					if ( !sc.getCharset().toLowerCase().equals("binary") )
+						sc.setCharset(convertCharset);
+				}
+			}
 		}
 
 		if ( this.pks != null ) {

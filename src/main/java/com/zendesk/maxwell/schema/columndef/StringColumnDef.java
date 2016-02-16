@@ -24,6 +24,10 @@ public class StringColumnDef extends ColumnDef {
 		return charset;
 	}
 
+	public void setCharset(String charset) {
+		this.charset = charset;
+	}
+
 	public void setDefaultCharset(String e) {
 		if ( this.charset == null )
 		  this.charset = e;
