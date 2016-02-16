@@ -7,6 +7,9 @@ class AddColumnMod extends ColumnMod {
 	public ColumnDef definition;
 	public ColumnPosition position;
 
+	// for JSON deserailization
+	public AddColumnMod() { }
+
 	public AddColumnMod(String name, ColumnDef d, ColumnPosition position) {
 		super(name);
 		this.definition = d;

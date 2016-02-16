@@ -21,11 +21,14 @@ public class TableAlter extends SchemaChange {
 	public String defaultCharset;
 	public List<String> pks;
 
+	public TableAlter() {
+		this.columnMods = new ArrayList<>();
+	}
 
 	public TableAlter(String database, String table) {
+		this();
 		this.database = database;
 		this.table = table;
-		this.columnMods = new ArrayList<>();
 	}
 
 	@Override

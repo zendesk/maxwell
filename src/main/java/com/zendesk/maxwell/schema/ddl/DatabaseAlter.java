@@ -8,6 +8,7 @@ public class DatabaseAlter extends SchemaChange {
 	public String database;
 	public String charset;
 
+	public DatabaseAlter() {}
 	public DatabaseAlter(String database) {
 		this.database = database;
 	}

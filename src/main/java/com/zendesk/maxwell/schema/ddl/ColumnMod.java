@@ -5,6 +5,7 @@ import com.zendesk.maxwell.schema.Table;
 abstract class ColumnMod {
 	public String name;
 
+	public ColumnMod() {}
 	public ColumnMod(String name) {
 		this.name = name;
 	}

@@ -5,6 +5,7 @@ public abstract class ColumnDef {
 	protected String type;
 	protected int pos;
 
+	public ColumnDef() { }
 	public ColumnDef(String name, String type, int pos) {
 		this.name = name.toLowerCase();
 		this.type = type;
