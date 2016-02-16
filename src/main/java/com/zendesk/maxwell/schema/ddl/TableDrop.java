@@ -5,11 +5,19 @@ import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.Table;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class TableDrop extends SchemaChange {
 	public String database;
-	final String table;
-	final boolean ifExists;
+	public String table;
 
+	@JsonProperty("if-exists")
+	public boolean ifExists;
+
+	public TableDrop() { }
 	public TableDrop(String database, String table, boolean ifExists) {
 		this.database = database;
 		this.table = table;
