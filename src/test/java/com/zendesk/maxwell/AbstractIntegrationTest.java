@@ -24,6 +24,23 @@ public class AbstractIntegrationTest extends AbstractMaxwellTest {
 		return mapper.readValue(json, MaxwellIntegrationTest.MAP_STRING_OBJECT_REF);
 	}
 
+	protected void assertJSON(List<Map<String, Object>> jsonOutput, List<Map<String, Object>> jsonAsserts) {
+		ArrayList<Map<String, Object>> missing = new ArrayList<>();
+
+		for ( Map m : jsonAsserts ) {
+			if ( !jsonOutput.contains(m) )
+				missing.add(m);
+		}
+
+		if ( missing.size() > 0 ) {
+			String msg = "Did not find: \n" +
+					StringUtils.join(missing.iterator(), "\n") +
+					"\n\n in : " +
+					StringUtils.join(jsonOutput.iterator(), "\n");
+			assertThat(msg, false, is(true));
+		}
+	}
+
 	private void runJSONTest(List<String> sql, List<Map<String, Object>> expectedJSON) throws Exception {
 		List<Map<String, Object>> eventJSON = new ArrayList<>();
 		List<Map<String, Object>> matched = new ArrayList<>();
@@ -39,52 +56,76 @@ public class AbstractIntegrationTest extends AbstractMaxwellTest {
 			outputMap.remove("commit");
 
 			eventJSON.add(outputMap);
-
-			for ( Map<String, Object> b : expectedJSON ) {
-				if ( outputMap.equals(b) )
-					matched.add(b);
-			}
 		}
+		assertJSON(eventJSON, expectedJSON);
 
-		for ( Map j : matched ) {
-			expectedJSON.remove(j);
-		}
+	}
 
-		if ( expectedJSON.size() > 0 ) {
-			String msg = "Did not find: \n" +
-						 StringUtils.join(expectedJSON.iterator(), "\n") +
-						 "\n\n in : " +
-						 StringUtils.join(eventJSON.iterator(), "\n");
-			assertThat(msg, false, is(true));
+	protected class SQLAndJSON {
+		public ArrayList<Map<String, Object>> jsonAsserts;
+		public ArrayList<String> inputSQL;
 
+		protected SQLAndJSON() {
+			this.jsonAsserts = new ArrayList<>();
+			this.inputSQL = new ArrayList<>();
 		}
 	}
 
-	protected void runJSONTestFile(String fname) throws Exception {
+	protected SQLAndJSON parseJSONTestFile(String fname) throws Exception {
+		SQLAndJSON ret = new SQLAndJSON();
 		File file = new File(fname);
-		ArrayList<Map<String, Object>> jsonAsserts = new ArrayList<>();
-		ArrayList<String> inputSQL  = new ArrayList<>();
 		BufferedReader reader = new BufferedReader(new FileReader(file));
 		ObjectMapper mapper = new ObjectMapper();
 
 		mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
 
+		String buffer = null;
+		boolean bufferIsJSON = false;
 		while ( reader.ready() ) {
 			String line = reader.readLine();
-			if ( line.matches("^\\s*$")) {
+
+			if (line.matches("^\\s*$")) { // skip blanks
 				continue;
 			}
 
-			if ( line.matches("^\\s*\\->\\s*\\{.*") ) {
-				line = line.replaceAll("^\\s*\\->\\s*", "");
+			if ( buffer != null ) {
+				if (line.matches("^\\s+.*$")) { // leading whitespace -- continuation of previous line
+					buffer = buffer + " " + line.trim();
+				} else {
+					if ( bufferIsJSON )	{
+						ret.jsonAsserts.add(mapper.<Map<String, Object>>readValue(buffer, MaxwellIntegrationTest.MAP_STRING_OBJECT_REF));
+					} else {
+						ret.inputSQL.add(buffer);
+					}
+					buffer = null;
+				}
+			}
 
-				jsonAsserts.add(mapper.<Map<String, Object>>readValue(line, MaxwellIntegrationTest.MAP_STRING_OBJECT_REF));
-			} else {
-				inputSQL.add(line);
+			if ( buffer == null ) {
+				if ( line.matches("^\\s*\\->\\s*\\{.*") ) {
+					line = line.replaceAll("^\\s*\\->\\s*", "");
+					bufferIsJSON = true;
+				} else {
+					bufferIsJSON = false;
+				}
+				buffer = line;
 			}
 		}
-		reader.close();
 
-	    runJSONTest(inputSQL, jsonAsserts);
+		if ( buffer != null ) {
+			if ( bufferIsJSON )	{
+				ret.jsonAsserts.add(mapper.<Map<String, Object>>readValue(buffer, MaxwellIntegrationTest.MAP_STRING_OBJECT_REF));
+			} else {
+				ret.inputSQL.add(buffer);
+			}
+		}
+
+		reader.close();
+		return ret;
+	}
+
+	protected void runJSONTestFile(String fname) throws Exception {
+		SQLAndJSON testResources = parseJSONTestFile(fname);
+	    runJSONTest(testResources.inputSQL, testResources.jsonAsserts);
 	}
 }

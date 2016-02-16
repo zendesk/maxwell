@@ -5,6 +5,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.zendesk.maxwell.MaxwellFilter;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
@@ -14,6 +17,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.zendesk.maxwell.schema.Schema;
+
+@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="type")
+@JsonSubTypes({
+		@JsonSubTypes.Type(value = TableAlter.class, name = "table-alter"),
+		@JsonSubTypes.Type(value = TableCreate.class, name = "table-create"),
+		@JsonSubTypes.Type(value = TableDrop.class, name = "table-drop"),
+		@JsonSubTypes.Type(value = DatabaseAlter.class, name = "database-alter"),
+		@JsonSubTypes.Type(value = DatabaseCreate.class, name = "database-create"),
+		@JsonSubTypes.Type(value = DatabaseDrop.class, name = "database-drop"),
+})
 
 public abstract class SchemaChange {
     final static Logger LOGGER = LoggerFactory.getLogger(SchemaChange.class);

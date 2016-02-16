@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zendesk.maxwell.CaseSensitivity;
 import org.apache.commons.lang.StringUtils;
 import org.junit.After;
@@ -29,17 +30,22 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 		super.tearDown();
 	}
 
-	private Schema testIntegration(String alters[]) throws SQLException, SchemaSyncError, IOException {
+	private void testIntegration(String alters[]) throws SQLException, SchemaSyncError, IOException {
 		SchemaCapturer capturer = new SchemaCapturer(server.getConnection(), buildContext().getCaseSensitivity());
 		Schema topSchema = capturer.capture();
 
 		server.executeList(Arrays.asList(alters));
 
+		ObjectMapper m = new ObjectMapper();
 		for ( String alterSQL : alters) {
 			List<SchemaChange> changes = SchemaChange.parse("shard_1", alterSQL);
 			if ( changes != null ) {
 				for ( SchemaChange change : changes ) {
-					topSchema = change.apply(topSchema);
+					// go to and from json
+					String json = m.writeValueAsString(change);
+					SchemaChange fromJson = m.readValue(json, SchemaChange.class);
+
+					topSchema = fromJson.apply(topSchema);
 				}
 			}
 		}
@@ -48,13 +54,11 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 
 		List<String> diff = topSchema.diff(bottomSchema, "followed schema", "recaptured schema");
 		assertThat(StringUtils.join(diff.iterator(), "\n"), diff.size(), is(0));
-
-		return topSchema;
 	}
 
-	private Schema testIntegration(String sql) throws Exception {
+	private void testIntegration(String sql) throws Exception {
 		String[] alters = {sql};
-		return testIntegration(alters);
+		testIntegration(alters);
 	}
 
 	@Test

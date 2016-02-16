@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.schema.ddl;
 
 import java.util.ArrayList;
-
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.zendesk.maxwell.MaxwellFilter;
 import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
@@ -12,12 +12,23 @@ public class TableCreate extends SchemaChange {
 	public String database;
 	public String table;
 	public ArrayList<ColumnDef> columns;
+
+	@JsonProperty("primary-key")
 	public ArrayList<String> pks;
 	public String charset;
 
+	@JsonProperty("like-db")
 	public String likeDB;
+
+	@JsonProperty("like-table")
 	public String likeTable;
-	public final boolean ifNotExists;
+
+	@JsonProperty("if-not-exists")
+	public boolean ifNotExists;
+
+	public TableCreate() {
+		this.ifNotExists = false;
+	}
 
 	public TableCreate (String database, String table, boolean ifNotExists) {
 		this.database = database;

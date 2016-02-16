@@ -1,8 +1,9 @@
 package com.zendesk.maxwell.schema.ddl;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.zendesk.maxwell.MaxwellFilter;
 import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
@@ -10,15 +11,24 @@ import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
 import com.zendesk.maxwell.schema.columndef.StringColumnDef;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class TableAlter extends SchemaChange {
 	public String database;
 	public String table;
+	@JsonProperty("column-changes")
 	public ArrayList<ColumnMod> columnMods;
+	@JsonProperty("new-table")
 	public String newTableName;
+	@JsonProperty("new-database")
 	public String newDatabase;
 
+
+	@JsonProperty("convert-charset")
 	public String convertCharset;
+	@JsonProperty("charset")
 	public String defaultCharset;
+
+	@JsonProperty("primary-keys")
 	public List<String> pks;
 
 	public TableAlter() {

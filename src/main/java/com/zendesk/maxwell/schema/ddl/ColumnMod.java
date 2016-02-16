@@ -1,7 +1,15 @@
 package com.zendesk.maxwell.schema.ddl;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.zendesk.maxwell.schema.Table;
 
+@JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="type")
+@JsonSubTypes({
+		@JsonSubTypes.Type(value = AddColumnMod.class, name = "column-add"),
+		@JsonSubTypes.Type(value = ChangeColumnMod.class, name = "column-modify"),
+		@JsonSubTypes.Type(value = RemoveColumnMod.class, name = "column-drop")
+})
 abstract class ColumnMod {
 	public String name;
 

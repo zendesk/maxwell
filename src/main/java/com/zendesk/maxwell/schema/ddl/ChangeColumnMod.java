@@ -12,7 +12,8 @@ class ChangeColumnMod extends ColumnMod {
 	}
 
 	public ChangeColumnMod(String name, ColumnDef d, ColumnPosition position ) {
-		super(name);
+		this();
+		this.name = name;
 		this.definition = d;
 		this.position = position;
 	}

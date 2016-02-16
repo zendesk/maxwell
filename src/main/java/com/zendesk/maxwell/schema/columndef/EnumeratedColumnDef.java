@@ -1,6 +1,9 @@
 package com.zendesk.maxwell.schema.columndef;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 abstract public class EnumeratedColumnDef extends ColumnDef  {
+	@JsonProperty("enum-values")
 	protected String[] enumValues;
 
 	public EnumeratedColumnDef() { }

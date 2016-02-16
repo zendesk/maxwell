@@ -1,0 +1,18 @@
+CREATE database `ser1`;
+-> { type: "database-create", database: "ser1", charset: null, if-not-exists: false }
+CREATE table `ser1`.`tbl1` ( id mediumint, `a` varchar(255) character set latin1, `b` mediumtext, `c` enum('a','b'), primary KEY(id) );
+-> {
+     type: "table-create", database: "ser1", table: "tbl1",
+     columns: [
+                { name: "id", type: "mediumint", signed: true, bits: 24 },
+                { name: "a",  type: "varchar", charset: "latin1" },
+                { name: "b",  type: "mediumtext", charset: null },
+                { name: "c",  type: "enum", enum-values: ["a", "b"] }
+              ],
+     primary-key: [ "id" ],
+     charset: null,
+     like-db: null,
+     like-table: null,
+     if-not-exists: false
+   }
+
