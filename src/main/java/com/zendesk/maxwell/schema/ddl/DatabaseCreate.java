@@ -7,8 +7,7 @@ import com.zendesk.maxwell.schema.Schema;
 
 public class DatabaseCreate extends SchemaChange {
 	public String database;
-	@JsonProperty(value = "if-not-exists")
-	public boolean ifNotExists;
+	private boolean ifNotExists;
 	public String charset;
 
 	public DatabaseCreate() { } // for deserialization
@@ -19,25 +18,36 @@ public class DatabaseCreate extends SchemaChange {
 	}
 
 	@Override
-	public Schema apply(Schema originalSchema) throws SchemaSyncError {
-		Database d = originalSchema.findDatabase(database);
+	public SchemaChange resolve(Schema schema) throws SchemaSyncError {
+		String chset;
+		Database d = schema.findDatabase(database);
 
-		if ( d != null ) {
+		if ( d == null ) {
 			if ( ifNotExists )
-				return originalSchema;
+				return null;
 			else
 				throw new SchemaSyncError("Unexpectedly asked to create existing database " + database);
 		}
 
+		if ( this.charset == null )
+			chset = schema.getCharset();
+		else
+			chset = this.charset;
+
+		return new DatabaseCreate(database, false, chset);
+	}
+
+
+	@Override
+	public Schema apply(Schema originalSchema) throws SchemaSyncError {
 		Schema newSchema = originalSchema.copy();
 
-		String createCharset;
-		if ( charset != null )
-			createCharset = charset;
-		else
-			createCharset = newSchema.getCharset();
+		Database existingDatabase = originalSchema.findDatabase(database);
 
-		newSchema.addDatabase(new Database(database, createCharset));
+		if ( existingDatabase != null && !ifNotExists )
+			throw new SchemaSyncError("Unexpectedly asked to create existing database " + database);
+
+		newSchema.addDatabase(new Database(database, charset));
 		return newSchema;
 	}
 

@@ -118,6 +118,10 @@ public class MysqlIsolatedServer {
 		executeList(Arrays.asList(schemaSQL));
 	}
 
+	public void executeQuery(String sql) throws SQLException {
+		getConnection().createStatement().executeUpdate(sql);
+	}
+
 	public int getPort() {
 		return port;
 	}

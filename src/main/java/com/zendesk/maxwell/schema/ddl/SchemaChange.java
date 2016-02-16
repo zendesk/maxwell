@@ -31,6 +31,8 @@ import com.zendesk.maxwell.schema.Schema;
 public abstract class SchemaChange {
     final static Logger LOGGER = LoggerFactory.getLogger(SchemaChange.class);
 
+	// TODO: make abstract
+	public SchemaChange resolve(Schema schema) throws SchemaSyncError { return this; };
 	public abstract Schema apply(Schema originalSchema) throws SchemaSyncError;
 
 	private static final Set<Pattern> SQL_BLACKLIST = new HashSet<Pattern>();

@@ -332,6 +332,7 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 		}
 	}
 
+	@Test
 	public void testAutoConvertToByte() throws Exception {
 		testIntegration("create table t1 ( " +
 			"a char(1) byte, " +

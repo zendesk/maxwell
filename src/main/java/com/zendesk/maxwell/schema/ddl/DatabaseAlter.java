@@ -14,6 +14,11 @@ public class DatabaseAlter extends SchemaChange {
 	}
 
 	@Override
+	public SchemaChange resolve(Schema schema) throws SchemaSyncError {
+		return this;
+	}
+
+	@Override
 	public Schema apply(Schema originalSchema) throws SchemaSyncError {
 		if ( charset == null )
 			return originalSchema;
