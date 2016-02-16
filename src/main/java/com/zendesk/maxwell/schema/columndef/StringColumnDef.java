@@ -12,9 +12,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class StringColumnDef extends ColumnDef {
+	protected String charset;
+
 	static final Logger LOGGER = LoggerFactory.getLogger(StringColumnDef.class);
-	public StringColumnDef(String tableName, String name, String type, int pos, String charset) {
-		super(tableName, name, type, pos);
+	public StringColumnDef(String name, String type, int pos, String charset) {
+		super(name, type, pos);
+		this.charset = charset;
+	}
+
+	public String getCharset() {
+		return charset;
+	}
+
+	public void setCharset(String charset) {
 		this.charset = charset;
 	}
 
@@ -34,7 +44,7 @@ public class StringColumnDef extends ColumnDef {
 	public String toSQL(Object value) {
 		byte[] b = (byte[]) value;
 
-		if ( getCharset().equals("utf8") || getCharset().equals("utf8mb4")) {
+		if ( charset.equals("utf8") || charset.equals("utf8mb4")) {
 			return quoteString(new String(b));
 		} else {
 			return "x'" +  Hex.encodeHexString( b ) + "'";
@@ -70,10 +80,16 @@ public class StringColumnDef extends ColumnDef {
 		}
 	}
 
+	@Override
+	public ColumnDef copy() {
+		return new StringColumnDef(name, type, pos, charset);
+	}
+
 	private String quoteString(String s) {
 		String escaped = StringEscapeUtils.escapeSql(s);
 		escaped = escaped.replaceAll("\n", "\\\\n");
 		escaped = escaped.replaceAll("\r", "\\\\r");
 		return "'" + escaped + "'";
 	}
+
 }

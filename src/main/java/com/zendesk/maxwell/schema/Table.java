@@ -2,6 +2,7 @@ package com.zendesk.maxwell.schema;
 
 import java.util.*;
 
+import com.zendesk.maxwell.schema.columndef.EnumeratedColumnDef;
 import org.apache.commons.lang.StringUtils;
 
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
@@ -102,7 +103,7 @@ public class Table {
 			if ( other == null )
 				diffs.add(b.fullName() + " is missing column " + column.getName() + " in " + nameB);
 			else {
-                String colName = a.fullName() + ".`" + column.getName() + "` ";
+				String colName = a.fullName() + ".`" + column.getName() + "` ";
 				if ( !column.getType().equals(other.getType()) ) {
 					diffs.add(colName + "has a type mismatch, "
 									  + column.getType()
@@ -115,19 +116,33 @@ public class Table {
 									  + " vs "
 									  + other.getPos()
 									  + " in " + nameB);
-				} else if ( !Arrays.deepEquals(column.getEnumValues(), other.getEnumValues()) ) {
-					diffs.add(colName + "has an enum value mismatch, "
-									  + StringUtils.join(column.getEnumValues(), ",")
-									  + " vs "
-									  + StringUtils.join(other.getEnumValues(), ",")
-									  + " in " + nameB);
+				}
 
-				} else if ( !Objects.equals(column.getCharset(), other.getCharset()) ) {
-					diffs.add(colName + "has an charset mismatch, "
-						+ "'" + column.getCharset() + "'"
-						+ " vs "
-						+ "'" + other.getCharset() + "'"
-						+ " in " + nameB);
+				if ( column instanceof EnumeratedColumnDef ) {
+					EnumeratedColumnDef enumA, enumB;
+					enumA = (EnumeratedColumnDef) column;
+					enumB = (EnumeratedColumnDef) other;
+					if ( !Arrays.deepEquals(enumA.getEnumValues(), enumB.getEnumValues()) ) {
+						diffs.add(colName + "has an enum value mismatch, "
+								+ StringUtils.join(enumA.getEnumValues(), ",")
+								+ " vs "
+								+ StringUtils.join(enumB.getEnumValues(), ",")
+								+ " in " + nameB);
+					}
+				}
+
+				if ( column instanceof StringColumnDef ) {
+					StringColumnDef stringA, stringB;
+					stringA = (StringColumnDef) column;
+					stringB = (StringColumnDef) other;
+
+					if ( !Objects.equals(stringA.getCharset(), stringB.getCharset()) ) {
+						diffs.add(colName + "has an charset mismatch, "
+								+ "'" + stringA.getCharset() + "'"
+								+ " vs "
+								+ "'" + stringB.getCharset() + "'"
+								+ " in " + nameB);
+					}
 
 				}
 			}

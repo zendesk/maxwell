@@ -3,9 +3,11 @@ package com.zendesk.maxwell.schema.columndef;
 import com.google.code.or.common.util.MySQLConstants;
 
 public class FloatColumnDef extends ColumnDef {
-	public FloatColumnDef(String tableName, String name, String type, int pos) {
-		super(tableName, name, type, pos);
+	public FloatColumnDef(String name, String type, int pos) {
+		super(name, type, pos);
 	}
+
+	public boolean signed;
 
 	@Override
 	public boolean matchesMysqlType(int type) {
@@ -18,6 +20,11 @@ public class FloatColumnDef extends ColumnDef {
 	@Override
 	public String toSQL(Object value) {
 		return value.toString();
+	}
+
+	@Override
+	public ColumnDef copy() {
+		return new FloatColumnDef(name, type, pos);
 	}
 
 }
