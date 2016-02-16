@@ -7,7 +7,7 @@ public abstract class ColumnDef {
 	protected String[] enumValues;
 	private int pos;
 	public boolean signed;
-	public String encoding;
+	public String charset;
 
 	public ColumnDef(String tableName, String name, String type, int pos) {
 		this.tableName = tableName;
@@ -25,10 +25,10 @@ public abstract class ColumnDef {
 	}
 
 	public ColumnDef copy() {
-		return build(this.tableName, this.name, this.encoding, this.type, this.pos, this.signed, this.enumValues);
+		return build(this.tableName, this.name, this.charset, this.type, this.pos, this.signed, this.enumValues);
 	}
 
-	public static ColumnDef build(String tableName, String name, String encoding, String type, int pos, boolean signed, String enumValues[]) {
+	public static ColumnDef build(String tableName, String name, String charset, String type, int pos, boolean signed, String enumValues[]) {
 		switch(type) {
 		case "tinyint":
 		case "smallint":
@@ -43,7 +43,7 @@ public abstract class ColumnDef {
 		case "longtext":
 		case "varchar":
 		case "char":
-			return new StringColumnDef(tableName, name, type, pos, encoding);
+			return new StringColumnDef(tableName, name, type, pos, charset);
 		case "tinyblob":
 		case "blob":
 		case "mediumblob":
@@ -186,8 +186,8 @@ public abstract class ColumnDef {
 		this.pos = i;
 	}
 
-	public String getEncoding() {
-		return this.encoding;
+	public String getCharset() {
+		return this.charset;
 	}
 
 	public boolean getSigned() {

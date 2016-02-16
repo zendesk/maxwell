@@ -13,14 +13,14 @@ import org.slf4j.LoggerFactory;
 
 public class StringColumnDef extends ColumnDef {
 	static final Logger LOGGER = LoggerFactory.getLogger(StringColumnDef.class);
-	public StringColumnDef(String tableName, String name, String type, int pos, String encoding) {
+	public StringColumnDef(String tableName, String name, String type, int pos, String charset) {
 		super(tableName, name, type, pos);
-		this.encoding = encoding;
+		this.charset = charset;
 	}
 
-	public void setDefaultEncoding(String e) {
-		if ( this.encoding == null )
-		  this.encoding = e;
+	public void setDefaultCharset(String e) {
+		if ( this.charset == null )
+		  this.charset = e;
 	}
 
 	@Override
@@ -34,7 +34,7 @@ public class StringColumnDef extends ColumnDef {
 	public String toSQL(Object value) {
 		byte[] b = (byte[]) value;
 
-		if ( getEncoding().equals("utf8") || getEncoding().equals("utf8mb4")) {
+		if ( getCharset().equals("utf8") || getCharset().equals("utf8mb4")) {
 			return quoteString(new String(b));
 		} else {
 			return "x'" +  Hex.encodeHexString( b ) + "'";
@@ -42,8 +42,8 @@ public class StringColumnDef extends ColumnDef {
 	}
 
 	// this could obviously be more complete.
-	private Charset charsetForEncoding() {
-		switch(encoding.toLowerCase()) {
+	private Charset charsetForCharset() {
+		switch(charset.toLowerCase()) {
 		case "utf8": case "utf8mb4":
 			return Charset.forName("UTF-8");
 		case "latin1": case "ascii":
@@ -51,7 +51,7 @@ public class StringColumnDef extends ColumnDef {
 		case "ucs2":
 			return Charset.forName("UTF-16");
 		default:
-			LOGGER.warn("warning: unhandled character set '" + encoding + "'");
+			LOGGER.warn("warning: unhandled character set '" + charset + "'");
 			return null;
 		}
 	}
@@ -63,10 +63,10 @@ public class StringColumnDef extends ColumnDef {
 		}
 
 		byte[] b = (byte[])value;
-		if ( encoding.equals("binary") ) {
+		if ( charset.equals("binary") ) {
 			return Base64.encodeBase64String(b);
 		} else {
-			return new String(b, charsetForEncoding());
+			return new String(b, charsetForCharset());
 		}
 	}
 

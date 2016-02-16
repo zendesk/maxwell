@@ -46,17 +46,17 @@ public class SchemaStore {
 		this.schemaDatabaseName = dbName;
 		this.schemaInsert = connection
 				.prepareStatement(
-						"INSERT INTO `schemas` SET binlog_file = ?, binlog_position = ?, server_id = ?, encoding = ?",
+						"INSERT INTO `schemas` SET binlog_file = ?, binlog_position = ?, server_id = ?, charset = ?",
 						Statement.RETURN_GENERATED_KEYS);
 		this.databaseInsert = connection
 				.prepareStatement(
-						"INSERT INTO `databases` SET schema_id = ?, name = ?, encoding=?",
+						"INSERT INTO `databases` SET schema_id = ?, name = ?, charset=?",
 						Statement.RETURN_GENERATED_KEYS);
 		this.tableInsert = connection
 				.prepareStatement(
-						"INSERT INTO `tables` SET schema_id = ?, database_id = ?, name = ?, encoding=?, pk=?",
+						"INSERT INTO `tables` SET schema_id = ?, database_id = ?, name = ?, charset=?, pk=?",
 						Statement.RETURN_GENERATED_KEYS);
-		this.columnInsertSQL = "INSERT INTO `columns` (schema_id, table_id, name, encoding, coltype, is_signed, enum_values) "
+		this.columnInsertSQL = "INSERT INTO `columns` (schema_id, table_id, name, charset, coltype, is_signed, enum_values) "
 				+ " VALUES (?, ?, ?, ?, ?, ?, ?)";
 	}
 
@@ -113,15 +113,15 @@ public class SchemaStore {
 
 	public Long saveSchema() throws SQLException {
 		Long schemaId = executeInsert(schemaInsert, position.getFile(),
-				position.getOffset(), serverID, schema.getEncoding());
+				position.getOffset(), serverID, schema.getCharset());
 
 		ArrayList<Object> columnData = new ArrayList<Object>();
 
 		for (Database d : schema.getDatabases()) {
-			Long dbId = executeInsert(databaseInsert, schemaId, d.getName(), d.getEncoding());
+			Long dbId = executeInsert(databaseInsert, schemaId, d.getName(), d.getCharset());
 
 			for (Table t : d.getTableList()) {
-				Long tableId = executeInsert(tableInsert, schemaId, dbId, t.getName(), t.getEncoding(), t.getPKString());
+				Long tableId = executeInsert(tableInsert, schemaId, dbId, t.getName(), t.getCharset(), t.getPKString());
 
 
 				for (ColumnDef c : t.getColumnList()) {
@@ -135,7 +135,7 @@ public class SchemaStore {
 					columnData.add(schemaId);
 					columnData.add(tableId);
 					columnData.add(c.getName());
-					columnData.add(c.getEncoding());
+					columnData.add(c.getCharset());
 					columnData.add(c.getType());
 					columnData.add(c.getSigned() ? 1 : 0);
 					columnData.add(enumValuesSQL);
@@ -236,7 +236,7 @@ public class SchemaStore {
 		}
 
 		ArrayList<Database> databases = new ArrayList<>();
-		this.schema = new Schema(databases, schemaRS.getString("encoding"), sensitivity);
+		this.schema = new Schema(databases, schemaRS.getString("charset"), sensitivity);
 		this.position = new BinlogPosition(schemaRS.getInt("binlog_position"),
 				schemaRS.getString("binlog_file"));
 
@@ -249,7 +249,7 @@ public class SchemaStore {
 		ResultSet dbRS = p.executeQuery();
 
 		while (dbRS.next()) {
-			this.schema.addDatabase(restoreDatabase(dbRS.getInt("id"), dbRS.getString("name"), dbRS.getString("encoding")));
+			this.schema.addDatabase(restoreDatabase(dbRS.getInt("id"), dbRS.getString("name"), dbRS.getString("charset")));
 		}
 
 		if ( this.schema.findDatabase("mysql") == null ) {
@@ -264,28 +264,28 @@ public class SchemaStore {
 			this.schema_id = saveSchema();
 	}
 
-	private Database restoreDatabase(int id, String name, String encoding) throws SQLException {
+	private Database restoreDatabase(int id, String name, String charset) throws SQLException {
 		Statement s = connection.createStatement();
-		Database d = new Database(name, encoding);
+		Database d = new Database(name, charset);
 
 		ResultSet tRS = s.executeQuery("SELECT * from `tables` where database_id = " + id + " ORDER by id");
 
 		while (tRS.next()) {
 			String tName = tRS.getString("name");
-			String tEncoding = tRS.getString("encoding");
+			String tCharset = tRS.getString("charset");
 			String tPKs = tRS.getString("pk");
 
 			int tID = tRS.getInt("id");
 
-			restoreTable(d, tName, tID, tEncoding, tPKs);
+			restoreTable(d, tName, tID, tCharset, tPKs);
 		}
 		return d;
 	}
 
-	private void restoreTable(Database d, String name, int id, String encoding, String pks) throws SQLException {
+	private void restoreTable(Database d, String name, int id, String charset, String pks) throws SQLException {
 		Statement s = connection.createStatement();
 
-		Table t = d.buildTable(name, encoding);
+		Table t = d.buildTable(name, charset);
 
 		ResultSet cRS = s.executeQuery("SELECT * from `columns` where table_id = " + id + " ORDER by id");
 
@@ -296,7 +296,7 @@ public class SchemaStore {
 				enumValues = StringUtils.splitByWholeSeparatorPreserveAllTokens(cRS.getString("enum_values"), ",");
 
 			ColumnDef c = ColumnDef.build(t.getName(),
-					cRS.getString("name"), cRS.getString("encoding"),
+					cRS.getString("name"), cRS.getString("charset"),
 					cRS.getString("coltype"), i++,
 					cRS.getInt("is_signed") == 1,
 					enumValues);
@@ -444,6 +444,13 @@ public class SchemaStore {
 		if ( !getTableColumns("bootstrap", c).containsKey("total_rows") ) {
 			performAlter(c, "alter table `bootstrap` add column total_rows bigint unsigned not null default 0 after inserted_rows");
 			performAlter(c, "alter table `bootstrap` modify column inserted_rows bigint unsigned not null default 0");
+		}
+
+		if ( !getTableColumns("schemas", c).containsKey("charset")) {
+			String[] charsetTables = { "schemas", "databases", "tables", "columns" };
+			for ( String table : charsetTables ) {
+				performAlter(c, "alter table `" + table + "` change `encoding` `charset` varchar(255)");
+			}
 		}
 	}
 

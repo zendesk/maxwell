@@ -13,14 +13,14 @@ public class Table {
 	private String name;
 
 	private Database database;
-	private final String encoding;
+	private final String charset;
 	private List<String> pkColumnNames;
 	private HashMap<String, Integer> columnOffsetMap;
 
-	public Table(Database d, String name, String encoding, List<ColumnDef> list, List<String> pks) {
+	public Table(Database d, String name, String charset, List<ColumnDef> list, List<String> pks) {
 		this.database = d;
 		this.name = name;
-		this.encoding = encoding;
+		this.charset = charset;
 		this.columnList = list;
 
 		if ( pks == null )
@@ -89,7 +89,7 @@ public class Table {
 			list.add(c.copy());
 		}
 
-		return new Table(database, name, encoding, list, pkColumnNames);
+		return new Table(database, name, charset, list, pkColumnNames);
 	}
 
 	public void rename(String tableName) {
@@ -122,11 +122,11 @@ public class Table {
 									  + StringUtils.join(other.getEnumValues(), ",")
 									  + " in " + nameB);
 
-				} else if ( !Objects.equals(column.getEncoding(), other.getEncoding()) ) {
-					diffs.add(colName + "has an encoding mismatch, "
-						+ "'" + column.getEncoding() + "'"
+				} else if ( !Objects.equals(column.getCharset(), other.getCharset()) ) {
+					diffs.add(colName + "has an charset mismatch, "
+						+ "'" + column.getCharset() + "'"
 						+ " vs "
-						+ "'" + other.getEncoding() + "'"
+						+ "'" + other.getCharset() + "'"
 						+ " in " + nameB);
 
 				}
@@ -139,10 +139,10 @@ public class Table {
 	}
 
 	public void diff(List<String> diffs, Table other, String nameA, String nameB) {
-		if ( !this.getEncoding().equals(other.getEncoding()) ) {
-			diffs.add(this.fullName() + " differs in encoding: "
-					  + nameA + " is " + this.getEncoding() + " but "
-					  + nameB + " is " + other.getEncoding());
+		if ( !this.getCharset().equals(other.getCharset()) ) {
+			diffs.add(this.fullName() + " differs in charset: "
+					  + nameA + " is " + this.getCharset() + " but "
+					  + nameB + " is " + other.getCharset());
 		}
 
 		if ( !this.getPKString().equals(other.getPKString())) {
@@ -161,10 +161,10 @@ public class Table {
 		}
 	}
 
-	public void setDefaultColumnEncodings() {
+	public void setDefaultColumnCharsets() {
 		for ( ColumnDef c : columnList ) {
 			if ( c instanceof StringColumnDef ) {
-				((StringColumnDef) c).setDefaultEncoding(this.getEncoding());
+				((StringColumnDef) c).setDefaultCharset(this.getCharset());
 			}
 		}
 	}
@@ -189,11 +189,11 @@ public class Table {
 		this.database = database;
 	}
 
-	public String getEncoding() {
-		if ( encoding == null ) {
-			return this.database.getEncoding();
+	public String getCharset() {
+		if ( charset == null ) {
+			return this.database.getCharset();
 		} else {
-		    return encoding;
+			return charset;
 		}
 	}
 

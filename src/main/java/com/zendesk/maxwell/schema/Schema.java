@@ -7,12 +7,12 @@ import java.util.List;
 
 public class Schema {
 	private final ArrayList<Database> databases;
-	private final String encoding;
+	private final String charset;
 	private final CaseSensitivity sensitivity;
 
-	public Schema(List<Database> databases, String encoding, CaseSensitivity sensitivity) {
+	public Schema(List<Database> databases, String charset, CaseSensitivity sensitivity) {
 		this.sensitivity = sensitivity;
-		this.encoding = encoding;
+		this.charset = charset;
 		this.databases = new ArrayList<>();
 
 		for ( Database d : databases )
@@ -53,7 +53,7 @@ public class Schema {
 			newDBs.add(d.copy());
 		}
 
-		return new Schema(newDBs, this.encoding, this.sensitivity);
+		return new Schema(newDBs, this.charset, this.sensitivity);
 	}
 
 	private void diffDBList(List<String> diff, Schema a, Schema b, String nameA, String nameB, boolean recurse) {
@@ -80,8 +80,8 @@ public class Schema {
 		return diff(that, "a", "b").size() == 0;
 	}
 
-	public String getEncoding() {
-		return encoding;
+	public String getCharset() {
+		return charset;
 	}
 
 }
