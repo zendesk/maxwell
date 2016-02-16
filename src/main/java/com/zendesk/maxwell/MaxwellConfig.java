@@ -26,6 +26,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public final Properties kafkaProperties;
 	public String kafkaTopic;
+	public final Properties awsClientProperties;
+	public String kinesisStream;
 	public String producerType;
 	public String kafkaPartitionHash;
 	public String kafkaPartitionKey;
@@ -41,6 +43,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public MaxwellConfig() { // argv is only null in tests
 		this.kafkaProperties = new Properties();
+		this.awsClientProperties = new Properties();
 		this.replayMode = false;
 		this.replicationMysql = new MaxwellMysqlConfig();
 		this.maxwellMysql = new MaxwellMysqlConfig();
@@ -73,7 +76,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_3" );
 
-		parser.accepts( "producer", "producer type: stdout|file|kafka" ).withRequiredArg();
+		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis" ).withRequiredArg();
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
 		parser.accepts( "kafka_partition_by", "database|table|primary_key, kafka producer assigns partition by hashing the specified parameter").withRequiredArg();
@@ -158,6 +161,10 @@ public class MaxwellConfig extends AbstractConfig {
 		if ( options.has("kafka.bootstrap.servers"))
 			this.kafkaProperties.setProperty("bootstrap.servers", (String) options.valueOf("kafka.bootstrap.servers"));
 
+		//TODO: Add any required / default kinesis args
+		if ( options.has("kinesis_stream"))
+			this.kinesisStream = (String) options.valueOf("kinesis_stream");
+
 		if ( options.has("kafka_topic"))
 			this.kafkaTopic = (String) options.valueOf("kafka_topic");
 
@@ -232,6 +239,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.bootstrapperType = p.getProperty("bootstrapper");
 		this.outputFile      = p.getProperty("output_file");
 		this.kafkaTopic      = p.getProperty("kafka_topic");
+		this.kinesisStream      = p.getProperty("kinesis_stream");
 		this.kafkaPartitionHash = p.getProperty("kafka_partition_hash", "default");
 		this.kafkaPartitionKey = p.getProperty("kafka_partition_by", "database");
 		this.includeDatabases = p.getProperty("include_dbs");
@@ -252,11 +260,15 @@ public class MaxwellConfig extends AbstractConfig {
 			if ( k.startsWith("kafka.")) {
 				this.kafkaProperties.setProperty(k.replace("kafka.", ""), p.getProperty(k));
 			}
+			if ( k.startsWith("kinesis.")) {
+				this.awsClientProperties.setProperty(k.replace("aws.", ""), p.getProperty(k));
+			}
 		}
 
 	}
 
 	private void setDefaults() {
+		//TODO: Need to update defaults config of kinesis
 		if ( this.producerType == null ) {
 			this.producerType = "stdout";
 		} else if ( this.producerType.equals("kafka") ) {
@@ -339,5 +351,9 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public Properties getKafkaProperties() {
 		return this.kafkaProperties;
+	}
+
+	public Properties getAwsProperties() {
+		return this.awsClientProperties;
 	}
 }

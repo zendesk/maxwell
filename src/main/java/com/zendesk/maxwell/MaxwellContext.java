@@ -173,6 +173,9 @@ public class MaxwellContext {
 			return new MaxwellKafkaProducer(this, this.config.getKafkaProperties(), this.config.kafkaTopic);
 		case "profiler":
 			return new ProfilerProducer(this);
+		case "kinesis":
+			//Pass additional configs
+			return new KinesisProducer(this, this.config.getAwsProperties(), this.config.kinesisStream);
 		case "stdout":
 		default:
 			return new StdoutProducer(this);
