@@ -5,11 +5,11 @@ import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
 
 public class DatabaseDrop extends SchemaChange {
-	public String dbName;
+	public String database;
 	public boolean ifExists;
 
-	public DatabaseDrop(String dbName, boolean ifExists) {
-		this.dbName = dbName;
+	public DatabaseDrop(String database, boolean ifExists) {
+		this.database = database;
 		this.ifExists = ifExists;
 	}
 
@@ -17,17 +17,17 @@ public class DatabaseDrop extends SchemaChange {
 	public Schema apply(Schema originalSchema) throws SchemaSyncError {
 		Schema newSchema = originalSchema.copy();
 
-		Database database = newSchema.findDatabase(dbName);
+		Database d = newSchema.findDatabase(database);
 
-		if ( database == null ) {
+		if ( d == null ) {
 			if ( ifExists ) { // ignore missing databases
 				return originalSchema;
 			} else {
-				throw new SchemaSyncError("Can't drop missing database: " + dbName);
+				throw new SchemaSyncError("Can't drop missing database: " + database);
 			}
 		}
 
-		newSchema.getDatabases().remove(database);
+		newSchema.getDatabases().remove(d);
 		return newSchema;
 	}
 

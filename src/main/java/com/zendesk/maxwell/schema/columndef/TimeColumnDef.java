@@ -5,8 +5,8 @@ import java.sql.Time;
 import com.google.code.or.common.util.MySQLConstants;
 
 public class TimeColumnDef extends ColumnDef {
-	public TimeColumnDef(String tableName, String name, String type, int pos) {
-		super(tableName, name, type, pos);
+	public TimeColumnDef(String name, String type, int pos) {
+		super(name, type, pos);
 	}
 
 	@Override
@@ -23,6 +23,11 @@ public class TimeColumnDef extends ColumnDef {
 	@Override
 	public Object asJSON(Object value) {
 		return String.valueOf((Time) value);
+	}
+
+	@Override
+	public ColumnDef copy() {
+		return new TimeColumnDef(name, type, pos);
 	}
 
 }

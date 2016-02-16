@@ -5,8 +5,8 @@ import java.math.BigDecimal;
 import com.google.code.or.common.util.MySQLConstants;
 
 public class DecimalColumnDef extends ColumnDef {
-	public DecimalColumnDef(String tableName, String name, String type, int pos) {
-		super(tableName, name, type, pos);
+	public DecimalColumnDef(String name, String type, int pos) {
+		super(name, type, pos);
 	}
 
 	@Override
@@ -19,6 +19,11 @@ public class DecimalColumnDef extends ColumnDef {
 		BigDecimal d = (BigDecimal) value;
 
 		return d.toEngineeringString();
+	}
+
+	@Override
+	public ColumnDef copy() {
+		return new DecimalColumnDef(name, type, pos);
 	}
 
 }

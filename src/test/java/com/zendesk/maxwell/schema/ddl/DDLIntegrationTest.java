@@ -153,7 +153,7 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 		testIntegration(sql);
 	}
 	@Test
-	public void testDatabaseEncoding() throws SQLException, SchemaSyncError, IOException {
+	public void testDatabaseCharset() throws SQLException, SchemaSyncError, IOException {
 		String sql[] = {
 		   "create DATABASE test_latin1 character set='latin1'",
 		   "create TABLE `test_latin1`.`latin1_table` ( id int(11) unsigned, str varchar(255) )",
@@ -162,6 +162,15 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 		     + "str_latin1 varchar(255) character set latin1) charset 'utf8'"
 		};
 
+		testIntegration(sql);
+	}
+
+	@Test
+	public void testConvertCharset() throws Exception {
+		String sql[] = {
+			"CREATE TABLE t ( a varchar(255) character set latin1, b varchar(255) character set latin2, c blob, d varbinary(255), e varchar(255) binary)",
+			"ALTER TABLE t convert to character set 'utf8'"
+		};
 		testIntegration(sql);
 	}
 
@@ -242,7 +251,7 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 	}
 
 	@Test
-	public void testASCIIEncoding() throws Exception {
+	public void testASCIICharset() throws Exception {
 		String sql[] = {
 			"create TABLE t1( a varchar(255) ASCII, b enum('a', 'b') ASCII )"
 		};

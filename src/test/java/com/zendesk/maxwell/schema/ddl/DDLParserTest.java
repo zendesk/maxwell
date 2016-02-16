@@ -15,9 +15,7 @@ import com.zendesk.maxwell.AbstractMaxwellTest;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.junit.*;
 
-import com.zendesk.maxwell.schema.columndef.BigIntColumnDef;
-import com.zendesk.maxwell.schema.columndef.IntColumnDef;
-import com.zendesk.maxwell.schema.columndef.StringColumnDef;
+import com.zendesk.maxwell.schema.columndef.*;
 
 public class DDLParserTest {
 	public String getSQLDir() {
@@ -74,7 +72,7 @@ public class DDLParserTest {
 		IntColumnDef i = (IntColumnDef) m.definition;
 		assertThat(i.getName(), is("int"));
 		assertThat(i.getType(), is("int"));
-		assertThat(i.getSigned(), is(false));
+		assertThat(i.isSigned(), is(false));
 	}
 
 	@Test
@@ -83,11 +81,10 @@ public class DDLParserTest {
 
 		AddColumnMod m = (AddColumnMod) a.columnMods.get(0);
 		assertThat(m.name, is("baz"));
-		assertThat(m.definition.getTableName(), is("fie"));
 
 		BigIntColumnDef b = (BigIntColumnDef) m.definition;
 		assertThat(b.getType(), is("bigint"));
-		assertThat(b.getSigned(), is(true));
+		assertThat(b.isSigned(), is(true));
 		assertThat(b.getName(), is("baz"));
 	}
 
@@ -97,11 +94,10 @@ public class DDLParserTest {
 
 		AddColumnMod m = (AddColumnMod) a.columnMods.get(0);
 		assertThat(m.name, is("mocha"));
-		assertThat(m.definition.getTableName(), is("no"));
 
 		StringColumnDef b = (StringColumnDef) m.definition;
 		assertThat(b.getType(), is("varchar"));
-		assertThat(b.getEncoding(), is("latin1"));
+		assertThat(b.getCharset(), is("latin1"));
 	}
 
 	@Test
@@ -111,7 +107,7 @@ public class DDLParserTest {
 		AddColumnMod m = (AddColumnMod) a.columnMods.get(0);
 		StringColumnDef b = (StringColumnDef) m.definition;
 		assertThat(b.getType(), is("text"));
-		assertThat(b.getEncoding(), is("utf8"));
+		assertThat(b.getCharset(), is("utf8"));
 	}
 
 	@Test
@@ -137,7 +133,7 @@ public class DDLParserTest {
 		AddColumnMod m = (AddColumnMod) a.columnMods.get(0);
 		StringColumnDef b = (StringColumnDef) m.definition;
 		assertThat(b.getType(), is("text"));
-		assertThat(b.getEncoding(), is("utf8"));
+		assertThat(b.getCharset(), is("utf8"));
 	}
 
 	@Test
@@ -303,8 +299,8 @@ public class DDLParserTest {
 	public void testCreateTable() {
 		TableCreate c = parseCreate("CREATE TABLE `foo` ( id int(11) auto_increment not null, `textcol` mediumtext character set 'utf8' not null )");
 
-		assertThat(c.dbName,  is("default_db"));
-		assertThat(c.tableName, is("foo"));
+		assertThat(c.database,  is("default_db"));
+		assertThat(c.table, is("foo"));
 
 		assertThat(c.columns.size(), is(2));
 		assertThat(c.columns.get(0).getName(), is("id"));
@@ -360,7 +356,7 @@ public class DDLParserTest {
 		TableCreate c = parseCreate("CREATE TABLE `foo` LIKE `bar`.`baz`");
 
 		assertThat(c, not(nullValue()));
-		assertThat(c.tableName, is("foo"));
+		assertThat(c.table, is("foo"));
 
 		assertThat(c.likeDB,    is("bar"));
 		assertThat(c.likeTable, is("baz"));
@@ -372,8 +368,8 @@ public class DDLParserTest {
 		assertThat(changes.size(), is(2));
 
 		TableDrop d = (TableDrop) changes.get(0);
-		assertThat(d.tableName, is("bar"));
-		assertThat(d.dbName, is("foo"));
+		assertThat(d.table, is("bar"));
+		assertThat(d.database, is("foo"));
 
 	}
 
@@ -381,15 +377,15 @@ public class DDLParserTest {
 	public void testCreateDatabase() {
 		List<SchemaChange> changes = parse("CREATE DATABASE if not exists `foo` default character set='latin1'");
 		DatabaseCreate create = (DatabaseCreate) changes.get(0);
-		assertThat(create.dbName, is("foo"));
-		assertThat(create.encoding, is("latin1"));
+		assertThat(create.database, is("foo"));
+		assertThat(create.charset, is("latin1"));
 	}
 
 	@Test
 	public void testCreateSchema() {
 		List<SchemaChange> changes = parse("CREATE SCHEMA if not exists `foo`");
 		DatabaseCreate create = (DatabaseCreate) changes.get(0);
-		assertThat(create.dbName, is("foo"));
+		assertThat(create.database, is("foo"));
 	}
 
 	@Test
@@ -419,15 +415,20 @@ public class DDLParserTest {
 	@Test
 	public void testCharsetPositionIndependence() {
 		TableCreate create = parseCreate("CREATE TABLE `foo` (id varchar(1) NOT NULL character set 'foo')");
-		assertThat(create.columns.get(0).encoding, is("foo"));
+		ColumnDef c = create.columns.get(0);
+		assertThat(c, is(instanceOf(StringColumnDef.class)));
+
+		assertThat(((StringColumnDef) c).getCharset(), is("foo"));
 
 		create = parseCreate("CREATE TABLE `foo` (id varchar(1) character set 'foo' NOT NULL)");
-		assertThat(create.columns.get(0).encoding, is("foo"));
+		c = create.columns.get(0);
+		assertThat(c, is(instanceOf(StringColumnDef.class)));
+		assertThat(((StringColumnDef) c).getCharset(), is("foo"));
 	}
 
 	@Test
 	public void testCreateTableNamedPrimaryKey() {
-		/* not documented, but accepted and ignored to name the primary key. */
+		/* not documented, but accepted and ignored to table the primary key. */
 		TableCreate create = parseCreate("CREATE TABLE db (foo char(60) binary DEFAULT '' NOT NULL, PRIMARY KEY Host (foo,Db,User))");
 		assertThat(create, is(notNullValue()));
 		assertThat(create.pks.size(), is(3));

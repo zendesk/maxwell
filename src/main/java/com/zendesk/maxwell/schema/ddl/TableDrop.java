@@ -6,32 +6,32 @@ import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.Table;
 
 public class TableDrop extends SchemaChange {
-	final String dbName;
-	final String tableName;
+	public String database;
+	final String table;
 	final boolean ifExists;
 
-	public TableDrop(String dbName, String tableName, boolean ifExists) {
-		this.dbName = dbName;
-		this.tableName = tableName;
+	public TableDrop(String database, String table, boolean ifExists) {
+		this.database = database;
+		this.table = table;
 		this.ifExists = ifExists;
 	}
 	@Override
 	public Schema apply(Schema originalSchema) throws SchemaSyncError {
 		Schema newSchema = originalSchema.copy();
 
-		Database d = newSchema.findDatabase(this.dbName);
+		Database d = newSchema.findDatabase(this.database);
 
 		// it's perfectly legal to say drop table if exists `random_garbage_db`.`random_garbage_table`
 		Table t = null;
 		if (d != null) {
-			t = d.findTable(this.tableName);
+			t = d.findTable(this.table);
 		}
 
 		if ( t == null ) {
 			if ( ifExists ) { // DROP TABLE IF NOT EXISTS ; ignore missing tables
 				return originalSchema;
 			} else {
-				throw new SchemaSyncError("Can't drop non-existant table: " + this.dbName + "." + this.tableName);
+				throw new SchemaSyncError("Can't drop non-existant table: " + this.database + "." + this.table);
 			}
 		}
 
@@ -44,7 +44,7 @@ public class TableDrop extends SchemaChange {
 		if ( filter == null ) {
 			return false;
 		} else {
-			return filter.isTableBlacklisted(this.tableName);
+			return filter.isTableBlacklisted(this.table);
 		}
 	}
 
