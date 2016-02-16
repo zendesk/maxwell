@@ -71,6 +71,7 @@ public class AbstractIntegrationTest extends AbstractMaxwellTest {
 		}
 	}
 
+	static final String JSON_PATTERN = "^\\s*\\->\\s*\\{.*";
 	protected SQLAndJSON parseJSONTestFile(String fname) throws Exception {
 		SQLAndJSON ret = new SQLAndJSON();
 		File file = new File(fname);
@@ -89,7 +90,7 @@ public class AbstractIntegrationTest extends AbstractMaxwellTest {
 			}
 
 			if ( buffer != null ) {
-				if (line.matches("^\\s+.*$")) { // leading whitespace -- continuation of previous line
+				if (line.matches("^\\s+.*$") && !line.matches(JSON_PATTERN)) { // leading whitespace -- continuation of previous line
 					buffer = buffer + " " + line.trim();
 				} else {
 					if ( bufferIsJSON )	{
@@ -102,7 +103,7 @@ public class AbstractIntegrationTest extends AbstractMaxwellTest {
 			}
 
 			if ( buffer == null ) {
-				if ( line.matches("^\\s*\\->\\s*\\{.*") ) {
+				if ( line.matches(JSON_PATTERN) ) {
 					line = line.replaceAll("^\\s*\\->\\s*", "");
 					bufferIsJSON = true;
 				} else {
