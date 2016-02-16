@@ -78,7 +78,7 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 
 	@Test
 	public void testAlterDatabase() throws Exception {
-	String sql[] = {
+		String sql[] = {
 			"create DATABASE test_db default character set='utf8'",
 			"alter schema test_db collate = 'binary'",
 			"alter schema test_db character set = 'latin2'"
