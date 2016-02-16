@@ -67,10 +67,10 @@ public class Database {
 	}
 
 	public void diff(List<String> diffs, Database other, String nameA, String nameB) {
-		if ( !this.encoding.toLowerCase().equals(other.getEncoding().toLowerCase()) ) {
-			diffs.add("-- Database " + this.getName() + " had different encoding: "
-					+ this.getEncoding() + " in " + nameA + ", "
-					+ other.getEncoding() + " in " + nameB);
+		if ( !this.charset.toLowerCase().equals(other.getCharset().toLowerCase()) ) {
+			diffs.add("-- Database " + this.getName() + " had different charset: "
+					+ this.getCharset() + " in " + nameA + ", "
+					+ other.getCharset() + " in " + nameB);
 		}
 		diffTableList(diffs, this, other, nameA, nameB, true);
 		diffTableList(diffs, other, this, nameB, nameA, false);
