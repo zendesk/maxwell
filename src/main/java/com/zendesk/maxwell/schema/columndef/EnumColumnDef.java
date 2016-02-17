@@ -2,10 +2,9 @@ package com.zendesk.maxwell.schema.columndef;
 
 import com.google.code.or.common.util.MySQLConstants;
 
-public class EnumColumnDef extends ColumnDef {
-	public EnumColumnDef(String tableName, String name, String type, int pos, String[] enumValues) {
-		super(tableName, name, type, pos);
-		this.enumValues = enumValues;
+public class EnumColumnDef extends EnumeratedColumnDef {
+	public EnumColumnDef(String name, String type, int pos, String[] enumValues) {
+		super(name, type, pos, enumValues);
 	}
 
 	@Override
@@ -21,6 +20,11 @@ public class EnumColumnDef extends ColumnDef {
 	@Override
 	public String asJSON(Object value) {
 		return asString(value);
+	}
+
+	@Override
+	public ColumnDef copy() {
+		return new EnumColumnDef(name, type, pos, enumValues);
 	}
 
 	private String asString(Object value) {

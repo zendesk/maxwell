@@ -5,28 +5,28 @@ import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
 
 public class DatabaseAlter extends SchemaChange {
-	private final String dbName;
-	public String characterSet;
+	public String database;
+	public String charset;
 
-	public DatabaseAlter(String dbName) {
-		this.dbName = dbName;
+	public DatabaseAlter(String database) {
+		this.database = database;
 	}
 
 	@Override
 	public Schema apply(Schema originalSchema) throws SchemaSyncError {
-		if ( characterSet == null )
+		if ( charset == null )
 			return originalSchema;
 
 		Schema schema = originalSchema.copy();
-		Database d = schema.findDatabase(dbName);
+		Database d = schema.findDatabase(database);
 
 		if ( d == null )
-			throw new SchemaSyncError("Couldn't find database: " + dbName + " while applying database alter");
+			throw new SchemaSyncError("Couldn't find database: " + database + " while applying database alter");
 
-		if ( d.getEncoding().equals(characterSet) )
+		if ( d.getCharset().equals(charset) )
 			return originalSchema;
 
-		d.setEncoding(characterSet);
+		d.setCharset(charset);
 		return schema;
 	}
 

@@ -54,7 +54,7 @@ public class SchemaCapturer {
 
 		while ( rs.next() ) {
 			String dbName = rs.getString("SCHEMA_NAME");
-			String encoding = rs.getString("DEFAULT_CHARACTER_SET_NAME");
+			String charset = rs.getString("DEFAULT_CHARACTER_SET_NAME");
 
 			if ( includeDatabases.size() > 0 && !includeDatabases.contains(dbName))
 				continue;
@@ -62,14 +62,14 @@ public class SchemaCapturer {
 			if ( IGNORED_DATABASES.contains(dbName) )
 				continue;
 
-			databases.add(captureDatabase(dbName, encoding));
+			databases.add(captureDatabase(dbName, charset));
 		}
 
 		LOGGER.debug("Finished capturing schema");
-		return new Schema(databases, captureDefaultEncoding(), this.sensitivity);
+		return new Schema(databases, captureDefaultCharset(), this.sensitivity);
 	}
 
-	private String captureDefaultEncoding() throws SQLException {
+	private String captureDefaultCharset() throws SQLException {
 		ResultSet rs = connection.createStatement().executeQuery("select @@character_set_server");
 		rs.next();
 		return rs.getString("@@character_set_server");
@@ -81,13 +81,13 @@ public class SchemaCapturer {
 			+ "JOIN  information_schema.COLLATION_CHARACTER_SET_APPLICABILITY AS CCSA"
 			+ " ON TABLES.TABLE_COLLATION = CCSA.COLLATION_NAME WHERE TABLES.TABLE_SCHEMA = ?";
 
-	private Database captureDatabase(String dbName, String dbEncoding) throws SQLException, SchemaSyncError {
+	private Database captureDatabase(String dbName, String dbCharset) throws SQLException, SchemaSyncError {
 		PreparedStatement p = connection.prepareStatement(tblSQL);
 
 		p.setString(1, dbName);
 		ResultSet rs = p.executeQuery();
 
-		Database db = new Database(dbName, dbEncoding);
+		Database db = new Database(dbName, dbCharset);
 
 		while ( rs.next() ) {
 			Table t = db.buildTable(rs.getString("TABLE_NAME"), rs.getString("CHARACTER_SET_NAME"));
@@ -121,7 +121,7 @@ public class SchemaCapturer {
 				enumValues = extractEnumValues(expandedType);
 			}
 
-			t.addColumn(ColumnDef.build(t.getName(), colName, colEnc, colType, colPos, colSigned, enumValues));
+			t.addColumn(ColumnDef.build(colName, colEnc, colType, colPos, colSigned, enumValues));
 			i++;
 		}
 		captureTablePK(t);

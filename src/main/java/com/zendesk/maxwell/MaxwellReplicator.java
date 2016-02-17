@@ -303,7 +303,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 
 	private void processQueryEvent(QueryEvent event) throws SchemaSyncError, SQLException, IOException {
-		// get encoding of the alter event somehow? or just ignore it.
+		// get charset of the alter event somehow? or just ignore it.
 		String dbName = event.getDatabaseName().toString();
 		String sql = event.getSql().toString();
 

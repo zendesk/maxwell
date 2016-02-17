@@ -89,14 +89,14 @@ module MavenFetcher
         when "project.version"
           first_text(@doc.root, "version") || first_text(@doc.root, "parent/version")
         else
-          first_text(@doc.root, "properties/#{k}")
+          first_text(@doc.root, "properties/#{k}") || parent.get_var(k)
         end
     end
 
     def subst(text)
       text.gsub(/\$\{(.*?)\}/) do |_|
         value = get_var($1)
-        raise "unknown variable: #{var}" if value.nil?
+        raise "unknown variable: #{$1}" if value.nil?
         value
       end
     end

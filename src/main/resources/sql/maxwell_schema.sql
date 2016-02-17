@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS `schemas` (
   binlog_file varchar(255),
   binlog_position int unsigned,
   server_id int unsigned,
-  encoding varchar(255),
+  charset varchar(255),
   deleted tinyint(1) not null default 0
 );
 
@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS `databases` (
   id        int unsigned auto_increment NOT NULL primary key,
   schema_id int unsigned,
   name      varchar(255),
-  encoding  varchar(255),
+  charset   varchar(255),
   index (schema_id)
 );
 
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS `tables` (
   schema_id   int unsigned,
   database_id int unsigned,
   name      varchar(255),
-  encoding  varchar(255),
+  charset   varchar(255),
   pk        varchar(1024) charset 'utf8',
   index (schema_id),
   index (database_id)
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS `columns` (
   schema_id   int unsigned,
   table_id    int unsigned,
   name        varchar(255),
-  encoding    varchar(255),
+  charset     varchar(255),
   coltype     varchar(255),
   is_signed   tinyint(1) unsigned,
   enum_values text,

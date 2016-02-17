@@ -28,7 +28,7 @@ import com.zendesk.maxwell.schema.columndef.StringColumnDef;
 
 public class ColumnDefTest {
 	private ColumnDef build(String type, boolean signed) {
-		return ColumnDef.build("foo", "bar", "", type, 1, signed, null);
+		return ColumnDef.build("bar", "", type, 1, signed, null);
 	}
 
 	@Before
@@ -103,7 +103,7 @@ public class ColumnDefTest {
 
 	@Test
 	public void testUTF8String() {
-		ColumnDef d = ColumnDef.build("foo", "bar", "utf8", "varchar", 1, false, null);
+		ColumnDef d = ColumnDef.build("bar", "utf8", "varchar", 1, false, null);
 
 		assertThat(d, instanceOf(StringColumnDef.class));
 		byte input[] = "He∆˚ß∆".getBytes();
@@ -114,7 +114,7 @@ public class ColumnDefTest {
 	public void TestUTF8MB4String() {
 		String utf8_4 = "😁";
 
-		ColumnDef d = ColumnDef.build("foo", "bar", "utf8mb4", "varchar", 1, false, null);
+		ColumnDef d = ColumnDef.build("bar", "utf8mb4", "varchar", 1, false, null);
 		byte input[] = utf8_4.getBytes();
 		assertThat(d.toSQL(input), is("'😁'"));
 	}
@@ -127,7 +127,7 @@ public class ColumnDefTest {
 		input[2] = Byte.valueOf((byte) 126);
 		input[3] = Byte.valueOf((byte) 126);
 
-		ColumnDef d = ColumnDef.build("foo", "bar", "ascii", "varchar", 1, false, null);
+		ColumnDef d = ColumnDef.build("bar", "ascii", "varchar", 1, false, null);
 		assertThat((String) d.asJSON(input), is("~~~~"));
 	}
 
@@ -139,7 +139,7 @@ public class ColumnDefTest {
 		input[2] = Byte.valueOf((byte) 169);
 		input[3] = Byte.valueOf((byte) 169);
 
-		ColumnDef d = ColumnDef.build("foo", "bar", "latin1", "varchar", 1, false, null);
+		ColumnDef d = ColumnDef.build("bar", "latin1", "varchar", 1, false, null);
 
 		assertThat((String) d.asJSON(input), is("©©©©"));
 	}
