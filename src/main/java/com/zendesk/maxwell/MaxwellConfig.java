@@ -29,8 +29,6 @@ public class MaxwellConfig extends AbstractConfig {
 
 	//Config specific to kinesis as output sink
 	public String kinesisEndpoint;
-	public String awsAccessKey;
-	public String awsSecretKey;
 	public String kinesisStream;
 
 	public String producerType;
@@ -87,8 +85,6 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning").withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
 		parser.accepts( "kinesis_endpoint", "optionally provide kinesis endpoint").withOptionalArg();
-		parser.accepts( "aws_access_key", "optionally provide aws access key for kinesis use").withOptionalArg();
-		parser.accepts( "aws_secret_key", "optionally provide aws secret key for kinesis use").withOptionalArg();
 		parser.accepts( "kinesis_stream", "optionally provide kinesis stream name").withOptionalArg();
 
 		parser.accepts( "__separator_4" );
@@ -171,10 +167,6 @@ public class MaxwellConfig extends AbstractConfig {
 
 		if ( options.has("kinesis_endpoint"))
 			this.kinesisEndpoint = (String) options.valueOf("kinesis_endpoint");
-		if ( options.has("aws_access_key"))
-			this.awsAccessKey = (String) options.valueOf("aws_access_key");
-		if ( options.has("aws_secret_key"))
-			this.awsSecretKey = (String) options.valueOf("aws_secret_key");
 		if ( options.has("kinesis_stream"))
 			this.kinesisStream = (String) options.valueOf("kinesis_stream");
 
@@ -255,8 +247,6 @@ public class MaxwellConfig extends AbstractConfig {
 
 		//Kinesis & aws specific configs
 		this.kinesisEndpoint    = p.getProperty("kinesis_endpoint");
-		this.awsAccessKey       = p.getProperty("aws_access_key");
-		this.awsSecretKey       = p.getProperty("aws_secret_key");
 		this.kinesisStream      = p.getProperty("kinesis_stream", "maxwell");
 
 		this.kafkaPartitionHash = p.getProperty("kafka_partition_hash", "default");
@@ -309,8 +299,8 @@ public class MaxwellConfig extends AbstractConfig {
 				&& this.outputFile == null) {
 			usage("please specify --output_file=FILE to use the file producer");
 		} else if ( this.producerType.equals("kinesis")
-		        && (this.awsAccessKey == null || this.awsSecretKey == null || this.kinesisEndpoint == null)) {
-			usage("You must provide aws access, secret & endpoint for using kinesis as output sink!");
+		        && this.kinesisEndpoint == null) {
+			usage("You must provide aws kinesis endpoint for using kinesis as output sink!");
 		}
 
 		if ( this.maxwellMysql.port == null )

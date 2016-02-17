@@ -18,7 +18,7 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicLong;
 import java.sql.SQLException;
 
-import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.regions.Region;
 import com.amazonaws.services.kinesis.model.InvalidArgumentException;
 import com.amazonaws.services.kinesis.model.ProvisionedThroughputExceededException;
@@ -31,8 +31,6 @@ import com.amazonaws.services.kinesis.AmazonKinesisClient;
 import com.amazonaws.services.kinesis.model.ResourceNotFoundException;
 import com.amazonaws.services.kinesis.model.InvalidArgumentException;
 import com.amazonaws.services.kinesis.model.ProvisionedThroughputExceededException;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.kinesis.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,17 +45,10 @@ public class KinesisProducer extends AbstractProducer {
     public KinesisProducer(
             MaxwellContext context,
             String kinesisEndpoint,
-            String awsAccessKey,
-            String awsSecretKey,
             String kinesisStream) {
         super(context);
 
-        BasicAWSCredentials awsCred = new BasicAWSCredentials(
-                awsAccessKey,
-                awsSecretKey
-                );
-
-        this.kinesis = new AmazonKinesisClient(awsCred);
+        this.kinesis = new AmazonKinesisClient(new DefaultAWSCredentialsProviderChain());
         kinesis.setEndpoint(kinesisEndpoint);
 
         this.stream = kinesisStream;

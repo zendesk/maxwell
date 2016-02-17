@@ -177,8 +177,6 @@ public class MaxwellContext {
 			return new KinesisProducer(
 			        this,
 			        this.config.kinesisEndpoint,
-			        this.config.awsAccessKey,
-			        this.config.awsSecretKey,
 			        this.config.kinesisStream
 			        );
 		case "stdout":
