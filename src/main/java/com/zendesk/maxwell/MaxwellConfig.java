@@ -26,6 +26,13 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public final Properties kafkaProperties;
 	public String kafkaTopic;
+
+	//Config specific to kinesis as output sink
+	public String kinesisEndpoint;
+	public String awsAccessKey;
+	public String awsSecretKey;
+	public String kinesisStream;
+
 	public String producerType;
 	public String kafkaPartitionHash;
 	public String kafkaPartitionKey;
@@ -73,12 +80,16 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_3" );
 
-		parser.accepts( "producer", "producer type: stdout|file|kafka" ).withRequiredArg();
+		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis" ).withRequiredArg();
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
 		parser.accepts( "kafka_partition_by", "database|table|primary_key, kafka producer assigns partition by hashing the specified parameter").withRequiredArg();
 		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning").withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
+		parser.accepts( "kinesis_endpoint", "optionally provide kinesis endpoint").withOptionalArg();
+		parser.accepts( "aws_access_key", "optionally provide aws access key for kinesis use").withOptionalArg();
+		parser.accepts( "aws_secret_key", "optionally provide aws secret key for kinesis use").withOptionalArg();
+		parser.accepts( "kinesis_stream", "optionally provide kinesis stream name").withOptionalArg();
 
 		parser.accepts( "__separator_4" );
 
@@ -158,6 +169,15 @@ public class MaxwellConfig extends AbstractConfig {
 		if ( options.has("kafka.bootstrap.servers"))
 			this.kafkaProperties.setProperty("bootstrap.servers", (String) options.valueOf("kafka.bootstrap.servers"));
 
+		if ( options.has("kinesis_endpoint"))
+			this.kinesisEndpoint = (String) options.valueOf("kinesis_endpoint");
+		if ( options.has("aws_access_key"))
+			this.awsAccessKey = (String) options.valueOf("aws_access_key");
+		if ( options.has("aws_secret_key"))
+			this.awsSecretKey = (String) options.valueOf("aws_secret_key");
+		if ( options.has("kinesis_stream"))
+			this.kinesisStream = (String) options.valueOf("kinesis_stream");
+
 		if ( options.has("kafka_topic"))
 			this.kafkaTopic = (String) options.valueOf("kafka_topic");
 
@@ -232,6 +252,13 @@ public class MaxwellConfig extends AbstractConfig {
 		this.bootstrapperType = p.getProperty("bootstrapper");
 		this.outputFile      = p.getProperty("output_file");
 		this.kafkaTopic      = p.getProperty("kafka_topic");
+
+		//Kinesis & aws specific configs
+		this.kinesisEndpoint    = p.getProperty("kinesis_endpoint");
+		this.awsAccessKey       = p.getProperty("aws_access_key");
+		this.awsSecretKey       = p.getProperty("aws_secret_key");
+		this.kinesisStream      = p.getProperty("kinesis_stream", "maxwell");
+
 		this.kafkaPartitionHash = p.getProperty("kafka_partition_hash", "default");
 		this.kafkaPartitionKey = p.getProperty("kafka_partition_by", "database");
 		this.includeDatabases = p.getProperty("include_dbs");
@@ -281,6 +308,9 @@ public class MaxwellConfig extends AbstractConfig {
 		} else if ( this.producerType.equals("file")
 				&& this.outputFile == null) {
 			usage("please specify --output_file=FILE to use the file producer");
+		} else if ( this.producerType.equals("kinesis")
+		        && (this.awsAccessKey == null || this.awsSecretKey == null || this.kinesisEndpoint == null)) {
+			usage("You must provide aws access, secret & endpoint for using kinesis as output sink!");
 		}
 
 		if ( this.maxwellMysql.port == null )
