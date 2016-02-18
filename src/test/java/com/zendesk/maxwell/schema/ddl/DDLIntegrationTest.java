@@ -166,6 +166,15 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 	}
 
 	@Test
+	public void testConvertCharset() throws Exception {
+		String sql[] = {
+			"CREATE TABLE t ( a varchar(255) character set latin1, b varchar(255) character set latin2, c blob, d varbinary(255), e varchar(255) binary)",
+			"ALTER TABLE t convert to character set 'utf8'"
+		};
+		testIntegration(sql);
+	}
+
+	@Test
 	public void testPKs() throws SQLException, SchemaSyncError, IOException {
 		String sql[] = {
 		   "create TABLE `test_pks` ( id int(11) unsigned primary KEY, str varchar(255) )",
