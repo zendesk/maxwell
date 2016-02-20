@@ -23,6 +23,10 @@ public class StringColumnDef extends ColumnDef {
 		  this.encoding = e;
 	}
 
+	public void setCharset(String encoding) {
+		this.encoding = encoding;
+	}
+
 	@Override
 	public boolean matchesMysqlType(int type) {
 		return type == MySQLConstants.TYPE_BLOB ||
