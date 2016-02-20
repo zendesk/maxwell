@@ -18,17 +18,15 @@ public class DatabaseCreate extends SchemaChange {
 	}
 
 	@Override
-	public SchemaChange resolve(Schema schema) throws SchemaSyncError {
-		String chset;
-		Database d = schema.findDatabase(database);
-
-		if ( d == null ) {
+	public DatabaseCreate resolve(Schema schema) throws SchemaSyncError {
+		if ( schema.hasDatabase(database) ) {
 			if ( ifNotExists )
 				return null;
 			else
 				throw new SchemaSyncError("Unexpectedly asked to create existing database " + database);
 		}
 
+		String chset;
 		if ( this.charset == null )
 			chset = schema.getCharset();
 		else
@@ -42,9 +40,7 @@ public class DatabaseCreate extends SchemaChange {
 	public Schema apply(Schema originalSchema) throws SchemaSyncError {
 		Schema newSchema = originalSchema.copy();
 
-		Database existingDatabase = originalSchema.findDatabase(database);
-
-		if ( existingDatabase != null && !ifNotExists )
+		if ( newSchema.hasDatabase(database) && !ifNotExists )
 			throw new SchemaSyncError("Unexpectedly asked to create existing database " + database);
 
 		newSchema.addDatabase(new Database(database, charset));

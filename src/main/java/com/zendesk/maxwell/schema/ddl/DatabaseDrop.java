@@ -8,9 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class DatabaseDrop extends SchemaChange {
 	public String database;
-
-	@JsonProperty("if-exists")
-	public boolean ifExists;
+	private boolean ifExists;
 
 	public DatabaseDrop() { }
 	public DatabaseDrop(String database, boolean ifExists) {
@@ -19,20 +17,25 @@ public class DatabaseDrop extends SchemaChange {
 	}
 
 	@Override
+	public DatabaseDrop resolve(Schema schema) throws SchemaSyncError {
+		if ( !schema.hasDatabase(database) ) {
+			if ( ifExists )
+				return null;
+			else
+				throw new SchemaSyncError("Can't drop missing database: " + database);
+		} else {
+			return new DatabaseDrop(this.database, false);
+		}
+	}
+
+	@Override
 	public Schema apply(Schema originalSchema) throws SchemaSyncError {
 		Schema newSchema = originalSchema.copy();
 
-		Database d = newSchema.findDatabase(database);
+		if ( !newSchema.hasDatabase(database) && !ifExists )
+			throw new SchemaSyncError("Can't drop missing database: " + database);
 
-		if ( d == null ) {
-			if ( ifExists ) { // ignore missing databases
-				return originalSchema;
-			} else {
-				throw new SchemaSyncError("Can't drop missing database: " + database);
-			}
-		}
-
-		newSchema.getDatabases().remove(d);
+		newSchema.getDatabases().remove(newSchema.findDatabase(database));
 		return newSchema;
 	}
 

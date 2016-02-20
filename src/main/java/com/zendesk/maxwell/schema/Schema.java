@@ -42,6 +42,10 @@ public class Schema {
 		return null;
 	}
 
+	public boolean hasDatabase(String string) {
+		return findDatabase(string) != null;
+	}
+
 	public void addDatabase(Database d) {
 		d.setSensitivity(sensitivity);
 		this.databases.add(d);
