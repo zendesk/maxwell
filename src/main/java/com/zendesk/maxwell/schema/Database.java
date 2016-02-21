@@ -48,6 +48,11 @@ public class Database {
 		return null;
 	}
 
+	public boolean hasTable(String name) {
+		return findTable(name) != null;
+	}
+
+
 	public Database copy() {
 		Database d = new Database(this.name, this.charset);
 		for ( Table t: this.tableList ) {

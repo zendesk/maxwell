@@ -1,30 +1,27 @@
 package com.zendesk.maxwell.schema.ddl;
 
 import java.util.ArrayList;
+import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.zendesk.maxwell.MaxwellFilter;
 import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
+import com.zendesk.maxwell.schema.columndef.StringColumnDef;
 
 public class TableCreate extends SchemaChange {
 	public String database;
 	public String table;
-	public ArrayList<ColumnDef> columns;
+	public List<ColumnDef> columns;
 
 	@JsonProperty("primary-key")
-	public ArrayList<String> pks;
+	public List<String> pks;
 	public String charset;
 
-	@JsonProperty("like-db")
 	public String likeDB;
-
-	@JsonProperty("like-table")
 	public String likeTable;
-
-	@JsonProperty("if-not-exists")
-	public boolean ifNotExists;
+	private boolean ifNotExists;
 
 	public TableCreate() {
 		this.ifNotExists = false;
@@ -39,33 +36,35 @@ public class TableCreate extends SchemaChange {
 	}
 
 	@Override
-	public Schema apply(Schema originalSchema) throws SchemaSyncError {
-		Schema newSchema = originalSchema.copy();
-
-		Database d = newSchema.findDatabase(this.database);
+	public TableCreate resolve(Schema schema) throws SchemaSyncError {
+		Database d = schema.findDatabase(this.database);
 		if ( d == null )
 			throw new SchemaSyncError("Couldn't find database " + this.database);
 
-		if ( likeDB != null && likeTable != null ) {
-			applyCreateLike(newSchema, d);
-		} else {
-			Table existingTable = d.findTable(this.table);
-			if (existingTable != null) {
-				if (ifNotExists) {
-					return originalSchema;
-				} else {
-					throw new SchemaSyncError("Unexpectedly asked to create existing table " + this.table);
-				}
-			}
-			Table t = d.buildTable(this.table, this.charset, this.columns, this.pks);
-			t.setDefaultColumnCharsets();
+		boolean tableExists = d.hasTable(table);
+
+		if ( tableExists ) {
+			if ( ifNotExists )
+				return null;
+			else
+				throw new SchemaSyncError("Couldn't find database " + this.database);
 		}
 
-		return newSchema;
+		TableCreate resolved = new TableCreate(database, table, false);
+
+		if ( likeDB != null && likeTable != null ) {
+			resolveLikeTable(schema, resolved);
+		} else {
+			resolved.columns = columns;
+			resolved.pks = pks;
+			resolveCharsets(d.getCharset(), resolved);
+		}
+
+		return resolved;
 	}
 
-	private void applyCreateLike(Schema newSchema, Database d) throws SchemaSyncError {
-		Database sourceDB = newSchema.findDatabase(likeDB);
+	private void resolveLikeTable(Schema schema, TableCreate resolved) throws SchemaSyncError {
+		Database sourceDB = schema.findDatabase(likeDB);
 
 		if ( sourceDB == null )
 			throw new SchemaSyncError("Couldn't find database " + likeDB);
@@ -74,9 +73,42 @@ public class TableCreate extends SchemaChange {
 		if ( sourceTable == null )
 			throw new SchemaSyncError("Couldn't find table " + likeDB + "." + likeTable);
 
-		Table t = sourceTable.copy();
-		t.rename(this.table);
-		d.addTable(t);
+		sourceTable = sourceTable.copy();
+
+		resolved.columns = sourceTable.getColumnList();
+		resolved.pks = sourceTable.getPKList();
+		resolved.charset = sourceTable.getCharset();
+	}
+
+	private void resolveCharsets(String dbCharset, TableCreate resolved) {
+		if ( this.charset != null )
+			resolved.charset = this.charset;
+		else
+			// inherit charset from database
+			resolved.charset = dbCharset;
+
+		for ( ColumnDef c : resolved.columns ) {
+			if ( c instanceof StringColumnDef ) {
+				StringColumnDef sc = (StringColumnDef) c;
+				if ( sc.charset == null )
+					sc.charset = resolved.charset;
+			}
+		}
+	}
+
+	@Override
+	public Schema apply(Schema originalSchema) throws SchemaSyncError {
+		Schema newSchema = originalSchema.copy();
+
+		Database d = newSchema.findDatabase(this.database);
+		if ( d == null )
+			throw new SchemaSyncError("Couldn't find database " + this.database);
+
+		if ( d.hasTable(this.table) )
+			throw new SchemaSyncError("Unexpectedly asked to create existing table " + this.table);
+
+		Table t = d.buildTable(this.table, this.charset, this.columns, this.pks);
+		return newSchema;
 	}
 
 	@Override
