@@ -18,21 +18,17 @@ public class DatabaseDrop extends SchemaChange {
 
 	@Override
 	public DatabaseDrop resolve(Schema schema) throws SchemaSyncError {
-		if ( !schema.hasDatabase(database) ) {
-			if ( ifExists )
-				return null;
-			else
-				throw new SchemaSyncError("Can't drop missing database: " + database);
-		} else {
-			return new DatabaseDrop(this.database, false);
-		}
+		if ( ifExists && !schema.hasDatabase(database) )
+			return null;
+
+		return new DatabaseDrop(this.database, false);
 	}
 
 	@Override
 	public Schema apply(Schema originalSchema) throws SchemaSyncError {
 		Schema newSchema = originalSchema.copy();
 
-		if ( !newSchema.hasDatabase(database) && !ifExists )
+		if ( !newSchema.hasDatabase(database) )
 			throw new SchemaSyncError("Can't drop missing database: " + database);
 
 		newSchema.getDatabases().remove(newSchema.findDatabase(database));

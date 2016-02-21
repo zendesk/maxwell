@@ -52,6 +52,11 @@ public class Database {
 		return findTable(name) != null;
 	}
 
+	public void removeTable(String name) {
+		Table t = findTable(name);
+		if ( t != null )
+			tableList.remove(t);
+	}
 
 	public Database copy() {
 		Database d = new Database(this.name, this.charset);

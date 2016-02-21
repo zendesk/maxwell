@@ -41,6 +41,11 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 			List<SchemaChange> changes = SchemaChange.parse("shard_1", alterSQL);
 			if ( changes != null ) {
 				for ( SchemaChange change : changes ) {
+					change = change.resolve(topSchema);
+
+					if ( change == null )
+						continue;
+
 					// go to and from json
 					String json = m.writeValueAsString(change);
 					SchemaChange fromJson = m.readValue(json, SchemaChange.class);

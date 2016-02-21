@@ -316,7 +316,9 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 		for ( SchemaChange change : changes ) {
 			if ( !change.isBlacklisted(this.filter) ) {
-				updatedSchema = change.apply(updatedSchema);
+				SchemaChange resolved = change.resolve(updatedSchema);
+				if ( resolved != null )
+					updatedSchema = resolved.apply(updatedSchema);
 			} else {
 				LOGGER.debug("ignoring blacklisted schema change");
 			}

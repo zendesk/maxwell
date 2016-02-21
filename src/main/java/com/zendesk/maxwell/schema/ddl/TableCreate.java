@@ -21,7 +21,7 @@ public class TableCreate extends SchemaChange {
 
 	public String likeDB;
 	public String likeTable;
-	private boolean ifNotExists;
+	protected boolean ifNotExists;
 
 	public TableCreate() {
 		this.ifNotExists = false;
@@ -41,14 +41,9 @@ public class TableCreate extends SchemaChange {
 		if ( d == null )
 			throw new SchemaSyncError("Couldn't find database " + this.database);
 
-		boolean tableExists = d.hasTable(table);
 
-		if ( tableExists ) {
-			if ( ifNotExists )
-				return null;
-			else
-				throw new SchemaSyncError("Couldn't find database " + this.database);
-		}
+		if ( ifNotExists && d.hasTable(table) )
+			return null;
 
 		TableCreate resolved = new TableCreate(database, table, false);
 
