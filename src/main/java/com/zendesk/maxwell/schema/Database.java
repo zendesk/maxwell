@@ -108,7 +108,7 @@ public class Database {
 	}
 
 	public void addTable(Table table) {
-		table.setDatabase(this);
+		table.setDatabase(this.name);
 		this.tableList.add(table);
 	}
 
@@ -119,7 +119,7 @@ public class Database {
 		if ( sensitivity == CaseSensitivity.CONVERT_TO_LOWER )
 			name = name.toLowerCase();
 
-		Table t = new Table(this, name, charset, list, pks);
+		Table t = new Table(this.name, name, charset, list, pks);
 		this.tableList.add(t);
 		return t;
 	}

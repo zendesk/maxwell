@@ -164,11 +164,12 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 	@Test
 	public void testDatabaseCharset() throws SQLException, SchemaSyncError, IOException {
 		String sql[] = {
-		   "create DATABASE test_latin1 character set='latin1'",
-		   "create TABLE `test_latin1`.`latin1_table` ( id int(11) unsigned, str varchar(255) )",
-		   "create TABLE `test_latin1`.`utf8_table` ( id int(11) unsigned, "
-		     + "str_utf8 varchar(255), "
-		     + "str_latin1 varchar(255) character set latin1) charset 'utf8'"
+			"create DATABASE test_latin1 character set='latin1'",
+			"create TABLE `test_latin1`.`latin1_table` ( id int(11) unsigned, str varchar(255) )",
+			"create TABLE `test_latin1`.`utf8_table` ( id int(11) unsigned, "
+				+ "str_utf8 varchar(255), "
+				+ "str_latin1 varchar(255) character set latin1) charset 'utf8'",
+			"alter DATABASE test_latin1 character set='latin2'"
 		};
 
 		testIntegration(sql);

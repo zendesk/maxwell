@@ -19,6 +19,8 @@ public class MaxwellBootstrapUtility {
 
 	private static final long UPDATE_PERIOD_MILLIS = 250;
 	private static final long DISPLAY_PROGRESS_WARMUP_MILLIS = 5000;
+	private static final long NON_CONSOLE_DISPLAY_LINE_COUNT_MULTIPLE = 100000;
+
 	private static Console console = System.console();
 
 	private boolean isComplete = false;
@@ -187,7 +189,7 @@ public class MaxwellBootstrapUtility {
 			long predictedTotalMillis = ( long ) ((elapsedMillis / ( float ) (count - initialCount)) * (total - initialCount));
 			long remainingMillis = predictedTotalMillis - elapsedMillis;
 			String duration = prettyDuration(remainingMillis, elapsedMillis);
-			displayLine(String.format("%d / %d (%.2f%%) %s", count, total, ( count * 100.0 ) / total, duration));
+			displayLine(String.format("%d / %d (%.2f%%) %s", count, total, ( count * 100.0 ) / total, duration), count);
 		} else {
 			displayLine("waiting for bootstrap to stop... ");
 		}
@@ -211,6 +213,14 @@ public class MaxwellBootstrapUtility {
 			return String.format("- %02ds remaining ", s);
 		} else {
 			return "";
+		}
+	}
+
+	private void displayLine(String line, long count) {
+		if ( console == null && count > 0 && count % NON_CONSOLE_DISPLAY_LINE_COUNT_MULTIPLE == 0 ) {
+			System.out.println(line);
+		} else {
+			displayLine(line);
 		}
 	}
 
