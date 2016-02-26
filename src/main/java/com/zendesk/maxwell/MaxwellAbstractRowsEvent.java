@@ -25,7 +25,7 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 	private final AbstractRowEvent event;
 
 	protected final Table table;
-	protected final Database database;
+	protected final String database;
 	protected final MaxwellFilter filter;
 
 	public MaxwellAbstractRowsEvent(AbstractRowEvent e, Table table, MaxwellFilter f) {
@@ -46,7 +46,7 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 		return table;
 	}
 
-	public Database getDatabase() {
+	public String getDatabase() {
 		return database;
 	}
 
@@ -169,7 +169,7 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 	protected RowMap buildRowMap() {
 		return new RowMap(
 				getType(),
-				getDatabase().getName(),
+				this.database,
 				getTable().getName(),
 				getHeader().getTimestamp() / 1000,
 				table.getPKList(),

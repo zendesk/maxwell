@@ -151,7 +151,7 @@ public class MaxwellFilter {
 	}
 
 	public boolean matches(MaxwellAbstractRowsEvent e) {
-		String database = e.getTable().getDatabase().getName();
+		String database = e.getTable().getDatabase();
 		String table = e.getTable().getName();
 		return ( database.equals("maxwell") && table.equals("bootstrap") )
 			|| ( matchesDatabase(database) && matchesTable(table) && matchesAnyRows(e) );
