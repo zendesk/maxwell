@@ -49,8 +49,8 @@ public class DDLResolverTest extends AbstractMaxwellTest {
 		DatabaseCreate c = parse("CREATE DATABASE `foofoo`", null, DatabaseCreate.class);
 		assertThat(c.charset, is(nullValue()));
 
-		c = c.resolve(topSchema);
-		assertThat(c.charset, is("latin1"));
+		ResolvedDatabaseCreate resolved = c.resolve(topSchema);
+		assertThat(resolved.charset, is("latin1"));
 	}
 
 	@Test
@@ -60,7 +60,7 @@ public class DDLResolverTest extends AbstractMaxwellTest {
 		DatabaseCreate c = parse("CREATE DATABASE if not exists already_there", null, DatabaseCreate.class);
 		assertThat(c.resolve(schema), is(nullValue()));
 
-		c = parse("CREATE DATABASE if not exists not_there", null, DatabaseCreate.class).resolve(schema);
+		ResolvedDatabaseCreate resolved = parse("CREATE DATABASE if not exists not_there", null, DatabaseCreate.class).resolve(schema);
 	}
 
 	@Test
@@ -81,11 +81,11 @@ public class DDLResolverTest extends AbstractMaxwellTest {
 		server.executeQuery("create database test_enc character set 'latin2'");
 
 		TableCreate c = parse("CREATE TABLE `test_enc`.`te` ( c varchar, d varchar character set 'utf8' )", "test_enc", TableCreate.class);
-		c = c.resolve(getSchema());
+		ResolvedTableCreate rc = c.resolve(getSchema());
 
-		assertThat(c.charset, is("latin2"));
-		assertThat(((StringColumnDef) c.columns.get(0)).charset, is("latin2"));
-		assertThat(((StringColumnDef) c.columns.get(1)).charset, is("utf8"));
+		assertThat(rc.table.charset, is("latin2"));
+		assertThat(((StringColumnDef) rc.table.getColumnList().get(0)).charset, is("latin2"));
+		assertThat(((StringColumnDef) rc.table.getColumnList().get(1)).charset, is("utf8"));
 
 	}
 
@@ -94,11 +94,10 @@ public class DDLResolverTest extends AbstractMaxwellTest {
 		server.executeQuery("alter database `test` character set 'utf8'");
 		server.executeQuery("create table `test`.`test_alike` ( ii int, aa char, PRIMARY KEY (ii))");
 		TableCreate c = parse("CREATE TABLE alike_2 like `test`.`test_alike`", "test", TableCreate.class);
-
-		c = c.resolve(getSchema());
-		assertThat(c.columns.size(), is(2));
-		assertThat(c.pks.get(0), is("ii"));
-		assertThat(((StringColumnDef) c.columns.get(1)).charset, is("utf8"));
+		ResolvedTableCreate rc = c.resolve(getSchema());
+		assertThat(rc.table.getColumnList().size(), is(2));
+		assertThat(rc.table.pkColumnNames.get(0), is("ii"));
+		assertThat(((StringColumnDef) rc.table.getColumnList().get(1)).charset, is("utf8"));
 	}
 
 	@Test

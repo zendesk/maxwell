@@ -53,11 +53,11 @@ public class TableAlter extends SchemaChange {
 		Table table = oldTable.copy();
 
 		if ( newTableName != null && newDatabase != null ) {
-			Database destDB = schema.findDatabase(this.newDatabase);
-			if ( destDB == null )
+			if ( !schema.hasDatabase(this.newDatabase) )
 				throw new SchemaSyncError("Couldn't find database " + this.database);
 
-			table.rename(newTableName);
+			table.name = newTableName;
+			table.database = newDatabase;
 		}
 
 		for (ColumnMod mod : columnMods) {
@@ -65,12 +65,9 @@ public class TableAlter extends SchemaChange {
 		}
 
 		if ( convertCharset != null ) {
-			for ( ColumnDef c : table.getColumnList() ) {
-				if ( c instanceof StringColumnDef ) {
-					StringColumnDef sc = (StringColumnDef) c;
-					if ( !sc.getCharset().toLowerCase().equals("binary") )
-						sc.setCharset(convertCharset);
-				}
+			for ( StringColumnDef sc : table.getStringColumns() ) {
+				if ( !sc.getCharset().toLowerCase().equals("binary") )
+					sc.setCharset(convertCharset);
 			}
 		}
 
@@ -80,11 +77,6 @@ public class TableAlter extends SchemaChange {
 		table.setDefaultColumnCharsets();
 
 		return new ResolvedTableAlter(this.database, this.table, oldTable, table);
-	}
-
-	@Override
-	public Schema apply(Schema originalSchema) throws SchemaSyncError {
-		throw new RuntimeException("resolve TableAlter before calling apply()");
 	}
 
 	@Override

@@ -1,16 +1,14 @@
 package com.zendesk.maxwell.schema.ddl;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.zendesk.maxwell.MaxwellFilter;
-import com.zendesk.maxwell.schema.Database;
-import com.zendesk.maxwell.schema.Schema;
+import com.zendesk.maxwell.schema.*;
+import com.zendesk.maxwell.schema.ddl.ResolvedDatabaseCreate;
 
 public class DatabaseCreate extends SchemaChange {
 	public String database;
 	private boolean ifNotExists;
 	public String charset;
 
-	public DatabaseCreate() { } // for deserialization
 	public DatabaseCreate(String database, boolean ifNotExists, String charset) {
 		this.database = database;
 		this.ifNotExists = ifNotExists;
@@ -18,7 +16,7 @@ public class DatabaseCreate extends SchemaChange {
 	}
 
 	@Override
-	public DatabaseCreate resolve(Schema schema) throws SchemaSyncError {
+	public ResolvedDatabaseCreate resolve(Schema schema) throws SchemaSyncError {
 		if ( ifNotExists && schema.hasDatabase(database) )
 			return null;
 
@@ -28,19 +26,7 @@ public class DatabaseCreate extends SchemaChange {
 		else
 			chset = this.charset;
 
-		return new DatabaseCreate(database, false, chset);
-	}
-
-
-	@Override
-	public Schema apply(Schema originalSchema) throws SchemaSyncError {
-		Schema newSchema = originalSchema.copy();
-
-		if ( newSchema.hasDatabase(database) )
-			throw new SchemaSyncError("Unexpectedly asked to create existing database " + database);
-
-		newSchema.addDatabase(new Database(database, charset));
-		return newSchema;
+		return new ResolvedDatabaseCreate(database, chset);
 	}
 
 	@Override

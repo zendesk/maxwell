@@ -22,6 +22,7 @@ import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaStore;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.ddl.SchemaChange;
+import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 import com.zendesk.maxwell.schema.ddl.SchemaSyncError;
 
 public class MaxwellReplicator extends RunLoopProcess {
@@ -316,7 +317,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 		for ( SchemaChange change : changes ) {
 			if ( !change.isBlacklisted(this.filter) ) {
-				SchemaChange resolved = change.resolve(updatedSchema);
+				ResolvedSchemaChange resolved = change.resolve(updatedSchema);
 				if ( resolved != null )
 					updatedSchema = resolved.apply(updatedSchema);
 			} else {

@@ -2,17 +2,14 @@ package com.zendesk.maxwell.schema.ddl;
 
 import java.util.*;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import com.zendesk.maxwell.MaxwellFilter;
-import com.zendesk.maxwell.schema.Database;
-import com.zendesk.maxwell.schema.Schema;
-import com.zendesk.maxwell.schema.Table;
+import com.zendesk.maxwell.schema.*;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
 import com.zendesk.maxwell.schema.columndef.StringColumnDef;
 
-
-public class ResolvedTableAlter extends SchemaChange {
+public class ResolvedTableAlter extends ResolvedSchemaChange {
 	public String database;
 	public String table;
 
@@ -35,28 +32,28 @@ public class ResolvedTableAlter extends SchemaChange {
 	public Schema apply(Schema originalSchema) throws SchemaSyncError {
 		Schema newSchema = originalSchema.copy();
 
-		Database database = newSchema.findDatabase(this.database);
-		if ( database == null ) {
+		Database oldDatabase = newSchema.findDatabase(this.database);
+		if ( oldDatabase == null ) {
 			throw new SchemaSyncError("Couldn't find database: " + this.database);
 		}
 
-		Table table = database.findTable(this.table);
+		Table table = oldDatabase.findTable(this.table);
 		if ( table == null ) {
 			throw new SchemaSyncError("Couldn't find table: " + this.database + "." + this.table);
 		}
 
-		database.removeTable(this.table);
-		database.addTable(newTable);
-		return newSchema;
-	}
-
-	@Override
-	public boolean isBlacklisted(MaxwellFilter filter) {
-		if ( filter == null ) {
-			return false;
-		} else {
-			return filter.isTableBlacklisted(this.table);
+		Database newDatabase;
+		if ( this.database.equals(newTable.database) )
+			newDatabase = oldDatabase;
+		else {
+			newDatabase = newSchema.findDatabase(newTable.database);
+			if ( newDatabase == null )
+				throw new SchemaSyncError("Couldn't find database: " + this.newTable.database);
 		}
+
+		oldDatabase.removeTable(this.table);
+		newDatabase.addTable(newTable);
+		return newSchema;
 	}
 }
 

@@ -1,5 +1,7 @@
 package com.zendesk.maxwell.schema.ddl;
 
+import com.zendesk.maxwell.schema.*;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.zendesk.maxwell.AbstractIntegrationTest;
@@ -24,17 +26,24 @@ public class DDLSerializationTest extends AbstractIntegrationTest {
 
 	private void TestDDLSerialization(String testFile) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
+		Schema schema = new SchemaCapturer(server.getConnection(), buildContext().getCaseSensitivity()).capture();
 
 		SQLAndJSON testResources = parseJSONTestFile(testFile);
-		ArrayList<SchemaChange> schemaChanges = new ArrayList<>();
 
+		ArrayList<ResolvedSchemaChange> schemaChanges = new ArrayList<>();
 		ArrayList<Map<String, Object>> schemaChangesAsJSON = new ArrayList<>();
 
 		for ( String sql : testResources.inputSQL ) {
-			schemaChanges.addAll(parse(sql));
+			for ( SchemaChange change : parse(sql) ) {
+				ResolvedSchemaChange resolved = change.resolve(schema);
+				if ( resolved != null ) {
+					schemaChanges.add(resolved);
+					schema = resolved.apply(schema);
+				}
+			}
 		}
 
-		for ( SchemaChange change : schemaChanges ) {
+		for ( ResolvedSchemaChange change : schemaChanges ) {
 			String json = mapper.writeValueAsString(change);
 			Map<String, Object> m = mapper.readValue(json.getBytes(), MaxwellIntegrationTest.MAP_STRING_OBJECT_REF);
 
