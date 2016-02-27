@@ -48,7 +48,7 @@ public class DDLSerializationTest extends AbstractIntegrationTest {
 			Map<String, Object> m = mapper.readValue(json.getBytes(), MaxwellIntegrationTest.MAP_STRING_OBJECT_REF);
 
 			/* test deserialization */
-			SchemaChange deserializedSchemaChange = mapper.readValue(json, SchemaChange.class);
+			ResolvedSchemaChange deserializedSchemaChange = mapper.readValue(json, ResolvedSchemaChange.class);
 			String deserializedJSON = mapper.writeValueAsString(deserializedSchemaChange);
 			Map<String, Object> m2 = mapper.readValue(deserializedJSON.getBytes(), MaxwellIntegrationTest.MAP_STRING_OBJECT_REF);
 

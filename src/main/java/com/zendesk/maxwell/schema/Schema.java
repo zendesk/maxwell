@@ -88,4 +88,7 @@ public class Schema {
 		return charset;
 	}
 
+	public CaseSensitivity getCaseSensitivity() {
+		return sensitivity;
+	};
 }

@@ -3,6 +3,7 @@ package com.zendesk.maxwell.schema.ddl;
 import java.util.ArrayList;
 import java.util.List;
 import com.zendesk.maxwell.MaxwellFilter;
+import com.zendesk.maxwell.CaseSensitivity;
 import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.Table;
@@ -38,7 +39,6 @@ public class TableCreate extends SchemaChange {
 		if ( d == null )
 			throw new SchemaSyncError("Couldn't find database " + this.database);
 
-
 		if ( ifNotExists && d.hasTable(table) )
 			return null;
 
@@ -49,6 +49,9 @@ public class TableCreate extends SchemaChange {
 			table = new Table(this.database, this.table, this.charset, this.columns, this.pks);
 			resolveCharsets(d.getCharset(), table);
 		}
+
+		if ( schema.getCaseSensitivity() == CaseSensitivity.CONVERT_TO_LOWER )
+			table.name = table.name.toLowerCase();
 
 		return new ResolvedTableCreate(table);
 	}

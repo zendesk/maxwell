@@ -4,26 +4,29 @@ ALTER table `ser3`.`tbl` add column `d` blob not null after `b`;
 -> { type: "table-alter",
      database: "ser3",
      table: "tbl",
-     column-changes: [ {
-                         type: "column-add",
-                         name: "d",
-                         position: "AFTER b",
-                         definition: {
-                           name: "d",
-                           type: "blob",
-                           charset: "binary"
-                         }
-                       }
-                      ]
-    }
-ALTER table `ser3`.`tbl` drop column `d`;
--> { type: "table-alter",
-     database: "ser3",
-     table: "tbl",
-     column-changes: [ {
-                         type: "column-drop",
-                         name: "d"
-                       }
-                     ]
-    }
-
+     old: {
+       database: "ser3",
+       table: "tbl",
+       charset: "utf8",
+       primary-key: [ "id" ],
+       columns: [
+        { name: "id", type: "mediumint",  signed: true, bits: 24 },
+        { name: "a",  type: "varchar",    charset: "latin1" },
+        { name: "b",  type: "mediumtext", charset: "utf8" },
+        { name: "c",  type: "enum",       enum-values: [ "a", "b" ] }
+       ]
+     },
+     new: {
+       database: "ser3",
+       table: "tbl",
+       charset: "utf8",
+       primary-key: [ "id" ],
+       columns: [
+        { name: "id", type: "mediumint",  signed: true, bits: 24 },
+        { name: "a",  type: "varchar",    charset: "latin1" },
+        { name: "b",  type: "mediumtext", charset: "utf8" },
+        { name: "d",  type: "blob",       charset: "binary" },
+        { name: "c",  type: "enum",       enum-values: [ "a", "b" ] }
+       ]
+     }
+   }
