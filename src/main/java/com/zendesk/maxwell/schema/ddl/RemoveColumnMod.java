@@ -3,7 +3,6 @@ package com.zendesk.maxwell.schema.ddl;
 import com.zendesk.maxwell.schema.Table;
 
 class RemoveColumnMod extends ColumnMod {
-	public RemoveColumnMod() {}
 	public RemoveColumnMod(String name) {
 		super(name);
 	}
