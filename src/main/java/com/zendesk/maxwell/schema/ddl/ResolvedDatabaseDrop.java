@@ -14,10 +14,8 @@ public class ResolvedDatabaseDrop extends ResolvedSchemaChange {
 	public Schema apply(Schema originalSchema) throws SchemaSyncError {
 		Schema newSchema = originalSchema.copy();
 
-		if ( !newSchema.hasDatabase(database) )
-			throw new SchemaSyncError("Can't drop missing database: " + database);
-
-		newSchema.getDatabases().remove(newSchema.findDatabase(database));
+		Database d = newSchema.findDatabaseOrThrow(database);
+		newSchema.getDatabases().remove(d);
 		return newSchema;
 	}
 }

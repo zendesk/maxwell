@@ -37,21 +37,13 @@ public class TableAlter extends SchemaChange {
 
 	@Override
 	public ResolvedTableAlter resolve(Schema schema) throws SchemaSyncError {
-		Database database = schema.findDatabase(this.database);
-		if ( database == null ) {
-			throw new SchemaSyncError("Couldn't find database: " + this.database);
-		}
-
-		Table oldTable = database.findTable(this.table);
-		if ( oldTable == null ) {
-			throw new SchemaSyncError("Couldn't find table: " + this.database + "." + this.table);
-		}
+		Database database = schema.findDatabaseOrThrow(this.database);
+		Table oldTable = database.findTableOrThrow(this.table);
 
 		Table table = oldTable.copy();
 
 		if ( newTableName != null && newDatabase != null ) {
-			if ( !schema.hasDatabase(this.newDatabase) )
-				throw new SchemaSyncError("Couldn't find database " + this.database);
+			schema.findDatabaseOrThrow(this.newDatabase);
 
 			table.name = newTableName;
 			table.database = newDatabase;

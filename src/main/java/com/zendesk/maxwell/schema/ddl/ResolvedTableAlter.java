@@ -32,24 +32,14 @@ public class ResolvedTableAlter extends ResolvedSchemaChange {
 	public Schema apply(Schema originalSchema) throws SchemaSyncError {
 		Schema newSchema = originalSchema.copy();
 
-		Database oldDatabase = newSchema.findDatabase(this.database);
-		if ( oldDatabase == null ) {
-			throw new SchemaSyncError("Couldn't find database: " + this.database);
-		}
-
-		Table table = oldDatabase.findTable(this.table);
-		if ( table == null ) {
-			throw new SchemaSyncError("Couldn't find table: " + this.database + "." + this.table);
-		}
+		Database oldDatabase = newSchema.findDatabaseOrThrow(this.database);
+		Table table = oldDatabase.findTableOrThrow(this.table);
 
 		Database newDatabase;
 		if ( this.database.equals(newTable.database) )
 			newDatabase = oldDatabase;
-		else {
-			newDatabase = newSchema.findDatabase(newTable.database);
-			if ( newDatabase == null )
-				throw new SchemaSyncError("Couldn't find database: " + this.newTable.database);
-		}
+		else
+			newDatabase = newSchema.findDatabaseOrThrow(newTable.database);
 
 		oldDatabase.removeTable(this.table);
 		newDatabase.addTable(newTable);

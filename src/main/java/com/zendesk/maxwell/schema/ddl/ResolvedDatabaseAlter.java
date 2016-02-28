@@ -19,10 +19,7 @@ public class ResolvedDatabaseAlter extends ResolvedSchemaChange {
 			return originalSchema;
 
 		Schema schema = originalSchema.copy();
-		Database d = schema.findDatabase(database);
-
-		if ( d == null )
-			throw new SchemaSyncError("Couldn't find database: " + database + " while applying database alter");
+		Database d = schema.findDatabaseOrThrow(database);
 
 		if ( d.getCharset().equals(charset) )
 			return originalSchema;

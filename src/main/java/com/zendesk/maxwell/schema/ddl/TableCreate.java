@@ -35,9 +35,7 @@ public class TableCreate extends SchemaChange {
 
 	@Override
 	public ResolvedTableCreate resolve(Schema schema) throws SchemaSyncError {
-		Database d = schema.findDatabase(this.database);
-		if ( d == null )
-			throw new SchemaSyncError("Couldn't find database " + this.database);
+		Database d = schema.findDatabaseOrThrow(this.database);
 
 		if ( ifNotExists && d.hasTable(table) )
 			return null;
@@ -57,14 +55,8 @@ public class TableCreate extends SchemaChange {
 	}
 
 	private Table resolveLikeTable(Schema schema) throws SchemaSyncError {
-		Database sourceDB = schema.findDatabase(likeDB);
-
-		if ( sourceDB == null )
-			throw new SchemaSyncError("Couldn't find database " + likeDB);
-
-		Table sourceTable = sourceDB.findTable(likeTable);
-		if ( sourceTable == null )
-			throw new SchemaSyncError("Couldn't find table " + likeDB + "." + likeTable);
+		Database sourceDB = schema.findDatabaseOrThrow(likeDB);
+		Table sourceTable = sourceDB.findTableOrThrow(likeTable);
 
 		Table copiedTable = sourceTable.copy();
 		copiedTable.database = this.database;

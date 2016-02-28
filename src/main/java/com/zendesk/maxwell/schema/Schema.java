@@ -1,9 +1,11 @@
 package com.zendesk.maxwell.schema;
 
 import com.zendesk.maxwell.CaseSensitivity;
+import com.zendesk.maxwell.schema.ddl.SchemaSyncError;
 
 import java.util.ArrayList;
 import java.util.List;
+
 
 public class Schema {
 	private final ArrayList<Database> databases;
@@ -40,6 +42,13 @@ public class Schema {
 		}
 
 		return null;
+	}
+
+	public Database findDatabaseOrThrow(String name) throws SchemaSyncError {
+		Database d = findDatabase(name);
+		if ( d == null )
+			throw new SchemaSyncError("Couldn't find database '" + name + "'");
+		return d;
 	}
 
 	public boolean hasDatabase(String string) {
