@@ -40,7 +40,11 @@ public class DatabaseCreate extends SchemaChange {
 
 	@Override
 	public boolean isBlacklisted(MaxwellFilter filter) {
-		return false;
+		if ( filter == null ) {
+			return false;
+		} else {
+			return filter.isDatabaseBlacklisted(database);
+		}
 	}
 
 }

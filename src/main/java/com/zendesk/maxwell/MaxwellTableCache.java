@@ -1,6 +1,7 @@
 package com.zendesk.maxwell;
 
 import java.util.HashMap;
+import java.util.HashSet;
 
 import com.google.code.or.binlog.impl.event.TableMapEvent;
 import com.zendesk.maxwell.schema.Database;
@@ -22,7 +23,7 @@ public class MaxwellTableCache {
 
 			Table tbl = db.findTable(tblName);
 
-			if ( filter != null && filter.isTableBlacklisted(tblName) )
+			if ( filter != null && filter.isTableBlacklisted(tbl.getDatabase().getName(), tblName) )
 				blacklistedTableCache.put(tableId, tblName);
 			else if ( tbl == null )
 				throw new RuntimeException("Couldn't find table " + tblName);
