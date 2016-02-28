@@ -5,9 +5,9 @@ import com.zendesk.maxwell.schema.*;
 import com.zendesk.maxwell.schema.ddl.ResolvedDatabaseCreate;
 
 public class DatabaseCreate extends SchemaChange {
-	public String database;
-	private boolean ifNotExists;
-	public String charset;
+	public final String database;
+	private final boolean ifNotExists;
+	public final String charset;
 
 	public DatabaseCreate(String database, boolean ifNotExists, String charset) {
 		this.database = database;

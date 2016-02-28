@@ -5,7 +5,7 @@ import com.zendesk.maxwell.schema.*;
 import com.zendesk.maxwell.schema.ddl.ResolvedDatabaseAlter;
 
 public class DatabaseAlter extends SchemaChange {
-	private String database;
+	public String database;
 	public String charset;
 
 	public DatabaseAlter(String database) {

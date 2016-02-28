@@ -6,8 +6,8 @@ import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.ddl.ResolvedDatabaseDrop;
 
 public class DatabaseDrop extends SchemaChange {
-	private String database;
-	private boolean ifExists;
+	public String database;
+	public boolean ifExists;
 
 	public DatabaseDrop(String database, boolean ifExists) {
 		this.database = database;

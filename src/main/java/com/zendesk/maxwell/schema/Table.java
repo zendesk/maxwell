@@ -172,12 +172,10 @@ public class Table {
 		}
 	}
 
-	@JsonIgnore
 	public String fullName() {
 		return "`" + this.database + "`." + this.name + "`";
 	}
 
-	@JsonIgnore
 	public void diff(List<String> diffs, Table other, String nameA, String nameB) {
 		if ( !this.getCharset().equals(other.getCharset()) ) {
 			diffs.add(this.fullName() + " differs in charset: "
