@@ -17,9 +17,7 @@ public class ResolvedTableCreate extends ResolvedSchemaChange {
 	public Schema apply(Schema originalSchema) throws SchemaSyncError {
 		Schema newSchema = originalSchema.copy();
 
-		Database d = newSchema.findDatabase(this.table.database);
-		if ( d == null )
-			throw new SchemaSyncError("Couldn't find database " + this.table.database);
+		Database d = newSchema.findDatabaseOrThrow(this.table.database);
 
 		if ( d.hasTable(this.table.name) )
 			throw new SchemaSyncError("Unexpectedly asked to create existing table " + this.table.name);

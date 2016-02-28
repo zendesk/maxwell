@@ -15,3 +15,30 @@ CREATE table `ser1`.`tbl1` ( id mediumint, `a` varchar(255) character set latin1
      charset: "utf8"
    }
 
+CREATE table `ser1`.`tbl2` ( id int unsigned, `a` BIT, primary key (id, a));
+->{
+    type: "table-create",
+    database: "ser1",
+    table: "tbl2",
+    columns: [
+      { name: "id", type: "int", signed: false, bits: 32 },
+      { name: "a", type: "bit" }
+    ],
+    primary-key: [ "id", "a" ],
+    charset: "utf8"
+  }
+
+CREATE database `ser1like`;
+CREATE table `ser1like`.`tbllike` LIKE `ser1`.`tbl2`;
+->{
+    type: "table-create",
+    database: "ser1like",
+    table: "tbllike",
+    columns: [
+      { name: "id", type: "int", signed: false, bits: 32 },
+      { name: "a", type: "bit" }
+    ],
+    primary-key: [ "id", "a" ],
+    charset: "utf8"
+  }
+
