@@ -1,7 +1,6 @@
 package com.zendesk.maxwell;
 
 import java.util.HashMap;
-import java.util.HashSet;
 
 import com.google.code.or.binlog.impl.event.TableMapEvent;
 import com.zendesk.maxwell.schema.Database;
