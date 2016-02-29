@@ -22,7 +22,7 @@ public class MaxwellTableCache {
 
 			Table tbl = db.findTable(tblName);
 
-			if ( filter != null && filter.isTableBlacklisted(tbl.getDatabase().getName(), tblName) )
+			if ( filter != null && filter.isTableBlacklisted(dbName, tblName) )
 				blacklistedTableCache.put(tableId, tblName);
 			else if ( tbl == null )
 				throw new RuntimeException("Couldn't find table " + tblName);
