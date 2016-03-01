@@ -30,7 +30,7 @@ public class TableDrop extends SchemaChange {
 		if ( filter == null ) {
 			return false;
 		} else {
-			return filter.isTableBlacklisted(this.table);
+			return filter.isTableBlacklisted(this.database, this.table);
 		}
 	}
 

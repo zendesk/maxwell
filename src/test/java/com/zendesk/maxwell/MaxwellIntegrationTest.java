@@ -2,7 +2,7 @@ package com.zendesk.maxwell;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
-
+import org.apache.commons.lang.ArrayUtils;
 import java.util.List;
 
 import com.zendesk.maxwell.schema.SchemaStore;
@@ -132,6 +132,42 @@ public class MaxwellIntegrationTest extends AbstractIntegrationTest {
 		assertThat(list.size(), is(1));
 
 		assertThat(list.get(0).getTable(), is("bars"));
+	}
+
+	static String blacklistSQLDDL[] = {
+		"CREATE DATABASE nodatabase",
+		"CREATE TABLE nodatabase.noseeum (i int)",
+		"CREATE TABLE nodatabase.oicu (i int)"
+	};
+
+	static String blacklistSQLDML[] = {
+		"insert into nodatabase.noseeum set i = 1",
+		"insert into nodatabase.oicu set i = 1"
+	};
+
+	@Test
+	public void testDDLTableBlacklist() throws Exception {
+		server.execute("drop database if exists nodatabase");
+		MaxwellFilter filter = new MaxwellFilter();
+		filter.blacklistTable("noseeum");
+
+		String[] allSQL = (String[])ArrayUtils.addAll(blacklistSQLDDL, blacklistSQLDML);
+
+		List<RowMap> rows = getRowsForSQL(filter, allSQL);
+		assertThat(rows.size(), is(1));
+	}
+
+	@Test
+	public void testDDLDatabaseBlacklist() throws Exception {
+		server.execute("drop database if exists nodatabase");
+
+		MaxwellFilter filter = new MaxwellFilter();
+		filter.blacklistDatabases("nodatabase");
+
+		String[] allSQL = (String[])ArrayUtils.addAll(blacklistSQLDDL, blacklistSQLDML);
+
+		List<RowMap> rows = getRowsForSQL(filter, allSQL);
+		assertThat(rows.size(), is(0));
 	}
 
 	String testAlterSQL[] = {
@@ -298,4 +334,5 @@ public class MaxwellIntegrationTest extends AbstractIntegrationTest {
 	public void testGIS() throws Exception {
 		runJSONTestFile(getSQLDir() + "/json/test_gis");
 	}
+
 }
