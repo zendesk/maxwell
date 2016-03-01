@@ -17,6 +17,7 @@ public class MaxwellFilter {
 	private final ArrayList<Pattern> excludeDatabases = new ArrayList<>();
 	private final ArrayList<Pattern> includeTables = new ArrayList<>();
 	private final ArrayList<Pattern> excludeTables = new ArrayList<>();
+	private final ArrayList<Pattern> blacklistDatabases = new ArrayList<>();
 	private final ArrayList<Pattern> blacklistTables = new ArrayList<>();
 
 	private final HashMap<String, Integer> rowFilter = new HashMap<>();
@@ -26,6 +27,7 @@ public class MaxwellFilter {
 						 String excludeDatabases,
 						 String includeTables,
 						 String excludeTables,
+						 String blacklistDatabases,
 						 String blacklistTables) throws MaxwellInvalidFilterException {
 		if ( includeDatabases != null ) {
 			for (String s : includeDatabases.split(","))
@@ -45,6 +47,11 @@ public class MaxwellFilter {
 		if ( excludeTables != null ) {
 			for (String s : excludeTables.split(","))
 				excludeTable(s);
+		}
+
+		if ( blacklistDatabases != null ) {
+			for ( String s : blacklistDatabases.split(",") )
+				blacklistDatabases(s);
 		}
 
 		if ( blacklistTables != null ) {
@@ -68,6 +75,10 @@ public class MaxwellFilter {
 
 	public void excludeTable(String name) throws MaxwellInvalidFilterException {
 		excludeTables.add(compile(name));
+	}
+
+	public void blacklistDatabases(String name) throws MaxwellInvalidFilterException {
+		blacklistDatabases.add(compile(name));
 	}
 
 	public void blacklistTable(String name) throws MaxwellInvalidFilterException {
@@ -157,8 +168,13 @@ public class MaxwellFilter {
 			|| ( matchesDatabase(database) && matchesTable(table) && matchesAnyRows(e) );
 	}
 
-	public boolean isTableBlacklisted(String tableName) {
-		return ! matchesIncludeExcludeList(emptyList, blacklistTables, tableName);
+	public boolean isDatabaseBlacklisted(String databaseName) {
+		return ! matchesIncludeExcludeList(emptyList, blacklistDatabases, databaseName);
+	}
+
+	public boolean isTableBlacklisted(String databaseName, String tableName) {
+		return isDatabaseBlacklisted(databaseName) ||
+			   ! matchesIncludeExcludeList(emptyList, blacklistTables, tableName);
 	}
 
 	private void throwUnlessEmpty(HashSet<String> set, String objType) {

@@ -374,10 +374,10 @@ given as <code>option=/regex/</code>.  The options are evaluated as follows:</p>
 <li>reject tables in <code>exclude_tables</code></li>
 </ol>
 <p>So an example like <code>--include_dbs=/foo.*/ --exclude_tables=bar</code> will include <code>footy.zab</code> and exclude <code>footy.bar</code></p>
-<p>The option <code>blacklist_tables</code> controls whether Maxwell will send updates for a table to its producer AND whether
-it captures schema changes for that table. Note that once Maxwell has been running with a table marked as blacklisted,
-you <em>must</em> continue to run Maxwell with that table blacklisted or else Maxwell will halt. If you want to stop
-blacklisting a table, you will have to drop the maxwell schema first.</p>
+<p>The option <code>blacklist_tables</code> or <code>blacklist_dbs</code> controls whether Maxwell will send updates for a table to its producer AND whether
+it captures schema changes for that table or database. Note that once Maxwell has been running with a table or database marked as blacklisted,
+you <em>must</em> continue to run Maxwell with that table or database blacklisted or else Maxwell will halt. If you want to stop
+blacklisting a table or database, you will have to drop the maxwell schema first.</p>
 <h3 id="schema-storage-host-vs-replica-host">Schema storage host vs replica host</h3>
 <hr />
 <p>Maxwell needs two sets of mysql permissions to operate properly: a mysql database in which to store schema snapshots,
