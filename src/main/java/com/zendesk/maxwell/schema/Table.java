@@ -12,14 +12,13 @@ public class Table {
 	private final List<ColumnDef> columnList;
 	int pkIndex;
 	private String name;
-
-	private Database database;
+	private String database;
 	private final String charset;
 	private List<String> pkColumnNames;
 	private HashMap<String, Integer> columnOffsetMap;
 
-	public Table(Database d, String name, String charset, List<ColumnDef> list, List<String> pks) {
-		this.database = d;
+	public Table(String database, String name, String charset, List<ColumnDef> list, List<String> pks) {
+		this.database = database;
 		this.name = name;
 		this.charset = charset;
 		this.columnList = list;
@@ -79,7 +78,7 @@ public class Table {
 		return this.pkIndex;
 	}
 
-	public Database getDatabase() {
+	public String getDatabase() {
 		return database;
 	}
 
@@ -150,7 +149,7 @@ public class Table {
 	}
 
 	public String fullName() {
-		return "`" + this.database.getName() + "`." + this.name + "`";
+		return "`" + this.database + "`." + this.name + "`";
 	}
 
 	public void diff(List<String> diffs, Table other, String nameA, String nameB) {
@@ -200,16 +199,12 @@ public class Table {
 		renumberColumns();
 	}
 
-	public void setDatabase(Database database) {
+	public void setDatabase(String database) {
 		this.database = database;
 	}
 
 	public String getCharset() {
-		if ( charset == null ) {
-			return this.database.getCharset();
-		} else {
-			return charset;
-		}
+		return charset;
 	}
 
 	public List<String> getPKList() {

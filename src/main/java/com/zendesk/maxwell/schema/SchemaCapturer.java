@@ -100,7 +100,7 @@ public class SchemaCapturer {
 
 	private void captureTable(Table t) throws SQLException, SchemaSyncError {
 		int i = 0;
-		infoSchemaStmt.setString(1, t.getDatabase().getName());
+		infoSchemaStmt.setString(1, t.getDatabase());
 		infoSchemaStmt.setString(2, t.getName());
 		ResultSet r = infoSchemaStmt.executeQuery();
 
@@ -133,7 +133,7 @@ public class SchemaCapturer {
 
 	private void captureTablePK(Table t) throws SQLException, SchemaSyncError {
 		PreparedStatement p = connection.prepareStatement(pkSQL);
-		p.setString(1, t.getDatabase().getName());
+		p.setString(1, t.getDatabase());
 		p.setString(2, t.getName());
 
 		ResultSet rs = p.executeQuery();
