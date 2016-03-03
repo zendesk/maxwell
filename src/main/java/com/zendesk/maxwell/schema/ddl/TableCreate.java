@@ -68,10 +68,7 @@ public class TableCreate extends SchemaChange {
 			// inherit charset from database
 			resolved.charset = dbCharset;
 
-		for ( StringColumnDef c : resolved.getStringColumns() ) {
-			if ( c.charset == null )
-				c.charset = resolved.charset;
-		}
+		resolved.setDefaultColumnCharsets();
 	}
 
 	@Override

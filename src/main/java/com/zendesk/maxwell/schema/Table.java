@@ -200,10 +200,8 @@ public class Table {
 	}
 
 	public void setDefaultColumnCharsets() {
-		for ( ColumnDef c : columnList ) {
-			if ( c instanceof StringColumnDef ) {
-				((StringColumnDef) c).setDefaultCharset(this.getCharset());
-			}
+		for ( StringColumnDef c : getStringColumns() ) {
+			c.setDefaultCharset(this.getCharset());
 		}
 	}
 
