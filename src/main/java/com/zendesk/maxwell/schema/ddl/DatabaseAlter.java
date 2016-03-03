@@ -13,7 +13,7 @@ public class DatabaseAlter extends SchemaChange {
 	}
 
 	@Override
-	public ResolvedDatabaseAlter resolve(Schema s) throws SchemaSyncError {
+	public ResolvedDatabaseAlter resolve(Schema s) throws InvalidSchemaError {
 		return new ResolvedDatabaseAlter(this.database, this.charset);
 	}
 

@@ -14,7 +14,7 @@ class AddColumnMod extends ColumnMod {
 	}
 
 	@Override
-	public void apply(Table table) throws SchemaSyncError {
+	public void apply(Table table) throws InvalidSchemaError {
 		table.addColumn(position.index(table, null), this.definition);
 	}
 }

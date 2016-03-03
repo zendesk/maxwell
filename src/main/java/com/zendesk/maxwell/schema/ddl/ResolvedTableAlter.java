@@ -29,7 +29,7 @@ public class ResolvedTableAlter extends ResolvedSchemaChange {
 	}
 
 	@Override
-	public Schema apply(Schema originalSchema) throws SchemaSyncError {
+	public Schema apply(Schema originalSchema) throws InvalidSchemaError {
 		Schema newSchema = originalSchema.copy();
 
 		Database oldDatabase = newSchema.findDatabaseOrThrow(this.database);

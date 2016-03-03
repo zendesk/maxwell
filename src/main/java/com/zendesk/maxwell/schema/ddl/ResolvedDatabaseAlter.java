@@ -14,7 +14,7 @@ public class ResolvedDatabaseAlter extends ResolvedSchemaChange {
 	}
 
 	@Override
-	public Schema apply(Schema originalSchema) throws SchemaSyncError {
+	public Schema apply(Schema originalSchema) throws InvalidSchemaError {
 		if ( charset == null )
 			return originalSchema;
 

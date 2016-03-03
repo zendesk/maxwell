@@ -17,7 +17,7 @@ import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
 import com.zendesk.maxwell.schema.SchemaStore;
 import com.zendesk.maxwell.schema.Table;
-import com.zendesk.maxwell.schema.ddl.SchemaSyncError;
+import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 
 public class SchemaStoreTest extends AbstractMaxwellTest {
 	private Schema schema;
@@ -42,7 +42,7 @@ public class SchemaStoreTest extends AbstractMaxwellTest {
 	}
 
 	@Test
-	public void testSave() throws SQLException, IOException, SchemaSyncError {
+	public void testSave() throws SQLException, IOException, InvalidSchemaError {
 		this.schemaStore.save();
 
 		SchemaStore restoredSchema = SchemaStore.restore(server.getConnection(this.buildContext().getConfig().databaseName), context);

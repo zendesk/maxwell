@@ -14,13 +14,13 @@ public class ResolvedTableCreate extends ResolvedSchemaChange {
 	}
 
 	@Override
-	public Schema apply(Schema originalSchema) throws SchemaSyncError {
+	public Schema apply(Schema originalSchema) throws InvalidSchemaError {
 		Schema newSchema = originalSchema.copy();
 
 		Database d = newSchema.findDatabaseOrThrow(this.table.database);
 
 		if ( d.hasTable(this.table.name) )
-			throw new SchemaSyncError("Unexpectedly asked to create existing table " + this.table.name);
+			throw new InvalidSchemaError("Unexpectedly asked to create existing table " + this.table.name);
 
 		d.addTable(this.table);
 		return newSchema;

@@ -31,7 +31,7 @@ public class TableAlter extends SchemaChange {
 	}
 
 	@Override
-	public ResolvedTableAlter resolve(Schema schema) throws SchemaSyncError {
+	public ResolvedTableAlter resolve(Schema schema) throws InvalidSchemaError {
 		Database database = schema.findDatabaseOrThrow(this.database);
 		Table oldTable = database.findTableOrThrow(this.table);
 

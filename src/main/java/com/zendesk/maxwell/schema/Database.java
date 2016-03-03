@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.zendesk.maxwell.CaseSensitivity;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
-import com.zendesk.maxwell.schema.ddl.SchemaSyncError;
+import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 
 public class Database {
 	private final String name;
@@ -49,10 +49,10 @@ public class Database {
 		return null;
 	}
 
-	public Table findTableOrThrow(String table) throws SchemaSyncError {
+	public Table findTableOrThrow(String table) throws InvalidSchemaError {
 		Table t = findTable(table);
 		if ( t == null )
-			throw new SchemaSyncError("Couldn't find table '" + table + "'" + " in database '" + this.name);
+			throw new InvalidSchemaError("Couldn't find table '" + table + "'" + " in database '" + this.name);
 
 		return t;
 	}

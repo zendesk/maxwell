@@ -14,5 +14,5 @@ import com.zendesk.maxwell.schema.Schema;
 })
 
 public abstract class ResolvedSchemaChange {
-	public abstract Schema apply(Schema originalSchema) throws SchemaSyncError;
+	public abstract Schema apply(Schema originalSchema) throws InvalidSchemaError;
 }

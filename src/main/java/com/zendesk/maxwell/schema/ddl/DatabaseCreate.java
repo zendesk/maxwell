@@ -16,7 +16,7 @@ public class DatabaseCreate extends SchemaChange {
 	}
 
 	@Override
-	public ResolvedDatabaseCreate resolve(Schema schema) throws SchemaSyncError {
+	public ResolvedDatabaseCreate resolve(Schema schema) throws InvalidSchemaError {
 		if ( ifNotExists && schema.hasDatabase(database) )
 			return null;
 

@@ -30,7 +30,7 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 		super.tearDown();
 	}
 
-	private void testIntegration(String alters[]) throws SQLException, SchemaSyncError, IOException {
+	private void testIntegration(String alters[]) throws SQLException, InvalidSchemaError, IOException {
 		SchemaCapturer capturer = new SchemaCapturer(server.getConnection(), buildContext().getCaseSensitivity());
 		Schema topSchema = capturer.capture();
 
@@ -67,7 +67,7 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 	}
 
 	@Test
-	public void testAlter() throws SQLException, SchemaSyncError, IOException, InterruptedException {
+	public void testAlter() throws SQLException, InvalidSchemaError, IOException, InterruptedException {
 		String sql[] = {
 			"create table shard_1.testAlter ( id int(11) unsigned default 1, str varchar(255) )",
 			"alter table shard_1.testAlter add column barbar tinyint",
@@ -106,7 +106,7 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 		testIntegration(sql);
 	}
 	@Test
-	public void testDrop() throws SQLException, SchemaSyncError, IOException, InterruptedException {
+	public void testDrop() throws SQLException, InvalidSchemaError, IOException, InterruptedException {
 		String sql[] = {
 			"create table shard_1.testAlter ( id int(11) unsigned default 1, str varchar(255) )",
 			"drop table if exists lasdkjflaskd.laskdjflaskdj",
@@ -162,7 +162,7 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 		testIntegration(sql);
 	}
 	@Test
-	public void testDatabaseCharset() throws SQLException, SchemaSyncError, IOException {
+	public void testDatabaseCharset() throws SQLException, InvalidSchemaError, IOException {
 		String sql[] = {
 			"create DATABASE test_latin1 character set='latin1'",
 			"create TABLE `test_latin1`.`latin1_table` ( id int(11) unsigned, str varchar(255) )",
@@ -185,7 +185,7 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 	}
 
 	@Test
-	public void testPKs() throws SQLException, SchemaSyncError, IOException {
+	public void testPKs() throws SQLException, InvalidSchemaError, IOException {
 		String sql[] = {
 		   "create TABLE `test_pks` ( id int(11) unsigned primary KEY, str varchar(255) )",
 		   "create TABLE `test_pks_2` ( id int(11) unsigned, str varchar(255), primary key(id, str) )",

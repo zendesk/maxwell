@@ -15,7 +15,7 @@ public class DatabaseDrop extends SchemaChange {
 	}
 
 	@Override
-	public ResolvedDatabaseDrop resolve(Schema schema) throws SchemaSyncError {
+	public ResolvedDatabaseDrop resolve(Schema schema) throws InvalidSchemaError {
 		if ( ifExists && !schema.hasDatabase(database) )
 			return null;
 

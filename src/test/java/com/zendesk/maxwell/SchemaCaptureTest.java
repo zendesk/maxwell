@@ -18,7 +18,7 @@ import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.*;
-import com.zendesk.maxwell.schema.ddl.SchemaSyncError;
+import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 
 public class SchemaCaptureTest extends AbstractMaxwellTest {
 	private SchemaCapturer capturer;
@@ -36,7 +36,7 @@ public class SchemaCaptureTest extends AbstractMaxwellTest {
 	}
 
 	@Test
-	public void testDatabases() throws SQLException, SchemaSyncError {
+	public void testDatabases() throws SQLException, InvalidSchemaError {
 		Schema s = capturer.capture();
 		String dbs = StringUtils.join(s.getDatabaseNames().iterator(), ":");
 
@@ -44,7 +44,7 @@ public class SchemaCaptureTest extends AbstractMaxwellTest {
 	}
 
 	@Test
-	public void testOneDatabase() throws SQLException, SchemaSyncError {
+	public void testOneDatabase() throws SQLException, InvalidSchemaError {
 		SchemaCapturer sc = new SchemaCapturer(server.getConnection(), CaseSensitivity.CASE_SENSITIVE, "shard_1");
 		Schema s = sc.capture();
 
@@ -53,7 +53,7 @@ public class SchemaCaptureTest extends AbstractMaxwellTest {
 	}
 
 	@Test
-	public void testTables() throws SQLException, SchemaSyncError {
+	public void testTables() throws SQLException, InvalidSchemaError {
 		Schema s = capturer.capture();
 
 		Database shard1DB = s.findDatabase("shard_1");
@@ -65,7 +65,7 @@ public class SchemaCaptureTest extends AbstractMaxwellTest {
 	}
 
 	@Test
-	public void testColumns() throws SQLException, SchemaSyncError {
+	public void testColumns() throws SQLException, InvalidSchemaError {
 		Schema s = capturer.capture();
 
 		Table sharded = s.findDatabase("shard_1").findTable("sharded");
@@ -88,7 +88,7 @@ public class SchemaCaptureTest extends AbstractMaxwellTest {
 	}
 
 	@Test
-	public void testPKs() throws SQLException, SchemaSyncError {
+	public void testPKs() throws SQLException, InvalidSchemaError {
 		Schema s = capturer.capture();
 
 		Table sharded = s.findDatabase("shard_1").findTable("sharded");

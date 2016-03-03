@@ -30,7 +30,7 @@ public class TableCreate extends SchemaChange {
 	}
 
 	@Override
-	public ResolvedTableCreate resolve(Schema schema) throws SchemaSyncError {
+	public ResolvedTableCreate resolve(Schema schema) throws InvalidSchemaError {
 		Database d = schema.findDatabaseOrThrow(this.database);
 
 		if ( ifNotExists && d.hasTable(table) )
@@ -50,7 +50,7 @@ public class TableCreate extends SchemaChange {
 		return new ResolvedTableCreate(table);
 	}
 
-	private Table resolveLikeTable(Schema schema) throws SchemaSyncError {
+	private Table resolveLikeTable(Schema schema) throws InvalidSchemaError {
 		Database sourceDB = schema.findDatabaseOrThrow(likeDB);
 		Table sourceTable = sourceDB.findTableOrThrow(likeTable);
 
