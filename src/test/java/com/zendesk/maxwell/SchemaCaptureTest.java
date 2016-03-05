@@ -20,19 +20,13 @@ import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.*;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 
-public class SchemaCaptureTest extends AbstractMaxwellTest {
+public class SchemaCaptureTest extends MaxwellTestWithIsolatedServer {
 	private SchemaCapturer capturer;
 
 	@Before
 	public void setUp() throws Exception {
 		server.getConnection().createStatement().executeUpdate("CREATE DATABASE if not exists test");
 		this.capturer = new SchemaCapturer(server.getConnection(), CaseSensitivity.CASE_SENSITIVE);
-	}
-
-	@Override
-	@After
-	public void tearDown() throws Exception {
-		super.tearDown();
 	}
 
 	@Test

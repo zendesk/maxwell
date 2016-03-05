@@ -1,30 +1,29 @@
 package com.zendesk.maxwell;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang.StringUtils;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.io.*;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-public class AbstractIntegrationTest extends AbstractMaxwellTest {
+import org.apache.commons.lang.StringUtils;
+
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+
+public class MaxwellTestJSON {
+	/* methods around running JSON test files */
 	public static final TypeReference<Map<String, Object>> MAP_STRING_OBJECT_REF = new TypeReference<Map<String, Object>>() {};
 
-	ObjectMapper mapper = new ObjectMapper();
-	protected Map<String, Object> parseJSON(String json) throws Exception {
+	public static Map<String, Object> parseJSON(String json) throws Exception {
+		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
-		return mapper.readValue(json, MaxwellIntegrationTest.MAP_STRING_OBJECT_REF);
+		return mapper.readValue(json, MAP_STRING_OBJECT_REF);
 	}
 
-	protected void assertJSON(List<Map<String, Object>> jsonOutput, List<Map<String, Object>> jsonAsserts) {
+	public static void assertJSON(List<Map<String, Object>> jsonOutput, List<Map<String, Object>> jsonAsserts) {
 		ArrayList<Map<String, Object>> missing = new ArrayList<>();
 
 		for ( Map m : jsonAsserts ) {
@@ -41,10 +40,10 @@ public class AbstractIntegrationTest extends AbstractMaxwellTest {
 		}
 	}
 
-	private void runJSONTest(List<String> sql, List<Map<String, Object>> expectedJSON) throws Exception {
+	private static void runJSONTest(MysqlIsolatedServer server, List<String> sql, List<Map<String, Object>> expectedJSON) throws Exception {
 		List<Map<String, Object>> eventJSON = new ArrayList<>();
 		List<Map<String, Object>> matched = new ArrayList<>();
-		List<RowMap> rows = getRowsForSQL(null, sql.toArray(new String[sql.size()]));
+		List<RowMap> rows = MaxwellTestSupport.getRowsForSQL(server, null, sql.toArray(new String[sql.size()]));
 
 		for ( RowMap r : rows ) {
 			String s = r.toJSON();
@@ -61,7 +60,7 @@ public class AbstractIntegrationTest extends AbstractMaxwellTest {
 
 	}
 
-	protected class SQLAndJSON {
+	public static class SQLAndJSON {
 		public ArrayList<Map<String, Object>> jsonAsserts;
 		public ArrayList<String> inputSQL;
 
@@ -72,9 +71,9 @@ public class AbstractIntegrationTest extends AbstractMaxwellTest {
 	}
 
 	static final String JSON_PATTERN = "^\\s*\\->\\s*\\{.*";
-	protected SQLAndJSON parseJSONTestFile(String fname) throws Exception {
-		SQLAndJSON ret = new SQLAndJSON();
+	public static SQLAndJSON parseJSONTestFile(String fname) throws Exception {
 		File file = new File(fname);
+		SQLAndJSON ret = new SQLAndJSON();
 		BufferedReader reader = new BufferedReader(new FileReader(file));
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -94,7 +93,7 @@ public class AbstractIntegrationTest extends AbstractMaxwellTest {
 					buffer = buffer + " " + line.trim();
 				} else {
 					if ( bufferIsJSON )	{
-						ret.jsonAsserts.add(mapper.<Map<String, Object>>readValue(buffer, MaxwellIntegrationTest.MAP_STRING_OBJECT_REF));
+						ret.jsonAsserts.add(mapper.<Map<String, Object>>readValue(buffer, MAP_STRING_OBJECT_REF));
 					} else {
 						ret.inputSQL.add(buffer);
 					}
@@ -115,7 +114,7 @@ public class AbstractIntegrationTest extends AbstractMaxwellTest {
 
 		if ( buffer != null ) {
 			if ( bufferIsJSON )	{
-				ret.jsonAsserts.add(mapper.<Map<String, Object>>readValue(buffer, MaxwellIntegrationTest.MAP_STRING_OBJECT_REF));
+				ret.jsonAsserts.add(mapper.<Map<String, Object>>readValue(buffer, MAP_STRING_OBJECT_REF));
 			} else {
 				ret.inputSQL.add(buffer);
 			}
@@ -125,8 +124,13 @@ public class AbstractIntegrationTest extends AbstractMaxwellTest {
 		return ret;
 	}
 
-	protected void runJSONTestFile(String fname) throws Exception {
-		SQLAndJSON testResources = parseJSONTestFile(fname);
-	    runJSONTest(testResources.inputSQL, testResources.jsonAsserts);
+	protected static void runJSONTestFile(MysqlIsolatedServer server, String dir, String fname) throws Exception {
+		SQLAndJSON testResources = parseJSONTestFile(new File(dir, fname).toString());
+	    runJSONTest(server, testResources.inputSQL, testResources.jsonAsserts);
+	}
+
+	protected static void runJSONTestFile(MysqlIsolatedServer server, String fname) throws Exception {
+		runJSONTestFile(server, MaxwellTestSupport.getSQLDir(), fname);
 	}
 }
+

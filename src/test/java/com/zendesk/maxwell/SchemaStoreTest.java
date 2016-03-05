@@ -12,14 +12,10 @@ import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.zendesk.maxwell.schema.Database;
-import com.zendesk.maxwell.schema.Schema;
-import com.zendesk.maxwell.schema.SchemaCapturer;
-import com.zendesk.maxwell.schema.SchemaStore;
-import com.zendesk.maxwell.schema.Table;
+import com.zendesk.maxwell.schema.*;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 
-public class SchemaStoreTest extends AbstractMaxwellTest {
+public class SchemaStoreTest extends MaxwellTestWithIsolatedServer {
 	private Schema schema;
 	private BinlogPosition binlogPosition;
 	private SchemaStore schemaStore;

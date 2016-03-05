@@ -28,6 +28,9 @@ public class MysqlIsolatedServer {
 	public void boot(String xtraParams) throws IOException, SQLException, InterruptedException {
         final String dir = System.getProperty("user.dir");
 
+		if ( xtraParams == null )
+			xtraParams = "";
+
 		ProcessBuilder pb = new ProcessBuilder(
 				dir + "/src/test/onetimeserver",
 				"--mysql-version=" + this.getVersion(),
@@ -84,7 +87,7 @@ public class MysqlIsolatedServer {
 	}
 
 	public void boot() throws Exception {
-		boot("");
+		boot(null);
 	}
 
 	public void resetConnection() throws SQLException {

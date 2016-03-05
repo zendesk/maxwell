@@ -10,22 +10,16 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.zendesk.maxwell.AbstractMaxwellTest;
+import com.zendesk.maxwell.MaxwellTestWithIsolatedServer;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
 
 import com.zendesk.maxwell.schema.columndef.StringColumnDef;
 
-public class DDLResolverTest extends AbstractMaxwellTest {
+public class DDLResolverTest extends MaxwellTestWithIsolatedServer {
 	@BeforeClass
 	public static void setUp() throws Exception {
 		server.executeQuery("create database already_there");
-	}
-
-	@Override
-	@After
-	public void tearDown() throws Exception {
-		super.tearDown();
 	}
 
 	private <T extends SchemaChange> T parse(String sql, String database, Class<T> type) {
