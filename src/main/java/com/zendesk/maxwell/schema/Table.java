@@ -188,6 +188,13 @@ public class Table {
 					  + nameA + " is " + this.getPKString() + " but "
 					  + nameB + " is " + other.getPKString());
 		}
+
+		if ( !this.getName().equals(other.getName()) ) {
+			diffs.add(this.fullName() + " differs in name: "
+					  + nameA + " is " + this.getName() + " but "
+					  + nameB + " is " + other.getName());
+		}
+
 		diffColumnList(diffs, this, other, nameA, nameB);
 		diffColumnList(diffs, other, this, nameB, nameA);
 	}

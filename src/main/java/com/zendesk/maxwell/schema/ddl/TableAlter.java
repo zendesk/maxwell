@@ -7,6 +7,7 @@ import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.StringColumnDef;
+import com.zendesk.maxwell.CaseSensitivity;
 
 public class TableAlter extends SchemaChange {
 	public String database;
@@ -39,6 +40,9 @@ public class TableAlter extends SchemaChange {
 
 		if ( newTableName != null && newDatabase != null ) {
 			schema.findDatabaseOrThrow(this.newDatabase);
+
+			if ( schema.getCaseSensitivity() == CaseSensitivity.CONVERT_TO_LOWER )
+				newTableName = newTableName.toLowerCase();
 
 			table.name = newTableName;
 			table.database = newDatabase;
