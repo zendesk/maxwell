@@ -17,7 +17,7 @@ import java.sql.SQLException;
 /**
  * Created by ben on 10/12/15.
  */
-public class SchemaScavengerTest extends AbstractMaxwellTest {
+public class SchemaScavengerTest extends MaxwellTestWithIsolatedServer {
 	String schemaSQL[] = {
 		"CREATE TABLE shard_1.latin1 (id int(11), str1 varchar(255), str2 varchar(255) character set 'utf8') charset = 'latin1'",
 		"CREATE TABLE shard_1.enums (id int(11), enum_col enum('foo', 'bar', 'baz'))",
@@ -33,7 +33,7 @@ public class SchemaScavengerTest extends AbstractMaxwellTest {
 		server.executeList(schemaSQL);
 		this.schema = new SchemaCapturer(server.getConnection(), CaseSensitivity.CASE_SENSITIVE).capture();
 		this.binlogPosition = BinlogPosition.capture(server.getConnection());
-		MaxwellContext context = buildContext();
+        MaxwellContext context = buildContext();
 
 		this.scavenger = new SchemaScavenger(buildContext().getMaxwellConnectionPool(), context.getConfig().databaseName);
 		Connection conn = server.getConnection();

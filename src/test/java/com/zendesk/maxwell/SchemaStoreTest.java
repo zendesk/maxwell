@@ -12,14 +12,10 @@ import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.zendesk.maxwell.schema.Database;
-import com.zendesk.maxwell.schema.Schema;
-import com.zendesk.maxwell.schema.SchemaCapturer;
-import com.zendesk.maxwell.schema.SchemaStore;
-import com.zendesk.maxwell.schema.Table;
-import com.zendesk.maxwell.schema.ddl.SchemaSyncError;
+import com.zendesk.maxwell.schema.*;
+import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 
-public class SchemaStoreTest extends AbstractMaxwellTest {
+public class SchemaStoreTest extends MaxwellTestWithIsolatedServer {
 	private Schema schema;
 	private BinlogPosition binlogPosition;
 	private SchemaStore schemaStore;
@@ -42,7 +38,7 @@ public class SchemaStoreTest extends AbstractMaxwellTest {
 	}
 
 	@Test
-	public void testSave() throws SQLException, IOException, SchemaSyncError {
+	public void testSave() throws SQLException, IOException, InvalidSchemaError {
 		this.schemaStore.save();
 
 		SchemaStore restoredSchema = SchemaStore.restore(server.getConnection(this.buildContext().getConfig().databaseName), context);

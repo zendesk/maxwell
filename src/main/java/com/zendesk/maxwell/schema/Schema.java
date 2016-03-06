@@ -1,9 +1,11 @@
 package com.zendesk.maxwell.schema;
 
 import com.zendesk.maxwell.CaseSensitivity;
+import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 
 import java.util.ArrayList;
 import java.util.List;
+
 
 public class Schema {
 	private final ArrayList<Database> databases;
@@ -40,6 +42,17 @@ public class Schema {
 		}
 
 		return null;
+	}
+
+	public Database findDatabaseOrThrow(String name) throws InvalidSchemaError {
+		Database d = findDatabase(name);
+		if ( d == null )
+			throw new InvalidSchemaError("Couldn't find database '" + name + "'");
+		return d;
+	}
+
+	public boolean hasDatabase(String string) {
+		return findDatabase(string) != null;
 	}
 
 	public void addDatabase(Database d) {
@@ -84,4 +97,7 @@ public class Schema {
 		return charset;
 	}
 
+	public CaseSensitivity getCaseSensitivity() {
+		return sensitivity;
+	};
 }

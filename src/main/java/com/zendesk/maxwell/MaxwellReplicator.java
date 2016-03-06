@@ -22,7 +22,8 @@ import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaStore;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.ddl.SchemaChange;
-import com.zendesk.maxwell.schema.ddl.SchemaSyncError;
+import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
+import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 
 public class MaxwellReplicator extends RunLoopProcess {
 	private final long MAX_TX_ELEMENTS = 10000;
@@ -128,7 +129,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 		return p;
 	}
 
-	private MaxwellAbstractRowsEvent processRowsEvent(AbstractRowEvent e) throws SchemaSyncError {
+	private MaxwellAbstractRowsEvent processRowsEvent(AbstractRowEvent e) throws InvalidSchemaError {
 		MaxwellAbstractRowsEvent ew;
 		Table table;
 
@@ -142,7 +143,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 		table = tableCache.getTable(tableId);
 
 		if ( table == null ) {
-			throw new SchemaSyncError("couldn't find table in cache for table id: " + tableId);
+			throw new InvalidSchemaError("couldn't find table in cache for table id: " + tableId);
 		}
 
 		switch (e.getHeader().getEventType()) {
@@ -302,7 +303,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 	}
 
 
-	private void processQueryEvent(QueryEvent event) throws SchemaSyncError, SQLException, IOException {
+	private void processQueryEvent(QueryEvent event) throws InvalidSchemaError, SQLException, IOException {
 		// get charset of the alter event somehow? or just ignore it.
 		String dbName = event.getDatabaseName().toString();
 		String sql = event.getSql().toString();
@@ -316,7 +317,9 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 		for ( SchemaChange change : changes ) {
 			if ( !change.isBlacklisted(this.filter) ) {
-				updatedSchema = change.apply(updatedSchema);
+				ResolvedSchemaChange resolved = change.resolve(updatedSchema);
+				if ( resolved != null )
+					updatedSchema = resolved.apply(updatedSchema);
 			} else {
 				LOGGER.debug("ignoring blacklisted schema change");
 			}

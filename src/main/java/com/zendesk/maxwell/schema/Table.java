@@ -8,31 +8,54 @@ import org.apache.commons.lang.StringUtils;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
 import com.zendesk.maxwell.schema.columndef.StringColumnDef;
 
-public class Table {
-	private final List<ColumnDef> columnList;
-	int pkIndex;
-	private String name;
-	private String database;
-	private final String charset;
-	private List<String> pkColumnNames;
-	private HashMap<String, Integer> columnOffsetMap;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
+public class Table {
+	public String database;
+	@JsonProperty("table")
+	public String name;
+	private List<ColumnDef> columnList;
+	public String charset;
+	@JsonProperty("primary-key")
+	public List<String> pkColumnNames;
+
+	private HashMap<String, Integer> columnOffsetMap;
+	@JsonIgnore
+	public int pkIndex;
+
+	public Table() { }
 	public Table(String database, String name, String charset, List<ColumnDef> list, List<String> pks) {
 		this.database = database;
 		this.name = name;
 		this.charset = charset;
-		this.columnList = list;
+		this.setColumnList(list);
 
 		if ( pks == null )
 			pks = new ArrayList<String>();
 
 		this.setPKList(pks);
+	}
 
+	@JsonProperty("columns")
+	public List<ColumnDef> getColumnList() {
+		return columnList;
+	}
+
+	@JsonProperty("columns")
+	public void setColumnList(List<ColumnDef> list) {
+		this.columnList = list;
 		renumberColumns();
 	}
 
-	public List<ColumnDef> getColumnList() {
-		return columnList;
+	@JsonIgnore
+	public List<StringColumnDef> getStringColumns() {
+		ArrayList<StringColumnDef> list = new ArrayList<>();
+		for ( ColumnDef c : columnList ) {
+			if ( c instanceof StringColumnDef )
+				list.add((StringColumnDef) c);
+		}
+		return list;
 	}
 
 	public String getName() {
@@ -74,6 +97,7 @@ public class Table {
 	}
 
 
+	@JsonIgnore
 	public int getPKIndex() {
 		return this.pkIndex;
 	}
@@ -164,6 +188,13 @@ public class Table {
 					  + nameA + " is " + this.getPKString() + " but "
 					  + nameB + " is " + other.getPKString());
 		}
+
+		if ( !this.getName().equals(other.getName()) ) {
+			diffs.add(this.fullName() + " differs in name: "
+					  + nameA + " is " + this.getName() + " but "
+					  + nameB + " is " + other.getName());
+		}
+
 		diffColumnList(diffs, this, other, nameA, nameB);
 		diffColumnList(diffs, other, this, nameB, nameA);
 	}
@@ -176,10 +207,8 @@ public class Table {
 	}
 
 	public void setDefaultColumnCharsets() {
-		for ( ColumnDef c : columnList ) {
-			if ( c instanceof StringColumnDef ) {
-				((StringColumnDef) c).setDefaultCharset(this.getCharset());
-			}
+		for ( StringColumnDef c : getStringColumns() ) {
+			c.setDefaultCharset(this.getCharset());
 		}
 	}
 
@@ -207,10 +236,12 @@ public class Table {
 		return charset;
 	}
 
+	@JsonIgnore
 	public List<String> getPKList() {
 		return this.pkColumnNames;
 	}
 
+	@JsonIgnore
 	public String getPKString() {
 		if ( this.pkColumnNames != null )
 			return StringUtils.join(pkColumnNames.iterator(), ",");

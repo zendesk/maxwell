@@ -12,7 +12,7 @@ public class ColumnPosition {
 		this.position = Position.DEFAULT;
 	}
 
-	public int index(Table t, Integer defaultIndex) throws SchemaSyncError {
+	public int index(Table t, Integer defaultIndex) throws InvalidSchemaError {
 		switch(position) {
 		case FIRST:
 			return 0;
@@ -25,7 +25,7 @@ public class ColumnPosition {
 		case AFTER:
 			int afterIdx = t.findColumnIndex(afterColumn);
 			if ( afterIdx == -1 )
-				throw new SchemaSyncError("Could not find column " + afterColumn + " (needed in AFTER statement)");
+				throw new InvalidSchemaError("Could not find column " + afterColumn + " (needed in AFTER statement)");
 			return afterIdx + 1;
 		}
 		return -1;

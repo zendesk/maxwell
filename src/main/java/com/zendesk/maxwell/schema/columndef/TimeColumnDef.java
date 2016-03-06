@@ -5,6 +5,7 @@ import java.sql.Time;
 import com.google.code.or.common.util.MySQLConstants;
 
 public class TimeColumnDef extends ColumnDef {
+	public TimeColumnDef() { }
 	public TimeColumnDef(String name, String type, int pos) {
 		super(name, type, pos);
 	}

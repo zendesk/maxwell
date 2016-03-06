@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.zendesk.maxwell.CaseSensitivity;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
+import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 
 public class Database {
 	private final String name;
@@ -46,6 +47,24 @@ public class Database {
 				return t;
 		}
 		return null;
+	}
+
+	public Table findTableOrThrow(String table) throws InvalidSchemaError {
+		Table t = findTable(table);
+		if ( t == null )
+			throw new InvalidSchemaError("Couldn't find table '" + table + "'" + " in database '" + this.name);
+
+		return t;
+	}
+
+	public boolean hasTable(String name) {
+		return findTable(name) != null;
+	}
+
+	public void removeTable(String name) {
+		Table t = findTable(name);
+		if ( t != null )
+			tableList.remove(t);
 	}
 
 	public Database copy() {

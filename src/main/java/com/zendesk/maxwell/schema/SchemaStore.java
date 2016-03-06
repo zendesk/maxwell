@@ -19,7 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.zendesk.maxwell.BinlogPosition;
-import com.zendesk.maxwell.schema.ddl.SchemaSyncError;
+import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 
 public class SchemaStore {
 	private static int maxSchemas = 5;
@@ -183,7 +183,7 @@ public class SchemaStore {
 		columnData.clear();
 	}
 
-	public static void ensureMaxwellSchema(Connection connection, String schemaDatabaseName) throws SQLException, IOException, SchemaSyncError {
+	public static void ensureMaxwellSchema(Connection connection, String schemaDatabaseName) throws SQLException, IOException, InvalidSchemaError {
 		if ( !SchemaStore.storeDatabaseExists(connection, schemaDatabaseName) ) {
 			SchemaStore.createStoreDatabase(connection, schemaDatabaseName);
 		}
@@ -220,7 +220,7 @@ public class SchemaStore {
 		executeSQLInputStream(connection, SchemaStore.class.getResourceAsStream("/sql/maxwell_schema_bootstrap.sql"), schemaDatabaseName);
 	}
 
-	public static SchemaStore restore(Connection connection, MaxwellContext context) throws SQLException, SchemaSyncError {
+	public static SchemaStore restore(Connection connection, MaxwellContext context) throws SQLException, InvalidSchemaError {
 		SchemaStore s = new SchemaStore(connection, context.getServerID(), context.getConfig().databaseName);
 
 		s.restoreFrom(context.getInitialPosition(), context.getCaseSensitivity());
@@ -229,7 +229,7 @@ public class SchemaStore {
 	}
 
 	private void restoreFrom(BinlogPosition targetPosition, CaseSensitivity sensitivity)
-			throws SQLException, SchemaSyncError {
+			throws SQLException, InvalidSchemaError {
 		PreparedStatement p;
 		boolean shouldResave = false;
 		ResultSet schemaRS = findSchema(targetPosition, this.serverID);
@@ -241,7 +241,7 @@ public class SchemaStore {
 			schemaRS = findSchema(targetPosition, 1L);
 
 			if ( schemaRS == null )
-				throw new SchemaSyncError("Could not find schema for "
+				throw new InvalidSchemaError("Could not find schema for "
 						+ targetPosition.getFile() + ":"
 						+ targetPosition.getOffset());
 

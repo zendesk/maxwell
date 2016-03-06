@@ -28,6 +28,9 @@ public class MysqlIsolatedServer {
 	public void boot(String xtraParams) throws IOException, SQLException, InterruptedException {
         final String dir = System.getProperty("user.dir");
 
+		if ( xtraParams == null )
+			xtraParams = "";
+
 		ProcessBuilder pb = new ProcessBuilder(
 				dir + "/src/test/onetimeserver",
 				"--mysql-version=" + this.getVersion(),
@@ -84,7 +87,7 @@ public class MysqlIsolatedServer {
 	}
 
 	public void boot() throws Exception {
-		boot("");
+		boot(null);
 	}
 
 	public void resetConnection() throws SQLException {
@@ -120,6 +123,10 @@ public class MysqlIsolatedServer {
 
 	public void executeList(String[] schemaSQL) throws SQLException {
 		executeList(Arrays.asList(schemaSQL));
+	}
+
+	public void executeQuery(String sql) throws SQLException {
+		getConnection().createStatement().executeUpdate(sql);
 	}
 
 	public int getPort() {

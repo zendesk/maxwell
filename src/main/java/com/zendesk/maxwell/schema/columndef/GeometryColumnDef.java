@@ -7,6 +7,7 @@ import com.vividsolutions.jts.geom.Geometry;
  * Created by ben on 12/30/15.
  */
 public class GeometryColumnDef extends ColumnDef {
+	public GeometryColumnDef() { }
 	public GeometryColumnDef(String name, String type, int pos) {
 		super(name, type, pos);
 	}

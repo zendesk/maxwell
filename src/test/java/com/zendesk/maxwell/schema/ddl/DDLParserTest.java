@@ -5,14 +5,16 @@ import static org.junit.Assert.assertThat;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.zendesk.maxwell.AbstractMaxwellTest;
-import org.antlr.v4.runtime.misc.NotNull;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zendesk.maxwell.schema.columndef.ColumnDef;
 import org.junit.*;
 
 import com.zendesk.maxwell.schema.columndef.*;
@@ -243,17 +245,13 @@ public class DDLParserTest {
 	}
 
 	@Test
-	public void testModifyColumn() {
-		TableAlter a = parseAlter("alter table c MODIFY column `foo` int(20) unsigned default 'foo' not null");
-
-		assertThat(a.columnMods.size(), is(1));
-		assertThat(a.columnMods.get(0), instanceOf(ChangeColumnMod.class));
-
+	public void testModifyColumn() throws IOException {
+		TableAlter a = parseAlter("alter table c MODIFY column `foo` bigint(20) unsigned default 'foo' not null");
 		ChangeColumnMod c = (ChangeColumnMod) a.columnMods.get(0);
+
 		assertThat(c.name, is("foo"));
 		assertThat(c.definition.getName(), is("foo"));
-
-		assertThat(c.definition.getType(), is("int"));
+		assertThat(c.definition.getType(), is("bigint"));
 	}
 
 
