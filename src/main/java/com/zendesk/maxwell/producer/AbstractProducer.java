@@ -1,8 +1,8 @@
 package com.zendesk.maxwell.producer;
 
-import com.zendesk.maxwell.MaxwellAbstractRowsEvent;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.RowMap;
+import com.zendesk.maxwell.filter.MaxwellColumnFilter;
 
 public abstract class AbstractProducer {
 	protected final MaxwellContext context;

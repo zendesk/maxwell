@@ -38,6 +38,8 @@ public class MaxwellConfig extends AbstractConfig {
 	public Integer maxSchemas;
 	public BinlogPosition initPosition;
 	public boolean replayMode;
+	public boolean isFilterRequired;
+	public String configLocation;
 
 	public MaxwellConfig() { // argv is only null in tests
 		this.kafkaProperties = new Properties();
@@ -102,6 +104,11 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "blacklist_tables", "ignore data AND schema changes to these tables, formatted as blacklist_tables=tb1,tb2. See the docs for details before setting this!").withOptionalArg();
 
 		parser.accepts( "__separator_7" );
+		
+		parser.accepts( "isFilterRequired" );
+		parser.accepts( "configLocation" );
+		
+		
 
 		parser.accepts( "help", "display help").forHelp();
 
@@ -139,6 +146,15 @@ public class MaxwellConfig extends AbstractConfig {
 
 		if ( options.has("log_level")) {
 			this.log_level = parseLogLevel((String) options.valueOf("log_level"));
+		}
+		if(options.has("configLocation")){
+		    this.configLocation=(String) options.valueOf("configLocation");
+		}
+		if(options.has("configLocation")){
+		    this.configLocation=(String) options.valueOf("configLocation");
+		}
+		if(options.has("isFilterRequired")){
+		    this.isFilterRequired=Boolean.parseBoolean((String)options.valueOf("configLocation"));
 		}
 
 		this.maxwellMysql.parseOptions("", options);

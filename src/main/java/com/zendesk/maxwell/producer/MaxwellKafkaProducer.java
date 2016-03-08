@@ -1,23 +1,20 @@
 package com.zendesk.maxwell.producer;
 
-import java.io.IOException;
 import java.sql.SQLException;
-import java.util.Iterator;
 import java.util.Properties;
 
-import com.zendesk.maxwell.MaxwellAbstractRowsEvent;
-import com.zendesk.maxwell.MaxwellContext;
-
-import com.zendesk.maxwell.RowMap;
-import com.zendesk.maxwell.producer.partitioners.*;
+import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.RecordMetadata;
-import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.RowMap;
+import com.zendesk.maxwell.filter.MaxwellColumnFilter;
+import com.zendesk.maxwell.producer.partitioners.MaxwellKafkaPartitioner;
 
 class KafkaCallback implements Callback {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
@@ -67,12 +64,10 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 
 	public MaxwellKafkaProducer(MaxwellContext context, Properties kafkaProperties, String kafkaTopic) {
 		super(context);
-
 		this.topic = kafkaTopic;
 		if ( this.topic == null ) {
 			this.topic = "maxwell";
 		}
-
 		this.setDefaults(kafkaProperties);
 		this.kafka = new KafkaProducer<>(kafkaProperties, new StringSerializer(), new StringSerializer());
 		this.numPartitions = kafka.partitionsFor(topic).size(); //returns 1 for new topics
@@ -88,11 +83,12 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		String value = r.toJSON();
 		ProducerRecord<String, String> record =
 				new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, this.numPartitions), r.pkToJson(), r.toJSON());
-
+		
 		kafka.send(record, new KafkaCallback(r, this.context, key, value));
 	}
 
-	private void setDefaults(Properties p) {
+
+    private void setDefaults(Properties p) {
 		for(int i=0 ; i < KAFKA_DEFAULTS.length; i += 2) {
 			String key = (String) KAFKA_DEFAULTS[i];
 			Object val = KAFKA_DEFAULTS[i + 1];
@@ -102,4 +98,5 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 			}
 		}
 	}
+
 }
