@@ -6,8 +6,8 @@ import com.zendesk.maxwell.MaxwellFilter;
 import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.Table;
+import com.zendesk.maxwell.schema.columndef.ColumnDef;
 import com.zendesk.maxwell.schema.columndef.StringColumnDef;
-import com.zendesk.maxwell.CaseSensitivity;
 
 public class TableAlter extends SchemaChange {
 	public String database;
