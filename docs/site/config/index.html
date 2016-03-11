@@ -313,6 +313,11 @@
 <td></td>
 </tr>
 <tr>
+<td>--blacklist_dbs PATTERN</td>
+<td>ignore updates AND schema changes from databases (see warnings below)</td>
+<td></td>
+</tr>
+<tr>
 <td>--blacklist_tables PATTERN</td>
 <td>ignore updates AND schema changes from tables named like PATTERN (see warnings below)</td>
 <td></td>
@@ -374,7 +379,7 @@ given as <code>option=/regex/</code>.  The options are evaluated as follows:</p>
 <li>reject tables in <code>exclude_tables</code></li>
 </ol>
 <p>So an example like <code>--include_dbs=/foo.*/ --exclude_tables=bar</code> will include <code>footy.zab</code> and exclude <code>footy.bar</code></p>
-<p>The option <code>blacklist_tables</code> or <code>blacklist_dbs</code> controls whether Maxwell will send updates for a table to its producer AND whether
+<p>The option <code>blacklist_tables</code> and <code>blacklist_dbs</code> controls whether Maxwell will send updates for a table to its producer AND whether
 it captures schema changes for that table or database. Note that once Maxwell has been running with a table or database marked as blacklisted,
 you <em>must</em> continue to run Maxwell with that table or database blacklisted or else Maxwell will halt. If you want to stop
 blacklisting a table or database, you will have to drop the maxwell schema first.</p>
