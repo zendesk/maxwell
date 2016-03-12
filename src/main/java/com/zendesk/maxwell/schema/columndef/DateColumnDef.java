@@ -6,7 +6,6 @@ import java.util.Date;
 import com.google.code.or.common.util.MySQLConstants;
 
 public class DateColumnDef extends ColumnDef {
-	public DateColumnDef() { }
 	public DateColumnDef(String name, String type, int pos) {
 		super(name, type, pos);
 	}

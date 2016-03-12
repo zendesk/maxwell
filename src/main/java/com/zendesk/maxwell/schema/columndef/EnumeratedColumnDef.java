@@ -6,7 +6,6 @@ abstract public class EnumeratedColumnDef extends ColumnDef  {
 	@JsonProperty("enum-values")
 	protected String[] enumValues;
 
-	public EnumeratedColumnDef() { }
 	public EnumeratedColumnDef(String name, String type, int pos, String [] enumValues) {
 		super(name, type, pos);
 		this.enumValues = enumValues;
