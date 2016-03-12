@@ -16,7 +16,7 @@ public class ResolvedTableAlter extends ResolvedSchemaChange {
 	@JsonProperty("old")
 	public Table oldTable;
 
-	@JsonProperty("new")
+	@JsonProperty("def")
 	public Table newTable;
 
 	public ResolvedTableAlter() { }

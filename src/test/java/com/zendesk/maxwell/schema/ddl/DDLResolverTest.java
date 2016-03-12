@@ -77,9 +77,9 @@ public class DDLResolverTest extends MaxwellTestWithIsolatedServer {
 		TableCreate c = parse("CREATE TABLE `test_enc`.`te` ( c varchar, d varchar character set 'utf8' )", "test_enc", TableCreate.class);
 		ResolvedTableCreate rc = c.resolve(getSchema());
 
-		assertThat(rc.table.charset, is("latin2"));
-		assertThat(((StringColumnDef) rc.table.getColumnList().get(0)).charset, is("latin2"));
-		assertThat(((StringColumnDef) rc.table.getColumnList().get(1)).charset, is("utf8"));
+		assertThat(rc.def.charset, is("latin2"));
+		assertThat(((StringColumnDef) rc.def.getColumnList().get(0)).charset, is("latin2"));
+		assertThat(((StringColumnDef) rc.def.getColumnList().get(1)).charset, is("utf8"));
 
 	}
 
@@ -89,9 +89,9 @@ public class DDLResolverTest extends MaxwellTestWithIsolatedServer {
 		server.executeQuery("create table `test`.`test_alike` ( ii int, aa char, PRIMARY KEY (ii))");
 		TableCreate c = parse("CREATE TABLE alike_2 like `test`.`test_alike`", "test", TableCreate.class);
 		ResolvedTableCreate rc = c.resolve(getSchema());
-		assertThat(rc.table.getColumnList().size(), is(2));
-		assertThat(rc.table.pkColumnNames.get(0), is("ii"));
-		assertThat(((StringColumnDef) rc.table.getColumnList().get(1)).charset, is("utf8"));
+		assertThat(rc.def.getColumnList().size(), is(2));
+		assertThat(rc.def.pkColumnNames.get(0), is("ii"));
+		assertThat(((StringColumnDef) rc.def.getColumnList().get(1)).charset, is("utf8"));
 	}
 
 	@Test
