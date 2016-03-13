@@ -2,7 +2,7 @@ package com.zendesk.maxwell.producer;
 
 import com.zendesk.maxwell.MaxwellAbstractRowsEvent;
 import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.RowMap;
+import com.zendesk.maxwell.RowInterface;
 
 public abstract class AbstractProducer {
 	protected final MaxwellContext context;
@@ -11,5 +11,5 @@ public abstract class AbstractProducer {
 		this.context = context;
 	}
 
-	abstract public void push(RowMap r) throws Exception;
+	abstract public void push(RowInterface r) throws Exception;
 }

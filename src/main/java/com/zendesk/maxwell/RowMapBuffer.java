@@ -4,7 +4,7 @@ import com.zendesk.maxwell.util.ListWithDiskBuffer;
 
 import java.io.IOException;
 
-public class RowMapBuffer extends ListWithDiskBuffer<RowMap> {
+public class RowMapBuffer extends ListWithDiskBuffer<RowMap> implements RowInterfaceBuffer {
 	private Long xid;
 
 	public RowMapBuffer(long maxInMemoryElements) throws IOException {

@@ -8,7 +8,7 @@ import java.util.Properties;
 import com.zendesk.maxwell.MaxwellAbstractRowsEvent;
 import com.zendesk.maxwell.MaxwellContext;
 
-import com.zendesk.maxwell.RowMap;
+import com.zendesk.maxwell.RowInterface;
 import com.zendesk.maxwell.producer.partitioners.*;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -22,11 +22,11 @@ import org.slf4j.LoggerFactory;
 class KafkaCallback implements Callback {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
 	private final MaxwellContext context;
-	private final RowMap rowMap;
+	private final RowInterface rowMap;
 	private final String json;
 	private final String key;
 
-	public KafkaCallback(RowMap r, MaxwellContext c, String key, String json) {
+	public KafkaCallback(RowInterface r, MaxwellContext c, String key, String json) {
 		this.context = c;
 		this.rowMap= r;
 		this.key = key;
@@ -83,11 +83,11 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	}
 
 	@Override
-	public void push(RowMap r) throws Exception {
-		String key = r.pkToJson();
+	public void push(RowInterface r) throws Exception {
+		String key = r.rowKey();
 		String value = r.toJSON();
 		ProducerRecord<String, String> record =
-				new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, this.numPartitions), r.pkToJson(), r.toJSON());
+				new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, this.numPartitions), r.rowKey(), r.toJSON());
 
 		kafka.send(record, new KafkaCallback(r, this.context, key, value));
 	}

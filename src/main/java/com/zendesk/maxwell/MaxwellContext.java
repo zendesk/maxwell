@@ -100,7 +100,7 @@ public class MaxwellContext {
 		return this.initialPosition;
 	}
 
-	public void setPosition(RowMap r) throws SQLException {
+	public void setPosition(RowInterface r) throws SQLException {
 		if ( r.isTXCommit() )
 			this.setPosition(r.getPosition());
 	}

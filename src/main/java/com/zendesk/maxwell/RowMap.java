@@ -1,5 +1,7 @@
 package com.zendesk.maxwell;
 
+import com.zendesk.maxwell.producer.partitioners.PartitionKeyType;
+
 import com.fasterxml.jackson.core.*;
 import com.google.code.or.common.glossary.Column;
 import org.slf4j.Logger;
@@ -13,7 +15,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-public class RowMap implements Serializable {
+public class RowMap implements Serializable, RowInterface {
 	static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
 
 	private final String rowType;
@@ -66,7 +68,7 @@ public class RowMap implements Serializable {
 		this.pkColumns = pkColumns;
 	}
 
-	public String pkToJson() throws IOException {
+	public String rowKey() throws IOException {
 		JsonGenerator g = jsonGeneratorThreadLocal.get();
 
 		g.writeStartObject(); // start of row {
@@ -91,7 +93,7 @@ public class RowMap implements Serializable {
 		return jsonFromStream();
 	}
 
-	public String pkAsConcatString() {
+	private String pkAsConcatString() {
 		if (pkColumns.isEmpty()) {
 			return database + table;
 		}
@@ -106,6 +108,18 @@ public class RowMap implements Serializable {
 		if (keys.isEmpty())
 			return "None";
 		return keys;
+	}
+
+	public String getPartitionKey(PartitionKeyType keyType) {
+		switch (keyType) {
+			case TABLE:
+				return this.table;
+			case PRIMARY_KEY:
+				return this.pkAsConcatString();
+			case DATABASE:
+			default:
+				return this.database;
+		}
 	}
 
 	private void writeMapToJSON(String jsonMapName, HashMap<String, Object> data, boolean includeNullField) throws IOException {
