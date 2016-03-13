@@ -2,6 +2,8 @@ CREATE TABLE IF NOT EXISTS `schemas` (
   id int unsigned auto_increment NOT NULL primary key,
   binlog_file varchar(255),
   binlog_position int unsigned,
+  base_schema_id int unsigned NULL default NULL,
+  deltas mediumtext charset 'utf8' NULL default NULL,
   server_id int unsigned,
   charset varchar(255),
   deleted tinyint(1) not null default 0
