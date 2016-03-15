@@ -3,7 +3,6 @@ package com.zendesk.maxwell.schema.columndef;
 import com.google.code.or.common.util.MySQLConstants;
 
 public class EnumColumnDef extends EnumeratedColumnDef {
-	public EnumColumnDef() { }
 	public EnumColumnDef(String name, String type, int pos, String[] enumValues) {
 		super(name, type, pos, enumValues);
 	}

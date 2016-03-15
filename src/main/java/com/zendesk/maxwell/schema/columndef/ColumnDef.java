@@ -1,18 +1,15 @@
 package com.zendesk.maxwell.schema.columndef;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
-@JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, include=JsonTypeInfo.As.PROPERTY, property="type")
-@JsonTypeIdResolver( ColumnDefResolver.class )
-
+@JsonSerialize(using=ColumnDefSerializer.class)
+@JsonDeserialize(using=ColumnDefDeserializer.class)
 
 public abstract class ColumnDef {
 	protected String name;
 	protected String type;
 
-	@JsonIgnore
 	protected int pos;
 
 	public ColumnDef() { }

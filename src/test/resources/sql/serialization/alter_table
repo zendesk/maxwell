@@ -10,19 +10,19 @@ ALTER table `ser3`.`tbl` add column `d` blob not null after `b`;
        charset: "utf8",
        primary-key: [ "id" ],
        columns: [
-        { name: "id", type: "mediumint",  signed: true, bits: 24 },
+        { name: "id", type: "mediumint",  signed: true },
         { name: "a",  type: "varchar",    charset: "latin1" },
         { name: "b",  type: "mediumtext", charset: "utf8" },
         { name: "c",  type: "enum",       enum-values: [ "a", "b" ] }
        ]
      },
-     new: {
+     def: {
        database: "ser3",
        table: "tbl",
        charset: "utf8",
        primary-key: [ "id" ],
        columns: [
-        { name: "id", type: "mediumint",  signed: true, bits: 24 },
+        { name: "id", type: "mediumint",  signed: true },
         { name: "a",  type: "varchar",    charset: "latin1" },
         { name: "b",  type: "mediumtext", charset: "utf8" },
         { name: "d",  type: "blob",       charset: "binary" },

@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SchemaScavenger extends RunLoopProcess implements Runnable {
-	static final Logger LOGGER = LoggerFactory.getLogger(SchemaStore.class);
+	static final Logger LOGGER = LoggerFactory.getLogger(SchemaScavenger.class);
 	private static final long MAX_ROWS_PER_SECOND = 500;
 	private final ConnectionPool connectionPool;
 	private final String schemaDatabaseName;
@@ -59,7 +59,6 @@ public class SchemaScavenger extends RunLoopProcess implements Runnable {
 					if (nDeleted == 0)
 						break;
 
-					LOGGER.debug("deleted " + nDeleted + " rows from "+ this.schemaDatabaseName + "." + tName + " schema: " + id);
 					try { Thread.sleep(1000); } catch (InterruptedException e) { }
 
 					if (isStopRequested())

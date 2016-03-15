@@ -9,7 +9,6 @@ public class BigIntColumnDef extends ColumnDef {
 
 	protected boolean signed;
 
-	public BigIntColumnDef() { }
 	public BigIntColumnDef(String name, String type, int pos, boolean signed) {
 		super(name, type, pos);
 		this.signed = signed;
