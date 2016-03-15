@@ -68,10 +68,4 @@ public class DateTimeColumnDef extends ColumnDef {
 	public Object asJSON(Object value) {
 		return formatValue(value);
 	}
-
-	@Override
-	public ColumnDef copy() {
-		return new DateTimeColumnDef(name, type, pos);
-	}
-
 }

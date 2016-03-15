@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -32,7 +33,10 @@ public class MaxwellReplicator extends RunLoopProcess {
 	private final long MAX_TX_ELEMENTS = 10000;
 	String filePath, fileName;
 	private long rowEventsProcessed;
+
 	protected Schema schema;
+	protected SchemaStore schemaStore;
+
 	private MaxwellFilter filter;
 
 	private final LinkedBlockingDeque<BinlogEventV4> queue = new LinkedBlockingDeque<>(20);
@@ -47,8 +51,9 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellReplicator.class);
 
-	public MaxwellReplicator(Schema currentSchema, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, BinlogPosition start) throws Exception {
-		this.schema = currentSchema;
+	public MaxwellReplicator(SchemaStore schemaStore, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, BinlogPosition start) throws Exception {
+		this.schema = schemaStore.getSchema();
+		this.schemaStore = schemaStore;
 
 		this.binlogEventListener = new MaxwellBinlogEventListener(queue);
 
@@ -331,6 +336,8 @@ public class MaxwellReplicator extends RunLoopProcess {
 			return null;
 
 		DDLRowBuffer buffer = new DDLRowBuffer();
+		ArrayList<ResolvedSchemaChange> resolvedSchemaChanges = new ArrayList<>();
+
 		Schema updatedSchema = this.schema;
 
 		for ( SchemaChange change : changes ) {
@@ -343,7 +350,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 					                      event.getHeader().getTimestamp(),
 					                      new BinlogPosition(event.getHeader().getPosition(), event.getBinlogFilename()));
 					buffer.add(r);
-
+					resolvedSchemaChanges.add(resolved);
 				}
 			} else {
 				LOGGER.debug("ignoring blacklisted schema change");
@@ -354,18 +361,25 @@ public class MaxwellReplicator extends RunLoopProcess {
 			BinlogPosition p = eventBinlogPosition(event);
 			LOGGER.info("storing schema @" + p + " after applying \"" + sql.replace('\n', ' ') + "\"");
 
-			saveSchema(updatedSchema, p);
+			this.schema = updatedSchema;
+			saveSchema(resolvedSchemaChanges, p);
 		}
 		return buffer;
 	}
 
-	private void saveSchema(Schema updatedSchema, BinlogPosition p) throws SQLException {
-		this.schema = updatedSchema;
+	private void saveSchema(List<ResolvedSchemaChange> changes, BinlogPosition p) throws SQLException {
 		tableCache.clear();
 
 		if ( !this.context.getReplayMode() ) {
 			try (Connection c = this.context.getMaxwellConnection()) {
-				new SchemaStore(c, this.context.getServerID(), this.schema, p, this.context.getConfig().databaseName).save();
+				this.schemaStore = new SchemaStore(this.context.getServerID(),
+				                                   this.context.getConfig().databaseName,
+				                                   this.context.getCaseSensitivity(),
+				                                   this.schema,
+				                                   p,
+				                                   this.schemaStore.getSchemaID(),
+				                                   changes);
+				this.schemaStore.save(c);
 			}
 
 			this.context.setPositionSync(p);
@@ -374,10 +388,6 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 	public Schema getSchema() {
 		return schema;
-	}
-
-	public void setSchema(Schema schema) {
-		this.schema = schema;
 	}
 
 	public void setFilter(MaxwellFilter filter) {

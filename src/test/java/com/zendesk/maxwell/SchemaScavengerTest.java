@@ -38,9 +38,8 @@ public class SchemaScavengerTest extends MaxwellTestWithIsolatedServer {
 		this.scavenger = new SchemaScavenger(buildContext().getMaxwellConnectionPool(), context.getConfig().databaseName);
 		Connection conn = server.getConnection();
 		conn.setCatalog(context.getConfig().databaseName);
-		this.schemaStore = new SchemaStore(conn, MysqlIsolatedServer.SERVER_ID, this.schema, binlogPosition, context.getConfig().databaseName);
-
-		this.schemaStore.save();
+		this.schemaStore = new SchemaStore(context, this.schema, binlogPosition);
+		this.schemaStore.save(conn);
 	}
 
 	private Long getCount(String sql) throws SQLException {
@@ -61,7 +60,7 @@ public class SchemaScavengerTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testDelete() throws Exception {
 		Long initialCount = countSchemaRows();
-		this.schemaStore.delete();
+		SchemaStore.delete(server.getConnection(), this.schemaStore.getSchemaID());
 		scavenger.deleteSchemas(20000L);
 
 		assertThat(countSchemaRows(), is(0L));

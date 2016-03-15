@@ -52,11 +52,6 @@ public class IntColumnDef extends ColumnDef {
 	}
 
 	@Override
-	public ColumnDef copy() {
-		return new IntColumnDef(name, type, pos, signed);
-	}
-
-	@Override
 	public boolean matchesMysqlType(int type) {
 		switch(this.bits) {
 		case 8:
