@@ -28,7 +28,7 @@ class KafkaCallback implements Callback {
 
 	public KafkaCallback(RowMap r, MaxwellContext c, String key, String json) {
 		this.context = c;
-		this.rowMap= r;
+		this.rowMap = r;
 		this.key = key;
 		this.json = json;
 	}
@@ -40,7 +40,7 @@ class KafkaCallback implements Callback {
 		} else {
 			try {
 				if ( LOGGER.isDebugEnabled()) {
-					LOGGER.debug("->  key:" + key + ", partition:" +md.partition() + ", offset:" + md.offset());
+					LOGGER.debug("->  key:" + key + ", partition:" + md.partition() + ", offset:" + md.offset());
 					LOGGER.debug("   " + this.json);
 					LOGGER.debug("   " + rowMap.getPosition());
 					LOGGER.debug("");

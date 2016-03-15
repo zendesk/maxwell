@@ -1,17 +1,17 @@
 package com.zendesk.maxwell;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.*;
-
-import joptsimple.*;
-
+import com.zendesk.maxwell.schema.SchemaStore;
+import com.zendesk.maxwell.util.AbstractConfig;
+import joptsimple.BuiltinHelpFormatter;
+import joptsimple.OptionDescriptor;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.zendesk.maxwell.util.AbstractConfig;
-import com.zendesk.maxwell.schema.SchemaStore;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.Properties;
 
 public class MaxwellConfig extends AbstractConfig {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfig.class);
@@ -31,6 +31,8 @@ public class MaxwellConfig extends AbstractConfig {
 	public String kafkaPartitionKey;
 	public String bootstrapperType;
 	public Integer bootstrapperBatchFetchSize;
+	public String pubsubProjectId;
+	public String pubsubTopic;
 
 	public String outputFile;
 	public String log_level;
@@ -73,12 +75,14 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_3" );
 
-		parser.accepts( "producer", "producer type: stdout|file|kafka" ).withRequiredArg();
+		parser.accepts( "producer", "producer type: stdout|file|kafka|pubsub" ).withRequiredArg();
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
 		parser.accepts( "kafka_partition_by", "database|table|primary_key, kafka producer assigns partition by hashing the specified parameter").withRequiredArg();
 		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning").withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
+		parser.accepts( "pubsub_project_id", "optionally provide a pubsub project id").withOptionalArg();
+		parser.accepts( "pubsub_topic", "optionally provide a pubsub topic").withOptionalArg();
 
 		parser.accepts( "__separator_4" );
 
@@ -167,6 +171,12 @@ public class MaxwellConfig extends AbstractConfig {
 
 		if ( options.has("kafka_partition_hash"))
 			this.kafkaPartitionHash = (String) options.valueOf("kafka_partition_hash");
+
+		if ( options.has("pubsub_project_id"))
+			this.pubsubProjectId = (String) options.valueOf("pubsub_project_id");
+
+		if ( options.has("pubsub_topic"))
+			this.pubsubTopic = (String) options.valueOf("pubsub_topic");
 
 		if ( options.has("output_file"))
 			this.outputFile = (String) options.valueOf("output_file");
@@ -286,6 +296,14 @@ public class MaxwellConfig extends AbstractConfig {
 		} else if ( this.producerType.equals("file")
 				&& this.outputFile == null) {
 			usage("please specify --output_file=FILE to use the file producer");
+		} else if ( this.producerType.equals("pubsub")) {
+			if (this.pubsubProjectId == null) {
+				usage("please specify --pubsub_project_id to use the pubsub producer");
+			}
+
+			if (this.pubsubTopic == null) {
+				usage("please specify --pubsub_topic to use the pubsub producer");
+			}
 		}
 
 		if ( this.maxwellMysql.port == null )
