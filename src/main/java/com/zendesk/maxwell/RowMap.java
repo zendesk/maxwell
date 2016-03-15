@@ -175,6 +175,9 @@ public class RowMap implements Serializable {
 	public Object getData(String key) {
 		return this.data.get(key);
 	}
+	public Object removeData(String key) {
+	    return this.data.remove(key);
+	}
 
 	public void putData(String key, Object value) {
 		this.data.put(key,  value);
@@ -187,6 +190,11 @@ public class RowMap implements Serializable {
 	public void putOldData(String key, Object value) {
 		this.oldData.put(key,  value);
 	}
+	public void removeOldData(String key) {
+	    if(this.oldData!=null){
+	        this.oldData.remove(key);
+	    }
+    }
 
 	public BinlogPosition getPosition() {
 		return nextPosition;

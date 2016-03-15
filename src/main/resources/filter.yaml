@@ -1,0 +1,7 @@
+- !!com.zendesk.maxwell.config.FilterConfig
+    table: OTP
+    columns:
+    - !!com.zendesk.maxwell.config.FilterColumns
+        column: otp
+    - !!com.zendesk.maxwell.config.FilterColumns
+        column: test
