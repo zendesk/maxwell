@@ -64,6 +64,7 @@ clean:
 
 depclean: clean
 	rm -f $(CLASSPATH)
+	rm -Rf target/dependency
 
 
 PKGNAME=maxwell-${MAXWELL_VERSION}

@@ -8,7 +8,7 @@ class RemoveColumnMod extends ColumnMod {
 	}
 
 	@Override
-	public void apply(Table table) throws SchemaSyncError {
+	public void apply(Table table) throws InvalidSchemaError {
 		table.removeColumn(originalIndex(table));
 	}
 }

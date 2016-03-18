@@ -1,10 +1,18 @@
 package com.zendesk.maxwell.schema.columndef;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
+@JsonSerialize(using=ColumnDefSerializer.class)
+@JsonDeserialize(using=ColumnDefDeserializer.class)
+
 public abstract class ColumnDef {
 	protected String name;
 	protected String type;
+
 	protected int pos;
 
+	public ColumnDef() { }
 	public ColumnDef(String name, String type, int pos) {
 		this.name = name.toLowerCase();
 		this.type = type;

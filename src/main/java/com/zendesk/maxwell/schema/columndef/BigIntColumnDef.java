@@ -5,9 +5,10 @@ import java.math.BigInteger;
 import com.google.code.or.common.util.MySQLConstants;
 
 public class BigIntColumnDef extends ColumnDef {
-	private final BigInteger longlong_max = BigInteger.ONE.shiftLeft(64);
+	static private final BigInteger longlong_max = BigInteger.ONE.shiftLeft(64);
 
 	protected boolean signed;
+
 	public BigIntColumnDef(String name, String type, int pos, boolean signed) {
 		super(name, type, pos);
 		this.signed = signed;

@@ -1,8 +1,8 @@
 package com.zendesk.maxwell.schema.ddl;
 
 import com.zendesk.maxwell.MaxwellFilter;
-import com.zendesk.maxwell.schema.Database;
-import com.zendesk.maxwell.schema.Schema;
+import com.zendesk.maxwell.schema.*;
+import com.zendesk.maxwell.schema.ddl.ResolvedDatabaseCreate;
 
 public class DatabaseCreate extends SchemaChange {
 	public final String database;
@@ -16,26 +16,17 @@ public class DatabaseCreate extends SchemaChange {
 	}
 
 	@Override
-	public Schema apply(Schema originalSchema) throws SchemaSyncError {
-		Database d = originalSchema.findDatabase(database);
+	public ResolvedDatabaseCreate resolve(Schema schema) throws InvalidSchemaError {
+		if ( ifNotExists && schema.hasDatabase(database) )
+			return null;
 
-		if ( d != null ) {
-			if ( ifNotExists )
-				return originalSchema;
-			else
-				throw new SchemaSyncError("Unexpectedly asked to create existing database " + database);
-		}
-
-		Schema newSchema = originalSchema.copy();
-
-		String createCharset;
-		if ( charset != null )
-			createCharset = charset;
+		String chset;
+		if ( this.charset == null )
+			chset = schema.getCharset();
 		else
-			createCharset = newSchema.getCharset();
+			chset = this.charset;
 
-		newSchema.addDatabase(new Database(database, createCharset));
-		return newSchema;
+		return new ResolvedDatabaseCreate(database, chset);
 	}
 
 	@Override

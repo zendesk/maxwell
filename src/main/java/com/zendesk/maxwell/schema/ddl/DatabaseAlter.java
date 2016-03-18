@@ -1,8 +1,8 @@
 package com.zendesk.maxwell.schema.ddl;
 
 import com.zendesk.maxwell.MaxwellFilter;
-import com.zendesk.maxwell.schema.Database;
-import com.zendesk.maxwell.schema.Schema;
+import com.zendesk.maxwell.schema.*;
+import com.zendesk.maxwell.schema.ddl.ResolvedDatabaseAlter;
 
 public class DatabaseAlter extends SchemaChange {
 	public String database;
@@ -13,21 +13,8 @@ public class DatabaseAlter extends SchemaChange {
 	}
 
 	@Override
-	public Schema apply(Schema originalSchema) throws SchemaSyncError {
-		if ( charset == null )
-			return originalSchema;
-
-		Schema schema = originalSchema.copy();
-		Database d = schema.findDatabase(database);
-
-		if ( d == null )
-			throw new SchemaSyncError("Couldn't find database: " + database + " while applying database alter");
-
-		if ( d.getCharset().equals(charset) )
-			return originalSchema;
-
-		d.setCharset(charset);
-		return schema;
+	public ResolvedDatabaseAlter resolve(Schema s) throws InvalidSchemaError {
+		return new ResolvedDatabaseAlter(this.database, this.charset);
 	}
 
 	@Override
