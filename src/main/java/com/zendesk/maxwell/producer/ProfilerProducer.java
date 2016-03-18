@@ -2,7 +2,6 @@ package com.zendesk.maxwell.producer;
 
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.RowMap;
-import com.zendesk.maxwell.filter.MaxwellColumnFilter;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -44,5 +43,4 @@ public class ProfilerProducer extends AbstractProducer {
 
 		this.context.setPosition(r);
 	}
-
 }

@@ -1,0 +1,12 @@
+antlr4.antlrRegisteredTools=4.4@/var/folders/pq/n208r67j5glc2402r8hf4ry80000gn/T/antlr-4.4-complete.jar\:4.5@/Users/ben/src/antlr/antlr-4.5-complete.jar
+antlr4.antlrToolPath=/Users/ben/src/antlr/antlr-4.5-complete.jar
+antlr4.encoding=UTF-8
+antlr4.listener=true
+antlr4.visitor=false
+antlr4.vmArgs=
+autobuilding=true
+eclipse.preferences.version=1
+is_project_specific=true
+outlet.DEFAULT_OUTPUT.cleanupDerived=true
+outlet.DEFAULT_OUTPUT.derived=true
+outlet.DEFAULT_OUTPUT.directory=./target/generated-sources/antlr4

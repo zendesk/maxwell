@@ -108,8 +108,6 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "isFilterRequired" );
 		parser.accepts( "configLocation" );
 		
-		
-
 		parser.accepts( "help", "display help").forHelp();
 
 		BuiltinHelpFormatter helpFormatter = new BuiltinHelpFormatter(200, 4) {
@@ -147,12 +145,15 @@ public class MaxwellConfig extends AbstractConfig {
 		if ( options.has("log_level")) {
 			this.log_level = parseLogLevel((String) options.valueOf("log_level"));
 		}
+
 		if(options.has("configLocation")){
 		    this.configLocation=(String) options.valueOf("configLocation");
 		}
+
 		if(options.has("configLocation")){
 		    this.configLocation=(String) options.valueOf("configLocation");
 		}
+
 		if(options.has("isFilterRequired")){
 		    this.isFilterRequired=Boolean.parseBoolean((String)options.valueOf("configLocation"));
 		}

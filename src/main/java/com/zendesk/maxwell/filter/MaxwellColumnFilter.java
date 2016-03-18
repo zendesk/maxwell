@@ -11,7 +11,6 @@ import com.zendesk.maxwell.config.FilterColumns;
 import com.zendesk.maxwell.config.FilterConfig;
 
 public class MaxwellColumnFilter {
-
     Collection<FilterConfig> filters = null;
 
     public MaxwellColumnFilter(String path) {

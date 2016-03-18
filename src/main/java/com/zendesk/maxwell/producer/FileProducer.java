@@ -7,7 +7,6 @@ import java.io.IOException;
 import com.zendesk.maxwell.MaxwellAbstractRowsEvent;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.RowMap;
-import com.zendesk.maxwell.filter.MaxwellColumnFilter;
 
 public class FileProducer extends AbstractProducer {
 	private final File file;
@@ -17,7 +16,6 @@ public class FileProducer extends AbstractProducer {
 		super(context);
 		this.file = new File(filename);
 		this.fileWriter = new FileWriter(this.file, true);
-		
 	}
 
 	@Override
@@ -28,5 +26,4 @@ public class FileProducer extends AbstractProducer {
 
 		context.setPosition(r);
 	}
-
 }
