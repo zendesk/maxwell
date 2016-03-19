@@ -55,7 +55,8 @@ public class RowMap implements Serializable {
 				}
 			};
 
-	public RowMap(String type, String database, String table, Long timestamp, List<String> pkColumns, BinlogPosition nextPosition) {
+	public RowMap(String type, String database, String table, Long timestamp,
+                List<String> pkColumns, BinlogPosition nextPosition) {
 		this.rowType = type;
 		this.database = database;
 		this.table = table;
@@ -136,7 +137,42 @@ public class RowMap implements Serializable {
 		return;
 	}
 
+	public String toJSON(String[] exclude_columns) throws IOException {
+		JsonGenerator g = getJsonGenerator();
+
+		for (String column : exclude_columns) {
+			this.data.remove(column);
+			this.oldData.remove(column);
+		}
+
+		// TODO skip this whole entry if all data being removed.
+		if ( !this.data.isEmpty() )
+			writeMapToJSON("data", this.data, true);
+
+		if ( !this.oldData.isEmpty() )
+			writeMapToJSON("old", this.oldData, true);
+
+		g.writeEndObject();
+		g.flush();
+
+		return jsonFromStream();
+	}
+
 	public String toJSON() throws IOException {
+		JsonGenerator g = getJsonGenerator();
+		writeMapToJSON("data", this.data, false);
+
+		if ( !this.oldData.isEmpty()) {
+			writeMapToJSON("old", this.oldData, true);
+		}
+
+		g.writeEndObject(); // end of row
+		g.flush();
+
+		return jsonFromStream();
+	}
+
+	private JsonGenerator getJsonGenerator() throws IOException {
 		JsonGenerator g = jsonGeneratorThreadLocal.get();
 
 		g.writeStartObject(); // start of row {
@@ -153,16 +189,7 @@ public class RowMap implements Serializable {
 		if ( this.txCommit )
 			g.writeBooleanField("commit", true);
 
-		writeMapToJSON("data", this.data, false);
-
-		if ( !this.oldData.isEmpty()) {
-			writeMapToJSON("old", this.oldData, true);
-		}
-
-		g.writeEndObject(); // end of row
-		g.flush();
-
-		return jsonFromStream();
+		return g;
 	}
 
 	private String jsonFromStream() {
@@ -174,9 +201,6 @@ public class RowMap implements Serializable {
 
 	public Object getData(String key) {
 		return this.data.get(key);
-	}
-	public Object removeData(String key) {
-	    return this.data.remove(key);
 	}
 
 	public void putData(String key, Object value) {
@@ -190,11 +214,6 @@ public class RowMap implements Serializable {
 	public void putOldData(String key, Object value) {
 		this.oldData.put(key,  value);
 	}
-	public void removeOldData(String key) {
-	    if(this.oldData!=null){
-	        this.oldData.remove(key);
-	    }
-    }
 
 	public BinlogPosition getPosition() {
 		return nextPosition;

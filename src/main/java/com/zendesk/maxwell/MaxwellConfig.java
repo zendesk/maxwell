@@ -38,8 +38,8 @@ public class MaxwellConfig extends AbstractConfig {
 	public Integer maxSchemas;
 	public BinlogPosition initPosition;
 	public boolean replayMode;
-	public boolean isFilterRequired;
-	public String configLocation;
+
+	public String[] exclude_columns;
 
 	public MaxwellConfig() { // argv is only null in tests
 		this.kafkaProperties = new Properties();
@@ -104,11 +104,12 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "blacklist_tables", "ignore data AND schema changes to these tables, formatted as blacklist_tables=tb1,tb2. See the docs for details before setting this!").withOptionalArg();
 
 		parser.accepts( "__separator_7" );
-		
-		parser.accepts( "isFilterRequired" );
-		parser.accepts( "configLocation" );
-		
+
 		parser.accepts( "help", "display help").forHelp();
+
+		parser.accepts( "__separator_8" );
+
+		parser.accepts( "exclude_columns", "columns which will be excluded, use format as --exclude_columns=column_name_1;column_name_2" ).withOptionalArg();
 
 		BuiltinHelpFormatter helpFormatter = new BuiltinHelpFormatter(200, 4) {
 			@Override
@@ -146,16 +147,8 @@ public class MaxwellConfig extends AbstractConfig {
 			this.log_level = parseLogLevel((String) options.valueOf("log_level"));
 		}
 
-		if(options.has("configLocation")){
-		    this.configLocation=(String) options.valueOf("configLocation");
-		}
-
-		if(options.has("configLocation")){
-		    this.configLocation=(String) options.valueOf("configLocation");
-		}
-
-		if(options.has("isFilterRequired")){
-		    this.isFilterRequired=Boolean.parseBoolean((String)options.valueOf("configLocation"));
+		if ( options.has("exclude_columns") ) {
+			this.exclude_columns = ((String) options.valueOf("exclude_columns")).split(";");
 		}
 
 		this.maxwellMysql.parseOptions("", options);
