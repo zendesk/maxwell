@@ -14,6 +14,8 @@ import java.util.Set;
 import java.util.UUID;
 
 public class RowMap implements Serializable {
+	public enum KeyFormat { HASH, ARRAY }
+
 	static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
 
 	private final String rowType;
@@ -66,7 +68,14 @@ public class RowMap implements Serializable {
 		this.pkColumns = pkColumns;
 	}
 
-	public String pkToJson() throws IOException {
+	public String pkToJson(KeyFormat keyFormat) throws IOException {
+		if ( keyFormat == KeyFormat.HASH )
+			return pkToJsonHash();
+		else
+			return pkToJsonArray();
+	}
+
+	private String pkToJsonHash() throws IOException {
 		JsonGenerator g = jsonGeneratorThreadLocal.get();
 
 		g.writeStartObject(); // start of row {
@@ -87,6 +96,29 @@ public class RowMap implements Serializable {
 		}
 
 		g.writeEndObject(); // end of 'data: { }'
+		g.flush();
+		return jsonFromStream();
+	}
+
+	private String pkToJsonArray() throws IOException {
+		JsonGenerator g = jsonGeneratorThreadLocal.get();
+
+		g.writeStartArray();
+		g.writeString(database);
+		g.writeString(table);
+
+		g.writeStartArray();
+		for (String pk : pkColumns) {
+			Object pkValue = null;
+			if ( data.containsKey(pk) )
+				pkValue = data.get(pk);
+
+			g.writeStartObject();
+			g.writeObjectField(pk, pkValue);
+			g.writeEndObject();
+		}
+		g.writeEndArray();
+		g.writeEndArray();
 		g.flush();
 		return jsonFromStream();
 	}
