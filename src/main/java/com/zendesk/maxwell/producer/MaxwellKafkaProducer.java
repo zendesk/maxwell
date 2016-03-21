@@ -87,7 +87,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		String key = r.pkToJson();
 		String value;
 
-		if (context.getConfig().exclude_columns.length > 0) {
+		if (context.getConfig().hasExcludedColumns()) {
 			value = r.toJSON(context.getConfig().exclude_columns);
 		}
 		else {

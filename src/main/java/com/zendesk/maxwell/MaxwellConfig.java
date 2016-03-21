@@ -109,7 +109,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_8" );
 
-		parser.accepts( "exclude_columns", "columns which will be excluded, use format as --exclude_columns=column_name_1;column_name_2" ).withOptionalArg();
+		parser.accepts( "exclude_columns", "columns which will be excluded, use format as --exclude_columns=column_name_1/column_name_2" ).withOptionalArg();
 
 		BuiltinHelpFormatter helpFormatter = new BuiltinHelpFormatter(200, 4) {
 			@Override
@@ -131,6 +131,12 @@ public class MaxwellConfig extends AbstractConfig {
 		return level;
 	}
 
+	public boolean hasExcludedColumns() {
+		if (this.exclude_columns != null)
+			return (this.exclude_columns.length > 0);
+		return false;
+	}
+
 	private void parse(String [] argv) {
 		OptionSet options = buildOptionParser().parse(argv);
 
@@ -148,7 +154,7 @@ public class MaxwellConfig extends AbstractConfig {
 		}
 
 		if ( options.has("exclude_columns") ) {
-			this.exclude_columns = ((String) options.valueOf("exclude_columns")).split(";");
+			this.exclude_columns = ((String) options.valueOf("exclude_columns")).split("/");
 		}
 
 		this.maxwellMysql.parseOptions("", options);

@@ -57,7 +57,10 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 				setRowValues(row, resultSet, table);
 
 				if ( LOGGER.isDebugEnabled() )
-					LOGGER.debug("bootstrapping row : " + row.toJSON());
+					if (context.getConfig().hasExcludedColumns())
+						LOGGER.debug("bootstrapping row : " + row.toJSON(context.getConfig().exclude_columns));
+					else
+						LOGGER.debug("bootstrapping row : " + row.toJSON());
 
 				producer.push(row);
 				++insertedRows;
