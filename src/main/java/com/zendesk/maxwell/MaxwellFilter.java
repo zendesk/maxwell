@@ -65,7 +65,7 @@ public class MaxwellFilter {
 		if ( excludeColumns != null ) {
 			for (String s : excludeColumns.split(","))
 				excludeColumns(s);
-	    }
+		}
 	}
 
 	public void includeDatabase(String name) throws MaxwellInvalidFilterException {

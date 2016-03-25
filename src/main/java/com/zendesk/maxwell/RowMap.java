@@ -72,7 +72,7 @@ public class RowMap implements Serializable {
             BinlogPosition nextPosition, List<String> excludeColumns) {
 		this(type, database, table, timestamp, pkColumns, nextPosition);
 		this.excludeColumns = excludeColumns;
-    }
+	}
 
 	public String pkToJson() throws IOException {
 		JsonGenerator g = jsonGeneratorThreadLocal.get();

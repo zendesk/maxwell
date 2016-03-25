@@ -194,7 +194,7 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 			Row r = ri.next();
 
 			RowMap rowMap;
-			if (this.filter.hasExcludeColumns())
+			if (this.filter != null && this.filter.hasExcludeColumns())
 				rowMap = buildRowMap(this.filter.getExcludeColumns());
 			else
 				rowMap = buildRowMap();

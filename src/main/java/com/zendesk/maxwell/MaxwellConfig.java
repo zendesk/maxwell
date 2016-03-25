@@ -109,7 +109,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_8" );
 
-		parser.accepts( "exclude_columns", "columns which will be excluded, use format as --exclude_columns=column_name_1/column_name_2" ).withOptionalArg();
+		parser.accepts( "exclude_columns", "columns which will be excluded, use format as --exclude_columns=id,name" ).withOptionalArg();
 
 		BuiltinHelpFormatter helpFormatter = new BuiltinHelpFormatter(200, 4) {
 			@Override

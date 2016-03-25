@@ -82,7 +82,7 @@ public class MaxwellUpdateRowsEvent extends MaxwellAbstractRowsEvent {
 
 			RowMap rowMap;
 
-			if(this.filter.hasExcludeColumns())
+			if(this.filter != null && this.filter.hasExcludeColumns())
 				rowMap = buildRowMap(this.filter.getExcludeColumns());
 			else
 				rowMap = buildRowMap();
