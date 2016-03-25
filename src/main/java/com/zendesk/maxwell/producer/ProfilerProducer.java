@@ -26,10 +26,8 @@ public class ProfilerProducer extends AbstractProducer {
 		if ( this.startTime == 0)
 			this.startTime = System.currentTimeMillis();
 
-		if (this.context.getConfig().hasExcludedColumns())
-			nullOutputStream.write(r.toJSON(this.context.getConfig().exclude_columns).getBytes());
-		else
-			nullOutputStream.write(r.toJSON().getBytes());
+
+		nullOutputStream.write(r.toJSON().getBytes());
 
 		this.count++;
 		if ( this.count % 10000 == 0 ) {

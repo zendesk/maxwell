@@ -39,7 +39,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public BinlogPosition initPosition;
 	public boolean replayMode;
 
-	public String[] exclude_columns;
+	public String excludeColumns;
 
 	public MaxwellConfig() { // argv is only null in tests
 		this.kafkaProperties = new Properties();
@@ -131,12 +131,6 @@ public class MaxwellConfig extends AbstractConfig {
 		return level;
 	}
 
-	public boolean hasExcludedColumns() {
-		if (this.exclude_columns != null)
-			return (this.exclude_columns.length > 0);
-		return false;
-	}
-
 	private void parse(String [] argv) {
 		OptionSet options = buildOptionParser().parse(argv);
 
@@ -151,10 +145,6 @@ public class MaxwellConfig extends AbstractConfig {
 
 		if ( options.has("log_level")) {
 			this.log_level = parseLogLevel((String) options.valueOf("log_level"));
-		}
-
-		if ( options.has("exclude_columns") ) {
-			this.exclude_columns = ((String) options.valueOf("exclude_columns")).split("/");
 		}
 
 		this.maxwellMysql.parseOptions("", options);
@@ -228,6 +218,10 @@ public class MaxwellConfig extends AbstractConfig {
 
 		if ( options.has("blacklist_tables"))
 			this.blacklistTables = (String) options.valueOf("blacklist_tables");
+
+		if ( options.has("exclude_columns") ) {
+			this.excludeColumns = (String) options.valueOf("exclude_columns");
+		}
 	}
 
 	private void parseFile(String filename, Boolean abortOnMissing) {

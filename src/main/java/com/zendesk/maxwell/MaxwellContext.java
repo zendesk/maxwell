@@ -197,7 +197,8 @@ public class MaxwellContext {
 			config.includeTables,
 			config.excludeTables,
 			config.blacklistDatabases,
-			config.blacklistTables);
+			config.blacklistTables,
+			config.excludeColumns);
 	}
 
 

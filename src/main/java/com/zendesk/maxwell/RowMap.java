@@ -28,6 +28,7 @@ public class RowMap implements Serializable {
 	private final HashMap<String, Object> data;
 	private final HashMap<String, Object> oldData;
 	private final List<String> pkColumns;
+	private List<String> excludeColumns;
 
 	private static final JsonFactory jsonFactory = new JsonFactory();
 
@@ -55,8 +56,8 @@ public class RowMap implements Serializable {
 				}
 			};
 
-	public RowMap(String type, String database, String table, Long timestamp,
-                List<String> pkColumns, BinlogPosition nextPosition) {
+	public RowMap(String type, String database, String table, Long timestamp, List<String> pkColumns,
+			BinlogPosition nextPosition) {
 		this.rowType = type;
 		this.database = database;
 		this.table = table;
@@ -66,6 +67,12 @@ public class RowMap implements Serializable {
 		this.nextPosition = nextPosition;
 		this.pkColumns = pkColumns;
 	}
+
+	public RowMap(String type, String database, String table, Long timestamp, List<String> pkColumns,
+            BinlogPosition nextPosition, List<String> excludeColumns) {
+		this(type, database, table, timestamp, pkColumns, nextPosition);
+		this.excludeColumns = excludeColumns;
+    }
 
 	public String pkToJson() throws IOException {
 		JsonGenerator g = jsonGeneratorThreadLocal.get();
@@ -137,42 +144,7 @@ public class RowMap implements Serializable {
 		return;
 	}
 
-	public String toJSON(String[] exclude_columns) throws IOException {
-		JsonGenerator g = getJsonGenerator();
-
-		for (String column : exclude_columns) {
-			this.data.remove(column);
-			this.oldData.remove(column);
-		}
-
-		// TODO skip this whole entry if all data being removed.
-		if ( !this.data.isEmpty() )
-			writeMapToJSON("data", this.data, true);
-
-		if ( !this.oldData.isEmpty() )
-			writeMapToJSON("old", this.oldData, true);
-
-		g.writeEndObject();
-		g.flush();
-
-		return jsonFromStream();
-	}
-
 	public String toJSON() throws IOException {
-		JsonGenerator g = getJsonGenerator();
-		writeMapToJSON("data", this.data, false);
-
-		if ( !this.oldData.isEmpty()) {
-			writeMapToJSON("old", this.oldData, true);
-		}
-
-		g.writeEndObject(); // end of row
-		g.flush();
-
-		return jsonFromStream();
-	}
-
-	private JsonGenerator getJsonGenerator() throws IOException {
 		JsonGenerator g = jsonGeneratorThreadLocal.get();
 
 		g.writeStartObject(); // start of row {
@@ -189,7 +161,28 @@ public class RowMap implements Serializable {
 		if ( this.txCommit )
 			g.writeBooleanField("commit", true);
 
-		return g;
+		if ( this.excludeColumns == null) {
+			writeMapToJSON("data", this.data, false);
+			if ( !this.oldData.isEmpty()) {
+				writeMapToJSON("old", this.oldData, true);
+			}
+		}
+		else {
+			for (String column : this.excludeColumns) {
+				this.data.remove(column);
+				this.oldData.remove(column);
+			}
+			
+			if ( !this.data.isEmpty() )
+				writeMapToJSON("data", this.data, true);
+			if ( !this.oldData.isEmpty() )
+				writeMapToJSON("old", this.oldData, true);
+		}
+
+		g.writeEndObject(); // end of row
+		g.flush();
+
+		return jsonFromStream();
 	}
 
 	private String jsonFromStream() {

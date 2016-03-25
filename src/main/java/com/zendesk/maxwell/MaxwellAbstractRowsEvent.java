@@ -176,6 +176,16 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 				this.getNextBinlogPosition());
 	}
 
+	protected RowMap buildRowMap(List<String> excludeColumns) {
+		return new RowMap(
+				getType(),
+				this.database,
+				getTable().getName(),
+				getHeader().getTimestamp() / 1000,
+				table.getPKList(),
+				this.getNextBinlogPosition(),
+				excludeColumns);
+	}
 
 	public List<RowMap> jsonMaps() {
 		ArrayList<RowMap> list = new ArrayList<>();
@@ -183,7 +193,11 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 		for ( Iterator<Row> ri = filteredRows().iterator() ; ri.hasNext(); ) {
 			Row r = ri.next();
 
-			RowMap rowMap = buildRowMap();
+			RowMap rowMap;
+			if (this.filter.hasExcludeColumns())
+				rowMap = buildRowMap(this.filter.getExcludeColumns());
+			else
+				rowMap = buildRowMap();
 
 			for ( ColumnWithDefinition cd : new ColumnWithDefinitionList(table, r, getUsedColumns()) )
 				rowMap.putData(cd.definition.getName(), cd.asJSON());

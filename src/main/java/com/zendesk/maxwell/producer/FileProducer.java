@@ -20,11 +20,7 @@ public class FileProducer extends AbstractProducer {
 
 	@Override
 	public void push(RowMap r) throws Exception {
-		if (this.context.getConfig().hasExcludedColumns())
-			this.fileWriter.write(r.toJSON(this.context.getConfig().exclude_columns));
-		else
-			this.fileWriter.write(r.toJSON());
-
+		this.fileWriter.write(r.toJSON());
 		this.fileWriter.write('\n');
 		this.fileWriter.flush();
 

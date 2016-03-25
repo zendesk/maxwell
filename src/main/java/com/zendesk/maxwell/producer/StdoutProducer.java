@@ -12,10 +12,7 @@ public class StdoutProducer extends AbstractProducer {
 
 	@Override
 	public void push(RowMap r) throws Exception {
-		if (this.context.getConfig().hasExcludedColumns())
-			System.out.println(r.toJSON(this.context.getConfig().exclude_columns));
-		else
-			System.out.println(r.toJSON());
+		System.out.println(r.toJSON());
 		this.context.setPosition(r);
 	}
 }
