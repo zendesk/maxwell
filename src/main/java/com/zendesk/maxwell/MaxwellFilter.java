@@ -3,7 +3,6 @@ package com.zendesk.maxwell;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import com.google.code.or.binlog.impl.event.TableMapEvent;
 import com.google.code.or.common.glossary.Column;
 import com.google.code.or.common.glossary.Row;
 
@@ -12,7 +11,7 @@ import com.google.code.or.common.glossary.Row;
 	(includeDatabases.nil? || includeDatabases.include?()
  */
 public class MaxwellFilter {
-	private static final List< Pattern > emptyList = Collections.unmodifiableList(new ArrayList<Pattern>());
+	private static final List<Pattern> emptyList = Collections.unmodifiableList(new ArrayList<Pattern>());
 	private final ArrayList<Pattern> includeDatabases = new ArrayList<>();
 	private final ArrayList<Pattern> excludeDatabases = new ArrayList<>();
 	private final ArrayList<Pattern> includeTables = new ArrayList<>();
@@ -20,7 +19,7 @@ public class MaxwellFilter {
 	private final ArrayList<Pattern> blacklistDatabases = new ArrayList<>();
 	private final ArrayList<Pattern> blacklistTables = new ArrayList<>();
 
-	private final List<String> excludeColumns = new ArrayList<>();
+	private final ArrayList<Pattern> excludeColumns = new ArrayList<>();
 
 	private final HashMap<String, Integer> rowFilter = new HashMap<>();
 
@@ -89,7 +88,7 @@ public class MaxwellFilter {
 	}
 
 	public void excludeColumns(String name) throws MaxwellInvalidFilterException {
-		excludeColumns.add(name);
+		excludeColumns.add(compile(name));
 	}
 
 	public void blacklistTable(String name) throws MaxwellInvalidFilterException {
@@ -192,7 +191,7 @@ public class MaxwellFilter {
 		return (excludeColumns.size() > 0);
 	}
 
-	public List<String> getExcludeColumns() {
+	public ArrayList<Pattern> getExcludeColumns() {
 		return excludeColumns;
 	}
 

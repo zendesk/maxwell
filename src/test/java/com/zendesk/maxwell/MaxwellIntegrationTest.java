@@ -137,16 +137,19 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
-	public void testExcludeColumn() throws Exception {
+	public void testExcludeColumns() throws Exception {
 		List<RowMap> list;
 		MaxwellFilter filter = new MaxwellFilter();
 	
 		list = getRowsForSQL(filter, insertSQL, createDBs);
-		assertEquals(list.get(1).getData("id").toString(), "1");
+		String json = list.get(1).toJSON();
+		assertTrue(Pattern.compile("\"id\":1").matcher(json).find());
+		assertTrue(Pattern.compile("\"account_id\":2").matcher(json).find());
 
 		filter.excludeColumns("id");
+
 		list = getRowsForSQL(filter, insertSQL, createDBs);
-		String json = list.get(1).toJSON();
+		json = list.get(1).toJSON();
 
 		assertFalse(Pattern.compile("\"id\":1").matcher(json).find());
 		assertTrue(Pattern.compile("\"account_id\":2").matcher(json).find());

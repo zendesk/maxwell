@@ -3,6 +3,7 @@ package com.zendesk.maxwell;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import com.google.code.or.binlog.BinlogEventV4Header;
 import com.google.code.or.binlog.impl.event.AbstractRowEvent;
@@ -176,7 +177,7 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 				this.getNextBinlogPosition());
 	}
 
-	protected RowMap buildRowMap(List<String> excludeColumns) {
+	protected RowMap buildRowMap(List<Pattern> excludeColumns) {
 		return new RowMap(
 				getType(),
 				this.database,

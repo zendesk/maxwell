@@ -9,9 +9,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 public class RowMap implements Serializable {
 	static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
@@ -28,7 +30,7 @@ public class RowMap implements Serializable {
 	private final HashMap<String, Object> data;
 	private final HashMap<String, Object> oldData;
 	private final List<String> pkColumns;
-	private List<String> excludeColumns;
+	private List<Pattern> excludeColumns;
 
 	private static final JsonFactory jsonFactory = new JsonFactory();
 
@@ -69,7 +71,7 @@ public class RowMap implements Serializable {
 	}
 
 	public RowMap(String type, String database, String table, Long timestamp, List<String> pkColumns,
-            BinlogPosition nextPosition, List<String> excludeColumns) {
+            BinlogPosition nextPosition, List<Pattern> excludeColumns) {
 		this(type, database, table, timestamp, pkColumns, nextPosition);
 		this.excludeColumns = excludeColumns;
 	}
@@ -161,22 +163,27 @@ public class RowMap implements Serializable {
 		if ( this.txCommit )
 			g.writeBooleanField("commit", true);
 
-		if ( this.excludeColumns == null) {
-			writeMapToJSON("data", this.data, false);
-			if ( !this.oldData.isEmpty()) {
-				writeMapToJSON("old", this.oldData, true);
+		if ( this.excludeColumns != null ) {
+			// NOTE: to avoid concurrent modification.
+			Set<String> keys = new HashSet<String>();
+			keys.addAll(this.data.keySet());
+			keys.addAll(this.oldData.keySet());
+
+			for ( Pattern p : this.excludeColumns ) {
+				for ( String key : keys ) {
+					if ( p.matcher(key).matches() ) {
+						// NOTE: let the record still be in the data.
+						this.data.put(key, "");
+						this.oldData.remove(key);
+					}
+				}
 			}
 		}
-		else {
-			for (String column : this.excludeColumns) {
-				this.data.remove(column);
-				this.oldData.remove(column);
-			}
-			
-			if ( !this.data.isEmpty() )
-				writeMapToJSON("data", this.data, true);
-			if ( !this.oldData.isEmpty() )
-				writeMapToJSON("old", this.oldData, true);
+
+		writeMapToJSON("data", this.data, false);
+
+		if ( !this.oldData.isEmpty() ) {
+			writeMapToJSON("old", this.oldData, true);
 		}
 
 		g.writeEndObject(); // end of row
