@@ -9,9 +9,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 public class RowMap implements Serializable {
 	static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
@@ -28,6 +30,7 @@ public class RowMap implements Serializable {
 	private final HashMap<String, Object> data;
 	private final HashMap<String, Object> oldData;
 	private final List<String> pkColumns;
+	private List<Pattern> excludeColumns;
 
 	private static final JsonFactory jsonFactory = new JsonFactory();
 
@@ -55,7 +58,8 @@ public class RowMap implements Serializable {
 				}
 			};
 
-	public RowMap(String type, String database, String table, Long timestamp, List<String> pkColumns, BinlogPosition nextPosition) {
+	public RowMap(String type, String database, String table, Long timestamp, List<String> pkColumns,
+			BinlogPosition nextPosition) {
 		this.rowType = type;
 		this.database = database;
 		this.table = table;
@@ -64,6 +68,12 @@ public class RowMap implements Serializable {
 		this.oldData = new HashMap<>();
 		this.nextPosition = nextPosition;
 		this.pkColumns = pkColumns;
+	}
+
+	public RowMap(String type, String database, String table, Long timestamp, List<String> pkColumns,
+            BinlogPosition nextPosition, List<Pattern> excludeColumns) {
+		this(type, database, table, timestamp, pkColumns, nextPosition);
+		this.excludeColumns = excludeColumns;
 	}
 
 	public String pkToJson() throws IOException {
@@ -153,9 +163,25 @@ public class RowMap implements Serializable {
 		if ( this.txCommit )
 			g.writeBooleanField("commit", true);
 
+		if ( this.excludeColumns != null ) {
+			// NOTE: to avoid concurrent modification.
+			Set<String> keys = new HashSet<String>();
+			keys.addAll(this.data.keySet());
+			keys.addAll(this.oldData.keySet());
+
+			for ( Pattern p : this.excludeColumns ) {
+				for ( String key : keys ) {
+					if ( p.matcher(key).matches() ) {
+						this.data.remove(key);
+						this.oldData.remove(key);
+					}
+				}
+			}
+		}
+
 		writeMapToJSON("data", this.data, false);
 
-		if ( !this.oldData.isEmpty()) {
+		if ( !this.oldData.isEmpty() ) {
 			writeMapToJSON("old", this.oldData, true);
 		}
 

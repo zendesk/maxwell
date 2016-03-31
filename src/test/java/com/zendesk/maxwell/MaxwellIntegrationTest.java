@@ -3,7 +3,9 @@ package com.zendesk.maxwell;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 import org.apache.commons.lang.ArrayUtils;
+
 import java.util.List;
+import java.util.regex.*;
 
 import com.zendesk.maxwell.schema.SchemaStore;
 import org.junit.Test;
@@ -132,6 +134,25 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		assertThat(list.size(), is(1));
 
 		assertThat(list.get(0).getTable(), is("bars"));
+	}
+
+	@Test
+	public void testExcludeColumns() throws Exception {
+		List<RowMap> list;
+		MaxwellFilter filter = new MaxwellFilter();
+	
+		list = getRowsForSQL(filter, insertSQL, createDBs);
+		String json = list.get(1).toJSON();
+		assertTrue(Pattern.compile("\"id\":1").matcher(json).find());
+		assertTrue(Pattern.compile("\"account_id\":2").matcher(json).find());
+
+		filter.excludeColumns("id");
+
+		list = getRowsForSQL(filter, insertSQL, createDBs);
+		json = list.get(1).toJSON();
+
+		assertFalse(Pattern.compile("\"id\":1").matcher(json).find());
+		assertTrue(Pattern.compile("\"account_id\":2").matcher(json).find());
 	}
 
 	static String blacklistSQLDDL[] = {
