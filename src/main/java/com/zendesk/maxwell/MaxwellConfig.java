@@ -22,7 +22,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public String databaseName;
 
-	public String  includeDatabases, excludeDatabases, includeTables, excludeTables, blacklistDatabases, blacklistTables;
+	public String  includeDatabases, excludeDatabases, includeTables, excludeTables, excludeColumns, blacklistDatabases, blacklistTables;
 
 	public final Properties kafkaProperties;
 	public String kafkaTopic;
@@ -38,8 +38,6 @@ public class MaxwellConfig extends AbstractConfig {
 	public Integer maxSchemas;
 	public BinlogPosition initPosition;
 	public boolean replayMode;
-
-	public String excludeColumns;
 
 	public MaxwellConfig() { // argv is only null in tests
 		this.kafkaProperties = new Properties();
@@ -100,16 +98,13 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "exclude_dbs", "exclude these databases, formatted as exclude_dbs=db1,db2").withOptionalArg();
 		parser.accepts( "include_tables", "include these tables, formatted as include_tables=db1,db2").withOptionalArg();
 		parser.accepts( "exclude_tables", "exclude these tables, formatted as exclude_tables=tb1,tb2").withOptionalArg();
+		parser.accepts( "exclude_columns", "exclude these columns, formatted as exclude_columns=col1,col2" ).withOptionalArg();
 		parser.accepts( "blacklist_dbs", "ignore data AND schema changes to these databases, formatted as blacklist_dbs=db1,db2. See the docs for details before setting this!").withOptionalArg();
 		parser.accepts( "blacklist_tables", "ignore data AND schema changes to these tables, formatted as blacklist_tables=tb1,tb2. See the docs for details before setting this!").withOptionalArg();
 
 		parser.accepts( "__separator_7" );
 
 		parser.accepts( "help", "display help").forHelp();
-
-		parser.accepts( "__separator_8" );
-
-		parser.accepts( "exclude_columns", "columns which will be excluded, use format as --exclude_columns=id,name" ).withOptionalArg();
 
 		BuiltinHelpFormatter helpFormatter = new BuiltinHelpFormatter(200, 4) {
 			@Override

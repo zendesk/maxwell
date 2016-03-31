@@ -172,8 +172,7 @@ public class RowMap implements Serializable {
 			for ( Pattern p : this.excludeColumns ) {
 				for ( String key : keys ) {
 					if ( p.matcher(key).matches() ) {
-						// NOTE: let the record still be in the data.
-						this.data.put(key, "");
+						this.data.remove(key);
 						this.oldData.remove(key);
 					}
 				}
