@@ -28,7 +28,7 @@ class KafkaCallback implements Callback {
 
 	public KafkaCallback(RowMap r, MaxwellContext c, String key, String json) {
 		this.context = c;
-		this.rowMap= r;
+		this.rowMap = r;
 		this.key = key;
 		this.json = json;
 	}
@@ -62,6 +62,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	};
 	private final KafkaProducer<String, String> kafka;
 	private String topic;
+	private final String originalTopic;
 	private final int numPartitions;
 	private final MaxwellKafkaPartitioner partitioner;
 
@@ -69,9 +70,12 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		super(context);
 
 		this.topic = kafkaTopic;
+		
 		if ( this.topic == null ) {
 			this.topic = "maxwell";
 		}
+		
+		this.originalTopic = this.topic;
 
 		this.setDefaults(kafkaProperties);
 		this.kafka = new KafkaProducer<>(kafkaProperties, new StringSerializer(), new StringSerializer());
@@ -86,10 +90,17 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	public void push(RowMap r) throws Exception {
 		String key = r.pkToJson();
 		String value = r.toJSON();
+		addTableTopic(context.getConfig().useTableTopic, r);
 		ProducerRecord<String, String> record =
 				new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, this.numPartitions), r.pkToJson(), r.toJSON());
 
 		kafka.send(record, new KafkaCallback(r, this.context, key, value));
+	}
+
+	private void addTableTopic(boolean useTableTopic, RowMap r) {
+		if ( useTableTopic == true ) {
+			this.topic = this.originalTopic + "-" + r.getTable();
+		}
 	}
 
 	private void setDefaults(Properties p) {

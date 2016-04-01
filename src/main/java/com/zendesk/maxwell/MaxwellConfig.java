@@ -38,12 +38,14 @@ public class MaxwellConfig extends AbstractConfig {
 	public Integer maxSchemas;
 	public BinlogPosition initPosition;
 	public boolean replayMode;
+	public boolean useTableTopic;
 
 	public MaxwellConfig() { // argv is only null in tests
 		this.kafkaProperties = new Properties();
 		this.replayMode = false;
 		this.replicationMysql = new MaxwellMysqlConfig();
 		this.maxwellMysql = new MaxwellMysqlConfig();
+		this.useTableTopic = false;
 	}
 
 	public MaxwellConfig(String argv[]) {
@@ -105,6 +107,10 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "__separator_7" );
 
 		parser.accepts( "help", "display help").forHelp();
+
+		parser.accepts( "__separator_8" );
+
+		parser.accepts( "use_table_topic", "configure one topic per table instead of single maxwell topic" );
 
 		BuiltinHelpFormatter helpFormatter = new BuiltinHelpFormatter(200, 4) {
 			@Override
@@ -216,6 +222,10 @@ public class MaxwellConfig extends AbstractConfig {
 
 		if ( options.has("exclude_columns") ) {
 			this.excludeColumns = (String) options.valueOf("exclude_columns");
+		}
+
+		if ( options.has("use_table_topic") ) {
+			this.useTableTopic = true;
 		}
 	}
 
