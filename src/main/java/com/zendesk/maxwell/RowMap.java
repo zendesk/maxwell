@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -27,8 +28,8 @@ public class RowMap implements Serializable {
 	private Long xid;
 	private boolean txCommit;
 
-	private final HashMap<String, Object> data;
-	private final HashMap<String, Object> oldData;
+	private final LinkedHashMap<String, Object> data;
+	private final LinkedHashMap<String, Object> oldData;
 	private final List<String> pkColumns;
 	private List<Pattern> excludeColumns;
 
@@ -64,8 +65,8 @@ public class RowMap implements Serializable {
 		this.database = database;
 		this.table = table;
 		this.timestamp = timestamp;
-		this.data = new HashMap<>();
-		this.oldData = new HashMap<>();
+		this.data = new LinkedHashMap<>();
+		this.oldData = new LinkedHashMap<>();
 		this.nextPosition = nextPosition;
 		this.pkColumns = pkColumns;
 	}
