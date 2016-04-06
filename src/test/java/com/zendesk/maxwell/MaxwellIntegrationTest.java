@@ -357,4 +357,20 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		runJSON("/json/test_gis");
 	}
 
+	static String[] createDBSql = {
+			"CREATE database if not exists `foo`",
+			"CREATE TABLE if not exists `foo`.`ordered_output` ( id int, account_id int, user_id int )"
+	};
+	static String[] insertDBSql = {
+			"insert into `foo`.`ordered_output` set id = 1, account_id = 2, user_id = 3"
+	};
+
+	@Test
+	public void testOrderedOutput() throws Exception {
+		MaxwellFilter filter = new MaxwellFilter();
+		List<RowMap> rows = getRowsForSQL(filter, insertDBSql, createDBSql);
+		String ordered_data = "\"data\":\\{\"id\":1,\"account_id\":2,\"user_id\":3\\}";
+		assertTrue(Pattern.compile(ordered_data).matcher(rows.get(0).toJSON()).find());
+	}
+
 }
