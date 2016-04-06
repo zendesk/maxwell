@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -119,7 +118,7 @@ public class RowMap implements Serializable {
 		return keys;
 	}
 
-	private void writeMapToJSON(String jsonMapName, HashMap<String, Object> data, boolean includeNullField) throws IOException {
+	private void writeMapToJSON(String jsonMapName, LinkedHashMap<String, Object> data, boolean includeNullField) throws IOException {
 		JsonGenerator generator = jsonGeneratorThreadLocal.get();
 		generator.writeObjectFieldStart(jsonMapName); // start of jsonMapName: {
 
