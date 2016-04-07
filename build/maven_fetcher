@@ -88,6 +88,8 @@ module MavenFetcher
       @vars[k] ||= case k
         when "project.version"
           first_text(@doc.root, "version") || first_text(@doc.root, "parent/version")
+        when "project.groupId"
+          first_text(@doc.root, "groupId") || first_text(@doc.root, "parent/groupId")
         else
           first_text(@doc.root, "properties/#{k}") || parent.get_var(k)
         end
