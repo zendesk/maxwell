@@ -26,7 +26,17 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String expectedJSON = "{\"database\":\"shard_1\",\"table\":\"minimal\",\"pk.id\":1,\"pk.text_field\":\"hello\"}";
 		list = getRowsForSQL(input);
 		assertThat(list.size(), is(1));
-		assertThat(list.get(0).pkToJson(), is(expectedJSON));
+		assertThat(list.get(0).pkToJson(RowMap.KeyFormat.HASH), is(expectedJSON));
+	}
+
+	@Test
+	public void testAlternativePKString() throws Exception {
+		List<RowMap> list;
+		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
+		String expectedJSON = "[\"shard_1\",\"minimal\",[{\"id\":1},{\"text_field\":\"hello\"}]]";
+		list = getRowsForSQL(input);
+		assertThat(list.size(), is(1));
+		assertThat(list.get(0).pkToJson(RowMap.KeyFormat.ARRAY), is(expectedJSON));
 	}
 
 	@Test

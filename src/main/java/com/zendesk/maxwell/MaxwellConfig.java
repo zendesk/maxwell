@@ -26,6 +26,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public final Properties kafkaProperties;
 	public String kafkaTopic;
+	public String kafkaKeyFormat;
 	public String producerType;
 	public String kafkaPartitionHash;
 	public String kafkaPartitionKey;
@@ -79,6 +80,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "kafka_partition_by", "database|table|primary_key, kafka producer assigns partition by hashing the specified parameter").withRequiredArg();
 		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning").withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
+		parser.accepts( "kafka_key_format", "how to format the kafka key; array|hash").withOptionalArg();
 
 		parser.accepts( "__separator_4" );
 
@@ -163,6 +165,9 @@ public class MaxwellConfig extends AbstractConfig {
 		if ( options.has("kafka_topic"))
 			this.kafkaTopic = (String) options.valueOf("kafka_topic");
 
+		if ( options.has("kafka_key_format"))
+			this.kafkaKeyFormat = (String) options.valueOf("kafka_key_format");
+
 		if ( options.has("kafka_partition_by"))
 			this.kafkaPartitionKey = (String) options.valueOf("kafka_partition_by");
 
@@ -245,6 +250,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.kafkaTopic      = p.getProperty("kafka_topic");
 		this.kafkaPartitionHash = p.getProperty("kafka_partition_hash", "default");
 		this.kafkaPartitionKey = p.getProperty("kafka_partition_by", "database");
+		this.kafkaKeyFormat = p.getProperty("kafka_key_format", "hash");
 		this.includeDatabases = p.getProperty("include_dbs");
 		this.excludeDatabases = p.getProperty("exclude_dbs");
 		this.includeTables = p.getProperty("include_tables");
@@ -288,6 +294,11 @@ public class MaxwellConfig extends AbstractConfig {
 					&& !this.kafkaPartitionKey.equals("primary_key") ) {
 				usage("please specify --kafka_partition_by=database|table|primary_key");
 			}
+
+
+			if ( !this.kafkaKeyFormat.equals("hash") && !this.kafkaKeyFormat.equals("array") )
+				usage("invalid kafka_key_format: " + this.kafkaKeyFormat);
+
 		} else if ( this.producerType.equals("file")
 				&& this.outputFile == null) {
 			usage("please specify --output_file=FILE to use the file producer");
