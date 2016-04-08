@@ -22,7 +22,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public String databaseName;
 
-	public String  includeDatabases, excludeDatabases, includeTables, excludeTables, blacklistDatabases, blacklistTables;
+	public String  includeDatabases, excludeDatabases, includeTables, excludeTables, excludeColumns, blacklistDatabases, blacklistTables;
 
 	public final Properties kafkaProperties;
 	public String kafkaTopic;
@@ -100,6 +100,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "exclude_dbs", "exclude these databases, formatted as exclude_dbs=db1,db2").withOptionalArg();
 		parser.accepts( "include_tables", "include these tables, formatted as include_tables=db1,db2").withOptionalArg();
 		parser.accepts( "exclude_tables", "exclude these tables, formatted as exclude_tables=tb1,tb2").withOptionalArg();
+		parser.accepts( "exclude_columns", "exclude these columns, formatted as exclude_columns=col1,col2" ).withOptionalArg();
 		parser.accepts( "blacklist_dbs", "ignore data AND schema changes to these databases, formatted as blacklist_dbs=db1,db2. See the docs for details before setting this!").withOptionalArg();
 		parser.accepts( "blacklist_tables", "ignore data AND schema changes to these tables, formatted as blacklist_tables=tb1,tb2. See the docs for details before setting this!").withOptionalArg();
 
@@ -217,6 +218,10 @@ public class MaxwellConfig extends AbstractConfig {
 
 		if ( options.has("blacklist_tables"))
 			this.blacklistTables = (String) options.valueOf("blacklist_tables");
+
+		if ( options.has("exclude_columns") ) {
+			this.excludeColumns = (String) options.valueOf("exclude_columns");
+		}
 	}
 
 	private void parseFile(String filename, Boolean abortOnMissing) {

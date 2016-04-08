@@ -3,7 +3,9 @@ package com.zendesk.maxwell;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 import org.apache.commons.lang.ArrayUtils;
+
 import java.util.List;
+import java.util.regex.*;
 
 import com.zendesk.maxwell.schema.SchemaStore;
 import org.junit.Test;
@@ -142,6 +144,25 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		assertThat(list.size(), is(1));
 
 		assertThat(list.get(0).getTable(), is("bars"));
+	}
+
+	@Test
+	public void testExcludeColumns() throws Exception {
+		List<RowMap> list;
+		MaxwellFilter filter = new MaxwellFilter();
+	
+		list = getRowsForSQL(filter, insertSQL, createDBs);
+		String json = list.get(1).toJSON();
+		assertTrue(Pattern.compile("\"id\":1").matcher(json).find());
+		assertTrue(Pattern.compile("\"account_id\":2").matcher(json).find());
+
+		filter.excludeColumns("id");
+
+		list = getRowsForSQL(filter, insertSQL, createDBs);
+		json = list.get(1).toJSON();
+
+		assertFalse(Pattern.compile("\"id\":1").matcher(json).find());
+		assertTrue(Pattern.compile("\"account_id\":2").matcher(json).find());
 	}
 
 	static String blacklistSQLDDL[] = {
@@ -344,6 +365,22 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testGIS() throws Exception {
 		runJSON("/json/test_gis");
+	}
+
+	static String[] createDBSql = {
+			"CREATE database if not exists `foo`",
+			"CREATE TABLE if not exists `foo`.`ordered_output` ( id int, account_id int, user_id int )"
+	};
+	static String[] insertDBSql = {
+			"insert into `foo`.`ordered_output` set id = 1, account_id = 2, user_id = 3"
+	};
+
+	@Test
+	public void testOrderedOutput() throws Exception {
+		MaxwellFilter filter = new MaxwellFilter();
+		List<RowMap> rows = getRowsForSQL(filter, insertDBSql, createDBSql);
+		String ordered_data = "\"data\":\\{\"id\":1,\"account_id\":2,\"user_id\":3\\}";
+		assertTrue(Pattern.compile(ordered_data).matcher(rows.get(0).toJSON()).find());
 	}
 
 }
