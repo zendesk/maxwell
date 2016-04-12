@@ -201,7 +201,8 @@ public class DDLParserTest {
 			"create table `shard1.foo` ( `id.foo` int )",
 			"create table `shard1.foo` ( `id.foo` int ) collate = `utf8_bin`",
 			"ALTER TABLE .`users` CHANGE COLUMN `password` `password` VARCHAR(60) CHARACTER SET 'utf8' COLLATE 'utf8_bin' NULL DEFAULT NULL COMMENT 'Length 60 for Bcrypt'",
-			"create table `shard1.foo` ( `id.foo` int ) collate = `utf8_bin`"
+			"create table `shard1.foo` ( `id.foo` int ) collate = `utf8_bin`",
+			"create table if not exists audit_payer_bank_details (event_time TIMESTAMP default CURRENT_TIMESTAMP())"
 		};
 
 		for ( String s : testSQL ) {
