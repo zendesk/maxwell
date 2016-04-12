@@ -22,7 +22,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public String databaseName;
 
-	public String  includeDatabases, excludeDatabases, includeTables, excludeTables, excludeColumns, blacklistDatabases, blacklistTables;
+	public String includeDatabases, excludeDatabases, includeTables, excludeTables, excludeColumns, blacklistDatabases,
+			blacklistTables;
 
 	public final Properties kafkaProperties;
 	public String kafkaTopic;
@@ -83,6 +84,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning").withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
 		parser.accepts( "kafka_key_format", "how to format the kafka key; array|hash").withOptionalArg();
+		parser.accepts( "kafka_topic_per_table", "configure one topic per table instead of single maxwell topic" );
 
 		parser.accepts( "__separator_4" );
 
@@ -109,10 +111,6 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "__separator_7" );
 
 		parser.accepts( "help", "display help").forHelp();
-
-		parser.accepts( "__separator_8" );
-
-		parser.accepts( "use_table_topic", "configure one topic per table instead of single maxwell topic" );
 
 		BuiltinHelpFormatter helpFormatter = new BuiltinHelpFormatter(200, 4) {
 			@Override
@@ -229,7 +227,7 @@ public class MaxwellConfig extends AbstractConfig {
 			this.excludeColumns = (String) options.valueOf("exclude_columns");
 		}
 
-		if ( options.has("use_table_topic") ) {
+		if ( options.has("kafka_topic_per_table") ) {
 			this.useTableTopic = true;
 		}
 	}

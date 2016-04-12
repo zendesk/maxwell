@@ -63,7 +63,6 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	};
 	private final KafkaProducer<String, String> kafka;
 	private String topic;
-	private final String originalTopic;
 	private final int numPartitions;
 	private final MaxwellKafkaPartitioner partitioner;
 	private final KeyFormat keyFormat;
@@ -72,12 +71,10 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		super(context);
 
 		this.topic = kafkaTopic;
-		
+
 		if ( this.topic == null ) {
 			this.topic = "maxwell";
 		}
-		
-		this.originalTopic = this.topic;
 
 		this.setDefaults(kafkaProperties);
 		this.kafka = new KafkaProducer<>(kafkaProperties, new StringSerializer(), new StringSerializer());
@@ -97,18 +94,19 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	public void push(RowMap r) throws Exception {
 		String key = r.pkToJson(keyFormat);
 		String value = r.toJSON();
-		addTableTopic(context.getConfig().useTableTopic, r);
+		
+		String messageTopic;
+		if ( context.getConfig().useTableTopic ) {
+			messageTopic = this.topic + "-" + r.getDatabase() + "." + r.getTable();
+		}
+		else {
+			messageTopic = this.topic;
+		}	
 
 		ProducerRecord<String, String> record =
-				new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, this.numPartitions), key, value);
+				new ProducerRecord<>(messageTopic, this.partitioner.kafkaPartition(r, this.numPartitions), key, value);
 
 		kafka.send(record, new KafkaCallback(r, this.context, key, value));
-	}
-
-	private void addTableTopic(boolean useTableTopic, RowMap r) {
-		if ( useTableTopic == true ) {
-			this.topic = this.originalTopic + "-" + r.getTable();
-		}
 	}
 
 	private void setDefaults(Properties p) {
