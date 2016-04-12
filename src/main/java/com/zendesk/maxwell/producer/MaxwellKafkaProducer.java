@@ -9,6 +9,9 @@ import com.zendesk.maxwell.MaxwellAbstractRowsEvent;
 import com.zendesk.maxwell.MaxwellContext;
 
 import com.zendesk.maxwell.RowInterface;
+import com.zendesk.maxwell.RowMap;
+import com.zendesk.maxwell.RowMap.KeyFormat;
+
 import com.zendesk.maxwell.producer.partitioners.*;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -64,6 +67,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	private String topic;
 	private final int numPartitions;
 	private final MaxwellKafkaPartitioner partitioner;
+	private final KeyFormat keyFormat;
 
 	public MaxwellKafkaProducer(MaxwellContext context, Properties kafkaProperties, String kafkaTopic) {
 		super(context);
@@ -80,14 +84,20 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		String hash = context.getConfig().kafkaPartitionHash;
 		String partitionKey = context.getConfig().kafkaPartitionKey;
 		this.partitioner = new MaxwellKafkaPartitioner(hash, partitionKey);
+
+		if ( context.getConfig().kafkaKeyFormat.equals("hash") )
+			keyFormat = KeyFormat.HASH;
+		else
+			keyFormat = KeyFormat.ARRAY;
 	}
 
 	@Override
 	public void push(RowInterface r) throws Exception {
-		String key = r.rowKey();
+		String key = r.rowKey(keyFormat);
 		String value = r.toJSON();
+
 		ProducerRecord<String, String> record =
-				new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, this.numPartitions), r.rowKey(), r.toJSON());
+				new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, this.numPartitions), key, value);
 
 		kafka.send(record, new KafkaCallback(r, this.context, key, value));
 	}
