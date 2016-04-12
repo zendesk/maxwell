@@ -3,6 +3,7 @@ package com.zendesk.maxwell.schema.ddl;
 import java.util.UUID;
 import java.io.IOException;
 
+import com.zendesk.maxwell.RowMap.KeyFormat;
 import com.zendesk.maxwell.RowInterface;
 import com.zendesk.maxwell.BinlogPosition;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
@@ -29,7 +30,7 @@ public class DDLRow implements RowInterface {
 		return this.nextPosition;
 	}
 
-	public String rowKey() throws IOException {
+	public String rowKey(KeyFormat keyFormat) throws IOException {
 		return UUID.randomUUID().toString();
 	}
 
