@@ -1,4 +1,4 @@
-*Maxwell's bootstrapping is available in the [1.0.0 release](https://github.com/zendesk/maxwell/releases/tag/v1.0.0)*
+*Maxwell's bootstrapping is available in the [1.0.1 release](https://github.com/zendesk/maxwell/releases/tag/v1.0.1)*
 
 ### Using the maxwell-bootstrap utility
 ***
