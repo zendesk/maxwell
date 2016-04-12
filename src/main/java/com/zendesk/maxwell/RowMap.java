@@ -8,14 +8,16 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
 public class RowMap implements Serializable {
+	public enum KeyFormat { HASH, ARRAY }
+
 	static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
 
 	private final String rowType;
@@ -27,8 +29,8 @@ public class RowMap implements Serializable {
 	private Long xid;
 	private boolean txCommit;
 
-	private final HashMap<String, Object> data;
-	private final HashMap<String, Object> oldData;
+	private final LinkedHashMap<String, Object> data;
+	private final LinkedHashMap<String, Object> oldData;
 	private final List<String> pkColumns;
 	private List<Pattern> excludeColumns;
 
@@ -64,8 +66,8 @@ public class RowMap implements Serializable {
 		this.database = database;
 		this.table = table;
 		this.timestamp = timestamp;
-		this.data = new HashMap<>();
-		this.oldData = new HashMap<>();
+		this.data = new LinkedHashMap<>();
+		this.oldData = new LinkedHashMap<>();
 		this.nextPosition = nextPosition;
 		this.pkColumns = pkColumns;
 	}
@@ -76,7 +78,14 @@ public class RowMap implements Serializable {
 		this.excludeColumns = excludeColumns;
 	}
 
-	public String pkToJson() throws IOException {
+	public String pkToJson(KeyFormat keyFormat) throws IOException {
+		if ( keyFormat == KeyFormat.HASH )
+			return pkToJsonHash();
+		else
+			return pkToJsonArray();
+	}
+
+	private String pkToJsonHash() throws IOException {
 		JsonGenerator g = jsonGeneratorThreadLocal.get();
 
 		g.writeStartObject(); // start of row {
@@ -101,6 +110,29 @@ public class RowMap implements Serializable {
 		return jsonFromStream();
 	}
 
+	private String pkToJsonArray() throws IOException {
+		JsonGenerator g = jsonGeneratorThreadLocal.get();
+
+		g.writeStartArray();
+		g.writeString(database);
+		g.writeString(table);
+
+		g.writeStartArray();
+		for (String pk : pkColumns) {
+			Object pkValue = null;
+			if ( data.containsKey(pk) )
+				pkValue = data.get(pk);
+
+			g.writeStartObject();
+			g.writeObjectField(pk, pkValue);
+			g.writeEndObject();
+		}
+		g.writeEndArray();
+		g.writeEndArray();
+		g.flush();
+		return jsonFromStream();
+	}
+
 	public String pkAsConcatString() {
 		if (pkColumns.isEmpty()) {
 			return database + table;
@@ -118,7 +150,7 @@ public class RowMap implements Serializable {
 		return keys;
 	}
 
-	private void writeMapToJSON(String jsonMapName, HashMap<String, Object> data, boolean includeNullField) throws IOException {
+	private void writeMapToJSON(String jsonMapName, LinkedHashMap<String, Object> data, boolean includeNullField) throws IOException {
 		JsonGenerator generator = jsonGeneratorThreadLocal.get();
 		generator.writeObjectFieldStart(jsonMapName); // start of jsonMapName: {
 

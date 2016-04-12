@@ -9,6 +9,7 @@ import com.zendesk.maxwell.MaxwellAbstractRowsEvent;
 import com.zendesk.maxwell.MaxwellContext;
 
 import com.zendesk.maxwell.RowMap;
+import com.zendesk.maxwell.RowMap.KeyFormat;
 import com.zendesk.maxwell.producer.partitioners.*;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -65,6 +66,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	private final String originalTopic;
 	private final int numPartitions;
 	private final MaxwellKafkaPartitioner partitioner;
+	private final KeyFormat keyFormat;
 
 	public MaxwellKafkaProducer(MaxwellContext context, Properties kafkaProperties, String kafkaTopic) {
 		super(context);
@@ -84,15 +86,21 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		String hash = context.getConfig().kafkaPartitionHash;
 		String partitionKey = context.getConfig().kafkaPartitionKey;
 		this.partitioner = new MaxwellKafkaPartitioner(hash, partitionKey);
+
+		if ( context.getConfig().kafkaKeyFormat.equals("hash") )
+			keyFormat = KeyFormat.HASH;
+		else
+			keyFormat = KeyFormat.ARRAY;
 	}
 
 	@Override
 	public void push(RowMap r) throws Exception {
-		String key = r.pkToJson();
+		String key = r.pkToJson(keyFormat);
 		String value = r.toJSON();
 		addTableTopic(context.getConfig().useTableTopic, r);
+
 		ProducerRecord<String, String> record =
-				new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, this.numPartitions), r.pkToJson(), r.toJSON());
+				new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, this.numPartitions), key, value);
 
 		kafka.send(record, new KafkaCallback(r, this.context, key, value));
 	}
