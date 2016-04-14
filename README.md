@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/zendesk/maxwell.svg?branch=master)](https://travis-ci.org/zendesk/maxwell)
+
 <div id="maxwell-header">
   <h2>Maxwell = Mysql + Kafka</h2>
 </div>
