@@ -1,6 +1,7 @@
 package com.zendesk.maxwell;
 
 import java.util.ArrayList;
+import org.apache.commons.lang.StringUtils;
 
 import joptsimple.OptionSet;
 
@@ -42,15 +43,16 @@ public class MaxwellMysqlConfig {
 		if ( options.has(prefix + "port"))
 			this.port = Integer.valueOf((String) options.valueOf(prefix + "port"));
 		if ( options.has(prefix + "jdbc_options") ) {
-			String[] opts = ((String) options.valueOf(prefix + "jdbc_options")).replaceAll("\\s+", "").split(",");
+			String[] opts = ((String) options.valueOf(prefix + "jdbc_options")).split("&");
 			for ( String opt : opts ) {
-				this.jdbc_options.add(opt);
+				this.jdbc_options.add(opt.trim());
 			}
 		}
 	}
 
 	public String getConnectionURI() {
-		return "jdbc:mysql://" + host + ":" + port + "?" + String.join("&", this.jdbc_options);
+		return "jdbc:mysql://" + host + ":" + port + "?" +				
+				StringUtils.join(this.jdbc_options.toArray(), "&");
 	}
 
 	@Override

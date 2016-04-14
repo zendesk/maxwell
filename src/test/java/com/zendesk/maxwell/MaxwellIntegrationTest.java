@@ -385,9 +385,8 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	
 	@Test
 	public void testJdbcConnectionOptions() throws Exception {
-		String[] opts = {"--jdbc_options=netTimeoutForStreamingResults=123, profileSQL=true"};
+		String[] opts = {"--jdbc_options= netTimeoutForStreamingResults=123& profileSQL=true  "};
 		MaxwellConfig config = new MaxwellConfig(opts);
-		
 		assertEquals(config.maxwellMysql.getConnectionURI(), 
 				"jdbc:mysql://localhost:3306?useCursorFetch=true&zeroDateTimeBehavior=convertToNull&netTimeoutForStreamingResults=123&profileSQL=true");
 	}
