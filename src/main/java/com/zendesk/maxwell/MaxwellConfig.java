@@ -64,6 +64,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "port", "port for host" ).withRequiredArg();
 		parser.accepts( "user", "username for host" ).withRequiredArg();
 		parser.accepts( "password", "password for host" ).withOptionalArg();
+		parser.accepts( "jdbc_options", "additional jdbc connection options" ).withOptionalArg();
 
 		parser.accepts( "__separator_2" );
 
