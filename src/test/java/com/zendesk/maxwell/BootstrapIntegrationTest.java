@@ -3,32 +3,30 @@ package com.zendesk.maxwell;
 import org.junit.Test;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
-public class BootstrapIntegrationTest extends AbstractIntegrationTest {
+public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testSingleRowBootstrap() throws Exception {
-		runJSONTestFile(getSQLDir() + "/json/bootstrap-single-row");
+		runJSON("json/bootstrap-single-row");
 	}
 
 	@Test
 	public void testMultipleRowBootstrap() throws Exception {
-		runJSONTestFile(getSQLDir() + "/json/bootstrap-multiple-row");
+		runJSON("json/bootstrap-multiple-row");
 	}
 
 	@Test
 	public void testNoPkTableBootstrap() throws Exception {
-		runJSONTestFile(getSQLDir() + "/json/bootstrap-no-pk");
+		runJSON("json/bootstrap-no-pk");
 	}
 
 	@Test
 	public void testMultipleTablesBootstrap() throws Exception {
-		runJSONTestFile(getSQLDir() + "/json/bootstrap-multiple-tables");
+		runJSON("json/bootstrap-multiple-tables");
 	}
 
 	@Test
@@ -150,13 +148,13 @@ public class BootstrapIntegrationTest extends AbstractIntegrationTest {
 			"INSERT INTO maxwell.bootstrap set database_name = 'shard_1', table_name = 'column_test'"
 		};
 
-		List<RowMap> rows = getRowsForSQL(null, input, null);
+		List<RowMap> rows = getRowsForSQL(input);
 		boolean foundNormalRow = false;
 
 		for ( RowMap r : rows ) {
 			String json = r.toJSON();
 
-			Map<String, Object> data, output = parseJSON(r.toJSON());
+			Map<String, Object> data, output = MaxwellTestJSON.parseJSON(r.toJSON());
 			if ( output.get("table").equals("column_test") && output.get("type").equals("insert") ) {
 				data = (Map<String, Object>) output.get("data");
 				if ( !foundNormalRow ) {

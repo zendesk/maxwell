@@ -1,14 +1,13 @@
 package com.zendesk.maxwell.schema.ddl;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import com.zendesk.maxwell.MaxwellFilter;
 import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.Table;
-import com.zendesk.maxwell.schema.columndef.ColumnDef;
 import com.zendesk.maxwell.schema.columndef.StringColumnDef;
+import com.zendesk.maxwell.CaseSensitivity;
 
 public class TableAlter extends SchemaChange {
 	public String database;
@@ -20,7 +19,6 @@ public class TableAlter extends SchemaChange {
 	public String convertCharset;
 	public String defaultCharset;
 	public List<String> pks;
-
 
 	public TableAlter(String database, String table) {
 		this.database = database;
@@ -34,29 +32,20 @@ public class TableAlter extends SchemaChange {
 	}
 
 	@Override
-	public Schema apply(Schema originalSchema) throws SchemaSyncError {
-		Schema newSchema = originalSchema.copy();
+	public ResolvedTableAlter resolve(Schema schema) throws InvalidSchemaError {
+		Database database = schema.findDatabaseOrThrow(this.database);
+		Table oldTable = database.findTableOrThrow(this.table);
 
-		Database database = newSchema.findDatabase(this.database);
-		if ( database == null ) {
-			throw new SchemaSyncError("Couldn't find database: " + this.database);
-		}
-
-		Table table = database.findTable(this.table);
-		if ( table == null ) {
-			throw new SchemaSyncError("Couldn't find table: " + this.database + "." + this.table);
-		}
-
+		Table table = oldTable.copy();
 
 		if ( newTableName != null && newDatabase != null ) {
-			Database destDB = newSchema.findDatabase(this.newDatabase);
-			if ( destDB == null )
-				throw new SchemaSyncError("Couldn't find database " + this.database);
+			schema.findDatabaseOrThrow(this.newDatabase);
 
-			table.rename(newTableName);
+			if ( schema.getCaseSensitivity() == CaseSensitivity.CONVERT_TO_LOWER )
+				newTableName = newTableName.toLowerCase();
 
-			database.getTableList().remove(table);
-			destDB.addTable(table);
+			table.name = newTableName;
+			table.database = newDatabase;
 		}
 
 		for (ColumnMod mod : columnMods) {
@@ -64,12 +53,9 @@ public class TableAlter extends SchemaChange {
 		}
 
 		if ( convertCharset != null ) {
-			for ( ColumnDef c : table.getColumnList() ) {
-				if ( c instanceof StringColumnDef ) {
-					StringColumnDef sc = (StringColumnDef) c;
-					if ( !sc.getCharset().toLowerCase().equals("binary") )
-						sc.setCharset(convertCharset);
-				}
+			for ( StringColumnDef sc : table.getStringColumns() ) {
+				if ( !sc.getCharset().toLowerCase().equals("binary") )
+					sc.setCharset(convertCharset);
 			}
 		}
 
@@ -78,7 +64,7 @@ public class TableAlter extends SchemaChange {
 		}
 		table.setDefaultColumnCharsets();
 
-		return newSchema;
+		return new ResolvedTableAlter(this.database, this.table, oldTable, table);
 	}
 
 	@Override
@@ -86,7 +72,7 @@ public class TableAlter extends SchemaChange {
 		if ( filter == null ) {
 			return false;
 		} else {
-			return filter.isTableBlacklisted(this.table);
+			return filter.isTableBlacklisted(this.database, this.table);
 		}
 	}
 }

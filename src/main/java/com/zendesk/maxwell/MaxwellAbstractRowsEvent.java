@@ -3,6 +3,7 @@ package com.zendesk.maxwell;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import com.google.code.or.binlog.BinlogEventV4Header;
 import com.google.code.or.binlog.impl.event.AbstractRowEvent;
@@ -25,7 +26,7 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 	private final AbstractRowEvent event;
 
 	protected final Table table;
-	protected final Database database;
+	protected final String database;
 	protected final MaxwellFilter filter;
 
 	public MaxwellAbstractRowsEvent(AbstractRowEvent e, Table table, MaxwellFilter f) {
@@ -46,7 +47,7 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 		return table;
 	}
 
-	public Database getDatabase() {
+	public String getDatabase() {
 		return database;
 	}
 
@@ -169,13 +170,23 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 	protected RowMap buildRowMap() {
 		return new RowMap(
 				getType(),
-				getDatabase().getName(),
+				this.database,
 				getTable().getName(),
 				getHeader().getTimestamp() / 1000,
 				table.getPKList(),
 				this.getNextBinlogPosition());
 	}
 
+	protected RowMap buildRowMap(List<Pattern> excludeColumns) {
+		return new RowMap(
+				getType(),
+				this.database,
+				getTable().getName(),
+				getHeader().getTimestamp() / 1000,
+				table.getPKList(),
+				this.getNextBinlogPosition(),
+				excludeColumns);
+	}
 
 	public List<RowMap> jsonMaps() {
 		ArrayList<RowMap> list = new ArrayList<>();
@@ -183,7 +194,11 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 		for ( Iterator<Row> ri = filteredRows().iterator() ; ri.hasNext(); ) {
 			Row r = ri.next();
 
-			RowMap rowMap = buildRowMap();
+			RowMap rowMap;
+			if (this.filter != null && this.filter.hasExcludeColumns())
+				rowMap = buildRowMap(this.filter.getExcludeColumns());
+			else
+				rowMap = buildRowMap();
 
 			for ( ColumnWithDefinition cd : new ColumnWithDefinitionList(table, r, getUsedColumns()) )
 				rowMap.putData(cd.definition.getName(), cd.asJSON());

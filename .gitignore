@@ -8,3 +8,4 @@ config/*.yml
 .*.sw*
 .DS_Store
 /test.log
+.sw?

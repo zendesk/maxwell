@@ -1,5 +1,8 @@
 package com.zendesk.maxwell;
 
+import java.util.ArrayList;
+import org.apache.commons.lang.StringUtils;
+
 import joptsimple.OptionSet;
 
 /**
@@ -11,6 +14,10 @@ public class MaxwellMysqlConfig {
 	public Integer port;
 	public String user;
 	public String password;
+	public ArrayList<String> jdbc_options = new ArrayList<String>() {{
+		add("useCursorFetch=true");
+		add("zeroDateTimeBehavior=convertToNull");
+	}};
 
 	public MaxwellMysqlConfig() {
 		this.host = null;
@@ -26,7 +33,7 @@ public class MaxwellMysqlConfig {
 		this.password = password;
 	}
 
-	public void parseOptions( String prefix, OptionSet options) {
+	public void parseOptions(String prefix, OptionSet options) {
 		if ( options.has(prefix + "host"))
 			this.host = (String) options.valueOf(prefix + "host");
 		if ( options.has(prefix + "password"))
@@ -35,9 +42,18 @@ public class MaxwellMysqlConfig {
 			this.user = (String) options.valueOf(prefix + "user");
 		if ( options.has(prefix + "port"))
 			this.port = Integer.valueOf((String) options.valueOf(prefix + "port"));
+		if ( options.has(prefix + "jdbc_options") ) {
+			String[] opts = ((String) options.valueOf(prefix + "jdbc_options")).split("&");
+			for ( String opt : opts ) {
+				this.jdbc_options.add(opt.trim());
+			}
+		}
 	}
 
-	public String getConnectionURI() { return "jdbc:mysql://" + host + ":" + port + "?" + "useCursorFetch=true&zeroDateTimeBehavior=convertToNull";}
+	public String getConnectionURI() {
+		return "jdbc:mysql://" + host + ":" + port + "?" +				
+				StringUtils.join(this.jdbc_options.toArray(), "&");
+	}
 
 	@Override
 	public boolean equals(Object obj) {

@@ -4,7 +4,7 @@ import com.google.code.or.common.util.MySQLConstants;
 
 
 public class IntColumnDef extends ColumnDef {
-	private final int bits;
+	public int bits;
 
 	protected boolean signed;
 

@@ -22,7 +22,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public String databaseName;
 
-	public String  includeDatabases, excludeDatabases, includeTables, excludeTables, blacklistTables;
+	public String  includeDatabases, excludeDatabases, includeTables, excludeTables, excludeColumns, blacklistDatabases, blacklistTables;
 
 	public final Properties kafkaProperties;
 	public String kafkaTopic;
@@ -31,6 +31,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public String kinesisEndpoint;
 	public String kinesisStream;
 
+	public String kafkaKeyFormat;
 	public String producerType;
 	public String kafkaPartitionHash;
 	public String kafkaPartitionKey;
@@ -54,7 +55,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public MaxwellConfig(String argv[]) {
 		this();
 		this.parse(argv);
-		this.setDefaults();
+		this.validate();
 	}
 
 	protected OptionParser buildOptionParser() {
@@ -68,6 +69,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "port", "port for host" ).withRequiredArg();
 		parser.accepts( "user", "username for host" ).withRequiredArg();
 		parser.accepts( "password", "password for host" ).withOptionalArg();
+		parser.accepts( "jdbc_options", "additional jdbc connection options" ).withOptionalArg();
 
 		parser.accepts( "__separator_2" );
 
@@ -84,6 +86,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "kafka_partition_by", "database|table|primary_key, kafka producer assigns partition by hashing the specified parameter").withRequiredArg();
 		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning").withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
+		parser.accepts( "kafka_key_format", "how to format the kafka key; array|hash").withOptionalArg();
 		parser.accepts( "kinesis_endpoint", "optionally provide kinesis endpoint").withOptionalArg();
 		parser.accepts( "kinesis_stream", "optionally provide kinesis stream name").withOptionalArg();
 
@@ -105,6 +108,8 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "exclude_dbs", "exclude these databases, formatted as exclude_dbs=db1,db2").withOptionalArg();
 		parser.accepts( "include_tables", "include these tables, formatted as include_tables=db1,db2").withOptionalArg();
 		parser.accepts( "exclude_tables", "exclude these tables, formatted as exclude_tables=tb1,tb2").withOptionalArg();
+		parser.accepts( "exclude_columns", "exclude these columns, formatted as exclude_columns=col1,col2" ).withOptionalArg();
+		parser.accepts( "blacklist_dbs", "ignore data AND schema changes to these databases, formatted as blacklist_dbs=db1,db2. See the docs for details before setting this!").withOptionalArg();
 		parser.accepts( "blacklist_tables", "ignore data AND schema changes to these tables, formatted as blacklist_tables=tb1,tb2. See the docs for details before setting this!").withOptionalArg();
 
 		parser.accepts( "__separator_7" );
@@ -173,6 +178,9 @@ public class MaxwellConfig extends AbstractConfig {
 		if ( options.has("kafka_topic"))
 			this.kafkaTopic = (String) options.valueOf("kafka_topic");
 
+		if ( options.has("kafka_key_format"))
+			this.kafkaKeyFormat = (String) options.valueOf("kafka_key_format");
+
 		if ( options.has("kafka_partition_by"))
 			this.kafkaPartitionKey = (String) options.valueOf("kafka_partition_by");
 
@@ -218,19 +226,26 @@ public class MaxwellConfig extends AbstractConfig {
 		if ( options.has("exclude_tables"))
 			this.excludeTables = (String) options.valueOf("exclude_tables");
 
+		if ( options.has("blacklist_dbs"))
+			this.blacklistDatabases = (String) options.valueOf("blacklist_dbs");
+
 		if ( options.has("blacklist_tables"))
 			this.blacklistTables = (String) options.valueOf("blacklist_tables");
+
+		if ( options.has("exclude_columns") ) {
+			this.excludeColumns = (String) options.valueOf("exclude_columns");
+		}
 	}
 
 	private void parseFile(String filename, Boolean abortOnMissing) {
 		Properties p = readPropertiesFile(filename, abortOnMissing);
 
 		if ( p == null )
-			return;
+			p = new Properties();
 
-		this.maxwellMysql.host = p.getProperty("host", "127.0.0.1");
+		this.maxwellMysql.host = p.getProperty("host");
 		this.maxwellMysql.password = p.getProperty("password");
-		this.maxwellMysql.user     = p.getProperty("user");
+		this.maxwellMysql.user     = p.getProperty("user", "maxwell");
 		this.maxwellMysql.port = Integer.valueOf(p.getProperty("port", "3306"));
 
 		this.replicationMysql.host = p.getProperty("replication_host");
@@ -238,10 +253,12 @@ public class MaxwellConfig extends AbstractConfig {
 		this.replicationMysql.user      = p.getProperty("replication_user");
 		this.replicationMysql.port = Integer.valueOf(p.getProperty("replication_port", "3306"));
 
-		this.databaseName = p.getProperty("schema_database");
+		this.databaseName = p.getProperty("schema_database", "maxwell");
 
-		this.producerType    = p.getProperty("producer");
-		this.bootstrapperType = p.getProperty("bootstrapper");
+		this.producerType    = p.getProperty("producer", "stdout");
+		this.bootstrapperType = p.getProperty("bootstrapper", "async");
+		this.bootstrapperBatchFetchSize = Integer.valueOf(p.getProperty("bootstrapper_fetch_size", "64000"));
+
 		this.outputFile      = p.getProperty("output_file");
 		this.kafkaTopic      = p.getProperty("kafka_topic");
 
@@ -251,10 +268,12 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.kafkaPartitionHash = p.getProperty("kafka_partition_hash", "default");
 		this.kafkaPartitionKey = p.getProperty("kafka_partition_by", "database");
+		this.kafkaKeyFormat = p.getProperty("kafka_key_format", "hash");
 		this.includeDatabases = p.getProperty("include_dbs");
 		this.excludeDatabases = p.getProperty("exclude_dbs");
 		this.includeTables = p.getProperty("include_tables");
 		this.excludeTables = p.getProperty("exclude_tables");
+		this.blacklistDatabases = p.getProperty("blacklist_dbs");
 		this.blacklistTables = p.getProperty("blacklist_tables");
 
 		String maxSchemaString = p.getProperty("max_schemas");
@@ -273,10 +292,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 	}
 
-	private void setDefaults() {
-		if ( this.producerType == null ) {
-			this.producerType = "stdout";
-		} else if ( this.producerType.equals("kafka") ) {
+	private void validate() {
+		if ( this.producerType.equals("kafka") ) {
 			if ( !this.kafkaProperties.containsKey("bootstrap.servers") ) {
 				usage("You must specify kafka.bootstrap.servers for the kafka producer!");
 			}
@@ -295,6 +312,11 @@ public class MaxwellConfig extends AbstractConfig {
 					&& !this.kafkaPartitionKey.equals("primary_key") ) {
 				usage("please specify --kafka_partition_by=database|table|primary_key");
 			}
+
+
+			if ( !this.kafkaKeyFormat.equals("hash") && !this.kafkaKeyFormat.equals("array") )
+				usage("invalid kafka_key_format: " + this.kafkaKeyFormat);
+
 		} else if ( this.producerType.equals("file")
 				&& this.outputFile == null) {
 			usage("please specify --output_file=FILE to use the file producer");
@@ -303,23 +325,10 @@ public class MaxwellConfig extends AbstractConfig {
 			usage("You must provide aws kinesis endpoint for using kinesis as output sink!");
 		}
 
-		if ( this.maxwellMysql.port == null )
-			this.maxwellMysql.port = 3306;
-
-		if ( this.maxwellMysql.user == null) {
-			this.maxwellMysql.user = "maxwell";
-		}
-
-		if ( this.bootstrapperType == null ) {
-			this.bootstrapperType = "async";
-		} else if ( !this.bootstrapperType.equals("async")
+		if ( !this.bootstrapperType.equals("async")
 				&& !this.bootstrapperType.equals("sync")
 				&& !this.bootstrapperType.equals("none") ) {
 			usage("please specify --bootstrapper=async|sync|none");
-		}
-
-		if ( this.bootstrapperBatchFetchSize  == null ) {
-			this.bootstrapperBatchFetchSize = 64000;
 		}
 
 		if ( this.maxwellMysql.host == null ) {
@@ -330,9 +339,6 @@ public class MaxwellConfig extends AbstractConfig {
 		if ( this.replicationMysql.host != null && !this.bootstrapperType.equals("none") ) {
 			usage("please specify --bootstrapper=none when specifying a replication host");
 		}
-
-		if ( this.replicationMysql.port == null )
-			this.replicationMysql.port = 3306;
 
 		if ( this.replicationMysql.host == null
 				|| this.replicationMysql.user == null ) {
@@ -347,10 +353,6 @@ public class MaxwellConfig extends AbstractConfig {
 									this.maxwellMysql.port,
 									this.maxwellMysql.user,
 									this.maxwellMysql.password);
-		}
-
-		if ( this.databaseName == null) {
-			this.databaseName = "maxwell";
 		}
 
 		if ( this.maxSchemas != null )

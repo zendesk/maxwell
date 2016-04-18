@@ -17,17 +17,19 @@ public class MaxwellTableCache {
 			String dbName = new String(event.getDatabaseName().getValue());
 			String tblName = new String(event.getTableName().getValue());
 			Database db = schema.findDatabase(dbName);
-			if ( db == null )
-				throw new RuntimeException("Couldn't find database " + dbName);
 
-			Table tbl = db.findTable(tblName);
-
-			if ( filter != null && filter.isTableBlacklisted(tblName) )
+			if ( filter != null && filter.isTableBlacklisted(dbName, tblName) )
 				blacklistedTableCache.put(tableId, tblName);
-			else if ( tbl == null )
-				throw new RuntimeException("Couldn't find table " + tblName);
-			else
-				tableMapCache.put(tableId, tbl);
+			else if ( db == null )
+				throw new RuntimeException("Couldn't find database " + dbName);
+			else {
+				Table tbl = db.findTable(tblName);
+
+				if (tbl == null)
+					throw new RuntimeException("Couldn't find table " + tblName);
+				else
+					tableMapCache.put(tableId, tbl);
+			}
 		}
 	}
 

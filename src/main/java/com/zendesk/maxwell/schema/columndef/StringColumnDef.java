@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class StringColumnDef extends ColumnDef {
-	protected String charset;
+	public String charset;
 
 	static final Logger LOGGER = LoggerFactory.getLogger(StringColumnDef.class);
 	public StringColumnDef(String name, String type, int pos, String charset) {

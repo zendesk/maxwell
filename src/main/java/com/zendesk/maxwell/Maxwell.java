@@ -13,7 +13,7 @@ import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
 import com.zendesk.maxwell.schema.SchemaStore;
-import com.zendesk.maxwell.schema.ddl.SchemaSyncError;
+import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 
 public class Maxwell {
 	private Schema schema;
@@ -21,7 +21,7 @@ public class Maxwell {
 	private MaxwellContext context;
 	static final Logger LOGGER = LoggerFactory.getLogger(Maxwell.class);
 
-	private void initFirstRun(Connection connection, Connection schemaConnection) throws SQLException, IOException, SchemaSyncError {
+	private void initFirstRun(Connection connection, Connection schemaConnection) throws SQLException, IOException, InvalidSchemaError {
 		LOGGER.info("Maxwell is capturing initial schema");
 		SchemaCapturer capturer = new SchemaCapturer(connection, this.context.getCaseSensitivity());
 		this.schema = capturer.capture();

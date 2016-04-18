@@ -8,12 +8,16 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 public class RowMap implements Serializable {
+	public enum KeyFormat { HASH, ARRAY }
+
 	static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
 
 	private final String rowType;
@@ -25,9 +29,10 @@ public class RowMap implements Serializable {
 	private Long xid;
 	private boolean txCommit;
 
-	private final HashMap<String, Object> data;
-	private final HashMap<String, Object> oldData;
+	private final LinkedHashMap<String, Object> data;
+	private final LinkedHashMap<String, Object> oldData;
 	private final List<String> pkColumns;
+	private List<Pattern> excludeColumns;
 
 	private static final JsonFactory jsonFactory = new JsonFactory();
 
@@ -55,18 +60,32 @@ public class RowMap implements Serializable {
 				}
 			};
 
-	public RowMap(String type, String database, String table, Long timestamp, List<String> pkColumns, BinlogPosition nextPosition) {
+	public RowMap(String type, String database, String table, Long timestamp, List<String> pkColumns,
+			BinlogPosition nextPosition) {
 		this.rowType = type;
 		this.database = database;
 		this.table = table;
 		this.timestamp = timestamp;
-		this.data = new HashMap<>();
-		this.oldData = new HashMap<>();
+		this.data = new LinkedHashMap<>();
+		this.oldData = new LinkedHashMap<>();
 		this.nextPosition = nextPosition;
 		this.pkColumns = pkColumns;
 	}
 
-	public String pkToJson() throws IOException {
+	public RowMap(String type, String database, String table, Long timestamp, List<String> pkColumns,
+            BinlogPosition nextPosition, List<Pattern> excludeColumns) {
+		this(type, database, table, timestamp, pkColumns, nextPosition);
+		this.excludeColumns = excludeColumns;
+	}
+
+	public String pkToJson(KeyFormat keyFormat) throws IOException {
+		if ( keyFormat == KeyFormat.HASH )
+			return pkToJsonHash();
+		else
+			return pkToJsonArray();
+	}
+
+	private String pkToJsonHash() throws IOException {
 		JsonGenerator g = jsonGeneratorThreadLocal.get();
 
 		g.writeStartObject(); // start of row {
@@ -91,6 +110,29 @@ public class RowMap implements Serializable {
 		return jsonFromStream();
 	}
 
+	private String pkToJsonArray() throws IOException {
+		JsonGenerator g = jsonGeneratorThreadLocal.get();
+
+		g.writeStartArray();
+		g.writeString(database);
+		g.writeString(table);
+
+		g.writeStartArray();
+		for (String pk : pkColumns) {
+			Object pkValue = null;
+			if ( data.containsKey(pk) )
+				pkValue = data.get(pk);
+
+			g.writeStartObject();
+			g.writeObjectField(pk, pkValue);
+			g.writeEndObject();
+		}
+		g.writeEndArray();
+		g.writeEndArray();
+		g.flush();
+		return jsonFromStream();
+	}
+
 	public String pkAsConcatString() {
 		if (pkColumns.isEmpty()) {
 			return database + table;
@@ -108,7 +150,7 @@ public class RowMap implements Serializable {
 		return keys;
 	}
 
-	private void writeMapToJSON(String jsonMapName, HashMap<String, Object> data, boolean includeNullField) throws IOException {
+	private void writeMapToJSON(String jsonMapName, LinkedHashMap<String, Object> data, boolean includeNullField) throws IOException {
 		JsonGenerator generator = jsonGeneratorThreadLocal.get();
 		generator.writeObjectFieldStart(jsonMapName); // start of jsonMapName: {
 
@@ -153,9 +195,25 @@ public class RowMap implements Serializable {
 		if ( this.txCommit )
 			g.writeBooleanField("commit", true);
 
+		if ( this.excludeColumns != null ) {
+			// NOTE: to avoid concurrent modification.
+			Set<String> keys = new HashSet<String>();
+			keys.addAll(this.data.keySet());
+			keys.addAll(this.oldData.keySet());
+
+			for ( Pattern p : this.excludeColumns ) {
+				for ( String key : keys ) {
+					if ( p.matcher(key).matches() ) {
+						this.data.remove(key);
+						this.oldData.remove(key);
+					}
+				}
+			}
+		}
+
 		writeMapToJSON("data", this.data, false);
 
-		if ( !this.oldData.isEmpty()) {
+		if ( !this.oldData.isEmpty() ) {
 			writeMapToJSON("old", this.oldData, true);
 		}
 

@@ -1,7 +1,5 @@
 package com.zendesk.maxwell.schema.ddl;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -9,56 +7,27 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.zendesk.maxwell.CaseSensitivity;
-import org.apache.commons.lang.StringUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.zendesk.maxwell.AbstractMaxwellTest;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
+import com.zendesk.maxwell.MaxwellTestWithIsolatedServer;
+import com.zendesk.maxwell.MaxwellTestSupport;
 
-public class DDLIntegrationTest extends AbstractMaxwellTest {
-	@Before
-	public void setUp() throws Exception {
+public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
+	private void testIntegration(String[] alters) throws Exception {
+		MaxwellTestSupport.testDDLFollowing(server, alters);
 	}
 
-	@Override
-	@After
-	public void tearDown() throws Exception {
-		super.tearDown();
-	}
-
-	private Schema testIntegration(String alters[]) throws SQLException, SchemaSyncError, IOException {
-		SchemaCapturer capturer = new SchemaCapturer(server.getConnection(), buildContext().getCaseSensitivity());
-		Schema topSchema = capturer.capture();
-
-		server.executeList(Arrays.asList(alters));
-
-		for ( String alterSQL : alters) {
-			List<SchemaChange> changes = SchemaChange.parse("shard_1", alterSQL);
-			if ( changes != null ) {
-				for ( SchemaChange change : changes ) {
-					topSchema = change.apply(topSchema);
-				}
-			}
-		}
-
-		Schema bottomSchema = capturer.capture();
-
-		List<String> diff = topSchema.diff(bottomSchema, "followed schema", "recaptured schema");
-		assertThat(StringUtils.join(diff.iterator(), "\n"), diff.size(), is(0));
-
-		return topSchema;
-	}
-
-	private Schema testIntegration(String sql) throws Exception {
+	private void testIntegration(String sql) throws Exception {
 		String[] alters = {sql};
-		return testIntegration(alters);
+		testIntegration(alters);
 	}
 
 	@Test
-	public void testAlter() throws SQLException, SchemaSyncError, IOException, InterruptedException {
+	public void testAlter() throws Exception {
 		String sql[] = {
 			"create table shard_1.testAlter ( id int(11) unsigned default 1, str varchar(255) )",
 			"alter table shard_1.testAlter add column barbar tinyint",
@@ -97,7 +66,7 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 		testIntegration(sql);
 	}
 	@Test
-	public void testDrop() throws SQLException, SchemaSyncError, IOException, InterruptedException {
+	public void testDrop() throws Exception {
 		String sql[] = {
 			"create table shard_1.testAlter ( id int(11) unsigned default 1, str varchar(255) )",
 			"drop table if exists lasdkjflaskd.laskdjflaskdj",
@@ -153,13 +122,14 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 		testIntegration(sql);
 	}
 	@Test
-	public void testDatabaseCharset() throws SQLException, SchemaSyncError, IOException {
+	public void testDatabaseCharset() throws Exception {
 		String sql[] = {
-		   "create DATABASE test_latin1 character set='latin1'",
-		   "create TABLE `test_latin1`.`latin1_table` ( id int(11) unsigned, str varchar(255) )",
-		   "create TABLE `test_latin1`.`utf8_table` ( id int(11) unsigned, "
-		     + "str_utf8 varchar(255), "
-		     + "str_latin1 varchar(255) character set latin1) charset 'utf8'"
+			"create DATABASE test_latin1 character set='latin1'",
+			"create TABLE `test_latin1`.`latin1_table` ( id int(11) unsigned, str varchar(255) )",
+			"create TABLE `test_latin1`.`utf8_table` ( id int(11) unsigned, "
+				+ "str_utf8 varchar(255), "
+				+ "str_latin1 varchar(255) character set latin1) charset 'utf8'",
+			"alter DATABASE test_latin1 character set='latin2'"
 		};
 
 		testIntegration(sql);
@@ -175,7 +145,7 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 	}
 
 	@Test
-	public void testPKs() throws SQLException, SchemaSyncError, IOException {
+	public void testPKs() throws Exception {
 		String sql[] = {
 		   "create TABLE `test_pks` ( id int(11) unsigned primary KEY, str varchar(255) )",
 		   "create TABLE `test_pks_2` ( id int(11) unsigned, str varchar(255), primary key(id, str) )",
@@ -316,18 +286,6 @@ public class DDLIntegrationTest extends AbstractMaxwellTest {
 	}
 
 	@Test
-	public void testCaseInsensitiveDatabase() throws Exception {
-		if (buildContext().getCaseSensitivity() != CaseSensitivity.CASE_SENSITIVE) {
-			String sql[] = {
-					"create TABLE taybal( a long varchar character set 'utf8' )",
-					"alter table TAYbal add column b int",
-					"drop table TAYBAL"
-			};
-
-			testIntegration(sql);
-		}
-	}
-
 	public void testAutoConvertToByte() throws Exception {
 		testIntegration("create table t1 ( " +
 			"a char(1) byte, " +

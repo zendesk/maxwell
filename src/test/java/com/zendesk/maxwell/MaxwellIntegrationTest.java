@@ -2,18 +2,20 @@ package com.zendesk.maxwell;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
+import org.apache.commons.lang.ArrayUtils;
 
 import java.util.List;
+import java.util.regex.*;
 
 import com.zendesk.maxwell.schema.SchemaStore;
 import org.junit.Test;
 
-public class MaxwellIntegrationTest extends AbstractIntegrationTest {
+public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testGetEvent() throws Exception {
 		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id = 1, text_field='hello'"};
-		list = getRowsForSQL(null, input);
+		list = getRowsForSQL(input);
 		assertThat(list.size(), is(1));
 	}
 
@@ -22,9 +24,19 @@ public class MaxwellIntegrationTest extends AbstractIntegrationTest {
 		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
 		String expectedJSON = "{\"database\":\"shard_1\",\"table\":\"minimal\",\"pk.id\":1,\"pk.text_field\":\"hello\"}";
-		list = getRowsForSQL(null, input);
+		list = getRowsForSQL(input);
 		assertThat(list.size(), is(1));
-		assertThat(list.get(0).pkToJson(), is(expectedJSON));
+		assertThat(list.get(0).pkToJson(RowMap.KeyFormat.HASH), is(expectedJSON));
+	}
+
+	@Test
+	public void testAlternativePKString() throws Exception {
+		List<RowMap> list;
+		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
+		String expectedJSON = "[\"shard_1\",\"minimal\",[{\"id\":1},{\"text_field\":\"hello\"}]]";
+		list = getRowsForSQL(input);
+		assertThat(list.size(), is(1));
+		assertThat(list.get(0).pkToJson(RowMap.KeyFormat.ARRAY), is(expectedJSON));
 	}
 
 	@Test
@@ -33,7 +45,7 @@ public class MaxwellIntegrationTest extends AbstractIntegrationTest {
 		String input[] = {"insert into minimal set account_id = 1000, text_field='hello'",
 						  "insert into minimal set account_id = 2000, text_field='goodbye'"};
 
-		list = getRowsForSQL(null, input);
+		list = getRowsForSQL(input);
 		assertThat(list.size(), is(2));
 
 		MaxwellFilter filter = new MaxwellFilter();
@@ -134,6 +146,61 @@ public class MaxwellIntegrationTest extends AbstractIntegrationTest {
 		assertThat(list.get(0).getTable(), is("bars"));
 	}
 
+	@Test
+	public void testExcludeColumns() throws Exception {
+		List<RowMap> list;
+		MaxwellFilter filter = new MaxwellFilter();
+	
+		list = getRowsForSQL(filter, insertSQL, createDBs);
+		String json = list.get(1).toJSON();
+		assertTrue(Pattern.compile("\"id\":1").matcher(json).find());
+		assertTrue(Pattern.compile("\"account_id\":2").matcher(json).find());
+
+		filter.excludeColumns("id");
+
+		list = getRowsForSQL(filter, insertSQL, createDBs);
+		json = list.get(1).toJSON();
+
+		assertFalse(Pattern.compile("\"id\":1").matcher(json).find());
+		assertTrue(Pattern.compile("\"account_id\":2").matcher(json).find());
+	}
+
+	static String blacklistSQLDDL[] = {
+		"CREATE DATABASE nodatabase",
+		"CREATE TABLE nodatabase.noseeum (i int)",
+		"CREATE TABLE nodatabase.oicu (i int)"
+	};
+
+	static String blacklistSQLDML[] = {
+		"insert into nodatabase.noseeum set i = 1",
+		"insert into nodatabase.oicu set i = 1"
+	};
+
+	@Test
+	public void testDDLTableBlacklist() throws Exception {
+		server.execute("drop database if exists nodatabase");
+		MaxwellFilter filter = new MaxwellFilter();
+		filter.blacklistTable("noseeum");
+
+		String[] allSQL = (String[])ArrayUtils.addAll(blacklistSQLDDL, blacklistSQLDML);
+
+		List<RowMap> rows = getRowsForSQL(filter, allSQL);
+		assertThat(rows.size(), is(1));
+	}
+
+	@Test
+	public void testDDLDatabaseBlacklist() throws Exception {
+		server.execute("drop database if exists nodatabase");
+
+		MaxwellFilter filter = new MaxwellFilter();
+		filter.blacklistDatabases("nodatabase");
+
+		String[] allSQL = (String[])ArrayUtils.addAll(blacklistSQLDDL, blacklistSQLDML);
+
+		List<RowMap> rows = getRowsForSQL(filter, allSQL);
+		assertThat(rows.size(), is(0));
+	}
+
 	String testAlterSQL[] = {
 			"insert into minimal set account_id = 1, text_field='hello'",
 			"ALTER table minimal drop column text_field",
@@ -146,7 +213,7 @@ public class MaxwellIntegrationTest extends AbstractIntegrationTest {
 	public void testAlterTable() throws Exception {
 		List<RowMap> list;
 
-		list = getRowsForSQL(null, testAlterSQL, null);
+		list = getRowsForSQL(testAlterSQL);
 
 		assertThat(list.get(0).getTable(), is("minimal"));
 	}
@@ -159,7 +226,7 @@ public class MaxwellIntegrationTest extends AbstractIntegrationTest {
 
 		};
 
-		List<RowMap> list = getRowsForSQL(null, sql, null);
+		List<RowMap> list = getRowsForSQL(sql);
 		assertThat(list.size(), is(3));
 		assertThat(list.get(2).isTXCommit(), is(true));
 	}
@@ -180,7 +247,7 @@ public class MaxwellIntegrationTest extends AbstractIntegrationTest {
 
 		try {
 			server.getConnection().setAutoCommit(false);
-			list = getRowsForSQL(null, testTransactions, null);
+			list = getRowsForSQL(testTransactions);
 
 			assertEquals(4, list.size());
 			for ( RowMap r : list ) {
@@ -207,7 +274,7 @@ public class MaxwellIntegrationTest extends AbstractIntegrationTest {
 			server.getConnection().createStatement().execute("set global binlog_row_image='minimal'");
 			server.resetConnection(); // only new connections pick up the binlog setting
 
-			runJSONTestFile(getSQLDir() + "/json/test_minimal");
+			runJSON("/json/test_minimal");
 		} finally {
 			server.getConnection().createStatement().execute("set global binlog_row_image='full'");
 			server.resetConnection();
@@ -216,38 +283,38 @@ public class MaxwellIntegrationTest extends AbstractIntegrationTest {
 
 	@Test
 	public void testRunMainJSONTest() throws Exception {
-		runJSONTestFile(getSQLDir() + "/json/test_1j");
+		runJSON("/json/test_1j");
 	}
 
 	@Test
 	public void testCreateLikeJSON() throws Exception {
-		runJSONTestFile(getSQLDir() + "/json/test_create_like");
+		runJSON("/json/test_create_like");
 	}
 
 	@Test
 	public void testCreateSelectJSON() throws Exception {
-		runJSONTestFile(getSQLDir() + "/json/test_create_select");
+		runJSON("/json/test_create_select");
 	}
 
 	@Test
 	public void testEnumJSON() throws Exception {
-		runJSONTestFile(getSQLDir() + "/json/test_enum");
+		runJSON("/json/test_enum");
 	}
 
 	@Test
 	public void testLatin1JSON() throws Exception {
-		runJSONTestFile(getSQLDir() + "/json/test_latin1");
+		runJSON("/json/test_latin1");
 	}
 
 	@Test
 	public void testSetJSON() throws Exception {
-		runJSONTestFile(getSQLDir() + "/json/test_set");
+		runJSON("/json/test_set");
 	}
 
 	@Test
 	public void testZeroCreatedAtJSON() throws Exception {
 		if ( server.getVersion().equals("5.5") ) // 5.6 not yet supported for this test
-			runJSONTestFile(getSQLDir() + "/json/test_zero_created_at");
+			runJSON("/json/test_zero_created_at");
 	}
 
 	@Test
@@ -256,46 +323,72 @@ public class MaxwellIntegrationTest extends AbstractIntegrationTest {
 
 
 		lowerCaseServer.boot("--lower-case-table-names=1");
-		SchemaStore.ensureMaxwellSchema(lowerCaseServer.getConnection(), buildContext().getConfig().databaseName);
+		MaxwellContext context = MaxwellTestSupport.buildContext(lowerCaseServer.getPort(), null);
+		SchemaStore.ensureMaxwellSchema(lowerCaseServer.getConnection(), context.getConfig().databaseName);
 
 		String[] sql = {
 			"CREATE TABLE `test`.`TOOTOOTWEE` ( id int )",
 			"insert into `test`.`tootootwee` set id = 5"
 		};
 
-		List<RowMap> rows = getRowsForSQL(lowerCaseServer, null, sql, null);
+		List<RowMap> rows = MaxwellTestSupport.getRowsForSQL(lowerCaseServer, null, sql, null);
 		assertThat(rows.size(), is(1));
 		assertThat(rows.get(0).getTable(), is("tootootwee"));
 	}
 
 	@Test
 	public void testBlob() throws Exception {
-		runJSONTestFile(getSQLDir() + "/json/test_blob");
+		runJSON("/json/test_blob");
 	}
 
 	@Test
 	public void testBit() throws Exception {
-		runJSONTestFile(getSQLDir() + "/json/test_bit");
+		runJSON("/json/test_bit");
 	}
 
 	@Test
 	public void testBignum() throws Exception {
-		runJSONTestFile(getSQLDir() + "/json/test_bignum");
+		runJSON("/json/test_bignum");
 	}
 
 	@Test
 	public void testTime() throws Exception {
 		if ( server.getVersion().equals("5.6") )
-			runJSONTestFile(getSQLDir() + "/json/test_time");
+			runJSON("/json/test_time");
 	}
 
 	@Test
 	public void testUCS2() throws Exception {
-		runJSONTestFile(getSQLDir() + "/json/test_ucs2");
+		runJSON("/json/test_ucs2");
 	}
 
 	@Test
 	public void testGIS() throws Exception {
-		runJSONTestFile(getSQLDir() + "/json/test_gis");
+		runJSON("/json/test_gis");
 	}
+
+	static String[] createDBSql = {
+			"CREATE database if not exists `foo`",
+			"CREATE TABLE if not exists `foo`.`ordered_output` ( id int, account_id int, user_id int )"
+	};
+	static String[] insertDBSql = {
+			"insert into `foo`.`ordered_output` set id = 1, account_id = 2, user_id = 3"
+	};
+
+	@Test
+	public void testOrderedOutput() throws Exception {
+		MaxwellFilter filter = new MaxwellFilter();
+		List<RowMap> rows = getRowsForSQL(filter, insertDBSql, createDBSql);
+		String ordered_data = "\"data\":\\{\"id\":1,\"account_id\":2,\"user_id\":3\\}";
+		assertTrue(Pattern.compile(ordered_data).matcher(rows.get(0).toJSON()).find());
+	}
+	
+	@Test
+	public void testJdbcConnectionOptions() throws Exception {
+		String[] opts = {"--jdbc_options= netTimeoutForStreamingResults=123& profileSQL=true  "};
+		MaxwellConfig config = new MaxwellConfig(opts);
+		assertEquals(config.maxwellMysql.getConnectionURI(), 
+				"jdbc:mysql://localhost:3306?useCursorFetch=true&zeroDateTimeBehavior=convertToNull&netTimeoutForStreamingResults=123&profileSQL=true");
+	}
+
 }
