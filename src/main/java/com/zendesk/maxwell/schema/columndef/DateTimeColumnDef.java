@@ -33,6 +33,10 @@ public class DateTimeColumnDef extends ColumnDef {
 	}
 
 	private String formatValue(Object value) {
+		// kristiankaufmann
+		if (value instanceof String) {
+			return (String) value;
+		}
 		/* protect against multithreaded access of static dateTimeFormatter */
 		synchronized ( DateTimeColumnDef.class ) {
 			if ( value instanceof Long && getType().equals("datetime") )

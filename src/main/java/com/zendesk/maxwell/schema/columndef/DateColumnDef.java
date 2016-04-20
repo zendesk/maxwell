@@ -26,6 +26,10 @@ public class DateColumnDef extends ColumnDef {
 	}
 
 	private String formatDate(Object value) {
+		// kristiankaufmann
+		if ( value instanceof String) {
+			return (String) value;
+		}
 		/* protect against multithreaded access of static dateFormatter */
 		synchronized ( DateColumnDef.class ) {
 			return getDateFormatter().format((Date) value);

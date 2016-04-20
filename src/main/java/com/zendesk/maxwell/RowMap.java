@@ -250,6 +250,11 @@ public class RowMap implements Serializable {
 		return nextPosition;
 	}
 
+	// kristiankaufmann
+	public String getRowType() {
+		return rowType;
+	}
+
 	public Long getXid() {
 		return xid;
 	}
@@ -281,4 +286,10 @@ public class RowMap implements Serializable {
 	public boolean hasData(String name) {
 		return this.data.containsKey(name);
 	}
+
+	// kristiankaufmann
+	public boolean hasOldData(String name) {
+		return this.oldData.containsKey(name);
+	}
+
 }

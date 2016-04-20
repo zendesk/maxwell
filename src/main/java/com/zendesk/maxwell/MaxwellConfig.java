@@ -53,6 +53,18 @@ public class MaxwellConfig extends AbstractConfig {
 		this.validate();
 	}
 
+	// kristiankaufmann
+	public MaxwellConfig(Map<String, String> props) {
+		this();
+		String[] argv = new String[props.size()];
+		int i = 0;
+		for( Map.Entry<String, String> entry: props.entrySet()) {
+			argv[i++] = "--" + entry.getKey() + "=" + entry.getValue();
+		}
+		this.parse(argv);
+		this.validate();
+	}
+
 	protected OptionParser buildOptionParser() {
 		final OptionParser parser = new OptionParser();
 		parser.accepts( "config", "location of config file" ).withRequiredArg();
