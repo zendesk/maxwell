@@ -66,7 +66,7 @@ Query OK, 1 row affected (0.04 sec)
 
 ### Kafka producer
 ***
-Boot kafka as described here:  [http://kafka.apache.org/07/quickstart.html](http://kafka.apache.org/07/quickstart.html), then:
+Boot kafka as described here:  [http://kafka.apache.org/documentation.html#quickstart](http://kafka.apache.org/documentation.html#quickstart), then:
 
 ```
 bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
