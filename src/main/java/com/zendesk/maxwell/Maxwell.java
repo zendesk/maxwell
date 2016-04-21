@@ -1,19 +1,19 @@
 package com.zendesk.maxwell;
 
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.concurrent.TimeoutException;
 import com.djdch.log4j.StaticShutdownCallbackRegistry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
 import com.zendesk.maxwell.schema.SchemaStore;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.concurrent.TimeoutException;
 
 public class Maxwell {
 	private Schema schema;
@@ -42,6 +42,10 @@ public class Maxwell {
 			MaxwellLogging.setLevel(this.config.log_level);
 
 		this.context = new MaxwellContext(this.config);
+
+		if (config.statusPort != null) {
+			MaxwellState.getInstance().startServer(config.statusPort);
+		}
 
 		this.context.probeConnections();
 

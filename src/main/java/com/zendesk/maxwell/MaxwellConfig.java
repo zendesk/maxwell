@@ -1,17 +1,17 @@
 package com.zendesk.maxwell;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.*;
-
-import joptsimple.*;
-
+import com.zendesk.maxwell.schema.SchemaStore;
+import com.zendesk.maxwell.util.AbstractConfig;
+import joptsimple.BuiltinHelpFormatter;
+import joptsimple.OptionDescriptor;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.zendesk.maxwell.util.AbstractConfig;
-import com.zendesk.maxwell.schema.SchemaStore;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.Properties;
 
 public class MaxwellConfig extends AbstractConfig {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfig.class);
@@ -31,6 +31,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public String kafkaPartitionKey;
 	public String bootstrapperType;
 	public Integer bootstrapperBatchFetchSize;
+	public Integer statusPort;
 
 	public String outputFile;
 	public String log_level;
@@ -57,21 +58,21 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "config", "location of config file" ).withRequiredArg();
 		parser.accepts( "log_level", "log level, one of DEBUG|INFO|WARN|ERROR" ).withRequiredArg();
 
-		parser.accepts( "__separator_1" );
+		parser.accepts("__separator_1");
 
 		parser.accepts( "host", "mysql host with write access to maxwell database" ).withRequiredArg();
 		parser.accepts( "port", "port for host" ).withRequiredArg();
 		parser.accepts( "user", "username for host" ).withRequiredArg();
 		parser.accepts( "password", "password for host" ).withOptionalArg();
 
-		parser.accepts( "__separator_2" );
+		parser.accepts("__separator_2");
 
 		parser.accepts( "replication_host", "mysql host to replicate from (if using separate schema and replication servers)" ).withRequiredArg();
 		parser.accepts( "replication_user", "username for replication_host" ).withRequiredArg();
 		parser.accepts( "replication_password", "password for replication_host" ).withOptionalArg();
 		parser.accepts( "replication_port", "port for replicattion_host" ).withRequiredArg();
 
-		parser.accepts( "__separator_3" );
+		parser.accepts("__separator_3");
 
 		parser.accepts( "producer", "producer type: stdout|file|kafka" ).withRequiredArg();
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
@@ -80,17 +81,17 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning").withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
 
-		parser.accepts( "__separator_4" );
+		parser.accepts("__separator_4");
 
 		parser.accepts( "bootstrapper", "bootstrapper type: async|sync|none. default: async" ).withRequiredArg();
 		parser.accepts( "bootstrapper_fetch_size", "number of rows fetched at a time during bootstrapping. default: 64000" ).withRequiredArg();
 
-		parser.accepts( "__separator_5" );
+		parser.accepts("__separator_5");
 
 		parser.accepts( "schema_database", "database name for maxwell state (schema and binlog position)").withRequiredArg();
 		parser.accepts( "max_schemas", "how many old schema definitions maxwell should keep around.  default: 5").withOptionalArg();
 		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION").withRequiredArg();
-		parser.accepts( "replay", "replay mode, don't store any information to the server");
+		parser.accepts("replay", "replay mode, don't store any information to the server");
 
 		parser.accepts( "__separator_6" );
 
@@ -101,7 +102,10 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "blacklist_dbs", "ignore data AND schema changes to these databases, formatted as blacklist_dbs=db1,db2. See the docs for details before setting this!").withOptionalArg();
 		parser.accepts( "blacklist_tables", "ignore data AND schema changes to these tables, formatted as blacklist_tables=tb1,tb2. See the docs for details before setting this!").withOptionalArg();
 
-		parser.accepts( "__separator_7" );
+		parser.accepts("__separator_7");
+		parser.accepts( "status_port", "port for reporting status. e.g. health check").withOptionalArg();
+
+		parser.accepts( "__separator_8" );
 
 		parser.accepts( "help", "display help").forHelp();
 
@@ -212,6 +216,9 @@ public class MaxwellConfig extends AbstractConfig {
 
 		if ( options.has("blacklist_tables"))
 			this.blacklistTables = (String) options.valueOf("blacklist_tables");
+
+		if ( options.has("status_port"))
+			this.statusPort = Integer.valueOf((String) options.valueOf("status_port"));
 	}
 
 	private void parseFile(String filename, Boolean abortOnMissing) {
@@ -244,6 +251,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.excludeTables = p.getProperty("exclude_tables");
 		this.blacklistDatabases = p.getProperty("blacklist_dbs");
 		this.blacklistTables = p.getProperty("blacklist_tables");
+		this.statusPort = p.containsKey("status_port") ? Integer.valueOf(p.getProperty("status_port")) : null;
 
 		String maxSchemaString = p.getProperty("max_schemas");
 		if (maxSchemaString != null)

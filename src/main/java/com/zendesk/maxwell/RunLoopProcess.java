@@ -19,20 +19,24 @@ abstract public class RunLoopProcess {
 	}
 
 	public boolean runLoop() throws Exception {
-		if ( this.runState != RunState.STOPPED )
+		if ( this.runState != RunState.STOPPED ) {
+			MaxwellState.getInstance().setRunState(runState.toString());
 			return false;
+		}
 
 		this.beforeStart();
 
 		this.runState = RunState.RUNNING;
+		MaxwellState.getInstance().setRunState(runState.toString());
 
 		try {
-			while (this.runState == RunState.RUNNING)
+			while (this.runState == RunState.RUNNING) {
 				work();
-
+			}
 			this.beforeStop();
 		} finally {
 			this.runState = RunState.STOPPED;
+			MaxwellState.getInstance().setRunState(runState.toString());
 		}
 
 		return true;

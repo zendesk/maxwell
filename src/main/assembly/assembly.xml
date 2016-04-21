@@ -18,7 +18,7 @@
   <fileSets>
     <fileSet>
       <directory>${project.basedir}</directory>
-      <outputDirectory>/</outputDirectory>
+      <outputDirectory>${project.basedir}</outputDirectory>
       <includes>
         <include>bin/*</include>
         <include>config.properties.example</include>
@@ -42,7 +42,7 @@
   <files>
     <file>
       <source>src/main/resources/log4j2.xml</source>
-      <outputDirectory>/</outputDirectory>
+      <outputDirectory>${project.basedir}</outputDirectory>
     </file>
   </files>
 </assembly>
