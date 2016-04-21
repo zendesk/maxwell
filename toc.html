@@ -1,0 +1,19 @@
+<div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        {% for nav_item in nav %}
+          <li {% if nav_item.active %}class="active"{% endif %}>
+              <a href="{{ nav_item.url }}">{{ nav_item.title }}</a>
+              {% if nav_item == current_page %}
+                  <ul class="nav">
+                  {% for toc_item in toc %}
+                      <li class="toctree-l3"><a href="{{ toc_item.url }}">{{ toc_item.title }}</a></li>
+                      {% for toc_item in toc_item.children %}
+                          <li><a class="toctree-l4" href="{{ toc_item.url }}">{{ toc_item.title }}</a></li>
+                      {% endfor %}
+                  {% endfor %}
+                  </ul>
+              {% endif %}
+          </li>
+        {% endfor %}
+    </ul>
+</div>
