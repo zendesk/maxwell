@@ -121,7 +121,7 @@ public class Database {
 		this.tableList.add(table);
 	}
 
-	public Table buildTable(String name, String charset, List<ColumnDef> list, List<String> pks) {
+	public Table buildTable(String name, String charset, ArrayList<ColumnDef> list, List<String> pks) {
 		if ( charset == null )
 			charset = getCharset(); // inherit database's default charset
 

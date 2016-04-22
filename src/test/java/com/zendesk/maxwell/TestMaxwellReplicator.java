@@ -5,6 +5,7 @@ import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.bootstrap.AsynchronousBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Schema;
+import com.zendesk.maxwell.schema.SchemaStore;
 
 import java.util.concurrent.TimeUnit;
 
@@ -15,13 +16,13 @@ public class TestMaxwellReplicator extends MaxwellReplicator {
 	private final BinlogPosition stopAt;
 	private boolean shouldStop;
 
-	public TestMaxwellReplicator(Schema currentSchema,
+	public TestMaxwellReplicator(SchemaStore schemaStore,
 								 AbstractProducer producer,
 								 AbstractBootstrapper bootstrapper,
 								 MaxwellContext ctx,
 								 BinlogPosition start,
 								 BinlogPosition stop) throws Exception {
-		super(currentSchema, producer, bootstrapper, ctx, start);
+		super(schemaStore, producer, bootstrapper, ctx, start);
 		LOGGER.debug("TestMaxwellReplicator initialized from " + start + " to " + stop);
 		this.stopAt = stop;
 	}
@@ -33,7 +34,12 @@ public class TestMaxwellReplicator extends MaxwellReplicator {
 		this.replicator.start();
 
 		while ( true ) {
-			RowMap row = getRow();
+			RowInterface ri = getRow();
+			if ( ri != null && !(ri instanceof RowMap) )
+				continue;
+
+			RowMap row = (RowMap) ri;
+
 			if ( row == null && bootstrapper.isRunning() ) {
 				Thread.sleep(100);
 				continue;

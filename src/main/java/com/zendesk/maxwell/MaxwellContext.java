@@ -63,7 +63,7 @@ public class MaxwellContext {
 
 	public void start() {
 		SchemaScavenger s = new SchemaScavenger(this.maxwellConnectionPool, this.config.databaseName);
-		new Thread(s).start();
+		new Thread(s, "maxwell-schema-scavenger").start();
 	}
 
 	public void terminate() {
@@ -100,7 +100,7 @@ public class MaxwellContext {
 		return this.initialPosition;
 	}
 
-	public void setPosition(RowMap r) throws SQLException {
+	public void setPosition(RowInterface r) throws SQLException {
 		if ( r.isTXCommit() )
 			this.setPosition(r.getPosition());
 	}

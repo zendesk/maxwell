@@ -23,11 +23,6 @@ public class GeometryColumnDef extends ColumnDef {
 	}
 
 	@Override
-	public ColumnDef copy() {
-		return new GeometryColumnDef(name, type, pos);
-	}
-
-	@Override
 	public String toSQL(Object value) {
 		return null;
 	}

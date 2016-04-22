@@ -110,7 +110,7 @@ public class Table {
 		ArrayList<ColumnDef> list = new ArrayList<>();
 
 		for ( ColumnDef c : columnList ) {
-			list.add(c.copy());
+			list.add(c);
 		}
 
 		return new Table(database, name, charset, list, pkColumnNames);

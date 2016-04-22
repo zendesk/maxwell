@@ -94,6 +94,8 @@ public class MaxwellTestSupport {
 
 
 		Schema initialSchema = capturer.capture();
+		SchemaStore initialSchemaStore = new SchemaStore(context, initialSchema, BinlogPosition.capture(mysql.getConnection()));
+		initialSchemaStore.save(context.getMaxwellConnection());
 
 		mysql.executeList(Arrays.asList(queries));
 
@@ -103,6 +105,10 @@ public class MaxwellTestSupport {
 
 		AbstractProducer producer = new AbstractProducer(context) {
 			@Override
+			public void push(RowInterface r) {
+				if ( r instanceof RowMap )
+					list.add((RowMap) r);
+			}
 			public void push(RowMap r) {
 				list.add(r);
 			}
@@ -122,13 +128,11 @@ public class MaxwellTestSupport {
 			}
 		};
 
-		TestMaxwellReplicator p = new TestMaxwellReplicator(initialSchema, producer, bootstrapper, context, start, endPosition);
+		TestMaxwellReplicator p = new TestMaxwellReplicator(initialSchemaStore, producer, bootstrapper, context, start, endPosition);
 
 		p.setFilter(filter);
 
 		p.getEvents(producer);
-
-		Schema schema = p.schema;
 
 		bootstrapper.join();
 

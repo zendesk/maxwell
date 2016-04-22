@@ -27,11 +27,6 @@ public class SetColumnDef extends EnumeratedColumnDef {
 		return asList(value);
 	}
 
-	@Override
-	public ColumnDef copy() {
-		return new SetColumnDef(name, type, pos, enumValues);
-	}
-
 	private ArrayList<String> asList(Object value) {
 		if ( value instanceof String ) {
 			return new ArrayList<>(Arrays.asList((( String ) value).split(",")));

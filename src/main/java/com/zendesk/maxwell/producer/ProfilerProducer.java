@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.producer;
 
 import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.RowMap;
+import com.zendesk.maxwell.RowInterface;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -18,7 +18,7 @@ public class ProfilerProducer extends AbstractProducer {
 	}
 
 	@Override
-	public void push(RowMap r) throws Exception {
+	public void push(RowInterface r) throws Exception {
 		if ( this.nullOutputStream == null ) {
 			this.nullOutputStream = new FileOutputStream(new File("/dev/null"));
 		}

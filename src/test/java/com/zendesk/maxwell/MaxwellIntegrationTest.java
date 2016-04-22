@@ -26,7 +26,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String expectedJSON = "{\"database\":\"shard_1\",\"table\":\"minimal\",\"pk.id\":1,\"pk.text_field\":\"hello\"}";
 		list = getRowsForSQL(input);
 		assertThat(list.size(), is(1));
-		assertThat(list.get(0).pkToJson(RowMap.KeyFormat.HASH), is(expectedJSON));
+		assertThat(list.get(0).rowKey(RowMap.KeyFormat.HASH), is(expectedJSON));
 	}
 
 	@Test
@@ -36,7 +36,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String expectedJSON = "[\"shard_1\",\"minimal\",[{\"id\":1},{\"text_field\":\"hello\"}]]";
 		list = getRowsForSQL(input);
 		assertThat(list.size(), is(1));
-		assertThat(list.get(0).pkToJson(RowMap.KeyFormat.ARRAY), is(expectedJSON));
+		assertThat(list.get(0).rowKey(RowMap.KeyFormat.ARRAY), is(expectedJSON));
 	}
 
 	@Test
@@ -150,7 +150,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	public void testExcludeColumns() throws Exception {
 		List<RowMap> list;
 		MaxwellFilter filter = new MaxwellFilter();
-	
+
 		list = getRowsForSQL(filter, insertSQL, createDBs);
 		String json = list.get(1).toJSON();
 		assertTrue(Pattern.compile("\"id\":1").matcher(json).find());
