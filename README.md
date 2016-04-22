@@ -16,7 +16,11 @@ but differentiates itself with these features:
 Maxwell is intended as a source for event-based readers, eg various ETL applications, search indexing,
 stat emitters.
 
+- Download: [https://github.com/zendesk/maxwell/releases/download/v1.0.1/maxwell-1.0.1.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.0.1/maxwell-1.0.1.tar.gz)
+- Source: [https://github.com/zendesk/maxwell](https://github.com/zendesk/maxwell)
+
 <br style="clear:both"/>
+
 
 ```
   mysql> insert into `test`.`maxwell` set id = 1, daemon = 'Stanlislaw Lem';

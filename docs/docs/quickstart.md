@@ -1,3 +1,15 @@
+### Download
+***
+- Download binary distro: [https://github.com/zendesk/maxwell/releases/download/v1.0.1/maxwell-1.0.1.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.0.1/maxwell-1.0.1.tar.gz)
+- Sources and bug tracking is available on github: [https://github.com/zendesk/maxwell](https://github.com/zendesk/maxwell)
+- Obligatory copy/paste to terminal:
+
+```
+curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.0.1/maxwell-1.0.1.tar.gz \
+       | tar zxvf -
+cd maxwell-1.0.1
+```
+
 ### Row based replication
 ***
 Maxwell can only operate if row-based replication is on.
@@ -32,16 +44,6 @@ mysql> GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE on *.* to 'maxwell'@'
 mysql> GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE on *.* to 'maxwell'@'localhost' identified by 'XXXXXX';
 mysql> GRANT ALL on maxwell.* to 'maxwell'@'localhost';
 
-```
-
-### Download
-***
-You'll need a version 7 of a JVM.
-
-```
-curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.17.0/maxwell-0.17.0.tar.gz \
-       | tar zxvf -
-cd maxwell-0.17.0
 ```
 
 
