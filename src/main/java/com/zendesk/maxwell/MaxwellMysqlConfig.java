@@ -43,10 +43,15 @@ public class MaxwellMysqlConfig {
 		if ( options.has(prefix + "port"))
 			this.port = Integer.valueOf((String) options.valueOf(prefix + "port"));
 		if ( options.has(prefix + "jdbc_options") ) {
-			String[] opts = ((String) options.valueOf(prefix + "jdbc_options")).split("&");
-			for ( String opt : opts ) {
-				this.jdbc_options.add(opt.trim());
-			}
+			String opts = (String) options.valueOf(prefix + "jdbc_options");
+			parseJdbcOptions(opts);
+		}
+	}
+	
+	public void parseJdbcOptions(String opts) {
+		if (opts == null) return;
+		for ( String opt : opts.split("&") ) {
+			this.jdbc_options.add(opt.trim());
 		}
 	}
 
