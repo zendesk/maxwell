@@ -389,6 +389,9 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		MaxwellConfig config = new MaxwellConfig(opts);
 		assertEquals(config.maxwellMysql.getConnectionURI(), 
 				"jdbc:mysql://localhost:3306?useCursorFetch=true&zeroDateTimeBehavior=convertToNull&netTimeoutForStreamingResults=123&profileSQL=true");
+		assertEquals(config.replicationMysql.getConnectionURI(), 
+				"jdbc:mysql://localhost:3306?useCursorFetch=true&zeroDateTimeBehavior=convertToNull&netTimeoutForStreamingResults=123&profileSQL=true");
+
 	}
 
 }

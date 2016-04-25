@@ -42,8 +42,8 @@ public class MaxwellMysqlConfig {
 			this.user = (String) options.valueOf(prefix + "user");
 		if ( options.has(prefix + "port"))
 			this.port = Integer.valueOf((String) options.valueOf(prefix + "port"));
-		if ( options.has(prefix + "jdbc_options") ) {
-			String opts = (String) options.valueOf(prefix + "jdbc_options");
+		if ( options.has("jdbc_options") ) {
+			String opts = (String) options.valueOf("jdbc_options");
 			parseJdbcOptions(opts);
 		}
 	}

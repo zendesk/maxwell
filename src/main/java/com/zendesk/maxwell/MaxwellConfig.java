@@ -228,36 +228,36 @@ public class MaxwellConfig extends AbstractConfig {
 		if ( p == null )
 			p = new Properties();
 
-		this.maxwellMysql.host		= p.getProperty("host");
-		this.maxwellMysql.password	= p.getProperty("password");
-		this.maxwellMysql.user     	= p.getProperty("user", "maxwell");
-		this.maxwellMysql.port 		= Integer.valueOf(p.getProperty("port", "3306"));
-
+		this.maxwellMysql.host = p.getProperty("host");
+		this.maxwellMysql.password = p.getProperty("password");
+		this.maxwellMysql.user     = p.getProperty("user", "maxwell");
+		this.maxwellMysql.port = Integer.valueOf(p.getProperty("port", "3306"));
 		this.maxwellMysql.parseJdbcOptions(p.getProperty("jdbc_options"));
 
-		this.replicationMysql.host		= p.getProperty("replication_host");
-		this.replicationMysql.password		= p.getProperty("replication_password");
-		this.replicationMysql.user		= p.getProperty("replication_user");
-		this.replicationMysql.port		= Integer.valueOf(p.getProperty("replication_port", "3306"));
+		this.replicationMysql.host = p.getProperty("replication_host");
+		this.replicationMysql.password = p.getProperty("replication_password");
+		this.replicationMysql.user      = p.getProperty("replication_user");
+		this.replicationMysql.port = Integer.valueOf(p.getProperty("replication_port", "3306"));
+		this.replicationMysql.parseJdbcOptions(p.getProperty("jdbc_options"));
 
 		this.databaseName = p.getProperty("schema_database", "maxwell");
 
-		this.producerType     = p.getProperty("producer", "stdout");
+		this.producerType    = p.getProperty("producer", "stdout");
 		this.bootstrapperType = p.getProperty("bootstrapper", "async");
 		this.bootstrapperBatchFetchSize = Integer.valueOf(p.getProperty("bootstrapper_fetch_size", "64000"));
 
-		this.outputFile      	= p.getProperty("output_file");
-		this.kafkaTopic      	= p.getProperty("kafka_topic");
+		this.outputFile      = p.getProperty("output_file");
+		this.kafkaTopic      = p.getProperty("kafka_topic");
 		this.kafkaPartitionHash = p.getProperty("kafka_partition_hash", "default");
-		this.kafkaPartitionKey 	= p.getProperty("kafka_partition_by", "database");
-		this.kafkaKeyFormat 	= p.getProperty("kafka_key_format", "hash");
-		this.includeDatabases 	= p.getProperty("include_dbs");
-		this.excludeDatabases 	= p.getProperty("exclude_dbs");
-		this.includeTables		= p.getProperty("include_tables");
-		this.excludeTables		= p.getProperty("exclude_tables");
+		this.kafkaPartitionKey = p.getProperty("kafka_partition_by", "database");
+		this.kafkaKeyFormat = p.getProperty("kafka_key_format", "hash");
+		this.includeDatabases = p.getProperty("include_dbs");
+		this.excludeDatabases = p.getProperty("exclude_dbs");
+		this.includeTables = p.getProperty("include_tables");
+		this.excludeTables = p.getProperty("exclude_tables");
+		this.excludeColumns = p.getProperty("exclude_columns");
 		this.blacklistDatabases = p.getProperty("blacklist_dbs");
-		this.blacklistTables 	= p.getProperty("blacklist_tables");
-		this.excludeColumns 	= p.getProperty("exclude_columns");
+		this.blacklistTables = p.getProperty("blacklist_tables");
 
 		String maxSchemaString = p.getProperty("max_schemas");
 		if (maxSchemaString != null)
@@ -333,6 +333,8 @@ public class MaxwellConfig extends AbstractConfig {
 									this.maxwellMysql.port,
 									this.maxwellMysql.user,
 									this.maxwellMysql.password);
+
+			this.replicationMysql.jdbc_options = this.maxwellMysql.jdbc_options;
 		}
 
 		if ( this.maxSchemas != null )
