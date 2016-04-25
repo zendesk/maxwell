@@ -14,7 +14,7 @@ public class MaxwellMysqlConfig {
 	public Integer port;
 	public String user;
 	public String password;
-	public ArrayList<String> jdbc_options = new ArrayList<String>() {{
+	public ArrayList<String> jdbcOptions = new ArrayList<String>() {{
 		add("useCursorFetch=true");
 		add("zeroDateTimeBehavior=convertToNull");
 	}};
@@ -44,20 +44,20 @@ public class MaxwellMysqlConfig {
 			this.port = Integer.valueOf((String) options.valueOf(prefix + "port"));
 		if ( options.has("jdbc_options") ) {
 			String opts = (String) options.valueOf("jdbc_options");
-			parseJdbcOptions(opts);
+			parseJDBCOptions(opts);
 		}
 	}
 	
-	public void parseJdbcOptions(String opts) {
+	public void parseJDBCOptions(String opts) {
 		if (opts == null) return;
 		for ( String opt : opts.split("&") ) {
-			this.jdbc_options.add(opt.trim());
+			this.jdbcOptions.add(opt.trim());
 		}
 	}
 
 	public String getConnectionURI() {
 		return "jdbc:mysql://" + host + ":" + port + "?" +				
-				StringUtils.join(this.jdbc_options.toArray(), "&");
+				StringUtils.join(this.jdbcOptions.toArray(), "&");
 	}
 
 	@Override

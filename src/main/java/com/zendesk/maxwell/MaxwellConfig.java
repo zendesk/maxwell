@@ -232,13 +232,13 @@ public class MaxwellConfig extends AbstractConfig {
 		this.maxwellMysql.password = p.getProperty("password");
 		this.maxwellMysql.user     = p.getProperty("user", "maxwell");
 		this.maxwellMysql.port = Integer.valueOf(p.getProperty("port", "3306"));
-		this.maxwellMysql.parseJdbcOptions(p.getProperty("jdbc_options"));
+		this.maxwellMysql.parseJDBCOptions(p.getProperty("jdbc_options"));
 
 		this.replicationMysql.host = p.getProperty("replication_host");
 		this.replicationMysql.password = p.getProperty("replication_password");
 		this.replicationMysql.user      = p.getProperty("replication_user");
 		this.replicationMysql.port = Integer.valueOf(p.getProperty("replication_port", "3306"));
-		this.replicationMysql.parseJdbcOptions(p.getProperty("jdbc_options"));
+		this.replicationMysql.parseJDBCOptions(p.getProperty("jdbc_options"));
 
 		this.databaseName = p.getProperty("schema_database", "maxwell");
 
@@ -334,7 +334,7 @@ public class MaxwellConfig extends AbstractConfig {
 									this.maxwellMysql.user,
 									this.maxwellMysql.password);
 
-			this.replicationMysql.jdbc_options = this.maxwellMysql.jdbc_options;
+			this.replicationMysql.jdbcOptions = this.maxwellMysql.jdbcOptions;
 		}
 
 		if ( this.maxSchemas != null )
