@@ -1,8 +1,5 @@
 package com.zendesk.maxwell;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.*;
 
 import joptsimple.*;
@@ -235,11 +232,13 @@ public class MaxwellConfig extends AbstractConfig {
 		this.maxwellMysql.password = p.getProperty("password");
 		this.maxwellMysql.user     = p.getProperty("user", "maxwell");
 		this.maxwellMysql.port = Integer.valueOf(p.getProperty("port", "3306"));
+		this.maxwellMysql.parseJDBCOptions(p.getProperty("jdbc_options"));
 
 		this.replicationMysql.host = p.getProperty("replication_host");
 		this.replicationMysql.password = p.getProperty("replication_password");
 		this.replicationMysql.user      = p.getProperty("replication_user");
 		this.replicationMysql.port = Integer.valueOf(p.getProperty("replication_port", "3306"));
+		this.replicationMysql.parseJDBCOptions(p.getProperty("jdbc_options"));
 
 		this.databaseName = p.getProperty("schema_database", "maxwell");
 
@@ -256,6 +255,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.excludeDatabases = p.getProperty("exclude_dbs");
 		this.includeTables = p.getProperty("include_tables");
 		this.excludeTables = p.getProperty("exclude_tables");
+		this.excludeColumns = p.getProperty("exclude_columns");
 		this.blacklistDatabases = p.getProperty("blacklist_dbs");
 		this.blacklistTables = p.getProperty("blacklist_tables");
 
@@ -333,6 +333,8 @@ public class MaxwellConfig extends AbstractConfig {
 									this.maxwellMysql.port,
 									this.maxwellMysql.user,
 									this.maxwellMysql.password);
+
+			this.replicationMysql.jdbcOptions = this.maxwellMysql.jdbcOptions;
 		}
 
 		if ( this.maxSchemas != null )
