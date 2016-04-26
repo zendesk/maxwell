@@ -150,7 +150,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	public void testExcludeColumns() throws Exception {
 		List<RowMap> list;
 		MaxwellFilter filter = new MaxwellFilter();
-	
+
 		list = getRowsForSQL(filter, insertSQL, createDBs);
 		String json = list.get(1).toJSON();
 		assertTrue(Pattern.compile("\"id\":1").matcher(json).find());
@@ -382,13 +382,13 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String ordered_data = "\"data\":\\{\"id\":1,\"account_id\":2,\"user_id\":3\\}";
 		assertTrue(Pattern.compile(ordered_data).matcher(rows.get(0).toJSON()).find());
 	}
-	
+
 	@Test
 	public void testJdbcConnectionOptions() throws Exception {
-		String[] opts = {"--jdbc_options= netTimeoutForStreamingResults=123& profileSQL=true  "};
+		String[] opts = {"--jdbc_options= netTimeoutForStreamingResults=123& profileSQL=true  ", "--host=no-soup-spoons"};
 		MaxwellConfig config = new MaxwellConfig(opts);
-		assertEquals(config.maxwellMysql.getConnectionURI(), 
-				"jdbc:mysql://localhost:3306?useCursorFetch=true&zeroDateTimeBehavior=convertToNull&netTimeoutForStreamingResults=123&profileSQL=true");
+		assertEquals(config.maxwellMysql.getConnectionURI(),
+				"jdbc:mysql://no-soup-spoons:3306?useCursorFetch=true&zeroDateTimeBehavior=convertToNull&netTimeoutForStreamingResults=123&profileSQL=true");
 	}
 
 }
