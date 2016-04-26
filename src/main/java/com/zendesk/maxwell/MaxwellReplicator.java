@@ -29,7 +29,8 @@ public class MaxwellReplicator extends RunLoopProcess {
 	private final long MAX_TX_ELEMENTS = 10000;
 	String filePath, fileName;
 	private long rowEventsProcessed;
-	protected Schema schema;
+	protected SchemaStore schemaStore;
+
 	private MaxwellFilter filter;
 
 	private final LinkedBlockingDeque<BinlogEventV4> queue = new LinkedBlockingDeque<>(20);
@@ -44,8 +45,8 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellReplicator.class);
 
-	public MaxwellReplicator(Schema currentSchema, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, BinlogPosition start) throws Exception {
-		this.schema = currentSchema;
+	public MaxwellReplicator(SchemaStore schemaStore, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, BinlogPosition start) throws Exception {
+		this.schemaStore = schemaStore;
 
 		this.binlogEventListener = new MaxwellBinlogEventListener(queue);
 
@@ -222,7 +223,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 					break;
 				case MySQLConstants.TABLE_MAP_EVENT:
-					tableCache.processEvent(this.schema, this.filter, (TableMapEvent) v4Event);
+					tableCache.processEvent(getSchema(), this.filter, (TableMapEvent) v4Event);
 					break;
 				case MySQLConstants.QUERY_EVENT:
 					QueryEvent qe = (QueryEvent) v4Event;
@@ -290,7 +291,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 					rowBuffer = getTransactionRows();
 					break;
 				case MySQLConstants.TABLE_MAP_EVENT:
-					tableCache.processEvent(this.schema, this.filter, (TableMapEvent) v4Event);
+					tableCache.processEvent(getSchema(), this.filter, (TableMapEvent) v4Event);
 					break;
 				case MySQLConstants.QUERY_EVENT:
 					QueryEvent qe = (QueryEvent) v4Event;
@@ -322,7 +323,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 		if ( changes == null )
 			return;
 
-		Schema updatedSchema = this.schema;
+		Schema updatedSchema = getSchema();
 
 		for ( SchemaChange change : changes ) {
 			if ( !change.isBlacklisted(this.filter) ) {
@@ -334,7 +335,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 			}
 		}
 
-		if ( updatedSchema != this.schema) {
+		if ( updatedSchema != getSchema() ) {
 			BinlogPosition p = eventBinlogPosition(event);
 			LOGGER.info("storing schema @" + p + " after applying \"" + sql.replace('\n', ' ') + "\"");
 
@@ -343,12 +344,12 @@ public class MaxwellReplicator extends RunLoopProcess {
 	}
 
 	private void saveSchema(Schema updatedSchema, BinlogPosition p) throws SQLException {
-		this.schema = updatedSchema;
 		tableCache.clear();
 
 		if ( !this.context.getReplayMode() ) {
 			try (Connection c = this.context.getMaxwellConnection()) {
-				new SchemaStore(c, this.context.getServerID(), this.schema, p, this.context.getConfig().databaseName).save();
+				this.schemaStore = new SchemaStore(this.context.getServerID(), this.context.getCaseSensitivity(), updatedSchema, p);
+				this.schemaStore.save(c);
 			}
 
 			this.context.setPositionSync(p);
@@ -356,11 +357,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 	}
 
 	public Schema getSchema() {
-		return schema;
-	}
-
-	public void setSchema(Schema schema) {
-		this.schema = schema;
+		return this.schemaStore.getSchema();
 	}
 
 	public void setFilter(MaxwellFilter filter) {
