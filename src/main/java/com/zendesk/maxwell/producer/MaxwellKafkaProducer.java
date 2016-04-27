@@ -29,7 +29,7 @@ class KafkaCallback implements Callback {
 
 	public KafkaCallback(RowMap r, MaxwellContext c, String key, String json) {
 		this.context = c;
-		this.rowMap= r;
+		this.rowMap = r;
 		this.key = key;
 		this.json = json;
 	}
@@ -71,6 +71,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		super(context);
 
 		this.topic = kafkaTopic;
+
 		if ( this.topic == null ) {
 			this.topic = "maxwell";
 		}
@@ -93,9 +94,17 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	public void push(RowMap r) throws Exception {
 		String key = r.pkToJson(keyFormat);
 		String value = r.toJSON();
+		
+		String messageTopic;
+		if ( context.getConfig().useTableTopic ) {
+			messageTopic = this.topic + "-" + r.getDatabase() + "." + r.getTable();
+		}
+		else {
+			messageTopic = this.topic;
+		}	
 
 		ProducerRecord<String, String> record =
-				new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, this.numPartitions), key, value);
+				new ProducerRecord<>(messageTopic, this.partitioner.kafkaPartition(r, this.numPartitions), key, value);
 
 		kafka.send(record, new KafkaCallback(r, this.context, key, value));
 	}
