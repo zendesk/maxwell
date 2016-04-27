@@ -7,10 +7,12 @@ import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 
+import com.fasterxml.jackson.databind.JavaType;
 import com.zendesk.maxwell.CaseSensitivity;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.schema.columndef.*;
@@ -20,17 +22,22 @@ import org.slf4j.LoggerFactory;
 
 import com.zendesk.maxwell.BinlogPosition;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
+import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class SchemaStore {
-	private static int maxSchemas = 5;
 	private Schema schema;
 	private BinlogPosition position;
 	private Long schema_id;
 	private String charset;
 
-	public Long getSchemaID() {
-		return schema_id;
-	}
+	private Long base_schema_id;
+	private List<ResolvedSchemaChange> deltas;
+
+	private static final ObjectMapper mapper = new ObjectMapper();
+	private static final JavaType listOfResolvedSchemaChangeType = mapper.getTypeFactory().constructCollectionType(List.class, ResolvedSchemaChange.class);
 
 	static final Logger LOGGER = LoggerFactory.getLogger(SchemaStore.class);
 
@@ -56,12 +63,19 @@ public class SchemaStore {
 		this(context.getServerID(), context.getCaseSensitivity(), schema, position);
 	}
 
-	public static int getMaxSchemas() {
-		return maxSchemas;
+	public SchemaStore(Long serverID, CaseSensitivity sensitivity, Schema schema, BinlogPosition position,
+			long base_schema_id, List<ResolvedSchemaChange> deltas) throws SQLException {
+		this(serverID, sensitivity);
+
+		this.schema = schema;
+		this.base_schema_id = base_schema_id;
+		this.deltas = deltas;
+
+		this.position = position;
 	}
 
-	public static void setMaxSchemas(int maxSchemas) {
-		SchemaStore.maxSchemas = maxSchemas;
+	public Long getSchemaID() {
+		return schema_id;
 	}
 
 	private static Long executeInsert(PreparedStatement preparedStatement,
@@ -90,12 +104,35 @@ public class SchemaStore {
 		} finally {
 			connection.setAutoCommit(true);
 		}
-		if ( this.schema_id != null ) {
-			deleteOldSchemas(connection, schema_id);
+	}
+
+	public Long saveDerivedSchema(Connection conn) throws SQLException {
+		PreparedStatement insert = conn.prepareStatement(
+				"INSERT into `schemas` SET base_schema_id = ?, deltas = ?, binlog_file = ?, binlog_position = ?, server_id = ?, charset = ?",
+				Statement.RETURN_GENERATED_KEYS);
+
+		String deltaString;
+
+		try {
+			deltaString = mapper.writerFor(listOfResolvedSchemaChangeType).writeValueAsString(deltas);
+		} catch ( JsonProcessingException e ) {
+			throw new RuntimeException("Couldn't serialize " + deltas + " to JSON.");
 		}
+
+		return executeInsert(insert,
+		                     this.base_schema_id,
+		                     deltaString,
+		                     position.getFile(),
+		                     position.getOffset(),
+		                     serverID,
+		                     schema.getCharset());
+
 	}
 
 	public Long saveSchema(Connection conn) throws SQLException {
+		if ( this.base_schema_id != null )
+			return saveDerivedSchema(conn);
+
 		PreparedStatement schemaInsert, databaseInsert, tableInsert;
 
 		schemaInsert = conn.prepareStatement(
@@ -229,8 +266,68 @@ public class SchemaStore {
 		return s;
 	}
 
-	private void restoreFrom(Connection conn, BinlogPosition targetPosition) throws SQLException, InvalidSchemaError {
-		PreparedStatement p;
+	private List<ResolvedSchemaChange> parseDeltas(String json) throws IOException {
+		if ( json == null )
+			return null;
+
+		return mapper.readerFor(listOfResolvedSchemaChangeType).readValue(json.getBytes());
+	}
+
+	/* restore a chain of derived schemas by following the chain backwards
+	 * until we find the "base" schema. */
+	private void restoreDerivedSchema(Connection conn, Long base_schema_id, Long schema_id) throws SQLException, IOException, InvalidSchemaError {
+		HashMap<Long, HashMap<String, Object>> schemas = new HashMap<>();
+
+		PreparedStatement p = conn.prepareStatement("SELECT * from `schemas` where server_id = ?");
+		p.setLong(1, this.serverID);
+		ResultSet rs = p.executeQuery();
+
+		ResultSetMetaData md = rs.getMetaData();
+		while ( rs.next() ) {
+			HashMap<String, Object> row = new HashMap<>();
+			for ( int i = 1; i <= md.getColumnCount(); i++ )
+				row.put(md.getColumnName(i), rs.getObject(i));
+			schemas.put(rs.getLong("id"), row);
+		}
+		rs.close();
+
+
+		LinkedList<Long> schemaChain = new LinkedList<>();
+
+		schemaChain.addFirst(schema_id);
+
+		for ( Long id = base_schema_id; id != null; ) {
+			if ( !schemas.containsKey(id) )
+				throw new RuntimeException("Couldn't find chained schema: " + id);
+
+			schemaChain.addFirst(id);
+
+			id = (Long) schemas.get(id).get("base_schema_id");
+		}
+
+		Long firstSchemaId = schemaChain.removeFirst();
+
+		SchemaStore firstSchema = new SchemaStore(serverID, sensitivity);
+		firstSchema.restoreFromSchemaID(conn, firstSchemaId);
+		this.schema = firstSchema.getSchema();
+
+		LOGGER.info("beginning to play deltas...");
+		int count = 0;
+		long startTime = System.currentTimeMillis();
+
+		for ( Long id : schemaChain ) {
+			List<ResolvedSchemaChange> deltas = parseDeltas((String) schemas.get(id).get("deltas"));
+			for ( ResolvedSchemaChange delta : deltas ) {
+				this.schema = delta.apply(this.schema);
+			}
+			count++;
+		}
+
+		long elapsed = System.currentTimeMillis() - startTime;
+		LOGGER.info("done, " + count + " schemas in " + elapsed + ", "  + (float) elapsed / count);
+	}
+
+	private void restoreFrom(Connection conn, BinlogPosition targetPosition) throws SQLException, IOException, InvalidSchemaError {
 		boolean shouldResave = false;
 
 		Long schemaID = findSchema(conn, targetPosition, this.serverID);
@@ -250,10 +347,9 @@ public class SchemaStore {
 			shouldResave = true;
 		}
 
-		restoreSchemaMetadata(conn, schemaID);
-		restoreFullSchema(conn, schemaID);
+		restoreFromSchemaID(conn, schemaID);
 
-		if ( this.schema.findDatabase("mysql") == null ) {
+		if ( this.schema != null && this.schema.findDatabase("mysql") == null ) {
 			LOGGER.info("Could not find mysql db, adding it to schema");
 			SchemaCapturer sc = new SchemaCapturer(conn, sensitivity, "mysql");
 			Database db = sc.capture().findDatabase("mysql");
@@ -265,7 +361,16 @@ public class SchemaStore {
 			this.schema_id = saveSchema(conn);
 	}
 
-	private void restoreSchemaMetadata(Connection conn, Long schemaID) throws SQLException {
+	private void restoreFromSchemaID(Connection conn, Long schemaID) throws SQLException, IOException, InvalidSchemaError {
+		restoreSchemaMetadata(conn, schemaID);
+
+		if ( this.base_schema_id != null )
+			restoreDerivedSchema(conn, this.base_schema_id, schemaID);
+		else
+			restoreFullSchema(conn, schemaID);
+	}
+
+	private void restoreSchemaMetadata(Connection conn, Long schemaID) throws SQLException, IOException {
 		PreparedStatement p = conn.prepareStatement("select * from `schemas` where id = " + schemaID);
 		ResultSet schemaRS = p.executeQuery();
 
@@ -276,11 +381,16 @@ public class SchemaStore {
 		LOGGER.info("Restoring schema id " + schemaRS.getInt("id") + " (last modified at " + this.position + ")");
 
 		this.schema_id = schemaRS.getLong("id");
+		this.base_schema_id = schemaRS.getLong("base_schema_id");
+
+		if ( schemaRS.wasNull() )
+			this.base_schema_id = null;
+
+		this.deltas = parseDeltas(schemaRS.getString("deltas"));
 		this.charset = schemaRS.getString("charset");
 	}
 
-
-	private void restoreFullSchema(Connection conn, Long schemaID) throws SQLException, InvalidSchemaError {
+	private void restoreFullSchema(Connection conn, Long schemaID) throws SQLException, IOException, InvalidSchemaError {
 		ArrayList<Database> databases = new ArrayList<>();
 		this.schema = new Schema(databases, charset, sensitivity);
 
@@ -399,17 +509,6 @@ public class SchemaStore {
 
 	public BinlogPosition getBinlogPosition() {
 		return this.position;
-	}
-
-	private void deleteOldSchemas(Connection connection, Long currentSchemaId) throws SQLException {
-		if ( maxSchemas <= 0  )
-			return;
-
-		Long toDelete = currentSchemaId - maxSchemas; // start with the highest numbered ID to delete, work downwards until we run out
-		while ( toDelete > 0 && schemaExists(connection, toDelete) ) {
-			delete(connection, toDelete);
-			toDelete--;
-		}
 	}
 
 	/*
