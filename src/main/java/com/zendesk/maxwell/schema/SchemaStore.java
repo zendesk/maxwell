@@ -589,6 +589,12 @@ public class SchemaStore {
 				performAlter(c, "alter table `" + table + "` change `encoding` `charset` varchar(255)");
 			}
 		}
+
+		if ( !getTableColumns("schemas", c).containsKey("base_schema_id"))
+			performAlter(c, "alter table `schemas` add column base_schema_id int unsigned NULL default NULL after binlog_position");
+
+		if ( !getTableColumns("schemas", c).containsKey("deltas"))
+			performAlter(c, "alter table `schemas` add column deltas mediumtext charset 'utf8' NULL default NULL after base_schema_id");
 	}
 
 }
