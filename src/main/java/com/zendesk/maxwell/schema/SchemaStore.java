@@ -335,7 +335,7 @@ public class SchemaStore {
 
 		this.schema = schema;
 		long elapsed = System.currentTimeMillis() - startTime;
-		LOGGER.info("done, " + count + " schemas in " + elapsed + ", "  + (float) elapsed / count);
+		LOGGER.info("played " + count + " deltas in " + elapsed + "ms");
 	}
 
 	private void restoreFrom(Connection conn, BinlogPosition targetPosition) throws SQLException, IOException, InvalidSchemaError {
