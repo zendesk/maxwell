@@ -22,11 +22,6 @@ public class EnumColumnDef extends EnumeratedColumnDef {
 		return asString(value);
 	}
 
-	@Override
-	public ColumnDef copy() {
-		return new EnumColumnDef(name, type, pos, enumValues);
-	}
-
 	private String asString(Object value) {
 		if ( value instanceof String ) {
 			return ( String ) value;
