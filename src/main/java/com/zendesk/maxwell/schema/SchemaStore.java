@@ -273,9 +273,7 @@ public class SchemaStore {
 		return mapper.readerFor(listOfResolvedSchemaChangeType).readValue(json.getBytes());
 	}
 
-	/* restore a chain of derived schemas by following the chain backwards
-	 * until we find the "base" schema. */
-	private void restoreDerivedSchema(Connection conn, Long base_schema_id, Long schema_id) throws SQLException, IOException, InvalidSchemaError {
+	private HashMap<Long, HashMap<String, Object>> buildSchemaMap(Connection conn) throws SQLException {
 		HashMap<Long, HashMap<String, Object>> schemas = new HashMap<>();
 
 		PreparedStatement p = conn.prepareStatement("SELECT * from `schemas` where server_id = ?");
@@ -290,39 +288,52 @@ public class SchemaStore {
 			schemas.put(rs.getLong("id"), row);
 		}
 		rs.close();
+		return schemas;
+	}
 
-
+	private LinkedList<Long> buildSchemaChain(HashMap<Long, HashMap<String, Object>> schemas, Long schema_id) {
 		LinkedList<Long> schemaChain = new LinkedList<>();
 
-		schemaChain.addFirst(schema_id);
+		while ( schema_id != null ) {
+			if ( !schemas.containsKey(schema_id) )
+				throw new RuntimeException("Couldn't find chained schema: " + schema_id);
 
-		for ( Long id = base_schema_id; id != null; ) {
-			if ( !schemas.containsKey(id) )
-				throw new RuntimeException("Couldn't find chained schema: " + id);
+			schemaChain.addFirst(schema_id);
 
-			schemaChain.addFirst(id);
-
-			id = (Long) schemas.get(id).get("base_schema_id");
+			schema_id = (Long) schemas.get(schema_id).get("base_schema_id");
 		}
+		return schemaChain;
+	}
+
+	private void restoreDerivedSchema(Connection conn, Long schema_id) throws SQLException, IOException, InvalidSchemaError {
+		/* build hashmap of schema_id -> schema properties (as hash) */
+		HashMap<Long, HashMap<String, Object>> schemas = buildSchemaMap(conn);
+
+		/* walk backwards to build linked list with base schema at the
+		 * head, and the rest of the delta schemas following */
+		LinkedList<Long> schemaChain = buildSchemaChain(schemas, schema_id);
 
 		Long firstSchemaId = schemaChain.removeFirst();
 
+		/* do the "full" restore */
 		SchemaStore firstSchema = new SchemaStore(serverID, sensitivity);
 		firstSchema.restoreFromSchemaID(conn, firstSchemaId);
-		this.schema = firstSchema.getSchema();
+		Schema schema = firstSchema.getSchema();
 
 		LOGGER.info("beginning to play deltas...");
 		int count = 0;
 		long startTime = System.currentTimeMillis();
 
+		/* now walk the chain and play each schema's delta */
 		for ( Long id : schemaChain ) {
 			List<ResolvedSchemaChange> deltas = parseDeltas((String) schemas.get(id).get("deltas"));
 			for ( ResolvedSchemaChange delta : deltas ) {
-				this.schema = delta.apply(this.schema);
+				schema = delta.apply(this.schema);
 			}
 			count++;
 		}
 
+		this.schema = schema;
 		long elapsed = System.currentTimeMillis() - startTime;
 		LOGGER.info("done, " + count + " schemas in " + elapsed + ", "  + (float) elapsed / count);
 	}
@@ -365,7 +376,7 @@ public class SchemaStore {
 		restoreSchemaMetadata(conn, schemaID);
 
 		if ( this.base_schema_id != null )
-			restoreDerivedSchema(conn, this.base_schema_id, schemaID);
+			restoreDerivedSchema(conn, schemaID);
 		else
 			restoreFullSchema(conn, schemaID);
 	}

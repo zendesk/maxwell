@@ -26,7 +26,6 @@ import com.zendesk.maxwell.schema.ddl.SchemaChange;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
-import com.zendesk.maxwell.schema.ddl.DDLRow;
 import com.zendesk.maxwell.util.ListWithDiskBuffer;
 
 public class MaxwellReplicator extends RunLoopProcess {
@@ -324,10 +323,9 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 		List<SchemaChange> changes = SchemaChange.parse(dbName, sql);
 
-		if ( changes == null )
-			return null;
+		if ( changes == null || changes.size() == 0 )
+			return;
 
-		DDLRowBuffer buffer = new DDLRowBuffer();
 		ArrayList<ResolvedSchemaChange> resolvedSchemaChanges = new ArrayList<>();
 
 		Schema updatedSchema = getSchema();
@@ -338,10 +336,6 @@ public class MaxwellReplicator extends RunLoopProcess {
 				if ( resolved != null ) {
 					updatedSchema = resolved.apply(updatedSchema);
 
-					DDLRow r = new DDLRow(resolved,
-					                      event.getHeader().getTimestamp(),
-					                      new BinlogPosition(event.getHeader().getPosition(), event.getBinlogFilename()));
-					buffer.add(r);
 					resolvedSchemaChanges.add(resolved);
 				}
 			} else {
@@ -355,7 +349,6 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 			saveSchema(updatedSchema, resolvedSchemaChanges, p);
 		}
-		return buffer;
 	}
 
 	private void saveSchema(Schema updatedSchema, List<ResolvedSchemaChange> changes, BinlogPosition p) throws SQLException {
