@@ -1,6 +1,6 @@
 CREATE TABLE `sharded` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `account_id` int(11) NOT NULL,
+  `account_id` int(11) UNSIGNED NOT NULL,
   `nice_id` int(11) NOT NULL,
   `status_id` tinyint NOT NULL default 2,
   `date_field` datetime,

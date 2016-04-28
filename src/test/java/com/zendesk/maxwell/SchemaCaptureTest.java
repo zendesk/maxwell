@@ -79,6 +79,8 @@ public class SchemaCaptureTest extends MaxwellTestWithIsolatedServer {
 
 		assertThat(columns[1], allOf(notNullValue(), instanceOf(IntColumnDef.class)));
 		assertThat(columns[1].getName(), is("account_id"));
+		assertThat(columns[1], instanceOf(IntColumnDef.class));
+		assertThat(((IntColumnDef) columns[1]).isSigned(), is(false));
 	}
 
 	@Test
