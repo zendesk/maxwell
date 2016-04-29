@@ -1,6 +1,6 @@
 all: compile
 
-MAXWELL_VERSION=$(shell build/current_rev)
+MAXWELL_VERSION ?=$(shell build/current_rev)
 
 JAVAC=javac
 JAVAC_FLAGS += -d target/classes
