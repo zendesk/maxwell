@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.Properties;
 
+import com.zendesk.maxwell.BinlogPosition;
 import com.zendesk.maxwell.MaxwellAbstractRowsEvent;
 import com.zendesk.maxwell.MaxwellContext;
 
@@ -23,13 +24,15 @@ import org.slf4j.LoggerFactory;
 class KafkaCallback implements Callback {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
 	private final MaxwellContext context;
-	private final RowMap rowMap;
+	private final BinlogPosition position;
+	private final boolean isTXCommit;
 	private final String json;
 	private final String key;
 
-	public KafkaCallback(RowMap r, MaxwellContext c, String key, String json) {
+	public KafkaCallback(BinlogPosition position, boolean isTXCommit, MaxwellContext c, String key, String json) {
 		this.context = c;
-		this.rowMap= r;
+		this.position = position;
+		this.isTXCommit = isTXCommit;
 		this.key = key;
 		this.json = json;
 	}
@@ -43,11 +46,11 @@ class KafkaCallback implements Callback {
 				if ( LOGGER.isDebugEnabled()) {
 					LOGGER.debug("->  key:" + key + ", partition:" +md.partition() + ", offset:" + md.offset());
 					LOGGER.debug("   " + this.json);
-					LOGGER.debug("   " + rowMap.getPosition());
+					LOGGER.debug("   " + position);
 					LOGGER.debug("");
 				}
-				if ( rowMap.isTXCommit() ) {
-					context.setPosition(rowMap.getPosition());
+				if ( isTXCommit ) {
+					context.setPosition(position);
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
@@ -97,7 +100,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		ProducerRecord<String, String> record =
 				new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, this.numPartitions), key, value);
 
-		kafka.send(record, new KafkaCallback(r, this.context, key, value));
+		kafka.send(record, new KafkaCallback(r.getPosition(), r.isTXCommit(), this.context, key, value));
 	}
 
 	private void setDefaults(Properties p) {
