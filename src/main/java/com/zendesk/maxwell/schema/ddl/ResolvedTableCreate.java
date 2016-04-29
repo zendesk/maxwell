@@ -19,15 +19,12 @@ public class ResolvedTableCreate extends ResolvedSchemaChange {
 	}
 
 	@Override
-	public Schema apply(Schema originalSchema) throws InvalidSchemaError {
-		Schema newSchema = originalSchema.copy();
-
-		Database d = newSchema.findDatabaseOrThrow(this.database);
+	public void apply(Schema schema) throws InvalidSchemaError {
+		Database d = schema.findDatabaseOrThrow(this.database);
 
 		if ( d.hasTable(this.table) )
 			throw new InvalidSchemaError("Unexpectedly asked to create existing table " + this.table);
 
 		d.addTable(this.def);
-		return newSchema;
 	}
 }

@@ -328,7 +328,7 @@ public class SchemaStore {
 		for ( Long id : schemaChain ) {
 			List<ResolvedSchemaChange> deltas = parseDeltas((String) schemas.get(id).get("deltas"));
 			for ( ResolvedSchemaChange delta : deltas ) {
-				schema = delta.apply(schema);
+				delta.apply(schema);
 			}
 			count++;
 		}

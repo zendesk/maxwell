@@ -334,7 +334,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 			if ( !change.isBlacklisted(this.filter) ) {
 				ResolvedSchemaChange resolved = change.resolve(updatedSchema);
 				if ( resolved != null ) {
-					updatedSchema = resolved.apply(updatedSchema);
+					resolved.apply(updatedSchema);
 
 					resolvedSchemaChanges.add(resolved);
 				}
@@ -343,7 +343,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 			}
 		}
 
-		if ( updatedSchema != getSchema() ) {
+		if ( resolvedSchemaChanges.size() > 0 ) {
 			BinlogPosition p = eventBinlogPosition(event);
 			LOGGER.info("storing schema @" + p + " after applying \"" + sql.replace('\n', ' ') + "\"");
 

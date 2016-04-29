@@ -146,6 +146,7 @@ public class MaxwellTestSupport {
 		server.executeList(Arrays.asList(alters));
 
 		ObjectMapper m = new ObjectMapper();
+
 		for ( String alterSQL : alters) {
 			List<SchemaChange> changes = SchemaChange.parse("shard_1", alterSQL);
 			if ( changes != null ) {
@@ -159,7 +160,7 @@ public class MaxwellTestSupport {
 					String json = m.writeValueAsString(resolvedChange);
 					ResolvedSchemaChange fromJson = m.readValue(json, ResolvedSchemaChange.class);
 
-					topSchema = fromJson.apply(topSchema);
+					fromJson.apply(topSchema);
 				}
 			}
 		}
