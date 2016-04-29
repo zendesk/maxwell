@@ -63,7 +63,7 @@ public class MaxwellContext {
 
 	public void start() {
 		SchemaScavenger s = new SchemaScavenger(this.maxwellConnectionPool, this.config.databaseName);
-		new Thread(s).start();
+		new Thread(s, "maxwell-schema-scavenger").start();
 	}
 
 	public void terminate() {

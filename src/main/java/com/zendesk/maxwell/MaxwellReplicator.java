@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -23,7 +24,9 @@ import com.zendesk.maxwell.schema.SchemaStore;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.ddl.SchemaChange;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
+
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
+import com.zendesk.maxwell.util.ListWithDiskBuffer;
 
 public class MaxwellReplicator extends RunLoopProcess {
 	private final long MAX_TX_ELEMENTS = 10000;
@@ -320,35 +323,45 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 		List<SchemaChange> changes = SchemaChange.parse(dbName, sql);
 
-		if ( changes == null )
+		if ( changes == null || changes.size() == 0 )
 			return;
+
+		ArrayList<ResolvedSchemaChange> resolvedSchemaChanges = new ArrayList<>();
 
 		Schema updatedSchema = getSchema();
 
 		for ( SchemaChange change : changes ) {
 			if ( !change.isBlacklisted(this.filter) ) {
 				ResolvedSchemaChange resolved = change.resolve(updatedSchema);
-				if ( resolved != null )
-					updatedSchema = resolved.apply(updatedSchema);
+				if ( resolved != null ) {
+					resolved.apply(updatedSchema);
+
+					resolvedSchemaChanges.add(resolved);
+				}
 			} else {
 				LOGGER.debug("ignoring blacklisted schema change");
 			}
 		}
 
-		if ( updatedSchema != getSchema() ) {
+		if ( resolvedSchemaChanges.size() > 0 ) {
 			BinlogPosition p = eventBinlogPosition(event);
 			LOGGER.info("storing schema @" + p + " after applying \"" + sql.replace('\n', ' ') + "\"");
 
-			saveSchema(updatedSchema, p);
+			saveSchema(updatedSchema, resolvedSchemaChanges, p);
 		}
 	}
 
-	private void saveSchema(Schema updatedSchema, BinlogPosition p) throws SQLException {
+	private void saveSchema(Schema updatedSchema, List<ResolvedSchemaChange> changes, BinlogPosition p) throws SQLException {
 		tableCache.clear();
 
 		if ( !this.context.getReplayMode() ) {
 			try (Connection c = this.context.getMaxwellConnection()) {
-				this.schemaStore = new SchemaStore(this.context.getServerID(), this.context.getCaseSensitivity(), updatedSchema, p);
+				this.schemaStore = new SchemaStore(this.context.getServerID(),
+				                                   this.context.getCaseSensitivity(),
+				                                   updatedSchema,
+				                                   p,
+				                                   this.schemaStore.getSchemaID(),
+				                                   changes);
 				this.schemaStore.save(c);
 			}
 

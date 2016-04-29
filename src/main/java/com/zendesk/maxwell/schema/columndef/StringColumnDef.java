@@ -80,11 +80,6 @@ public class StringColumnDef extends ColumnDef {
 		}
 	}
 
-	@Override
-	public ColumnDef copy() {
-		return new StringColumnDef(name, type, pos, charset);
-	}
-
 	private String quoteString(String s) {
 		String escaped = StringEscapeUtils.escapeSql(s);
 		escaped = escaped.replaceAll("\n", "\\\\n");

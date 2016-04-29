@@ -123,7 +123,7 @@ public class SchemaPosition extends RunLoopProcess implements Runnable {
 			thread.interrupt();
 			BinlogPosition s = storedPosition.get();
 			if ( p.newerThan(s) ) {
-				try { Thread.sleep(50); } catch (InterruptedException e) { }
+				try { Thread.sleep(1); } catch (InterruptedException e) { }
 				if ( exception != null )
 					throw(exception);
 			} else {

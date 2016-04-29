@@ -11,11 +11,8 @@ public class ResolvedDatabaseDrop extends ResolvedSchemaChange {
 	}
 
 	@Override
-	public Schema apply(Schema originalSchema) throws InvalidSchemaError {
-		Schema newSchema = originalSchema.copy();
-
-		Database d = newSchema.findDatabaseOrThrow(database);
-		newSchema.getDatabases().remove(d);
-		return newSchema;
+	public void apply(Schema schema) throws InvalidSchemaError {
+		Database d = schema.findDatabaseOrThrow(database);
+		schema.getDatabases().remove(d);
 	}
 }

@@ -41,10 +41,4 @@ public class DateColumnDef extends ColumnDef {
 	public Object asJSON(Object value) {
 		return formatDate(value);
 	}
-
-	@Override
-	public ColumnDef copy() {
-		return new DateColumnDef(name, type, pos);
-	}
-
 }
