@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.regex.*;
 
 import com.zendesk.maxwell.schema.SchemaStore;
+import com.zendesk.maxwell.schema.SchemaStoreSchema;
 import org.junit.Test;
 
 public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
@@ -324,7 +325,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 		lowerCaseServer.boot("--lower-case-table-names=1");
 		MaxwellContext context = MaxwellTestSupport.buildContext(lowerCaseServer.getPort(), null);
-		SchemaStore.ensureMaxwellSchema(lowerCaseServer.getConnection(), context.getConfig().databaseName);
+		SchemaStoreSchema.ensureMaxwellSchema(lowerCaseServer.getConnection(), context.getConfig().databaseName);
 
 		String[] sql = {
 			"CREATE TABLE `test`.`TOOTOOTWEE` ( id int )",

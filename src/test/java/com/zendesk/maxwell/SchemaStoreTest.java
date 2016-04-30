@@ -90,7 +90,7 @@ public class SchemaStoreTest extends MaxwellTestWithIsolatedServer {
 		Connection conn = context.getMaxwellConnection();
 		this.schemaStore.save(conn);
 
-		SchemaStore.handleMasterChange(conn, 123456L, dbName);
+		SchemaStoreSchema.handleMasterChange(conn, 123456L, dbName);
 
 		ResultSet rs = conn.createStatement().executeQuery("SELECT * from `schemas`");
 		assertThat(rs.next(), is(true));
