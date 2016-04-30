@@ -57,7 +57,7 @@ def tag
 end
 
 def prerelease?
-  $version =~ /-\w+$/
+  !!($version =~ /-\w+$/)
 end
 
 def release
