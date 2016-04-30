@@ -595,6 +595,9 @@ public class SchemaStore {
 
 		if ( !getTableColumns("schemas", c).containsKey("deltas"))
 			performAlter(c, "alter table `schemas` add column deltas mediumtext charset 'utf8' NULL default NULL after base_schema_id");
-	}
 
+		if ( !getTableColumns("schemas", c).containsKey("version")) {
+			performAlter(c, "alter table `schemas` add column `version` smallint unsigned not null default 0 after `charset`");
+		}
+	}
 }
