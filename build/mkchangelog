@@ -19,6 +19,7 @@ while releases.any?
 %{body}
     EOL
 
+    r[:body].gsub!(/\r\n/, "\n")
     r[:munged_name] = r[:name].gsub(/^(\S+)\s+(.*)/, '\2')
     puts out.strip % r
     puts

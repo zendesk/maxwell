@@ -1,5 +1,78 @@
 # Maxwell changelog
 
+## [v1.1.0-pre1](https://github.com/zendesk/maxwell/releases/tag/v1.1.0-pre1): "first to fall"
+
+Deltas from 1.0:
+- much more efficient processing of schema updates storage, especially
+  when dealing with large schemas.
+- @lileeyao added --exclude-columns option
+- alternative kafka key format
+- @lileeyao added --jdbc_options
+- can now blacklist entire databases
+
+## [v1.0.1](https://github.com/zendesk/maxwell/releases/tag/v1.0.1): "bag of oversized daisies"
+
+
+- fixes a parsing bug with `CURRENT_TIMESTAMP()`
+
+
+## [v1.0.0](https://github.com/zendesk/maxwell/releases/tag/v1.0.0): "Maxwell learns to speak"
+
+
+Since v0.17.0, Maxwell has gotten:
+- bootstrapping support
+- blacklisting for tables
+- flexible kafka partitioning
+- replication heartbeats
+- GEOMETRY columns
+- a whole lotta lotta bugfixes
+
+and I, Osheroff, think the damn thing is stable enough for a 1.0.  So
+there.
+
+
+## [v1.0.0-RC3](https://github.com/zendesk/maxwell/releases/tag/v1.0.0-RC3): "C'mon and take it"
+
+
+pull in support for replication heartbeats.  helps in the flakier
+network environs.
+
+
+## [v1.0.0-RC2](https://github.com/zendesk/maxwell/releases/tag/v1.0.0-RC2): "same thing, just without the v"
+
+
+- fixes the way ALTER DATABASE charset= was handled
+- adds proper handling of ALTER TABLE CONVERT TO CHARSET
+
+
+## [v1.0.0-RC1](https://github.com/zendesk/maxwell/releases/tag/v1.0.0-RC1): "Richard Buckner's release"
+
+
+- modifications to the way the bootstrap utility works
+- fix a race condition crash bug in bootstrapping
+- fix a parser bug
+
+
+## [v1.0.0-PRE2](https://github.com/zendesk/maxwell/releases/tag/v1.0.0-PRE2): "an embarassment of riches"
+
+
+1.0.0-PRE2 brings in a lot of changes that got merged while we were
+testing out PRE1.  so, hey.
+
+- Configurable names for the `maxwell` schema database (Kristian Kaufman)
+- Configurable key (primary key, id, database) into the kafka partition hash function (Kristian Kaufman)
+- Configurable Kafka partition hash function (java hashCode, murmur3) (Kristian Kaufman)
+- support GEOMETRY columns, output as well-known-text
+- add `--blacklist_tables` option to fully ignore excessive schema changes (Nicolas Maquet)
+- bootstrap rows now have 'bootstrap-insert' type
+
+
+## [v1.0.0-PRE1](https://github.com/zendesk/maxwell/releases/tag/v1.0.0-PRE1): "drunk conversations with sober people"
+
+- Here we have the preview release of @nmaquet's excellent work around
+  bootstrapping initial versions of mysql tables.
+
+
 ## [v0.17.0](https://github.com/zendesk/maxwell/releases/tag/v0.17.0): "wrists of William"
 
 
