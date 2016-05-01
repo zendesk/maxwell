@@ -218,6 +218,7 @@ public class SchemaStore {
 			columnInsert.setObject(i++,  o);
 
 		columnInsert.execute();
+		columnInsert.close();
 		columnData.clear();
 	}
 
