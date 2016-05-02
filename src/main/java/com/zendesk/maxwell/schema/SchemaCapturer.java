@@ -128,8 +128,8 @@ public class SchemaCapturer {
 	}
 
 	private static final String pkSQL =
-			"SELECT column_name from information_schema.key_column_usage  "
-	      + "WHERE constraint_name = 'PRIMARY' and table_schema = ? and table_name = ? order by ordinal_position";
+			"SELECT column_name, ordinal_position from information_schema.key_column_usage  "
+	      + "WHERE constraint_name = 'PRIMARY' and table_schema = ? and table_name = ?";
 
 	private void captureTablePK(Table t) throws SQLException, InvalidSchemaError {
 		PreparedStatement p = connection.prepareStatement(pkSQL);
@@ -140,7 +140,7 @@ public class SchemaCapturer {
 
 		ArrayList<String> l = new ArrayList<>();
 		while ( rs.next() ) {
-			l.add(rs.getString("column_name"));
+			l.add(rs.getInt("ordinal_position") - 1, rs.getString("column_name"));
 		}
 		t.setPKList(l);
 	}
