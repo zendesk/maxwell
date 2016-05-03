@@ -82,7 +82,7 @@ public class MysqlIsolatedServer {
 
 		resetConnection();
 		this.connection.createStatement().executeUpdate("GRANT REPLICATION SLAVE on *.* to 'maxwell'@'127.0.0.1' IDENTIFIED BY 'maxwell'");
-		this.connection.createStatement().executeUpdate("GRANT ALL on `maxwell`.* to 'maxwell'@'127.0.0.1'");
+		this.connection.createStatement().executeUpdate("GRANT ALL on *.* to 'maxwell'@'127.0.0.1'");
 		LOGGER.debug("booted at port " + this.port + ", outputting to file " + outputFile);
 	}
 

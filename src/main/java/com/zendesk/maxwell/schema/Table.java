@@ -87,7 +87,7 @@ public class Table {
 		}
 	}
 
-	private ColumnDef findColumn(String name) {
+	public ColumnDef findColumn(String name) {
 		String lcName = name.toLowerCase();
 
 		for (ColumnDef c : columnList )  {
