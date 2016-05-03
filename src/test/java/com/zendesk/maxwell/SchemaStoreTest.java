@@ -62,22 +62,6 @@ public class SchemaStoreTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
-	public void testUpgradeToFixServerIDBug() throws Exception {
-		// create a couple of schemas
-		this.schemaStore.save(context.getMaxwellConnection());
-		Long badSchemaID = this.schemaStore.getSchemaID();
-
-		// throw into old state
-		String updateSQL[] = {"UPDATE `" + buildContext().getConfig().databaseName+ "`.`schemas` set server_id = 1"};
-		server.executeList(updateSQL);
-
-		SchemaStore restoredSchema = SchemaStore.restore(context.getMaxwellConnection(), context);
-
-		List<String> diffs = restoredSchema.getSchema().diff(this.schemaStore.getSchema(), "restored", "captured");
-		assert diffs.isEmpty() : "Expected empty schema diff, got" + diffs;
-	}
-
-	@Test
 	public void testMasterChange() throws Exception {
 		this.schema = new SchemaCapturer(server.getConnection(), context.getCaseSensitivity()).capture();
 		this.binlogPosition = BinlogPosition.capture(server.getConnection());
@@ -98,15 +82,5 @@ public class SchemaStoreTest extends MaxwellTestWithIsolatedServer {
 
 		rs = conn.createStatement().executeQuery("SELECT * from `positions`");
 		assertThat(rs.next(), is(false));
-	}
-
-	@Test
-	public void testRestoreMysqlDb() throws Exception {
-		Database db = this.schema.findDatabase("mysql");
-		String maxwellDBName = this.buildContext().getConfig().databaseName;
-		this.schema.getDatabases().remove(db);
-		this.schemaStore.save(context.getMaxwellConnection());
-		SchemaStore restoredSchema = SchemaStore.restore(server.getConnection(maxwellDBName), context);
-		assertThat(restoredSchema.getSchema().findDatabase("mysql"), is(not(nullValue())));
 	}
 }
