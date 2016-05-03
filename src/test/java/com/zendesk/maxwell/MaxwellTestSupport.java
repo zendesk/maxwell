@@ -1,18 +1,24 @@
 package com.zendesk.maxwell;
 
-import java.io.*;
-import java.util.*;
-import java.sql.*;
-import java.nio.file.*;
-import java.nio.charset.Charset;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zendesk.maxwell.bootstrap.AsynchronousBootstrapper;
+import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
+import com.zendesk.maxwell.producer.AbstractProducer;
+import com.zendesk.maxwell.schema.Schema;
+import com.zendesk.maxwell.schema.SchemaCapturer;
+import com.zendesk.maxwell.schema.SchemaStore;
+import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
+import com.zendesk.maxwell.schema.ddl.SchemaChange;
 import org.apache.commons.lang.StringUtils;
 
-import com.zendesk.maxwell.bootstrap.*;
-import com.zendesk.maxwell.producer.AbstractProducer;
-import com.zendesk.maxwell.schema.*;
-import com.zendesk.maxwell.schema.ddl.*;
+import java.io.File;
+import java.nio.file.Files;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -121,12 +127,12 @@ public class MaxwellTestSupport {
 						return conn;
 					}
 
-                    @Override
-                    protected Connection getStreamingConnection() throws SQLException {
-                        Connection conn = mysql.getNewConnection();
-                        conn.setCatalog(context.getConfig().databaseName);
-                        return conn;
-                    }
+					@Override
+					protected Connection getStreamingConnection() throws SQLException {
+						Connection conn = mysql.getNewConnection();
+						conn.setCatalog(context.getConfig().databaseName);
+						return conn;
+					}
 				};
 			}
 		};
