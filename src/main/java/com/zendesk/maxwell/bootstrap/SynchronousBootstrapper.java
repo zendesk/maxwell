@@ -48,9 +48,10 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		producer.push(startBootstrapRow);
 		producer.push(bootstrapStartRowMap(table, position));
 		LOGGER.info(String.format("bootstrapping started for %s.%s, binlog position is %s", databaseName, tableName, position.toString()));
-		try ( Connection connection = getConnection() ) {
+		try ( Connection connection = getConnection();
+                Connection streamingConnection = getStreamingConnection()) {
 			setBootstrapRowToStarted(startBootstrapRow, connection);
-			ResultSet resultSet = getAllRows(databaseName, tableName, schema, connection);
+			ResultSet resultSet = getAllRows(databaseName, tableName, schema, streamingConnection);
 			int insertedRows = 0;
 			while ( resultSet.next() ) {
 				RowMap row = bootstrapEventRowMap("bootstrap-insert", table, position);
@@ -89,6 +90,12 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		conn.setCatalog(context.getConfig().databaseName);
 		return conn;
 	}
+
+    protected Connection getStreamingConnection() throws SQLException {
+        Connection conn = DriverManager.getConnection(context.getConfig().replicationMysql.getConnectionURI(), context.getConfig().replicationMysql.user, context.getConfig().replicationMysql.password);
+        conn.setCatalog(context.getConfig().databaseName);
+        return conn;
+    }
 
 	private RowMap bootstrapStartRowMap(Table table, BinlogPosition position) {
 		return bootstrapEventRowMap("bootstrap-start", table, position);
@@ -181,11 +188,11 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		}
 	}
 
-	private Statement createBatchStatement(Connection connection) throws SQLException, InterruptedException {
-		Statement statement = connection.createStatement();
-		statement.setFetchSize(context.getConfig().bootstrapperBatchFetchSize);
-		return statement;
-	}
+    private Statement createBatchStatement(Connection connection) throws SQLException, InterruptedException {
+        Statement statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+        statement.setFetchSize(Integer.MIN_VALUE);
+        return statement;
+    }
 
 	private void setBootstrapRowToStarted(RowMap startBootstrapRow, Connection connection) throws SQLException, NoSuchElementException {
 		String sql = "update `bootstrap` set started_at=NOW() where id=?";

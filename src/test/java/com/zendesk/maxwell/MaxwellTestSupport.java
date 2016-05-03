@@ -120,6 +120,13 @@ public class MaxwellTestSupport {
 						conn.setCatalog(context.getConfig().databaseName);
 						return conn;
 					}
+
+                    @Override
+                    protected Connection getStreamingConnection() throws SQLException {
+                        Connection conn = mysql.getNewConnection();
+                        conn.setCatalog(context.getConfig().databaseName);
+                        return conn;
+                    }
 				};
 			}
 		};
