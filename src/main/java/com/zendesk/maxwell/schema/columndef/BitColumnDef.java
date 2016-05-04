@@ -16,7 +16,12 @@ public class BitColumnDef extends ColumnDef {
 
 	@Override
 	public Object asJSON(Object value) {
-		byte[] bytes = (byte[]) value;
+		byte[] bytes;
+		if(Boolean.class.isAssignableFrom(value.getClass())){
+			bytes = new byte[]{(byte) ((Boolean)value?1:0)};
+		}else {
+			bytes = (byte[]) value;
+		}
 		if ( bytes.length == 8 && ((bytes[7] & 0xFF) > 127) ) {
 			return bytesToBigInteger(bytes);
 		} else {
