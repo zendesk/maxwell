@@ -15,7 +15,4 @@ else
   JAVA="$JAVA_HOME/bin/java"
 fi
 
-export LANG="en_US.UTF-8"
-
-exec $JAVA $JAVA_OPTS -Dlog4j.shutdownCallbackRegistry=com.djdch.log4j.StaticShutdownCallbackRegistry -cp $CLASSPATH com.zendesk.maxwell.Maxwell "$@"
-
+exec $JAVA $JAVA_OPTS -Dfile.encoding=UTF-8 -Dlog4j.shutdownCallbackRegistry=com.djdch.log4j.StaticShutdownCallbackRegistry -cp $CLASSPATH com.zendesk.maxwell.Maxwell "$@"
