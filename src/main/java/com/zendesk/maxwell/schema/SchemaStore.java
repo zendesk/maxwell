@@ -307,6 +307,10 @@ public class SchemaStore {
 
 	private void restoreFrom(Connection conn, BinlogPosition targetPosition) throws SQLException, IOException, InvalidSchemaError {
 		Long schemaID = findSchema(conn, targetPosition, this.serverID);
+		if ( schemaID == null ) {
+			throw new InvalidSchemaError("Could not find schema for "
+					+ targetPosition.getFile() + ":" + targetPosition.getOffset());
+		}
 
 		restoreFromSchemaID(conn, schemaID);
 
@@ -507,8 +511,6 @@ public class SchemaStore {
 	}
 
 	private void handleVersionUpgrades(Connection conn, Long schemaID, int version) throws SQLException, InvalidSchemaError {
-		boolean shouldResave = false;
-
 		if ( version < 1 ) {
 			if ( this.schema != null && this.schema.findDatabase("mysql") == null ) {
 				LOGGER.info("Could not find mysql db, adding it to schema");
