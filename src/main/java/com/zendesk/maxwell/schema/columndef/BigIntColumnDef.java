@@ -42,4 +42,8 @@ public class BigIntColumnDef extends ColumnDef {
 	public boolean isSigned() {
 		return signed;
 	}
+
+	public void setSigned(boolean signed) {
+		this.signed = signed;
+	}
 }

@@ -15,6 +15,7 @@ import org.junit.Test;
 
 import com.zendesk.maxwell.schema.*;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
+import com.zendesk.maxwell.schema.columndef.IntColumnDef;
 
 public class SchemaStoreTest extends MaxwellTestWithIsolatedServer {
 	private Schema schema;
@@ -24,7 +25,8 @@ public class SchemaStoreTest extends MaxwellTestWithIsolatedServer {
 	String schemaSQL[] = {
 		"CREATE TABLE shard_1.latin1 (id int(11), str1 varchar(255), str2 varchar(255) character set 'utf8') charset = 'latin1'",
 		"CREATE TABLE shard_1.enums (id int(11), enum_col enum('foo', 'bar', 'baz'))",
-		"CREATE TABLE shard_1.pks (id int(11), col2 varchar(255), col3 datetime, PRIMARY KEY(col2, col3, id))"
+		"CREATE TABLE shard_1.pks (id int(11), col2 varchar(255), col3 datetime, PRIMARY KEY(col2, col3, id))",
+		"CREATE TABLE shard_1.signed (badcol int(10) unsigned)"
 	};
 	private MaxwellContext context;
 
@@ -62,22 +64,6 @@ public class SchemaStoreTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
-	public void testUpgradeToFixServerIDBug() throws Exception {
-		// create a couple of schemas
-		this.schemaStore.save(context.getMaxwellConnection());
-		Long badSchemaID = this.schemaStore.getSchemaID();
-
-		// throw into old state
-		String updateSQL[] = {"UPDATE `" + buildContext().getConfig().databaseName+ "`.`schemas` set server_id = 1"};
-		server.executeList(updateSQL);
-
-		SchemaStore restoredSchema = SchemaStore.restore(context.getMaxwellConnection(), context);
-
-		List<String> diffs = restoredSchema.getSchema().diff(this.schemaStore.getSchema(), "restored", "captured");
-		assert diffs.isEmpty() : "Expected empty schema diff, got" + diffs;
-	}
-
-	@Test
 	public void testMasterChange() throws Exception {
 		this.schema = new SchemaCapturer(server.getConnection(), context.getCaseSensitivity()).capture();
 		this.binlogPosition = BinlogPosition.capture(server.getConnection());
@@ -101,12 +87,15 @@ public class SchemaStoreTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
-	public void testRestoreMysqlDb() throws Exception {
-		Database db = this.schema.findDatabase("mysql");
-		String maxwellDBName = this.buildContext().getConfig().databaseName;
-		this.schema.getDatabases().remove(db);
-		this.schemaStore.save(context.getMaxwellConnection());
-		SchemaStore restoredSchema = SchemaStore.restore(server.getConnection(maxwellDBName), context);
-		assertThat(restoredSchema.getSchema().findDatabase("mysql"), is(not(nullValue())));
+	public void testFixUnsignedColumnBug() throws Exception {
+		Connection c = context.getMaxwellConnection();
+		this.schemaStore.save(c);
+
+		c.createStatement().executeUpdate("update maxwell.schemas set version = 0 where id = " + this.schemaStore.getSchemaID());
+		c.createStatement().executeUpdate("update maxwell.columns set is_signed = 1 where name = 'badcol'");
+
+		SchemaStore restored = SchemaStore.restore(context.getMaxwellConnection(), context);
+		IntColumnDef cd = (IntColumnDef) restored.getSchema().findDatabase("shard_1").findTable("signed").findColumn("badcol");
+		assertThat(cd.isSigned(), is(false));
 	}
 }
