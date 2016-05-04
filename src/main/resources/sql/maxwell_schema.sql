@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS `schemas` (
   deltas mediumtext charset 'utf8' NULL default NULL,
   server_id int unsigned,
   charset varchar(255),
+  version smallint unsigned not null default 0,
   deleted tinyint(1) not null default 0
 );
 
