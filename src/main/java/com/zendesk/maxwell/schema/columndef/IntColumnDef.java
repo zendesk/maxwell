@@ -86,4 +86,7 @@ public class IntColumnDef extends ColumnDef {
 		return signed;
 	}
 
+	public void setSigned(boolean signed) {
+		this.signed = signed;
+	}
 }

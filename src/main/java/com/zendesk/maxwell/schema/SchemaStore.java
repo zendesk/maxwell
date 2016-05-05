@@ -1,16 +1,9 @@
 package com.zendesk.maxwell.schema;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.*;
+
+import java.io.IOException;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.zendesk.maxwell.CaseSensitivity;
@@ -28,10 +21,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class SchemaStore {
+	static int SchemaStoreVersion = 1;
+
 	private Schema schema;
 	private BinlogPosition position;
 	private Long schema_id;
-	private String charset;
+	private int schemaVersion;
 
 	private Long base_schema_id;
 	private List<ResolvedSchemaChange> deltas;
@@ -47,6 +42,7 @@ public class SchemaStore {
 	private final CaseSensitivity sensitivity;
 	private final Long serverID;
 
+	private boolean shouldSnapshotNextSchema = false;
 
 	public SchemaStore(Long serverID, CaseSensitivity sensitivity) throws SQLException {
 		this.serverID = serverID;
@@ -72,6 +68,13 @@ public class SchemaStore {
 		this.deltas = deltas;
 
 		this.position = position;
+	}
+
+	public SchemaStore createDerivedSchema(Schema newSchema, BinlogPosition position, List<ResolvedSchemaChange> deltas) throws SQLException {
+		if ( this.shouldSnapshotNextSchema )
+			return new SchemaStore(this.serverID, this.sensitivity, newSchema, position);
+		else
+			return new SchemaStore(this.serverID, this.sensitivity, newSchema, position, this.schema_id, deltas);
 	}
 
 	public Long getSchemaID() {
@@ -108,7 +111,7 @@ public class SchemaStore {
 
 	public Long saveDerivedSchema(Connection conn) throws SQLException {
 		PreparedStatement insert = conn.prepareStatement(
-				"INSERT into `schemas` SET base_schema_id = ?, deltas = ?, binlog_file = ?, binlog_position = ?, server_id = ?, charset = ?",
+				"INSERT into `schemas` SET base_schema_id = ?, deltas = ?, binlog_file = ?, binlog_position = ?, server_id = ?, charset = ?, version = ?",
 				Statement.RETURN_GENERATED_KEYS);
 
 		String deltaString;
@@ -125,7 +128,8 @@ public class SchemaStore {
 		                     position.getFile(),
 		                     position.getOffset(),
 		                     serverID,
-		                     schema.getCharset());
+		                     schema.getCharset(),
+		                     SchemaStoreVersion);
 
 	}
 
@@ -136,7 +140,7 @@ public class SchemaStore {
 		PreparedStatement schemaInsert, databaseInsert, tableInsert;
 
 		schemaInsert = conn.prepareStatement(
-				"INSERT INTO `schemas` SET binlog_file = ?, binlog_position = ?, server_id = ?, charset = ?",
+				"INSERT INTO `schemas` SET binlog_file = ?, binlog_position = ?, server_id = ?, charset = ?, version = ?",
 				Statement.RETURN_GENERATED_KEYS
 		);
 
@@ -151,7 +155,7 @@ public class SchemaStore {
 		);
 
 		Long schemaId = executeInsert(schemaInsert, position.getFile(),
-				position.getOffset(), serverID, schema.getCharset());
+				position.getOffset(), serverID, schema.getCharset(), SchemaStoreVersion);
 
 		ArrayList<Object> columnData = new ArrayList<Object>();
 
@@ -220,43 +224,6 @@ public class SchemaStore {
 		columnInsert.execute();
 		columnInsert.close();
 		columnData.clear();
-	}
-
-	public static void ensureMaxwellSchema(Connection connection, String schemaDatabaseName) throws SQLException, IOException, InvalidSchemaError {
-		if ( !SchemaStore.storeDatabaseExists(connection, schemaDatabaseName) ) {
-			SchemaStore.createStoreDatabase(connection, schemaDatabaseName);
-		}
-	}
-
-	private static boolean storeDatabaseExists(Connection connection, String schemaDatabaseName) throws SQLException {
-		Statement s = connection.createStatement();
-		ResultSet rs = s.executeQuery("show databases like '" + schemaDatabaseName + "'");
-
-		return rs.next();
-	}
-
-	private static void executeSQLInputStream(Connection connection, InputStream schemaSQL, String schemaDatabaseName) throws SQLException, IOException {
-		BufferedReader r = new BufferedReader(new InputStreamReader(schemaSQL));
-		String sql = "", line;
-
-		LOGGER.info("Creating maxwell database");
-		connection.createStatement().execute("CREATE DATABASE IF NOT EXISTS `" + schemaDatabaseName + "`");
-		if (!connection.getCatalog().equals(schemaDatabaseName))
-			connection.setCatalog(schemaDatabaseName);
-		while ((line = r.readLine()) != null) {
-			sql += line + "\n";
-		}
-		for (String statement : StringUtils.splitByWholeSeparator(sql, "\n\n")) {
-			if (statement.length() == 0)
-				continue;
-
-			connection.createStatement().execute(statement);
-		}
-	}
-
-	private static void createStoreDatabase(Connection connection, String schemaDatabaseName) throws SQLException, IOException {
-		executeSQLInputStream(connection, SchemaStore.class.getResourceAsStream("/sql/maxwell_schema.sql"), schemaDatabaseName);
-		executeSQLInputStream(connection, SchemaStore.class.getResourceAsStream("/sql/maxwell_schema_bootstrap.sql"), schemaDatabaseName);
 	}
 
 	public static SchemaStore restore(Connection connection, MaxwellContext context) throws SQLException, IOException, InvalidSchemaError {
@@ -340,37 +307,15 @@ public class SchemaStore {
 	}
 
 	private void restoreFrom(Connection conn, BinlogPosition targetPosition) throws SQLException, IOException, InvalidSchemaError {
-		boolean shouldResave = false;
-
 		Long schemaID = findSchema(conn, targetPosition, this.serverID);
-
-		if (schemaID == null) {
-			// old versions of Maxwell had a bug where they set every server_id to 1.
-			// try to upgrade.
-
-			schemaID = findSchema(conn, targetPosition, 1L);
-
-			if ( schemaID == null )
-				throw new InvalidSchemaError("Could not find schema for "
-						+ targetPosition.getFile() + ":"
-						+ targetPosition.getOffset());
-
-			LOGGER.info("found schema with server_id == 1, re-saving...");
-			shouldResave = true;
+		if ( schemaID == null ) {
+			throw new InvalidSchemaError("Could not find schema for "
+					+ targetPosition.getFile() + ":" + targetPosition.getOffset());
 		}
 
 		restoreFromSchemaID(conn, schemaID);
 
-		if ( this.schema != null && this.schema.findDatabase("mysql") == null ) {
-			LOGGER.info("Could not find mysql db, adding it to schema");
-			SchemaCapturer sc = new SchemaCapturer(conn, sensitivity, "mysql");
-			Database db = sc.capture().findDatabase("mysql");
-			this.schema.addDatabase(db);
-			shouldResave = true;
-		}
-
-		if ( shouldResave )
-			this.schema_id = saveSchema(conn);
+		handleVersionUpgrades(conn, schemaID, this.schemaVersion);
 	}
 
 	private void restoreFromSchemaID(Connection conn, Long schemaID) throws SQLException, IOException, InvalidSchemaError {
@@ -399,13 +344,11 @@ public class SchemaStore {
 			this.base_schema_id = null;
 
 		this.deltas = parseDeltas(schemaRS.getString("deltas"));
-		this.charset = schemaRS.getString("charset");
+		this.schemaVersion = schemaRS.getInt("version");
+		this.schema = new Schema(new ArrayList<Database>(), schemaRS.getString("charset"), this.sensitivity);
 	}
 
 	private void restoreFullSchema(Connection conn, Long schemaID) throws SQLException, IOException, InvalidSchemaError {
-		ArrayList<Database> databases = new ArrayList<>();
-		this.schema = new Schema(databases, charset, sensitivity);
-
 		PreparedStatement p = conn.prepareStatement("SELECT * from `databases` where schema_id = ? ORDER by id");
 		p.setLong(1, this.schema_id);
 
@@ -523,82 +466,62 @@ public class SchemaStore {
 		return this.position;
 	}
 
-	/*
-		for the time being, when we detect other schemas we will simply wipe them down.
-		in the future, this is our moment to pick up where the master left off.
-	*/
-	public static void handleMasterChange(Connection c, Long serverID, String schemaDatabaseName) throws SQLException {
-		PreparedStatement s = c.prepareStatement(
-				"SELECT id from `schemas` WHERE server_id != ? and deleted = 0"
-		);
+	private void fixUnsignedColumns(Connection conn) throws SQLException, InvalidSchemaError {
+		int unsignedDiffs = 0;
 
-		s.setLong(1, serverID);
-		ResultSet rs = s.executeQuery();
+		Schema recaptured = new SchemaCapturer(conn, sensitivity).capture();
 
-		while ( rs.next() ) {
-			Long schemaID = rs.getLong("id");
-			LOGGER.info("maxwell detected schema " + schemaID + " from different server_id.  deleting...");
-			delete(c, schemaID);
-		}
+		for ( Database dA : schema.getDatabases() ) {
+			Database dB = recaptured.findDatabaseOrThrow(dA.getName());
+			for ( Table tA : dA.getTableList() ) {
+				Table tB = dB.findTableOrThrow(tA.getName());
+				for ( ColumnDef cA : tA.getColumnList() ) {
+					ColumnDef cB = tB.findColumnOrThrow(cA.getName());
 
-		c.createStatement().execute("delete from `positions` where server_id != " + serverID);
-	}
+					if ( cA instanceof IntColumnDef ) {
+						if ( !(cB instanceof IntColumnDef) )
+							throw new InvalidSchemaError("Expected " + cB.getName() + " to be an IntColumnDef");
 
-	private static Map<String, String> getTableColumns(String table, Connection c) throws SQLException {
-		HashMap<String, String> map = new HashMap<>();
-		ResultSet rs = c.createStatement().executeQuery("show columns from `" + table + "`");
-		while (rs.next()) {
-			map.put(rs.getString("Field"), rs.getString("Type"));
-		}
-		return map;
-	}
+						if ( ((IntColumnDef)cA).isSigned() && !((IntColumnDef)cB).isSigned() ) {
+							((IntColumnDef)cA).setSigned(false);
+							unsignedDiffs++;
+						}
+					} else if ( cA instanceof BigIntColumnDef ) {
+						if ( !(cB instanceof BigIntColumnDef) )
+							throw new InvalidSchemaError("Expected " + cB.getName() + " to be an BigIntColumnDef");
 
-	private static List<String> getMaxwellTables(Connection c) throws SQLException {
-		ArrayList<String> l = new ArrayList<>();
+						if ( ((BigIntColumnDef)cA).isSigned() && !((BigIntColumnDef)cB).isSigned() )
+							((BigIntColumnDef)cA).setSigned(false);
+							unsignedDiffs++;
 
-		ResultSet rs = c.createStatement().executeQuery("show tables");
-		while (rs.next()) {
-			l.add(rs.getString(1));
-		}
-		return l;
-	}
-
-	private static void performAlter(Connection c, String sql) throws SQLException {
-		LOGGER.info("Maxwell is upgrading its own schema: '" + sql + "'");
-		c.createStatement().execute(sql);
-	}
-
-	public static void upgradeSchemaStoreSchema(Connection c, String schemaDatabaseName) throws SQLException, IOException {
-		if ( !getTableColumns("schemas", c).containsKey("deleted") ) {
-			performAlter(c, "alter table `schemas` add column deleted tinyint(1) not null default 0");
-		}
-
-		if ( !getMaxwellTables(c).contains("bootstrap") )  {
-			LOGGER.info("adding `" + schemaDatabaseName + "`.`bootstrap` to the schema.");
-			InputStream is = SchemaStore.class.getResourceAsStream("/sql/maxwell_schema_bootstrap.sql");
-			executeSQLInputStream(c, is, schemaDatabaseName);
-		}
-
-		if ( !getTableColumns("bootstrap", c).containsKey("total_rows") ) {
-			performAlter(c, "alter table `bootstrap` add column total_rows bigint unsigned not null default 0 after inserted_rows");
-			performAlter(c, "alter table `bootstrap` modify column inserted_rows bigint unsigned not null default 0");
-		}
-
-		if ( !getTableColumns("schemas", c).containsKey("charset")) {
-			String[] charsetTables = { "schemas", "databases", "tables", "columns" };
-			for ( String table : charsetTables ) {
-				performAlter(c, "alter table `" + table + "` change `encoding` `charset` varchar(255)");
+					}
+				}
 			}
 		}
 
-		if ( !getTableColumns("schemas", c).containsKey("base_schema_id"))
-			performAlter(c, "alter table `schemas` add column base_schema_id int unsigned NULL default NULL after binlog_position");
+		if ( unsignedDiffs > 0 ) {
+			/* A little explanation here: we've detected differences in signed-ness between the restored
+			 * and the recaptured schema.  99.9% of the time this will be the result of our capture bug.
+			 *
+			 * We can't however simply re-save the re-captured schema, as we might be behind some DDL updates
+			 * that we'd otherwise lose.  So we leave a marker so that the next time we save the schema, we'll
+			 * purposely break the delta chain and fix the unsigned columns in the database.
+			 * */
+			this.shouldSnapshotNextSchema = true;
+		}
+	}
 
-		if ( !getTableColumns("schemas", c).containsKey("deltas"))
-			performAlter(c, "alter table `schemas` add column deltas mediumtext charset 'utf8' NULL default NULL after base_schema_id");
+	private void handleVersionUpgrades(Connection conn, Long schemaID, int version) throws SQLException, InvalidSchemaError {
+		if ( version < 1 ) {
+			if ( this.schema != null && this.schema.findDatabase("mysql") == null ) {
+				LOGGER.info("Could not find mysql db, adding it to schema");
+				SchemaCapturer sc = new SchemaCapturer(conn, sensitivity, "mysql");
+				Database db = sc.capture().findDatabase("mysql");
+				this.schema.addDatabase(db);
+				this.shouldSnapshotNextSchema = true;
+			}
 
-		if ( !getTableColumns("schemas", c).containsKey("version")) {
-			performAlter(c, "alter table `schemas` add column `version` smallint unsigned not null default 0 after `charset`");
+			fixUnsignedColumns(conn);
 		}
 	}
 }

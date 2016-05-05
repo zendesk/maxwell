@@ -13,6 +13,7 @@ import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
 import com.zendesk.maxwell.schema.SchemaStore;
+import com.zendesk.maxwell.schema.SchemaStoreSchema;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 
 public class Maxwell {
@@ -48,11 +49,11 @@ public class Maxwell {
 			MaxwellMysqlStatus.ensureReplicationMysqlState(connection);
 			MaxwellMysqlStatus.ensureMaxwellMysqlState(schemaConnection);
 
-			SchemaStore.ensureMaxwellSchema(schemaConnection, this.config.databaseName);
+			SchemaStoreSchema.ensureMaxwellSchema(schemaConnection, this.config.databaseName);
 			schemaConnection.setCatalog(this.config.databaseName);
-			SchemaStore.upgradeSchemaStoreSchema(schemaConnection, this.config.databaseName);
+			SchemaStoreSchema.upgradeSchemaStoreSchema(schemaConnection, this.config.databaseName);
 
-			SchemaStore.handleMasterChange(schemaConnection, context.getServerID(), this.config.databaseName);
+			SchemaStoreSchema.handleMasterChange(schemaConnection, context.getServerID(), this.config.databaseName);
 
 			if ( this.context.getInitialPosition() != null ) {
 				String producerClass = this.context.getProducer().getClass().getSimpleName();
