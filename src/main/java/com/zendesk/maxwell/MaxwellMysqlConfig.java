@@ -15,7 +15,6 @@ public class MaxwellMysqlConfig {
 	public String user;
 	public String password;
 	public ArrayList<String> jdbcOptions = new ArrayList<String>() {{
-		add("useCursorFetch=true");
 		add("zeroDateTimeBehavior=convertToNull");
 	}};
 
@@ -47,7 +46,7 @@ public class MaxwellMysqlConfig {
 			parseJDBCOptions(opts);
 		}
 	}
-	
+
 	public void parseJDBCOptions(String opts) {
 		if (opts == null) return;
 		for ( String opt : opts.split("&") ) {
@@ -56,7 +55,7 @@ public class MaxwellMysqlConfig {
 	}
 
 	public String getConnectionURI() {
-		return "jdbc:mysql://" + host + ":" + port + "?" +				
+		return "jdbc:mysql://" + host + ":" + port + "?" +
 				StringUtils.join(this.jdbcOptions.toArray(), "&");
 	}
 

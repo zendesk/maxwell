@@ -81,8 +81,6 @@ public class MaxwellTestSupport {
 
 		config.databaseName = "maxwell";
 
-		config.bootstrapperBatchFetchSize = 64;
-
 		config.initPosition = p;
 
 		return new MaxwellContext(config);
