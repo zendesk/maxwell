@@ -28,7 +28,6 @@ public class MaxwellConfig extends AbstractConfig {
 	public String kafkaPartitionHash;
 	public String kafkaPartitionKey;
 	public String bootstrapperType;
-	public Integer bootstrapperBatchFetchSize;
 
 	public String outputFile;
 	public String log_level;
@@ -82,7 +81,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "__separator_4" );
 
 		parser.accepts( "bootstrapper", "bootstrapper type: async|sync|none. default: async" ).withRequiredArg();
-		parser.accepts( "bootstrapper_fetch_size", "number of rows fetched at a time during bootstrapping. default: 64000" ).withRequiredArg();
+		parser.accepts( "bootstrapper_fetch_size", "(deprecated)" ).withRequiredArg();
 
 		parser.accepts( "__separator_5" );
 
@@ -153,8 +152,6 @@ public class MaxwellConfig extends AbstractConfig {
 			this.producerType = (String) options.valueOf("producer");
 		if ( options.has("bootstrapper"))
 			this.bootstrapperType = (String) options.valueOf("bootstrapper");
-		if ( options.has("bootstrapper_fetch_size"))
-			this.bootstrapperBatchFetchSize = Integer.valueOf((String) options.valueOf("bootstrapper_fetch_size"));
 
 		if ( options.has("kafka.bootstrap.servers"))
 			this.kafkaProperties.setProperty("bootstrap.servers", (String) options.valueOf("kafka.bootstrap.servers"));
@@ -240,7 +237,6 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.producerType    = p.getProperty("producer", "stdout");
 		this.bootstrapperType = p.getProperty("bootstrapper", "async");
-		this.bootstrapperBatchFetchSize = Integer.valueOf(p.getProperty("bootstrapper_fetch_size", "64000"));
 
 		this.outputFile      = p.getProperty("output_file");
 		this.kafkaTopic      = p.getProperty("kafka_topic");

@@ -32,7 +32,6 @@ option                                        | description | default
 --blacklist_tables PATTERN                    | ignore updates AND schema changes from tables named like PATTERN (see warnings below)|
 &nbsp;
 --bootstrapper                                | bootstrapper type: async|sync|none. | async
---bootstrapper_fetch_size                     | number of rows fetched at a time during bootstrapping. | 64000
 &nbsp;
 --init_position FILE:POSITION                 | ignore the information in maxwell.positions and start at the given binlog position. Not available in config.properties.
 --replay                                      | enable maxwell's read-only "replay" mode.  Not available in config.properties.
