@@ -476,24 +476,27 @@ public class SchemaStore {
 			for ( Table tA : dA.getTableList() ) {
 				Table tB = dB.findTableOrThrow(tA.getName());
 				for ( ColumnDef cA : tA.getColumnList() ) {
-					ColumnDef cB = tB.findColumnOrThrow(cA.getName());
+					ColumnDef cB = tB.findColumn(cA.getName());
 
 					if ( cA instanceof IntColumnDef ) {
-						if ( !(cB instanceof IntColumnDef) )
-							throw new InvalidSchemaError("Expected " + cB.getName() + " to be an IntColumnDef");
-
-						if ( ((IntColumnDef)cA).isSigned() && !((IntColumnDef)cB).isSigned() ) {
-							((IntColumnDef)cA).setSigned(false);
-							unsignedDiffs++;
+						if ( cB != null && cB instanceof IntColumnDef ) {
+							if ( ((IntColumnDef)cA).isSigned() && !((IntColumnDef)cB).isSigned() ) {
+								((IntColumnDef)cA).setSigned(false);
+								unsignedDiffs++;
+							}
+						} else {
+							LOGGER.warn("warning: Couldn't check for unsigned integer bug on column " + cA.getName() +
+								".  You may want to recapture your schema");
 						}
 					} else if ( cA instanceof BigIntColumnDef ) {
-						if ( !(cB instanceof BigIntColumnDef) )
-							throw new InvalidSchemaError("Expected " + cB.getName() + " to be an BigIntColumnDef");
-
-						if ( ((BigIntColumnDef)cA).isSigned() && !((BigIntColumnDef)cB).isSigned() )
-							((BigIntColumnDef)cA).setSigned(false);
-							unsignedDiffs++;
-
+						if ( cB != null && cB instanceof BigIntColumnDef ) {
+							if ( ((BigIntColumnDef)cA).isSigned() && !((BigIntColumnDef)cB).isSigned() )
+								((BigIntColumnDef)cA).setSigned(false);
+								unsignedDiffs++;
+						} else {
+							LOGGER.warn("warning: Couldn't check for unsigned integer bug on column " + cA.getName() +
+								".  You may want to recapture your schema");
+						}
 					}
 				}
 			}
