@@ -95,7 +95,7 @@ public class MysqlIsolatedServer {
 	}
 
 	public Connection getNewConnection() throws SQLException {
-		return DriverManager.getConnection("jdbc:mysql://127.0.0.1:" + port + "/mysql?useCursorFetch=true&zeroDateTimeBehavior=convertToNull", "root", "");
+		return DriverManager.getConnection("jdbc:mysql://127.0.0.1:" + port + "/mysql?zeroDateTimeBehavior=convertToNull", "root", "");
 	}
 
 	public Connection getConnection() {

@@ -389,9 +389,9 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String[] opts = {"--jdbc_options= netTimeoutForStreamingResults=123& profileSQL=true  ", "--host=no-soup-spoons"};
 		MaxwellConfig config = new MaxwellConfig(opts);
 		assertEquals(config.maxwellMysql.getConnectionURI(),
-				"jdbc:mysql://no-soup-spoons:3306?useCursorFetch=true&zeroDateTimeBehavior=convertToNull&netTimeoutForStreamingResults=123&profileSQL=true");
+				"jdbc:mysql://no-soup-spoons:3306?zeroDateTimeBehavior=convertToNull&netTimeoutForStreamingResults=123&profileSQL=true");
 		assertEquals(config.replicationMysql.getConnectionURI(),
-				"jdbc:mysql://no-soup-spoons:3306?useCursorFetch=true&zeroDateTimeBehavior=convertToNull&netTimeoutForStreamingResults=123&profileSQL=true");
+				"jdbc:mysql://no-soup-spoons:3306?zeroDateTimeBehavior=convertToNull&netTimeoutForStreamingResults=123&profileSQL=true");
 
 	}
 
