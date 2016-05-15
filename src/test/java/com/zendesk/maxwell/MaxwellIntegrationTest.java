@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.regex.*;
 
 import com.zendesk.maxwell.schema.SchemaStore;
+import com.zendesk.maxwell.schema.SchemaStoreSchema;
 import org.junit.Test;
 
 public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
@@ -324,7 +325,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 		lowerCaseServer.boot("--lower-case-table-names=1");
 		MaxwellContext context = MaxwellTestSupport.buildContext(lowerCaseServer.getPort(), null);
-		SchemaStore.ensureMaxwellSchema(lowerCaseServer.getConnection(), context.getConfig().databaseName);
+		SchemaStoreSchema.ensureMaxwellSchema(lowerCaseServer.getConnection(), context.getConfig().databaseName);
 
 		String[] sql = {
 			"CREATE TABLE `test`.`TOOTOOTWEE` ( id int )",
@@ -388,9 +389,9 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String[] opts = {"--jdbc_options= netTimeoutForStreamingResults=123& profileSQL=true  ", "--host=no-soup-spoons"};
 		MaxwellConfig config = new MaxwellConfig(opts);
 		assertEquals(config.maxwellMysql.getConnectionURI(),
-				"jdbc:mysql://no-soup-spoons:3306?useCursorFetch=true&zeroDateTimeBehavior=convertToNull&netTimeoutForStreamingResults=123&profileSQL=true");
+				"jdbc:mysql://no-soup-spoons:3306?zeroDateTimeBehavior=convertToNull&netTimeoutForStreamingResults=123&profileSQL=true");
 		assertEquals(config.replicationMysql.getConnectionURI(),
-				"jdbc:mysql://no-soup-spoons:3306?useCursorFetch=true&zeroDateTimeBehavior=convertToNull&netTimeoutForStreamingResults=123&profileSQL=true");
+				"jdbc:mysql://no-soup-spoons:3306?zeroDateTimeBehavior=convertToNull&netTimeoutForStreamingResults=123&profileSQL=true");
 
 	}
 

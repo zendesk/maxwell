@@ -32,7 +32,6 @@ option                                        | description | default
 --blacklist_tables PATTERN                    | ignore updates AND schema changes from tables named like PATTERN (see warnings below)|
 &nbsp;
 --bootstrapper                                | bootstrapper type: async|sync|none. | async
---bootstrapper_fetch_size                     | number of rows fetched at a time during bootstrapping. | 64000
 &nbsp;
 --init_position FILE:POSITION                 | ignore the information in maxwell.positions and start at the given binlog position. Not available in config.properties.
 --replay                                      | enable maxwell's read-only "replay" mode.  Not available in config.properties.
@@ -52,6 +51,16 @@ kafka.batch.size=16384
 ```
 
 then Maxwell will send `batch.size=16384` to the kafka producer library.
+
+### Running against RDS
+***
+To run Maxwell against RDS, (either Aurora or Mysql) you will need to do the following:
+
+- set binlog_format to "ROW".  Do this in the "parameter groups" section.  For a Mysql-RDS instance this parameter will be
+  in a "DB Parameter Group", for Aurora it will be in a "DB Cluster Parameter Group".
+- setup RDS binlog retention as described [http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.Concepts.MySQL.html](here).
+  The tl;dr is to execute `call mysql.rds_set_configuration('binlog retention hours', 24)` on the server.
+
 
 ### Filters
 ***

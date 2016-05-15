@@ -43,7 +43,7 @@ public class DDLSerializationTest extends MaxwellTestWithIsolatedServer {
 				ResolvedSchemaChange resolved = change.resolve(schema);
 				if ( resolved != null ) {
 					schemaChanges.add(resolved);
-					schema = resolved.apply(schema);
+					resolved.apply(schema);
 				}
 			}
 		}

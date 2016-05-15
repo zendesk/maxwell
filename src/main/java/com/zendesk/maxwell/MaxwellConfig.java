@@ -28,12 +28,10 @@ public class MaxwellConfig extends AbstractConfig {
 	public String kafkaPartitionHash;
 	public String kafkaPartitionKey;
 	public String bootstrapperType;
-	public Integer bootstrapperBatchFetchSize;
 
 	public String outputFile;
 	public String log_level;
 
-	public Integer maxSchemas;
 	public BinlogPosition initPosition;
 	public boolean replayMode;
 
@@ -95,12 +93,12 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "__separator_4" );
 
 		parser.accepts( "bootstrapper", "bootstrapper type: async|sync|none. default: async" ).withRequiredArg();
-		parser.accepts( "bootstrapper_fetch_size", "number of rows fetched at a time during bootstrapping. default: 64000" ).withRequiredArg();
+		parser.accepts( "bootstrapper_fetch_size", "(deprecated)" ).withRequiredArg();
 
 		parser.accepts( "__separator_5" );
 
 		parser.accepts( "schema_database", "database name for maxwell state (schema and binlog position)").withRequiredArg();
-		parser.accepts( "max_schemas", "how many old schema definitions maxwell should keep around.  default: 5").withOptionalArg();
+		parser.accepts( "max_schemas", "deprecated.").withOptionalArg();
 		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION").withRequiredArg();
 		parser.accepts( "replay", "replay mode, don't store any information to the server");
 
@@ -166,8 +164,6 @@ public class MaxwellConfig extends AbstractConfig {
 			this.producerType = (String) options.valueOf("producer");
 		if ( options.has("bootstrapper"))
 			this.bootstrapperType = (String) options.valueOf("bootstrapper");
-		if ( options.has("bootstrapper_fetch_size"))
-			this.bootstrapperBatchFetchSize = Integer.valueOf((String) options.valueOf("bootstrapper_fetch_size"));
 
 		if ( options.has("kafka.bootstrap.servers"))
 			this.kafkaProperties.setProperty("bootstrap.servers", (String) options.valueOf("kafka.bootstrap.servers"));
@@ -186,9 +182,6 @@ public class MaxwellConfig extends AbstractConfig {
 
 		if ( options.has("output_file"))
 			this.outputFile = (String) options.valueOf("output_file");
-
-		if ( options.has("max_schemas"))
-			this.maxSchemas = Integer.valueOf((String)options.valueOf("max_schemas"));
 
 		if ( options.has("init_position")) {
 			String initPosition = (String) options.valueOf("init_position");
@@ -256,7 +249,6 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.producerType    = p.getProperty("producer", "stdout");
 		this.bootstrapperType = p.getProperty("bootstrapper", "async");
-		this.bootstrapperBatchFetchSize = Integer.valueOf(p.getProperty("bootstrapper_fetch_size", "64000"));
 
 		this.outputFile      = p.getProperty("output_file");
 		this.kafkaTopic      = p.getProperty("kafka_topic");
@@ -270,10 +262,6 @@ public class MaxwellConfig extends AbstractConfig {
 		this.excludeColumns = p.getProperty("exclude_columns");
 		this.blacklistDatabases = p.getProperty("blacklist_dbs");
 		this.blacklistTables = p.getProperty("blacklist_tables");
-
-		String maxSchemaString = p.getProperty("max_schemas");
-		if (maxSchemaString != null)
-			this.maxSchemas      = Integer.valueOf(maxSchemaString);
 
 		if ( p.containsKey("log_level") )
 			this.log_level = parseLogLevel(p.getProperty("log_level"));
@@ -349,8 +337,9 @@ public class MaxwellConfig extends AbstractConfig {
 			this.replicationMysql.jdbcOptions = this.maxwellMysql.jdbcOptions;
 		}
 
-		if ( this.maxSchemas != null )
-			SchemaStore.setMaxSchemas(this.maxSchemas);
+		if ( this.databaseName == null) {
+			this.databaseName = "maxwell";
+		}
 	}
 
 	public Properties getKafkaProperties() {

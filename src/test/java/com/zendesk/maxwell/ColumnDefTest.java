@@ -13,18 +13,12 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
+import com.zendesk.maxwell.schema.columndef.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.google.code.or.common.util.MySQLConstants;
-import com.zendesk.maxwell.schema.columndef.BigIntColumnDef;
-import com.zendesk.maxwell.schema.columndef.ColumnDef;
-import com.zendesk.maxwell.schema.columndef.DateColumnDef;
-import com.zendesk.maxwell.schema.columndef.DateTimeColumnDef;
-import com.zendesk.maxwell.schema.columndef.FloatColumnDef;
-import com.zendesk.maxwell.schema.columndef.IntColumnDef;
-import com.zendesk.maxwell.schema.columndef.StringColumnDef;
 
 public class ColumnDefTest {
 	private ColumnDef build(String type, boolean signed) {
@@ -199,6 +193,26 @@ public class ColumnDefTest {
 
 		Timestamp t = new Timestamp(307653559000L - TimeZone.getDefault().getOffset(307653559000L));
 		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19'"));
+	}
+
+	@Test
+	public void TestBit() {
+		ColumnDef d = build("bit", true);
+		assertThat(d, instanceOf(BitColumnDef.class));
+
+		assertTrue(d.matchesMysqlType(MySQLConstants.TYPE_BIT));
+
+		byte[] b = new byte[]{0x1};
+		assertThat(d.toSQL(b), is("1"));
+
+		b = new byte[]{0x0};
+		assertThat(d.toSQL(b), is("0"));
+
+		Boolean bO = Boolean.TRUE;
+		assertThat(d.toSQL(bO), is("1"));
+
+		bO = Boolean.FALSE;
+		assertThat(d.toSQL(bO), is("0"));
 	}
 
 }

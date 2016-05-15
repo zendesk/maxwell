@@ -26,11 +26,6 @@ public class YearColumnDef extends ColumnDef {
 	}
 
 	@Override
-	public ColumnDef copy() {
-		return new YearColumnDef(name, type, pos);
-	}
-
-	@Override
 	public String toSQL(Object value) {
 		return ((Integer)value).toString();
 	}

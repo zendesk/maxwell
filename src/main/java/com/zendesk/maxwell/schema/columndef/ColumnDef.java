@@ -26,8 +26,6 @@ public abstract class ColumnDef {
 		return value;
 	}
 
-	abstract public ColumnDef copy();
-
 	public static ColumnDef build(String name, String charset, String type, int pos, boolean signed, String enumValues[]) {
 		switch(type) {
 		case "tinyint":

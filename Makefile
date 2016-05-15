@@ -1,6 +1,6 @@
 all: compile
 
-MAXWELL_VERSION=$(shell build/current_rev)
+MAXWELL_VERSION ?=$(shell build/current_rev)
 
 JAVAC=javac
 JAVAC_FLAGS += -d target/classes
@@ -28,11 +28,13 @@ JAVA_DEPENDS = $(shell  build/maven_fetcher -p -o target/dependency)
 target/.java: $(ANTLR_OUTPUT) $(JAVA_SOURCE)
 	@mkdir -p target/classes
 	$(JAVAC) -classpath $(JAVA_DEPENDS) $(JAVAC_FLAGS) $?
-	cp -a src/main/resources/* target/classes
 	@touch target/.java
 
+copy-resources:
+	@cp -a src/main/resources/* target/classes
+
 compile-java: target/.java
-compile: compile-antlr compile-java
+compile: compile-antlr compile-java copy-resources
 
 
 

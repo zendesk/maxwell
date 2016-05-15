@@ -9,7 +9,7 @@ BINDIR=File.dirname(__FILE__)
 
 CURRENT_REV=`#{BINDIR}/current_rev`
 
-if !( ($version = ARGV[0]) && $version =~ /\d+\.\d+\.\d+/)
+if !( ($version = ARGV[0]) && $version =~ /\d+\.\d+\.\d+(-\w+)?/)
   message =  "usage: #{$0} VERSION\n"
   message += "  (current version is #{CURRENT_REV})"
   abort(message)
@@ -33,7 +33,7 @@ def bump
 end
 
 def build
-  do_system("make package")
+  do_system("make package MAXWELL_VERSION=#{$version}")
 
   commit_template = Tempfile.new('maxwell_build')
   commit_template.write <<-EOL
@@ -56,6 +56,10 @@ def tag
   do_system("git push --tags")
 end
 
+def prerelease?
+  !!($version =~ /-\w+$/)
+end
+
 def release
   release_title = `git show -s HEAD --format='%s'`
   release_body = `git show -s HEAD --format='%b'`
@@ -65,7 +69,7 @@ def release
 
   client = Octokit::Client.new(netrc: true)
 
-  release = client.create_release(REPO, 'v' + $version, name: release_title, body: release_body)
+  release = client.create_release(REPO, 'v' + $version, name: release_title, body: release_body, prerelease: prerelease?)
   client.upload_asset(release.url, BINDIR + "/../target/maxwell-#{$version}.tar.gz")
   do_system(BINDIR + "/../docs/push")
 end
@@ -73,7 +77,7 @@ end
 if $command
   send($command)
 else
-  bump
+  bump unless prerelease?
   build
   tag
   release
