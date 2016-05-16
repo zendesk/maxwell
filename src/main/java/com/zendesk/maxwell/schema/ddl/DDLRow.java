@@ -29,7 +29,7 @@ public class DDLRow implements RowInterface {
 		return this.nextPosition;
 	}
 
-	public String rowKey() throws IOException {
+	public String rowKey(RowInterface.KeyFormat keyFormat) throws IOException {
 		return UUID.randomUUID().toString();
 	}
 

@@ -18,8 +18,6 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 public class RowMap implements Serializable, RowInterface {
-	public enum KeyFormat { HASH, ARRAY }
-
 	static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
 
 	private final String rowType;
@@ -80,8 +78,8 @@ public class RowMap implements Serializable, RowInterface {
 		this.excludeColumns = excludeColumns;
 	}
 
-	public String rowKey(KeyFormat keyFormat) throws IOException {
-		if ( keyFormat == KeyFormat.HASH )
+	public String rowKey(RowInterface.KeyFormat keyFormat) throws IOException {
+		if ( keyFormat == RowInterface.KeyFormat.HASH )
 			return pkToJsonHash();
 		else
 			return pkToJsonArray();

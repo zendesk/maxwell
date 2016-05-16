@@ -330,7 +330,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 		List<SchemaChange> changes = SchemaChange.parse(dbName, sql);
 
 		if ( changes == null || changes.size() == 0 )
-			return;
+			return null;
 
 		DDLRowBuffer buffer = new DDLRowBuffer();
 		Schema updatedSchema = getSchema();

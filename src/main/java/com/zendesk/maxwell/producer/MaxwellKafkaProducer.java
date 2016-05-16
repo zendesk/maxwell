@@ -11,7 +11,7 @@ import com.zendesk.maxwell.MaxwellContext;
 
 import com.zendesk.maxwell.RowInterface;
 import com.zendesk.maxwell.RowMap;
-import com.zendesk.maxwell.RowMap.KeyFormat;
+import com.zendesk.maxwell.RowInterface.KeyFormat;
 import com.zendesk.maxwell.producer.partitioners.*;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
