@@ -19,8 +19,7 @@ public class Table {
 	public String name;
 	private List<ColumnDef> columnList;
 	public String charset;
-	@JsonProperty("primary-key")
-	public List<String> pkColumnNames;
+	private List<String> pkColumnNames;
 
 	private HashMap<String, Integer> columnOffsetMap;
 	@JsonIgnore
@@ -246,7 +245,7 @@ public class Table {
 		return charset;
 	}
 
-	@JsonIgnore
+	@JsonProperty("primary-key")
 	public List<String> getPKList() {
 		return this.pkColumnNames;
 	}
@@ -259,7 +258,10 @@ public class Table {
 			return null;
 	}
 
+	@JsonProperty("primary-key")
 	public void setPKList(List<String> pkColumnNames) {
-		this.pkColumnNames = pkColumnNames;
+		this.pkColumnNames = new ArrayList<>();
+		for ( String c : pkColumnNames )
+			this.pkColumnNames.add(c.toLowerCase());
 	}
 }

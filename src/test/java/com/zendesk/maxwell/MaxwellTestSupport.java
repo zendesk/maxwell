@@ -88,7 +88,6 @@ public class MaxwellTestSupport {
 	}
 
 	public static List<RowMap>getRowsForSQL(final MysqlIsolatedServer mysql, MaxwellFilter filter, String queries[], String before[]) throws Exception {
-		BinlogPosition start = BinlogPosition.capture(mysql.getConnection());
 		MaxwellContext context = buildContext(mysql.getPort(), null);
 
 		SchemaCapturer capturer = new SchemaCapturer(mysql.getConnection(), context.getCaseSensitivity());
@@ -97,6 +96,7 @@ public class MaxwellTestSupport {
 			mysql.executeList(Arrays.asList(before));
 		}
 
+		BinlogPosition start = BinlogPosition.capture(mysql.getConnection());
 
 		Schema initialSchema = capturer.capture();
 		SchemaStore initialSchemaStore = new SchemaStore(context, initialSchema, BinlogPosition.capture(mysql.getConnection()));
