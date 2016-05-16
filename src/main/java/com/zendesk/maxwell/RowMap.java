@@ -97,10 +97,8 @@ public class RowMap implements Serializable {
 			g.writeStringField("_uuid", UUID.randomUUID().toString());
 		} else {
 			for (String pk : pkColumns) {
-				pk = pk.toLowerCase();
 				Object pkValue = null;
-
-				if (data.containsKey(pk))
+				if ( data.containsKey(pk) )
 					pkValue = data.get(pk);
 
 				g.writeObjectField("pk." + pk, pkValue);
@@ -122,8 +120,6 @@ public class RowMap implements Serializable {
 		g.writeStartArray();
 		for (String pk : pkColumns) {
 			Object pkValue = null;
-			pk = pk.toLowerCase();
-
 			if ( data.containsKey(pk) )
 				pkValue = data.get(pk);
 
@@ -144,8 +140,6 @@ public class RowMap implements Serializable {
 		String keys="";
 		for (String pk : pkColumns) {
 			Object pkValue = null;
-			pk = pk.toLowerCase();
-
 			if (data.containsKey(pk))
 				pkValue = data.get(pk);
 			if (pkValue != null)
