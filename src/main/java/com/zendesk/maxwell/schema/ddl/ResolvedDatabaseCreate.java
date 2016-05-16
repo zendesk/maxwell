@@ -13,13 +13,10 @@ public class ResolvedDatabaseCreate extends ResolvedSchemaChange {
 	}
 
 	@Override
-	public Schema apply(Schema originalSchema) throws InvalidSchemaError {
-		Schema newSchema = originalSchema.copy();
-
-		if ( newSchema.hasDatabase(database) )
+	public void apply(Schema schema) throws InvalidSchemaError {
+		if ( schema.hasDatabase(database) )
 			throw new InvalidSchemaError("Unexpectedly asked to create existing database " + database);
 
-		newSchema.addDatabase(new Database(database, charset));
-		return newSchema;
+		schema.addDatabase(new Database(database, charset));
 	}
 }

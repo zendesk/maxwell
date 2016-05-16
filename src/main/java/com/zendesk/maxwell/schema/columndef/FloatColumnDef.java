@@ -22,10 +22,4 @@ public class FloatColumnDef extends ColumnDef {
 	public String toSQL(Object value) {
 		return value.toString();
 	}
-
-	@Override
-	public ColumnDef copy() {
-		return new FloatColumnDef(name, type, pos);
-	}
-
 }

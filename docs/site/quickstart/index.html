@@ -126,13 +126,13 @@
               
                   <ul class="nav">
                   
+                      <li class="toctree-l3"><a href="#download">Download</a></li>
+                      
+                  
                       <li class="toctree-l3"><a href="#row-based-replication">Row based replication</a></li>
                       
                   
                       <li class="toctree-l3"><a href="#mysql-permissions">Mysql permissions</a></li>
-                      
-                  
-                      <li class="toctree-l3"><a href="#download">Download</a></li>
                       
                   
                       <li class="toctree-l3"><a href="#stdout-producer">STDOUT producer</a></li>
@@ -174,6 +174,18 @@
 </div></div>
             <div class="col-md-10" role="main">
 
+<h3 id="download">Download</h3>
+<hr />
+<ul>
+<li>Download binary distro: <a href="https://github.com/zendesk/maxwell/releases/download/v1.0.1/maxwell-1.0.1.tar.gz">https://github.com/zendesk/maxwell/releases/download/v1.0.1/maxwell-1.0.1.tar.gz</a></li>
+<li>Sources and bug tracking is available on github: <a href="https://github.com/zendesk/maxwell">https://github.com/zendesk/maxwell</a></li>
+<li>Obligatory copy/paste to terminal:</li>
+</ul>
+<pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.0.1/maxwell-1.0.1.tar.gz \
+       | tar zxvf -
+cd maxwell-1.0.1
+</code></pre>
+
 <h3 id="row-based-replication">Row based replication</h3>
 <hr />
 <p>Maxwell can only operate if row-based replication is on.</p>
@@ -204,14 +216,6 @@ mysql&gt; GRANT ALL on maxwell.* to 'maxwell'@'localhost';
 
 </code></pre>
 
-<h3 id="download">Download</h3>
-<hr />
-<p>You'll need a version 7 of a JVM.</p>
-<pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v0.17.0/maxwell-0.17.0.tar.gz \
-       | tar zxvf -
-cd maxwell-0.17.0
-</code></pre>
-
 <h3 id="stdout-producer">STDOUT producer</h3>
 <hr />
 <p>Useful for smoke-testing the thing.</p>
@@ -228,7 +232,7 @@ Query OK, 1 row affected (0.04 sec)
 
 <h3 id="kafka-producer">Kafka producer</h3>
 <hr />
-<p>Boot kafka as described here:  <a href="http://kafka.apache.org/07/quickstart.html">http://kafka.apache.org/07/quickstart.html</a>, then:</p>
+<p>Boot kafka as described here:  <a href="http://kafka.apache.org/documentation.html#quickstart">http://kafka.apache.org/documentation.html#quickstart</a>, then:</p>
 <pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
    --producer=kafka --kafka.bootstrap.servers=localhost:9092
 </code></pre>

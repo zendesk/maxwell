@@ -14,18 +14,13 @@ public class ResolvedDatabaseAlter extends ResolvedSchemaChange {
 	}
 
 	@Override
-	public Schema apply(Schema originalSchema) throws InvalidSchemaError {
+	public void apply(Schema schema) throws InvalidSchemaError {
 		if ( charset == null )
-			return originalSchema;
+			return;
 
-		Schema schema = originalSchema.copy();
 		Database d = schema.findDatabaseOrThrow(database);
 
-		if ( d.getCharset().equals(charset) )
-			return originalSchema;
-
-		d.setCharset(charset);
-		return schema;
+		if ( !d.getCharset().equals(charset) )
+			d.setCharset(charset);
 	}
-
 }

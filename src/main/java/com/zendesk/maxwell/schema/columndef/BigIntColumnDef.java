@@ -39,12 +39,11 @@ public class BigIntColumnDef extends ColumnDef {
 		return toNumeric(value);
 	}
 
-	@Override
-	public ColumnDef copy() {
-		return new BigIntColumnDef(name, type, pos, signed);
-	}
-
 	public boolean isSigned() {
 		return signed;
+	}
+
+	public void setSigned(boolean signed) {
+		this.signed = signed;
 	}
 }

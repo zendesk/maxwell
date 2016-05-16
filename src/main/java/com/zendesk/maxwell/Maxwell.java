@@ -13,10 +13,11 @@ import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
 import com.zendesk.maxwell.schema.SchemaStore;
+import com.zendesk.maxwell.schema.SchemaStoreSchema;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 
 public class Maxwell {
-	private Schema schema;
+	private SchemaStore schemaStore;
 	private MaxwellConfig config;
 	private MaxwellContext context;
 	static final Logger LOGGER = LoggerFactory.getLogger(Maxwell.class);
@@ -24,13 +25,12 @@ public class Maxwell {
 	private void initFirstRun(Connection connection, Connection schemaConnection) throws SQLException, IOException, InvalidSchemaError {
 		LOGGER.info("Maxwell is capturing initial schema");
 		SchemaCapturer capturer = new SchemaCapturer(connection, this.context.getCaseSensitivity());
-		this.schema = capturer.capture();
+		Schema schema = capturer.capture();
 
 		BinlogPosition pos = BinlogPosition.capture(connection);
 
-		SchemaStore store = new SchemaStore(schemaConnection, this.context.getServerID(), this.schema, pos, this.config.databaseName);
-
-		store.save();
+		this.schemaStore = new SchemaStore(this.context.getServerID(), this.context.getCaseSensitivity(), schema, pos);
+		this.schemaStore.save(schemaConnection);
 
 		this.context.setPosition(pos);
 	}
@@ -49,20 +49,18 @@ public class Maxwell {
 			MaxwellMysqlStatus.ensureReplicationMysqlState(connection);
 			MaxwellMysqlStatus.ensureMaxwellMysqlState(schemaConnection);
 
-			SchemaStore.ensureMaxwellSchema(schemaConnection, this.config.databaseName);
+			SchemaStoreSchema.ensureMaxwellSchema(schemaConnection, this.config.databaseName);
 			schemaConnection.setCatalog(this.config.databaseName);
-			SchemaStore.upgradeSchemaStoreSchema(schemaConnection, this.config.databaseName);
+			SchemaStoreSchema.upgradeSchemaStoreSchema(schemaConnection, this.config.databaseName);
 
-			SchemaStore.handleMasterChange(schemaConnection, context.getServerID(), this.config.databaseName);
+			SchemaStoreSchema.handleMasterChange(schemaConnection, context.getServerID(), this.config.databaseName);
 
 			if ( this.context.getInitialPosition() != null ) {
 				String producerClass = this.context.getProducer().getClass().getSimpleName();
 
 				LOGGER.info("Maxwell is booting (" + producerClass + "), starting at " + this.context.getInitialPosition());
 
-				SchemaStore store = SchemaStore.restore(schemaConnection, this.context);
-
-				this.schema = store.getSchema();
+				this.schemaStore = SchemaStore.restore(schemaConnection, this.context);
 			} else {
 				initFirstRun(connection, schemaConnection);
 			}
@@ -75,7 +73,7 @@ public class Maxwell {
 		AbstractProducer producer = this.context.getProducer();
 		AbstractBootstrapper bootstrapper = this.context.getBootstrapper();
 
-		final MaxwellReplicator p = new MaxwellReplicator(this.schema, producer, bootstrapper, this.context, this.context.getInitialPosition());
+		final MaxwellReplicator p = new MaxwellReplicator(this.schemaStore, producer, bootstrapper, this.context, this.context.getInitialPosition());
 
 		bootstrapper.resume(producer, p);
 

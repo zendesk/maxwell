@@ -63,7 +63,7 @@ public class MaxwellContext {
 
 	public void start() {
 		SchemaScavenger s = new SchemaScavenger(this.maxwellConnectionPool, this.config.databaseName);
-		new Thread(s).start();
+		new Thread(s, "maxwell-schema-scavenger").start();
 	}
 
 	public void terminate() {
@@ -197,7 +197,8 @@ public class MaxwellContext {
 			config.includeTables,
 			config.excludeTables,
 			config.blacklistDatabases,
-			config.blacklistTables);
+			config.blacklistTables,
+			config.excludeColumns);
 	}
 
 

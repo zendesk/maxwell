@@ -2,6 +2,8 @@ package com.zendesk.maxwell.schema;
 
 import java.util.*;
 
+import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
+
 import com.zendesk.maxwell.schema.columndef.EnumeratedColumnDef;
 import org.apache.commons.lang.StringUtils;
 
@@ -85,7 +87,7 @@ public class Table {
 		}
 	}
 
-	private ColumnDef findColumn(String name) {
+	public ColumnDef findColumn(String name) {
 		String lcName = name.toLowerCase();
 
 		for (ColumnDef c : columnList )  {
@@ -94,6 +96,14 @@ public class Table {
 		}
 
 		return null;
+	}
+
+	public ColumnDef findColumnOrThrow(String name) throws InvalidSchemaError {
+		ColumnDef c = findColumn(name);
+		if ( c == null )
+			throw new InvalidSchemaError("couldn't find column " + name + " in table " + this.name);
+
+		return c;
 	}
 
 
@@ -110,7 +120,7 @@ public class Table {
 		ArrayList<ColumnDef> list = new ArrayList<>();
 
 		for ( ColumnDef c : columnList ) {
-			list.add(c.copy());
+			list.add(c);
 		}
 
 		return new Table(database, name, charset, list, pkColumnNames);

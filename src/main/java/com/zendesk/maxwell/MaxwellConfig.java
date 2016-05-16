@@ -1,8 +1,5 @@
 package com.zendesk.maxwell;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.*;
 
 import joptsimple.*;
@@ -22,20 +19,19 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public String databaseName;
 
-	public String  includeDatabases, excludeDatabases, includeTables, excludeTables, blacklistDatabases, blacklistTables;
+	public String  includeDatabases, excludeDatabases, includeTables, excludeTables, excludeColumns, blacklistDatabases, blacklistTables;
 
 	public final Properties kafkaProperties;
 	public String kafkaTopic;
+	public String kafkaKeyFormat;
 	public String producerType;
 	public String kafkaPartitionHash;
 	public String kafkaPartitionKey;
 	public String bootstrapperType;
-	public Integer bootstrapperBatchFetchSize;
 
 	public String outputFile;
 	public String log_level;
 
-	public Integer maxSchemas;
 	public BinlogPosition initPosition;
 	public boolean replayMode;
 
@@ -49,7 +45,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public MaxwellConfig(String argv[]) {
 		this();
 		this.parse(argv);
-		this.setDefaults();
+		this.validate();
 	}
 
 	protected OptionParser buildOptionParser() {
@@ -63,6 +59,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "port", "port for host" ).withRequiredArg();
 		parser.accepts( "user", "username for host" ).withRequiredArg();
 		parser.accepts( "password", "password for host" ).withOptionalArg();
+		parser.accepts( "jdbc_options", "additional jdbc connection options" ).withOptionalArg();
 
 		parser.accepts( "__separator_2" );
 
@@ -79,16 +76,17 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "kafka_partition_by", "database|table|primary_key, kafka producer assigns partition by hashing the specified parameter").withRequiredArg();
 		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning").withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
+		parser.accepts( "kafka_key_format", "how to format the kafka key; array|hash").withOptionalArg();
 
 		parser.accepts( "__separator_4" );
 
 		parser.accepts( "bootstrapper", "bootstrapper type: async|sync|none. default: async" ).withRequiredArg();
-		parser.accepts( "bootstrapper_fetch_size", "number of rows fetched at a time during bootstrapping. default: 64000" ).withRequiredArg();
+		parser.accepts( "bootstrapper_fetch_size", "(deprecated)" ).withRequiredArg();
 
 		parser.accepts( "__separator_5" );
 
 		parser.accepts( "schema_database", "database name for maxwell state (schema and binlog position)").withRequiredArg();
-		parser.accepts( "max_schemas", "how many old schema definitions maxwell should keep around.  default: 5").withOptionalArg();
+		parser.accepts( "max_schemas", "deprecated.").withOptionalArg();
 		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION").withRequiredArg();
 		parser.accepts( "replay", "replay mode, don't store any information to the server");
 
@@ -98,6 +96,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "exclude_dbs", "exclude these databases, formatted as exclude_dbs=db1,db2").withOptionalArg();
 		parser.accepts( "include_tables", "include these tables, formatted as include_tables=db1,db2").withOptionalArg();
 		parser.accepts( "exclude_tables", "exclude these tables, formatted as exclude_tables=tb1,tb2").withOptionalArg();
+		parser.accepts( "exclude_columns", "exclude these columns, formatted as exclude_columns=col1,col2" ).withOptionalArg();
 		parser.accepts( "blacklist_dbs", "ignore data AND schema changes to these databases, formatted as blacklist_dbs=db1,db2. See the docs for details before setting this!").withOptionalArg();
 		parser.accepts( "blacklist_tables", "ignore data AND schema changes to these tables, formatted as blacklist_tables=tb1,tb2. See the docs for details before setting this!").withOptionalArg();
 
@@ -153,14 +152,15 @@ public class MaxwellConfig extends AbstractConfig {
 			this.producerType = (String) options.valueOf("producer");
 		if ( options.has("bootstrapper"))
 			this.bootstrapperType = (String) options.valueOf("bootstrapper");
-		if ( options.has("bootstrapper_fetch_size"))
-			this.bootstrapperBatchFetchSize = Integer.valueOf((String) options.valueOf("bootstrapper_fetch_size"));
 
 		if ( options.has("kafka.bootstrap.servers"))
 			this.kafkaProperties.setProperty("bootstrap.servers", (String) options.valueOf("kafka.bootstrap.servers"));
 
 		if ( options.has("kafka_topic"))
 			this.kafkaTopic = (String) options.valueOf("kafka_topic");
+
+		if ( options.has("kafka_key_format"))
+			this.kafkaKeyFormat = (String) options.valueOf("kafka_key_format");
 
 		if ( options.has("kafka_partition_by"))
 			this.kafkaPartitionKey = (String) options.valueOf("kafka_partition_by");
@@ -170,9 +170,6 @@ public class MaxwellConfig extends AbstractConfig {
 
 		if ( options.has("output_file"))
 			this.outputFile = (String) options.valueOf("output_file");
-
-		if ( options.has("max_schemas"))
-			this.maxSchemas = Integer.valueOf((String)options.valueOf("max_schemas"));
 
 		if ( options.has("init_position")) {
 			String initPosition = (String) options.valueOf("init_position");
@@ -212,42 +209,47 @@ public class MaxwellConfig extends AbstractConfig {
 
 		if ( options.has("blacklist_tables"))
 			this.blacklistTables = (String) options.valueOf("blacklist_tables");
+
+		if ( options.has("exclude_columns") ) {
+			this.excludeColumns = (String) options.valueOf("exclude_columns");
+		}
 	}
 
 	private void parseFile(String filename, Boolean abortOnMissing) {
 		Properties p = readPropertiesFile(filename, abortOnMissing);
 
 		if ( p == null )
-			return;
+			p = new Properties();
 
-		this.maxwellMysql.host = p.getProperty("host", "127.0.0.1");
+		this.maxwellMysql.host = p.getProperty("host");
 		this.maxwellMysql.password = p.getProperty("password");
-		this.maxwellMysql.user     = p.getProperty("user");
+		this.maxwellMysql.user     = p.getProperty("user", "maxwell");
 		this.maxwellMysql.port = Integer.valueOf(p.getProperty("port", "3306"));
+		this.maxwellMysql.parseJDBCOptions(p.getProperty("jdbc_options"));
 
 		this.replicationMysql.host = p.getProperty("replication_host");
 		this.replicationMysql.password = p.getProperty("replication_password");
 		this.replicationMysql.user      = p.getProperty("replication_user");
 		this.replicationMysql.port = Integer.valueOf(p.getProperty("replication_port", "3306"));
+		this.replicationMysql.parseJDBCOptions(p.getProperty("jdbc_options"));
 
-		this.databaseName = p.getProperty("schema_database");
+		this.databaseName = p.getProperty("schema_database", "maxwell");
 
-		this.producerType    = p.getProperty("producer");
-		this.bootstrapperType = p.getProperty("bootstrapper");
+		this.producerType    = p.getProperty("producer", "stdout");
+		this.bootstrapperType = p.getProperty("bootstrapper", "async");
+
 		this.outputFile      = p.getProperty("output_file");
 		this.kafkaTopic      = p.getProperty("kafka_topic");
 		this.kafkaPartitionHash = p.getProperty("kafka_partition_hash", "default");
 		this.kafkaPartitionKey = p.getProperty("kafka_partition_by", "database");
+		this.kafkaKeyFormat = p.getProperty("kafka_key_format", "hash");
 		this.includeDatabases = p.getProperty("include_dbs");
 		this.excludeDatabases = p.getProperty("exclude_dbs");
 		this.includeTables = p.getProperty("include_tables");
 		this.excludeTables = p.getProperty("exclude_tables");
+		this.excludeColumns = p.getProperty("exclude_columns");
 		this.blacklistDatabases = p.getProperty("blacklist_dbs");
 		this.blacklistTables = p.getProperty("blacklist_tables");
-
-		String maxSchemaString = p.getProperty("max_schemas");
-		if (maxSchemaString != null)
-			this.maxSchemas      = Integer.valueOf(maxSchemaString);
 
 		if ( p.containsKey("log_level") )
 			this.log_level = parseLogLevel(p.getProperty("log_level"));
@@ -261,10 +263,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 	}
 
-	private void setDefaults() {
-		if ( this.producerType == null ) {
-			this.producerType = "stdout";
-		} else if ( this.producerType.equals("kafka") ) {
+	private void validate() {
+		if ( this.producerType.equals("kafka") ) {
 			if ( !this.kafkaProperties.containsKey("bootstrap.servers") ) {
 				usage("You must specify kafka.bootstrap.servers for the kafka producer!");
 			}
@@ -283,28 +283,20 @@ public class MaxwellConfig extends AbstractConfig {
 					&& !this.kafkaPartitionKey.equals("primary_key") ) {
 				usage("please specify --kafka_partition_by=database|table|primary_key");
 			}
+
+
+			if ( !this.kafkaKeyFormat.equals("hash") && !this.kafkaKeyFormat.equals("array") )
+				usage("invalid kafka_key_format: " + this.kafkaKeyFormat);
+
 		} else if ( this.producerType.equals("file")
 				&& this.outputFile == null) {
 			usage("please specify --output_file=FILE to use the file producer");
 		}
 
-		if ( this.maxwellMysql.port == null )
-			this.maxwellMysql.port = 3306;
-
-		if ( this.maxwellMysql.user == null) {
-			this.maxwellMysql.user = "maxwell";
-		}
-
-		if ( this.bootstrapperType == null ) {
-			this.bootstrapperType = "async";
-		} else if ( !this.bootstrapperType.equals("async")
+		if ( !this.bootstrapperType.equals("async")
 				&& !this.bootstrapperType.equals("sync")
 				&& !this.bootstrapperType.equals("none") ) {
 			usage("please specify --bootstrapper=async|sync|none");
-		}
-
-		if ( this.bootstrapperBatchFetchSize  == null ) {
-			this.bootstrapperBatchFetchSize = 64000;
 		}
 
 		if ( this.maxwellMysql.host == null ) {
@@ -315,9 +307,6 @@ public class MaxwellConfig extends AbstractConfig {
 		if ( this.replicationMysql.host != null && !this.bootstrapperType.equals("none") ) {
 			usage("please specify --bootstrapper=none when specifying a replication host");
 		}
-
-		if ( this.replicationMysql.port == null )
-			this.replicationMysql.port = 3306;
 
 		if ( this.replicationMysql.host == null
 				|| this.replicationMysql.user == null ) {
@@ -332,14 +321,13 @@ public class MaxwellConfig extends AbstractConfig {
 									this.maxwellMysql.port,
 									this.maxwellMysql.user,
 									this.maxwellMysql.password);
+
+			this.replicationMysql.jdbcOptions = this.maxwellMysql.jdbcOptions;
 		}
 
 		if ( this.databaseName == null) {
 			this.databaseName = "maxwell";
 		}
-
-		if ( this.maxSchemas != null )
-			SchemaStore.setMaxSchemas(this.maxSchemas);
 	}
 
 	public Properties getKafkaProperties() {

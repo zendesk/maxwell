@@ -3,9 +3,12 @@ package com.zendesk.maxwell;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 import org.apache.commons.lang.ArrayUtils;
+
 import java.util.List;
+import java.util.regex.*;
 
 import com.zendesk.maxwell.schema.SchemaStore;
+import com.zendesk.maxwell.schema.SchemaStoreSchema;
 import org.junit.Test;
 
 public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
@@ -24,7 +27,17 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String expectedJSON = "{\"database\":\"shard_1\",\"table\":\"minimal\",\"pk.id\":1,\"pk.text_field\":\"hello\"}";
 		list = getRowsForSQL(input);
 		assertThat(list.size(), is(1));
-		assertThat(list.get(0).rowKey(), is(expectedJSON));
+		assertThat(list.get(0).rowKey(RowMap.KeyFormat.HASH), is(expectedJSON));
+	}
+
+	@Test
+	public void testAlternativePKString() throws Exception {
+		List<RowMap> list;
+		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
+		String expectedJSON = "[\"shard_1\",\"minimal\",[{\"id\":1},{\"text_field\":\"hello\"}]]";
+		list = getRowsForSQL(input);
+		assertThat(list.size(), is(1));
+		assertThat(list.get(0).rowKey(RowMap.KeyFormat.ARRAY), is(expectedJSON));
 	}
 
 	@Test
@@ -132,6 +145,25 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		assertThat(list.size(), is(1));
 
 		assertThat(list.get(0).getTable(), is("bars"));
+	}
+
+	@Test
+	public void testExcludeColumns() throws Exception {
+		List<RowMap> list;
+		MaxwellFilter filter = new MaxwellFilter();
+
+		list = getRowsForSQL(filter, insertSQL, createDBs);
+		String json = list.get(1).toJSON();
+		assertTrue(Pattern.compile("\"id\":1").matcher(json).find());
+		assertTrue(Pattern.compile("\"account_id\":2").matcher(json).find());
+
+		filter.excludeColumns("id");
+
+		list = getRowsForSQL(filter, insertSQL, createDBs);
+		json = list.get(1).toJSON();
+
+		assertFalse(Pattern.compile("\"id\":1").matcher(json).find());
+		assertTrue(Pattern.compile("\"account_id\":2").matcher(json).find());
 	}
 
 	static String blacklistSQLDDL[] = {
@@ -293,7 +325,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 		lowerCaseServer.boot("--lower-case-table-names=1");
 		MaxwellContext context = MaxwellTestSupport.buildContext(lowerCaseServer.getPort(), null);
-		SchemaStore.ensureMaxwellSchema(lowerCaseServer.getConnection(), context.getConfig().databaseName);
+		SchemaStoreSchema.ensureMaxwellSchema(lowerCaseServer.getConnection(), context.getConfig().databaseName);
 
 		String[] sql = {
 			"CREATE TABLE `test`.`TOOTOOTWEE` ( id int )",
@@ -334,6 +366,33 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testGIS() throws Exception {
 		runJSON("/json/test_gis");
+	}
+
+	static String[] createDBSql = {
+			"CREATE database if not exists `foo`",
+			"CREATE TABLE if not exists `foo`.`ordered_output` ( id int, account_id int, user_id int )"
+	};
+	static String[] insertDBSql = {
+			"insert into `foo`.`ordered_output` set id = 1, account_id = 2, user_id = 3"
+	};
+
+	@Test
+	public void testOrderedOutput() throws Exception {
+		MaxwellFilter filter = new MaxwellFilter();
+		List<RowMap> rows = getRowsForSQL(filter, insertDBSql, createDBSql);
+		String ordered_data = "\"data\":\\{\"id\":1,\"account_id\":2,\"user_id\":3\\}";
+		assertTrue(Pattern.compile(ordered_data).matcher(rows.get(0).toJSON()).find());
+	}
+
+	@Test
+	public void testJdbcConnectionOptions() throws Exception {
+		String[] opts = {"--jdbc_options= netTimeoutForStreamingResults=123& profileSQL=true  ", "--host=no-soup-spoons"};
+		MaxwellConfig config = new MaxwellConfig(opts);
+		assertEquals(config.maxwellMysql.getConnectionURI(),
+				"jdbc:mysql://no-soup-spoons:3306?zeroDateTimeBehavior=convertToNull&netTimeoutForStreamingResults=123&profileSQL=true");
+		assertEquals(config.replicationMysql.getConnectionURI(),
+				"jdbc:mysql://no-soup-spoons:3306?zeroDateTimeBehavior=convertToNull&netTimeoutForStreamingResults=123&profileSQL=true");
+
 	}
 
 }

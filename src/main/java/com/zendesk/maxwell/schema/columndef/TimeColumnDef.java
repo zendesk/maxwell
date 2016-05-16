@@ -24,10 +24,4 @@ public class TimeColumnDef extends ColumnDef {
 	public Object asJSON(Object value) {
 		return String.valueOf((Time) value);
 	}
-
-	@Override
-	public ColumnDef copy() {
-		return new TimeColumnDef(name, type, pos);
-	}
-
 }

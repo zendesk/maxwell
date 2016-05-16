@@ -1,7 +1,7 @@
 FROM java:openjdk-7-jre
 ENV MAXWELL_VERSION 1.1.0-PRE1
 
-RUN apt-get update && apt-get upgrade
+RUN apt-get update && apt-get -y upgrade
 
 RUN mkdir /app
 WORKDIR /app
