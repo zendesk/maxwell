@@ -52,11 +52,11 @@
     	<artifactId>log4j-core</artifactId>
     	<version>2.1</version>
     </dependency>
-    <dependency>
+    <!-- <dependency>
     	<groupId>org.apache.kafka</groupId>
     	<artifactId>kafka-clients</artifactId>
     	<version>0.8.2.0</version>
-    </dependency>
+    </dependency> -->
     <dependency>
     	<groupId>org.apache.logging.log4j</groupId>
     	<artifactId>log4j-slf4j-impl</artifactId>
@@ -97,6 +97,43 @@
       <artifactId>jts</artifactId>
       <version>1.13</version>
     </dependency>
+    <dependency>
+        <groupId>org.apache.kafka</groupId>
+        <artifactId>kafka-clients</artifactId>
+        <version>0.9.0.1</version>
+    </dependency>
+    <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>19.0</version>
+    </dependency>
+    <dependency>
+	  <groupId>org.hdrhistogram</groupId>
+	  <artifactId>HdrHistogram</artifactId>
+	  <version>1.2.1</version>
+    </dependency>
+    <dependency>
+	  <groupId>org.elasticsearch</groupId>
+	  <artifactId>elasticsearch</artifactId>
+	  <version>2.3.1</version>
+	</dependency>
+	<dependency>
+	  <groupId>org.apache.httpcomponents</groupId>
+	  <artifactId>httpclient</artifactId>
+	  <version>4.5.2</version>
+    </dependency>
+	<dependency>
+		<groupId>io.searchbox</groupId>
+		<artifactId>jest</artifactId>
+		<version>2.0.2</version>
+	</dependency>
+	<dependency>
+		<groupId>net.java.dev.jna</groupId>
+		<artifactId>jna</artifactId>
+		<version>4.1.0</version>
+		<scope>test</scope>
+	</dependency>
+	   
   </dependencies>
 
   <build>
