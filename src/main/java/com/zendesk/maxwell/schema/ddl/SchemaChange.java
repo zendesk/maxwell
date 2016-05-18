@@ -38,7 +38,7 @@ public abstract class SchemaChange {
 		SQL_BLACKLIST.add(Pattern.compile("^\\s*SET\\s+PASSWORD", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
 		SQL_BLACKLIST.add(Pattern.compile("^\\s*(ALTER|CREATE|DROP|RENAME)\\s+USER", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
 
-		SQL_BLACKLIST.add(Pattern.compile("^\\s*CREATE\\s+TEMPORARY\\s+TABLE", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
+		SQL_BLACKLIST.add(Pattern.compile("^\\s*(ALTER|CREATE|DROP)\\s+TEMPORARY\\s+TABLE", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
 		SQL_BLACKLIST.add(Pattern.compile("^\\s*TRUNCATE\\s+", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
 		SQL_BLACKLIST.add(Pattern.compile("^\\s*OPTIMIZE\\s+", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
 
