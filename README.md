@@ -33,7 +33,7 @@ stat emitters.
     "ts": 1449786310,
     "xid": 940753,
     "commit": true,
-    "data": { "id":1, "daemon": "Stanlislaw Lem" }
+    "data": { "id":1, "daemon": "Stanislaw Lem" }
   }
 ```
 
@@ -47,7 +47,7 @@ stat emitters.
     "xid": 940786,
     "commit": true,
     "data": {"id":1, "daemon": "Firebus!  Firebus!"},
-    "old":  {"daemon": "Stanlislaw Lem"}
+    "old":  {"daemon": "Stanislaw Lem"}
   }
 ```
 
