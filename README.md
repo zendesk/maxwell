@@ -25,7 +25,7 @@ stat emitters.
 
 
 ```
-  mysql> insert into `test`.`maxwell` set id = 1, daemon = 'Stanlislaw Lem';
+  mysql> insert into `test`.`maxwell` set id = 1, daemon = 'Stanislaw Lem';
   maxwell: {
     "database": "test",
     "table": "maxwell",
