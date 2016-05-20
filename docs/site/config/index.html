@@ -137,6 +137,9 @@
                       <li class="toctree-l3"><a href="#properties-file">Properties file</a></li>
                       
                   
+                      <li class="toctree-l3"><a href="#running-against-rds">Running against RDS</a></li>
+                      
+                  
                       <li class="toctree-l3"><a href="#filters">Filters</a></li>
                       
                   
@@ -333,11 +336,6 @@
 <td>sync</td>
 </tr>
 <tr>
-<td>--bootstrapper_fetch_size</td>
-<td>number of rows fetched at a time during bootstrapping.</td>
-<td>64000</td>
-</tr>
-<tr>
 <td>&nbsp;</td>
 <td></td>
 <td></td>
@@ -366,6 +364,15 @@ front of the key.  So, for example if config.properties contains</p>
 </code></pre>
 
 <p>then Maxwell will send <code>batch.size=16384</code> to the kafka producer library.</p>
+<h3 id="running-against-rds">Running against RDS</h3>
+<hr />
+<p>To run Maxwell against RDS, (either Aurora or Mysql) you will need to do the following:</p>
+<ul>
+<li>set binlog_format to "ROW".  Do this in the "parameter groups" section.  For a Mysql-RDS instance this parameter will be
+  in a "DB Parameter Group", for Aurora it will be in a "DB Cluster Parameter Group".</li>
+<li>setup RDS binlog retention as described <a href="../here">http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.Concepts.MySQL.html</a>.
+  The tl;dr is to execute <code>call mysql.rds_set_configuration('binlog retention hours', 24)</code> on the server.</li>
+</ul>
 <h3 id="filters">Filters</h3>
 <hr />
 <p>The options <code>include_dbs</code>, <code>exclude_dbs</code>, <code>include_tables</code>, and <code>exclude_tables</code> control whether
