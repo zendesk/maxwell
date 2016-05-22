@@ -13,29 +13,29 @@ password=maxwell
 ######### general stuff #############
 
 # choose where to produce data to. currently this is one of: stdout|file|kafka
-#producer = kafka
+#producer=kafka
 
 # set the log level.  note that you can configure things further in log4j2.xml
-#log_level = DEBUG|INFO|WARN|ERROR
+#log_level=DEBUG # [DEBUG, INFO, WARN, ERROR]
 
 
 ######### mysql stuff ###############
 
 # mysql host to connect to
-#host = hostname
+#host=hostname
 
 # mysql port to connect to
-#port = 3306
+#port=3306
 
 # mysql user to connect as.  This user must have REPLICATION SLAVE permissions,
 # as well as full access to the `maxwell` (or schema_database) database
-#user = maxwell
+#user=maxwell
 
 # mysql password
-#password = maxwell
+#password=maxwell
 
 # options to pass into the jdbc connection, given as opt=val&opt2=val2
-#jdbc_options = opt1=100&opt2=hello
+#jdbc_options=opt1=100&opt2=hello
 
 # name of the mysql database where maxwell keeps its own state
 #schema_database=maxwell
@@ -59,10 +59,10 @@ password=maxwell
 #kafka_topic=maxwell
 
 # hash function to use.  "default" is just the JVM's 'hashCode'
-# function.  murmur3 is murmur3.
+# function.
 #kafka_partition_hash=default # [default, murmur3]
 
-# what is input into kafka_partition_hash.  Note that this defines
+# controls the input input into the hash function.  Note that this defines
 # which transactions keep ordering with respect to each other.  Generally
 # here you're making a trade-off between inter-row consistency and balanced
 # partitions.
@@ -77,7 +77,7 @@ password=maxwell
 # ["test","tickets",[{"id":10001}]]
 #
 # currently the default is "hash"
-#kafka_key_format=hash # hash|array
+#kafka_key_format=hash # [hash, array]
 
 # other kafka options.  Anything prefixed "kafka." will get
 # passed directly into the kafka-producer's config.
@@ -88,6 +88,7 @@ password=maxwell
 
 ######### filter stuff ###############
 
+# filter rows out of Maxwell's output.
 # all filters may be given either as literal names, or as java-style regular expressions.
 # This is a literal name: "exclude_tables=tblname".
 # This is a regexp:       "exclude_tables=/tblname_\d+/"
@@ -121,7 +122,7 @@ password=maxwell
 # maxwell's bootstrapping functionality has a couple of modes.
 #
 # In "async" mode, maxwell will output the replication stream while it
-# simultaneously outputs the database to the topic.  Note that it will *not*
+# simultaneously outputs the database to the topic.  Note that it won't
 # output replication data for any tables it is currently bootstrapping -- this
 # data will be buffered and output after the bootstrap is complete.
 #
@@ -131,7 +132,7 @@ password=maxwell
 # async mode keeps ops live while bootstrapping, but carries the possibility of
 # data loss (due to buffering transactions).  sync mode is safer but you
 # have to stop replication.
-#bootstrapper=sync|async|none
+#bootstrapper=async [sync, async, none]
 
 # output filename when using the "file" producer
 #output_file=/path/to/file
