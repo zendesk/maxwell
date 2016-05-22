@@ -20,6 +20,45 @@ public abstract class AbstractConfig {
 		} catch (IOException e) { }
 	}
 
+	protected void usageForOptions(String string, final String... filterOptions) {
+		BuiltinHelpFormatter filteredHelpFormatter = new BuiltinHelpFormatter(200, 4) {
+			@Override
+			public String format(Map<String, ? extends OptionDescriptor> options) {
+				this.addRows(options.values());
+				String output = this.formattedHelpOutput();
+				String[] lines = output.split("\n");
+
+				String filtered = "";
+				int i = 0;
+				for ( String l : lines ) {
+					boolean showLine = false;
+
+					if ( l.contains("--help") || i++ < 2 ) // take the first 3 lines, these are the header
+						showLine = true;
+					for ( String o : filterOptions )  {
+						if ( l.contains(o) )
+							showLine = true;
+					}
+
+					if ( showLine )
+						filtered += l + "\n";
+				}
+
+				return filtered;
+			}
+		};
+
+		System.err.println(string);
+		System.err.println();
+
+		OptionParser p = buildOptionParser();
+		p.formatHelpWith(filteredHelpFormatter);
+		try {
+			p.printHelpOn(System.err);
+			System.exit(1);
+		} catch (IOException e) { }
+	}
+
 	protected Properties readPropertiesFile(String filename, Boolean abortOnMissing) {
 		Properties p = null;
 		File file = new File(filename);
