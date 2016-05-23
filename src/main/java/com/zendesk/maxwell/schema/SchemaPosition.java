@@ -112,13 +112,14 @@ public class SchemaPosition extends RunLoopProcess implements Runnable {
 		}
 	}
 
-	public void set(BinlogPosition p) {
-		position.set(p);
+	public synchronized void set(BinlogPosition p) {
+		if ( position.get() == null || p.newerThan(position.get()) )
+			position.set(p);
 	}
 
 	public void setSync(BinlogPosition p) throws SQLException {
 		LOGGER.debug("syncing binlog position: " + p);
-		position.set(p);
+		set(p);
 		while ( true ) {
 			thread.interrupt();
 			BinlogPosition s = storedPosition.get();
