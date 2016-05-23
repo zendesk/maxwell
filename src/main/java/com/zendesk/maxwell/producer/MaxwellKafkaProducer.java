@@ -9,8 +9,9 @@ import com.zendesk.maxwell.BinlogPosition;
 import com.zendesk.maxwell.MaxwellAbstractRowsEvent;
 import com.zendesk.maxwell.MaxwellContext;
 
+import com.zendesk.maxwell.RowInterface;
 import com.zendesk.maxwell.RowMap;
-import com.zendesk.maxwell.RowMap.KeyFormat;
+import com.zendesk.maxwell.RowInterface.KeyFormat;
 import com.zendesk.maxwell.producer.partitioners.*;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -93,8 +94,8 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	}
 
 	@Override
-	public void push(RowMap r) throws Exception {
-		String key = r.pkToJson(keyFormat);
+	public void push(RowInterface r) throws Exception {
+		String key = r.rowKey(keyFormat);
 		String value = r.toJSON();
 
 		ProducerRecord<String, String> record =

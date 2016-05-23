@@ -34,7 +34,12 @@ public class TestMaxwellReplicator extends MaxwellReplicator {
 		this.replicator.start();
 
 		while ( true ) {
-			RowMap row = getRow();
+			RowInterface ri = getRow();
+			if ( ri != null && !(ri instanceof RowMap) )
+				continue;
+
+			RowMap row = (RowMap) ri;
+
 			if ( row == null && bootstrapper.isRunning() ) {
 				Thread.sleep(100);
 				continue;
