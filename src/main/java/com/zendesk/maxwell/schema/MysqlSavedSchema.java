@@ -25,10 +25,10 @@ public class MysqlSavedSchema {
 
 	private Schema schema;
 	private BinlogPosition position;
-	private Long schema_id;
+	private Long schemaID;
 	private int schemaVersion;
 
-	private Long base_schema_id;
+	private Long baseSchemaID;
 	private List<ResolvedSchemaChange> deltas;
 
 	private static final ObjectMapper mapper = new ObjectMapper();
@@ -44,7 +44,7 @@ public class MysqlSavedSchema {
 
 	private boolean shouldSnapshotNextSchema = false;
 
-	public MysqlSavedSchema(Long serverID, CaseSensitivity sensitivity) throws SQLException {
+	private MysqlSavedSchema(Long serverID, CaseSensitivity sensitivity) throws SQLException {
 		this.serverID = serverID;
 		this.sensitivity = sensitivity;
 	}
@@ -60,11 +60,11 @@ public class MysqlSavedSchema {
 	}
 
 	public MysqlSavedSchema(Long serverID, CaseSensitivity sensitivity, Schema schema, BinlogPosition position,
-							long base_schema_id, List<ResolvedSchemaChange> deltas) throws SQLException {
+							long baseSchemaID, List<ResolvedSchemaChange> deltas) throws SQLException {
 		this(serverID, sensitivity);
 
 		this.schema = schema;
-		this.base_schema_id = base_schema_id;
+		this.baseSchemaID = baseSchemaID;
 		this.deltas = deltas;
 
 		this.position = position;
@@ -74,11 +74,11 @@ public class MysqlSavedSchema {
 		if ( this.shouldSnapshotNextSchema )
 			return new MysqlSavedSchema(this.serverID, this.sensitivity, newSchema, position);
 		else
-			return new MysqlSavedSchema(this.serverID, this.sensitivity, newSchema, position, this.schema_id, deltas);
+			return new MysqlSavedSchema(this.serverID, this.sensitivity, newSchema, position, this.schemaID, deltas);
 	}
 
 	public Long getSchemaID() {
-		return schema_id;
+		return schemaID;
 	}
 
 	private static Long executeInsert(PreparedStatement preparedStatement,
@@ -102,7 +102,7 @@ public class MysqlSavedSchema {
 
 		try {
 			connection.setAutoCommit(false);
-			this.schema_id = saveSchema(connection);
+			this.schemaID = saveSchema(connection);
 			connection.commit();
 		} finally {
 			connection.setAutoCommit(true);
@@ -123,7 +123,7 @@ public class MysqlSavedSchema {
 		}
 
 		return executeInsert(insert,
-		                     this.base_schema_id,
+		                     this.baseSchemaID,
 		                     deltaString,
 		                     position.getFile(),
 		                     position.getOffset(),
@@ -134,7 +134,7 @@ public class MysqlSavedSchema {
 	}
 
 	public Long saveSchema(Connection conn) throws SQLException {
-		if ( this.base_schema_id != null )
+		if ( this.baseSchemaID != null )
 			return saveDerivedSchema(conn);
 
 		PreparedStatement schemaInsert, databaseInsert, tableInsert;
@@ -274,7 +274,7 @@ public class MysqlSavedSchema {
 	}
 
 	private void restoreDerivedSchema(Connection conn, Long schema_id) throws SQLException, IOException, InvalidSchemaError {
-		/* build hashmap of schema_id -> schema properties (as hash) */
+		/* build hashmap of schemaID -> schema properties (as hash) */
 		HashMap<Long, HashMap<String, Object>> schemas = buildSchemaMap(conn);
 
 		/* walk backwards to build linked list with base schema at the
@@ -321,7 +321,7 @@ public class MysqlSavedSchema {
 	private void restoreFromSchemaID(Connection conn, Long schemaID) throws SQLException, IOException, InvalidSchemaError {
 		restoreSchemaMetadata(conn, schemaID);
 
-		if ( this.base_schema_id != null )
+		if ( this.baseSchemaID != null )
 			restoreDerivedSchema(conn, schemaID);
 		else
 			restoreFullSchema(conn, schemaID);
@@ -337,11 +337,11 @@ public class MysqlSavedSchema {
 
 		LOGGER.info("Restoring schema id " + schemaRS.getInt("id") + " (last modified at " + this.position + ")");
 
-		this.schema_id = schemaRS.getLong("id");
-		this.base_schema_id = schemaRS.getLong("base_schema_id");
+		this.schemaID = schemaRS.getLong("id");
+		this.baseSchemaID = schemaRS.getLong("base_schema_id");
 
 		if ( schemaRS.wasNull() )
-			this.base_schema_id = null;
+			this.baseSchemaID = null;
 
 		this.deltas = parseDeltas(schemaRS.getString("deltas"));
 		this.schemaVersion = schemaRS.getInt("version");
@@ -350,7 +350,7 @@ public class MysqlSavedSchema {
 
 	private void restoreFullSchema(Connection conn, Long schemaID) throws SQLException, IOException, InvalidSchemaError {
 		PreparedStatement p = conn.prepareStatement("SELECT * from `databases` where schema_id = ? ORDER by id");
-		p.setLong(1, this.schema_id);
+		p.setLong(1, this.schemaID);
 
 		ResultSet dbRS = p.executeQuery();
 
@@ -436,7 +436,7 @@ public class MysqlSavedSchema {
 	}
 
 	private void ensureSchemaID() {
-		if ( this.schema_id == null ) {
+		if ( this.schemaID == null ) {
 			throw new RuntimeException("Can't destroy uninitialized schema!");
 		}
 	}
@@ -449,14 +449,14 @@ public class MysqlSavedSchema {
 		ensureSchemaID();
 
 		String[] tables = { "databases", "tables", "columns" };
-		connection.createStatement().execute("delete from `schemas` where id = " + schema_id);
+		connection.createStatement().execute("delete from `schemas` where id = " + schemaID);
 		for ( String tName : tables ) {
-			connection.createStatement().execute("delete from `" + tName + "` where schema_id = " + schema_id);
+			connection.createStatement().execute("delete from `" + tName + "` where schema_id = " + schemaID);
 		}
 	}
 
 	public boolean schemaExists(Connection connection, long schema_id) throws SQLException {
-		if ( this.schema_id == null )
+		if ( this.schemaID == null )
 			return false;
 		ResultSet rs = connection.createStatement().executeQuery("select id from `schemas` where id = " + schema_id);
 		return rs.next();
