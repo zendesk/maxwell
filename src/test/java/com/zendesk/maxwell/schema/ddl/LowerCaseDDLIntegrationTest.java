@@ -4,7 +4,6 @@ import java.io.File;
 
 import com.zendesk.maxwell.MysqlIsolatedServer;
 import com.zendesk.maxwell.MaxwellTestSupport;
-import com.zendesk.maxwell.schema.SchemaStore;
 
 import org.junit.*;
 

@@ -20,19 +20,18 @@ import com.google.code.or.common.util.MySQLConstants;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Schema;
-import com.zendesk.maxwell.schema.SchemaStore;
+import com.zendesk.maxwell.schema.MysqlSavedSchema;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.ddl.SchemaChange;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
-import com.zendesk.maxwell.util.ListWithDiskBuffer;
 
 public class MaxwellReplicator extends RunLoopProcess {
 	private final long MAX_TX_ELEMENTS = 10000;
 	String filePath, fileName;
 	private long rowEventsProcessed;
-	protected SchemaStore schemaStore;
+	protected MysqlSavedSchema savedSchema;
 
 	private MaxwellFilter filter;
 
@@ -48,8 +47,8 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellReplicator.class);
 
-	public MaxwellReplicator(SchemaStore schemaStore, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, BinlogPosition start) throws Exception {
-		this.schemaStore = schemaStore;
+	public MaxwellReplicator(MysqlSavedSchema savedSchema, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, BinlogPosition start) throws Exception {
+		this.savedSchema = savedSchema;
 
 		this.binlogEventListener = new MaxwellBinlogEventListener(queue);
 
@@ -356,8 +355,8 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 		if ( !this.context.getReplayMode() ) {
 			try (Connection c = this.context.getMaxwellConnection()) {
-				this.schemaStore = this.schemaStore.createDerivedSchema(updatedSchema, p, changes);
-				this.schemaStore.save(c);
+				this.savedSchema = this.savedSchema.createDerivedSchema(updatedSchema, p, changes);
+				this.savedSchema.save(c);
 			}
 
 			this.context.setPositionSync(p);
@@ -365,7 +364,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 	}
 
 	public Schema getSchema() {
-		return this.schemaStore.getSchema();
+		return this.savedSchema.getSchema();
 	}
 
 	public void setFilter(MaxwellFilter filter) {
