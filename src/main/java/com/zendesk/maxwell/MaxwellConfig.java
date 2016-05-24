@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.zendesk.maxwell.util.AbstractConfig;
-import com.zendesk.maxwell.schema.SchemaStore;
 
 public class MaxwellConfig extends AbstractConfig {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfig.class);

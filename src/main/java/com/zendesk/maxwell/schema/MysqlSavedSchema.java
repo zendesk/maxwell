@@ -20,7 +20,7 @@ import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-public class SchemaStore {
+public class MysqlSavedSchema {
 	static int SchemaStoreVersion = 1;
 
 	private Schema schema;
@@ -34,7 +34,7 @@ public class SchemaStore {
 	private static final ObjectMapper mapper = new ObjectMapper();
 	private static final JavaType listOfResolvedSchemaChangeType = mapper.getTypeFactory().constructCollectionType(List.class, ResolvedSchemaChange.class);
 
-	static final Logger LOGGER = LoggerFactory.getLogger(SchemaStore.class);
+	static final Logger LOGGER = LoggerFactory.getLogger(MysqlSavedSchema.class);
 
 	private final static String columnInsertSQL =
 		"INSERT INTO `columns` (schema_id, table_id, name, charset, coltype, is_signed, enum_values) VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -44,23 +44,23 @@ public class SchemaStore {
 
 	private boolean shouldSnapshotNextSchema = false;
 
-	public SchemaStore(Long serverID, CaseSensitivity sensitivity) throws SQLException {
+	public MysqlSavedSchema(Long serverID, CaseSensitivity sensitivity) throws SQLException {
 		this.serverID = serverID;
 		this.sensitivity = sensitivity;
 	}
 
-	public SchemaStore(Long serverID, CaseSensitivity sensitivity, Schema schema, BinlogPosition position) throws SQLException {
+	public MysqlSavedSchema(Long serverID, CaseSensitivity sensitivity, Schema schema, BinlogPosition position) throws SQLException {
 		this(serverID, sensitivity);
 		this.schema = schema;
 		this.position = position;
 	}
 
-	public SchemaStore(MaxwellContext context, Schema schema, BinlogPosition position) throws SQLException {
+	public MysqlSavedSchema(MaxwellContext context, Schema schema, BinlogPosition position) throws SQLException {
 		this(context.getServerID(), context.getCaseSensitivity(), schema, position);
 	}
 
-	public SchemaStore(Long serverID, CaseSensitivity sensitivity, Schema schema, BinlogPosition position,
-			long base_schema_id, List<ResolvedSchemaChange> deltas) throws SQLException {
+	public MysqlSavedSchema(Long serverID, CaseSensitivity sensitivity, Schema schema, BinlogPosition position,
+							long base_schema_id, List<ResolvedSchemaChange> deltas) throws SQLException {
 		this(serverID, sensitivity);
 
 		this.schema = schema;
@@ -70,11 +70,11 @@ public class SchemaStore {
 		this.position = position;
 	}
 
-	public SchemaStore createDerivedSchema(Schema newSchema, BinlogPosition position, List<ResolvedSchemaChange> deltas) throws SQLException {
+	public MysqlSavedSchema createDerivedSchema(Schema newSchema, BinlogPosition position, List<ResolvedSchemaChange> deltas) throws SQLException {
 		if ( this.shouldSnapshotNextSchema )
-			return new SchemaStore(this.serverID, this.sensitivity, newSchema, position);
+			return new MysqlSavedSchema(this.serverID, this.sensitivity, newSchema, position);
 		else
-			return new SchemaStore(this.serverID, this.sensitivity, newSchema, position, this.schema_id, deltas);
+			return new MysqlSavedSchema(this.serverID, this.sensitivity, newSchema, position, this.schema_id, deltas);
 	}
 
 	public Long getSchemaID() {
@@ -226,8 +226,8 @@ public class SchemaStore {
 		columnData.clear();
 	}
 
-	public static SchemaStore restore(Connection connection, MaxwellContext context) throws SQLException, IOException, InvalidSchemaError {
-		SchemaStore s = new SchemaStore(context.getServerID(), context.getCaseSensitivity());
+	public static MysqlSavedSchema restore(Connection connection, MaxwellContext context) throws SQLException, IOException, InvalidSchemaError {
+		MysqlSavedSchema s = new MysqlSavedSchema(context.getServerID(), context.getCaseSensitivity());
 
 		s.restoreFrom(connection, context.getInitialPosition());
 
@@ -284,7 +284,7 @@ public class SchemaStore {
 		Long firstSchemaId = schemaChain.removeFirst();
 
 		/* do the "full" restore */
-		SchemaStore firstSchema = new SchemaStore(serverID, sensitivity);
+		MysqlSavedSchema firstSchema = new MysqlSavedSchema(serverID, sensitivity);
 		firstSchema.restoreFromSchemaID(conn, firstSchemaId);
 		Schema schema = firstSchema.getSchema();
 

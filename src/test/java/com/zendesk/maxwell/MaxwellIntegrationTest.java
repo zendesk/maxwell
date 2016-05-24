@@ -7,7 +7,6 @@ import org.apache.commons.lang.ArrayUtils;
 import java.util.List;
 import java.util.regex.*;
 
-import com.zendesk.maxwell.schema.SchemaStore;
 import com.zendesk.maxwell.schema.SchemaStoreSchema;
 import org.junit.Test;
 
