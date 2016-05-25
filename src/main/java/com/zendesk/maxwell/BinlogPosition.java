@@ -21,6 +21,10 @@ public class BinlogPosition implements Serializable {
 		return new BinlogPosition(rs.getInt("Position"), rs.getString("File"));
 	}
 
+	public static BinlogPosition at(long offset, String file) {
+		return new BinlogPosition(offset, file);
+	}
+
 	public long getOffset() {
 		return offset;
 	}
@@ -46,5 +50,14 @@ public class BinlogPosition implements Serializable {
 		} else {
 			return false;
 		}
+	}
+
+	@Override
+	public boolean equals(Object other) {
+		if ( !(other instanceof BinlogPosition) )
+			return false;
+		BinlogPosition otherPosition = (BinlogPosition) other;
+
+		return this.file.equals(otherPosition.file) && this.offset == otherPosition.offset;
 	}
 }

@@ -23,13 +23,15 @@ import org.slf4j.LoggerFactory;
 
 class KafkaCallback implements Callback {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
+	private InflightMessageList inflightMessages;
 	private final MaxwellContext context;
 	private final BinlogPosition position;
 	private final boolean isTXCommit;
 	private final String json;
 	private final String key;
 
-	public KafkaCallback(BinlogPosition position, boolean isTXCommit, MaxwellContext c, String key, String json) {
+	public KafkaCallback(InflightMessageList inflightMessages, BinlogPosition position, boolean isTXCommit, MaxwellContext c, String key, String json) {
+		this.inflightMessages = inflightMessages;
 		this.context = c;
 		this.position = position;
 		this.isTXCommit = isTXCommit;
@@ -50,7 +52,10 @@ class KafkaCallback implements Callback {
 					LOGGER.debug("");
 				}
 				if ( isTXCommit ) {
-					context.setPosition(position);
+					BinlogPosition newPosition = inflightMessages.completeMessage(position);
+
+					if ( newPosition != null )
+						context.setPosition(newPosition);
 				}
 			} catch (SQLException e1) {
 				e1.printStackTrace();
@@ -64,6 +69,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		"compression.type", "gzip",
 		"metadata.fetch.timeout.ms", 5000
 	};
+	private final InflightMessageList inflightMessages;
 	private final KafkaProducer<String, String> kafka;
 	private String topic;
 	private final int numPartitions;
@@ -90,6 +96,8 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 			keyFormat = KeyFormat.HASH;
 		else
 			keyFormat = KeyFormat.ARRAY;
+
+		this.inflightMessages = new InflightMessageList();
 	}
 
 	@Override
@@ -100,7 +108,11 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		ProducerRecord<String, String> record =
 				new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, this.numPartitions), key, value);
 
-		kafka.send(record, new KafkaCallback(r.getPosition(), r.isTXCommit(), this.context, key, value));
+		if ( r.isTXCommit() )
+			inflightMessages.addMessage(r.getPosition());
+
+		kafka.send(record, new KafkaCallback(inflightMessages, r.getPosition(), r.isTXCommit(), this.context, key, value));
+
 	}
 
 	private void setDefaults(Properties p) {
