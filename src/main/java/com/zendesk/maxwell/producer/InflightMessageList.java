@@ -8,9 +8,8 @@ package com.zendesk.maxwell.producer;
 
 import com.zendesk.maxwell.BinlogPosition;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.ListIterator;
+import java.util.LinkedHashMap;
+import java.util.Iterator;
 
 public class InflightMessageList {
 	class InflightMessage {
@@ -22,29 +21,27 @@ public class InflightMessageList {
 		}
 	}
 
-	private LinkedList<InflightMessage> list;
-	private HashMap<String, InflightMessage> hash;
+	private LinkedHashMap<String, InflightMessage> linkedMap;
 
 	public InflightMessageList() {
-		this.list = new LinkedList<>();
-		this.hash = new HashMap<>();
+		this.linkedMap = new LinkedHashMap<>();
 	}
 
 	public void addMessage(BinlogPosition p) {
 		InflightMessage m = new InflightMessage(p);
-		this.list.add(m);
-		this.hash.put(p.toString(), m);
+		this.linkedMap.put(p.toString(), m);
 	}
 
 	/* returns the position that stuff is complete up to, or null if there were no changes */
 	public BinlogPosition completeMessage(BinlogPosition p) {
-		InflightMessage m = hash.get(p.toString());
+		InflightMessage m = this.linkedMap.get(p.toString());
 		assert(m != null);
 
 		m.isComplete = true;
 
 		BinlogPosition completeUntil = null;
-		ListIterator<InflightMessage> iterator = this.list.listIterator();
+		Iterator<InflightMessage> iterator = this.linkedMap.values().iterator();
+
 		while ( iterator.hasNext() ) {
 			InflightMessage msg = iterator.next();
 			if ( !msg.isComplete )
@@ -52,13 +49,12 @@ public class InflightMessageList {
 
 			completeUntil = msg.position;
 			iterator.remove();
-			this.hash.remove(msg.position.toString());
 		}
 
 		return completeUntil;
 	}
 
 	public int size() {
-		return list.size();
+		return linkedMap.size();
 	}
 }
