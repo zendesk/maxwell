@@ -359,7 +359,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 				this.savedSchema.save(c);
 			}
 
-			this.context.setPositionSync(p);
+			this.producer.writePosition(p);
 		}
 	}
 

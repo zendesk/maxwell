@@ -112,7 +112,13 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 			inflightMessages.addMessage(r.getPosition());
 
 		kafka.send(record, new KafkaCallback(inflightMessages, r.getPosition(), r.isTXCommit(), this.context, key, value));
+	}
 
+	@Override
+	public void writePosition(BinlogPosition p) throws SQLException {
+		// ensure that we don't prematurely advance the binlog pointer.
+		inflightMessages.addMessage(p);
+		inflightMessages.completeMessage(p);
 	}
 
 	private void setDefaults(Properties p) {
