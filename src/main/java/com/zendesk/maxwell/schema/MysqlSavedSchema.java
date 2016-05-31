@@ -227,9 +227,14 @@ public class MysqlSavedSchema {
 	}
 
 	public static MysqlSavedSchema restore(Connection connection, MaxwellContext context) throws SQLException, IOException, InvalidSchemaError {
-		MysqlSavedSchema s = new MysqlSavedSchema(context.getServerID(), context.getCaseSensitivity());
+		Long schemaID = findSchema(conn, targetPosition, this.serverID);
+		if ( schemaID == null )
+			return null;
 
-		s.restoreFrom(connection, context.getInitialPosition());
+		MysqlSavedSchema savedSchema = new MysqlSavedSchema(context.getServerID(), context.getCaseSensitivity());
+
+		savedSchema.restoreFromSchemaID(conn, schemaID);
+		savedSchema.handleVersionUpgrades(conn, schemaID, this.schemaVersion);
 
 		return s;
 	}
@@ -306,19 +311,7 @@ public class MysqlSavedSchema {
 		LOGGER.info("played " + count + " deltas in " + elapsed + "ms");
 	}
 
-	private void restoreFrom(Connection conn, BinlogPosition targetPosition) throws SQLException, IOException, InvalidSchemaError {
-		Long schemaID = findSchema(conn, targetPosition, this.serverID);
-		if ( schemaID == null ) {
-			throw new InvalidSchemaError("Could not find schema for "
-					+ targetPosition.getFile() + ":" + targetPosition.getOffset());
-		}
-
-		restoreFromSchemaID(conn, schemaID);
-
-		handleVersionUpgrades(conn, schemaID, this.schemaVersion);
-	}
-
-	private void restoreFromSchemaID(Connection conn, Long schemaID) throws SQLException, IOException, InvalidSchemaError {
+	protected void restoreFromSchemaID(Connection conn, Long schemaID) throws SQLException, IOException, InvalidSchemaError {
 		restoreSchemaMetadata(conn, schemaID);
 
 		if ( this.baseSchemaID != null )
@@ -514,7 +507,7 @@ public class MysqlSavedSchema {
 		}
 	}
 
-	private void handleVersionUpgrades(Connection conn, Long schemaID, int version) throws SQLException, InvalidSchemaError {
+	protected void handleVersionUpgrades(Connection conn, Long schemaID, int version) throws SQLException, InvalidSchemaError {
 		if ( version < 1 ) {
 			if ( this.schema != null && this.schema.findDatabase("mysql") == null ) {
 				LOGGER.info("Could not find mysql db, adding it to schema");
