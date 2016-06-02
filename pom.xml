@@ -16,6 +16,11 @@
 
   <dependencies>
     <dependency>
+        <groupId>com.amazonaws</groupId>
+        <artifactId>amazon-kinesis-client</artifactId>
+        <version>1.6.1</version>
+    </dependency>
+    <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
       <version>5.1.6</version>
@@ -151,6 +156,8 @@
       </plugin>
       <plugin>
         <groupId>org.jacoco</groupId>
+        <!--<artifactId>jacoco-maven-plugin</artifactId>-->
+        <!--<version>0.7.6-SNAPSHOT</version>-->
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>0.7.5.201505241946</version>
         <executions>

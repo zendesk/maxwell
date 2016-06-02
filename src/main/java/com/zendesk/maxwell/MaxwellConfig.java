@@ -22,6 +22,11 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public final Properties kafkaProperties;
 	public String kafkaTopic;
+
+	//Config specific to kinesis as output sink
+	public String kinesisEndpoint;
+	public String kinesisStream;
+
 	public String kafkaKeyFormat;
 	public String producerType;
 	public String kafkaPartitionHash;
@@ -69,13 +74,15 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_3" );
 
-		parser.accepts( "producer", "producer type: stdout|file|kafka" ).withRequiredArg();
+		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis" ).withRequiredArg();
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
 		parser.accepts( "kafka_partition_by", "database|table|primary_key, kafka producer assigns partition by hashing the specified parameter").withRequiredArg();
 		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning").withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
 		parser.accepts( "kafka_key_format", "how to format the kafka key; array|hash").withOptionalArg();
+		parser.accepts( "kinesis_endpoint", "optionally provide kinesis endpoint").withOptionalArg();
+		parser.accepts( "kinesis_stream", "optionally provide kinesis stream name").withOptionalArg();
 
 		parser.accepts( "__separator_4" );
 
@@ -154,6 +161,11 @@ public class MaxwellConfig extends AbstractConfig {
 
 		if ( options.has("kafka.bootstrap.servers"))
 			this.kafkaProperties.setProperty("bootstrap.servers", (String) options.valueOf("kafka.bootstrap.servers"));
+
+		if ( options.has("kinesis_endpoint"))
+			this.kinesisEndpoint = (String) options.valueOf("kinesis_endpoint");
+		if ( options.has("kinesis_stream"))
+			this.kinesisStream = (String) options.valueOf("kinesis_stream");
 
 		if ( options.has("kafka_topic"))
 			this.kafkaTopic = (String) options.valueOf("kafka_topic");
@@ -239,6 +251,11 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.outputFile      = p.getProperty("output_file");
 		this.kafkaTopic      = p.getProperty("kafka_topic");
+
+		//Kinesis & aws specific configs
+		this.kinesisEndpoint    = p.getProperty("kinesis_endpoint");
+		this.kinesisStream      = p.getProperty("kinesis_stream", "maxwell");
+
 		this.kafkaPartitionHash = p.getProperty("kafka_partition_hash", "default");
 		this.kafkaPartitionKey = p.getProperty("kafka_partition_by", "database");
 		this.kafkaKeyFormat = p.getProperty("kafka_key_format", "hash");
@@ -290,6 +307,9 @@ public class MaxwellConfig extends AbstractConfig {
 		} else if ( this.producerType.equals("file")
 				&& this.outputFile == null) {
 			usage("please specify --output_file=FILE to use the file producer");
+		} else if ( this.producerType.equals("kinesis")
+		        && this.kinesisEndpoint == null) {
+			usage("You must provide aws kinesis endpoint for using kinesis as output sink!");
 		}
 
 		if ( !this.bootstrapperType.equals("async")
