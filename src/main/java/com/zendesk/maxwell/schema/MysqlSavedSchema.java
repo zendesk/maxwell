@@ -226,17 +226,19 @@ public class MysqlSavedSchema {
 		columnData.clear();
 	}
 
-	public static MysqlSavedSchema restore(Connection connection, MaxwellContext context) throws SQLException, IOException, InvalidSchemaError {
-		Long schemaID = findSchema(conn, targetPosition, this.serverID);
-		if ( schemaID == null )
-			return null;
+	public static MysqlSavedSchema restore(MaxwellContext context, BinlogPosition targetPosition) throws SQLException, IOException, InvalidSchemaError {
+		try ( Connection conn = context.getMaxwellConnection() ) {
+			Long schemaID = findSchema(conn, targetPosition, this.serverID);
+			if (schemaID == null)
+				return null;
 
-		MysqlSavedSchema savedSchema = new MysqlSavedSchema(context.getServerID(), context.getCaseSensitivity());
+			MysqlSavedSchema savedSchema = new MysqlSavedSchema(context.getServerID(), context.getCaseSensitivity());
 
-		savedSchema.restoreFromSchemaID(conn, schemaID);
-		savedSchema.handleVersionUpgrades(conn, schemaID, this.schemaVersion);
+			savedSchema.restoreFromSchemaID(conn, schemaID);
+			savedSchema.handleVersionUpgrades(conn, schemaID, this.schemaVersion);
 
-		return s;
+			return savedSchema;
+		}
 	}
 
 	private List<ResolvedSchemaChange> parseDeltas(String json) throws IOException {
@@ -399,7 +401,7 @@ public class MysqlSavedSchema {
 
 	}
 
-	private Long findSchema(Connection connection, BinlogPosition targetPosition, Long serverID)
+	private static Long findSchema(Connection connection, BinlogPosition targetPosition, Long serverID)
 			throws SQLException {
 		LOGGER.debug("looking to restore schema at target position " + targetPosition);
 		PreparedStatement s = connection.prepareStatement(
