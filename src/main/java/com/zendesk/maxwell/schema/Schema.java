@@ -60,15 +60,6 @@ public class Schema {
 		this.databases.add(d);
 	}
 
-	public Schema copy() {
-		ArrayList<Database> newDBs = new ArrayList<>();
-		for ( Database d : this.databases ) {
-			newDBs.add(d.copy());
-		}
-
-		return new Schema(newDBs, this.charset, this.sensitivity);
-	}
-
 	private void diffDBList(List<String> diff, Schema a, Schema b, String nameA, String nameB, boolean recurse) {
 		for ( Database d : a.databases ) {
 			Database matchingDB = b.findDatabase(d.getName());

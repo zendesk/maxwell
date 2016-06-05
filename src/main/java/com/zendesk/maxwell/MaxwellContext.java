@@ -49,8 +49,8 @@ public class MaxwellContext {
 		return this.config;
 	}
 
-	public ConnectionPool getReplicationConnectionPool() {
-		return this.replicationConnectionPool;
+	public Connection getReplicationConnection() throws SQLException {
+		return this.replicationConnectionPool.getConnection();
 	}
 
 	public ConnectionPool getMaxwellConnectionPool() { return this.maxwellConnectionPool; }
@@ -127,7 +127,7 @@ public class MaxwellContext {
 		if ( this.serverID != null)
 			return this.serverID;
 
-		try ( Connection c = getReplicationConnectionPool().getConnection() ) {
+		try ( Connection c = getReplicationConnection() ) {
 			ResultSet rs = c.createStatement().executeQuery("SELECT @@server_id as server_id");
 			if ( !rs.next() ) {
 				throw new RuntimeException("Could not retrieve server_id!");
@@ -142,7 +142,7 @@ public class MaxwellContext {
 		if ( this.caseSensitivity != null )
 			return this.caseSensitivity;
 
-		try ( Connection c = getReplicationConnectionPool().getConnection()) {
+		try ( Connection c = getReplicationConnection()) {
 			ResultSet rs = c.createStatement().executeQuery("select @@lower_case_table_names");
 			if ( !rs.next() )
 				throw new RuntimeException("Could not retrieve @@lower_case_table_names!");
@@ -191,16 +191,9 @@ public class MaxwellContext {
 
 	}
 
-	public MaxwellFilter buildFilter() throws MaxwellInvalidFilterException {
-		return new MaxwellFilter(config.includeDatabases,
-			config.excludeDatabases,
-			config.includeTables,
-			config.excludeTables,
-			config.blacklistDatabases,
-			config.blacklistTables,
-			config.excludeColumns);
+	public MaxwellFilter getFilter() {
+		return config.filter;
 	}
-
 
 	public boolean getReplayMode() {
 		return this.config.replayMode;

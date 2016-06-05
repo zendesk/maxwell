@@ -45,7 +45,7 @@ public class Maxwell {
 
 		this.context.probeConnections();
 
-		try ( Connection connection = this.context.getReplicationConnectionPool().getConnection(); Connection schemaConnection = context.getMaxwellConnectionPool().getConnection() ) {
+		try ( Connection connection = this.context.getReplicationConnection(); Connection schemaConnection = context.getMaxwellConnectionPool().getConnection() ) {
 			MaxwellMysqlStatus.ensureReplicationMysqlState(connection);
 			MaxwellMysqlStatus.ensureMaxwellMysqlState(schemaConnection);
 
@@ -77,12 +77,7 @@ public class Maxwell {
 
 		bootstrapper.resume(producer, p);
 
-		try {
-			p.setFilter(context.buildFilter());
-		} catch (MaxwellInvalidFilterException e) {
-			LOGGER.error("Invalid maxwell filter", e);
-			System.exit(1);
-		}
+		p.setFilter(context.getFilter());
 
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
