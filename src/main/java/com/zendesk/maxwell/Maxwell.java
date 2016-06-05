@@ -12,26 +12,17 @@ import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
-import com.zendesk.maxwell.schema.MysqlSavedSchema;
+import com.zendesk.maxwell.schema.MysqlSchemaStore;
 import com.zendesk.maxwell.schema.SchemaStoreSchema;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 
 public class Maxwell {
-	private MysqlSavedSchema savedSchema;
 	private MaxwellConfig config;
 	private MaxwellContext context;
 	static final Logger LOGGER = LoggerFactory.getLogger(Maxwell.class);
 
 	private void initFirstRun(Connection connection, Connection schemaConnection) throws SQLException, IOException, InvalidSchemaError {
-		LOGGER.info("Maxwell is capturing initial schema");
-		SchemaCapturer capturer = new SchemaCapturer(connection, this.context.getCaseSensitivity());
-		Schema schema = capturer.capture();
-
 		BinlogPosition pos = BinlogPosition.capture(connection);
-
-		this.savedSchema = new MysqlSavedSchema(this.context.getServerID(), this.context.getCaseSensitivity(), schema, pos);
-		this.savedSchema.save(schemaConnection);
-
 		this.context.setPosition(pos);
 	}
 
@@ -55,15 +46,12 @@ public class Maxwell {
 
 			SchemaStoreSchema.handleMasterChange(schemaConnection, context.getServerID(), this.config.databaseName);
 
-			if ( this.context.getInitialPosition() != null ) {
-				String producerClass = this.context.getProducer().getClass().getSimpleName();
-
-				LOGGER.info("Maxwell is booting (" + producerClass + "), starting at " + this.context.getInitialPosition());
-
-				this.savedSchema = MysqlSavedSchema.restore(schemaConnection, this.context);
-			} else {
+			if ( this.context.getInitialPosition() == null ) {
 				initFirstRun(connection, schemaConnection);
 			}
+
+			String producerClass = this.context.getProducer().getClass().getSimpleName();
+			LOGGER.info("Maxwell is booting (" + producerClass + "), starting at " + this.context.getInitialPosition());
 		} catch ( SQLException e ) {
 			LOGGER.error("SQLException: " + e.getLocalizedMessage());
 			LOGGER.error(e.getLocalizedMessage());
@@ -73,7 +61,8 @@ public class Maxwell {
 		AbstractProducer producer = this.context.getProducer();
 		AbstractBootstrapper bootstrapper = this.context.getBootstrapper();
 
-		final MaxwellReplicator p = new MaxwellReplicator(this.savedSchema, producer, bootstrapper, this.context, this.context.getInitialPosition());
+		MysqlSchemaStore mysqlSchemaStore = new MysqlSchemaStore(this.context);
+		final MaxwellReplicator p = new MaxwellReplicator(mysqlSchemaStore, producer, bootstrapper, this.context, this.context.getInitialPosition());
 
 		bootstrapper.resume(producer, p);
 

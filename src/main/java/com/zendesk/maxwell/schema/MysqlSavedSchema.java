@@ -24,7 +24,6 @@ public class MysqlSavedSchema {
 	static int SchemaStoreVersion = 1;
 
 	private Schema schema;
-	private BinlogPosition position;
 	private Long schemaID;
 	private int schemaVersion;
 
@@ -49,32 +48,29 @@ public class MysqlSavedSchema {
 		this.sensitivity = sensitivity;
 	}
 
-	public MysqlSavedSchema(Long serverID, CaseSensitivity sensitivity, Schema schema, BinlogPosition position) throws SQLException {
+	public MysqlSavedSchema(Long serverID, CaseSensitivity sensitivity, Schema schema) throws SQLException {
 		this(serverID, sensitivity);
 		this.schema = schema;
-		this.position = position;
 	}
 
-	public MysqlSavedSchema(MaxwellContext context, Schema schema, BinlogPosition position) throws SQLException {
-		this(context.getServerID(), context.getCaseSensitivity(), schema, position);
+	public MysqlSavedSchema(MaxwellContext context, Schema schema) throws SQLException {
+		this(context.getServerID(), context.getCaseSensitivity(), schema);
 	}
 
-	public MysqlSavedSchema(Long serverID, CaseSensitivity sensitivity, Schema schema, BinlogPosition position,
+	public MysqlSavedSchema(Long serverID, CaseSensitivity sensitivity, Schema schema,
 							long baseSchemaID, List<ResolvedSchemaChange> deltas) throws SQLException {
 		this(serverID, sensitivity);
 
 		this.schema = schema;
 		this.baseSchemaID = baseSchemaID;
 		this.deltas = deltas;
-
-		this.position = position;
 	}
 
 	public MysqlSavedSchema createDerivedSchema(Schema newSchema, BinlogPosition position, List<ResolvedSchemaChange> deltas) throws SQLException {
 		if ( this.shouldSnapshotNextSchema )
-			return new MysqlSavedSchema(this.serverID, this.sensitivity, newSchema, position);
+			return new MysqlSavedSchema(this.serverID, this.sensitivity, newSchema);
 		else
-			return new MysqlSavedSchema(this.serverID, this.sensitivity, newSchema, position, this.schemaID, deltas);
+			return new MysqlSavedSchema(this.serverID, this.sensitivity, newSchema, this.schemaID, deltas);
 	}
 
 	public Long getSchemaID() {
@@ -125,8 +121,8 @@ public class MysqlSavedSchema {
 		return executeInsert(insert,
 		                     this.baseSchemaID,
 		                     deltaString,
-		                     position.getFile(),
-		                     position.getOffset(),
+		                     schema.getBinlogPosition().getFile(),
+		                     schema.getBinlogPosition().getOffset(),
 		                     serverID,
 		                     schema.getCharset(),
 		                     SchemaStoreVersion);
@@ -154,8 +150,8 @@ public class MysqlSavedSchema {
 				Statement.RETURN_GENERATED_KEYS
 		);
 
-		Long schemaId = executeInsert(schemaInsert, position.getFile(),
-				position.getOffset(), serverID, schema.getCharset(), SchemaStoreVersion);
+		Long schemaId = executeInsert(schemaInsert, schema.getBinlogPosition().getFile(),
+				schema.getBinlogPosition().getOffset(), serverID, schema.getCharset(), SchemaStoreVersion);
 
 		ArrayList<Object> columnData = new ArrayList<Object>();
 
@@ -226,26 +222,30 @@ public class MysqlSavedSchema {
 		columnData.clear();
 	}
 
-	public static MysqlSavedSchema restore(MaxwellContext context, BinlogPosition targetPosition) throws SQLException, IOException, InvalidSchemaError {
+	public static MysqlSavedSchema restore(MaxwellContext context, BinlogPosition targetPosition) throws SQLException, InvalidSchemaError {
 		try ( Connection conn = context.getMaxwellConnection() ) {
-			Long schemaID = findSchema(conn, targetPosition, this.serverID);
+			Long schemaID = findSchema(conn, targetPosition, context.getServerID());
 			if (schemaID == null)
 				return null;
 
 			MysqlSavedSchema savedSchema = new MysqlSavedSchema(context.getServerID(), context.getCaseSensitivity());
 
 			savedSchema.restoreFromSchemaID(conn, schemaID);
-			savedSchema.handleVersionUpgrades(conn, schemaID, this.schemaVersion);
+			savedSchema.handleVersionUpgrades(conn);
 
 			return savedSchema;
 		}
 	}
 
-	private List<ResolvedSchemaChange> parseDeltas(String json) throws IOException {
+	private List<ResolvedSchemaChange> parseDeltas(String json) {
 		if ( json == null )
 			return null;
 
-		return mapper.readerFor(listOfResolvedSchemaChangeType).readValue(json.getBytes());
+		try {
+			return mapper.readerFor(listOfResolvedSchemaChangeType).readValue(json.getBytes());
+		} catch ( IOException e ) {
+			throw new RuntimeException("couldn't parse json delta: " + json.getBytes(), e);
+		}
 	}
 
 	private HashMap<Long, HashMap<String, Object>> buildSchemaMap(Connection conn) throws SQLException {
@@ -280,7 +280,7 @@ public class MysqlSavedSchema {
 		return schemaChain;
 	}
 
-	private void restoreDerivedSchema(Connection conn, Long schema_id) throws SQLException, IOException, InvalidSchemaError {
+	private void restoreDerivedSchema(Connection conn, Long schema_id) throws SQLException, InvalidSchemaError {
 		/* build hashmap of schemaID -> schema properties (as hash) */
 		HashMap<Long, HashMap<String, Object>> schemas = buildSchemaMap(conn);
 
@@ -313,7 +313,7 @@ public class MysqlSavedSchema {
 		LOGGER.info("played " + count + " deltas in " + elapsed + "ms");
 	}
 
-	protected void restoreFromSchemaID(Connection conn, Long schemaID) throws SQLException, IOException, InvalidSchemaError {
+	protected void restoreFromSchemaID(Connection conn, Long schemaID) throws SQLException, InvalidSchemaError {
 		restoreSchemaMetadata(conn, schemaID);
 
 		if ( this.baseSchemaID != null )
@@ -322,15 +322,15 @@ public class MysqlSavedSchema {
 			restoreFullSchema(conn, schemaID);
 	}
 
-	private void restoreSchemaMetadata(Connection conn, Long schemaID) throws SQLException, IOException {
+	private void restoreSchemaMetadata(Connection conn, Long schemaID) throws SQLException {
 		PreparedStatement p = conn.prepareStatement("select * from `schemas` where id = " + schemaID);
 		ResultSet schemaRS = p.executeQuery();
 
 		schemaRS.next();
 
-		this.position = new BinlogPosition(schemaRS.getInt("binlog_position"), schemaRS.getString("binlog_file"));
+		BinlogPosition position = new BinlogPosition(schemaRS.getInt("binlog_position"), schemaRS.getString("binlog_file"));
 
-		LOGGER.info("Restoring schema id " + schemaRS.getInt("id") + " (last modified at " + this.position + ")");
+		LOGGER.info("Restoring schema id " + schemaRS.getInt("id") + " (last modified at " + position + ")");
 
 		this.schemaID = schemaRS.getLong("id");
 		this.baseSchemaID = schemaRS.getLong("base_schema_id");
@@ -340,10 +340,10 @@ public class MysqlSavedSchema {
 
 		this.deltas = parseDeltas(schemaRS.getString("deltas"));
 		this.schemaVersion = schemaRS.getInt("version");
-		this.schema = new Schema(new ArrayList<Database>(), schemaRS.getString("charset"), this.sensitivity);
+		this.schema = new Schema(new ArrayList<Database>(), schemaRS.getString("charset"), this.sensitivity, position);
 	}
 
-	private void restoreFullSchema(Connection conn, Long schemaID) throws SQLException, IOException, InvalidSchemaError {
+	private void restoreFullSchema(Connection conn, Long schemaID) throws SQLException, InvalidSchemaError {
 		PreparedStatement p = conn.prepareStatement("SELECT * from `databases` where schema_id = ? ORDER by id");
 		p.setLong(1, this.schemaID);
 
@@ -450,17 +450,6 @@ public class MysqlSavedSchema {
 		}
 	}
 
-	public boolean schemaExists(Connection connection, long schema_id) throws SQLException {
-		if ( this.schemaID == null )
-			return false;
-		ResultSet rs = connection.createStatement().executeQuery("select id from `schemas` where id = " + schema_id);
-		return rs.next();
-	}
-
-	public BinlogPosition getBinlogPosition() {
-		return this.position;
-	}
-
 	private void fixUnsignedColumns(Connection conn) throws SQLException, InvalidSchemaError {
 		int unsignedDiffs = 0;
 
@@ -509,8 +498,8 @@ public class MysqlSavedSchema {
 		}
 	}
 
-	protected void handleVersionUpgrades(Connection conn, Long schemaID, int version) throws SQLException, InvalidSchemaError {
-		if ( version < 1 ) {
+	protected void handleVersionUpgrades(Connection conn) throws SQLException, InvalidSchemaError {
+		if ( this.schemaVersion < 1 ) {
 			if ( this.schema != null && this.schema.findDatabase("mysql") == null ) {
 				LOGGER.info("Could not find mysql db, adding it to schema");
 				SchemaCapturer sc = new SchemaCapturer(conn, sensitivity, "mysql");

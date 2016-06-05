@@ -24,7 +24,6 @@ public class SchemaScavengerTest extends MaxwellTestWithIsolatedServer {
 		"CREATE TABLE shard_1.pks (id int(11), col2 varchar(255), col3 datetime, PRIMARY KEY(col2, col3, id))"
 	};
 	private Schema schema;
-	private BinlogPosition binlogPosition;
 	private MysqlSavedSchema savedSchema;
 	private SchemaScavenger scavenger;
 
@@ -32,13 +31,12 @@ public class SchemaScavengerTest extends MaxwellTestWithIsolatedServer {
 	public void setUp() throws Exception {
 		server.executeList(schemaSQL);
 		this.schema = new SchemaCapturer(server.getConnection(), CaseSensitivity.CASE_SENSITIVE).capture();
-		this.binlogPosition = BinlogPosition.capture(server.getConnection());
         MaxwellContext context = buildContext();
 
 		this.scavenger = new SchemaScavenger(buildContext().getMaxwellConnectionPool(), context.getConfig().databaseName);
 		Connection conn = server.getConnection();
 		conn.setCatalog(context.getConfig().databaseName);
-		this.savedSchema = new MysqlSavedSchema(context, this.schema, binlogPosition);
+		this.savedSchema = new MysqlSavedSchema(context, this.schema);
 		this.savedSchema.save(conn);
 	}
 

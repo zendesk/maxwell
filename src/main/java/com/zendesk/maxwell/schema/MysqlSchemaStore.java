@@ -14,45 +14,43 @@ import java.util.List;
 
 import static com.zendesk.maxwell.schema.SchemaScavenger.LOGGER;
 
-public class MysqlSchemaStore implements SchemaStore {
-	private final MaxwellContext context;
+public class MysqlSchemaStore extends AbstractSchemaStore {
 	private MysqlSavedSchema savedSchema;
 
 	public MysqlSchemaStore(MaxwellContext context) {
-		this.context = context;
+		super(context);
 	}
 
-	public void initPosition(BinlogPosition position) throws SchemaStoreException, InvalidSchemaError {
+	public void getSchema(BinlogPosition position) throws SchemaStoreException, InvalidSchemaError {
 		try ( Connection conn = context.getMaxwellConnection() ) {
-			savedSchema = MysqlSavedSchema.restore(conn, this.context);
+			savedSchema = MysqlSavedSchema.restore(this.context, position);
 			if ( savedSchema == null ) {
-				// capture, save.
+				Schema capturedSchema = captureSchema();
+				savedSchema = new MysqlSavedSchema(context, capturedSchema);
+				savedSchema.save(conn);
 			}
 		} catch (SQLException e) {
 			throw new SchemaStoreException(e);
 		}
 	}
 
-	public Schema getSchema() {
-		return savedSchema.getSchema();
-	}
 
-
-	public List<ResolvedSchemaChange> processSQL(String sql, String currentDatabase, BinlogPosition position) throws SchemaStoreException, InvalidSchemaError {
+	/*
+		parse 
+	 */
+	public List<ResolvedSchemaChange> processSQL(String sql, String currentDatabase, Schema schema, BinlogPosition position) throws SchemaStoreException, InvalidSchemaError {
 		List<SchemaChange> changes = SchemaChange.parse(currentDatabase, sql);
 
 		if ( changes == null || changes.size() == 0 )
-			return new List<>();
+			return new ArrayList<>();
 
 		ArrayList<ResolvedSchemaChange> resolvedSchemaChanges = new ArrayList<>();
 
-		Schema updatedSchema = getSchema();
-
 		for ( SchemaChange change : changes ) {
 			if ( !change.isBlacklisted(this.context.getFilter()) ) {
-				ResolvedSchemaChange resolved = change.resolve(updatedSchema);
+				ResolvedSchemaChange resolved = change.resolve(schema);
 				if ( resolved != null ) {
-					resolved.apply(updatedSchema);
+					resolved.apply(schema);
 
 					resolvedSchemaChanges.add(resolved);
 				}
@@ -64,7 +62,11 @@ public class MysqlSchemaStore implements SchemaStore {
 		if ( resolvedSchemaChanges.size() > 0 ) {
 			LOGGER.info("storing schema @" + position + " after applying \"" + sql.replace('\n', ' ') + "\"");
 
-			saveSchema(updatedSchema, resolvedSchemaChanges, position);
+			try {
+				saveSchema(schema, resolvedSchemaChanges, position);
+			} catch (SQLException e) {
+				throw new SchemaStoreException(e);
+			}
 		}
 		return resolvedSchemaChanges;
 	}

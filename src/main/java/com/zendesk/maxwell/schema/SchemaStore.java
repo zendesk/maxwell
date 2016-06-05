@@ -7,7 +7,6 @@ import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 import java.util.List;
 
 public interface SchemaStore {
-	void initPosition(BinlogPosition position) throws SchemaStoreException, InvalidSchemaError;
-	Schema getSchema();
-	List<ResolvedSchemaChange> processSQL(String sql, String currentDatabase, BinlogPosition position) throws SchemaStoreException;
+	void getSchema(BinlogPosition position) throws SchemaStoreException, InvalidSchemaError;
+	List<ResolvedSchemaChange> processSQL(String sql, String currentDatabase, BinlogPosition position) throws SchemaStoreException, InvalidSchemaError;
 }
