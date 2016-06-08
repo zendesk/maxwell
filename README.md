@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/zendesk/maxwell.svg?branch=master)](https://travis-ci.org/zendesk/maxwell)
-
 <div id="maxwell-header">
   <h2>Maxwell = Mysql + Kafka</h2>
 </div>
@@ -18,7 +16,7 @@ but differentiates itself with these features:
 Maxwell is intended as a source for event-based readers, eg various ETL applications, search indexing,
 stat emitters.
 
-- Download: [https://github.com/zendesk/maxwell/releases/download/v1.1.0/maxwell-1.1.0.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.1.0/maxwell-1.1.0.tar.gz)
+- Download: [https://github.com/zendesk/maxwell/releases/download/v1.1.1/maxwell-1.1.1.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.1.1/maxwell-1.1.1.tar.gz)
 - Source: [https://github.com/zendesk/maxwell](https://github.com/zendesk/maxwell)
 
 <br style="clear:both"/>

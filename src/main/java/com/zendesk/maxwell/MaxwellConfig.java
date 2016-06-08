@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.zendesk.maxwell.util.AbstractConfig;
-import com.zendesk.maxwell.schema.SchemaStore;
 
 public class MaxwellConfig extends AbstractConfig {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfig.class);
@@ -16,6 +15,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public MaxwellMysqlConfig replicationMysql;
 
 	public MaxwellMysqlConfig maxwellMysql;
+	public MaxwellFilter filter;
 
 	public String databaseName;
 
@@ -328,6 +328,20 @@ public class MaxwellConfig extends AbstractConfig {
 
 		if ( this.databaseName == null) {
 			this.databaseName = "maxwell";
+		}
+
+		try {
+			this.filter = new MaxwellFilter(
+					includeDatabases,
+					excludeDatabases,
+					includeTables,
+					excludeTables,
+					blacklistDatabases,
+					blacklistTables,
+					excludeColumns
+			);
+		} catch (MaxwellInvalidFilterException e) {
+			usage("Invalid filter options: " + e.getLocalizedMessage());
 		}
 	}
 

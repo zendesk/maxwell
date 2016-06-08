@@ -12,12 +12,12 @@ import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
-import com.zendesk.maxwell.schema.SchemaStore;
+import com.zendesk.maxwell.schema.MysqlSavedSchema;
 import com.zendesk.maxwell.schema.SchemaStoreSchema;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 
 public class Maxwell {
-	private SchemaStore schemaStore;
+	private MysqlSavedSchema savedSchema;
 	private MaxwellConfig config;
 	private MaxwellContext context;
 	static final Logger LOGGER = LoggerFactory.getLogger(Maxwell.class);
@@ -29,8 +29,8 @@ public class Maxwell {
 
 		BinlogPosition pos = BinlogPosition.capture(connection);
 
-		this.schemaStore = new SchemaStore(this.context.getServerID(), this.context.getCaseSensitivity(), schema, pos);
-		this.schemaStore.save(schemaConnection);
+		this.savedSchema = new MysqlSavedSchema(this.context.getServerID(), this.context.getCaseSensitivity(), schema, pos);
+		this.savedSchema.save(schemaConnection);
 
 		this.context.setPosition(pos);
 	}
@@ -45,7 +45,7 @@ public class Maxwell {
 
 		this.context.probeConnections();
 
-		try ( Connection connection = this.context.getReplicationConnectionPool().getConnection(); Connection schemaConnection = context.getMaxwellConnectionPool().getConnection() ) {
+		try ( Connection connection = this.context.getReplicationConnection(); Connection schemaConnection = context.getMaxwellConnectionPool().getConnection() ) {
 			MaxwellMysqlStatus.ensureReplicationMysqlState(connection);
 			MaxwellMysqlStatus.ensureMaxwellMysqlState(schemaConnection);
 
@@ -60,7 +60,7 @@ public class Maxwell {
 
 				LOGGER.info("Maxwell is booting (" + producerClass + "), starting at " + this.context.getInitialPosition());
 
-				this.schemaStore = SchemaStore.restore(schemaConnection, this.context);
+				this.savedSchema = MysqlSavedSchema.restore(schemaConnection, this.context);
 			} else {
 				initFirstRun(connection, schemaConnection);
 			}
@@ -73,16 +73,11 @@ public class Maxwell {
 		AbstractProducer producer = this.context.getProducer();
 		AbstractBootstrapper bootstrapper = this.context.getBootstrapper();
 
-		final MaxwellReplicator p = new MaxwellReplicator(this.schemaStore, producer, bootstrapper, this.context, this.context.getInitialPosition());
+		final MaxwellReplicator p = new MaxwellReplicator(this.savedSchema, producer, bootstrapper, this.context, this.context.getInitialPosition());
 
 		bootstrapper.resume(producer, p);
 
-		try {
-			p.setFilter(context.buildFilter());
-		} catch (MaxwellInvalidFilterException e) {
-			LOGGER.error("Invalid maxwell filter", e);
-			System.exit(1);
-		}
+		p.setFilter(context.getFilter());
 
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override

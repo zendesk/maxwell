@@ -20,21 +20,21 @@ import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-public class SchemaStore {
+public class MysqlSavedSchema {
 	static int SchemaStoreVersion = 1;
 
 	private Schema schema;
 	private BinlogPosition position;
-	private Long schema_id;
+	private Long schemaID;
 	private int schemaVersion;
 
-	private Long base_schema_id;
+	private Long baseSchemaID;
 	private List<ResolvedSchemaChange> deltas;
 
 	private static final ObjectMapper mapper = new ObjectMapper();
 	private static final JavaType listOfResolvedSchemaChangeType = mapper.getTypeFactory().constructCollectionType(List.class, ResolvedSchemaChange.class);
 
-	static final Logger LOGGER = LoggerFactory.getLogger(SchemaStore.class);
+	static final Logger LOGGER = LoggerFactory.getLogger(MysqlSavedSchema.class);
 
 	private final static String columnInsertSQL =
 		"INSERT INTO `columns` (schema_id, table_id, name, charset, coltype, is_signed, enum_values) VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -44,41 +44,41 @@ public class SchemaStore {
 
 	private boolean shouldSnapshotNextSchema = false;
 
-	public SchemaStore(Long serverID, CaseSensitivity sensitivity) throws SQLException {
+	private MysqlSavedSchema(Long serverID, CaseSensitivity sensitivity) throws SQLException {
 		this.serverID = serverID;
 		this.sensitivity = sensitivity;
 	}
 
-	public SchemaStore(Long serverID, CaseSensitivity sensitivity, Schema schema, BinlogPosition position) throws SQLException {
+	public MysqlSavedSchema(Long serverID, CaseSensitivity sensitivity, Schema schema, BinlogPosition position) throws SQLException {
 		this(serverID, sensitivity);
 		this.schema = schema;
 		this.position = position;
 	}
 
-	public SchemaStore(MaxwellContext context, Schema schema, BinlogPosition position) throws SQLException {
+	public MysqlSavedSchema(MaxwellContext context, Schema schema, BinlogPosition position) throws SQLException {
 		this(context.getServerID(), context.getCaseSensitivity(), schema, position);
 	}
 
-	public SchemaStore(Long serverID, CaseSensitivity sensitivity, Schema schema, BinlogPosition position,
-			long base_schema_id, List<ResolvedSchemaChange> deltas) throws SQLException {
+	public MysqlSavedSchema(Long serverID, CaseSensitivity sensitivity, Schema schema, BinlogPosition position,
+							long baseSchemaID, List<ResolvedSchemaChange> deltas) throws SQLException {
 		this(serverID, sensitivity);
 
 		this.schema = schema;
-		this.base_schema_id = base_schema_id;
+		this.baseSchemaID = baseSchemaID;
 		this.deltas = deltas;
 
 		this.position = position;
 	}
 
-	public SchemaStore createDerivedSchema(Schema newSchema, BinlogPosition position, List<ResolvedSchemaChange> deltas) throws SQLException {
+	public MysqlSavedSchema createDerivedSchema(Schema newSchema, BinlogPosition position, List<ResolvedSchemaChange> deltas) throws SQLException {
 		if ( this.shouldSnapshotNextSchema )
-			return new SchemaStore(this.serverID, this.sensitivity, newSchema, position);
+			return new MysqlSavedSchema(this.serverID, this.sensitivity, newSchema, position);
 		else
-			return new SchemaStore(this.serverID, this.sensitivity, newSchema, position, this.schema_id, deltas);
+			return new MysqlSavedSchema(this.serverID, this.sensitivity, newSchema, position, this.schemaID, deltas);
 	}
 
 	public Long getSchemaID() {
-		return schema_id;
+		return schemaID;
 	}
 
 	private static Long executeInsert(PreparedStatement preparedStatement,
@@ -102,7 +102,7 @@ public class SchemaStore {
 
 		try {
 			connection.setAutoCommit(false);
-			this.schema_id = saveSchema(connection);
+			this.schemaID = saveSchema(connection);
 			connection.commit();
 		} finally {
 			connection.setAutoCommit(true);
@@ -123,7 +123,7 @@ public class SchemaStore {
 		}
 
 		return executeInsert(insert,
-		                     this.base_schema_id,
+		                     this.baseSchemaID,
 		                     deltaString,
 		                     position.getFile(),
 		                     position.getOffset(),
@@ -134,7 +134,7 @@ public class SchemaStore {
 	}
 
 	public Long saveSchema(Connection conn) throws SQLException {
-		if ( this.base_schema_id != null )
+		if ( this.baseSchemaID != null )
 			return saveDerivedSchema(conn);
 
 		PreparedStatement schemaInsert, databaseInsert, tableInsert;
@@ -226,8 +226,8 @@ public class SchemaStore {
 		columnData.clear();
 	}
 
-	public static SchemaStore restore(Connection connection, MaxwellContext context) throws SQLException, IOException, InvalidSchemaError {
-		SchemaStore s = new SchemaStore(context.getServerID(), context.getCaseSensitivity());
+	public static MysqlSavedSchema restore(Connection connection, MaxwellContext context) throws SQLException, IOException, InvalidSchemaError {
+		MysqlSavedSchema s = new MysqlSavedSchema(context.getServerID(), context.getCaseSensitivity());
 
 		s.restoreFrom(connection, context.getInitialPosition());
 
@@ -274,7 +274,7 @@ public class SchemaStore {
 	}
 
 	private void restoreDerivedSchema(Connection conn, Long schema_id) throws SQLException, IOException, InvalidSchemaError {
-		/* build hashmap of schema_id -> schema properties (as hash) */
+		/* build hashmap of schemaID -> schema properties (as hash) */
 		HashMap<Long, HashMap<String, Object>> schemas = buildSchemaMap(conn);
 
 		/* walk backwards to build linked list with base schema at the
@@ -284,7 +284,7 @@ public class SchemaStore {
 		Long firstSchemaId = schemaChain.removeFirst();
 
 		/* do the "full" restore */
-		SchemaStore firstSchema = new SchemaStore(serverID, sensitivity);
+		MysqlSavedSchema firstSchema = new MysqlSavedSchema(serverID, sensitivity);
 		firstSchema.restoreFromSchemaID(conn, firstSchemaId);
 		Schema schema = firstSchema.getSchema();
 
@@ -321,7 +321,7 @@ public class SchemaStore {
 	private void restoreFromSchemaID(Connection conn, Long schemaID) throws SQLException, IOException, InvalidSchemaError {
 		restoreSchemaMetadata(conn, schemaID);
 
-		if ( this.base_schema_id != null )
+		if ( this.baseSchemaID != null )
 			restoreDerivedSchema(conn, schemaID);
 		else
 			restoreFullSchema(conn, schemaID);
@@ -337,11 +337,11 @@ public class SchemaStore {
 
 		LOGGER.info("Restoring schema id " + schemaRS.getInt("id") + " (last modified at " + this.position + ")");
 
-		this.schema_id = schemaRS.getLong("id");
-		this.base_schema_id = schemaRS.getLong("base_schema_id");
+		this.schemaID = schemaRS.getLong("id");
+		this.baseSchemaID = schemaRS.getLong("base_schema_id");
 
 		if ( schemaRS.wasNull() )
-			this.base_schema_id = null;
+			this.baseSchemaID = null;
 
 		this.deltas = parseDeltas(schemaRS.getString("deltas"));
 		this.schemaVersion = schemaRS.getInt("version");
@@ -350,7 +350,7 @@ public class SchemaStore {
 
 	private void restoreFullSchema(Connection conn, Long schemaID) throws SQLException, IOException, InvalidSchemaError {
 		PreparedStatement p = conn.prepareStatement("SELECT * from `databases` where schema_id = ? ORDER by id");
-		p.setLong(1, this.schema_id);
+		p.setLong(1, this.schemaID);
 
 		ResultSet dbRS = p.executeQuery();
 
@@ -436,7 +436,7 @@ public class SchemaStore {
 	}
 
 	private void ensureSchemaID() {
-		if ( this.schema_id == null ) {
+		if ( this.schemaID == null ) {
 			throw new RuntimeException("Can't destroy uninitialized schema!");
 		}
 	}
@@ -449,14 +449,14 @@ public class SchemaStore {
 		ensureSchemaID();
 
 		String[] tables = { "databases", "tables", "columns" };
-		connection.createStatement().execute("delete from `schemas` where id = " + schema_id);
+		connection.createStatement().execute("delete from `schemas` where id = " + schemaID);
 		for ( String tName : tables ) {
-			connection.createStatement().execute("delete from `" + tName + "` where schema_id = " + schema_id);
+			connection.createStatement().execute("delete from `" + tName + "` where schema_id = " + schemaID);
 		}
 	}
 
 	public boolean schemaExists(Connection connection, long schema_id) throws SQLException {
-		if ( this.schema_id == null )
+		if ( this.schemaID == null )
 			return false;
 		ResultSet rs = connection.createStatement().executeQuery("select id from `schemas` where id = " + schema_id);
 		return rs.next();

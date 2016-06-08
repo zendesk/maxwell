@@ -6,7 +6,7 @@ import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
-import com.zendesk.maxwell.schema.SchemaStore;
+import com.zendesk.maxwell.schema.MysqlSavedSchema;
 import com.zendesk.maxwell.schema.SchemaStoreSchema;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 import com.zendesk.maxwell.schema.ddl.SchemaChange;
@@ -99,8 +99,8 @@ public class MaxwellTestSupport {
 		BinlogPosition start = BinlogPosition.capture(mysql.getConnection());
 
 		Schema initialSchema = capturer.capture();
-		SchemaStore initialSchemaStore = new SchemaStore(context, initialSchema, BinlogPosition.capture(mysql.getConnection()));
-		initialSchemaStore.save(context.getMaxwellConnection());
+		MysqlSavedSchema initialSavedSchema = new MysqlSavedSchema(context, initialSchema, BinlogPosition.capture(mysql.getConnection()));
+		initialSavedSchema.save(context.getMaxwellConnection());
 
 		mysql.executeList(Arrays.asList(queries));
 
@@ -136,7 +136,7 @@ public class MaxwellTestSupport {
 			}
 		};
 
-		TestMaxwellReplicator p = new TestMaxwellReplicator(initialSchemaStore, producer, bootstrapper, context, start, endPosition);
+		TestMaxwellReplicator p = new TestMaxwellReplicator(initialSavedSchema, producer, bootstrapper, context, start, endPosition);
 
 		p.setFilter(filter);
 
