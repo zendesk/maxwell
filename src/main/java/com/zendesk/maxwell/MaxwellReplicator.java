@@ -32,6 +32,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 	private final long MAX_TX_ELEMENTS = 10000;
 	String filePath, fileName;
 	private long rowEventsProcessed;
+	private Schema schema;
 	protected SchemaStore schemaStore;
 
 	private MaxwellFilter filter;
@@ -50,7 +51,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 	public MaxwellReplicator(SchemaStore schemaStore, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, BinlogPosition start) throws Exception {
 		this.schemaStore = schemaStore;
-		this.schemaStore.initPosition(start);
+		this.schema = schemaStore.getSchema(start);
 
 		this.binlogEventListener = new MaxwellBinlogEventListener(queue);
 
@@ -323,13 +324,13 @@ public class MaxwellReplicator extends RunLoopProcess {
 		String sql = event.getSql().toString();
 		BinlogPosition position = eventBinlogPosition(event);
 
-		schemaStore.processSQL(sql, dbName, position);
+		schemaStore.processSQL(schema, sql, dbName, position);
 		tableCache.clear();
 		this.producer.writePosition(position);
 	}
 
 	public Schema getSchema() {
-		return this.schemaStore.getSchema();
+		return schema;
 	}
 
 	public void setFilter(MaxwellFilter filter) {

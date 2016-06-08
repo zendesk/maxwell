@@ -21,7 +21,7 @@ public class MysqlSchemaStore extends AbstractSchemaStore {
 		super(context);
 	}
 
-	public void getSchema(BinlogPosition position) throws SchemaStoreException, InvalidSchemaError {
+	public Schema getSchema(BinlogPosition position) throws SchemaStoreException, InvalidSchemaError {
 		try ( Connection conn = context.getMaxwellConnection() ) {
 			savedSchema = MysqlSavedSchema.restore(this.context, position);
 			if ( savedSchema == null ) {
@@ -29,16 +29,14 @@ public class MysqlSchemaStore extends AbstractSchemaStore {
 				savedSchema = new MysqlSavedSchema(context, capturedSchema);
 				savedSchema.save(conn);
 			}
+
+			return savedSchema.getSchema();
 		} catch (SQLException e) {
 			throw new SchemaStoreException(e);
 		}
 	}
 
-
-	/*
-		parse 
-	 */
-	public List<ResolvedSchemaChange> processSQL(String sql, String currentDatabase, Schema schema, BinlogPosition position) throws SchemaStoreException, InvalidSchemaError {
+	public List<ResolvedSchemaChange> processSQL(Schema schema, String sql, String currentDatabase, BinlogPosition position) throws SchemaStoreException, InvalidSchemaError {
 		List<SchemaChange> changes = SchemaChange.parse(currentDatabase, sql);
 
 		if ( changes == null || changes.size() == 0 )

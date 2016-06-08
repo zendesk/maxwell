@@ -290,7 +290,7 @@ public class MysqlSavedSchema {
 
 		Long firstSchemaId = schemaChain.removeFirst();
 
-		/* do the "full" restore */
+		/* do the "full" restore of the schema snapshot */
 		MysqlSavedSchema firstSchema = new MysqlSavedSchema(serverID, sensitivity);
 		firstSchema.restoreFromSchemaID(conn, firstSchemaId);
 		Schema schema = firstSchema.getSchema();
@@ -299,7 +299,7 @@ public class MysqlSavedSchema {
 		int count = 0;
 		long startTime = System.currentTimeMillis();
 
-		/* now walk the chain and play each schema's delta */
+		/* now walk the chain and play each schema's deltas on top of the snapshot */
 		for ( Long id : schemaChain ) {
 			List<ResolvedSchemaChange> deltas = parseDeltas((String) schemas.get(id).get("deltas"));
 			for ( ResolvedSchemaChange delta : deltas ) {
