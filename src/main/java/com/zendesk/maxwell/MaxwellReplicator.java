@@ -33,7 +33,9 @@ public class MaxwellReplicator extends RunLoopProcess {
 	String filePath, fileName;
 	private long rowEventsProcessed;
 	private Schema schema;
+
 	protected SchemaStore schemaStore;
+	protected SavedSchema savedSchema;
 
 	private MaxwellFilter filter;
 
@@ -51,7 +53,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 	public MaxwellReplicator(SchemaStore schemaStore, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, BinlogPosition start) throws Exception {
 		this.schemaStore = schemaStore;
-		this.schema = schemaStore.getSchema(start);
+		this.savedSchema = schemaStore.getSavedSchema(start);
 
 		this.binlogEventListener = new MaxwellBinlogEventListener(queue);
 
@@ -324,7 +326,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 		String sql = event.getSql().toString();
 		BinlogPosition position = eventBinlogPosition(event);
 
-		schemaStore.processSQL(schema, sql, dbName, position);
+		schemaStore.processSQL(savedSchema, sql, dbName, position);
 		tableCache.clear();
 		this.producer.writePosition(position);
 	}

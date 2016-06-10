@@ -20,7 +20,7 @@ import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-public class MysqlSavedSchema {
+public class MysqlSavedSchema implements SavedSchema {
 	static int SchemaStoreVersion = 1;
 
 	private Schema schema;
