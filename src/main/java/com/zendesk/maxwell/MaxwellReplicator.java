@@ -19,8 +19,9 @@ import com.google.code.or.binlog.BinlogEventV4;
 import com.google.code.or.common.util.MySQLConstants;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
-import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaStore;
+import com.zendesk.maxwell.schema.SavedSchema;
+import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.SchemaStoreException;
 import com.zendesk.maxwell.schema.ddl.SchemaChange;
@@ -32,7 +33,6 @@ public class MaxwellReplicator extends RunLoopProcess {
 	private final long MAX_TX_ELEMENTS = 10000;
 	String filePath, fileName;
 	private long rowEventsProcessed;
-	private Schema schema;
 
 	protected SchemaStore schemaStore;
 	protected SavedSchema savedSchema;
@@ -52,8 +52,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellReplicator.class);
 
 	public MaxwellReplicator(SchemaStore schemaStore, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, BinlogPosition start) throws Exception {
-		this.schemaStore = schemaStore;
-		this.savedSchema = schemaStore.getSavedSchema(start);
+		this.savedSchema = schemaStore.getSchema(start);
 
 		this.binlogEventListener = new MaxwellBinlogEventListener(queue);
 
@@ -326,13 +325,13 @@ public class MaxwellReplicator extends RunLoopProcess {
 		String sql = event.getSql().toString();
 		BinlogPosition position = eventBinlogPosition(event);
 
-		schemaStore.processSQL(savedSchema, sql, dbName, position);
+		savedSchema.processSQL(sql, dbName, position);
 		tableCache.clear();
 		this.producer.writePosition(position);
 	}
 
 	public Schema getSchema() {
-		return schema;
+		return savedSchema.getSchema();
 	}
 
 	public void setFilter(MaxwellFilter filter) {
