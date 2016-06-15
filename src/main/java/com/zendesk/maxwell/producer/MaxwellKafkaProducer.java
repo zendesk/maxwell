@@ -45,7 +45,7 @@ class KafkaCallback implements Callback {
 		if ( e != null ) {
 			if ( e instanceof RecordTooLargeException ) {
 				LOGGER.error("RecordTooLargeException @ " + position + " -- " + key);
-				LOGGER.error("Maxwell dropped a row because it was too large (" + e.getLocalizedMessage() + ")");
+				LOGGER.error(e.getLocalizedMessage());
 				LOGGER.error("Considering raising max.request.size broker-side.");
 
 				if ( isTXCommit )
