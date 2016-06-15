@@ -48,30 +48,36 @@ class KafkaCallback implements Callback {
 				LOGGER.error(e.getLocalizedMessage());
 				LOGGER.error("Considering raising max.request.size broker-side.");
 
-				if ( isTXCommit )
-					inflightMessages.completeMessage(position);
+				markCompleted();
 			} else {
 				throw new RuntimeException(e);
 			}
 		} else {
-			try {
-				if ( LOGGER.isDebugEnabled()) {
-					LOGGER.debug("->  key:" + key + ", partition:" +md.partition() + ", offset:" + md.offset());
-					LOGGER.debug("   " + this.json);
-					LOGGER.debug("   " + position);
-					LOGGER.debug("");
-				}
-				if ( isTXCommit ) {
-					BinlogPosition newPosition = inflightMessages.completeMessage(position);
+			if ( LOGGER.isDebugEnabled()) {
+				LOGGER.debug("->  key:" + key + ", partition:" +md.partition() + ", offset:" + md.offset());
+				LOGGER.debug("   " + this.json);
+				LOGGER.debug("   " + position);
+				LOGGER.debug("");
+			}
 
-					if ( newPosition != null )
-						context.setPosition(newPosition);
+			markCompleted();
+		}
+	}
+
+	private void markCompleted() {
+		if ( isTXCommit ) {
+			BinlogPosition newPosition = inflightMessages.completeMessage(position);
+
+			if ( newPosition != null ) {
+				try {
+					context.setPosition(newPosition);
+				} catch ( SQLException e ) {
+					e.printStackTrace();
 				}
-			} catch (SQLException e1) {
-				e1.printStackTrace();
 			}
 		}
 	}
+
 }
 
 public class MaxwellKafkaProducer extends AbstractProducer {
