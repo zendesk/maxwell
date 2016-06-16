@@ -45,31 +45,39 @@ class KafkaCallback implements Callback {
 		if ( e != null ) {
 			if ( e instanceof RecordTooLargeException ) {
 				LOGGER.error("RecordTooLargeException @ " + position + " -- " + key);
-				LOGGER.error("Maxwell dropped a row because it was too large (" + e.getLocalizedMessage() + ")");
+				LOGGER.error(e.getLocalizedMessage());
 				LOGGER.error("Considering raising max.request.size broker-side.");
-				inflightMessages.completeMessage(position);
+
+				markCompleted();
 			} else {
 				throw new RuntimeException(e);
 			}
 		} else {
-			try {
-				if ( LOGGER.isDebugEnabled()) {
-					LOGGER.debug("->  key:" + key + ", partition:" +md.partition() + ", offset:" + md.offset());
-					LOGGER.debug("   " + this.json);
-					LOGGER.debug("   " + position);
-					LOGGER.debug("");
-				}
-				if ( isTXCommit ) {
-					BinlogPosition newPosition = inflightMessages.completeMessage(position);
+			if ( LOGGER.isDebugEnabled()) {
+				LOGGER.debug("->  key:" + key + ", partition:" +md.partition() + ", offset:" + md.offset());
+				LOGGER.debug("   " + this.json);
+				LOGGER.debug("   " + position);
+				LOGGER.debug("");
+			}
 
-					if ( newPosition != null )
-						context.setPosition(newPosition);
+			markCompleted();
+		}
+	}
+
+	private void markCompleted() {
+		if ( isTXCommit ) {
+			BinlogPosition newPosition = inflightMessages.completeMessage(position);
+
+			if ( newPosition != null ) {
+				try {
+					context.setPosition(newPosition);
+				} catch ( SQLException e ) {
+					e.printStackTrace();
 				}
-			} catch (SQLException e1) {
-				e1.printStackTrace();
 			}
 		}
 	}
+
 }
 
 public class MaxwellKafkaProducer extends AbstractProducer {

@@ -27,13 +27,13 @@ public class InflightMessageList {
 		this.linkedMap = new LinkedHashMap<>();
 	}
 
-	public void addMessage(BinlogPosition p) {
+	public synchronized void addMessage(BinlogPosition p) {
 		InflightMessage m = new InflightMessage(p);
 		this.linkedMap.put(p.toString(), m);
 	}
 
 	/* returns the position that stuff is complete up to, or null if there were no changes */
-	public BinlogPosition completeMessage(BinlogPosition p) {
+	public synchronized BinlogPosition completeMessage(BinlogPosition p) {
 		InflightMessage m = this.linkedMap.get(p.toString());
 		assert(m != null);
 
