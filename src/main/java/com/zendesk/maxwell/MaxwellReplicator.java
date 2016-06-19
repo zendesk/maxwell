@@ -22,6 +22,7 @@ import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.MysqlSavedSchema;
 import com.zendesk.maxwell.schema.Table;
+import com.zendesk.maxwell.schema.SchemaStoreException;
 import com.zendesk.maxwell.schema.ddl.SchemaChange;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 
@@ -315,7 +316,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 	}
 
 
-	private void processQueryEvent(QueryEvent event) throws InvalidSchemaError, SQLException, IOException {
+	private void processQueryEvent(QueryEvent event) throws SchemaStoreException, InvalidSchemaError, SQLException {
 		// get charset of the alter event somehow? or just ignore it.
 		String dbName = event.getDatabaseName().toString();
 		String sql = event.getSql().toString();

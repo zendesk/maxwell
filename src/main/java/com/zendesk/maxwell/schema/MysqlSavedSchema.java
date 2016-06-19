@@ -226,19 +226,30 @@ public class MysqlSavedSchema {
 		columnData.clear();
 	}
 
-	public static MysqlSavedSchema restore(Connection connection, MaxwellContext context) throws SQLException, IOException, InvalidSchemaError {
-		MysqlSavedSchema s = new MysqlSavedSchema(context.getServerID(), context.getCaseSensitivity());
+	public static MysqlSavedSchema restore(MaxwellContext context, BinlogPosition targetPosition) throws SQLException, InvalidSchemaError {
+		try ( Connection conn = context.getMaxwellConnection() ) {
+			Long schemaID = findSchema(conn, targetPosition, context.getServerID());
+			if (schemaID == null)
+				return null;
 
-		s.restoreFrom(connection, context.getInitialPosition());
+			MysqlSavedSchema savedSchema = new MysqlSavedSchema(context.getServerID(), context.getCaseSensitivity());
 
-		return s;
+			savedSchema.restoreFromSchemaID(conn, schemaID);
+			savedSchema.handleVersionUpgrades(conn);
+
+			return savedSchema;
+		}
 	}
 
-	private List<ResolvedSchemaChange> parseDeltas(String json) throws IOException {
+	private List<ResolvedSchemaChange> parseDeltas(String json) {
 		if ( json == null )
 			return null;
 
-		return mapper.readerFor(listOfResolvedSchemaChangeType).readValue(json.getBytes());
+		try {
+			return mapper.readerFor(listOfResolvedSchemaChangeType).readValue(json.getBytes());
+		} catch ( IOException e ) {
+			throw new RuntimeException("couldn't parse json delta: " + json.getBytes(), e);
+		}
 	}
 
 	private HashMap<Long, HashMap<String, Object>> buildSchemaMap(Connection conn) throws SQLException {
@@ -318,7 +329,7 @@ public class MysqlSavedSchema {
 		handleVersionUpgrades(conn, schemaID, this.schemaVersion);
 	}
 
-	private void restoreFromSchemaID(Connection conn, Long schemaID) throws SQLException, IOException, InvalidSchemaError {
+	protected void restoreFromSchemaID(Connection conn, Long schemaID) throws SQLException, InvalidSchemaError {
 		restoreSchemaMetadata(conn, schemaID);
 
 		if ( this.baseSchemaID != null )
@@ -327,7 +338,7 @@ public class MysqlSavedSchema {
 			restoreFullSchema(conn, schemaID);
 	}
 
-	private void restoreSchemaMetadata(Connection conn, Long schemaID) throws SQLException, IOException {
+	private void restoreSchemaMetadata(Connection conn, Long schemaID) throws SQLException {
 		PreparedStatement p = conn.prepareStatement("select * from `schemas` where id = " + schemaID);
 		ResultSet schemaRS = p.executeQuery();
 
@@ -348,7 +359,7 @@ public class MysqlSavedSchema {
 		this.schema = new Schema(new ArrayList<Database>(), schemaRS.getString("charset"), this.sensitivity);
 	}
 
-	private void restoreFullSchema(Connection conn, Long schemaID) throws SQLException, IOException, InvalidSchemaError {
+	private void restoreFullSchema(Connection conn, Long schemaID) throws SQLException, InvalidSchemaError {
 		PreparedStatement p = conn.prepareStatement("SELECT * from `databases` where schema_id = ? ORDER by id");
 		p.setLong(1, this.schemaID);
 
