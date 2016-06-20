@@ -10,7 +10,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class RowMapBufferTest {
 	@Test
 	public void TestOverflowToDisk() throws Exception {
-		RowMapBuffer buffer = new RowMapBuffer(2);
+		RowMapBuffer buffer = new RowMapBuffer(2, 250); // allow about 250 bytes of memory to be used
 
 		RowMap r;
 		buffer.add(new RowMap("insert", "foo", "bar", 1L, new ArrayList<String>(), new BinlogPosition(3, "mysql.1")));
