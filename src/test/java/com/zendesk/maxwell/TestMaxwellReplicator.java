@@ -3,7 +3,7 @@ package com.zendesk.maxwell;
 import com.google.code.or.binlog.BinlogEventV4;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
-import com.zendesk.maxwell.schema.MysqlSavedSchema;
+import com.zendesk.maxwell.schema.SchemaStore;
 
 import java.util.concurrent.TimeUnit;
 
@@ -14,13 +14,13 @@ public class TestMaxwellReplicator extends MaxwellReplicator {
 	private final BinlogPosition stopAt;
 	private boolean shouldStop;
 
-	public TestMaxwellReplicator(MysqlSavedSchema savedSchema,
+	public TestMaxwellReplicator(SchemaStore schemaStore,
 								 AbstractProducer producer,
 								 AbstractBootstrapper bootstrapper,
 								 MaxwellContext ctx,
 								 BinlogPosition start,
 								 BinlogPosition stop) throws Exception {
-		super(savedSchema, producer, bootstrapper, ctx, start);
+		super(schemaStore, producer, bootstrapper, ctx, start);
 		LOGGER.debug("TestMaxwellReplicator initialized from " + start + " to " + stop);
 		this.stopAt = stop;
 	}

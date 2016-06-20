@@ -1,5 +1,6 @@
 package com.zendesk.maxwell.schema;
 
+import com.zendesk.maxwell.BinlogPosition;
 import com.zendesk.maxwell.CaseSensitivity;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 
@@ -11,17 +12,20 @@ public class Schema {
 	private final ArrayList<Database> databases;
 	private final String charset;
 	private final CaseSensitivity sensitivity;
+	private final BinlogPosition position;
 
-	public Schema(List<Database> databases, String charset, CaseSensitivity sensitivity) {
+	public Schema(List<Database> databases, String charset, CaseSensitivity sensitivity, BinlogPosition position) {
 		this.sensitivity = sensitivity;
 		this.charset = charset;
 		this.databases = new ArrayList<>();
+		this.position = position;
 
 		for ( Database d : databases )
 			addDatabase(d);
 	}
 
 	public List<Database> getDatabases() { return this.databases; }
+	public BinlogPosition getBinlogPosition() { return this.position; }
 
 	public List<String> getDatabaseNames () {
 		ArrayList<String> names = new ArrayList<String>();
