@@ -128,13 +128,12 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		if ( r.isTXCommit() )
 			inflightMessages.addMessage(r.getPosition());
 
-		KafkaCallback callback;
 
-		/* if debug logging isn't enabled, try to release refs to key / value for memory conversation */
-		if ( KafkaCallback.LOGGER.isDebugEnabled() )
-			callback = new KafkaCallback(inflightMessages, r.getPosition(), r.isTXCommit(), this.context, key, value);
-		else
-			callback = new KafkaCallback(inflightMessages, r.getPosition(), r.isTXCommit(), this.context, null, null);
+		/* if debug logging isn't enabled, release the reference to `value`, which can ease memory pressure somewhat */
+		if ( !KafkaCallback.LOGGER.isDebugEnabled() )
+			value = null;
+
+		KafkaCallback callback = new KafkaCallback(inflightMessages, r.getPosition(), r.isTXCommit(), this.context, key, value);
 
 		kafka.send(record, callback);
 	}
