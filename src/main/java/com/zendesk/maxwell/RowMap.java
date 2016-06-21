@@ -37,7 +37,7 @@ public class RowMap implements Serializable {
 
 	private static final JsonFactory jsonFactory = new JsonFactory();
 
-	private long approximateSize = 0;
+	private long approximateSize;
 
 	private static final ThreadLocal<ByteArrayOutputStream> byteArrayThreadLocal =
 			new ThreadLocal<ByteArrayOutputStream>(){
@@ -244,15 +244,14 @@ public class RowMap implements Serializable {
 	}
 
 	private long approximateKVSize(String key, Object value) {
-		this.approximateSize += 40; // overhead.  Whynot.
-		this.approximateSize += key.getBytes().length;
-
-		long length;
+		long length = 0;
+		length += 40; // overhead.  Whynot.
+		length += key.length() * 2;
 
 		if ( value instanceof String ) {
-			length = ((String) value).getBytes().length * 2;
+			length += ((String) value).length() * 2;
 		} else {
-			length = 64;
+			length += 64;
 		}
 
 		return length;
