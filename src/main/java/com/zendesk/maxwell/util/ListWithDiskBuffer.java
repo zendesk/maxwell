@@ -30,15 +30,15 @@ public class ListWithDiskBuffer<T> {
 		while ( shouldBuffer() )
 			evict();
 	}
-//*
+
 	protected boolean shouldBuffer() {
 		return this.list.size() > maxInMemoryElements;
 	}
-//*
+
 	protected void resetOutputStreamCaches() throws IOException {
 		os.reset();
 	}
-//*
+
 	public void flushToDisk() throws IOException {
 		if ( os != null )
 			os.flush();
