@@ -19,7 +19,7 @@ public class ListWithDiskBuffer<T> {
 	private ObjectInputStream is;
 	private ObjectOutputStream os;
 
-	public ListWithDiskBuffer(long maxInMemoryElements) throws IOException {
+	public ListWithDiskBuffer(long maxInMemoryElements) {
 		this.maxInMemoryElements = maxInMemoryElements;
 		list = new LinkedList<>();
 	}
@@ -27,23 +27,16 @@ public class ListWithDiskBuffer<T> {
 	public void add(T element) throws IOException {
 		list.add(element);
 
-		while (this.list.size() > maxInMemoryElements) {
-			if ( file == null ) {
-				file = File.createTempFile("maxwell", "events");
-				file.deleteOnExit();
-				os = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
-			}
+		while ( shouldBuffer() )
+			evict();
+	}
 
-			if ( elementsInFile == 0 )
-				LOGGER.debug("Overflowed in-memory buffer, spilling over into " + file);
+	protected boolean shouldBuffer() {
+		return this.list.size() > maxInMemoryElements;
+	}
 
-			os.writeObject(this.list.removeFirst());
-
-			elementsInFile++;
-
-			if ( elementsInFile % maxInMemoryElements == 0 )
-				os.reset(); // flush ObjectOutputStream caches
-		}
+	protected void resetOutputStreamCaches() throws IOException {
+		os.reset();
 	}
 
 	public void flushToDisk() throws IOException {
@@ -92,4 +85,26 @@ public class ListWithDiskBuffer<T> {
 			super.finalize();
 		}
 	}
+
+	protected T evict() throws IOException {
+		if ( file == null ) {
+			file = File.createTempFile("maxwell", "events");
+			file.deleteOnExit();
+			os = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
+		}
+
+		if ( elementsInFile == 0 )
+			LOGGER.info("Overflowed in-memory buffer, spilling over into " + file);
+
+		T evicted = this.list.removeFirst();
+		os.writeObject(evicted);
+
+		elementsInFile++;
+
+		if ( elementsInFile % maxInMemoryElements == 0 )
+			resetOutputStreamCaches();
+
+		return evicted;
+	}
+
 }

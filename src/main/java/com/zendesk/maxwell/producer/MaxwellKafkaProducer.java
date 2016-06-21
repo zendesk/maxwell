@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class KafkaCallback implements Callback {
-	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
+	public static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
 	private InflightMessageList inflightMessages;
 	private final MaxwellContext context;
 	private final BinlogPosition position;
@@ -128,7 +128,14 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		if ( r.isTXCommit() )
 			inflightMessages.addMessage(r.getPosition());
 
-		kafka.send(record, new KafkaCallback(inflightMessages, r.getPosition(), r.isTXCommit(), this.context, key, value));
+
+		/* if debug logging isn't enabled, release the reference to `value`, which can ease memory pressure somewhat */
+		if ( !KafkaCallback.LOGGER.isDebugEnabled() )
+			value = null;
+
+		KafkaCallback callback = new KafkaCallback(inflightMessages, r.getPosition(), r.isTXCommit(), this.context, key, value);
+
+		kafka.send(record, callback);
 	}
 
 	@Override
