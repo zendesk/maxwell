@@ -44,7 +44,7 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 	public void testSave() throws SQLException, IOException, InvalidSchemaError {
 		this.savedSchema.save(context.getMaxwellConnection());
 
-		MysqlSavedSchema restoredSchema = MysqlSavedSchema.restore(context.getMaxwellConnection(), context);
+		MysqlSavedSchema restoredSchema = MysqlSavedSchema.restore(context, context.getInitialPosition());
 		List<String> diff = this.schema.diff(restoredSchema.getSchema(), "captured schema", "restored schema");
 		assertThat(StringUtils.join(diff, "\n"), diff.size(), is(0));
 	}
@@ -53,7 +53,7 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 	public void testRestorePK() throws Exception {
 		this.savedSchema.save(context.getMaxwellConnection());
 
-		MysqlSavedSchema restoredSchema = MysqlSavedSchema.restore(context.getMaxwellConnection(), context);
+		MysqlSavedSchema restoredSchema = MysqlSavedSchema.restore(context, context.getInitialPosition());
 		Table t = restoredSchema.getSchema().findDatabase("shard_1").findTable("pks");
 
 		assertThat(t.getPKList(), is(not(nullValue())));
@@ -94,7 +94,7 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 		c.createStatement().executeUpdate("update maxwell.schemas set version = 0 where id = " + this.savedSchema.getSchemaID());
 		c.createStatement().executeUpdate("update maxwell.columns set is_signed = 1 where name = 'badcol'");
 
-		MysqlSavedSchema restored = MysqlSavedSchema.restore(context.getMaxwellConnection(), context);
+		MysqlSavedSchema restored = MysqlSavedSchema.restore(context, context.getInitialPosition());
 		IntColumnDef cd = (IntColumnDef) restored.getSchema().findDatabase("shard_1").findTable("signed").findColumn("badcol");
 		assertThat(cd.isSigned(), is(false));
 	}

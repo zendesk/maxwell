@@ -16,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
-import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 
 public class SchemaCapturer {
 	private final Connection connection;
@@ -45,10 +44,9 @@ public class SchemaCapturer {
 		this.includeDatabases.add(dbName);
 	}
 
-	public Schema capture() throws SQLException, InvalidSchemaError {
+	public Schema capture() throws SQLException {
 		LOGGER.debug("Capturing schema");
 		ArrayList<Database> databases = new ArrayList<>();
-
 
 		ResultSet rs = connection.createStatement().executeQuery("SELECT * from INFORMATION_SCHEMA.SCHEMATA");
 
@@ -81,7 +79,7 @@ public class SchemaCapturer {
 			+ "JOIN  information_schema.COLLATION_CHARACTER_SET_APPLICABILITY AS CCSA"
 			+ " ON TABLES.TABLE_COLLATION = CCSA.COLLATION_NAME WHERE TABLES.TABLE_SCHEMA = ?";
 
-	private Database captureDatabase(String dbName, String dbCharset) throws SQLException, InvalidSchemaError {
+	private Database captureDatabase(String dbName, String dbCharset) throws SQLException {
 		PreparedStatement p = connection.prepareStatement(tblSQL);
 
 		p.setString(1, dbName);
@@ -98,7 +96,7 @@ public class SchemaCapturer {
 	}
 
 
-	private void captureTable(Table t) throws SQLException, InvalidSchemaError {
+	private void captureTable(Table t) throws SQLException {
 		int i = 0;
 		infoSchemaStmt.setString(1, t.getDatabase());
 		infoSchemaStmt.setString(2, t.getName());
@@ -131,7 +129,7 @@ public class SchemaCapturer {
 			"SELECT column_name, ordinal_position from information_schema.key_column_usage  "
 	      + "WHERE constraint_name = 'PRIMARY' and table_schema = ? and table_name = ?";
 
-	private void captureTablePK(Table t) throws SQLException, InvalidSchemaError {
+	private void captureTablePK(Table t) throws SQLException {
 		PreparedStatement p = connection.prepareStatement(pkSQL);
 		p.setString(1, t.getDatabase());
 		p.setString(2, t.getName());

@@ -97,6 +97,14 @@ public class MaxwellContext {
 			return this.initialPosition;
 
 		this.initialPosition = getMysqlPositionStore().get();
+
+		if ( this.initialPosition == null ) {
+			try ( Connection connection = getReplicationConnection() ) {
+				this.initialPosition = BinlogPosition.capture(connection);
+				this.setPosition(this.initialPosition);
+			}
+		}
+
 		return this.initialPosition;
 	}
 

@@ -20,8 +20,9 @@ import com.google.code.or.common.util.MySQLConstants;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Schema;
-import com.zendesk.maxwell.schema.MysqlSavedSchema;
+import com.zendesk.maxwell.schema.SchemaStore;
 import com.zendesk.maxwell.schema.Table;
+import com.zendesk.maxwell.schema.SchemaStoreException;
 import com.zendesk.maxwell.schema.ddl.SchemaChange;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 
@@ -31,7 +32,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 	private final long MAX_TX_ELEMENTS = 10000;
 	String filePath, fileName;
 	private long rowEventsProcessed;
-	protected MysqlSavedSchema savedSchema;
+	protected SchemaStore schemaStore;
 
 	private MaxwellFilter filter;
 
@@ -47,9 +48,8 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellReplicator.class);
 
-	public MaxwellReplicator(MysqlSavedSchema savedSchema, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, BinlogPosition start) throws Exception {
-		this.savedSchema = savedSchema;
-
+	public MaxwellReplicator(SchemaStore schemaStore, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, BinlogPosition start) throws Exception {
+		this.schemaStore = schemaStore;
 		this.binlogEventListener = new MaxwellBinlogEventListener(queue);
 
 		this.replicator = new OpenReplicator();
@@ -315,56 +315,19 @@ public class MaxwellReplicator extends RunLoopProcess {
 	}
 
 
-	private void processQueryEvent(QueryEvent event) throws InvalidSchemaError, SQLException, IOException {
+	private void processQueryEvent(QueryEvent event) throws SchemaStoreException, InvalidSchemaError, SQLException {
 		// get charset of the alter event somehow? or just ignore it.
 		String dbName = event.getDatabaseName().toString();
 		String sql = event.getSql().toString();
+		BinlogPosition position = eventBinlogPosition(event);
 
-		List<SchemaChange> changes = SchemaChange.parse(dbName, sql);
-
-		if ( changes == null || changes.size() == 0 )
-			return;
-
-		ArrayList<ResolvedSchemaChange> resolvedSchemaChanges = new ArrayList<>();
-
-		Schema updatedSchema = getSchema();
-
-		for ( SchemaChange change : changes ) {
-			if ( !change.isBlacklisted(this.filter) ) {
-				ResolvedSchemaChange resolved = change.resolve(updatedSchema);
-				if ( resolved != null ) {
-					resolved.apply(updatedSchema);
-
-					resolvedSchemaChanges.add(resolved);
-				}
-			} else {
-				LOGGER.debug("ignoring blacklisted schema change");
-			}
-		}
-
-		if ( resolvedSchemaChanges.size() > 0 ) {
-			BinlogPosition p = eventBinlogPosition(event);
-			LOGGER.info("storing schema @" + p + " after applying \"" + sql.replace('\n', ' ') + "\"");
-
-			saveSchema(updatedSchema, resolvedSchemaChanges, p);
-		}
-	}
-
-	private void saveSchema(Schema updatedSchema, List<ResolvedSchemaChange> changes, BinlogPosition p) throws SQLException {
+		schemaStore.processSQL(sql, dbName, position);
 		tableCache.clear();
-
-		if ( !this.context.getReplayMode() ) {
-			try (Connection c = this.context.getMaxwellConnection()) {
-				this.savedSchema = this.savedSchema.createDerivedSchema(updatedSchema, p, changes);
-				this.savedSchema.save(c);
-			}
-
-			this.producer.writePosition(p);
-		}
+		this.producer.writePosition(position);
 	}
 
-	public Schema getSchema() {
-		return this.savedSchema.getSchema();
+	public Schema getSchema() throws SchemaStoreException {
+		return this.schemaStore.getSchema();
 	}
 
 	public void setFilter(MaxwellFilter filter) {

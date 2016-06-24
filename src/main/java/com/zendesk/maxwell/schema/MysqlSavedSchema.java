@@ -226,19 +226,30 @@ public class MysqlSavedSchema {
 		columnData.clear();
 	}
 
-	public static MysqlSavedSchema restore(Connection connection, MaxwellContext context) throws SQLException, IOException, InvalidSchemaError {
-		MysqlSavedSchema s = new MysqlSavedSchema(context.getServerID(), context.getCaseSensitivity());
+	public static MysqlSavedSchema restore(MaxwellContext context, BinlogPosition targetPosition) throws SQLException, InvalidSchemaError {
+		try ( Connection conn = context.getMaxwellConnection() ) {
+			Long schemaID = findSchema(conn, targetPosition, context.getServerID());
+			if (schemaID == null)
+				return null;
 
-		s.restoreFrom(connection, context.getInitialPosition());
+			MysqlSavedSchema savedSchema = new MysqlSavedSchema(context.getServerID(), context.getCaseSensitivity());
 
-		return s;
+			savedSchema.restoreFromSchemaID(conn, schemaID);
+			savedSchema.handleVersionUpgrades(conn);
+
+			return savedSchema;
+		}
 	}
 
-	private List<ResolvedSchemaChange> parseDeltas(String json) throws IOException {
+	private List<ResolvedSchemaChange> parseDeltas(String json) {
 		if ( json == null )
 			return null;
 
-		return mapper.readerFor(listOfResolvedSchemaChangeType).readValue(json.getBytes());
+		try {
+			return mapper.readerFor(listOfResolvedSchemaChangeType).readValue(json.getBytes());
+		} catch ( IOException e ) {
+			throw new RuntimeException("couldn't parse json delta: " + json.getBytes(), e);
+		}
 	}
 
 	private HashMap<Long, HashMap<String, Object>> buildSchemaMap(Connection conn) throws SQLException {
@@ -273,7 +284,7 @@ public class MysqlSavedSchema {
 		return schemaChain;
 	}
 
-	private void restoreDerivedSchema(Connection conn, Long schema_id) throws SQLException, IOException, InvalidSchemaError {
+	private void restoreDerivedSchema(Connection conn, Long schema_id) throws SQLException, InvalidSchemaError {
 		/* build hashmap of schemaID -> schema properties (as hash) */
 		HashMap<Long, HashMap<String, Object>> schemas = buildSchemaMap(conn);
 
@@ -283,7 +294,7 @@ public class MysqlSavedSchema {
 
 		Long firstSchemaId = schemaChain.removeFirst();
 
-		/* do the "full" restore */
+		/* do the "full" restore of the schema snapshot */
 		MysqlSavedSchema firstSchema = new MysqlSavedSchema(serverID, sensitivity);
 		firstSchema.restoreFromSchemaID(conn, firstSchemaId);
 		Schema schema = firstSchema.getSchema();
@@ -292,7 +303,7 @@ public class MysqlSavedSchema {
 		int count = 0;
 		long startTime = System.currentTimeMillis();
 
-		/* now walk the chain and play each schema's delta */
+		/* now walk the chain and play each schema's deltas on top of the snapshot */
 		for ( Long id : schemaChain ) {
 			List<ResolvedSchemaChange> deltas = parseDeltas((String) schemas.get(id).get("deltas"));
 			for ( ResolvedSchemaChange delta : deltas ) {
@@ -306,19 +317,7 @@ public class MysqlSavedSchema {
 		LOGGER.info("played " + count + " deltas in " + elapsed + "ms");
 	}
 
-	private void restoreFrom(Connection conn, BinlogPosition targetPosition) throws SQLException, IOException, InvalidSchemaError {
-		Long schemaID = findSchema(conn, targetPosition, this.serverID);
-		if ( schemaID == null ) {
-			throw new InvalidSchemaError("Could not find schema for "
-					+ targetPosition.getFile() + ":" + targetPosition.getOffset());
-		}
-
-		restoreFromSchemaID(conn, schemaID);
-
-		handleVersionUpgrades(conn, schemaID, this.schemaVersion);
-	}
-
-	private void restoreFromSchemaID(Connection conn, Long schemaID) throws SQLException, IOException, InvalidSchemaError {
+	protected void restoreFromSchemaID(Connection conn, Long schemaID) throws SQLException, InvalidSchemaError {
 		restoreSchemaMetadata(conn, schemaID);
 
 		if ( this.baseSchemaID != null )
@@ -327,7 +326,7 @@ public class MysqlSavedSchema {
 			restoreFullSchema(conn, schemaID);
 	}
 
-	private void restoreSchemaMetadata(Connection conn, Long schemaID) throws SQLException, IOException {
+	private void restoreSchemaMetadata(Connection conn, Long schemaID) throws SQLException {
 		PreparedStatement p = conn.prepareStatement("select * from `schemas` where id = " + schemaID);
 		ResultSet schemaRS = p.executeQuery();
 
@@ -348,7 +347,7 @@ public class MysqlSavedSchema {
 		this.schema = new Schema(new ArrayList<Database>(), schemaRS.getString("charset"), this.sensitivity);
 	}
 
-	private void restoreFullSchema(Connection conn, Long schemaID) throws SQLException, IOException, InvalidSchemaError {
+	private void restoreFullSchema(Connection conn, Long schemaID) throws SQLException, InvalidSchemaError {
 		PreparedStatement p = conn.prepareStatement("SELECT * from `databases` where schema_id = ? ORDER by id");
 		p.setLong(1, this.schemaID);
 
@@ -406,7 +405,7 @@ public class MysqlSavedSchema {
 
 	}
 
-	private Long findSchema(Connection connection, BinlogPosition targetPosition, Long serverID)
+	private static Long findSchema(Connection connection, BinlogPosition targetPosition, Long serverID)
 			throws SQLException {
 		LOGGER.debug("looking to restore schema at target position " + targetPosition);
 		PreparedStatement s = connection.prepareStatement(
@@ -514,8 +513,8 @@ public class MysqlSavedSchema {
 		}
 	}
 
-	private void handleVersionUpgrades(Connection conn, Long schemaID, int version) throws SQLException, InvalidSchemaError {
-		if ( version < 1 ) {
+	protected void handleVersionUpgrades(Connection conn) throws SQLException, InvalidSchemaError {
+		if ( this.schemaVersion < 1 ) {
 			if ( this.schema != null && this.schema.findDatabase("mysql") == null ) {
 				LOGGER.info("Could not find mysql db, adding it to schema");
 				SchemaCapturer sc = new SchemaCapturer(conn, sensitivity, "mysql");
