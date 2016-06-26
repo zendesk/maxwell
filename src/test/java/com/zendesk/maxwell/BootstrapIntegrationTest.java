@@ -99,6 +99,8 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 			testColumnType("datetime", "'0000-00-00 00:00:00'","0000-00-00 00:00:00", null);
 		testColumnType("timestamp", "'2015-11-07 01:02:03'","2015-11-07 01:02:03");
 		testColumnType("timestamp", "'0000-00-00 00:00:00'","" + epoch.substring(0, epoch.length() - 2) + "", null);
+		if ( server.getVersion().equals("5.6") )
+			testColumnType("timestamp(3)", "'2015-11-07 01:02:03.123'","2015-11-07 01:02:03");
 		testColumnType("enum('a', 'b')","'a'", "a");
 		testColumnType("bit(8)","b'01010101'", 85);
 		testColumnType("bit(8)","b'1'", 1);
