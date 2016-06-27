@@ -9,7 +9,7 @@ BINDIR=File.dirname(__FILE__)
 
 CURRENT_REV=`#{BINDIR}/current_rev`
 
-if !( ($version = ARGV[0]) && $version =~ /\d+\.\d+\.\d+(-\w+)?/)
+if !( ($version = ARGV[0]) && $version =~ /^\d+\.\d+\.\d+(-\w+)?$/)
   message =  "usage: #{$0} VERSION\n"
   message += "  (current version is #{CURRENT_REV})"
   abort(message)
