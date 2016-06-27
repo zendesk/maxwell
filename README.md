@@ -29,7 +29,7 @@ stat emitters.
     "table": "maxwell",
     "type": "insert",
     "ts": 1449786310,
-    "xid": 940753,
+    "xid": 940752,
     "commit": true,
     "data": { "id":1, "daemon": "Stanislaw Lem" }
   }
