@@ -5,7 +5,7 @@ import java.util.*;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 
 import com.zendesk.maxwell.schema.columndef.EnumeratedColumnDef;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
 import com.zendesk.maxwell.schema.columndef.StringColumnDef;

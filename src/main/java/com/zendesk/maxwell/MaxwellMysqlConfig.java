@@ -1,7 +1,7 @@
 package com.zendesk.maxwell;
 
 import java.util.ArrayList;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import joptsimple.OptionSet;
 
