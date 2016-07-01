@@ -88,14 +88,17 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	private final int numPartitions;
 	private final MaxwellKafkaPartitioner partitioner;
 	private final KeyFormat keyFormat;
-
-	public MaxwellKafkaProducer(MaxwellContext context, Properties kafkaProperties, String kafkaTopic) {
+    private boolean topicPerDbtable;
+    private boolean topicPerDb;
+	public MaxwellKafkaProducer(MaxwellContext context, Properties kafkaProperties, String kafkaTopic ,boolean topicPerDbtable ,boolean topicPerDb) {
 		super(context);
 
 		this.topic = kafkaTopic;
 		if ( this.topic == null ) {
 			this.topic = "maxwell";
 		}
+        this.topicPerDb=topicPerDb;
+        this.topicPerDbtable=topicPerDbtable;
 
 		this.setDefaults(kafkaProperties);
 		this.kafka = new KafkaProducer<>(kafkaProperties, new StringSerializer(), new StringSerializer());
@@ -120,15 +123,16 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 
     public String getDbTopic(String database,String table,String topic){
         StringBuilder topicValue = new StringBuilder();
-        if(topic.equalsIgnoreCase("database")) {
-            topicValue.append(database);
-            return  topicValue.toString();
-        } else if (topic.equalsIgnoreCase("database.table")){
+          if (topicPerDbtable){
             topicValue.append(database);
             topicValue.append(".");
             topicValue.append(table);
             return  topicValue.toString();
         }
+        else if(topicPerDb) {
+              topicValue.append(database);
+              return  topicValue.toString();
+          }
         return topic;
     }
 
@@ -151,6 +155,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		KafkaCallback callback = new KafkaCallback(inflightMessages, r.getPosition(), r.isTXCommit(), this.context, key, value);
 
 		kafka.send(record, callback);
+
 	}
 
 	@Override

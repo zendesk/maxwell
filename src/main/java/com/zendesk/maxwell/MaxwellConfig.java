@@ -1,13 +1,16 @@
 package com.zendesk.maxwell;
 
-import java.util.*;
-
-import joptsimple.*;
-
+import com.zendesk.maxwell.util.AbstractConfig;
+import joptsimple.BuiltinHelpFormatter;
+import joptsimple.OptionDescriptor;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.zendesk.maxwell.util.AbstractConfig;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.Properties;
 
 public class MaxwellConfig extends AbstractConfig {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfig.class);
@@ -23,6 +26,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public final Properties kafkaProperties;
 	public String kafkaTopic;
+    public boolean topicPerDbtable;
+    public boolean topicPerDb;
 	public String kafkaKeyFormat;
 	public String producerType;
 	public String kafkaPartitionHash;
@@ -40,6 +45,8 @@ public class MaxwellConfig extends AbstractConfig {
 		this.replayMode = false;
 		this.replicationMysql = new MaxwellMysqlConfig();
 		this.maxwellMysql = new MaxwellMysqlConfig();
+        this.topicPerDbtable=false;
+        this.topicPerDb=false;
 	}
 
 	public MaxwellConfig(String argv[]) {
@@ -76,6 +83,8 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "kafka_partition_by", "database|table|primary_key, kafka producer assigns partition by hashing the specified parameter").withRequiredArg();
 		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning").withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
+        parser.accepts( "kafka_topic_per_table", "optionally create separate topic for each database table default: false").withOptionalArg();
+        parser.accepts( "kafka_topic_per_db", "optionally create separate topic for each database default: false").withOptionalArg();
 		parser.accepts( "kafka_key_format", "how to format the kafka key; array|hash").withOptionalArg();
 
 		parser.accepts( "__separator_4" );
@@ -126,7 +135,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 	private void parse(String [] argv) {
 		OptionSet options = buildOptionParser().parse(argv);
-
+         System.out.println("Starting maxwell config parser");
 		if ( options.has("config") ) {
 			parseFile((String) options.valueOf("config"), true);
 		} else {
@@ -158,6 +167,10 @@ public class MaxwellConfig extends AbstractConfig {
 
 		if ( options.has("kafka_topic"))
 			this.kafkaTopic = (String) options.valueOf("kafka_topic");
+
+        if ( options.has("kafka_topic_per_table")) {this.topicPerDbtable=true;} // Create Separate topic for each database
+
+        if ( options.has("kafka_topic_per_db")) {this.topicPerDb=true;}  // Create Separate topic for each database table
 
 		if ( options.has("kafka_key_format"))
 			this.kafkaKeyFormat = (String) options.valueOf("kafka_key_format");
@@ -250,6 +263,10 @@ public class MaxwellConfig extends AbstractConfig {
 		this.excludeColumns = p.getProperty("exclude_columns");
 		this.blacklistDatabases = p.getProperty("blacklist_dbs");
 		this.blacklistTables = p.getProperty("blacklist_tables");
+        if(p.containsKey("kafka_topic_per_db")) {this.topicPerDb= true;}
+        if(p.containsKey("kafka_topic_per_table")) {this.topicPerDbtable=true; this.topicPerDb= false;}
+
+
 
 		if ( p.containsKey("log_level") )
 			this.log_level = parseLogLevel(p.getProperty("log_level"));

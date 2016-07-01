@@ -58,6 +58,12 @@ password=maxwell
 # kafka topic to write to
 #kafka_topic=maxwell
 
+#Create separate topic for each database kafka_topic=dbname
+#kafka_topic_per_db
+
+#Create separate topic for each database table   kafka_topic=dbname.tablename
+#kafka_topic_per_table
+
 # hash function to use.  "default" is just the JVM's 'hashCode'
 # function.
 #kafka_partition_hash=default # [default, murmur3]
