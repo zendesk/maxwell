@@ -86,7 +86,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	protected Connection getConnection() throws SQLException {
-		Connection conn = context.getReplicationConnection();
+		Connection conn = context.getReplicationConnectionPool().getConnection();
 		conn.setCatalog(context.getConfig().databaseName);
 		return conn;
 	}
@@ -133,7 +133,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 
 	@Override
 	public void resume(AbstractProducer producer, MaxwellReplicator replicator) throws Exception {
-		try ( Connection connection = context.getMaxwellConnection() ) {
+		try ( Connection connection = context.getMaxwellConnectionPool().getConnection() ) {
 			// This update resets all rows of incomplete bootstraps to their original state.
 			// These updates are treated as fresh bootstrap requests and trigger a restart
 			// of the bootstrap process from the beginning.

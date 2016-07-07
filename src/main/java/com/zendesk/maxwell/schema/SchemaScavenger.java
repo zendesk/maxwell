@@ -48,9 +48,9 @@ public class SchemaScavenger extends RunLoopProcess implements Runnable {
 			for ( String tName : tables ) {
 				for (;;) {
 					long nDeleted = connection.createStatement().executeUpdate(
-						"DELETE FROM `" + tName +
-							"` WHERE schema_id = " + id +
-							" LIMIT " + maxRowsPerSecond
+							"DELETE FROM `" + tName +
+									"` WHERE schema_id = " + id +
+									" LIMIT " + maxRowsPerSecond
 					);
 
 					if (isStopRequested())

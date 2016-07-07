@@ -16,13 +16,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
+import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 
 public class SchemaCapturer {
 	private final Connection connection;
-	static final Logger LOGGER = LoggerFactory.getLogger(MysqlSavedSchema.class);
+	static final Logger LOGGER = LoggerFactory.getLogger(SchemaStore.class);
 
 	public static final HashSet<String> IGNORED_DATABASES = new HashSet<String>(
-		Arrays.asList(new String[] {"performance_schema", "information_schema"})
+			Arrays.asList(new String[] {"performance_schema", "information_schema"})
 	);
 
 	private final HashSet<String> includeDatabases;
@@ -44,9 +45,10 @@ public class SchemaCapturer {
 		this.includeDatabases.add(dbName);
 	}
 
-	public Schema capture() throws SQLException {
+	public Schema capture() throws SQLException, InvalidSchemaError {
 		LOGGER.debug("Capturing schema");
 		ArrayList<Database> databases = new ArrayList<>();
+
 
 		ResultSet rs = connection.createStatement().executeQuery("SELECT * from INFORMATION_SCHEMA.SCHEMATA");
 
@@ -74,12 +76,12 @@ public class SchemaCapturer {
 	}
 
 	private static final String tblSQL =
-			  "SELECT TABLES.TABLE_NAME, CCSA.CHARACTER_SET_NAME "
-			+ "FROM INFORMATION_SCHEMA.TABLES "
-			+ "JOIN  information_schema.COLLATION_CHARACTER_SET_APPLICABILITY AS CCSA"
-			+ " ON TABLES.TABLE_COLLATION = CCSA.COLLATION_NAME WHERE TABLES.TABLE_SCHEMA = ?";
+			"SELECT TABLES.TABLE_NAME, CCSA.CHARACTER_SET_NAME "
+					+ "FROM INFORMATION_SCHEMA.TABLES "
+					+ "JOIN  information_schema.COLLATION_CHARACTER_SET_APPLICABILITY AS CCSA"
+					+ " ON TABLES.TABLE_COLLATION = CCSA.COLLATION_NAME WHERE TABLES.TABLE_SCHEMA = ?";
 
-	private Database captureDatabase(String dbName, String dbCharset) throws SQLException {
+	private Database captureDatabase(String dbName, String dbCharset) throws SQLException, InvalidSchemaError {
 		PreparedStatement p = connection.prepareStatement(tblSQL);
 
 		p.setString(1, dbName);
@@ -96,7 +98,7 @@ public class SchemaCapturer {
 	}
 
 
-	private void captureTable(Table t) throws SQLException {
+	private void captureTable(Table t) throws SQLException, InvalidSchemaError {
 		int i = 0;
 		infoSchemaStmt.setString(1, t.getDatabase());
 		infoSchemaStmt.setString(2, t.getName());
@@ -127,9 +129,9 @@ public class SchemaCapturer {
 
 	private static final String pkSQL =
 			"SELECT column_name, ordinal_position from information_schema.key_column_usage  "
-	      + "WHERE constraint_name = 'PRIMARY' and table_schema = ? and table_name = ?";
+					+ "WHERE constraint_name = 'PRIMARY' and table_schema = ? and table_name = ?";
 
-	private void captureTablePK(Table t) throws SQLException {
+	private void captureTablePK(Table t) throws SQLException, InvalidSchemaError {
 		PreparedStatement p = connection.prepareStatement(pkSQL);
 		p.setString(1, t.getDatabase());
 		p.setString(2, t.getName());

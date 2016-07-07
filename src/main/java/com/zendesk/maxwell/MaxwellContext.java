@@ -12,8 +12,8 @@ import com.zendesk.maxwell.bootstrap.AsynchronousBootstrapper;
 import com.zendesk.maxwell.bootstrap.NoOpBootstrapper;
 import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
 import com.zendesk.maxwell.producer.*;
-import com.zendesk.maxwell.schema.ReadOnlyMysqlPositionStore;
-import com.zendesk.maxwell.schema.MysqlPositionStore;
+import com.zendesk.maxwell.schema.ReadOnlySchemaPosition;
+import com.zendesk.maxwell.schema.SchemaPosition;
 
 import com.zendesk.maxwell.schema.SchemaScavenger;
 import org.slf4j.Logger;
@@ -26,7 +26,7 @@ public class MaxwellContext {
 	private final ConnectionPool replicationConnectionPool;
 	private final ConnectionPool maxwellConnectionPool;
 	private final MaxwellConfig config;
-	private MysqlPositionStore positionStore;
+	private SchemaPosition schemaPosition;
 	private Long serverID;
 	private BinlogPosition initialPosition;
 	private CaseSensitivity caseSensitivity;
@@ -38,7 +38,7 @@ public class MaxwellContext {
 				config.replicationMysql.getConnectionURI(), config.replicationMysql.user, config.replicationMysql.password);
 
 		this.maxwellConnectionPool = new ConnectionPool("MaxwellConnectionPool", 10, 0, 10,
-					config.maxwellMysql.getConnectionURI(), config.maxwellMysql.user, config.maxwellMysql.password);
+				config.maxwellMysql.getConnectionURI(), config.maxwellMysql.user, config.maxwellMysql.password);
 		this.maxwellConnectionPool.setCaching(false);
 
 		if ( this.config.initPosition != null )
@@ -49,8 +49,8 @@ public class MaxwellContext {
 		return this.config;
 	}
 
-	public Connection getReplicationConnection() throws SQLException {
-		return this.replicationConnectionPool.getConnection();
+	public ConnectionPool getReplicationConnectionPool() {
+		return this.replicationConnectionPool;
 	}
 
 	public ConnectionPool getMaxwellConnectionPool() { return this.maxwellConnectionPool; }
@@ -67,28 +67,28 @@ public class MaxwellContext {
 	}
 
 	public void terminate() {
-		if ( this.positionStore != null ) {
+		if ( this.schemaPosition != null ) {
 			try {
-				this.positionStore.stopLoop();
+				this.schemaPosition.stopLoop();
 			} catch (TimeoutException e) {
-				LOGGER.error("got timeout trying to shutdown positionStore thread.");
+				LOGGER.error("got timeout trying to shutdown schemaPosition thread.");
 			}
 		}
 		this.replicationConnectionPool.release();
 		this.maxwellConnectionPool.release();
 	}
 
-	private MysqlPositionStore getMysqlPositionStore() throws SQLException {
-		if ( this.positionStore == null ) {
+	private SchemaPosition getSchemaPosition() throws SQLException {
+		if ( this.schemaPosition == null ) {
 			if ( this.getConfig().replayMode ) {
-				this.positionStore = new ReadOnlyMysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.databaseName);
+				this.schemaPosition = new ReadOnlySchemaPosition(this.getMaxwellConnectionPool(), this.getServerID(), this.config.databaseName);
 			} else {
-				this.positionStore = new MysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.databaseName);
+				this.schemaPosition = new SchemaPosition(this.getMaxwellConnectionPool(), this.getServerID(), this.config.databaseName);
 			}
 
-			this.positionStore.start();
+			this.schemaPosition.start();
 		}
-		return this.positionStore;
+		return this.schemaPosition;
 	}
 
 
@@ -96,15 +96,7 @@ public class MaxwellContext {
 		if ( this.initialPosition != null )
 			return this.initialPosition;
 
-		this.initialPosition = getMysqlPositionStore().get();
-
-		if ( this.initialPosition == null ) {
-			try ( Connection connection = getReplicationConnection() ) {
-				this.initialPosition = BinlogPosition.capture(connection);
-				this.setPosition(this.initialPosition);
-			}
-		}
-
+		this.initialPosition = getSchemaPosition().get();
 		return this.initialPosition;
 	}
 
@@ -114,18 +106,18 @@ public class MaxwellContext {
 	}
 
 	public void setPosition(BinlogPosition position) throws SQLException {
-		this.getMysqlPositionStore().set(position);
+		this.getSchemaPosition().set(position);
 	}
 
 	public void setPositionSync(BinlogPosition position) throws SQLException {
-		this.getMysqlPositionStore().setSync(position);
+		this.getSchemaPosition().setSync(position);
 	}
 
 	public void ensurePositionThread() throws SQLException {
-		if ( this.positionStore == null )
+		if ( this.schemaPosition == null )
 			return;
 
-		SQLException e = this.positionStore.getException();
+		SQLException e = this.schemaPosition.getException();
 		if ( e != null ) {
 			throw (e);
 		}
@@ -135,7 +127,7 @@ public class MaxwellContext {
 		if ( this.serverID != null)
 			return this.serverID;
 
-		try ( Connection c = getReplicationConnection() ) {
+		try ( Connection c = getReplicationConnectionPool().getConnection() ) {
 			ResultSet rs = c.createStatement().executeQuery("SELECT @@server_id as server_id");
 			if ( !rs.next() ) {
 				throw new RuntimeException("Could not retrieve server_id!");
@@ -150,7 +142,7 @@ public class MaxwellContext {
 		if ( this.caseSensitivity != null )
 			return this.caseSensitivity;
 
-		try ( Connection c = getReplicationConnection()) {
+		try ( Connection c = getReplicationConnectionPool().getConnection()) {
 			ResultSet rs = c.createStatement().executeQuery("select @@lower_case_table_names");
 			if ( !rs.next() )
 				throw new RuntimeException("Could not retrieve @@lower_case_table_names!");
@@ -175,15 +167,15 @@ public class MaxwellContext {
 
 	public AbstractProducer getProducer() throws IOException {
 		switch ( this.config.producerType ) {
-		case "file":
-			return new FileProducer(this, this.config.outputFile);
-		case "kafka":
-			return new MaxwellKafkaProducer(this, this.config.getKafkaProperties(), this.config.kafkaTopic);
-		case "profiler":
-			return new ProfilerProducer(this);
-		case "stdout":
-		default:
-			return new StdoutProducer(this);
+			case "file":
+				return new FileProducer(this, this.config.outputFile);
+			case "kafka":
+				return new MaxwellKafkaProducer(this, this.config.getKafkaProperties(), this.config.kafkaTopic);
+			case "profiler":
+				return new ProfilerProducer(this);
+			case "stdout":
+			default:
+				return new StdoutProducer(this);
 		}
 	}
 
@@ -199,9 +191,16 @@ public class MaxwellContext {
 
 	}
 
-	public MaxwellFilter getFilter() {
-		return config.filter;
+	public MaxwellFilter buildFilter() throws MaxwellInvalidFilterException {
+		return new MaxwellFilter(config.includeDatabases,
+				config.excludeDatabases,
+				config.includeTables,
+				config.excludeTables,
+				config.blacklistDatabases,
+				config.blacklistTables,
+				config.excludeColumns);
 	}
+
 
 	public boolean getReplayMode() {
 		return this.config.replayMode;

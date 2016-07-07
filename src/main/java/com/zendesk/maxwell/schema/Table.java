@@ -19,7 +19,8 @@ public class Table {
 	public String name;
 	private List<ColumnDef> columnList;
 	public String charset;
-	private List<String> pkColumnNames;
+	@JsonProperty("primary-key")
+	public List<String> pkColumnNames;
 
 	private HashMap<String, Integer> columnOffsetMap;
 	@JsonIgnore
@@ -138,16 +139,16 @@ public class Table {
 				String colName = a.fullName() + ".`" + column.getName() + "` ";
 				if ( !column.getType().equals(other.getType()) ) {
 					diffs.add(colName + "has a type mismatch, "
-									  + column.getType()
-									  + " vs "
-									  + other.getType()
-									  + " in " + nameB);
+							+ column.getType()
+							+ " vs "
+							+ other.getType()
+							+ " in " + nameB);
 				} else if ( column.getPos() != other.getPos() ) {
 					diffs.add(colName + "has a position mismatch, "
-									  + column.getPos()
-									  + " vs "
-									  + other.getPos()
-									  + " in " + nameB);
+							+ column.getPos()
+							+ " vs "
+							+ other.getPos()
+							+ " in " + nameB);
 				}
 
 				if ( column instanceof EnumeratedColumnDef ) {
@@ -188,20 +189,20 @@ public class Table {
 	public void diff(List<String> diffs, Table other, String nameA, String nameB) {
 		if ( !this.getCharset().equals(other.getCharset()) ) {
 			diffs.add(this.fullName() + " differs in charset: "
-					  + nameA + " is " + this.getCharset() + " but "
-					  + nameB + " is " + other.getCharset());
+					+ nameA + " is " + this.getCharset() + " but "
+					+ nameB + " is " + other.getCharset());
 		}
 
 		if ( !this.getPKString().equals(other.getPKString())) {
 			diffs.add(this.fullName() + " differs in PKs: "
-					  + nameA + " is " + this.getPKString() + " but "
-					  + nameB + " is " + other.getPKString());
+					+ nameA + " is " + this.getPKString() + " but "
+					+ nameB + " is " + other.getPKString());
 		}
 
 		if ( !this.getName().equals(other.getName()) ) {
 			diffs.add(this.fullName() + " differs in name: "
-					  + nameA + " is " + this.getName() + " but "
-					  + nameB + " is " + other.getName());
+					+ nameA + " is " + this.getName() + " but "
+					+ nameB + " is " + other.getName());
 		}
 
 		diffColumnList(diffs, this, other, nameA, nameB);
@@ -245,7 +246,7 @@ public class Table {
 		return charset;
 	}
 
-	@JsonProperty("primary-key")
+	@JsonIgnore
 	public List<String> getPKList() {
 		return this.pkColumnNames;
 	}
@@ -258,10 +259,7 @@ public class Table {
 			return null;
 	}
 
-	@JsonProperty("primary-key")
 	public void setPKList(List<String> pkColumnNames) {
-		this.pkColumnNames = new ArrayList<>();
-		for ( String c : pkColumnNames )
-			this.pkColumnNames.add(c.toLowerCase());
+		this.pkColumnNames = pkColumnNames;
 	}
 }

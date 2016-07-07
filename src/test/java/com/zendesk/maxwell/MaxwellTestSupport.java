@@ -87,6 +87,10 @@ public class MaxwellTestSupport {
 		return new MaxwellContext(config);
 	}
 
+	private static void clearSchemaStore(MysqlIsolatedServer mysql) throws Exception {
+		mysql.getConnection().prepareStatement("delete from `maxwell`.`schemas`").execute();
+	}
+
 	public static List<RowMap>getRowsForSQL(final MysqlIsolatedServer mysql, MaxwellFilter filter, String queries[], String before[]) throws Exception {
 		BinlogPosition start = BinlogPosition.capture(mysql.getConnection());
 		MaxwellContext context = buildContext(mysql.getPort(), null);

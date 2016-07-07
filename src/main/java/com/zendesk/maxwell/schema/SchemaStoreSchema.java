@@ -73,7 +73,7 @@ public class SchemaStoreSchema {
 		while ( rs.next() ) {
 			Long schemaID = rs.getLong("id");
 			LOGGER.info("maxwell detected schema " + schemaID + " from different server_id.  deleting...");
-			MysqlSavedSchema.delete(c, schemaID);
+			SchemaStore.delete(c, schemaID);
 		}
 
 		c.createStatement().execute("delete from `positions` where server_id != " + serverID);
@@ -110,7 +110,7 @@ public class SchemaStoreSchema {
 
 		if ( !getMaxwellTables(c).contains("bootstrap") )  {
 			LOGGER.info("adding `" + schemaDatabaseName + "`.`bootstrap` to the schema.");
-			InputStream is = MysqlSavedSchema.class.getResourceAsStream("/sql/maxwell_schema_bootstrap.sql");
+			InputStream is = SchemaStore.class.getResourceAsStream("/sql/maxwell_schema_bootstrap.sql");
 			executeSQLInputStream(c, is, schemaDatabaseName);
 		}
 

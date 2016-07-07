@@ -345,8 +345,8 @@ public class MaxwellReplicator extends RunLoopProcess {
 					resolved.apply(updatedSchema);
 
 					DDLRow r = new DDLRow(resolved,
-					                      event.getHeader().getTimestamp(),
-					                      new BinlogPosition(event.getHeader().getPosition(), event.getBinlogFilename()));
+							event.getHeader().getTimestamp(),
+							new BinlogPosition(event.getHeader().getPosition(), event.getBinlogFilename()));
 					buffer.add(r);
 					resolvedSchemaChanges.add(resolved);
 				}
