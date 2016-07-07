@@ -1,5 +1,7 @@
 package com.zendesk.maxwell;
 
+import com.zendesk.maxwell.producer.partitioners.PartitionKeyType;
+
 import com.fasterxml.jackson.core.*;
 import com.google.code.or.common.glossary.Column;
 import org.slf4j.Logger;
@@ -15,10 +17,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-
-public class RowMap implements Serializable {
-	public enum KeyFormat { HASH, ARRAY }
-
+public class RowMap implements Serializable, RowInterface {
 	static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
 
 	private final String rowType;
@@ -36,8 +35,6 @@ public class RowMap implements Serializable {
 	private List<Pattern> excludeColumns;
 
 	private static final JsonFactory jsonFactory = new JsonFactory();
-
-	private long approximateSize;
 
 	private static final ThreadLocal<ByteArrayOutputStream> byteArrayThreadLocal =
 			new ThreadLocal<ByteArrayOutputStream>(){
@@ -73,7 +70,6 @@ public class RowMap implements Serializable {
 		this.oldData = new LinkedHashMap<>();
 		this.nextPosition = nextPosition;
 		this.pkColumns = pkColumns;
-		this.approximateSize = 100L; // more or less 100 bytes of overhead
 	}
 
 	public RowMap(String type, String database, String table, Long timestamp, List<String> pkColumns,
@@ -82,8 +78,8 @@ public class RowMap implements Serializable {
 		this.excludeColumns = excludeColumns;
 	}
 
-	public String pkToJson(KeyFormat keyFormat) throws IOException {
-		if ( keyFormat == KeyFormat.HASH )
+	public String rowKey(RowInterface.KeyFormat keyFormat) throws IOException {
+		if ( keyFormat == RowInterface.KeyFormat.HASH )
 			return pkToJsonHash();
 		else
 			return pkToJsonArray();
@@ -102,7 +98,7 @@ public class RowMap implements Serializable {
 		} else {
 			for (String pk : pkColumns) {
 				Object pkValue = null;
-				if (data.containsKey(pk.toLowerCase()))
+				if ( data.containsKey(pk) )
 					pkValue = data.get(pk);
 
 				g.writeObjectField("pk." + pk, pkValue);
@@ -124,7 +120,7 @@ public class RowMap implements Serializable {
 		g.writeStartArray();
 		for (String pk : pkColumns) {
 			Object pkValue = null;
-			if ( data.containsKey(pk.toLowerCase()) )
+			if ( data.containsKey(pk) )
 				pkValue = data.get(pk);
 
 			g.writeStartObject();
@@ -144,7 +140,7 @@ public class RowMap implements Serializable {
 		String keys="";
 		for (String pk : pkColumns) {
 			Object pkValue = null;
-			if (data.containsKey(pk.toLowerCase()))
+			if (data.containsKey(pk))
 				pkValue = data.get(pk);
 			if (pkValue != null)
 				keys += pkValue.toString();
@@ -152,6 +148,18 @@ public class RowMap implements Serializable {
 		if (keys.isEmpty())
 			return "None";
 		return keys;
+	}
+
+	public String getPartitionKey(PartitionKeyType keyType) {
+		switch (keyType) {
+			case TABLE:
+				return this.table;
+			case PRIMARY_KEY:
+				return this.pkAsConcatString();
+			case DATABASE:
+			default:
+				return this.database;
+		}
 	}
 
 	private void writeMapToJSON(String jsonMapName, LinkedHashMap<String, Object> data, boolean includeNullField) throws IOException {
@@ -238,29 +246,8 @@ public class RowMap implements Serializable {
 		return this.data.get(key);
 	}
 
-
-	public long getApproximateSize() {
-		return approximateSize;
-	}
-
-	private long approximateKVSize(String key, Object value) {
-		long length = 0;
-		length += 40; // overhead.  Whynot.
-		length += key.length() * 2;
-
-		if ( value instanceof String ) {
-			length += ((String) value).length() * 2;
-		} else {
-			length += 64;
-		}
-
-		return length;
-	}
-
 	public void putData(String key, Object value) {
-		this.data.put(key, value);
-
-		this.approximateSize += approximateKVSize(key, value);
+		this.data.put(key,  value);
 	}
 
 	public Object getOldData(String key) {
@@ -268,9 +255,7 @@ public class RowMap implements Serializable {
 	}
 
 	public void putOldData(String key, Object value) {
-		this.oldData.put(key, value);
-
-		this.approximateSize += approximateKVSize(key, value);
+		this.oldData.put(key,  value);
 	}
 
 	public BinlogPosition getPosition() {

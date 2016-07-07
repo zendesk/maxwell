@@ -17,10 +17,10 @@ import com.zendesk.maxwell.schema.*;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.schema.columndef.IntColumnDef;
 
-public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
+public class SchemaStoreTest extends MaxwellTestWithIsolatedServer {
 	private Schema schema;
 	private BinlogPosition binlogPosition;
-	private MysqlSavedSchema savedSchema;
+	private SchemaStore schemaStore;
 
 	String schemaSQL[] = {
 		"CREATE TABLE shard_1.latin1 (id int(11), str1 varchar(255), str2 varchar(255) character set 'utf8') charset = 'latin1'",
@@ -37,23 +37,23 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 		this.binlogPosition = BinlogPosition.capture(server.getConnection());
 		this.context = buildContext(binlogPosition);
 		this.schema = new SchemaCapturer(server.getConnection(), context.getCaseSensitivity()).capture();
-		this.savedSchema = new MysqlSavedSchema(this.context, this.schema, binlogPosition);
+		this.schemaStore = new SchemaStore(this.context, this.schema, binlogPosition);
 	}
 
 	@Test
 	public void testSave() throws SQLException, IOException, InvalidSchemaError {
-		this.savedSchema.save(context.getMaxwellConnection());
+		this.schemaStore.save(context.getMaxwellConnection());
 
-		MysqlSavedSchema restoredSchema = MysqlSavedSchema.restore(context, context.getInitialPosition());
+		SchemaStore restoredSchema = SchemaStore.restore(context.getMaxwellConnection(), context);
 		List<String> diff = this.schema.diff(restoredSchema.getSchema(), "captured schema", "restored schema");
 		assertThat(StringUtils.join(diff, "\n"), diff.size(), is(0));
 	}
 
 	@Test
 	public void testRestorePK() throws Exception {
-		this.savedSchema.save(context.getMaxwellConnection());
+		this.schemaStore.save(context.getMaxwellConnection());
 
-		MysqlSavedSchema restoredSchema = MysqlSavedSchema.restore(context, context.getInitialPosition());
+		SchemaStore restoredSchema = SchemaStore.restore(context.getMaxwellConnection(), context);
 		Table t = restoredSchema.getSchema().findDatabase("shard_1").findTable("pks");
 
 		assertThat(t.getPKList(), is(not(nullValue())));
@@ -71,10 +71,10 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 		MaxwellContext context = this.buildContext();
 		String dbName = context.getConfig().databaseName;
 
-		this.savedSchema = new MysqlSavedSchema(5551234L, context.getCaseSensitivity(), this.schema, binlogPosition);
+		this.schemaStore = new SchemaStore(5551234L, context.getCaseSensitivity(), this.schema, binlogPosition);
 
 		Connection conn = context.getMaxwellConnection();
-		this.savedSchema.save(conn);
+		this.schemaStore.save(conn);
 
 		SchemaStoreSchema.handleMasterChange(conn, 123456L, dbName);
 
@@ -89,12 +89,12 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testFixUnsignedColumnBug() throws Exception {
 		Connection c = context.getMaxwellConnection();
-		this.savedSchema.save(c);
+		this.schemaStore.save(c);
 
-		c.createStatement().executeUpdate("update maxwell.schemas set version = 0 where id = " + this.savedSchema.getSchemaID());
+		c.createStatement().executeUpdate("update maxwell.schemas set version = 0 where id = " + this.schemaStore.getSchemaID());
 		c.createStatement().executeUpdate("update maxwell.columns set is_signed = 1 where name = 'badcol'");
 
-		MysqlSavedSchema restored = MysqlSavedSchema.restore(context, context.getInitialPosition());
+		SchemaStore restored = SchemaStore.restore(context.getMaxwellConnection(), context);
 		IntColumnDef cd = (IntColumnDef) restored.getSchema().findDatabase("shard_1").findTable("signed").findColumn("badcol");
 		assertThat(cd.isSigned(), is(false));
 	}

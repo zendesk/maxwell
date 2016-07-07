@@ -90,7 +90,7 @@ public class DDLResolverTest extends MaxwellTestWithIsolatedServer {
 		TableCreate c = parse("CREATE TABLE alike_2 like `test`.`test_alike`", "test", TableCreate.class);
 		ResolvedTableCreate rc = c.resolve(getSchema());
 		assertThat(rc.def.getColumnList().size(), is(2));
-		assertThat(rc.def.getPKList().get(0), is("ii"));
+		assertThat(rc.def.pkColumnNames.get(0), is("ii"));
 		assertThat(((StringColumnDef) rc.def.getColumnList().get(1)).charset, is("utf8"));
 	}
 

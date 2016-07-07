@@ -6,7 +6,7 @@ import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
-import com.zendesk.maxwell.schema.MysqlSchemaStore;
+import com.zendesk.maxwell.schema.SchemaStore;
 import com.zendesk.maxwell.schema.SchemaStoreSchema;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 import com.zendesk.maxwell.schema.ddl.SchemaChange;
@@ -67,7 +67,7 @@ public class MaxwellTestSupport {
 	}
 
 
-	public static MaxwellContext buildContext(int port, BinlogPosition p, MaxwellFilter filter) {
+	public static MaxwellContext buildContext(int port, BinlogPosition p) {
 		MaxwellConfig config = new MaxwellConfig();
 
 		config.replicationMysql.host = "127.0.0.1";
@@ -82,30 +82,25 @@ public class MaxwellTestSupport {
 
 		config.databaseName = "maxwell";
 
-		config.filter = filter;
 		config.initPosition = p;
 
 		return new MaxwellContext(config);
 	}
 
-	private static void clearSchemaStore(MysqlIsolatedServer mysql) throws Exception {
-		mysql.getConnection().prepareStatement("delete from `maxwell`.`schemas`").execute();
-	}
-
 	public static List<RowMap>getRowsForSQL(final MysqlIsolatedServer mysql, MaxwellFilter filter, String queries[], String before[]) throws Exception {
-		MaxwellContext context = buildContext(mysql.getPort(), null, filter);
+		BinlogPosition start = BinlogPosition.capture(mysql.getConnection());
+		MaxwellContext context = buildContext(mysql.getPort(), null);
 
-		clearSchemaStore(mysql);
+		SchemaCapturer capturer = new SchemaCapturer(mysql.getConnection(), context.getCaseSensitivity());
 
 		if ( before != null ) {
 			mysql.executeList(Arrays.asList(before));
 		}
 
-		BinlogPosition start = BinlogPosition.capture(mysql.getConnection());
-		context.setPosition(start);
 
-		MysqlSchemaStore schemaStore = new MysqlSchemaStore(context);
-		schemaStore.getSchema();
+		Schema initialSchema = capturer.capture();
+		SchemaStore initialSchemaStore = new SchemaStore(context, initialSchema, BinlogPosition.capture(mysql.getConnection()));
+		initialSchemaStore.save(context.getMaxwellConnection());
 
 		mysql.executeList(Arrays.asList(queries));
 
@@ -115,6 +110,10 @@ public class MaxwellTestSupport {
 
 		AbstractProducer producer = new AbstractProducer(context) {
 			@Override
+			public void push(RowInterface r) {
+				if ( r instanceof RowMap )
+					list.add((RowMap) r);
+			}
 			public void push(RowMap r) {
 				list.add(r);
 			}
@@ -141,7 +140,7 @@ public class MaxwellTestSupport {
 			}
 		};
 
-		TestMaxwellReplicator p = new TestMaxwellReplicator(schemaStore, producer, bootstrapper, context, start, endPosition);
+		TestMaxwellReplicator p = new TestMaxwellReplicator(initialSchemaStore, producer, bootstrapper, context, start, endPosition);
 
 		p.setFilter(filter);
 
@@ -157,7 +156,7 @@ public class MaxwellTestSupport {
 	}
 
 	public static void testDDLFollowing(MysqlIsolatedServer server, String alters[]) throws Exception {
-		SchemaCapturer capturer = new SchemaCapturer(server.getConnection(), buildContext(server.getPort(), null, null).getCaseSensitivity());
+		SchemaCapturer capturer = new SchemaCapturer(server.getConnection(), buildContext(server.getPort(), null).getCaseSensitivity());
 		Schema topSchema = capturer.capture();
 
 		server.executeList(Arrays.asList(alters));

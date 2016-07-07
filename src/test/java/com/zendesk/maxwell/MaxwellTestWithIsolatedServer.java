@@ -33,10 +33,10 @@ public class MaxwellTestWithIsolatedServer {
 	}
 
 	protected MaxwellContext buildContext() {
-		return MaxwellTestSupport.buildContext(server.getPort(), null, null);
+		return MaxwellTestSupport.buildContext(server.getPort(), null);
 	}
 
 	protected MaxwellContext buildContext(BinlogPosition p) {
-		return MaxwellTestSupport.buildContext(server.getPort(), p, null);
+		return MaxwellTestSupport.buildContext(server.getPort(), p);
 	}
 }

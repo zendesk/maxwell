@@ -22,11 +22,12 @@ import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaStore;
 import com.zendesk.maxwell.schema.Table;
-import com.zendesk.maxwell.schema.SchemaStoreException;
 import com.zendesk.maxwell.schema.ddl.SchemaChange;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
+import com.zendesk.maxwell.schema.ddl.DDLRow;
+import com.zendesk.maxwell.util.ListWithDiskBuffer;
 
 public class MaxwellReplicator extends RunLoopProcess {
 	private final long MAX_TX_ELEMENTS = 10000;
@@ -50,6 +51,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 	public MaxwellReplicator(SchemaStore schemaStore, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, BinlogPosition start) throws Exception {
 		this.schemaStore = schemaStore;
+
 		this.binlogEventListener = new MaxwellBinlogEventListener(queue);
 
 		this.replicator = new OpenReplicator();
@@ -112,19 +114,24 @@ public class MaxwellReplicator extends RunLoopProcess {
 	}
 
 	public void work() throws Exception {
-		RowMap row = getRow();
+		RowInterface row = getRow();
 
 		context.ensurePositionThread();
 
 		if (row == null)
 			return;
 
-		if ( !bootstrapper.shouldSkip(row) && !isMaxwellRow(row) ) {
-			producer.push(row);
+		if ( row instanceof RowMap ) {
+			RowMap rm = (RowMap) row;
+			/* meh.  at some point should refactor this stuff. */
+			if ( !bootstrapper.shouldSkip(rm) && !isMaxwellRow(rm) ) {
+				producer.push(row);
+			} else {
+				bootstrapper.work(rm, producer, this);
+			}
 		} else {
-			bootstrapper.work(row, producer, this);
+			producer.push(row);
 		}
-
 	}
 
 	// kristiankaufmann
@@ -265,9 +272,9 @@ public class MaxwellReplicator extends RunLoopProcess {
 		}
 	}
 
-	private RowMapBuffer rowBuffer;
+	private RowInterfaceBuffer rowBuffer;
 
-	public RowMap getRow() throws Exception {
+	public RowInterface getRow() throws Exception {
 		BinlogEventV4 v4Event;
 
 		while (true) {
@@ -302,7 +309,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 					if (qe.getSql().toString().equals("BEGIN"))
 						rowBuffer = getTransactionRows();
 					else
-						processQueryEvent((QueryEvent) v4Event);
+						rowBuffer = processQueryEvent((QueryEvent) v4Event);
 					break;
 				default:
 					break;
@@ -317,18 +324,60 @@ public class MaxwellReplicator extends RunLoopProcess {
 	}
 
 
-	private void processQueryEvent(QueryEvent event) throws SchemaStoreException, InvalidSchemaError, SQLException {
+	private DDLRowBuffer processQueryEvent(QueryEvent event) throws InvalidSchemaError, SQLException, IOException {
 		// get charset of the alter event somehow? or just ignore it.
 		String dbName = event.getDatabaseName().toString();
 		String sql = event.getSql().toString();
-		BinlogPosition position = eventBinlogPosition(event);
 
-		schemaStore.processSQL(sql, dbName, position);
-		tableCache.clear();
-		this.producer.writePosition(position);
+		List<SchemaChange> changes = SchemaChange.parse(dbName, sql);
+
+		if ( changes == null || changes.size() == 0 )
+			return null;
+
+		DDLRowBuffer buffer = new DDLRowBuffer();
+		Schema updatedSchema = getSchema();
+		ArrayList<ResolvedSchemaChange> resolvedSchemaChanges = new ArrayList<>();
+
+		for ( SchemaChange change : changes ) {
+			if ( !change.isBlacklisted(this.filter) ) {
+				ResolvedSchemaChange resolved = change.resolve(updatedSchema);
+				if ( resolved != null ) {
+					resolved.apply(updatedSchema);
+
+					DDLRow r = new DDLRow(resolved,
+					                      event.getHeader().getTimestamp(),
+					                      new BinlogPosition(event.getHeader().getPosition(), event.getBinlogFilename()));
+					buffer.add(r);
+					resolvedSchemaChanges.add(resolved);
+				}
+			} else {
+				LOGGER.debug("ignoring blacklisted schema change");
+			}
+		}
+
+		if ( resolvedSchemaChanges.size() > 0 ) {
+			BinlogPosition p = eventBinlogPosition(event);
+			LOGGER.info("storing schema @" + p + " after applying \"" + sql.replace('\n', ' ') + "\"");
+
+			saveSchema(updatedSchema, resolvedSchemaChanges, p);
+		}
+		return buffer;
 	}
 
-	public Schema getSchema() throws SchemaStoreException {
+	private void saveSchema(Schema updatedSchema, List<ResolvedSchemaChange> changes, BinlogPosition p) throws SQLException {
+		tableCache.clear();
+
+		if ( !this.context.getReplayMode() ) {
+			try (Connection c = this.context.getMaxwellConnection()) {
+				this.schemaStore = this.schemaStore.createDerivedSchema(updatedSchema, p, changes);
+				this.schemaStore.save(c);
+			}
+
+			this.context.setPositionSync(p);
+		}
+	}
+
+	public Schema getSchema() {
 		return this.schemaStore.getSchema();
 	}
 

@@ -7,6 +7,7 @@ import org.apache.commons.lang.ArrayUtils;
 import java.util.List;
 import java.util.regex.*;
 
+import com.zendesk.maxwell.schema.SchemaStore;
 import com.zendesk.maxwell.schema.SchemaStoreSchema;
 import org.junit.Test;
 
@@ -26,18 +27,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String expectedJSON = "{\"database\":\"shard_1\",\"table\":\"minimal\",\"pk.id\":1,\"pk.text_field\":\"hello\"}";
 		list = getRowsForSQL(input);
 		assertThat(list.size(), is(1));
-		assertThat(list.get(0).pkToJson(RowMap.KeyFormat.HASH), is(expectedJSON));
-	}
-
-	@Test
-	public void testCaseSensitivePrimaryKeyStrings() throws Exception {
-		List<RowMap> list;
-		String before[] = { "create table pksen (Id int, primary key(ID))" };
-		String input[] = {"insert into pksen set id =1"};
-		String expectedJSON = "{\"database\":\"shard_1\",\"table\":\"pksen\",\"pk.id\":1}";
-		list = getRowsForSQL(null, input, before);
-		assertThat(list.size(), is(1));
-		assertThat(list.get(0).pkToJson(RowMap.KeyFormat.HASH), is(expectedJSON));
+		assertThat(list.get(0).rowKey(RowMap.KeyFormat.HASH), is(expectedJSON));
 	}
 
 	@Test
@@ -47,7 +37,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String expectedJSON = "[\"shard_1\",\"minimal\",[{\"id\":1},{\"text_field\":\"hello\"}]]";
 		list = getRowsForSQL(input);
 		assertThat(list.size(), is(1));
-		assertThat(list.get(0).pkToJson(RowMap.KeyFormat.ARRAY), is(expectedJSON));
+		assertThat(list.get(0).rowKey(RowMap.KeyFormat.ARRAY), is(expectedJSON));
 	}
 
 	@Test
@@ -334,7 +324,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 
 		lowerCaseServer.boot("--lower-case-table-names=1");
-		MaxwellContext context = MaxwellTestSupport.buildContext(lowerCaseServer.getPort(), null, null);
+		MaxwellContext context = MaxwellTestSupport.buildContext(lowerCaseServer.getPort(), null);
 		SchemaStoreSchema.ensureMaxwellSchema(lowerCaseServer.getConnection(), context.getConfig().databaseName);
 
 		String[] sql = {

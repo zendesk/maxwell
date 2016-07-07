@@ -2,7 +2,9 @@ package com.zendesk.maxwell;
 
 import com.google.code.or.binlog.BinlogEventV4;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
+import com.zendesk.maxwell.bootstrap.AsynchronousBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
+import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaStore;
 
 import java.util.concurrent.TimeUnit;
@@ -32,7 +34,12 @@ public class TestMaxwellReplicator extends MaxwellReplicator {
 		this.replicator.start();
 
 		while ( true ) {
-			RowMap row = getRow();
+			RowInterface ri = getRow();
+			if ( ri != null && !(ri instanceof RowMap) )
+				continue;
+
+			RowMap row = (RowMap) ri;
+
 			if ( row == null && bootstrapper.isRunning() ) {
 				Thread.sleep(100);
 				continue;
