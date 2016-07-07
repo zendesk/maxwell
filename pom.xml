@@ -4,7 +4,7 @@
 
   <groupId>com.zendesk</groupId>
   <artifactId>maxwell</artifactId>
-  <version>1.1.2</version>
+  <version>1.1.2-kafka-connect</version>
   <packaging>jar</packaging>
 
   <name>maxwell</name>
