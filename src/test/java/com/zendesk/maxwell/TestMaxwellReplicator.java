@@ -2,9 +2,7 @@ package com.zendesk.maxwell;
 
 import com.google.code.or.binlog.BinlogEventV4;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
-import com.zendesk.maxwell.bootstrap.AsynchronousBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
-import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaStore;
 
 import java.util.concurrent.TimeUnit;

@@ -3,7 +3,7 @@ package com.zendesk.maxwell;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
 import com.zendesk.maxwell.schema.SchemaScavenger;
-import com.zendesk.maxwell.schema.SchemaStore;
+import com.zendesk.maxwell.schema.MysqlSavedSchema;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -25,7 +25,7 @@ public class SchemaScavengerTest extends MaxwellTestWithIsolatedServer {
 	};
 	private Schema schema;
 	private BinlogPosition binlogPosition;
-	private SchemaStore schemaStore;
+	private MysqlSavedSchema savedSchema;
 	private SchemaScavenger scavenger;
 
 	@Before
@@ -38,8 +38,8 @@ public class SchemaScavengerTest extends MaxwellTestWithIsolatedServer {
 		this.scavenger = new SchemaScavenger(buildContext().getMaxwellConnectionPool(), context.getConfig().databaseName);
 		Connection conn = server.getConnection();
 		conn.setCatalog(context.getConfig().databaseName);
-		this.schemaStore = new SchemaStore(context, this.schema, binlogPosition);
-		this.schemaStore.save(conn);
+		this.savedSchema = new MysqlSavedSchema(context, this.schema, binlogPosition);
+		this.savedSchema.save(conn);
 	}
 
 	private Long getCount(String sql) throws SQLException {
@@ -60,7 +60,7 @@ public class SchemaScavengerTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testDelete() throws Exception {
 		Long initialCount = countSchemaRows();
-		SchemaStore.delete(server.getConnection(), this.schemaStore.getSchemaID());
+		MysqlSavedSchema.delete(server.getConnection(), this.savedSchema.getSchemaID());
 		scavenger.deleteSchemas(20000L);
 
 		assertThat(countSchemaRows(), is(0L));

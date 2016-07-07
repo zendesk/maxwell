@@ -15,10 +15,8 @@ import org.slf4j.LoggerFactory;
 
 import snaq.db.ConnectionPool;
 
-
-// todo: rename something better
-public class SchemaPosition extends RunLoopProcess implements Runnable {
-	static final Logger LOGGER = LoggerFactory.getLogger(SchemaPosition.class);
+public class MysqlPositionStore extends RunLoopProcess implements Runnable {
+	static final Logger LOGGER = LoggerFactory.getLogger(MysqlPositionStore.class);
 	private final Long serverID;
 	private final AtomicReference<BinlogPosition> position;
 	private final AtomicReference<BinlogPosition> storedPosition;
@@ -28,7 +26,7 @@ public class SchemaPosition extends RunLoopProcess implements Runnable {
 	private final ConnectionPool connectionPool;
 	private SQLException exception;
 
-	public SchemaPosition(ConnectionPool pool, Long serverID, String dbName) {
+	public MysqlPositionStore(ConnectionPool pool, Long serverID, String dbName) {
 		this.connectionPool = pool;
 		this.serverID = serverID;
 		this.schemaDatabaseName = dbName;
@@ -66,7 +64,7 @@ public class SchemaPosition extends RunLoopProcess implements Runnable {
 			// a design flaw in my code, but at a certain point
 			// the whole inheritance + exception handling thing
 			// just started to drive me nuts.
-			LOGGER.error("Hit unexpected exception in SchemaPosition thread: " + e);
+			LOGGER.error("Hit unexpected exception in MysqlPositionStore thread: " + e);
 		}
 	}
 
@@ -112,13 +110,14 @@ public class SchemaPosition extends RunLoopProcess implements Runnable {
 		}
 	}
 
-	public void set(BinlogPosition p) {
-		position.set(p);
+	public synchronized void set(BinlogPosition p) {
+		if ( position.get() == null || p.newerThan(position.get()) )
+			position.set(p);
 	}
 
 	public void setSync(BinlogPosition p) throws SQLException {
 		LOGGER.debug("syncing binlog position: " + p);
-		position.set(p);
+		set(p);
 		while ( true ) {
 			thread.interrupt();
 			BinlogPosition s = storedPosition.get();

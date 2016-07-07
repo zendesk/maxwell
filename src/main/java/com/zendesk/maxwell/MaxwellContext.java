@@ -12,8 +12,8 @@ import com.zendesk.maxwell.bootstrap.AsynchronousBootstrapper;
 import com.zendesk.maxwell.bootstrap.NoOpBootstrapper;
 import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
 import com.zendesk.maxwell.producer.*;
-import com.zendesk.maxwell.schema.ReadOnlySchemaPosition;
-import com.zendesk.maxwell.schema.SchemaPosition;
+import com.zendesk.maxwell.schema.ReadOnlyMysqlPositionStore;
+import com.zendesk.maxwell.schema.MysqlPositionStore;
 
 import com.zendesk.maxwell.schema.SchemaScavenger;
 import org.slf4j.Logger;
@@ -26,7 +26,7 @@ public class MaxwellContext {
 	private final ConnectionPool replicationConnectionPool;
 	private final ConnectionPool maxwellConnectionPool;
 	private final MaxwellConfig config;
-	private SchemaPosition schemaPosition;
+	private MysqlPositionStore positionStore;
 	private Long serverID;
 	private BinlogPosition initialPosition;
 	private CaseSensitivity caseSensitivity;
@@ -49,8 +49,8 @@ public class MaxwellContext {
 		return this.config;
 	}
 
-	public ConnectionPool getReplicationConnectionPool() {
-		return this.replicationConnectionPool;
+	public Connection getReplicationConnection() throws SQLException {
+		return this.replicationConnectionPool.getConnection();
 	}
 
 	public ConnectionPool getMaxwellConnectionPool() { return this.maxwellConnectionPool; }
@@ -67,28 +67,28 @@ public class MaxwellContext {
 	}
 
 	public void terminate() {
-		if ( this.schemaPosition != null ) {
+		if ( this.positionStore != null ) {
 			try {
-				this.schemaPosition.stopLoop();
+				this.positionStore.stopLoop();
 			} catch (TimeoutException e) {
-				LOGGER.error("got timeout trying to shutdown schemaPosition thread.");
+				LOGGER.error("got timeout trying to shutdown positionStore thread.");
 			}
 		}
 		this.replicationConnectionPool.release();
 		this.maxwellConnectionPool.release();
 	}
 
-	private SchemaPosition getSchemaPosition() throws SQLException {
-		if ( this.schemaPosition == null ) {
+	private MysqlPositionStore getMysqlPositionStore() throws SQLException {
+		if ( this.positionStore == null ) {
 			if ( this.getConfig().replayMode ) {
-				this.schemaPosition = new ReadOnlySchemaPosition(this.getMaxwellConnectionPool(), this.getServerID(), this.config.databaseName);
+				this.positionStore = new ReadOnlyMysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.databaseName);
 			} else {
-				this.schemaPosition = new SchemaPosition(this.getMaxwellConnectionPool(), this.getServerID(), this.config.databaseName);
+				this.positionStore = new MysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.databaseName);
 			}
 
-			this.schemaPosition.start();
+			this.positionStore.start();
 		}
-		return this.schemaPosition;
+		return this.positionStore;
 	}
 
 
@@ -96,7 +96,15 @@ public class MaxwellContext {
 		if ( this.initialPosition != null )
 			return this.initialPosition;
 
-		this.initialPosition = getSchemaPosition().get();
+		this.initialPosition = getMysqlPositionStore().get();
+
+		if ( this.initialPosition == null ) {
+			try ( Connection connection = getReplicationConnection() ) {
+				this.initialPosition = BinlogPosition.capture(connection);
+				this.setPosition(this.initialPosition);
+			}
+		}
+
 		return this.initialPosition;
 	}
 
@@ -106,18 +114,18 @@ public class MaxwellContext {
 	}
 
 	public void setPosition(BinlogPosition position) throws SQLException {
-		this.getSchemaPosition().set(position);
+		this.getMysqlPositionStore().set(position);
 	}
 
 	public void setPositionSync(BinlogPosition position) throws SQLException {
-		this.getSchemaPosition().setSync(position);
+		this.getMysqlPositionStore().setSync(position);
 	}
 
 	public void ensurePositionThread() throws SQLException {
-		if ( this.schemaPosition == null )
+		if ( this.positionStore == null )
 			return;
 
-		SQLException e = this.schemaPosition.getException();
+		SQLException e = this.positionStore.getException();
 		if ( e != null ) {
 			throw (e);
 		}
@@ -127,7 +135,7 @@ public class MaxwellContext {
 		if ( this.serverID != null)
 			return this.serverID;
 
-		try ( Connection c = getReplicationConnectionPool().getConnection() ) {
+		try ( Connection c = getReplicationConnection() ) {
 			ResultSet rs = c.createStatement().executeQuery("SELECT @@server_id as server_id");
 			if ( !rs.next() ) {
 				throw new RuntimeException("Could not retrieve server_id!");
@@ -142,7 +150,7 @@ public class MaxwellContext {
 		if ( this.caseSensitivity != null )
 			return this.caseSensitivity;
 
-		try ( Connection c = getReplicationConnectionPool().getConnection()) {
+		try ( Connection c = getReplicationConnection()) {
 			ResultSet rs = c.createStatement().executeQuery("select @@lower_case_table_names");
 			if ( !rs.next() )
 				throw new RuntimeException("Could not retrieve @@lower_case_table_names!");
@@ -191,16 +199,9 @@ public class MaxwellContext {
 
 	}
 
-	public MaxwellFilter buildFilter() throws MaxwellInvalidFilterException {
-		return new MaxwellFilter(config.includeDatabases,
-			config.excludeDatabases,
-			config.includeTables,
-			config.excludeTables,
-			config.blacklistDatabases,
-			config.blacklistTables,
-			config.excludeColumns);
+	public MaxwellFilter getFilter() {
+		return config.filter;
 	}
-
 
 	public boolean getReplayMode() {
 		return this.config.replayMode;

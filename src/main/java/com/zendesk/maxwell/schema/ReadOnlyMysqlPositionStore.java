@@ -10,8 +10,8 @@ import java.util.concurrent.TimeoutException;
  * a schema position object that doesn't write its position out.
  * useful for "replay" mode.
  */
-public class ReadOnlySchemaPosition extends SchemaPosition {
-	public ReadOnlySchemaPosition(ConnectionPool pool, Long serverID, String dbName) {
+public class ReadOnlyMysqlPositionStore extends MysqlPositionStore {
+	public ReadOnlyMysqlPositionStore(ConnectionPool pool, Long serverID, String dbName) {
 		super(pool, serverID, dbName);
 	}
 

@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.zendesk.maxwell.util.AbstractConfig;
-import com.zendesk.maxwell.schema.SchemaStore;
 
 public class MaxwellConfig extends AbstractConfig {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfig.class);
@@ -16,6 +15,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public MaxwellMysqlConfig replicationMysql;
 
 	public MaxwellMysqlConfig maxwellMysql;
+	public MaxwellFilter filter;
 
 	public String databaseName;
 
@@ -132,7 +132,7 @@ public class MaxwellConfig extends AbstractConfig {
 	private String parseLogLevel(String level) {
 		level = level.toLowerCase();
 		if ( !( level.equals("debug") || level.equals("info") || level.equals("warn") || level.equals("error")))
-			usage("unknown log level: " + level);
+			usageForOptions("unknown log level: " + level, "--log_level");
 		return level;
 	}
 
@@ -188,13 +188,13 @@ public class MaxwellConfig extends AbstractConfig {
 			String[] initPositionSplit = initPosition.split(":");
 
 			if ( initPositionSplit.length != 2 )
-				usage("Invalid init_position: " + initPosition);
+				usageForOptions("Invalid init_position: " + initPosition, "--init_position");
 
 			Long pos = 0L;
 			try {
 				pos = Long.valueOf(initPositionSplit[1]);
 			} catch ( NumberFormatException e ) {
-				usage("Invalid init_position: " + initPosition);
+				usageForOptions("Invalid init_position: " + initPosition, "--init_position");
 			}
 
 			this.initPosition = new BinlogPosition(pos, initPositionSplit[0]);
@@ -278,14 +278,14 @@ public class MaxwellConfig extends AbstractConfig {
 	private void validate() {
 		if ( this.producerType.equals("kafka") ) {
 			if ( !this.kafkaProperties.containsKey("bootstrap.servers") ) {
-				usage("You must specify kafka.bootstrap.servers for the kafka producer!");
+				usageForOptions("You must specify kafka.bootstrap.servers for the kafka producer!", "kafka");
 			}
 
 			if ( this.kafkaPartitionHash == null ) {
 				this.kafkaPartitionHash = "default";
 			} else if ( !this.kafkaPartitionHash.equals("default")
 					&& !this.kafkaPartitionHash.equals("murmur3") ) {
-				usage("please specify --kafka_partition_hash=default|murmur3");
+				usageForOptions("please specify --kafka_partition_hash=default|murmur3", "kafka_partition_hash");
 			}
 
 			if ( this.kafkaPartitionKey == null ) {
@@ -293,22 +293,22 @@ public class MaxwellConfig extends AbstractConfig {
 			} else if ( !this.kafkaPartitionKey.equals("database")
 					&& !this.kafkaPartitionKey.equals("table")
 					&& !this.kafkaPartitionKey.equals("primary_key") ) {
-				usage("please specify --kafka_partition_by=database|table|primary_key");
+				usageForOptions("please specify --kafka_partition_by=database|table|primary_key", "kafka_partition_by");
 			}
 
 
 			if ( !this.kafkaKeyFormat.equals("hash") && !this.kafkaKeyFormat.equals("array") )
-				usage("invalid kafka_key_format: " + this.kafkaKeyFormat);
+				usageForOptions("invalid kafka_key_format: " + this.kafkaKeyFormat, "kafka_key_format");
 
 		} else if ( this.producerType.equals("file")
 				&& this.outputFile == null) {
-			usage("please specify --output_file=FILE to use the file producer");
+			usageForOptions("please specify --output_file=FILE to use the file producer", "--producer", "--output_file");
 		}
 
 		if ( !this.bootstrapperType.equals("async")
 				&& !this.bootstrapperType.equals("sync")
 				&& !this.bootstrapperType.equals("none") ) {
-			usage("please specify --bootstrapper=async|sync|none");
+			usageForOptions("please specify --bootstrapper=async|sync|none", "--bootstrapper");
 		}
 
 		if ( this.maxwellMysql.host == null ) {
@@ -317,7 +317,8 @@ public class MaxwellConfig extends AbstractConfig {
 		}
 
 		if ( this.replicationMysql.host != null && !this.bootstrapperType.equals("none") ) {
-			usage("please specify --bootstrapper=none when specifying a replication host");
+			LOGGER.warn("disabling bootstrapping; not available when using a separate replication host.");
+			this.bootstrapperType = "none";
 		}
 
 		if ( this.replicationMysql.host == null
@@ -326,7 +327,7 @@ public class MaxwellConfig extends AbstractConfig {
 			if (this.replicationMysql.host != null
 					|| this.replicationMysql.user != null
 					|| this.replicationMysql.password != null) {
-				usage("Specified a replication option but missing one of the following options: replication_host, replication_user, replication_password.");
+				usageForOptions("Please specify all of: replication_host, replication_user, replication_password", "--replication");
 			}
 
 			this.replicationMysql = new MaxwellMysqlConfig(this.maxwellMysql.host,
@@ -339,6 +340,20 @@ public class MaxwellConfig extends AbstractConfig {
 
 		if ( this.databaseName == null) {
 			this.databaseName = "maxwell";
+		}
+
+		try {
+			this.filter = new MaxwellFilter(
+					includeDatabases,
+					excludeDatabases,
+					includeTables,
+					excludeTables,
+					blacklistDatabases,
+					blacklistTables,
+					excludeColumns
+			);
+		} catch (MaxwellInvalidFilterException e) {
+			usage("Invalid filter options: " + e.getLocalizedMessage());
 		}
 	}
 

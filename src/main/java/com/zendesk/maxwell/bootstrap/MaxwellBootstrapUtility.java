@@ -10,6 +10,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 public class MaxwellBootstrapUtility {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellBootstrapUtility.class);
@@ -59,6 +61,7 @@ public class MaxwellBootstrapUtility {
 		} catch ( SQLException e ) {
 			LOGGER.error("failed to connect to mysql server @ " + config.getConnectionURI());
 			LOGGER.error(e.getLocalizedMessage());
+			e.printStackTrace();
 			System.exit(1);
 		}
 	}
@@ -161,7 +164,7 @@ public class MaxwellBootstrapUtility {
 	private long insertBootstrapStartRow(Connection connection, String db, String table, Long totalRows) throws SQLException {
 		LOGGER.info("inserting bootstrap start row");
 		String sql = "insert into `bootstrap` (database_name, table_name, total_rows) values(?, ?, ?)";
-		PreparedStatement preparedStatement = connection.prepareStatement(sql);
+		PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 		preparedStatement.setString(1, db);
 		preparedStatement.setString(2, table);
 		preparedStatement.setLong(3, totalRows);
