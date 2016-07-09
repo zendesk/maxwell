@@ -1,7 +1,9 @@
 package com.zendesk.maxwell.schema;
 
 import com.zendesk.maxwell.CaseSensitivity;
+import com.zendesk.maxwell.schema.columndef.ColumnDef;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -91,4 +93,29 @@ public class Schema {
 	public CaseSensitivity getCaseSensitivity() {
 		return sensitivity;
 	};
+
+	public List<Pair<ColumnDef, ColumnDef>> matchColumns(Schema thatSchema) {
+		ArrayList<Pair<ColumnDef, ColumnDef>> list = new ArrayList<>();
+
+		for ( Database thisDatabase : this.getDatabases() ) {
+			Database thatDatabase = thatSchema.findDatabase(thisDatabase.getName());
+
+			if ( thatDatabase == null )
+				continue;
+
+			for ( Table thisTable : thisDatabase.getTableList() ) {
+				Table thatTable = thatDatabase.findTable(thisTable.getName());
+
+				if ( thatTable == null )
+					continue;
+
+				for ( ColumnDef thisColumn : thisTable.getColumnList() ) {
+					ColumnDef thatColumn = thatTable.findColumn(thisColumn.getName());
+					if ( thatColumn != null )
+						list.add(Pair.of(thisColumn, thatColumn));
+				}
+			}
+		}
+		return list;
+	}
 }

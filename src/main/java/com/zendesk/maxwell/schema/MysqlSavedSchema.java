@@ -10,6 +10,7 @@ import com.zendesk.maxwell.CaseSensitivity;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.schema.columndef.*;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -470,33 +471,28 @@ public class MysqlSavedSchema {
 
 		Schema recaptured = new SchemaCapturer(conn, sensitivity).capture();
 
-		for ( Database dA : schema.getDatabases() ) {
-			Database dB = recaptured.findDatabaseOrThrow(dA.getName());
-			for ( Table tA : dA.getTableList() ) {
-				Table tB = dB.findTableOrThrow(tA.getName());
-				for ( ColumnDef cA : tA.getColumnList() ) {
-					ColumnDef cB = tB.findColumn(cA.getName());
+		for ( Pair<ColumnDef, ColumnDef> pair : schema.matchColumns(recaptured) ) {
+			ColumnDef cA = pair.getLeft();
+			ColumnDef cB = pair.getRight();
 
-					if ( cA instanceof IntColumnDef ) {
-						if ( cB != null && cB instanceof IntColumnDef ) {
-							if ( ((IntColumnDef)cA).isSigned() && !((IntColumnDef)cB).isSigned() ) {
-								((IntColumnDef)cA).setSigned(false);
-								unsignedDiffs++;
-							}
-						} else {
-							LOGGER.warn("warning: Couldn't check for unsigned integer bug on column " + cA.getName() +
-								".  You may want to recapture your schema");
-						}
-					} else if ( cA instanceof BigIntColumnDef ) {
-						if ( cB != null && cB instanceof BigIntColumnDef ) {
-							if ( ((BigIntColumnDef)cA).isSigned() && !((BigIntColumnDef)cB).isSigned() )
-								((BigIntColumnDef)cA).setSigned(false);
-								unsignedDiffs++;
-						} else {
-							LOGGER.warn("warning: Couldn't check for unsigned integer bug on column " + cA.getName() +
-								".  You may want to recapture your schema");
-						}
+			if (cA instanceof IntColumnDef) {
+				if (cB != null && cB instanceof IntColumnDef) {
+					if (((IntColumnDef) cA).isSigned() && !((IntColumnDef) cB).isSigned()) {
+						((IntColumnDef) cA).setSigned(false);
+						unsignedDiffs++;
 					}
+				} else {
+					LOGGER.warn("warning: Couldn't check for unsigned integer bug on column " + cA.getName() +
+						".  You may want to recapture your schema");
+				}
+			} else if (cA instanceof BigIntColumnDef) {
+				if (cB != null && cB instanceof BigIntColumnDef) {
+					if (((BigIntColumnDef) cA).isSigned() && !((BigIntColumnDef) cB).isSigned())
+						((BigIntColumnDef) cA).setSigned(false);
+					unsignedDiffs++;
+				} else {
+					LOGGER.warn("warning: Couldn't check for unsigned integer bug on column " + cA.getName() +
+						".  You may want to recapture your schema");
 				}
 			}
 		}
