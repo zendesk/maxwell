@@ -62,6 +62,7 @@ ignored_alter_specifications:
      */
      | ALGORITHM '='? algorithm_type
      | LOCK '='? lock_type
+     | RENAME (INDEX|KEY) name TO name
     ;
   algorithm_type: DEFAULT | INPLACE | COPY;
   lock_type: DEFAULT | NONE | SHARED | EXCLUSIVE;
