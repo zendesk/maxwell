@@ -172,6 +172,15 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
+	public void testSerial() throws Exception {
+		String sql[] = {
+			"create TABLE `test_int1` ( id serial )"
+		};
+
+		testIntegration(sql);
+	}
+
+	@Test
 	public void testYearWithLength() throws Exception {
 		String sql[] = {
 			"create TABLE `test_year` ( id year(4) )"

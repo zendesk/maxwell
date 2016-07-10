@@ -153,6 +153,7 @@ public abstract class ColumnDef {
 			case "integer":
 				return "int";
 			case "int8":
+			case "serial":
 				return "bigint";
 			case "real":
 			case "numeric":

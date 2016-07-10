@@ -14,8 +14,8 @@ data_type:
     generic_type
   | signed_type
   | string_type
-	| enumerated_type
-	;
+  | enumerated_type
+  ;
 
 
 // all from http://dev.mysql.com/doc/refman/5.1/en/create-table.html
@@ -25,7 +25,7 @@ generic_type:
 	| col_type=(GEOMETRY | GEOMETRYCOLLECTION | LINESTRING | MULTILINESTRING
 	             | MULTIPOINT | MULTIPOLYGON | POINT | POLYGON ) column_options*
 	| col_type=VARBINARY length column_options*
-
+	| col_type=SERIAL column_options*
 	;
 
 
