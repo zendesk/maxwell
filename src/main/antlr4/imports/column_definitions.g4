@@ -25,7 +25,6 @@ generic_type:
 	| col_type=(GEOMETRY | GEOMETRYCOLLECTION | LINESTRING | MULTILINESTRING
 	             | MULTIPOINT | MULTIPOLYGON | POINT | POLYGON ) column_options*
 	| col_type=VARBINARY length column_options*
-	| col_type=SERIAL column_options*
 	;
 
 
@@ -42,6 +41,7 @@ signed_type: // we need the UNSIGNED flag here
 		decimal_length?
 		int_flags*
 		column_options*
+    | col_type=SERIAL column_options*
     ;
 
 string_type locals [Boolean utf8 = false]:
