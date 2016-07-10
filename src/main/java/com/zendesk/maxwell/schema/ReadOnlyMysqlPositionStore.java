@@ -20,9 +20,4 @@ public class ReadOnlyMysqlPositionStore extends MysqlPositionStore {
 
 	@Override
 	public void stopLoop() throws TimeoutException { }
-
-	@Override
-	public void setSync(BinlogPosition p) throws SQLException {
-		set(p);
-	}
 }

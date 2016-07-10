@@ -121,10 +121,6 @@ public class MaxwellContext {
 		this.getMysqlPositionStore().set(position);
 	}
 
-	public void setPositionSync(BinlogPosition position) throws SQLException {
-		this.getMysqlPositionStore().setSync(position);
-	}
-
 	public void ensurePositionThread() throws SQLException {
 		if ( this.positionStore == null )
 			return;

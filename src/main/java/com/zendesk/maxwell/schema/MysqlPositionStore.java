@@ -115,22 +115,6 @@ public class MysqlPositionStore extends RunLoopProcess implements Runnable {
 			position.set(p);
 	}
 
-	public void setSync(BinlogPosition p) throws SQLException {
-		LOGGER.debug("syncing binlog position: " + p);
-		set(p);
-		while ( true ) {
-			thread.interrupt();
-			BinlogPosition s = storedPosition.get();
-			if ( p.newerThan(s) ) {
-				try { Thread.sleep(1); } catch (InterruptedException e) { }
-				if ( exception != null )
-					throw(exception);
-			} else {
-				break;
-			}
-		}
-	}
-
 	public BinlogPosition get() throws SQLException {
 		BinlogPosition p = position.get();
 		if ( p != null )
