@@ -16,6 +16,7 @@ import org.junit.Test;
 import com.zendesk.maxwell.schema.*;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.schema.columndef.IntColumnDef;
+import com.zendesk.maxwell.schema.columndef.ColumnDef;
 
 public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 	private Schema schema;
@@ -26,7 +27,8 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 		"CREATE TABLE shard_1.latin1 (id int(11), str1 varchar(255), str2 varchar(255) character set 'utf8') charset = 'latin1'",
 		"CREATE TABLE shard_1.enums (id int(11), enum_col enum('foo', 'bar', 'baz'))",
 		"CREATE TABLE shard_1.pks (id int(11), col2 varchar(255), col3 datetime, PRIMARY KEY(col2, col3, id))",
-		"CREATE TABLE shard_1.signed (badcol int(10) unsigned)"
+		"CREATE TABLE shard_1.pks_case (id int(11), Col2 varchar(255), COL3 datetime, PRIMARY KEY(col2, col3))",
+		"CREATE TABLE shard_1.signed (badcol int(10) unsigned, CaseCol char)"
 	};
 	private MaxwellContext context;
 
@@ -64,6 +66,17 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
+	public void testPKCase() throws Exception {
+		this.savedSchema.save(context.getMaxwellConnection());
+
+		MysqlSavedSchema restoredSchema = MysqlSavedSchema.restore(context, context.getInitialPosition());
+		Table t = restoredSchema.getSchema().findDatabase("shard_1").findTable("pks_case");
+
+		assertThat(t.getPKList().get(0), is("Col2"));
+		assertThat(t.getPKList().get(1), is("COL3"));
+	}
+
+	@Test
 	public void testMasterChange() throws Exception {
 		this.schema = new SchemaCapturer(server.getConnection(), context.getCaseSensitivity()).capture();
 		this.binlogPosition = BinlogPosition.capture(server.getConnection());
@@ -97,5 +110,18 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 		MysqlSavedSchema restored = MysqlSavedSchema.restore(context, context.getInitialPosition());
 		IntColumnDef cd = (IntColumnDef) restored.getSchema().findDatabase("shard_1").findTable("signed").findColumn("badcol");
 		assertThat(cd.isSigned(), is(false));
+	}
+
+	@Test
+	public void testFixColumnCasingOnUpgrade() throws Exception {
+		Connection c = context.getMaxwellConnection();
+		this.savedSchema.save(c);
+
+		c.createStatement().executeUpdate("update maxwell.schemas set version = 1 where id = " + this.savedSchema.getSchemaID());
+		c.createStatement().executeUpdate("update maxwell.columns set name = 'casecol' where name = 'CaseCol'");
+
+		MysqlSavedSchema restored = MysqlSavedSchema.restore(context, context.getInitialPosition());
+		ColumnDef cd = restored.getSchema().findDatabase("shard_1").findTable("signed").findColumn("casecol");
+		assertThat(cd.getName(), is("CaseCol"));
 	}
 }

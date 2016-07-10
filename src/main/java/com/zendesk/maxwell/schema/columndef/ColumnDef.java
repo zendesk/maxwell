@@ -14,7 +14,7 @@ public abstract class ColumnDef {
 
 	public ColumnDef() { }
 	public ColumnDef(String name, String type, int pos) {
-		this.name = name.toLowerCase();
+		this.name = name;
 		this.type = type;
 		this.pos = pos;
 	}
@@ -162,6 +162,10 @@ public abstract class ColumnDef {
 			default:
 				return type;
 		}
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public String getName() {

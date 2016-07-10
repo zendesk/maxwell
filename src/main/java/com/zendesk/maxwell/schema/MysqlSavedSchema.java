@@ -466,10 +466,8 @@ public class MysqlSavedSchema {
 		return this.position;
 	}
 
-	private void fixUnsignedColumns(Connection conn) throws SQLException, InvalidSchemaError {
+	private void fixUnsignedColumns(Schema recaptured) throws SQLException, InvalidSchemaError {
 		int unsignedDiffs = 0;
-
-		Schema recaptured = new SchemaCapturer(conn, sensitivity).capture();
 
 		for ( Pair<ColumnDef, ColumnDef> pair : schema.matchColumns(recaptured) ) {
 			ColumnDef cA = pair.getLeft();
@@ -509,17 +507,43 @@ public class MysqlSavedSchema {
 		}
 	}
 
+	private void fixColumnCases(Schema recaptured) throws SQLException {
+		int caseDiffs = 0;
+
+		for ( Pair<ColumnDef, ColumnDef> pair : schema.matchColumns(recaptured) ) {
+			ColumnDef cA = pair.getLeft();
+			ColumnDef cB = pair.getRight();
+
+			if ( !cA.getName().equals(cB.getName()) ) {
+				LOGGER.info("correcting name of `" + cA.getName() + "` to `" + cB.getName() + "`");
+				caseDiffs++;
+				cA.setName(cB.getName());
+			}
+		}
+
+		if ( caseDiffs > 0 )
+			this.shouldSnapshotNextSchema = true;
+	}
+
 	protected void handleVersionUpgrades(Connection conn) throws SQLException, InvalidSchemaError {
-		if ( this.schemaVersion < 1 ) {
-			if ( this.schema != null && this.schema.findDatabase("mysql") == null ) {
-				LOGGER.info("Could not find mysql db, adding it to schema");
-				SchemaCapturer sc = new SchemaCapturer(conn, sensitivity, "mysql");
-				Database db = sc.capture().findDatabase("mysql");
-				this.schema.addDatabase(db);
-				this.shouldSnapshotNextSchema = true;
+		if ( this.schemaVersion < 2 ) {
+			Schema recaptured = new SchemaCapturer(conn, sensitivity).capture();
+
+			if ( this.schemaVersion < 1 ) {
+				if ( this.schema != null && this.schema.findDatabase("mysql") == null ) {
+					LOGGER.info("Could not find mysql db, adding it to schema");
+					SchemaCapturer sc = new SchemaCapturer(conn, sensitivity, "mysql");
+					Database db = sc.capture().findDatabase("mysql");
+					this.schema.addDatabase(db);
+					this.shouldSnapshotNextSchema = true;
+				}
+
+				fixUnsignedColumns(recaptured);
 			}
 
-			fixUnsignedColumns(conn);
+			if ( this.schemaVersion < 2 ) {
+				fixColumnCases(recaptured);
+			}
 		}
 	}
 }
