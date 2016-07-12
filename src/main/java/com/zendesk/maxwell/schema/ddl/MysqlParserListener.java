@@ -328,6 +328,9 @@ public class MysqlParserListener extends mysqlBaseListener {
 			colType = dctx.signed_type().col_type.getText();
 			signed = isSigned(dctx.signed_type().int_flags());
 			colOptions = dctx.signed_type().column_options();
+
+			if ( colType.toLowerCase().equals("serial") )
+				signed = false;
 		} else if ( dctx.string_type() != null ) {
 			colType = dctx.string_type().col_type.getText();
 			colCharset = getCharset(dctx.string_type().string_column_options());

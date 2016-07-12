@@ -17,6 +17,9 @@ ANTLR_IMPORTS=src/main/antlr4/imports
 ANTLR_DIR=target/generated-sources/src/main/antlr4/com/zendesk/maxwell/schema/ddl
 ANTLR_OUTPUT=$(ANTLR_DIR)/mysqlBaseListener.java $(ANTLR_DIR)/mysqlLexer.java $(ANTLR_DIR)/mysqlListener.java $(ANTLR_DIR)/mysqlParser.java
 
+$(ANTLR_IMPORTS)/mysql_literal_tokens.g4: $(ANTLR_IMPORTS)/generate_tokens.rb
+	ruby $(ANTLR_IMPORTS)/generate_tokens.rb
+
 $(ANTLR_OUTPUT): $(ANTLR_SRC) $(ANTLR_IMPORTS)/*.g4
 	${ANTLR} -package com.zendesk.maxwell.schema.ddl -lib $(ANTLR_IMPORTS) -o target/generated-sources $(ANTLR_SRC)
 

@@ -220,6 +220,8 @@ MULTILINESTRING
 MULTIPOINT
 MULTIPOLYGON
 POLYGON
+
+SERIAL
 )
 
 tokens_allowed_in_names = []

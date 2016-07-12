@@ -4,6 +4,8 @@ import java.util.*;
 
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 
+import com.zendesk.maxwell.schema.columndef.IntColumnDef;
+import com.zendesk.maxwell.schema.columndef.BigIntColumnDef;
 import com.zendesk.maxwell.schema.columndef.EnumeratedColumnDef;
 import org.apache.commons.lang.StringUtils;
 
@@ -176,6 +178,32 @@ public class Table {
 								+ " in " + nameB);
 					}
 
+				}
+
+				if ( column instanceof IntColumnDef ) {
+					boolean signedA, signedB;
+					signedA = ((IntColumnDef) column).isSigned();
+					signedB = ((IntColumnDef) other).isSigned();
+
+					if ( signedA != signedB )
+						diffs.add(colName + "has a signedness mismatch, "
+								+ "'" + signedA + "'"
+								+ " vs "
+								+ "'" + signedB + "'"
+								+ " in " + nameB);
+				}
+
+				if ( column instanceof BigIntColumnDef ) {
+					boolean signedA, signedB;
+					signedA = ((BigIntColumnDef) column).isSigned();
+					signedB = ((BigIntColumnDef) other).isSigned();
+
+					if ( signedA != signedB )
+						diffs.add(colName + "has a signedness mismatch, "
+								+ "'" + signedA + "'"
+								+ " vs "
+								+ "'" + signedB + "'"
+								+ " in " + nameB);
 				}
 			}
 		}
