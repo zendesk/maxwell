@@ -66,7 +66,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "replication_host", "mysql host to replicate from (if using separate schema and replication servers)" ).withRequiredArg();
 		parser.accepts( "replication_user", "username for replication_host" ).withRequiredArg();
 		parser.accepts( "replication_password", "password for replication_host" ).withOptionalArg();
-		parser.accepts( "replication_port", "port for replicattion_host" ).withRequiredArg();
+		parser.accepts( "replication_port", "port for replication_host" ).withRequiredArg();
 
 		parser.accepts( "__separator_3" );
 
