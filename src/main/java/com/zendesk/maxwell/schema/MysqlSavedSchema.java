@@ -499,9 +499,11 @@ public class MysqlSavedSchema {
 			/* A little explanation here: we've detected differences in signed-ness between the restored
 			 * and the recaptured schema.  99.9% of the time this will be the result of our capture bug.
 			 *
-			 * We can't however simply re-save the re-captured schema, as we might be behind some DDL updates
-			 * that we'd otherwise lose.  So we leave a marker so that the next time we save the schema, we'll
-			 * purposely break the delta chain and fix the unsigned columns in the database.
+			 * We can't however simply re-save the re-captured schema, as the
+			 * capture might be ahead of some DDL updates that we'd otherwise
+			 * lose.  So we leave a marker so that the next time we save the
+			 * schema, we'll purposely break the delta chain and fix the
+			 * unsigned columns in the database.
 			 * */
 			this.shouldSnapshotNextSchema = true;
 		}
@@ -515,7 +517,7 @@ public class MysqlSavedSchema {
 			ColumnDef cB = pair.getRight();
 
 			if ( !cA.getName().equals(cB.getName()) ) {
-				LOGGER.info("correcting name of `" + cA.getName() + "` to `" + cB.getName() + "`");
+				LOGGER.info("correcting column case of `" + cA.getName() + "` to `" + cB.getName() + "`.  Will save a full schema snapshot after the new DDL update is processed.");
 				caseDiffs++;
 				cA.setName(cB.getName());
 			}
