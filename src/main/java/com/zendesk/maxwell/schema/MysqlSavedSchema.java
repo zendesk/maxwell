@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class MysqlSavedSchema {
-	static int SchemaStoreVersion = 1;
+	static int SchemaStoreVersion = 2;
 
 	private Schema schema;
 	private BinlogPosition position;
