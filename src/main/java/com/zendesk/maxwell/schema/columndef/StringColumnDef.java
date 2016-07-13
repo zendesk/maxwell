@@ -4,7 +4,6 @@ import java.nio.charset.Charset;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.lang.StringEscapeUtils;
 
 import com.google.code.or.common.util.MySQLConstants;
 
@@ -81,7 +80,7 @@ public class StringColumnDef extends ColumnDef {
 	}
 
 	private String quoteString(String s) {
-		String escaped = StringEscapeUtils.escapeSql(s);
+		String escaped = s.replaceAll("'", "''");
 		escaped = escaped.replaceAll("\n", "\\\\n");
 		escaped = escaped.replaceAll("\r", "\\\\r");
 		return "'" + escaped + "'";

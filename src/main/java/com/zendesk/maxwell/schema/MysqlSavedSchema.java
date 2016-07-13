@@ -9,7 +9,8 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.zendesk.maxwell.CaseSensitivity;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.schema.columndef.*;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class MysqlSavedSchema {
-	static int SchemaStoreVersion = 1;
+	static int SchemaStoreVersion = 2;
 
 	private Schema schema;
 	private BinlogPosition position;
@@ -465,38 +466,31 @@ public class MysqlSavedSchema {
 		return this.position;
 	}
 
-	private void fixUnsignedColumns(Connection conn) throws SQLException, InvalidSchemaError {
+	private void fixUnsignedColumns(Schema recaptured) throws SQLException, InvalidSchemaError {
 		int unsignedDiffs = 0;
 
-		Schema recaptured = new SchemaCapturer(conn, sensitivity).capture();
+		for ( Pair<ColumnDef, ColumnDef> pair : schema.matchColumns(recaptured) ) {
+			ColumnDef cA = pair.getLeft();
+			ColumnDef cB = pair.getRight();
 
-		for ( Database dA : schema.getDatabases() ) {
-			Database dB = recaptured.findDatabaseOrThrow(dA.getName());
-			for ( Table tA : dA.getTableList() ) {
-				Table tB = dB.findTableOrThrow(tA.getName());
-				for ( ColumnDef cA : tA.getColumnList() ) {
-					ColumnDef cB = tB.findColumn(cA.getName());
-
-					if ( cA instanceof IntColumnDef ) {
-						if ( cB != null && cB instanceof IntColumnDef ) {
-							if ( ((IntColumnDef)cA).isSigned() && !((IntColumnDef)cB).isSigned() ) {
-								((IntColumnDef)cA).setSigned(false);
-								unsignedDiffs++;
-							}
-						} else {
-							LOGGER.warn("warning: Couldn't check for unsigned integer bug on column " + cA.getName() +
-								".  You may want to recapture your schema");
-						}
-					} else if ( cA instanceof BigIntColumnDef ) {
-						if ( cB != null && cB instanceof BigIntColumnDef ) {
-							if ( ((BigIntColumnDef)cA).isSigned() && !((BigIntColumnDef)cB).isSigned() )
-								((BigIntColumnDef)cA).setSigned(false);
-								unsignedDiffs++;
-						} else {
-							LOGGER.warn("warning: Couldn't check for unsigned integer bug on column " + cA.getName() +
-								".  You may want to recapture your schema");
-						}
+			if (cA instanceof IntColumnDef) {
+				if (cB != null && cB instanceof IntColumnDef) {
+					if (((IntColumnDef) cA).isSigned() && !((IntColumnDef) cB).isSigned()) {
+						((IntColumnDef) cA).setSigned(false);
+						unsignedDiffs++;
 					}
+				} else {
+					LOGGER.warn("warning: Couldn't check for unsigned integer bug on column " + cA.getName() +
+						".  You may want to recapture your schema");
+				}
+			} else if (cA instanceof BigIntColumnDef) {
+				if (cB != null && cB instanceof BigIntColumnDef) {
+					if (((BigIntColumnDef) cA).isSigned() && !((BigIntColumnDef) cB).isSigned())
+						((BigIntColumnDef) cA).setSigned(false);
+					unsignedDiffs++;
+				} else {
+					LOGGER.warn("warning: Couldn't check for unsigned integer bug on column " + cA.getName() +
+						".  You may want to recapture your schema");
 				}
 			}
 		}
@@ -505,25 +499,53 @@ public class MysqlSavedSchema {
 			/* A little explanation here: we've detected differences in signed-ness between the restored
 			 * and the recaptured schema.  99.9% of the time this will be the result of our capture bug.
 			 *
-			 * We can't however simply re-save the re-captured schema, as we might be behind some DDL updates
-			 * that we'd otherwise lose.  So we leave a marker so that the next time we save the schema, we'll
-			 * purposely break the delta chain and fix the unsigned columns in the database.
+			 * We can't however simply re-save the re-captured schema, as the
+			 * capture might be ahead of some DDL updates that we'd otherwise
+			 * lose.  So we leave a marker so that the next time we save the
+			 * schema, we'll purposely break the delta chain and fix the
+			 * unsigned columns in the database.
 			 * */
 			this.shouldSnapshotNextSchema = true;
 		}
 	}
 
+	private void fixColumnCases(Schema recaptured) throws SQLException {
+		int caseDiffs = 0;
+
+		for ( Pair<ColumnDef, ColumnDef> pair : schema.matchColumns(recaptured) ) {
+			ColumnDef cA = pair.getLeft();
+			ColumnDef cB = pair.getRight();
+
+			if ( !cA.getName().equals(cB.getName()) ) {
+				LOGGER.info("correcting column case of `" + cA.getName() + "` to `" + cB.getName() + "`.  Will save a full schema snapshot after the new DDL update is processed.");
+				caseDiffs++;
+				cA.setName(cB.getName());
+			}
+		}
+
+		if ( caseDiffs > 0 )
+			this.shouldSnapshotNextSchema = true;
+	}
+
 	protected void handleVersionUpgrades(Connection conn) throws SQLException, InvalidSchemaError {
-		if ( this.schemaVersion < 1 ) {
-			if ( this.schema != null && this.schema.findDatabase("mysql") == null ) {
-				LOGGER.info("Could not find mysql db, adding it to schema");
-				SchemaCapturer sc = new SchemaCapturer(conn, sensitivity, "mysql");
-				Database db = sc.capture().findDatabase("mysql");
-				this.schema.addDatabase(db);
-				this.shouldSnapshotNextSchema = true;
+		if ( this.schemaVersion < 2 ) {
+			Schema recaptured = new SchemaCapturer(conn, sensitivity).capture();
+
+			if ( this.schemaVersion < 1 ) {
+				if ( this.schema != null && this.schema.findDatabase("mysql") == null ) {
+					LOGGER.info("Could not find mysql db, adding it to schema");
+					SchemaCapturer sc = new SchemaCapturer(conn, sensitivity, "mysql");
+					Database db = sc.capture().findDatabase("mysql");
+					this.schema.addDatabase(db);
+					this.shouldSnapshotNextSchema = true;
+				}
+
+				fixUnsignedColumns(recaptured);
 			}
 
-			fixUnsignedColumns(conn);
+			if ( this.schemaVersion < 2 ) {
+				fixColumnCases(recaptured);
+			}
 		}
 	}
 }

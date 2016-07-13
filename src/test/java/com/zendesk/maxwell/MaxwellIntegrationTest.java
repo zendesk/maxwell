@@ -2,7 +2,7 @@ package com.zendesk.maxwell;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.List;
 import java.util.regex.*;
@@ -376,6 +376,11 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testGIS() throws Exception {
 		runJSON("/json/test_gis");
+	}
+
+	@Test
+	public void testColumnCase() throws Exception {
+		runJSON("/json/test_column_case");
 	}
 
 	static String[] createDBSql = {

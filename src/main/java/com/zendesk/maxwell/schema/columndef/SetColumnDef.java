@@ -3,7 +3,7 @@ package com.zendesk.maxwell.schema.columndef;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.google.code.or.common.util.MySQLConstants;
 

@@ -7,7 +7,7 @@ import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.schema.columndef.IntColumnDef;
 import com.zendesk.maxwell.schema.columndef.BigIntColumnDef;
 import com.zendesk.maxwell.schema.columndef.EnumeratedColumnDef;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
 import com.zendesk.maxwell.schema.columndef.StringColumnDef;
@@ -22,6 +22,7 @@ public class Table {
 	private List<ColumnDef> columnList;
 	public String charset;
 	private List<String> pkColumnNames;
+	private List<String> normalizedPKColumnNames;
 
 	private HashMap<String, Integer> columnOffsetMap;
 	@JsonIgnore
@@ -73,7 +74,7 @@ public class Table {
 		int i = 0;
 
 		for(ColumnDef c : columnList) {
-			this.columnOffsetMap.put(c.getName(), i++);
+			this.columnOffsetMap.put(c.getName().toLowerCase(), i++);
 		}
 	}
 
@@ -89,14 +90,11 @@ public class Table {
 	}
 
 	public ColumnDef findColumn(String name) {
-		String lcName = name.toLowerCase();
-
-		for (ColumnDef c : columnList )  {
-			if ( c.getName().equals(lcName) )
-				return c;
-		}
-
-		return null;
+		int index = findColumnIndex(name);
+		if ( index == -1 )
+			return null;
+		else
+			return columnList.get(index);
 	}
 
 	public ColumnDef findColumnOrThrow(String name) throws InvalidSchemaError {
@@ -260,8 +258,11 @@ public class Table {
 	}
 
 	public void removeColumn(int idx) {
+		removePKColumn(columnList.get(idx).getName());
+
 		this.columnList.remove(idx);
 		this.columnOffsetMap = null;
+
 		renumberColumns();
 	}
 
@@ -275,7 +276,7 @@ public class Table {
 
 	@JsonProperty("primary-key")
 	public List<String> getPKList() {
-		return this.pkColumnNames;
+		return normalizedColumnNames();
 	}
 
 	@JsonIgnore
@@ -287,9 +288,40 @@ public class Table {
 	}
 
 	@JsonProperty("primary-key")
-	public void setPKList(List<String> pkColumnNames) {
-		this.pkColumnNames = new ArrayList<>();
-		for ( String c : pkColumnNames )
-			this.pkColumnNames.add(c.toLowerCase());
+	public synchronized void setPKList(List<String> pkColumnNames) {
+		this.pkColumnNames = pkColumnNames;
+		this.normalizedPKColumnNames = null;
+	}
+
+	private synchronized void removePKColumn(String name) {
+		int pkIndex = getPKList().indexOf(name);
+		if ( pkIndex != -1 ) {
+			this.pkColumnNames.remove(pkIndex);
+			this.normalizedPKColumnNames = null;
+		}
+	}
+
+	private synchronized List<String> normalizedColumnNames() {
+		/*
+		   primary keys may come in with different casing than the column names.
+		   convert the list of primary keys to match the column casing.
+
+		   we do this normalization lazily, as when a Table object is being deserialized
+		   from JSON, there may be no column definitions present when the setPKList() function is called.
+		   ugly!
+		 */
+		if ( this.normalizedPKColumnNames == null ) {
+			this.normalizedPKColumnNames = new ArrayList<>(this.pkColumnNames.size());
+
+			for (String name : pkColumnNames) {
+				ColumnDef cd = findColumn(name);
+
+				if ( cd == null )
+					throw new RuntimeException("Couldn't find column for primary-key: " + name);
+
+				this.normalizedPKColumnNames.add(cd.getName());
+			}
+		}
+		return this.normalizedPKColumnNames;
 	}
 }
