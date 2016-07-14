@@ -206,7 +206,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 				continue;
 			}
 
-			setReplicatorPosition((AbstractRowEvent) v4Event);
+			setReplicatorPosition((AbstractBinlogEventV4) v4Event);
 
 			switch(v4Event.getHeader().getEventType()) {
 				case MySQLConstants.WRITE_ROWS_EVENT:
