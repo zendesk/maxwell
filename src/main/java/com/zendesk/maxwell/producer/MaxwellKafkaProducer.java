@@ -1,26 +1,21 @@
 package com.zendesk.maxwell.producer;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.Iterator;
-import java.util.Properties;
-
 import com.zendesk.maxwell.BinlogPosition;
-import com.zendesk.maxwell.MaxwellAbstractRowsEvent;
 import com.zendesk.maxwell.MaxwellContext;
-
 import com.zendesk.maxwell.RowMap;
 import com.zendesk.maxwell.RowMap.KeyFormat;
-import com.zendesk.maxwell.producer.partitioners.*;
+import com.zendesk.maxwell.producer.partitioners.MaxwellKafkaPartitioner;
+import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.errors.RecordTooLargeException;
-import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.sql.SQLException;
+import java.util.Properties;
 
 class KafkaCallback implements Callback {
 	public static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
@@ -42,6 +37,7 @@ class KafkaCallback implements Callback {
 
 	@Override
 	public void onCompletion(RecordMetadata md, Exception e) {
+
 		if ( e != null ) {
 			if ( e instanceof RecordTooLargeException ) {
 				LOGGER.error("RecordTooLargeException @ " + position + " -- " + key);
@@ -92,17 +88,21 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	private final int numPartitions;
 	private final MaxwellKafkaPartitioner partitioner;
 	private final KeyFormat keyFormat;
-
-	public MaxwellKafkaProducer(MaxwellContext context, Properties kafkaProperties, String kafkaTopic) {
+    private boolean topicPerDbtable;
+    private boolean topicPerDb;
+	public MaxwellKafkaProducer(MaxwellContext context, Properties kafkaProperties, String kafkaTopic ,boolean topicPerDbtable ,boolean topicPerDb) {
 		super(context);
 
 		this.topic = kafkaTopic;
 		if ( this.topic == null ) {
 			this.topic = "maxwell";
 		}
+        this.topicPerDb=topicPerDb;
+        this.topicPerDbtable=topicPerDbtable;
 
 		this.setDefaults(kafkaProperties);
 		this.kafka = new KafkaProducer<>(kafkaProperties, new StringSerializer(), new StringSerializer());
+
 		this.numPartitions = kafka.partitionsFor(topic).size(); //returns 1 for new topics
 
 		String hash = context.getConfig().kafkaPartitionHash;
@@ -117,13 +117,32 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		this.inflightMessages = new InflightMessageList();
 	}
 
+        /* if topic is database then set separate topic for each database
+     * if topic is database.table then set separate topic for each database.table
+     * enable auto.create.topics.enable=true in server.properties*/
+
+    public String getDbTopic(String database,String table,String topic){
+        StringBuilder topicValue = new StringBuilder();
+          if (topicPerDbtable){
+            topicValue.append(database);
+            topicValue.append(".");
+            topicValue.append(table);
+            return  topicValue.toString();
+        }
+        else if(topicPerDb) {
+              topicValue.append(database);
+              return  topicValue.toString();
+          }
+        return topic;
+    }
+
 	@Override
 	public void push(RowMap r) throws Exception {
 		String key = r.pkToJson(keyFormat);
 		String value = r.toJSON();
-
+        String dbTopic =getDbTopic(r.getDatabase(),r.getTable(),topic) ; // get kafka topic if multi topic enable
 		ProducerRecord<String, String> record =
-				new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, this.numPartitions), key, value);
+				new ProducerRecord<>(dbTopic, this.partitioner.kafkaPartition(r, this.numPartitions), key, value);
 
 		if ( r.isTXCommit() )
 			inflightMessages.addMessage(r.getPosition());
@@ -136,6 +155,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		KafkaCallback callback = new KafkaCallback(inflightMessages, r.getPosition(), r.isTXCommit(), this.context, key, value);
 
 		kafka.send(record, callback);
+
 	}
 
 	@Override

@@ -1,24 +1,22 @@
 package com.zendesk.maxwell;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.concurrent.TimeoutException;
-
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.bootstrap.AsynchronousBootstrapper;
 import com.zendesk.maxwell.bootstrap.NoOpBootstrapper;
 import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
 import com.zendesk.maxwell.producer.*;
-import com.zendesk.maxwell.schema.ReadOnlyMysqlPositionStore;
 import com.zendesk.maxwell.schema.MysqlPositionStore;
-
+import com.zendesk.maxwell.schema.ReadOnlyMysqlPositionStore;
 import com.zendesk.maxwell.schema.SchemaScavenger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import snaq.db.ConnectionPool;
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.concurrent.TimeoutException;
 
 public class MaxwellContext {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellContext.class);
@@ -178,7 +176,7 @@ public class MaxwellContext {
 		case "file":
 			return new FileProducer(this, this.config.outputFile);
 		case "kafka":
-			return new MaxwellKafkaProducer(this, this.config.getKafkaProperties(), this.config.kafkaTopic);
+			return new MaxwellKafkaProducer(this, this.config.getKafkaProperties(), this.config.kafkaTopic,this.config.topicPerDbtable,this.config.topicPerDb);
 		case "profiler":
 			return new ProfilerProducer(this);
 		case "stdout":
