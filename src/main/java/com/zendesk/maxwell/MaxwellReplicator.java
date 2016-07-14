@@ -3,6 +3,7 @@ package com.zendesk.maxwell;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.text.Format;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -62,7 +63,8 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 		this.replicator.setLevel2BufferSize(50 * 1024 * 1024);
 
-		this.replicator.setHeartbeatPeriod(0.5f);
+		if ( ctx.shouldHeartbeat() )
+			this.replicator.setHeartbeatPeriod(0.5f);
 
 		this.producer = producer;
 		this.bootstrapper = bootstrapper;
@@ -86,11 +88,13 @@ public class MaxwellReplicator extends RunLoopProcess {
 			replicator.start();
 		}
 
-		Long ms = replicator.millisSinceLastEvent();
-		if ( ms != null && ms > 2000 ) {
-			LOGGER.warn("no heartbeat heard from server in " + ms + "ms.  restarting replication.");
-			replicator.stop(5, TimeUnit.SECONDS);
-			replicator.start();
+		if ( context.shouldHeartbeat() ) {
+			Long ms = replicator.millisSinceLastEvent();
+			if (ms != null && ms > 2000) {
+				LOGGER.warn("no heartbeat heard from server in " + ms + "ms.  restarting replication.");
+				replicator.stop(5, TimeUnit.SECONDS);
+				replicator.start();
+			}
 		}
 	}
 
@@ -202,6 +206,8 @@ public class MaxwellReplicator extends RunLoopProcess {
 				continue;
 			}
 
+			setReplicatorPosition((AbstractBinlogEventV4) v4Event);
+
 			switch(v4Event.getHeader().getEventType()) {
 				case MySQLConstants.WRITE_ROWS_EVENT:
 				case MySQLConstants.WRITE_ROWS_EVENT_V2:
@@ -220,8 +226,6 @@ public class MaxwellReplicator extends RunLoopProcess {
 						for ( RowMap r : event.jsonMaps() )
 							buffer.add(r);
 					}
-
-					setReplicatorPosition(event);
 
 					break;
 				case MySQLConstants.TABLE_MAP_EVENT:
@@ -294,19 +298,22 @@ public class MaxwellReplicator extends RunLoopProcess {
 					break;
 				case MySQLConstants.TABLE_MAP_EVENT:
 					tableCache.processEvent(getSchema(), this.filter, (TableMapEvent) v4Event);
+					setReplicatorPosition((AbstractBinlogEventV4) v4Event);
 					break;
 				case MySQLConstants.QUERY_EVENT:
 					QueryEvent qe = (QueryEvent) v4Event;
 					if (qe.getSql().toString().equals("BEGIN"))
 						rowBuffer = getTransactionRows();
-					else
+					else {
 						processQueryEvent((QueryEvent) v4Event);
+						setReplicatorPosition((AbstractBinlogEventV4) v4Event);
+					}
 					break;
 				default:
+					setReplicatorPosition((AbstractBinlogEventV4) v4Event);
 					break;
 			}
 
-			setReplicatorPosition((AbstractBinlogEventV4) v4Event);
 		}
 	}
 
@@ -335,6 +342,9 @@ public class MaxwellReplicator extends RunLoopProcess {
 	}
 
 	private void setReplicatorPosition(AbstractBinlogEventV4 e) {
+		if ( e instanceof FormatDescriptionEvent ) // these have invalid positions
+			return;
+
 		replicator.setBinlogFileName(e.getBinlogFilename());
 		replicator.setBinlogPosition(e.getHeader().getNextPosition());
 	}
