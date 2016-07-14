@@ -3,6 +3,7 @@ package com.zendesk.maxwell;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.concurrent.TimeoutException;
@@ -30,6 +31,9 @@ public class MaxwellContext {
 	private Long serverID;
 	private BinlogPosition initialPosition;
 	private CaseSensitivity caseSensitivity;
+
+	private Integer mysqlMajorVersion;
+	private Integer mysqlMinorVersion;
 
 	public MaxwellContext(MaxwellConfig config) {
 		this.config = config;
@@ -145,6 +149,21 @@ public class MaxwellContext {
 		}
 	}
 
+
+	private void fetchMysqlVersion() throws SQLException {
+		if ( mysqlMajorVersion == null ) {
+			try ( Connection c = getReplicationConnection() ) {
+				DatabaseMetaData meta = c.getMetaData();
+				mysqlMajorVersion = meta.getDatabaseMajorVersion();
+				mysqlMinorVersion = meta.getDatabaseMinorVersion();
+			}
+		}
+	}
+
+	public boolean shouldHeartbeat() throws SQLException {
+		fetchMysqlVersion();
+		return mysqlMajorVersion >= 5 && mysqlMinorVersion >= 5;
+	}
 
 	public CaseSensitivity getCaseSensitivity() throws SQLException {
 		if ( this.caseSensitivity != null )

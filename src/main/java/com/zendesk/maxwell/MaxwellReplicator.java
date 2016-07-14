@@ -63,7 +63,8 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 		this.replicator.setLevel2BufferSize(50 * 1024 * 1024);
 
-		this.replicator.setHeartbeatPeriod(0.5f);
+		if ( ctx.shouldHeartbeat() )
+			this.replicator.setHeartbeatPeriod(0.5f);
 
 		this.producer = producer;
 		this.bootstrapper = bootstrapper;
@@ -87,11 +88,13 @@ public class MaxwellReplicator extends RunLoopProcess {
 			replicator.start();
 		}
 
-		Long ms = replicator.millisSinceLastEvent();
-		if ( ms != null && ms > 2000 ) {
-			LOGGER.warn("no heartbeat heard from server in " + ms + "ms.  restarting replication.");
-			replicator.stop(5, TimeUnit.SECONDS);
-			replicator.start();
+		if ( context.shouldHeartbeat() ) {
+			Long ms = replicator.millisSinceLastEvent();
+			if (ms != null && ms > 2000) {
+				LOGGER.warn("no heartbeat heard from server in " + ms + "ms.  restarting replication.");
+				replicator.stop(5, TimeUnit.SECONDS);
+				replicator.start();
+			}
 		}
 	}
 
