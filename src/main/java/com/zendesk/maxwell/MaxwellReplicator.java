@@ -206,6 +206,8 @@ public class MaxwellReplicator extends RunLoopProcess {
 				continue;
 			}
 
+			setReplicatorPosition((AbstractRowEvent) v4Event);
+
 			switch(v4Event.getHeader().getEventType()) {
 				case MySQLConstants.WRITE_ROWS_EVENT:
 				case MySQLConstants.WRITE_ROWS_EVENT_V2:
@@ -224,8 +226,6 @@ public class MaxwellReplicator extends RunLoopProcess {
 						for ( RowMap r : event.jsonMaps() )
 							buffer.add(r);
 					}
-
-					setReplicatorPosition(event);
 
 					break;
 				case MySQLConstants.TABLE_MAP_EVENT:
