@@ -3,6 +3,7 @@ package com.zendesk.maxwell;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.text.Format;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -294,19 +295,22 @@ public class MaxwellReplicator extends RunLoopProcess {
 					break;
 				case MySQLConstants.TABLE_MAP_EVENT:
 					tableCache.processEvent(getSchema(), this.filter, (TableMapEvent) v4Event);
+					setReplicatorPosition((AbstractBinlogEventV4) v4Event);
 					break;
 				case MySQLConstants.QUERY_EVENT:
 					QueryEvent qe = (QueryEvent) v4Event;
 					if (qe.getSql().toString().equals("BEGIN"))
 						rowBuffer = getTransactionRows();
-					else
+					else {
 						processQueryEvent((QueryEvent) v4Event);
+						setReplicatorPosition((AbstractBinlogEventV4) v4Event);
+					}
 					break;
 				default:
+					setReplicatorPosition((AbstractBinlogEventV4) v4Event);
 					break;
 			}
 
-			setReplicatorPosition((AbstractBinlogEventV4) v4Event);
 		}
 	}
 
@@ -335,6 +339,9 @@ public class MaxwellReplicator extends RunLoopProcess {
 	}
 
 	private void setReplicatorPosition(AbstractBinlogEventV4 e) {
+		if ( e instanceof FormatDescriptionEvent ) // these have invalid positions
+			return;
+
 		replicator.setBinlogFileName(e.getBinlogFilename());
 		replicator.setBinlogPosition(e.getHeader().getNextPosition());
 	}
