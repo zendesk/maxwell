@@ -85,9 +85,9 @@ public class MaxwellContext {
 	private MysqlPositionStore getMysqlPositionStore() throws SQLException {
 		if ( this.positionStore == null ) {
 			if ( this.getConfig().replayMode ) {
-				this.positionStore = new ReadOnlyMysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.databaseName);
+				this.positionStore = new ReadOnlyMysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.databaseName, this.config.clientID);
 			} else {
-				this.positionStore = new MysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.databaseName);
+				this.positionStore = new MysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.databaseName, this.config.clientID);
 			}
 
 			this.positionStore.start();
@@ -119,6 +119,10 @@ public class MaxwellContext {
 
 	public void setPosition(BinlogPosition position) throws SQLException {
 		this.getMysqlPositionStore().set(position);
+	}
+
+	public BinlogPosition getPosition() throws SQLException {
+		return this.getMysqlPositionStore().get();
 	}
 
 	public void ensurePositionThread() throws SQLException {

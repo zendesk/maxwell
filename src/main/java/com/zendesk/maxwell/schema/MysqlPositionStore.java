@@ -23,13 +23,15 @@ public class MysqlPositionStore extends RunLoopProcess implements Runnable {
 	private final AtomicBoolean run;
 	private Thread thread;
 	private String schemaDatabaseName;
+	private String clientID;
 	private final ConnectionPool connectionPool;
 	private SQLException exception;
 
-	public MysqlPositionStore(ConnectionPool pool, Long serverID, String dbName) {
+	public MysqlPositionStore(ConnectionPool pool, Long serverID, String dbName, String clientID) {
 		this.connectionPool = pool;
 		this.serverID = serverID;
 		this.schemaDatabaseName = dbName;
+		this.clientID = clientID;
 		this.position = new AtomicReference<>();
 		this.storedPosition = new AtomicReference<>();
 		this.exception = null;
@@ -88,17 +90,19 @@ public class MysqlPositionStore extends RunLoopProcess implements Runnable {
 		String sql = "INSERT INTO `positions` set "
 				+ "server_id = ?, "
 				+ "binlog_file = ?, "
-				+ "binlog_position = ? "
+				+ "binlog_position = ?, "
+				+ "client_id = ? "
 				+ "ON DUPLICATE KEY UPDATE binlog_file=?, binlog_position=?";
-		try(Connection c = getConnection() ){
+		try( Connection c = getConnection() ){
 			PreparedStatement s = c.prepareStatement(sql);
 
 			LOGGER.debug("Writing binlog position to " + this.schemaDatabaseName + ".positions: " + newPosition);
 			s.setLong(1, serverID);
 			s.setString(2, newPosition.getFile());
 			s.setLong(3, newPosition.getOffset());
-			s.setString(4, newPosition.getFile());
-			s.setLong(5, newPosition.getOffset());
+			s.setString(4, clientID);
+			s.setString(5, newPosition.getFile());
+			s.setLong(6, newPosition.getOffset());
 
 			s.execute();
 			storedPosition.set(newPosition);
@@ -121,8 +125,9 @@ public class MysqlPositionStore extends RunLoopProcess implements Runnable {
 			return p;
 
 		try ( Connection c = getConnection() ) {
-			PreparedStatement s = c.prepareStatement("SELECT * from `positions` where server_id = ?");
+			PreparedStatement s = c.prepareStatement("SELECT * from `positions` where server_id = ? and client_id = ?");
 			s.setLong(1, serverID);
+			s.setString(2, clientID);
 
 			ResultSet rs = s.executeQuery();
 			if ( !rs.next() )

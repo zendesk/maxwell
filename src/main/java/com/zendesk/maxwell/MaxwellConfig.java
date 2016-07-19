@@ -32,6 +32,8 @@ public class MaxwellConfig extends AbstractConfig {
 	public String outputFile;
 	public String log_level;
 
+	public String clientID;
+
 	public BinlogPosition initPosition;
 	public boolean replayMode;
 
@@ -85,6 +87,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_5" );
 
+		parser.accepts( "client_id", "unique identifier for this maxwell replicator").withRequiredArg();
 		parser.accepts( "schema_database", "database name for maxwell state (schema and binlog position)").withRequiredArg();
 		parser.accepts( "max_schemas", "deprecated.").withOptionalArg();
 		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION").withRequiredArg();
@@ -148,8 +151,13 @@ public class MaxwellConfig extends AbstractConfig {
 			this.databaseName = (String) options.valueOf("schema_database");
 		}
 
+		if ( options.has("client_id") ) {
+			this.clientID = (String) options.valueOf("client_id");
+		}
+
 		if ( options.has("producer"))
 			this.producerType = (String) options.valueOf("producer");
+
 		if ( options.has("bootstrapper"))
 			this.bootstrapperType = (String) options.valueOf("bootstrapper");
 
@@ -238,6 +246,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.producerType    = p.getProperty("producer", "stdout");
 		this.bootstrapperType = p.getProperty("bootstrapper", "async");
 
+		this.clientID        = p.getProperty("client_id");
 		this.outputFile      = p.getProperty("output_file");
 		this.kafkaTopic      = p.getProperty("kafka_topic");
 		this.kafkaPartitionHash = p.getProperty("kafka_partition_hash", "default");
@@ -328,6 +337,10 @@ public class MaxwellConfig extends AbstractConfig {
 
 		if ( this.databaseName == null) {
 			this.databaseName = "maxwell";
+		}
+
+		if ( this.clientID == null ) {
+			this.clientID = "maxwell";
 		}
 
 		try {
