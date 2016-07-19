@@ -370,7 +370,7 @@ front of the key.  So, for example if config.properties contains</p>
 <ul>
 <li>set binlog_format to "ROW".  Do this in the "parameter groups" section.  For a Mysql-RDS instance this parameter will be
   in a "DB Parameter Group", for Aurora it will be in a "DB Cluster Parameter Group".</li>
-<li>setup RDS binlog retention as described <a href="../here">http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.Concepts.MySQL.html</a>.
+<li>setup RDS binlog retention as described <a href="http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.Concepts.MySQL.html">here</a>.
   The tl;dr is to execute <code>call mysql.rds_set_configuration('binlog retention hours', 24)</code> on the server.</li>
 </ul>
 <h3 id="filters">Filters</h3>
