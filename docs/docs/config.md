@@ -52,6 +52,13 @@ kafka.batch.size=16384
 
 then Maxwell will send `batch.size=16384` to the kafka producer library.
 
+Additionally, the following values are available only in the properties file:
+
+option                                        | description | default
+--------------------------------------------- | ----------- | -------
+heartbeat_period  | how often to request a replication heartbeat from the master | 500 (ms)
+heartbeat_timeout | how long we'll wait before considering the master connection dead | 2000 (ms)
+
 ### Running against RDS
 ***
 To run Maxwell against RDS, (either Aurora or Mysql) you will need to do the following:

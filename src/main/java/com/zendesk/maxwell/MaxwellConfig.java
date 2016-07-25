@@ -32,6 +32,10 @@ public class MaxwellConfig extends AbstractConfig {
 	public String outputFile;
 	public String log_level;
 
+	public Long heartbeatPeriodMS;
+	public Long heartbeatTimeoutMS;
+
+
 	public BinlogPosition initPosition;
 	public boolean replayMode;
 
@@ -133,6 +137,21 @@ public class MaxwellConfig extends AbstractConfig {
 			return defaultVal;
 	}
 
+	private Long fetchLongOption(String name, OptionSet options, Properties properties, Long defaultVal) {
+		String strVal = fetchOption(name, options, properties, null);
+		if ( strVal == null )
+			return defaultVal;
+		else {
+			try {
+				return Long.valueOf(strVal);
+			} catch ( NumberFormatException e ) {
+				LOGGER.error("invalid value '" + strVal + "' for " + name + ".  Defaulting to " + defaultVal);
+				return defaultVal;
+			}
+		}
+
+	}
+
 	private MaxwellMysqlConfig parseMysqlConfig(String prefix, OptionSet options, Properties properties) {
 		MaxwellMysqlConfig config = new MaxwellMysqlConfig();
 		config.host     = fetchOption(prefix + "host", options, properties, null);
@@ -161,6 +180,9 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.maxwellMysql       = parseMysqlConfig("", options, properties);
 		this.replicationMysql   = parseMysqlConfig("replication_", options, properties);
+
+		this.heartbeatPeriodMS  = fetchLongOption("heartbeat_period", options, properties, 500L);
+		this.heartbeatTimeoutMS = fetchLongOption("heartbeat_timeout", options, properties, 2000L);
 
 		this.databaseName       = fetchOption("schema_database", options, properties, "maxwell");
 		this.producerType       = fetchOption("producer", options, properties, "stdout");

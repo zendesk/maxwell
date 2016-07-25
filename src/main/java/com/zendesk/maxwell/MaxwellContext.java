@@ -165,6 +165,14 @@ public class MaxwellContext {
 		return mysqlMajorVersion >= 5 && mysqlMinorVersion >= 5;
 	}
 
+	public Long heartbeatPeriodMS() {
+		return config.heartbeatPeriodMS;
+	}
+
+	public Long heartbeatTimeoutMS() {
+		return config.heartbeatTimeoutMS;
+	}
+
 	public CaseSensitivity getCaseSensitivity() throws SQLException {
 		if ( this.caseSensitivity != null )
 			return this.caseSensitivity;
