@@ -171,7 +171,10 @@ public class MaxwellConfig extends AbstractConfig {
 		this.kafkaPartitionKey  = fetchOption("kafka_partition_by", options, properties, "database");
 		this.kafkaPartitionHash = fetchOption("kafka_partition_hash", options, properties, "default");
 
-		this.kafkaProperties.setProperty("bootstrap.servers", fetchOption("kafka.bootstrap.servers", options, properties, null));
+		String kafkaBootstrapServers = fetchOption("kafka.bootstrap.servers", options, properties, null);
+		if ( kafkaBootstrapServers != null )
+			this.kafkaProperties.setProperty("bootstrap.servers", kafkaBootstrapServers);
+
 		for ( Enumeration<Object> e = properties.keys(); e.hasMoreElements(); ) {
 			String k = (String) e.nextElement();
 			if ( k.startsWith("kafka.")) {
