@@ -24,6 +24,8 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 	private MysqlSavedSchema savedSchema;
 
 	String schemaSQL[] = {
+		"delete from `maxwell`.`positions`",
+		"delete from `maxwell`.`schemas`",
 		"CREATE TABLE shard_1.latin1 (id int(11), str1 varchar(255), str2 varchar(255) character set 'utf8') charset = 'latin1'",
 		"CREATE TABLE shard_1.enums (id int(11), enum_col enum('foo', 'bar', 'baz'))",
 		"CREATE TABLE shard_1.pks (id int(11), col2 varchar(255), col3 datetime, PRIMARY KEY(col2, col3, id))",
