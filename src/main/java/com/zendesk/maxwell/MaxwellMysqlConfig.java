@@ -14,9 +14,7 @@ public class MaxwellMysqlConfig {
 	public Integer port;
 	public String user;
 	public String password;
-	public ArrayList<String> jdbcOptions = new ArrayList<String>() {{
-		add("zeroDateTimeBehavior=convertToNull");
-	}};
+	public ArrayList<String> jdbcOptions = new ArrayList<String>();
 
 	public MaxwellMysqlConfig() {
 		this.host = null;
@@ -32,23 +30,12 @@ public class MaxwellMysqlConfig {
 		this.password = password;
 	}
 
-	public void parseOptions(String prefix, OptionSet options) {
-		if ( options.has(prefix + "host"))
-			this.host = (String) options.valueOf(prefix + "host");
-		if ( options.has(prefix + "password"))
-			this.password = (String) options.valueOf(prefix + "password");
-		if ( options.has(prefix + "user"))
-			this.user = (String) options.valueOf(prefix + "user");
-		if ( options.has(prefix + "port"))
-			this.port = Integer.valueOf((String) options.valueOf(prefix + "port"));
-		if ( options.has("jdbc_options") ) {
-			String opts = (String) options.valueOf("jdbc_options");
-			parseJDBCOptions(opts);
-		}
-	}
+	public void setJDBCOptions(String opts) {
+		if (opts == null)
+			return;
+		this.jdbcOptions = new ArrayList<>();
+		this.jdbcOptions.add("zeroDateTimeBehavior=convertToNull");
 
-	public void parseJDBCOptions(String opts) {
-		if (opts == null) return;
 		for ( String opt : opts.split("&") ) {
 			this.jdbcOptions.add(opt.trim());
 		}
