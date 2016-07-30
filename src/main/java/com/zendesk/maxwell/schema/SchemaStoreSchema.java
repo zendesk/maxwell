@@ -143,7 +143,7 @@ public class SchemaStoreSchema {
 
 		if ( !getTableColumns("positions", c).containsKey("client_id") ) {
 			performAlter(c, "alter table `positions` add column `client_id` varchar(255) charset 'latin1' not null default 'maxwell'");
-			performAlter(c, "alter table `positions` add column drop primary key, add primary key(`server_id`, `client_id`)");
+			performAlter(c, "alter table `positions` drop primary key, add primary key(`server_id`, `client_id`)");
 		}
 
 		if ( !schemaColumns.containsKey("position_sha") ) {
