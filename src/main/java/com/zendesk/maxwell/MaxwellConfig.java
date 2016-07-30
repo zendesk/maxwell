@@ -83,7 +83,6 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "__separator_4" );
 
 		parser.accepts( "bootstrapper", "bootstrapper type: async|sync|none. default: async" ).withRequiredArg();
-		parser.accepts( "bootstrapper_fetch_size", "(deprecated)" ).withRequiredArg();
 
 		parser.accepts( "__separator_5" );
 
@@ -127,57 +126,75 @@ public class MaxwellConfig extends AbstractConfig {
 		return level;
 	}
 
+
+	private String fetchOption(String name, OptionSet options, Properties properties, String defaultVal) {
+		if ( options.has(name) )
+			return (String) options.valueOf(name);
+		else if ( (properties != null) && properties.containsKey(name) )
+			return (String) properties.getProperty(name);
+		else
+			return defaultVal;
+	}
+
+	private MaxwellMysqlConfig parseMysqlConfig(String prefix, OptionSet options, Properties properties) {
+		MaxwellMysqlConfig config = new MaxwellMysqlConfig();
+		config.host     = fetchOption(prefix + "host", options, properties, null);
+		config.password = fetchOption(prefix + "password", options, properties, null);
+		config.user     = fetchOption(prefix + "user", options, properties, null);
+		config.port     = Integer.valueOf(fetchOption(prefix + "port", options, properties, "3306"));
+		config.setJDBCOptions(fetchOption(prefix + "jdbc_options", options, properties, null));
+		return config;
+	}
+
 	private void parse(String [] argv) {
 		OptionSet options = buildOptionParser().parse(argv);
 
+		Properties properties;
+
 		if ( options.has("config") ) {
-			parseFile((String) options.valueOf("config"), true);
+			properties = parseFile((String) options.valueOf("config"), true);
 		} else {
-			parseFile(DEFAULT_CONFIG_FILE, false);
+			properties = parseFile(DEFAULT_CONFIG_FILE, false);
 		}
 
 		if ( options.has("help") )
 			usage("Help for Maxwell:");
 
-		if ( options.has("log_level")) {
-			this.log_level = parseLogLevel((String) options.valueOf("log_level"));
+		this.log_level = fetchOption("log_level", options, properties, null);
+
+		this.maxwellMysql       = parseMysqlConfig("", options, properties);
+		this.replicationMysql   = parseMysqlConfig("replication_", options, properties);
+
+		this.databaseName       = fetchOption("schema_database", options, properties, "maxwell");
+		this.producerType       = fetchOption("producer", options, properties, "stdout");
+		this.bootstrapperType   = fetchOption("bootstrapper", options, properties, "async");
+		this.clientID           = fetchOption("client_id", options, properties, "maxwell");
+
+		this.kafkaTopic         = fetchOption("kafka_topic", options, properties, "maxwell");
+		this.kafkaKeyFormat     = fetchOption("kafka_key_format", options, properties, "hash");
+		this.kafkaPartitionKey  = fetchOption("kafka_partition_by", options, properties, "database");
+		this.kafkaPartitionHash = fetchOption("kafka_partition_hash", options, properties, "default");
+
+		String kafkaBootstrapServers = fetchOption("kafka.bootstrap.servers", options, properties, null);
+		if ( kafkaBootstrapServers != null )
+			this.kafkaProperties.setProperty("bootstrap.servers", kafkaBootstrapServers);
+
+		for ( Enumeration<Object> e = properties.keys(); e.hasMoreElements(); ) {
+			String k = (String) e.nextElement();
+			if ( k.startsWith("kafka.")) {
+				this.kafkaProperties.setProperty(k.replace("kafka.", ""), properties.getProperty(k));
+			}
 		}
 
-		this.maxwellMysql.parseOptions("", options);
+		this.outputFile         = fetchOption("output_file", options, properties, null);
 
-		this.replicationMysql.parseOptions("replication_", options);
-
-		if ( options.has("schema_database")) {
-			this.databaseName = (String) options.valueOf("schema_database");
-		}
-
-		if ( options.has("client_id") ) {
-			this.clientID = (String) options.valueOf("client_id");
-		}
-
-		if ( options.has("producer"))
-			this.producerType = (String) options.valueOf("producer");
-
-		if ( options.has("bootstrapper"))
-			this.bootstrapperType = (String) options.valueOf("bootstrapper");
-
-		if ( options.has("kafka.bootstrap.servers"))
-			this.kafkaProperties.setProperty("bootstrap.servers", (String) options.valueOf("kafka.bootstrap.servers"));
-
-		if ( options.has("kafka_topic"))
-			this.kafkaTopic = (String) options.valueOf("kafka_topic");
-
-		if ( options.has("kafka_key_format"))
-			this.kafkaKeyFormat = (String) options.valueOf("kafka_key_format");
-
-		if ( options.has("kafka_partition_by"))
-			this.kafkaPartitionKey = (String) options.valueOf("kafka_partition_by");
-
-		if ( options.has("kafka_partition_hash"))
-			this.kafkaPartitionHash = (String) options.valueOf("kafka_partition_hash");
-
-		if ( options.has("output_file"))
-			this.outputFile = (String) options.valueOf("output_file");
+		this.includeDatabases   = fetchOption("include_dbs", options, properties, null);
+		this.excludeDatabases   = fetchOption("exclude_dbs", options, properties, null);
+		this.includeTables      = fetchOption("include_tables", options, properties, null);
+		this.excludeTables      = fetchOption("exclude_tables", options, properties, null);
+		this.excludeColumns     = fetchOption("exclude_columns", options, properties, null);
+		this.blacklistDatabases = fetchOption("blacklist_dbs", options, properties, null);
+		this.blacklistTables    = fetchOption("blacklist_tables", options, properties, null);
 
 		if ( options.has("init_position")) {
 			String initPosition = (String) options.valueOf("init_position");
@@ -199,77 +216,15 @@ public class MaxwellConfig extends AbstractConfig {
 		if ( options.has("replay")) {
 			this.replayMode = true;
 		}
-
-		if ( options.has("include_dbs"))
-			this.includeDatabases = (String) options.valueOf("include_dbs");
-
-		if ( options.has("exclude_dbs"))
-			this.excludeDatabases = (String) options.valueOf("exclude_dbs");
-
-		if ( options.has("include_tables"))
-			this.includeTables = (String) options.valueOf("include_tables");
-
-		if ( options.has("exclude_tables"))
-			this.excludeTables = (String) options.valueOf("exclude_tables");
-
-		if ( options.has("blacklist_dbs"))
-			this.blacklistDatabases = (String) options.valueOf("blacklist_dbs");
-
-		if ( options.has("blacklist_tables"))
-			this.blacklistTables = (String) options.valueOf("blacklist_tables");
-
-		if ( options.has("exclude_columns") ) {
-			this.excludeColumns = (String) options.valueOf("exclude_columns");
-		}
 	}
 
-	private void parseFile(String filename, Boolean abortOnMissing) {
+	private Properties parseFile(String filename, Boolean abortOnMissing) {
 		Properties p = readPropertiesFile(filename, abortOnMissing);
 
 		if ( p == null )
 			p = new Properties();
 
-		this.maxwellMysql.host = p.getProperty("host");
-		this.maxwellMysql.password = p.getProperty("password");
-		this.maxwellMysql.user     = p.getProperty("user", "maxwell");
-		this.maxwellMysql.port = Integer.valueOf(p.getProperty("port", "3306"));
-		this.maxwellMysql.parseJDBCOptions(p.getProperty("jdbc_options"));
-
-		this.replicationMysql.host = p.getProperty("replication_host");
-		this.replicationMysql.password = p.getProperty("replication_password");
-		this.replicationMysql.user      = p.getProperty("replication_user");
-		this.replicationMysql.port = Integer.valueOf(p.getProperty("replication_port", "3306"));
-		this.replicationMysql.parseJDBCOptions(p.getProperty("jdbc_options"));
-
-		this.databaseName = p.getProperty("schema_database", "maxwell");
-
-		this.producerType    = p.getProperty("producer", "stdout");
-		this.bootstrapperType = p.getProperty("bootstrapper", "async");
-
-		this.clientID        = p.getProperty("client_id");
-		this.outputFile      = p.getProperty("output_file");
-		this.kafkaTopic      = p.getProperty("kafka_topic");
-		this.kafkaPartitionHash = p.getProperty("kafka_partition_hash", "default");
-		this.kafkaPartitionKey = p.getProperty("kafka_partition_by", "database");
-		this.kafkaKeyFormat = p.getProperty("kafka_key_format", "hash");
-		this.includeDatabases = p.getProperty("include_dbs");
-		this.excludeDatabases = p.getProperty("exclude_dbs");
-		this.includeTables = p.getProperty("include_tables");
-		this.excludeTables = p.getProperty("exclude_tables");
-		this.excludeColumns = p.getProperty("exclude_columns");
-		this.blacklistDatabases = p.getProperty("blacklist_dbs");
-		this.blacklistTables = p.getProperty("blacklist_tables");
-
-		if ( p.containsKey("log_level") )
-			this.log_level = parseLogLevel(p.getProperty("log_level"));
-
-		for ( Enumeration<Object> e = p.keys(); e.hasMoreElements(); ) {
-			String k = (String) e.nextElement();
-			if ( k.startsWith("kafka.")) {
-				this.kafkaProperties.setProperty(k.replace("kafka.", ""), p.getProperty(k));
-			}
-		}
-
+		return p;
 	}
 
 	private void validate() {
@@ -333,14 +288,6 @@ public class MaxwellConfig extends AbstractConfig {
 									this.maxwellMysql.password);
 
 			this.replicationMysql.jdbcOptions = this.maxwellMysql.jdbcOptions;
-		}
-
-		if ( this.databaseName == null) {
-			this.databaseName = "maxwell";
-		}
-
-		if ( this.clientID == null ) {
-			this.clientID = "maxwell";
 		}
 
 		try {
