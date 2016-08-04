@@ -92,7 +92,7 @@ public class MaxwellTestSupport {
 		mysql.getConnection().prepareStatement("delete from `maxwell`.`schemas`").execute();
 	}
 
-	public static List<RowMap>getRowsForSQL(final MysqlIsolatedServer mysql, MaxwellFilter filter, String queries[], String before[]) throws Exception {
+	public static List<RowMap>getRowsForSQL(final MysqlIsolatedServer mysql, MaxwellFilter filter, String queries[], String before[], boolean transactional) throws Exception {
 		MaxwellContext context = buildContext(mysql.getPort(), null, filter);
 
 		clearSchemaStore(mysql);
@@ -107,7 +107,13 @@ public class MaxwellTestSupport {
 		MysqlSchemaStore schemaStore = new MysqlSchemaStore(context);
 		schemaStore.getSchema();
 
+		if ( transactional )
+			mysql.getConnection().setAutoCommit(false);
+
 		mysql.executeList(Arrays.asList(queries));
+
+		if ( transactional )
+			mysql.getConnection().setAutoCommit(true);
 
 		BinlogPosition endPosition = BinlogPosition.capture(mysql.getConnection());
 
@@ -191,6 +197,6 @@ public class MaxwellTestSupport {
 
 
 	public static  List<RowMap>getRowsForSQL(MysqlIsolatedServer server, MaxwellFilter filter, String queries[]) throws Exception {
-		return getRowsForSQL(server, filter, queries, null);
+		return getRowsForSQL(server, filter, queries, null, false);
 	}
 }

@@ -22,12 +22,17 @@ public class MaxwellTestWithIsolatedServer {
 	}
 
 	protected List<RowMap> getRowsForSQL(MaxwellFilter filter, String[] input, String[] before) throws Exception {
-		return MaxwellTestSupport.getRowsForSQL(server, filter, input, before);
+		return MaxwellTestSupport.getRowsForSQL(server, filter, input, before, false);
 	}
 
 	protected List<RowMap> getRowsForSQL(String[] input) throws Exception {
-		return MaxwellTestSupport.getRowsForSQL(server, null, input, null);
+		return MaxwellTestSupport.getRowsForSQL(server, null, input, null, false);
 	}
+
+	protected List<RowMap> getRowsForSQLTransactional(String[] input) throws Exception {
+		return MaxwellTestSupport.getRowsForSQL(server, null, input, null, true);
+	}
+
 	protected void runJSON(String filename) throws Exception {
 		MaxwellTestJSON.runJSONTestFile(server, filename);
 	}
