@@ -49,6 +49,8 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellReplicator.class);
 
+	private final Long heartbeatTimeoutMS;
+
 	public MaxwellReplicator(SchemaStore schemaStore, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, BinlogPosition start) throws Exception {
 		this.schemaStore = schemaStore;
 		this.binlogEventListener = new MaxwellBinlogEventListener(queue);
@@ -64,7 +66,9 @@ public class MaxwellReplicator extends RunLoopProcess {
 		this.replicator.setLevel2BufferSize(50 * 1024 * 1024);
 
 		if ( ctx.shouldHeartbeat() )
-			this.replicator.setHeartbeatPeriod(0.5f);
+			this.replicator.setHeartbeatPeriod(ctx.heartbeatPeriodMS().floatValue() / 1000.0f);
+
+		this.heartbeatTimeoutMS = ctx.heartbeatTimeoutMS();
 
 		this.producer = producer;
 		this.bootstrapper = bootstrapper;
@@ -90,7 +94,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 		if ( context.shouldHeartbeat() ) {
 			Long ms = replicator.millisSinceLastEvent();
-			if (ms != null && ms > 2000) {
+			if (ms != null && ms > this.heartbeatTimeoutMS) {
 				LOGGER.warn("no heartbeat heard from server in " + ms + "ms.  restarting replication.");
 				replicator.stop(5, TimeUnit.SECONDS);
 				replicator.start();
