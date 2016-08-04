@@ -43,14 +43,10 @@ class KafkaCallback implements Callback {
 	@Override
 	public void onCompletion(RecordMetadata md, Exception e) {
 		if ( e != null ) {
+			LOGGER.error(e.getClass().getSimpleName() + " @ " + position + " -- " + key);
+			LOGGER.error(e.getLocalizedMessage());
 			if ( e instanceof RecordTooLargeException ) {
-				LOGGER.error("RecordTooLargeException @ " + position + " -- " + key);
-				LOGGER.error(e.getLocalizedMessage());
 				LOGGER.error("Considering raising max.request.size broker-side.");
-
-				markCompleted();
-			} else {
-				throw new RuntimeException(e);
 			}
 		} else {
 			if ( LOGGER.isDebugEnabled()) {
@@ -59,9 +55,8 @@ class KafkaCallback implements Callback {
 				LOGGER.debug("   " + position);
 				LOGGER.debug("");
 			}
-
-			markCompleted();
 		}
+		markCompleted();
 	}
 
 	private void markCompleted() {
