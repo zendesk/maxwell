@@ -14,7 +14,7 @@ releases = client.releases('zendesk/maxwell', page: page)
 while releases.any?
   releases.each do |r|
     out = <<-EOL
-## [%{tag_name}](%{html_url}): %{munged_name}
+### [%{tag_name}](%{html_url}): %{munged_name}
 
 %{body}
     EOL
