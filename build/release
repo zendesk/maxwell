@@ -18,7 +18,7 @@ end
 puts "Releasing version: #{$version}"
 
 if ( $command = ARGV[1] )
-  unless ["bump", "build", "tag", "release"].include?($command)
+  unless ["changelog", "bump", "build", "tag", "release"].include?($command)
     abort("unknown subcommand: #{$command}")
   end
 end
@@ -74,6 +74,10 @@ def release
   do_system(BINDIR + "/../docs/push")
 end
 
+def changelog
+  do_system(BINDIR + "/mkchangelog > " + BINDIR + "/../CHANGELOG.md")
+end
+
 if $command
   send($command)
 else
@@ -81,5 +85,7 @@ else
   build
   tag
   release
+  sleep 2
+  changelog
 end
 

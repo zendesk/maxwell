@@ -1,14 +1,76 @@
 # Maxwell changelog
 
-## [v1.1.0-pre1](https://github.com/zendesk/maxwell/releases/tag/v1.1.0-pre1): "first to fall"
+## [v1.1.4](https://github.com/zendesk/maxwell/releases/tag/v1.1.4): "george flunk"
 
-Deltas from 1.0:
-- much more efficient processing of schema updates storage, especially
-  when dealing with large schemas.
-- @lileeyao added --exclude-columns option
-- alternative kafka key format
+
+- add support for a bunch more charsets (gbk, big5, notably)
+- fix Maxwell's handling of kafka errors - previously we were trying to
+  crash Maxwell by throwing a RuntimeException out of the Kafka
+  Producer, but this was a failure.  Now we log and skip all errors.
+
+
+## [v1.1.3](https://github.com/zendesk/maxwell/releases/tag/v1.1.3): "the button I push to not have to go out"
+
+
+This is a bugfix release, which fixes:
+- https://github.com/zendesk/maxwell/issues/376, a problem parsing
+  RENAME INDEX
+- https://github.com/zendesk/maxwell/issues/371, a problem with the
+  SERIAL datatype
+- https://github.com/zendesk/maxwell/issues/362, we now preserve the
+  original casing of columns
+- https://github.com/zendesk/maxwell/issues/373, we were incorrectly
+  expecting heartbeats to work under 5.1
+
+
+## [v1.1.2](https://github.com/zendesk/maxwell/releases/tag/v1.1.2): "scribbled notes on red pages"
+
+
+- pick up latest mysql-connector-j, fixes #369
+- fix an issue where maxwell could skip ahead positions if a leader failed.
+- rework buffering code to be much kinder to the GC and JVM heap in case
+  of very large transactions / rows inside transactions
+- kinder, gentler help text when you specify an option incorrectly
+
+
+## [v1.1.1](https://github.com/zendesk/maxwell/releases/tag/v1.1.1): scribbled notes on blue pages
+
+
+- fixes a race condition setting the binlog position that would get
+  maxwell stuck
+
+
+## [v1.1.0](https://github.com/zendesk/maxwell/releases/tag/v1.1.0): "sleep away the afternoon"
+
+
+- much more efficient processing of schema updates storage, especially when dealing with large schemas.
+- @lileeyao added --exclude-columns and the --jdbc_options features
 - @lileeyao added --jdbc_options
 - can now blacklist entire databases
+- new kafka key format available, using a JSON array instead of an object
+- bugfix: unsigned integer columns were captured incorrectly.  1.1 will
+  recapture the schema and attempt to correct the error.
+
+
+## [v1.1.0-pre4](https://github.com/zendesk/maxwell/releases/tag/v1.1.0-pre4): "buck buck buck buck buck buck-AH!"
+
+
+- Eddie McLean gives some helpful patches around bootstrapping
+- Bugfixes for the patch-up-the-schema code around unsigned ints
+
+
+## [v1.1.0-pre3](https://github.com/zendesk/maxwell/releases/tag/v1.1.0-pre3): 
+
+- forgot to include some updates that back-patch unsigned column
+  problems
+
+
+## [v1.1.0-pre2](https://github.com/zendesk/maxwell/releases/tag/v1.1.0-pre2): "yawn yawn"
+
+
+- fix performance issues when capturing schema in AWS Aurora
+- fix a bug in capturing unsigned integer columns
+
 
 ## [v1.0.1](https://github.com/zendesk/maxwell/releases/tag/v1.0.1): "bag of oversized daisies"
 
