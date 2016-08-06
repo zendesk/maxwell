@@ -29,8 +29,8 @@ Or on a running server:
 mysql> set global binlog_row_image=FULL;
 ```
 
-*note*: When changing the binlog format on a running server, currently connected mysql clients will continue to replication in STATEMENT format --
-in order to change to row-based replication, you must reconnect all active clients to the server.
+*note*: When changing the binlog format on a running server, currently connected mysql clients will generate binlog entries in STATEMENT format, leading
+to odd results.  In order to change to row-based replication in runtime, you must reconnect all active clients to the server.
 
 ### Mysql permissions
 ***
