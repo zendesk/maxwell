@@ -459,7 +459,22 @@ public class DDLParserTest {
 		int i = 1;
 		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test-fixed.sql"), Charset.defaultCharset());
 		for ( String sql: lines ) {
-			parse(sql);
+				parse(sql);
+		}
+	}
+
+	@Test
+	public void testMysqlTestPartitionSQL() throws Exception {
+		int i = 1;
+		boolean outputFirst = false;
+		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test-partition.sql"), Charset.defaultCharset());
+		for ( String sql: lines ) {
+			try {
+				parse(sql);
+			} catch ( Exception e ) {
+				assertThat(e.getMessage() + "\nline: " + i + ": " + sql, true, is(false));
+			}
+			i++;
 		}
 	}
 

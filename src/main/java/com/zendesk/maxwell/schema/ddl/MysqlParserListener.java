@@ -253,17 +253,10 @@ public class MysqlParserListener extends mysqlBaseListener {
 		schemaChanges.add(new DatabaseDrop(dbName, ifExists));
 	}
 
-	private String spliceIndexTypeCheck(int startIndex) {
+	private String spliceParens(int startIndex, int initialParenCount) {
 		TokenStreamRewriter r = new TokenStreamRewriter(tokenStream);
-		int i = startIndex, parens = 0;
+		int i = startIndex, parens = initialParenCount;
 
-		/* skip until first paren */
-		for ( ; i < tokenStream.size(); i++ )  {
-			if ( tokenStream.get(i).getText().equals("("))
-				break;
-		}
-
-		/* now skip until matching paren */
 		for ( ; i < tokenStream.size(); i++ ) {
 			String tokenText = tokenStream.get(i).getText();
 
@@ -276,15 +269,27 @@ public class MysqlParserListener extends mysqlBaseListener {
 				break;
 		}
 
-		r.insertBefore(startIndex, "___MAXWELL___");
+		r.insertBefore(startIndex, "/__MAXWELL__/");
 		r.delete(startIndex, i);
 		return r.getText();
 	}
 
+	/* we enter this code twice.  the first time, we gobble up parens.  The
+		   second time, we just have the __MAXWELL__ token, and we can continue.
+		 */
 	@Override
-	public void enterIndex_type_check(Index_type_checkContext ctx) {
-		throw new ReparseSQLException(spliceIndexTypeCheck(ctx.getStart().getTokenIndex()));
+	public void enterSkip_parens(Skip_parensContext ctx) {
+		if ( ctx.MAXWELL_ELIDED_PARSE_ISSUE() == null )
+			throw new ReparseSQLException(spliceParens(ctx.getStart().getTokenIndex(), 0));
+
 	}
+
+	@Override
+	public void enterSkip_parens_inside_partition_definitions(Skip_parens_inside_partition_definitionsContext ctx) {
+		if ( ctx.MAXWELL_ELIDED_PARSE_ISSUE() == null )
+			throw new ReparseSQLException(spliceParens(ctx.getStart().getTokenIndex(), 1));
+	}
+
 
 	@Override
 	public void exitIndex_type_pk(mysqlParser.Index_type_pkContext ctx) {
