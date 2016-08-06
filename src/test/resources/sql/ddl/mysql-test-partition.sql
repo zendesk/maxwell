@@ -1,4 +1,5 @@
-create table t1 (col1 int) engine='MYISAM'  partition by range(col1 * 12.3 / 111 >> 1 & 123 | 5) (partition p0 values less than (15), partition p1 values less than maxvalue)
+create table t1 (a varchar(5)) partition by list columns(a) ( partition p0 values in ("\\\\\'\n\'ac\"''"),   partition p1 values in (''),   partition p2 values in ('b'))
+create table t1 (col1 int) engine='MYISAM'  partition by range(col1 * 12.3 / 111 >> 1 & 123 | 5 * 2 ~5 < !5) (partition p0 values less than (15), partition p1 values less than maxvalue)
 create table t1 (col1 time) engine='MYISAM'  partition by range(time_to_sec(col1)-(time_to_sec(col1)-20))  (partition p0 values less than (15), partition p1 values less than maxvalue)
 create table t1 (a varchar(5)) partition by list columns(a) ( partition p0 values in ('\n\x\\'),   partition p1 values in (''),   partition p2 values in ('b'))
 create table t1 (a varchar(5)) partition by list columns(a) ( partition p0 values in ('\''),   partition p1 values in (''),   partition p2 values in ('b'))

@@ -46,12 +46,15 @@ SQL_COMMENT: '/*' ~'!' (.)*? '*/' -> skip;
 
 SQL_LINE_COMMENT: ('#' | '--') (~'\n')* ('\n' | EOF) -> skip;
 
-// all of these are greedy matches: we consume double-ticks (''), escaped ticks (\') and double-backslashes ('\\') as hard as
-// we can, also matching anything that's not a single tick (') character until we hit the tick.  Same thing
-// with DBL_STRING_LITERAL and QUOTED_IDENT.
+// the logic here is that the character following a backslash may never
+// end a string -- there will always be a character following it.
+// So \' will be consumed, as will \\.  earlier we were trying to
+// explicitly match \', but this had issues around the string '\\', as the
+// tokenizer made the first backslash part of the string, and the second backslash
+// got attached to the tick character.
 
 STRING_LITERAL: [bnxBNX]? TICK (('\\' . ) | '\'\'' | ~('\\' | '\''))* TICK;
-DBL_STRING_LITERAL: DBL ('""' | ~('"'))+ DBL;
+DBL_STRING_LITERAL: DBL (('\\' .) | '""' | ~('\\' | '"'))+ DBL;
 INTEGER_LITERAL: DIGIT+;
 
 fragment TICK: '\'';
