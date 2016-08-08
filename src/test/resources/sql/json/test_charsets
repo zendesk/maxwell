@@ -1,0 +1,4 @@
+CREATE DATABASE `test_charsets`
+create table `test_charsets`.`c` ( gbk varchar(255) charset 'gbk', big5 varchar(255) charset 'big5' )
+insert into `test_charsets`.`c` set `gbk` = '乪', `big5` = '圖形碼';
+-> {"database": "test_charsets", "table": "c", "type": "insert", "data": {"gbk": "乪", "big5": "圖形碼"} }

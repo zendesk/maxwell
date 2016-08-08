@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.schema.columndef;
 
 import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
@@ -60,8 +61,11 @@ public class StringColumnDef extends ColumnDef {
 		case "ucs2":
 			return Charset.forName("UTF-16");
 		default:
-			LOGGER.warn("warning: unhandled character set '" + charset + "'");
-			return null;
+			try {
+				return Charset.forName(charset.toLowerCase());
+			} catch ( java.nio.charset.UnsupportedCharsetException e ) {
+				throw new RuntimeException("error: unhandled character set '" + charset + "'");
+			}
 		}
 	}
 	@Override

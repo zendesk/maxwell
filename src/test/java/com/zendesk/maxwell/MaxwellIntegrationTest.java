@@ -256,24 +256,19 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	public void testTransactionID() throws Exception {
 		List<RowMap> list;
 
-		try {
-			server.getConnection().setAutoCommit(false);
-			list = getRowsForSQL(testTransactions);
+		list = getRowsForSQLTransactional(testTransactions);
 
-			assertEquals(4, list.size());
-			for ( RowMap r : list ) {
-				assertNotNull(r.getXid());
-			}
-
-			assertEquals(list.get(0).getXid(), list.get(1).getXid());
-			assertFalse(list.get(0).isTXCommit());
-			assertTrue(list.get(1).isTXCommit());
-
-			assertFalse(list.get(2).isTXCommit());
-			assertTrue(list.get(3).isTXCommit());
-		} finally {
-			server.getConnection().setAutoCommit(true);
+		assertEquals(4, list.size());
+		for ( RowMap r : list ) {
+			assertNotNull(r.getXid());
 		}
+
+		assertEquals(list.get(0).getXid(), list.get(1).getXid());
+		assertFalse(list.get(0).isTXCommit());
+		assertTrue(list.get(1).isTXCommit());
+
+		assertFalse(list.get(2).isTXCommit());
+		assertTrue(list.get(3).isTXCommit());
 	}
 
 	@Test
@@ -342,7 +337,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 			"insert into `test`.`tootootwee` set id = 5"
 		};
 
-		List<RowMap> rows = MaxwellTestSupport.getRowsForSQL(lowerCaseServer, null, sql, null);
+		List<RowMap> rows = MaxwellTestSupport.getRowsForSQL(lowerCaseServer, null, sql, null, false);
 		assertThat(rows.size(), is(1));
 		assertThat(rows.get(0).getTable(), is("tootootwee"));
 	}
@@ -371,6 +366,11 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testUCS2() throws Exception {
 		runJSON("/json/test_ucs2");
+	}
+
+	@Test
+	public void testCharsets() throws Exception {
+		runJSON("/json/test_charsets");
 	}
 
 	@Test

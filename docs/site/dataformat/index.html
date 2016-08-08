@@ -91,6 +91,12 @@
                 </li>
             
             
+            
+                <li >
+                    <a href="../changelog/">Changelog</a>
+                </li>
+            
+            
             </ul>
 
             <!-- Search, Navigation and Repo links -->
@@ -141,9 +147,6 @@
               
                   <ul class="nav">
                   
-                      <li class="toctree-l3"><a href="#strings-varchar-text">strings (varchar, text)</a></li>
-                      
-                  
                       <li class="toctree-l3"><a href="#blob-binary-encoded-strings">blob (+ binary encoded strings)</a></li>
                       
                   
@@ -151,6 +154,9 @@
                       
                   
                       <li class="toctree-l3"><a href="#sets">sets</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#strings-varchar-text">strings (varchar, text)</a></li>
                       
                   
                   </ul>
@@ -167,15 +173,17 @@
               
           </li>
         
+          <li >
+              <a href="../changelog/">Changelog</a>
+              
+          </li>
+        
     </ul>
 </div></div>
             <div class="col-md-10" role="main">
 
 <h4>How Maxwell translates different mysql types</h4>
 
-<h3 id="strings-varchar-text">strings (varchar, text)</h3>
-<hr />
-<p>Maxwell currently supports latin1 and utf-8 columns, and will convert both to UTF-8 before outputting as JSON.</p>
 <h3 id="blob-binary-encoded-strings">blob (+ binary encoded strings)</h3>
 <hr />
 <p>Maxell will base64 encode BLOB, BINARY and VARBINARY columns (as well as varchar/string columns with a BINARY encoding).</p>
@@ -188,7 +196,7 @@ for lack of something better to do.</p>
 <pre><code>mysql&gt;    create table test_datetime ( id int(11), dtcol datetime );
 mysql&gt;    insert into test_datetime set dtcol='0000-00-00 00:00:00';
 
-&lt;maxwell  {&quot;table&quot;:&quot;test_datetime&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;data&quot;:{&quot;dtcol&quot;:&quot;0000-00-00 00:00:00&quot;}}
+&lt;maxwell  { &quot;table&quot; : &quot;test_datetime&quot;, &quot;type&quot;: &quot;insert&quot;, &quot;data&quot;: { &quot;dtcol&quot;: &quot;0000-00-00 00:00:00&quot; } }
 </code></pre>
 
 <h3 id="sets">sets</h3>
@@ -197,8 +205,184 @@ mysql&gt;    insert into test_datetime set dtcol='0000-00-00 00:00:00';
 <pre><code>mysql&gt;   create table test_sets ( id int(11), setcol set('a_val', 'b_val', 'c_val') );
 mysql&gt;   insert into test_sets set setcol = 'b_val,c_val';
 
-&lt;maxwell {&quot;table&quot;:&quot;test_sets&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;data&quot;:{&quot;setcol&quot;:[&quot;b_val&quot;,&quot;c_val&quot;]}}
-</code></pre></div>
+&lt;maxwell { &quot;table&quot;:&quot;test_sets&quot;, &quot;type&quot;:&quot;insert&quot;, &quot;data&quot;: { &quot;setcol&quot;: [&quot;b_val&quot;, &quot;c_val&quot;] } }
+</code></pre>
+
+<h3 id="strings-varchar-text">strings (varchar, text)</h3>
+<hr />
+<p>Maxwell will accept a variety of character encodings, but will always output UTF-8 strings.  The following table
+describes support for mysql's character sets:</p>
+<table>
+<thead>
+<tr>
+<th>charset</th>
+<th>status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>utf8</td>
+<td>supported</td>
+</tr>
+<tr>
+<td>utf8mb4</td>
+<td>supported</td>
+</tr>
+<tr>
+<td>latin1</td>
+<td>supported</td>
+</tr>
+<tr>
+<td>latin2</td>
+<td>supported</td>
+</tr>
+<tr>
+<td>ascii</td>
+<td>supported</td>
+</tr>
+<tr>
+<td>ucs2</td>
+<td>supported</td>
+</tr>
+<tr>
+<td>binary</td>
+<td>supported (as base64)</td>
+</tr>
+<tr>
+<td>utf16</td>
+<td>supported, not tested in production</td>
+</tr>
+<tr>
+<td>utf32</td>
+<td>supported, not tested in production</td>
+</tr>
+<tr>
+<td>big5</td>
+<td>supported, not tested in production</td>
+</tr>
+<tr>
+<td>cp850</td>
+<td>supported, not tested in production</td>
+</tr>
+<tr>
+<td>sjis</td>
+<td>supported, not tested in production</td>
+</tr>
+<tr>
+<td>hebrew</td>
+<td>supported, not tested in production</td>
+</tr>
+<tr>
+<td>tis620</td>
+<td>supported, not tested in production</td>
+</tr>
+<tr>
+<td>euckr</td>
+<td>supported, not tested in production</td>
+</tr>
+<tr>
+<td>gb2312</td>
+<td>supported, not tested in production</td>
+</tr>
+<tr>
+<td>greek</td>
+<td>supported, not tested in production</td>
+</tr>
+<tr>
+<td>cp1250</td>
+<td>supported, not tested in production</td>
+</tr>
+<tr>
+<td>gbk</td>
+<td>supported, not tested in production</td>
+</tr>
+<tr>
+<td>latin5</td>
+<td>supported, not tested in production</td>
+</tr>
+<tr>
+<td>macroman</td>
+<td>supported, not tested in production</td>
+</tr>
+<tr>
+<td>cp852</td>
+<td>supported, not tested in production</td>
+</tr>
+<tr>
+<td>cp1251</td>
+<td>supported, not tested in production</td>
+</tr>
+<tr>
+<td>cp866</td>
+<td>supported, not tested in production</td>
+</tr>
+<tr>
+<td>cp1256</td>
+<td>supported, not tested in production</td>
+</tr>
+<tr>
+<td>cp1257</td>
+<td>supported, not tested in production</td>
+</tr>
+<tr>
+<td>dec8</td>
+<td>unsupported</td>
+</tr>
+<tr>
+<td>hp8</td>
+<td>unsupported</td>
+</tr>
+<tr>
+<td>koi8r</td>
+<td>unsupported</td>
+</tr>
+<tr>
+<td>swe7</td>
+<td>unsupported</td>
+</tr>
+<tr>
+<td>ujis</td>
+<td>unsupported</td>
+</tr>
+<tr>
+<td>koi8u</td>
+<td>unsupported</td>
+</tr>
+<tr>
+<td>armscii8</td>
+<td>unsupported</td>
+</tr>
+<tr>
+<td>keybcs2</td>
+<td>unsupported</td>
+</tr>
+<tr>
+<td>macce</td>
+<td>unsupported</td>
+</tr>
+<tr>
+<td>latin7</td>
+<td>unsupported</td>
+</tr>
+<tr>
+<td>geostd8</td>
+<td>unsupported</td>
+</tr>
+<tr>
+<td>cp932</td>
+<td>unsupported</td>
+</tr>
+<tr>
+<td>eucjpms</td>
+<td>unsupported</td>
+</tr>
+</tbody>
+</table>
+<script>
+  jQuery(document).ready(function () {
+    jQuery("table").addClass("table table-condensed table-bordered table-hover");
+  });
+</script></div>
         </div>
 
         

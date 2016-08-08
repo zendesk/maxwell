@@ -8,3 +8,4 @@ pages:
   - 'Data Format': 'dataformat.md'
   - 'Bootstrapping': 'bootstrapping.md'
   - 'Compat / Caveats': 'compat.md'
+  - 'Changelog': 'changelog.md'
