@@ -182,6 +182,9 @@ public class MaxwellConfig extends AbstractConfig {
 		for ( Enumeration<Object> e = properties.keys(); e.hasMoreElements(); ) {
 			String k = (String) e.nextElement();
 			if ( k.startsWith("kafka.")) {
+				if ( k.equals("kafka.bootstrap.servers") && kafkaBootstrapServers != null )
+					continue; // don't override command line bootstrap servers with config files'
+
 				this.kafkaProperties.setProperty(k.replace("kafka.", ""), properties.getProperty(k));
 			}
 		}
