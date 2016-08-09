@@ -62,6 +62,9 @@ public class MaxwellReplicator extends RunLoopProcess {
 		this.replicator.setPort(ctx.getConfig().replicationMysql.port);
 
 		this.replicator.setLevel2BufferSize(50 * 1024 * 1024);
+		int serverID = (int) ctx.getConfig().clientID.hashCode();
+		//int serverID = (int) (Math.random() * Integer.MAX_VALUE);
+		this.replicator.setServerId(serverID);
 
 		if ( ctx.shouldHeartbeat() )
 			this.replicator.setHeartbeatPeriod(0.5f);

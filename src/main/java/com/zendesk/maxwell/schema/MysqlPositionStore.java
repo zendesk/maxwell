@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.zendesk.maxwell.BinlogPosition;
 import com.zendesk.maxwell.RunLoopProcess;
+import com.zendesk.maxwell.errors.DuplicateProcessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +26,7 @@ public class MysqlPositionStore extends RunLoopProcess implements Runnable {
 	private String schemaDatabaseName;
 	private String clientID;
 	private final ConnectionPool connectionPool;
-	private SQLException exception;
+	private Exception exception;
 
 	public MysqlPositionStore(ConnectionPool pool, Long serverID, String dbName, String clientID) {
 		this.connectionPool = pool;
@@ -53,7 +54,11 @@ public class MysqlPositionStore extends RunLoopProcess implements Runnable {
 	protected void beforeStop() {
 		if ( exception == null ) {
 			LOGGER.info("Storing final position: " + position.get());
-			store(position.get());
+			try {
+				store(position.get());
+			} catch ( SQLException e ) {
+				LOGGER.error("error storing final position: " + e);
+			}
 		}
 	}
 
@@ -66,7 +71,9 @@ public class MysqlPositionStore extends RunLoopProcess implements Runnable {
 			// a design flaw in my code, but at a certain point
 			// the whole inheritance + exception handling thing
 			// just started to drive me nuts.
-			LOGGER.error("Hit unexpected exception in MysqlPositionStore thread: " + e);
+			LOGGER.error("Hit exception in MysqlPositionStore thread: ", e);
+			this.requestStop();
+			this.exception = e;
 		}
 	}
 
@@ -80,10 +87,12 @@ public class MysqlPositionStore extends RunLoopProcess implements Runnable {
 		try {
 			Thread.sleep(1000);
 		} catch (InterruptedException e) { }
+
+		heartbeat();
 	}
 
 
-	private void store(BinlogPosition newPosition) {
+	private void store(BinlogPosition newPosition) throws SQLException {
 		if ( newPosition == null )
 			return;
 
@@ -106,12 +115,63 @@ public class MysqlPositionStore extends RunLoopProcess implements Runnable {
 
 			s.execute();
 			storedPosition.set(newPosition);
-		} catch ( SQLException e ) {
-			LOGGER.error("received SQLException while trying to save to " + this.schemaDatabaseName + ".positions: ");
-			LOGGER.error(e.getLocalizedMessage());
-			this.requestStop();
-			this.exception = e;
 		}
+	}
+
+	private void heartbeat() throws Exception {
+		try ( Connection c = getConnection() ) {
+			heartbeat(c);
+		}
+	}
+
+	/*
+	 * detect duplicate maxwell processes configured with the same client_id, aborting if we detect a dupe.
+	 * note that this could at some point provide the basis for doing Maxwell-HA independent of
+	 * a distributed lock system, but we'd have to rework the interfaces.
+	 */
+
+	private Long lastHeartbeat = null;
+
+	private void heartbeat(Connection c) throws SQLException, DuplicateProcessException, InterruptedException {
+		if ( lastHeartbeat == null ) {
+			PreparedStatement s = c.prepareStatement("SELECT `heartbeat_at` from `positions` where server_id = ? and client_id = ?");
+			s.setLong(1, serverID);
+			s.setString(2, clientID);
+
+			ResultSet rs = s.executeQuery();
+			if ( !rs.next() )
+				return; // we haven't yet written a position, so no heartbeat is available.
+
+			lastHeartbeat = rs.getLong("heartbeat_at");
+			if ( rs.wasNull() )
+				lastHeartbeat = null;
+		}
+
+		Long thisHeartbeat = System.currentTimeMillis();
+
+		String heartbeatUpdate = "update `positions` set `heartbeat_at` = ? where `server_id` = ? and `client_id` = ?";
+		if ( lastHeartbeat == null )
+			heartbeatUpdate += " and `heartbeat_at` IS NULL";
+		else
+			heartbeatUpdate += " and `heartbeat_at` = " + lastHeartbeat;
+
+		PreparedStatement s = c.prepareStatement(heartbeatUpdate);
+		s.setLong(1, thisHeartbeat);
+		s.setLong(2, serverID);
+		s.setString(3, clientID);
+
+		int nRows = s.executeUpdate();
+		if ( nRows != 1 ) {
+			System.out.println(nRows);
+			String msg = String.format(
+				"Expected a heartbeat value of %d but didn't find it.  Is another Maxwell process running with the same client_id?",
+				lastHeartbeat
+			);
+
+			throw new DuplicateProcessException(msg);
+		}
+
+		lastHeartbeat = thisHeartbeat;
 	}
 
 	public synchronized void set(BinlogPosition p) {
@@ -143,7 +203,7 @@ public class MysqlPositionStore extends RunLoopProcess implements Runnable {
 		return conn;
 	}
 
-	public SQLException getException() {
+	public Exception getException() {
 		return this.exception;
 	}
 
