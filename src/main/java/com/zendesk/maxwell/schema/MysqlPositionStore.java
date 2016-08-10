@@ -71,7 +71,7 @@ public class MysqlPositionStore extends RunLoopProcess implements Runnable {
 			// a design flaw in my code, but at a certain point
 			// the whole inheritance + exception handling thing
 			// just started to drive me nuts.
-			LOGGER.error("Hit exception in MysqlPositionStore thread: ", e);
+			LOGGER.error("Hit " + e.getClass().getName() + " exception in MysqlPositionStore thread.");
 			this.requestStop();
 			this.exception = e;
 		}
@@ -162,7 +162,6 @@ public class MysqlPositionStore extends RunLoopProcess implements Runnable {
 
 		int nRows = s.executeUpdate();
 		if ( nRows != 1 ) {
-			System.out.println(nRows);
 			String msg = String.format(
 				"Expected a heartbeat value of %d but didn't find it.  Is another Maxwell process running with the same client_id?",
 				lastHeartbeat
