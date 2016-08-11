@@ -35,7 +35,7 @@ public class MysqlPositionStoreTest extends MaxwellTestWithIsolatedServer {
 		ResultSet rs = server.getConnection().createStatement().executeQuery("select * from maxwell.positions");
 		rs.next();
 
-		assertThat(rs.getLong("heartbeat_at") > preHeartbeat, is(true));
+		assertThat(rs.getLong("heartbeat_at") >= preHeartbeat, is(true));
 
 	}
 
