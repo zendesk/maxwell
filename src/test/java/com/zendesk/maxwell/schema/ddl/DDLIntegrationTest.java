@@ -39,8 +39,8 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 			"alter table shard_2.weird_rename rename to lowball", // renames to shard_1.lowball
 
 			"create table shard_1.testDrop ( id int(11) )",
-			"drop table shard_1.testDrop"
-
+			"drop table shard_1.testDrop",
+			"create table test.c ( v varchar(255) charset ascii )"
 		};
 		testIntegration(sql);
 	}
