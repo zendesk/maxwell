@@ -52,7 +52,7 @@ public class MysqlPositionStore {
 		}
 	}
 
-	private void heartbeat() throws Exception {
+	public void heartbeat() throws Exception {
 		try ( Connection c = getConnection() ) {
 			heartbeat(c);
 		}
