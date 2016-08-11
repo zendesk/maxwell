@@ -11,7 +11,8 @@ abstract public class RunLoopProcess {
 	}
 
 	protected void requestStop() {
-		this.runState = RunState.REQUEST_STOP;
+		if ( this.runState != RunState.STOPPED )
+			this.runState = RunState.REQUEST_STOP;
 	}
 
 	protected boolean isStopRequested() {
@@ -52,8 +53,8 @@ abstract public class RunLoopProcess {
 
 		this.requestStop();
 
-		for (long left = timeoutMS; left > 0 && this.runState == RunState.REQUEST_STOP; left -= 100)
-			try { Thread.sleep(100); } catch (InterruptedException e) { }
+		for (long left = timeoutMS; left > 0 && this.runState == RunState.REQUEST_STOP; left -= 10)
+			try { Thread.sleep(10); } catch (InterruptedException e) { }
 
 		if( this.runState != RunState.STOPPED )
 			throw new TimeoutException("Timed out trying to stop processed after " + timeoutMS + "ms.");

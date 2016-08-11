@@ -32,7 +32,6 @@ public class PositionStoreThread extends RunLoopProcess implements Runnable {
 			runLoop();
 		} catch ( Exception e ) {
 			LOGGER.error("Hit " + e.getClass().getName() + " exception in MysqlPositionStore thread.");
-			this.requestStop();
 			this.exception = e;
 		}
 	}
