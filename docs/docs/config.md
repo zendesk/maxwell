@@ -10,7 +10,8 @@ option                                        | description | default
 --password PASSWORD                           | mysql password | (none)
 --port PORT                                   | mysql port | 3306
 --schema_database                             | database name where maxwell stores schema and state | maxwell
---client_id                                   | unique identifier for this maxwell replicator configuration | maxwell
+--client_id                                   | unique (string) identifier for this maxwell instance| maxwell
+--replica_server_id                           | unique (long) identifier for this maxwell instance | 6379 (see notes)
 &nbsp;
 --producer PRODUCER                           | what type of producer to use: [stdout, kafka, file, profiler] | stdout
 --output_file                                 | if using the file producer, write JSON rows to this path |
@@ -93,16 +94,24 @@ the host described by `host`, `user`, ..., will be used to write schema informat
 events from the host described by `replication_host`, `replication_user`, ...  Note that bootstrapping is not available
 in this configuration.
 
+### running multiple instances of maxwell against the same master
+***
+Maxwell can operate with multiple instances running against a single master, in
+different configurations.  This can be useful if you wish to have producers
+running in different configurations, for example producing different groups of
+tables to different topics.  Each instance of Maxwell must be configured with a
+unique `client_id`, in order to store unique binlog positions.
+
+#### multiple instances on a 5.5 server
+
+With MySQL 5.5 and below, each replicator (be it mysql, maxwell, whatever) must
+also be configured with a unique `replica_server_id`.  This is a 32-bit integer
+that corresponds to mysql's `server_id` parameter.  The value you configure
+should be unique across all mysql and maxwell instances.
+
 <script>
   jQuery(document).ready(function () {
     jQuery("table").addClass("table table-condensed table-bordered table-hover");
   });
 </script>
-
-### running multiple instances of maxwell against the same master
-***
-Maxwell can operate with multiple instances running against a single master, in different configurations.  This can
-be useful if you wish to have producers running in different configurations, for example producing different groups
-of tables to different topics.  In order to run multiple instances, you must give each instance a unique `client_id`.
-
 
