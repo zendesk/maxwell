@@ -8,10 +8,16 @@ import java.sql.SQLException;
 public class BinlogPosition implements Serializable {
 	private final long offset;
 	private final String file;
+	private final Long heartbeat;
 
-	public BinlogPosition(long l, String file) {
+	public BinlogPosition(long l, String file, Long heartbeat) {
 		this.offset = l;
 		this.file = file;
+		this.heartbeat = heartbeat;
+	}
+
+	public BinlogPosition(long l, String file) {
+		this(l, file, null);
 	}
 
 	public static BinlogPosition capture(Connection c) throws SQLException {
@@ -31,6 +37,10 @@ public class BinlogPosition implements Serializable {
 
 	public String getFile() {
 		return file;
+	}
+
+	public Long getHeartbeat() {
+		return heartbeat;
 	}
 
 	@Override

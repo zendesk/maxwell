@@ -96,12 +96,19 @@ public class MysqlPositionStore extends RunLoopProcess implements Runnable {
 		if ( newPosition == null )
 			return;
 
+		Long heartbeat = newPosition.getHeartbeat();
+		String lastHeartbeatSQL = heartbeat == null ? "" : "last_heartbeat_read = " + heartbeat + ", ";
+
 		String sql = "INSERT INTO `positions` set "
 				+ "server_id = ?, "
 				+ "binlog_file = ?, "
 				+ "binlog_position = ?, "
+				+ lastHeartbeatSQL
 				+ "client_id = ? "
-				+ "ON DUPLICATE KEY UPDATE binlog_file=?, binlog_position=?";
+				+ "ON DUPLICATE KEY UPDATE "
+				+ lastHeartbeatSQL
+				+ "binlog_file = ?, binlog_position=?";
+
 		try( Connection c = getConnection() ){
 			PreparedStatement s = c.prepareStatement(sql);
 
