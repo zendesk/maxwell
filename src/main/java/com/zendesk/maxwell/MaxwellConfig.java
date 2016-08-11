@@ -43,6 +43,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.replayMode = false;
 		this.replicationMysql = new MaxwellMysqlConfig();
 		this.maxwellMysql = new MaxwellMysqlConfig();
+		setup(null, null); // setup defaults
 	}
 
 	public MaxwellConfig(String argv[]) {
@@ -130,7 +131,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 
 	private String fetchOption(String name, OptionSet options, Properties properties, String defaultVal) {
-		if ( options.has(name) )
+		if ( options != null && options.has(name) )
 			return (String) options.valueOf(name);
 		else if ( (properties != null) && properties.containsKey(name) )
 			return (String) properties.getProperty(name);
@@ -168,15 +169,19 @@ public class MaxwellConfig extends AbstractConfig {
 
 		Properties properties;
 
-		if ( options.has("config") ) {
+		if (options.has("config")) {
 			properties = parseFile((String) options.valueOf("config"), true);
 		} else {
 			properties = parseFile(DEFAULT_CONFIG_FILE, false);
 		}
 
-		if ( options.has("help") )
+		if (options.has("help"))
 			usage("Help for Maxwell:");
 
+		setup(options, properties);
+	}
+
+	private void setup(OptionSet options, Properties properties) {
 		this.log_level = fetchOption("log_level", options, properties, null);
 
 		this.maxwellMysql       = parseMysqlConfig("", options, properties);
@@ -197,13 +202,15 @@ public class MaxwellConfig extends AbstractConfig {
 		if ( kafkaBootstrapServers != null )
 			this.kafkaProperties.setProperty("bootstrap.servers", kafkaBootstrapServers);
 
-		for ( Enumeration<Object> e = properties.keys(); e.hasMoreElements(); ) {
-			String k = (String) e.nextElement();
-			if ( k.startsWith("kafka.")) {
-				if ( k.equals("kafka.bootstrap.servers") && kafkaBootstrapServers != null )
-					continue; // don't override command line bootstrap servers with config files'
+		if ( properties != null ) {
+			for (Enumeration<Object> e = properties.keys(); e.hasMoreElements(); ) {
+				String k = (String) e.nextElement();
+				if (k.startsWith("kafka.")) {
+					if (k.equals("kafka.bootstrap.servers") && kafkaBootstrapServers != null)
+						continue; // don't override command line bootstrap servers with config files'
 
-				this.kafkaProperties.setProperty(k.replace("kafka.", ""), properties.getProperty(k));
+					this.kafkaProperties.setProperty(k.replace("kafka.", ""), properties.getProperty(k));
+				}
 			}
 		}
 
@@ -217,25 +224,20 @@ public class MaxwellConfig extends AbstractConfig {
 		this.blacklistDatabases = fetchOption("blacklist_dbs", options, properties, null);
 		this.blacklistTables    = fetchOption("blacklist_tables", options, properties, null);
 
-		if ( options.has("init_position")) {
+		if ( options != null && options.has("init_position")) {
 			String initPosition = (String) options.valueOf("init_position");
 			String[] initPositionSplit = initPosition.split(":");
 
-			if ( initPositionSplit.length != 2 )
+			if (initPositionSplit.length != 2)
 				usageForOptions("Invalid init_position: " + initPosition, "--init_position");
 
 			Long pos = 0L;
 			try {
 				pos = Long.valueOf(initPositionSplit[1]);
-			} catch ( NumberFormatException e ) {
+			} catch (NumberFormatException e) {
 				usageForOptions("Invalid init_position: " + initPosition, "--init_position");
+				this.replayMode = true;
 			}
-
-			this.initPosition = new BinlogPosition(pos, initPositionSplit[0]);
-		}
-
-		if ( options.has("replay")) {
-			this.replayMode = true;
 		}
 	}
 
