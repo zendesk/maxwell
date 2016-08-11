@@ -5,9 +5,11 @@ CREATE TABLE IF NOT EXISTS `schemas` (
   base_schema_id int unsigned NULL default NULL,
   deltas mediumtext charset 'utf8' NULL default NULL,
   server_id int unsigned,
+  position_sha char(40) CHARACTER SET latin1 DEFAULT NULL,
   charset varchar(255),
   version smallint unsigned not null default 0,
-  deleted tinyint(1) not null default 0
+  deleted tinyint(1) not null default 0,
+  UNIQUE KEY `position_sha` (`position_sha`)
 );
 
 CREATE TABLE IF NOT EXISTS `databases` (
@@ -43,7 +45,9 @@ CREATE TABLE IF NOT EXISTS `columns` (
 );
 
 CREATE TABLE IF NOT EXISTS `positions` (
-  server_id int unsigned not null primary key,
+  server_id int unsigned not null,
   binlog_file varchar(255),
-  binlog_position int unsigned
+  binlog_position int unsigned,
+  client_id varchar(255) charset latin1 not null default 'maxwell',
+  primary key(server_id, client_id)
 );

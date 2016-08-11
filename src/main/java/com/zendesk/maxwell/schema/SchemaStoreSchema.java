@@ -1,7 +1,10 @@
 package com.zendesk.maxwell.schema;
 
 /* represents the schema of the `maxwell` databases, and contains code around upgrading
- * and managing that schema */
+ * and managing that schema
+ *
+ * TODO: move all this into MysqlSchemaStore
+ */
 
 import java.sql.*;
 import java.util.HashMap;
@@ -38,7 +41,6 @@ public class SchemaStoreSchema {
 		BufferedReader r = new BufferedReader(new InputStreamReader(schemaSQL));
 		String sql = "", line;
 
-		LOGGER.info("Creating maxwell database");
 		connection.createStatement().execute("CREATE DATABASE IF NOT EXISTS `" + schemaDatabaseName + "`");
 		if (!connection.getCatalog().equals(schemaDatabaseName))
 			connection.setCatalog(schemaDatabaseName);
@@ -54,6 +56,7 @@ public class SchemaStoreSchema {
 	}
 
 	private static void createStoreDatabase(Connection connection, String schemaDatabaseName) throws SQLException, IOException {
+		LOGGER.info("Creating maxwell database");
 		executeSQLInputStream(connection, SchemaStoreSchema.class.getResourceAsStream("/sql/maxwell_schema.sql"), schemaDatabaseName);
 		executeSQLInputStream(connection, SchemaStoreSchema.class.getResourceAsStream("/sql/maxwell_schema_bootstrap.sql"), schemaDatabaseName);
 	}
@@ -119,21 +122,43 @@ public class SchemaStoreSchema {
 			performAlter(c, "alter table `bootstrap` modify column inserted_rows bigint unsigned not null default 0");
 		}
 
-		if ( !getTableColumns("schemas", c).containsKey("charset")) {
+
+		HashMap<String, String> schemaColumns = getTableColumns("schemas", c);
+		if ( !schemaColumns.containsKey("charset")) {
 			String[] charsetTables = { "schemas", "databases", "tables", "columns" };
 			for ( String table : charsetTables ) {
 				performAlter(c, "alter table `" + table + "` change `encoding` `charset` varchar(255)");
 			}
 		}
 
-		if ( !getTableColumns("schemas", c).containsKey("base_schema_id"))
+		if ( !schemaColumns.containsKey("base_schema_id"))
 			performAlter(c, "alter table `schemas` add column base_schema_id int unsigned NULL default NULL after binlog_position");
 
-		if ( !getTableColumns("schemas", c).containsKey("deltas"))
+		if ( !schemaColumns.containsKey("deltas"))
 			performAlter(c, "alter table `schemas` add column deltas mediumtext charset 'utf8' NULL default NULL after base_schema_id");
 
-		if ( !getTableColumns("schemas", c).containsKey("version")) {
+		if ( !schemaColumns.containsKey("version")) {
 			performAlter(c, "alter table `schemas` add column `version` smallint unsigned not null default 0 after `charset`");
 		}
+
+		if ( !getTableColumns("positions", c).containsKey("client_id") ) {
+			performAlter(c, "alter table `positions` add column `client_id` varchar(255) charset 'latin1' not null default 'maxwell'");
+			performAlter(c, "alter table `positions` drop primary key, add primary key(`server_id`, `client_id`)");
+		}
+
+		if ( !schemaColumns.containsKey("position_sha") ) {
+			performAlter(c, "alter table `schemas` add column `position_sha` char(40) charset 'latin1' null default null, add unique index(`position_sha`)");
+			backfillPositionSHAs(c);
+		}
+	}
+
+	private static void backfillPositionSHAs(Connection c) throws SQLException {
+		ResultSet rs = c.createStatement().executeQuery("select * from `schemas`");
+		while (rs.next()) {
+			Long id = rs.getLong("id");
+			String sha = MysqlSavedSchema.getSchemaPositionSHA(rs.getLong("server_id"), rs.getString("binlog_file"), rs.getLong("binlog_position"));
+			c.createStatement().executeUpdate("update `schemas` set `position_sha` = '" + sha + "' where id = " + id);
+		}
+		rs.close();
 	}
 }

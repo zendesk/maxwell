@@ -4,11 +4,14 @@ import java.sql.*;
 import java.util.*;
 
 import java.io.IOException;
+import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.zendesk.maxwell.CaseSensitivity;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.schema.columndef.*;
+
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -101,18 +104,47 @@ public class MysqlSavedSchema {
 		if (this.schema == null)
 			throw new RuntimeException("Uninitialized schema!");
 
+
+		this.schemaID = findSchemaForPositionSHA(connection, getPositionSHA());
+
+		if ( this.schemaID != null )
+			return;
+
 		try {
 			connection.setAutoCommit(false);
 			this.schemaID = saveSchema(connection);
 			connection.commit();
+		} catch ( MySQLIntegrityConstraintViolationException e ) {
+			connection.rollback();
+
+			connection.setAutoCommit(true);
+			this.schemaID = findSchemaForPositionSHA(connection, getPositionSHA());
 		} finally {
 			connection.setAutoCommit(true);
 		}
 	}
 
+	/* Look for SHAs already created at a position we're about to save to.
+	 * don't conflict with other maxwell replicators running on the same server. */
+	private Long findSchemaForPositionSHA(Connection c, String sha) throws SQLException {
+		PreparedStatement p = c.prepareStatement("SELECT * from `schemas` where position_sha = ?");
+		p.setString(1, sha);
+		ResultSet rs = p.executeQuery();
+
+		if ( rs.next() ) {
+			Long id = rs.getLong("id");
+			LOGGER.debug("findSchemaForPositionSHA: found schema_id: " + id + " for sha: " + sha);
+			return id;
+		} else {
+			return null;
+		}
+	}
+
 	public Long saveDerivedSchema(Connection conn) throws SQLException {
 		PreparedStatement insert = conn.prepareStatement(
-				"INSERT into `schemas` SET base_schema_id = ?, deltas = ?, binlog_file = ?, binlog_position = ?, server_id = ?, charset = ?, version = ?",
+				"INSERT into `schemas` SET base_schema_id = ?, deltas = ?, binlog_file = ?, " +
+				"binlog_position = ?, server_id = ?, charset = ?, version = ?, " +
+				"position_sha = ?",
 				Statement.RETURN_GENERATED_KEYS);
 
 		String deltaString;
@@ -130,7 +162,8 @@ public class MysqlSavedSchema {
 		                     position.getOffset(),
 		                     serverID,
 		                     schema.getCharset(),
-		                     SchemaStoreVersion);
+		                     SchemaStoreVersion,
+							 getPositionSHA());
 
 	}
 
@@ -141,7 +174,7 @@ public class MysqlSavedSchema {
 		PreparedStatement schemaInsert, databaseInsert, tableInsert;
 
 		schemaInsert = conn.prepareStatement(
-				"INSERT INTO `schemas` SET binlog_file = ?, binlog_position = ?, server_id = ?, charset = ?, version = ?",
+				"INSERT INTO `schemas` SET binlog_file = ?, binlog_position = ?, server_id = ?, charset = ?, version = ?, position_sha = ?",
 				Statement.RETURN_GENERATED_KEYS
 		);
 
@@ -156,7 +189,7 @@ public class MysqlSavedSchema {
 		);
 
 		Long schemaId = executeInsert(schemaInsert, position.getFile(),
-				position.getOffset(), serverID, schema.getCharset(), SchemaStoreVersion);
+				position.getOffset(), serverID, schema.getCharset(), SchemaStoreVersion, getPositionSHA());
 
 		ArrayList<Object> columnData = new ArrayList<Object>();
 
@@ -547,5 +580,14 @@ public class MysqlSavedSchema {
 				fixColumnCases(recaptured);
 			}
 		}
+	}
+
+	private String getPositionSHA() {
+		return getSchemaPositionSHA(serverID, position.getFile(), position.getOffset());
+	}
+
+	public static String getSchemaPositionSHA(Long serverID, String binlogFilename, Long binlogPosition) {
+		String shaString = String.format("%d/%s/%d", serverID, binlogFilename, binlogPosition);
+		return DigestUtils.shaHex(shaString);
 	}
 }

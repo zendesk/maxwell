@@ -10,7 +10,7 @@ option                                        | description | default
 --password PASSWORD                           | mysql password | (none)
 --port PORT                                   | mysql port | 3306
 --schema_database                             | database name where maxwell stores schema and state | maxwell
---max_schemas                                 | how many old schemas maxwell should leave lying around in maxwell.schemas | 5
+--client_id                                   | unique identifier for this maxwell replicator configuration | maxwell
 &nbsp;
 --producer PRODUCER                           | what type of producer to use: [stdout, kafka, file, profiler] | stdout
 --output_file                                 | if using the file producer, write JSON rows to this path |
@@ -98,4 +98,11 @@ in this configuration.
     jQuery("table").addClass("table table-condensed table-bordered table-hover");
   });
 </script>
+
+### running multiple instances of maxwell against the same master
+***
+Maxwell can operate with multiple instances running against a single master, in different configurations.  This can
+be useful if you wish to have producers running in different configurations, for example producing different groups
+of tables to different topics.  In order to run multiple instances, you must give each instance a unique `client_id`.
+
 

@@ -32,6 +32,8 @@ public class MaxwellConfig extends AbstractConfig {
 	public String outputFile;
 	public String log_level;
 
+	public String clientID;
+
 	public BinlogPosition initPosition;
 	public boolean replayMode;
 
@@ -84,6 +86,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_5" );
 
+		parser.accepts( "client_id", "unique identifier for this maxwell replicator").withRequiredArg();
 		parser.accepts( "schema_database", "database name for maxwell state (schema and binlog position)").withRequiredArg();
 		parser.accepts( "max_schemas", "deprecated.").withOptionalArg();
 		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION").withRequiredArg();
@@ -165,6 +168,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.databaseName       = fetchOption("schema_database", options, properties, "maxwell");
 		this.producerType       = fetchOption("producer", options, properties, "stdout");
 		this.bootstrapperType   = fetchOption("bootstrapper", options, properties, "async");
+		this.clientID           = fetchOption("client_id", options, properties, "maxwell");
 
 		this.kafkaTopic         = fetchOption("kafka_topic", options, properties, "maxwell");
 		this.kafkaKeyFormat     = fetchOption("kafka_key_format", options, properties, "hash");
@@ -178,6 +182,9 @@ public class MaxwellConfig extends AbstractConfig {
 		for ( Enumeration<Object> e = properties.keys(); e.hasMoreElements(); ) {
 			String k = (String) e.nextElement();
 			if ( k.startsWith("kafka.")) {
+				if ( k.equals("kafka.bootstrap.servers") && kafkaBootstrapServers != null )
+					continue; // don't override command line bootstrap servers with config files'
+
 				this.kafkaProperties.setProperty(k.replace("kafka.", ""), properties.getProperty(k));
 			}
 		}
@@ -219,6 +226,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		if ( p == null )
 			p = new Properties();
+
 		return p;
 	}
 

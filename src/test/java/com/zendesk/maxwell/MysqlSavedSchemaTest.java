@@ -24,6 +24,8 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 	private MysqlSavedSchema savedSchema;
 
 	String schemaSQL[] = {
+		"delete from `maxwell`.`positions`",
+		"delete from `maxwell`.`schemas`",
 		"CREATE TABLE shard_1.latin1 (id int(11), str1 varchar(255), str2 varchar(255) character set 'utf8') charset = 'latin1'",
 		"CREATE TABLE shard_1.enums (id int(11), enum_col enum('foo', 'bar', 'baz'))",
 		"CREATE TABLE shard_1.pks (id int(11), col2 varchar(255), col3 datetime, PRIMARY KEY(col2, col3, id))",
@@ -123,5 +125,14 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 		MysqlSavedSchema restored = MysqlSavedSchema.restore(context, context.getInitialPosition());
 		ColumnDef cd = restored.getSchema().findDatabase("shard_1").findTable("signed").findColumn("casecol");
 		assertThat(cd.getName(), is("CaseCol"));
+	}
+
+	@Test
+	public void testUpgradeSchemaStore() throws Exception {
+		Connection c = context.getMaxwellConnection();
+		c.createStatement().executeUpdate("alter table `maxwell`.`schemas` drop column deleted, " +
+				"drop column base_schema_id, drop column deltas, drop column version, drop column position_sha");
+		c.createStatement().executeUpdate("alter table maxwell.positions drop column client_id");
+		SchemaStoreSchema.upgradeSchemaStoreSchema(c, "maxwell"); // just verify no-crash.
 	}
 }
