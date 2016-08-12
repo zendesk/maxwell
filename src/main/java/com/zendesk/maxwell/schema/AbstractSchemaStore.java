@@ -4,6 +4,9 @@ import java.sql.SQLException;
 import java.sql.Connection;
 import java.util.List;
 import java.util.ArrayList;
+
+import com.zendesk.maxwell.CaseSensitivity;
+import com.zendesk.maxwell.MaxwellFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,19 +15,31 @@ import com.zendesk.maxwell.BinlogPosition;
 import com.zendesk.maxwell.schema.ddl.SchemaChange;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
+import snaq.db.ConnectionPool;
 
 public abstract class AbstractSchemaStore {
 	static final Logger LOGGER = LoggerFactory.getLogger(AbstractSchemaStore.class);
-	protected final MaxwellContext context;
+	private final ConnectionPool replicationConnectionPool;
+	private final CaseSensitivity caseSensitivity;
+	private final MaxwellFilter filter;
 
-	protected AbstractSchemaStore(MaxwellContext context) {
-		this.context = context;
+	protected AbstractSchemaStore(ConnectionPool replicationConnectionPool,
+								  CaseSensitivity caseSensitivity,
+								  MaxwellFilter filter) {
+		this.replicationConnectionPool = replicationConnectionPool;
+		this.caseSensitivity = caseSensitivity;
+		this.filter = filter;
+
+
+	}
+	protected AbstractSchemaStore(MaxwellContext context) throws SQLException {
+		this(context.getReplicationConnectionPool(), context.getCaseSensitivity(), context.getFilter());
 	}
 
 	protected Schema captureSchema() throws SQLException {
-		try(Connection connection = context.getReplicationConnection()) {
+		try(Connection connection = replicationConnectionPool.getConnection()) {
 			LOGGER.info("Maxwell is capturing initial schema");
-			SchemaCapturer capturer = new SchemaCapturer(connection, this.context.getCaseSensitivity());
+			SchemaCapturer capturer = new SchemaCapturer(connection, caseSensitivity);
 			return capturer.capture();
 		}
 	}
@@ -38,7 +53,7 @@ public abstract class AbstractSchemaStore {
 		ArrayList<ResolvedSchemaChange> resolvedSchemaChanges = new ArrayList<>();
 
 		for ( SchemaChange change : changes ) {
-			if ( !change.isBlacklisted(this.context.getFilter()) ) {
+			if ( !change.isBlacklisted(this.filter) ) {
 				ResolvedSchemaChange resolved = change.resolve(schema);
 				if ( resolved != null ) {
 					resolved.apply(schema);

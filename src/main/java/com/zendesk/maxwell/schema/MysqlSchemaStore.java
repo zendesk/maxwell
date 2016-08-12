@@ -1,23 +1,51 @@
 package com.zendesk.maxwell.schema;
 
+import com.zendesk.maxwell.CaseSensitivity;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.BinlogPosition;
+import com.zendesk.maxwell.MaxwellFilter;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
+import snaq.db.ConnectionPool;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
-import static com.zendesk.maxwell.schema.SchemaScavenger.LOGGER;
-
 public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore {
+	private final ConnectionPool maxwellConnectionPool;
+	private final BinlogPosition initialPosition;
+	private final CaseSensitivity caseSensitivity;
+	private final Long serverID;
+	private final boolean replayMode;
+
 	private MysqlSavedSchema savedSchema;
 
-	public MysqlSchemaStore(MaxwellContext context) {
-		super(context);
+	public MysqlSchemaStore(ConnectionPool maxwellConnectionPool,
+							ConnectionPool replicationConnectionPool,
+							Long serverID,
+							BinlogPosition initialPosition,
+							CaseSensitivity caseSensitivity,
+							MaxwellFilter filter,
+							boolean replayMode) {
+		super(replicationConnectionPool, caseSensitivity, filter);
+		this.caseSensitivity = caseSensitivity;
+		this.serverID = serverID;
+		this.maxwellConnectionPool = maxwellConnectionPool;
+		this.initialPosition = initialPosition;
+		this.replayMode = replayMode;
+
+	}
+	public MysqlSchemaStore(MaxwellContext context) throws SQLException {
+		this(
+			context.getMaxwellConnectionPool(),
+			context.getReplicationConnectionPool(),
+			context.getServerID(),
+			context.getInitialPosition(),
+			context.getCaseSensitivity(),
+			context.getFilter(),
+			context.getReplayMode()
+		);
 	}
 
 	public Schema getSchema() throws SchemaStoreException {
@@ -27,11 +55,13 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 	}
 
 	private MysqlSavedSchema restoreOrCaptureSchema() throws SchemaStoreException {
-		try ( Connection conn = context.getMaxwellConnection() ) {
-			MysqlSavedSchema savedSchema = MysqlSavedSchema.restore(this.context, this.context.getInitialPosition());
+		try ( Connection conn = maxwellConnectionPool.getConnection() ) {
+			MysqlSavedSchema savedSchema =
+				MysqlSavedSchema.restore(maxwellConnectionPool, serverID, caseSensitivity, initialPosition);
+
 			if ( savedSchema == null ) {
 				Schema capturedSchema = captureSchema();
-				savedSchema = new MysqlSavedSchema(context, capturedSchema, this.context.getInitialPosition());
+				savedSchema = new MysqlSavedSchema(serverID, caseSensitivity, capturedSchema, initialPosition);
 				savedSchema.save(conn);
 			}
 			return savedSchema;
@@ -60,10 +90,10 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 
 	private void saveSchema(Schema updatedSchema, List<ResolvedSchemaChange> changes, BinlogPosition p) throws SQLException {
 		/* TODO: replay mode should trigger a null schema-store */
-		if ( this.context.getReplayMode() )
+		if ( replayMode )
 			return;
 
-		try (Connection c = this.context.getMaxwellConnection()) {
+		try (Connection c = maxwellConnectionPool.getConnection()) {
 			this.savedSchema = this.savedSchema.createDerivedSchema(updatedSchema, p, changes);
 			this.savedSchema.save(c);
 		}
