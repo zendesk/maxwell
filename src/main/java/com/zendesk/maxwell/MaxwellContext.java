@@ -17,6 +17,7 @@ import com.zendesk.maxwell.schema.ReadOnlyMysqlPositionStore;
 import com.zendesk.maxwell.schema.MysqlPositionStore;
 
 import com.zendesk.maxwell.schema.SchemaScavenger;
+import org.I0Itec.zkclient.ZkClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import snaq.db.ConnectionPool;
@@ -31,6 +32,8 @@ public class MaxwellContext {
 	private Long serverID;
 	private BinlogPosition initialPosition;
 	private CaseSensitivity caseSensitivity;
+	private String kafkaTopicPerTableFormat;
+    private ZkClient zkClient;
 
 	private Integer mysqlMajorVersion;
 	private Integer mysqlMinorVersion;
@@ -47,6 +50,12 @@ public class MaxwellContext {
 
 		if ( this.config.initPosition != null )
 			this.initialPosition = this.config.initPosition;
+
+        if ( this.config.kafkaTopicPerTable != null )
+            this.kafkaTopicPerTableFormat = this.config.kafkaTopicPerTable;
+
+        if ( this.config.zkClient != null )
+            this.zkClient = this.config.zkClient;
 	}
 
 	public MaxwellConfig getConfig() {
@@ -64,6 +73,10 @@ public class MaxwellContext {
 		conn.setCatalog(config.databaseName);
 		return conn;
 	}
+
+    public String getKafkaTopicPerTableFormat() { return this.kafkaTopicPerTableFormat; }
+
+    public ZkClient getZkClient() { return this.zkClient; }
 
 	public void start() {
 		SchemaScavenger s = new SchemaScavenger(this.maxwellConnectionPool, this.config.databaseName);
