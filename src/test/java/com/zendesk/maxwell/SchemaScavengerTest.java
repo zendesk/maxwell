@@ -35,7 +35,7 @@ public class SchemaScavengerTest extends MaxwellTestWithIsolatedServer {
 		this.binlogPosition = BinlogPosition.capture(server.getConnection());
         MaxwellContext context = buildContext();
 
-		this.scavenger = new SchemaScavenger(buildContext().getMaxwellConnectionPool(), context.getConfig().databaseName);
+		this.scavenger = new SchemaScavenger(buildContext().getMaxwellConnectionPool());
 		Connection conn = server.getConnection();
 		conn.setCatalog(context.getConfig().databaseName);
 		this.savedSchema = new MysqlSavedSchema(context, this.schema, binlogPosition);

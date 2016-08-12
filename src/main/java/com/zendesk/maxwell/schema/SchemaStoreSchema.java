@@ -41,9 +41,12 @@ public class SchemaStoreSchema {
 		BufferedReader r = new BufferedReader(new InputStreamReader(schemaSQL));
 		String sql = "", line;
 
-		connection.createStatement().execute("CREATE DATABASE IF NOT EXISTS `" + schemaDatabaseName + "`");
-		if (!connection.getCatalog().equals(schemaDatabaseName))
-			connection.setCatalog(schemaDatabaseName);
+		if ( schemaDatabaseName != null ) {
+			connection.createStatement().execute("CREATE DATABASE IF NOT EXISTS `" + schemaDatabaseName + "`");
+			if (!connection.getCatalog().equals(schemaDatabaseName))
+				connection.setCatalog(schemaDatabaseName);
+		}
+
 		while ((line = r.readLine()) != null) {
 			sql += line + "\n";
 		}
@@ -65,7 +68,7 @@ public class SchemaStoreSchema {
 		for the time being, when we detect other schemas we will simply wipe them down.
 		in the future, this is our moment to pick up where the master left off.
 	*/
-	public static void handleMasterChange(Connection c, Long serverID, String schemaDatabaseName) throws SQLException {
+	public static void handleMasterChange(Connection c, Long serverID) throws SQLException {
 		PreparedStatement s = c.prepareStatement(
 				"SELECT id from `schemas` WHERE server_id != ? and deleted = 0"
 		);
@@ -106,15 +109,15 @@ public class SchemaStoreSchema {
 		c.createStatement().execute(sql);
 	}
 
-	public static void upgradeSchemaStoreSchema(Connection c, String schemaDatabaseName) throws SQLException, IOException {
+	public static void upgradeSchemaStoreSchema(Connection c) throws SQLException, IOException {
 		if ( !getTableColumns("schemas", c).containsKey("deleted") ) {
 			performAlter(c, "alter table `schemas` add column deleted tinyint(1) not null default 0");
 		}
 
 		if ( !getMaxwellTables(c).contains("bootstrap") )  {
-			LOGGER.info("adding `" + schemaDatabaseName + "`.`bootstrap` to the schema.");
+			LOGGER.info("adding bootstrap tables to the maxwell schema.");
 			InputStream is = MysqlSavedSchema.class.getResourceAsStream("/sql/maxwell_schema_bootstrap.sql");
-			executeSQLInputStream(c, is, schemaDatabaseName);
+			executeSQLInputStream(c, is, null);
 		}
 
 		if ( !getTableColumns("bootstrap", c).containsKey("total_rows") ) {

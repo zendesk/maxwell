@@ -31,15 +31,17 @@ public class Maxwell {
 
 		this.context.probeConnections();
 
-		try ( Connection connection = this.context.getReplicationConnection(); Connection schemaConnection = context.getMaxwellConnectionPool().getConnection() ) {
+		try ( Connection connection = this.context.getReplicationConnection();
+			  Connection rawConnection = this.context.getMaxwellConnectionWithoutDatabase() ) {
 			MaxwellMysqlStatus.ensureReplicationMysqlState(connection);
-			MaxwellMysqlStatus.ensureMaxwellMysqlState(schemaConnection);
+			MaxwellMysqlStatus.ensureMaxwellMysqlState(rawConnection);
 
-			SchemaStoreSchema.ensureMaxwellSchema(schemaConnection, this.config.databaseName);
-			schemaConnection.setCatalog(this.config.databaseName);
-			SchemaStoreSchema.upgradeSchemaStoreSchema(schemaConnection, this.config.databaseName);
+			SchemaStoreSchema.ensureMaxwellSchema(rawConnection, this.config.databaseName);
 
-			SchemaStoreSchema.handleMasterChange(schemaConnection, context.getServerID(), this.config.databaseName);
+			try ( Connection schemaConnection = this.context.getMaxwellConnection() ) {
+				SchemaStoreSchema.upgradeSchemaStoreSchema(schemaConnection);
+				SchemaStoreSchema.handleMasterChange(schemaConnection, context.getServerID());
+			}
 
 			String producerClass = this.context.getProducer().getClass().getSimpleName();
 			LOGGER.info("Maxwell is booting (" + producerClass + "), starting at " + this.context.getInitialPosition());

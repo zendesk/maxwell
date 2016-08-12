@@ -27,6 +27,7 @@ public class MaxwellContext {
 
 	private final ConnectionPool replicationConnectionPool;
 	private final ConnectionPool maxwellConnectionPool;
+	private final ConnectionPool maxwellConnectionPoolWithoutDatabase;
 	private final MaxwellConfig config;
 	private PositionStoreThread positionStoreThread;
 	private Long serverID;
@@ -41,6 +42,9 @@ public class MaxwellContext {
 
 		this.replicationConnectionPool = new ConnectionPool("ReplicationConnectionPool", 10, 0, 10,
 				config.replicationMysql.getConnectionURI(), config.replicationMysql.user, config.replicationMysql.password);
+
+		this.maxwellConnectionPoolWithoutDatabase = new ConnectionPool("MaxellConnectionPoolWithoutDatabase", 1, 2, 100,
+			config.maxwellMysql.getConnectionURI(false), config.maxwellMysql.user, config.maxwellMysql.password);
 
 		this.maxwellConnectionPool = new ConnectionPool("MaxwellConnectionPool", 10, 0, 10,
 					config.maxwellMysql.getConnectionURI(), config.maxwellMysql.user, config.maxwellMysql.password);
@@ -58,16 +62,15 @@ public class MaxwellContext {
 		return this.replicationConnectionPool.getConnection();
 	}
 
+	public ConnectionPool getReplicationConnectionPool() { return replicationConnectionPool; }
 	public ConnectionPool getMaxwellConnectionPool() { return this.maxwellConnectionPool; }
 
 	public Connection getMaxwellConnection() throws SQLException {
-		Connection conn = this.maxwellConnectionPool.getConnection();
-		conn.setCatalog(config.databaseName);
-		return conn;
+		return this.maxwellConnectionPool.getConnection();
 	}
 
 	public void start() {
-		SchemaScavenger s = new SchemaScavenger(this.maxwellConnectionPool, this.config.databaseName);
+		SchemaScavenger s = new SchemaScavenger(this.maxwellConnectionPool);
 		new Thread(s, "maxwell-schema-scavenger").start();
 	}
 
@@ -84,13 +87,13 @@ public class MaxwellContext {
 		this.maxwellConnectionPool.release();
 	}
 
-	private PositionStoreThread getPositionStoreThread() throws SQLException {
+	public PositionStoreThread getPositionStoreThread() throws SQLException {
 		if ( this.positionStoreThread == null ) {
 			MysqlPositionStore store;
 			if ( this.getConfig().replayMode ) {
-				store = new ReadOnlyMysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.databaseName, this.config.clientID);
+				store = new ReadOnlyMysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.clientID);
 			} else {
-				store = new MysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.databaseName, this.config.clientID);
+				store = new MysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.clientID);
 			}
 			this.positionStoreThread = new PositionStoreThread(store);
 			this.positionStoreThread.start();
