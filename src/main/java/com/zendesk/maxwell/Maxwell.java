@@ -32,7 +32,7 @@ public class Maxwell {
 		this.context.probeConnections();
 
 		try ( Connection connection = this.context.getReplicationConnection();
-			  Connection rawConnection = this.context.getMaxwellConnectionWithoutDatabase() ) {
+			  Connection rawConnection = this.context.getRawMaxwellConnection() ) {
 			MaxwellMysqlStatus.ensureReplicationMysqlState(connection);
 			MaxwellMysqlStatus.ensureMaxwellMysqlState(rawConnection);
 
