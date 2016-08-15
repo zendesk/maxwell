@@ -49,10 +49,10 @@ public class MaxwellContext {
 		if ( this.config.initPosition != null )
 			this.initialPosition = this.config.initPosition;
 
-        if ( this.config.kafkaTopicPerTable != null )
-            this.kafkaTopicPerTableFormat = this.config.kafkaTopicPerTable;
-
-	}
+	        if ( this.config.kafkaTopicPerTable != null )
+	            this.kafkaTopicPerTableFormat = this.config.kafkaTopicPerTable;
+	
+		}
 
 	public MaxwellConfig getConfig() {
 		return this.config;
