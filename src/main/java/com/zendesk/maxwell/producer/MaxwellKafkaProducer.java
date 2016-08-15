@@ -1,8 +1,10 @@
 package com.zendesk.maxwell.producer;
 
 import java.io.IOException;
+import java.nio.channels.InterruptedByTimeoutException;
 import java.sql.SQLException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
 import com.zendesk.maxwell.BinlogPosition;
@@ -12,20 +14,15 @@ import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.RowMap;
 import com.zendesk.maxwell.RowMap.KeyFormat;
 import com.zendesk.maxwell.producer.partitioners.*;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.Callback;
-import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.clients.producer.*;
+import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.errors.RecordTooLargeException;
+import org.apache.kafka.common.errors.SerializationException;
+import org.apache.kafka.common.errors.TimeoutException;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Properties;
-
-import kafka.admin.AdminUtils;
-import kafka.utils.ZkUtils;
 
 class KafkaCallback implements Callback {
 	public static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
@@ -81,7 +78,7 @@ class KafkaCallback implements Callback {
 }
 
 public class MaxwellKafkaProducer extends AbstractProducer {
-    	static final Object KAFKA_DEFAULTS[] = {
+    static final Object KAFKA_DEFAULTS[] = {
 		"compression.type", "gzip",
 		"metadata.fetch.timeout.ms", 5000,
 		"retries", 1
@@ -92,6 +89,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	private final int numPartitions;
 	private final MaxwellKafkaPartitioner partitioner;
 	private final KeyFormat keyFormat;
+    public static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
 
 	public MaxwellKafkaProducer(MaxwellContext context, Properties kafkaProperties, String kafkaTopic) {
 		super(context);
@@ -118,22 +116,25 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	}
 
 	@Override
-	public void push(RowMap r) throws Exception {
-	        String original_topic_per_table = this.context.getKafkaTopicPerTableFormat();
-	        if(original_topic_per_table.contains("%{database}") || original_topic_per_table.contains("%{table}")) {
-	            	//replace the %{database} in kafkaTopicPerTable with the datebase name
-	            	String db_name = r.getDatabase();
-	            	String kafkaTopicWithFormat = original_topic_per_table.replaceAll("%\\{database\\}", db_name);
-	
-	            	//replace the %{table} in kafkaTopicPerTable with the table name and set the topic name
-	            	String table_name = r.getTable();
-	            	this.topic = kafkaTopicWithFormat.replaceAll("%\\{table\\}", table_name);
-	
-	            	//check if the topic exists
-	            	//if it doesn't exist then have the topic "maxwell_needs_topics_created"
-			if(!AdminUtils.topicExists(this.context.getZkClient(), kafkaTopicWithFormat)) {
-				this.topic = "maxwell_needs_topics_created";
-			}
+	public void push(RowMap r) throws InterruptedException, Exception {
+        String original_topic_per_table = this.context.getKafkaTopicPerTableFormat();
+        if(original_topic_per_table.contains("%{database}") || original_topic_per_table.contains("%{table}")) {
+            //replace the %{database} in kafkaTopicPerTable with the datebase name
+            String db_name = r.getDatabase();
+            String kafkaTopicWithFormat = original_topic_per_table.replaceAll("%\\{database\\}", db_name);
+
+            //replace the %{table} in kafkaTopicPerTable with the table name and set the topic name
+            String table_name = r.getTable();
+            this.topic = kafkaTopicWithFormat.replaceAll("%\\{table\\}", table_name);
+
+            //check if the topic exists
+            List<PartitionInfo> partitions_for_kafka;
+            try {
+                partitions_for_kafka = this.kafka.partitionsFor(this.topic);
+            } catch(TimeoutException e) {
+                LOGGER.error("This topic name does not exist: " + this.topic + ": " + e.getLocalizedMessage());
+                throw (e);
+            }
         }
 
         String key = r.pkToJson(keyFormat);
@@ -145,14 +146,14 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		if ( r.isTXCommit() )
 			inflightMessages.addMessage(r.getPosition());
 
-
 		/* if debug logging isn't enabled, release the reference to `value`, which can ease memory pressure somewhat */
 		if ( !KafkaCallback.LOGGER.isDebugEnabled() )
 			value = null;
 
 		KafkaCallback callback = new KafkaCallback(inflightMessages, r.getPosition(), r.isTXCommit(), this.context, key, value);
 
-		kafka.send(record, callback);
+        kafka.send(record, callback);
+
 	}
 
 	@Override

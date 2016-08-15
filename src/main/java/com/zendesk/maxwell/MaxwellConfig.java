@@ -7,9 +7,6 @@ import joptsimple.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.I0Itec.zkclient.ZkClient;
-import kafka.utils.ZKStringSerializer$;
-
 import com.zendesk.maxwell.util.AbstractConfig;
 
 public class MaxwellConfig extends AbstractConfig {
@@ -31,11 +28,8 @@ public class MaxwellConfig extends AbstractConfig {
 	public String kafkaPartitionHash;
 	public String kafkaPartitionKey;
 	public String bootstrapperType;
-    	public String kafkaTopicPerTable;
-    	public Integer zkConnectionTimeout;
-    	public Integer zkSessionTimeout;
-    	public String zkConnection;
-    	public ZkClient zkClient;
+    public String kafkaTopicPerTable;
+
 
 	public String outputFile;
 	public String log_level;
@@ -85,11 +79,8 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning").withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
 		parser.accepts( "kafka_key_format", "how to format the kafka key; array|hash").withOptionalArg();
-        	//kafka_topic_per_table string to have the format for the kafka_topic
-        	parser.accepts( "kafka_topic_per_table", "how to format the kafka topic string for the tables, example: 'namespace_%{db}_%{table}' where db and table are replaced with the names depending on the row").withOptionalArg();
-        	parser.accepts( "zk_connection_timeout_ms", "Used to check if kafka topic exists").withOptionalArg();
-        	parser.accepts( "zk_session_timeout_ms", "Used to check if kafka topic exists").withOptionalArg();
-        	parser.accepts( "zk_connection", "Zookeeper to check if the kafka topic exists").withOptionalArg();
+        //kafka_topic_per_table string to have the format for the kafka_topic
+        parser.accepts( "kafka_topic_per_table", "how to format the kafka topic string for the tables, example: 'namespace_%{db}_%{table}' where db and table are replaced with the names depending on the row").withOptionalArg();
 
 		parser.accepts( "__separator_4" );
 
@@ -183,11 +174,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.kafkaKeyFormat     = fetchOption("kafka_key_format", options, properties, "hash");
 		this.kafkaPartitionKey  = fetchOption("kafka_partition_by", options, properties, "database");
 		this.kafkaPartitionHash = fetchOption("kafka_partition_hash", options, properties, "default");
-        	this.kafkaTopicPerTable = fetchOption("kafka_topic_per_table", options, properties, "maxwell");
-        	this.zkConnectionTimeout= Integer.parseInt(fetchOption("zk_connection_timeout_ms", options, properties, "default"));
-        	this.zkSessionTimeout   = Integer.parseInt(fetchOption("zk_session_timeout_ms", options, properties, "default"));
-        	this.zkConnection       = fetchOption("zk_connection", options, properties, "default");
-        	this.zkClient           = new ZkClient(this.zkConnection, this.zkSessionTimeout, this.zkConnectionTimeout, ZKStringSerializer$.MODULE$);
+        this.kafkaTopicPerTable = fetchOption("kafka_topic_per_table", options, properties, "maxwell");
 
 
 		String kafkaBootstrapServers = fetchOption("kafka.bootstrap.servers", options, properties, null);
