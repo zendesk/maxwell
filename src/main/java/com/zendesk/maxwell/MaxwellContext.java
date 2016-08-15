@@ -33,7 +33,7 @@ public class MaxwellContext {
 	private BinlogPosition initialPosition;
 	private CaseSensitivity caseSensitivity;
 	private String kafkaTopicPerTableFormat;
-    private ZkClient zkClient;
+    	private ZkClient zkClient;
 
 	private Integer mysqlMajorVersion;
 	private Integer mysqlMinorVersion;
@@ -74,9 +74,9 @@ public class MaxwellContext {
 		return conn;
 	}
 
-    public String getKafkaTopicPerTableFormat() { return this.kafkaTopicPerTableFormat; }
+    	public String getKafkaTopicPerTableFormat() { return this.kafkaTopicPerTableFormat; }
 
-    public ZkClient getZkClient() { return this.zkClient; }
+    	public ZkClient getZkClient() { return this.zkClient; }
 
 	public void start() {
 		SchemaScavenger s = new SchemaScavenger(this.maxwellConnectionPool, this.config.databaseName);
