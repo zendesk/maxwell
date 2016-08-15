@@ -28,7 +28,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public String kafkaPartitionHash;
 	public String kafkaPartitionKey;
 	public String bootstrapperType;
-    public String kafkaTopicPerTable;
+    	public String kafkaTopicPerTable;
 
 
 	public String outputFile;
@@ -79,8 +79,8 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning").withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
 		parser.accepts( "kafka_key_format", "how to format the kafka key; array|hash").withOptionalArg();
-        //kafka_topic_per_table string to have the format for the kafka_topic
-        parser.accepts( "kafka_topic_per_table", "how to format the kafka topic string for the tables, example: 'namespace_%{db}_%{table}' where db and table are replaced with the names depending on the row").withOptionalArg();
+        	//kafka_topic_per_table string to have the format for the kafka_topic
+        	parser.accepts( "kafka_topic_per_table", "how to format the kafka topic string for the tables, example: 'namespace_%{db}_%{table}' where db and table are replaced with the names depending on the row").withOptionalArg();
 
 		parser.accepts( "__separator_4" );
 
