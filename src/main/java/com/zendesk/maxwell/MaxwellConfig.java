@@ -174,7 +174,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.kafkaKeyFormat     = fetchOption("kafka_key_format", options, properties, "hash");
 		this.kafkaPartitionKey  = fetchOption("kafka_partition_by", options, properties, "database");
 		this.kafkaPartitionHash = fetchOption("kafka_partition_hash", options, properties, "default");
-        this.kafkaTopicPerTable = fetchOption("kafka_topic_per_table", options, properties, "maxwell");
+        	this.kafkaTopicPerTable = fetchOption("kafka_topic_per_table", options, properties, "maxwell");
 
 
 		String kafkaBootstrapServers = fetchOption("kafka.bootstrap.servers", options, properties, null);
