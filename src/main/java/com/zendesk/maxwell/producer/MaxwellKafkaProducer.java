@@ -81,7 +81,7 @@ class KafkaCallback implements Callback {
 }
 
 public class MaxwellKafkaProducer extends AbstractProducer {
-    static final Object KAFKA_DEFAULTS[] = {
+    	static final Object KAFKA_DEFAULTS[] = {
 		"compression.type", "gzip",
 		"metadata.fetch.timeout.ms", 5000,
 		"retries", 1
@@ -119,18 +119,18 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 
 	@Override
 	public void push(RowMap r) throws Exception {
-        String original_topic_per_table = this.context.getKafkaTopicPerTableFormat();
-        if(original_topic_per_table.contains("%{database}") || original_topic_per_table.contains("%{table}")) {
-            //replace the %{database} in kafkaTopicPerTable with the datebase name
-            String db_name = r.getDatabase();
-            String kafkaTopicWithFormat = original_topic_per_table.replaceAll("%\\{database\\}", db_name);
-
-            //replace the %{table} in kafkaTopicPerTable with the table name and set the topic name
-            String table_name = r.getTable();
-            this.topic = kafkaTopicWithFormat.replaceAll("%\\{table\\}", table_name);
-
-            //check if the topic exists
-            //if it doesn't exist then have the topic "maxwell_needs_topics_created"
+	        String original_topic_per_table = this.context.getKafkaTopicPerTableFormat();
+	        if(original_topic_per_table.contains("%{database}") || original_topic_per_table.contains("%{table}")) {
+	            	//replace the %{database} in kafkaTopicPerTable with the datebase name
+	            	String db_name = r.getDatabase();
+	            	String kafkaTopicWithFormat = original_topic_per_table.replaceAll("%\\{database\\}", db_name);
+	
+	            	//replace the %{table} in kafkaTopicPerTable with the table name and set the topic name
+	            	String table_name = r.getTable();
+	            	this.topic = kafkaTopicWithFormat.replaceAll("%\\{table\\}", table_name);
+	
+	            	//check if the topic exists
+	            	//if it doesn't exist then have the topic "maxwell_needs_topics_created"
 			if(!AdminUtils.topicExists(this.context.getZkClient(), kafkaTopicWithFormat)) {
 				this.topic = "maxwell_needs_topics_created";
 			}
