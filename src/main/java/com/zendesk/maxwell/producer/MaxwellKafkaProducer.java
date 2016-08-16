@@ -115,27 +115,32 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		this.inflightMessages = new InflightMessageList();
 	}
 
+	//getTopic updates the topic based on the topic per table format (declare by the --kafka_topic_per_table flag)
+	private void getTopic(RowMap r){
+		String original_topic_per_table = this.context.getKafkaTopicPerTableFormat();
+		if(original_topic_per_table.contains("%{database}") || original_topic_per_table.contains("%{table}")) {
+			//replace the %{database} in kafkaTopicPerTable with the datebase name
+			String db_name = r.getDatabase();
+			String kafkaTopicWithFormat = original_topic_per_table.replaceAll("%\\{database\\}", db_name);
+
+			//replace the %{table} in kafkaTopicPerTable with the table name and set the topic name
+			String table_name = r.getTable();
+			this.topic = kafkaTopicWithFormat.replaceAll("%\\{table\\}", table_name);
+
+			//check if the topic exists
+			List<PartitionInfo> partitions_for_kafka;
+			try {
+				partitions_for_kafka = this.kafka.partitionsFor(this.topic);
+			} catch(TimeoutException e) {
+				LOGGER.error("This topic name does not exist: " + this.topic + ": " + e.getLocalizedMessage());
+				throw (e);
+			}
+		}
+	}
+
 	@Override
-	public void push(RowMap r) throws InterruptedException, Exception {
-        String original_topic_per_table = this.context.getKafkaTopicPerTableFormat();
-        if(original_topic_per_table.contains("%{database}") || original_topic_per_table.contains("%{table}")) {
-            //replace the %{database} in kafkaTopicPerTable with the datebase name
-            String db_name = r.getDatabase();
-            String kafkaTopicWithFormat = original_topic_per_table.replaceAll("%\\{database\\}", db_name);
-
-            //replace the %{table} in kafkaTopicPerTable with the table name and set the topic name
-            String table_name = r.getTable();
-            this.topic = kafkaTopicWithFormat.replaceAll("%\\{table\\}", table_name);
-
-            //check if the topic exists
-            List<PartitionInfo> partitions_for_kafka;
-            try {
-                partitions_for_kafka = this.kafka.partitionsFor(this.topic);
-            } catch(TimeoutException e) {
-                LOGGER.error("This topic name does not exist: " + this.topic + ": " + e.getLocalizedMessage());
-                throw (e);
-            }
-        }
+	public void push(RowMap r) throws Exception {
+		getTopic(r);
 
         String key = r.pkToJson(keyFormat);
 		String value = r.toJSON();
@@ -153,7 +158,6 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		KafkaCallback callback = new KafkaCallback(inflightMessages, r.getPosition(), r.isTXCommit(), this.context, key, value);
 
         kafka.send(record, callback);
-
 	}
 
 	@Override
