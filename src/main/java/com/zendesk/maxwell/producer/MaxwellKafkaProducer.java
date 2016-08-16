@@ -78,7 +78,7 @@ class KafkaCallback implements Callback {
 }
 
 public class MaxwellKafkaProducer extends AbstractProducer {
-    static final Object KAFKA_DEFAULTS[] = {
+    	static final Object KAFKA_DEFAULTS[] = {
 		"compression.type", "gzip",
 		"metadata.fetch.timeout.ms", 5000,
 		"retries", 1
@@ -89,7 +89,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	private final int numPartitions;
 	private final MaxwellKafkaPartitioner partitioner;
 	private final KeyFormat keyFormat;
-    public static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
+    	public static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
 
 	public MaxwellKafkaProducer(MaxwellContext context, Properties kafkaProperties, String kafkaTopic) {
 		super(context);
@@ -139,6 +139,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	}
 
 	@Override
+
 	public void push(RowMap r) throws Exception {
 		getTopic(r);
 
