@@ -115,8 +115,22 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		this.inflightMessages = new InflightMessageList();
 	}
 
+	//get the partitionsFor the topic in a try catch to catch the
+	private int getKafkaNumPartition(RowMap r) {
+		//check if the topic exists
+		List<PartitionInfo> partitions_for_kafka;
+		try {
+			partitions_for_kafka = this.kafka.partitionsFor(this.topic);
+		} catch(TimeoutException e) {
+			LOGGER.error("This topic name does not exist: " + this.topic + ": " + e.getLocalizedMessage());
+			throw (e);
+		}
+		return partitions_for_kafka.size();
+	}
+
 	//getTopic updates the topic based on the topic per table format (declare by the --kafka_topic_per_table flag)
-	private void getTopic(RowMap r){
+	private String getTopic(RowMap r){
+		String finalKafkaTopicWithFormat = "";
 		String original_topic_per_table = this.context.getKafkaTopicPerTableFormat();
 		if(original_topic_per_table.contains("%{database}") || original_topic_per_table.contains("%{table}")) {
 			//replace the %{database} in kafkaTopicPerTable with the datebase name
@@ -125,29 +139,24 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 
 			//replace the %{table} in kafkaTopicPerTable with the table name and set the topic name
 			String table_name = r.getTable();
-			this.topic = kafkaTopicWithFormat.replaceAll("%\\{table\\}", table_name);
-
-			//check if the topic exists
-			List<PartitionInfo> partitions_for_kafka;
-			try {
-				partitions_for_kafka = this.kafka.partitionsFor(this.topic);
-			} catch(TimeoutException e) {
-				LOGGER.error("This topic name does not exist: " + this.topic + ": " + e.getLocalizedMessage());
-				throw (e);
-			}
+			finalKafkaTopicWithFormat = kafkaTopicWithFormat.replaceAll("%\\{table\\}", table_name);
 		}
+		return finalKafkaTopicWithFormat;
 	}
 
 	@Override
 
 	public void push(RowMap r) throws Exception {
-		getTopic(r);
-
-        String key = r.pkToJson(keyFormat);
+		String kafkaTopicWithFormat = getTopic(r);
+		if(kafkaTopicWithFormat != "") {
+			this.topic = kafkaTopicWithFormat;
+		}
+		String key = r.pkToJson(keyFormat);
 		String value = r.toJSON();
 
+		int numPartitions = getKafkaNumPartition(r);
 		ProducerRecord<String, String> record =
-				new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, this.numPartitions), key, value);
+				new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, numPartitions), key, value);
 
 		if ( r.isTXCommit() )
 			inflightMessages.addMessage(r.getPosition());
@@ -158,7 +167,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 
 		KafkaCallback callback = new KafkaCallback(inflightMessages, r.getPosition(), r.isTXCommit(), this.context, key, value);
 
-        kafka.send(record, callback);
+		kafka.send(record, callback);
 	}
 
 	@Override
