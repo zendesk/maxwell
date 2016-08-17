@@ -236,8 +236,13 @@ public class MaxwellConfig extends AbstractConfig {
 				pos = Long.valueOf(initPositionSplit[1]);
 			} catch (NumberFormatException e) {
 				usageForOptions("Invalid init_position: " + initPosition, "--init_position");
-				this.replayMode = true;
 			}
+
+			this.initPosition = new BinlogPosition(pos, initPositionSplit[0]);
+		}
+
+		if ( options != null && options.has("replay")) {
+			this.replayMode = true;
 		}
 	}
 
