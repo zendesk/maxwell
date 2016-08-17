@@ -15,6 +15,7 @@ import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
 import com.zendesk.maxwell.producer.*;
 import com.zendesk.maxwell.schema.ReadOnlyMysqlPositionStore;
 import com.zendesk.maxwell.schema.MysqlPositionStore;
+import com.zendesk.maxwell.schema.PositionStoreThread;
 
 import com.zendesk.maxwell.schema.SchemaScavenger;
 import org.slf4j.Logger;
@@ -27,7 +28,7 @@ public class MaxwellContext {
 	private final ConnectionPool replicationConnectionPool;
 	private final ConnectionPool maxwellConnectionPool;
 	private final MaxwellConfig config;
-	private MysqlPositionStore positionStore;
+	private PositionStoreThread positionStoreThread;
 	private Long serverID;
 	private BinlogPosition initialPosition;
 	private CaseSensitivity caseSensitivity;
@@ -71,9 +72,10 @@ public class MaxwellContext {
 	}
 
 	public void terminate() {
-		if ( this.positionStore != null ) {
+		if ( this.positionStoreThread != null ) {
 			try {
-				this.positionStore.stopLoop();
+				this.positionStoreThread.stopLoop();
+				this.positionStoreThread = null;
 			} catch (TimeoutException e) {
 				LOGGER.error("got timeout trying to shutdown positionStore thread.");
 			}
@@ -82,17 +84,18 @@ public class MaxwellContext {
 		this.maxwellConnectionPool.release();
 	}
 
-	private MysqlPositionStore getMysqlPositionStore() throws SQLException {
-		if ( this.positionStore == null ) {
+	private PositionStoreThread getPositionStoreThread() throws SQLException {
+		if ( this.positionStoreThread == null ) {
+			MysqlPositionStore store;
 			if ( this.getConfig().replayMode ) {
-				this.positionStore = new ReadOnlyMysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.databaseName, this.config.clientID);
+				store = new ReadOnlyMysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.databaseName, this.config.clientID);
 			} else {
-				this.positionStore = new MysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.databaseName, this.config.clientID);
+				store = new MysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.databaseName, this.config.clientID);
 			}
-
-			this.positionStore.start();
+			this.positionStoreThread = new PositionStoreThread(store);
+			this.positionStoreThread.start();
 		}
-		return this.positionStore;
+		return this.positionStoreThread;
 	}
 
 
@@ -100,7 +103,7 @@ public class MaxwellContext {
 		if ( this.initialPosition != null )
 			return this.initialPosition;
 
-		this.initialPosition = getMysqlPositionStore().get();
+		this.initialPosition = getPositionStoreThread().getPosition();
 
 		if ( this.initialPosition == null ) {
 			try ( Connection connection = getReplicationConnection() ) {
@@ -118,18 +121,18 @@ public class MaxwellContext {
 	}
 
 	public void setPosition(BinlogPosition position) throws SQLException {
-		this.getMysqlPositionStore().set(position);
+		this.getPositionStoreThread().setPosition(position);
 	}
 
 	public BinlogPosition getPosition() throws SQLException {
-		return this.getMysqlPositionStore().get();
+		return this.getPositionStoreThread().getPosition();
 	}
 
 	public void ensurePositionThread() throws Exception {
-		if ( this.positionStore == null )
+		if ( this.positionStoreThread == null )
 			return;
 
-		Exception e = this.positionStore.getException();
+		Exception e = this.getPositionStoreThread().getException();
 		if ( e != null ) {
 			throw (e);
 		}
