@@ -223,7 +223,7 @@ public class MaxwellConfig extends AbstractConfig {
 			this.initPosition = new BinlogPosition(pos, initPositionSplit[0]);
 		}
 
-		if ( options.has("replay")) {
+		if ( options != null && options.has("replay")) {
 			this.replayMode = true;
 		}
 	}
