@@ -265,10 +265,12 @@ public class MysqlSavedSchema {
 		return restore(context.getMaxwellConnectionPool(), context.getServerID(), context.getCaseSensitivity(), context.getInitialPosition());
 	}
 
-	public static MysqlSavedSchema restore(ConnectionPool pool,
-										   Long serverID,
-										   CaseSensitivity caseSensitivity,
-										   BinlogPosition targetPosition) throws SQLException, InvalidSchemaError {
+	public static MysqlSavedSchema restore(
+		ConnectionPool pool,
+		Long serverID,
+		CaseSensitivity caseSensitivity,
+		BinlogPosition targetPosition
+	) throws SQLException, InvalidSchemaError {
 		try ( Connection conn = pool.getConnection() ) {
 			Long schemaID = findSchema(conn, targetPosition, serverID);
 			if (schemaID == null)
