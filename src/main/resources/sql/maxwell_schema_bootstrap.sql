@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS `bootstrap` (
   started_at      DATETIME default NULL,
   completed_at    DATETIME default NULL,
   binlog_file varchar(255) default NULL,
-  binlog_position int unsigned default 0
+  binlog_position int unsigned default 0,
+  PRIMARY KEY (`id`),
+  KEY `is_complete` (`is_complete`,`started_at`)
 );
-
