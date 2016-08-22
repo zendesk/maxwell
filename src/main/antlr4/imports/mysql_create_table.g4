@@ -1,6 +1,6 @@
 grammar mysql_create_table;
 
-import mysql_literal_tokens, mysql_idents, mysql_indices;
+import mysql_literal_tokens, mysql_idents, mysql_indices, mysql_partition;
 
 create_table:
   create_table_preamble
@@ -42,7 +42,8 @@ table_creation_option:
 	| creation_stats_sample_pages
 	| creation_storage_option
 	| creation_tablespace
-	| creation_union;
+	| creation_union
+	| partition_by;
 
 
 creation_engine: ENGINE '='? (string | MEMORY | MERGE);

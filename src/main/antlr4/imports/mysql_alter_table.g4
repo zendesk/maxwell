@@ -1,8 +1,8 @@
 grammar mysql_alter_table;
 
-import mysql_literal_tokens, mysql_idents, column_definitions;
+import mysql_literal_tokens, mysql_idents, column_definitions, mysql_partition;
 
-alter_table: alter_table_preamble alter_specifications;
+alter_table: alter_table_preamble alter_specifications alter_partition_specification?;
 
 alter_table_preamble: ALTER alter_flags? TABLE table_name;
 alter_flags: (ONLINE | OFFLINE | IGNORE);
@@ -34,6 +34,24 @@ drop_key: DROP FOREIGN? (INDEX|KEY) name;
 drop_primary_key: DROP PRIMARY KEY;
 alter_rename_table: RENAME (TO | AS)? table_name;
 convert_to_character_set: CONVERT TO charset_token charset_name collation?;
+
+alter_partition_specification:
+      ADD PARTITION skip_parens
+    | DROP PARTITION partition_names
+    | TRUNCATE PARTITION partition_names
+    | DISCARD PARTITION partition_names TABLESPACE
+    | IMPORT PARTITION partition_names TABLESPACE
+    | COALESCE PARTITION INTEGER_LITERAL
+    | REORGANIZE PARTITION (partition_names INTO skip_parens)?
+    | EXCHANGE PARTITION IDENT WITH TABLE name ((WITH|WITHOUT) VALIDATION)?
+    | ANALYZE PARTITION partition_names
+    | CHECK PARTITION partition_names
+    | OPTIMIZE PARTITION partition_names
+    | REBUILD PARTITION partition_names
+    | REPAIR PARTITION partition_names
+    | REMOVE PARTITIONING
+    | partition_by;
+
 ignored_alter_specifications:
     ADD index_definition
     | ALTER COLUMN? name ((SET DEFAULT literal) | (DROP DEFAULT))
@@ -42,31 +60,16 @@ ignored_alter_specifications:
     | ENABLE KEYS
     | ORDER BY alter_ordering (',' alter_ordering)*
     | FORCE
-    /*
-     I'm also leaving out the following from the alter table definition because who cares:
-     | DISCARD TABLESPACE
-     | IMPORT TABLESPACE
-     | ADD PARTITION (partition_definition)
-     | DROP PARTITION partition_names
-     | COALESCE PARTITION number
-     | REORGANIZE PARTITION [partition_names INTO (partition_definitions)]
-     | ANALYZE PARTITION {partition_names | ALL}
-     | CHECK PARTITION {partition_names | ALL}
-     | OPTIMIZE PARTITION {partition_names | ALL}
-     | REBUILD PARTITION {partition_names | ALL}
-     | REPAIR PARTITION {partition_names | ALL}
-     | PARTITION BY partitioning_expression
-     | REMOVE PARTITIONING
-
-     because who cares.
-     */
-     | ALGORITHM '='? algorithm_type
-     | LOCK '='? lock_type
-     | RENAME (INDEX|KEY) name TO name
+    | DISCARD TABLESPACE
+    | IMPORT TABLESPACE
+    | ALGORITHM '='? algorithm_type
+    | LOCK '='? lock_type
+    | RENAME (INDEX|KEY) name TO name
     ;
   algorithm_type: DEFAULT | INPLACE | COPY;
   lock_type: DEFAULT | NONE | SHARED | EXCLUSIVE;
 
+partition_names: IDENT (',' IDENT)*;
 alter_ordering: alter_ordering_column (ASC|DESC)?;
 alter_ordering_column:
     name '.' name '.' name
