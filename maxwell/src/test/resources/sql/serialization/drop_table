@@ -1,0 +1,12 @@
+DROP database if exists `serdrop`;
+CREATE database `serdrop`;
+CREATE table `serdrop`.`tbl` ( id int );
+DROP table `serdrop`.`tbl`;
+
+-> {
+     type: "table-drop",
+     database: "serdrop",
+     table: "tbl",
+     def: null
+   }
+

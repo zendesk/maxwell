@@ -1,5 +1,0 @@
-create database case_columns;
-use case_columns;
-create table case_columns.test_case(ID int(10) unsigned not null auto_increment primary key, bar_FIELD varchar(255));
-insert into test_case set bar_field='bar';
-  -> {database:"case_columns", table: "test_case", type: "insert", data: {"ID": 1, "bar_FIELD": "bar"}}

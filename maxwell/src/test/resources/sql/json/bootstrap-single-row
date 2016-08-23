@@ -1,0 +1,9 @@
+truncate table maxwell.bootstrap;
+insert into minimal set account_id = 1, text_field='hello'
+insert into maxwell.bootstrap set database_name = 'shard_1', table_name = 'minimal'
+
+-> { database: "shard_1", table: "minimal", type:"insert", primary_key: ["1", "hello"], data: { id: 1, account_id: 1, text_field: "hello"} }
+-> { database: "maxwell", table: "bootstrap", type: "insert", primary_key:["1"], data:{ id: 1, database_name: "shard_1", table_name: "minimal", is_complete: 0, inserted_rows: 0, total_rows: 0, binlog_position: 0}}
+-> { database: "shard_1", table: "minimal", type: "bootstrap-start", primary_key: [null,null], data: {} }
+-> { database: "shard_1", table: "minimal", type: "bootstrap-insert", primary_key: ["1", "hello"], data: { id: 1, account_id: 1, text_field: "hello"} }
+-> { database: "shard_1", table: "minimal", type: "bootstrap-complete", primary_key: [null, null], data: {}}

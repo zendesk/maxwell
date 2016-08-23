@@ -1,0 +1,10 @@
+before_script:
+  - git submodule update
+  - gem install mysql2
+language: java
+rvm: 1.9.3
+env:
+  - MYSQL_VERSION=5.5
+  - MYSQL_VERSION=5.6
+after_success:
+  - pip install --user codecov && codecov

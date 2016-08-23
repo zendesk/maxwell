@@ -1,0 +1,8 @@
+DROP DATABASE IF EXISTS `cdb`
+CREATE DATABASE IF NOT EXISTS `cdb`
+create table if not exists `cdb`.`ca` ( id int(11) auto_increment not null primary key, datecol datetime NOT NULL default 0, ch varchar(255));
+insert into cdb.ca set ch='a';
+-> {"database":"cdb", "table": "ca", "type": "insert", "primary_key": ["1"], "data":  {"id": 1, "ch": "a", "datecol": "0000-00-00 00:00:00"}  }
+insert into cdb.ca set ch='a', datecol = '0003-00-00 00:00:01';
+-> {"database":"cdb", "table": "ca", "type": "insert", "primary_key": ["2"], "data":  {"id": 2, "ch": "a", "datecol": "0003-00-00 00:00:01"}  }
+

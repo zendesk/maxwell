@@ -1,0 +1,11 @@
+drop database if exists enum_db;
+create database if not exists enum_db;
+use enum_db;
+create table if not exists test_enums(id int(10) unsigned not null auto_increment primary key, enum_field enum('foo', 'bar', 'baz'));
+insert into test_enums set enum_field='bar';
+  -> {database:"enum_db", table: "test_enums", type: "insert", primary_key: ["1"], data: {"id": 1, enum_field: "bar"} }
+insert into test_enums set enum_field='baz';
+  -> {database:"enum_db", table: "test_enums", type: "insert", primary_key: ["2"], data: {"id": 2, enum_field: "baz"} }
+insert into test_enums set enum_field='foo';
+  -> {database:"enum_db", table: "test_enums", type: "insert", primary_key: ["3"], data: {"id": 3, enum_field: "foo"} }
+

@@ -1,0 +1,17 @@
+DROP database if exists `ser_d1`;
+CREATE database `ser_d1` charset 'latin1';
+-> { type: "database-create", database: "ser_d1", charset: "latin1" }
+
+DROP database if exists `ser_d2`;
+CREATE database if not exists `ser_d2`;
+-> { type: "database-create", database: "ser_d2", charset: "utf8" }
+
+ALTER database `ser_d1` charset 'utf8'
+-> { type: "database-alter", database: "ser_d1", charset: "utf8" }
+
+DROP database `ser_d2`;
+-> { type: "database-drop", database: "ser_d2", def: { name: "ser_d2", tableList: [], charset: "utf8", tableNames: [] } }
+
+DROP database if exists `ser_d1`;
+-> { type: "database-drop", database: "ser_d1", def: { name: "ser_d1", tableList: [], charset: "utf8", tableNames: [] }  }
+

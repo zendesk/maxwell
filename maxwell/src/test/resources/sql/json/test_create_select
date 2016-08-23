@@ -1,0 +1,14 @@
+DROP DATABASE IF EXISTS `test_db_create_select`
+CREATE DATABASE if not exists `test_db_create_select`
+use test_db_create_select
+CREATE TABLE if not exists `test_alike` ( id int(11), flt float )
+
+insert into test_alike set id = 1, flt = 0.5;
+
+-> {"database":"test_db_create_select", "table": "test_alike", "type": "insert", primary_key: [], "data": { "id" : 1, "flt": 0.5 } }
+
+CREATE TABLE if not exists `test_db_create_select`.`test_alike2` select * from test_alike;
+
+-> {"database":"test_db_create_select", "table": "test_alike2", "type": "insert", primary_key: [], "data": { "id" : 1, "flt": 0.5 } }
+
+

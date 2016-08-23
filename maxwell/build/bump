@@ -1,0 +1,19 @@
+#!/bin/bash
+
+if [ "$1" == "" ]
+then
+  echo "Usage: $0 VERSION" && exit 0
+fi
+
+DIR=`dirname $0`
+cd $DIR/..
+
+CURRENT_REV=`build/current_rev`
+
+if [ "$CURRENT_REV" == "" ]
+then
+  echo "Couldn't get CURRENT_REV" && exit 1
+fi
+
+git grep -lF $CURRENT_REV | grep -v search_index.json | grep -v CHANGELOG.md | xargs perl -i -npe "s|$CURRENT_REV|$1|g"
+docs/build
