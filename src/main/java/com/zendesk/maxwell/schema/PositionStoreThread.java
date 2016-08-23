@@ -64,6 +64,7 @@ public class PositionStoreThread extends RunLoopProcess implements Runnable {
 		}
 
 		try { Thread.sleep(1000); } catch (InterruptedException e) { }
+		store.heartbeat();
 	}
 
 	public synchronized void setPosition(BinlogPosition p) {
