@@ -71,13 +71,11 @@ public class PositionStoreThread extends RunLoopProcess implements Runnable {
 			position = p;
 	}
 
-	public BinlogPosition getPosition() throws SQLException {
+	public synchronized BinlogPosition getPosition() throws SQLException {
 		if ( position != null )
 			return position;
 
-		synchronized(this) {
-			position = store.get();
-		}
+		position = store.get();
 
 		return position;
 	}
