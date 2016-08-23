@@ -1,0 +1,15 @@
+drop database if exists set_db;
+create database if not exists set_db;
+use set_db;
+create table if not exists test_sets(id int(10) unsigned not null auto_increment primary key, set_field set('foo', 'bar', 'baz') NOT NULL);
+insert into test_sets set set_field='bar,baz';
+  -> {database:"set_db", table: "test_sets", type: "insert", primary_key: ["1"], data: {"id": 1, set_field: ["bar", "baz"]} }
+insert into test_sets set set_field='baz,foo';
+  -> {database:"set_db", table: "test_sets", type: "insert", primary_key: ["2"], data: {"id": 2, set_field: ["foo", "baz"]} }
+insert into test_sets set set_field='foo';
+  -> {database:"set_db", table: "test_sets", type: "insert", primary_key: ["3"], data: {"id": 3, set_field: ["foo"]} }
+insert into test_sets set set_field='';
+  -> {database:"set_db", table: "test_sets", type: "insert", primary_key: ["4"], data: {"id": 4, set_field: []} }
+alter table test_sets modify column set_field set('foo', 'bar', 'baz') NULL DEFAULT NULL;
+insert into test_sets set id=NULL;
+  -> {database:"set_db", table: "test_sets", type: "insert", primary_key: ["5"], data: {"id": 5} }

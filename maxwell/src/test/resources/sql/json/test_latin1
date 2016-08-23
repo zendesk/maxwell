@@ -1,0 +1,6 @@
+DROP DATABASE IF EXISTS `test_latin1`
+CREATE DATABASE IF NOT EXISTS `test_latin1` default charset 'latin1'
+create table if not exists `test_latin1`.`latin1` ( textcol text )
+use test_latin1
+insert into `latin1` set `textcol` = 'áááááááá';
+-> {"database": "test_latin1", "table": "latin1", "type": "insert", "primary_key":[], "data": {"textcol": "áááááááá"} }

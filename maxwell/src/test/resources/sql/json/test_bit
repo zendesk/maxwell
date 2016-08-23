@@ -1,0 +1,29 @@
+drop database if exists bit_db;
+create database if not exists bit_db;
+use bit_db;
+create table if not exists test_bit(id int(10) unsigned not null auto_increment primary key, bit_field bit(64));
+insert into test_bit set bit_field=b'00011';
+  -> {database:"bit_db", table: "test_bit", type: "insert", primary_key: ["1"], data: {"id": 1, bit_field: 3} }
+insert into test_bit set bit_field=b'111111';
+  -> {database:"bit_db", table: "test_bit", type: "insert", primary_key: ["2"], data: {"id": 2, bit_field: 63} }
+insert into test_bit set bit_field=409832983;
+  -> {database:"bit_db", table: "test_bit", type: "insert", primary_key: ["3"], data: {"id": 3, bit_field: 409832983} }
+insert into test_bit set bit_field=18446744073709551615;
+  -> {database:"bit_db", table: "test_bit", type: "insert", primary_key: ["4"], data: {"id": 4, bit_field: 18446744073709551615} }
+insert into test_bit set bit_field=5461;
+  -> {database:"bit_db", table: "test_bit", type: "insert", primary_key: ["5"], data: {"id": 5, bit_field: 5461} }
+
+create table if not exists test_bit2 (id int(10) unsigned not null auto_increment primary key, bit_field bit(8));
+
+insert into test_bit2 set bit_field=b'00011';
+  -> {database:"bit_db", table: "test_bit2", type: "insert", primary_key: ["1"], data: {"id": 1, bit_field: 3} }
+
+create table if not exists test_bit3 (id int(10) unsigned not null auto_increment primary key, bit_field bit(16));
+
+insert into test_bit3 set bit_field=13929;
+  -> {database:"bit_db", table: "test_bit3", type: "insert", primary_key: ["1"], data: {"id": 1, bit_field: 13929} }
+
+create table if not exists test_bit4 (id int(10) unsigned not null auto_increment primary key, bit_field bit(24));
+
+insert into test_bit4 set bit_field=b'111000111000111001010110';
+  -> {database:"bit_db", table: "test_bit4", type: "insert", primary_key: ["1"], data: {"id": 1, bit_field: 14913110} }

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+
+        <title>Configuration - Maxwell's Daemon</title>
+
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/bootstrap-theme.min.css" rel="stylesheet">
+        <link href="../css/font-awesome-4.0.3.css" rel="stylesheet">
+        <link href="../css/prettify-1.0.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+        <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+            <!-- Main title -->
+            <a class="navbar-brand" href="..">Maxwell's Daemon</a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+            
+            
+                <li >
+                    <a href="..">Overview</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../quickstart/">Quick Start</a>
+                </li>
+            
+            
+            
+                <li class="active">
+                    <a href="./">Configuration</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../kafka/">Kafka</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../dataformat/">Data Format</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../bootstrapping/">Bootstrapping</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../compat/">Compat / Caveats</a>
+                </li>
+            
+            
+            </ul>
+
+            <!-- Search, Navigation and Repo links -->
+            <ul class="nav navbar-nav navbar-right">
+                <li >
+                    <a rel="next" href="../quickstart/">
+                        <i class="fa fa-arrow-left"></i> Previous
+                    </a>
+                </li>
+                <li >
+                    <a rel="prev" href="../kafka/">
+                        Next <i class="fa fa-arrow-right"></i>
+                    </a>
+                </li>
+                
+            </ul>
+        </div>
+    </div>
+</div>
+
+        <a href="https://github.com/zendesk/maxwell"><img id="github-banner" style="position: absolute; top: 0; right: 0; border: 0; z-index: 1031;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
+        <div class="container">
+            <div class="col-md-2">&nbsp;<div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        
+          <li >
+              <a href="..">Overview</a>
+              
+          </li>
+        
+          <li >
+              <a href="../quickstart/">Quick Start</a>
+              
+          </li>
+        
+          <li class="active">
+              <a href="./">Configuration</a>
+              
+                  <ul class="nav">
+                  
+                      <li class="toctree-l3"><a href="#command-line-options">Command line options</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#properties-file">Properties file</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#filters">Filters</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#schema-storage-host-vs-replica-host">Schema storage host vs replica host</a></li>
+                      
+                  
+                  </ul>
+              
+          </li>
+        
+          <li >
+              <a href="../kafka/">Kafka</a>
+              
+          </li>
+        
+          <li >
+              <a href="../dataformat/">Data Format</a>
+              
+          </li>
+        
+          <li >
+              <a href="../bootstrapping/">Bootstrapping</a>
+              
+          </li>
+        
+          <li >
+              <a href="../compat/">Compat / Caveats</a>
+              
+          </li>
+        
+    </ul>
+</div></div>
+            <div class="col-md-10" role="main">
+
+<h3 id="command-line-options">Command line options</h3>
+<hr />
+<table>
+<thead>
+<tr>
+<th>option</th>
+<th>description</th>
+<th>default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>--config FILE</td>
+<td>location of <code>config.properties</code> file</td>
+<td></td>
+</tr>
+<tr>
+<td>--log_level</td>
+<td>log level [DEBUG&#124;INFO &#124;WARN&#124;ERROR</td>
+<td>INFO</td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>--host HOST</td>
+<td>mysql host</td>
+<td></td>
+</tr>
+<tr>
+<td>--user USER</td>
+<td>mysql username</td>
+<td></td>
+</tr>
+<tr>
+<td>--password PASSWORD</td>
+<td>mysql password</td>
+<td>(none)</td>
+</tr>
+<tr>
+<td>--port PORT</td>
+<td>mysql port</td>
+<td>3306</td>
+</tr>
+<tr>
+<td>--schema_database</td>
+<td>database name where maxwell stores schema and state</td>
+<td>maxwell</td>
+</tr>
+<tr>
+<td>--max_schemas</td>
+<td>how many old schemas maxwell should leave lying around in maxwell.schemas</td>
+<td>5</td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>--producer PRODUCER</td>
+<td>what type of producer to use: [stdout, kafka, file, profiler]</td>
+<td>stdout</td>
+</tr>
+<tr>
+<td>--output_file</td>
+<td>if using the file producer, write JSON rows to this path</td>
+<td></td>
+</tr>
+<tr>
+<td>--kafka.bootstrap.servers</td>
+<td>list of kafka brokers, listed as HOST:PORT[,HOST:PORT]</td>
+<td></td>
+</tr>
+<tr>
+<td>--kafka_partition_hash</td>
+<td>which hash function to use: [default, murmur3]</td>
+<td>default</td>
+</tr>
+<tr>
+<td>--kafka_partition_by</td>
+<td>what fields to hash for partition key: [database, table, primary_key]</td>
+<td>database</td>
+</tr>
+<tr>
+<td>--kafka_topic</td>
+<td>kafka topic to write to.</td>
+<td>maxwell</td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>--replication_host</td>
+<td>mysql host to replicate from.  Only specify if different from <code>host</code> (see notes)</td>
+<td>schema-store host</td>
+</tr>
+<tr>
+<td>--replication_password</td>
+<td>password on replication server</td>
+<td>(none)</td>
+</tr>
+<tr>
+<td>--replication_port</td>
+<td>port on replication server</td>
+<td>3306</td>
+</tr>
+<tr>
+<td>--replication_user</td>
+<td>user on replication server</td>
+<td></td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>--include_dbs PATTERN</td>
+<td>only send updates from these databases</td>
+<td></td>
+</tr>
+<tr>
+<td>--exclude_dbs PATTERN</td>
+<td>ignore updates from these databases</td>
+<td></td>
+</tr>
+<tr>
+<td>--include_tables PATTERN</td>
+<td>only send updates from tables named like PATTERN</td>
+<td></td>
+</tr>
+<tr>
+<td>--exclude_tables PATTERN</td>
+<td>ignore updates from tables named like PATTERN</td>
+<td></td>
+</tr>
+<tr>
+<td>--blacklist_dbs PATTERN</td>
+<td>ignore updates AND schema changes from databases (see warnings below)</td>
+<td></td>
+</tr>
+<tr>
+<td>--blacklist_tables PATTERN</td>
+<td>ignore updates AND schema changes from tables named like PATTERN (see warnings below)</td>
+<td></td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>--bootstrapper</td>
+<td>bootstrapper type: async</td>
+<td>sync</td>
+</tr>
+<tr>
+<td>--bootstrapper_fetch_size</td>
+<td>number of rows fetched at a time during bootstrapping.</td>
+<td>64000</td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>--init_position FILE:POSITION</td>
+<td>ignore the information in maxwell.positions and start at the given binlog position. Not available in config.properties.</td>
+<td></td>
+</tr>
+<tr>
+<td>--replay</td>
+<td>enable maxwell's read-only "replay" mode.  Not available in config.properties.</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="properties-file">Properties file</h3>
+<hr />
+<p>If maxwell finds the file <code>config.properties</code> in $PWD it will use it.  Any
+command line options (except init_position and replay) may be given as
+"key=value" pairs.</p>
+<p>Additionally, any configuration file options prefixed with 'kafka.' will be
+passed into the kafka producer library, after having 'kafka.' stripped off the
+front of the key.  So, for example if config.properties contains</p>
+<pre><code>kafka.batch.size=16384
+</code></pre>
+
+<p>then Maxwell will send <code>batch.size=16384</code> to the kafka producer library.</p>
+<h3 id="filters">Filters</h3>
+<hr />
+<p>The options <code>include_dbs</code>, <code>exclude_dbs</code>, <code>include_tables</code>, and <code>exclude_tables</code> control whether
+Maxwell will send an update for a given row to its producer.  All the options take a single value PATTERN,
+which may either be a literal table/database name, given as <code>option=name</code>, or a regular expression,
+given as <code>option=/regex/</code>.  The options are evaluated as follows:</p>
+<ol>
+<li>only accept databases in <code>include_dbs</code> if non-empty</li>
+<li>reject databases in <code>exclude_dbs</code></li>
+<li>only accept tables in <code>include_tables</code> if non-empty</li>
+<li>reject tables in <code>exclude_tables</code></li>
+</ol>
+<p>So an example like <code>--include_dbs=/foo.*/ --exclude_tables=bar</code> will include <code>footy.zab</code> and exclude <code>footy.bar</code></p>
+<p>The option <code>blacklist_tables</code> and <code>blacklist_dbs</code> controls whether Maxwell will send updates for a table to its producer AND whether
+it captures schema changes for that table or database. Note that once Maxwell has been running with a table or database marked as blacklisted,
+you <em>must</em> continue to run Maxwell with that table or database blacklisted or else Maxwell will halt. If you want to stop
+blacklisting a table or database, you will have to drop the maxwell schema first.</p>
+<h3 id="schema-storage-host-vs-replica-host">Schema storage host vs replica host</h3>
+<hr />
+<p>Maxwell needs two sets of mysql permissions to operate properly: a mysql database in which to store schema snapshots,
+and a mysql host to replicate from.  The recommended configuration is that
+these two functions are provided by a single mysql host.  In this case, just
+specify <code>host</code>, <code>user</code>, etc.</p>
+<p>Some configurations, however, may need to write data to a different server than it replicates from.  In this case,
+the host described by <code>host</code>, <code>user</code>, ..., will be used to write schema information to, and Maxwell will replicate
+events from the host described by <code>replication_host</code>, <code>replication_user</code>, ...  Note that bootstrapping is not available
+in this configuration.</p>
+<script>
+  jQuery(document).ready(function () {
+    jQuery("table").addClass("table table-condensed table-bordered table-hover");
+  });
+</script></div>
+        </div>
+
+        
+
+        <script src="../js/bootstrap-3.0.3.min.js"></script>
+        <script src="../js/prettify-1.0.min.js"></script>
+        <script src="../js/base.js"></script>
+    </body>
+</html>

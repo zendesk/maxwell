@@ -1,0 +1,7 @@
+drop database if exists long_db;
+create database if not exists long_db;
+use long_db;
+drop table if exists test_long;
+create table if not exists test_long(id int(10) unsigned not null auto_increment primary key, long_field BIGINT(20) UNSIGNED);
+insert into test_long set long_field= 18446744073709551615 ;
+  -> {database:"long_db", table: "test_long", type: "insert", primary_key: ["1"], data: {"id": 1, long_field: 18446744073709551615} }
