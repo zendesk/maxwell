@@ -1,8 +1,0 @@
-create database gis_db;
-use gis_db;
-create table test_gis(id int(10) unsigned not null auto_increment primary key, g GEOMETRY NULL);
-insert into test_gis set g=POINT(3, 2);
-  -> { database: "gis_db", table: "test_gis", type: "insert", data: { "id": 1, g: "POINT (3 2)"} }
-insert into test_gis set g=GEOMETRYCOLLECTION(POINT(1, 1),LINESTRING(POINT(0,1), POINT(1,2), POINT(2,3), POINT(3,4)));
-  -> { database: "gis_db", table: "test_gis", type: "insert", data: { "id": 2, g: "GEOMETRYCOLLECTION (POINT (1 1), LINESTRING (0 1, 1 2, 2 3, 3 4))"} }
-

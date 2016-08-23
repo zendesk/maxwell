@@ -1,5 +1,0 @@
-CREATE DATABASE `test_ucs2` default charset 'ucs2'
-create table `test_ucs2`.`ucs2` ( textcol text )
-insert into `test_ucs2`.`ucs2` set `textcol` = '∆˚ø¨´˚∆ƒ¬ß∂µ≤˜π∑ˆ¨´øßå¬∂˚∆ƒ…¬å˚∆ß';
--> {"database": "test_ucs2", "table": "ucs2", "type": "insert", "data": {"textcol": "∆˚ø¨´˚∆ƒ¬ß∂µ≤˜π∑ˆ¨´øßå¬∂˚∆ƒ…¬å˚∆ß"} }
-

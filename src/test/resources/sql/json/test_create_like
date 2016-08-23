@@ -1,8 +1,0 @@
-CREATE DATABASE `test_db`
-CREATE TABLE `test_db`.`test_alike` ( id int(11) auto_increment not null primary key, flt float )
-CREATE TABLE `test_db`.`test_alike2` LIKE `test_db`.`test_alike`
-
-insert into test_db.test_alike2 set flt = 1.5;
--> {"database":"test_db", "table": "test_alike2", "type": "insert", "data": { "id" : 1, "flt": 1.5 } }
-
-

@@ -1,4 +1,0 @@
-#!/bin/bash
-
-POM=`dirname $0`/../pom.xml
-grep '<version>' $POM | head -n1 | perl -npe 'chomp; s%.*<version>(.*)\s*</version>%\1%'
