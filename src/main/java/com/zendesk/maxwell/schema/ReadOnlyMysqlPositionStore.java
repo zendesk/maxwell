@@ -16,8 +16,5 @@ public class ReadOnlyMysqlPositionStore extends MysqlPositionStore {
 	}
 
 	@Override
-	public void start() { }
-
-	@Override
-	public void stopLoop() throws TimeoutException { }
+	public void set(BinlogPosition p) { }
 }
