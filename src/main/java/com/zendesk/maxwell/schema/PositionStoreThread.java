@@ -75,7 +75,10 @@ public class PositionStoreThread extends RunLoopProcess implements Runnable {
 		if ( position != null )
 			return position;
 
-		position = store.get();
+		synchronized(this) {
+			position = store.get();
+		}
+
 		return position;
 	}
 
