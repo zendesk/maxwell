@@ -146,6 +146,10 @@ public class SchemaStoreSchema {
 			performAlter(c, "alter table `positions` drop primary key, add primary key(`server_id`, `client_id`)");
 		}
 
+		if ( !getTableColumns("positions", c).containsKey("heartbeat_at") ) {
+			performAlter(c, "alter table `positions` add column `heartbeat_at` bigint null default null");
+		}
+
 		if ( !schemaColumns.containsKey("position_sha") ) {
 			performAlter(c, "alter table `schemas` add column `position_sha` char(40) charset 'latin1' null default null, add unique index(`position_sha`)");
 			backfillPositionSHAs(c);

@@ -56,12 +56,15 @@ public class MaxwellReplicator extends RunLoopProcess {
 		this.replicator = new OpenReplicator();
 		this.replicator.setBinlogEventListener(this.binlogEventListener);
 
-		this.replicator.setHost(ctx.getConfig().replicationMysql.host);
-		this.replicator.setUser(ctx.getConfig().replicationMysql.user);
-		this.replicator.setPassword(ctx.getConfig().replicationMysql.password);
-		this.replicator.setPort(ctx.getConfig().replicationMysql.port);
+		MaxwellConfig config = ctx.getConfig();
+
+		this.replicator.setHost(config.replicationMysql.host);
+		this.replicator.setUser(config.replicationMysql.user);
+		this.replicator.setPassword(config.replicationMysql.password);
+		this.replicator.setPort(config.replicationMysql.port);
 
 		this.replicator.setLevel2BufferSize(50 * 1024 * 1024);
+		this.replicator.setServerId(config.replicaServerID.intValue());
 
 		if ( ctx.shouldHeartbeat() )
 			this.replicator.setHeartbeatPeriod(0.5f);

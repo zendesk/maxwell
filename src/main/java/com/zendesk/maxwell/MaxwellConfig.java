@@ -33,6 +33,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public String log_level;
 
 	public String clientID;
+	public Long replicaServerID;
 
 	public BinlogPosition initPosition;
 	public boolean replayMode;
@@ -87,6 +88,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_5" );
 
+		parser.accepts( "replica_server_id", "server_id that maxwell reports to the master.  See docs for full explanation.").withRequiredArg();
 		parser.accepts( "client_id", "unique identifier for this maxwell replicator").withRequiredArg();
 		parser.accepts( "schema_database", "database name for maxwell state (schema and binlog position)").withRequiredArg();
 		parser.accepts( "max_schemas", "deprecated.").withOptionalArg();
@@ -137,6 +139,21 @@ public class MaxwellConfig extends AbstractConfig {
 			return defaultVal;
 	}
 
+	private Long fetchLongOption(String name, OptionSet options, Properties properties, Long defaultVal) {
+		String strOption = fetchOption(name, options, properties, null);
+		if ( strOption == null )
+			return defaultVal;
+		else {
+			try {
+				return Long.valueOf(strOption);
+			} catch ( NumberFormatException e ) {
+				usageForOptions("Invalid value for " + name + ", integer required", "--" + name);
+			}
+			return null; // unreached
+		}
+	}
+
+
 	private MaxwellMysqlConfig parseMysqlConfig(String prefix, OptionSet options, Properties properties) {
 		MaxwellMysqlConfig config = new MaxwellMysqlConfig();
 		config.host     = fetchOption(prefix + "host", options, properties, null);
@@ -174,6 +191,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.producerType       = fetchOption("producer", options, properties, "stdout");
 		this.bootstrapperType   = fetchOption("bootstrapper", options, properties, "async");
 		this.clientID           = fetchOption("client_id", options, properties, "maxwell");
+		this.replicaServerID    = fetchLongOption("replica_server_id", options, properties, 6379L);
 
 		this.kafkaTopic         = fetchOption("kafka_topic", options, properties, "maxwell");
 		this.kafkaKeyFormat     = fetchOption("kafka_key_format", options, properties, "hash");

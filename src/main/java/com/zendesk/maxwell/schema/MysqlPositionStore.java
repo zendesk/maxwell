@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.concurrent.TimeoutException;
 
 import com.zendesk.maxwell.BinlogPosition;
+import com.zendesk.maxwell.errors.DuplicateProcessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,6 +50,61 @@ public class MysqlPositionStore {
 
 			s.execute();
 		}
+	}
+
+	public void heartbeat() throws Exception {
+		try ( Connection c = getConnection() ) {
+			heartbeat(c);
+		}
+	}
+
+	/*
+	 * detect duplicate maxwell processes configured with the same client_id, aborting if we detect a dupe.
+	 * note that this could at some point provide the basis for doing Maxwell-HA independent of
+	 * a distributed lock system, but we'd have to rework the interfaces.
+	 */
+
+	private Long lastHeartbeat = null;
+
+	private void heartbeat(Connection c) throws SQLException, DuplicateProcessException, InterruptedException {
+		if ( lastHeartbeat == null ) {
+			PreparedStatement s = c.prepareStatement("SELECT `heartbeat_at` from `positions` where server_id = ? and client_id = ?");
+			s.setLong(1, serverID);
+			s.setString(2, clientID);
+
+			ResultSet rs = s.executeQuery();
+			if ( !rs.next() )
+				return; // we haven't yet written a position, so no heartbeat is available.
+
+			lastHeartbeat = rs.getLong("heartbeat_at");
+			if ( rs.wasNull() )
+				lastHeartbeat = null;
+		}
+
+		Long thisHeartbeat = System.currentTimeMillis();
+
+		String heartbeatUpdate = "update `positions` set `heartbeat_at` = ? where `server_id` = ? and `client_id` = ?";
+		if ( lastHeartbeat == null )
+			heartbeatUpdate += " and `heartbeat_at` IS NULL";
+		else
+			heartbeatUpdate += " and `heartbeat_at` = " + lastHeartbeat;
+
+		PreparedStatement s = c.prepareStatement(heartbeatUpdate);
+		s.setLong(1, thisHeartbeat);
+		s.setLong(2, serverID);
+		s.setString(3, clientID);
+
+		int nRows = s.executeUpdate();
+		if ( nRows != 1 ) {
+			String msg = String.format(
+				"Expected a heartbeat value of %d but didn't find it.  Is another Maxwell process running with the same client_id?",
+				lastHeartbeat
+			);
+
+			throw new DuplicateProcessException(msg);
+		}
+
+		lastHeartbeat = thisHeartbeat;
 	}
 
 	public BinlogPosition get() throws SQLException {
