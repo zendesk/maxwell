@@ -158,7 +158,6 @@ public class RowMap implements Serializable {
 		JsonGenerator generator = jsonGeneratorThreadLocal.get();
 		generator.writeObjectFieldStart(jsonMapName); // start of jsonMapName: {
 
-		/* TODO: maintain ordering of fields in column order */
 		for ( String key: data.keySet() ) {
 			Object value = data.get(key);
 
@@ -179,7 +178,6 @@ public class RowMap implements Serializable {
 		}
 
 		generator.writeEndObject(); // end of 'jsonMapName: { }'
-		return;
 	}
 
 	public String toJSON() throws IOException {

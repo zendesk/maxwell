@@ -16,13 +16,13 @@ import com.zendesk.maxwell.schema.columndef.ColumnDef;
 public class MaxwellUpdateRowsEvent extends MaxwellAbstractRowsEvent {
 	private final UpdateRowsEvent event;
 
-	public MaxwellUpdateRowsEvent(UpdateRowsEvent e, Table t, MaxwellFilter f) {
-		super(e, t, f);
+	public MaxwellUpdateRowsEvent(UpdateRowsEvent e, Table t, MaxwellFilter f, Long heartbeat) {
+		super(e, t, f, heartbeat);
 		this.event = e;
 	}
 
-	public MaxwellUpdateRowsEvent(UpdateRowsEventV2 e2, Table table, MaxwellFilter filter) {
-		super(e2, table, filter);
+	public MaxwellUpdateRowsEvent(UpdateRowsEventV2 e2, Table table, MaxwellFilter filter, Long heartbeat) {
+		super(e2, table, filter, heartbeat);
 		UpdateRowsEvent e =  new UpdateRowsEvent(e2.getHeader());
 
 		e.setBinlogFilename(e2.getBinlogFilename());

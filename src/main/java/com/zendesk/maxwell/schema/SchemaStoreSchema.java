@@ -150,6 +150,10 @@ public class SchemaStoreSchema {
 			performAlter(c, "alter table `positions` add column `heartbeat_at` bigint null default null");
 		}
 
+		if ( !getTableColumns("positions", c).containsKey("last_heartbeat_read") ) {
+			performAlter(c, "alter table `positions` add column `last_heartbeat_read` bigint null default null");
+		}
+
 		if ( !schemaColumns.containsKey("position_sha") ) {
 			performAlter(c, "alter table `schemas` add column `position_sha` char(40) charset 'latin1' null default null, add unique index(`position_sha`)");
 			backfillPositionSHAs(c);
