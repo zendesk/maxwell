@@ -2,6 +2,7 @@ package com.zendesk.maxwell;
 
 import java.util.*;
 import java.io.*;
+import java.util.regex.Pattern;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -23,11 +24,43 @@ public class MaxwellTestJSON {
 		return mapper.readValue(json, MAP_STRING_OBJECT_REF);
 	}
 
+	// If objects aren't equal, and `expected` is of the form /{regex}/, do a pattern match.
+	private static boolean jsonValueMatches(Object value, Object expected) {
+		if ( (value == null && expected != null) || (value != null && expected == null) )
+			return false;
+		if ( value.equals(expected) )
+			return true;
+		if ( !expected.toString().startsWith("/") )
+			return false;
+		String regex = expected.toString().replaceAll("/", "");
+		return Pattern.matches(regex, value.toString());
+	}
+
 	public static void assertJSON(List<Map<String, Object>> jsonOutput, List<Map<String, Object>> jsonAsserts) {
 		ArrayList<Map<String, Object>> missing = new ArrayList<>();
+		Boolean contains;
 
-		for ( Map m : jsonAsserts ) {
-			if ( !jsonOutput.contains(m) )
+		for ( Map<String, Object> m : jsonAsserts ) {
+			contains = false;
+
+			for ( Map jm : jsonOutput ) {
+				contains = true;
+
+				for ( String key : m.keySet() ) {
+					Object expected = m.get(key);
+					Object value = jm.get(key);
+
+					if ( !jsonValueMatches(value, expected) ) {
+						contains = false;
+						break;
+					}
+				}
+
+				if ( contains )
+					break;
+			}
+
+			if ( !contains )
 				missing.add(m);
 		}
 
