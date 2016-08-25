@@ -85,6 +85,10 @@ password=maxwell
 #kafka.compression.type=gzip
 #kafka.batch.size=16384
 
+#topic per table options
+#the format for the kafka topic name
+#kafka_topic_per_table=namspace_%{database}_%{table}
+
 
 ######### filter stuff ###############
 

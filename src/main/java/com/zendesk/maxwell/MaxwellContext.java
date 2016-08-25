@@ -32,6 +32,7 @@ public class MaxwellContext {
 	private Long serverID;
 	private BinlogPosition initialPosition;
 	private CaseSensitivity caseSensitivity;
+	private String kafkaTopicPerTableFormat;
 
 	private Integer mysqlMajorVersion;
 	private Integer mysqlMinorVersion;
@@ -48,6 +49,10 @@ public class MaxwellContext {
 
 		if ( this.config.initPosition != null )
 			this.initialPosition = this.config.initPosition;
+
+		if ( this.config.kafkaTopicPerTable != null )
+			this.kafkaTopicPerTableFormat = this.config.kafkaTopicPerTable;
+	
 	}
 
 	public MaxwellConfig getConfig() {
@@ -65,6 +70,8 @@ public class MaxwellContext {
 		conn.setCatalog(config.databaseName);
 		return conn;
 	}
+
+    	public String getKafkaTopicPerTableFormat() { return this.kafkaTopicPerTableFormat; }
 
 	public void start() {
 		SchemaScavenger s = new SchemaScavenger(this.maxwellConnectionPool, this.config.databaseName);

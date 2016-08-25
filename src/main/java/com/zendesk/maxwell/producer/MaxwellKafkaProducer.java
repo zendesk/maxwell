@@ -1,8 +1,10 @@
 package com.zendesk.maxwell.producer;
 
 import java.io.IOException;
+import java.nio.channels.InterruptedByTimeoutException;
 import java.sql.SQLException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
 import com.zendesk.maxwell.BinlogPosition;
@@ -12,11 +14,11 @@ import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.RowMap;
 import com.zendesk.maxwell.RowMap.KeyFormat;
 import com.zendesk.maxwell.producer.partitioners.*;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.Callback;
-import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.clients.producer.*;
+import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.errors.RecordTooLargeException;
+import org.apache.kafka.common.errors.SerializationException;
+import org.apache.kafka.common.errors.TimeoutException;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
@@ -76,7 +78,7 @@ class KafkaCallback implements Callback {
 }
 
 public class MaxwellKafkaProducer extends AbstractProducer {
-	static final Object KAFKA_DEFAULTS[] = {
+    	static final Object KAFKA_DEFAULTS[] = {
 		"compression.type", "gzip",
 		"metadata.fetch.timeout.ms", 5000,
 		"retries", 1
@@ -87,6 +89,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	private final int numPartitions;
 	private final MaxwellKafkaPartitioner partitioner;
 	private final KeyFormat keyFormat;
+    	public static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
 
 	public MaxwellKafkaProducer(MaxwellContext context, Properties kafkaProperties, String kafkaTopic) {
 		super(context);
@@ -112,17 +115,51 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		this.inflightMessages = new InflightMessageList();
 	}
 
+	//get the partitionsFor the topic in a try catch to catch the
+	private int getKafkaNumPartition(RowMap r) {
+		//check if the topic exists
+		List<PartitionInfo> partitions_for_kafka;
+		try {
+			partitions_for_kafka = this.kafka.partitionsFor(this.topic);
+		} catch(TimeoutException e) {
+			LOGGER.error("This topic name does not exist: " + this.topic + ": " + e.getLocalizedMessage());
+			throw (e);
+		}
+		return partitions_for_kafka.size();
+	}
+
+	//getTopic updates the topic based on the topic per table format (declare by the --kafka_topic_per_table flag)
+	private String getTopic(RowMap r){
+		String finalKafkaTopicWithFormat = "";
+		String original_topic_per_table = this.context.getKafkaTopicPerTableFormat();
+		if(original_topic_per_table.contains("%{database}") || original_topic_per_table.contains("%{table}")) {
+			//replace the %{database} in kafkaTopicPerTable with the datebase name
+			String db_name = r.getDatabase();
+			String kafkaTopicWithFormat = original_topic_per_table.replaceAll("%\\{database\\}", db_name);
+
+			//replace the %{table} in kafkaTopicPerTable with the table name and set the topic name
+			String table_name = r.getTable();
+			finalKafkaTopicWithFormat = kafkaTopicWithFormat.replaceAll("%\\{table\\}", table_name);
+		}
+		return finalKafkaTopicWithFormat;
+	}
+
 	@Override
+
 	public void push(RowMap r) throws Exception {
+		String kafkaTopicWithFormat = getTopic(r);
+		if(kafkaTopicWithFormat != "") {
+			this.topic = kafkaTopicWithFormat;
+		}
 		String key = r.pkToJson(keyFormat);
 		String value = r.toJSON();
 
+		int numPartitions = getKafkaNumPartition(r);
 		ProducerRecord<String, String> record =
-				new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, this.numPartitions), key, value);
+				new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, numPartitions), key, value);
 
 		if ( r.isTXCommit() )
 			inflightMessages.addMessage(r.getPosition());
-
 
 		/* if debug logging isn't enabled, release the reference to `value`, which can ease memory pressure somewhat */
 		if ( !KafkaCallback.LOGGER.isDebugEnabled() )
