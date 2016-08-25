@@ -1,0 +1,5 @@
+CREATE DATABASE `test_binlog_position`
+create table `test_binlog_position`.`bposition` ( textcol text )
+use test_binlog_position
+insert into `bposition` set `textcol` = 'kk';
+-> {"database": "test_binlog_position", "table": "bposition", "type": "insert", binlog_position: "/\\d+/", "data": {"textcol": "kk"} }
