@@ -27,11 +27,14 @@ public class MaxwellContext {
 
 	private final ConnectionPool replicationConnectionPool;
 	private final ConnectionPool maxwellConnectionPool;
+	private final ConnectionPool rawMaxwellConnectionPool;
 	private final MaxwellConfig config;
+	private MysqlPositionStore positionStore;
 	private PositionStoreThread positionStoreThread;
 	private Long serverID;
 	private BinlogPosition initialPosition;
 	private CaseSensitivity caseSensitivity;
+	private AbstractProducer producer;
 
 	private Integer mysqlMajorVersion;
 	private Integer mysqlMinorVersion;
@@ -40,7 +43,10 @@ public class MaxwellContext {
 		this.config = config;
 
 		this.replicationConnectionPool = new ConnectionPool("ReplicationConnectionPool", 10, 0, 10,
-				config.replicationMysql.getConnectionURI(), config.replicationMysql.user, config.replicationMysql.password);
+				config.replicationMysql.getConnectionURI(false), config.replicationMysql.user, config.replicationMysql.password);
+
+		this.rawMaxwellConnectionPool = new ConnectionPool("RawMaxwellConnectionPool", 1, 2, 100,
+			config.maxwellMysql.getConnectionURI(false), config.maxwellMysql.user, config.maxwellMysql.password);
 
 		this.maxwellConnectionPool = new ConnectionPool("MaxwellConnectionPool", 10, 0, 10,
 					config.maxwellMysql.getConnectionURI(), config.maxwellMysql.user, config.maxwellMysql.password);
@@ -58,16 +64,19 @@ public class MaxwellContext {
 		return this.replicationConnectionPool.getConnection();
 	}
 
-	public ConnectionPool getMaxwellConnectionPool() { return this.maxwellConnectionPool; }
+	public ConnectionPool getReplicationConnectionPool() { return replicationConnectionPool; }
+	public ConnectionPool getMaxwellConnectionPool() { return maxwellConnectionPool; }
 
 	public Connection getMaxwellConnection() throws SQLException {
-		Connection conn = this.maxwellConnectionPool.getConnection();
-		conn.setCatalog(config.databaseName);
-		return conn;
+		return this.maxwellConnectionPool.getConnection();
+	}
+
+	public Connection getRawMaxwellConnection() throws SQLException {
+		return rawMaxwellConnectionPool.getConnection();
 	}
 
 	public void start() {
-		SchemaScavenger s = new SchemaScavenger(this.maxwellConnectionPool, this.config.databaseName);
+		SchemaScavenger s = new SchemaScavenger(this.maxwellConnectionPool);
 		new Thread(s, "maxwell-schema-scavenger").start();
 	}
 
@@ -84,13 +93,13 @@ public class MaxwellContext {
 		this.maxwellConnectionPool.release();
 	}
 
-	private PositionStoreThread getPositionStoreThread() throws SQLException {
+	public PositionStoreThread getPositionStoreThread() throws SQLException {
 		if ( this.positionStoreThread == null ) {
 			MysqlPositionStore store;
 			if ( this.getConfig().replayMode ) {
-				store = new ReadOnlyMysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.databaseName, this.config.clientID);
+				store = new ReadOnlyMysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.clientID);
 			} else {
-				store = new MysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.databaseName, this.config.clientID);
+				store = new MysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.clientID);
 			}
 			this.positionStoreThread = new PositionStoreThread(store);
 			this.positionStoreThread.start();
@@ -239,7 +248,7 @@ public class MaxwellContext {
 	}
 
 	public void probeConnections() throws SQLException {
-		probePool(this.maxwellConnectionPool, this.config.maxwellMysql.getConnectionURI());
+		probePool(this.rawMaxwellConnectionPool, this.config.maxwellMysql.getConnectionURI(false));
 
 		if ( this.maxwellConnectionPool != this.replicationConnectionPool )
 			probePool(this.replicationConnectionPool, this.config.replicationMysql.getConnectionURI());

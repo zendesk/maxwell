@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 
 import com.google.code.or.binlog.impl.event.*;
 import com.google.code.or.net.TransportException;
+import com.zendesk.maxwell.schema.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,10 +16,6 @@ import com.google.code.or.binlog.BinlogEventV4;
 import com.google.code.or.common.util.MySQLConstants;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
-import com.zendesk.maxwell.schema.Schema;
-import com.zendesk.maxwell.schema.SchemaStore;
-import com.zendesk.maxwell.schema.Table;
-import com.zendesk.maxwell.schema.SchemaStoreException;
 
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 
@@ -33,39 +30,65 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 	protected MaxwellBinlogEventListener binlogEventListener;
 
+	private final boolean shouldHeartbeat;
 	private final MaxwellTableCache tableCache = new MaxwellTableCache();
 	protected final OpenReplicator replicator;
-	private final MaxwellContext context;
+	private final PositionStoreThread positionStoreThread;
 	protected final AbstractProducer producer;
 	protected final AbstractBootstrapper bootstrapper;
+	private final String maxwellSchemaDatabaseName;
 
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellReplicator.class);
 
-	public MaxwellReplicator(SchemaStore schemaStore, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, BinlogPosition start) throws Exception {
+	public MaxwellReplicator(
+		SchemaStore schemaStore,
+		AbstractProducer producer,
+		AbstractBootstrapper bootstrapper,
+		MaxwellMysqlConfig mysqlConfig,
+		Long replicaServerID,
+		boolean shouldHeartbeat,
+		PositionStoreThread positionStoreThread,
+		String maxwellSchemaDatabaseName,
+		BinlogPosition start
+	) throws Exception {
 		this.schemaStore = schemaStore;
 		this.binlogEventListener = new MaxwellBinlogEventListener(queue);
 
 		this.replicator = new OpenReplicator();
 		this.replicator.setBinlogEventListener(this.binlogEventListener);
 
-		MaxwellConfig config = ctx.getConfig();
-
-		this.replicator.setHost(config.replicationMysql.host);
-		this.replicator.setUser(config.replicationMysql.user);
-		this.replicator.setPassword(config.replicationMysql.password);
-		this.replicator.setPort(config.replicationMysql.port);
+		this.replicator.setHost(mysqlConfig.host);
+		this.replicator.setUser(mysqlConfig.user);
+		this.replicator.setPassword(mysqlConfig.password);
+		this.replicator.setPort(mysqlConfig.port);
 
 		this.replicator.setLevel2BufferSize(50 * 1024 * 1024);
-		this.replicator.setServerId(config.replicaServerID.intValue());
+		this.replicator.setServerId(replicaServerID.intValue());
 
-		if ( ctx.shouldHeartbeat() )
+		this.shouldHeartbeat = shouldHeartbeat;
+		if ( shouldHeartbeat )
 			this.replicator.setHeartbeatPeriod(0.5f);
 
 		this.producer = producer;
 		this.bootstrapper = bootstrapper;
 
-		this.context = ctx;
+		this.positionStoreThread = positionStoreThread;
+		this.maxwellSchemaDatabaseName = maxwellSchemaDatabaseName;
 		this.setBinlogPosition(start);
+	}
+
+	public MaxwellReplicator(SchemaStore schemaStore, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, BinlogPosition start) throws Exception {
+		this(
+			schemaStore,
+			producer,
+			bootstrapper,
+			ctx.getConfig().replicationMysql,
+			ctx.getConfig().replicaServerID,
+			ctx.shouldHeartbeat(),
+			ctx.getPositionStoreThread(),
+			ctx.getConfig().databaseName,
+			start
+		);
 	}
 
 	public void setBinlogPosition(BinlogPosition p) {
@@ -83,7 +106,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 			replicator.start();
 		}
 
-		if ( context.shouldHeartbeat() ) {
+		if ( shouldHeartbeat ) {
 			Long ms = replicator.millisSinceLastEvent();
 			if (ms != null && ms > 2000) {
 				LOGGER.warn("no heartbeat heard from server in " + ms + "ms.  restarting replication.");
@@ -112,7 +135,10 @@ public class MaxwellReplicator extends RunLoopProcess {
 	public void work() throws Exception {
 		RowMap row = getRow();
 
-		context.ensurePositionThread();
+		// todo: this is inelegant.  Ideally the outer code would just
+		// call this and tell us to stop if the positionThread is dead.
+		if ( positionStoreThread.getException() != null )
+			throw positionStoreThread.getException();
 
 		if (row == null)
 			return;
@@ -139,7 +165,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 	}
 
 	protected boolean isMaxwellRow(RowMap row) {
-		return row.getDatabase().equals(this.context.getConfig().databaseName);
+		return row.getDatabase().equals(this.maxwellSchemaDatabaseName);
 	}
 
 	private BinlogPosition eventBinlogPosition(AbstractBinlogEventV4 event) {

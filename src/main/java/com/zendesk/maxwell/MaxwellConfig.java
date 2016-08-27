@@ -188,6 +188,8 @@ public class MaxwellConfig extends AbstractConfig {
 		this.replicationMysql   = parseMysqlConfig("replication_", options, properties);
 
 		this.databaseName       = fetchOption("schema_database", options, properties, "maxwell");
+		this.maxwellMysql.database = this.databaseName;
+
 		this.producerType       = fetchOption("producer", options, properties, "stdout");
 		this.bootstrapperType   = fetchOption("bootstrapper", options, properties, "async");
 		this.clientID           = fetchOption("client_id", options, properties, "maxwell");
@@ -310,10 +312,13 @@ public class MaxwellConfig extends AbstractConfig {
 				usageForOptions("Please specify all of: replication_host, replication_user, replication_password", "--replication");
 			}
 
-			this.replicationMysql = new MaxwellMysqlConfig(this.maxwellMysql.host,
-									this.maxwellMysql.port,
-									this.maxwellMysql.user,
-									this.maxwellMysql.password);
+			this.replicationMysql = new MaxwellMysqlConfig(
+				this.maxwellMysql.host,
+				this.maxwellMysql.port,
+				null,
+				this.maxwellMysql.user,
+				this.maxwellMysql.password
+			);
 
 			this.replicationMysql.jdbcOptions = this.maxwellMysql.jdbcOptions;
 		}

@@ -15,17 +15,13 @@ public class SchemaScavenger extends RunLoopProcess implements Runnable {
 	static final Logger LOGGER = LoggerFactory.getLogger(SchemaScavenger.class);
 	private static final long MAX_ROWS_PER_SECOND = 500;
 	private final ConnectionPool connectionPool;
-	private final String schemaDatabaseName;
 
-	public SchemaScavenger(ConnectionPool pool, String dbName) {
+	public SchemaScavenger(ConnectionPool pool) {
 		this.connectionPool = pool;
-		this.schemaDatabaseName = dbName;
 	}
 
 	private Connection getConnection() throws SQLException {
-		Connection conn = this.connectionPool.getConnection();
-		conn.setCatalog(this.schemaDatabaseName);
-		return conn;
+		return this.connectionPool.getConnection();
 	}
 
 	private List<Long> getDeletedSchemas() throws SQLException {
