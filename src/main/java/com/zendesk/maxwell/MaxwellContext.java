@@ -29,10 +29,12 @@ public class MaxwellContext {
 	private final ConnectionPool maxwellConnectionPool;
 	private final ConnectionPool rawMaxwellConnectionPool;
 	private final MaxwellConfig config;
+	private MysqlPositionStore positionStore;
 	private PositionStoreThread positionStoreThread;
 	private Long serverID;
 	private BinlogPosition initialPosition;
 	private CaseSensitivity caseSensitivity;
+	private AbstractProducer producer;
 
 	private Integer mysqlMajorVersion;
 	private Integer mysqlMinorVersion;
@@ -41,9 +43,9 @@ public class MaxwellContext {
 		this.config = config;
 
 		this.replicationConnectionPool = new ConnectionPool("ReplicationConnectionPool", 10, 0, 10,
-				config.replicationMysql.getConnectionURI(), config.replicationMysql.user, config.replicationMysql.password);
+				config.replicationMysql.getConnectionURI(false), config.replicationMysql.user, config.replicationMysql.password);
 
-		this.rawMaxwellConnectionPool = new ConnectionPool("RawMaxwellConenectionPool", 1, 2, 100,
+		this.rawMaxwellConnectionPool = new ConnectionPool("RawMaxwellConnectionPool", 1, 2, 100,
 			config.maxwellMysql.getConnectionURI(false), config.maxwellMysql.user, config.maxwellMysql.password);
 
 		this.maxwellConnectionPool = new ConnectionPool("MaxwellConnectionPool", 10, 0, 10,
@@ -246,7 +248,7 @@ public class MaxwellContext {
 	}
 
 	public void probeConnections() throws SQLException {
-		probePool(this.maxwellConnectionPool, this.config.maxwellMysql.getConnectionURI());
+		probePool(this.rawMaxwellConnectionPool, this.config.maxwellMysql.getConnectionURI(false));
 
 		if ( this.maxwellConnectionPool != this.replicationConnectionPool )
 			probePool(this.replicationConnectionPool, this.config.replicationMysql.getConnectionURI());
