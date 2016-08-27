@@ -11,8 +11,8 @@ import java.util.concurrent.TimeoutException;
  * useful for "replay" mode.
  */
 public class ReadOnlyMysqlPositionStore extends MysqlPositionStore {
-	public ReadOnlyMysqlPositionStore(ConnectionPool pool, Long serverID, String dbName, String clientID) {
-		super(pool, serverID, dbName, clientID);
+	public ReadOnlyMysqlPositionStore(ConnectionPool pool, Long serverID, String clientID) {
+		super(pool, serverID, clientID);
 	}
 
 	@Override

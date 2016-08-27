@@ -91,7 +91,7 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 		Connection conn = context.getMaxwellConnection();
 		this.savedSchema.save(conn);
 
-		SchemaStoreSchema.handleMasterChange(conn, 123456L, dbName);
+		SchemaStoreSchema.handleMasterChange(conn, 123456L);
 
 		ResultSet rs = conn.createStatement().executeQuery("SELECT * from `schemas`");
 		assertThat(rs.next(), is(true));
@@ -133,6 +133,6 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 		c.createStatement().executeUpdate("alter table `maxwell`.`schemas` drop column deleted, " +
 				"drop column base_schema_id, drop column deltas, drop column version, drop column position_sha");
 		c.createStatement().executeUpdate("alter table maxwell.positions drop column client_id");
-		SchemaStoreSchema.upgradeSchemaStoreSchema(c, "maxwell"); // just verify no-crash.
+		SchemaStoreSchema.upgradeSchemaStoreSchema(c); // just verify no-crash.
 	}
 }
