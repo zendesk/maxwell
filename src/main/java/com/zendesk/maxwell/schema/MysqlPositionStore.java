@@ -16,14 +16,12 @@ import snaq.db.ConnectionPool;
 public class MysqlPositionStore {
 	static final Logger LOGGER = LoggerFactory.getLogger(MysqlPositionStore.class);
 	private final Long serverID;
-	private String schemaDatabaseName;
 	private String clientID;
 	private final ConnectionPool connectionPool;
 
-	public MysqlPositionStore(ConnectionPool pool, Long serverID, String dbName, String clientID) {
+	public MysqlPositionStore(ConnectionPool pool, Long serverID, String clientID) {
 		this.connectionPool = pool;
 		this.serverID = serverID;
-		this.schemaDatabaseName = dbName;
 		this.clientID = clientID;
 	}
 
@@ -31,16 +29,23 @@ public class MysqlPositionStore {
 		if ( newPosition == null )
 			return;
 
+		Long heartbeat = newPosition.getHeartbeat();
+		String lastHeartbeatSQL = heartbeat == null ? "" : "last_heartbeat_read = " + heartbeat + ", ";
+
 		String sql = "INSERT INTO `positions` set "
 				+ "server_id = ?, "
 				+ "binlog_file = ?, "
 				+ "binlog_position = ?, "
+				+ lastHeartbeatSQL
 				+ "client_id = ? "
-				+ "ON DUPLICATE KEY UPDATE binlog_file=?, binlog_position=?";
-		try( Connection c = getConnection() ){
+				+ "ON DUPLICATE KEY UPDATE "
+				+ lastHeartbeatSQL
+				+ "binlog_file = ?, binlog_position=?";
+
+		try( Connection c = connectionPool.getConnection() ){
 			PreparedStatement s = c.prepareStatement(sql);
 
-			LOGGER.debug("Writing binlog position to " + this.schemaDatabaseName + ".positions: " + newPosition);
+			LOGGER.debug("Writing binlog position to " + c.getCatalog() + ".positions: " + newPosition);
 			s.setLong(1, serverID);
 			s.setString(2, newPosition.getFile());
 			s.setLong(3, newPosition.getOffset());
@@ -53,7 +58,7 @@ public class MysqlPositionStore {
 	}
 
 	public void heartbeat() throws Exception {
-		try ( Connection c = getConnection() ) {
+		try ( Connection c = connectionPool.getConnection() ) {
 			heartbeat(c);
 		}
 	}
@@ -108,7 +113,7 @@ public class MysqlPositionStore {
 	}
 
 	public BinlogPosition get() throws SQLException {
-		try ( Connection c = getConnection() ) {
+		try ( Connection c = connectionPool.getConnection() ) {
 			PreparedStatement s = c.prepareStatement("SELECT * from `positions` where server_id = ? and client_id = ?");
 			s.setLong(1, serverID);
 			s.setString(2, clientID);
@@ -119,11 +124,5 @@ public class MysqlPositionStore {
 
 			return new BinlogPosition(rs.getLong("binlog_position"), rs.getString("binlog_file"));
 		}
-	}
-
-	private Connection getConnection() throws SQLException {
-		Connection conn = this.connectionPool.getConnection();
-		conn.setCatalog(this.schemaDatabaseName);
-		return conn;
 	}
 }

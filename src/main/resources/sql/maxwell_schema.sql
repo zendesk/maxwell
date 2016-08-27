@@ -50,5 +50,6 @@ CREATE TABLE IF NOT EXISTS `positions` (
   binlog_position int unsigned,
   client_id varchar(255) charset latin1 not null default 'maxwell',
   heartbeat_at bigint null default null,
+  last_heartbeat_read bigint null default null,
   primary key(server_id, client_id)
 );

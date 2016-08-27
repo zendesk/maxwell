@@ -1,17 +1,13 @@
 package com.zendesk.maxwell;
 
-import java.io.IOException;
-import java.sql.Connection;
 import java.sql.SQLException;
-import java.text.Format;
-import java.util.List;
-import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 import com.google.code.or.binlog.impl.event.*;
 import com.google.code.or.net.TransportException;
+import com.zendesk.maxwell.schema.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,60 +16,79 @@ import com.google.code.or.binlog.BinlogEventV4;
 import com.google.code.or.common.util.MySQLConstants;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
-import com.zendesk.maxwell.schema.Schema;
-import com.zendesk.maxwell.schema.SchemaStore;
-import com.zendesk.maxwell.schema.Table;
-import com.zendesk.maxwell.schema.SchemaStoreException;
-import com.zendesk.maxwell.schema.ddl.SchemaChange;
-import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 
 public class MaxwellReplicator extends RunLoopProcess {
 	private final long MAX_TX_ELEMENTS = 10000;
-	String filePath, fileName;
-	private long rowEventsProcessed;
 	protected SchemaStore schemaStore;
 
 	private MaxwellFilter filter;
+	private Long lastHeartbeatRead;
 
 	private final LinkedBlockingDeque<BinlogEventV4> queue = new LinkedBlockingDeque<>(20);
 
 	protected MaxwellBinlogEventListener binlogEventListener;
 
+	private final boolean shouldHeartbeat;
 	private final MaxwellTableCache tableCache = new MaxwellTableCache();
 	protected final OpenReplicator replicator;
-	private final MaxwellContext context;
+	private final PositionStoreThread positionStoreThread;
 	protected final AbstractProducer producer;
 	protected final AbstractBootstrapper bootstrapper;
+	private final String maxwellSchemaDatabaseName;
 
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellReplicator.class);
 
-	public MaxwellReplicator(SchemaStore schemaStore, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, BinlogPosition start) throws Exception {
+	public MaxwellReplicator(
+		SchemaStore schemaStore,
+		AbstractProducer producer,
+		AbstractBootstrapper bootstrapper,
+		MaxwellMysqlConfig mysqlConfig,
+		Long replicaServerID,
+		boolean shouldHeartbeat,
+		PositionStoreThread positionStoreThread,
+		String maxwellSchemaDatabaseName,
+		BinlogPosition start
+	) throws Exception {
 		this.schemaStore = schemaStore;
 		this.binlogEventListener = new MaxwellBinlogEventListener(queue);
 
 		this.replicator = new OpenReplicator();
 		this.replicator.setBinlogEventListener(this.binlogEventListener);
 
-		MaxwellConfig config = ctx.getConfig();
-
-		this.replicator.setHost(config.replicationMysql.host);
-		this.replicator.setUser(config.replicationMysql.user);
-		this.replicator.setPassword(config.replicationMysql.password);
-		this.replicator.setPort(config.replicationMysql.port);
+		this.replicator.setHost(mysqlConfig.host);
+		this.replicator.setUser(mysqlConfig.user);
+		this.replicator.setPassword(mysqlConfig.password);
+		this.replicator.setPort(mysqlConfig.port);
 
 		this.replicator.setLevel2BufferSize(50 * 1024 * 1024);
-		this.replicator.setServerId(config.replicaServerID.intValue());
+		this.replicator.setServerId(replicaServerID.intValue());
 
-		if ( ctx.shouldHeartbeat() )
+		this.shouldHeartbeat = shouldHeartbeat;
+		if ( shouldHeartbeat )
 			this.replicator.setHeartbeatPeriod(0.5f);
 
 		this.producer = producer;
 		this.bootstrapper = bootstrapper;
 
-		this.context = ctx;
+		this.positionStoreThread = positionStoreThread;
+		this.maxwellSchemaDatabaseName = maxwellSchemaDatabaseName;
 		this.setBinlogPosition(start);
+	}
+
+	public MaxwellReplicator(SchemaStore schemaStore, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, BinlogPosition start) throws Exception {
+		this(
+			schemaStore,
+			producer,
+			bootstrapper,
+			ctx.getConfig().replicationMysql,
+			ctx.getConfig().replicaServerID,
+			ctx.shouldHeartbeat(),
+			ctx.getPositionStoreThread(),
+			ctx.getConfig().databaseName,
+			start
+		);
 	}
 
 	public void setBinlogPosition(BinlogPosition p) {
@@ -91,7 +106,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 			replicator.start();
 		}
 
-		if ( context.shouldHeartbeat() ) {
+		if ( shouldHeartbeat ) {
 			Long ms = replicator.millisSinceLastEvent();
 			if (ms != null && ms > 2000) {
 				LOGGER.warn("no heartbeat heard from server in " + ms + "ms.  restarting replication.");
@@ -120,10 +135,20 @@ public class MaxwellReplicator extends RunLoopProcess {
 	public void work() throws Exception {
 		RowMap row = getRow();
 
-		context.ensurePositionThread();
+		// todo: this is inelegant.  Ideally the outer code would just
+		// call this and tell us to stop if the positionThread is dead.
+		if ( positionStoreThread.getException() != null )
+			throw positionStoreThread.getException();
 
 		if (row == null)
 			return;
+
+		if ( isMaxwellRow(row) && row.getTable().equals("positions") ) {
+			Object heartbeat_at = row.getData("heartbeat_at");
+			if ( heartbeat_at != null ) {
+				lastHeartbeatRead = (Long) heartbeat_at;
+			}
+		}
 
 		if ( !bootstrapper.shouldSkip(row) && !isMaxwellRow(row) ) {
 			producer.push(row);
@@ -140,7 +165,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 	}
 
 	protected boolean isMaxwellRow(RowMap row) {
-		return row.getDatabase().equals(this.context.getConfig().databaseName);
+		return row.getDatabase().equals(this.maxwellSchemaDatabaseName);
 	}
 
 	private BinlogPosition eventBinlogPosition(AbstractBinlogEventV4 event) {
@@ -167,22 +192,22 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 		switch (e.getHeader().getEventType()) {
 			case MySQLConstants.WRITE_ROWS_EVENT:
-				ew = new MaxwellWriteRowsEvent((WriteRowsEvent) e, table, filter);
+				ew = new MaxwellWriteRowsEvent((WriteRowsEvent) e, table, filter, lastHeartbeatRead);
 				break;
 			case MySQLConstants.WRITE_ROWS_EVENT_V2:
-				ew = new MaxwellWriteRowsEvent((WriteRowsEventV2) e, table, filter);
+				ew = new MaxwellWriteRowsEvent((WriteRowsEventV2) e, table, filter, lastHeartbeatRead);
 				break;
 			case MySQLConstants.UPDATE_ROWS_EVENT:
-				ew = new MaxwellUpdateRowsEvent((UpdateRowsEvent) e, table, filter);
+				ew = new MaxwellUpdateRowsEvent((UpdateRowsEvent) e, table, filter, lastHeartbeatRead);
 				break;
 			case MySQLConstants.UPDATE_ROWS_EVENT_V2:
-				ew = new MaxwellUpdateRowsEvent((UpdateRowsEventV2) e, table, filter);
+				ew = new MaxwellUpdateRowsEvent((UpdateRowsEventV2) e, table, filter, lastHeartbeatRead);
 				break;
 			case MySQLConstants.DELETE_ROWS_EVENT:
-				ew = new MaxwellDeleteRowsEvent((DeleteRowsEvent) e, table, filter);
+				ew = new MaxwellDeleteRowsEvent((DeleteRowsEvent) e, table, filter, lastHeartbeatRead);
 				break;
 			case MySQLConstants.DELETE_ROWS_EVENT_V2:
-				ew = new MaxwellDeleteRowsEvent((DeleteRowsEventV2) e, table, filter);
+				ew = new MaxwellDeleteRowsEvent((DeleteRowsEventV2) e, table, filter, lastHeartbeatRead);
 				break;
 			default:
 				return null;
@@ -192,6 +217,18 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 	private static Pattern createTablePattern =
 			Pattern.compile("^CREATE\\s+TABLE", Pattern.CASE_INSENSITIVE);
+
+	/**
+	 * Get a batch of rows for the current transaction.
+	 *
+	 * We assume the replicator has just processed a "BEGIN" event, and now
+	 * we're inside a transaction.  We'll process all rows inside that transaction
+	 * and turn them into RowMap objects.  We do this because mysql attaches the
+	 * transaction-id (xid) to the COMMIT object, so we process the entire transaction
+	 * to give them all that property.
+	 *
+	 * @return A RowMapBuffer of rows; either in-memory or on disk.
+	 */
 
 	private RowMapBuffer getTransactionRows() throws Exception {
 		BinlogEventV4 v4Event;
@@ -218,7 +255,6 @@ public class MaxwellReplicator extends RunLoopProcess {
 				case MySQLConstants.UPDATE_ROWS_EVENT_V2:
 				case MySQLConstants.DELETE_ROWS_EVENT:
 				case MySQLConstants.DELETE_ROWS_EVENT_V2:
-					rowEventsProcessed++;
 					event = processRowsEvent((AbstractRowEvent) v4Event);
 
 					if ( event == null ) {

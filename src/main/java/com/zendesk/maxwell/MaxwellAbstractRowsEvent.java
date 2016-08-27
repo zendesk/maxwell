@@ -19,23 +19,25 @@ import org.slf4j.LoggerFactory;
 // the main wrapper for a raw (AbstractRowEvent) binlog event.
 // decorates the event with metadata info from Table,
 // filters rows using the passed in MaxwellFilter,
-// and ultimately outputs arrays of json objects representing each row.
+// and ultimately outputs arrays of RowMap objects.
 
 public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellAbstractRowsEvent.class);
 	private final AbstractRowEvent event;
+	private final Long heartbeat;
 
 	protected final Table table;
 	protected final String database;
 	protected final MaxwellFilter filter;
 
-	public MaxwellAbstractRowsEvent(AbstractRowEvent e, Table table, MaxwellFilter f) {
+	public MaxwellAbstractRowsEvent(AbstractRowEvent e, Table table, MaxwellFilter f, Long heartbeat) {
 		this.tableId = e.getTableId();
 		this.event = e;
 		this.header = e.getHeader();
 		this.table = table;
 		this.database = table.getDatabase();
 		this.filter = f;
+		this.heartbeat = heartbeat;
 	}
 
 	@Override
@@ -57,7 +59,7 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 	}
 
 	public BinlogPosition getNextBinlogPosition() {
-		return new BinlogPosition(getHeader().getNextPosition(), getBinlogFilename());
+		return new BinlogPosition(getHeader().getNextPosition(), getBinlogFilename(), heartbeat);
 	}
 
 	@Override
