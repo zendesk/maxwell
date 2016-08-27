@@ -15,7 +15,6 @@ import java.util.List;
 public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore {
 	private final ConnectionPool maxwellConnectionPool;
 	private final BinlogPosition initialPosition;
-	private final CaseSensitivity caseSensitivity;
 	private final Long serverID;
 	private final boolean replayMode;
 
@@ -29,7 +28,6 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 							MaxwellFilter filter,
 							boolean replayMode) {
 		super(replicationConnectionPool, caseSensitivity, filter);
-		this.caseSensitivity = caseSensitivity;
 		this.serverID = serverID;
 		this.maxwellConnectionPool = maxwellConnectionPool;
 		this.initialPosition = initialPosition;
