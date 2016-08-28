@@ -11,13 +11,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 public class MysqlIsolatedServer {
-	public static final Long SERVER_ID = 123123L;
+	public static final Long SERVER_ID = 4321L;
 	private Connection connection; private String baseDir;
 	private int port;
 	private int serverPid;
@@ -31,13 +32,18 @@ public class MysqlIsolatedServer {
 		if ( xtraParams == null )
 			xtraParams = "";
 
+		String serverID = "";
+		if ( !xtraParams.contains("--server_id") )
+			serverID = "--server_id=" + SERVER_ID;
+
 		ProcessBuilder pb = new ProcessBuilder(
 				dir + "/src/test/onetimeserver",
 				"--mysql-version=" + this.getVersion(),
+				"--log-slave-updates",
 				"--log-bin=master",
 				"--binlog_format=row",
 				"--innodb_flush_log_at_trx_commit=1",
-				"--server_id=" + SERVER_ID,
+				serverID,
 				"--character-set-server=utf8",
 				xtraParams
 		);
@@ -84,6 +90,24 @@ public class MysqlIsolatedServer {
 		this.connection.createStatement().executeUpdate("GRANT REPLICATION SLAVE on *.* to 'maxwell'@'127.0.0.1' IDENTIFIED BY 'maxwell'");
 		this.connection.createStatement().executeUpdate("GRANT ALL on *.* to 'maxwell'@'127.0.0.1'");
 		LOGGER.debug("booted at port " + this.port + ", outputting to file " + outputFile);
+	}
+
+	public void setupSlave(int masterPort) throws SQLException {
+		Connection master = DriverManager.getConnection("jdbc:mysql://127.0.0.1:" + masterPort + "/mysql", "root", "");
+		ResultSet rs = master.createStatement().executeQuery("show master status");
+		if ( !rs.next() )
+			throw new RuntimeException("could not get master status");
+
+		String file = rs.getString("File");
+		Long position = rs.getLong("Position");
+
+		String changeSQL = String.format(
+			"CHANGE MASTER to master_host = '127.0.0.1', master_user='maxwell', master_password='maxwell', "
+			+ "master_log_file = '%s', master_log_pos = %d, master_port = %d",
+			file, position, masterPort
+		);
+		getConnection().createStatement().execute(changeSQL);
+		getConnection().createStatement().execute("START SLAVE");
 	}
 
 	public void boot() throws Exception {

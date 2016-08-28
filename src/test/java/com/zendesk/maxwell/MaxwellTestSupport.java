@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zendesk.maxwell.bootstrap.AsynchronousBootstrapper;
 import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
+import com.zendesk.maxwell.producer.BufferedProducer;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
 import com.zendesk.maxwell.schema.MysqlSchemaStore;
@@ -37,7 +38,7 @@ public class MaxwellTestSupport {
 		return setupServer(null);
 	}
 
-	public static void setupSchema(MysqlIsolatedServer server) throws Exception {
+	public static void setupSchema(MysqlIsolatedServer server, boolean resetBinlogs) throws Exception {
 		List<String> queries = new ArrayList<String>(Arrays.asList(
 				"CREATE DATABASE if not exists shard_2",
 				"DROP DATABASE if exists shard_1",
@@ -56,11 +57,15 @@ public class MaxwellTestSupport {
 			}
 		}
 
-		queries.add("RESET MASTER");
+		if ( resetBinlogs )
+			queries.add("RESET MASTER");
 
 		server.executeList(queries);
 	}
 
+	public static void setupSchema(MysqlIsolatedServer server) throws Exception {
+		setupSchema(server, true);
+	}
 
 	public static String getSQLDir() {
 		 final String dir = System.getProperty("user.dir");
@@ -68,7 +73,7 @@ public class MaxwellTestSupport {
 	}
 
 
-	public static MaxwellContext buildContext(int port, BinlogPosition p, MaxwellFilter filter) throws Exception {
+	public static MaxwellContext buildContext(int port, BinlogPosition p, MaxwellFilter filter) throws SQLException {
 		MaxwellConfig config = new MaxwellConfig();
 
 		config.replicationMysql.host = "127.0.0.1";

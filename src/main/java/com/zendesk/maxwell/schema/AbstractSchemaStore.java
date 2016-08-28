@@ -19,7 +19,7 @@ import snaq.db.ConnectionPool;
 
 public abstract class AbstractSchemaStore {
 	static final Logger LOGGER = LoggerFactory.getLogger(AbstractSchemaStore.class);
-	private final ConnectionPool replicationConnectionPool;
+	protected final ConnectionPool replicationConnectionPool;
 	protected final CaseSensitivity caseSensitivity;
 	private final MaxwellFilter filter;
 

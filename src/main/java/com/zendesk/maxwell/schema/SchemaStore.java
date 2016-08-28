@@ -27,4 +27,14 @@ public interface SchemaStore {
 	 * @return A list of the schema changes parsed from the SQL.
 	 */
 	List<ResolvedSchemaChange> processSQL(String sql, String currentDatabase, BinlogPosition position) throws SchemaStoreException, InvalidSchemaError;
+
+	/**
+	 * Clone the store, swapping out the serverID and position.  Used for master recovery.
+	 *
+	 * @param serverID The server_id to swap to
+	 * @param position The binlog position to swap to
+	 * @param readOnly should the cloned store be read-only?
+	 * @return a new SchemaStore object
+	 */
+	SchemaStore clone(Long serverID, BinlogPosition position, boolean readOnly);
 }

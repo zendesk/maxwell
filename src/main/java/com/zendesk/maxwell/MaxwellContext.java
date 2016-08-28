@@ -115,14 +115,12 @@ public class MaxwellContext {
 		if ( this.initialPosition != null )
 			return this.initialPosition;
 
-		this.initialPosition = getPositionStoreThread().getPosition();
-		if ( this.initialPosition == null ) {
-			try ( Connection connection = getReplicationConnection() ) {
-				this.initialPosition = BinlogPosition.capture(connection);
-				this.setPosition(this.initialPosition);
-			}
-		}
+		this.initialPosition = this.positionStore.get();
 		return this.initialPosition;
+	}
+
+	public MaxwellMasterRecoveryInfo getRecoveryInfo() throws SQLException {
+		return this.positionStore.getRecoveryInfo();
 	}
 
 	public void setPosition(RowMap r) throws SQLException {

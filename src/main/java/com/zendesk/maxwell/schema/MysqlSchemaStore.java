@@ -14,7 +14,6 @@ import java.util.List;
 
 public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore {
 	private final ConnectionPool maxwellConnectionPool;
-	private final ConnectionPool replicationConnectionPool;
 	private final BinlogPosition initialPosition;
 	private final Long serverID;
 	private final boolean readOnly;
@@ -30,14 +29,13 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 							MaxwellFilter filter,
 							boolean readOnly) {
 		super(replicationConnectionPool, caseSensitivity, filter);
-		this.replicationConnectionPool = replicationConnectionPool;
 		this.serverID = serverID;
 		this.filter = filter;
 		this.maxwellConnectionPool = maxwellConnectionPool;
 		this.initialPosition = initialPosition;
 		this.readOnly = readOnly;
-
 	}
+
 	public MysqlSchemaStore(MaxwellContext context, BinlogPosition initialPosition) throws SQLException {
 		this(
 			context.getMaxwellConnectionPool(),

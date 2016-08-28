@@ -38,12 +38,14 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public BinlogPosition initPosition;
 	public boolean replayMode;
+	public boolean stopOnEOF;
 
 	public MaxwellConfig() { // argv is only null in tests
 		this.kafkaProperties = new Properties();
 		this.replayMode = false;
 		this.replicationMysql = new MaxwellMysqlConfig();
 		this.maxwellMysql = new MaxwellMysqlConfig();
+		this.stopOnEOF = false;
 		this.bufferedProducerSize = 200;
 		setup(null, null); // setup defaults
 	}
@@ -259,7 +261,7 @@ public class MaxwellConfig extends AbstractConfig {
 		return p;
 	}
 
-	private void validate() {
+	protected void validate() {
 		if ( this.producerType.equals("kafka") ) {
 			if ( !this.kafkaProperties.containsKey("bootstrap.servers") ) {
 				usageForOptions("You must specify kafka.bootstrap.servers for the kafka producer!", "kafka");

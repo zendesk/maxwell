@@ -49,8 +49,9 @@ public class MaxwellReplicator extends RunLoopProcess {
 		boolean shouldHeartbeat,
 		PositionStoreThread positionStoreThread,
 		String maxwellSchemaDatabaseName,
-		BinlogPosition start
-	) throws Exception {
+		BinlogPosition start,
+		boolean stopOnEOF
+	) {
 		this.schemaStore = schemaStore;
 		this.binlogEventListener = new MaxwellBinlogEventListener(queue);
 
@@ -61,6 +62,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 		this.replicator.setUser(mysqlConfig.user);
 		this.replicator.setPassword(mysqlConfig.password);
 		this.replicator.setPort(mysqlConfig.port);
+		this.replicator.setStopOnEOF(stopOnEOF);
 
 		this.replicator.setLevel2BufferSize(50 * 1024 * 1024);
 		this.replicator.setServerId(replicaServerID.intValue());
@@ -77,7 +79,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 		this.setBinlogPosition(start);
 	}
 
-	public MaxwellReplicator(SchemaStore schemaStore, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, BinlogPosition start) throws Exception {
+	public MaxwellReplicator(SchemaStore schemaStore, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, BinlogPosition start) throws SQLException {
 		this(
 			schemaStore,
 			producer,
@@ -87,7 +89,8 @@ public class MaxwellReplicator extends RunLoopProcess {
 			ctx.shouldHeartbeat(),
 			ctx.getPositionStoreThread(),
 			ctx.getConfig().databaseName,
-			start
+			start,
+			ctx.getConfig().stopOnEOF
 		);
 	}
 
@@ -101,7 +104,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 	}
 
 	private void ensureReplicatorThread() throws Exception {
-		if ( !replicator.isRunning() ) {
+		if ( !replicator.isRunning() && !replicator.isStopOnEOF() ) {
 			LOGGER.warn("open-replicator stopped at position " + replicator.getBinlogFileName() + ":" + replicator.getBinlogPosition() + " -- restarting");
 			replicator.start();
 		}
@@ -139,27 +142,20 @@ public class MaxwellReplicator extends RunLoopProcess {
 	public void work() throws Exception {
 		RowMap row = getRow();
 
-		// todo: this is inelegant.  Ideally the outer code would just
-		// call this and tell us to stop if the positionThread is dead.
+		// todo: this is inelegant.  Ideally the outer code would monitor the
+		// position thread and stop us if it was dead.
+
 		if ( positionStoreThread.getException() != null )
 			throw positionStoreThread.getException();
 
-		if (row == null)
+		if ( row == null )
 			return;
-
-		if ( isMaxwellRow(row) && row.getTable().equals("positions") ) {
-			Object heartbeat_at = row.getData("heartbeat_at");
-			if ( heartbeat_at != null ) {
-				lastHeartbeatRead = (Long) heartbeat_at;
-			}
-		}
 
 		if ( !bootstrapper.shouldSkip(row) && !isMaxwellRow(row) ) {
 			producer.push(row);
 		} else {
 			bootstrapper.work(row, producer, this);
 		}
-
 	}
 
 	@Override
@@ -310,6 +306,28 @@ public class MaxwellReplicator extends RunLoopProcess {
 		}
 	}
 
+	public Long getLastHeartbeatRead() {
+		return lastHeartbeatRead;
+	}
+
+	private void processHeartbeats(RowMap row) throws SQLException {
+		if ( row != null && isMaxwellRow(row) && row.getTable().equals("positions") ) {
+			Object heartbeat_at = row.getData("heartbeat_at");
+			if ( heartbeat_at != null ) {
+				Long thisHeartbeat = (Long) heartbeat_at;
+				if ( !thisHeartbeat.equals(lastHeartbeatRead) ) {
+					lastHeartbeatRead = thisHeartbeat;
+
+					BinlogPosition position = new BinlogPosition(row.getPosition().getOffset(), row.getPosition().getFile(), lastHeartbeatRead);
+
+					if ( this.producer != null ) {
+						this.producer.writePosition(position);
+					}
+				}
+			}
+		}
+	}
+
 	private RowMapBuffer rowBuffer;
 
 	public RowMap getRow() throws Exception {
@@ -317,14 +335,25 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 		while (true) {
 			if (rowBuffer != null && !rowBuffer.isEmpty()) {
-				return rowBuffer.removeFirst();
+				RowMap row = rowBuffer.removeFirst();
+
+				processHeartbeats(row);
+
+				return row;
 			}
 
 			v4Event = pollV4EventFromQueue();
 
 			if (v4Event == null) {
-				ensureReplicatorThread();
-				return null;
+				if ( replicator.isStopOnEOF() ) {
+					if ( replicator.isRunning() )
+						continue;
+					else
+						return null;
+				} else {
+					ensureReplicatorThread();
+					return null;
+				}
 			}
 
 			switch (v4Event.getHeader().getEventType()) {
