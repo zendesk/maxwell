@@ -16,7 +16,7 @@ public class BufferedProducer extends AbstractProducer {
 
 	@Override
 	public void push(RowMap r) throws Exception {
-		this.queue.offer(r);
+		this.queue.put(r);
 	}
 
 	public RowMap poll(long timeout, TimeUnit unit) throws InterruptedException {

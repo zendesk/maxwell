@@ -155,16 +155,28 @@ public class MaxwellTestSupport {
 		BinlogPosition finalPosition = BinlogPosition.capture(mysql.getConnection());
 
 		// add a final row to ensure we pick up all the data
-		mysql.execute("insert into test.boundary set i = 1");
+		mysql.execute("insert into test.boundary set i = 2");
 
-		for ( int nullChecksLeft = 100 ; nullChecksLeft > 0 ; nullChecksLeft-- ) {
-			RowMap row = maxwell.getRow(10, TimeUnit.MILLISECONDS);
-			if ( row == null )
-				continue;
+		for ( ;; ) {
+			RowMap row = maxwell.getRow(1, TimeUnit.SECONDS);
 
-			if ( row.getPosition().newerThan(finalPosition) )
-				nullChecksLeft = 2; // finish off what's in there, then break.
+			if ( row == null ) {
+				break;
+			}
 
+			if ( row.getPosition().newerThan(finalPosition) ) {
+				// consume whatever's left over in the buffer.
+				for ( ;; ) {
+					RowMap r = maxwell.getRow(10, TimeUnit.MILLISECONDS);
+					if ( r == null )
+						break;
+
+					if ( !row.getTable().equals("boundary"))
+						list.add(row);
+				}
+
+				break;
+			}
 			if ( !row.getTable().equals("boundary"))
 				list.add(row);
 		}

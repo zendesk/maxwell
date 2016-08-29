@@ -79,29 +79,6 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
-	public void testMasterChange() throws Exception {
-		this.schema = new SchemaCapturer(server.getConnection(), context.getCaseSensitivity()).capture();
-		this.binlogPosition = BinlogPosition.capture(server.getConnection());
-
-		MaxwellContext context = this.buildContext();
-		String dbName = context.getConfig().databaseName;
-
-		this.savedSchema = new MysqlSavedSchema(5551234L, context.getCaseSensitivity(), this.schema, binlogPosition);
-
-		Connection conn = context.getMaxwellConnection();
-		this.savedSchema.save(conn);
-
-		SchemaStoreSchema.handleMasterChange(conn, 123456L);
-
-		ResultSet rs = conn.createStatement().executeQuery("SELECT * from `schemas`");
-		assertThat(rs.next(), is(true));
-		assertThat(rs.getBoolean("deleted"), is(true));
-
-		rs = conn.createStatement().executeQuery("SELECT * from `positions`");
-		assertThat(rs.next(), is(false));
-	}
-
-	@Test
 	public void testFixUnsignedColumnBug() throws Exception {
 		Connection c = context.getMaxwellConnection();
 		this.savedSchema.save(c);

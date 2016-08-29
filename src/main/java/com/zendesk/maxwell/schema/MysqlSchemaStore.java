@@ -90,12 +90,7 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 		return resolvedSchemaChanges;
 	}
 
-	public SchemaStore clone(Long serverID, BinlogPosition position, boolean readOnly) {
-		return new MysqlSchemaStore(maxwellConnectionPool, replicationConnectionPool, serverID, position, caseSensitivity, filter, readOnly);
-	}
-
 	private void saveSchema(Schema updatedSchema, List<ResolvedSchemaChange> changes, BinlogPosition p) throws SQLException {
-		/* TODO: replay mode should trigger a null schema-store */
 		if ( readOnly )
 			return;
 

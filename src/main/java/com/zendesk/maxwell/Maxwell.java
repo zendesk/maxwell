@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.TimeoutException;
 import com.djdch.log4j.StaticShutdownCallbackRegistry;
+import com.zendesk.maxwell.recovery.Recovery;
+import com.zendesk.maxwell.recovery.RecoveryInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +55,35 @@ public class Maxwell implements Runnable {
 		context = null;
 	}
 
+	protected BinlogPosition getInitialPosition() throws Exception {
+		/* first method:  do we have a stored position for this server? */
+		BinlogPosition initial = this.context.getInitialPosition();
+
+		/* second method: are we recovering from a master swap? */
+		if ( initial == null ) {
+			RecoveryInfo recoveryInfo = this.context.getRecoveryInfo();
+
+			if ( recoveryInfo != null ) {
+				Recovery masterRecovery = new Recovery(
+					config.replicationMysql,
+					config.databaseName,
+					this.context.getReplicationConnectionPool(),
+					this.context.getCaseSensitivity(),
+					recoveryInfo
+				);
+
+				initial = masterRecovery.recover();
+			}
+		}
+
+		/* third method: capture the current master postiion. */
+		if ( initial == null ) {
+			try ( Connection c = context.getReplicationConnection() ) {
+				initial = BinlogPosition.capture(c);
+			}
+		}
+		return initial;
+	}
 
 	private void start() throws Exception {
 		try ( Connection connection = this.context.getReplicationConnection();
@@ -64,7 +95,6 @@ public class Maxwell implements Runnable {
 
 			try ( Connection schemaConnection = this.context.getMaxwellConnection() ) {
 				SchemaStoreSchema.upgradeSchemaStoreSchema(schemaConnection);
-				SchemaStoreSchema.handleMasterChange(schemaConnection, context.getServerID());
 			}
 
 			String producerClass = this.context.getProducer().getClass().getSimpleName();
@@ -78,8 +108,9 @@ public class Maxwell implements Runnable {
 		AbstractProducer producer = this.context.getProducer();
 		AbstractBootstrapper bootstrapper = this.context.getBootstrapper();
 
-		MysqlSchemaStore mysqlSchemaStore = new MysqlSchemaStore(this.context, this.context.getInitialPosition());
-		this.replicator = new MaxwellReplicator(mysqlSchemaStore, producer, bootstrapper, this.context, this.context.getInitialPosition());
+		BinlogPosition initPosition = getInitialPosition();
+		MysqlSchemaStore mysqlSchemaStore = new MysqlSchemaStore(this.context, initPosition);
+		this.replicator = new MaxwellReplicator(mysqlSchemaStore, producer, bootstrapper, this.context, initPosition);
 
 		bootstrapper.resume(producer, replicator);
 

@@ -19,19 +19,19 @@ public class Recovery {
 
 	private final ConnectionPool replicationConnectionPool;
 	private final RecoveryInfo recoveryInfo;
-	private final SchemaStore schemaStore;
 	private final MaxwellMysqlConfig replicationConfig;
 	private final String maxwellDatabaseName;
+	private final RecoverySchemaStore schemaStore;
 
 	public Recovery(MaxwellMysqlConfig replicationConfig,
 					String maxwellDatabaseName,
-					SchemaStore schemaStore,
 					ConnectionPool replicationConnectionPool,
+					CaseSensitivity caseSensitivity,
 					RecoveryInfo recoveryInfo) {
 		this.replicationConfig = replicationConfig;
 		this.replicationConnectionPool = replicationConnectionPool;
 		this.recoveryInfo = recoveryInfo;
-		this.schemaStore = schemaStore;
+		this.schemaStore = new RecoverySchemaStore(replicationConnectionPool, maxwellDatabaseName, caseSensitivity);
 		this.maxwellDatabaseName = maxwellDatabaseName;
 	}
 
@@ -52,9 +52,8 @@ public class Recovery {
 
 			LOGGER.debug("scanning binlog: " + position);
 
-			SchemaStore store = schemaStore.clone(recoveryInfo.serverID, recoveryInfo.position, true);
 			MaxwellReplicator replicator = new MaxwellReplicator(
-				store,
+				this.schemaStore,
 				null,
 				null,
 				replicationConfig,
@@ -65,6 +64,9 @@ public class Recovery {
 				position,
 				true
 			);
+
+			replicator.setFilter(new RecoveryFilter(this.maxwellDatabaseName));
+
 			BinlogPosition p = findHeartbeat(replicator);
 			if ( p != null )
 				return p;

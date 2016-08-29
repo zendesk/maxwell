@@ -183,7 +183,6 @@ public class MaxwellReplicator extends RunLoopProcess {
 		long tableId = e.getTableId();
 
 		if ( tableCache.isTableBlacklisted(tableId) ) {
-			LOGGER.debug(String.format("ignoring row event for blacklisted table %s", tableCache.getBlacklistedTableName(tableId)));
 			return null;
 		}
 
