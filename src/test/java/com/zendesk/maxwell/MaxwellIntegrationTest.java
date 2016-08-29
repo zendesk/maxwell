@@ -410,4 +410,9 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	}
 
+	@Test
+	public void testOutputBinlogPosition() throws Exception {
+		runJSON("/json/test_binlog_position");
+	}
+
 }

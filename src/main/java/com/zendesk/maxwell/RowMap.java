@@ -189,6 +189,7 @@ public class RowMap implements Serializable {
 		g.writeStringField("table", this.table);
 		g.writeStringField("type", this.rowType);
 		g.writeNumberField("ts", this.timestamp);
+		g.writeNumberField("binlog_position", this.nextPosition.getOffset());
 
 		/* TODO: allow xid and commit to be configurable in the output */
 		if ( this.xid != null )
