@@ -39,6 +39,8 @@ public class MaxwellReplicator extends RunLoopProcess {
 	private final String maxwellSchemaDatabaseName;
 
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellReplicator.class);
+	private final boolean stopOnEOF;
+	private boolean hitEOF = false;
 
 	public MaxwellReplicator(
 		SchemaStore schemaStore,
@@ -73,6 +75,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 		this.producer = producer;
 		this.bootstrapper = bootstrapper;
+		this.stopOnEOF = stopOnEOF;
 
 		this.positionStoreThread = positionStoreThread;
 		this.maxwellSchemaDatabaseName = maxwellSchemaDatabaseName;
@@ -333,6 +336,9 @@ public class MaxwellReplicator extends RunLoopProcess {
 	public RowMap getRow() throws Exception {
 		BinlogEventV4 v4Event;
 
+		if ( stopOnEOF && hitEOF )
+			return null;
+
 		while (true) {
 			if (rowBuffer != null && !rowBuffer.isEmpty()) {
 				RowMap row = rowBuffer.removeFirst();
@@ -345,7 +351,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 			v4Event = pollV4EventFromQueue();
 
 			if (v4Event == null) {
-				if ( replicator.isStopOnEOF() ) {
+				if ( stopOnEOF ) {
 					if ( replicator.isRunning() )
 						continue;
 					else
@@ -379,6 +385,14 @@ public class MaxwellReplicator extends RunLoopProcess {
 					else {
 						processQueryEvent((QueryEvent) v4Event);
 						setReplicatorPosition((AbstractBinlogEventV4) v4Event);
+					}
+					break;
+				case MySQLConstants.ROTATE_EVENT:
+					if ( stopOnEOF ) {
+						this.replicator.stopQuietly(100, TimeUnit.MILLISECONDS);
+						setReplicatorPosition((AbstractBinlogEventV4) v4Event);
+						this.hitEOF = true;
+						return null;
 					}
 					break;
 				default:

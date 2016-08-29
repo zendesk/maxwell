@@ -261,7 +261,7 @@ public class MaxwellConfig extends AbstractConfig {
 		return p;
 	}
 
-	protected void validate() {
+	public void validate() {
 		if ( this.producerType.equals("kafka") ) {
 			if ( !this.kafkaProperties.containsKey("bootstrap.servers") ) {
 				usageForOptions("You must specify kafka.bootstrap.servers for the kafka producer!", "kafka");

@@ -1,6 +1,5 @@
 package com.zendesk.maxwell;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -13,6 +12,7 @@ import com.zendesk.maxwell.bootstrap.AsynchronousBootstrapper;
 import com.zendesk.maxwell.bootstrap.NoOpBootstrapper;
 import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
 import com.zendesk.maxwell.producer.*;
+import com.zendesk.maxwell.recovery.RecoveryInfo;
 import com.zendesk.maxwell.schema.ReadOnlyMysqlPositionStore;
 import com.zendesk.maxwell.schema.MysqlPositionStore;
 import com.zendesk.maxwell.schema.PositionStoreThread;
@@ -119,7 +119,7 @@ public class MaxwellContext {
 		return this.initialPosition;
 	}
 
-	public MaxwellMasterRecoveryInfo getRecoveryInfo() throws SQLException {
+	public RecoveryInfo getRecoveryInfo() throws SQLException {
 		return this.positionStore.getRecoveryInfo();
 	}
 

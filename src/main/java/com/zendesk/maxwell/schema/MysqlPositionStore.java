@@ -5,7 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import com.zendesk.maxwell.MaxwellMasterRecoveryInfo;
+import com.zendesk.maxwell.recovery.RecoveryInfo;
 
 import com.zendesk.maxwell.BinlogPosition;
 import com.zendesk.maxwell.errors.DuplicateProcessException;
@@ -134,15 +134,15 @@ public class MysqlPositionStore {
 	 * @return a tuple of server_id, heartbeat
 	 */
 
-	public MaxwellMasterRecoveryInfo getRecoveryInfo() throws SQLException {
+	public RecoveryInfo getRecoveryInfo() throws SQLException {
 		try ( Connection c = connectionPool.getConnection() ) {
 			return getRecoveryInfo(c);
 		}
 	}
 
-	private MaxwellMasterRecoveryInfo getRecoveryInfo(Connection c) throws SQLException {
+	private RecoveryInfo getRecoveryInfo(Connection c) throws SQLException {
 		ResultSet rs = c.createStatement().executeQuery("SELECT * from `positions`");
-		MaxwellMasterRecoveryInfo info = null;
+		RecoveryInfo info = null;
 
 		while ( rs.next() ) {
 			Long server_id = rs.getLong("server_id");
@@ -155,7 +155,7 @@ public class MysqlPositionStore {
 				LOGGER.error("also found a row for server_id: " + server_id);
 				return null;
 			} else {
-				info = new MaxwellMasterRecoveryInfo(position, last_heartbeat_read, server_id);
+				info = new RecoveryInfo(position, last_heartbeat_read, server_id);
 			}
 		}
 		return info;

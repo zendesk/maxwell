@@ -1,14 +1,10 @@
-package com.zendesk.maxwell;
+package com.zendesk.maxwell.recovery;
 
-import com.google.code.or.binlog.impl.event.RotateEvent;
-import com.zendesk.maxwell.schema.MysqlSchemaStore;
-import com.zendesk.maxwell.schema.PositionStoreThread;
-import com.zendesk.maxwell.schema.ReadOnlyMysqlPositionStore;
+import com.zendesk.maxwell.*;
 import com.zendesk.maxwell.schema.SchemaStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.EOFException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,20 +14,20 @@ import java.util.Objects;
 
 import snaq.db.ConnectionPool;
 
-public class MaxwellMasterRecovery {
-	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellMasterRecovery.class);
+public class Recovery {
+	static final Logger LOGGER = LoggerFactory.getLogger(Recovery.class);
 
 	private final ConnectionPool replicationConnectionPool;
-	private final MaxwellMasterRecoveryInfo recoveryInfo;
+	private final RecoveryInfo recoveryInfo;
 	private final SchemaStore schemaStore;
 	private final MaxwellMysqlConfig replicationConfig;
 	private final String maxwellDatabaseName;
 
-	public MaxwellMasterRecovery(MaxwellMysqlConfig replicationConfig,
-								 String maxwellDatabaseName,
-								 SchemaStore schemaStore,
-								 ConnectionPool replicationConnectionPool,
-								 MaxwellMasterRecoveryInfo recoveryInfo) {
+	public Recovery(MaxwellMysqlConfig replicationConfig,
+					String maxwellDatabaseName,
+					SchemaStore schemaStore,
+					ConnectionPool replicationConnectionPool,
+					RecoveryInfo recoveryInfo) {
 		this.replicationConfig = replicationConfig;
 		this.replicationConnectionPool = replicationConnectionPool;
 		this.recoveryInfo = recoveryInfo;
@@ -68,16 +64,7 @@ public class MaxwellMasterRecovery {
 				maxwellDatabaseName,
 				position,
 				true
-			) {
-				@Override
-				protected void onRotateEvent(RotateEvent e) {
-					try {
-						this.stopReplicator();
-					} catch (Exception ex) {
-						LOGGER.error("couldn't stop replicator", ex);
-					}
-				}
-			};
+			);
 			BinlogPosition p = findHeartbeat(replicator);
 			if ( p != null )
 				return p;
@@ -93,11 +80,9 @@ public class MaxwellMasterRecovery {
 	 */
 	private BinlogPosition findHeartbeat(MaxwellReplicator r) throws Exception {
 		r.startReplicator();
-		for ( RowMap row = r.getRow(); row != null ; row = r.getRow()) {
+		for (RowMap row = r.getRow(); row != null ; row = r.getRow()) {
 			if (Objects.equals(r.getLastHeartbeatRead(), recoveryInfo.heartbeat))
 				return row.getPosition();
-			else
-				System.out.println(row.getPosition());
 
 		}
 		return null;
