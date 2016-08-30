@@ -171,8 +171,8 @@ public class MaxwellTestSupport {
 					if ( r == null )
 						break;
 
-					if ( !row.getTable().equals("boundary"))
-						list.add(row);
+					if ( !r.getTable().equals("boundary"))
+						list.add(r);
 				}
 
 				break;
