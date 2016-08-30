@@ -26,7 +26,7 @@ public abstract class ColumnDef {
 		return value;
 	}
 
-	public static ColumnDef build(String name, String charset, String type, int pos, boolean signed, String enumValues[]) {
+	public static ColumnDef build(String name, String charset, String type, int pos, boolean signed, String enumValues[], Long columnLength) {
 		switch(type) {
 		case "tinyint":
 		case "smallint":
@@ -67,11 +67,11 @@ public abstract class ColumnDef {
 			return new DateColumnDef(name, type, pos);
 		case "datetime":
 		case "timestamp":
-			return new DateTimeColumnDef(name, type, pos);
+			return new DateTimeColumnDef(name, type, pos, columnLength);
+		case "time":			
+			return new TimeColumnDef(name, type, pos, columnLength);
 		case "year":
 			return new YearColumnDef(name, type, pos);
-		case "time":
-			return new TimeColumnDef(name, type, pos);
 		case "enum":
 			return new EnumColumnDef(name, type, pos, enumValues);
 		case "set":
@@ -185,4 +185,3 @@ public abstract class ColumnDef {
 		this.pos = i;
 	}
 }
-

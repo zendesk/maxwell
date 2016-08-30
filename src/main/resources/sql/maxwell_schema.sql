@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS `columns` (
   coltype     varchar(255),
   is_signed   tinyint(1) unsigned,
   enum_values text,
+  column_length bigint unsigned,
   index (schema_id),
   index (table_id)
 );

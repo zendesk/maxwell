@@ -50,6 +50,9 @@ public class MaxwellTestSupport {
 			if ( !file.getName().endsWith(".sql"))
 				continue;
 
+			if ( file.getName().contains("sharded") )
+				continue;
+
 			byte[] sql = Files.readAllBytes(file.toPath());
 			String s = new String(sql);
 			if ( s != null ) {
@@ -59,6 +62,21 @@ public class MaxwellTestSupport {
 
 		if ( resetBinlogs )
 			queries.add("RESET MASTER");
+
+		String shardedFileName;
+		if ( server.getVersion().equals("5.6") )
+			shardedFileName = "sharded_56.sql";
+		else
+			shardedFileName = "sharded.sql";
+
+		File shardedFile = new File(getSQLDir() + "/schema/" + shardedFileName);
+		byte[] sql = Files.readAllBytes(shardedFile.toPath());
+		String s = new String(sql);
+		if ( s != null ) {
+			queries.add(s);
+		}
+
+		queries.add("RESET MASTER");
 
 		server.executeList(queries);
 	}
