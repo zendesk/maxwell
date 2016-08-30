@@ -73,6 +73,22 @@ public class Maxwell implements Runnable {
 				);
 
 				initial = masterRecovery.recover();
+
+				if ( initial != null ) {
+
+					// load up the schema from the recovery position
+					MysqlSchemaStore oldServerSchemaStore = new MysqlSchemaStore(
+						context.getMaxwellConnectionPool(),
+						context.getReplicationConnectionPool(),
+						recoveryInfo.serverID,
+						recoveryInfo.position,
+						context.getCaseSensitivity(),
+						config.filter,
+						false
+					);
+
+					oldServerSchemaStore.clone(context.getServerID(), initial);
+				}
 			}
 		}
 

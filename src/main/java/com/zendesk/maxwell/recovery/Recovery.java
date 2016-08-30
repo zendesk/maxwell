@@ -68,8 +68,10 @@ public class Recovery {
 			replicator.setFilter(new RecoveryFilter(this.maxwellDatabaseName));
 
 			BinlogPosition p = findHeartbeat(replicator);
-			if ( p != null )
+			if ( p != null ) {
+				LOGGER.info("recovered new master position: " + p);
 				return p;
+			}
 		}
 
 		LOGGER.warn("Could not recover from master-change: " + recoveryMsg);

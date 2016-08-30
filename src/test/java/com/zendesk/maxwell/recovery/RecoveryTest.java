@@ -6,7 +6,9 @@ import com.zendesk.maxwell.schema.SchemaStoreSchema;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -92,6 +94,7 @@ public class RecoveryTest {
 		} else {
 			// TODO: something something.
 		}
+
 	}
 
 	@Test
@@ -100,6 +103,7 @@ public class RecoveryTest {
 		/* run the execution through with the replicator running so we get heartbeats */
 		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(masterServer, null, input, null);
 
+		BinlogPosition approximateRecoverPosition = BinlogPosition.capture(slaveServer.getConnection());
 		generateNewMasterData();
 
 		MaxwellConfig c = getConfig(slaveServer.getPort());
@@ -116,6 +120,64 @@ public class RecoveryTest {
 		}
 
 		for ( long i = 0 ; i < 6000; i++ ) {
+			assertEquals(i + 1, rows.get((int) i).getData("id"));
+		}
+
+		// assert that we created a schema that matches up with the matched position.
+		ResultSet rs = slaveServer.getConnection().createStatement().executeQuery("select * from maxwell.schemas");
+		boolean foundSchema = false;
+		while ( rs.next() ) {
+			if ( rs.getLong("server_id") == 12345 ) {
+				foundSchema = true;
+				long recoveredPosition = rs.getLong("binlog_position");
+				assertThat(Math.abs(recoveredPosition - approximateRecoverPosition.getOffset()), lessThan(1000L));
+				rs.getLong("base_schema_id");
+				assertEquals(false, rs.wasNull());
+			}
+		}
+		assertEquals(true, foundSchema);
+	}
+
+	@Test
+	public void testRecoveryIntegrationWithLaggedMaxwell() throws Exception {
+		final String[] input = generateMasterData();
+		MaxwellTestSupportCallback callback = new MaxwellTestSupportCallback() {
+			@Override
+			public void afterReplicatorStart(MysqlIsolatedServer mysql) throws SQLException {
+				mysql.executeList(Arrays.asList(input));
+			}
+
+			@Override
+			public void beforeTerminate(MysqlIsolatedServer mysql) {
+				/* record some queries.  maxwell may continue to heartbeat but we will be behind. */
+				try {
+					mysql.executeList(Arrays.asList(input));
+					mysql.execute("FLUSH LOGS");
+					mysql.executeList(Arrays.asList(input));
+					mysql.execute("FLUSH LOGS");
+				} catch ( Exception e ) {}
+			}
+		};
+
+		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(masterServer, null, callback);
+
+		generateNewMasterData();
+
+		MaxwellConfig c = getConfig(slaveServer.getPort());
+		BufferedMaxwell maxwell = new BufferedMaxwell(getConfig(slaveServer.getPort()));
+
+		new Thread(maxwell).start();
+
+		for ( ;; ) {
+			RowMap r = maxwell.getRow(10, TimeUnit.SECONDS);
+			if ( r == null )
+				break;
+			else
+				rows.add(r);
+		}
+
+		assertEquals(16000, rows.size());
+		for ( long i = 0 ; i < 16000; i++ ) {
 			assertEquals(i + 1, rows.get((int) i).getData("id"));
 		}
 	}
