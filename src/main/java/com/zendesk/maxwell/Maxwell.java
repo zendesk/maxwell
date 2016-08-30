@@ -42,11 +42,10 @@ public class Maxwell implements Runnable {
 
 			if ( this.replicator != null)
 				replicator.stopLoop();
-			} catch (TimeoutException e) {
-				System.err.println("Timed out trying to shutdown maxwell parser thread.");
-			} catch (InterruptedException e) {
-			} catch (Exception e) {
-		}
+		} catch (TimeoutException e) {
+			System.err.println("Timed out trying to shutdown maxwell parser thread.");
+		} catch (InterruptedException e) {
+		} catch (Exception e) { }
 
 		if ( this.context != null )
 			context.terminate();
