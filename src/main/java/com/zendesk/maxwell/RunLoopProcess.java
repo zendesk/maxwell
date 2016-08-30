@@ -31,8 +31,8 @@ abstract public class RunLoopProcess {
 			while (this.runState == RunState.RUNNING)
 				work();
 
-			this.beforeStop();
 		} finally {
+			this.beforeStop();
 			this.runState = RunState.STOPPED;
 		}
 
