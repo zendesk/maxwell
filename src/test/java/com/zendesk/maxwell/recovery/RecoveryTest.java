@@ -20,7 +20,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
-public class RecoveryTest {
+public class RecoveryTest extends TestWithNameLogging {
 	private static MysqlIsolatedServer masterServer, slaveServer;
 	static final Logger LOGGER = LoggerFactory.getLogger(RecoveryTest.class);
 
@@ -125,6 +125,7 @@ public class RecoveryTest {
 		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(masterServer, null, input, null);
 
 		BinlogPosition approximateRecoverPosition = BinlogPosition.capture(slaveServer.getConnection());
+		LOGGER.warn("slave master position at time of cut: " + approximateRecoverPosition);
 		generateNewMasterData();
 
 		BufferedMaxwell maxwell = new BufferedMaxwell(getConfig(slaveServer.getPort()));
@@ -155,7 +156,6 @@ public class RecoveryTest {
 
 	@Test
 	public void testRecoveryIntegrationWithLaggedMaxwell() throws Exception {
-		LOGGER.info("begin-test");
 		final String[] input = generateMasterData();
 		MaxwellTestSupportCallback callback = new MaxwellTestSupportCallback() {
 			@Override
@@ -184,7 +184,6 @@ public class RecoveryTest {
 		new Thread(maxwell).start();
 		drainReplication(maxwell, rows);
 
-		LOGGER.info("end-test");
 		assertThat(rows.size(), greaterThanOrEqualTo(16000));
 
 		boolean[] ids = new boolean[16001];
