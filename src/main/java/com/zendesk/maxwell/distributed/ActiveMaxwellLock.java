@@ -53,7 +53,7 @@ public class ActiveMaxwellLock extends StateModel {
   @Transition(from = "ONLINE", to = "OFFLINE")
   public void release(Message m, NotificationContext context) {
     LOGGER.info("Maxwell Active Node changed status");
-    maxwell.stop();
+    maxwell.terminate();
   }
 
 }
