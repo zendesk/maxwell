@@ -17,6 +17,7 @@ import org.apache.helix.tools.StateModelConfigGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -37,7 +38,7 @@ public class ActiveStandbyMaxwell implements Runnable {
     private HelixManager participantManager = null;
     private HelixManager controllerManager = null;
 
-    public ActiveStandbyMaxwell(HAMaxwellConfig conf) {
+    public ActiveStandbyMaxwell(HAMaxwellConfig conf) throws SQLException {
         this.config = conf;
 
         _zkAddress = config.zkAddress;
@@ -52,11 +53,32 @@ public class ActiveStandbyMaxwell implements Runnable {
         this.context = new MaxwellContext(this.config);
     }
 
-    @Override
-    public void run() throws Exception {
+    public void run() {
+        try {
+            start();
+        } catch (Exception e) {
+            LOGGER.error("active-standby maxwell encountered an exception", e);
+        }
+    }
+
+    public void terminate() {
+        if (participantManager != null) {
+            participantManager.disconnect();
+        }
+
+        if (controllerManager != null) {
+            controllerManager.disconnect();
+        }
+    }
+
+    private void start() throws Exception {
         configureInstance();
 
-        addParticipant();
+        try {
+            addParticipant();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         if (config.startController) {
             startContoller();
@@ -103,17 +125,6 @@ public class ActiveStandbyMaxwell implements Runnable {
         controllerManager = HelixControllerMain.startHelixController(_zkAddress, _clusterName, _clusterName+"_Controller", HelixControllerMain.STANDALONE);
     }
 
-    @Override
-    public void stop() {
-        if (participantManager != null) {
-            participantManager.disconnect();
-        }
-
-        if (controllerManager != null) {
-            controllerManager.disconnect();
-        }
-    }
-
     public static void main(String[] args) {
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
@@ -128,7 +139,7 @@ public class ActiveStandbyMaxwell implements Runnable {
             if ( config.log_level != null )
                 MaxwellLogging.setLevel(config.log_level);
 
-            new Maxwell(config).start();
+            new ActiveStandbyMaxwell(config).start();
         } catch ( Exception e ) {
             e.printStackTrace();
             System.exit(1);
