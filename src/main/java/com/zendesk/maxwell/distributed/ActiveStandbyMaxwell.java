@@ -37,7 +37,7 @@ public class ActiveStandbyMaxwell implements Runnable {
     private HelixManager participantManager = null;
     private HelixManager controllerManager = null;
 
-    public ActiveStandbyMaxwell(MaxwellConfig conf) {
+    public ActiveStandbyMaxwell(HAMaxwellConfig conf) {
         this.config = conf;
 
         _zkAddress = config.zkAddress;
@@ -45,7 +45,6 @@ public class ActiveStandbyMaxwell implements Runnable {
         _instanceName = config.instanceName;
         _hostName = config.hostName;
         _port = config.clusterPort;
-
 
         if (this.config.log_level != null)
             MaxwellLogging.setLevel(this.config.log_level);
@@ -124,7 +123,7 @@ public class ActiveStandbyMaxwell implements Runnable {
         });
 
         try {
-            MaxwellConfig config = new MaxwellConfig(args);
+            HAMaxwellConfig config = new HAMaxwellConfig(args);
 
             if ( config.log_level != null )
                 MaxwellLogging.setLevel(config.log_level);

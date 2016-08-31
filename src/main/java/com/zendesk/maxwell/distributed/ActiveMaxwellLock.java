@@ -4,7 +4,6 @@ package com.zendesk.maxwell.distributed;
  * Created by springloops on 2016. 8. 31..
  */
 import com.zendesk.maxwell.Maxwell;
-import com.zendesk.maxwell.MaxwellConfig;
 import org.apache.helix.NotificationContext;
 import org.apache.helix.model.Message;
 import org.apache.helix.participant.statemachine.StateModel;
@@ -19,10 +18,10 @@ import org.slf4j.LoggerFactory;
 public class ActiveMaxwellLock extends StateModel {
   static final Logger LOGGER = LoggerFactory.getLogger(ActiveMaxwellLock.class);
 
-  private final MaxwellConfig config;
+  private final HAMaxwellConfig config;
   private Maxwell maxwell;
 
-  public ActiveMaxwellLock(MaxwellConfig config) {
+  public ActiveMaxwellLock(HAMaxwellConfig config) {
       this.config = config;
   }
 
