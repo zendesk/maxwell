@@ -2,5 +2,10 @@ language: java
 env:
   - MYSQL_VERSION=5.5
   - MYSQL_VERSION=5.6
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install pastebinit
 install: true
-script: make test
+script:
+  - make test
+  - pastebinit -i test.log

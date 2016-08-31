@@ -155,6 +155,7 @@ public class RecoveryTest {
 
 	@Test
 	public void testRecoveryIntegrationWithLaggedMaxwell() throws Exception {
+		LOGGER.info("begin-test");
 		final String[] input = generateMasterData();
 		MaxwellTestSupportCallback callback = new MaxwellTestSupportCallback() {
 			@Override
@@ -183,6 +184,7 @@ public class RecoveryTest {
 		new Thread(maxwell).start();
 		drainReplication(maxwell, rows);
 
+		LOGGER.info("end-test");
 		assertThat(rows.size(), greaterThanOrEqualTo(16000));
 
 		boolean[] ids = new boolean[16001];
