@@ -144,21 +144,16 @@ public class MaxwellTestSupport {
 		BufferedMaxwell maxwell = new BufferedMaxwell(config);
 
 		new Thread(maxwell).start();
-		mysql.execute("CREATE TABLE if not exists test.boundary ( i int )");
-		mysql.execute("insert into test.boundary set i = 1");
 
-		// wait for it to come through
-		maxwell.getRow(5, TimeUnit.SECONDS);
+		// wait for a heartbeat to come through
+		maxwell.poll(5000);
 
 		callback.afterReplicatorStart(mysql);
 
 		BinlogPosition finalPosition = BinlogPosition.capture(mysql.getConnection());
 
-		// add a final row to ensure we pick up all the data
-		mysql.execute("insert into test.boundary set i = 2");
-
 		for ( ;; ) {
-			RowMap row = maxwell.getRow(1, TimeUnit.SECONDS);
+			RowMap row = maxwell.poll(1000);
 
 			if ( row == null ) {
 				break;
@@ -167,17 +162,17 @@ public class MaxwellTestSupport {
 			if ( row.getPosition().newerThan(finalPosition) ) {
 				// consume whatever's left over in the buffer.
 				for ( ;; ) {
-					RowMap r = maxwell.getRow(10, TimeUnit.MILLISECONDS);
+					RowMap r = maxwell.poll(100);
 					if ( r == null )
 						break;
 
-					if ( !r.getTable().equals("boundary"))
+					if ( !r.getRowType().equals("heartbeat"))
 						list.add(r);
 				}
 
 				break;
 			}
-			if ( !row.getTable().equals("boundary"))
+			if ( !row.getRowType().equals("heartbeat"))
 				list.add(row);
 		}
 

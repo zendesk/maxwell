@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -29,8 +30,7 @@ public class RecoveryTest {
 		masterServer.boot();
 		SchemaStoreSchema.ensureMaxwellSchema(masterServer.getConnection(), "maxwell");
 
-		// slaveServer = MaxwellTestSupport.setupServer("--server_id=12345 --max_binlog_size=100000 --log_bin=slave --debug=d:o,/tmp/mysql.trace --verbose");
-		 slaveServer = MaxwellTestSupport.setupServer("--server_id=12345 --max_binlog_size=100000 --log_bin=slave");
+		slaveServer = MaxwellTestSupport.setupServer("--server_id=12345 --max_binlog_size=100000 --log_bin=slave");
 		slaveServer.setupSlave(masterServer.getPort());
 		MaxwellTestSupport.setupSchema(masterServer, false);
 	}
@@ -41,6 +41,7 @@ public class RecoveryTest {
 		config.maxwellMysql.port = port;
 		config.maxwellMysql.user = "maxwell";
 		config.maxwellMysql.password = "maxwell";
+		config.masterRecovery = true;
 		config.validate();
 		return config;
 	}
@@ -94,11 +95,27 @@ public class RecoveryTest {
 
 		if ( slavePosition.getFile().equals(recoveredPosition.getFile()) )	{
 			long positionDiff = recoveredPosition.getOffset() - slavePosition.getOffset();
-			assertThat(Math.abs(positionDiff), lessThan(1000L));
+			assertThat(Math.abs(positionDiff), lessThan(2000L));
 		} else {
 			// TODO: something something.
 		}
 
+	}
+
+	/* i know.  it's horrible. */
+	private void drainReplication(BufferedMaxwell maxwell, List<RowMap> rows) throws IOException, InterruptedException {
+		int pollMS = 10000;
+		for ( ;; ) {
+			RowMap r = maxwell.poll(pollMS);
+			if ( r == null )
+				break;
+			else {
+				if ( !r.getRowType().equals("heartbeat") )
+					rows.add(r);
+
+				pollMS = 500; // once we get a row, we timeout quickly.
+			}
+		}
 	}
 
 	@Test
@@ -110,18 +127,10 @@ public class RecoveryTest {
 		BinlogPosition approximateRecoverPosition = BinlogPosition.capture(slaveServer.getConnection());
 		generateNewMasterData();
 
-		MaxwellConfig c = getConfig(slaveServer.getPort());
 		BufferedMaxwell maxwell = new BufferedMaxwell(getConfig(slaveServer.getPort()));
 
 		new Thread(maxwell).start();
-
-		for ( ;; ) {
-			RowMap r = maxwell.getRow(10, TimeUnit.SECONDS);
-			if ( r == null )
-				break;
-			else
-				rows.add(r);
-		}
+		drainReplication(maxwell, rows);
 
 		for ( long i = 0 ; i < 6000; i++ ) {
 			assertEquals(i + 1, rows.get((int) i).getData("id"));
@@ -134,7 +143,7 @@ public class RecoveryTest {
 			if ( rs.getLong("server_id") == 12345 ) {
 				foundSchema = true;
 				long recoveredPosition = rs.getLong("binlog_position");
-				assertThat(Math.abs(recoveredPosition - approximateRecoverPosition.getOffset()), lessThan(1000L));
+				assertThat(Math.abs(recoveredPosition - approximateRecoverPosition.getOffset()), lessThan(2000L));
 				rs.getLong("base_schema_id");
 				assertEquals(false, rs.wasNull());
 			}
@@ -142,6 +151,7 @@ public class RecoveryTest {
 		assertEquals(true, foundSchema);
 		maxwell.terminate();
 	}
+
 
 	@Test
 	public void testRecoveryIntegrationWithLaggedMaxwell() throws Exception {
@@ -166,28 +176,13 @@ public class RecoveryTest {
 		};
 
 		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(masterServer, null, callback);
-		LOGGER.info("got " + rows.size() + " rows before recovery");
-
 
 		generateNewMasterData();
 
-		MaxwellConfig c = getConfig(slaveServer.getPort());
 		BufferedMaxwell maxwell = new BufferedMaxwell(getConfig(slaveServer.getPort()));
-
 		new Thread(maxwell).start();
+		drainReplication(maxwell, rows);
 
-		for ( ;; ) {
-			RowMap r = maxwell.getRow(10, TimeUnit.SECONDS);
-			if ( r == null )
-				break;
-			else
-				rows.add(r);
-		}
-
-		LOGGER.info("got " + rows.size() + " rows after recovery");
-		LOGGER.info("done waiting.");
-		if ( rows.size() < 16000 )
-			LOGGER.info("break here.");
 		assertThat(rows.size(), greaterThanOrEqualTo(16000));
 
 		boolean[] ids = new boolean[16001];
@@ -203,14 +198,5 @@ public class RecoveryTest {
 			assertEquals("didn't find id " + i, true, ids[i]);
 
 		maxwell.terminate();
-	}
-
-	@Test
-	public void loopTest() throws Exception {
-		for (int i = 0 ; i < 1000; i++ ) {
-			setupServers();
-			testRecoveryIntegrationWithLaggedMaxwell();
-		}
-
 	}
 }

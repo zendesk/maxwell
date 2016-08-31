@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 
 
 public class RowMap implements Serializable {
+
 	public enum KeyFormat { HASH, ARRAY }
 
 	static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
@@ -25,7 +26,8 @@ public class RowMap implements Serializable {
 	private final String database;
 	private final String table;
 	private final Long timestamp;
-	private final BinlogPosition nextPosition;
+	private BinlogPosition nextPosition;
+	private boolean isHeartbeat;
 
 	private Long xid;
 	private boolean txCommit;
@@ -74,6 +76,7 @@ public class RowMap implements Serializable {
 		this.nextPosition = nextPosition;
 		this.pkColumns = pkColumns;
 		this.approximateSize = 100L; // more or less 100 bytes of overhead
+		this.isHeartbeat = false;
 	}
 
 	public RowMap(String type, String database, String table, Long timestamp, List<String> pkColumns,
@@ -305,5 +308,18 @@ public class RowMap implements Serializable {
 
 	public boolean hasData(String name) {
 		return this.data.containsKey(name);
+	}
+
+	public void markAsHeartbeat(long lastHeartBeatRead) {
+		this.isHeartbeat = true;
+		this.nextPosition = new BinlogPosition(this.nextPosition.getOffset(), this.nextPosition.getFile(), lastHeartBeatRead);
+	}
+
+	public boolean isHeartbeat() {
+		return this.isHeartbeat;
+	}
+
+	public String getRowType() {
+		return this.rowType;
 	}
 }

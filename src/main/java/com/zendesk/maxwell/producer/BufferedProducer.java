@@ -1,8 +1,11 @@
 package com.zendesk.maxwell.producer;
 
+import com.zendesk.maxwell.BinlogPosition;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.RowMap;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
@@ -19,10 +22,21 @@ public class BufferedProducer extends AbstractProducer {
 		this.queue.put(r);
 	}
 
+	@Override
+	public void writePosition(BinlogPosition p) throws SQLException {
+		RowMap fakePositionRow = new RowMap("heartbeat", "maxwell", "heartbeat", System.currentTimeMillis(), new ArrayList<String>(), p);
+		try {
+			this.queue.put(fakePositionRow);
+		} catch ( InterruptedException e ) { }
+	}
+
 	public RowMap poll(long timeout, TimeUnit unit) throws InterruptedException {
-		RowMap r = this.queue.poll(timeout, unit);
-		if ( r != null )
-			this.context.setPosition(r.getPosition());
-		return r;
+		for ( ;; ) {
+			RowMap r = this.queue.poll(timeout, unit);
+			if (r != null) {
+				this.context.setPosition(r.getPosition());
+			}
+			return r;
+		}
 	}
 }

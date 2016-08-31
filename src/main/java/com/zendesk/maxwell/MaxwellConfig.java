@@ -39,6 +39,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public BinlogPosition initPosition;
 	public boolean replayMode;
 	public boolean stopOnEOF;
+	public boolean masterRecovery;
 
 	public MaxwellConfig() { // argv is only null in tests
 		this.kafkaProperties = new Properties();
@@ -46,6 +47,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.replicationMysql = new MaxwellMysqlConfig();
 		this.maxwellMysql = new MaxwellMysqlConfig();
 		this.stopOnEOF = false;
+		this.masterRecovery = false;
 		this.bufferedProducerSize = 200;
 		setup(null, null); // setup defaults
 	}
@@ -139,6 +141,15 @@ public class MaxwellConfig extends AbstractConfig {
 			return (String) options.valueOf(name);
 		else if ( (properties != null) && properties.containsKey(name) )
 			return (String) properties.getProperty(name);
+		else
+			return defaultVal;
+	}
+
+	private boolean fetchBooleanOption(String name, OptionSet options, Properties properties, boolean defaultVal) {
+		if ( options != null && options.has(name) )
+			return true;
+		else if ( (properties != null) && properties.containsKey(name) )
+			return true;
 		else
 			return defaultVal;
 	}
@@ -247,9 +258,8 @@ public class MaxwellConfig extends AbstractConfig {
 			this.initPosition = new BinlogPosition(pos, initPositionSplit[0]);
 		}
 
-		if ( options != null && options.has("replay")) {
-			this.replayMode = true;
-		}
+		this.replayMode =     fetchBooleanOption("replay", options, null, false);
+		this.masterRecovery = fetchBooleanOption("master_recovery", options, properties, false);
 	}
 
 	private Properties parseFile(String filename, Boolean abortOnMissing) {

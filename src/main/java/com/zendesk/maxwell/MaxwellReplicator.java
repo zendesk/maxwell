@@ -156,6 +156,8 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 		if ( !bootstrapper.shouldSkip(row) && !isMaxwellRow(row) ) {
 			producer.push(row);
+		} else if ( row.isHeartbeat() ) {
+			producer.writePosition(row.getPosition());
 		} else {
 			bootstrapper.work(row, producer, this);
 		}
@@ -321,6 +323,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 				Long thisHeartbeat = (Long) heartbeat_at;
 				if ( !thisHeartbeat.equals(lastHeartbeatRead) ) {
 					lastHeartbeatRead = thisHeartbeat;
+					row.markAsHeartbeat(lastHeartbeatRead);
 				}
 			}
 		}

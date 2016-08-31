@@ -5,6 +5,7 @@ import java.util.concurrent.TimeoutException;
 abstract public class RunLoopProcess {
 	private enum RunState { STOPPED, RUNNING, REQUEST_STOP };
 	private volatile RunState runState;
+	private Thread thread;
 
 	public RunLoopProcess() {
 		this.runState = RunState.STOPPED;
@@ -13,6 +14,7 @@ abstract public class RunLoopProcess {
 	protected void requestStop() {
 		if ( this.runState != RunState.STOPPED )
 			this.runState = RunState.REQUEST_STOP;
+
 	}
 
 	protected boolean isStopRequested() {
@@ -23,6 +25,7 @@ abstract public class RunLoopProcess {
 		if ( this.runState != RunState.STOPPED )
 			return false;
 
+		this.thread = Thread.currentThread();
 		this.beforeStart();
 
 		this.runState = RunState.RUNNING;
@@ -51,10 +54,17 @@ abstract public class RunLoopProcess {
 		if ( this.runState == RunState.STOPPED )
 			return;
 
+		/* gentle request */
 		this.requestStop();
 
+		/* foot tapping */
 		for (long left = timeoutMS; left > 0 && this.runState == RunState.REQUEST_STOP; left -= 10)
 			try { Thread.sleep(10); } catch (InterruptedException e) { }
+
+		/* very impatient throat clear */
+		thread.interrupt();
+
+		try { Thread.sleep(50); } catch (InterruptedException e) { }
 
 		if( this.runState != RunState.STOPPED )
 			throw new TimeoutException("Timed out trying to stop processed after " + timeoutMS + "ms.");

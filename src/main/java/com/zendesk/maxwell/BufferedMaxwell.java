@@ -15,9 +15,9 @@ public class BufferedMaxwell extends Maxwell {
 		config.producerType = "buffer";
 	}
 
-	public RowMap getRow(long timeout, TimeUnit unit) throws IOException, InterruptedException {
+	public RowMap poll(long ms) throws IOException, InterruptedException {
 		BufferedProducer p = (BufferedProducer) this.context.getProducer();
-		return p.poll(timeout, unit);
+		return p.poll(ms, TimeUnit.MILLISECONDS);
 	}
 
 }

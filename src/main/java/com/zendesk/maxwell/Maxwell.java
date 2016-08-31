@@ -18,6 +18,7 @@ public class Maxwell implements Runnable {
 	protected MaxwellConfig config;
 	protected MaxwellContext context;
 	protected MaxwellReplicator replicator;
+
 	static final Logger LOGGER = LoggerFactory.getLogger(Maxwell.class);
 
 	public Maxwell(MaxwellConfig config) throws SQLException {
@@ -43,7 +44,7 @@ public class Maxwell implements Runnable {
 			if ( this.replicator != null)
 				replicator.stopLoop();
 		} catch (TimeoutException e) {
-			System.err.println("Timed out trying to shutdown maxwell parser thread.");
+			System.err.println("Timed out trying to shutdown maxwell replication thread.");
 		} catch (InterruptedException e) {
 		} catch (Exception e) { }
 
@@ -54,42 +55,47 @@ public class Maxwell implements Runnable {
 		context = null;
 	}
 
+	private BinlogPosition attemptMasterRecovery() throws Exception {
+		BinlogPosition recovered = null;
+		RecoveryInfo recoveryInfo = this.context.getRecoveryInfo();
+
+		if ( recoveryInfo != null ) {
+			Recovery masterRecovery = new Recovery(
+				config.replicationMysql,
+				config.databaseName,
+				this.context.getReplicationConnectionPool(),
+				this.context.getCaseSensitivity(),
+				recoveryInfo
+			);
+
+			recovered = masterRecovery.recover();
+
+			if (recovered != null) {
+				// load up the schema from the recovery position and chain it into the
+				// new server_id
+				MysqlSchemaStore oldServerSchemaStore = new MysqlSchemaStore(
+					context.getMaxwellConnectionPool(),
+					context.getReplicationConnectionPool(),
+					recoveryInfo.serverID,
+					recoveryInfo.position,
+					context.getCaseSensitivity(),
+					config.filter,
+					false
+				);
+
+				oldServerSchemaStore.clone(context.getServerID(), recovered);
+			}
+		}
+		return recovered;
+	}
+
 	protected BinlogPosition getInitialPosition() throws Exception {
 		/* first method:  do we have a stored position for this server? */
 		BinlogPosition initial = this.context.getInitialPosition();
 
 		/* second method: are we recovering from a master swap? */
-		if ( initial == null ) {
-			RecoveryInfo recoveryInfo = this.context.getRecoveryInfo();
-
-			if ( recoveryInfo != null ) {
-				Recovery masterRecovery = new Recovery(
-					config.replicationMysql,
-					config.databaseName,
-					this.context.getReplicationConnectionPool(),
-					this.context.getCaseSensitivity(),
-					recoveryInfo
-				);
-
-				initial = masterRecovery.recover();
-
-				if ( initial != null ) {
-
-					// load up the schema from the recovery position
-					MysqlSchemaStore oldServerSchemaStore = new MysqlSchemaStore(
-						context.getMaxwellConnectionPool(),
-						context.getReplicationConnectionPool(),
-						recoveryInfo.serverID,
-						recoveryInfo.position,
-						context.getCaseSensitivity(),
-						config.filter,
-						false
-					);
-
-					oldServerSchemaStore.clone(context.getServerID(), initial);
-				}
-			}
-		}
+		if ( initial == null && config.masterRecovery )
+			initial = attemptMasterRecovery();
 
 		/* third method: capture the current master postiion. */
 		if ( initial == null ) {
