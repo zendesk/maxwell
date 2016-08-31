@@ -2,6 +2,7 @@ package com.zendesk.maxwell;
 
 import java.util.*;
 
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import joptsimple.*;
 
 import org.slf4j.Logger;
@@ -30,6 +31,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public String bootstrapperType;
 
 	public String outputFile;
+	public MaxwellOutputConfig outputConfig;
 	public String log_level;
 
 	public String clientID;
@@ -76,6 +78,9 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "producer", "producer type: stdout|file|kafka" ).withRequiredArg();
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
+		parser.accepts( "output_includes_binlog_position", "produced records include binlog position" );
+		parser.accepts( "output_includes_commit", "produced records include commit" );
+		parser.accepts( "output_includes_xid", "produced records include xid" );
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
 		parser.accepts( "kafka_partition_by", "database|table|primary_key, kafka producer assigns partition by hashing the specified parameter").withRequiredArg();
 		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning").withRequiredArg();
@@ -246,6 +251,11 @@ public class MaxwellConfig extends AbstractConfig {
 		if ( options != null && options.has("replay")) {
 			this.replayMode = true;
 		}
+
+		boolean outputIncludesBinlogPosition = options != null && options.has("output_includes_binlog_position");
+		boolean outputIncludesCommit = options != null && options.has("output_includes_commit");
+		boolean outputIncludesXid = options != null && options.has("output_includes_xid");
+		this.outputConfig = new MaxwellOutputConfig(outputIncludesBinlogPosition, outputIncludesCommit, outputIncludesXid);
 	}
 
 	private Properties parseFile(String filename, Boolean abortOnMissing) {
