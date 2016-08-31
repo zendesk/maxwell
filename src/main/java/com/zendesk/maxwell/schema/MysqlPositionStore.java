@@ -129,9 +129,7 @@ public class MysqlPositionStore {
 	}
 
 	/**
-	 * seeks out a position from a different server_id.
-	 *
-	 * @return a tuple of server_id, heartbeat
+	 * grabs a position from a different server_id
 	 */
 
 	public RecoveryInfo getRecoveryInfo() throws SQLException {

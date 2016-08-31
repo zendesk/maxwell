@@ -17,7 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by ben on 8/29/16.
+ * A schema store that contains only the maxwell database, and throws
+ * away any schema changes we encounter while trying to recover the binlog position.
  */
 public class RecoverySchemaStore implements SchemaStore {
 

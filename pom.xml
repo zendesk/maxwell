@@ -65,7 +65,7 @@
     <dependency>
     	<groupId>com.zendesk</groupId>
     	<artifactId>open-replicator</artifactId>
-    	<version>1.5.0-PRE2</version>
+    	<version>1.5.0-PRE3</version>
     </dependency>
     <dependency>
     	<groupId>net.sf.jopt-simple</groupId>

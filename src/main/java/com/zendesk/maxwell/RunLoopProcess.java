@@ -64,7 +64,7 @@ abstract public class RunLoopProcess {
 		/* very impatient throat clear */
 		thread.interrupt();
 
-		try { Thread.sleep(50); } catch (InterruptedException e) { }
+		try { Thread.sleep(100); } catch (InterruptedException e) { }
 
 		if( this.runState != RunState.STOPPED )
 			throw new TimeoutException("Timed out trying to stop processed after " + timeoutMS + "ms.");

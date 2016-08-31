@@ -93,7 +93,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 			ctx.getPositionStoreThread(),
 			ctx.getConfig().databaseName,
 			start,
-			ctx.getConfig().stopOnEOF
+			false
 		);
 	}
 

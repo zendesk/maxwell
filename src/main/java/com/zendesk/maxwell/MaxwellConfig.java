@@ -38,7 +38,6 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public BinlogPosition initPosition;
 	public boolean replayMode;
-	public boolean stopOnEOF;
 	public boolean masterRecovery;
 
 	public MaxwellConfig() { // argv is only null in tests
@@ -46,7 +45,6 @@ public class MaxwellConfig extends AbstractConfig {
 		this.replayMode = false;
 		this.replicationMysql = new MaxwellMysqlConfig();
 		this.maxwellMysql = new MaxwellMysqlConfig();
-		this.stopOnEOF = false;
 		this.masterRecovery = false;
 		this.bufferedProducerSize = 200;
 		setup(null, null); // setup defaults
