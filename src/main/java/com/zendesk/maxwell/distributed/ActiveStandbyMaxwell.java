@@ -1,5 +1,6 @@
 package com.zendesk.maxwell.distributed;
 
+import com.djdch.log4j.StaticShutdownCallbackRegistry;
 import com.zendesk.maxwell.Maxwell;
 import com.zendesk.maxwell.MaxwellConfig;
 import com.zendesk.maxwell.MaxwellContext;
@@ -19,9 +20,9 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 /**
- * Created by min on 2016. 8. 29..
+ * Created by springloops on 2016. 8. 29..
  */
-public class ActiveStandbyMaxwell implements Maxwell {
+public class ActiveStandbyMaxwell implements Runnable {
     static final Logger LOGGER = LoggerFactory.getLogger(ActiveStandbyMaxwell.class);
 
     private MaxwellConfig config;
@@ -111,6 +112,27 @@ public class ActiveStandbyMaxwell implements Maxwell {
 
         if (controllerManager != null) {
             controllerManager.disconnect();
+        }
+    }
+
+    public static void main(String[] args) {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                StaticShutdownCallbackRegistry.invoke();
+            }
+        });
+
+        try {
+            MaxwellConfig config = new MaxwellConfig(args);
+
+            if ( config.log_level != null )
+                MaxwellLogging.setLevel(config.log_level);
+
+            new Maxwell(config).start();
+        } catch ( Exception e ) {
+            e.printStackTrace();
+            System.exit(1);
         }
     }
 }
