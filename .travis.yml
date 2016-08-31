@@ -8,4 +8,5 @@ before_install:
 install: true
 script:
   - make test
+after_script:
   - pastebinit -i test.log
