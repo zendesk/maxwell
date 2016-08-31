@@ -315,16 +315,12 @@ public class MaxwellReplicator extends RunLoopProcess {
 	private void processHeartbeats(RowMap row) throws SQLException {
 		if ( row != null && isMaxwellRow(row) && row.getTable().equals("positions") ) {
 			Object heartbeat_at = row.getData("heartbeat_at");
-			if ( heartbeat_at != null ) {
+			Object old_heartbeat_at = row.getOldData("heartbeat_at"); // make sure it's a heartbeat update, not a position set.
+
+			if ( heartbeat_at != null && old_heartbeat_at != null ) {
 				Long thisHeartbeat = (Long) heartbeat_at;
 				if ( !thisHeartbeat.equals(lastHeartbeatRead) ) {
 					lastHeartbeatRead = thisHeartbeat;
-
-					BinlogPosition position = new BinlogPosition(row.getPosition().getOffset(), row.getPosition().getFile(), lastHeartbeatRead);
-
-					if ( this.producer != null ) {
-						this.producer.writePosition(position);
-					}
 				}
 			}
 		}

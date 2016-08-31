@@ -45,10 +45,11 @@ public class MysqlIsolatedServer {
 				"--innodb_flush_log_at_trx_commit=1",
 				serverID,
 				"--character-set-server=utf8",
+				"--verbose",
 				xtraParams
 		);
 
-		LOGGER.debug("booting onetimeserver: " + StringUtils.join(pb.command(), " "));
+		LOGGER.info("booting onetimeserver: " + StringUtils.join(pb.command(), " "));
 		Process p = pb.start();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
@@ -89,7 +90,7 @@ public class MysqlIsolatedServer {
 		resetConnection();
 		this.connection.createStatement().executeUpdate("GRANT REPLICATION SLAVE on *.* to 'maxwell'@'127.0.0.1' IDENTIFIED BY 'maxwell'");
 		this.connection.createStatement().executeUpdate("GRANT ALL on *.* to 'maxwell'@'127.0.0.1'");
-		LOGGER.debug("booted at port " + this.port + ", outputting to file " + outputFile);
+		LOGGER.info("booted at port " + this.port + ", outputting to file " + outputFile);
 	}
 
 	public void setupSlave(int masterPort) throws SQLException {

@@ -44,7 +44,7 @@ public class Recovery {
 			recoveryInfo.heartbeat
 		);
 
-		LOGGER.info("attempting to recover from master-change: " + recoveryMsg);
+		LOGGER.warn("attempting to recover from master-change: " + recoveryMsg);
 
 		List<BinlogPosition> list = getBinlogInfo();
 		for ( int i = list.size() - 1; i >= 0 ; i-- ) {
@@ -69,12 +69,12 @@ public class Recovery {
 
 			BinlogPosition p = findHeartbeat(replicator);
 			if ( p != null ) {
-				LOGGER.info("recovered new master position: " + p);
+				LOGGER.warn("recovered new master position: " + p);
 				return p;
 			}
 		}
 
-		LOGGER.warn("Could not recover from master-change: " + recoveryMsg);
+		LOGGER.error("Could not recover from master-change: " + recoveryMsg);
 		return null;
 	}
 

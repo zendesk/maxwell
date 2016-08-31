@@ -1,14 +1,17 @@
 package com.zendesk.maxwell.recovery;
 
 import com.zendesk.maxwell.*;
-import com.zendesk.maxwell.schema.MysqlSchemaStore;
 import com.zendesk.maxwell.schema.SchemaStoreSchema;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -18,16 +21,17 @@ import static org.junit.Assert.assertThat;
 
 public class RecoveryTest {
 	private static MysqlIsolatedServer masterServer, slaveServer;
+	static final Logger LOGGER = LoggerFactory.getLogger(RecoveryTest.class);
 
-	@BeforeClass
-	public static void setupSlaveServer() throws Exception {
+	@Before
+	public void setupServers() throws Exception {
 		masterServer = new MysqlIsolatedServer();
 		masterServer.boot();
 		SchemaStoreSchema.ensureMaxwellSchema(masterServer.getConnection(), "maxwell");
 
-		slaveServer = MaxwellTestSupport.setupServer("--server_id=12345 --max_binlog_size=100000 --log_bin=slave");
+		// slaveServer = MaxwellTestSupport.setupServer("--server_id=12345 --max_binlog_size=100000 --log_bin=slave --debug=d:o,/tmp/mysql.trace --verbose");
+		 slaveServer = MaxwellTestSupport.setupServer("--server_id=12345 --max_binlog_size=100000 --log_bin=slave");
 		slaveServer.setupSlave(masterServer.getPort());
-
 		MaxwellTestSupport.setupSchema(masterServer, false);
 	}
 
@@ -136,6 +140,7 @@ public class RecoveryTest {
 			}
 		}
 		assertEquals(true, foundSchema);
+		maxwell.terminate();
 	}
 
 	@Test
@@ -151,6 +156,7 @@ public class RecoveryTest {
 			public void beforeTerminate(MysqlIsolatedServer mysql) {
 				/* record some queries.  maxwell may continue to heartbeat but we will be behind. */
 				try {
+					LOGGER.warn("slave master position at time of cut: " + BinlogPosition.capture(slaveServer.getConnection()));
 					mysql.executeList(Arrays.asList(input));
 					mysql.execute("FLUSH LOGS");
 					mysql.executeList(Arrays.asList(input));
@@ -160,6 +166,8 @@ public class RecoveryTest {
 		};
 
 		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(masterServer, null, callback);
+		LOGGER.info("got " + rows.size() + " rows before recovery");
+
 
 		generateNewMasterData();
 
@@ -176,9 +184,33 @@ public class RecoveryTest {
 				rows.add(r);
 		}
 
-		assertEquals(16000, rows.size());
-		for ( long i = 0 ; i < 16000; i++ ) {
-			assertEquals(i + 1, rows.get((int) i).getData("id"));
+		LOGGER.info("got " + rows.size() + " rows after recovery");
+		LOGGER.info("done waiting.");
+		if ( rows.size() < 16000 )
+			LOGGER.info("break here.");
+		assertThat(rows.size(), greaterThanOrEqualTo(16000));
+
+		boolean[] ids = new boolean[16001];
+
+		for ( RowMap r : rows ) {
+			Long id = (Long) r.getData("id");
+			if ( id != null )
+				ids[id.intValue()] = true;
 		}
+
+
+		for ( int i = 1 ; i < 16001; i++ )
+			assertEquals("didn't find id " + i, true, ids[i]);
+
+		maxwell.terminate();
+	}
+
+	@Test
+	public void loopTest() throws Exception {
+		for (int i = 0 ; i < 1000; i++ ) {
+			setupServers();
+			testRecoveryIntegrationWithLaggedMaxwell();
+		}
+
 	}
 }
