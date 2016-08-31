@@ -97,6 +97,11 @@
       <artifactId>jts</artifactId>
       <version>1.13</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.helix</groupId>
+      <artifactId>helix-core</artifactId>
+      <version>0.6.5</version>
+    </dependency>
   </dependencies>
 
   <build>
