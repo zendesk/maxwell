@@ -21,12 +21,12 @@ public class ActiveMaxwellLock extends StateModel {
   private final HAMaxwellConfig config;
   private Maxwell maxwell;
 
-  public ActiveMaxwellLock(HAMaxwellConfig config) {
+  protected ActiveMaxwellLock(HAMaxwellConfig config) {
       this.config = config;
   }
 
   @Transition(from = "OFFLINE", to = "ONLINE")
-  public void lock(Message m, NotificationContext context) throws Exception {
+  protected void lock(Message m, NotificationContext context) throws Exception {
     LOGGER.info(context.getManager().getClusterName() + " : " + context.getManager().getInstanceName() + " applied Active");
     LOGGER.info("Start Maxwell Active Node");
     maxwell = new Maxwell(this.config);
@@ -34,9 +34,12 @@ public class ActiveMaxwellLock extends StateModel {
   }
 
   @Transition(from = "ONLINE", to = "OFFLINE")
-  public void release(Message m, NotificationContext context) {
+  protected void release(Message m, NotificationContext context) {
     LOGGER.info("Maxwell Active Node changed status");
     maxwell.terminate();
   }
 
+  protected Maxwell getMaxwell() {
+      return maxwell;
+  }
 }

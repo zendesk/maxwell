@@ -35,8 +35,9 @@ public class ActiveStandbyMaxwell implements Runnable {
     private final String _hostName;
     private final String _port;
 
-    private HelixManager participantManager = null;
-    private HelixManager controllerManager = null;
+    private HelixManager participantManager;
+    private HelixManager controllerManager;
+    private ActiveMaxwellLockFactory activeMaxwellLockFactory;
 
     public ActiveStandbyMaxwell(HAMaxwellConfig conf) throws SQLException {
         this.config = conf;
@@ -62,6 +63,9 @@ public class ActiveStandbyMaxwell implements Runnable {
     }
 
     public void terminate() {
+
+        activeMaxwellLockFactory.getActiveMaxwellLock().getMaxwell().terminate();
+
         if (participantManager != null) {
             participantManager.disconnect();
         }
@@ -83,6 +87,15 @@ public class ActiveStandbyMaxwell implements Runnable {
         if (config.startController) {
             startContoller();
         }
+
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {
+                terminate();
+            }
+        });
+
+        Thread.currentThread().join();
     }
 
     private void configureInstance() {
@@ -110,13 +123,15 @@ public class ActiveStandbyMaxwell implements Runnable {
             helixAdmin.addInstance(_clusterName, instanceConfig);
         }
 
+        activeMaxwellLockFactory = new ActiveMaxwellLockFactory(this.context);
+
         LOGGER.info("Started Maxwell Active-Standby Mode");
     }
 
     private void addParticipant() throws Exception {
         LOGGER.info("Adding participant into Maxwell Cluster");
         participantManager = HelixManagerFactory.getZKHelixManager(_clusterName, _instanceName, InstanceType.PARTICIPANT, _zkAddress);
-        participantManager.getStateMachineEngine().registerStateModelFactory("OnlineOffline", new ActiveMaxwellLockFactory(this.context));
+        participantManager.getStateMachineEngine().registerStateModelFactory("OnlineOffline", activeMaxwellLockFactory);
         participantManager.connect();
     }
 
