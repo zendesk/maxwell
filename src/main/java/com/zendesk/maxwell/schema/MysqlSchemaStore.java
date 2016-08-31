@@ -14,9 +14,11 @@ import java.util.List;
 
 public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore {
 	private final ConnectionPool maxwellConnectionPool;
+	private final ConnectionPool replicationConnectionPool;
 	private final BinlogPosition initialPosition;
 	private final Long serverID;
-	private final boolean replayMode;
+	private final boolean readOnly;
+	private final MaxwellFilter filter;
 
 	private MysqlSavedSchema savedSchema;
 
@@ -26,20 +28,22 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 							BinlogPosition initialPosition,
 							CaseSensitivity caseSensitivity,
 							MaxwellFilter filter,
-							boolean replayMode) {
+							boolean readOnly) {
 		super(replicationConnectionPool, caseSensitivity, filter);
+		this.replicationConnectionPool = replicationConnectionPool;
 		this.serverID = serverID;
+		this.filter = filter;
 		this.maxwellConnectionPool = maxwellConnectionPool;
 		this.initialPosition = initialPosition;
-		this.replayMode = replayMode;
+		this.readOnly = readOnly;
 
 	}
-	public MysqlSchemaStore(MaxwellContext context) throws SQLException {
+	public MysqlSchemaStore(MaxwellContext context, BinlogPosition initialPosition) throws SQLException {
 		this(
 			context.getMaxwellConnectionPool(),
 			context.getReplicationConnectionPool(),
 			context.getServerID(),
-			context.getInitialPosition(),
+			initialPosition,
 			context.getCaseSensitivity(),
 			context.getFilter(),
 			context.getReplayMode()
@@ -60,8 +64,10 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 			if ( savedSchema == null ) {
 				Schema capturedSchema = captureSchema();
 				savedSchema = new MysqlSavedSchema(serverID, caseSensitivity, capturedSchema, initialPosition);
-				savedSchema.save(conn);
+				if ( !readOnly )
+					savedSchema.save(conn);
 			}
+
 			return savedSchema;
 		} catch (SQLException e) {
 			throw new SchemaStoreException(e);
@@ -86,9 +92,13 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 		return resolvedSchemaChanges;
 	}
 
+	public SchemaStore clone(Long serverID, BinlogPosition position, boolean readOnly) {
+		return new MysqlSchemaStore(maxwellConnectionPool, replicationConnectionPool, serverID, position, caseSensitivity, filter, readOnly);
+	}
+
 	private void saveSchema(Schema updatedSchema, List<ResolvedSchemaChange> changes, BinlogPosition p) throws SQLException {
 		/* TODO: replay mode should trigger a null schema-store */
-		if ( replayMode )
+		if ( readOnly )
 			return;
 
 		try (Connection c = maxwellConnectionPool.getConnection()) {

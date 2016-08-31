@@ -243,6 +243,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	String testTransactions[] = {
+			"create table if not exists minimal ( account_id int, text_field text )",
 			"BEGIN",
 			"insert into minimal set account_id = 1, text_field = 's'",
 			"insert into minimal set account_id = 2, text_field = 's'",
@@ -337,7 +338,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 			"insert into `test`.`tootootwee` set id = 5"
 		};
 
-		List<RowMap> rows = MaxwellTestSupport.getRowsForSQL(lowerCaseServer, null, sql, null, false);
+		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(lowerCaseServer, null, sql, null);
 		assertThat(rows.size(), is(1));
 		assertThat(rows.get(0).getTable(), is("tootootwee"));
 	}
