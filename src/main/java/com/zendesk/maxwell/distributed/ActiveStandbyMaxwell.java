@@ -25,7 +25,6 @@ import java.util.List;
 public class ActiveStandbyMaxwell implements Runnable {
     static final Logger LOGGER = LoggerFactory.getLogger(ActiveStandbyMaxwell.class);
 
-    private final MaxwellConfig config;
     private final HAConfig haConfig;
     private final MaxwellContext context;
 
@@ -33,14 +32,13 @@ public class ActiveStandbyMaxwell implements Runnable {
     private HelixManager controllerManager;
     private ActiveMaxwellLockFactory activeMaxwellLockFactory;
 
-    public ActiveStandbyMaxwell(MaxwellConfig conf, HAConfig haConf) throws SQLException {
-        this.config = conf;
+    public ActiveStandbyMaxwell(HAMaxwellConfig haConf) throws SQLException {
         this.haConfig = haConf;
 
-        if (this.config.log_level != null)
-            MaxwellLogging.setLevel(this.config.log_level);
+        if (this.haConfig.getMaxwellConfig().log_level != null)
+            MaxwellLogging.setLevel(this.haConfig.getMaxwellConfig().log_level);
 
-        this.context = new MaxwellContext(this.config);
+        this.context = new MaxwellContext(this.haConfig.getMaxwellConfig());
     }
 
     public void run() {
@@ -138,13 +136,12 @@ public class ActiveStandbyMaxwell implements Runnable {
         });
 
         try {
-            MaxwellConfig config = new MaxwellConfig(args);
-            HAConfig haConfig = new HAConfig(args);
 
-            if ( config.log_level != null )
-                MaxwellLogging.setLevel(config.log_level);
+            final HAMaxwellConfig haConfig = new HAMaxwellConfig(args);
+            if (haConfig.getMaxwellConfig().log_level != null)
+                MaxwellLogging.setLevel(this.haConfig.getMaxwellConfig().log_level);
 
-            new ActiveStandbyMaxwell(config, haConfig).start();
+            new ActiveStandbyMaxwell(haConfig).start();
         } catch ( Exception e ) {
             e.printStackTrace();
             System.exit(1);
