@@ -1,7 +1,6 @@
 package com.zendesk.maxwell.distributed;
 
 import com.djdch.log4j.StaticShutdownCallbackRegistry;
-import com.zendesk.maxwell.MaxwellConfig;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.MaxwellLogging;
 import org.apache.helix.HelixManager;
@@ -25,7 +24,7 @@ import java.util.List;
 public class ActiveStandbyMaxwell implements Runnable {
     static final Logger LOGGER = LoggerFactory.getLogger(ActiveStandbyMaxwell.class);
 
-    private final HAConfig haConfig;
+    private final HAMaxwellConfig haConfig;
     private final MaxwellContext context;
 
     private HelixManager participantManager;
@@ -139,7 +138,7 @@ public class ActiveStandbyMaxwell implements Runnable {
 
             final HAMaxwellConfig haConfig = new HAMaxwellConfig(args);
             if (haConfig.getMaxwellConfig().log_level != null)
-                MaxwellLogging.setLevel(this.haConfig.getMaxwellConfig().log_level);
+                MaxwellLogging.setLevel(haConfig.getMaxwellConfig().log_level);
 
             new ActiveStandbyMaxwell(haConfig).start();
         } catch ( Exception e ) {

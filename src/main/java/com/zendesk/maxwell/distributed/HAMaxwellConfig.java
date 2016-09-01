@@ -16,7 +16,7 @@ import java.util.Properties;
 /**
  * Created by springloops on 2016. 8. 31..
  */
-public class HAConfig extends AbstractConfig {
+public class HAMaxwellConfig extends AbstractConfig {
 
 	private static final String DEFAULT_HA_CONFIG_FILE = "ha.config.properties";
 
@@ -28,9 +28,10 @@ public class HAConfig extends AbstractConfig {
 	private String clusterPort;
 	private Boolean startController;
 
-	public HAConfig(String[] args) throws UnknownHostException {
+	public HAMaxwellConfig(String[] args) throws UnknownHostException {
+
 		this.parse(args);
-		this.maxwellConfig = new MaxwellConfig(args);
+
 		//this.validate();
 	}
 
@@ -47,12 +48,12 @@ public class HAConfig extends AbstractConfig {
 
 		parser.accepts( "help", "display help").forHelp();
 
-		BuiltinHelpFormatter helpFormatter = new BuiltinHelpFormatter(200, 4) {
+		BuiltinHelpFormatter helpFormatter = new BuiltinHelpFormatter(300, 4) {
 			@Override
 			public String format(Map<String, ? extends OptionDescriptor> options) {
 				this.addRows(options.values());
 				String output = this.formattedHelpOutput();
-				return output.replaceAll("--__separator_.*", "");
+				return output.replaceAll("--help.*", "\n");
 			}
 		};
 
@@ -71,10 +72,13 @@ public class HAConfig extends AbstractConfig {
 			properties = parseFile(DEFAULT_HA_CONFIG_FILE, false);
 		}
 
-		if (options.has("help"))
+		if (options.has("help") == false) {
+			setup(options, properties);
+		} else {
 			usage("Help for Active-Standby Maxwell:");
+		}
 
-		setup(options, properties);
+		this.maxwellConfig = new MaxwellConfig(args);
 	}
 
 	private void setup(OptionSet options, Properties properties) throws UnknownHostException {
@@ -91,9 +95,7 @@ public class HAConfig extends AbstractConfig {
 		System.err.println(string);
 		System.err.println();
 		try {
-			maxwellConfig.buildOptionParser().printHelpOn(System.err);
 			buildOptionParser().printHelpOn(System.err);
-			System.exit(1);
 		} catch (IOException e) { }
 	}
 
