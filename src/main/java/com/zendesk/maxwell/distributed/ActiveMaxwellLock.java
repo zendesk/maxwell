@@ -3,7 +3,9 @@ package com.zendesk.maxwell.distributed;
 /**
  * Created by springloops on 2016. 8. 31..
  */
+
 import com.zendesk.maxwell.Maxwell;
+import com.zendesk.maxwell.MaxwellConfig;
 import org.apache.helix.NotificationContext;
 import org.apache.helix.model.Message;
 import org.apache.helix.participant.statemachine.StateModel;
@@ -18,15 +20,15 @@ import org.slf4j.LoggerFactory;
 public class ActiveMaxwellLock extends StateModel {
   static final Logger LOGGER = LoggerFactory.getLogger(ActiveMaxwellLock.class);
 
-  private final HAMaxwellConfig config;
+  private final MaxwellConfig config;
   private Maxwell maxwell;
 
-  protected ActiveMaxwellLock(HAMaxwellConfig config) {
+  protected ActiveMaxwellLock(MaxwellConfig config) {
       this.config = config;
   }
 
   @Transition(from = "OFFLINE", to = "ONLINE")
-  protected void lock(Message m, NotificationContext context) throws Exception {
+  public void lock(Message m, NotificationContext context) throws Exception {
     LOGGER.info(context.getManager().getClusterName() + " : " + context.getManager().getInstanceName() + " applied Active");
     LOGGER.info("Start Maxwell Active Node");
     maxwell = new Maxwell(this.config);
@@ -34,7 +36,7 @@ public class ActiveMaxwellLock extends StateModel {
   }
 
   @Transition(from = "ONLINE", to = "OFFLINE")
-  protected void release(Message m, NotificationContext context) {
+  public void release(Message m, NotificationContext context) {
     LOGGER.info("Maxwell Active Node changed status");
     maxwell.terminate();
   }

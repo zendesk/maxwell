@@ -18,7 +18,7 @@ public class ActiveMaxwellLockFactory extends StateModelFactory<ActiveMaxwellLoc
 
   @Override
   public ActiveMaxwellLock createNewStateModel(String resourceName, String lockName) {
-    activeMaxwellLock = new ActiveMaxwellLock((HAMaxwellConfig) this.context.getConfig());
+    activeMaxwellLock = new ActiveMaxwellLock(this.context.getConfig());
     return activeMaxwellLock;
   }
 

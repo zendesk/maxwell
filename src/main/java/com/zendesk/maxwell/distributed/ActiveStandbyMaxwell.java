@@ -1,7 +1,6 @@
 package com.zendesk.maxwell.distributed;
 
 import com.djdch.log4j.StaticShutdownCallbackRegistry;
-import com.zendesk.maxwell.Maxwell;
 import com.zendesk.maxwell.MaxwellConfig;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.MaxwellLogging;
@@ -26,27 +25,17 @@ import java.util.List;
 public class ActiveStandbyMaxwell implements Runnable {
     static final Logger LOGGER = LoggerFactory.getLogger(ActiveStandbyMaxwell.class);
 
-    private HAMaxwellConfig config;
-    private MaxwellContext context;
-
-    private final String _zkAddress;
-    private final String _clusterName;
-    private final String _instanceName;
-    private final String _hostName;
-    private final String _port;
+    private final MaxwellConfig config;
+    private final HAConfig haConfig;
+    private final MaxwellContext context;
 
     private HelixManager participantManager;
     private HelixManager controllerManager;
     private ActiveMaxwellLockFactory activeMaxwellLockFactory;
 
-    public ActiveStandbyMaxwell(HAMaxwellConfig conf) throws SQLException {
+    public ActiveStandbyMaxwell(MaxwellConfig conf, HAConfig haConf) throws SQLException {
         this.config = conf;
-
-        _zkAddress = config.zkAddress;
-        _clusterName = config.clusterName;
-        _instanceName = config.instanceName;
-        _hostName = config.hostName;
-        _port = config.clusterPort;
+        this.haConfig = haConf;
 
         if (this.config.log_level != null)
             MaxwellLogging.setLevel(this.config.log_level);
@@ -84,7 +73,7 @@ public class ActiveStandbyMaxwell implements Runnable {
             e.printStackTrace();
         }
 
-        if (config.startController) {
+        if (haConfig.getStartController()) {
             startContoller();
         }
 
@@ -103,24 +92,24 @@ public class ActiveStandbyMaxwell implements Runnable {
 
         String maxwellActiveStandbyResourceName = "ActiveStandbyResource";
 
-        ZKHelixAdmin helixAdmin = new ZKHelixAdmin(_zkAddress);
+        ZKHelixAdmin helixAdmin = new ZKHelixAdmin(haConfig.getZkAddress());
 
-        helixAdmin.addCluster(_clusterName, false);
+        helixAdmin.addCluster(haConfig.getClusterName(), false);
 
-        if (helixAdmin.getStateModelDefs(_clusterName).isEmpty()) {
-            helixAdmin.addStateModelDef(_clusterName, "OnlineOffline", new StateModelDefinition(
+        if (helixAdmin.getStateModelDefs(haConfig.getClusterName()).isEmpty()) {
+            helixAdmin.addStateModelDef(haConfig.getClusterName(), "OnlineOffline", new StateModelDefinition(
                     StateModelConfigGenerator.generateConfigForOnlineOffline()));
-            helixAdmin.addResource(_clusterName, maxwellActiveStandbyResourceName, 1, "OnlineOffline",
+            helixAdmin.addResource(haConfig.getClusterName(), maxwellActiveStandbyResourceName, 1, "OnlineOffline",
                     IdealState.RebalanceMode.FULL_AUTO.toString());
-            helixAdmin.rebalance(_clusterName, maxwellActiveStandbyResourceName, 1);
+            helixAdmin.rebalance(haConfig.getClusterName(), maxwellActiveStandbyResourceName, 1);
         }
 
-        List<String> instanceInCluster = helixAdmin.getInstancesInCluster(_clusterName);
-        if (instanceInCluster == null || !instanceInCluster.contains(_instanceName)) {
-            InstanceConfig instanceConfig = new InstanceConfig(_instanceName);
-            instanceConfig.setHostName(_hostName);
-            instanceConfig.setPort(_port);
-            helixAdmin.addInstance(_clusterName, instanceConfig);
+        List<String> instanceInCluster = helixAdmin.getInstancesInCluster(haConfig.getClusterName());
+        if (instanceInCluster == null || !instanceInCluster.contains(haConfig.getInstanceName())) {
+            InstanceConfig instanceConfig = new InstanceConfig(haConfig.getInstanceName());
+            instanceConfig.setHostName(haConfig.getHostName());
+            instanceConfig.setPort(haConfig.getClusterPort());
+            helixAdmin.addInstance(haConfig.getClusterName(), instanceConfig);
         }
 
         activeMaxwellLockFactory = new ActiveMaxwellLockFactory(this.context);
@@ -130,14 +119,14 @@ public class ActiveStandbyMaxwell implements Runnable {
 
     private void addParticipant() throws Exception {
         LOGGER.info("Adding participant into Maxwell Cluster");
-        participantManager = HelixManagerFactory.getZKHelixManager(_clusterName, _instanceName, InstanceType.PARTICIPANT, _zkAddress);
+        participantManager = HelixManagerFactory.getZKHelixManager(haConfig.getClusterName(), haConfig.getInstanceName(), InstanceType.PARTICIPANT, haConfig.getZkAddress());
         participantManager.getStateMachineEngine().registerStateModelFactory("OnlineOffline", activeMaxwellLockFactory);
         participantManager.connect();
     }
 
     private void startContoller() {
         LOGGER.info("start helix controller");
-        controllerManager = HelixControllerMain.startHelixController(_zkAddress, _clusterName, _clusterName+"_Controller", HelixControllerMain.STANDALONE);
+        controllerManager = HelixControllerMain.startHelixController(haConfig.getZkAddress(), haConfig.getClusterName(), haConfig.getClusterName()+"_Controller", HelixControllerMain.STANDALONE);
     }
 
     public static void main(String[] args) {
@@ -149,12 +138,13 @@ public class ActiveStandbyMaxwell implements Runnable {
         });
 
         try {
-            HAMaxwellConfig config = new HAMaxwellConfig(args);
+            MaxwellConfig config = new MaxwellConfig(args);
+            HAConfig haConfig = new HAConfig(args);
 
             if ( config.log_level != null )
                 MaxwellLogging.setLevel(config.log_level);
 
-            new ActiveStandbyMaxwell(config).start();
+            new ActiveStandbyMaxwell(config, haConfig).start();
         } catch ( Exception e ) {
             e.printStackTrace();
             System.exit(1);

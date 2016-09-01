@@ -1,12 +1,13 @@
 package com.zendesk.maxwell.distributed;
 
-import com.zendesk.maxwell.MaxwellConfig;
 import com.zendesk.maxwell.util.AbstractConfig;
 import joptsimple.BuiltinHelpFormatter;
 import joptsimple.OptionDescriptor;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Properties;
 
@@ -24,49 +25,72 @@ public class HAConfig extends AbstractConfig {
 	private String clusterPort;
 	private Boolean startController;
 
-	public HAConfig(String[] args) {
+	public HAConfig(String[] args) throws UnknownHostException {
 		this.parse(args);
 		//this.validate();
 	}
 
 	protected OptionParser buildOptionParser() {
 		final OptionParser parser = new OptionParser();
+		parser.allowsUnrecognizedOptions();
 
-		parser.accepts( "zkAddress", "When ACTIVE_STANDBY mode, determined zookeeper address, formatted as —zkAddress=zkIP:port[,skip:port]…" ).withRequiredArg();
-		parser.accepts( "clusterName", "When ACTIVE_STANDBY mode, determined maxwell cluster name, formatted as —clusterName=<ClusterName>" ).withRequiredArg();
-		parser.accepts( "instanceName", "When ACTIVE_STANDBY mode, determined each maxwell node name, formatted as —instanceName=<unique maxwell node name>" ).withRequiredArg();
-		parser.accepts( "hostName", "When ACTIVE_STANDBY mode, determined node's network hostname, formatted as —hostName=<hostName>. default value is `InetAddress.getLocalHost().getHostName()`" ).withOptionalArg();
-		parser.accepts( "clusterPort", "When ACTIVE_STANDBY mode, determined communication port for between nodes, formatted as —clusterPort=<using port>. default value is 12000" ).withOptionalArg();
-		parser.accepts( "startController", "When ACTIVE_STANDBY mode, determined whether Helix Controller, formatted as startController=true|false. default value is true" ).withOptionalArg();
+		parser.accepts( "zkAddress", "When ACTIVE_STANDBY mode, determined zookeeper address, formatted as —-zkAddress=zkIP:port[,skip:port]…" ).withRequiredArg();
+		parser.accepts( "clusterName", "When ACTIVE_STANDBY mode, determined maxwell cluster name, formatted as —-clusterName=<ClusterName>" ).withRequiredArg();
+		parser.accepts( "instanceName", "When ACTIVE_STANDBY mode, determined each maxwell node name, formatted as —-instanceName=<unique maxwell node name>" ).withRequiredArg();
+		parser.accepts( "hostName", "When ACTIVE_STANDBY mode, determined node's network hostname, formatted as —-hostName=<hostName>. default value is `InetAddress.getLocalHost().getHostName()`" ).withOptionalArg();
+		parser.accepts( "clusterPort", "When ACTIVE_STANDBY mode, determined communication port for between nodes, formatted as —-clusterPort=<using port>. default value is 12000" ).withOptionalArg();
+		parser.accepts( "startController", "When ACTIVE_STANDBY mode, determined whether Helix Controller, formatted as --startController=true|false. default value is true" ).withOptionalArg();
 
+		parser.accepts( "help", "display help").forHelp();
+
+		BuiltinHelpFormatter helpFormatter = new BuiltinHelpFormatter(200, 4) {
+			@Override
+			public String format(Map<String, ? extends OptionDescriptor> options) {
+				this.addRows(options.values());
+				String output = this.formattedHelpOutput();
+				return output.replaceAll("--__separator_.*", "");
+			}
+		};
+
+		parser.formatHelpWith(helpFormatter);
 		return parser;
 	}
 
-	private void parse(String[] args) {
+	private void parse(String[] args) throws UnknownHostException {
 		OptionSet options = buildOptionParser().parse(args);
-		Properties properties;
-		String configFileName = DEFAULT_HA_CONFIG_FILE;
-		Boolean abortOnMissing = false;
 
-		if( options.has("haconfig") ) {
-			configFileName = (String) options.valueOf("haconfig");
-			abortOnMissing = true;
+		Properties properties;
+
+		if (options.has("haconfig")) {
+			properties = parseFile((String) options.valueOf("haconfig"), true);
+		} else {
+			properties = parseFile(DEFAULT_HA_CONFIG_FILE, false);
 		}
 
-		properties = readPropertiesFile(configFileName, abortOnMissing);
-		if(properties == null) properties = new Properties();
+		if (options.has("help"))
+			usage("Help for Active-Standby Maxwell:");
 
 		setup(options, properties);
 	}
 
-	private void setup(OptionSet options, Properties properties){
+	private void setup(OptionSet options, Properties properties) throws UnknownHostException {
 		this.zkAddress = fetchOption("zkAddress",options, properties, "localhost");
 		this.clusterName = fetchOption("clusterName", options, properties, "maxwell");
 		this.instanceName = fetchOption("instanceName", options, properties, "maxwell");
-		this.hostName = fetchOption("hostName", options, properties, "localhost");
+		this.hostName = fetchOption("hostName", options, properties, InetAddress.getLocalHost().getHostName());
 		this.clusterPort = fetchOption("clusterPort", options, properties, "");
 		this.startController = fetchBooleanOption("startController", options, properties, true);
 	}
+
+	private Properties parseFile(String filename, Boolean abortOnMissing) {
+		Properties p = readPropertiesFile(filename, abortOnMissing);
+
+		if ( p == null )
+			p = new Properties();
+
+		return p;
+	}
+
 
 	private void validate(){
 		//TODO..
