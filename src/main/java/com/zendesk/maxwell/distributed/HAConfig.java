@@ -17,12 +17,12 @@ public class HAConfig extends AbstractConfig {
 
 	private static final String DEFAULT_HA_CONFIG_FILE = "ha.config.properties";
 
-	public String zkAddress;
-	public String clusterName;
-	public String instanceName;
-	public String hostName;
-	public String clusterPort;
-	public Boolean startController;
+	private String zkAddress;
+	private String clusterName;
+	private String instanceName;
+	private String hostName;
+	private String clusterPort;
+	private Boolean startController;
 
 	public HAConfig(String[] args) {
 		this.parse(args);
@@ -79,5 +79,29 @@ public class HAConfig extends AbstractConfig {
 
 	private void validate(){
 		//TODO..
+	}
+
+	public String getZkAddress() {
+		return zkAddress;
+	}
+
+	public String getClusterName() {
+		return clusterName;
+	}
+
+	public String getInstanceName() {
+		return instanceName;
+	}
+
+	public String getHostName() {
+		return hostName;
+	}
+
+	public String getClusterPort() {
+		return clusterPort;
+	}
+
+	public Boolean getStartController() {
+		return startController;
 	}
 }
