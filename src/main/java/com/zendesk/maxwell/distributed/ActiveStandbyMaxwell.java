@@ -26,7 +26,7 @@ import java.util.List;
 public class ActiveStandbyMaxwell implements Runnable {
     static final Logger LOGGER = LoggerFactory.getLogger(ActiveStandbyMaxwell.class);
 
-    private MaxwellConfig config;
+    private HAMaxwellConfig config;
     private MaxwellContext context;
 
     private final String _zkAddress;
