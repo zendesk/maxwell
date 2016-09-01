@@ -1,11 +1,13 @@
 package com.zendesk.maxwell.distributed;
 
+import com.zendesk.maxwell.MaxwellConfig;
 import com.zendesk.maxwell.util.AbstractConfig;
 import joptsimple.BuiltinHelpFormatter;
 import joptsimple.OptionDescriptor;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
@@ -18,15 +20,17 @@ public class HAConfig extends AbstractConfig {
 
 	private static final String DEFAULT_HA_CONFIG_FILE = "ha.config.properties";
 
+	private MaxwellConfig maxwellConfig;
 	private String zkAddress;
 	private String clusterName;
 	private String instanceName;
-	private String hostName;
+	private String nodeHostName;
 	private String clusterPort;
 	private Boolean startController;
 
 	public HAConfig(String[] args) throws UnknownHostException {
 		this.parse(args);
+		this.maxwellConfig = new MaxwellConfig(args);
 		//this.validate();
 	}
 
@@ -37,7 +41,7 @@ public class HAConfig extends AbstractConfig {
 		parser.accepts( "zkAddress", "When ACTIVE_STANDBY mode, determined zookeeper address, formatted as —-zkAddress=zkIP:port[,skip:port]…" ).withRequiredArg();
 		parser.accepts( "clusterName", "When ACTIVE_STANDBY mode, determined maxwell cluster name, formatted as —-clusterName=<ClusterName>" ).withRequiredArg();
 		parser.accepts( "instanceName", "When ACTIVE_STANDBY mode, determined each maxwell node name, formatted as —-instanceName=<unique maxwell node name>" ).withRequiredArg();
-		parser.accepts( "hostName", "When ACTIVE_STANDBY mode, determined node's network hostname, formatted as —-hostName=<hostName>. default value is `InetAddress.getLocalHost().getHostName()`" ).withOptionalArg();
+		parser.accepts( "nodeHostName", "When ACTIVE_STANDBY mode, determined node's network hostname, formatted as —-nodeHostName=<hostName>. default value is `InetAddress.getLocalHost().getHostName()`" ).withOptionalArg();
 		parser.accepts( "clusterPort", "When ACTIVE_STANDBY mode, determined communication port for between nodes, formatted as —-clusterPort=<using port>. default value is 12000" ).withOptionalArg();
 		parser.accepts( "startController", "When ACTIVE_STANDBY mode, determined whether Helix Controller, formatted as --startController=true|false. default value is true" ).withOptionalArg();
 
@@ -74,12 +78,23 @@ public class HAConfig extends AbstractConfig {
 	}
 
 	private void setup(OptionSet options, Properties properties) throws UnknownHostException {
-		this.zkAddress = fetchOption("zkAddress",options, properties, "localhost");
+		this.zkAddress = fetchOption("zkAddress",options, properties, "localhost:2181");
 		this.clusterName = fetchOption("clusterName", options, properties, "maxwell");
 		this.instanceName = fetchOption("instanceName", options, properties, "maxwell");
-		this.hostName = fetchOption("hostName", options, properties, InetAddress.getLocalHost().getHostName());
-		this.clusterPort = fetchOption("clusterPort", options, properties, "");
+		this.nodeHostName = fetchOption("nodeHostName", options, properties, InetAddress.getLocalHost().getHostName());
+		this.clusterPort = fetchOption("clusterPort", options, properties, "12000");
 		this.startController = fetchBooleanOption("startController", options, properties, true);
+	}
+
+	@Override
+	protected void usage(String string) {
+		System.err.println(string);
+		System.err.println();
+		try {
+			maxwellConfig.buildOptionParser().printHelpOn(System.err);
+			buildOptionParser().printHelpOn(System.err);
+			System.exit(1);
+		} catch (IOException e) { }
 	}
 
 	private Properties parseFile(String filename, Boolean abortOnMissing) {
@@ -108,8 +123,8 @@ public class HAConfig extends AbstractConfig {
 		return instanceName;
 	}
 
-	public String getHostName() {
-		return hostName;
+	public String getNodeHostName() {
+		return nodeHostName;
 	}
 
 	public String getClusterPort() {
@@ -118,5 +133,9 @@ public class HAConfig extends AbstractConfig {
 
 	public Boolean getStartController() {
 		return startController;
+	}
+
+	public MaxwellConfig getMaxwellConfig() {
+		return maxwellConfig;
 	}
 }

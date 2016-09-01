@@ -57,7 +57,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.validate();
 	}
 
-	protected OptionParser buildOptionParser() {
+	public OptionParser buildOptionParser() {
 		final OptionParser parser = new OptionParser();
 		parser.allowsUnrecognizedOptions();
 		

@@ -105,7 +105,7 @@ public class ActiveStandbyMaxwell implements Runnable {
         List<String> instanceInCluster = helixAdmin.getInstancesInCluster(haConfig.getClusterName());
         if (instanceInCluster == null || !instanceInCluster.contains(haConfig.getInstanceName())) {
             InstanceConfig instanceConfig = new InstanceConfig(haConfig.getInstanceName());
-            instanceConfig.setHostName(haConfig.getHostName());
+            instanceConfig.setHostName(haConfig.getNodeHostName());
             instanceConfig.setPort(haConfig.getClusterPort());
             helixAdmin.addInstance(haConfig.getClusterName(), instanceConfig);
         }
