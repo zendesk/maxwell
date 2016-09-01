@@ -82,4 +82,40 @@ public abstract class AbstractConfig {
 		return p;
 	}
 
+	protected String fetchOption(String name, OptionSet options, Properties properties, String defaultVal) {
+		if ( options != null && options.has(name) )
+			return (String) options.valueOf(name);
+		else if ( (properties != null) && properties.containsKey(name) )
+			return (String) properties.getProperty(name);
+		else
+			return defaultVal;
+	}
+
+	protected Long fetchLongOption(String name, OptionSet options, Properties properties, Long defaultVal) {
+		String strOption = fetchOption(name, options, properties, null);
+		if ( strOption == null )
+			return defaultVal;
+		else {
+			try {
+				return Long.valueOf(strOption);
+			} catch ( NumberFormatException e ) {
+				usageForOptions("Invalid value for " + name + ", integer required", "--" + name);
+			}
+			return null; // unreached
+		}
+	}
+
+	protected Boolean fetchBooleanOption(String name, OptionSet options, Properties properties, Boolean defaultVal){
+		String strOption = fetchOption(name, options, properties, null);
+		if ( strOption == null )
+			return defaultVal;
+		else {
+			try {
+				return Boolean.valueOf(strOption);
+			} catch( IllegalArgumentException e) {
+				usageForOptions("Invalid value for " + name + ", boolean required", "--" + name);
+			}
+			return null;
+		}
+	}
 }

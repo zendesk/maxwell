@@ -131,31 +131,6 @@ public class MaxwellConfig extends AbstractConfig {
 		return level;
 	}
 
-
-	private String fetchOption(String name, OptionSet options, Properties properties, String defaultVal) {
-		if ( options != null && options.has(name) )
-			return (String) options.valueOf(name);
-		else if ( (properties != null) && properties.containsKey(name) )
-			return (String) properties.getProperty(name);
-		else
-			return defaultVal;
-	}
-
-	private Long fetchLongOption(String name, OptionSet options, Properties properties, Long defaultVal) {
-		String strOption = fetchOption(name, options, properties, null);
-		if ( strOption == null )
-			return defaultVal;
-		else {
-			try {
-				return Long.valueOf(strOption);
-			} catch ( NumberFormatException e ) {
-				usageForOptions("Invalid value for " + name + ", integer required", "--" + name);
-			}
-			return null; // unreached
-		}
-	}
-
-
 	private MaxwellMysqlConfig parseMysqlConfig(String prefix, OptionSet options, Properties properties) {
 		MaxwellMysqlConfig config = new MaxwellMysqlConfig();
 		config.host     = fetchOption(prefix + "host", options, properties, null);

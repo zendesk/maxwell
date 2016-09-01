@@ -59,22 +59,13 @@ public class HAConfig extends AbstractConfig {
 		setup(options, properties);
 	}
 
-	private String fetchOption(String name, OptionSet options, Properties properties, String defaultVal) {
-		if ( options != null && options.has(name) )
-			return (String) options.valueOf(name);
-		else if ( (properties != null) && properties.containsKey(name) )
-			return (String) properties.getProperty(name);
-		else
-			return defaultVal;
-	}
-
 	private void setup(OptionSet options, Properties properties){
 		this.zkAddress = fetchOption("zkAddress",options, properties, "localhost");
 		this.clusterName = fetchOption("clusterName", options, properties, "maxwell");
 		this.instanceName = fetchOption("instanceName", options, properties, "maxwell");
 		this.hostName = fetchOption("hostName", options, properties, "localhost");
 		this.clusterPort = fetchOption("clusterPort", options, properties, "");
-		this.startController = Boolean.valueOf(fetchOption("startController", options, properties, "true"));
+		this.startController = fetchBooleanOption("startController", options, properties, true);
 	}
 
 	private void validate(){
