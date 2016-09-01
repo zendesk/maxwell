@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.distributed;
 
 import com.zendesk.maxwell.MaxwellConfig;
+import com.zendesk.maxwell.util.AbstractConfig;
 import joptsimple.BuiltinHelpFormatter;
 import joptsimple.OptionDescriptor;
 import joptsimple.OptionParser;
@@ -12,30 +13,28 @@ import java.util.Properties;
 /**
  * Created by springloops on 2016. 8. 31..
  */
-public class HAMaxwellConfig extends MaxwellConfig {
+public class HAConfig extends AbstractConfig {
 
 	private static final String DEFAULT_HA_CONFIG_FILE = "ha.config.properties";
 
-    public String zkAddress;
+	public String zkAddress;
 	public String clusterName;
 	public String instanceName;
 	public String hostName;
 	public String clusterPort;
 	public Boolean startController;
 
-	public HAMaxwellConfig(String[] args) {
-		super(args);
+	public HAConfig(String[] args) {
 		this.parse(args);
 		//this.validate();
 	}
 
-	@Override
 	protected OptionParser buildOptionParser() {
 		final OptionParser parser = new OptionParser();
 
-		parser.accepts( "zkAddress", "When ACTIVE_STANDBY mode, determined zookeeper address, formatted as —zkAddress=zkIP:port[,skip:port]…" ).withOptionalArg();
-		parser.accepts( "clusterName", "When ACTIVE_STANDBY mode, determined maxwell cluster name, formatted as —clusterName=<ClusterName>" ).withOptionalArg();
-		parser.accepts( "instanceName", "When ACTIVE_STANDBY mode, determined each maxwell node name, formatted as —instanceName=<unique maxwell node name>" ).withOptionalArg();
+		parser.accepts( "zkAddress", "When ACTIVE_STANDBY mode, determined zookeeper address, formatted as —zkAddress=zkIP:port[,skip:port]…" ).withRequiredArg();
+		parser.accepts( "clusterName", "When ACTIVE_STANDBY mode, determined maxwell cluster name, formatted as —clusterName=<ClusterName>" ).withRequiredArg();
+		parser.accepts( "instanceName", "When ACTIVE_STANDBY mode, determined each maxwell node name, formatted as —instanceName=<unique maxwell node name>" ).withRequiredArg();
 		parser.accepts( "hostName", "When ACTIVE_STANDBY mode, determined node's network hostname, formatted as —hostName=<hostName>. default value is `InetAddress.getLocalHost().getHostName()`" ).withOptionalArg();
 		parser.accepts( "clusterPort", "When ACTIVE_STANDBY mode, determined communication port for between nodes, formatted as —clusterPort=<using port>. default value is 12000" ).withOptionalArg();
 		parser.accepts( "startController", "When ACTIVE_STANDBY mode, determined whether Helix Controller, formatted as startController=true|false. default value is true" ).withOptionalArg();
@@ -58,6 +57,15 @@ public class HAMaxwellConfig extends MaxwellConfig {
 		if(properties == null) properties = new Properties();
 
 		setup(options, properties);
+	}
+
+	private String fetchOption(String name, OptionSet options, Properties properties, String defaultVal) {
+		if ( options != null && options.has(name) )
+			return (String) options.valueOf(name);
+		else if ( (properties != null) && properties.containsKey(name) )
+			return (String) properties.getProperty(name);
+		else
+			return defaultVal;
 	}
 
 	private void setup(OptionSet options, Properties properties){
