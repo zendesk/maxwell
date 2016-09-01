@@ -78,9 +78,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "producer", "producer type: stdout|file|kafka" ).withRequiredArg();
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
-		parser.accepts( "output_includes_binlog_position", "produced records include binlog position" );
-		parser.accepts( "output_includes_commit", "produced records include commit" );
-		parser.accepts( "output_includes_xid", "produced records include xid" );
+		parser.accepts( "output_binlog_position", "produced records include binlog position" );
+		parser.accepts( "output_commit_info", "produced records include commit and xid" );
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
 		parser.accepts( "kafka_partition_by", "database|table|primary_key, kafka producer assigns partition by hashing the specified parameter").withRequiredArg();
 		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning").withRequiredArg();
@@ -140,6 +139,16 @@ public class MaxwellConfig extends AbstractConfig {
 			return (String) options.valueOf(name);
 		else if ( (properties != null) && properties.containsKey(name) )
 			return (String) properties.getProperty(name);
+		else
+			return defaultVal;
+	}
+
+
+	private boolean fetchBooleanOption(String name, OptionSet options, Properties properties, boolean defaultVal) {
+		if ( options != null && options.has(name) )
+			return true;
+		else if ( (properties != null) && properties.containsKey(name) )
+			return true;
 		else
 			return defaultVal;
 	}
@@ -252,10 +261,9 @@ public class MaxwellConfig extends AbstractConfig {
 			this.replayMode = true;
 		}
 
-		boolean outputIncludesBinlogPosition = options != null && options.has("output_includes_binlog_position");
-		boolean outputIncludesCommit = options != null && options.has("output_includes_commit");
-		boolean outputIncludesXid = options != null && options.has("output_includes_xid");
-		this.outputConfig = new MaxwellOutputConfig(outputIncludesBinlogPosition, outputIncludesCommit, outputIncludesXid);
+		boolean outputBinlogPosition = fetchBooleanOption("output_binlog_position", options, properties, false);
+		boolean outputCommitInfo = fetchBooleanOption("output_commit_info", options, properties, false);
+		this.outputConfig = new MaxwellOutputConfig(outputBinlogPosition, outputCommitInfo);
 	}
 
 	private Properties parseFile(String filename, Boolean abortOnMissing) {
