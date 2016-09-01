@@ -132,7 +132,7 @@ public class MaxwellConfig extends AbstractConfig {
 	}
 
 
-	protected String fetchOption(String name, OptionSet options, Properties properties, String defaultVal) {
+	private String fetchOption(String name, OptionSet options, Properties properties, String defaultVal) {
 		if ( options != null && options.has(name) )
 			return (String) options.valueOf(name);
 		else if ( (properties != null) && properties.containsKey(name) )
@@ -141,7 +141,7 @@ public class MaxwellConfig extends AbstractConfig {
 			return defaultVal;
 	}
 
-	protected Long fetchLongOption(String name, OptionSet options, Properties properties, Long defaultVal) {
+	private Long fetchLongOption(String name, OptionSet options, Properties properties, Long defaultVal) {
 		String strOption = fetchOption(name, options, properties, null);
 		if ( strOption == null )
 			return defaultVal;

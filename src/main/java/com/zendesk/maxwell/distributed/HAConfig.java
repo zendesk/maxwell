@@ -48,8 +48,8 @@ public class HAConfig extends AbstractConfig {
 		String configFileName = DEFAULT_HA_CONFIG_FILE;
 		Boolean abortOnMissing = false;
 
-		if( options.has("config") ) {
-			configFileName = (String) options.valueOf("config");
+		if( options.has("haconfig") ) {
+			configFileName = (String) options.valueOf("haconfig");
 			abortOnMissing = true;
 		}
 
