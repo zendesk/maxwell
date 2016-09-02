@@ -368,3 +368,4 @@ create table имя_таблицы_в_кодировке_утф8_длиной_б
 drop database if exists това_е_дълго_име_за_база_данни_нали
 drop database имя_базы_в_кодировке_утф8_длиной_больше_чем_45
 drop database това_е_дълго_име_за_база_данни_нали
+CREATE TABLE `xxx_asset_access_audit` ( `id` int(11) NOT NULL, `partner_id` varchar(31) NOT NULL , `partner_product_id` varchar(31) NOT NULL , `log_date` datetime NOT NULL , `batch_id` varchar(64) NOT NULL , `order_id` varchar(64) NOT NULL , `audit_status` tinyint(4) NOT NULL , `audit_reason` varchar(255) DEFAULT NULL , `remark` varchar(255) DEFAULT '', `is_deleted` char(1) NOT NULL DEFAULT 'N' , `gmt_created` datetime NOT NULL , `creator` varchar(32) NOT NULL , `gmt_modified` datetime NOT NULL , `modifier` varchar(32) NOT NULL , PRIMARY KEY (`id`), UNIQUE `UN_ORDER` (`partner_product_id`, `batch_id`, `order_id`) comment '') ENGINE=`InnoDB` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci ROW_FORMAT=COMPACT  CHECKSUM=0 DELAY_KEY_WRITE=0
