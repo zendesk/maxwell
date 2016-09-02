@@ -1,5 +1,7 @@
 all: compile
 
+KAFKA_09_VERSION="0.9.0.1"
+
 MAXWELL_VERSION ?=$(shell build/current_rev)
 
 JAVAC=javac
@@ -27,10 +29,11 @@ compile-antlr: $(ANTLR_OUTPUT)
 
 JAVA_SOURCE = $(shell find src/main/java -name '*.java')
 JAVA_DEPENDS = $(shell  build/maven_fetcher -p -o target/dependency)
+KAFKA_09_SOURCE = $(shell build/maven_fetcher -f org.apache.kafka/kafka-clients/${KAFKA_09_VERSION} -o target/dependency)
 
 target/.java: $(ANTLR_OUTPUT) $(JAVA_SOURCE)
 	@mkdir -p target/classes
-	$(JAVAC) -classpath $(JAVA_DEPENDS) $(JAVAC_FLAGS) $?
+	$(JAVAC) -classpath $(JAVA_DEPENDS):$(KAFKA_09_SOURCE) $(JAVAC_FLAGS) $?
 	@touch target/.java
 
 copy-resources:
