@@ -92,6 +92,7 @@ TARFILE=target/$(PKGNAME).tar.gz
 package-tar:
 	rm -Rf target/dependency-build
 	build/maven_fetcher -p -o target/dependency-build >/dev/null
+	build/maven_fetcher -f org.apache.kafka/kafka-clients/${KAFKA_09_VERSION} -o target/dependency-build >/dev/null
 	rm -Rf $(TARDIR) $(TARFILE)
 	mkdir $(TARDIR)
 	cp $(DISTFILES) $(TARDIR)
