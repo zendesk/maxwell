@@ -367,9 +367,11 @@ public class MaxwellReplicator extends RunLoopProcess {
 		String sql = event.getSql().toString();
 		BinlogPosition position = eventBinlogPosition(event);
 
-		schemaStore.processSQL(sql, dbName, position);
-		tableCache.clear();
-		this.producer.writePosition(position);
+		if (!this.context.getConfig().ignoreDDL) {
+			schemaStore.processSQL(sql, dbName, position);
+			tableCache.clear();
+			this.producer.writePosition(position);
+		}
 	}
 
 	public Schema getSchema() throws SchemaStoreException {

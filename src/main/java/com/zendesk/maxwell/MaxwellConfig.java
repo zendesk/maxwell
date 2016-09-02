@@ -37,10 +37,12 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public BinlogPosition initPosition;
 	public boolean replayMode;
+	public boolean ignoreDDL;
 
 	public MaxwellConfig() { // argv is only null in tests
 		this.kafkaProperties = new Properties();
 		this.replayMode = false;
+		this.ignoreDDL = false;
 		this.replicationMysql = new MaxwellMysqlConfig();
 		this.maxwellMysql = new MaxwellMysqlConfig();
 		setup(null, null); // setup defaults
@@ -104,7 +106,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "exclude_columns", "exclude these columns, formatted as exclude_columns=col1,col2" ).withOptionalArg();
 		parser.accepts( "blacklist_dbs", "ignore data AND schema changes to these databases, formatted as blacklist_dbs=db1,db2. See the docs for details before setting this!").withOptionalArg();
 		parser.accepts( "blacklist_tables", "ignore data AND schema changes to these tables, formatted as blacklist_tables=tb1,tb2. See the docs for details before setting this!").withOptionalArg();
-
+		parser.accepts( "ignore_ddl", "ignore DDL statements").withOptionalArg();
 		parser.accepts( "__separator_7" );
 
 		parser.accepts( "help", "display help").forHelp();
@@ -246,6 +248,10 @@ public class MaxwellConfig extends AbstractConfig {
 		if ( options != null && options.has("replay")) {
 			this.replayMode = true;
 		}
+		if ( options != null && options.has("ignore_ddl")) {
+			this.ignoreDDL = true;
+		}
+
 	}
 
 	private Properties parseFile(String filename, Boolean abortOnMissing) {
