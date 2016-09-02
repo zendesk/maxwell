@@ -29,11 +29,11 @@ compile-antlr: $(ANTLR_OUTPUT)
 
 JAVA_SOURCE = $(shell find src/main/java -name '*.java')
 JAVA_DEPENDS = $(shell  build/maven_fetcher -p -o target/dependency)
-KAFKA_09_SOURCE = $(shell build/maven_fetcher -f org.apache.kafka/kafka-clients/${KAFKA_09_VERSION} -o target/dependency)
 
 target/.java: $(ANTLR_OUTPUT) $(JAVA_SOURCE)
 	@mkdir -p target/classes
-	$(JAVAC) -classpath $(JAVA_DEPENDS):$(KAFKA_09_SOURCE) $(JAVAC_FLAGS) $?
+	build/maven_fetcher -f org.apache.kafka/kafka-clients/${KAFKA_09_VERSION} -o target/dependency
+	$(JAVAC) -classpath $(JAVA_DEPENDS) $(JAVAC_FLAGS) $?
 	@touch target/.java
 
 copy-resources:
@@ -46,19 +46,33 @@ compile: compile-antlr compile-java copy-resources
 
 JAVA_TEST_DEPENDS = $(shell build/maven_fetcher -p -o target/dependency-test -s test)
 JAVA_TEST_SOURCE=$(shell find src/test/java -name '*.java')
+KAFKA_09_TEST_DEPENDS = $(shell build/maven_fetcher -f org.apache.kafka/kafka-clients/${KAFKA_09_VERSION} -o target/dependency-test)
+
 target/.java-test: $(JAVA_TEST_SOURCE)
 	@mkdir -p target/test-classes
 	cp -a src/test/resources/* target/test-classes
-	javac -d target/test-classes -sourcepath src/main/java:src/test/java:target/generated-sources -classpath target/classes:$(JAVA_TEST_DEPENDS) \
+	javac -d target/test-classes -sourcepath src/main/java:src/test/java:target/generated-sources -classpath target/classes:$(JAVA_TEST_DEPENDS):$(KAFKA_09_TEST_DEPENDS) \
+		-g -target 1.7 -source 1.7 -encoding UTF-8 $?
+	@touch target/.java-test
+
+target/.java-test-kafka-09: $(JAVA_TEST_SOURCE)
+	@mkdir -p target/test-classes
+	cp -a src/test/resources/* target/test-classes
+	javac -d target/test-classes -sourcepath src/main/java:src/test/java:target/generated-sources -classpath target/classes:$(KAFKA_09_TEST_DEPENDS):$(JAVA_TEST_DEPENDS): \
 		-g -target 1.7 -source 1.7 -encoding UTF-8 $?
 	@touch target/.java-test
 
 compile-test: compile target/.java-test
 
+compile-test-kafka-09: compile target/.java-test-kafka-09
+
 TEST_CLASSES=$(shell build/get-test-classes)
 
 test: compile-test
 	java -Xmx128m -classpath $(JAVA_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore $(TEST_CLASSES)
+
+test-kafka-09: compile-test-kafka-09
+	java -Xmx128m -classpath $(KAFKA_09_TEST_DEPENDS):$(JAVA_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore $(TEST_CLASSES)
 
 test.%:  compile-test
 	java -classpath $(JAVA_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore $(filter %$(subst test.,,$@),$(TEST_CLASSES))
