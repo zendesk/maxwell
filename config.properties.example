@@ -136,3 +136,9 @@ password=maxwell
 
 # output filename when using the "file" producer
 #output_file=/path/to/file
+
+# produced records include binlog position
+output_binlog_position=true
+
+# produced records include commit and xid
+output_commit_info=true

@@ -78,8 +78,6 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "producer", "producer type: stdout|file|kafka" ).withRequiredArg();
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
-		parser.accepts( "output_binlog_position", "produced records include binlog position" );
-		parser.accepts( "output_commit_info", "produced records include commit and xid" );
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
 		parser.accepts( "kafka_partition_by", "database|table|primary_key, kafka producer assigns partition by hashing the specified parameter").withRequiredArg();
 		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning").withRequiredArg();
@@ -88,9 +86,14 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_4" );
 
-		parser.accepts( "bootstrapper", "bootstrapper type: async|sync|none. default: async" ).withRequiredArg();
+		parser.accepts( "output_binlog_position", "produced records include binlog position; [true|false]. default: false" ).withOptionalArg();
+		parser.accepts( "output_commit_info", "produced records include commit and xid; [true|false]. default: true" ).withOptionalArg();
 
 		parser.accepts( "__separator_5" );
+
+		parser.accepts( "bootstrapper", "bootstrapper type: async|sync|none. default: async" ).withRequiredArg();
+
+		parser.accepts( "__separator_6" );
 
 		parser.accepts( "replica_server_id", "server_id that maxwell reports to the master.  See docs for full explanation.").withRequiredArg();
 		parser.accepts( "client_id", "unique identifier for this maxwell replicator").withRequiredArg();
@@ -99,7 +102,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION").withRequiredArg();
 		parser.accepts( "replay", "replay mode, don't store any information to the server");
 
-		parser.accepts( "__separator_6" );
+		parser.accepts( "__separator_7" );
 
 		parser.accepts( "include_dbs", "include these databases, formatted as include_dbs=db1,db2").withOptionalArg();
 		parser.accepts( "exclude_dbs", "exclude these databases, formatted as exclude_dbs=db1,db2").withOptionalArg();
@@ -109,7 +112,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "blacklist_dbs", "ignore data AND schema changes to these databases, formatted as blacklist_dbs=db1,db2. See the docs for details before setting this!").withOptionalArg();
 		parser.accepts( "blacklist_tables", "ignore data AND schema changes to these tables, formatted as blacklist_tables=tb1,tb2. See the docs for details before setting this!").withOptionalArg();
 
-		parser.accepts( "__separator_7" );
+		parser.accepts( "__separator_8" );
 
 		parser.accepts( "help", "display help").forHelp();
 
@@ -138,17 +141,20 @@ public class MaxwellConfig extends AbstractConfig {
 		if ( options != null && options.has(name) )
 			return (String) options.valueOf(name);
 		else if ( (properties != null) && properties.containsKey(name) )
-			return (String) properties.getProperty(name);
+			return properties.getProperty(name);
 		else
 			return defaultVal;
 	}
 
 
 	private boolean fetchBooleanOption(String name, OptionSet options, Properties properties, boolean defaultVal) {
-		if ( options != null && options.has(name) )
-			return true;
-		else if ( (properties != null) && properties.containsKey(name) )
-			return true;
+		if ( options != null && options.has(name) ) {
+			if ( !options.hasArgument(name) )
+				return true;
+			else
+				return Boolean.valueOf((String) options.valueOf(name));
+		} else if ( (properties != null) && properties.containsKey(name) )
+			return Boolean.valueOf(properties.getProperty(name));
 		else
 			return defaultVal;
 	}
@@ -262,7 +268,7 @@ public class MaxwellConfig extends AbstractConfig {
 		}
 
 		boolean outputBinlogPosition = fetchBooleanOption("output_binlog_position", options, properties, false);
-		boolean outputCommitInfo = fetchBooleanOption("output_commit_info", options, properties, false);
+		boolean outputCommitInfo = fetchBooleanOption("output_commit_info", options, properties, true);
 		this.outputConfig = new MaxwellOutputConfig(outputBinlogPosition, outputCommitInfo);
 	}
 
