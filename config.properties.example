@@ -138,7 +138,7 @@ password=maxwell
 #output_file=/path/to/file
 
 # produced records include binlog position
-output_binlog_position=true
+#output_binlog_position=true
 
 # produced records include commit and xid
-output_commit_info=true
+#output_commit_info=true
