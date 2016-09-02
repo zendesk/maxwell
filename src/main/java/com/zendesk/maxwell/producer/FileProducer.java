@@ -20,7 +20,7 @@ public class FileProducer extends AbstractProducer {
 
 	@Override
 	public void push(RowMap r) throws Exception {
-		this.fileWriter.write(r.toJSON());
+		this.fileWriter.write(r.toJSON(outputConfig));
 		this.fileWriter.write('\n');
 		this.fileWriter.flush();
 

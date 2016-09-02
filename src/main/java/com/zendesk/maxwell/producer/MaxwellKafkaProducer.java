@@ -115,7 +115,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	@Override
 	public void push(RowMap r) throws Exception {
 		String key = r.pkToJson(keyFormat);
-		String value = r.toJSON();
+		String value = r.toJSON(outputConfig);
 
 		ProducerRecord<String, String> record =
 				new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, this.numPartitions), key, value);
