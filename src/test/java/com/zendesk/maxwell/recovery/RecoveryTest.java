@@ -200,4 +200,28 @@ public class RecoveryTest extends TestWithNameLogging {
 
 		maxwell.terminate();
 	}
+
+	@Test
+	public void aggressiveRecoveryTest() throws Exception {
+		if ( System.getenv("AGRESSIVE_RECOVERY_TEST") == null )
+			return;
+
+		for(int i=0 ; i < 20; i++) {
+			LOGGER.info("starting testBasicRecovery");
+			setupServers();
+			testBasicRecovery();
+		}
+
+		for(int i=0 ; i < 20; i++) {
+			LOGGER.info("starting testRecoveryIntegration");
+			setupServers();
+			testRecoveryIntegration();
+		}
+
+		for(int i=0 ; i < 20; i++) {
+			LOGGER.info("starting testRecoveryIntegrationWithLaggedMaxwell");
+			setupServers();
+			testRecoveryIntegrationWithLaggedMaxwell();
+		}
+	}
 }
