@@ -17,7 +17,6 @@ public class LowerCaseDDLIntegrationTest {
 		MaxwellTestSupport.setupSchema(convertServer);
 
 		if ( isFileSystemCaseSensitive() ) {
-			System.out.println("booting case-sensitive server");
 			caseSensitiveServer = MaxwellTestSupport.setupServer("--lower-case-table-names=0");
 			MaxwellTestSupport.setupSchema(caseSensitiveServer);
 		}

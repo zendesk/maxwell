@@ -143,7 +143,7 @@ public class MaxwellTestSupport {
 		mysql.execute("insert into test.boundary set i = 1");
 
 		// wait for it to come through
-		maxwell.getRow(5, TimeUnit.SECONDS);
+		maxwell.poll(5000);
 
 		callback.afterReplicatorStart(mysql);
 
@@ -153,7 +153,7 @@ public class MaxwellTestSupport {
 		mysql.execute("insert into test.boundary set i = 1");
 
 		for ( int nullChecksLeft = 100 ; nullChecksLeft > 0 ; nullChecksLeft-- ) {
-			RowMap row = maxwell.getRow(10, TimeUnit.MILLISECONDS);
+			RowMap row = maxwell.poll(10);
 			if ( row == null )
 				continue;
 
