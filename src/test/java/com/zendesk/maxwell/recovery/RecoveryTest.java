@@ -80,6 +80,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		generateNewMasterData();
 		RecoveryInfo recoveryInfo = slaveContext.getRecoveryInfo();
 
+		assertThat(recoveryInfo, notNullValue());
 		MaxwellConfig slaveConfig = getConfig(slaveServer.getPort());
 		Recovery recovery = new Recovery(
 			slaveConfig.maxwellMysql,
@@ -143,8 +144,6 @@ public class RecoveryTest extends TestWithNameLogging {
 		while ( rs.next() ) {
 			if ( rs.getLong("server_id") == 12345 ) {
 				foundSchema = true;
-				long recoveredPosition = rs.getLong("binlog_position");
-				assertThat(Math.abs(recoveredPosition - approximateRecoverPosition.getOffset()), lessThan(2000L));
 				rs.getLong("base_schema_id");
 				assertEquals(false, rs.wasNull());
 			}
