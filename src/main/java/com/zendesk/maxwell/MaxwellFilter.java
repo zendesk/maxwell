@@ -95,6 +95,14 @@ public class MaxwellFilter {
 		blacklistTables.add(compile(name));
 	}
 
+	public boolean isDatabaseWhitelist() {
+		return !includeDatabases.isEmpty();
+	}
+
+	public boolean isTableWhitelist() {
+		return !includeTables.isEmpty();
+	}
+
 	private Pattern compile(String name) throws MaxwellInvalidFilterException {
 		name = name.trim();
 		if ( name.startsWith("/") ) {

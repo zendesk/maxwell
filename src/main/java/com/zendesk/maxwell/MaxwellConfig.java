@@ -29,6 +29,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public String kafkaPartitionHash;
 	public String kafkaPartitionKey;
 	public String bootstrapperType;
+	public int bufferedProducerSize;
 
 	public String outputFile;
 	public MaxwellOutputConfig outputConfig;
@@ -45,6 +46,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.replayMode = false;
 		this.replicationMysql = new MaxwellMysqlConfig();
 		this.maxwellMysql = new MaxwellMysqlConfig();
+		this.bufferedProducerSize = 200;
 		setup(null, null); // setup defaults
 	}
 

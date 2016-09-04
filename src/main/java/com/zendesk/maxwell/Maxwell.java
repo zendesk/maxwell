@@ -1,6 +1,5 @@
 package com.zendesk.maxwell;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.TimeoutException;
@@ -10,27 +9,52 @@ import org.slf4j.LoggerFactory;
 
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
-import com.zendesk.maxwell.schema.Schema;
-import com.zendesk.maxwell.schema.SchemaCapturer;
 import com.zendesk.maxwell.schema.MysqlSchemaStore;
 import com.zendesk.maxwell.schema.SchemaStoreSchema;
-import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 
-public class Maxwell {
-	private MaxwellConfig config;
-	private MaxwellContext context;
+public class Maxwell implements Runnable {
+	protected MaxwellConfig config;
+	protected MaxwellContext context;
+	protected MaxwellReplicator replicator;
 	static final Logger LOGGER = LoggerFactory.getLogger(Maxwell.class);
 
-	private void run(String[] argv) throws Exception {
-		this.config = new MaxwellConfig(argv);
-
-		if ( this.config.log_level != null )
-			MaxwellLogging.setLevel(this.config.log_level);
-
+	public Maxwell(MaxwellConfig config) throws SQLException {
+		this.config = config;
 		this.context = new MaxwellContext(this.config);
-
 		this.context.probeConnections();
+	}
 
+	public void run() {
+		try {
+			start();
+		} catch (Exception e) {
+			LOGGER.error("maxwell encountered an exception", e);
+		}
+	}
+
+	public void terminate() {
+		try {
+			// send a final heartbeat through the system
+			context.heartbeat();
+			Thread.sleep(100);
+
+			if ( this.replicator != null)
+				replicator.stopLoop();
+			} catch (TimeoutException e) {
+				System.err.println("Timed out trying to shutdown maxwell parser thread.");
+			} catch (InterruptedException e) {
+			} catch (Exception e) {
+		}
+
+		if ( this.context != null )
+			context.terminate();
+
+		replicator = null;
+		context = null;
+	}
+
+
+	private void start() throws Exception {
 		try ( Connection connection = this.context.getReplicationConnection();
 			  Connection rawConnection = this.context.getRawMaxwellConnection() ) {
 			MaxwellMysqlStatus.ensureReplicationMysqlState(connection);
@@ -54,34 +78,39 @@ public class Maxwell {
 		AbstractProducer producer = this.context.getProducer();
 		AbstractBootstrapper bootstrapper = this.context.getBootstrapper();
 
-		MysqlSchemaStore mysqlSchemaStore = new MysqlSchemaStore(this.context);
-		final MaxwellReplicator p = new MaxwellReplicator(mysqlSchemaStore, producer, bootstrapper, this.context, this.context.getInitialPosition());
+		MysqlSchemaStore mysqlSchemaStore = new MysqlSchemaStore(this.context, this.context.getInitialPosition());
+		this.replicator = new MaxwellReplicator(mysqlSchemaStore, producer, bootstrapper, this.context, this.context.getInitialPosition());
 
-		bootstrapper.resume(producer, p);
+		bootstrapper.resume(producer, replicator);
 
-		p.setFilter(context.getFilter());
+		replicator.setFilter(context.getFilter());
 
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			@Override
 			public void run() {
-				try {
-					p.stopLoop();
-				} catch (TimeoutException e) {
-					System.err.println("Timed out trying to shutdown maxwell parser thread.");
-				}
-				context.terminate();
-				StaticShutdownCallbackRegistry.invoke();
+				terminate();
 			}
 		});
 
 		this.context.start();
-		p.runLoop();
-
+		replicator.runLoop();
 	}
 
 	public static void main(String[] args) {
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				StaticShutdownCallbackRegistry.invoke();
+			}
+		});
+
 		try {
-			new Maxwell().run(args);
+			MaxwellConfig config = new MaxwellConfig(args);
+
+			if ( config.log_level != null )
+				MaxwellLogging.setLevel(config.log_level);
+
+			new Maxwell(config).start();
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(1);

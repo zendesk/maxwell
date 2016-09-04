@@ -116,8 +116,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 		}
 	}
 
-	@Override
-	protected void beforeStart() throws Exception {
+	public void startReplicator() throws Exception {
 		try {
 			this.replicator.start();
 		} catch ( TransportException e ) {
@@ -130,6 +129,11 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 			throw(e);
 		}
+	}
+
+	@Override
+	protected void beforeStart() throws Exception {
+		startReplicator();
 	}
 
 	public void work() throws Exception {

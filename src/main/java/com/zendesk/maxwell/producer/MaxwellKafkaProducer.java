@@ -64,11 +64,7 @@ class KafkaCallback implements Callback {
 			BinlogPosition newPosition = inflightMessages.completeMessage(position);
 
 			if ( newPosition != null ) {
-				try {
-					context.setPosition(newPosition);
-				} catch ( SQLException e ) {
-					e.printStackTrace();
-				}
+				context.setPosition(newPosition);
 			}
 		}
 	}
