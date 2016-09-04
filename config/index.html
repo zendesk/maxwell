@@ -152,6 +152,11 @@
                       <li class="toctree-l3"><a href="#schema-storage-host-vs-replica-host">Schema storage host vs replica host</a></li>
                       
                   
+                      <li class="toctree-l3"><a href="#running-multiple-instances-of-maxwell-against-the-same-master">running multiple instances of maxwell against the same master</a></li>
+                      
+                          <li><a class="toctree-l4" href="#multiple-instances-on-a-55-server">multiple instances on a 5.5 server</a></li>
+                      
+                  
                   </ul>
               
           </li>
@@ -237,9 +242,14 @@
 <td>maxwell</td>
 </tr>
 <tr>
-<td>--max_schemas</td>
-<td>how many old schemas maxwell should leave lying around in maxwell.schemas</td>
-<td>5</td>
+<td>--client_id</td>
+<td>unique (string) identifier for this maxwell instance</td>
+<td>maxwell</td>
+</tr>
+<tr>
+<td>--replica_server_id</td>
+<td>unique (long) identifier for this maxwell instance</td>
+<td>6379 (see notes)</td>
 </tr>
 <tr>
 <td>&nbsp;</td>
@@ -275,6 +285,21 @@
 <td>--kafka_topic</td>
 <td>kafka topic to write to.</td>
 <td>maxwell</td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>--output_binlog_position</td>
+<td>produced records include binlog position: [true</td>
+<td>false]</td>
+</tr>
+<tr>
+<td>--output_commit_info</td>
+<td>produced records include commit and xid: [true</td>
+<td>false]</td>
 </tr>
 <tr>
 <td>&nbsp;</td>
@@ -411,6 +436,18 @@ specify <code>host</code>, <code>user</code>, etc.</p>
 the host described by <code>host</code>, <code>user</code>, ..., will be used to write schema information to, and Maxwell will replicate
 events from the host described by <code>replication_host</code>, <code>replication_user</code>, ...  Note that bootstrapping is not available
 in this configuration.</p>
+<h3 id="running-multiple-instances-of-maxwell-against-the-same-master">running multiple instances of maxwell against the same master</h3>
+<hr />
+<p>Maxwell can operate with multiple instances running against a single master, in
+different configurations.  This can be useful if you wish to have producers
+running in different configurations, for example producing different groups of
+tables to different topics.  Each instance of Maxwell must be configured with a
+unique <code>client_id</code>, in order to store unique binlog positions.</p>
+<h4 id="multiple-instances-on-a-55-server">multiple instances on a 5.5 server</h4>
+<p>With MySQL 5.5 and below, each replicator (be it mysql, maxwell, whatever) must
+also be configured with a unique <code>replica_server_id</code>.  This is a 32-bit integer
+that corresponds to mysql's <code>server_id</code> parameter.  The value you configure
+should be unique across all mysql and maxwell instances.</p>
 <script>
   jQuery(document).ready(function () {
     jQuery("table").addClass("table table-condensed table-bordered table-hover");
