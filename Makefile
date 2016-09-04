@@ -81,7 +81,8 @@ package-jar: all
 	mkdir -p ${MAVEN_DIR}
 	sed -e "s/VERSION/${MAXWELL_VERSION}/" build/pom.properties > ${MAVEN_DIR}/pom.properties
 	cp pom.xml ${MAVEN_DIR}
-	jar cvf ${MAXWELL_JARFILE} -C target/classes .
+	echo "Implementation-Version: ${MAXWELL_VERSION}" >target/jar-manifest
+	jar cvmf target/jar-manifest ${MAXWELL_JARFILE} -C target/classes .
 
 TARDIR=target/$(PKGNAME)
 TARFILE=target/$(PKGNAME).tar.gz
