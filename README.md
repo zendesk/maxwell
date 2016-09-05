@@ -16,7 +16,7 @@ but differentiates itself with these features:
 Maxwell is intended as a source for event-based readers, eg various ETL applications, search indexing,
 stat emitters.
 
-- Download: [https://github.com/zendesk/maxwell/releases/download/v1.1.4/maxwell-1.1.4.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.1.4/maxwell-1.1.4.tar.gz)
+- Download: [https://github.com/zendesk/maxwell/releases/download/v1.1.5/maxwell-1.1.5.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.1.5/maxwell-1.1.5.tar.gz)
 - Source: [https://github.com/zendesk/maxwell](https://github.com/zendesk/maxwell)
 
 <br style="clear:both"/>

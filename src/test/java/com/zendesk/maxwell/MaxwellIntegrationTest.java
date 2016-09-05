@@ -2,6 +2,8 @@ package com.zendesk.maxwell;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
+
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.List;
@@ -86,6 +88,22 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 		list = getRowsForSQL(filter, input);
 		assertThat(list.size(), is(0));
+	}
+
+	@Test
+	public void testOutputConfig() throws Exception {
+		List<RowMap> list;
+		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig(true, true);
+		list = getRowsForSQL(input);
+		String json = list.get(0).toJSON(outputConfig);
+
+		// Binlog
+		assertTrue(Pattern.matches(".*\"position\":\"master.0+1.\\d+\".*", json));
+		// Commit
+		assertTrue(Pattern.matches(".*\"commit\":true.*", json));
+		// Xid
+		assertTrue(Pattern.matches(".*\"xid\":\\d+.*", json));
 	}
 
 	static String createDBs[] = {

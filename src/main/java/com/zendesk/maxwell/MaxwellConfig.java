@@ -5,6 +5,9 @@ import joptsimple.BuiltinHelpFormatter;
 import joptsimple.OptionDescriptor;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
+
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +37,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public int bufferedProducerSize;
 
 	public String outputFile;
+	public MaxwellOutputConfig outputConfig;
 	public String log_level;
 
 	public String clientID;
@@ -91,9 +95,14 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_4" );
 
-		parser.accepts( "bootstrapper", "bootstrapper type: async|sync|none. default: async" ).withRequiredArg();
+		parser.accepts( "output_binlog_position", "produced records include binlog position; [true|false]. default: false" ).withOptionalArg();
+		parser.accepts( "output_commit_info", "produced records include commit and xid; [true|false]. default: true" ).withOptionalArg();
 
 		parser.accepts( "__separator_5" );
+
+		parser.accepts( "bootstrapper", "bootstrapper type: async|sync|none. default: async" ).withRequiredArg();
+
+		parser.accepts( "__separator_6" );
 
 		parser.accepts( "replica_server_id", "server_id that maxwell reports to the master.  See docs for full explanation.").withRequiredArg();
 		parser.accepts( "client_id", "unique identifier for this maxwell replicator").withRequiredArg();
@@ -102,7 +111,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION").withRequiredArg();
 		parser.accepts( "replay", "replay mode, don't store any information to the server");
 
-		parser.accepts( "__separator_6" );
+		parser.accepts( "__separator_7" );
 
 		parser.accepts( "include_dbs", "include these databases, formatted as include_dbs=db1,db2").withOptionalArg();
 		parser.accepts( "exclude_dbs", "exclude these databases, formatted as exclude_dbs=db1,db2").withOptionalArg();
@@ -112,7 +121,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "blacklist_dbs", "ignore data AND schema changes to these databases, formatted as blacklist_dbs=db1,db2. See the docs for details before setting this!").withOptionalArg();
 		parser.accepts( "blacklist_tables", "ignore data AND schema changes to these tables, formatted as blacklist_tables=tb1,tb2. See the docs for details before setting this!").withOptionalArg();
 
-		parser.accepts( "__separator_7" );
+		parser.accepts( "__separator_8" );
 
 		parser.accepts( "help", "display help").forHelp();
 
@@ -228,6 +237,10 @@ public class MaxwellConfig extends AbstractConfig {
 		if ( options != null && options.has("replay")) {
 			this.replayMode = true;
 		}
+
+		boolean outputBinlogPosition = fetchBooleanOption("output_binlog_position", options, properties, false);
+		boolean outputCommitInfo = fetchBooleanOption("output_commit_info", options, properties, true);
+		this.outputConfig = new MaxwellOutputConfig(outputBinlogPosition, outputCommitInfo);
 	}
 
 	private Properties parseFile(String filename, Boolean abortOnMissing) {
