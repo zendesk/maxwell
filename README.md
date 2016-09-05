@@ -49,6 +49,33 @@ stat emitters.
   }
 ```
 
+
+###Maxwell HA Mode
+
+Maxwell is supported HA Mode ( Active-Standby Mode ).
+
+```
+./bin/maxwell-active-standby \ 
+    --replication_host=replication_database \
+    --replication_user=user \
+    --replication_password=password \
+    --replication_port=3306 \
+    --user=maxwell \
+    --password=maxwell \
+    --host=maxwell_schema_database \
+    --producer=stdout \
+    
+    ## Opstions for Maxwell HA Mode.
+    --zkAddress=localhost:2181 \
+    --clusterName=Maxwell_HAMODE \
+    --instanceName=node1 \
+    --nodeHostName=localhost \
+    --clusterPort=12000 \
+    --startController=true 
+```
+
+
+
 <script>
   jQuery(document).ready(function () {
     jQuery("#maxwell-header").append(
