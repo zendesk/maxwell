@@ -167,6 +167,18 @@
             <div class="col-md-10" role="main">
 
 <h1 id="maxwell-changelog">Maxwell changelog</h1>
+<h3 id="v115-my-brain-is-a-polluted-mess"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.1.5">v1.1.5</a>: "my brain is a polluted mess"</h3>
+<ul>
+<li>@dadah89 adds --output_binlog_position to optionally output the
+  position with the row</li>
+<li>@dadah89 adds --output_commit_info to turn off xid/commit fields</li>
+<li>maxwell now supports tables with partitions</li>
+<li>maxwell now supports N maxwells per-server.  see the client_id /
+  replica_server_id options.</li>
+<li>two parser fixes, for engine=<code>innodb</code> and CHARSET ASCII</li>
+<li>lay the ground work for doing master recovery; we add a heartbeat into
+  the positions table that we can co-ordinate around.</li>
+</ul>
 <h3 id="v114-george-flunk"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.1.4">v1.1.4</a>: "george flunk"</h3>
 <ul>
 <li>add support for a bunch more charsets (gbk, big5, notably)</li>
