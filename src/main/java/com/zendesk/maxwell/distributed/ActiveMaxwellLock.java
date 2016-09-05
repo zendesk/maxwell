@@ -38,7 +38,6 @@ public class ActiveMaxwellLock extends StateModel {
         try {
             maxwell.run();
         } catch (Exception e) {
-            e.printStackTrace();
             handler.exceptionHandling(maxwell, e);
         }
 
