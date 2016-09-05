@@ -9,22 +9,29 @@ import org.apache.helix.participant.statemachine.StateModelFactory;
 
 public class ActiveMaxwellLockFactory extends StateModelFactory<ActiveMaxwellLock> {
 
-  private final MaxwellContext context;
-  private ActiveMaxwellLock activeMaxwellLock;
+    private final MaxwellContext context;
+    private final MaxwellHAExceptionHandler handler;
 
-  public ActiveMaxwellLockFactory(MaxwellContext context) {
-      this.context = context;
-  }
+    private ActiveMaxwellLock activeMaxwellLock;
 
-  @Override
-  public ActiveMaxwellLock createNewStateModel(String resourceName, String lockName) {
-    activeMaxwellLock = new ActiveMaxwellLock(this.context.getConfig());
-    return activeMaxwellLock;
-  }
+    protected ActiveMaxwellLockFactory(MaxwellContext context) {
+        this(context, new MaxwellHAExceptionDefaultHandler());
+    }
 
-  protected ActiveMaxwellLock getActiveMaxwellLock() {
-      ActiveMaxwellLock lock = activeMaxwellLock;
-      return lock;
-  }
+    protected ActiveMaxwellLockFactory(MaxwellContext context, MaxwellHAExceptionHandler handler) {
+        this.context = context;
+        this.handler = handler;
+    }
+
+    @Override
+    public ActiveMaxwellLock createNewStateModel(String resourceName, String lockName) {
+        activeMaxwellLock = new ActiveMaxwellLock(this.context.getConfig(), handler);
+        return activeMaxwellLock;
+    }
+
+    protected ActiveMaxwellLock getActiveMaxwellLock() {
+        final ActiveMaxwellLock lock = activeMaxwellLock;
+        return lock;
+    }
 
 }

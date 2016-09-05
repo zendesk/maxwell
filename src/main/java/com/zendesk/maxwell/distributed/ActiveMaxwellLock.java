@@ -15,33 +15,43 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @StateModelInfo(initialState = "OFFLINE", states = {
-    "OFFLINE", "ONLINE"
+        "OFFLINE", "ONLINE"
 })
 public class ActiveMaxwellLock extends StateModel {
-  static final Logger LOGGER = LoggerFactory.getLogger(ActiveMaxwellLock.class);
+    static final Logger LOGGER = LoggerFactory.getLogger(ActiveMaxwellLock.class);
 
-  private final MaxwellConfig config;
-  private Maxwell maxwell;
+    private final MaxwellConfig config;
+    private final MaxwellHAExceptionHandler handler;
 
-  protected ActiveMaxwellLock(MaxwellConfig config) {
-      this.config = config;
-  }
+    private Maxwell maxwell;
 
-  @Transition(from = "OFFLINE", to = "ONLINE")
-  public void lock(Message m, NotificationContext context) throws Exception {
-    LOGGER.info(context.getManager().getClusterName() + " : " + context.getManager().getInstanceName() + " applied Active");
-    LOGGER.info("Start Maxwell Active Node");
-    maxwell = new Maxwell(this.config);
-    maxwell.run();
-  }
+    protected ActiveMaxwellLock(MaxwellConfig config, MaxwellHAExceptionHandler handler) {
+        this.config = config;
+        this.handler = handler;
+    }
 
-  @Transition(from = "ONLINE", to = "OFFLINE")
-  public void release(Message m, NotificationContext context) {
-    LOGGER.info("Maxwell Active Node changed status");
-    maxwell.terminate();
-  }
+    @Transition(from = "OFFLINE", to = "ONLINE")
+    public void lock(Message m, NotificationContext context) throws Exception {
+        LOGGER.info(context.getManager().getClusterName() + " : " + context.getManager().getInstanceName() + " applied Active");
+        LOGGER.info("Start Maxwell Active Node");
+        maxwell = new Maxwell(this.config);
+        try {
+            maxwell.run();
+        } catch (Exception e) {
+            e.printStackTrace();
+            handler.exceptionHandling(maxwell, e);
+        }
 
-  protected Maxwell getMaxwell() {
-      return maxwell;
-  }
+    }
+
+    @Transition(from = "ONLINE", to = "OFFLINE")
+    public void release(Message m, NotificationContext context) {
+        LOGGER.info("Maxwell Active Node changed status");
+        maxwell.terminate();
+    }
+
+    protected Maxwell getMaxwell() {
+        return maxwell;
+    }
+
 }

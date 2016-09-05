@@ -1,16 +1,16 @@
 package com.zendesk.maxwell;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.concurrent.TimeoutException;
 import com.djdch.log4j.StaticShutdownCallbackRegistry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.MysqlSchemaStore;
 import com.zendesk.maxwell.schema.SchemaStoreSchema;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.concurrent.TimeoutException;
 
 public class Maxwell implements Runnable {
 	protected MaxwellConfig config;
@@ -29,6 +29,7 @@ public class Maxwell implements Runnable {
 			start();
 		} catch (Exception e) {
 			LOGGER.error("maxwell encountered an exception", e);
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -72,7 +73,7 @@ public class Maxwell implements Runnable {
 		} catch ( SQLException e ) {
 			LOGGER.error("SQLException: " + e.getLocalizedMessage());
 			LOGGER.error(e.getLocalizedMessage());
-			return;
+			throw e;
 		}
 
 		AbstractProducer producer = this.context.getProducer();

@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.distributed;
 
 import com.djdch.log4j.StaticShutdownCallbackRegistry;
+import com.zendesk.maxwell.Maxwell;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.MaxwellLogging;
 import org.apache.helix.HelixManager;
@@ -45,6 +46,7 @@ public class ActiveStandbyMaxwell implements Runnable {
             start();
         } catch (Exception e) {
             LOGGER.error("active-standby maxwell encountered an exception", e);
+            throw new RuntimeException(e);
         }
     }
 
@@ -109,7 +111,14 @@ public class ActiveStandbyMaxwell implements Runnable {
             helixAdmin.addInstance(haConfig.getClusterName(), instanceConfig);
         }
 
-        activeMaxwellLockFactory = new ActiveMaxwellLockFactory(this.context);
+        activeMaxwellLockFactory = new ActiveMaxwellLockFactory(this.context, new MaxwellHAExceptionHandler() {
+            @Override
+            public void exceptionHandling(Maxwell maxwell, Exception exception) {
+                maxwell.terminate();
+                terminate();
+                System.exit(1);
+            }
+        });
 
         LOGGER.info("Started Maxwell Active-Standby Mode");
     }
