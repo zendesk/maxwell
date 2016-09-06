@@ -17,4 +17,7 @@ public class ReadOnlyMysqlPositionStore extends MysqlPositionStore {
 
 	@Override
 	public void set(BinlogPosition p) { }
+
+	@Override
+	public void heartbeat() throws Exception { }
 }
