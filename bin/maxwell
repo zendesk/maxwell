@@ -2,8 +2,12 @@
 
 base_dir=$(dirname $0)/..
 
-KAFKA_08_VERSION="0.8.2.2"
-KAFKA_09_VERSION="0.9.0.1"
+# Which version of kafka-clients will be loaded, based on the presence of the
+# --kafka0.9 option or not; should match the ones declared in the Makefile (0.9)
+# and pom.xml (0.8).
+
+KAFKA_08_VERSION=0.8.2.2
+KAFKA_09_VERSION=0.9.0.1
 
 CLASSPATH=$CLASSPATH:$base_dir/target/classes:../open-replicator/target/classes
 
