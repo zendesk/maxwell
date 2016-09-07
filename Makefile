@@ -8,7 +8,7 @@ JAVAC_FLAGS += -sourcepath src/main/java:src/test/java:target/generated-sources/
 JAVAC_FLAGS += -g -target 1.7 -source 1.7 -encoding UTF-8 -Xlint:-options -Xlint:unchecked
 
 # files that just get copied to the root of the maxwell distro
-DISTFILES=README.md docs/docs/quickstart.md docs/docs/config.md LICENSE src/main/resources/log4j2.xml config.properties.example
+DISTFILES=README.md docs/docs/quickstart.md docs/docs/config.md LICENSE src/main/resources/log4j2.xml config.properties.example ha.config.properties.example
 
 ANTLR_DEPS=$(shell build/maven_fetcher -f org.antlr/antlr4/4.5 -o target/dependency-antlr)
 ANTLR=java -cp $(ANTLR_DEPS) org.antlr.v4.Tool

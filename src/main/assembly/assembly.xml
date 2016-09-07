@@ -22,6 +22,7 @@
       <includes>
         <include>bin/*</include>
         <include>config.properties.example</include>
+        <include>ha.config.properties.example</include>
         <include>README*</include>
         <include>LICENSE*</include>
         <include>NOTICE*</include>
