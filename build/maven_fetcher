@@ -209,9 +209,9 @@ module MavenFetcher
     end
 
     # http://repo.maven.apache.org/maven2/mysql/mysql-connector-java/5.1.6/mysql-connector-java-5.1.6.pom
-    def fetch_artifact(artifact, scope, path)
+    def fetch_artifact(artifact, scope, path, fetch_dependencies = true)
       pom = get_pom(artifact)
-      deps = resolve(pom.dependencies, scope)
+      deps = fetch_dependencies ? resolve(pom.dependencies, scope) : []
       deps << artifact
       puts download(deps, path).join(':')
     end
@@ -291,8 +291,9 @@ parser = OptionParser.new do |opts|
 
   opts.on("-r", "--repo REPO", "maven repository base url, default is '#{DEFAULT_REPO}'") { |repo| options[:repo] = repo }
   opts.on("-f", "--fetch ARTIFACT", "fetch a given artifact, named as 'GROUP/ARTIFACT/VERSION'") { |artifact| options[:fetch] = artifact }
+  opts.on("--skip-dependencies", "do not fetch artifact dependencies (only applies if -f is present)") { options[:skip_depedencies] = true }
   opts.on("-p", "--pom [POM]", "fetch all dependencies for pom.xml") { |pom| options[:pom] = pom }
-  opts.on("--force-artifact ARTIFACT", "when fetching from pom, replace artifact with argument, named as 'GROUP/ARTIFACT/VERSION'") { |artifact| options[:force_artifact] = artifact }
+  opts.on("--force-artifact ARTIFACT", "when fetching from pom.xml, replace artifact with argument, named as 'GROUP/ARTIFACT/VERSION'") { |artifact| options[:force_artifact] = artifact }
   opts.on("-o", "--output-directory DIRECTORY", "required.  Directory to store jar files in") { |dir| options[:output_dir] = dir }
   opts.on("-s", "--scope SCOPE", "fetch pacakges with this scope.  [compile, runtime, test] Default: compile") { |scope| options[:scope] = scope }
   opts.on("-v", "--verbose", "turn on verbose output") { $verbose = true }
@@ -312,7 +313,7 @@ end
 if options[:fetch]
   artifact = MavenFetcher::Artifact.new(*options[:fetch].split('/'))
 
-  repo.fetch_artifact(artifact, scope, options[:output_dir])
+  repo.fetch_artifact(artifact, scope, options[:output_dir], fetch_dependencies = !options[:skip_depedencies])
 elsif options.key?(:pom)
   pom = options[:pom] || 'pom.xml'
   if !File.exist?(pom)
