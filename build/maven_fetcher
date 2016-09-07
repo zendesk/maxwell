@@ -216,11 +216,21 @@ module MavenFetcher
       puts download(deps, path).join(':')
     end
 
-    def fetch_pom_deps(pomfile, scope, path)
+    def fetch_pom_deps(pomfile, scope, path, force_artifact = nil)
       pom_data = pomfile.read
       pom = Pom.parse(pom_data, self)
+      dependencies = pom.dependencies
 
-      deps = resolve(pom.dependencies, scope)
+      # Replace dependency version with `artifact` version, if a match is found
+      if force_artifact
+        artifact = MavenFetcher::Artifact.new(*force_artifact.split('/'))
+        if index = dependencies.find_index { |a| a.key == artifact.key }
+          # Can't just replace, need to keep original scope
+          dependencies[index].version = artifact.version
+        end
+      end
+
+      deps = resolve(dependencies, scope)
       puts download(deps, path).join(':')
     end
 
@@ -282,6 +292,7 @@ parser = OptionParser.new do |opts|
   opts.on("-r", "--repo REPO", "maven repository base url, default is '#{DEFAULT_REPO}'") { |repo| options[:repo] = repo }
   opts.on("-f", "--fetch ARTIFACT", "fetch a given artifact, named as 'GROUP/ARTIFACT/VERSION'") { |artifact| options[:fetch] = artifact }
   opts.on("-p", "--pom [POM]", "fetch all dependencies for pom.xml") { |pom| options[:pom] = pom }
+  opts.on("--force-artifact ARTIFACT", "when fetching from pom, replace artifact with argument, named as 'GROUP/ARTIFACT/VERSION'") { |artifact| options[:force_artifact] = artifact }
   opts.on("-o", "--output-directory DIRECTORY", "required.  Directory to store jar files in") { |dir| options[:output_dir] = dir }
   opts.on("-s", "--scope SCOPE", "fetch pacakges with this scope.  [compile, runtime, test] Default: compile") { |scope| options[:scope] = scope }
   opts.on("-v", "--verbose", "turn on verbose output") { $verbose = true }
@@ -307,13 +318,10 @@ elsif options.key?(:pom)
   if !File.exist?(pom)
     $stderr.puts("could not open file: #{pom}")
   else
-    repo.fetch_pom_deps(File.open(pom), scope, options[:output_dir])
+    repo.fetch_pom_deps(File.open(pom), scope, options[:output_dir], options[:force_artifact])
   end
 else
   puts "Please specify either --fetch or --pom"
   puts parser
   exit 1
 end
-
-
-
