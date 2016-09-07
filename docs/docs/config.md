@@ -20,6 +20,9 @@ option                                        | description | default
 --kafka_partition_by                          | what fields to hash for partition key: [database, table, primary_key] | database
 --kafka_topic                                 | kafka topic to write to. | maxwell
 &nbsp;
+--output_binlog_position                      | produced records include binlog position: [true&#124;false] | false
+--output_commit_info                          | produced records include commit and xid: [true&#124;false] | true
+&nbsp;
 --replication_host                            | mysql host to replicate from.  Only specify if different from `host` (see notes) | schema-store host
 --replication_password                        | password on replication server | (none)
 --replication_port                            | port on replication server | 3306

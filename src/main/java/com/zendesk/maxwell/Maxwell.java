@@ -106,6 +106,16 @@ public class Maxwell implements Runnable {
 		return initial;
 	}
 
+	public String getMaxwellVersion() {
+		String packageVersion = getClass().getPackage().getImplementationVersion();
+		if ( packageVersion == null )
+			return "??";
+		else
+			return packageVersion;
+	}
+
+	static String bootString = "Maxwell v%s is booting (%s), starting at %s";
+
 	private void start() throws Exception {
 		try ( Connection connection = this.context.getReplicationConnection();
 			  Connection rawConnection = this.context.getRawMaxwellConnection() ) {
@@ -119,7 +129,7 @@ public class Maxwell implements Runnable {
 			}
 
 			String producerClass = this.context.getProducer().getClass().getSimpleName();
-			LOGGER.info("Maxwell is booting (" + producerClass + "), starting at " + this.context.getInitialPosition());
+			LOGGER.info(String.format(bootString, getMaxwellVersion(), producerClass, this.context.getInitialPosition().toString()));
 		} catch ( SQLException e ) {
 			LOGGER.error("SQLException: " + e.getLocalizedMessage());
 			LOGGER.error(e.getLocalizedMessage());
