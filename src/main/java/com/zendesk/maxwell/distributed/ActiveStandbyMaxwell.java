@@ -132,7 +132,7 @@ public class ActiveStandbyMaxwell implements Runnable {
 
     private void startContoller() {
         LOGGER.info("start helix controller");
-        controllerManager = HelixControllerMain.startHelixController(haConfig.getZkAddress(), haConfig.getClusterName(), haConfig.getClusterName()+"_Controller", HelixControllerMain.STANDALONE);
+        controllerManager = HelixControllerMain.startHelixController(haConfig.getZkAddress(), haConfig.getClusterName(), haConfig.getClusterName()+"_Controller", HelixControllerMain.DISTRIBUTED);
     }
 
     public static void main(String[] args) {

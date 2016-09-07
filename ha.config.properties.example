@@ -1,0 +1,14 @@
+# list of zookeeper ensemble
+#zookeeper=hosta:2181,hostb:2181
+
+#maxwell ha cluster name
+#clusterName=maxwell_cluster
+
+# each instance name of node
+#instanceName=maxwell1
+
+# whether helix controller use
+#startController=true
+
+# port of helix contoller
+#clusterPort=12000
