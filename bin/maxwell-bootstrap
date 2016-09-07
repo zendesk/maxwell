@@ -11,7 +11,7 @@ KAFKA_09_VERSION=0.9.0.1
 
 CLASSPATH=$CLASSPATH:$base_dir/target/classes:../open-replicator/target/classes
 
-for file in $base_dir/target/maxwell-*/*/lib/*.jar lib/*.jar target/dependency/*.jar
+for file in lib/*.jar target/dependency/*.jar
 do
   if [[ "$@" == *--kafka0.8* ]] && [[ ! $file == "target/dependency/kafka-clients-$KAFKA_09_VERSION.jar" ]]; then
     CLASSPATH=$CLASSPATH:$file
