@@ -4,7 +4,7 @@ MAXWELL_VERSION ?=$(shell build/current_rev)
 
 # If KAFKA_VERSION is provided, replace pom version with it
 # (e.g. KAFKA_VERSION=0.8.2.2 make test)
-FORCE_ARTIFACT = $(shell [ -n "$(KAFKA_VERSION)" ] && echo "--force-artifact org.apache.kafka/kafka-clients/$(KAFKA_VERSION)")
+LOCK_KAFKA_VERSION = $(shell [ -n "$(KAFKA_VERSION)" ] && echo "--lock-version org.apache.kafka/kafka-clients=$(KAFKA_VERSION)")
 
 # Which additional version of kafka-clients will be fetched; should match the
 # one declared in bin/maxwell bin/maxwell-bootstrap
@@ -34,7 +34,7 @@ $(ANTLR_OUTPUT): $(ANTLR_SRC) $(ANTLR_IMPORTS)/*.g4
 compile-antlr: $(ANTLR_OUTPUT)
 
 JAVA_SOURCE = $(shell find src/main/java -name '*.java')
-JAVA_DEPENDS = $(shell build/maven_fetcher -p -o target/dependency $(FORCE_ARTIFACT))
+JAVA_DEPENDS = $(shell build/maven_fetcher -p -o target/dependency $(LOCK_KAFKA_VERSION))
 
 target/.java: $(ANTLR_OUTPUT) $(JAVA_SOURCE)
 	@mkdir -p target/classes
@@ -51,7 +51,7 @@ compile: compile-antlr compile-java copy-resources
 
 
 
-JAVA_TEST_DEPENDS = $(shell build/maven_fetcher -p -o target/dependency-test -s test $(FORCE_ARTIFACT))
+JAVA_TEST_DEPENDS = $(shell build/maven_fetcher -p -o target/dependency-test -s test $(LOCK_KAFKA_VERSION))
 JAVA_TEST_SOURCE=$(shell find src/test/java -name '*.java')
 target/.java-test: $(JAVA_TEST_SOURCE)
 	@mkdir -p target/test-classes
