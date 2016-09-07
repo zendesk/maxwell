@@ -2,12 +2,10 @@ language: java
 branches:
   only: master
 install: true
-script: make $TARGET
+script: make test
 env:
   matrix:
-    - TARGET=test
-      MYSQL_VERSION=5.5
-    - TARGET=test
-      MYSQL_VERSION=5.6
-    - TARGET=test-kafka-09
+    - MYSQL_VERSION=5.5
+    - MYSQL_VERSION=5.6
+    - KAFKA_VERSION=0.8.2.2
       MYSQL_VERSION=5.6

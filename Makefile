@@ -101,7 +101,6 @@ package-tar:
 	build/maven_fetcher -p -o target/dependency-build >/dev/null
  	# Include kafka 0.8 jar
 	build/maven_fetcher -f org.apache.kafka/kafka-clients/$(ADDITIONAL_PACKAGED_KAFKA) --skip-dependencies -o target/dependency-build >/dev/null
-	ls target/dependency-build
 	rm -Rf $(TARDIR) $(TARFILE)
 	mkdir $(TARDIR)
 	cp $(DISTFILES) $(TARDIR)
