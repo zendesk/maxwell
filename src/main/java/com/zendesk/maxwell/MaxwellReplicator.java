@@ -154,13 +154,12 @@ public class MaxwellReplicator extends RunLoopProcess {
 		if ( row == null )
 			return;
 
-		if ( !bootstrapper.shouldSkip(row) && !isMaxwellRow(row) ) {
+		if ( row instanceof HeartbeatRowMap )
 			producer.push(row);
-		} else if ( row.isHeartbeat() ) {
-			producer.writePosition(row.getPosition());
-		} else {
+		else if (!bootstrapper.shouldSkip(row) && !isMaxwellRow(row))
+			producer.push(row);
+		else
 			bootstrapper.work(row, producer, this);
-		}
 	}
 
 	@Override
@@ -314,19 +313,19 @@ public class MaxwellReplicator extends RunLoopProcess {
 		return lastHeartbeatRead;
 	}
 
-	private void processHeartbeats(RowMap row) throws SQLException {
-		if ( row != null && isMaxwellRow(row) && row.getTable().equals("positions") ) {
-			Object heartbeat_at = row.getData("heartbeat_at");
-			Object old_heartbeat_at = row.getOldData("heartbeat_at"); // make sure it's a heartbeat update, not a position set.
+	private RowMap processHeartbeats(RowMap row) throws SQLException {
+		Object heartbeat_at = row.getData("heartbeat_at");
+		Object old_heartbeat_at = row.getOldData("heartbeat_at"); // make sure it's a heartbeat update, not a position set.
 
-			if ( heartbeat_at != null && old_heartbeat_at != null ) {
-				Long thisHeartbeat = (Long) heartbeat_at;
-				if ( !thisHeartbeat.equals(lastHeartbeatRead) ) {
-					lastHeartbeatRead = thisHeartbeat;
-					row.markAsHeartbeat(lastHeartbeatRead);
-				}
+		if ( heartbeat_at != null && old_heartbeat_at != null ) {
+			Long thisHeartbeat = (Long) heartbeat_at;
+			if ( !thisHeartbeat.equals(lastHeartbeatRead) ) {
+				this.lastHeartbeatRead = thisHeartbeat;
+
+				return HeartbeatRowMap.valueOf(row.getDatabase(), row.getPosition(), thisHeartbeat);
 			}
 		}
+		return row;
 	}
 
 	private RowMapBuffer rowBuffer;
@@ -341,9 +340,10 @@ public class MaxwellReplicator extends RunLoopProcess {
 			if (rowBuffer != null && !rowBuffer.isEmpty()) {
 				RowMap row = rowBuffer.removeFirst();
 
-				processHeartbeats(row);
-
-				return row;
+				if ( row != null && isMaxwellRow(row) && row.getTable().equals("positions") )
+					return processHeartbeats(row);
+				else
+					return row;
 			}
 
 			v4Event = pollV4EventFromQueue();
