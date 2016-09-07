@@ -100,8 +100,9 @@ public class ActiveStandbyMaxwell implements Runnable {
                     StateModelConfigGenerator.generateConfigForOnlineOffline()));
             helixAdmin.addResource(haConfig.getClusterName(), maxwellActiveStandbyResourceName, 1, "OnlineOffline",
                     IdealState.RebalanceMode.FULL_AUTO.toString());
-            helixAdmin.rebalance(haConfig.getClusterName(), maxwellActiveStandbyResourceName, 1);
         }
+
+        helixAdmin.rebalance(haConfig.getClusterName(), maxwellActiveStandbyResourceName, 1);
 
         List<String> instanceInCluster = helixAdmin.getInstancesInCluster(haConfig.getClusterName());
         if (instanceInCluster == null || !instanceInCluster.contains(haConfig.getInstanceName())) {
@@ -132,7 +133,7 @@ public class ActiveStandbyMaxwell implements Runnable {
 
     private void startContoller() {
         LOGGER.info("start helix controller");
-        controllerManager = HelixControllerMain.startHelixController(haConfig.getZkAddress(), haConfig.getClusterName(), haConfig.getClusterName()+"_Controller", HelixControllerMain.DISTRIBUTED);
+        controllerManager = HelixControllerMain.startHelixController(haConfig.getZkAddress(), haConfig.getClusterName(), haConfig.getClusterName()+"_Controller", HelixControllerMain.STANDALONE);
     }
 
     public static void main(String[] args) {
