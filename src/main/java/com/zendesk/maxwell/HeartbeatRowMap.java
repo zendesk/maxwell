@@ -1,5 +1,8 @@
 package com.zendesk.maxwell;
 
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+
+import java.io.IOException;
 import java.util.ArrayList;
 
 /**
@@ -13,5 +16,10 @@ public class HeartbeatRowMap extends RowMap {
 	public static HeartbeatRowMap valueOf(String database, BinlogPosition position, long heartbeatValue) {
 		BinlogPosition p = new BinlogPosition(position.getOffset(), position.getFile(), heartbeatValue);
 		return new HeartbeatRowMap(database, p);
+	}
+
+	@Override
+	public String toJSON(MaxwellOutputConfig outputConfig) throws IOException {
+		return null;
 	}
 }

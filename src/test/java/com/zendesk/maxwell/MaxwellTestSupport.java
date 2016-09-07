@@ -166,13 +166,13 @@ public class MaxwellTestSupport {
 					if ( r == null )
 						break;
 
-					if ( !r.getRowType().equals("heartbeat"))
+					if ( r.toJSON() != null )
 						list.add(r);
 				}
 
 				break;
 			}
-			if ( !row.getRowType().equals("heartbeat"))
+			if ( row.toJSON() != null )
 				list.add(row);
 		}
 

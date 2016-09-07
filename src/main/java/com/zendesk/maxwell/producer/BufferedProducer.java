@@ -23,12 +23,7 @@ public class BufferedProducer extends AbstractProducer {
 	}
 
 	@Override
-	public void writePosition(BinlogPosition p) throws SQLException {
-		RowMap fakePositionRow = new RowMap("heartbeat", "maxwell", "heartbeat", System.currentTimeMillis(), new ArrayList<String>(), p);
-		try {
-			this.queue.put(fakePositionRow);
-		} catch ( InterruptedException e ) { }
-	}
+	public void writePosition(BinlogPosition p) throws SQLException { }
 
 	public RowMap poll(long timeout, TimeUnit unit) throws InterruptedException {
 		RowMap r = this.queue.poll(timeout, unit);
