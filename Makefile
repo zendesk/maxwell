@@ -60,6 +60,7 @@ test: compile-test
 test.%:  compile-test
 	java -classpath $(JAVA_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore $(filter %$(subst test.,,$@),$(TEST_CLASSES))
 
+
 clean:
 	rm -f  target/.java target/.java-test
 	rm -rf target/classes
