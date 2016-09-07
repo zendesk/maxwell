@@ -1,11 +1,10 @@
 all: compile
 
-# Which version of kafka-clients will be fetched; should match the one declared
-# in bin/maxwell bin/maxwell-bootstrap and pom.xml
-KAFKA_08_VERSION=0.8.2.2
-KAFKA_09_VERSION=0.9.0.1
-
 MAXWELL_VERSION ?=$(shell build/current_rev)
+
+# If KAFKA_VERSION is provided, replace pom version with it
+# (e.g. KAFKA_VERSION=0.8.2.2)
+FORCE_ARTIFACT = $(shell [ -n "$(KAFKA_VERSION)" ] && echo "--force-artifact org.apache.kafka/kafka-clients/$(KAFKA_VERSION)")
 
 JAVAC=javac
 JAVAC_FLAGS += -d target/classes
@@ -30,31 +29,12 @@ $(ANTLR_OUTPUT): $(ANTLR_SRC) $(ANTLR_IMPORTS)/*.g4
 
 compile-antlr: $(ANTLR_OUTPUT)
 
-
-# Argument: classpath
-define compile-with-kafka
-	@mkdir -p target/classes
-	# Fetch kafka 0.9 (so we can pick which version when running maxwell)
-	build/maven_fetcher -f org.apache.kafka/kafka-clients/${KAFKA_09_VERSION} -o target/dependency
-	$(JAVAC) -classpath $1 $(JAVAC_FLAGS) $?
-endef
-
-# Argument: classpath
-define compile-test-with-kafka
-	@mkdir -p target/test-classes
-	cp -a src/test/resources/* target/test-classes
-	javac -d target/test-classes -sourcepath src/main/java:src/test/java:target/generated-sources -classpath target/classes:$1 \
-		-g -target 1.7 -source 1.7 -encoding UTF-8 $?
-endef
-
-
-
 JAVA_SOURCE = $(shell find src/main/java -name '*.java')
-JAVA_DEPENDS = $(shell  build/maven_fetcher -p -o target/dependency)
+JAVA_DEPENDS = $(shell build/maven_fetcher -p -o target/dependency $(FORCE_ARTIFACT))
 
 target/.java: $(ANTLR_OUTPUT) $(JAVA_SOURCE)
-	# Compile with kafka-clients 0.8 (pom.xml)
-	$(call compile-with-kafka,$(JAVA_DEPENDS))
+	@mkdir -p target/classes
+	$(JAVAC) -classpath $(JAVA_DEPENDS) $(JAVAC_FLAGS) $?
 	@touch target/.java
 
 copy-resources:
@@ -65,48 +45,24 @@ compile: compile-antlr compile-java copy-resources
 
 
 
-# Test recipes
-
-JAVA_TEST_DEPENDS = $(shell build/maven_fetcher -p -o target/dependency-test -s test)
-JAVA_TEST_SOURCE = $(shell find src/test/java -name '*.java')
-TEST_CLASSES = $(shell build/get-test-classes)
-
+JAVA_TEST_DEPENDS = $(shell build/maven_fetcher -p -o target/dependency-test -s test $(FORCE_ARTIFACT))
+JAVA_TEST_SOURCE=$(shell find src/test/java -name '*.java')
 target/.java-test: $(JAVA_TEST_SOURCE)
-	# Compile with kafka-clients 0.8
-	$(call compile-test-with-kafka,$(JAVA_TEST_DEPENDS))
+	@mkdir -p target/test-classes
+	cp -a src/test/resources/* target/test-classes
+	javac -d target/test-classes -sourcepath src/main/java:src/test/java:target/generated-sources -classpath target/classes:$(JAVA_TEST_DEPENDS) \
+		-g -target 1.7 -source 1.7 -encoding UTF-8 $?
 	@touch target/.java-test
 
 compile-test: compile target/.java-test
+
+TEST_CLASSES=$(shell build/get-test-classes)
 
 test: compile-test
 	java -Xmx128m -classpath $(JAVA_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore $(TEST_CLASSES)
 
 test.%:  compile-test
 	java -classpath $(JAVA_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore $(filter %$(subst test.,,$@),$(TEST_CLASSES))
-
-# Kafka 0.9 test recipes
-
-KAFKA_09_DEPENDS = $(subst kafka-clients-$(KAFKA_08_VERSION).jar,kafka-clients-$(KAFKA_09_VERSION).jar,$(JAVA_DEPENDS))
-KAFKA_09_TEST_DEPENDS = $(subst kafka-clients-$(KAFKA_08_VERSION).jar,kafka-clients-$(KAFKA_09_VERSION).jar,$(JAVA_TEST_DEPENDS))
-
-target/.java-test-kafka-09: $(JAVA_TEST_SOURCE)
-	# Fetch kafka 0.9
-	build/maven_fetcher -f org.apache.kafka/kafka-clients/${KAFKA_09_VERSION} -o target/dependency-test
-	# Compile with kafka-clients 0.9
-	$(call compile-test-with-kafka,$(KAFKA_09_TEST_DEPENDS))
-	@touch target/.java-test
-
-target/.java-kafka-09: $(ANTLR_OUTPUT) $(JAVA_SOURCE)
-	# Compile with kafka-clients 0.9
-	$(call compile-with-kafka,$(KAFKA_09_DEPENDS))
-	@touch target/.java-kafka-09
-
-compile-java-kafka-09: target/.java-kafka-09
-compile-test-kafka-09: compile-antlr compile-java-kafka-09 copy-resources target/.java-test-kafka-09
-
-test-kafka-09: compile-test-kafka-09
-	java -Xmx128m -classpath $(KAFKA_09_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore $(TEST_CLASSES)
-
 
 
 clean:
@@ -137,8 +93,6 @@ TARFILE=target/$(PKGNAME).tar.gz
 package-tar:
 	rm -Rf target/dependency-build
 	build/maven_fetcher -p -o target/dependency-build >/dev/null
-	# Include kafka 0.9 jar
-	build/maven_fetcher -f org.apache.kafka/kafka-clients/${KAFKA_09_VERSION} -o target/dependency-build >/dev/null
 	rm -Rf $(TARDIR) $(TARFILE)
 	mkdir $(TARDIR)
 	cp $(DISTFILES) $(TARDIR)
@@ -148,5 +102,4 @@ package-tar:
 	tar czvf $(TARFILE) -C target $(PKGNAME)
 
 package: depclean package-jar package-tar
-
 
