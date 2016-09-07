@@ -3,8 +3,12 @@ all: compile
 MAXWELL_VERSION ?=$(shell build/current_rev)
 
 # If KAFKA_VERSION is provided, replace pom version with it
-# (e.g. KAFKA_VERSION=0.8.2.2)
+# (e.g. KAFKA_VERSION=0.8.2.2 make test)
 FORCE_ARTIFACT = $(shell [ -n "$(KAFKA_VERSION)" ] && echo "--force-artifact org.apache.kafka/kafka-clients/$(KAFKA_VERSION)")
+
+# Which additional version of kafka-clients will be fetched; should match the
+# one declared in bin/maxwell bin/maxwell-bootstrap
+ADDITIONAL_PACKAGED_KAFKA=0.8.2.2
 
 JAVAC=javac
 JAVAC_FLAGS += -d target/classes
@@ -34,6 +38,8 @@ JAVA_DEPENDS = $(shell build/maven_fetcher -p -o target/dependency $(FORCE_ARTIF
 
 target/.java: $(ANTLR_OUTPUT) $(JAVA_SOURCE)
 	@mkdir -p target/classes
+	# Fetch jar so we can run it locally (bin/maxwell)
+	build/maven_fetcher -f org.apache.kafka/kafka-clients/$(ADDITIONAL_PACKAGED_KAFKA) --skip-dependencies -o target/dependency >/dev/null
 	$(JAVAC) -classpath $(JAVA_DEPENDS) $(JAVAC_FLAGS) $?
 	@touch target/.java
 
@@ -93,6 +99,9 @@ TARFILE=target/$(PKGNAME).tar.gz
 package-tar:
 	rm -Rf target/dependency-build
 	build/maven_fetcher -p -o target/dependency-build >/dev/null
+ 	# Include kafka 0.8 jar
+	build/maven_fetcher -f org.apache.kafka/kafka-clients/$(ADDITIONAL_PACKAGED_KAFKA) --skip-dependencies -o target/dependency-build >/dev/null
+	ls target/dependency-build
 	rm -Rf $(TARDIR) $(TARFILE)
 	mkdir $(TARDIR)
 	cp $(DISTFILES) $(TARDIR)
