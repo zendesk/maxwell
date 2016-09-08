@@ -6,7 +6,7 @@ import java.util.*;
 import org.junit.*;
 
 
-public class MaxwellTestWithIsolatedServer {
+public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 	protected static MysqlIsolatedServer server;
 
 	@BeforeClass

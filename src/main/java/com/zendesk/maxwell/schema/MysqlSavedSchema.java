@@ -299,8 +299,7 @@ public class MysqlSavedSchema {
 	private HashMap<Long, HashMap<String, Object>> buildSchemaMap(Connection conn) throws SQLException {
 		HashMap<Long, HashMap<String, Object>> schemas = new HashMap<>();
 
-		PreparedStatement p = conn.prepareStatement("SELECT * from `schemas` where server_id = ?");
-		p.setLong(1, this.serverID);
+		PreparedStatement p = conn.prepareStatement("SELECT * from `schemas`");
 		ResultSet rs = p.executeQuery();
 
 		ResultSetMetaData md = rs.getMetaData();

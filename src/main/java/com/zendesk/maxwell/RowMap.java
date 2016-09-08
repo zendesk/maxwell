@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 
 
 public class RowMap implements Serializable {
+
 	public enum KeyFormat { HASH, ARRAY }
 
 	static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
@@ -25,7 +26,7 @@ public class RowMap implements Serializable {
 	private final String database;
 	private final String table;
 	private final Long timestamp;
-	private final BinlogPosition nextPosition;
+	private BinlogPosition nextPosition;
 
 	private Long xid;
 	private boolean txCommit;
@@ -317,5 +318,9 @@ public class RowMap implements Serializable {
 
 	public boolean hasData(String name) {
 		return this.data.containsKey(name);
+	}
+
+	public String getRowType() {
+		return this.rowType;
 	}
 }

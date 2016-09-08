@@ -40,12 +40,14 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public BinlogPosition initPosition;
 	public boolean replayMode;
+	public boolean masterRecovery;
 
 	public MaxwellConfig() { // argv is only null in tests
 		this.kafkaProperties = new Properties();
 		this.replayMode = false;
 		this.replicationMysql = new MaxwellMysqlConfig();
 		this.maxwellMysql = new MaxwellMysqlConfig();
+		this.masterRecovery = false;
 		this.bufferedProducerSize = 200;
 		setup(null, null); // setup defaults
 	}
@@ -103,6 +105,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "max_schemas", "deprecated.").withOptionalArg();
 		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION").withRequiredArg();
 		parser.accepts( "replay", "replay mode, don't store any information to the server");
+		parser.accepts( "master_recovery", "(experimental) enable master position recovery code");
 
 		parser.accepts( "__separator_7" );
 
@@ -265,9 +268,8 @@ public class MaxwellConfig extends AbstractConfig {
 			this.initPosition = new BinlogPosition(pos, initPositionSplit[0]);
 		}
 
-		if ( options != null && options.has("replay")) {
-			this.replayMode = true;
-		}
+		this.replayMode =     fetchBooleanOption("replay", options, null, false);
+		this.masterRecovery = fetchBooleanOption("master_recovery", options, properties, false);
 
 		boolean outputBinlogPosition = fetchBooleanOption("output_binlog_position", options, properties, false);
 		boolean outputCommitInfo = fetchBooleanOption("output_commit_info", options, properties, true);
@@ -283,7 +285,7 @@ public class MaxwellConfig extends AbstractConfig {
 		return p;
 	}
 
-	private void validate() {
+	public void validate() {
 		if ( this.producerType.equals("kafka") ) {
 			if ( !this.kafkaProperties.containsKey("bootstrap.servers") ) {
 				usageForOptions("You must specify kafka.bootstrap.servers for the kafka producer!", "kafka");

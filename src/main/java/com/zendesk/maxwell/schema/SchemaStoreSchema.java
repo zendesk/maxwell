@@ -64,27 +64,6 @@ public class SchemaStoreSchema {
 		executeSQLInputStream(connection, SchemaStoreSchema.class.getResourceAsStream("/sql/maxwell_schema_bootstrap.sql"), schemaDatabaseName);
 	}
 
-	/*
-		for the time being, when we detect other schemas we will simply wipe them down.
-		in the future, this is our moment to pick up where the master left off.
-	*/
-	public static void handleMasterChange(Connection c, Long serverID) throws SQLException {
-		PreparedStatement s = c.prepareStatement(
-				"SELECT id from `schemas` WHERE server_id != ? and deleted = 0"
-		);
-
-		s.setLong(1, serverID);
-		ResultSet rs = s.executeQuery();
-
-		while ( rs.next() ) {
-			Long schemaID = rs.getLong("id");
-			LOGGER.info("maxwell detected schema " + schemaID + " from different server_id.  deleting...");
-			MysqlSavedSchema.delete(c, schemaID);
-		}
-
-		c.createStatement().execute("delete from `positions` where server_id != " + serverID);
-	}
-
 	private static HashMap<String, String> getTableColumns(String table, Connection c) throws SQLException {
 		HashMap<String, String> map = new HashMap<>();
 		ResultSet rs = c.createStatement().executeQuery("show columns from `" + table + "`");

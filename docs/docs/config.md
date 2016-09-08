@@ -12,6 +12,7 @@ option                                        | description | default
 --schema_database                             | database name where maxwell stores schema and state | maxwell
 --client_id                                   | unique (string) identifier for this maxwell instance| maxwell
 --replica_server_id                           | unique (long) identifier for this maxwell instance | 6379 (see notes)
+--master_recovery                             | enable experimental master recovery code | false
 &nbsp;
 --producer PRODUCER                           | what type of producer to use: [stdout, kafka, file, profiler] | stdout
 --output_file                                 | if using the file producer, write JSON rows to this path |

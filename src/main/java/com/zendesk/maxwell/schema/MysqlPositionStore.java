@@ -4,7 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.concurrent.TimeoutException;
+
+import com.zendesk.maxwell.recovery.RecoveryInfo;
 
 import com.zendesk.maxwell.BinlogPosition;
 import com.zendesk.maxwell.errors.DuplicateProcessException;
@@ -45,7 +46,7 @@ public class MysqlPositionStore {
 		try( Connection c = connectionPool.getConnection() ){
 			PreparedStatement s = c.prepareStatement(sql);
 
-			LOGGER.debug("Writing binlog position to " + c.getCatalog() + ".positions: " + newPosition);
+			LOGGER.debug("Writing binlog position to " + c.getCatalog() + ".positions: " + newPosition + ", last_heartbeat: " + heartbeat);
 			s.setLong(1, serverID);
 			s.setString(2, newPosition.getFile());
 			s.setLong(3, newPosition.getOffset());
@@ -57,7 +58,7 @@ public class MysqlPositionStore {
 		}
 	}
 
-	public void heartbeat() throws Exception {
+	public synchronized void heartbeat() throws Exception {
 		try ( Connection c = connectionPool.getConnection() ) {
 			heartbeat(c);
 		}
@@ -99,6 +100,7 @@ public class MysqlPositionStore {
 		s.setLong(2, serverID);
 		s.setString(3, clientID);
 
+		LOGGER.debug("writing heartbeat: " + lastHeartbeat);
 		int nRows = s.executeUpdate();
 		if ( nRows != 1 ) {
 			String msg = String.format(
@@ -124,5 +126,38 @@ public class MysqlPositionStore {
 
 			return new BinlogPosition(rs.getLong("binlog_position"), rs.getString("binlog_file"));
 		}
+	}
+
+	/**
+	 * grabs a position from a different server_id
+	 */
+
+	public RecoveryInfo getRecoveryInfo() throws SQLException {
+		try ( Connection c = connectionPool.getConnection() ) {
+			return getRecoveryInfo(c);
+		}
+	}
+
+	private RecoveryInfo getRecoveryInfo(Connection c) throws SQLException {
+		ResultSet rs = c.createStatement().executeQuery("SELECT * from `positions`");
+		RecoveryInfo info = null;
+
+		while ( rs.next() ) {
+			Long server_id = rs.getLong("server_id");
+			BinlogPosition position = BinlogPosition.at(rs.getLong("binlog_position"), rs.getString("binlog_file"));
+			Long last_heartbeat_read = rs.getLong("last_heartbeat_read");
+
+			if ( rs.wasNull() ) {
+				LOGGER.warn("master recovery is ignorning position with NULL heartbeat");
+			} else if ( info != null ) {
+				LOGGER.error("found multiple binlog positions for cluster.  Not attempting position recovery.");
+				LOGGER.error("found a row for server_id: " + info.serverID);
+				LOGGER.error("also found a row for server_id: " + server_id);
+				return null;
+			} else {
+				info = new RecoveryInfo(position, last_heartbeat_read, server_id);
+			}
+		}
+		return info;
 	}
 }

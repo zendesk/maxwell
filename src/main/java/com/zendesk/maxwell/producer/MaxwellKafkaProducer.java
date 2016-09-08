@@ -113,6 +113,17 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		String key = r.pkToJson(keyFormat);
 		String value = r.toJSON(outputConfig);
 
+		if ( value == null ) { // heartbeat row or other row with suppressed output
+			inflightMessages.addMessage(r.getPosition());
+			BinlogPosition newPosition = inflightMessages.completeMessage(r.getPosition());
+
+			if ( newPosition != null ) {
+				context.setPosition(newPosition);
+			}
+
+			return;
+		}
+
 		ProducerRecord<String, String> record =
 				new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, this.numPartitions), key, value);
 

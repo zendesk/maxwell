@@ -37,7 +37,7 @@
     </dependency>
     <dependency>
     	<groupId>org.hamcrest</groupId>
-    	<artifactId>hamcrest-core</artifactId>
+    	<artifactId>hamcrest-all</artifactId>
     	<version>1.3</version>
     	<scope>test</scope>
     </dependency>
@@ -65,7 +65,7 @@
     <dependency>
     	<groupId>com.zendesk</groupId>
     	<artifactId>open-replicator</artifactId>
-    	<version>1.4.3</version>
+    	<version>1.5.0</version>
     </dependency>
     <dependency>
     	<groupId>net.sf.jopt-simple</groupId>
