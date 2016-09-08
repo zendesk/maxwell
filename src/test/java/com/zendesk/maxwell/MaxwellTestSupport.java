@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zendesk.maxwell.bootstrap.AsynchronousBootstrapper;
 import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
+import com.zendesk.maxwell.producer.BufferedProducer;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
 import com.zendesk.maxwell.schema.MysqlSchemaStore;
@@ -37,7 +38,7 @@ public class MaxwellTestSupport {
 		return setupServer(null);
 	}
 
-	public static void setupSchema(MysqlIsolatedServer server) throws Exception {
+	public static void setupSchema(MysqlIsolatedServer server, boolean resetBinlogs) throws Exception {
 		List<String> queries = new ArrayList<String>(Arrays.asList(
 				"CREATE DATABASE if not exists shard_2",
 				"DROP DATABASE if exists shard_1",
@@ -56,11 +57,15 @@ public class MaxwellTestSupport {
 			}
 		}
 
-		queries.add("RESET MASTER");
+		if ( resetBinlogs )
+			queries.add("RESET MASTER");
 
 		server.executeList(queries);
 	}
 
+	public static void setupSchema(MysqlIsolatedServer server) throws Exception {
+		setupSchema(server, true);
+	}
 
 	public static String getSQLDir() {
 		 final String dir = System.getProperty("user.dir");
@@ -68,7 +73,7 @@ public class MaxwellTestSupport {
 	}
 
 
-	public static MaxwellContext buildContext(int port, BinlogPosition p, MaxwellFilter filter) throws Exception {
+	public static MaxwellContext buildContext(int port, BinlogPosition p, MaxwellFilter filter) throws SQLException {
 		MaxwellConfig config = new MaxwellConfig();
 
 		config.replicationMysql.host = "127.0.0.1";
@@ -139,28 +144,35 @@ public class MaxwellTestSupport {
 		BufferedMaxwell maxwell = new BufferedMaxwell(config);
 
 		new Thread(maxwell).start();
-		mysql.execute("CREATE TABLE if not exists test.boundary ( i int )");
-		mysql.execute("insert into test.boundary set i = 1");
 
-		// wait for it to come through
+		// wait for a heartbeat to come through
 		maxwell.poll(5000);
 
 		callback.afterReplicatorStart(mysql);
 
 		BinlogPosition finalPosition = BinlogPosition.capture(mysql.getConnection());
 
-		// add a final row to ensure we pick up all the data
-		mysql.execute("insert into test.boundary set i = 1");
+		for ( ;; ) {
+			RowMap row = maxwell.poll(1000);
 
-		for ( int nullChecksLeft = 100 ; nullChecksLeft > 0 ; nullChecksLeft-- ) {
-			RowMap row = maxwell.poll(10);
-			if ( row == null )
-				continue;
+			if ( row == null ) {
+				break;
+			}
 
-			if ( row.getPosition().newerThan(finalPosition) )
-				nullChecksLeft = 2; // finish off what's in there, then break.
+			if ( row.getPosition().newerThan(finalPosition) ) {
+				// consume whatever's left over in the buffer.
+				for ( ;; ) {
+					RowMap r = maxwell.poll(100);
+					if ( r == null )
+						break;
 
-			if ( !row.getTable().equals("boundary"))
+					if ( r.toJSON() != null )
+						list.add(r);
+				}
+
+				break;
+			}
+			if ( row.toJSON() != null )
 				list.add(row);
 		}
 

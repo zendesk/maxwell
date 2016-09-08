@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class RowMapBufferTest {
+public class RowMapBufferTest extends TestWithNameLogging {
 	@Test
 	public void TestOverflowToDisk() throws Exception {
 		RowMapBuffer buffer = new RowMapBuffer(2, 250); // allow about 250 bytes of memory to be used

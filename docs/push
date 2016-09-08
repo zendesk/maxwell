@@ -1,4 +1,9 @@
 #!/bin/bash
 
-GITROOT=$(dirname $0)/..
-(cd $GITROOT && git subtree push origin --prefix docs/site gh-pages)
+cd $(dirname $0)
+git worktree add site gh-pages
+mkdocs build --clean && cp CNAME site
+(cd site && git commit -am 'update docs' && git push)
+rm -Rf site
+git worktree prune
+

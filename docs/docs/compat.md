@@ -7,7 +7,6 @@
 ### Unsupported configurations
 ***
 - Mysql 5.7 is untested with Maxwell.  GTID replication is known to not function.
-- Maxwell is incompatible with PARTITION tables, as it is unable to parse the SQL.
 
 ### binlog_row_image=MINIMAL
 ***

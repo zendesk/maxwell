@@ -55,7 +55,7 @@ compile-test: compile target/.java-test
 TEST_CLASSES=$(shell build/get-test-classes)
 
 test: compile-test
-	java -Xmx256m -classpath $(JAVA_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore $(TEST_CLASSES)
+	java -Xmx1024m -classpath $(JAVA_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore $(TEST_CLASSES)
 
 test.%:  compile-test
 	java -classpath $(JAVA_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore $(filter %$(subst test.,,$@),$(TEST_CLASSES))
@@ -81,7 +81,8 @@ package-jar: all
 	mkdir -p ${MAVEN_DIR}
 	sed -e "s/VERSION/${MAXWELL_VERSION}/" build/pom.properties > ${MAVEN_DIR}/pom.properties
 	cp pom.xml ${MAVEN_DIR}
-	jar cvf ${MAXWELL_JARFILE} -C target/classes .
+	echo "Implementation-Version: ${MAXWELL_VERSION}" >target/jar-manifest
+	jar cvmf target/jar-manifest ${MAXWELL_JARFILE} -C target/classes .
 
 TARDIR=target/$(PKGNAME)
 TARFILE=target/$(PKGNAME).tar.gz

@@ -39,6 +39,8 @@ public class MaxwellReplicator extends RunLoopProcess {
 	private final String maxwellSchemaDatabaseName;
 
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellReplicator.class);
+	private final boolean stopOnEOF;
+	private boolean hitEOF = false;
 
 	public MaxwellReplicator(
 		SchemaStore schemaStore,
@@ -49,8 +51,9 @@ public class MaxwellReplicator extends RunLoopProcess {
 		boolean shouldHeartbeat,
 		PositionStoreThread positionStoreThread,
 		String maxwellSchemaDatabaseName,
-		BinlogPosition start
-	) throws Exception {
+		BinlogPosition start,
+		boolean stopOnEOF
+	) {
 		this.schemaStore = schemaStore;
 		this.binlogEventListener = new MaxwellBinlogEventListener(queue);
 
@@ -61,6 +64,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 		this.replicator.setUser(mysqlConfig.user);
 		this.replicator.setPassword(mysqlConfig.password);
 		this.replicator.setPort(mysqlConfig.port);
+		this.replicator.setStopOnEOF(stopOnEOF);
 
 		this.replicator.setLevel2BufferSize(50 * 1024 * 1024);
 		this.replicator.setServerId(replicaServerID.intValue());
@@ -71,13 +75,14 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 		this.producer = producer;
 		this.bootstrapper = bootstrapper;
+		this.stopOnEOF = stopOnEOF;
 
 		this.positionStoreThread = positionStoreThread;
 		this.maxwellSchemaDatabaseName = maxwellSchemaDatabaseName;
 		this.setBinlogPosition(start);
 	}
 
-	public MaxwellReplicator(SchemaStore schemaStore, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, BinlogPosition start) throws Exception {
+	public MaxwellReplicator(SchemaStore schemaStore, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, BinlogPosition start) throws SQLException {
 		this(
 			schemaStore,
 			producer,
@@ -87,7 +92,8 @@ public class MaxwellReplicator extends RunLoopProcess {
 			ctx.shouldHeartbeat(),
 			ctx.getPositionStoreThread(),
 			ctx.getConfig().databaseName,
-			start
+			start,
+			false
 		);
 	}
 
@@ -101,7 +107,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 	}
 
 	private void ensureReplicatorThread() throws Exception {
-		if ( !replicator.isRunning() ) {
+		if ( !replicator.isRunning() && !replicator.isStopOnEOF() ) {
 			LOGGER.warn("open-replicator stopped at position " + replicator.getBinlogFileName() + ":" + replicator.getBinlogPosition() + " -- restarting");
 			replicator.start();
 		}
@@ -139,27 +145,21 @@ public class MaxwellReplicator extends RunLoopProcess {
 	public void work() throws Exception {
 		RowMap row = getRow();
 
-		// todo: this is inelegant.  Ideally the outer code would just
-		// call this and tell us to stop if the positionThread is dead.
+		// todo: this is inelegant.  Ideally the outer code would monitor the
+		// position thread and stop us if it was dead.
+
 		if ( positionStoreThread.getException() != null )
 			throw positionStoreThread.getException();
 
-		if (row == null)
+		if ( row == null )
 			return;
 
-		if ( isMaxwellRow(row) && row.getTable().equals("positions") ) {
-			Object heartbeat_at = row.getData("heartbeat_at");
-			if ( heartbeat_at != null ) {
-				lastHeartbeatRead = (Long) heartbeat_at;
-			}
-		}
-
-		if ( !bootstrapper.shouldSkip(row) && !isMaxwellRow(row) ) {
+		if ( row instanceof HeartbeatRowMap )
 			producer.push(row);
-		} else {
+		else if (!bootstrapper.shouldSkip(row) && !isMaxwellRow(row))
+			producer.push(row);
+		else
 			bootstrapper.work(row, producer, this);
-		}
-
 	}
 
 	@Override
@@ -184,7 +184,6 @@ public class MaxwellReplicator extends RunLoopProcess {
 		long tableId = e.getTableId();
 
 		if ( tableCache.isTableBlacklisted(tableId) ) {
-			LOGGER.debug(String.format("ignoring row event for blacklisted table %s", tableCache.getBlacklistedTableName(tableId)));
 			return null;
 		}
 
@@ -310,21 +309,55 @@ public class MaxwellReplicator extends RunLoopProcess {
 		}
 	}
 
+	public Long getLastHeartbeatRead() {
+		return lastHeartbeatRead;
+	}
+
+	private RowMap processHeartbeats(RowMap row) throws SQLException {
+		Object heartbeat_at = row.getData("heartbeat_at");
+		Object old_heartbeat_at = row.getOldData("heartbeat_at"); // make sure it's a heartbeat update, not a position set.
+
+		if ( heartbeat_at != null && old_heartbeat_at != null ) {
+			Long thisHeartbeat = (Long) heartbeat_at;
+			if ( !thisHeartbeat.equals(lastHeartbeatRead) ) {
+				this.lastHeartbeatRead = thisHeartbeat;
+
+				return HeartbeatRowMap.valueOf(row.getDatabase(), row.getPosition(), thisHeartbeat);
+			}
+		}
+		return row;
+	}
+
 	private RowMapBuffer rowBuffer;
 
 	public RowMap getRow() throws Exception {
 		BinlogEventV4 v4Event;
 
+		if ( stopOnEOF && hitEOF )
+			return null;
+
 		while (true) {
 			if (rowBuffer != null && !rowBuffer.isEmpty()) {
-				return rowBuffer.removeFirst();
+				RowMap row = rowBuffer.removeFirst();
+
+				if ( row != null && isMaxwellRow(row) && row.getTable().equals("positions") )
+					return processHeartbeats(row);
+				else
+					return row;
 			}
 
 			v4Event = pollV4EventFromQueue();
 
 			if (v4Event == null) {
-				ensureReplicatorThread();
-				return null;
+				if ( stopOnEOF ) {
+					if ( replicator.isRunning() )
+						continue;
+					else
+						return null;
+				} else {
+					ensureReplicatorThread();
+					return null;
+				}
 			}
 
 			switch (v4Event.getHeader().getEventType()) {
@@ -352,6 +385,14 @@ public class MaxwellReplicator extends RunLoopProcess {
 						setReplicatorPosition((AbstractBinlogEventV4) v4Event);
 					}
 					break;
+				case MySQLConstants.ROTATE_EVENT:
+					if ( stopOnEOF ) {
+						this.replicator.stopQuietly(100, TimeUnit.MILLISECONDS);
+						setReplicatorPosition((AbstractBinlogEventV4) v4Event);
+						this.hitEOF = true;
+						return null;
+					}
+					break;
 				default:
 					setReplicatorPosition((AbstractBinlogEventV4) v4Event);
 					break;
@@ -373,7 +414,9 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 		schemaStore.processSQL(sql, dbName, position);
 		tableCache.clear();
-		this.producer.writePosition(position);
+
+		if ( this.producer != null )
+			this.producer.writePosition(position);
 	}
 
 	public Schema getSchema() throws SchemaStoreException {

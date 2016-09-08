@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.TimeoutException;
 import com.djdch.log4j.StaticShutdownCallbackRegistry;
+import com.zendesk.maxwell.recovery.Recovery;
+import com.zendesk.maxwell.recovery.RecoveryInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +18,7 @@ public class Maxwell implements Runnable {
 	protected MaxwellConfig config;
 	protected MaxwellContext context;
 	protected MaxwellReplicator replicator;
+
 	static final Logger LOGGER = LoggerFactory.getLogger(Maxwell.class);
 
 	public Maxwell(MaxwellConfig config) throws SQLException {
@@ -40,11 +43,10 @@ public class Maxwell implements Runnable {
 
 			if ( this.replicator != null)
 				replicator.stopLoop();
-			} catch (TimeoutException e) {
-				System.err.println("Timed out trying to shutdown maxwell parser thread.");
-			} catch (InterruptedException e) {
-			} catch (Exception e) {
-		}
+		} catch (TimeoutException e) {
+			System.err.println("Timed out trying to shutdown maxwell replication thread.");
+		} catch (InterruptedException e) {
+		} catch (Exception e) { }
 
 		if ( this.context != null )
 			context.terminate();
@@ -53,6 +55,70 @@ public class Maxwell implements Runnable {
 		context = null;
 	}
 
+	private BinlogPosition attemptMasterRecovery() throws Exception {
+		BinlogPosition recovered = null;
+		RecoveryInfo recoveryInfo = this.context.getRecoveryInfo();
+
+		if ( recoveryInfo != null ) {
+			Recovery masterRecovery = new Recovery(
+				config.replicationMysql,
+				config.databaseName,
+				this.context.getReplicationConnectionPool(),
+				this.context.getCaseSensitivity(),
+				recoveryInfo
+			);
+
+			recovered = masterRecovery.recover();
+
+			if (recovered != null) {
+				// load up the schema from the recovery position and chain it into the
+				// new server_id
+				MysqlSchemaStore oldServerSchemaStore = new MysqlSchemaStore(
+					context.getMaxwellConnectionPool(),
+					context.getReplicationConnectionPool(),
+					recoveryInfo.serverID,
+					recoveryInfo.position,
+					context.getCaseSensitivity(),
+					config.filter,
+					false
+				);
+
+				oldServerSchemaStore.clone(context.getServerID(), recovered);
+			}
+		}
+		return recovered;
+	}
+
+	protected BinlogPosition getInitialPosition() throws Exception {
+		/* first method:  do we have a stored position for this server? */
+		BinlogPosition initial = this.context.getInitialPosition();
+
+		/* second method: are we recovering from a master swap? */
+		if ( initial == null && config.masterRecovery )
+			initial = attemptMasterRecovery();
+
+		/* third method: capture the current master postiion. */
+		if ( initial == null ) {
+			try ( Connection c = context.getReplicationConnection() ) {
+				initial = BinlogPosition.capture(c);
+			}
+		}
+		return initial;
+	}
+
+	public String getMaxwellVersion() {
+		String packageVersion = getClass().getPackage().getImplementationVersion();
+		if ( packageVersion == null )
+			return "??";
+		else
+			return packageVersion;
+	}
+
+	static String bootString = "Maxwell v%s is booting (%s), starting at %s";
+	private void logBanner(AbstractProducer producer, BinlogPosition initialPosition) {
+		String producerName = producer.getClass().getSimpleName();
+		LOGGER.info(String.format(bootString, getMaxwellVersion(), producerName, initialPosition.toString()));
+	}
 
 	private void start() throws Exception {
 		try ( Connection connection = this.context.getReplicationConnection();
@@ -64,11 +130,8 @@ public class Maxwell implements Runnable {
 
 			try ( Connection schemaConnection = this.context.getMaxwellConnection() ) {
 				SchemaStoreSchema.upgradeSchemaStoreSchema(schemaConnection);
-				SchemaStoreSchema.handleMasterChange(schemaConnection, context.getServerID());
 			}
 
-			String producerClass = this.context.getProducer().getClass().getSimpleName();
-			LOGGER.info("Maxwell is booting (" + producerClass + "), starting at " + this.context.getInitialPosition());
 		} catch ( SQLException e ) {
 			LOGGER.error("SQLException: " + e.getLocalizedMessage());
 			LOGGER.error(e.getLocalizedMessage());
@@ -78,8 +141,12 @@ public class Maxwell implements Runnable {
 		AbstractProducer producer = this.context.getProducer();
 		AbstractBootstrapper bootstrapper = this.context.getBootstrapper();
 
-		MysqlSchemaStore mysqlSchemaStore = new MysqlSchemaStore(this.context, this.context.getInitialPosition());
-		this.replicator = new MaxwellReplicator(mysqlSchemaStore, producer, bootstrapper, this.context, this.context.getInitialPosition());
+		BinlogPosition initPosition = getInitialPosition();
+		logBanner(producer, initPosition);
+		this.context.setPosition(initPosition);
+
+		MysqlSchemaStore mysqlSchemaStore = new MysqlSchemaStore(this.context, initPosition);
+		this.replicator = new MaxwellReplicator(mysqlSchemaStore, producer, bootstrapper, this.context, initPosition);
 
 		bootstrapper.resume(producer, replicator);
 
