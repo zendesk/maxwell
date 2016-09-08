@@ -27,7 +27,6 @@ public class RowMap implements Serializable {
 	private final String table;
 	private final Long timestamp;
 	private BinlogPosition nextPosition;
-	private boolean isHeartbeat;
 
 	private Long xid;
 	private boolean txCommit;
@@ -76,7 +75,6 @@ public class RowMap implements Serializable {
 		this.nextPosition = nextPosition;
 		this.pkColumns = pkColumns;
 		this.approximateSize = 100L; // more or less 100 bytes of overhead
-		this.isHeartbeat = false;
 	}
 
 	public RowMap(String type, String database, String table, Long timestamp, List<String> pkColumns,
