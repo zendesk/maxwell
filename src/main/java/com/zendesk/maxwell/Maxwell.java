@@ -115,6 +115,10 @@ public class Maxwell implements Runnable {
 	}
 
 	static String bootString = "Maxwell v%s is booting (%s), starting at %s";
+	private void logBanner(AbstractProducer producer, BinlogPosition initialPosition) {
+		String producerName = producer.getClass().getSimpleName();
+		LOGGER.info(String.format(bootString, getMaxwellVersion(), producerName, initialPosition.toString()));
+	}
 
 	private void start() throws Exception {
 		try ( Connection connection = this.context.getReplicationConnection();
@@ -128,8 +132,6 @@ public class Maxwell implements Runnable {
 				SchemaStoreSchema.upgradeSchemaStoreSchema(schemaConnection);
 			}
 
-			String producerClass = this.context.getProducer().getClass().getSimpleName();
-			LOGGER.info(String.format(bootString, getMaxwellVersion(), producerClass, this.context.getInitialPosition().toString()));
 		} catch ( SQLException e ) {
 			LOGGER.error("SQLException: " + e.getLocalizedMessage());
 			LOGGER.error(e.getLocalizedMessage());
@@ -140,6 +142,9 @@ public class Maxwell implements Runnable {
 		AbstractBootstrapper bootstrapper = this.context.getBootstrapper();
 
 		BinlogPosition initPosition = getInitialPosition();
+		logBanner(producer, initPosition);
+		this.context.setPosition(initPosition);
+
 		MysqlSchemaStore mysqlSchemaStore = new MysqlSchemaStore(this.context, initPosition);
 		this.replicator = new MaxwellReplicator(mysqlSchemaStore, producer, bootstrapper, this.context, initPosition);
 

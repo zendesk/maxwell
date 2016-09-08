@@ -22,4 +22,9 @@ public class HeartbeatRowMap extends RowMap {
 	public String toJSON(MaxwellOutputConfig outputConfig) throws IOException {
 		return null;
 	}
+
+	@Override
+	public String toJSON() throws IOException {
+		return null;
+	}
 }

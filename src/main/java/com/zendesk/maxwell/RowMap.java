@@ -322,15 +322,6 @@ public class RowMap implements Serializable {
 		return this.data.containsKey(name);
 	}
 
-	public void markAsHeartbeat(long lastHeartBeatRead) {
-		this.isHeartbeat = true;
-		this.nextPosition = new BinlogPosition(this.nextPosition.getOffset(), this.nextPosition.getFile(), lastHeartBeatRead);
-	}
-
-	public boolean isHeartbeat() {
-		return this.isHeartbeat;
-	}
-
 	public String getRowType() {
 		return this.rowType;
 	}

@@ -414,7 +414,9 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 		schemaStore.processSQL(sql, dbName, position);
 		tableCache.clear();
-		this.producer.writePosition(position);
+
+		if ( this.producer != null )
+			this.producer.writePosition(position);
 	}
 
 	public Schema getSchema() throws SchemaStoreException {

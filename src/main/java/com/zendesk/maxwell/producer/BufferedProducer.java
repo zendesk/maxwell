@@ -4,6 +4,7 @@ import com.zendesk.maxwell.BinlogPosition;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.RowMap;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -19,7 +20,9 @@ public class BufferedProducer extends AbstractProducer {
 
 	@Override
 	public void push(RowMap r) throws Exception {
-		this.queue.put(r);
+		try {
+			this.queue.put(r);
+		} catch ( InterruptedException e ) {}
 	}
 
 	@Override

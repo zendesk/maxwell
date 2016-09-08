@@ -111,7 +111,7 @@ public class RecoveryTest extends TestWithNameLogging {
 			if ( r == null )
 				break;
 			else {
-				if ( !r.getRowType().equals("heartbeat") )
+				if ( r.toJSON() != null )
 					rows.add(r);
 
 				pollMS = 500; // once we get a row, we timeout quickly.
