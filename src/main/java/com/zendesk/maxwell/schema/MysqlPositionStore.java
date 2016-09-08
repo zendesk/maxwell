@@ -144,10 +144,12 @@ public class MysqlPositionStore {
 
 		while ( rs.next() ) {
 			Long server_id = rs.getLong("server_id");
-			Long last_heartbeat_read = rs.getLong("last_heartbeat_read");
 			BinlogPosition position = BinlogPosition.at(rs.getLong("binlog_position"), rs.getString("binlog_file"));
+			Long last_heartbeat_read = rs.getLong("last_heartbeat_read");
 
-			if ( info != null ) {
+			if ( rs.wasNull() ) {
+				LOGGER.warn("master recovery is ignorning position with NULL heartbeat");
+			} else if ( info != null ) {
 				LOGGER.error("found multiple binlog positions for cluster.  Not attempting position recovery.");
 				LOGGER.error("found a row for server_id: " + info.serverID);
 				LOGGER.error("also found a row for server_id: " + server_id);

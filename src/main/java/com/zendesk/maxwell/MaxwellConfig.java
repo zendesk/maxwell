@@ -105,6 +105,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "max_schemas", "deprecated.").withOptionalArg();
 		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION").withRequiredArg();
 		parser.accepts( "replay", "replay mode, don't store any information to the server");
+		parser.accepts( "master_recovery", "(experimental) enable master position recovery code");
 
 		parser.accepts( "__separator_7" );
 
