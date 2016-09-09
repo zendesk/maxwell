@@ -1,12 +1,16 @@
 language: java
-env:
-  - MYSQL_VERSION=5.5
-  - MYSQL_VERSION=5.6
+branches:
+  only: master
 before_install:
   - sudo apt-get -qq update
   - sudo apt-get install pastebinit
 install: true
-script:
-  - make test
+script: make test
 after_script:
   - pastebinit -i test.log
+env:
+  matrix:
+    - MYSQL_VERSION=5.5
+    - MYSQL_VERSION=5.6
+    - KAFKA_VERSION=0.8.2.2
+      MYSQL_VERSION=5.6

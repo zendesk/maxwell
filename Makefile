@@ -2,6 +2,14 @@ all: compile
 
 MAXWELL_VERSION ?=$(shell build/current_rev)
 
+# If KAFKA_VERSION is provided, replace pom version with it
+# (e.g. KAFKA_VERSION=0.8.2.2 make test)
+LOCK_KAFKA_VERSION = $(shell [ -n "$(KAFKA_VERSION)" ] && echo "--lock-version org.apache.kafka/kafka-clients=$(KAFKA_VERSION)")
+
+# Which additional version of kafka-clients will be fetched; should match the
+# one declared in bin/maxwell bin/maxwell-bootstrap
+ADDITIONAL_PACKAGED_KAFKA=0.8.2.2
+
 JAVAC=javac
 JAVAC_FLAGS += -d target/classes
 JAVAC_FLAGS += -sourcepath src/main/java:src/test/java:target/generated-sources/src/main/antlr4
@@ -26,10 +34,12 @@ $(ANTLR_OUTPUT): $(ANTLR_SRC) $(ANTLR_IMPORTS)/*.g4
 compile-antlr: $(ANTLR_OUTPUT)
 
 JAVA_SOURCE = $(shell find src/main/java -name '*.java')
-JAVA_DEPENDS = $(shell  build/maven_fetcher -p -o target/dependency)
+JAVA_DEPENDS = $(shell build/maven_fetcher -p -o target/dependency $(LOCK_KAFKA_VERSION))
 
 target/.java: $(ANTLR_OUTPUT) $(JAVA_SOURCE)
 	@mkdir -p target/classes
+	# Fetch jar so we can run it locally (bin/maxwell)
+	build/maven_fetcher -f org.apache.kafka/kafka-clients/$(ADDITIONAL_PACKAGED_KAFKA) --skip-dependencies -o target/dependency >/dev/null
 	$(JAVAC) -classpath $(JAVA_DEPENDS) $(JAVAC_FLAGS) $?
 	@touch target/.java
 
@@ -41,7 +51,7 @@ compile: compile-antlr compile-java copy-resources
 
 
 
-JAVA_TEST_DEPENDS = $(shell build/maven_fetcher -p -o target/dependency-test -s test)
+JAVA_TEST_DEPENDS = $(shell build/maven_fetcher -p -o target/dependency-test -s test $(LOCK_KAFKA_VERSION))
 JAVA_TEST_SOURCE=$(shell find src/test/java -name '*.java')
 target/.java-test: $(JAVA_TEST_SOURCE)
 	@mkdir -p target/test-classes
@@ -90,6 +100,8 @@ TARFILE=target/$(PKGNAME).tar.gz
 package-tar:
 	rm -Rf target/dependency-build
 	build/maven_fetcher -p -o target/dependency-build >/dev/null
+ 	# Include kafka 0.8 jar
+	build/maven_fetcher -f org.apache.kafka/kafka-clients/$(ADDITIONAL_PACKAGED_KAFKA) --skip-dependencies -o target/dependency-build >/dev/null
 	rm -Rf $(TARDIR) $(TARFILE)
 	mkdir $(TARDIR)
 	cp $(DISTFILES) $(TARDIR)
@@ -99,5 +111,4 @@ package-tar:
 	tar czvf $(TARFILE) -C target $(PKGNAME)
 
 package: depclean package-jar package-tar
-
 

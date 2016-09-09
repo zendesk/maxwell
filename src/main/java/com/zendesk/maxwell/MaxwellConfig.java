@@ -87,6 +87,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning").withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
 		parser.accepts( "kafka_key_format", "how to format the kafka key; array|hash").withOptionalArg();
+		parser.accepts( "kafka0.8", "switch to kafka 0.8 producer (from 0.9)");
 
 		parser.accepts( "__separator_4" );
 

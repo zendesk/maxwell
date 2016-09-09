@@ -1,26 +1,21 @@
 package com.zendesk.maxwell.producer;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.Iterator;
-import java.util.Properties;
-
 import com.zendesk.maxwell.BinlogPosition;
-import com.zendesk.maxwell.MaxwellAbstractRowsEvent;
 import com.zendesk.maxwell.MaxwellContext;
-
 import com.zendesk.maxwell.RowMap;
 import com.zendesk.maxwell.RowMap.KeyFormat;
-import com.zendesk.maxwell.producer.partitioners.*;
+import com.zendesk.maxwell.producer.partitioners.MaxwellKafkaPartitioner;
+import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.errors.RecordTooLargeException;
-import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.sql.SQLException;
+import java.util.Properties;
 
 class KafkaCallback implements Callback {
 	public static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);

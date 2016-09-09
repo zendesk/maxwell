@@ -223,18 +223,29 @@ module MavenFetcher
     end
 
     # http://repo.maven.apache.org/maven2/mysql/mysql-connector-java/5.1.6/mysql-connector-java-5.1.6.pom
-    def fetch_artifact(artifact, scope, path)
+    def fetch_artifact(artifact, scope, path, fetch_dependencies = true)
       pom = get_pom(artifact)
-      deps = resolve(pom.dependencies, scope)
+      deps = fetch_dependencies ? resolve(pom.dependencies, scope) : []
       deps << artifact
       puts download(deps, path).join(':')
     end
 
-    def fetch_pom_deps(pomfile, scope, path)
+    # lock_version has the format ARTIFACT=version
+    def fetch_pom_deps(pomfile, scope, path, lock_version = nil)
       pom_data = pomfile.read
       pom = Pom.parse(pom_data, self)
+      dependencies = pom.dependencies
 
-      deps = resolve(pom.dependencies, scope)
+      # Replace dependency version with `artifact` version, if a match is found
+      if lock_version
+        key, version = lock_version.split('=')
+        if index = dependencies.find_index { |a| a.key == key }
+          # Can't just replace artifact, need to keep original scope
+          dependencies[index].version = version
+        end
+      end
+
+      deps = resolve(dependencies, scope)
       puts download(deps, path).join(':')
     end
 
@@ -295,7 +306,9 @@ parser = OptionParser.new do |opts|
 
   opts.on("-r", "--repo REPO", "maven repository base url, default is '#{DEFAULT_REPO}'") { |repo| options[:repo] = repo }
   opts.on("-f", "--fetch ARTIFACT", "fetch a given artifact, named as 'GROUP/ARTIFACT/VERSION'") { |artifact| options[:fetch] = artifact }
+  opts.on("--skip-dependencies", "do not fetch artifact dependencies (only applies if -f is present)") { options[:skip_depedencies] = true }
   opts.on("-p", "--pom [POM]", "fetch all dependencies for pom.xml") { |pom| options[:pom] = pom }
+  opts.on("--lock-version ARTIFACT=version", "when fetching from pom.xml, replace artifact (named as 'GROUP/ARTIFACT') with provided version") { |input| options[:lock_version] = input }
   opts.on("-o", "--output-directory DIRECTORY", "required.  Directory to store jar files in") { |dir| options[:output_dir] = dir }
   opts.on("-s", "--scope SCOPE", "fetch pacakges with this scope.  [compile, runtime, test] Default: compile") { |scope| options[:scope] = scope }
   opts.on("-v", "--verbose", "turn on verbose output") { $verbose = true }
@@ -315,19 +328,16 @@ end
 if options[:fetch]
   artifact = MavenFetcher::Artifact.new(*options[:fetch].split('/'))
 
-  repo.fetch_artifact(artifact, scope, options[:output_dir])
+  repo.fetch_artifact(artifact, scope, options[:output_dir], fetch_dependencies = !options[:skip_depedencies])
 elsif options.key?(:pom)
   pom = options[:pom] || 'pom.xml'
   if !File.exist?(pom)
     $stderr.puts("could not open file: #{pom}")
   else
-    repo.fetch_pom_deps(File.open(pom), scope, options[:output_dir])
+    repo.fetch_pom_deps(File.open(pom), scope, options[:output_dir], options[:lock_version])
   end
 else
   puts "Please specify either --fetch or --pom"
   puts parser
   exit 1
 end
-
-
-

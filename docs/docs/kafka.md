@@ -47,6 +47,25 @@ bin/kafka-topics.sh --zookeeper ZK_HOST:2181 --create \
 [http://kafka.apache.org/documentation.html#quickstart](http://kafka.apache.org/documentation.html#quickstart)
 
 
+### Kafka 0.9
+***
+By default, maxwell runs with kafka clients 0.9.0.1, which isn't compatible with brokers running kafka 0.8. The exception below will show in logs when that is the case:
+
+```
+14:53:06,033 ERROR Sender - Uncaught error in kafka producer I/O thread: 
+org.apache.kafka.common.protocol.types.SchemaException: Error reading field 'throttle_time_ms': java.nio.BufferUnderflowException
+    at org.apache.kafka.common.protocol.types.Schema.read(Schema.java:71) ~[kafka-clients-0.9.0.1.jar:?]
+    at org.apache.kafka.clients.NetworkClient.handleCompletedReceives(NetworkClient.java:439) ~[kafka-clients-0.9.0.1.jar:?]
+    at org.apache.kafka.clients.NetworkClient.poll(NetworkClient.java:265) ~[kafka-clients-0.9.0.1.jar:?]
+    at org.apache.kafka.clients.producer.internals.Sender.run(Sender.java:216) ~[kafka-clients-0.9.0.1.jar:?]
+    at org.apache.kafka.clients.producer.internals.Sender.run(Sender.java:128) [kafka-clients-0.9.0.1.jar:?]
+    at java.lang.Thread.run(Thread.java:745) [?:1.7.0_79]
+```
+
+There is a flag (--kafka0.8) that switches maxwell to run with kafka clients 0.8.2.2.
+
+Note both kafka clients (0.8 and 0.9) are compatible with brokers running kafka 0.8.
+
 <script>
   jQuery(document).ready(function () {
     jQuery("table").addClass("table table-condensed table-bordered table-hover");
