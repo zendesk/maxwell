@@ -49,7 +49,7 @@ bin/kafka-topics.sh --zookeeper ZK_HOST:2181 --create \
 
 ### Kafka 0.9
 ***
-By default, maxwell runs with kafka clients 0.9.0.1, which isn't compatible withbrokers running kafka 0.8. The exception below will show in logs when that is the case:
+By default, maxwell runs with kafka clients 0.9.0.1, which isn't compatible with brokers running kafka 0.8. The exception below will show in logs when that is the case:
 
 ```
 14:53:06,033 ERROR Sender - Uncaught error in kafka producer I/O thread: 
