@@ -20,7 +20,7 @@ import org.junit.Test;
 
 import com.google.code.or.common.util.MySQLConstants;
 
-public class ColumnDefTest {
+public class ColumnDefTest extends TestWithNameLogging {
 	private ColumnDef build(String type, boolean signed) {
 		return ColumnDef.build("bar", "", type, 1, signed, null);
 	}

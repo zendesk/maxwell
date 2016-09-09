@@ -1,7 +1,7 @@
 package com.zendesk.maxwell;
 
 import com.fasterxml.jackson.core.*;
-import com.google.code.or.common.glossary.Column;
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 
 
 public class RowMap implements Serializable {
+
 	public enum KeyFormat { HASH, ARRAY }
 
 	static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
@@ -25,7 +26,7 @@ public class RowMap implements Serializable {
 	private final String database;
 	private final String table;
 	private final Long timestamp;
-	private final BinlogPosition nextPosition;
+	private BinlogPosition nextPosition;
 
 	private Long xid;
 	private boolean txCommit;
@@ -181,6 +182,14 @@ public class RowMap implements Serializable {
 	}
 
 	public String toJSON() throws IOException {
+		return toJSON(false, false);
+	}
+
+	public String toJSON(MaxwellOutputConfig outputConfig) throws IOException {
+		return toJSON(outputConfig.includesBinlogPosition, outputConfig.includesCommitInfo);
+	}
+
+	public String toJSON(boolean includesBinlogPosition, boolean includesCommitInfo) throws IOException {
 		JsonGenerator g = jsonGeneratorThreadLocal.get();
 
 		g.writeStartObject(); // start of row {
@@ -190,12 +199,16 @@ public class RowMap implements Serializable {
 		g.writeStringField("type", this.rowType);
 		g.writeNumberField("ts", this.timestamp);
 
-		/* TODO: allow xid and commit to be configurable in the output */
-		if ( this.xid != null )
-			g.writeNumberField("xid", this.xid);
+		if ( includesCommitInfo ) {
+			if ( this.xid != null )
+				g.writeNumberField("xid", this.xid);
 
-		if ( this.txCommit )
-			g.writeBooleanField("commit", true);
+			if ( this.txCommit )
+				g.writeBooleanField("commit", true);
+		}
+
+		if ( includesBinlogPosition )
+			g.writeStringField("position", this.nextPosition.getFile() + ":" + this.nextPosition.getOffset());
 
 		if ( this.excludeColumns != null ) {
 			// NOTE: to avoid concurrent modification.
@@ -305,5 +318,9 @@ public class RowMap implements Serializable {
 
 	public boolean hasData(String name) {
 		return this.data.containsKey(name);
+	}
+
+	public String getRowType() {
+		return this.rowType;
 	}
 }

@@ -12,6 +12,7 @@ option                                        | description | default
 --schema_database                             | database name where maxwell stores schema and state | maxwell
 --client_id                                   | unique (string) identifier for this maxwell instance| maxwell
 --replica_server_id                           | unique (long) identifier for this maxwell instance | 6379 (see notes)
+--master_recovery                             | enable experimental master recovery code | false
 &nbsp;
 --producer PRODUCER                           | what type of producer to use: [stdout, kafka, file, profiler] | stdout
 --output_file                                 | if using the file producer, write JSON rows to this path |
@@ -19,6 +20,9 @@ option                                        | description | default
 --kafka_partition_hash                        | which hash function to use: [default, murmur3] | default
 --kafka_partition_by                          | what fields to hash for partition key: [database, table, primary_key] | database
 --kafka_topic                                 | kafka topic to write to. | maxwell
+&nbsp;
+--output_binlog_position                      | produced records include binlog position: [true&#124;false] | false
+--output_commit_info                          | produced records include commit and xid: [true&#124;false] | true
 &nbsp;
 --replication_host                            | mysql host to replicate from.  Only specify if different from `host` (see notes) | schema-store host
 --replication_password                        | password on replication server | (none)

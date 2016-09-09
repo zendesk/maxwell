@@ -42,8 +42,7 @@ public class MaxwellTestJSON {
 
 	private static void runJSONTest(MysqlIsolatedServer server, List<String> sql, List<Map<String, Object>> expectedJSON) throws Exception {
 		List<Map<String, Object>> eventJSON = new ArrayList<>();
-		List<Map<String, Object>> matched = new ArrayList<>();
-		List<RowMap> rows = MaxwellTestSupport.getRowsForSQL(server, null, sql.toArray(new String[sql.size()]));
+		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(server, null, sql.toArray(new String[sql.size()]), null);
 
 		for ( RowMap r : rows ) {
 			String s = r.toJSON();

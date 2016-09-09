@@ -2,6 +2,7 @@ package com.zendesk.maxwell;
 
 import java.util.*;
 
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import joptsimple.*;
 
 import org.slf4j.Logger;
@@ -28,8 +29,10 @@ public class MaxwellConfig extends AbstractConfig {
 	public String kafkaPartitionHash;
 	public String kafkaPartitionKey;
 	public String bootstrapperType;
+	public int bufferedProducerSize;
 
 	public String outputFile;
+	public MaxwellOutputConfig outputConfig;
 	public String log_level;
 
 	public String clientID;
@@ -37,12 +40,15 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public BinlogPosition initPosition;
 	public boolean replayMode;
+	public boolean masterRecovery;
 
 	public MaxwellConfig() { // argv is only null in tests
 		this.kafkaProperties = new Properties();
 		this.replayMode = false;
 		this.replicationMysql = new MaxwellMysqlConfig();
 		this.maxwellMysql = new MaxwellMysqlConfig();
+		this.masterRecovery = false;
+		this.bufferedProducerSize = 200;
 		setup(null, null); // setup defaults
 	}
 
@@ -85,9 +91,14 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_4" );
 
-		parser.accepts( "bootstrapper", "bootstrapper type: async|sync|none. default: async" ).withRequiredArg();
+		parser.accepts( "output_binlog_position", "produced records include binlog position; [true|false]. default: false" ).withOptionalArg();
+		parser.accepts( "output_commit_info", "produced records include commit and xid; [true|false]. default: true" ).withOptionalArg();
 
 		parser.accepts( "__separator_5" );
+
+		parser.accepts( "bootstrapper", "bootstrapper type: async|sync|none. default: async" ).withRequiredArg();
+
+		parser.accepts( "__separator_6" );
 
 		parser.accepts( "replica_server_id", "server_id that maxwell reports to the master.  See docs for full explanation.").withRequiredArg();
 		parser.accepts( "client_id", "unique identifier for this maxwell replicator").withRequiredArg();
@@ -95,8 +106,9 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "max_schemas", "deprecated.").withOptionalArg();
 		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION").withRequiredArg();
 		parser.accepts( "replay", "replay mode, don't store any information to the server");
+		parser.accepts( "master_recovery", "(experimental) enable master position recovery code");
 
-		parser.accepts( "__separator_6" );
+		parser.accepts( "__separator_7" );
 
 		parser.accepts( "include_dbs", "include these databases, formatted as include_dbs=db1,db2").withOptionalArg();
 		parser.accepts( "exclude_dbs", "exclude these databases, formatted as exclude_dbs=db1,db2").withOptionalArg();
@@ -106,7 +118,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "blacklist_dbs", "ignore data AND schema changes to these databases, formatted as blacklist_dbs=db1,db2. See the docs for details before setting this!").withOptionalArg();
 		parser.accepts( "blacklist_tables", "ignore data AND schema changes to these tables, formatted as blacklist_tables=tb1,tb2. See the docs for details before setting this!").withOptionalArg();
 
-		parser.accepts( "__separator_7" );
+		parser.accepts( "__separator_8" );
 
 		parser.accepts( "help", "display help").forHelp();
 
@@ -135,7 +147,20 @@ public class MaxwellConfig extends AbstractConfig {
 		if ( options != null && options.has(name) )
 			return (String) options.valueOf(name);
 		else if ( (properties != null) && properties.containsKey(name) )
-			return (String) properties.getProperty(name);
+			return properties.getProperty(name);
+		else
+			return defaultVal;
+	}
+
+
+	private boolean fetchBooleanOption(String name, OptionSet options, Properties properties, boolean defaultVal) {
+		if ( options != null && options.has(name) ) {
+			if ( !options.hasArgument(name) )
+				return true;
+			else
+				return Boolean.valueOf((String) options.valueOf(name));
+		} else if ( (properties != null) && properties.containsKey(name) )
+			return Boolean.valueOf(properties.getProperty(name));
 		else
 			return defaultVal;
 	}
@@ -189,6 +214,8 @@ public class MaxwellConfig extends AbstractConfig {
 		this.replicationMysql   = parseMysqlConfig("replication_", options, properties);
 
 		this.databaseName       = fetchOption("schema_database", options, properties, "maxwell");
+		this.maxwellMysql.database = this.databaseName;
+
 		this.producerType       = fetchOption("producer", options, properties, "stdout");
 		this.bootstrapperType   = fetchOption("bootstrapper", options, properties, "async");
 		this.clientID           = fetchOption("client_id", options, properties, "maxwell");
@@ -242,9 +269,12 @@ public class MaxwellConfig extends AbstractConfig {
 			this.initPosition = new BinlogPosition(pos, initPositionSplit[0]);
 		}
 
-		if ( options != null && options.has("replay")) {
-			this.replayMode = true;
-		}
+		this.replayMode =     fetchBooleanOption("replay", options, null, false);
+		this.masterRecovery = fetchBooleanOption("master_recovery", options, properties, false);
+
+		boolean outputBinlogPosition = fetchBooleanOption("output_binlog_position", options, properties, false);
+		boolean outputCommitInfo = fetchBooleanOption("output_commit_info", options, properties, true);
+		this.outputConfig = new MaxwellOutputConfig(outputBinlogPosition, outputCommitInfo);
 	}
 
 	private Properties parseFile(String filename, Boolean abortOnMissing) {
@@ -256,7 +286,7 @@ public class MaxwellConfig extends AbstractConfig {
 		return p;
 	}
 
-	private void validate() {
+	public void validate() {
 		if ( this.producerType.equals("kafka") ) {
 			if ( !this.kafkaProperties.containsKey("bootstrap.servers") ) {
 				usageForOptions("You must specify kafka.bootstrap.servers for the kafka producer!", "kafka");
@@ -311,10 +341,13 @@ public class MaxwellConfig extends AbstractConfig {
 				usageForOptions("Please specify all of: replication_host, replication_user, replication_password", "--replication");
 			}
 
-			this.replicationMysql = new MaxwellMysqlConfig(this.maxwellMysql.host,
-									this.maxwellMysql.port,
-									this.maxwellMysql.user,
-									this.maxwellMysql.password);
+			this.replicationMysql = new MaxwellMysqlConfig(
+				this.maxwellMysql.host,
+				this.maxwellMysql.port,
+				null,
+				this.maxwellMysql.user,
+				this.maxwellMysql.password
+			);
 
 			this.replicationMysql.jdbcOptions = this.maxwellMysql.jdbcOptions;
 		}

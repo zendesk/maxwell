@@ -13,7 +13,7 @@ import org.junit.Test;
 public class MysqlPositionStoreTest extends MaxwellTestWithIsolatedServer {
 	private MysqlPositionStore buildStore() throws Exception {
 		MaxwellContext context = buildContext();
-		return new MysqlPositionStore(context.getMaxwellConnectionPool(), context.getServerID(), "maxwell", "maxwell");
+		return new MysqlPositionStore(context.getMaxwellConnectionPool(), context.getServerID(), "maxwell");
 	}
 
 	@Test

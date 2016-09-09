@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zendesk.maxwell.bootstrap.AsynchronousBootstrapper;
 import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
+import com.zendesk.maxwell.producer.BufferedProducer;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
 import com.zendesk.maxwell.schema.MysqlSchemaStore;
@@ -19,6 +20,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -36,7 +38,7 @@ public class MaxwellTestSupport {
 		return setupServer(null);
 	}
 
-	public static void setupSchema(MysqlIsolatedServer server) throws Exception {
+	public static void setupSchema(MysqlIsolatedServer server, boolean resetBinlogs) throws Exception {
 		List<String> queries = new ArrayList<String>(Arrays.asList(
 				"CREATE DATABASE if not exists shard_2",
 				"DROP DATABASE if exists shard_1",
@@ -55,11 +57,15 @@ public class MaxwellTestSupport {
 			}
 		}
 
-		queries.add("RESET MASTER");
+		if ( resetBinlogs )
+			queries.add("RESET MASTER");
 
 		server.executeList(queries);
 	}
 
+	public static void setupSchema(MysqlIsolatedServer server) throws Exception {
+		setupSchema(server, true);
+	}
 
 	public static String getSQLDir() {
 		 final String dir = System.getProperty("user.dir");
@@ -67,7 +73,7 @@ public class MaxwellTestSupport {
 	}
 
 
-	public static MaxwellContext buildContext(int port, BinlogPosition p, MaxwellFilter filter) {
+	public static MaxwellContext buildContext(int port, BinlogPosition p, MaxwellFilter filter) throws SQLException {
 		MaxwellConfig config = new MaxwellConfig();
 
 		config.replicationMysql.host = "127.0.0.1";
@@ -89,75 +95,89 @@ public class MaxwellTestSupport {
 	}
 
 	private static void clearSchemaStore(MysqlIsolatedServer mysql) throws Exception {
-		mysql.getConnection().prepareStatement("delete from `maxwell`.`schemas`").execute();
+		mysql.execute("drop database if exists maxwell");
 	}
 
-	public static List<RowMap>getRowsForSQL(final MysqlIsolatedServer mysql, MaxwellFilter filter, String queries[], String before[], boolean transactional) throws Exception {
-		MaxwellContext context = buildContext(mysql.getPort(), null, filter);
+	public static List<RowMap>getRowsWithReplicator(final MysqlIsolatedServer mysql, MaxwellFilter filter, final String queries[], final String before[]) throws Exception {
+		MaxwellTestSupportCallback callback = new MaxwellTestSupportCallback() {
+			@Override
+			public void afterReplicatorStart(MysqlIsolatedServer mysql) throws SQLException {
+				 mysql.executeList(Arrays.asList(queries));
+			}
+
+			@Override
+			public void beforeReplicatorStart(MysqlIsolatedServer mysql) throws SQLException {
+				if ( before != null)
+					mysql.executeList(Arrays.asList(before));
+			}
+		};
+
+		return getRowsWithReplicator(mysql, filter, callback);
+	}
+
+	public static List<RowMap>getRowsWithReplicator(final MysqlIsolatedServer mysql, MaxwellFilter filter, MaxwellTestSupportCallback callback) throws Exception {
+		final ArrayList<RowMap> list = new ArrayList<>();
 
 		clearSchemaStore(mysql);
 
-		if ( before != null ) {
-			mysql.executeList(Arrays.asList(before));
+		MaxwellConfig config = new MaxwellConfig();
+
+		config.maxwellMysql.user = "maxwell";
+		config.maxwellMysql.password = "maxwell";
+		config.maxwellMysql.host = "localhost";
+		config.maxwellMysql.port = mysql.getPort();
+		config.replicationMysql = config.maxwellMysql;
+
+		if ( filter != null ) {
+			if ( filter.isDatabaseWhitelist() )
+				filter.includeDatabase("test");
+			if ( filter.isTableWhitelist() )
+				filter.includeTable("boundary");
 		}
 
-		BinlogPosition start = BinlogPosition.capture(mysql.getConnection());
-		context.setPosition(start);
+		config.filter = filter;
+		config.bootstrapperType = "sync";
 
-		MysqlSchemaStore schemaStore = new MysqlSchemaStore(context);
-		schemaStore.getSchema();
+		callback.beforeReplicatorStart(mysql);
 
-		if ( transactional )
-			mysql.getConnection().setAutoCommit(false);
+		config.initPosition = BinlogPosition.capture(mysql.getConnection());
+		BufferedMaxwell maxwell = new BufferedMaxwell(config);
 
-		mysql.executeList(Arrays.asList(queries));
+		new Thread(maxwell).start();
 
-		if ( transactional )
-			mysql.getConnection().setAutoCommit(true);
+		// wait for a heartbeat to come through
+		maxwell.poll(5000);
 
-		BinlogPosition endPosition = BinlogPosition.capture(mysql.getConnection());
+		callback.afterReplicatorStart(mysql);
 
-		final ArrayList<RowMap> list = new ArrayList<>();
+		BinlogPosition finalPosition = BinlogPosition.capture(mysql.getConnection());
 
-		AbstractProducer producer = new AbstractProducer(context) {
-			@Override
-			public void push(RowMap r) {
-				list.add(r);
+		for ( ;; ) {
+			RowMap row = maxwell.poll(1000);
+
+			if ( row == null ) {
+				break;
 			}
-		};
 
-		AsynchronousBootstrapper bootstrapper = new AsynchronousBootstrapper(context) {
-			@Override
-			protected SynchronousBootstrapper getSynchronousBootstrapper() {
-				return new SynchronousBootstrapper(context) {
-					@Override
-					protected Connection getConnection() throws SQLException {
-						Connection conn = mysql.getNewConnection();
-						conn.setCatalog(context.getConfig().databaseName);
-						return conn;
-					}
+			if ( row.getPosition().newerThan(finalPosition) ) {
+				// consume whatever's left over in the buffer.
+				for ( ;; ) {
+					RowMap r = maxwell.poll(100);
+					if ( r == null )
+						break;
 
-					@Override
-					protected Connection getStreamingConnection() throws SQLException {
-						Connection conn = mysql.getNewConnection();
-						conn.setCatalog(context.getConfig().databaseName);
-						return conn;
-					}
-				};
+					if ( r.toJSON() != null )
+						list.add(r);
+				}
+
+				break;
 			}
-		};
+			if ( row.toJSON() != null )
+				list.add(row);
+		}
 
-		TestMaxwellReplicator p = new TestMaxwellReplicator(schemaStore, producer, bootstrapper, context, start, endPosition);
-
-		p.setFilter(filter);
-
-		p.getEvents(producer);
-
-		bootstrapper.join();
-
-		p.stopLoop();
-
-		context.terminate();
+		callback.beforeTerminate(mysql);
+		maxwell.terminate();
 
 		return list;
 	}
@@ -192,11 +212,5 @@ public class MaxwellTestSupport {
 
 		List<String> diff = topSchema.diff(bottomSchema, "followed schema", "recaptured schema");
 		assertThat(StringUtils.join(diff.iterator(), "\n"), diff.size(), is(0));
-	}
-
-
-
-	public static  List<RowMap>getRowsForSQL(MysqlIsolatedServer server, MaxwellFilter filter, String queries[]) throws Exception {
-		return getRowsForSQL(server, filter, queries, null, false);
 	}
 }

@@ -2,6 +2,8 @@ package com.zendesk.maxwell;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
+
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.List;
@@ -86,6 +88,22 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 		list = getRowsForSQL(filter, input);
 		assertThat(list.size(), is(0));
+	}
+
+	@Test
+	public void testOutputConfig() throws Exception {
+		List<RowMap> list;
+		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig(true, true);
+		list = getRowsForSQL(input);
+		String json = list.get(0).toJSON(outputConfig);
+
+		// Binlog
+		assertTrue(Pattern.matches(".*\"position\":\"master.0+1.\\d+\".*", json));
+		// Commit
+		assertTrue(Pattern.matches(".*\"commit\":true.*", json));
+		// Xid
+		assertTrue(Pattern.matches(".*\"xid\":\\d+.*", json));
 	}
 
 	static String createDBs[] = {
@@ -243,6 +261,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	String testTransactions[] = {
+			"create table if not exists minimal ( account_id int, text_field text )",
 			"BEGIN",
 			"insert into minimal set account_id = 1, text_field = 's'",
 			"insert into minimal set account_id = 2, text_field = 's'",
@@ -337,7 +356,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 			"insert into `test`.`tootootwee` set id = 5"
 		};
 
-		List<RowMap> rows = MaxwellTestSupport.getRowsForSQL(lowerCaseServer, null, sql, null, false);
+		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(lowerCaseServer, null, sql, null);
 		assertThat(rows.size(), is(1));
 		assertThat(rows.get(0).getTable(), is("tootootwee"));
 	}
@@ -404,7 +423,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String[] opts = {"--jdbc_options= netTimeoutForStreamingResults=123& profileSQL=true  ", "--host=no-soup-spoons"};
 		MaxwellConfig config = new MaxwellConfig(opts);
 		assertEquals(config.maxwellMysql.getConnectionURI(),
-				"jdbc:mysql://no-soup-spoons:3306?zeroDateTimeBehavior=convertToNull&netTimeoutForStreamingResults=123&profileSQL=true");
+				"jdbc:mysql://no-soup-spoons:3306/maxwell?zeroDateTimeBehavior=convertToNull&netTimeoutForStreamingResults=123&profileSQL=true");
 		assertEquals(config.replicationMysql.getConnectionURI(),
 				"jdbc:mysql://no-soup-spoons:3306?zeroDateTimeBehavior=convertToNull&netTimeoutForStreamingResults=123&profileSQL=true");
 

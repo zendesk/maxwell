@@ -23,6 +23,7 @@ import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import snaq.db.ConnectionPool;
 
 public class MysqlSavedSchema {
 	static int SchemaStoreVersion = 2;
@@ -261,12 +262,21 @@ public class MysqlSavedSchema {
 	}
 
 	public static MysqlSavedSchema restore(MaxwellContext context, BinlogPosition targetPosition) throws SQLException, InvalidSchemaError {
-		try ( Connection conn = context.getMaxwellConnection() ) {
-			Long schemaID = findSchema(conn, targetPosition, context.getServerID());
+		return restore(context.getMaxwellConnectionPool(), context.getServerID(), context.getCaseSensitivity(), context.getInitialPosition());
+	}
+
+	public static MysqlSavedSchema restore(
+		ConnectionPool pool,
+		Long serverID,
+		CaseSensitivity caseSensitivity,
+		BinlogPosition targetPosition
+	) throws SQLException, InvalidSchemaError {
+		try ( Connection conn = pool.getConnection() ) {
+			Long schemaID = findSchema(conn, targetPosition, serverID);
 			if (schemaID == null)
 				return null;
 
-			MysqlSavedSchema savedSchema = new MysqlSavedSchema(context.getServerID(), context.getCaseSensitivity());
+			MysqlSavedSchema savedSchema = new MysqlSavedSchema(serverID, caseSensitivity);
 
 			savedSchema.restoreFromSchemaID(conn, schemaID);
 			savedSchema.handleVersionUpgrades(conn);
@@ -289,8 +299,7 @@ public class MysqlSavedSchema {
 	private HashMap<Long, HashMap<String, Object>> buildSchemaMap(Connection conn) throws SQLException {
 		HashMap<Long, HashMap<String, Object>> schemas = new HashMap<>();
 
-		PreparedStatement p = conn.prepareStatement("SELECT * from `schemas` where server_id = ?");
-		p.setLong(1, this.serverID);
+		PreparedStatement p = conn.prepareStatement("SELECT * from `schemas`");
 		ResultSet rs = p.executeQuery();
 
 		ResultSetMetaData md = rs.getMetaData();

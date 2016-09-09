@@ -7,17 +7,20 @@ require 'net/http'
 require 'fileutils'
 
 DEFAULT_REPO="http://repo.maven.apache.org/maven2"
+ENV.delete('http_proxy')
+ENV.delete('HTTP_PROXY')
 
 module MavenFetcher
   class Artifact
-    attr_reader :group_id, :artifact_id
+    attr_reader :group_id, :artifact_id, :exclusions
     attr_accessor :scope, :version
 
-    def initialize(group_id, artifact_id, version, scope = nil)
+    def initialize(group_id, artifact_id, version, scope = nil, exclusions = [])
       @group_id = group_id
       @artifact_id = artifact_id
       @version = version
       @scope = scope
+      @exclusions = exclusions
     end
 
     def hash
@@ -113,7 +116,15 @@ module MavenFetcher
       artifact_id = first_text(el, "artifactId")
       version = first_text(el, "version")
       scope = first_text(el, "scope") || "compile"
-      Artifact.new(group_id, artifact_id, version, scope)
+
+      exclusions = []
+      if el.elements['exclusions']
+        el.elements['exclusions'].each_element do |exclusion|
+          exclusions << first_text(exclusion, "groupId") + "/" + first_text(exclusion, 'artifactId')
+        end
+      end
+
+      Artifact.new(group_id, artifact_id, version, scope, exclusions)
     end
 
     def parent
@@ -177,11 +188,12 @@ module MavenFetcher
     # version.  It's pretty psychotic that this works at all.  Technically there's a concept
     # of semantic verisoning.  in practice it doesn't appear used at all..?
     #
-    def resolve(artifacts, scope, deps = Set.new, versions = {}, scopes = {})
+    def resolve(artifacts, scope, deps = Set.new, versions = {}, scopes = {}, exclusions = Set.new)
       # a higher level dependency will set the version, even if it's excluded by the current scope
       artifacts.each do |a|
         scopes[a.key] ||= a.scope
         versions[a.key] ||= a.version
+        exclusions += a.exclusions.to_set
       end
 
       artifacts = artifacts.select { |a| scope.include?(a.scope) }
@@ -192,20 +204,22 @@ module MavenFetcher
       new_artifact_dependencies = new_artifacts.map do |a|
         pom = get_pom(a)
 
-        pom.dependencies.tap do |new_deps|
-          new_deps.each do |d|
-            d.version = pom.resolve_version(d, versions)
+        pom.dependencies.select do |d|
+          next false if exclusions.include?(d.key)
+          d.version = pom.resolve_version(d, versions)
 
-            # if a high-level artifact defines something in "test" scope, and a lower-level one
-            # defines it in "compile", make it "test".
-            if scopes[d.key]
-              d.scope = scopes[d.key]
-            end
+          # if a high-level artifact defines something in "test" scope, and a lower-level one
+          # defines it in "compile", make it "test".
+          if scopes[d.key]
+            d.scope = scopes[d.key]
           end
+
+          true
         end
       end.flatten
 
-      resolve(new_artifact_dependencies, Scope.new("compile"), deps | new_artifacts, versions, scopes)
+
+      resolve(new_artifact_dependencies, Scope.new("compile"), deps | new_artifacts, versions, scopes, exclusions)
     end
 
     # http://repo.maven.apache.org/maven2/mysql/mysql-connector-java/5.1.6/mysql-connector-java-5.1.6.pom

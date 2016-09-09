@@ -7,7 +7,6 @@
 ### Unsupported configurations
 ***
 - Mysql 5.7 is untested with Maxwell.  GTID replication is known to not function.
-- Maxwell is incompatible with PARTITION tables, as it is unable to parse the SQL.
 
 ### binlog_row_image=MINIMAL
 ***
@@ -22,11 +21,22 @@ from normal Maxwell operation in that:
 
 ### Master recovery
 ***
-Currently Maxwell is not very smart about master recovery or detecting a promoted slave; if it determines
-that the server_id has changed between runs, Maxwell will simply delete its old schema cache and binlog position
-and start again.  We plan on improving master recovery in future releases.
 
-If you know the starting position of your new master, you can start the new Maxwell process with the
-`--init_position` flag, which will ensure that no gap appears in a master failover.
+As of 1.2.0, maxwell includes experimental support for master position recovery.  It works like this:
+
+- maxwell writes heartbeats into the binlogs (via the `positions` table)
+- maxwell reads its own heartbeats, using them as a secondary position guide
+- if maxwell boots and can't find its position matching the `server_id` it's
+  connecting to, it will look for a row in `maxwell.positions` from a different
+  server_id.
+- if it finds that row, it will scan backwards in the binary logs of the new
+  master until it finds that heartbeat.
+
+Notes:
+- master recovery is not compatible with separate schema-store hosts and
+  replication-hosts, due to the heartbeat mechanism.
+- this code should be considered alpha-quality.
+- on highly active servers, as much as 1 second of data may be duplicated.
+
 
 

@@ -1,5 +1,19 @@
 # Maxwell changelog
 
+### [v1.1.5](https://github.com/zendesk/maxwell/releases/tag/v1.1.5): "my brain is a polluted mess"
+
+
+- @dadah89 adds --output_binlog_position to optionally output the
+  position with the row
+- @dadah89 adds --output_commit_info to turn off xid/commit fields
+- maxwell now supports tables with partitions
+- maxwell now supports N maxwells per-server.  see the client_id /
+  replica_server_id options.
+- two parser fixes, for engine=`innodb` and CHARSET ASCII
+- lay the ground work for doing master recovery; we add a heartbeat into
+  the positions table that we can co-ordinate around.
+
+
 ### [v1.1.4](https://github.com/zendesk/maxwell/releases/tag/v1.1.4): "george flunk"
 
 

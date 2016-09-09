@@ -1,8 +1,13 @@
 language: java
 branches:
   only: master
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install pastebinit
 install: true
 script: make test
+after_script:
+  - pastebinit -i test.log
 env:
   matrix:
     - MYSQL_VERSION=5.5

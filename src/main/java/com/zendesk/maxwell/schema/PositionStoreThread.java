@@ -49,12 +49,30 @@ public class PositionStoreThread extends RunLoopProcess implements Runnable {
 			LOGGER.info("Storing final position: " + position);
 			try {
 				store.set(position);
-			} catch ( SQLException e ) {
+			} catch ( Exception e ) {
 				LOGGER.error("error storing final position: " + e);
 			}
 		}
 	}
 
+	public void heartbeat() throws Exception {
+		store.heartbeat();
+	}
+
+	private boolean shouldHeartbeat(BinlogPosition heartbeatPosition, BinlogPosition currentPosition) {
+		if ( currentPosition == null )
+			return true;
+		if ( heartbeatPosition == null )
+			return true;
+		if ( !heartbeatPosition.getFile().equals(currentPosition.getFile()) )
+			return true;
+		if ( currentPosition.getOffset() - heartbeatPosition.getOffset() > 1000 ) {
+			return true;
+		}
+		return false;
+	}
+
+	BinlogPosition lastHeartbeatPosition = null; // last position we sent a heartbeat to
 	public void work() throws Exception {
 		BinlogPosition newPosition = position;
 
@@ -64,7 +82,11 @@ public class PositionStoreThread extends RunLoopProcess implements Runnable {
 		}
 
 		try { Thread.sleep(1000); } catch (InterruptedException e) { }
-		store.heartbeat();
+
+		if ( shouldHeartbeat(lastHeartbeatPosition, position) )  {
+			store.heartbeat();
+			lastHeartbeatPosition = position;
+		}
 	}
 
 	public synchronized void setPosition(BinlogPosition p) {
