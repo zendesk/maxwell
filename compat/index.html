@@ -207,11 +207,21 @@ from normal Maxwell operation in that:</p>
 </ul>
 <h3 id="master-recovery">Master recovery</h3>
 <hr />
-<p>Currently Maxwell is not very smart about master recovery or detecting a promoted slave; if it determines
-that the server_id has changed between runs, Maxwell will simply delete its old schema cache and binlog position
-and start again.  We plan on improving master recovery in future releases.</p>
-<p>If you know the starting position of your new master, you can start the new Maxwell process with the
-<code>--init_position</code> flag, which will ensure that no gap appears in a master failover.</p></div>
+<p>As of 1.2.0, maxwell includes experimental support for master position recovery.  It works like this:</p>
+<ul>
+<li>maxwell writes heartbeats into the binlogs (via the <code>positions</code> table)</li>
+<li>maxwell reads its own heartbeats, using them as a secondary position guide</li>
+<li>if maxwell boots and can't find its position matching the <code>server_id</code> it's
+  connecting to, it will look for a row in <code>maxwell.positions</code> from a different
+  server_id.</li>
+<li>if it finds that row, it will scan backwards in the binary logs of the new
+  master until it finds that heartbeat.</li>
+</ul>
+<p>Notes:
+- master recovery is not compatible with separate schema-store hosts and
+  replication-hosts, due to the heartbeat mechanism.
+- this code should be considered alpha-quality.
+- on highly active servers, as much as 1 second of data may be duplicated.</p></div>
         </div>
 
         
