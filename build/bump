@@ -18,5 +18,4 @@ if [ -z "$CURRENT_REV" ] ; then
   fi
 fi
 
-git grep -lF $CURRENT_REV | grep -v search_index.json | grep -v CHANGELOG.md | xargs perl -i -npe "s|$CURRENT_REV|$1|g"
-docs/build
+git grep -lF $CURRENT_REV | grep -v CHANGELOG.md | xargs perl -i -npe "s|$CURRENT_REV|$1|g"
