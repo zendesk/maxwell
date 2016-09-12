@@ -1,5 +1,25 @@
 # Maxwell changelog
 
+### [v1.2.0](https://github.com/zendesk/maxwell/releases/tag/v1.2.0): "just here, not to talk to you"
+
+
+1.2.0 is a major release of Maxwell that introduces master recovery
+features; when a slave is promoted to master, Maxwell is now capable of
+recovering the position.  See the `--master_recovery` flag for more
+details.
+
+It also upgrades the kafka producer library to 0.9.  If you're using
+maxwell with a kafka 0.8 server, you must now pass the `--kafka0.8` flag
+to maxwell.
+
+
+### [v1.1.6](https://github.com/zendesk/maxwell/releases/tag/v1.1.6): "pithy"
+
+
+- minor bugfix in which maxwell with --replay mode was trying to write
+  heartbeats
+
+
 ### [v1.1.5](https://github.com/zendesk/maxwell/releases/tag/v1.1.5): "my brain is a polluted mess"
 
 
