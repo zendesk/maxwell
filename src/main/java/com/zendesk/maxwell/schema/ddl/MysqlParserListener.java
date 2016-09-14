@@ -110,8 +110,6 @@ public class MysqlParserListener extends mysqlBaseListener {
 		String dbName = unquote(ctx.name().getText());
 		DatabaseAlter alter = new DatabaseAlter(dbName);
 
-
-
 		List<Default_character_setContext> charSet = ctx.alter_database_definition().default_character_set();
 		if ( charSet.size() > 0 ) {
 			alter.charset = unquote_literal(charSet.get(0).charset_name().getText());
@@ -234,8 +232,16 @@ public class MysqlParserListener extends mysqlBaseListener {
 
 	@Override
 	public void exitCreation_character_set(Creation_character_setContext ctx) {
-		TableCreate tableCreate = (TableCreate) schemaChanges.get(0);
-		tableCreate.charset = unquote_literal(ctx.charset_name().getText());
+		SchemaChange change = schemaChanges.get(0);
+
+		/* due to an unfortunate duplication of syntaxes (DEFAULT CHARACTER SET and CHARACTER SET),
+		 * it's possible that a table alter will end up down this parse path (depending on how options are ordered) */
+		if ( change instanceof TableCreate ) {
+			TableCreate tableCreate = (TableCreate) change;
+			tableCreate.charset = unquote_literal(ctx.charset_name().getText());
+		} else if ( change instanceof TableAlter ) {
+			((TableAlter) change).defaultCharset = unquote_literal(ctx.charset_name().getText());
+		}
 	}
 
 	@Override
