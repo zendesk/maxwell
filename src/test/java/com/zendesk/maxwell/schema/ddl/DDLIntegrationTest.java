@@ -31,6 +31,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String sql[] = {
 			"create table shard_1.testAlter ( id int(11) unsigned default 1, str varchar(255) )",
 			"alter table shard_1.testAlter add column barbar tinyint",
+			"alter table shard_1.testAlter add column thiswillbeutf16 text, engine=`innodb` CHARACTER SET utf16",
 			"alter table shard_1.testAlter rename to shard_1.`freedonia`",
 			"rename table shard_1.`freedonia` to shard_1.ducksoup, shard_1.ducksoup to shard_1.`nananana`",
 			"alter table shard_1.nananana drop column barbar",

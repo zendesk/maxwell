@@ -62,6 +62,10 @@ public class TableAlter extends SchemaChange {
 		if ( this.pks != null ) {
 			table.setPKList(this.pks);
 		}
+
+		if ( this.defaultCharset != null )
+			table.charset = this.defaultCharset;
+
 		table.setDefaultColumnCharsets();
 
 		return new ResolvedTableAlter(this.database, this.table, oldTable, table);

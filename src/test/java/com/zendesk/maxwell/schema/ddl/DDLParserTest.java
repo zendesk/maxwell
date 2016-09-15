@@ -177,6 +177,7 @@ public class DDLParserTest {
 			"alter table t alter column `foo` SET DEFAULT false",
 			"alter table t alter column `foo` drop default",
 			"alter table t CHARACTER SET latin1 COLLATE = 'utf8'",
+			"ALTER TABLE `test` ENGINE=`InnoDB` CHARACTER SET latin1",
 			"alter table t DROP PRIMARY KEY",
 			"alter table t drop index `foo`",
 			"alter table t disable keys",
