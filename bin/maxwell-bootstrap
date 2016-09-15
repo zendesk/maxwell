@@ -13,9 +13,9 @@ CLASSPATH=$CLASSPATH:$base_dir/target/classes:../open-replicator/target/classes
 
 for file in lib/*.jar target/dependency/*.jar
 do
-  if [[ "$@" == *--kafka0.8* ]] && [[ ! $file == "target/dependency/kafka-clients-$KAFKA_09_VERSION.jar" ]]; then
+  if [[ "$@" == *--kafka0.8* ]] && [[ ! $file == *kafka-clients-$KAFKA_09_VERSION.jar* ]]; then
     CLASSPATH=$CLASSPATH:$file
-  elif [[ ! "$@" == *--kafka0.8* ]] && [[ ! $file == "target/dependency/kafka-clients-$KAFKA_08_VERSION.jar" ]]; then
+  elif [[ ! "$@" == *--kafka0.8* ]] && [[ ! $file == *kafka-clients-$KAFKA_08_VERSION.jar* ]]; then
     CLASSPATH=$CLASSPATH:$file
   fi
 done
