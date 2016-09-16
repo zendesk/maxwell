@@ -103,6 +103,33 @@ public class RecoveryTest extends TestWithNameLogging {
 
 	}
 
+	@Test
+	public void testOtherClientID() throws Exception {
+		MaxwellContext slaveContext = getContext(slaveServer.getPort());
+
+		String[] input = generateMasterData();
+		MaxwellTestSupport.getRowsWithReplicator(masterServer, null, input, null);
+
+		generateNewMasterData();
+		RecoveryInfo recoveryInfo = slaveContext.getRecoveryInfo();
+		assertThat(recoveryInfo, notNullValue());
+
+		/* pretend that we're a seperate client trying to recover now */
+		recoveryInfo.clientID = "another_client";
+
+		MaxwellConfig slaveConfig = getConfig(slaveServer.getPort());
+		Recovery recovery = new Recovery(
+			slaveConfig.maxwellMysql,
+			slaveConfig.databaseName,
+			slaveContext.getReplicationConnectionPool(),
+			slaveContext.getCaseSensitivity(),
+			recoveryInfo
+		);
+
+		BinlogPosition recoveredPosition = recovery.recover();
+		assertEquals(null, recoveredPosition);
+	}
+
 	/* i know.  it's horrible. */
 	private void drainReplication(BufferedMaxwell maxwell, List<RowMap> rows) throws IOException, InterruptedException {
 		int pollMS = 10000;

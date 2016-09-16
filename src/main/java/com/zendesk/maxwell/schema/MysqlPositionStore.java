@@ -139,8 +139,12 @@ public class MysqlPositionStore {
 	}
 
 	private RecoveryInfo getRecoveryInfo(Connection c) throws SQLException {
-		ResultSet rs = c.createStatement().executeQuery("SELECT * from `positions`");
 		RecoveryInfo info = null;
+
+		PreparedStatement s = c.prepareStatement("SELECT * from `positions` where client_id = ?");
+		s.setString(1, clientID);
+		ResultSet rs = s.executeQuery();
+
 
 		while ( rs.next() ) {
 			Long server_id = rs.getLong("server_id");
@@ -155,7 +159,7 @@ public class MysqlPositionStore {
 				LOGGER.error("also found a row for server_id: " + server_id);
 				return null;
 			} else {
-				info = new RecoveryInfo(position, last_heartbeat_read, server_id);
+				info = new RecoveryInfo(position, last_heartbeat_read, server_id, clientID);
 			}
 		}
 		return info;
