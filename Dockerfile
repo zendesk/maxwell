@@ -10,4 +10,4 @@ RUN curl -sLo - https://github.com/zendesk/maxwell/releases/download/v"$MAXWELL_
   | tar --strip-components=1 -zxvf -
 
 RUN echo "$MAXWELL_VERSION" > /REVISION
-CMD bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kafka --kafka.bootstrap.servers=$KAFKA_HOST:$KAFKA_PORT
+CMD bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kafka --kafka.bootstrap.servers=$KAFKA_HOST:$KAFKA_PORT $MAXWELL_OPTIONS
