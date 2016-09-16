@@ -1,5 +1,14 @@
 # Maxwell changelog
 
+### [v1.2.1](https://github.com/zendesk/maxwell/releases/tag/v1.2.1): "point-ones are a sad and inevitable fact"
+
+
+This is a bugfix release.
+- fix a parser bug around ALTER TABLE CHARACTER SET
+- fix bin/maxwell to pull in the proper version of the kafka-clients
+  library
+
+
 ### [v1.2.0](https://github.com/zendesk/maxwell/releases/tag/v1.2.0): "just here, not to talk to you"
 
 
