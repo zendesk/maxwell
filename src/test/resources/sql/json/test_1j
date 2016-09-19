@@ -20,7 +20,7 @@ insert into test_table set textcol='test_col_2', datecol='1979-10-01 00:00:00'
 
 update test_table set textcol='test_col_5' where id = 1
 
--> {"database": "test_db_1", "table": "test_table", "type": "update", "data": {"id": 1, "textcol": "test_col_5"}, "old": {"textcol": "test_col_1"} }
+-> {"database": "test_db_1", "table": "test_table", "type": "update", "data": {"id": 1, "textcol": "test_col_5", "datecol": null}, "old": {"textcol": "test_col_1"} }
 
 update test_table set datecol='1979-10-01 00:00:00' where id = 1
 
@@ -43,7 +43,7 @@ delete from test_table;
 /*!40000 ALTER TABLE `test_db_1`.`test_table` ENABLE KEYS */
 
 -> {"database": "test_db_1", "table": "test_table", "type": "delete", "data": {"id": 1, "textcol": "test_col_5", "datecol":"1970-01-01 00:00:00"} }
--> {"database": "test_db_1", "table": "test_table", "type": "delete", "data": {"id": 2, "textcol": "test_col_2"} }
+-> {"database": "test_db_1", "table": "test_table", "type": "delete", "data": {"id": 2, "textcol": "test_col_2", "datecol":null} }
 -> {"database": "test_db_1", "table": "test_table", "type": "delete", "data": {"id": 3, "textcol": "test_col_2", "datecol": "1979-10-01 00:00:00"} }
 
 

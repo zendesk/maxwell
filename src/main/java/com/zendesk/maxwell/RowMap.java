@@ -182,14 +182,10 @@ public class RowMap implements Serializable {
 	}
 
 	public String toJSON() throws IOException {
-		return toJSON(false, false);
+		return toJSON(new MaxwellOutputConfig());
 	}
 
 	public String toJSON(MaxwellOutputConfig outputConfig) throws IOException {
-		return toJSON(outputConfig.includesBinlogPosition, outputConfig.includesCommitInfo);
-	}
-
-	public String toJSON(boolean includesBinlogPosition, boolean includesCommitInfo) throws IOException {
 		JsonGenerator g = jsonGeneratorThreadLocal.get();
 
 		g.writeStartObject(); // start of row {
@@ -199,7 +195,7 @@ public class RowMap implements Serializable {
 		g.writeStringField("type", this.rowType);
 		g.writeNumberField("ts", this.timestamp);
 
-		if ( includesCommitInfo ) {
+		if ( outputConfig.includesCommitInfo ) {
 			if ( this.xid != null )
 				g.writeNumberField("xid", this.xid);
 
@@ -207,7 +203,7 @@ public class RowMap implements Serializable {
 				g.writeBooleanField("commit", true);
 		}
 
-		if ( includesBinlogPosition )
+		if ( outputConfig.includesBinlogPosition )
 			g.writeStringField("position", this.nextPosition.getFile() + ":" + this.nextPosition.getOffset());
 
 		if ( this.excludeColumns != null ) {
@@ -226,7 +222,7 @@ public class RowMap implements Serializable {
 			}
 		}
 
-		writeMapToJSON("data", this.data, false);
+		writeMapToJSON("data", this.data, !outputConfig.omitNull);
 
 		if ( !this.oldData.isEmpty() ) {
 			writeMapToJSON("old", this.oldData, true);

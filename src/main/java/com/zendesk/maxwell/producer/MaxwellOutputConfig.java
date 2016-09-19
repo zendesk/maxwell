@@ -1,11 +1,13 @@
 package com.zendesk.maxwell.producer;
 
 public class MaxwellOutputConfig {
-	public final boolean includesBinlogPosition;
-	public final boolean includesCommitInfo;
+	public boolean includesBinlogPosition;
+	public boolean includesCommitInfo;
+	public boolean omitNull;
 
-	public MaxwellOutputConfig(boolean includesBinlogPosition, boolean includesCommitInfo) {
-		this.includesBinlogPosition = includesBinlogPosition;
-		this.includesCommitInfo = includesCommitInfo;
+	public MaxwellOutputConfig() {
+		this.includesBinlogPosition = false;
+		this.includesCommitInfo = true;
+		this.omitNull = false;
 	}
 }
