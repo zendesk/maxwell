@@ -62,7 +62,8 @@ public class Recovery {
 				null,
 				maxwellDatabaseName,
 				position,
-				true
+				true,
+				recoveryInfo.clientID
 			);
 
 			replicator.setFilter(new RecoveryFilter(this.maxwellDatabaseName));

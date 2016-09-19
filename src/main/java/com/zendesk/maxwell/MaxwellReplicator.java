@@ -1,6 +1,7 @@
 package com.zendesk.maxwell;
 
 import java.sql.SQLException;
+import java.util.Objects;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -37,6 +38,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 	protected final AbstractProducer producer;
 	protected final AbstractBootstrapper bootstrapper;
 	private final String maxwellSchemaDatabaseName;
+	private final String clientID;
 
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellReplicator.class);
 	private final boolean stopOnEOF;
@@ -52,7 +54,8 @@ public class MaxwellReplicator extends RunLoopProcess {
 		PositionStoreThread positionStoreThread,
 		String maxwellSchemaDatabaseName,
 		BinlogPosition start,
-		boolean stopOnEOF
+		boolean stopOnEOF,
+		String clientID
 	) {
 		this.schemaStore = schemaStore;
 		this.binlogEventListener = new MaxwellBinlogEventListener(queue);
@@ -80,6 +83,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 		this.positionStoreThread = positionStoreThread;
 		this.maxwellSchemaDatabaseName = maxwellSchemaDatabaseName;
 		this.setBinlogPosition(start);
+		this.clientID = clientID;
 	}
 
 	public MaxwellReplicator(SchemaStore schemaStore, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, BinlogPosition start) throws SQLException {
@@ -93,7 +97,8 @@ public class MaxwellReplicator extends RunLoopProcess {
 			ctx.getPositionStoreThread(),
 			ctx.getConfig().databaseName,
 			start,
-			false
+			false,
+			ctx.getConfig().clientID
 		);
 	}
 
@@ -314,6 +319,10 @@ public class MaxwellReplicator extends RunLoopProcess {
 	}
 
 	private RowMap processHeartbeats(RowMap row) throws SQLException {
+		String hbClientID = (String) row.getData("client_id");
+		if ( !Objects.equals(hbClientID, this.clientID) )
+			return row;
+
 		Object heartbeat_at = row.getData("heartbeat_at");
 		Object old_heartbeat_at = row.getOldData("heartbeat_at"); // make sure it's a heartbeat update, not a position set.
 
