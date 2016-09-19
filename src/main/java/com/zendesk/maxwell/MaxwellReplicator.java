@@ -2,6 +2,7 @@ package com.zendesk.maxwell;
 
 import java.sql.SQLException;
 import java.util.Objects;
+import java.util.List;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -9,6 +10,7 @@ import java.util.regex.Pattern;
 import com.google.code.or.binlog.impl.event.*;
 import com.google.code.or.net.TransportException;
 import com.zendesk.maxwell.schema.*;
+import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -415,13 +417,20 @@ public class MaxwellReplicator extends RunLoopProcess {
 	}
 
 
-	private void processQueryEvent(QueryEvent event) throws SchemaStoreException, InvalidSchemaError, SQLException {
+	private void processQueryEvent(QueryEvent event) throws SchemaStoreException, InvalidSchemaError, SQLException, Exception {
 		// get charset of the alter event somehow? or just ignore it.
 		String dbName = event.getDatabaseName().toString();
 		String sql = event.getSql().toString();
 		BinlogPosition position = eventBinlogPosition(event);
 
 		schemaStore.processSQL(sql, dbName, position);
+		//SUMO Start
+		List<ResolvedSchemaChange> changes =  schemaStore.processSQL(sql, dbName, position);
+		for ( ResolvedSchemaChange change : changes ) {
+			DDLMap ddl = new DDLMap(change,event.getHeader().getTimestamp(), sql, position);
+			producer.push(ddl);
+		}
+		//SUMO End
 		tableCache.clear();
 
 		if ( this.producer != null )
