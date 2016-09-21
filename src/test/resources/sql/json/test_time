@@ -8,5 +8,5 @@ CREATE TABLE tt ( t time(6), dt datetime(3), ts timestamp(4) NULL );
 insert into tt set t = '12:23:33.222', dt = '2012-01-01 22:32:34.222';
 
 # TODO: support fractional times properly!
--> { "database": "timedb", "table": "tt", "type": "insert", "data": {"t": "12:23:33", "dt": "2012-01-01 22:32:34" } }
+-> { "database": "timedb", "table": "tt", "type": "insert", "data": {"t": "12:23:33", "dt": "2012-01-01 22:32:34", ts: null } }
 

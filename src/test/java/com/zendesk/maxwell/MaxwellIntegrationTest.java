@@ -94,7 +94,11 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	public void testOutputConfig() throws Exception {
 		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
-		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig(true, true);
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
+
+		outputConfig.includesCommitInfo = true;
+		outputConfig.includesBinlogPosition = true;
+
 		list = getRowsForSQL(input);
 		String json = list.get(0).toJSON(outputConfig);
 

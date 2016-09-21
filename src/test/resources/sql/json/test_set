@@ -11,4 +11,4 @@ insert into test_sets set set_field='';
   -> {database:"set_db", table: "test_sets", type: "insert", data: {"id": 4, set_field: []} }
 alter table test_sets modify column set_field set('foo', 'bar', 'baz') NULL DEFAULT NULL;
 insert into test_sets set id=NULL;
-  -> {database:"set_db", table: "test_sets", type: "insert", data: {"id": 5} }
+  -> {database:"set_db", table: "test_sets", type: "insert", data: {"id": 5, set_field: null} }
