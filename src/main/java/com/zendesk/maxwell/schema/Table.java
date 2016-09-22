@@ -3,6 +3,7 @@ package com.zendesk.maxwell.schema;
 import java.util.*;
 
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
+import com.zendesk.maxwell.schema.ddl.ColumnPosition;
 
 import com.zendesk.maxwell.schema.columndef.IntColumnDef;
 import com.zendesk.maxwell.schema.columndef.BigIntColumnDef;
@@ -117,12 +118,17 @@ public class Table {
 
 	public Table copy() {
 		ArrayList<ColumnDef> list = new ArrayList<>();
+		ArrayList<String> pkList = new ArrayList<>();
 
 		for ( ColumnDef c : columnList ) {
 			list.add(c);
 		}
 
-		return new Table(database, name, charset, list, pkColumnNames);
+		for ( String s : pkColumnNames ) {
+			pkList.add(s);
+		}
+
+		return new Table(database, name, charset, list, pkList);
 	}
 
 	public void rename(String tableName) {
@@ -266,6 +272,16 @@ public class Table {
 		renumberColumns();
 	}
 
+	public void changeColumn(int idx, ColumnPosition position, ColumnDef definition) throws InvalidSchemaError {
+		ColumnDef oldColumn = columnList.get(idx);
+		this.columnList.remove(idx);
+		this.columnList.add(position.index(this, idx), definition);
+		renamePKColumn(oldColumn.getName(), definition.getName());
+
+		this.columnOffsetMap = null;
+		renumberColumns();
+	}
+
 	public void setDatabase(String database) {
 		this.database = database;
 	}
@@ -301,6 +317,13 @@ public class Table {
 		}
 	}
 
+	private synchronized void renamePKColumn(String oldName, String newName) {
+		int pkIndex = getPKList().indexOf(oldName);
+		if ( pkIndex != -1 ) {
+			this.pkColumnNames.set(pkIndex, newName);
+			this.normalizedPKColumnNames = null;
+		}
+	}
 	private synchronized List<String> normalizedColumnNames() {
 		/*
 		   primary keys may come in with different casing than the column names.
