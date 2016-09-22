@@ -222,7 +222,7 @@ public class RowMap implements Serializable {
 			}
 		}
 
-		writeMapToJSON("data", this.data, !outputConfig.omitNull);
+		writeMapToJSON("data", this.data, outputConfig.includesNulls);
 
 		if ( !this.oldData.isEmpty() ) {
 			writeMapToJSON("old", this.oldData, true);
