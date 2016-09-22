@@ -16,8 +16,7 @@ class ChangeColumnMod extends ColumnMod {
 	@Override
 	public void apply(Table table) throws InvalidSchemaError {
 		int idx = originalIndex(table);
-		table.removeColumn(idx);
-		table.addColumn(position.index(table, idx), this.definition);
+		table.changeColumn(idx, position, definition);
 	}
 }
 
