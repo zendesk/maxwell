@@ -1,5 +1,18 @@
 # Maxwell changelog
 
+### [v1.2.2](https://github.com/zendesk/maxwell/releases/tag/v1.2.2): "bats wearing frog pajamas"
+
+
+- Maxwell will now include by default fields with NULL values (as null
+fields).  To disable this and restore the old functionality where fields
+were omitted, pass `--output_nulls=false`
+- Fix an issue with multi-client support where two replicators would
+ping-pong heartbeats at each other
+- Fix an issue where a client would attempt to recover a position from a
+mismatched client_id
+- Fix a bug when using CHANGE COLUMN on a primary key
+
+
 ### [v1.2.1](https://github.com/zendesk/maxwell/releases/tag/v1.2.1): "point-ones are a sad and inevitable fact"
 
 
