@@ -38,7 +38,6 @@ public class DDLMap extends RowMap {
 
 	public String toJSON(MaxwellOutputConfig outputConfig) throws IOException {
 		ObjectMapper mapper = new ObjectMapper();
-		//return mapper.writeValueAsString(change);
 
 		Map<String, Object> changeMixin = mapper.convertValue(change, new TypeReference<Map<String, Object>>() { });
 		changeMixin.put("ts", timestamp);

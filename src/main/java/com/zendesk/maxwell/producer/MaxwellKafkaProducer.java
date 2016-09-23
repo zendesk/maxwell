@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.producer;
 
 import com.zendesk.maxwell.BinlogPosition;
+import com.zendesk.maxwell.DDLMap;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.RowMap;
 import com.zendesk.maxwell.RowMap.KeyFormat;
@@ -75,8 +76,11 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	private final InflightMessageList inflightMessages;
 	private final KafkaProducer<String, String> kafka;
 	private String topic;
+	private final String ddlTopic;
 	private final int numPartitions;
 	private final MaxwellKafkaPartitioner partitioner;
+	private final MaxwellKafkaPartitioner ddlPartitioner;
+	private final boolean outputDDL;
 	private final KeyFormat keyFormat;
 
 	public MaxwellKafkaProducer(MaxwellContext context, Properties kafkaProperties, String kafkaTopic) {
@@ -94,6 +98,9 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		String hash = context.getConfig().kafkaPartitionHash;
 		String partitionKey = context.getConfig().kafkaPartitionKey;
 		this.partitioner = new MaxwellKafkaPartitioner(hash, partitionKey);
+		this.outputDDL =  context.getConfig().outputDDL;
+		this.ddlPartitioner = new MaxwellKafkaPartitioner(hash, "database");
+		this.ddlTopic =  context.getConfig().ddlKafkaTopic;
 
 		if ( context.getConfig().kafkaKeyFormat.equals("hash") )
 			keyFormat = KeyFormat.HASH;
@@ -105,6 +112,10 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 
 	@Override
 	public void push(RowMap r) throws Exception {
+		if (r instanceof DDLMap && !outputDDL) {
+			return;
+		}
+
 		String key = r.pkToJson(keyFormat);
 		String value = r.toJSON(outputConfig);
 
@@ -119,8 +130,12 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 			return;
 		}
 
-		ProducerRecord<String, String> record =
-				new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, this.numPartitions), key, value);
+		ProducerRecord<String, String> record;
+		if (r instanceof DDLMap) {
+			record = new ProducerRecord<>(ddlTopic, this.ddlPartitioner.kafkaPartition(r, this.numPartitions), key, value);
+		} else {
+			record = new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, this.numPartitions), key, value);
+		}
 
 		if ( r.isTXCommit() )
 			inflightMessages.addMessage(r.getPosition());

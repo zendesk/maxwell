@@ -24,6 +24,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public final Properties kafkaProperties;
 	public String kafkaTopic;
+	public String ddlKafkaTopic;
+	public boolean outputDDL;
 	public String kafkaKeyFormat;
 	public String producerType;
 	public String kafkaPartitionHash;
@@ -49,6 +51,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.maxwellMysql = new MaxwellMysqlConfig();
 		this.masterRecovery = false;
 		this.bufferedProducerSize = 200;
+		this.outputDDL = false;
 		setup(null, null); // setup defaults
 	}
 
@@ -94,6 +97,8 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "output_binlog_position", "produced records include binlog position; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_commit_info", "produced records include commit and xid; [true|false]. default: true" ).withOptionalArg();
 		parser.accepts( "output_nulls", "produced records include fields with NULL values [true|false]. default: true" ).withOptionalArg();
+		parser.accepts( "output_ddl", "produce DDL records to ddl_kafka_topic [true|false]. default: false" ).withOptionalArg();
+		parser.accepts( "ddl_kafka_topic", "optionally provide a topic name to push DDL records to. default: kafka_topic").withOptionalArg();
 
 		parser.accepts( "__separator_5" );
 
@@ -226,6 +231,8 @@ public class MaxwellConfig extends AbstractConfig {
 		this.kafkaKeyFormat     = fetchOption("kafka_key_format", options, properties, "hash");
 		this.kafkaPartitionKey  = fetchOption("kafka_partition_by", options, properties, "database");
 		this.kafkaPartitionHash = fetchOption("kafka_partition_hash", options, properties, "default");
+		this.outputDDL 			= fetchBooleanOption("output_ddl", options, properties, false);
+		this.ddlKafkaTopic 		= fetchOption("ddl_kafka_topic", options, properties, this.kafkaTopic);
 
 		String kafkaBootstrapServers = fetchOption("kafka.bootstrap.servers", options, properties, null);
 		if ( kafkaBootstrapServers != null )
