@@ -423,13 +423,12 @@ public class MaxwellReplicator extends RunLoopProcess {
 		String sql = event.getSql().toString();
 		BinlogPosition position = eventBinlogPosition(event);
 
-		//SUMO Start
 		List<ResolvedSchemaChange> changes =  schemaStore.processSQL(sql, dbName, position);
 		for ( ResolvedSchemaChange change : changes ) {
 			DDLMap ddl = new DDLMap(change,event.getHeader().getTimestamp(), sql, position);
 			producer.push(ddl);
 		}
-		//SUMO End
+
 		tableCache.clear();
 
 		if ( this.producer != null )
