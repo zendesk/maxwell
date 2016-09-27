@@ -1,0 +1,5 @@
+#!/bin/bash
+
+. $(dirname $0)/common.bash
+
+exec scala $JAVA_OPTS -Dfile.encoding=UTF-8 -cp $CLASSPATH com.zendesk.maxwellperf.MaxwellPerf "$@"

@@ -133,6 +133,8 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		KafkaCallback callback = new KafkaCallback(inflightMessages, r.getPosition(), r.isTXCommit(), this.context, key, value);
 
 		kafka.send(record, callback);
+
+		rowsProduced++;
 	}
 
 	@Override

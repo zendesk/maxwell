@@ -17,6 +17,7 @@ public class StdoutProducer extends AbstractProducer {
 		if ( output != null )
 			System.out.println(output);
 
+		rowsProduced++;
 		this.context.setPosition(r);
 	}
 }

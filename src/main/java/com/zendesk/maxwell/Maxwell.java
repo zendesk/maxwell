@@ -1,5 +1,6 @@
 package com.zendesk.maxwell;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.TimeoutException;
@@ -53,6 +54,7 @@ public class Maxwell implements Runnable {
 
 		replicator = null;
 		context = null;
+		this.onStop();
 	}
 
 	private BinlogPosition attemptMasterRecovery() throws Exception {
@@ -160,8 +162,38 @@ public class Maxwell implements Runnable {
 		});
 
 		this.context.start();
-		replicator.runLoop();
+		this.onStart();
+
+		if ( replicator != null ) // onStart may have called .terminate
+			replicator.runLoop();
 	}
+
+	public void onStart() {}
+	public void onStop() {}
+
+	public BinlogPosition getPosition() {
+		if ( this.context == null )
+			return null;
+
+		try {
+			return this.context.getPositionStoreThread().getPosition();
+		} catch (SQLException e) {
+			return null;
+		}
+	}
+
+	public long getRowsProduced() {
+		if ( this.context == null )
+			return 0;
+		try {
+			if ( this.context.getProducer() == null )
+				return 0;
+			return this.context.getProducer().getRowsProduced();
+		} catch (IOException e) {
+			return 0;
+		}
+	}
+
 
 	public static void main(String[] args) {
 		Runtime.getRuntime().addShutdownHook(new Thread() {

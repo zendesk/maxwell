@@ -28,6 +28,7 @@ public class FileProducer extends AbstractProducer {
 			this.fileWriter.flush();
 		}
 
+		rowsProduced++;
 		context.setPosition(r);
 	}
 }

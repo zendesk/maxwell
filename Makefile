@@ -49,8 +49,6 @@ copy-resources:
 compile-java: target/.java
 compile: compile-antlr compile-java copy-resources
 
-
-
 JAVA_TEST_DEPENDS = $(shell build/maven_fetcher -p -o target/dependency-test -s test $(LOCK_KAFKA_VERSION))
 JAVA_TEST_SOURCE=$(shell find src/test/java -name '*.java')
 target/.java-test: $(JAVA_TEST_SOURCE)
@@ -70,6 +68,10 @@ test: compile-test
 test.%:  compile-test
 	java -classpath $(JAVA_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore $(filter %$(subst test.,,$@),$(TEST_CLASSES))
 
+
+PERF_SOURCE = $(shell find src/main/scala/com/zendesk/maxwellperf -name '*.scala')
+perf: $(PERF_SOURCE)
+	scalac-2.11 -d target/classes -sourcepath src/main/java:src/main/scala -classpath target/classes:$(JAVA_DEPENDS) $?
 
 clean:
 	rm -f  target/.java target/.java-test

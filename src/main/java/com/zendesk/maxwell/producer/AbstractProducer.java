@@ -8,6 +8,7 @@ import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.RowMap;
 
 public abstract class AbstractProducer {
+	protected volatile long rowsProduced;
 	protected final MaxwellContext context;
 	protected final MaxwellOutputConfig outputConfig;
 
@@ -20,5 +21,9 @@ public abstract class AbstractProducer {
 
 	public void writePosition(BinlogPosition p) throws SQLException {
 		this.context.setPosition(p);
+	}
+
+	public long getRowsProduced() {
+		return rowsProduced;
 	}
 }

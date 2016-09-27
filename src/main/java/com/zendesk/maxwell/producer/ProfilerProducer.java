@@ -27,7 +27,10 @@ public class ProfilerProducer extends AbstractProducer {
 			this.startTime = System.currentTimeMillis();
 
 
-		nullOutputStream.write(r.toJSON().getBytes());
+		String json = r.toJSON();
+		if ( json != null ) {
+			nullOutputStream.write(json.getBytes());
+		}
 
 		this.count++;
 		if ( this.count % 10000 == 0 ) {
@@ -41,6 +44,7 @@ public class ProfilerProducer extends AbstractProducer {
 			this.startTime = System.currentTimeMillis();
 		}
 
+		rowsProduced++;
 		this.context.setPosition(r);
 	}
 }

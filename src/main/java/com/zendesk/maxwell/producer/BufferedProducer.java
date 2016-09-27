@@ -33,6 +33,7 @@ public class BufferedProducer extends AbstractProducer {
 		if (r != null) {
 			this.context.setPosition(r.getPosition());
 		}
+		rowsProduced++;
 		return r;
 	}
 }
