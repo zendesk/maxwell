@@ -30,6 +30,8 @@ public class RowMap implements Serializable {
 
 	private Long xid;
 	private boolean txCommit;
+	private Long serverId;
+	private Long threadId;
 
 	private final LinkedHashMap<String, Object> data;
 	private final LinkedHashMap<String, Object> oldData;
@@ -206,6 +208,17 @@ public class RowMap implements Serializable {
 		if ( outputConfig.includesBinlogPosition )
 			g.writeStringField("position", this.nextPosition.getFile() + ":" + this.nextPosition.getOffset());
 
+
+		if ( outputConfig.includesThreadInfo ) {
+			if (this.serverId != null) {
+				g.writeNumberField("server_id", this.serverId);
+			}
+
+			if (this.threadId != null) {
+				g.writeNumberField("thread_id", this.threadId);
+			}
+		}
+
 		if ( this.excludeColumns != null ) {
 			// NOTE: to avoid concurrent modification.
 			Set<String> keys = new HashSet<String>();
@@ -298,6 +311,22 @@ public class RowMap implements Serializable {
 
 	public boolean isTXCommit() {
 		return this.txCommit;
+	}
+
+	public Long getServerId() {
+		return serverId;
+	}
+
+	public void setServerId(Long serverId) {
+		this.serverId = serverId;
+	}
+
+	public Long getThreadId() {
+		return threadId;
+	}
+
+	public void setThreadId(Long threadId) {
+		this.threadId = threadId;
 	}
 
 	public String getDatabase() {

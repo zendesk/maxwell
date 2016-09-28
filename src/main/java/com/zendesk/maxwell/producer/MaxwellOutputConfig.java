@@ -4,10 +4,12 @@ public class MaxwellOutputConfig {
 	public boolean includesBinlogPosition;
 	public boolean includesCommitInfo;
 	public boolean includesNulls;
+	public boolean includesThreadInfo;
 
 	public MaxwellOutputConfig() {
 		this.includesBinlogPosition = false;
 		this.includesCommitInfo = true;
 		this.includesNulls = true;
+		this.includesThreadInfo = false;
 	}
 }

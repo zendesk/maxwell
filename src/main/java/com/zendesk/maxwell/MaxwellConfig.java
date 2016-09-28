@@ -94,6 +94,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "output_binlog_position", "produced records include binlog position; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_commit_info", "produced records include commit and xid; [true|false]. default: true" ).withOptionalArg();
 		parser.accepts( "output_nulls", "produced records include fields with NULL values [true|false]. default: true" ).withOptionalArg();
+		parser.accepts( "output_thread_info", "produced records include server_id and thread_id; [true|false]. default: false" ).withOptionalArg();
 
 		parser.accepts( "__separator_5" );
 
@@ -277,6 +278,7 @@ public class MaxwellConfig extends AbstractConfig {
 		outputConfig.includesBinlogPosition = fetchBooleanOption("output_binlog_position", options, properties, false);
 		outputConfig.includesCommitInfo = fetchBooleanOption("output_commit_info", options, properties, true);
 		outputConfig.includesNulls = fetchBooleanOption("output_nulls", options, properties, true);
+		outputConfig.includesThreadInfo = fetchBooleanOption("output_thread_info", options, properties, false);
 	}
 
 	private Properties parseFile(String filename, Boolean abortOnMissing) {
