@@ -387,9 +387,11 @@ public class MaxwellReplicator extends RunLoopProcess {
 					break;
 				case MySQLConstants.QUERY_EVENT:
 					QueryEvent qe = (QueryEvent) v4Event;
-					if (qe.getSql().toString().equals("BEGIN"))
+					if (qe.getSql().toString().equals("BEGIN")) {
 						rowBuffer = getTransactionRows();
-					else {
+						rowBuffer.setServerId(qe.getHeader().getServerId());
+						rowBuffer.setThreadId(qe.getThreadId());
+					} else {
 						processQueryEvent((QueryEvent) v4Event);
 						setReplicatorPosition((AbstractBinlogEventV4) v4Event);
 					}
