@@ -53,6 +53,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 			setBootstrapRowToStarted(startBootstrapRow, connection);
 			ResultSet resultSet = getAllRows(databaseName, tableName, schema, streamingConnection);
 			int insertedRows = 0;
+	                lastInsertedRowsUpdateTimeMillis = 0; // ensure updateInsertedRowsColumn is called at least once
 			while ( resultSet.next() ) {
 				RowMap row = bootstrapEventRowMap("bootstrap-insert", table, position);
 				setRowValues(row, resultSet, table);
