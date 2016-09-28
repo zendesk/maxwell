@@ -209,14 +209,12 @@ public class RowMap implements Serializable {
 			g.writeStringField("position", this.nextPosition.getFile() + ":" + this.nextPosition.getOffset());
 
 
-		if ( outputConfig.includesThreadInfo ) {
-			if (this.serverId != null) {
-				g.writeNumberField("server_id", this.serverId);
-			}
+		if ( outputConfig.includesServerId && this.serverId != null ) {
+			g.writeNumberField("server_id", this.serverId);
+		}
 
-			if (this.threadId != null) {
-				g.writeNumberField("thread_id", this.threadId);
-			}
+		if ( outputConfig.includesThreadId && this.threadId != null ) {
+			g.writeNumberField("thread_id", this.threadId);
 		}
 
 		if ( this.excludeColumns != null ) {
