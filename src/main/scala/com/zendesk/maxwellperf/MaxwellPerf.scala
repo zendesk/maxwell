@@ -11,8 +11,6 @@ import scala.util.Try
 
 class MaxwellPerf(args: Array[String]) {
   val config = new MaxwellConfig(args)
-  config.databaseName = "maxwell_perf"
-  config.maxwellMysql.database = "maxwell_perf"
 
   val uri = config.replicationMysql.getConnectionURI(false)
   val connection = DriverManager.getConnection(uri, config.replicationMysql.user, config.replicationMysql.password)
@@ -45,7 +43,6 @@ class MaxwellPerf(args: Array[String]) {
   }
 
   def loadData(schemaFile: String, dataFile: String) = {
-    connection.createStatement.execute("drop database if exists maxwell_perf")
     connection.createStatement.execute("drop database if exists test_maxwell_perf")
     connection.createStatement.execute("create database test_maxwell_perf")
     connection.setCatalog("test_maxwell_perf")
@@ -61,6 +58,7 @@ class MaxwellPerf(args: Array[String]) {
   }
 
   def run() = {
+    config.replayMode = true
     val maxwell = new Maxwell(config)
     new Thread {
       override def run(): Unit = {
