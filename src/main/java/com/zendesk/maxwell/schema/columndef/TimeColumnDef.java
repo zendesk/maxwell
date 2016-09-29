@@ -17,7 +17,7 @@ public class TimeColumnDef extends ColumnDefWithLength {
 
 	protected String formatValue(Object value) {
 		if ( value instanceof Timestamp ) {
-			Time time = new java.sql.Time(((Timestamp) value).getTime());
+			Time time = new Time(((Timestamp) value).getTime());
 			String timeAsStr = String.valueOf(time);
 
 			return objectWithPrecisionToString(timeAsStr, (Timestamp) value, this.columnLength);

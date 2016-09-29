@@ -137,7 +137,7 @@ public class SchemaStoreSchema {
 		}
 
 		if ( !getTableColumns("columns", c).containsKey("column_length") ) {
-			performAlter(c, "alter table `columns` add column `column_length` bigint unsigned");
+			performAlter(c, "alter table `columns` add column `column_length` tinyint unsigned");
 		}
 
 		if ( !schemaColumns.containsKey("position_sha") ) {
