@@ -186,10 +186,10 @@ public class ColumnDefTest extends TestWithNameLogging {
 		Timestamp t = new Timestamp(307653559000L - TimeZone.getDefault().getOffset(307653559000L));
 
 		t.setNanos(0);
-		assertThat(d.toSQL(t), is("'19:19:19'"));
+		assertThat(d.toSQL(t), is("'19:19:19.000'"));
 
 		t.setNanos(123000);
-		assertThat(d.toSQL(t), is("'19:19:19'"));
+		assertThat(d.toSQL(t), is("'19:19:19.000'"));
 
 		t.setNanos(123456789);
 		assertThat(d.toSQL(t), is("'19:19:19.123'"));
@@ -203,6 +203,9 @@ public class ColumnDefTest extends TestWithNameLogging {
 		assertTrue(d.matchesMysqlType(MySQLConstants.TYPE_TIME));
 
 		Timestamp t = new Timestamp(307653559000L - TimeZone.getDefault().getOffset(307653559000L));
+
+		t.setNanos(0);
+		assertThat(d.toSQL(t), is("'19:19:19.000000'"));
 
 		t.setNanos(123456789);
 		assertThat(d.toSQL(t), is("'19:19:19.123456'"));
@@ -255,6 +258,9 @@ public class ColumnDefTest extends TestWithNameLogging {
 		Timestamp t = Timestamp.valueOf("1979-10-01 19:19:19.123");
 		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.123'"));
 
+		t = Timestamp.valueOf("1979-10-01 19:19:19");
+		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.000'"));
+
 		t = Timestamp.valueOf("1979-10-01 19:19:19.001");
 		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.001'"));
 	}
@@ -301,6 +307,15 @@ public class ColumnDefTest extends TestWithNameLogging {
 
 		Timestamp t = Timestamp.valueOf("1979-10-01 19:19:19.123456000");
 		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.123'"));
+
+		t = Timestamp.valueOf("1979-10-01 19:19:19");
+		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.000'"));
+
+		t = Timestamp.valueOf("1979-10-01 19:19:19.000");
+		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.000'"));
+
+		t = Timestamp.valueOf("1979-10-01 19:19:19.001");
+		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.001'"));
 	}
 
 	@Test

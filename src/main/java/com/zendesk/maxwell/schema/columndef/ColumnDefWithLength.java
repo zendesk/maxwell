@@ -57,13 +57,13 @@ public abstract class ColumnDefWithLength extends ColumnDef {
 	}
 
 	protected static String objectWithPrecisionToString(String value, Timestamp t, Long columnLength) {
+		if ( columnLength == 0L )
+			return value;
+
 		// 6 is the max precision of datetime2/time6/timestamp2 in MysQL
 		// 3: we go from nano (10^9) to micro (10^6)
 		int divideBy = (int) Math.pow(10, 6 + 3 - columnLength);
 		int fractional = ((int) t.getNanos()) / divideBy;
-
-		if (fractional == 0)
-			return value;
 
 		String strFractional = String.format(buildStrFormatForColLength(columnLength), fractional);
 
