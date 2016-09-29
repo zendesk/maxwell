@@ -204,11 +204,11 @@ public class ColumnDefTest extends TestWithNameLogging {
 
 		Timestamp t = new Timestamp(307653559000L - TimeZone.getDefault().getOffset(307653559000L));
 
+		t.setNanos(123456789);
+		assertThat(d.toSQL(t), is("'19:19:19.123456'"));
+
 		t.setNanos(123000);
 		assertThat(d.toSQL(t), is("'19:19:19.000123'"));
-
-		t.setNanos(123456789);
-		assertThat(d.toSQL(t), is("'19:19:19.123457'"));
 	}
 
 	@Test
@@ -241,7 +241,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 
 		assertTrue(d.matchesMysqlType(MySQLConstants.TYPE_DATETIME));
 
-		Timestamp t = new Timestamp(307653559000L - TimeZone.getDefault().getOffset(307653559000L));
+		Timestamp t = Timestamp.valueOf("1979-10-01 19:19:19");
 		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19'"));
 	}
 
@@ -252,19 +252,11 @@ public class ColumnDefTest extends TestWithNameLogging {
 
 		assertTrue(d.matchesMysqlType(MySQLConstants.TYPE_DATETIME));
 
-		Timestamp t = new Timestamp(307653559000L - TimeZone.getDefault().getOffset(307653559000L));
-
-		t.setNanos(0);
-		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19'"));
-
-		t.setNanos(123000);
-		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19'"));
-
-		t.setNanos(123000000);
+		Timestamp t = Timestamp.valueOf("1979-10-01 19:19:19.123");
 		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.123'"));
 
-		t.setNanos(123456789);
-		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.123'"));
+		t = Timestamp.valueOf("1979-10-01 19:19:19.001");
+		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.001'"));
 	}
 
 	@Test
@@ -274,19 +266,19 @@ public class ColumnDefTest extends TestWithNameLogging {
 
 		assertTrue(d.matchesMysqlType(MySQLConstants.TYPE_DATETIME));
 
-		Timestamp t = new Timestamp(307653559000L - TimeZone.getDefault().getOffset(307653559000L));
+		Timestamp t = Timestamp.valueOf("1979-10-01 19:19:19.001000");
+		org.junit.Assert.assertEquals(1000000, t.getNanos());
+		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.001000'"));
 
-		t.setNanos(123000000);
-		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.123000'"));
+		t = Timestamp.valueOf("1979-10-01 19:19:19.000001");
+		org.junit.Assert.assertEquals(1000, t.getNanos());
+		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.000001'"));
 
-		t.setNanos(123000);
-		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.000123'"));
+		t = Timestamp.valueOf("1979-10-01 19:19:19.345678");
+		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.345678'"));
 
-		t.setNanos(123456000);
-		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.123456'"));
-
-		t.setNanos(123456789);
-		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.123457'"));
+		t = Timestamp.valueOf("1979-10-01 19:19:19.100000");
+		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.100000'"));
 	}
 
 	@Test
@@ -296,7 +288,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 
 		assertTrue(d.matchesMysqlType(MySQLConstants.TYPE_TIMESTAMP));
 
-		Timestamp t = new Timestamp(307653559000L - TimeZone.getDefault().getOffset(307653559000L));
+		Timestamp t = Timestamp.valueOf("1979-10-01 19:19:19");
 		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19'"));
 	}
 
@@ -307,10 +299,25 @@ public class ColumnDefTest extends TestWithNameLogging {
 
 		assertTrue(d.matchesMysqlType(MySQLConstants.TYPE_TIMESTAMP));
 
-		Timestamp t = new Timestamp(307653559000L - TimeZone.getDefault().getOffset(307653559000L));
-		t.setNanos(123456000);
-
+		Timestamp t = Timestamp.valueOf("1979-10-01 19:19:19.123456000");
 		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.123'"));
+	}
+
+	@Test
+	public void TestTimestampWithMicroSecPrecision() throws ParseException {
+		ColumnDef d = build("timestamp", true, 6L);
+		assertThat(d, instanceOf(DateTimeColumnDef.class));
+
+		assertTrue(d.matchesMysqlType(MySQLConstants.TYPE_TIMESTAMP));
+
+		Timestamp t = Timestamp.valueOf("1979-10-01 19:19:19.123456000");
+		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.123456'"));
+
+		t = Timestamp.valueOf("1979-10-01 19:19:19.000123");
+		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.000123'"));
+
+		t = Timestamp.valueOf("1979-10-01 19:19:19.000001");
+		assertThat(d.toSQL(t), is("'1979-10-01 19:19:19.000001'"));
 	}
 
 	@Test

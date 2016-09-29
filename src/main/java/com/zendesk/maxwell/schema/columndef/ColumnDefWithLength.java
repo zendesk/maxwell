@@ -35,7 +35,6 @@ public abstract class ColumnDefWithLength extends ColumnDef {
 		return "'" + formatValue(value) + "'";
 	}
 
-
 	@Override
 	public Object asJSON(Object value) {
 		return formatValue(value);
@@ -49,35 +48,29 @@ public abstract class ColumnDefWithLength extends ColumnDef {
 
 	protected abstract String formatValue(Object value);
 
-	// Rounds the number of nano secs to the column length.
-	// See http://dev.mysql.com/doc/refman/5.6/en/fractional-seconds.html
-	// 123 456 789 nano secs for:
-	// - col length 3 -> 123 ;
-	// - col length 6 -> 123 457.
-	// 123 456 nano secs (123 micro secs):
-	// - col length 3 -> 0 (milli secs)
-	// - col length 6 -> 123 (micro secs).
-	protected static int roundNanosToColumnLength(int nanos, Long columnLength) {
-		// 6 is the max precision of datetime2/time6/timestamp2 in MysQL
-		// 3: we go from nano (10^9) to micro (10^6)
-		int divideBy = (int) Math.pow(10, 6 + 3 - columnLength);
-		BigDecimal bigDivideBy = new BigDecimal(divideBy);
-		java.math.RoundingMode rounding = java.math.RoundingMode.HALF_UP;
-		// Scale of result is 0
-		BigDecimal result = new BigDecimal(nanos).divide(bigDivideBy, 0, rounding);
-		return result.intValue();
+	protected static String buildStrFormatForColLength(Long columnLength) {
+		StringBuilder result = threadLocalBuilder.get();
+		result.append("%0");
+		result.append(columnLength);
+		result.append("d");
+		return result.toString();
 	}
 
 	protected static String objectWithPrecisionToString(String value, Timestamp t, Long columnLength) {
-		int fraction = roundNanosToColumnLength(t.getNanos(), columnLength);
-		if (fraction == 0)
+		// 6 is the max precision of datetime2/time6/timestamp2 in MysQL
+		// 3: we go from nano (10^9) to micro (10^6)
+		int divideBy = (int) Math.pow(10, 6 + 3 - columnLength);
+		int fractional = ((int) t.getNanos()) / divideBy;
+
+		if (fractional == 0)
 			return value;
 
-		String strFormat = "%0" + columnLength + "d";
+		String strFractional = String.format(buildStrFormatForColLength(columnLength), fractional);
+
 		StringBuilder result = threadLocalBuilder.get();
 		result.append(value);
 		result.append(".");
-		result.append(String.format(strFormat, fraction));
+		result.append(strFractional);
 
 		return result.toString();
 	}

@@ -294,6 +294,17 @@ public class MysqlSavedSchema {
 		}
 	}
 
+	public static MysqlSavedSchema restoreFromSchemaID(MysqlSavedSchema savedSchema, MaxwellContext context) throws SQLException, InvalidSchemaError {
+		try ( Connection conn = context.getMaxwellConnectionPool().getConnection() ) {
+			Long schemaID = savedSchema.getSchemaID();
+			if (schemaID == null)
+				return null;
+
+			savedSchema.restoreFromSchemaID(conn, schemaID);
+			return savedSchema;
+		}
+	}
+
 	private List<ResolvedSchemaChange> parseDeltas(String json) {
 		if ( json == null )
 			return null;

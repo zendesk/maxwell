@@ -43,8 +43,10 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 
 	@Before
 	public void setUp() throws Exception {
-		if ( server.getVersion().equals("5.6") )
+		if ( server.getVersion().equals("5.6") ) {
 			schemaSQL.add("CREATE TABLE shard_1.time_with_length (id int (11), dt2 datetime(3), ts2 timestamp(6), t2 time(6))");
+			schemaSQL.add("CREATE TABLE shard_1.without_col_length (badcol datetime(3))");
+		}
 
 		server.executeList(schemaSQL);
 
@@ -157,15 +159,14 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 		if ( !server.getVersion().equals("5.6") )
 			return;
 
-		schemaSQL.add("CREATE TABLE shard_1.without_col_length (badcol datetime(3))");
-
 		Connection c = context.getMaxwellConnection();
 		this.savedSchema.save(c);
 		c.createStatement().executeUpdate("update maxwell.schemas set version = 2 where id = " + this.savedSchema.getSchemaID());
 		c.createStatement().executeUpdate("update maxwell.columns set column_length = NULL where name = 'badcol'");
 
 		SchemaStoreSchema.upgradeSchemaStoreSchema(c);
-		DateTimeColumnDef cd1 = (DateTimeColumnDef) this.schema.findDatabase("shard_1").findTable("without_col_length").findColumn("badcol");
+		Schema schemaBefore = MysqlSavedSchema.restoreFromSchemaID(savedSchema, context).getSchema();
+		DateTimeColumnDef cd1 = (DateTimeColumnDef) schemaBefore.findDatabase("shard_1").findTable("without_col_length").findColumn("badcol");
 		assertEquals((Long) 0L, (Long) cd1.getColumnLength());
 
 		MysqlSavedSchema restored = MysqlSavedSchema.restore(context, context.getInitialPosition());
