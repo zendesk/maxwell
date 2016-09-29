@@ -26,7 +26,7 @@ public class ColumnDefSerializer extends JsonSerializer<ColumnDef> {
 				jgen.writeString(s);
 			jgen.writeEndArray();
 		} else if ( def instanceof ColumnDefWithLength ) {
-			// columnLength is a Long but technically, it' not that long. It it were, we could
+			// columnLength is a long but technically, it' not that long. It it were, we could
 			// need to use a string to represent it, instead of an integer, to avoid issues
 			// with Javascript when parsing long integers.
 			Long columnLength = ( (ColumnDefWithLength) def ).getColumnLength();

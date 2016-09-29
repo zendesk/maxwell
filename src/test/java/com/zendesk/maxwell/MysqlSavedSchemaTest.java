@@ -2,6 +2,7 @@ package com.zendesk.maxwell;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -94,8 +95,6 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 
 		this.savedSchema.save(context.getMaxwellConnection());
 
-		MysqlSavedSchema restoredSchema = MysqlSavedSchema.restore(context, context.getInitialPosition());
-
 		MysqlSavedSchema restored = MysqlSavedSchema.restore(context, context.getInitialPosition());
 
 		DateTimeColumnDef cd = (DateTimeColumnDef) restored.getSchema().findDatabase("shard_1").findTable("time_with_length").findColumn("dt2");
@@ -141,5 +140,37 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 				"drop column base_schema_id, drop column deltas, drop column version, drop column position_sha");
 		c.createStatement().executeUpdate("alter table maxwell.positions drop column client_id");
 		SchemaStoreSchema.upgradeSchemaStoreSchema(c); // just verify no-crash.
+	}
+
+	@Test
+	public void testUpgradeAddColumnLength() throws Exception {
+		if ( !server.getVersion().equals("5.6") )
+			return;
+
+		Connection c = context.getMaxwellConnection();
+		c.createStatement().executeUpdate("alter table `maxwell`.`columns` drop column column_length");
+		SchemaStoreSchema.upgradeSchemaStoreSchema(c); // just verify no-crash.
+	}
+
+	@Test
+	public void testUpgradeAddColumnLengthForExistingSchemas() throws Exception {
+		if ( !server.getVersion().equals("5.6") )
+			return;
+
+		schemaSQL.add("CREATE TABLE shard_1.without_col_length (badcol datetime(3))");
+
+		Connection c = context.getMaxwellConnection();
+		this.savedSchema.save(c);
+		c.createStatement().executeUpdate("update maxwell.schemas set version = 2 where id = " + this.savedSchema.getSchemaID());
+		c.createStatement().executeUpdate("update maxwell.columns set column_length = NULL where name = 'badcol'");
+
+		SchemaStoreSchema.upgradeSchemaStoreSchema(c);
+		DateTimeColumnDef cd1 = (DateTimeColumnDef) this.schema.findDatabase("shard_1").findTable("without_col_length").findColumn("badcol");
+		assertEquals((Long) 0L, (Long) cd1.getColumnLength());
+
+		MysqlSavedSchema restored = MysqlSavedSchema.restore(context, context.getInitialPosition());
+		DateTimeColumnDef cd = (DateTimeColumnDef) restored.getSchema().findDatabase("shard_1").findTable("without_col_length").findColumn("badcol");
+
+		assertEquals((Long) 3L, (Long) cd.getColumnLength());
 	}
 }

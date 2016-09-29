@@ -30,8 +30,6 @@ public abstract class ColumnDefWithLength extends ColumnDef {
 			this.columnLength = columnLength;
 	}
 
-	public Long getColumnLength() { return columnLength ; }
-
 	@Override
 	public String toSQL(Object value) {
 		return "'" + formatValue(value) + "'";
@@ -41,6 +39,12 @@ public abstract class ColumnDefWithLength extends ColumnDef {
 	@Override
 	public Object asJSON(Object value) {
 		return formatValue(value);
+	}
+
+	public Long getColumnLength() { return columnLength ; }
+
+	public void setColumnLength(long length) {
+		this.columnLength = length;
 	}
 
 	protected abstract String formatValue(Object value);

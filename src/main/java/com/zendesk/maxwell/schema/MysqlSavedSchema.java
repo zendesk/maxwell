@@ -26,7 +26,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import snaq.db.ConnectionPool;
 
 public class MysqlSavedSchema {
-	static int SchemaStoreVersion = 2;
+	static int SchemaStoreVersion = 3;
 
 	private Schema schema;
 	private BinlogPosition position;
@@ -579,8 +579,36 @@ public class MysqlSavedSchema {
 			this.shouldSnapshotNextSchema = true;
 	}
 
+	private void fixColumnLength(Schema recaptured) throws SQLException {
+		int colLengthDiffs = 0;
+
+		for ( Pair<ColumnDef, ColumnDef> pair : schema.matchColumns(recaptured) ) {
+			ColumnDef cA = pair.getLeft();
+			ColumnDef cB = pair.getRight();
+
+			if (cA instanceof ColumnDefWithLength) {
+				if (cB != null && cB instanceof ColumnDefWithLength) {
+					long aColLength = ((ColumnDefWithLength) cA).getColumnLength();
+					long bColLength = ((ColumnDefWithLength) cB).getColumnLength();
+
+					if ( aColLength != bColLength ) {
+						colLengthDiffs++;
+						LOGGER.info("correcting column length of `" + cA.getName() + "` to `" + cB.getName() + "`.  Will save a full schema snapshot after the new DDL update is processed.");
+						((ColumnDefWithLength) cA).setColumnLength(bColLength);
+					}
+				} else {
+					LOGGER.warn("warning: Couldn't check for column length on column " + cA.getName() +
+						".  You may want to recapture your schema");
+				}
+			}
+
+			if ( colLengthDiffs > 0 )
+				this.shouldSnapshotNextSchema = true;
+		}
+	}
+
 	protected void handleVersionUpgrades(Connection conn) throws SQLException, InvalidSchemaError {
-		if ( this.schemaVersion < 2 ) {
+		if ( this.schemaVersion < 3 ) {
 			Schema recaptured = new SchemaCapturer(conn, sensitivity).capture();
 
 			if ( this.schemaVersion < 1 ) {
@@ -597,6 +625,10 @@ public class MysqlSavedSchema {
 
 			if ( this.schemaVersion < 2 ) {
 				fixColumnCases(recaptured);
+			}
+
+			if ( this.schemaVersion < 3 ) {
+				fixColumnLength(recaptured);
 			}
 		}
 	}

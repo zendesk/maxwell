@@ -102,6 +102,8 @@ public class SchemaCapturer {
 		infoSchemaStmt.setString(2, t.getName());
 		ResultSet r = infoSchemaStmt.executeQuery();
 
+		boolean hasDateTimePrecision = !( t.findColumn("DATETIME_PRECISION") == null );
+
 		while(r.next()) {
 			String[] enumValues = null;
 			String colName    = r.getString("COLUMN_NAME");
@@ -112,11 +114,10 @@ public class SchemaCapturer {
 			Long columnLength;
 
 			// Only available for datetime/timestamp/time
-			try {
+			if ( hasDateTimePrecision )
 				columnLength = r.getLong("DATETIME_PRECISION");
-			} catch ( java.sql.SQLException e ) {
+			else
 				columnLength = null;
-			}
 
 			if ( r.getString("COLUMN_KEY").equals("PRI") )
 				t.pkIndex = i;
