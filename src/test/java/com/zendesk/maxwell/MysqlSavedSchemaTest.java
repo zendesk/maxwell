@@ -150,8 +150,14 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 			return;
 
 		Connection c = context.getMaxwellConnection();
+		this.savedSchema.save(c);
 		c.createStatement().executeUpdate("alter table `maxwell`.`columns` drop column column_length");
 		SchemaStoreSchema.upgradeSchemaStoreSchema(c); // just verify no-crash.
+
+		Schema schemaBefore = MysqlSavedSchema.restoreFromSchemaID(this.savedSchema, context).getSchema();
+		DateTimeColumnDef cd1 = (DateTimeColumnDef) schemaBefore.findDatabase("shard_1").findTable("without_col_length").findColumn("badcol");
+
+		assertEquals((Long) 0L, (Long) cd1.getColumnLength());
 	}
 
 	@Test

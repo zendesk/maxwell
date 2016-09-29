@@ -449,6 +449,13 @@ public class MysqlSavedSchema {
 
 		int i = 0;
 		while (cRS.next()) {
+			Long columnLength;
+			int columnLengthInt = cRS.getInt("column_length");
+			if ( cRS.wasNull() )
+				columnLength = null;
+			else
+				columnLength = Long.valueOf(columnLengthInt);
+
 			String[] enumValues = null;
 			if ( cRS.getString("enum_values") != null )
 				enumValues = StringUtils.splitByWholeSeparatorPreserveAllTokens(cRS.getString("enum_values"), ",");
@@ -458,7 +465,7 @@ public class MysqlSavedSchema {
 					cRS.getString("coltype"), i++,
 					cRS.getInt("is_signed") == 1,
 					enumValues,
-					Long.valueOf(cRS.getInt("column_length")));
+					columnLength);
 			t.addColumn(c);
 		}
 
@@ -466,7 +473,6 @@ public class MysqlSavedSchema {
 			List<String> pkList = Arrays.asList(StringUtils.split(pks, ','));
 			t.setPKList(pkList);
 		}
-
 	}
 
 	private static Long findSchema(Connection connection, BinlogPosition targetPosition, Long serverID)
