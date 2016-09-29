@@ -105,12 +105,12 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 		if ( server.getVersion().equals("5.6") ) {
 			testColumnType("timestamp(6)", "'2015-11-07 01:02:03.333444'","2015-11-07 01:02:03.333444");
 			testColumnType("timestamp(6)", "'2015-11-07 01:02:03.123'","2015-11-07 01:02:03.123000");
-			testColumnType("timestamp(6)", "'2015-11-07 01:02:03.0'","2015-11-07 01:02:03");
+			testColumnType("timestamp(6)", "'2015-11-07 01:02:03.0'","2015-11-07 01:02:03.000000");
 
 			testColumnType("timestamp(3)", "'2015-11-07 01:02:03.123456'","2015-11-07 01:02:03.123");
 			testColumnType("timestamp(3)", "'2015-11-07 01:02:03.123'","2015-11-07 01:02:03.123");
 			testColumnType("timestamp(3)", "'2015-11-07 01:02:03.1'","2015-11-07 01:02:03.100");
-			testColumnType("timestamp(3)", "'2015-11-07 01:02:03.0'","2015-11-07 01:02:03");
+			testColumnType("timestamp(3)", "'2015-11-07 01:02:03.0'","2015-11-07 01:02:03.000");
 
 			testColumnType("datetime(6)", "'2015-11-07 01:02:03.123456'","2015-11-07 01:02:03.123456");
 			testColumnType("datetime(6)", "'2015-11-07 01:02:03.123'","2015-11-07 01:02:03.123000");
