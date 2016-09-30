@@ -610,7 +610,7 @@ public class MysqlSavedSchema {
 
 					if ( aColLength != bColLength ) {
 						colLengthDiffs++;
-						LOGGER.info("correcting column length of `" + cA.getName() + "` to `" + cB.getName() + "`.  Will save a full schema snapshot after the new DDL update is processed.");
+						LOGGER.info("correcting column length of `" + cA.getName() + "` to " + bColLength + ".  Will save a full schema snapshot after the new DDL update is processed.");
 						((ColumnDefWithLength) cA).setColumnLength(bColLength);
 					}
 				} else {
