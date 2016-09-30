@@ -50,6 +50,24 @@ password=maxwell
 #replication_password=password
 #replication_port=3306
 
+######### output format stuff ###############
+
+# records include binlog position (default false)
+#output_binlog_position=true
+
+# records output null values (default true)
+#output_nulls=true
+
+# records include server_id (default false)
+#output_server_id=true
+
+# records include thread_id (default false)
+#output_thread_id=true
+
+# records include commit and xid (default true)
+#output_commit_info=true
+
+
 ######### kafka stuff ###############
 
 # list of kafka brokers
@@ -136,9 +154,3 @@ password=maxwell
 
 # output filename when using the "file" producer
 #output_file=/path/to/file
-
-# produced records include binlog position
-#output_binlog_position=true
-
-# produced records include commit and xid
-#output_commit_info=true

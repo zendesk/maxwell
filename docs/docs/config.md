@@ -24,6 +24,9 @@ option                                        | description | default
 &nbsp;
 --output_binlog_position                      | produced records include binlog position: [true&#124;false] | false
 --output_commit_info                          | produced records include commit and xid: [true&#124;false] | true
+--output_nulls                                | produced records include fields with NULL values [true&#124;false] | true
+--output_server_id                            | produced records include server_id; [true&#124;false] | false
+--output_thread_id                            | produced records include thread_id; [true&#124;false] | false
 &nbsp;
 --replication_host                            | mysql host to replicate from.  Only specify if different from `host` (see notes) | schema-store host
 --replication_password                        | password on replication server | (none)
