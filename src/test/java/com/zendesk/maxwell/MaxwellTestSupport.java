@@ -60,9 +60,6 @@ public class MaxwellTestSupport {
 			}
 		}
 
-		if ( resetBinlogs )
-			queries.add("RESET MASTER");
-
 		String shardedFileName;
 		if ( server.getVersion().equals("5.6") )
 			shardedFileName = "sharded_56.sql";
@@ -76,7 +73,8 @@ public class MaxwellTestSupport {
 			queries.add(s);
 		}
 
-		queries.add("RESET MASTER");
+		if ( resetBinlogs )
+			queries.add("RESET MASTER");
 
 		server.executeList(queries);
 	}
