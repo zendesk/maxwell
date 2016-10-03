@@ -167,6 +167,17 @@
             <div class="col-md-10" role="main">
 
 <h1 id="maxwell-changelog">Maxwell changelog</h1>
+<h3 id="v122-bats-wearing-frog-pajamas"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.2.2">v1.2.2</a>: "bats wearing frog pajamas"</h3>
+<ul>
+<li>Maxwell will now include by default fields with NULL values (as null
+fields).  To disable this and restore the old functionality where fields
+were omitted, pass <code>--output_nulls=false</code></li>
+<li>Fix an issue with multi-client support where two replicators would
+ping-pong heartbeats at each other</li>
+<li>Fix an issue where a client would attempt to recover a position from a
+mismatched client_id</li>
+<li>Fix a bug when using CHANGE COLUMN on a primary key</li>
+</ul>
 <h3 id="v121-point-ones-are-a-sad-and-inevitable-fact"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.2.1">v1.2.1</a>: "point-ones are a sad and inevitable fact"</h3>
 <p>This is a bugfix release.
 - fix a parser bug around ALTER TABLE CHARACTER SET
