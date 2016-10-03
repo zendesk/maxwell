@@ -70,7 +70,7 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 		testColumnType("int", "-2147483648", -2147483648);
 		testColumnType("int", "2147483647", 2147483647);
 		testColumnType("int unsigned", "0", 0);
-		//  throws MySQLDataException
+		// throws MySQLDataException
 		//testColumnType("int unsigned", "4294967295", "4294967295");
 	}
 
@@ -79,13 +79,13 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 		testColumnType("bigint", "-9223372036854775808", -9223372036854775808L);
 		testColumnType("bigint", "9223372036854775807", 9223372036854775807L);
 		testColumnType("bigint unsigned", "0", 0);
-		//  throws MySQLDataException
+		// throws MySQLDataException
 		//testColumnType("bigint unsigned", "18446744073709551615", "18446744073709551615");
 	}
 
 	@Test
 	public void testStringTypes( ) throws Exception {
-		String epoch = String.valueOf(new Timestamp(0));  // timezone dependent
+		String epoch = String.valueOf(new Timestamp(0)); // timezone dependent
 		testColumnType("tinytext", "'hello'", "hello");
 		testColumnType("text", "'hello'", "hello");
 		testColumnType("mediumtext","'hello'", "hello");
@@ -95,12 +95,31 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 		testColumnType("date", "'2015-11-07'","2015-11-07");
 		testColumnType("date", "'0000-00-00'","0002-11-30", null);
 		testColumnType("datetime", "'2015-11-07 01:02:03'","2015-11-07 01:02:03");
+
 		if ( server.getVersion().equals("5.5") )
 			testColumnType("datetime", "'0000-00-00 00:00:00'","0000-00-00 00:00:00", null);
+
 		testColumnType("timestamp", "'2015-11-07 01:02:03'","2015-11-07 01:02:03");
 		testColumnType("timestamp", "'0000-00-00 00:00:00'","" + epoch.substring(0, epoch.length() - 2) + "", null);
-		if ( server.getVersion().equals("5.6") )
-			testColumnType("timestamp(3)", "'2015-11-07 01:02:03.123'","2015-11-07 01:02:03");
+
+		if ( server.getVersion().equals("5.6") ) {
+			testColumnType("timestamp(6)", "'2015-11-07 01:02:03.333444'","2015-11-07 01:02:03.333444");
+			testColumnType("timestamp(6)", "'2015-11-07 01:02:03.123'","2015-11-07 01:02:03.123000");
+			testColumnType("timestamp(6)", "'2015-11-07 01:02:03.0'","2015-11-07 01:02:03.000000");
+
+			testColumnType("timestamp(3)", "'2015-11-07 01:02:03.123456'","2015-11-07 01:02:03.123");
+			testColumnType("timestamp(3)", "'2015-11-07 01:02:03.123'","2015-11-07 01:02:03.123");
+			testColumnType("timestamp(3)", "'2015-11-07 01:02:03.1'","2015-11-07 01:02:03.100");
+			testColumnType("timestamp(3)", "'2015-11-07 01:02:03.0'","2015-11-07 01:02:03.000");
+
+			testColumnType("datetime(6)", "'2015-11-07 01:02:03.123456'","2015-11-07 01:02:03.123456");
+			testColumnType("datetime(6)", "'2015-11-07 01:02:03.123'","2015-11-07 01:02:03.123000");
+			testColumnType("datetime(3)", "'2015-11-07 01:02:03.123456'","2015-11-07 01:02:03.123");
+			testColumnType("datetime(3)", "'2015-11-07 01:02:03.123'","2015-11-07 01:02:03.123");
+			testColumnType("time(3)", "'01:02:03.123456'","01:02:03.123");
+			testColumnType("time(3)", "'01:02:03.123'","01:02:03.123");
+		}
+
 		testColumnType("enum('a', 'b')","'a'", "a");
 		testColumnType("bit(8)","b'01010101'", 85);
 		testColumnType("bit(8)","b'1'", 1);

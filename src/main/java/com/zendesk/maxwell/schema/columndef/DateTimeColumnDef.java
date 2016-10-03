@@ -6,9 +6,9 @@ import java.util.Date;
 
 import com.google.code.or.common.util.MySQLConstants;
 
-public class DateTimeColumnDef extends ColumnDef {
-	public DateTimeColumnDef(String name, String type, int pos) {
-		super(name, type, pos);
+public class DateTimeColumnDef extends ColumnDefWithLength {
+	public DateTimeColumnDef(String name, String type, int pos, Long columnLength) {
+		super(name, type, pos, columnLength);
 	}
 
 	private static SimpleDateFormat dateTimeFormatter;
@@ -20,29 +20,38 @@ public class DateTimeColumnDef extends ColumnDef {
 		return dateTimeFormatter;
 	}
 
-
 	@Override
 	public boolean matchesMysqlType(int type) {
 		if ( getType().equals("datetime") ) {
 			return type == MySQLConstants.TYPE_DATETIME ||
-				   type == MySQLConstants.TYPE_DATETIME2;
+				type == MySQLConstants.TYPE_DATETIME2;
 		} else {
 			return type == MySQLConstants.TYPE_TIMESTAMP ||
-				   type == MySQLConstants.TYPE_TIMESTAMP2;
+				type == MySQLConstants.TYPE_TIMESTAMP2;
 		}
 	}
 
-	private String formatValue(Object value) {
+	protected String formatValue(Object value) {
 		/* protect against multithreaded access of static dateTimeFormatter */
 		synchronized ( DateTimeColumnDef.class ) {
-			if ( value instanceof Long && getType().equals("datetime") )
+			if ( value instanceof Long && getType().equals("datetime") ) {
 				return formatLong(( Long ) value);
-			else if ( value instanceof Timestamp )
-				return getDateTimeFormatter().format(( Timestamp ) value);
-			else if ( value instanceof Date )
-				return getDateTimeFormatter().format(( Date ) value);
-			else
+
+			} else if ( value instanceof Timestamp ) {
+				Timestamp ts = (Timestamp) value;
+				String datetimeAsStr = getDateTimeFormatter().format(ts);
+
+				return objectWithPrecisionToString(datetimeAsStr, ts, this.columnLength);
+
+			} else if ( value instanceof Date ) {
+				Timestamp ts = new Timestamp((( Date ) value).getTime());
+				String dateAsStr = getDateTimeFormatter().format(ts);
+
+				return objectWithPrecisionToString(dateAsStr, ts, this.columnLength);
+
+			} else {
 				return "";
+			}
 		}
 	}
 
@@ -54,18 +63,6 @@ public class DateTimeColumnDef extends ColumnDef {
 		final int month = (int)(value % 100);
 		final int year = (int)(value / 100);
 
-		return String.format("%04d-%02d-%02d %02d:%02d:%02d",  year, month, day, hour, minute, second);
-	}
-
-
-	@Override
-	public String toSQL(Object value) {
-		return "'" + formatValue(value) + "'";
-	}
-
-
-	@Override
-	public Object asJSON(Object value) {
-		return formatValue(value);
+		return String.format("%04d-%02d-%02d %02d:%02d:%02d", year, month, day, hour, minute, second);
 	}
 }

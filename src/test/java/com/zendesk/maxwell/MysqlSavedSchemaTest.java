@@ -2,12 +2,15 @@ package com.zendesk.maxwell;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Connection;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
@@ -17,25 +20,34 @@ import com.zendesk.maxwell.schema.*;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.schema.columndef.IntColumnDef;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
+import com.zendesk.maxwell.schema.columndef.DateTimeColumnDef;
+import com.zendesk.maxwell.schema.columndef.TimeColumnDef;
 
 public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 	private Schema schema;
 	private BinlogPosition binlogPosition;
 	private MysqlSavedSchema savedSchema;
 
-	String schemaSQL[] = {
-		"delete from `maxwell`.`positions`",
-		"delete from `maxwell`.`schemas`",
-		"CREATE TABLE shard_1.latin1 (id int(11), str1 varchar(255), str2 varchar(255) character set 'utf8') charset = 'latin1'",
-		"CREATE TABLE shard_1.enums (id int(11), enum_col enum('foo', 'bar', 'baz'))",
-		"CREATE TABLE shard_1.pks (id int(11), col2 varchar(255), col3 datetime, PRIMARY KEY(col2, col3, id))",
-		"CREATE TABLE shard_1.pks_case (id int(11), Col2 varchar(255), COL3 datetime, PRIMARY KEY(col2, col3))",
-		"CREATE TABLE shard_1.signed (badcol int(10) unsigned, CaseCol char)"
+	String ary[] = {
+			"delete from `maxwell`.`positions`",
+			"delete from `maxwell`.`schemas`",
+			"CREATE TABLE shard_1.latin1 (id int(11), str1 varchar(255), str2 varchar(255) character set 'utf8') charset = 'latin1'",
+			"CREATE TABLE shard_1.enums (id int(11), enum_col enum('foo', 'bar', 'baz'))",
+			"CREATE TABLE shard_1.pks (id int(11), col2 varchar(255), col3 datetime, PRIMARY KEY(col2, col3, id))",
+			"CREATE TABLE shard_1.pks_case (id int(11), Col2 varchar(255), COL3 datetime, PRIMARY KEY(col2, col3))",
+			"CREATE TABLE shard_1.signed (badcol int(10) unsigned, CaseCol char)"
 	};
+	ArrayList<String> schemaSQL = new ArrayList(Arrays.asList(ary));
+
 	private MaxwellContext context;
 
 	@Before
 	public void setUp() throws Exception {
+		if ( server.getVersion().equals("5.6") ) {
+			schemaSQL.add("CREATE TABLE shard_1.time_with_length (id int (11), dt2 datetime(3), ts2 timestamp(6), t2 time(6))");
+			schemaSQL.add("CREATE TABLE shard_1.without_col_length (badcol datetime(3))");
+		}
+
 		server.executeList(schemaSQL);
 
 		this.binlogPosition = BinlogPosition.capture(server.getConnection());
@@ -79,6 +91,25 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
+	public void testTimeWithLengthCase() throws Exception {
+		if ( !server.getVersion().equals("5.6") )
+			return;
+
+		this.savedSchema.save(context.getMaxwellConnection());
+
+		MysqlSavedSchema restored = MysqlSavedSchema.restore(context, context.getInitialPosition());
+
+		DateTimeColumnDef cd = (DateTimeColumnDef) restored.getSchema().findDatabase("shard_1").findTable("time_with_length").findColumn("dt2");
+		assertThat(cd.getColumnLength(), is(3L));
+
+		cd = (DateTimeColumnDef) restored.getSchema().findDatabase("shard_1").findTable("time_with_length").findColumn("ts2");
+		assertThat(cd.getColumnLength(), is(6L));
+
+		TimeColumnDef cd2 = (TimeColumnDef) restored.getSchema().findDatabase("shard_1").findTable("time_with_length").findColumn("t2");
+		assertThat(cd2.getColumnLength(), is(6L));
+	}
+
+	@Test
 	public void testFixUnsignedColumnBug() throws Exception {
 		Connection c = context.getMaxwellConnection();
 		this.savedSchema.save(c);
@@ -111,5 +142,42 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 				"drop column base_schema_id, drop column deltas, drop column version, drop column position_sha");
 		c.createStatement().executeUpdate("alter table maxwell.positions drop column client_id");
 		SchemaStoreSchema.upgradeSchemaStoreSchema(c); // just verify no-crash.
+	}
+
+	@Test
+	public void testUpgradeAddColumnLength() throws Exception {
+		if ( !server.getVersion().equals("5.6") )
+			return;
+
+		Connection c = context.getMaxwellConnection();
+		this.savedSchema.save(c);
+		c.createStatement().executeUpdate("alter table `maxwell`.`columns` drop column column_length");
+		SchemaStoreSchema.upgradeSchemaStoreSchema(c); // just verify no-crash.
+
+		Schema schemaBefore = MysqlSavedSchema.restoreFromSchemaID(this.savedSchema, context).getSchema();
+		DateTimeColumnDef cd1 = (DateTimeColumnDef) schemaBefore.findDatabase("shard_1").findTable("without_col_length").findColumn("badcol");
+
+		assertEquals((Long) 0L, (Long) cd1.getColumnLength());
+	}
+
+	@Test
+	public void testUpgradeAddColumnLengthForExistingSchemas() throws Exception {
+		if ( !server.getVersion().equals("5.6") )
+			return;
+
+		Connection c = context.getMaxwellConnection();
+		this.savedSchema.save(c);
+		c.createStatement().executeUpdate("update maxwell.schemas set version = 2 where id = " + this.savedSchema.getSchemaID());
+		c.createStatement().executeUpdate("update maxwell.columns set column_length = NULL where name = 'badcol'");
+
+		SchemaStoreSchema.upgradeSchemaStoreSchema(c);
+		Schema schemaBefore = MysqlSavedSchema.restoreFromSchemaID(savedSchema, context).getSchema();
+		DateTimeColumnDef cd1 = (DateTimeColumnDef) schemaBefore.findDatabase("shard_1").findTable("without_col_length").findColumn("badcol");
+		assertEquals((Long) 0L, (Long) cd1.getColumnLength());
+
+		MysqlSavedSchema restored = MysqlSavedSchema.restore(context, context.getInitialPosition());
+		DateTimeColumnDef cd = (DateTimeColumnDef) restored.getSchema().findDatabase("shard_1").findTable("without_col_length").findColumn("badcol");
+
+		assertEquals((Long) 3L, (Long) cd.getColumnLength());
 	}
 }

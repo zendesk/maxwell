@@ -14,17 +14,24 @@ public class ColumnDefSerializer extends JsonSerializer<ColumnDef> {
 		jgen.writeStringField("type", def.type);
 		jgen.writeStringField("name", def.name);
 
-		if ( def instanceof StringColumnDef )
+		if ( def instanceof StringColumnDef ) {
 			jgen.writeStringField("charset", ((StringColumnDef) def).charset);
-		else if ( def instanceof IntColumnDef )
+		} else if ( def instanceof IntColumnDef ) {
 			jgen.writeBooleanField("signed", ((IntColumnDef) def).isSigned());
-		else if ( def instanceof BigIntColumnDef )
+		} else if ( def instanceof BigIntColumnDef ) {
 			jgen.writeBooleanField("signed", ((BigIntColumnDef) def).isSigned());
-		else if ( def instanceof EnumeratedColumnDef ) {
+		} else if ( def instanceof EnumeratedColumnDef ) {
 			jgen.writeArrayFieldStart("enum-values");
-			for ( String s : ((EnumeratedColumnDef) def).getEnumValues() )
+			for (String s : ((EnumeratedColumnDef) def).getEnumValues())
 				jgen.writeString(s);
 			jgen.writeEndArray();
+		} else if ( def instanceof ColumnDefWithLength ) {
+			// columnLength is a long but technically, it' not that long. It it were, we could
+			// need to use a string to represent it, instead of an integer, to avoid issues
+			// with Javascript when parsing long integers.
+			Long columnLength = ( (ColumnDefWithLength) def ).getColumnLength();
+			if ( columnLength != null )
+				jgen.writeNumberField("column-length", columnLength);
 		}
 		jgen.writeEndObject();
 	}
