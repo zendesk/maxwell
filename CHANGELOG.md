@@ -1,5 +1,13 @@
 # Maxwell changelog
 
+### [v1.3.0](https://github.com/zendesk/maxwell/releases/tag/v1.3.0): "yogg-saron"
+
+
+- support for fractional DATETIME, TIME, TIMESTAMP columns, thanks @Dagnan
+- support for outputting server_id & thread_id, thanks @sagiba
+- fix a race condition in bootstrap support
+
+
 ### [v1.2.2](https://github.com/zendesk/maxwell/releases/tag/v1.2.2): "bats wearing frog pajamas"
 
 
