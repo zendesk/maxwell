@@ -13,6 +13,6 @@ public class HashStringColumn implements HashStringProvider {
     }
 
     public String getHashString(RowMap r, List<String> partitionColumns) {
-        return r.getPartitionKey(partitionColumns);
+        return r.buildPartitionKey(partitionColumns);
     }
 }

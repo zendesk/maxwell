@@ -157,7 +157,7 @@ public class RowMap implements Serializable {
 		return keys;
 	}
 
-	public String getPartitionKey(List<String> partitionColumns) {
+	public String buildPartitionKey(List<String> partitionColumns) {
 		if (partitionColumns.isEmpty()) {
 			return table;
 		}
