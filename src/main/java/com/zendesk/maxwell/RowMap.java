@@ -157,6 +157,24 @@ public class RowMap implements Serializable {
 		return keys;
 	}
 
+	public String getPartitionKey(List<String> partitionColumns) {
+		if (partitionColumns.isEmpty()) {
+			return table;
+		}
+		// rename keys
+		String partitionKey="";
+		for (String pc : partitionColumns) {
+			Object pcValue = null;
+			if (data.containsKey(pc))
+				pcValue = data.get(pc);
+			if (pcValue != null)
+				partitionKey += pcValue.toString();
+		}
+		if (partitionKey.isEmpty())
+			return table;
+		return partitionKey;
+	}
+
 	private void writeMapToJSON(String jsonMapName, LinkedHashMap<String, Object> data, boolean includeNullField) throws IOException {
 		JsonGenerator generator = jsonGeneratorThreadLocal.get();
 		generator.writeObjectFieldStart(jsonMapName); // start of jsonMapName: {
