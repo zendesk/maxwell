@@ -161,7 +161,7 @@ public class RowMap implements Serializable {
 		if (partitionColumns.isEmpty()) {
 			return table;
 		}
-		// rename keys
+
 		String partitionKey="";
 		for (String pc : partitionColumns) {
 			Object pcValue = null;
