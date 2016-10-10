@@ -16,7 +16,9 @@ public class MaxwellKafkaPartitioner {
 	HashFunction hashFunc;
 	List<String> partitionColumns = new ArrayList<String>();
 
-	public MaxwellKafkaPartitioner(String hashFunction, String partitionKey) {
+	private String partitionKeyFallback;
+
+	public MaxwellKafkaPartitioner(String hashFunction, String partitionKey, String csvColumns, String partitionKeyFallback) {
 		int MURMUR_HASH_SEED = 25342;
 		switch (hashFunction) {
 			case "murmur3": this.hashFunc = new HashFunctionMurmur3(MURMUR_HASH_SEED);
@@ -38,6 +40,10 @@ public class MaxwellKafkaPartitioner {
 				this.provider = new HashStringDatabase();
 				break;
 		}
+		if ( partitionColumns != null )
+			this.partitionColumns = Arrays.asList(csvColumns.split(","));
+
+		this.partitionKeyFallback = partitionKeyFallback;
 	}
 
 	static protected String getDatabase(RowMap r) {
@@ -52,14 +58,7 @@ public class MaxwellKafkaPartitioner {
 		return r.pkAsConcatString();
 	}
 
-	public void setPartitionColumns(String csvColumns) {
-		this.partitionColumns = Arrays.asList(csvColumns.split(","));
-	}
-
 	public int kafkaPartition(RowMap r, int numPartitions) {
-		if ( this.provider instanceof HashStringColumn )
-			return Math.abs(hashFunc.hashCode(((HashStringColumn) provider).getHashString(r, this.partitionColumns)) % numPartitions);
-		else
-			return Math.abs(hashFunc.hashCode(provider.getHashString(r)) % numPartitions);
+		return Math.abs(hashFunc.hashCode(provider.getHashString(r, this.partitionColumns, this.partitionKeyFallback)) % numPartitions);
 	}
 }

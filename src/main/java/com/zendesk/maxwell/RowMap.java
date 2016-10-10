@@ -157,11 +157,7 @@ public class RowMap implements Serializable {
 		return keys;
 	}
 
-	public String buildPartitionKey(List<String> partitionColumns) {
-		if (partitionColumns.isEmpty()) {
-			return table;
-		}
-
+	public String buildPartitionKey(List<String> partitionColumns, String partitionKeyFallback) {
 		String partitionKey="";
 		for (String pc : partitionColumns) {
 			Object pcValue = null;
@@ -171,8 +167,20 @@ public class RowMap implements Serializable {
 				partitionKey += pcValue.toString();
 		}
 		if (partitionKey.isEmpty())
-			return table;
+			return getPartitionKeyFallback(partitionKeyFallback);
 		return partitionKey;
+	}
+
+	private String getPartitionKeyFallback(String partitionKeyFallback) {
+		switch (partitionKeyFallback) {
+			case "table":
+				return this.table;
+			case "primary_key":
+				return pkAsConcatString();
+			case "database":
+			default:
+				return this.database;
+		}
 	}
 
 	private void writeMapToJSON(String jsonMapName, LinkedHashMap<String, Object> data, boolean includeNullField) throws IOException {
