@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.row.RowMap;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.sql.ResultSet;

@@ -1,5 +1,6 @@
 package com.zendesk.maxwell;
 
+import com.zendesk.maxwell.row.RowMap;
 import org.junit.Test;
 
 import java.sql.Timestamp;

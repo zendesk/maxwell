@@ -1,7 +1,5 @@
-package com.zendesk.maxwell;
+package com.zendesk.maxwell.replication;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -10,7 +8,10 @@ import com.google.code.or.binlog.impl.event.AbstractRowEvent;
 import com.google.code.or.common.glossary.Column;
 import com.google.code.or.common.glossary.Row;
 import com.google.code.or.common.glossary.column.BitColumn;
-import com.zendesk.maxwell.schema.Database;
+import com.zendesk.maxwell.MaxwellFilter;
+import com.zendesk.maxwell.row.RowMap;
+import com.zendesk.maxwell.schema.ColumnWithDefinition;
+import com.zendesk.maxwell.schema.ColumnWithDefinitionList;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
 import org.slf4j.Logger;
@@ -21,8 +22,8 @@ import org.slf4j.LoggerFactory;
 // filters rows using the passed in MaxwellFilter,
 // and ultimately outputs arrays of RowMap objects.
 
-public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
-	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellAbstractRowsEvent.class);
+public abstract class AbstractRowsEvent extends AbstractRowEvent {
+	static final Logger LOGGER = LoggerFactory.getLogger(AbstractRowsEvent.class);
 	private final AbstractRowEvent event;
 	private final Long heartbeat;
 
@@ -30,7 +31,7 @@ public abstract class MaxwellAbstractRowsEvent extends AbstractRowEvent {
 	protected final String database;
 	protected final MaxwellFilter filter;
 
-	public MaxwellAbstractRowsEvent(AbstractRowEvent e, Table table, MaxwellFilter f, Long heartbeat) {
+	public AbstractRowsEvent(AbstractRowEvent e, Table table, MaxwellFilter f, Long heartbeat) {
 		this.tableId = e.getTableId();
 		this.event = e;
 		this.header = e.getHeader();

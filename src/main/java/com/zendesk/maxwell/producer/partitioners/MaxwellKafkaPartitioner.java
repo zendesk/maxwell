@@ -1,9 +1,6 @@
 package com.zendesk.maxwell.producer.partitioners;
 
-import com.zendesk.maxwell.RowMap;
-import org.apache.kafka.common.metrics.stats.Max;
-
-import java.io.IOException;
+import com.zendesk.maxwell.row.RowMap;
 
 /**
  * Created by kaufmannkr on 1/18/16.

@@ -1,4 +1,4 @@
-package com.zendesk.maxwell;
+package com.zendesk.maxwell.schema.columndef;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -13,7 +13,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
-import com.zendesk.maxwell.schema.columndef.*;
+import com.zendesk.maxwell.TestWithNameLogging;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

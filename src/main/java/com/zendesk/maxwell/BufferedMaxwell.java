@@ -1,6 +1,7 @@
 package com.zendesk.maxwell;
 
 import com.zendesk.maxwell.producer.BufferedProducer;
+import com.zendesk.maxwell.row.RowMap;
 
 import java.io.IOException;
 import java.sql.SQLException;

@@ -1,12 +1,10 @@
 package com.zendesk.maxwell.producer;
 
-import com.zendesk.maxwell.BinlogPosition;
+import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.RowMap;
+import com.zendesk.maxwell.row.RowMap;
 
-import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 

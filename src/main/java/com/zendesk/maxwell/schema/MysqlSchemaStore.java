@@ -2,7 +2,7 @@ package com.zendesk.maxwell.schema;
 
 import com.zendesk.maxwell.CaseSensitivity;
 import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.BinlogPosition;
+import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.MaxwellFilter;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;

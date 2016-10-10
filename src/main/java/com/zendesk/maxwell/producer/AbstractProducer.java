@@ -2,10 +2,9 @@ package com.zendesk.maxwell.producer;
 
 import java.sql.SQLException;
 
-import com.zendesk.maxwell.BinlogPosition;
-import com.zendesk.maxwell.MaxwellAbstractRowsEvent;
+import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.RowMap;
+import com.zendesk.maxwell.row.RowMap;
 
 public abstract class AbstractProducer {
 	protected final MaxwellContext context;
