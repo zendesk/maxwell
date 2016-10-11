@@ -18,7 +18,7 @@ public class MaxwellKafkaPartitioner {
 
 	private String partitionKeyFallback;
 
-	public MaxwellKafkaPartitioner(String hashFunction, String partitionKey, String csvColumns, String partitionKeyFallback) {
+	public MaxwellKafkaPartitioner(String hashFunction, String partitionKey, String csvPartitionColumns, String partitionKeyFallback) {
 		int MURMUR_HASH_SEED = 25342;
 		switch (hashFunction) {
 			case "murmur3": this.hashFunc = new HashFunctionMurmur3(MURMUR_HASH_SEED);
@@ -40,8 +40,8 @@ public class MaxwellKafkaPartitioner {
 				this.provider = new HashStringDatabase();
 				break;
 		}
-		if ( partitionColumns != null )
-			this.partitionColumns = Arrays.asList(csvColumns.split(","));
+		if ( csvPartitionColumns != null )
+			this.partitionColumns = Arrays.asList(csvPartitionColumns.split("\\s*,\\s*"));
 
 		this.partitionKeyFallback = partitionKeyFallback;
 	}
