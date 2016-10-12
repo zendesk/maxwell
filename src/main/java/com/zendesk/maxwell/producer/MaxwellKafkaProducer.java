@@ -93,7 +93,9 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 
 		String hash = context.getConfig().kafkaPartitionHash;
 		String partitionKey = context.getConfig().kafkaPartitionKey;
-		this.partitioner = new MaxwellKafkaPartitioner(hash, partitionKey);
+		String partitionColumns = context.getConfig().kafkaPartitionColumns;
+		String partitionFallback = context.getConfig().kafkaPartitionFallback;
+		this.partitioner = new MaxwellKafkaPartitioner(hash, partitionKey, partitionColumns, partitionFallback);
 
 		if ( context.getConfig().kafkaKeyFormat.equals("hash") )
 			keyFormat = KeyFormat.HASH;

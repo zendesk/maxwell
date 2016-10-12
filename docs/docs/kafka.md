@@ -33,7 +33,10 @@ A binlog event's partition is determined by the selected hash function and hash 
 
 The HASH_FUNCTION is either java's _hashCode_ or _murmurhash3_. The default HASH_FUNCTION is _hashCode_. Murmurhash3 may be set with the `kafka_partition_hash` option. The seed value for the murmurhash function is hardcoded to 25342 in the MaxwellKafkaPartitioner class.
  
-The HASH_STRING may be (_database_, _table_, _primary_key_).  The default HASH_STRING is the _database_. The partitioning field can be configured using the `kafka_partition_by` option.    
+The HASH_STRING may be (_database_, _table_, _primary_key_, _column_).  The default HASH_STRING is the _database_. The partitioning field can be configured using the `kafka_partition_by` option.
+
+When using `kafka_partition_by`=_column_ you must set `kafka_partition_columns` with the column name(s) to partition by (e.g. `kafka_partition_columns`=user_id or `kafka_partition_columns`=user_id,create_date). You must also set `kafka_partiton_by_fallback`. This may be (_database_, _table_, _primary_key_). It is used when the column(s) specified does not exist in the current row. The default is _database_.
+When partitioning by _column_ Maxwell will treat the values for the specified columns as strings, concatenate them and use that value to partition the data. The above example, partitioning by user_id + create_date would have a partition key similar to _1178532016-10-10 18:29:04_.
 
 Maxwell will discover the number of partitions in its kafka topic upon boot.  This means that you should pre-create your kafka topics,
 and with at least as many partitions as you have logical databases:
