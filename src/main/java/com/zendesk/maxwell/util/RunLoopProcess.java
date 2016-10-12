@@ -1,4 +1,4 @@
-package com.zendesk.maxwell;
+package com.zendesk.maxwell.util;
 
 import java.util.concurrent.TimeoutException;
 

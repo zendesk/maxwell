@@ -1,29 +1,30 @@
-package com.zendesk.maxwell;
+package com.zendesk.maxwell.replication;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.*;
 
-import com.google.code.or.binlog.impl.event.UpdateRowsEvent;
 import com.google.code.or.binlog.impl.event.UpdateRowsEventV2;
-import com.google.code.or.common.glossary.Column;
 import com.google.code.or.common.glossary.Pair;
 import com.google.code.or.common.glossary.Row;
 import com.google.code.or.common.glossary.column.BitColumn;
+import com.zendesk.maxwell.MaxwellFilter;
+import com.zendesk.maxwell.row.RowMap;
+import com.zendesk.maxwell.schema.ColumnWithDefinition;
+import com.zendesk.maxwell.schema.ColumnWithDefinitionList;
 import com.zendesk.maxwell.schema.Table;
-import com.zendesk.maxwell.schema.columndef.ColumnDef;
 
-public class MaxwellUpdateRowsEvent extends MaxwellAbstractRowsEvent {
-	private final UpdateRowsEvent event;
+public class UpdateRowsEvent extends AbstractRowsEvent {
+	private final com.google.code.or.binlog.impl.event.UpdateRowsEvent event;
 
-	public MaxwellUpdateRowsEvent(UpdateRowsEvent e, Table t, MaxwellFilter f, Long heartbeat) {
+	public UpdateRowsEvent(com.google.code.or.binlog.impl.event.UpdateRowsEvent e, Table t, MaxwellFilter f, Long heartbeat) {
 		super(e, t, f, heartbeat);
 		this.event = e;
 	}
 
-	public MaxwellUpdateRowsEvent(UpdateRowsEventV2 e2, Table table, MaxwellFilter filter, Long heartbeat) {
+	public UpdateRowsEvent(UpdateRowsEventV2 e2, Table table, MaxwellFilter filter, Long heartbeat) {
 		super(e2, table, filter, heartbeat);
-		UpdateRowsEvent e =  new UpdateRowsEvent(e2.getHeader());
+		com.google.code.or.binlog.impl.event.UpdateRowsEvent e =  new com.google.code.or.binlog.impl.event.UpdateRowsEvent(e2.getHeader());
 
 		e.setBinlogFilename(e2.getBinlogFilename());
 		e.setColumnCount(e2.getColumnCount());

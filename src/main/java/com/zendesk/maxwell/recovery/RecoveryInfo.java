@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.recovery;
 
-import com.zendesk.maxwell.BinlogPosition;
+import com.zendesk.maxwell.replication.BinlogPosition;
 
 public class RecoveryInfo {
 	public BinlogPosition position;

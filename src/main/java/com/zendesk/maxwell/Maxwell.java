@@ -4,8 +4,11 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.TimeoutException;
 import com.djdch.log4j.StaticShutdownCallbackRegistry;
+import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.replication.MaxwellReplicator;
 import com.zendesk.maxwell.recovery.Recovery;
 import com.zendesk.maxwell.recovery.RecoveryInfo;
+import com.zendesk.maxwell.util.Logging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -162,7 +165,7 @@ public class Maxwell implements Runnable {
 			MaxwellConfig config = new MaxwellConfig(args);
 
 			if ( config.log_level != null )
-				MaxwellLogging.setLevel(config.log_level);
+				Logging.setLevel(config.log_level);
 
 			final Maxwell maxwell = new Maxwell(config);
 

@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.producer;
 
 import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.RowMap;
+import com.zendesk.maxwell.row.RowMap;
 
 import java.io.File;
 import java.io.FileOutputStream;

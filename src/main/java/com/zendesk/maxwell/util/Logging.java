@@ -1,4 +1,4 @@
-package com.zendesk.maxwell;
+package com.zendesk.maxwell.util;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -6,7 +6,7 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 
-public class MaxwellLogging {
+public class Logging {
 	public static void setLevel(String level) {
 		LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
 		Configuration config = ctx.getConfiguration();

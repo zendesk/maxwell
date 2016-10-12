@@ -1,9 +1,10 @@
 package com.zendesk.maxwell.recovery;
 
 import com.zendesk.maxwell.*;
+import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.SchemaStoreSchema;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,9 +13,7 @@ import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;

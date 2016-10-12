@@ -1,4 +1,4 @@
-package com.zendesk.maxwell;
+package com.zendesk.maxwell.replication;
 
 import java.sql.SQLException;
 import java.util.Objects;
@@ -8,7 +8,12 @@ import java.util.regex.Pattern;
 
 import com.google.code.or.binlog.impl.event.*;
 import com.google.code.or.net.TransportException;
+import com.zendesk.maxwell.*;
+import com.zendesk.maxwell.row.HeartbeatRowMap;
+import com.zendesk.maxwell.row.RowMap;
+import com.zendesk.maxwell.row.RowMapBuffer;
 import com.zendesk.maxwell.schema.*;
+import com.zendesk.maxwell.util.RunLoopProcess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,10 +34,10 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 	private final LinkedBlockingDeque<BinlogEventV4> queue = new LinkedBlockingDeque<>(20);
 
-	protected MaxwellBinlogEventListener binlogEventListener;
+	protected BinlogEventListener binlogEventListener;
 
 	private final boolean shouldHeartbeat;
-	private final MaxwellTableCache tableCache = new MaxwellTableCache();
+	private final TableCache tableCache = new TableCache();
 	protected final OpenReplicator replicator;
 	private final PositionStoreThread positionStoreThread;
 	protected final AbstractProducer producer;
@@ -58,7 +63,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 		String clientID
 	) {
 		this.schemaStore = schemaStore;
-		this.binlogEventListener = new MaxwellBinlogEventListener(queue);
+		this.binlogEventListener = new BinlogEventListener(queue);
 
 		this.replicator = new OpenReplicator();
 		this.replicator.setBinlogEventListener(this.binlogEventListener);
@@ -159,7 +164,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 		if ( row == null )
 			return;
 
-		if ( row instanceof HeartbeatRowMap )
+		if ( row instanceof HeartbeatRowMap)
 			producer.push(row);
 		else if (!bootstrapper.shouldSkip(row) && !isMaxwellRow(row))
 			producer.push(row);
@@ -182,8 +187,8 @@ public class MaxwellReplicator extends RunLoopProcess {
 		return p;
 	}
 
-	private MaxwellAbstractRowsEvent processRowsEvent(AbstractRowEvent e) throws InvalidSchemaError {
-		MaxwellAbstractRowsEvent ew;
+	private AbstractRowsEvent processRowsEvent(AbstractRowEvent e) throws InvalidSchemaError {
+		AbstractRowsEvent ew;
 		Table table;
 
 		long tableId = e.getTableId();
@@ -200,22 +205,22 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 		switch (e.getHeader().getEventType()) {
 			case MySQLConstants.WRITE_ROWS_EVENT:
-				ew = new MaxwellWriteRowsEvent((WriteRowsEvent) e, table, filter, lastHeartbeatRead);
+				ew = new WriteRowsEvent((com.google.code.or.binlog.impl.event.WriteRowsEvent) e, table, filter, lastHeartbeatRead);
 				break;
 			case MySQLConstants.WRITE_ROWS_EVENT_V2:
-				ew = new MaxwellWriteRowsEvent((WriteRowsEventV2) e, table, filter, lastHeartbeatRead);
+				ew = new WriteRowsEvent((WriteRowsEventV2) e, table, filter, lastHeartbeatRead);
 				break;
 			case MySQLConstants.UPDATE_ROWS_EVENT:
-				ew = new MaxwellUpdateRowsEvent((UpdateRowsEvent) e, table, filter, lastHeartbeatRead);
+				ew = new UpdateRowsEvent((com.google.code.or.binlog.impl.event.UpdateRowsEvent) e, table, filter, lastHeartbeatRead);
 				break;
 			case MySQLConstants.UPDATE_ROWS_EVENT_V2:
-				ew = new MaxwellUpdateRowsEvent((UpdateRowsEventV2) e, table, filter, lastHeartbeatRead);
+				ew = new UpdateRowsEvent((UpdateRowsEventV2) e, table, filter, lastHeartbeatRead);
 				break;
 			case MySQLConstants.DELETE_ROWS_EVENT:
-				ew = new MaxwellDeleteRowsEvent((DeleteRowsEvent) e, table, filter, lastHeartbeatRead);
+				ew = new DeleteRowsEvent((com.google.code.or.binlog.impl.event.DeleteRowsEvent) e, table, filter, lastHeartbeatRead);
 				break;
 			case MySQLConstants.DELETE_ROWS_EVENT_V2:
-				ew = new MaxwellDeleteRowsEvent((DeleteRowsEventV2) e, table, filter, lastHeartbeatRead);
+				ew = new DeleteRowsEvent((DeleteRowsEventV2) e, table, filter, lastHeartbeatRead);
 				break;
 			default:
 				return null;
@@ -240,7 +245,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 	private RowMapBuffer getTransactionRows() throws Exception {
 		BinlogEventV4 v4Event;
-		MaxwellAbstractRowsEvent event;
+		AbstractRowsEvent event;
 
 		RowMapBuffer buffer = new RowMapBuffer(MAX_TX_ELEMENTS);
 

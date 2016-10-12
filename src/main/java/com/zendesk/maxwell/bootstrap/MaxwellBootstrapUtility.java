@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.bootstrap;
 
-import com.zendesk.maxwell.MaxwellLogging;
+import com.zendesk.maxwell.util.Logging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import snaq.db.ConnectionPool;
@@ -9,7 +9,6 @@ import java.io.Console;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -31,7 +30,7 @@ public class MaxwellBootstrapUtility {
 		MaxwellBootstrapUtilityConfig config = new MaxwellBootstrapUtilityConfig(argv);
 
 		if ( config.log_level != null ) {
-			MaxwellLogging.setLevel(config.log_level);
+			Logging.setLevel(config.log_level);
 		}
 
 		ConnectionPool connectionPool = getConnectionPool(config);

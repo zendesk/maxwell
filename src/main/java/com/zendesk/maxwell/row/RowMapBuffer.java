@@ -1,4 +1,4 @@
-package com.zendesk.maxwell;
+package com.zendesk.maxwell.row;
 
 import com.zendesk.maxwell.util.ListWithDiskBuffer;
 

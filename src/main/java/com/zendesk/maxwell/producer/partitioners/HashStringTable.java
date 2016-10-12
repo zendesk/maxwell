@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.producer.partitioners;
 
-import com.zendesk.maxwell.RowMap;
+import com.zendesk.maxwell.row.RowMap;
 
 import java.util.List;
 

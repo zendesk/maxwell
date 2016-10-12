@@ -1,10 +1,12 @@
-package com.zendesk.maxwell;
+package com.zendesk.maxwell.schema;
 
 import static org.junit.Assert.*;
 
 import java.sql.SQLException;
 import java.util.List;
 
+import com.zendesk.maxwell.CaseSensitivity;
+import com.zendesk.maxwell.MaxwellTestWithIsolatedServer;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;

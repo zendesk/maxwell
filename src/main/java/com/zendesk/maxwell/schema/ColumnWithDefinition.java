@@ -1,4 +1,4 @@
-package com.zendesk.maxwell;
+package com.zendesk.maxwell.schema;
 
 import com.google.code.or.common.glossary.Column;
 import com.google.code.or.common.glossary.column.DatetimeColumn;

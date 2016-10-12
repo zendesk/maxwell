@@ -2,6 +2,7 @@ package com.zendesk.maxwell;
 
 import java.util.*;
 
+import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import joptsimple.*;
 

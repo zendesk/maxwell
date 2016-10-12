@@ -1,8 +1,8 @@
 package com.zendesk.maxwell.bootstrap;
 
 import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.MaxwellReplicator;
-import com.zendesk.maxwell.RowMap;
+import com.zendesk.maxwell.replication.MaxwellReplicator;
+import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.producer.AbstractProducer;
 
 import java.io.IOException;

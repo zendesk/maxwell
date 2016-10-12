@@ -5,13 +5,13 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Connection;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import com.zendesk.maxwell.replication.BinlogPosition;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;

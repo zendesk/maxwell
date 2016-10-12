@@ -1,6 +1,7 @@
-package com.zendesk.maxwell;
+package com.zendesk.maxwell.row;
 
 import com.fasterxml.jackson.core.*;
+import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

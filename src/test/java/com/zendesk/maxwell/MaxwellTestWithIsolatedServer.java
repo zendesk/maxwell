@@ -3,6 +3,9 @@ package com.zendesk.maxwell;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
+
+import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.row.RowMap;
 import org.junit.*;
 
 

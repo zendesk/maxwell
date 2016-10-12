@@ -6,8 +6,8 @@ import org.slf4j.LoggerFactory;
 import java.sql.SQLException;
 import java.util.concurrent.TimeoutException;
 
-import com.zendesk.maxwell.BinlogPosition;
-import com.zendesk.maxwell.RunLoopProcess;
+import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.util.RunLoopProcess;
 
 public class PositionStoreThread extends RunLoopProcess implements Runnable {
 	static final Logger LOGGER = LoggerFactory.getLogger(PositionStoreThread.class);

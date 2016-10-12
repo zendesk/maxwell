@@ -1,26 +1,26 @@
-package com.zendesk.maxwell;
+package com.zendesk.maxwell.replication;
 
 import java.util.Iterator;
 import java.util.List;
 
-import com.google.code.or.binlog.impl.event.DeleteRowsEvent;
 import com.google.code.or.binlog.impl.event.DeleteRowsEventV2;
 import com.google.code.or.common.glossary.Row;
 import com.google.code.or.common.glossary.column.BitColumn;
+import com.zendesk.maxwell.MaxwellFilter;
 import com.zendesk.maxwell.schema.Table;
 
-public class MaxwellDeleteRowsEvent extends MaxwellAbstractRowsEvent {
-	private final DeleteRowsEvent event;
+public class DeleteRowsEvent extends AbstractRowsEvent {
+	private final com.google.code.or.binlog.impl.event.DeleteRowsEvent event;
 
-	public MaxwellDeleteRowsEvent(DeleteRowsEvent e, Table table, MaxwellFilter f, Long heartbeat) {
+	public DeleteRowsEvent(com.google.code.or.binlog.impl.event.DeleteRowsEvent e, Table table, MaxwellFilter f, Long heartbeat) {
 		super(e, table, f, heartbeat);
 		this.event = e;
 	}
 
-	public MaxwellDeleteRowsEvent(DeleteRowsEventV2 e2, Table table, MaxwellFilter filter, Long heartbeat) {
+	public DeleteRowsEvent(DeleteRowsEventV2 e2, Table table, MaxwellFilter filter, Long heartbeat) {
 		super(e2, table, filter, heartbeat);
 
-		DeleteRowsEvent e =  new DeleteRowsEvent(e2.getHeader());
+		com.google.code.or.binlog.impl.event.DeleteRowsEvent e =  new com.google.code.or.binlog.impl.event.DeleteRowsEvent(e2.getHeader());
 
 		e.setBinlogFilename(e2.getBinlogFilename());
 		e.setColumnCount(e2.getColumnCount());
