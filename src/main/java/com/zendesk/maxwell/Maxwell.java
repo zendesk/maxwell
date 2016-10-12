@@ -36,6 +36,7 @@ public class Maxwell implements Runnable {
 	}
 
 	public void terminate() {
+		LOGGER.info("starting shutdown");
 		try {
 			// send a final heartbeat through the system
 			context.heartbeat();
@@ -152,32 +153,29 @@ public class Maxwell implements Runnable {
 
 		replicator.setFilter(context.getFilter());
 
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			@Override
-			public void run() {
-				terminate();
-			}
-		});
-
 		this.context.start();
 		replicator.runLoop();
 	}
 
 	public static void main(String[] args) {
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			@Override
-			public void run() {
-				StaticShutdownCallbackRegistry.invoke();
-			}
-		});
-
 		try {
 			MaxwellConfig config = new MaxwellConfig(args);
 
 			if ( config.log_level != null )
 				MaxwellLogging.setLevel(config.log_level);
 
-			new Maxwell(config).start();
+			final Maxwell maxwell = new Maxwell(config);
+
+			Runtime.getRuntime().addShutdownHook(new Thread() {
+				@Override
+				public void run() {
+					maxwell.terminate();
+					StaticShutdownCallbackRegistry.invoke();
+				}
+			});
+
+
+			maxwell.start();
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(1);
