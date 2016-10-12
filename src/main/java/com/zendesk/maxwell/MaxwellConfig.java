@@ -5,6 +5,7 @@ import java.util.*;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import joptsimple.*;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +29,8 @@ public class MaxwellConfig extends AbstractConfig {
 	public String producerType;
 	public String kafkaPartitionHash;
 	public String kafkaPartitionKey;
+	public String kafkaPartitionColumns;
+	public String kafkaPartitionFallback;
 	public String bootstrapperType;
 	public int bufferedProducerSize;
 
@@ -83,7 +86,10 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "producer", "producer type: stdout|file|kafka" ).withRequiredArg();
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
-		parser.accepts( "kafka_partition_by", "database|table|primary_key, kafka producer assigns partition by hashing the specified parameter").withRequiredArg();
+		parser.accepts( "kafka_partition_by", "database|table|primary_key|column, kafka producer assigns partition by hashing the specified parameter").withRequiredArg();
+		parser.accepts( "kafka_partition_columns", "comma separated list of columns, the columns that should be used for partitioning when kafka_partition_by=column").withRequiredArg();
+		parser.accepts( "kafka_partition_by_fallback", "database|table|primary_key, kafka_partition_by fallback when the using 'column' partitioning and the columsn are not present in the row").withRequiredArg();
+
 		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning").withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
 		parser.accepts( "kafka_key_format", "how to format the kafka key; array|hash").withOptionalArg();
@@ -224,10 +230,12 @@ public class MaxwellConfig extends AbstractConfig {
 		this.clientID           = fetchOption("client_id", options, properties, "maxwell");
 		this.replicaServerID    = fetchLongOption("replica_server_id", options, properties, 6379L);
 
-		this.kafkaTopic         = fetchOption("kafka_topic", options, properties, "maxwell");
-		this.kafkaKeyFormat     = fetchOption("kafka_key_format", options, properties, "hash");
-		this.kafkaPartitionKey  = fetchOption("kafka_partition_by", options, properties, "database");
-		this.kafkaPartitionHash = fetchOption("kafka_partition_hash", options, properties, "default");
+		this.kafkaTopic         	= fetchOption("kafka_topic", options, properties, "maxwell");
+		this.kafkaKeyFormat     	= fetchOption("kafka_key_format", options, properties, "hash");
+		this.kafkaPartitionKey  	= fetchOption("kafka_partition_by", options, properties, "database");
+		this.kafkaPartitionColumns  = fetchOption("kafka_partition_columns", options, properties, null);
+		this.kafkaPartitionFallback = fetchOption("kafka_partition_by_fallback", options, properties, null);
+		this.kafkaPartitionHash 	= fetchOption("kafka_partition_hash", options, properties, "default");
 
 		String kafkaBootstrapServers = fetchOption("kafka.bootstrap.servers", options, properties, null);
 		if ( kafkaBootstrapServers != null )
@@ -309,10 +317,14 @@ public class MaxwellConfig extends AbstractConfig {
 				this.kafkaPartitionKey = "database";
 			} else if ( !this.kafkaPartitionKey.equals("database")
 					&& !this.kafkaPartitionKey.equals("table")
-					&& !this.kafkaPartitionKey.equals("primary_key") ) {
-				usageForOptions("please specify --kafka_partition_by=database|table|primary_key", "kafka_partition_by");
+					&& !this.kafkaPartitionKey.equals("primary_key")
+					&& !this.kafkaPartitionKey.equals("column") ) {
+				usageForOptions("please specify --kafka_partition_by=database|table|primary_key|column", "kafka_partition_by");
+			} else if ( this.kafkaPartitionKey.equals("column") && StringUtils.isEmpty(this.kafkaPartitionColumns) ) {
+				usageForOptions("please specify --kafka_partition_columns=column1 when using kafka_partition_by=column", "kafka_partition_columns");
+			} else if ( this.kafkaPartitionKey.equals("column") && StringUtils.isEmpty(this.kafkaPartitionFallback) ) {
+				usageForOptions("please specify --kafka_partition_by_fallback=[database, table, primary_key] when using kafka_partition_by=column", "kafka_partition_by_fallback");
 			}
-
 
 			if ( !this.kafkaKeyFormat.equals("hash") && !this.kafkaKeyFormat.equals("array") )
 				usageForOptions("invalid kafka_key_format: " + this.kafkaKeyFormat, "kafka_key_format");

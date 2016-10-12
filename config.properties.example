@@ -84,7 +84,17 @@ password=maxwell
 # which transactions keep ordering with respect to each other.  Generally
 # here you're making a trade-off between inter-row consistency and balanced
 # partitions.
-#kafka_partition_by=database # [database, table, primary_key]
+#kafka_partition_by=database # [database, table, primary_key, column]
+
+# required when using kafka_partition_by=column
+# otherwise the partitioner will revert to table
+# can be a single or multiple columns, e.g. aggregate_id or aggregate_id,event_type
+#kafka_partition_columns=
+
+# required when using kafka_partition_by=column
+# the fallback partitioning behavior when the specified column(s) do not exist
+# can be any one of [database, table, primary_key]
+#kafka_partition_by_fallback=database
 
 # how maxwell writes its kafka key.
 #

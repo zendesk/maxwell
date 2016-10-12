@@ -4,6 +4,9 @@ import com.zendesk.maxwell.RowMap;
 import org.apache.kafka.common.metrics.stats.Max;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by kaufmannkr on 1/18/16.
@@ -11,7 +14,11 @@ import java.io.IOException;
 public class MaxwellKafkaPartitioner {
 	HashStringProvider provider;
 	HashFunction hashFunc;
-	public MaxwellKafkaPartitioner(String hashFunction, String partitionKey) {
+	List<String> partitionColumns = new ArrayList<String>();
+
+	private String partitionKeyFallback;
+
+	public MaxwellKafkaPartitioner(String hashFunction, String partitionKey, String csvPartitionColumns, String partitionKeyFallback) {
 		int MURMUR_HASH_SEED = 25342;
 		switch (hashFunction) {
 			case "murmur3": this.hashFunc = new HashFunctionMurmur3(MURMUR_HASH_SEED);
@@ -26,11 +33,17 @@ public class MaxwellKafkaPartitioner {
 				break;
 			case "primary_key": this.provider = new HashStringPrimaryKey();
 				break;
+			case "column": this.provider = new HashStringColumn();
+				break;
 			case "database":
 			default:
 				this.provider = new HashStringDatabase();
 				break;
 		}
+		if ( csvPartitionColumns != null )
+			this.partitionColumns = Arrays.asList(csvPartitionColumns.split("\\s*,\\s*"));
+
+		this.partitionKeyFallback = partitionKeyFallback;
 	}
 
 	static protected String getDatabase(RowMap r) {
@@ -46,6 +59,6 @@ public class MaxwellKafkaPartitioner {
 	}
 
 	public int kafkaPartition(RowMap r, int numPartitions) {
-		return Math.abs(hashFunc.hashCode(provider.getHashString(r)) % numPartitions);
+		return Math.abs(hashFunc.hashCode(provider.getHashString(r, this.partitionColumns, this.partitionKeyFallback)) % numPartitions);
 	}
 }
