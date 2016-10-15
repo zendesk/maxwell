@@ -209,7 +209,9 @@ as a source of truth.</p>
 </code></pre>
 
 <p>The HASH_FUNCTION is either java's <em>hashCode</em> or <em>murmurhash3</em>. The default HASH_FUNCTION is <em>hashCode</em>. Murmurhash3 may be set with the <code>kafka_partition_hash</code> option. The seed value for the murmurhash function is hardcoded to 25342 in the MaxwellKafkaPartitioner class.</p>
-<p>The HASH_STRING may be (<em>database</em>, <em>table</em>, <em>primary_key</em>).  The default HASH_STRING is the <em>database</em>. The partitioning field can be configured using the <code>kafka_partition_by</code> option.    </p>
+<p>The HASH_STRING may be (<em>database</em>, <em>table</em>, <em>primary_key</em>, <em>column</em>).  The default HASH_STRING is the <em>database</em>. The partitioning field can be configured using the <code>kafka_partition_by</code> option.</p>
+<p>When using <code>kafka_partition_by</code>=<em>column</em> you must set <code>kafka_partition_columns</code> with the column name(s) to partition by (e.g. <code>kafka_partition_columns</code>=user_id or <code>kafka_partition_columns</code>=user_id,create_date). You must also set <code>kafka_partiton_by_fallback</code>. This may be (<em>database</em>, <em>table</em>, <em>primary_key</em>). It is used when the column(s) specified does not exist in the current row. The default is <em>database</em>.
+When partitioning by <em>column</em> Maxwell will treat the values for the specified columns as strings, concatenate them and use that value to partition the data. The above example, partitioning by user_id + create_date would have a partition key similar to <em>1178532016-10-10 18:29:04</em>.</p>
 <p>Maxwell will discover the number of partitions in its kafka topic upon boot.  This means that you should pre-create your kafka topics,
 and with at least as many partitions as you have logical databases:</p>
 <pre><code>bin/kafka-topics.sh --zookeeper ZK_HOST:2181 --create \
