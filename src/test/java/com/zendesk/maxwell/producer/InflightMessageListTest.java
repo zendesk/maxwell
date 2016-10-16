@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.producer;
 
-import com.zendesk.maxwell.BinlogPosition;
+import com.zendesk.maxwell.replication.BinlogPosition;
 import org.junit.Before;
 import org.junit.Test;
 

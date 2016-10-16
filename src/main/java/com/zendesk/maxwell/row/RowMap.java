@@ -1,6 +1,7 @@
-package com.zendesk.maxwell;
+package com.zendesk.maxwell.row;
 
 import com.fasterxml.jackson.core.*;
+import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,8 @@ public class RowMap implements Serializable {
 
 	private Long xid;
 	private boolean txCommit;
+	private Long serverId;
+	private Long threadId;
 
 	private final LinkedHashMap<String, Object> data;
 	private final LinkedHashMap<String, Object> oldData;
@@ -155,6 +158,32 @@ public class RowMap implements Serializable {
 		return keys;
 	}
 
+	public String buildPartitionKey(List<String> partitionColumns, String partitionKeyFallback) {
+		String partitionKey="";
+		for (String pc : partitionColumns) {
+			Object pcValue = null;
+			if (data.containsKey(pc))
+				pcValue = data.get(pc);
+			if (pcValue != null)
+				partitionKey += pcValue.toString();
+		}
+		if (partitionKey.isEmpty())
+			return getPartitionKeyFallback(partitionKeyFallback);
+		return partitionKey;
+	}
+
+	private String getPartitionKeyFallback(String partitionKeyFallback) {
+		switch (partitionKeyFallback) {
+			case "table":
+				return this.table;
+			case "primary_key":
+				return pkAsConcatString();
+			case "database":
+			default:
+				return this.database;
+		}
+	}
+
 	private void writeMapToJSON(String jsonMapName, LinkedHashMap<String, Object> data, boolean includeNullField) throws IOException {
 		JsonGenerator generator = jsonGeneratorThreadLocal.get();
 		generator.writeObjectFieldStart(jsonMapName); // start of jsonMapName: {
@@ -205,6 +234,15 @@ public class RowMap implements Serializable {
 
 		if ( outputConfig.includesBinlogPosition )
 			g.writeStringField("position", this.nextPosition.getFile() + ":" + this.nextPosition.getOffset());
+
+
+		if ( outputConfig.includesServerId && this.serverId != null ) {
+			g.writeNumberField("server_id", this.serverId);
+		}
+
+		if ( outputConfig.includesThreadId && this.threadId != null ) {
+			g.writeNumberField("thread_id", this.threadId);
+		}
 
 		if ( this.excludeColumns != null ) {
 			// NOTE: to avoid concurrent modification.
@@ -298,6 +336,22 @@ public class RowMap implements Serializable {
 
 	public boolean isTXCommit() {
 		return this.txCommit;
+	}
+
+	public Long getServerId() {
+		return serverId;
+	}
+
+	public void setServerId(Long serverId) {
+		this.serverId = serverId;
+	}
+
+	public Long getThreadId() {
+		return threadId;
+	}
+
+	public void setThreadId(Long threadId) {
+		this.threadId = threadId;
 	}
 
 	public String getDatabase() {

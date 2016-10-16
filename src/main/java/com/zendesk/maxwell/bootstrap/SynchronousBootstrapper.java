@@ -1,9 +1,9 @@
 package com.zendesk.maxwell.bootstrap;
 
-import com.zendesk.maxwell.BinlogPosition;
+import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.MaxwellReplicator;
-import com.zendesk.maxwell.RowMap;
+import com.zendesk.maxwell.replication.MaxwellReplicator;
+import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
@@ -53,6 +53,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 			setBootstrapRowToStarted(startBootstrapRow, connection);
 			ResultSet resultSet = getAllRows(databaseName, tableName, schema, streamingConnection);
 			int insertedRows = 0;
+	                lastInsertedRowsUpdateTimeMillis = 0; // ensure updateInsertedRowsColumn is called at least once
 			while ( resultSet.next() ) {
 				RowMap row = bootstrapEventRowMap("bootstrap-insert", table, position);
 				setRowValues(row, resultSet, table);

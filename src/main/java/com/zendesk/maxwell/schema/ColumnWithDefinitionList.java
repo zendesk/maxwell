@@ -1,9 +1,8 @@
-package com.zendesk.maxwell;
+package com.zendesk.maxwell.schema;
 
 import com.google.code.or.common.glossary.Column;
 import com.google.code.or.common.glossary.Row;
 import com.google.code.or.common.glossary.column.BitColumn;
-import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
 
 import java.util.Iterator;

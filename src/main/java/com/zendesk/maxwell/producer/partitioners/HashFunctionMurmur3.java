@@ -1,6 +1,5 @@
 package com.zendesk.maxwell.producer.partitioners;
 
-import com.zendesk.maxwell.RowMap;
 import com.zendesk.maxwell.util.MurmurHash3;
 
 /**

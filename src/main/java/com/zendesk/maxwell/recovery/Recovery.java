@@ -1,7 +1,9 @@
 package com.zendesk.maxwell.recovery;
 
 import com.zendesk.maxwell.*;
-import com.zendesk.maxwell.schema.SchemaStore;
+import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.replication.MaxwellReplicator;
+import com.zendesk.maxwell.row.RowMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

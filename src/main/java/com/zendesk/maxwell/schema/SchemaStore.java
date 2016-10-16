@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.schema;
 
-import com.zendesk.maxwell.BinlogPosition;
+import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 

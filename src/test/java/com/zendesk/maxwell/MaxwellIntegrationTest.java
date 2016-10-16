@@ -4,8 +4,10 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.row.RowMap;
 import org.apache.commons.lang3.ArrayUtils;
 
+import java.sql.ResultSet;
 import java.util.List;
 import java.util.regex.*;
 
@@ -108,6 +110,47 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		assertTrue(Pattern.matches(".*\"commit\":true.*", json));
 		// Xid
 		assertTrue(Pattern.matches(".*\"xid\":\\d+.*", json));
+
+		// by default the server_id and thread_id should not be included in the output
+		assertFalse(Pattern.matches(".*\"server_id\":\\d+.*", json));
+		assertFalse(Pattern.matches(".*\"thread_id\":\\d+.*", json));
+	}
+
+	@Test
+	public void testServerId() throws Exception {
+		ResultSet resultSet = server.getConnection().createStatement().executeQuery("SELECT @@server_id");
+		resultSet.next();
+		final long actualServerId = resultSet.getLong(1);
+
+		List<RowMap> list;
+		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
+
+		outputConfig.includesServerId = true;
+
+		list = getRowsForSQL(input);
+		String json = list.get(0).toJSON(outputConfig);
+
+		assertTrue(Pattern.matches(".*\"server_id\":"+actualServerId+",.*", json));
+	}
+
+
+	@Test
+	public void testThreadId() throws Exception {
+		ResultSet resultSet = server.getConnection().createStatement().executeQuery("SELECT CONNECTION_ID()");
+		resultSet.next();
+		final long actualThreadId = resultSet.getLong(1);
+
+		List<RowMap> list;
+		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
+
+		outputConfig.includesThreadId = true;
+
+		list = getRowsForSQL(input);
+		String json = list.get(0).toJSON(outputConfig);
+
+		assertTrue(Pattern.matches(".*\"thread_id\":"+actualThreadId+",.*", json));
 	}
 
 	static String createDBs[] = {
@@ -427,9 +470,9 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String[] opts = {"--jdbc_options= netTimeoutForStreamingResults=123& profileSQL=true  ", "--host=no-soup-spoons"};
 		MaxwellConfig config = new MaxwellConfig(opts);
 		assertEquals(config.maxwellMysql.getConnectionURI(),
-				"jdbc:mysql://no-soup-spoons:3306/maxwell?zeroDateTimeBehavior=convertToNull&netTimeoutForStreamingResults=123&profileSQL=true");
+				"jdbc:mysql://no-soup-spoons:3306/maxwell?zeroDateTimeBehavior=convertToNull&connectTimeout=5000&netTimeoutForStreamingResults=123&profileSQL=true");
 		assertEquals(config.replicationMysql.getConnectionURI(),
-				"jdbc:mysql://no-soup-spoons:3306?zeroDateTimeBehavior=convertToNull&netTimeoutForStreamingResults=123&profileSQL=true");
+				"jdbc:mysql://no-soup-spoons:3306?zeroDateTimeBehavior=convertToNull&connectTimeout=5000&netTimeoutForStreamingResults=123&profileSQL=true");
 
 	}
 

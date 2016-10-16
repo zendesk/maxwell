@@ -95,12 +95,20 @@ public class SchemaCapturer {
 		return db;
 	}
 
+	private boolean isMySQLAtLeast56() throws SQLException {
+		java.sql.DatabaseMetaData meta = connection.getMetaData();
+		int major = meta.getDatabaseMajorVersion();
+		int minor = meta.getDatabaseMinorVersion();
+		return ( (major == 5 && minor >= 6) || major > 5 );
+	}
+
 
 	private void captureTable(Table t) throws SQLException {
 		int i = 0;
 		infoSchemaStmt.setString(1, t.getDatabase());
 		infoSchemaStmt.setString(2, t.getName());
 		ResultSet r = infoSchemaStmt.executeQuery();
+		boolean hasDatetimePrecision = isMySQLAtLeast56();
 
 		while(r.next()) {
 			String[] enumValues = null;
@@ -109,6 +117,10 @@ public class SchemaCapturer {
 			String colEnc     = r.getString("CHARACTER_SET_NAME");
 			int colPos        = r.getInt("ORDINAL_POSITION") - 1;
 			boolean colSigned = !r.getString("COLUMN_TYPE").matches(".* unsigned$");
+			Long columnLength = null;
+
+			if (hasDatetimePrecision)
+				columnLength = r.getLong("DATETIME_PRECISION");
 
 			if ( r.getString("COLUMN_KEY").equals("PRI") )
 				t.pkIndex = i;
@@ -119,7 +131,7 @@ public class SchemaCapturer {
 				enumValues = extractEnumValues(expandedType);
 			}
 
-			t.addColumn(ColumnDef.build(colName, colEnc, colType, colPos, colSigned, enumValues));
+			t.addColumn(ColumnDef.build(colName, colEnc, colType, colPos, colSigned, enumValues, columnLength));
 			i++;
 		}
 		captureTablePK(t);

@@ -4,8 +4,11 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.TimeoutException;
 import com.djdch.log4j.StaticShutdownCallbackRegistry;
+import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.replication.MaxwellReplicator;
 import com.zendesk.maxwell.recovery.Recovery;
 import com.zendesk.maxwell.recovery.RecoveryInfo;
+import com.zendesk.maxwell.util.Logging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +39,7 @@ public class Maxwell implements Runnable {
 	}
 
 	public void terminate() {
+		LOGGER.info("starting shutdown");
 		try {
 			// send a final heartbeat through the system
 			context.heartbeat();
@@ -152,32 +156,29 @@ public class Maxwell implements Runnable {
 
 		replicator.setFilter(context.getFilter());
 
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			@Override
-			public void run() {
-				terminate();
-			}
-		});
-
 		this.context.start();
 		replicator.runLoop();
 	}
 
 	public static void main(String[] args) {
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			@Override
-			public void run() {
-				StaticShutdownCallbackRegistry.invoke();
-			}
-		});
-
 		try {
 			MaxwellConfig config = new MaxwellConfig(args);
 
 			if ( config.log_level != null )
-				MaxwellLogging.setLevel(config.log_level);
+				Logging.setLevel(config.log_level);
 
-			new Maxwell(config).start();
+			final Maxwell maxwell = new Maxwell(config);
+
+			Runtime.getRuntime().addShutdownHook(new Thread() {
+				@Override
+				public void run() {
+					maxwell.terminate();
+					StaticShutdownCallbackRegistry.invoke();
+				}
+			});
+
+
+			maxwell.start();
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(1);

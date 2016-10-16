@@ -1,7 +1,8 @@
-package com.zendesk.maxwell;
+package com.zendesk.maxwell.schema;
 
 import com.google.code.or.common.glossary.Column;
 import com.google.code.or.common.glossary.column.DatetimeColumn;
+import com.google.code.or.common.glossary.column.AbstractDatetimeColumn;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
 
 public class ColumnWithDefinition {
@@ -16,6 +17,12 @@ public class ColumnWithDefinition {
 	private Object valueForJSON() {
 		if (column instanceof DatetimeColumn)
 			return ((DatetimeColumn) column).getLongValue();
+
+		if (column instanceof AbstractDatetimeColumn) {
+			// time2, datetime2, timestamp2
+			return ((AbstractDatetimeColumn) column).getTimestampValue();
+		}
+
 		return column.getValue();
 	}
 
@@ -27,4 +34,3 @@ public class ColumnWithDefinition {
 		return definition.asJSON(value);
 	}
 }
-

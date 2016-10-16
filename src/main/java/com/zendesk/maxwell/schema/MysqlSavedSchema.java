@@ -17,7 +17,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.zendesk.maxwell.BinlogPosition;
+import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 
@@ -26,7 +26,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import snaq.db.ConnectionPool;
 
 public class MysqlSavedSchema {
-	static int SchemaStoreVersion = 2;
+	static int SchemaStoreVersion = 3;
 
 	private Schema schema;
 	private BinlogPosition position;
@@ -42,7 +42,7 @@ public class MysqlSavedSchema {
 	static final Logger LOGGER = LoggerFactory.getLogger(MysqlSavedSchema.class);
 
 	private final static String columnInsertSQL =
-		"INSERT INTO `columns` (schema_id, table_id, name, charset, coltype, is_signed, enum_values) VALUES (?, ?, ?, ?, ?, ?, ?)";
+		"INSERT INTO `columns` (schema_id, table_id, name, charset, coltype, is_signed, enum_values, column_length) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
 	private final CaseSensitivity sensitivity;
 	private final Long serverID;
@@ -156,15 +156,17 @@ public class MysqlSavedSchema {
 			throw new RuntimeException("Couldn't serialize " + deltas + " to JSON.");
 		}
 
-		return executeInsert(insert,
-		                     this.baseSchemaID,
-		                     deltaString,
-		                     position.getFile(),
-		                     position.getOffset(),
-		                     serverID,
-		                     schema.getCharset(),
-		                     SchemaStoreVersion,
-							 getPositionSHA());
+		return executeInsert(
+			insert,
+			this.baseSchemaID,
+			deltaString,
+			position.getFile(),
+			position.getOffset(),
+			serverID,
+			schema.getCharset(),
+			SchemaStoreVersion,
+			getPositionSHA()
+		);
 
 	}
 
@@ -230,6 +232,13 @@ public class MysqlSavedSchema {
 					}
 
 					columnData.add(enumValuesSQL);
+
+					if ( c instanceof ColumnDefWithLength ) {
+						Long columnLength = ((ColumnDefWithLength) c).getColumnLength();
+						columnData.add(columnLength);
+					} else {
+						columnData.add(null);
+					}
 				}
 
 				if ( columnData.size() > 1000 )
@@ -246,8 +255,8 @@ public class MysqlSavedSchema {
 	private void executeColumnInsert(Connection conn, ArrayList<Object> columnData) throws SQLException {
 		String insertColumnSQL = this.columnInsertSQL;
 
-		for (int i=1; i < columnData.size() / 7; i++) {
-			insertColumnSQL = insertColumnSQL + ", (?, ?, ?, ?, ?, ?, ?)";
+		for (int i=1; i < columnData.size() / 8; i++) {
+			insertColumnSQL = insertColumnSQL + ", (?, ?, ?, ?, ?, ?, ?, ?)";
 		}
 
 		PreparedStatement columnInsert = conn.prepareStatement(insertColumnSQL);
@@ -281,6 +290,17 @@ public class MysqlSavedSchema {
 			savedSchema.restoreFromSchemaID(conn, schemaID);
 			savedSchema.handleVersionUpgrades(conn);
 
+			return savedSchema;
+		}
+	}
+
+	public static MysqlSavedSchema restoreFromSchemaID(MysqlSavedSchema savedSchema, MaxwellContext context) throws SQLException, InvalidSchemaError {
+		try ( Connection conn = context.getMaxwellConnectionPool().getConnection() ) {
+			Long schemaID = savedSchema.getSchemaID();
+			if (schemaID == null)
+				return null;
+
+			savedSchema.restoreFromSchemaID(conn, schemaID);
 			return savedSchema;
 		}
 	}
@@ -429,6 +449,13 @@ public class MysqlSavedSchema {
 
 		int i = 0;
 		while (cRS.next()) {
+			Long columnLength;
+			int columnLengthInt = cRS.getInt("column_length");
+			if ( cRS.wasNull() )
+				columnLength = null;
+			else
+				columnLength = Long.valueOf(columnLengthInt);
+
 			String[] enumValues = null;
 			if ( cRS.getString("enum_values") != null )
 				enumValues = StringUtils.splitByWholeSeparatorPreserveAllTokens(cRS.getString("enum_values"), ",");
@@ -437,7 +464,8 @@ public class MysqlSavedSchema {
 					cRS.getString("name"), cRS.getString("charset"),
 					cRS.getString("coltype"), i++,
 					cRS.getInt("is_signed") == 1,
-					enumValues);
+					enumValues,
+					columnLength);
 			t.addColumn(c);
 		}
 
@@ -445,7 +473,6 @@ public class MysqlSavedSchema {
 			List<String> pkList = Arrays.asList(StringUtils.split(pks, ','));
 			t.setPKList(pkList);
 		}
-
 	}
 
 	private static Long findSchema(Connection connection, BinlogPosition targetPosition, Long serverID)
@@ -569,8 +596,36 @@ public class MysqlSavedSchema {
 			this.shouldSnapshotNextSchema = true;
 	}
 
+	private void fixColumnLength(Schema recaptured) throws SQLException {
+		int colLengthDiffs = 0;
+
+		for ( Pair<ColumnDef, ColumnDef> pair : schema.matchColumns(recaptured) ) {
+			ColumnDef cA = pair.getLeft();
+			ColumnDef cB = pair.getRight();
+
+			if (cA instanceof ColumnDefWithLength) {
+				if (cB != null && cB instanceof ColumnDefWithLength) {
+					long aColLength = ((ColumnDefWithLength) cA).getColumnLength();
+					long bColLength = ((ColumnDefWithLength) cB).getColumnLength();
+
+					if ( aColLength != bColLength ) {
+						colLengthDiffs++;
+						LOGGER.info("correcting column length of `" + cA.getName() + "` to " + bColLength + ".  Will save a full schema snapshot after the new DDL update is processed.");
+						((ColumnDefWithLength) cA).setColumnLength(bColLength);
+					}
+				} else {
+					LOGGER.warn("warning: Couldn't check for column length on column " + cA.getName() +
+						".  You may want to recapture your schema");
+				}
+			}
+
+			if ( colLengthDiffs > 0 )
+				this.shouldSnapshotNextSchema = true;
+		}
+	}
+
 	protected void handleVersionUpgrades(Connection conn) throws SQLException, InvalidSchemaError {
-		if ( this.schemaVersion < 2 ) {
+		if ( this.schemaVersion < 3 ) {
 			Schema recaptured = new SchemaCapturer(conn, sensitivity).capture();
 
 			if ( this.schemaVersion < 1 ) {
@@ -587,6 +642,10 @@ public class MysqlSavedSchema {
 
 			if ( this.schemaVersion < 2 ) {
 				fixColumnCases(recaptured);
+			}
+
+			if ( this.schemaVersion < 3 ) {
+				fixColumnLength(recaptured);
 			}
 		}
 	}

@@ -7,6 +7,7 @@ import static org.junit.Assert.*;
 import com.zendesk.maxwell.*;
 import java.sql.ResultSet;
 
+import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.errors.DuplicateProcessException;
 import org.junit.Test;
 

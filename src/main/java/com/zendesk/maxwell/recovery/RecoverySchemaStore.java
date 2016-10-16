@@ -1,12 +1,8 @@
 package com.zendesk.maxwell.recovery;
 
-import com.zendesk.maxwell.BinlogPosition;
+import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.CaseSensitivity;
 import com.zendesk.maxwell.schema.*;
-import com.zendesk.maxwell.schema.columndef.BigIntColumnDef;
-import com.zendesk.maxwell.schema.columndef.ColumnDef;
-import com.zendesk.maxwell.schema.columndef.IntColumnDef;
-import com.zendesk.maxwell.schema.columndef.StringColumnDef;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 import snaq.db.ConnectionPool;

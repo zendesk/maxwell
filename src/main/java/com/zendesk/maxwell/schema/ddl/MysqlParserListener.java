@@ -373,12 +373,16 @@ public class MysqlParserListener extends mysqlBaseListener {
 		}
 
 		colType = ColumnDef.unalias_type(colType.toLowerCase(), longStringFlag, columnLength, byteFlagToStringColumn);
-		ColumnDef c = ColumnDef.build(name,
-					                   colCharset,
-					                   colType.toLowerCase(),
-					                   -1,
-					                   signed,
-					                   enumValues);
+		ColumnDef c;
+		c = ColumnDef.build(
+		  name,
+		  colCharset,
+		  colType.toLowerCase(),
+		  -1,
+		  signed,
+		  enumValues,
+		  columnLength
+		);
 
 		this.columnDefs.add(c);
 

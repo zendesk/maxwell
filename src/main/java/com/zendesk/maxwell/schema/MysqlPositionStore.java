@@ -7,7 +7,7 @@ import java.sql.SQLException;
 
 import com.zendesk.maxwell.recovery.RecoveryInfo;
 
-import com.zendesk.maxwell.BinlogPosition;
+import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.errors.DuplicateProcessException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

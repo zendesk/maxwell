@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.BinlogPosition;
 import com.zendesk.maxwell.schema.ddl.SchemaChange;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;

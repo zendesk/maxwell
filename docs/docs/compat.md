@@ -22,7 +22,7 @@ from normal Maxwell operation in that:
 ### Master recovery
 ***
 
-As of 1.2.1, maxwell includes experimental support for master position recovery.  It works like this:
+As of 1.3.0, maxwell includes experimental support for master position recovery.  It works like this:
 
 - maxwell writes heartbeats into the binlogs (via the `positions` table)
 - maxwell reads its own heartbeats, using them as a secondary position guide

@@ -50,6 +50,24 @@ password=maxwell
 #replication_password=password
 #replication_port=3306
 
+######### output format stuff ###############
+
+# records include binlog position (default false)
+#output_binlog_position=true
+
+# records output null values (default true)
+#output_nulls=true
+
+# records include server_id (default false)
+#output_server_id=true
+
+# records include thread_id (default false)
+#output_thread_id=true
+
+# records include commit and xid (default true)
+#output_commit_info=true
+
+
 ######### kafka stuff ###############
 
 # list of kafka brokers
@@ -66,7 +84,17 @@ password=maxwell
 # which transactions keep ordering with respect to each other.  Generally
 # here you're making a trade-off between inter-row consistency and balanced
 # partitions.
-#kafka_partition_by=database # [database, table, primary_key]
+#kafka_partition_by=database # [database, table, primary_key, column]
+
+# required when using kafka_partition_by=column
+# otherwise the partitioner will revert to table
+# can be a single or multiple columns, e.g. aggregate_id or aggregate_id,event_type
+#kafka_partition_columns=
+
+# required when using kafka_partition_by=column
+# the fallback partitioning behavior when the specified column(s) do not exist
+# can be any one of [database, table, primary_key]
+#kafka_partition_by_fallback=database
 
 # how maxwell writes its kafka key.
 #
@@ -136,9 +164,3 @@ password=maxwell
 
 # output filename when using the "file" producer
 #output_file=/path/to/file
-
-# produced records include binlog position
-#output_binlog_position=true
-
-# produced records include commit and xid
-#output_commit_info=true

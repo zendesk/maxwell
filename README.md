@@ -2,22 +2,26 @@
   <h2>Maxwell = Mysql + Kafka</h2>
 </div>
 
-This is Maxwell's daemon, an application that reads MySQL binlogs and writes row updates to Kafka as JSON.
-It's playing in the same space as [mypipe](https://github.com/mardambey/mypipe) and [databus](http://data.linkedin.com/projects/databus),
-but differentiates itself with these features:
+This is Maxwell's daemon, an application that reads MySQL binlogs and writes
+row updates to Kafka as JSON.  Maxwell has a low operational bar and produces a
+consistent, easy to ingest stream of updates.  It allows you to easily "bolt
+on" some of the benefits of stream processing systems without going through your
+entire code base to add (unreliable) instrumentation points.  Common use cases
+include ETL, cache building/expiring, metrics collection, and search indexing.
 
-- Works with an unpatched mysql
-- Parses ALTER/CREATE/DROP table statements, which allows Maxwell to always have a correct view of the mysql schema
-- Stores its replication position and needed data within the mysql server itself
-- Requires no external dependencies (save Kafka, if used)
-- Eschews the complexity of Avro for plain old JSON.
-- Minimal setup
+advanced features:
 
-Maxwell is intended as a source for event-based readers, eg various ETL applications, search indexing,
-stat emitters.
+- Can do `SELECT * from table` (bootstrapping) initial loads of a table
+- supports automatic position recover on master promotion
+- flexible partitioning schemes for Kakfa - by database, table, primary key, or column
+- Maxwell pulls all this off by acting as a full mysql replica, including a SQL
+  parser for create/alter/drop statements (nope, there was no other way).
 
-- Download: [https://github.com/zendesk/maxwell/releases/download/v1.2.1/maxwell-1.2.1.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.2.1/maxwell-1.2.1.tar.gz)
-- Source: [https://github.com/zendesk/maxwell](https://github.com/zendesk/maxwell)
+&rarr; Download:
+[https://github.com/zendesk/maxwell/releases/download/v1.3.0/maxwell-1.3.0.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.3.0/maxwell-1.3.0.tar.gz)
+<br/>
+&rarr; Source:
+[https://github.com/zendesk/maxwell](https://github.com/zendesk/maxwell)
 
 <br style="clear:both"/>
 
@@ -48,6 +52,8 @@ stat emitters.
     "old":  {"daemon": "Stanislaw Lem"}
   }
 ```
+
+
 
 <script>
   jQuery(document).ready(function () {

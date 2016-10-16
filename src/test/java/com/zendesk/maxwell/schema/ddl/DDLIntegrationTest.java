@@ -192,6 +192,43 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
+	public void testTimeWithLength() throws Exception {
+		if ( !server.getVersion().equals("5.6") )
+			return;
+
+		String sql[] = {
+			"create TABLE `test_time` ( id time(3) )"
+		};
+
+		testIntegration(sql);
+	}
+
+	@Test
+	public void testDatetimeWithLength() throws Exception {
+		if ( !server.getVersion().equals("5.6") )
+			return;
+
+		String sql[] = {
+			"create TABLE `test_datetime` ( id datetime(3) )",
+			"alter TABLE `test_datetime` add column ts timestamp(6)"
+		};
+
+		testIntegration(sql);
+	}
+
+	@Test
+	public void testTimestampWithLength() throws Exception {
+		if ( !server.getVersion().equals("5.6") )
+			return;
+
+		String sql[] = {
+			"create TABLE `test_year` ( id timestamp(3) )"
+		};
+
+		testIntegration(sql);
+	}
+
+	@Test
 	public void testBooleans() throws Exception {
 		String sql[] = {
 			"create TABLE `test_boolean` ( b1 bool, b2 boolean )"

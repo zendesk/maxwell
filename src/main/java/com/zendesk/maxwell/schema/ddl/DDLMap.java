@@ -3,6 +3,8 @@ package com.zendesk.maxwell;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 
 import java.io.IOException;

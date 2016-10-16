@@ -1,10 +1,10 @@
 package com.zendesk.maxwell.producer;
 
-import com.zendesk.maxwell.BinlogPosition;
+import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.DDLMap;
 import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.RowMap;
-import com.zendesk.maxwell.RowMap.KeyFormat;
+import com.zendesk.maxwell.row.RowMap;
+import com.zendesk.maxwell.row.RowMap.KeyFormat;
 import com.zendesk.maxwell.producer.partitioners.MaxwellKafkaPartitioner;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -97,7 +97,9 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 
 		String hash = context.getConfig().kafkaPartitionHash;
 		String partitionKey = context.getConfig().kafkaPartitionKey;
-		this.partitioner = new MaxwellKafkaPartitioner(hash, partitionKey);
+		String partitionColumns = context.getConfig().kafkaPartitionColumns;
+		String partitionFallback = context.getConfig().kafkaPartitionFallback;
+		this.partitioner = new MaxwellKafkaPartitioner(hash, partitionKey, partitionColumns, partitionFallback);
 		this.outputDDL =  context.getConfig().outputDDL;
 		this.ddlPartitioner = new MaxwellKafkaPartitioner(hash, "database");
 		this.ddlTopic =  context.getConfig().ddlKafkaTopic;

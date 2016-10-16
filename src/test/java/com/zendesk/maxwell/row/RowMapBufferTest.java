@@ -1,5 +1,7 @@
-package com.zendesk.maxwell;
+package com.zendesk.maxwell.row;
 
+import com.zendesk.maxwell.TestWithNameLogging;
+import com.zendesk.maxwell.replication.BinlogPosition;
 import org.junit.Test;
 
 import java.util.ArrayList;
