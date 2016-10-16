@@ -1,4 +1,4 @@
-package com.zendesk.maxwell;
+package com.zendesk.maxwell.schema.ddl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,7 +38,12 @@ public class DDLMap extends RowMap {
 		return toJSON(new MaxwellOutputConfig());
 	}
 
+	@Override
 	public String toJSON(MaxwellOutputConfig outputConfig) throws IOException {
+
+		if(!outputConfig.outputDDL)
+		return null;
+
 		ObjectMapper mapper = new ObjectMapper();
 
 		Map<String, Object> changeMixin = mapper.convertValue(change, new TypeReference<Map<String, Object>>() { });

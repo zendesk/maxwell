@@ -6,6 +6,7 @@ public class MaxwellOutputConfig {
 	public boolean includesNulls;
 	public boolean includesServerId;
 	public boolean includesThreadId;
+	public boolean outputDDL;
 
 	public MaxwellOutputConfig() {
 		this.includesBinlogPosition = false;
@@ -13,5 +14,6 @@ public class MaxwellOutputConfig {
 		this.includesNulls = true;
 		this.includesServerId = false;
 		this.includesThreadId = false;
+		this.outputDDL = false;
 	}
 }

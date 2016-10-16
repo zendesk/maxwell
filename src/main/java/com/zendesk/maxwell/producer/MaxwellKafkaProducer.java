@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.producer;
 
 import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.DDLMap;
+import com.zendesk.maxwell.schema.ddl.DDLMap;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMap.KeyFormat;
@@ -80,7 +80,6 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	private final int numPartitions;
 	private final MaxwellKafkaPartitioner partitioner;
 	private final MaxwellKafkaPartitioner ddlPartitioner;
-	private final boolean outputDDL;
 	private final KeyFormat keyFormat;
 
 	public MaxwellKafkaProducer(MaxwellContext context, Properties kafkaProperties, String kafkaTopic) {
@@ -100,8 +99,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		String partitionColumns = context.getConfig().kafkaPartitionColumns;
 		String partitionFallback = context.getConfig().kafkaPartitionFallback;
 		this.partitioner = new MaxwellKafkaPartitioner(hash, partitionKey, partitionColumns, partitionFallback);
-		this.outputDDL =  context.getConfig().outputDDL;
-		this.ddlPartitioner = new MaxwellKafkaPartitioner(hash, "database");
+		this.ddlPartitioner = new MaxwellKafkaPartitioner(hash, "database", null,"database");
 		this.ddlTopic =  context.getConfig().ddlKafkaTopic;
 
 		if ( context.getConfig().kafkaKeyFormat.equals("hash") )
@@ -114,9 +112,6 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 
 	@Override
 	public void push(RowMap r) throws Exception {
-		if (r instanceof DDLMap && !outputDDL) {
-			return;
-		}
 
 		String key = r.pkToJson(keyFormat);
 		String value = r.toJSON(outputConfig);
