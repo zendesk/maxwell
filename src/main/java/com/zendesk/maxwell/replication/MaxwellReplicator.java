@@ -237,9 +237,9 @@ public class MaxwellReplicator extends RunLoopProcess {
 	 * We assume the replicator has just processed a "BEGIN" event, and now
 	 * we're inside a transaction.  We'll process all rows inside that transaction
 	 * and turn them into RowMap objects.  We do this because mysql attaches the
-	 * transaction-id (xid) to the COMMIT object, so we process the entire transaction
-	 * to give them all that property.
-	 *
+	 * transaction-id (xid) to the COMMIT event (at the end of the transaction),
+	 * so we process the entire transaction in order to assign each row the same xid.
+
 	 * @return A RowMapBuffer of rows; either in-memory or on disk.
 	 */
 
@@ -319,10 +319,28 @@ public class MaxwellReplicator extends RunLoopProcess {
 		}
 	}
 
+	/**
+	 * Get the last heartbeat that the replicator has processed.
+	 *
+	 * We pass along the value of the heartbeat to the producer inside the row map.
+	 * @return the millisecond value ot fhte last heartbeat
+	 */
+
 	public Long getLastHeartbeatRead() {
 		return lastHeartbeatRead;
 	}
 
+
+	/**
+	 * Possibly convert a RowMap object into a HeartbeatRowMap
+	 *
+	 * Process a rowmap that represents a write to `maxwell`.`positions`.
+	 * If it's a write for a different client_id, or it's not a heartbeat,
+	 * we return just the RowMap.  Otherwise, we transform it into a HeartbeatRowMap
+	 * and set lastHeartbeatRead.
+	 *
+	 * @return either a RowMap or a HeartbeatRowMap
+	 */
 	private RowMap processHeartbeats(RowMap row) throws SQLException {
 		String hbClientID = (String) row.getData("client_id");
 		if ( !Objects.equals(hbClientID, this.clientID) )

@@ -21,6 +21,8 @@ mysql>    insert into test_datetime set dtcol='0000-00-00 00:00:00';
 <maxwell  { "table" : "test_datetime", "type": "insert", "data": { "dtcol": "0000-00-00 00:00:00" } }
 ```
 
+As of 1.3.0, Maxwell supports microsecond precision datetime/timestamp/time columns.
+
 ### sets
 ***
 
