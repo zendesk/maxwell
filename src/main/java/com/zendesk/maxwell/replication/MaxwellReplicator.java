@@ -362,6 +362,17 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 	private RowMapBuffer rowBuffer;
 
+	/**
+	 * The main entry point into the event reading loop.
+	 *
+	 * We maintain a buffer of events in a transaction,
+	 * and each subsequent call to `getRow` can grab one from
+	 * the buffer.  If that buffer is empty, we'll go check
+	 * the open-replicator buffer for rows to process.  If that
+	 * buffer is empty, we return null.
+	 *
+	 * @return either a RowMap or null
+	 */
 	public RowMap getRow() throws Exception {
 		BinlogEventV4 v4Event;
 
@@ -438,7 +449,6 @@ public class MaxwellReplicator extends RunLoopProcess {
 	protected BinlogEventV4 pollV4EventFromQueue() throws InterruptedException {
 		return queue.poll(100, TimeUnit.MILLISECONDS);
 	}
-
 
 	private void processQueryEvent(QueryEvent event) throws SchemaStoreException, InvalidSchemaError, SQLException {
 		// get charset of the alter event somehow? or just ignore it.
