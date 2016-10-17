@@ -240,9 +240,9 @@ public class MaxwellReplicator extends RunLoopProcess {
 	 * We assume the replicator has just processed a "BEGIN" event, and now
 	 * we're inside a transaction.  We'll process all rows inside that transaction
 	 * and turn them into RowMap objects.  We do this because mysql attaches the
-	 * transaction-id (xid) to the COMMIT object, so we process the entire transaction
-	 * to give them all that property.
-	 *
+	 * transaction-id (xid) to the COMMIT event (at the end of the transaction),
+	 * so we process the entire transaction in order to assign each row the same xid.
+
 	 * @return A RowMapBuffer of rows; either in-memory or on disk.
 	 */
 
@@ -322,10 +322,28 @@ public class MaxwellReplicator extends RunLoopProcess {
 		}
 	}
 
+	/**
+	 * Get the last heartbeat that the replicator has processed.
+	 *
+	 * We pass along the value of the heartbeat to the producer inside the row map.
+	 * @return the millisecond value ot fhte last heartbeat
+	 */
+
 	public Long getLastHeartbeatRead() {
 		return lastHeartbeatRead;
 	}
 
+
+	/**
+	 * Possibly convert a RowMap object into a HeartbeatRowMap
+	 *
+	 * Process a rowmap that represents a write to `maxwell`.`positions`.
+	 * If it's a write for a different client_id, or it's not a heartbeat,
+	 * we return just the RowMap.  Otherwise, we transform it into a HeartbeatRowMap
+	 * and set lastHeartbeatRead.
+	 *
+	 * @return either a RowMap or a HeartbeatRowMap
+	 */
 	private RowMap processHeartbeats(RowMap row) throws SQLException {
 		String hbClientID = (String) row.getData("client_id");
 		if ( !Objects.equals(hbClientID, this.clientID) )
@@ -347,6 +365,17 @@ public class MaxwellReplicator extends RunLoopProcess {
 
 	private RowMapBuffer rowBuffer;
 
+	/**
+	 * The main entry point into the event reading loop.
+	 *
+	 * We maintain a buffer of events in a transaction,
+	 * and each subsequent call to `getRow` can grab one from
+	 * the buffer.  If that buffer is empty, we'll go check
+	 * the open-replicator buffer for rows to process.  If that
+	 * buffer is empty, we return null.
+	 *
+	 * @return either a RowMap or null
+	 */
 	public RowMap getRow() throws Exception {
 		BinlogEventV4 v4Event;
 
@@ -423,7 +452,6 @@ public class MaxwellReplicator extends RunLoopProcess {
 	protected BinlogEventV4 pollV4EventFromQueue() throws InterruptedException {
 		return queue.poll(100, TimeUnit.MILLISECONDS);
 	}
-
 
 	private void processQueryEvent(QueryEvent event) throws SchemaStoreException, InvalidSchemaError, SQLException, Exception {
 		// get charset of the alter event somehow? or just ignore it.
