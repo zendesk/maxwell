@@ -20,6 +20,7 @@ option                                        | description | default
 --kafka_partition_hash                        | which hash function to use: [default, murmur3] | default
 --kafka_partition_by                          | what fields to hash for partition key: [database, table, primary_key] | database
 --kafka_topic                                 | kafka topic to write to. | maxwell
+--ddl_kafka_topic                             | kafka topic to write schema change records to. | kafka_topic | maxwell
 --kafka0.8                                    | run maxwell with kafka producer 0.8 (instead of the 0.9)
 &nbsp;
 --output_binlog_position                      | produced records include binlog position: [true&#124;false] | false
@@ -27,6 +28,7 @@ option                                        | description | default
 --output_nulls                                | produced records include fields with NULL values [true&#124;false] | true
 --output_server_id                            | produced records include server_id; [true&#124;false] | false
 --output_thread_id                            | produced records include thread_id; [true&#124;false] | false
+--output_ddl                                  | produce DDL records to ddl_kafka_topic [true&#124;false] | false
 &nbsp;
 --replication_host                            | mysql host to replicate from.  Only specify if different from `host` (see notes) | schema-store host
 --replication_password                        | password on replication server | (none)
