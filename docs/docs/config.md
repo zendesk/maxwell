@@ -19,7 +19,7 @@ option                                        | description | default
 --kafka.bootstrap.servers                     | list of kafka brokers, listed as HOST:PORT[,HOST:PORT] |
 --kafka_partition_hash                        | which hash function to use: [default, murmur3] | default
 --kafka_partition_by                          | what fields to hash for partition key: [database, table, primary_key] | database
---kafka_topic                                 | kafka topic to write to. | maxwell
+--kafka_topic                                 | kafka topic to write to. static string or variable replacement |  namespace_%{database}_%{table}
 --kafka0.8                                    | run maxwell with kafka producer 0.8 (instead of the 0.9)
 &nbsp;
 --output_binlog_position                      | produced records include binlog position: [true&#124;false] | false

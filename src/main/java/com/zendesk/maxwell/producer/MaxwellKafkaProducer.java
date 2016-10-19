@@ -10,6 +10,7 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.errors.RecordTooLargeException;
+import org.apache.kafka.common.errors.TimeoutException;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +68,8 @@ class KafkaCallback implements Callback {
 }
 
 public class MaxwellKafkaProducer extends AbstractProducer {
+	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
+
 	static final Object KAFKA_DEFAULTS[] = {
 		"compression.type", "gzip",
 		"metadata.fetch.timeout.ms", 5000,
@@ -75,7 +78,6 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	private final InflightMessageList inflightMessages;
 	private final KafkaProducer<String, String> kafka;
 	private String topic;
-	private final int numPartitions;
 	private final MaxwellKafkaPartitioner partitioner;
 	private final KeyFormat keyFormat;
 
@@ -89,7 +91,6 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 
 		this.setDefaults(kafkaProperties);
 		this.kafka = new KafkaProducer<>(kafkaProperties, new StringSerializer(), new StringSerializer());
-		this.numPartitions = kafka.partitionsFor(topic).size(); //returns 1 for new topics
 
 		String hash = context.getConfig().kafkaPartitionHash;
 		String partitionKey = context.getConfig().kafkaPartitionKey;
@@ -105,8 +106,24 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		this.inflightMessages = new InflightMessageList();
 	}
 
+	private Integer getNumPartitions(String topic) {
+		try {
+			return this.kafka.partitionsFor(topic).size(); //returns 1 for new topics
+		} catch(TimeoutException e) {
+			LOGGER.error("Topic '" + topic + "' name does not exist. Exception: " + e.getLocalizedMessage());
+			throw e;
+		}
+	}
+
+	private String generateTopic(RowMap r){
+		return this.topic.replaceAll("%\\{database\\}", r.getDatabase()).replaceAll("%\\{table\\}", r.getTable());
+	}
+
 	@Override
 	public void push(RowMap r) throws Exception {
+		String topic = generateTopic(r);
+		int numPartitions = getNumPartitions(topic);
+
 		String key = r.pkToJson(keyFormat);
 		String value = r.toJSON(outputConfig);
 
@@ -122,7 +139,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		}
 
 		ProducerRecord<String, String> record =
-				new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, this.numPartitions), key, value);
+				new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, numPartitions), key, value);
 
 		if ( r.isTXCommit() )
 			inflightMessages.addMessage(r.getPosition());

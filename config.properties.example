@@ -74,6 +74,8 @@ password=maxwell
 #kafka.bootstrap.servers=hosta:9092,hostb:9092
 
 # kafka topic to write to
+# this can be static, e.g. 'maxwell', or dynamic, e.g. namespace_%{database}_%{table}
+# in the latter case 'database' and 'table' will be replaced with the values for the row being processed
 #kafka_topic=maxwell
 
 # hash function to use.  "default" is just the JVM's 'hashCode'
