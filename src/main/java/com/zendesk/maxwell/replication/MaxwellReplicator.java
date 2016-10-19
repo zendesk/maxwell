@@ -2,6 +2,7 @@ package com.zendesk.maxwell.replication;
 
 import java.sql.SQLException;
 import java.util.Objects;
+import java.util.List;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -13,6 +14,8 @@ import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMapBuffer;
 import com.zendesk.maxwell.schema.*;
+import com.zendesk.maxwell.schema.ddl.DDLMap;
+import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 import com.zendesk.maxwell.util.RunLoopProcess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -450,13 +453,18 @@ public class MaxwellReplicator extends RunLoopProcess {
 		return queue.poll(100, TimeUnit.MILLISECONDS);
 	}
 
-	private void processQueryEvent(QueryEvent event) throws SchemaStoreException, InvalidSchemaError, SQLException {
+	private void processQueryEvent(QueryEvent event) throws SchemaStoreException, InvalidSchemaError, SQLException, Exception {
 		// get charset of the alter event somehow? or just ignore it.
 		String dbName = event.getDatabaseName().toString();
 		String sql = event.getSql().toString();
 		BinlogPosition position = eventBinlogPosition(event);
 
-		schemaStore.processSQL(sql, dbName, position);
+		List<ResolvedSchemaChange> changes =  schemaStore.processSQL(sql, dbName, position);
+		for ( ResolvedSchemaChange change : changes ) {
+			DDLMap ddl = new DDLMap(change,event.getHeader().getTimestamp(), sql, position);
+			producer.push(ddl);
+		}
+
 		tableCache.clear();
 
 		if ( this.producer != null )
