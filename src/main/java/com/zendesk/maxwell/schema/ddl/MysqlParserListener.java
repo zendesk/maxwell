@@ -283,18 +283,18 @@ public class MysqlParserListener extends mysqlBaseListener {
 	/* we enter this code twice.  the first time, we gobble up parens.  The
 		   second time, we just have the __MAXWELL__ token, and we can continue.
 		 */
-//	@Override
-//	public void enterSkip_parens(Skip_parensContext ctx) {
-//		if ( ctx.MAXWELL_ELIDED_PARSE_ISSUE() == null )
-//			throw new ReparseSQLException(spliceParens(ctx.getStart().getTokenIndex(), 0));
-//
-//	}
-//
-//	@Override
-//	public void enterSkip_parens_inside_partition_definitions(Skip_parens_inside_partition_definitionsContext ctx) {
-//		if ( ctx.MAXWELL_ELIDED_PARSE_ISSUE() == null )
-//			throw new ReparseSQLException(spliceParens(ctx.getStart().getTokenIndex(), 1));
-//	}
+	@Override
+	public void enterSkip_parens(Skip_parensContext ctx) {
+		if ( ctx.MAXWELL_ELIDED_PARSE_ISSUE() == null )
+			throw new ReparseSQLException(spliceParens(ctx.getStart().getTokenIndex(), 0));
+
+	}
+
+	@Override
+	public void enterSkip_parens_inside_partition_definitions(Skip_parens_inside_partition_definitionsContext ctx) {
+		if ( ctx.MAXWELL_ELIDED_PARSE_ISSUE() == null )
+			throw new ReparseSQLException(spliceParens(ctx.getStart().getTokenIndex(), 1));
+	}
 
 
 	@Override
