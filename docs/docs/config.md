@@ -1,51 +1,59 @@
 ### Command line options
 ***
-option                                        | description | default
---------------------------------------------- | ----------- | -------
---config FILE                                 | location of `config.properties` file |
---log_level                                   | log level [DEBUG&#124;INFO &#124;WARN&#124;ERROR | INFO
+option                         | argument                            | description                                         | default
+-------------------------------|-------------------------------------| --------------------------------------------------- | -------
+**general options**
+config                         | STRING                              | location of `config.properties` file                |
+log_level                      | [debug┃info┃warn┃error]             | log level                                           | INFO
 &nbsp;
---host HOST                                   | mysql host |
---user USER                                   | mysql username |
---password PASSWORD                           | mysql password | (none)
---port PORT                                   | mysql port | 3306
---schema_database                             | database name where maxwell stores schema and state | maxwell
---client_id                                   | unique (string) identifier for this maxwell instance| maxwell
---replica_server_id                           | unique (long) identifier for this maxwell instance | 6379 (see notes)
---master_recovery                             | enable experimental master recovery code | false
+**mysql options**
+host                           | STRING                              | mysql host                                          | localhost
+user                           | STRING                              | mysql username                                      |
+password                       | STRING                              | mysql password                                      | (no password)
+port                           | INT                                 | mysql port                                          | 3306
+schema_database                | STRING                              | database to store schema and position in            | maxwell
+client_id                      | STRING                              | unique text identifier for maxwell instance         | maxwell
+replica_server_id              | LONG                                | unique numeric identifier for this maxwell instance | 6379 (see notes)
+master_recovery                | BOOLEAN                             | enable experimental master recovery code            | false
 &nbsp;
---producer PRODUCER                           | what type of producer to use: [stdout, kafka, file, profiler] | stdout
---output_file                                 | if using the file producer, write JSON rows to this path |
---kafka.bootstrap.servers                     | list of kafka brokers, listed as HOST:PORT[,HOST:PORT] |
---kafka_partition_hash                        | which hash function to use: [default, murmur3] | default
---kafka_partition_by                          | what fields to hash for partition key: [database, table, primary_key] | database
---kafka_topic                                 | kafka topic to write to. | maxwell
---ddl_kafka_topic                             | kafka topic to write schema change records to. | kafka_topic | maxwell
---kafka0.8                                    | run maxwell with kafka producer 0.8 (instead of the 0.9)
+replication_host               | STRING                              | mysql host to replicate from.  Only specify if different from `host` (see notes) | *schema-store host*
+replication_password           | STRING                              | password on replication server | (none)
+replication_port               | INT                                 | port on replication server | 3306
+replication_user               | STRING                              | user on replication server |
 &nbsp;
---output_binlog_position                      | produced records include binlog position: [true&#124;false] | false
---output_commit_info                          | produced records include commit and xid: [true&#124;false] | true
---output_nulls                                | produced records include fields with NULL values [true&#124;false] | true
---output_server_id                            | produced records include server_id; [true&#124;false] | false
---output_thread_id                            | produced records include thread_id; [true&#124;false] | false
---output_ddl                                  | produce DDL records to ddl_kafka_topic [true&#124;false] | false
+**producer options**
+producer                       | [stdout┃kafka┃file┃profiler]        | type of producer to use                             | stdout
+output_file                    | STRING                              | output file for `file` producer                     |
 &nbsp;
---replication_host                            | mysql host to replicate from.  Only specify if different from `host` (see notes) | schema-store host
---replication_password                        | password on replication server | (none)
---replication_port                            | port on replication server | 3306
---replication_user                            | user on replication server
+kafka.bootstrap.servers        | STRING                              | kafka brokers, given as `HOST:PORT[,HOST:PORT]`     |
+kafka_topic                    | STRING                              | kafka topic to write to.                            | maxwell
+kafka_partition_by             | [database┃table┃primary_key┃column] | input to kafka partition function                   | database
+kafka_partition_columns        | STRING                              | if partitioning by 'column', a comma separated list of columns |
+kafka_partition_by_fallback    | [database┃table┃primary_key]        | required when kafka_partition_by=column.  Used when the column is missing |
+kafka_partition_hash           | [default┃murmur3]                   | hash function to use when hoosing kafka partition   | default
+ddl_kafka_topic                | STRING                              | if output_ddl is true, kafka topic to write DDL changes to | *kafka_topic*
+kafka0.8                       | BOOLEAN                             | run maxwell with kafka producer 0.8 (instead of the 0.9) |
+**formatting**
+output_binlog_position         | BOOLEAN                             | should produced records include binlog position     | false
+output_commit_info             | BOOLEAN                             | should produced records include commit and xid      | true
+output_nulls                   | BOOLEAN                             | produced records include fields with NULL values    | true
+output_server_id               | BOOLEAN                             | produced records include server_id                  | false
+output_thread_id               | BOOLEAN                             | produced records include thread_id                  | false
+output_ddl                     | BOOLEAN                             | output DDL (table-alter, table-create, etc) events  | false
 &nbsp;
---include_dbs PATTERN                         | only send updates from these databases |
---exclude_dbs PATTERN                         | ignore updates from these databases |
---include_tables PATTERN                      | only send updates from tables named like PATTERN |
---exclude_tables PATTERN                      | ignore updates from tables named like PATTERN |
---blacklist_dbs PATTERN                       | ignore updates AND schema changes from databases (see warnings below)|
---blacklist_tables PATTERN                    | ignore updates AND schema changes from tables named like PATTERN (see warnings below)|
+**filtering**
+include_dbs                    | PATTERN                             | only send updates from these databases |
+exclude_dbs                    | PATTERN                             | ignore updates from these databases |
+include_tables                 | PATTERN                             | only send updates from tables named like PATTERN |
+exclude_tables                 | PATTERN                             | ignore updates from tables named like PATTERN |
+blacklist_dbs                  | PATTERN                             | ignore updates AND schema changes from databases (see warnings below) |
+blacklist_tables               | PATTERN                             | ignore updates AND schema changes from tables named like PATTERN (see warnings below) |
 &nbsp;
---bootstrapper                                | bootstrapper type: async|sync|none. | async
+**misc**
+bootstrapper                   | [async┃sync┃none]                   | bootstrapper type.  See bootstrapping docs.        | async
 &nbsp;
---init_position FILE:POSITION                 | ignore the information in maxwell.positions and start at the given binlog position. Not available in config.properties.
---replay                                      | enable maxwell's read-only "replay" mode.  Not available in config.properties.
+init_position                  | FILE:POSITION                       | ignore the information in maxwell.positions and start at the given binlog position. Not available in config.properties. |
+replay                         | BOOLEAN                             | enable maxwell's read-only "replay" mode: don't store a binlog position or schema changes.  Not available in config.properties. |
 
 ### Properties file
 ***
