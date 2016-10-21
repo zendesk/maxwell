@@ -20,7 +20,7 @@
         <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
         <!--[if lt IE 9]>
             <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.0/respond.min.js"></script>
         <![endif]-->
         <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
     </head>
@@ -196,63 +196,87 @@
 <thead>
 <tr>
 <th>option</th>
+<th>argument</th>
 <th>description</th>
 <th>default</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>--config FILE</td>
+<td><strong>general options</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>config</td>
+<td>STRING</td>
 <td>location of <code>config.properties</code> file</td>
 <td></td>
 </tr>
 <tr>
-<td>--log_level</td>
-<td>log level [DEBUG&#124;INFO &#124;WARN&#124;ERROR</td>
+<td>log_level</td>
+<td>[debug┃info┃warn┃error]</td>
+<td>log level</td>
 <td>INFO</td>
 </tr>
 <tr>
 <td>&nbsp;</td>
 <td></td>
 <td></td>
-</tr>
-<tr>
-<td>--host HOST</td>
-<td>mysql host</td>
 <td></td>
 </tr>
 <tr>
-<td>--user USER</td>
+<td><strong>mysql options</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>host</td>
+<td>STRING</td>
+<td>mysql host</td>
+<td>localhost</td>
+</tr>
+<tr>
+<td>user</td>
+<td>STRING</td>
 <td>mysql username</td>
 <td></td>
 </tr>
 <tr>
-<td>--password PASSWORD</td>
+<td>password</td>
+<td>STRING</td>
 <td>mysql password</td>
-<td>(none)</td>
+<td>(no password)</td>
 </tr>
 <tr>
-<td>--port PORT</td>
+<td>port</td>
+<td>INT</td>
 <td>mysql port</td>
 <td>3306</td>
 </tr>
 <tr>
-<td>--schema_database</td>
-<td>database name where maxwell stores schema and state</td>
+<td>schema_database</td>
+<td>STRING</td>
+<td>database to store schema and position in</td>
 <td>maxwell</td>
 </tr>
 <tr>
-<td>--client_id</td>
-<td>unique (string) identifier for this maxwell instance</td>
+<td>client_id</td>
+<td>STRING</td>
+<td>unique text identifier for maxwell instance</td>
 <td>maxwell</td>
 </tr>
 <tr>
-<td>--replica_server_id</td>
-<td>unique (long) identifier for this maxwell instance</td>
+<td>replica_server_id</td>
+<td>LONG</td>
+<td>unique numeric identifier for this maxwell instance</td>
 <td>6379 (see notes)</td>
 </tr>
 <tr>
-<td>--master_recovery</td>
+<td>master_recovery</td>
+<td>BOOLEAN</td>
 <td>enable experimental master recovery code</td>
 <td>false</td>
 </tr>
@@ -260,94 +284,29 @@
 <td>&nbsp;</td>
 <td></td>
 <td></td>
-</tr>
-<tr>
-<td>--producer PRODUCER</td>
-<td>what type of producer to use: [stdout, kafka, file, profiler]</td>
-<td>stdout</td>
-</tr>
-<tr>
-<td>--output_file</td>
-<td>if using the file producer, write JSON rows to this path</td>
 <td></td>
 </tr>
 <tr>
-<td>--kafka.bootstrap.servers</td>
-<td>list of kafka brokers, listed as HOST:PORT[,HOST:PORT]</td>
-<td></td>
-</tr>
-<tr>
-<td>--kafka_partition_hash</td>
-<td>which hash function to use: [default, murmur3]</td>
-<td>default</td>
-</tr>
-<tr>
-<td>--kafka_partition_by</td>
-<td>what fields to hash for partition key: [database, table, primary_key]</td>
-<td>database</td>
-</tr>
-<tr>
-<td>--kafka_topic</td>
-<td>kafka topic to write to.</td>
-<td>maxwell</td>
-</tr>
-<tr>
-<td>--kafka0.8</td>
-<td>run maxwell with kafka producer 0.8 (instead of the 0.9)</td>
-<td></td>
-</tr>
-<tr>
-<td>&nbsp;</td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>--output_binlog_position</td>
-<td>produced records include binlog position: [true&#124;false]</td>
-<td>false</td>
-</tr>
-<tr>
-<td>--output_commit_info</td>
-<td>produced records include commit and xid: [true&#124;false]</td>
-<td>true</td>
-</tr>
-<tr>
-<td>--output_nulls</td>
-<td>produced records include fields with NULL values [true&#124;false]</td>
-<td>true</td>
-</tr>
-<tr>
-<td>--output_server_id</td>
-<td>produced records include server_id; [true&#124;false]</td>
-<td>false</td>
-</tr>
-<tr>
-<td>--output_thread_id</td>
-<td>produced records include thread_id; [true&#124;false]</td>
-<td>false</td>
-</tr>
-<tr>
-<td>&nbsp;</td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>--replication_host</td>
+<td>replication_host</td>
+<td>STRING</td>
 <td>mysql host to replicate from.  Only specify if different from <code>host</code> (see notes)</td>
-<td>schema-store host</td>
+<td><em>schema-store host</em></td>
 </tr>
 <tr>
-<td>--replication_password</td>
+<td>replication_password</td>
+<td>STRING</td>
 <td>password on replication server</td>
 <td>(none)</td>
 </tr>
 <tr>
-<td>--replication_port</td>
+<td>replication_port</td>
+<td>INT</td>
 <td>port on replication server</td>
 <td>3306</td>
 </tr>
 <tr>
-<td>--replication_user</td>
+<td>replication_user</td>
+<td>STRING</td>
 <td>user on replication server</td>
 <td></td>
 </tr>
@@ -355,34 +314,167 @@
 <td>&nbsp;</td>
 <td></td>
 <td></td>
+<td></td>
 </tr>
 <tr>
-<td>--include_dbs PATTERN</td>
+<td><strong>producer options</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>producer</td>
+<td>[stdout┃kafka┃file┃profiler]</td>
+<td>type of producer to use</td>
+<td>stdout</td>
+</tr>
+<tr>
+<td>output_file</td>
+<td>STRING</td>
+<td>output file for <code>file</code> producer</td>
+<td></td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>kafka.bootstrap.servers</td>
+<td>STRING</td>
+<td>kafka brokers, given as <code>HOST:PORT[,HOST:PORT]</code></td>
+<td></td>
+</tr>
+<tr>
+<td>kafka_topic</td>
+<td>STRING</td>
+<td>kafka topic to write to.</td>
+<td>maxwell</td>
+</tr>
+<tr>
+<td>kafka_partition_by</td>
+<td>[database┃table┃primary_key┃column]</td>
+<td>input to kafka partition function</td>
+<td>database</td>
+</tr>
+<tr>
+<td>kafka_partition_columns</td>
+<td>STRING</td>
+<td>if partitioning by 'column', a comma separated list of columns</td>
+<td></td>
+</tr>
+<tr>
+<td>kafka_partition_by_fallback</td>
+<td>[database┃table┃primary_key]</td>
+<td>required when kafka_partition_by=column.  Used when the column is missing</td>
+<td></td>
+</tr>
+<tr>
+<td>kafka_partition_hash</td>
+<td>[default┃murmur3]</td>
+<td>hash function to use when hoosing kafka partition</td>
+<td>default</td>
+</tr>
+<tr>
+<td>ddl_kafka_topic</td>
+<td>STRING</td>
+<td>if output_ddl is true, kafka topic to write DDL changes to</td>
+<td><em>kafka_topic</em></td>
+</tr>
+<tr>
+<td>kafka0.8</td>
+<td>BOOLEAN</td>
+<td>run maxwell with kafka producer 0.8 (instead of the 0.9)</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>formatting</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>output_binlog_position</td>
+<td>BOOLEAN</td>
+<td>should produced records include binlog position</td>
+<td>false</td>
+</tr>
+<tr>
+<td>output_commit_info</td>
+<td>BOOLEAN</td>
+<td>should produced records include commit and xid</td>
+<td>true</td>
+</tr>
+<tr>
+<td>output_nulls</td>
+<td>BOOLEAN</td>
+<td>produced records include fields with NULL values</td>
+<td>true</td>
+</tr>
+<tr>
+<td>output_server_id</td>
+<td>BOOLEAN</td>
+<td>produced records include server_id</td>
+<td>false</td>
+</tr>
+<tr>
+<td>output_thread_id</td>
+<td>BOOLEAN</td>
+<td>produced records include thread_id</td>
+<td>false</td>
+</tr>
+<tr>
+<td>output_ddl</td>
+<td>BOOLEAN</td>
+<td>output DDL (table-alter, table-create, etc) events</td>
+<td>false</td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>filtering</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>include_dbs</td>
+<td>PATTERN</td>
 <td>only send updates from these databases</td>
 <td></td>
 </tr>
 <tr>
-<td>--exclude_dbs PATTERN</td>
+<td>exclude_dbs</td>
+<td>PATTERN</td>
 <td>ignore updates from these databases</td>
 <td></td>
 </tr>
 <tr>
-<td>--include_tables PATTERN</td>
+<td>include_tables</td>
+<td>PATTERN</td>
 <td>only send updates from tables named like PATTERN</td>
 <td></td>
 </tr>
 <tr>
-<td>--exclude_tables PATTERN</td>
+<td>exclude_tables</td>
+<td>PATTERN</td>
 <td>ignore updates from tables named like PATTERN</td>
 <td></td>
 </tr>
 <tr>
-<td>--blacklist_dbs PATTERN</td>
+<td>blacklist_dbs</td>
+<td>PATTERN</td>
 <td>ignore updates AND schema changes from databases (see warnings below)</td>
 <td></td>
 </tr>
 <tr>
-<td>--blacklist_tables PATTERN</td>
+<td>blacklist_tables</td>
+<td>PATTERN</td>
 <td>ignore updates AND schema changes from tables named like PATTERN (see warnings below)</td>
 <td></td>
 </tr>
@@ -390,25 +482,36 @@
 <td>&nbsp;</td>
 <td></td>
 <td></td>
+<td></td>
 </tr>
 <tr>
-<td>--bootstrapper</td>
-<td>bootstrapper type: async</td>
-<td>sync</td>
+<td><strong>misc</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>bootstrapper</td>
+<td>[async┃sync┃none]</td>
+<td>bootstrapper type.  See bootstrapping docs.</td>
+<td>async</td>
 </tr>
 <tr>
 <td>&nbsp;</td>
 <td></td>
 <td></td>
+<td></td>
 </tr>
 <tr>
-<td>--init_position FILE:POSITION</td>
+<td>init_position</td>
+<td>FILE:POSITION</td>
 <td>ignore the information in maxwell.positions and start at the given binlog position. Not available in config.properties.</td>
 <td></td>
 </tr>
 <tr>
-<td>--replay</td>
-<td>enable maxwell's read-only "replay" mode.  Not available in config.properties.</td>
+<td>replay</td>
+<td>BOOLEAN</td>
+<td>enable maxwell's read-only "replay" mode: don't store a binlog position or schema changes.  Not available in config.properties.</td>
 <td></td>
 </tr>
 </tbody>

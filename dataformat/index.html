@@ -20,7 +20,7 @@
         <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
         <!--[if lt IE 9]>
             <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.0/respond.min.js"></script>
         <![endif]-->
         <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
     </head>
@@ -147,6 +147,26 @@
               
                   <ul class="nav">
                   
+                      <li class="toctree-l3"><a href="#so-you-ran-some-sql">So you ran some sql?</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#insert">INSERT</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#update">UPDATE</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#delete">DELETE</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#create-table">CREATE TABLE</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#alter-table">ALTER TABLE</a></li>
+                      
+                          <li><a class="toctree-l4" href="#column-types">Column types</a></li>
+                      
+                  
                       <li class="toctree-l3"><a href="#blob-binary-encoded-strings">blob (+ binary encoded strings)</a></li>
                       
                   
@@ -182,8 +202,241 @@
 </div></div>
             <div class="col-md-10" role="main">
 
-<h4>How Maxwell translates different mysql types</h4>
+<h3 id="so-you-ran-some-sql">So you ran some sql?</h3>
+<pre><code>create table test.e (
+  id int(10) not null primary key auto_increment,
+  m double,
+  c timestamp(6),
+  comment varchar(255) charset 'latin1'
+);
 
+insert into test.e set m = 4.2341, c = now(3), comment = 'I am a creature of light.';
+update test.e set m = 5.444, c = now(3) where id = 1;
+delete from test.e where id = 1;
+alter table test.e add column torvalds bigint unsigned after m;
+drop table test.e;
+</code></pre>
+<p>Maxwell will produce some output for that.  Let's look at it.</p>
+<h3 id="insert">INSERT</h3>
+<hr />
+<pre><code>mysql&gt; insert into test.e set m = 4.2341, c = now(3), comment = 'I am a creature of light.';
+{
+   &quot;database&quot;:&quot;test&quot;,
+   &quot;table&quot;:&quot;e&quot;,
+   &quot;type&quot;:&quot;insert&quot;,
+   &quot;ts&quot;:1477053217,
+   &quot;xid&quot;:23396,
+   &quot;commit&quot;:true,
+   &quot;position&quot;:&quot;master.000006:800911&quot;,
+   &quot;server_id&quot;:23042,
+   &quot;thread_id&quot;:108,
+   &quot;data&quot;:{
+      &quot;id&quot;:1,
+      &quot;m&quot;:4.2341,
+      &quot;c&quot;:&quot;2016-10-21 05:33:37.523000&quot;,
+      &quot;comment&quot;:&quot;I am a creature of light.&quot;
+   }
+}
+
+</code></pre>
+
+<p>Most of the fields are self-explanatory, but a couple of them deserve mention:</p>
+<p>↳ <code>"type":"insert",</code></p>
+<p>Most commonly you will see insert/update/delete here.  If you're bootstrapping
+a table, you will see "bootstrap-insert", and DDL statements (explained later)
+have their own types.</p>
+<p>↳ <code>"xid":23396,</code></p>
+<p>This is InnoDB's "transaction ID" for the transaction this row is associated
+with.  It's unique within the lifetime of a server as near as I can tell.</p>
+<p>↳ <code>"server_id":23042,</code></p>
+<p>The mysql server_id of the server that accepted this transaction.</p>
+<p>↳ <code>"thread_id":108,</code></p>
+<p>A thread_id is more or less a unique identifier of the client connection that
+generated the data.</p>
+<p>↳ <code>"commit":true,</code></p>
+<p>If you need to re-assemble transactions in your stream processors, you can use
+this field and <code>xid</code> to do so.  The data will look like:</p>
+<ul>
+<li>row with no <code>commit</code>, xid=142</li>
+<li>row with no <code>commit</code>, xid=142</li>
+<li>row with <code>commit=true</code>, xid=142</li>
+<li>row with no <code>commit</code>, xid=155</li>
+<li>...</li>
+</ul>
+<h3 id="update">UPDATE</h3>
+<hr />
+<pre><code>mysql&gt; update test.e set m = 5.444, c = now(3) where id = 1;
+{
+   &quot;database&quot;:&quot;test&quot;,
+   &quot;table&quot;:&quot;e&quot;,
+   &quot;type&quot;:&quot;update&quot;,
+   &quot;ts&quot;:1477053234,
+   ...
+   &quot;data&quot;:{
+      &quot;id&quot;:1,
+      &quot;m&quot;:5.444,
+      &quot;c&quot;:&quot;2016-10-21 05:33:54.631000&quot;,
+      &quot;comment&quot;:&quot;I am a creature of light.&quot;
+   },
+   &quot;old&quot;:{
+      &quot;m&quot;:4.2341,
+      &quot;c&quot;:&quot;2016-10-21 05:33:37.523000&quot;
+   }
+}
+
+</code></pre>
+
+<p>What's important to note here is the <code>old</code> field, which stores old values for
+rows that changed.  So <code>data</code> still has a complete copy of the row (just as
+with the insert), but now you can reconstruct what the row <em>was</em> by doing
+<code>data.merge(old)</code>.</p>
+<h3 id="delete">DELETE</h3>
+<hr />
+<pre><code>mysql&gt; delete from test.e where id = 1;
+{
+   &quot;database&quot;:&quot;test&quot;,
+   &quot;table&quot;:&quot;e&quot;,
+   &quot;type&quot;:&quot;delete&quot;,
+   ...
+   &quot;data&quot;:{
+      &quot;id&quot;:1,
+      &quot;m&quot;:5.444,
+      &quot;c&quot;:&quot;2016-10-21 05:33:54.631000&quot;,
+      &quot;comment&quot;:&quot;I am a creature of light.&quot;
+   }
+}
+</code></pre>
+
+<p>after a DELETE, <code>data</code> contains a copy of the row, just before it shuffled off
+this mortal coil.</p>
+<h3 id="create-table">CREATE TABLE</h3>
+<hr />
+<pre><code>create table test.e ( ... )
+{
+   &quot;type&quot;:&quot;table-create&quot;,
+   &quot;database&quot;:&quot;test&quot;,
+   &quot;table&quot;:&quot;e&quot;,
+   &quot;def&quot;:{
+      &quot;database&quot;:&quot;test&quot;,
+      &quot;charset&quot;:&quot;utf8mb4&quot;,
+      &quot;table&quot;:&quot;e&quot;,
+      &quot;columns&quot;:[
+         {
+            &quot;type&quot;:&quot;int&quot;,
+            &quot;name&quot;:&quot;id&quot;,
+            &quot;signed&quot;:true
+         },
+         {
+            &quot;type&quot;:&quot;double&quot;,
+            &quot;name&quot;:&quot;m&quot;
+         },
+         {
+            &quot;type&quot;:&quot;timestamp&quot;,
+            &quot;name&quot;:&quot;c&quot;,
+            &quot;column-length&quot;:6
+         },
+         {
+            &quot;type&quot;:&quot;varchar&quot;,
+            &quot;name&quot;:&quot;comment&quot;,
+            &quot;charset&quot;:&quot;latin1&quot;
+         }
+      ],
+      &quot;primary-key&quot;:[
+         &quot;id&quot;
+      ]
+   },
+   &quot;ts&quot;:1477053126000,
+   &quot;sql&quot;:&quot;create table test.e ( id int(10) not null primary key auto_increment, m double, c timestamp(6), comment varchar(255) charset 'latin1' )&quot;,
+   &quot;position&quot;:&quot;master.000006:800050&quot;
+}
+
+</code></pre>
+
+<p>You only get this with <code>--output_ddl</code>.</p>
+<p>↳ <code>"type": "table-create"</code>
+here you have <code>database-create</code>, <code>database-alter</code>, <code>database-drop</code>, <code>table-create</code>, <code>table-alter</code>, <code>table-drop</code>.</p>
+<p>↳ <code>"type":"int",</code>
+Mostly here we preserve the inbound type of the column.  There's a couple of
+exceptions where we will change the column type, you could read about them in the
+<a href="https://github.com/zendesk/maxwell/blob/master/src/main/java/com/zendesk/maxwell/schema/columndef/ColumnDef.java#L109">unalias_type</a>
+function if you so desired.</p>
+<h3 id="alter-table">ALTER TABLE</h3>
+<pre><code>mysql&gt; alter table test.e add column torvalds bigint unsigned after m;
+{
+   &quot;type&quot;:&quot;table-alter&quot;,
+   &quot;database&quot;:&quot;test&quot;,
+   &quot;table&quot;:&quot;e&quot;,
+   &quot;old&quot;:{
+      &quot;database&quot;:&quot;test&quot;,
+      &quot;charset&quot;:&quot;utf8mb4&quot;,
+      &quot;table&quot;:&quot;e&quot;,
+      &quot;columns&quot;:[
+         {
+            &quot;type&quot;:&quot;int&quot;,
+            &quot;name&quot;:&quot;id&quot;,
+            &quot;signed&quot;:true
+         },
+         {
+            &quot;type&quot;:&quot;double&quot;,
+            &quot;name&quot;:&quot;m&quot;
+         },
+         {
+            &quot;type&quot;:&quot;timestamp&quot;,
+            &quot;name&quot;:&quot;c&quot;,
+            &quot;column-length&quot;:6
+         },
+         {
+            &quot;type&quot;:&quot;varchar&quot;,
+            &quot;name&quot;:&quot;comment&quot;,
+            &quot;charset&quot;:&quot;latin1&quot;
+         }
+      ],
+      &quot;primary-key&quot;:[
+         &quot;id&quot;
+      ]
+   },
+   &quot;def&quot;:{
+      &quot;database&quot;:&quot;test&quot;,
+      &quot;charset&quot;:&quot;utf8mb4&quot;,
+      &quot;table&quot;:&quot;e&quot;,
+      &quot;columns&quot;:[
+         {
+            &quot;type&quot;:&quot;int&quot;,
+            &quot;name&quot;:&quot;id&quot;,
+            &quot;signed&quot;:true
+         },
+         {
+            &quot;type&quot;:&quot;double&quot;,
+            &quot;name&quot;:&quot;m&quot;
+         },
+         {
+            &quot;type&quot;:&quot;bigint&quot;,
+            &quot;name&quot;:&quot;torvalds&quot;,
+            &quot;signed&quot;:false
+         },
+         {
+            &quot;type&quot;:&quot;timestamp&quot;,
+            &quot;name&quot;:&quot;c&quot;,
+            &quot;column-length&quot;:6
+         },
+         {
+            &quot;type&quot;:&quot;varchar&quot;,
+            &quot;name&quot;:&quot;comment&quot;,
+            &quot;charset&quot;:&quot;latin1&quot;
+         }
+      ],
+      &quot;primary-key&quot;:[
+         &quot;id&quot;
+      ]
+   },
+   &quot;ts&quot;:1477053308000,
+   &quot;sql&quot;:&quot;alter table test.e add column torvalds bigint unsigned after m&quot;,
+   &quot;position&quot;:&quot;master.000006:804398&quot;
+}
+</code></pre>
+
+<p>As with the UPDATE, we have a complete image of the table before-and-after the alter</p>
+<h4 id="column-types">Column types</h4>
 <h3 id="blob-binary-encoded-strings">blob (+ binary encoded strings)</h3>
 <hr />
 <p>Maxell will base64 encode BLOB, BINARY and VARBINARY columns (as well as varchar/string columns with a BINARY encoding).</p>
@@ -199,6 +452,7 @@ mysql&gt;    insert into test_datetime set dtcol='0000-00-00 00:00:00';
 &lt;maxwell  { &quot;table&quot; : &quot;test_datetime&quot;, &quot;type&quot;: &quot;insert&quot;, &quot;data&quot;: { &quot;dtcol&quot;: &quot;0000-00-00 00:00:00&quot; } }
 </code></pre>
 
+<p>As of 1.3.0, Maxwell supports microsecond precision datetime/timestamp/time columns.</p>
 <h3 id="sets">sets</h3>
 <hr />
 <p>output as JSON arrays.</p>
