@@ -265,8 +265,6 @@ mysql> alter table test.e add column torvalds bigint unsigned after m;
 As with the UPDATE, we have a complete image of the table before-and-after the alter
 
 
-#### Column types
-
 ### blob (+ binary encoded strings)
 ***
 
