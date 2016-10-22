@@ -218,11 +218,13 @@ from normal Maxwell operation in that:</p>
 <li>if it finds that row, it will scan backwards in the binary logs of the new
   master until it finds that heartbeat.</li>
 </ul>
-<p>Notes:
-- master recovery is not compatible with separate schema-store hosts and
-  replication-hosts, due to the heartbeat mechanism.
-- this code should be considered alpha-quality.
-- on highly active servers, as much as 1 second of data may be duplicated.</p></div>
+<p>Notes:</p>
+<ul>
+<li>master recovery is not compatible with separate schema-store hosts and
+  replication-hosts, due to the heartbeat mechanism.</li>
+<li>this code should be considered alpha-quality.</li>
+<li>on highly active servers, as much as 1 second of data may be duplicated.</li>
+</ul></div>
         </div>
 
         
