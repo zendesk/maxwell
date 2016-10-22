@@ -33,6 +33,7 @@ As of 1.2.0, maxwell includes experimental support for master position recovery.
   master until it finds that heartbeat.
 
 Notes:
+
 - master recovery is not compatible with separate schema-store hosts and
   replication-hosts, due to the heartbeat mechanism.
 - this code should be considered alpha-quality.
