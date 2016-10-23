@@ -2,7 +2,7 @@ package com.zendesk.maxwell.bootstrap;
 
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.replication.MaxwellReplicator;
+import com.zendesk.maxwell.replication.Replicator;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.schema.Database;
@@ -19,7 +19,7 @@ import java.util.NoSuchElementException;
 
 public class SynchronousBootstrapper extends AbstractBootstrapper {
 
-	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellReplicator.class);
+	static final Logger LOGGER = LoggerFactory.getLogger(Replicator.class);
 	private static final long INSERTED_ROWS_UPDATE_PERIOD_MILLIS = 250;
 
 	private long lastInsertedRowsUpdateTimeMillis = 0;
@@ -34,7 +34,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	@Override
-	public void startBootstrap(RowMap startBootstrapRow, AbstractProducer producer, MaxwellReplicator replicator) throws Exception {
+	public void startBootstrap(RowMap startBootstrapRow, AbstractProducer producer, Replicator replicator) throws Exception {
 		String databaseName = bootstrapDatabase(startBootstrapRow);
 		String tableName = bootstrapTable(startBootstrapRow);
 
@@ -117,7 +117,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	@Override
-	public void completeBootstrap(RowMap completeBootstrapRow, AbstractProducer producer, MaxwellReplicator replicator) throws Exception {
+	public void completeBootstrap(RowMap completeBootstrapRow, AbstractProducer producer, Replicator replicator) throws Exception {
 		String databaseName = bootstrapDatabase(completeBootstrapRow);
 		String tableName = bootstrapTable(completeBootstrapRow);
 
@@ -133,7 +133,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	@Override
-	public void resume(AbstractProducer producer, MaxwellReplicator replicator) throws Exception {
+	public void resume(AbstractProducer producer, Replicator replicator) throws Exception {
 		try ( Connection connection = context.getMaxwellConnection() ) {
 			// This update resets all rows of incomplete bootstraps to their original state.
 			// These updates are treated as fresh bootstrap requests and trigger a restart
@@ -149,7 +149,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	@Override
-	public void work(RowMap row, AbstractProducer producer, MaxwellReplicator replicator) throws Exception {
+	public void work(RowMap row, AbstractProducer producer, Replicator replicator) throws Exception {
 		try {
 			if ( isStartBootstrapRow(row) ) {
 				startBootstrap(row, producer, replicator);

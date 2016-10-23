@@ -28,7 +28,7 @@ import com.zendesk.maxwell.producer.AbstractProducer;
 
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 
-public class MaxwellReplicator extends RunLoopProcess {
+public class MaxwellReplicator extends RunLoopProcess implements Replicator {
 	private final long MAX_TX_ELEMENTS = 10000;
 	protected SchemaStore schemaStore;
 
@@ -113,10 +113,6 @@ public class MaxwellReplicator extends RunLoopProcess {
 	public void setBinlogPosition(BinlogPosition p) {
 		this.replicator.setBinlogFileName(p.getFile());
 		this.replicator.setBinlogPosition(p.getOffset());
-	}
-
-	public void setPort(int port) {
-		this.replicator.setPort(port);
 	}
 
 	private void ensureReplicatorThread() throws Exception {
