@@ -10,8 +10,8 @@ import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.KafkaException;
 import org.apache.kafka.common.errors.RecordTooLargeException;
-import org.apache.kafka.common.errors.TimeoutException;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,7 +114,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	private Integer getNumPartitions(String topic) {
 		try {
 			return this.kafka.partitionsFor(topic).size(); //returns 1 for new topics
-		} catch(TimeoutException e) {
+		} catch (KafkaException e) {
 			LOGGER.error("Topic '" + topic + "' name does not exist. Exception: " + e.getLocalizedMessage());
 			throw e;
 		}
@@ -142,8 +142,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 
 		ProducerRecord<String, String> record;
 		if (r instanceof DDLMap) {
-			String topic = generateTopic(this.ddlTopic, r);
-			record = new ProducerRecord<>(topic, this.ddlPartitioner.kafkaPartition(r, getNumPartitions(topic)), key, value);
+			record = new ProducerRecord<>(this.ddlTopic, this.ddlPartitioner.kafkaPartition(r, getNumPartitions(this.ddlTopic)), key, value);
 		} else {
 			String topic = generateTopic(this.topic, r);
 			record = new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, getNumPartitions(topic)), key, value);
