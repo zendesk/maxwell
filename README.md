@@ -1,5 +1,4 @@
 <div id="maxwell-header">
-  <h2>Maxwell = Mysql + Kafka</h2>
 </div>
 
 This is Maxwell's daemon, an application that reads MySQL binlogs and writes
@@ -18,7 +17,7 @@ advanced features:
   parser for create/alter/drop statements (nope, there was no other way).
 
 &rarr; Download:
-[https://github.com/zendesk/maxwell/releases/download/v1.3.0/maxwell-1.3.0.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.3.0/maxwell-1.3.0.tar.gz)
+[https://github.com/zendesk/maxwell/releases/download/v1.4.0/maxwell-1.4.0.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.4.0/maxwell-1.4.0.tar.gz)
 <br/>
 &rarr; Source:
 [https://github.com/zendesk/maxwell](https://github.com/zendesk/maxwell)

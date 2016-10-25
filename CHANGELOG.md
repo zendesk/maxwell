@@ -1,5 +1,14 @@
 # Maxwell changelog
 
+### [v1.4.0](https://github.com/zendesk/maxwell/releases/tag/v1.4.0): "deep, insomniac character flaws"
+
+1.4.0 brings us two nice new features:
+
+  - partition-by-column: see --kafka_partition_columns.  Thanks @smferguson
+  - output schema changes as JSON: see --output_ddl.  Thanks @xmlking
+  - As well as a fix around race conditions on shutdown.
+
+
 ### [v1.3.0](https://github.com/zendesk/maxwell/releases/tag/v1.3.0): "yogg-saron"
 
 

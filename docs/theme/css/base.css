@@ -3,7 +3,8 @@ body {
 }
 
 h1,h2,h3,h4,h5,h6,body {
-    font-family: "Helvetica Neue","Helvetica","Arial","sans-serif";
+    font-family: "Open Sans","Helvetica Neue","Helvetica","Arial","sans-serif";
+    font-size: 15px;
 }
 
 ul.nav li.main {
@@ -49,6 +50,29 @@ div.source-links {
 
 .navbar-header {
   padding-left: 15px;
+}
+
+.navbar-image-container {
+  float: right;
+}
+
+#navbar-image {
+  width: 200px;
+  margin-right: -20px;
+  margin-top: 5px;
+}
+
+.navbar-default {
+  background-image: linear-gradient(to bottom, #9db3e0 0, #b8cdf9 100%);
+  /* background-image: none; */
+  /* background-color: #b8cdf9;  */
+}
+
+.navbar-default .navbar-brand {
+  color: #ffffff;
+  font-size: 220%;
+  font-family: "arial";
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
 }
 
 .navbar-collapse ul {
@@ -120,6 +144,10 @@ h3 {
     padding-left: 0px;
   }
 
+    .nav {
+      font-size: 12px;
+    }
+
     #maxwell-daemon-image {
       display: inline;
       float: left;
@@ -136,7 +164,6 @@ h3 {
     }
 
     .container {
-      margin-left: 50px;
     }
 
     .bs-sidebar .nav > .active > ul {
