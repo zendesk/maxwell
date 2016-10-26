@@ -26,12 +26,12 @@ producer                       | [stdout┃kafka┃file┃profiler]        | typ
 output_file                    | STRING                              | output file for `file` producer                     |
 &nbsp;
 kafka.bootstrap.servers        | STRING                              | kafka brokers, given as `HOST:PORT[,HOST:PORT]`     |
-kafka_topic                    | STRING                              | kafka topic to write to. static string or variable replacement                            | namespace_ddl_%{database}_%{table}
+kafka_topic                    | STRING                              | kafka topic to write to. static string or variable replacement                            | maxwell
 kafka_partition_by             | [database┃table┃primary_key┃column] | input to kafka partition function                   | database
 kafka_partition_columns        | STRING                              | if partitioning by 'column', a comma separated list of columns |
 kafka_partition_by_fallback    | [database┃table┃primary_key]        | required when kafka_partition_by=column.  Used when the column is missing |
 kafka_partition_hash           | [default┃murmur3]                   | hash function to use when hoosing kafka partition   | default
-ddl_kafka_topic                | STRING                              | if output_ddl is true, kafka topic to write DDL changes to. the topic is a static string or variable replacement | namespace_ddl_%{database}_%{table}
+ddl_kafka_topic                | STRING                              | if output_ddl is true, kafka topic to write DDL changes to | *kafka_topic*
 kafka0.8                       | BOOLEAN                             | run maxwell with kafka producer 0.8 (instead of the 0.9) |
 **formatting**
 output_binlog_position         | BOOLEAN                             | should produced records include binlog position     | false

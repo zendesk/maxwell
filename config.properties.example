@@ -81,8 +81,6 @@ password=maxwell
 #kafka_topic=maxwell
 
 # kafka topic to write DDL to
-# this can be static, e.g. 'maxwell_ddl', or dynamic, e.g. namespace_ddl_%{database}_%{table}
-# in the latter case 'database' and 'table' will be replaced with the values for the row being processed
 #ddl_kafka_topic=maxwell_ddl
 
 # hash function to use.  "default" is just the JVM's 'hashCode'
