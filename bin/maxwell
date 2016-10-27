@@ -3,10 +3,10 @@
 base_dir=$(dirname $0)/..
 
 # Which version of kafka-clients will be loaded, based on the --kafka_version
-# flag. If none is specified default to 0.10
-# valid options are 0.8, 0.9, 0.10
+# flag. If none is specified default to 0.9.0
+# valid options are 0.8.2, 0.9.0, 0.10.0
 
-KAFKA_VERSION=0.10
+KAFKA_VERSION=0.9
 
 KAFKA_08="0.8.2.2"
 KAFKA_09="0.9.0.1"
