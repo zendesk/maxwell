@@ -20,7 +20,7 @@
         <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
         <!--[if lt IE 9]>
             <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.0/respond.min.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.1/respond.min.js"></script>
         <![endif]-->
         <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
     </head>
@@ -193,7 +193,7 @@
 <li>kafka.acks = 1</li>
 <li>kafka.compression.type = gzip</li>
 </ul>
-<p>Maxwell writes to a kafka topic named "maxwell" by default.  This can be changed with the <code>kafka_topic</code> option.</p>
+<p>Maxwell writes to a kafka topic named "maxwell" by default. It can be static, e.g. 'maxwell', or dynamic, e.g. <code>namespace_%{database}_%{table}</code>. In the latter case 'database' and 'table' will be replaced with the values for the row being processed. This can be changed with the <code>kafka_topic</code> option.</p>
 <h3 id="kafka-key">Kafka key</h3>
 <hr />
 <p>Maxwell generates keys for its Kafka messages based upon a mysql row's primary key in JSON format:</p>
