@@ -2,28 +2,59 @@
 
 base_dir=$(dirname $0)/..
 
-# Which version of kafka-clients will be loaded, based on the presence of the
-# --kafka0.9 option or not; should match the ones declared in the Makefile (0.8)
-# and pom.xml (0.9).
+# Which version of kafka-clients will be loaded, based on the --kafka_version
+# flag. If none is specified default to 0.10
+# valid options are 0.8, 0.9, 0.10
 
-KAFKA_08_VERSION=0.8.2.2
-KAFKA_09_VERSION=0.9.0.1
+KAFKA_VERSION=0.10
+
+KAFKA_08="0.8.2.2"
+KAFKA_09="0.9.0.1"
+KAFKA_10="0.10.0.1"
+
+WANTED_VERSION=""
 
 CLASSPATH=$CLASSPATH:$base_dir/target/classes:../open-replicator/target/classes
 
-for file in lib/*.jar target/dependency/*.jar
+while [[ $# -gt 1 ]]
 do
-  if [[ "$@" == *--kafka0.8* ]] && [[ ! $file == *kafka-clients-$KAFKA_09_VERSION.jar* ]]; then
-    CLASSPATH=$CLASSPATH:$file
-  elif [[ ! "$@" == *--kafka0.8* ]] && [[ ! $file == *kafka-clients-$KAFKA_08_VERSION.jar* ]]; then
-    CLASSPATH=$CLASSPATH:$file
-  fi
+key="$1"
+case $key in
+	--kafka_version)
+	KAFKA_VERSION="$2"
+	shift # past argument
+	;;
+esac
+shift # past argument or value
+done
+
+case $KAFKA_VERSION in
+	0.8)
+	WANTED_VERSION=$KAFKA_08
+	;;
+	0.9)
+	WANTED_VERSION=$KAFKA_09
+	;;
+	0.10)
+	WANTED_VERSION=$KAFKA_10
+	;;
+esac
+
+for file in lib/*.jar target/dependency/*.jar;
+do
+	# keep all non-kafka-client jars
+	# keep the kafka-client jar for the version we want
+	if [[ ! $file == *kafka-clients-* ]];then
+		CLASSPATH=$CLASSPATH:$file
+	elif [[ $file == *kafka-clients-$WANTED_VERSION.jar* ]]; then
+		CLASSPATH=$CLASSPATH:$file
+	fi
 done
 
 if [ -z "$JAVA_HOME" ]; then
-  JAVA="java"
+	JAVA="java"
 else
-  JAVA="$JAVA_HOME/bin/java"
+	JAVA="$JAVA_HOME/bin/java"
 fi
 
 exec $JAVA $JAVA_OPTS -Dfile.encoding=UTF-8 -Dlog4j.shutdownCallbackRegistry=com.djdch.log4j.StaticShutdownCallbackRegistry -cp $CLASSPATH com.zendesk.maxwell.Maxwell "$@"
