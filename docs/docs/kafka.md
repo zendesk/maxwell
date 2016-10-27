@@ -9,7 +9,7 @@ Maxwell sets the following Kafka options by default, but you can override them i
 - kafka.acks = 1
 - kafka.compression.type = gzip
 
-Maxwell writes to a kafka topic named "maxwell" by default.  This can be changed with the `kafka_topic` option.
+Maxwell writes to a kafka topic named "maxwell" by default. It can be static, e.g. 'maxwell', or dynamic, e.g. `namespace_%{database}_%{table}`. In the latter case 'database' and 'table' will be replaced with the values for the row being processed. This can be changed with the `kafka_topic` option.
 
 ### Kafka key
 ***

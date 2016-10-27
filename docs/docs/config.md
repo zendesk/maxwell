@@ -26,7 +26,7 @@ producer                       | [stdout┃kafka┃file┃profiler]        | typ
 output_file                    | STRING                              | output file for `file` producer                     |
 &nbsp;
 kafka.bootstrap.servers        | STRING                              | kafka brokers, given as `HOST:PORT[,HOST:PORT]`     |
-kafka_topic                    | STRING                              | kafka topic to write to.                            | maxwell
+kafka_topic                    | STRING                              | kafka topic to write to. static string or variable replacement                            | maxwell
 kafka_partition_by             | [database┃table┃primary_key┃column] | input to kafka partition function                   | database
 kafka_partition_columns        | STRING                              | if partitioning by 'column', a comma separated list of columns |
 kafka_partition_by_fallback    | [database┃table┃primary_key]        | required when kafka_partition_by=column.  Used when the column is missing |
