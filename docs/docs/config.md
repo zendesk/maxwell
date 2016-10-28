@@ -4,7 +4,7 @@ option                         | argument                            | descripti
 -------------------------------|-------------------------------------| --------------------------------------------------- | -------
 **general options**
 config                         | STRING                              | location of `config.properties` file                |
-log_level                      | [debug┃info┃warn┃error]             | log level                                           | INFO
+log_level                      | [debug &#124; info &#124; warn &#124; error]             | log level                                           | INFO
 &nbsp;
 **mysql options**
 host                           | STRING                              | mysql host                                          | localhost
@@ -22,17 +22,17 @@ replication_port               | INT                                 | port on r
 replication_user               | STRING                              | user on replication server |
 &nbsp;
 **producer options**
-producer                       | [stdout┃kafka┃file┃profiler]        | type of producer to use                             | stdout
+producer                       | [stdout &#124; kafka &#124; file &#124; profiler]        | type of producer to use                             | stdout
 output_file                    | STRING                              | output file for `file` producer                     |
 &nbsp;
 kafka.bootstrap.servers        | STRING                              | kafka brokers, given as `HOST:PORT[,HOST:PORT]`     |
 kafka_topic                    | STRING                              | kafka topic to write to. static string or variable replacement                            | maxwell
-kafka_partition_by             | [database┃table┃primary_key┃column] | input to kafka partition function                   | database
+kafka_partition_by             | [database &#124; table &#124; primary_key &#124; column] | input to kafka partition function                   | database
 kafka_partition_columns        | STRING                              | if partitioning by 'column', a comma separated list of columns |
-kafka_partition_by_fallback    | [database┃table┃primary_key]        | required when kafka_partition_by=column.  Used when the column is missing |
-kafka_partition_hash           | [default┃murmur3]                   | hash function to use when hoosing kafka partition   | default
+kafka_partition_by_fallback    | [database &#124; table &#124; primary_key]        | required when kafka_partition_by=column.  Used when the column is missing |
+kafka_partition_hash           | [default &#124; murmur3]                   | hash function to use when hoosing kafka partition   | default
 ddl_kafka_topic                | STRING                              | if output_ddl is true, kafka topic to write DDL changes to | *kafka_topic*
-kafka_version                  | [0.8┃0.9┃0.10]                      | run maxwell with kafka producer 0.8.2, 0.9.0 or 0.10.0 | 0.9.0
+kafka_version                  | [0.8 &#124; 0.9 &#124; 0.10]                      | run maxwell with kafka producer 0.8.2, 0.9.0 or 0.10.0 | 0.9.0
 **formatting**
 output_binlog_position         | BOOLEAN                             | should produced records include binlog position     | false
 output_commit_info             | BOOLEAN                             | should produced records include commit and xid      | true
@@ -50,7 +50,7 @@ blacklist_dbs                  | PATTERN                             | ignore up
 blacklist_tables               | PATTERN                             | ignore updates AND schema changes from tables named like PATTERN (see warnings below) |
 &nbsp;
 **misc**
-bootstrapper                   | [async┃sync┃none]                   | bootstrapper type.  See bootstrapping docs.        | async
+bootstrapper                   | [async &#124; sync &#124; none]                   | bootstrapper type.  See bootstrapping docs.        | async
 &nbsp;
 init_position                  | FILE:POSITION                       | ignore the information in maxwell.positions and start at the given binlog position. Not available in config.properties. |
 replay                         | BOOLEAN                             | enable maxwell's read-only "replay" mode: don't store a binlog position or schema changes.  Not available in config.properties. |
