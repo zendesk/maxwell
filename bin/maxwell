@@ -16,16 +16,19 @@ WANTED_VERSION=""
 
 CLASSPATH=$CLASSPATH:$base_dir/target/classes:../open-replicator/target/classes
 
-while [[ $# -gt 1 ]]
+for key in "$@"
 do
-key="$1"
-case $key in
-	--kafka_version)
-	KAFKA_VERSION="$2"
-	shift # past argument
-	;;
-esac
-shift # past argument or value
+	case $key in
+		--kafka_version)
+		KAFKA_VERSION="$2"
+		shift # past argument
+		;;
+		--kafka_version=*)
+		KAFKA_VERSION="${key#*=}"
+		shift # past argument
+		;;
+	esac
+	shift # past argument or value
 done
 
 case $KAFKA_VERSION in
