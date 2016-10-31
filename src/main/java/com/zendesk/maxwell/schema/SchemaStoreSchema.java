@@ -59,7 +59,7 @@ public class SchemaStoreSchema {
 	}
 
 	private static void createStoreDatabase(Connection connection, String schemaDatabaseName) throws SQLException, IOException {
-		LOGGER.info("Creating maxwell database");
+		LOGGER.info("Creating " + schemaDatabaseName + " database");
 		executeSQLInputStream(connection, SchemaStoreSchema.class.getResourceAsStream("/sql/maxwell_schema.sql"), schemaDatabaseName);
 		executeSQLInputStream(connection, SchemaStoreSchema.class.getResourceAsStream("/sql/maxwell_schema_bootstrap.sql"), schemaDatabaseName);
 	}
