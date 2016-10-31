@@ -17,7 +17,7 @@ KAFKA_10="0.10.0.1"
 WANTED_VERSION=""
 
 CLASSPATH=$CLASSPATH:$base_dir/target/classes:../open-replicator/target/classes
-for key in "$args"
+for key in $args
 do
 	case $key in
 		--kafka_version)
