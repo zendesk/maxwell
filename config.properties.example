@@ -140,6 +140,9 @@ password=maxwell
 # exclude these tables
 #exclude_tables=tbl1,/tbl\d+/
 
+# exclude these columns
+#exclude_columns=col1,/col\d+/
+
 # "blacklist" these dbs -- this means maxwell will ignore schema
 # changes happening to these databases.  Can be useful if you have a
 # high-churn schema that you want to completely ignore, but it's
