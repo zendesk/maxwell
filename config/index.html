@@ -20,7 +20,7 @@
         <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
         <!--[if lt IE 9]>
             <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.1/respond.min.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
         <![endif]-->
         <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
     </head>
@@ -217,7 +217,7 @@
 </tr>
 <tr>
 <td>log_level</td>
-<td>[debug┃info┃warn┃error]</td>
+<td>[debug &#124; info &#124; warn &#124; error]</td>
 <td>log level</td>
 <td>INFO</td>
 </tr>
@@ -325,7 +325,7 @@
 </tr>
 <tr>
 <td>producer</td>
-<td>[stdout┃kafka┃file┃profiler]</td>
+<td>[stdout &#124; kafka &#124; file &#124; profiler]</td>
 <td>type of producer to use</td>
 <td>stdout</td>
 </tr>
@@ -355,7 +355,7 @@
 </tr>
 <tr>
 <td>kafka_partition_by</td>
-<td>[database┃table┃primary_key┃column]</td>
+<td>[database &#124; table &#124; primary_key &#124; column]</td>
 <td>input to kafka partition function</td>
 <td>database</td>
 </tr>
@@ -367,13 +367,13 @@
 </tr>
 <tr>
 <td>kafka_partition_by_fallback</td>
-<td>[database┃table┃primary_key]</td>
+<td>[database &#124; table &#124; primary_key]</td>
 <td>required when kafka_partition_by=column.  Used when the column is missing</td>
 <td></td>
 </tr>
 <tr>
 <td>kafka_partition_hash</td>
-<td>[default┃murmur3]</td>
+<td>[default &#124; murmur3]</td>
 <td>hash function to use when hoosing kafka partition</td>
 <td>default</td>
 </tr>
@@ -384,10 +384,10 @@
 <td><em>kafka_topic</em></td>
 </tr>
 <tr>
-<td>kafka0.8</td>
-<td>BOOLEAN</td>
-<td>run maxwell with kafka producer 0.8 (instead of the 0.9)</td>
-<td></td>
+<td>kafka_version</td>
+<td>[0.8 &#124; 0.9 &#124; 0.10]</td>
+<td>run maxwell with kafka producer 0.8.2, 0.9.0 or 0.10.0</td>
+<td>0.9.0</td>
 </tr>
 <tr>
 <td><strong>formatting</strong></td>
@@ -493,7 +493,7 @@
 </tr>
 <tr>
 <td>bootstrapper</td>
-<td>[async┃sync┃none]</td>
+<td>[async &#124; sync &#124; none]</td>
 <td>bootstrapper type.  See bootstrapping docs.</td>
 <td>async</td>
 </tr>
