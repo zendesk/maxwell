@@ -1,5 +1,12 @@
 # Maxwell changelog
 
+### [v1.4.1](https://github.com/zendesk/maxwell/releases/tag/v1.4.1): "cat snores"
+
+
+- support per-table topics, Thanks @smferguson and @sschatts.
+- fix a parser issue with DROP COLUMN CASCADE, thanks @smferguson
+
+
 ### [v1.4.0](https://github.com/zendesk/maxwell/releases/tag/v1.4.0): "deep, insomniac character flaws"
 
 1.4.0 brings us two nice new features:
