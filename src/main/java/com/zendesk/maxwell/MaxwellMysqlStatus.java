@@ -44,6 +44,13 @@ public class MaxwellMysqlStatus {
 	}
 
 
+	private void ensureServerIDIsSet() throws SQLException, MaxwellCompatibilityError {
+		String id = getVariableState("server_id", false);
+		if ( "0".equals(id) ) {
+			throw new MaxwellCompatibilityError("server_id is '0'.  Maxwell will not function without a server_id being set.");
+		}
+	}
+
 	private void ensureRowImageFormat() throws SQLException, MaxwellCompatibilityError {
 		String rowImageFormat = getVariableState("binlog_row_image", false);
 		if ( rowImageFormat == null ) // only present in mysql 5.6+
@@ -58,6 +65,7 @@ public class MaxwellMysqlStatus {
 	public static void ensureReplicationMysqlState(Connection c) throws SQLException, MaxwellCompatibilityError {
 		MaxwellMysqlStatus m = new MaxwellMysqlStatus(c);
 
+		m.ensureServerIDIsSet();
 		m.ensureVariableState("log_bin", "ON");
 		m.ensureVariableState("binlog_format", "ROW");
 		m.ensureRowImageFormat();
