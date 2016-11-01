@@ -1,5 +1,12 @@
 # Maxwell changelog
 
+### [v1.4.2](https://github.com/zendesk/maxwell/releases/tag/v1.4.2): "drawer cat is back"
+
+
+- kafka 0.10.0 support, as well as a re-working of the --kafka_version
+  command line option.
+
+
 ### [v1.4.1](https://github.com/zendesk/maxwell/releases/tag/v1.4.1): "cat snores"
 
 
