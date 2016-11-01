@@ -116,10 +116,14 @@ password=maxwell
 
 # other kafka options.  Anything prefixed "kafka." will get
 # passed directly into the kafka-producer's config.
-#kafka.acks=1
-#kafka.compression.type=gzip
 #kafka.batch.size=16384
 
+# a few defaults.
+# These are 0.9-specific. They may or may not work with other versions.
+kafka.compression.type=gzip
+kafka.metadata.fetch.timeout.ms=5000
+kafka.retries=0
+kafka.acks=1
 
 ######### filter stuff ###############
 
