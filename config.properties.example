@@ -154,6 +154,7 @@ password=maxwell
 #blacklist_tables=table1,table_no
 #
 
+
 ######### misc stuff ###############
 
 # maxwell's bootstrapping functionality has a couple of modes.
