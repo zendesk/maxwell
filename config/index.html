@@ -386,7 +386,7 @@
 <tr>
 <td>kafka_version</td>
 <td>[0.8 &#124; 0.9 &#124; 0.10]</td>
-<td>run maxwell with kafka producer 0.8.2, 0.9.0 or 0.10.0</td>
+<td>run maxwell with kafka producer 0.8.2, 0.9.0 or 0.10.0.  Not available in config.properties.</td>
 <td>0.9.0</td>
 </tr>
 <tr>
@@ -520,7 +520,7 @@
 <h3 id="properties-file">Properties file</h3>
 <hr />
 <p>If maxwell finds the file <code>config.properties</code> in $PWD it will use it.  Any
-command line options (except init_position and replay) may be given as
+command line options (except <code>init_position</code>, <code>replay</code>, and <code>kafka_version</code>) may be given as
 "key=value" pairs.</p>
 <p>Additionally, any configuration file options prefixed with 'kafka.' will be
 passed into the kafka producer library, after having 'kafka.' stripped off the
