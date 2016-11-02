@@ -4,11 +4,10 @@ Any options given to Maxwell that are prefixed with `kafka.` will be passed dire
 (with `kafka.` stripped off).  We use the "new producer" configuration, as described here:
 [http://kafka.apache.org/documentation.html#newproducerconfigs](http://kafka.apache.org/documentation.html#newproducerconfigs)
 
-Maxwell sets the following Kafka options by default via the properties file. You can remove or update them in `config.properties`.
-
+These are recommended properties. You can remove or update them in `config.properties`.
 - kafka.acks = 1
-- kafka.compression.type = gzip
-- kafka.metadata.fetch.timeout.ms=50000
+- kafka.compression.type = snappy
+- kafka.metadata.fetch.timeout.ms=5000
 - kafka.retries=0
 
 Maxwell writes to a kafka topic named "maxwell" by default. It can be static, e.g. 'maxwell', or dynamic, e.g. `namespace_%{database}_%{table}`. In the latter case 'database' and 'table' will be replaced with the values for the row being processed. This can be changed with the `kafka_topic` option.
