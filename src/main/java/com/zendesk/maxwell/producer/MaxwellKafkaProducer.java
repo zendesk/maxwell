@@ -71,11 +71,6 @@ class KafkaCallback implements Callback {
 public class MaxwellKafkaProducer extends AbstractProducer {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
 
-	static final Object KAFKA_DEFAULTS[] = {
-		"compression.type", "gzip",
-		"metadata.fetch.timeout.ms", 5000,
-		"retries", 1
-	};
 	private final InflightMessageList inflightMessages;
 	private final KafkaProducer<String, String> kafka;
 	private String topic;
@@ -92,7 +87,6 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 			this.topic = "maxwell";
 		}
 
-		this.setDefaults(kafkaProperties);
 		this.kafka = new KafkaProducer<>(kafkaProperties, new StringSerializer(), new StringSerializer());
 
 		String hash = context.getConfig().kafkaPartitionHash;
@@ -166,16 +160,5 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		// ensure that we don't prematurely advance the binlog pointer.
 		inflightMessages.addMessage(p);
 		inflightMessages.completeMessage(p);
-	}
-
-	private void setDefaults(Properties p) {
-		for(int i=0 ; i < KAFKA_DEFAULTS.length; i += 2) {
-			String key = (String) KAFKA_DEFAULTS[i];
-			Object val = KAFKA_DEFAULTS[i + 1];
-
-			if ( !p.containsKey(key)) {
-				p.put(key, val);
-			}
-		}
 	}
 }
