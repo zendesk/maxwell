@@ -146,6 +146,16 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
+	public void testModifyAndMoveColumn() throws Exception {
+		String sql[] = {
+			"CREATE TABLE t ( a varchar(255), b int)",
+			"ALTER TABLE t modify column a varchar(255) after b"
+		};
+		testIntegration(sql);
+
+	}
+
+	@Test
 	public void testPKs() throws Exception {
 		String sql[] = {
 		   "create TABLE `test_pks` ( id int(11) unsigned primary KEY, str varchar(255) )",

@@ -20,7 +20,7 @@ public class Table {
 	public String database;
 	@JsonProperty("table")
 	public String name;
-	private List<ColumnDef> columnList;
+	private TableColumnList columns;
 	public String charset;
 	private List<String> pkColumnNames;
 	private List<String> normalizedPKColumnNames;
@@ -44,19 +44,18 @@ public class Table {
 
 	@JsonProperty("columns")
 	public List<ColumnDef> getColumnList() {
-		return columnList;
+		return columns.getList();
 	}
 
 	@JsonProperty("columns")
 	public void setColumnList(List<ColumnDef> list) {
-		this.columnList = list;
-		renumberColumns();
+		this.columns = new TableColumnList(list);
 	}
 
 	@JsonIgnore
 	public List<StringColumnDef> getStringColumns() {
 		ArrayList<StringColumnDef> list = new ArrayList<>();
-		for ( ColumnDef c : columnList ) {
+		for ( ColumnDef c : columns.getList() ) {
 			if ( c instanceof StringColumnDef )
 				list.add((StringColumnDef) c);
 		}
@@ -67,45 +66,13 @@ public class Table {
 		return this.name;
 	}
 
-	private void initColumnOffsetMap() {
-		if ( this.columnOffsetMap != null )
-			return;
-
-		this.columnOffsetMap = new HashMap<>();
-		int i = 0;
-
-		for(ColumnDef c : columnList) {
-			this.columnOffsetMap.put(c.getName().toLowerCase(), i++);
-		}
-	}
-
 	public int findColumnIndex(String name) {
-		String lcName = name.toLowerCase();
-		initColumnOffsetMap();
-
-		if ( this.columnOffsetMap.containsKey(lcName) ) {
-			return this.columnOffsetMap.get(lcName);
-		} else {
-			return -1;
-		}
+		return columns.indexOf(name);
 	}
 
 	public ColumnDef findColumn(String name) {
-		int index = findColumnIndex(name);
-		if ( index == -1 )
-			return null;
-		else
-			return columnList.get(index);
+		return columns.findByName(name);
 	}
-
-	public ColumnDef findColumnOrThrow(String name) throws InvalidSchemaError {
-		ColumnDef c = findColumn(name);
-		if ( c == null )
-			throw new InvalidSchemaError("couldn't find column " + name + " in table " + this.name);
-
-		return c;
-	}
-
 
 	@JsonIgnore
 	public int getPKIndex() {
@@ -120,7 +87,7 @@ public class Table {
 		ArrayList<ColumnDef> list = new ArrayList<>();
 		ArrayList<String> pkList = new ArrayList<>();
 
-		for ( ColumnDef c : columnList ) {
+		for ( ColumnDef c : columns ) {
 			list.add(c);
 		}
 
@@ -240,13 +207,6 @@ public class Table {
 		diffColumnList(diffs, other, this, nameB, nameA);
 	}
 
-	private void renumberColumns() {
-		int i = 0 ;
-		for ( ColumnDef c : columnList ) {
-			c.setPos(i++);
-		}
-	}
-
 	public void setDefaultColumnCharsets() {
 		for ( StringColumnDef c : getStringColumns() ) {
 			c.setDefaultCharset(this.getCharset());
@@ -254,32 +214,26 @@ public class Table {
 	}
 
 	public void addColumn(int index, ColumnDef definition) {
-		this.columnList.add(index, definition);
-		this.columnOffsetMap = null;
-		renumberColumns();
+		columns.add(index, definition);
 	}
 
-	public void addColumn(ColumnDef defintion) {
-		addColumn(this.columnList.size(), defintion);
+	public void addColumn(ColumnDef definition) {
+		columns.add(columns.size(), definition);
 	}
 
 	public void removeColumn(int idx) {
-		removePKColumn(columnList.get(idx).getName());
-
-		this.columnList.remove(idx);
-		this.columnOffsetMap = null;
-
-		renumberColumns();
+		ColumnDef removed = columns.remove(idx);
+		removePKColumn(removed.getName());
 	}
 
 	public void changeColumn(int idx, ColumnPosition position, ColumnDef definition) throws InvalidSchemaError {
-		ColumnDef oldColumn = columnList.get(idx);
-		this.columnList.remove(idx);
-		this.columnList.add(position.index(this, idx), definition);
+		// when we go to rename the PK column, we need to make sure the old column name
+		// is still there for (for normalization of pk-columns).
+		ColumnDef oldColumn = columns.get(idx);
 		renamePKColumn(oldColumn.getName(), definition.getName());
 
-		this.columnOffsetMap = null;
-		renumberColumns();
+		columns.remove(idx);
+		columns.add(position.index(this, idx), definition);
 	}
 
 	public void setDatabase(String database) {
