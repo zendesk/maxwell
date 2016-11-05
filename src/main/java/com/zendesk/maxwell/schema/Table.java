@@ -55,7 +55,7 @@ public class Table {
 	@JsonIgnore
 	public List<StringColumnDef> getStringColumns() {
 		ArrayList<StringColumnDef> list = new ArrayList<>();
-		for ( ColumnDef c : columns.getList() ) {
+		for ( ColumnDef c : columns ) {
 			if ( c instanceof StringColumnDef )
 				list.add((StringColumnDef) c);
 		}
