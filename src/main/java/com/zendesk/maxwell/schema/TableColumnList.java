@@ -11,7 +11,7 @@ public class TableColumnList implements Iterable<ColumnDef> {
 
 	public TableColumnList(List<ColumnDef> columns) {
 		this.columns = columns;
-		this.columnOffsetMap = null;
+		initColumnOffsetMap();
 		renumberColumns();
 	}
 
@@ -25,7 +25,6 @@ public class TableColumnList implements Iterable<ColumnDef> {
 
 	public synchronized int indexOf(String name) {
 		String lcName = name.toLowerCase();
-		initColumnOffsetMap();
 
 		if ( this.columnOffsetMap.containsKey(lcName) ) {
 			return this.columnOffsetMap.get(lcName);
