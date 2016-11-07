@@ -20,7 +20,7 @@
         <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
         <!--[if lt IE 9]>
             <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.5.0/respond.min.js"></script>
         <![endif]-->
         <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
     </head>
@@ -188,11 +188,11 @@
 <p>Any options given to Maxwell that are prefixed with <code>kafka.</code> will be passed directly into the Kafka producer configuration
 (with <code>kafka.</code> stripped off).  We use the "new producer" configuration, as described here:
 <a href="http://kafka.apache.org/documentation.html#newproducerconfigs">http://kafka.apache.org/documentation.html#newproducerconfigs</a></p>
-<p>Maxwell sets the following Kafka options by default, but you can override them in <code>config.properties</code>.</p>
-<ul>
-<li>kafka.acks = 1</li>
-<li>kafka.compression.type = gzip</li>
-</ul>
+<p>These are recommended properties. You can remove or update them in <code>config.properties</code>.
+- kafka.acks = 1
+- kafka.compression.type = snappy
+- kafka.metadata.fetch.timeout.ms=5000
+- kafka.retries=0</p>
 <p>Maxwell writes to a kafka topic named "maxwell" by default. It can be static, e.g. 'maxwell', or dynamic, e.g. <code>namespace_%{database}_%{table}</code>. In the latter case 'database' and 'table' will be replaced with the values for the row being processed. This can be changed with the <code>kafka_topic</code> option.</p>
 <h3 id="kafka-key">Kafka key</h3>
 <hr />
