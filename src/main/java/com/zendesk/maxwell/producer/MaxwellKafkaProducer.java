@@ -1,72 +1,20 @@
 package com.zendesk.maxwell.producer;
 
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.schema.ddl.DDLMap;
 import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.producer.partitioners.MaxwellKafkaPartitioner;
+import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMap.KeyFormat;
-import com.zendesk.maxwell.producer.partitioners.MaxwellKafkaPartitioner;
-import org.apache.kafka.clients.producer.Callback;
+import com.zendesk.maxwell.schema.ddl.DDLMap;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.KafkaException;
-import org.apache.kafka.common.errors.RecordTooLargeException;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.Properties;
-
-class KafkaCallback implements Callback {
-	public static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
-	private InflightMessageList inflightMessages;
-	private final MaxwellContext context;
-	private final BinlogPosition position;
-	private final boolean isTXCommit;
-	private final String json;
-	private final String key;
-
-	public KafkaCallback(InflightMessageList inflightMessages, BinlogPosition position, boolean isTXCommit, MaxwellContext c, String key, String json) {
-		this.inflightMessages = inflightMessages;
-		this.context = c;
-		this.position = position;
-		this.isTXCommit = isTXCommit;
-		this.key = key;
-		this.json = json;
-	}
-
-	@Override
-	public void onCompletion(RecordMetadata md, Exception e) {
-		if ( e != null ) {
-			LOGGER.error(e.getClass().getSimpleName() + " @ " + position + " -- " + key);
-			LOGGER.error(e.getLocalizedMessage());
-			if ( e instanceof RecordTooLargeException ) {
-				LOGGER.error("Considering raising max.request.size broker-side.");
-			}
-		} else {
-			if ( LOGGER.isDebugEnabled()) {
-				LOGGER.debug("->  key:" + key + ", partition:" +md.partition() + ", offset:" + md.offset());
-				LOGGER.debug("   " + this.json);
-				LOGGER.debug("   " + position);
-				LOGGER.debug("");
-			}
-		}
-		markCompleted();
-	}
-
-	private void markCompleted() {
-		if ( isTXCommit ) {
-			BinlogPosition newPosition = inflightMessages.completeMessage(position);
-
-			if ( newPosition != null ) {
-				context.setPosition(newPosition);
-			}
-		}
-	}
-
-}
 
 public class MaxwellKafkaProducer extends AbstractProducer {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);

@@ -186,7 +186,10 @@ public class RowMap implements Serializable {
 
 	private void writeMapToJSON(String jsonMapName, LinkedHashMap<String, Object> data, boolean includeNullField) throws IOException {
 		JsonGenerator generator = jsonGeneratorThreadLocal.get();
-		generator.writeObjectFieldStart(jsonMapName); // start of jsonMapName: {
+
+		if (jsonMapName != null) {
+			generator.writeObjectFieldStart(jsonMapName); // start of jsonMapName: {
+		}
 
 		for ( String key: data.keySet() ) {
 			Object value = data.get(key);
@@ -207,7 +210,9 @@ public class RowMap implements Serializable {
 			}
 		}
 
-		generator.writeEndObject(); // end of 'jsonMapName: { }'
+		if (jsonMapName != null) {
+			generator.writeEndObject(); // end of 'jsonMapName: { }'
+		}
 	}
 
 	public String toJSON() throws IOException {
@@ -283,6 +288,17 @@ public class RowMap implements Serializable {
 		return this.data.get(key);
 	}
 
+	public String getData(Boolean includeNulls) throws IOException  {
+		JsonGenerator g = jsonGeneratorThreadLocal.get();
+
+		g.writeStartObject();
+		writeMapToJSON(null, this.data, includeNulls);
+		g.writeEndObject(); // end of row
+		g.flush();
+
+		return jsonFromStream();
+	}
+
 
 	public long getApproximateSize() {
 		return approximateSize;
@@ -310,6 +326,21 @@ public class RowMap implements Serializable {
 
 	public Object getOldData(String key) {
 		return this.oldData.get(key);
+	}
+
+	public String getOldData(Boolean includeNulls) throws IOException  {
+		if ( this.oldData.isEmpty() ) {
+			return null;
+		} else {
+			JsonGenerator g = jsonGeneratorThreadLocal.get();
+
+			g.writeStartObject();
+			writeMapToJSON(null, this.oldData, includeNulls);
+			g.writeEndObject(); // end of row
+			g.flush();
+
+			return jsonFromStream();
+		}
 	}
 
 	public void putOldData(String key, Object value) {
