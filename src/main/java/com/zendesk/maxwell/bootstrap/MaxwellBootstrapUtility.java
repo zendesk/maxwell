@@ -153,7 +153,7 @@ public class MaxwellBootstrapUtility {
 
 	private Long calculateRowCount(Connection connection, String db, String table) throws SQLException {
 		LOGGER.info("counting rows");
-		String sql = String.format("select count(*) from %s.%s", db, table);
+		String sql = String.format("select count(*) from `%s`.%s", db, table);
 		PreparedStatement preparedStatement = connection.prepareStatement(sql);
 		ResultSet resultSet = preparedStatement.executeQuery();
 		resultSet.next();
