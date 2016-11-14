@@ -277,10 +277,17 @@ public class MaxwellReplicator extends RunLoopProcess {
 						continue;
 					}
 
-					Boolean isSystemWhitelisted = event.getDatabase().equals(this.maxwellSchemaDatabaseName)
-							&& event.getTable().name.equals("bootstrap");
+					String table = event.getTable().name;
+					String database = event.getDatabase();
 
-					if ( event.matchesFilter() || isSystemWhitelisted ) {
+					Boolean isSystemWhitelisted = database.equals(this.maxwellSchemaDatabaseName)
+							&& table.equals("bootstrap");
+
+					/* there's an odd RDS thing, I guess, where ha_health_check doesn't
+					 * show up in INFORMATION_SCHEMA but it's replicated nonetheless. */
+					Boolean isSystemBlacklisted = database.equals("mysql") && table.equals("ha_health_check");
+
+					if ( !isSystemBlacklisted && (event.matchesFilter() || isSystemWhitelisted) ) {
 						for ( RowMap r : event.jsonMaps() )
 							buffer.add(r);
 					}
