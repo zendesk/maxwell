@@ -152,12 +152,19 @@ public class MaxwellTestSupport {
 		callback.beforeReplicatorStart(mysql);
 
 		config.initPosition = BinlogPosition.capture(mysql.getConnection());
-		BufferedMaxwell maxwell = new BufferedMaxwell(config);
+		final String waitObject = new String("");
+		BufferedMaxwell maxwell = new BufferedMaxwell(config) {
+			@Override
+			protected void onReplicatorStart() {
+				synchronized(waitObject) {
+					waitObject.notify();
+				}
+			}
+		};
 
 		new Thread(maxwell).start();
 
-		// wait for a heartbeat to come through
-		maxwell.poll(5000);
+		synchronized(waitObject) { waitObject.wait(); }
 
 		callback.afterReplicatorStart(mysql);
 
