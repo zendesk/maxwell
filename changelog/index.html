@@ -168,6 +168,14 @@
             <div class="col-md-10" role="main">
 
 <h1 id="maxwell-changelog">Maxwell changelog</h1>
+<h3 id="v150-someone-somewhere-is-still-smoking-cigarettes-damnit"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.5.0">v1.5.0</a>: "someone, somewhere, is still smoking cigarettes, damnit"</h3>
+<ul>
+<li>CHANGE: Kafka producer no longer ships with hard-coded defaults.
+  Please ensure you have "compression.type", "metadata.fetch.timeout.ms", and "retries"
+  configured to your liking.</li>
+<li>bugfix: fix a regression in handling <code>ALTER TABLE change c int after b</code> statements</li>
+<li>warn on servers with missing server_id</li>
+</ul>
 <h3 id="v142-drawer-cat-is-back"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.4.2">v1.4.2</a>: "drawer cat is back"</h3>
 <ul>
 <li>kafka 0.10.0 support, as well as a re-working of the --kafka_version
