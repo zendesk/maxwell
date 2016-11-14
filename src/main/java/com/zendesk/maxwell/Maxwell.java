@@ -124,6 +124,7 @@ public class Maxwell implements Runnable {
 		LOGGER.info(String.format(bootString, getMaxwellVersion(), producerName, initialPosition.toString()));
 	}
 
+	protected void onReplicatorStart() {}
 	private void start() throws Exception {
 		try ( Connection connection = this.context.getReplicationConnection();
 			  Connection rawConnection = this.context.getRawMaxwellConnection() ) {
@@ -150,6 +151,7 @@ public class Maxwell implements Runnable {
 		this.context.setPosition(initPosition);
 
 		MysqlSchemaStore mysqlSchemaStore = new MysqlSchemaStore(this.context, initPosition);
+		mysqlSchemaStore.getSchema(); // trigger schema to load / capture before we start the replicator.
 		this.replicator = new MaxwellReplicator(mysqlSchemaStore, producer, bootstrapper, this.context, initPosition);
 
 		bootstrapper.resume(producer, replicator);
@@ -157,6 +159,7 @@ public class Maxwell implements Runnable {
 		replicator.setFilter(context.getFilter());
 
 		this.context.start();
+		this.onReplicatorStart();
 		replicator.runLoop();
 	}
 
