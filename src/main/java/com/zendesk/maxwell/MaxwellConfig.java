@@ -384,7 +384,6 @@ public class MaxwellConfig extends AbstractConfig {
 					excludeTables,
 					blacklistDatabases,
 					blacklistTables,
-					this.databaseName,
 					excludeColumns
 			);
 		} catch (MaxwellInvalidFilterException e) {

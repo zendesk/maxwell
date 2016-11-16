@@ -277,7 +277,10 @@ public class MaxwellReplicator extends RunLoopProcess {
 						continue;
 					}
 
-					if ( event.matchesFilter() ) {
+					Boolean isSystemWhitelisted = event.getDatabase().equals(this.maxwellSchemaDatabaseName)
+							&& event.getTable().name.equals("bootstrap");
+
+					if ( event.matchesFilter() || isSystemWhitelisted ) {
 						for ( RowMap r : event.jsonMaps() )
 							buffer.add(r);
 					}
@@ -492,6 +495,3 @@ public class MaxwellReplicator extends RunLoopProcess {
 	}
 
 }
-
-
-

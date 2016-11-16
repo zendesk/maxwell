@@ -222,24 +222,6 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		assertThat(list.get(0).getTable(), is("bars"));
 	}
 
-	static String bootstrapSQL[] = {
-		"CREATE DATABASE bootstrap_test",
-		"CREATE TABLE bootstrap_test.bootstrap (database_name varchar(50), table_name varchar(50))",
-		"INSERT INTO bootstrap_test.bootstrap set database_name = 'foo', table_name = 'bar'"
-	};
-
-	@Test
-	public void testIncludesBootstrapRows() throws Exception {
-		List<RowMap> list;
-
-		MaxwellFilter filter = new MaxwellFilter();
-		filter.setMaxwellDatabaseName("bootstrap_test");
-
-		list = getRowsForSQL(filter, bootstrapSQL);
-
-		assertThat(list.size(), is(1));
-	}
-
 	@Test
 	public void testExcludeColumns() throws Exception {
 		List<RowMap> list;

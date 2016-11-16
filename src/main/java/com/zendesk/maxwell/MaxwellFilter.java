@@ -24,8 +24,6 @@ public class MaxwellFilter {
 
 	private final HashMap<String, Integer> rowFilter = new HashMap<>();
 
-	private String maxwellDatabaseName = "";
-
 	public MaxwellFilter() { }
 	public MaxwellFilter(String includeDatabases,
 						 String excludeDatabases,
@@ -33,8 +31,7 @@ public class MaxwellFilter {
 						 String excludeTables,
 						 String blacklistDatabases,
 						 String blacklistTables,
-						 String excludeColumns,
-						 String maxwellDatabaseName) throws MaxwellInvalidFilterException {
+						 String excludeColumns) throws MaxwellInvalidFilterException {
 		if ( includeDatabases != null ) {
 			for (String s : includeDatabases.split(","))
 				includeDatabase(s);
@@ -69,9 +66,6 @@ public class MaxwellFilter {
 			for (String s : excludeColumns.split(","))
 				excludeColumns(s);
 		}
-
-		this.maxwellDatabaseName = maxwellDatabaseName;
-
 	}
 
 	public void includeDatabase(String name) throws MaxwellInvalidFilterException {
@@ -100,10 +94,6 @@ public class MaxwellFilter {
 
 	public void blacklistTable(String name) throws MaxwellInvalidFilterException {
 		blacklistTables.add(compile(name));
-	}
-
-	public void setMaxwellDatabaseName(String name) {
-		this.maxwellDatabaseName = name;
 	}
 
 	public boolean isDatabaseWhitelist() {
@@ -193,8 +183,7 @@ public class MaxwellFilter {
 	public boolean matches(AbstractRowsEvent e) {
 		String database = e.getTable().getDatabase();
 		String table = e.getTable().getName();
-		return ( database.equals(this.maxwellDatabaseName) && table.equals("bootstrap") )
-			|| ( matchesDatabase(database) && matchesTable(table) && matchesAnyRows(e) );
+		return matchesDatabase(database) && matchesTable(table) && matchesAnyRows(e);
 	}
 
 	public boolean isDatabaseBlacklisted(String databaseName) {
