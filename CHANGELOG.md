@@ -1,5 +1,15 @@
 # Maxwell changelog
 
+### [v1.5.0](https://github.com/zendesk/maxwell/releases/tag/v1.5.0): "someone, somewhere, is still smoking cigarettes, damnit"
+
+
+- CHANGE: Kafka producer no longer ships with hard-coded defaults.
+  Please ensure you have "compression.type", "metadata.fetch.timeout.ms", and "retries"
+  configured to your liking.
+- bugfix: fix a regression in handling `ALTER TABLE change c int after b` statements
+- warn on servers with missing server_id
+
+
 ### [v1.4.2](https://github.com/zendesk/maxwell/releases/tag/v1.4.2): "drawer cat is back"
 
 
