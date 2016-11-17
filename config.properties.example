@@ -127,8 +127,6 @@ kafka.acks=1
 
 # confluent schema registry specifics
 #kafka.schema.registry.url=http://localhost:8081
-#kafka.key.serializer=io.confluent.kafka.serializers.KafkaAvroSerializer
-#kafka.value.serializer=io.confluent.kafka.serializers.KafkaAvroSerializer
 
 
 ######### filter stuff ###############

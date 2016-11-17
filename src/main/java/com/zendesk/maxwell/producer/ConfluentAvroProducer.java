@@ -35,12 +35,11 @@ public class ConfluentAvroProducer extends AbstractProducer {
     // NOTE: The KafkaAvroProducer maintains a cache of known schemas via an IdentityHashMap.
     // Since the equals method on IdentityHashMap is based on identity, not value - like other hashmaps,
     // passing in a newly created Schema that is logically equivalent to previously passed in schemas
-    // results in the Producer's cache filling up and erroring out.
+    // results in the Producer believing it has a new Schema and caching it (again).
+    // As a result the Producer's cache quickly fills up. Once full the Producer raises and exception and falls down.
     // As a result we must maintain our own cache of schemas and always pass in the same Schema object to the
     // Producer. This represents a little more overhead, but it should be tolerable - even a few hundred Schemas would
     // represent a small about of in-memory data.
-    //
-    // Fun fact: According to the maintainers the IdentityHashMap is used as an optimization.
     private HashMap<String, Schema> knownSchemas = new HashMap<String, Schema>();
 
     public ConfluentAvroProducer(MaxwellContext context, Properties kafkaProperties, String kafkaTopic) {
