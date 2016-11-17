@@ -3,6 +3,7 @@ package com.zendesk.maxwell.row;
 import com.fasterxml.jackson.core.*;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.schema.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +27,7 @@ public class RowMap implements Serializable {
 	private final String rowType;
 	private final String database;
 	private final String table;
+	private final Table tableDef;
 	private final Long timestamp;
 	private BinlogPosition nextPosition;
 
@@ -67,21 +69,36 @@ public class RowMap implements Serializable {
 				}
 			};
 
-	public RowMap(String type, String database, String table, Long timestamp, List<String> pkColumns,
-			BinlogPosition nextPosition) {
+	public RowMap(String type, String database, String tableName, Long timestamp, List<String> pkColumns,
+				  BinlogPosition nextPosition) {
 		this.rowType = type;
 		this.database = database;
-		this.table = table;
+		this.table = tableName;
 		this.timestamp = timestamp;
 		this.data = new LinkedHashMap<>();
 		this.oldData = new LinkedHashMap<>();
 		this.nextPosition = nextPosition;
 		this.pkColumns = pkColumns;
 		this.approximateSize = 100L; // more or less 100 bytes of overhead
+		this.tableDef = null;
 	}
 
-	public RowMap(String type, String database, String table, Long timestamp, List<String> pkColumns,
-            BinlogPosition nextPosition, List<Pattern> excludeColumns) {
+	public RowMap(String type, String database, Table table, Long timestamp, List<String> pkColumns,
+			BinlogPosition nextPosition) {
+		this.rowType = type;
+		this.database = database;
+		this.table = table.getName();
+		this.timestamp = timestamp;
+		this.data = new LinkedHashMap<>();
+		this.oldData = new LinkedHashMap<>();
+		this.nextPosition = nextPosition;
+		this.pkColumns = pkColumns;
+		this.approximateSize = 100L; // more or less 100 bytes of overhead
+		this.tableDef = table;
+	}
+
+	public RowMap(String type, String database, Table table, Long timestamp, List<String> pkColumns,
+				  BinlogPosition nextPosition, List<Pattern> excludeColumns) {
 		this(type, database, table, timestamp, pkColumns, nextPosition);
 		this.excludeColumns = excludeColumns;
 	}
@@ -187,9 +204,7 @@ public class RowMap implements Serializable {
 	private void writeMapToJSON(String jsonMapName, LinkedHashMap<String, Object> data, boolean includeNullField) throws IOException {
 		JsonGenerator generator = jsonGeneratorThreadLocal.get();
 
-		if (jsonMapName != null) {
-			generator.writeObjectFieldStart(jsonMapName); // start of jsonMapName: {
-		}
+		generator.writeObjectFieldStart(jsonMapName); // start of jsonMapName: {
 
 		for ( String key: data.keySet() ) {
 			Object value = data.get(key);
@@ -210,9 +225,7 @@ public class RowMap implements Serializable {
 			}
 		}
 
-		if (jsonMapName != null) {
-			generator.writeEndObject(); // end of 'jsonMapName: { }'
-		}
+		generator.writeEndObject(); // end of 'jsonMapName: { }'
 	}
 
 	public String toJSON() throws IOException {
@@ -284,21 +297,17 @@ public class RowMap implements Serializable {
 		return s;
 	}
 
+	public String getColumnType(String column) {
+		return this.tableDef.findColumn(column).getType();
+	}
+
+	public Set<String> getDataKeys() {
+		return this.data.keySet();
+	}
+
 	public Object getData(String key) {
 		return this.data.get(key);
 	}
-
-	public String getData(Boolean includeNulls) throws IOException  {
-		JsonGenerator g = jsonGeneratorThreadLocal.get();
-
-		g.writeStartObject();
-		writeMapToJSON(null, this.data, includeNulls);
-		g.writeEndObject(); // end of row
-		g.flush();
-
-		return jsonFromStream();
-	}
-
 
 	public long getApproximateSize() {
 		return approximateSize;
@@ -326,21 +335,6 @@ public class RowMap implements Serializable {
 
 	public Object getOldData(String key) {
 		return this.oldData.get(key);
-	}
-
-	public String getOldData(Boolean includeNulls) throws IOException  {
-		if ( this.oldData.isEmpty() ) {
-			return null;
-		} else {
-			JsonGenerator g = jsonGeneratorThreadLocal.get();
-
-			g.writeStartObject();
-			writeMapToJSON(null, this.oldData, includeNulls);
-			g.writeEndObject(); // end of row
-			g.flush();
-
-			return jsonFromStream();
-		}
 	}
 
 	public void putOldData(String key, Object value) {

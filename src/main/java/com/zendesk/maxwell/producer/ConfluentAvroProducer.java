@@ -6,13 +6,19 @@ import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMap.KeyFormat;
 import com.zendesk.maxwell.schema.ddl.DDLMap;
+import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.KafkaException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Properties;
 
 public class ConfluentAvroProducer extends AbstractProducer {
@@ -26,6 +32,17 @@ public class ConfluentAvroProducer extends AbstractProducer {
     private final MaxwellKafkaPartitioner ddlPartitioner;
     private final KeyFormat keyFormat;
 
+    // NOTE: The KafkaAvroProducer maintains a cache of known schemas via an IdentityHashMap.
+    // Since the equals method on IdentityHashMap is based on identity, not value - like other hashmaps,
+    // passing in a newly created Schema that is logically equivalent to previously passed in schemas
+    // results in the Producer's cache filling up and erroring out.
+    // As a result we must maintain our own cache of schemas and always pass in the same Schema object to the
+    // Producer. This represents a little more overhead, but it should be tolerable - even a few hundred Schemas would
+    // represent a small about of in-memory data.
+    //
+    // Fun fact: According to the maintainers the IdentityHashMap is used as an optimization.
+    private HashMap<String, Schema> knownSchemas = new HashMap<String, Schema>();
+
     public ConfluentAvroProducer(MaxwellContext context, Properties kafkaProperties, String kafkaTopic) {
         super(context);
 
@@ -34,6 +51,8 @@ public class ConfluentAvroProducer extends AbstractProducer {
             this.topic = "maxwell";
         }
 
+        kafkaProperties.put("key.serializer", "io.confluent.kafka.serializers.KafkaAvroSerializer");
+        kafkaProperties.put("value.serializer", "io.confluent.kafka.serializers.KafkaAvroSerializer");
         this.kafka = new KafkaProducer<>(kafkaProperties);
 
         String hash = context.getConfig().kafkaPartitionHash;
@@ -65,6 +84,99 @@ public class ConfluentAvroProducer extends AbstractProducer {
         return topic.replaceAll("%\\{database\\}", r.getDatabase()).replaceAll("%\\{table\\}", r.getTable());
     }
 
+    private String buildSchemaTypeFragment(String columnName, String columnType) {
+        // TODO: some types need dealing with, e.g. blob, datetime, timestamp, bit
+        // NOTE: we're avoiding complex types at the moment because they seem to take the following form on the
+        // consumer side: {"field_name": {"bytes": "<byte value>"}}
+        // instead of the form: {"field_name": "field_value"}
+
+        if (Arrays.asList("varchar", "char", "text", "mediumtext", "tinytext", "decimal").contains(columnType)) {
+            return "{" +
+                    "\"name\":\"" + columnName + "\"," +
+                    "  \"type\": [\"null\",\"string\"]" +
+                    "},";
+        } else if (columnType.contains("blob")) {
+            return "{" +
+                    "\"name\":\"" + columnName + "\"," +
+                    "  \"type\": [\"null\",\"string\"]" +
+                    "},";
+        } else if (Arrays.asList("int", "smallint", "bigint", "id", "tinyint").contains(columnType)) {
+            return "{" +
+                    "\"name\":\"" + columnName + "\"," +
+                    "  \"type\": [\"null\",\"long\"]" +
+                    "},";
+        } else if (columnType.equalsIgnoreCase("float")) {
+            return "{" +
+                    "\"name\":\"" + columnName + "\"," +
+                    "  \"type\": [\"null\",\"float\"]" +
+                    "},";
+        } else if (columnType.equalsIgnoreCase("double")) {
+            return "{" +
+                    "\"name\":\"" + columnName + "\"," +
+                    "  \"type\": [\"null\",\"double\"]" +
+                    "},";
+        } else if (columnType.equalsIgnoreCase("bit")) {
+            return "{" +
+                    "\"name\":\"" + columnName + "\"," +
+                    "  \"type\": [\"null\",\"long\"]" +
+                    "},";
+        } else if (columnType.equalsIgnoreCase("datetime")) {
+            return "{" +
+                    "\"name\":\"" + columnName + "\"," +
+                    "  \"type\": [\"null\",\"string\"]" +
+                    "},";
+        } else if (columnType.equalsIgnoreCase("timestamp")) {
+            return "{" +
+                    "\"name\":\"" + columnName + "\"," +
+                    "  \"type\": [\"null\",\"string\"]" +
+                    "},";
+        } else {
+            throw new RuntimeException("Unknown conversion for column: " + columnName + ", database type: " + columnType);
+        }
+    }
+
+    private String buildSchema(RowMap rowMap) {
+        String schema = "{" +
+                "    \"type\":\"record\"," +
+                "    \"name\":\"" + rowMap.getTable() + "\"," +
+                "    \"namespace\":\"" + rowMap.getTable() + ".avro\"," +
+                "    \"fields\":[";
+
+        for (String key : rowMap.getDataKeys()) {
+            schema += buildSchemaTypeFragment(key, rowMap.getColumnType(key));
+        }
+
+        schema += "]}";
+        schema = schema.replace("},]}", "}]}");
+        return schema;
+    }
+
+    // Why would we cache the schema? See the lengthy description where knownSchemas is declared.
+    private Schema getSchemaFromCache(String schemaString) {
+        Schema schema;
+        if (knownSchemas.containsKey(schemaString)) {
+            schema = this.knownSchemas.get(schemaString);
+        } else {
+            schema = new Schema.Parser().parse(schemaString);
+            knownSchemas.put(schemaString, schema);
+        }
+        return schema;
+    }
+
+    private GenericRecord buildRecord(Schema schema, RowMap rowMap) {
+        GenericRecord maxwellRecord = new GenericData.Record(schema);
+        for (String dataKey : rowMap.getDataKeys()) {
+            Object data = rowMap.getData(dataKey);
+            // TODO: what other types need dealing with?
+            if (data != null && rowMap.getColumnType(dataKey).equals("decimal")) {
+                maxwellRecord.put(dataKey, ((BigDecimal) data).toString());
+            } else {
+                maxwellRecord.put(dataKey, data);
+            }
+        }
+        return maxwellRecord;
+    }
+
     @Override
     public void push(RowMap r) throws Exception {
         String key = r.pkToJson(keyFormat);
@@ -84,28 +196,19 @@ public class ConfluentAvroProducer extends AbstractProducer {
         KafkaCallback callback;
         ProducerRecord<String, Object> record;
         if (r instanceof DDLMap) {
-
             record = new ProducerRecord<>(this.ddlTopic, this.ddlPartitioner.kafkaPartition(r, getNumPartitions(this.ddlTopic)), key, (Object) value);
 
             callback = new KafkaCallback(inflightMessages, r.getPosition(), r.isTXCommit(), this.context, key, value);
         } else {
-            MaxwellEnvelope maxwellEnvelope = new MaxwellEnvelope(
-                    r.getDatabase(),
-                    r.getTable(),
-                    r.getRowType(),
-                    r.getTimestamp(),
-                    r.getXid(),
-                    r.isTXCommit(),
-                    r.getPosition().toString(),
-                    r.getServerId(),
-                    r.getThreadId(),
-                    r.getData(outputConfig.includesNulls),
-                    r.getOldData(outputConfig.includesNulls));
+            String schemaString = buildSchema(r);
+            Schema schema = getSchemaFromCache(schemaString);
+
+            GenericRecord maxwellRecord = buildRecord(schema, r);
 
             String topic = generateTopic(this.topic, r);
-            record = new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, getNumPartitions(topic)), key, (Object) maxwellEnvelope);
+            record = new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, getNumPartitions(topic)), key, (Object) maxwellRecord);
 
-            callback = new KafkaCallback(inflightMessages, r.getPosition(), r.isTXCommit(), this.context, key, maxwellEnvelope);
+            callback = new KafkaCallback(inflightMessages, r.getPosition(), r.isTXCommit(), this.context, key, maxwellRecord);
         }
 
         if ( r.isTXCommit() )

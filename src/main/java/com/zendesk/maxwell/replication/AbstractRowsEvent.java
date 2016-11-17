@@ -174,7 +174,7 @@ public abstract class AbstractRowsEvent extends AbstractRowEvent {
 		return new RowMap(
 				getType(),
 				this.database,
-				getTable().getName(),
+				getTable(),
 				getHeader().getTimestamp() / 1000,
 				table.getPKList(),
 				this.getNextBinlogPosition());
@@ -184,7 +184,7 @@ public abstract class AbstractRowsEvent extends AbstractRowEvent {
 		return new RowMap(
 				getType(),
 				this.database,
-				getTable().getName(),
+				getTable(),
 				getHeader().getTimestamp() / 1000,
 				table.getPKList(),
 				this.getNextBinlogPosition(),
