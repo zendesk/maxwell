@@ -78,8 +78,8 @@ module MavenFetcher
   end
 
   class Pom
-    def initialize(doc, repo)
-      @doc, @repo = doc, repo
+    def initialize(doc, resolver)
+      @doc, @resolver = doc, resolver
     end
 
     def to_s
@@ -129,7 +129,7 @@ module MavenFetcher
 
     def parent
       return nil unless el = @doc.elements["project/parent"]
-      @parent ||= @repo.get_pom(artifact_from_element(el))
+      @parent ||= @resolver.get_pom(artifact_from_element(el))
     end
 
     def dependency_management
@@ -157,8 +157,14 @@ module MavenFetcher
       end.compact
     end
 
-    def self.parse(xml, repo)
-      Pom.new(REXML::Document.new(xml), repo)
+    def pom_repositories
+      @doc.elements.to_a("project/repositories/repository").map do |repo|
+        Repo.new(repo.elements["url"].text.sub(/\/$/, ''))
+      end
+    end
+
+    def self.parse(xml, resolver)
+      Pom.new(REXML::Document.new(xml), resolver)
     end
   end
 
@@ -174,15 +180,28 @@ module MavenFetcher
       debug("downloading #{url}")
       resp = Net::HTTP.get_response(@host, url)
       if resp.code == '404'
-        raise "not found: #{url}"
+        nil
       elsif resp.code != '200'
         raise "got status #{resp.code} hitting #{url}"
       else
         resp.body
       end
     end
+  end
 
-    #
+  class Resolver
+    def initialize(base_repo)
+      @repos = [base_repo]
+    end
+
+    def get(uri)
+      @repos.each do |r|
+        body = r.get(uri)
+        return body if body
+      end
+      raise "couldn't fetch #{uri}"
+    end
+
     # recursively resolve dependencies in a top-down breadth-first fashion.
     # We do this to make it so the "closest to the top" dependency defines
     # version.  It's pretty psychotic that this works at all.  Technically there's a concept
@@ -234,7 +253,9 @@ module MavenFetcher
     def fetch_pom_deps(pomfile, scope, path, lock_version = nil)
       pom_data = pomfile.read
       pom = Pom.parse(pom_data, self)
+
       dependencies = pom.dependencies
+      @repos += pom.pom_repositories
 
       # Replace dependency version with `artifact` version, if a match is found
       if lock_version
@@ -318,6 +339,7 @@ parser.parse!
 
 repo = MavenFetcher::Repo.new(options[:repo] || DEFAULT_REPO)
 scope = MavenFetcher::Scope.new(options[:scope])
+resolver = MavenFetcher::Resolver.new(repo)
 
 if !options[:output_dir]
   puts "Please specify -o"
@@ -327,14 +349,13 @@ end
 
 if options[:fetch]
   artifact = MavenFetcher::Artifact.new(*options[:fetch].split('/'))
-
-  repo.fetch_artifact(artifact, scope, options[:output_dir], fetch_dependencies = !options[:skip_depedencies])
+  resolver.fetch_artifact(artifact, scope, options[:output_dir], fetch_dependencies = !options[:skip_depedencies])
 elsif options.key?(:pom)
   pom = options[:pom] || 'pom.xml'
   if !File.exist?(pom)
     $stderr.puts("could not open file: #{pom}")
   else
-    repo.fetch_pom_deps(File.open(pom), scope, options[:output_dir], options[:lock_version])
+    resolver.fetch_pom_deps(File.open(pom), scope, options[:output_dir], options[:lock_version])
   end
 else
   puts "Please specify either --fetch or --pom"
