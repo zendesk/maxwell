@@ -1,0 +1,6 @@
+truncate maxwell.bootstrap;
+create table shard_1.null_bootstraps (id int auto_increment primary key, txt varchar(255) null default null)
+insert into shard_1.null_bootstraps set txt = NULL
+insert into maxwell.bootstrap set database_name = 'shard_1', table_name = 'null_boostraps'
+
+-> { database: "shard_1", table: "null_bootstraps", type:"insert", data: { id: 1, txt: null } }
