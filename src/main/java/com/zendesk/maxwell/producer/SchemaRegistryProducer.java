@@ -12,17 +12,22 @@ import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.KafkaException;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Properties;
 
-public class ConfluentAvroProducer extends AbstractProducer {
-    static final Logger LOGGER = LoggerFactory.getLogger(ConfluentAvroProducer.class);
+public class SchemaRegistryProducer extends AbstractProducer {
+    static final Logger LOGGER = LoggerFactory.getLogger(SchemaRegistryProducer.class);
 
     private final InflightMessageList inflightMessages;
     private final KafkaProducer<String, Object> kafka;
@@ -31,18 +36,22 @@ public class ConfluentAvroProducer extends AbstractProducer {
     private final MaxwellKafkaPartitioner partitioner;
     private final MaxwellKafkaPartitioner ddlPartitioner;
     private final KeyFormat keyFormat;
+    private HashMap<String, String> jsonMappings;
+    private JSONObject configuredSchemas;
+    private String dataColumn;
+    private String keyColumn;
 
-    // NOTE: The KafkaAvroProducer maintains a cache of known schemas via an IdentityHashMap.
+    // NOTE: The KafkaAvroProducer maintains a cache of known configuredSchemas via an IdentityHashMap.
     // Since the equals method on IdentityHashMap is based on identity, not value - like other hashmaps,
-    // passing in a newly created Schema that is logically equivalent to previously passed in schemas
+    // passing in a newly created Schema that is logically equivalent to previously passed in configuredSchemas
     // results in the Producer believing it has a new Schema and caching it (again).
     // As a result the Producer's cache quickly fills up. Once full the Producer raises and exception and falls down.
-    // Given this behavior we must maintain our own cache of schemas and always pass in the same Schema object to the
+    // Given this behavior we must maintain our own cache of configuredSchemas and always pass in the same Schema object to the
     // Producer. This represents a little more overhead, but it should be tolerable - even a few hundred Schemas would
     // represent a small about of in-memory data.
-    private HashMap<String, Schema> knownSchemas = new HashMap<String, Schema>();
+    private HashMap<String, Schema> schemaCache = new HashMap<String, Schema>();
 
-    public ConfluentAvroProducer(MaxwellContext context, Properties kafkaProperties, String kafkaTopic) {
+    public SchemaRegistryProducer(MaxwellContext context, Properties kafkaProperties, String kafkaTopic) {
         super(context);
 
         this.topic = kafkaTopic;
@@ -50,6 +59,7 @@ public class ConfluentAvroProducer extends AbstractProducer {
             this.topic = "maxwell";
         }
 
+        // hardcoded because the schema registry is opinionated about what it accepts
         kafkaProperties.put("key.serializer", "io.confluent.kafka.serializers.KafkaAvroSerializer");
         kafkaProperties.put("value.serializer", "io.confluent.kafka.serializers.KafkaAvroSerializer");
         this.kafka = new KafkaProducer<>(kafkaProperties);
@@ -68,6 +78,24 @@ public class ConfluentAvroProducer extends AbstractProducer {
             keyFormat = KeyFormat.ARRAY;
 
         this.inflightMessages = new InflightMessageList();
+        loadJsonConfig(context.getConfig().jsonMappingConfig);
+    }
+
+    private void loadJsonConfig(String filename) {
+        if (filename == null) {
+            return;
+        }
+
+        try {
+            String content = new String(Files.readAllBytes(Paths.get(filename)));
+            JSONObject obj = new JSONObject(content);
+            this.configuredSchemas = (JSONObject) obj.get("schemas");
+            this.dataColumn = obj.get("data_column").toString();
+            this.keyColumn = obj.get("key_column").toString();
+            LOGGER.info("Loaded configuredSchemas " + this.configuredSchemas.keys().toString());
+        } catch (IOException | NullPointerException e) {
+            LOGGER.error("Failed to load configuredSchemas: " + e.toString());
+        }
     }
 
     private Integer getNumPartitions(String topic) {
@@ -83,13 +111,30 @@ public class ConfluentAvroProducer extends AbstractProducer {
         return topic.replaceAll("%\\{database\\}", r.getDatabase()).replaceAll("%\\{table\\}", r.getTable());
     }
 
-    private String buildSchemaTypeFragment(String columnName, String columnType) {
+    private String getSchema(String key) {
+        try {
+            return this.configuredSchemas.get(key).toString();
+        } catch (JSONException e) {
+            throw new RuntimeException("No schema for key " + key + " - " + e.toString());
+        }
+    }
+
+    private String buildSchemaTypeFragment(String columnName, String columnType, String key) {
         // TODO: some types need dealing with, e.g. blob, datetime, timestamp, bit
         // NOTE: we're avoiding complex types at the moment because they seem to take the following form on the
         // consumer side: {"field_name": {"bytes": "<byte value>"}}
         // instead of the form: {"field_name": "field_value"}
 
-        if (Arrays.asList("varchar", "char", "text", "mediumtext", "tinytext", "decimal").contains(columnType)) {
+        if (this.dataColumn != null && columnName.equals(this.dataColumn)) {
+            String fragment = "{  \n" +
+                    "            \"name\":\"" + this.dataColumn + "\",\n" +
+                    "            \"type\":";
+
+            fragment += getSchema(key);
+
+            fragment += "},";
+            return fragment;
+        } else if (Arrays.asList("varchar", "char").contains(columnType) || columnType.contains("text")) {
             return "{" +
                     "\"name\":\"" + columnName + "\"," +
                     "  \"type\": [\"null\",\"string\"]" +
@@ -104,7 +149,7 @@ public class ConfluentAvroProducer extends AbstractProducer {
                     "\"name\":\"" + columnName + "\"," +
                     "  \"type\": [\"null\",\"long\"]" +
                     "},";
-        } else if (columnType.equalsIgnoreCase("float")) {
+        } else if (columnType.equalsIgnoreCase("float") || columnType.equalsIgnoreCase("decimal")) {
             return "{" +
                     "\"name\":\"" + columnName + "\"," +
                     "  \"type\": [\"null\",\"float\"]" +
@@ -141,8 +186,12 @@ public class ConfluentAvroProducer extends AbstractProducer {
                 "    \"namespace\":\"" + rowMap.getTable() + ".avro\"," +
                 "    \"fields\":[";
 
-        for (String key : rowMap.getDataKeys()) {
-            schema += buildSchemaTypeFragment(key, rowMap.getColumnType(key));
+        for (String columnName : rowMap.getDataKeys()) {
+            String key = null;
+            if (this.keyColumn != null) {
+                key = rowMap.getData(this.keyColumn).toString();
+            }
+            schema += buildSchemaTypeFragment(columnName, rowMap.getColumnType(columnName), key);
         }
 
         schema += "]}";
@@ -150,27 +199,48 @@ public class ConfluentAvroProducer extends AbstractProducer {
         return schema;
     }
 
-    // Why would we cache the schema? See the lengthy description where knownSchemas is declared.
+    // Why would we cache the schema? See the lengthy description where schemaCache is declared.
     private Schema getSchemaFromCache(String schemaString) {
         Schema schema;
-        if (knownSchemas.containsKey(schemaString)) {
-            schema = this.knownSchemas.get(schemaString);
+        if (schemaCache.containsKey(schemaString)) {
+            schema = this.schemaCache.get(schemaString);
         } else {
             schema = new Schema.Parser().parse(schemaString);
-            knownSchemas.put(schemaString, schema);
+            schemaCache.put(schemaString, schema);
         }
         return schema;
     }
 
-    private GenericRecord buildRecord(Schema schema, RowMap rowMap) {
+    private GenericRecord populateRecord(Schema schema, RowMap rowMap) {
         GenericRecord maxwellRecord = new GenericData.Record(schema);
         for (String dataKey : rowMap.getDataKeys()) {
             Object data = rowMap.getData(dataKey);
             // TODO: what other types need dealing with?
             if (data != null && rowMap.getColumnType(dataKey).equals("decimal")) {
-                maxwellRecord.put(dataKey, ((BigDecimal) data).toString());
+                maxwellRecord.put(dataKey, ((BigDecimal) data).floatValue());
+            } else if (dataKey.equals(this.dataColumn)) {
+                String schemaStr = getSchema(rowMap.getData(this.keyColumn).toString());
+                Schema childSchema = getSchemaFromCache(schemaStr);
+                GenericRecord childRecord = populateRecordFromJson(childSchema, new JSONObject(data.toString()));
+                maxwellRecord.put(dataKey, childRecord);
             } else {
                 maxwellRecord.put(dataKey, data);
+            }
+        }
+        return maxwellRecord;
+    }
+
+    private GenericRecord populateRecordFromJson(Schema schema, JSONObject data) {
+        GenericRecord maxwellRecord = new GenericData.Record(schema);
+        for (String key : data.keySet()) {
+            if (schema.getField(key).schema().getType().getName().equals("record")) {
+                maxwellRecord.put(key, populateRecordFromJson(schema.getField(key).schema(), (JSONObject) data.get(key)));
+            } else if (schema.getField(key).schema().getTypes().toString().contains("float")) {
+                maxwellRecord.put(key, Float.parseFloat(data.get(key).toString()));
+            } else if (schema.getField(key).schema().getTypes().toString().contains("int")) {
+                maxwellRecord.put(key, Integer.parseInt((data.get(key).toString())));
+            } else {
+                maxwellRecord.put(key, data.get(key));
             }
         }
         return maxwellRecord;
@@ -202,7 +272,7 @@ public class ConfluentAvroProducer extends AbstractProducer {
             String schemaString = buildSchema(r);
             Schema schema = getSchemaFromCache(schemaString);
 
-            GenericRecord maxwellRecord = buildRecord(schema, r);
+            GenericRecord maxwellRecord = populateRecord(schema, r);
 
             String topic = generateTopic(this.topic, r);
             record = new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, getNumPartitions(topic)), key, (Object) maxwellRecord);
