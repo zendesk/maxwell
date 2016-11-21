@@ -81,6 +81,11 @@ public class SchemaRegistryProducer extends AbstractProducer {
         loadJsonConfig(context.getConfig().jsonMappingConfig);
     }
 
+    /**
+     * Load the keyColumn, dataColumn and configuredSchemas from the specified config file.
+     *
+     * @param filename The filename to load data from.
+     */
     private void loadJsonConfig(String filename) {
         if (filename == null) {
             return;
@@ -111,6 +116,12 @@ public class SchemaRegistryProducer extends AbstractProducer {
         return topic.replaceAll("%\\{database\\}", r.getDatabase()).replaceAll("%\\{table\\}", r.getTable());
     }
 
+    /**
+     * Return the schema for a given key.
+     *
+     * @param key
+     * @return The schema corresponding to the key.
+     */
     private String getSchema(String key) {
         try {
             return this.configuredSchemas.get(key).toString();
@@ -119,67 +130,62 @@ public class SchemaRegistryProducer extends AbstractProducer {
         }
     }
 
+    /**
+     * Build and return an Avro field definition based on the database column, type and the lookup key for embedded
+     * json.
+     *
+     * @param columnName The database column name.
+     * @param columnType The database column type.
+     * @param key The key
+     * @return An Avro field definition.
+     */
     private String buildSchemaTypeFragment(String columnName, String columnType, String key) {
         // TODO: some types need dealing with, e.g. blob, datetime, timestamp, bit
         // NOTE: we're avoiding complex types at the moment because they seem to take the following form on the
         // consumer side: {"field_name": {"bytes": "<byte value>"}}
         // instead of the form: {"field_name": "field_value"}
 
+        String fragment = "";
         if (this.dataColumn != null && columnName.equals(this.dataColumn)) {
-            String fragment = "{  \n" +
+            fragment = "{  \n" +
                     "            \"name\":\"" + this.dataColumn + "\",\n" +
                     "            \"type\":";
 
             fragment += getSchema(key);
 
-            fragment += "},";
+            fragment += "}";
             return fragment;
-        } else if (Arrays.asList("varchar", "char").contains(columnType) || columnType.contains("text")) {
-            return "{" +
-                    "\"name\":\"" + columnName + "\"," +
-                    "  \"type\": [\"null\",\"string\"]" +
-                    "},";
-        } else if (columnType.contains("blob")) {
-            return "{" +
-                    "\"name\":\"" + columnName + "\"," +
-                    "  \"type\": [\"null\",\"string\"]" +
-                    "},";
-        } else if (Arrays.asList("int", "smallint", "bigint", "id", "tinyint").contains(columnType)) {
-            return "{" +
-                    "\"name\":\"" + columnName + "\"," +
-                    "  \"type\": [\"null\",\"long\"]" +
-                    "},";
-        } else if (columnType.equalsIgnoreCase("float") || columnType.equalsIgnoreCase("decimal")) {
-            return "{" +
-                    "\"name\":\"" + columnName + "\"," +
-                    "  \"type\": [\"null\",\"float\"]" +
-                    "},";
-        } else if (columnType.equalsIgnoreCase("double")) {
-            return "{" +
-                    "\"name\":\"" + columnName + "\"," +
-                    "  \"type\": [\"null\",\"double\"]" +
-                    "},";
-        } else if (columnType.equalsIgnoreCase("bit")) {
-            return "{" +
-                    "\"name\":\"" + columnName + "\"," +
-                    "  \"type\": [\"null\",\"long\"]" +
-                    "},";
-        } else if (columnType.equalsIgnoreCase("datetime")) {
-            return "{" +
-                    "\"name\":\"" + columnName + "\"," +
-                    "  \"type\": [\"null\",\"string\"]" +
-                    "},";
-        } else if (columnType.equalsIgnoreCase("timestamp")) {
-            return "{" +
-                    "\"name\":\"" + columnName + "\"," +
-                    "  \"type\": [\"null\",\"string\"]" +
-                    "},";
         } else {
-            throw new RuntimeException("Unknown conversion for column: " + columnName + ", database type: " + columnType);
+            fragment = "{\"name\":\"" + columnName + "\", \"type\": [\"null\"";
+
+            if (columnType.contains("char") || columnType.contains("text") || columnType.contains("blob")
+                    || columnType.contains("datetime") || columnType.contains("timestamp")) {
+                fragment += ", \"string\"";
+            } else if (columnType.contains("int") || columnType.contains("id")) {
+                fragment += ", \"long\"";
+            } else if (columnType.equalsIgnoreCase("float") || columnType.equalsIgnoreCase("decimal")) {
+                fragment += ", \"float\"";
+            } else if (columnType.equalsIgnoreCase("double")) {
+                fragment += ", \"double\"";
+            } else if (columnType.equalsIgnoreCase("bit")) {
+                fragment += ", \"long\"";
+            } else {
+                throw new RuntimeException("Unknown conversion for column: " + columnName
+                        + ", database type: " + columnType);
+            }
+            fragment += "]}";
+
+            return fragment;
         }
     }
 
-    private String buildSchema(RowMap rowMap) {
+    /**
+     * Build the schema string for a given row of data.
+     *
+     * @param rowMap the current RowMap object.
+     * @return The schema string based on this row's database schema.
+     */
+    private String buildSchemaString(RowMap rowMap) {
         String schema = "{" +
                 "    \"type\":\"record\"," +
                 "    \"name\":\"" + rowMap.getTable() + "\"," +
@@ -192,6 +198,7 @@ public class SchemaRegistryProducer extends AbstractProducer {
                 key = rowMap.getData(this.keyColumn).toString();
             }
             schema += buildSchemaTypeFragment(columnName, rowMap.getColumnType(columnName), key);
+            schema += ",";
         }
 
         schema += "]}";
@@ -199,7 +206,13 @@ public class SchemaRegistryProducer extends AbstractProducer {
         return schema;
     }
 
-    // Why would we cache the schema? See the lengthy description where schemaCache is declared.
+    /**
+     * Why would we cache the schema? See the lengthy description where schemaCache is declared.
+     * In short, the Avro Schema Registry client chooses an IdentityHasHMap which has an eccentric .equals() method.
+     *
+     * @param schemaString The schema corresponding to the current row of data.
+     * @return The cached schema object.
+     */
     private Schema getSchemaFromCache(String schemaString) {
         Schema schema;
         if (schemaCache.containsKey(schemaString)) {
@@ -211,39 +224,53 @@ public class SchemaRegistryProducer extends AbstractProducer {
         return schema;
     }
 
+    /**
+     * Create and populate a GenericRecord based on a schema and a row of data.
+     *
+     * @param schema The Schema object.
+     * @param rowMap The row of data.
+     * @return A GenericRecord based on the Schema and row data.
+     */
     private GenericRecord populateRecord(Schema schema, RowMap rowMap) {
-        GenericRecord maxwellRecord = new GenericData.Record(schema);
+        GenericRecord record = new GenericData.Record(schema);
         for (String dataKey : rowMap.getDataKeys()) {
             Object data = rowMap.getData(dataKey);
             // TODO: what other types need dealing with?
             if (data != null && rowMap.getColumnType(dataKey).equals("decimal")) {
-                maxwellRecord.put(dataKey, ((BigDecimal) data).floatValue());
+                record.put(dataKey, ((BigDecimal) data).floatValue());
             } else if (dataKey.equals(this.dataColumn)) {
                 String schemaStr = getSchema(rowMap.getData(this.keyColumn).toString());
                 Schema childSchema = getSchemaFromCache(schemaStr);
                 GenericRecord childRecord = populateRecordFromJson(childSchema, new JSONObject(data.toString()));
-                maxwellRecord.put(dataKey, childRecord);
+                record.put(dataKey, childRecord);
             } else {
-                maxwellRecord.put(dataKey, data);
+                record.put(dataKey, data);
             }
         }
-        return maxwellRecord;
+        return record;
     }
 
+    /**
+     * Create and populate a GenericRecord from a Schema and a Json object.
+     *
+     * @param schema The Schema object.
+     * @param data the Json object.
+     * @return A GenericRecord based on the Schema and the Json object.
+     */
     private GenericRecord populateRecordFromJson(Schema schema, JSONObject data) {
-        GenericRecord maxwellRecord = new GenericData.Record(schema);
+        GenericRecord record = new GenericData.Record(schema);
         for (String key : data.keySet()) {
             if (schema.getField(key).schema().getType().getName().equals("record")) {
-                maxwellRecord.put(key, populateRecordFromJson(schema.getField(key).schema(), (JSONObject) data.get(key)));
+                record.put(key, populateRecordFromJson(schema.getField(key).schema(), (JSONObject) data.get(key)));
             } else if (schema.getField(key).schema().getTypes().toString().contains("float")) {
-                maxwellRecord.put(key, Float.parseFloat(data.get(key).toString()));
+                record.put(key, Float.parseFloat(data.get(key).toString()));
             } else if (schema.getField(key).schema().getTypes().toString().contains("int")) {
-                maxwellRecord.put(key, Integer.parseInt((data.get(key).toString())));
+                record.put(key, Integer.parseInt((data.get(key).toString())));
             } else {
-                maxwellRecord.put(key, data.get(key));
+                record.put(key, data.get(key));
             }
         }
-        return maxwellRecord;
+        return record;
     }
 
     @Override
@@ -269,8 +296,7 @@ public class SchemaRegistryProducer extends AbstractProducer {
 
             callback = new KafkaCallback(inflightMessages, r.getPosition(), r.isTXCommit(), this.context, key, value);
         } else {
-            String schemaString = buildSchema(r);
-            Schema schema = getSchemaFromCache(schemaString);
+            Schema schema = getSchemaFromCache(buildSchemaString(r));
 
             GenericRecord maxwellRecord = populateRecord(schema, r);
 
