@@ -31,6 +31,12 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
+	public void testBootstrapIsWhitelisted() throws Exception {
+		MaxwellFilter filter = new MaxwellFilter();
+		filter.includeDatabase("shard_1");
+		runJSON("json/bootstrap-whitelist", filter);
+	}
+
 	public void testBool() throws Exception {
 		testColumnType("bool", "0", 0);
 		testColumnType("bool", "1", 1);
