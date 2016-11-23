@@ -9,9 +9,11 @@ import com.zendesk.maxwell.schema.ddl.DDLMap;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
+import org.apache.commons.io.IOUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.KafkaException;
+import org.apache.zookeeper.KeeperException;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -19,10 +21,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Properties;
 
@@ -36,23 +38,21 @@ public class SchemaRegistryProducer extends AbstractProducer {
     private final MaxwellKafkaPartitioner partitioner;
     private final MaxwellKafkaPartitioner ddlPartitioner;
     private final KeyFormat keyFormat;
-    private HashMap<String, String> jsonMappings;
-    private JSONObject configuredSchemas;
-    private String dataColumn;
-    private String keyColumn;
+    private JSONObject resources;
 
-    // NOTE: The KafkaAvroProducer maintains a cache of known configuredSchemas via an IdentityHashMap.
+    // NOTE: The KafkaAvroProducer maintains a cache of known childSchemas via an IdentityHashMap.
     // Since the equals method on IdentityHashMap is based on identity, not value - like other hashmaps,
-    // passing in a newly created Schema that is logically equivalent to previously passed in configuredSchemas
+    // passing in a newly created Schema that is logically equivalent to previously passed in childSchemas
     // results in the Producer believing it has a new Schema and caching it (again).
     // As a result the Producer's cache quickly fills up. Once full the Producer raises and exception and falls down.
-    // Given this behavior we must maintain our own cache of configuredSchemas and always pass in the same Schema object to the
+    // Given this behavior we must maintain our own cache of childSchemas and always pass in the same Schema object to the
     // Producer. This represents a little more overhead, but it should be tolerable - even a few hundred Schemas would
     // represent a small about of in-memory data.
     private HashMap<String, Schema> schemaCache = new HashMap<String, Schema>();
 
     public SchemaRegistryProducer(MaxwellContext context, Properties kafkaProperties, String kafkaTopic) {
         super(context);
+        // TODO: maybe refactor to extend maxwellkafkaproducer
 
         this.topic = kafkaTopic;
         if ( this.topic == null ) {
@@ -78,29 +78,29 @@ public class SchemaRegistryProducer extends AbstractProducer {
             keyFormat = KeyFormat.ARRAY;
 
         this.inflightMessages = new InflightMessageList();
-        loadJsonConfig(context.getConfig().jsonMappingConfig);
+        this.resources = loadResource(context.getConfig().jsonMappingConfig);
+        LOGGER.info("Loaded resources " + this.resources.keys().toString());
     }
 
     /**
-     * Load the keyColumn, dataColumn and configuredSchemas from the specified config file.
+     * Load the keyColumn, dataColumn and childSchemas from the specified config file.
      *
-     * @param filename The filename to load data from.
+     * @param resourceName The filename to load data from.
      */
-    private void loadJsonConfig(String filename) {
-        if (filename == null) {
-            return;
+    private JSONObject loadResource(String resourceName) {
+        if (resourceName == null) {
+            throw new RuntimeException("No resource supplied.");
         }
 
         try {
-            String content = new String(Files.readAllBytes(Paths.get(filename)));
-            JSONObject obj = new JSONObject(content);
-            this.configuredSchemas = (JSONObject) obj.get("schemas");
-            this.dataColumn = obj.get("data_column").toString();
-            this.keyColumn = obj.get("key_column").toString();
-            LOGGER.info("Loaded configuredSchemas " + this.configuredSchemas.keys().toString());
+            URL resource = new URL(resourceName);
+
+            String content = IOUtils.toString(resource.openStream()); // TODO: deprecated call
+            return new JSONObject(content);
         } catch (IOException | NullPointerException e) {
-            LOGGER.error("Failed to load configuredSchemas: " + e.toString());
+            LOGGER.error("Failed to load resources: " + e.toString());
         }
+        return null;
     }
 
     private Integer getNumPartitions(String topic) {
@@ -119,91 +119,34 @@ public class SchemaRegistryProducer extends AbstractProducer {
     /**
      * Return the schema for a given key.
      *
-     * @param key
+     * @param rowMap
      * @return The schema corresponding to the key.
      */
-    private String getSchema(String key) {
+    private String getSchema(RowMap rowMap) {
         try {
-            return this.configuredSchemas.get(key).toString();
+            JSONObject schemaInfo = this.resources.getJSONObject(rowMap.getTable());
+            JSONObject schema = schemaInfo.getJSONObject("schema");
+            if (schemaInfo.keySet().contains("key_column")) {
+                JSONObject childSchema = getChildSchema(rowMap, schemaInfo);
+                String dataColumn = schemaInfo.getString("data_column");
+
+                for (Object field : schema.getJSONArray("fields")) {
+                    JSONObject f = (JSONObject) field;
+                    if (f.getString("name").equals(dataColumn)) {
+                        f.put("type", childSchema);
+                        break;
+                    }
+                }
+            }
+            return schema.toString();
         } catch (JSONException e) {
-            throw new RuntimeException("No schema for key " + key + " - " + e.toString());
+            throw new RuntimeException("No schema information for table " + rowMap.getTable() + " - " + e.toString());
         }
     }
 
-    /**
-     * Build and return an Avro field definition based on the database column, type and the lookup key for embedded
-     * json.
-     *
-     * @param columnName The database column name.
-     * @param columnType The database column type.
-     * @param key The key
-     * @return An Avro field definition.
-     */
-    private String buildSchemaTypeFragment(String columnName, String columnType, String key) {
-        // TODO: some types need dealing with, e.g. blob, datetime, timestamp, bit
-        // NOTE: we're avoiding complex types at the moment because they seem to take the following form on the
-        // consumer side: {"field_name": {"bytes": "<byte value>"}}
-        // instead of the form: {"field_name": "field_value"}
-
-        String fragment = "";
-        if (this.dataColumn != null && columnName.equals(this.dataColumn)) {
-            fragment = "{  \n" +
-                    "            \"name\":\"" + this.dataColumn + "\",\n" +
-                    "            \"type\":";
-
-            fragment += getSchema(key);
-
-            fragment += "}";
-            return fragment;
-        } else {
-            fragment = "{\"name\":\"" + columnName + "\", \"type\": [\"null\"";
-
-            if (columnType.contains("char") || columnType.contains("text") || columnType.contains("blob")
-                    || columnType.contains("datetime") || columnType.contains("timestamp")) {
-                fragment += ", \"string\"";
-            } else if (columnType.contains("int") || columnType.contains("id")) {
-                fragment += ", \"long\"";
-            } else if (columnType.equalsIgnoreCase("float") || columnType.equalsIgnoreCase("decimal")) {
-                fragment += ", \"float\"";
-            } else if (columnType.equalsIgnoreCase("double")) {
-                fragment += ", \"double\"";
-            } else if (columnType.equalsIgnoreCase("bit")) {
-                fragment += ", \"long\"";
-            } else {
-                throw new RuntimeException("Unknown conversion for column: " + columnName
-                        + ", database type: " + columnType);
-            }
-            fragment += "]}";
-
-            return fragment;
-        }
-    }
-
-    /**
-     * Build the schema string for a given row of data.
-     *
-     * @param rowMap the current RowMap object.
-     * @return The schema string based on this row's database schema.
-     */
-    private String buildSchemaString(RowMap rowMap) {
-        String schema = "{" +
-                "    \"type\":\"record\"," +
-                "    \"name\":\"" + rowMap.getTable() + "\"," +
-                "    \"namespace\":\"" + rowMap.getTable() + ".avro\"," +
-                "    \"fields\":[";
-
-        for (String columnName : rowMap.getDataKeys()) {
-            String key = null;
-            if (this.keyColumn != null) {
-                key = rowMap.getData(this.keyColumn).toString();
-            }
-            schema += buildSchemaTypeFragment(columnName, rowMap.getColumnType(columnName), key);
-            schema += ",";
-        }
-
-        schema += "]}";
-        schema = schema.replace("},]}", "}]}");
-        return schema;
+    private JSONObject getChildSchema(RowMap rowMap, JSONObject schemaInfo) {
+        String key = schemaInfo.getString("key_column");
+        return loadResource(schemaInfo.getString("child_schema_uri") + rowMap.getData(key) + ".json");
     }
 
     /**
@@ -233,14 +176,21 @@ public class SchemaRegistryProducer extends AbstractProducer {
      */
     private GenericRecord populateRecord(Schema schema, RowMap rowMap) {
         GenericRecord record = new GenericData.Record(schema);
+        JSONObject schemaInfo = this.resources.getJSONObject(rowMap.getTable());
+        String dataColumn = null;
+        if (schemaInfo.keySet().contains("key_column")) {
+            dataColumn = schemaInfo.getString("data_column");
+        }
+        // the issue here is that we cannot blindly populate the record since we may have a subrecort that
+        // is just a string right now, but is actually a json blob
         for (String dataKey : rowMap.getDataKeys()) {
             Object data = rowMap.getData(dataKey);
             // TODO: what other types need dealing with?
             if (data != null && rowMap.getColumnType(dataKey).equals("decimal")) {
                 record.put(dataKey, ((BigDecimal) data).floatValue());
-            } else if (dataKey.equals(this.dataColumn)) {
-                String schemaStr = getSchema(rowMap.getData(this.keyColumn).toString());
-                Schema childSchema = getSchemaFromCache(schemaStr);
+            } else
+            if (dataColumn != null && dataKey.equals(dataColumn)) {
+                Schema childSchema = ((Schema) record.getSchema()).getField("event_data").schema();
                 GenericRecord childRecord = populateRecordFromJson(childSchema, new JSONObject(data.toString()));
                 record.put(dataKey, childRecord);
             } else {
@@ -262,12 +212,21 @@ public class SchemaRegistryProducer extends AbstractProducer {
         for (String key : data.keySet()) {
             if (schema.getField(key).schema().getType().getName().equals("record")) {
                 record.put(key, populateRecordFromJson(schema.getField(key).schema(), (JSONObject) data.get(key)));
-            } else if (schema.getField(key).schema().getTypes().toString().contains("float")) {
-                record.put(key, Float.parseFloat(data.get(key).toString()));
-            } else if (schema.getField(key).schema().getTypes().toString().contains("int")) {
-                record.put(key, Integer.parseInt((data.get(key).toString())));
             } else {
-                record.put(key, data.get(key));
+                Object obj = data.get(key);
+                if (obj instanceof Double) {
+                    record.put(key, ((Double) obj).doubleValue());
+                } else if (obj instanceof Float) {
+                    record.put(key, ((Float) obj).floatValue());
+                } else if (obj instanceof Long) {
+                    record.put(key, ((Long) obj).longValue());
+                } else if (obj instanceof Integer) {
+                    record.put(key, ((Integer) obj).intValue());
+                } else if (obj instanceof String) {
+                    record.put(key, obj.toString());
+                } else {
+                    throw new RuntimeException("Unknown type mapping from " + obj.getClass());
+                }
             }
         }
         return record;
@@ -296,7 +255,8 @@ public class SchemaRegistryProducer extends AbstractProducer {
 
             callback = new KafkaCallback(inflightMessages, r.getPosition(), r.isTXCommit(), this.context, key, value);
         } else {
-            Schema schema = getSchemaFromCache(buildSchemaString(r));
+            // TODO: test against RI
+            Schema schema = getSchemaFromCache(getSchema(r));
 
             GenericRecord maxwellRecord = populateRecord(schema, r);
 
