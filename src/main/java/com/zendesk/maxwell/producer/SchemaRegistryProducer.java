@@ -1,10 +1,7 @@
 package com.zendesk.maxwell.producer;
 
 import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.producer.partitioners.MaxwellKafkaPartitioner;
-import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.row.RowMap;
-import com.zendesk.maxwell.row.RowMap.KeyFormat;
 import com.zendesk.maxwell.schema.ddl.DDLMap;
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
@@ -21,20 +18,13 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URL;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Properties;
 
-public class SchemaRegistryProducer extends AbstractProducer {
+public class SchemaRegistryProducer extends AbstractKafkaProducer {
     static final Logger LOGGER = LoggerFactory.getLogger(SchemaRegistryProducer.class);
 
-    private final InflightMessageList inflightMessages;
     private final KafkaProducer<String, GenericRecord> kafka;
-    private String topic;
-    private final String ddlTopic;
-    private final MaxwellKafkaPartitioner partitioner;
-    private final MaxwellKafkaPartitioner ddlPartitioner;
-    private final KeyFormat keyFormat;
     private JSONObject resources;
 
     private static final String keyLookup = "key_column";
@@ -66,33 +56,13 @@ public class SchemaRegistryProducer extends AbstractProducer {
     private static final GenericRecord ddlSchemaRecord = new GenericData.Record(ddlSchema);
 
     public SchemaRegistryProducer(MaxwellContext context, Properties kafkaProperties, String kafkaTopic) {
-        super(context);
-        // TODO: maybe refactor to extend maxwellkafkaproducer
-
-        this.topic = kafkaTopic;
-        if ( this.topic == null ) {
-            this.topic = "maxwell";
-        }
+        super(context, kafkaTopic);
 
         // hardcoded because the schema registry is opinionated about what it accepts
         kafkaProperties.put("key.serializer", "io.confluent.kafka.serializers.KafkaAvroSerializer");
         kafkaProperties.put("value.serializer", "io.confluent.kafka.serializers.KafkaAvroSerializer");
         this.kafka = new KafkaProducer<>(kafkaProperties);
 
-        String hash = context.getConfig().kafkaPartitionHash;
-        String partitionKey = context.getConfig().kafkaPartitionKey;
-        String partitionColumns = context.getConfig().kafkaPartitionColumns;
-        String partitionFallback = context.getConfig().kafkaPartitionFallback;
-        this.partitioner = new MaxwellKafkaPartitioner(hash, partitionKey, partitionColumns, partitionFallback);
-        this.ddlPartitioner = new MaxwellKafkaPartitioner(hash, "database", null,"database");
-        this.ddlTopic =  context.getConfig().ddlKafkaTopic;
-
-        if ( context.getConfig().kafkaKeyFormat.equals("hash") )
-            keyFormat = KeyFormat.HASH;
-        else
-            keyFormat = KeyFormat.ARRAY;
-
-        this.inflightMessages = new InflightMessageList();
         this.resources = loadResource(context.getConfig().jsonMappingConfig);
         LOGGER.info("Loaded resources " + this.resources.keys().toString());
     }
@@ -113,10 +83,8 @@ public class SchemaRegistryProducer extends AbstractProducer {
             String content = IOUtils.toString(resource.openStream()); // TODO: deprecated call
             return new JSONObject(content);
         } catch (IOException | NullPointerException e) {
-            LOGGER.error("Failed to load resources: " + e.toString());
+            throw new RuntimeException("Failed to load resources: " + e.toString());
         }
-
-        return null;
     }
 
     /**
@@ -177,7 +145,7 @@ public class SchemaRegistryProducer extends AbstractProducer {
      * @param rowMap The row of data.
      * @return A GenericRecord based on the Schema and row data.
      */
-    private GenericRecord populateRecord(Schema schema, RowMap rowMap) {
+    private GenericRecord populateRecordFromRowMap(Schema schema, RowMap rowMap) {
         GenericRecord record = new GenericData.Record(schema);
         JSONObject schemaInfo = this.resources.getJSONObject(rowMap.getTable());
         String dataColumn = null;
@@ -191,8 +159,7 @@ public class SchemaRegistryProducer extends AbstractProducer {
             // TODO: what other types need dealing with?
             if (data != null && rowMap.getColumnType(dataKey).equals("decimal")) {
                 record.put(dataKey, ((BigDecimal) data).floatValue());
-            } else
-            if (dataColumn != null && dataKey.equals(dataColumn)) {
+            } else if (dataColumn != null && dataKey.equals(dataColumn)) {
                 Schema childSchema = ((Schema) record.getSchema()).getField("event_data").schema();
                 GenericRecord childRecord = populateRecordFromJson(childSchema, new JSONObject(data.toString()));
                 record.put(dataKey, childRecord);
@@ -244,41 +211,29 @@ public class SchemaRegistryProducer extends AbstractProducer {
         }
     }
 
-    private String generateTopic(String topic, RowMap r){
-        return topic.replaceAll("%\\{database\\}", r.getDatabase()).replaceAll("%\\{table\\}", r.getTable());
-    }
-
     @Override
     public void push(RowMap r) throws Exception {
         String key = r.pkToJson(keyFormat);
         String value = r.toJSON(outputConfig);
 
         if ( value == null ) { // heartbeat row or other row with suppressed output
-            inflightMessages.addMessage(r.getPosition());
-            BinlogPosition newPosition = inflightMessages.completeMessage(r.getPosition());
-
-            if ( newPosition != null ) {
-                context.setPosition(newPosition);
-            }
-
+            skipMessage(r);
             return;
         }
 
         ProducerRecord<String, GenericRecord> record;
         GenericRecord genericRecord;
-        String topic;
         if (r instanceof DDLMap) {
             genericRecord = ddlSchemaRecord;
             genericRecord.put("value", value);
-            topic = this.ddlTopic;
+            record = new ProducerRecord<>(this.ddlTopic, this.ddlPartitioner.kafkaPartition(r, getNumPartitions(this.ddlTopic)), key, genericRecord);
         } else {
             // TODO: test against RI
             Schema schema = getSchemaFromCache(getSchema(r));
-            genericRecord = populateRecord(schema, r);
-            topic = generateTopic(this.topic, r);
+            genericRecord = populateRecordFromRowMap(schema, r);
+            String topic = generateTopic(this.topic, r);
+            record = new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, getNumPartitions(topic)), key, genericRecord);
         }
-
-        record = new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, getNumPartitions(topic)), key, genericRecord);
 
         KafkaCallback callback = new KafkaCallback(inflightMessages, r.getPosition(), r.isTXCommit(), this.context, key, genericRecord);
 
@@ -291,12 +246,5 @@ public class SchemaRegistryProducer extends AbstractProducer {
             value = null;
 
         kafka.send(record, callback);
-    }
-
-    @Override
-    public void writePosition(BinlogPosition p) throws SQLException {
-        // ensure that we don't prematurely advance the binlog pointer.
-        inflightMessages.addMessage(p);
-        inflightMessages.completeMessage(p);
     }
 }
