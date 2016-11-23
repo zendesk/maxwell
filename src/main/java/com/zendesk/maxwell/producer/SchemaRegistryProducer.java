@@ -13,7 +13,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.KafkaException;
-import org.apache.zookeeper.KeeperException;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -22,8 +21,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Properties;
@@ -32,13 +29,17 @@ public class SchemaRegistryProducer extends AbstractProducer {
     static final Logger LOGGER = LoggerFactory.getLogger(SchemaRegistryProducer.class);
 
     private final InflightMessageList inflightMessages;
-    private final KafkaProducer<String, Object> kafka;
+    private final KafkaProducer<String, GenericRecord> kafka;
     private String topic;
     private final String ddlTopic;
     private final MaxwellKafkaPartitioner partitioner;
     private final MaxwellKafkaPartitioner ddlPartitioner;
     private final KeyFormat keyFormat;
     private JSONObject resources;
+
+    private static final String keyLookup = "key_column";
+    private static final String dataLookup = "data_column";
+    private static final String childSchemaLookup = "child_schema_uri";
 
     // NOTE: The KafkaAvroProducer maintains a cache of known childSchemas via an IdentityHashMap.
     // Since the equals method on IdentityHashMap is based on identity, not value - like other hashmaps,
@@ -49,6 +50,20 @@ public class SchemaRegistryProducer extends AbstractProducer {
     // Producer. This represents a little more overhead, but it should be tolerable - even a few hundred Schemas would
     // represent a small about of in-memory data.
     private HashMap<String, Schema> schemaCache = new HashMap<String, Schema>();
+
+    private static final String ddlSchemaString = "{" +
+                                                "      \"type\": \"record\"," +
+                                                "      \"name\": \"maxwell_ddl\"," +
+                                                "      \"namespace\": \"maxwell_dll.avro\"," +
+                                                "      \"fields\": [" +
+                                                "        {" +
+                                                "          \"name\": \"value\"," +
+                                                "          \"type\": \"string\"" +
+                                                "        }" +
+                                                "    ]" +
+                                                "}";
+    private static final Schema ddlSchema = new Schema.Parser().parse(ddlSchemaString);
+    private static final GenericRecord ddlSchemaRecord = new GenericData.Record(ddlSchema);
 
     public SchemaRegistryProducer(MaxwellContext context, Properties kafkaProperties, String kafkaTopic) {
         super(context);
@@ -83,37 +98,25 @@ public class SchemaRegistryProducer extends AbstractProducer {
     }
 
     /**
-     * Load the keyColumn, dataColumn and childSchemas from the specified config file.
+     * Load the keyLookup, dataColumn and childSchemas from the specified config file.
      *
-     * @param resourceName The filename to load data from.
+     * @param resourceURI The resource uri to load data from.
      */
-    private JSONObject loadResource(String resourceName) {
-        if (resourceName == null) {
+    private JSONObject loadResource(String resourceURI) {
+        if (resourceURI == null) {
             throw new RuntimeException("No resource supplied.");
         }
 
         try {
-            URL resource = new URL(resourceName);
+            URL resource = new URL(resourceURI);
 
             String content = IOUtils.toString(resource.openStream()); // TODO: deprecated call
             return new JSONObject(content);
         } catch (IOException | NullPointerException e) {
             LOGGER.error("Failed to load resources: " + e.toString());
         }
+
         return null;
-    }
-
-    private Integer getNumPartitions(String topic) {
-        try {
-            return this.kafka.partitionsFor(topic).size(); //returns 1 for new topics
-        } catch (KafkaException e) {
-            LOGGER.error("Topic '" + topic + "' name does not exist. Exception: " + e.getLocalizedMessage());
-            throw e;
-        }
-    }
-
-    private String generateTopic(String topic, RowMap r){
-        return topic.replaceAll("%\\{database\\}", r.getDatabase()).replaceAll("%\\{table\\}", r.getTable());
     }
 
     /**
@@ -126,9 +129,9 @@ public class SchemaRegistryProducer extends AbstractProducer {
         try {
             JSONObject schemaInfo = this.resources.getJSONObject(rowMap.getTable());
             JSONObject schema = schemaInfo.getJSONObject("schema");
-            if (schemaInfo.keySet().contains("key_column")) {
+            if (schemaInfo.keySet().contains(this.keyLookup)) {
                 JSONObject childSchema = getChildSchema(rowMap, schemaInfo);
-                String dataColumn = schemaInfo.getString("data_column");
+                String dataColumn = schemaInfo.getString(this.dataLookup);
 
                 for (Object field : schema.getJSONArray("fields")) {
                     JSONObject f = (JSONObject) field;
@@ -145,8 +148,8 @@ public class SchemaRegistryProducer extends AbstractProducer {
     }
 
     private JSONObject getChildSchema(RowMap rowMap, JSONObject schemaInfo) {
-        String key = schemaInfo.getString("key_column");
-        return loadResource(schemaInfo.getString("child_schema_uri") + rowMap.getData(key) + ".json");
+        String key = schemaInfo.getString(this.keyLookup);
+        return loadResource(schemaInfo.getString(this.childSchemaLookup) + rowMap.getData(key) + ".json");
     }
 
     /**
@@ -178,8 +181,8 @@ public class SchemaRegistryProducer extends AbstractProducer {
         GenericRecord record = new GenericData.Record(schema);
         JSONObject schemaInfo = this.resources.getJSONObject(rowMap.getTable());
         String dataColumn = null;
-        if (schemaInfo.keySet().contains("key_column")) {
-            dataColumn = schemaInfo.getString("data_column");
+        if (schemaInfo.keySet().contains(this.keyLookup)) {
+            dataColumn = schemaInfo.getString(this.dataLookup);
         }
         // the issue here is that we cannot blindly populate the record since we may have a subrecort that
         // is just a string right now, but is actually a json blob
@@ -232,6 +235,19 @@ public class SchemaRegistryProducer extends AbstractProducer {
         return record;
     }
 
+    protected Integer getNumPartitions(String topic) {
+        try {
+            return this.kafka.partitionsFor(topic).size(); //returns 1 for new topics
+        } catch (KafkaException e) {
+            LOGGER.error("Topic '" + topic + "' name does not exist. Exception: " + e.getLocalizedMessage());
+            throw e;
+        }
+    }
+
+    private String generateTopic(String topic, RowMap r){
+        return topic.replaceAll("%\\{database\\}", r.getDatabase()).replaceAll("%\\{table\\}", r.getTable());
+    }
+
     @Override
     public void push(RowMap r) throws Exception {
         String key = r.pkToJson(keyFormat);
@@ -248,23 +264,23 @@ public class SchemaRegistryProducer extends AbstractProducer {
             return;
         }
 
-        KafkaCallback callback;
-        ProducerRecord<String, Object> record;
+        ProducerRecord<String, GenericRecord> record;
+        GenericRecord genericRecord;
+        String topic;
         if (r instanceof DDLMap) {
-            record = new ProducerRecord<>(this.ddlTopic, this.ddlPartitioner.kafkaPartition(r, getNumPartitions(this.ddlTopic)), key, (Object) value);
-
-            callback = new KafkaCallback(inflightMessages, r.getPosition(), r.isTXCommit(), this.context, key, value);
+            genericRecord = ddlSchemaRecord;
+            genericRecord.put("value", value);
+            topic = this.ddlTopic;
         } else {
             // TODO: test against RI
             Schema schema = getSchemaFromCache(getSchema(r));
-
-            GenericRecord maxwellRecord = populateRecord(schema, r);
-
-            String topic = generateTopic(this.topic, r);
-            record = new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, getNumPartitions(topic)), key, (Object) maxwellRecord);
-
-            callback = new KafkaCallback(inflightMessages, r.getPosition(), r.isTXCommit(), this.context, key, maxwellRecord);
+            genericRecord = populateRecord(schema, r);
+            topic = generateTopic(this.topic, r);
         }
+
+        record = new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, getNumPartitions(topic)), key, genericRecord);
+
+        KafkaCallback callback = new KafkaCallback(inflightMessages, r.getPosition(), r.isTXCommit(), this.context, key, genericRecord);
 
         if ( r.isTXCommit() )
             inflightMessages.addMessage(r.getPosition());
