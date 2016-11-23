@@ -16,44 +16,17 @@ import org.slf4j.LoggerFactory;
 import java.sql.SQLException;
 import java.util.Properties;
 
-public class MaxwellKafkaProducer extends AbstractProducer {
+public class MaxwellKafkaProducer extends AbstractKafkaProducer {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
 
-	private final InflightMessageList inflightMessages;
 	private final KafkaProducer<String, String> kafka;
-	private String topic;
-	private final String ddlTopic;
-	private final MaxwellKafkaPartitioner partitioner;
-	private final MaxwellKafkaPartitioner ddlPartitioner;
-	private final KeyFormat keyFormat;
 
 	public MaxwellKafkaProducer(MaxwellContext context, Properties kafkaProperties, String kafkaTopic) {
-		super(context);
-
-		this.topic = kafkaTopic;
-		if ( this.topic == null ) {
-			this.topic = "maxwell";
-		}
-
+		super(context, kafkaTopic);
 		this.kafka = new KafkaProducer<>(kafkaProperties, new StringSerializer(), new StringSerializer());
-
-		String hash = context.getConfig().kafkaPartitionHash;
-		String partitionKey = context.getConfig().kafkaPartitionKey;
-		String partitionColumns = context.getConfig().kafkaPartitionColumns;
-		String partitionFallback = context.getConfig().kafkaPartitionFallback;
-		this.partitioner = new MaxwellKafkaPartitioner(hash, partitionKey, partitionColumns, partitionFallback);
-		this.ddlPartitioner = new MaxwellKafkaPartitioner(hash, "database", null,"database");
-		this.ddlTopic =  context.getConfig().ddlKafkaTopic;
-
-		if ( context.getConfig().kafkaKeyFormat.equals("hash") )
-			keyFormat = KeyFormat.HASH;
-		else
-			keyFormat = KeyFormat.ARRAY;
-
-		this.inflightMessages = new InflightMessageList();
 	}
 
-	private Integer getNumPartitions(String topic) {
+	protected Integer getNumPartitions(String topic) {
 		try {
 			return this.kafka.partitionsFor(topic).size(); //returns 1 for new topics
 		} catch (KafkaException e) {
@@ -62,23 +35,13 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		}
 	}
 
-	private String generateTopic(String topic, RowMap r){
-		return topic.replaceAll("%\\{database\\}", r.getDatabase()).replaceAll("%\\{table\\}", r.getTable());
-	}
-
 	@Override
 	public void push(RowMap r) throws Exception {
 		String key = r.pkToJson(keyFormat);
 		String value = r.toJSON(outputConfig);
 
 		if ( value == null ) { // heartbeat row or other row with suppressed output
-			inflightMessages.addMessage(r.getPosition());
-			BinlogPosition newPosition = inflightMessages.completeMessage(r.getPosition());
-
-			if ( newPosition != null ) {
-				context.setPosition(newPosition);
-			}
-
+			skipMessage(r);
 			return;
 		}
 
@@ -101,12 +64,5 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		KafkaCallback callback = new KafkaCallback(inflightMessages, r.getPosition(), r.isTXCommit(), this.context, key, value);
 
 		kafka.send(record, callback);
-	}
-
-	@Override
-	public void writePosition(BinlogPosition p) throws SQLException {
-		// ensure that we don't prematurely advance the binlog pointer.
-		inflightMessages.addMessage(p);
-		inflightMessages.completeMessage(p);
 	}
 }

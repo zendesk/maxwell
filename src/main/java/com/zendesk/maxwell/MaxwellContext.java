@@ -220,8 +220,8 @@ public class MaxwellContext {
 		case "kafka":
 			this.producer = new MaxwellKafkaProducer(this, this.config.getKafkaProperties(), this.config.kafkaTopic);
 			break;
-		case "kafka-avro":
-			this.producer = new ConfluentAvroProducer(this, this.config.getKafkaProperties(), this.config.kafkaTopic);
+		case "kafka-schema-registry":
+			this.producer = new SchemaRegistryProducer(this, this.config.getKafkaProperties(), this.config.kafkaTopic);
 			break;
 		case "profiler":
 			this.producer = new ProfilerProducer(this);
