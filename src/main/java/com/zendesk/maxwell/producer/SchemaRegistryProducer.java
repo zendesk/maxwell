@@ -27,12 +27,12 @@ public class SchemaRegistryProducer extends AbstractKafkaProducer {
     private final KafkaProducer<String, GenericRecord> kafka;
     private String schemaMappingURI;
 
-    private static final String keyLookup = "key_column";
-    private static final String dataLookup = "data_column";
-    private static final String schemaLookup = "schema";
-    private static final String metadataLookup = "metadata";
-    private static final String nestedSchemaLookup = "child_schemas";
-    private static final String childSchemaLookup = "child_schema_uri";
+//    private static final String keyLookup = "key_column";
+//    private static final String dataLookup = "data_column";
+//    private static final String schemaLookup = "schema";
+//    private static final String metadataLookup = "metadata";
+//    private static final String nestedSchemaLookup = "child_schemas";
+//    private static final String childSchemaLookup = "child_schema_uri";
     private static final String jsonSuffix = ".json";
 
     // NOTE: The KafkaAvroProducer maintains a cache of known childSchemas via an IdentityHashMap.
@@ -45,6 +45,7 @@ public class SchemaRegistryProducer extends AbstractKafkaProducer {
     // represent a small about of in-memory data.
     private HashMap<String, Schema> schemaCache = new HashMap<>();
 
+    // a cache of URIs to their data
     private HashMap<String, JSONObject> resourceCache = new HashMap<>();
 
     private static final String ddlSchemaString = "{" +
@@ -99,7 +100,7 @@ public class SchemaRegistryProducer extends AbstractKafkaProducer {
      * @param rowMap
      * @return The schema corresponding to the key.
      */
-    private String assembleSchema(RowMap rowMap) {
+/*    private String assembleSchema(RowMap rowMap) {
         try {
             JSONObject schemaInfo = getResourceWithCache(getResourceKey(rowMap.getTable()));
 
@@ -133,6 +134,7 @@ public class SchemaRegistryProducer extends AbstractKafkaProducer {
     private JSONObject getMetadata(JSONObject schemaInfo) {
         return schemaInfo.getJSONObject(this.metadataLookup);
     }
+    */
 
     private JSONObject getResourceWithCache(String uri) {
         JSONObject schemaInfo;
@@ -177,24 +179,35 @@ public class SchemaRegistryProducer extends AbstractKafkaProducer {
      */
     private GenericRecord populateRecordFromRowMap(Schema schema, RowMap rowMap) {
         GenericRecord record = new GenericData.Record(schema);
+        /*
         JSONObject schemaInfo = this.resourceCache.get(getResourceKey(rowMap.getTable()));
+
         String dataColumn = null;
         if (getMetadata(schemaInfo).getBoolean(this.nestedSchemaLookup)) {
             dataColumn = getMetadata(schemaInfo).getString(this.dataLookup);
         }
+         */
 
         for (String dataKey : rowMap.getDataKeys()) {
             Object data = rowMap.getData(dataKey);
             // TODO: what other types need dealing with?
-            if (data != null && rowMap.getColumnType(dataKey).equals("decimal")) {
-                record.put(dataKey, ((BigDecimal) data).floatValue());
-            } else if (dataColumn != null && dataKey.equals(dataColumn)) {
+            if (data != null && ((Schema.Field) schema.getField(dataKey)).schema().getType().getName().equals("double")) {
+                record.put(dataKey, Double.parseDouble(data.toString()));
+            } else if (data != null && ((Schema.Field) schema.getField(dataKey)).schema().getType().getName().equals("float")) {
+                record.put(dataKey, Float.parseFloat(data.toString()));
+            } else if (data != null && ((Schema.Field) schema.getField(dataKey)).schema().getType().getName().equals("long")) {
+                record.put(dataKey, Long.parseLong(data.toString()));
+            } else
+            /*
+             else if (dataColumn != null && dataKey.equals(dataColumn)) {
                 // the issue here is that we cannot blindly populate the record since we may have a subrecord that
                 // is just a string right now, but is actually a json blob with an associated schema.
                 Schema childSchema = ((Schema) record.getSchema()).getField(dataColumn).schema();
                 GenericRecord childRecord = populateRecordFromJson(childSchema, new JSONObject(data.toString()));
                 record.put(dataKey, childRecord);
-            } else {
+            } else
+            */
+            {
                 record.put(dataKey, data);
             }
         }
@@ -208,7 +221,7 @@ public class SchemaRegistryProducer extends AbstractKafkaProducer {
      * @param data the Json object.
      * @return A GenericRecord based on the Schema and the Json object.
      */
-    private GenericRecord populateRecordFromJson(Schema schema, JSONObject data) {
+/*    private GenericRecord populateRecordFromJson(Schema schema, JSONObject data) {
         GenericRecord record = new GenericData.Record(schema);
         for (String key : data.keySet()) {
             if (schema.getField(key).schema().getType().getName().equals("record")) {
@@ -232,7 +245,7 @@ public class SchemaRegistryProducer extends AbstractKafkaProducer {
         }
         return record;
     }
-
+*/
     protected Integer getNumPartitions(String topic) {
         try {
             return this.kafka.partitionsFor(topic).size(); //returns 1 for new topics
@@ -260,7 +273,8 @@ public class SchemaRegistryProducer extends AbstractKafkaProducer {
             record = new ProducerRecord<>(this.ddlTopic, this.ddlPartitioner.kafkaPartition(r, getNumPartitions(this.ddlTopic)), key, genericRecord);
         } else {
             // TODO: test against RI
-            Schema schema = getSchemaFromCache(assembleSchema(r));
+//            Schema schema = getSchemaFromCache(assembleSchema(r));
+            Schema schema = getSchemaFromCache(getResourceWithCache(getResourceKey(r.getTable())).toString());
             genericRecord = populateRecordFromRowMap(schema, r);
             String topic = generateTopic(this.topic, r);
             record = new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, getNumPartitions(topic)), key, genericRecord);
