@@ -307,6 +307,17 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		assertThat(list.get(2).isTXCommit(), is(true));
 	}
 
+	@Test
+	public void testSystemBlacklist() throws Exception  {
+		String sql[] = {
+			"create table mysql.ha_health_check ( id int )",
+			"insert into mysql.ha_health_check set id = 1"
+		};
+
+		List<RowMap> list = getRowsForSQL(sql);
+		assertThat(list.size(), is(0));
+	}
+
 	String testTransactions[] = {
 			"create table if not exists minimal ( account_id int, text_field text )",
 			"BEGIN",
