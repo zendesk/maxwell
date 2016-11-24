@@ -169,13 +169,15 @@
 
 <h1 id="maxwell-changelog">Maxwell changelog</h1>
 <h3 id="v151-151-is-just-151"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.5.1">v1.5.1</a>: "1.5.1 is just 1.5.1"</h3>
-<p>This is a bugfix release.
-- fixes for bootstrapping with an alternative maxwell-schema name and an
-  <code>include_database</code> filter, thanks Lucian Jones
-- fixes for kafka 0.10 with lz4 compression, thanks Scott Ferguson
-- ignore the RDS table <code>mysql.ha_health_check</code> table
-- Get the bootstrapping process to output NULL values.
-- fix a quoting issue in the bootstrap code, thanks @mylesjao.</p>
+<p>This is a bugfix release.</p>
+<ul>
+<li>fixes for bootstrapping with an alternative maxwell-schema name and an
+  <code>include_database</code> filter, thanks Lucian Jones</li>
+<li>fixes for kafka 0.10 with lz4 compression, thanks Scott Ferguson</li>
+<li>ignore the RDS table <code>mysql.ha_health_check</code> table</li>
+<li>Get the bootstrapping process to output NULL values.</li>
+<li>fix a quoting issue in the bootstrap code, thanks @mylesjao.</li>
+</ul>
 <h3 id="v150-someone-somewhere-is-still-smoking-cigarettes-damnit"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.5.0">v1.5.0</a>: "someone, somewhere, is still smoking cigarettes, damnit"</h3>
 <ul>
 <li>CHANGE: Kafka producer no longer ships with hard-coded defaults.
