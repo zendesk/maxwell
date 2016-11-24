@@ -67,11 +67,11 @@ public class RowMap implements Serializable {
 				}
 			};
 
-	public RowMap(String type, String database, String tableName, Long timestamp, List<String> pkColumns,
+	public RowMap(String type, String database, String table, Long timestamp, List<String> pkColumns,
 				  BinlogPosition nextPosition) {
 		this.rowType = type;
 		this.database = database;
-		this.table = tableName;
+		this.table = table;
 		this.timestamp = timestamp;
 		this.data = new LinkedHashMap<>();
 		this.oldData = new LinkedHashMap<>();
