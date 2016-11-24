@@ -10,13 +10,11 @@ import org.apache.commons.io.IOUtils;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.KafkaException;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Properties;
@@ -27,12 +25,6 @@ public class SchemaRegistryProducer extends AbstractKafkaProducer {
     private final KafkaProducer<String, GenericRecord> kafka;
     private String schemaMappingURI;
 
-//    private static final String keyLookup = "key_column";
-//    private static final String dataLookup = "data_column";
-//    private static final String schemaLookup = "schema";
-//    private static final String metadataLookup = "metadata";
-//    private static final String nestedSchemaLookup = "child_schemas";
-//    private static final String childSchemaLookup = "child_schema_uri";
     private static final String jsonSuffix = ".json";
 
     // NOTE: The KafkaAvroProducer maintains a cache of known childSchemas via an IdentityHashMap.
@@ -94,48 +86,6 @@ public class SchemaRegistryProducer extends AbstractKafkaProducer {
         }
     }
 
-    /**
-     * Return the schema from our resource cache. If the schema isn't in the resource cache it will be loaded.
-     *
-     * @param rowMap
-     * @return The schema corresponding to the key.
-     */
-/*    private String assembleSchema(RowMap rowMap) {
-        try {
-            JSONObject schemaInfo = getResourceWithCache(getResourceKey(rowMap.getTable()));
-
-            // get the schema. the structure contains the schema and metadata
-            JSONObject schema = schemaInfo.getJSONObject(this.schemaLookup);
-
-            // if this schema contains a nested schema (translating a column's string data into a json object)
-            // find the schema and insert it into the schema "in the right place"
-            if (getMetadata(schemaInfo).getBoolean(this.nestedSchemaLookup)) {
-                JSONObject metadata = getMetadata(schemaInfo);
-                String uri = metadata.getString(this.childSchemaLookup)
-                        + rowMap.getData(metadata.getString(this.keyLookup))
-                        + this.jsonSuffix;
-                JSONObject childSchema = getResourceWithCache(uri).getJSONObject(this.schemaLookup);
-                String dataColumn = metadata.getString(this.dataLookup);
-
-                for (Object field : schema.getJSONArray("fields")) {
-                    JSONObject f = (JSONObject) field;
-                    if (f.getString("name").equals(dataColumn)) {
-                        f.put("type", childSchema);
-                        break;
-                    }
-                }
-            }
-            return schema.toString();
-        } catch (JSONException e) {
-            throw new RuntimeException("No schema information for table " + rowMap.getTable() + " - " + e.toString());
-        }
-    }
-
-    private JSONObject getMetadata(JSONObject schemaInfo) {
-        return schemaInfo.getJSONObject(this.metadataLookup);
-    }
-    */
-
     private JSONObject getResourceWithCache(String uri) {
         JSONObject schemaInfo;
         if (this.resourceCache.containsKey(uri)){
@@ -179,14 +129,6 @@ public class SchemaRegistryProducer extends AbstractKafkaProducer {
      */
     private GenericRecord populateRecordFromRowMap(Schema schema, RowMap rowMap) {
         GenericRecord record = new GenericData.Record(schema);
-        /*
-        JSONObject schemaInfo = this.resourceCache.get(getResourceKey(rowMap.getTable()));
-
-        String dataColumn = null;
-        if (getMetadata(schemaInfo).getBoolean(this.nestedSchemaLookup)) {
-            dataColumn = getMetadata(schemaInfo).getString(this.dataLookup);
-        }
-         */
 
         for (String dataKey : rowMap.getDataKeys()) {
             Object data = rowMap.getData(dataKey);
@@ -197,55 +139,13 @@ public class SchemaRegistryProducer extends AbstractKafkaProducer {
                 record.put(dataKey, Float.parseFloat(data.toString()));
             } else if (data != null && ((Schema.Field) schema.getField(dataKey)).schema().getType().getName().equals("long")) {
                 record.put(dataKey, Long.parseLong(data.toString()));
-            } else
-            /*
-             else if (dataColumn != null && dataKey.equals(dataColumn)) {
-                // the issue here is that we cannot blindly populate the record since we may have a subrecord that
-                // is just a string right now, but is actually a json blob with an associated schema.
-                Schema childSchema = ((Schema) record.getSchema()).getField(dataColumn).schema();
-                GenericRecord childRecord = populateRecordFromJson(childSchema, new JSONObject(data.toString()));
-                record.put(dataKey, childRecord);
-            } else
-            */
-            {
+            } else {
                 record.put(dataKey, data);
             }
         }
         return record;
     }
 
-    /**
-     * Create and populate a GenericRecord from a Schema and a Json object.
-     *
-     * @param schema The Schema object.
-     * @param data the Json object.
-     * @return A GenericRecord based on the Schema and the Json object.
-     */
-/*    private GenericRecord populateRecordFromJson(Schema schema, JSONObject data) {
-        GenericRecord record = new GenericData.Record(schema);
-        for (String key : data.keySet()) {
-            if (schema.getField(key).schema().getType().getName().equals("record")) {
-                record.put(key, populateRecordFromJson(schema.getField(key).schema(), (JSONObject) data.get(key)));
-            } else {
-                Object obj = data.get(key);
-                if (obj instanceof Double) {
-                    record.put(key, ((Double) obj).doubleValue());
-                } else if (obj instanceof Float) {
-                    record.put(key, ((Float) obj).floatValue());
-                } else if (obj instanceof Long) {
-                    record.put(key, ((Long) obj).longValue());
-                } else if (obj instanceof Integer) {
-                    record.put(key, ((Integer) obj).intValue());
-                } else if (obj instanceof String) {
-                    record.put(key, obj.toString());
-                } else {
-                    throw new RuntimeException("Unknown type mapping from " + obj.getClass());
-                }
-            }
-        }
-        return record;
-    }
-*/
     protected Integer getNumPartitions(String topic) {
         try {
             return this.kafka.partitionsFor(topic).size(); //returns 1 for new topics
@@ -272,8 +172,6 @@ public class SchemaRegistryProducer extends AbstractKafkaProducer {
             genericRecord.put("value", value);
             record = new ProducerRecord<>(this.ddlTopic, this.ddlPartitioner.kafkaPartition(r, getNumPartitions(this.ddlTopic)), key, genericRecord);
         } else {
-            // TODO: test against RI
-//            Schema schema = getSchemaFromCache(assembleSchema(r));
             Schema schema = getSchemaFromCache(getResourceWithCache(getResourceKey(r.getTable())).toString());
             genericRecord = populateRecordFromRowMap(schema, r);
             String topic = generateTopic(this.topic, r);
