@@ -3,7 +3,6 @@ package com.zendesk.maxwell.row;
 import com.fasterxml.jackson.core.*;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
-import com.zendesk.maxwell.schema.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +26,6 @@ public class RowMap implements Serializable {
 	private final String rowType;
 	private final String database;
 	private final String table;
-	private final Table tableDef;
 	private final Long timestamp;
 	private BinlogPosition nextPosition;
 
@@ -80,24 +78,9 @@ public class RowMap implements Serializable {
 		this.nextPosition = nextPosition;
 		this.pkColumns = pkColumns;
 		this.approximateSize = 100L; // more or less 100 bytes of overhead
-		this.tableDef = null;
 	}
 
-	public RowMap(String type, String database, Table table, Long timestamp, List<String> pkColumns,
-			BinlogPosition nextPosition) {
-		this.rowType = type;
-		this.database = database;
-		this.table = table.getName();
-		this.timestamp = timestamp;
-		this.data = new LinkedHashMap<>();
-		this.oldData = new LinkedHashMap<>();
-		this.nextPosition = nextPosition;
-		this.pkColumns = pkColumns;
-		this.approximateSize = 100L; // more or less 100 bytes of overhead
-		this.tableDef = table;
-	}
-
-	public RowMap(String type, String database, Table table, Long timestamp, List<String> pkColumns,
+	public RowMap(String type, String database, String table, Long timestamp, List<String> pkColumns,
 				  BinlogPosition nextPosition, List<Pattern> excludeColumns) {
 		this(type, database, table, timestamp, pkColumns, nextPosition);
 		this.excludeColumns = excludeColumns;
@@ -295,10 +278,6 @@ public class RowMap implements Serializable {
 		String s = b.toString();
 		b.reset();
 		return s;
-	}
-
-	public String getColumnType(String column) {
-		return this.tableDef.findColumn(column).getType();
 	}
 
 	public Set<String> getDataKeys() {

@@ -66,10 +66,8 @@ public class SchemaRegistryProducer extends AbstractKafkaProducer {
         this.schemaMappingURI = context.getConfig().schemaMappingURI;
     }
 
-    /**
+    /** TODO: fix or rm docs (please fix)
      * Load the keyLookup, dataColumn and childSchemas from the specified config file.
-     *
-     * @param resourceURI The resource uri to load data from.
      */
     private JSONObject loadResource(String resourceURI) {
         if (resourceURI == null) {
