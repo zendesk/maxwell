@@ -1,5 +1,17 @@
 # Maxwell changelog
 
+### [v1.5.1](https://github.com/zendesk/maxwell/releases/tag/v1.5.1): "1.5.1 is just 1.5.1"
+
+
+This is a bugfix release.
+- fixes for bootstrapping with an alternative maxwell-schema name and an
+  `include_database` filter, thanks Lucian Jones
+- fixes for kafka 0.10 with lz4 compression, thanks Scott Ferguson
+- ignore the RDS table `mysql.ha_health_check` table
+- Get the bootstrapping process to output NULL values.
+- fix a quoting issue in the bootstrap code, thanks @mylesjao.
+
+
 ### [v1.5.0](https://github.com/zendesk/maxwell/releases/tag/v1.5.0): "someone, somewhere, is still smoking cigarettes, damnit"
 
 
