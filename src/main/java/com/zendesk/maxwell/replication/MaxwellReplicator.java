@@ -280,6 +280,7 @@ public class MaxwellReplicator extends RunLoopProcess {
 					String table = event.getTable().name;
 					String database = event.getDatabase();
 
+					/* always pass bootstrap rows through */
 					Boolean isSystemWhitelisted = database.equals(this.maxwellSchemaDatabaseName)
 							&& table.equals("bootstrap");
 
