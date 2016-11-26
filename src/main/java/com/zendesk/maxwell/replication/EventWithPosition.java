@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.replication;
 
-import com.github.shyiko.mysql.binlog.event.Event;
+import com.github.shyiko.mysql.binlog.event.*;
 
 public class EventWithPosition {
 	private final Event event;
@@ -17,5 +17,18 @@ public class EventWithPosition {
 
 	public BinlogPosition getPosition() {
 		return position;
+	}
+
+	public Long getTableID() {
+		EventData data = event.getData();
+		switch ( event.getHeader().getEventType() ) {
+			case WRITE_ROWS:
+				return ((WriteRowsEventData) data).getTableId();
+			case UPDATE_ROWS:
+				return ((UpdateRowsEventData) data).getTableId();
+			case DELETE_ROWS:
+				return ((DeleteRowsEventData) data).getTableId();
+		}
+		return null;
 	}
 }

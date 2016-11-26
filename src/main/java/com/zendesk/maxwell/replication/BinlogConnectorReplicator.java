@@ -1,8 +1,7 @@
 package com.zendesk.maxwell.replication;
 
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
-import com.github.shyiko.mysql.binlog.event.Event;
-import com.github.shyiko.mysql.binlog.event.QueryEventData;
+import com.github.shyiko.mysql.binlog.event.*;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.MaxwellFilter;
 import com.zendesk.maxwell.MaxwellMysqlConfig;
@@ -11,10 +10,7 @@ import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMapBuffer;
-import com.zendesk.maxwell.schema.PositionStoreThread;
-import com.zendesk.maxwell.schema.Schema;
-import com.zendesk.maxwell.schema.SchemaStore;
-import com.zendesk.maxwell.schema.SchemaStoreException;
+import com.zendesk.maxwell.schema.*;
 import com.zendesk.maxwell.schema.ddl.DDLMap;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
@@ -73,7 +69,6 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		this.binlogEventListener = new BinlogConnectorEventListener(client, queue);
 		this.client.setBlocking(!stopOnEOF);
 		this.client.registerEventListener(binlogEventListener);
-		this.client.getBinlogFilename();
 		this.client.setServerId(replicaServerID.intValue());
 
 		/*
@@ -170,23 +165,31 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		return row.getDatabase().equals(this.maxwellSchemaDatabaseName);
 	}
 
-	private AbstractRowsEvent processRowsEvent(EventWithPosition e) throws InvalidSchemaError {
-		/*
+	private List<RowMap> processRowsEvent(EventWithPosition e) throws InvalidSchemaError {
 		AbstractRowsEvent ew;
+
 		Table table;
 
-		long tableId = e.getTableId();
+		long tableId = e.getTableID();
 
 		if ( tableCache.isTableBlacklisted(tableId) ) {
 			return null;
 		}
 
 		table = tableCache.getTable(tableId);
-
 		if ( table == null ) {
 			throw new InvalidSchemaError("couldn't find table in cache for table id: " + tableId);
 		}
 
+		switch (e.getEvent().getHeader().getEventType()) {
+			case WRITE_ROWS:
+			case EXT_WRITE_ROWS:
+				WriteRowsEventData data = (WriteRowsEventData) e.getEvent().getData();
+				data.
+		}
+
+
+ /*
 		switch (e.getHeader().getEventType()) {
 			case MySQLConstants.WRITE_ROWS_EVENT:
 				ew = new WriteRowsEvent((com.google.code.or.binlog.impl.event.WriteRowsEvent) e, table, filter, lastHeartbeatRead);
@@ -230,33 +233,27 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	 */
 
 	private RowMapBuffer getTransactionRows() throws Exception {
-		/*
-
-		BinlogEventV4 v4Event;
-		AbstractRowsEvent event;
-
+		EventWithPosition event;
 		RowMapBuffer buffer = new RowMapBuffer(MAX_TX_ELEMENTS);
 
 		while ( true ) {
-			v4Event = pollV4EventFromQueue();
+			event = pollEvent();
 
 			// currently to satisfy the test interface, the contract is to return null
 			// if the queue is empty.  should probably just replace this with an optional timeout...
-			if (v4Event == null) {
+			if (event == null) {
 				ensureReplicatorThread();
 				continue;
 			}
 
-			setReplicatorPosition((AbstractBinlogEventV4) v4Event);
-
-			switch(v4Event.getHeader().getEventType()) {
-				case MySQLConstants.WRITE_ROWS_EVENT:
-				case MySQLConstants.WRITE_ROWS_EVENT_V2:
-				case MySQLConstants.UPDATE_ROWS_EVENT:
-				case MySQLConstants.UPDATE_ROWS_EVENT_V2:
-				case MySQLConstants.DELETE_ROWS_EVENT:
-				case MySQLConstants.DELETE_ROWS_EVENT_V2:
-					event = processRowsEvent((AbstractRowEvent) v4Event);
+			switch(event.getEvent().getHeader().getEventType()) {
+				case WRITE_ROWS:
+				case UPDATE_ROWS:
+				case DELETE_ROWS:
+				case EXT_WRITE_ROWS:
+				case EXT_UPDATE_ROWS:
+				case EXT_DELETE_ROWS:
+					event = processRowsEvent();
 
 					if ( event == null ) {
 						continue;
@@ -268,8 +265,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					}
 
 					break;
-				case MySQLConstants.TABLE_MAP_EVENT:
-					tableCache.processEvent(getSchema(), this.filter, (TableMapEvent) v4Event);
+				case TABLE_MAP:
+					tableCache.processEvent(getSchema(), this.filter,  4Event);
 					break;
 				case MySQLConstants.QUERY_EVENT:
 					QueryEvent qe = (QueryEvent) v4Event;
@@ -369,8 +366,6 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		/*
 		if ( stopOnEOF && hitEOF )
 			return null;
-
-	 	*/
 
 		while (true) {
 			if (rowBuffer != null && !rowBuffer.isEmpty()) {

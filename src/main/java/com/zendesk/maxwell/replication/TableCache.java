@@ -11,6 +11,9 @@ import com.zendesk.maxwell.schema.Table;
 public class TableCache {
 	private final HashMap<Long, Table> tableMapCache = new HashMap<>();
 	private final HashMap<Long, String> blacklistedTableCache = new HashMap<>();
+
+	public void addToCache(Schema schema, MaxwellFilter filter, String dbName, )
+
 	// open-replicator keeps a very similar cache, but we can't get access to it.
 	public void processEvent(Schema schema, MaxwellFilter filter, TableMapEvent event) {
 		Long tableId = event.getTableId();
