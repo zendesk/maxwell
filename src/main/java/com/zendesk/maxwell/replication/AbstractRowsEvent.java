@@ -175,11 +175,7 @@ public abstract class AbstractRowsEvent extends AbstractRowEvent {
 		ArrayList<RowMap> list = new ArrayList<>();
 
 		for ( Row r : getRows() ) {
-			RowMap rowMap;
-			if (this.filter != null && this.filter.hasExcludeColumns())
-				rowMap = buildRowMap(this.filter.getExcludeColumns());
-			else
-				rowMap = buildRowMap();
+			RowMap rowMap = buildRowMap();
 
 			for ( ColumnWithDefinition cd : new ColumnWithDefinitionList(table, r, getUsedColumns()) )
 				rowMap.putData(cd.definition.getName(), cd.asJSON());

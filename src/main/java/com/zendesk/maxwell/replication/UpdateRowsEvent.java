@@ -62,12 +62,7 @@ public class UpdateRowsEvent extends AbstractRowsEvent {
 			Row after = p.getAfter();
 			Row before = p.getBefore();
 
-			RowMap rowMap;
-
-			if(this.filter != null && this.filter.hasExcludeColumns())
-				rowMap = buildRowMap(this.filter.getExcludeColumns());
-			else
-				rowMap = buildRowMap();
+			RowMap rowMap = buildRowMap();
 
 			for ( ColumnWithDefinition cd : new ColumnWithDefinitionList(table, after, event.getUsedColumnsAfter())) {
 				rowMap.putData(cd.definition.getName(), cd.asJSON());
