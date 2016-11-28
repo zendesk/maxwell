@@ -5,7 +5,6 @@ import java.util.regex.Pattern;
 
 import com.google.code.or.common.glossary.Column;
 import com.google.code.or.common.glossary.Row;
-import com.zendesk.maxwell.replication.AbstractRowsEvent;
 
 /*
 	filters compile down to:
@@ -144,9 +143,7 @@ public class MaxwellFilter {
 		return matchesIncludeExcludeList(includeTables, excludeTables, tableName);
 	}
 
-	public boolean matches(AbstractRowsEvent e) {
-		String database = e.getTable().getDatabase();
-		String table = e.getTable().getName();
+	public boolean matches(String database, String table) {
 		return matchesDatabase(database) && matchesTable(table);
 	}
 

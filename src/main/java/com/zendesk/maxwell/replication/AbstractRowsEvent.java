@@ -72,7 +72,7 @@ public abstract class AbstractRowsEvent extends AbstractRowEvent {
 		if ( filter == null )
 			return true;
 
-		return filter.matches(this);
+		return filter.matches(this.database, this.table.getName());
 	}
 
 	public abstract String getType();
