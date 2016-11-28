@@ -22,8 +22,6 @@ public class MaxwellFilter {
 
 	private final ArrayList<Pattern> excludeColumns = new ArrayList<>();
 
-	private final HashMap<String, Integer> rowFilter = new HashMap<>();
-
 	public MaxwellFilter() { }
 	public MaxwellFilter(String includeDatabases,
 						 String excludeDatabases,
@@ -117,10 +115,6 @@ public class MaxwellFilter {
 
 	}
 
-	public void addRowConstraint(String field, Integer value) {
-		rowFilter.put(field, value);
-	}
-
 	private boolean matchesIncludeExcludeList(List<Pattern> includeList, List<Pattern> excludeList, String name) {
 		if ( includeList.size() > 0 ) {
 			boolean found = false;
@@ -150,40 +144,10 @@ public class MaxwellFilter {
 		return matchesIncludeExcludeList(includeTables, excludeTables, tableName);
 	}
 
-	public boolean matchesRow(AbstractRowsEvent e, Row r) {
-		for (Map.Entry<String, Integer> entry : rowFilter.entrySet()) {
-			Column c = e.findColumn(entry.getKey(), r);
-			if ( c == null )
-				return false;
-
-			if ( c.getValue() == entry.getValue() ) {
-				continue; // null or same instance
-			}
-
-			if ( c.getValue() == null || entry.getValue() == null ) {
-				return false; // one side is null
-			}
-
-			if ( !c.getValue().equals(entry.getValue())) {
-				return false;
-			}
-
-		}
-		return true;
-	}
-
-	private boolean matchesAnyRows(AbstractRowsEvent e) {
-		for (Row r : e.getRows()) {
-			if ( matchesRow(e, r) )
-				return true;
-		}
-		return false;
-	}
-
 	public boolean matches(AbstractRowsEvent e) {
 		String database = e.getTable().getDatabase();
 		String table = e.getTable().getName();
-		return matchesDatabase(database) && matchesTable(table) && matchesAnyRows(e);
+		return matchesDatabase(database) && matchesTable(table);
 	}
 
 	public boolean isDatabaseBlacklisted(String databaseName) {
@@ -201,11 +165,5 @@ public class MaxwellFilter {
 
 	public ArrayList<Pattern> getExcludeColumns() {
 		return excludeColumns;
-	}
-
-	private void throwUnlessEmpty(HashSet<String> set, String objType) {
-		if ( set.size() != 0 ) {
-			throw new IllegalArgumentException("A " + objType + " filter may only be inclusive or exclusive");
-		}
 	}
 }

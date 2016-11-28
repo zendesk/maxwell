@@ -93,26 +93,6 @@ public abstract class AbstractRowsEvent extends AbstractRowEvent {
 	public abstract List<Row> getRows();
 	public abstract String sqlOperationString();
 
-	private LinkedList<Row> filteredRows;
-	private boolean performedFilter = false;
-
-	protected List<Row> filteredRows() {
-		if ( this.filter == null )
-			return getRows();
-
-		if ( performedFilter )
-			return filteredRows;
-
-		filteredRows = new LinkedList<>();
-		for ( Row r : getRows()) {
-			if ( this.filter.matchesRow(this, r) )
-				filteredRows.add(r);
-		}
-		performedFilter = true;
-
-		return filteredRows;
-	}
-
 	private void appendColumnNames(StringBuilder sql)
 	{
 		sql.append(" (");
@@ -128,7 +108,7 @@ public abstract class AbstractRowsEvent extends AbstractRowEvent {
 
 	public String toSQL() {
 		StringBuilder sql = new StringBuilder();
-		List<Row> rows = filteredRows();
+		List<Row> rows = getRows();
 
 		if ( rows.isEmpty() )
 			return null;
@@ -194,9 +174,7 @@ public abstract class AbstractRowsEvent extends AbstractRowEvent {
 	public List<RowMap> jsonMaps() {
 		ArrayList<RowMap> list = new ArrayList<>();
 
-		for ( Iterator<Row> ri = filteredRows().iterator() ; ri.hasNext(); ) {
-			Row r = ri.next();
-
+		for ( Row r : getRows() ) {
 			RowMap rowMap;
 			if (this.filter != null && this.filter.hasExcludeColumns())
 				rowMap = buildRowMap(this.filter.getExcludeColumns());

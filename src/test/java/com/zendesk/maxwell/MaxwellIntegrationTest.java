@@ -55,44 +55,6 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
-	public void testRowFilter() throws Exception {
-		List<RowMap> list;
-		String input[] = {"insert into minimal set account_id = 1000, text_field='hello'",
-						  "insert into minimal set account_id = 2000, text_field='goodbye'"};
-
-		list = getRowsForSQL(input);
-		assertThat(list.size(), is(2));
-
-		MaxwellFilter filter = new MaxwellFilter();
-
-		@SuppressWarnings("UnnecessaryBoxing")
-		Integer filterValue = new Integer(2000); // make sure we're using a different instance of the filter value
-
-		filter.addRowConstraint("account_id", filterValue);
-
-		list = getRowsForSQL(filter, input);
-		assertThat(list.size(), is(1));
-
-		RowMap jsonMap = list.get(0);
-
-		assertThat((Long) jsonMap.getData("account_id"), is(2000L));
-		assertThat((String) jsonMap.getData("text_field"), is("goodbye"));
-	}
-
-	@Test
-	public void testRowFilterOnNonExistentFields() throws Exception {
-		List<RowMap> list;
-		String input[] = {"insert into minimal set account_id = 1000, text_field='hello'",
-						  "insert into minimal set account_id = 2000, text_field='goodbye'"};
-
-		MaxwellFilter filter = new MaxwellFilter();
-		filter.addRowConstraint("piggypiggy", 2000);
-
-		list = getRowsForSQL(filter, input);
-		assertThat(list.size(), is(0));
-	}
-
-	@Test
 	public void testOutputConfig() throws Exception {
 		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
