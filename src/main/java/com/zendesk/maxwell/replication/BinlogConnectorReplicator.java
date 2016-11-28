@@ -2,6 +2,7 @@ package com.zendesk.maxwell.replication;
 
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import com.github.shyiko.mysql.binlog.event.*;
+import com.github.shyiko.mysql.binlog.event.deserialization.AbstractRowsEventDataDeserializer;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.MaxwellFilter;
 import com.zendesk.maxwell.MaxwellMysqlConfig;
@@ -32,7 +33,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private MaxwellFilter filter;
 	private Long lastHeartbeatRead;
 
-	private final LinkedBlockingDeque<EventWithPosition> queue = new LinkedBlockingDeque<>(20);
+	private final LinkedBlockingDeque<BinlogConnectorEvent> queue = new LinkedBlockingDeque<>(20);
 
 	protected BinlogConnectorEventListener binlogEventListener;
 
@@ -64,6 +65,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		String clientID
 	) {
 		this.schemaStore = schemaStore;
+		AbstractRowsEventDataDeserializer.READ_STRING_COLUMN_AS_BYTE_ARRAY = true;
 
 		this.client = new BinaryLogClient(mysqlConfig.host, mysqlConfig.port, mysqlConfig.user, mysqlConfig.password);
 		this.binlogEventListener = new BinlogConnectorEventListener(client, queue);
@@ -165,7 +167,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		return row.getDatabase().equals(this.maxwellSchemaDatabaseName);
 	}
 
-	private List<RowMap> processRowsEvent(EventWithPosition e) throws InvalidSchemaError {
+	private List<RowMap> processRowsEvent(BinlogConnectorEvent e) throws InvalidSchemaError {
 		AbstractRowsEvent ew;
 
 		Table table;
@@ -185,7 +187,6 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 			case WRITE_ROWS:
 			case EXT_WRITE_ROWS:
 				WriteRowsEventData data = (WriteRowsEventData) e.getEvent().getData();
-				data.
 		}
 
 
@@ -233,7 +234,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	 */
 
 	private RowMapBuffer getTransactionRows() throws Exception {
-		EventWithPosition event;
+		BinlogConnectorEvent event;
 		RowMapBuffer buffer = new RowMapBuffer(MAX_TX_ELEMENTS);
 
 		while ( true ) {
@@ -253,24 +254,24 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 				case EXT_WRITE_ROWS:
 				case EXT_UPDATE_ROWS:
 				case EXT_DELETE_ROWS:
-					event = processRowsEvent();
-
 					if ( event == null ) {
 						continue;
 					}
 
-					if ( event.matchesFilter() ) {
-						for ( RowMap r : event.jsonMaps() )
+					Table table = tableCache.getTable(event.getTableID());
+					if ( filter == null || filter.matches(table.getDatabase(), table.getName()) ) {
+						for ( RowMap r : event.jsonMaps(table, filter) )
 							buffer.add(r);
 					}
 
 					break;
 				case TABLE_MAP:
-					tableCache.processEvent(getSchema(), this.filter,  4Event);
+					TableMapEventData data = event.tableMapData();
+					tableCache.processEvent(getSchema(), this.filter, data.getTableId(), data.getDatabase(), data.getTable());
 					break;
-				case MySQLConstants.QUERY_EVENT:
-					QueryEvent qe = (QueryEvent) v4Event;
-					String sql = qe.getSql().toString();
+				case QUERY:
+					QueryEventData qe = event.queryData();
+					String sql = qe.getSql();
 
 					if ( sql.equals("COMMIT") ) {
 						// MyISAM will output a "COMMIT" QUERY_EVENT instead of a XID_EVENT.
@@ -286,15 +287,13 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 						// inside a transaction.  Note that this could, in rare cases, lead
 						// to us starting on a WRITE_ROWS event -- we sync the schema position somewhere
 						// kinda unsafe.
-						processQueryEvent(qe);
+						processQueryEvent(event);
 					} else {
 						LOGGER.warn("Unhandled QueryEvent inside transaction: " + qe);
 					}
 					break;
-				case MySQLConstants.XID_EVENT:
-					XidEvent xe = (XidEvent) v4Event;
-
-					buffer.setXid(xe.getXid());
+				case XID:
+					buffer.setXid(event.xidData().getXid());
 
 					if ( !buffer.isEmpty() )
 						buffer.getLast().setTXCommit();
@@ -302,8 +301,6 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					return buffer;
 			}
 		}
-		 */
-		return null;
 	}
 
 	/**
@@ -361,9 +358,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	 * @return either a RowMap or null
 	 */
 	public RowMap getRow() throws Exception {
-		EventWithPosition event;
+		BinlogConnectorEvent event;
 
-		/*
 		if ( stopOnEOF && hitEOF )
 			return null;
 
@@ -381,7 +377,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 			if (event == null) {
 				if ( stopOnEOF ) {
-					if ( replicator.isRunning() )
+					if ( client.isConnected() )
 						continue;
 					else
 						return null;
@@ -391,56 +387,57 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 				}
 			}
 
-			switch (v4Event.getHeader().getEventType()) {
-				case MySQLConstants.WRITE_ROWS_EVENT:
-				case MySQLConstants.WRITE_ROWS_EVENT_V2:
-				case MySQLConstants.UPDATE_ROWS_EVENT:
-				case MySQLConstants.UPDATE_ROWS_EVENT_V2:
-				case MySQLConstants.DELETE_ROWS_EVENT:
-				case MySQLConstants.DELETE_ROWS_EVENT_V2:
+			switch (event.getType()) {
+				case WRITE_ROWS:
+				case EXT_WRITE_ROWS:
+				case UPDATE_ROWS:
+				case EXT_UPDATE_ROWS:
+				case DELETE_ROWS:
+				case EXT_DELETE_ROWS:
 					LOGGER.warn("Started replication stream outside of transaction.  This shouldn't normally happen.");
 
-					queue.offerFirst(v4Event);
+					queue.offerFirst(event);
 					rowBuffer = getTransactionRows();
 					break;
-				case MySQLConstants.TABLE_MAP_EVENT:
-					tableCache.processEvent(getSchema(), this.filter, (TableMapEvent) v4Event);
-					setReplicatorPosition((AbstractBinlogEventV4) v4Event);
+				case TABLE_MAP:
+					TableMapEventData data = event.tableMapData();
+					tableCache.processEvent(getSchema(), this.filter, data.getTableId(), data.getDatabase(), data.getTable());
+					// setReplicatorPosition((AbstractBinlogEventV4) v4Event);
 					break;
-				case MySQLConstants.QUERY_EVENT:
-					QueryEvent qe = (QueryEvent) v4Event;
-					if (qe.getSql().toString().equals("BEGIN")) {
+				case QUERY:
+					QueryEventData qe = event.queryData();
+					String sql = qe.getSql();
+					if (sql.equals("BEGIN")) {
 						rowBuffer = getTransactionRows();
-						rowBuffer.setServerId(qe.getHeader().getServerId());
+						rowBuffer.setServerId(event.getEvent().getHeader().getServerId());
 						rowBuffer.setThreadId(qe.getThreadId());
 					} else {
-						processQueryEvent((QueryEvent) v4Event);
-						setReplicatorPosition((AbstractBinlogEventV4) v4Event);
+						processQueryEvent(event);
+						//setReplicatorPosition((AbstractBinlogEventV4) v4Event);
 					}
 					break;
-				case MySQLConstants.ROTATE_EVENT:
+				case ROTATE:
 					if ( stopOnEOF ) {
-						this.replicator.stopQuietly(100, TimeUnit.MILLISECONDS);
-						setReplicatorPosition((AbstractBinlogEventV4) v4Event);
+						this.client.disconnect();
+						// setReplicatorPosition((AbstractBinlogEventV4) v4Event);
 						this.hitEOF = true;
 						return null;
 					}
 					break;
 				default:
-					setReplicatorPosition((AbstractBinlogEventV4) v4Event);
+					// setReplicatorPosition((AbstractBinlogEventV4) v4Event);
 					break;
 			}
 
 		}
-		*/
-		return null;
 	}
 
-	protected EventWithPosition pollEvent() throws InterruptedException {
+	protected BinlogConnectorEvent pollEvent() throws InterruptedException {
 		return queue.poll(100, TimeUnit.MILLISECONDS);
 	}
 
-	private void processQueryEvent(EventWithPosition event, QueryEventData data) throws SchemaStoreException, InvalidSchemaError, SQLException, Exception {
+	private void processQueryEvent(BinlogConnectorEvent event) throws Exception {
+		QueryEventData data = event.queryData();
 
 		// get charset of the alter event somehow? or just ignore it.
 		String dbName = data.getDatabase();
