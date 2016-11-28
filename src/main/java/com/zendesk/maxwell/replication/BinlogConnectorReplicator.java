@@ -72,6 +72,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		this.client.setBlocking(!stopOnEOF);
 		this.client.registerEventListener(binlogEventListener);
 		this.client.setServerId(replicaServerID.intValue());
+		this.client.setBinlogFilename(start.getFile());
+		this.client.setBinlogPosition(start.getOffset());
 
 		/*
 		this.shouldHeartbeat = shouldHeartbeat;
@@ -167,57 +169,6 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		return row.getDatabase().equals(this.maxwellSchemaDatabaseName);
 	}
 
-	private List<RowMap> processRowsEvent(BinlogConnectorEvent e) throws InvalidSchemaError {
-		AbstractRowsEvent ew;
-
-		Table table;
-
-		long tableId = e.getTableID();
-
-		if ( tableCache.isTableBlacklisted(tableId) ) {
-			return null;
-		}
-
-		table = tableCache.getTable(tableId);
-		if ( table == null ) {
-			throw new InvalidSchemaError("couldn't find table in cache for table id: " + tableId);
-		}
-
-		switch (e.getEvent().getHeader().getEventType()) {
-			case WRITE_ROWS:
-			case EXT_WRITE_ROWS:
-				WriteRowsEventData data = (WriteRowsEventData) e.getEvent().getData();
-		}
-
-
- /*
-		switch (e.getHeader().getEventType()) {
-			case MySQLConstants.WRITE_ROWS_EVENT:
-				ew = new WriteRowsEvent((com.google.code.or.binlog.impl.event.WriteRowsEvent) e, table, filter, lastHeartbeatRead);
-				break;
-			case MySQLConstants.WRITE_ROWS_EVENT_V2:
-				ew = new WriteRowsEvent((WriteRowsEventV2) e, table, filter, lastHeartbeatRead);
-				break;
-			case MySQLConstants.UPDATE_ROWS_EVENT:
-				ew = new UpdateRowsEvent((com.google.code.or.binlog.impl.event.UpdateRowsEvent) e, table, filter, lastHeartbeatRead);
-				break;
-			case MySQLConstants.UPDATE_ROWS_EVENT_V2:
-				ew = new UpdateRowsEvent((UpdateRowsEventV2) e, table, filter, lastHeartbeatRead);
-				break;
-			case MySQLConstants.DELETE_ROWS_EVENT:
-				ew = new DeleteRowsEvent((com.google.code.or.binlog.impl.event.DeleteRowsEvent) e, table, filter, lastHeartbeatRead);
-				break;
-			case MySQLConstants.DELETE_ROWS_EVENT_V2:
-				ew = new DeleteRowsEvent((DeleteRowsEventV2) e, table, filter, lastHeartbeatRead);
-				break;
-			default:
-				return null;
-		}
-		return ew;
-		*/
-		return null;
-	}
-
 	private static Pattern createTablePattern =
 			Pattern.compile("^CREATE\\s+TABLE", Pattern.CASE_INSENSITIVE);
 
@@ -240,8 +191,6 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		while ( true ) {
 			event = pollEvent();
 
-			// currently to satisfy the test interface, the contract is to return null
-			// if the queue is empty.  should probably just replace this with an optional timeout...
 			if (event == null) {
 				ensureReplicatorThread();
 				continue;
@@ -254,10 +203,6 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 				case EXT_WRITE_ROWS:
 				case EXT_UPDATE_ROWS:
 				case EXT_DELETE_ROWS:
-					if ( event == null ) {
-						continue;
-					}
-
 					Table table = tableCache.getTable(event.getTableID());
 					if ( filter == null || filter.matches(table.getDatabase(), table.getName()) ) {
 						for ( RowMap r : event.jsonMaps(table, filter) )

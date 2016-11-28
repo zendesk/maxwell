@@ -7,10 +7,7 @@ import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class BinlogConnectorEvent {
 	private final Event event;
@@ -79,66 +76,96 @@ public class BinlogConnectorEvent {
 	}
 
 	private void writeData(Table table, RowMap row, Serializable[] data, BitSet includedColumns) {
-		int i = 0, j = 0;
+		int dataIdx = 0, colIdx = 0;
+
 		for ( ColumnDef cd : table.getColumnList() ) {
-			if ( includedColumns.get(j) ) {
+			if ( includedColumns.get(colIdx) ) {
 				Object json = null;
-				if ( data[i] != null ) {
-					json = cd.asJSON(data[i]);
+				if ( data[dataIdx] != null ) {
+					json = cd.asJSON(data[dataIdx]);
 				}
 				row.putData(cd.getName(), json);
-				i++;
+				dataIdx++;
 			}
-			j++;
+			colIdx++;
 		}
+	}
+
+	private void writeOldData(Table table, RowMap row, Serializable[] oldData, BitSet oldIncludedColumns) {
+		int dataIdx = 0, colIdx = 0;
+
+		for ( ColumnDef cd : table.getColumnList() ) {
+			if ( oldIncludedColumns.get(colIdx) ) {
+				Object json = null;
+				if ( oldData[dataIdx] != null ) {
+					json = cd.asJSON(oldData[dataIdx]);
+				}
+
+				if (!row.hasData(cd.getName())) {
+					/*
+					   If we find a column in the BEFORE image that's *not* present in the AFTER image,
+					   we're running in binlog_row_image = MINIMAL.  In this case, the BEFORE image acts
+					   as a sort of WHERE clause to update rows with the new values (present in the AFTER image),
+					   In this case we should put what's in the "before" image into the "data" section, not the "old".
+					 */
+					row.putData(cd.getName(), json);
+				} else {
+					if (!Objects.equals(row.getData(cd.getName()), json)) {
+						row.putOldData(cd.getName(), json);
+					}
+				}
+				dataIdx++;
+			}
+			colIdx++;
+		}
+	}
+
+	private RowMap buildRowMap(String type, Serializable[] data, Table table, BitSet includedColumns, MaxwellFilter filter) {
+		RowMap map = new RowMap(
+			type,
+			table.getDatabase(),
+			table.getName(),
+			event.getHeader().getTimestamp() / 1000,
+			table.getPKList(),
+			nextPosition,
+			filter.getExcludeColumns()
+		);
+
+		writeData(table, map, data, includedColumns);
+		return map;
 	}
 
 	public List<RowMap> jsonMaps(Table table, MaxwellFilter filter) {
 		ArrayList<RowMap> list = new ArrayList<>();
 
 		String type = null;
-		List<Serializable[]> rowData = null;
-		List<Serializable[]> oldRowData = null;
-		BitSet includedColumns = null;
+
 
 		switch ( getType() ) {
 			case WRITE_ROWS:
 			case EXT_WRITE_ROWS:
-				type = "insert";
-				rowData = writeRowsData().getRows();
-				includedColumns = writeRowsData().getIncludedColumns();
+				for ( Serializable[] data : writeRowsData().getRows() ) {
+					list.add(buildRowMap("insert", data, table, writeRowsData().getIncludedColumns(), filter));
+				}
 				break;
 			case DELETE_ROWS:
 			case EXT_DELETE_ROWS:
-				type = "delete";
-				rowData = deleteRowsData().getRows();
-				includedColumns = deleteRowsData().getIncludedColumns();
+				for ( Serializable[] data : deleteRowsData().getRows() ) {
+					list.add(buildRowMap("delete", data, table, deleteRowsData().getIncludedColumns(), filter));
+				}
 				break;
 			case UPDATE_ROWS:
 			case EXT_UPDATE_ROWS:
 				type = "update";
-				rowData = new ArrayList<>();
-				oldRowData = new ArrayList<>();
-				includedColumns = updateRowsData().getIncludedColumns();
 				for ( Map.Entry<Serializable[], Serializable[]> e : updateRowsData().getRows() ) {
-					rowData.add(e.getValue());
-					oldRowData.add(e.getKey());
+					Serializable[] data = e.getValue();
+					Serializable[] oldData = e.getKey();
+
+					RowMap r = buildRowMap("update", data, table, updateRowsData().getIncludedColumns(), filter);
+					writeOldData(table, r, oldData, updateRowsData().getIncludedColumnsBeforeUpdate());
+					list.add(r);
 				}
-		}
-
-		for ( Serializable[] data : rowData ) {
-			RowMap map = new RowMap(
-				type,
-				table.getDatabase(),
-				table.getName(),
-				event.getHeader().getTimestamp() / 1000,
-				table.getPKList(),
-				nextPosition,
-				filter.getExcludeColumns()
-			);
-
-			writeData(table, map, data, includedColumns);
-			list.add(map);
+				break;
 		}
 
 		return list;
