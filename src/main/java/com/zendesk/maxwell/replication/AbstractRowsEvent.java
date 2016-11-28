@@ -160,17 +160,6 @@ public abstract class AbstractRowsEvent extends AbstractRowEvent {
 				this.getNextBinlogPosition());
 	}
 
-	protected RowMap buildRowMap(List<Pattern> excludeColumns) {
-		return new RowMap(
-				getType(),
-				this.database,
-				getTable().getName(),
-				getHeader().getTimestamp() / 1000,
-				table.getPKList(),
-				this.getNextBinlogPosition(),
-				excludeColumns);
-	}
-
 	public List<RowMap> jsonMaps() {
 		ArrayList<RowMap> list = new ArrayList<>();
 
