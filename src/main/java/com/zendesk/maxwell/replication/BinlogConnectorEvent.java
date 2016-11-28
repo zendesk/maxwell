@@ -1,15 +1,19 @@
 package com.zendesk.maxwell.replication;
 
 import com.github.shyiko.mysql.binlog.event.*;
-import com.zendesk.maxwell.MaxwellFilter;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
+import com.zendesk.maxwell.util.Logging;
 
 import java.io.Serializable;
 import java.util.*;
 
 public class BinlogConnectorEvent {
+	static {
+		Logging.setupLogBridging();
+	}
+
 	private final Event event;
 	private final BinlogPosition position;
 	private final BinlogPosition nextPosition;
@@ -120,48 +124,44 @@ public class BinlogConnectorEvent {
 		}
 	}
 
-	private RowMap buildRowMap(String type, Serializable[] data, Table table, BitSet includedColumns, MaxwellFilter filter) {
+	private RowMap buildRowMap(String type, Serializable[] data, Table table, BitSet includedColumns) {
 		RowMap map = new RowMap(
 			type,
 			table.getDatabase(),
 			table.getName(),
 			event.getHeader().getTimestamp() / 1000,
 			table.getPKList(),
-			nextPosition,
-			filter.getExcludeColumns()
+			nextPosition
 		);
 
 		writeData(table, map, data, includedColumns);
 		return map;
 	}
 
-	public List<RowMap> jsonMaps(Table table, MaxwellFilter filter) {
+	public List<RowMap> jsonMaps(Table table) {
 		ArrayList<RowMap> list = new ArrayList<>();
-
-		String type = null;
 
 
 		switch ( getType() ) {
 			case WRITE_ROWS:
 			case EXT_WRITE_ROWS:
 				for ( Serializable[] data : writeRowsData().getRows() ) {
-					list.add(buildRowMap("insert", data, table, writeRowsData().getIncludedColumns(), filter));
+					list.add(buildRowMap("insert", data, table, writeRowsData().getIncludedColumns()));
 				}
 				break;
 			case DELETE_ROWS:
 			case EXT_DELETE_ROWS:
 				for ( Serializable[] data : deleteRowsData().getRows() ) {
-					list.add(buildRowMap("delete", data, table, deleteRowsData().getIncludedColumns(), filter));
+					list.add(buildRowMap("delete", data, table, deleteRowsData().getIncludedColumns()));
 				}
 				break;
 			case UPDATE_ROWS:
 			case EXT_UPDATE_ROWS:
-				type = "update";
 				for ( Map.Entry<Serializable[], Serializable[]> e : updateRowsData().getRows() ) {
 					Serializable[] data = e.getValue();
 					Serializable[] oldData = e.getKey();
 
-					RowMap r = buildRowMap("update", data, table, updateRowsData().getIncludedColumns(), filter);
+					RowMap r = buildRowMap("update", data, table, updateRowsData().getIncludedColumns());
 					writeOldData(table, r, oldData, updateRowsData().getIncludedColumnsBeforeUpdate());
 					list.add(r);
 				}

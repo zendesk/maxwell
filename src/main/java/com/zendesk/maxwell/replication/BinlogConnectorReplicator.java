@@ -3,6 +3,7 @@ package com.zendesk.maxwell.replication;
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import com.github.shyiko.mysql.binlog.event.*;
 import com.github.shyiko.mysql.binlog.event.deserialization.AbstractRowsEventDataDeserializer;
+import com.github.shyiko.mysql.binlog.event.deserialization.EventDeserializer;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.MaxwellFilter;
 import com.zendesk.maxwell.MaxwellMysqlConfig;
@@ -65,9 +66,14 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		String clientID
 	) {
 		this.schemaStore = schemaStore;
-		AbstractRowsEventDataDeserializer.READ_STRING_COLUMN_AS_BYTE_ARRAY = true;
 
 		this.client = new BinaryLogClient(mysqlConfig.host, mysqlConfig.port, mysqlConfig.user, mysqlConfig.password);
+
+		EventDeserializer eventDeserializer = new EventDeserializer();
+		eventDeserializer.setCompatibilityMode(EventDeserializer.CompatibilityMode.DATE_AND_TIME_AS_LONG,
+			EventDeserializer.CompatibilityMode.CHAR_AND_BINARY_AS_BYTE_ARRAY);
+		this.client.setEventDeserializer(eventDeserializer);
+
 		this.binlogEventListener = new BinlogConnectorEventListener(client, queue);
 		this.client.setBlocking(!stopOnEOF);
 		this.client.registerEventListener(binlogEventListener);
@@ -113,22 +119,10 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	}
 
 	private void ensureReplicatorThread() throws Exception {
-		/*
-		if ( !replicator.isRunning() && !replicator.isStopOnEOF() ) {
-			LOGGER.warn("open-replicator stopped at position " + replicator.getBinlogFileName() + ":" + replicator.getBinlogPosition() + " -- restarting");
-			replicator.start();
+		if ( !client.isConnected() && !stopOnEOF ) {
+			LOGGER.warn("replicator stopped at position " + client.getBinlogFilename() + ":" + client.getBinlogPosition() + " -- restarting");
+			client.connect();
 		}
-
-
-		if ( shouldHeartbeat ) {
-			Long ms = replicator.millisSinceLastEvent();
-			if (ms != null && ms > 2000) {
-				LOGGER.warn("no heartbeat heard from server in " + ms + "ms.  restarting replication.");
-				replicator.stop(5, TimeUnit.SECONDS);
-				replicator.start();
-			}
-		}
-		*/
 	}
 
 	public void startReplicator() throws Exception {
@@ -203,9 +197,10 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 				case EXT_WRITE_ROWS:
 				case EXT_UPDATE_ROWS:
 				case EXT_DELETE_ROWS:
+
 					Table table = tableCache.getTable(event.getTableID());
 					if ( filter == null || filter.matches(table.getDatabase(), table.getName()) ) {
-						for ( RowMap r : event.jsonMaps(table, filter) )
+						for ( RowMap r : event.jsonMaps(table) )
 							buffer.add(r);
 					}
 
@@ -347,7 +342,6 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 				case TABLE_MAP:
 					TableMapEventData data = event.tableMapData();
 					tableCache.processEvent(getSchema(), this.filter, data.getTableId(), data.getDatabase(), data.getTable());
-					// setReplicatorPosition((AbstractBinlogEventV4) v4Event);
 					break;
 				case QUERY:
 					QueryEventData qe = event.queryData();
@@ -358,19 +352,16 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 						rowBuffer.setThreadId(qe.getThreadId());
 					} else {
 						processQueryEvent(event);
-						//setReplicatorPosition((AbstractBinlogEventV4) v4Event);
 					}
 					break;
 				case ROTATE:
 					if ( stopOnEOF ) {
 						this.client.disconnect();
-						// setReplicatorPosition((AbstractBinlogEventV4) v4Event);
 						this.hitEOF = true;
 						return null;
 					}
 					break;
 				default:
-					// setReplicatorPosition((AbstractBinlogEventV4) v4Event);
 					break;
 			}
 
