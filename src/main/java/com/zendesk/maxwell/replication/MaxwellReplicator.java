@@ -28,7 +28,7 @@ import com.zendesk.maxwell.producer.AbstractProducer;
 
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 
-public class MaxwellReplicator extends RunLoopProcess {
+public class MaxwellReplicator extends RunLoopProcess implements Replicator {
 	private final long MAX_TX_ELEMENTS = 10000;
 	protected SchemaStore schemaStore;
 

@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.bootstrap;
 
 import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.replication.MaxwellReplicator;
+import com.zendesk.maxwell.replication.Replicator;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import org.slf4j.Logger;
@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 public class NoOpBootstrapper extends AbstractBootstrapper {
 
-	static final Logger LOGGER = LoggerFactory.getLogger( MaxwellReplicator.class );
+	static final Logger LOGGER = LoggerFactory.getLogger( NoOpBootstrapper.class );
 
 	public NoOpBootstrapper(MaxwellContext context) { super( context ); }
 
@@ -19,13 +19,13 @@ public class NoOpBootstrapper extends AbstractBootstrapper {
 	}
 
 	@Override
-	public void startBootstrap(RowMap startBootstrapRow, AbstractProducer producer, MaxwellReplicator replicator) throws Exception {}
+	public void startBootstrap(RowMap startBootstrapRow, AbstractProducer producer, Replicator replicator) throws Exception {}
 
 	@Override
-	public void completeBootstrap(RowMap completeBootstrapRow, AbstractProducer producer, MaxwellReplicator replicator) throws Exception {}
+	public void completeBootstrap(RowMap completeBootstrapRow, AbstractProducer producer, Replicator replicator) throws Exception {}
 
 	@Override
-	public void resume(AbstractProducer producer, MaxwellReplicator replicator) throws Exception {}
+	public void resume(AbstractProducer producer, Replicator replicator) throws Exception {}
 
 	@Override
 	public boolean isRunning( ) {
@@ -33,6 +33,6 @@ public class NoOpBootstrapper extends AbstractBootstrapper {
 	}
 
 	@Override
-	public void work(RowMap row, AbstractProducer producer, MaxwellReplicator replicator) throws Exception {}
+	public void work(RowMap row, AbstractProducer producer, Replicator replicator) throws Exception {}
 
 }
