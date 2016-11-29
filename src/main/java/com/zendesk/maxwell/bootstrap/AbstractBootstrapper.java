@@ -2,7 +2,6 @@ package com.zendesk.maxwell.bootstrap;
 
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.replication.Replicator;
-import com.zendesk.maxwell.replication.Replicator;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.producer.AbstractProducer;
 

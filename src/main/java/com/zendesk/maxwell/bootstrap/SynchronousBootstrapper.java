@@ -18,8 +18,7 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 public class SynchronousBootstrapper extends AbstractBootstrapper {
-
-	static final Logger LOGGER = LoggerFactory.getLogger(Replicator.class);
+	static final Logger LOGGER = LoggerFactory.getLogger(SynchronousBootstrapper.class);
 	private static final long INSERTED_ROWS_UPDATE_PERIOD_MILLIS = 250;
 
 	private long lastInsertedRowsUpdateTimeMillis = 0;
