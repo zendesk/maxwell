@@ -1,5 +1,6 @@
 all: compile
 
+
 MAXWELL_VERSION ?=$(shell build/current_rev)
 
 # If KAFKA_VERSION is provided, replace pom version with it
