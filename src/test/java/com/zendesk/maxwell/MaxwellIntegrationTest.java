@@ -198,9 +198,9 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		outputConfig.excludeColumns.add(Pattern.compile("id"));
 
 		list = getRowsForSQL(filter, insertSQL, createDBs);
-		json = list.get(1).toJSON();
+		json = list.get(1).toJSON(outputConfig);
 
-		assertFalse(Pattern.compile("\"id\":1").matcher(json).find());
+		assertFalse(Pattern.compile("\"id\":\\d+").matcher(json).find());
 		assertTrue(Pattern.compile("\"account_id\":2").matcher(json).find());
 	}
 
