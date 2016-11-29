@@ -19,16 +19,13 @@ public class MaxwellFilter {
 	private final ArrayList<Pattern> blacklistDatabases = new ArrayList<>();
 	private final ArrayList<Pattern> blacklistTables = new ArrayList<>();
 
-	private final ArrayList<Pattern> excludeColumns = new ArrayList<>();
-
 	public MaxwellFilter() { }
 	public MaxwellFilter(String includeDatabases,
 						 String excludeDatabases,
 						 String includeTables,
 						 String excludeTables,
 						 String blacklistDatabases,
-						 String blacklistTables,
-						 String excludeColumns) throws MaxwellInvalidFilterException {
+						 String blacklistTables) throws MaxwellInvalidFilterException {
 		if ( includeDatabases != null ) {
 			for (String s : includeDatabases.split(","))
 				includeDatabase(s);
@@ -58,11 +55,6 @@ public class MaxwellFilter {
 			for ( String s : blacklistTables.split(",") )
 				blacklistTable(s);
 		}
-
-		if ( excludeColumns != null ) {
-			for (String s : excludeColumns.split(","))
-				excludeColumns(s);
-		}
 	}
 
 	public void includeDatabase(String name) throws MaxwellInvalidFilterException {
@@ -85,10 +77,6 @@ public class MaxwellFilter {
 		blacklistDatabases.add(compile(name));
 	}
 
-	public void excludeColumns(String name) throws MaxwellInvalidFilterException {
-		excludeColumns.add(compile(name));
-	}
-
 	public void blacklistTable(String name) throws MaxwellInvalidFilterException {
 		blacklistTables.add(compile(name));
 	}
@@ -102,16 +90,7 @@ public class MaxwellFilter {
 	}
 
 	private Pattern compile(String name) throws MaxwellInvalidFilterException {
-		name = name.trim();
-		if ( name.startsWith("/") ) {
-			if ( !name.endsWith("/") ) {
-				throw new MaxwellInvalidFilterException("Invalid regular expression: " + name);
-			}
-			return Pattern.compile(name.substring(1, name.length() - 1));
-		} else {
-			return Pattern.compile("^" + name + "$");
-		}
-
+		return MaxwellConfig.compileStringToPattern(name);
 	}
 
 	private boolean matchesIncludeExcludeList(List<Pattern> includeList, List<Pattern> excludeList, String name) {
@@ -154,13 +133,5 @@ public class MaxwellFilter {
 	public boolean isTableBlacklisted(String databaseName, String tableName) {
 		return isDatabaseBlacklisted(databaseName) ||
 			   ! matchesIncludeExcludeList(emptyList, blacklistTables, tableName);
-	}
-
-	public boolean hasExcludeColumns() {
-		return (excludeColumns.size() > 0);
-	}
-
-	public ArrayList<Pattern> getExcludeColumns() {
-		return excludeColumns;
 	}
 }

@@ -1,6 +1,7 @@
 package com.zendesk.maxwell;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
@@ -264,7 +265,6 @@ public class MaxwellConfig extends AbstractConfig {
 		this.excludeDatabases   = fetchOption("exclude_dbs", options, properties, null);
 		this.includeTables      = fetchOption("include_tables", options, properties, null);
 		this.excludeTables      = fetchOption("exclude_tables", options, properties, null);
-		this.excludeColumns     = fetchOption("exclude_columns", options, properties, null);
 		this.blacklistDatabases = fetchOption("blacklist_dbs", options, properties, null);
 		this.blacklistTables    = fetchOption("blacklist_tables", options, properties, null);
 
@@ -295,6 +295,17 @@ public class MaxwellConfig extends AbstractConfig {
 		outputConfig.includesServerId = fetchBooleanOption("output_server_id", options, properties, false);
 		outputConfig.includesThreadId = fetchBooleanOption("output_thread_id", options, properties, false);
 		outputConfig.outputDDL	= fetchBooleanOption("output_ddl", options, properties, false);
+		this.excludeColumns     = fetchOption("exclude_columns", options, properties, null);
+
+		if ( this.excludeColumns != null ) {
+			for ( String s : this.excludeColumns.split(",") ) {
+				try {
+					outputConfig.excludeColumns.add(compileStringToPattern(s));
+				} catch ( MaxwellInvalidFilterException e ) {
+					usage("invalid exclude_columns: '" + this.excludeColumns + "': " + e.getMessage());
+				}
+			}
+		}
 	}
 
 	private Properties parseFile(String filename, Boolean abortOnMissing) {
@@ -383,8 +394,7 @@ public class MaxwellConfig extends AbstractConfig {
 					includeTables,
 					excludeTables,
 					blacklistDatabases,
-					blacklistTables,
-					excludeColumns
+					blacklistTables
 			);
 		} catch (MaxwellInvalidFilterException e) {
 			usage("Invalid filter options: " + e.getLocalizedMessage());
@@ -393,5 +403,17 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public Properties getKafkaProperties() {
 		return this.kafkaProperties;
+	}
+
+	public static Pattern compileStringToPattern(String name) throws MaxwellInvalidFilterException {
+		name = name.trim();
+		if ( name.startsWith("/") ) {
+			if ( !name.endsWith("/") ) {
+				throw new MaxwellInvalidFilterException("Invalid regular expression: " + name);
+			}
+			return Pattern.compile(name.substring(1, name.length() - 1));
+		} else {
+			return Pattern.compile("^" + name + "$");
+		}
 	}
 }
