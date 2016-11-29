@@ -79,12 +79,6 @@ public class RowMap implements Serializable {
 		this.approximateSize = 100L; // more or less 100 bytes of overhead
 	}
 
-	public RowMap(String type, String database, String table, Long timestamp, List<String> pkColumns,
-				  BinlogPosition nextPosition, List<Pattern> excludeColumns) {
-		this(type, database, table, timestamp, pkColumns, nextPosition);
-		this.excludeColumns = excludeColumns;
-	}
-
 	public String pkToJson(KeyFormat keyFormat) throws IOException {
 		if ( keyFormat == KeyFormat.HASH )
 			return pkToJsonHash();
@@ -185,7 +179,6 @@ public class RowMap implements Serializable {
 
 	private void writeMapToJSON(String jsonMapName, LinkedHashMap<String, Object> data, boolean includeNullField) throws IOException {
 		JsonGenerator generator = jsonGeneratorThreadLocal.get();
-
 		generator.writeObjectFieldStart(jsonMapName); // start of jsonMapName: {
 
 		for ( String key: data.keySet() ) {
