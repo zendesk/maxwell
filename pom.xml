@@ -131,9 +131,9 @@
       <version>20160810</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.directory.studio</groupId>
-      <artifactId>org.apache.commons.io</artifactId>
-      <version>2.4</version>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.5</version>
     </dependency>
   </dependencies>
 
