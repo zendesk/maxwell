@@ -72,7 +72,7 @@ public abstract class AbstractRowsEvent extends AbstractRowEvent {
 		if ( filter == null )
 			return true;
 
-		return filter.matches(this);
+		return filter.matches(this.database, this.table.getName());
 	}
 
 	public abstract String getType();
@@ -93,26 +93,6 @@ public abstract class AbstractRowsEvent extends AbstractRowEvent {
 	public abstract List<Row> getRows();
 	public abstract String sqlOperationString();
 
-	private LinkedList<Row> filteredRows;
-	private boolean performedFilter = false;
-
-	protected List<Row> filteredRows() {
-		if ( this.filter == null )
-			return getRows();
-
-		if ( performedFilter )
-			return filteredRows;
-
-		filteredRows = new LinkedList<>();
-		for ( Row r : getRows()) {
-			if ( this.filter.matchesRow(this, r) )
-				filteredRows.add(r);
-		}
-		performedFilter = true;
-
-		return filteredRows;
-	}
-
 	private void appendColumnNames(StringBuilder sql)
 	{
 		sql.append(" (");
@@ -128,7 +108,7 @@ public abstract class AbstractRowsEvent extends AbstractRowEvent {
 
 	public String toSQL() {
 		StringBuilder sql = new StringBuilder();
-		List<Row> rows = filteredRows();
+		List<Row> rows = getRows();
 
 		if ( rows.isEmpty() )
 			return null;
@@ -180,28 +160,11 @@ public abstract class AbstractRowsEvent extends AbstractRowEvent {
 				this.getNextBinlogPosition());
 	}
 
-	protected RowMap buildRowMap(List<Pattern> excludeColumns) {
-		return new RowMap(
-				getType(),
-				this.database,
-				getTable().getName(),
-				getHeader().getTimestamp() / 1000,
-				table.getPKList(),
-				this.getNextBinlogPosition(),
-				excludeColumns);
-	}
-
 	public List<RowMap> jsonMaps() {
 		ArrayList<RowMap> list = new ArrayList<>();
 
-		for ( Iterator<Row> ri = filteredRows().iterator() ; ri.hasNext(); ) {
-			Row r = ri.next();
-
-			RowMap rowMap;
-			if (this.filter != null && this.filter.hasExcludeColumns())
-				rowMap = buildRowMap(this.filter.getExcludeColumns());
-			else
-				rowMap = buildRowMap();
+		for ( Row r : getRows() ) {
+			RowMap rowMap = buildRowMap();
 
 			for ( ColumnWithDefinition cd : new ColumnWithDefinitionList(table, r, getUsedColumns()) )
 				rowMap.putData(cd.definition.getName(), cd.asJSON());

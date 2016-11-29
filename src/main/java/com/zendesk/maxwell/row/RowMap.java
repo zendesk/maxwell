@@ -37,7 +37,6 @@ public class RowMap implements Serializable {
 	private final LinkedHashMap<String, Object> data;
 	private final LinkedHashMap<String, Object> oldData;
 	private final List<String> pkColumns;
-	private List<Pattern> excludeColumns;
 
 	private static final JsonFactory jsonFactory = new JsonFactory();
 
@@ -245,13 +244,13 @@ public class RowMap implements Serializable {
 			g.writeNumberField("thread_id", this.threadId);
 		}
 
-		if ( this.excludeColumns != null ) {
+		if ( outputConfig.excludeColumns.size() > 0 ) {
 			// NOTE: to avoid concurrent modification.
-			Set<String> keys = new HashSet<String>();
+			Set<String> keys = new HashSet<>();
 			keys.addAll(this.data.keySet());
 			keys.addAll(this.oldData.keySet());
 
-			for ( Pattern p : this.excludeColumns ) {
+			for ( Pattern p : outputConfig.excludeColumns ) {
 				for ( String key : keys ) {
 					if ( p.matcher(key).matches() ) {
 						this.data.remove(key);

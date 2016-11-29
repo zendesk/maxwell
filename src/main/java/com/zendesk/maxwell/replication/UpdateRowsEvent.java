@@ -55,38 +55,14 @@ public class UpdateRowsEvent extends AbstractRowsEvent {
 		return "update";
 	}
 
-	private LinkedList<Pair<Row>> filteredRowsBeforeAndAfter;
-	private boolean performedBeforeAndAfterFilter;
-
-	private List<Pair<Row>> filteredRowsBeforeAndAfter() {
-		if ( this.filter == null)
-			return event.getRows();
-
-		if ( performedBeforeAndAfterFilter )
-			return filteredRowsBeforeAndAfter;
-
-		filteredRowsBeforeAndAfter = new LinkedList<>();
-		for ( Pair<Row> p : event.getRows()) {
-			if ( this.filter.matchesRow(this, p.getAfter()) )
-				filteredRowsBeforeAndAfter.add(p);
-		}
-		performedBeforeAndAfterFilter = true;
-		return filteredRowsBeforeAndAfter;
-	}
-
 	@Override
 	public List<RowMap> jsonMaps() {
 		ArrayList<RowMap> list = new ArrayList<>();
-		for (Pair<Row> p : filteredRowsBeforeAndAfter() ) {
+		for (Pair<Row> p : event.getRows() ) {
 			Row after = p.getAfter();
 			Row before = p.getBefore();
 
-			RowMap rowMap;
-
-			if(this.filter != null && this.filter.hasExcludeColumns())
-				rowMap = buildRowMap(this.filter.getExcludeColumns());
-			else
-				rowMap = buildRowMap();
+			RowMap rowMap = buildRowMap();
 
 			for ( ColumnWithDefinition cd : new ColumnWithDefinitionList(table, after, event.getUsedColumnsAfter())) {
 				rowMap.putData(cd.definition.getName(), cd.asJSON());
