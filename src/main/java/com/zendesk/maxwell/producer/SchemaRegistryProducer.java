@@ -131,14 +131,33 @@ public class SchemaRegistryProducer extends AbstractKafkaProducer {
         for (String dataKey : rowMap.getDataKeys()) {
             Object data = rowMap.getData(dataKey);
             // TODO: what other types need dealing with?
-            if (data != null && ((Schema.Field) schema.getField(dataKey)).schema().getType().getName().equals("double")) {
+            // TODO: all avro types.... logical and otherwise.
+            // logical types:
+            // decimal
+            // date
+            // time milli/micro
+            // timestamp milli/micro
+            // duration... wtf?
+            if (data == null) {
+                record.put(dataKey, null);
+            } else if (((Schema.Field) schema.getField(dataKey)).schema().getType().getName().equals("double")) {
                 record.put(dataKey, Double.parseDouble(data.toString()));
-            } else if (data != null && ((Schema.Field) schema.getField(dataKey)).schema().getType().getName().equals("float")) {
+            } else if (((Schema.Field) schema.getField(dataKey)).schema().getType().getName().equals("float")) {
                 record.put(dataKey, Float.parseFloat(data.toString()));
-            } else if (data != null && ((Schema.Field) schema.getField(dataKey)).schema().getType().getName().equals("long")) {
+            } else if (((Schema.Field) schema.getField(dataKey)).schema().getType().getName().equals("long")) {
                 record.put(dataKey, Long.parseLong(data.toString()));
+            } else if (((Schema.Field) schema.getField(dataKey)).schema().getType().getName().equals("string")) {
+                record.put(dataKey, data.toString());
+            } else if (((Schema.Field) schema.getField(dataKey)).schema().getType().getName().equals("int")) {
+                record.put(dataKey, Integer.parseInt(data.toString()));
+            } else if (((Schema.Field) schema.getField(dataKey)).schema().getType().getName().equals("boolean")) {
+                record.put(dataKey, Boolean.parseBoolean(data.toString()));
+            } else if (((Schema.Field) schema.getField(dataKey)).schema().getType().getName().equals("bytes")) {
+                // TODO:
+                record.put(dataKey, java.nio.ByteBuffer.wrap(data.toString().getBytes()));
             } else {
-                record.put(dataKey, data);
+                throw new RuntimeException("Unknown mapping for avro type "
+                        + ((Schema.Field) schema.getField(dataKey)).schema().getType().getName().toString());
             }
         }
         return record;
