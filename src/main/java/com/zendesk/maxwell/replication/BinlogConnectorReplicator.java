@@ -27,12 +27,11 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-public class BinlogConnectorReplicator extends RunLoopProcess implements Replicator {
+public class BinlogConnectorReplicator extends AbstractReplicator implements Replicator {
 	private final long MAX_TX_ELEMENTS = 10000;
 	protected SchemaStore schemaStore;
 
 	private MaxwellFilter filter;
-	private Long lastHeartbeatRead;
 
 	private final LinkedBlockingDeque<BinlogConnectorEvent> queue = new LinkedBlockingDeque<>(20);
 
@@ -44,7 +43,6 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	protected final AbstractProducer producer;
 	protected final AbstractBootstrapper bootstrapper;
 	private final String maxwellSchemaDatabaseName;
-	private final String clientID;
 
 	private final BinaryLogClient client;
 
@@ -65,6 +63,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		boolean stopOnEOF,
 		String clientID
 	) {
+		super(clientID);
 		this.schemaStore = schemaStore;
 
 		this.client = new BinaryLogClient(mysqlConfig.host, mysqlConfig.port, mysqlConfig.user, mysqlConfig.password);
@@ -94,7 +93,6 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		this.positionStoreThread = positionStoreThread;
 		this.maxwellSchemaDatabaseName = maxwellSchemaDatabaseName;
 		this.setBinlogPosition(start);
-		this.clientID = clientID;
 	}
 
 	public BinlogConnectorReplicator(SchemaStore schemaStore, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, BinlogPosition start) throws SQLException {
@@ -157,6 +155,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	@Override
 	protected void beforeStop() throws Exception {
 		this.binlogEventListener.stop();
+		this.client.disconnect();
 	}
 
 	protected boolean isMaxwellRow(RowMap row) {
@@ -197,9 +196,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 				case EXT_WRITE_ROWS:
 				case EXT_UPDATE_ROWS:
 				case EXT_DELETE_ROWS:
-
 					Table table = tableCache.getTable(event.getTableID());
-					if ( filter == null || filter.matches(table.getDatabase(), table.getName()) ) {
+					if ( table != null && (filter == null || filter.matches(table.getDatabase(), table.getName())) ) {
 						for ( RowMap r : event.jsonMaps(table) )
 							buffer.add(r);
 					}
@@ -241,47 +239,6 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					return buffer;
 			}
 		}
-	}
-
-	/**
-	 * Get the last heartbeat that the replicator has processed.
-	 *
-	 * We pass along the value of the heartbeat to the producer inside the row map.
-	 * @return the millisecond value ot fhte last heartbeat
-	 */
-
-	public Long getLastHeartbeatRead() {
-		return lastHeartbeatRead;
-	}
-
-
-	/**
-	 * Possibly convert a RowMap object into a HeartbeatRowMap
-	 *
-	 * Process a rowmap that represents a write to `maxwell`.`positions`.
-	 * If it's a write for a different client_id, or it's not a heartbeat,
-	 * we return just the RowMap.  Otherwise, we transform it into a HeartbeatRowMap
-	 * and set lastHeartbeatRead.
-	 *
-	 * @return either a RowMap or a HeartbeatRowMap
-	 */
-	private RowMap processHeartbeats(RowMap row) throws SQLException {
-		String hbClientID = (String) row.getData("client_id");
-		if ( !Objects.equals(hbClientID, this.clientID) )
-			return row;
-
-		Object heartbeat_at = row.getData("heartbeat_at");
-		Object old_heartbeat_at = row.getOldData("heartbeat_at"); // make sure it's a heartbeat update, not a position set.
-
-		if ( heartbeat_at != null && old_heartbeat_at != null ) {
-			Long thisHeartbeat = (Long) heartbeat_at;
-			if ( !thisHeartbeat.equals(lastHeartbeatRead) ) {
-				this.lastHeartbeatRead = thisHeartbeat;
-
-				return HeartbeatRowMap.valueOf(row.getDatabase(), row.getPosition(), thisHeartbeat);
-			}
-		}
-		return row;
 	}
 
 	private RowMapBuffer rowBuffer;

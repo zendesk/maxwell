@@ -48,6 +48,8 @@ public class MaxwellConfig extends AbstractConfig {
 	public boolean replayMode;
 	public boolean masterRecovery;
 
+	public static boolean ShykoMode = true;
+
 	public MaxwellConfig() { // argv is only null in tests
 		this.kafkaProperties = new Properties();
 		this.replayMode = false;

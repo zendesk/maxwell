@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 public abstract class ColumnDefWithLength extends ColumnDef {
+	public static boolean BinlogConnectorMode = true;
 	protected Long columnLength;
 
 	protected static ThreadLocal<StringBuilder> threadLocalBuilder = new ThreadLocal<StringBuilder>() {

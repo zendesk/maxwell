@@ -141,7 +141,6 @@ public class BinlogConnectorEvent {
 	public List<RowMap> jsonMaps(Table table) {
 		ArrayList<RowMap> list = new ArrayList<>();
 
-
 		switch ( getType() ) {
 			case WRITE_ROWS:
 			case EXT_WRITE_ROWS:
