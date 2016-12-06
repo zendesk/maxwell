@@ -222,8 +222,9 @@ public class Table {
 	}
 
 	public void removeColumn(int idx) {
-		ColumnDef removed = columns.remove(idx);
-		removePKColumn(removed.getName());
+		ColumnDef toRemove = columns.get(idx);
+		removePKColumn(toRemove.getName());
+		columns.remove(idx);
 	}
 
 	public void changeColumn(int idx, ColumnPosition position, ColumnDef definition) throws InvalidSchemaError {
