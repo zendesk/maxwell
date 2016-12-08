@@ -3,6 +3,7 @@ package com.zendesk.maxwell.recovery;
 import com.zendesk.maxwell.*;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.MaxwellReplicator;
+import com.zendesk.maxwell.replication.Replicator;
 import com.zendesk.maxwell.row.RowMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +55,7 @@ public class Recovery {
 
 			LOGGER.debug("scanning binlog: " + position);
 
-			MaxwellReplicator replicator = new MaxwellReplicator(
+			Replicator replicator = new MaxwellReplicator(
 				this.schemaStore,
 				null,
 				null,
@@ -85,7 +86,7 @@ public class Recovery {
 	 * try to find a given heartbeat value from the replicator.
 	 * @return A BinlogPosition where the heartbeat was found, or null if none was found.
 	 */
-	private BinlogPosition findHeartbeat(MaxwellReplicator r) throws Exception {
+	private BinlogPosition findHeartbeat(Replicator r) throws Exception {
 		r.startReplicator();
 		for (RowMap row = r.getRow(); row != null ; row = r.getRow()) {
 			if (Objects.equals(r.getLastHeartbeatRead(), recoveryInfo.heartbeat))

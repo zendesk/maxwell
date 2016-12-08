@@ -3,8 +3,10 @@ package com.zendesk.maxwell.schema.columndef;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 import com.google.code.or.common.util.MySQLConstants;
+import com.zendesk.maxwell.MaxwellConfig;
 
 public class DateTimeColumnDef extends ColumnDefWithLength {
 	public DateTimeColumnDef(String name, String type, int pos, Long columnLength) {
@@ -16,6 +18,7 @@ public class DateTimeColumnDef extends ColumnDefWithLength {
 	private static SimpleDateFormat getDateTimeFormatter() {
 		if ( dateTimeFormatter == null ) {
 			dateTimeFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			dateTimeFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 		}
 		return dateTimeFormatter;
 	}
@@ -34,7 +37,14 @@ public class DateTimeColumnDef extends ColumnDefWithLength {
 	protected String formatValue(Object value) {
 		/* protect against multithreaded access of static dateTimeFormatter */
 		synchronized ( DateTimeColumnDef.class ) {
-			if ( value instanceof Long && getType().equals("datetime") ) {
+			if ( MaxwellConfig.ShykoMode && value instanceof Long ) {
+				Long longVal = (Long) value;
+				Timestamp ts = new Timestamp(longVal);
+				String dateString = getDateTimeFormatter().format(ts);
+
+				return objectWithPrecisionToString(dateString, ts, columnLength);
+
+			} else if ( value instanceof Long && getType().equals("datetime") ) {
 				return formatLong(( Long ) value);
 
 			} else if ( value instanceof Timestamp ) {

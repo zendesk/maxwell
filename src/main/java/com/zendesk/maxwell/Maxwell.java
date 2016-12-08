@@ -4,10 +4,12 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.TimeoutException;
 import com.djdch.log4j.StaticShutdownCallbackRegistry;
+import com.zendesk.maxwell.replication.BinlogConnectorReplicator;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.MaxwellReplicator;
 import com.zendesk.maxwell.recovery.Recovery;
 import com.zendesk.maxwell.recovery.RecoveryInfo;
+import com.zendesk.maxwell.replication.Replicator;
 import com.zendesk.maxwell.schema.MysqlPositionStore;
 import com.zendesk.maxwell.util.Logging;
 import org.slf4j.Logger;
@@ -21,7 +23,7 @@ import com.zendesk.maxwell.schema.SchemaStoreSchema;
 public class Maxwell implements Runnable {
 	protected MaxwellConfig config;
 	protected MaxwellContext context;
-	protected MaxwellReplicator replicator;
+	protected Replicator replicator;
 
 	static final Logger LOGGER = LoggerFactory.getLogger(Maxwell.class);
 
@@ -156,7 +158,9 @@ public class Maxwell implements Runnable {
 
 		MysqlSchemaStore mysqlSchemaStore = new MysqlSchemaStore(this.context, initPosition);
 		mysqlSchemaStore.getSchema(); // trigger schema to load / capture before we start the replicator.
-		this.replicator = new MaxwellReplicator(mysqlSchemaStore, producer, bootstrapper, this.context, initPosition);
+
+	//	this.replicator = new MaxwellReplicator(mysqlSchemaStore, producer, bootstrapper, this.context, initPosition);
+		this.replicator = new BinlogConnectorReplicator(mysqlSchemaStore, producer, bootstrapper, this.context, initPosition);
 
 		bootstrapper.resume(producer, replicator);
 
