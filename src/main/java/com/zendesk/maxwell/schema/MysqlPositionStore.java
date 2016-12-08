@@ -164,4 +164,18 @@ public class MysqlPositionStore {
 		}
 		return info;
 	}
+
+	public int delete(Long serverID, String clientID, BinlogPosition position) throws SQLException {
+		try ( Connection c = connectionPool.getConnection()) {
+			PreparedStatement s = c.prepareStatement(
+				"DELETE from `positions` where server_id = ? and client_id = ? and binlog_file = ? and binlog_position = ?"
+			);
+			s.setLong(1, serverID);
+			s.setString(2, clientID);
+			s.setString(3, position.getFile());
+			s.setLong(4, position.getOffset());
+			s.execute();
+			return s.getUpdateCount();
+		}
+	}
 }

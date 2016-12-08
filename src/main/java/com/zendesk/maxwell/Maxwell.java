@@ -10,6 +10,7 @@ import com.zendesk.maxwell.replication.MaxwellReplicator;
 import com.zendesk.maxwell.recovery.Recovery;
 import com.zendesk.maxwell.recovery.RecoveryInfo;
 import com.zendesk.maxwell.replication.Replicator;
+import com.zendesk.maxwell.schema.MysqlPositionStore;
 import com.zendesk.maxwell.util.Logging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +64,8 @@ public class Maxwell implements Runnable {
 
 	private BinlogPosition attemptMasterRecovery() throws Exception {
 		BinlogPosition recovered = null;
-		RecoveryInfo recoveryInfo = this.context.getRecoveryInfo();
+		MysqlPositionStore positionStore = this.context.getPositionStore();
+		RecoveryInfo recoveryInfo = positionStore.getRecoveryInfo();
 
 		if ( recoveryInfo != null ) {
 			Recovery masterRecovery = new Recovery(
@@ -90,6 +92,8 @@ public class Maxwell implements Runnable {
 				);
 
 				oldServerSchemaStore.clone(context.getServerID(), recovered);
+
+				positionStore.delete(recoveryInfo.serverID, recoveryInfo.clientID, recoveryInfo.position);
 			}
 		}
 		return recovered;
