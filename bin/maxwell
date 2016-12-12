@@ -6,13 +6,14 @@ args="$@"
 
 # Which version of kafka-clients will be loaded, based on the --kafka_version
 # flag. If none is specified default to 0.9.0
-# valid options are 0.8.2, 0.9.0, 0.10.0
+# valid options are 0.8, 0.9, 0.10, 0.10.1
 
 KAFKA_VERSION=0.9
 
 KAFKA_08="0.8.2.2"
 KAFKA_09="0.9.0.1"
 KAFKA_10="0.10.0.1"
+KAFKA_1010="0.10.1.0"
 
 WANTED_VERSION=""
 
@@ -41,6 +42,9 @@ case $KAFKA_VERSION in
 	;;
 	0.10)
 	WANTED_VERSION=$KAFKA_10
+	;;
+	0.10.1)
+	WANTED_VERSION=$KAFKA_1010
 	;;
 esac
 
