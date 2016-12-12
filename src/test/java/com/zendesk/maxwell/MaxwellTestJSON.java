@@ -33,9 +33,9 @@ public class MaxwellTestJSON {
 		}
 
 		if ( missing.size() > 0 ) {
-			String msg = "Did not find: \n" +
+			String msg = "Did not find:\n" +
 					StringUtils.join(missing.iterator(), "\n") +
-					"\n\n in : " +
+					"\n\n in:\n" +
 					StringUtils.join(jsonOutput.iterator(), "\n");
 			assertThat(msg, false, is(true));
 		}
