@@ -1,5 +1,6 @@
 all: compile
 
+
 MAXWELL_VERSION ?=$(shell build/current_rev)
 
 # If KAFKA_VERSION is provided, replace pom version with it
@@ -40,7 +41,7 @@ JAVA_DEPENDS = $(shell build/maven_fetcher -p -o target/dependency $(LOCK_KAFKA_
 
 target/.java: $(ANTLR_OUTPUT) $(JAVA_SOURCE)
 	@mkdir -p target/classes
-	# Fetch jar so we can run it locally (bin/maxwell)
+	@# Fetch jar so we can run it locally (bin/maxwell)
 	build/maven_fetcher -f org.apache.kafka/kafka-clients/$(ADDITIONAL_PACKAGED_KAFKA_08) --skip-dependencies -o target/dependency >/dev/null
 	build/maven_fetcher -f org.apache.kafka/kafka-clients/$(ADDITIONAL_PACKAGED_KAFKA_010) --skip-dependencies -o target/dependency >/dev/null
 	build/maven_fetcher -f org.apache.kafka/kafka-clients/$(ADDITIONAL_PACKAGED_KAFKA_01010) --skip-dependencies -o target/dependency >/dev/null

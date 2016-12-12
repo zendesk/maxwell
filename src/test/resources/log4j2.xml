@@ -2,7 +2,7 @@
 <Configuration status="WARN">
   <Appenders>
     <File name="TestLog" fileName="test.log">
-      <PatternLayout pattern="%-5level %logger{1} - %msg%n"/>
+      <PatternLayout pattern="%d{HH:mm:ss,SSS} %-5level %logger{1} - %msg%n"/>
     </File>
   </Appenders>
   <Loggers>
@@ -13,6 +13,9 @@
       <AppenderRef ref="TestLog"/>
     </Logger>
     <Logger name="snaq.db.ConnectionPool.ReplicationConnectionPool" level="off" additivity="false">
+      <AppenderRef ref="TestLog"/>
+    </Logger>
+    <Logger name="snaq.db.ConnectionPool.RawMaxwellConnectionPool" level="off" additivity="false">
       <AppenderRef ref="TestLog"/>
     </Logger>
   </Loggers>
