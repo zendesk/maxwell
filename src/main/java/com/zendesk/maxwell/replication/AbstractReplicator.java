@@ -26,7 +26,6 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	protected final AbstractProducer producer;
 	protected final AbstractBootstrapper bootstrapper;
 	protected final String maxwellSchemaDatabaseName;
-	// private final boolean shouldHeartbeat;
 	protected final TableCache tableCache = new TableCache();
 	protected Long lastHeartbeatRead;
 
