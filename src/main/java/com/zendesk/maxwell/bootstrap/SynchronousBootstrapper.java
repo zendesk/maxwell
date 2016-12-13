@@ -182,9 +182,9 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		Statement statement = createBatchStatement(connection);
 		String pk = schema.findDatabase(databaseName).findTable(tableName).getPKString();
 		if ( pk != null && !pk.equals("") ) {
-			return statement.executeQuery(String.format("select * from %s.%s order by %s", databaseName, tableName, pk));
+			return statement.executeQuery(String.format("select * from %s.%s LIMIT 1000000000 OFFSET 415000000 order by %s", databaseName, tableName, pk));
 		} else {
-			return statement.executeQuery(String.format("select * from %s.%s", databaseName, tableName));
+			return statement.executeQuery(String.format("select * from %s.%s LIMIT 1000000000 OFFSET 415000000", databaseName, tableName));
 		}
 	}
 
