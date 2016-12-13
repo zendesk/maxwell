@@ -358,20 +358,11 @@ public class MaxwellReplicator extends RunLoopProcess implements Replicator {
 	private RowMap processHeartbeats(RowMap row) throws SQLException {
 		String hbClientID = (String) row.getData("client_id");
 		if ( !Objects.equals(hbClientID, this.clientID) )
-			return row;
+			return row; // plain row -- do not process.
 
-		Object heartbeat_at = row.getData("heartbeat_at");
-		Object old_heartbeat_at = row.getOldData("heartbeat_at"); // make sure it's a heartbeat update, not a position set.
-
-		if ( heartbeat_at != null && old_heartbeat_at != null ) {
-			Long thisHeartbeat = (Long) heartbeat_at;
-			if ( !thisHeartbeat.equals(lastHeartbeatRead) ) {
-				this.lastHeartbeatRead = thisHeartbeat;
-
-				return HeartbeatRowMap.valueOf(row.getDatabase(), row.getPosition(), thisHeartbeat);
-			}
-		}
-		return row;
+		this.lastHeartbeatRead = (Long) row.getData("heartbeat");
+		LOGGER.debug("replicator picked up heartbeat: " + this.lastHeartbeatRead);
+		return HeartbeatRowMap.valueOf(row.getDatabase(), row.getPosition(), this.lastHeartbeatRead);
 	}
 
 	private RowMapBuffer rowBuffer;
@@ -397,7 +388,7 @@ public class MaxwellReplicator extends RunLoopProcess implements Replicator {
 			if (rowBuffer != null && !rowBuffer.isEmpty()) {
 				RowMap row = rowBuffer.removeFirst();
 
-				if ( row != null && isMaxwellRow(row) && row.getTable().equals("positions") )
+				if ( row != null && isMaxwellRow(row) && row.getTable().equals("heartbeats") )
 					return processHeartbeats(row);
 				else
 					return row;
