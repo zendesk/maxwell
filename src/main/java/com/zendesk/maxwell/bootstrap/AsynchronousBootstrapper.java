@@ -61,6 +61,10 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 
 	@Override
 	public void startBootstrap(final RowMap bootstrapStartRow, final AbstractProducer producer, final MaxwellReplicator replicator) throws Exception {
+		if (bootstrapStartRow.getDatabase().equals("vc_cineplexca")) {
+			LOGGER.warn("Skipping vc_cineplexca bootstrap...");
+			return;
+		}
 		if (thread == null) {
 			bootstrappedRow = bootstrapStartRow;
 			thread = new Thread(new Runnable() {
