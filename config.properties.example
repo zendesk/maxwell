@@ -125,6 +125,9 @@ kafka.metadata.fetch.timeout.ms=5000
 kafka.retries=0
 kafka.acks=1
 
+######### kinesis ####################
+kinesis_stream=maxwell
+
 ######### filter stuff ###############
 
 # filter rows out of Maxwell's output.

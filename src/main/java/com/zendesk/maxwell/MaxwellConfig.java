@@ -38,6 +38,8 @@ public class MaxwellConfig extends AbstractConfig {
 	public String bootstrapperType;
 	public int bufferedProducerSize;
 
+	public String kinesisStream;
+
 	public String outputFile;
 	public MaxwellOutputConfig outputConfig;
 	public String log_level;
@@ -89,7 +91,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_3" );
 
-		parser.accepts( "producer", "producer type: stdout|file|kafka" ).withRequiredArg();
+		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis" ).withRequiredArg();
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
 		parser.accepts( "kafka_partition_by", "database|table|primary_key|column, kafka producer assigns partition by hashing the specified parameter").withRequiredArg();
@@ -100,6 +102,8 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
 		parser.accepts( "kafka_key_format", "how to format the kafka key; array|hash").withOptionalArg();
 		parser.accepts( "kafka_version", "switch to kafka 0.8, 0.10 or 0.10.1 producer (from 0.9)");
+
+		parser.accepts( "kinesis_stream", "optionally provide kinesis stream name").withOptionalArg();
 
 		parser.accepts( "__separator_4" );
 
@@ -263,6 +267,8 @@ public class MaxwellConfig extends AbstractConfig {
 			}
 		}
 
+		this.kinesisStream   = fetchOption("kinesis_stream", options, properties, null);
+
 		this.outputFile         = fetchOption("output_file", options, properties, null);
 
 		this.includeDatabases   = fetchOption("include_dbs", options, properties, null);
@@ -353,6 +359,8 @@ public class MaxwellConfig extends AbstractConfig {
 		} else if ( this.producerType.equals("file")
 				&& this.outputFile == null) {
 			usageForOptions("please specify --output_file=FILE to use the file producer", "--producer", "--output_file");
+		} else if ( this.producerType.equals("kinesis") && this.kinesisStream == null) {
+			usageForOptions("please specify a stream name for kinesis", "kinesis_stream");
 		}
 
 		if ( !this.bootstrapperType.equals("async")
