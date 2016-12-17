@@ -47,7 +47,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	 *
 	 * @return either a RowMap or a HeartbeatRowMap
 	 */
-	private RowMap processHeartbeats(RowMap row) throws SQLException {
+	protected RowMap processHeartbeats(RowMap row) throws SQLException {
 		String hbClientID = (String) row.getData("client_id");
 		if ( !Objects.equals(hbClientID, this.clientID) )
 			return row; // plain row -- do not process.
