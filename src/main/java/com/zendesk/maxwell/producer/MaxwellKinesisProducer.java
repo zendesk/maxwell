@@ -116,13 +116,13 @@ public class MaxwellKinesisProducer extends AbstractProducer {
 			inflightMessages.addMessage(r.getPosition());
 		}
 
+		ByteBuffer encodedValue = ByteBuffer.wrap(value.getBytes("UTF-8"));
+		ListenableFuture<UserRecordResult> future = kinesisProducer.addUserRecord(kinesisStream, key, encodedValue);
+
 		// release the reference to ease memory pressure
 		if(!KinesisCallback.logger.isDebugEnabled()) {
 			value = null;
 		}
-
-		ByteBuffer encodedValue = ByteBuffer.wrap(value.getBytes("UTF-8"));
-		ListenableFuture<UserRecordResult> future = kinesisProducer.addUserRecord(kinesisStream, key, encodedValue);
 
 		KinesisCallback callback = new KinesisCallback(inflightMessages, r.getPosition(), r.isTXCommit(), context, key, value);
 
