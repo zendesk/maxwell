@@ -13,6 +13,7 @@ import com.zendesk.maxwell.row.RowMap;
 
 import com.amazonaws.services.kinesis.producer.Attempt;
 import com.amazonaws.services.kinesis.producer.KinesisProducer;
+import com.amazonaws.services.kinesis.producer.KinesisProducerConfiguration;
 import com.amazonaws.services.kinesis.producer.UserRecordFailedException;
 import com.amazonaws.services.kinesis.producer.UserRecordResult;
 
@@ -91,7 +92,8 @@ public class MaxwellKinesisProducer extends AbstractProducer {
 
 		this.kinesisStream = kinesisStream;
 
-		this.kinesisProducer = new KinesisProducer();
+		KinesisProducerConfiguration config = KinesisProducerConfiguration.fromPropertiesFile("kinesis-producer-library.properties");
+		this.kinesisProducer = new KinesisProducer(config);
 	}
 
 	@Override
