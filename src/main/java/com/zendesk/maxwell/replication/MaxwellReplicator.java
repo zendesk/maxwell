@@ -28,24 +28,18 @@ import com.zendesk.maxwell.producer.AbstractProducer;
 
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 
-public class MaxwellReplicator extends RunLoopProcess implements Replicator {
+public class MaxwellReplicator extends AbstractReplicator implements Replicator {
 	private final long MAX_TX_ELEMENTS = 10000;
 	protected SchemaStore schemaStore;
 
 	private MaxwellFilter filter;
-	private Long lastHeartbeatRead;
 
 	private final LinkedBlockingDeque<BinlogEventV4> queue = new LinkedBlockingDeque<>(20);
 
 	protected BinlogEventListener binlogEventListener;
 
 	private final boolean shouldHeartbeat;
-	private final TableCache tableCache = new TableCache();
 	protected final OpenReplicator replicator;
-	private final PositionStoreThread positionStoreThread;
-	protected final AbstractProducer producer;
-	protected final AbstractBootstrapper bootstrapper;
-	private final String maxwellSchemaDatabaseName;
 	private final String clientID;
 
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellReplicator.class);
@@ -65,6 +59,7 @@ public class MaxwellReplicator extends RunLoopProcess implements Replicator {
 		boolean stopOnEOF,
 		String clientID
 	) {
+		super(clientID, bootstrapper, positionStoreThread, maxwellSchemaDatabaseName, producer);
 		this.schemaStore = schemaStore;
 		this.binlogEventListener = new BinlogEventListener(queue);
 
@@ -84,12 +79,8 @@ public class MaxwellReplicator extends RunLoopProcess implements Replicator {
 		if ( shouldHeartbeat )
 			this.replicator.setHeartbeatPeriod(0.5f);
 
-		this.producer = producer;
-		this.bootstrapper = bootstrapper;
 		this.stopOnEOF = stopOnEOF;
 
-		this.positionStoreThread = positionStoreThread;
-		this.maxwellSchemaDatabaseName = maxwellSchemaDatabaseName;
 		this.setBinlogPosition(start);
 		this.clientID = clientID;
 	}
@@ -113,10 +104,6 @@ public class MaxwellReplicator extends RunLoopProcess implements Replicator {
 	public void setBinlogPosition(BinlogPosition p) {
 		this.replicator.setBinlogFileName(p.getFile());
 		this.replicator.setBinlogPosition(p.getOffset());
-	}
-
-	public void setPort(int port) {
-		this.replicator.setPort(port);
 	}
 
 	private void ensureReplicatorThread() throws Exception {
@@ -155,34 +142,10 @@ public class MaxwellReplicator extends RunLoopProcess implements Replicator {
 		startReplicator();
 	}
 
-	public void work() throws Exception {
-		RowMap row = getRow();
-
-		// todo: this is inelegant.  Ideally the outer code would monitor the
-		// position thread and stop us if it was dead.
-
-		if ( positionStoreThread.getException() != null )
-			throw positionStoreThread.getException();
-
-		if ( row == null )
-			return;
-
-		if ( row instanceof HeartbeatRowMap)
-			producer.push(row);
-		else if (!bootstrapper.shouldSkip(row) && !isMaxwellRow(row))
-			producer.push(row);
-		else
-			bootstrapper.work(row, producer, this);
-	}
-
 	@Override
 	protected void beforeStop() throws Exception {
 		this.binlogEventListener.stop();
 		this.replicator.stop(5, TimeUnit.SECONDS);
-	}
-
-	protected boolean isMaxwellRow(RowMap row) {
-		return row.getDatabase().equals(this.maxwellSchemaDatabaseName);
 	}
 
 	private BinlogPosition eventBinlogPosition(AbstractBinlogEventV4 event) {
@@ -277,18 +240,7 @@ public class MaxwellReplicator extends RunLoopProcess implements Replicator {
 						continue;
 					}
 
-					String table = event.getTable().name;
-					String database = event.getDatabase();
-
-					/* always pass bootstrap rows through */
-					Boolean isSystemWhitelisted = database.equals(this.maxwellSchemaDatabaseName)
-							&& table.equals("bootstrap");
-
-					/* there's an odd RDS thing, I guess, where ha_health_check doesn't
-					 * show up in INFORMATION_SCHEMA but it's replicated nonetheless. */
-					Boolean isSystemBlacklisted = database.equals("mysql") && table.equals("ha_health_check");
-
-					if ( !isSystemBlacklisted && (event.matchesFilter() || isSystemWhitelisted) ) {
+					if ( shouldOutputEvent(event.getDatabase(), event.getTable().getName(), filter) ) {
 						for ( RowMap r : event.jsonMaps() )
 							buffer.add(r);
 					}
@@ -333,51 +285,9 @@ public class MaxwellReplicator extends RunLoopProcess implements Replicator {
 		}
 	}
 
-	/**
-	 * Get the last heartbeat that the replicator has processed.
-	 *
-	 * We pass along the value of the heartbeat to the producer inside the row map.
-	 * @return the millisecond value ot fhte last heartbeat
-	 */
-
-	public Long getLastHeartbeatRead() {
-		return lastHeartbeatRead;
-	}
-
-
-	/**
-	 * Possibly convert a RowMap object into a HeartbeatRowMap
-	 *
-	 * Process a rowmap that represents a write to `maxwell`.`positions`.
-	 * If it's a write for a different client_id, or it's not a heartbeat,
-	 * we return just the RowMap.  Otherwise, we transform it into a HeartbeatRowMap
-	 * and set lastHeartbeatRead.
-	 *
-	 * @return either a RowMap or a HeartbeatRowMap
-	 */
-	private RowMap processHeartbeats(RowMap row) throws SQLException {
-		String hbClientID = (String) row.getData("client_id");
-		if ( !Objects.equals(hbClientID, this.clientID) )
-			return row; // plain row -- do not process.
-
-		this.lastHeartbeatRead = (Long) row.getData("heartbeat");
-		LOGGER.debug("replicator picked up heartbeat: " + this.lastHeartbeatRead);
-		return HeartbeatRowMap.valueOf(row.getDatabase(), row.getPosition(), this.lastHeartbeatRead);
-	}
-
 	private RowMapBuffer rowBuffer;
 
-	/**
-	 * The main entry point into the event reading loop.
-	 *
-	 * We maintain a buffer of events in a transaction,
-	 * and each subsequent call to `getRow` can grab one from
-	 * the buffer.  If that buffer is empty, we'll go check
-	 * the open-replicator buffer for rows to process.  If that
-	 * buffer is empty, we return null.
-	 *
-	 * @return either a RowMap or null
-	 */
+	@Override
 	public RowMap getRow() throws Exception {
 		BinlogEventV4 v4Event;
 
@@ -455,22 +365,14 @@ public class MaxwellReplicator extends RunLoopProcess implements Replicator {
 		return queue.poll(100, TimeUnit.MILLISECONDS);
 	}
 
-	private void processQueryEvent(QueryEvent event) throws SchemaStoreException, InvalidSchemaError, SQLException, Exception {
-		// get charset of the alter event somehow? or just ignore it.
-		String dbName = event.getDatabaseName().toString();
-		String sql = event.getSql().toString();
-		BinlogPosition position = eventBinlogPosition(event);
-
-		List<ResolvedSchemaChange> changes =  schemaStore.processSQL(sql, dbName, position);
-		for ( ResolvedSchemaChange change : changes ) {
-			DDLMap ddl = new DDLMap(change,event.getHeader().getTimestamp(), sql, position);
-			producer.push(ddl);
-		}
-
-		tableCache.clear();
-
-		if ( this.producer != null )
-			this.producer.writePosition(position);
+	private void processQueryEvent(QueryEvent event) throws Exception {
+		processQueryEvent(
+			event.getDatabaseName().toString(),
+			event.getSql().toString(),
+			this.schemaStore,
+			eventBinlogPosition(event),
+			event.getHeader().getTimestamp()
+		);
 	}
 
 	public Schema getSchema() throws SchemaStoreException {
