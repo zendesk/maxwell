@@ -10,7 +10,6 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.row.RowMap;
-import com.zendesk.maxwell.schema.ddl.DDLMap;
 
 import com.amazonaws.services.kinesis.producer.Attempt;
 import com.amazonaws.services.kinesis.producer.KinesisProducer;
