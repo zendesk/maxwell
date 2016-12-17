@@ -23,7 +23,6 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.row.RowMap;
-import com.zendesk.maxwell.row.RowMap.KeyFormat;
 import com.zendesk.maxwell.schema.ddl.DDLMap;
 
 import com.amazonaws.services.kinesis.producer.Attempt;
@@ -95,7 +94,6 @@ public class MaxwellKinesisProducer extends AbstractProducer {
 	private static final Logger logger = LoggerFactory.getLogger(MaxwellKinesisProducer.class);
 
 	private final InflightMessageList inflightMessages;
-	private final KeyFormat keyFormat;
 
 	private final KinesisProducer kinesisProducer;
 	private final String kinesisStream;
@@ -105,12 +103,6 @@ public class MaxwellKinesisProducer extends AbstractProducer {
 
 		this.inflightMessages = new InflightMessageList();
 
-		if(context.getConfig().kafkaKeyFormat.equals("hash")) {
-			keyFormat = KeyFormat.HASH;
-		} else {
-			keyFormat = KeyFormat.ARRAY;
-		}
-
 		this.kinesisStream = kinesisStream;
 
 		this.kinesisProducer = new KinesisProducer();
@@ -118,8 +110,7 @@ public class MaxwellKinesisProducer extends AbstractProducer {
 
 	@Override
 	public void push(RowMap r) throws Exception {
-		// why do we need different key formats
-		String key = r.pkToJson(keyFormat);
+		String key = r.pkToJsonArray();
 		String value = r.toJSON(outputConfig);
 
 		if(value == null) { // heartbeat row or other row with suppressed output

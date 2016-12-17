@@ -111,7 +111,7 @@ public class RowMap implements Serializable {
 		return jsonFromStream();
 	}
 
-	private String pkToJsonArray() throws IOException {
+	public String pkToJsonArray() throws IOException {
 		JsonGenerator g = jsonGeneratorThreadLocal.get();
 
 		g.writeStartArray();
