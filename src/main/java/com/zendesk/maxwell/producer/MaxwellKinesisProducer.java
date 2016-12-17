@@ -1,16 +1,3 @@
-/**
- * This is simplest kinesis producer, using stream apis provided by aws sdk (and
- * not kpl).
- * Ref: http://docs.aws.amazon.com/kinesis/latest/dev/developing-producers-with-kpl.html
- *
- * Scope/limitations:
- * 1. It puts results synchronously (blocking call) and doesn't usage callback mechanism (as in kpl).
- * 2. It will stop/break execution in cases of exceptions of kind (aws kinesis stream resouce not found, throughput exceeded
- *	exception) and won't attempt to re push the row data.
- * 3. Need to ensure stream is already created in kinesis.
- * 4. Using database name as partition key.
- */
-
 package com.zendesk.maxwell.producer;
 
 import java.nio.ByteBuffer;
