@@ -229,7 +229,7 @@ public class MaxwellContext {
 		case "buffer":
 			this.producer = new BufferedProducer(this, this.config.bufferedProducerSize);
 			break;
-		case "httpPost":
+		case "httppost":
 			this.producer = new HttpPostProducer(this, this.config.httpPostEndPoint);
 			break;
 		case "none":

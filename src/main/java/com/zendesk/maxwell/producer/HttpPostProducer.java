@@ -3,24 +3,35 @@ package com.zendesk.maxwell.producer;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.row.RowMap;
 
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
+import com.google.api.client.http.GenericUrl;
+import com.google.api.client.http.HttpResponse;
+import com.google.api.client.http.HttpResponseException;
+import com.google.api.client.http.HttpRequestFactory;
+import com.google.api.client.http.HttpRequest;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.HttpHeaders;
+import com.google.api.client.http.ByteArrayContent;
+import com.google.api.client.http.HttpRequestInitializer;
+import com.google.api.client.http.HttpBackOffUnsuccessfulResponseHandler;
+import com.google.api.client.util.ExponentialBackOff;
 
+import com.google.api.client.http.javanet.NetHttpTransport;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import java.io.IOException;
+
 public class HttpPostProducer extends AbstractProducer {
-    private final String httpPostEndPoint;
+    private final GenericUrl httpPostEndPoint;
+    static final String HTTP_CONENT_TYPE_HEADER = "application/json";
+    static final int maxRetryTimeSeconds = 10;
+    private final HttpTransport httpTransport = new NetHttpTransport();
 
 	public HttpPostProducer(MaxwellContext context, String httpPostEndPoint) {
 		super(context);
-        this.httpPostEndPoint = httpPostEndPoint;
+        this.httpPostEndPoint = new GenericUrl(httpPostEndPoint);
 	}
 
 	@Override
@@ -34,24 +45,45 @@ public class HttpPostProducer extends AbstractProducer {
             String database = r.getDatabase();
             String table = r.getTable();
 
-            CloseableHttpClient httpClient = HttpClients.createDefault();
-            HttpPost httpPost = new HttpPost("http://requestb.in/1k1i3n81");
-            httpPost.addHeader("Content-Type", "application/json");
-            StringEntity params = new StringEntity(payload);
-            httpPost.setEntity(params);
-            CloseableHttpResponse response = httpClient.execute(httpPost);
-            int status = response.getStatusLine().getStatusCode();
+            HttpRequestFactory requestFactory = this.getHttpRequestFactory();
 
-            System.out.println(payload);
-            String statusMessage = String.format("Got status %s", status);
-            System.out.println(statusMessage);
+            try {
+                this.sendPayload(requestFactory, this.httpPostEndPoint, payload);
+            } catch (HttpResponseException err) {
+                System.err.println(err.getMessage());
+            }
 
-
-        } else {
-            String message = String.format("Event type %s ignoring ...", rowType);
-            System.out.println(message);
         }
 
 		this.context.setPosition(r);
 	}
+
+    public void sendPayload(HttpRequestFactory httpRequestFactory, GenericUrl url, String payload) throws IOException {
+        ByteArrayContent content = ByteArrayContent.fromString(HttpPostProducer.HTTP_CONENT_TYPE_HEADER, payload);
+        HttpRequest request = httpRequestFactory.buildPostRequest(url, content);
+
+        ExponentialBackOff backoff = this.getExponentialBackoff();
+        request.setUnsuccessfulResponseHandler(new HttpBackOffUnsuccessfulResponseHandler(backoff));
+        HttpResponse response = request.execute();
+    }
+
+    private HttpRequestFactory getHttpRequestFactory() {
+        return this.httpTransport.createRequestFactory(new HttpRequestInitializer() {
+             public void initialize(HttpRequest request) throws IOException {
+                request.getHeaders().setContentType(HttpPostProducer.HTTP_CONENT_TYPE_HEADER);
+            }
+        });
+    }
+
+    private ExponentialBackOff getExponentialBackoff() {
+        int maxElapsedTimeMillis = maxRetryTimeSeconds * 1000;
+        return new ExponentialBackOff.Builder()
+            .setInitialIntervalMillis(500)
+            .setMaxElapsedTimeMillis(maxElapsedTimeMillis)
+            .setMaxIntervalMillis(6000)
+            .setMultiplier(1.5)
+            .setRandomizationFactor(0.5)
+            .build();
+    }
+
 }
