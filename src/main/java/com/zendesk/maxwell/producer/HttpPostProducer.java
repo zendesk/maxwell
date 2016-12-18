@@ -16,8 +16,11 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class HttpPostProducer extends AbstractProducer {
-	public HttpPostProducer(MaxwellContext context) {
+    private final String httpPostEndPoint;
+
+	public HttpPostProducer(MaxwellContext context, String httpPostEndPoint) {
 		super(context);
+        this.httpPostEndPoint = httpPostEndPoint;
 	}
 
 	@Override

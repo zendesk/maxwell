@@ -41,6 +41,8 @@ public class MaxwellConfig extends AbstractConfig {
 	public MaxwellOutputConfig outputConfig;
 	public String log_level;
 
+    public String httpPostEndPoint;
+
 	public String clientID;
 	public Long replicaServerID;
 
@@ -86,7 +88,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_3" );
 
-		parser.accepts( "producer", "producer type: stdout|file|kafka|httpPost" ).withRequiredArg();
+		parser.accepts( "producer", "producer type: stdout|file|kafka|httppost" ).withRequiredArg();
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
 		parser.accepts( "kafka_partition_by", "database|table|primary_key|column, kafka producer assigns partition by hashing the specified parameter").withRequiredArg();
@@ -100,6 +102,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_4" );
 
+		parser.accepts( "httppost_endpoint", "provide an endpoint to send data to using the httppost producer" ).withOptionalArg();
 		parser.accepts( "output_binlog_position", "produced records include binlog position; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_commit_info", "produced records include commit and xid; [true|false]. default: true" ).withOptionalArg();
 		parser.accepts( "output_nulls", "produced records include fields with NULL values [true|false]. default: true" ).withOptionalArg();
@@ -261,6 +264,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.outputFile         = fetchOption("output_file", options, properties, null);
 
+        this.httpPostEndPoint   = fetchOption("httppost_endpoint", options, properties, null);
+
 		this.includeDatabases   = fetchOption("include_dbs", options, properties, null);
 		this.excludeDatabases   = fetchOption("exclude_dbs", options, properties, null);
 		this.includeTables      = fetchOption("include_tables", options, properties, null);
@@ -349,7 +354,10 @@ public class MaxwellConfig extends AbstractConfig {
 		} else if ( this.producerType.equals("file")
 				&& this.outputFile == null) {
 			usageForOptions("please specify --output_file=FILE to use the file producer", "--producer", "--output_file");
-		}
+		} else if ( this.producerType.equals("httppost")
+                && this.httpPostEndPoint == null)
+			usageForOptions("please specify --httppost_endpoint=URI to use the httppost producer", "--producer", "--httppost_endpoint");
+
 
 		if ( !this.bootstrapperType.equals("async")
 				&& !this.bootstrapperType.equals("sync")
