@@ -1,4 +1,6 @@
-### Kafka options
+### Kafka
+
+#### Kafka options
 ***
 Any options given to Maxwell that are prefixed with `kafka.` will be passed directly into the Kafka producer configuration
 (with `kafka.` stripped off).  We use the "new producer" configuration, as described here:
@@ -12,7 +14,7 @@ These are recommended properties. You can remove or update them in `config.prope
 
 Maxwell writes to a kafka topic named "maxwell" by default. It can be static, e.g. 'maxwell', or dynamic, e.g. `namespace_%{database}_%{table}`. In the latter case 'database' and 'table' will be replaced with the values for the row being processed. This can be changed with the `kafka_topic` option.
 
-### Kafka key
+#### Kafka key
 ***
 Maxwell generates keys for its Kafka messages based upon a mysql row's primary key in JSON format:
 
@@ -24,7 +26,7 @@ This key is designed to co-operate with Kafka's log compaction, which will save 
 value for a key, allowing Maxwell's Kafka stream to retain the last-known value for a row and act
 as a source of truth.
 
-### Partitioning
+#### Partitioning
 ***
 A binlog event's partition is determined by the selected hash function and hash string as follows
 
@@ -51,7 +53,7 @@ bin/kafka-topics.sh --zookeeper ZK_HOST:2181 --create \
 [http://kafka.apache.org/documentation.html#quickstart](http://kafka.apache.org/documentation.html#quickstart)
 
 
-### Kafka 0.9
+#### Kafka 0.9
 ***
 By default, maxwell runs with kafka clients 0.9.0.1. There is a flag (--kafka_version) that allows maxwell to run with either 0.8.2.2, 0.9.0.1, 0.10.0.1 or 0.10.1.0.
 Noteables:
@@ -83,3 +85,14 @@ http://kafka.apache.org/0100/documentation.html#upgrade_10_performance_impact
     jQuery("table").addClass("table table-condensed table-bordered table-hover");
   });
 </script>
+
+### Kinesis
+
+#### Kinesis Options
+
+The producer uses the [DefaultAWSCredentialsProviderChain](http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html) class to gain aws credentials.
+
+Set the output stream in `config.properties` by setting the `kinesis_stream` property.
+
+The producer uses the [KPL (Kinesis Producer Library](http://docs.aws.amazon.com/streams/latest/dev/developing-producers-with-kpl.html) and uses the KPL built in configurations.
+Copy `kinesis-producer-library.properties.example` to `kinesis-producer-library.properties` and configure the properties file to your needs.
