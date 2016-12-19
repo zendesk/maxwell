@@ -28,4 +28,9 @@ public class HeartbeatRowMap extends RowMap {
 	public String toJSON() throws IOException {
 		return null;
 	}
+
+	@Override
+	public boolean isTXCommit() {
+		return true;
+	}
 }

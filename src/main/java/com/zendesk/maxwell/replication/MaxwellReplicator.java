@@ -298,7 +298,7 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 			if (rowBuffer != null && !rowBuffer.isEmpty()) {
 				RowMap row = rowBuffer.removeFirst();
 
-				if ( row != null && isMaxwellRow(row) && row.getTable().equals("positions") )
+				if ( row != null && isMaxwellRow(row) && row.getTable().equals("heartbeats") )
 					return processHeartbeats(row);
 				else
 					return row;
