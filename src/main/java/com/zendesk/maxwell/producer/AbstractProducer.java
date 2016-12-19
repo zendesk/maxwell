@@ -16,8 +16,4 @@ public abstract class AbstractProducer {
 	}
 
 	abstract public void push(RowMap r) throws Exception;
-
-	public void writePosition(BinlogPosition p) throws SQLException {
-		this.context.setPosition(p);
-	}
 }
