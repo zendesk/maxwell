@@ -45,6 +45,8 @@ public abstract class SchemaChange {
 		SQL_BLACKLIST.add(Pattern.compile("^\\s*REPAIR\\s+", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
 	}
 
+	private static final Pattern DELETE_BLACKLIST = Pattern.compile("^\\s*DELETE\\s*FROM", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+
 	private static boolean matchesBlacklist(String sql) {
 		// first *include* /*50032 CREATE EVENT */ style sql
 		sql = sql.replaceAll("/\\*!\\d+\\s*(.*)\\*/", "$1");
@@ -56,6 +58,13 @@ public abstract class SchemaChange {
 		for (Pattern p : SQL_BLACKLIST) {
 			if (p.matcher(sql).find())
 				return true;
+		}
+
+		if ( DELETE_BLACKLIST.matcher(sql).find() ) {
+			LOGGER.info("Ignoring DELETE statement: " + sql);
+			LOGGER.info("You may ignore this warning if this is a MEMORY table.");
+			LOGGER.info("Otherwise you should make sure your binlog_format setting is correct, and that your clients have all reconnected.");
+			return true;
 		}
 
 		return false;
