@@ -33,4 +33,9 @@ public class HeartbeatRowMap extends RowMap {
 	public boolean isTXCommit() {
 		return true;
 	}
+
+	@Override
+	public boolean shouldOutput(MaxwellOutputConfig outputConfig) {
+		return false;
+	}
 }

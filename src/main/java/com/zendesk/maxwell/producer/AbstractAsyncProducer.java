@@ -41,9 +41,7 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 
 	@Override
 	public final void push(RowMap r) throws Exception {
-		String value = r.toJSON(outputConfig);
-
-		if(value == null) { // heartbeat row or other row with suppressed output
+		if(!r.shouldOutput(outputConfig)) {
 			inflightMessages.addMessage(r.getPosition());
 			BinlogPosition newPosition = inflightMessages.completeMessage(r.getPosition());
 
@@ -53,9 +51,6 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 
 			return;
 		}
-
-		// release reference to ease memory pressure
-		value = null;
 
 		if(r.isTXCommit()) {
 			inflightMessages.addMessage(r.getPosition());
