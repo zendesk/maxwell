@@ -21,18 +21,14 @@ import java.util.Properties;
 
 class KafkaCallback implements Callback {
 	public static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
-	private InflightMessageList inflightMessages;
-	private final MaxwellContext context;
+	private final AbstractAsyncProducer.CallbackCompleter cc;
 	private final BinlogPosition position;
-	private final boolean isTXCommit;
 	private final String json;
 	private final String key;
 
-	public KafkaCallback(InflightMessageList inflightMessages, BinlogPosition position, boolean isTXCommit, MaxwellContext c, String key, String json) {
-		this.inflightMessages = inflightMessages;
-		this.context = c;
+	public KafkaCallback(AbstractAsyncProducer.CallbackCompleter cc, BinlogPosition position, String key, String json) {
+		this.cc = cc;
 		this.position = position;
-		this.isTXCommit = isTXCommit;
 		this.key = key;
 		this.json = json;
 	}
@@ -53,25 +49,13 @@ class KafkaCallback implements Callback {
 				LOGGER.debug("");
 			}
 		}
-		markCompleted();
+		cc.markCompleted();
 	}
-
-	private void markCompleted() {
-		if ( isTXCommit ) {
-			BinlogPosition newPosition = inflightMessages.completeMessage(position);
-
-			if ( newPosition != null ) {
-				context.setPosition(newPosition);
-			}
-		}
-	}
-
 }
 
-public class MaxwellKafkaProducer extends AbstractProducer {
+public class MaxwellKafkaProducer extends AbstractAsyncProducer {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
 
-	private final InflightMessageList inflightMessages;
 	private final KafkaProducer<String, String> kafka;
 	private String topic;
 	private final String ddlTopic;
@@ -101,8 +85,6 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 			keyFormat = KeyFormat.HASH;
 		else
 			keyFormat = KeyFormat.ARRAY;
-
-		this.inflightMessages = new InflightMessageList();
 	}
 
 	private Integer getNumPartitions(String topic) {
@@ -119,20 +101,9 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	}
 
 	@Override
-	public void push(RowMap r) throws Exception {
+	public void push(RowMap r, AbstractAsyncProducer.CallbackCompleter cc) throws Exception {
 		String key = r.pkToJson(keyFormat);
 		String value = r.toJSON(outputConfig);
-
-		if ( value == null ) { // heartbeat row or other row with suppressed output
-			inflightMessages.addMessage(r.getPosition());
-			BinlogPosition newPosition = inflightMessages.completeMessage(r.getPosition());
-
-			if ( newPosition != null ) {
-				context.setPosition(newPosition);
-			}
-
-			return;
-		}
 
 		ProducerRecord<String, String> record;
 		if (r instanceof DDLMap) {
@@ -142,15 +113,11 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 			record = new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, getNumPartitions(topic)), key, value);
 		}
 
-		if ( r.isTXCommit() )
-			inflightMessages.addMessage(r.getPosition());
-
-
 		/* if debug logging isn't enabled, release the reference to `value`, which can ease memory pressure somewhat */
 		if ( !KafkaCallback.LOGGER.isDebugEnabled() )
 			value = null;
 
-		KafkaCallback callback = new KafkaCallback(inflightMessages, r.getPosition(), r.isTXCommit(), this.context, key, value);
+		KafkaCallback callback = new KafkaCallback(cc, r.getPosition(), key, value);
 
 		kafka.send(record, callback);
 	}

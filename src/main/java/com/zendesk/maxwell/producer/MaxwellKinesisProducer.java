@@ -26,18 +26,14 @@ import org.slf4j.LoggerFactory;
 class KinesisCallback implements FutureCallback<UserRecordResult> {
 	public static final Logger logger = LoggerFactory.getLogger(KinesisCallback.class);
 
-	private InflightMessageList inflightMessages;
-	private final MaxwellContext context;
+	private final AbstractAsyncProducer.CallbackCompleter cc;
 	private final BinlogPosition position;
-	private final boolean isTXCommit;
 	private final String json;
 	private final String key;
 
-	public KinesisCallback(InflightMessageList inflightMessages, BinlogPosition position, boolean isTXCommit, MaxwellContext context, String key, String json) {
-		this.inflightMessages = inflightMessages;
-		this.context = context;
+	public KinesisCallback(AbstractAsyncProducer.CallbackCompleter cc, BinlogPosition position, String key, String json) {
+		this.cc = cc;
 		this.position = position;
-		this.isTXCommit = isTXCommit;
 		this.key = key;
 		this.json = json;
 	}
@@ -54,7 +50,7 @@ class KinesisCallback implements FutureCallback<UserRecordResult> {
 
 		logger.error("Exception during put", t);
 
-		markCompleted();
+		cc.markCompleted();
 	};
 
 	@Override
@@ -66,32 +62,18 @@ class KinesisCallback implements FutureCallback<UserRecordResult> {
 			logger.debug("");
 		}
 
-		markCompleted();
+		cc.markCompleted();
 	};
-
-	private void markCompleted() {
-		if(isTXCommit) {
-			BinlogPosition newPosition = inflightMessages.completeMessage(position);
-
-			if(newPosition != null) {
-				context.setPosition(newPosition);
-			}
-		}
-	}
 }
 
-public class MaxwellKinesisProducer extends AbstractProducer {
+public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 	private static final Logger logger = LoggerFactory.getLogger(MaxwellKinesisProducer.class);
-
-	private final InflightMessageList inflightMessages;
 
 	private final KinesisProducer kinesisProducer;
 	private final String kinesisStream;
 
 	public MaxwellKinesisProducer(MaxwellContext context, String kinesisStream) {
 		super(context);
-
-		this.inflightMessages = new InflightMessageList();
 
 		this.kinesisStream = kinesisStream;
 
@@ -105,24 +87,9 @@ public class MaxwellKinesisProducer extends AbstractProducer {
 	}
 
 	@Override
-	public void push(RowMap r) throws Exception {
+	public void push(RowMap r, AbstractAsyncProducer.CallbackCompleter cc) throws Exception {
 		String key = r.pkToJsonArray();
 		String value = r.toJSON(outputConfig);
-
-		if(value == null) { // heartbeat row or other row with suppressed output
-			inflightMessages.addMessage(r.getPosition());
-			BinlogPosition newPosition = inflightMessages.completeMessage(r.getPosition());
-
-			if(newPosition != null) {
-				context.setPosition(newPosition);
-			}
-
-			return;
-		}
-
-		if(r.isTXCommit()) {
-			inflightMessages.addMessage(r.getPosition());
-		}
 
 		ByteBuffer encodedValue = ByteBuffer.wrap(value.getBytes("UTF-8"));
 		ListenableFuture<UserRecordResult> future = kinesisProducer.addUserRecord(kinesisStream, key, encodedValue);
@@ -132,7 +99,7 @@ public class MaxwellKinesisProducer extends AbstractProducer {
 			value = null;
 		}
 
-		KinesisCallback callback = new KinesisCallback(inflightMessages, r.getPosition(), r.isTXCommit(), context, key, value);
+		FutureCallback<UserRecordResult> callback = new KinesisCallback(cc, r.getPosition(), key, value);
 
 		Futures.addCallback(future, callback);
 	}
