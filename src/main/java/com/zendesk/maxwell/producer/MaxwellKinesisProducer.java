@@ -1,6 +1,9 @@
 package com.zendesk.maxwell.producer;
 
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.FutureCallback;
@@ -92,8 +95,13 @@ public class MaxwellKinesisProducer extends AbstractProducer {
 
 		this.kinesisStream = kinesisStream;
 
-		KinesisProducerConfiguration config = KinesisProducerConfiguration.fromPropertiesFile("kinesis-producer-library.properties");
-		this.kinesisProducer = new KinesisProducer(config);
+		Path path = Paths.get("kinesis-producer-library.properties");
+		if(Files.exists(path) && Files.isRegularFile(path)) {
+			KinesisProducerConfiguration config = KinesisProducerConfiguration.fromPropertiesFile(path.toString());
+			this.kinesisProducer = new KinesisProducer(config);
+		} else {
+			this.kinesisProducer = new KinesisProducer();
+		}
 	}
 
 	@Override
