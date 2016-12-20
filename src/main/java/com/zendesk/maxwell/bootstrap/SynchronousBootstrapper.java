@@ -182,9 +182,9 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		Statement statement = createBatchStatement(connection);
 		String pk = schema.findDatabase(databaseName).findTable(tableName).getPKString();
 		if ( pk != null && !pk.equals("") ) {
-			return statement.executeQuery(String.format("select * from %s.%s WHERE id < 115760000 order by %s", databaseName, tableName, pk));
+			return statement.executeQuery(String.format("select * from %s.%s WHERE id < 280900000 order by %s", databaseName, tableName, pk));
 		} else {
-			return statement.executeQuery(String.format("select * from %s.%s WHERE id < 115760000", databaseName, tableName));
+			return statement.executeQuery(String.format("select * from %s.%s WHERE id < 280900000", databaseName, tableName));
 		}
 	}
 
