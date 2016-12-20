@@ -1,7 +1,5 @@
 package com.zendesk.maxwell.producer;
 
-import java.sql.SQLException;
-
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.row.RowMap;
