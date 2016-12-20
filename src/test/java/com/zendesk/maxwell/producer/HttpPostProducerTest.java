@@ -1,51 +1,48 @@
 package com.zendesk.maxwell.producer;
 
-import com.zendesk.maxwell.MaxwellConfig;
-import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.MaxwellTestSupport;
-import com.zendesk.maxwell.MaxwellTestSupport;
-
+import com.google.api.client.http.HttpRequest;
+import com.google.api.client.testing.http.HttpTesting;
 import com.google.api.client.testing.http.MockHttpTransport;
-import com.google.api.client.http.HttpRequestFactory;
-import com.google.api.client.http.GenericUrl;
-import com.google.api.client.http.HttpTransport;
 
-import java.sql.SQLException;
-import java.io.IOException;
-
-import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class HttpPostProducerTest {
-    private String endPoint = "http://test.local";
-    private HttpPostProducer producer;
-
-	@Before
-	public void setupBefore() {
-        try {
-            MaxwellContext context = MaxwellTestSupport.buildContext(3306, null, null);
-            this.producer = new HttpPostProducer(context, this.endPoint);
-        } catch (SQLException e) {
-            System.err.println(e.getMessage());
-        }
-	}
 
     @Test
-    public void TestSendSuccessfulPayload() {
-        String testUrl = "http://test.local";
-        HttpTransport transport = new MockHttpTransport();
-        HttpRequestFactory factory = transport.createRequestFactory();
-        GenericUrl url = new GenericUrl(testUrl);
-        String data = "{\"myKey\": \"myVal\"}";
+    public void TestPostRequestWithHmac() throws Exception {
+        String payload = "{\"myKey\": \"myVal\"}";
+        String hmacSecret = "mysecret";
+        String hmacDigest = "b113e5d7c0792017edaf8ab1a43d3522d848a0cc";
 
-        try {
-            this.producer.sendPayload(factory, url, data);
-        } catch (IOException e) {
-            System.err.println(e.getMessage());
-        }
+        HttpRequest request = null;
 
-        assert(true);
+        request = HttpPostProducer.buildRequest(
+                new MockHttpTransport().createRequestFactory(),
+                HttpTesting.SIMPLE_GENERIC_URL,
+                payload,
+                hmacSecret
+        );
+
+        // must calculate correct HMAC digest
+        assertEquals(request.getHeaders().get(HttpPostProducer.HTTP_HMAC_HEADER), hmacDigest);
+    }
+
+    @Test
+    public void TestPostRequestWithNullHmac() throws Exception {
+        String payload = "{\"myKey\": \"myVal\"}";
+
+        HttpRequest request = null;
+
+        request = HttpPostProducer.buildRequest(
+                new MockHttpTransport().createRequestFactory(),
+                HttpTesting.SIMPLE_GENERIC_URL,
+                payload,
+                null
+        );
+
+        // must support `application/json` media type.
+        assertEquals(request.getHeaders().getContentType(), HttpPostProducer.HTTP_CONENT_TYPE_HEADER);
     }
 
 }

@@ -16,7 +16,10 @@ import com.google.api.client.http.HttpBackOffUnsuccessfulResponseHandler;
 import com.google.api.client.util.ExponentialBackOff;
 
 import com.google.api.client.http.javanet.NetHttpTransport;
+import org.apache.commons.codec.binary.Hex;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -24,58 +27,70 @@ import java.util.Set;
 import java.io.IOException;
 
 public class HttpPostProducer extends AbstractProducer {
-    private final GenericUrl httpPostEndPoint;
+    static final String HTTP_HMAC_HEADER = "x-signature";
     static final String HTTP_CONENT_TYPE_HEADER = "application/json";
-    static final int maxRetryTimeSeconds = 10;
+    static final String HMAC_ALG = "HmacSHA1";
+
+    private static final int maxRetryTimeSeconds = 15;
+    private final GenericUrl httpPostEndPoint;
+    private final String httpPostHmacSecret;
     private final HttpTransport httpTransport = new NetHttpTransport();
 
-	public HttpPostProducer(MaxwellContext context, String httpPostEndPoint) {
+	public HttpPostProducer(MaxwellContext context, String httpPostEndPoint, String httpPostHmacSecret) {
 		super(context);
         this.httpPostEndPoint = new GenericUrl(httpPostEndPoint);
+        this.httpPostHmacSecret = httpPostHmacSecret;
 	}
 
 	@Override
 	public void push(RowMap r) throws Exception {
 
-        Set<String> eventTypeWhilteList = new HashSet<String>(Arrays.asList("insert", "update", "delete"));
+        Set<String> eventTypeWhiteList = new HashSet<String>(Arrays.asList("insert", "update", "delete"));
 
         String rowType = r.getRowType();
-        if ( eventTypeWhilteList.contains(rowType)) {
+        if ( eventTypeWhiteList.contains(rowType) ) {
             String payload = r.toJSON(outputConfig);
-            String database = r.getDatabase();
-            String table = r.getTable();
 
-            HttpRequestFactory requestFactory = this.getHttpRequestFactory();
+            HttpRequest request = buildRequest(
+                this.getHttpRequestFactory(),
+                this.httpPostEndPoint,
+                payload,
+                this.httpPostHmacSecret);
 
-            try {
-                this.sendPayload(requestFactory, this.httpPostEndPoint, payload);
-            } catch (HttpResponseException err) {
-                System.err.println(err.getMessage());
-            }
-
+            // throws error on 300 and above
+            HttpResponse response = request.execute();
         }
 
 		this.context.setPosition(r);
 	}
 
-    public void sendPayload(HttpRequestFactory httpRequestFactory, GenericUrl url, String payload) throws IOException {
+    static HttpRequest buildRequest(HttpRequestFactory httpRequestFactory, GenericUrl url, String payload, String secret) throws Exception {
+
         ByteArrayContent content = ByteArrayContent.fromString(HttpPostProducer.HTTP_CONENT_TYPE_HEADER, payload);
         HttpRequest request = httpRequestFactory.buildPostRequest(url, content);
 
-        ExponentialBackOff backoff = this.getExponentialBackoff();
+        HttpHeaders headers = request.getHeaders()
+                .setContentType(HTTP_CONENT_TYPE_HEADER)
+                .setContentLength(content.getLength());
+
+        if (secret != null) {
+            String digest = generateHmacSha1(payload, secret);
+            headers.set(HTTP_HMAC_HEADER, digest);
+        }
+        request.setHeaders(headers);
+
+        ExponentialBackOff backoff = getExponentialBackoff();
         request.setUnsuccessfulResponseHandler(new HttpBackOffUnsuccessfulResponseHandler(backoff));
-        HttpResponse response = request.execute();
+        return request;
     }
 
     private HttpRequestFactory getHttpRequestFactory() {
         return this.httpTransport.createRequestFactory(new HttpRequestInitializer() {
-             public void initialize(HttpRequest request) throws IOException {
-                request.getHeaders().setContentType(HttpPostProducer.HTTP_CONENT_TYPE_HEADER);
-            }
+             public void initialize(HttpRequest request) throws IOException {}
         });
     }
 
-    private ExponentialBackOff getExponentialBackoff() {
+    private static ExponentialBackOff getExponentialBackoff() {
         int maxElapsedTimeMillis = maxRetryTimeSeconds * 1000;
         return new ExponentialBackOff.Builder()
             .setInitialIntervalMillis(500)
@@ -84,6 +99,17 @@ public class HttpPostProducer extends AbstractProducer {
             .setMultiplier(1.5)
             .setRandomizationFactor(0.5)
             .build();
+    }
+
+    private static String generateHmacSha1(String value, String key) throws Exception {
+        SecretKeySpec keySpec = new SecretKeySpec(key.getBytes("UTF-8"), HMAC_ALG);
+        Mac mac = Mac.getInstance(HMAC_ALG);
+        mac.init(keySpec);
+
+        byte[] rawHmac = mac.doFinal(value.getBytes("UTF-8"));
+        byte[] hexHmac = new Hex().encode(rawHmac);
+
+        return new String(hexHmac, "UTF-8");
     }
 
 }

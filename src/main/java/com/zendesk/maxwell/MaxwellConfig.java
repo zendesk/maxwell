@@ -42,6 +42,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public String log_level;
 
     public String httpPostEndPoint;
+	public String httpPostHmacSecret;
 
 	public String clientID;
 	public Long replicaServerID;
@@ -102,7 +103,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_4" );
 
-		parser.accepts( "httppost_endpoint", "provide an endpoint to send data to using the httppost producer" ).withOptionalArg();
+		parser.accepts( "httppost_endpoint", "provide an endpoint to send data to using the httppost producer" ).withRequiredArg();
+		parser.accepts( "httppost_hmacsecret", "secret key for calculating HMAC digest for httppost producer" ).withRequiredArg();
 		parser.accepts( "output_binlog_position", "produced records include binlog position; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_commit_info", "produced records include commit and xid; [true|false]. default: true" ).withOptionalArg();
 		parser.accepts( "output_nulls", "produced records include fields with NULL values [true|false]. default: true" ).withOptionalArg();
@@ -265,6 +267,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.outputFile         = fetchOption("output_file", options, properties, null);
 
         this.httpPostEndPoint   = fetchOption("httppost_endpoint", options, properties, null);
+		this.httpPostHmacSecret = fetchOption("httppost_hmacsecret", options, properties, null);
 
 		this.includeDatabases   = fetchOption("include_dbs", options, properties, null);
 		this.excludeDatabases   = fetchOption("exclude_dbs", options, properties, null);
