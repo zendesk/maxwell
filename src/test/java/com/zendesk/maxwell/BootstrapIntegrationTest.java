@@ -42,6 +42,7 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 		runJSON("json/bootstrap-null-values");
 	}
 
+	@Test
 	public void testBool() throws Exception {
 		testColumnType("bool", "0", 0);
 		testColumnType("bool", "1", 1);
