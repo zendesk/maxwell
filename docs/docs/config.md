@@ -32,7 +32,7 @@ kafka_partition_columns        | STRING                              | if partit
 kafka_partition_by_fallback    | [database &#124; table &#124; primary_key]        | required when kafka_partition_by=column.  Used when the column is missing |
 kafka_partition_hash           | [default &#124; murmur3]                   | hash function to use when hoosing kafka partition   | default
 ddl_kafka_topic                | STRING                              | if output_ddl is true, kafka topic to write DDL changes to | *kafka_topic*
-kafka_version                  | [0.8 &#124; 0.9 &#124; 0.10]                      | run maxwell with kafka producer 0.8.2, 0.9.0 or 0.10.0.  Not available in config.properties. | 0.9.0
+kafka_version                  | [0.8 &#124; 0.9 &#124; 0.10 &#124; 0.10.1]                      | run maxwell with kafka producer 0.8.2, 0.9.0, 0.10.0.1 or 0.10.1.0.  Not available in config.properties. | 0.9.0
 **formatting**
 output_binlog_position         | BOOLEAN                             | should produced records include binlog position     | false
 output_commit_info             | BOOLEAN                             | should produced records include commit and xid      | true

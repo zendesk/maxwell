@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.bootstrap;
 
 import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.replication.MaxwellReplicator;
+import com.zendesk.maxwell.replication.Replicator;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.producer.AbstractProducer;
 
@@ -43,13 +43,13 @@ public abstract class AbstractBootstrapper {
 
 	abstract public boolean shouldSkip(RowMap row) throws SQLException, IOException;
 
-	abstract public void startBootstrap(RowMap startBootstrapRow, AbstractProducer producer, MaxwellReplicator replicator) throws Exception;
+	abstract public void startBootstrap(RowMap startBootstrapRow, AbstractProducer producer, Replicator replicator) throws Exception;
 
-	abstract public void completeBootstrap(RowMap completeBootstrapRow, AbstractProducer producer, MaxwellReplicator replicator) throws Exception;
+	abstract public void completeBootstrap(RowMap completeBootstrapRow, AbstractProducer producer, Replicator replicator) throws Exception;
 
-	public abstract void resume(AbstractProducer producer, MaxwellReplicator replicator) throws Exception;
+	public abstract void resume(AbstractProducer producer, Replicator replicator) throws Exception;
 
 	public abstract boolean isRunning();
 
-	public abstract void work(RowMap row, AbstractProducer producer, MaxwellReplicator replicator) throws Exception;
+	public abstract void work(RowMap row, AbstractProducer producer, Replicator replicator) throws Exception;
 }

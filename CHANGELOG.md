@@ -1,5 +1,15 @@
 # Maxwell changelog
 
+### [v1.5.2](https://github.com/zendesk/maxwell/releases/tag/v1.5.2): "french banana"
+
+
+- add support for kafka 0.10.1 @ smferguson
+- master recovery: cleanup positions from previous master; prevent
+  errors on flip-back.
+- fix a bug that would trigger in certain cases when dropping a column
+  that was part of the primary-key
+
+
 ### [v1.5.1](https://github.com/zendesk/maxwell/releases/tag/v1.5.1): "1.5.1 is just 1.5.1"
 
 This is a bugfix release.
