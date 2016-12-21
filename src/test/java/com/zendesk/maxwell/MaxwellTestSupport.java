@@ -169,9 +169,13 @@ public class MaxwellTestSupport {
 		callback.afterReplicatorStart(mysql);
 
 		BinlogPosition finalPosition = BinlogPosition.capture(mysql.getConnection());
+		LOGGER.debug("running replicator up to " + finalPosition);
+
+		Long pollTime = 1000L;
 
 		for ( ;; ) {
-			RowMap row = maxwell.poll(1000);
+			RowMap row = maxwell.poll(pollTime);
+			pollTime = 500L; // after the first row is receive, we go into a tight loop.
 
 			if ( row == null ) {
 				break;
