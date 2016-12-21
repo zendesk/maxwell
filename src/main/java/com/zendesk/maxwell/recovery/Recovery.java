@@ -26,17 +26,20 @@ public class Recovery {
 	private final MaxwellMysqlConfig replicationConfig;
 	private final String maxwellDatabaseName;
 	private final RecoverySchemaStore schemaStore;
+	private final boolean shykoMode;
 
 	public Recovery(MaxwellMysqlConfig replicationConfig,
 					String maxwellDatabaseName,
 					ConnectionPool replicationConnectionPool,
 					CaseSensitivity caseSensitivity,
-					RecoveryInfo recoveryInfo) {
+					RecoveryInfo recoveryInfo,
+					boolean shykoMode) {
 		this.replicationConfig = replicationConfig;
 		this.replicationConnectionPool = replicationConnectionPool;
 		this.recoveryInfo = recoveryInfo;
 		this.schemaStore = new RecoverySchemaStore(replicationConnectionPool, maxwellDatabaseName, caseSensitivity);
 		this.maxwellDatabaseName = maxwellDatabaseName;
+		this.shykoMode = shykoMode;
 	}
 
 	public BinlogPosition recover() throws Exception {
@@ -55,20 +58,36 @@ public class Recovery {
 			BinlogPosition position = list.get(i);
 
 			LOGGER.debug("scanning binlog: " + position);
-
-			Replicator replicator = new BinlogConnectorReplicator(
-				this.schemaStore,
-				null,
-				null,
-				replicationConfig,
-				0L, // server-id of 0 activatives "mysqlbinlog" behavior where the server will stop after each binlog
-				false,
-				null,
-				maxwellDatabaseName,
-				position,
-				true,
-				recoveryInfo.clientID
-			);
+			Replicator replicator;
+			if ( shykoMode ) {
+				replicator = new BinlogConnectorReplicator(
+						this.schemaStore,
+						null,
+						null,
+						replicationConfig,
+						0L, // server-id of 0 activatives "mysqlbinlog" behavior where the server will stop after each binlog
+						false,
+						null,
+						maxwellDatabaseName,
+						position,
+						true,
+						recoveryInfo.clientID
+						);
+			} else {
+				replicator = new MaxwellReplicator(
+						this.schemaStore,
+						null,
+						null,
+						replicationConfig,
+						0L, // server-id of 0 activatives "mysqlbinlog" behavior where the server will stop after each binlog
+						false,
+						null,
+						maxwellDatabaseName,
+						position,
+						true,
+						recoveryInfo.clientID
+						);
+			}
 
 			replicator.setFilter(new RecoveryFilter(this.maxwellDatabaseName));
 
