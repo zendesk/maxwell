@@ -1,13 +1,13 @@
 FROM java:openjdk-7-jre
 ENV MAXWELL_VERSION 1.5.2
-ENV ENDPOINT http://requestb.in/xr9aegxr
+
+RUN apt-get update && apt-get -y upgrade
 
 RUN mkdir /app
+WORKDIR /app
 
-COPY target/maxwell-"$MAXWELL_VERSION".tar.gz .
-RUN tar -zxf maxwell-"$MAXWELL_VERSION".tar.gz -C /app
+RUN curl -sLo - https://github.com/zendesk/maxwell/releases/download/v"$MAXWELL_VERSION"/maxwell-"$MAXWELL_VERSION".tar.gz \
+  | tar --strip-components=1 -zxvf -
 
 RUN echo "$MAXWELL_VERSION" > /REVISION
-
-WORKDIR /app/maxwell-"$MAXWELL_VERSION"
-CMD ./bin/maxwell --user=root --password=$MYSQL_ENV_MYSQL_ROOT_PASSWORD --host=$MYSQL_PORT_3306_TCP_ADDR --producer=httppost --httppost_endpoint="$ENDPOINT"
+CMD bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kafka --kafka.bootstrap.servers=$KAFKA_HOST:$KAFKA_PORT $MAXWELL_OPTIONS
