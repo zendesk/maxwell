@@ -20,6 +20,10 @@ import com.zendesk.maxwell.schema.MysqlSchemaStore;
 import com.zendesk.maxwell.schema.SchemaStoreSchema;
 
 public class Maxwell implements Runnable {
+	static {
+		Logging.setupLogBridging();
+	}
+
 	protected MaxwellConfig config;
 	protected MaxwellContext context;
 	protected Replicator replicator;
