@@ -15,8 +15,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 
 public class SchemaRegistryProducer extends AbstractKafkaProducer {
@@ -25,7 +28,17 @@ public class SchemaRegistryProducer extends AbstractKafkaProducer {
     private final KafkaProducer<String, GenericRecord> kafka;
     private String schemaMappingURI;
 
-    private static final String jsonSuffix = ".json";
+    private static final String JSON_SUFFIX = ".json";
+
+    private static final String TYPE_NULL = "null";
+    private static final String TYPE_DOUBLE = "double";
+    private static final String TYPE_FLOAT = "float";
+    private static final String TYPE_LONG = "long";
+    private static final String TYPE_STRING = "string";
+    private static final String TYPE_INT = "int";
+    private static final String TYPE_BOOLEAN = "boolean";
+    private static final String TYPE_FIXED = "fixed";
+    private static final String TYPE_BYTES = "bytes";
 
     // NOTE: The KafkaAvroProducer maintains a cache of known childSchemas via an IdentityHashMap.
     // Since the equals method on IdentityHashMap is based on identity, not value - like other hashmaps,
@@ -115,7 +128,37 @@ public class SchemaRegistryProducer extends AbstractKafkaProducer {
     }
 
     private String getResourceKey(String tableName) {
-        return this.schemaMappingURI + tableName + this.jsonSuffix;
+        return this.schemaMappingURI + tableName + this.JSON_SUFFIX;
+    }
+
+    private ArrayList<String> getTypesForSchema(Schema schema, String dataKey) {
+        ArrayList<String> validTypes = new ArrayList<String>();
+        Schema typeSchema = ((Schema.Field) schema.getField(dataKey)).schema();
+
+        if (!typeSchema.getType().getName().equals("union")) {
+            // we have 1 type for this field. add it and return
+            validTypes.add(typeSchema.getType().getName());
+        } else {
+            // multiple types. populate them all and return
+            List<Schema> types = ((Schema.Field) schema.getField(dataKey)).schema().getTypes();
+            Schema[] schemas = types.toArray(new Schema[types.size()]);
+            if (schemas.length > 2) {
+                throw new RuntimeException(">2 types for key " + dataKey);
+            }
+
+            for (Schema s : schemas) {
+                validTypes.add(s.getName());
+            }
+        }
+        return validTypes;
+    }
+
+    private byte[] valueSerializer(Object object) {
+        if (object instanceof BigDecimal) {
+            return ((BigDecimal) object).unscaledValue().toByteArray();
+        } else {
+            throw new RuntimeException("Unknown byte conversion from " + object.getClass().toString());
+        }
     }
 
     /**
@@ -135,26 +178,34 @@ public class SchemaRegistryProducer extends AbstractKafkaProducer {
             // logical types:
             // decimal
             // date
-            // time milli/micro
-            // timestamp milli/micro
+            // time milli/micro precision
+            // timestamp milli/micro precision
             // duration... wtf?
+            ArrayList<String> validTypes = getTypesForSchema(schema, dataKey);
+
             if (data == null) {
+                if (!validTypes.contains(TYPE_NULL)) {
+                    throw new RuntimeException("Invalid null value found in field " + schema.getField(dataKey).name());
+                }
                 record.put(dataKey, null);
-            } else if (((Schema.Field) schema.getField(dataKey)).schema().getType().getName().equals("double")) {
+            } else if (validTypes.contains(TYPE_DOUBLE)) {
                 record.put(dataKey, Double.parseDouble(data.toString()));
-            } else if (((Schema.Field) schema.getField(dataKey)).schema().getType().getName().equals("float")) {
+            } else if (validTypes.contains((TYPE_FLOAT))) {
                 record.put(dataKey, Float.parseFloat(data.toString()));
-            } else if (((Schema.Field) schema.getField(dataKey)).schema().getType().getName().equals("long")) {
+            } else if (validTypes.contains((TYPE_LONG))) {
                 record.put(dataKey, Long.parseLong(data.toString()));
-            } else if (((Schema.Field) schema.getField(dataKey)).schema().getType().getName().equals("string")) {
+            } else if (validTypes.contains((TYPE_STRING))) {
                 record.put(dataKey, data.toString());
-            } else if (((Schema.Field) schema.getField(dataKey)).schema().getType().getName().equals("int")) {
+            } else if (validTypes.contains((TYPE_INT))) {
                 record.put(dataKey, Integer.parseInt(data.toString()));
-            } else if (((Schema.Field) schema.getField(dataKey)).schema().getType().getName().equals("boolean")) {
+            } else if (validTypes.contains((TYPE_BOOLEAN))) {
                 record.put(dataKey, Boolean.parseBoolean(data.toString()));
-            } else if (((Schema.Field) schema.getField(dataKey)).schema().getType().getName().equals("bytes")) {
+            } else if (validTypes.contains((TYPE_FIXED))) {
+                record.put(dataKey, data.toString());
+            } else if (validTypes.contains((TYPE_BYTES))) {
                 // TODO:
-                record.put(dataKey, java.nio.ByteBuffer.wrap(data.toString().getBytes()));
+                byte[] bytes = valueSerializer(data);
+                record.put(dataKey, java.nio.ByteBuffer.wrap(bytes)); //data.toString().getBytes())
             } else {
                 throw new RuntimeException("Unknown mapping for avro type "
                         + ((Schema.Field) schema.getField(dataKey)).schema().getType().getName().toString());
@@ -189,7 +240,8 @@ public class SchemaRegistryProducer extends AbstractKafkaProducer {
             genericRecord.put("value", value);
             record = new ProducerRecord<>(this.ddlTopic, this.ddlPartitioner.kafkaPartition(r, getNumPartitions(this.ddlTopic)), key, genericRecord);
         } else {
-            Schema schema = getSchemaFromCache(getResourceWithCache(getResourceKey(r.getTable())).toString());
+            String schemaString = getResourceWithCache(getResourceKey(r.getTable())).get("schema").toString();
+            Schema schema = getSchemaFromCache(schemaString);
             genericRecord = populateRecordFromRowMap(schema, r);
             String topic = generateTopic(this.topic, r);
             record = new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, getNumPartitions(topic)), key, genericRecord);
