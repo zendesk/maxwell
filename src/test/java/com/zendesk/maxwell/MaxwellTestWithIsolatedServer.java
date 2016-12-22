@@ -11,6 +11,9 @@ import org.junit.*;
 
 public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 	protected static MysqlIsolatedServer server;
+	static {
+		TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+	}
 
 	@BeforeClass
 	public static void setupTest() throws Exception {

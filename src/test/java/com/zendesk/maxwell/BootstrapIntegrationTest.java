@@ -99,6 +99,7 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testStringTypes( ) throws Exception {
 		String epoch = String.valueOf(new Timestamp(0)); // timezone dependent
+		testColumnType("datetime", "'1000-01-01 00:00:00'","1000-01-01 00:00:00", null);
 
 		testColumnType("tinytext", "'hello'", "hello");
 		testColumnType("text", "'hello'", "hello");
@@ -108,7 +109,6 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 		testColumnType("char", "'h'", "h");
 		testColumnType("date", "'2015-11-07'","2015-11-07");
 		testColumnType("datetime", "'2015-11-07 01:02:03'","2015-11-07 01:02:03");
-		testColumnType("datetime", "'1000-01-01 00:00:00'","1000-01-01 00:00:00", null);
 
 		testColumnType("date", "'0000-00-00'",null);
 		testColumnType("datetime", "'1000-01-01 00:00:00'","1000-01-01 00:00:00");

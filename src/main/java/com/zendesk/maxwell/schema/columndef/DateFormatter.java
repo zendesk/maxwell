@@ -19,7 +19,6 @@ public class DateFormatter {
 	private static SimpleDateFormat dateTimeFormatter       = makeFormatter("yyyy-MM-dd HH:mm:ss", false);
 	private static SimpleDateFormat dateTimeUTCFormatter    = makeFormatter("yyyy-MM-dd HH:mm:ss", true);
 
-	private static long MIN_DATE = -30609763200000L;
 	public static Timestamp extractTimestamp(Object value) {
 		if (value instanceof Long) {
 			return new Timestamp((Long) value);
@@ -33,6 +32,7 @@ public class DateFormatter {
 
 	}
 
+	private static Long MIN_DATE = Timestamp.valueOf("1000-01-01 00:00:00").getTime();
 	private static String extractAndFormat(SimpleDateFormat formatter, Object value) {
 		synchronized(formatter) {
 			Timestamp t = extractTimestamp(value);
