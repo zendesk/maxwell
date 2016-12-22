@@ -117,6 +117,13 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 		testColumnType("timestamp", "'2015-11-07 01:02:03'","2015-11-07 01:02:03");
 		testColumnType("timestamp", "'0000-00-00 00:00:00'","" + epoch.substring(0, epoch.length() - 2) + "", null);
 
+		testColumnType("enum('a', 'b')","'a'", "a");
+		testColumnType("bit(8)","b'01010101'", 85);
+		testColumnType("bit(8)","b'1'", 1);
+	}
+
+	@Test
+	public void testSubsecondTypes() throws Exception {
 		if ( server.getVersion().equals("5.6") ) {
 			testColumnType("timestamp(6)", "'2015-11-07 01:02:03.333444'","2015-11-07 01:02:03.333444");
 			testColumnType("timestamp(6)", "'2015-11-07 01:02:03.123'","2015-11-07 01:02:03.123000");
@@ -134,10 +141,6 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 			testColumnType("time(3)", "'01:02:03.123456'","01:02:03.123");
 			testColumnType("time(3)", "'01:02:03.123'","01:02:03.123");
 		}
-
-		testColumnType("enum('a', 'b')","'a'", "a");
-		testColumnType("bit(8)","b'01010101'", 85);
-		testColumnType("bit(8)","b'1'", 1);
 	}
 
 	@Test
