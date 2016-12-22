@@ -1,7 +1,6 @@
 package com.zendesk.maxwell.schema.columndef;
 
 import com.google.code.or.common.util.MySQLConstants;
-import com.zendesk.maxwell.MaxwellConfig;
 
 public class DateColumnDef extends ColumnDef {
 	public DateColumnDef(String name, String type, int pos) {
@@ -15,7 +14,11 @@ public class DateColumnDef extends ColumnDef {
 
 	@Override
 	public String toSQL(Object value) {
-		return "'" + DateFormatter.formatDate(value) + "'";
+		String formatted = DateFormatter.formatDate(value);
+		if ( formatted == null )
+			return null;
+		else
+			return "'" +  formatted + "'";
 	}
 
 	@Override

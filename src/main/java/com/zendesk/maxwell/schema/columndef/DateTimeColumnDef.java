@@ -27,6 +27,9 @@ public class DateTimeColumnDef extends ColumnDefWithLength {
 	protected String formatValue(Object value) {
 		Timestamp ts = DateFormatter.extractTimestamp(value);
 		String dateString = DateFormatter.formatDateTime(value);
-		return objectWithPrecisionToString(dateString, ts, columnLength);
+		if ( dateString == null )
+			return null;
+		else
+			return objectWithPrecisionToString(dateString, ts, columnLength);
 	}
 }
