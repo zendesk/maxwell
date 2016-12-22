@@ -71,7 +71,7 @@ rewrite is in progress).  `MaxwellReplicator` holds a background thread that
 consumes events from a remote mysql server and pushes them, raw, into a queue.
 Those events are then combined with the current mysql schema, converted into a
 [RowMap](https://github.com/zendesk/maxwell/blob/master/src/main/java/com/zendesk/maxwell/row/RowMap.java),
-and handled off to one of a few different producers.  The most advanced of
+and handed off to one of a few different producers.  The most advanced of
 these is the
 [MaxwellKafkaProducer](https://github.com/zendesk/maxwell/blob/master/src/main/java/com/zendesk/maxwell/producer/MaxwellKafkaProducer.java),
 which will convert the `RowMap` into JSON before sending it to Kafka.  Once the
