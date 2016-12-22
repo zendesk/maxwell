@@ -45,7 +45,7 @@ Tabs-only, no spaces.  If you break function calls across lines, do it like:
 
 ## Building documentation
 
-Maxwell uses the excellent [http://www.mkdocs.org/](mkdocs) package with a custom theme for its
+Maxwell uses the excellent [mkdocs](http://www.mkdocs.org/) package with a custom theme for its
 use-facing documentation.  To view your changes, you should get mkdocs via pip
 or easy_install or whatever, and then do:
 
@@ -64,16 +64,16 @@ maintains a view of the current schema (inside of mysql itself) and parses data
 definition language (DDL) SQL to keep that schema current schema.
 
 At its core is the
-[https://github.com/zendesk/maxwell/blob/master/src/main/java/com/zendesk/maxwell/replication/MaxwellReplicator.java](MaxwellReplicator) class,
+[MaxwellReplicator](https://github.com/zendesk/maxwell/blob/master/src/main/java/com/zendesk/maxwell/replication/MaxwellReplicator.java) class,
 which current sits atop a fork of
-[http://github.com/zendesk/open-replicator](open-replicator) (a port to shyko's
+[open-replicator](http://github.com/zendesk/open-replicator) (a port to shyko's
 rewrite is in progress).  `MaxwellReplicator` holds a background thread that
 consumes events from a remote mysql server and pushes them, raw, into a queue.
 Those events are then combined with the current mysql schema, converted into a
-[https://github.com/zendesk/maxwell/blob/master/src/main/java/com/zendesk/maxwell/row/RowMap.java](RowMap),
+[RowMap](https://github.com/zendesk/maxwell/blob/master/src/main/java/com/zendesk/maxwell/row/RowMap.java),
 and handled off to one of a few different producers.  The most advanced of
 these is the
-[https://github.com/zendesk/maxwell/blob/master/src/main/java/com/zendesk/maxwell/producer/MaxwellKafkaProducer.java](MaxwellKafkaProducer),
+[MaxwellKafkaProducer](https://github.com/zendesk/maxwell/blob/master/src/main/java/com/zendesk/maxwell/producer/MaxwellKafkaProducer.java),
 which will convert the `RowMap` into JSON before sending it to Kafka.  Once the
 message has been acked by Kafka, the binlog position is advanced and stored
 back inside mysql.
