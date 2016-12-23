@@ -17,10 +17,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 public class MaxwellTestSupport {
+	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellTestSupport.class);
+
 	public static MysqlIsolatedServer setupServer(String extraParams) throws Exception {
 		MysqlIsolatedServer server = new MysqlIsolatedServer();
 		server.boot(extraParams);
@@ -169,13 +174,21 @@ public class MaxwellTestSupport {
 		callback.afterReplicatorStart(mysql);
 
 		BinlogPosition finalPosition = BinlogPosition.capture(mysql.getConnection());
+		LOGGER.debug("running replicator up to " + finalPosition);
+
+		Long pollTime = 1000L;
+		BinlogPosition lastPositionRead = null;
 
 		for ( ;; ) {
-			RowMap row = maxwell.poll(1000);
+			RowMap row = maxwell.poll(pollTime);
+			pollTime = 500L; // after the first row is receive, we go into a tight loop.
 
 			if ( row == null ) {
+				LOGGER.debug("timed out waiting for final row.  Last position we saw: " + lastPositionRead);
 				break;
 			}
+
+			lastPositionRead = row.getPosition();
 
 			if ( row.getPosition().newerThan(finalPosition) ) {
 				// consume whatever's left over in the buffer.
