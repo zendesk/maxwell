@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.recovery;
 
 import com.zendesk.maxwell.*;
+import com.zendesk.maxwell.replication.BinlogConnectorReplicator;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.MaxwellReplicator;
 import com.zendesk.maxwell.replication.Replicator;
@@ -55,7 +56,7 @@ public class Recovery {
 
 			LOGGER.debug("scanning binlog: " + position);
 
-			Replicator replicator = new MaxwellReplicator(
+			Replicator replicator = new BinlogConnectorReplicator(
 				this.schemaStore,
 				null,
 				null,
