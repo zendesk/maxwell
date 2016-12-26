@@ -20,13 +20,13 @@ public class TimeColumnDef extends ColumnDefWithLength {
 			Time time = new Time(((Timestamp) value).getTime());
 			String timeAsStr = String.valueOf(time);
 
-			return objectWithPrecisionToString(timeAsStr, (Timestamp) value, this.columnLength);
+			return appendFractionalSeconds(timeAsStr, ((Timestamp) value).getNanos(), this.columnLength);
 
 		} else if ( value instanceof Long ) {
-			Time time = new Time((Long) value);
+			Time time = new Time((Long) value / 1000);
 			String timeAsStr = String.valueOf(time);
 
-			return objectWithPrecisionToString(timeAsStr, new Timestamp((Long) value), this.columnLength);
+			return appendFractionalSeconds(timeAsStr, (int) ((Long) value % 1000000) * 1000, this.columnLength);
 		} else {
 			return String.valueOf((Time) value);
 		}
