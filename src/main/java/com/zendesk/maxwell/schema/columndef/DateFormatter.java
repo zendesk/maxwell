@@ -21,7 +21,11 @@ public class DateFormatter {
 
 	public static Timestamp extractTimestamp(Object value) {
 		if (value instanceof Long) {
-			return new Timestamp((Long) value);
+			Long micros = (Long) value;
+			Timestamp t = new Timestamp(micros / 1000);
+
+			t.setNanos((int) (micros % 1000000) * 1000);
+			return t;
 		} else if (value instanceof Timestamp) {
 			return (Timestamp) value;
 		} else if ( value instanceof Date ) {
