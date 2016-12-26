@@ -22,6 +22,11 @@ public class TimeColumnDef extends ColumnDefWithLength {
 
 			return objectWithPrecisionToString(timeAsStr, (Timestamp) value, this.columnLength);
 
+		} else if ( value instanceof Long ) {
+			Time time = new Time((Long) value);
+			String timeAsStr = String.valueOf(time);
+
+			return objectWithPrecisionToString(timeAsStr, new Timestamp((Long) value), this.columnLength);
 		} else {
 			return String.valueOf((Time) value);
 		}
