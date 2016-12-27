@@ -91,7 +91,6 @@ depclean: clean
 	rm -f $(CLASSPATH)
 	rm -Rf target/dependency
 
-
 PKGNAME=maxwell-${MAXWELL_VERSION}
 MAVEN_DIR=target/classes/META-INF/maven/com.zendesk/maxwell
 MAXWELL_JARFILE=target/$(PKGNAME).jar

@@ -5,19 +5,20 @@ before_install:
   - sudo apt-get -qq update
   - sudo apt-get install pastebinit
 install: true
-script: make test
+script:
+  - echo travis_fold:start:compile
+  - KAFKA_VERSION=0.8.2.2 make depclean compile
+  - KAFKA_VERSION=0.10.0.1 make depclean compile
+  - KAFKA_VERSION=0.10.1.0 make depclean compile
+  - make depclean
+  - echo travis_fold:end:compile
+  - make test
 after_script:
   - pastebinit -i test.log
 env:
   matrix:
     - MYSQL_VERSION=5.5
     - MYSQL_VERSION=5.6
-    - KAFKA_VERSION=0.8.2.2
-      MYSQL_VERSION=5.6
-    - KAFKA_VERSION=0.10.0.1
-      MYSQL_VERSION=5.6
-    - KAFKA_VERSION=0.10.1.0
-      MYSQL_VERSION=5.6
     - SHYKO_MODE=1
       MYSQL_VERSION=5.5
     - SHYKO_MODE=1
