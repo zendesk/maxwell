@@ -172,6 +172,7 @@ public class MaxwellTestSupport {
 		synchronized(waitObject) { waitObject.wait(); }
 
 		callback.afterReplicatorStart(mysql);
+		maxwell.context.getPositionStore().heartbeat();
 
 		BinlogPosition finalPosition = BinlogPosition.capture(mysql.getConnection());
 		LOGGER.debug("running replicator up to " + finalPosition);
