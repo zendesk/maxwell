@@ -86,7 +86,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	 * Here we check against a whitelist/blacklist/filter.  The whitelist
 	 * passes updates to `maxwell.bootstrap` through (those are control
 	 * mechanisms for bootstrap), the blacklist gets rid of the
-	 * `ha_health_check` table which shows up oddly in Amazon RDS.
+	 * `ha_health_check` table which shows up erroneously in Alibaba RDS.
 	 *
 	 * @param database The database of the DML
 	 * @param table The table of the DML
@@ -97,8 +97,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 		Boolean isSystemWhitelisted = database.equals(this.maxwellSchemaDatabaseName)
 			&& table.equals("bootstrap");
 
-		Boolean isSystemBlacklisted = database.equals("mysql") && table.equals("ha_health_check");
-		if ( isSystemBlacklisted )
+		if ( MaxwellFilter.isSystemBlacklisted(database, table) )
 			return false;
 		else if ( isSystemWhitelisted)
 			return true;

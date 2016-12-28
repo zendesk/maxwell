@@ -14,11 +14,13 @@ public class TableCache {
 
 	public void processEvent(Schema schema, MaxwellFilter filter, Long tableId, String dbName, String tblName) {
 		if ( !tableMapCache.containsKey(tableId) ) {
-			Database db = schema.findDatabase(dbName);
-
-			if ( filter != null && filter.isTableBlacklisted(dbName, tblName) )
+			if ( filter != null && filter.isTableBlacklisted(dbName, tblName) ) {
 				blacklistedTableCache.put(tableId, tblName);
-			else if ( db == null )
+				return;
+			}
+
+			Database db = schema.findDatabase(dbName);
+			if ( db == null )
 				throw new RuntimeException("Couldn't find database " + dbName);
 			else {
 				Table tbl = db.findTable(tblName);
