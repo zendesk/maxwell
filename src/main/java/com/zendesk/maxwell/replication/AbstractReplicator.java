@@ -65,7 +65,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	 * @param sql The DDL SQL to be processed
 	 * @param schemaStore A SchemaStore object to which we delegate the parsing of the sql
 	 * @param position The position that the SQL happened at
-	 * @param timestmap The timestamp of the SQL binlog event
+	 * @param timestamp The timestamp of the SQL binlog event
 	 */
 	protected void processQueryEvent(String dbName, String sql, SchemaStore schemaStore, BinlogPosition position, Long timestamp) throws Exception {
 		List<ResolvedSchemaChange> changes =  schemaStore.processSQL(sql, dbName, position);
@@ -76,6 +76,11 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 
 		tableCache.clear();
 
+		if ( this.producer != null )
+			this.producer.writePosition(position);
+	}
+
+	protected void processRDSHeartbeatEvent(BinlogPosition position) throws Exception {
 		if ( this.producer != null )
 			this.producer.writePosition(position);
 	}
