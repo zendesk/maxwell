@@ -29,8 +29,6 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 
 	protected BinlogConnectorEventListener binlogEventListener;
 
-	private final String maxwellSchemaDatabaseName;
-
 	private final BinaryLogClient client;
 
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellReplicator.class);
@@ -43,7 +41,6 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 		AbstractBootstrapper bootstrapper,
 		MaxwellMysqlConfig mysqlConfig,
 		Long replicaServerID,
-		boolean shouldHeartbeat,
 		PositionStoreThread positionStoreThread,
 		String maxwellSchemaDatabaseName,
 		BinlogPosition start,
@@ -67,16 +64,7 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 		this.client.setBinlogFilename(start.getFile());
 		this.client.setBinlogPosition(start.getOffset());
 
-		/*
-		this.shouldHeartbeat = shouldHeartbeat;
-		if ( shouldHeartbeat )
-			this.replicator.setHeartbeatPeriod(0.5f);
-			*/
-
 		this.stopOnEOF = stopOnEOF;
-
-		this.maxwellSchemaDatabaseName = maxwellSchemaDatabaseName;
-		this.setBinlogPosition(start);
 	}
 
 	public BinlogConnectorReplicator(SchemaStore schemaStore, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, BinlogPosition start) throws SQLException {
@@ -86,18 +74,12 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 			bootstrapper,
 			ctx.getConfig().replicationMysql,
 			ctx.getConfig().replicaServerID,
-			ctx.shouldHeartbeat(),
 			ctx.getPositionStoreThread(),
 			ctx.getConfig().databaseName,
 			start,
 			false,
 			ctx.getConfig().clientID
 		);
-	}
-
-	public void setBinlogPosition(BinlogPosition p) {
-		this.client.setBinlogFilename(p.getFile());
-		this.client.setBinlogPosition(p.getOffset());
 	}
 
 	private void ensureReplicatorThread() throws Exception {
