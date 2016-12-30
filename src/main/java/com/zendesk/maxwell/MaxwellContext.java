@@ -232,6 +232,9 @@ public class MaxwellContext {
 		case "none":
 			this.producer = null;
 			break;
+		case "rabbitmq":
+			this.producer = new RabbitmqProducer(this);
+				break;
 		default:
 			throw new RuntimeException("Unknown producer type: " + this.config.producerType);
 		}
