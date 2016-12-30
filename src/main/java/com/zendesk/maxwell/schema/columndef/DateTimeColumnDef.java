@@ -1,12 +1,8 @@
 package com.zendesk.maxwell.schema.columndef;
 
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.TimeZone;
 
 import com.google.code.or.common.util.MySQLConstants;
-import com.zendesk.maxwell.MaxwellConfig;
 
 public class DateTimeColumnDef extends ColumnDefWithLength {
 	public DateTimeColumnDef(String name, String type, int pos, Long columnLength) {
@@ -30,6 +26,6 @@ public class DateTimeColumnDef extends ColumnDefWithLength {
 		if ( dateString == null )
 			return null;
 		else
-			return objectWithPrecisionToString(dateString, ts, columnLength);
+			return appendFractionalSeconds(dateString, ts.getNanos(), columnLength);
 	}
 }

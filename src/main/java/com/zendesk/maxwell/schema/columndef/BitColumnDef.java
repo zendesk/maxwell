@@ -3,6 +3,7 @@ package com.zendesk.maxwell.schema.columndef;
 import com.google.code.or.common.util.MySQLConstants;
 
 import java.math.BigInteger;
+import java.util.BitSet;
 
 public class BitColumnDef extends ColumnDef {
 	public BitColumnDef(String name, String type, int pos) {
@@ -19,7 +20,10 @@ public class BitColumnDef extends ColumnDef {
 		byte[] bytes;
 		if( value instanceof Boolean ){
 			bytes = new byte[]{(byte) (( Boolean ) value ? 1 : 0)};
-		}else {
+		} else if ( value instanceof BitSet ) {
+			BitSet bs = (BitSet) value;
+			bytes = bs.toByteArray();
+		} else {
 			bytes = (byte[]) value;
 		}
 		if ( bytes.length == 8 && ((bytes[7] & 0xFF) > 127) ) {
