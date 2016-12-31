@@ -139,6 +139,7 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 			testColumnType("datetime(3)", "'2015-11-07 01:02:03.123456'","2015-11-07 01:02:03.123");
 			testColumnType("datetime(3)", "'2015-11-07 01:02:03.123'","2015-11-07 01:02:03.123");
 			testColumnType("time(3)", "'01:02:03.123456'","01:02:03.123");
+			testColumnType("time(6)", "'01:02:03.123456'","01:02:03.123456");
 			testColumnType("time(3)", "'01:02:03.123'","01:02:03.123");
 		}
 	}

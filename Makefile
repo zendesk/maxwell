@@ -69,13 +69,18 @@ compile-test: compile target/.java-test
 
 TEST_CLASSES=$(shell build/get-test-classes)
 
+define get_test_parameters
+	$(eval filter=$(shell echo $(1) | perl -ne '/#(.*)/; print "--filter=com.zendesk.maxwell.JUnitNameFilterFactory=$$1" if $$1')) \
+	$(eval class_pattern=$(shell echo $(1) | perl -ne '/test\.(\w+)/; print $$1 if $$1')) \
+	$(eval classes=$(if $(class_pattern),$(filter %$(class_pattern),$(TEST_CLASSES)),$(TEST_CLASSES))) \
+	$(filter) $(classes)
+endef
+
+test%: compile-test
+	java -classpath $(JAVA_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore $(call get_test_parameters,$@)
+
 test: compile-test
-	java -Xmx1024m -classpath $(JAVA_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore $(TEST_CLASSES)
-
-test.%:  compile-test
-	java -classpath $(JAVA_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore $(filter %$(subst test.,,$@),$(TEST_CLASSES))
-
-
+	java -classpath $(JAVA_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore $(TEST_CLASSES)
 clean:
 	rm -f  target/.java target/.java-test
 	rm -rf target/classes
@@ -85,7 +90,6 @@ clean:
 depclean: clean
 	rm -f $(CLASSPATH)
 	rm -Rf target/dependency
-
 
 PKGNAME=maxwell-${MAXWELL_VERSION}
 MAVEN_DIR=target/classes/META-INF/maven/com.zendesk/maxwell
