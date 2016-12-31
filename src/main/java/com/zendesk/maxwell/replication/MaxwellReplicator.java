@@ -383,8 +383,8 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 
 	private void processRDSHeartbeatInsertEvent(QueryEvent event) throws Exception {
 		processRDSHeartbeatInsertEvent(
-				event.getDatabaseName().toString(),
-				eventBinlogPosition(event)
+			event.getDatabaseName().toString(),
+			eventBinlogPosition(event)
 		);
 	}
 
