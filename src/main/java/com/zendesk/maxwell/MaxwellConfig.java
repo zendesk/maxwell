@@ -20,6 +20,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public MaxwellMysqlConfig maxwellMysql;
 	public MaxwellFilter filter;
+	public Boolean shykoMode;
 
 	public String databaseName;
 
@@ -54,6 +55,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.replicationMysql = new MaxwellMysqlConfig();
 		this.maxwellMysql = new MaxwellMysqlConfig();
 		this.masterRecovery = false;
+		this.shykoMode = false;
 		this.bufferedProducerSize = 200;
 		setup(null, null); // setup defaults
 	}
@@ -76,6 +78,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "user", "username for host" ).withRequiredArg();
 		parser.accepts( "password", "password for host" ).withOptionalArg();
 		parser.accepts( "jdbc_options", "additional jdbc connection options" ).withOptionalArg();
+		parser.accepts( "binlog_connector", "run with new binlog connector library" ).withRequiredArg();
 
 		parser.accepts( "__separator_2" );
 
@@ -226,6 +229,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.maxwellMysql       = parseMysqlConfig("", options, properties);
 		this.replicationMysql   = parseMysqlConfig("replication_", options, properties);
+		this.shykoMode          = fetchBooleanOption("binlog_connector", options, properties, System.getenv("SHYKO_MODE") != null);
 
 		this.databaseName       = fetchOption("schema_database", options, properties, "maxwell");
 		this.maxwellMysql.database = this.databaseName;
