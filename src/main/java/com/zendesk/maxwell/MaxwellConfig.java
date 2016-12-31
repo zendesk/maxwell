@@ -49,10 +49,10 @@ public class MaxwellConfig extends AbstractConfig {
 	public boolean masterRecovery;
 
 	public String rabbitmqHost;
-    public String rabbitmqExchange;
-    public String rabbitmqExchangeType;
+    	public String rabbitmqExchange;
+    	public String rabbitmqExchangeType;
 
-    public MaxwellConfig() { // argv is only null in tests
+    	public MaxwellConfig() { // argv is only null in tests
 		this.kafkaProperties = new Properties();
 		this.replayMode = false;
 		this.replicationMysql = new MaxwellMysqlConfig();
@@ -138,12 +138,12 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_8" );
 
-        parser.accepts("rabbitmq_host", "Host of Rabbitmq machine").withOptionalArg();
-        parser.accepts("rabbitmq_exchange", "Name of exchange for rabbitmq publisher").withOptionalArg();
-        parser.accepts("rabbitmq_exchange_type", "Exchange type for rabbitmq").withOptionalArg();
+        	parser.accepts("rabbitmq_host", "Host of Rabbitmq machine").withOptionalArg();
+        	parser.accepts("rabbitmq_exchange", "Name of exchange for rabbitmq publisher").withOptionalArg();
+        	parser.accepts("rabbitmq_exchange_type", "Exchange type for rabbitmq").withOptionalArg();
 
 
-        parser.accepts( "help", "display help").forHelp();
+        	parser.accepts( "help", "display help").forHelp();
 
 
 		BuiltinHelpFormatter helpFormatter = new BuiltinHelpFormatter(200, 4) {
