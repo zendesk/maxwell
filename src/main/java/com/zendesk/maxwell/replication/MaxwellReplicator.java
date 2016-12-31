@@ -2,7 +2,7 @@ package com.zendesk.maxwell.replication;
 
 import java.sql.SQLException;
 import java.util.Objects;
-import java.util.List
+import java.util.List;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
