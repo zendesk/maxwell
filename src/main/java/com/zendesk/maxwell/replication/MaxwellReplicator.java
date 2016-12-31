@@ -1,6 +1,8 @@
 package com.zendesk.maxwell.replication;
 
 import java.sql.SQLException;
+import java.util.Objects;
+import java.util.List
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -8,9 +10,13 @@ import java.util.regex.Pattern;
 import com.google.code.or.binlog.impl.event.*;
 import com.google.code.or.net.TransportException;
 import com.zendesk.maxwell.*;
+import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMapBuffer;
 import com.zendesk.maxwell.schema.*;
+import com.zendesk.maxwell.schema.ddl.DDLMap;
+import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
+import com.zendesk.maxwell.util.RunLoopProcess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
