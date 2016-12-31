@@ -1,8 +1,6 @@
 package com.zendesk.maxwell.replication;
 
 import java.sql.SQLException;
-import java.util.Objects;
-import java.util.List;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -10,13 +8,9 @@ import java.util.regex.Pattern;
 import com.google.code.or.binlog.impl.event.*;
 import com.google.code.or.net.TransportException;
 import com.zendesk.maxwell.*;
-import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMapBuffer;
 import com.zendesk.maxwell.schema.*;
-import com.zendesk.maxwell.schema.ddl.DDLMap;
-import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
-import com.zendesk.maxwell.util.RunLoopProcess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -273,7 +267,7 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 						// INSERT INTO mysql.rds_heartbeat2(id, value) values (1,1483041015005) ON DUPLICATE KEY UPDATE value = 1483041015005
 						// As a result they are processed as query events.
 						// When these occur we need to update to update our position.
-						processRDSHeartbeatEvent(qe);
+						processRDSHeartbeatInsertEvent(qe);
 					} else {
 						LOGGER.warn("Unhandled QueryEvent inside transaction: " + qe);
 					}
@@ -381,8 +375,9 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 		);
 	}
 
-	private void processRDSHeartbeatEvent(QueryEvent event) throws Exception {
-		processRDSHeartbeatEvent(
+	private void processRDSHeartbeatInsertEvent(QueryEvent event) throws Exception {
+		processRDSHeartbeatInsertEvent(
+				event.getDatabaseName().toString(),
 				eventBinlogPosition(event)
 		);
 	}

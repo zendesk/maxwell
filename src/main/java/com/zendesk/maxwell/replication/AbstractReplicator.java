@@ -80,9 +80,9 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 			this.producer.writePosition(position);
 	}
 
-	protected void processRDSHeartbeatEvent(BinlogPosition position) throws Exception {
-		if ( this.producer != null )
-			this.producer.writePosition(position);
+	protected void processRDSHeartbeatInsertEvent(String database, BinlogPosition position) throws Exception {
+		HeartbeatRowMap hbr = new HeartbeatRowMap(database, position);
+		this.producer.push(hbr);
 	}
 
 	/**
