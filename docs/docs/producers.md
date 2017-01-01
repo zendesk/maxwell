@@ -88,11 +88,19 @@ http://kafka.apache.org/0100/documentation.html#upgrade_10_performance_impact
 
 ### Kinesis
 
-#### Kinesis Options
+#### Setting up AWS credentials
+
+You will need to obtain an IAM user that has the permission "kinesis:PutRecord" for the stream you are planning on producing to.
+See the [AWS docs](http://docs.aws.amazon.com/streams/latest/dev/controlling-access.html#kinesis-using-iam-examples) for the latest examples on which permissions are needed.
+
 
 The producer uses the [DefaultAWSCredentialsProviderChain](http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html) class to gain aws credentials.
+See the [AWS docs](http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html) on how to setup the IAM user with the Default Credential Provider Chain.
+
+#### Kinesis Options
 
 Set the output stream in `config.properties` by setting the `kinesis_stream` property.
 
 The producer uses the [KPL (Kinesis Producer Library](http://docs.aws.amazon.com/streams/latest/dev/developing-producers-with-kpl.html) and uses the KPL built in configurations.
 Copy `kinesis-producer-library.properties.example` to `kinesis-producer-library.properties` and configure the properties file to your needs.
+The most important option here is configuring the region.
