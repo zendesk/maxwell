@@ -43,6 +43,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public String producerPartitionFallback;
 
 	public String kinesisStream;
+	public boolean kinesisHashKey;
 
 	public String outputFile;
 	public MaxwellOutputConfig outputConfig;
@@ -293,7 +294,8 @@ public class MaxwellConfig extends AbstractConfig {
 			this.producerPartitionFallback = fetchOption("producer_partition_by_fallback", options, properties, null);
 		}
 
-		this.kinesisStream   = fetchOption("kinesis_stream", options, properties, null);
+		this.kinesisStream  = fetchOption("kinesis_stream", options, properties, null);
+		this.kinesisHashKey = fetchBooleanOption("kinesis_hash_key", options, properties, false);
 
 		this.outputFile         = fetchOption("output_file", options, properties, null);
 

@@ -131,6 +131,15 @@ kafka.acks=1
 ######### kinesis ####################
 kinesis_stream=maxwell
 
+# AWS places a 256 unicode character limit on the max key length of a record
+# http://docs.aws.amazon.com/kinesis/latest/APIReference/API_PutRecord.html
+#
+# Setting this option to true enables hashing the key with the md5 algorithm
+# before we send it to kinesis so all the keys work within the key size limit.
+# Values: true, false
+# Default: false
+#kinesis_hash_key=true
+
 ######### filter stuff ###############
 
 # filter rows out of Maxwell's output.
