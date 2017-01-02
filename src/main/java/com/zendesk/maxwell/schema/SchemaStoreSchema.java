@@ -34,6 +34,10 @@ public class SchemaStoreSchema {
 		Statement s = connection.createStatement();
 		ResultSet rs = s.executeQuery("show databases like '" + schemaDatabaseName + "'");
 
+		if (!rs.next())
+			return false;
+
+		rs = s.executeQuery("show tables from `" + schemaDatabaseName + "` like 'schemas'");
 		return rs.next();
 	}
 

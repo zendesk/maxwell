@@ -229,7 +229,8 @@ public class DDLParserTest {
 			"CREATE TEMPORARY TABLE 172898_16841_transmem SELECT t.* FROM map.transmem AS t",
 			"DROP TEMPORARY TABLE IF EXISTS 172898_16841_transmem",
 			"ALTER TEMPORARY TABLE 172898_16841_transmem ADD something VARCHAR(1)",
-			"/* hi bob */ CREATE EVENT FOO"
+			"/* hi bob */ CREATE EVENT FOO",
+			"DELETE FROM `foo`.`bar`"
 		};
 
 		for ( String s : testSQL ) {

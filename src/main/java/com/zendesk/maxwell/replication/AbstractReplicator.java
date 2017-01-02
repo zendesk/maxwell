@@ -65,7 +65,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	 * @param sql The DDL SQL to be processed
 	 * @param schemaStore A SchemaStore object to which we delegate the parsing of the sql
 	 * @param position The position that the SQL happened at
-	 * @param timestmap The timestamp of the SQL binlog event
+	 * @param timestamp The timestamp of the SQL binlog event
 	 */
 	protected void processQueryEvent(String dbName, String sql, SchemaStore schemaStore, BinlogPosition position, Long timestamp) throws Exception {
 		List<ResolvedSchemaChange> changes =  schemaStore.processSQL(sql, dbName, position);
@@ -80,13 +80,18 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 			this.producer.writePosition(position);
 	}
 
+	protected void processRDSHeartbeatInsertEvent(String database, BinlogPosition position) throws Exception {
+		HeartbeatRowMap hbr = new HeartbeatRowMap(database, position);
+		this.producer.push(hbr);
+	}
+
 	/**
 	 * Should we output an event for the given database and table?
 	 *
 	 * Here we check against a whitelist/blacklist/filter.  The whitelist
 	 * passes updates to `maxwell.bootstrap` through (those are control
 	 * mechanisms for bootstrap), the blacklist gets rid of the
-	 * `ha_health_check` table which shows up oddly in Amazon RDS.
+	 * `ha_health_check` table which shows up erroneously in Alibaba RDS.
 	 *
 	 * @param database The database of the DML
 	 * @param table The table of the DML
@@ -97,8 +102,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 		Boolean isSystemWhitelisted = database.equals(this.maxwellSchemaDatabaseName)
 			&& table.equals("bootstrap");
 
-		Boolean isSystemBlacklisted = database.equals("mysql") && table.equals("ha_health_check");
-		if ( isSystemBlacklisted )
+		if ( MaxwellFilter.isSystemBlacklisted(database, table) )
 			return false;
 		else if ( isSystemWhitelisted)
 			return true;

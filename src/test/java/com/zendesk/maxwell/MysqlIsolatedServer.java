@@ -45,6 +45,7 @@ public class MysqlIsolatedServer {
 				"--innodb_flush_log_at_trx_commit=1",
 				serverID,
 				"--character-set-server=utf8",
+				"--default-time-zone=+00:00",
 				"--verbose",
 				xtraParams
 		);

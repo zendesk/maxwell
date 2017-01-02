@@ -15,11 +15,7 @@ public class ColumnWithDefinition {
 	}
 
 	private Object valueForJSON() {
-		if (column instanceof DatetimeColumn)
-			return ((DatetimeColumn) column).getLongValue();
-
 		if (column instanceof AbstractDatetimeColumn) {
-			// time2, datetime2, timestamp2
 			return ((AbstractDatetimeColumn) column).getTimestampValue();
 		}
 
