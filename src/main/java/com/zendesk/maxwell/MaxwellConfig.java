@@ -38,6 +38,10 @@ public class MaxwellConfig extends AbstractConfig {
 	public String bootstrapperType;
 	public int bufferedProducerSize;
 
+	public String producerPartitionKey;
+	public String producerPartitionColumns;
+	public String producerPartitionFallback;
+
 	public String kinesisStream;
 
 	public String outputFile;
@@ -245,9 +249,10 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.kafkaTopic         	= fetchOption("kafka_topic", options, properties, "maxwell");
 		this.kafkaKeyFormat     	= fetchOption("kafka_key_format", options, properties, "hash");
-		this.kafkaPartitionKey  	= fetchOption("kafka_partition_by", options, properties, "database");
+		this.kafkaPartitionKey  	= fetchOption("kafka_partition_by", options, properties, null);
 		this.kafkaPartitionColumns  = fetchOption("kafka_partition_columns", options, properties, null);
 		this.kafkaPartitionFallback = fetchOption("kafka_partition_by_fallback", options, properties, null);
+
 		this.kafkaPartitionHash 	= fetchOption("kafka_partition_hash", options, properties, "default");
 		this.ddlKafkaTopic 		    = fetchOption("ddl_kafka_topic", options, properties, this.kafkaTopic);
 
@@ -266,6 +271,25 @@ public class MaxwellConfig extends AbstractConfig {
 				}
 			}
 		}
+
+		if(this.kafkaPartitionKey != null) {
+			LOGGER.warn("kafka_partition_by is deprecated, please use producer_partition_by");
+			this.producerPartitionKey = this.kafkaPartitionKey;
+		}
+
+		if(this.kafkaPartitionColumns != null) {
+			LOGGER.warn("kafka_partition_columns is deprecated, please use producer_partition_columns");
+			this.producerPartitionColumns = this.kafkaPartitionColumns;
+		}
+
+		if(this.kafkaPartitionFallback != null) {
+			LOGGER.warn("kafka_partition_by_fallback is deprecated, please use producer_partition_by_fallback");
+			this.producerPartitionFallback = this.kafkaPartitionFallback;
+		}
+
+		this.producerPartitionKey		= fetchOption("producer_partition_by", options, properties, "database");
+		this.producerPartitionColumns	= fetchOption("producer_partition_columns", options, properties, null);
+		this.producerPartitionFallback	= fetchOption("producer_partition_by_fallback", options, properties, null);
 
 		this.kinesisStream   = fetchOption("kinesis_stream", options, properties, null);
 

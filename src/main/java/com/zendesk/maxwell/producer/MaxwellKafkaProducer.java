@@ -74,9 +74,9 @@ public class MaxwellKafkaProducer extends AbstractAsyncProducer {
 		this.kafka = new KafkaProducer<>(kafkaProperties, new StringSerializer(), new StringSerializer());
 
 		String hash = context.getConfig().kafkaPartitionHash;
-		String partitionKey = context.getConfig().kafkaPartitionKey;
-		String partitionColumns = context.getConfig().kafkaPartitionColumns;
-		String partitionFallback = context.getConfig().kafkaPartitionFallback;
+		String partitionKey = context.getConfig().producerPartitionKey;
+		String partitionColumns = context.getConfig().producerPartitionColumns;
+		String partitionFallback = context.getConfig().producerPartitionFallback;
 		this.partitioner = new MaxwellKafkaPartitioner(hash, partitionKey, partitionColumns, partitionFallback);
 		this.ddlPartitioner = new MaxwellKafkaPartitioner(hash, "database", null,"database");
 		this.ddlTopic =  context.getConfig().ddlKafkaTopic;

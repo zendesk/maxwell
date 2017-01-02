@@ -11,6 +11,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.producer.partitioners.MaxwellPartitioner;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.row.RowMap;
 
@@ -69,12 +70,17 @@ class KinesisCallback implements FutureCallback<UserRecordResult> {
 public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 	private static final Logger logger = LoggerFactory.getLogger(MaxwellKinesisProducer.class);
 
+	private final MaxwellPartitioner partitioner;
 	private final KinesisProducer kinesisProducer;
 	private final String kinesisStream;
 
 	public MaxwellKinesisProducer(MaxwellContext context, String kinesisStream) {
 		super(context);
 
+		String partitionKey = context.getConfig().producerPartitionKey;
+		String partitionColumns = context.getConfig().producerPartitionColumns;
+		String partitionFallback = context.getConfig().producerPartitionFallback;
+		this.partitioner = new MaxwellPartitioner(partitionKey, partitionColumns, partitionFallback);
 		this.kinesisStream = kinesisStream;
 
 		Path path = Paths.get("kinesis-producer-library.properties");
@@ -88,7 +94,7 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 
 	@Override
 	public void push(RowMap r, AbstractAsyncProducer.CallbackCompleter cc) throws Exception {
-		String key = r.pkToJsonArray();
+		String key = this.partitioner.getHashString(r);
 		String value = r.toJSON(outputConfig);
 
 		ByteBuffer encodedValue = ByteBuffer.wrap(value.getBytes("UTF-8"));
