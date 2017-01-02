@@ -272,24 +272,26 @@ public class MaxwellConfig extends AbstractConfig {
 			}
 		}
 
-		if(this.kafkaPartitionKey != null) {
+		if(this.kafkaPartitionKey != "database") {
 			LOGGER.warn("kafka_partition_by is deprecated, please use producer_partition_by");
 			this.producerPartitionKey = this.kafkaPartitionKey;
+		} else {
+			this.producerPartitionKey = fetchOption("producer_partition_by", options, properties, "database");
 		}
 
 		if(this.kafkaPartitionColumns != null) {
 			LOGGER.warn("kafka_partition_columns is deprecated, please use producer_partition_columns");
 			this.producerPartitionColumns = this.kafkaPartitionColumns;
+		} else {
+			this.producerPartitionColumns = fetchOption("producer_partition_columns", options, properties, null);
 		}
 
 		if(this.kafkaPartitionFallback != null) {
 			LOGGER.warn("kafka_partition_by_fallback is deprecated, please use producer_partition_by_fallback");
 			this.producerPartitionFallback = this.kafkaPartitionFallback;
+		} else {
+			this.producerPartitionFallback = fetchOption("producer_partition_by_fallback", options, properties, null);
 		}
-
-		this.producerPartitionKey		= fetchOption("producer_partition_by", options, properties, "database");
-		this.producerPartitionColumns	= fetchOption("producer_partition_columns", options, properties, null);
-		this.producerPartitionFallback	= fetchOption("producer_partition_by_fallback", options, properties, null);
 
 		this.kinesisStream   = fetchOption("kinesis_stream", options, properties, null);
 
