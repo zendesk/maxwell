@@ -1,10 +1,15 @@
 package com.zendesk.maxwell.schema.ddl;
 
 import com.zendesk.maxwell.CaseSensitivity;
+import com.zendesk.maxwell.Mysql57Tests;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.zendesk.maxwell.MaxwellTestWithIsolatedServer;
 import com.zendesk.maxwell.MaxwellTestSupport;
+import org.junit.experimental.categories.Category;
+import org.junit.runners.Suite;
 
 public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	private void testIntegration(String[] alters) throws Exception {
@@ -359,5 +364,17 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 			"i text(234344) byte" +
 			")"
 		);
+	}
+
+	@Test
+	@Category(Mysql57Tests.class)
+	public void testGeneratedColumns() throws Exception {
+		if ( server.getVersion().equals("5.7") ) {
+			testIntegration("create table t ("
+				+ "a INT GENERATED ALWAYS AS (0) VIRTUAL UNIQUE NOT NULL, "
+				+ "b int AS (a + 0) STORED PRIMARY KEY"
+				+ ")"
+			);
+		}
 	}
 }
