@@ -277,7 +277,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.producerPartitionColumns = fetchOption("producer_partition_columns", options, properties, null);
 		this.producerPartitionFallback = fetchOption("producer_partition_by_fallback", options, properties, null);
 
-		if(!this.kafkaPartitionKey.equals("database")) {
+		if(this.kafkaPartitionKey != null && !this.kafkaPartitionKey.equals("database")) {
 			LOGGER.warn("kafka_partition_by is deprecated, please use producer_partition_by");
 			this.producerPartitionKey = this.kafkaPartitionKey;
 		}
