@@ -41,6 +41,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		config.maxwellMysql.user = "maxwell";
 		config.maxwellMysql.password = "maxwell";
 		config.masterRecovery = true;
+		config.maxwellMysql.jdbcOptions.add("useSSL=false");
 		config.validate();
 		return config;
 	}
