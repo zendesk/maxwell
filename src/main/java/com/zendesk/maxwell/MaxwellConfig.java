@@ -273,7 +273,7 @@ public class MaxwellConfig extends AbstractConfig {
 			}
 		}
 
-		if(this.kafkaPartitionKey != "database") {
+		if(!this.kafkaPartitionKey.equals("database")) {
 			LOGGER.warn("kafka_partition_by is deprecated, please use producer_partition_by");
 			this.producerPartitionKey = this.kafkaPartitionKey;
 		} else {
