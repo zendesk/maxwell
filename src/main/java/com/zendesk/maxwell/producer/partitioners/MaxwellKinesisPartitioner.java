@@ -4,7 +4,7 @@ import com.zendesk.maxwell.row.RowMap;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
-public class MaxwellKinesisPartitioner extends MaxwellPartitioner {
+public class MaxwellKinesisPartitioner extends AbstractMaxwellPartitioner {
 	boolean md5Keys;
 
 	public MaxwellKinesisPartitioner(String partitionKey, String csvPartitionColumns, String partitionKeyFallback, boolean md5Keys) {

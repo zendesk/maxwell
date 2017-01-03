@@ -2,7 +2,7 @@ package com.zendesk.maxwell.producer.partitioners;
 
 import com.zendesk.maxwell.row.RowMap;
 
-public class MaxwellKafkaPartitioner extends MaxwellPartitioner {
+public class MaxwellKafkaPartitioner extends AbstractMaxwellPartitioner {
 	HashFunction hashFunc;
 
 	public MaxwellKafkaPartitioner(String hashFunction, String partitionKey, String csvPartitionColumns, String partitionKeyFallback) {

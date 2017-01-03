@@ -6,13 +6,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MaxwellPartitioner {
+public abstract class AbstractMaxwellPartitioner {
 	HashStringProvider provider;
 	List<String> partitionColumns = new ArrayList<String>();
 
 	String partitionKeyFallback;
 
-	public MaxwellPartitioner(String partitionKey, String csvPartitionColumns, String partitionKeyFallback) {
+	public AbstractMaxwellPartitioner(String partitionKey, String csvPartitionColumns, String partitionKeyFallback) {
 		switch (partitionKey) {
 			case "table": this.provider = new HashStringTable();
 				break;
