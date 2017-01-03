@@ -423,6 +423,12 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		runJSON("/json/test_column_case");
 	}
 
+	@Test
+	public void testJson() throws Exception {
+		if ( server.getVersion().equals("5.7") )
+			runJSON("/json/test_json");
+	}
+
 	static String[] createDBSql = {
 			"CREATE database if not exists `foo`",
 			"CREATE TABLE if not exists `foo`.`ordered_output` ( id int, account_id int, user_id int )"

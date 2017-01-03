@@ -78,6 +78,9 @@ public abstract class ColumnDef {
 			return new SetColumnDef(name, type, pos, enumValues);
 		case "bit":
 			return new BitColumnDef(name, type, pos);
+		case "json":
+			return new JsonColumnDef(name, type, pos);
+
 		default:
 			throw new IllegalArgumentException("unsupported column type " + type);
 		}
