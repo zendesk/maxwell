@@ -5,18 +5,18 @@ import com.zendesk.maxwell.row.RowMap;
 import org.apache.commons.codec.digest.DigestUtils;
 
 public class MaxwellKinesisPartitioner extends MaxwellPartitioner {
-	boolean hashKey;
+	boolean md5Keys;
 
-	public MaxwellKinesisPartitioner(String partitionKey, String csvPartitionColumns, String partitionKeyFallback, boolean hashKey) {
+	public MaxwellKinesisPartitioner(String partitionKey, String csvPartitionColumns, String partitionKeyFallback, boolean md5Keys) {
 		super(partitionKey, csvPartitionColumns, partitionKeyFallback);
 
-		this.hashKey = hashKey;
+		this.md5Keys = md5Keys;
 	}
 
 	public String getKinesisKey(RowMap r) {
 		String key = this.getHashString(r);
 
-		if(hashKey) {
+		if(md5Keys) {
 			return DigestUtils.md5Hex(key);
 		}
 

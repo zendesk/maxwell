@@ -138,7 +138,7 @@ kinesis_stream=maxwell
 # before we send it to kinesis so all the keys work within the key size limit.
 # Values: true, false
 # Default: false
-#kinesis_hash_key=true
+#kinesis_md5_keys=true
 
 ######### filter stuff ###############
 
