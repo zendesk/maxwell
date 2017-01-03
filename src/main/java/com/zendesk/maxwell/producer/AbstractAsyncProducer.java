@@ -37,7 +37,7 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 		this.inflightMessages = new InflightMessageList();
 	}
 
-	public abstract void push(RowMap r, CallbackCompleter cc) throws Exception;
+	public abstract void sendAsync(RowMap r, CallbackCompleter cc) throws Exception;
 
 	@Override
 	public final void push(RowMap r) throws Exception {
@@ -58,6 +58,6 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 
 		CallbackCompleter cc = new CallbackCompleter(inflightMessages, r.getPosition(), r.isTXCommit(), context);
 
-		push(r, cc);
+		sendAsync(r, cc);
 	}
 }
