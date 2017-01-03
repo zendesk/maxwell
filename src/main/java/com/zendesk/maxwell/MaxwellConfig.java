@@ -98,11 +98,15 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis" ).withRequiredArg();
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
-		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
-		parser.accepts( "kafka_partition_by", "database|table|primary_key|column, kafka producer assigns partition by hashing the specified parameter").withRequiredArg();
-		parser.accepts( "kafka_partition_columns", "comma separated list of columns, the columns that should be used for partitioning when kafka_partition_by=column").withRequiredArg();
-		parser.accepts( "kafka_partition_by_fallback", "database|table|primary_key, kafka_partition_by fallback when the using 'column' partitioning and the columsn are not present in the row").withRequiredArg();
 
+		parser.accepts( "producer_partition_by", "database|table|primary_key|column, kafka/kinesis producers will partition by this value").withRequiredArg();
+		parser.accepts( "producer_partition_columns", "with producer_partition_by=column, partition by the value of these columns.  comma separated.");
+		parser.accepts( "producer_partition_by_fallback", "database|table|primary_key, fallback to this value when when sing 'column' partitioning and the columns are not present in the row").withRequiredArg();
+
+		parser.accepts( "kafka_partition_by", "[deprecated]").withRequiredArg();
+		parser.accepts( "kafka_partition_columns", "[deprecated]").withRequiredArg();
+		parser.accepts( "kafka_partition_by_fallback", "[deprecated]").withRequiredArg();
+		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
 		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning").withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
 		parser.accepts( "kafka_key_format", "how to format the kafka key; array|hash").withOptionalArg();
@@ -153,7 +157,10 @@ public class MaxwellConfig extends AbstractConfig {
 			public String format(Map<String, ? extends OptionDescriptor> options) {
 				this.addRows(options.values());
 				String output = this.formattedHelpOutput();
-				return output.replaceAll("--__separator_.*", "");
+				output = output.replaceAll("--__separator_.*", "");
+
+				Pattern deprecated = Pattern.compile("^.*\\[deprecated\\].*\\n", Pattern.MULTILINE);
+				return deprecated.matcher(output).replaceAll("");
 			}
 		};
 
