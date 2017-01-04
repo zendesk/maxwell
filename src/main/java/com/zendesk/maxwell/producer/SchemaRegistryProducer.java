@@ -154,8 +154,12 @@ public class SchemaRegistryProducer extends AbstractKafkaProducer {
     }
 
     private byte[] valueSerializer(Object object) {
-        if (object instanceof BigDecimal) {
+        if (object instanceof String) {
+            return ((String) object).getBytes();//ByteBuffer.wrap((byte[]) ((String) object).getBytes());
+        } else if (object instanceof BigDecimal) {
             return ((BigDecimal) object).unscaledValue().toByteArray();
+        } else if (object instanceof byte[]) {
+            return (byte[]) object;
         } else {
             throw new RuntimeException("Unknown byte conversion from " + object.getClass().toString());
         }
@@ -173,14 +177,6 @@ public class SchemaRegistryProducer extends AbstractKafkaProducer {
 
         for (String dataKey : rowMap.getDataKeys()) {
             Object data = rowMap.getData(dataKey);
-            // TODO: what other types need dealing with?
-            // TODO: all avro types.... logical and otherwise.
-            // logical types:
-            // decimal
-            // date
-            // time milli/micro precision
-            // timestamp milli/micro precision
-            // duration... wtf?
             ArrayList<String> validTypes = getTypesForSchema(schema, dataKey);
 
             if (data == null) {
@@ -203,9 +199,8 @@ public class SchemaRegistryProducer extends AbstractKafkaProducer {
             } else if (validTypes.contains((TYPE_FIXED))) {
                 record.put(dataKey, data.toString());
             } else if (validTypes.contains((TYPE_BYTES))) {
-                // TODO:
                 byte[] bytes = valueSerializer(data);
-                record.put(dataKey, java.nio.ByteBuffer.wrap(bytes)); //data.toString().getBytes())
+                record.put(dataKey, java.nio.ByteBuffer.wrap(bytes));
             } else {
                 throw new RuntimeException("Unknown mapping for avro type "
                         + ((Schema.Field) schema.getField(dataKey)).schema().getType().getName().toString());
