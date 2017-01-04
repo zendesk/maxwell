@@ -81,6 +81,7 @@ column_options:
 	| COLUMN_FORMAT (FIXED|DYNAMIC|DEFAULT)
 	| STORAGE (DISK|MEMORY|DEFAULT)
 	| reference_definition
+	| CHECK skip_parens
 ;
 
 primary_key: PRIMARY KEY;
