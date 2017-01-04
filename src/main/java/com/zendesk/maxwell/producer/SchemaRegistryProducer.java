@@ -79,8 +79,11 @@ public class SchemaRegistryProducer extends AbstractKafkaProducer {
         this.schemaMappingURI = context.getConfig().schemaMappingURI;
     }
 
-    /** TODO: fix or rm docs (please fix)
-     * Load the keyLookup, dataColumn and childSchemas from the specified config file.
+    /**
+     * Loads a resource and returns its content as a JSONObject.
+     *
+     * @param resourceURI
+     * @return a JSONObject containing the content loaded from the URI
      */
     private JSONObject loadResource(String resourceURI) {
         if (resourceURI == null) {
@@ -97,6 +100,13 @@ public class SchemaRegistryProducer extends AbstractKafkaProducer {
         }
     }
 
+    /**
+     * Looks up and returns the data for the given uri.
+     * If it doesn't exist it looks up the resource and caches it.
+     *
+     * @param uri
+     * @return the data for the given uri as a JSONObject
+     */
     private JSONObject getResourceWithCache(String uri) {
         JSONObject schemaInfo;
         if (this.resourceCache.containsKey(uri)){
@@ -131,6 +141,13 @@ public class SchemaRegistryProducer extends AbstractKafkaProducer {
         return this.schemaMappingURI + tableName + this.JSON_SUFFIX;
     }
 
+    /**
+     * Looks up the expected types for the schema's dataKey.
+     *
+     * @param schema
+     * @param dataKey
+     * @return an ArrayList of expected types for this schema's dataKey
+     */
     private ArrayList<String> getTypesForSchema(Schema schema, String dataKey) {
         ArrayList<String> validTypes = new ArrayList<String>();
         Schema typeSchema = ((Schema.Field) schema.getField(dataKey)).schema();
@@ -151,18 +168,6 @@ public class SchemaRegistryProducer extends AbstractKafkaProducer {
             }
         }
         return validTypes;
-    }
-
-    private byte[] valueSerializer(Object object) {
-        if (object instanceof String) {
-            return ((String) object).getBytes();//ByteBuffer.wrap((byte[]) ((String) object).getBytes());
-        } else if (object instanceof BigDecimal) {
-            return ((BigDecimal) object).unscaledValue().toByteArray();
-        } else if (object instanceof byte[]) {
-            return (byte[]) object;
-        } else {
-            throw new RuntimeException("Unknown byte conversion from " + object.getClass().toString());
-        }
     }
 
     /**
@@ -199,7 +204,7 @@ public class SchemaRegistryProducer extends AbstractKafkaProducer {
             } else if (validTypes.contains((TYPE_FIXED))) {
                 record.put(dataKey, data.toString());
             } else if (validTypes.contains((TYPE_BYTES))) {
-                byte[] bytes = valueSerializer(data);
+                byte[] bytes = getBytesForObject(data);
                 record.put(dataKey, java.nio.ByteBuffer.wrap(bytes));
             } else {
                 throw new RuntimeException("Unknown mapping for avro type "
@@ -207,6 +212,24 @@ public class SchemaRegistryProducer extends AbstractKafkaProducer {
             }
         }
         return record;
+    }
+
+    /**
+     * Convert an object to its byte[] value.
+     *
+     * @param object
+     * @return byte[] containing the data from the object
+     */
+    private byte[] getBytesForObject(Object object) {
+        if (object instanceof String) {
+            return ((String) object).getBytes();//ByteBuffer.wrap((byte[]) ((String) object).getBytes());
+        } else if (object instanceof BigDecimal) {
+            return ((BigDecimal) object).unscaledValue().toByteArray();
+        } else if (object instanceof byte[]) {
+            return (byte[]) object;
+        } else {
+            throw new RuntimeException("Unknown byte conversion from " + object.getClass().toString());
+        }
     }
 
     protected Integer getNumPartitions(String topic) {
