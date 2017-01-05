@@ -230,7 +230,14 @@ public class MaxwellContext {
 			this.producer = new BufferedProducer(this, this.config.bufferedProducerSize);
 			break;
 		case "httppost":
-			this.producer = new HttpPostProducer(this, this.config.httpPostEndPoint, this.config.httpPostHmacSecret);
+			if (this.config.httpPostHmacAlias != null) {
+				this.producer = new HmacHttpProducer(
+						this, this.config.httpPostEndPoint,
+						this.config.httpPostHmacAlias, this.config.httpPostHmacSecret
+				);
+			} else {
+				this.producer = new BackoffHttpProducer(this, this.config.httpPostEndPoint);
+			}
 			break;
 		case "none":
 			this.producer = null;

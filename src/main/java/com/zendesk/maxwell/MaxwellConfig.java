@@ -41,7 +41,8 @@ public class MaxwellConfig extends AbstractConfig {
 	public MaxwellOutputConfig outputConfig;
 	public String log_level;
 
-    public String httpPostEndPoint;
+	public String httpPostEndPoint;
+	public String httpPostHmacAlias;
 	public String httpPostHmacSecret;
 
 	public String clientID;
@@ -104,6 +105,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "__separator_4" );
 
 		parser.accepts( "httppost_endpoint", "provide an endpoint to send data to using the httppost producer" ).withRequiredArg();
+		parser.accepts( "httppost_hmacalias", "secret alias (keyId) for calculating HMAC digest for httppost producer" ).withRequiredArg();
 		parser.accepts( "httppost_hmacsecret", "secret key for calculating HMAC digest for httppost producer" ).withRequiredArg();
 		parser.accepts( "output_binlog_position", "produced records include binlog position; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_commit_info", "produced records include commit and xid; [true|false]. default: true" ).withOptionalArg();
@@ -266,7 +268,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.outputFile         = fetchOption("output_file", options, properties, null);
 
-        this.httpPostEndPoint   = fetchOption("httppost_endpoint", options, properties, null);
+		this.httpPostEndPoint   = fetchOption("httppost_endpoint", options, properties, null);
+		this.httpPostHmacAlias  = fetchOption("httppost_hmacalias", options, properties, null);
 		this.httpPostHmacSecret = fetchOption("httppost_hmacsecret", options, properties, null);
 
 		this.includeDatabases   = fetchOption("include_dbs", options, properties, null);
@@ -358,8 +361,13 @@ public class MaxwellConfig extends AbstractConfig {
 				&& this.outputFile == null) {
 			usageForOptions("please specify --output_file=FILE to use the file producer", "--producer", "--output_file");
 		} else if ( this.producerType.equals("httppost")
-                && this.httpPostEndPoint == null)
+				&& this.httpPostEndPoint == null) {
 			usageForOptions("please specify --httppost_endpoint=URI to use the httppost producer", "--producer", "--httppost_endpoint");
+		} else if ( this.producerType.equals("httppost")
+				&& (this.httpPostHmacAlias != null && this.httpPostHmacSecret == null)
+				|| (this.httpPostHmacAlias == null && this.httpPostHmacSecret != null))
+			usageForOptions("please specify --httppost_hmacalias=keyId and --httppost_hmacsecret=yoursecret to use the httppost producer with HMAC auth", "--httppost_hmacalias", "--httppost_hmacsecret");
+
 
 
 		if ( !this.bootstrapperType.equals("async")
