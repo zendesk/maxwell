@@ -112,7 +112,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "kafka_key_format", "how to format the kafka key; array|hash").withOptionalArg();
 		parser.accepts( "kafka_version", "switch to kafka 0.8, 0.10 or 0.10.1 producer (from 0.9)");
 
-		parser.accepts( "kinesis_stream", "optionally provide kinesis stream name").withOptionalArg();
+		parser.accepts( "kinesis_stream", "kinesis stream name").withOptionalArg();
 
 		parser.accepts( "__separator_4" );
 
@@ -122,7 +122,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "output_server_id", "produced records include server_id; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_thread_id", "produced records include thread_id; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_ddl", "produce DDL records to ddl_kafka_topic [true|false]. default: false" ).withOptionalArg();
-		parser.accepts( "ddl_kafka_topic", "optionally provide a topic name to push DDL records to. default: kafka_topic").withOptionalArg();
+		parser.accepts( "ddl_kafka_topic", "optionally provide an alternate topic to push DDL records to. default: kafka_topic").withOptionalArg();
 
 		parser.accepts( "__separator_5" );
 
