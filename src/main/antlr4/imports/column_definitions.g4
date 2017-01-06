@@ -80,6 +80,8 @@ column_options:
 	| COMMENT string_literal
 	| COLUMN_FORMAT (FIXED|DYNAMIC|DEFAULT)
 	| STORAGE (DISK|MEMORY|DEFAULT)
+	| (VIRTUAL | STORED)
+	| (GENERATED ALWAYS)? AS skip_parens
 	| reference_definition
 	| CHECK skip_parens
 ;
