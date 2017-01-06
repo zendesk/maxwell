@@ -75,9 +75,6 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 		}
 
 		tableCache.clear();
-
-		if ( this.producer != null )
-			this.producer.writePosition(position);
 	}
 
 	protected void processRDSHeartbeatInsertEvent(String database, BinlogPosition position) throws Exception {

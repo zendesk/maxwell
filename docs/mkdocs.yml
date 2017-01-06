@@ -4,7 +4,7 @@ pages:
   - 'Overview': 'index.md'
   - 'Quick Start': 'quickstart.md'
   - 'Configuration': 'config.md'
-  - 'Kafka': 'kafka.md'
+  - 'Producers': 'producers.md'
   - 'Data Format': 'dataformat.md'
   - 'Bootstrapping': 'bootstrapping.md'
   - 'Compat / Caveats': 'compat.md'
