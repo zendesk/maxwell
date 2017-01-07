@@ -1,5 +1,5 @@
 FROM java:openjdk-7-jre
-ENV MAXWELL_VERSION 1.6.0
+ENV MAXWELL_VERSION 1.7.0
 
 RUN apt-get update && apt-get -y upgrade
 

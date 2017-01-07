@@ -17,7 +17,7 @@ advanced features:
   parser for create/alter/drop statements (nope, there was no other way).
 
 &rarr; Download:
-[https://github.com/zendesk/maxwell/releases/download/v1.6.0/maxwell-1.6.0.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.6.0/maxwell-1.6.0.tar.gz)
+[https://github.com/zendesk/maxwell/releases/download/v1.7.0/maxwell-1.7.0.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.7.0/maxwell-1.7.0.tar.gz)
 <br/>
 &rarr; Source:
 [https://github.com/zendesk/maxwell](https://github.com/zendesk/maxwell)
