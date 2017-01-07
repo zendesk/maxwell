@@ -168,6 +168,33 @@
             <div class="col-md-10" role="main">
 
 <h1 id="maxwell-changelog">Maxwell changelog</h1>
+<h3 id="v170-lucky-me-lucky-mud"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.7.0">v1.7.0</a>: "lucky me, lucky mud"</h3>
+<p>Maxwell 1.7 brings 2 major new, alpha features.  The first is Mysql 5.7
+support, including JSON column type support and handling of 5.7 SQL, but
+<em>not</em> including GTID support yet.  This is based on porting Maxwell to
+Stanley Shyko's binlog-connector library.  Thanks to Stanley for his
+amazing support doing this port.</p>
+<p>The second major new feature is a producer for Amazon's Kinesis streams,
+This was contributed in full by the dogged and persistent Thomas Dziedzic.
+Check it out with <code>--producer=kinesis</code>.</p>
+<p>There's also some bugfixes:</p>
+<ul>
+<li>Amazon RDS heartbeat events now tick maxwell's position, thx Scott Ferguson</li>
+<li>allow CHECK() statements inside column definitions</li>
+</ul>
+<h3 id="v160-give-me-a-quest"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.6.0">v1.6.0</a>: "give me a quest"</h3>
+<p>This is mostly a bugfix release, but it gets a minor version bump due to
+a single change of behavior: dates and timestamps which mysql may
+accept, but are considered invalid (0000-00-00 is a notable example)
+previously had inconsistent behavior.  Now we convert these to NULL.
+Other bugfixes:</p>
+<ul>
+<li>heartbeats have moved into their own table</li>
+<li>more fixes around alibaba rds</li>
+<li>ignore DELETE statements that are output for MEMORY tables upon server
+  restart</li>
+<li>allow pointing maxwell to a pre-existing database</li>
+</ul>
 <h3 id="v152-french-banana"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.5.2">v1.5.2</a>: "french banana"</h3>
 <ul>
 <li>add support for kafka 0.10.1 @ smferguson</li>
