@@ -69,7 +69,7 @@
             
             
                 <li >
-                    <a href="../kafka/">Kafka</a>
+                    <a href="../producers/">Producers</a>
                 </li>
             
             
@@ -107,7 +107,7 @@
                     </a>
                 </li>
                 <li >
-                    <a rel="prev" href="../kafka/">
+                    <a rel="prev" href="../producers/">
                         Next <i class="fa fa-arrow-right"></i>
                     </a>
                 </li>
@@ -138,7 +138,7 @@
               
                   <ul class="nav">
                   
-                      <li class="toctree-l3"><a href="#command-line-options">Command line options</a></li>
+                      <li class="toctree-l3"><a href="#command-line-configproperties-options">Command line / config.properties options</a></li>
                       
                   
                       <li class="toctree-l3"><a href="#properties-file">Properties file</a></li>
@@ -163,7 +163,7 @@
           </li>
         
           <li >
-              <a href="../kafka/">Kafka</a>
+              <a href="../producers/">Producers</a>
               
           </li>
         
@@ -191,8 +191,10 @@
 </div></div>
             <div class="col-md-10" role="main">
 
-<h3 id="command-line-options">Command line options</h3>
+<h3 id="command-line-configproperties-options">Command line / config.properties options</h3>
 <hr />
+<p>At the minimum, you will need to specify 'host', 'user', 'password', 'producer'.
+The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requires 'kinesis_stream'.</p>
 <table>
 <thead>
 <tr>
@@ -213,7 +215,7 @@
 <td>config</td>
 <td>STRING</td>
 <td>location of <code>config.properties</code> file</td>
-<td></td>
+<td>$PWD/config.properties</td>
 </tr>
 <tr>
 <td>log_level</td>
@@ -354,21 +356,21 @@
 <td>maxwell</td>
 </tr>
 <tr>
-<td>kafka_partition_by</td>
+<td>producer_partition_by</td>
 <td>[database &#124; table &#124; primary_key &#124; column]</td>
 <td>input to kafka partition function</td>
 <td>database</td>
 </tr>
 <tr>
-<td>kafka_partition_columns</td>
+<td>producer_partition_columns</td>
 <td>STRING</td>
 <td>if partitioning by 'column', a comma separated list of columns</td>
 <td></td>
 </tr>
 <tr>
-<td>kafka_partition_by_fallback</td>
+<td>producer_partition_by_fallback</td>
 <td>[database &#124; table &#124; primary_key]</td>
-<td>required when kafka_partition_by=column.  Used when the column is missing</td>
+<td>required when producer_partition_by=column.  Used when the column is missing</td>
 <td></td>
 </tr>
 <tr>
@@ -388,6 +390,18 @@
 <td>[0.8 &#124; 0.9 &#124; 0.10 &#124; 0.10.1]</td>
 <td>run maxwell with kafka producer 0.8.2, 0.9.0, 0.10.0.1 or 0.10.1.0.  Not available in config.properties.</td>
 <td>0.9.0</td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>kinesis_stream</td>
+<td>STRING</td>
+<td>kinesis stream name</td>
+<td></td>
 </tr>
 <tr>
 <td><strong>formatting</strong></td>

@@ -69,7 +69,7 @@
             
             
                 <li >
-                    <a href="../kafka/">Kafka</a>
+                    <a href="../producers/">Producers</a>
                 </li>
             
             
@@ -139,7 +139,7 @@
           </li>
         
           <li >
-              <a href="../kafka/">Kafka</a>
+              <a href="../producers/">Producers</a>
               
           </li>
         
@@ -161,7 +161,7 @@
                       <li class="toctree-l3"><a href="#requirements">Requirements:</a></li>
                       
                   
-                      <li class="toctree-l3"><a href="#unsupported-configurations">Unsupported configurations</a></li>
+                      <li class="toctree-l3"><a href="#mysql-57">Mysql 5.7</a></li>
                       
                   
                       <li class="toctree-l3"><a href="#binlog_row_imageminimal">binlog_row_image=MINIMAL</a></li>
@@ -187,13 +187,14 @@
 <hr />
 <ul>
 <li>JRE 7 or above</li>
-<li>mysql 5.1, 5.5, 5.6</li>
+<li>mysql 5.1, 5.5, 5.6, 5.7 (alpha)</li>
 <li>kafka 0.8.2 or greater</li>
 </ul>
-<h3 id="unsupported-configurations">Unsupported configurations</h3>
+<h3 id="mysql-57">Mysql 5.7</h3>
 <hr />
 <ul>
-<li>Mysql 5.7 is untested with Maxwell.  GTID replication is known to not function.</li>
+<li>Mysql 5.7 support is considered alpha-quality at the moment.  JSON columns
+  are supported, but GTID replication is not as of yet.</li>
 </ul>
 <h3 id="binlog_row_imageminimal">binlog_row_image=MINIMAL</h3>
 <hr />

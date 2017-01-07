@@ -9,7 +9,7 @@
         
         <link rel="shortcut icon" href="../img/robut.ico">
 
-        <title>Kafka - Maxwell's Daemon</title>
+        <title>Producers - Maxwell's Daemon</title>
 
         <link href="../css/bootstrap.min.css" rel="stylesheet">
         <link href="../css/bootstrap-theme.min.css" rel="stylesheet">
@@ -69,7 +69,7 @@
             
             
                 <li class="active">
-                    <a href="./">Kafka</a>
+                    <a href="./">Producers</a>
                 </li>
             
             
@@ -139,20 +139,29 @@
           </li>
         
           <li class="active">
-              <a href="./">Kafka</a>
+              <a href="./">Producers</a>
               
                   <ul class="nav">
                   
                       <li class="toctree-l3"><a href="#kafka-options">Kafka options</a></li>
                       
                   
+                      <li class="toctree-l3"><a href="#kafka-topic">Kafka topic</a></li>
+                      
+                  
                       <li class="toctree-l3"><a href="#kafka-key">Kafka key</a></li>
                       
                   
-                      <li class="toctree-l3"><a href="#partitioning">Partitioning</a></li>
+                      <li class="toctree-l3"><a href="#kafka-partitioning">Kafka Partitioning</a></li>
                       
                   
-                      <li class="toctree-l3"><a href="#kafka-09">Kafka 0.9</a></li>
+                      <li class="toctree-l3"><a href="#kafka-client-version">Kafka client version</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#kinesis-aws-credentials">Kinesis AWS credentials</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#kinesis-options">Kinesis Options</a></li>
                       
                   
                   </ul>
@@ -188,12 +197,26 @@
 <p>Any options given to Maxwell that are prefixed with <code>kafka.</code> will be passed directly into the Kafka producer configuration
 (with <code>kafka.</code> stripped off).  We use the "new producer" configuration, as described here:
 <a href="http://kafka.apache.org/documentation.html#newproducerconfigs">http://kafka.apache.org/documentation.html#newproducerconfigs</a></p>
-<p>These are recommended properties. You can remove or update them in <code>config.properties</code>.
-- kafka.acks = 1
-- kafka.compression.type = snappy
-- kafka.metadata.fetch.timeout.ms=5000
-- kafka.retries=0</p>
-<p>Maxwell writes to a kafka topic named "maxwell" by default. It can be static, e.g. 'maxwell', or dynamic, e.g. <code>namespace_%{database}_%{table}</code>. In the latter case 'database' and 'table' will be replaced with the values for the row being processed. This can be changed with the <code>kafka_topic</code> option.</p>
+<p>Here's some decent kafka properties. You can set them in <code>config.properties</code>.</p>
+<pre><code>kafka.acks = 1
+kafka.compression.type = snappy
+kafka.metadata.fetch.timeout.ms=5000
+kafka.retries=0
+</code></pre>
+
+<p>Note that these settings are optimized for throughput rather than full
+consistency.  For at-least-once delivery, you will want something more like:</p>
+<pre><code>kafka.acks = all
+kafka.retries = 5 # or some larger number
+</code></pre>
+
+<p>And you will also want to set <code>min.insync.replicas</code> on Maxwell's output topic.</p>
+<h3 id="kafka-topic">Kafka topic</h3>
+<hr />
+<p>Maxwell writes to a kafka topic named "maxwell" by default. It can be static,
+e.g. 'maxwell', or dynamic, e.g. <code>namespace_%{database}_%{table}</code>. In the
+latter case 'database' and 'table' will be replaced with the values for the row
+being processed. This can be changed with the <code>kafka_topic</code> option.</p>
 <h3 id="kafka-key">Kafka key</h3>
 <hr />
 <p>Maxwell generates keys for its Kafka messages based upon a mysql row's primary key in JSON format:</p>
@@ -203,16 +226,29 @@
 <p>This key is designed to co-operate with Kafka's log compaction, which will save the last-known
 value for a key, allowing Maxwell's Kafka stream to retain the last-known value for a row and act
 as a source of truth.</p>
-<h3 id="partitioning">Partitioning</h3>
+<h3 id="kafka-partitioning">Kafka Partitioning</h3>
 <hr />
 <p>A binlog event's partition is determined by the selected hash function and hash string as follows</p>
 <pre><code>  HASH_FUNCTION(HASH_STRING) % TOPIC.NUMBER_OF_PARTITIONS
 </code></pre>
 
-<p>The HASH_FUNCTION is either java's <em>hashCode</em> or <em>murmurhash3</em>. The default HASH_FUNCTION is <em>hashCode</em>. Murmurhash3 may be set with the <code>kafka_partition_hash</code> option. The seed value for the murmurhash function is hardcoded to 25342 in the MaxwellKafkaPartitioner class.</p>
-<p>The HASH_STRING may be (<em>database</em>, <em>table</em>, <em>primary_key</em>, <em>column</em>).  The default HASH_STRING is the <em>database</em>. The partitioning field can be configured using the <code>kafka_partition_by</code> option.</p>
-<p>When using <code>kafka_partition_by</code>=<em>column</em> you must set <code>kafka_partition_columns</code> with the column name(s) to partition by (e.g. <code>kafka_partition_columns</code>=user_id or <code>kafka_partition_columns</code>=user_id,create_date). You must also set <code>kafka_partiton_by_fallback</code>. This may be (<em>database</em>, <em>table</em>, <em>primary_key</em>). It is used when the column(s) specified does not exist in the current row. The default is <em>database</em>.
-When partitioning by <em>column</em> Maxwell will treat the values for the specified columns as strings, concatenate them and use that value to partition the data. The above example, partitioning by user_id + create_date would have a partition key similar to <em>1178532016-10-10 18:29:04</em>.</p>
+<p>The HASH_FUNCTION is either java's <em>hashCode</em> or <em>murmurhash3</em>. The default
+HASH_FUNCTION is <em>hashCode</em>. Murmurhash3 may be set with the
+<code>kafka_partition_hash</code> option. The seed value for the murmurhash function is
+hardcoded to 25342 in the MaxwellKafkaPartitioner class.</p>
+<p>The HASH_STRING may be (<em>database</em>, <em>table</em>, <em>primary_key</em>, <em>column</em>).  The
+default HASH_STRING is the <em>database</em>. The partitioning field can be configured
+using the <code>producer_partition_by</code> option.</p>
+<p>When using <code>producer_partition_by</code>=<em>column</em> you must set
+<code>producer_partition_columns</code> with the column name(s) to partition by (e.g.
+<code>producer_partition_columns</code>=user_id or
+<code>producer_partition_columns</code>=user_id,create_date). You must also set
+<code>kafka_partiton_by_fallback</code>. This may be (<em>database</em>, <em>table</em>, <em>primary_key</em>).
+It is used when the column(s) specified does not exist in the current row. The
+default is <em>database</em>.  When partitioning by <em>column</em> Maxwell will treat the
+values for the specified columns as strings, concatenate them and use that
+value to partition the data. The above example, partitioning by user_id +
+create_date would have a partition key similar to <em>1178532016-10-10 18:29:04</em>.</p>
 <p>Maxwell will discover the number of partitions in its kafka topic upon boot.  This means that you should pre-create your kafka topics,
 and with at least as many partitions as you have logical databases:</p>
 <pre><code>bin/kafka-topics.sh --zookeeper ZK_HOST:2181 --create \
@@ -220,34 +256,34 @@ and with at least as many partitions as you have logical databases:</p>
 </code></pre>
 
 <p><a href="http://kafka.apache.org/documentation.html#quickstart">http://kafka.apache.org/documentation.html#quickstart</a></p>
-<h3 id="kafka-09">Kafka 0.9</h3>
+<h3 id="kafka-client-version">Kafka client version</h3>
 <hr />
 <p>By default, maxwell runs with kafka clients 0.9.0.1. There is a flag (--kafka_version) that allows maxwell to run with either 0.8.2.2, 0.9.0.1, 0.10.0.1 or 0.10.1.0.
 Noteables:
 - Kafka clients 0.9.0.1 are not compatible with brokers running kafka 0.8. The exception below will show in logs when that is the case:</p>
-<pre><code>14:53:06,033 ERROR Sender - Uncaught error in kafka producer I/O thread: 
-org.apache.kafka.common.protocol.types.SchemaException: Error reading field 'throttle_time_ms': java.nio.BufferUnderflowException
-    at org.apache.kafka.common.protocol.types.Schema.read(Schema.java:71) ~[kafka-clients-0.9.0.1.jar:?]
-    at org.apache.kafka.clients.NetworkClient.handleCompletedReceives(NetworkClient.java:439) ~[kafka-clients-0.9.0.1.jar:?]
-    at org.apache.kafka.clients.NetworkClient.poll(NetworkClient.java:265) ~[kafka-clients-0.9.0.1.jar:?]
-    at org.apache.kafka.clients.producer.internals.Sender.run(Sender.java:216) ~[kafka-clients-0.9.0.1.jar:?]
-    at org.apache.kafka.clients.producer.internals.Sender.run(Sender.java:128) [kafka-clients-0.9.0.1.jar:?]
-    at java.lang.Thread.run(Thread.java:745) [?:1.7.0_79]
+<pre><code>ERROR Sender - Uncaught error in kafka producer I/O thread:
+SchemaException: Error reading field 'throttle_time_ms': java.nio.BufferUnderflowException
 </code></pre>
 
 <ul>
 <li>Kafka clients 0.8 and 0.9 are compatible with brokers running kafka 0.8.</li>
 <li>0.10.0.x clients only support 0.10.0.x or later brokers.</li>
-<li>Mixing Kafka 0.10 with other versions can lead to serious performance impacts:
-http://kafka.apache.org/0100/documentation.html#upgrade_10<blockquote>
-<p>Notes to clients with version 0.9.0.0: Due to a bug introduced in 0.9.0.0, clients that depend on ZooKeeper (old Scala high-level Consumer and MirrorMaker if used with the old consumer) will not work with 0.10.0.x brokers. Therefore, 0.9.0.0 clients should be upgraded to 0.9.0.1 before brokers are upgraded to 0.10.0.x. This step is not necessary for 0.8.X or 0.9.0.1 clients.
-http://kafka.apache.org/0100/documentation.html#upgrade_10_performance_impact
-The message format in 0.10.0 includes a new timestamp field and uses relative offsets for compressed messages. The on disk message format can be configured through log.message.format.version in the server.properties file. The default on-disk message format is 0.10.0. If a consumer client is on a version before 0.10.0.0, it only understands message formats before 0.10.0. In this case, the broker is able to convert messages from the 0.10.0 format to an earlier format before sending the response to the consumer on an older version. However, the broker can't use zero-copy transfer in this case. Reports from the Kafka community on the performance impact have shown CPU utilization going from 20% before to 100% after an upgrade, which forced an immediate upgrade of all clients to bring performance back to normal. To avoid such message conversion before consumers are upgraded to 0.10.0.0, one can set log.message.format.version to 0.8.2 or 0.9.0 when upgrading the broker to 0.10.0.0. This way, the broker can still use zero-copy transfer to send the data to the old consumers. Once consumers are upgraded, one can change the message format to 0.10.0 on the broker and enjoy the new message format that includes new timestamp and improved compression. The conversion is supported to ensure compatibility and can be useful to support a few apps that have not updated to newer clients yet, but is impractical to support all consumer traffic on even an overprovisioned cluster. Therefore it is critical to avoid the message conversion as much as possible when brokers have been upgraded but the majority of clients have not.
-For clients that are upgraded to 0.10.0.0, there is no performance impact.
-Note: By setting the message format version, one certifies that all existing messages are on or below that message format version. Otherwise consumers before 0.10.0.0 might break. In particular, after the message format is set to 0.10.0, one should not change it back to an earlier format as it may break consumers on versions before 0.10.0.0.</p>
-</blockquote>
-</li>
+<li>Mixing Kafka 0.10 with other versions can lead to serious performance impacts.
+  For More details, <a href="http://kafka.apache.org/0100/documentation.html#upgrade_10_performance_impact">read about it here</a>.</li>
 </ul>
+<hr />
+<h3 id="kinesis-aws-credentials">Kinesis AWS credentials</h3>
+<hr />
+<p>You will need to obtain an IAM user that has the permission "kinesis:PutRecord" for the stream you are planning on producing to.
+See the <a href="http://docs.aws.amazon.com/streams/latest/dev/controlling-access.html#kinesis-using-iam-examples">AWS docs</a> for the latest examples on which permissions are needed.</p>
+<p>The producer uses the <a href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html">DefaultAWSCredentialsProviderChain</a> class to gain aws credentials.
+See the <a href="http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html">AWS docs</a> on how to setup the IAM user with the Default Credential Provider Chain.</p>
+<h3 id="kinesis-options">Kinesis Options</h3>
+<hr />
+<p>Set the output stream in <code>config.properties</code> by setting the <code>kinesis_stream</code> property.</p>
+<p>The producer uses the <a href="http://docs.aws.amazon.com/streams/latest/dev/developing-producers-with-kpl.html">KPL (Kinesis Producer Library</a> and uses the KPL built in configurations.
+Copy <code>kinesis-producer-library.properties.example</code> to <code>kinesis-producer-library.properties</code> and configure the properties file to your needs.
+The most important option here is configuring the region.</p>
 <script>
   jQuery(document).ready(function () {
     jQuery("table").addClass("table table-condensed table-bordered table-hover");
