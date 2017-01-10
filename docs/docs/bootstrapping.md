@@ -19,6 +19,11 @@ Alternatively you can insert a row in the `maxwell.bootstrap` table to trigger a
 ```
 mysql> insert into maxwell.bootstrap (database_name, table_name) values ('fooDB', 'barTable');
 ```
+Optionally, you can include a date field and starting point.
+```
+mysql> insert into maxwell.bootstrap (database_name, table_name, field_name, start_date) values ('fooDB', 'barTable', 'insert_date', str_to_date('2017-01-01 11:07:13','%Y-%m-%d %H:%i:%s'));
+
+```
 
 ### Async vs Sync bootstrapping
 ***

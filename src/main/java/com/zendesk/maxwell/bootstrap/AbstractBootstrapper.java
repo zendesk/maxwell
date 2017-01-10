@@ -41,6 +41,14 @@ public abstract class AbstractBootstrapper {
 		return (String) rowmap.getData("table_name");
 	}
 
+	protected String bootstrapField(RowMap rowmap) {
+		return (String) rowmap.getData("field_name");
+	}
+
+	protected String bootstrapStart(RowMap rowmap) {
+		return (String) rowmap.getData("start_date");
+	}
+
 	abstract public boolean shouldSkip(RowMap row) throws SQLException, IOException;
 
 	abstract public void startBootstrap(RowMap startBootstrapRow, AbstractProducer producer, Replicator replicator) throws Exception;

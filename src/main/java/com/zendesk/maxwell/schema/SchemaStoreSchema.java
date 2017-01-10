@@ -110,6 +110,10 @@ public class SchemaStoreSchema {
 			performAlter(c, "alter table `bootstrap` modify column inserted_rows bigint unsigned not null default 0");
 		}
 
+		if ( !getTableColumns("bootstrap", c).containsKey("field_name") ) {
+			performAlter(c, "alter table `bootstrap` add column field_name varchar(255)");
+			performAlter(c, "alter table `bootstrap` add column start_date datetime");
+		}
 
 		HashMap<String, String> schemaColumns = getTableColumns("schemas", c);
 		if ( !schemaColumns.containsKey("charset")) {

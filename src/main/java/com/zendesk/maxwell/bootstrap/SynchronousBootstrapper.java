@@ -37,7 +37,14 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		String databaseName = bootstrapDatabase(startBootstrapRow);
 		String tableName = bootstrapTable(startBootstrapRow);
 
-		LOGGER.debug(String.format("bootstrapping request for %s.%s", databaseName, tableName));
+		String fieldName = bootstrapField(startBootstrapRow);
+		String startDate = bootstrapStart(startBootstrapRow);
+
+		String logString = String.format("bootstrapping request for %s.%s", databaseName, tableName);
+		if (fieldName != null && startDate != null) {
+			logString += String.format("with field %s, value %s", fieldName, startDate);
+		}
+		LOGGER.debug(logString);
 
 		Schema schema = replicator.getSchema();
 		Database database = findDatabase(schema, databaseName);
@@ -50,9 +57,9 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		try ( Connection connection = getConnection();
 			  Connection streamingConnection = getStreamingConnection()) {
 			setBootstrapRowToStarted(startBootstrapRow, connection);
-			ResultSet resultSet = getAllRows(databaseName, tableName, schema, streamingConnection);
+			ResultSet resultSet = getAllRows(databaseName, tableName, schema, fieldName, startDate, streamingConnection);
 			int insertedRows = 0;
-	                lastInsertedRowsUpdateTimeMillis = 0; // ensure updateInsertedRowsColumn is called at least once
+			lastInsertedRowsUpdateTimeMillis = 0; // ensure updateInsertedRowsColumn is called at least once
 			while ( resultSet.next() ) {
 				RowMap row = bootstrapEventRowMap("bootstrap-insert", table, position);
 				setRowValues(row, resultSet, table);
@@ -178,14 +185,27 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		findTable(tableName, database);
 	}
 
-	private ResultSet getAllRows(String databaseName, String tableName, Schema schema, Connection connection) throws SQLException, InterruptedException {
-		Statement statement = createBatchStatement(connection);
+	private ResultSet getAllRows(String databaseName, String tableName, Schema schema, String fieldName, String startDate,
+								 Connection connection) throws SQLException, InterruptedException {
 		String pk = schema.findDatabase(databaseName).findTable(tableName).getPKString();
-		if ( pk != null && !pk.equals("") ) {
-			return statement.executeQuery(String.format("select * from `%s`.%s order by %s", databaseName, tableName, pk));
-		} else {
-			return statement.executeQuery(String.format("select * from `%s`.%s", databaseName, tableName));
+
+		String sql = String.format("select * from `%s`.`%s`", databaseName, tableName);
+
+		if ( fieldName != null && startDate != null ) {
+			sql += String.format(" where `%s`", fieldName);
+			sql += " >= str_to_date(?, '%Y-%m-%d %H:%i:%s')";
 		}
+
+		if ( pk != null && !pk.equals("") ) {
+			sql += String.format(" order by %s", pk);
+		}
+
+		PreparedStatement preparedStatement = connection.prepareStatement(sql);
+		if ( fieldName != null && startDate != null ) {
+			preparedStatement.setString(1, startDate);
+		}
+
+		return preparedStatement.executeQuery();
 	}
 
 	private Statement createBatchStatement(Connection connection) throws SQLException, InterruptedException {
