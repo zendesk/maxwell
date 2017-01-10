@@ -11,7 +11,7 @@ include ETL, cache building/expiring, metrics collection, and search indexing.
 advanced features:
 
 - Can do `SELECT * from table` (bootstrapping) initial loads of a table.
-  - Optionally can use a `WHERE` clause to load (replay) part of the table, `SELECT * FROM table WHERE _field_name_ >= _datetime_`.
+  - Optionally can use a `WHERE` clause to load (replay) part of the table, `SELECT * FROM table WHERE _field_name_ >= _field_value_`.
 - supports automatic position recover on master promotion
 - flexible partitioning schemes for Kakfa - by database, table, primary key, or column
 - Maxwell pulls all this off by acting as a full mysql replica, including a SQL

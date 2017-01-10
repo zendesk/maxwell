@@ -37,12 +37,11 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		String databaseName = bootstrapDatabase(startBootstrapRow);
 		String tableName = bootstrapTable(startBootstrapRow);
 
-		String fieldName = bootstrapField(startBootstrapRow);
-		String startDate = bootstrapStart(startBootstrapRow);
+		String whereClause = bootstrapWhere(startBootstrapRow);
 
 		String logString = String.format("bootstrapping request for %s.%s", databaseName, tableName);
-		if (fieldName != null && startDate != null) {
-			logString += String.format("with field %s, value %s", fieldName, startDate);
+		if ( whereClause != null ) {
+			logString += String.format(" with where clause %s", whereClause);
 		}
 		LOGGER.debug(logString);
 
@@ -57,7 +56,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		try ( Connection connection = getConnection();
 			  Connection streamingConnection = getStreamingConnection()) {
 			setBootstrapRowToStarted(startBootstrapRow, connection);
-			ResultSet resultSet = getAllRows(databaseName, tableName, schema, fieldName, startDate, streamingConnection);
+			ResultSet resultSet = getAllRows(databaseName, tableName, schema, whereClause, streamingConnection);
 			int insertedRows = 0;
 			lastInsertedRowsUpdateTimeMillis = 0; // ensure updateInsertedRowsColumn is called at least once
 			while ( resultSet.next() ) {
@@ -185,34 +184,29 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		findTable(tableName, database);
 	}
 
-	private ResultSet getAllRows(String databaseName, String tableName, Schema schema, String fieldName, String startDate,
-								 Connection connection) throws SQLException, InterruptedException {
-		String pk = schema.findDatabase(databaseName).findTable(tableName).getPKString();
+    private ResultSet getAllRows(String databaseName, String tableName, Schema schema, String whereClause,
+                                 Connection connection) throws SQLException, InterruptedException {
+        Statement statement = createBatchStatement(connection);
+        String pk = schema.findDatabase(databaseName).findTable(tableName).getPKString();
 
-		String sql = String.format("select * from `%s`.`%s`", databaseName, tableName);
+        String sql = String.format("select * from `%s`.%s", databaseName, tableName);
 
-		if ( fieldName != null && startDate != null ) {
-			sql += String.format(" where `%s`", fieldName);
-			sql += " >= str_to_date(?, '%Y-%m-%d %H:%i:%s')";
-		}
+        if ( whereClause != null && !whereClause.equals("") ) {
+            sql += String.format(" where %s", whereClause);
+        }
 
-		if ( pk != null && !pk.equals("") ) {
-			sql += String.format(" order by %s", pk);
-		}
+        if ( pk != null && !pk.equals("") ) {
+            sql += String.format(" order by %s", pk);
+        }
 
-		PreparedStatement preparedStatement = connection.prepareStatement(sql);
-		if ( fieldName != null && startDate != null ) {
-			preparedStatement.setString(1, startDate);
-		}
+        return statement.executeQuery(sql);
+    }
 
-		return preparedStatement.executeQuery();
-	}
-
-	private Statement createBatchStatement(Connection connection) throws SQLException, InterruptedException {
-		Statement statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-		statement.setFetchSize(Integer.MIN_VALUE);
-		return statement;
-	}
+    private Statement createBatchStatement(Connection connection) throws SQLException, InterruptedException {
+        Statement statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+        statement.setFetchSize(Integer.MIN_VALUE);
+        return statement;
+    }
 
 	private void setBootstrapRowToStarted(RowMap startBootstrapRow, Connection connection) throws SQLException, NoSuchElementException {
 		String sql = "update `bootstrap` set started_at=NOW() where id=?";
