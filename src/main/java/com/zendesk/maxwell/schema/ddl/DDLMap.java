@@ -54,5 +54,9 @@ public class DDLMap extends RowMap {
 		}
 		return mapper.writeValueAsString(changeMixin);
 	}
-}
 
+	@Override
+	public boolean shouldOutput(MaxwellOutputConfig outputConfig) {
+		return outputConfig.outputDDL;
+	}
+}

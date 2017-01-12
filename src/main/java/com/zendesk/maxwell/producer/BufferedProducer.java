@@ -23,9 +23,6 @@ public class BufferedProducer extends AbstractProducer {
 		} catch ( InterruptedException e ) {}
 	}
 
-	@Override
-	public void writePosition(BinlogPosition p) throws SQLException { }
-
 	public RowMap poll(long timeout, TimeUnit unit) throws InterruptedException {
 		RowMap r = this.queue.poll(timeout, unit);
 		if (r != null) {

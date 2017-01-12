@@ -41,6 +41,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		config.maxwellMysql.user = "maxwell";
 		config.maxwellMysql.password = "maxwell";
 		config.masterRecovery = true;
+		config.maxwellMysql.jdbcOptions.add("useSSL=false");
 		config.validate();
 		return config;
 	}
@@ -86,7 +87,8 @@ public class RecoveryTest extends TestWithNameLogging {
 			slaveConfig.databaseName,
 			slaveContext.getReplicationConnectionPool(),
 			slaveContext.getCaseSensitivity(),
-			recoveryInfo
+			recoveryInfo,
+			System.getenv("SHYKO_MODE") != null
 		);
 
 		BinlogPosition recoveredPosition = recovery.recover();
@@ -122,7 +124,8 @@ public class RecoveryTest extends TestWithNameLogging {
 			slaveConfig.databaseName,
 			slaveContext.getReplicationConnectionPool(),
 			slaveContext.getCaseSensitivity(),
-			recoveryInfo
+			recoveryInfo,
+			System.getenv("SHYKO_MODE") != null
 		);
 
 		BinlogPosition recoveredPosition = recovery.recover();

@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.SQLException;
 
 
-public abstract class AbstractKafkaProducer extends AbstractProducer {
+public abstract class AbstractKafkaProducer extends AbstractAsyncProducer {
     static final Logger LOGGER = LoggerFactory.getLogger(AbstractKafkaProducer.class);
 
     protected InflightMessageList inflightMessages;
@@ -57,12 +57,5 @@ public abstract class AbstractKafkaProducer extends AbstractProducer {
         if ( newPosition != null ) {
             context.setPosition(newPosition);
         }
-    }
-
-    @Override
-    public void writePosition(BinlogPosition p) throws SQLException {
-        // ensure that we don't prematurely advance the binlog pointer.
-        inflightMessages.addMessage(p);
-        inflightMessages.completeMessage(p);
     }
 }

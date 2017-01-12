@@ -222,6 +222,8 @@ public class MaxwellContext {
 			break;
 		case "kafka-schema-registry":
 			this.producer = new SchemaRegistryProducer(this, this.config.getKafkaProperties(), this.config.kafkaTopic);
+		case "kinesis":
+			this.producer = new MaxwellKinesisProducer(this, this.config.kinesisStream);
 			break;
 		case "profiler":
 			this.producer = new ProfilerProducer(this);

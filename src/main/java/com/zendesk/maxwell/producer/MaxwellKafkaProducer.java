@@ -36,7 +36,7 @@ public class MaxwellKafkaProducer extends AbstractKafkaProducer {
 	}
 
 	@Override
-	public void push(RowMap r) throws Exception {
+	public void sendAsync(RowMap r, AbstractAsyncProducer.CallbackCompleter cc) throws Exception {
 		String key = r.pkToJson(keyFormat);
 		String value = r.toJSON(outputConfig);
 
@@ -53,15 +53,14 @@ public class MaxwellKafkaProducer extends AbstractKafkaProducer {
 			record = new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, getNumPartitions(topic)), key, value);
 		}
 
+		KafkaCallback callback = new KafkaCallback(this.inflightMessages, r.getPosition(), r.isTXCommit(), this.context, key, value);
+
 		if ( r.isTXCommit() )
 			inflightMessages.addMessage(r.getPosition());
-
 
 		/* if debug logging isn't enabled, release the reference to `value`, which can ease memory pressure somewhat */
 		if ( !KafkaCallback.LOGGER.isDebugEnabled() )
 			value = null;
-
-		KafkaCallback callback = new KafkaCallback(inflightMessages, r.getPosition(), r.isTXCommit(), this.context, key, value);
 
 		kafka.send(record, callback);
 	}

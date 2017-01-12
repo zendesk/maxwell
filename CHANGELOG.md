@@ -1,5 +1,39 @@
 # Maxwell changelog
 
+### [v1.7.0](https://github.com/zendesk/maxwell/releases/tag/v1.7.0): "lucky me, lucky mud"
+
+
+Maxwell 1.7 brings 2 major new, alpha features.  The first is Mysql 5.7
+support, including JSON column type support and handling of 5.7 SQL, but
+*not* including GTID support yet.  This is based on porting Maxwell to
+Stanley Shyko's binlog-connector library.  Thanks to Stanley for his
+amazing support doing this port.
+
+The second major new feature is a producer for Amazon's Kinesis streams,
+This was contributed in full by the dogged and persistent Thomas Dziedzic.
+Check it out with `--producer=kinesis`.
+
+There's also some bugfixes:
+
+- Amazon RDS heartbeat events now tick maxwell's position, thx Scott Ferguson
+- allow CHECK() statements inside column definitions
+
+
+### [v1.6.0](https://github.com/zendesk/maxwell/releases/tag/v1.6.0): "give me a quest"
+
+This is mostly a bugfix release, but it gets a minor version bump due to
+a single change of behavior: dates and timestamps which mysql may
+accept, but are considered invalid (0000-00-00 is a notable example)
+previously had inconsistent behavior.  Now we convert these to NULL.
+Other bugfixes:
+
+- heartbeats have moved into their own table
+- more fixes around alibaba rds
+- ignore DELETE statements that are output for MEMORY tables upon server
+  restart
+- allow pointing maxwell to a pre-existing database
+
+
 ### [v1.5.2](https://github.com/zendesk/maxwell/releases/tag/v1.5.2): "french banana"
 
 

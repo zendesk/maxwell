@@ -203,7 +203,8 @@ public class DDLParserTest {
 			"create table `shard1.foo` ( `id.foo` int ) collate = `utf8_bin`",
 			"create table if not exists audit_payer_bank_details (event_time TIMESTAMP default CURRENT_TIMESTAMP())",
 			"ALTER TABLE foo RENAME INDEX index_quote_request_follow_on_data_on_model_name TO index_quote_request_follow_on_data_on_model_class_name",
-			"ALTER TABLE foo DROP COLUMN `ducati` CASCADE"
+			"ALTER TABLE foo DROP COLUMN `ducati` CASCADE",
+			"CREATE TABLE account_groups ( visible_to_all CHAR(1) DEFAULT 'N' NOT NULL CHECK (visible_to_all IN ('Y','N')))"
 		};
 
 		for ( String s : testSQL ) {
@@ -229,7 +230,8 @@ public class DDLParserTest {
 			"CREATE TEMPORARY TABLE 172898_16841_transmem SELECT t.* FROM map.transmem AS t",
 			"DROP TEMPORARY TABLE IF EXISTS 172898_16841_transmem",
 			"ALTER TEMPORARY TABLE 172898_16841_transmem ADD something VARCHAR(1)",
-			"/* hi bob */ CREATE EVENT FOO"
+			"/* hi bob */ CREATE EVENT FOO",
+			"DELETE FROM `foo`.`bar`"
 		};
 
 		for ( String s : testSQL ) {
