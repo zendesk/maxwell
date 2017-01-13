@@ -11,6 +11,7 @@ option                                        | description
 --port PORT                                   | mysql port
 --database DATABASE                           | mysql database containing the table to bootstrap
 --table TABLE                                 | mysql table to bootstrap
+--where WHERE_CLAUSE                          | where clause to restrict the rows bootstrapped from the specified table
 
 ### Using the maxwell.bootstrap table
 ***
@@ -21,7 +22,12 @@ mysql> insert into maxwell.bootstrap (database_name, table_name) values ('fooDB'
 ```
 Optionally, you can include a where clause to replay part of the data.
 ```
-mysql> insert into maxwell.bootstrap (database_name, table_name, where_clause) values ('fooDB', 'barTable', 'my_date >= str_to_date(\'2017-01-01 11:07:13\',\'%Y-%m-%d %H:%i:%s\')');
+mysql> insert into maxwell.bootstrap (database_name, table_name, where_clause) values ('fooDB', 'barTable', 'my_date >= \'2017-01-01 11:07:13\'');
+
+```
+or
+```
+mysql> insert into maxwell.bootstrap (database_name, table_name, where_clause) values ('fooDB', 'barTable', 'my_id = 13');
 
 ```
 

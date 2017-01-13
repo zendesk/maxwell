@@ -46,8 +46,8 @@ public class MaxwellBootstrapUtility {
 				getInsertedRowsCount(connection, config.monitorBootstrapID);
 				rowId = config.monitorBootstrapID;
 			} else {
-				Long totalRows = calculateRowCount(connection, config.databaseName, config.tableName);
-				rowId = insertBootstrapStartRow(connection, config.databaseName, config.tableName, totalRows);
+				Long totalRows = calculateRowCount(connection, config.databaseName, config.tableName, config.whereClause);
+				rowId = insertBootstrapStartRow(connection, config.databaseName, config.tableName, config.whereClause, totalRows);
 			}
 
 			try {
@@ -151,22 +151,37 @@ public class MaxwellBootstrapUtility {
 		}
 	}
 
-	private Long calculateRowCount(Connection connection, String db, String table) throws SQLException {
+	private Long calculateRowCount(Connection connection, String db, String table, String whereClause) throws SQLException {
 		LOGGER.info("counting rows");
 		String sql = String.format("select count(*) from `%s`.%s", db, table);
+		if ( whereClause != null ) {
+			sql += String.format(" where %s", whereClause);
+		}
 		PreparedStatement preparedStatement = connection.prepareStatement(sql);
 		ResultSet resultSet = preparedStatement.executeQuery();
 		resultSet.next();
 		return resultSet.getLong(1);
 	}
 
-	private long insertBootstrapStartRow(Connection connection, String db, String table, Long totalRows) throws SQLException {
+	private long insertBootstrapStartRow(Connection connection, String db, String table, String whereClause, Long totalRows) throws SQLException {
 		LOGGER.info("inserting bootstrap start row");
-		String sql = "insert into `bootstrap` (database_name, table_name, total_rows) values(?, ?, ?)";
+		String sql = null;
+		if ( whereClause != null ) {
+			sql = "insert into `bootstrap` (database_name, table_name, where_clause, total_rows) values(?, ?, ?, ?)";
+		} else {
+			sql = "insert into `bootstrap` (database_name, table_name, total_rows) values(?, ?, ?)";
+		}
 		PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 		preparedStatement.setString(1, db);
 		preparedStatement.setString(2, table);
-		preparedStatement.setLong(3, totalRows);
+
+		if ( whereClause != null ) {
+			preparedStatement.setString(3, whereClause);
+			preparedStatement.setLong(4, totalRows);
+		} else {
+			preparedStatement.setLong(3, totalRows);
+		}
+
 		preparedStatement.execute();
 		ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
 		generatedKeys.next();

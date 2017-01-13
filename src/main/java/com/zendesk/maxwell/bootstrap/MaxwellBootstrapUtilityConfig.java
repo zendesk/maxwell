@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.bootstrap;
 
 import joptsimple.*;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +21,7 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 	public String  databaseName;
 	public String  schemaDatabaseName;
 	public String  tableName;
+	public String  whereClause;
 	public String  log_level;
 
 	public Long    abortBootstrapID;
@@ -40,6 +42,7 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 		parser.accepts( "__separator_1", "" );
 		parser.accepts( "database", "database that contains the table to bootstrap").withRequiredArg();
 		parser.accepts( "table", "table to bootstrap").withRequiredArg();
+		parser.accepts( "where", "where clause to restrict the rows bootstrapped from the specified table. e.g. my_date >= '2017-01-01 11:07:13'").withOptionalArg();
 		parser.accepts( "__separator_2", "" );
 		parser.accepts( "abort", "bootstrap_id to abort" ).withRequiredArg();
 		parser.accepts( "monitor", "bootstrap_id to monitor" ).withRequiredArg();
@@ -129,6 +132,9 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 			this.tableName = (String) options.valueOf("table");
 		else if ( !options.has("abort") && !options.has("monitor") )
 			usage("please specify a table");
+
+		if ( options.has("where")  && !StringUtils.isEmpty(((String) options.valueOf("where"))) )
+			this.whereClause = (String) options.valueOf("where");
 	}
 
 	private void parseFile(String filename, boolean abortOnMissing) {
