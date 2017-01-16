@@ -21,15 +21,12 @@ Alternatively you can insert a row in the `maxwell.bootstrap` table to trigger a
 mysql> insert into maxwell.bootstrap (database_name, table_name) values ('fooDB', 'barTable');
 ```
 Optionally, you can include a where clause to replay part of the data.
-```
-mysql> insert into maxwell.bootstrap (database_name, table_name, where_clause) values ('fooDB', 'barTable', 'my_date >= \'2017-01-01 11:07:13\'');
 
-```
+bin/maxwell-bootstrap --config localhost.properties --database foobar --table test --log_level info
+
 or
-```
-mysql> insert into maxwell.bootstrap (database_name, table_name, where_clause) values ('fooDB', 'barTable', 'my_id = 13');
 
-```
+bin/maxwell-bootstrap --config localhost.properties --database foobar --table test --where "my_date >= '2017-01-07 00:00:00'" --log_level info
 
 ### Async vs Sync bootstrapping
 ***

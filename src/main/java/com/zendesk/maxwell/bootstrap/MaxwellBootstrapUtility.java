@@ -166,21 +166,14 @@ public class MaxwellBootstrapUtility {
 	private long insertBootstrapStartRow(Connection connection, String db, String table, String whereClause, Long totalRows) throws SQLException {
 		LOGGER.info("inserting bootstrap start row");
 		String sql = null;
-		if ( whereClause != null ) {
-			sql = "insert into `bootstrap` (database_name, table_name, where_clause, total_rows) values(?, ?, ?, ?)";
-		} else {
-			sql = "insert into `bootstrap` (database_name, table_name, total_rows) values(?, ?, ?)";
-		}
+		sql = "insert into `bootstrap` (database_name, table_name, where_clause, total_rows) values(?, ?, ?, ?)";
+
 		PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 		preparedStatement.setString(1, db);
 		preparedStatement.setString(2, table);
 
-		if ( whereClause != null ) {
-			preparedStatement.setString(3, whereClause);
-			preparedStatement.setLong(4, totalRows);
-		} else {
-			preparedStatement.setLong(3, totalRows);
-		}
+		preparedStatement.setString(3, whereClause);
+		preparedStatement.setLong(4, totalRows);
 
 		preparedStatement.execute();
 		ResultSet generatedKeys = preparedStatement.getGeneratedKeys();

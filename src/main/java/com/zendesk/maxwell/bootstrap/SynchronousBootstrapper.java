@@ -184,29 +184,29 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		findTable(tableName, database);
 	}
 
-    private ResultSet getAllRows(String databaseName, String tableName, Schema schema, String whereClause,
-                                 Connection connection) throws SQLException, InterruptedException {
-        Statement statement = createBatchStatement(connection);
-        String pk = schema.findDatabase(databaseName).findTable(tableName).getPKString();
+	private ResultSet getAllRows(String databaseName, String tableName, Schema schema, String whereClause,
+								Connection connection) throws SQLException, InterruptedException {
+		Statement statement = createBatchStatement(connection);
+		String pk = schema.findDatabase(databaseName).findTable(tableName).getPKString();
 
-        String sql = String.format("select * from `%s`.%s", databaseName, tableName);
+		String sql = String.format("select * from `%s`.%s", databaseName, tableName);
 
-        if ( whereClause != null && !whereClause.equals("") ) {
-            sql += String.format(" where %s", whereClause);
-        }
+		if ( whereClause != null && !whereClause.equals("") ) {
+			sql += String.format(" where %s", whereClause);
+		}
 
-        if ( pk != null && !pk.equals("") ) {
-            sql += String.format(" order by %s", pk);
-        }
+		if ( pk != null && !pk.equals("") ) {
+			sql += String.format(" order by %s", pk);
+		}
 
-        return statement.executeQuery(sql);
-    }
+		return statement.executeQuery(sql);
+	}
 
-    private Statement createBatchStatement(Connection connection) throws SQLException, InterruptedException {
-        Statement statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-        statement.setFetchSize(Integer.MIN_VALUE);
-        return statement;
-    }
+	private Statement createBatchStatement(Connection connection) throws SQLException, InterruptedException {
+		Statement statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		statement.setFetchSize(Integer.MIN_VALUE);
+		return statement;
+	}
 
 	private void setBootstrapRowToStarted(RowMap startBootstrapRow, Connection connection) throws SQLException, NoSuchElementException {
 		String sql = "update `bootstrap` set started_at=NOW() where id=?";
