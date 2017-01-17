@@ -21,6 +21,11 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
+	public void testMultipleRowBootstrapWithWhereclause() throws Exception {
+		runJSON("json/bootstrap-multiple-row-with-whereclause");
+	}
+
+	@Test
 	public void testNoPkTableBootstrap() throws Exception {
 		runJSON("json/bootstrap-no-pk");
 	}
