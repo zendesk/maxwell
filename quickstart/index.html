@@ -148,6 +148,9 @@
                       <li class="toctree-l3"><a href="#kafka-producer">Kafka producer</a></li>
                       
                   
+                      <li class="toctree-l3"><a href="#kinesis-producer-docker">Kinesis Producer, docker</a></li>
+                      
+                  
                   </ul>
               
           </li>
@@ -198,6 +201,10 @@
 cd maxwell-1.7.0
 </code></pre>
 
+<p>or get the docker image:</p>
+<pre><code>docker pull osheroff/maxwell
+</code></pre>
+
 <h3 id="row-based-replication">Row based replication</h3>
 <hr />
 <p>Maxwell can only operate if row-based replication is on.</p>
@@ -234,6 +241,10 @@ mysql&gt; GRANT ALL on maxwell.* to 'maxwell'@'localhost';
 <pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' --producer=stdout
 </code></pre>
 
+<p>(or docker):</p>
+<pre><code>docker run -it --rm osheroff/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=stdout
+</code></pre>
+
 <p>If all goes well you'll see maxwell replaying your inserts:</p>
 <pre><code>mysql&gt; insert into test.maxwell set id = 5, daemon = 'firebus!  firebus!';
 Query OK, 1 row affected (0.04 sec)
@@ -249,7 +260,15 @@ Query OK, 1 row affected (0.04 sec)
    --producer=kafka --kafka.bootstrap.servers=localhost:9092
 </code></pre>
 
-<p>This will start writing to the topic "maxwell".</p></div>
+<p>(or docker):</p>
+<pre><code>docker run -it --rm osheroff/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kafka --kafka.bootstrap.servers=$KAFKA_HOST:$KAFKA_PORT
+</code></pre>
+
+<p>This will start writing to the topic "maxwell".</p>
+<h3 id="kinesis-producer-docker">Kinesis Producer, docker</h3>
+<hr />
+<pre><code>docker run -it --rm --name maxwell -v `cd &amp;&amp; pwd`/.aws:/root/.aws maxwell sh -c 'cp /app/kinesis-producer-library.properties.example /app/kinesis-producer-library.properties &amp;&amp; echo &quot;Region=$AWS_DEFAULT_REGION&quot; &gt;&gt; /app/kinesis-producer-library.properties &amp;&amp; bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kinesis --kinesis_stream=$KINESIS_STREAM'
+</code></pre></div>
         </div>
 
         
