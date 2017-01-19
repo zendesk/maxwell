@@ -25,6 +25,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
 		list = getRowsForSQL(input);
 		String json = list.get(0).toJSON(outputConfig);
+		System.out.println(json);
 		assertTrue(Pattern.matches(".*\"ts\":\\d+.*",json));
 		assertTrue(Pattern.matches(".*\"database\":\"shard_1\".*",json));
 		assertTrue(Pattern.matches(".*\"xid\":\\d+.*", json));
