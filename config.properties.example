@@ -109,6 +109,9 @@ kafka.metadata.fetch.timeout.ms=5000
 kafka.retries=0
 kafka.acks=1
 
+# confluent schema registry specifics
+#kafka.schema.registry.url=http://localhost:8081
+
 ####### producer partitioning #######
 # used by kafka and kinesis
 

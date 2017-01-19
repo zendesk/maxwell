@@ -49,6 +49,8 @@ public class MaxwellConfig extends AbstractConfig {
 	public MaxwellOutputConfig outputConfig;
 	public String log_level;
 
+	public String schemaMappingURI;
+
 	public String clientID;
 	public Long replicaServerID;
 
@@ -123,6 +125,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "output_thread_id", "produced records include thread_id; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_ddl", "produce DDL records to ddl_kafka_topic [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "ddl_kafka_topic", "optionally provide an alternate topic to push DDL records to. default: kafka_topic").withOptionalArg();
+		parser.accepts( "schema_mapping_uri", "the uri where schemas can be found").withOptionalArg(); // TODO
 
 		parser.accepts( "__separator_5" );
 
@@ -263,6 +266,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.kafkaPartitionHash 	= fetchOption("kafka_partition_hash", options, properties, "default");
 		this.ddlKafkaTopic 		    = fetchOption("ddl_kafka_topic", options, properties, this.kafkaTopic);
+		this.schemaMappingURI 		= fetchOption("schema_mapping_uri", options, properties, null);
 
 		String kafkaBootstrapServers = fetchOption("kafka.bootstrap.servers", options, properties, null);
 		if ( kafkaBootstrapServers != null )

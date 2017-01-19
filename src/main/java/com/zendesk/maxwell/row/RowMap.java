@@ -67,7 +67,7 @@ public class RowMap implements Serializable {
 			};
 
 	public RowMap(String type, String database, String table, Long timestamp, List<String> pkColumns,
-			BinlogPosition nextPosition) {
+				  BinlogPosition nextPosition) {
 		this.rowType = type;
 		this.database = database;
 		this.table = table;
@@ -276,10 +276,13 @@ public class RowMap implements Serializable {
 		return s;
 	}
 
+	public Set<String> getDataKeys() {
+		return this.data.keySet();
+	}
+
 	public Object getData(String key) {
 		return this.data.get(key);
 	}
-
 
 	public long getApproximateSize() {
 		return approximateSize;
