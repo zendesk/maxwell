@@ -46,6 +46,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public boolean kinesisMd5Keys;
 
 	public String outputFile;
+	//changed by Brady
 	public MaxwellOutputConfig outputConfig;
 	public String log_level;
 
@@ -123,6 +124,10 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "output_thread_id", "produced records include thread_id; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_ddl", "produce DDL records to ddl_kafka_topic [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "ddl_kafka_topic", "optionally provide an alternate topic to push DDL records to. default: kafka_topic").withOptionalArg();
+		parser.accepts("encryption_key", "The 128 bit key used for encryption").withOptionalArg();
+		parser.accepts("secret_key", "The secret key for the AES encryption").withOptionalArg();
+		parser.accepts("use_encryption", "boolean flag to enable encryption").withOptionalArg();
+		parser.accepts( "ddl_kafka_topic", "optionally provide a topic name to push DDL records to. default: kafka_topic").withOptionalArg();
 
 		parser.accepts( "__separator_5" );
 
@@ -339,6 +344,9 @@ public class MaxwellConfig extends AbstractConfig {
 		outputConfig.includesThreadId = fetchBooleanOption("output_thread_id", options, properties, false);
 		outputConfig.outputDDL	= fetchBooleanOption("output_ddl", options, properties, false);
 		this.excludeColumns     = fetchOption("exclude_columns", options, properties, null);
+		outputConfig.useEncryption = fetchBooleanOption("use_encryption", options, properties, false);
+		outputConfig.encryption_key = fetchOption("encryption_key", options, properties, null);
+		outputConfig.secret_key = fetchOption("secret_key", options, properties, null);
 
 		if ( this.excludeColumns != null ) {
 			for ( String s : this.excludeColumns.split(",") ) {

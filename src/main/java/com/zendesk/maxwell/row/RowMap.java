@@ -3,17 +3,15 @@ package com.zendesk.maxwell.row;
 import com.fasterxml.jackson.core.*;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Pattern;
 
 
@@ -79,14 +77,14 @@ public class RowMap implements Serializable {
 		this.approximateSize = 100L; // more or less 100 bytes of overhead
 	}
 
-	public String pkToJson(KeyFormat keyFormat) throws IOException {
+	public String pkToJson(KeyFormat keyFormat, MaxwellOutputConfig outputConfig) throws IOException {
 		if ( keyFormat == KeyFormat.HASH )
-			return pkToJsonHash();
+			return pkToJsonHash(outputConfig);
 		else
-			return pkToJsonArray();
+			return pkToJsonArray(outputConfig);
 	}
 
-	private String pkToJsonHash() throws IOException {
+	private String pkToJsonHash(MaxwellOutputConfig outputConfig) throws IOException {
 		JsonGenerator g = jsonGeneratorThreadLocal.get();
 
 		g.writeStartObject(); // start of row {
@@ -108,10 +106,10 @@ public class RowMap implements Serializable {
 
 		g.writeEndObject(); // end of 'data: { }'
 		g.flush();
-		return jsonFromStream();
+		return jsonFromStream(outputConfig);
 	}
 
-	private String pkToJsonArray() throws IOException {
+	private String pkToJsonArray(MaxwellOutputConfig outputConfig) throws IOException {
 		JsonGenerator g = jsonGeneratorThreadLocal.get();
 
 		g.writeStartArray();
@@ -131,7 +129,7 @@ public class RowMap implements Serializable {
 		g.writeEndArray();
 		g.writeEndArray();
 		g.flush();
-		return jsonFromStream();
+		return jsonFromStream(outputConfig);
 	}
 
 	public String pkAsConcatString() {
@@ -257,6 +255,7 @@ public class RowMap implements Serializable {
 			}
 		}
 
+		//changed by Brady
 		writeMapToJSON("data", this.data, outputConfig.includesNulls);
 
 		if ( !this.oldData.isEmpty() ) {
@@ -266,14 +265,15 @@ public class RowMap implements Serializable {
 		g.writeEndObject(); // end of row
 		g.flush();
 
-		return jsonFromStream();
+		return jsonFromStream(outputConfig);
 	}
 
-	private String jsonFromStream() {
+	private String jsonFromStream(MaxwellOutputConfig outputConfig) {
 		ByteArrayOutputStream b = byteArrayThreadLocal.get();
 		String s = b.toString();
 		b.reset();
-		return s;
+		String json = encryptData(s, outputConfig);
+		return json;
 	}
 
 	public Object getData(String key) {
@@ -376,5 +376,28 @@ public class RowMap implements Serializable {
 	// return false when there is a heartbeat row or other row with suppressed output
 	public boolean shouldOutput(MaxwellOutputConfig outputConfig) {
 		return true;
+	}
+
+	private String encryptData(String json, MaxwellOutputConfig outputConfig) {
+		Boolean useEncryption = outputConfig.useEncryption;
+		String jsonOutput;
+		try {
+			if (useEncryption) {
+				JSONObject obj = new JSONObject(json);
+				String dataObject = obj.getJSONObject("data").toString();
+				String encryptData = RowEncrypt.encrypt(dataObject, outputConfig);
+				obj.put("data", encryptData);
+				if (!this.oldData.isEmpty() ) {
+					String oldObject = obj.getJSONObject("old").toString();
+					String encryptOld = RowEncrypt.encrypt(oldObject, outputConfig);
+					obj.put("old", encryptOld);
+				}
+				jsonOutput = obj.toString();
+				return jsonOutput;
+			} else
+				return json;
+		} catch (Exception e) {
+			return json;
+		}
 	}
 }
