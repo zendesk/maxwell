@@ -10,6 +10,12 @@ curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.7.0/maxwell-
 cd maxwell-1.7.0
 ```
 
+or get the docker image:
+
+```
+docker pull osheroff/maxwell
+```
+
 ### Row based replication
 ***
 Maxwell can only operate if row-based replication is on.
@@ -55,6 +61,12 @@ Useful for smoke-testing the thing.
 bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' --producer=stdout
 ```
 
+(or docker):
+
+```
+docker run -it --rm osheroff/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=stdout
+```
+
 
 If all goes well you'll see maxwell replaying your inserts:
 ```
@@ -75,6 +87,19 @@ bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
    --producer=kafka --kafka.bootstrap.servers=localhost:9092
 ```
 
+(or docker):
+
+```
+docker run -it --rm osheroff/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kafka --kafka.bootstrap.servers=$KAFKA_HOST:$KAFKA_PORT
+```
+
 This will start writing to the topic "maxwell".
 
+
+### Kinesis Producer, docker
+***
+
+```
+docker run -it --rm --name maxwell -v `cd && pwd`/.aws:/root/.aws maxwell sh -c 'cp /app/kinesis-producer-library.properties.example /app/kinesis-producer-library.properties && echo "Region=$AWS_DEFAULT_REGION" >> /app/kinesis-producer-library.properties && bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kinesis --kinesis_stream=$KINESIS_STREAM'
+```
 

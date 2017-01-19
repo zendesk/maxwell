@@ -63,22 +63,3 @@ advanced features:
   });
 </script>
 
-# Docker
-```
-docker pull osheroff/maxwell
-```
-
-## Kafka Producer
-```
-docker run -it --rm osheroff/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kafka --kafka.bootstrap.servers=$KAFKA_HOST:$KAFKA_PORT
-```
-
-## STDOUT Producer
-```
-docker run -it --rm osheroff/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=stdout
-```
-
-## AWS Kinesis Producer
-```
-docker run -it --rm --name maxwell -v `cd && pwd`/.aws:/root/.aws maxwell sh -c 'cp /app/kinesis-producer-library.properties.example /app/kinesis-producer-library.properties && echo "Region=$AWS_DEFAULT_REGION" >> /app/kinesis-producer-library.properties && bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kinesis --kinesis_stream=$KINESIS_STREAM'
-```
