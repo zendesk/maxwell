@@ -102,7 +102,6 @@ public class MaxwellKafkaProducer extends AbstractAsyncProducer {
 
 	@Override
 	public void sendAsync(RowMap r, AbstractAsyncProducer.CallbackCompleter cc) throws Exception {
-		//changed by Brady
 		String key = r.pkToJson(keyFormat, outputConfig);
 		String value = r.toJSON(outputConfig);
 

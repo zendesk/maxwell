@@ -37,7 +37,6 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testPrimaryKeyStrings() throws Exception {
-		//changed by Brady
 		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
 		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
@@ -49,7 +48,6 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testCaseSensitivePrimaryKeyStrings() throws Exception {
-		//changed by Brady
 		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
 		List<RowMap> list;
 		String before[] = { "create table pksen (Id int, primary key(ID))" };
@@ -62,7 +60,6 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testAlternativePKString() throws Exception {
-		//changed by Brady
 		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
 		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
@@ -443,9 +440,8 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testJson() throws Exception {
-		if ( server.getVersion().equals("5.7") ) {
+		if ( server.getVersion().equals("5.7") ) 
 			runJSON("/json/test_json");
-		}
 	}
 
 	static String[] createDBSql = {

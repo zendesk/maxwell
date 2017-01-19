@@ -255,7 +255,6 @@ public class RowMap implements Serializable {
 			}
 		}
 
-		//changed by Brady
 		writeMapToJSON("data", this.data, outputConfig.includesNulls);
 
 		if ( !this.oldData.isEmpty() ) {
