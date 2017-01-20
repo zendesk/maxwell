@@ -1,9 +1,5 @@
 package com.zendesk.maxwell.row;
 
-/**
- * Created by davesmelker on 11/9/15.
- */
-
 import com.zendesk.maxwell.MaxwellConfig;
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;

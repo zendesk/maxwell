@@ -126,7 +126,6 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts("encryption_key", "The 128 bit key used for encryption").withOptionalArg();
 		parser.accepts("secret_key", "The secret key for the AES encryption").withOptionalArg();
 		parser.accepts("use_encryption", "boolean flag to enable encryption").withOptionalArg();
-		parser.accepts( "ddl_kafka_topic", "optionally provide a topic name to push DDL records to. default: kafka_topic").withOptionalArg();
 
 		parser.accepts( "__separator_5" );
 
