@@ -1,5 +1,9 @@
 package com.zendesk.maxwell.row;
 
+/**
+ * Created by davesmelker on 11/9/15.
+ */
+
 import com.zendesk.maxwell.MaxwellConfig;
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
@@ -14,10 +18,9 @@ public class RowEncrypt {
 
     static final Logger LOGGER = LoggerFactory.getLogger(RowEncrypt.class);
 
-    public static String encrypt(String value, MaxwellOutputConfig outputConfig) {
 
-        String key =  outputConfig.encryption_key;
-        String initVector = outputConfig.secret_key;
+
+    public static String encrypt(String value, String key, String initVector) {
         try {
             IvParameterSpec iv = new IvParameterSpec(initVector.getBytes("UTF-8"));
             SecretKeySpec skeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES");

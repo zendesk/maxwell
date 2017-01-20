@@ -79,12 +79,12 @@ public class RowMap implements Serializable {
 
 	public String pkToJson(KeyFormat keyFormat, MaxwellOutputConfig outputConfig) throws IOException {
 		if ( keyFormat == KeyFormat.HASH )
-			return pkToJsonHash(outputConfig);
+			return pkToJsonHash();
 		else
-			return pkToJsonArray(outputConfig);
+			return pkToJsonArray();
 	}
 
-	private String pkToJsonHash(MaxwellOutputConfig outputConfig) throws IOException {
+	private String pkToJsonHash() throws IOException {
 		JsonGenerator g = jsonGeneratorThreadLocal.get();
 
 		g.writeStartObject(); // start of row {
@@ -106,10 +106,10 @@ public class RowMap implements Serializable {
 
 		g.writeEndObject(); // end of 'data: { }'
 		g.flush();
-		return jsonFromStream(outputConfig);
+		return jsonFromStream();
 	}
 
-	private String pkToJsonArray(MaxwellOutputConfig outputConfig) throws IOException {
+	private String pkToJsonArray() throws IOException {
 		JsonGenerator g = jsonGeneratorThreadLocal.get();
 
 		g.writeStartArray();
@@ -129,7 +129,7 @@ public class RowMap implements Serializable {
 		g.writeEndArray();
 		g.writeEndArray();
 		g.flush();
-		return jsonFromStream(outputConfig);
+		return jsonFromStream();
 	}
 
 	public String pkAsConcatString() {
@@ -175,25 +175,47 @@ public class RowMap implements Serializable {
 		}
 	}
 
+	private void writeEncryptedMapToJSON(String jsonMapName, LinkedHashMap<String, Object> data, boolean includeNullField, String encryption_key, String secret_key) throws IOException{
+		JsonGenerator generator = jsonGeneratorThreadLocal.get();
+		JSONObject obj = new JSONObject();
+		for (String key : data.keySet()) {
+			Object value = data.get(key);
+
+			if (value == null && !includeNullField)
+				continue;
+
+			if (value instanceof List) {
+				List stringList = (List) value;
+				obj.put(key, stringList);
+			} else if (value instanceof RawJSONString) {
+				obj.put(key, ((RawJSONString) value).json);
+			} else {
+				obj.put(key, value);
+			}
+		}
+
+		generator.writeStringField(jsonMapName, RowEncrypt.encrypt(obj.toString(), encryption_key, secret_key));
+	}
+
 	private void writeMapToJSON(String jsonMapName, LinkedHashMap<String, Object> data, boolean includeNullField) throws IOException {
 		JsonGenerator generator = jsonGeneratorThreadLocal.get();
 		generator.writeObjectFieldStart(jsonMapName); // start of jsonMapName: {
 
-		for ( String key: data.keySet() ) {
+		for (String key : data.keySet()) {
 			Object value = data.get(key);
 
-			if ( value == null && !includeNullField )
+			if (value == null && !includeNullField)
 				continue;
 
-			if ( value instanceof List ) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
+			if (value instanceof List) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
 				List stringList = (List) value;
 
 				generator.writeArrayFieldStart(key);
-				for ( Object s : stringList )  {
+				for (Object s : stringList) {
 					generator.writeObject(s);
 				}
 				generator.writeEndArray();
-			} else if ( value instanceof RawJSONString ) {
+			} else if (value instanceof RawJSONString) {
 				// JSON column type, using binlog-connector's serializers.
 				generator.writeFieldName(key);
 				generator.writeRawValue(((RawJSONString) value).json);
@@ -255,24 +277,32 @@ public class RowMap implements Serializable {
 			}
 		}
 
-		writeMapToJSON("data", this.data, outputConfig.includesNulls);
+		if(outputConfig.useEncryption){
+			writeEncryptedMapToJSON("data", this.data, outputConfig.includesNulls, outputConfig.encryption_key, outputConfig.secret_key);
 
-		if ( !this.oldData.isEmpty() ) {
-			writeMapToJSON("old", this.oldData, true);
+			if(!this.oldData.isEmpty()){
+				writeEncryptedMapToJSON("old", this.oldData, true, outputConfig.encryption_key, outputConfig.secret_key);
+			}
+		}
+		else {
+			writeMapToJSON("data", this.data, outputConfig.includesNulls);
+
+			if (!this.oldData.isEmpty()) {
+				writeMapToJSON("old", this.oldData, true);
+			}
 		}
 
 		g.writeEndObject(); // end of row
 		g.flush();
 
-		return jsonFromStream(outputConfig);
+		return jsonFromStream();
 	}
 
-	private String jsonFromStream(MaxwellOutputConfig outputConfig) {
+	private String jsonFromStream() {
 		ByteArrayOutputStream b = byteArrayThreadLocal.get();
 		String s = b.toString();
 		b.reset();
-		String json = encryptData(s, outputConfig);
-		return json;
+		return s;
 	}
 
 	public Object getData(String key) {
@@ -377,26 +407,4 @@ public class RowMap implements Serializable {
 		return true;
 	}
 
-	private String encryptData(String json, MaxwellOutputConfig outputConfig) {
-		Boolean useEncryption = outputConfig.useEncryption;
-		String jsonOutput;
-		try {
-			if (useEncryption) {
-				JSONObject obj = new JSONObject(json);
-				String dataObject = obj.getJSONObject("data").toString();
-				String encryptData = RowEncrypt.encrypt(dataObject, outputConfig);
-				obj.put("data", encryptData);
-				if (!this.oldData.isEmpty() ) {
-					String oldObject = obj.getJSONObject("old").toString();
-					String encryptOld = RowEncrypt.encrypt(oldObject, outputConfig);
-					obj.put("old", encryptOld);
-				}
-				jsonOutput = obj.toString();
-				return jsonOutput;
-			} else
-				return json;
-		} catch (Exception e) {
-			return json;
-		}
-	}
 }
