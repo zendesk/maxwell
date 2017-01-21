@@ -7,12 +7,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.concurrent.TimeoutException;
 
+import com.google.api.client.http.BasicAuthentication;
+import com.google.api.client.http.HttpExecuteInterceptor;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.bootstrap.AsynchronousBootstrapper;
 import com.zendesk.maxwell.bootstrap.NoOpBootstrapper;
 import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
 import com.zendesk.maxwell.producer.*;
+import com.zendesk.maxwell.producer.interceptors.*;
 import com.zendesk.maxwell.recovery.RecoveryInfo;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.ReadOnlyMysqlPositionStore;
@@ -230,13 +233,27 @@ public class MaxwellContext {
 			this.producer = new BufferedProducer(this, this.config.bufferedProducerSize);
 			break;
 		case "httppost":
-			if (this.config.httpPostHmacAlias != null) {
-				this.producer = new HmacHttpProducer(
-						this, this.config.httpPostEndPoint,
-						this.config.httpPostHmacAlias, this.config.httpPostHmacSecret
-				);
+
+			HttpExecuteInterceptor interceptor;
+			switch ( this.config.httpPostInterceptorType ) {
+				case "hmac":
+					interceptor = new HMacSigner(this.config.httpPostAuthKey, this.config.httpPostAuthSecret);
+					break;
+				case "basicauth":
+					interceptor = new BasicAuthentication(this.config.httpPostAuthKey, this.config.httpPostAuthSecret);
+					break;
+				case "":
+					interceptor = null;
+					break;
+				default:
+					throw new RuntimeException("Unknown http interceptor type: " + this.config.producerType);
+			}
+
+			if (interceptor == null) {
+				this.producer = new HttpPostProducer(this, this.config.httpPostEndpoint);
 			} else {
-				this.producer = new BackoffHttpProducer(this, this.config.httpPostEndPoint);
+				HttpPostProducerInitializer initializer = new HttpPostProducerInitializer(interceptor);
+				this.producer = new HttpPostProducer(this, this.config.httpPostEndpoint, initializer);
 			}
 			break;
 		case "none":

@@ -1,8 +1,10 @@
 package com.zendesk.maxwell;
 
 import java.util.*;
+
 import java.util.regex.Pattern;
 
+import com.google.api.client.http.BasicAuthentication;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import joptsimple.*;
@@ -41,9 +43,12 @@ public class MaxwellConfig extends AbstractConfig {
 	public MaxwellOutputConfig outputConfig;
 	public String log_level;
 
-	public String httpPostEndPoint;
-	public String httpPostHmacAlias;
-	public String httpPostHmacSecret;
+	// HttpPostProducer
+	public String httpPostEndpoint;
+	// public int httpPostBackoffMaxSecs; TODO: add exponential backoff options.
+	public String httpPostInterceptorType;
+	public String httpPostAuthKey;
+	public String httpPostAuthSecret;
 
 	public String clientID;
 	public Long replicaServerID;
@@ -105,8 +110,9 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "__separator_4" );
 
 		parser.accepts( "httppost_endpoint", "provide an endpoint to send data to using the httppost producer" ).withRequiredArg();
-		parser.accepts( "httppost_hmacalias", "secret alias (keyId) for calculating HMAC digest for httppost producer" ).withRequiredArg();
-		parser.accepts( "httppost_hmacsecret", "secret key for calculating HMAC digest for httppost producer" ).withRequiredArg();
+		parser.accepts( "httppost_interceptor", "optional values include 'hmac', 'basicauth'" ).withRequiredArg();
+		parser.accepts( "httppost_authkey", "secret alias (keyId) for calculating HMAC digest or Username for Basic Auth for httppost producer" ).withRequiredArg();
+		parser.accepts( "httppost_authsecret", "secret key for calculating HMAC digest or password for Basic Auth for httppost producer" ).withRequiredArg();
 		parser.accepts( "output_binlog_position", "produced records include binlog position; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_commit_info", "produced records include commit and xid; [true|false]. default: true" ).withOptionalArg();
 		parser.accepts( "output_nulls", "produced records include fields with NULL values [true|false]. default: true" ).withOptionalArg();
@@ -268,9 +274,10 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.outputFile         = fetchOption("output_file", options, properties, null);
 
-		this.httpPostEndPoint   = fetchOption("httppost_endpoint", options, properties, null);
-		this.httpPostHmacAlias  = fetchOption("httppost_hmacalias", options, properties, null);
-		this.httpPostHmacSecret = fetchOption("httppost_hmacsecret", options, properties, null);
+		this.httpPostEndpoint   	  = fetchOption("httppost_endpoint", options, properties, null);
+		this.httpPostInterceptorType  = fetchOption("httppost_interceptor", options, properties, "");
+		this.httpPostAuthKey  		  = fetchOption("httppost_authkey", options, properties, null);
+		this.httpPostAuthSecret 	  = fetchOption("httppost_authsecret", options, properties, null);
 
 		this.includeDatabases   = fetchOption("include_dbs", options, properties, null);
 		this.excludeDatabases   = fetchOption("exclude_dbs", options, properties, null);
@@ -361,12 +368,12 @@ public class MaxwellConfig extends AbstractConfig {
 				&& this.outputFile == null) {
 			usageForOptions("please specify --output_file=FILE to use the file producer", "--producer", "--output_file");
 		} else if ( this.producerType.equals("httppost")
-				&& this.httpPostEndPoint == null) {
+				&& this.httpPostEndpoint == null) {
 			usageForOptions("please specify --httppost_endpoint=URI to use the httppost producer", "--producer", "--httppost_endpoint");
 		} else if ( this.producerType.equals("httppost")
-				&& (this.httpPostHmacAlias != null && this.httpPostHmacSecret == null)
-				|| (this.httpPostHmacAlias == null && this.httpPostHmacSecret != null))
-			usageForOptions("please specify --httppost_hmacalias=keyId and --httppost_hmacsecret=yoursecret to use the httppost producer with HMAC auth", "--httppost_hmacalias", "--httppost_hmacsecret");
+				&& (this.httpPostAuthKey != null && this.httpPostAuthSecret == null)
+				|| (this.httpPostAuthKey == null && this.httpPostAuthSecret != null))
+			usageForOptions("please specify --httppost_authkey=keyId and --httppost_authsecret=yoursecret to use the httppost producer with auth", "--httppost_authkey", "--httppost_authsecret");
 
 
 

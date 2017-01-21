@@ -3,12 +3,20 @@ package com.zendesk.maxwell;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
+import com.google.api.client.http.HttpExecuteInterceptor;
+import com.google.api.client.http.HttpRequest;
+import com.zendesk.maxwell.producer.HttpPostProducerInitializer;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.producer.MockHttpPostProducer;
+import com.zendesk.maxwell.producer.interceptors.HMacSigner;
 import com.zendesk.maxwell.row.RowMap;
+import org.tomitribe.auth.signatures.Signature;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.sql.ResultSet;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Stack;
 import java.util.regex.*;
 
 import com.zendesk.maxwell.schema.SchemaStoreSchema;
@@ -380,6 +388,41 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(lowerCaseServer, null, sql, null);
 		assertThat(rows.size(), is(1));
 		assertThat(rows.get(0).getTable(), is("tootootwee"));
+	}
+
+	@Test
+	public void testHttpProducer() throws Exception {
+		String[] sql = {
+				"CREATE TABLE `test`.`http_check` ( id int )",
+				"insert into `test`.`http_check` set id = 5",
+				"insert into `test`.`http_check` set id = 6"
+		};
+
+		// TODO: test body, backoff, and basic auth;
+		List<RowMap> rows = getRowsForSQL(sql);
+
+		HttpExecuteInterceptor a = new HMacSigner("mykey", "mysecret");
+		HttpPostProducerInitializer initializer = new HttpPostProducerInitializer(a);
+		MaxwellContext context = MaxwellTestSupport.buildContext(server.getPort(), null, null);
+
+		MockHttpPostProducer producer = new MockHttpPostProducer(context, initializer);
+		producer.push(rows);
+
+		Stack<HttpRequest> results = producer.getLifoRequests();
+		for (int i = rows.size() -1 ; i >= 0; i--) {
+			RowMap row = rows.get(i);
+			HttpRequest last = results.pop();
+
+			assertThat(last.getContent().getType(), is("application/json; charset=UTF-8"));
+			assertThat(last.getHeaders().getDate(), is(producer.getDateString()));
+
+			String expectedDigest = MockHttpPostProducer.digestHeader(MockHttpPostProducer.DIGEST_ALGO, MockHttpPostProducer.CHARSET, row.toJSON());
+			assertThat(last.getHeaders().get("digest").toString(), is(expectedDigest));
+
+			Signature signature = Signature.fromString(last.getHeaders().getAuthorization());
+			assertThat(signature.getHeaders().containsAll(Arrays.asList("(request-target)", "date", "digest")), is(true));
+			assertThat(signature.getKeyId(), is("mykey"));
+		}
 	}
 
 	@Test
