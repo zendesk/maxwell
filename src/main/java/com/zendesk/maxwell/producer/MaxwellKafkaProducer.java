@@ -62,6 +62,7 @@ public class MaxwellKafkaProducer extends AbstractAsyncProducer {
 	private final MaxwellKafkaPartitioner partitioner;
 	private final MaxwellKafkaPartitioner ddlPartitioner;
 	private final KeyFormat keyFormat;
+	private final boolean interpolateTopic;
 
 	public MaxwellKafkaProducer(MaxwellContext context, Properties kafkaProperties, String kafkaTopic) {
 		super(context);
@@ -71,6 +72,7 @@ public class MaxwellKafkaProducer extends AbstractAsyncProducer {
 			this.topic = "maxwell";
 		}
 
+		this.interpolateTopic = kafkaTopic.contains("%{");
 		this.kafka = new KafkaProducer<>(kafkaProperties, new StringSerializer(), new StringSerializer());
 
 		String hash = context.getConfig().kafkaPartitionHash;
@@ -97,7 +99,10 @@ public class MaxwellKafkaProducer extends AbstractAsyncProducer {
 	}
 
 	private String generateTopic(String topic, RowMap r){
-		return topic.replaceAll("%\\{database\\}", r.getDatabase()).replaceAll("%\\{table\\}", r.getTable());
+		if ( interpolateTopic )
+			return topic.replaceAll("%\\{database\\}", r.getDatabase()).replaceAll("%\\{table\\}", r.getTable());
+		else
+			return topic;
 	}
 
 	@Override
