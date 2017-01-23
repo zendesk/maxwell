@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ArrayBlockingQueue;
 
 
 class KafkaCallback implements Callback {
@@ -57,14 +57,14 @@ class KafkaCallback implements Callback {
 
 
 public class MaxwellKafkaProducer extends AbstractProducer {
-	private final LinkedBlockingQueue<RowMap> queue;
+	private final ArrayBlockingQueue<RowMap> queue;
 	private final MaxwellKafkaProducerWorker worker;
 
 	public MaxwellKafkaProducer(MaxwellContext context, Properties kafkaProperties, String kafkaTopic) {
 		super(context);
-		this.queue = new LinkedBlockingQueue<>(100);
+		this.queue = new ArrayBlockingQueue<>(100);
 		this.worker = new MaxwellKafkaProducerWorker(context, kafkaProperties, kafkaTopic, this.queue);
-		new Thread(this.worker, "maxwell-kafka-producer").start();
+		new Thread(this.worker, "maxwell-kafka-worker").start();
 
 	}
 
@@ -84,9 +84,9 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	private final MaxwellKafkaPartitioner ddlPartitioner;
 	private final KeyFormat keyFormat;
 	private final boolean interpolateTopic;
-	private final LinkedBlockingQueue<RowMap> queue;
+	private final ArrayBlockingQueue<RowMap> queue;
 
-	public MaxwellKafkaProducerWorker(MaxwellContext context, Properties kafkaProperties, String kafkaTopic, LinkedBlockingQueue<RowMap> queue) {
+	public MaxwellKafkaProducerWorker(MaxwellContext context, Properties kafkaProperties, String kafkaTopic, ArrayBlockingQueue<RowMap> queue) {
 		super(context);
 
 		this.topic = kafkaTopic;
