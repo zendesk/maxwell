@@ -37,7 +37,13 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		String databaseName = bootstrapDatabase(startBootstrapRow);
 		String tableName = bootstrapTable(startBootstrapRow);
 
-		LOGGER.debug(String.format("bootstrapping request for %s.%s", databaseName, tableName));
+		String whereClause = bootstrapWhere(startBootstrapRow);
+
+		String logString = String.format("bootstrapping request for %s.%s", databaseName, tableName);
+		if ( whereClause != null ) {
+			logString += String.format(" with where clause %s", whereClause);
+		}
+		LOGGER.debug(logString);
 
 		Schema schema = replicator.getSchema();
 		Database database = findDatabase(schema, databaseName);
@@ -50,9 +56,9 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		try ( Connection connection = getConnection();
 			  Connection streamingConnection = getStreamingConnection()) {
 			setBootstrapRowToStarted(startBootstrapRow, connection);
-			ResultSet resultSet = getAllRows(databaseName, tableName, schema, streamingConnection);
+			ResultSet resultSet = getAllRows(databaseName, tableName, schema, whereClause, streamingConnection);
 			int insertedRows = 0;
-	                lastInsertedRowsUpdateTimeMillis = 0; // ensure updateInsertedRowsColumn is called at least once
+			lastInsertedRowsUpdateTimeMillis = 0; // ensure updateInsertedRowsColumn is called at least once
 			while ( resultSet.next() ) {
 				RowMap row = bootstrapEventRowMap("bootstrap-insert", table, position);
 				setRowValues(row, resultSet, table);
@@ -178,14 +184,22 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		findTable(tableName, database);
 	}
 
-	private ResultSet getAllRows(String databaseName, String tableName, Schema schema, Connection connection) throws SQLException, InterruptedException {
+	private ResultSet getAllRows(String databaseName, String tableName, Schema schema, String whereClause,
+								Connection connection) throws SQLException, InterruptedException {
 		Statement statement = createBatchStatement(connection);
 		String pk = schema.findDatabase(databaseName).findTable(tableName).getPKString();
-		if ( pk != null && !pk.equals("") ) {
-			return statement.executeQuery(String.format("select * from `%s`.%s order by %s", databaseName, tableName, pk));
-		} else {
-			return statement.executeQuery(String.format("select * from `%s`.%s", databaseName, tableName));
+
+		String sql = String.format("select * from `%s`.%s", databaseName, tableName);
+
+		if ( whereClause != null && !whereClause.equals("") ) {
+			sql += String.format(" where %s", whereClause);
 		}
+
+		if ( pk != null && !pk.equals("") ) {
+			sql += String.format(" order by %s", pk);
+		}
+
+		return statement.executeQuery(sql);
 	}
 
 	private Statement createBatchStatement(Connection connection) throws SQLException, InterruptedException {
