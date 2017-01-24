@@ -111,7 +111,7 @@ public class SchemaStoreSchema {
 		}
 
 		if ( !getTableColumns("bootstrap", c).containsKey("where_clause") ) {
-			performAlter(c, "alter table `bootstrap` add column where_clause varchar(255)");
+			performAlter(c, "alter table `bootstrap` add column where_clause varchar(1024)");
 		}
 
 		HashMap<String, String> schemaColumns = getTableColumns("schemas", c);
