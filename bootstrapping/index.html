@@ -222,6 +222,10 @@
 <td>--table TABLE</td>
 <td>mysql table to bootstrap</td>
 </tr>
+<tr>
+<td>--where WHERE_CLAUSE</td>
+<td>where clause to restrict the rows bootstrapped from the specified table</td>
+</tr>
 </tbody>
 </table>
 <h3 id="using-the-maxwellbootstrap-table">Using the maxwell.bootstrap table</h3>
@@ -230,6 +234,10 @@
 <pre><code>mysql&gt; insert into maxwell.bootstrap (database_name, table_name) values ('fooDB', 'barTable');
 </code></pre>
 
+<p>Optionally, you can include a where clause to replay part of the data.</p>
+<p>bin/maxwell-bootstrap --config localhost.properties --database foobar --table test --log_level info</p>
+<p>or</p>
+<p>bin/maxwell-bootstrap --config localhost.properties --database foobar --table test --where "my_date &gt;= '2017-01-07 00:00:00'" --log_level info</p>
 <h3 id="async-vs-sync-bootstrapping">Async vs Sync bootstrapping</h3>
 <hr />
 <p>The Maxwell replicator is single threaded; events are captured by one thread from the binlog and replicated to Kafka one message at a time.

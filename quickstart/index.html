@@ -192,13 +192,13 @@
 <h3 id="download">Download</h3>
 <hr />
 <ul>
-<li>Download binary distro: <a href="https://github.com/zendesk/maxwell/releases/download/v1.7.0/maxwell-1.7.0.tar.gz">https://github.com/zendesk/maxwell/releases/download/v1.7.0/maxwell-1.7.0.tar.gz</a></li>
+<li>Download binary distro: <a href="https://github.com/zendesk/maxwell/releases/download/v1.7.1/maxwell-1.7.1.tar.gz">https://github.com/zendesk/maxwell/releases/download/v1.7.1/maxwell-1.7.1.tar.gz</a></li>
 <li>Sources and bug tracking is available on github: <a href="https://github.com/zendesk/maxwell">https://github.com/zendesk/maxwell</a></li>
 <li>Obligatory copy/paste to terminal:</li>
 </ul>
-<pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.7.0/maxwell-1.7.0.tar.gz \
+<pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.7.1/maxwell-1.7.1.tar.gz \
        | tar zxvf -
-cd maxwell-1.7.0
+cd maxwell-1.7.1
 </code></pre>
 
 <p>or get the docker image:</p>
@@ -238,7 +238,7 @@ mysql&gt; GRANT ALL on maxwell.* to 'maxwell'@'localhost';
 <h3 id="stdout-producer">STDOUT producer</h3>
 <hr />
 <p>Useful for smoke-testing the thing.</p>
-<pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' --producer=stdout
+<pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='1.7.1.0.1' --producer=stdout
 </code></pre>
 
 <p>(or docker):</p>
@@ -256,7 +256,7 @@ Query OK, 1 row affected (0.04 sec)
 <h3 id="kafka-producer">Kafka producer</h3>
 <hr />
 <p>Boot kafka as described here:  <a href="http://kafka.apache.org/documentation.html#quickstart">http://kafka.apache.org/documentation.html#quickstart</a>, then:</p>
-<pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
+<pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='1.7.1.0.1' \
    --producer=kafka --kafka.bootstrap.servers=localhost:9092
 </code></pre>
 
