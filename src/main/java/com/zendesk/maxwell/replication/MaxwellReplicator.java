@@ -352,6 +352,7 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 					}
 					break;
 				case MySQLConstants.ROTATE_EVENT:
+					tableCache.clear();
 					if ( stopOnEOF ) {
 						this.replicator.stopQuietly(100, TimeUnit.MILLISECONDS);
 						setReplicatorPosition((AbstractBinlogEventV4) v4Event);
