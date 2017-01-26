@@ -10,14 +10,14 @@ include ETL, cache building/expiring, metrics collection, and search indexing.
 
 advanced features:
 
-- Can do `SELECT * from table` (bootstrapping) initial loads of a table
+- Can do `SELECT * from table` (bootstrapping) initial loads of a table.
 - supports automatic position recover on master promotion
 - flexible partitioning schemes for Kakfa - by database, table, primary key, or column
 - Maxwell pulls all this off by acting as a full mysql replica, including a SQL
   parser for create/alter/drop statements (nope, there was no other way).
 
 &rarr; Download:
-[https://github.com/zendesk/maxwell/releases/download/v1.5.2/maxwell-1.5.2.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.5.2/maxwell-1.5.2.tar.gz)
+[https://github.com/zendesk/maxwell/releases/download/v1.7.1/maxwell-1.7.1.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.7.1/maxwell-1.7.1.tar.gz)
 <br/>
 &rarr; Source:
 [https://github.com/zendesk/maxwell](https://github.com/zendesk/maxwell)
@@ -62,3 +62,4 @@ advanced features:
     jQuery("pre").addClass("home-code");
   });
 </script>
+

@@ -1,0 +1,5 @@
+CREATE DATABASE `test_json`
+create table `test_json`.`json` ( j json )
+use test_json
+insert into `json` set `j` = '{"foo": "bar", "baz": [1,2,3,{"hello": "inside an array"}], "bar": 123.4321}';
+-> {"database": "test_json", "table": "json", "type": "insert", "data": {"j": {"foo": "bar", "baz": [1,2,3,{"hello": "inside an array"}], "bar": 123.4321}}}

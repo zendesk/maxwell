@@ -87,22 +87,6 @@ password=maxwell
 # function.
 #kafka_partition_hash=default # [default, murmur3]
 
-# controls the input input into the hash function.  Note that this defines
-# which transactions keep ordering with respect to each other.  Generally
-# here you're making a trade-off between inter-row consistency and balanced
-# partitions.
-#kafka_partition_by=database # [database, table, primary_key, column]
-
-# required when using kafka_partition_by=column
-# otherwise the partitioner will revert to table
-# can be a single or multiple columns, e.g. aggregate_id or aggregate_id,event_type
-#kafka_partition_columns=
-
-# required when using kafka_partition_by=column
-# the fallback partitioning behavior when the specified column(s) do not exist
-# can be any one of [database, table, primary_key]
-#kafka_partition_by_fallback=database
-
 # how maxwell writes its kafka key.
 #
 # 'hash' looks like:
@@ -124,6 +108,37 @@ kafka.compression.type=snappy
 kafka.metadata.fetch.timeout.ms=5000
 kafka.retries=0
 kafka.acks=1
+
+####### producer partitioning #######
+# used by kafka and kinesis
+
+# controls the input input into the hash function.  Note that this defines
+# which transactions keep ordering with respect to each other.  Generally
+# here you're making a trade-off between inter-row consistency and balanced
+# partitions.
+#producer_partition_by=database # [database, table, primary_key, column]
+
+# required when using producer_partition_by=column
+# otherwise the partitioner will revert to table
+# can be a single or multiple columns, e.g. aggregate_id or aggregate_id,event_type
+#producer_partition_columns=
+
+# required when using producer_partition_by=column
+# the fallback partitioning behavior when the specified column(s) do not exist
+# can be any one of [database, table, primary_key]
+#producer_partition_by_fallback=database
+
+######### kinesis ####################
+kinesis_stream=maxwell
+
+# AWS places a 256 unicode character limit on the max key length of a record
+# http://docs.aws.amazon.com/kinesis/latest/APIReference/API_PutRecord.html
+#
+# Setting this option to true enables hashing the key with the md5 algorithm
+# before we send it to kinesis so all the keys work within the key size limit.
+# Values: true, false
+# Default: false
+#kinesis_md5_keys=true
 
 ######### filter stuff ###############
 

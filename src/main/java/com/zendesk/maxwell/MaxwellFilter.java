@@ -93,7 +93,7 @@ public class MaxwellFilter {
 		return MaxwellConfig.compileStringToPattern(name);
 	}
 
-	private boolean matchesIncludeExcludeList(List<Pattern> includeList, List<Pattern> excludeList, String name) {
+	private boolean filterListsInclude(List<Pattern> includeList, List<Pattern> excludeList, String name) {
 		if ( includeList.size() > 0 ) {
 			boolean found = false;
 			for ( Pattern p : includeList ) {
@@ -115,11 +115,11 @@ public class MaxwellFilter {
 	}
 
 	private boolean matchesDatabase(String dbName) {
-		return matchesIncludeExcludeList(includeDatabases, excludeDatabases, dbName);
+		return filterListsInclude(includeDatabases, excludeDatabases, dbName);
 	}
 
 	private boolean matchesTable(String tableName) {
-		return matchesIncludeExcludeList(includeTables, excludeTables, tableName);
+		return filterListsInclude(includeTables, excludeTables, tableName);
 	}
 
 	public boolean matches(String database, String table) {
@@ -127,11 +127,16 @@ public class MaxwellFilter {
 	}
 
 	public boolean isDatabaseBlacklisted(String databaseName) {
-		return ! matchesIncludeExcludeList(emptyList, blacklistDatabases, databaseName);
+		return ! filterListsInclude(emptyList, blacklistDatabases, databaseName);
 	}
 
 	public boolean isTableBlacklisted(String databaseName, String tableName) {
-		return isDatabaseBlacklisted(databaseName) ||
-			   ! matchesIncludeExcludeList(emptyList, blacklistTables, tableName);
+		return isSystemBlacklisted(databaseName, tableName)
+			   || isDatabaseBlacklisted(databaseName)
+			   || !filterListsInclude(emptyList, blacklistTables, tableName);
+	}
+
+	public static boolean isSystemBlacklisted(String databaseName, String tableName) {
+		return "mysql".equals(databaseName) && "ha_health_check".equals(tableName);
 	}
 }

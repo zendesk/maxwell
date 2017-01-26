@@ -4,7 +4,7 @@
 
   <groupId>com.zendesk</groupId>
   <artifactId>maxwell</artifactId>
-  <version>1.5.2</version>
+  <version>1.7.1</version>
   <packaging>jar</packaging>
 
   <name>maxwell</name>
@@ -15,6 +15,16 @@
   </properties>
 
   <dependencies>
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-core</artifactId>
+      <version>1.11.68</version>
+    </dependency>
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>amazon-kinesis-producer</artifactId>
+      <version>0.12.3</version>
+    </dependency>
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
@@ -68,9 +78,19 @@
     	<version>2.1</version>
     </dependency>
     <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jul-to-slf4j</artifactId>
+      <version>1.7.21</version>
+    </dependency>
+    <dependency>
     	<groupId>com.zendesk</groupId>
     	<artifactId>open-replicator</artifactId>
     	<version>1.6.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.shyiko</groupId>
+      <artifactId>mysql-binlog-connector-java</artifactId>
+      <version>0.7.3</version>
     </dependency>
     <dependency>
     	<groupId>net.sf.jopt-simple</groupId>
@@ -127,6 +147,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
+	<version>3.6.0</version>
         <configuration>
           <source>1.7</source>
           <target>1.7</target>

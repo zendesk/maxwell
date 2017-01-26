@@ -28,4 +28,14 @@ public class HeartbeatRowMap extends RowMap {
 	public String toJSON() throws IOException {
 		return null;
 	}
+
+	@Override
+	public boolean isTXCommit() {
+		return true;
+	}
+
+	@Override
+	public boolean shouldOutput(MaxwellOutputConfig outputConfig) {
+		return false;
+	}
 }

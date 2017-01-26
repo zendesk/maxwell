@@ -1,9 +1,13 @@
-### Command line options
+### Command line / config.properties options
 ***
+
+At the minimum, you will need to specify 'host', 'user', 'password', 'producer'.
+The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requires 'kinesis_stream'.
+
 option                         | argument                            | description                                         | default
 -------------------------------|-------------------------------------| --------------------------------------------------- | -------
 **general options**
-config                         | STRING                              | location of `config.properties` file                |
+config                         | STRING                              | location of `config.properties` file                | $PWD/config.properties
 log_level                      | [debug &#124; info &#124; warn &#124; error]             | log level                                           | INFO
 &nbsp;
 **mysql options**
@@ -27,12 +31,14 @@ output_file                    | STRING                              | output fi
 &nbsp;
 kafka.bootstrap.servers        | STRING                              | kafka brokers, given as `HOST:PORT[,HOST:PORT]`     |
 kafka_topic                    | STRING                              | kafka topic to write to. static string or variable replacement                            | maxwell
-kafka_partition_by             | [database &#124; table &#124; primary_key &#124; column] | input to kafka partition function                   | database
-kafka_partition_columns        | STRING                              | if partitioning by 'column', a comma separated list of columns |
-kafka_partition_by_fallback    | [database &#124; table &#124; primary_key]        | required when kafka_partition_by=column.  Used when the column is missing |
+producer_partition_by             | [database &#124; table &#124; primary_key &#124; column] | input to kafka partition function                   | database
+producer_partition_columns        | STRING                              | if partitioning by 'column', a comma separated list of columns |
+producer_partition_by_fallback    | [database &#124; table &#124; primary_key]        | required when producer_partition_by=column.  Used when the column is missing |
 kafka_partition_hash           | [default &#124; murmur3]                   | hash function to use when hoosing kafka partition   | default
 ddl_kafka_topic                | STRING                              | if output_ddl is true, kafka topic to write DDL changes to | *kafka_topic*
 kafka_version                  | [0.8 &#124; 0.9 &#124; 0.10 &#124; 0.10.1]                      | run maxwell with kafka producer 0.8.2, 0.9.0, 0.10.0.1 or 0.10.1.0.  Not available in config.properties. | 0.9.0
+&nbsp;
+kinesis_stream                 | STRING                              | kinesis stream name |
 **formatting**
 output_binlog_position         | BOOLEAN                             | should produced records include binlog position     | false
 output_commit_info             | BOOLEAN                             | should produced records include commit and xid      | true

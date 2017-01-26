@@ -34,6 +34,10 @@ public class SchemaStoreSchema {
 		Statement s = connection.createStatement();
 		ResultSet rs = s.executeQuery("show databases like '" + schemaDatabaseName + "'");
 
+		if (!rs.next())
+			return false;
+
+		rs = s.executeQuery("show tables from `" + schemaDatabaseName + "` like 'schemas'");
 		return rs.next();
 	}
 
@@ -62,6 +66,7 @@ public class SchemaStoreSchema {
 		LOGGER.info("Creating " + schemaDatabaseName + " database");
 		executeSQLInputStream(connection, SchemaStoreSchema.class.getResourceAsStream("/sql/maxwell_schema.sql"), schemaDatabaseName);
 		executeSQLInputStream(connection, SchemaStoreSchema.class.getResourceAsStream("/sql/maxwell_schema_bootstrap.sql"), schemaDatabaseName);
+		executeSQLInputStream(connection, SchemaStoreSchema.class.getResourceAsStream("/sql/maxwell_schema_heartbeats.sql"), schemaDatabaseName);
 	}
 
 	private static HashMap<String, String> getTableColumns(String table, Connection c) throws SQLException {
@@ -89,11 +94,12 @@ public class SchemaStoreSchema {
 	}
 
 	public static void upgradeSchemaStoreSchema(Connection c) throws SQLException, IOException {
+		ArrayList<String> maxwellTables = getMaxwellTables(c);
 		if ( !getTableColumns("schemas", c).containsKey("deleted") ) {
 			performAlter(c, "alter table `schemas` add column deleted tinyint(1) not null default 0");
 		}
 
-		if ( !getMaxwellTables(c).contains("bootstrap") )  {
+		if ( !maxwellTables.contains("bootstrap") )  {
 			LOGGER.info("adding bootstrap tables to the maxwell schema.");
 			InputStream is = MysqlSavedSchema.class.getResourceAsStream("/sql/maxwell_schema_bootstrap.sql");
 			executeSQLInputStream(c, is, null);
@@ -104,6 +110,9 @@ public class SchemaStoreSchema {
 			performAlter(c, "alter table `bootstrap` modify column inserted_rows bigint unsigned not null default 0");
 		}
 
+		if ( !getTableColumns("bootstrap", c).containsKey("where_clause") ) {
+			performAlter(c, "alter table `bootstrap` add column where_clause varchar(1024)");
+		}
 
 		HashMap<String, String> schemaColumns = getTableColumns("schemas", c);
 		if ( !schemaColumns.containsKey("charset")) {
@@ -143,6 +152,12 @@ public class SchemaStoreSchema {
 		if ( !schemaColumns.containsKey("position_sha") ) {
 			performAlter(c, "alter table `schemas` add column `position_sha` char(40) charset 'latin1' null default null, add unique index(`position_sha`)");
 			backfillPositionSHAs(c);
+		}
+
+		if ( !maxwellTables.contains("heartbeats") )  {
+			LOGGER.info("adding heartbeats table to the maxwell schema.");
+			InputStream is = MysqlSavedSchema.class.getResourceAsStream("/sql/maxwell_schema_heartbeats.sql");
+			executeSQLInputStream(c, is, null);
 		}
 	}
 

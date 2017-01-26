@@ -11,6 +11,7 @@ option                                        | description
 --port PORT                                   | mysql port
 --database DATABASE                           | mysql database containing the table to bootstrap
 --table TABLE                                 | mysql table to bootstrap
+--where WHERE_CLAUSE                          | where clause to restrict the rows bootstrapped from the specified table
 
 ### Using the maxwell.bootstrap table
 ***
@@ -19,6 +20,13 @@ Alternatively you can insert a row in the `maxwell.bootstrap` table to trigger a
 ```
 mysql> insert into maxwell.bootstrap (database_name, table_name) values ('fooDB', 'barTable');
 ```
+Optionally, you can include a where clause to replay part of the data.
+
+bin/maxwell-bootstrap --config localhost.properties --database foobar --table test --log_level info
+
+or
+
+bin/maxwell-bootstrap --config localhost.properties --database foobar --table test --where "my_date >= '2017-01-07 00:00:00'" --log_level info
 
 ### Async vs Sync bootstrapping
 ***

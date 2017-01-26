@@ -22,6 +22,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public MaxwellMysqlConfig maxwellMysql;
 	public MaxwellFilter filter;
+	public Boolean shykoMode;
 
 	public String databaseName;
 
@@ -38,6 +39,13 @@ public class MaxwellConfig extends AbstractConfig {
 	public String kafkaPartitionFallback;
 	public String bootstrapperType;
 	public int bufferedProducerSize;
+
+	public String producerPartitionKey;
+	public String producerPartitionColumns;
+	public String producerPartitionFallback;
+
+	public String kinesisStream;
+	public boolean kinesisMd5Keys;
 
 	public String outputFile;
 	public MaxwellOutputConfig outputConfig;
@@ -63,6 +71,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.replicationMysql = new MaxwellMysqlConfig();
 		this.maxwellMysql = new MaxwellMysqlConfig();
 		this.masterRecovery = false;
+		this.shykoMode = false;
 		this.bufferedProducerSize = 200;
 		setup(null, null); // setup defaults
 	}
@@ -85,6 +94,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "user", "username for host" ).withRequiredArg();
 		parser.accepts( "password", "password for host" ).withOptionalArg();
 		parser.accepts( "jdbc_options", "additional jdbc connection options" ).withOptionalArg();
+		parser.accepts( "binlog_connector", "run with new binlog connector library" ).withRequiredArg();
 
 		parser.accepts( "__separator_2" );
 
@@ -95,17 +105,24 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_3" );
 
-		parser.accepts( "producer", "producer type: stdout|file|kafka|httppost" ).withRequiredArg();
-		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
-		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
-		parser.accepts( "kafka_partition_by", "database|table|primary_key|column, kafka producer assigns partition by hashing the specified parameter").withRequiredArg();
-		parser.accepts( "kafka_partition_columns", "comma separated list of columns, the columns that should be used for partitioning when kafka_partition_by=column").withRequiredArg();
-		parser.accepts( "kafka_partition_by_fallback", "database|table|primary_key, kafka_partition_by fallback when the using 'column' partitioning and the columsn are not present in the row").withRequiredArg();
+		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|httppost" ).withRequiredArg();
 
+		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
+
+		parser.accepts( "producer_partition_by", "database|table|primary_key|column, kafka/kinesis producers will partition by this value").withRequiredArg();
+		parser.accepts( "producer_partition_columns", "with producer_partition_by=column, partition by the value of these columns.  comma separated.");
+		parser.accepts( "producer_partition_by_fallback", "database|table|primary_key, fallback to this value when when sing 'column' partitioning and the columns are not present in the row").withRequiredArg();
+
+		parser.accepts( "kafka_partition_by", "[deprecated]").withRequiredArg();
+		parser.accepts( "kafka_partition_columns", "[deprecated]").withRequiredArg();
+		parser.accepts( "kafka_partition_by_fallback", "[deprecated]").withRequiredArg();
+		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
 		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning").withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
 		parser.accepts( "kafka_key_format", "how to format the kafka key; array|hash").withOptionalArg();
 		parser.accepts( "kafka_version", "switch to kafka 0.8, 0.10 or 0.10.1 producer (from 0.9)");
+
+		parser.accepts( "kinesis_stream", "kinesis stream name").withOptionalArg();
 
 		parser.accepts( "__separator_4" );
 
@@ -119,7 +136,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "output_server_id", "produced records include server_id; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_thread_id", "produced records include thread_id; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_ddl", "produce DDL records to ddl_kafka_topic [true|false]. default: false" ).withOptionalArg();
-		parser.accepts( "ddl_kafka_topic", "optionally provide a topic name to push DDL records to. default: kafka_topic").withOptionalArg();
+		parser.accepts( "ddl_kafka_topic", "optionally provide an alternate topic to push DDL records to. default: kafka_topic").withOptionalArg();
 
 		parser.accepts( "__separator_5" );
 
@@ -154,7 +171,10 @@ public class MaxwellConfig extends AbstractConfig {
 			public String format(Map<String, ? extends OptionDescriptor> options) {
 				this.addRows(options.values());
 				String output = this.formattedHelpOutput();
-				return output.replaceAll("--__separator_.*", "");
+				output = output.replaceAll("--__separator_.*", "");
+
+				Pattern deprecated = Pattern.compile("^.*\\[deprecated\\].*\\n", Pattern.MULTILINE);
+				return deprecated.matcher(output).replaceAll("");
 			}
 		};
 
@@ -239,6 +259,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.maxwellMysql       = parseMysqlConfig("", options, properties);
 		this.replicationMysql   = parseMysqlConfig("replication_", options, properties);
+		this.shykoMode          = fetchBooleanOption("binlog_connector", options, properties, System.getenv("SHYKO_MODE") != null);
 
 		this.databaseName       = fetchOption("schema_database", options, properties, "maxwell");
 		this.maxwellMysql.database = this.databaseName;
@@ -250,9 +271,10 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.kafkaTopic         	= fetchOption("kafka_topic", options, properties, "maxwell");
 		this.kafkaKeyFormat     	= fetchOption("kafka_key_format", options, properties, "hash");
-		this.kafkaPartitionKey  	= fetchOption("kafka_partition_by", options, properties, "database");
+		this.kafkaPartitionKey  	= fetchOption("kafka_partition_by", options, properties, null);
 		this.kafkaPartitionColumns  = fetchOption("kafka_partition_columns", options, properties, null);
 		this.kafkaPartitionFallback = fetchOption("kafka_partition_by_fallback", options, properties, null);
+
 		this.kafkaPartitionHash 	= fetchOption("kafka_partition_hash", options, properties, "default");
 		this.ddlKafkaTopic 		    = fetchOption("ddl_kafka_topic", options, properties, this.kafkaTopic);
 
@@ -271,6 +293,28 @@ public class MaxwellConfig extends AbstractConfig {
 				}
 			}
 		}
+
+		this.producerPartitionKey = fetchOption("producer_partition_by", options, properties, "database");
+		this.producerPartitionColumns = fetchOption("producer_partition_columns", options, properties, null);
+		this.producerPartitionFallback = fetchOption("producer_partition_by_fallback", options, properties, null);
+
+		if(this.kafkaPartitionKey != null && !this.kafkaPartitionKey.equals("database")) {
+			LOGGER.warn("kafka_partition_by is deprecated, please use producer_partition_by");
+			this.producerPartitionKey = this.kafkaPartitionKey;
+		}
+
+		if(this.kafkaPartitionColumns != null) {
+			LOGGER.warn("kafka_partition_columns is deprecated, please use producer_partition_columns");
+			this.producerPartitionColumns = this.kafkaPartitionColumns;
+		}
+
+		if(this.kafkaPartitionFallback != null) {
+			LOGGER.warn("kafka_partition_by_fallback is deprecated, please use producer_partition_by_fallback");
+			this.producerPartitionFallback = this.kafkaPartitionFallback;
+		}
+
+		this.kinesisStream  = fetchOption("kinesis_stream", options, properties, null);
+		this.kinesisMd5Keys = fetchBooleanOption("kinesis_md5_keys", options, properties, false);
 
 		this.outputFile         = fetchOption("output_file", options, properties, null);
 
@@ -367,6 +411,10 @@ public class MaxwellConfig extends AbstractConfig {
 		} else if ( this.producerType.equals("file")
 				&& this.outputFile == null) {
 			usageForOptions("please specify --output_file=FILE to use the file producer", "--producer", "--output_file");
+
+  	} else if ( this.producerType.equals("kinesis") && this.kinesisStream == null) {
+			usageForOptions("please specify a stream name for kinesis", "kinesis_stream");
+		}
 		} else if ( this.producerType.equals("httppost")
 				&& this.httpPostEndpoint == null) {
 			usageForOptions("please specify --httppost_endpoint=URI to use the httppost producer", "--producer", "--httppost_endpoint");
@@ -374,7 +422,6 @@ public class MaxwellConfig extends AbstractConfig {
 				&& (this.httpPostAuthKey != null && this.httpPostAuthSecret == null)
 				|| (this.httpPostAuthKey == null && this.httpPostAuthSecret != null))
 			usageForOptions("please specify --httppost_authkey=keyId and --httppost_authsecret=yoursecret to use the httppost producer with auth", "--httppost_authkey", "--httppost_authsecret");
-
 
 
 		if ( !this.bootstrapperType.equals("async")

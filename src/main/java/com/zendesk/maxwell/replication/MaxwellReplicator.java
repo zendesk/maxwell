@@ -268,6 +268,12 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 						// to us starting on a WRITE_ROWS event -- we sync the schema position somewhere
 						// kinda unsafe.
 						processQueryEvent(qe);
+					} else if (sql.toUpperCase().startsWith("INSERT INTO MYSQL.RDS_HEARTBEAT")) {
+						// RDS heartbeat events take the following form:
+						// INSERT INTO mysql.rds_heartbeat2(id, value) values (1,1483041015005) ON DUPLICATE KEY UPDATE value = 1483041015005
+						// As a result they are processed as query events.
+						// When these occur we need to update to update our position.
+						processRDSHeartbeatInsertEvent(qe);
 					} else {
 						LOGGER.warn("Unhandled QueryEvent inside transaction: " + qe);
 					}
@@ -298,7 +304,7 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 			if (rowBuffer != null && !rowBuffer.isEmpty()) {
 				RowMap row = rowBuffer.removeFirst();
 
-				if ( row != null && isMaxwellRow(row) && row.getTable().equals("positions") )
+				if ( row != null && isMaxwellRow(row) && row.getTable().equals("heartbeats") )
 					return processHeartbeats(row);
 				else
 					return row;
@@ -372,6 +378,13 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 			this.schemaStore,
 			eventBinlogPosition(event),
 			event.getHeader().getTimestamp()
+		);
+	}
+
+	private void processRDSHeartbeatInsertEvent(QueryEvent event) throws Exception {
+		processRDSHeartbeatInsertEvent(
+			event.getDatabaseName().toString(),
+			eventBinlogPosition(event)
 		);
 	}
 

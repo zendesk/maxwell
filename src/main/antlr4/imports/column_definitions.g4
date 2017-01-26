@@ -24,6 +24,7 @@ generic_type:
 	| col_type=(DATE | TINYBLOB | MEDIUMBLOB | LONGBLOB | BOOLEAN | BOOL ) column_options*
 	| col_type=(GEOMETRY | GEOMETRYCOLLECTION | LINESTRING | MULTILINESTRING
 	             | MULTIPOINT | MULTIPOLYGON | POINT | POLYGON ) column_options*
+	| col_type=JSON column_options*
 	| col_type=VARBINARY length column_options*
 	;
 
@@ -79,7 +80,10 @@ column_options:
 	| COMMENT string_literal
 	| COLUMN_FORMAT (FIXED|DYNAMIC|DEFAULT)
 	| STORAGE (DISK|MEMORY|DEFAULT)
+	| (VIRTUAL | STORED)
+	| (GENERATED ALWAYS)? AS skip_parens
 	| reference_definition
+	| CHECK skip_parens
 ;
 
 primary_key: PRIMARY KEY;

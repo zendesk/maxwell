@@ -1,5 +1,42 @@
 # Maxwell changelog
 
+### [v1.7.1](https://github.com/zendesk/maxwell/releases/tag/v1.7.1): "blame it on your seratonin"
+
+
+- bootstrapping now can take a `--where` clause
+- performance improvements in the kafka producer
+
+
+### [v1.7.0](https://github.com/zendesk/maxwell/releases/tag/v1.7.0): "lucky me, lucky mud"
+
+
+Maxwell 1.7 brings 2 major new, alpha features.  The first is Mysql 5.7
+support, including JSON column type support and handling of 5.7 SQL, but
+_not_ including GTID support yet.  This is based on porting Maxwell to
+Stanley Shyko's binlog-connector library.  Thanks to Stanley for his
+amazing support doing this port.
+
+The second major new feature is a producer for Amazon's Kinesis streams,
+This was contributed in full by the dogged and persistent Thomas Dziedzic.
+Check it out with `--producer=kinesis`.
+
+There's also some bugfixes:
+- Amazon RDS heartbeat events now tick maxwell's position, thx Scott Ferguson
+- allow CHECK() statements inside column definitions
+
+### [v1.6.0](https://github.com/zendesk/maxwell/releases/tag/v1.6.0): "give me a quest"
+
+This is mostly a bugfix release, but it gets a minor version bump due to
+a single change of behavior: dates and timestamps which mysql may
+accept, but are considered invalid (0000-00-00 is a notable example)
+previously had inconsistent behavior.  Now we convert these to NULL.
+Other bugfixes:
+- heartbeats have moved into their own table
+- more fixes around alibaba rds
+- ignore DELETE statements that are output for MEMORY tables upon server
+  restart
+- allow pointing maxwell to a pre-existing database
+
 ### [v1.5.2](https://github.com/zendesk/maxwell/releases/tag/v1.5.2): "french banana"
 
 
@@ -9,18 +46,15 @@
 - fix a bug that would trigger in certain cases when dropping a column
   that was part of the primary-key
 
-
 ### [v1.5.1](https://github.com/zendesk/maxwell/releases/tag/v1.5.1): "1.5.1 is just 1.5.1"
 
 This is a bugfix release.
-
 - fixes for bootstrapping with an alternative maxwell-schema name and an
   `include_database` filter, thanks Lucian Jones
 - fixes for kafka 0.10 with lz4 compression, thanks Scott Ferguson
 - ignore the RDS table `mysql.ha_health_check` table
 - Get the bootstrapping process to output NULL values.
 - fix a quoting issue in the bootstrap code, thanks @mylesjao.
-
 
 ### [v1.5.0](https://github.com/zendesk/maxwell/releases/tag/v1.5.0): "someone, somewhere, is still smoking cigarettes, damnit"
 
@@ -31,13 +65,11 @@ This is a bugfix release.
 - bugfix: fix a regression in handling `ALTER TABLE change c int after b` statements
 - warn on servers with missing server_id
 
-
 ### [v1.4.2](https://github.com/zendesk/maxwell/releases/tag/v1.4.2): "drawer cat is back"
 
 
 - kafka 0.10.0 support, as well as a re-working of the --kafka_version
   command line option.
-
 
 ### [v1.4.1](https://github.com/zendesk/maxwell/releases/tag/v1.4.1): "cat snores"
 
@@ -45,15 +77,12 @@ This is a bugfix release.
 - support per-table topics, Thanks @smferguson and @sschatts.
 - fix a parser issue with DROP COLUMN CASCADE, thanks @smferguson
 
-
 ### [v1.4.0](https://github.com/zendesk/maxwell/releases/tag/v1.4.0): "deep, insomniac character flaws"
 
 1.4.0 brings us two nice new features:
-
-  - partition-by-column: see --kafka_partition_columns.  Thanks @smferguson
-  - output schema changes as JSON: see --output_ddl.  Thanks @xmlking
-  - As well as a fix around race conditions on shutdown.
-
+- partition-by-column: see --kafka_partition_columns.  Thanks @smferguson
+- output schema changes as JSON: see --output_ddl.  Thanks @xmlking
+- As well as a fix around race conditions on shutdown.
 
 ### [v1.3.0](https://github.com/zendesk/maxwell/releases/tag/v1.3.0): "yogg-saron"
 
@@ -62,19 +91,17 @@ This is a bugfix release.
 - support for outputting server_id & thread_id, thanks @sagiba
 - fix a race condition in bootstrap support
 
-
 ### [v1.2.2](https://github.com/zendesk/maxwell/releases/tag/v1.2.2): "bats wearing frog pajamas"
 
 
 - Maxwell will now include by default fields with NULL values (as null
-fields).  To disable this and restore the old functionality where fields
-were omitted, pass `--output_nulls=false`
+  fields).  To disable this and restore the old functionality where fields
+  were omitted, pass `--output_nulls=false`
 - Fix an issue with multi-client support where two replicators would
-ping-pong heartbeats at each other
+  ping-pong heartbeats at each other
 - Fix an issue where a client would attempt to recover a position from a
-mismatched client_id
+  mismatched client_id
 - Fix a bug when using CHANGE COLUMN on a primary key
-
 
 ### [v1.2.1](https://github.com/zendesk/maxwell/releases/tag/v1.2.1): "point-ones are a sad and inevitable fact"
 
@@ -83,7 +110,6 @@ This is a bugfix release.
 - fix a parser bug around ALTER TABLE CHARACTER SET
 - fix bin/maxwell to pull in the proper version of the kafka-clients
   library
-
 
 ### [v1.2.0](https://github.com/zendesk/maxwell/releases/tag/v1.2.0): "just here, not to talk to you"
 
@@ -97,13 +123,11 @@ It also upgrades the kafka producer library to 0.9.  If you're using
 maxwell with a kafka 0.8 server, you must now pass the `--kafka0.8` flag
 to maxwell.
 
-
 ### [v1.1.6](https://github.com/zendesk/maxwell/releases/tag/v1.1.6): "pithy"
 
 
 - minor bugfix in which maxwell with --replay mode was trying to write
   heartbeats
-
 
 ### [v1.1.5](https://github.com/zendesk/maxwell/releases/tag/v1.1.5): "my brain is a polluted mess"
 
@@ -118,7 +142,6 @@ to maxwell.
 - lay the ground work for doing master recovery; we add a heartbeat into
   the positions table that we can co-ordinate around.
 
-
 ### [v1.1.4](https://github.com/zendesk/maxwell/releases/tag/v1.1.4): "george flunk"
 
 
@@ -127,11 +150,9 @@ to maxwell.
   crash Maxwell by throwing a RuntimeException out of the Kafka
   Producer, but this was a failure.  Now we log and skip all errors.
 
-
 ### [v1.1.3](https://github.com/zendesk/maxwell/releases/tag/v1.1.3): "the button I push to not have to go out"
 
 This is a bugfix release, which fixes:
-
 - https://github.com/zendesk/maxwell/issues/376, a problem parsing
   RENAME INDEX
 - https://github.com/zendesk/maxwell/issues/371, a problem with the
@@ -140,7 +161,6 @@ This is a bugfix release, which fixes:
   original casing of columns
 - https://github.com/zendesk/maxwell/issues/373, we were incorrectly
   expecting heartbeats to work under 5.1
-
 
 ### [v1.1.2](https://github.com/zendesk/maxwell/releases/tag/v1.1.2): "scribbled notes on red pages"
 
@@ -151,13 +171,11 @@ This is a bugfix release, which fixes:
   of very large transactions / rows inside transactions
 - kinder, gentler help text when you specify an option incorrectly
 
-
 ### [v1.1.1](https://github.com/zendesk/maxwell/releases/tag/v1.1.1): scribbled notes on blue pages
 
 
 - fixes a race condition setting the binlog position that would get
   maxwell stuck
-
 
 ### [v1.1.0](https://github.com/zendesk/maxwell/releases/tag/v1.1.0): "sleep away the afternoon"
 
@@ -170,19 +188,16 @@ This is a bugfix release, which fixes:
 - bugfix: unsigned integer columns were captured incorrectly.  1.1 will
   recapture the schema and attempt to correct the error.
 
-
 ### [v1.1.0-pre4](https://github.com/zendesk/maxwell/releases/tag/v1.1.0-pre4): "buck buck buck buck buck buck-AH!"
 
 
 - Eddie McLean gives some helpful patches around bootstrapping
 - Bugfixes for the patch-up-the-schema code around unsigned ints
 
-
 ### [v1.1.0-pre3](https://github.com/zendesk/maxwell/releases/tag/v1.1.0-pre3): 
 
 - forgot to include some updates that back-patch unsigned column
   problems
-
 
 ### [v1.1.0-pre2](https://github.com/zendesk/maxwell/releases/tag/v1.1.0-pre2): "yawn yawn"
 
@@ -190,12 +205,10 @@ This is a bugfix release, which fixes:
 - fix performance issues when capturing schema in AWS Aurora
 - fix a bug in capturing unsigned integer columns
 
-
 ### [v1.0.1](https://github.com/zendesk/maxwell/releases/tag/v1.0.1): "bag of oversized daisies"
 
 
 - fixes a parsing bug with `CURRENT_TIMESTAMP()`
-
 
 ### [v1.0.0](https://github.com/zendesk/maxwell/releases/tag/v1.0.0): "Maxwell learns to speak"
 
@@ -211,20 +224,17 @@ Since v0.17.0, Maxwell has gotten:
 and I, Osheroff, think the damn thing is stable enough for a 1.0.  So
 there.
 
-
 ### [v1.0.0-RC3](https://github.com/zendesk/maxwell/releases/tag/v1.0.0-RC3): "C'mon and take it"
 
 
 pull in support for replication heartbeats.  helps in the flakier
 network environs.
 
-
 ### [v1.0.0-RC2](https://github.com/zendesk/maxwell/releases/tag/v1.0.0-RC2): "same thing, just without the v"
 
 
 - fixes the way ALTER DATABASE charset= was handled
 - adds proper handling of ALTER TABLE CONVERT TO CHARSET
-
 
 ### [v1.0.0-RC1](https://github.com/zendesk/maxwell/releases/tag/v1.0.0-RC1): "Richard Buckner's release"
 
@@ -233,13 +243,11 @@ network environs.
 - fix a race condition crash bug in bootstrapping
 - fix a parser bug
 
-
 ### [v1.0.0-PRE2](https://github.com/zendesk/maxwell/releases/tag/v1.0.0-PRE2): "an embarassment of riches"
 
 
 1.0.0-PRE2 brings in a lot of changes that got merged while we were
 testing out PRE1.  so, hey.
-
 - Configurable names for the `maxwell` schema database (Kristian Kaufman)
 - Configurable key (primary key, id, database) into the kafka partition hash function (Kristian Kaufman)
 - Configurable Kafka partition hash function (java hashCode, murmur3) (Kristian Kaufman)
@@ -247,18 +255,15 @@ testing out PRE1.  so, hey.
 - add `--blacklist_tables` option to fully ignore excessive schema changes (Nicolas Maquet)
 - bootstrap rows now have 'bootstrap-insert' type
 
-
 ### [v1.0.0-PRE1](https://github.com/zendesk/maxwell/releases/tag/v1.0.0-PRE1): "drunk conversations with sober people"
 
 - Here we have the preview release of @nmaquet's excellent work around
   bootstrapping initial versions of mysql tables.
 
-
 ### [v0.17.0](https://github.com/zendesk/maxwell/releases/tag/v0.17.0): "wrists of William"
 
 
 v0.17 is a large bugfix release with one new feature.
-
 - FEATURE: allow specifying an alternative mysql schema-storage server and
   replication server
 - BUGFIX: properly handle case-sensitivity by aping the behavior of the
@@ -266,7 +271,6 @@ v0.17 is a large bugfix release with one new feature.
 - BUGFIX: parse some forms of CHECK( ... ) statements.  Fixes #203.
 - BUGFIX: many more SQL-parser fixes.  We are mostly through some
   thousands of lines of SQL produced by mysql-test.
-
 
 ### [v0.16.2](https://github.com/zendesk/maxwell/releases/tag/v0.16.2): "The best laid plans"
 
@@ -279,7 +283,6 @@ This is a large-ish bugfix release.
 - support UCS2 (start trying to operate ok on the mysql-test suite)
 - use ObjectOutputStream.reset to fix memory leaks when buffering to disk
 
-
 ### [v0.16.1](https://github.com/zendesk/maxwell/releases/tag/v0.16.1): "me and room service"
 
 
@@ -290,7 +293,6 @@ This is a bug-fix-roundup release:
 - some modifications to the overflow-to-disk logic; we buffer the input
   and output, and we fix a memory leak
 
-
 ### [v0.16.0](https://github.com/zendesk/maxwell/releases/tag/v0.16.0): "Kristian Kaufmann's version"
 
 
@@ -298,18 +300,15 @@ Version 0.16.0 introduces a feature where UPDATE statements will now
 show both the new row image and the old values of the fields that
 changed.  Thanks @kristiankaufmann
 
-
 ### [v0.15.0](https://github.com/zendesk/maxwell/releases/tag/v0.15.0): "the littlest little city"
 
 - fix a parse problem with indices ordered by ASC/DESC
-
 
 ### [v0.15.0-RC1](https://github.com/zendesk/maxwell/releases/tag/v0.15.0-RC1): "it's later than you think"
 
 
 - large transactions now buffer to disk instead of crushing maxwell.
 - support ALGORITHM=[algo], LOCK=[lock] for 5.6 alters
-
 
 ### [v0.14.6](https://github.com/zendesk/maxwell/releases/tag/v0.14.6): "It's about being American.  Sort of."
 
@@ -318,28 +317,23 @@ changed.  Thanks @kristiankaufmann
 - fix parsing on millisecond precision column defintions
 - fix CREATE SCHEMA parsing
 
-
 ### [v0.14.5](https://github.com/zendesk/maxwell/releases/tag/v0.14.5): "false is the new true"
 
 
 - handle BOOLEAN columns with true/false defaults
-
 
 ### [v0.14.4](https://github.com/zendesk/maxwell/releases/tag/v0.14.4): "You'd think we'd be at 1.0 by now, wouldn't you?"
 
 - fixes parsing of "mysql comments" (`/*! .. */`)
 - More performance improvements, another 10% in a tight loop.
 
-
 ### [v0.14.3](https://github.com/zendesk/maxwell/releases/tag/v0.14.3): "Peanuts.  My girlfriend thinks about peanuts."
 
 - fixes a regression in 0.14.2 that creates duplicate copies of the "mysql" database in the schema.
 
-
 ### [v0.14.2](https://github.com/zendesk/maxwell/releases/tag/v0.14.2): "Maxwell Sandvik 88"
 
 - capture the mysql database along with the rest of the schema.  Eliding it was a bad premature optimization that led to crashes when tables in the mysql database changed. 
-
 
 ### [v0.14.1](https://github.com/zendesk/maxwell/releases/tag/v0.14.1): "be liberal in what you accept.  Even if nonsensical."
 
@@ -349,13 +343,11 @@ changed.  Thanks @kristiankaufmann
 
 This release introduces row filters, allowing you to include or exclude tables from maxwell's output based on names or regular expressions.  
 
-
 ### [v0.13.1](https://github.com/zendesk/maxwell/releases/tag/v0.13.1): "well that was somewhat expected"
 
 v0.13.1 is a bug fix of v0.13.0 -- fixes a bug where long rows were truncated. 
 
 v0.13.0 contains:
-
 - Big performance boost for maxwell: 75% faster in some benchmarks
 - @davidsheldon contributed some nice bug fixes around `CREATE TABLE ... IF NOT EXISTS`, which were previously generating new, bogus copies of the schema.
 - we now include a "scavenger thread" that will lazily clean out old, deleted schemas.
@@ -363,12 +355,11 @@ v0.13.0 contains:
 ### [v0.13.0](https://github.com/zendesk/maxwell/releases/tag/v0.13.0): "Malkovich Malkovich Malkovich Sheldon?"
 
 Lucky release number 13 brings some reasonably big changes:
-
 - Big performance boost for maxwell: 75% faster in some benchmarks
 - @davidsheldon contributed some nice bug fixes around `CREATE TABLE ... IF NOT EXISTS`, which were previously generating new, bogus copies of the schema.
 - we now include a "scavenger thread" that will lazily clean out old, deleted schemas.
 
-*This release has a pretty bad bug.  do not use.*
+_This release has a pretty bad bug.  do not use._
 
 ### [v0.12.0](https://github.com/zendesk/maxwell/releases/tag/v0.12.0): "what do I call them?  Slippers?  Why, are you jealous?"
 
@@ -377,7 +368,6 @@ Lucky release number 13 brings some reasonably big changes:
 ### [v0.11.4](https://github.com/zendesk/maxwell/releases/tag/v0.11.4): "13 steps"
 
 this is another bugfix release that fixes a problem where the replication thread can die in the middle of processing a transaction event.  I really need to fix this at a lower level, ie the open-replicator level.
-
 
 ### [v0.11.3](https://github.com/zendesk/maxwell/releases/tag/v0.11.3): ".. and the other half is to take the bugs out"
 
@@ -420,7 +410,6 @@ It also contains a bugfix around server_id handling.
 - Mysql 5.6 checksum support!
 - some more bugfixes with the SQL parser 
 
-
 ### [v0.11.0-PRE4](https://github.com/zendesk/maxwell/releases/tag/v0.11.0-PRE4): "except for that other thing"
 
 - bugfix on v0.11.0-PRE3
@@ -455,7 +444,6 @@ It also contains a bugfix around server_id handling.
 
 - fixes a bug with checksum processing.
 
-
 ### [v0.10.0-RC1](https://github.com/zendesk/maxwell/releases/tag/v0.10.0-RC1): "verify all the things"
 
 - upgrade to open-replicator 1.3.0-RC1, which brings binlog checksum (and thus easy 5.6.1) support to maxwell.
@@ -482,7 +470,6 @@ It also contains a bugfix around server_id handling.
 ### [v0.9.0](https://github.com/zendesk/maxwell/releases/tag/v0.9.0): Vanchi says "eat"
 
 Also, vanchi is so paranoid he's worried immediately about this. 
-
 - mysql 5.6 support (without checksum support, yet)
 - fix a bunch of miscellaneous bugs @akshayi1 found (REAL, BOOL, BOOLEAN types, TRUNCATE TABLE)
 
@@ -495,7 +482,6 @@ Also, vanchi is so paranoid he's worried immediately about this.
 - add "ts" field to row output
 - add --config option for passing a different config file
 - support int1, int2, int4, int8 columns
-
 
 ### [v0.7.2](https://github.com/zendesk/maxwell/releases/tag/v0.7.2): "all the sql ladies"
 
@@ -569,5 +555,4 @@ v0.1.1, a small bugfix release.
 ### [v0.1](https://github.com/zendesk/maxwell/releases/tag/v0.1): 0.1
 
 This is the first possible release of Maxwell that might work.  It includes some exceedingly basic kafka support, and JSON output of binlog deltas.
-
 
