@@ -138,6 +138,7 @@ public class Maxwell implements Runnable {
 
 	protected void onReplicatorStart() {}
 	private void start() throws Exception {
+		MaxwellMetrics.setup();
 		try ( Connection connection = this.context.getReplicationConnection();
 			Connection rawConnection = this.context.getRawMaxwellConnection() ) {
 			MaxwellMysqlStatus.ensureReplicationMysqlState(connection);

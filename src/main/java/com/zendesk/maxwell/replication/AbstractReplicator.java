@@ -1,5 +1,10 @@
 package com.zendesk.maxwell.replication;
 
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
+import com.zendesk.maxwell.MaxwellMetrics;
 import com.zendesk.maxwell.MaxwellFilter;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
@@ -12,6 +17,7 @@ import com.zendesk.maxwell.schema.ddl.DDLMap;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 import com.zendesk.maxwell.util.RunLoopProcess;
+import org.apache.kafka.common.metrics.stats.Rate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,12 +35,30 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	protected final TableCache tableCache = new TableCache();
 	protected Long lastHeartbeatRead;
 
+	private final Counter rowCounter = MaxwellMetrics.registry.counter(
+		MetricRegistry.name(AbstractReplicator.class, "row-count")
+	);
+	private final Meter rowMeter = MaxwellMetrics.registry.meter(
+		MetricRegistry.name(AbstractReplicator.class, "row-meter")
+	);
+	protected Long replicationLag = 0L;
+
 	public AbstractReplicator(String clientID, AbstractBootstrapper bootstrapper, PositionStoreThread positionStoreThread, String maxwellSchemaDatabaseName, AbstractProducer producer) {
 		this.clientID = clientID;
 		this.bootstrapper = bootstrapper;
 		this.positionStoreThread = positionStoreThread;
 		this.maxwellSchemaDatabaseName = maxwellSchemaDatabaseName;
 		this.producer = producer;
+
+		MaxwellMetrics.registry.register(
+			MetricRegistry.name(AbstractReplicator.class, "replicator-lag"),
+			new Gauge<Long>() {
+				@Override
+				public Long getValue() {
+					return replicationLag;
+				}
+			}
+		);
 	}
 
 	/**
@@ -42,6 +66,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	 *
 	 * Process a rowmap that represents a write to `maxwell`.`heartbeats`.
 	 * If it's a write for a different client_id, we return the input (which
+	 *
 	 * will signify to the rest of the chain to ignore it).  Otherwise, we
 	 * transform it into a HeartbeatRowMap (which will not be output, but will
 	 * advance the binlog position) and set `this.lastHeartbeatRead`
@@ -126,6 +151,9 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	public void work() throws Exception {
 		RowMap row = getRow();
 
+		rowCounter.inc();
+		rowMeter.mark();
+
 		// todo: this is inelegant.  Ideally the outer code would monitor the
 		// position thread and stop us if it was dead.
 
@@ -141,6 +169,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 			producer.push(row);
 		else
 			bootstrapper.work(row, producer, this);
+
 	}
 
 	/**
