@@ -140,6 +140,22 @@ kinesis_stream=maxwell
 # Default: false
 #kinesis_md5_keys=true
 
+# AWS KPL tries to send each event up to a maximum TTL (defined in kinesis.producer-library.properties).
+# However in some cases you must guarantee that each event is sent to the stream.
+# With this parameter you can configure that maxwell tries to send the event to the KPL
+# a number of times
+# Values: integer value
+# Default: 0
+kinesis_max_attempts=3
+
+# AWS KPL buffers sent records before passing them to a kinesis stream. This consumes
+# system resources, and if you don't control it, you can exhauste them
+# This parameter establishes the maximum of buffered records Maxwell will allow in order
+# to avoid backpressure
+# Values: integer value
+# Default: 1000
+kinesis_max_buffered_records=1000
+
 ######### filter stuff ###############
 
 # filter rows out of Maxwell's output.
