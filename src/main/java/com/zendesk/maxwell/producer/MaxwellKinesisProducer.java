@@ -143,6 +143,7 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 	private final KinesisProducer kinesisProducer;
 	private final String kinesisStream;
 	private final int maxAttempts;
+	private final int maxBufferedRecords;
 	private AtomicInteger successRecords = new AtomicInteger(0);
 	private AtomicInteger errorRecords = new AtomicInteger(0);
 	private AtomicLong lastInfoLog = new AtomicLong(0L);
@@ -157,6 +158,7 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 		this.kinesisStream = kinesisStream;
 
 		this.maxAttempts = context.getConfig().kinesisMaxAttempts;
+		this.maxBufferedRecords = context.getConfig().kinesisMaxBufferedRecords;
 
 		Path path = Paths.get("kinesis-producer-library.properties");
 		if(Files.exists(path) && Files.isRegularFile(path)) {
@@ -171,6 +173,11 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 	public void sendAsync(RowMap r, AbstractAsyncProducer.CallbackCompleter cc) throws Exception {
 		String key = this.partitioner.getKinesisKey(r);
 		String value = r.toJSON(outputConfig);
+
+        // Wait for KPL to finish sending events
+        while(kinesisProducer.getOutstandingRecordsCount()> this.maxBufferedRecords) {
+            Thread.sleep(1);
+        }
 
         ByteBuffer encodedValue = ByteBuffer.wrap(value.getBytes("UTF-8"));
 		ListenableFuture<UserRecordResult> future = kinesisProducer.addUserRecord(kinesisStream, key, encodedValue);
