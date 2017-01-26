@@ -172,11 +172,17 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 		String key = this.partitioner.getKinesisKey(r);
 		String value = r.toJSON(outputConfig);
 
-		ByteBuffer encodedValue = ByteBuffer.wrap(value.getBytes("UTF-8"));
+        ByteBuffer encodedValue = ByteBuffer.wrap(value.getBytes("UTF-8"));
 		ListenableFuture<UserRecordResult> future = kinesisProducer.addUserRecord(kinesisStream, key, encodedValue);
 
 		FutureCallback<UserRecordResult> callback = new KinesisCallback(cc, r.getPosition(), key, value, successRecords, errorRecords, kinesisProducer, kinesisStream, 0, maxAttempts, lastInfoLog);
 
 		Futures.addCallback(future, callback);
 	}
+
+	@Override
+    public void release() {
+	    kinesisProducer.flushSync();
+	    kinesisProducer.destroy();
+    }
 }
