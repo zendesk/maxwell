@@ -5,10 +5,8 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -48,7 +46,7 @@ class KinesisCallback implements FutureCallback<UserRecordResult> {
 	private final int maxAttempts;
 	private AtomicLong lastInfoLog;
 
-    private static final Random RANDOM = new Random();
+	private static final Random RANDOM = new Random();
 
 	public KinesisCallback(AbstractAsyncProducer.CallbackCompleter cc, BinlogPosition position, String key, String json, AtomicInteger successRecords, AtomicInteger errorRecords, KinesisProducer kinesisProducer, String kinesisStream, int attempts, int maxAttempts, AtomicLong lastInfoLog) {
 		this.cc = cc;
@@ -60,8 +58,8 @@ class KinesisCallback implements FutureCallback<UserRecordResult> {
 		this.kinesisProducer = kinesisProducer;
 		this.kinesisStream = kinesisStream;
 		this.attempts = attempts;
-        this.maxAttempts = maxAttempts;
-        this.lastInfoLog = lastInfoLog;
+		this.maxAttempts = maxAttempts;
+		this.lastInfoLog = lastInfoLog;
 	}
 
 	@Override
@@ -69,74 +67,93 @@ class KinesisCallback implements FutureCallback<UserRecordResult> {
 		logger.error(t.getClass().getSimpleName() + " @ " + position + " -- " + key);
 		logger.error(t.getLocalizedMessage());
 
-        if(attempts>=maxAttempts) {
-            int errRecords = errorRecords.incrementAndGet();
+		if(attempts>=maxAttempts) {
+			int errRecords = errorRecords.incrementAndGet();
 
-            if(t instanceof UserRecordFailedException) {
-                Attempt last = Iterables.getLast(((UserRecordFailedException) t).getResult().getAttempts());
-                UserRecordResult result = ((UserRecordFailedException) t).getResult();
-                List<String> errorList = new ArrayList<String>();
-                for(Attempt attempt : result.getAttempts()){
-                   errorList.add(String.format(
-                           "Delay after prev attempt: %d ms, "
-                                   + "Duration: %d ms, Code: %s, "
-                                   + "Message: %s",
-                           attempt.getDelay(), attempt.getDuration(),
-                           attempt.getErrorCode(),
-                           attempt.getErrorMessage()));
-                }
-                String errorListStr = StringUtils.join(errorList, "n");
-                logger.error(String.format(
-                        "Record failed to put, attempts: %d. Errors: %s", result.getAttempts().size(), errorListStr));
-                logger.error(String.format("Number of failed records up to now: %d", errRecords));
-                logger.error(String.format("Errored message: %s", json));
-            }
+			if(t instanceof UserRecordFailedException) {
+				Attempt last = Iterables.getLast(((UserRecordFailedException) t).getResult().getAttempts());
+				UserRecordResult result = ((UserRecordFailedException) t).getResult();
+				List<String> errorList = new ArrayList<String>();
+				for(Attempt attempt : result.getAttempts()){
+				   errorList.add(String.format(
+						   "Delay after prev attempt: %d ms, "
+								   + "Duration: %d ms, Code: %s, "
+								   + "Message: %s",
+						   attempt.getDelay(), attempt.getDuration(),
+						   attempt.getErrorCode(),
+						   attempt.getErrorMessage()));
+				}
+				String errorListStr = StringUtils.join(errorList, "n");
+				logger.error(String.format(
+						"Record failed to put, attempts: %d. Errors: %s", result.getAttempts().size(), errorListStr));
+				logger.error(String.format("Number of failed records up to now: %d", errRecords));
+				logger.error(String.format("Errored message: %s", json));
+			}
 
-            cc.markCompleted();
-        } else {
-            attempts++;
+			cc.markCompleted();
+		} else {
+			attempts++;
 
-            logger.warn(String.format("Record failed to put. Retrying. Attempt: %d ", attempts));
+			logger.warn(String.format("Record failed to put. Retrying. Attempt: %d ", attempts));
 
-            try {
-                ByteBuffer encodedValue = ByteBuffer.wrap(json.getBytes("UTF-8"));
-                ListenableFuture<UserRecordResult> future = kinesisProducer.addUserRecord(kinesisStream, key, encodedValue);
+			try {
+				ByteBuffer encodedValue = ByteBuffer.wrap(json.getBytes("UTF-8"));
+				ListenableFuture<UserRecordResult> future = kinesisProducer.addUserRecord(kinesisStream, key, encodedValue);
 
-                FutureCallback<UserRecordResult> callback = new KinesisCallback(cc, position, key, json, successRecords, errorRecords, kinesisProducer, kinesisStream, attempts, maxAttempts, lastInfoLog);
+				FutureCallback<UserRecordResult> callback = new KinesisCallback(cc, position, key, json, successRecords, errorRecords, kinesisProducer, kinesisStream, attempts, maxAttempts, lastInfoLog);
 
-                Futures.addCallback(future, callback);
-            } catch (UnsupportedEncodingException e) {
-                logger.error("Error encoding message. Message: " + json + ". Error: " + e.getMessage());
-            }
-        }
+				Futures.addCallback(future, callback);
+			} catch (UnsupportedEncodingException e) {
+				logger.error("Error encoding message. Message: " + json + ". Error: " + e.getMessage());
+			}
+		}
 	};
 
 	@Override
 	public void onSuccess(UserRecordResult result) {
-        int succRecords = successRecords.incrementAndGet();
-        if(logger.isDebugEnabled()) {
-            // Only log with a small probability, otherwise it'll be very spammy
-            // Or when it is more than 30 seconds since last log
-            if (RANDOM.nextDouble() < 1e-5 || lastInfoLog.getAndSet(new Date().getTime()) < new Date().getTime() - 30 * 1000) {
-                long totalTime = 0L;
-                for (Attempt attempt : result.getAttempts()) {
-                    totalTime += attempt.getDelay() + attempt.getDuration();
-                }
-                logger.debug(String.format(
-                        "Succesfully put record, sequenceNumber=%s, "
-                                + "shardId=%s, took %d attempts, "
-                                + "totalling %s ms",
-                        result.getSequenceNumber(),
-                        result.getShardId(), result.getAttempts().size(),
-                        totalTime));
-                logger.debug(String.format("Number of success records up to now: %d", succRecords));
-            }
-        }
-        cc.markCompleted();
+		int succRecords = successRecords.incrementAndGet();
+		if(logger.isInfoEnabled()) {
+			// Only log with a small probability, otherwise it'll be very spammy
+			// Or when it is more than 30 seconds since last log
+			if (RANDOM.nextDouble() < 1e-5 || lastInfoLog.getAndSet(new Date().getTime()) < new Date().getTime() - 30 * 1000) {
+				long totalTime = 0L;
+				for (Attempt attempt : result.getAttempts()) {
+					totalTime += attempt.getDelay() + attempt.getDuration();
+				}
+				logger.info(String.format(
+						"Succesfully put record, sequenceNumber=%s, "
+								+ "shardId=%s, took %d attempts, "
+								+ "totalling %s ms",
+						result.getSequenceNumber(),
+						result.getShardId(), result.getAttempts().size(),
+						totalTime));
+				logger.debug(String.format("Number of success records up to now: %d", succRecords));
+			}
+		}
+		cc.markCompleted();
 	};
 }
 
-public class MaxwellKinesisProducer extends AbstractAsyncProducer {
+public class MaxwellKinesisProducer extends AbstractProducer {
+	private final ArrayBlockingQueue<RowMap> queue;
+	private final MaxwellKinesisProducerWorker worker;
+
+	public MaxwellKinesisProducer(MaxwellContext context, String kinesisStream) {
+		super(context);
+		this.queue = new ArrayBlockingQueue<>(100);
+		this.worker = new MaxwellKinesisProducerWorker(context, kinesisStream, this.queue);
+		new Thread(this.worker, "maxwell-kinesis-worker").start();
+	}
+
+	@Override
+	public void push(RowMap r) throws Exception {
+		this.queue.put(r);
+	}
+
+}
+
+class MaxwellKinesisProducerWorker extends AbstractAsyncProducerWorker {
+
 	private static final Logger logger = LoggerFactory.getLogger(MaxwellKinesisProducer.class);
 
 	private final MaxwellKinesisPartitioner partitioner;
@@ -147,10 +164,11 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 	private AtomicInteger successRecords = new AtomicInteger(0);
 	private AtomicInteger errorRecords = new AtomicInteger(0);
 	private AtomicLong lastInfoLog = new AtomicLong(0L);
+	private final ArrayBlockingQueue<RowMap> queue;
 
-	public MaxwellKinesisProducer(MaxwellContext context, String kinesisStream) {
-		super(context);
-        String partitionKey = context.getConfig().producerPartitionKey;
+	public MaxwellKinesisProducerWorker(MaxwellContext context, String kinesisStream, ArrayBlockingQueue<RowMap> queue) {
+		super(context, queue);
+		String partitionKey = context.getConfig().producerPartitionKey;
 		String partitionColumns = context.getConfig().producerPartitionColumns;
 		String partitionFallback = context.getConfig().producerPartitionFallback;
 		boolean kinesisMd5Keys = context.getConfig().kinesisMd5Keys;
@@ -167,6 +185,7 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 		} else {
 			this.kinesisProducer = new KinesisProducer();
 		}
+		this.queue = queue;
 	}
 
 	@Override
@@ -174,12 +193,12 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 		String key = this.partitioner.getKinesisKey(r);
 		String value = r.toJSON(outputConfig);
 
-        // Wait for KPL to finish sending events
-        while(kinesisProducer.getOutstandingRecordsCount()> this.maxBufferedRecords) {
-            Thread.sleep(1);
-        }
+		// Wait for KPL to finish sending events
+		while(kinesisProducer.getOutstandingRecordsCount()> this.maxBufferedRecords) {
+			Thread.sleep(1);
+		}
 
-        ByteBuffer encodedValue = ByteBuffer.wrap(value.getBytes("UTF-8"));
+		ByteBuffer encodedValue = ByteBuffer.wrap(value.getBytes("UTF-8"));
 		ListenableFuture<UserRecordResult> future = kinesisProducer.addUserRecord(kinesisStream, key, encodedValue);
 
 		FutureCallback<UserRecordResult> callback = new KinesisCallback(cc, r.getPosition(), key, value, successRecords, errorRecords, kinesisProducer, kinesisStream, 0, maxAttempts, lastInfoLog);
@@ -188,8 +207,8 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 	}
 
 	@Override
-    public void release() {
-	    kinesisProducer.flushSync();
-	    kinesisProducer.destroy();
-    }
+	public void release() {
+		kinesisProducer.flushSync();
+		kinesisProducer.destroy();
+	}
 }
