@@ -1,34 +1,27 @@
 package com.zendesk.maxwell.producer;
 
+import com.amazonaws.services.kinesis.producer.*;
+import com.google.common.collect.Iterables;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.producer.partitioners.MaxwellKinesisPartitioner;
+import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.row.RowMap;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-
-import com.google.common.collect.Iterables;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-
-import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.producer.partitioners.MaxwellKinesisPartitioner;
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.row.RowMap;
-
-import com.amazonaws.services.kinesis.producer.Attempt;
-import com.amazonaws.services.kinesis.producer.KinesisProducer;
-import com.amazonaws.services.kinesis.producer.KinesisProducerConfiguration;
-import com.amazonaws.services.kinesis.producer.UserRecordFailedException;
-import com.amazonaws.services.kinesis.producer.UserRecordResult;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 class KinesisCallback implements FutureCallback<UserRecordResult> {
 	public static final Logger logger = LoggerFactory.getLogger(KinesisCallback.class);
@@ -44,11 +37,8 @@ class KinesisCallback implements FutureCallback<UserRecordResult> {
 	private final String kinesisStream;
 	private int attempts = 0;
 	private final int maxAttempts;
-	private AtomicLong lastInfoLog;
 
-	private static final Random RANDOM = new Random();
-
-	public KinesisCallback(AbstractAsyncProducer.CallbackCompleter cc, BinlogPosition position, String key, String json, AtomicInteger successRecords, AtomicInteger errorRecords, KinesisProducer kinesisProducer, String kinesisStream, int attempts, int maxAttempts, AtomicLong lastInfoLog) {
+	public KinesisCallback(AbstractAsyncProducer.CallbackCompleter cc, BinlogPosition position, String key, String json, AtomicInteger successRecords, AtomicInteger errorRecords, KinesisProducer kinesisProducer, String kinesisStream, int attempts, int maxAttempts) {
 		this.cc = cc;
 		this.position = position;
 		this.key = key;
@@ -59,7 +49,6 @@ class KinesisCallback implements FutureCallback<UserRecordResult> {
 		this.kinesisStream = kinesisStream;
 		this.attempts = attempts;
 		this.maxAttempts = maxAttempts;
-		this.lastInfoLog = lastInfoLog;
 	}
 
 	@Override
@@ -100,7 +89,7 @@ class KinesisCallback implements FutureCallback<UserRecordResult> {
 				ByteBuffer encodedValue = ByteBuffer.wrap(json.getBytes("UTF-8"));
 				ListenableFuture<UserRecordResult> future = kinesisProducer.addUserRecord(kinesisStream, key, encodedValue);
 
-				FutureCallback<UserRecordResult> callback = new KinesisCallback(cc, position, key, json, successRecords, errorRecords, kinesisProducer, kinesisStream, attempts, maxAttempts, lastInfoLog);
+				FutureCallback<UserRecordResult> callback = new KinesisCallback(cc, position, key, json, successRecords, errorRecords, kinesisProducer, kinesisStream, attempts, maxAttempts);
 
 				Futures.addCallback(future, callback);
 			} catch (UnsupportedEncodingException e) {
@@ -112,23 +101,19 @@ class KinesisCallback implements FutureCallback<UserRecordResult> {
 	@Override
 	public void onSuccess(UserRecordResult result) {
 		int succRecords = successRecords.incrementAndGet();
-		if(logger.isInfoEnabled()) {
-			// Only log with a small probability, otherwise it'll be very spammy
-			// Or when it is more than 30 seconds since last log
-			if (RANDOM.nextDouble() < 1e-5 || lastInfoLog.getAndSet(new Date().getTime()) < new Date().getTime() - 30 * 1000) {
-				long totalTime = 0L;
-				for (Attempt attempt : result.getAttempts()) {
-					totalTime += attempt.getDelay() + attempt.getDuration();
-				}
-				logger.info(String.format(
-						"Succesfully put record, sequenceNumber=%s, "
-								+ "shardId=%s, took %d attempts, "
-								+ "totalling %s ms",
-						result.getSequenceNumber(),
-						result.getShardId(), result.getAttempts().size(),
-						totalTime));
-				logger.debug(String.format("Number of success records up to now: %d", succRecords));
+		if(logger.isDebugEnabled()) {
+			long totalTime = 0L;
+			for (Attempt attempt : result.getAttempts()) {
+				totalTime += attempt.getDelay() + attempt.getDuration();
 			}
+			logger.debug(String.format(
+					"Succesfully put record, sequenceNumber=%s, "
+							+ "shardId=%s, took %d attempts, "
+							+ "totalling %s ms",
+					result.getSequenceNumber(),
+					result.getShardId(), result.getAttempts().size(),
+					totalTime));
+			logger.debug(String.format("Number of success records up to now: %d", succRecords));
 		}
 		cc.markCompleted();
 	};
@@ -163,7 +148,6 @@ class MaxwellKinesisProducerWorker extends AbstractAsyncProducerWorker {
 	private final int maxBufferedRecords;
 	private AtomicInteger successRecords = new AtomicInteger(0);
 	private AtomicInteger errorRecords = new AtomicInteger(0);
-	private AtomicLong lastInfoLog = new AtomicLong(0L);
 	private final ArrayBlockingQueue<RowMap> queue;
 
 	public MaxwellKinesisProducerWorker(MaxwellContext context, String kinesisStream, ArrayBlockingQueue<RowMap> queue) {
@@ -201,7 +185,7 @@ class MaxwellKinesisProducerWorker extends AbstractAsyncProducerWorker {
 		ByteBuffer encodedValue = ByteBuffer.wrap(value.getBytes("UTF-8"));
 		ListenableFuture<UserRecordResult> future = kinesisProducer.addUserRecord(kinesisStream, key, encodedValue);
 
-		FutureCallback<UserRecordResult> callback = new KinesisCallback(cc, r.getPosition(), key, value, successRecords, errorRecords, kinesisProducer, kinesisStream, 0, maxAttempts, lastInfoLog);
+		FutureCallback<UserRecordResult> callback = new KinesisCallback(cc, r.getPosition(), key, value, successRecords, errorRecords, kinesisProducer, kinesisStream, 0, maxAttempts);
 
 		Futures.addCallback(future, callback);
 	}
