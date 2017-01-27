@@ -137,6 +137,10 @@ public class SchemaStoreSchema {
 			performAlter(c, "alter table `positions` drop primary key, add primary key(`server_id`, `client_id`)");
 		}
 
+		if ( !getTableColumns("positions", c).containsKey("gtid_set") ) {
+			performAlter(c, "alter table `positions` add column gtid_set varchar(255)");
+		}
+
 		if ( !getTableColumns("positions", c).containsKey("heartbeat_at") ) {
 			performAlter(c, "alter table `positions` add column `heartbeat_at` bigint null default null");
 		}
