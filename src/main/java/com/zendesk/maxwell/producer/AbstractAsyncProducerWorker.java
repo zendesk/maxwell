@@ -5,9 +5,6 @@ import com.zendesk.maxwell.row.RowMap;
 
 import java.util.concurrent.ArrayBlockingQueue;
 
-/**
- * Created by abuxeres on 27/01/2017.
- */
 public class AbstractAsyncProducerWorker extends AbstractAsyncProducer implements Runnable {
 
 	private final ArrayBlockingQueue<RowMap> queue;
