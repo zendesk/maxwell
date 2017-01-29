@@ -10,12 +10,15 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 		private final MaxwellContext context;
 		private final BinlogPosition position;
 		private final boolean isTXCommit;
+		private final long sendTimeMS;
+		private Long completeTimeMS;
 
 		public CallbackCompleter(InflightMessageList inflightMessages, BinlogPosition position, boolean isTXCommit, MaxwellContext context) {
 			this.inflightMessages = inflightMessages;
 			this.context = context;
 			this.position = position;
 			this.isTXCommit = isTXCommit;
+			this.sendTimeMS = System.currentTimeMillis();
 		}
 
 		public void markCompleted() {
@@ -26,6 +29,12 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 					context.setPosition(newPosition);
 				}
 			}
+			completeTimeMS = System.currentTimeMillis();
+		}
+
+		public Long timeToSendMS() {
+			if ( completeTimeMS == null ) return null;
+			return completeTimeMS - sendTimeMS;
 		}
 	}
 

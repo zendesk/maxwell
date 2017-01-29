@@ -1,5 +1,8 @@
 package com.zendesk.maxwell.producer;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
+import com.zendesk.maxwell.MaxwellMetrics;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.schema.ddl.DDLMap;
 import com.zendesk.maxwell.MaxwellContext;
@@ -19,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.SQLException;
 import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 
 class KafkaCallback implements Callback {
@@ -27,12 +31,14 @@ class KafkaCallback implements Callback {
 	private final BinlogPosition position;
 	private final String json;
 	private final String key;
+	private final Timer timer;
 
-	public KafkaCallback(AbstractAsyncProducer.CallbackCompleter cc, BinlogPosition position, String key, String json) {
+	public KafkaCallback(AbstractAsyncProducer.CallbackCompleter cc, BinlogPosition position, String key, String json, Timer timer) {
 		this.cc = cc;
 		this.position = position;
 		this.key = key;
 		this.json = json;
+		this.timer = timer;
 	}
 
 	@Override
@@ -52,6 +58,7 @@ class KafkaCallback implements Callback {
 			}
 		}
 		cc.markCompleted();
+		timer.update(cc.timeToSendMS(), TimeUnit.MILLISECONDS);
 	}
 }
 
@@ -84,6 +91,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	private final MaxwellKafkaPartitioner ddlPartitioner;
 	private final KeyFormat keyFormat;
 	private final boolean interpolateTopic;
+	private final Timer metricsTimer;
 	private final ArrayBlockingQueue<RowMap> queue;
 
 	public MaxwellKafkaProducerWorker(MaxwellContext context, Properties kafkaProperties, String kafkaTopic, ArrayBlockingQueue<RowMap> queue) {
@@ -110,6 +118,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		else
 			keyFormat = KeyFormat.ARRAY;
 
+		this.metricsTimer = MaxwellMetrics.registry.timer(MetricRegistry.name(MaxwellKafkaProducer.class, "kafka-overall-time"));
 		this.queue = queue;
 	}
 
@@ -158,7 +167,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		if ( !KafkaCallback.LOGGER.isDebugEnabled() )
 			value = null;
 
-		KafkaCallback callback = new KafkaCallback(cc, r.getPosition(), key, value);
+		KafkaCallback callback = new KafkaCallback(cc, r.getPosition(), key, value, metricsTimer);
 
 		kafka.send(record, callback);
 	}
