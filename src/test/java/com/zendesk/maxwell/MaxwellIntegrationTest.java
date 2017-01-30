@@ -16,6 +16,24 @@ import org.junit.Test;
 
 public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
+	public void testEncryptedValues() throws Exception{
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
+		outputConfig.useEncryption = true;
+		outputConfig.encryption_key = "aaaaaaaaaaaaaaaa";
+		outputConfig.secret_key = "RandomInitVector";
+		List<RowMap> list;
+		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
+		list = getRowsForSQL(input);
+		String json = list.get(0).toJSON(outputConfig);
+		assertTrue(Pattern.matches(".*\"ts\":\\d+.*",json));
+		assertTrue(Pattern.matches(".*\"database\":\"shard_1\".*",json));
+		assertTrue(Pattern.matches(".*\"xid\":\\d+.*", json));
+		assertTrue(Pattern.matches(".*\"commit\":true.*",json));
+		assertTrue(Pattern.matches(".*\"data\":\"1ub4DX5FGXqLnDWK6nhrZAY6sbwNvItFnTPzpByMNX4BuIRIgNq7rybo\\+hztXCdD\".*",json));
+		assertTrue(Pattern.matches(".*\"type\":\"insert\".*",json));
+		assertTrue(Pattern.matches(".*\"table\":\"minimal\".*",json));
+	}
+	@Test
 	public void testGetEvent() throws Exception {
 		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id = 1, text_field='hello'"};
@@ -25,33 +43,36 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testPrimaryKeyStrings() throws Exception {
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
 		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
 		String expectedJSON = "{\"database\":\"shard_1\",\"table\":\"minimal\",\"pk.id\":1,\"pk.text_field\":\"hello\"}";
 		list = getRowsForSQL(input);
 		assertThat(list.size(), is(1));
-		assertThat(list.get(0).pkToJson(RowMap.KeyFormat.HASH), is(expectedJSON));
+		assertThat(list.get(0).pkToJson(RowMap.KeyFormat.HASH, outputConfig), is(expectedJSON));
 	}
 
 	@Test
 	public void testCaseSensitivePrimaryKeyStrings() throws Exception {
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
 		List<RowMap> list;
 		String before[] = { "create table pksen (Id int, primary key(ID))" };
 		String input[] = {"insert into pksen set id =1"};
 		String expectedJSON = "{\"database\":\"shard_1\",\"table\":\"pksen\",\"pk.id\":1}";
 		list = getRowsForSQL(null, input, before);
 		assertThat(list.size(), is(1));
-		assertThat(list.get(0).pkToJson(RowMap.KeyFormat.HASH), is(expectedJSON));
+		assertThat(list.get(0).pkToJson(RowMap.KeyFormat.HASH, outputConfig), is(expectedJSON));
 	}
 
 	@Test
 	public void testAlternativePKString() throws Exception {
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
 		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
 		String expectedJSON = "[\"shard_1\",\"minimal\",[{\"id\":1},{\"text_field\":\"hello\"}]]";
 		list = getRowsForSQL(input);
 		assertThat(list.size(), is(1));
-		assertThat(list.get(0).pkToJson(RowMap.KeyFormat.ARRAY), is(expectedJSON));
+		assertThat(list.get(0).pkToJson(RowMap.KeyFormat.ARRAY, outputConfig), is(expectedJSON));
 	}
 
 	@Test

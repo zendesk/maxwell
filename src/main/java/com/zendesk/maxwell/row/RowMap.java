@@ -3,17 +3,15 @@ package com.zendesk.maxwell.row;
 import com.fasterxml.jackson.core.*;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import org.apache.commons.lang3.StringUtils;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Pattern;
 
 
@@ -79,7 +77,7 @@ public class RowMap implements Serializable {
 		this.approximateSize = 100L; // more or less 100 bytes of overhead
 	}
 
-	public String pkToJson(KeyFormat keyFormat) throws IOException {
+	public String pkToJson(KeyFormat keyFormat, MaxwellOutputConfig outputConfig) throws IOException {
 		if ( keyFormat == KeyFormat.HASH )
 			return pkToJsonHash();
 		else
@@ -177,25 +175,47 @@ public class RowMap implements Serializable {
 		}
 	}
 
+	private void writeEncryptedMapToJSON(String jsonMapName, LinkedHashMap<String, Object> data, boolean includeNullField, String encryption_key, String secret_key) throws IOException{
+		JsonGenerator generator = jsonGeneratorThreadLocal.get();
+		JSONObject obj = new JSONObject();
+		for (String key : data.keySet()) {
+			Object value = data.get(key);
+
+			if (value == null && !includeNullField)
+				continue;
+
+			if (value instanceof List) {
+				List stringList = (List) value;
+				obj.put(key, stringList);
+			} else if (value instanceof RawJSONString) {
+				obj.put(key, ((RawJSONString) value).json);
+			} else {
+				obj.put(key, value);
+			}
+		}
+
+		generator.writeStringField(jsonMapName, RowEncrypt.encrypt(obj.toString(), encryption_key, secret_key));
+	}
+
 	private void writeMapToJSON(String jsonMapName, LinkedHashMap<String, Object> data, boolean includeNullField) throws IOException {
 		JsonGenerator generator = jsonGeneratorThreadLocal.get();
 		generator.writeObjectFieldStart(jsonMapName); // start of jsonMapName: {
 
-		for ( String key: data.keySet() ) {
+		for (String key : data.keySet()) {
 			Object value = data.get(key);
 
-			if ( value == null && !includeNullField )
+			if (value == null && !includeNullField)
 				continue;
 
-			if ( value instanceof List ) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
+			if (value instanceof List) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
 				List stringList = (List) value;
 
 				generator.writeArrayFieldStart(key);
-				for ( Object s : stringList )  {
+				for (Object s : stringList) {
 					generator.writeObject(s);
 				}
 				generator.writeEndArray();
-			} else if ( value instanceof RawJSONString ) {
+			} else if (value instanceof RawJSONString) {
 				// JSON column type, using binlog-connector's serializers.
 				generator.writeFieldName(key);
 				generator.writeRawValue(((RawJSONString) value).json);
@@ -257,10 +277,19 @@ public class RowMap implements Serializable {
 			}
 		}
 
-		writeMapToJSON("data", this.data, outputConfig.includesNulls);
+		if(outputConfig.useEncryption){
+			writeEncryptedMapToJSON("data", this.data, outputConfig.includesNulls, outputConfig.encryption_key, outputConfig.secret_key);
 
-		if ( !this.oldData.isEmpty() ) {
-			writeMapToJSON("old", this.oldData, true);
+			if(!this.oldData.isEmpty()){
+				writeEncryptedMapToJSON("old", this.oldData, true, outputConfig.encryption_key, outputConfig.secret_key);
+			}
+		}
+		else {
+			writeMapToJSON("data", this.data, outputConfig.includesNulls);
+
+			if (!this.oldData.isEmpty()) {
+				writeMapToJSON("old", this.oldData, true);
+			}
 		}
 
 		g.writeEndObject(); // end of row
@@ -377,4 +406,5 @@ public class RowMap implements Serializable {
 	public boolean shouldOutput(MaxwellOutputConfig outputConfig) {
 		return true;
 	}
+
 }

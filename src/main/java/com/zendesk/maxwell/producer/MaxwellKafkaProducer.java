@@ -143,7 +143,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 
 	@Override
 	public void sendAsync(RowMap r, AbstractAsyncProducer.CallbackCompleter cc) throws Exception {
-		String key = r.pkToJson(keyFormat);
+		String key = r.pkToJson(keyFormat, outputConfig);
 		String value = r.toJSON(outputConfig);
 
 		ProducerRecord<String, String> record;
