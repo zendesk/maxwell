@@ -251,6 +251,9 @@ public class MaxwellReplicator extends RunLoopProcess {
 						LOGGER.warn("Unhandled QueryEvent inside transaction: " + qe);
 					}
 					break;
+				case MySQLConstants.ROTATE_EVENT:
+					tableCache.clear();
+					break;
 				case MySQLConstants.XID_EVENT:
 					XidEvent xe = (XidEvent) v4Event;
 
