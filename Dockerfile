@@ -1,5 +1,5 @@
 FROM java:openjdk-7
-ENV MAXWELL_VERSION 1.7.1
+ENV MAXWELL_VERSION 1.7.2
 ENV KAFKA_VERSION 0.10.1.0
 
 RUN apt-get update && apt-get -y upgrade
