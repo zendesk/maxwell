@@ -85,16 +85,7 @@ class KinesisCallback implements FutureCallback<UserRecordResult> {
 
 			logger.warn(String.format("Record failed to put. Retrying. Attempt: %d ", attempts));
 
-			try {
-				ByteBuffer encodedValue = ByteBuffer.wrap(json.getBytes("UTF-8"));
-				ListenableFuture<UserRecordResult> future = kinesisProducer.addUserRecord(kinesisStream, key, encodedValue);
-
-				FutureCallback<UserRecordResult> callback = new KinesisCallback(cc, position, key, json, successRecords, errorRecords, kinesisProducer, kinesisStream, attempts, maxAttempts);
-
-				Futures.addCallback(future, callback);
-			} catch (UnsupportedEncodingException e) {
-				logger.error("Error encoding message. Message: " + json + ". Error: " + e.getMessage());
-			}
+			MaxwellKinesisProducerWorker.sendRow(cc, position, key, json, successRecords, errorRecords, kinesisProducer, kinesisStream, attempts, maxAttempts);
 		}
 	};
 
@@ -182,12 +173,22 @@ class MaxwellKinesisProducerWorker extends AbstractAsyncProducerWorker {
 			Thread.sleep(1);
 		}
 
-		ByteBuffer encodedValue = ByteBuffer.wrap(value.getBytes("UTF-8"));
-		ListenableFuture<UserRecordResult> future = kinesisProducer.addUserRecord(kinesisStream, key, encodedValue);
+		sendRow(cc, r.getPosition(), key, value, successRecords, errorRecords, kinesisProducer, kinesisStream, 0, maxAttempts);
+	}
 
-		FutureCallback<UserRecordResult> callback = new KinesisCallback(cc, r.getPosition(), key, value, successRecords, errorRecords, kinesisProducer, kinesisStream, 0, maxAttempts);
+	public static void sendRow(AbstractAsyncProducer.CallbackCompleter cc, BinlogPosition position, String key, String json, AtomicInteger successRecords, AtomicInteger errorRecords, KinesisProducer kinesisProducer, String kinesisStream, int attempts, int maxAttempts) {
+		ByteBuffer encodedValue = null;
+		try {
+			encodedValue = ByteBuffer.wrap(json.getBytes("UTF-8"));
 
-		Futures.addCallback(future, callback);
+			ListenableFuture<UserRecordResult> future = kinesisProducer.addUserRecord(kinesisStream, key, encodedValue);
+
+			FutureCallback<UserRecordResult> callback = new KinesisCallback(cc, position, key, json, successRecords, errorRecords, kinesisProducer, kinesisStream, 0, maxAttempts);
+
+			Futures.addCallback(future, callback);
+		} catch (UnsupportedEncodingException e) {
+			logger.error("Error encoding message. Message: " + json + ". Error: " + e.getMessage());
+		}
 	}
 
 	@Override
