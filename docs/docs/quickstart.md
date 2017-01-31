@@ -69,6 +69,11 @@ docker run -it --rm osheroff/maxwell bin/maxwell --user=$MYSQL_USERNAME --passwo
 *note*: If you are installing on local machine using `docker` on `macOSX` then make sure that,
 - Even if the `mysql` server is *local*, you will have to use the local ip address (use `ifconfig` to find it) & pass that as `$MYSQL_HOST` instead of localhost. This is because in macOSX docker doesnt run as localhost.
 - You will have to use the non-localhost way of granting permissions to maxwell's mysql user.
+- If you are specifying any files either for `config` location or for output of `file` producer then make sure you are explicitly sharing volumes/files present on the host. E.g. the above docker command then becomes,
+```
+docker run -v /Users:/Users -it --rm osheroff/maxwell bin/maxwell --config=/Users/demo/maxwell/config/basic.properties
+```
+*make a note of the `-v` option.*
 
 If all goes well you'll see maxwell replaying your inserts:
 ```
