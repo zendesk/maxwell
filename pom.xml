@@ -9,7 +9,7 @@
 
   <name>maxwell</name>
   <description>Maxwell's daemon.  Watches mysql, outputs to JSON.</description>
-  <url>https://maxwells-daemon.io</url>
+  <url>http://maxwells-daemon.io</url>
 
   <licenses>
     <license>
