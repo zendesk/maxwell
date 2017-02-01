@@ -19,24 +19,26 @@ import snaq.db.ConnectionPool;
 public abstract class AbstractSchemaStore {
 	static final Logger LOGGER = LoggerFactory.getLogger(AbstractSchemaStore.class);
 	protected final ConnectionPool replicationConnectionPool;
+	protected final ConnectionPool schemaConnectionPool;
 	protected final CaseSensitivity caseSensitivity;
 	private final MaxwellFilter filter;
 
 	protected AbstractSchemaStore(ConnectionPool replicationConnectionPool,
+								  ConnectionPool schemaConnectionPool,
 								  CaseSensitivity caseSensitivity,
 								  MaxwellFilter filter) {
 		this.replicationConnectionPool = replicationConnectionPool;
+		this.schemaConnectionPool = schemaConnectionPool;
 		this.caseSensitivity = caseSensitivity;
 		this.filter = filter;
-
-
 	}
+
 	protected AbstractSchemaStore(MaxwellContext context) throws SQLException {
-		this(context.getReplicationConnectionPool(), context.getCaseSensitivity(), context.getFilter());
+		this(context.getReplicationConnectionPool(), context.getSchemaConnectionPool(), context.getCaseSensitivity(), context.getFilter());
 	}
 
 	protected Schema captureSchema() throws SQLException {
-		try(Connection connection = replicationConnectionPool.getConnection()) {
+		try(Connection connection = schemaConnectionPool.getConnection()) {
 			LOGGER.info("Maxwell is capturing initial schema");
 			SchemaCapturer capturer = new SchemaCapturer(connection, caseSensitivity);
 			return capturer.capture();

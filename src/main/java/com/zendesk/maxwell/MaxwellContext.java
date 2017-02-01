@@ -29,6 +29,7 @@ public class MaxwellContext {
 	private final ConnectionPool replicationConnectionPool;
 	private final ConnectionPool maxwellConnectionPool;
 	private final ConnectionPool rawMaxwellConnectionPool;
+	private final ConnectionPool schemaConnectionPool;
 	private final MaxwellConfig config;
 	private MysqlPositionStore positionStore;
 	private PositionStoreThread positionStoreThread;
@@ -45,6 +46,19 @@ public class MaxwellContext {
 
 		this.replicationConnectionPool = new ConnectionPool("ReplicationConnectionPool", 10, 0, 10,
 				config.replicationMysql.getConnectionURI(false), config.replicationMysql.user, config.replicationMysql.password);
+
+		if (config.schemaMysql.host == null) {
+			this.schemaConnectionPool = null;
+		} else {
+			this.schemaConnectionPool = new ConnectionPool(
+					"SchemaConnectionPool",
+					10,
+					0,
+					10,
+					config.schemaMysql.getConnectionURI(false),
+					config.schemaMysql.user,
+					config.schemaMysql.password);
+		}
 
 		this.rawMaxwellConnectionPool = new ConnectionPool("RawMaxwellConnectionPool", 1, 2, 100,
 			config.maxwellMysql.getConnectionURI(false), config.maxwellMysql.user, config.maxwellMysql.password);
@@ -73,6 +87,13 @@ public class MaxwellContext {
 
 	public ConnectionPool getReplicationConnectionPool() { return replicationConnectionPool; }
 	public ConnectionPool getMaxwellConnectionPool() { return maxwellConnectionPool; }
+
+	public ConnectionPool getSchemaConnectionPool() {
+	    if (this.schemaConnectionPool != null) {
+		return schemaConnectionPool;
+	    }
+	    return replicationConnectionPool;
+	}
 
 	public Connection getMaxwellConnection() throws SQLException {
 		return this.maxwellConnectionPool.getConnection();

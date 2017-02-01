@@ -19,6 +19,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public static final String GTID_MODE_ENV = "GTID_MODE";
 
 	public MaxwellMysqlConfig replicationMysql;
+	public MaxwellMysqlConfig schemaMysql;
 
 	public MaxwellMysqlConfig maxwellMysql;
 	public MaxwellFilter filter;
@@ -64,6 +65,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.replayMode = false;
 		this.replicationMysql = new MaxwellMysqlConfig();
 		this.maxwellMysql = new MaxwellMysqlConfig();
+		this.schemaMysql = new MaxwellMysqlConfig();
 		this.masterRecovery = false;
 		this.shykoMode = false;
 		this.gtidMode = false;
@@ -97,6 +99,11 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "replication_user", "username for replication_host" ).withRequiredArg();
 		parser.accepts( "replication_password", "password for replication_host" ).withOptionalArg();
 		parser.accepts( "replication_port", "port for replication_host" ).withRequiredArg();
+
+		parser.accepts( "schema_host", "overrides replication_host for retrieving schema" ).withRequiredArg();
+		parser.accepts( "schema_user", "username for schema_host" ).withRequiredArg();
+		parser.accepts( "schema_password", "password for schema_host" ).withOptionalArg();
+		parser.accepts( "schema_port", "port for schema_host" ).withRequiredArg();
 
 		parser.accepts("__separator_3");
 
@@ -255,6 +262,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.maxwellMysql       = parseMysqlConfig("", options, properties);
 		this.replicationMysql   = parseMysqlConfig("replication_", options, properties);
+		this.schemaMysql        = parseMysqlConfig("schema_", options, properties);
 		this.shykoMode          = fetchBooleanOption("binlog_connector", options, properties, System.getenv("SHYKO_MODE") != null);
 		this.gtidMode           = fetchBooleanOption("gtid_mode", options, properties, System.getenv(GTID_MODE_ENV) != null);
 
@@ -454,6 +462,16 @@ public class MaxwellConfig extends AbstractConfig {
 
 		if (outputConfig.includesGtidPosition && !gtidMode) {
 			usageForOptions("output_gtid_position is only support with gtid mode.", "--output_gtid_position");
+		}
+
+		if (this.schemaMysql.host != null) {
+			if (this.schemaMysql.user == null || this.schemaMysql.password == null) {
+				usageForOptions("Please specify all of: schema_host, schema_user, schema_password", "--schema");
+			}
+
+			if (this.replicationMysql.host == null) {
+				usageForOptions("Specifying schema_host only makes sense along with replication_host");
+			}
 		}
 
 		try {
