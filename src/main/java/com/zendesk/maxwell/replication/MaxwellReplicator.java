@@ -77,7 +77,7 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 
 		this.shouldHeartbeat = shouldHeartbeat;
 		if ( shouldHeartbeat )
-			this.replicator.setHeartbeatPeriod(0.5f);
+			this.replicator.setHeartbeatPeriod(1f);
 
 		this.stopOnEOF = stopOnEOF;
 
