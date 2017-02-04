@@ -90,7 +90,7 @@ module MavenFetcher
       @vars    ||= {}
       @vars[k] ||= case k
         when /project.(\w+)/
-          first_text(@doc.root, $1) || first_text(@doc.root, "parent/#{$1}")
+          first_text(@doc.root, $1) || first_text(@doc.root, "properties/#{k}") || first_text(@doc.root, "parent/#{$1}")
         else
           first_text(@doc.root, "properties/#{k}") || parent.get_var(k)
         end

@@ -3,18 +3,16 @@ package com.zendesk.maxwell;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
+import com.google.api.client.http.BasicAuthentication;
 import com.google.api.client.http.HttpExecuteInterceptor;
 import com.google.api.client.http.HttpRequest;
-import com.zendesk.maxwell.producer.HttpPostProducerInitializer;
+import com.zendesk.maxwell.producer.HttpProducerConfiguration;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
-import com.zendesk.maxwell.producer.MockHttpPostProducer;
-import com.zendesk.maxwell.producer.interceptors.HMacSigner;
+import com.zendesk.maxwell.producer.MockHttpProducer;
 import com.zendesk.maxwell.row.RowMap;
-import org.tomitribe.auth.signatures.Signature;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.sql.ResultSet;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
 import java.util.regex.*;
@@ -398,14 +396,16 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 				"insert into `test`.`http_check` set id = 6"
 		};
 
-		// TODO: test body, backoff, and basic auth;
 		List<RowMap> rows = getRowsForSQL(sql);
 
-		HttpExecuteInterceptor a = new HMacSigner("mykey", "mysecret");
-		HttpPostProducerInitializer initializer = new HttpPostProducerInitializer(a);
+		String basicAuthInput = "mykey:mysecret";
+		String[] creds = basicAuthInput.split(":");
+		HttpExecuteInterceptor basicAuth = new BasicAuthentication(creds[0],creds[1]);
+		HttpProducerConfiguration httpConfig = new HttpProducerConfiguration(MockHttpProducer.SAMPLE_URL, basicAuth);
+
 		MaxwellContext context = MaxwellTestSupport.buildContext(server.getPort(), null, null);
 
-		MockHttpPostProducer producer = new MockHttpPostProducer(context, initializer);
+		MockHttpProducer producer = new MockHttpProducer(context, httpConfig);
 		producer.push(rows);
 
 		Stack<HttpRequest> results = producer.getLifoRequests();
@@ -413,15 +413,13 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 			RowMap row = rows.get(i);
 			HttpRequest last = results.pop();
 
-			assertThat(last.getContent().getType(), is("application/json; charset=UTF-8"));
-			assertThat(last.getHeaders().getDate(), is(producer.getDateString()));
+			assertThat("default encoding and Content-Type headers", last.getContent().getType(), is("application/json; charset=UTF-8"));
+			assertThat("Date header populated", last.getHeaders().getDate(), is(producer.getDateString()));
 
-			String expectedDigest = MockHttpPostProducer.digestHeader(MockHttpPostProducer.DIGEST_ALGO, MockHttpPostProducer.CHARSET, row.toJSON());
-			assertThat(last.getHeaders().get("digest").toString(), is(expectedDigest));
+			String expectedDigest = MockHttpProducer.digestHeader(MockHttpProducer.DEFAULT_DIGEST_ALGO, MockHttpProducer.DEFAULT_CHARSET, row.toJSON());
+			assertThat("defaut Digest header populated", last.getHeaders().get("digest").toString(), is(expectedDigest));
 
-			Signature signature = Signature.fromString(last.getHeaders().getAuthorization());
-			assertThat(signature.getHeaders().containsAll(Arrays.asList("(request-target)", "date", "digest")), is(true));
-			assertThat(signature.getKeyId(), is("mykey"));
+			assertThat("Basic Auth configuration sets header poperly", last.getHeaders().getAuthorization(), is("Basic bXlrZXk6bXlzZWNyZXQ="));
 		}
 	}
 

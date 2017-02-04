@@ -15,7 +15,6 @@ import com.zendesk.maxwell.bootstrap.AsynchronousBootstrapper;
 import com.zendesk.maxwell.bootstrap.NoOpBootstrapper;
 import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
 import com.zendesk.maxwell.producer.*;
-import com.zendesk.maxwell.producer.interceptors.*;
 import com.zendesk.maxwell.recovery.RecoveryInfo;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.ReadOnlyMysqlPositionStore;
@@ -235,29 +234,21 @@ public class MaxwellContext {
 		case "buffer":
 			this.producer = new BufferedProducer(this, this.config.bufferedProducerSize);
 			break;
-		case "httppost":
+		case "http":
+		    String url = this.config.httpUrl;
 
-			HttpExecuteInterceptor interceptor;
-			switch ( this.config.httpPostInterceptorType ) {
-				case "hmac":
-					interceptor = new HMacSigner(this.config.httpPostAuthKey, this.config.httpPostAuthSecret);
-					break;
-				case "basicauth":
-					interceptor = new BasicAuthentication(this.config.httpPostAuthKey, this.config.httpPostAuthSecret);
-					break;
-				case "":
-					interceptor = null;
-					break;
-				default:
-					throw new RuntimeException("Unknown http interceptor type: " + this.config.producerType);
-			}
+		    // add additional custom configurations here.
+			HttpProducerConfiguration httpConfig;
 
-			if (interceptor == null) {
-				this.producer = new HttpPostProducer(this, this.config.httpPostEndpoint);
+			if ( this.config.httpBasicAuth != null) {
+			    String[] creds = this.config.httpBasicAuth.split(":");
+				HttpExecuteInterceptor basicAuth = new BasicAuthentication(creds[0],creds[1]);
+				httpConfig = new HttpProducerConfiguration(url, basicAuth);
 			} else {
-				HttpPostProducerInitializer initializer = new HttpPostProducerInitializer(interceptor);
-				this.producer = new HttpPostProducer(this, this.config.httpPostEndpoint, initializer);
+				httpConfig = new HttpProducerConfiguration(url);
 			}
+
+			this.producer = new HttpProducer(this, httpConfig);
 			break;
 		case "none":
 			this.producer = null;

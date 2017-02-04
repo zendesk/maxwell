@@ -4,7 +4,6 @@ import java.util.*;
 
 import java.util.regex.Pattern;
 
-import com.google.api.client.http.BasicAuthentication;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import joptsimple.*;
@@ -51,12 +50,8 @@ public class MaxwellConfig extends AbstractConfig {
 	public MaxwellOutputConfig outputConfig;
 	public String log_level;
 
-	// HttpPostProducer
-	public String httpPostEndpoint;
-	// public int httpPostBackoffMaxSecs; TODO: add exponential backoff options.
-	public String httpPostInterceptorType;
-	public String httpPostAuthKey;
-	public String httpPostAuthSecret;
+	public String httpUrl;
+	public String httpBasicAuth;
 
 	public String clientID;
 	public Long replicaServerID;
@@ -105,7 +100,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_3" );
 
-		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|httppost" ).withRequiredArg();
+		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|httpp" ).withRequiredArg();
 
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
 
@@ -124,12 +119,11 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "kinesis_stream", "kinesis stream name").withOptionalArg();
 
+		parser.accepts( "http_url", "request URL for HTTP(S) producer" ).withRequiredArg();
+		parser.accepts( "http_basic_auth", "Basic Authentication params for HTTP(S) producer. format is 'username:password'" ).withRequiredArg();
+
 		parser.accepts( "__separator_4" );
 
-		parser.accepts( "httppost_endpoint", "provide an endpoint to send data to using the httppost producer" ).withRequiredArg();
-		parser.accepts( "httppost_interceptor", "optional values include 'hmac', 'basicauth'" ).withRequiredArg();
-		parser.accepts( "httppost_authkey", "secret alias (keyId) for calculating HMAC digest or Username for Basic Auth for httppost producer" ).withRequiredArg();
-		parser.accepts( "httppost_authsecret", "secret key for calculating HMAC digest or password for Basic Auth for httppost producer" ).withRequiredArg();
 		parser.accepts( "output_binlog_position", "produced records include binlog position; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_commit_info", "produced records include commit and xid; [true|false]. default: true" ).withOptionalArg();
 		parser.accepts( "output_nulls", "produced records include fields with NULL values [true|false]. default: true" ).withOptionalArg();
@@ -318,10 +312,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.outputFile         = fetchOption("output_file", options, properties, null);
 
-		this.httpPostEndpoint   	  = fetchOption("httppost_endpoint", options, properties, null);
-		this.httpPostInterceptorType  = fetchOption("httppost_interceptor", options, properties, "");
-		this.httpPostAuthKey  		  = fetchOption("httppost_authkey", options, properties, null);
-		this.httpPostAuthSecret 	  = fetchOption("httppost_authsecret", options, properties, null);
+		this.httpUrl   	  	= fetchOption("http_url", options, properties, null);
+		this.httpBasicAuth	= fetchOption("http_basic_auth", options, properties, null);
 
 		this.includeDatabases   = fetchOption("include_dbs", options, properties, null);
 		this.excludeDatabases   = fetchOption("exclude_dbs", options, properties, null);
@@ -412,16 +404,19 @@ public class MaxwellConfig extends AbstractConfig {
 				&& this.outputFile == null) {
 			usageForOptions("please specify --output_file=FILE to use the file producer", "--producer", "--output_file");
 
-  	} else if ( this.producerType.equals("kinesis") && this.kinesisStream == null) {
+  		} else if ( this.producerType.equals("kinesis") && this.kinesisStream == null) {
 			usageForOptions("please specify a stream name for kinesis", "kinesis_stream");
+
+		} else if ( this.producerType.equals("http") ) {
+		    if (this.httpUrl == null)
+				usageForOptions("please specify a request URL for HTTP(S) producer", "--producer", "--http_url");
+		    if (this.httpBasicAuth != null) {
+				int split = this.httpBasicAuth.indexOf(':');
+				int len = this.httpBasicAuth.length();
+				if (split == -1 || split == 0 || split == len - 1)
+					usageForOptions("please specify a valid credential of form 'username:password'", "--producer", "--http_basic_auth");
+			}
 		}
-		} else if ( this.producerType.equals("httppost")
-				&& this.httpPostEndpoint == null) {
-			usageForOptions("please specify --httppost_endpoint=URI to use the httppost producer", "--producer", "--httppost_endpoint");
-		} else if ( this.producerType.equals("httppost")
-				&& (this.httpPostAuthKey != null && this.httpPostAuthSecret == null)
-				|| (this.httpPostAuthKey == null && this.httpPostAuthSecret != null))
-			usageForOptions("please specify --httppost_authkey=keyId and --httppost_authsecret=yoursecret to use the httppost producer with auth", "--httppost_authkey", "--httppost_authsecret");
 
 
 		if ( !this.bootstrapperType.equals("async")

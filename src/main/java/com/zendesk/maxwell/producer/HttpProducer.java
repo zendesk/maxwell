@@ -15,49 +15,46 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
- * Produces application/json POST request with Date and SHA-256 digest headers.
+ *
+ * Produces messages as HTTP POST requests.
+ *
+ * By default, requests are sent UTF-8 with Content-Type: `application/json`, with Date and Digest headers.
+ *
+ * To modify the message-body (potentially changing Content-Type), and/or modify headers and authentication,
+ * see HttpProducerConfiguration.
+ *
+ * See MaxwellConfig for additional options.
  */
-public class HttpPostProducer extends AbstractProducer {
+public class HttpProducer extends AbstractProducer {
 
-    public static final String DIGEST_ALGO = "SHA-256";
-    public static final Charset CHARSET = Charset.forName("UTF-8");
+    public static final String  DEFAULT_DIGEST_ALGO = "SHA-256";
+    public static final Charset DEFAULT_CHARSET = Charset.forName("UTF-8");
 
-    private HttpTransport transport;
-    private HttpPostProducerInitializer initializer;
+    private final GenericUrl requestUrl;
     private HttpRequestFactory requestFactory;
-    private final GenericUrl endpoint;
 
     private HttpRequest lastRequest;
 
-    public HttpPostProducer(MaxwellContext context, String endpoint) {
-        this(context, endpoint, new NetHttpTransport(), new HttpPostProducerInitializer());
+    public HttpProducer(MaxwellContext context, HttpProducerConfiguration config) {
+        this(context, new NetHttpTransport(), config);
     }
 
-    public HttpPostProducer(MaxwellContext context, String endpoint, HttpPostProducerInitializer initializer) {
-        this(context, endpoint, new NetHttpTransport(), initializer);
-    }
-
-    public HttpPostProducer(MaxwellContext context, String endpoint, HttpTransport transport, HttpPostProducerInitializer initializer) {
+    public HttpProducer(MaxwellContext context, HttpTransport transport, HttpProducerConfiguration config) {
         super(context);
-        this.endpoint = new GenericUrl(endpoint);
-        this.transport = transport;
-        this.initializer = initializer;
-
-        // init request factory.
-        this.requestFactory = transport.createRequestFactory(initializer);
+        requestUrl = new GenericUrl(config.getRequestUrl());
+        requestFactory = transport.createRequestFactory(config.getRequestInitializer());
     }
 
     @Override
     public void push(RowMap r) throws Exception {
         String payload = r.toJSON(outputConfig);
         ByteArrayContent content = ByteArrayContent.fromString(Json.MEDIA_TYPE, payload);
-        HttpRequest request = requestFactory.buildPostRequest(endpoint, content);
+        HttpRequest request = requestFactory.buildPostRequest(requestUrl, content);
 
-        // add statndard webhook headers: Content-Length, Date, and digest.
         HttpHeaders headers = request.getHeaders();
         headers.setContentLength(content.getLength());
         headers.setDate(getDateString());
-        headers.set("digest", digestHeader(DIGEST_ALGO, CHARSET, payload));
+        headers.set("digest", digestHeader(DEFAULT_DIGEST_ALGO, DEFAULT_CHARSET, payload));
 
         request.execute(); // throws error on 300 and above
         lastRequest = request;
@@ -65,7 +62,7 @@ public class HttpPostProducer extends AbstractProducer {
         this.context.setPosition(r);
     }
 
-    public GenericUrl getEndpoint() { return endpoint; }
+    public GenericUrl getRequestUrl() { return requestUrl; }
 
     // useful for testing.
     protected HttpRequest lastRequest() { return lastRequest; }

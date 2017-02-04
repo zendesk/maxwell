@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.producer;
 
 import com.google.api.client.http.HttpRequest;
+//import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.testing.http.*;
 
 import com.zendesk.maxwell.MaxwellContext;
@@ -10,14 +11,15 @@ import java.util.List;
 import java.util.Stack;
 
 // Helper class for Integration Tests that uses mock transport and has stack of previous requests.
-public class MockHttpPostProducer extends HttpPostProducer {
+public class MockHttpProducer extends HttpProducer {
 
-    static final String EXAMPLE_DATE_STRING = "Sat, 21 Jan 2017 12:25:02 EST";
-    static final String SAMPLE_URL = "http://requestb.in/1lw4tln1";
+    public static final String EXAMPLE_DATE_STRING = "Sat, 21 Jan 2017 12:25:02 EST";
+    public static final String SAMPLE_URL = "http://requestb.in/tu5ko9tu"; // for using real transport.
+
     private Stack<HttpRequest> previousRequests;
 
-    public MockHttpPostProducer(MaxwellContext context, HttpPostProducerInitializer initializer) {
-        super(context, SAMPLE_URL, new MockHttpTransport(), initializer);
+    public MockHttpProducer(MaxwellContext context, HttpProducerConfiguration config) {
+        super(context, new MockHttpTransport(), config); // use NetHttpTransport() for requestb.in
         previousRequests = new Stack<>();
     }
 

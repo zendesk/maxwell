@@ -127,11 +127,6 @@
       <artifactId>lz4</artifactId>
       <version>1.3.0</version>
     </dependency>
-    <dependency>
-      <groupId>org.tomitribe</groupId>
-      <artifactId>tomitribe-http-signatures</artifactId>
-      <version>1.0</version>
-    </dependency>
   </dependencies>
 
   <build>
