@@ -102,7 +102,7 @@ public class RecoveryTest extends TestWithNameLogging {
 			slaveContext.getReplicationConnectionPool(),
 			slaveContext.getCaseSensitivity(),
 			recoveryInfo,
-			MaxwellTestSupport.inGtidMode()
+			System.getenv("SHYKO_MODE") != null
 		);
 
 		BinlogPosition recoveredPosition = recovery.recover();
@@ -144,7 +144,7 @@ public class RecoveryTest extends TestWithNameLogging {
 			slaveContext.getReplicationConnectionPool(),
 			slaveContext.getCaseSensitivity(),
 			recoveryInfo,
-			MaxwellTestSupport.inGtidMode()
+			System.getenv("SHYKO_MODE") != null
 		);
 
 		BinlogPosition recoveredPosition = recovery.recover();
