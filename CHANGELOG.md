@@ -1,5 +1,12 @@
 # Maxwell changelog
 
+### [v1.7.2](https://github.com/zendesk/maxwell/releases/tag/v1.7.2): "comparing self to better"
+
+
+- Fix a bug found where maxwell could cache the wrong TABLE_MAP_ID for a
+binlog event, leading to crashes or in some cases data mismatches.
+
+
 ### [v1.7.1](https://github.com/zendesk/maxwell/releases/tag/v1.7.1): "blame it on your seratonin"
 
 

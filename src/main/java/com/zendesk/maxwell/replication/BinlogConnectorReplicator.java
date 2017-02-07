@@ -265,6 +265,7 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 					}
 					break;
 				case ROTATE:
+					tableCache.clear();
 					if ( stopOnEOF && event.getPosition().getOffset() > 0 ) {
 						this.binlogEventListener.mustStop.set(true);
 						this.client.disconnect();
