@@ -17,14 +17,22 @@ import snaq.db.ConnectionPool;
 
 public class MysqlPositionStore {
 	static final Logger LOGGER = LoggerFactory.getLogger(MysqlPositionStore.class);
+	private static final Long DEFAULT_GTID_SERVER_ID = new Long(0);
 	private final Long serverID;
 	private String clientID;
+	private final boolean gtidMode;
 	private final ConnectionPool connectionPool;
 
-	public MysqlPositionStore(ConnectionPool pool, Long serverID, String clientID) {
+	public MysqlPositionStore(ConnectionPool pool, Long serverID, String clientID, boolean gtidMode) {
 		this.connectionPool = pool;
-		this.serverID = serverID;
 		this.clientID = clientID;
+		this.gtidMode = gtidMode;
+		if (gtidMode) {
+			// we don't use server id for position store in gtid mode
+			this.serverID = DEFAULT_GTID_SERVER_ID;
+		} else {
+			this.serverID = serverID;
+		}
 	}
 
 	public void set(BinlogPosition newPosition) throws SQLException {
@@ -142,7 +150,8 @@ public class MysqlPositionStore {
 			if ( !rs.next() )
 				return null;
 
-			return new BinlogPosition(rs.getString("gtid_set"),
+			String gtid = gtidMode ? rs.getString("gtid_set") : null;
+			return new BinlogPosition(gtid,
 				rs.getLong("binlog_position"), rs.getString("binlog_file"), null);
 		}
 	}
@@ -167,7 +176,8 @@ public class MysqlPositionStore {
 
 		while ( rs.next() ) {
 			Long server_id = rs.getLong("server_id");
-			BinlogPosition position = BinlogPosition.at(rs.getString("gtid_set"),
+			String gtid = gtidMode ? rs.getString("gtid_set") : null;
+			BinlogPosition position = BinlogPosition.at(gtid,
 				rs.getLong("binlog_position"), rs.getString("binlog_file"));
 			Long last_heartbeat_read = rs.getLong("last_heartbeat_read");
 

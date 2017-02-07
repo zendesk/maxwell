@@ -99,6 +99,10 @@ public class SchemaStoreSchema {
 			performAlter(c, "alter table `schemas` add column deleted tinyint(1) not null default 0");
 		}
 
+		if ( !getTableColumns("schemas", c).containsKey("gtid_set") ) {
+			performAlter(c, "alter table `schemas` add column gtid_set varchar(255)");
+		}
+
 		if ( !maxwellTables.contains("bootstrap") )  {
 			LOGGER.info("adding bootstrap tables to the maxwell schema.");
 			InputStream is = MysqlSavedSchema.class.getResourceAsStream("/sql/maxwell_schema_bootstrap.sql");

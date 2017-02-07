@@ -14,15 +14,20 @@ import org.junit.Test;
 public class MysqlPositionStoreTest extends MaxwellTestWithIsolatedServer {
 	private MysqlPositionStore buildStore() throws Exception {
 		MaxwellContext context = buildContext();
-		return new MysqlPositionStore(context.getMaxwellConnectionPool(), context.getServerID(), "maxwell");
+		return new MysqlPositionStore(context.getMaxwellConnectionPool(), context.getServerID(), "maxwell", MaxwellTestSupport.inGtidMode());
 	}
 
 	@Test
 	public void testSetBinlogPosition() throws Exception {
 		MysqlPositionStore store = buildStore();
-		store.set(new BinlogPosition(12345, "foo"));
-
-		assertThat(buildStore().get(), is(new BinlogPosition(12345, "foo")));
+		if (MaxwellTestSupport.inGtidMode()) {
+			String gtid = "123:1-100";
+			store.set(new BinlogPosition(gtid, 12345, "foo", null));
+			assertThat(buildStore().get(), is(new BinlogPosition(gtid, 12345, "foo", null)));
+		} else {
+			store.set(new BinlogPosition(12345, "foo"));
+			assertThat(buildStore().get(), is(new BinlogPosition(12345, "foo")));
+		}
 	}
 
 	@Test

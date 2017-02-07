@@ -37,18 +37,15 @@ public class BinlogPosition implements Serializable {
 		this(null, l, file, null);
 	}
 
-	public static BinlogPosition capture(Connection c) throws SQLException {
+	public static BinlogPosition capture(Connection c, boolean gtidMode) throws SQLException {
 		ResultSet rs;
 		rs = c.createStatement().executeQuery("SHOW MASTER STATUS");
 		rs.next();
 		long l = rs.getInt(POSITION_COLUMN);
 		String file = rs.getString(FILE_COLUMN);
 		String gtidStr = null;
-		try {
+		if (gtidMode) {
 			gtidStr = rs.getString(GTID_COLUMN);
-		} catch (SQLException ex) {
-			// gtid column might not exist if gtid mode is not turned on
-			LOGGER.info("Unable to retrieve column " + GTID_COLUMN, ex);
 		}
 		return new BinlogPosition(gtidStr, l, file, null);
 	}
@@ -83,7 +80,8 @@ public class BinlogPosition implements Serializable {
 
 	@Override
 	public String toString() {
-		return "BinlogPosition[" + file + ":" + offset + ":" + gtidStr + "]";
+		return "BinlogPosition[" +
+			(gtidStr == null ? file + ":" + offset : gtidStr) + "]";
 	}
 
 	public boolean newerThan(BinlogPosition other) {

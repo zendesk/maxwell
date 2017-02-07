@@ -16,15 +16,18 @@ import com.zendesk.maxwell.util.AbstractConfig;
 public class MaxwellConfig extends AbstractConfig {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfig.class);
 
+	public static final String GTID_MODE_ENV = "GTID_MODE";
+
 	public MaxwellMysqlConfig replicationMysql;
 
 	public MaxwellMysqlConfig maxwellMysql;
 	public MaxwellFilter filter;
 	public Boolean shykoMode;
+	public Boolean gtidMode;
 
 	public String databaseName;
 
-	public String  includeDatabases, excludeDatabases, includeTables, excludeTables, excludeColumns, blacklistDatabases, blacklistTables;
+	public String includeDatabases, excludeDatabases, includeTables, excludeTables, excludeColumns, blacklistDatabases, blacklistTables;
 
 	public final Properties kafkaProperties;
 	public String kafkaTopic;
@@ -63,6 +66,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.maxwellMysql = new MaxwellMysqlConfig();
 		this.masterRecovery = false;
 		this.shykoMode = false;
+		this.gtidMode = false;
 		this.bufferedProducerSize = 200;
 		setup(null, null); // setup defaults
 	}
@@ -137,6 +141,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION").withRequiredArg();
 		parser.accepts( "replay", "replay mode, don't store any information to the server");
 		parser.accepts( "master_recovery", "(experimental) enable master position recovery code");
+		parser.accepts( "gtid_mode", "(experimental) enable gtid mode");
 
 		parser.accepts( "__separator_7" );
 
@@ -219,7 +224,8 @@ public class MaxwellConfig extends AbstractConfig {
 		config.password = fetchOption(prefix + "password", options, properties, null);
 		config.user     = fetchOption(prefix + "user", options, properties, null);
 		config.port     = Integer.valueOf(fetchOption(prefix + "port", options, properties, "3306"));
-		config.setJDBCOptions(fetchOption(prefix + "jdbc_options", options, properties, null));
+		config.setJDBCOptions(
+		    fetchOption(prefix + "jdbc_options", options, properties, null));
 		return config;
 	}
 
@@ -246,6 +252,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.maxwellMysql       = parseMysqlConfig("", options, properties);
 		this.replicationMysql   = parseMysqlConfig("replication_", options, properties);
 		this.shykoMode          = fetchBooleanOption("binlog_connector", options, properties, System.getenv("SHYKO_MODE") != null);
+		this.gtidMode           = fetchBooleanOption("gtid_mode", options, properties, System.getenv(GTID_MODE_ENV) != null);
 
 		this.databaseName       = fetchOption("schema_database", options, properties, "maxwell");
 		this.maxwellMysql.database = this.databaseName;
@@ -430,6 +437,14 @@ public class MaxwellConfig extends AbstractConfig {
 			);
 
 			this.replicationMysql.jdbcOptions = this.maxwellMysql.jdbcOptions;
+		}
+
+		if (gtidMode && !shykoMode) {
+			usageForOptions("Gtid mode is only support with shyko bin connector.", "--gtid_mode");
+		}
+
+		if (gtidMode && masterRecovery) {
+			usageForOptions("There is no need to perform master_recovery under gtid_mode", "--gtid_mode");
 		}
 
 		try {
