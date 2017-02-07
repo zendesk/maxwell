@@ -189,7 +189,7 @@ public class MaxwellTestSupport {
 		BinlogPosition finalPosition = capture(mysql.getConnection());
 		LOGGER.debug("running replicator up to " + finalPosition);
 
-		Long pollTime = 1000L;
+		Long pollTime = 2000L;
 		BinlogPosition lastPositionRead = null;
 
 		for ( ;; ) {

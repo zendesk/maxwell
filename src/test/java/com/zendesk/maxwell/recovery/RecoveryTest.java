@@ -111,7 +111,7 @@ public class RecoveryTest extends TestWithNameLogging {
 
 		if ( slavePosition.getFile().equals(recoveredPosition.getFile()) )	{
 			long positionDiff = recoveredPosition.getOffset() - slavePosition.getOffset();
-			assertThat(Math.abs(positionDiff), lessThan(1000L));
+			assertThat(Math.abs(positionDiff), lessThan(1500L));
 		} else {
 			// TODO: something something.
 		}
@@ -268,6 +268,12 @@ public class RecoveryTest extends TestWithNameLogging {
 		String[] input = generateMasterData();
 		// Have maxwell connect to master first
 		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(masterServer, null, input, null);
+		try {
+			// sleep a bit for slave to catch up
+			Thread.sleep(1000);
+		} catch (InterruptedException ex) {
+			LOGGER.info("Got ex: " + ex);
+		}
 
 		BinlogPosition slavePosition1 = MaxwellTestSupport.capture(slaveServer.getConnection());
 		LOGGER.info("slave master position at time of cut: " + slavePosition1 + " rows: " + rows.size());
