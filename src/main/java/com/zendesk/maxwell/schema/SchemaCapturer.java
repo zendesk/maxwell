@@ -1,5 +1,11 @@
 package com.zendesk.maxwell.schema;
 
+import com.zendesk.maxwell.CaseSensitivity;
+import com.zendesk.maxwell.schema.columndef.ColumnDef;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,13 +15,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import com.zendesk.maxwell.CaseSensitivity;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.zendesk.maxwell.schema.columndef.ColumnDef;
 
 public class SchemaCapturer {
 	private final Connection connection;
@@ -60,6 +59,7 @@ public class SchemaCapturer {
 			if ( IGNORED_DATABASES.contains(dbName) )
 				continue;
 
+			LOGGER.debug("Capturing Database " + dbName);
 			databases.add(captureDatabase(dbName, charset));
 		}
 
@@ -88,7 +88,11 @@ public class SchemaCapturer {
 		Database db = new Database(dbName, dbCharset);
 
 		while ( rs.next() ) {
-			Table t = db.buildTable(rs.getString("TABLE_NAME"), rs.getString("CHARACTER_SET_NAME"));
+			String tableName = rs.getString("TABLE_NAME");
+			String characterSetName = rs.getString("CHARACTER_SET_NAME");
+			LOGGER.debug("Capturing table " + tableName);
+
+			Table t = db.buildTable(tableName, characterSetName);
 			captureTable(t);
 		}
 
