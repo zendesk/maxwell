@@ -414,12 +414,8 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 			HttpRequest last = results.pop();
 
 			assertThat("default encoding and Content-Type headers", last.getContent().getType(), is("application/json; charset=UTF-8"));
-			assertThat("Date header populated", last.getHeaders().getDate(), is(producer.getDateString()));
 
-			String expectedDigest = MockHttpProducer.digestHeader(MockHttpProducer.DEFAULT_DIGEST_ALGO, MockHttpProducer.DEFAULT_CHARSET, row.toJSON());
-			assertThat("defaut Digest header populated", last.getHeaders().get("digest").toString(), is(expectedDigest));
-
-			assertThat("Basic Auth configuration sets header poperly", last.getHeaders().getAuthorization(), is("Basic bXlrZXk6bXlzZWNyZXQ="));
+			assertThat("Basic Auth configuration sets header properly", last.getHeaders().getAuthorization(), is("Basic bXlrZXk6bXlzZWNyZXQ="));
 		}
 	}
 

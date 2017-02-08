@@ -100,7 +100,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_3" );
 
-		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|httpp" ).withRequiredArg();
+		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|http" ).withRequiredArg();
 
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
 

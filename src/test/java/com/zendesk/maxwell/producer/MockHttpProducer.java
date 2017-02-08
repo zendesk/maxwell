@@ -13,8 +13,7 @@ import java.util.Stack;
 // Helper class for Integration Tests that uses mock transport and has stack of previous requests.
 public class MockHttpProducer extends HttpProducer {
 
-    public static final String EXAMPLE_DATE_STRING = "Sat, 21 Jan 2017 12:25:02 EST";
-    public static final String SAMPLE_URL = "http://requestb.in/tu5ko9tu"; // for using real transport.
+    public static final String SAMPLE_URL = "http://requestb.in/ss60d2ss"; // when using real transport.
 
     private Stack<HttpRequest> previousRequests;
 
@@ -36,7 +35,4 @@ public class MockHttpProducer extends HttpProducer {
     }
 
     public Stack<HttpRequest> getLifoRequests() { return previousRequests; }
-
-    @Override
-    public String getDateString() { return EXAMPLE_DATE_STRING; }
 }
