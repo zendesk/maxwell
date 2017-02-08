@@ -100,7 +100,7 @@ public class SchemaStoreSchema {
 		}
 
 		if ( !getTableColumns("schemas", c).containsKey("gtid_set") ) {
-			performAlter(c, "alter table `schemas` add column gtid_set varchar(255)");
+			performAlter(c, "alter table `schemas` add column gtid_set varchar(4096)");
 		}
 
 		if ( !maxwellTables.contains("bootstrap") )  {
@@ -142,7 +142,7 @@ public class SchemaStoreSchema {
 		}
 
 		if ( !getTableColumns("positions", c).containsKey("gtid_set") ) {
-			performAlter(c, "alter table `positions` add column gtid_set varchar(255)");
+			performAlter(c, "alter table `positions` add column gtid_set varchar(4096)");
 		}
 
 		if ( !getTableColumns("positions", c).containsKey("heartbeat_at") ) {
