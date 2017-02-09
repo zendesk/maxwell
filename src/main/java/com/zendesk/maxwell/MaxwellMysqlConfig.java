@@ -26,6 +26,7 @@ public class MaxwellMysqlConfig {
 		this.password = null;
 
 		this.jdbcOptions = new ArrayList<>();
+		this.jdbcOptions.add("autoReconnect=true");
 		this.jdbcOptions.add("zeroDateTimeBehavior=convertToNull");
 		this.jdbcOptions.add(String.format("connectTimeout=%d", connectTimeoutMS));
 	}

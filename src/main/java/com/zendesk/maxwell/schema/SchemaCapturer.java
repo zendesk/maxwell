@@ -26,10 +26,44 @@ public class SchemaCapturer {
 
     private final CaseSensitivity sensitivity;
 
+    private PreparedStatement tablePreparedStatement;
+
+    private PreparedStatement columnPreparedStatement;
+
+    private PreparedStatement pkPreparedStatement;
+
     public SchemaCapturer(Connection c, CaseSensitivity sensitivity) throws SQLException {
         this.includeDatabases = new HashSet<>();
         this.connection = c;
         this.sensitivity = sensitivity;
+
+        String tblSql = "SELECT TABLES.TABLE_NAME, CCSA.CHARACTER_SET_NAME "
+                + "FROM INFORMATION_SCHEMA.TABLES "
+                + "JOIN information_schema.COLLATION_CHARACTER_SET_APPLICABILITY AS CCSA"
+                + " ON TABLES.TABLE_COLLATION = CCSA.COLLATION_NAME WHERE TABLES.TABLE_SCHEMA = ?";
+
+        tablePreparedStatement = connection.prepareStatement(tblSql);
+
+
+        String columnSql = "SELECT " +
+                "TABLE_NAME," +
+                "COLUMN_NAME, " +
+                "DATA_TYPE, " +
+                "CHARACTER_SET_NAME, " +
+                "ORDINAL_POSITION, " +
+                "COLUMN_TYPE, " +
+                "DATETIME_PRECISION, " +
+                "COLUMN_KEY, " +
+                "COLUMN_TYPE " +
+                "FROM `information_schema`.`COLUMNS` WHERE TABLE_SCHEMA = ?";
+
+        columnPreparedStatement = connection.prepareStatement(columnSql);
+
+        String pkSql = "SELECT TABLE_NAME, COLUMN_NAME, ORDINAL_POSITION FROM information_schema.KEY_COLUMN_USAGE "
+                + "WHERE CONSTRAINT_NAME = 'PRIMARY' AND TABLE_SCHEMA = ?";
+
+        pkPreparedStatement = connection.prepareStatement(pkSql);
+
     }
 
     public SchemaCapturer(Connection c, CaseSensitivity sensitivity, String dbName) throws SQLException {
@@ -54,14 +88,22 @@ public class SchemaCapturer {
             if (IGNORED_DATABASES.contains(dbName))
                 continue;
 
-            LOGGER.debug("Registering Database " + dbName);
             Database db = new Database(dbName, charset);
             databases.add(db);
         }
         rs.close();
 
-        LOGGER.debug("Augmenting databases with tables");
-        captureDatabases(databases);
+        int size = databases.size();
+        LOGGER.debug("Augmenting " + size + " databases with tables");
+        int counter = 1;
+        for (Database db : databases) {
+            LOGGER.debug(counter + "/" + size + " Augmenting " + db.getName());
+            long start = System.currentTimeMillis();
+            captureDatabase(db);
+            long end = System.currentTimeMillis();
+            LOGGER.debug(counter + "/" + size + " Augmented " + db.getName() + " after " + (end - start) + "ms");
+            counter++;
+        }
         LOGGER.debug("Databases Augmented!");
 
         return new Schema(databases, captureDefaultCharset(), this.sensitivity);
@@ -75,37 +117,20 @@ public class SchemaCapturer {
     }
 
 
-    private void captureDatabases(ArrayList<Database> databases) throws SQLException {
-        HashMap<String, Database> databaseNames = new HashMap<String, Database>();
-        for (Database database : databases) {
-            databaseNames.put(database.getName(), database);
-        }
-
-        String tblSql =
-                "SELECT TABLES.TABLE_SCHEMA, TABLES.TABLE_NAME, CCSA.CHARACTER_SET_NAME "
-                        + "FROM INFORMATION_SCHEMA.TABLES "
-                        + "JOIN information_schema.COLLATION_CHARACTER_SET_APPLICABILITY AS CCSA"
-                        + " ON TABLES.TABLE_COLLATION = CCSA.COLLATION_NAME WHERE " + databaseConditional("TABLES.TABLE_SCHEMA");
-
-        PreparedStatement p = connection.prepareStatement(tblSql);
-        ResultSet rs = p.executeQuery();
+    private void captureDatabase(Database db) throws SQLException {
+        tablePreparedStatement.setString(1, db.getName());
+        ResultSet rs = tablePreparedStatement.executeQuery();
 
         HashMap<String, Table> tables = new HashMap<>();
         while (rs.next()) {
-            String databaseName = rs.getString("TABLE_SCHEMA");
             String tableName = rs.getString("TABLE_NAME");
             String characterSetName = rs.getString("CHARACTER_SET_NAME");
-            String tableKey = tableKey(databaseName, tableName);
-            LOGGER.debug("Capturing table " + tableKey);
-
-            Database db = databaseNames.get(databaseName);
             Table t = db.buildTable(tableName, characterSetName);
-            tables.put(tableKey, t);
+            tables.put(tableName, t);
         }
         rs.close();
 
-        LOGGER.debug("Augmenting tables");
-        captureTables(tables);
+        captureTables(db, tables);
     }
 
 
@@ -117,40 +142,24 @@ public class SchemaCapturer {
     }
 
 
-    private void captureTables(HashMap<String, Table> tables) throws SQLException {
+    private void captureTables(Database db, HashMap<String, Table> tables) throws SQLException {
 
-        String sql = "SELECT " +
-                "TABLE_SCHEMA, " +
-                "TABLE_NAME," +
-                "COLUMN_NAME, " +
-                "DATA_TYPE, " +
-                "CHARACTER_SET_NAME, " +
-                "ORDINAL_POSITION, " +
-                "COLUMN_TYPE, " +
-                "DATETIME_PRECISION, " +
-                "COLUMN_KEY, " +
-                "COLUMN_TYPE " +
-                "FROM `information_schema`.`COLUMNS` WHERE " + databaseConditional("TABLE_SCHEMA");
-
-        PreparedStatement statement = connection.prepareStatement(sql);
-        ResultSet r = statement.executeQuery();
+        columnPreparedStatement.setString(1, db.getName());
+        ResultSet r = columnPreparedStatement.executeQuery();
 
         boolean hasDatetimePrecision = isMySQLAtLeast56();
 
         HashMap<String, Integer> pkIndexCounters = new HashMap<>();
-        for (String tableKey : tables.keySet()) {
-            pkIndexCounters.put(tableKey, 0);
+        for (String tableName : tables.keySet()) {
+            pkIndexCounters.put(tableName, 0);
         }
 
         while (r.next()) {
             String[] enumValues = null;
-            String dbName = r.getString("TABLE_SCHEMA");
             String tableName = r.getString("TABLE_NAME");
-            String tableKey = tableKey(dbName, tableName);
 
-            if (tables.containsKey(tableKey)) {
-                LOGGER.debug("Augmenting table " + tableKey);
-                Table t = tables.get(tableKey);
+            if (tables.containsKey(tableName)) {
+                Table t = tables.get(tableName);
                 String colName = r.getString("COLUMN_NAME");
                 String colType = r.getString("DATA_TYPE");
                 String colEnc = r.getString("CHARACTER_SET_NAME");
@@ -162,7 +171,7 @@ public class SchemaCapturer {
                     columnLength = r.getLong("DATETIME_PRECISION");
 
                 if (r.getString("COLUMN_KEY").equals("PRI"))
-                    t.pkIndex = pkIndexCounters.get(tableKey);
+                    t.pkIndex = pkIndexCounters.get(tableName);
 
                 if (colType.equals("enum") || colType.equals("set")) {
                     String expandedType = r.getString("COLUMN_TYPE");
@@ -172,37 +181,30 @@ public class SchemaCapturer {
 
                 t.addColumn(ColumnDef.build(colName, colEnc, colType, colPos, colSigned, enumValues, columnLength));
 
-                pkIndexCounters.put(tableKey, pkIndexCounters.get(tableKey) + 1);
+                pkIndexCounters.put(tableName, pkIndexCounters.get(tableName) + 1);
             }
         }
         r.close();
 
-        LOGGER.debug("Augmenting table primary keys");
-        captureTablesPK(tables);
+        captureTablesPK(db, tables);
     }
 
-    private void captureTablesPK(HashMap<String, Table> tables) throws SQLException {
-
-        String pkSQL = "SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, ORDINAL_POSITION FROM information_schema.KEY_COLUMN_USAGE "
-                + "WHERE CONSTRAINT_NAME = 'PRIMARY' AND " + databaseConditional("TABLE_SCHEMA");
-
-        PreparedStatement p = connection.prepareStatement(pkSQL);
-        ResultSet rs = p.executeQuery();
+    private void captureTablesPK(Database db, HashMap<String, Table> tables) throws SQLException {
+        pkPreparedStatement.setString(1, db.getName());
+        ResultSet rs = pkPreparedStatement.executeQuery();
 
         HashMap<String, ArrayList<String>> l = new HashMap<>();
 
-        for (String tableKey : tables.keySet()) {
-            l.put(tableKey, new ArrayList<String>());
+        for (String tableName : tables.keySet()) {
+            l.put(tableName, new ArrayList<String>());
         }
 
         while (rs.next()) {
             int ordinalPosition = rs.getInt("ORDINAL_POSITION");
-            String dbName = rs.getString("TABLE_SCHEMA");
             String tableName = rs.getString("TABLE_NAME");
             String columnName = rs.getString("COLUMN_NAME");
-            String tableKey = tableKey(dbName, tableName);
 
-            l.get(tableKey).add(ordinalPosition - 1, columnName);
+            l.get(tableName).add(ordinalPosition - 1, columnName);
         }
         rs.close();
 
@@ -224,21 +226,5 @@ public class SchemaCapturer {
             enumValues[j] = enumValues[j].substring(1, enumValues[j].length() - 1);
         }
         return enumValues;
-    }
-
-
-    private String databaseConditional(String schemaAlias) {
-        String where = schemaAlias + " NOT IN ('" + StringUtils.join(IGNORED_DATABASES, "','") + "') ";
-
-        if (includeDatabases.size() > 0) {
-            where = " AND " + schemaAlias + " IN ('" + StringUtils.join(includeDatabases, "','") + "') ";
-        }
-
-        return where;
-    }
-
-
-    private String tableKey(String databaseName, String tableName) {
-        return databaseName + "::" + tableName;
     }
 }
