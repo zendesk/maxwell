@@ -65,14 +65,14 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 			if ( savedSchema == null ) {
 				Schema capturedSchema = captureSchema();
 				savedSchema = new MysqlSavedSchema(serverID, caseSensitivity, capturedSchema, initialPosition);
-				if ( !readOnly )
-					if(conn.isClosed()){
+				if (!readOnly)
+					if (conn.isValid(30)) {
+						savedSchema.save(conn);
+					} else {
 						// The capture time might be long and the conn connection might be closed already. Consulting the pool
 						// again for a new connection
 						Connection newConn = maxwellConnectionPool.getConnection();
 						savedSchema.save(newConn);
-					} else {
-						savedSchema.save(conn);
 					}
 			}
 
