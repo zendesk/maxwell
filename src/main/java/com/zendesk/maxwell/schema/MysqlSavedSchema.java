@@ -1,29 +1,25 @@
 package com.zendesk.maxwell.schema;
 
-import java.sql.*;
-import java.util.*;
-
-import java.io.IOException;
-import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 import com.zendesk.maxwell.CaseSensitivity;
 import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.schema.columndef.*;
-
+import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
+import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
-import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import snaq.db.ConnectionPool;
+
+import java.io.IOException;
+import java.sql.*;
+import java.util.*;
 
 public class MysqlSavedSchema {
 	static int SchemaStoreVersion = 3;
@@ -411,41 +407,62 @@ public class MysqlSavedSchema {
 	}
 
 	private void restoreFullSchema(Connection conn, Long schemaID) throws SQLException, InvalidSchemaError {
-		PreparedStatement p = conn.prepareStatement("SELECT * from `databases` where schema_id = ? ORDER by id");
+		PreparedStatement p = conn.prepareStatement("SELECT id, name, charset from `databases` where schema_id = ? ORDER by id");
 		p.setLong(1, this.schemaID);
 
 		ResultSet dbRS = p.executeQuery();
 
+		HashMap<Integer, Database> databases = new HashMap<>();
 		while (dbRS.next()) {
-			this.schema.addDatabase(restoreDatabase(conn, dbRS.getInt("id"), dbRS.getString("name"), dbRS.getString("charset")));
+			String name = dbRS.getString("name");
+			int id = dbRS.getInt("id");
+			String charset = dbRS.getString("charset");
+			Database d = new Database(name, charset);
+			databases.put(id, d);
 		}
+		dbRS.close();
 
+		for (Map.Entry<Integer, Database> entry : databases.entrySet()) {
+			int id = entry.getKey();
+			Database db = entry.getValue();
+			this.schema.addDatabase(restoreDatabase(conn, id, db));
+		}
 	}
 
-	private Database restoreDatabase(Connection conn, int id, String name, String charset) throws SQLException {
-		Statement s = conn.createStatement();
-		Database d = new Database(name, charset);
+	private Database restoreDatabase(Connection conn, int id, Database d) throws SQLException {
+		PreparedStatement s = conn.prepareStatement("SELECT name, charset, pk, id from `tables` where database_id = ? ORDER by id");
+		s.setInt(1, id);
+		ResultSet tRS = s.executeQuery();
 
-		ResultSet tRS = s.executeQuery("SELECT * from `tables` where database_id = " + id + " ORDER by id");
-
+		HashMap<Integer, Table> tables = new HashMap<>();
 		while (tRS.next()) {
 			String tName = tRS.getString("name");
 			String tCharset = tRS.getString("charset");
 			String tPKs = tRS.getString("pk");
-
 			int tID = tRS.getInt("id");
 
-			restoreTable(conn, d, tName, tID, tCharset, tPKs);
+			Table t = d.buildTable(tName, tCharset);
+			if (tPKs != null) {
+				List<String> pkList = Arrays.asList(StringUtils.split(tPKs, ','));
+				t.setPKList(pkList);
+			}
+			tables.put(tID, t);
 		}
+		tRS.close();
+
+		for (Map.Entry<Integer, Table> entry : tables.entrySet()) {
+			int tableId = entry.getKey();
+			Table table = entry.getValue();
+			restoreTable(conn, tableId, table);
+		}
+
 		return d;
 	}
 
-	private void restoreTable(Connection connection, Database d, String name, int id, String charset, String pks) throws SQLException {
-		Statement s = connection.createStatement();
-
-		Table t = d.buildTable(name, charset);
-
-		ResultSet cRS = s.executeQuery("SELECT * from `columns` where table_id = " + id + " ORDER by id");
+	private void restoreTable(Connection connection, int id, Table t) throws SQLException {
+		PreparedStatement s = connection.prepareStatement("SELECT * from `columns` where table_id = ? ORDER by id");
+		s.setInt(1, id);
+		ResultSet cRS = s.executeQuery();
 
 		int i = 0;
 		while (cRS.next()) {
@@ -468,11 +485,7 @@ public class MysqlSavedSchema {
 					columnLength);
 			t.addColumn(c);
 		}
-
-		if ( pks != null ) {
-			List<String> pkList = Arrays.asList(StringUtils.split(pks, ','));
-			t.setPKList(pkList);
-		}
+		cRS.close();
 	}
 
 	private static Long findSchema(Connection connection, BinlogPosition targetPosition, Long serverID)
