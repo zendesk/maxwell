@@ -1,15 +1,19 @@
 package com.zendesk.maxwell.row;
 
 import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
@@ -77,6 +81,42 @@ public class RowMap implements Serializable {
 		this.nextPosition = nextPosition;
 		this.pkColumns = pkColumns;
 		this.approximateSize = 100L; // more or less 100 bytes of overhead
+	}
+
+	public RowMap(JSONObject json)
+	{
+		this(
+				json.optString("type"),
+				json.optString("database"),
+				json.optString("table"),
+				json.optLong("ts"),
+				new ArrayList<String>(),
+				null
+		);
+
+		setXid(json.optLong("xid"));
+
+		JSONObject data = json.optJSONObject("data");
+		if (data != null) {
+			Iterator keys = data.keys();
+			if (keys != null) {
+				while (keys.hasNext()) {
+					String key = (String) keys.next();
+					putData(key, data.isNull(key) ? null : data.opt(key));
+				}
+			}
+		}
+
+		JSONObject oldData = json.optJSONObject("old");
+		if (oldData != null) {
+			Iterator keys = oldData.keys();
+			if (keys != null) {
+				while (keys.hasNext()) {
+					String key = (String) keys.next();
+					putOldData(key, oldData.isNull(key) ? null : oldData.opt(key));
+				}
+			}
+		}
 	}
 
 	public String pkToJson(KeyFormat keyFormat) throws IOException {
