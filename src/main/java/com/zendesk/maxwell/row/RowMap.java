@@ -377,4 +377,14 @@ public class RowMap implements Serializable {
 	public boolean shouldOutput(MaxwellOutputConfig outputConfig) {
 		return true;
 	}
+
+	public LinkedHashMap<String, Object> getData()
+	{
+		return new LinkedHashMap<>(data);
+	}
+
+	public LinkedHashMap<String, Object> getOldData()
+	{
+		return new LinkedHashMap<>(oldData);
+	}
 }
