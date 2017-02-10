@@ -379,10 +379,13 @@ public class MysqlSavedSchema {
 	protected void restoreFromSchemaID(Connection conn, Long schemaID) throws SQLException, InvalidSchemaError {
 		restoreSchemaMetadata(conn, schemaID);
 
-		if ( this.baseSchemaID != null )
+		if (this.baseSchemaID != null) {
+			LOGGER.debug("Restoring derived schema");
 			restoreDerivedSchema(conn, schemaID);
-		else
+		} else {
+			LOGGER.debug("Restoring full schema");
 			restoreFullSchema(conn, schemaID);
+		}
 	}
 
 	private void restoreSchemaMetadata(Connection conn, Long schemaID) throws SQLException {
@@ -422,10 +425,20 @@ public class MysqlSavedSchema {
 		}
 		dbRS.close();
 
+		int databasesCount = databases.size();
+		int counter = 1;
 		for (Map.Entry<Integer, Database> entry : databases.entrySet()) {
 			int id = entry.getKey();
 			Database db = entry.getValue();
+
+			long start = System.currentTimeMillis();
+			LOGGER.debug(counter + "/" + databasesCount + " Restoring " + db.getName());
+
 			this.schema.addDatabase(restoreDatabase(conn, id, db));
+
+			long end = System.currentTimeMillis();
+			counter++;
+			LOGGER.debug(counter + "/" + databasesCount + " Restored " + db.getName() + " after " + (end - start) + "ms");
 		}
 	}
 
