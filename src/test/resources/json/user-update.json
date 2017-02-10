@@ -1,0 +1,1 @@
+{"database":"MyDatabase","table":"User","type":"update","ts":1486439516,"xid":5694,"commit":true,"data":{"UserID":20,"FirstName":"Fiz","MiddleName":null,"LastName":"Buz","Version":1486703131000},"old":{"backup_date":"2017-02-08 02:00:05","FirstName":"Foo","LastName":"Bar"}}
