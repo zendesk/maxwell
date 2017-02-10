@@ -64,6 +64,9 @@ public class UpdateRowsEvent extends AbstractRowsEvent {
 
 			RowMap rowMap = buildRowMap();
 
+			LOGGER.debug("JEROEN Before " + before.toString());
+			LOGGER.debug("JEROEN After " + after.toString());
+
 			for ( ColumnWithDefinition cd : new ColumnWithDefinitionList(table, after, event.getUsedColumnsAfter())) {
 				LOGGER.debug("JEROEN Adding " + cd.definition.getName() + " " + table.getDatabase() + " " + table.getName());
 				rowMap.putData(cd.definition.getName(), cd.asJSON());

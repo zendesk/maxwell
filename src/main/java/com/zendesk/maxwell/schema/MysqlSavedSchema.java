@@ -409,97 +409,91 @@ public class MysqlSavedSchema {
 		this.schema = new Schema(new ArrayList<Database>(), schemaRS.getString("charset"), this.sensitivity);
 	}
 
-	private void restoreFullSchema(Connection conn, Long schemaID) throws SQLException, InvalidSchemaError {
-		PreparedStatement p = conn.prepareStatement("SELECT id, name, charset from `databases` where schema_id = ? ORDER by id");
-		p.setLong(1, this.schemaID);
 
-		ResultSet dbRS = p.executeQuery();
+    private void restoreFullSchema(Connection conn, Long schemaID) throws SQLException, InvalidSchemaError {
+        PreparedStatement p = conn.prepareStatement(
+                "SELECT " +
+                        "d.id AS dbId," +
+                        "d.name AS dbName," +
+                        "d.charset AS dbCharset," +
+                        "t.name AS tableName," +
+                        "t.charset AS tableCharset," +
+                        "t.pk AS tablePk," +
+                        "t.id AS tableId," +
+                        "c.column_length AS columnLength," +
+                        "c.enum_values AS columnEnumValues," +
+                        "c.name AS columnName," +
+                        "c.charset AS columnCharset," +
+                        "c.coltype AS columnColtype," +
+                        "c.is_signed AS columnIsSigned " +
+                        "FROM columns c " +
+                        "INNER JOIN tables t ON c.table_id = t.id " +
+                        "INNER JOIN `databases` d ON t.database_id=d.id " +
+                        "WHERE d.schema_id = ? " +
+                        "ORDER BY d.id, t.id, c.id"
+        );
 
-		HashMap<Integer, Database> databases = new HashMap<>();
-		while (dbRS.next()) {
-			String name = dbRS.getString("name");
-			int id = dbRS.getInt("id");
-			String charset = dbRS.getString("charset");
-			Database d = new Database(name, charset);
-			databases.put(id, d);
-		}
-		dbRS.close();
+        p.setLong(1, this.schemaID);
+        ResultSet rs = p.executeQuery();
 
-		int databasesCount = databases.size();
-		int counter = 1;
-		for (Map.Entry<Integer, Database> entry : databases.entrySet()) {
-			int id = entry.getKey();
-			Database db = entry.getValue();
+        Database currentDatabase = null;
+        Table currentTable = null;
+        int columnIndex = 0;
+        long dbStart = 0;
 
-			long start = System.currentTimeMillis();
-			LOGGER.debug(counter + "/" + databasesCount + " Restoring " + db.getName());
+        while (rs.next()) {
+            String dbName = rs.getString("dbName");
+            String dbCharset = rs.getString("dbCharset");
 
-			this.schema.addDatabase(restoreDatabase(conn, id, db));
+            String tName = rs.getString("tableName");
+            String tCharset = rs.getString("tableCharset");
+            String tPKs = rs.getString("tablePk");
 
-			long end = System.currentTimeMillis();
-			counter++;
-			LOGGER.debug(counter + "/" + databasesCount + " Restored " + db.getName() + " after " + (end - start) + "ms");
-		}
-	}
+            if (currentDatabase == null || !currentDatabase.getName().equals(dbName)) {
+                if (currentDatabase != null) {
+                    long end = System.currentTimeMillis();
+                    LOGGER.debug("Processed database " + dbName + " after " + (end - dbStart) + "ms");
+                }
+                dbStart = System.currentTimeMillis();
+                currentDatabase = new Database(dbName, dbCharset);
+                this.schema.addDatabase(currentDatabase);
+                LOGGER.debug("Processing database " + dbName);
+            }
 
-	private Database restoreDatabase(Connection conn, int id, Database d) throws SQLException {
-		PreparedStatement s = conn.prepareStatement("SELECT name, charset, pk, id from `tables` where database_id = ? ORDER by id");
-		s.setInt(1, id);
-		ResultSet tRS = s.executeQuery();
+            if (currentTable == null || !currentTable.getName().equals(tName)) {
+                currentTable = currentDatabase.buildTable(tName, tCharset);
+                if (tPKs != null) {
+                    List<String> pkList = Arrays.asList(StringUtils.split(tPKs, ','));
+                    currentTable.setPKList(pkList);
+                }
+                columnIndex = 0;
+            }
 
-		HashMap<Integer, Table> tables = new HashMap<>();
-		while (tRS.next()) {
-			String tName = tRS.getString("name");
-			String tCharset = tRS.getString("charset");
-			String tPKs = tRS.getString("pk");
-			int tID = tRS.getInt("id");
+            Long columnLength;
+            int columnLengthInt = rs.getInt("columnLength");
+            if (rs.wasNull()) {
+                columnLength = null;
+            } else {
+                columnLength = Long.valueOf(columnLengthInt);
+            }
 
-			Table t = d.buildTable(tName, tCharset);
-			if (tPKs != null) {
-				List<String> pkList = Arrays.asList(StringUtils.split(tPKs, ','));
-				t.setPKList(pkList);
-			}
-			tables.put(tID, t);
-		}
-		tRS.close();
+            String[] enumValues = null;
+            if (rs.getString("columnEnumValues") != null) {
+                enumValues = StringUtils.splitByWholeSeparatorPreserveAllTokens(rs.getString("columnEnumValues"), ",");
+            }
 
-		for (Map.Entry<Integer, Table> entry : tables.entrySet()) {
-			int tableId = entry.getKey();
-			Table table = entry.getValue();
-			restoreTable(conn, tableId, table);
-		}
+            ColumnDef c = ColumnDef.build(
+                    rs.getString("columnName"), rs.getString("columnCharset"),
+                    rs.getString("columnColtype"), columnIndex++,
+                    rs.getInt("columnIsSigned") == 1,
+                    enumValues,
+                    columnLength);
+            currentTable.addColumn(c);
 
-		return d;
-	}
-
-	private void restoreTable(Connection connection, int id, Table t) throws SQLException {
-		PreparedStatement s = connection.prepareStatement("SELECT * from `columns` where table_id = ? ORDER by id");
-		s.setInt(1, id);
-		ResultSet cRS = s.executeQuery();
-
-		int i = 0;
-		while (cRS.next()) {
-			Long columnLength;
-			int columnLengthInt = cRS.getInt("column_length");
-			if ( cRS.wasNull() )
-				columnLength = null;
-			else
-				columnLength = Long.valueOf(columnLengthInt);
-
-			String[] enumValues = null;
-			if ( cRS.getString("enum_values") != null )
-				enumValues = StringUtils.splitByWholeSeparatorPreserveAllTokens(cRS.getString("enum_values"), ",");
-
-			ColumnDef c = ColumnDef.build(
-					cRS.getString("name"), cRS.getString("charset"),
-					cRS.getString("coltype"), i++,
-					cRS.getInt("is_signed") == 1,
-					enumValues,
-					columnLength);
-			t.addColumn(c);
-		}
-		cRS.close();
-	}
+        }
+        rs.close();
+        LOGGER.debug("Processed all databases ");
+    }
 
 	private static Long findSchema(Connection connection, BinlogPosition targetPosition, Long serverID)
 			throws SQLException {
