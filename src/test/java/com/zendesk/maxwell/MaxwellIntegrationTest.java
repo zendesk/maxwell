@@ -3,12 +3,18 @@ package com.zendesk.maxwell;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
+import com.google.api.client.http.BasicAuthentication;
+import com.google.api.client.http.HttpExecuteInterceptor;
+import com.google.api.client.http.HttpRequest;
+import com.zendesk.maxwell.producer.HttpProducerConfiguration;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.producer.MockHttpProducer;
 import com.zendesk.maxwell.row.RowMap;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.sql.ResultSet;
 import java.util.List;
+import java.util.Stack;
 import java.util.regex.*;
 
 import com.zendesk.maxwell.schema.SchemaStoreSchema;
@@ -380,6 +386,37 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(lowerCaseServer, null, sql, null);
 		assertThat(rows.size(), is(1));
 		assertThat(rows.get(0).getTable(), is("tootootwee"));
+	}
+
+	@Test
+	public void testHttpProducer() throws Exception {
+		String[] sql = {
+				"CREATE TABLE `test`.`http_check` ( id int )",
+				"insert into `test`.`http_check` set id = 5",
+				"insert into `test`.`http_check` set id = 6"
+		};
+
+		List<RowMap> rows = getRowsForSQL(sql);
+
+		String basicAuthInput = "mykey:mysecret";
+		String[] creds = basicAuthInput.split(":");
+		HttpExecuteInterceptor basicAuth = new BasicAuthentication(creds[0],creds[1]);
+		HttpProducerConfiguration httpConfig = new HttpProducerConfiguration(MockHttpProducer.SAMPLE_URL, basicAuth);
+
+		MaxwellContext context = MaxwellTestSupport.buildContext(server.getPort(), null, null);
+
+		MockHttpProducer producer = new MockHttpProducer(context, httpConfig);
+		producer.push(rows);
+
+		Stack<HttpRequest> results = producer.getLifoRequests();
+		for (int i = rows.size() -1 ; i >= 0; i--) {
+			RowMap row = rows.get(i);
+			HttpRequest last = results.pop();
+
+			assertThat("default encoding and Content-Type headers", last.getContent().getType(), is("application/json; charset=UTF-8"));
+
+			assertThat("Basic Auth configuration sets header properly", last.getHeaders().getAuthorization(), is("Basic bXlrZXk6bXlzZWNyZXQ="));
+		}
 	}
 
 	@Test

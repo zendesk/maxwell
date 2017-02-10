@@ -1,6 +1,7 @@
 package com.zendesk.maxwell;
 
 import java.util.*;
+
 import java.util.regex.Pattern;
 
 import com.zendesk.maxwell.replication.BinlogPosition;
@@ -49,6 +50,9 @@ public class MaxwellConfig extends AbstractConfig {
 	public MaxwellOutputConfig outputConfig;
 	public String log_level;
 
+	public String httpUrl;
+	public String httpBasicAuth;
+
 	public String clientID;
 	public Long replicaServerID;
 
@@ -96,7 +100,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_3" );
 
-		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis" ).withRequiredArg();
+		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|http" ).withRequiredArg();
+
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
 
 		parser.accepts( "producer_partition_by", "database|table|primary_key|column, kafka/kinesis producers will partition by this value").withRequiredArg();
@@ -113,6 +118,9 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "kafka_version", "switch to kafka 0.8, 0.10 or 0.10.1 producer (from 0.9)");
 
 		parser.accepts( "kinesis_stream", "kinesis stream name").withOptionalArg();
+
+		parser.accepts( "http_url", "request URL for HTTP(S) producer" ).withRequiredArg();
+		parser.accepts( "http_basic_auth", "Basic Authentication params for HTTP(S) producer. format is 'username:password'" ).withRequiredArg();
 
 		parser.accepts( "__separator_4" );
 
@@ -304,6 +312,9 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.outputFile         = fetchOption("output_file", options, properties, null);
 
+		this.httpUrl   	  	= fetchOption("http_url", options, properties, null);
+		this.httpBasicAuth	= fetchOption("http_basic_auth", options, properties, null);
+
 		this.includeDatabases   = fetchOption("include_dbs", options, properties, null);
 		this.excludeDatabases   = fetchOption("exclude_dbs", options, properties, null);
 		this.includeTables      = fetchOption("include_tables", options, properties, null);
@@ -392,9 +403,21 @@ public class MaxwellConfig extends AbstractConfig {
 		} else if ( this.producerType.equals("file")
 				&& this.outputFile == null) {
 			usageForOptions("please specify --output_file=FILE to use the file producer", "--producer", "--output_file");
-		} else if ( this.producerType.equals("kinesis") && this.kinesisStream == null) {
+
+  		} else if ( this.producerType.equals("kinesis") && this.kinesisStream == null) {
 			usageForOptions("please specify a stream name for kinesis", "kinesis_stream");
+
+		} else if ( this.producerType.equals("http") ) {
+		    if (this.httpUrl == null)
+				usageForOptions("please specify a request URL for HTTP(S) producer", "--producer", "--http_url");
+		    if (this.httpBasicAuth != null) {
+				int split = this.httpBasicAuth.indexOf(':');
+				int len = this.httpBasicAuth.length();
+				if (split == -1 || split == 0 || split == len - 1)
+					usageForOptions("please specify a valid credential of form 'username:password'", "--producer", "--http_basic_auth");
+			}
 		}
+
 
 		if ( !this.bootstrapperType.equals("async")
 				&& !this.bootstrapperType.equals("sync")

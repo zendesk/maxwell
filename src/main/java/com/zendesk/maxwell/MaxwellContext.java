@@ -7,6 +7,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.concurrent.TimeoutException;
 
+import com.google.api.client.http.BasicAuthentication;
+import com.google.api.client.http.HttpExecuteInterceptor;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.bootstrap.AsynchronousBootstrapper;
@@ -231,6 +233,22 @@ public class MaxwellContext {
 			break;
 		case "buffer":
 			this.producer = new BufferedProducer(this, this.config.bufferedProducerSize);
+			break;
+		case "http":
+		    String url = this.config.httpUrl;
+
+		    // add additional custom configurations here.
+			HttpProducerConfiguration httpConfig;
+
+			if ( this.config.httpBasicAuth != null) {
+			    String[] creds = this.config.httpBasicAuth.split(":");
+				HttpExecuteInterceptor basicAuth = new BasicAuthentication(creds[0],creds[1]);
+				httpConfig = new HttpProducerConfiguration(url, basicAuth);
+			} else {
+				httpConfig = new HttpProducerConfiguration(url);
+			}
+
+			this.producer = new HttpProducer(this, httpConfig);
 			break;
 		case "none":
 			this.producer = null;
