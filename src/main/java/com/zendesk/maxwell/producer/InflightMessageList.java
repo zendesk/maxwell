@@ -1,10 +1,11 @@
 package com.zendesk.maxwell.producer;
-/* respresents a list of inflight messages -- stuff being sent over the
-	 network, that may complete in any order.  Allows for only bumping
-	 the binlog position upon completion of the oldest outstanding item.
+/*
+    respresents a list of inflight messages -- stuff being sent over the
+    network, that may complete in any order.  Allows for only bumping
+    the binlog position upon completion of the oldest outstanding item.
 
-	 Assumes .addInflight(position) will be call monotonically.
-	 */
+    Assumes .addInflight(position) will be call monotonically.
+*/
 
 import com.zendesk.maxwell.replication.BinlogPosition;
 
@@ -31,7 +32,7 @@ public class InflightMessageList {
 
 	private final Lock txLock = new ReentrantLock();
 	private final Lock nonTXLock = new ReentrantLock();
-	private final Condition nonTXMessagesNotFull = nonTXLock.newCondition(); 
+	private final Condition nonTXMessagesNotFull = nonTXLock.newCondition();
 
 	private final int MAX_INFLIGHT_NON_TX_MESSAGES = 10000;
 

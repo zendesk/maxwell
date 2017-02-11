@@ -21,7 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RowMap implements Serializable {
 
 	public enum KeyFormat { HASH, ARRAY }
-static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
+	static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
 
 	private final int rowId;
 	private final String rowType;
@@ -45,7 +45,7 @@ static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
 	private long approximateSize;
 
 	private static final ThreadLocal<ByteArrayOutputStream> byteArrayThreadLocal =
-		new ThreadLocal<ByteArrayOutputStream>(){
+		new ThreadLocal<ByteArrayOutputStream>() {
 			@Override
 			protected ByteArrayOutputStream initialValue() {
 				return new ByteArrayOutputStream();
@@ -69,7 +69,7 @@ static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
 		};
 
 	public RowMap(String type, String database, String table, Long timestamp, List<String> pkColumns,
-			BinlogPosition nextPosition) {
+				  BinlogPosition nextPosition) {
 		rowIdCounter.compareAndSet(Integer.MAX_VALUE, 1);
 		this.rowId = rowIdCounter.getAndIncrement();
 		this.rowType = type;
@@ -117,7 +117,7 @@ static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
 		g.writeEndObject(); // end of 'data: { }'
 		g.flush();
 		return jsonFromStream();
-		}
+	}
 
 	private String pkToJsonArray() throws IOException {
 		JsonGenerator g = jsonGeneratorThreadLocal.get();
@@ -213,7 +213,7 @@ static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
 		}
 
 		generator.writeEndObject(); // end of 'jsonMapName: { }'
-		}
+	}
 
 	public String toJSON() throws IOException {
 		return toJSON(new MaxwellOutputConfig());
@@ -275,7 +275,7 @@ static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
 		g.flush();
 
 		return jsonFromStream();
-		}
+	}
 
 	private String jsonFromStream() {
 		ByteArrayOutputStream b = byteArrayThreadLocal.get();
@@ -395,4 +395,4 @@ static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
 	{
 		return new LinkedHashMap<>(oldData);
 	}
-	}
+}
