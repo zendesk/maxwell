@@ -1,5 +1,4 @@
 package com.zendesk.maxwell.producer;
-
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.row.RowMap;
@@ -8,23 +7,25 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 	public class CallbackCompleter {
 		private InflightMessageList inflightMessages;
 		private final MaxwellContext context;
-		private final BinlogPosition position;
+		private final String rowId;
 		private final boolean isTXCommit;
 
-		public CallbackCompleter(InflightMessageList inflightMessages, BinlogPosition position, boolean isTXCommit, MaxwellContext context) {
+		public CallbackCompleter(InflightMessageList inflightMessages, String rowId, boolean isTXCommit, MaxwellContext context) {
 			this.inflightMessages = inflightMessages;
 			this.context = context;
-			this.position = position;
+			this.rowId = rowId;
 			this.isTXCommit = isTXCommit;
 		}
 
 		public void markCompleted() {
 			if(isTXCommit) {
-				BinlogPosition newPosition = inflightMessages.completeMessage(position);
+				BinlogPosition newPosition = inflightMessages.completeTXMessage(rowId);
 
 				if(newPosition != null) {
 					context.setPosition(newPosition);
 				}
+			} else {
+				inflightMessages.completeNonTXMessage(rowId);
 			}
 		}
 	}
@@ -41,24 +42,25 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 
 	@Override
 	public final void push(RowMap r) throws Exception {
-		// Rows that do not get sent to a target will be automatically marked as complete.
-		// We will attempt to commit a checkpoint up to the current row.
-		if(!r.shouldOutput(outputConfig)) {
-			inflightMessages.addMessage(r.getPosition());
-			BinlogPosition newPosition = inflightMessages.completeMessage(r.getPosition());
-
-			if(newPosition != null) {
-				context.setPosition(newPosition);
-			}
-
-			return;
-		}
-
 		if(r.isTXCommit()) {
-			inflightMessages.addMessage(r.getPosition());
+			inflightMessages.addTXMessage(r.getUniqueId(), r.getPosition());
+
+			// Rows that do not get sent to a target will be automatically marked as complete.
+			// We will attempt to commit a checkpoint up to the current row.
+			if(!r.shouldOutput(outputConfig)) {
+				BinlogPosition newPosition = inflightMessages.completeTXMessage(r.getUniqueId());
+
+				if(newPosition != null) {
+					context.setPosition(newPosition);
+				}
+
+				return;
+			}
+		} else {
+			inflightMessages.addNonTXMessage(r.getUniqueId());
 		}
 
-		CallbackCompleter cc = new CallbackCompleter(inflightMessages, r.getPosition(), r.isTXCommit(), context);
+		CallbackCompleter cc = new CallbackCompleter(inflightMessages, r.getUniqueId(), r.isTXCommit(), context);
 
 		sendAsync(r, cc);
 	}

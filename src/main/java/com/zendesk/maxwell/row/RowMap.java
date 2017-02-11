@@ -23,6 +23,7 @@ public class RowMap implements Serializable {
 
 	static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
 
+	private final String uuid;
 	private final String rowType;
 	private final String database;
 	private final String table;
@@ -43,31 +44,32 @@ public class RowMap implements Serializable {
 	private long approximateSize;
 
 	private static final ThreadLocal<ByteArrayOutputStream> byteArrayThreadLocal =
-			new ThreadLocal<ByteArrayOutputStream>(){
-				@Override
-				protected ByteArrayOutputStream initialValue() {
-					return new ByteArrayOutputStream();
-				}
-			};
+		new ThreadLocal<ByteArrayOutputStream>(){
+			@Override
+			protected ByteArrayOutputStream initialValue() {
+				return new ByteArrayOutputStream();
+			}
+		};
 
 	private static final ThreadLocal<JsonGenerator> jsonGeneratorThreadLocal =
-			new ThreadLocal<JsonGenerator>() {
-				@Override
-				protected JsonGenerator initialValue() {
-					JsonGenerator g = null;
-					try {
-						g = jsonFactory.createGenerator(byteArrayThreadLocal.get());
-					} catch (IOException e) {
-						LOGGER.error("error initializing jsonGenerator", e);
-						return null;
-					}
-					g.setRootValueSeparator(null);
-					return g;
+		new ThreadLocal<JsonGenerator>() {
+			@Override
+			protected JsonGenerator initialValue() {
+				JsonGenerator g = null;
+				try {
+					g = jsonFactory.createGenerator(byteArrayThreadLocal.get());
+				} catch (IOException e) {
+					LOGGER.error("error initializing jsonGenerator", e);
+					return null;
 				}
-			};
+				g.setRootValueSeparator(null);
+				return g;
+			}
+		};
 
 	public RowMap(String type, String database, String table, Long timestamp, List<String> pkColumns,
 			BinlogPosition nextPosition) {
+		this.uuid = UUID.randomUUID().toString();
 		this.rowType = type;
 		this.database = database;
 		this.table = table;
@@ -77,6 +79,10 @@ public class RowMap implements Serializable {
 		this.nextPosition = nextPosition;
 		this.pkColumns = pkColumns;
 		this.approximateSize = 100L; // more or less 100 bytes of overhead
+	}
+
+	public String getUniqueId() {
+		return uuid;
 	}
 
 	public String pkToJson(KeyFormat keyFormat) throws IOException {
@@ -95,7 +101,7 @@ public class RowMap implements Serializable {
 		g.writeStringField("table", table);
 
 		if (pkColumns.isEmpty()) {
-			g.writeStringField("_uuid", UUID.randomUUID().toString());
+			g.writeStringField("_uuid", uuid);
 		} else {
 			for (String pk : pkColumns) {
 				Object pkValue = null;
@@ -109,7 +115,7 @@ public class RowMap implements Serializable {
 		g.writeEndObject(); // end of 'data: { }'
 		g.flush();
 		return jsonFromStream();
-	}
+		}
 
 	private String pkToJsonArray() throws IOException {
 		JsonGenerator g = jsonGeneratorThreadLocal.get();
@@ -205,7 +211,7 @@ public class RowMap implements Serializable {
 		}
 
 		generator.writeEndObject(); // end of 'jsonMapName: { }'
-	}
+		}
 
 	public String toJSON() throws IOException {
 		return toJSON(new MaxwellOutputConfig());
@@ -267,7 +273,7 @@ public class RowMap implements Serializable {
 		g.flush();
 
 		return jsonFromStream();
-	}
+		}
 
 	private String jsonFromStream() {
 		ByteArrayOutputStream b = byteArrayThreadLocal.get();
@@ -387,4 +393,4 @@ public class RowMap implements Serializable {
 	{
 		return new LinkedHashMap<>(oldData);
 	}
-}
+	}
