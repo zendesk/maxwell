@@ -108,4 +108,8 @@ public class InflightMessageList {
 
 		return;
 	}
+
+	public int size() {
+		return txMessages.size() + nonTXMessages.size();
+	}
 }
