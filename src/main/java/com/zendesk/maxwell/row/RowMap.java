@@ -15,15 +15,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class RowMap implements Serializable {
 
 	public enum KeyFormat { HASH, ARRAY }
+static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
 
-	static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
-
-	private final String uuid;
+	private final int rowId;
 	private final String rowType;
 	private final String database;
 	private final String table;
@@ -39,6 +39,7 @@ public class RowMap implements Serializable {
 	private final LinkedHashMap<String, Object> oldData;
 	private final List<String> pkColumns;
 
+	private static final AtomicInteger rowIdCounter = new AtomicInteger();
 	private static final JsonFactory jsonFactory = new JsonFactory();
 
 	private long approximateSize;
@@ -69,7 +70,7 @@ public class RowMap implements Serializable {
 
 	public RowMap(String type, String database, String table, Long timestamp, List<String> pkColumns,
 			BinlogPosition nextPosition) {
-		this.uuid = UUID.randomUUID().toString();
+		this.rowId = Math.abs(rowIdCounter.incrementAndGet());
 		this.rowType = type;
 		this.database = database;
 		this.table = table;
@@ -81,8 +82,8 @@ public class RowMap implements Serializable {
 		this.approximateSize = 100L; // more or less 100 bytes of overhead
 	}
 
-	public String getUniqueId() {
-		return uuid;
+	public int getRowId() {
+		return rowId;
 	}
 
 	public String pkToJson(KeyFormat keyFormat) throws IOException {
@@ -101,7 +102,7 @@ public class RowMap implements Serializable {
 		g.writeStringField("table", table);
 
 		if (pkColumns.isEmpty()) {
-			g.writeStringField("_uuid", uuid);
+			g.writeStringField("_uuid", UUID.randomUUID().toString());
 		} else {
 			for (String pk : pkColumns) {
 				Object pkValue = null;

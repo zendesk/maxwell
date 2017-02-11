@@ -7,10 +7,10 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 	public class CallbackCompleter {
 		private InflightMessageList inflightMessages;
 		private final MaxwellContext context;
-		private final String rowId;
+		private final int rowId;
 		private final boolean isTXCommit;
 
-		public CallbackCompleter(InflightMessageList inflightMessages, String rowId, boolean isTXCommit, MaxwellContext context) {
+		public CallbackCompleter(InflightMessageList inflightMessages, int rowId, boolean isTXCommit, MaxwellContext context) {
 			this.inflightMessages = inflightMessages;
 			this.context = context;
 			this.rowId = rowId;
@@ -43,12 +43,12 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 	@Override
 	public final void push(RowMap r) throws Exception {
 		if(r.isTXCommit()) {
-			inflightMessages.addTXMessage(r.getUniqueId(), r.getPosition());
+			inflightMessages.addTXMessage(r.getRowId(), r.getPosition());
 
 			// Rows that do not get sent to a target will be automatically marked as complete.
 			// We will attempt to commit a checkpoint up to the current row.
 			if(!r.shouldOutput(outputConfig)) {
-				BinlogPosition newPosition = inflightMessages.completeTXMessage(r.getUniqueId());
+				BinlogPosition newPosition = inflightMessages.completeTXMessage(r.getRowId());
 
 				if(newPosition != null) {
 					context.setPosition(newPosition);
@@ -57,10 +57,10 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 				return;
 			}
 		} else {
-			inflightMessages.addNonTXMessage(r.getUniqueId());
+			inflightMessages.addNonTXMessage(r.getRowId());
 		}
 
-		CallbackCompleter cc = new CallbackCompleter(inflightMessages, r.getUniqueId(), r.isTXCommit(), context);
+		CallbackCompleter cc = new CallbackCompleter(inflightMessages, r.getRowId(), r.isTXCommit(), context);
 
 		sendAsync(r, cc);
 	}

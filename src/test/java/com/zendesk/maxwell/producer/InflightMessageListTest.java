@@ -18,9 +18,9 @@ public class InflightMessageListTest {
 	@Before
 	public void setupBefore() {
 		list = new InflightMessageList();
-		list.addTXMessage("1", p1);
-		list.addTXMessage("2", p2);
-		list.addTXMessage("3", p3);
+		list.addTXMessage(1, p1);
+		list.addTXMessage(2, p2);
+		list.addTXMessage(3, p3);
 	}
 
 	@Test
@@ -28,13 +28,13 @@ public class InflightMessageListTest {
 		BinlogPosition ret;
 
 
-		ret = list.completeTXMessage("1");
+		ret = list.completeTXMessage(1);
 		assert(ret.equals(p1));
 
-		ret = list.completeTXMessage("2");
+		ret = list.completeTXMessage(2);
 		assert(ret.equals(p2));
 
-		ret = list.completeTXMessage("3");
+		ret = list.completeTXMessage(3);
 		assert(ret.equals(p3));
 
 		assert(list.size() == 0);
@@ -44,13 +44,13 @@ public class InflightMessageListTest {
 	public void testOutOfOrderComplete() {
 		BinlogPosition ret;
 
-		ret = list.completeTXMessage("3");
+		ret = list.completeTXMessage(3);
 		assert(ret == null);
 
-		ret = list.completeTXMessage("2");
+		ret = list.completeTXMessage(2);
 		assert(ret == null);
 
-		ret = list.completeTXMessage("1");
+		ret = list.completeTXMessage(1);
 		assertEquals(p3, ret);
 	}
 }

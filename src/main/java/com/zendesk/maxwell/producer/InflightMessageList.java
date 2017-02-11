@@ -26,8 +26,8 @@ public class InflightMessageList {
 		}
 	}
 
-	private final HashSet<String> nonTXMessages;
-	private final LinkedHashMap<String, InflightTXMessage> txMessages;
+	private final HashSet<Integer> nonTXMessages;
+	private final LinkedHashMap<Integer, InflightTXMessage> txMessages;
 
 	private final Lock txLock = new ReentrantLock();
 	private final Lock nonTXLock = new ReentrantLock();
@@ -36,11 +36,11 @@ public class InflightMessageList {
 	private final int MAX_INFLIGHT_NON_TX_MESSAGES = 10000;
 
 	public InflightMessageList() {
-		this.nonTXMessages = new HashSet<>();
-		this.txMessages = new LinkedHashMap<>();
+		this.nonTXMessages = new HashSet<Integer>();
+		this.txMessages = new LinkedHashMap<Integer, InflightTXMessage>();
 	}
 
-	public void addTXMessage(String rowId, BinlogPosition position) {
+	public void addTXMessage(int rowId, BinlogPosition position) {
 		txLock.lock();
 
 		try {
@@ -53,7 +53,7 @@ public class InflightMessageList {
 		return;
 	}
 
-	public void addNonTXMessage(String rowId) throws InterruptedException {
+	public void addNonTXMessage(int rowId) throws InterruptedException {
 		nonTXLock.lock();
 
 		try {
@@ -68,7 +68,7 @@ public class InflightMessageList {
 	}
 
 	/* returns the position that stuff is complete up to, or null if there were no changes */
-	public BinlogPosition completeTXMessage(String rowId) {
+	public BinlogPosition completeTXMessage(int rowId) {
 		BinlogPosition completeUntil = null;
 
 		txLock.lock();
@@ -96,7 +96,7 @@ public class InflightMessageList {
 		return completeUntil;
 	}
 
-	public void completeNonTXMessage(String rowId) {
+	public void completeNonTXMessage(int rowId) {
 		nonTXLock.lock();
 
 		try {
