@@ -45,28 +45,28 @@ public class RowMap implements Serializable {
 	private long approximateSize;
 
 	private static final ThreadLocal<ByteArrayOutputStream> byteArrayThreadLocal =
-		new ThreadLocal<ByteArrayOutputStream>() {
-			@Override
-			protected ByteArrayOutputStream initialValue() {
-				return new ByteArrayOutputStream();
-			}
-		};
+			new ThreadLocal<ByteArrayOutputStream>() {
+				@Override
+				protected ByteArrayOutputStream initialValue() {
+					return new ByteArrayOutputStream();
+				}
+			};
 
 	private static final ThreadLocal<JsonGenerator> jsonGeneratorThreadLocal =
-		new ThreadLocal<JsonGenerator>() {
-			@Override
-			protected JsonGenerator initialValue() {
-				JsonGenerator g = null;
-				try {
-					g = jsonFactory.createGenerator(byteArrayThreadLocal.get());
-				} catch (IOException e) {
-					LOGGER.error("error initializing jsonGenerator", e);
-					return null;
+			new ThreadLocal<JsonGenerator>() {
+				@Override
+				protected JsonGenerator initialValue() {
+					JsonGenerator g = null;
+					try {
+						g = jsonFactory.createGenerator(byteArrayThreadLocal.get());
+					} catch (IOException e) {
+						LOGGER.error("error initializing jsonGenerator", e);
+						return null;
+					}
+					g.setRootValueSeparator(null);
+					return g;
 				}
-				g.setRootValueSeparator(null);
-				return g;
-			}
-		};
+			};
 
 	public RowMap(String type, String database, String table, Long timestamp, List<String> pkColumns,
 				  BinlogPosition nextPosition) {
