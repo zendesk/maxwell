@@ -39,7 +39,7 @@ static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
 	private final LinkedHashMap<String, Object> oldData;
 	private final List<String> pkColumns;
 
-	private static final AtomicInteger rowIdCounter = new AtomicInteger();
+	private static final AtomicInteger rowIdCounter = new AtomicInteger(1);
 	private static final JsonFactory jsonFactory = new JsonFactory();
 
 	private long approximateSize;
@@ -70,7 +70,8 @@ static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
 
 	public RowMap(String type, String database, String table, Long timestamp, List<String> pkColumns,
 			BinlogPosition nextPosition) {
-		this.rowId = Math.abs(rowIdCounter.incrementAndGet());
+		rowIdCounter.compareAndSet(Integer.MAX_VALUE, 1);
+		this.rowId = rowIdCounter.getAndIncrement();
 		this.rowType = type;
 		this.database = database;
 		this.table = table;
