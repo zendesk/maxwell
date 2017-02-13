@@ -22,8 +22,8 @@ public class MysqlPositionStoreTest extends MaxwellTestWithIsolatedServer {
 		MysqlPositionStore store = buildStore();
 		if (MaxwellTestSupport.inGtidMode()) {
 			String gtid = "123:1-100";
-			store.set(new BinlogPosition(gtid, 12345, "foo", null));
-			assertThat(buildStore().get(), is(new BinlogPosition(gtid, 12345, "foo", null)));
+			store.set(new BinlogPosition(gtid, null, 12345, "foo", null));
+			assertThat(buildStore().get(), is(new BinlogPosition(gtid, null, 12345, "foo", null)));
 		} else {
 			store.set(new BinlogPosition(12345, "foo"));
 			assertThat(buildStore().get(), is(new BinlogPosition(12345, "foo")));
