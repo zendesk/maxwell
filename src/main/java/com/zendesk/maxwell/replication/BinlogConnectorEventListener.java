@@ -6,6 +6,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import com.github.shyiko.mysql.binlog.event.Event;
+import com.github.shyiko.mysql.binlog.event.EventType;
+import com.github.shyiko.mysql.binlog.event.GtidEventData;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +19,7 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener,
 	private final BlockingQueue<BinlogConnectorEvent> queue;
 	protected final AtomicBoolean mustStop = new AtomicBoolean(false);
 	private final BinaryLogClient client;
+	private String gtid;
 
 	public BinlogConnectorEventListener(BinaryLogClient client, BlockingQueue<BinlogConnectorEvent> q) {
 		this.client = client;
@@ -29,8 +32,10 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener,
 	@Override
 	public void onEvent(Event event) {
 		while (mustStop.get() != true) {
-			BinlogConnectorEvent ep = new BinlogConnectorEvent(event,
-			    client.getBinlogFilename(), client.getGtidSet());
+			if (event.getHeader().getEventType() == EventType.GTID) {
+				gtid = ((GtidEventData)event.getData()).getGtid();
+			}
+			BinlogConnectorEvent ep = new BinlogConnectorEvent(event, client.getBinlogFilename(), client.getGtidSet(), gtid);
 			try {
 				if ( queue.offer(ep, 100, TimeUnit.MILLISECONDS ) ) {
 					return;

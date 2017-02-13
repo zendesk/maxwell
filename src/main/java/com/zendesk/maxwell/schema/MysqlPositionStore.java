@@ -58,11 +58,11 @@ public class MysqlPositionStore {
 
 			LOGGER.debug("Writing binlog position to " + c.getCatalog() + ".positions: " + newPosition + ", last heartbeat read: " + heartbeat);
 			s.setLong(1, serverID);
-			s.setString(2, newPosition.getGtidStr());
+			s.setString(2, newPosition.getGtidSetStr());
 			s.setString(3, newPosition.getFile());
 			s.setLong(4, newPosition.getOffset());
 			s.setString(5, clientID);
-			s.setString(6, newPosition.getGtidStr());
+			s.setString(6, newPosition.getGtidSetStr());
 			s.setString(7, newPosition.getFile());
 			s.setLong(8, newPosition.getOffset());
 
@@ -151,7 +151,7 @@ public class MysqlPositionStore {
 				return null;
 
 			String gtid = gtidMode ? rs.getString("gtid_set") : null;
-			return new BinlogPosition(gtid,
+			return new BinlogPosition(gtid, null,
 				rs.getLong("binlog_position"), rs.getString("binlog_file"), null);
 		}
 	}

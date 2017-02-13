@@ -17,24 +17,26 @@ public class BinlogPosition implements Serializable {
 	private static final String POSITION_COLUMN = "Position";
 	private static final String GTID_COLUMN = "Executed_Gtid_Set";
 
-	private final String gtidStr;
+	private final String gtidSetStr;
+	private final String gtid;
 	private final long offset;
 	private final String file;
 	private final Long heartbeat;
 
-	public BinlogPosition(String gtidStr, long l, String file, Long heartbeat) {
-		this.gtidStr = gtidStr;
+	public BinlogPosition(String gtidSetStr, String gtid, long l, String file, Long heartbeat) {
+		this.gtidSetStr = gtidSetStr;
+		this.gtid = gtid;
 		this.offset = l;
 		this.file = file;
 		this.heartbeat = heartbeat;
 	}
 
 	public BinlogPosition(long l, String file, Long heartbeat) {
-		this(null, l, file, heartbeat);
+		this(null, null, l, file, heartbeat);
 	}
 
 	public BinlogPosition(long l, String file) {
-		this(null, l, file, null);
+		this(null, null, l, file, null);
 	}
 
 	public static BinlogPosition capture(Connection c, boolean gtidMode) throws SQLException {
@@ -43,19 +45,19 @@ public class BinlogPosition implements Serializable {
 		rs.next();
 		long l = rs.getInt(POSITION_COLUMN);
 		String file = rs.getString(FILE_COLUMN);
-		String gtidStr = null;
+		String gtidSetStr = null;
 		if (gtidMode) {
-			gtidStr = rs.getString(GTID_COLUMN);
+			gtidSetStr = rs.getString(GTID_COLUMN);
 		}
-		return new BinlogPosition(gtidStr, l, file, null);
+		return new BinlogPosition(gtidSetStr, null, l, file, null);
 	}
 
-	public static BinlogPosition at(String gtidStr, long offset, String file) {
-		return new BinlogPosition(gtidStr, offset, file, null);
+	public static BinlogPosition at(String gtidSetStr, long offset, String file) {
+		return new BinlogPosition(gtidSetStr, null, offset, file, null);
 	}
 
 	public static BinlogPosition at(long offset, String file) {
-		return new BinlogPosition(null, offset, file, null);
+		return new BinlogPosition(null, null, offset, file, null);
 	}
 
 	public long getOffset() {
@@ -70,25 +72,29 @@ public class BinlogPosition implements Serializable {
 		return heartbeat;
 	}
 
-	public String getGtidStr() {
-		return gtidStr;
+	public String getGtid() {
+		return gtid;
+	}
+
+	public String getGtidSetStr() {
+		return gtidSetStr;
 	}
 
 	public GtidSet getGtidSet() {
-		return new GtidSet(gtidStr);
+		return new GtidSet(gtidSetStr);
 	}
 
 	@Override
 	public String toString() {
 		return "BinlogPosition[" +
-			(gtidStr == null ? file + ":" + offset : gtidStr) + "]";
+			(gtidSetStr == null ? file + ":" + offset : gtidSetStr) + "]";
 	}
 
 	public boolean newerThan(BinlogPosition other) {
 		if ( other == null )
 			return true;
 
-		if (gtidStr != null) {
+		if (gtidSetStr != null) {
 			return !getGtidSet().isContainedWithin(other.getGtidSet());
 		}
 
@@ -109,7 +115,7 @@ public class BinlogPosition implements Serializable {
 		BinlogPosition otherPosition = (BinlogPosition) other;
 
 		return this.file.equals(otherPosition.file) && this.offset == otherPosition.offset
-			&& (gtidStr == null) ? otherPosition.gtidStr == null
-				: gtidStr.equals(otherPosition.gtidStr);
+			&& (gtidSetStr == null) ? otherPosition.gtidSetStr == null
+				: gtidSetStr.equals(otherPosition.gtidSetStr);
 	}
 }

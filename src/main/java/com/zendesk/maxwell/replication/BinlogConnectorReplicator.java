@@ -51,8 +51,8 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 		this.schemaStore = schemaStore;
 
 		this.client = new BinaryLogClient(mysqlConfig.host, mysqlConfig.port, mysqlConfig.user, mysqlConfig.password);
-		if (start.getGtidStr() != null) {
-			String gtidStr = start.getGtidStr();
+		if (start.getGtidSetStr() != null) {
+			String gtidStr = start.getGtidSetStr();
 			LOGGER.info("Setting initial gtid to: " + gtidStr);
 			this.client.setGtidSet(gtidStr);
 		} else {

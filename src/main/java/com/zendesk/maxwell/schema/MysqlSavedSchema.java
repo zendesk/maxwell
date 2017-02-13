@@ -168,7 +168,7 @@ public class MysqlSavedSchema {
 			schema.getCharset(),
 			SchemaStoreVersion,
 			getPositionSHA(),
-			position.getGtidStr()
+			position.getGtidSetStr()
 		);
 
 	}
@@ -196,7 +196,7 @@ public class MysqlSavedSchema {
 
 		Long schemaId = executeInsert(schemaInsert, position.getFile(),
 				position.getOffset(), serverID, schema.getCharset(), SchemaStoreVersion,
-				getPositionSHA(), position.getGtidStr());
+				getPositionSHA(), position.getGtidSetStr());
 
 		ArrayList<Object> columnData = new ArrayList<Object>();
 
@@ -399,7 +399,7 @@ public class MysqlSavedSchema {
 
 		schemaRS.next();
 
-		this.position = new BinlogPosition(schemaRS.getString("gtid_set"), schemaRS.getInt("binlog_position"), schemaRS.getString("binlog_file"), null);
+		this.position = new BinlogPosition(schemaRS.getString("gtid_set"), null, schemaRS.getInt("binlog_position"), schemaRS.getString("binlog_file"), null);
 
 		LOGGER.info("Restoring schema id " + schemaRS.getInt("id") + " (last modified at " + this.position + ")");
 
@@ -482,7 +482,7 @@ public class MysqlSavedSchema {
 	private static Long findSchema(Connection connection, BinlogPosition targetPosition, Long serverID)
 			throws SQLException {
 		LOGGER.debug("looking to restore schema at target position " + targetPosition);
-		if (targetPosition.getGtidStr() != null) {
+		if (targetPosition.getGtidSetStr() != null) {
 			PreparedStatement s = connection.prepareStatement(
 				"SELECT id, gtid_set from `schemas` "
 				+ "WHERE deleted = 0 "

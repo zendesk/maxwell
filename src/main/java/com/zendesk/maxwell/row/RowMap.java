@@ -230,7 +230,10 @@ public class RowMap implements Serializable {
 		}
 
 		if ( outputConfig.includesBinlogPosition )
-			g.writeStringField("position", this.nextPosition.getFile() + ":" + this.nextPosition.getOffset());
+			g.writeStringField("position",
+				nextPosition.getGtid() != null
+				? nextPosition.getGtid()
+				: this.nextPosition.getFile() + ":" + this.nextPosition.getOffset());
 
 
 		if ( outputConfig.includesServerId && this.serverId != null ) {
