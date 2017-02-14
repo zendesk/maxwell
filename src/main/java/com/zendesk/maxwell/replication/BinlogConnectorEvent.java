@@ -4,7 +4,6 @@ import com.github.shyiko.mysql.binlog.event.*;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
-import com.zendesk.maxwell.util.Logging;
 
 import java.io.Serializable;
 import java.util.*;
@@ -13,12 +12,16 @@ public class BinlogConnectorEvent {
 	private BinlogPosition position;
 	private BinlogPosition nextPosition;
 	private final Event event;
+	private final String gtidSetStr;
+	private final String gtid;
 
-	public BinlogConnectorEvent(Event event, String filename) {
+	public BinlogConnectorEvent(Event event, String filename, String gtidSetStr, String gtid) {
 		this.event = event;
+		this.gtidSetStr = gtidSetStr;
+		this.gtid = gtid;
 		EventHeaderV4 hV4 = (EventHeaderV4) event.getHeader();
-		this.nextPosition = BinlogPosition.at(hV4.getNextPosition(), filename);
-		this.position = BinlogPosition.at(hV4.getPosition(), filename);
+		this.nextPosition = new BinlogPosition(gtidSetStr, gtid, hV4.getNextPosition(), filename, null);
+		this.position = new BinlogPosition(gtidSetStr, gtid, hV4.getPosition(), filename, null);
 	}
 
 	public Event getEvent() {
@@ -58,8 +61,8 @@ public class BinlogConnectorEvent {
 	}
 
 	public void setLastHeartbeat(Long lastHeartbeat) {
-		this.position     = new BinlogPosition(this.position.getOffset(), this.position.getFile(), lastHeartbeat);
-		this.nextPosition = new BinlogPosition(this.position.getOffset(), this.position.getFile(), lastHeartbeat);
+		this.position     = new BinlogPosition(gtidSetStr, gtid, this.position.getOffset(), this.position.getFile(), lastHeartbeat);
+		this.nextPosition = new BinlogPosition(gtidSetStr, gtid, this.position.getOffset(), this.position.getFile(), lastHeartbeat);
 	}
 
 	public Long getTableID() {

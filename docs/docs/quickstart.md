@@ -29,6 +29,22 @@ log-bin=master
 binlog_format=row
 ```
 
+### GTID based replication
+***
+Maxwell can also support GTID based replication (on MySQL 5.6 or 5.7)
+
+```
+$ vi my.cnf
+
+[mysqld]
+server-id=1
+log-bin=master
+binlog_format=row
+gtid-mode=ON
+log-slave-updates=ON
+enforce-gtid-consistency=true
+```
+
 Or on a running server:
 
 ```
@@ -67,6 +83,12 @@ bin/maxwell --user='maxwell' --password='XXXXXX' --host='1.7.2.0.1' --producer=s
 docker run -it --rm osheroff/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=stdout
 ```
 
+### GTID based replication for STDOUT producer
+***
+
+```
+bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' --producer=stdout --binlog_connector=true
+```
 
 If all goes well you'll see maxwell replaying your inserts:
 ```

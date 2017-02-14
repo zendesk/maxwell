@@ -32,6 +32,14 @@ public class MysqlIsolatedServer {
 		if ( xtraParams == null )
 			xtraParams = "";
 
+		String gtidParams = "";
+		if (MaxwellTestSupport.inGtidMode()) {
+			LOGGER.info("In gtid test mode.");
+			gtidParams =
+				"--gtid-mode=ON " +
+				"--log-slave-updates=ON " +
+				"--enforce-gtid-consistency=true ";
+		}
 		String serverID = "";
 		if ( !xtraParams.contains("--server_id") )
 			serverID = "--server_id=" + SERVER_ID;
@@ -48,6 +56,7 @@ public class MysqlIsolatedServer {
 				"--sync_binlog=0",
 				"--default-time-zone=+00:00",
 				"--verbose",
+				gtidParams,
 				xtraParams
 		);
 

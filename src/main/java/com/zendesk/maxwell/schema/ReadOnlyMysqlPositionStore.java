@@ -8,8 +8,8 @@ import snaq.db.ConnectionPool;
  * useful for "replay" mode.
  */
 public class ReadOnlyMysqlPositionStore extends MysqlPositionStore {
-	public ReadOnlyMysqlPositionStore(ConnectionPool pool, Long serverID, String clientID) {
-		super(pool, serverID, clientID);
+	public ReadOnlyMysqlPositionStore(ConnectionPool pool, Long serverID, String clientID, boolean gtidMode) {
+		super(pool, serverID, clientID, gtidMode);
 	}
 
 	@Override

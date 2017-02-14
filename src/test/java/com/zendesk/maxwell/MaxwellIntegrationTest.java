@@ -62,12 +62,17 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 		outputConfig.includesCommitInfo = true;
 		outputConfig.includesBinlogPosition = true;
+		outputConfig.includesGtidPosition = true;
 
 		list = getRowsForSQL(input);
 		String json = list.get(0).toJSON(outputConfig);
 
 		// Binlog
-		assertTrue(Pattern.matches(".*\"position\":\"master.0+1.\\d+\".*", json));
+		if (MaxwellTestSupport.inGtidMode()) {
+			assertTrue(Pattern.matches(".*\"gtid\":\".*:.*\".*", json));
+		} else {
+			assertTrue(Pattern.matches(".*\"position\":\"master.0+1.\\d+\".*", json));
+		}
 		// Commit
 		assertTrue(Pattern.matches(".*\"commit\":true.*", json));
 		// Xid
@@ -339,6 +344,10 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testCreateSelectJSON() throws Exception {
+		if (MaxwellTestSupport.inGtidMode()) {
+			// "CREATE TABLE ... SELECT is forbidden when @@GLOBAL.ENFORCE_GTID_CONSISTENCY = 1"
+			return;
+		}
 		runJSON("/json/test_create_select");
 	}
 

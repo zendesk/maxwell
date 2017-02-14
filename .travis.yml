@@ -25,3 +25,9 @@ env:
       MYSQL_VERSION=5.6
     - SHYKO_MODE=1
       MYSQL_VERSION=5.7
+    - SHYKO_MODE=1
+      GTID_MODE=1
+      MYSQL_VERSION=5.6
+    - SHYKO_MODE=1
+      GTID_MODE=1
+      MYSQL_VERSION=5.7
