@@ -139,10 +139,16 @@
                       <li class="toctree-l3"><a href="#row-based-replication">Row based replication</a></li>
                       
                   
+                      <li class="toctree-l3"><a href="#gtid-based-replication">GTID based replication</a></li>
+                      
+                  
                       <li class="toctree-l3"><a href="#mysql-permissions">Mysql permissions</a></li>
                       
                   
                       <li class="toctree-l3"><a href="#stdout-producer">STDOUT producer</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#gtid-based-replication-for-stdout-producer">GTID based replication for STDOUT producer</a></li>
                       
                   
                       <li class="toctree-l3"><a href="#kafka-producer">Kafka producer</a></li>
@@ -192,13 +198,13 @@
 <h3 id="download">Download</h3>
 <hr />
 <ul>
-<li>Download binary distro: <a href="https://github.com/zendesk/maxwell/releases/download/v1.7.2/maxwell-1.7.2.tar.gz">https://github.com/zendesk/maxwell/releases/download/v1.7.2/maxwell-1.7.2.tar.gz</a></li>
+<li>Download binary distro: <a href="https://github.com/zendesk/maxwell/releases/download/v1.8.0/maxwell-1.8.0.tar.gz">https://github.com/zendesk/maxwell/releases/download/v1.8.0/maxwell-1.8.0.tar.gz</a></li>
 <li>Sources and bug tracking is available on github: <a href="https://github.com/zendesk/maxwell">https://github.com/zendesk/maxwell</a></li>
 <li>Obligatory copy/paste to terminal:</li>
 </ul>
-<pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.7.2/maxwell-1.7.2.tar.gz \
+<pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.8.0/maxwell-1.8.0.tar.gz \
        | tar zxvf -
-cd maxwell-1.7.2
+cd maxwell-1.8.0
 </code></pre>
 
 <p>or get the docker image:</p>
@@ -214,6 +220,20 @@ cd maxwell-1.7.2
 server-id=1
 log-bin=master
 binlog_format=row
+</code></pre>
+
+<h3 id="gtid-based-replication">GTID based replication</h3>
+<hr />
+<p>Maxwell can also support GTID based replication (on MySQL 5.6 or 5.7)</p>
+<pre><code>$ vi my.cnf
+
+[mysqld]
+server-id=1
+log-bin=master
+binlog_format=row
+gtid-mode=ON
+log-slave-updates=ON
+enforce-gtid-consistency=true
 </code></pre>
 
 <p>Or on a running server:</p>
@@ -238,11 +258,16 @@ mysql&gt; GRANT ALL on maxwell.* to 'maxwell'@'localhost';
 <h3 id="stdout-producer">STDOUT producer</h3>
 <hr />
 <p>Useful for smoke-testing the thing.</p>
-<pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='1.7.2.0.1' --producer=stdout
+<pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='1.8.0.0.1' --producer=stdout
 </code></pre>
 
 <p>(or docker):</p>
 <pre><code>docker run -it --rm osheroff/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=stdout
+</code></pre>
+
+<h3 id="gtid-based-replication-for-stdout-producer">GTID based replication for STDOUT producer</h3>
+<hr />
+<pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' --producer=stdout --binlog_connector=true
 </code></pre>
 
 <p>If all goes well you'll see maxwell replaying your inserts:</p>
@@ -256,7 +281,7 @@ Query OK, 1 row affected (0.04 sec)
 <h3 id="kafka-producer">Kafka producer</h3>
 <hr />
 <p>Boot kafka as described here:  <a href="http://kafka.apache.org/documentation.html#quickstart">http://kafka.apache.org/documentation.html#quickstart</a>, then:</p>
-<pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='1.7.2.0.1' \
+<pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='1.8.0.0.1' \
    --producer=kafka --kafka.bootstrap.servers=localhost:9092
 </code></pre>
 
