@@ -30,6 +30,7 @@ end
 
 def bump
   do_system(BINDIR + "/bump", $version)
+  do_system("/bin/bash -i")
 end
 
 def build
