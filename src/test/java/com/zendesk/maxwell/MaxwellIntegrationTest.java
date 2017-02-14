@@ -62,13 +62,14 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 		outputConfig.includesCommitInfo = true;
 		outputConfig.includesBinlogPosition = true;
+		outputConfig.includesGtidPosition = true;
 
 		list = getRowsForSQL(input);
 		String json = list.get(0).toJSON(outputConfig);
 
 		// Binlog
 		if (MaxwellTestSupport.inGtidMode()) {
-			assertTrue(Pattern.matches(".*\"position\":\".*:.*\".*", json));
+			assertTrue(Pattern.matches(".*\"gtid\":\".*:.*\".*", json));
 		} else {
 			assertTrue(Pattern.matches(".*\"position\":\"master.0+1.\\d+\".*", json));
 		}
