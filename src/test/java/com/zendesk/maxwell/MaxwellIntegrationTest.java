@@ -465,4 +465,44 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	}
 
+	@Test
+	public void testSchemaServerDifferentThanReplicationServer() throws Exception {
+		String[] opts = {
+			"--replication_host=replhost",
+			"--replication_port=1001",
+			"--replication_user=repluser",
+			"--replication_password=replpass",
+			"--schema_host=schemahost",
+			"--schema_port=2002",
+			"--schema_user=schemauser",
+			"--schema_password=schemapass"
+		};
+		MaxwellConfig config = new MaxwellConfig(opts);
+		assertEquals(config.replicationMysql.host, "replhost");
+		assertThat(config.replicationMysql.port, is(1001));
+		assertEquals(config.replicationMysql.user, "repluser");
+		assertEquals(config.replicationMysql.password, "replpass");
+		assertEquals(config.schemaMysql.host, "schemahost");
+		assertThat(config.schemaMysql.port, is(2002));
+		assertEquals(config.schemaMysql.user, "schemauser");
+		assertEquals(config.schemaMysql.password, "schemapass");
+	}
+
+	@Test
+	public void testSchemaServerNotSet() throws Exception {
+		String[] opts = {
+			"--replication_host=replhost",
+			"--replication_port=1001",
+			"--replication_user=repluser",
+			"--replication_password=replpass",
+		};
+		MaxwellConfig config = new MaxwellConfig(opts);
+		assertEquals(config.replicationMysql.host, "replhost");
+		assertThat(config.replicationMysql.port, is(1001));
+		assertEquals(config.replicationMysql.user, "repluser");
+		assertEquals(config.replicationMysql.password, "replpass");
+		assertNull(config.schemaMysql.host);
+		assertNull(config.schemaMysql.user);
+		assertNull(config.schemaMysql.password);
+	}
 }

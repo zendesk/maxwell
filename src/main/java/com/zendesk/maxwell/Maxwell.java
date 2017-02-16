@@ -89,6 +89,7 @@ public class Maxwell implements Runnable {
 				MysqlSchemaStore oldServerSchemaStore = new MysqlSchemaStore(
 					context.getMaxwellConnectionPool(),
 					context.getReplicationConnectionPool(),
+					context.getSchemaConnectionPool(),
 					recoveryInfo.serverID,
 					recoveryInfo.position,
 					context.getCaseSensitivity(),
