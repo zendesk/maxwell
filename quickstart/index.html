@@ -139,16 +139,13 @@
                       <li class="toctree-l3"><a href="#row-based-replication">Row based replication</a></li>
                       
                   
-                      <li class="toctree-l3"><a href="#gtid-based-replication">GTID based replication</a></li>
-                      
-                  
                       <li class="toctree-l3"><a href="#mysql-permissions">Mysql permissions</a></li>
                       
                   
                       <li class="toctree-l3"><a href="#stdout-producer">STDOUT producer</a></li>
                       
                   
-                      <li class="toctree-l3"><a href="#gtid-based-replication-for-stdout-producer">GTID based replication for STDOUT producer</a></li>
+                      <li class="toctree-l3"><a href="#docker">Docker</a></li>
                       
                   
                       <li class="toctree-l3"><a href="#kafka-producer">Kafka producer</a></li>
@@ -222,20 +219,6 @@ log-bin=master
 binlog_format=row
 </code></pre>
 
-<h3 id="gtid-based-replication">GTID based replication</h3>
-<hr />
-<p>Maxwell can also support GTID based replication (on MySQL 5.6 or 5.7)</p>
-<pre><code>$ vi my.cnf
-
-[mysqld]
-server-id=1
-log-bin=master
-binlog_format=row
-gtid-mode=ON
-log-slave-updates=ON
-enforce-gtid-consistency=true
-</code></pre>
-
 <p>Or on a running server:</p>
 <pre><code>mysql&gt; set global binlog_row_image=FULL;
 </code></pre>
@@ -261,15 +244,6 @@ mysql&gt; GRANT ALL on maxwell.* to 'maxwell'@'localhost';
 <pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='1.8.0.0.1' --producer=stdout
 </code></pre>
 
-<p>(or docker):</p>
-<pre><code>docker run -it --rm osheroff/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=stdout
-</code></pre>
-
-<h3 id="gtid-based-replication-for-stdout-producer">GTID based replication for STDOUT producer</h3>
-<hr />
-<pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' --producer=stdout --binlog_connector=true
-</code></pre>
-
 <p>If all goes well you'll see maxwell replaying your inserts:</p>
 <pre><code>mysql&gt; insert into test.maxwell set id = 5, daemon = 'firebus!  firebus!';
 Query OK, 1 row affected (0.04 sec)
@@ -278,6 +252,23 @@ Query OK, 1 row affected (0.04 sec)
 {&quot;table&quot;:&quot;maxwell&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;data&quot;:{&quot;id&quot;:5,&quot;daemon&quot;:&quot;firebus!  firebus!&quot;},&quot;ts&quot;: 123456789}
 </code></pre>
 
+<h3 id="docker">Docker</h3>
+<pre><code>docker run -it --rm osheroff/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=stdout
+</code></pre>
+
+<p>If you're using a virtualbox-docker setup on OSX, you'll need to ensure that:</p>
+<ul>
+<li>You pass the proper docker IP address as <code>$MYSQL_HOST</code>.</li>
+<li>You will want to use the non-localhost way of granting permissions to
+  maxwell's mysql user.</li>
+<li>If you are specifying any files either for <code>config</code> location or for output of
+  <code>file</code> producer then make sure you are explicitly sharing volumes/files
+  present on the host. E.g. the above docker command then becomes,</li>
+</ul>
+<pre><code>docker run -v /Users:/Users -it --rm osheroff/maxwell bin/maxwell --config=/Users/demo/maxwell/config/basic.properties
+</code></pre>
+
+<p>(make a note of the <code>-v</code> option).</p>
 <h3 id="kafka-producer">Kafka producer</h3>
 <hr />
 <p>Boot kafka as described here:  <a href="http://kafka.apache.org/documentation.html#quickstart">http://kafka.apache.org/documentation.html#quickstart</a>, then:</p>
