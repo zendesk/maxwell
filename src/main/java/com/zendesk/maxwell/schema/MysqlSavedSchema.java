@@ -451,12 +451,22 @@ public class MysqlSavedSchema {
 		long dbStart = 0;
 
 		while (rs.next()) {
+			// Database
 			String dbName = rs.getString("dbName");
 			String dbCharset = rs.getString("dbCharset");
 
+			// Table
 			String tName = rs.getString("tableName");
 			String tCharset = rs.getString("tableCharset");
 			String tPKs = rs.getString("tablePk");
+
+			// Column
+			String columnName = rs.getString("columnName");
+			int columnLengthInt = rs.getInt("columnLength");
+			String columnEnumValues = rs.getString("columnEnumValues");
+			String columnCharset = rs.getString("columnCharset");
+			String columnType = rs.getString("columnColtype");
+			int columnIsSigned = rs.getInt("columnIsSigned");
 
 			if (currentDatabase == null || !currentDatabase.getName().equals(dbName)) {
 				if (currentDatabase != null) {
@@ -470,6 +480,7 @@ public class MysqlSavedSchema {
 			}
 
 			if (tName == null) {
+				// if tName is null, there are no tables connected to this database
 				continue;
 			} else if (currentTable == null || !currentTable.getName().equals(tName)) {
 				currentTable = currentDatabase.buildTable(tName, tCharset);
@@ -480,13 +491,13 @@ public class MysqlSavedSchema {
 				columnIndex = 0;
 			}
 
-			String columnName = rs.getString("columnName");
+
 			if (columnName == null) {
+				// If columnName is null, there are no columns connected to this table
 				continue;
 			}
 
 			Long columnLength;
-			int columnLengthInt = rs.getInt("columnLength");
 			if (rs.wasNull()) {
 				columnLength = null;
 			} else {
@@ -494,16 +505,19 @@ public class MysqlSavedSchema {
 			}
 
 			String[] enumValues = null;
-			if (rs.getString("columnEnumValues") != null) {
-				enumValues = StringUtils.splitByWholeSeparatorPreserveAllTokens(rs.getString("columnEnumValues"), ",");
+			if (columnEnumValues != null) {
+				enumValues = StringUtils.splitByWholeSeparatorPreserveAllTokens(columnEnumValues, ",");
 			}
 
 			ColumnDef c = ColumnDef.build(
-					columnName, rs.getString("columnCharset"),
-					rs.getString("columnColtype"), columnIndex++,
-					rs.getInt("columnIsSigned") == 1,
+					columnName,
+					columnCharset,
+					columnType,
+					columnIndex++,
+					columnIsSigned == 1,
 					enumValues,
-					columnLength);
+					columnLength
+			);
 			currentTable.addColumn(c);
 
 		}
