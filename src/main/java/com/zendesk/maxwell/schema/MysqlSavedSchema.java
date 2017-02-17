@@ -419,90 +419,90 @@ public class MysqlSavedSchema {
 	}
 
 
-    private void restoreFullSchema(Connection conn, Long schemaID) throws SQLException, InvalidSchemaError {
-        PreparedStatement p = conn.prepareStatement(
-                "SELECT " +
-                        "d.id AS dbId," +
-                        "d.name AS dbName," +
-                        "d.charset AS dbCharset," +
-                        "t.name AS tableName," +
-                        "t.charset AS tableCharset," +
-                        "t.pk AS tablePk," +
-                        "t.id AS tableId," +
-                        "c.column_length AS columnLength," +
-                        "c.enum_values AS columnEnumValues," +
-                        "c.name AS columnName," +
-                        "c.charset AS columnCharset," +
-                        "c.coltype AS columnColtype," +
-                        "c.is_signed AS columnIsSigned " +
-                        "FROM columns c " +
-                        "INNER JOIN tables t ON c.table_id = t.id " +
-                        "INNER JOIN `databases` d ON t.database_id=d.id " +
-                        "WHERE d.schema_id = ? " +
-                        "ORDER BY d.id, t.id, c.id"
-        );
+	private void restoreFullSchema(Connection conn, Long schemaID) throws SQLException, InvalidSchemaError {
+		PreparedStatement p = conn.prepareStatement(
+				"SELECT " +
+						"d.id AS dbId," +
+						"d.name AS dbName," +
+						"d.charset AS dbCharset," +
+						"t.name AS tableName," +
+						"t.charset AS tableCharset," +
+						"t.pk AS tablePk," +
+						"t.id AS tableId," +
+						"c.column_length AS columnLength," +
+						"c.enum_values AS columnEnumValues," +
+						"c.name AS columnName," +
+						"c.charset AS columnCharset," +
+						"c.coltype AS columnColtype," +
+						"c.is_signed AS columnIsSigned " +
+						"FROM columns c " +
+						"INNER JOIN tables t ON c.table_id = t.id " +
+						"INNER JOIN `databases` d ON t.database_id=d.id " +
+						"WHERE d.schema_id = ? " +
+						"ORDER BY d.id, t.id, c.id"
+		);
 
-        p.setLong(1, this.schemaID);
-        ResultSet rs = p.executeQuery();
+		p.setLong(1, this.schemaID);
+		ResultSet rs = p.executeQuery();
 
-        Database currentDatabase = null;
-        Table currentTable = null;
-        int columnIndex = 0;
-        long dbStart = 0;
+		Database currentDatabase = null;
+		Table currentTable = null;
+		int columnIndex = 0;
+		long dbStart = 0;
 
-        while (rs.next()) {
-            String dbName = rs.getString("dbName");
-            String dbCharset = rs.getString("dbCharset");
+		while (rs.next()) {
+			String dbName = rs.getString("dbName");
+			String dbCharset = rs.getString("dbCharset");
 
-            String tName = rs.getString("tableName");
-            String tCharset = rs.getString("tableCharset");
-            String tPKs = rs.getString("tablePk");
+			String tName = rs.getString("tableName");
+			String tCharset = rs.getString("tableCharset");
+			String tPKs = rs.getString("tablePk");
 
-            if (currentDatabase == null || !currentDatabase.getName().equals(dbName)) {
-                if (currentDatabase != null) {
-                    long end = System.currentTimeMillis();
-                    LOGGER.debug("Processed database " + dbName + " after " + (end - dbStart) + "ms");
-                }
-                dbStart = System.currentTimeMillis();
-                currentDatabase = new Database(dbName, dbCharset);
-                this.schema.addDatabase(currentDatabase);
-                LOGGER.debug("Processing database " + dbName);
-            }
+			if (currentDatabase == null || !currentDatabase.getName().equals(dbName)) {
+				if (currentDatabase != null) {
+					long end = System.currentTimeMillis();
+					LOGGER.debug("Processed database " + dbName + " after " + (end - dbStart) + "ms");
+				}
+				dbStart = System.currentTimeMillis();
+				currentDatabase = new Database(dbName, dbCharset);
+				this.schema.addDatabase(currentDatabase);
+				LOGGER.debug("Processing database " + dbName);
+			}
 
-            if (currentTable == null || !currentTable.getName().equals(tName)) {
-                currentTable = currentDatabase.buildTable(tName, tCharset);
-                if (tPKs != null) {
-                    List<String> pkList = Arrays.asList(StringUtils.split(tPKs, ','));
-                    currentTable.setPKList(pkList);
-                }
-                columnIndex = 0;
-            }
+			if (currentTable == null || !currentTable.getName().equals(tName)) {
+				currentTable = currentDatabase.buildTable(tName, tCharset);
+				if (tPKs != null) {
+					List<String> pkList = Arrays.asList(StringUtils.split(tPKs, ','));
+					currentTable.setPKList(pkList);
+				}
+				columnIndex = 0;
+			}
 
-            Long columnLength;
-            int columnLengthInt = rs.getInt("columnLength");
-            if (rs.wasNull()) {
-                columnLength = null;
-            } else {
-                columnLength = Long.valueOf(columnLengthInt);
-            }
+			Long columnLength;
+			int columnLengthInt = rs.getInt("columnLength");
+			if (rs.wasNull()) {
+				columnLength = null;
+			} else {
+				columnLength = Long.valueOf(columnLengthInt);
+			}
 
-            String[] enumValues = null;
-            if (rs.getString("columnEnumValues") != null) {
-                enumValues = StringUtils.splitByWholeSeparatorPreserveAllTokens(rs.getString("columnEnumValues"), ",");
-            }
+			String[] enumValues = null;
+			if (rs.getString("columnEnumValues") != null) {
+				enumValues = StringUtils.splitByWholeSeparatorPreserveAllTokens(rs.getString("columnEnumValues"), ",");
+			}
 
-            ColumnDef c = ColumnDef.build(
-                    rs.getString("columnName"), rs.getString("columnCharset"),
-                    rs.getString("columnColtype"), columnIndex++,
-                    rs.getInt("columnIsSigned") == 1,
-                    enumValues,
-                    columnLength);
-            currentTable.addColumn(c);
+			ColumnDef c = ColumnDef.build(
+					rs.getString("columnName"), rs.getString("columnCharset"),
+					rs.getString("columnColtype"), columnIndex++,
+					rs.getInt("columnIsSigned") == 1,
+					enumValues,
+					columnLength);
+			currentTable.addColumn(c);
 
-        }
-        rs.close();
-        LOGGER.debug("Processed all databases ");
-    }
+		}
+		rs.close();
+		LOGGER.debug("Processed all databases ");
+	}
 
 	private static Long findSchema(Connection connection, BinlogPosition targetPosition, Long serverID)
 			throws SQLException {
