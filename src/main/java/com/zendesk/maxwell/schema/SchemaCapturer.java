@@ -44,6 +44,9 @@ public class SchemaCapturer {
 
 		tablePreparedStatement = connection.prepareStatement(tblSql);
 
+		String dateTimePrecision = "";
+		if(isMySQLAtLeast56())
+			dateTimePrecision = "DATETIME_PRECISION, ";
 
 		String columnSql = "SELECT " +
 				"TABLE_NAME," +
@@ -52,7 +55,7 @@ public class SchemaCapturer {
 				"CHARACTER_SET_NAME, " +
 				"ORDINAL_POSITION, " +
 				"COLUMN_TYPE, " +
-				"DATETIME_PRECISION, " +
+				dateTimePrecision +
 				"COLUMN_KEY, " +
 				"COLUMN_TYPE " +
 				"FROM `information_schema`.`COLUMNS` WHERE TABLE_SCHEMA = ?";
