@@ -99,6 +99,10 @@ public class SchemaStoreSchema {
 			performAlter(c, "alter table `schemas` add column deleted tinyint(1) not null default 0");
 		}
 
+		if ( !getTableColumns("schemas", c).containsKey("gtid_set") ) {
+			performAlter(c, "alter table `schemas` add column gtid_set varchar(4096)");
+		}
+
 		if ( !maxwellTables.contains("bootstrap") )  {
 			LOGGER.info("adding bootstrap tables to the maxwell schema.");
 			InputStream is = MysqlSavedSchema.class.getResourceAsStream("/sql/maxwell_schema_bootstrap.sql");
@@ -135,6 +139,10 @@ public class SchemaStoreSchema {
 		if ( !getTableColumns("positions", c).containsKey("client_id") ) {
 			performAlter(c, "alter table `positions` add column `client_id` varchar(255) charset 'latin1' not null default 'maxwell'");
 			performAlter(c, "alter table `positions` drop primary key, add primary key(`server_id`, `client_id`)");
+		}
+
+		if ( !getTableColumns("positions", c).containsKey("gtid_set") ) {
+			performAlter(c, "alter table `positions` add column gtid_set varchar(4096)");
 		}
 
 		if ( !getTableColumns("positions", c).containsKey("heartbeat_at") ) {

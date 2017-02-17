@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.row.RowMap;
-import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -51,6 +50,9 @@ public class DDLMap extends RowMap {
 		changeMixin.put("sql", sql);
 		if ( outputConfig.includesBinlogPosition ) {
 			changeMixin.put("position", this.nextPosition.getFile() + ":" + this.nextPosition.getOffset());
+		}
+		if ( outputConfig.includesGtidPosition) {
+			changeMixin.put("gtid", this.nextPosition.getGtid());
 		}
 		return mapper.writeValueAsString(changeMixin);
 	}

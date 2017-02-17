@@ -232,6 +232,8 @@ public class RowMap implements Serializable {
 		if ( outputConfig.includesBinlogPosition )
 			g.writeStringField("position", this.nextPosition.getFile() + ":" + this.nextPosition.getOffset());
 
+		if ( outputConfig.includesGtidPosition)
+			g.writeStringField("gtid", this.nextPosition.getGtid());
 
 		if ( outputConfig.includesServerId && this.serverId != null ) {
 			g.writeNumberField("server_id", this.serverId);
@@ -376,5 +378,15 @@ public class RowMap implements Serializable {
 	// return false when there is a heartbeat row or other row with suppressed output
 	public boolean shouldOutput(MaxwellOutputConfig outputConfig) {
 		return true;
+	}
+
+	public LinkedHashMap<String, Object> getData()
+	{
+		return new LinkedHashMap<>(data);
+	}
+
+	public LinkedHashMap<String, Object> getOldData()
+	{
+		return new LinkedHashMap<>(oldData);
 	}
 }

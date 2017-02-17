@@ -4,6 +4,8 @@ import java.sql.*;
 import java.util.*;
 
 import java.io.IOException;
+
+import com.github.shyiko.mysql.binlog.GtidSet;
 import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 
 import com.fasterxml.jackson.databind.JavaType;
@@ -146,7 +148,7 @@ public class MysqlSavedSchema {
 		PreparedStatement insert = conn.prepareStatement(
 				"INSERT into `schemas` SET base_schema_id = ?, deltas = ?, binlog_file = ?, " +
 				"binlog_position = ?, server_id = ?, charset = ?, version = ?, " +
-				"position_sha = ?",
+				"position_sha = ?, gtid_set = ?",
 				Statement.RETURN_GENERATED_KEYS);
 
 		String deltaString;
@@ -166,7 +168,8 @@ public class MysqlSavedSchema {
 			serverID,
 			schema.getCharset(),
 			SchemaStoreVersion,
-			getPositionSHA()
+			getPositionSHA(),
+			position.getGtidSetStr()
 		);
 
 	}
@@ -178,7 +181,7 @@ public class MysqlSavedSchema {
 		PreparedStatement schemaInsert, databaseInsert, tableInsert;
 
 		schemaInsert = conn.prepareStatement(
-				"INSERT INTO `schemas` SET binlog_file = ?, binlog_position = ?, server_id = ?, charset = ?, version = ?, position_sha = ?",
+				"INSERT INTO `schemas` SET binlog_file = ?, binlog_position = ?, server_id = ?, charset = ?, version = ?, position_sha = ?, gtid_set = ?",
 				Statement.RETURN_GENERATED_KEYS
 		);
 
@@ -193,7 +196,8 @@ public class MysqlSavedSchema {
 		);
 
 		Long schemaId = executeInsert(schemaInsert, position.getFile(),
-				position.getOffset(), serverID, schema.getCharset(), SchemaStoreVersion, getPositionSHA());
+				position.getOffset(), serverID, schema.getCharset(), SchemaStoreVersion,
+				getPositionSHA(), position.getGtidSetStr());
 
 		ArrayList<Object> columnData = new ArrayList<Object>();
 
@@ -272,7 +276,7 @@ public class MysqlSavedSchema {
 	}
 
 	public static MysqlSavedSchema restore(MaxwellContext context, BinlogPosition targetPosition) throws SQLException, InvalidSchemaError {
-		return restore(context.getMaxwellConnectionPool(), context.getServerID(), context.getCaseSensitivity(), context.getInitialPosition());
+		return restore(context.getMaxwellConnectionPool(), context.getServerID(), context.getCaseSensitivity(), targetPosition);
 	}
 
 	public static MysqlSavedSchema restore(
@@ -399,7 +403,7 @@ public class MysqlSavedSchema {
 
 		schemaRS.next();
 
-		this.position = new BinlogPosition(schemaRS.getInt("binlog_position"), schemaRS.getString("binlog_file"));
+		this.position = new BinlogPosition(schemaRS.getString("gtid_set"), null, schemaRS.getInt("binlog_position"), schemaRS.getString("binlog_file"), null);
 
 		LOGGER.info("Restoring schema id " + schemaRS.getInt("id") + " (last modified at " + this.position + ")");
 
@@ -503,22 +507,44 @@ public class MysqlSavedSchema {
 	private static Long findSchema(Connection connection, BinlogPosition targetPosition, Long serverID)
 			throws SQLException {
 		LOGGER.debug("looking to restore schema at target position " + targetPosition);
-		PreparedStatement s = connection.prepareStatement(
-			"SELECT id from `schemas` "
-			+ "WHERE deleted = 0 "
-			+ "AND ((binlog_file < ?) OR (binlog_file = ? and binlog_position <= ?)) AND server_id = ? "
-			+ "ORDER BY id desc limit 1");
+		if (targetPosition.getGtidSetStr() != null) {
+			PreparedStatement s = connection.prepareStatement(
+				"SELECT id, gtid_set from `schemas` "
+				+ "WHERE deleted = 0 "
+				+ "ORDER BY id desc");
 
-		s.setString(1, targetPosition.getFile());
-		s.setString(2, targetPosition.getFile());
-		s.setLong(3, targetPosition.getOffset());
-		s.setLong(4, serverID);
-
-		ResultSet rs = s.executeQuery();
-		if (rs.next()) {
-			return rs.getLong("id");
-		} else
+			ResultSet rs = s.executeQuery();
+			while (rs.next()) {
+				Long id = rs.getLong("id");
+				String gtid = rs.getString("gtid_set");
+				LOGGER.debug("Retrieving schema at id: " + id + " gtid: " + gtid);
+				if (gtid != null) {
+					GtidSet gtidSet = new GtidSet(gtid);
+					if (gtidSet.isContainedWithin(targetPosition.getGtidSet())) {
+						LOGGER.debug("Found contained schema: " + id);
+						return id;
+					}
+				}
+			}
 			return null;
+		} else {
+			PreparedStatement s = connection.prepareStatement(
+				"SELECT id from `schemas` "
+				+ "WHERE deleted = 0 "
+				+ "AND ((binlog_file < ?) OR (binlog_file = ? and binlog_position <= ?)) AND server_id = ? "
+				+ "ORDER BY id desc limit 1");
+
+			s.setString(1, targetPosition.getFile());
+			s.setString(2, targetPosition.getFile());
+			s.setLong(3, targetPosition.getOffset());
+			s.setLong(4, serverID);
+
+			ResultSet rs = s.executeQuery();
+			if (rs.next()) {
+				return rs.getLong("id");
+			} else
+				return null;
+		}
 	}
 
 	public Schema getSchema() {

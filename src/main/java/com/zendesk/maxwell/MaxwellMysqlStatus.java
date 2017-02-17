@@ -76,4 +76,12 @@ public class MaxwellMysqlStatus {
 
 		m.ensureVariableState("read_only", "OFF");
 	}
+
+	public static void ensureGtidMysqlState(Connection c) throws SQLException, MaxwellCompatibilityError {
+		MaxwellMysqlStatus m = new MaxwellMysqlStatus(c);
+
+		m.ensureVariableState("gtid_mode", "ON");
+		m.ensureVariableState("log_slave_updates", "ON");
+		m.ensureVariableState("enforce_gtid_consistency", "ON");
+	}
 }

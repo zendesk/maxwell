@@ -1,13 +1,13 @@
 ### Download
 ***
-- Download binary distro: [https://github.com/zendesk/maxwell/releases/download/v1.7.2/maxwell-1.7.2.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.7.2/maxwell-1.7.2.tar.gz)
+- Download binary distro: [https://github.com/zendesk/maxwell/releases/download/v1.8.0/maxwell-1.8.0.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.8.0/maxwell-1.8.0.tar.gz)
 - Sources and bug tracking is available on github: [https://github.com/zendesk/maxwell](https://github.com/zendesk/maxwell)
 - Obligatory copy/paste to terminal:
 
 ```
-curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.7.2/maxwell-1.7.2.tar.gz \
+curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.8.0/maxwell-1.8.0.tar.gz \
        | tar zxvf -
-cd maxwell-1.7.2
+cd maxwell-1.8.0
 ```
 
 or get the docker image:
@@ -52,21 +52,13 @@ mysql> GRANT ALL on maxwell.* to 'maxwell'@'localhost';
 
 ```
 
-
 ### STDOUT producer
 ***
 Useful for smoke-testing the thing.
 
 ```
-bin/maxwell --user='maxwell' --password='XXXXXX' --host='1.7.2.0.1' --producer=stdout
+bin/maxwell --user='maxwell' --password='XXXXXX' --host='1.8.0.0.1' --producer=stdout
 ```
-
-(or docker):
-
-```
-docker run -it --rm osheroff/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=stdout
-```
-
 
 If all goes well you'll see maxwell replaying your inserts:
 ```
@@ -77,13 +69,33 @@ Query OK, 1 row affected (0.04 sec)
 {"table":"maxwell","type":"insert","data":{"id":5,"daemon":"firebus!  firebus!"},"ts": 123456789}
 ```
 
+### Docker
+
+```
+docker run -it --rm osheroff/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=stdout
+```
+
+If you're using a virtualbox-docker setup on OSX, you'll need to ensure that:
+
+- You pass the proper docker IP address as `$MYSQL_HOST`.
+- You will want to use the non-localhost way of granting permissions to
+  maxwell's mysql user.
+- If you are specifying any files either for `config` location or for output of
+  `file` producer then make sure you are explicitly sharing volumes/files
+  present on the host. E.g. the above docker command then becomes,
+
+```
+docker run -v /Users:/Users -it --rm osheroff/maxwell bin/maxwell --config=/Users/demo/maxwell/config/basic.properties
+```
+
+(make a note of the `-v` option).
 
 ### Kafka producer
 ***
 Boot kafka as described here:  [http://kafka.apache.org/documentation.html#quickstart](http://kafka.apache.org/documentation.html#quickstart), then:
 
 ```
-bin/maxwell --user='maxwell' --password='XXXXXX' --host='1.7.2.0.1' \
+bin/maxwell --user='maxwell' --password='XXXXXX' --host='1.8.0.0.1' \
    --producer=kafka --kafka.bootstrap.servers=localhost:9092
 ```
 

@@ -31,7 +31,7 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 
 	private final BinaryLogClient client;
 
-	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellReplicator.class);
+	static final Logger LOGGER = LoggerFactory.getLogger(BinlogConnectorReplicator.class);
 	private final boolean stopOnEOF;
 	private boolean hitEOF = false;
 
@@ -51,6 +51,15 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 		this.schemaStore = schemaStore;
 
 		this.client = new BinaryLogClient(mysqlConfig.host, mysqlConfig.port, mysqlConfig.user, mysqlConfig.password);
+		if (start.getGtidSetStr() != null) {
+			String gtidStr = start.getGtidSetStr();
+			LOGGER.info("Setting initial gtid to: " + gtidStr);
+			this.client.setGtidSet(gtidStr);
+		} else {
+			LOGGER.info("Setting initial binlog pos to: " + start.getFile() + ":" + start.getOffset());
+			this.client.setBinlogFilename(start.getFile());
+			this.client.setBinlogPosition(start.getOffset());
+		}
 
 		EventDeserializer eventDeserializer = new EventDeserializer();
 		eventDeserializer.setCompatibilityMode(EventDeserializer.CompatibilityMode.DATE_AND_TIME_AS_LONG_MICRO,
@@ -61,8 +70,6 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 		this.client.setBlocking(!stopOnEOF);
 		this.client.registerEventListener(binlogEventListener);
 		this.client.setServerId(replicaServerID.intValue());
-		this.client.setBinlogFilename(start.getFile());
-		this.client.setBinlogPosition(start.getOffset());
 
 		this.stopOnEOF = stopOnEOF;
 	}
@@ -84,7 +91,9 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 
 	private void ensureReplicatorThread() throws Exception {
 		if ( !client.isConnected() && !stopOnEOF ) {
-			LOGGER.warn("replicator stopped at position " + client.getBinlogFilename() + ":" + client.getBinlogPosition() + " -- restarting");
+			String gtidStr = client.getGtidSet();
+			String binlogPos = client.getBinlogFilename() + ":" + client.getBinlogPosition();
+			LOGGER.warn("replicator stopped at position: " + gtidStr == null ? binlogPos : gtidStr + " -- restarting");
 			client.connect(5000);
 		}
 	}

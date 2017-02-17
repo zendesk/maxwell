@@ -1,5 +1,12 @@
 # Maxwell changelog
 
+### [v1.8.0](https://github.com/zendesk/maxwell/releases/tag/v1.8.0): "upbeat, honest, contradictory"
+
+
+In version 1.8.0 Maxwell gains alpha support for GTID-based positions!
+All praise due to Henry Cai.
+
+
 ### [v1.7.2](https://github.com/zendesk/maxwell/releases/tag/v1.7.2): "comparing self to better"
 
 

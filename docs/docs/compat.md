@@ -1,13 +1,8 @@
 ### Requirements:
 ***
 - JRE 7 or above
-- mysql 5.1, 5.5, 5.6, 5.7 (alpha)
+- mysql 5.1, 5.5, 5.6, 5.7
 - kafka 0.8.2 or greater
-
-### Mysql 5.7
-***
-- Mysql 5.7 support is considered alpha-quality at the moment.  JSON columns
-  are supported, but GTID replication is not as of yet.
 
 ### binlog_row_image=MINIMAL
 ***
@@ -39,6 +34,6 @@ Notes:
   replication-hosts, due to the heartbeat mechanism.
 - this code should be considered alpha-quality.
 - on highly active servers, as much as 1 second of data may be duplicated.
-
+- master recovery is not available in GTID-mode.
 
 

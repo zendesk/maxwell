@@ -15,7 +15,7 @@ public class HeartbeatRowMap extends RowMap {
 	}
 
 	public static HeartbeatRowMap valueOf(String database, BinlogPosition position, long heartbeatValue) {
-		BinlogPosition p = new BinlogPosition(position.getOffset(), position.getFile(), heartbeatValue);
+		BinlogPosition p = new BinlogPosition(position.getGtidSetStr(), position.getGtid(), position.getOffset(), position.getFile(), heartbeatValue);
 		return new HeartbeatRowMap(database, p);
 	}
 

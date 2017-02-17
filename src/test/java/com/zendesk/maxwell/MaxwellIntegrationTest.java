@@ -62,12 +62,17 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 		outputConfig.includesCommitInfo = true;
 		outputConfig.includesBinlogPosition = true;
+		outputConfig.includesGtidPosition = true;
 
 		list = getRowsForSQL(input);
 		String json = list.get(0).toJSON(outputConfig);
 
 		// Binlog
-		assertTrue(Pattern.matches(".*\"position\":\"master.0+1.\\d+\".*", json));
+		if (MaxwellTestSupport.inGtidMode()) {
+			assertTrue(Pattern.matches(".*\"gtid\":\".*:.*\".*", json));
+		} else {
+			assertTrue(Pattern.matches(".*\"position\":\"master.0+1.\\d+\".*", json));
+		}
 		// Commit
 		assertTrue(Pattern.matches(".*\"commit\":true.*", json));
 		// Xid
@@ -339,6 +344,10 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testCreateSelectJSON() throws Exception {
+		if (MaxwellTestSupport.inGtidMode()) {
+			// "CREATE TABLE ... SELECT is forbidden when @@GLOBAL.ENFORCE_GTID_CONSISTENCY = 1"
+			return;
+		}
 		runJSON("/json/test_create_select");
 	}
 
@@ -456,4 +465,44 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	}
 
+	@Test
+	public void testSchemaServerDifferentThanReplicationServer() throws Exception {
+		String[] opts = {
+			"--replication_host=replhost",
+			"--replication_port=1001",
+			"--replication_user=repluser",
+			"--replication_password=replpass",
+			"--schema_host=schemahost",
+			"--schema_port=2002",
+			"--schema_user=schemauser",
+			"--schema_password=schemapass"
+		};
+		MaxwellConfig config = new MaxwellConfig(opts);
+		assertEquals(config.replicationMysql.host, "replhost");
+		assertThat(config.replicationMysql.port, is(1001));
+		assertEquals(config.replicationMysql.user, "repluser");
+		assertEquals(config.replicationMysql.password, "replpass");
+		assertEquals(config.schemaMysql.host, "schemahost");
+		assertThat(config.schemaMysql.port, is(2002));
+		assertEquals(config.schemaMysql.user, "schemauser");
+		assertEquals(config.schemaMysql.password, "schemapass");
+	}
+
+	@Test
+	public void testSchemaServerNotSet() throws Exception {
+		String[] opts = {
+			"--replication_host=replhost",
+			"--replication_port=1001",
+			"--replication_user=repluser",
+			"--replication_password=replpass",
+		};
+		MaxwellConfig config = new MaxwellConfig(opts);
+		assertEquals(config.replicationMysql.host, "replhost");
+		assertThat(config.replicationMysql.port, is(1001));
+		assertEquals(config.replicationMysql.user, "repluser");
+		assertEquals(config.replicationMysql.password, "replpass");
+		assertNull(config.schemaMysql.host);
+		assertNull(config.schemaMysql.user);
+		assertNull(config.schemaMysql.password);
+	}
 }
