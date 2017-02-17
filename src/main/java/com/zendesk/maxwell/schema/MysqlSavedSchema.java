@@ -435,9 +435,9 @@ public class MysqlSavedSchema {
 						"c.charset AS columnCharset," +
 						"c.coltype AS columnColtype," +
 						"c.is_signed AS columnIsSigned " +
-						"FROM columns c " +
-						"INNER JOIN tables t ON c.table_id = t.id " +
-						"INNER JOIN `databases` d ON t.database_id=d.id " +
+						"FROM `databases` d " +
+						"LEFT JOIN tables t ON d.id = t.database_id " +
+						"LEFT JOIN columns c ON c.table_id=t.id " +
 						"WHERE d.schema_id = ? " +
 						"ORDER BY d.id, t.id, c.id"
 		);
@@ -469,13 +469,20 @@ public class MysqlSavedSchema {
 				LOGGER.debug("Processing database " + dbName);
 			}
 
-			if (currentTable == null || !currentTable.getName().equals(tName)) {
+			if (tName == null) {
+				continue;
+			} else if (currentTable == null || !currentTable.getName().equals(tName)) {
 				currentTable = currentDatabase.buildTable(tName, tCharset);
 				if (tPKs != null) {
 					List<String> pkList = Arrays.asList(StringUtils.split(tPKs, ','));
 					currentTable.setPKList(pkList);
 				}
 				columnIndex = 0;
+			}
+
+			String columnName = rs.getString("columnName");
+			if (columnName == null) {
+				continue;
 			}
 
 			Long columnLength;
@@ -492,7 +499,7 @@ public class MysqlSavedSchema {
 			}
 
 			ColumnDef c = ColumnDef.build(
-					rs.getString("columnName"), rs.getString("columnCharset"),
+					columnName, rs.getString("columnCharset"),
 					rs.getString("columnColtype"), columnIndex++,
 					rs.getInt("columnIsSigned") == 1,
 					enumValues,

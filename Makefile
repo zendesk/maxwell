@@ -81,6 +81,9 @@ test%: compile-test
 
 test: compile-test
 	java -classpath $(JAVA_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore $(TEST_CLASSES)
+test-only: compile-test
+	java -classpath $(JAVA_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore ${ARGS}
+
 clean:
 	rm -f  target/.java target/.java-test
 	rm -rf target/classes
