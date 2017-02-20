@@ -34,7 +34,7 @@ public class MysqlIsolatedServer {
 
 		// By default, MySQL doesn't run under root. However, in an environment like Docker, this is a reality.
 		// By checking the HOME env variable for "/root", we can identify whether we are the root user
-		boolean isRoot = System.getenv().get("HOME").equals("/root");
+		boolean isRoot = System.getProperty("user.name").equals("root");
 
 		String gtidParams = "";
 		if (MaxwellTestSupport.inGtidMode()) {
