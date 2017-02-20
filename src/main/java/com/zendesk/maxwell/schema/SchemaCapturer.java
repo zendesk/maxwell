@@ -75,7 +75,7 @@ public class SchemaCapturer {
 	}
 
 	public Schema capture() throws SQLException {
-		LOGGER.debug("Capturing schema");
+		LOGGER.debug("Capturing schemas...");
 		ArrayList<Database> databases = new ArrayList<>();
 
 		ResultSet rs = connection.createStatement().executeQuery(
@@ -97,17 +97,14 @@ public class SchemaCapturer {
 		rs.close();
 
 		int size = databases.size();
-		LOGGER.debug("Augmenting " + size + " databases with tables");
+		LOGGER.debug("Starting schema capture of " + size + " databases...");
 		int counter = 1;
 		for (Database db : databases) {
-			LOGGER.debug(counter + "/" + size + " Augmenting " + db.getName());
-			long start = System.currentTimeMillis();
+			LOGGER.debug(counter + "/" + size + " Capturing " + db.getName() + "...");
 			captureDatabase(db);
-			long end = System.currentTimeMillis();
-			LOGGER.debug(counter + "/" + size + " Augmented " + db.getName() + " after " + (end - start) + "ms");
 			counter++;
 		}
-		LOGGER.debug("Databases Augmented!");
+		LOGGER.debug(size + " database schemas captured!");
 
 		return new Schema(databases, captureDefaultCharset(), this.sensitivity);
 	}

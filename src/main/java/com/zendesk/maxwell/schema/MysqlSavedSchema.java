@@ -448,7 +448,6 @@ public class MysqlSavedSchema {
 		Database currentDatabase = null;
 		Table currentTable = null;
 		int columnIndex = 0;
-		long dbStart = 0;
 
 		while (rs.next()) {
 			// Database
@@ -469,14 +468,9 @@ public class MysqlSavedSchema {
 			int columnIsSigned = rs.getInt("columnIsSigned");
 
 			if (currentDatabase == null || !currentDatabase.getName().equals(dbName)) {
-				if (currentDatabase != null) {
-					long end = System.currentTimeMillis();
-					LOGGER.debug("Processed database " + dbName + " after " + (end - dbStart) + "ms");
-				}
-				dbStart = System.currentTimeMillis();
 				currentDatabase = new Database(dbName, dbCharset);
 				this.schema.addDatabase(currentDatabase);
-				LOGGER.debug("Processing database " + dbName);
+				LOGGER.debug("Restoring database " + dbName + "...");
 			}
 
 			if (tName == null) {
@@ -522,7 +516,7 @@ public class MysqlSavedSchema {
 
 		}
 		rs.close();
-		LOGGER.debug("Processed all databases ");
+		LOGGER.debug("Restored all databases");
 	}
 
 	private static Long findSchema(Connection connection, BinlogPosition targetPosition, Long serverID)
