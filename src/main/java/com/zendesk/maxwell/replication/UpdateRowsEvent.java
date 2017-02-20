@@ -1,9 +1,5 @@
 package com.zendesk.maxwell.replication;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.*;
-
 import com.google.code.or.binlog.impl.event.UpdateRowsEventV2;
 import com.google.code.or.common.glossary.Pair;
 import com.google.code.or.common.glossary.Row;
@@ -13,6 +9,10 @@ import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.ColumnWithDefinition;
 import com.zendesk.maxwell.schema.ColumnWithDefinitionList;
 import com.zendesk.maxwell.schema.Table;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public class UpdateRowsEvent extends AbstractRowsEvent {
 	private final com.google.code.or.binlog.impl.event.UpdateRowsEvent event;

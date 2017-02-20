@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import snaq.db.ConnectionPool;
 
+
 public class MysqlSavedSchema {
 	static int SchemaStoreVersion = 3;
 
@@ -387,10 +388,13 @@ public class MysqlSavedSchema {
 	protected void restoreFromSchemaID(Connection conn, Long schemaID) throws SQLException, InvalidSchemaError {
 		restoreSchemaMetadata(conn, schemaID);
 
-		if ( this.baseSchemaID != null )
+		if (this.baseSchemaID != null) {
+			LOGGER.debug("Restoring derived schema");
 			restoreDerivedSchema(conn, schemaID);
-		else
+		} else {
+			LOGGER.debug("Restoring full schema");
 			restoreFullSchema(conn, schemaID);
+		}
 	}
 
 	private void restoreSchemaMetadata(Connection conn, Long schemaID) throws SQLException {
@@ -414,69 +418,105 @@ public class MysqlSavedSchema {
 		this.schema = new Schema(new ArrayList<Database>(), schemaRS.getString("charset"), this.sensitivity);
 	}
 
+
 	private void restoreFullSchema(Connection conn, Long schemaID) throws SQLException, InvalidSchemaError {
-		PreparedStatement p = conn.prepareStatement("SELECT * from `databases` where schema_id = ? ORDER by id");
+		PreparedStatement p = conn.prepareStatement(
+				"SELECT " +
+						"d.id AS dbId," +
+						"d.name AS dbName," +
+						"d.charset AS dbCharset," +
+						"t.name AS tableName," +
+						"t.charset AS tableCharset," +
+						"t.pk AS tablePk," +
+						"t.id AS tableId," +
+						"c.column_length AS columnLength," +
+						"c.enum_values AS columnEnumValues," +
+						"c.name AS columnName," +
+						"c.charset AS columnCharset," +
+						"c.coltype AS columnColtype," +
+						"c.is_signed AS columnIsSigned " +
+						"FROM `databases` d " +
+						"LEFT JOIN tables t ON d.id = t.database_id " +
+						"LEFT JOIN columns c ON c.table_id=t.id " +
+						"WHERE d.schema_id = ? " +
+						"ORDER BY d.id, t.id, c.id"
+		);
+
 		p.setLong(1, this.schemaID);
+		ResultSet rs = p.executeQuery();
 
-		ResultSet dbRS = p.executeQuery();
+		Database currentDatabase = null;
+		Table currentTable = null;
+		int columnIndex = 0;
 
-		while (dbRS.next()) {
-			this.schema.addDatabase(restoreDatabase(conn, dbRS.getInt("id"), dbRS.getString("name"), dbRS.getString("charset")));
-		}
+		while (rs.next()) {
+			// Database
+			String dbName = rs.getString("dbName");
+			String dbCharset = rs.getString("dbCharset");
 
-	}
+			// Table
+			String tName = rs.getString("tableName");
+			String tCharset = rs.getString("tableCharset");
+			String tPKs = rs.getString("tablePk");
 
-	private Database restoreDatabase(Connection conn, int id, String name, String charset) throws SQLException {
-		Statement s = conn.createStatement();
-		Database d = new Database(name, charset);
+			// Column
+			String columnName = rs.getString("columnName");
+			int columnLengthInt = rs.getInt("columnLength");
+			String columnEnumValues = rs.getString("columnEnumValues");
+			String columnCharset = rs.getString("columnCharset");
+			String columnType = rs.getString("columnColtype");
+			int columnIsSigned = rs.getInt("columnIsSigned");
 
-		ResultSet tRS = s.executeQuery("SELECT * from `tables` where database_id = " + id + " ORDER by id");
+			if (currentDatabase == null || !currentDatabase.getName().equals(dbName)) {
+				currentDatabase = new Database(dbName, dbCharset);
+				this.schema.addDatabase(currentDatabase);
+				LOGGER.debug("Restoring database " + dbName + "...");
+			}
 
-		while (tRS.next()) {
-			String tName = tRS.getString("name");
-			String tCharset = tRS.getString("charset");
-			String tPKs = tRS.getString("pk");
+			if (tName == null) {
+				// if tName is null, there are no tables connected to this database
+				continue;
+			} else if (currentTable == null || !currentTable.getName().equals(tName)) {
+				currentTable = currentDatabase.buildTable(tName, tCharset);
+				if (tPKs != null) {
+					List<String> pkList = Arrays.asList(StringUtils.split(tPKs, ','));
+					currentTable.setPKList(pkList);
+				}
+				columnIndex = 0;
+			}
 
-			int tID = tRS.getInt("id");
 
-			restoreTable(conn, d, tName, tID, tCharset, tPKs);
-		}
-		return d;
-	}
+			if (columnName == null) {
+				// If columnName is null, there are no columns connected to this table
+				continue;
+			}
 
-	private void restoreTable(Connection connection, Database d, String name, int id, String charset, String pks) throws SQLException {
-		Statement s = connection.createStatement();
-
-		Table t = d.buildTable(name, charset);
-
-		ResultSet cRS = s.executeQuery("SELECT * from `columns` where table_id = " + id + " ORDER by id");
-
-		int i = 0;
-		while (cRS.next()) {
 			Long columnLength;
-			int columnLengthInt = cRS.getInt("column_length");
-			if ( cRS.wasNull() )
+			if (rs.wasNull()) {
 				columnLength = null;
-			else
+			} else {
 				columnLength = Long.valueOf(columnLengthInt);
+			}
 
 			String[] enumValues = null;
-			if ( cRS.getString("enum_values") != null )
-				enumValues = StringUtils.splitByWholeSeparatorPreserveAllTokens(cRS.getString("enum_values"), ",");
+			if (columnEnumValues != null) {
+				enumValues = StringUtils.splitByWholeSeparatorPreserveAllTokens(columnEnumValues, ",");
+			}
 
 			ColumnDef c = ColumnDef.build(
-					cRS.getString("name"), cRS.getString("charset"),
-					cRS.getString("coltype"), i++,
-					cRS.getInt("is_signed") == 1,
+					columnName,
+					columnCharset,
+					columnType,
+					columnIndex++,
+					columnIsSigned == 1,
 					enumValues,
-					columnLength);
-			t.addColumn(c);
-		}
+					columnLength
+			);
+			currentTable.addColumn(c);
 
-		if ( pks != null ) {
-			List<String> pkList = Arrays.asList(StringUtils.split(pks, ','));
-			t.setPKList(pkList);
 		}
+		rs.close();
+		LOGGER.debug("Restored all databases");
 	}
 
 	private static Long findSchema(Connection connection, BinlogPosition targetPosition, Long serverID)
