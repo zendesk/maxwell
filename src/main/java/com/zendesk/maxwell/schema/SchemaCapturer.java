@@ -2,7 +2,7 @@ package com.zendesk.maxwell.schema;
 
 import com.zendesk.maxwell.CaseSensitivity;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.text.StrTokenizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -217,14 +217,9 @@ public class SchemaCapturer {
 	}
 
 	private static String[] extractEnumValues(String expandedType) {
-		String[] enumValues;
 		Matcher matcher = Pattern.compile("(enum|set)\\((.*)\\)").matcher(expandedType);
 		matcher.matches(); // why do you tease me so.
 
-		enumValues = StringUtils.split(matcher.group(2), ",");
-		for (int j = 0; j < enumValues.length; j++) {
-			enumValues[j] = enumValues[j].substring(1, enumValues[j].length() - 1);
-		}
-		return enumValues;
+		return new StrTokenizer(matcher.group(2), ',', '\'').getTokenArray();
 	}
 }
