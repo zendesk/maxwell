@@ -1,5 +1,14 @@
 # Maxwell changelog
 
+### [v1.8.1](https://github.com/zendesk/maxwell/releases/tag/v1.8.1): "famous is faster, don't have to be talented"
+
+
+- performance improves in capturing and restoring schema, thx Joren
+Minnaert
+- Allow for capturing from a separate mysql host (adds support for using
+Maxscale as a replication proxy), thx Adam Szkoda
+
+
 ### [v1.8.0](https://github.com/zendesk/maxwell/releases/tag/v1.8.0): "upbeat, honest, contradictory"
 
 
