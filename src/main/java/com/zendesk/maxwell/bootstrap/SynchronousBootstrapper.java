@@ -47,7 +47,16 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 
 		Schema schema = replicator.getSchema();
 		Database database = findDatabase(schema, databaseName);
-		Table table = findTable(tableName, database);
+		Table table = database.findTable(tableName);
+
+		if ( table == null ) {
+			LOGGER.error(String.format("Could not bootstrap unknown table '%s'", tableName));
+			try ( Connection connection = getConnection() ) {
+				int insertedRows = 0;
+				setBootstrapRowToCompleted(insertedRows, startBootstrapRow, connection);
+			}
+			return;
+		}
 
 		BinlogPosition position = startBootstrapRow.getPosition();
 		producer.push(startBootstrapRow);
