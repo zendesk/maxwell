@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.row.RowMap;
 import org.junit.*;
@@ -38,18 +39,13 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 	}
 
 	protected List<RowMap> getRowsForSQLTransactional(final String[] input) throws Exception {
-		MaxwellTestSupportCallback callback = new MaxwellTestSupportCallback() {
-			@Override
-			public void afterReplicatorStart(MysqlIsolatedServer mysql) throws SQLException {
-				Connection c = mysql.getNewConnection();
-				c.setAutoCommit(false);
-				for ( String s : input ) {
-					c.createStatement().execute(s);
-				}
-				c.commit();
-			}
-		};
-		return MaxwellTestSupport.getRowsWithReplicator(server, null, callback);
+		MaxwellTestSupportCallback callback = getMaxwellTestSupportCallback(input);
+		return MaxwellTestSupport.getRowsWithReplicator(server, null, callback, null);
+	}
+
+	protected List<RowMap> getRowsForSQLTransactional(final String[] input, MaxwellFilter filter, MaxwellOutputConfig outputConfig) throws Exception {
+		MaxwellTestSupportCallback callback = getMaxwellTestSupportCallback(input);
+		return MaxwellTestSupport.getRowsWithReplicator(server, filter, callback, outputConfig);
 	}
 
 	protected void runJSON(String filename) throws Exception {
@@ -66,5 +62,19 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 
 	protected MaxwellContext buildContext(BinlogPosition p) throws Exception {
 		return MaxwellTestSupport.buildContext(server.getPort(), p, null);
+	}
+
+	private MaxwellTestSupportCallback getMaxwellTestSupportCallback(final String[] input) {
+		return new MaxwellTestSupportCallback() {
+			@Override
+			public void afterReplicatorStart(MysqlIsolatedServer mysql) throws SQLException {
+				Connection c = mysql.getNewConnection();
+				c.setAutoCommit(false);
+				for ( String s : input ) {
+					c.createStatement().execute(s);
+				}
+				c.commit();
+			}
+		};
 	}
 }

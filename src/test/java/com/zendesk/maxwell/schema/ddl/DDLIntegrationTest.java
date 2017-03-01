@@ -1,15 +1,19 @@
 package com.zendesk.maxwell.schema.ddl;
 
-import com.zendesk.maxwell.CaseSensitivity;
-import com.zendesk.maxwell.Mysql57Tests;
+import com.zendesk.maxwell.*;
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.row.RowMap;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.zendesk.maxwell.MaxwellTestWithIsolatedServer;
-import com.zendesk.maxwell.MaxwellTestSupport;
 import org.junit.experimental.categories.Category;
 import org.junit.runners.Suite;
+
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	private void testIntegration(String[] alters) throws Exception {
@@ -376,5 +380,73 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 				+ ")"
 			);
 		}
+	}
+
+	@Test
+	public void testTableCreate() throws Exception {
+		String[] sql = {"create table TestTableCreate1 ( account_id int, text_field text )"};
+		MaxwellFilter filter = new MaxwellFilter();
+
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
+		outputConfig.outputDDL = true;
+		List<RowMap> rows = getRowsForSQLTransactional(sql, filter, outputConfig);
+		assertEquals(1, rows.size());
+		assertTrue(rows.get(0).toJSON(outputConfig).contains("\"type\":\"table-create\",\"database\":\"mysql\",\"table\":\"TestTableCreate1\""));
+	}
+
+	@Test
+	public void testTableCreateFilter() throws Exception {
+		String[] sql = {"create table TestTableCreate2 ( account_id int, text_field text )"};
+		MaxwellFilter filter = new MaxwellFilter();
+		filter.excludeTable("TestTableCreate2");
+
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
+		outputConfig.outputDDL = true;
+		List<RowMap> rows = getRowsForSQLTransactional(sql, filter, outputConfig);
+		assertEquals(0, rows.size());
+	}
+
+	@Test
+	public void testTableRenameFilter() throws Exception {
+		String[] sql = {
+			"create table TestTableCreate3 ( account_id int, text_field text )",
+			"rename table TestTableCreate3 to TestTableCreate4"
+		};
+		MaxwellFilter filter = new MaxwellFilter();
+		filter.excludeTable("TestTableCreate4");
+
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
+		outputConfig.outputDDL = true;
+		List<RowMap> rows = getRowsForSQLTransactional(sql, filter, outputConfig);
+		assertEquals(1, rows.size());
+		assertTrue(rows.get(0).toJSON(outputConfig).contains("\"type\":\"table-create\",\"database\":\"mysql\",\"table\":\"TestTableCreate3\""));
+	}
+
+	@Test
+	public void testDatabaseCreate() throws Exception {
+		String[] sql = {
+			"create database TestDatabaseCreate1",
+			"alter database TestDatabaseCreate1 character set latin2"
+		};
+
+		MaxwellFilter filter = new MaxwellFilter();
+
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
+		outputConfig.outputDDL = true;
+		List<RowMap> rows = getRowsForSQLTransactional(sql, filter, outputConfig);
+		assertEquals(2, rows.size());
+		assertTrue(rows.get(0).toJSON(outputConfig).contains("\"type\":\"database-create\",\"database\":\"TestDatabaseCreate1\""));
+		assertTrue(rows.get(1).toJSON(outputConfig).contains("\"type\":\"database-alter\",\"database\":\"TestDatabaseCreate1\""));
+	}
+
+	@Test
+	public void testDatabaseFilter() throws Exception {
+		String[] sql = {"create database TestDatabaseCreate2"};
+		MaxwellFilter filter = new MaxwellFilter();
+		filter.excludeDatabase("TestDatabaseCreate2");
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
+		outputConfig.outputDDL = true;
+		List<RowMap> rows = getRowsForSQLTransactional(sql, filter, outputConfig);
+		assertEquals(0, rows.size());
 	}
 }

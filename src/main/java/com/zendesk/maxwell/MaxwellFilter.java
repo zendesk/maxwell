@@ -139,4 +139,12 @@ public class MaxwellFilter {
 	public static boolean isSystemBlacklisted(String databaseName, String tableName) {
 		return "mysql".equals(databaseName) && "ha_health_check".equals(tableName);
 	}
+
+	public static boolean matches(MaxwellFilter filter, String database, String table) {
+		if (filter == null) {
+			return true;
+		} else {
+			return filter.matches(database, table);
+		}
+	}
 }

@@ -69,10 +69,7 @@ public abstract class AbstractRowsEvent extends AbstractRowEvent {
 	}
 
 	public boolean matchesFilter() {
-		if ( filter == null )
-			return true;
-
-		return filter.matches(this.database, this.table.getName());
+		return MaxwellFilter.matches(filter, this.database, this.table.getName());
 	}
 
 	public abstract String getType();
