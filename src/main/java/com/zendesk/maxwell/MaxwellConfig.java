@@ -52,6 +52,8 @@ public class MaxwellConfig extends AbstractConfig {
 	public String outputFile;
 	public MaxwellOutputConfig outputConfig;
 	public String log_level;
+	public String metricsReportingType;
+	public Long metricsReportingInterval;
 
 	public String clientID;
 	public Long replicaServerID;
@@ -321,7 +323,10 @@ public class MaxwellConfig extends AbstractConfig {
 		this.kinesisStream  = fetchOption("kinesis_stream", options, properties, null);
 		this.kinesisMd5Keys = fetchBooleanOption("kinesis_md5_keys", options, properties, false);
 
-		this.outputFile         = fetchOption("output_file", options, properties, null);
+		this.outputFile = fetchOption("output_file", options, properties, null);
+
+		this.metricsReportingType = fetchOption("metrics_reporting_type", options, properties, null);
+		this.metricsReportingInterval = fetchLongOption("metrics_reporting_interval", options, properties, 60L);
 
 		this.includeDatabases   = fetchOption("include_dbs", options, properties, null);
 		this.excludeDatabases   = fetchOption("exclude_dbs", options, properties, null);

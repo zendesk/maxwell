@@ -18,6 +18,12 @@ password=maxwell
 # set the log level.  note that you can configure things further in log4j2.xml
 #log_level=DEBUG # [DEBUG, INFO, WARN, ERROR]
 
+# Maxwell collects metrics via dropwizard. These can be exposed through the
+# base logging mechanism (slf4j) or via JMX.
+# Options: [jmx, slf4j]
+#metrics_reporting_type=jmx
+# When metrics_reporting_type is slf4j this is the frequency metrics are emitted to the log, in seconds
+#metrics_reporting_interval=60
 
 ######### mysql stuff ###############
 
