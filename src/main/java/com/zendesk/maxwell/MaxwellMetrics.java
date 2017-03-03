@@ -3,6 +3,7 @@ package com.zendesk.maxwell;
 import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Slf4jReporter;
+import org.apache.logging.log4j.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,11 +18,11 @@ public class MaxwellMetrics {
 		// TODO: csvreporter? consolereporter? (console feels kinda like a dup of slf4j)
 		if (metricsReportingType.equalsIgnoreCase("slf4j")) {
 			final Slf4jReporter reporter = Slf4jReporter.forRegistry(registry)
-					.outputTo(LoggerFactory.getLogger("com.zendesk.maxwell.metrics"))
+					.outputTo(LOGGER)
 					.convertRatesTo(TimeUnit.SECONDS)
 					.convertDurationsTo(TimeUnit.MILLISECONDS)
-					.withLoggingLevel(Slf4jReporter.LoggingLevel.DEBUG)
 					.build();
+
 			reporter.start(metricsReportingInteval, TimeUnit.SECONDS);
 			LOGGER.info("Slf4j metrics reporter enabled");
 		} else if (metricsReportingType.equalsIgnoreCase("jmx")) {
