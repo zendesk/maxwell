@@ -1,7 +1,6 @@
 package com.zendesk.maxwell.producer;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
+import com.codahale.metrics.*;
 import com.zendesk.maxwell.MaxwellMetrics;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.schema.ddl.DDLMap;
@@ -33,23 +32,32 @@ class KafkaCallback implements Callback {
 	private final String key;
 	private final Timer timer;
 
-	public KafkaCallback(AbstractAsyncProducer.CallbackCompleter cc, BinlogPosition position, String key, String json, Timer timer) {
+	private Counter producedMessageCount;
+	private Counter failedMessageCount;
+
+	public KafkaCallback(AbstractAsyncProducer.CallbackCompleter cc, BinlogPosition position, String key, String json, Timer timer, Counter producedMessageCount, Counter failedMessageCount) {
 		this.cc = cc;
 		this.position = position;
 		this.key = key;
 		this.json = json;
 		this.timer = timer;
+		this.producedMessageCount = producedMessageCount;
+		this.failedMessageCount = failedMessageCount;
 	}
 
 	@Override
 	public void onCompletion(RecordMetadata md, Exception e) {
 		if ( e != null ) {
+			this.failedMessageCount.inc();
+
 			LOGGER.error(e.getClass().getSimpleName() + " @ " + position + " -- " + key);
 			LOGGER.error(e.getLocalizedMessage());
 			if ( e instanceof RecordTooLargeException ) {
 				LOGGER.error("Considering raising max.request.size broker-side.");
 			}
 		} else {
+			this.producedMessageCount.inc();
+
 			if ( LOGGER.isDebugEnabled()) {
 				LOGGER.debug("->  key:" + key + ", partition:" +md.partition() + ", offset:" + md.offset());
 				LOGGER.debug("   " + this.json);
@@ -72,7 +80,6 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		this.queue = new ArrayBlockingQueue<>(100);
 		this.worker = new MaxwellKafkaProducerWorker(context, kafkaProperties, kafkaTopic, this.queue);
 		new Thread(this.worker, "maxwell-kafka-worker").start();
-
 	}
 
 	@Override
@@ -93,6 +100,14 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	private final boolean interpolateTopic;
 	private final Timer metricsTimer;
 	private final ArrayBlockingQueue<RowMap> queue;
+
+	protected final Counter producedMessageCount = MaxwellMetrics.registry.counter(
+			MetricRegistry.name(MaxwellKafkaProducerWorker.class, "kafka-produced-message-count")
+	);
+
+	protected final Counter failedMessageCount = MaxwellMetrics.registry.counter(
+			MetricRegistry.name(MaxwellKafkaProducerWorker.class, "kafka-failed-message-count")
+	);
 
 	public MaxwellKafkaProducerWorker(MaxwellContext context, Properties kafkaProperties, String kafkaTopic, ArrayBlockingQueue<RowMap> queue) {
 		super(context);
@@ -167,7 +182,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		if ( !KafkaCallback.LOGGER.isDebugEnabled() )
 			value = null;
 
-		KafkaCallback callback = new KafkaCallback(cc, r.getPosition(), key, value, metricsTimer);
+		KafkaCallback callback = new KafkaCallback(cc, r.getPosition(), key, value, metricsTimer, this.producedMessageCount, this.failedMessageCount);
 
 		kafka.send(record, callback);
 	}

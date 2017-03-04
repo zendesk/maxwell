@@ -16,7 +16,7 @@ public class MaxwellMetrics {
 
 	public static void setup(String metricsReportingType, Long metricsReportingInteval) {
 		// TODO: csvreporter? consolereporter? (console feels kinda like a dup of slf4j)
-		if (metricsReportingType.equalsIgnoreCase("slf4j")) {
+		if (metricsReportingType.contains("slf4j")) {
 			final Slf4jReporter reporter = Slf4jReporter.forRegistry(registry)
 					.outputTo(LOGGER)
 					.convertRatesTo(TimeUnit.SECONDS)
@@ -25,15 +25,15 @@ public class MaxwellMetrics {
 
 			reporter.start(metricsReportingInteval, TimeUnit.SECONDS);
 			LOGGER.info("Slf4j metrics reporter enabled");
-		} else if (metricsReportingType.equalsIgnoreCase("jmx")) {
+		}
+
+		if (metricsReportingType.contains("jmx")) {
 			final JmxReporter jmxReporter = JmxReporter.forRegistry(registry)
 					.convertRatesTo(TimeUnit.SECONDS)
 					.convertDurationsTo(TimeUnit.MILLISECONDS)
 					.build();
 			jmxReporter.start();
 			LOGGER.info("Jmx metrics reporter enabled");
-		} else {
-			LOGGER.warn("Metrics reporter not enabled");
 		}
 	}
 }
