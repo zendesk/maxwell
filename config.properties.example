@@ -21,7 +21,8 @@ password=maxwell
 # Maxwell collects metrics via dropwizard. These can be exposed through the
 # base logging mechanism (slf4j) or via JMX.
 # Options: [jmx, slf4j]
-#metrics_reporting_type=jmx
+# Supplying multiple is allowed.
+#metrics_reporting_type=jmx,slf4j
 # When metrics_reporting_type is slf4j this is the frequency metrics are emitted to the log, in seconds
 #metrics_reporting_interval=60
 
