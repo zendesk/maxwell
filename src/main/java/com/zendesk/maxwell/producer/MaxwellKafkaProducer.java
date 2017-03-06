@@ -103,11 +103,11 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	private final ArrayBlockingQueue<RowMap> queue;
 
 	protected final Counter producedMessageCount = MaxwellMetrics.registry.counter(
-			MetricRegistry.name(MaxwellKafkaProducerWorker.class, "kafka-produced-message-count")
+			MetricRegistry.name(MaxwellKafkaProducerWorker.class, "count", "produced")
 	);
 
 	protected final Counter failedMessageCount = MaxwellMetrics.registry.counter(
-			MetricRegistry.name(MaxwellKafkaProducerWorker.class, "kafka-failed-message-count")
+			MetricRegistry.name(MaxwellKafkaProducerWorker.class, "count", "failed")
 	);
 
 	public MaxwellKafkaProducerWorker(MaxwellContext context, Properties kafkaProperties, String kafkaTopic, ArrayBlockingQueue<RowMap> queue) {
@@ -134,7 +134,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		else
 			keyFormat = KeyFormat.ARRAY;
 
-		this.metricsTimer = MaxwellMetrics.registry.timer(MetricRegistry.name(MaxwellKafkaProducer.class, "kafka-overall-time"));
+		this.metricsTimer = MaxwellMetrics.registry.timer(MetricRegistry.name(MaxwellKafkaProducer.class, "time", "overall"));
 		this.queue = queue;
 	}
 
@@ -183,7 +183,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		if ( !KafkaCallback.LOGGER.isDebugEnabled() )
 			value = null;
 
-		KafkaCallback callback = new KafkaCallback(cc, r.getPosition(), key, value, metricsTimer, this.producedMessageCount, this.failedMessageCount);
+		KafkaCallback callback = new KafkaCallback(cc, r.getPosition(), key, value, this.metricsTimer, this.producedMessageCount, this.failedMessageCount);
 
 		kafka.send(record, callback);
 	}

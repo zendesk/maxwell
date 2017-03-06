@@ -36,11 +36,13 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	protected Long lastHeartbeatRead;
 
 	private final Counter rowCounter = MaxwellMetrics.registry.counter(
-		MetricRegistry.name(AbstractReplicator.class, "row-count")
+		MetricRegistry.name(AbstractReplicator.class, "row", "count")
 	);
+
 	private final Meter rowMeter = MaxwellMetrics.registry.meter(
-		MetricRegistry.name(AbstractReplicator.class, "row-meter")
+		MetricRegistry.name(AbstractReplicator.class, "row", "meter")
 	);
+
 	protected Long replicationLag = 0L;
 
 	public AbstractReplicator(String clientID, AbstractBootstrapper bootstrapper, PositionStoreThread positionStoreThread, String maxwellSchemaDatabaseName, AbstractProducer producer) {
@@ -50,15 +52,15 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 		this.maxwellSchemaDatabaseName = maxwellSchemaDatabaseName;
 		this.producer = producer;
 
-		MaxwellMetrics.registry.register(
-			MetricRegistry.name(AbstractReplicator.class, "replicator-lag"),
-			new Gauge<Long>() {
-				@Override
-				public Long getValue() {
-					return replicationLag;
-				}
-			}
-		);
+//		MaxwellMetrics.registry.register(
+//			MetricRegistry.name(AbstractReplicator.class, "replicator", "lag"),
+//			new Gauge<Long>() {
+//				@Override
+//				public Long getValue() {
+//					return replicationLag;
+//				}
+//			}
+//		);
 	}
 
 	/**
