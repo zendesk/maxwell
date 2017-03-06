@@ -378,7 +378,7 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 			event.getSql().toString(),
 			this.schemaStore,
 			eventBinlogPosition(event),
-			event.getHeader().getTimestamp()
+			event.getHeader().getTimestamp() / 1000
 		);
 	}
 
