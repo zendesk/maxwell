@@ -7,7 +7,7 @@ consistent, easy to ingest stream of updates.  It allows you to easily "bolt
 on" some of the benefits of stream processing systems without going through your
 entire code base to add (unreliable) instrumentation points.  Common use cases
 include ETL, cache building/expiring, metrics collection, search indexing and
-inter-process communication.
+inter-service communication.
 
 advanced features:
 
