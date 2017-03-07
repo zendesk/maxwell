@@ -3,12 +3,9 @@ package com.zendesk.maxwell.schema.ddl;
 import com.zendesk.maxwell.*;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.row.RowMap;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import org.junit.experimental.categories.Category;
-import org.junit.runners.Suite;
 
 import java.util.List;
 
@@ -16,6 +13,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
+	private MaxwellOutputConfig ddlOutputConfig() {
+		MaxwellOutputConfig config = new MaxwellOutputConfig();
+		config.outputDDL = true;
+		return config;
+	}
+
 	private void testIntegration(String[] alters) throws Exception {
 		MaxwellTestSupport.testDDLFollowing(server, alters);
 	}
@@ -385,24 +388,15 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testTableCreate() throws Exception {
 		String[] sql = {"create table TestTableCreate1 ( account_id int, text_field text )"};
-		MaxwellFilter filter = new MaxwellFilter();
-
-		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
-		outputConfig.outputDDL = true;
-		List<RowMap> rows = getRowsForSQLTransactional(sql, filter, outputConfig);
+		List<RowMap> rows = getRowsForDDLTransaction(sql, null);
 		assertEquals(1, rows.size());
-		assertTrue(rows.get(0).toJSON(outputConfig).contains("\"type\":\"table-create\",\"database\":\"mysql\",\"table\":\"TestTableCreate1\""));
+		assertTrue(rows.get(0).toJSON(ddlOutputConfig()).contains("\"type\":\"table-create\",\"database\":\"mysql\",\"table\":\"TestTableCreate1\""));
 	}
 
 	@Test
 	public void testTableCreateFilter() throws Exception {
 		String[] sql = {"create table TestTableCreate2 ( account_id int, text_field text )"};
-		MaxwellFilter filter = new MaxwellFilter();
-		filter.excludeTable("TestTableCreate2");
-
-		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
-		outputConfig.outputDDL = true;
-		List<RowMap> rows = getRowsForSQLTransactional(sql, filter, outputConfig);
+		List<RowMap> rows = getRowsForDDLTransaction(sql, excludeTable("TestTableCreate2"));
 		assertEquals(0, rows.size());
 	}
 
@@ -412,14 +406,9 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 			"create table TestTableCreate3 ( account_id int, text_field text )",
 			"rename table TestTableCreate3 to TestTableCreate4"
 		};
-		MaxwellFilter filter = new MaxwellFilter();
-		filter.excludeTable("TestTableCreate4");
-
-		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
-		outputConfig.outputDDL = true;
-		List<RowMap> rows = getRowsForSQLTransactional(sql, filter, outputConfig);
+		List<RowMap> rows = getRowsForDDLTransaction(sql, excludeTable("TestTableCreate4"));
 		assertEquals(1, rows.size());
-		assertTrue(rows.get(0).toJSON(outputConfig).contains("\"type\":\"table-create\",\"database\":\"mysql\",\"table\":\"TestTableCreate3\""));
+		assertTrue(rows.get(0).toJSON(ddlOutputConfig()).contains("\"type\":\"table-create\",\"database\":\"mysql\",\"table\":\"TestTableCreate3\""));
 	}
 
 	@Test
@@ -428,25 +417,16 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 			"create database TestDatabaseCreate1",
 			"alter database TestDatabaseCreate1 character set latin2"
 		};
-
-		MaxwellFilter filter = new MaxwellFilter();
-
-		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
-		outputConfig.outputDDL = true;
-		List<RowMap> rows = getRowsForSQLTransactional(sql, filter, outputConfig);
+		List<RowMap> rows = getRowsForDDLTransaction(sql, null);
 		assertEquals(2, rows.size());
-		assertTrue(rows.get(0).toJSON(outputConfig).contains("\"type\":\"database-create\",\"database\":\"TestDatabaseCreate1\""));
-		assertTrue(rows.get(1).toJSON(outputConfig).contains("\"type\":\"database-alter\",\"database\":\"TestDatabaseCreate1\""));
+		assertTrue(rows.get(0).toJSON(ddlOutputConfig()).contains("\"type\":\"database-create\",\"database\":\"TestDatabaseCreate1\""));
+		assertTrue(rows.get(1).toJSON(ddlOutputConfig()).contains("\"type\":\"database-alter\",\"database\":\"TestDatabaseCreate1\""));
 	}
 
 	@Test
 	public void testDatabaseFilter() throws Exception {
 		String[] sql = {"create database TestDatabaseCreate2"};
-		MaxwellFilter filter = new MaxwellFilter();
-		filter.excludeDatabase("TestDatabaseCreate2");
-		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
-		outputConfig.outputDDL = true;
-		List<RowMap> rows = getRowsForSQLTransactional(sql, filter, outputConfig);
+		List<RowMap> rows = getRowsForDDLTransaction(sql, excludeDb("TestDatabaseCreate2"));
 		assertEquals(0, rows.size());
 	}
 }

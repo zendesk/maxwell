@@ -57,6 +57,12 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 		return MaxwellTestSupport.getRowsWithReplicator(server, filter, callback, outputConfig);
 	}
 
+	protected List<RowMap> getRowsForDDLTransaction(String[] sql, MaxwellFilter filter) throws Exception {
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
+		outputConfig.outputDDL = true;
+		return getRowsForSQLTransactional(sql, filter, outputConfig);
+	}
+
 	protected void runJSON(String filename) throws Exception {
 		MaxwellTestJSON.runJSONTestFile(server, filename, null);
 	}
@@ -73,4 +79,15 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 		return MaxwellTestSupport.buildContext(server.getPort(), p, null);
 	}
 
+	protected MaxwellFilter excludeTable(String name) throws MaxwellInvalidFilterException {
+		MaxwellFilter filter = new MaxwellFilter();
+		filter.excludeTable(name);
+		return filter;
+	}
+
+	protected MaxwellFilter excludeDb(String name) throws MaxwellInvalidFilterException {
+		MaxwellFilter filter = new MaxwellFilter();
+		filter.excludeDatabase(name);
+		return filter;
+	}
 }
