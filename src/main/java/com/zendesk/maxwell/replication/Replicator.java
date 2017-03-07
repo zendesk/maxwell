@@ -1,7 +1,6 @@
 package com.zendesk.maxwell.replication;
 
 import java.util.concurrent.TimeoutException;
-
 import com.codahale.metrics.Gauge;
 import com.zendesk.maxwell.MaxwellFilter;
 import com.zendesk.maxwell.row.RowMap;

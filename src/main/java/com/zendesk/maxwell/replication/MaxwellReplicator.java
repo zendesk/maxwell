@@ -47,8 +47,6 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 	private final boolean stopOnEOF;
 	private boolean hitEOF = false;
 
-
-
 	public MaxwellReplicator(
 		SchemaStore schemaStore,
 		AbstractProducer producer,
@@ -86,8 +84,6 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 
 		this.setBinlogPosition(start);
 		this.clientID = clientID;
-
-
 	}
 
 	public MaxwellReplicator(SchemaStore schemaStore, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, BinlogPosition start) throws SQLException {

@@ -65,7 +65,6 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	 *
 	 * Process a rowmap that represents a write to `maxwell`.`heartbeats`.
 	 * If it's a write for a different client_id, we return the input (which
-	 *
 	 * will signify to the rest of the chain to ignore it).  Otherwise, we
 	 * transform it into a HeartbeatRowMap (which will not be output, but will
 	 * advance the binlog position) and set `this.lastHeartbeatRead`
