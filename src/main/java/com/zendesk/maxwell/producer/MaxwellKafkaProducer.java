@@ -103,7 +103,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	private final ArrayBlockingQueue<RowMap> queue;
 
 	protected final Counter producedMessageCount = MaxwellMetrics.registry.counter(
-			MetricRegistry.name(MaxwellKafkaProducerWorker.class, "count", "produced")
+			MetricRegistry.name(MaxwellKafkaProducerWorker.class, "count", "succeeded")
 	);
 
 	protected final Counter failedMessageCount = MaxwellMetrics.registry.counter(
