@@ -39,12 +39,21 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 	}
 
 	protected List<RowMap> getRowsForSQLTransactional(final String[] input) throws Exception {
-		MaxwellTestSupportCallback callback = getMaxwellTestSupportCallback(input);
-		return MaxwellTestSupport.getRowsWithReplicator(server, null, callback, null);
+		return getRowsForSQLTransactional(input, null, null);
 	}
 
 	protected List<RowMap> getRowsForSQLTransactional(final String[] input, MaxwellFilter filter, MaxwellOutputConfig outputConfig) throws Exception {
-		MaxwellTestSupportCallback callback = getMaxwellTestSupportCallback(input);
+		MaxwellTestSupportCallback callback = new MaxwellTestSupportCallback() {
+			@Override
+			public void afterReplicatorStart(MysqlIsolatedServer mysql) throws SQLException {
+				Connection c = mysql.getNewConnection();
+				c.setAutoCommit(false);
+				for (String s : input) {
+					c.createStatement().execute(s);
+				}
+				c.commit();
+			}
+		};
 		return MaxwellTestSupport.getRowsWithReplicator(server, filter, callback, outputConfig);
 	}
 
@@ -64,17 +73,4 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 		return MaxwellTestSupport.buildContext(server.getPort(), p, null);
 	}
 
-	private MaxwellTestSupportCallback getMaxwellTestSupportCallback(final String[] input) {
-		return new MaxwellTestSupportCallback() {
-			@Override
-			public void afterReplicatorStart(MysqlIsolatedServer mysql) throws SQLException {
-				Connection c = mysql.getNewConnection();
-				c.setAutoCommit(false);
-				for ( String s : input ) {
-					c.createStatement().execute(s);
-				}
-				c.commit();
-			}
-		};
-	}
 }
