@@ -45,22 +45,19 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 
 	protected Long replicationLag = 0L;
 
+	protected Gauge<Long> lagGauge = new Gauge<Long>() {
+		@Override
+		public Long getValue() {
+			return replicationLag;
+		}
+	};
+
 	public AbstractReplicator(String clientID, AbstractBootstrapper bootstrapper, PositionStoreThread positionStoreThread, String maxwellSchemaDatabaseName, AbstractProducer producer) {
 		this.clientID = clientID;
 		this.bootstrapper = bootstrapper;
 		this.positionStoreThread = positionStoreThread;
 		this.maxwellSchemaDatabaseName = maxwellSchemaDatabaseName;
 		this.producer = producer;
-
-//		MaxwellMetrics.registry.register(
-//			MetricRegistry.name(AbstractReplicator.class, "replicator", "lag"),
-//			new Gauge<Long>() {
-//				@Override
-//				public Long getValue() {
-//					return replicationLag;
-//				}
-//			}
-//		);
 	}
 
 	/**

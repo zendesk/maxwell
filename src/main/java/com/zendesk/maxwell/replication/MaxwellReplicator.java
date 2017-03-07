@@ -7,6 +7,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
+import com.codahale.metrics.Gauge;
 import com.google.code.or.binlog.impl.event.*;
 import com.google.code.or.net.TransportException;
 import com.zendesk.maxwell.*;
@@ -46,6 +47,8 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 	private final boolean stopOnEOF;
 	private boolean hitEOF = false;
 
+
+
 	public MaxwellReplicator(
 		SchemaStore schemaStore,
 		AbstractProducer producer,
@@ -83,6 +86,8 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 
 		this.setBinlogPosition(start);
 		this.clientID = clientID;
+
+
 	}
 
 	public MaxwellReplicator(SchemaStore schemaStore, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, BinlogPosition start) throws SQLException {
@@ -410,4 +415,7 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 		return replicator;
 	}
 
+	public Gauge<Long> getLagGauge() {
+		return this.lagGauge;
+	}
 }

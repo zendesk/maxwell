@@ -1,5 +1,6 @@
 package com.zendesk.maxwell.replication;
 
+import com.codahale.metrics.Gauge;
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import com.github.shyiko.mysql.binlog.event.*;
 import com.github.shyiko.mysql.binlog.event.deserialization.EventDeserializer;
@@ -304,5 +305,9 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 
 	public void setFilter(MaxwellFilter filter) {
 		this.filter = filter;
+	}
+
+	public Gauge<Long> getLagGauge() {
+		return this.lagGauge;
 	}
 }

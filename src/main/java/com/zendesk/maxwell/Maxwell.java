@@ -1,24 +1,25 @@
 package com.zendesk.maxwell;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.concurrent.TimeoutException;
+import com.codahale.metrics.MetricRegistry;
 import com.djdch.log4j.StaticShutdownCallbackRegistry;
+import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
+import com.zendesk.maxwell.producer.AbstractProducer;
+import com.zendesk.maxwell.recovery.Recovery;
+import com.zendesk.maxwell.recovery.RecoveryInfo;
 import com.zendesk.maxwell.replication.BinlogConnectorReplicator;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.MaxwellReplicator;
-import com.zendesk.maxwell.recovery.Recovery;
-import com.zendesk.maxwell.recovery.RecoveryInfo;
 import com.zendesk.maxwell.replication.Replicator;
 import com.zendesk.maxwell.schema.MysqlPositionStore;
+import com.zendesk.maxwell.schema.MysqlSchemaStore;
+import com.zendesk.maxwell.schema.SchemaStoreSchema;
 import com.zendesk.maxwell.util.Logging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
-import com.zendesk.maxwell.producer.AbstractProducer;
-import com.zendesk.maxwell.schema.MysqlSchemaStore;
-import com.zendesk.maxwell.schema.SchemaStoreSchema;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.concurrent.TimeoutException;
 
 public class Maxwell implements Runnable {
 	static {
@@ -82,7 +83,6 @@ public class Maxwell implements Runnable {
 			);
 
 			recovered = masterRecovery.recover();
-
 			if (recovered != null) {
 				// load up the schema from the recovery position and chain it into the
 				// new server_id
@@ -181,6 +181,14 @@ public class Maxwell implements Runnable {
 		this.context.start();
 		this.onReplicatorStart();
 		replicator.runLoop();
+
+		// Register the replication lag metric here because there are codepaths that allow for creating multiple
+		// replicators (at least in the tests).
+		// Doing so results in attempting to create multiple metrics with the same name which causes an exception.
+		MaxwellMetrics.registry.register(
+			MetricRegistry.name(Maxwell.class, "replication", "lag"),
+			replicator.getLagGauge()
+		);
 	}
 
 	public static void main(String[] args) {

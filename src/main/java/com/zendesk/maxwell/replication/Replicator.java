@@ -1,6 +1,8 @@
 package com.zendesk.maxwell.replication;
 
 import java.util.concurrent.TimeoutException;
+
+import com.codahale.metrics.Gauge;
 import com.zendesk.maxwell.MaxwellFilter;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.SchemaStoreException;
@@ -15,6 +17,7 @@ public interface Replicator {
 	RowMap getRow() throws Exception;
 	Long getLastHeartbeatRead();
 	Schema getSchema() throws SchemaStoreException;
+	Gauge<Long> getLagGauge();
 
 	boolean runLoop() throws Exception;
 	void stopLoop() throws TimeoutException;
