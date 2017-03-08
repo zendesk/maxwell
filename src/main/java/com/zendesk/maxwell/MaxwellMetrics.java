@@ -11,6 +11,8 @@ import java.util.concurrent.TimeUnit;
 public class MaxwellMetrics {
 	public static final MetricRegistry registry = new MetricRegistry();
 
+	public static final String metricsName = "MaxwellMetrics";
+
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellMetrics.class);
 
 	public static void setup(String metricsReportingType, Long metricsReportingInteval) {
@@ -19,7 +21,6 @@ public class MaxwellMetrics {
 			return;
 		}
 
-		// TODO: csvreporter? consolereporter? (console feels kinda like a dup of slf4j)
 		if (metricsReportingType.contains("slf4j")) {
 			final Slf4jReporter reporter = Slf4jReporter.forRegistry(registry)
 					.outputTo(LOGGER)

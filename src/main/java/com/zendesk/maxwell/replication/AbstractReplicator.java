@@ -1,7 +1,6 @@
 package com.zendesk.maxwell.replication;
 
 import com.codahale.metrics.Counter;
-import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.zendesk.maxwell.MaxwellMetrics;
@@ -36,21 +35,14 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	protected Long lastHeartbeatRead;
 
 	private final Counter rowCounter = MaxwellMetrics.registry.counter(
-		MetricRegistry.name(AbstractReplicator.class, "row", "count")
+		MetricRegistry.name(MaxwellMetrics.metricsName, "row", "count")
 	);
 
 	private final Meter rowMeter = MaxwellMetrics.registry.meter(
-		MetricRegistry.name(AbstractReplicator.class, "row", "meter")
+		MetricRegistry.name(MaxwellMetrics.metricsName, "row", "meter")
 	);
 
 	protected Long replicationLag = 0L;
-
-	protected Gauge<Long> lagGauge = new Gauge<Long>() {
-		@Override
-		public Long getValue() {
-			return replicationLag;
-		}
-	};
 
 	public AbstractReplicator(String clientID, AbstractBootstrapper bootstrapper, PositionStoreThread positionStoreThread, String maxwellSchemaDatabaseName, AbstractProducer producer) {
 		this.clientID = clientID;

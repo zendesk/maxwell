@@ -103,11 +103,11 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	private final ArrayBlockingQueue<RowMap> queue;
 
 	protected final Counter producedMessageCount = MaxwellMetrics.registry.counter(
-			MetricRegistry.name(MaxwellKafkaProducerWorker.class, "count", "succeeded")
+			MetricRegistry.name(MaxwellMetrics.metricsName, "count", "succeeded")
 	);
 
 	protected final Counter failedMessageCount = MaxwellMetrics.registry.counter(
-			MetricRegistry.name(MaxwellKafkaProducerWorker.class, "count", "failed")
+			MetricRegistry.name(MaxwellMetrics.metricsName, "count", "failed")
 	);
 
 	public MaxwellKafkaProducerWorker(MaxwellContext context, Properties kafkaProperties, String kafkaTopic, ArrayBlockingQueue<RowMap> queue) {
@@ -134,7 +134,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		else
 			keyFormat = KeyFormat.ARRAY;
 
-		this.metricsTimer = MaxwellMetrics.registry.timer(MetricRegistry.name(MaxwellKafkaProducer.class, "time", "overall"));
+		this.metricsTimer = MaxwellMetrics.registry.timer(MetricRegistry.name(MaxwellMetrics.metricsName, "time", "overall"));
 		this.queue = queue;
 	}
 

@@ -7,7 +7,6 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import com.codahale.metrics.Gauge;
 import com.google.code.or.binlog.impl.event.*;
 import com.google.code.or.net.TransportException;
 import com.zendesk.maxwell.*;
@@ -411,7 +410,7 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 		return replicator;
 	}
 
-	public Gauge<Long> getLagGauge() {
-		return this.lagGauge;
+	public Long getReplicationLag() {
+		return this.replicationLag;
 	}
 }

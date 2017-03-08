@@ -1,5 +1,6 @@
 package com.zendesk.maxwell;
 
+import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.djdch.log4j.StaticShutdownCallbackRegistry;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
@@ -180,15 +181,26 @@ public class Maxwell implements Runnable {
 
 		this.context.start();
 		this.onReplicatorStart();
-		replicator.runLoop();
 
-		// Register the replication lag metric here because there are codepaths that allow for creating multiple
-		// replicators (at least in the tests).
-		// Doing so results in attempting to create multiple metrics with the same name which causes an exception.
-		MaxwellMetrics.registry.register(
-			MetricRegistry.name(Maxwell.class, "replication", "lag"),
-			replicator.getLagGauge()
-		);
+		// Background: Dropwizard throws an exception if you try to register multiple metrics with the same name.
+		//
+		// Register the replication lag metric here because there are codepaths that create multiple replicators
+		// (at least in the tests).
+		// In addition, the tests create multiple BufferedMaxwells so we need to avoid those cases too...
+		// This all leaves me a little bit nervous.
+		if ( !(this instanceof BufferedMaxwell) ) {
+			MaxwellMetrics.registry.register(
+					MetricRegistry.name(MaxwellMetrics.metricsName, "replication", "lag"),
+					new Gauge<Long>() {
+						@Override
+						public Long getValue() {
+							return replicator.getReplicationLag();
+						}
+					}
+			);
+		}
+
+		replicator.runLoop();
 	}
 
 	public static void main(String[] args) {
