@@ -170,6 +170,7 @@ public class DDLParserTest {
 			"alter table t add index foo (a asc)",
 			"alter table t add index foo (a) COMMENT 'hello world'",
 			"alter table t add spatial key (`id`)",
+			"ALTER TABLE foo ADD feee int(11) COLLATE utf8_unicode_ci NOT NULL DEFAULT '0' COMMENT 'eee' AFTER id",
 			"alter table t alter column `foo` SET DEFAULT 112312",
 			"alter table t alter column `foo` SET DEFAULT 1.2",
 			"alter table t alter column `foo` SET DEFAULT 'foo'",
