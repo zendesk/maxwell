@@ -294,7 +294,7 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 			data.getSql(),
 			this.schemaStore,
 			event.getPosition(),
-			event.getEvent().getHeader().getTimestamp()
+			event.getEvent().getHeader().getTimestamp() / 1000
 		);
 	}
 
