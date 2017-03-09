@@ -62,8 +62,8 @@ public class MysqlParserListener extends mysqlBaseListener {
 		return (TableAlter)schemaChanges.get(0);
 	}
 
-	private String getCharset(List<String_column_optionsContext> list) {
-		for ( String_column_optionsContext ctx : list ) {
+	private String getCharset(List<Column_optionsContext> list) {
+		for ( Column_optionsContext ctx : list ) {
 			if ( ctx.charset_def() != null ) {
 				if ( ctx.charset_def().ASCII() != null ) {
 					return "latin1";
@@ -344,7 +344,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 				signed = false;
 		} else if ( dctx.string_type() != null ) {
 			colType = dctx.string_type().col_type.getText();
-			colCharset = getCharset(dctx.string_type().string_column_options());
+			colCharset = getCharset(dctx.string_type().column_options());
 
 			if ( dctx.string_type().utf8 ) // forced into UTF-8 by NATIONAL-fu
 				colCharset = "utf8";
@@ -362,7 +362,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 			List<Enum_valueContext> valueList = dctx.enumerated_type().enumerated_values().enum_value();
 
 			colType = dctx.enumerated_type().col_type.getText();
-			colCharset = getCharset(dctx.enumerated_type().string_column_options());
+			colCharset = getCharset(dctx.enumerated_type().column_options());
 			colOptions = dctx.enumerated_type().column_options();
 			enumValues = new String[valueList.size()];
 
