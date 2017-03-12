@@ -18,6 +18,7 @@ password=maxwell
 # set the log level.  note that you can configure things further in log4j2.xml
 #log_level=DEBUG # [DEBUG, INFO, WARN, ERROR]
 
+
 ######### mysql stuff ###############
 
 # mysql host to connect to

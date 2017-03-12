@@ -173,7 +173,6 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "metrics_reporting_interval", "the frequency metrics are emitted to the log, in seconds, when slf4j reporting is configured" ).withOptionalArg();
 		parser.accepts( "metrics_reporting_port", "the port the server will bind to when http reporting is configured" ).withOptionalArg();
 
-
 		parser.accepts( "__separator_9" );
 
 		parser.accepts( "help", "display help").forHelp();

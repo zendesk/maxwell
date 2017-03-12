@@ -85,6 +85,7 @@ public class Maxwell implements Runnable {
 			);
 
 			recovered = masterRecovery.recover();
+
 			if (recovered != null) {
 				// load up the schema from the recovery position and chain it into the
 				// new server_id
