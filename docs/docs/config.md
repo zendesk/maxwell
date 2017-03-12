@@ -180,6 +180,11 @@ exclude_tables                 | PATTERN                             | ignore up
 blacklist_dbs                  | PATTERN                             | ignore updates AND schema changes from databases (see warnings below) |
 blacklist_tables               | PATTERN                             | ignore updates AND schema changes from tables named like PATTERN (see warnings below) |
 &nbsp;
+**monitoring**
+metrics_reporting_type         | [slf4j &#124; jmx &#124; http]      | how maxwell metrics will be reported, at least one of slf4j &#124; jmx &#124; http | 
+metrics_reporting_interval     | INT                                 | the frequency metrics are emitted to the log, in seconds, when slf4j reporting is configured | 
+metrics_reporting_port         | INT                                 | the port the server will bind to when http reporting is configured | 
+&nbsp;
 **misc**
 bootstrapper                   | [async &#124; sync &#124; none]                   | bootstrapper type.  See bootstrapping docs.        | async
 init_position                  | FILE:POSITION                       | ignore the information in maxwell.positions and start at the given binlog position. Not available in config.properties. |
