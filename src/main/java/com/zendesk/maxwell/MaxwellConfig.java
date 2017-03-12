@@ -54,6 +54,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public String log_level;
 	public String metricsReportingType;
 	public Long metricsReportingInterval;
+	public int metricsReportingPort;
 
 	public String clientID;
 	public Long replicaServerID;
@@ -166,7 +167,14 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "blacklist_dbs", "ignore data AND schema changes to these databases, formatted as blacklist_dbs=db1,db2. See the docs for details before setting this!").withOptionalArg();
 		parser.accepts( "blacklist_tables", "ignore data AND schema changes to these tables, formatted as blacklist_tables=tb1,tb2. See the docs for details before setting this!").withOptionalArg();
 
-		parser.accepts( "__separator_8" );
+		parser.accepts("__separator_8");
+
+		parser.accepts( "metrics_reporting_type", "how maxwell metrics will be reported, at least one of slf4j|jmx|http" ).withOptionalArg();
+		parser.accepts( "metrics_reporting_interval", "the frequency metrics are emitted to the log, in seconds, when slf4j reporting is configured" ).withOptionalArg();
+		parser.accepts( "metrics_reporting_port", "the port the server will bind to when http reporting is configured" ).withOptionalArg();
+
+
+		parser.accepts( "__separator_9" );
 
 		parser.accepts( "help", "display help").forHelp();
 
@@ -327,6 +335,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.metricsReportingType = fetchOption("metrics_reporting_type", options, properties, null);
 		this.metricsReportingInterval = fetchLongOption("metrics_reporting_interval", options, properties, 60L);
+		this.metricsReportingPort = Integer.parseInt(fetchOption("metrics_reporting_port", options, properties, "8080"));
 
 		this.includeDatabases   = fetchOption("include_dbs", options, properties, null);
 		this.excludeDatabases   = fetchOption("exclude_dbs", options, properties, null);

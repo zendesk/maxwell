@@ -3,7 +3,7 @@ package com.zendesk.maxwell.replication;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
-import com.zendesk.maxwell.MaxwellMetrics;
+import com.zendesk.maxwell.metrics.MaxwellMetrics;
 import com.zendesk.maxwell.MaxwellFilter;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
@@ -11,12 +11,9 @@ import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.PositionStoreThread;
 import com.zendesk.maxwell.schema.SchemaStore;
-import com.zendesk.maxwell.schema.SchemaStoreException;
 import com.zendesk.maxwell.schema.ddl.DDLMap;
-import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 import com.zendesk.maxwell.util.RunLoopProcess;
-import org.apache.kafka.common.metrics.stats.Rate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,11 +31,11 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	protected final TableCache tableCache = new TableCache();
 	protected Long lastHeartbeatRead;
 
-	private final Counter rowCounter = MaxwellMetrics.registry.counter(
+	private final Counter rowCounter = MaxwellMetrics.metricRegistry.counter(
 		MetricRegistry.name(MaxwellMetrics.metricsName, "row", "count")
 	);
 
-	private final Meter rowMeter = MaxwellMetrics.registry.meter(
+	private final Meter rowMeter = MaxwellMetrics.metricRegistry.meter(
 		MetricRegistry.name(MaxwellMetrics.metricsName, "row", "meter")
 	);
 

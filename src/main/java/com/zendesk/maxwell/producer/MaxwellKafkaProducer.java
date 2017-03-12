@@ -4,7 +4,7 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.MaxwellMetrics;
+import com.zendesk.maxwell.metrics.MaxwellMetrics;
 import com.zendesk.maxwell.producer.partitioners.MaxwellKafkaPartitioner;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.row.RowMap;
@@ -102,11 +102,11 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	private final Timer metricsTimer;
 	private final ArrayBlockingQueue<RowMap> queue;
 
-	protected final Counter producedMessageCount = MaxwellMetrics.registry.counter(
+	protected final Counter producedMessageCount = MaxwellMetrics.metricRegistry.counter(
 			MetricRegistry.name(MaxwellMetrics.metricsName, "count", "succeeded")
 	);
 
-	protected final Counter failedMessageCount = MaxwellMetrics.registry.counter(
+	protected final Counter failedMessageCount = MaxwellMetrics.metricRegistry.counter(
 			MetricRegistry.name(MaxwellMetrics.metricsName, "count", "failed")
 	);
 
@@ -134,7 +134,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		else
 			keyFormat = KeyFormat.ARRAY;
 
-		this.metricsTimer = MaxwellMetrics.registry.timer(MetricRegistry.name(MaxwellMetrics.metricsName, "time", "overall"));
+		this.metricsTimer = MaxwellMetrics.metricRegistry.timer(MetricRegistry.name(MaxwellMetrics.metricsName, "time", "overall"));
 		this.queue = queue;
 	}
 
