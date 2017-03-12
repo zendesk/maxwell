@@ -11,12 +11,10 @@ import org.eclipse.jetty.servlet.ServletHolder;
 
 
 public class MaxwellServer {
-
 	public MaxwellServer(int port, MetricRegistry metricRegistry, HealthCheckRegistry healthCheckRegistry) {
 		MaxwellServerWorker maxwellServerWorker = new MaxwellServerWorker(port, metricRegistry, healthCheckRegistry);
 		new Thread(maxwellServerWorker).start();
 	}
-
 }
 
 class MaxwellServerWorker implements Runnable {

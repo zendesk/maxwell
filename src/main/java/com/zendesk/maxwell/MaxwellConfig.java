@@ -167,7 +167,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "blacklist_dbs", "ignore data AND schema changes to these databases, formatted as blacklist_dbs=db1,db2. See the docs for details before setting this!").withOptionalArg();
 		parser.accepts( "blacklist_tables", "ignore data AND schema changes to these tables, formatted as blacklist_tables=tb1,tb2. See the docs for details before setting this!").withOptionalArg();
 
-		parser.accepts("__separator_8");
+		parser.accepts( "__separator_8" );
 
 		parser.accepts( "metrics_reporting_type", "how maxwell metrics will be reported, at least one of slf4j|jmx|http" ).withOptionalArg();
 		parser.accepts( "metrics_reporting_interval", "the frequency metrics are emitted to the log, in seconds, when slf4j reporting is configured" ).withOptionalArg();

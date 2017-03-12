@@ -156,7 +156,6 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 			producer.push(row);
 		else
 			bootstrapper.work(row, producer, this);
-
 	}
 
 	/**

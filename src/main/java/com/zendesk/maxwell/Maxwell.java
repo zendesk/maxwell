@@ -183,8 +183,10 @@ public class Maxwell implements Runnable {
 		this.onReplicatorStart();
 
 		// Background: Dropwizard throws an exception if you try to register multiple metrics with the same name.
-		// We register everything here for simplicity. In reality we only need to register the replication.lag metric.
+		// We register everything here for simplicity. In reality we only need to register the replication.lag metric
+		// here.
 		//
+		// More details:
 		// Register the replication lag metric here because there are codepaths that create multiple replicators
 		// (at least in the tests).
 		// In addition, the tests create multiple BufferedMaxwells so we need to avoid those cases too...
