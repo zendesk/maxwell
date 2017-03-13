@@ -33,10 +33,10 @@ To make use of this set `JAVA_OPTS` before starting Maxwell.
 The following is an example which allows remote access with no authentication and dinsecure connections.
 
 ```
-export JAVA_OPTS="-Dcom.sun.management.jmxremote
--Dcom.sun.management.jmxremote.port=9010
--Dcom.sun.management.jmxremote.local.only=false
--Dcom.sun.management.jmxremote.authenticate=false
+export JAVA_OPTS="-Dcom.sun.management.jmxremote \
+-Dcom.sun.management.jmxremote.port=9010 \
+-Dcom.sun.management.jmxremote.local.only=false \
+-Dcom.sun.management.jmxremote.authenticate=false \
 -Dcom.sun.management.jmxremote.ssl=false"
 ```
 
@@ -47,3 +47,4 @@ export JAVA_OPTS="-Dcom.sun.management.jmxremote
     jQuery("table").addClass("table table-condensed table-bordered table-hover");
   });
 </script>
+

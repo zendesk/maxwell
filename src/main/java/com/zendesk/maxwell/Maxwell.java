@@ -141,6 +141,7 @@ public class Maxwell implements Runnable {
 
 	protected void onReplicatorStart() {}
 	private void start() throws Exception {
+		MaxwellMetrics.setup(config.metricsReportingType, config.metricsReportingInterval, config.metricsReportingPort);
 		try ( Connection connection = this.context.getReplicationConnection();
 			Connection rawConnection = this.context.getRawMaxwellConnection() ) {
 			MaxwellMysqlStatus.ensureReplicationMysqlState(connection);
@@ -183,17 +184,13 @@ public class Maxwell implements Runnable {
 		this.context.start();
 		this.onReplicatorStart();
 
-		// Background: Dropwizard throws an exception if you try to register multiple metrics with the same name.
-		// We register everything here for simplicity. In reality we only need to register the replication.lag metric
-		// here.
-		//
-		// More details:
-		// Register the replication lag metric here because there are codepaths that create multiple replicators
-		// (at least in the tests).
-		// In addition, the tests create multiple BufferedMaxwells so we need to avoid those cases too...
-		if ( !(this instanceof BufferedMaxwell) ) {
+		// Dropwizard throws an exception if you try to register multiple metrics with the same name.
+		// Since there are codepaths that create multiple replicators (at least in the tests) we need to protect
+		// against that.
+		String lagGaugeName = MetricRegistry.name(MaxwellMetrics.metricsName, "replication", "lag");
+		if ( !(MaxwellMetrics.metricRegistry.getGauges().containsKey(lagGaugeName)) ) {
 			MaxwellMetrics.metricRegistry.register(
-					MetricRegistry.name(MaxwellMetrics.metricsName, "replication", "lag"),
+					lagGaugeName,
 					new Gauge<Long>() {
 						@Override
 						public Long getValue() {
@@ -201,8 +198,6 @@ public class Maxwell implements Runnable {
 						}
 					}
 			);
-
-			MaxwellMetrics.setup(config.metricsReportingType, config.metricsReportingInterval, config.metricsReportingPort);
 		}
 
 		replicator.runLoop();
