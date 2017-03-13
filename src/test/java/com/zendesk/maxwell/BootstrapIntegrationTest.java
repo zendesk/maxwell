@@ -240,7 +240,7 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 		for ( RowMap r : rows ) {
 			String json = r.toJSON(outputConfig);
-			
+
 			Map<String, Object> data, output = MaxwellTestJSON.parseJSON(r.toJSON(outputConfig));
 			if ( output.get("table").equals("column_test") && output.get("type").equals("insert") ) {
 				IvParameterSpec ivSpec = new IvParameterSpec(outputConfig.secret_key.getBytes("UTF-8"));
