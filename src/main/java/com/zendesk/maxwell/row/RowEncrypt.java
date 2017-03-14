@@ -3,7 +3,6 @@ package com.zendesk.maxwell.row;
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import org.json.JSONObject;
 
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
