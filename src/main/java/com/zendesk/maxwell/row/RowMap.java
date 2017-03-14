@@ -190,7 +190,9 @@ public class RowMap implements Serializable {
 				continue;
 
 			if ( value instanceof List ) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
-				obj.put(key, value);
+				List stringList = (List) value;
+
+				obj.put(key, stringList);
 			} else if (value instanceof RawJSONString) {
 				obj.put(key, ((RawJSONString) value).json);
 			} else {
@@ -284,7 +286,7 @@ public class RowMap implements Serializable {
 			}
 		}
 
-		if(outputConfig.encryptData){
+		if(outputConfig.encryptData && !outputConfig.encryptAll){
 			writeEncryptedMapToJSON("data", this.data, outputConfig.includesNulls, outputConfig.encryption_key, outputConfig.secret_key);
 			if(!this.oldData.isEmpty()){
 				writeEncryptedMapToJSON("old", this.oldData, outputConfig.includesNulls, outputConfig.encryption_key, outputConfig.secret_key);

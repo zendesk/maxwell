@@ -1,5 +1,6 @@
 package com.zendesk.maxwell;
 
+import com.zendesk.maxwell.row.RowEncrypt;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import javax.crypto.Cipher;
@@ -280,11 +281,8 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 		for ( RowMap r : rows ) {
 			String json = r.toJSON(outputConfig);
-			IvParameterSpec ivSpec = new IvParameterSpec(outputConfig.secret_key.getBytes("UTF-8"));
-			SecretKeySpec skeySpec = new SecretKeySpec(outputConfig.encryption_key.getBytes("UTF-8"), "AES");
-			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
-			cipher.init(Cipher.DECRYPT_MODE, skeySpec, ivSpec);
-			Map<String,Object> output = MaxwellTestJSON.parseJSON(new String(cipher.doFinal(Base64.decodeBase64(json.getBytes())), Charset.forName("UTF-8")));
+
+			Map<String,Object> output = MaxwellTestJSON.parseJSON(RowEncrypt.decrypt(json, outputConfig.encryption_key, outputConfig.secret_key));
 			if ( output.get("table").equals("column_test") && output.get("type").equals("insert") ) {
 				output = (Map<String, Object>) output.get("data");
 				if ( !foundNormalRow ) {

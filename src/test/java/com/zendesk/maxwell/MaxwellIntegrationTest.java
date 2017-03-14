@@ -4,11 +4,10 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.row.RowEncrypt;
 import com.zendesk.maxwell.row.RowMap;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.ArrayUtils;
 
-import java.nio.charset.Charset;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Map;
@@ -17,9 +16,6 @@ import java.util.regex.*;
 import com.zendesk.maxwell.schema.SchemaStoreSchema;
 import org.junit.Test;
 
-import javax.crypto.Cipher;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 
 public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
@@ -35,12 +31,8 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 		Map<String,Object> output = MaxwellTestJSON.parseJSON(json);
 
-		IvParameterSpec ivSpec = new IvParameterSpec(outputConfig.secret_key.getBytes("UTF-8"));
-		SecretKeySpec skeySpec = new SecretKeySpec(outputConfig.encryption_key.getBytes("UTF-8"), "AES");
-		Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
-		cipher.init(Cipher.DECRYPT_MODE, skeySpec, ivSpec);
+		output.put("data",MaxwellTestJSON.parseJSON(RowEncrypt.decrypt(output.get("data").toString(), outputConfig.encryption_key, outputConfig.secret_key)));
 
-		output.put("data",MaxwellTestJSON.parseJSON(new String(cipher.doFinal(Base64.decodeBase64(output.get("data").toString().getBytes())), Charset.forName("UTF-8"))));
 		assertTrue(output.get("database").equals("shard_1"));
 		assertTrue(output.get("table").equals("minimal"));
 		assertTrue(Pattern.matches("\\d+", output.get("xid").toString()));
@@ -62,13 +54,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		list = getRowsForSQL(input);
 		String json = list.get(0).toJSON(outputConfig);
 
-		IvParameterSpec ivSpec = new IvParameterSpec(outputConfig.secret_key.getBytes("UTF-8"));
-		SecretKeySpec skeySpec = new SecretKeySpec(outputConfig.encryption_key.getBytes("UTF-8"), "AES");
-		Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
-		cipher.init(Cipher.DECRYPT_MODE, skeySpec, ivSpec);
-
-		//TODO get all these attributes to stay as their native data type
-		Map<String,Object> output = MaxwellTestJSON.parseJSON(new String(cipher.doFinal(Base64.decodeBase64(json.getBytes())), Charset.forName("UTF-8")));
+		Map<String,Object> output = MaxwellTestJSON.parseJSON(RowEncrypt.decrypt(json, outputConfig.encryption_key, outputConfig.secret_key));
 
 		assertTrue(output.get("database").equals("shard_1"));
 		assertTrue(output.get("table").equals("minimal"));
