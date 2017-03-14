@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.row;
 
 import com.fasterxml.jackson.core.*;
+import com.google.code.or.common.glossary.Row;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import org.slf4j.Logger;
@@ -189,8 +190,6 @@ public class RowMap implements Serializable {
 				continue;
 
 			if ( value instanceof List ) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
-				List stringList = (List) value;
-
 				obj.put(key, value);
 			} else if (value instanceof RawJSONString) {
 				obj.put(key, ((RawJSONString) value).json);
@@ -241,42 +240,43 @@ public class RowMap implements Serializable {
 
 		g.writeStartObject(); // start of row {
 
+
 		g.writeStringField("database", this.database);
 		g.writeStringField("table", this.table);
 		g.writeStringField("type", this.rowType);
 		g.writeNumberField("ts", this.timestamp);
 
-		if ( outputConfig.includesCommitInfo ) {
-			if ( this.xid != null )
+		if (outputConfig.includesCommitInfo) {
+			if (this.xid != null)
 				g.writeNumberField("xid", this.xid);
 
-			if ( this.txCommit )
+			if (this.txCommit)
 				g.writeBooleanField("commit", true);
 		}
 
-		if ( outputConfig.includesBinlogPosition )
+		if (outputConfig.includesBinlogPosition)
 			g.writeStringField("position", this.nextPosition.getFile() + ":" + this.nextPosition.getOffset());
 
-		if ( outputConfig.includesGtidPosition)
+		if (outputConfig.includesGtidPosition)
 			g.writeStringField("gtid", this.nextPosition.getGtid());
 
-		if ( outputConfig.includesServerId && this.serverId != null ) {
+		if (outputConfig.includesServerId && this.serverId != null) {
 			g.writeNumberField("server_id", this.serverId);
 		}
 
-		if ( outputConfig.includesThreadId && this.threadId != null ) {
+		if (outputConfig.includesThreadId && this.threadId != null) {
 			g.writeNumberField("thread_id", this.threadId);
 		}
 
-		if ( outputConfig.excludeColumns.size() > 0 ) {
+		if (outputConfig.excludeColumns.size() > 0) {
 			// NOTE: to avoid concurrent modification.
 			Set<String> keys = new HashSet<>();
 			keys.addAll(this.data.keySet());
 			keys.addAll(this.oldData.keySet());
 
-			for ( Pattern p : outputConfig.excludeColumns ) {
-				for ( String key : keys ) {
-					if ( p.matcher(key).matches() ) {
+			for (Pattern p : outputConfig.excludeColumns) {
+				for (String key : keys) {
+					if (p.matcher(key).matches()) {
 						this.data.remove(key);
 						this.oldData.remove(key);
 					}
@@ -284,7 +284,7 @@ public class RowMap implements Serializable {
 			}
 		}
 
-		if(outputConfig.useEncryption){
+		if(outputConfig.encryptData){
 			writeEncryptedMapToJSON("data", this.data, outputConfig.includesNulls, outputConfig.encryption_key, outputConfig.secret_key);
 			if(!this.oldData.isEmpty()){
 				writeEncryptedMapToJSON("old", this.oldData, outputConfig.includesNulls, outputConfig.encryption_key, outputConfig.secret_key);
@@ -301,7 +301,19 @@ public class RowMap implements Serializable {
 		g.writeEndObject(); // end of row
 		g.flush();
 
-		return jsonFromStream();
+		if(outputConfig.encryptAll) {
+			return jsonFromStream(outputConfig);
+		}
+		else{
+			return jsonFromStream();
+		}
+	}
+
+	private String jsonFromStream(MaxwellOutputConfig outputConfig){
+		ByteArrayOutputStream b = byteArrayThreadLocal.get();
+		String s = b.toString();
+		b.reset();
+		return RowEncrypt.encrypt(s, outputConfig.encryption_key, outputConfig.secret_key);
 	}
 
 	private String jsonFromStream() {

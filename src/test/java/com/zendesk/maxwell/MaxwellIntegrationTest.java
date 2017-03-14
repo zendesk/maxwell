@@ -23,9 +23,9 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
-	public void testEncryptedValues() throws Exception{
+	public void testEncryptedData() throws Exception{
 		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
-		outputConfig.useEncryption = true;
+		outputConfig.encryptData = true;
 		outputConfig.encryption_key = "aaaaaaaaaaaaaaaa";
 		outputConfig.secret_key = "RandomInitVector";
 		List<RowMap> list;
@@ -41,6 +41,35 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		cipher.init(Cipher.DECRYPT_MODE, skeySpec, ivSpec);
 
 		output.put("data",MaxwellTestJSON.parseJSON(new String(cipher.doFinal(Base64.decodeBase64(output.get("data").toString().getBytes())), Charset.forName("UTF-8"))));
+		assertTrue(output.get("database").equals("shard_1"));
+		assertTrue(output.get("table").equals("minimal"));
+		assertTrue(Pattern.matches("\\d+", output.get("xid").toString()));
+		assertTrue(output.get("type").equals("insert"));
+		assertTrue(Pattern.matches("\\d+",output.get("ts").toString()));
+		assertTrue(output.get("commit").equals(true));
+		assertTrue(((Map) output.get("data")).get("account_id").equals(1));
+		assertTrue(((Map) output.get("data")).get("text_field").equals("hello"));
+	}
+
+	@Test
+	public void testEncryptedAll() throws Exception{
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
+		outputConfig.encryptAll = true;
+		outputConfig.encryption_key = "aaaaaaaaaaaaaaaa";
+		outputConfig.secret_key = "RandomInitVector";
+		List<RowMap> list;
+		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
+		list = getRowsForSQL(input);
+		String json = list.get(0).toJSON(outputConfig);
+
+		IvParameterSpec ivSpec = new IvParameterSpec(outputConfig.secret_key.getBytes("UTF-8"));
+		SecretKeySpec skeySpec = new SecretKeySpec(outputConfig.encryption_key.getBytes("UTF-8"), "AES");
+		Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+		cipher.init(Cipher.DECRYPT_MODE, skeySpec, ivSpec);
+
+		//TODO get all these attributes to stay as their native data type
+		Map<String,Object> output = MaxwellTestJSON.parseJSON(new String(cipher.doFinal(Base64.decodeBase64(json.getBytes())), Charset.forName("UTF-8")));
+
 		assertTrue(output.get("database").equals("shard_1"));
 		assertTrue(output.get("table").equals("minimal"));
 		assertTrue(Pattern.matches("\\d+", output.get("xid").toString()));

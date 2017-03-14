@@ -12,7 +12,7 @@ public class RowEncrypt {
 
 	static final Logger LOGGER = LoggerFactory.getLogger(RowEncrypt.class);
 
-	public static String encrypt(String value, String key, String initVector) {
+	public static String encrypt(Object value, String key, String initVector) {
 		try {
 			IvParameterSpec iv = new IvParameterSpec(initVector.getBytes("UTF-8"));
 			SecretKeySpec skeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES");
@@ -20,7 +20,7 @@ public class RowEncrypt {
 			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
 			cipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
 
-			byte[] encrypted = cipher.doFinal(value.getBytes());
+			byte[] encrypted = cipher.doFinal(value.toString().getBytes());
 
 			return Base64.encodeBase64String(encrypted);
 		} catch (Exception ex) {
