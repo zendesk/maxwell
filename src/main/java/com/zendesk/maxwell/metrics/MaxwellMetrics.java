@@ -56,7 +56,7 @@ public class MaxwellMetrics {
 		}
 
 		if (metricsReportingType.contains(reportingTypeHttp)) {
-			healthCheckRegistry.register("MaxwellHealth", new MaxwellHealthCheck());
+			healthCheckRegistry.register("MaxwellHealth", new MaxwellHealthCheck(metricRegistry));
 
 			LOGGER.info("Metrics http server starting");
 			new MaxwellServer(metricsReportingPort, MaxwellMetrics.metricRegistry, healthCheckRegistry);

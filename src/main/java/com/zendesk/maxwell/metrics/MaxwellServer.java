@@ -13,7 +13,16 @@ import org.eclipse.jetty.servlet.ServletHolder;
 public class MaxwellServer {
 	public MaxwellServer(int port, MetricRegistry metricRegistry, HealthCheckRegistry healthCheckRegistry) {
 		MaxwellServerWorker maxwellServerWorker = new MaxwellServerWorker(port, metricRegistry, healthCheckRegistry);
-		new Thread(maxwellServerWorker).start();
+		Thread thread = new Thread(maxwellServerWorker);
+
+		thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+			public void uncaughtException(Thread t, Throwable e) {
+				e.printStackTrace();
+				System.exit(1);
+			}
+		});
+
+		thread.start();
 	}
 }
 

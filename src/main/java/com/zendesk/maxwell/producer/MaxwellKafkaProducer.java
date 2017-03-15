@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.producer;
 
 import com.codahale.metrics.Counter;
+import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.zendesk.maxwell.MaxwellContext;
@@ -33,23 +34,30 @@ class KafkaCallback implements Callback {
 	private final String key;
 	private final Timer timer;
 
-	private Counter producedMessageCount;
+	private Counter succeededMessageCount;
 	private Counter failedMessageCount;
+	private Meter succeededMessageMeter;
+	private Meter failedMessageMeter;
 
-	public KafkaCallback(AbstractAsyncProducer.CallbackCompleter cc, BinlogPosition position, String key, String json, Timer timer, Counter producedMessageCount, Counter failedMessageCount) {
+	public KafkaCallback(AbstractAsyncProducer.CallbackCompleter cc, BinlogPosition position, String key, String json,
+						 Timer timer, Counter producedMessageCount, Counter failedMessageCount, Meter producedMessageMeter,
+						Meter failedMessageMeter) {
 		this.cc = cc;
 		this.position = position;
 		this.key = key;
 		this.json = json;
 		this.timer = timer;
-		this.producedMessageCount = producedMessageCount;
+		this.succeededMessageCount = producedMessageCount;
 		this.failedMessageCount = failedMessageCount;
+		this.succeededMessageMeter = producedMessageMeter;
+		this.failedMessageMeter = failedMessageMeter;
 	}
 
 	@Override
 	public void onCompletion(RecordMetadata md, Exception e) {
 		if ( e != null ) {
 			this.failedMessageCount.inc();
+			this.failedMessageMeter.mark();
 
 			LOGGER.error(e.getClass().getSimpleName() + " @ " + position + " -- " + key);
 			LOGGER.error(e.getLocalizedMessage());
@@ -57,7 +65,8 @@ class KafkaCallback implements Callback {
 				LOGGER.error("Considering raising max.request.size broker-side.");
 			}
 		} else {
-			this.producedMessageCount.inc();
+			this.succeededMessageCount.inc();
+			this.succeededMessageMeter.mark();
 
 			if ( LOGGER.isDebugEnabled()) {
 				LOGGER.debug("->  key:" + key + ", partition:" +md.partition() + ", offset:" + md.offset());
@@ -103,13 +112,10 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	private final Timer metricsTimer;
 	private final ArrayBlockingQueue<RowMap> queue;
 
-	protected final Counter producedMessageCount = MaxwellMetrics.metricRegistry.counter(
-			MetricRegistry.name(MaxwellMetrics.metricsName, "count", "succeeded")
-	);
-
-	protected final Counter failedMessageCount = MaxwellMetrics.metricRegistry.counter(
-			MetricRegistry.name(MaxwellMetrics.metricsName, "count", "failed")
-	);
+	private final Counter succeededMessageCount = MaxwellMetrics.metricRegistry.counter(succeededMessageCountName);
+	private final Meter succeededMessageMeter = MaxwellMetrics.metricRegistry.meter(succeededMessageMeterName);
+	private final Counter failedMessageCount = MaxwellMetrics.metricRegistry.counter(failedMessageCountName);
+	private final Meter failedMessageMeter = MaxwellMetrics.metricRegistry.meter(failedMessageMeterName);
 
 	public MaxwellKafkaProducerWorker(MaxwellContext context, Properties kafkaProperties, String kafkaTopic, ArrayBlockingQueue<RowMap> queue) {
 		super(context);
@@ -184,7 +190,8 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		if ( !KafkaCallback.LOGGER.isDebugEnabled() )
 			value = null;
 
-		KafkaCallback callback = new KafkaCallback(cc, r.getPosition(), key, value, this.metricsTimer, this.producedMessageCount, this.failedMessageCount);
+		KafkaCallback callback = new KafkaCallback(cc, r.getPosition(), key, value, this.metricsTimer,
+				this.succeededMessageCount, this.failedMessageCount, this.succeededMessageMeter, this.failedMessageMeter);
 
 		kafka.send(record, callback);
 	}

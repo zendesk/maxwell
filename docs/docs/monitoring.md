@@ -9,11 +9,17 @@ All metrics are prepended with `MaxwellMetrics.`
 
 metric                         | description
 -------------------------------|-------------------------------------
-`count.failed`                 | count of messages that failed to send to Kafka
-`count.succeeded`              | count of messages that were successfully sent to Kafka
-`replication.lag`              | the time elapsed between the database transaction commit and the time it was processed by Maxwell, in milliseconds
+**Counters**
+`messages.succeeded`           | count of messages that were successfully sent to Kafka
+`messages.failed`              | count of messages that failed to send to Kafka
 `row.count`                    | a count of rows that have been processed from the binlog. note that not every row results in a message being sent to Kafka.
+**Meters**
+`messages.succeeded.meter`     | a measure of the rate at which messages were successfully sent to Kafka
+`messages.failed.meter`        | a measure of the rate at which messages failed to send Kafka
 `row.meter`                    | a measure of the rate at which rows arrive to Maxwell from the binlog connector
+**Gauges**
+`replication.lag`              | the time elapsed between the database transaction commit and the time it was processed by Maxwell, in milliseconds
+**Timers**
 `time.overall`                 | the time it took to send a given record to Kafka, in milliseconds
 
 ### HTTP Endpoints
@@ -24,6 +30,9 @@ endpoint                       | description
 `/metrics`                     | return all metrics as JSON
 `/healthcheck`                 | run Maxwell's healthcheck(s) and return success or failure based on the result
 `/ping`                        | a simple ping test, responds with `pong`
+
+### Healthcheck
+The `/healthcheck` endpoint will return unhealthy when there is more than 1 message that failed to be sent to Kafka in the past 15 minutes.
 
 ### JMX Configuration
 Standard configuration is either via commandline args or the `config.properties` file. However, when exposing JMX metrics
