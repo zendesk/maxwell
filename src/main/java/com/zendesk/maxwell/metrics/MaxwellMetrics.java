@@ -46,7 +46,7 @@ public class MaxwellMetrics {
 			LOGGER.info("Jmx metrics reporter enabled");
 
 			if (System.getProperty("com.sun.management.jmxremote") == null) {
-				System.out.println("JMX remote is disabled");
+				LOGGER.warn("JMX remote is disabled");
 			} else {
 				String portString = System.getProperty("com.sun.management.jmxremote.port");
 				if (portString != null) {
