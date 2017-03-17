@@ -10,10 +10,10 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
 
-public class MaxwellServer {
-	public MaxwellServer(int port, MetricRegistry metricRegistry, HealthCheckRegistry healthCheckRegistry) {
-		MaxwellServerWorker maxwellServerWorker = new MaxwellServerWorker(port, metricRegistry, healthCheckRegistry);
-		Thread thread = new Thread(maxwellServerWorker);
+public class MaxwellHTTPServer {
+	public MaxwellHTTPServer(int port, MetricRegistry metricRegistry, HealthCheckRegistry healthCheckRegistry) {
+		MaxwellHTTPServerWorker maxwellHTTPServerWorker = new MaxwellHTTPServerWorker(port, metricRegistry, healthCheckRegistry);
+		Thread thread = new Thread(maxwellHTTPServerWorker);
 
 		thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
 			public void uncaughtException(Thread t, Throwable e) {
@@ -26,14 +26,14 @@ public class MaxwellServer {
 	}
 }
 
-class MaxwellServerWorker implements Runnable {
+class MaxwellHTTPServerWorker implements Runnable {
 
 	private int port;
 	private MetricRegistry metricRegistry;
 	private HealthCheckRegistry healthCheckRegistry;
 	private Server server;
 
-	public MaxwellServerWorker(int port, MetricRegistry metricRegistry, HealthCheckRegistry healthCheckRegistry) {
+	public MaxwellHTTPServerWorker(int port, MetricRegistry metricRegistry, HealthCheckRegistry healthCheckRegistry) {
 		this.port = port;
 		this.metricRegistry = metricRegistry;
 		this.healthCheckRegistry = healthCheckRegistry;

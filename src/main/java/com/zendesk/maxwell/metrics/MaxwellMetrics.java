@@ -59,7 +59,7 @@ public class MaxwellMetrics {
 			healthCheckRegistry.register("MaxwellHealth", new MaxwellHealthCheck(metricRegistry));
 
 			LOGGER.info("Metrics http server starting");
-			new MaxwellServer(metricsReportingPort, MaxwellMetrics.metricRegistry, healthCheckRegistry);
+			new MaxwellHTTPServer(metricsReportingPort, MaxwellMetrics.metricRegistry, healthCheckRegistry);
 			LOGGER.info("Metrics http server started");
 		}
 	}
