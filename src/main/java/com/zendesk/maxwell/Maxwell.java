@@ -1,5 +1,6 @@
 package com.zendesk.maxwell;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.TimeoutException;
@@ -55,13 +56,17 @@ public class Maxwell implements Runnable {
 
 			if ( this.replicator != null)
 				replicator.stopLoop();
-			if ( this.context != null )
-				context.terminate();
 		} catch (TimeoutException e) {
 			System.err.println("Timed out trying to shutdown maxwell replication thread.");
 		} catch (InterruptedException e) {
 		} catch (Exception e) { }
 
+		if ( this.context != null )
+			try {
+				context.terminate();
+			} catch (IOException | TimeoutException e) {
+				e.printStackTrace();
+			}
 
 		replicator = null;
 		context = null;
