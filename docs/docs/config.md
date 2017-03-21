@@ -180,6 +180,12 @@ exclude_tables                 | PATTERN                             | ignore up
 blacklist_dbs                  | PATTERN                             | ignore updates AND schema changes from databases (see warnings below) |
 blacklist_tables               | PATTERN                             | ignore updates AND schema changes from tables named like PATTERN (see warnings below) |
 &nbsp;
+**encryption**
+encrypt_data                   | BOOLEAN                             | encrypt the data field of the payload               | false
+encrypt_all                    | BOOLEAN                             | encrypt the entire payload                          | false
+encryption_key                 | STRING                              | specify the encryption key to be used               | null
+secret_key                     | STRING                              | specify the secret key to be used                   | null
+&nbsp;
 **misc**
 bootstrapper                   | [async &#124; sync &#124; none]                   | bootstrapper type.  See bootstrapping docs.        | async
 init_position                  | FILE:POSITION                       | ignore the information in maxwell.positions and start at the given binlog position. Not available in config.properties. |
