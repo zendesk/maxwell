@@ -5,7 +5,6 @@ import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -181,7 +180,10 @@ public class RowMap implements Serializable {
 
 	private void writeEncryptedMapToJSON(String jsonMapName, LinkedHashMap<String, Object> data, boolean includeNullField, String encryption_key, String secret_key) throws IOException{
 		JsonGenerator generator = jsonGeneratorThreadLocal.get();
-		JSONObject obj = new JSONObject();
+		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+		JsonGenerator obj = jsonFactory.createGenerator(outputStream);
+
+		obj.writeStartObject();
 		for (String key : data.keySet()) {
 			Object value = data.get(key);
 
@@ -191,15 +193,23 @@ public class RowMap implements Serializable {
 			if ( value instanceof List ) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
 				List stringList = (List) value;
 
-				obj.put(key, stringList);
+				obj.writeArrayFieldStart(key);
+				for ( Object s : stringList )  {
+					obj.writeObject(s);
+				}
+				obj.writeEndArray();
 			} else if (value instanceof RawJSONString) {
-				obj.put(key, ((RawJSONString) value).json);
+				// JSON column type, using binlog-connector's serializers.
+				obj.writeFieldName(key);
+				obj.writeRawValue(((RawJSONString) value).json);
 			} else {
-				obj.put(key, value);
+				obj.writeObjectField(key, value);
 			}
 		}
-
-		generator.writeStringField(jsonMapName, RowEncrypt.encrypt(obj.toString(), encryption_key, secret_key));
+		obj.writeEndObject();
+		obj.close();
+		outputStream.close();
+		generator.writeStringField(jsonMapName, RowEncrypt.encrypt(outputStream.toString(), encryption_key, secret_key));
 	}
 
 	private void writeMapToJSON(String jsonMapName, LinkedHashMap<String, Object> data, boolean includeNullField) throws IOException {
@@ -247,37 +257,37 @@ public class RowMap implements Serializable {
 		g.writeStringField("type", this.rowType);
 		g.writeNumberField("ts", this.timestamp);
 
-		if (outputConfig.includesCommitInfo) {
-			if (this.xid != null)
+		if ( outputConfig.includesCommitInfo ) {
+			if ( this.xid != null )
 				g.writeNumberField("xid", this.xid);
 
-			if (this.txCommit)
+			if ( this.txCommit )
 				g.writeBooleanField("commit", true);
 		}
 
-		if (outputConfig.includesBinlogPosition)
+		if ( outputConfig.includesBinlogPosition )
 			g.writeStringField("position", this.nextPosition.getFile() + ":" + this.nextPosition.getOffset());
 
-		if (outputConfig.includesGtidPosition)
+		if ( outputConfig.includesGtidPosition )
 			g.writeStringField("gtid", this.nextPosition.getGtid());
 
-		if (outputConfig.includesServerId && this.serverId != null) {
+		if ( outputConfig.includesServerId && this.serverId != null ) {
 			g.writeNumberField("server_id", this.serverId);
 		}
 
-		if (outputConfig.includesThreadId && this.threadId != null) {
+		if ( outputConfig.includesThreadId && this.threadId != null ) {
 			g.writeNumberField("thread_id", this.threadId);
 		}
 
-		if (outputConfig.excludeColumns.size() > 0) {
+		if ( outputConfig.excludeColumns.size() > 0 ) {
 			// NOTE: to avoid concurrent modification.
 			Set<String> keys = new HashSet<>();
 			keys.addAll(this.data.keySet());
 			keys.addAll(this.oldData.keySet());
 
-			for (Pattern p : outputConfig.excludeColumns) {
-				for (String key : keys) {
-					if (p.matcher(key).matches()) {
+			for ( Pattern p : outputConfig.excludeColumns ) {
+				for ( String key : keys ) {
+					if ( p.matcher(key).matches() ) {
 						this.data.remove(key);
 						this.oldData.remove(key);
 					}
@@ -285,16 +295,15 @@ public class RowMap implements Serializable {
 			}
 		}
 
-		if(outputConfig.encryptData && !outputConfig.encryptAll){
+		if( outputConfig.encryptData && !outputConfig.encryptAll ){
 			writeEncryptedMapToJSON("data", this.data, outputConfig.includesNulls, outputConfig.encryption_key, outputConfig.secret_key);
-			if(!this.oldData.isEmpty()){
+			if( !this.oldData.isEmpty() ){
 				writeEncryptedMapToJSON("old", this.oldData, outputConfig.includesNulls, outputConfig.encryption_key, outputConfig.secret_key);
 			}
-		}
-		else {
+		} else {
 			writeMapToJSON("data", this.data, outputConfig.includesNulls);
 
-			if (!this.oldData.isEmpty()) {
+			if ( !this.oldData.isEmpty() ) {
 				writeMapToJSON("old", this.oldData, true);
 			}
 		}
@@ -302,15 +311,15 @@ public class RowMap implements Serializable {
 		g.writeEndObject(); // end of row
 		g.flush();
 
-		if(outputConfig.encryptAll) {
-			return jsonFromStream(outputConfig);
+		if( outputConfig.encryptAll ) {
+			return encryptedJsonFromStream(outputConfig);
 		}
 		else{
 			return jsonFromStream();
 		}
 	}
 
-	private String jsonFromStream(MaxwellOutputConfig outputConfig){
+	private String encryptedJsonFromStream(MaxwellOutputConfig outputConfig){
 		ByteArrayOutputStream b = byteArrayThreadLocal.get();
 		String s = b.toString();
 		b.reset();
