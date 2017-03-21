@@ -1,9 +1,6 @@
 package com.zendesk.maxwell.util;
 
 import java.io.IOException;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,7 +19,7 @@ import io.vertx.core.json.JsonObject;
 
 public class MessageBusManager {
     static final Logger LOGGER = LoggerFactory.getLogger(MessageBusManager.class);
-    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME;
+//    private static final DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME;
 	private static ConnectionFactory _factory;
 	private static Connection _connection;
 	private static ConcurrentMap<Long, Channel> _channels = new ConcurrentHashMap<>();
@@ -136,7 +133,7 @@ public class MessageBusManager {
           .replyTo(json.getString("replyTo"))
           .expiration(json.getString("expiration"))
           .messageId(json.getString("messageId"))
-          .timestamp(parseDate(json.getString("timestamp")))
+//          .timestamp(parseDate(json.getString("timestamp")))
           .type(json.getString("type"))
           .userId(json.getString("userId"))
           .appId(json.getString("appId"))
@@ -149,12 +146,12 @@ public class MessageBusManager {
         return json.getMap();
       }
     
-    private static Date parseDate(String date) {
-        if (date == null) return null;
-
-        OffsetDateTime odt = OffsetDateTime.parse(date, dateTimeFormatter);
-        return Date.from(odt.toInstant());
-      }
+//    private static Date parseDate(String date) {
+//        if (date == null) return null;
+//
+//        OffsetDateTime odt = OffsetDateTime.parse(date, dateTimeFormatter);
+//        return Date.from(odt.toInstant());
+//      }
     
     private static JsonObject getMessageProperties(){
         Map<String, Object> props = new HashMap<>();
