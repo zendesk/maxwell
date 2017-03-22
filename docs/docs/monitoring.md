@@ -1,6 +1,6 @@
 ### Monitoring
 ***
-Maxwell exposes certain metrics through either its base logging mechanism, JMX or HTTP. This is configurable through commandline options
+Maxwell exposes certain metrics through either its base logging mechanism, JMX, HTTP or by push to Datadog. This is configurable through commandline options
 or the `config.properties` file. These can provide insight into system health.
 At present certain metrics are Kafka-specific - that is, not yet supported other producers.
 

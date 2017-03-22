@@ -171,6 +171,11 @@
       <artifactId>jetty-servlet</artifactId>
       <version>9.4.2.v20170220</version>
     </dependency>
+    <dependency>
+      <groupId>org.coursera</groupId>
+      <artifactId>metrics-datadog</artifactId>
+      <version>1.1.10</version>
+    </dependency>
   </dependencies>
 
   <build>
