@@ -349,20 +349,12 @@ public class MaxwellConfig extends AbstractConfig {
 		this.metricsReportingType = fetchOption("metrics_type", options, properties, null);
 		this.metricsSlf4jInterval = fetchLongOption("metrics_slf4j_interval", options, properties, 60L);
 		this.metricsHTTPPort = Integer.parseInt(fetchOption("metrics_http_port", options, properties, "8080"));
-		this.metricsDatadogType = fetchOption("metrics_datadog_type", options, properties, "udp");
+		this.metricsDatadogType = fetchOption("metrics_datadog_type", options, properties, "");
 		this.metricsDatadogTags = fetchOption("metrics_datadog_tags", options, properties, "");
 		this.metricsDatadogAPIKey = fetchOption("metrics_datadog_apikey", options, properties, "");
 		this.metricsDatadogHost = fetchOption("metrics_datadog_host", options, properties, "");
 		this.metricsDatadogPort = Integer.parseInt(fetchOption("metrics_datadog_port", options, properties, "8125"));
 		this.metricsDatadogInterval = fetchLongOption("metrics_datadog_interval", options, properties, 60L);
-
-		if ( options != null && this.metricsDatadogType.contains("http") && StringUtils.isEmpty(this.metricsDatadogAPIKey) ) {
-			usage("invalid or missing metrics_datadog_apikey: '" + this.metricsDatadogAPIKey);
-		}
-
-		if ( options != null && this.metricsDatadogType.contains("udp") && StringUtils.isEmpty(this.metricsDatadogHost) ) {
-			usage("invalid or missing metrics_datadog_host: '" + this.metricsDatadogHost);
-		}
 
 		this.includeDatabases   = fetchOption("include_dbs", options, properties, null);
 		this.excludeDatabases   = fetchOption("exclude_dbs", options, properties, null);
@@ -526,6 +518,14 @@ public class MaxwellConfig extends AbstractConfig {
 			);
 		} catch (MaxwellInvalidFilterException e) {
 			usage("Invalid filter options: " + e.getLocalizedMessage());
+		}
+
+		if ( this.metricsDatadogType.contains("http") && StringUtils.isEmpty(this.metricsDatadogAPIKey) ) {
+			usageForOptions("please specify metrics_datadog_apikey when metrics_datadog_type = http");
+		}
+
+		if ( this.metricsDatadogType.contains("udp") && StringUtils.isEmpty(this.metricsDatadogHost) ) {
+			usageForOptions("Please specify metrics_datadog_host when metrics_datadog_type = udp" );
 		}
 	}
 
