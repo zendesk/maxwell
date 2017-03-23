@@ -2,7 +2,8 @@
 </div>
 
 This is Maxwell's daemon, an application that reads MySQL binlogs and writes
-row updates to Kafka or RabbitMQ as JSON.  Maxwell has a low operational bar and produces a
+row updates to Kafka or RabbitMQ as JSON.  
+Maxwell has a low operational bar and produces a
 consistent, easy to ingest stream of updates.  It allows you to easily "bolt
 on" some of the benefits of stream processing systems without going through your
 entire code base to add (unreliable) instrumentation points.  Common use cases
