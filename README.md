@@ -1,4 +1,3 @@
-
 <div id="maxwell-header">
 </div>
 
