@@ -59,6 +59,11 @@ Corresponding replication stream output of table `fooDB.barTable`:
 {"database":"fooDB","table":"barTable","type":"bootstrap-complete","ts":1450557744,"data":{}}
 ```
 
+### Failure Scenarios
+If Maxwell crashes during bootstrapping the next time it runs it will rerun the bootstrap in its entirety - regardless of previous progress.
+If this behavior is not desired, manual updates to the `bootstrap` table are required.
+Specifically, marking the unfinished bootstrap row as 'complete' (`is_complete` = 1) or deleting the row.
+
 <script>
   jQuery(document).ready(function () {
     jQuery("table").addClass("table table-condensed table-bordered table-hover");
