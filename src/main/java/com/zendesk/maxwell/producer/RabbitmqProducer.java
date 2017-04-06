@@ -34,7 +34,7 @@ public class RabbitmqProducer extends AbstractProducer {
 
 	@Override
 	public void push(RowMap r) throws Exception {
-		if ( r.shouldOutput(outputConfig) ) {
+		if ( !r.shouldOutput(outputConfig) ) {
 			context.setPosition(r.getPosition());
 
 			return;
