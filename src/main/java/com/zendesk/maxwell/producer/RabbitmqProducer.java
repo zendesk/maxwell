@@ -28,7 +28,7 @@ public class RabbitmqProducer extends AbstractProducer {
 			this.channel = connection.createChannel();
 			this.channel.exchangeDeclare(exchangeName, context.getConfig().rabbitmqExchangeType);
 		} catch (IOException | TimeoutException e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 	}
 
