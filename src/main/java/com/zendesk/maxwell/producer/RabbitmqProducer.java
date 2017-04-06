@@ -34,10 +34,13 @@ public class RabbitmqProducer extends AbstractProducer {
 
 	@Override
 	public void push(RowMap r) throws Exception {
-		String value = r.toJSON(outputConfig);
-		if (value == null) {
+		if ( r.shouldOutput(outputConfig) ) {
+			context.setPosition(r.getPosition());
+
 			return;
 		}
+
+		String value = r.toJSON(outputConfig);
 		String routingKey = r.getDatabase() + "." + r.getTable();
 
 		channel.basicPublish(exchangeName, routingKey, null, value.getBytes());
