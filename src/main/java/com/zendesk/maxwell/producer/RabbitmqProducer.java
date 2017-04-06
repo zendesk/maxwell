@@ -19,7 +19,7 @@ public class RabbitmqProducer extends AbstractProducer {
 	private Channel channel;
 	public RabbitmqProducer(MaxwellContext context) {
 		super(context);
-		this.exchangeName = context.getConfig().rabbitmqExchange;
+		exchangeName = context.getConfig().rabbitmqExchange;
 
 		ConnectionFactory factory = new ConnectionFactory();
 		factory.setHost(context.getConfig().rabbitmqHost);
