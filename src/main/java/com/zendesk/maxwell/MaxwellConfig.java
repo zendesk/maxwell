@@ -63,6 +63,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public String rabbitmqHost;
 	public String rabbitmqExchange;
 	public String rabbitmqExchangeType;
+	public String rabbitmqRoutingKeyTemplate;
 
 	public MaxwellConfig() { // argv is only null in tests
 		this.kafkaProperties = new Properties();
@@ -173,6 +174,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts("rabbitmq_host", "Host of Rabbitmq machine").withOptionalArg();
 		parser.accepts("rabbitmq_exchange", "Name of exchange for rabbitmq publisher").withOptionalArg();
 		parser.accepts("rabbitmq_exchange_type", "Exchange type for rabbitmq").withOptionalArg();
+		parser.accepts("rabbitmq_routing_key_template", "A string template for the routing key, '%db%' and '%table%' will be substituted. Default is '%db%.%table%'.").withOptionalArg();
 
 		parser.accepts( "help", "display help").forHelp();
 
@@ -295,6 +297,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.rabbitmqHost           = fetchOption("rabbitmq_host", options, properties, "localhost");
 		this.rabbitmqExchange       = fetchOption("rabbitmq_exchange", options, properties, "maxwell");
 		this.rabbitmqExchangeType   = fetchOption("rabbitmq_exchange_type", options, properties, "fanout");
+		this.rabbitmqRoutingKeyTemplate   = fetchOption("rabbitmq_routing_key_template", options, properties, "%db%.%table%");
 
 		String kafkaBootstrapServers = fetchOption("kafka.bootstrap.servers", options, properties, null);
 		if ( kafkaBootstrapServers != null )

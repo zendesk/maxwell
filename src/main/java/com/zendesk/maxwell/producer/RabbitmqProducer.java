@@ -41,7 +41,7 @@ public class RabbitmqProducer extends AbstractProducer {
 		}
 
 		String value = r.toJSON(outputConfig);
-		String routingKey = r.getDatabase() + "." + r.getTable();
+		String routingKey = getRoutingKeyFromTemplate(r);
 
 		channel.basicPublish(exchangeName, routingKey, null, value.getBytes());
 		if ( r.isTXCommit() ) {
@@ -50,5 +50,13 @@ public class RabbitmqProducer extends AbstractProducer {
 		if ( LOGGER.isDebugEnabled()) {
 			LOGGER.debug("->  routing key:" + routingKey + ", partition:" + value);
 		}
+	}
+
+	private String getRoutingKeyFromTemplate(RowMap r) {
+		return context
+				.getConfig()
+				.rabbitmqRoutingKeyTemplate
+				.replace("%db%", r.getDatabase())
+				.replace("%table%", r.getTable());
 	}
 }
