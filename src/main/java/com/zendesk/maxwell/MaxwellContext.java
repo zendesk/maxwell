@@ -143,7 +143,7 @@ public class MaxwellContext {
 	}
 
 	public RecoveryInfo getRecoveryInfo() throws SQLException {
-		return this.positionStore.getRecoveryInfo();
+		return this.positionStore.getRecoveryInfo(config);
 	}
 
 	public void setPosition(RowMap r) throws SQLException {

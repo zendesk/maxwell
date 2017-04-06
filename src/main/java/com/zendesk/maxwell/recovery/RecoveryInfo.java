@@ -14,4 +14,13 @@ public class RecoveryInfo {
 		this.serverID = serverID;
 		this.clientID = clientID;
 	}
+
+	public String toString() {
+		return "<RecoveryInfo" +
+				" position: " + position +
+				", heartbeat: " + heartbeat +
+				", serverId: " + serverID +
+				", clientId: " + clientID +
+				">";
+	}
 }
