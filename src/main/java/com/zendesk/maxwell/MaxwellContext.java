@@ -89,10 +89,11 @@ public class MaxwellContext {
 	public ConnectionPool getMaxwellConnectionPool() { return maxwellConnectionPool; }
 
 	public ConnectionPool getSchemaConnectionPool() {
-	    if (this.schemaConnectionPool != null) {
-		return schemaConnectionPool;
-	    }
-	    return replicationConnectionPool;
+		if (this.schemaConnectionPool != null) {
+			return schemaConnectionPool;
+		}
+
+		return replicationConnectionPool;
 	}
 
 	public Connection getMaxwellConnection() throws SQLException {
