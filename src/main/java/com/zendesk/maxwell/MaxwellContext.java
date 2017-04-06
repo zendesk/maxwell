@@ -253,6 +253,9 @@ public class MaxwellContext {
 		case "buffer":
 			this.producer = new BufferedProducer(this, this.config.bufferedProducerSize);
 			break;
+		case "rabbitmq":
+			this.producer = new RabbitmqProducer(this);
+			break;
 		case "none":
 			this.producer = null;
 			break;

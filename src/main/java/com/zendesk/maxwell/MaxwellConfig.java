@@ -60,7 +60,11 @@ public class MaxwellConfig extends AbstractConfig {
 	public boolean replayMode;
 	public boolean masterRecovery;
 
-	public MaxwellConfig() { // argv is only null in tests
+	public String rabbitmqHost;
+    	public String rabbitmqExchange;
+    	public String rabbitmqExchangeType;
+
+    	public MaxwellConfig() { // argv is only null in tests
 		this.kafkaProperties = new Properties();
 		this.replayMode = false;
 		this.replicationMysql = new MaxwellMysqlConfig();
@@ -166,7 +170,13 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_8" );
 
-		parser.accepts( "help", "display help").forHelp();
+        	parser.accepts("rabbitmq_host", "Host of Rabbitmq machine").withOptionalArg();
+        	parser.accepts("rabbitmq_exchange", "Name of exchange for rabbitmq publisher").withOptionalArg();
+        	parser.accepts("rabbitmq_exchange_type", "Exchange type for rabbitmq").withOptionalArg();
+
+
+        	parser.accepts( "help", "display help").forHelp();
+
 
 		BuiltinHelpFormatter helpFormatter = new BuiltinHelpFormatter(200, 4) {
 			@Override
@@ -282,6 +292,10 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.kafkaPartitionHash 	= fetchOption("kafka_partition_hash", options, properties, "default");
 		this.ddlKafkaTopic 		    = fetchOption("ddl_kafka_topic", options, properties, this.kafkaTopic);
+
+		this.rabbitmqHost           = fetchOption("rabbitmq_host", options, properties, "localhost");
+		this.rabbitmqExchange       = fetchOption("rabbitmq_exchange", options, properties, "maxwell");
+		this.rabbitmqExchangeType   = fetchOption("rabbitmq_exchange_type", options, properties, "fanout");
 
 		String kafkaBootstrapServers = fetchOption("kafka.bootstrap.servers", options, properties, null);
 		if ( kafkaBootstrapServers != null )
