@@ -29,6 +29,7 @@ public class MaxwellContext {
 	private final ConnectionPool replicationConnectionPool;
 	private final ConnectionPool maxwellConnectionPool;
 	private final ConnectionPool rawMaxwellConnectionPool;
+	private final ConnectionPool schemaConnectionPool;
 	private final MaxwellConfig config;
 	private MysqlPositionStore positionStore;
 	private PositionStoreThread positionStoreThread;
@@ -46,6 +47,19 @@ public class MaxwellContext {
 		this.replicationConnectionPool = new ConnectionPool("ReplicationConnectionPool", 10, 0, 10,
 				config.replicationMysql.getConnectionURI(false), config.replicationMysql.user, config.replicationMysql.password);
 
+		if (config.schemaMysql.host == null) {
+			this.schemaConnectionPool = null;
+		} else {
+			this.schemaConnectionPool = new ConnectionPool(
+					"SchemaConnectionPool",
+					10,
+					0,
+					10,
+					config.schemaMysql.getConnectionURI(false),
+					config.schemaMysql.user,
+					config.schemaMysql.password);
+		}
+
 		this.rawMaxwellConnectionPool = new ConnectionPool("RawMaxwellConnectionPool", 1, 2, 100,
 			config.maxwellMysql.getConnectionURI(false), config.maxwellMysql.user, config.maxwellMysql.password);
 
@@ -57,9 +71,9 @@ public class MaxwellContext {
 			this.initialPosition = this.config.initPosition;
 
 		if ( this.getConfig().replayMode ) {
-			this.positionStore = new ReadOnlyMysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.clientID);
+			this.positionStore = new ReadOnlyMysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.clientID, config.gtidMode);
 		} else {
-			this.positionStore = new MysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.clientID);
+			this.positionStore = new MysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.clientID, config.gtidMode);
 		}
 	}
 
@@ -73,6 +87,14 @@ public class MaxwellContext {
 
 	public ConnectionPool getReplicationConnectionPool() { return replicationConnectionPool; }
 	public ConnectionPool getMaxwellConnectionPool() { return maxwellConnectionPool; }
+
+	public ConnectionPool getSchemaConnectionPool() {
+		if (this.schemaConnectionPool != null) {
+			return schemaConnectionPool;
+		}
+
+		return replicationConnectionPool;
+	}
 
 	public Connection getMaxwellConnection() throws SQLException {
 		return this.maxwellConnectionPool.getConnection();
@@ -219,6 +241,9 @@ public class MaxwellContext {
 			break;
 		case "kafka":
 			this.producer = new MaxwellKafkaProducer(this, this.config.getKafkaProperties(), this.config.kafkaTopic);
+			break;
+		case "kinesis":
+			this.producer = new MaxwellKinesisProducer(this, this.config.kinesisStream);
 			break;
 		case "profiler":
 			this.producer = new ProfilerProducer(this);

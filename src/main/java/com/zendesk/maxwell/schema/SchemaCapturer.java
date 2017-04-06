@@ -1,42 +1,72 @@
 package com.zendesk.maxwell.schema;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import com.zendesk.maxwell.CaseSensitivity;
+import com.zendesk.maxwell.schema.columndef.ColumnDef;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.zendesk.maxwell.schema.columndef.ColumnDef;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SchemaCapturer {
 	private final Connection connection;
 	static final Logger LOGGER = LoggerFactory.getLogger(MysqlSavedSchema.class);
 
 	public static final HashSet<String> IGNORED_DATABASES = new HashSet<String>(
-		Arrays.asList(new String[] {"performance_schema", "information_schema"})
+			Arrays.asList(new String[]{"performance_schema", "information_schema"})
 	);
 
 	private final HashSet<String> includeDatabases;
 
-	private final PreparedStatement infoSchemaStmt;
-	private final String INFORMATION_SCHEMA_SQL =
-			"SELECT * FROM `information_schema`.`COLUMNS` WHERE `TABLE_SCHEMA` = ? AND `TABLE_NAME` = ?";
 	private final CaseSensitivity sensitivity;
+
+	private PreparedStatement tablePreparedStatement;
+
+	private PreparedStatement columnPreparedStatement;
+
+	private PreparedStatement pkPreparedStatement;
 
 	public SchemaCapturer(Connection c, CaseSensitivity sensitivity) throws SQLException {
 		this.includeDatabases = new HashSet<>();
 		this.connection = c;
 		this.sensitivity = sensitivity;
-		this.infoSchemaStmt = connection.prepareStatement(INFORMATION_SCHEMA_SQL);
+
+		String tblSql = "SELECT TABLES.TABLE_NAME, CCSA.CHARACTER_SET_NAME "
+				+ "FROM INFORMATION_SCHEMA.TABLES "
+				+ "JOIN information_schema.COLLATION_CHARACTER_SET_APPLICABILITY AS CCSA"
+				+ " ON TABLES.TABLE_COLLATION = CCSA.COLLATION_NAME WHERE TABLES.TABLE_SCHEMA = ?";
+
+		tablePreparedStatement = connection.prepareStatement(tblSql);
+
+		String dateTimePrecision = "";
+		if(isMySQLAtLeast56())
+			dateTimePrecision = "DATETIME_PRECISION, ";
+
+		String columnSql = "SELECT " +
+				"TABLE_NAME," +
+				"COLUMN_NAME, " +
+				"DATA_TYPE, " +
+				"CHARACTER_SET_NAME, " +
+				"ORDINAL_POSITION, " +
+				"COLUMN_TYPE, " +
+				dateTimePrecision +
+				"COLUMN_KEY, " +
+				"COLUMN_TYPE " +
+				"FROM `information_schema`.`COLUMNS` WHERE TABLE_SCHEMA = ?";
+
+		columnPreparedStatement = connection.prepareStatement(columnSql);
+
+		String pkSql = "SELECT TABLE_NAME, COLUMN_NAME, ORDINAL_POSITION FROM information_schema.KEY_COLUMN_USAGE "
+				+ "WHERE CONSTRAINT_NAME = 'PRIMARY' AND TABLE_SCHEMA = ?";
+
+		pkPreparedStatement = connection.prepareStatement(pkSql);
+
 	}
 
 	public SchemaCapturer(Connection c, CaseSensitivity sensitivity, String dbName) throws SQLException {
@@ -45,114 +75,145 @@ public class SchemaCapturer {
 	}
 
 	public Schema capture() throws SQLException {
-		LOGGER.debug("Capturing schema");
+		LOGGER.debug("Capturing schemas...");
 		ArrayList<Database> databases = new ArrayList<>();
 
-		ResultSet rs = connection.createStatement().executeQuery("SELECT * from INFORMATION_SCHEMA.SCHEMATA");
-
-		while ( rs.next() ) {
+		ResultSet rs = connection.createStatement().executeQuery(
+				"SELECT SCHEMA_NAME, DEFAULT_CHARACTER_SET_NAME FROM INFORMATION_SCHEMA.SCHEMATA"
+		);
+		while (rs.next()) {
 			String dbName = rs.getString("SCHEMA_NAME");
 			String charset = rs.getString("DEFAULT_CHARACTER_SET_NAME");
 
-			if ( includeDatabases.size() > 0 && !includeDatabases.contains(dbName))
+			if (includeDatabases.size() > 0 && !includeDatabases.contains(dbName))
 				continue;
 
-			if ( IGNORED_DATABASES.contains(dbName) )
+			if (IGNORED_DATABASES.contains(dbName))
 				continue;
 
-			databases.add(captureDatabase(dbName, charset));
+			Database db = new Database(dbName, charset);
+			databases.add(db);
 		}
+		rs.close();
 
-		LOGGER.debug("Finished capturing schema");
+		int size = databases.size();
+		LOGGER.debug("Starting schema capture of " + size + " databases...");
+		int counter = 1;
+		for (Database db : databases) {
+			LOGGER.debug(counter + "/" + size + " Capturing " + db.getName() + "...");
+			captureDatabase(db);
+			counter++;
+		}
+		LOGGER.debug(size + " database schemas captured!");
+
 		return new Schema(databases, captureDefaultCharset(), this.sensitivity);
 	}
 
 	private String captureDefaultCharset() throws SQLException {
+		LOGGER.debug("Capturing Default Charset");
 		ResultSet rs = connection.createStatement().executeQuery("select @@character_set_server");
 		rs.next();
 		return rs.getString("@@character_set_server");
 	}
 
-	private static final String tblSQL =
-			  "SELECT TABLES.TABLE_NAME, CCSA.CHARACTER_SET_NAME "
-			+ "FROM INFORMATION_SCHEMA.TABLES "
-			+ "JOIN  information_schema.COLLATION_CHARACTER_SET_APPLICABILITY AS CCSA"
-			+ " ON TABLES.TABLE_COLLATION = CCSA.COLLATION_NAME WHERE TABLES.TABLE_SCHEMA = ?";
 
-	private Database captureDatabase(String dbName, String dbCharset) throws SQLException {
-		PreparedStatement p = connection.prepareStatement(tblSQL);
+	private void captureDatabase(Database db) throws SQLException {
+		tablePreparedStatement.setString(1, db.getName());
+		ResultSet rs = tablePreparedStatement.executeQuery();
 
-		p.setString(1, dbName);
-		ResultSet rs = p.executeQuery();
-
-		Database db = new Database(dbName, dbCharset);
-
-		while ( rs.next() ) {
-			Table t = db.buildTable(rs.getString("TABLE_NAME"), rs.getString("CHARACTER_SET_NAME"));
-			captureTable(t);
+		HashMap<String, Table> tables = new HashMap<>();
+		while (rs.next()) {
+			String tableName = rs.getString("TABLE_NAME");
+			String characterSetName = rs.getString("CHARACTER_SET_NAME");
+			Table t = db.buildTable(tableName, characterSetName);
+			tables.put(tableName, t);
 		}
+		rs.close();
 
-		return db;
+		captureTables(db, tables);
 	}
+
 
 	private boolean isMySQLAtLeast56() throws SQLException {
 		java.sql.DatabaseMetaData meta = connection.getMetaData();
 		int major = meta.getDatabaseMajorVersion();
 		int minor = meta.getDatabaseMinorVersion();
-		return ( (major == 5 && minor >= 6) || major > 5 );
+		return ((major == 5 && minor >= 6) || major > 5);
 	}
 
 
-	private void captureTable(Table t) throws SQLException {
-		int i = 0;
-		infoSchemaStmt.setString(1, t.getDatabase());
-		infoSchemaStmt.setString(2, t.getName());
-		ResultSet r = infoSchemaStmt.executeQuery();
+	private void captureTables(Database db, HashMap<String, Table> tables) throws SQLException {
+
+		columnPreparedStatement.setString(1, db.getName());
+		ResultSet r = columnPreparedStatement.executeQuery();
+
 		boolean hasDatetimePrecision = isMySQLAtLeast56();
 
-		while(r.next()) {
-			String[] enumValues = null;
-			String colName    = r.getString("COLUMN_NAME");
-			String colType    = r.getString("DATA_TYPE");
-			String colEnc     = r.getString("CHARACTER_SET_NAME");
-			int colPos        = r.getInt("ORDINAL_POSITION") - 1;
-			boolean colSigned = !r.getString("COLUMN_TYPE").matches(".* unsigned$");
-			Long columnLength = null;
-
-			if (hasDatetimePrecision)
-				columnLength = r.getLong("DATETIME_PRECISION");
-
-			if ( r.getString("COLUMN_KEY").equals("PRI") )
-				t.pkIndex = i;
-
-			if ( colType.equals("enum") || colType.equals("set")) {
-				String expandedType = r.getString("COLUMN_TYPE");
-
-				enumValues = extractEnumValues(expandedType);
-			}
-
-			t.addColumn(ColumnDef.build(colName, colEnc, colType, colPos, colSigned, enumValues, columnLength));
-			i++;
+		HashMap<String, Integer> pkIndexCounters = new HashMap<>();
+		for (String tableName : tables.keySet()) {
+			pkIndexCounters.put(tableName, 0);
 		}
-		captureTablePK(t);
+
+		while (r.next()) {
+			String[] enumValues = null;
+			String tableName = r.getString("TABLE_NAME");
+
+			if (tables.containsKey(tableName)) {
+				Table t = tables.get(tableName);
+				String colName = r.getString("COLUMN_NAME");
+				String colType = r.getString("DATA_TYPE");
+				String colEnc = r.getString("CHARACTER_SET_NAME");
+				int colPos = r.getInt("ORDINAL_POSITION") - 1;
+				boolean colSigned = !r.getString("COLUMN_TYPE").matches(".* unsigned$");
+				Long columnLength = null;
+
+				if (hasDatetimePrecision)
+					columnLength = r.getLong("DATETIME_PRECISION");
+
+				if (r.getString("COLUMN_KEY").equals("PRI"))
+					t.pkIndex = pkIndexCounters.get(tableName);
+
+				if (colType.equals("enum") || colType.equals("set")) {
+					String expandedType = r.getString("COLUMN_TYPE");
+
+					enumValues = extractEnumValues(expandedType);
+				}
+
+				t.addColumn(ColumnDef.build(colName, colEnc, colType, colPos, colSigned, enumValues, columnLength));
+
+				pkIndexCounters.put(tableName, pkIndexCounters.get(tableName) + 1);
+			}
+		}
+		r.close();
+
+		captureTablesPK(db, tables);
 	}
 
-	private static final String pkSQL =
-			"SELECT column_name, ordinal_position from information_schema.key_column_usage  "
-	      + "WHERE constraint_name = 'PRIMARY' and table_schema = ? and table_name = ?";
+	private void captureTablesPK(Database db, HashMap<String, Table> tables) throws SQLException {
+		pkPreparedStatement.setString(1, db.getName());
+		ResultSet rs = pkPreparedStatement.executeQuery();
 
-	private void captureTablePK(Table t) throws SQLException {
-		PreparedStatement p = connection.prepareStatement(pkSQL);
-		p.setString(1, t.getDatabase());
-		p.setString(2, t.getName());
+		HashMap<String, ArrayList<String>> l = new HashMap<>();
 
-		ResultSet rs = p.executeQuery();
-
-		ArrayList<String> l = new ArrayList<>();
-		while ( rs.next() ) {
-			l.add(rs.getInt("ordinal_position") - 1, rs.getString("column_name"));
+		for (String tableName : tables.keySet()) {
+			l.put(tableName, new ArrayList<String>());
 		}
-		t.setPKList(l);
+
+		while (rs.next()) {
+			int ordinalPosition = rs.getInt("ORDINAL_POSITION");
+			String tableName = rs.getString("TABLE_NAME");
+			String columnName = rs.getString("COLUMN_NAME");
+
+			l.get(tableName).add(ordinalPosition - 1, columnName);
+		}
+		rs.close();
+
+		for (Map.Entry<String, Table> entry : tables.entrySet()) {
+			String key = entry.getKey();
+			Table table = entry.getValue();
+
+			table.setPKList(l.get(key));
+		}
 	}
 
 	private static String[] extractEnumValues(String expandedType) {
@@ -161,7 +222,7 @@ public class SchemaCapturer {
 		matcher.matches(); // why do you tease me so.
 
 		enumValues = StringUtils.split(matcher.group(2), ",");
-		for(int j=0 ; j < enumValues.length; j++) {
+		for (int j = 0; j < enumValues.length; j++) {
 			enumValues[j] = enumValues[j].substring(1, enumValues[j].length() - 1);
 		}
 		return enumValues;

@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 
 public class MaxwellOutputConfig {
 	public boolean includesBinlogPosition;
+	public boolean includesGtidPosition;
 	public boolean includesCommitInfo;
 	public boolean includesNulls;
 	public boolean includesServerId;
@@ -15,6 +16,7 @@ public class MaxwellOutputConfig {
 
 	public MaxwellOutputConfig() {
 		this.includesBinlogPosition = false;
+		this.includesGtidPosition = false;
 		this.includesCommitInfo = true;
 		this.includesNulls = true;
 		this.includesServerId = false;

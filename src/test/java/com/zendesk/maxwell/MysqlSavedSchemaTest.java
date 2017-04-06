@@ -50,7 +50,7 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 
 		server.executeList(schemaSQL);
 
-		this.binlogPosition = BinlogPosition.capture(server.getConnection());
+		this.binlogPosition = MaxwellTestSupport.capture(server.getConnection());
 		this.context = buildContext(binlogPosition);
 		this.schema = new SchemaCapturer(server.getConnection(), context.getCaseSensitivity()).capture();
 		this.savedSchema = new MysqlSavedSchema(this.context, this.schema, binlogPosition);
@@ -141,6 +141,8 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 		c.createStatement().executeUpdate("alter table `maxwell`.`schemas` drop column deleted, " +
 				"drop column base_schema_id, drop column deltas, drop column version, drop column position_sha");
 		c.createStatement().executeUpdate("alter table maxwell.positions drop column client_id");
+		c.createStatement().executeUpdate("alter table maxwell.positions drop column gtid_set");
+		c.createStatement().executeUpdate("alter table maxwell.schemas drop column gtid_set");
 		SchemaStoreSchema.upgradeSchemaStoreSchema(c); // just verify no-crash.
 	}
 

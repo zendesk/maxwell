@@ -1,20 +1,15 @@
 package com.zendesk.maxwell.schema.ddl;
 
-
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.List;
-
 import com.zendesk.maxwell.CaseSensitivity;
+import com.zendesk.maxwell.Mysql57Tests;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.zendesk.maxwell.schema.Schema;
-import com.zendesk.maxwell.schema.SchemaCapturer;
 import com.zendesk.maxwell.MaxwellTestWithIsolatedServer;
 import com.zendesk.maxwell.MaxwellTestSupport;
+import org.junit.experimental.categories.Category;
+import org.junit.runners.Suite;
 
 public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	private void testIntegration(String[] alters) throws Exception {
@@ -41,7 +36,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 			"create table shard_1.testDrop ( id int(11) )",
 			"drop table shard_1.testDrop",
-			"create table test.c ( v varchar(255) charset ascii )"
+			"create table test.c ( v varchar(255) charset ascii )",
 		};
 		testIntegration(sql);
 	}
@@ -75,6 +70,17 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		};
 
 		testIntegration(sql);
+	}
+
+	@Test
+	public void testJSON() throws Exception {
+		if ( server.getVersion().equals("5.7") ) {
+			String sql[] = {
+				"create table shard_1.testJSON ( j json )",
+			};
+
+			testIntegration(sql);
+		}
 	}
 
 	@Test
@@ -358,5 +364,17 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 			"i text(234344) byte" +
 			")"
 		);
+	}
+
+	@Test
+	@Category(Mysql57Tests.class)
+	public void testGeneratedColumns() throws Exception {
+		if ( server.getVersion().equals("5.7") ) {
+			testIntegration("create table t ("
+				+ "a INT GENERATED ALWAYS AS (0) VIRTUAL UNIQUE NOT NULL, "
+				+ "b int AS (a + 0) STORED PRIMARY KEY"
+				+ ")"
+			);
+		}
 	}
 }

@@ -26,8 +26,11 @@ public class ProfilerProducer extends AbstractProducer {
 		if ( this.startTime == 0)
 			this.startTime = System.currentTimeMillis();
 
+		String value = r.toJSON();
 
-		nullOutputStream.write(r.toJSON().getBytes());
+		if (value != null) {
+			nullOutputStream.write(value.getBytes());
+		}
 
 		this.count++;
 		if ( this.count % 10000 == 0 ) {

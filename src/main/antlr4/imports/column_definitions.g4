@@ -24,6 +24,7 @@ generic_type:
 	| col_type=(DATE | TINYBLOB | MEDIUMBLOB | LONGBLOB | BOOLEAN | BOOL ) column_options*
 	| col_type=(GEOMETRY | GEOMETRYCOLLECTION | LINESTRING | MULTILINESTRING
 	             | MULTIPOINT | MULTIPOLYGON | POINT | POLYGON ) column_options*
+	| col_type=JSON column_options*
 	| col_type=VARBINARY length column_options*
 	;
 
@@ -46,16 +47,16 @@ signed_type: // we need the UNSIGNED flag here
 
 string_type locals [Boolean utf8 = false]:
       (NATIONAL {$utf8=true;})?
-      col_type=(CHAR | CHARACTER | VARCHAR) length?  (column_options | string_column_options | BYTE | UNICODE)*
+      col_type=(CHAR | CHARACTER | VARCHAR) length?  (column_options | BYTE | UNICODE)*
     | (NATIONAL {$utf8=true;})?
-      (CHARACTER|CHAR) col_type=VARYING length (string_column_options | column_options | BYTE | UNICODE)*
-    | col_type=(NCHAR | NVARCHAR) length? (string_column_options | column_options)* {$utf8=true;}
-    | NCHAR col_type=VARCHAR length? (column_options | string_column_options)* {$utf8=true;}
-    | col_type=(TINYTEXT | MEDIUMTEXT | LONGTEXT) (column_options | string_column_options | BYTE | UNICODE)*
-    | col_type=TEXT length? (column_options | string_column_options | BYTE | UNICODE)*
-    | long_flag col_type=(VARCHAR | BINARY) (column_options | string_column_options | UNICODE)*
+      (CHARACTER|CHAR) col_type=VARYING length (column_options | BYTE | UNICODE)*
+    | col_type=(NCHAR | NVARCHAR) length? column_options* {$utf8=true;}
+    | NCHAR col_type=VARCHAR length? column_options* {$utf8=true;}
+    | col_type=(TINYTEXT | MEDIUMTEXT | LONGTEXT) (column_options | BYTE | UNICODE)*
+    | col_type=TEXT length? (column_options | BYTE | UNICODE)*
+    | long_flag col_type=(VARCHAR | BINARY) (column_options | UNICODE)*
     | long_flag col_type=VARBINARY column_options*
-    | col_type=LONG (column_options | string_column_options | BYTE | UNICODE)*
+    | col_type=LONG (column_options | BYTE | UNICODE)*
     ;
 
 long_flag: LONG;
@@ -63,23 +64,27 @@ long_flag: LONG;
 enumerated_type:
 	  col_type=(ENUM | SET)
 	  '(' enumerated_values ')'
-	  (column_options | string_column_options)*
+	  column_options*
 	  ;
-
-string_column_options: charset_def | collation | BINARY;
 
 column_options:
 	  nullability
+	| charset_def
+	| collation
 	| default_value
 	| primary_key
 	| ON UPDATE ( CURRENT_TIMESTAMP current_timestamp_length? | now_function )
 	| UNIQUE KEY?
 	| KEY
 	| AUTO_INCREMENT
+	| BINARY
 	| COMMENT string_literal
 	| COLUMN_FORMAT (FIXED|DYNAMIC|DEFAULT)
 	| STORAGE (DISK|MEMORY|DEFAULT)
+	| (VIRTUAL | STORED)
+	| (GENERATED ALWAYS)? AS skip_parens
 	| reference_definition
+	| CHECK skip_parens
 ;
 
 primary_key: PRIMARY KEY;

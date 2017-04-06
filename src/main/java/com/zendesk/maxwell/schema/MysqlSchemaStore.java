@@ -26,12 +26,13 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 
 	public MysqlSchemaStore(ConnectionPool maxwellConnectionPool,
 							ConnectionPool replicationConnectionPool,
+							ConnectionPool schemaConnectionPool,
 							Long serverID,
 							BinlogPosition initialPosition,
 							CaseSensitivity caseSensitivity,
 							MaxwellFilter filter,
 							boolean readOnly) {
-		super(replicationConnectionPool, caseSensitivity, filter);
+		super(replicationConnectionPool, schemaConnectionPool, caseSensitivity, filter);
 		this.serverID = serverID;
 		this.filter = filter;
 		this.maxwellConnectionPool = maxwellConnectionPool;
@@ -43,6 +44,7 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 		this(
 			context.getMaxwellConnectionPool(),
 			context.getReplicationConnectionPool(),
+			context.getSchemaConnectionPool(),
 			context.getServerID(),
 			initialPosition,
 			context.getCaseSensitivity(),
@@ -65,8 +67,15 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 			if ( savedSchema == null ) {
 				Schema capturedSchema = captureSchema();
 				savedSchema = new MysqlSavedSchema(serverID, caseSensitivity, capturedSchema, initialPosition);
-				if ( !readOnly )
-					savedSchema.save(conn);
+				if (!readOnly)
+					if (conn.isValid(30)) {
+						savedSchema.save(conn);
+					} else {
+						// The capture time might be long and the conn connection might be closed already. Consulting the pool
+						// again for a new connection
+						Connection newConn = maxwellConnectionPool.getConnection();
+						savedSchema.save(newConn);
+					}
 			}
 
 			return savedSchema;

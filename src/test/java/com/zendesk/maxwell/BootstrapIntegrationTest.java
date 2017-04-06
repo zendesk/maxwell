@@ -21,6 +21,11 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
+	public void testMultipleRowBootstrapWithWhereclause() throws Exception {
+		runJSON("json/bootstrap-multiple-row-with-whereclause");
+	}
+
+	@Test
 	public void testNoPkTableBootstrap() throws Exception {
 		runJSON("json/bootstrap-no-pk");
 	}
@@ -110,12 +115,15 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 		testColumnType("date", "'2015-11-07'","2015-11-07");
 		testColumnType("datetime", "'2015-11-07 01:02:03'","2015-11-07 01:02:03");
 
-		testColumnType("date", "'0000-00-00'",null);
+		if ( !server.getVersion().equals("5.7") ) {
+			testColumnType("date", "'0000-00-00'",null);
+			testColumnType("datetime", "'0000-00-00 00:00:00'", null);
+			testColumnType("timestamp", "'0000-00-00 00:00:00'","" + epoch.substring(0, epoch.length() - 2) + "", null);
+		}
+
 		testColumnType("datetime", "'1000-01-01 00:00:00'","1000-01-01 00:00:00");
-		testColumnType("datetime", "'0000-00-00 00:00:00'", null);
 
 		testColumnType("timestamp", "'2015-11-07 01:02:03'","2015-11-07 01:02:03");
-		testColumnType("timestamp", "'0000-00-00 00:00:00'","" + epoch.substring(0, epoch.length() - 2) + "", null);
 
 		testColumnType("enum('a', 'b')","'a'", "a");
 		testColumnType("bit(8)","b'01010101'", 85);

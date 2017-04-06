@@ -184,10 +184,10 @@ public class RowMap implements Serializable {
 		for ( String key: data.keySet() ) {
 			Object value = data.get(key);
 
-			if ( value == null && !includeNullField)
+			if ( value == null && !includeNullField )
 				continue;
 
-			if ( value instanceof List) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
+			if ( value instanceof List ) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
 				List stringList = (List) value;
 
 				generator.writeArrayFieldStart(key);
@@ -195,6 +195,10 @@ public class RowMap implements Serializable {
 					generator.writeObject(s);
 				}
 				generator.writeEndArray();
+			} else if ( value instanceof RawJSONString ) {
+				// JSON column type, using binlog-connector's serializers.
+				generator.writeFieldName(key);
+				generator.writeRawValue(((RawJSONString) value).json);
 			} else {
 				generator.writeObjectField(key, value);
 			}
@@ -228,6 +232,8 @@ public class RowMap implements Serializable {
 		if ( outputConfig.includesBinlogPosition )
 			g.writeStringField("position", this.nextPosition.getFile() + ":" + this.nextPosition.getOffset());
 
+		if ( outputConfig.includesGtidPosition)
+			g.writeStringField("gtid", this.nextPosition.getGtid());
 
 		if ( outputConfig.includesServerId && this.serverId != null ) {
 			g.writeNumberField("server_id", this.serverId);
@@ -365,5 +371,22 @@ public class RowMap implements Serializable {
 
 	public String getRowType() {
 		return this.rowType;
+	}
+
+	// determines whether there is anything for the producer to output
+	// override this for extended classes that don't output a value
+	// return false when there is a heartbeat row or other row with suppressed output
+	public boolean shouldOutput(MaxwellOutputConfig outputConfig) {
+		return true;
+	}
+
+	public LinkedHashMap<String, Object> getData()
+	{
+		return new LinkedHashMap<>(data);
+	}
+
+	public LinkedHashMap<String, Object> getOldData()
+	{
+		return new LinkedHashMap<>(oldData);
 	}
 }

@@ -17,14 +17,22 @@ import snaq.db.ConnectionPool;
 
 public class MysqlPositionStore {
 	static final Logger LOGGER = LoggerFactory.getLogger(MysqlPositionStore.class);
+	private static final Long DEFAULT_GTID_SERVER_ID = new Long(0);
 	private final Long serverID;
 	private String clientID;
+	private final boolean gtidMode;
 	private final ConnectionPool connectionPool;
 
-	public MysqlPositionStore(ConnectionPool pool, Long serverID, String clientID) {
+	public MysqlPositionStore(ConnectionPool pool, Long serverID, String clientID, boolean gtidMode) {
 		this.connectionPool = pool;
-		this.serverID = serverID;
 		this.clientID = clientID;
+		this.gtidMode = gtidMode;
+		if (gtidMode) {
+			// we don't use server id for position store in gtid mode
+			this.serverID = DEFAULT_GTID_SERVER_ID;
+		} else {
+			this.serverID = serverID;
+		}
 	}
 
 	public void set(BinlogPosition newPosition) throws SQLException {
@@ -36,24 +44,27 @@ public class MysqlPositionStore {
 
 		String sql = "INSERT INTO `positions` set "
 				+ "server_id = ?, "
+				+ "gtid_set = ?, "
 				+ "binlog_file = ?, "
 				+ "binlog_position = ?, "
 				+ lastHeartbeatSQL
 				+ "client_id = ? "
 				+ "ON DUPLICATE KEY UPDATE "
 				+ lastHeartbeatSQL
-				+ "binlog_file = ?, binlog_position=?";
+				+ "gtid_set = ?, binlog_file = ?, binlog_position=?";
 
 		try( Connection c = connectionPool.getConnection() ){
 			PreparedStatement s = c.prepareStatement(sql);
 
 			LOGGER.debug("Writing binlog position to " + c.getCatalog() + ".positions: " + newPosition + ", last heartbeat read: " + heartbeat);
 			s.setLong(1, serverID);
-			s.setString(2, newPosition.getFile());
-			s.setLong(3, newPosition.getOffset());
-			s.setString(4, clientID);
-			s.setString(5, newPosition.getFile());
-			s.setLong(6, newPosition.getOffset());
+			s.setString(2, newPosition.getGtidSetStr());
+			s.setString(3, newPosition.getFile());
+			s.setLong(4, newPosition.getOffset());
+			s.setString(5, clientID);
+			s.setString(6, newPosition.getGtidSetStr());
+			s.setString(7, newPosition.getFile());
+			s.setLong(8, newPosition.getOffset());
 
 			s.execute();
 		}
@@ -139,7 +150,9 @@ public class MysqlPositionStore {
 			if ( !rs.next() )
 				return null;
 
-			return new BinlogPosition(rs.getLong("binlog_position"), rs.getString("binlog_file"));
+			String gtid = gtidMode ? rs.getString("gtid_set") : null;
+			return new BinlogPosition(gtid, null,
+				rs.getLong("binlog_position"), rs.getString("binlog_file"), null);
 		}
 	}
 
@@ -163,7 +176,9 @@ public class MysqlPositionStore {
 
 		while ( rs.next() ) {
 			Long server_id = rs.getLong("server_id");
-			BinlogPosition position = BinlogPosition.at(rs.getLong("binlog_position"), rs.getString("binlog_file"));
+			String gtid = gtidMode ? rs.getString("gtid_set") : null;
+			BinlogPosition position = BinlogPosition.at(gtid,
+				rs.getLong("binlog_position"), rs.getString("binlog_file"));
 			Long last_heartbeat_read = rs.getLong("last_heartbeat_read");
 
 			if ( rs.wasNull() ) {

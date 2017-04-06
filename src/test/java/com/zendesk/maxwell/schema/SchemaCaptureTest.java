@@ -36,7 +36,10 @@ public class SchemaCaptureTest extends MaxwellTestWithIsolatedServer {
 		Schema s = capturer.capture();
 		String dbs = StringUtils.join(s.getDatabaseNames().iterator(), ":");
 
-		assertEquals("maxwell:mysql:shard_1:shard_2:test", dbs);
+		if ( server.getVersion().equals("5.7") )
+			assertEquals("maxwell:mysql:shard_1:shard_2:sys:test", dbs);
+		else
+			assertEquals("maxwell:mysql:shard_1:shard_2:test", dbs);
 	}
 
 	@Test

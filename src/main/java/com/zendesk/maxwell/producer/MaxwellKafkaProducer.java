@@ -18,21 +18,19 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.Properties;
+import java.util.concurrent.ArrayBlockingQueue;
+
 
 class KafkaCallback implements Callback {
 	public static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
-	private InflightMessageList inflightMessages;
-	private final MaxwellContext context;
+	private final AbstractAsyncProducer.CallbackCompleter cc;
 	private final BinlogPosition position;
-	private final boolean isTXCommit;
 	private final String json;
 	private final String key;
 
-	public KafkaCallback(InflightMessageList inflightMessages, BinlogPosition position, boolean isTXCommit, MaxwellContext c, String key, String json) {
-		this.inflightMessages = inflightMessages;
-		this.context = c;
+	public KafkaCallback(AbstractAsyncProducer.CallbackCompleter cc, BinlogPosition position, String key, String json) {
+		this.cc = cc;
 		this.position = position;
-		this.isTXCommit = isTXCommit;
 		this.key = key;
 		this.json = json;
 	}
@@ -53,33 +51,42 @@ class KafkaCallback implements Callback {
 				LOGGER.debug("");
 			}
 		}
-		markCompleted();
+		cc.markCompleted();
 	}
-
-	private void markCompleted() {
-		if ( isTXCommit ) {
-			BinlogPosition newPosition = inflightMessages.completeMessage(position);
-
-			if ( newPosition != null ) {
-				context.setPosition(newPosition);
-			}
-		}
-	}
-
 }
 
+
 public class MaxwellKafkaProducer extends AbstractProducer {
+	private final ArrayBlockingQueue<RowMap> queue;
+	private final MaxwellKafkaProducerWorker worker;
+
+	public MaxwellKafkaProducer(MaxwellContext context, Properties kafkaProperties, String kafkaTopic) {
+		super(context);
+		this.queue = new ArrayBlockingQueue<>(100);
+		this.worker = new MaxwellKafkaProducerWorker(context, kafkaProperties, kafkaTopic, this.queue);
+		new Thread(this.worker, "maxwell-kafka-worker").start();
+
+	}
+
+	@Override
+	public void push(RowMap r) throws Exception {
+		this.queue.put(r);
+	}
+}
+
+class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnable {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
 
-	private final InflightMessageList inflightMessages;
 	private final KafkaProducer<String, String> kafka;
 	private String topic;
 	private final String ddlTopic;
 	private final MaxwellKafkaPartitioner partitioner;
 	private final MaxwellKafkaPartitioner ddlPartitioner;
 	private final KeyFormat keyFormat;
+	private final boolean interpolateTopic;
+	private final ArrayBlockingQueue<RowMap> queue;
 
-	public MaxwellKafkaProducer(MaxwellContext context, Properties kafkaProperties, String kafkaTopic) {
+	public MaxwellKafkaProducerWorker(MaxwellContext context, Properties kafkaProperties, String kafkaTopic, ArrayBlockingQueue<RowMap> queue) {
 		super(context);
 
 		this.topic = kafkaTopic;
@@ -87,12 +94,13 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 			this.topic = "maxwell";
 		}
 
+		this.interpolateTopic = kafkaTopic.contains("%{");
 		this.kafka = new KafkaProducer<>(kafkaProperties, new StringSerializer(), new StringSerializer());
 
 		String hash = context.getConfig().kafkaPartitionHash;
-		String partitionKey = context.getConfig().kafkaPartitionKey;
-		String partitionColumns = context.getConfig().kafkaPartitionColumns;
-		String partitionFallback = context.getConfig().kafkaPartitionFallback;
+		String partitionKey = context.getConfig().producerPartitionKey;
+		String partitionColumns = context.getConfig().producerPartitionColumns;
+		String partitionFallback = context.getConfig().producerPartitionFallback;
 		this.partitioner = new MaxwellKafkaPartitioner(hash, partitionKey, partitionColumns, partitionFallback);
 		this.ddlPartitioner = new MaxwellKafkaPartitioner(hash, "database", null,"database");
 		this.ddlTopic =  context.getConfig().ddlKafkaTopic;
@@ -102,7 +110,19 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		else
 			keyFormat = KeyFormat.ARRAY;
 
-		this.inflightMessages = new InflightMessageList();
+		this.queue = queue;
+	}
+
+	@Override
+	public void run() {
+		while ( true ) {
+			try {
+				RowMap row = queue.take();
+				this.push(row);
+			} catch ( Exception e ) {
+				throw new RuntimeException(e);
+			}
+		}
 	}
 
 	private Integer getNumPartitions(String topic) {
@@ -115,24 +135,16 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	}
 
 	private String generateTopic(String topic, RowMap r){
-		return topic.replaceAll("%\\{database\\}", r.getDatabase()).replaceAll("%\\{table\\}", r.getTable());
+		if ( interpolateTopic )
+			return topic.replaceAll("%\\{database\\}", r.getDatabase()).replaceAll("%\\{table\\}", r.getTable());
+		else
+			return topic;
 	}
 
 	@Override
-	public void push(RowMap r) throws Exception {
+	public void sendAsync(RowMap r, AbstractAsyncProducer.CallbackCompleter cc) throws Exception {
 		String key = r.pkToJson(keyFormat);
 		String value = r.toJSON(outputConfig);
-
-		if ( value == null ) { // heartbeat row or other row with suppressed output
-			inflightMessages.addMessage(r.getPosition());
-			BinlogPosition newPosition = inflightMessages.completeMessage(r.getPosition());
-
-			if ( newPosition != null ) {
-				context.setPosition(newPosition);
-			}
-
-			return;
-		}
 
 		ProducerRecord<String, String> record;
 		if (r instanceof DDLMap) {
@@ -142,23 +154,12 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 			record = new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, getNumPartitions(topic)), key, value);
 		}
 
-		if ( r.isTXCommit() )
-			inflightMessages.addMessage(r.getPosition());
-
-
 		/* if debug logging isn't enabled, release the reference to `value`, which can ease memory pressure somewhat */
 		if ( !KafkaCallback.LOGGER.isDebugEnabled() )
 			value = null;
 
-		KafkaCallback callback = new KafkaCallback(inflightMessages, r.getPosition(), r.isTXCommit(), this.context, key, value);
+		KafkaCallback callback = new KafkaCallback(cc, r.getPosition(), key, value);
 
 		kafka.send(record, callback);
-	}
-
-	@Override
-	public void writePosition(BinlogPosition p) throws SQLException {
-		// ensure that we don't prematurely advance the binlog pointer.
-		inflightMessages.addMessage(p);
-		inflightMessages.completeMessage(p);
 	}
 }

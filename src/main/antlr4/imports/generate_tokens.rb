@@ -75,6 +75,7 @@ MEDIUMTEXT
 LONGTEXT
 ENUM
 SET
+JSON
 
 NOT
 NULL
@@ -247,13 +248,18 @@ TRUNCATE
 EXCHANGE
 WITHOUT
 VALIDATION
+
+VIRTUAL
+STORED
+GENERATED
+ALWAYS
 )
 
 tokens_allowed_in_names = []
 
 tokens = tokens.select { |t| !t.empty? }.sort.uniq
 
-$connection = Mysql2::Client.new(:database => 'test')
+$connection = Mysql2::Client.new(:database => 'test', :default_file => ENV["HOME"] + '/.my.cnf', :default_group => 'mysql')
 
 def discover_token_availability(tokens, array, sql)
   tokens.each do |token|

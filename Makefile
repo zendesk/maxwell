@@ -19,7 +19,7 @@ JAVAC_FLAGS += -sourcepath src/main/java:src/test/java:target/generated-sources/
 JAVAC_FLAGS += -g -target 1.7 -source 1.7 -encoding UTF-8 -Xlint:-options -Xlint:unchecked
 
 # files that just get copied to the root of the maxwell distro
-DISTFILES=README.md docs/docs/quickstart.md docs/docs/config.md LICENSE src/main/resources/log4j2.xml config.properties.example
+DISTFILES=README.md docs/docs/quickstart.md docs/docs/config.md LICENSE src/main/resources/log4j2.xml config.properties.example kinesis-producer-library.properties.example
 
 ANTLR_DEPS=$(shell build/maven_fetcher -f org.antlr/antlr4/4.5 -o target/dependency-antlr)
 ANTLR=java -cp $(ANTLR_DEPS) org.antlr.v4.Tool
@@ -81,6 +81,9 @@ test%: compile-test
 
 test: compile-test
 	java -classpath $(JAVA_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore $(TEST_CLASSES)
+test-only: compile-test
+	java -classpath $(JAVA_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore ${ARGS}
+
 clean:
 	rm -f  target/.java target/.java-test
 	rm -rf target/classes

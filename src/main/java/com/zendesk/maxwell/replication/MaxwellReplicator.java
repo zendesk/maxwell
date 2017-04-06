@@ -77,7 +77,7 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 
 		this.shouldHeartbeat = shouldHeartbeat;
 		if ( shouldHeartbeat )
-			this.replicator.setHeartbeatPeriod(0.5f);
+			this.replicator.setHeartbeatPeriod(1f);
 
 		this.stopOnEOF = stopOnEOF;
 
@@ -352,6 +352,7 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 					}
 					break;
 				case MySQLConstants.ROTATE_EVENT:
+					tableCache.clear();
 					if ( stopOnEOF ) {
 						this.replicator.stopQuietly(100, TimeUnit.MILLISECONDS);
 						setReplicatorPosition((AbstractBinlogEventV4) v4Event);
@@ -377,7 +378,7 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 			event.getSql().toString(),
 			this.schemaStore,
 			eventBinlogPosition(event),
-			event.getHeader().getTimestamp()
+			event.getHeader().getTimestamp() / 1000
 		);
 	}
 

@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -96,11 +97,13 @@ public class MaxwellTestSupport {
 		config.replicationMysql.port = port;
 		config.replicationMysql.user = "maxwell";
 		config.replicationMysql.password = "maxwell";
+		config.replicationMysql.jdbcOptions.add("useSSL=false");
 
 		config.maxwellMysql.host = "127.0.0.1";
 		config.maxwellMysql.port = port;
 		config.maxwellMysql.user = "maxwell";
 		config.maxwellMysql.password = "maxwell";
+		config.maxwellMysql.jdbcOptions.add("useSSL=false");
 
 		config.databaseName = "maxwell";
 
@@ -131,6 +134,14 @@ public class MaxwellTestSupport {
 		return getRowsWithReplicator(mysql, filter, callback);
 	}
 
+	public static boolean inGtidMode() {
+		return System.getenv(MaxwellConfig.GTID_MODE_ENV) != null;
+	}
+
+	public static BinlogPosition capture(Connection c) throws SQLException {
+		return BinlogPosition.capture(c, inGtidMode());
+	}
+
 	public static List<RowMap>getRowsWithReplicator(final MysqlIsolatedServer mysql, MaxwellFilter filter, MaxwellTestSupportCallback callback) throws Exception {
 		final ArrayList<RowMap> list = new ArrayList<>();
 
@@ -142,6 +153,7 @@ public class MaxwellTestSupport {
 		config.maxwellMysql.password = "maxwell";
 		config.maxwellMysql.host = "localhost";
 		config.maxwellMysql.port = mysql.getPort();
+		config.maxwellMysql.jdbcOptions.add("useSSL=false");
 		config.replicationMysql = config.maxwellMysql;
 
 		if ( filter != null ) {
@@ -156,7 +168,7 @@ public class MaxwellTestSupport {
 
 		callback.beforeReplicatorStart(mysql);
 
-		config.initPosition = BinlogPosition.capture(mysql.getConnection());
+		config.initPosition = capture(mysql.getConnection());
 		final String waitObject = new String("");
 		BufferedMaxwell maxwell = new BufferedMaxwell(config) {
 			@Override
@@ -174,10 +186,10 @@ public class MaxwellTestSupport {
 		callback.afterReplicatorStart(mysql);
 		maxwell.context.getPositionStore().heartbeat();
 
-		BinlogPosition finalPosition = BinlogPosition.capture(mysql.getConnection());
+		BinlogPosition finalPosition = capture(mysql.getConnection());
 		LOGGER.debug("running replicator up to " + finalPosition);
 
-		Long pollTime = 1000L;
+		Long pollTime = 2000L;
 		BinlogPosition lastPositionRead = null;
 
 		for ( ;; ) {

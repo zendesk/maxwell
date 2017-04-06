@@ -1,12 +1,8 @@
 ### Requirements:
 ***
 - JRE 7 or above
-- mysql 5.1, 5.5, 5.6
+- mysql 5.1, 5.5, 5.6, 5.7
 - kafka 0.8.2 or greater
-
-### Unsupported configurations
-***
-- Mysql 5.7 is untested with Maxwell.  GTID replication is known to not function.
 
 ### binlog_row_image=MINIMAL
 ***
@@ -38,6 +34,6 @@ Notes:
   replication-hosts, due to the heartbeat mechanism.
 - this code should be considered alpha-quality.
 - on highly active servers, as much as 1 second of data may be duplicated.
-
+- master recovery is not available in GTID-mode.
 
 

@@ -89,6 +89,7 @@ public class Maxwell implements Runnable {
 				MysqlSchemaStore oldServerSchemaStore = new MysqlSchemaStore(
 					context.getMaxwellConnectionPool(),
 					context.getReplicationConnectionPool(),
+					context.getSchemaConnectionPool(),
 					recoveryInfo.serverID,
 					recoveryInfo.position,
 					context.getCaseSensitivity(),
@@ -115,7 +116,7 @@ public class Maxwell implements Runnable {
 		/* third method: capture the current master postiion. */
 		if ( initial == null ) {
 			try ( Connection c = context.getReplicationConnection() ) {
-				initial = BinlogPosition.capture(c);
+				initial = BinlogPosition.capture(c, config.gtidMode);
 			}
 		}
 		return initial;
@@ -138,9 +139,12 @@ public class Maxwell implements Runnable {
 	protected void onReplicatorStart() {}
 	private void start() throws Exception {
 		try ( Connection connection = this.context.getReplicationConnection();
-			  Connection rawConnection = this.context.getRawMaxwellConnection() ) {
+			Connection rawConnection = this.context.getRawMaxwellConnection() ) {
 			MaxwellMysqlStatus.ensureReplicationMysqlState(connection);
 			MaxwellMysqlStatus.ensureMaxwellMysqlState(rawConnection);
+			if (config.gtidMode) {
+				MaxwellMysqlStatus.ensureGtidMysqlState(connection);
+			}
 
 			SchemaStoreSchema.ensureMaxwellSchema(rawConnection, this.config.databaseName);
 
