@@ -25,6 +25,7 @@ public class PositionStoreThread extends RunLoopProcess implements Runnable {
 
 	public void start() {
 		this.thread = new Thread(this, "Position Flush Thread");
+		this.thread.setDaemon(true);
 		thread.start();
 	}
 

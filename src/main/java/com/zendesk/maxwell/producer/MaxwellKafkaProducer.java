@@ -92,7 +92,9 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		super(context);
 		this.queue = new ArrayBlockingQueue<>(100);
 		this.worker = new MaxwellKafkaProducerWorker(context, kafkaProperties, kafkaTopic, this.queue);
-		new Thread(this.worker, "maxwell-kafka-worker").start();
+		Thread thread = new Thread(this.worker, "maxwell-kafka-worker");
+		thread.setDaemon(true);
+		thread.start();
 	}
 
 	@Override
