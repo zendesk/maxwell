@@ -1,10 +1,10 @@
 package com.zendesk.maxwell.schema;
 
+import com.zendesk.maxwell.MaxwellContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
-import java.util.concurrent.TimeoutException;
 
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.util.RunLoopProcess;
@@ -14,11 +14,13 @@ public class PositionStoreThread extends RunLoopProcess implements Runnable {
 	private BinlogPosition position; // in memory position
 	private BinlogPosition storedPosition; // position as flushed to storage
 	private final MysqlPositionStore store;
+	private MaxwellContext context;
 	private Exception exception;
 	private Thread thread;
 
-	public PositionStoreThread(MysqlPositionStore store) {
+	public PositionStoreThread(MysqlPositionStore store, MaxwellContext context) {
 		this.store = store;
+		this.context = context;
 	}
 
 	public void start() {
@@ -31,16 +33,17 @@ public class PositionStoreThread extends RunLoopProcess implements Runnable {
 		try {
 			runLoop();
 		} catch ( Exception e ) {
-			LOGGER.error("Hit " + e.getClass().getName() + " exception in MysqlPositionStore thread.");
 			this.exception = e;
+			context.terminate(e);
+		} finally {
+			this.taskState.stopped();
 		}
 	}
 
-
-	public void stopLoop() throws TimeoutException {
-		this.requestStop();
+	@Override
+	public void requestStop() {
+		super.requestStop();
 		thread.interrupt();
-		super.stopLoop();
 	}
 
 	@Override
@@ -101,10 +104,6 @@ public class PositionStoreThread extends RunLoopProcess implements Runnable {
 		position = store.get();
 
 		return position;
-	}
-
-	public Exception getException() {
-		return this.exception;
 	}
 }
 

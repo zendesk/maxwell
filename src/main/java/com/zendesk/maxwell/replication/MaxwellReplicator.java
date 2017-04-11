@@ -44,13 +44,12 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 		MaxwellMysqlConfig mysqlConfig,
 		Long replicaServerID,
 		boolean shouldHeartbeat,
-		PositionStoreThread positionStoreThread,
 		String maxwellSchemaDatabaseName,
 		BinlogPosition start,
 		boolean stopOnEOF,
 		String clientID
 	) {
-		super(clientID, bootstrapper, positionStoreThread, maxwellSchemaDatabaseName, producer);
+		super(clientID, bootstrapper, maxwellSchemaDatabaseName, producer);
 		this.schemaStore = schemaStore;
 		this.binlogEventListener = new BinlogEventListener(queue);
 
@@ -84,7 +83,6 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 			ctx.getConfig().replicationMysql,
 			ctx.getConfig().replicaServerID,
 			ctx.shouldHeartbeat(),
-			ctx.getPositionStoreThread(),
 			ctx.getConfig().databaseName,
 			start,
 			false,

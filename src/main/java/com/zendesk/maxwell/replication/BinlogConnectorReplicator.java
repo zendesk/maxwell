@@ -39,13 +39,12 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 		AbstractBootstrapper bootstrapper,
 		MaxwellMysqlConfig mysqlConfig,
 		Long replicaServerID,
-		PositionStoreThread positionStoreThread,
 		String maxwellSchemaDatabaseName,
 		BinlogPosition start,
 		boolean stopOnEOF,
 		String clientID
 	) {
-		super(clientID, bootstrapper, positionStoreThread, maxwellSchemaDatabaseName, producer);
+		super(clientID, bootstrapper, maxwellSchemaDatabaseName, producer);
 		this.schemaStore = schemaStore;
 
 		this.client = new BinaryLogClient(mysqlConfig.host, mysqlConfig.port, mysqlConfig.user, mysqlConfig.password);
@@ -79,7 +78,6 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 			bootstrapper,
 			ctx.getConfig().replicationMysql,
 			ctx.getConfig().replicaServerID,
-			ctx.getPositionStoreThread(),
 			ctx.getConfig().databaseName,
 			start,
 			false,
@@ -91,7 +89,8 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 		if ( !client.isConnected() && !stopOnEOF ) {
 			String gtidStr = client.getGtidSet();
 			String binlogPos = client.getBinlogFilename() + ":" + client.getBinlogPosition();
-			LOGGER.warn("replicator stopped at position: " + gtidStr == null ? binlogPos : gtidStr + " -- restarting");
+			String position = gtidStr == null ? binlogPos : gtidStr;
+			LOGGER.warn("replicator stopped at position: " + position + " -- restarting");
 			client.connect(5000);
 		}
 	}

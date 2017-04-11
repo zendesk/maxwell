@@ -65,8 +65,7 @@ public class Recovery {
 						null,
 						null,
 						replicationConfig,
-						0L, // server-id of 0 activatives "mysqlbinlog" behavior where the server will stop after each binlog
-						null,
+						0L, // server-id of 0 activates "mysqlbinlog" behavior where the server will stop after each binlog
 						maxwellDatabaseName,
 						position,
 						true,
@@ -78,9 +77,8 @@ public class Recovery {
 						null,
 						null,
 						replicationConfig,
-						0L, // server-id of 0 activatives "mysqlbinlog" behavior where the server will stop after each binlog
+						0L, // server-id of 0 activates "mysqlbinlog" behavior where the server will stop after each binlog
 						false,
-						null,
 						maxwellDatabaseName,
 						position,
 						true,
