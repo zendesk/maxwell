@@ -69,7 +69,7 @@ ignored_alter_specifications:
   algorithm_type: DEFAULT | INPLACE | COPY;
   lock_type: DEFAULT | NONE | SHARED | EXCLUSIVE;
 
-partition_names: IDENT (',' IDENT)*;
+partition_names: id (',' id)*;
 alter_ordering: alter_ordering_column (ASC|DESC)?;
 alter_ordering_column:
     name '.' name '.' name
