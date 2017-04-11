@@ -165,6 +165,9 @@
                       <li class="toctree-l3"><a href="#bootstrapping-data-format">Bootstrapping Data Format</a></li>
                       
                   
+                      <li class="toctree-l3"><a href="#failure-scenarios">Failure Scenarios</a></li>
+                      
+                  
                   </ul>
               
           </li>
@@ -267,6 +270,10 @@ mysql&gt; insert into maxwell.bootstrap (database_name, table_name) values (&quo
 {&quot;database&quot;:&quot;fooDB&quot;,&quot;table&quot;:&quot;barTable&quot;,&quot;type&quot;:&quot;bootstrap-complete&quot;,&quot;ts&quot;:1450557744,&quot;data&quot;:{}}
 </code></pre>
 
+<h3 id="failure-scenarios">Failure Scenarios</h3>
+<p>If Maxwell crashes during bootstrapping the next time it runs it will rerun the bootstrap in its entirety - regardless of previous progress.
+If this behavior is not desired, manual updates to the <code>bootstrap</code> table are required.
+Specifically, marking the unfinished bootstrap row as 'complete' (<code>is_complete</code> = 1) or deleting the row.</p>
 <script>
   jQuery(document).ready(function () {
     jQuery("table").addClass("table table-condensed table-bordered table-hover");
