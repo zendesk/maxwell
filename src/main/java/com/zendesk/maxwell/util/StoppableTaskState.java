@@ -48,4 +48,8 @@ public class StoppableTaskState {
 			);
 		}
 	}
+
+	public RunState getState() {
+		return state;
+	}
 }
