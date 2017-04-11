@@ -203,8 +203,8 @@ kinesis_stream=maxwell
 #metrics_datadog_apikey=API_KEY
 
 # required if metrics_datadog_type = udp
-#metrics_datadog_host=localhost
-#metrics_datadog_port=8125
+#metrics_datadog_host=localhost # default localhost
+#metrics_datadog_port=8125 # default 8125
 
 
 ######### misc stuff ###############

@@ -181,7 +181,7 @@ blacklist_dbs                  | PATTERN                             | ignore up
 blacklist_tables               | PATTERN                             | ignore updates AND schema changes from tables named like PATTERN (see warnings below) |
 &nbsp;
 **monitoring**
-metrics_reporting_type         | [slf4j &#124; jmx &#124; http]      | how maxwell metrics will be reported, at least one of slf4j &#124; jmx &#124; http | 
+metrics_reporting_type         | [slf4j &#124; jmx &#124; http &#124; datadog]      | how maxwell metrics will be reported, at least one of slf4j &#124; jmx &#124; http &#124; datadog| 
 metrics_reporting_interval     | INT                                 | the frequency metrics are emitted to the log, in seconds, when slf4j reporting is configured | 
 metrics_reporting_port         | INT                                 | the port the server will bind to when http reporting is configured | 
 &nbsp;
