@@ -114,8 +114,11 @@ public class BinlogPosition implements Serializable {
 			return false;
 		BinlogPosition otherPosition = (BinlogPosition) other;
 
-		return this.file.equals(otherPosition.file) && this.offset == otherPosition.offset
-			&& (gtidSetStr == null) ? otherPosition.gtidSetStr == null
-				: gtidSetStr.equals(otherPosition.gtidSetStr);
+		return this.file.equals(otherPosition.file)
+			&& this.offset == otherPosition.offset
+			&& (gtidSetStr == null
+					? otherPosition.gtidSetStr == null
+					: gtidSetStr.equals(otherPosition.gtidSetStr)
+				);
 	}
 }
