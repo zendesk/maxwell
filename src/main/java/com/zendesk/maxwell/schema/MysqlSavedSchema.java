@@ -543,11 +543,13 @@ public class MysqlSavedSchema {
 			}
 			return null;
 		} else {
+			// Only consider binlog positions before the target position on the current server.
+			// Within those, sort for the latest binlog file, then the latest binlog position.
 			PreparedStatement s = connection.prepareStatement(
 				"SELECT id from `schemas` "
 				+ "WHERE deleted = 0 "
 				+ "AND ((binlog_file < ?) OR (binlog_file = ? and binlog_position <= ?)) AND server_id = ? "
-				+ "ORDER BY id desc limit 1");
+				+ "ORDER BY binlog_file DESC, binlog_position DESC limit 1");
 
 			s.setString(1, targetPosition.getFile());
 			s.setString(2, targetPosition.getFile());
