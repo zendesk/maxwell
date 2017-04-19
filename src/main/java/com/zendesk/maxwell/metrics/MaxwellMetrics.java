@@ -5,6 +5,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Slf4jReporter;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.zendesk.maxwell.MaxwellConfig;
+import org.apache.commons.lang.StringUtils;
 import org.coursera.metrics.datadog.DatadogReporter;
 import org.coursera.metrics.datadog.transport.HttpTransport;
 import org.coursera.metrics.datadog.transport.Transport;
@@ -103,7 +104,9 @@ public class MaxwellMetrics {
 	private static ArrayList<String> getDatadogTags(String datadogTags) {
 		ArrayList<String> tags = new ArrayList<>();
 		for (String tag : datadogTags.split(",")) {
-			tags.add(tag);
+			if (!StringUtils.isEmpty(tag)) {
+				tags.add(tag);
+			}
 		}
 
 		return tags;
