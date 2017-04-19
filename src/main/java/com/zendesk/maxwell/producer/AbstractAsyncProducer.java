@@ -8,10 +8,10 @@ import com.zendesk.maxwell.row.RowMap;
 
 public abstract class AbstractAsyncProducer extends AbstractProducer {
 
-	public final static String succeededMessageCountName = MetricRegistry.name(MaxwellMetrics.metricsName, "messages", "succeeded");
-	public final static String succeededMessageMeterName = MetricRegistry.name(MaxwellMetrics.metricsName, "messages", "succeeded", "meter");
-	public final static String failedMessageCountName = MetricRegistry.name(MaxwellMetrics.metricsName, "messages", "failed");
-	public final static String failedMessageMeterName = MetricRegistry.name(MaxwellMetrics.metricsName, "messages", "failed", "meter");
+	public final static String succeededMessageCountName = MetricRegistry.name(MaxwellMetrics.getMetricsPrefix(), "messages", "succeeded");
+	public final static String succeededMessageMeterName = MetricRegistry.name(MaxwellMetrics.getMetricsPrefix(), "messages", "succeeded", "meter");
+	public final static String failedMessageCountName = MetricRegistry.name(MaxwellMetrics.getMetricsPrefix(), "messages", "failed");
+	public final static String failedMessageMeterName = MetricRegistry.name(MaxwellMetrics.getMetricsPrefix(), "messages", "failed", "meter");
 
 	public class CallbackCompleter {
 		private InflightMessageList inflightMessages;

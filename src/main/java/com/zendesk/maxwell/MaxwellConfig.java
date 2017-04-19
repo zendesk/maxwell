@@ -53,6 +53,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public MaxwellOutputConfig outputConfig;
 	public String log_level;
 
+	public String metricsPrefix;
 	public String metricsReportingType;
 	public Long metricsSlf4jInterval;
 	public int metricsHTTPPort;
@@ -177,6 +178,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_8" );
 
+		parser.accepts( "metrics_prefix", "the prefix maxwell will apply to all metrics" ).withOptionalArg();
 		parser.accepts( "metrics_type", "how maxwell metrics will be reported, at least one of slf4j|jmx|http|datadog" ).withOptionalArg();
 		parser.accepts( "metrics_slf4j_interval", "the frequency metrics are emitted to the log, in seconds, when slf4j reporting is configured" ).withOptionalArg();
 		parser.accepts( "metrics_http_port", "the port the server will bind to when http reporting is configured" ).withOptionalArg();
@@ -346,6 +348,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.outputFile = fetchOption("output_file", options, properties, null);
 
+		this.metricsPrefix = fetchOption("metrics_prefix", options, properties, "MaxwellMetrics");
 		this.metricsReportingType = fetchOption("metrics_type", options, properties, null);
 		this.metricsSlf4jInterval = fetchLongOption("metrics_slf4j_interval", options, properties, 60L);
 		this.metricsHTTPPort = Integer.parseInt(fetchOption("metrics_http_port", options, properties, "8080"));

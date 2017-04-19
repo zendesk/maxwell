@@ -187,7 +187,7 @@ public class Maxwell implements Runnable {
 		// Dropwizard throws an exception if you try to register multiple metrics with the same name.
 		// Since there are codepaths that create multiple replicators (at least in the tests) we need to protect
 		// against that.
-		String lagGaugeName = MetricRegistry.name(MaxwellMetrics.metricsName, "replication", "lag");
+		String lagGaugeName = MetricRegistry.name(MaxwellMetrics.getMetricsPrefix(), "replication", "lag");
 		if ( !(MaxwellMetrics.metricRegistry.getGauges().containsKey(lagGaugeName)) ) {
 			MaxwellMetrics.metricRegistry.register(
 					lagGaugeName,

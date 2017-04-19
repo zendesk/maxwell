@@ -34,11 +34,11 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	protected Long lastHeartbeatRead;
 
 	private final Counter rowCounter = MaxwellMetrics.metricRegistry.counter(
-		MetricRegistry.name(MaxwellMetrics.metricsName, "row", "count")
+		MetricRegistry.name(MaxwellMetrics.getMetricsPrefix(), "row", "count")
 	);
 
 	private final Meter rowMeter = MaxwellMetrics.metricRegistry.meter(
-		MetricRegistry.name(MaxwellMetrics.metricsName, "row", "meter")
+		MetricRegistry.name(MaxwellMetrics.getMetricsPrefix(), "row", "meter")
 	);
 
 	protected Long replicationLag = 0L;

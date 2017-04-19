@@ -5,7 +5,7 @@ or the `config.properties` file. These can provide insight into system health.
 At present certain metrics are Kafka-specific - that is, not yet supported other producers.
 
 ### Metrics
-All metrics are prepended with `MaxwellMetrics.`
+All metrics are prepended with the configured `metrics_prefix.`
 
 metric                         | description
 -------------------------------|-------------------------------------
@@ -18,7 +18,7 @@ metric                         | description
 `messages.failed.meter`        | a measure of the rate at which messages failed to send Kafka
 `row.meter`                    | a measure of the rate at which rows arrive to Maxwell from the binlog connector
 **Gauges**
-`replication.lag`              | the time elapsed between the database transaction commit and the time it was processed by Maxwell, in milliseconds
+`replication.lag`              | the time elapsed between the database transaction commit and the time it was processed by Maxwell, in seconds
 **Timers**
 `time.overall`                 | the time it took to send a given record to Kafka, in milliseconds
 

@@ -141,7 +141,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		else
 			keyFormat = KeyFormat.ARRAY;
 
-		this.metricsTimer = MaxwellMetrics.metricRegistry.timer(MetricRegistry.name(MaxwellMetrics.metricsName, "time", "overall"));
+		this.metricsTimer = MaxwellMetrics.metricRegistry.timer(MetricRegistry.name(MaxwellMetrics.getMetricsPrefix(), "time", "overall"));
 		this.queue = queue;
 	}
 

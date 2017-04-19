@@ -181,6 +181,9 @@ kinesis_stream=maxwell
 # Supplying multiple is allowed.
 #metrics_type=jmx,slf4j
 
+# The prefix maxwell will apply to all metrics
+#metrics_prefix=MaxwellMetrics # default MaxwellMetrics
+
 # When metrics_type includes slf4j this is the frequency metrics are emitted to the log, in seconds
 #metrics_slf4j_interval=60
 

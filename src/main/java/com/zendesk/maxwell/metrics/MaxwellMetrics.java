@@ -23,7 +23,6 @@ public class MaxwellMetrics {
 	public static final MetricRegistry metricRegistry = new MetricRegistry();
 	public static final HealthCheckRegistry healthCheckRegistry = new HealthCheckRegistry();
 
-	public static final String metricsName = "MaxwellMetrics";
 	public static final String reportingTypeSlf4j = "slf4j";
 	public static final String reportingTypeJmx = "jmx";
 	public static final String reportingTypeHttp = "http";
@@ -31,11 +30,15 @@ public class MaxwellMetrics {
 
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellMetrics.class);
 
+	private static String metricsPrefix;
+
 	public static void setup(MaxwellConfig config) {
 		if (config.metricsReportingType == null) {
 			LOGGER.warn("Metrics will not be exposed: metricsReportingType not configured.");
 			return;
 		}
+
+		metricsPrefix = config.metricsPrefix;
 
 		if (config.metricsReportingType.contains(reportingTypeSlf4j)) {
 			final Slf4jReporter reporter = Slf4jReporter.forRegistry(metricRegistry)
@@ -110,5 +113,9 @@ public class MaxwellMetrics {
 		}
 
 		return tags;
+	}
+
+	public static String getMetricsPrefix() {
+		return metricsPrefix;
 	}
 }

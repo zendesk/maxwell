@@ -181,9 +181,16 @@ blacklist_dbs                  | PATTERN                             | ignore up
 blacklist_tables               | PATTERN                             | ignore updates AND schema changes from tables named like PATTERN (see warnings below) |
 &nbsp;
 **monitoring**
-metrics_reporting_type         | [slf4j &#124; jmx &#124; http &#124; datadog]      | how maxwell metrics will be reported, at least one of slf4j &#124; jmx &#124; http &#124; datadog| 
-metrics_reporting_interval     | INT                                 | the frequency metrics are emitted to the log, in seconds, when slf4j reporting is configured | 
-metrics_reporting_port         | INT                                 | the port the server will bind to when http reporting is configured | 
+metrics_prefix | STRING | the prefix maxwell will apply to all metrics | MaxwellMetrics
+metrics_type         | [slf4j &#124; jmx &#124; http &#124; datadog]      | how maxwell metrics will be reported, at least one of slf4j &#124; jmx &#124; http &#124; datadog| 
+metrics_slf4j_interval     | INT                                 | the frequency metrics are emitted to the log, in seconds, when slf4j reporting is configured | 60
+metrics_http_port         | INT                                 | the port the server will bind to when http reporting is configured | 8080
+metrics_datadog_type | [udp &#124; http] | when metrics_type includes `datadog` this is the way metrics will be reported, can only be one of [udp &#124; http] | udp
+metrics_datadog_tags | STRING | datadog tags that should be supplied, e.g. tag1:value1,tag2:value2 | 
+metrics_datadog_interval | INT | the frequency metrics are pushed to datadog, in seconds | 60
+metrics_datadog_apikey | STRING | the datadog api key to use when metrics_datadog_type = `http` | 
+metrics_datadog_host | STRING | the host to publish metrics to when metrics_datadog_type = `udp` | localhost
+metrics_datadog_port | INT | the port to publish metrics to when metrics_datadog_type = `udp` | 8125
 &nbsp;
 **misc**
 bootstrapper                   | [async &#124; sync &#124; none]                   | bootstrapper type.  See bootstrapping docs.        | async
