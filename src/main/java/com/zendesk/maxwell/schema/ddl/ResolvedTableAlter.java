@@ -1,13 +1,10 @@
 package com.zendesk.maxwell.schema.ddl;
 
-import java.util.*;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import com.zendesk.maxwell.MaxwellFilter;
-import com.zendesk.maxwell.schema.*;
-import com.zendesk.maxwell.schema.columndef.ColumnDef;
-import com.zendesk.maxwell.schema.columndef.StringColumnDef;
+import com.zendesk.maxwell.schema.Database;
+import com.zendesk.maxwell.schema.Schema;
+import com.zendesk.maxwell.schema.Table;
 
 public class ResolvedTableAlter extends ResolvedSchemaChange {
 	public String database;
@@ -42,5 +39,20 @@ public class ResolvedTableAlter extends ResolvedSchemaChange {
 		oldDatabase.removeTable(this.table);
 		newDatabase.addTable(newTable);
 	}
-}
 
+	@Override
+	public String databaseName() {
+		return database;
+	}
+
+	@Override
+	public String tableName() {
+		return table;
+	}
+
+	@Override
+	public boolean shouldOutput(MaxwellFilter filter) {
+		return MaxwellFilter.matches(filter, database, oldTable.getName()) &&
+			MaxwellFilter.matches(filter, database, newTable.getName());
+	}
+}

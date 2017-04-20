@@ -1,6 +1,8 @@
 package com.zendesk.maxwell.schema.ddl;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.zendesk.maxwell.MaxwellFilter;
 import com.zendesk.maxwell.schema.Schema;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="type")
@@ -15,4 +17,12 @@ import com.zendesk.maxwell.schema.Schema;
 
 public abstract class ResolvedSchemaChange {
 	public abstract void apply(Schema originalSchema) throws InvalidSchemaError;
+
+	public abstract String databaseName();
+
+	public abstract String tableName();
+
+	public boolean shouldOutput(MaxwellFilter filter) {
+		return MaxwellFilter.matches(filter, databaseName(), tableName());
+	};
 }

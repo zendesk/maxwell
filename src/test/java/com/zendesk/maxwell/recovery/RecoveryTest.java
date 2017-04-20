@@ -238,7 +238,7 @@ public class RecoveryTest extends TestWithNameLogging {
 			}
 		};
 
-		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(masterServer, null, callback);
+		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(masterServer, null, callback, null);
 
 		generateNewMasterData(false, DATA_SIZE);
 

@@ -1,6 +1,7 @@
 package com.zendesk.maxwell;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.Schema;
@@ -117,7 +118,7 @@ public class MaxwellTestSupport {
 		mysql.execute("drop database if exists maxwell");
 	}
 
-	public static List<RowMap>getRowsWithReplicator(final MysqlIsolatedServer mysql, MaxwellFilter filter, final String queries[], final String before[]) throws Exception {
+	public static List<RowMap> getRowsWithReplicator(final MysqlIsolatedServer mysql, MaxwellFilter filter, final String queries[], final String before[]) throws Exception {
 		MaxwellTestSupportCallback callback = new MaxwellTestSupportCallback() {
 			@Override
 			public void afterReplicatorStart(MysqlIsolatedServer mysql) throws SQLException {
@@ -131,7 +132,7 @@ public class MaxwellTestSupport {
 			}
 		};
 
-		return getRowsWithReplicator(mysql, filter, callback);
+		return getRowsWithReplicator(mysql, filter, callback, null);
 	}
 
 	public static boolean inGtidMode() {
@@ -142,7 +143,7 @@ public class MaxwellTestSupport {
 		return BinlogPosition.capture(c, inGtidMode());
 	}
 
-	public static List<RowMap>getRowsWithReplicator(final MysqlIsolatedServer mysql, MaxwellFilter filter, MaxwellTestSupportCallback callback) throws Exception {
+	public static List<RowMap> getRowsWithReplicator(final MysqlIsolatedServer mysql, MaxwellFilter filter, MaxwellTestSupportCallback callback, MaxwellOutputConfig outputConfig) throws Exception {
 		final ArrayList<RowMap> list = new ArrayList<>();
 
 		clearSchemaStore(mysql);
@@ -155,6 +156,9 @@ public class MaxwellTestSupport {
 		config.maxwellMysql.port = mysql.getPort();
 		config.maxwellMysql.jdbcOptions.add("useSSL=false");
 		config.replicationMysql = config.maxwellMysql;
+		if (outputConfig == null) {
+			outputConfig = new MaxwellOutputConfig();
+		}
 
 		if ( filter != null ) {
 			if ( filter.isDatabaseWhitelist() )
@@ -210,13 +214,13 @@ public class MaxwellTestSupport {
 					if ( r == null )
 						break;
 
-					if ( r.toJSON() != null )
+					if ( r.toJSON(outputConfig) != null )
 						list.add(r);
 				}
 
 				break;
 			}
-			if ( row.toJSON() != null )
+			if ( row.toJSON(outputConfig) != null )
 				list.add(row);
 		}
 

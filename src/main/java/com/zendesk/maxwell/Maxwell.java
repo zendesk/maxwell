@@ -72,7 +72,7 @@ public class Maxwell implements Runnable {
 	private BinlogPosition attemptMasterRecovery() throws Exception {
 		BinlogPosition recovered = null;
 		MysqlPositionStore positionStore = this.context.getPositionStore();
-		RecoveryInfo recoveryInfo = positionStore.getRecoveryInfo();
+		RecoveryInfo recoveryInfo = positionStore.getRecoveryInfo(config);
 
 		if ( recoveryInfo != null ) {
 			Recovery masterRecovery = new Recovery(

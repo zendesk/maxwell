@@ -162,9 +162,9 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "schema_database", "database name for maxwell state (schema and binlog position)").withRequiredArg();
 		parser.accepts( "max_schemas", "deprecated.").withOptionalArg();
 		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION").withRequiredArg();
-		parser.accepts( "replay", "replay mode, don't store any information to the server");
-		parser.accepts( "master_recovery", "(experimental) enable master position recovery code");
-		parser.accepts( "gtid_mode", "(experimental) enable gtid mode");
+		parser.accepts( "replay", "replay mode, don't store any information to the server").withOptionalArg();
+		parser.accepts( "master_recovery", "(experimental) enable master position recovery code").withOptionalArg();
+		parser.accepts( "gtid_mode", "(experimental) enable gtid mode").withOptionalArg();
 
 		parser.accepts( "__separator_7" );
 
