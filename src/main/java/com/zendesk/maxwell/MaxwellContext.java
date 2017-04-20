@@ -123,6 +123,7 @@ public class MaxwellContext {
 		this.replicationConnectionPool.release();
 		this.maxwellConnectionPool.release();
 		this.rawMaxwellConnectionPool.release();
+		this.producer.release();
 	}
 
 	public PositionStoreThread getPositionStoreThread() {

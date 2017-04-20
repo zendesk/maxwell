@@ -1,11 +1,11 @@
 package com.zendesk.maxwell.producer;
 
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.schema.ddl.DDLMap;
 import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.producer.partitioners.MaxwellKafkaPartitioner;
+import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMap.KeyFormat;
-import com.zendesk.maxwell.producer.partitioners.MaxwellKafkaPartitioner;
+import com.zendesk.maxwell.schema.ddl.DDLMap;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -16,7 +16,6 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.SQLException;
 import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -74,7 +73,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	}
 }
 
-class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnable {
+class MaxwellKafkaProducerWorker extends AbstractAsyncProducerWorker {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
 
 	private final KafkaProducer<String, String> kafka;
@@ -84,10 +83,9 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	private final MaxwellKafkaPartitioner ddlPartitioner;
 	private final KeyFormat keyFormat;
 	private final boolean interpolateTopic;
-	private final ArrayBlockingQueue<RowMap> queue;
 
 	public MaxwellKafkaProducerWorker(MaxwellContext context, Properties kafkaProperties, String kafkaTopic, ArrayBlockingQueue<RowMap> queue) {
-		super(context);
+		super(context, queue);
 
 		this.topic = kafkaTopic;
 		if ( this.topic == null ) {
@@ -109,20 +107,6 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 			keyFormat = KeyFormat.HASH;
 		else
 			keyFormat = KeyFormat.ARRAY;
-
-		this.queue = queue;
-	}
-
-	@Override
-	public void run() {
-		while ( true ) {
-			try {
-				RowMap row = queue.take();
-				this.push(row);
-			} catch ( Exception e ) {
-				throw new RuntimeException(e);
-			}
-		}
 	}
 
 	private Integer getNumPartitions(String topic) {

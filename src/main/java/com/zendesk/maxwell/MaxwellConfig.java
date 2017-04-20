@@ -48,6 +48,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public String kinesisStream;
 	public boolean kinesisMd5Keys;
+	public int kinesisMaxAttempts;
+	public int kinesisMaxBufferedRecords;
 
 	public String outputFile;
 	public MaxwellOutputConfig outputConfig;
@@ -320,6 +322,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.kinesisStream  = fetchOption("kinesis_stream", options, properties, null);
 		this.kinesisMd5Keys = fetchBooleanOption("kinesis_md5_keys", options, properties, false);
+		this.kinesisMaxAttempts = fetchLongOption("kinesis_max_attempts", options, properties, 0L).intValue();
+		this.kinesisMaxBufferedRecords = fetchLongOption("kinesis_max_buffered_records", options, properties, 1000L).intValue();
 
 		this.outputFile         = fetchOption("output_file", options, properties, null);
 

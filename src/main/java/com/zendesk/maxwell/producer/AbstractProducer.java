@@ -14,4 +14,6 @@ public abstract class AbstractProducer {
 	}
 
 	abstract public void push(RowMap r) throws Exception;
+
+	public void release() {};
 }
