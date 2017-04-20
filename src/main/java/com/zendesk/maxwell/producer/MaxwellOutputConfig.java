@@ -13,6 +13,11 @@ public class MaxwellOutputConfig {
 	public boolean includesThreadId;
 	public boolean outputDDL;
 	public List<Pattern> excludeColumns;
+	public boolean encryptData;
+	public boolean encryptAll;
+	public String encryption_key;
+	public String secret_key;
+
 
 	public MaxwellOutputConfig() {
 		this.includesBinlogPosition = false;
@@ -23,5 +28,9 @@ public class MaxwellOutputConfig {
 		this.includesThreadId = false;
 		this.outputDDL = false;
 		this.excludeColumns = new ArrayList<>();
+		this.encryptData = false;
+		this.encryptAll = false;
+		this.encryption_key = null;
+		this.secret_key = null;
 	}
 }

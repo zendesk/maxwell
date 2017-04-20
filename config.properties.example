@@ -173,6 +173,17 @@ kinesis_stream=maxwell
 #blacklist_tables=table1,table_no
 #
 
+######### encryption ###############
+
+# convert the data field to a json string and encrypt it
+#encrypt_data=true
+
+# convert the whole payload to a json string and encrypt it
+#encrypt_all=true
+
+# specify the encryption key and secret key
+#encryption_key=aaaaaaaaaaaaaaaa
+#secret_key=RandomInitVector
 
 ######### misc stuff ###############
 
