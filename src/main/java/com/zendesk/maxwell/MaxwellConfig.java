@@ -1,17 +1,22 @@
 package com.zendesk.maxwell;
 
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.Properties;
 import java.util.regex.Pattern;
-
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.producer.MaxwellOutputConfig;
-import joptsimple.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.util.AbstractConfig;
+
+import joptsimple.BuiltinHelpFormatter;
+import joptsimple.OptionDescriptor;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
 
 public class MaxwellConfig extends AbstractConfig {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfig.class);
@@ -60,6 +65,13 @@ public class MaxwellConfig extends AbstractConfig {
 	public boolean replayMode;
 	public boolean masterRecovery;
 
+	public String rabbitmqHost;
+    public String rabbitmqExchange;
+    public String rabbitmqExchangeType;
+    public String rabbitmqPort;
+    public String rabbitmqUser;
+    public String rabbitmqPassword;
+
 	public MaxwellConfig() { // argv is only null in tests
 		this.kafkaProperties = new Properties();
 		this.replayMode = false;
@@ -78,6 +90,14 @@ public class MaxwellConfig extends AbstractConfig {
 		this.parse(argv);
 		this.validate();
 	}
+	
+	//StartPaaSChanges
+	public MaxwellConfig(Properties additionalProperties) {
+		this();
+		this.parse(additionalProperties);
+		this.validate();
+	}
+	//EndPaaSChanges
 
 	protected OptionParser buildOptionParser() {
 		final OptionParser parser = new OptionParser();
@@ -165,6 +185,14 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "blacklist_tables", "ignore data AND schema changes to these tables, formatted as blacklist_tables=tb1,tb2. See the docs for details before setting this!").withOptionalArg();
 
 		parser.accepts( "__separator_8" );
+
+        parser.accepts("rabbitmq.host", "Host of Rabbitmq machine").withOptionalArg();
+        parser.accepts("rabbitmq.exchange", "Name of exchange for rabbitmq publisher").withOptionalArg();
+        parser.accepts("rabbitmq.exchange.type", "Exchange type for rabbitmq").withOptionalArg();
+        	
+        parser.accepts("rabbitmq.port", "port of Rabbitmq machine").withOptionalArg();
+        parser.accepts("rabbitmq.user", "user of rabbitmq").withOptionalArg();
+        parser.accepts("rabbitmq.password", "password of rabbitmq").withOptionalArg();
 
 		parser.accepts( "help", "display help").forHelp();
 
@@ -256,6 +284,13 @@ public class MaxwellConfig extends AbstractConfig {
 
 		setup(options, properties);
 	}
+	
+	private void parse(Properties additionalProperties) {
+		OptionSet options = null; // is not used now
+		Properties properties = parseFile(DEFAULT_CONFIG_FILE, false);
+		properties.putAll(additionalProperties);
+		setup(options, properties);
+	}
 
 	private void setup(OptionSet options, Properties properties) {
 		this.log_level = fetchOption("log_level", options, properties, null);
@@ -282,6 +317,13 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.kafkaPartitionHash 	= fetchOption("kafka_partition_hash", options, properties, "default");
 		this.ddlKafkaTopic 		    = fetchOption("ddl_kafka_topic", options, properties, this.kafkaTopic);
+
+		this.rabbitmqHost           = fetchOption("rabbitmq.host", options, properties, "epic_rabbitmq");
+		this.rabbitmqExchange       = fetchOption("rabbitmq.exchange", options, properties, "maxwell");
+		this.rabbitmqExchangeType   = fetchOption("rabbitmq.exchange.type", options, properties, "fanout");
+		this.rabbitmqPort  			= fetchOption("rabbitmq.port", options, properties, "15672");
+		this.rabbitmqUser   		= fetchOption("rabbitmq.user", options, properties, "fanout");
+		this.rabbitmqPassword   	= fetchOption("rabbitmq.password", options, properties, "fanout");
 
 		String kafkaBootstrapServers = fetchOption("kafka.bootstrap.servers", options, properties, null);
 		if ( kafkaBootstrapServers != null )

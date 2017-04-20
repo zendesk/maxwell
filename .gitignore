@@ -1,7 +1,6 @@
 data/*.yaml
 config/*.yml
 /target
-/config.properties
 /maxwell.position
 /.idea
 /*.iml
@@ -9,3 +8,6 @@ config/*.yml
 .DS_Store
 /test.log
 .sw?
+/.classpath
+/.project
+/.org.eclipse.*

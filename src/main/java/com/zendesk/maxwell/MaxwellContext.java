@@ -7,20 +7,28 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.concurrent.TimeoutException;
 
-import com.zendesk.maxwell.replication.BinlogPosition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.bootstrap.AsynchronousBootstrapper;
 import com.zendesk.maxwell.bootstrap.NoOpBootstrapper;
 import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
-import com.zendesk.maxwell.producer.*;
+import com.zendesk.maxwell.producer.AbstractProducer;
+import com.zendesk.maxwell.producer.BufferedProducer;
+import com.zendesk.maxwell.producer.FileProducer;
+import com.zendesk.maxwell.producer.MaxwellKafkaProducer;
+import com.zendesk.maxwell.producer.MaxwellKinesisProducer;
+import com.zendesk.maxwell.producer.ProfilerProducer;
+import com.zendesk.maxwell.producer.RabbitmqProducer;
+import com.zendesk.maxwell.producer.StdoutProducer;
 import com.zendesk.maxwell.recovery.RecoveryInfo;
+import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.row.RowMap;
-import com.zendesk.maxwell.schema.ReadOnlyMysqlPositionStore;
 import com.zendesk.maxwell.schema.MysqlPositionStore;
 import com.zendesk.maxwell.schema.PositionStoreThread;
+import com.zendesk.maxwell.schema.ReadOnlyMysqlPositionStore;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import snaq.db.ConnectionPool;
 
 public class MaxwellContext {
@@ -111,7 +119,7 @@ public class MaxwellContext {
 		this.positionStore.heartbeat();
 	}
 
-	public void terminate() {
+	public void terminate() throws IOException, TimeoutException {
 		if ( this.positionStoreThread != null ) {
 			try {
 				this.positionStoreThread.stopLoop();
@@ -123,6 +131,7 @@ public class MaxwellContext {
 		this.replicationConnectionPool.release();
 		this.maxwellConnectionPool.release();
 		this.rawMaxwellConnectionPool.release();
+		this.producer.stop();
 	}
 
 	public PositionStoreThread getPositionStoreThread() {
@@ -255,6 +264,10 @@ public class MaxwellContext {
 			break;
 		case "none":
 			this.producer = null;
+			break;
+
+		case "rabbitmq":
+			this.producer = new RabbitmqProducer(this);
 			break;
 		default:
 			throw new RuntimeException("Unknown producer type: " + this.config.producerType);

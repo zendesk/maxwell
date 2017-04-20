@@ -1,24 +1,26 @@
 package com.zendesk.maxwell;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.TimeoutException;
-import com.djdch.log4j.StaticShutdownCallbackRegistry;
-import com.zendesk.maxwell.replication.BinlogConnectorReplicator;
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.replication.MaxwellReplicator;
-import com.zendesk.maxwell.recovery.Recovery;
-import com.zendesk.maxwell.recovery.RecoveryInfo;
-import com.zendesk.maxwell.replication.Replicator;
-import com.zendesk.maxwell.schema.MysqlPositionStore;
-import com.zendesk.maxwell.util.Logging;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.djdch.log4j.StaticShutdownCallbackRegistry;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
+import com.zendesk.maxwell.recovery.Recovery;
+import com.zendesk.maxwell.recovery.RecoveryInfo;
+import com.zendesk.maxwell.replication.BinlogConnectorReplicator;
+import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.replication.MaxwellReplicator;
+import com.zendesk.maxwell.replication.Replicator;
+import com.zendesk.maxwell.schema.MysqlPositionStore;
 import com.zendesk.maxwell.schema.MysqlSchemaStore;
 import com.zendesk.maxwell.schema.SchemaStoreSchema;
+import com.zendesk.maxwell.util.Logging;
 
 public class Maxwell implements Runnable {
 	static {
@@ -60,7 +62,11 @@ public class Maxwell implements Runnable {
 		} catch (Exception e) { }
 
 		if ( this.context != null )
-			context.terminate();
+			try {
+				context.terminate();
+			} catch (IOException | TimeoutException e) {
+				e.printStackTrace();
+			}
 
 		replicator = null;
 		context = null;
@@ -184,6 +190,7 @@ public class Maxwell implements Runnable {
 
 	public static void main(String[] args) {
 		try {
+			
 			MaxwellConfig config = new MaxwellConfig(args);
 
 			if ( config.log_level != null )
