@@ -1,17 +1,24 @@
 package com.zendesk.maxwell.schema.ddl;
 
-import com.zendesk.maxwell.CaseSensitivity;
-import com.zendesk.maxwell.Mysql57Tests;
-import org.junit.After;
-import org.junit.Before;
+import com.zendesk.maxwell.*;
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.row.RowMap;
 import org.junit.Test;
 
-import com.zendesk.maxwell.MaxwellTestWithIsolatedServer;
-import com.zendesk.maxwell.MaxwellTestSupport;
 import org.junit.experimental.categories.Category;
-import org.junit.runners.Suite;
+
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
+	private MaxwellOutputConfig ddlOutputConfig() {
+		MaxwellOutputConfig config = new MaxwellOutputConfig();
+		config.outputDDL = true;
+		return config;
+	}
+
 	private void testIntegration(String[] alters) throws Exception {
 		MaxwellTestSupport.testDDLFollowing(server, alters);
 	}
@@ -376,5 +383,50 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 				+ ")"
 			);
 		}
+	}
+
+	@Test
+	public void testTableCreate() throws Exception {
+		String[] sql = {"create table TestTableCreate1 ( account_id int, text_field text )"};
+		List<RowMap> rows = getRowsForDDLTransaction(sql, null);
+		assertEquals(1, rows.size());
+		assertTrue(rows.get(0).toJSON(ddlOutputConfig()).contains("\"type\":\"table-create\",\"database\":\"mysql\",\"table\":\"TestTableCreate1\""));
+	}
+
+	@Test
+	public void testTableCreateFilter() throws Exception {
+		String[] sql = {"create table TestTableCreate2 ( account_id int, text_field text )"};
+		List<RowMap> rows = getRowsForDDLTransaction(sql, excludeTable("TestTableCreate2"));
+		assertEquals(0, rows.size());
+	}
+
+	@Test
+	public void testTableRenameFilter() throws Exception {
+		String[] sql = {
+			"create table TestTableCreate3 ( account_id int, text_field text )",
+			"rename table TestTableCreate3 to TestTableCreate4"
+		};
+		List<RowMap> rows = getRowsForDDLTransaction(sql, excludeTable("TestTableCreate4"));
+		assertEquals(1, rows.size());
+		assertTrue(rows.get(0).toJSON(ddlOutputConfig()).contains("\"type\":\"table-create\",\"database\":\"mysql\",\"table\":\"TestTableCreate3\""));
+	}
+
+	@Test
+	public void testDatabaseCreate() throws Exception {
+		String[] sql = {
+			"create database TestDatabaseCreate1",
+			"alter database TestDatabaseCreate1 character set latin2"
+		};
+		List<RowMap> rows = getRowsForDDLTransaction(sql, null);
+		assertEquals(2, rows.size());
+		assertTrue(rows.get(0).toJSON(ddlOutputConfig()).contains("\"type\":\"database-create\",\"database\":\"TestDatabaseCreate1\""));
+		assertTrue(rows.get(1).toJSON(ddlOutputConfig()).contains("\"type\":\"database-alter\",\"database\":\"TestDatabaseCreate1\""));
+	}
+
+	@Test
+	public void testDatabaseFilter() throws Exception {
+		String[] sql = {"create database TestDatabaseCreate2"};
+		List<RowMap> rows = getRowsForDDLTransaction(sql, excludeDb("TestDatabaseCreate2"));
+		assertEquals(0, rows.size());
 	}
 }

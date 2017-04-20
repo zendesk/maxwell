@@ -1,38 +1,29 @@
 package com.zendesk.maxwell.replication;
 
+import com.google.code.or.OpenReplicator;
+import com.google.code.or.binlog.BinlogEventV4;
+import com.google.code.or.binlog.impl.event.*;
+import com.google.code.or.common.util.MySQLConstants;
+import com.google.code.or.net.TransportException;
+import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.MaxwellMysqlConfig;
+import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
+import com.zendesk.maxwell.producer.AbstractProducer;
+import com.zendesk.maxwell.row.RowMap;
+import com.zendesk.maxwell.row.RowMapBuffer;
+import com.zendesk.maxwell.schema.*;
+import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.sql.SQLException;
-import java.util.Objects;
-import java.util.List;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-import com.google.code.or.binlog.impl.event.*;
-import com.google.code.or.net.TransportException;
-import com.zendesk.maxwell.*;
-import com.zendesk.maxwell.row.HeartbeatRowMap;
-import com.zendesk.maxwell.row.RowMap;
-import com.zendesk.maxwell.row.RowMapBuffer;
-import com.zendesk.maxwell.schema.*;
-import com.zendesk.maxwell.schema.ddl.DDLMap;
-import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
-import com.zendesk.maxwell.util.RunLoopProcess;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.code.or.OpenReplicator;
-import com.google.code.or.binlog.BinlogEventV4;
-import com.google.code.or.common.util.MySQLConstants;
-import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
-import com.zendesk.maxwell.producer.AbstractProducer;
-
-import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
-
 public class MaxwellReplicator extends AbstractReplicator implements Replicator {
 	private final long MAX_TX_ELEMENTS = 10000;
 	protected SchemaStore schemaStore;
-
-	private MaxwellFilter filter;
 
 	private final LinkedBlockingDeque<BinlogEventV4> queue = new LinkedBlockingDeque<>(20);
 
@@ -391,10 +382,6 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 
 	public Schema getSchema() throws SchemaStoreException {
 		return this.schemaStore.getSchema();
-	}
-
-	public void setFilter(MaxwellFilter filter) {
-		this.filter = filter;
 	}
 
 	private void setReplicatorPosition(AbstractBinlogEventV4 e) {

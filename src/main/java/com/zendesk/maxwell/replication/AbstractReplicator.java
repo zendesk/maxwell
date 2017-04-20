@@ -7,9 +7,7 @@ import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.PositionStoreThread;
 import com.zendesk.maxwell.schema.SchemaStore;
-import com.zendesk.maxwell.schema.SchemaStoreException;
 import com.zendesk.maxwell.schema.ddl.DDLMap;
-import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 import com.zendesk.maxwell.util.RunLoopProcess;
 import org.slf4j.Logger;
@@ -28,6 +26,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	protected final String maxwellSchemaDatabaseName;
 	protected final TableCache tableCache = new TableCache();
 	protected Long lastHeartbeatRead;
+	protected MaxwellFilter filter;
 
 	public AbstractReplicator(String clientID, AbstractBootstrapper bootstrapper, PositionStoreThread positionStoreThread, String maxwellSchemaDatabaseName, AbstractProducer producer) {
 		this.clientID = clientID;
@@ -68,10 +67,12 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	 * @param timestamp The timestamp of the SQL binlog event
 	 */
 	protected void processQueryEvent(String dbName, String sql, SchemaStore schemaStore, BinlogPosition position, Long timestamp) throws Exception {
-		List<ResolvedSchemaChange> changes =  schemaStore.processSQL(sql, dbName, position);
-		for ( ResolvedSchemaChange change : changes ) {
-			DDLMap ddl = new DDLMap(change, timestamp, sql, position);
-			producer.push(ddl);
+		List<ResolvedSchemaChange> changes = schemaStore.processSQL(sql, dbName, position);
+		for (ResolvedSchemaChange change : changes) {
+			if (change.shouldOutput(filter)) {
+				DDLMap ddl = new DDLMap(change, timestamp, sql, position);
+				producer.push(ddl);
+			}
 		}
 
 		tableCache.clear();
@@ -96,15 +97,15 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	 * @return Whether we should write the event to the producer
 	 */
 	protected boolean shouldOutputEvent(String database, String table, MaxwellFilter filter) {
-		Boolean isSystemWhitelisted = database.equals(this.maxwellSchemaDatabaseName)
-			&& table.equals("bootstrap");
+		Boolean isSystemWhitelisted = this.maxwellSchemaDatabaseName.equals(database)
+			&& "bootstrap".equals(table);
 
 		if ( MaxwellFilter.isSystemBlacklisted(database, table) )
 			return false;
 		else if ( isSystemWhitelisted)
 			return true;
 		else
-			return (filter == null || filter.matches(database, table));
+			return MaxwellFilter.matches(filter, database, table);
 	}
 
 	/**
@@ -166,4 +167,8 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	 * @return either a RowMap or null
 	 */
 	public abstract RowMap getRow() throws Exception;
+
+	public void setFilter(MaxwellFilter filter) {
+		this.filter = filter;
+	}
 }
