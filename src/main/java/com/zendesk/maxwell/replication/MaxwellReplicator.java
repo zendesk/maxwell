@@ -283,7 +283,7 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 
 					buffer.setXid(xe.getXid());
 
-					replicationLag = (xe.getHeader().getTimestamp() / 1000) - (System.currentTimeMillis() / 1000);
+					replicationLag = xe.getHeader().getTimestamp() - System.currentTimeMillis();
 					if ( !buffer.isEmpty() )
 						buffer.getLast().setTXCommit();
 

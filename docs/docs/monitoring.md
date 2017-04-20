@@ -18,7 +18,7 @@ metric                         | description
 `messages.failed.meter`        | a measure of the rate at which messages failed to send Kafka
 `row.meter`                    | a measure of the rate at which rows arrive to Maxwell from the binlog connector
 **Gauges**
-`replication.lag`              | the time elapsed between the database transaction commit and the time it was processed by Maxwell, in seconds
+`replication.lag`              | the time elapsed between the database transaction commit and the time it was processed by Maxwell, in milliseconds
 **Timers**
 `time.overall`                 | the time it took to send a given record to Kafka, in milliseconds
 
