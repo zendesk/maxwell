@@ -15,6 +15,7 @@ public interface Replicator {
 	RowMap getRow() throws Exception;
 	Long getLastHeartbeatRead();
 	Schema getSchema() throws SchemaStoreException;
+	Long getReplicationLag();
 
 	boolean runLoop() throws Exception;
 	void stopLoop() throws TimeoutException;

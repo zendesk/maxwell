@@ -53,6 +53,18 @@ public class MaxwellConfig extends AbstractConfig {
 	public MaxwellOutputConfig outputConfig;
 	public String log_level;
 
+	public String metricsPrefix;
+	public String metricsReportingType;
+	public Long metricsSlf4jInterval;
+	public int metricsHTTPPort;
+
+	public String metricsDatadogType;
+	public String metricsDatadogTags;
+	public String metricsDatadogAPIKey;
+	public String metricsDatadogHost;
+	public int metricsDatadogPort;
+	public Long metricsDatadogInterval;
+
 	public String clientID;
 	public Long replicaServerID;
 
@@ -165,6 +177,19 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "blacklist_tables", "ignore data AND schema changes to these tables, formatted as blacklist_tables=tb1,tb2. See the docs for details before setting this!").withOptionalArg();
 
 		parser.accepts( "__separator_8" );
+
+		parser.accepts( "metrics_prefix", "the prefix maxwell will apply to all metrics" ).withOptionalArg();
+		parser.accepts( "metrics_type", "how maxwell metrics will be reported, at least one of slf4j|jmx|http|datadog" ).withOptionalArg();
+		parser.accepts( "metrics_slf4j_interval", "the frequency metrics are emitted to the log, in seconds, when slf4j reporting is configured" ).withOptionalArg();
+		parser.accepts( "metrics_http_port", "the port the server will bind to when http reporting is configured" ).withOptionalArg();
+		parser.accepts( "metrics_datadog_type", "when metrics_type includes datadog this is the way metrics will be reported, one of udp|http" ).withOptionalArg();
+		parser.accepts( "metrics_datadog_tags", "datadog tags that should be supplied, e.g. tag1:value1,tag2:value2" ).withOptionalArg();
+		parser.accepts( "metrics_datadog_interval", "the frequency metrics are pushed to datadog, in seconds" ).withOptionalArg();
+		parser.accepts( "metrics_datadog_apikey", "the datadog api key to use when metrics_datadog_type = http" ).withOptionalArg();
+		parser.accepts( "metrics_datadog_host", "the host to publish metrics to when metrics_datadog_type = udp" ).withOptionalArg();
+		parser.accepts( "metrics_datadog_port", "the port to publish metrics to when metrics_datadog_type = udp" ).withOptionalArg();
+
+		parser.accepts( "__separator_9" );
 
 		parser.accepts( "help", "display help").forHelp();
 
@@ -321,7 +346,18 @@ public class MaxwellConfig extends AbstractConfig {
 		this.kinesisStream  = fetchOption("kinesis_stream", options, properties, null);
 		this.kinesisMd5Keys = fetchBooleanOption("kinesis_md5_keys", options, properties, false);
 
-		this.outputFile         = fetchOption("output_file", options, properties, null);
+		this.outputFile = fetchOption("output_file", options, properties, null);
+
+		this.metricsPrefix = fetchOption("metrics_prefix", options, properties, "MaxwellMetrics");
+		this.metricsReportingType = fetchOption("metrics_type", options, properties, null);
+		this.metricsSlf4jInterval = fetchLongOption("metrics_slf4j_interval", options, properties, 60L);
+		this.metricsHTTPPort = Integer.parseInt(fetchOption("metrics_http_port", options, properties, "8080"));
+		this.metricsDatadogType = fetchOption("metrics_datadog_type", options, properties, "udp");
+		this.metricsDatadogTags = fetchOption("metrics_datadog_tags", options, properties, "");
+		this.metricsDatadogAPIKey = fetchOption("metrics_datadog_apikey", options, properties, "");
+		this.metricsDatadogHost = fetchOption("metrics_datadog_host", options, properties, "localhost");
+		this.metricsDatadogPort = Integer.parseInt(fetchOption("metrics_datadog_port", options, properties, "8125"));
+		this.metricsDatadogInterval = fetchLongOption("metrics_datadog_interval", options, properties, 60L);
 
 		this.includeDatabases   = fetchOption("include_dbs", options, properties, null);
 		this.excludeDatabases   = fetchOption("exclude_dbs", options, properties, null);
@@ -485,6 +521,10 @@ public class MaxwellConfig extends AbstractConfig {
 			);
 		} catch (MaxwellInvalidFilterException e) {
 			usage("Invalid filter options: " + e.getLocalizedMessage());
+		}
+
+		if ( this.metricsDatadogType.contains("http") && StringUtils.isEmpty(this.metricsDatadogAPIKey) ) {
+			usageForOptions("please specify metrics_datadog_apikey when metrics_datadog_type = http");
 		}
 	}
 

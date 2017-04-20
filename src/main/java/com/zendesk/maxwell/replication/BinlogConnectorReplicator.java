@@ -184,6 +184,9 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 				case XID:
 					buffer.setXid(event.xidData().getXid());
 
+					// feed metric gauge.
+					replicationLag = System.currentTimeMillis() - event.getEvent().getHeader().getTimestamp();
+
 					if ( !buffer.isEmpty() )
 						buffer.getLast().setTXCommit();
 
@@ -295,5 +298,9 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 
 	public Schema getSchema() throws SchemaStoreException {
 		return this.schemaStore.getSchema();
+	}
+
+	public Long getReplicationLag() {
+		return this.replicationLag;
 	}
 }

@@ -1,5 +1,9 @@
 package com.zendesk.maxwell.replication;
 
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
+import com.zendesk.maxwell.metrics.MaxwellMetrics;
 import com.zendesk.maxwell.MaxwellFilter;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
@@ -27,6 +31,16 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	protected final TableCache tableCache = new TableCache();
 	protected Long lastHeartbeatRead;
 	protected MaxwellFilter filter;
+
+	private final Counter rowCounter = MaxwellMetrics.metricRegistry.counter(
+		MetricRegistry.name(MaxwellMetrics.getMetricsPrefix(), "row", "count")
+	);
+
+	private final Meter rowMeter = MaxwellMetrics.metricRegistry.meter(
+		MetricRegistry.name(MaxwellMetrics.getMetricsPrefix(), "row", "meter")
+	);
+
+	protected Long replicationLag = 0L;
 
 	public AbstractReplicator(String clientID, AbstractBootstrapper bootstrapper, PositionStoreThread positionStoreThread, String maxwellSchemaDatabaseName, AbstractProducer producer) {
 		this.clientID = clientID;
@@ -126,6 +140,9 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	 */
 	public void work() throws Exception {
 		RowMap row = getRow();
+
+		rowCounter.inc();
+		rowMeter.mark();
 
 		// todo: this is inelegant.  Ideally the outer code would monitor the
 		// position thread and stop us if it was dead.

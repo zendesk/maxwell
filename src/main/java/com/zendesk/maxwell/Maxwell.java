@@ -1,24 +1,27 @@
 package com.zendesk.maxwell;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.concurrent.TimeoutException;
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.MetricRegistry;
 import com.djdch.log4j.StaticShutdownCallbackRegistry;
+import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
+import com.zendesk.maxwell.metrics.MaxwellMetrics;
+import com.zendesk.maxwell.producer.AbstractProducer;
+import com.zendesk.maxwell.recovery.Recovery;
+import com.zendesk.maxwell.recovery.RecoveryInfo;
 import com.zendesk.maxwell.replication.BinlogConnectorReplicator;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.MaxwellReplicator;
-import com.zendesk.maxwell.recovery.Recovery;
-import com.zendesk.maxwell.recovery.RecoveryInfo;
 import com.zendesk.maxwell.replication.Replicator;
 import com.zendesk.maxwell.schema.MysqlPositionStore;
+import com.zendesk.maxwell.schema.MysqlSchemaStore;
+import com.zendesk.maxwell.schema.SchemaStoreSchema;
 import com.zendesk.maxwell.util.Logging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
-import com.zendesk.maxwell.producer.AbstractProducer;
-import com.zendesk.maxwell.schema.MysqlSchemaStore;
-import com.zendesk.maxwell.schema.SchemaStoreSchema;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.concurrent.TimeoutException;
 
 public class Maxwell implements Runnable {
 	static {
@@ -138,6 +141,7 @@ public class Maxwell implements Runnable {
 
 	protected void onReplicatorStart() {}
 	private void start() throws Exception {
+		MaxwellMetrics.setup(config);
 		try ( Connection connection = this.context.getReplicationConnection();
 			Connection rawConnection = this.context.getRawMaxwellConnection() ) {
 			MaxwellMysqlStatus.ensureReplicationMysqlState(connection);
@@ -179,6 +183,23 @@ public class Maxwell implements Runnable {
 
 		this.context.start();
 		this.onReplicatorStart();
+
+		// Dropwizard throws an exception if you try to register multiple metrics with the same name.
+		// Since there are codepaths that create multiple replicators (at least in the tests) we need to protect
+		// against that.
+		String lagGaugeName = MetricRegistry.name(MaxwellMetrics.getMetricsPrefix(), "replication", "lag");
+		if ( !(MaxwellMetrics.metricRegistry.getGauges().containsKey(lagGaugeName)) ) {
+			MaxwellMetrics.metricRegistry.register(
+					lagGaugeName,
+					new Gauge<Long>() {
+						@Override
+						public Long getValue() {
+							return replicator.getReplicationLag();
+						}
+					}
+			);
+		}
+
 		replicator.runLoop();
 	}
 
