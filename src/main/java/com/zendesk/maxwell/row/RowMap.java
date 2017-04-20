@@ -5,6 +5,7 @@ import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -79,6 +80,7 @@ public class RowMap implements Serializable {
 		this.approximateSize = 100L; // more or less 100 bytes of overhead
 	}
 
+	//Do we want to encrypt this part?
 	public String pkToJson(KeyFormat keyFormat) throws IOException {
 		if ( keyFormat == KeyFormat.HASH )
 			return pkToJsonHash();
@@ -177,6 +179,29 @@ public class RowMap implements Serializable {
 		}
 	}
 
+	private void writeEncryptedMapToJSON(String jsonMapName, LinkedHashMap<String, Object> data, boolean includeNullField, String encryption_key, String secret_key) throws IOException{
+		JsonGenerator generator = jsonGeneratorThreadLocal.get();
+		JSONObject obj = new JSONObject();
+		for (String key : data.keySet()) {
+			Object value = data.get(key);
+
+			if (value == null && !includeNullField)
+				continue;
+
+			if ( value instanceof List ) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
+				List stringList = (List) value;
+
+				obj.put(key, value);
+			} else if (value instanceof RawJSONString) {
+				obj.put(key, ((RawJSONString) value).json);
+			} else {
+				obj.put(key, value);
+			}
+		}
+
+		generator.writeStringField(jsonMapName, RowEncrypt.encrypt(obj.toString(), encryption_key, secret_key));
+	}
+
 	private void writeMapToJSON(String jsonMapName, LinkedHashMap<String, Object> data, boolean includeNullField) throws IOException {
 		JsonGenerator generator = jsonGeneratorThreadLocal.get();
 		generator.writeObjectFieldStart(jsonMapName); // start of jsonMapName: {
@@ -259,10 +284,18 @@ public class RowMap implements Serializable {
 			}
 		}
 
-		writeMapToJSON("data", this.data, outputConfig.includesNulls);
+		if(outputConfig.useEncryption){
+			writeEncryptedMapToJSON("data", this.data, outputConfig.includesNulls, outputConfig.encryption_key, outputConfig.secret_key);
+			if(!this.oldData.isEmpty()){
+				writeEncryptedMapToJSON("old", this.oldData, outputConfig.includesNulls, outputConfig.encryption_key, outputConfig.secret_key);
+			}
+		}
+		else {
+			writeMapToJSON("data", this.data, outputConfig.includesNulls);
 
-		if ( !this.oldData.isEmpty() ) {
-			writeMapToJSON("old", this.oldData, true);
+			if (!this.oldData.isEmpty()) {
+				writeMapToJSON("old", this.oldData, true);
+			}
 		}
 
 		g.writeEndObject(); // end of row

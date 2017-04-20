@@ -5,16 +5,51 @@ import static org.junit.Assert.*;
 
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.row.RowMap;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.ArrayUtils;
 
+import java.nio.charset.Charset;
 import java.sql.ResultSet;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.*;
 
 import com.zendesk.maxwell.schema.SchemaStoreSchema;
 import org.junit.Test;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+
 public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
+	@Test
+	public void testEncryptedValues() throws Exception{
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
+		outputConfig.useEncryption = true;
+		outputConfig.encryption_key = "aaaaaaaaaaaaaaaa";
+		outputConfig.secret_key = "RandomInitVector";
+		List<RowMap> list;
+		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
+		list = getRowsForSQL(input);
+		String json = list.get(0).toJSON(outputConfig);
+
+		Map<String,Object> output = MaxwellTestJSON.parseJSON(json);
+
+		IvParameterSpec ivSpec = new IvParameterSpec(outputConfig.secret_key.getBytes("UTF-8"));
+		SecretKeySpec skeySpec = new SecretKeySpec(outputConfig.encryption_key.getBytes("UTF-8"), "AES");
+		Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
+		cipher.init(Cipher.DECRYPT_MODE, skeySpec, ivSpec);
+
+		output.put("data",MaxwellTestJSON.parseJSON(new String(cipher.doFinal(Base64.decodeBase64(output.get("data").toString().getBytes())), Charset.forName("UTF-8"))));
+		assertTrue(output.get("database").equals("shard_1"));
+		assertTrue(output.get("table").equals("minimal"));
+		assertTrue(Pattern.matches("\\d+", output.get("xid").toString()));
+		assertTrue(output.get("type").equals("insert"));
+		assertTrue(Pattern.matches("\\d+",output.get("ts").toString()));
+		assertTrue(output.get("commit").equals(true));
+		assertTrue(((Map) output.get("data")).get("account_id").equals(1));
+		assertTrue(((Map) output.get("data")).get("text_field").equals("hello"));
+	}
 	@Test
 	public void testGetEvent() throws Exception {
 		List<RowMap> list;
