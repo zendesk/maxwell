@@ -1,6 +1,5 @@
 package com.zendesk.maxwell.util;
 
-import org.apache.commons.lang3.time.StopWatch;
 import org.junit.Test;
 
 import java.util.concurrent.TimeoutException;
@@ -15,15 +14,15 @@ public class StoppableTaskStateTest {
 	public void testStateTransition() {
 		StoppableTaskState state = new StoppableTaskState("task");
 		assertThat(state.getState(), equalTo(RunState.RUNNING));
-		assertThat(state.keepGoing(), equalTo(true));
+		assertThat(state.isRunning(), equalTo(true));
 
 		state.requestStop();
 		assertThat(state.getState(), equalTo(RunState.REQUEST_STOP));
-		assertThat(state.keepGoing(), equalTo(false));
+		assertThat(state.isRunning(), equalTo(false));
 
 		state.stopped();
 		assertThat(state.getState(), equalTo(RunState.STOPPED));
-		assertThat(state.keepGoing(), equalTo(false));
+		assertThat(state.isRunning(), equalTo(false));
 	}
 
 	@Test

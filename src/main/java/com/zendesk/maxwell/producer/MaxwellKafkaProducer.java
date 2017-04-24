@@ -163,7 +163,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		while ( true ) {
 			try {
 				RowMap row = queue.take();
-				if (!taskState.keepGoing()) {
+				if (!taskState.isRunning()) {
 					taskState.stopped();
 					return;
 				}

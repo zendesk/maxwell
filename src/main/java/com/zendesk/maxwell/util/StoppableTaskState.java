@@ -15,13 +15,13 @@ public class StoppableTaskState {
 		this.description = description;
 	}
 
-	public boolean keepGoing() {
+	public boolean isRunning() {
 		return state == RunState.RUNNING;
 	}
 
 	public synchronized void requestStop() {
 		LOGGER.info(description + " requestStop() called (in state: " + state + ")");
-		if (state == RunState.RUNNING) {
+		if (isRunning()) {
 			this.state = RunState.REQUEST_STOP;
 		}
 	}

@@ -26,7 +26,7 @@ abstract public class RunLoopProcess implements StoppableTask {
 		this.beforeStart();
 
 		try {
-			while (this.taskState.keepGoing()) {
+			while (this.taskState.isRunning()) {
 				work();
 			}
 		} finally {
