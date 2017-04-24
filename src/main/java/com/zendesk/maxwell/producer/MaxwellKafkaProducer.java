@@ -11,6 +11,8 @@ import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMap.KeyFormat;
 import com.zendesk.maxwell.schema.ddl.DDLMap;
+import com.zendesk.maxwell.util.StoppableTask;
+import com.zendesk.maxwell.util.StoppableTaskState;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -24,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 class KafkaCallback implements Callback {
@@ -89,17 +92,23 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 		super(context);
 		this.queue = new ArrayBlockingQueue<>(100);
 		this.worker = new MaxwellKafkaProducerWorker(context, kafkaProperties, kafkaTopic, this.queue);
-		new Thread(this.worker, "maxwell-kafka-worker").start();
-
+		Thread thread = new Thread(this.worker, "maxwell-kafka-worker");
+		thread.setDaemon(true);
+		thread.start();
 	}
 
 	@Override
 	public void push(RowMap r) throws Exception {
 		this.queue.put(r);
 	}
+
+	@Override
+	public StoppableTask getStoppableTask() {
+		return this.worker;
+	}
 }
 
-class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnable {
+class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnable, StoppableTask {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
 
 	private final KafkaProducer<String, String> kafka;
@@ -111,6 +120,8 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	private final boolean interpolateTopic;
 	private final Timer metricsTimer;
 	private final ArrayBlockingQueue<RowMap> queue;
+	private Thread thread;
+	private StoppableTaskState taskState;
 
 	private final Counter succeededMessageCount = MaxwellMetrics.metricRegistry.counter(succeededMessageCountName);
 	private final Meter succeededMessageMeter = MaxwellMetrics.metricRegistry.meter(succeededMessageMeterName);
@@ -143,16 +154,24 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 
 		this.metricsTimer = MaxwellMetrics.metricRegistry.timer(MetricRegistry.name(MaxwellMetrics.getMetricsPrefix(), "time", "overall"));
 		this.queue = queue;
+		this.taskState = new StoppableTaskState("MaxwellKafkaProducerWorker");
 	}
 
 	@Override
 	public void run() {
+		this.thread = Thread.currentThread();
 		while ( true ) {
 			try {
 				RowMap row = queue.take();
+				if (!taskState.isRunning()) {
+					taskState.stopped();
+					return;
+				}
 				this.push(row);
 			} catch ( Exception e ) {
-				throw new RuntimeException(e);
+				taskState.stopped();
+				context.terminate(e);
+				return;
 			}
 		}
 	}
@@ -194,5 +213,21 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 				this.succeededMessageCount, this.failedMessageCount, this.succeededMessageMeter, this.failedMessageMeter);
 
 		kafka.send(record, callback);
+	}
+
+	@Override
+	public void requestStop() {
+		taskState.requestStop();
+		kafka.close();
+	}
+
+	@Override
+	public void awaitStop(Long timeout) throws TimeoutException {
+		taskState.awaitStop(thread, timeout);
+	}
+
+	@Override
+	public StoppableTask getStoppableTask() {
+		return this;
 	}
 }

@@ -9,7 +9,6 @@ import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
-import com.zendesk.maxwell.schema.PositionStoreThread;
 import com.zendesk.maxwell.schema.SchemaStore;
 import com.zendesk.maxwell.schema.ddl.DDLMap;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
@@ -24,7 +23,6 @@ import java.util.Objects;
 public abstract class AbstractReplicator extends RunLoopProcess implements Replicator {
 	private static Logger LOGGER = LoggerFactory.getLogger(AbstractReplicator.class);
 	protected final String clientID;
-	protected final PositionStoreThread positionStoreThread;
 	protected final AbstractProducer producer;
 	protected final AbstractBootstrapper bootstrapper;
 	protected final String maxwellSchemaDatabaseName;
@@ -42,10 +40,9 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 
 	protected Long replicationLag = 0L;
 
-	public AbstractReplicator(String clientID, AbstractBootstrapper bootstrapper, PositionStoreThread positionStoreThread, String maxwellSchemaDatabaseName, AbstractProducer producer) {
+	public AbstractReplicator(String clientID, AbstractBootstrapper bootstrapper, String maxwellSchemaDatabaseName, AbstractProducer producer) {
 		this.clientID = clientID;
 		this.bootstrapper = bootstrapper;
-		this.positionStoreThread = positionStoreThread;
 		this.maxwellSchemaDatabaseName = maxwellSchemaDatabaseName;
 		this.producer = producer;
 	}
@@ -143,12 +140,6 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 
 		rowCounter.inc();
 		rowMeter.mark();
-
-		// todo: this is inelegant.  Ideally the outer code would monitor the
-		// position thread and stop us if it was dead.
-
-		if ( positionStoreThread.getException() != null )
-			throw positionStoreThread.getException();
 
 		if ( row == null )
 			return;

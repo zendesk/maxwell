@@ -5,7 +5,6 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.concurrent.TimeoutException;
 
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
@@ -19,6 +18,8 @@ import com.zendesk.maxwell.schema.ReadOnlyMysqlPositionStore;
 import com.zendesk.maxwell.schema.MysqlPositionStore;
 import com.zendesk.maxwell.schema.PositionStoreThread;
 
+import com.zendesk.maxwell.util.StoppableTask;
+import com.zendesk.maxwell.util.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import snaq.db.ConnectionPool;
@@ -37,12 +38,15 @@ public class MaxwellContext {
 	private BinlogPosition initialPosition;
 	private CaseSensitivity caseSensitivity;
 	private AbstractProducer producer;
+	private TaskManager taskManager;
+	private volatile Exception error;
 
 	private Integer mysqlMajorVersion;
 	private Integer mysqlMinorVersion;
 
 	public MaxwellContext(MaxwellConfig config) throws SQLException {
 		this.config = config;
+		this.taskManager = new TaskManager();
 
 		this.replicationConnectionPool = new ConnectionPool("ReplicationConnectionPool", 10, 0, 10,
 				config.replicationMysql.getConnectionURI(false), config.replicationMysql.user, config.replicationMysql.password);
@@ -111,24 +115,34 @@ public class MaxwellContext {
 		this.positionStore.heartbeat();
 	}
 
+	public void addTask(StoppableTask task) {
+		this.taskManager.add(task);
+	}
+
 	public void terminate() {
-		if ( this.positionStoreThread != null ) {
-			try {
-				this.positionStoreThread.stopLoop();
-				this.positionStoreThread = null;
-			} catch (TimeoutException e) {
-				LOGGER.error("got timeout trying to shutdown positionStore thread.");
-			}
+		terminate(null);
+	}
+
+	public void terminate(Exception error) {
+		if (this.error == null) {
+			this.error = error;
 		}
-		this.replicationConnectionPool.release();
-		this.maxwellConnectionPool.release();
-		this.rawMaxwellConnectionPool.release();
+		if (taskManager.stop(error)) {
+			this.replicationConnectionPool.release();
+			this.maxwellConnectionPool.release();
+			this.rawMaxwellConnectionPool.release();
+		}
+	}
+
+	public Exception getError() {
+		return error;
 	}
 
 	public PositionStoreThread getPositionStoreThread() {
 		if ( this.positionStoreThread == null ) {
-			this.positionStoreThread = new PositionStoreThread(this.positionStore);
+			this.positionStoreThread = new PositionStoreThread(this.positionStore, this);
 			this.positionStoreThread.start();
+			addTask(positionStoreThread);
 		}
 		return this.positionStoreThread;
 	}
@@ -161,16 +175,6 @@ public class MaxwellContext {
 
 	public MysqlPositionStore getPositionStore() {
 		return this.positionStore;
-	}
-
-	public void ensurePositionThread() throws Exception {
-		if ( this.positionStoreThread == null )
-			return;
-
-		Exception e = this.getPositionStoreThread().getException();
-		if ( e != null ) {
-			throw (e);
-		}
 	}
 
 	public Long getServerID() throws SQLException {
@@ -260,6 +264,13 @@ public class MaxwellContext {
 			throw new RuntimeException("Unknown producer type: " + this.config.producerType);
 		}
 
+		StoppableTask task = null;
+		if (producer != null) {
+			task = producer.getStoppableTask();
+		}
+		if (task != null) {
+			addTask(task);
+		}
 		return this.producer;
 	}
 

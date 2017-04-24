@@ -226,6 +226,10 @@ public class MaxwellTestSupport {
 
 		callback.beforeTerminate(mysql);
 		maxwell.terminate();
+		Exception maxwellError = maxwell.context.getError();
+		if (maxwellError != null) {
+			throw maxwellError;
+		}
 
 		return list;
 	}

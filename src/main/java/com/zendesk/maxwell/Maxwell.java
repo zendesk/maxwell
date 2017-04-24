@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.concurrent.TimeoutException;
 
 public class Maxwell implements Runnable {
 	static {
@@ -49,24 +48,18 @@ public class Maxwell implements Runnable {
 	}
 
 	public void terminate() {
-		LOGGER.info("starting shutdown");
-		try {
-			// send a final heartbeat through the system
-			context.heartbeat();
-			Thread.sleep(100);
-
-			if ( this.replicator != null)
-				replicator.stopLoop();
-		} catch (TimeoutException e) {
-			System.err.println("Timed out trying to shutdown maxwell replication thread.");
-		} catch (InterruptedException e) {
-		} catch (Exception e) { }
-
-		if ( this.context != null )
-			context.terminate();
-
-		replicator = null;
-		context = null;
+		if (this.context.getError() == null) {
+			LOGGER.info("starting shutdown");
+			try {
+				// send a final heartbeat through the system
+				context.heartbeat();
+				Thread.sleep(100);
+				context.terminate();
+			} catch (InterruptedException e) {
+			} catch (Exception e) {
+				LOGGER.error("failed graceful shutdown", e);
+			}
+		}
 	}
 
 	private BinlogPosition attemptMasterRecovery() throws Exception {
@@ -142,8 +135,16 @@ public class Maxwell implements Runnable {
 	protected void onReplicatorStart() {}
 	private void start() throws Exception {
 		MaxwellMetrics.setup(config);
+		try {
+			startInner();
+		} finally {
+			this.context.terminate();
+		}
+	}
+
+	private void startInner() throws Exception {
 		try ( Connection connection = this.context.getReplicationConnection();
-			Connection rawConnection = this.context.getRawMaxwellConnection() ) {
+		      Connection rawConnection = this.context.getRawMaxwellConnection() ) {
 			MaxwellMysqlStatus.ensureReplicationMysqlState(connection);
 			MaxwellMysqlStatus.ensureMaxwellMysqlState(rawConnection);
 			if (config.gtidMode) {
@@ -155,11 +156,6 @@ public class Maxwell implements Runnable {
 			try ( Connection schemaConnection = this.context.getMaxwellConnection() ) {
 				SchemaStoreSchema.upgradeSchemaStoreSchema(schemaConnection);
 			}
-
-		} catch ( SQLException e ) {
-			LOGGER.error("SQLException: " + e.getLocalizedMessage());
-			LOGGER.error(e.getLocalizedMessage());
-			return;
 		}
 
 		AbstractProducer producer = this.context.getProducer();
@@ -181,6 +177,7 @@ public class Maxwell implements Runnable {
 
 		replicator.setFilter(context.getFilter());
 
+		this.context.addTask(replicator);
 		this.context.start();
 		this.onReplicatorStart();
 
@@ -201,6 +198,10 @@ public class Maxwell implements Runnable {
 		}
 
 		replicator.runLoop();
+		Exception error = this.context.getError();
+		if (error != null) {
+			throw error;
+		}
 	}
 
 	public static void main(String[] args) {
@@ -220,8 +221,12 @@ public class Maxwell implements Runnable {
 				}
 			});
 
-
 			maxwell.start();
+		} catch ( SQLException e ) {
+			// catch SQLException explicitly because we likely don't care about the stacktrace
+			LOGGER.error("SQLException: " + e.getLocalizedMessage());
+			LOGGER.error(e.getLocalizedMessage());
+			System.exit(1);
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(1);
