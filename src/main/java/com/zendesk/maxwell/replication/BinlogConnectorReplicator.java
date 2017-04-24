@@ -244,7 +244,8 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 				case EXT_UPDATE_ROWS:
 				case DELETE_ROWS:
 				case EXT_DELETE_ROWS:
-					LOGGER.warn("Started replication stream outside of transaction.  This shouldn't normally happen.");
+					LOGGER.warn("Started replication stream inside a transaction.  This shouldn't normally happen.");
+					LOGGER.warn("Assuming new transaction at unexpected event:" + event);
 
 					queue.offerFirst(event);
 					rowBuffer = getTransactionRows();
