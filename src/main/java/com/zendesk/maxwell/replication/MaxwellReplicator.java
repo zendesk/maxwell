@@ -321,7 +321,8 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 				case MySQLConstants.UPDATE_ROWS_EVENT_V2:
 				case MySQLConstants.DELETE_ROWS_EVENT:
 				case MySQLConstants.DELETE_ROWS_EVENT_V2:
-					LOGGER.warn("Started replication stream outside of transaction.  This shouldn't normally happen.");
+					LOGGER.warn("Started replication stream inside a transaction.  This shouldn't normally happen.");
+					LOGGER.warn("Assuming new transaction at unexpected event:" + v4Event);
 
 					queue.offerFirst(v4Event);
 					rowBuffer = getTransactionRows();
