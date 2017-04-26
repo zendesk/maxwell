@@ -1,13 +1,36 @@
 # Maxwell changelog
 
+### [v1.9.0](https://github.com/zendesk/maxwell/releases/tag/v1.9.0): "now with added whimsy"
+
+Maxwell 1.9 adds one main feature: monitoring support, contributed by
+Scott Ferguson. Multiple backends can be configured, read the updated
+docs for full details.
+
+There's also some bugfixes:
+
+- filter DDL messages based on config
+- determine newest schema from binlog order, not creation order
+- add task manager to shutdown cleanly on error
+- minor logging improvements
+
+
+### [v1.8.2](https://github.com/zendesk/maxwell/releases/tag/v1.8.2): "just as the postcards wept"
+
+
+Bugfix release.
+
+- maxwell would crash on a quoted partition name
+- fixes for alters on non-string tables containing VARCHAR
+- use seconds instead of milliseconds for DDL messages
+
+
 ### [v1.8.1](https://github.com/zendesk/maxwell/releases/tag/v1.8.1): "famous is faster, don't have to be talented"
 
 
 - performance improves in capturing and restoring schema, thx Joren
-Minnaert
+  Minnaert
 - Allow for capturing from a separate mysql host (adds support for using
-Maxscale as a replication proxy), thx Adam Szkoda
-
+  Maxscale as a replication proxy), thx Adam Szkoda
 
 ### [v1.8.0](https://github.com/zendesk/maxwell/releases/tag/v1.8.0): "upbeat, honest, contradictory"
 
@@ -15,20 +38,17 @@ Maxscale as a replication proxy), thx Adam Szkoda
 In version 1.8.0 Maxwell gains alpha support for GTID-based positions!
 All praise due to Henry Cai.
 
-
 ### [v1.7.2](https://github.com/zendesk/maxwell/releases/tag/v1.7.2): "comparing self to better"
 
 
 - Fix a bug found where maxwell could cache the wrong TABLE_MAP_ID for a
-binlog event, leading to crashes or in some cases data mismatches.
-
+  binlog event, leading to crashes or in some cases data mismatches.
 
 ### [v1.7.1](https://github.com/zendesk/maxwell/releases/tag/v1.7.1): "blame it on your seratonin"
 
 
 - bootstrapping now can take a `--where` clause
 - performance improvements in the kafka producer
-
 
 ### [v1.7.0](https://github.com/zendesk/maxwell/releases/tag/v1.7.0): "lucky me, lucky mud"
 
