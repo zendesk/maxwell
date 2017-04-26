@@ -39,7 +39,7 @@ Standard configuration is either via commandline args or the `config.properties`
 additional configuration is required to allow remote access. In this case Maxwell makes use of the `JAVA_OPTS` environment variable.
 To make use of this set `JAVA_OPTS` before starting Maxwell.
 
-The following is an example which allows remote access with no authentication and dinsecure connections.
+The following is an example which allows remote access with no authentication and insecure connections.
 
 ```
 export JAVA_OPTS="-Dcom.sun.management.jmxremote \
