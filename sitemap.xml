@@ -3,64 +3,72 @@
 
     
     <url>
-     <loc>None/</loc>
-     <lastmod>2017-04-11</lastmod>
+     <loc>/</loc>
+     <lastmod>1970-01-01</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
 
     
     <url>
-     <loc>None/quickstart/</loc>
-     <lastmod>2017-04-11</lastmod>
+     <loc>/quickstart/</loc>
+     <lastmod>1970-01-01</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
 
     
     <url>
-     <loc>None/config/</loc>
-     <lastmod>2017-04-11</lastmod>
+     <loc>/config/</loc>
+     <lastmod>1970-01-01</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
 
     
     <url>
-     <loc>None/producers/</loc>
-     <lastmod>2017-04-11</lastmod>
+     <loc>/producers/</loc>
+     <lastmod>1970-01-01</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
 
     
     <url>
-     <loc>None/dataformat/</loc>
-     <lastmod>2017-04-11</lastmod>
+     <loc>/dataformat/</loc>
+     <lastmod>1970-01-01</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
 
     
     <url>
-     <loc>None/bootstrapping/</loc>
-     <lastmod>2017-04-11</lastmod>
+     <loc>/bootstrapping/</loc>
+     <lastmod>1970-01-01</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
 
     
     <url>
-     <loc>None/compat/</loc>
-     <lastmod>2017-04-11</lastmod>
+     <loc>/monitoring/</loc>
+     <lastmod>1970-01-01</lastmod>
      <changefreq>daily</changefreq>
     </url>
     
 
     
     <url>
-     <loc>None/changelog/</loc>
-     <lastmod>2017-04-11</lastmod>
+     <loc>/compat/</loc>
+     <lastmod>1970-01-01</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    
+
+    
+    <url>
+     <loc>/changelog/</loc>
+     <lastmod>1970-01-01</lastmod>
      <changefreq>daily</changefreq>
     </url>
     

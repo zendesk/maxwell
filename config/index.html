@@ -87,6 +87,12 @@
             
             
                 <li >
+                    <a href="../monitoring/">Monitoring</a>
+                </li>
+            
+            
+            
+                <li >
                     <a href="../compat/">Compat / Caveats</a>
                 </li>
             
@@ -181,6 +187,11 @@
         
           <li >
               <a href="../bootstrapping/">Bootstrapping</a>
+              
+          </li>
+        
+          <li >
+              <a href="../monitoring/">Monitoring</a>
               
           </li>
         
@@ -636,6 +647,78 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 <td>PATTERN</td>
 <td>ignore updates AND schema changes from tables named like PATTERN (see warnings below)</td>
 <td></td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>monitoring</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>metrics_prefix</td>
+<td>STRING</td>
+<td>the prefix maxwell will apply to all metrics</td>
+<td>MaxwellMetrics</td>
+</tr>
+<tr>
+<td>metrics_type</td>
+<td>[slf4j &#124; jmx &#124; http &#124; datadog]</td>
+<td>how maxwell metrics will be reported, at least one of slf4j &#124; jmx &#124; http &#124; datadog</td>
+<td></td>
+</tr>
+<tr>
+<td>metrics_slf4j_interval</td>
+<td>INT</td>
+<td>the frequency metrics are emitted to the log, in seconds, when slf4j reporting is configured</td>
+<td>60</td>
+</tr>
+<tr>
+<td>metrics_http_port</td>
+<td>INT</td>
+<td>the port the server will bind to when http reporting is configured</td>
+<td>8080</td>
+</tr>
+<tr>
+<td>metrics_datadog_type</td>
+<td>[udp &#124; http]</td>
+<td>when metrics_type includes <code>datadog</code> this is the way metrics will be reported, can only be one of [udp &#124; http]</td>
+<td>udp</td>
+</tr>
+<tr>
+<td>metrics_datadog_tags</td>
+<td>STRING</td>
+<td>datadog tags that should be supplied, e.g. tag1:value1,tag2:value2</td>
+<td></td>
+</tr>
+<tr>
+<td>metrics_datadog_interval</td>
+<td>INT</td>
+<td>the frequency metrics are pushed to datadog, in seconds</td>
+<td>60</td>
+</tr>
+<tr>
+<td>metrics_datadog_apikey</td>
+<td>STRING</td>
+<td>the datadog api key to use when metrics_datadog_type = <code>http</code></td>
+<td></td>
+</tr>
+<tr>
+<td>metrics_datadog_host</td>
+<td>STRING</td>
+<td>the host to publish metrics to when metrics_datadog_type = <code>udp</code></td>
+<td>localhost</td>
+</tr>
+<tr>
+<td>metrics_datadog_port</td>
+<td>INT</td>
+<td>the port to publish metrics to when metrics_datadog_type = <code>udp</code></td>
+<td>8125</td>
 </tr>
 <tr>
 <td>&nbsp;</td>

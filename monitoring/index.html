@@ -9,7 +9,7 @@
         
         <link rel="shortcut icon" href="../img/robut.ico">
 
-        <title>Compat / Caveats - Maxwell's Daemon</title>
+        <title>Monitoring - Maxwell's Daemon</title>
 
         <link href="../css/bootstrap.min.css" rel="stylesheet">
         <link href="../css/bootstrap-theme.min.css" rel="stylesheet">
@@ -86,14 +86,14 @@
             
             
             
-                <li >
-                    <a href="../monitoring/">Monitoring</a>
+                <li class="active">
+                    <a href="./">Monitoring</a>
                 </li>
             
             
             
-                <li class="active">
-                    <a href="./">Compat / Caveats</a>
+                <li >
+                    <a href="../compat/">Compat / Caveats</a>
                 </li>
             
             
@@ -108,12 +108,12 @@
             <!-- Search, Navigation and Repo links -->
             <ul class="nav navbar-nav navbar-right">
                 <li >
-                    <a rel="next" href="../monitoring/">
+                    <a rel="next" href="../bootstrapping/">
                         <i class="fa fa-arrow-left"></i> Previous
                     </a>
                 </li>
                 <li >
-                    <a rel="prev" href="../changelog/">
+                    <a rel="prev" href="../compat/">
                         Next <i class="fa fa-arrow-right"></i>
                     </a>
                 </li>
@@ -159,26 +159,32 @@
               
           </li>
         
-          <li >
-              <a href="../monitoring/">Monitoring</a>
-              
-          </li>
-        
           <li class="active">
-              <a href="./">Compat / Caveats</a>
+              <a href="./">Monitoring</a>
               
                   <ul class="nav">
                   
-                      <li class="toctree-l3"><a href="#requirements">Requirements:</a></li>
+                      <li class="toctree-l3"><a href="#monitoring">Monitoring</a></li>
                       
                   
-                      <li class="toctree-l3"><a href="#binlog_row_imageminimal">binlog_row_image=MINIMAL</a></li>
+                      <li class="toctree-l3"><a href="#metrics">Metrics</a></li>
                       
                   
-                      <li class="toctree-l3"><a href="#master-recovery">Master recovery</a></li>
+                      <li class="toctree-l3"><a href="#http-endpoints">HTTP Endpoints</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#healthcheck">Healthcheck</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#jmx-configuration">JMX Configuration</a></li>
                       
                   
                   </ul>
+              
+          </li>
+        
+          <li >
+              <a href="../compat/">Compat / Caveats</a>
               
           </li>
         
@@ -191,44 +197,115 @@
 </div></div>
             <div class="col-md-10" role="main">
 
-<h3 id="requirements">Requirements:</h3>
+<h3 id="monitoring">Monitoring</h3>
 <hr />
-<ul>
-<li>JRE 7 or above</li>
-<li>mysql 5.1, 5.5, 5.6, 5.7</li>
-<li>kafka 0.8.2 or greater</li>
-</ul>
-<h3 id="binlog_row_imageminimal">binlog_row_image=MINIMAL</h3>
-<hr />
-<p>As of 0.16.2, Maxwell supports binlog_row_image=MINIMAL, but it may not be what you want.  It will differ
-from normal Maxwell operation in that:</p>
-<ul>
-<li>INSERT statements will no longer output a column's default value</li>
-<li>UPDATE statements will be incomplete; Maxwell outputs as much of the row as given in the binlogs,
-  but <code>data</code> will only include what is needed to perform the update (generally, id columns and changed columns).
-  The <code>old</code> section may or may not be included, depending on the nature of the update.</li>
-<li>DELETE statements will be incomplete; generally they will only include the primary key.</li>
-</ul>
-<h3 id="master-recovery">Master recovery</h3>
-<hr />
-<p>As of 1.2.0, maxwell includes experimental support for master position recovery.  It works like this:</p>
-<ul>
-<li>maxwell writes heartbeats into the binlogs (via the <code>positions</code> table)</li>
-<li>maxwell reads its own heartbeats, using them as a secondary position guide</li>
-<li>if maxwell boots and can't find its position matching the <code>server_id</code> it's
-  connecting to, it will look for a row in <code>maxwell.positions</code> from a different
-  server_id.</li>
-<li>if it finds that row, it will scan backwards in the binary logs of the new
-  master until it finds that heartbeat.</li>
-</ul>
-<p>Notes:</p>
-<ul>
-<li>master recovery is not compatible with separate schema-store hosts and
-  replication-hosts, due to the heartbeat mechanism.</li>
-<li>this code should be considered alpha-quality.</li>
-<li>on highly active servers, as much as 1 second of data may be duplicated.</li>
-<li>master recovery is not available in GTID-mode.</li>
-</ul></div>
+<p>Maxwell exposes certain metrics through either its base logging mechanism, JMX, HTTP or by push to Datadog. This is configurable through commandline options
+or the <code>config.properties</code> file. These can provide insight into system health.
+At present certain metrics are Kafka-specific - that is, not yet supported other producers.</p>
+<h3 id="metrics">Metrics</h3>
+<p>All metrics are prepended with the configured <code>metrics_prefix.</code></p>
+<table>
+<thead>
+<tr>
+<th>metric</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Counters</strong></td>
+<td></td>
+</tr>
+<tr>
+<td><code>messages.succeeded</code></td>
+<td>count of messages that were successfully sent to Kafka</td>
+</tr>
+<tr>
+<td><code>messages.failed</code></td>
+<td>count of messages that failed to send to Kafka</td>
+</tr>
+<tr>
+<td><code>row.count</code></td>
+<td>a count of rows that have been processed from the binlog. note that not every row results in a message being sent to Kafka.</td>
+</tr>
+<tr>
+<td><strong>Meters</strong></td>
+<td></td>
+</tr>
+<tr>
+<td><code>messages.succeeded.meter</code></td>
+<td>a measure of the rate at which messages were successfully sent to Kafka</td>
+</tr>
+<tr>
+<td><code>messages.failed.meter</code></td>
+<td>a measure of the rate at which messages failed to send Kafka</td>
+</tr>
+<tr>
+<td><code>row.meter</code></td>
+<td>a measure of the rate at which rows arrive to Maxwell from the binlog connector</td>
+</tr>
+<tr>
+<td><strong>Gauges</strong></td>
+<td></td>
+</tr>
+<tr>
+<td><code>replication.lag</code></td>
+<td>the time elapsed between the database transaction commit and the time it was processed by Maxwell, in milliseconds</td>
+</tr>
+<tr>
+<td><strong>Timers</strong></td>
+<td></td>
+</tr>
+<tr>
+<td><code>time.overall</code></td>
+<td>the time it took to send a given record to Kafka, in milliseconds</td>
+</tr>
+</tbody>
+</table>
+<h3 id="http-endpoints">HTTP Endpoints</h3>
+<p>When the HTTP server is enabled the following endpoints are exposed:</p>
+<table>
+<thead>
+<tr>
+<th>endpoint</th>
+<th>description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/metrics</code></td>
+<td>return all metrics as JSON</td>
+</tr>
+<tr>
+<td><code>/healthcheck</code></td>
+<td>run Maxwell's healthcheck(s) and return success or failure based on the result</td>
+</tr>
+<tr>
+<td><code>/ping</code></td>
+<td>a simple ping test, responds with <code>pong</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="healthcheck">Healthcheck</h3>
+<p>The <code>/healthcheck</code> endpoint will return unhealthy when there is more than 1 message that failed to be sent to Kafka in the past 15 minutes.</p>
+<h3 id="jmx-configuration">JMX Configuration</h3>
+<p>Standard configuration is either via commandline args or the <code>config.properties</code> file. However, when exposing JMX metrics
+additional configuration is required to allow remote access. In this case Maxwell makes use of the <code>JAVA_OPTS</code> environment variable.
+To make use of this set <code>JAVA_OPTS</code> before starting Maxwell.</p>
+<p>The following is an example which allows remote access with no authentication and dinsecure connections.</p>
+<pre><code>export JAVA_OPTS=&quot;-Dcom.sun.management.jmxremote \
+-Dcom.sun.management.jmxremote.port=9010 \
+-Dcom.sun.management.jmxremote.local.only=false \
+-Dcom.sun.management.jmxremote.authenticate=false \
+-Dcom.sun.management.jmxremote.ssl=false \
+-Djava.rmi.server.hostname=SERVER_IP_ADDRESS&quot;
+</code></pre>
+
+<script>
+  jQuery(document).ready(function () {
+    jQuery("table").addClass("table table-condensed table-bordered table-hover");
+  });
+</script></div>
         </div>
 
         

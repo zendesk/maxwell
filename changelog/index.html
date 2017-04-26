@@ -87,6 +87,12 @@
             
             
                 <li >
+                    <a href="../monitoring/">Monitoring</a>
+                </li>
+            
+            
+            
+                <li >
                     <a href="../compat/">Compat / Caveats</a>
                 </li>
             
@@ -154,6 +160,11 @@
           </li>
         
           <li >
+              <a href="../monitoring/">Monitoring</a>
+              
+          </li>
+        
+          <li >
               <a href="../compat/">Compat / Caveats</a>
               
           </li>
@@ -168,12 +179,30 @@
             <div class="col-md-10" role="main">
 
 <h1 id="maxwell-changelog">Maxwell changelog</h1>
+<h3 id="v190-now-with-added-whimsy"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.9.0">v1.9.0</a>: "now with added whimsy"</h3>
+<p>Maxwell 1.9 adds one main feature: monitoring support, contributed by
+Scott Ferguson. Multiple backends can be configured, read the updated
+docs for full details.</p>
+<p>There's also some bugfixes:</p>
+<ul>
+<li>filter DDL messages based on config</li>
+<li>determine newest schema from binlog order, not creation order</li>
+<li>add task manager to shutdown cleanly on error</li>
+<li>minor logging improvements</li>
+</ul>
+<h3 id="v182-just-as-the-postcards-wept"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.8.2">v1.8.2</a>: "just as the postcards wept"</h3>
+<p>Bugfix release.</p>
+<ul>
+<li>maxwell would crash on a quoted partition name</li>
+<li>fixes for alters on non-string tables containing VARCHAR</li>
+<li>use seconds instead of milliseconds for DDL messages</li>
+</ul>
 <h3 id="v181-famous-is-faster-dont-have-to-be-talented"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.8.1">v1.8.1</a>: "famous is faster, don't have to be talented"</h3>
 <ul>
 <li>performance improves in capturing and restoring schema, thx Joren
-Minnaert</li>
+  Minnaert</li>
 <li>Allow for capturing from a separate mysql host (adds support for using
-Maxscale as a replication proxy), thx Adam Szkoda</li>
+  Maxscale as a replication proxy), thx Adam Szkoda</li>
 </ul>
 <h3 id="v180-upbeat-honest-contradictory"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.8.0">v1.8.0</a>: "upbeat, honest, contradictory"</h3>
 <p>In version 1.8.0 Maxwell gains alpha support for GTID-based positions!
@@ -181,7 +210,7 @@ All praise due to Henry Cai.</p>
 <h3 id="v172-comparing-self-to-better"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.7.2">v1.7.2</a>: "comparing self to better"</h3>
 <ul>
 <li>Fix a bug found where maxwell could cache the wrong TABLE_MAP_ID for a
-binlog event, leading to crashes or in some cases data mismatches.</li>
+  binlog event, leading to crashes or in some cases data mismatches.</li>
 </ul>
 <h3 id="v171-blame-it-on-your-seratonin"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.7.1">v1.7.1</a>: "blame it on your seratonin"</h3>
 <ul>
