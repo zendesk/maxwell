@@ -34,7 +34,7 @@ def bump
 end
 
 def build
-  do_system("make package MAXWELL_VERSION=#{$version}")
+  do_system("make -C #{BINDIR}/.. package MAXWELL_VERSION=#{$version}")
 
   commit_template = Tempfile.new('maxwell_build')
   commit_template.write <<-EOL
