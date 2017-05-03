@@ -104,17 +104,26 @@ public class Maxwell implements Runnable {
 	protected BinlogPosition getInitialPosition() throws Exception {
 		/* first method:  do we have a stored position for this server? */
 		BinlogPosition initial = this.context.getInitialPosition();
+		if (initial != null) {
+			return initial;
+		}
 
 		/* second method: are we recovering from a master swap? */
-		if ( initial == null && config.masterRecovery )
+		if ( config.masterRecovery )
 			initial = attemptMasterRecovery();
 
-		/* third method: capture the current master postiion. */
+		/* third method: capture the current master position. */
 		if ( initial == null ) {
 			try ( Connection c = context.getReplicationConnection() ) {
 				initial = BinlogPosition.capture(c, config.gtidMode);
 			}
 		}
+
+		if (initial != null) {
+			/* if the initial position didn't come from the store, store it */
+			context.getPositionStore().set(initial);
+		}
+
 		return initial;
 	}
 
