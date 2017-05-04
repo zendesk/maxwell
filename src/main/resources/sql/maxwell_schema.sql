@@ -2,6 +2,7 @@ CREATE TABLE IF NOT EXISTS `schemas` (
   id int unsigned auto_increment NOT NULL primary key,
   binlog_file varchar(255),
   binlog_position int unsigned,
+  last_heartbeat_read bigint null default 0,
   gtid_set varchar(4096),
   base_schema_id int unsigned NULL default NULL,
   deltas mediumtext charset 'utf8' NULL default NULL,

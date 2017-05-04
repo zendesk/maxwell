@@ -114,7 +114,7 @@ public class Recovery {
 	}
 
 	/**
-	 * fetch a list of binlog postiions representing the start of each binlog file
+	 * fetch a list of binlog positions representing the start of each binlog file
 	 *
 	 * @return a list of binlog positions to attempt recovery at
 	 * */

@@ -11,11 +11,18 @@ import java.util.ArrayList;
  */
 public class HeartbeatRowMap extends RowMap {
 	public HeartbeatRowMap(String database, BinlogPosition position) {
-		super("heartbeat", database, "heartbeats", position.getHeartbeat(), new ArrayList<String>(), position);
+		super("heartbeat", database, "heartbeats", position.getLastHeartbeat(), new ArrayList<String>(), position);
+		position.requireLastHeartbeat();
 	}
 
 	public static HeartbeatRowMap valueOf(String database, BinlogPosition position, long heartbeatValue) {
-		BinlogPosition p = new BinlogPosition(position.getGtidSetStr(), position.getGtid(), position.getOffset(), position.getFile(), heartbeatValue);
+		BinlogPosition p = new BinlogPosition(
+			position.getGtidSetStr(),
+			position.getGtid(),
+			position.getOffset(),
+			position.getFile(),
+			heartbeatValue
+			);
 		return new HeartbeatRowMap(database, p);
 	}
 

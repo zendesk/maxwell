@@ -40,11 +40,12 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 
 	protected Long replicationLag = 0L;
 
-	public AbstractReplicator(String clientID, AbstractBootstrapper bootstrapper, String maxwellSchemaDatabaseName, AbstractProducer producer) {
+	public AbstractReplicator(String clientID, AbstractBootstrapper bootstrapper, String maxwellSchemaDatabaseName, AbstractProducer producer, BinlogPosition initialPosition) {
 		this.clientID = clientID;
 		this.bootstrapper = bootstrapper;
 		this.maxwellSchemaDatabaseName = maxwellSchemaDatabaseName;
 		this.producer = producer;
+		this.lastHeartbeatRead = initialPosition.getLastHeartbeat();
 	}
 
 	/**
@@ -78,7 +79,8 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	 * @param timestamp The timestamp of the SQL binlog event
 	 */
 	protected void processQueryEvent(String dbName, String sql, SchemaStore schemaStore, BinlogPosition position, Long timestamp) throws Exception {
-		List<ResolvedSchemaChange> changes = schemaStore.processSQL(sql, dbName, position);
+		BinlogPosition timestampedPosition = BinlogPosition.at(position, lastHeartbeatRead);
+		List<ResolvedSchemaChange> changes = schemaStore.processSQL(sql, dbName, timestampedPosition);
 		for (ResolvedSchemaChange change : changes) {
 			if (change.shouldOutput(filter)) {
 				DDLMap ddl = new DDLMap(change, timestamp, sql, position);

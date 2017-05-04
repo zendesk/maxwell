@@ -146,6 +146,7 @@ public class SchemaStoreSchema {
 		}
 
 		if ( !getTableColumns("positions", c).containsKey("heartbeat_at") ) {
+			// Note: unused as of 64a6a30074e3509ed9ed102a149bf5ca844f5df5; will be removed in the future
 			performAlter(c, "alter table `positions` add column `heartbeat_at` bigint null default null");
 		}
 
@@ -166,6 +167,11 @@ public class SchemaStoreSchema {
 			LOGGER.info("adding heartbeats table to the maxwell schema.");
 			InputStream is = MysqlSavedSchema.class.getResourceAsStream("/sql/maxwell_schema_heartbeats.sql");
 			executeSQLInputStream(c, is, null);
+		}
+
+		if ( !schemaColumns.containsKey("last_heartbeat_read") ) {
+			// default 0 makes sorting easier (rows before this migration are older than those after)
+			performAlter(c, "alter table `schemas` add column `last_heartbeat_read` bigint null default 0");
 		}
 	}
 

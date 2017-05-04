@@ -49,7 +49,7 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 		boolean stopOnEOF,
 		String clientID
 	) {
-		super(clientID, bootstrapper, maxwellSchemaDatabaseName, producer);
+		super(clientID, bootstrapper, maxwellSchemaDatabaseName, producer, start);
 		this.schemaStore = schemaStore;
 		this.binlogEventListener = new BinlogEventListener(queue);
 

@@ -32,7 +32,9 @@ public class MaxwellTestSupport {
 		MysqlIsolatedServer server = new MysqlIsolatedServer();
 		server.boot(extraParams);
 
-		SchemaStoreSchema.ensureMaxwellSchema(server.getConnection(), "maxwell");
+		Connection conn = server.getConnection();
+		SchemaStoreSchema.ensureMaxwellSchema(conn, "maxwell");
+		SchemaStoreSchema.upgradeSchemaStoreSchema(conn);
 		return server;
 	}
 
