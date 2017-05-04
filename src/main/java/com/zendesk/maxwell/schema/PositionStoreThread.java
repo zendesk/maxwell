@@ -50,12 +50,18 @@ public class PositionStoreThread extends RunLoopProcess implements Runnable {
 	@Override
 	protected void beforeStop() {
 		if ( exception == null ) {
-			LOGGER.info("Storing final position: " + position);
 			try {
-				store.set(position);
+				storeFinalPosition();
 			} catch ( Exception e ) {
 				LOGGER.error("error storing final position: " + e);
 			}
+		}
+	}
+
+	void storeFinalPosition() throws SQLException {
+		if ( position != null && !position.equals(storedPosition) ) {
+			LOGGER.info("Storing final position: " + position);
+			store.set(position);
 		}
 	}
 
@@ -94,8 +100,12 @@ public class PositionStoreThread extends RunLoopProcess implements Runnable {
 	}
 
 	public synchronized void setPosition(BinlogPosition p) {
-		if ( position == null || p.newerThan(position) )
+		if ( position == null || p.newerThan(position) ) {
 			position = p;
+			if (storedPosition == null) {
+				storedPosition = p;
+			}
+		}
 	}
 
 	public synchronized BinlogPosition getPosition() throws SQLException {

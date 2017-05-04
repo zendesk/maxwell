@@ -312,7 +312,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		BinlogPosition oldlogPosition = MaxwellTestSupport.capture(server.getConnection());
 		LOGGER.info("Initial pos: " + oldlogPosition);
 		MaxwellContext context = getContext(server.getPort(), false);
-		context.setPosition(oldlogPosition);
+		context.getPositionStore().set(oldlogPosition);
 		MysqlSavedSchema savedSchema = MysqlSavedSchema.restore(context, oldlogPosition);
 		if (savedSchema == null) {
 			Connection c = context.getMaxwellConnection();
