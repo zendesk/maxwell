@@ -63,7 +63,7 @@ public class Maxwell implements Runnable {
 	}
 
 	private BinlogPosition attemptMasterRecovery() throws Exception {
-		BinlogPosition recovered = null;
+		BinlogPosition recoveredPosition = null;
 		MysqlPositionStore positionStore = this.context.getPositionStore();
 		RecoveryInfo recoveryInfo = positionStore.getRecoveryInfo(config);
 
@@ -77,9 +77,9 @@ public class Maxwell implements Runnable {
 				this.config.shykoMode
 			);
 
-			recovered = masterRecovery.recover();
+			recoveredPosition = masterRecovery.recover();
 
-			if (recovered != null) {
+			if (recoveredPosition != null) {
 				// load up the schema from the recovery position and chain it into the
 				// new server_id
 				MysqlSchemaStore oldServerSchemaStore = new MysqlSchemaStore(
@@ -93,12 +93,12 @@ public class Maxwell implements Runnable {
 					false
 				);
 
-				oldServerSchemaStore.clone(context.getServerID(), recovered);
+				oldServerSchemaStore.clone(context.getServerID(), recoveredPosition);
 
 				positionStore.delete(recoveryInfo.serverID, recoveryInfo.clientID, recoveryInfo.position);
 			}
 		}
-		return recovered;
+		return recoveredPosition;
 	}
 
 	protected BinlogPosition getInitialPosition() throws Exception {

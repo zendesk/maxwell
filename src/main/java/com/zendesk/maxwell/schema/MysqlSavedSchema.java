@@ -104,7 +104,7 @@ public class MysqlSavedSchema {
 			return null;
 	}
 
-	public void save(Connection connection) throws SQLException {
+	public Long save(Connection connection) throws SQLException {
 		if (this.schema == null)
 			throw new RuntimeException("Uninitialized schema!");
 
@@ -112,7 +112,7 @@ public class MysqlSavedSchema {
 		this.schemaID = findSchemaForPositionSHA(connection, getPositionSHA());
 
 		if ( this.schemaID != null )
-			return;
+			return schemaID;
 
 		try {
 			connection.setAutoCommit(false);
@@ -126,6 +126,7 @@ public class MysqlSavedSchema {
 		} finally {
 			connection.setAutoCommit(true);
 		}
+		return schemaID;
 	}
 
 	/* Look for SHAs already created at a position we're about to save to.
@@ -144,7 +145,7 @@ public class MysqlSavedSchema {
 		}
 	}
 
-	public Long saveDerivedSchema(Connection conn) throws SQLException {
+	private Long saveDerivedSchema(Connection conn) throws SQLException {
 		PreparedStatement insert = conn.prepareStatement(
 				"INSERT into `schemas` SET base_schema_id = ?, deltas = ?, binlog_file = ?, " +
 				"binlog_position = ?, server_id = ?, charset = ?, version = ?, " +
