@@ -19,8 +19,8 @@ public class PositionStoreThreadTest extends MaxwellTestWithIsolatedServer {
 	public void testStoresFinalPosition() throws Exception {
 		MaxwellContext context = buildContext();
 		MysqlPositionStore store = buildStore(context);
-		BinlogPosition initialPosition = new BinlogPosition(4L, "file");
-		BinlogPosition finalPosition = new BinlogPosition(88L, "file");
+		BinlogPosition initialPosition = new BinlogPosition(4L, "file", 0L);
+		BinlogPosition finalPosition = new BinlogPosition(88L, "file", 1L);
 		PositionStoreThread thread = new PositionStoreThread(store, context);
 
 		thread.setPosition(initialPosition);
@@ -34,7 +34,7 @@ public class PositionStoreThreadTest extends MaxwellTestWithIsolatedServer {
 	public void testDoesNotStoreUnchangedPosition() throws Exception {
 		MaxwellContext context = buildContext();
 		MysqlPositionStore store = buildStore(context);
-		BinlogPosition initialPosition = new BinlogPosition(4L, "file");
+		BinlogPosition initialPosition = new BinlogPosition(4L, "file", 0L);
 		PositionStoreThread thread = new PositionStoreThread(store, context);
 
 		thread.setPosition(initialPosition);

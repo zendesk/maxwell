@@ -44,7 +44,7 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 		boolean stopOnEOF,
 		String clientID
 	) {
-		super(clientID, bootstrapper, maxwellSchemaDatabaseName, producer);
+		super(clientID, bootstrapper, maxwellSchemaDatabaseName, producer, start);
 		this.schemaStore = schemaStore;
 
 		this.client = new BinaryLogClient(mysqlConfig.host, mysqlConfig.port, mysqlConfig.user, mysqlConfig.password);

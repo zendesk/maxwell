@@ -44,7 +44,7 @@ public class MysqlPositionStore {
 		if ( newPosition == null )
 			return;
 
-		Long heartbeat = newPosition.getHeartbeat();
+		Long heartbeat = newPosition.getLastHeartbeat();
 		String lastHeartbeatSQL = heartbeat == null ? "" : "last_heartbeat_read = " + heartbeat + ", ";
 
 		String sql = "INSERT INTO `positions` set "
@@ -157,7 +157,10 @@ public class MysqlPositionStore {
 
 			String gtid = gtidMode ? rs.getString("gtid_set") : null;
 			return new BinlogPosition(gtid, null,
-				rs.getLong("binlog_position"), rs.getString("binlog_file"), null);
+				rs.getLong("binlog_position"),
+				rs.getString("binlog_file"),
+				rs.getLong("last_heartbeat_read")
+			);
 		}
 	}
 
@@ -200,7 +203,9 @@ public class MysqlPositionStore {
 			Long server_id = rs.getLong("server_id");
 			String gtid = gtidMode ? rs.getString("gtid_set") : null;
 			BinlogPosition position = BinlogPosition.at(gtid,
-				rs.getLong("binlog_position"), rs.getString("binlog_file"));
+				rs.getLong("binlog_position"), rs.getString("binlog_file"),
+				rs.getLong("last_heartbeat_read")
+			);
 			Long last_heartbeat_read = rs.getLong("last_heartbeat_read");
 
 			if ( rs.wasNull() ) {

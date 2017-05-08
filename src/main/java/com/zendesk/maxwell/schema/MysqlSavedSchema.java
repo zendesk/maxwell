@@ -60,7 +60,7 @@ public class MysqlSavedSchema {
 	public MysqlSavedSchema(Long serverID, CaseSensitivity sensitivity, Schema schema, BinlogPosition position) throws SQLException {
 		this(serverID, sensitivity);
 		this.schema = schema;
-		this.position = position;
+		setPosition(position);
 	}
 
 	public MysqlSavedSchema(MaxwellContext context, Schema schema, BinlogPosition position) throws SQLException {
@@ -69,13 +69,10 @@ public class MysqlSavedSchema {
 
 	public MysqlSavedSchema(Long serverID, CaseSensitivity sensitivity, Schema schema, BinlogPosition position,
 							long baseSchemaID, List<ResolvedSchemaChange> deltas) throws SQLException {
-		this(serverID, sensitivity);
+		this(serverID, sensitivity, schema, position);
 
-		this.schema = schema;
 		this.baseSchemaID = baseSchemaID;
 		this.deltas = deltas;
-
-		this.position = position;
 	}
 
 	public MysqlSavedSchema createDerivedSchema(Schema newSchema, BinlogPosition position, List<ResolvedSchemaChange> deltas) throws SQLException {
@@ -148,7 +145,7 @@ public class MysqlSavedSchema {
 		PreparedStatement insert = conn.prepareStatement(
 				"INSERT into `schemas` SET base_schema_id = ?, deltas = ?, binlog_file = ?, " +
 				"binlog_position = ?, server_id = ?, charset = ?, version = ?, " +
-				"position_sha = ?, gtid_set = ?",
+				"position_sha = ?, gtid_set = ?, last_heartbeat_read = ?",
 				Statement.RETURN_GENERATED_KEYS);
 
 		String deltaString;
@@ -169,7 +166,8 @@ public class MysqlSavedSchema {
 			schema.getCharset(),
 			SchemaStoreVersion,
 			getPositionSHA(),
-			position.getGtidSetStr()
+			position.getGtidSetStr(),
+			position.getLastHeartbeat()
 		);
 
 	}
@@ -181,7 +179,7 @@ public class MysqlSavedSchema {
 		PreparedStatement schemaInsert, databaseInsert, tableInsert;
 
 		schemaInsert = conn.prepareStatement(
-				"INSERT INTO `schemas` SET binlog_file = ?, binlog_position = ?, server_id = ?, charset = ?, version = ?, position_sha = ?, gtid_set = ?",
+				"INSERT INTO `schemas` SET binlog_file = ?, binlog_position = ?, server_id = ?, charset = ?, version = ?, position_sha = ?, gtid_set = ?, last_heartbeat_read = ?",
 				Statement.RETURN_GENERATED_KEYS
 		);
 
@@ -197,7 +195,7 @@ public class MysqlSavedSchema {
 
 		Long schemaId = executeInsert(schemaInsert, position.getFile(),
 				position.getOffset(), serverID, schema.getCharset(), SchemaStoreVersion,
-				getPositionSHA(), position.getGtidSetStr());
+				getPositionSHA(), position.getGtidSetStr(), position.getLastHeartbeat());
 
 		ArrayList<Object> columnData = new ArrayList<Object>();
 
@@ -403,7 +401,13 @@ public class MysqlSavedSchema {
 
 		schemaRS.next();
 
-		this.position = new BinlogPosition(schemaRS.getString("gtid_set"), null, schemaRS.getInt("binlog_position"), schemaRS.getString("binlog_file"), null);
+		setPosition(new BinlogPosition(
+			schemaRS.getString("gtid_set"),
+			null,
+			schemaRS.getInt("binlog_position"),
+			schemaRS.getString("binlog_file"),
+			schemaRS.getLong("last_heartbeat_read")
+		));
 
 		LOGGER.info("Restoring schema id " + schemaRS.getInt("id") + " (last modified at " + this.position + ")");
 
@@ -522,6 +526,7 @@ public class MysqlSavedSchema {
 	private static Long findSchema(Connection connection, BinlogPosition targetPosition, Long serverID)
 			throws SQLException {
 		LOGGER.debug("looking to restore schema at target position " + targetPosition);
+		targetPosition.requireLastHeartbeat();
 		if (targetPosition.getGtidSetStr() != null) {
 			PreparedStatement s = connection.prepareStatement(
 				"SELECT id, gtid_set from `schemas` "
@@ -548,13 +553,14 @@ public class MysqlSavedSchema {
 			PreparedStatement s = connection.prepareStatement(
 				"SELECT id from `schemas` "
 				+ "WHERE deleted = 0 "
-				+ "AND ((binlog_file < ?) OR (binlog_file = ? and binlog_position <= ?)) AND server_id = ? "
-				+ "ORDER BY binlog_file DESC, binlog_position DESC limit 1");
+				+ "AND last_heartbeat_read <= ? AND ((binlog_file < ?) OR (binlog_file = ? and binlog_position <= ?)) AND server_id = ? "
+				+ "ORDER BY last_heartbeat_read DESC, binlog_file DESC, binlog_position DESC limit 1");
 
-			s.setString(1, targetPosition.getFile());
+			s.setLong(1, targetPosition.getLastHeartbeat());
 			s.setString(2, targetPosition.getFile());
-			s.setLong(3, targetPosition.getOffset());
-			s.setLong(4, serverID);
+			s.setString(3, targetPosition.getFile());
+			s.setLong(4, targetPosition.getOffset());
+			s.setLong(5, serverID);
 
 			ResultSet rs = s.executeQuery();
 			if (rs.next()) {
@@ -576,6 +582,11 @@ public class MysqlSavedSchema {
 		if ( this.schemaID == null ) {
 			throw new RuntimeException("Can't destroy uninitialized schema!");
 		}
+	}
+
+	private void setPosition(BinlogPosition position) {
+		position.requireLastHeartbeat();
+		this.position = position;
 	}
 
 	public static void delete(Connection connection, long schema_id) throws SQLException {
