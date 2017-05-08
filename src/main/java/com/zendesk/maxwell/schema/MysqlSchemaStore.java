@@ -93,11 +93,7 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 		if ( resolvedSchemaChanges.size() > 0 ) {
 			try {
 				Long schemaId = saveSchema(getSchema(), resolvedSchemaChanges, position);
-				String logMessage = "storing schema @" + position + " after applying \"" + sql.replace('\n', ' ') + "\" to " + currentDatabase;
-				if (schemaId != null) {
-					logMessage += ", new schema id is " + schemaId;
-				}
-				LOGGER.info(logMessage);
+				LOGGER.info("storing schema @" + position + " after applying \"" + sql.replace('\n', ' ') + "\" to " + currentDatabase + ", new schema id is " + schemaId);
 			} catch (SQLException e) {
 				throw new SchemaStoreException(e);
 			}
@@ -123,12 +119,7 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 
 			MysqlSavedSchema cloned = new MysqlSavedSchema(serverID, caseSensitivity, getSchema(), position, savedSchema.getSchemaID(), empty);
 			Long schemaId = cloned.save(c);
-
-			String logMessage = "clone schema @" + position + " based on id " + savedSchema.getSchemaID();
-			if (schemaId != null) {
-				logMessage += ", new schema id is " + schemaId;
-			}
-			LOGGER.info(logMessage);
+			LOGGER.info("clone schema @" + position + " based on id " + savedSchema.getSchemaID() + ", new schema id is " + schemaId);
 		} catch ( SQLException e ) {
 			throw new SchemaStoreException(e);
 		}
