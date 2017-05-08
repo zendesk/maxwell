@@ -62,7 +62,7 @@ public class BinlogConnectorEvent {
 
 	public void setLastHeartbeat(Long lastHeartbeat) {
 		this.position     = new BinlogPosition(gtidSetStr, gtid, this.position.getOffset(), this.position.getFile(), lastHeartbeat);
-		this.nextPosition = new BinlogPosition(gtidSetStr, gtid, this.position.getOffset(), this.position.getFile(), lastHeartbeat);
+		this.nextPosition = new BinlogPosition(gtidSetStr, gtid, this.nextPosition.getOffset(), this.nextPosition.getFile(), lastHeartbeat);
 	}
 
 	public Long getTableID() {

@@ -91,10 +91,9 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 		List<ResolvedSchemaChange> resolvedSchemaChanges = resolveSQL(getSchema(), sql, currentDatabase);
 
 		if ( resolvedSchemaChanges.size() > 0 ) {
-			LOGGER.info("storing schema @" + position + " after applying \"" + sql.replace('\n', ' ') + "\"");
-
 			try {
-				saveSchema(getSchema(), resolvedSchemaChanges, position);
+				Long schemaId = saveSchema(getSchema(), resolvedSchemaChanges, position);
+				LOGGER.info("storing schema @" + position + " after applying \"" + sql.replace('\n', ' ') + "\" to " + currentDatabase + ", new schema id is " + schemaId);
 			} catch (SQLException e) {
 				throw new SchemaStoreException(e);
 			}
@@ -102,13 +101,13 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 		return resolvedSchemaChanges;
 	}
 
-	private void saveSchema(Schema updatedSchema, List<ResolvedSchemaChange> changes, BinlogPosition p) throws SQLException {
+	private Long saveSchema(Schema updatedSchema, List<ResolvedSchemaChange> changes, BinlogPosition p) throws SQLException {
 		if ( readOnly )
-			return;
+			return null;
 
 		try (Connection c = maxwellConnectionPool.getConnection()) {
 			this.savedSchema = this.savedSchema.createDerivedSchema(updatedSchema, p, changes);
-			this.savedSchema.save(c);
+			return this.savedSchema.save(c);
 		}
 	}
 
@@ -119,7 +118,8 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 			getSchema();
 
 			MysqlSavedSchema cloned = new MysqlSavedSchema(serverID, caseSensitivity, getSchema(), position, savedSchema.getSchemaID(), empty);
-			cloned.save(c);
+			Long schemaId = cloned.save(c);
+			LOGGER.info("clone schema @" + position + " based on id " + savedSchema.getSchemaID() + ", new schema id is " + schemaId);
 		} catch ( SQLException e ) {
 			throw new SchemaStoreException(e);
 		}
