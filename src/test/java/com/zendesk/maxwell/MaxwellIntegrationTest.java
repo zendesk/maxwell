@@ -279,7 +279,9 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	public void testSystemBlacklist() throws Exception  {
 		String sql[] = {
 			"create table mysql.ha_health_check ( id int )",
-			"insert into mysql.ha_health_check set id = 1"
+			"create table mysql.rds_heartbeat2 ( id int )",
+			"insert into mysql.ha_health_check set id = 1",
+			"insert into mysql.rds_heartbeat2 set id = 1"
 		};
 
 		List<RowMap> list = getRowsForSQL(sql);
