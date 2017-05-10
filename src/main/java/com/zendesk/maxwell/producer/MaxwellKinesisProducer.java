@@ -30,13 +30,15 @@ class KinesisCallback implements FutureCallback<UserRecordResult> {
 	private final AbstractAsyncProducer.CallbackCompleter cc;
 	private final BinlogPosition position;
 	private final String json;
+	private MaxwellContext context;
 	private final String key;
 
-	public KinesisCallback(AbstractAsyncProducer.CallbackCompleter cc, BinlogPosition position, String key, String json) {
+	public KinesisCallback(AbstractAsyncProducer.CallbackCompleter cc, BinlogPosition position, String key, String json, MaxwellContext context) {
 		this.cc = cc;
 		this.position = position;
 		this.key = key;
 		this.json = json;
+		this.context = context;
 	}
 
 	@Override
@@ -51,7 +53,11 @@ class KinesisCallback implements FutureCallback<UserRecordResult> {
 
 		logger.error("Exception during put", t);
 
-		cc.markCompleted();
+		if (!context.getConfig().ignoreProducerError) {
+			context.terminate(new RuntimeException(t));
+		} else {
+			cc.markCompleted();
+		}
 	};
 
 	@Override
@@ -106,7 +112,7 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 			value = null;
 		}
 
-		FutureCallback<UserRecordResult> callback = new KinesisCallback(cc, r.getPosition(), key, value);
+		FutureCallback<UserRecordResult> callback = new KinesisCallback(cc, r.getPosition(), key, value, this.context);
 
 		Futures.addCallback(future, callback);
 	}

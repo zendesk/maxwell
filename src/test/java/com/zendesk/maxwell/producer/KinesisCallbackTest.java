@@ -1,0 +1,42 @@
+package com.zendesk.maxwell.producer;
+
+import com.amazonaws.services.kinesis.producer.IrrecoverableError;
+import com.zendesk.maxwell.MaxwellConfig;
+import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.replication.BinlogPosition;
+import org.junit.Test;
+
+import static org.mockito.Mockito.*;
+
+public class KinesisCallbackTest {
+
+	@Test
+	public void shouldIgnoreProducerErrorByDefault() {
+		MaxwellContext context = mock(MaxwellContext.class);
+		MaxwellConfig config = new MaxwellConfig();
+		when(context.getConfig()).thenReturn(config);
+		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
+		KinesisCallback callback = new KinesisCallback(cc,
+			new BinlogPosition(1, "binlog-1"), "key", "value",
+			context);
+		IrrecoverableError error = new IrrecoverableError("blah");
+		callback.onFailure(error);
+		verify(cc).markCompleted();
+	}
+
+	@Test
+	public void shouldTerminateWhenNotIgnoreProuderError() {
+		MaxwellContext context = mock(MaxwellContext.class);
+		MaxwellConfig config = new MaxwellConfig();
+		config.ignoreProducerError = false;
+		when(context.getConfig()).thenReturn(config);
+		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
+		KinesisCallback callback = new KinesisCallback(cc,
+			new BinlogPosition(1, "binlog-1"), "key", "value",
+			context);
+		IrrecoverableError error = new IrrecoverableError("blah");
+		callback.onFailure(error);
+		verify(context).terminate(any(RuntimeException.class));
+		verifyZeroInteractions(cc);
+	}
+}

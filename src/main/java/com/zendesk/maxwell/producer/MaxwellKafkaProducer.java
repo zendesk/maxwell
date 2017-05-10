@@ -36,6 +36,7 @@ class KafkaCallback implements Callback {
 	private final String json;
 	private final String key;
 	private final Timer timer;
+	private final MaxwellContext context;
 
 	private Counter succeededMessageCount;
 	private Counter failedMessageCount;
@@ -44,7 +45,7 @@ class KafkaCallback implements Callback {
 
 	public KafkaCallback(AbstractAsyncProducer.CallbackCompleter cc, BinlogPosition position, String key, String json,
 						 Timer timer, Counter producedMessageCount, Counter failedMessageCount, Meter producedMessageMeter,
-						Meter failedMessageMeter) {
+						Meter failedMessageMeter, MaxwellContext context) {
 		this.cc = cc;
 		this.position = position;
 		this.key = key;
@@ -54,6 +55,7 @@ class KafkaCallback implements Callback {
 		this.failedMessageCount = failedMessageCount;
 		this.succeededMessageMeter = producedMessageMeter;
 		this.failedMessageMeter = failedMessageMeter;
+		this.context = context;
 	}
 
 	@Override
@@ -66,18 +68,22 @@ class KafkaCallback implements Callback {
 			LOGGER.error(e.getLocalizedMessage());
 			if ( e instanceof RecordTooLargeException ) {
 				LOGGER.error("Considering raising max.request.size broker-side.");
+			} else if (!this.context.getConfig().ignoreProducerError) {
+				this.context.terminate(e);
+				return;
 			}
 		} else {
 			this.succeededMessageCount.inc();
 			this.succeededMessageMeter.mark();
 
-			if ( LOGGER.isDebugEnabled()) {
-				LOGGER.debug("->  key:" + key + ", partition:" +md.partition() + ", offset:" + md.offset());
+			if (LOGGER.isDebugEnabled()) {
+				LOGGER.debug("->  key:" + key + ", partition:" + md.partition() + ", offset:" + md.offset());
 				LOGGER.debug("   " + this.json);
 				LOGGER.debug("   " + position);
 				LOGGER.debug("");
 			}
 		}
+
 		cc.markCompleted();
 		timer.update(cc.timeToSendMS(), TimeUnit.MILLISECONDS);
 	}
@@ -136,7 +142,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 			this.topic = "maxwell";
 		}
 
-		this.interpolateTopic = kafkaTopic.contains("%{");
+		this.interpolateTopic = this.topic.contains("%{");
 		this.kafka = new KafkaProducer<>(kafkaProperties, new StringSerializer(), new StringSerializer());
 
 		String hash = context.getConfig().kafkaPartitionHash;
@@ -210,7 +216,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 			value = null;
 
 		KafkaCallback callback = new KafkaCallback(cc, r.getPosition(), key, value, this.metricsTimer,
-				this.succeededMessageCount, this.failedMessageCount, this.succeededMessageMeter, this.failedMessageMeter);
+				this.succeededMessageCount, this.failedMessageCount, this.succeededMessageMeter, this.failedMessageMeter, this.context);
 
 		kafka.send(record, callback);
 	}

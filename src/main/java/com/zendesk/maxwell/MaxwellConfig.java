@@ -71,6 +71,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public BinlogPosition initPosition;
 	public boolean replayMode;
 	public boolean masterRecovery;
+	public boolean ignoreProducerError;
 
 	public MaxwellConfig() { // argv is only null in tests
 		this.kafkaProperties = new Properties();
@@ -165,6 +166,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "replay", "replay mode, don't store any information to the server").withOptionalArg();
 		parser.accepts( "master_recovery", "(experimental) enable master position recovery code").withOptionalArg();
 		parser.accepts( "gtid_mode", "(experimental) enable gtid mode").withOptionalArg();
+		parser.accepts( "ignore_producer_error", "maxwell is terminated on Kafka/Kinesis errors when set it to false, default to true").withOptionalArg();
 
 		parser.accepts( "__separator_7" );
 
@@ -385,6 +387,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.replayMode =     fetchBooleanOption("replay", options, null, false);
 		this.masterRecovery = fetchBooleanOption("master_recovery", options, properties, false);
+		this.ignoreProducerError = fetchBooleanOption("ignore_producer_error", options, properties, true);
 
 		this.outputConfig = new MaxwellOutputConfig();
 		outputConfig.includesBinlogPosition = fetchBooleanOption("output_binlog_position", options, properties, false);
