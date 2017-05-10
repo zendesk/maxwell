@@ -292,7 +292,7 @@ At present certain metrics are Kafka-specific - that is, not yet supported other
 <p>Standard configuration is either via commandline args or the <code>config.properties</code> file. However, when exposing JMX metrics
 additional configuration is required to allow remote access. In this case Maxwell makes use of the <code>JAVA_OPTS</code> environment variable.
 To make use of this set <code>JAVA_OPTS</code> before starting Maxwell.</p>
-<p>The following is an example which allows remote access with no authentication and dinsecure connections.</p>
+<p>The following is an example which allows remote access with no authentication and insecure connections.</p>
 <pre><code>export JAVA_OPTS=&quot;-Dcom.sun.management.jmxremote \
 -Dcom.sun.management.jmxremote.port=9010 \
 -Dcom.sun.management.jmxremote.local.only=false \
