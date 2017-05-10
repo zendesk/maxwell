@@ -15,6 +15,7 @@ import com.zendesk.maxwell.schema.columndef.*;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.text.StrTokenizer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +30,7 @@ import snaq.db.ConnectionPool;
 
 
 public class MysqlSavedSchema {
-	static int SchemaStoreVersion = 3;
+	static int SchemaStoreVersion = 4;
 
 	private Schema schema;
 	private BinlogPosition position;
@@ -212,7 +213,13 @@ public class MysqlSavedSchema {
 
 					if ( c instanceof EnumeratedColumnDef ) {
 						EnumeratedColumnDef enumColumn = (EnumeratedColumnDef) c;
-						enumValuesSQL = StringUtils.join(enumColumn.getEnumValues(), ",");
+						if (enumColumn.getEnumValues() != null) {
+							try {
+								enumValuesSQL = mapper.writeValueAsString(enumColumn.getEnumValues());
+							} catch (JsonProcessingException e) {
+								throw new SQLException(e);
+							}
+						}
 					}
 
 					columnData.add(schemaId);
@@ -505,7 +512,15 @@ public class MysqlSavedSchema {
 
 			String[] enumValues = null;
 			if (columnEnumValues != null) {
-				enumValues = StringUtils.splitByWholeSeparatorPreserveAllTokens(columnEnumValues, ",");
+				if (this.schemaVersion >= 4) {
+					try {
+						enumValues = mapper.readValue(columnEnumValues, String[].class);
+					} catch (IOException e) {
+						throw new SQLException(e);
+					}
+				} else {
+					enumValues = StringUtils.splitByWholeSeparatorPreserveAllTokens(columnEnumValues, ",");
+				}
 			}
 
 			ColumnDef c = ColumnDef.build(
