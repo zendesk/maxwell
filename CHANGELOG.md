@@ -1,5 +1,25 @@
 # Maxwell changelog
 
+### [v1.10.0](https://github.com/zendesk/maxwell/releases/tag/v1.10.0): "slightly more ones than zeoes"
+
+
+This is a small release, primarily around a change to how schemas are
+stored. Maxwell now stores the `last_heartbeat_read` with each entry
+in the `schemas` table, making schema management more resilient to
+cases where binlog numbers are reused, but means that you must take
+care if you need to roll back to an earlier version. If you deploy
+v1.10.0, then roll back to an earlier version, you should manually
+update all `schemas`.`last_heartbeat_read` values to `0` before
+redeploying v1.10.0 or higher.
+
+Other minor changes:
+
+  - allow negative default numbers in columns
+  - only store final binlog position if it has changed
+  - blacklist internal aurora table `rds_heartbeat*'
+  - log4j version bump (allows for one entry per line JSON logging)
+
+
 ### [v1.9.0](https://github.com/zendesk/maxwell/releases/tag/v1.9.0): "now with added whimsy"
 
 Maxwell 1.9 adds one main feature: monitoring support, contributed by
