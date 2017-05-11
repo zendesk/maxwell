@@ -25,7 +25,7 @@ public class KinesisCallbackTest {
 	}
 
 	@Test
-	public void shouldTerminateWhenNotIgnoreProuderError() {
+	public void shouldTerminateWhenNotIgnoreProducerError() {
 		MaxwellContext context = mock(MaxwellContext.class);
 		MaxwellConfig config = new MaxwellConfig();
 		config.ignoreProducerError = false;
