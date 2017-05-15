@@ -138,7 +138,7 @@ client_id                      | STRING                              | unique te
 replica_server_id              | LONG                                | unique numeric identifier for this maxwell instance | 6379 (see notes)
 master_recovery                | BOOLEAN                             | enable experimental master recovery code            | false
 gtid_mode                      | BOOLEAN                             | enable GTID-based replication                       | false
-ignore_producer_error          | BOOLEAN                             | Maxwell will be terminated on kafka/kinesis errors when set it to false. Otherwise, those producer errors are only logged. | true
+ignore_producer_error          | BOOLEAN                             | Maxwell will be terminated on kafka/kinesis errors when false. Otherwise, those producer errors are only logged. | true
 &nbsp;
 replication_host               | STRING                              | mysql host to replicate from.  Only specify if different from `host` (see notes) | *schema-store host*
 replication_password           | STRING                              | password on replication server | (none)

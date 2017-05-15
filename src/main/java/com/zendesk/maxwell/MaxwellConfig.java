@@ -166,7 +166,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "replay", "replay mode, don't store any information to the server").withOptionalArg();
 		parser.accepts( "master_recovery", "(experimental) enable master position recovery code").withOptionalArg();
 		parser.accepts( "gtid_mode", "(experimental) enable gtid mode").withOptionalArg();
-		parser.accepts( "ignore_producer_error", "Maxwell will be terminated on kafka/kinesis errors when set it to false. Otherwise, those producer errors are only logged. Default to true").withOptionalArg();
+		parser.accepts( "ignore_producer_error", "Maxwell will be terminated on kafka/kinesis errors when false. Otherwise, those producer errors are only logged. Default to true").withOptionalArg();
 
 		parser.accepts( "__separator_7" );
 
