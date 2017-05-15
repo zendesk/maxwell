@@ -54,7 +54,7 @@ SQL_LINE_COMMENT: ('#' | '--') (~'\n')* ('\n' | EOF) -> skip;
 // got attached to the tick character.
 
 STRING_LITERAL: [bnxBNX]? TICK (('\\' . ) | '\'\'' | ~('\\' | '\''))* TICK;
-DBL_STRING_LITERAL: DBL (('\\' .) | '""' | ~('\\' | '"'))+ DBL;
+DBL_STRING_LITERAL: DBL (('\\' .) | '""' | ~('\\' | '"'))* DBL;
 INTEGER_LITERAL: DIGIT+;
 
 fragment TICK: '\'';
