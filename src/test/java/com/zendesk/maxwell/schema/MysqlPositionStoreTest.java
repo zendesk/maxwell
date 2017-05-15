@@ -12,6 +12,7 @@ import java.util.List;
 import com.zendesk.maxwell.recovery.RecoveryInfo;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.errors.DuplicateProcessException;
+import com.zendesk.maxwell.replication.Position;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 
@@ -31,20 +32,23 @@ public class MysqlPositionStoreTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testSetBinlogPosition() throws Exception {
 		MysqlPositionStore store = buildStore();
+		long lastHeartbeatRead = 100L;
+		BinlogPosition binlogPosition;
 		if (MaxwellTestSupport.inGtidMode()) {
 			String gtid = "123:1-100";
-			store.set(new BinlogPosition(gtid, null, 12345, "foo", 100L));
-			assertThat(buildStore().get(), is(new BinlogPosition(gtid, null, 12345, "foo", 100L)));
+			binlogPosition = new BinlogPosition(gtid, null, 12345, "foo");
 		} else {
-			store.set(new BinlogPosition(12345, "foo", 100L));
-			assertThat(buildStore().get(), is(new BinlogPosition(12345, "foo", 100L)));
+			binlogPosition = new BinlogPosition(12345, "foo");
 		}
+		Position position = new Position(binlogPosition, 100L);
+		store.set(position);
+		assertThat(buildStore().get(), is(position));
 	}
 
 	@Test
 	public void testHeartbeat() throws Exception {
 		MysqlPositionStore store = buildStore();
-		store.set(new BinlogPosition(12345, "foo"));
+		store.set(new Position(new BinlogPosition(12345, "foo"), 0L));
 
 		Long preHeartbeat = System.currentTimeMillis();
 		store.heartbeat();
@@ -53,13 +57,12 @@ public class MysqlPositionStoreTest extends MaxwellTestWithIsolatedServer {
 		rs.next();
 
 		assertThat(rs.getLong("heartbeat") >= preHeartbeat, is(true));
-
 	}
 
 	@Test
 	public void testHeartbeatDuplicate() throws Exception {
 		MysqlPositionStore store = buildStore();
-		store.set(new BinlogPosition(12345, "foo"));
+		store.set(new Position(new BinlogPosition(12345, "foo"), 0L));
 
 		store.heartbeat();
 		buildStore().heartbeat();
@@ -103,9 +106,9 @@ public class MysqlPositionStoreTest extends MaxwellTestWithIsolatedServer {
 		Long oldestHeartbeat = newestHeartbeat - 20;
 		String binlogFile = "bin.log";
 
-		buildStore(context, oldestServerID).set(new BinlogPosition(0L, binlogFile, oldestHeartbeat));
-		buildStore(context, intermediateServerID).set(new BinlogPosition(0L, binlogFile, intermediateHeartbeat));
-		buildStore(context, newestServerID).set(new BinlogPosition(0L, binlogFile, newestHeartbeat));
+		buildStore(context, oldestServerID).set(new Position(new BinlogPosition(0L, binlogFile), oldestHeartbeat));
+		buildStore(context, intermediateServerID).set(new Position(new BinlogPosition(0L, binlogFile), intermediateHeartbeat));
+		buildStore(context, newestServerID).set(new Position(new BinlogPosition(0L, binlogFile), newestHeartbeat));
 		MysqlPositionStore store = buildStore(context);
 
 		List<RecoveryInfo> recoveries = store.getAllRecoveryInfos();

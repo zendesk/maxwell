@@ -14,6 +14,8 @@ import java.io.InputStreamReader;
 import java.io.BufferedReader;
 import java.io.IOException;
 
+import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.replication.Position;
 import org.apache.commons.lang3.StringUtils;
 
 import org.slf4j.Logger;
@@ -179,7 +181,11 @@ public class SchemaStoreSchema {
 		ResultSet rs = c.createStatement().executeQuery("select * from `schemas`");
 		while (rs.next()) {
 			Long id = rs.getLong("id");
-			String sha = MysqlSavedSchema.getSchemaPositionSHA(rs.getLong("server_id"), rs.getString("binlog_file"), rs.getLong("binlog_position"));
+			Position position = new Position(
+				new BinlogPosition(rs.getLong("binlog_position"), rs.getString("binlog_file")),
+				rs.getLong("last_heartbeat_read")
+			);
+			String sha = MysqlSavedSchema.getSchemaPositionSHA(rs.getLong("server_id"), position);
 			c.createStatement().executeUpdate("update `schemas` set `position_sha` = '" + sha + "' where id = " + id);
 		}
 		rs.close();

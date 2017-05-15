@@ -11,6 +11,7 @@ import com.zendesk.maxwell.recovery.RecoveryInfo;
 import com.zendesk.maxwell.replication.BinlogConnectorReplicator;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.MaxwellReplicator;
+import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.replication.Replicator;
 import com.zendesk.maxwell.schema.MysqlPositionStore;
 import com.zendesk.maxwell.schema.MysqlSchemaStore;
@@ -62,8 +63,8 @@ public class Maxwell implements Runnable {
 		}
 	}
 
-	private BinlogPosition attemptMasterRecovery() throws Exception {
-		BinlogPosition recoveredPosition = null;
+	private Position attemptMasterRecovery() throws Exception {
+		Position recoveredPosition = null;
 		MysqlPositionStore positionStore = this.context.getPositionStore();
 		RecoveryInfo recoveryInfo = positionStore.getRecoveryInfo(config);
 
@@ -101,9 +102,9 @@ public class Maxwell implements Runnable {
 		return recoveredPosition;
 	}
 
-	protected BinlogPosition getInitialPosition() throws Exception {
+	protected Position getInitialPosition() throws Exception {
 		/* first method:  do we have a stored position for this server? */
-		BinlogPosition initial = this.context.getInitialPosition();
+		Position initial = this.context.getInitialPosition();
 
 		if (initial == null) {
 
@@ -114,7 +115,7 @@ public class Maxwell implements Runnable {
 			/* third method: capture the current master position. */
 			if ( initial == null ) {
 				try ( Connection c = context.getReplicationConnection() ) {
-					initial = BinlogPosition.capture(c, config.gtidMode);
+					initial = Position.capture(c, config.gtidMode);
 				}
 			}
 
@@ -124,9 +125,6 @@ public class Maxwell implements Runnable {
 			}
 		}
 
-		if (initial != null) {
-			initial.requireLastHeartbeat();
-		}
 		return initial;
 	}
 
@@ -139,7 +137,7 @@ public class Maxwell implements Runnable {
 	}
 
 	static String bootString = "Maxwell v%s is booting (%s), starting at %s";
-	private void logBanner(AbstractProducer producer, BinlogPosition initialPosition) {
+	private void logBanner(AbstractProducer producer, Position initialPosition) {
 		String producerName = producer.getClass().getSimpleName();
 		LOGGER.info(String.format(bootString, getMaxwellVersion(), producerName, initialPosition.toString()));
 	}
@@ -173,7 +171,7 @@ public class Maxwell implements Runnable {
 		AbstractProducer producer = this.context.getProducer();
 		AbstractBootstrapper bootstrapper = this.context.getBootstrapper();
 
-		BinlogPosition initPosition = getInitialPosition();
+		Position initPosition = getInitialPosition();
 		logBanner(producer, initPosition);
 		this.context.setPosition(initPosition);
 

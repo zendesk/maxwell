@@ -4,6 +4,7 @@ import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.MaxwellTestSupport;
 import com.zendesk.maxwell.MaxwellTestWithIsolatedServer;
 import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.replication.Position;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -19,8 +20,8 @@ public class PositionStoreThreadTest extends MaxwellTestWithIsolatedServer {
 	public void testStoresFinalPosition() throws Exception {
 		MaxwellContext context = buildContext();
 		MysqlPositionStore store = buildStore(context);
-		BinlogPosition initialPosition = new BinlogPosition(4L, "file", 0L);
-		BinlogPosition finalPosition = new BinlogPosition(88L, "file", 1L);
+		Position initialPosition = new Position(new BinlogPosition(4L, "file"), 0L);
+		Position finalPosition = new Position(new BinlogPosition(88L, "file"), 1L);
 		PositionStoreThread thread = new PositionStoreThread(store, context);
 
 		thread.setPosition(initialPosition);
@@ -34,7 +35,7 @@ public class PositionStoreThreadTest extends MaxwellTestWithIsolatedServer {
 	public void testDoesNotStoreUnchangedPosition() throws Exception {
 		MaxwellContext context = buildContext();
 		MysqlPositionStore store = buildStore(context);
-		BinlogPosition initialPosition = new BinlogPosition(4L, "file", 0L);
+		Position initialPosition = new Position(new BinlogPosition(4L, "file"), 0L);
 		PositionStoreThread thread = new PositionStoreThread(store, context);
 
 		thread.setPosition(initialPosition);

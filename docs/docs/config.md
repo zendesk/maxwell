@@ -195,7 +195,7 @@ metrics_datadog_port | INT | the port to publish metrics to when metrics_datadog
 &nbsp;
 **misc**
 bootstrapper                   | [async &#124; sync &#124; none]                   | bootstrapper type.  See bootstrapping docs.        | async
-init_position                  | FILE:POSITION                       | ignore the information in maxwell.positions and start at the given binlog position. Not available in config.properties. |
+init_position                  | FILE:POSITION:HEARTBEAT             | ignore the information in maxwell.positions and start at the given binlog position. Not available in config.properties. |
 replay                         | BOOLEAN                             | enable maxwell's read-only "replay" mode: don't store a binlog position or schema changes.  Not available in config.properties. |
 
 

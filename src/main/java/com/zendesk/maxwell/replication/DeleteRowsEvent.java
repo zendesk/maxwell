@@ -12,13 +12,13 @@ import com.zendesk.maxwell.schema.Table;
 public class DeleteRowsEvent extends AbstractRowsEvent {
 	private final com.google.code.or.binlog.impl.event.DeleteRowsEvent event;
 
-	public DeleteRowsEvent(com.google.code.or.binlog.impl.event.DeleteRowsEvent e, Table table, MaxwellFilter f, Long heartbeat) {
-		super(e, table, f, heartbeat);
+	public DeleteRowsEvent(com.google.code.or.binlog.impl.event.DeleteRowsEvent e, Table table, MaxwellFilter f, long lastHeartbeat) {
+		super(e, table, f, lastHeartbeat);
 		this.event = e;
 	}
 
-	public DeleteRowsEvent(DeleteRowsEventV2 e2, Table table, MaxwellFilter filter, Long heartbeat) {
-		super(e2, table, filter, heartbeat);
+	public DeleteRowsEvent(DeleteRowsEventV2 e2, Table table, MaxwellFilter filter, long lastHeartbeat) {
+		super(e2, table, filter, lastHeartbeat);
 
 		com.google.code.or.binlog.impl.event.DeleteRowsEvent e =  new com.google.code.or.binlog.impl.event.DeleteRowsEvent(e2.getHeader());
 

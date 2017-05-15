@@ -3,6 +3,7 @@ package com.zendesk.maxwell.row;
 import com.fasterxml.jackson.core.*;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.replication.Position;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +28,7 @@ public class RowMap implements Serializable {
 	private final String database;
 	private final String table;
 	private final Long timestamp;
-	private BinlogPosition nextPosition;
+	private Position nextPosition;
 
 	private Long xid;
 	private boolean txCommit;
@@ -67,7 +68,7 @@ public class RowMap implements Serializable {
 			};
 
 	public RowMap(String type, String database, String table, Long timestamp, List<String> pkColumns,
-			BinlogPosition nextPosition) {
+			Position nextPosition) {
 		this.rowType = type;
 		this.database = database;
 		this.table = table;
@@ -229,11 +230,12 @@ public class RowMap implements Serializable {
 				g.writeBooleanField("commit", true);
 		}
 
+		BinlogPosition binlogPosition = this.nextPosition.getBinlogPosition();
 		if ( outputConfig.includesBinlogPosition )
-			g.writeStringField("position", this.nextPosition.getFile() + ":" + this.nextPosition.getOffset());
+			g.writeStringField("position", binlogPosition.getFile() + ":" + binlogPosition.getOffset());
 
 		if ( outputConfig.includesGtidPosition)
-			g.writeStringField("gtid", this.nextPosition.getGtid());
+			g.writeStringField("gtid", binlogPosition.getGtid());
 
 		if ( outputConfig.includesServerId && this.serverId != null ) {
 			g.writeNumberField("server_id", this.serverId);
@@ -317,7 +319,7 @@ public class RowMap implements Serializable {
 		this.approximateSize += approximateKVSize(key, value);
 	}
 
-	public BinlogPosition getPosition() {
+	public Position getPosition() {
 		return nextPosition;
 	}
 

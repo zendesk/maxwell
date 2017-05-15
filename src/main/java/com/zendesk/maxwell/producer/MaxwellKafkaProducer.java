@@ -8,6 +8,7 @@ import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.metrics.MaxwellMetrics;
 import com.zendesk.maxwell.producer.partitioners.MaxwellKafkaPartitioner;
 import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMap.KeyFormat;
 import com.zendesk.maxwell.schema.ddl.DDLMap;
@@ -32,7 +33,7 @@ import java.util.concurrent.TimeoutException;
 class KafkaCallback implements Callback {
 	public static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
 	private final AbstractAsyncProducer.CallbackCompleter cc;
-	private final BinlogPosition position;
+	private final Position position;
 	private final String json;
 	private final String key;
 	private final Timer timer;
@@ -43,9 +44,9 @@ class KafkaCallback implements Callback {
 	private Meter succeededMessageMeter;
 	private Meter failedMessageMeter;
 
-	public KafkaCallback(AbstractAsyncProducer.CallbackCompleter cc, BinlogPosition position, String key, String json,
-						 Timer timer, Counter producedMessageCount, Counter failedMessageCount, Meter producedMessageMeter,
-						Meter failedMessageMeter, MaxwellContext context) {
+	public KafkaCallback(AbstractAsyncProducer.CallbackCompleter cc, Position position, String key, String json,
+	                     Timer timer, Counter producedMessageCount, Counter failedMessageCount, Meter producedMessageMeter,
+	                     Meter failedMessageMeter, MaxwellContext context) {
 		this.cc = cc;
 		this.position = position;
 		this.key = key;

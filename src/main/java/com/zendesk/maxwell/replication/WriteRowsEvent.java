@@ -17,13 +17,13 @@ public class WriteRowsEvent extends AbstractRowsEvent {
 		return event.getRows();
 	}
 
-	public WriteRowsEvent(com.google.code.or.binlog.impl.event.WriteRowsEvent e, Table t, MaxwellFilter f, Long heartbeat) {
-		super(e, t, f, heartbeat);
+	public WriteRowsEvent(com.google.code.or.binlog.impl.event.WriteRowsEvent e, Table t, MaxwellFilter f, long lastHeartbeat) {
+		super(e, t, f, lastHeartbeat);
 		this.event = e;
 	}
 
-	public WriteRowsEvent(WriteRowsEventV2 e2, Table table, MaxwellFilter filter, Long heartbeat) {
-		super(e2, table, filter, heartbeat);
+	public WriteRowsEvent(WriteRowsEventV2 e2, Table table, MaxwellFilter filter, long lastHeartbeat) {
+		super(e2, table, filter, lastHeartbeat);
 		com.google.code.or.binlog.impl.event.WriteRowsEvent e =  new com.google.code.or.binlog.impl.event.WriteRowsEvent(e2.getHeader());
 
 		e.setBinlogFilename(e2.getBinlogFilename());

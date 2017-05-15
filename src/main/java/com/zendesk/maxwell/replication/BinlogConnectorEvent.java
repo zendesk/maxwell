@@ -20,8 +20,8 @@ public class BinlogConnectorEvent {
 		this.gtidSetStr = gtidSetStr;
 		this.gtid = gtid;
 		EventHeaderV4 hV4 = (EventHeaderV4) event.getHeader();
-		this.nextPosition = new BinlogPosition(gtidSetStr, gtid, hV4.getNextPosition(), filename, null);
-		this.position = new BinlogPosition(gtidSetStr, gtid, hV4.getPosition(), filename, null);
+		this.nextPosition = new BinlogPosition(gtidSetStr, gtid, hV4.getNextPosition(), filename);
+		this.position = new BinlogPosition(gtidSetStr, gtid, hV4.getPosition(), filename);
 	}
 
 	public Event getEvent() {
@@ -58,11 +58,6 @@ public class BinlogConnectorEvent {
 
 	public EventType getType() {
 		return event.getHeader().getEventType();
-	}
-
-	public void setLastHeartbeat(Long lastHeartbeat) {
-		this.position     = new BinlogPosition(gtidSetStr, gtid, this.position.getOffset(), this.position.getFile(), lastHeartbeat);
-		this.nextPosition = new BinlogPosition(gtidSetStr, gtid, this.nextPosition.getOffset(), this.nextPosition.getFile(), lastHeartbeat);
 	}
 
 	public Long getTableID() {
@@ -128,34 +123,35 @@ public class BinlogConnectorEvent {
 		}
 	}
 
-	private RowMap buildRowMap(String type, Serializable[] data, Table table, BitSet includedColumns) {
+	private RowMap buildRowMap(String type, Position position, Serializable[] data, Table table, BitSet includedColumns) {
 		RowMap map = new RowMap(
 			type,
 			table.getDatabase(),
 			table.getName(),
 			event.getHeader().getTimestamp() / 1000,
 			table.getPKList(),
-			nextPosition
+			position
 		);
 
 		writeData(table, map, data, includedColumns);
 		return map;
 	}
 
-	public List<RowMap> jsonMaps(Table table) {
+	public List<RowMap> jsonMaps(Table table, Position lastHeartbeatPosition) {
 		ArrayList<RowMap> list = new ArrayList<>();
 
+		Position nextPosition = lastHeartbeatPosition.withBinlogPosition(this.nextPosition);
 		switch ( getType() ) {
 			case WRITE_ROWS:
 			case EXT_WRITE_ROWS:
 				for ( Serializable[] data : writeRowsData().getRows() ) {
-					list.add(buildRowMap("insert", data, table, writeRowsData().getIncludedColumns()));
+					list.add(buildRowMap("insert", nextPosition, data, table, writeRowsData().getIncludedColumns()));
 				}
 				break;
 			case DELETE_ROWS:
 			case EXT_DELETE_ROWS:
 				for ( Serializable[] data : deleteRowsData().getRows() ) {
-					list.add(buildRowMap("delete", data, table, deleteRowsData().getIncludedColumns()));
+					list.add(buildRowMap("delete", nextPosition, data, table, deleteRowsData().getIncludedColumns()));
 				}
 				break;
 			case UPDATE_ROWS:
@@ -164,7 +160,7 @@ public class BinlogConnectorEvent {
 					Serializable[] data = e.getValue();
 					Serializable[] oldData = e.getKey();
 
-					RowMap r = buildRowMap("update", data, table, updateRowsData().getIncludedColumns());
+					RowMap r = buildRowMap("update", nextPosition, data, table, updateRowsData().getIncludedColumns());
 					writeOldData(table, r, oldData, updateRowsData().getIncludedColumnsBeforeUpdate());
 					list.add(r);
 				}
