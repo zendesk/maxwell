@@ -35,7 +35,10 @@ public class InflightMessageList {
 	/* returns the position that stuff is complete up to, or null if there were no changes */
 	public synchronized BinlogPosition completeMessage(BinlogPosition p) {
 		InflightMessage m = this.linkedMap.get(p.toString());
-		assert(m != null);
+
+		if (m == null) {
+			return null;
+		}
 
 		m.isComplete = true;
 

@@ -2,6 +2,8 @@ package com.zendesk.maxwell.replication;
 
 import com.google.code.or.OpenReplicator;
 import com.google.code.or.binlog.BinlogEventV4;
+import com.google.code.or.binlog.BinlogParser;
+import com.google.code.or.binlog.BinlogParserListener;
 import com.google.code.or.binlog.impl.event.*;
 import com.google.code.or.common.util.MySQLConstants;
 import com.google.code.or.net.TransportException;
@@ -114,6 +116,28 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 	public void startReplicator() throws Exception {
 		try {
 			this.replicator.start();
+
+			replicator.getBinlogParser().addParserListener(new BinlogParserListener() {
+				@Override
+				public void onStart(BinlogParser parser) {}
+
+				@Override
+				public void onException(BinlogParser parser, Exception exception) {
+					LOGGER.error("Binlog parse error: " + exception.getLocalizedMessage());
+				}
+
+				@Override
+				public void onStop(BinlogParser parser) {
+					queue.clear();
+					try {
+						//wait a bit here for new messages to be pushed to the queue since the queue might be blocked before
+						Thread.sleep(2000);
+					} catch (InterruptedException e) {
+					}
+					//clear again in case some messages were pushed just now
+					queue.clear();
+				}
+			});
 		} catch ( TransportException e ) {
 			switch ( e.getErrorCode() ) {
 				case 1236:
@@ -214,7 +238,6 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 				continue;
 			}
 
-			setReplicatorPosition((AbstractBinlogEventV4) v4Event);
 
 			switch(v4Event.getHeader().getEventType()) {
 				case MySQLConstants.WRITE_ROWS_EVENT:
@@ -248,6 +271,7 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 						if ( !buffer.isEmpty() )
 							buffer.getLast().setTXCommit();
 
+						setReplicatorPosition((AbstractBinlogEventV4) v4Event);
 						return buffer;
 					} else if ( sql.toUpperCase().startsWith("SAVEPOINT")) {
 						LOGGER.info("Ignoring SAVEPOINT in transaction: " + qe);
@@ -261,7 +285,7 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 						// RDS heartbeat events take the following form:
 						// INSERT INTO mysql.rds_heartbeat2(id, value) values (1,1483041015005) ON DUPLICATE KEY UPDATE value = 1483041015005
 						// As a result they are processed as query events.
-						// When these occur we need to update to update our position.
+						// When these occur we need to update our position.
 						processRDSHeartbeatInsertEvent(qe);
 					} else {
 						LOGGER.warn("Unhandled QueryEvent inside transaction: " + qe);
@@ -272,6 +296,7 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 
 					buffer.setXid(xe.getXid());
 
+					setReplicatorPosition((AbstractBinlogEventV4) v4Event);
 					replicationLag = System.currentTimeMillis() - xe.getHeader().getTimestamp();
 					if ( !buffer.isEmpty() )
 						buffer.getLast().setTXCommit();
@@ -321,11 +346,7 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 				case MySQLConstants.UPDATE_ROWS_EVENT_V2:
 				case MySQLConstants.DELETE_ROWS_EVENT:
 				case MySQLConstants.DELETE_ROWS_EVENT_V2:
-					LOGGER.warn("Started replication stream inside a transaction.  This shouldn't normally happen.");
-					LOGGER.warn("Assuming new transaction at unexpected event:" + v4Event);
-
-					queue.offerFirst(v4Event);
-					rowBuffer = getTransactionRows();
+					LOGGER.warn("Started replication stream inside a transaction. This shouldn't normally happen. Drop this event: " + v4Event);
 					break;
 				case MySQLConstants.TABLE_MAP_EVENT:
 					tableCache.processEvent(getSchema(), this.filter, (TableMapEvent) v4Event);
