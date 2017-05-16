@@ -5,16 +5,21 @@ import com.codahale.metrics.health.HealthCheckRegistry;
 import com.codahale.metrics.servlets.HealthCheckServlet;
 import com.codahale.metrics.servlets.MetricsServlet;
 import com.codahale.metrics.servlets.PingServlet;
+import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.util.StoppableTask;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
+import java.util.concurrent.TimeoutException;
+
 
 public class MaxwellHTTPServer {
-	public MaxwellHTTPServer(int port, MetricRegistry metricRegistry, HealthCheckRegistry healthCheckRegistry) {
+	public MaxwellHTTPServer(int port, MetricRegistry metricRegistry, HealthCheckRegistry healthCheckRegistry, MaxwellContext context) {
 		MaxwellHTTPServerWorker maxwellHTTPServerWorker = new MaxwellHTTPServerWorker(port, metricRegistry, healthCheckRegistry);
 		Thread thread = new Thread(maxwellHTTPServerWorker);
 
+		context.addTask(maxwellHTTPServerWorker);
 		thread.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
 			public void uncaughtException(Thread t, Throwable e) {
 				e.printStackTrace();
@@ -22,11 +27,12 @@ public class MaxwellHTTPServer {
 			}
 		});
 
+		thread.setDaemon(true);
 		thread.start();
 	}
 }
 
-class MaxwellHTTPServerWorker implements Runnable {
+class MaxwellHTTPServerWorker implements StoppableTask, Runnable {
 
 	private int port;
 	private MetricRegistry metricRegistry;
@@ -60,5 +66,17 @@ class MaxwellHTTPServerWorker implements Runnable {
 			throw new RuntimeException(e);
 		}
 	}
-}
 
+	@Override
+	public void requestStop() {
+		try {
+			this.server.stop();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void awaitStop(Long timeout) throws TimeoutException {
+	}
+}

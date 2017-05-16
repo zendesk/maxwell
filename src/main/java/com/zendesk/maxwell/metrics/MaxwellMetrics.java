@@ -5,6 +5,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Slf4jReporter;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.zendesk.maxwell.MaxwellConfig;
+import com.zendesk.maxwell.MaxwellContext;
 import org.apache.commons.lang.StringUtils;
 import org.coursera.metrics.datadog.DatadogReporter;
 import org.coursera.metrics.datadog.transport.HttpTransport;
@@ -32,7 +33,7 @@ public class MaxwellMetrics {
 
 	private static String metricsPrefix;
 
-	public static void setup(MaxwellConfig config) {
+	public static void setup(MaxwellConfig config, MaxwellContext context) {
 		if (config.metricsReportingType == null) {
 			LOGGER.warn("Metrics will not be exposed: metricsReportingType not configured.");
 			return;
@@ -73,7 +74,7 @@ public class MaxwellMetrics {
 			healthCheckRegistry.register("MaxwellHealth", new MaxwellHealthCheck(metricRegistry));
 
 			LOGGER.info("Metrics http server starting");
-			new MaxwellHTTPServer(config.metricsHTTPPort, MaxwellMetrics.metricRegistry, healthCheckRegistry);
+			new MaxwellHTTPServer(config.metricsHTTPPort, MaxwellMetrics.metricRegistry, healthCheckRegistry, context);
 			LOGGER.info("Metrics http server started on port " + config.metricsHTTPPort);
 		}
 

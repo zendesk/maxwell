@@ -146,7 +146,7 @@ public class Maxwell implements Runnable {
 
 	protected void onReplicatorStart() {}
 	private void start() throws Exception {
-		MaxwellMetrics.setup(config);
+		MaxwellMetrics.setup(config, context);
 		try {
 			startInner();
 		} finally {
