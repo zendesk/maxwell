@@ -13,6 +13,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.producer.partitioners.MaxwellKinesisPartitioner;
 import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
 
 import com.amazonaws.services.kinesis.producer.Attempt;
@@ -28,12 +29,12 @@ class KinesisCallback implements FutureCallback<UserRecordResult> {
 	public static final Logger logger = LoggerFactory.getLogger(KinesisCallback.class);
 
 	private final AbstractAsyncProducer.CallbackCompleter cc;
-	private final BinlogPosition position;
+	private final Position position;
 	private final String json;
 	private MaxwellContext context;
 	private final String key;
 
-	public KinesisCallback(AbstractAsyncProducer.CallbackCompleter cc, BinlogPosition position, String key, String json, MaxwellContext context) {
+	public KinesisCallback(AbstractAsyncProducer.CallbackCompleter cc, Position position, String key, String json, MaxwellContext context) {
 		this.cc = cc;
 		this.position = position;
 		this.key = key;

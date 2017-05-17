@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.schema;
 
-import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 
@@ -26,5 +26,5 @@ public interface SchemaStore {
 	 * @param position The position of the DDL statement
 	 * @return A list of the schema changes parsed from the SQL.
 	 */
-	List<ResolvedSchemaChange> processSQL(String sql, String currentDatabase, BinlogPosition position) throws SchemaStoreException, InvalidSchemaError;
+	List<ResolvedSchemaChange> processSQL(String sql, String currentDatabase, Position position) throws SchemaStoreException, InvalidSchemaError;
 }

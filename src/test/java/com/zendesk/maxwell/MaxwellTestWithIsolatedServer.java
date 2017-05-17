@@ -6,6 +6,7 @@ import java.util.*;
 
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
 import org.junit.*;
 
@@ -75,7 +76,7 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 		return MaxwellTestSupport.buildContext(server.getPort(), null, null);
 	}
 
-	protected MaxwellContext buildContext(BinlogPosition p) throws Exception {
+	protected MaxwellContext buildContext(Position p) throws Exception {
 		return MaxwellTestSupport.buildContext(server.getPort(), p, null);
 	}
 

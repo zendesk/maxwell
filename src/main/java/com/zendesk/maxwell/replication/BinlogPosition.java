@@ -9,7 +9,6 @@ import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Objects;
 
 public class BinlogPosition implements Serializable {
 	static final Logger LOGGER = LoggerFactory.getLogger(BinlogPosition.class);
@@ -23,25 +22,15 @@ public class BinlogPosition implements Serializable {
 	private final long offset;
 	private final String file;
 
-	// LastHeartbeat is the most recent heartbeat seen prior to this position.
-	// For a HeartbeatRow, it is the exact (new) heartbeat value for this position.
-	// It must be set for this position to be stored or used as a restore target position.
-	private final Long lastHeartbeat;
-
-	public BinlogPosition(String gtidSetStr, String gtid, long l, String file, Long lastHeartbeat) {
+	public BinlogPosition(String gtidSetStr, String gtid, long l, String file) {
 		this.gtidSetStr = gtidSetStr;
 		this.gtid = gtid;
 		this.offset = l;
 		this.file = file;
-		this.lastHeartbeat = lastHeartbeat;
-	}
-
-	public BinlogPosition(long l, String file, Long lastHeartbeat) {
-		this(null, null, l, file, lastHeartbeat);
 	}
 
 	public BinlogPosition(long l, String file) {
-		this(null, null, l, file, null);
+		this(null, null, l, file);
 	}
 
 	public static BinlogPosition capture(Connection c, boolean gtidMode) throws SQLException {
@@ -54,23 +43,19 @@ public class BinlogPosition implements Serializable {
 		if (gtidMode) {
 			gtidSetStr = rs.getString(GTID_COLUMN);
 		}
-		return new BinlogPosition(gtidSetStr, null, l, file, 0L);
+		return new BinlogPosition(gtidSetStr, null, l, file);
 	}
 
-	public static BinlogPosition at(BinlogPosition position, Long lastHeartbeat) {
-		return new BinlogPosition(position.gtidSetStr, position.gtid, position.offset, position.file, lastHeartbeat);
+	public static BinlogPosition at(BinlogPosition position) {
+		return new BinlogPosition(position.gtidSetStr, position.gtid, position.offset, position.file);
 	}
 
-	public static BinlogPosition at(String gtidSetStr, long offset, String file, Long lastHeartbeat) {
-		return new BinlogPosition(gtidSetStr, null, offset, file, lastHeartbeat);
-	}
-
-	public static BinlogPosition at(long offset, String file, Long lastHeartbeat) {
-		return new BinlogPosition(null, null, offset, file, lastHeartbeat);
+	public static BinlogPosition at(String gtidSetStr, long offset, String file) {
+		return new BinlogPosition(gtidSetStr, null, offset, file);
 	}
 
 	public static BinlogPosition at(long offset, String file) {
-		return new BinlogPosition(null, null, offset, file, null);
+		return new BinlogPosition(null, null, offset, file);
 	}
 
 	public long getOffset() {
@@ -79,16 +64,6 @@ public class BinlogPosition implements Serializable {
 
 	public String getFile() {
 		return file;
-	}
-
-	public Long getLastHeartbeat() {
-		return lastHeartbeat;
-	}
-
-	public void requireLastHeartbeat() {
-		if (lastHeartbeat == null) {
-			throw new AssertionError("BinlogPosition.lastHeartbeat must be set");
-		}
 	}
 
 	public String getGtid() {
@@ -107,7 +82,6 @@ public class BinlogPosition implements Serializable {
 	public String toString() {
 		return "BinlogPosition["
 			+ (gtidSetStr == null ? file + ":" + offset : gtidSetStr)
-			+ ", lastHeartbeat=" + String.valueOf(lastHeartbeat)
 			+ "]";
 	}
 
@@ -137,10 +111,18 @@ public class BinlogPosition implements Serializable {
 
 		return this.file.equals(otherPosition.file)
 			&& this.offset == otherPosition.offset
-			&& Objects.equals(this.lastHeartbeat, otherPosition.lastHeartbeat)
 			&& (gtidSetStr == null
 					? otherPosition.gtidSetStr == null
 					: gtidSetStr.equals(otherPosition.gtidSetStr)
 				);
+	}
+
+	@Override
+	public int hashCode() {
+		if (gtidSetStr != null) {
+			return gtidSetStr.hashCode();
+		} else {
+			return Long.valueOf(offset).hashCode();
+		}
 	}
 }

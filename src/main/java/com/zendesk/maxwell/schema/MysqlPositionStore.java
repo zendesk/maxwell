@@ -15,6 +15,7 @@ import com.zendesk.maxwell.recovery.RecoveryInfo;
 
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.errors.DuplicateProcessException;
+import com.zendesk.maxwell.replication.Position;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,36 +41,38 @@ public class MysqlPositionStore {
 		}
 	}
 
-	public void set(BinlogPosition newPosition) throws SQLException {
+	public void set(Position newPosition) throws SQLException {
 		if ( newPosition == null )
 			return;
 
-		Long heartbeat = newPosition.getLastHeartbeat();
-		String lastHeartbeatSQL = heartbeat == null ? "" : "last_heartbeat_read = " + heartbeat + ", ";
+		Long heartbeat = newPosition.getLastHeartbeatRead();
 
 		String sql = "INSERT INTO `positions` set "
 				+ "server_id = ?, "
 				+ "gtid_set = ?, "
 				+ "binlog_file = ?, "
 				+ "binlog_position = ?, "
-				+ lastHeartbeatSQL
+				+ "last_heartbeat_read = ?, "
 				+ "client_id = ? "
 				+ "ON DUPLICATE KEY UPDATE "
-				+ lastHeartbeatSQL
+				+ "last_heartbeat_read = ?, "
 				+ "gtid_set = ?, binlog_file = ?, binlog_position=?";
 
+		BinlogPosition binlogPosition = newPosition.getBinlogPosition();
 		try( Connection c = connectionPool.getConnection() ){
 			PreparedStatement s = c.prepareStatement(sql);
 
 			LOGGER.debug("Writing binlog position to " + c.getCatalog() + ".positions: " + newPosition + ", last heartbeat read: " + heartbeat);
 			s.setLong(1, serverID);
-			s.setString(2, newPosition.getGtidSetStr());
-			s.setString(3, newPosition.getFile());
-			s.setLong(4, newPosition.getOffset());
-			s.setString(5, clientID);
-			s.setString(6, newPosition.getGtidSetStr());
-			s.setString(7, newPosition.getFile());
-			s.setLong(8, newPosition.getOffset());
+			s.setString(2, binlogPosition.getGtidSetStr());
+			s.setString(3, binlogPosition.getFile());
+			s.setLong(4, binlogPosition.getOffset());
+			s.setLong(5, heartbeat);
+			s.setString(6, clientID);
+			s.setLong(7, heartbeat);
+			s.setString(8, binlogPosition.getGtidSetStr());
+			s.setString(9, binlogPosition.getFile());
+			s.setLong(10, binlogPosition.getOffset());
 
 			s.execute();
 		}
@@ -145,7 +148,7 @@ public class MysqlPositionStore {
 		lastHeartbeat = thisHeartbeat;
 	}
 
-	public BinlogPosition get() throws SQLException {
+	public Position get() throws SQLException {
 		try ( Connection c = connectionPool.getConnection() ) {
 			PreparedStatement s = c.prepareStatement("SELECT * from `positions` where server_id = ? and client_id = ?");
 			s.setLong(1, serverID);
@@ -156,9 +159,11 @@ public class MysqlPositionStore {
 				return null;
 
 			String gtid = gtidMode ? rs.getString("gtid_set") : null;
-			return new BinlogPosition(gtid, null,
-				rs.getLong("binlog_position"),
-				rs.getString("binlog_file"),
+			return new Position(
+				new BinlogPosition(gtid, null,
+					rs.getLong("binlog_position"),
+					rs.getString("binlog_file")
+				),
 				rs.getLong("last_heartbeat_read")
 			);
 		}
@@ -202,16 +207,16 @@ public class MysqlPositionStore {
 		while ( rs.next() ) {
 			Long server_id = rs.getLong("server_id");
 			String gtid = gtidMode ? rs.getString("gtid_set") : null;
-			BinlogPosition position = BinlogPosition.at(gtid,
-				rs.getLong("binlog_position"), rs.getString("binlog_file"),
-				rs.getLong("last_heartbeat_read")
-			);
-			Long last_heartbeat_read = rs.getLong("last_heartbeat_read");
+			Position position = new Position(
+				BinlogPosition.at(gtid,
+					rs.getLong("binlog_position"),
+					rs.getString("binlog_file")
+				), rs.getLong("last_heartbeat_read"));
 
 			if ( rs.wasNull() ) {
 				LOGGER.warn("master recovery is ignoring position with NULL heartbeat");
 			} else {
-				recoveries.add(new RecoveryInfo(position, last_heartbeat_read, server_id, clientID));
+				recoveries.add(new RecoveryInfo(position, server_id, clientID));
 			}
 		}
 		return recoveries;
@@ -238,15 +243,16 @@ public class MysqlPositionStore {
 		return result;
 	}
 
-	public int delete(Long serverID, String clientID, BinlogPosition position) throws SQLException {
+	public int delete(Long serverID, String clientID, Position position) throws SQLException {
 		try ( Connection c = connectionPool.getConnection()) {
 			PreparedStatement s = c.prepareStatement(
 				"DELETE from `positions` where server_id = ? and client_id = ? and binlog_file = ? and binlog_position = ?"
 			);
+			BinlogPosition binlogPosition = position.getBinlogPosition();
 			s.setLong(1, serverID);
 			s.setString(2, clientID);
-			s.setString(3, position.getFile());
-			s.setLong(4, position.getOffset());
+			s.setString(3, binlogPosition.getFile());
+			s.setLong(4, binlogPosition.getOffset());
 			s.execute();
 			return s.getUpdateCount();
 		}

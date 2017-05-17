@@ -27,7 +27,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	protected final AbstractBootstrapper bootstrapper;
 	protected final String maxwellSchemaDatabaseName;
 	protected final TableCache tableCache = new TableCache();
-	protected Long lastHeartbeatRead;
+	protected Position lastHeartbeatPosition;
 	protected MaxwellFilter filter;
 
 	private final Counter rowCounter = MaxwellMetrics.metricRegistry.counter(
@@ -40,12 +40,12 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 
 	protected Long replicationLag = 0L;
 
-	public AbstractReplicator(String clientID, AbstractBootstrapper bootstrapper, String maxwellSchemaDatabaseName, AbstractProducer producer, BinlogPosition initialPosition) {
+	public AbstractReplicator(String clientID, AbstractBootstrapper bootstrapper, String maxwellSchemaDatabaseName, AbstractProducer producer, Position initialPosition) {
 		this.clientID = clientID;
 		this.bootstrapper = bootstrapper;
 		this.maxwellSchemaDatabaseName = maxwellSchemaDatabaseName;
 		this.producer = producer;
-		this.lastHeartbeatRead = initialPosition.getLastHeartbeat();
+		this.lastHeartbeatPosition = initialPosition;
 	}
 
 	/**
@@ -55,7 +55,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	 * If it's a write for a different client_id, we return the input (which
 	 * will signify to the rest of the chain to ignore it).  Otherwise, we
 	 * transform it into a HeartbeatRowMap (which will not be output, but will
-	 * advance the binlog position) and set `this.lastHeartbeatRead`
+	 * advance the binlog position) and set `this.lastHeartbeatPosition`
 	 *
 	 * @return either a RowMap or a HeartbeatRowMap
 	 */
@@ -64,9 +64,10 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 		if ( !Objects.equals(hbClientID, this.clientID) )
 			return row; // plain row -- do not process.
 
-		this.lastHeartbeatRead = (Long) row.getData("heartbeat");
-		LOGGER.debug("replicator picked up heartbeat: " + this.lastHeartbeatRead);
-		return HeartbeatRowMap.valueOf(row.getDatabase(), row.getPosition(), this.lastHeartbeatRead);
+		long lastHeartbeatRead = (Long) row.getData("heartbeat");
+		LOGGER.debug("replicator picked up heartbeat: " + lastHeartbeatRead);
+		this.lastHeartbeatPosition = row.getPosition().withHeartbeat(lastHeartbeatRead);
+		return HeartbeatRowMap.valueOf(row.getDatabase(), this.lastHeartbeatPosition);
 	}
 
 	/**
@@ -78,9 +79,8 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	 * @param position The position that the SQL happened at
 	 * @param timestamp The timestamp of the SQL binlog event
 	 */
-	protected void processQueryEvent(String dbName, String sql, SchemaStore schemaStore, BinlogPosition position, Long timestamp) throws Exception {
-		BinlogPosition timestampedPosition = BinlogPosition.at(position, lastHeartbeatRead);
-		List<ResolvedSchemaChange> changes = schemaStore.processSQL(sql, dbName, timestampedPosition);
+	protected void processQueryEvent(String dbName, String sql, SchemaStore schemaStore, Position position, Long timestamp) throws Exception {
+		List<ResolvedSchemaChange> changes = schemaStore.processSQL(sql, dbName, position);
 		for (ResolvedSchemaChange change : changes) {
 			if (change.shouldOutput(filter)) {
 				DDLMap ddl = new DDLMap(change, timestamp, sql, position);
@@ -91,7 +91,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 		tableCache.clear();
 	}
 
-	protected void processRDSHeartbeatInsertEvent(String database, BinlogPosition position) throws Exception {
+	protected void processRDSHeartbeatInsertEvent(String database, Position position) throws Exception {
 		HeartbeatRowMap hbr = new HeartbeatRowMap(database, position);
 		this.producer.push(hbr);
 	}
@@ -129,7 +129,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	 */
 
 	public Long getLastHeartbeatRead() {
-		return lastHeartbeatRead;
+		return lastHeartbeatPosition.getLastHeartbeatRead();
 	}
 
 	/**

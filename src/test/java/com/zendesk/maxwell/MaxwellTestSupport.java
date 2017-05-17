@@ -3,6 +3,7 @@ package com.zendesk.maxwell;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
@@ -93,7 +94,7 @@ public class MaxwellTestSupport {
 	}
 
 
-	public static MaxwellContext buildContext(int port, BinlogPosition p, MaxwellFilter filter) throws SQLException {
+	public static MaxwellContext buildContext(int port, Position p, MaxwellFilter filter) throws SQLException {
 		MaxwellConfig config = new MaxwellConfig();
 
 		config.replicationMysql.host = "127.0.0.1";
@@ -141,8 +142,8 @@ public class MaxwellTestSupport {
 		return System.getenv(MaxwellConfig.GTID_MODE_ENV) != null;
 	}
 
-	public static BinlogPosition capture(Connection c) throws SQLException {
-		return BinlogPosition.capture(c, inGtidMode());
+	public static Position capture(Connection c) throws SQLException {
+		return Position.capture(c, inGtidMode());
 	}
 
 	public static List<RowMap> getRowsWithReplicator(final MysqlIsolatedServer mysql, MaxwellFilter filter, MaxwellTestSupportCallback callback, MaxwellOutputConfig outputConfig) throws Exception {
@@ -192,11 +193,11 @@ public class MaxwellTestSupport {
 		callback.afterReplicatorStart(mysql);
 		maxwell.context.getPositionStore().heartbeat();
 
-		BinlogPosition finalPosition = capture(mysql.getConnection());
+		Position finalPosition = capture(mysql.getConnection());
 		LOGGER.debug("running replicator up to " + finalPosition);
 
 		Long pollTime = 2000L;
-		BinlogPosition lastPositionRead = null;
+		Position lastPositionRead = null;
 
 		for ( ;; ) {
 			RowMap row = maxwell.poll(pollTime);

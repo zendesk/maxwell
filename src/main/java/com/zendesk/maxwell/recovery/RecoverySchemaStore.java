@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.recovery;
 
-import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.CaseSensitivity;
+import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.schema.*;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
@@ -48,7 +48,7 @@ public class RecoverySchemaStore implements SchemaStore {
 	}
 
 	@Override
-	public List<ResolvedSchemaChange> processSQL(String sql, String currentDatabase, BinlogPosition position) throws SchemaStoreException, InvalidSchemaError {
+	public List<ResolvedSchemaChange> processSQL(String sql, String currentDatabase, Position position) throws SchemaStoreException, InvalidSchemaError {
 		return new ArrayList<>();
 	}
 }

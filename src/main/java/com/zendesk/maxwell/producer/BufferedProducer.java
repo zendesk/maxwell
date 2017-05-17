@@ -26,7 +26,7 @@ public class BufferedProducer extends AbstractProducer {
 	public RowMap poll(long timeout, TimeUnit unit) throws InterruptedException {
 		RowMap r = this.queue.poll(timeout, unit);
 		if (r != null) {
-			this.context.setPosition(r.getPosition());
+			this.context.setPosition(r);
 		}
 		return r;
 	}

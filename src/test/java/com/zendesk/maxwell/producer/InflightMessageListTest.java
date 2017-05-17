@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.producer;
 
 import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.replication.Position;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -10,9 +11,9 @@ import static org.junit.Assert.*;
  * Created by ben on 5/25/16.
  */
 public class InflightMessageListTest {
-	static BinlogPosition p1 = BinlogPosition.at(1, "f");
-	static BinlogPosition p2 = BinlogPosition.at(2, "f");
-	static BinlogPosition p3 = BinlogPosition.at(3, "f");
+	static Position p1 = new Position(BinlogPosition.at(1, "f"), 0L);
+	static Position p2 = new Position(BinlogPosition.at(2, "f"), 0L);
+	static Position p3 = new Position(BinlogPosition.at(3, "f"), 0L);
 	InflightMessageList list;
 
 	@Before
@@ -25,7 +26,7 @@ public class InflightMessageListTest {
 
 	@Test
 	public void testInOrderCompletion() {
-		BinlogPosition ret;
+		Position ret;
 
 
 		ret = list.completeMessage(p1);
@@ -42,7 +43,7 @@ public class InflightMessageListTest {
 
 	@Test
 	public void testOutOfOrderComplete() {
-		BinlogPosition ret;
+		Position ret;
 
 		ret = list.completeMessage(p3);
 		assert(ret == null);

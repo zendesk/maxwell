@@ -13,6 +13,7 @@ import com.zendesk.maxwell.bootstrap.NoOpBootstrapper;
 import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
 import com.zendesk.maxwell.producer.*;
 import com.zendesk.maxwell.recovery.RecoveryInfo;
+import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.ReadOnlyMysqlPositionStore;
 import com.zendesk.maxwell.schema.MysqlPositionStore;
@@ -35,7 +36,7 @@ public class MaxwellContext {
 	private MysqlPositionStore positionStore;
 	private PositionStoreThread positionStoreThread;
 	private Long serverID;
-	private BinlogPosition initialPosition;
+	private Position initialPosition;
 	private CaseSensitivity caseSensitivity;
 	private AbstractProducer producer;
 	private TaskManager taskManager;
@@ -148,7 +149,7 @@ public class MaxwellContext {
 	}
 
 
-	public BinlogPosition getInitialPosition() throws SQLException {
+	public Position getInitialPosition() throws SQLException {
 		if ( this.initialPosition != null )
 			return this.initialPosition;
 
@@ -160,16 +161,16 @@ public class MaxwellContext {
 		return this.positionStore.getRecoveryInfo(config);
 	}
 
-	public void setPosition(RowMap r) throws SQLException {
+	public void setPosition(RowMap r) {
 		if ( r.isTXCommit() )
 			this.setPosition(r.getPosition());
 	}
 
-	public void setPosition(BinlogPosition position) {
+	public void setPosition(Position position) {
 		this.getPositionStoreThread().setPosition(position);
 	}
 
-	public BinlogPosition getPosition() throws SQLException {
+	public Position getPosition() throws SQLException {
 		return this.getPositionStoreThread().getPosition();
 	}
 
@@ -204,7 +205,8 @@ public class MaxwellContext {
 
 	public boolean shouldHeartbeat() throws SQLException {
 		fetchMysqlVersion();
-		return mysqlMajorVersion >= 5 && mysqlMinorVersion >= 5;
+		// 5.5 and above
+		return (mysqlMajorVersion >= 6) || (mysqlMajorVersion == 5 && mysqlMinorVersion >= 5);
 	}
 
 	public CaseSensitivity getCaseSensitivity() throws SQLException {

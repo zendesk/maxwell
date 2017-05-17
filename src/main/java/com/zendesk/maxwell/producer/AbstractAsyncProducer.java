@@ -2,8 +2,8 @@ package com.zendesk.maxwell.producer;
 
 import com.codahale.metrics.MetricRegistry;
 import com.zendesk.maxwell.metrics.MaxwellMetrics;
-import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
 
 public abstract class AbstractAsyncProducer extends AbstractProducer {
@@ -16,12 +16,12 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 	public class CallbackCompleter {
 		private InflightMessageList inflightMessages;
 		private final MaxwellContext context;
-		private final BinlogPosition position;
+		private final Position position;
 		private final boolean isTXCommit;
 		private final long sendTimeMS;
 		private Long completeTimeMS;
 
-		public CallbackCompleter(InflightMessageList inflightMessages, BinlogPosition position, boolean isTXCommit, MaxwellContext context) {
+		public CallbackCompleter(InflightMessageList inflightMessages, Position position, boolean isTXCommit, MaxwellContext context) {
 			this.inflightMessages = inflightMessages;
 			this.context = context;
 			this.position = position;
@@ -31,7 +31,7 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 
 		public void markCompleted() {
 			if(isTXCommit) {
-				BinlogPosition newPosition = inflightMessages.completeMessage(position);
+				Position newPosition = inflightMessages.completeMessage(position);
 
 				if(newPosition != null) {
 					context.setPosition(newPosition);
@@ -58,24 +58,24 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 
 	@Override
 	public final void push(RowMap r) throws Exception {
+		Position position = r.getPosition();
 		// Rows that do not get sent to a target will be automatically marked as complete.
 		// We will attempt to commit a checkpoint up to the current row.
 		if(!r.shouldOutput(outputConfig)) {
-			inflightMessages.addMessage(r.getPosition());
-			BinlogPosition newPosition = inflightMessages.completeMessage(r.getPosition());
+			inflightMessages.addMessage(position);
 
-			if(newPosition != null) {
-				context.setPosition(newPosition);
+			Position completed = inflightMessages.completeMessage(position);
+			if(completed != null) {
+				context.setPosition(completed);
 			}
-
 			return;
 		}
 
 		if(r.isTXCommit()) {
-			inflightMessages.addMessage(r.getPosition());
+			inflightMessages.addMessage(position);
 		}
 
-		CallbackCompleter cc = new CallbackCompleter(inflightMessages, r.getPosition(), r.isTXCommit(), context);
+		CallbackCompleter cc = new CallbackCompleter(inflightMessages, position, r.isTXCommit(), context);
 
 		sendAsync(r, cc);
 	}

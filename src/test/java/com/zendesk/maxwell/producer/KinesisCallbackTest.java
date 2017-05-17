@@ -4,6 +4,7 @@ import com.amazonaws.services.kinesis.producer.IrrecoverableError;
 import com.zendesk.maxwell.MaxwellConfig;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.replication.Position;
 import org.junit.Test;
 
 import static org.mockito.Mockito.*;
@@ -17,7 +18,7 @@ public class KinesisCallbackTest {
 		when(context.getConfig()).thenReturn(config);
 		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
 		KinesisCallback callback = new KinesisCallback(cc,
-			new BinlogPosition(1, "binlog-1"), "key", "value",
+			new Position(new BinlogPosition(1, "binlog-1"), 0L), "key", "value",
 			context);
 		IrrecoverableError error = new IrrecoverableError("blah");
 		callback.onFailure(error);
@@ -32,7 +33,7 @@ public class KinesisCallbackTest {
 		when(context.getConfig()).thenReturn(config);
 		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
 		KinesisCallback callback = new KinesisCallback(cc,
-			new BinlogPosition(1, "binlog-1"), "key", "value",
+			new Position(new BinlogPosition(1, "binlog-1"), 0L), "key", "value",
 			context);
 		IrrecoverableError error = new IrrecoverableError("blah");
 		callback.onFailure(error);

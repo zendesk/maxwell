@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.recovery;
 
 import com.zendesk.maxwell.*;
-import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.MysqlSavedSchema;
 import com.zendesk.maxwell.schema.Schema;
@@ -89,7 +89,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		/* run the execution through with the replicator running so we get heartbeats */
 		MaxwellTestSupport.getRowsWithReplicator(masterServer, null, input, null);
 
-		BinlogPosition slavePosition = MaxwellTestSupport.capture(slaveServer.getConnection());
+		Position slavePosition = MaxwellTestSupport.capture(slaveServer.getConnection());
 
 		generateNewMasterData(false, DATA_SIZE);
 		RecoveryInfo recoveryInfo = slaveContext.getRecoveryInfo();
@@ -105,12 +105,12 @@ public class RecoveryTest extends TestWithNameLogging {
 			System.getenv("SHYKO_MODE") != null
 		);
 
-		BinlogPosition recoveredPosition = recovery.recover();
+		Position recoveredPosition = recovery.recover();
 		// lousy tests, but it's very hard to make firm assertions about the correct position.
 		// It's in a ballpark.
 
-		if ( slavePosition.getFile().equals(recoveredPosition.getFile()) )	{
-			long positionDiff = recoveredPosition.getOffset() - slavePosition.getOffset();
+		if ( slavePosition.getBinlogPosition().getFile().equals(recoveredPosition.getBinlogPosition().getFile()) )	{
+			long positionDiff = recoveredPosition.getBinlogPosition().getOffset() - slavePosition.getBinlogPosition().getOffset();
 			assertThat(Math.abs(positionDiff), lessThan(1500L));
 		} else {
 			// TODO: something something.
@@ -147,7 +147,7 @@ public class RecoveryTest extends TestWithNameLogging {
 			System.getenv("SHYKO_MODE") != null
 		);
 
-		BinlogPosition recoveredPosition = recovery.recover();
+		Position recoveredPosition = recovery.recover();
 		assertEquals(null, recoveredPosition);
 	}
 
@@ -177,7 +177,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		/* run the execution through with the replicator running so we get heartbeats */
 		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(masterServer, null, input, null);
 
-		BinlogPosition approximateRecoverPosition = MaxwellTestSupport.capture(slaveServer.getConnection());
+		Position approximateRecoverPosition = MaxwellTestSupport.capture(slaveServer.getConnection());
 		LOGGER.warn("slave master position at time of cut: " + approximateRecoverPosition);
 		generateNewMasterData(false, DATA_SIZE);
 
@@ -275,7 +275,7 @@ public class RecoveryTest extends TestWithNameLogging {
 			LOGGER.info("Got ex: " + ex);
 		}
 
-		BinlogPosition slavePosition1 = MaxwellTestSupport.capture(slaveServer.getConnection());
+		Position slavePosition1 = MaxwellTestSupport.capture(slaveServer.getConnection());
 		LOGGER.info("slave master position at time of cut: " + slavePosition1 + " rows: " + rows.size());
 
 		// add 1000 rows on master side
@@ -286,7 +286,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		new Thread(maxwell).start();
 		drainReplication(maxwell, rows);
 		maxwell.terminate();
-		BinlogPosition slavePosition2 = MaxwellTestSupport.capture(slaveServer.getConnection());
+		Position slavePosition2 = MaxwellTestSupport.capture(slaveServer.getConnection());
 		LOGGER.info("slave master position after failover: " + slavePosition2 + " rows: " + rows.size());
 		assertTrue(slavePosition2.newerThan(slavePosition1));
 
@@ -297,7 +297,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		new Thread(maxwell).start();
 		drainReplication(maxwell, rows);
 		maxwell.terminate();
-		BinlogPosition slavePosition3 = MaxwellTestSupport.capture(slaveServer.getConnection());
+		Position slavePosition3 = MaxwellTestSupport.capture(slaveServer.getConnection());
 		LOGGER.info("slave master position after resumption: " + slavePosition3 + " rows: " + rows.size());
 		assertTrue(slavePosition3.newerThan(slavePosition2));
 
@@ -309,7 +309,7 @@ public class RecoveryTest extends TestWithNameLogging {
 	@Test
 	public void testSchemaIdRestore() throws Exception {
 		MysqlIsolatedServer server = masterServer;
-		BinlogPosition oldlogPosition = MaxwellTestSupport.capture(server.getConnection());
+		Position oldlogPosition = MaxwellTestSupport.capture(server.getConnection());
 		LOGGER.info("Initial pos: " + oldlogPosition);
 		MaxwellContext context = getContext(server.getPort(), false);
 		context.getPositionStore().set(oldlogPosition);
@@ -330,12 +330,12 @@ public class RecoveryTest extends TestWithNameLogging {
 		drainReplication(maxwell, rows);
 		maxwell.terminate();
 
-		BinlogPosition newPosition = MaxwellTestSupport.capture(server.getConnection());
+		Position newPosition = MaxwellTestSupport.capture(server.getConnection());
 		LOGGER.info("New pos: " + newPosition);
 		MysqlSavedSchema newSavedSchema = MysqlSavedSchema.restore(context, newPosition);
 		LOGGER.info("New schema id: " + newSavedSchema.getSchemaID());
 		assertEquals(new Long(oldSchemaId + 1), newSavedSchema.getSchemaID());
-		assertTrue(newPosition.newerThan(savedSchema.getBinlogPosition()));
+		assertTrue(newPosition.newerThan(savedSchema.getPosition()));
 
 		MysqlSavedSchema restored = MysqlSavedSchema.restore(context, oldlogPosition);
 		assertEquals(oldSchemaId, restored.getSchemaID());

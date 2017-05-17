@@ -31,7 +31,6 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 
 	private final boolean shouldHeartbeat;
 	protected final OpenReplicator replicator;
-	private final String clientID;
 
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellReplicator.class);
 	private final boolean stopOnEOF;
@@ -45,7 +44,7 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 		Long replicaServerID,
 		boolean shouldHeartbeat,
 		String maxwellSchemaDatabaseName,
-		BinlogPosition start,
+		Position start,
 		boolean stopOnEOF,
 		String clientID
 	) {
@@ -71,11 +70,10 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 
 		this.stopOnEOF = stopOnEOF;
 
-		this.setBinlogPosition(start);
-		this.clientID = clientID;
+		this.setBinlogPosition(start.getBinlogPosition());
 	}
 
-	public MaxwellReplicator(SchemaStore schemaStore, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, BinlogPosition start) throws SQLException {
+	public MaxwellReplicator(SchemaStore schemaStore, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, Position start) throws SQLException {
 		this(
 			schemaStore,
 			producer,
@@ -137,9 +135,9 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 		this.replicator.stop(5, TimeUnit.SECONDS);
 	}
 
-	private BinlogPosition eventBinlogPosition(AbstractBinlogEventV4 event) {
+	private Position eventPosition(AbstractBinlogEventV4 event) {
 		BinlogPosition p = new BinlogPosition(event.getHeader().getNextPosition(), event.getBinlogFilename());
-		return p;
+		return new Position(p, getLastHeartbeatRead());
 	}
 
 	private AbstractRowsEvent processRowsEvent(AbstractRowEvent e) throws InvalidSchemaError {
@@ -157,6 +155,8 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 		if ( table == null ) {
 			throw new InvalidSchemaError("couldn't find table in cache for table id: " + tableId);
 		}
+
+		long lastHeartbeatRead = getLastHeartbeatRead();
 
 		switch (e.getHeader().getEventType()) {
 			case MySQLConstants.WRITE_ROWS_EVENT:
@@ -368,7 +368,7 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 			event.getDatabaseName().toString(),
 			event.getSql().toString(),
 			this.schemaStore,
-			eventBinlogPosition(event),
+			eventPosition(event),
 			event.getHeader().getTimestamp() / 1000
 		);
 	}
@@ -376,7 +376,7 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 	private void processRDSHeartbeatInsertEvent(QueryEvent event) throws Exception {
 		processRDSHeartbeatInsertEvent(
 			event.getDatabaseName().toString(),
-			eventBinlogPosition(event)
+			eventPosition(event)
 		);
 	}
 

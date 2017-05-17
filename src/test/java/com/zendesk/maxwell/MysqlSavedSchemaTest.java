@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.replication.Position;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +27,7 @@ import com.zendesk.maxwell.schema.columndef.TimeColumnDef;
 
 public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 	private Schema schema;
-	private BinlogPosition binlogPosition;
+	private Position position;
 	private MysqlSavedSchema savedSchema;
 	private CaseSensitivity caseSensitivity = CaseSensitivity.CASE_SENSITIVE;
 
@@ -52,10 +53,10 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 
 		server.executeList(schemaSQL);
 
-		this.binlogPosition = MaxwellTestSupport.capture(server.getConnection());
-		this.context = buildContext(binlogPosition);
+		this.position = MaxwellTestSupport.capture(server.getConnection());
+		this.context = buildContext(position);
 		this.schema = new SchemaCapturer(server.getConnection(), context.getCaseSensitivity()).capture();
-		this.savedSchema = new MysqlSavedSchema(this.context, this.schema, binlogPosition);
+		this.savedSchema = new MysqlSavedSchema(this.context, this.schema, position);
 	}
 
 	@Test
@@ -65,30 +66,6 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 		MysqlSavedSchema restoredSchema = MysqlSavedSchema.restore(context, context.getInitialPosition());
 		List<String> diff = this.schema.diff(restoredSchema.getSchema(), "captured schema", "restored schema");
 		assertThat(StringUtils.join(diff, "\n"), diff.size(), is(0));
-	}
-
-	@Test
-	public void testRejectsPositionWithoutLastHeartbeat() throws SQLException {
-
-		String err = null;
-		try {
-			new MysqlSavedSchema(context, null, new BinlogPosition(300L, "binlog01"));
-		} catch (AssertionError e) {
-			err = e.getMessage();
-		}
-		assertThat(err, is("BinlogPosition.lastHeartbeat must be set"));
-	}
-
-	@Test
-	public void testRestoreRejectsTargetPositionWithoutLastHeartbeat() throws SQLException, InvalidSchemaError {
-
-		String err = null;
-		try {
-			MysqlSavedSchema.restore(context, new BinlogPosition(300L, "binlog01"));
-		} catch (AssertionError e) {
-			err = e.getMessage();
-		}
-		assertThat(err, is("BinlogPosition.lastHeartbeat must be set"));
 	}
 
 	@Test
@@ -218,24 +195,26 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 	private void populateSchemasSurroundingTarget(
 			Connection c,
 			Long serverId,
-			BinlogPosition targetPosition,
+			Position targetPosition,
 			Long lastHeartbeat,
 			String previousFile,
 			String newerFile
 	) throws SQLException {
 
+		BinlogPosition targetBinlog = targetPosition.getBinlogPosition();
+
 		// newer binlog file
 		new MysqlSavedSchema(
 			serverId, caseSensitivity,
 			buildSchema(),
-			binlogPosition(targetPosition.getOffset() - 100L, newerFile, lastHeartbeat)
+			makePosition(targetBinlog.getOffset() - 100L, newerFile, lastHeartbeat)
 		).saveSchema(c);
 
 		// newer binlog position
 		new MysqlSavedSchema(
 			serverId, caseSensitivity,
 			buildSchema(),
-			binlogPosition(targetPosition.getOffset() + 100L, targetPosition.getFile(), lastHeartbeat)
+			makePosition(targetBinlog.getOffset() + 100L, targetBinlog.getFile(), lastHeartbeat)
 		).saveSchema(c);
 
 		// different server ID
@@ -249,12 +228,12 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 		new MysqlSavedSchema(
 			serverId, caseSensitivity,
 			buildSchema(),
-			binlogPosition(targetPosition.getOffset(), previousFile, lastHeartbeat)
+			makePosition(targetBinlog.getOffset(), previousFile, lastHeartbeat)
 		).saveSchema(c);
 	}
 
-	private BinlogPosition binlogPosition(long position, String file, Long lastHeartbeat) {
-		return new BinlogPosition(position, file, lastHeartbeat);
+	private Position makePosition(long position, String file, Long lastHeartbeat) {
+		return new Position(new BinlogPosition(position, file), lastHeartbeat);
 	}
 
 	@Test
@@ -271,11 +250,11 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 		String targetFile = "binlog08";
 		String previousFile = "binlog07";
 		String newerFile = "binlog09";
-		BinlogPosition targetBinlogPosition = binlogPosition(targetPosition, targetFile, lastHeartbeat + 10L);
+		Position targetBinlogPosition = makePosition(targetPosition, targetFile, lastHeartbeat + 10L);
 
 		MysqlSavedSchema expectedSchema = new MysqlSavedSchema(serverId, caseSensitivity,
 			buildSchema(),
-			binlogPosition(targetPosition - 50L, targetFile, lastHeartbeat)
+			makePosition(targetPosition - 50L, targetFile, lastHeartbeat)
 		);
 		expectedSchema.save(c);
 
@@ -283,14 +262,14 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 		new MysqlSavedSchema(
 			serverId, caseSensitivity,
 			buildSchema(),
-			binlogPosition(targetPosition - 200L, targetFile, lastHeartbeat)
+			makePosition(targetPosition - 200L, targetFile, lastHeartbeat)
 		).saveSchema(c);
 
 		// Newer binlog position but older heartbeat
 		new MysqlSavedSchema(
 				serverId, caseSensitivity,
 				buildSchema(),
-				binlogPosition(targetPosition - 1L, targetFile, lastHeartbeat - 1000L)
+				makePosition(targetPosition - 1L, targetFile, lastHeartbeat - 1000L)
 		).saveSchema(c);
 
 		populateSchemasSurroundingTarget(c, serverId, targetBinlogPosition, lastHeartbeat, previousFile, newerFile);
@@ -314,12 +293,12 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 		String targetFile = "binlog08";
 		String previousFile = "binlog07";
 		String newerFile = "binlog09";
-		BinlogPosition targetBinlogPosition = binlogPosition(targetPosition, targetFile, lastHeartbeat + 10L);
+		Position targetBinlogPosition = makePosition(targetPosition, targetFile, lastHeartbeat + 10L);
 
 		// the newest schema:
 		MysqlSavedSchema expectedSchema = new MysqlSavedSchema(serverId, caseSensitivity,
 				buildSchema(),
-				binlogPosition(targetPosition + 50L, previousFile, lastHeartbeat)
+				makePosition(targetPosition + 50L, previousFile, lastHeartbeat)
 		);
 		expectedSchema.save(c);
 
@@ -327,7 +306,7 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 		new MysqlSavedSchema(
 				serverId, caseSensitivity,
 				buildSchema(),
-				binlogPosition(targetPosition - 1L, targetFile, lastHeartbeat - 1000L)
+				makePosition(targetPosition - 1L, targetFile, lastHeartbeat - 1000L)
 		).saveSchema(c);
 
 		populateSchemasSurroundingTarget(c, serverId, targetBinlogPosition, lastHeartbeat, previousFile, newerFile);
