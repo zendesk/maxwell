@@ -49,18 +49,7 @@ public class Maxwell implements Runnable {
 	}
 
 	public void terminate() {
-		if (this.context.getError() == null) {
-			LOGGER.info("starting shutdown");
-			try {
-				// send a final heartbeat through the system
-				context.heartbeat();
-				Thread.sleep(100);
-				context.terminate();
-			} catch (InterruptedException e) {
-			} catch (Exception e) {
-				LOGGER.error("failed graceful shutdown", e);
-			}
-		}
+		this.context.terminate();
 	}
 
 	private Position attemptMasterRecovery() throws Exception {
@@ -187,7 +176,7 @@ public class Maxwell implements Runnable {
 
 		replicator.setFilter(context.getFilter());
 
-		this.context.addTask(replicator);
+		context.setReplicator(replicator);
 		this.context.start();
 		this.onReplicatorStart();
 

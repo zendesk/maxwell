@@ -7,6 +7,7 @@ abstract public class RunLoopProcess implements StoppableTask {
 	private Thread thread;
 
 	public RunLoopProcess() {
+		this.taskState = new StoppableTaskState(this.getClass().getName());
 	}
 
 	public void requestStop() {
@@ -17,11 +18,7 @@ abstract public class RunLoopProcess implements StoppableTask {
 		this.taskState.awaitStop(thread, timeout);
 	}
 
-	public boolean runLoop() throws Exception {
-		if ( this.taskState != null )
-			return false;
-
-		this.taskState = new StoppableTaskState(this.getClass().getName());
+	public void runLoop() throws Exception {
 		this.thread = Thread.currentThread();
 		this.beforeStart();
 
@@ -33,8 +30,6 @@ abstract public class RunLoopProcess implements StoppableTask {
 			this.beforeStop();
 			this.taskState.stopped();
 		}
-
-		return true;
 	}
 
 	protected abstract void work() throws Exception;
