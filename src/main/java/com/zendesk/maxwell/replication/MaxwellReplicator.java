@@ -260,9 +260,7 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 					} else if (sql.toUpperCase().startsWith("INSERT INTO MYSQL.RDS_HEARTBEAT")) {
 						// RDS heartbeat events take the following form:
 						// INSERT INTO mysql.rds_heartbeat2(id, value) values (1,1483041015005) ON DUPLICATE KEY UPDATE value = 1483041015005
-						// As a result they are processed as query events.
-						// When these occur we need to update to update our position.
-						processRDSHeartbeatInsertEvent(qe);
+						// We don't need to process them, just ignore
 					} else {
 						LOGGER.warn("Unhandled QueryEvent inside transaction: " + qe);
 					}
@@ -370,13 +368,6 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 			this.schemaStore,
 			eventPosition(event),
 			event.getHeader().getTimestamp() / 1000
-		);
-	}
-
-	private void processRDSHeartbeatInsertEvent(QueryEvent event) throws Exception {
-		processRDSHeartbeatInsertEvent(
-			event.getDatabaseName().toString(),
-			eventPosition(event)
 		);
 	}
 

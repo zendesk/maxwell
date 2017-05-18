@@ -2,7 +2,6 @@ package com.zendesk.maxwell.schema;
 
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.replication.Position;
-import com.zendesk.maxwell.row.RowMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,12 +18,14 @@ public class PositionStoreThread extends RunLoopProcess implements Runnable {
 	private MaxwellContext context;
 	private Exception exception;
 	private Thread thread;
-	private Position lastHeartbeatSent; // last position we sent a heartbeat to
+	private BinlogPosition lastHeartbeatSentFrom; // last position we sent a heartbeat from
+	private long lastHeartbeatSent;
 
 	public PositionStoreThread(MysqlPositionStore store, MaxwellContext context) {
 		this.store = store;
 		this.context = context;
-		lastHeartbeatSent = null;
+		lastHeartbeatSentFrom = null;
+		lastHeartbeatSent = 0L;
 	}
 
 	public void start() {
@@ -73,19 +74,25 @@ public class PositionStoreThread extends RunLoopProcess implements Runnable {
 		store.heartbeat();
 	}
 
-	private boolean shouldHeartbeat(Position heartbeatPosition, Position currentPosition) {
+	boolean shouldHeartbeat(Position currentPosition) {
 		if ( currentPosition == null )
 			return true;
-		if ( heartbeatPosition == null )
+		if ( lastHeartbeatSentFrom == null )
 			return true;
 
-		BinlogPosition heartbeatBinlog = heartbeatPosition.getBinlogPosition();
 		BinlogPosition currentBinlog = currentPosition.getBinlogPosition();
-		if ( !heartbeatBinlog.getFile().equals(currentBinlog.getFile()) )
+		if ( !lastHeartbeatSentFrom.getFile().equals(currentBinlog.getFile()) )
 			return true;
-		if ( currentBinlog.getOffset() - heartbeatBinlog.getOffset() > 1000 ) {
+		if ( currentBinlog.getOffset() - lastHeartbeatSentFrom.getOffset() > 1000 ) {
 			return true;
 		}
+
+		long secondsSinceHeartbeat = (System.currentTimeMillis() - lastHeartbeatSent) / 1000;
+		if ( secondsSinceHeartbeat >= 10 ) {
+			// during quiet times, heartbeat at least every 10s
+			return true;
+		}
+
 		return false;
 	}
 
@@ -99,9 +106,11 @@ public class PositionStoreThread extends RunLoopProcess implements Runnable {
 
 		try { Thread.sleep(1000); } catch (InterruptedException e) { }
 
-		if ( shouldHeartbeat(lastHeartbeatSent, position) )  {
-			store.heartbeat();
-			lastHeartbeatSent = position;
+		if ( shouldHeartbeat(newPosition) )  {
+			lastHeartbeatSent = store.heartbeat();
+			if (newPosition != null) {
+				lastHeartbeatSentFrom = newPosition.getBinlogPosition();
+			}
 		}
 	}
 

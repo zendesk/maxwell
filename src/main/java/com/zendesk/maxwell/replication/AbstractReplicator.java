@@ -91,11 +91,6 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 		tableCache.clear();
 	}
 
-	protected void processRDSHeartbeatInsertEvent(String database, Position position) throws Exception {
-		HeartbeatRowMap hbr = new HeartbeatRowMap(database, position);
-		this.producer.push(hbr);
-	}
-
 	/**
 	 * Should we output an event for the given database and table?
 	 *
