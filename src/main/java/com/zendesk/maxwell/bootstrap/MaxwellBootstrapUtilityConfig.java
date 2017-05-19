@@ -19,7 +19,13 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 	public String  mysqlUser;
 	public String  mysqlPassword;
 	public String  databaseName;
+
 	public String  schemaDatabaseName;
+	public Integer replicationPort;
+	public String  replicationUser;
+	public String  replicationPassword;
+	public String  replicationHost;
+	
 	public String  tableName;
 	public String  whereClause;
 	public String  log_level;
@@ -36,6 +42,10 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 		return "jdbc:mysql://" + mysqlHost + ":" + mysqlPort + "/" + schemaDatabaseName;
 	}
 
+	public String getReplicationConnectionURI( ) {
+		return "jdbc:mysql://" + replicationHost + ":" + replicationPort + "/" + databaseName;
+	}
+
 	protected OptionParser buildOptionParser() {
 		OptionParser parser = new OptionParser();
 		parser.accepts( "config", "location of config file" ).withRequiredArg();
@@ -47,12 +57,18 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 		parser.accepts( "abort", "bootstrap_id to abort" ).withRequiredArg();
 		parser.accepts( "monitor", "bootstrap_id to monitor" ).withRequiredArg();
 		parser.accepts( "__separator_3", "" );
-		parser.accepts( "log_level", "log level, one of DEBUG|INFO|WARN|ERROR. default: WARN" ).withRequiredArg();
 		parser.accepts( "host", "mysql host. default: localhost").withRequiredArg();
 		parser.accepts( "user", "mysql username. default: maxwell" ).withRequiredArg();
 		parser.accepts( "password", "mysql password" ).withRequiredArg();
 		parser.accepts( "port", "mysql port. default: 3306" ).withRequiredArg();
-		parser.accepts( "schema_database", "database that contains maxwell schema and state").withRequiredArg();
+		parser.accepts( "schema_database", "database that contains maxwell schema and state. default: maxwell").withRequiredArg();
+		parser.accepts( "__separator_4", "" );
+		parser.accepts( "replication_host", "replication host. default value is the same as --host").withRequiredArg();
+		parser.accepts( "replication_user", "replication username. default value is the same as --user" ).withRequiredArg();
+		parser.accepts( "replication_password", "replication password. default value is the same as --password" ).withRequiredArg();
+		parser.accepts( "replication_port", "replication port. default value is the same as --port" ).withRequiredArg();
+		parser.accepts( "__separator_5", "" );
+		parser.accepts( "log_level", "log level, one of DEBUG|INFO|WARN|ERROR. default: WARN" ).withRequiredArg();
 		parser.accepts( "help", "display help").forHelp();
 
 		BuiltinHelpFormatter helpFormatter = new BuiltinHelpFormatter(200, 4) {
@@ -104,6 +120,18 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 		if ( options.has("schema_database"))
 			this.schemaDatabaseName = (String) options.valueOf("schema_database");
 
+		if ( options.has("replication_host"))
+			this.replicationHost = (String) options.valueOf("replication_host");
+
+		if ( options.has("replication_user"))
+			this.replicationUser = (String) options.valueOf("replication_user");
+		
+		if ( options.has("replication_password"))
+			this.replicationPassword = (String) options.valueOf("replication_password");
+
+		if ( options.has("replication_port"))
+			this.replicationPort = Integer.valueOf((String) options.valueOf("replication_port"));
+
 		if ( options.has("database") )
 			this.databaseName = (String) options.valueOf("database");
 		else if ( !options.has("abort") && !options.has("monitor") )
@@ -148,6 +176,12 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 		this.mysqlPort = Integer.valueOf(p.getProperty("port", "3306"));
 		this.mysqlPassword = p.getProperty("password");
 		this.schemaDatabaseName = p.getProperty("schema_database", "maxwell");
+		
+		this.replicationHost = p.getProperty("replication_host");
+		this.replicationUser = p.getProperty("replication_user");
+		String value = p.getProperty("replication_port");
+		this.replicationPort = value == null ? null : Integer.valueOf(value);
+		this.replicationPassword = p.getProperty("replication_password");
 	}
 
 
@@ -161,5 +195,17 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 			LOGGER.warn("mysql host not specified, defaulting to localhost");
 			this.mysqlHost = "localhost";
 		}
+
+		if (this.replicationHost == null)
+			this.replicationHost = this.mysqlHost;
+
+		if (this.replicationUser == null)
+			this.replicationUser = this.mysqlUser;
+
+		if (this.replicationPassword == null)
+			this.replicationPassword = this.mysqlPassword;
+
+		if (this.replicationPort == null)
+			this.replicationPort = this.mysqlPort;
 	}
 }
