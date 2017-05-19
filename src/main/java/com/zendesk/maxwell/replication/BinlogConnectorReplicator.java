@@ -177,6 +177,10 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 						// to us starting on a WRITE_ROWS event -- we sync the schema position somewhere
 						// kinda unsafe.
 						processQueryEvent(event);
+					} else if (sql.toUpperCase().startsWith("INSERT INTO MYSQL.RDS_HEARTBEAT")) {
+						// RDS heartbeat events take the following form:
+						// INSERT INTO mysql.rds_heartbeat2(id, value) values (1,1483041015005) ON DUPLICATE KEY UPDATE value = 1483041015005
+						// We don't need to process them, just ignore
 					} else {
 						LOGGER.warn("Unhandled QueryEvent inside transaction: " + qe);
 					}

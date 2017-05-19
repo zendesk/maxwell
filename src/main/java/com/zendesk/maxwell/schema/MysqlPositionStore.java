@@ -78,9 +78,15 @@ public class MysqlPositionStore {
 		}
 	}
 
-	public synchronized void heartbeat() throws Exception {
+	public long heartbeat() throws Exception {
+		long heartbeatValue = System.currentTimeMillis();
+		heartbeat(heartbeatValue);
+		return heartbeatValue;
+	}
+
+	public synchronized void heartbeat(long heartbeatValue) throws Exception {
 		try ( Connection c = connectionPool.getConnection() ) {
-			heartbeat(c);
+			heartbeat(c, heartbeatValue);
 		}
 	}
 
@@ -108,9 +114,7 @@ public class MysqlPositionStore {
 		}
 	}
 
-	private void heartbeat(Connection c) throws SQLException, DuplicateProcessException, InterruptedException {
-		Long thisHeartbeat = System.currentTimeMillis();
-
+	private void heartbeat(Connection c, long thisHeartbeat) throws SQLException, DuplicateProcessException, InterruptedException {
 		if ( lastHeartbeat == null ) {
 			PreparedStatement s = c.prepareStatement("SELECT `heartbeat` from `heartbeats` where server_id = ? and client_id = ?");
 			s.setLong(1, serverID);

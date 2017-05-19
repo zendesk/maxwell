@@ -28,6 +28,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	protected final String maxwellSchemaDatabaseName;
 	protected final TableCache tableCache = new TableCache();
 	protected Position lastHeartbeatPosition;
+	protected Long stopAtHeartbeat;
 	protected MaxwellFilter filter;
 
 	private final Counter rowCounter = MaxwellMetrics.metricRegistry.counter(
@@ -91,11 +92,6 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 		tableCache.clear();
 	}
 
-	protected void processRDSHeartbeatInsertEvent(String database, Position position) throws Exception {
-		HeartbeatRowMap hbr = new HeartbeatRowMap(database, position);
-		this.producer.push(hbr);
-	}
-
 	/**
 	 * Should we output an event for the given database and table?
 	 *
@@ -146,9 +142,25 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 		if ( row == null )
 			return;
 
-		if ( row instanceof HeartbeatRowMap)
+		processRow(row);
+	}
+
+	public void stopAtHeartbeat(long heartbeat) {
+		stopAtHeartbeat = heartbeat;
+	}
+
+	protected void processRow(RowMap row) throws Exception {
+		if ( row instanceof HeartbeatRowMap) {
 			producer.push(row);
-		else if (!bootstrapper.shouldSkip(row) && !isMaxwellRow(row))
+			if (stopAtHeartbeat != null) {
+				long thisHeartbeat = row.getPosition().getLastHeartbeatRead();
+				if (thisHeartbeat >= stopAtHeartbeat) {
+					LOGGER.info("received final heartbeat " + thisHeartbeat + "; stopping replicator");
+					// terminate runLoop
+					this.taskState.stopped();
+				}
+			}
+		} else if (!bootstrapper.shouldSkip(row) && !isMaxwellRow(row))
 			producer.push(row);
 		else
 			bootstrapper.work(row, producer, this);

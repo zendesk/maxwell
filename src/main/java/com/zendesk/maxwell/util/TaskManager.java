@@ -19,10 +19,19 @@ public class TaskManager {
 
 	// Can be invoked multiple times, will only return `true`
 	// for the first invocation.
-	public synchronized boolean stop(Exception error) {
-		if (this.state != RunState.RUNNING) {
-			LOGGER.debug("stop() called multiple times");
+	public synchronized boolean requestStop() {
+		if (state == RunState.RUNNING) {
+			state = RunState.REQUEST_STOP;
+			return true;
+		} else {
 			return false;
+		}
+	}
+
+	public synchronized void stop(Exception error) {
+		if (this.state == RunState.STOPPED) {
+			LOGGER.debug("stop() called multiple times");
+			return;
 		}
 		this.state = RunState.REQUEST_STOP;
 
@@ -49,7 +58,6 @@ public class TaskManager {
 
 		this.state = RunState.STOPPED;
 		LOGGER.info("stopped all tasks");
-		return true;
 	}
 
 	public synchronized void add(StoppableTask task) {

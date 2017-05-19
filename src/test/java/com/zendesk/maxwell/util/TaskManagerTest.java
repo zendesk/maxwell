@@ -99,8 +99,10 @@ public class TaskManagerTest {
 		TaskManager manager = new TaskManager();
 		manager.add(task);
 
-		assertThat(manager.stop(null), equalTo(true));
-		assertThat(manager.stop(null), equalTo(false));
+		assertThat(manager.requestStop(), equalTo(true));
+		assertThat(manager.requestStop(), equalTo(false));
+		manager.stop(null);
+		manager.stop(null);
 
 		assertThat(log, equalTo(Arrays.asList(
 			new Event(EventType.REQUEST_STOP, "task"),

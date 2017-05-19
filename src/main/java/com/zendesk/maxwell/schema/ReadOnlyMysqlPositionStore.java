@@ -16,5 +16,7 @@ public class ReadOnlyMysqlPositionStore extends MysqlPositionStore {
 	public void set(Position p) { }
 
 	@Override
-	public void heartbeat() throws Exception { }
+	public long heartbeat() throws Exception {
+		return System.currentTimeMillis();
+	}
 }

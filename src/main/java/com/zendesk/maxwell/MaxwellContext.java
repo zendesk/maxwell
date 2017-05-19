@@ -14,6 +14,7 @@ import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
 import com.zendesk.maxwell.producer.*;
 import com.zendesk.maxwell.recovery.RecoveryInfo;
 import com.zendesk.maxwell.replication.Position;
+import com.zendesk.maxwell.replication.Replicator;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.ReadOnlyMysqlPositionStore;
 import com.zendesk.maxwell.schema.MysqlPositionStore;
@@ -44,6 +45,7 @@ public class MaxwellContext {
 
 	private Integer mysqlMajorVersion;
 	private Integer mysqlMinorVersion;
+	private Replicator replicator;
 
 	public MaxwellContext(MaxwellConfig config) throws SQLException {
 		this.config = config;
@@ -128,7 +130,27 @@ public class MaxwellContext {
 		if (this.error == null) {
 			this.error = error;
 		}
-		if (taskManager.stop(error)) {
+
+		if (taskManager.requestStop()) {
+			if (this.error == null && this.replicator != null) {
+				long heartbeat = System.currentTimeMillis();
+				LOGGER.info("sending final heartbeat: " + heartbeat);
+				try {
+					this.replicator.stopAtHeartbeat(heartbeat);
+					this.positionStore.heartbeat(heartbeat);
+					long deadline = heartbeat + 10000L;
+					while (positionStoreThread.getPosition().getLastHeartbeatRead() < heartbeat) {
+						if (System.currentTimeMillis() > deadline) {
+							LOGGER.warn("timed out waiting for heartbeat " + heartbeat);
+							break;
+						}
+						Thread.sleep(100);
+					}
+				} catch (Exception e) {
+					LOGGER.error("failed graceful shutdown", e);
+				}
+			}
+			taskManager.stop(this.error);
 			this.replicationConnectionPool.release();
 			this.maxwellConnectionPool.release();
 			this.rawMaxwellConnectionPool.release();
@@ -312,4 +334,8 @@ public class MaxwellContext {
 			probePool(this.replicationConnectionPool, this.config.replicationMysql.getConnectionURI());
 	}
 
+	public void setReplicator(Replicator replicator) {
+		this.addTask(replicator);
+		this.replicator = replicator;
+	}
 }
