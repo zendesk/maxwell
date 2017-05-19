@@ -147,8 +147,15 @@ public class Maxwell implements Runnable {
 		MaxwellMetrics.setup(config, context);
 		try {
 			startInner();
+		} catch ( Exception e) {
+			this.context.terminate(e);
 		} finally {
 			this.context.terminate();
+		}
+
+		Exception error = this.context.getError();
+		if (error != null) {
+			throw error;
 		}
 	}
 
@@ -208,10 +215,6 @@ public class Maxwell implements Runnable {
 		}
 
 		replicator.runLoop();
-		Exception error = this.context.getError();
-		if (error != null) {
-			throw error;
-		}
 	}
 
 	public static void main(String[] args) {
