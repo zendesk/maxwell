@@ -41,6 +41,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public String kafkaPartitionColumns;
 	public String kafkaPartitionFallback;
 	public String bootstrapperType;
+	public long bootstrapPollerInterval;
 	public int bufferedProducerSize;
 
 	public String producerPartitionKey;
@@ -299,6 +300,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.producerType       = fetchOption("producer", options, properties, "stdout");
 		this.bootstrapperType   = fetchOption("bootstrapper", options, properties, "async");
+		this.bootstrapPollerInterval = fetchLongOption("bootstrap_poller_interval", options, properties, 1000L);
 		this.clientID           = fetchOption("client_id", options, properties, "maxwell");
 		this.replicaServerID    = fetchLongOption("replica_server_id", options, properties, 6379L);
 

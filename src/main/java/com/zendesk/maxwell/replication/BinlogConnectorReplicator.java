@@ -1,5 +1,13 @@
 package com.zendesk.maxwell.replication;
 
+import java.sql.SQLException;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import com.github.shyiko.mysql.binlog.event.Event;
 import com.github.shyiko.mysql.binlog.event.QueryEventData;
@@ -9,16 +17,13 @@ import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.MaxwellMysqlConfig;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
+import com.zendesk.maxwell.row.BootstrapRowMap;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMapBuffer;
-import com.zendesk.maxwell.schema.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.sql.SQLException;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
+import com.zendesk.maxwell.schema.Schema;
+import com.zendesk.maxwell.schema.SchemaStore;
+import com.zendesk.maxwell.schema.SchemaStoreException;
+import com.zendesk.maxwell.schema.Table;
 
 public class BinlogConnectorReplicator extends AbstractReplicator implements Replicator {
 	private final long MAX_TX_ELEMENTS = 10000;
@@ -226,6 +231,14 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 					return processHeartbeats(row);
 				else
 					return row;
+			}
+
+			if (bootstrapper != null) {
+				BootstrapRowMap row = bootstrapper.pollBootstrapEvent();
+
+				if (row != null) {
+					return row;
+				}
 			}
 
 			event = pollEvent();

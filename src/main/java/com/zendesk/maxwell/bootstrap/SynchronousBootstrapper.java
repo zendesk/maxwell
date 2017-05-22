@@ -1,22 +1,29 @@
 package com.zendesk.maxwell.bootstrap;
 
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.replication.Position;
-import com.zendesk.maxwell.replication.Replicator;
-import com.zendesk.maxwell.row.RowMap;
-import com.zendesk.maxwell.producer.AbstractProducer;
-import com.zendesk.maxwell.schema.Database;
-import com.zendesk.maxwell.schema.Schema;
-import com.zendesk.maxwell.schema.Table;
-import com.zendesk.maxwell.schema.columndef.ColumnDef;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.sql.*;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.producer.AbstractProducer;
+import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.replication.Position;
+import com.zendesk.maxwell.replication.Replicator;
+import com.zendesk.maxwell.row.RowMap;
+import com.zendesk.maxwell.schema.Database;
+import com.zendesk.maxwell.schema.Schema;
+import com.zendesk.maxwell.schema.SchemaCapturer;
+import com.zendesk.maxwell.schema.Table;
+import com.zendesk.maxwell.schema.columndef.ColumnDef;
 
 public class SynchronousBootstrapper extends AbstractBootstrapper {
 	static final Logger LOGGER = LoggerFactory.getLogger(SynchronousBootstrapper.class);
@@ -57,7 +64,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		try ( Connection connection = getConnection();
 			  Connection streamingConnection = getStreamingConnection()) {
 			setBootstrapRowToStarted(startBootstrapRow, connection);
-			ResultSet resultSet = getAllRows(databaseName, tableName, schema, whereClause, streamingConnection);
+			ResultSet resultSet = getAllRows(databaseName, tableName, table, whereClause, streamingConnection);
 			int insertedRows = 0;
 			lastInsertedRowsUpdateTimeMillis = 0; // ensure updateInsertedRowsColumn is called at least once
 			while ( resultSet.next() ) {
@@ -167,10 +174,36 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		}
 	}
 
+	private Table probeTable(String tableName, Database database) {
+		try (Connection streamingConnection = getStreamingConnection()) {
+			SchemaCapturer capturer = new SchemaCapturer(streamingConnection, database.getSensitivity(),
+					database.getName(), tableName);
+			Schema schema = capturer.capture();
+
+			Database db = schema.findDatabase(database.getName());
+			if (db == null) {
+				return null;
+			}
+
+			return db.findTable(tableName);
+		} catch (SQLException e) {
+			// ignored
+		}
+		return null;
+	}
+
 	private Table findTable(String tableName, Database database) {
 		Table table = database.findTable(tableName);
-		if ( table == null )
-			throw new RuntimeException("Couldn't find table " + tableName);
+		if ( table == null ) {
+			// Here is a race condition between bootstrap poller and
+			// create table event. In case that bootstrap event arrived before
+			// create table event, we try to probe table information directly
+			// from database.
+			table = probeTable(tableName, database);
+
+			if (table == null)
+				throw new RuntimeException("Couldn't find table " + tableName);
+		}
 		return table;
 	}
 
@@ -185,10 +218,10 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		findTable(tableName, database);
 	}
 
-	private ResultSet getAllRows(String databaseName, String tableName, Schema schema, String whereClause,
+	private ResultSet getAllRows(String databaseName, String tableName, Table table, String whereClause,
 								Connection connection) throws SQLException, InterruptedException {
 		Statement statement = createBatchStatement(connection);
-		String pk = schema.findDatabase(databaseName).findTable(tableName).getPKString();
+		String pk = table.getPKString();
 
 		String sql = String.format("select * from `%s`.%s", databaseName, tableName);
 

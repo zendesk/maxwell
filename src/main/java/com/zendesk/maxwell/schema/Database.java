@@ -140,4 +140,8 @@ public class Database {
 	public void setSensitivity(CaseSensitivity sensitivity) {
 		this.sensitivity = sensitivity;
 	}
+
+	public CaseSensitivity getSensitivity() {
+		return this.sensitivity;
+	}
 }

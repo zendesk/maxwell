@@ -9,6 +9,7 @@ import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.MaxwellMysqlConfig;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.producer.AbstractProducer;
+import com.zendesk.maxwell.row.BootstrapRowMap;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMapBuffer;
 import com.zendesk.maxwell.schema.*;
@@ -296,6 +297,14 @@ public class MaxwellReplicator extends AbstractReplicator implements Replicator 
 					return processHeartbeats(row);
 				else
 					return row;
+			}
+
+			if (bootstrapper != null) {
+				BootstrapRowMap row = bootstrapper.pollBootstrapEvent();
+
+				if (row != null) {
+					return row;
+				}
 			}
 
 			v4Event = pollV4EventFromQueue();

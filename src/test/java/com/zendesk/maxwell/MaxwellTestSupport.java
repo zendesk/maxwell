@@ -113,6 +113,7 @@ public class MaxwellTestSupport {
 
 		config.filter = filter;
 		config.initPosition = p;
+		config.bootstrapPollerInterval = 1L;
 
 		return new MaxwellContext(config);
 	}
@@ -159,6 +160,8 @@ public class MaxwellTestSupport {
 		config.maxwellMysql.port = mysql.getPort();
 		config.maxwellMysql.jdbcOptions.add("useSSL=false");
 		config.replicationMysql = config.maxwellMysql;
+		config.bootstrapPollerInterval = 1L;
+
 		if (outputConfig == null) {
 			outputConfig = new MaxwellOutputConfig();
 		}
@@ -213,7 +216,7 @@ public class MaxwellTestSupport {
 			if ( row.getPosition().newerThan(finalPosition) ) {
 				// consume whatever's left over in the buffer.
 				for ( ;; ) {
-					RowMap r = maxwell.poll(100);
+					RowMap r = maxwell.poll(pollTime);
 					if ( r == null )
 						break;
 

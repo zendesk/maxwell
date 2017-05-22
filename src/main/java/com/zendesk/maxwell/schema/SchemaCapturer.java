@@ -24,6 +24,8 @@ public class SchemaCapturer {
 
 	private final HashSet<String> includeDatabases;
 
+	private final HashSet<String> includeTables;
+
 	private final CaseSensitivity sensitivity;
 
 	private PreparedStatement tablePreparedStatement;
@@ -34,6 +36,7 @@ public class SchemaCapturer {
 
 	public SchemaCapturer(Connection c, CaseSensitivity sensitivity) throws SQLException {
 		this.includeDatabases = new HashSet<>();
+		this.includeTables = new HashSet<>();
 		this.connection = c;
 		this.sensitivity = sensitivity;
 
@@ -72,6 +75,12 @@ public class SchemaCapturer {
 	public SchemaCapturer(Connection c, CaseSensitivity sensitivity, String dbName) throws SQLException {
 		this(c, sensitivity);
 		this.includeDatabases.add(dbName);
+	}
+
+	public SchemaCapturer(Connection c, CaseSensitivity sensitivity, String dbName, String tableName)
+			throws SQLException {
+		this(c, sensitivity, dbName);
+		this.includeTables.add(tableName);
 	}
 
 	public Schema capture() throws SQLException {
@@ -125,6 +134,10 @@ public class SchemaCapturer {
 		while (rs.next()) {
 			String tableName = rs.getString("TABLE_NAME");
 			String characterSetName = rs.getString("CHARACTER_SET_NAME");
+
+			if (includeTables.size() > 0 && !includeTables.contains(tableName))
+				continue;
+
 			Table t = db.buildTable(tableName, characterSetName);
 			tables.put(tableName, t);
 		}
@@ -203,6 +216,9 @@ public class SchemaCapturer {
 			int ordinalPosition = rs.getInt("ORDINAL_POSITION");
 			String tableName = rs.getString("TABLE_NAME");
 			String columnName = rs.getString("COLUMN_NAME");
+
+			if (!l.containsKey(tableName))
+				continue;
 
 			l.get(tableName).add(ordinalPosition - 1, columnName);
 		}
