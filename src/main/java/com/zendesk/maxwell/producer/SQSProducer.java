@@ -12,9 +12,9 @@ import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.row.RowMap;
 
-public class StdoutProducer extends AbstractProducer {
+public class SQSProducer extends AbstractProducer {
 
-	public StdoutProducer(MaxwellContext context) {
+	public SQSProducer(MaxwellContext context) {
 		super(context);
 	}
 

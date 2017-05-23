@@ -275,8 +275,8 @@ public class MaxwellContext {
 		case "profiler":
 			this.producer = new ProfilerProducer(this);
 			break;
-		case "stdout":
-			this.producer = new StdoutProducer(this);
+		case "SQS":
+			this.producer = new SQSProducer(this);
 			break;
 		case "buffer":
 			this.producer = new BufferedProducer(this, this.config.bufferedProducerSize);
