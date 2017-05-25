@@ -9,6 +9,10 @@ host=localhost
 user=maxwell
 password=maxwell
 
+#SQS Credentials Details
+aws_access_key_id=AKIAJQBR5ZMJWEBWZZ6Q
+aws_secret_access_key=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
+
 
 ######### general stuff #############
 

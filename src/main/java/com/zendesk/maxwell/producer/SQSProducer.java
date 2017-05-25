@@ -9,6 +9,7 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClient;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
+import com.amazonaws.services.sqs.model.SendMessageResult;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.row.RowMap;
 
@@ -18,7 +19,7 @@ public class SQSProducer extends AbstractProducer {
 		super(context);
 	}
 
-	private static String myQueueUrl = "maxwell";
+	private static String myQueueUrl = SQSProducerCredentials.getQueueName();
 	private static AmazonSQS sqs;
 
 	static {
@@ -29,7 +30,7 @@ public class SQSProducer extends AbstractProducer {
 
 		AWSCredentials credentials = null;
 		try {
-			credentials = new ProfileCredentialsProvider().getCredentials();
+			credentials = new SQSProducerCredentials();
 		} catch (Exception e) {
 			throw new AmazonClientException("Cannot load the credentials from the credential profiles file. "
 					+ "Please make sure that your credentials file is at the correct "
@@ -37,7 +38,7 @@ public class SQSProducer extends AbstractProducer {
 		}
 
 		sqs = new AmazonSQSClient(credentials);
-		Region usEast1 = Region.getRegion(Regions.US_EAST_1);
+		Region usEast1 = Region.getRegion(Regions.AP_SOUTHEAST_1);
 		sqs.setRegion(usEast1);
 
 		System.out.println("===========================================");
@@ -53,12 +54,14 @@ public class SQSProducer extends AbstractProducer {
 			}
 
 			// Send a message
-			System.out.println("Sending a message to MyQueue. "+msg);
+			System.out.println("Sending a message to MyQueue. " + myQueueUrl);
+			System.out.println("Message Content " + msg);
 			SendMessageRequest message = new SendMessageRequest();
 			message.setQueueUrl(myQueueUrl);
 			message.setMessageBody(msg);
 			message.setDelaySeconds(0);
-			sqs.sendMessage(message);
+			SendMessageResult response = sqs.sendMessage(message);
+			System.out.println("Response From SQS " + response);
 
 		} catch (AmazonServiceException ase) {
 			System.out.println("Caught an AmazonServiceException, which means your request made it "
@@ -81,8 +84,7 @@ public class SQSProducer extends AbstractProducer {
 		String output = r.toJSON(outputConfig);
 
 		if (output != null)
-			System.out.println("Sending SQS msg..");
-		msg(output);
+			msg(output);
 		this.context.setPosition(r);
 	}
 }
