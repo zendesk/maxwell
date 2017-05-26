@@ -179,6 +179,22 @@
             <div class="col-md-10" role="main">
 
 <h1 id="maxwell-changelog">Maxwell changelog</h1>
+<h3 id="v1100-slightly-more-ones-than-zeoes"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.10.0">v1.10.0</a>: "slightly more ones than zeoes"</h3>
+<p>This is a small release, primarily around a change to how schemas are
+stored. Maxwell now stores the <code>last_heartbeat_read</code> with each entry
+in the <code>schemas</code> table, making schema management more resilient to
+cases where binlog numbers are reused, but means that you must take
+care if you need to roll back to an earlier version. If you deploy
+v1.10.0, then roll back to an earlier version, you should manually
+update all <code>schemas</code>.<code>last_heartbeat_read</code> values to <code>0</code> before
+redeploying v1.10.0 or higher.</p>
+<p>Other minor changes:</p>
+<ul>
+<li>allow negative default numbers in columns</li>
+<li>only store final binlog position if it has changed</li>
+<li>blacklist internal aurora table `rds_heartbeat*'</li>
+<li>log4j version bump (allows for one entry per line JSON logging)</li>
+</ul>
 <h3 id="v190-now-with-added-whimsy"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.9.0">v1.9.0</a>: "now with added whimsy"</h3>
 <p>Maxwell 1.9 adds one main feature: monitoring support, contributed by
 Scott Ferguson. Multiple backends can be configured, read the updated
