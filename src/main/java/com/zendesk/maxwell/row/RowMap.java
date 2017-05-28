@@ -67,6 +67,8 @@ public class RowMap implements Serializable {
 				}
 			};
 
+	public RowMap() {}
+
 	public RowMap(String type, String database, String table, Long timestamp, List<String> pkColumns,
 			Position nextPosition) {
 		this.rowType = type;
