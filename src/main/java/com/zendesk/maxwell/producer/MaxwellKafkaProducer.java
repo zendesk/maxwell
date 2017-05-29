@@ -156,7 +156,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 			keyFormat = KeyFormat.ARRAY;
 
 		Metrics metrics = context.getMetrics();
-		this.metricsTimer = metrics.getRegistry().timer(metrics.metricName("time", "overall"));
+		this.metricsTimer = metrics.getRegistry().timer(metrics.metricName("message", "publish", "time"));
 
 		this.queue = queue;
 		this.taskState = new StoppableTaskState("MaxwellKafkaProducerWorker");
