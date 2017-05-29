@@ -117,7 +117,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 				type,
 				table.getDatabase(),
 				table.getName(),
-				System.currentTimeMillis() / 1000,
+				System.currentTimeMillis(),
 				table.getPKList(),
 				position);
 	}

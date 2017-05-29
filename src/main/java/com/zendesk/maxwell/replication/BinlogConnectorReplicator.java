@@ -1,5 +1,7 @@
 package com.zendesk.maxwell.replication;
 
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.Timer;
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import com.github.shyiko.mysql.binlog.event.Event;
 import com.github.shyiko.mysql.binlog.event.QueryEventData;
@@ -68,12 +70,34 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 			EventDeserializer.CompatibilityMode.CHAR_AND_BINARY_AS_BYTE_ARRAY);
 		this.client.setEventDeserializer(eventDeserializer);
 
-		this.binlogEventListener = new BinlogConnectorEventListener(client, queue);
+		Timer replicationQueueTimer = metrics.getRegistry().timer(metrics.metricName("replication", "queue", "time"));
+		this.binlogEventListener = new BinlogConnectorEventListener(client, queue, replicationQueueTimer);
+
 		this.client.setBlocking(!stopOnEOF);
 		this.client.registerEventListener(binlogEventListener);
 		this.client.setServerId(replicaServerID.intValue());
 
 		this.stopOnEOF = stopOnEOF;
+
+		metrics.getRegistry().register(
+				metrics.metricName("replication", "wait"),
+				new Gauge<Long>() {
+					@Override
+					public Long getValue() {
+						return binlogEventListener.getReplicationWait();
+					}
+				}
+		);
+
+		metrics.getRegistry().register(
+				metrics.metricName("replication", "queue", "count"),
+				new Gauge<Long>() {
+					@Override
+					public Long getValue() {
+						return (long) queue.size();
+					}
+				}
+		);
 	}
 
 	public BinlogConnectorReplicator(SchemaStore schemaStore, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, Position start) throws SQLException {
@@ -192,9 +216,6 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 				case XID:
 					buffer.setXid(event.xidData().getXid());
 
-					// feed metric gauge.
-					replicationLag = System.currentTimeMillis() - event.getEvent().getHeader().getTimestamp();
-
 					if ( !buffer.isEmpty() )
 						buffer.getLast().setTXCommit();
 
@@ -301,15 +322,11 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 			data.getSql(),
 			this.schemaStore,
 			lastHeartbeatPosition.withBinlogPosition(event.getPosition()),
-			event.getEvent().getHeader().getTimestamp() / 1000
+			event.getEvent().getHeader().getTimestamp()
 		);
 	}
 
 	public Schema getSchema() throws SchemaStoreException {
 		return this.schemaStore.getSchema();
-	}
-
-	public Long getReplicationLag() {
-		return this.replicationLag;
 	}
 }
