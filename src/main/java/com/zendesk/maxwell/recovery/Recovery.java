@@ -1,6 +1,8 @@
 package com.zendesk.maxwell.recovery;
 
 import com.zendesk.maxwell.*;
+import com.zendesk.maxwell.metrics.Metrics;
+import com.zendesk.maxwell.metrics.NoOpMetrics;
 import com.zendesk.maxwell.replication.BinlogConnectorReplicator;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.MaxwellReplicator;
@@ -51,11 +53,11 @@ public class Recovery {
 		);
 
 		LOGGER.warn("attempting to recover from master-change: " + recoveryMsg);
-
 		List<BinlogPosition> list = getBinlogInfo();
 		for ( int i = list.size() - 1; i >= 0 ; i-- ) {
 			BinlogPosition binlogPosition = list.get(i);
 			Position position = recoveryInfo.position.withBinlogPosition(binlogPosition);
+			Metrics metrics = new NoOpMetrics();
 
 			LOGGER.debug("scanning binlog: " + binlogPosition);
 			Replicator replicator;
@@ -67,6 +69,7 @@ public class Recovery {
 						replicationConfig,
 						0L, // server-id of 0 activates "mysqlbinlog" behavior where the server will stop after each binlog
 						maxwellDatabaseName,
+						metrics,
 						position,
 						true,
 						recoveryInfo.clientID
@@ -80,6 +83,7 @@ public class Recovery {
 						0L, // server-id of 0 activates "mysqlbinlog" behavior where the server will stop after each binlog
 						false,
 						maxwellDatabaseName,
+						metrics,
 						position,
 						true,
 						recoveryInfo.clientID

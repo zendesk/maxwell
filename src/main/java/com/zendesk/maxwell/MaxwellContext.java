@@ -6,11 +6,12 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.metrics.MaxwellMetrics;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.bootstrap.AsynchronousBootstrapper;
 import com.zendesk.maxwell.bootstrap.NoOpBootstrapper;
 import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
+import com.zendesk.maxwell.metrics.Metrics;
 import com.zendesk.maxwell.producer.*;
 import com.zendesk.maxwell.recovery.RecoveryInfo;
 import com.zendesk.maxwell.replication.Position;
@@ -34,6 +35,7 @@ public class MaxwellContext {
 	private final ConnectionPool rawMaxwellConnectionPool;
 	private final ConnectionPool schemaConnectionPool;
 	private final MaxwellConfig config;
+	private final MaxwellMetrics metrics;
 	private MysqlPositionStore positionStore;
 	private PositionStoreThread positionStoreThread;
 	private Long serverID;
@@ -50,6 +52,7 @@ public class MaxwellContext {
 	public MaxwellContext(MaxwellConfig config) throws SQLException {
 		this.config = config;
 		this.taskManager = new TaskManager();
+		this.metrics = new MaxwellMetrics(config);
 
 		this.replicationConnectionPool = new ConnectionPool("ReplicationConnectionPool", 10, 0, 10,
 				config.replicationMysql.getConnectionURI(false), config.replicationMysql.user, config.replicationMysql.password);
@@ -110,7 +113,8 @@ public class MaxwellContext {
 		return rawMaxwellConnectionPool.getConnection();
 	}
 
-	public void start() {
+	public void start() throws IOException {
+		metrics.startBackgroundTasks(this);
 		getPositionStoreThread(); // boot up thread explicitly.
 	}
 
@@ -337,5 +341,9 @@ public class MaxwellContext {
 	public void setReplicator(Replicator replicator) {
 		this.addTask(replicator);
 		this.replicator = replicator;
+	}
+
+	public Metrics getMetrics() {
+		return metrics;
 	}
 }

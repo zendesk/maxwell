@@ -6,6 +6,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.metrics.MaxwellMetrics;
+import com.zendesk.maxwell.metrics.Metrics;
 import com.zendesk.maxwell.producer.partitioners.MaxwellKafkaPartitioner;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.Position;
@@ -130,11 +131,6 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	private Thread thread;
 	private StoppableTaskState taskState;
 
-	private final Counter succeededMessageCount = MaxwellMetrics.metricRegistry.counter(succeededMessageCountName);
-	private final Meter succeededMessageMeter = MaxwellMetrics.metricRegistry.meter(succeededMessageMeterName);
-	private final Counter failedMessageCount = MaxwellMetrics.metricRegistry.counter(failedMessageCountName);
-	private final Meter failedMessageMeter = MaxwellMetrics.metricRegistry.meter(failedMessageMeterName);
-
 	public MaxwellKafkaProducerWorker(MaxwellContext context, Properties kafkaProperties, String kafkaTopic, ArrayBlockingQueue<RowMap> queue) {
 		super(context);
 
@@ -159,7 +155,9 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		else
 			keyFormat = KeyFormat.ARRAY;
 
-		this.metricsTimer = MaxwellMetrics.metricRegistry.timer(MetricRegistry.name(MaxwellMetrics.getMetricsPrefix(), "time", "overall"));
+		Metrics metrics = context.getMetrics();
+		this.metricsTimer = metrics.getRegistry().timer(metrics.metricName("time", "overall"));
+
 		this.queue = queue;
 		this.taskState = new StoppableTaskState("MaxwellKafkaProducerWorker");
 	}
