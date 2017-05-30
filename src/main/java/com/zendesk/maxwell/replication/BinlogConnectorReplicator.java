@@ -80,16 +80,6 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 		this.stopOnEOF = stopOnEOF;
 
 		metrics.getRegistry().register(
-				metrics.metricName("replication", "wait"),
-				new Gauge<Long>() {
-					@Override
-					public Long getValue() {
-						return binlogEventListener.getReplicationWait();
-					}
-				}
-		);
-
-		metrics.getRegistry().register(
 				metrics.metricName("replication", "queue", "count"),
 				new Gauge<Long>() {
 					@Override

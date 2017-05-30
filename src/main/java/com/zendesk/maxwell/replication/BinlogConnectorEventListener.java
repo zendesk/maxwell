@@ -23,15 +23,14 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener,
 	private final BinaryLogClient client;
 	private String gtid;
 
-	private long replicationWait = 0L;
-	private long lastProcessedEventTimestamp = 0L;
-	private long lastProcessedEventAt;
-
-	public BinlogConnectorEventListener(BinaryLogClient client, BlockingQueue<BinlogConnectorEvent> q, Timer queueTimer) {
+	public BinlogConnectorEventListener(
+		BinaryLogClient client,
+		BlockingQueue<BinlogConnectorEvent> q,
+		Timer queueTimer
+	) {
 		this.client = client;
 		this.queue = q;
 		this.queueTimer = queueTimer;
-		this.lastProcessedEventAt = System.currentTimeMillis();
 	}
 
 	public void stop() {
@@ -41,21 +40,10 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener,
 	@Override
 	public void onEvent(Event event) {
 		long eventSeenAt = 0L;
-		long eventTimestamp = 0L;
 
 		boolean trackMetrics = event.getHeader().getEventType() == EventType.XID;
 		if (trackMetrics) {
-			// replicationWait is not lag, but a measure of how much we're
-			// waiting for events - if events come in with timestamp intervals smaller
-			// than the clock time we spend waiting, the DB is slowing us down.
 			eventSeenAt = System.currentTimeMillis();
-			eventTimestamp = event.getHeader().getTimestamp();
-
-			long eventTimeDiff = eventTimestamp - this.lastProcessedEventTimestamp;
-			long clockTimeDiff = eventSeenAt - this.lastProcessedEventAt;
-			this.replicationWait = Math.max(0L, this.replicationWait + (
-				clockTimeDiff - eventTimeDiff
-			));
 		}
 
 		while (mustStop.get() != true) {
@@ -75,8 +63,6 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener,
 
 		if (trackMetrics) {
 			queueTimer.update(System.currentTimeMillis() - eventSeenAt, TimeUnit.MILLISECONDS);
-			this.lastProcessedEventAt = eventSeenAt;
-			this.lastProcessedEventTimestamp = eventTimestamp;
 		}
 	}
 
@@ -98,10 +84,6 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener,
 	@Override
 	public void onDisconnect(BinaryLogClient client) {
 		LOGGER.info("Binlog disconnected.");
-	}
-
-	public long getReplicationWait() {
-		return replicationWait;
 	}
 }
 
