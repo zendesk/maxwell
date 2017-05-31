@@ -78,16 +78,6 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 		this.client.setServerId(replicaServerID.intValue());
 
 		this.stopOnEOF = stopOnEOF;
-
-		metrics.getRegistry().register(
-				metrics.metricName("replication", "queue", "count"),
-				new Gauge<Long>() {
-					@Override
-					public Long getValue() {
-						return (long) queue.size();
-					}
-				}
-		);
 	}
 
 	public BinlogConnectorReplicator(SchemaStore schemaStore, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, Position start) throws SQLException {
