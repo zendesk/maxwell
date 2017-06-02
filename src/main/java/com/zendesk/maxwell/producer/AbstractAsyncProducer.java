@@ -1,17 +1,21 @@
 package com.zendesk.maxwell.producer;
 
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.zendesk.maxwell.metrics.MaxwellMetrics;
 import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.metrics.Metrics;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
 
 public abstract class AbstractAsyncProducer extends AbstractProducer {
 
-	public final static String succeededMessageCountName = MetricRegistry.name(MaxwellMetrics.getMetricsPrefix(), "messages", "succeeded");
-	public final static String succeededMessageMeterName = MetricRegistry.name(MaxwellMetrics.getMetricsPrefix(), "messages", "succeeded", "meter");
-	public final static String failedMessageCountName = MetricRegistry.name(MaxwellMetrics.getMetricsPrefix(), "messages", "failed");
-	public final static String failedMessageMeterName = MetricRegistry.name(MaxwellMetrics.getMetricsPrefix(), "messages", "failed", "meter");
+	protected final Counter succeededMessageCount;
+	protected final Meter succeededMessageMeter;
+	protected final Counter failedMessageCount;
+	protected final Meter failedMessageMeter;
 
 	public class CallbackCompleter {
 		private InflightMessageList inflightMessages;
@@ -52,9 +56,22 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 		super(context);
 
 		this.inflightMessages = new InflightMessageList();
+
+		Metrics metrics = context.getMetrics();
+		MetricRegistry metricRegistry = metrics.getRegistry();
+
+		this.succeededMessageCount = metricRegistry.counter(metrics.metricName("messages", "succeeded"));
+		this.succeededMessageMeter = metricRegistry.meter(metrics.metricName("messages", "succeeded", "meter"));
+		this.failedMessageCount = metricRegistry.counter(metrics.metricName("messages", "failed"));
+		this.failedMessageMeter = metricRegistry.meter(metrics.metricName("messages", "failed", "meter"));
 	}
 
 	public abstract void sendAsync(RowMap r, CallbackCompleter cc) throws Exception;
+
+	@Override
+	public Meter getFailedMessageMeter() {
+		return this.failedMessageMeter;
+	}
 
 	@Override
 	public final void push(RowMap r) throws Exception {

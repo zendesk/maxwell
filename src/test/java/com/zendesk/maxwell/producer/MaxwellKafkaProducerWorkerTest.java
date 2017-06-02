@@ -2,6 +2,7 @@ package com.zendesk.maxwell.producer;
 
 import com.zendesk.maxwell.MaxwellConfig;
 import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.metrics.NoOpMetrics;
 import org.junit.Test;
 
 import java.util.Properties;
@@ -16,6 +17,7 @@ public class MaxwellKafkaProducerWorkerTest {
 		MaxwellContext context = mock(MaxwellContext.class);
 		MaxwellConfig config = new MaxwellConfig();
 		when(context.getConfig()).thenReturn(config);
+		when(context.getMetrics()).thenReturn(new NoOpMetrics());
 		Properties kafkaProperties = new Properties();
 		kafkaProperties.put("bootstrap.servers", "localhost:9092");
 		String kafkaTopic = null;

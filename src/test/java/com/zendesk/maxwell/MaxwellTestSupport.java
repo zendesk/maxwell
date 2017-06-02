@@ -177,11 +177,22 @@ public class MaxwellTestSupport {
 
 		config.initPosition = capture(mysql.getConnection());
 		final String waitObject = new String("");
-		BufferedMaxwell maxwell = new BufferedMaxwell(config) {
+		final BufferedMaxwell maxwell = new BufferedMaxwell(config) {
 			@Override
 			protected void onReplicatorStart() {
 				synchronized(waitObject) {
 					waitObject.notify();
+				}
+			}
+
+			@Override
+			public void run() {
+				try {
+					super.run();
+				} finally {
+					synchronized(waitObject) {
+						waitObject.notify();
+					}
 				}
 			}
 		};
@@ -189,6 +200,11 @@ public class MaxwellTestSupport {
 		new Thread(maxwell).start();
 
 		synchronized(waitObject) { waitObject.wait(); }
+
+		Exception maxwellError = maxwell.context.getError();
+		if (maxwellError != null) {
+			throw maxwell.context.getError();
+		}
 
 		callback.afterReplicatorStart(mysql);
 		maxwell.context.getPositionStore().heartbeat();
@@ -229,7 +245,8 @@ public class MaxwellTestSupport {
 
 		callback.beforeTerminate(mysql);
 		maxwell.terminate();
-		Exception maxwellError = maxwell.context.getError();
+
+		maxwellError = maxwell.context.getError();
 		if (maxwellError != null) {
 			throw maxwellError;
 		}

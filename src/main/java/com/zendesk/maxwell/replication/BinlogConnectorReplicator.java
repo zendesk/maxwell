@@ -8,6 +8,8 @@ import com.github.shyiko.mysql.binlog.event.deserialization.EventDeserializer;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.MaxwellMysqlConfig;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
+import com.zendesk.maxwell.metrics.MaxwellMetrics;
+import com.zendesk.maxwell.metrics.Metrics;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMapBuffer;
@@ -41,11 +43,12 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 		MaxwellMysqlConfig mysqlConfig,
 		Long replicaServerID,
 		String maxwellSchemaDatabaseName,
+		Metrics metrics,
 		Position start,
 		boolean stopOnEOF,
 		String clientID
 	) {
-		super(clientID, bootstrapper, maxwellSchemaDatabaseName, producer, start);
+		super(clientID, bootstrapper, maxwellSchemaDatabaseName, producer, metrics, start);
 		this.schemaStore = schemaStore;
 
 		this.client = new BinaryLogClient(mysqlConfig.host, mysqlConfig.port, mysqlConfig.user, mysqlConfig.password);
@@ -81,6 +84,7 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 			ctx.getConfig().replicationMysql,
 			ctx.getConfig().replicaServerID,
 			ctx.getConfig().databaseName,
+			ctx.getMetrics(),
 			start,
 			false,
 			ctx.getConfig().clientID

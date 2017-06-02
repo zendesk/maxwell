@@ -1,11 +1,13 @@
 package com.zendesk.maxwell.replication;
 
 import com.codahale.metrics.Counter;
+import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.zendesk.maxwell.metrics.MaxwellMetrics;
 import com.zendesk.maxwell.MaxwellFilter;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
+import com.zendesk.maxwell.metrics.Metrics;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
@@ -31,22 +33,43 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	protected Long stopAtHeartbeat;
 	protected MaxwellFilter filter;
 
-	private final Counter rowCounter = MaxwellMetrics.metricRegistry.counter(
-		MetricRegistry.name(MaxwellMetrics.getMetricsPrefix(), "row", "count")
-	);
-
-	private final Meter rowMeter = MaxwellMetrics.metricRegistry.meter(
-		MetricRegistry.name(MaxwellMetrics.getMetricsPrefix(), "row", "meter")
-	);
+	private final Counter rowCounter;
+	private final Meter rowMeter;
 
 	protected Long replicationLag = 0L;
 
-	public AbstractReplicator(String clientID, AbstractBootstrapper bootstrapper, String maxwellSchemaDatabaseName, AbstractProducer producer, Position initialPosition) {
+	public AbstractReplicator(
+		String clientID,
+		AbstractBootstrapper bootstrapper,
+		String maxwellSchemaDatabaseName,
+		AbstractProducer producer,
+		Metrics metrics,
+		Position initialPosition
+	) {
 		this.clientID = clientID;
 		this.bootstrapper = bootstrapper;
 		this.maxwellSchemaDatabaseName = maxwellSchemaDatabaseName;
 		this.producer = producer;
 		this.lastHeartbeatPosition = initialPosition;
+
+		final AbstractReplicator self = this;
+
+		String lagGaugeName = metrics.metricName("replication", "lag");
+		metrics.getRegistry().register(
+			lagGaugeName,
+			new Gauge<Long>() {
+				@Override
+				public Long getValue() {
+					return self.getReplicationLag();
+				}
+			}
+		);
+		rowCounter = metrics.getRegistry().counter(
+			metrics.metricName("row", "count")
+		);
+		rowMeter = metrics.getRegistry().meter(
+			metrics.metricName("row", "meter")
+		);
 	}
 
 	/**

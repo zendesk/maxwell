@@ -6,6 +6,8 @@ import com.codahale.metrics.Slf4jReporter;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.zendesk.maxwell.MaxwellConfig;
 import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.producer.AbstractAsyncProducer;
+import com.zendesk.maxwell.util.StoppableTask;
 import org.apache.commons.lang.StringUtils;
 import org.coursera.metrics.datadog.DatadogReporter;
 import org.coursera.metrics.datadog.transport.HttpTransport;
@@ -14,15 +16,17 @@ import org.coursera.metrics.datadog.transport.UdpTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.coursera.metrics.datadog.DatadogReporter.Expansion.*;
 
-public class MaxwellMetrics {
-	public static final MetricRegistry metricRegistry = new MetricRegistry();
-	public static final HealthCheckRegistry healthCheckRegistry = new HealthCheckRegistry();
+public class MaxwellMetrics implements Metrics {
+	private final MetricRegistry metricRegistry;
+	private final HealthCheckRegistry healthCheckRegistry;
 
 	public static final String reportingTypeSlf4j = "slf4j";
 	public static final String reportingTypeJmx = "jmx";
@@ -30,10 +34,18 @@ public class MaxwellMetrics {
 	public static final String reportingTypeDataDog = "datadog";
 
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellMetrics.class);
+	private final MaxwellConfig config;
 
-	private static String metricsPrefix;
+	private String metricsPrefix;
 
-	public static void setup(MaxwellConfig config, MaxwellContext context) {
+	public MaxwellMetrics(MaxwellConfig config) {
+		healthCheckRegistry = new HealthCheckRegistry();
+		metricRegistry = new MetricRegistry();
+		this.config = config;
+		setup(config);
+	}
+
+	private void setup(MaxwellConfig config) {
 		if (config.metricsReportingType == null) {
 			LOGGER.warn("Metrics will not be exposed: metricsReportingType not configured.");
 			return;
@@ -68,14 +80,6 @@ public class MaxwellMetrics {
 					LOGGER.info("JMX running on port " + Integer.parseInt(portString));
 				}
 			}
-		}
-
-		if (config.metricsReportingType.contains(reportingTypeHttp)) {
-			healthCheckRegistry.register("MaxwellHealth", new MaxwellHealthCheck(metricRegistry));
-
-			LOGGER.info("Metrics http server starting");
-			new MaxwellHTTPServer(config.metricsHTTPPort, MaxwellMetrics.metricRegistry, healthCheckRegistry, context);
-			LOGGER.info("Metrics http server started on port " + config.metricsHTTPPort);
 		}
 
 		if (config.metricsReportingType.contains(reportingTypeDataDog)) {
@@ -116,7 +120,22 @@ public class MaxwellMetrics {
 		return tags;
 	}
 
-	public static String getMetricsPrefix() {
-		return metricsPrefix;
+	public String metricName(String... names) {
+		return MetricRegistry.name(metricsPrefix, names);
+	}
+
+	@Override
+	public MetricRegistry getRegistry() {
+		return metricRegistry;
+	}
+
+	public void startBackgroundTasks(MaxwellContext context) throws IOException {
+		String metricsReportingType = config.metricsReportingType;
+		if (metricsReportingType != null && metricsReportingType.contains(reportingTypeHttp)) {
+			LOGGER.info("Metrics http server starting");
+			new MaxwellHTTPServer(config.metricsHTTPPort, metricRegistry, healthCheckRegistry, context);
+			healthCheckRegistry.register("MaxwellHealth", new MaxwellHealthCheck(context.getProducer()));
+			LOGGER.info("Metrics http server started on port " + config.metricsHTTPPort);
+		}
 	}
 }

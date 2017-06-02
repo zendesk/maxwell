@@ -133,7 +133,6 @@ public class Maxwell implements Runnable {
 
 	protected void onReplicatorStart() {}
 	private void start() throws Exception {
-		MaxwellMetrics.setup(config, context);
 		try {
 			startInner();
 		} catch ( Exception e) {
@@ -186,22 +185,6 @@ public class Maxwell implements Runnable {
 		context.setReplicator(replicator);
 		this.context.start();
 		this.onReplicatorStart();
-
-		// Dropwizard throws an exception if you try to register multiple metrics with the same name.
-		// Since there are codepaths that create multiple replicators (at least in the tests) we need to protect
-		// against that.
-		String lagGaugeName = MetricRegistry.name(MaxwellMetrics.getMetricsPrefix(), "replication", "lag");
-		if ( !(MaxwellMetrics.metricRegistry.getGauges().containsKey(lagGaugeName)) ) {
-			MaxwellMetrics.metricRegistry.register(
-					lagGaugeName,
-					new Gauge<Long>() {
-						@Override
-						public Long getValue() {
-							return replicator.getReplicationLag();
-						}
-					}
-			);
-		}
 
 		replicator.runLoop();
 	}
