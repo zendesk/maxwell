@@ -2,13 +2,10 @@ package com.zendesk.maxwell.producer;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.metrics.MaxwellMetrics;
 import com.zendesk.maxwell.metrics.Metrics;
 import com.zendesk.maxwell.producer.partitioners.MaxwellKafkaPartitioner;
-import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMap.KeyFormat;
@@ -156,7 +153,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 			keyFormat = KeyFormat.ARRAY;
 
 		Metrics metrics = context.getMetrics();
-		this.metricsTimer = metrics.getRegistry().timer(metrics.metricName("time", "overall"));
+		this.metricsTimer = metrics.getRegistry().timer(metrics.metricName("message", "publish", "time"));
 
 		this.queue = queue;
 		this.taskState = new StoppableTaskState("MaxwellKafkaProducerWorker");

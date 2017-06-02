@@ -60,6 +60,17 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 		Metrics metrics = context.getMetrics();
 		MetricRegistry metricRegistry = metrics.getRegistry();
 
+		String gaugeName = metrics.metricName("inflightmessages", "count");
+		metricRegistry.register(
+			gaugeName,
+			new Gauge<Long>() {
+				@Override
+				public Long getValue() {
+					return (long) inflightMessages.size();
+				}
+			}
+		);
+
 		this.succeededMessageCount = metricRegistry.counter(metrics.metricName("messages", "succeeded"));
 		this.succeededMessageMeter = metricRegistry.meter(metrics.metricName("messages", "succeeded", "meter"));
 		this.failedMessageCount = metricRegistry.counter(metrics.metricName("messages", "failed"));

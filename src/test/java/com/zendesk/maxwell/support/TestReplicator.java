@@ -40,11 +40,6 @@ public class TestReplicator extends AbstractReplicator {
 	}
 
 	@Override
-	public Long getReplicationLag() {
-		return null;
-	}
-
-	@Override
 	public RowMap getRow() throws Exception {
 		return null;
 	}

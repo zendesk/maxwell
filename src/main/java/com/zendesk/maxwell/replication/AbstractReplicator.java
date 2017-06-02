@@ -3,8 +3,6 @@ package com.zendesk.maxwell.replication;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
-import com.zendesk.maxwell.metrics.MaxwellMetrics;
 import com.zendesk.maxwell.MaxwellFilter;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.metrics.Metrics;
@@ -35,8 +33,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 
 	private final Counter rowCounter;
 	private final Meter rowMeter;
-
-	protected Long replicationLag = 0L;
+	private Long replicationLag = 0L;
 
 	public AbstractReplicator(
 		String clientID,
@@ -60,7 +57,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 			new Gauge<Long>() {
 				@Override
 				public Long getValue() {
-					return self.getReplicationLag();
+					return self.replicationLag;
 				}
 			}
 		);
@@ -159,11 +156,12 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	public void work() throws Exception {
 		RowMap row = getRow();
 
-		rowCounter.inc();
-		rowMeter.mark();
-
 		if ( row == null )
 			return;
+
+		rowCounter.inc();
+		rowMeter.mark();
+		replicationLag = System.currentTimeMillis() - row.getTimestampMillis();
 
 		processRow(row);
 	}

@@ -128,7 +128,7 @@ public class BinlogConnectorEvent {
 			type,
 			table.getDatabase(),
 			table.getName(),
-			event.getHeader().getTimestamp() / 1000,
+			event.getHeader().getTimestamp(),
 			table.getPKList(),
 			position
 		);
