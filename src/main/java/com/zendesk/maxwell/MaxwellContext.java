@@ -289,7 +289,7 @@ public class MaxwellContext {
 			this.producer = null;
 			break;
 		default:
-			throw new RuntimeException("Unknown producer type: " + this.config.producerType);
+		    this.producer = ProducerFactory.getInstance().getProducer(this, this.config);
 		}
 
 		StoppableTask task = null;
