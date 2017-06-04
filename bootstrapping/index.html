@@ -261,10 +261,10 @@ In this async mode, non-bootstrapped tables are replicated as normal by the main
 <h3 id="bootstrapping-data-format">Bootstrapping Data Format</h3>
 <hr />
 <ul>
-<li>a bootstrap starts with a document with <code>type = "bootstrap-start"</code></li>
-<li>then documents with <code>type = "insert"</code> (one per row in the table)</li>
-<li>then one document per <code>INSERT</code>, <code>UPDATE</code> or <code>DELETE</code> that occurred since the beginning of bootstrap</li>
-<li>finally a document with <code>type = "bootstrap-complete"</code></li>
+<li>a bootstrap starts with an event of <code>type = "bootstrap-start"</code></li>
+<li>then events with <code>type = "bootstrap-insert"</code> (one per row in the table)</li>
+<li>then one event per <code>INSERT</code>, <code>UPDATE</code> or <code>DELETE</code> with standard event types i.e. <code>type = "insert"</code>, <code>type = "update"</code> or <code>type = "delete"</code> that occurred since the beginning of bootstrap</li>
+<li>finally an event with <code>type = "bootstrap-complete"</code></li>
 </ul>
 <p>Here's a complete example:</p>
 <pre><code>mysql&gt; create table fooDB.barTable(txt varchar(255));

@@ -253,12 +253,20 @@ At present certain metrics are Kafka-specific - that is, not yet supported other
 <td>the time elapsed between the database transaction commit and the time it was processed by Maxwell, in milliseconds</td>
 </tr>
 <tr>
+<td><code>inflightmessages.count</code></td>
+<td>the number of messages that are currently in-flight (awaiting acknowledgement from the destination, or ahead of messages which are)</td>
+</tr>
+<tr>
 <td><strong>Timers</strong></td>
 <td></td>
 </tr>
 <tr>
-<td><code>time.overall</code></td>
+<td><code>message.publish.time</code></td>
 <td>the time it took to send a given record to Kafka, in milliseconds</td>
+</tr>
+<tr>
+<td><code>replication.queue.time</code></td>
+<td>the time it took to enqueue a given binlog event for processing, in milliseconds</td>
 </tr>
 </tbody>
 </table>
