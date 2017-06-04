@@ -1,7 +1,24 @@
 # Maxwell changelog
 
-### [v1.10.0](https://github.com/zendesk/maxwell/releases/tag/v1.10.0): "slightly more ones than zeoes"
+### [v1.10.2](https://github.com/zendesk/maxwell/releases/tag/v1.10.2): "just in time for tomorrow"
 
+
+- added metrics: "replication.queue.time" and "inflightmessages.count"
+- renamed "time.overall" metric to "message.publish.time"
+- documentation updates (thanks Chintan Tank)
+
+
+### [v1.10.1](https://github.com/zendesk/maxwell/releases/tag/v1.10.1): "forgive and forget"
+
+The observable changes in this minor release are a new configuration for Kafka/Kinesis producer to abort processing on publish errors, and support of Kafka 0.10.2. Also a bunch of good refactoring has been done for heartbeat processing. List of changes:   
+
+- Support Kafka 0.10.2   
+- Stop procesing RDS hearbeats   
+- Keep maxwell heartbeat going every 10 seconds when database is quiet   
+- Allow for empty double-quoted string literals for database schema changes   
+- Ignore Kafka/Kinesis producer errors based on new configuration ignore_producer_error
+
+### [v1.10.0](https://github.com/zendesk/maxwell/releases/tag/v1.10.0): "slightly more ones than zeroes"
 
 This is a small release, primarily around a change to how schemas are
 stored. Maxwell now stores the `last_heartbeat_read` with each entry
