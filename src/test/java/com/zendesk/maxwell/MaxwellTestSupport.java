@@ -2,7 +2,6 @@ package com.zendesk.maxwell;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
-import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.Schema;
@@ -207,10 +206,9 @@ public class MaxwellTestSupport {
 		}
 
 		callback.afterReplicatorStart(mysql);
-		maxwell.context.getPositionStore().heartbeat();
+		long finalHeartbeat = maxwell.context.getPositionStore().heartbeat();
 
-		Position finalPosition = capture(mysql.getConnection());
-		LOGGER.debug("running replicator up to " + finalPosition);
+		LOGGER.debug("running replicator up to heartbeat: " + finalHeartbeat);
 
 		Long pollTime = 2000L;
 		Position lastPositionRead = null;
@@ -226,7 +224,7 @@ public class MaxwellTestSupport {
 
 			lastPositionRead = row.getPosition();
 
-			if ( row.getPosition().newerThan(finalPosition) ) {
+			if ( lastPositionRead.getLastHeartbeatRead() >= finalHeartbeat ) {
 				// consume whatever's left over in the buffer.
 				for ( ;; ) {
 					RowMap r = maxwell.poll(100);
