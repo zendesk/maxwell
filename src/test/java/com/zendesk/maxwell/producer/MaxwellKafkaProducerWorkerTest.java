@@ -14,14 +14,10 @@ public class MaxwellKafkaProducerWorkerTest {
 
 	@Test
 	public void constructNewWorkerWithNullTopic() {
-		MaxwellContext context = mock(MaxwellContext.class);
 		MaxwellConfig config = new MaxwellConfig();
-		when(context.getConfig()).thenReturn(config);
-		when(context.getMetrics()).thenReturn(new NoOpMetrics());
-		Properties kafkaProperties = new Properties();
-		kafkaProperties.put("bootstrap.servers", "localhost:9092");
-		String kafkaTopic = null;
+		config.getKafkaProperties().put("bootstrap.servers", "localhost:9092");
+		config.kafkaTopic = null;
 		//shouldn't throw NPE
-		new MaxwellKafkaProducerWorker(context, kafkaProperties, kafkaTopic, null);
+		new MaxwellKafkaProducerWorker(new NoOpMetrics(), config, null);
 	}
 }

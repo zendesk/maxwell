@@ -1,18 +1,15 @@
 package com.zendesk.maxwell.producer;
 
-import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
 
-import java.sql.SQLException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 public class BufferedProducer extends AbstractProducer {
 	private final LinkedBlockingQueue<RowMap> queue;
 
-	public BufferedProducer(MaxwellContext context, int maxSize) {
-		super(context);
+	public BufferedProducer(int maxSize) {
 		this.queue = new LinkedBlockingQueue<>(maxSize);
 	}
 

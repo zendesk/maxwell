@@ -3,6 +3,7 @@ package com.zendesk.maxwell.producer;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.Timer;
+import com.zendesk.maxwell.MaxwellConfig;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.metrics.Metrics;
 import com.zendesk.maxwell.producer.partitioners.MaxwellKafkaPartitioner;
@@ -23,7 +24,6 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -94,13 +94,18 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	private final ArrayBlockingQueue<RowMap> queue;
 	private final MaxwellKafkaProducerWorker worker;
 
-	public MaxwellKafkaProducer(MaxwellContext context, Properties kafkaProperties, String kafkaTopic) {
-		super(context);
+	public MaxwellKafkaProducer(Metrics metrics, MaxwellConfig config) {
 		this.queue = new ArrayBlockingQueue<>(100);
-		this.worker = new MaxwellKafkaProducerWorker(context, kafkaProperties, kafkaTopic, this.queue);
+		this.worker = new MaxwellKafkaProducerWorker(metrics, config, this.queue);
 		Thread thread = new Thread(this.worker, "maxwell-kafka-worker");
 		thread.setDaemon(true);
 		thread.start();
+	}
+
+	@Override
+	public void setContext(MaxwellContext context) {
+		super.setContext(context);
+		worker.setContext(context);
 	}
 
 	@Override
@@ -129,31 +134,29 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	private Thread thread;
 	private StoppableTaskState taskState;
 
-	public MaxwellKafkaProducerWorker(MaxwellContext context, Properties kafkaProperties, String kafkaTopic, ArrayBlockingQueue<RowMap> queue) {
-		super(context);
-
-		this.topic = kafkaTopic;
+	public MaxwellKafkaProducerWorker(Metrics metrics, MaxwellConfig config, ArrayBlockingQueue<RowMap> queue) {
+		super(metrics);
+		this.topic = config.kafkaTopic;
 		if ( this.topic == null ) {
 			this.topic = "maxwell";
 		}
 
 		this.interpolateTopic = this.topic.contains("%{");
-		this.kafka = new KafkaProducer<>(kafkaProperties, new StringSerializer(), new StringSerializer());
+		this.kafka = new KafkaProducer<>(config.getKafkaProperties(), new StringSerializer(), new StringSerializer());
 
-		String hash = context.getConfig().kafkaPartitionHash;
-		String partitionKey = context.getConfig().producerPartitionKey;
-		String partitionColumns = context.getConfig().producerPartitionColumns;
-		String partitionFallback = context.getConfig().producerPartitionFallback;
+		String hash = config.kafkaPartitionHash;
+		String partitionKey = config.producerPartitionKey;
+		String partitionColumns = config.producerPartitionColumns;
+		String partitionFallback = config.producerPartitionFallback;
 		this.partitioner = new MaxwellKafkaPartitioner(hash, partitionKey, partitionColumns, partitionFallback);
 		this.ddlPartitioner = new MaxwellKafkaPartitioner(hash, "database", null,"database");
-		this.ddlTopic =  context.getConfig().ddlKafkaTopic;
+		this.ddlTopic =  config.ddlKafkaTopic;
 
-		if ( context.getConfig().kafkaKeyFormat.equals("hash") )
+		if ( config.kafkaKeyFormat.equals("hash") )
 			keyFormat = KeyFormat.HASH;
 		else
 			keyFormat = KeyFormat.ARRAY;
 
-		Metrics metrics = context.getMetrics();
 		this.metricsTimer = metrics.getRegistry().timer(metrics.metricName("message", "publish", "time"));
 
 		this.queue = queue;

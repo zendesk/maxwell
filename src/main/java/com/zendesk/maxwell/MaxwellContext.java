@@ -322,34 +322,39 @@ public class MaxwellContext {
 		if ( this.producer != null )
 			return this.producer;
 
-		switch ( this.config.producerType ) {
-		case "file":
-			this.producer = new FileProducer(this, this.config.outputFile);
-			break;
-		case "kafka":
-			this.producer = new MaxwellKafkaProducer(this, this.config.getKafkaProperties(), this.config.kafkaTopic);
-			break;
-		case "kinesis":
-			this.producer = new MaxwellKinesisProducer(this, this.config.kinesisStream);
-			break;
-		case "profiler":
-			this.producer = new ProfilerProducer(this);
-			break;
-		case "stdout":
-			this.producer = new StdoutProducer(this);
-			break;
-		case "buffer":
-			this.producer = new BufferedProducer(this, this.config.bufferedProducerSize);
-			break;
-		case "none":
-			this.producer = null;
-			break;
-		default:
-			throw new RuntimeException("Unknown producer type: " + this.config.producerType);
+		if ( this.config.producer != null ) {
+			this.producer = this.config.producer;
+		} else {
+			switch ( this.config.producerType ) {
+			case "file":
+				this.producer = new FileProducer(this.config.outputFile);
+				break;
+			case "kafka":
+				this.producer = new MaxwellKafkaProducer(this.metrics, this.config);
+				break;
+			case "kinesis":
+				this.producer = new MaxwellKinesisProducer(this.metrics, this.config);
+				break;
+			case "profiler":
+				this.producer = new ProfilerProducer();
+				break;
+			case "stdout":
+				this.producer = new StdoutProducer();
+				break;
+			case "buffer":
+				this.producer = new BufferedProducer(this.config.bufferedProducerSize);
+				break;
+			case "none":
+				this.producer = null;
+				break;
+			default:
+				throw new RuntimeException("Unknown producer type: " + this.config.producerType);
+			}
 		}
 
 		StoppableTask task = null;
 		if (producer != null) {
+			producer.setContext(this);
 			task = producer.getStoppableTask();
 		}
 		if (task != null) {

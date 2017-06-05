@@ -1,6 +1,5 @@
 package com.zendesk.maxwell.producer;
 
-import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.row.RowMap;
 
 import java.io.File;
@@ -11,8 +10,7 @@ public class ProfilerProducer extends AbstractProducer {
 	private long startTime;
 	private FileOutputStream nullOutputStream;
 
-	public ProfilerProducer(MaxwellContext context) {
-		super(context);
+	public ProfilerProducer() {
 		this.count = 0;
 		this.startTime = 0;
 	}

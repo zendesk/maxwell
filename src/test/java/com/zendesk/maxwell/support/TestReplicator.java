@@ -14,8 +14,10 @@ public class TestReplicator extends AbstractReplicator {
 	public TestReplicator(MaxwellContext context) {
 		super(
 			null, null, null,
-			new BufferedProducer(context, 10), new NoOpMetrics(), null
+			new BufferedProducer(10), new NoOpMetrics(), null
 		);
+		getProducer().setContext(context);
+
 	}
 
 	public BufferedProducer getProducer() {

@@ -1,18 +1,25 @@
 package com.zendesk.maxwell;
 
-import java.util.*;
-import java.util.regex.Pattern;
-
-import com.zendesk.maxwell.replication.BinlogPosition;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.health.HealthCheckRegistry;
+import com.zendesk.maxwell.metrics.Metrics;
+import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.Position;
-import joptsimple.*;
-
+import com.zendesk.maxwell.util.AbstractConfig;
+import joptsimple.BuiltinHelpFormatter;
+import joptsimple.OptionDescriptor;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.zendesk.maxwell.util.AbstractConfig;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.Properties;
+import java.util.regex.Pattern;
 
 public class MaxwellConfig extends AbstractConfig {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfig.class);
@@ -31,11 +38,13 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public String includeDatabases, excludeDatabases, includeTables, excludeTables, excludeColumns, blacklistDatabases, blacklistTables;
 
+	public AbstractProducer producer; // producer has precedence over producerType
+	public String producerType;
+
 	public final Properties kafkaProperties;
 	public String kafkaTopic;
 	public String ddlKafkaTopic;
 	public String kafkaKeyFormat;
-	public String producerType;
 	public String kafkaPartitionHash;
 	public String kafkaPartitionKey;
 	public String kafkaPartitionColumns;
@@ -53,6 +62,9 @@ public class MaxwellConfig extends AbstractConfig {
 	public String outputFile;
 	public MaxwellOutputConfig outputConfig;
 	public String log_level;
+
+	public MetricRegistry metricRegistry;
+	public HealthCheckRegistry healthCheckRegistry;
 
 	public String metricsPrefix;
 	public String metricsReportingType;
@@ -84,6 +96,8 @@ public class MaxwellConfig extends AbstractConfig {
 		this.shykoMode = false;
 		this.gtidMode = false;
 		this.bufferedProducerSize = 200;
+		this.metricRegistry = new MetricRegistry();
+		this.healthCheckRegistry = new HealthCheckRegistry();
 		setup(null, null); // setup defaults
 	}
 

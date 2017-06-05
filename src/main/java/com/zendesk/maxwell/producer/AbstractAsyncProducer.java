@@ -4,7 +4,6 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
-import com.zendesk.maxwell.metrics.MaxwellMetrics;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.metrics.Metrics;
 import com.zendesk.maxwell.replication.Position;
@@ -52,12 +51,9 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 
 	private InflightMessageList inflightMessages;
 
-	public AbstractAsyncProducer(MaxwellContext context) {
-		super(context);
-
+	public AbstractAsyncProducer(Metrics metrics) {
 		this.inflightMessages = new InflightMessageList();
 
-		Metrics metrics = context.getMetrics();
 		MetricRegistry metricRegistry = metrics.getRegistry();
 
 		String gaugeName = metrics.metricName("inflightmessages", "count");

@@ -20,10 +20,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public class Maxwell implements Runnable {
-	static {
-		Logging.setupLogBridging();
-	}
-
 	protected MaxwellConfig config;
 	protected MaxwellContext context;
 	protected Replicator replicator;
@@ -194,6 +190,7 @@ public class Maxwell implements Runnable {
 
 	public static void main(String[] args) {
 		try {
+			Logging.setupLogBridging();
 			MaxwellConfig config = new MaxwellConfig(args);
 
 			if ( config.log_level != null )
