@@ -1,5 +1,12 @@
 # Maxwell changelog
 
+### [v1.10.3](https://github.com/zendesk/maxwell/releases/tag/v1.10.3): "1.10.2-and-a-bit"
+
+
+ - tiny release to fix a units error in the `replication.lag` metric
+   (subtracting seconds from milliseconds)
+
+
 ### [v1.10.2](https://github.com/zendesk/maxwell/releases/tag/v1.10.2): "just in time for tomorrow"
 
 
