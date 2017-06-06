@@ -370,7 +370,7 @@ public class RowMap implements Serializable {
 	}
 
 	public Long getTimestampMillis() {
-		return timestampSeconds;
+		return timestampMillis;
 	}
 
 	public boolean hasData(String name) {
