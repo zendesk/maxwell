@@ -2,7 +2,7 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.zendesk</groupId>
+  <groupId>com.capillary</groupId>
   <artifactId>maxwell</artifactId>
   <version>1.10.1</version>
   <packaging>jar</packaging>
@@ -187,7 +187,7 @@
   <build>
     <plugins>
       <!-- horrible sonatype plugins -->
-      <plugin>
+      <!--plugin>
         <groupId>org.sonatype.plugins</groupId>
         <artifactId>nexus-staging-maven-plugin</artifactId>
         <version>1.6.6</version>
@@ -202,17 +202,11 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-gpg-plugin</artifactId>
         <version>1.5</version>
-        <executions>
-          <execution>
-            <id>sign-artifacts</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>sign</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
+        <configuration>
+		<skip>true</skip>
+	</configuration>
+      </plugin-->
+      <!--plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
         <version>3.0.1</version>
@@ -237,7 +231,7 @@
             </goals>
           </execution>
         </executions>
-      </plugin>
+      </plugin-->
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -269,6 +263,27 @@
           </execution>
         </executions>
       </plugin>
-    </plugins>
+    <plugin>
+		<groupId>org.apache.maven.plugins</groupId>
+		<artifactId>maven-dependency-plugin</artifactId>
+    </plugin>
+	<plugin>
+		<groupId>com.atlassian.maven.plugins</groupId>
+		<artifactId>maven-jgitflow-plugin</artifactId>
+		<version>1.0-alpha21.1</version>
+		<configuration>
+			<allowSnapshots>true</allowSnapshots>
+			<noDeploy>true</noDeploy>
+			<pushReleases>false</pushReleases>
+			<enableFeatureVersions>true</enableFeatureVersions>
+			<flowInitContext>
+				<masterBranchName>production</masterBranchName>
+				<developBranchName>master</developBranchName>
+				<featureBranchPrefix>pheature</featureBranchPrefix>
+				<versionTagPrefix>v</versionTagPrefix>
+			</flowInitContext>
+		</configuration>
+	</plugin>
+     </plugins>
   </build>
 </project>
