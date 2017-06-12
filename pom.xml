@@ -19,7 +19,7 @@
     </license>
   </licenses>
 
-  <developers>
+  <!--developers>
     <developer>
       <id>osheroff</id>
       <name>Ben Osheroff</name>
@@ -37,7 +37,7 @@
     <connection>scm:git:git@github.com:zendesk/maxwell.git</connection>
     <developerConnection>scm:git:git@github.com:zendesk/maxwell.git</developerConnection>
     <url>git@github.com:zendesk/maxwell.git</url>
-  </scm>
+  </scm-->
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -206,7 +206,7 @@
 		<skip>true</skip>
 	</configuration>
       </plugin-->
-      <!--plugin>
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
         <version>3.0.1</version>
@@ -214,12 +214,12 @@
           <execution>
             <id>attach-sources</id>
             <goals>
-              <goal>jar-no-fork</goal>
+              <goal>jar</goal>
             </goals>
           </execution>
         </executions>
       </plugin>
-      <plugin>
+      <!--plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>2.9.1</version>
@@ -241,6 +241,26 @@
           <forkCount>0</forkCount>
         </configuration>
       </plugin>
+       <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>2.3</version>
+          <executions>
+            <execution>
+              <id>copy-dependencies</id>
+              <phase>package</phase>
+              <goals>
+                <goal>copy-dependencies</goal>
+              </goals>
+              <configuration>
+                <outputDirectory>${project.dependencyDir}</outputDirectory>
+                <includeScope>runtime</includeScope>
+                <excludeScope>provided</excludeScope>
+                <excludeTypes>pom</excludeTypes>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -264,8 +284,8 @@
         </executions>
       </plugin>
     <plugin>
-		<groupId>org.apache.maven.plugins</groupId>
-		<artifactId>maven-dependency-plugin</artifactId>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-dependency-plugin</artifactId>
     </plugin>
 	<plugin>
 		<groupId>com.atlassian.maven.plugins</groupId>
