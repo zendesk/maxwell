@@ -154,10 +154,18 @@ public class MaxwellContext {
 					LOGGER.error("failed graceful shutdown", e);
 				}
 			}
-			taskManager.stop(this.error);
-			this.replicationConnectionPool.release();
-			this.maxwellConnectionPool.release();
-			this.rawMaxwellConnectionPool.release();
+			try {
+				taskManager.stop(this.error);
+				this.replicationConnectionPool.release();
+				this.maxwellConnectionPool.release();
+				this.rawMaxwellConnectionPool.release();
+			} catch (Exception e) {
+				LOGGER.error("Exception occurred during graceful shutdown:", e);
+				if (this.error != null) {
+					LOGGER.error("Termination reason:", this.error);
+				}
+				System.exit(1);
+			}
 		}
 	}
 
