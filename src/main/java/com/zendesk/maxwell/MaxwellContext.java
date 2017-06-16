@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.zendesk.maxwell.metrics.MaxwellMetrics;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
@@ -130,6 +131,37 @@ public class MaxwellContext {
 		terminate(null);
 	}
 
+	private void sendFinalHeartbeat() {
+		long heartbeat = System.currentTimeMillis();
+		LOGGER.info("Sending final heartbeat: " + heartbeat);
+		try {
+			this.replicator.stopAtHeartbeat(heartbeat);
+			this.positionStore.heartbeat(heartbeat);
+			long deadline = heartbeat + 5000L;
+			while (positionStoreThread.getPosition().getLastHeartbeatRead() < heartbeat) {
+				if (System.currentTimeMillis() > deadline) {
+					LOGGER.warn("Timed out waiting for heartbeat " + heartbeat);
+					break;
+				}
+				Thread.sleep(100);
+			}
+		} catch (Exception e) {
+			LOGGER.error("Failed to send final heartbeat", e);
+		}
+	}
+
+	private void shutdown(AtomicBoolean complete) {
+		try {
+			taskManager.stop(this.error);
+			this.replicationConnectionPool.release();
+			this.maxwellConnectionPool.release();
+			this.rawMaxwellConnectionPool.release();
+			complete.set(true);
+		} catch (Exception e) {
+			LOGGER.error("Exception occurred during shutdown:", e);
+		}
+	}
+
 	public void terminate(Exception error) {
 		if (this.error == null) {
 			this.error = error;
@@ -137,34 +169,30 @@ public class MaxwellContext {
 
 		if (taskManager.requestStop()) {
 			if (this.error == null && this.replicator != null) {
-				long heartbeat = System.currentTimeMillis();
-				LOGGER.info("sending final heartbeat: " + heartbeat);
-				try {
-					this.replicator.stopAtHeartbeat(heartbeat);
-					this.positionStore.heartbeat(heartbeat);
-					long deadline = heartbeat + 10000L;
-					while (positionStoreThread.getPosition().getLastHeartbeatRead() < heartbeat) {
-						if (System.currentTimeMillis() > deadline) {
-							LOGGER.warn("timed out waiting for heartbeat " + heartbeat);
-							break;
-						}
-						Thread.sleep(100);
-					}
-				} catch (Exception e) {
-					LOGGER.error("failed graceful shutdown", e);
-				}
+				sendFinalHeartbeat();
 			}
+
+			final AtomicBoolean shutdownComplete = new AtomicBoolean(false);
+			final MaxwellContext self = this;
+			Thread shutdownThread = new Thread(new Runnable() {
+				@Override
+				public void run() {
+					self.shutdown(shutdownComplete);
+				}
+			}, "shutdownThread");
+			shutdownThread.start();
 			try {
-				taskManager.stop(this.error);
-				this.replicationConnectionPool.release();
-				this.maxwellConnectionPool.release();
-				this.rawMaxwellConnectionPool.release();
-			} catch (Exception e) {
-				LOGGER.error("Exception occurred during graceful shutdown:", e);
+				shutdownThread.join(10000L);
+			} catch (InterruptedException e) {
+				// ignore
+			}
+			LOGGER.debug("Shutdown complete: " + shutdownComplete.get());
+			if (!shutdownComplete.get()) {
+				LOGGER.error("Shutdown stalled - forcefully killing maxwell process");
 				if (this.error != null) {
 					LOGGER.error("Termination reason:", this.error);
 				}
-				System.exit(1);
+				Runtime.getRuntime().halt(1);
 			}
 		}
 	}

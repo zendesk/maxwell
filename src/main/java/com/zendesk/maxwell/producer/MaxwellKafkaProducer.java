@@ -222,7 +222,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	public void requestStop() {
 		taskState.requestStop();
 		try {
-			kafka.close(5L, TimeUnit.SECONDS);
+			kafka.close(3L, TimeUnit.SECONDS);
 		} catch (Exception e) {
 			LOGGER.info("Failed to close kafka producer:", e);
 		}
