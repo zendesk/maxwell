@@ -16,6 +16,8 @@ import java.util.Iterator;
 
 public class RowMapDeserializer extends StdDeserializer<RowMap> {
 	private static ObjectMapper mapper;
+	private String encryption_key;
+	private String secret_key;
 
 	public RowMapDeserializer() {
 		this(null);
@@ -23,6 +25,12 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 
 	public RowMapDeserializer(Class<?> vc) {
 		super(vc);
+	}
+
+	public RowMapDeserializer(String encryption_key, String secret_key){
+		this(null);
+		this.encryption_key = encryption_key;
+		this.secret_key = secret_key;
 	}
 
 	@Override
@@ -78,6 +86,25 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 					}
 				}
 			}
+		} else if (data.isTextual()){
+			String decryptedData = RowEncrypt.decrypt(data.textValue(), this.encryption_key, this.secret_key);
+			JsonNode decryptedDataNode = mapper.valueToTree(decryptedData);
+			if (decryptedDataNode instanceof ObjectNode) {
+				Iterator keys = data.fieldNames();
+				if (keys != null) {
+					while (keys.hasNext()) {
+						String key = (String) keys.next();
+						JsonNode value = data.get(key);
+						if (value.isValueNode()) {
+							ValueNode valueNode = (ValueNode) value;
+							rowMap.putData(key, getValue(valueNode));
+						}
+					}
+				}
+			}
+			else{
+				throw new ParseException("`data` is required and cannot be null.");
+			}
 		} else {
 			throw new ParseException("`data` is required and cannot be null.");
 		}
@@ -120,6 +147,18 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 		return value.asText();
 	}
 
+	private static ObjectMapper getMapper(String encryption_key, String secret_key)
+	{
+		if (mapper == null) {
+			mapper = new ObjectMapper();
+			SimpleModule module = new SimpleModule();
+			module.addDeserializer(RowMap.class, new RowMapDeserializer(encryption_key, secret_key));
+			mapper.registerModule(module);
+		}
+
+		return mapper;
+	}
+
 	private static ObjectMapper getMapper()
 	{
 		if (mapper == null) {
@@ -134,6 +173,12 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 
 	public static RowMap createFromString(String json) throws IOException
 	{
+
 		return getMapper().readValue(json, RowMap.class);
+	}
+
+	public static RowMap createFromString(String json, String encryption_key, String secret_key) throws IOException
+	{
+		return getMapper(encryption_key,secret_key).readValue(json, RowMap.class);
 	}
 }
