@@ -121,6 +121,25 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 					}
 				}
 			}
+		} else if (oldData.isTextual()){
+			String decryptedData = RowEncrypt.decrypt(oldData.textValue(), this.encryption_key, this.secret_key);
+			JsonNode decryptedDataNode = mapper.valueToTree(decryptedData);
+			if (decryptedDataNode instanceof ObjectNode) {
+				Iterator keys = oldData.fieldNames();
+				if (keys != null) {
+					while (keys.hasNext()) {
+						String key = (String) keys.next();
+						JsonNode value = oldData.get(key);
+						if (value.isValueNode()) {
+							ValueNode valueNode = (ValueNode) value;
+							rowMap.putOldData(key, getValue(valueNode));
+						}
+					}
+				}
+			}
+			else{
+				throw new ParseException("`oldData` is required and cannot be null.");
+			}
 		}
 
 		return rowMap;
