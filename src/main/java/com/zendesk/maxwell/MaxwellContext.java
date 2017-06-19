@@ -49,6 +49,7 @@ public class MaxwellContext {
 	private Integer mysqlMajorVersion;
 	private Integer mysqlMinorVersion;
 	private Replicator replicator;
+	private Thread terminationThread;
 
 	public MaxwellContext(MaxwellConfig config) throws SQLException {
 		this.config = config;
@@ -127,8 +128,8 @@ public class MaxwellContext {
 		this.taskManager.add(task);
 	}
 
-	public void terminate() {
-		terminate(null);
+	public Thread terminate() {
+		return terminate(null);
 	}
 
 	private void sendFinalHeartbeat() {
@@ -162,7 +163,47 @@ public class MaxwellContext {
 		}
 	}
 
-	public void terminate(Exception error) {
+	private Thread spawnTerminateThread() {
+		// Because terminate() may be called from a task thread
+		// which won't end until we let its event loop progress,
+		// we need to perform termination in a new thread
+		final AtomicBoolean shutdownComplete = new AtomicBoolean(false);
+		final MaxwellContext self = this;
+		Thread thread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				// Spawn an inner thread to perform shutdown
+				final Thread shutdownThread = new Thread(new Runnable() {
+					@Override
+					public void run() {
+						self.shutdown(shutdownComplete);
+					}
+				}, "shutdownThread");
+				shutdownThread.start();
+
+				// wait for its completion, timing out after 10s
+				try {
+					shutdownThread.join(10000L);
+				} catch (InterruptedException e) {
+					// ignore
+				}
+
+				LOGGER.debug("Shutdown complete: " + shutdownComplete.get());
+				if (!shutdownComplete.get()) {
+					LOGGER.error("Shutdown stalled - forcefully killing maxwell process");
+					if (self.error != null) {
+						LOGGER.error("Termination reason:", self.error);
+					}
+					Runtime.getRuntime().halt(1);
+				}
+			}
+		}, "shutdownMonitor");
+		thread.setDaemon(false);
+		thread.start();
+		return thread;
+	}
+
+	public Thread terminate(Exception error) {
 		if (this.error == null) {
 			this.error = error;
 		}
@@ -171,30 +212,9 @@ public class MaxwellContext {
 			if (this.error == null && this.replicator != null) {
 				sendFinalHeartbeat();
 			}
-
-			final AtomicBoolean shutdownComplete = new AtomicBoolean(false);
-			final MaxwellContext self = this;
-			Thread shutdownThread = new Thread(new Runnable() {
-				@Override
-				public void run() {
-					self.shutdown(shutdownComplete);
-				}
-			}, "shutdownThread");
-			shutdownThread.start();
-			try {
-				shutdownThread.join(10000L);
-			} catch (InterruptedException e) {
-				// ignore
-			}
-			LOGGER.debug("Shutdown complete: " + shutdownComplete.get());
-			if (!shutdownComplete.get()) {
-				LOGGER.error("Shutdown stalled - forcefully killing maxwell process");
-				if (this.error != null) {
-					LOGGER.error("Termination reason:", this.error);
-				}
-				Runtime.getRuntime().halt(1);
-			}
+			this.terminationThread = spawnTerminateThread();
 		}
+		return this.terminationThread;
 	}
 
 	public Exception getError() {
