@@ -88,13 +88,13 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 			}
 		} else if (data.isTextual()){
 			String decryptedData = RowEncrypt.decrypt(data.textValue(), this.encryption_key, this.secret_key);
-			JsonNode decryptedDataNode = mapper.valueToTree(decryptedData);
+			JsonNode decryptedDataNode = mapper.readTree(decryptedData);
 			if (decryptedDataNode instanceof ObjectNode) {
-				Iterator keys = data.fieldNames();
+				Iterator keys = decryptedDataNode.fieldNames();
 				if (keys != null) {
 					while (keys.hasNext()) {
 						String key = (String) keys.next();
-						JsonNode value = data.get(key);
+						JsonNode value = decryptedDataNode.get(key);
 						if (value.isValueNode()) {
 							ValueNode valueNode = (ValueNode) value;
 							rowMap.putData(key, getValue(valueNode));
@@ -123,13 +123,13 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 			}
 		} else if (oldData.isTextual()){
 			String decryptedData = RowEncrypt.decrypt(oldData.textValue(), this.encryption_key, this.secret_key);
-			JsonNode decryptedDataNode = mapper.valueToTree(decryptedData);
+			JsonNode decryptedDataNode = mapper.readTree(decryptedData);
 			if (decryptedDataNode instanceof ObjectNode) {
-				Iterator keys = oldData.fieldNames();
+				Iterator keys = decryptedDataNode.fieldNames();
 				if (keys != null) {
 					while (keys.hasNext()) {
 						String key = (String) keys.next();
-						JsonNode value = oldData.get(key);
+						JsonNode value = decryptedDataNode.get(key);
 						if (value.isValueNode()) {
 							ValueNode valueNode = (ValueNode) value;
 							rowMap.putOldData(key, getValue(valueNode));
