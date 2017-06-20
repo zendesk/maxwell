@@ -2,7 +2,9 @@ package com.zendesk.maxwell.recovery;
 
 import com.zendesk.maxwell.*;
 import com.zendesk.maxwell.replication.Position;
+import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
+import com.zendesk.maxwell.schema.MysqlPositionStore;
 import com.zendesk.maxwell.schema.MysqlSavedSchema;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
@@ -12,12 +14,12 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
@@ -151,18 +153,42 @@ public class RecoveryTest extends TestWithNameLogging {
 		assertEquals(null, recoveredPosition);
 	}
 
-	/* i know.  it's horrible. */
-	private void drainReplication(BufferedMaxwell maxwell, List<RowMap> rows) throws IOException, InterruptedException {
-		int pollMS = 10000;
-		for ( ;; ) {
-			RowMap r = maxwell.poll(pollMS);
-			if ( r == null )
-				break;
-			else {
-				if ( r.toJSON() != null )
-					rows.add(r);
+	private void drainReplication(BufferedMaxwell maxwell, List<RowMap> rows) throws Exception {
+		MysqlPositionStore positionStore = maxwell.getContext().getPositionStore();
 
-				pollMS = 500; // once we get a row, we timeout quickly.
+		// Wait for position store to send initial heartbeat, to ensure we
+		// don't accidentally send the same value
+		Long lastHeartbeat;
+		long totalWaitTime = 0L;
+		while(true)  {
+			lastHeartbeat = positionStore.getLastHeartbeatSent();
+			if (lastHeartbeat != null) {
+				break;
+			}
+			totalWaitTime += 100L;
+			if (totalWaitTime > 5000L) {
+				throw new RuntimeException("Timed out waiting for initial heartbeat to be sent");
+			}
+			Thread.sleep(100L);
+		}
+
+		long heartbeat = lastHeartbeat + 1L;
+		positionStore.heartbeat(heartbeat);
+
+		int initialRowCount = rows.size();
+		for ( ;; ) {
+			RowMap r = maxwell.poll(1000);
+			if ( r == null ) {
+				throw new RuntimeException("Timed out waiting for heartbeat row: " + heartbeat);
+			}
+			else {
+				if (r instanceof HeartbeatRowMap && r.getPosition().getLastHeartbeatRead() == heartbeat) {
+					LOGGER.info("read " + (rows.size() - initialRowCount) + " rows up to heartbeat " + heartbeat);
+					break;
+				}
+				if ( r.toJSON() != null ) {
+					rows.add(r);
+				}
 			}
 		}
 	}
@@ -234,31 +260,39 @@ public class RecoveryTest extends TestWithNameLogging {
 					mysql.execute("FLUSH LOGS");
 					mysql.executeList(Arrays.asList(input));
 					mysql.execute("FLUSH LOGS");
-				} catch ( Exception e ) {}
+				} catch ( Exception e ) {
+					LOGGER.error("Exception in beforeTerminate:", e);
+				}
 			}
 		};
 
 		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(masterServer, null, callback, null);
+		int expectedRows = input.length;
+		assertEquals(expectedRows, rows.size());
 
+		// we executed 2*input in beforeTerminate, as lag
+		expectedRows += input.length * 2;
+
+		// now add some more data
 		generateNewMasterData(false, DATA_SIZE);
+		expectedRows += NEW_DATA_SIZE;
 
 		BufferedMaxwell maxwell = new BufferedMaxwell(getConfig(slaveServer.getPort(), true));
 		new Thread(maxwell).start();
 		drainReplication(maxwell, rows);
+		assertEquals(expectedRows, rows.size());
 
-		assertThat(rows.size(), greaterThanOrEqualTo(1600));
-
-		boolean[] ids = new boolean[1601];
+		HashSet<Long> ids = new HashSet<>();
 
 		for ( RowMap r : rows ) {
 			Long id = (Long) r.getData("id");
-			if ( id != null )
-				ids[id.intValue()] = true;
+			if ( id != null ) ids.add(id);
 		}
 
-
-		for ( int i = 1 ; i < 1601; i++ )
-			assertEquals("didn't find id " + i, true, ids[i]);
+		for ( long id = 1 ; id < expectedRows+1; id++ ) {
+			assertEquals("didn't find id " + id + " (out of " + expectedRows + " rows)",
+				true, ids.contains(id));
+		}
 
 		maxwell.terminate();
 	}
@@ -268,6 +302,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		String[] input = generateMasterData();
 		// Have maxwell connect to master first
 		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(masterServer, null, input, null);
+		int expectedRowCount = DATA_SIZE;
 		try {
 			// sleep a bit for slave to catch up
 			Thread.sleep(1000);
@@ -277,32 +312,40 @@ public class RecoveryTest extends TestWithNameLogging {
 
 		Position slavePosition1 = MaxwellTestSupport.capture(slaveServer.getConnection());
 		LOGGER.info("slave master position at time of cut: " + slavePosition1 + " rows: " + rows.size());
+		assertEquals(expectedRowCount, rows.size());
 
-		// add 1000 rows on master side
+		// add 100 rows on master side
 		generateNewMasterData(true, DATA_SIZE);
-		// connect to slave, maxwell should get these 1000 rows from slave
+		expectedRowCount += NEW_DATA_SIZE;
+		// connect to slave, maxwell should get these 100 rows from slave
 		boolean masterRecovery = !MaxwellTestSupport.inGtidMode();
 		BufferedMaxwell maxwell = new BufferedMaxwell(getConfig(slaveServer.getPort(), masterRecovery));
 		new Thread(maxwell).start();
 		drainReplication(maxwell, rows);
 		maxwell.terminate();
+		assertEquals(expectedRowCount, rows.size());
+
 		Position slavePosition2 = MaxwellTestSupport.capture(slaveServer.getConnection());
 		LOGGER.info("slave master position after failover: " + slavePosition2 + " rows: " + rows.size());
 		assertTrue(slavePosition2.newerThan(slavePosition1));
 
-		// add 1000 rows on slave side
+		// add another 100 rows on slave side
 		generateNewMasterData(false, DATA_SIZE + NEW_DATA_SIZE);
-		// reconnct to slave to resume, maxwell should get the new 1000 rows
+		expectedRowCount += NEW_DATA_SIZE;
+		// reconnect to slave to resume, maxwell should get the new 100 rows
 		maxwell = new BufferedMaxwell(getConfig(slaveServer.getPort(), false));
 		new Thread(maxwell).start();
 		drainReplication(maxwell, rows);
+		assertEquals(expectedRowCount, rows.size());
+
 		maxwell.terminate();
 		Position slavePosition3 = MaxwellTestSupport.capture(slaveServer.getConnection());
 		LOGGER.info("slave master position after resumption: " + slavePosition3 + " rows: " + rows.size());
 		assertTrue(slavePosition3.newerThan(slavePosition2));
-
-		for ( long i = 0 ; i < DATA_SIZE + NEW_DATA_SIZE + NEW_DATA_SIZE; i++ ) {
-			assertEquals(i + 1, rows.get((int) i).getData("id"));
+		
+		for ( long i = 0 ; i < expectedRowCount; i++ ) {
+			RowMap row = rows.get((int) i);
+			assertEquals(i + 1, row.getData("id"));
 		}
 	}
 

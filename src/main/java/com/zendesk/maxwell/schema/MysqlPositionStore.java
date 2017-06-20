@@ -152,6 +152,10 @@ public class MysqlPositionStore {
 		lastHeartbeat = thisHeartbeat;
 	}
 
+	public Long getLastHeartbeatSent() {
+		return lastHeartbeat;
+	}
+
 	public Position get() throws SQLException {
 		try ( Connection c = connectionPool.getConnection() ) {
 			PreparedStatement s = c.prepareStatement("SELECT * from `positions` where server_id = ? and client_id = ?");
