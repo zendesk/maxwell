@@ -74,7 +74,9 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 			rowMap.setXid(xid.asLong());
 		}
 
-		if (data instanceof ObjectNode) {
+		if (data == null){
+			throw new ParseException("`data` is required and cannot be null.");
+		} else if (data instanceof ObjectNode) {
 			Iterator keys = data.fieldNames();
 			if (keys != null) {
 				while (keys.hasNext()) {
@@ -103,42 +105,44 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 				}
 			}
 			else{
-				throw new ParseException("`data` is required and cannot be null.");
+				throw new ParseException("`data` cannot be parsed.");
 			}
 		} else {
-			throw new ParseException("`data` is required and cannot be null.");
+			throw new ParseException("`data` cannot be parsed.");
 		}
 
-		if (oldData instanceof ObjectNode) {
-			Iterator keys = oldData.fieldNames();
-			if (keys != null) {
-				while (keys.hasNext()) {
-					String key = (String) keys.next();
-					JsonNode value = oldData.get(key);
-					if (value.isValueNode()) {
-						ValueNode valueNode = (ValueNode) value;
-						rowMap.putOldData(key, getValue(valueNode));
-					}
-				}
-			}
-		} else if (oldData.isTextual()){
-			String decryptedData = RowEncrypt.decrypt(oldData.textValue(), this.encryption_key, this.secret_key);
-			JsonNode decryptedDataNode = mapper.readTree(decryptedData);
-			if (decryptedDataNode instanceof ObjectNode) {
-				Iterator keys = decryptedDataNode.fieldNames();
+		if (oldData != null) {
+			if (oldData instanceof ObjectNode) {
+				Iterator keys = oldData.fieldNames();
 				if (keys != null) {
 					while (keys.hasNext()) {
 						String key = (String) keys.next();
-						JsonNode value = decryptedDataNode.get(key);
+						JsonNode value = oldData.get(key);
 						if (value.isValueNode()) {
 							ValueNode valueNode = (ValueNode) value;
 							rowMap.putOldData(key, getValue(valueNode));
 						}
 					}
 				}
-			}
-			else{
-				throw new ParseException("`oldData` is required and cannot be null.");
+			} else if (oldData.isTextual()) {
+				String decryptedData = RowEncrypt
+						.decrypt(oldData.textValue(), this.encryption_key, this.secret_key);
+				JsonNode decryptedDataNode = mapper.readTree(decryptedData);
+				if (decryptedDataNode instanceof ObjectNode) {
+					Iterator keys = decryptedDataNode.fieldNames();
+					if (keys != null) {
+						while (keys.hasNext()) {
+							String key = (String) keys.next();
+							JsonNode value = decryptedDataNode.get(key);
+							if (value.isValueNode()) {
+								ValueNode valueNode = (ValueNode) value;
+								rowMap.putOldData(key, getValue(valueNode));
+							}
+						}
+					}
+				} else {
+					throw new ParseException("`oldData` cannot be parsed.");
+				}
 			}
 		}
 
