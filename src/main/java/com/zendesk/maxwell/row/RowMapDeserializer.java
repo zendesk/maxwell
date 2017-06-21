@@ -204,4 +204,8 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 	{
 		return getMapper(encryption_key,secret_key).readValue(json, RowMap.class);
 	}
+
+	public static void resetMapper(){
+		mapper = null;
+	}
 }
