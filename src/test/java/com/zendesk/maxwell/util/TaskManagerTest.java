@@ -3,12 +3,14 @@ package com.zendesk.maxwell.util;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.junit.Test;
 
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 
@@ -55,7 +57,7 @@ public class TaskManagerTest {
 	}
 
 	@Test
-	public void shutsDownAllTasksAndWaitsForCompletion() {
+	public void shutsDownAllTasksAndWaitsForCompletion() throws Exception {
 		List<Event> log = new ArrayList<>();
 		StoppableTask task1 = new SampleTask(log, "task1");
 		StoppableTask task2 = new SampleTask(log, "task2");
@@ -76,24 +78,24 @@ public class TaskManagerTest {
 	}
 
 	@Test
-	public void continuesOnAwaitTimeout() {
+	public void raisesOnAwaitTimeout() throws InterruptedException {
 		List<Event> log = new ArrayList<>();
 		StoppableTask task1 = new UnstoppableTask();
-		StoppableTask task2 = new SampleTask(log, "task2");
 
 		TaskManager manager = new TaskManager();
 		manager.add(task1);
-		manager.add(task2);
 
-		manager.stop(null); // does not throw
-
-		assertThat(log, hasItem(
-			new Event(EventType.AWAIT_STOP, "task2")
-		));
+		TimeoutException timeout = null;
+		try {
+			manager.stop(null);
+		} catch(TimeoutException e) {
+			timeout = e;
+		}
+		assertThat(timeout, notNullValue());
 	}
 
 	@Test
-	public void onlyStopsTasksOnce() {
+	public void onlyStopsTasksOnce() throws Exception {
 		List<Event> log = new ArrayList<>();
 		StoppableTask task = new SampleTask(log, "task");
 		TaskManager manager = new TaskManager();
