@@ -120,8 +120,8 @@ public class MaxwellContext {
 		getPositionStoreThread(); // boot up thread explicitly.
 	}
 
-	public void heartbeat() throws Exception {
-		this.positionStore.heartbeat();
+	public long heartbeat() throws Exception {
+		return this.positionStore.heartbeat();
 	}
 
 	public void addTask(StoppableTask task) {
