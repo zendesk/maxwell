@@ -28,6 +28,7 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 		MetricRegistry metrics = new MetricRegistry();
 		HealthCheckRegistry healthChecks = new HealthCheckRegistry();
 		final BlockingQueue<RowMap> rowBuffer = new LinkedBlockingQueue<>();
+		config.metricsReportingType = "embedded";
 		config.metricRegistry = metrics;
 		config.healthCheckRegistry = healthChecks;
 		config.metricsPrefix = "prefix";

@@ -53,6 +53,7 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 
 	public AbstractAsyncProducer(MaxwellContext context) {
 		super(context);
+
 		this.inflightMessages = new InflightMessageList();
 
 		Metrics metrics = context.getMetrics();

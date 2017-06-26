@@ -6,8 +6,8 @@ import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.util.StoppableTask;
 
 public abstract class AbstractProducer {
-	protected MaxwellContext context;
-	protected MaxwellOutputConfig outputConfig;
+	protected final MaxwellContext context;
+	protected final MaxwellOutputConfig outputConfig;
 
 	public AbstractProducer(MaxwellContext context) {
 		this.context = context;
