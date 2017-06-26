@@ -1,11 +1,11 @@
 package com.zendesk.maxwell.producer;
 
-import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.row.RowMap;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+
+import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.row.RowMap;
 
 public class FileProducer extends AbstractProducer {
 	private final File file;

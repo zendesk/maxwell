@@ -10,6 +10,7 @@ import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMap.KeyFormat;
 import com.zendesk.maxwell.schema.ddl.DDLMap;
+import com.zendesk.maxwell.util.Logging;
 import com.zendesk.maxwell.util.StoppableTask;
 import com.zendesk.maxwell.util.StoppableTaskState;
 import org.apache.kafka.clients.producer.Callback;
@@ -130,6 +131,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 
 	public MaxwellKafkaProducerWorker(MaxwellContext context, Properties kafkaProperties, String kafkaTopic, ArrayBlockingQueue<RowMap> queue) {
 		super(context);
+
 		this.topic = kafkaTopic;
 		if ( this.topic == null ) {
 			this.topic = "maxwell";
