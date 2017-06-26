@@ -9,7 +9,7 @@ public abstract class AbstractProducer {
 	protected MaxwellContext context;
 	protected MaxwellOutputConfig outputConfig;
 
-	public void setContext(MaxwellContext context) {
+	public AbstractProducer(MaxwellContext context) {
 		this.context = context;
 		this.outputConfig = context.getConfig().outputConfig;
 	}

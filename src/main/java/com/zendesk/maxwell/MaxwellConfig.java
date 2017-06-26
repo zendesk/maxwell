@@ -5,6 +5,7 @@ import com.codahale.metrics.health.HealthCheckRegistry;
 import com.zendesk.maxwell.metrics.Metrics;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.producer.ProducerFactory;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.util.AbstractConfig;
@@ -38,7 +39,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public String includeDatabases, excludeDatabases, includeTables, excludeTables, excludeColumns, blacklistDatabases, blacklistTables;
 
-	public AbstractProducer producer; // producer has precedence over producerType
+	public ProducerFactory producerFactory; // producerFactory has precedence over producerType
 	public String producerType;
 
 	public final Properties kafkaProperties;

@@ -2,12 +2,14 @@ package com.zendesk.maxwell;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
-import com.zendesk.maxwell.metrics.MaxwellMetrics;
-import com.zendesk.maxwell.producer.BufferedProducer;
+import com.zendesk.maxwell.producer.AbstractProducer;
+import com.zendesk.maxwell.producer.ProducerFactory;
 import com.zendesk.maxwell.row.RowMap;
 import org.junit.Test;
 
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -25,12 +27,16 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 		MaxwellConfig config = getConfig(server);
 		MetricRegistry metrics = new MetricRegistry();
 		HealthCheckRegistry healthChecks = new HealthCheckRegistry();
+		final BlockingQueue<RowMap> rowBuffer = new LinkedBlockingQueue<>();
 		config.metricRegistry = metrics;
 		config.healthCheckRegistry = healthChecks;
 		config.metricsPrefix = "prefix";
-
-		BufferedProducer bufferedProducer = new BufferedProducer(1);
-		config.producer = bufferedProducer;
+		config.producerFactory = new ProducerFactory() {
+			@Override
+			public AbstractProducer createProducer(MaxwellContext context) {
+				return new EmbeddedTestProducer(context, rowBuffer);
+			}
+		};
 
 		final CountDownLatch latch = new CountDownLatch(1);
 		Maxwell maxwell = new Maxwell(config) {
@@ -43,7 +49,7 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 		latch.await();
 
 		server.execute("insert into minimal set account_id = 1, text_field='hello'");
-		RowMap rowMap = bufferedProducer.poll(10, TimeUnit.SECONDS);
+		RowMap rowMap = rowBuffer.poll(10, TimeUnit.SECONDS);
 
 		maxwell.terminate();
 		Exception maxwellError = maxwell.context.getError();
@@ -64,5 +70,19 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 		config.maxwellMysql.jdbcOptions.add("useSSL=false");
 		config.replicationMysql = config.maxwellMysql;
 		return config;
+	}
+
+	private static class EmbeddedTestProducer extends AbstractProducer {
+		private BlockingQueue<RowMap> rowBuffer;
+
+		EmbeddedTestProducer(MaxwellContext context, BlockingQueue<RowMap> rowBuffer) {
+			super(context);
+			this.rowBuffer = rowBuffer;
+		}
+
+		@Override
+		public void push(RowMap r) throws Exception {
+			rowBuffer.put(r);
+		}
 	}
 }

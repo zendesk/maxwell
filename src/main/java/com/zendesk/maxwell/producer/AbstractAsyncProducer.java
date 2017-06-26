@@ -51,9 +51,11 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 
 	private InflightMessageList inflightMessages;
 
-	public AbstractAsyncProducer(Metrics metrics) {
+	public AbstractAsyncProducer(MaxwellContext context) {
+		super(context);
 		this.inflightMessages = new InflightMessageList();
 
+		Metrics metrics = context.getMetrics();
 		MetricRegistry metricRegistry = metrics.getRegistry();
 
 		String gaugeName = metrics.metricName("inflightmessages", "count");

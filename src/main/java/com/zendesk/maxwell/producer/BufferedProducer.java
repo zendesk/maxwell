@@ -1,5 +1,6 @@
 package com.zendesk.maxwell.producer;
 
+import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
 
@@ -9,7 +10,8 @@ import java.util.concurrent.TimeUnit;
 public class BufferedProducer extends AbstractProducer {
 	private final LinkedBlockingQueue<RowMap> queue;
 
-	public BufferedProducer(int maxSize) {
+	public BufferedProducer(MaxwellContext context, int maxSize) {
+		super(context);
 		this.queue = new LinkedBlockingQueue<>(maxSize);
 	}
 

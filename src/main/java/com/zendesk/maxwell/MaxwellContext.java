@@ -322,27 +322,27 @@ public class MaxwellContext {
 		if ( this.producer != null )
 			return this.producer;
 
-		if ( this.config.producer != null ) {
-			this.producer = this.config.producer;
+		if ( this.config.producerFactory != null ) {
+			this.producer = this.config.producerFactory.createProducer(this);
 		} else {
 			switch ( this.config.producerType ) {
 			case "file":
-				this.producer = new FileProducer(this.config.outputFile);
+				this.producer = new FileProducer(this, this.config.outputFile);
 				break;
 			case "kafka":
-				this.producer = new MaxwellKafkaProducer(this.metrics, this.config);
+				this.producer = new MaxwellKafkaProducer(this, this.config.getKafkaProperties(), this.config.kafkaTopic);
 				break;
 			case "kinesis":
-				this.producer = new MaxwellKinesisProducer(this.metrics, this.config);
+				this.producer = new MaxwellKinesisProducer(this, this.config.kinesisStream);
 				break;
 			case "profiler":
-				this.producer = new ProfilerProducer();
+				this.producer = new ProfilerProducer(this);
 				break;
 			case "stdout":
-				this.producer = new StdoutProducer();
+				this.producer = new StdoutProducer(this);
 				break;
 			case "buffer":
-				this.producer = new BufferedProducer(this.config.bufferedProducerSize);
+				this.producer = new BufferedProducer(this, this.config.bufferedProducerSize);
 				break;
 			case "none":
 				this.producer = null;
@@ -354,7 +354,6 @@ public class MaxwellContext {
 
 		StoppableTask task = null;
 		if (producer != null) {
-			producer.setContext(this);
 			task = producer.getStoppableTask();
 		}
 		if (task != null) {
