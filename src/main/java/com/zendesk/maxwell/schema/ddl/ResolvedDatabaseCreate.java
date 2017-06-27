@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.schema.ddl;
 
-import com.zendesk.maxwell.schema.*;
+import com.zendesk.maxwell.schema.Database;
+import com.zendesk.maxwell.schema.Schema;
 
 public class ResolvedDatabaseCreate extends ResolvedSchemaChange {
 	public String database;
@@ -18,5 +19,15 @@ public class ResolvedDatabaseCreate extends ResolvedSchemaChange {
 			throw new InvalidSchemaError("Unexpectedly asked to create existing database " + database);
 
 		schema.addDatabase(new Database(database, charset));
+	}
+
+	@Override
+	public String databaseName() {
+		return database;
+	}
+
+	@Override
+	public String tableName() {
+		return null;
 	}
 }

@@ -65,7 +65,7 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 				type.asText(),
 				database.asText(),
 				table.asText(),
-				ts.asLong(),
+				ts.asLong() * 1000,
 				new ArrayList<String>(),
 				null
 		);

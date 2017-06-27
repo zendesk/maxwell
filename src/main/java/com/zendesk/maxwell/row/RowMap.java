@@ -3,6 +3,7 @@ package com.zendesk.maxwell.row;
 import com.fasterxml.jackson.core.*;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.replication.Position;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,8 +27,9 @@ public class RowMap implements Serializable {
 	private final String rowType;
 	private final String database;
 	private final String table;
-	private final Long timestamp;
-	private BinlogPosition nextPosition;
+	private final Long timestampMillis;
+	private final Long timestampSeconds;
+	private Position nextPosition;
 
 	private Long xid;
 	private boolean txCommit;
@@ -66,12 +68,13 @@ public class RowMap implements Serializable {
 				}
 			};
 
-	public RowMap(String type, String database, String table, Long timestamp, List<String> pkColumns,
-			BinlogPosition nextPosition) {
+	public RowMap(String type, String database, String table, Long timestampMillis, List<String> pkColumns,
+			Position nextPosition) {
 		this.rowType = type;
 		this.database = database;
 		this.table = table;
-		this.timestamp = timestamp;
+		this.timestampMillis = timestampMillis;
+		this.timestampSeconds = timestampMillis / 1000;
 		this.data = new LinkedHashMap<>();
 		this.oldData = new LinkedHashMap<>();
 		this.nextPosition = nextPosition;
@@ -255,7 +258,7 @@ public class RowMap implements Serializable {
 		g.writeStringField("database", this.database);
 		g.writeStringField("table", this.table);
 		g.writeStringField("type", this.rowType);
-		g.writeNumberField("ts", this.timestamp);
+		g.writeNumberField("ts", this.timestampSeconds);
 
 		if ( outputConfig.includesCommitInfo ) {
 			if ( this.xid != null )
@@ -265,11 +268,13 @@ public class RowMap implements Serializable {
 				g.writeBooleanField("commit", true);
 		}
 
+		BinlogPosition binlogPosition = this.nextPosition.getBinlogPosition();
 		if ( outputConfig.includesBinlogPosition )
-			g.writeStringField("position", this.nextPosition.getFile() + ":" + this.nextPosition.getOffset());
+			g.writeStringField("position", binlogPosition.getFile() + ":" + binlogPosition.getOffset());
 
-		if ( outputConfig.includesGtidPosition )
-			g.writeStringField("gtid", this.nextPosition.getGtid());
+
+		if ( outputConfig.includesGtidPosition)
+			g.writeStringField("gtid", binlogPosition.getGtid());
 
 		if ( outputConfig.includesServerId && this.serverId != null ) {
 			g.writeNumberField("server_id", this.serverId);
@@ -372,7 +377,7 @@ public class RowMap implements Serializable {
 		this.approximateSize += approximateKVSize(key, value);
 	}
 
-	public BinlogPosition getPosition() {
+	public Position getPosition() {
 		return nextPosition;
 	}
 
@@ -417,7 +422,11 @@ public class RowMap implements Serializable {
 	}
 
 	public Long getTimestamp() {
-		return timestamp;
+		return timestampSeconds;
+	}
+
+	public Long getTimestampMillis() {
+		return timestampMillis;
 	}
 
 	public boolean hasData(String name) {

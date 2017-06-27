@@ -1,28 +1,36 @@
 package com.zendesk.maxwell.schema;
 
+import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.replication.Position;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
-import java.util.concurrent.TimeoutException;
 
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.util.RunLoopProcess;
 
 public class PositionStoreThread extends RunLoopProcess implements Runnable {
 	static final Logger LOGGER = LoggerFactory.getLogger(PositionStoreThread.class);
-	private BinlogPosition position; // in memory position
-	private BinlogPosition storedPosition; // position as flushed to storage
+	private Position position; // in memory position
+	private Position storedPosition; // position as flushed to storage
 	private final MysqlPositionStore store;
+	private MaxwellContext context;
 	private Exception exception;
 	private Thread thread;
+	private BinlogPosition lastHeartbeatSentFrom; // last position we sent a heartbeat from
+	private long lastHeartbeatSent;
 
-	public PositionStoreThread(MysqlPositionStore store) {
+	public PositionStoreThread(MysqlPositionStore store, MaxwellContext context) {
 		this.store = store;
+		this.context = context;
+		lastHeartbeatSentFrom = null;
+		lastHeartbeatSent = 0L;
 	}
 
 	public void start() {
 		this.thread = new Thread(this, "Position Flush Thread");
+		this.thread.setDaemon(true);
 		thread.start();
 	}
 
@@ -31,27 +39,34 @@ public class PositionStoreThread extends RunLoopProcess implements Runnable {
 		try {
 			runLoop();
 		} catch ( Exception e ) {
-			LOGGER.error("Hit " + e.getClass().getName() + " exception in MysqlPositionStore thread.");
 			this.exception = e;
+			context.terminate(e);
+		} finally {
+			this.taskState.stopped();
 		}
 	}
 
-
-	public void stopLoop() throws TimeoutException {
-		this.requestStop();
+	@Override
+	public void requestStop() {
+		super.requestStop();
 		thread.interrupt();
-		super.stopLoop();
 	}
 
 	@Override
 	protected void beforeStop() {
 		if ( exception == null ) {
-			LOGGER.info("Storing final position: " + position);
 			try {
-				store.set(position);
+				storeFinalPosition();
 			} catch ( Exception e ) {
 				LOGGER.error("error storing final position: " + e);
 			}
+		}
+	}
+
+	void storeFinalPosition() throws SQLException {
+		if ( position != null && !position.equals(storedPosition) ) {
+			LOGGER.info("Storing final position: " + position);
+			store.set(position);
 		}
 	}
 
@@ -59,22 +74,30 @@ public class PositionStoreThread extends RunLoopProcess implements Runnable {
 		store.heartbeat();
 	}
 
-	private boolean shouldHeartbeat(BinlogPosition heartbeatPosition, BinlogPosition currentPosition) {
+	boolean shouldHeartbeat(Position currentPosition) {
 		if ( currentPosition == null )
 			return true;
-		if ( heartbeatPosition == null )
+		if ( lastHeartbeatSentFrom == null )
 			return true;
-		if ( !heartbeatPosition.getFile().equals(currentPosition.getFile()) )
+
+		BinlogPosition currentBinlog = currentPosition.getBinlogPosition();
+		if ( !lastHeartbeatSentFrom.getFile().equals(currentBinlog.getFile()) )
 			return true;
-		if ( currentPosition.getOffset() - heartbeatPosition.getOffset() > 1000 ) {
+		if ( currentBinlog.getOffset() - lastHeartbeatSentFrom.getOffset() > 1000 ) {
 			return true;
 		}
+
+		long secondsSinceHeartbeat = (System.currentTimeMillis() - lastHeartbeatSent) / 1000;
+		if ( secondsSinceHeartbeat >= 10 ) {
+			// during quiet times, heartbeat at least every 10s
+			return true;
+		}
+
 		return false;
 	}
 
-	BinlogPosition lastHeartbeatPosition = null; // last position we sent a heartbeat to
 	public void work() throws Exception {
-		BinlogPosition newPosition = position;
+		Position newPosition = position;
 
 		if ( newPosition != null && newPosition.newerThan(storedPosition) ) {
 			store.set(newPosition);
@@ -83,28 +106,30 @@ public class PositionStoreThread extends RunLoopProcess implements Runnable {
 
 		try { Thread.sleep(1000); } catch (InterruptedException e) { }
 
-		if ( shouldHeartbeat(lastHeartbeatPosition, position) )  {
-			store.heartbeat();
-			lastHeartbeatPosition = position;
+		if ( shouldHeartbeat(newPosition) )  {
+			lastHeartbeatSent = store.heartbeat();
+			if (newPosition != null) {
+				lastHeartbeatSentFrom = newPosition.getBinlogPosition();
+			}
 		}
 	}
 
-	public synchronized void setPosition(BinlogPosition p) {
-		if ( position == null || p.newerThan(position) )
+	public synchronized void setPosition(Position p) {
+		if ( position == null || p.newerThan(position) ) {
 			position = p;
+			if (storedPosition == null) {
+				storedPosition = p;
+			}
+		}
 	}
 
-	public synchronized BinlogPosition getPosition() throws SQLException {
+	public synchronized Position getPosition() throws SQLException {
 		if ( position != null )
 			return position;
 
 		position = store.get();
 
 		return position;
-	}
-
-	public Exception getException() {
-		return this.exception;
 	}
 }
 

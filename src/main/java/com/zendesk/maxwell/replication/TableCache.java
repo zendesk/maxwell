@@ -26,7 +26,7 @@ public class TableCache {
 				Table tbl = db.findTable(tblName);
 
 				if (tbl == null)
-					throw new RuntimeException("Couldn't find table " + tblName);
+					throw new RuntimeException("Couldn't find table " + tblName + " in database " + dbName);
 				else
 					tableMapCache.put(tableId, tbl);
 			}

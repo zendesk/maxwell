@@ -1,10 +1,14 @@
 package com.zendesk.maxwell.recovery;
 
 import com.zendesk.maxwell.*;
+import com.zendesk.maxwell.metrics.Metrics;
+import com.zendesk.maxwell.metrics.NoOpMetrics;
 import com.zendesk.maxwell.replication.BinlogConnectorReplicator;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.MaxwellReplicator;
+import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.replication.Replicator;
+import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +18,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import snaq.db.ConnectionPool;
 
@@ -42,22 +45,21 @@ public class Recovery {
 		this.shykoMode = shykoMode;
 	}
 
-	public BinlogPosition recover() throws Exception {
+	public Position recover() throws Exception {
 		String recoveryMsg = String.format(
-			"old-server-id: %d, file: %s, position: %d, heartbeat: %d",
+			"old-server-id: %d, position: %s",
 			recoveryInfo.serverID,
-			recoveryInfo.position.getFile(),
-			recoveryInfo.position.getOffset(),
-			recoveryInfo.heartbeat
+			recoveryInfo.position
 		);
 
 		LOGGER.warn("attempting to recover from master-change: " + recoveryMsg);
-
 		List<BinlogPosition> list = getBinlogInfo();
 		for ( int i = list.size() - 1; i >= 0 ; i-- ) {
-			BinlogPosition position = list.get(i);
+			BinlogPosition binlogPosition = list.get(i);
+			Position position = recoveryInfo.position.withBinlogPosition(binlogPosition);
+			Metrics metrics = new NoOpMetrics();
 
-			LOGGER.debug("scanning binlog: " + position);
+			LOGGER.debug("scanning binlog: " + binlogPosition);
 			Replicator replicator;
 			if ( shykoMode ) {
 				replicator = new BinlogConnectorReplicator(
@@ -65,9 +67,9 @@ public class Recovery {
 						null,
 						null,
 						replicationConfig,
-						0L, // server-id of 0 activatives "mysqlbinlog" behavior where the server will stop after each binlog
-						null,
+						0L, // server-id of 0 activates "mysqlbinlog" behavior where the server will stop after each binlog
 						maxwellDatabaseName,
+						metrics,
 						position,
 						true,
 						recoveryInfo.clientID
@@ -78,10 +80,10 @@ public class Recovery {
 						null,
 						null,
 						replicationConfig,
-						0L, // server-id of 0 activatives "mysqlbinlog" behavior where the server will stop after each binlog
+						0L, // server-id of 0 activates "mysqlbinlog" behavior where the server will stop after each binlog
 						false,
-						null,
 						maxwellDatabaseName,
+						metrics,
 						position,
 						true,
 						recoveryInfo.clientID
@@ -90,7 +92,7 @@ public class Recovery {
 
 			replicator.setFilter(new RecoveryFilter(this.maxwellDatabaseName));
 
-			BinlogPosition p = findHeartbeat(replicator);
+			Position p = findHeartbeat(replicator);
 			if ( p != null ) {
 				LOGGER.warn("recovered new master position: " + p);
 				return p;
@@ -105,18 +107,22 @@ public class Recovery {
 	 * try to find a given heartbeat value from the replicator.
 	 * @return A BinlogPosition where the heartbeat was found, or null if none was found.
 	 */
-	private BinlogPosition findHeartbeat(Replicator r) throws Exception {
+	private Position findHeartbeat(Replicator r) throws Exception {
 		r.startReplicator();
 		for (RowMap row = r.getRow(); row != null ; row = r.getRow()) {
-			if (Objects.equals(r.getLastHeartbeatRead(), recoveryInfo.heartbeat))
-				return row.getPosition();
-
+			if (!(row instanceof HeartbeatRowMap)) {
+				continue;
+			}
+			HeartbeatRowMap heartbeatRow = (HeartbeatRowMap) row;
+			Position heartbeatPosition = heartbeatRow.getPosition();
+			if (heartbeatPosition.getLastHeartbeatRead() == recoveryInfo.getHeartbeat())
+				return heartbeatPosition;
 		}
 		return null;
 	}
 
 	/**
-	 * fetch a list of binlog postiions representing the start of each binlog file
+	 * fetch a list of binlog positions representing the start of each binlog file
 	 *
 	 * @return a list of binlog positions to attempt recovery at
 	 * */

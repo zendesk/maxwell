@@ -4,6 +4,7 @@ import com.zendesk.maxwell.CaseSensitivity;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.MaxwellFilter;
+import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 import snaq.db.ConnectionPool;
@@ -17,7 +18,7 @@ import static com.zendesk.maxwell.schema.MysqlSavedSchema.restore;
 
 public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore {
 	private final ConnectionPool maxwellConnectionPool;
-	private final BinlogPosition initialPosition;
+	private final Position initialPosition;
 	private final boolean readOnly;
 	private final MaxwellFilter filter;
 	private Long serverID;
@@ -28,7 +29,7 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 							ConnectionPool replicationConnectionPool,
 							ConnectionPool schemaConnectionPool,
 							Long serverID,
-							BinlogPosition initialPosition,
+							Position initialPosition,
 							CaseSensitivity caseSensitivity,
 							MaxwellFilter filter,
 							boolean readOnly) {
@@ -40,7 +41,7 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 		this.readOnly = readOnly;
 	}
 
-	public MysqlSchemaStore(MaxwellContext context, BinlogPosition initialPosition) throws SQLException {
+	public MysqlSchemaStore(MaxwellContext context, Position initialPosition) throws SQLException {
 		this(
 			context.getMaxwellConnectionPool(),
 			context.getReplicationConnectionPool(),
@@ -87,14 +88,13 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 	}
 
 
-	public List<ResolvedSchemaChange> processSQL(String sql, String currentDatabase, BinlogPosition position) throws SchemaStoreException, InvalidSchemaError {
+	public List<ResolvedSchemaChange> processSQL(String sql, String currentDatabase, Position position) throws SchemaStoreException, InvalidSchemaError {
 		List<ResolvedSchemaChange> resolvedSchemaChanges = resolveSQL(getSchema(), sql, currentDatabase);
 
 		if ( resolvedSchemaChanges.size() > 0 ) {
-			LOGGER.info("storing schema @" + position + " after applying \"" + sql.replace('\n', ' ') + "\"");
-
 			try {
-				saveSchema(getSchema(), resolvedSchemaChanges, position);
+				Long schemaId = saveSchema(getSchema(), resolvedSchemaChanges, position);
+				LOGGER.info("storing schema @" + position + " after applying \"" + sql.replace('\n', ' ') + "\" to " + currentDatabase + ", new schema id is " + schemaId);
 			} catch (SQLException e) {
 				throw new SchemaStoreException(e);
 			}
@@ -102,24 +102,25 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 		return resolvedSchemaChanges;
 	}
 
-	private void saveSchema(Schema updatedSchema, List<ResolvedSchemaChange> changes, BinlogPosition p) throws SQLException {
+	private Long saveSchema(Schema updatedSchema, List<ResolvedSchemaChange> changes, Position p) throws SQLException {
 		if ( readOnly )
-			return;
+			return null;
 
 		try (Connection c = maxwellConnectionPool.getConnection()) {
 			this.savedSchema = this.savedSchema.createDerivedSchema(updatedSchema, p, changes);
-			this.savedSchema.save(c);
+			return this.savedSchema.save(c);
 		}
 	}
 
-	public void clone(Long serverID, BinlogPosition position) throws SchemaStoreException {
+	public void clone(Long serverID, Position position) throws SchemaStoreException {
 		List<ResolvedSchemaChange> empty = Collections.emptyList();
 
 		try (Connection c = maxwellConnectionPool.getConnection()) {
 			getSchema();
 
 			MysqlSavedSchema cloned = new MysqlSavedSchema(serverID, caseSensitivity, getSchema(), position, savedSchema.getSchemaID(), empty);
-			cloned.save(c);
+			Long schemaId = cloned.save(c);
+			LOGGER.info("clone schema @" + position + " based on id " + savedSchema.getSchemaID() + ", new schema id is " + schemaId);
 		} catch ( SQLException e ) {
 			throw new SchemaStoreException(e);
 		}

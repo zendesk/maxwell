@@ -1,13 +1,13 @@
 ### Download
 ***
-- Download binary distro: [https://github.com/zendesk/maxwell/releases/download/v1.8.1/maxwell-1.8.1.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.8.1/maxwell-1.8.1.tar.gz)
+- Download binary distro: [https://github.com/zendesk/maxwell/releases/download/v1.10.3/maxwell-1.10.3.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.10.3/maxwell-1.10.3.tar.gz)
 - Sources and bug tracking is available on github: [https://github.com/zendesk/maxwell](https://github.com/zendesk/maxwell)
 - Obligatory copy/paste to terminal:
 
 ```
-curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.8.1/maxwell-1.8.1.tar.gz \
+curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.10.3/maxwell-1.10.3.tar.gz \
        | tar zxvf -
-cd maxwell-1.8.1
+cd maxwell-1.10.3
 ```
 
 or get the docker image:
@@ -57,7 +57,7 @@ mysql> GRANT ALL on maxwell.* to 'maxwell'@'localhost';
 Useful for smoke-testing the thing.
 
 ```
-bin/maxwell --user='maxwell' --password='XXXXXX' --host='1.8.1.0.1' --producer=stdout
+bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' --producer=stdout
 ```
 
 If all goes well you'll see maxwell replaying your inserts:
@@ -95,7 +95,7 @@ docker run -v /Users:/Users -it --rm osheroff/maxwell bin/maxwell --config=/User
 Boot kafka as described here:  [http://kafka.apache.org/documentation.html#quickstart](http://kafka.apache.org/documentation.html#quickstart), then:
 
 ```
-bin/maxwell --user='maxwell' --password='XXXXXX' --host='1.8.1.0.1' \
+bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
    --producer=kafka --kafka.bootstrap.servers=localhost:9092
 ```
 

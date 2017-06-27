@@ -52,7 +52,7 @@ public class Database {
 	public Table findTableOrThrow(String table) throws InvalidSchemaError {
 		Table t = findTable(table);
 		if ( t == null )
-			throw new InvalidSchemaError("Couldn't find table '" + table + "'" + " in database '" + this.name);
+			throw new InvalidSchemaError("Couldn't find table '" + table + "'" + " in database " + this.name);
 
 		return t;
 	}

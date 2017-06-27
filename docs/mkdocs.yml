@@ -7,5 +7,6 @@ pages:
   - 'Producers': 'producers.md'
   - 'Data Format': 'dataformat.md'
   - 'Bootstrapping': 'bootstrapping.md'
+  - 'Monitoring': 'monitoring.md'
   - 'Compat / Caveats': 'compat.md'
   - 'Changelog': 'changelog.md'

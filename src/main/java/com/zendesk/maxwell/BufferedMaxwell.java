@@ -21,4 +21,7 @@ public class BufferedMaxwell extends Maxwell {
 		return p.poll(ms, TimeUnit.MILLISECONDS);
 	}
 
+	public MaxwellContext getContext() {
+		return context;
+	}
 }

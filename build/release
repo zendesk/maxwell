@@ -34,14 +34,14 @@ def bump
 end
 
 def build
-  do_system("make package MAXWELL_VERSION=#{$version}")
+  do_system("make -C #{BINDIR}/.. package MAXWELL_VERSION=#{$version}")
 
   commit_template = Tempfile.new('maxwell_build')
   commit_template.write <<-EOL
-  v#{$version}, "pithy title here"
-  - list changes
+v#{$version}, "pithy title here"
 
-  EOL
+ - list changes
+EOL
 
   git_log = "git log --pretty=format:'%h -%d %s %cr <%an>' --abbrev-commit --date=relative v#{CURRENT_REV}..HEAD"
 
@@ -49,7 +49,7 @@ def build
   commit_template.close
 
   do_system("git commit -av -t #{commit_template.path}")
-  do_system("git push")
+  do_system("git push origin HEAD:master")
 end
 
 def tag

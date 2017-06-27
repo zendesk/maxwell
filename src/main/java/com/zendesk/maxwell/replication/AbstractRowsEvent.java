@@ -1,7 +1,6 @@
 package com.zendesk.maxwell.replication;
 
 import java.util.*;
-import java.util.regex.Pattern;
 
 import com.google.code.or.binlog.BinlogEventV4Header;
 import com.google.code.or.binlog.impl.event.AbstractRowEvent;
@@ -25,20 +24,20 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractRowsEvent extends AbstractRowEvent {
 	static final Logger LOGGER = LoggerFactory.getLogger(AbstractRowsEvent.class);
 	private final AbstractRowEvent event;
-	private final Long heartbeat;
 
 	protected final Table table;
 	protected final String database;
 	protected final MaxwellFilter filter;
+	private final long lastHeartbeatRead;
 
-	public AbstractRowsEvent(AbstractRowEvent e, Table table, MaxwellFilter f, Long heartbeat) {
+	public AbstractRowsEvent(AbstractRowEvent e, Table table, MaxwellFilter f, long lastHeartbeat) {
 		this.tableId = e.getTableId();
 		this.event = e;
 		this.header = e.getHeader();
 		this.table = table;
 		this.database = table.getDatabase();
 		this.filter = f;
-		this.heartbeat = heartbeat;
+		this.lastHeartbeatRead = lastHeartbeat;
 	}
 
 	@Override
@@ -59,8 +58,8 @@ public abstract class AbstractRowsEvent extends AbstractRowEvent {
 		return event.getBinlogFilename();
 	}
 
-	public BinlogPosition getNextBinlogPosition() {
-		return new BinlogPosition(getHeader().getNextPosition(), getBinlogFilename(), heartbeat);
+	public Position getNextPosition() {
+		return new Position(new BinlogPosition(getHeader().getNextPosition(), getBinlogFilename()), lastHeartbeatRead);
 	}
 
 	@Override
@@ -69,10 +68,7 @@ public abstract class AbstractRowsEvent extends AbstractRowEvent {
 	}
 
 	public boolean matchesFilter() {
-		if ( filter == null )
-			return true;
-
-		return filter.matches(this.database, this.table.getName());
+		return MaxwellFilter.matches(filter, this.database, this.table.getName());
 	}
 
 	public abstract String getType();
@@ -155,9 +151,9 @@ public abstract class AbstractRowsEvent extends AbstractRowEvent {
 				getType(),
 				this.database,
 				getTable().getName(),
-				getHeader().getTimestamp() / 1000,
+				getHeader().getTimestamp(),
 				table.getPKList(),
-				this.getNextBinlogPosition());
+				this.getNextPosition());
 	}
 
 	public List<RowMap> jsonMaps() {
