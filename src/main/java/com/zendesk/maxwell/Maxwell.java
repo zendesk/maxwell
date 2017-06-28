@@ -1,15 +1,11 @@
 package com.zendesk.maxwell;
 
-import com.codahale.metrics.Gauge;
-import com.codahale.metrics.MetricRegistry;
 import com.djdch.log4j.StaticShutdownCallbackRegistry;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
-import com.zendesk.maxwell.metrics.MaxwellMetrics;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.recovery.Recovery;
 import com.zendesk.maxwell.recovery.RecoveryInfo;
 import com.zendesk.maxwell.replication.BinlogConnectorReplicator;
-import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.MaxwellReplicator;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.replication.Replicator;
@@ -49,7 +45,14 @@ public class Maxwell implements Runnable {
 	}
 
 	public void terminate() {
-		this.context.terminate();
+		Thread terminationThread = this.context.terminate();
+		if (terminationThread != null) {
+			try {
+				terminationThread.join();
+			} catch (InterruptedException e) {
+				// ignore
+			}
+		}
 	}
 
 	private Position attemptMasterRecovery() throws Exception {
@@ -138,7 +141,7 @@ public class Maxwell implements Runnable {
 		} catch ( Exception e) {
 			this.context.terminate(e);
 		} finally {
-			this.context.terminate();
+			this.terminate();
 		}
 
 		Exception error = this.context.getError();

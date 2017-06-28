@@ -38,10 +38,10 @@ def build
 
   commit_template = Tempfile.new('maxwell_build')
   commit_template.write <<-EOL
-  v#{$version}, "pithy title here"
-  - list changes
+v#{$version}, "pithy title here"
 
-  EOL
+ - list changes
+EOL
 
   git_log = "git log --pretty=format:'%h -%d %s %cr <%an>' --abbrev-commit --date=relative v#{CURRENT_REV}..HEAD"
 

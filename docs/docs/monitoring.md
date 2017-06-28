@@ -19,8 +19,10 @@ metric                         | description
 `row.meter`                    | a measure of the rate at which rows arrive to Maxwell from the binlog connector
 **Gauges**
 `replication.lag`              | the time elapsed between the database transaction commit and the time it was processed by Maxwell, in milliseconds
+`inflightmessages.count`       | the number of messages that are currently in-flight (awaiting acknowledgement from the destination, or ahead of messages which are)
 **Timers**
-`time.overall`                 | the time it took to send a given record to Kafka, in milliseconds
+`message.publish.time`         | the time it took to send a given record to Kafka, in milliseconds
+`replication.queue.time`       | the time it took to enqueue a given binlog event for processing, in milliseconds
 
 ### HTTP Endpoints
 When the HTTP server is enabled the following endpoints are exposed:

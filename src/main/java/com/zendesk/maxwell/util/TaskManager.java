@@ -28,14 +28,14 @@ public class TaskManager {
 		}
 	}
 
-	public synchronized void stop(Exception error) {
+	public synchronized void stop(Exception error) throws TimeoutException, InterruptedException {
 		if (this.state == RunState.STOPPED) {
-			LOGGER.debug("stop() called multiple times");
+			LOGGER.debug("Stop() called multiple times");
 			return;
 		}
 		this.state = RunState.REQUEST_STOP;
 
-		LOGGER.info("stopping " + tasks.size() + " tasks");
+		LOGGER.info("Stopping " + tasks.size() + " tasks");
 
 		if (error != null) {
 			LOGGER.error("cause: ", error);
@@ -43,21 +43,19 @@ public class TaskManager {
 
 		// tell everything to stop
 		for (StoppableTask task: this.tasks) {
+			LOGGER.info("Stopping: " + task);
 			task.requestStop();
 		}
 
 		// then wait for everything to stop
-		Long timeout = 500L;
+		Long timeout = 1000L;
 		for (StoppableTask task: this.tasks) {
-			try {
-				task.awaitStop(timeout);
-			} catch (TimeoutException e) {
-				LOGGER.error(e.getMessage());
-			}
+			LOGGER.debug("Awaiting stop of: " + task);
+			task.awaitStop(timeout);
 		}
 
 		this.state = RunState.STOPPED;
-		LOGGER.info("stopped all tasks");
+		LOGGER.info("Stopped all tasks");
 	}
 
 	public synchronized void add(StoppableTask task) {

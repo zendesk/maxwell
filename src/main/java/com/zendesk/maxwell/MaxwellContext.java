@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.zendesk.maxwell.metrics.MaxwellMetrics;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
@@ -48,6 +49,7 @@ public class MaxwellContext {
 	private Integer mysqlMajorVersion;
 	private Integer mysqlMinorVersion;
 	private Replicator replicator;
+	private Thread terminationThread;
 
 	public MaxwellContext(MaxwellConfig config) throws SQLException {
 		this.config = config;
@@ -118,47 +120,101 @@ public class MaxwellContext {
 		getPositionStoreThread(); // boot up thread explicitly.
 	}
 
-	public void heartbeat() throws Exception {
-		this.positionStore.heartbeat();
+	public long heartbeat() throws Exception {
+		return this.positionStore.heartbeat();
 	}
 
 	public void addTask(StoppableTask task) {
 		this.taskManager.add(task);
 	}
 
-	public void terminate() {
-		terminate(null);
+	public Thread terminate() {
+		return terminate(null);
 	}
 
-	public void terminate(Exception error) {
+	private void sendFinalHeartbeat() {
+		long heartbeat = System.currentTimeMillis();
+		LOGGER.info("Sending final heartbeat: " + heartbeat);
+		try {
+			this.replicator.stopAtHeartbeat(heartbeat);
+			this.positionStore.heartbeat(heartbeat);
+			long deadline = heartbeat + 5000L;
+			while (positionStoreThread.getPosition().getLastHeartbeatRead() < heartbeat) {
+				if (System.currentTimeMillis() > deadline) {
+					LOGGER.warn("Timed out waiting for heartbeat " + heartbeat);
+					break;
+				}
+				Thread.sleep(100);
+			}
+		} catch (Exception e) {
+			LOGGER.error("Failed to send final heartbeat", e);
+		}
+	}
+
+	private void shutdown(AtomicBoolean complete) {
+		try {
+			taskManager.stop(this.error);
+			this.replicationConnectionPool.release();
+			this.maxwellConnectionPool.release();
+			this.rawMaxwellConnectionPool.release();
+			complete.set(true);
+		} catch (Exception e) {
+			LOGGER.error("Exception occurred during shutdown:", e);
+		}
+	}
+
+	private Thread spawnTerminateThread() {
+		// Because terminate() may be called from a task thread
+		// which won't end until we let its event loop progress,
+		// we need to perform termination in a new thread
+		final AtomicBoolean shutdownComplete = new AtomicBoolean(false);
+		final MaxwellContext self = this;
+		Thread thread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				// Spawn an inner thread to perform shutdown
+				final Thread shutdownThread = new Thread(new Runnable() {
+					@Override
+					public void run() {
+						self.shutdown(shutdownComplete);
+					}
+				}, "shutdownThread");
+				shutdownThread.start();
+
+				// wait for its completion, timing out after 10s
+				try {
+					shutdownThread.join(10000L);
+				} catch (InterruptedException e) {
+					// ignore
+				}
+
+				LOGGER.debug("Shutdown complete: " + shutdownComplete.get());
+				if (!shutdownComplete.get()) {
+					LOGGER.error("Shutdown stalled - forcefully killing maxwell process");
+					if (self.error != null) {
+						LOGGER.error("Termination reason:", self.error);
+					}
+					Runtime.getRuntime().halt(1);
+				}
+			}
+		}, "shutdownMonitor");
+		thread.setDaemon(false);
+		thread.start();
+		return thread;
+	}
+
+	public Thread terminate(Exception error) {
 		if (this.error == null) {
 			this.error = error;
 		}
 
 		if (taskManager.requestStop()) {
 			if (this.error == null && this.replicator != null) {
-				long heartbeat = System.currentTimeMillis();
-				LOGGER.info("sending final heartbeat: " + heartbeat);
-				try {
-					this.replicator.stopAtHeartbeat(heartbeat);
-					this.positionStore.heartbeat(heartbeat);
-					long deadline = heartbeat + 10000L;
-					while (positionStoreThread.getPosition().getLastHeartbeatRead() < heartbeat) {
-						if (System.currentTimeMillis() > deadline) {
-							LOGGER.warn("timed out waiting for heartbeat " + heartbeat);
-							break;
-						}
-						Thread.sleep(100);
-					}
-				} catch (Exception e) {
-					LOGGER.error("failed graceful shutdown", e);
-				}
+				sendFinalHeartbeat();
 			}
-			taskManager.stop(this.error);
-			this.replicationConnectionPool.release();
-			this.maxwellConnectionPool.release();
-			this.rawMaxwellConnectionPool.release();
+			this.terminationThread = spawnTerminateThread();
 		}
+		return this.terminationThread;
 	}
 
 	public Exception getError() {

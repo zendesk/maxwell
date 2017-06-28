@@ -10,6 +10,7 @@ import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMap.KeyFormat;
 import com.zendesk.maxwell.schema.ddl.DDLMap;
+import com.zendesk.maxwell.util.Logging;
 import com.zendesk.maxwell.util.StoppableTask;
 import com.zendesk.maxwell.util.StoppableTaskState;
 import org.apache.kafka.clients.producer.Callback;
@@ -220,6 +221,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	@Override
 	public void requestStop() {
 		taskState.requestStop();
+		// TODO: set a timeout once we drop support for kafka 0.8
 		kafka.close();
 	}
 
