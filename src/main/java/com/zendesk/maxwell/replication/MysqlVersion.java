@@ -21,13 +21,6 @@ public class MysqlVersion {
 		return atLeast(version.major, version.minor);
 	}
 
-	@Override
-	public boolean equals(Object obj) {
-		if (obj.getClass() != this.getClass() ) return false;
-		MysqlVersion other = (MysqlVersion) obj;
-		return other.major == major && other.minor == minor;
-	}
-
 	public static MysqlVersion capture(Connection c) throws SQLException {
 		DatabaseMetaData meta = c.getMetaData();
 		return new MysqlVersion(meta.getDatabaseMajorVersion(), meta.getDatabaseMinorVersion());
