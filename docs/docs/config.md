@@ -133,6 +133,7 @@ host                           | STRING                              | mysql hos
 user                           | STRING                              | mysql username                                      |
 password                       | STRING                              | mysql password                                      | (no password)
 port                           | INT                                 | mysql port                                          | 3306
+jdbc_options                   | STRING                              | mysql jdbc connection options                       | zeroDateTimeBehavior=convertToNull&amp;connectTimeout=5000
 schema_database                | STRING                              | database to store schema and position in            | maxwell
 client_id                      | STRING                              | unique text identifier for maxwell instance         | maxwell
 replica_server_id              | LONG                                | unique numeric identifier for this maxwell instance | 6379 (see notes)
