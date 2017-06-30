@@ -73,7 +73,7 @@ public class DDLSerializationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void TestCreateTableSerialization() throws Exception {
-		if ( server.getVersion().equals("5.6") )
+		if ( server.getVersion().equals(server.VERSION_5_6) )
 			TestDDLSerialization(MaxwellTestSupport.getSQLDir() + "/serialization/create_table_56");
 		else
 			TestDDLSerialization(MaxwellTestSupport.getSQLDir() + "/serialization/create_table");

@@ -42,7 +42,7 @@ public class SchemaCaptureTest extends MaxwellTestWithIsolatedServer {
 		Schema s = capturer.capture();
 		String dbs = StringUtils.join(s.getDatabaseNames().iterator(), ":");
 
-		if ( server.getVersion().equals("5.7") )
+		if ( server.getVersion().atLeast(server.VERSION_5_7) )
 			assertEquals("maxwell:mysql:shard_1:shard_2:sys:test", dbs);
 		else
 			assertEquals("maxwell:mysql:shard_1:shard_2:test", dbs);
@@ -93,7 +93,7 @@ public class SchemaCaptureTest extends MaxwellTestWithIsolatedServer {
 		assertThat(columns[1], instanceOf(IntColumnDef.class));
 		assertThat(((IntColumnDef) columns[1]).isSigned(), is(false));
 
-		if ( server.getVersion().equals("5.6") ) {
+		if ( server.getVersion().atLeast(server.VERSION_5_6) ) {
 			assertThat(columns[10].getName(), is("timestamp2_field"));
 			assertThat(columns[10], instanceOf(DateTimeColumnDef.class));
 			assertThat(((DateTimeColumnDef) columns[10]).getColumnLength(), is(3L));

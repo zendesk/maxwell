@@ -14,6 +14,7 @@ import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
 import com.zendesk.maxwell.metrics.Metrics;
 import com.zendesk.maxwell.producer.*;
 import com.zendesk.maxwell.recovery.RecoveryInfo;
+import com.zendesk.maxwell.replication.MysqlVersion;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.replication.Replicator;
 import com.zendesk.maxwell.row.RowMap;
@@ -45,8 +46,7 @@ public class MaxwellContext {
 	private TaskManager taskManager;
 	private volatile Exception error;
 
-	private Integer mysqlMajorVersion;
-	private Integer mysqlMinorVersion;
+	private MysqlVersion mysqlVersion;
 	private Replicator replicator;
 
 	public MaxwellContext(MaxwellConfig config) throws SQLException {
@@ -218,21 +218,17 @@ public class MaxwellContext {
 		}
 	}
 
-
-	private void fetchMysqlVersion() throws SQLException {
-		if ( mysqlMajorVersion == null ) {
+	public MysqlVersion getMysqlVersion() throws SQLException {
+		if ( mysqlVersion == null ) {
 			try ( Connection c = getReplicationConnection() ) {
-				DatabaseMetaData meta = c.getMetaData();
-				mysqlMajorVersion = meta.getDatabaseMajorVersion();
-				mysqlMinorVersion = meta.getDatabaseMinorVersion();
+				mysqlVersion = MysqlVersion.capture(c);
 			}
 		}
+		return mysqlVersion;
 	}
 
 	public boolean shouldHeartbeat() throws SQLException {
-		fetchMysqlVersion();
-		// 5.5 and above
-		return (mysqlMajorVersion >= 6) || (mysqlMajorVersion == 5 && mysqlMinorVersion >= 5);
+		return getMysqlVersion().atLeast(5,5);
 	}
 
 	public CaseSensitivity getCaseSensitivity() throws SQLException {

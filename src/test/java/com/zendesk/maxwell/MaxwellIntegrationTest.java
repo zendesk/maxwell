@@ -410,8 +410,8 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testTime() throws Exception {
-		if ( server.getVersion().equals("5.6") )
-			runJSON("/json/test_time");
+		requireMinimumVersion(server.VERSION_5_6);
+		runJSON("/json/test_time");
 	}
 
 	@Test
@@ -436,8 +436,8 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testJson() throws Exception {
-		if ( server.getVersion().equals("5.7") )
-			runJSON("/json/test_json");
+		requireMinimumVersion(server.VERSION_5_7);
+		runJSON("/json/test_json");
 	}
 
 	static String[] createDBSql = {

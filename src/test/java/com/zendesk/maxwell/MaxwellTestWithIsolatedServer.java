@@ -5,10 +5,12 @@ import java.sql.SQLException;
 import java.util.*;
 
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
-import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.replication.MysqlVersion;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
 import org.junit.*;
+
+import static org.junit.Assume.assumeTrue;
 
 
 public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
@@ -90,5 +92,10 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 		MaxwellFilter filter = new MaxwellFilter();
 		filter.excludeDatabase(name);
 		return filter;
+	}
+
+	protected void requireMinimumVersion(MysqlVersion minimum) {
+		// skips this test if running an older MYSQL version
+		assumeTrue(server.getVersion().atLeast(minimum));
 	}
 }

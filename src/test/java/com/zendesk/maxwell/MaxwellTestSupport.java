@@ -65,7 +65,7 @@ public class MaxwellTestSupport {
 		}
 
 		String shardedFileName;
-		if ( server.getVersion().equals("5.6") )
+		if ( server.getVersion().equals(server.VERSION_5_6) )
 			shardedFileName = "sharded_56.sql";
 		else
 			shardedFileName = "sharded.sql";
