@@ -6,8 +6,6 @@ import com.codahale.metrics.Slf4jReporter;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.zendesk.maxwell.MaxwellConfig;
 import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.producer.AbstractAsyncProducer;
-import com.zendesk.maxwell.util.StoppableTask;
 import org.apache.commons.lang.StringUtils;
 import org.coursera.metrics.datadog.DatadogReporter;
 import org.coursera.metrics.datadog.transport.HttpTransport;
@@ -19,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.coursera.metrics.datadog.DatadogReporter.Expansion.*;
@@ -39,8 +36,8 @@ public class MaxwellMetrics implements Metrics {
 	private String metricsPrefix;
 
 	public MaxwellMetrics(MaxwellConfig config) {
-		healthCheckRegistry = new HealthCheckRegistry();
-		metricRegistry = new MetricRegistry();
+		healthCheckRegistry = config.healthCheckRegistry;
+		metricRegistry = config.metricRegistry;
 		this.config = config;
 		setup(config);
 	}
