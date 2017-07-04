@@ -22,7 +22,7 @@ public class DateTimeColumnDef extends ColumnDefWithLength {
 
 	protected String formatValue(Object value) {
 		Timestamp ts = DateFormatter.extractTimestamp(value);
-		String dateString = DateFormatter.formatDateTime(value);
+		String dateString = DateFormatter.formatDateTime(value, ts);
 		if ( dateString == null )
 			return null;
 		else
