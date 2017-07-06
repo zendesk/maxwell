@@ -16,8 +16,8 @@ public class RowEncrypt {
 
 	public static String encrypt(String value, String key, String initVector) {
 		try {
-			IvParameterSpec iv = new IvParameterSpec(initVector.getBytes("UTF-8"));
-			SecretKeySpec skeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES");
+			IvParameterSpec iv = new IvParameterSpec(initVector.getBytes("ASCII"));
+			SecretKeySpec skeySpec = new SecretKeySpec(key.getBytes("ASCII"), "AES");
 
 			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
 			cipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
@@ -34,13 +34,13 @@ public class RowEncrypt {
 
 	public static String decrypt(String value, String key, String initVector) {
 		try {
-			IvParameterSpec ivSpec = new IvParameterSpec(initVector.getBytes("UTF-8"));
-			SecretKeySpec skeySpec = new SecretKeySpec(key.getBytes("UTF-8"), "AES");
+			IvParameterSpec ivSpec = new IvParameterSpec(initVector.getBytes("ASCII"));
+			SecretKeySpec skeySpec = new SecretKeySpec(key.getBytes("ASCII"), "AES");
 
 			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
 			cipher.init(Cipher.DECRYPT_MODE, skeySpec, ivSpec);
 
-			return new String(cipher.doFinal(Base64.decodeBase64(value.getBytes("UTF-8"))), Charset.forName("UTF-8"));
+			return new String(cipher.doFinal(Base64.decodeBase64(value.getBytes("ASCII"))), Charset.forName("ASCII"));
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}

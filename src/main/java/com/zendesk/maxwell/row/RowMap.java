@@ -181,68 +181,69 @@ public class RowMap implements Serializable {
 		}
 	}
 
-	private void writeEncryptedMapToJSON(String jsonMapName, LinkedHashMap<String, Object> data, boolean includeNullField, String encryption_key, String secret_key) throws IOException{
+	private void writeMapToJSON(String jsonMapName, LinkedHashMap<String, Object> data, MaxwellOutputConfig outputConfig) throws IOException {
 		JsonGenerator generator = jsonGeneratorThreadLocal.get();
-		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		JsonGenerator obj = jsonFactory.createGenerator(outputStream);
 
-		obj.writeStartObject();
-		for (String key : data.keySet()) {
-			Object value = data.get(key);
+		if(outputConfig.encryptData && !outputConfig.encryptAll){
+			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+			JsonGenerator obj = jsonFactory.createGenerator(outputStream);
 
-			if (value == null && !includeNullField)
-				continue;
+			obj.writeStartObject();
+			for (String key : data.keySet()) {
+				Object value = data.get(key);
 
-			if ( value instanceof List ) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
-				List stringList = (List) value;
+				if (value == null && !outputConfig.includesNulls)
+					continue;
 
-				obj.writeArrayFieldStart(key);
-				for ( Object s : stringList )  {
-					obj.writeObject(s);
+				if ( value instanceof List ) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
+					List stringList = (List) value;
+
+					obj.writeArrayFieldStart(key);
+					for ( Object s : stringList )  {
+						obj.writeObject(s);
+					}
+					obj.writeEndArray();
+				} else if (value instanceof RawJSONString) {
+					// JSON column type, using binlog-connector's serializers.
+					obj.writeFieldName(key);
+					obj.writeRawValue(((RawJSONString) value).json);
+				} else {
+					obj.writeObjectField(key, value);
 				}
-				obj.writeEndArray();
-			} else if (value instanceof RawJSONString) {
-				// JSON column type, using binlog-connector's serializers.
-				obj.writeFieldName(key);
-				obj.writeRawValue(((RawJSONString) value).json);
-			} else {
-				obj.writeObjectField(key, value);
 			}
+			obj.writeEndObject();
+			obj.close();
+			outputStream.close();
+			generator.writeStringField(jsonMapName, RowEncrypt.encrypt(outputStream.toString(), outputConfig.encryption_key, outputConfig.secret_key));
 		}
-		obj.writeEndObject();
-		obj.close();
-		outputStream.close();
-		generator.writeStringField(jsonMapName, RowEncrypt.encrypt(outputStream.toString(), encryption_key, secret_key));
-	}
+		else {
+			generator.writeObjectFieldStart(jsonMapName); // start of jsonMapName: {
 
-	private void writeMapToJSON(String jsonMapName, LinkedHashMap<String, Object> data, boolean includeNullField) throws IOException {
-		JsonGenerator generator = jsonGeneratorThreadLocal.get();
-		generator.writeObjectFieldStart(jsonMapName); // start of jsonMapName: {
+			for (String key : data.keySet()) {
+				Object value = data.get(key);
 
-		for ( String key: data.keySet() ) {
-			Object value = data.get(key);
+				if (value == null && !outputConfig.includesNulls)
+					continue;
 
-			if ( value == null && !includeNullField )
-				continue;
+				if (value instanceof List) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
+					List stringList = (List) value;
 
-			if ( value instanceof List ) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
-				List stringList = (List) value;
-
-				generator.writeArrayFieldStart(key);
-				for ( Object s : stringList )  {
-					generator.writeObject(s);
+					generator.writeArrayFieldStart(key);
+					for (Object s : stringList) {
+						generator.writeObject(s);
+					}
+					generator.writeEndArray();
+				} else if (value instanceof RawJSONString) {
+					// JSON column type, using binlog-connector's serializers.
+					generator.writeFieldName(key);
+					generator.writeRawValue(((RawJSONString) value).json);
+				} else {
+					generator.writeObjectField(key, value);
 				}
-				generator.writeEndArray();
-			} else if ( value instanceof RawJSONString ) {
-				// JSON column type, using binlog-connector's serializers.
-				generator.writeFieldName(key);
-				generator.writeRawValue(((RawJSONString) value).json);
-			} else {
-				generator.writeObjectField(key, value);
 			}
-		}
 
-		generator.writeEndObject(); // end of 'jsonMapName: { }'
+			generator.writeEndObject(); // end of 'jsonMapName: { }'
+		}
 	}
 
 	public String toJSON() throws IOException {
@@ -300,17 +301,9 @@ public class RowMap implements Serializable {
 			}
 		}
 
-		if( outputConfig.encryptData && !outputConfig.encryptAll ){
-			writeEncryptedMapToJSON("data", this.data, outputConfig.includesNulls, outputConfig.encryption_key, outputConfig.secret_key);
-			if( !this.oldData.isEmpty() ){
-				writeEncryptedMapToJSON("old", this.oldData, outputConfig.includesNulls, outputConfig.encryption_key, outputConfig.secret_key);
-			}
-		} else {
-			writeMapToJSON("data", this.data, outputConfig.includesNulls);
-
-			if ( !this.oldData.isEmpty() ) {
-				writeMapToJSON("old", this.oldData, true);
-			}
+		writeMapToJSON("data", this.data, outputConfig);
+		if( !this.oldData.isEmpty() ){
+			writeMapToJSON("old", this.oldData, outputConfig);
 		}
 
 		g.writeEndObject(); // end of row
