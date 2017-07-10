@@ -12,9 +12,15 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 public class RowMapTest {
+
+	private static final long TIMESTAMP_MILLISECONDS = 1496712943447L;
+
+	private static final Position POSITION = new Position(new BinlogPosition(1L, "binlog-0001"), 0L);
+
+
 	@Test
 	public void testGetDataMaps() throws Exception {
-		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", 1234567890L, null, null);
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", 1234567890L, new ArrayList<String>(), null);
 		rowMap.putData("foo", "bar");
 		rowMap.putOldData("fiz", "buz");
 
@@ -43,14 +49,12 @@ public class RowMapTest {
 
 	@Test
 	public void testTimestampConversion() throws Exception {
-		long timestampMillis = 1496712943447L;
 		long timestampSeconds = 1496712943;
 
-		Position position = new Position(new BinlogPosition(1L, "binlog-0001"), 0L);
-		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", timestampMillis, null, position);
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, new ArrayList<String>(), POSITION);
 
 		Assert.assertEquals(timestampSeconds, rowMap.getTimestamp().longValue());
-		Assert.assertEquals(timestampMillis, rowMap.getTimestampMillis().longValue());
+		Assert.assertEquals(TIMESTAMP_MILLISECONDS, rowMap.getTimestampMillis().longValue());
 		Map<String, Object> output = MaxwellTestJSON.parseJSON(rowMap.toJSON());
 
 		int ts = (int) output.get("ts");
@@ -60,17 +64,13 @@ public class RowMapTest {
 	@Test
 	public void testPkToJsonHash() throws IOException {
 
-		long timestampMillis = 1496712943447L;
-
 		List<String> pKeys = new ArrayList<>();
 
 		pKeys.add("id");
 
 		pKeys.add("name");
 
-		Position position = new Position(new BinlogPosition(1L, "binlog-0001"), 0L);
-
-		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", timestampMillis, pKeys, position);
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
 
 		rowMap.putData("id", "9001");
 		rowMap.putData("name", "example");
@@ -87,12 +87,7 @@ public class RowMapTest {
 	@Test
 	public void testPkToJsonHashWithEmptyData() throws Exception {
 
-		long timestampMillis = 1496712943447L;
-
-		Position position = new Position(new BinlogPosition(1L, "binlog-0001"), 0L);
-
-		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", timestampMillis, null, position);
-
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, new ArrayList<String>(), POSITION);
 
 		String jsonString = rowMap.pkToJson(RowMap.KeyFormat.HASH);
 
@@ -108,8 +103,6 @@ public class RowMapTest {
 	@Test
 	public void testPkToJsonArray() throws IOException {
 
-		long timestampMillis = 1496712943447L;
-
 		List<String> pKeys = new ArrayList<>();
 
 		pKeys.add("id");
@@ -118,7 +111,7 @@ public class RowMapTest {
 
 		Position position = new Position(new BinlogPosition(1L, "binlog-0001"), 0L);
 
-		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", timestampMillis, pKeys, position);
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, position);
 
 		rowMap.putData("id", "9001");
 		rowMap.putData("name", "example");
@@ -133,17 +126,13 @@ public class RowMapTest {
 
 	@Test
 	public void testBuildPartitionKey() {
-		long timestampMillis = 1496712943447L;
-
 		List<String> pKeys = new ArrayList<>();
 
 		pKeys.add("id");
 
 		pKeys.add("first_name");
 
-		Position position = new Position(new BinlogPosition(1L, "binlog-0001"), 0L);
-
-		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", timestampMillis, pKeys, position);
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
 
 		rowMap.putData("id", "9001");
 		rowMap.putData("first_name", "foo");
@@ -162,7 +151,6 @@ public class RowMapTest {
 
 	@Test
 	public void testBuildPartitionKeyWithEmptyList() {
-		long timestampMillis = 1496712943447L;
 
 		List<String> pKeys = new ArrayList<>();
 
@@ -170,9 +158,7 @@ public class RowMapTest {
 
 		pKeys.add("first_name");
 
-		Position position = new Position(new BinlogPosition(1L, "binlog-0001"), 0L);
-
-		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", timestampMillis, pKeys, position);
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
 
 		rowMap.putData("id", "9001");
 		rowMap.putData("first_name", "foo");
@@ -191,53 +177,44 @@ public class RowMapTest {
 
 	@Test
 	public void testToJSONWithRawJSONData() throws IOException {
-		long timestampMillis = 1496712943487L;
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS,
+				new ArrayList<String>(), POSITION);
 
-		Position position = new Position(new BinlogPosition(1L, "binlog-0001"), 0L);
-		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", timestampMillis,
-				null, position);
+		rowMap.setServerId(7653213L);
+		rowMap.setThreadId(6532312L);
 
 		rowMap.putData("id", "9001");
 		rowMap.putData("first_name", "foo");
-		rowMap.putData("middle_name", "buzz");
 		rowMap.putData("last_name", "bar");
-		rowMap.putData("salary", "4000");
-		rowMap.putData("department", "science");
-        rowMap.putData("rawJSON", new RawJSONString("{\"database\":\"MyDatabase\",\"table\":\"User\",\"type\":\"insert\",\"ts\":1486439516,\"xid\":5694,\"commit\":true,\"data\":{\"UserID\":20,\"FirstName\":\"Fiz\",\"MiddleName\":null,\"LastName\":\"Buz\",\"Version\":1486703131000}}\n"));
+        rowMap.putData("rawJSON", new RawJSONString("{\"UserID\":20}"));
 		MaxwellOutputConfig outputConfig = getMaxwellOutputConfig();
 
-		Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\",\"type\":\"insert\",\"ts\":1496712943,\"position\":\"binlog-0001:1\",\"gtid\":null,\"data\":{\"id\":\"9001\",\"salary\":\"4000\",\"department\":\"science\",\"rawJSON\":{\"database\":\"MyDatabase\",\"table\":\"User\",\"type\":\"insert\",\"ts\":1486439516,\"xid\":5694,\"commit\":true,\"data\":{\"UserID\":20,\"FirstName\":\"Fiz\",\"MiddleName\":null,\"LastName\":\"Buz\",\"Version\":1486703131000}}\n" +
-				"}}", rowMap.toJSON(outputConfig));
+		Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\",\"type\":\"insert\"," +
+				"\"ts\":1496712943,\"position\":\"binlog-0001:1\",\"gtid\":null,\"server_id\":7653213,\"thread_id\":6532312," +
+				"\"data\":{\"id\":\"9001\",\"first_name\":\"foo\",\"last_name\":\"bar\",\"rawJSON\":{\"UserID\":20}}}", rowMap.toJSON(outputConfig));
+
 	}
 
 	@Test
 	public void testToJSONWithListData() throws IOException {
-		long timestampMillis = 1496712943487L;
-
-		Position position = new Position(new BinlogPosition(1L, "binlog-0001"), 0L);
-		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", timestampMillis,
-				null, position);
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS,
+				new ArrayList<String>(), POSITION);
 
 		rowMap.putData("id", "9001");
 		rowMap.putData("first_name", "foo");
-		rowMap.putData("middle_name", "buzz");
 		rowMap.putData("last_name", "bar");
-		rowMap.putData("salary", "4000");
-		rowMap.putData("department", "science");
-		rowMap.putData("interests", Arrays.asList("classical music", "hiking", "biking", "programming"));
-		MaxwellOutputConfig outputConfig = getMaxwellOutputConfig();
+		rowMap.putData("interests", Arrays.asList("hiking", "programming"));
+		rowMap.setServerId(7653213L);
+		rowMap.setThreadId(6532312L);
+		MaxwellOutputConfig outputConfig = getMaxwellOutputConfig(Pattern.compile("^.*name.*$"));
 
-		Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\",\"type\":\"insert\",\"ts\":1496712943,\"position\":\"binlog-0001:1\",\"gtid\":null,\"data\":{\"id\":\"9001\",\"salary\":\"4000\",\"department\":\"science\",\"interests\":[\"classical music\",\"hiking\",\"biking\",\"programming\"]}}", rowMap.toJSON(outputConfig));
+		Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\",\"type\":\"insert\",\"ts\":1496712943," +
+				"\"position\":\"binlog-0001:1\",\"gtid\":null,\"server_id\":7653213,\"thread_id\":6532312," +
+				"\"data\":{\"id\":\"9001\",\"interests\":[\"hiking\",\"programming\"]}}", rowMap.toJSON(outputConfig));
 	}
 
-	private MaxwellOutputConfig getMaxwellOutputConfig() {
+	private MaxwellOutputConfig getMaxwellOutputConfig(Pattern... patterns) {
 		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
-
-
-
-		List<Pattern> patterns = new ArrayList<>();
-		Pattern pattern = Pattern.compile("^.*name.*$");
-		patterns.add(pattern);
 
 		outputConfig.includesBinlogPosition = true;
 		outputConfig.includesCommitInfo = true;
@@ -245,9 +222,8 @@ public class RowMapTest {
 		outputConfig.includesServerId = true;
 		outputConfig.includesThreadId = true;
 		outputConfig.includesNulls = true;
-		outputConfig.excludeColumns = patterns;
+		outputConfig.excludeColumns = Arrays.asList(patterns);
 
 		return outputConfig;
-
 	}
 }

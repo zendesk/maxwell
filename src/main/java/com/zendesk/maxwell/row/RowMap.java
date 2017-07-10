@@ -97,7 +97,7 @@ public class RowMap implements Serializable {
 		g.writeStringField("database", database);
 		g.writeStringField("table", table);
 
-		if (pkColumns == null || pkColumns.isEmpty()) {
+		if (pkColumns.isEmpty()) {
 			g.writeStringField("_uuid", UUID.randomUUID().toString());
 		} else {
 			for (String pk : pkColumns) {
