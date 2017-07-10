@@ -22,7 +22,7 @@
             <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
             <script src="https://oss.maxcdn.com/libs/respond.js/1.5.2/respond.min.js"></script>
         <![endif]-->
-        <script src="https://code.jquery.com/jquery-1.10.3.min.js"></script>
+        <script src="https://code.jquery.com/jquery-1.10.4.min.js"></script>
     </head>
 
     <body>
@@ -88,6 +88,12 @@
             
                 <li >
                     <a href="../monitoring/">Monitoring</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../embedding/">Embedding</a>
                 </li>
             
             
@@ -165,6 +171,11 @@
           </li>
         
           <li >
+              <a href="../embedding/">Embedding</a>
+              
+          </li>
+        
+          <li >
               <a href="../compat/">Compat / Caveats</a>
               
           </li>
@@ -179,6 +190,11 @@
             <div class="col-md-10" role="main">
 
 <h1 id="maxwell-changelog">Maxwell changelog</h1>
+<h3 id="v1103-1102-and-a-bit"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.10.3">v1.10.3</a>: "1.10.2-and-a-bit"</h3>
+<ul>
+<li>tiny release to fix a units error in the <code>replication.lag</code> metric
+   (subtracting seconds from milliseconds)</li>
+</ul>
 <h3 id="v1102-just-in-time-for-tomorrow"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.10.2">v1.10.2</a>: "just in time for tomorrow"</h3>
 <ul>
 <li>added metrics: "replication.queue.time" and "inflightmessages.count"</li>

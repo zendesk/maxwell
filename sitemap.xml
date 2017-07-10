@@ -59,6 +59,14 @@
 
     
     <url>
+     <loc>/embedding/</loc>
+     <lastmod>1970-01-01</lastmod>
+     <changefreq>daily</changefreq>
+    </url>
+    
+
+    
+    <url>
      <loc>/compat/</loc>
      <lastmod>1970-01-01</lastmod>
      <changefreq>daily</changefreq>

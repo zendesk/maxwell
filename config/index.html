@@ -22,7 +22,7 @@
             <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
             <script src="https://oss.maxcdn.com/libs/respond.js/1.5.2/respond.min.js"></script>
         <![endif]-->
-        <script src="https://code.jquery.com/jquery-1.10.3.min.js"></script>
+        <script src="https://code.jquery.com/jquery-1.10.4.min.js"></script>
     </head>
 
     <body>
@@ -88,6 +88,12 @@
             
                 <li >
                     <a href="../monitoring/">Monitoring</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../embedding/">Embedding</a>
                 </li>
             
             
@@ -192,6 +198,11 @@
         
           <li >
               <a href="../monitoring/">Monitoring</a>
+              
+          </li>
+        
+          <li >
+              <a href="../embedding/">Embedding</a>
               
           </li>
         
@@ -371,6 +382,12 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 <td>INT</td>
 <td>mysql port</td>
 <td>3306</td>
+</tr>
+<tr>
+<td>jdbc_options</td>
+<td>STRING</td>
+<td>mysql jdbc connection options</td>
+<td>zeroDateTimeBehavior=convertToNull&amp;connectTimeout=5000</td>
 </tr>
 <tr>
 <td>schema_database</td>

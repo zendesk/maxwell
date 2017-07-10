@@ -9,7 +9,7 @@
         
         <link rel="shortcut icon" href="../img/robut.ico">
 
-        <title>Monitoring - Maxwell's Daemon</title>
+        <title>Embedding - Maxwell's Daemon</title>
 
         <link href="../css/bootstrap.min.css" rel="stylesheet">
         <link href="../css/bootstrap-theme.min.css" rel="stylesheet">
@@ -86,14 +86,14 @@
             
             
             
-                <li class="active">
-                    <a href="./">Monitoring</a>
+                <li >
+                    <a href="../monitoring/">Monitoring</a>
                 </li>
             
             
             
-                <li >
-                    <a href="../embedding/">Embedding</a>
+                <li class="active">
+                    <a href="./">Embedding</a>
                 </li>
             
             
@@ -114,12 +114,12 @@
             <!-- Search, Navigation and Repo links -->
             <ul class="nav navbar-nav navbar-right">
                 <li >
-                    <a rel="next" href="../bootstrapping/">
+                    <a rel="next" href="../monitoring/">
                         <i class="fa fa-arrow-left"></i> Previous
                     </a>
                 </li>
                 <li >
-                    <a rel="prev" href="../embedding/">
+                    <a rel="prev" href="../compat/">
                         Next <i class="fa fa-arrow-right"></i>
                     </a>
                 </li>
@@ -165,32 +165,23 @@
               
           </li>
         
-          <li class="active">
-              <a href="./">Monitoring</a>
-              
-                  <ul class="nav">
-                  
-                      <li class="toctree-l3"><a href="#monitoring">Monitoring</a></li>
-                      
-                  
-                      <li class="toctree-l3"><a href="#metrics">Metrics</a></li>
-                      
-                  
-                      <li class="toctree-l3"><a href="#http-endpoints">HTTP Endpoints</a></li>
-                      
-                  
-                      <li class="toctree-l3"><a href="#healthcheck">Healthcheck</a></li>
-                      
-                  
-                      <li class="toctree-l3"><a href="#jmx-configuration">JMX Configuration</a></li>
-                      
-                  
-                  </ul>
+          <li >
+              <a href="../monitoring/">Monitoring</a>
               
           </li>
         
-          <li >
-              <a href="../embedding/">Embedding</a>
+          <li class="active">
+              <a href="./">Embedding</a>
+              
+                  <ul class="nav">
+                  
+                      <li class="toctree-l3"><a href="#embedding-maxwell">Embedding Maxwell</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#compatibility-caveat">Compatibility caveat</a></li>
+                      
+                  
+                  </ul>
               
           </li>
         
@@ -208,123 +199,17 @@
 </div></div>
             <div class="col-md-10" role="main">
 
-<h3 id="monitoring">Monitoring</h3>
-<hr />
-<p>Maxwell exposes certain metrics through either its base logging mechanism, JMX, HTTP or by push to Datadog. This is configurable through commandline options
-or the <code>config.properties</code> file. These can provide insight into system health.
-At present certain metrics are Kafka-specific - that is, not yet supported other producers.</p>
-<h3 id="metrics">Metrics</h3>
-<p>All metrics are prepended with the configured <code>metrics_prefix.</code></p>
-<table>
-<thead>
-<tr>
-<th>metric</th>
-<th>description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Counters</strong></td>
-<td></td>
-</tr>
-<tr>
-<td><code>messages.succeeded</code></td>
-<td>count of messages that were successfully sent to Kafka</td>
-</tr>
-<tr>
-<td><code>messages.failed</code></td>
-<td>count of messages that failed to send to Kafka</td>
-</tr>
-<tr>
-<td><code>row.count</code></td>
-<td>a count of rows that have been processed from the binlog. note that not every row results in a message being sent to Kafka.</td>
-</tr>
-<tr>
-<td><strong>Meters</strong></td>
-<td></td>
-</tr>
-<tr>
-<td><code>messages.succeeded.meter</code></td>
-<td>a measure of the rate at which messages were successfully sent to Kafka</td>
-</tr>
-<tr>
-<td><code>messages.failed.meter</code></td>
-<td>a measure of the rate at which messages failed to send Kafka</td>
-</tr>
-<tr>
-<td><code>row.meter</code></td>
-<td>a measure of the rate at which rows arrive to Maxwell from the binlog connector</td>
-</tr>
-<tr>
-<td><strong>Gauges</strong></td>
-<td></td>
-</tr>
-<tr>
-<td><code>replication.lag</code></td>
-<td>the time elapsed between the database transaction commit and the time it was processed by Maxwell, in milliseconds</td>
-</tr>
-<tr>
-<td><code>inflightmessages.count</code></td>
-<td>the number of messages that are currently in-flight (awaiting acknowledgement from the destination, or ahead of messages which are)</td>
-</tr>
-<tr>
-<td><strong>Timers</strong></td>
-<td></td>
-</tr>
-<tr>
-<td><code>message.publish.time</code></td>
-<td>the time it took to send a given record to Kafka, in milliseconds</td>
-</tr>
-<tr>
-<td><code>replication.queue.time</code></td>
-<td>the time it took to enqueue a given binlog event for processing, in milliseconds</td>
-</tr>
-</tbody>
-</table>
-<h3 id="http-endpoints">HTTP Endpoints</h3>
-<p>When the HTTP server is enabled the following endpoints are exposed:</p>
-<table>
-<thead>
-<tr>
-<th>endpoint</th>
-<th>description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>/metrics</code></td>
-<td>return all metrics as JSON</td>
-</tr>
-<tr>
-<td><code>/healthcheck</code></td>
-<td>run Maxwell's healthcheck(s) and return success or failure based on the result</td>
-</tr>
-<tr>
-<td><code>/ping</code></td>
-<td>a simple ping test, responds with <code>pong</code></td>
-</tr>
-</tbody>
-</table>
-<h3 id="healthcheck">Healthcheck</h3>
-<p>The <code>/healthcheck</code> endpoint will return unhealthy when there is more than 1 message that failed to be sent to Kafka in the past 15 minutes.</p>
-<h3 id="jmx-configuration">JMX Configuration</h3>
-<p>Standard configuration is either via commandline args or the <code>config.properties</code> file. However, when exposing JMX metrics
-additional configuration is required to allow remote access. In this case Maxwell makes use of the <code>JAVA_OPTS</code> environment variable.
-To make use of this set <code>JAVA_OPTS</code> before starting Maxwell.</p>
-<p>The following is an example which allows remote access with no authentication and insecure connections.</p>
-<pre><code>export JAVA_OPTS=&quot;-Dcom.sun.management.jmxremote \
--Dcom.sun.management.jmxremote.port=9010 \
--Dcom.sun.management.jmxremote.local.only=false \
--Dcom.sun.management.jmxremote.authenticate=false \
--Dcom.sun.management.jmxremote.ssl=false \
--Djava.rmi.server.hostname=SERVER_IP_ADDRESS&quot;
-</code></pre>
-
-<script>
-  jQuery(document).ready(function () {
-    jQuery("table").addClass("table table-condensed table-bordered table-hover");
-  });
-</script></div>
+<h3 id="embedding-maxwell">Embedding Maxwell</h3>
+<p>Maxwell typically runs as a command-line program. However, for advanced use it
+is possible to run maxwell from any JVM-based language. Currently the source of
+truth is the source code (there is no published API documentation). Pull requests
+to better document embedded Maxwell uses are welcome.</p>
+<h3 id="compatibility-caveat">Compatibility caveat</h3>
+<p>Maxwell makes every attempt to remain backwards compatible. However this
+only applies to the command-line usage - Maxwell's Java API may change without
+notice.</p>
+<p>However (and unless otherwise indicated) breaking API changes will result in
+a type error - i.e. if your code still compiles, then the API has not changed.</p></div>
         </div>
 
         
