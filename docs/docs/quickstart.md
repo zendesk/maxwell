@@ -13,7 +13,7 @@ cd maxwell-1.10.4
 or get the docker image:
 
 ```
-docker pull osheroff/maxwell
+docker pull zendesk/maxwell
 ```
 
 ### Row based replication
@@ -72,7 +72,7 @@ Query OK, 1 row affected (0.04 sec)
 ### Docker
 
 ```
-docker run -it --rm osheroff/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=stdout
+docker run -it --rm zendesk/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=stdout
 ```
 
 If you're using a virtualbox-docker setup on OSX, you'll need to ensure that:
@@ -85,7 +85,7 @@ If you're using a virtualbox-docker setup on OSX, you'll need to ensure that:
   present on the host. E.g. the above docker command then becomes,
 
 ```
-docker run -v /Users:/Users -it --rm osheroff/maxwell bin/maxwell --config=/Users/demo/maxwell/config/basic.properties
+docker run -v /Users:/Users -it --rm zendesk/maxwell bin/maxwell --config=/Users/demo/maxwell/config/basic.properties
 ```
 
 (make a note of the `-v` option).
@@ -102,7 +102,7 @@ bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
 (or docker):
 
 ```
-docker run -it --rm osheroff/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kafka --kafka.bootstrap.servers=$KAFKA_HOST:$KAFKA_PORT
+docker run -it --rm zendesk/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kafka --kafka.bootstrap.servers=$KAFKA_HOST:$KAFKA_PORT
 ```
 
 This will start writing to the topic "maxwell".
@@ -112,6 +112,6 @@ This will start writing to the topic "maxwell".
 ***
 
 ```
-docker run -it --rm --name maxwell -v `cd && pwd`/.aws:/root/.aws maxwell sh -c 'cp /app/kinesis-producer-library.properties.example /app/kinesis-producer-library.properties && echo "Region=$AWS_DEFAULT_REGION" >> /app/kinesis-producer-library.properties && bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kinesis --kinesis_stream=$KINESIS_STREAM'
+docker run -it --rm --name maxwell -v `cd && pwd`/.aws:/root/.aws zendesk/maxwell sh -c 'cp /app/kinesis-producer-library.properties.example /app/kinesis-producer-library.properties && echo "Region=$AWS_DEFAULT_REGION" >> /app/kinesis-producer-library.properties && bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kinesis --kinesis_stream=$KINESIS_STREAM'
 ```
 
