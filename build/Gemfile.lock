@@ -4,6 +4,9 @@ GEM
     addressable (2.3.8)
     faraday (0.9.2)
       multipart-post (>= 1.2, < 3)
+    mime-types (3.1)
+      mime-types-data (~> 3.2015)
+    mime-types-data (3.2016.0521)
     multipart-post (2.0.0)
     netrc (0.11.0)
     octokit (4.2.0)
@@ -16,8 +19,9 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  mime-types
   netrc
   octokit
 
 BUNDLED WITH
-   1.10.6
+   1.13.7

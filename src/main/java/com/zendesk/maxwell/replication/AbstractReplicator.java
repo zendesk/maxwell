@@ -1,15 +1,16 @@
 package com.zendesk.maxwell.replication;
 
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.Meter;
 import com.zendesk.maxwell.MaxwellFilter;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
+import com.zendesk.maxwell.metrics.Metrics;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
-import com.zendesk.maxwell.schema.PositionStoreThread;
 import com.zendesk.maxwell.schema.SchemaStore;
-import com.zendesk.maxwell.schema.SchemaStoreException;
 import com.zendesk.maxwell.schema.ddl.DDLMap;
-import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 import com.zendesk.maxwell.util.RunLoopProcess;
 import org.slf4j.Logger;
@@ -22,19 +23,50 @@ import java.util.Objects;
 public abstract class AbstractReplicator extends RunLoopProcess implements Replicator {
 	private static Logger LOGGER = LoggerFactory.getLogger(AbstractReplicator.class);
 	protected final String clientID;
-	protected final PositionStoreThread positionStoreThread;
 	protected final AbstractProducer producer;
 	protected final AbstractBootstrapper bootstrapper;
 	protected final String maxwellSchemaDatabaseName;
 	protected final TableCache tableCache = new TableCache();
-	protected Long lastHeartbeatRead;
+	protected Position lastHeartbeatPosition;
+	protected Long stopAtHeartbeat;
+	protected MaxwellFilter filter;
 
-	public AbstractReplicator(String clientID, AbstractBootstrapper bootstrapper, PositionStoreThread positionStoreThread, String maxwellSchemaDatabaseName, AbstractProducer producer) {
+	private final Counter rowCounter;
+	private final Meter rowMeter;
+	private Long replicationLag = 0L;
+
+	public AbstractReplicator(
+		String clientID,
+		AbstractBootstrapper bootstrapper,
+		String maxwellSchemaDatabaseName,
+		AbstractProducer producer,
+		Metrics metrics,
+		Position initialPosition
+	) {
 		this.clientID = clientID;
 		this.bootstrapper = bootstrapper;
-		this.positionStoreThread = positionStoreThread;
 		this.maxwellSchemaDatabaseName = maxwellSchemaDatabaseName;
 		this.producer = producer;
+		this.lastHeartbeatPosition = initialPosition;
+
+		final AbstractReplicator self = this;
+
+		String lagGaugeName = metrics.metricName("replication", "lag");
+		metrics.getRegistry().register(
+			lagGaugeName,
+			new Gauge<Long>() {
+				@Override
+				public Long getValue() {
+					return self.replicationLag;
+				}
+			}
+		);
+		rowCounter = metrics.getRegistry().counter(
+			metrics.metricName("row", "count")
+		);
+		rowMeter = metrics.getRegistry().meter(
+			metrics.metricName("row", "meter")
+		);
 	}
 
 	/**
@@ -44,7 +76,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	 * If it's a write for a different client_id, we return the input (which
 	 * will signify to the rest of the chain to ignore it).  Otherwise, we
 	 * transform it into a HeartbeatRowMap (which will not be output, but will
-	 * advance the binlog position) and set `this.lastHeartbeatRead`
+	 * advance the binlog position) and set `this.lastHeartbeatPosition`
 	 *
 	 * @return either a RowMap or a HeartbeatRowMap
 	 */
@@ -53,9 +85,10 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 		if ( !Objects.equals(hbClientID, this.clientID) )
 			return row; // plain row -- do not process.
 
-		this.lastHeartbeatRead = (Long) row.getData("heartbeat");
-		LOGGER.debug("replicator picked up heartbeat: " + this.lastHeartbeatRead);
-		return HeartbeatRowMap.valueOf(row.getDatabase(), row.getPosition(), this.lastHeartbeatRead);
+		long lastHeartbeatRead = (Long) row.getData("heartbeat");
+		LOGGER.debug("replicator picked up heartbeat: " + lastHeartbeatRead);
+		this.lastHeartbeatPosition = row.getPosition().withHeartbeat(lastHeartbeatRead);
+		return HeartbeatRowMap.valueOf(row.getDatabase(), this.lastHeartbeatPosition);
 	}
 
 	/**
@@ -67,19 +100,16 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	 * @param position The position that the SQL happened at
 	 * @param timestamp The timestamp of the SQL binlog event
 	 */
-	protected void processQueryEvent(String dbName, String sql, SchemaStore schemaStore, BinlogPosition position, Long timestamp) throws Exception {
-		List<ResolvedSchemaChange> changes =  schemaStore.processSQL(sql, dbName, position);
-		for ( ResolvedSchemaChange change : changes ) {
-			DDLMap ddl = new DDLMap(change, timestamp, sql, position);
-			producer.push(ddl);
+	protected void processQueryEvent(String dbName, String sql, SchemaStore schemaStore, Position position, Long timestamp) throws Exception {
+		List<ResolvedSchemaChange> changes = schemaStore.processSQL(sql, dbName, position);
+		for (ResolvedSchemaChange change : changes) {
+			if (change.shouldOutput(filter)) {
+				DDLMap ddl = new DDLMap(change, timestamp, sql, position);
+				producer.push(ddl);
+			}
 		}
 
 		tableCache.clear();
-	}
-
-	protected void processRDSHeartbeatInsertEvent(String database, BinlogPosition position) throws Exception {
-		HeartbeatRowMap hbr = new HeartbeatRowMap(database, position);
-		this.producer.push(hbr);
 	}
 
 	/**
@@ -96,15 +126,15 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	 * @return Whether we should write the event to the producer
 	 */
 	protected boolean shouldOutputEvent(String database, String table, MaxwellFilter filter) {
-		Boolean isSystemWhitelisted = database.equals(this.maxwellSchemaDatabaseName)
-			&& table.equals("bootstrap");
+		Boolean isSystemWhitelisted = this.maxwellSchemaDatabaseName.equals(database)
+			&& "bootstrap".equals(table);
 
 		if ( MaxwellFilter.isSystemBlacklisted(database, table) )
 			return false;
 		else if ( isSystemWhitelisted)
 			return true;
 		else
-			return (filter == null || filter.matches(database, table));
+			return MaxwellFilter.matches(filter, database, table);
 	}
 
 	/**
@@ -115,7 +145,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	 */
 
 	public Long getLastHeartbeatRead() {
-		return lastHeartbeatRead;
+		return lastHeartbeatPosition.getLastHeartbeatRead();
 	}
 
 	/**
@@ -126,18 +156,32 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	public void work() throws Exception {
 		RowMap row = getRow();
 
-		// todo: this is inelegant.  Ideally the outer code would monitor the
-		// position thread and stop us if it was dead.
-
-		if ( positionStoreThread.getException() != null )
-			throw positionStoreThread.getException();
-
 		if ( row == null )
 			return;
 
-		if ( row instanceof HeartbeatRowMap)
+		rowCounter.inc();
+		rowMeter.mark();
+		replicationLag = System.currentTimeMillis() - row.getTimestampMillis();
+
+		processRow(row);
+	}
+
+	public void stopAtHeartbeat(long heartbeat) {
+		stopAtHeartbeat = heartbeat;
+	}
+
+	protected void processRow(RowMap row) throws Exception {
+		if ( row instanceof HeartbeatRowMap) {
 			producer.push(row);
-		else if (!bootstrapper.shouldSkip(row) && !isMaxwellRow(row))
+			if (stopAtHeartbeat != null) {
+				long thisHeartbeat = row.getPosition().getLastHeartbeatRead();
+				if (thisHeartbeat >= stopAtHeartbeat) {
+					LOGGER.info("received final heartbeat " + thisHeartbeat + "; stopping replicator");
+					// terminate runLoop
+					this.taskState.stopped();
+				}
+			}
+		} else if (!bootstrapper.shouldSkip(row) && !isMaxwellRow(row))
 			producer.push(row);
 		else
 			bootstrapper.work(row, producer, this);
@@ -166,4 +210,8 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	 * @return either a RowMap or null
 	 */
 	public abstract RowMap getRow() throws Exception;
+
+	public void setFilter(MaxwellFilter filter) {
+		this.filter = filter;
+	}
 }

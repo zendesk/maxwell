@@ -1,17 +1,26 @@
 package com.zendesk.maxwell;
 
-import java.util.*;
-import java.util.regex.Pattern;
-
-import com.zendesk.maxwell.replication.BinlogPosition;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.health.HealthCheckRegistry;
+import com.zendesk.maxwell.metrics.Metrics;
+import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
-import joptsimple.*;
-
+import com.zendesk.maxwell.producer.ProducerFactory;
+import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.replication.Position;
+import com.zendesk.maxwell.util.AbstractConfig;
+import joptsimple.BuiltinHelpFormatter;
+import joptsimple.OptionDescriptor;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.zendesk.maxwell.util.AbstractConfig;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.Properties;
+import java.util.regex.Pattern;
 
 public class MaxwellConfig extends AbstractConfig {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfig.class);
@@ -30,11 +39,13 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public String includeDatabases, excludeDatabases, includeTables, excludeTables, excludeColumns, blacklistDatabases, blacklistTables;
 
+	public ProducerFactory producerFactory; // producerFactory has precedence over producerType
+	public String producerType;
+
 	public final Properties kafkaProperties;
 	public String kafkaTopic;
 	public String ddlKafkaTopic;
 	public String kafkaKeyFormat;
-	public String producerType;
 	public String kafkaPartitionHash;
 	public String kafkaPartitionKey;
 	public String kafkaPartitionColumns;
@@ -53,12 +64,28 @@ public class MaxwellConfig extends AbstractConfig {
 	public MaxwellOutputConfig outputConfig;
 	public String log_level;
 
+	public MetricRegistry metricRegistry;
+	public HealthCheckRegistry healthCheckRegistry;
+
+	public String metricsPrefix;
+	public String metricsReportingType;
+	public Long metricsSlf4jInterval;
+	public int metricsHTTPPort;
+
+	public String metricsDatadogType;
+	public String metricsDatadogTags;
+	public String metricsDatadogAPIKey;
+	public String metricsDatadogHost;
+	public int metricsDatadogPort;
+	public Long metricsDatadogInterval;
+
 	public String clientID;
 	public Long replicaServerID;
 
-	public BinlogPosition initPosition;
+	public Position initPosition;
 	public boolean replayMode;
 	public boolean masterRecovery;
+	public boolean ignoreProducerError;
 
 	public String rabbitmqHost;
 	public String rabbitmqExchange;
@@ -75,6 +102,8 @@ public class MaxwellConfig extends AbstractConfig {
 		this.shykoMode = false;
 		this.gtidMode = false;
 		this.bufferedProducerSize = 200;
+		this.metricRegistry = new MetricRegistry();
+		this.healthCheckRegistry = new HealthCheckRegistry();
 		setup(null, null); // setup defaults
 	}
 
@@ -128,8 +157,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning").withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
 		parser.accepts( "kafka_key_format", "how to format the kafka key; array|hash").withOptionalArg();
-		parser.accepts("kafka_version",
-		    "switch to kafka 0.8, 0.10 or 0.10.1 producer (from 0.9)");
+		parser.accepts( "kafka_version", "use kafka 0.8, 0.9, 0.10, 0.10.1, or 0.10.2 producer (default 0.9)");
 
 		parser.accepts( "kinesis_stream", "kinesis stream name").withOptionalArg();
 
@@ -154,10 +182,11 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "client_id", "unique identifier for this maxwell replicator").withRequiredArg();
 		parser.accepts( "schema_database", "database name for maxwell state (schema and binlog position)").withRequiredArg();
 		parser.accepts( "max_schemas", "deprecated.").withOptionalArg();
-		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION").withRequiredArg();
+		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION:HEARTBEAT").withRequiredArg();
 		parser.accepts( "replay", "replay mode, don't store any information to the server").withOptionalArg();
 		parser.accepts( "master_recovery", "(experimental) enable master position recovery code").withOptionalArg();
 		parser.accepts( "gtid_mode", "(experimental) enable gtid mode").withOptionalArg();
+		parser.accepts( "ignore_producer_error", "Maxwell will be terminated on kafka/kinesis errors when false. Otherwise, those producer errors are only logged. Default to true").withOptionalArg();
 
 		parser.accepts( "__separator_7" );
 
@@ -175,6 +204,21 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts("rabbitmq_exchange", "Name of exchange for rabbitmq publisher").withOptionalArg();
 		parser.accepts("rabbitmq_exchange_type", "Exchange type for rabbitmq").withOptionalArg();
 		parser.accepts("rabbitmq_routing_key_template", "A string template for the routing key, '%db%' and '%table%' will be substituted. Default is '%db%.%table%'.").withOptionalArg();
+
+    parser.accepts( "__separator_9" );
+    
+		parser.accepts( "metrics_prefix", "the prefix maxwell will apply to all metrics" ).withOptionalArg();
+		parser.accepts( "metrics_type", "how maxwell metrics will be reported, at least one of slf4j|jmx|http|datadog" ).withOptionalArg();
+		parser.accepts( "metrics_slf4j_interval", "the frequency metrics are emitted to the log, in seconds, when slf4j reporting is configured" ).withOptionalArg();
+		parser.accepts( "metrics_http_port", "the port the server will bind to when http reporting is configured" ).withOptionalArg();
+		parser.accepts( "metrics_datadog_type", "when metrics_type includes datadog this is the way metrics will be reported, one of udp|http" ).withOptionalArg();
+		parser.accepts( "metrics_datadog_tags", "datadog tags that should be supplied, e.g. tag1:value1,tag2:value2" ).withOptionalArg();
+		parser.accepts( "metrics_datadog_interval", "the frequency metrics are pushed to datadog, in seconds" ).withOptionalArg();
+		parser.accepts( "metrics_datadog_apikey", "the datadog api key to use when metrics_datadog_type = http" ).withOptionalArg();
+		parser.accepts( "metrics_datadog_host", "the host to publish metrics to when metrics_datadog_type = udp" ).withOptionalArg();
+		parser.accepts( "metrics_datadog_port", "the port to publish metrics to when metrics_datadog_type = udp" ).withOptionalArg();
+
+		parser.accepts( "__separator_10" );
 
 		parser.accepts( "help", "display help").forHelp();
 
@@ -337,7 +381,18 @@ public class MaxwellConfig extends AbstractConfig {
 		this.kinesisStream  = fetchOption("kinesis_stream", options, properties, null);
 		this.kinesisMd5Keys = fetchBooleanOption("kinesis_md5_keys", options, properties, false);
 
-		this.outputFile         = fetchOption("output_file", options, properties, null);
+		this.outputFile = fetchOption("output_file", options, properties, null);
+
+		this.metricsPrefix = fetchOption("metrics_prefix", options, properties, "MaxwellMetrics");
+		this.metricsReportingType = fetchOption("metrics_type", options, properties, null);
+		this.metricsSlf4jInterval = fetchLongOption("metrics_slf4j_interval", options, properties, 60L);
+		this.metricsHTTPPort = Integer.parseInt(fetchOption("metrics_http_port", options, properties, "8080"));
+		this.metricsDatadogType = fetchOption("metrics_datadog_type", options, properties, "udp");
+		this.metricsDatadogTags = fetchOption("metrics_datadog_tags", options, properties, "");
+		this.metricsDatadogAPIKey = fetchOption("metrics_datadog_apikey", options, properties, "");
+		this.metricsDatadogHost = fetchOption("metrics_datadog_host", options, properties, "localhost");
+		this.metricsDatadogPort = Integer.parseInt(fetchOption("metrics_datadog_port", options, properties, "8125"));
+		this.metricsDatadogInterval = fetchLongOption("metrics_datadog_interval", options, properties, 60L);
 
 		this.includeDatabases   = fetchOption("include_dbs", options, properties, null);
 		this.excludeDatabases   = fetchOption("exclude_dbs", options, properties, null);
@@ -350,7 +405,7 @@ public class MaxwellConfig extends AbstractConfig {
 			String initPosition = (String) options.valueOf("init_position");
 			String[] initPositionSplit = initPosition.split(":");
 
-			if (initPositionSplit.length != 2)
+			if (initPositionSplit.length != 3)
 				usageForOptions("Invalid init_position: " + initPosition, "--init_position");
 
 			Long pos = 0L;
@@ -360,11 +415,19 @@ public class MaxwellConfig extends AbstractConfig {
 				usageForOptions("Invalid init_position: " + initPosition, "--init_position");
 			}
 
-			this.initPosition = new BinlogPosition(pos, initPositionSplit[0]);
+			Long lastHeartbeat = 0L;
+			try {
+				lastHeartbeat = Long.valueOf(initPositionSplit[2]);
+			} catch (NumberFormatException e) {
+				usageForOptions("Invalid init_position: " + initPosition, "--init_position");
+			}
+
+			this.initPosition = new Position(new BinlogPosition(pos, initPositionSplit[0]), lastHeartbeat);
 		}
 
 		this.replayMode =     fetchBooleanOption("replay", options, null, false);
 		this.masterRecovery = fetchBooleanOption("master_recovery", options, properties, false);
+		this.ignoreProducerError = fetchBooleanOption("ignore_producer_error", options, properties, true);
 
 		this.outputConfig = new MaxwellOutputConfig();
 		outputConfig.includesBinlogPosition = fetchBooleanOption("output_binlog_position", options, properties, false);
@@ -501,6 +564,10 @@ public class MaxwellConfig extends AbstractConfig {
 			);
 		} catch (MaxwellInvalidFilterException e) {
 			usage("Invalid filter options: " + e.getLocalizedMessage());
+		}
+
+		if ( this.metricsDatadogType.contains("http") && StringUtils.isEmpty(this.metricsDatadogAPIKey) ) {
+			usageForOptions("please specify metrics_datadog_apikey when metrics_datadog_type = http");
 		}
 	}
 

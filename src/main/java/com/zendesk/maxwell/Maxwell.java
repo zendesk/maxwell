@@ -1,30 +1,25 @@
 package com.zendesk.maxwell;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.concurrent.TimeoutException;
 import com.djdch.log4j.StaticShutdownCallbackRegistry;
-import com.zendesk.maxwell.replication.BinlogConnectorReplicator;
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.replication.MaxwellReplicator;
+import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
+import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.recovery.Recovery;
 import com.zendesk.maxwell.recovery.RecoveryInfo;
+import com.zendesk.maxwell.replication.BinlogConnectorReplicator;
+import com.zendesk.maxwell.replication.MaxwellReplicator;
+import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.replication.Replicator;
 import com.zendesk.maxwell.schema.MysqlPositionStore;
+import com.zendesk.maxwell.schema.MysqlSchemaStore;
+import com.zendesk.maxwell.schema.SchemaStoreSchema;
 import com.zendesk.maxwell.util.Logging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
-import com.zendesk.maxwell.producer.AbstractProducer;
-import com.zendesk.maxwell.schema.MysqlSchemaStore;
-import com.zendesk.maxwell.schema.SchemaStoreSchema;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 public class Maxwell implements Runnable {
-	static {
-		Logging.setupLogBridging();
-	}
-
 	protected MaxwellConfig config;
 	protected MaxwellContext context;
 	protected Replicator replicator;
@@ -46,30 +41,20 @@ public class Maxwell implements Runnable {
 	}
 
 	public void terminate() {
-		LOGGER.info("starting shutdown");
-		try {
-			// send a final heartbeat through the system
-			context.heartbeat();
-			Thread.sleep(100);
-
-			if ( this.replicator != null)
-				replicator.stopLoop();
-		} catch (TimeoutException e) {
-			System.err.println("Timed out trying to shutdown maxwell replication thread.");
-		} catch (InterruptedException e) {
-		} catch (Exception e) { }
-
-		if ( this.context != null )
-			context.terminate();
-
-		replicator = null;
-		context = null;
+		Thread terminationThread = this.context.terminate();
+		if (terminationThread != null) {
+			try {
+				terminationThread.join();
+			} catch (InterruptedException e) {
+				// ignore
+			}
+		}
 	}
 
-	private BinlogPosition attemptMasterRecovery() throws Exception {
-		BinlogPosition recovered = null;
+	private Position attemptMasterRecovery() throws Exception {
+		Position recoveredPosition = null;
 		MysqlPositionStore positionStore = this.context.getPositionStore();
-		RecoveryInfo recoveryInfo = positionStore.getRecoveryInfo();
+		RecoveryInfo recoveryInfo = positionStore.getRecoveryInfo(config);
 
 		if ( recoveryInfo != null ) {
 			Recovery masterRecovery = new Recovery(
@@ -81,9 +66,9 @@ public class Maxwell implements Runnable {
 				this.config.shykoMode
 			);
 
-			recovered = masterRecovery.recover();
+			recoveredPosition = masterRecovery.recover();
 
-			if (recovered != null) {
+			if (recoveredPosition != null) {
 				// load up the schema from the recovery position and chain it into the
 				// new server_id
 				MysqlSchemaStore oldServerSchemaStore = new MysqlSchemaStore(
@@ -97,28 +82,37 @@ public class Maxwell implements Runnable {
 					false
 				);
 
-				oldServerSchemaStore.clone(context.getServerID(), recovered);
+				oldServerSchemaStore.clone(context.getServerID(), recoveredPosition);
 
 				positionStore.delete(recoveryInfo.serverID, recoveryInfo.clientID, recoveryInfo.position);
 			}
 		}
-		return recovered;
+		return recoveredPosition;
 	}
 
-	protected BinlogPosition getInitialPosition() throws Exception {
+	protected Position getInitialPosition() throws Exception {
 		/* first method:  do we have a stored position for this server? */
-		BinlogPosition initial = this.context.getInitialPosition();
+		Position initial = this.context.getInitialPosition();
 
-		/* second method: are we recovering from a master swap? */
-		if ( initial == null && config.masterRecovery )
-			initial = attemptMasterRecovery();
+		if (initial == null) {
 
-		/* third method: capture the current master postiion. */
-		if ( initial == null ) {
-			try ( Connection c = context.getReplicationConnection() ) {
-				initial = BinlogPosition.capture(c, config.gtidMode);
+			/* second method: are we recovering from a master swap? */
+			if ( config.masterRecovery )
+				initial = attemptMasterRecovery();
+
+			/* third method: capture the current master position. */
+			if ( initial == null ) {
+				try ( Connection c = context.getReplicationConnection() ) {
+					initial = Position.capture(c, config.gtidMode);
+				}
+			}
+
+			if (initial != null) {
+				/* if the initial position didn't come from the store, store it */
+				context.getPositionStore().set(initial);
 			}
 		}
+
 		return initial;
 	}
 
@@ -131,15 +125,30 @@ public class Maxwell implements Runnable {
 	}
 
 	static String bootString = "Maxwell v%s is booting (%s), starting at %s";
-	private void logBanner(AbstractProducer producer, BinlogPosition initialPosition) {
+	private void logBanner(AbstractProducer producer, Position initialPosition) {
 		String producerName = producer.getClass().getSimpleName();
 		LOGGER.info(String.format(bootString, getMaxwellVersion(), producerName, initialPosition.toString()));
 	}
 
 	protected void onReplicatorStart() {}
 	private void start() throws Exception {
+		try {
+			startInner();
+		} catch ( Exception e) {
+			this.context.terminate(e);
+		} finally {
+			this.terminate();
+		}
+
+		Exception error = this.context.getError();
+		if (error != null) {
+			throw error;
+		}
+	}
+
+	private void startInner() throws Exception {
 		try ( Connection connection = this.context.getReplicationConnection();
-			Connection rawConnection = this.context.getRawMaxwellConnection() ) {
+		      Connection rawConnection = this.context.getRawMaxwellConnection() ) {
 			MaxwellMysqlStatus.ensureReplicationMysqlState(connection);
 			MaxwellMysqlStatus.ensureMaxwellMysqlState(rawConnection);
 			if (config.gtidMode) {
@@ -151,17 +160,12 @@ public class Maxwell implements Runnable {
 			try ( Connection schemaConnection = this.context.getMaxwellConnection() ) {
 				SchemaStoreSchema.upgradeSchemaStoreSchema(schemaConnection);
 			}
-
-		} catch ( SQLException e ) {
-			LOGGER.error("SQLException: " + e.getLocalizedMessage());
-			LOGGER.error(e.getLocalizedMessage());
-			return;
 		}
 
 		AbstractProducer producer = this.context.getProducer();
 		AbstractBootstrapper bootstrapper = this.context.getBootstrapper();
 
-		BinlogPosition initPosition = getInitialPosition();
+		Position initPosition = getInitialPosition();
 		logBanner(producer, initPosition);
 		this.context.setPosition(initPosition);
 
@@ -177,13 +181,16 @@ public class Maxwell implements Runnable {
 
 		replicator.setFilter(context.getFilter());
 
+		context.setReplicator(replicator);
 		this.context.start();
 		this.onReplicatorStart();
+
 		replicator.runLoop();
 	}
 
 	public static void main(String[] args) {
 		try {
+			Logging.setupLogBridging();
 			MaxwellConfig config = new MaxwellConfig(args);
 
 			if ( config.log_level != null )
@@ -199,8 +206,12 @@ public class Maxwell implements Runnable {
 				}
 			});
 
-
 			maxwell.start();
+		} catch ( SQLException e ) {
+			// catch SQLException explicitly because we likely don't care about the stacktrace
+			LOGGER.error("SQLException: " + e.getLocalizedMessage());
+			LOGGER.error(e.getLocalizedMessage());
+			System.exit(1);
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(1);

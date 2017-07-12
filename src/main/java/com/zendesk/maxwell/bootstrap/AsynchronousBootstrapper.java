@@ -132,7 +132,7 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 		skippedRows.flushToDisk(databaseName, tableName);
 		while ( skippedRows.size(databaseName, tableName) > 0 ) {
 			RowMap row = skippedRows.removeFirst(databaseName, tableName);
-			if ( bootstrapStartBinlogPosition == null || row.getPosition().newerThan(bootstrapStartBinlogPosition) )
+			if ( bootstrapStartBinlogPosition == null || row.getPosition().getBinlogPosition().newerThan(bootstrapStartBinlogPosition) )
 				producer.push(row);
 		}
 		LOGGER.info("async bootstrapping: replay complete");

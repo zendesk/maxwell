@@ -21,22 +21,16 @@ public class BinlogPosition implements Serializable {
 	private final String gtid;
 	private final long offset;
 	private final String file;
-	private final Long heartbeat;
 
-	public BinlogPosition(String gtidSetStr, String gtid, long l, String file, Long heartbeat) {
+	public BinlogPosition(String gtidSetStr, String gtid, long l, String file) {
 		this.gtidSetStr = gtidSetStr;
 		this.gtid = gtid;
 		this.offset = l;
 		this.file = file;
-		this.heartbeat = heartbeat;
-	}
-
-	public BinlogPosition(long l, String file, Long heartbeat) {
-		this(null, null, l, file, heartbeat);
 	}
 
 	public BinlogPosition(long l, String file) {
-		this(null, null, l, file, null);
+		this(null, null, l, file);
 	}
 
 	public static BinlogPosition capture(Connection c, boolean gtidMode) throws SQLException {
@@ -49,15 +43,19 @@ public class BinlogPosition implements Serializable {
 		if (gtidMode) {
 			gtidSetStr = rs.getString(GTID_COLUMN);
 		}
-		return new BinlogPosition(gtidSetStr, null, l, file, null);
+		return new BinlogPosition(gtidSetStr, null, l, file);
+	}
+
+	public static BinlogPosition at(BinlogPosition position) {
+		return new BinlogPosition(position.gtidSetStr, position.gtid, position.offset, position.file);
 	}
 
 	public static BinlogPosition at(String gtidSetStr, long offset, String file) {
-		return new BinlogPosition(gtidSetStr, null, offset, file, null);
+		return new BinlogPosition(gtidSetStr, null, offset, file);
 	}
 
 	public static BinlogPosition at(long offset, String file) {
-		return new BinlogPosition(null, null, offset, file, null);
+		return new BinlogPosition(null, null, offset, file);
 	}
 
 	public long getOffset() {
@@ -66,10 +64,6 @@ public class BinlogPosition implements Serializable {
 
 	public String getFile() {
 		return file;
-	}
-
-	public Long getHeartbeat() {
-		return heartbeat;
 	}
 
 	public String getGtid() {
@@ -86,8 +80,9 @@ public class BinlogPosition implements Serializable {
 
 	@Override
 	public String toString() {
-		return "BinlogPosition[" +
-			(gtidSetStr == null ? file + ":" + offset : gtidSetStr) + "]";
+		return "BinlogPosition["
+			+ (gtidSetStr == null ? file + ":" + offset : gtidSetStr)
+			+ "]";
 	}
 
 	public boolean newerThan(BinlogPosition other) {
@@ -114,8 +109,20 @@ public class BinlogPosition implements Serializable {
 			return false;
 		BinlogPosition otherPosition = (BinlogPosition) other;
 
-		return this.file.equals(otherPosition.file) && this.offset == otherPosition.offset
-			&& (gtidSetStr == null) ? otherPosition.gtidSetStr == null
-				: gtidSetStr.equals(otherPosition.gtidSetStr);
+		return this.file.equals(otherPosition.file)
+			&& this.offset == otherPosition.offset
+			&& (gtidSetStr == null
+					? otherPosition.gtidSetStr == null
+					: gtidSetStr.equals(otherPosition.gtidSetStr)
+				);
+	}
+
+	@Override
+	public int hashCode() {
+		if (gtidSetStr != null) {
+			return gtidSetStr.hashCode();
+		} else {
+			return Long.valueOf(offset).hashCode();
+		}
 	}
 }

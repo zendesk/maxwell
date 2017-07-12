@@ -1,8 +1,14 @@
 package com.zendesk.maxwell.schema;
 
+import static com.zendesk.maxwell.MaxwellTestSupport.getSQLDir;
 import static org.junit.Assert.*;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
 
 import com.zendesk.maxwell.CaseSensitivity;
@@ -36,7 +42,7 @@ public class SchemaCaptureTest extends MaxwellTestWithIsolatedServer {
 		Schema s = capturer.capture();
 		String dbs = StringUtils.join(s.getDatabaseNames().iterator(), ":");
 
-		if ( server.getVersion().equals("5.7") )
+		if ( server.getVersion().atLeast(server.VERSION_5_7) )
 			assertEquals("maxwell:mysql:shard_1:shard_2:sys:test", dbs);
 		else
 			assertEquals("maxwell:mysql:shard_1:shard_2:test", dbs);
@@ -87,7 +93,7 @@ public class SchemaCaptureTest extends MaxwellTestWithIsolatedServer {
 		assertThat(columns[1], instanceOf(IntColumnDef.class));
 		assertThat(((IntColumnDef) columns[1]).isSigned(), is(false));
 
-		if ( server.getVersion().equals("5.6") ) {
+		if ( server.getVersion().atLeast(server.VERSION_5_6) ) {
 			assertThat(columns[10].getName(), is("timestamp2_field"));
 			assertThat(columns[10], instanceOf(DateTimeColumnDef.class));
 			assertThat(((DateTimeColumnDef) columns[10]).getColumnLength(), is(3L));
@@ -112,5 +118,28 @@ public class SchemaCaptureTest extends MaxwellTestWithIsolatedServer {
 		assertThat(pk.size(), is(2));
 		assertThat(pk.get(0), is("id"));
 		assertThat(pk.get(1), is("account_id"));
+	}
+
+	@Test
+	public void testEnums() throws SQLException, InvalidSchemaError, IOException {
+		byte[] sql = Files.readAllBytes(Paths.get(getSQLDir() + "/schema/enum.sql"));
+		server.executeList(Collections.singletonList(new String(sql)));
+
+		Schema s = capturer.capture();
+
+		Table enumTest = s.findDatabase("test").findTable("enum_test");
+		assert(enumTest != null);
+
+		ColumnDef[] columns = enumTest.getColumnList().toArray(new ColumnDef[0]);
+
+		assertThat(columns[0], notNullValue());
+		assertThat(columns[0], instanceOf(EnumColumnDef.class));
+		assertThat(columns[0].getName(), is("language"));
+		assertArrayEquals(((EnumColumnDef) columns[0]).getEnumValues(), new String[] {"en-US", "de-DE"});
+
+		assertThat(columns[1], notNullValue());
+		assertThat(columns[1], instanceOf(EnumColumnDef.class));
+		assertThat(columns[1].getName(), is("decimal_separator"));
+		assertArrayEquals(((EnumColumnDef) columns[1]).getEnumValues(), new String[] {",", "."});
 	}
 }

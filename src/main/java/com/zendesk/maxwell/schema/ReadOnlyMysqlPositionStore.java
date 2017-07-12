@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.schema;
 
-import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.replication.Position;
 import snaq.db.ConnectionPool;
 
 /**
@@ -13,8 +13,10 @@ public class ReadOnlyMysqlPositionStore extends MysqlPositionStore {
 	}
 
 	@Override
-	public void set(BinlogPosition p) { }
+	public void set(Position p) { }
 
 	@Override
-	public void heartbeat() throws Exception { }
+	public long heartbeat() throws Exception {
+		return System.currentTimeMillis();
+	}
 }

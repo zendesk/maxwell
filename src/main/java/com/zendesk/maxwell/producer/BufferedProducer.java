@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.producer;
 
-import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
 
 import java.sql.SQLException;
@@ -18,6 +18,10 @@ public class BufferedProducer extends AbstractProducer {
 
 	@Override
 	public void push(RowMap r) throws Exception {
+		// set position on heartbeats immediately to ensure we terminate cleanly
+		if (r instanceof HeartbeatRowMap) {
+			this.context.setPosition(r);
+		}
 		try {
 			this.queue.put(r);
 		} catch ( InterruptedException e ) {}
@@ -26,7 +30,7 @@ public class BufferedProducer extends AbstractProducer {
 	public RowMap poll(long timeout, TimeUnit unit) throws InterruptedException {
 		RowMap r = this.queue.poll(timeout, unit);
 		if (r != null) {
-			this.context.setPosition(r.getPosition());
+			this.context.setPosition(r);
 		}
 		return r;
 	}

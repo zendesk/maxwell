@@ -13,6 +13,8 @@ releases = client.releases('zendesk/maxwell', page: page)
 
 while releases.any?
   releases.each do |r|
+    prerelease = !!(r[:tag_name] =~ /-\w+$/)
+    next if prerelease && r[:body].strip.empty?
     out = <<-EOL
 ### [%{tag_name}](%{html_url}): %{munged_name}
 

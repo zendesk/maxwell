@@ -14,6 +14,8 @@ import java.io.InputStreamReader;
 import java.io.BufferedReader;
 import java.io.IOException;
 
+import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.replication.Position;
 import org.apache.commons.lang3.StringUtils;
 
 import org.slf4j.Logger;
@@ -146,6 +148,7 @@ public class SchemaStoreSchema {
 		}
 
 		if ( !getTableColumns("positions", c).containsKey("heartbeat_at") ) {
+			// Note: unused as of 64a6a30074e3509ed9ed102a149bf5ca844f5df5; will be removed in the future
 			performAlter(c, "alter table `positions` add column `heartbeat_at` bigint null default null");
 		}
 
@@ -167,13 +170,22 @@ public class SchemaStoreSchema {
 			InputStream is = MysqlSavedSchema.class.getResourceAsStream("/sql/maxwell_schema_heartbeats.sql");
 			executeSQLInputStream(c, is, null);
 		}
+
+		if ( !schemaColumns.containsKey("last_heartbeat_read") ) {
+			// default 0 makes sorting easier (rows before this migration are older than those after)
+			performAlter(c, "alter table `schemas` add column `last_heartbeat_read` bigint null default 0");
+		}
 	}
 
 	private static void backfillPositionSHAs(Connection c) throws SQLException {
 		ResultSet rs = c.createStatement().executeQuery("select * from `schemas`");
 		while (rs.next()) {
 			Long id = rs.getLong("id");
-			String sha = MysqlSavedSchema.getSchemaPositionSHA(rs.getLong("server_id"), rs.getString("binlog_file"), rs.getLong("binlog_position"));
+			Position position = new Position(
+				new BinlogPosition(rs.getLong("binlog_position"), rs.getString("binlog_file")),
+				rs.getLong("last_heartbeat_read")
+			);
+			String sha = MysqlSavedSchema.getSchemaPositionSHA(rs.getLong("server_id"), position);
 			c.createStatement().executeUpdate("update `schemas` set `position_sha` = '" + sha + "' where id = " + id);
 		}
 		rs.close();

@@ -4,7 +4,7 @@
 
   <groupId>com.zendesk</groupId>
   <artifactId>maxwell</artifactId>
-  <version>1.8.1</version>
+  <version>1.10.4</version>
   <packaging>jar</packaging>
 
   <name>maxwell</name>
@@ -71,36 +71,42 @@
       <version>1.5</version>
     </dependency>
     <dependency>
-    	<groupId>org.antlr</groupId>
-    	<artifactId>antlr4-runtime</artifactId>
-    	<version>4.5</version>
+      <groupId>org.antlr</groupId>
+      <artifactId>antlr4-runtime</artifactId>
+      <version>4.5</version>
     </dependency>
     <dependency>
-    	<groupId>org.hamcrest</groupId>
-    	<artifactId>hamcrest-all</artifactId>
-    	<version>1.3</version>
-    	<scope>test</scope>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-all</artifactId>
+      <version>1.3</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
-    	<groupId>junit</groupId>
-    	<artifactId>junit</artifactId>
-    	<version>4.12</version>
-    	<scope>test</scope>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
-    	<groupId>org.apache.logging.log4j</groupId>
-    	<artifactId>log4j-core</artifactId>
-    	<version>2.1</version>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>2.7.22</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
-    	<groupId>org.apache.kafka</groupId>
-    	<artifactId>kafka-clients</artifactId>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>2.8.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka-clients</artifactId>
       <version>0.9.0.1</version>
     </dependency>
     <dependency>
-    	<groupId>org.apache.logging.log4j</groupId>
-    	<artifactId>log4j-slf4j-impl</artifactId>
-    	<version>2.1</version>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+      <version>2.8.2</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -108,9 +114,9 @@
       <version>1.7.21</version>
     </dependency>
     <dependency>
-    	<groupId>com.zendesk</groupId>
-    	<artifactId>open-replicator</artifactId>
-    	<version>1.6.0</version>
+      <groupId>com.zendesk</groupId>
+      <artifactId>open-replicator</artifactId>
+      <version>1.6.0</version>
     </dependency>
     <dependency>
       <groupId>com.github.shyiko</groupId>
@@ -118,14 +124,14 @@
       <version>0.7.3</version>
     </dependency>
     <dependency>
-    	<groupId>net.sf.jopt-simple</groupId>
-    	<artifactId>jopt-simple</artifactId>
-    	<version>4.9</version>
+      <groupId>net.sf.jopt-simple</groupId>
+      <artifactId>jopt-simple</artifactId>
+      <version>4.9</version>
     </dependency>
     <dependency>
-    	<groupId>net.snaq</groupId>
-    	<artifactId>dbpool</artifactId>
-    	<version>7.0-jdk7</version>
+      <groupId>net.snaq</groupId>
+      <artifactId>dbpool</artifactId>
+      <version>7.0-jdk7</version>
     </dependency>
     <dependency>
       <groupId>com.djdch.log4j</groupId>
@@ -156,6 +162,31 @@
       <groupId>com.rabbitmq</groupId>
       <artifactId>amqp-client</artifactId>
       <version>4.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>io.dropwizard.metrics</groupId>
+      <artifactId>metrics-core</artifactId>
+      <version>3.1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>io.dropwizard.metrics</groupId>
+      <artifactId>metrics-servlets</artifactId>
+      <version>3.1.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-server</artifactId>
+      <version>9.2.21.v20170120</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-servlet</artifactId>
+      <version>9.2.21.v20170120</version>
+    </dependency>
+    <dependency>
+      <groupId>org.coursera</groupId>
+      <artifactId>metrics-datadog</artifactId>
+      <version>1.1.10</version>
     </dependency>
   </dependencies>
 

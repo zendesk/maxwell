@@ -1,19 +1,19 @@
 ### Download
 ***
-- Download binary distro: [https://github.com/zendesk/maxwell/releases/download/v1.8.1/maxwell-1.8.1.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.8.1/maxwell-1.8.1.tar.gz)
+- Download binary distro: [https://github.com/zendesk/maxwell/releases/download/v1.10.4/maxwell-1.10.4.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.10.4/maxwell-1.10.4.tar.gz)
 - Sources and bug tracking is available on github: [https://github.com/zendesk/maxwell](https://github.com/zendesk/maxwell)
 - Obligatory copy/paste to terminal:
 
 ```
-curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.8.1/maxwell-1.8.1.tar.gz \
+curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.10.4/maxwell-1.10.4.tar.gz \
        | tar zxvf -
-cd maxwell-1.8.1
+cd maxwell-1.10.4
 ```
 
 or get the docker image:
 
 ```
-docker pull osheroff/maxwell
+docker pull zendesk/maxwell
 ```
 
 ### Row based replication
@@ -57,7 +57,7 @@ mysql> GRANT ALL on maxwell.* to 'maxwell'@'localhost';
 Useful for smoke-testing the thing.
 
 ```
-bin/maxwell --user='maxwell' --password='XXXXXX' --host='1.8.1.0.1' --producer=stdout
+bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' --producer=stdout
 ```
 
 If all goes well you'll see maxwell replaying your inserts:
@@ -72,7 +72,7 @@ Query OK, 1 row affected (0.04 sec)
 ### Docker
 
 ```
-docker run -it --rm osheroff/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=stdout
+docker run -it --rm zendesk/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=stdout
 ```
 
 If you're using a virtualbox-docker setup on OSX, you'll need to ensure that:
@@ -85,7 +85,7 @@ If you're using a virtualbox-docker setup on OSX, you'll need to ensure that:
   present on the host. E.g. the above docker command then becomes,
 
 ```
-docker run -v /Users:/Users -it --rm osheroff/maxwell bin/maxwell --config=/Users/demo/maxwell/config/basic.properties
+docker run -v /Users:/Users -it --rm zendesk/maxwell bin/maxwell --config=/Users/demo/maxwell/config/basic.properties
 ```
 
 (make a note of the `-v` option).
@@ -95,14 +95,14 @@ docker run -v /Users:/Users -it --rm osheroff/maxwell bin/maxwell --config=/User
 Boot kafka as described here:  [http://kafka.apache.org/documentation.html#quickstart](http://kafka.apache.org/documentation.html#quickstart), then:
 
 ```
-bin/maxwell --user='maxwell' --password='XXXXXX' --host='1.8.1.0.1' \
+bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
    --producer=kafka --kafka.bootstrap.servers=localhost:9092
 ```
 
 (or docker):
 
 ```
-docker run -it --rm osheroff/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kafka --kafka.bootstrap.servers=$KAFKA_HOST:$KAFKA_PORT
+docker run -it --rm zendesk/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kafka --kafka.bootstrap.servers=$KAFKA_HOST:$KAFKA_PORT
 ```
 
 This will start writing to the topic "maxwell".
@@ -112,6 +112,6 @@ This will start writing to the topic "maxwell".
 ***
 
 ```
-docker run -it --rm --name maxwell -v `cd && pwd`/.aws:/root/.aws maxwell sh -c 'cp /app/kinesis-producer-library.properties.example /app/kinesis-producer-library.properties && echo "Region=$AWS_DEFAULT_REGION" >> /app/kinesis-producer-library.properties && bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kinesis --kinesis_stream=$KINESIS_STREAM'
+docker run -it --rm --name maxwell -v `cd && pwd`/.aws:/root/.aws zendesk/maxwell sh -c 'cp /app/kinesis-producer-library.properties.example /app/kinesis-producer-library.properties && echo "Region=$AWS_DEFAULT_REGION" >> /app/kinesis-producer-library.properties && bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kinesis --kinesis_stream=$KINESIS_STREAM'
 ```
 

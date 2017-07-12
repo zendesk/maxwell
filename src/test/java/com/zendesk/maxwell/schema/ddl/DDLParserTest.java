@@ -176,6 +176,7 @@ public class DDLParserTest {
 			"alter table t alter column `foo` SET DEFAULT 'foo'",
 			"alter table t alter column `foo` SET DEFAULT true",
 			"alter table t alter column `foo` SET DEFAULT false",
+			"alter table t alter column `foo` SET DEFAULT -1",
 			"alter table t alter column `foo` drop default",
 			"alter table t CHARACTER SET latin1 COLLATE = 'utf8'",
 			"ALTER TABLE `test` ENGINE=`InnoDB` CHARACTER SET latin1",
@@ -205,7 +206,9 @@ public class DDLParserTest {
 			"create table if not exists audit_payer_bank_details (event_time TIMESTAMP default CURRENT_TIMESTAMP())",
 			"ALTER TABLE foo RENAME INDEX index_quote_request_follow_on_data_on_model_name TO index_quote_request_follow_on_data_on_model_class_name",
 			"ALTER TABLE foo DROP COLUMN `ducati` CASCADE",
-			"CREATE TABLE account_groups ( visible_to_all CHAR(1) DEFAULT 'N' NOT NULL CHECK (visible_to_all IN ('Y','N')))"
+			"CREATE TABLE account_groups ( visible_to_all CHAR(1) DEFAULT 'N' NOT NULL CHECK (visible_to_all IN ('Y','N')))",
+			"create table vc11( id serial, name varchar(10) not null default \"\")"
+
 		};
 
 		for ( String s : testSQL ) {

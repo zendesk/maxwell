@@ -173,6 +173,42 @@ kinesis_stream=maxwell
 #blacklist_tables=table1,table_no
 #
 
+######## monitoring stuff ###########
+
+# Maxwell collects metrics via dropwizard. These can be exposed through the
+# base logging mechanism (slf4j), JMX, HTTP or pushed to Datadog.
+# Options: [jmx, slf4j, http, datadog]
+# Supplying multiple is allowed.
+#metrics_type=jmx,slf4j
+
+# The prefix maxwell will apply to all metrics
+#metrics_prefix=MaxwellMetrics # default MaxwellMetrics
+
+# When metrics_type includes slf4j this is the frequency metrics are emitted to the log, in seconds
+#metrics_slf4j_interval=60
+
+# When metrics_type includes http this is the port the server will bind to.
+#metrics_http_port=8080
+
+# ** The following are Datadog specific. **
+# When metrics_type includes datadog this is the way metrics will be reported.
+# Options: [udp, http]
+# Supplying multiple is not allowed.
+#metrics_datadog_type=udp
+
+# datadog tags that should be supplied
+#metrics_datadog_tags=tag1:value1,tag2:value2
+
+# The frequency metrics are pushed to datadog, in seconds
+#metrics_datadog_interval=60
+
+# required if metrics_datadog_type = http
+#metrics_datadog_apikey=API_KEY
+
+# required if metrics_datadog_type = udp
+#metrics_datadog_host=localhost # default localhost
+#metrics_datadog_port=8125 # default 8125
+
 
 ######### misc stuff ###############
 

@@ -1,10 +1,11 @@
 package com.zendesk.maxwell;
 
-import java.util.*;
-import java.util.regex.Pattern;
+import org.apache.commons.lang.StringUtils;
 
-import com.google.code.or.common.glossary.Column;
-import com.google.code.or.common.glossary.Row;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.regex.Pattern;
 
 /*
 	filters compile down to:
@@ -137,6 +138,15 @@ public class MaxwellFilter {
 	}
 
 	public static boolean isSystemBlacklisted(String databaseName, String tableName) {
-		return "mysql".equals(databaseName) && "ha_health_check".equals(tableName);
+		return "mysql".equals(databaseName) &&
+			("ha_health_check".equals(tableName) || StringUtils.startsWith(tableName, "rds_heartbeat"));
+	}
+
+	public static boolean matches(MaxwellFilter filter, String database, String table) {
+		if (filter == null) {
+			return true;
+		} else {
+			return filter.matches(database, table);
+		}
 	}
 }

@@ -485,6 +485,7 @@ alter table t1 add partition (partition p2 values in (3))
 alter table t1 add partition (partition x3 values in (30))
 alter table t1 drop partition p0
 alter table t1 drop partition p2
+alter table t1 drop partition `p2`
 alter table t1 engine=heap partition by key (a) (partition p0, partition p1)
 alter table t1 engine=heap partition by key(a) (partition p0, partition p1 engine=heap)
 alter table t1 engine=myisam partition by key(a) (partition p0 engine=myisam, partition p1)

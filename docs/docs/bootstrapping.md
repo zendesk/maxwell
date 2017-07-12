@@ -38,10 +38,10 @@ In this async mode, non-bootstrapped tables are replicated as normal by the main
 ### Bootstrapping Data Format
 ***
 
-* a bootstrap starts with a document with `type = "bootstrap-start"`
-* then documents with `type = "insert"` (one per row in the table)
-* then one document per `INSERT`, `UPDATE` or `DELETE` that occurred since the beginning of bootstrap
-* finally a document with `type = "bootstrap-complete"`
+* a bootstrap starts with an event of `type = "bootstrap-start"`
+* then events with `type = "bootstrap-insert"` (one per row in the table)
+* then one event per `INSERT`, `UPDATE` or `DELETE` with standard event types i.e. `type = "insert"`, `type = "update"` or `type = "delete"` that occurred since the beginning of bootstrap
+* finally an event with `type = "bootstrap-complete"`
 
 Here's a complete example:
 ```

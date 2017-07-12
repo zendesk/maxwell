@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.schema.ddl;
 
-import com.zendesk.maxwell.MaxwellFilter;
-import com.zendesk.maxwell.schema.*;
+import com.zendesk.maxwell.schema.Database;
+import com.zendesk.maxwell.schema.Schema;
 
 public class ResolvedDatabaseAlter extends ResolvedSchemaChange {
 	public String database;
@@ -22,5 +22,15 @@ public class ResolvedDatabaseAlter extends ResolvedSchemaChange {
 
 		if ( !d.getCharset().equals(charset) )
 			d.setCharset(charset);
+	}
+
+	@Override
+	public String databaseName() {
+		return database;
+	}
+
+	@Override
+	public String tableName() {
+		return null;
 	}
 }
