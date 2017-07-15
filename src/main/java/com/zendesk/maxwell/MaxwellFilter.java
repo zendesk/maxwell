@@ -95,6 +95,9 @@ public class MaxwellFilter {
 	}
 
 	private boolean filterListsInclude(List<Pattern> includeList, List<Pattern> excludeList, String name) {
+		if ( name == null ) {
+			return false;
+		}
 		if ( includeList.size() > 0 ) {
 			boolean found = false;
 			for ( Pattern p : includeList ) {
