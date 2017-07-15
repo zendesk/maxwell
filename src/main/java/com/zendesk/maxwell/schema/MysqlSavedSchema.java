@@ -463,6 +463,7 @@ public class MysqlSavedSchema {
 
 		Database currentDatabase = null;
 		Table currentTable = null;
+		String currentTableDName = null;
 		int columnIndex = 0;
 
 		while (rs.next()) {
@@ -492,7 +493,9 @@ public class MysqlSavedSchema {
 			if (tName == null) {
 				// if tName is null, there are no tables connected to this database
 				continue;
-			} else if (currentTable == null || !currentTable.getName().equals(tName)) {
+			} else if (currentTable == null || !currentTable.getName().equals(tName) || 
+					currentTableDName == null || !currentTableDName.equals(dbName)) {
+				currentTableDBName = dbName;
 				currentTable = currentDatabase.buildTable(tName, tCharset);
 				if (tPKs != null) {
 					List<String> pkList = Arrays.asList(StringUtils.split(tPKs, ','));
