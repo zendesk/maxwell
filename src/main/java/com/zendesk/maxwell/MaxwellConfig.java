@@ -205,8 +205,8 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts("rabbitmq_exchange_type", "Exchange type for rabbitmq").withOptionalArg();
 		parser.accepts("rabbitmq_routing_key_template", "A string template for the routing key, '%db%' and '%table%' will be substituted. Default is '%db%.%table%'.").withOptionalArg();
 
-    parser.accepts( "__separator_9" );
-    
+		parser.accepts( "__separator_9" );
+
 		parser.accepts( "metrics_prefix", "the prefix maxwell will apply to all metrics" ).withOptionalArg();
 		parser.accepts( "metrics_type", "how maxwell metrics will be reported, at least one of slf4j|jmx|http|datadog" ).withOptionalArg();
 		parser.accepts( "metrics_slf4j_interval", "the frequency metrics are emitted to the log, in seconds, when slf4j reporting is configured" ).withOptionalArg();
