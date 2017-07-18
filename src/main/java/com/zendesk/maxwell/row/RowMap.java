@@ -68,6 +68,14 @@ public class RowMap implements Serializable {
 				}
 			};
 
+	private static final ThreadLocal<DataJsonGenerator> plaintextDataGeneratorThreadLocal =
+			new ThreadLocal<DataJsonGenerator>() {
+				@Override
+				protected DataJsonGenerator initialValue() {
+					return new PlaintextJsonGenerator(jsonGeneratorThreadLocal.get());
+				}
+			};
+
 	public RowMap(String type, String database, String table, Long timestampMillis, List<String> pkColumns,
 			Position nextPosition) {
 		this.rowType = type;
@@ -181,69 +189,45 @@ public class RowMap implements Serializable {
 		}
 	}
 
+	private DataJsonGenerator dataJsonGenerator(JsonGenerator generator, MaxwellOutputConfig outputConfig) {
+		if (outputConfig.encryptData && !outputConfig.encryptAll) {
+			// TODO: this is inefficient, ideally we'd cache thread-local
+			return new EncryptingJsonGenerator(generator, jsonFactory, outputConfig.encryption_key, outputConfig.secret_key);
+		} else {
+			return plaintextDataGeneratorThreadLocal.get();
+		}
+	}
+
 	private void writeMapToJSON(String jsonMapName, LinkedHashMap<String, Object> data, MaxwellOutputConfig outputConfig) throws IOException {
 		JsonGenerator generator = jsonGeneratorThreadLocal.get();
+		DataJsonGenerator dataGenerator = dataJsonGenerator(generator, outputConfig);
 
-		if(outputConfig.encryptData && !outputConfig.encryptAll){
-			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-			JsonGenerator obj = jsonFactory.createGenerator(outputStream);
+		dataGenerator.begin(jsonMapName);
 
-			obj.writeStartObject();
-			for (String key : data.keySet()) {
-				Object value = data.get(key);
+		for (String key : data.keySet()) {
+			Object value = data.get(key);
 
-				if (value == null && !outputConfig.includesNulls)
-					continue;
+			if (value == null && !outputConfig.includesNulls)
+				continue;
 
-				if ( value instanceof List ) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
-					List stringList = (List) value;
+			if (value instanceof List) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
+				List stringList = (List) value;
 
-					obj.writeArrayFieldStart(key);
-					for ( Object s : stringList )  {
-						obj.writeObject(s);
-					}
-					obj.writeEndArray();
-				} else if (value instanceof RawJSONString) {
-					// JSON column type, using binlog-connector's serializers.
-					obj.writeFieldName(key);
-					obj.writeRawValue(((RawJSONString) value).json);
-				} else {
-					obj.writeObjectField(key, value);
+				dataGenerator.writeArrayFieldStart(key);
+				for (Object s : stringList) {
+					dataGenerator.writeObject(s);
 				}
+				dataGenerator.writeEndArray();
+			} else if (value instanceof RawJSONString) {
+				// JSON column type, using binlog-connector's serializers.
+				dataGenerator.writeFieldName(key);
+				dataGenerator.writeRawValue(((RawJSONString) value).json);
+			} else {
+				dataGenerator.writeObjectField(key, value);
 			}
-			obj.writeEndObject();
-			obj.close();
-			outputStream.close();
-			generator.writeStringField(jsonMapName, RowEncrypt.encrypt(outputStream.toString(), outputConfig.encryption_key, outputConfig.secret_key));
 		}
-		else {
-			generator.writeObjectFieldStart(jsonMapName); // start of jsonMapName: {
 
-			for (String key : data.keySet()) {
-				Object value = data.get(key);
-
-				if (value == null && !outputConfig.includesNulls)
-					continue;
-
-				if (value instanceof List) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
-					List stringList = (List) value;
-
-					generator.writeArrayFieldStart(key);
-					for (Object s : stringList) {
-						generator.writeObject(s);
-					}
-					generator.writeEndArray();
-				} else if (value instanceof RawJSONString) {
-					// JSON column type, using binlog-connector's serializers.
-					generator.writeFieldName(key);
-					generator.writeRawValue(((RawJSONString) value).json);
-				} else {
-					generator.writeObjectField(key, value);
-				}
-			}
-
-			generator.writeEndObject(); // end of 'jsonMapName: { }'
-		}
+		dataGenerator.end(); // end of 'jsonMapName: { }'
 	}
 
 	public String toJSON() throws IOException {
