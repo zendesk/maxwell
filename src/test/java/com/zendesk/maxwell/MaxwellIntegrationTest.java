@@ -22,8 +22,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	public void testEncryptedData() throws Exception{
 		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
 		outputConfig.encryptData = true;
-		outputConfig.encryption_key = "aaaaaaaaaaaaaaaa";
-		outputConfig.secret_key = "RandomInitVector";
+		outputConfig.secret_key = "aaaaaaaaaaaaaaaa";
 		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
 		list = getRowsForSQL(input);
@@ -31,7 +30,9 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 		Map<String,Object> output = MaxwellTestJSON.parseJSON(json);
 
-		output.put("data",MaxwellTestJSON.parseJSON(RowEncrypt.decrypt(output.get("data").toString(), outputConfig.encryption_key, outputConfig.secret_key)));
+		String init_vector = output.get("init_vector").toString();
+
+		output.put("data",MaxwellTestJSON.parseJSON(RowEncrypt.decrypt(output.get("data").toString(), outputConfig.secret_key, init_vector)));
 
 		assertTrue(output.get("database").equals("shard_1"));
 		assertTrue(output.get("table").equals("minimal"));
@@ -47,14 +48,17 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	public void testEncryptedAll() throws Exception{
 		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
 		outputConfig.encryptAll = true;
-		outputConfig.encryption_key = "aaaaaaaaaaaaaaaa";
-		outputConfig.secret_key = "RandomInitVector";
+		outputConfig.secret_key = "aaaaaaaaaaaaaaaa";
 		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
 		list = getRowsForSQL(input);
 		String json = list.get(0).toJSON(outputConfig);
 
-		Map<String,Object> output = MaxwellTestJSON.parseJSON(RowEncrypt.decrypt(json, outputConfig.encryption_key, outputConfig.secret_key));
+		Map<String,Object> output = MaxwellTestJSON.parseJSON(json);
+
+		String init_vector = output.get("init_vector").toString();
+
+		output = (MaxwellTestJSON.parseJSON(RowEncrypt.decrypt(output.get("data").toString(), outputConfig.secret_key, init_vector)));
 
 		assertTrue(output.get("database").equals("shard_1"));
 		assertTrue(output.get("table").equals("minimal"));

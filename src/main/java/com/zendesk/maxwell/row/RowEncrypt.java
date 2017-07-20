@@ -14,15 +14,15 @@ public class RowEncrypt {
 
 	static final Logger LOGGER = LoggerFactory.getLogger(RowEncrypt.class);
 
-	public static String encrypt(String value, String key, String initVector) {
+	public static String encrypt(String value, String secretKey, byte[] initVector) {
 		try {
-			IvParameterSpec iv = new IvParameterSpec(initVector.getBytes("ASCII"));
-			SecretKeySpec skeySpec = new SecretKeySpec(key.getBytes("ASCII"), "AES");
+			IvParameterSpec iv = new IvParameterSpec(initVector);
+			SecretKeySpec skeySpec = new SecretKeySpec(secretKey.getBytes("ASCII"), "AES");
 
 			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
 			cipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
 
-			byte[] encrypted = cipher.doFinal(value.getBytes());
+			byte[] encrypted = cipher.doFinal(value.getBytes("UTF-8"));
 
 			return Base64.encodeBase64String(encrypted);
 		} catch (Exception ex) {
@@ -32,10 +32,10 @@ public class RowEncrypt {
 		return null;
 	}
 
-	public static String decrypt(String value, String key, String initVector) {
+	public static String decrypt(String value, String secretKey, String initVector) {
 		try {
-			IvParameterSpec ivSpec = new IvParameterSpec(initVector.getBytes("ASCII"));
-			SecretKeySpec skeySpec = new SecretKeySpec(key.getBytes("ASCII"), "AES");
+			IvParameterSpec ivSpec = new IvParameterSpec(Base64.decodeBase64(initVector.getBytes("ASCII")));
+			SecretKeySpec skeySpec = new SecretKeySpec(secretKey.getBytes("ASCII"), "AES");
 
 			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
 			cipher.init(Cipher.DECRYPT_MODE, skeySpec, ivSpec);
