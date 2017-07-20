@@ -15,7 +15,6 @@ public class MaxwellOutputConfig {
 	public List<Pattern> excludeColumns;
 	public boolean encryptData;
 	public boolean encryptAll;
-	public String encryption_key;
 	public String secret_key;
 
 
@@ -30,7 +29,6 @@ public class MaxwellOutputConfig {
 		this.excludeColumns = new ArrayList<>();
 		this.encryptData = false;
 		this.encryptAll = false;
-		this.encryption_key = null;
 		this.secret_key = null;
 	}
 }

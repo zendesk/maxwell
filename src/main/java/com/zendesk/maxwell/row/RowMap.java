@@ -4,12 +4,15 @@ import com.fasterxml.jackson.core.*;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.Position;
+import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -73,6 +76,14 @@ public class RowMap implements Serializable {
 				@Override
 				protected DataJsonGenerator initialValue() {
 					return new PlaintextJsonGenerator(jsonGeneratorThreadLocal.get());
+				}
+			};
+
+	private static final ThreadLocal<DataJsonGenerator> encryptingJsonGeneratorThreadLocal =
+			new ThreadLocal<DataJsonGenerator>() {
+				@Override
+				protected DataJsonGenerator initialValue(){
+					return new EncryptingJsonGenerator(jsonGeneratorThreadLocal.get(),jsonFactory);
 				}
 			};
 
@@ -189,20 +200,20 @@ public class RowMap implements Serializable {
 		}
 	}
 
-	private DataJsonGenerator dataJsonGenerator(JsonGenerator generator, MaxwellOutputConfig outputConfig) {
+	private DataJsonGenerator dataJsonGenerator(MaxwellOutputConfig outputConfig) throws NoSuchAlgorithmException{
 		if (outputConfig.encryptData && !outputConfig.encryptAll) {
-			// TODO: this is inefficient, ideally we'd cache thread-local
-			return new EncryptingJsonGenerator(generator, jsonFactory, outputConfig.encryption_key, outputConfig.secret_key);
+			DataJsonGenerator g = encryptingJsonGeneratorThreadLocal.get();
+			g.set(outputConfig.secret_key);
+			return g;
 		} else {
 			return plaintextDataGeneratorThreadLocal.get();
 		}
 	}
 
-	private void writeMapToJSON(String jsonMapName, LinkedHashMap<String, Object> data, MaxwellOutputConfig outputConfig) throws IOException {
-		JsonGenerator generator = jsonGeneratorThreadLocal.get();
-		DataJsonGenerator dataGenerator = dataJsonGenerator(generator, outputConfig);
+	private void writeMapToJSON(String jsonMapName, LinkedHashMap<String, Object> data, MaxwellOutputConfig outputConfig) throws IOException, NoSuchAlgorithmException {
+		DataJsonGenerator dataGenerator = dataJsonGenerator(outputConfig);
 
-		dataGenerator.begin(jsonMapName);
+		dataGenerator.begin(jsonMapName, byteArrayThreadLocal.get());
 
 		for (String key : data.keySet()) {
 			Object value = data.get(key);
@@ -230,11 +241,11 @@ public class RowMap implements Serializable {
 		dataGenerator.end(); // end of 'jsonMapName: { }'
 	}
 
-	public String toJSON() throws IOException {
+	public String toJSON() throws IOException, NoSuchAlgorithmException {
 		return toJSON(new MaxwellOutputConfig());
 	}
 
-	public String toJSON(MaxwellOutputConfig outputConfig) throws IOException {
+	public String toJSON(MaxwellOutputConfig outputConfig) throws IOException, NoSuchAlgorithmException {
 		JsonGenerator g = jsonGeneratorThreadLocal.get();
 
 		g.writeStartObject(); // start of row {
@@ -293,25 +304,37 @@ public class RowMap implements Serializable {
 		g.writeEndObject(); // end of row
 		g.flush();
 
-		if( outputConfig.encryptAll ) {
-			return encryptedJsonFromStream(outputConfig);
+		if(outputConfig.encryptAll){
+			return encryptedJsonFromStream(g, outputConfig);
 		}
-		else{
+		else {
 			return jsonFromStream();
 		}
-	}
-
-	private String encryptedJsonFromStream(MaxwellOutputConfig outputConfig){
-		ByteArrayOutputStream b = byteArrayThreadLocal.get();
-		String s = b.toString();
-		b.reset();
-		return RowEncrypt.encrypt(s, outputConfig.encryption_key, outputConfig.secret_key);
 	}
 
 	private String jsonFromStream() {
 		ByteArrayOutputStream b = byteArrayThreadLocal.get();
 		String s = b.toString();
 		b.reset();
+		return s;
+	}
+
+	private String encryptedJsonFromStream(JsonGenerator g, MaxwellOutputConfig outputConfig) throws IOException, NoSuchAlgorithmException {
+		SecureRandom randomSecureRandom = SecureRandom.getInstance("SHA1PRNG");
+		byte[] iv = new byte[16];
+		randomSecureRandom.nextBytes(iv);
+		byte[] init_vector = iv;
+		ByteArrayOutputStream outputStream = byteArrayThreadLocal.get();
+		String encryptedJSON = RowEncrypt.encrypt(outputStream.toString(), outputConfig.secret_key, init_vector);
+		outputStream.reset();
+		g.writeStartObject();
+		g.writeStringField("data", encryptedJSON);
+		g.writeStringField("init_vector", Base64.encodeBase64String(init_vector));
+		g.writeEndObject();
+		g.flush();
+
+		String s = outputStream.toString();
+		outputStream.reset();
 		return s;
 	}
 

@@ -184,8 +184,7 @@ blacklist_tables               | PATTERN                             | ignore up
 **encryption**
 encrypt_data                   | BOOLEAN                             | encrypt the data field of the payload               | false
 encrypt_all                    | BOOLEAN                             | encrypt the entire payload                          | false
-encryption_key                 | STRING                              | specify the encryption key to be used               | null
-secret_key                     | STRING                              | specify the secret key to be used                   | null
+secret_key                     | STRING                              | specify the encryption key to be used               | null
 **monitoring**
 metrics_prefix | STRING | the prefix maxwell will apply to all metrics | MaxwellMetrics
 metrics_type         | [slf4j &#124; jmx &#124; http &#124; datadog]      | how maxwell metrics will be reported, at least one of slf4j &#124; jmx &#124; http &#124; datadog| 
