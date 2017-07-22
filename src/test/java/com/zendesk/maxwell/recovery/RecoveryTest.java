@@ -103,8 +103,7 @@ public class RecoveryTest extends TestWithNameLogging {
 			slaveConfig.databaseName,
 			slaveContext.getReplicationConnectionPool(),
 			slaveContext.getCaseSensitivity(),
-			recoveryInfo,
-			System.getenv("SHYKO_MODE") != null
+			recoveryInfo
 		);
 
 		Position recoveredPosition = recovery.recover();
@@ -145,8 +144,7 @@ public class RecoveryTest extends TestWithNameLogging {
 			slaveConfig.databaseName,
 			slaveContext.getReplicationConnectionPool(),
 			slaveContext.getCaseSensitivity(),
-			recoveryInfo,
-			System.getenv("SHYKO_MODE") != null
+			recoveryInfo
 		);
 
 		Position recoveredPosition = recovery.recover();
@@ -342,7 +340,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		Position slavePosition3 = MaxwellTestSupport.capture(slaveServer.getConnection());
 		LOGGER.info("slave master position after resumption: " + slavePosition3 + " rows: " + rows.size());
 		assertTrue(slavePosition3.newerThan(slavePosition2));
-		
+
 		for ( long i = 0 ; i < expectedRowCount; i++ ) {
 			RowMap row = rows.get((int) i);
 			assertEquals(i + 1, row.getData("id"));
