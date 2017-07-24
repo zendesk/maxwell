@@ -19,7 +19,7 @@ interface DataJsonGenerator {
 
 	// outer object
 	void begin(String key, ByteArrayOutputStream bos) throws IOException;
-	void set(String secret_key) throws NoSuchAlgorithmException;
+	void set(String secret_key) throws IOException,NoSuchAlgorithmException;
 	void end() throws IOException;
 
 	// contents
@@ -113,19 +113,18 @@ class EncryptingJsonGenerator implements DataJsonGenerator {
 		encryptedGenerator.flush();
 		String encryptedJSON = RowEncrypt.encrypt(outputStream.toString(), secretKey, initVector);
 		rawGenerator.writeStringField(toplevelKey, encryptedJSON);
-		rawGenerator.writeStringField("init_vector", Base64.encodeBase64String(initVector));
 		outputStream.reset();
 		outputStream.close();
 	}
 
 	@Override
-	public void set(String secret_key) throws NoSuchAlgorithmException{
+	public void set(String secret_key) throws IOException,NoSuchAlgorithmException{
 		this.secretKey = secret_key;
 		SecureRandom randomSecureRandom = SecureRandom.getInstance("SHA1PRNG");
 		byte[] iv = new byte[16];
 		randomSecureRandom.nextBytes(iv);
 		this.initVector = iv;
-
+		rawGenerator.writeStringField("init_vector", Base64.encodeBase64String(initVector));
 	}
 
 	@Override

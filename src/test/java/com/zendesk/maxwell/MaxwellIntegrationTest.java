@@ -4,11 +4,16 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowEncrypt;
 import com.zendesk.maxwell.row.RowMap;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import org.apache.commons.codec.binary.Base64;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.*;

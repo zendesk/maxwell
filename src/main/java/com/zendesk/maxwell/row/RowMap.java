@@ -203,7 +203,6 @@ public class RowMap implements Serializable {
 	private DataJsonGenerator dataJsonGenerator(MaxwellOutputConfig outputConfig) throws NoSuchAlgorithmException{
 		if (outputConfig.encryptData && !outputConfig.encryptAll) {
 			DataJsonGenerator g = encryptingJsonGeneratorThreadLocal.get();
-			g.set(outputConfig.secret_key);
 			return g;
 		} else {
 			return plaintextDataGeneratorThreadLocal.get();
@@ -212,7 +211,9 @@ public class RowMap implements Serializable {
 
 	private void writeMapToJSON(String jsonMapName, LinkedHashMap<String, Object> data, MaxwellOutputConfig outputConfig) throws IOException, NoSuchAlgorithmException {
 		DataJsonGenerator dataGenerator = dataJsonGenerator(outputConfig);
-
+		if(jsonMapName != "old") {
+			dataGenerator.set(outputConfig.secret_key);
+		}
 		dataGenerator.begin(jsonMapName, byteArrayThreadLocal.get());
 
 		for (String key : data.keySet()) {
