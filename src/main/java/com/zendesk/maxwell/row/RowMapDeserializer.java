@@ -41,6 +41,10 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 	public RowMap deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
 		JsonNode node = jsonParser.getCodec().readTree(jsonParser);
 
+		if(!node.has("type")){
+			node = mapper.readTree(RowEncrypt.decrypt(node.get("data").toString(), this.secret_key, node.get("init_vector").toString()));
+		}
+
 		JsonNode type = node.get("type");
 		if (type == null) {
 			throw new ParseException("`type` is required and cannot be null.");

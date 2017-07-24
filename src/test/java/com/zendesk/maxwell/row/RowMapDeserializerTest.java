@@ -82,4 +82,40 @@ public class RowMapDeserializerTest {
 		Assert.assertEquals(1, rowMap.getData("account_id"));
 		Assert.assertEquals("goodbye", rowMap.getData("text_field"));
 	}
+
+	@Test
+	public void testAllEncryptedInsert() throws Exception {
+		byte[] bytes = ByteStreams.toByteArray(this.getClass().getResourceAsStream("/json/all-encrypted-user-insert.json"));
+		Assert.assertNotNull(bytes);
+
+		RowMap rowMap = RowMapDeserializer.createFromString(new String(bytes),"aaaaaaaaaaaaaaaa");
+		Assert.assertNotNull(rowMap);
+
+		Assert.assertEquals("shard_1", rowMap.getDatabase());
+		Assert.assertEquals("minimal", rowMap.getTable());
+		Assert.assertEquals("insert", rowMap.getRowType());
+		Assert.assertEquals("1500935709", rowMap.getTimestamp().toString());
+		Assert.assertEquals("161", rowMap.getXid().toString());
+		Assert.assertEquals(1, rowMap.getData("id"));
+		Assert.assertEquals(1, rowMap.getData("account_id"));
+		Assert.assertEquals("hello", rowMap.getData("text_field"));
+	}
+
+	@Test
+	public void testAllEncryptedUpdate() throws Exception {
+		byte[] bytes = ByteStreams.toByteArray(this.getClass().getResourceAsStream("/json/all-encrypted-user-update.json"));
+		Assert.assertNotNull(bytes);
+
+		RowMap rowMap = RowMapDeserializer.createFromString(new String(bytes),"aaaaaaaaaaaaaaaa");
+		Assert.assertNotNull(rowMap);
+
+		Assert.assertEquals("shard_1", rowMap.getDatabase());
+		Assert.assertEquals("minimal", rowMap.getTable());
+		Assert.assertEquals("update", rowMap.getRowType());
+		Assert.assertEquals("1500935710", rowMap.getTimestamp().toString());
+		Assert.assertEquals("294", rowMap.getXid().toString());
+		Assert.assertEquals(1, rowMap.getData("id"));
+		Assert.assertEquals(1, rowMap.getData("account_id"));
+		Assert.assertEquals("goodbye", rowMap.getData("text_field"));
+	}
 }
