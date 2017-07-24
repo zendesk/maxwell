@@ -4,16 +4,11 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowEncrypt;
 import com.zendesk.maxwell.row.RowMap;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import org.apache.commons.codec.binary.Base64;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.*;
@@ -62,14 +57,6 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		Map<String,Object> output = MaxwellTestJSON.parseJSON(json);
 
 		String init_vector = output.get("init_vector").toString();
-
-
-		System.out.println(json);
-
-		String input2[] = {"update minimal set text_field='goodbye' WHERE account_id = 1"};
-		List<RowMap> list2 = getRowsForSQL(input2);
-		String json2 = list2.get(0).toJSON(outputConfig);
-		System.out.println(json2);
 
 		output = (MaxwellTestJSON.parseJSON(RowEncrypt.decrypt(output.get("data").toString(), outputConfig.secret_key, init_vector)));
 
