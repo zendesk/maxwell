@@ -60,6 +60,8 @@ public class MaxwellConfig extends AbstractConfig {
 	public String kinesisStream;
 	public boolean kinesisMd5Keys;
 
+	public String sqsQueueUri;
+	
 	public String outputFile;
 	public MaxwellOutputConfig outputConfig;
 	public String log_level;
@@ -155,6 +157,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "kafka_version", "use kafka 0.8, 0.9, 0.10, 0.10.1, or 0.10.2 producer (default 0.9)");
 
 		parser.accepts( "kinesis_stream", "kinesis stream name").withOptionalArg();
+    parser.accepts( "sqs_queue_uri", "SQS Queue uri").withOptionalArg();
 
 		parser.accepts("__separator_4");
 
@@ -362,6 +365,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.kinesisStream  = fetchOption("kinesis_stream", options, properties, null);
 		this.kinesisMd5Keys = fetchBooleanOption("kinesis_md5_keys", options, properties, false);
+		
+		this.sqsQueueUri = fetchOption("sqs_queue_uri", options, properties, null);
 
 		this.outputFile = fetchOption("output_file", options, properties, null);
 
@@ -475,6 +480,8 @@ public class MaxwellConfig extends AbstractConfig {
 			usageForOptions("please specify --output_file=FILE to use the file producer", "--producer", "--output_file");
 		} else if ( this.producerType.equals("kinesis") && this.kinesisStream == null) {
 			usageForOptions("please specify a stream name for kinesis", "kinesis_stream");
+		}else if ( this.producerType.equals("sqs") && this.sqsQueueUri == null){
+      usageForOptions("please specify a queue uri for sqs", "sqs_queue_uri");
 		}
 
 		if ( !this.bootstrapperType.equals("async")
