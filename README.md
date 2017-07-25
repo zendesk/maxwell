@@ -9,8 +9,6 @@ entire code base to add (unreliable) instrumentation points.  Common use cases
 include ETL, cache building/expiring, metrics collection, search indexing and
 inter-service communication.
 
-advanced features:
-
 - Can do `SELECT * from table` (bootstrapping) initial loads of a table.
 - supports automatic position recover on master promotion
 - flexible partitioning schemes for Kakfa - by database, table, primary key, or column
