@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 
 import com.amazonaws.handlers.AsyncHandler;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
+import com.amazonaws.services.sqs.AmazonSQSAsyncClient;
+import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.amazonaws.services.sqs.model.SendMessageResult;
 import com.zendesk.maxwell.MaxwellContext;
@@ -19,6 +21,7 @@ public class MaxwellSQSProducer extends AbstractAsyncProducer {
 	public MaxwellSQSProducer(MaxwellContext context, String queueUri) {
 		super(context);
 		this.queueUri = queueUri;
+		this.client = AmazonSQSAsyncClientBuilder.defaultClient();
 	}
 
 	@Override
