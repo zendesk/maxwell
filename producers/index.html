@@ -22,7 +22,7 @@
             <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
             <script src="https://oss.maxcdn.com/libs/respond.js/1.5.2/respond.min.js"></script>
         <![endif]-->
-        <script src="https://code.jquery.com/jquery-1.10.4.min.js"></script>
+        <script src="http://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
     </head>
 
     <body>
@@ -305,12 +305,7 @@ See the <a href="http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/cred
 <p>Set the output stream in <code>config.properties</code> by setting the <code>kinesis_stream</code> property.</p>
 <p>The producer uses the <a href="http://docs.aws.amazon.com/streams/latest/dev/developing-producers-with-kpl.html">KPL (Kinesis Producer Library</a> and uses the KPL built in configurations.
 Copy <code>kinesis-producer-library.properties.example</code> to <code>kinesis-producer-library.properties</code> and configure the properties file to your needs.
-The most important option here is configuring the region.</p>
-<script>
-  jQuery(document).ready(function () {
-    jQuery("table").addClass("table table-condensed table-bordered table-hover");
-  });
-</script></div>
+The most important option here is configuring the region.</p></div>
         </div>
 
         
@@ -319,4 +314,12 @@ The most important option here is configuring the region.</p>
         <script src="../js/prettify-1.0.min.js"></script>
         <script src="../js/base.js"></script>
     </body>
+    <script>
+        jQuery(document).ready(function () {
+            jQuery("table").addClass("table table-condensed table-bordered table-hover");
+            jQuery("#maxwell-header").append(
+                jQuery("<img alt='The Daemon, maybe' src='/img/cyberiad_1.jpg' id='maxwell-daemon-image'>")
+            );
+        });
+    </script>
 </html>

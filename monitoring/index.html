@@ -22,7 +22,7 @@
             <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
             <script src="https://oss.maxcdn.com/libs/respond.js/1.5.2/respond.min.js"></script>
         <![endif]-->
-        <script src="https://code.jquery.com/jquery-1.10.4.min.js"></script>
+        <script src="http://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
     </head>
 
     <body>
@@ -286,22 +286,22 @@ At present certain metrics are Kafka-specific - that is, not yet supported other
 <table>
 <thead>
 <tr>
-<th>endpoint</th>
-<th>description</th>
+<th align="left">endpoint</th>
+<th align="left">description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>/metrics</code></td>
-<td>return all metrics as JSON</td>
+<td align="left"><code>/metrics</code></td>
+<td align="left">return all metrics as JSON</td>
 </tr>
 <tr>
-<td><code>/healthcheck</code></td>
-<td>run Maxwell's healthcheck(s) and return success or failure based on the result</td>
+<td align="left"><code>/healthcheck</code></td>
+<td align="left">run Maxwell's healthcheck(s) and return success or failure based on the result</td>
 </tr>
 <tr>
-<td><code>/ping</code></td>
-<td>a simple ping test, responds with <code>pong</code></td>
+<td align="left"><code>/ping</code></td>
+<td align="left">a simple ping test, responds with <code>pong</code></td>
 </tr>
 </tbody>
 </table>
@@ -318,13 +318,7 @@ To make use of this set <code>JAVA_OPTS</code> before starting Maxwell.</p>
 -Dcom.sun.management.jmxremote.authenticate=false \
 -Dcom.sun.management.jmxremote.ssl=false \
 -Djava.rmi.server.hostname=SERVER_IP_ADDRESS&quot;
-</code></pre>
-
-<script>
-  jQuery(document).ready(function () {
-    jQuery("table").addClass("table table-condensed table-bordered table-hover");
-  });
-</script></div>
+</code></pre></div>
         </div>
 
         
@@ -333,4 +327,12 @@ To make use of this set <code>JAVA_OPTS</code> before starting Maxwell.</p>
         <script src="../js/prettify-1.0.min.js"></script>
         <script src="../js/base.js"></script>
     </body>
+    <script>
+        jQuery(document).ready(function () {
+            jQuery("table").addClass("table table-condensed table-bordered table-hover");
+            jQuery("#maxwell-header").append(
+                jQuery("<img alt='The Daemon, maybe' src='/img/cyberiad_1.jpg' id='maxwell-daemon-image'>")
+            );
+        });
+    </script>
 </html>

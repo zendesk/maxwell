@@ -22,7 +22,7 @@
             <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
             <script src="https://oss.maxcdn.com/libs/respond.js/1.5.2/respond.min.js"></script>
         <![endif]-->
-        <script src="https://code.jquery.com/jquery-1.10.4.min.js"></script>
+        <script src="http://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
     </head>
 
     <body>
@@ -774,12 +774,7 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 <td></td>
 </tr>
 </tbody>
-</table>
-<script>
-  jQuery(document).ready(function () {
-    jQuery("table").addClass("table table-condensed table-bordered table-hover");
-  });
-</script></div>
+</table></div>
         </div>
 
         
@@ -788,4 +783,12 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
         <script src="../js/prettify-1.0.min.js"></script>
         <script src="../js/base.js"></script>
     </body>
+    <script>
+        jQuery(document).ready(function () {
+            jQuery("table").addClass("table table-condensed table-bordered table-hover");
+            jQuery("#maxwell-header").append(
+                jQuery("<img alt='The Daemon, maybe' src='/img/cyberiad_1.jpg' id='maxwell-daemon-image'>")
+            );
+        });
+    </script>
 </html>

@@ -22,7 +22,7 @@
             <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
             <script src="https://oss.maxcdn.com/libs/respond.js/1.5.2/respond.min.js"></script>
         <![endif]-->
-        <script src="https://code.jquery.com/jquery-1.10.4.min.js"></script>
+        <script src="http://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
     </head>
 
     <body>
@@ -190,6 +190,21 @@
             <div class="col-md-10" role="main">
 
 <h1 id="maxwell-changelog">Maxwell changelog</h1>
+<h3 id="v1104-shutdown-harder"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.10.4">v1.10.4</a>: "shutdown --harder"</h3>
+<p>Notable changes:</p>
+<ul>
+<li>Shutdown hardening. If maxwell can't shut down (because the kafka
+   producer is in a bad state and <code>close()</code> never terminates, for example),
+   it would previously stall and process no messages. Now, shutdown is run
+   in a separate thread and there is an additional watchdog thread which
+   forcibly kills the maxwell process if it can't shut down within 10
+   seconds.</li>
+<li>Initial support for running maxwell from java, rather then as its own
+   process. This mode of operation is still experimental, but we'll
+   accept PRs to improve it (thanks Geoff Lywood).</li>
+<li>Fix incorrect handling of negative (pre-epoch dates) when using
+   binlog_connector mode (thanks Geoff Lywood).</li>
+</ul>
 <h3 id="v1103-1102-and-a-bit"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.10.3">v1.10.3</a>: "1.10.2-and-a-bit"</h3>
 <ul>
 <li>tiny release to fix a units error in the <code>replication.lag</code> metric
@@ -718,4 +733,12 @@ changed.  Thanks @kristiankaufmann</p>
         <script src="../js/prettify-1.0.min.js"></script>
         <script src="../js/base.js"></script>
     </body>
+    <script>
+        jQuery(document).ready(function () {
+            jQuery("table").addClass("table table-condensed table-bordered table-hover");
+            jQuery("#maxwell-header").append(
+                jQuery("<img alt='The Daemon, maybe' src='/img/cyberiad_1.jpg' id='maxwell-daemon-image'>")
+            );
+        });
+    </script>
 </html>

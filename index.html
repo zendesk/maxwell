@@ -22,7 +22,7 @@
             <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
             <script src="https://oss.maxcdn.com/libs/respond.js/1.5.2/respond.min.js"></script>
         <![endif]-->
-        <script src="https://code.jquery.com/jquery-1.10.4.min.js"></script>
+        <script src="http://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
     </head>
 
     <body>
@@ -203,7 +203,6 @@ on" some of the benefits of stream processing systems without going through your
 entire code base to add (unreliable) instrumentation points.  Common use cases
 include ETL, cache building/expiring, metrics collection, search indexing and
 inter-service communication.</p>
-<p>advanced features:</p>
 <ul>
 <li>Can do <code>SELECT * from table</code> (bootstrapping) initial loads of a table.</li>
 <li>supports automatic position recover on master promotion</li>
@@ -240,16 +239,7 @@ inter-service communication.</p>
     &quot;data&quot;: {&quot;id&quot;:1, &quot;daemon&quot;: &quot;Firebus!  Firebus!&quot;},
     &quot;old&quot;:  {&quot;daemon&quot;: &quot;Stanislaw Lem&quot;}
   }
-</code></pre>
-
-<script>
-  jQuery(document).ready(function () {
-    jQuery("#maxwell-header").append(
-      jQuery("<img alt='The Daemon, maybe' src='./img/cyberiad_1.jpg' id='maxwell-daemon-image'>")
-    );
-    jQuery("pre").addClass("home-code");
-  });
-</script></div>
+</code></pre></div>
         </div>
 
         
@@ -258,4 +248,12 @@ inter-service communication.</p>
         <script src="./js/prettify-1.0.min.js"></script>
         <script src="./js/base.js"></script>
     </body>
+    <script>
+        jQuery(document).ready(function () {
+            jQuery("table").addClass("table table-condensed table-bordered table-hover");
+            jQuery("#maxwell-header").append(
+                jQuery("<img alt='The Daemon, maybe' src='/img/cyberiad_1.jpg' id='maxwell-daemon-image'>")
+            );
+        });
+    </script>
 </html>
