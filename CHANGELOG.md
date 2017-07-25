@@ -1,5 +1,12 @@
 # Maxwell changelog
 
+### [v1.10.5](https://github.com/zendesk/maxwell/releases/tag/v1.10.5): "half asleep on her couch"
+
+
+- Shyko's binlog-connector is now the default and only replication
+backend available for maxwell.
+
+
 ### [v1.10.4](https://github.com/zendesk/maxwell/releases/tag/v1.10.4): "shutdown --harder"
 
 
