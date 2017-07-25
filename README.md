@@ -52,15 +52,3 @@ advanced features:
     "old":  {"daemon": "Stanislaw Lem"}
   }
 ```
-
-
-
-<script>
-  jQuery(document).ready(function () {
-    jQuery("#maxwell-header").append(
-      jQuery("<img alt='The Daemon, maybe' src='./img/cyberiad_1.jpg' id='maxwell-daemon-image'>")
-    );
-    jQuery("pre").addClass("home-code");
-  });
-</script>
-
