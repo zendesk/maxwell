@@ -16,26 +16,34 @@ import java.util.Iterator;
 
 public class RowMapDeserializer extends StdDeserializer<RowMap> {
 	private static ObjectMapper mapper;
-	private String encryption_key;
 	private String secret_key;
 
+
 	public RowMapDeserializer() {
-		this(null);
+		this(Class.class);
 	}
+
+	public RowMapDeserializer(String secret_key){
+		this(null,secret_key);
+	}
+
 
 	public RowMapDeserializer(Class<?> vc) {
 		super(vc);
 	}
 
-	public RowMapDeserializer(String encryption_key, String secret_key){
-		this(null);
-		this.encryption_key = encryption_key;
+	public RowMapDeserializer(Class<?> vc, String secret_key){
+		super(vc);
 		this.secret_key = secret_key;
 	}
 
 	@Override
 	public RowMap deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
 		JsonNode node = jsonParser.getCodec().readTree(jsonParser);
+
+		if(!node.has("type")){
+			node = mapper.readTree(RowEncrypt.decrypt(node.get("data").toString(), this.secret_key, node.get("init_vector").toString()));
+		}
 
 		JsonNode type = node.get("type");
 		if (type == null) {
@@ -77,34 +85,13 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 		if (data == null){
 			throw new ParseException("`data` is required and cannot be null.");
 		} else if (data instanceof ObjectNode) {
-			Iterator keys = data.fieldNames();
-			if (keys != null) {
-				while (keys.hasNext()) {
-					String key = (String) keys.next();
-					JsonNode value = data.get(key);
-					if (value.isValueNode()) {
-						ValueNode valueNode = (ValueNode) value;
-						rowMap.putData(key, getValue(valueNode));
-					}
-				}
-			}
+			rowMap = mapKeys(rowMap, data, false);
 		} else if (data.isTextual()){
-			String decryptedData = RowEncrypt.decrypt(data.textValue(), this.encryption_key, this.secret_key);
+			String decryptedData = RowEncrypt.decrypt(data.textValue(), this.secret_key, node.get("init_vector").toString());
 			JsonNode decryptedDataNode = mapper.readTree(decryptedData);
 			if (decryptedDataNode instanceof ObjectNode) {
-				Iterator keys = decryptedDataNode.fieldNames();
-				if (keys != null) {
-					while (keys.hasNext()) {
-						String key = (String) keys.next();
-						JsonNode value = decryptedDataNode.get(key);
-						if (value.isValueNode()) {
-							ValueNode valueNode = (ValueNode) value;
-							rowMap.putData(key, getValue(valueNode));
-						}
-					}
-				}
-			}
-			else{
+				rowMap = mapKeys(rowMap, decryptedDataNode, false);
+			} else{
 				throw new ParseException("`data` cannot be parsed.");
 			}
 		} else {
@@ -113,39 +100,38 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 
 		if (oldData != null) {
 			if (oldData instanceof ObjectNode) {
-				Iterator keys = oldData.fieldNames();
-				if (keys != null) {
-					while (keys.hasNext()) {
-						String key = (String) keys.next();
-						JsonNode value = oldData.get(key);
-						if (value.isValueNode()) {
-							ValueNode valueNode = (ValueNode) value;
-							rowMap.putOldData(key, getValue(valueNode));
-						}
-					}
-				}
+				rowMap = mapKeys(rowMap, oldData, true);
 			} else if (oldData.isTextual()) {
 				String decryptedData = RowEncrypt
-						.decrypt(oldData.textValue(), this.encryption_key, this.secret_key);
+						.decrypt(oldData.textValue(), this.secret_key, node.get("init_vector").toString());
 				JsonNode decryptedDataNode = mapper.readTree(decryptedData);
 				if (decryptedDataNode instanceof ObjectNode) {
-					Iterator keys = decryptedDataNode.fieldNames();
-					if (keys != null) {
-						while (keys.hasNext()) {
-							String key = (String) keys.next();
-							JsonNode value = decryptedDataNode.get(key);
-							if (value.isValueNode()) {
-								ValueNode valueNode = (ValueNode) value;
-								rowMap.putOldData(key, getValue(valueNode));
-							}
-						}
-					}
+					rowMap = mapKeys(rowMap, decryptedDataNode, true);
 				} else {
 					throw new ParseException("`oldData` cannot be parsed.");
 				}
 			}
 		}
 
+		return rowMap;
+	}
+
+	private RowMap mapKeys(RowMap rowMap, JsonNode data, boolean isOld){
+		Iterator keys = data.fieldNames();
+		if (keys != null) {
+			while (keys.hasNext()) {
+				String key = (String) keys.next();
+				JsonNode value = data.get(key);
+				if (value.isValueNode()) {
+					ValueNode valueNode = (ValueNode) value;
+					if(isOld) {
+						rowMap.putOldData(key, getValue(valueNode));
+					} else {
+						rowMap.putData(key, getValue(valueNode));
+					}
+				}
+			}
+		}
 		return rowMap;
 	}
 
@@ -170,12 +156,12 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 		return value.asText();
 	}
 
-	private static ObjectMapper getMapper(String encryption_key, String secret_key)
+	private static ObjectMapper getMapper(String secret_key)
 	{
 		if (mapper == null) {
 			mapper = new ObjectMapper();
 			SimpleModule module = new SimpleModule();
-			module.addDeserializer(RowMap.class, new RowMapDeserializer(encryption_key, secret_key));
+			module.addDeserializer(RowMap.class, new RowMapDeserializer(secret_key));
 			mapper.registerModule(module);
 		}
 
@@ -200,9 +186,9 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 		return getMapper().readValue(json, RowMap.class);
 	}
 
-	public static RowMap createFromString(String json, String encryption_key, String secret_key) throws IOException
+	public static RowMap createFromString(String json, String secret_key) throws IOException
 	{
-		return getMapper(encryption_key,secret_key).readValue(json, RowMap.class);
+		return getMapper(secret_key).readValue(json, RowMap.class);
 	}
 
 	public static void resetMapper(){
