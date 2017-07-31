@@ -34,6 +34,7 @@ public class MaxwellBootstrapUtility {
 		}
 
 		ConnectionPool connectionPool = getConnectionPool(config);
+		ConnectionPool replicationPool = getReplicationConnectionPool(config);
 		try ( final Connection connection = connectionPool.getConnection() ) {
 			if ( config.abortBootstrapID != null ) {
 				getInsertedRowsCount(connection, config.abortBootstrapID);
@@ -46,8 +47,12 @@ public class MaxwellBootstrapUtility {
 				getInsertedRowsCount(connection, config.monitorBootstrapID);
 				rowId = config.monitorBootstrapID;
 			} else {
-				Long totalRows = calculateRowCount(connection, config.databaseName, config.tableName, config.whereClause);
-				rowId = insertBootstrapStartRow(connection, config.databaseName, config.tableName, config.whereClause, totalRows);
+				try (final Connection conn = replicationPool.getConnection()) {
+					Long totalRows = calculateRowCount(conn, config.databaseName, config.tableName,
+							config.whereClause);
+					rowId = insertBootstrapStartRow(connection, config.databaseName, config.tableName,
+							config.whereClause, totalRows);
+				}
 			}
 
 			try {
@@ -138,6 +143,17 @@ public class MaxwellBootstrapUtility {
 		String connectionURI = config.getConnectionURI();
 		String mysqlUser = config.mysqlUser;
 		String mysqlPassword = config.mysqlPassword;
+		return new ConnectionPool(name, maxPool, maxSize, idleTimeout, connectionURI, mysqlUser, mysqlPassword);
+	}
+	
+	private ConnectionPool getReplicationConnectionPool(MaxwellBootstrapUtilityConfig config) {
+		String name = "MaxwellReplicationConnectionPool";
+		int maxPool = 10;
+		int maxSize = 0;
+		int idleTimeout = 10;
+		String connectionURI = config.getReplicationConnectionURI();
+		String mysqlUser = config.replicationUser;
+		String mysqlPassword = config.replicationPassword;
 		return new ConnectionPool(name, maxPool, maxSize, idleTimeout, connectionURI, mysqlUser, mysqlPassword);
 	}
 
