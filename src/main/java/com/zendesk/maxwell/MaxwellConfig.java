@@ -138,7 +138,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts("__separator_3");
 
-		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis" ).withRequiredArg();
+		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|sqs" ).withRequiredArg();
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
 
 		parser.accepts( "producer_partition_by", "database|table|primary_key|column, kafka/kinesis producers will partition by this value").withRequiredArg();
