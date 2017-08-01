@@ -305,51 +305,44 @@ mysql>   insert into test_sets set setcol = 'b_val,c_val';
 Maxwell will accept a variety of character encodings, but will always output UTF-8 strings.  The following table
 describes support for mysql's character sets:
 
-charset  | status
----------| ------
-utf8     | supported
-utf8mb4  | supported
-latin1   | supported
-latin2   | supported
-ascii    | supported
-ucs2     | supported
-binary   | supported (as base64)
-utf16    | supported, not tested in production
-utf32    | supported, not tested in production
-big5     | supported, not tested in production
-cp850    | supported, not tested in production
-sjis     | supported, not tested in production
-hebrew   | supported, not tested in production
-tis620   | supported, not tested in production
-euckr    | supported, not tested in production
-gb2312   | supported, not tested in production
-greek    | supported, not tested in production
-cp1250   | supported, not tested in production
-gbk      | supported, not tested in production
-latin5   | supported, not tested in production
-macroman | supported, not tested in production
-cp852    | supported, not tested in production
-cp1251   | supported, not tested in production
-cp866    | supported, not tested in production
-cp1256   | supported, not tested in production
-cp1257   | supported, not tested in production
-dec8     | unsupported
-hp8      | unsupported
-koi8r    | unsupported
-swe7     | unsupported
-ujis     | unsupported
-koi8u    | unsupported
-armscii8 | unsupported
-keybcs2  | unsupported
-macce    | unsupported
-latin7   | unsupported
-geostd8  | unsupported
-cp932    | unsupported
-eucjpms  | unsupported
-
-
-<script>
-  jQuery(document).ready(function () {
-    jQuery("table").addClass("table table-condensed table-bordered table-hover");
-  });
-</script>
+| charset  | status                              |
+|:---------|:------------------------------------|
+| utf8     | supported                           |
+| utf8mb4  | supported                           |
+| latin1   | supported                           |
+| latin2   | supported                           |
+| ascii    | supported                           |
+| ucs2     | supported                           |
+| binary   | supported (as base64)               |
+| utf16    | supported, not tested in production |
+| utf32    | supported, not tested in production |
+| big5     | supported, not tested in production |
+| cp850    | supported, not tested in production |
+| sjis     | supported, not tested in production |
+| hebrew   | supported, not tested in production |
+| tis620   | supported, not tested in production |
+| euckr    | supported, not tested in production |
+| gb2312   | supported, not tested in production |
+| greek    | supported, not tested in production |
+| cp1250   | supported, not tested in production |
+| gbk      | supported, not tested in production |
+| latin5   | supported, not tested in production |
+| macroman | supported, not tested in production |
+| cp852    | supported, not tested in production |
+| cp1251   | supported, not tested in production |
+| cp866    | supported, not tested in production |
+| cp1256   | supported, not tested in production |
+| cp1257   | supported, not tested in production |
+| dec8     | unsupported                         |
+| hp8      | unsupported                         |
+| koi8r    | unsupported                         |
+| swe7     | unsupported                         |
+| ujis     | unsupported                         |
+| koi8u    | unsupported                         |
+| armscii8 | unsupported                         |
+| keybcs2  | unsupported                         |
+| macce    | unsupported                         |
+| latin7   | unsupported                         |
+| geostd8  | unsupported                         |
+| cp932    | unsupported                         |
+| eucjpms  | unsupported                         |

@@ -6,7 +6,6 @@ import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.recovery.Recovery;
 import com.zendesk.maxwell.recovery.RecoveryInfo;
 import com.zendesk.maxwell.replication.BinlogConnectorReplicator;
-import com.zendesk.maxwell.replication.MaxwellReplicator;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.replication.Replicator;
 import com.zendesk.maxwell.schema.MysqlPositionStore;
@@ -62,8 +61,7 @@ public class Maxwell implements Runnable {
 				config.databaseName,
 				this.context.getReplicationConnectionPool(),
 				this.context.getCaseSensitivity(),
-				recoveryInfo,
-				this.config.shykoMode
+				recoveryInfo
 			);
 
 			recoveredPosition = masterRecovery.recover();
@@ -172,10 +170,7 @@ public class Maxwell implements Runnable {
 		MysqlSchemaStore mysqlSchemaStore = new MysqlSchemaStore(this.context, initPosition);
 		mysqlSchemaStore.getSchema(); // trigger schema to load / capture before we start the replicator.
 
-		if ( this.config.shykoMode )
-			this.replicator = new BinlogConnectorReplicator(mysqlSchemaStore, producer, bootstrapper, this.context, initPosition);
-		else
-			this.replicator = new MaxwellReplicator(mysqlSchemaStore, producer, bootstrapper, this.context, initPosition);
+		this.replicator = new BinlogConnectorReplicator(mysqlSchemaStore, producer, bootstrapper, this.context, initPosition);
 
 		bootstrapper.resume(producer, replicator);
 

@@ -27,11 +27,11 @@ metric                         | description
 ### HTTP Endpoints
 When the HTTP server is enabled the following endpoints are exposed:
 
-endpoint                       | description
--------------------------------|-------------
-`/metrics`                     | return all metrics as JSON
-`/healthcheck`                 | run Maxwell's healthcheck(s) and return success or failure based on the result
-`/ping`                        | a simple ping test, responds with `pong`
+| endpoint       | description                                                                    |
+|:---------------|:-------------------------------------------------------------------------------|
+| `/metrics`     | return all metrics as JSON                                                     |
+| `/healthcheck` | run Maxwell's healthcheck(s) and return success or failure based on the result |
+| `/ping`        | a simple ping test, responds with `pong`                                       |
 
 ### Healthcheck
 The `/healthcheck` endpoint will return unhealthy when there is more than 1 message that failed to be sent to Kafka in the past 15 minutes.
@@ -51,12 +51,3 @@ export JAVA_OPTS="-Dcom.sun.management.jmxremote \
 -Dcom.sun.management.jmxremote.ssl=false \
 -Djava.rmi.server.hostname=SERVER_IP_ADDRESS"
 ```
-
-
-
-<script>
-  jQuery(document).ready(function () {
-    jQuery("table").addClass("table table-condensed table-bordered table-hover");
-  });
-</script>
-
