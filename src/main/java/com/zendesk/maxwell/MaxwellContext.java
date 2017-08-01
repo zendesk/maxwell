@@ -334,7 +334,7 @@ public class MaxwellContext {
 			case "sqs":
 				this.producer = new MaxwellSQSProducer(this, this.config.sqsQueueUri);
 				break;
-				case "profiler":
+			case "profiler":
 				this.producer = new ProfilerProducer(this);
 				break;
 			case "stdout":

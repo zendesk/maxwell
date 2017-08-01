@@ -124,3 +124,18 @@ The most important option here is configuring the region.
   });
 </script>
 
+
+### SQS AWS credentials
+***
+You will need to obtain an IAM user that has the permission to access the SQS service. The sqs producer also uses [DefaultAWSCredentialsProviderChain](http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html) to get aws credentials.
+
+See the [AWS docs](http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html) on how to setup the IAM user with the Default Credential Provider Chain.
+
+In case you need to set up a different region also along with credentials then default one, see the [AWS docs](http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html#setup-credentials-setting-region).
+
+### SQS Options
+***
+Set the output queue in the `config.properties` by setting the `sqs_queue_uri` property to full SQS queue uri from aws console.
+
+The producer uses the [AWS SQS SDK](http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sqs/AmazonSQSClient.html).
+
