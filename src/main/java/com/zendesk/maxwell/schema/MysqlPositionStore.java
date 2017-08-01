@@ -246,23 +246,19 @@ public class MysqlPositionStore {
 
 		result.add("Most likely the first is the most recent master, in which case you should:");
 		result.add("1. stop maxwell");
-		result.add("2. execute: DELETE FROM " + config.databaseName + ".positions WHERE server_id <> " + mostRecentMaster + ";");
+		result.add("2. execute: DELETE FROM " + config.databaseName + ".positions WHERE server_id <> " + mostRecentMaster + " AND client_id = '<your_client_id>';");
 		result.add("3. restart maxwell");
 		return result;
 	}
 
-	public int delete(Long serverID, String clientID, Position position) throws SQLException {
+	public void cleanupOldPositions() throws SQLException {
 		try ( Connection c = connectionPool.getConnection()) {
 			PreparedStatement s = c.prepareStatement(
-				"DELETE from `positions` where server_id = ? and client_id = ? and binlog_file = ? and binlog_position = ?"
+				"DELETE FROM `positions` WHERE server_id <> ? AND client_id = ?"
 			);
-			BinlogPosition binlogPosition = position.getBinlogPosition();
 			s.setLong(1, serverID);
 			s.setString(2, clientID);
-			s.setString(3, binlogPosition.getFile());
-			s.setLong(4, binlogPosition.getOffset());
 			s.execute();
-			return s.getUpdateCount();
 		}
 	}
 }
