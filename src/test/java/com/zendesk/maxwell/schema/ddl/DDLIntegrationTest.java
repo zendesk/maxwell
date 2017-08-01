@@ -424,4 +424,17 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		List<RowMap> rows = getRowsForDDLTransaction(sql, excludeDb("TestDatabaseCreate2"));
 		assertEquals(0, rows.size());
 	}
+
+	@Test
+	public void testDatabaseChangeWithTableFilter() throws Exception {
+		String[] sql = {
+				"create database TestDatabaseCreate3",
+				"create table `TestDatabaseCreate3`.`chicken` ( id int )",
+				"create table `TestDatabaseCreate3`.`burger` ( id int )"
+		};
+		List<RowMap> rows = getRowsForDDLTransaction(sql, excludeTable("chicken"));
+		assertEquals(2, rows.size());
+		assertTrue(rows.get(0).toJSON(ddlOutputConfig()).contains("\"type\":\"database-create\",\"database\":\"TestDatabaseCreate3\""));
+		assertTrue(rows.get(1).toJSON(ddlOutputConfig()).contains("\"type\":\"table-create\",\"database\":\"TestDatabaseCreate3\",\"table\":\"burger\""));
+	}
 }
