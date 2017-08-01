@@ -118,13 +118,6 @@ The producer uses the [KPL (Kinesis Producer Library](http://docs.aws.amazon.com
 Copy `kinesis-producer-library.properties.example` to `kinesis-producer-library.properties` and configure the properties file to your needs.
 The most important option here is configuring the region.
 
-<script>
-  jQuery(document).ready(function () {
-    jQuery("table").addClass("table table-condensed table-bordered table-hover");
-  });
-</script>
-
-
 ### SQS AWS credentials
 ***
 You will need to obtain an IAM user that has the permission to access the SQS service. The sqs producer also uses [DefaultAWSCredentialsProviderChain](http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html) to get aws credentials.
@@ -138,4 +131,3 @@ In case you need to set up a different region also along with credentials then d
 Set the output queue in the `config.properties` by setting the `sqs_queue_uri` property to full SQS queue uri from aws console.
 
 The producer uses the [AWS SQS SDK](http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sqs/AmazonSQSClient.html).
-

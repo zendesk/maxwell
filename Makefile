@@ -78,13 +78,15 @@ define get_test_parameters
 	$(filter) $(classes)
 endef
 
+JAVA_TEST_PARAMS=-Djava.util.logging.config.file=./src/test/resources/logging.properties
+
 test%: compile-test
-	java -classpath $(JAVA_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore $(call get_test_parameters,$@)
+	java $(JAVA_TEST_PARAMS) -classpath $(JAVA_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore $(call get_test_parameters,$@)
 
 test: compile-test
-	java -classpath $(JAVA_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore $(TEST_CLASSES)
+	java $(JAVA_TEST_PARAMS) -classpath $(JAVA_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore $(TEST_CLASSES)
 test-only: compile-test
-	java -classpath $(JAVA_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore ${ARGS}
+	java $(JAVA_TEST_PARAMS) -classpath $(JAVA_TEST_DEPENDS):target/test-classes:target/classes org.junit.runner.JUnitCore ${ARGS}
 
 clean:
 	rm -f  target/.java target/.java-test

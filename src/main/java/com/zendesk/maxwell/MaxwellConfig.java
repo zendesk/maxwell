@@ -32,7 +32,6 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public MaxwellMysqlConfig maxwellMysql;
 	public MaxwellFilter filter;
-	public Boolean shykoMode;
 	public Boolean gtidMode;
 
 	public String databaseName;
@@ -96,7 +95,6 @@ public class MaxwellConfig extends AbstractConfig {
 		this.maxwellMysql = new MaxwellMysqlConfig();
 		this.schemaMysql = new MaxwellMysqlConfig();
 		this.masterRecovery = false;
-		this.shykoMode = false;
 		this.gtidMode = false;
 		this.bufferedProducerSize = 200;
 		this.metricRegistry = new MetricRegistry();
@@ -122,7 +120,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "user", "username for host" ).withRequiredArg();
 		parser.accepts( "password", "password for host" ).withOptionalArg();
 		parser.accepts( "jdbc_options", "additional jdbc connection options" ).withOptionalArg();
-		parser.accepts( "binlog_connector", "run with new binlog connector library" ).withRequiredArg();
+		parser.accepts( "binlog_connector", "[deprecated]" ).withRequiredArg();
 
 		parser.accepts("__separator_2");
 
@@ -237,54 +235,6 @@ public class MaxwellConfig extends AbstractConfig {
 	}
 
 
-	private String fetchOption(String name, OptionSet options, Properties properties, String defaultVal) {
-		if ( options != null && options.has(name) )
-			return (String) options.valueOf(name);
-		else if ( (properties != null) && properties.containsKey(name) )
-			return properties.getProperty(name);
-		else
-			return defaultVal;
-	}
-
-
-	private boolean fetchBooleanOption(String name, OptionSet options, Properties properties, boolean defaultVal) {
-		if ( options != null && options.has(name) ) {
-			if ( !options.hasArgument(name) )
-				return true;
-			else
-				return Boolean.valueOf((String) options.valueOf(name));
-		} else if ( (properties != null) && properties.containsKey(name) )
-			return Boolean.valueOf(properties.getProperty(name));
-		else
-			return defaultVal;
-	}
-
-	private Long fetchLongOption(String name, OptionSet options, Properties properties, Long defaultVal) {
-		String strOption = fetchOption(name, options, properties, null);
-		if ( strOption == null )
-			return defaultVal;
-		else {
-			try {
-				return Long.valueOf(strOption);
-			} catch ( NumberFormatException e ) {
-				usageForOptions("Invalid value for " + name + ", integer required", "--" + name);
-			}
-			return null; // unreached
-		}
-	}
-
-
-	private MaxwellMysqlConfig parseMysqlConfig(String prefix, OptionSet options, Properties properties) {
-		MaxwellMysqlConfig config = new MaxwellMysqlConfig();
-		config.host     = fetchOption(prefix + "host", options, properties, null);
-		config.password = fetchOption(prefix + "password", options, properties, null);
-		config.user     = fetchOption(prefix + "user", options, properties, null);
-		config.port     = Integer.valueOf(fetchOption(prefix + "port", options, properties, "3306"));
-		config.setJDBCOptions(
-		    fetchOption(prefix + "jdbc_options", options, properties, null));
-		return config;
-	}
-
 	private void parse(String [] argv) {
 		OptionSet options = buildOptionParser().parse(argv);
 
@@ -308,7 +258,6 @@ public class MaxwellConfig extends AbstractConfig {
 		this.maxwellMysql       = parseMysqlConfig("", options, properties);
 		this.replicationMysql   = parseMysqlConfig("replication_", options, properties);
 		this.schemaMysql        = parseMysqlConfig("schema_", options, properties);
-		this.shykoMode          = fetchBooleanOption("binlog_connector", options, properties, System.getenv("SHYKO_MODE") != null);
 		this.gtidMode           = fetchBooleanOption("gtid_mode", options, properties, System.getenv(GTID_MODE_ENV) != null);
 
 		this.databaseName       = fetchOption("schema_database", options, properties, "maxwell");
@@ -518,10 +467,6 @@ public class MaxwellConfig extends AbstractConfig {
 			);
 
 			this.replicationMysql.jdbcOptions = this.maxwellMysql.jdbcOptions;
-		}
-
-		if (gtidMode && !shykoMode) {
-			usageForOptions("Gtid mode is only support with shyko bin connector.", "--gtid_mode");
 		}
 
 		if (gtidMode && masterRecovery) {

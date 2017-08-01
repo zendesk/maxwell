@@ -8,5 +8,6 @@ pages:
   - 'Data Format': 'dataformat.md'
   - 'Bootstrapping': 'bootstrapping.md'
   - 'Monitoring': 'monitoring.md'
+  - 'Embedding': 'embedding.md'
   - 'Compat / Caveats': 'compat.md'
   - 'Changelog': 'changelog.md'
