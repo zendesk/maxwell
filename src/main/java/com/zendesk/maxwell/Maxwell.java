@@ -107,7 +107,10 @@ public class Maxwell implements Runnable {
 			context.getPositionStore().set(initial);
 		}
 
-		this.context.getPositionStore().cleanupOldPositions();
+		if (config.masterRecovery) {
+			this.context.getPositionStore().cleanupOldRecoveryInfos();
+		}
+
 		return initial;
 	}
 

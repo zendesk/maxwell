@@ -150,7 +150,7 @@ public class MysqlPositionStoreTest extends MaxwellTestWithIsolatedServer {
 		testStore.set(new Position(new BinlogPosition(0L, binlogFile), 3L));
 
 		assertEquals(3, testStore.getAllRecoveryInfos().size());
-		testStore.cleanupOldPositions();
+		testStore.cleanupOldRecoveryInfos();
 		assertEquals(1, testStore.getAllRecoveryInfos().size());
 	}
 }

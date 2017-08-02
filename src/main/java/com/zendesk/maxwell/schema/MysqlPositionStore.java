@@ -251,14 +251,19 @@ public class MysqlPositionStore {
 		return result;
 	}
 
-	public void cleanupOldPositions() throws SQLException {
-		try ( Connection c = connectionPool.getConnection()) {
-			PreparedStatement s = c.prepareStatement(
-				"DELETE FROM `positions` WHERE server_id <> ? AND client_id = ?"
-			);
-			s.setLong(1, serverID);
-			s.setString(2, clientID);
-			s.execute();
+	public void cleanupOldRecoveryInfos() throws SQLException {
+		List<RecoveryInfo> allRecoveryInfos = getAllRecoveryInfos();
+		if (allRecoveryInfos.size() > 1) {
+			LOGGER.warn("Multiple recovery infos found: " + allRecoveryInfos);
+			LOGGER.warn("Cleaning up the old recovery infos");
+			try (Connection c = connectionPool.getConnection()) {
+				PreparedStatement s = c.prepareStatement(
+					"DELETE FROM `positions` WHERE server_id <> ? AND client_id = ?"
+				);
+				s.setLong(1, serverID);
+				s.setString(2, clientID);
+				s.execute();
+			}
 		}
 	}
 }
