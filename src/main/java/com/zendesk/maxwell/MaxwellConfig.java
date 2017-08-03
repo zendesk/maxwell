@@ -510,7 +510,7 @@ public class MaxwellConfig extends AbstractConfig {
 			}
 			return Pattern.compile(name.substring(1, name.length() - 1));
 		} else {
-			return Pattern.compile("^" + name + "$");
+			return Pattern.compile("^" + Pattern.quote(name) + "$");
 		}
 	}
 }
