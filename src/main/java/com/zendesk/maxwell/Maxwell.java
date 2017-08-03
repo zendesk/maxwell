@@ -81,8 +81,6 @@ public class Maxwell implements Runnable {
 				);
 
 				oldServerSchemaStore.clone(context.getServerID(), recoveredPosition);
-
-				positionStore.delete(recoveryInfo.serverID, recoveryInfo.clientID, recoveryInfo.position);
 			}
 		}
 		return recoveredPosition;
@@ -105,10 +103,12 @@ public class Maxwell implements Runnable {
 				}
 			}
 
-			if (initial != null) {
-				/* if the initial position didn't come from the store, store it */
-				context.getPositionStore().set(initial);
-			}
+			/* if the initial position didn't come from the store, store it */
+			context.getPositionStore().set(initial);
+		}
+
+		if (config.masterRecovery) {
+			this.context.getPositionStore().cleanupOldRecoveryInfos();
 		}
 
 		return initial;
