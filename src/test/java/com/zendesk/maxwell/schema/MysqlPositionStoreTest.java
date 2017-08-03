@@ -135,7 +135,12 @@ public class MysqlPositionStoreTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
-	public void testCleanupOldPositions() throws Exception {
+	public void testCleanupOldRecoveryInfos() throws Exception {
+		if (MaxwellTestSupport.inGtidMode()) {
+			// gtid mode can't get into a multiple recovery state
+			return;
+		}
+
 		MaxwellContext context = buildContext();
 		Long activeServerID = context.getServerID();
 		Long oldServerID1 = activeServerID + 1;
