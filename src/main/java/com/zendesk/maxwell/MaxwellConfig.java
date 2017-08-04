@@ -153,6 +153,8 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "kafka_version", "use kafka 0.8, 0.9, 0.10, 0.10.1, or 0.10.2 producer (default 0.9)");
 
 		parser.accepts( "kinesis_stream", "kinesis stream name").withOptionalArg();
+        parser.accepts( "cluster", "cluster name").withOptionalArg();
+        parser.accepts( "pod", "pod name").withOptionalArg();
 
 		parser.accepts("__separator_4");
 
@@ -325,6 +327,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.metricsDatadogPort = Integer.parseInt(fetchOption("metrics_datadog_port", options, properties, "8125"));
 		this.metricsDatadogInterval = fetchLongOption("metrics_datadog_interval", options, properties, 60L);
 
+		
 		this.includeDatabases   = fetchOption("include_dbs", options, properties, null);
 		this.excludeDatabases   = fetchOption("exclude_dbs", options, properties, null);
 		this.includeTables      = fetchOption("include_tables", options, properties, null);
@@ -369,6 +372,8 @@ public class MaxwellConfig extends AbstractConfig {
 		outputConfig.includesThreadId = fetchBooleanOption("output_thread_id", options, properties, false);
 		outputConfig.outputDDL	= fetchBooleanOption("output_ddl", options, properties, false);
 		this.excludeColumns     = fetchOption("exclude_columns", options, properties, null);
+		outputConfig.cluster =  fetchOption("cluster", options, properties, "local");
+		outputConfig.pod = fetchOption("pod", options, properties, "local");
 
 		if ( this.excludeColumns != null ) {
 			for ( String s : this.excludeColumns.split(",") ) {

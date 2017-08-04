@@ -49,6 +49,9 @@ public class DDLMap extends RowMap {
 		Map<String, Object> changeMixin = mapper.convertValue(change, new TypeReference<Map<String, Object>>() { });
 		changeMixin.put("ts", timestamp);
 		changeMixin.put("sql", sql);
+		changeMixin.put("__cluster", outputConfig.cluster);
+		changeMixin.put("__pod", outputConfig.pod);
+		
 		BinlogPosition binlogPosition = nextPosition.getBinlogPosition();
 		if ( outputConfig.includesBinlogPosition ) {
 			changeMixin.put("position", binlogPosition.getFile() + ":" + binlogPosition.getOffset());

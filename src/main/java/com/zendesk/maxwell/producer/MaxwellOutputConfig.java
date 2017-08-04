@@ -13,6 +13,8 @@ public class MaxwellOutputConfig {
 	public boolean includesThreadId;
 	public boolean outputDDL;
 	public List<Pattern> excludeColumns;
+	public String cluster;
+	public String pod;
 
 	public MaxwellOutputConfig() {
 		this.includesBinlogPosition = false;
