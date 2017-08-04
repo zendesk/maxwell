@@ -154,7 +154,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "kinesis_stream", "kinesis stream name").withOptionalArg();
         parser.accepts( "cluster", "cluster name").withOptionalArg();
-        parser.accepts( "pod", "pod name").withOptionalArg();
+        parser.accepts( "shard", "shard name").withOptionalArg();
 
 		parser.accepts("__separator_4");
 
@@ -373,7 +373,7 @@ public class MaxwellConfig extends AbstractConfig {
 		outputConfig.outputDDL	= fetchBooleanOption("output_ddl", options, properties, false);
 		this.excludeColumns     = fetchOption("exclude_columns", options, properties, null);
 		outputConfig.cluster =  fetchOption("cluster", options, properties, "local");
-		outputConfig.pod = fetchOption("pod", options, properties, "local");
+		outputConfig.shard = fetchOption("shard", options, properties, "local");
 
 		if ( this.excludeColumns != null ) {
 			for ( String s : this.excludeColumns.split(",") ) {

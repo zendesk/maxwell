@@ -14,7 +14,7 @@ public class MaxwellOutputConfig {
 	public boolean outputDDL;
 	public List<Pattern> excludeColumns;
 	public String cluster;
-	public String pod;
+	public String shard;
 
 	public MaxwellOutputConfig() {
 		this.includesBinlogPosition = false;

@@ -50,7 +50,7 @@ public class DDLMap extends RowMap {
 		changeMixin.put("ts", timestamp);
 		changeMixin.put("sql", sql);
 		changeMixin.put("__cluster", outputConfig.cluster);
-		changeMixin.put("__pod", outputConfig.pod);
+		changeMixin.put("__shard", outputConfig.shard);
 		
 		BinlogPosition binlogPosition = nextPosition.getBinlogPosition();
 		if ( outputConfig.includesBinlogPosition ) {
