@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.ValueNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.zendesk.maxwell.errors.ParseException;
 
 import java.io.IOException;
@@ -48,8 +49,9 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 		if (ts == null) {
 			throw new ParseException("`ts` is required and cannot be null.");
 		}
-		
+
 		JsonNode xid = node.get("xid");
+		JsonNode commit = node.get("commit");
 		JsonNode data = node.get("data");
 		JsonNode oldData = node.get("old");
 
@@ -64,6 +66,10 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 
 		if (xid != null) {
 			rowMap.setXid(xid.asLong());
+		}
+
+		if (commit != null && commit.asBoolean()) {
+			rowMap.setTXCommit();
 		}
 
 		if (data instanceof ObjectNode) {
@@ -99,10 +105,30 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 		return rowMap;
 	}
 
-	private Object getValue(ValueNode value)
+	@VisibleForTesting
+	final Object getValue(ValueNode value)
 	{
 		if (value.isNull()) {
 			return null;
+		}
+
+		if (value.numberType() != null) {
+			switch (value.numberType()) {
+				case LONG:
+					return value.longValue();
+				case DOUBLE:
+					return value.doubleValue();
+				case FLOAT:
+					return value.floatValue();
+				case INT:
+					return value.intValue();
+				case BIG_DECIMAL:
+					return value.decimalValue();
+				case BIG_INTEGER:
+					return value.bigIntegerValue();
+				default:
+					return value.asText();
+			}
 		}
 
 		if (value.isBoolean()) {
