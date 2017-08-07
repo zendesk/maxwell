@@ -9,6 +9,7 @@ import com.zendesk.maxwell.*;
 import java.sql.ResultSet;
 import java.util.List;
 
+import com.zendesk.maxwell.metrics.NoOpMetrics;
 import com.zendesk.maxwell.recovery.RecoveryInfo;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.errors.DuplicateProcessException;
@@ -26,11 +27,11 @@ public class MysqlPositionStoreTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	private MysqlPositionStore buildStore(MaxwellContext context, Long serverID) throws Exception {
-		return new MysqlPositionStore(context.getMaxwellConnectionPool(), serverID, "maxwell", MaxwellTestSupport.inGtidMode());
+		return new MysqlPositionStore(context.getMaxwellConnectionPool(), serverID, "maxwell", MaxwellTestSupport.inGtidMode(), new NoOpMetrics());
 	}
 
 	private MysqlPositionStore buildStore(MaxwellContext context, Long serverID, String clientId) throws Exception {
-		return new MysqlPositionStore(context.getMaxwellConnectionPool(), serverID, clientId, MaxwellTestSupport.inGtidMode());
+		return new MysqlPositionStore(context.getMaxwellConnectionPool(), serverID, clientId, MaxwellTestSupport.inGtidMode(), new NoOpMetrics());
 	}
 
 	@Test
