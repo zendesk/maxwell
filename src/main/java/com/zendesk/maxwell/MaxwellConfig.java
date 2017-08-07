@@ -1,18 +1,26 @@
 package com.zendesk.maxwell;
 
-import java.util.*;
-import java.util.regex.Pattern;
-
-import com.zendesk.maxwell.replication.BinlogPosition;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.health.HealthCheckRegistry;
+import com.zendesk.maxwell.metrics.Metrics;
+import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.producer.ProducerFactory;
+import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.Position;
-import joptsimple.*;
-
+import com.zendesk.maxwell.util.AbstractConfig;
+import joptsimple.BuiltinHelpFormatter;
+import joptsimple.OptionDescriptor;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.zendesk.maxwell.util.AbstractConfig;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.Properties;
+import java.util.regex.Pattern;
 
 public class MaxwellConfig extends AbstractConfig {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfig.class);
@@ -24,18 +32,19 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public MaxwellMysqlConfig maxwellMysql;
 	public MaxwellFilter filter;
-	public Boolean shykoMode;
 	public Boolean gtidMode;
 
 	public String databaseName;
 
 	public String includeDatabases, excludeDatabases, includeTables, excludeTables, excludeColumns, blacklistDatabases, blacklistTables;
 
+	public ProducerFactory producerFactory; // producerFactory has precedence over producerType
+	public String producerType;
+
 	public final Properties kafkaProperties;
 	public String kafkaTopic;
 	public String ddlKafkaTopic;
 	public String kafkaKeyFormat;
-	public String producerType;
 	public String kafkaPartitionHash;
 	public String kafkaPartitionKey;
 	public String kafkaPartitionColumns;
@@ -53,6 +62,9 @@ public class MaxwellConfig extends AbstractConfig {
 	public String outputFile;
 	public MaxwellOutputConfig outputConfig;
 	public String log_level;
+
+	public MetricRegistry metricRegistry;
+	public HealthCheckRegistry healthCheckRegistry;
 
 	public String metricsPrefix;
 	public String metricsReportingType;
@@ -81,9 +93,10 @@ public class MaxwellConfig extends AbstractConfig {
 		this.maxwellMysql = new MaxwellMysqlConfig();
 		this.schemaMysql = new MaxwellMysqlConfig();
 		this.masterRecovery = false;
-		this.shykoMode = false;
 		this.gtidMode = false;
 		this.bufferedProducerSize = 200;
+		this.metricRegistry = new MetricRegistry();
+		this.healthCheckRegistry = new HealthCheckRegistry();
 		setup(null, null); // setup defaults
 	}
 
@@ -105,7 +118,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "user", "username for host" ).withRequiredArg();
 		parser.accepts( "password", "password for host" ).withOptionalArg();
 		parser.accepts( "jdbc_options", "additional jdbc connection options" ).withOptionalArg();
-		parser.accepts( "binlog_connector", "run with new binlog connector library" ).withRequiredArg();
+		parser.accepts( "binlog_connector", "[deprecated]" ).withRequiredArg();
 
 		parser.accepts("__separator_2");
 
@@ -219,54 +232,6 @@ public class MaxwellConfig extends AbstractConfig {
 	}
 
 
-	private String fetchOption(String name, OptionSet options, Properties properties, String defaultVal) {
-		if ( options != null && options.has(name) )
-			return (String) options.valueOf(name);
-		else if ( (properties != null) && properties.containsKey(name) )
-			return properties.getProperty(name);
-		else
-			return defaultVal;
-	}
-
-
-	private boolean fetchBooleanOption(String name, OptionSet options, Properties properties, boolean defaultVal) {
-		if ( options != null && options.has(name) ) {
-			if ( !options.hasArgument(name) )
-				return true;
-			else
-				return Boolean.valueOf((String) options.valueOf(name));
-		} else if ( (properties != null) && properties.containsKey(name) )
-			return Boolean.valueOf(properties.getProperty(name));
-		else
-			return defaultVal;
-	}
-
-	private Long fetchLongOption(String name, OptionSet options, Properties properties, Long defaultVal) {
-		String strOption = fetchOption(name, options, properties, null);
-		if ( strOption == null )
-			return defaultVal;
-		else {
-			try {
-				return Long.valueOf(strOption);
-			} catch ( NumberFormatException e ) {
-				usageForOptions("Invalid value for " + name + ", integer required", "--" + name);
-			}
-			return null; // unreached
-		}
-	}
-
-
-	private MaxwellMysqlConfig parseMysqlConfig(String prefix, OptionSet options, Properties properties) {
-		MaxwellMysqlConfig config = new MaxwellMysqlConfig();
-		config.host     = fetchOption(prefix + "host", options, properties, null);
-		config.password = fetchOption(prefix + "password", options, properties, null);
-		config.user     = fetchOption(prefix + "user", options, properties, null);
-		config.port     = Integer.valueOf(fetchOption(prefix + "port", options, properties, "3306"));
-		config.setJDBCOptions(
-		    fetchOption(prefix + "jdbc_options", options, properties, null));
-		return config;
-	}
-
 	private void parse(String [] argv) {
 		OptionSet options = buildOptionParser().parse(argv);
 
@@ -290,7 +255,6 @@ public class MaxwellConfig extends AbstractConfig {
 		this.maxwellMysql       = parseMysqlConfig("", options, properties);
 		this.replicationMysql   = parseMysqlConfig("replication_", options, properties);
 		this.schemaMysql        = parseMysqlConfig("schema_", options, properties);
-		this.shykoMode          = fetchBooleanOption("binlog_connector", options, properties, System.getenv("SHYKO_MODE") != null);
 		this.gtidMode           = fetchBooleanOption("gtid_mode", options, properties, System.getenv(GTID_MODE_ENV) != null);
 
 		this.databaseName       = fetchOption("schema_database", options, properties, "maxwell");
@@ -498,10 +462,6 @@ public class MaxwellConfig extends AbstractConfig {
 			this.replicationMysql.jdbcOptions = this.maxwellMysql.jdbcOptions;
 		}
 
-		if (gtidMode && !shykoMode) {
-			usageForOptions("Gtid mode is only support with shyko bin connector.", "--gtid_mode");
-		}
-
 		if (gtidMode && masterRecovery) {
 			usageForOptions("There is no need to perform master_recovery under gtid_mode", "--gtid_mode");
 		}
@@ -550,7 +510,7 @@ public class MaxwellConfig extends AbstractConfig {
 			}
 			return Pattern.compile(name.substring(1, name.length() - 1));
 		} else {
-			return Pattern.compile("^" + name + "$");
+			return Pattern.compile("^" + Pattern.quote(name) + "$");
 		}
 	}
 }

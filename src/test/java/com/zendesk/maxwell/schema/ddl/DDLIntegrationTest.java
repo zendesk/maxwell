@@ -81,13 +81,12 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testJSON() throws Exception {
-		if ( server.getVersion().equals("5.7") ) {
-			String sql[] = {
-				"create table shard_1.testJSON ( j json )",
-			};
+		requireMinimumVersion(server.VERSION_5_7);
+		String sql[] = {
+			"create table shard_1.testJSON ( j json )",
+		};
 
-			testIntegration(sql);
-		}
+		testIntegration(sql);
 	}
 
 	@Test
@@ -217,8 +216,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testTimeWithLength() throws Exception {
-		if ( !server.getVersion().equals("5.6") )
-			return;
+		requireMinimumVersion(server.VERSION_5_6);
 
 		String sql[] = {
 			"create TABLE `test_time` ( id time(3) )"
@@ -229,8 +227,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testDatetimeWithLength() throws Exception {
-		if ( !server.getVersion().equals("5.6") )
-			return;
+		requireMinimumVersion(server.VERSION_5_6);
 
 		String sql[] = {
 			"create TABLE `test_datetime` ( id datetime(3) )",
@@ -242,8 +239,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testTimestampWithLength() throws Exception {
-		if ( !server.getVersion().equals("5.6") )
-			return;
+		requireMinimumVersion(server.VERSION_5_6);
 
 		String sql[] = {
 			"create TABLE `test_year` ( id timestamp(3) )"
@@ -376,13 +372,12 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	@Category(Mysql57Tests.class)
 	public void testGeneratedColumns() throws Exception {
-		if ( server.getVersion().equals("5.7") ) {
-			testIntegration("create table t ("
-				+ "a INT GENERATED ALWAYS AS (0) VIRTUAL UNIQUE NOT NULL, "
-				+ "b int AS (a + 0) STORED PRIMARY KEY"
-				+ ")"
-			);
-		}
+		requireMinimumVersion(server.VERSION_5_7);
+		testIntegration("create table t ("
+			+ "a INT GENERATED ALWAYS AS (0) VIRTUAL UNIQUE NOT NULL, "
+			+ "b int AS (a + 0) STORED PRIMARY KEY"
+			+ ")"
+		);
 	}
 
 	@Test
@@ -428,5 +423,18 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String[] sql = {"create database TestDatabaseCreate2"};
 		List<RowMap> rows = getRowsForDDLTransaction(sql, excludeDb("TestDatabaseCreate2"));
 		assertEquals(0, rows.size());
+	}
+
+	@Test
+	public void testDatabaseChangeWithTableFilter() throws Exception {
+		String[] sql = {
+				"create database TestDatabaseCreate3",
+				"create table `TestDatabaseCreate3`.`chicken` ( id int )",
+				"create table `TestDatabaseCreate3`.`burger` ( id int )"
+		};
+		List<RowMap> rows = getRowsForDDLTransaction(sql, excludeTable("chicken"));
+		assertEquals(2, rows.size());
+		assertTrue(rows.get(0).toJSON(ddlOutputConfig()).contains("\"type\":\"database-create\",\"database\":\"TestDatabaseCreate3\""));
+		assertTrue(rows.get(1).toJSON(ddlOutputConfig()).contains("\"type\":\"table-create\",\"database\":\"TestDatabaseCreate3\",\"table\":\"burger\""));
 	}
 }

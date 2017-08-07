@@ -36,25 +36,6 @@ CREATE table `ser1`.`tbl2` ( id int unsigned, `a` BIT, primary key (id, a));
     }
   }
 
-CREATE table `ser1`.`tbl3` ( id int, `dt` datetime(6), `ts` timestamp(3), `t` time(6), primary key (id));
-->{
-    type: "table-create",
-    database: "ser1",
-    table: "tbl3",
-    def: {
-      database: "ser1",
-      table: "tbl3",
-      columns: [
-        { name: "id", type: "int", signed: true },
-        { name: "dt", type: "datetime", column-length: 6 },
-        { name: "ts", type: "timestamp", column-length: 3 },
-        { name: "t", type: "time", column-length: 6 }
-      ],
-      primary-key: [ "id" ],
-      charset: "utf8"
-    }
-  }
-
 CREATE database `ser1like`;
 CREATE table `ser1like`.`tbllike` LIKE `ser1`.`tbl2`;
 ->{
@@ -72,3 +53,4 @@ CREATE table `ser1like`.`tbllike` LIKE `ser1`.`tbl2`;
       charset: "utf8"
     }
   }
+

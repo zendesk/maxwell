@@ -65,10 +65,10 @@ public class MaxwellTestSupport {
 		}
 
 		String shardedFileName;
-		if ( server.getVersion().equals("5.6") )
-			shardedFileName = "sharded_56.sql";
-		else
+		if ( server.getVersion().atLeast(server.VERSION_5_6) )
 			shardedFileName = "sharded.sql";
+		else
+			shardedFileName = "sharded_55.sql";
 
 		File shardedFile = new File(getSQLDir() + "/schema/" + shardedFileName);
 		byte[] sql = Files.readAllBytes(shardedFile.toPath());

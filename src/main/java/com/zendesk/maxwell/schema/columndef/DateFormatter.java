@@ -22,9 +22,10 @@ public class DateFormatter {
 	public static Timestamp extractTimestamp(Object value) {
 		if (value instanceof Long) {
 			Long micros = (Long) value;
-			Timestamp t = new Timestamp(micros / 1000);
-
-			t.setNanos((int) (micros % 1000000) * 1000);
+			long millis = floorDiv(micros, 1000L);
+			Timestamp t = new Timestamp(millis);
+			long microsOnly = floorMod(micros, (long) 1000000);
+			t.setNanos((int) microsOnly * 1000);
 			return t;
 		} else if (value instanceof Timestamp) {
 			return (Timestamp) value;
@@ -33,17 +34,17 @@ public class DateFormatter {
 			return new Timestamp(time);
 		} else
 			throw new RuntimeException("couldn't extract date/time out of " + value);
-
 	}
 
-	private static Long MIN_DATE = Timestamp.valueOf("1000-01-01 00:00:00").getTime();
-	private static String extractAndFormat(SimpleDateFormat formatter, Object value) {
-		synchronized(formatter) {
-			Timestamp t = extractTimestamp(value);
-			if ( t.getTime() < MIN_DATE )
-				return null;
-			else
-				return formatter.format(t);
+	private static Timestamp MIN_DATE = Timestamp.valueOf("1000-01-01 00:00:00");
+
+	private static String format(SimpleDateFormat formatter, Timestamp ts) {
+		if ( ts.before(MIN_DATE) ) {
+			return null;
+		} else {
+			synchronized(formatter) {
+					return formatter.format(ts);
+			}
 		}
 	}
 
@@ -57,10 +58,10 @@ public class DateFormatter {
 		else
 			formatter = dateFormatter;
 
-		return extractAndFormat(formatter, value);
+		return format(formatter, extractTimestamp(value));
 	}
 
-	public static String formatDateTime(Object value) {
+	public static String formatDateTime(Object value, Timestamp ts) {
 		SimpleDateFormat formatter;
 
 		if ( value instanceof Long )
@@ -68,6 +69,14 @@ public class DateFormatter {
 		else
 			formatter = dateTimeFormatter;
 
-		return extractAndFormat(formatter, value);
+		return format(formatter, ts);
+	}
+
+	private static long floorDiv(long a, long b) {
+		return ((a < 0)?(a - (b - 1)):a) / b;
+	}
+
+	private static long floorMod(long x, long y) {
+		return x - floorDiv(x, y) * y;
 	}
 }

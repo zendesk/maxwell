@@ -9,8 +9,6 @@ entire code base to add (unreliable) instrumentation points.  Common use cases
 include ETL, cache building/expiring, metrics collection, search indexing and
 inter-service communication.
 
-advanced features:
-
 - Can do `SELECT * from table` (bootstrapping) initial loads of a table.
 - supports automatic position recover on master promotion
 - flexible partitioning schemes for Kakfa - by database, table, primary key, or column
@@ -18,7 +16,7 @@ advanced features:
   parser for create/alter/drop statements (nope, there was no other way).
 
 &rarr; Download:
-[https://github.com/zendesk/maxwell/releases/download/v1.10.3/maxwell-1.10.3.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.10.3/maxwell-1.10.3.tar.gz)
+[https://github.com/zendesk/maxwell/releases/download/v1.10.5/maxwell-1.10.5.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.10.5/maxwell-1.10.5.tar.gz)
 <br/>
 &rarr; Source:
 [https://github.com/zendesk/maxwell](https://github.com/zendesk/maxwell)
@@ -52,15 +50,3 @@ advanced features:
     "old":  {"daemon": "Stanislaw Lem"}
   }
 ```
-
-
-
-<script>
-  jQuery(document).ready(function () {
-    jQuery("#maxwell-header").append(
-      jQuery("<img alt='The Daemon, maybe' src='./img/cyberiad_1.jpg' id='maxwell-daemon-image'>")
-    );
-    jQuery("pre").addClass("home-code");
-  });
-</script>
-
