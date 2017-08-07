@@ -68,7 +68,7 @@ public class MysqlPositionStore {
 		try( Connection c = connectionPool.getConnection() ){
 			PreparedStatement s = c.prepareStatement(sql);
 
-			LOGGER.debug("Writing binlog position to " + c.getCatalog() + ".positions: " + newPosition + ", last lastHeartbeatRead read: " + lastHeartbeatRead);
+			LOGGER.debug("Writing binlog position to " + c.getCatalog() + ".positions: " + newPosition + ", last heartbeat read: " + lastHeartbeatRead);
 			s.setLong(1, serverID);
 			s.setString(2, binlogPosition.getGtidSetStr());
 			s.setString(3, binlogPosition.getFile());
