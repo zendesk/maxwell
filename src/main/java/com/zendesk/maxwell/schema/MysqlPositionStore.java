@@ -8,9 +8,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.codahale.metrics.Gauge;
 import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 
 import com.zendesk.maxwell.MaxwellConfig;
+import com.zendesk.maxwell.metrics.Metrics;
 import com.zendesk.maxwell.recovery.RecoveryInfo;
 
 import com.zendesk.maxwell.replication.BinlogPosition;
@@ -28,8 +30,10 @@ public class MysqlPositionStore {
 	private String clientID;
 	private final boolean gtidMode;
 	private final ConnectionPool connectionPool;
+	private Long lastHeartbeat;
+	private Long lastHeartbeatRead;
 
-	public MysqlPositionStore(ConnectionPool pool, Long serverID, String clientID, boolean gtidMode) {
+	public MysqlPositionStore(ConnectionPool pool, Long serverID, String clientID, boolean gtidMode, Metrics metrics) {
 		this.connectionPool = pool;
 		this.clientID = clientID;
 		this.gtidMode = gtidMode;
@@ -39,13 +43,15 @@ public class MysqlPositionStore {
 		} else {
 			this.serverID = serverID;
 		}
+
+		addMetrics(metrics);
 	}
 
 	public void set(Position newPosition) throws SQLException {
 		if ( newPosition == null )
 			return;
 
-		Long heartbeat = newPosition.getLastHeartbeatRead();
+		lastHeartbeatRead = newPosition.getLastHeartbeatRead();
 
 		String sql = "INSERT INTO `positions` set "
 				+ "server_id = ?, "
@@ -62,14 +68,14 @@ public class MysqlPositionStore {
 		try( Connection c = connectionPool.getConnection() ){
 			PreparedStatement s = c.prepareStatement(sql);
 
-			LOGGER.debug("Writing binlog position to " + c.getCatalog() + ".positions: " + newPosition + ", last heartbeat read: " + heartbeat);
+			LOGGER.debug("Writing binlog position to " + c.getCatalog() + ".positions: " + newPosition + ", last heartbeat read: " + lastHeartbeatRead);
 			s.setLong(1, serverID);
 			s.setString(2, binlogPosition.getGtidSetStr());
 			s.setString(3, binlogPosition.getFile());
 			s.setLong(4, binlogPosition.getOffset());
-			s.setLong(5, heartbeat);
+			s.setLong(5, lastHeartbeatRead);
 			s.setString(6, clientID);
-			s.setLong(7, heartbeat);
+			s.setLong(7, lastHeartbeatRead);
 			s.setString(8, binlogPosition.getGtidSetStr());
 			s.setString(9, binlogPosition.getFile());
 			s.setLong(10, binlogPosition.getOffset());
@@ -90,13 +96,33 @@ public class MysqlPositionStore {
 		}
 	}
 
+	private void addMetrics(Metrics metrics) {
+		metrics.getRegistry().register(
+			metrics.metricName("replication", "heartbeat"),
+			new Gauge<Long>() {
+				@Override
+				public Long getValue() {
+					return lastHeartbeat;
+				}
+			}
+		);
+
+		metrics.getRegistry().register(
+			metrics.metricName("replication", "heartbeatRead"),
+			new Gauge<Long>() {
+				@Override
+				public Long getValue() {
+					return lastHeartbeatRead;
+				}
+			}
+		);
+	}
+
 	/*
 	 * the heartbeat system performs two functions:
 	 * 1 - it leaves pointers in the binlog in order to facilitate master recovery
 	 * 2 - it detects duplicate maxwell processes configured with the same client_id, aborting if we detect a dupe.
 	 */
-
-	private Long lastHeartbeat = null;
 
 	private Long insertHeartbeat(Connection c, Long thisHeartbeat) throws SQLException, DuplicateProcessException {
 		String heartbeatInsert = "insert into `heartbeats` set `heartbeat` = ?, `server_id` = ?, `client_id` = ?";

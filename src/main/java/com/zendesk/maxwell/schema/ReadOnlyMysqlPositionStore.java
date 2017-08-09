@@ -1,5 +1,6 @@
 package com.zendesk.maxwell.schema;
 
+import com.zendesk.maxwell.metrics.NoOpMetrics;
 import com.zendesk.maxwell.replication.Position;
 import snaq.db.ConnectionPool;
 
@@ -9,7 +10,7 @@ import snaq.db.ConnectionPool;
  */
 public class ReadOnlyMysqlPositionStore extends MysqlPositionStore {
 	public ReadOnlyMysqlPositionStore(ConnectionPool pool, Long serverID, String clientID, boolean gtidMode) {
-		super(pool, serverID, clientID, gtidMode);
+		super(pool, serverID, clientID, gtidMode, new NoOpMetrics());
 	}
 
 	@Override
