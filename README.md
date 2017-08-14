@@ -16,7 +16,7 @@ inter-service communication.
   parser for create/alter/drop statements (nope, there was no other way).
 
 &rarr; Download:
-[https://github.com/zendesk/maxwell/releases/download/v1.10.5/maxwell-1.10.5.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.10.5/maxwell-1.10.5.tar.gz)
+[https://github.com/zendesk/maxwell/releases/download/v1.10.6/maxwell-1.10.6.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.10.6/maxwell-1.10.6.tar.gz)
 <br/>
 &rarr; Source:
 [https://github.com/zendesk/maxwell](https://github.com/zendesk/maxwell)
