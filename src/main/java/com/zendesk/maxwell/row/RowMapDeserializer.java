@@ -105,8 +105,7 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 		return rowMap;
 	}
 
-	@VisibleForTesting
-	final Object getValue(ValueNode value)
+	private Object getValue(ValueNode value)
 	{
 		if (value.isNull()) {
 			return null;
@@ -133,14 +132,6 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 
 		if (value.isBoolean()) {
 			return value.asBoolean();
-		}
-
-		if (value.canConvertToInt()) {
-			return value.asInt();
-		}
-
-		if (value.canConvertToLong()) {
-			return value.asLong();
 		}
 
 		return value.asText();
