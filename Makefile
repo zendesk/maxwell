@@ -17,7 +17,7 @@ ADDITIONAL_PACKAGED_KAFKA_01021=0.10.2.1
 JAVAC=javac
 JAVAC_FLAGS += -d target/classes
 JAVAC_FLAGS += -sourcepath src/main/java:src/test/java:target/generated-sources/src/main/antlr4
-JAVAC_FLAGS += -g -target 1.7 -source 1.7 -encoding UTF-8 -Xlint:-options -Xlint:unchecked
+JAVAC_FLAGS += -g -target 1.8 -source 1.8 -encoding UTF-8 -Xlint:-options -Xlint:unchecked
 
 # files that just get copied to the root of the maxwell distro
 DISTFILES=README.md docs/docs/quickstart.md docs/docs/config.md LICENSE src/main/resources/log4j2.xml config.properties.example kinesis-producer-library.properties.example
@@ -64,7 +64,7 @@ target/.java-test: $(JAVA_TEST_SOURCE)
 	@mkdir -p target/test-classes
 	cp -a src/test/resources/* target/test-classes
 	javac -d target/test-classes -sourcepath src/main/java:src/test/java:target/generated-sources -classpath target/classes:$(JAVA_TEST_DEPENDS) \
-		-g -target 1.7 -source 1.7 -encoding UTF-8 $?
+		-g -target 1.8 -source 1.8 -encoding UTF-8 $?
 	@touch target/.java-test
 
 compile-test: compile target/.java-test

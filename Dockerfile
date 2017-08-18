@@ -1,4 +1,4 @@
-FROM java:openjdk-7
+FROM java:openjdk-8
 ENV MAXWELL_VERSION 1.10.6
 ENV KAFKA_VERSION 0.10.1.0
 
