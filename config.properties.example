@@ -187,8 +187,11 @@ kinesis_stream=maxwell
 # When metrics_type includes slf4j this is the frequency metrics are emitted to the log, in seconds
 #metrics_slf4j_interval=60
 
-# When metrics_type includes http this is the port the server will bind to.
-#metrics_http_port=8080
+# When metrics_type includes http or diagnostic is enabled, this is the port the server will bind to.
+#http_port=8080
+
+# When metrics_type includes http or diagnostic is enabled, this is the http path prefix, default /.
+#http_path_prefix=/some/path/
 
 # ** The following are Datadog specific. **
 # When metrics_type includes datadog this is the way metrics will be reported.
@@ -209,6 +212,15 @@ kinesis_stream=maxwell
 #metrics_datadog_host=localhost # default localhost
 #metrics_datadog_port=8125 # default 8125
 
+# Maxwell exposes http diagnostic endpoint to check below in parallel:
+# 1. binlog replication lag
+# 2. producer (currently kafka) lag
+
+# To enable Maxwell diagnostic
+#http_diagnostic=true # default false
+
+# Diagnostic check timeout in milliseconds, required if diagnostic = true
+#http_diagnostic_timeout=10000 # default 10000
 
 ######### misc stuff ###############
 

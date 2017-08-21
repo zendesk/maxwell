@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.metrics;
+package com.zendesk.maxwell.monitoring;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.health.HealthCheck;

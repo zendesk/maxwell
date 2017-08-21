@@ -2,6 +2,7 @@ package com.zendesk.maxwell.producer;
 
 import com.codahale.metrics.Meter;
 import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.monitoring.MaxwellDiagnostic;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.util.StoppableTask;
 
@@ -21,6 +22,10 @@ public abstract class AbstractProducer {
 	}
 
 	public Meter getFailedMessageMeter() {
+		return null;
+	}
+
+	public MaxwellDiagnostic getDiagnostic() {
 		return null;
 	}
 }
