@@ -101,10 +101,11 @@ public class MaxwellContext {
 	public ConnectionPool getMaxwellConnectionPool() { return maxwellConnectionPool; }
 
 	public ConnectionPool getSchemaConnectionPool() {
-	    if (this.schemaConnectionPool != null) {
-		return schemaConnectionPool;
-	    }
-	    return replicationConnectionPool;
+		if (this.schemaConnectionPool != null) {
+			return schemaConnectionPool;
+		}
+
+		return replicationConnectionPool;
 	}
 
 	public Connection getMaxwellConnection() throws SQLException {
@@ -339,6 +340,9 @@ public class MaxwellContext {
 				break;
 			case "buffer":
 				this.producer = new BufferedProducer(this, this.config.bufferedProducerSize);
+				break;
+			case "rabbitmq":
+				this.producer = new RabbitmqProducer(this);
 				break;
 			case "none":
 				this.producer = null;
