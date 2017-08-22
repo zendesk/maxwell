@@ -1,24 +1,25 @@
 package com.zendesk.maxwell.replication;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import com.codahale.metrics.Timer;
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import com.github.shyiko.mysql.binlog.event.Event;
 import com.github.shyiko.mysql.binlog.event.EventType;
 import com.github.shyiko.mysql.binlog.event.GtidEventData;
-
+import com.github.shyiko.mysql.binlog.event.QueryEventData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 class BinlogConnectorEventListener implements BinaryLogClient.EventListener,
 					      BinaryLogClient.LifecycleListener {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BinlogConnectorEventListener.class);
 
 	private final BlockingQueue<BinlogConnectorEvent> queue;
-	private Timer queueTimer;
+	private final Timer queueTimer;
+	private final Timer mysqlTxExecutionTimer;
 	protected final AtomicBoolean mustStop = new AtomicBoolean(false);
 	private final BinaryLogClient client;
 	private String gtid;
@@ -26,11 +27,12 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener,
 	public BinlogConnectorEventListener(
 		BinaryLogClient client,
 		BlockingQueue<BinlogConnectorEvent> q,
-		Timer queueTimer
-	) {
+		Timer queueTimer,
+		Timer mysqlTxExecutionTimer) {
 		this.client = client;
 		this.queue = q;
 		this.queueTimer = queueTimer;
+		this.mysqlTxExecutionTimer = mysqlTxExecutionTimer;
 	}
 
 	public void stop() {
@@ -40,10 +42,13 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener,
 	@Override
 	public void onEvent(Event event) {
 		long eventSeenAt = 0L;
+		boolean trackMetrics = false;
 
-		boolean trackMetrics = event.getHeader().getEventType() == EventType.XID;
-		if (trackMetrics) {
+		if (event.getHeader().getEventType() == EventType.QUERY) {
+			trackMetrics = true;
 			eventSeenAt = System.currentTimeMillis();
+			QueryEventData queryEventData = event.getData();
+			mysqlTxExecutionTimer.update(queryEventData.getExecutionTime(), TimeUnit.SECONDS);
 		}
 
 		while (mustStop.get() != true) {

@@ -71,7 +71,8 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 		this.client.setEventDeserializer(eventDeserializer);
 
 		Timer replicationQueueTimer = metrics.getRegistry().timer(metrics.metricName("replication", "queue", "time"));
-		this.binlogEventListener = new BinlogConnectorEventListener(client, queue, replicationQueueTimer);
+		Timer mysqlTxExecutionTimer = metrics.getRegistry().timer(metrics.metricName("mysql", "transaction", "execution", "time"));
+		this.binlogEventListener = new BinlogConnectorEventListener(client, queue, replicationQueueTimer, mysqlTxExecutionTimer);
 
 		this.client.setBlocking(!stopOnEOF);
 		this.client.registerEventListener(binlogEventListener);
