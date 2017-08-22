@@ -18,8 +18,8 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener,
 	private static final Logger LOGGER = LoggerFactory.getLogger(BinlogConnectorEventListener.class);
 
 	private final BlockingQueue<BinlogConnectorEvent> queue;
-	private Timer queueTimer;
-	private Timer mysqlTxExecutionTimer;
+	private final Timer queueTimer;
+	private final Timer mysqlTxExecutionTimer;
 	protected final AtomicBoolean mustStop = new AtomicBoolean(false);
 	private final BinaryLogClient client;
 	private String gtid;
@@ -42,15 +42,13 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener,
 	@Override
 	public void onEvent(Event event) {
 		long eventSeenAt = 0L;
+		boolean trackMetrics = false;
 
 		if (event.getHeader().getEventType() == EventType.QUERY) {
+			trackMetrics = true;
+			eventSeenAt = System.currentTimeMillis();
 			QueryEventData queryEventData = event.getData();
 			mysqlTxExecutionTimer.update(queryEventData.getExecutionTime(), TimeUnit.SECONDS);
-		}
-
-		boolean trackMetrics = event.getHeader().getEventType() == EventType.XID;
-		if (trackMetrics) {
-			eventSeenAt = System.currentTimeMillis();
 		}
 
 		while (mustStop.get() != true) {
