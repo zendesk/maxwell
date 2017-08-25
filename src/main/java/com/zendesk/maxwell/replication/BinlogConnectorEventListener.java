@@ -1,11 +1,13 @@
 package com.zendesk.maxwell.replication;
 
+import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Timer;
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import com.github.shyiko.mysql.binlog.event.Event;
 import com.github.shyiko.mysql.binlog.event.EventType;
 import com.github.shyiko.mysql.binlog.event.GtidEventData;
 import com.github.shyiko.mysql.binlog.event.QueryEventData;
+import com.zendesk.maxwell.metrics.Metrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,20 +21,44 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener,
 
 	private final BlockingQueue<BinlogConnectorEvent> queue;
 	private final Timer queueTimer;
-	private final Timer mysqlTxExecutionTimer;
 	protected final AtomicBoolean mustStop = new AtomicBoolean(false);
 	private final BinaryLogClient client;
 	private String gtid;
+	private Long executionTime = 0L;
+	private Long replicationLag = 0L;
+	private long transactionStartTime = 0L;
 
 	public BinlogConnectorEventListener(
 		BinaryLogClient client,
 		BlockingQueue<BinlogConnectorEvent> q,
-		Timer queueTimer,
-		Timer mysqlTxExecutionTimer) {
+		Metrics metrics) {
 		this.client = client;
 		this.queue = q;
-		this.queueTimer = queueTimer;
-		this.mysqlTxExecutionTimer = mysqlTxExecutionTimer;
+		this.queueTimer =  metrics.getRegistry().timer(metrics.metricName("replication", "queue", "time"));
+
+		final BinlogConnectorEventListener self = this;
+
+		String executionTimeGaugeName = metrics.metricName("mysql", "transaction", "execution", "time");
+		metrics.getRegistry().register(
+			executionTimeGaugeName,
+			new Gauge<Long>() {
+				@Override
+				public Long getValue() {
+					return self.executionTime;
+				}
+			}
+		);
+
+		String lagGaugeName = metrics.metricName("replication", "lag");
+		metrics.getRegistry().register(
+			lagGaugeName,
+			new Gauge<Long>() {
+				@Override
+				public Long getValue() {
+					return self.replicationLag;
+				}
+			}
+		);
 	}
 
 	public void stop() {
@@ -44,19 +70,23 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener,
 		long eventSeenAt = 0L;
 		boolean trackMetrics = false;
 
-		if (event.getHeader().getEventType() == EventType.QUERY) {
+		EventType eventType = event.getHeader().getEventType();
+
+		if (eventType == EventType.QUERY) {
+			transactionStartTime = event.getHeader().getTimestamp();
+		} else if (eventType == EventType.XID) {
 			trackMetrics = true;
 			eventSeenAt = System.currentTimeMillis();
-			QueryEventData queryEventData = event.getData();
-			mysqlTxExecutionTimer.update(queryEventData.getExecutionTime(), TimeUnit.SECONDS);
+			long transactionCommitTime = event.getHeader().getTimestamp();
+			replicationLag = eventSeenAt - transactionCommitTime;
+			executionTime = transactionCommitTime - transactionStartTime;
+		} else if (eventType == EventType.GTID) {
+			gtid = ((GtidEventData)event.getData()).getGtid();
 		}
 
-		while (mustStop.get() != true) {
-			if (event.getHeader().getEventType() == EventType.GTID) {
-				gtid = ((GtidEventData)event.getData()).getGtid();
-			}
+		BinlogConnectorEvent ep = new BinlogConnectorEvent(event, client.getBinlogFilename(), client.getGtidSet(), gtid);
 
-			BinlogConnectorEvent ep = new BinlogConnectorEvent(event, client.getBinlogFilename(), client.getGtidSet(), gtid);
+		while (mustStop.get() != true) {
 			try {
 				if ( queue.offer(ep, 100, TimeUnit.MILLISECONDS ) ) {
 					break;
