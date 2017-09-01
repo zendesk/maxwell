@@ -103,7 +103,13 @@ SchemaException: Error reading field 'throttle_time_ms': java.nio.BufferUnderflo
 
 ### Kinesis AWS credentials
 ***
-You will need to obtain an IAM user that has the permission "kinesis:PutRecord" for the stream you are planning on producing to.
+You will need to obtain an IAM user that has the following permissions for the stream you are planning on producing to:
+
+- "kinesis:PutRecord"
+- "kinesis:PutRecords"
+- "kinesis:DescribeStream"
+- "cloudwatch:PutMetricData"
+
 See the [AWS docs](http://docs.aws.amazon.com/streams/latest/dev/controlling-access.html#kinesis-using-iam-examples) for the latest examples on which permissions are needed.
 
 
