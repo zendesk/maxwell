@@ -129,6 +129,7 @@ public class Maxwell implements Runnable {
 	}
 
 	protected void onReplicatorStart() {}
+
 	private void start() throws Exception {
 		try {
 			startInner();
