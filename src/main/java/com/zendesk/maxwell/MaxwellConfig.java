@@ -86,6 +86,11 @@ public class MaxwellConfig extends AbstractConfig {
 	public boolean masterRecovery;
 	public boolean ignoreProducerError;
 
+	public String rabbitmqHost;
+	public String rabbitmqExchange;
+	public String rabbitmqExchangeType;
+	public String rabbitmqRoutingKeyTemplate;
+
 	public MaxwellConfig() { // argv is only null in tests
 		this.kafkaProperties = new Properties();
 		this.replayMode = false;
@@ -193,6 +198,13 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_8" );
 
+		parser.accepts("rabbitmq_host", "Host of Rabbitmq machine").withOptionalArg();
+		parser.accepts("rabbitmq_exchange", "Name of exchange for rabbitmq publisher").withOptionalArg();
+		parser.accepts("rabbitmq_exchange_type", "Exchange type for rabbitmq").withOptionalArg();
+		parser.accepts("rabbitmq_routing_key_template", "A string template for the routing key, '%db%' and '%table%' will be substituted. Default is '%db%.%table%'.").withOptionalArg();
+
+		parser.accepts( "__separator_9" );
+
 		parser.accepts( "metrics_prefix", "the prefix maxwell will apply to all metrics" ).withOptionalArg();
 		parser.accepts( "metrics_type", "how maxwell metrics will be reported, at least one of slf4j|jmx|http|datadog" ).withOptionalArg();
 		parser.accepts( "metrics_slf4j_interval", "the frequency metrics are emitted to the log, in seconds, when slf4j reporting is configured" ).withOptionalArg();
@@ -204,9 +216,10 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "metrics_datadog_host", "the host to publish metrics to when metrics_datadog_type = udp" ).withOptionalArg();
 		parser.accepts( "metrics_datadog_port", "the port to publish metrics to when metrics_datadog_type = udp" ).withOptionalArg();
 
-		parser.accepts( "__separator_9" );
+		parser.accepts( "__separator_10" );
 
 		parser.accepts( "help", "display help").forHelp();
+
 
 		BuiltinHelpFormatter helpFormatter = new BuiltinHelpFormatter(200, 4) {
 			@Override
@@ -273,6 +286,11 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.kafkaPartitionHash 	= fetchOption("kafka_partition_hash", options, properties, "default");
 		this.ddlKafkaTopic 		    = fetchOption("ddl_kafka_topic", options, properties, this.kafkaTopic);
+
+		this.rabbitmqHost           = fetchOption("rabbitmq_host", options, properties, "localhost");
+		this.rabbitmqExchange       = fetchOption("rabbitmq_exchange", options, properties, "maxwell");
+		this.rabbitmqExchangeType   = fetchOption("rabbitmq_exchange_type", options, properties, "fanout");
+		this.rabbitmqRoutingKeyTemplate   = fetchOption("rabbitmq_routing_key_template", options, properties, "%db%.%table%");
 
 		String kafkaBootstrapServers = fetchOption("kafka.bootstrap.servers", options, properties, null);
 		if ( kafkaBootstrapServers != null )
