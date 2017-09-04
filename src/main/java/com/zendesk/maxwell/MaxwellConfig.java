@@ -412,7 +412,10 @@ public class MaxwellConfig extends AbstractConfig {
 		outputConfig.encryptAll = fetchBooleanOption("encrypt_all", options, properties, false);
 		outputConfig.secret_key = fetchOption("secret_key", options, properties, null);
 
-		if(outputConfig.encryptData || outputConfig.encryptAll)
+		if(outputConfig.encryptData && outputConfig.encryptAll) {
+			usage("You cannot specify both encrypt_data and encrypt_all");
+		}
+
 		if ( this.excludeColumns != null ) {
 			for ( String s : this.excludeColumns.split(",") ) {
 				try {

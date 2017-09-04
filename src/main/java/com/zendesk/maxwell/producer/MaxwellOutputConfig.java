@@ -17,7 +17,6 @@ public class MaxwellOutputConfig {
 	public boolean encryptAll;
 	public String secret_key;
 
-
 	public MaxwellOutputConfig() {
 		this.includesBinlogPosition = false;
 		this.includesGtidPosition = false;
@@ -30,5 +29,9 @@ public class MaxwellOutputConfig {
 		this.encryptData = false;
 		this.encryptAll = false;
 		this.secret_key = null;
+	}
+
+	public boolean encryptionEnabled() {
+		return encryptData || encryptAll;
 	}
 }

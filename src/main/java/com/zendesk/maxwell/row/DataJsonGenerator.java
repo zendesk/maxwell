@@ -18,9 +18,9 @@ interface DataJsonGenerator {
 	// writes an encrypted contents on end
 
 	// outer object
-	void begin(String key, ByteArrayOutputStream bos) throws IOException;
-	void set(String secret_key) throws IOException,NoSuchAlgorithmException;
-	void end() throws IOException;
+	void begin(String key) throws IOException;
+	void writeMetadata(EncryptionContext context) throws IOException;
+	void end(EncryptionContext context) throws IOException;
 
 	// contents
 	void writeArrayFieldStart(String key) throws IOException;
@@ -39,15 +39,16 @@ class PlaintextJsonGenerator implements DataJsonGenerator {
 	}
 
 	@Override
-	public void set(String secret_key){}
+	public void writeMetadata(EncryptionContext ctx) {
+	}
 
 	@Override
-	public void begin(String key, ByteArrayOutputStream bos) throws IOException {
+	public void begin(String key) throws IOException {
 		generator.writeObjectFieldStart(key);
 	}
 
 	@Override
-	public void end() throws IOException {
+	public void end(EncryptionContext ctx) throws IOException {
 		generator.writeEndObject();
 	}
 
@@ -82,49 +83,61 @@ class PlaintextJsonGenerator implements DataJsonGenerator {
 	}
 }
 
+class EncryptionContext {
+	String secretKey;
+	byte[] iv;
+
+	EncryptionContext(String secretKey, byte[] iv) {
+		this.secretKey = secretKey;
+		this.iv = iv;
+	}
+}
+
+
 class EncryptingJsonGenerator implements DataJsonGenerator {
-	private JsonGenerator rawGenerator;
-	private JsonFactory jsonFactory;
-	private String secretKey;
-	private byte[] initVector;
-	private ByteArrayOutputStream outputStream;
-	private JsonGenerator encryptedGenerator;
+	final private JsonGenerator rawGenerator;
+	final private JsonFactory jsonFactory;
+	final private ByteArrayOutputStream buffer;
+	final private JsonGenerator encryptedGenerator;
 	private String toplevelKey;
 
 	public EncryptingJsonGenerator(
-		JsonGenerator generator, JsonFactory jsonFactory)
-	{
+		JsonGenerator generator, JsonFactory jsonFactory) throws IOException {
+		this.buffer = new ByteArrayOutputStream();
 		this.rawGenerator = generator;
 		this.jsonFactory = jsonFactory;
-		this.encryptedGenerator = null;
+		this.encryptedGenerator = jsonFactory.createGenerator(buffer);
 	}
 
 	@Override
-	public void begin(String key, ByteArrayOutputStream bos) throws IOException {
-		this.outputStream = bos;
-		this.encryptedGenerator = jsonFactory.createGenerator(outputStream);
+	public void begin(String key) throws IOException {
 		this.encryptedGenerator.writeStartObject();
 		this.toplevelKey = key;
 	}
 
 	@Override
-	public void end() throws IOException {
+	public void end(EncryptionContext ctx) throws IOException {
 		encryptedGenerator.writeEndObject();
 		encryptedGenerator.flush();
-		String encryptedJSON = RowEncrypt.encrypt(outputStream.toString(), secretKey, initVector);
+		String encryptedJSON = RowEncrypt.encrypt(buffer.toString(), ctx.secretKey, ctx.iv);
 		rawGenerator.writeStringField(toplevelKey, encryptedJSON);
-		outputStream.reset();
-		outputStream.close();
+		buffer.reset();
 	}
 
-	@Override
-	public void set(String secret_key) throws IOException,NoSuchAlgorithmException{
-		this.secretKey = secret_key;
+	public static EncryptionContext createEncryptionContext(String secretKey) throws IOException,NoSuchAlgorithmException {
 		SecureRandom randomSecureRandom = SecureRandom.getInstance("SHA1PRNG");
 		byte[] iv = new byte[16];
 		randomSecureRandom.nextBytes(iv);
-		this.initVector = iv;
-		rawGenerator.writeStringField("init_vector", Base64.encodeBase64String(initVector));
+		return new EncryptionContext(secretKey, iv);
+	}
+
+	public static void writeMetadata(JsonGenerator rawGenerator, EncryptionContext ctx) throws IOException {
+		rawGenerator.writeStringField("init_vector", Base64.encodeBase64String(ctx.iv));
+	}
+
+	@Override
+	public void writeMetadata(EncryptionContext ctx) throws IOException {
+		EncryptingJsonGenerator.writeMetadata(rawGenerator, ctx);
 	}
 
 	@Override
