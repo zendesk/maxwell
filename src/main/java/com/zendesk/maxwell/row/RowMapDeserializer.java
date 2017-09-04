@@ -89,39 +89,27 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 
 		if (data == null){
 			throw new ParseException("`data` is required and cannot be null.");
-		} else if (data instanceof ObjectNode) {
-			rowMap = mapKeys(rowMap, data, false);
-		} else if (data.isTextual()){
-			String decryptedData = RowEncrypt.decrypt(data.textValue(), this.secret_key, node.get("init_vector").toString());
-			JsonNode decryptedDataNode = mapper.readTree(decryptedData);
-			if (decryptedDataNode instanceof ObjectNode) {
-				rowMap = mapKeys(rowMap, decryptedDataNode, false);
-			} else{
-				throw new ParseException("`data` cannot be parsed.");
-			}
-		} else {
-			throw new ParseException("`data` cannot be parsed.");
 		}
 
+		readDataInto(rowMap, data, false);
+
 		if (oldData != null) {
-			if (oldData instanceof ObjectNode) {
-				rowMap = mapKeys(rowMap, oldData, true);
-			} else if (oldData.isTextual()) {
-				String decryptedData = RowEncrypt
-						.decrypt(oldData.textValue(), this.secret_key, node.get("init_vector").toString());
-				JsonNode decryptedDataNode = mapper.readTree(decryptedData);
-				if (decryptedDataNode instanceof ObjectNode) {
-					rowMap = mapKeys(rowMap, decryptedDataNode, true);
-				} else {
-					throw new ParseException("`oldData` cannot be parsed.");
-				}
-			}
+			readDataInto(rowMap, oldData, true);
 		}
 
 		return rowMap;
 	}
 
-	private RowMap mapKeys(RowMap rowMap, JsonNode data, boolean isOld){
+	private void readDataInto(RowMap dest, JsonNode data, boolean isOld) throws IOException {
+		if (data.isTextual()) {
+			String decryptedData = RowEncrypt
+				.decrypt(data.textValue(), this.secret_key, data.get("init_vector").toString());
+			data = mapper.readTree(decryptedData);
+		}
+		if (!(data instanceof ObjectNode)) {
+			throw new ParseException("`" + (isOld ? "oldData" : "data") + "` cannot be parsed.");
+		}
+
 		Iterator keys = data.fieldNames();
 		if (keys != null) {
 			while (keys.hasNext()) {
@@ -130,14 +118,13 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 				if (value.isValueNode()) {
 					ValueNode valueNode = (ValueNode) value;
 					if(isOld) {
-						rowMap.putOldData(key, getValue(valueNode));
+						dest.putOldData(key, getValue(valueNode));
 					} else {
-						rowMap.putData(key, getValue(valueNode));
+						dest.putData(key, getValue(valueNode));
 					}
 				}
 			}
 		}
-		return rowMap;
 	}
 
 	private Object getValue(ValueNode value)
