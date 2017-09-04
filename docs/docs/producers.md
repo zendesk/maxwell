@@ -103,7 +103,13 @@ SchemaException: Error reading field 'throttle_time_ms': java.nio.BufferUnderflo
 
 ### Kinesis AWS credentials
 ***
-You will need to obtain an IAM user that has the permission "kinesis:PutRecord" for the stream you are planning on producing to.
+You will need to obtain an IAM user that has the following permissions for the stream you are planning on producing to:
+
+- "kinesis:PutRecord"
+- "kinesis:PutRecords"
+- "kinesis:DescribeStream"
+- "cloudwatch:PutMetricData"
+
 See the [AWS docs](http://docs.aws.amazon.com/streams/latest/dev/controlling-access.html#kinesis-using-iam-examples) for the latest examples on which permissions are needed.
 
 
@@ -117,10 +123,3 @@ Set the output stream in `config.properties` by setting the `kinesis_stream` pro
 The producer uses the [KPL (Kinesis Producer Library](http://docs.aws.amazon.com/streams/latest/dev/developing-producers-with-kpl.html) and uses the KPL built in configurations.
 Copy `kinesis-producer-library.properties.example` to `kinesis-producer-library.properties` and configure the properties file to your needs.
 The most important option here is configuring the region.
-
-<script>
-  jQuery(document).ready(function () {
-    jQuery("table").addClass("table table-condensed table-bordered table-hover");
-  });
-</script>
-

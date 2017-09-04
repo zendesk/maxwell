@@ -12,6 +12,7 @@ import org.junit.runners.Suite;
 	BootstrapIntegrationTest.class,
 	SchemaCaptureTest.class,
 	MaxwellIntegrationTest.class,
-	DDLIntegrationTest.class
+	DDLIntegrationTest.class,
+	EmbeddedMaxwellTest.class
 })
 public class Mysql57TestSuite {}

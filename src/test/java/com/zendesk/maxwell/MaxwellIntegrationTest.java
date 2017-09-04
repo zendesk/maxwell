@@ -2,6 +2,7 @@ package com.zendesk.maxwell;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
+import static org.junit.Assume.assumeTrue;
 
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.row.RowEncrypt;
@@ -400,8 +401,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testRunMinimalBinlog() throws Exception {
-		if ( server.getVersion().equals("5.5") )
-			return;
+		requireMinimumVersion(server.VERSION_5_6);
 
 		try {
 			server.getConnection().createStatement().execute("set global binlog_row_image='minimal'");
@@ -450,8 +450,8 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testZeroCreatedAtJSON() throws Exception {
-		if ( server.getVersion().equals("5.5") ) // 5.6 not yet supported for this test
-			runJSON("/json/test_zero_created_at");
+		assumeTrue(server.supportsZeroDates());
+		runJSON("/json/test_zero_created_at");
 	}
 
 	@Test
@@ -490,8 +490,8 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testTime() throws Exception {
-		if ( server.getVersion().equals("5.6") )
-			runJSON("/json/test_time");
+		requireMinimumVersion(server.VERSION_5_6);
+		runJSON("/json/test_time");
 	}
 
 	@Test
@@ -516,8 +516,8 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testJson() throws Exception {
-		if ( server.getVersion().equals("5.7") )
-			runJSON("/json/test_json");
+		requireMinimumVersion(server.VERSION_5_7);
+		runJSON("/json/test_json");
 	}
 
 	static String[] createDBSql = {

@@ -29,6 +29,10 @@ public class MysqlPositionStoreTest extends MaxwellTestWithIsolatedServer {
 		return new MysqlPositionStore(context.getMaxwellConnectionPool(), serverID, "maxwell", MaxwellTestSupport.inGtidMode());
 	}
 
+	private MysqlPositionStore buildStore(MaxwellContext context, Long serverID, String clientId) throws Exception {
+		return new MysqlPositionStore(context.getMaxwellConnectionPool(), serverID, clientId, MaxwellTestSupport.inGtidMode());
+	}
+
 	@Test
 	public void testSetBinlogPosition() throws Exception {
 		MysqlPositionStore store = buildStore();
@@ -127,6 +131,31 @@ public class MysqlPositionStoreTest extends MaxwellTestWithIsolatedServer {
 		for (RecoveryInfo recovery: recoveries) {
 			assertThat(errorMessage, containsString(" - " + recovery));
 		}
-		assertThat(errorMessage, containsString("execute: DELETE FROM maxwell.positions WHERE server_id <> " + newestServerID + ";"));
+		assertThat(errorMessage, containsString("execute: DELETE FROM maxwell.positions WHERE server_id <> " + newestServerID + " AND client_id = '<your_client_id>';"));
+	}
+
+	@Test
+	public void testCleanupOldRecoveryInfos() throws Exception {
+		if (MaxwellTestSupport.inGtidMode()) {
+			// gtid mode can't get into a multiple recovery state
+			return;
+		}
+
+		MaxwellContext context = buildContext();
+		Long activeServerID = context.getServerID();
+		Long oldServerID1 = activeServerID + 1;
+		Long oldServerID2 = activeServerID + 2;
+
+		String binlogFile = "bin.log";
+		String clientId = "client-123";
+
+		buildStore(context, oldServerID1, clientId).set(new Position(new BinlogPosition(0L, binlogFile), 1L));
+		buildStore(context, oldServerID2, clientId).set(new Position(new BinlogPosition(0L, binlogFile), 2L));
+		MysqlPositionStore testStore = buildStore(context, activeServerID, clientId);
+		testStore.set(new Position(new BinlogPosition(0L, binlogFile), 3L));
+
+		assertEquals(3, testStore.getAllRecoveryInfos().size());
+		testStore.cleanupOldRecoveryInfos();
+		assertEquals(1, testStore.getAllRecoveryInfos().size());
 	}
 }

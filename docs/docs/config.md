@@ -133,6 +133,7 @@ host                           | STRING                              | mysql hos
 user                           | STRING                              | mysql username                                      |
 password                       | STRING                              | mysql password                                      | (no password)
 port                           | INT                                 | mysql port                                          | 3306
+jdbc_options                   | STRING                              | mysql jdbc connection options                       | zeroDateTimeBehavior=convertToNull&amp;connectTimeout=5000
 schema_database                | STRING                              | database to store schema and position in            | maxwell
 client_id                      | STRING                              | unique text identifier for maxwell instance         | maxwell
 replica_server_id              | LONG                                | unique numeric identifier for this maxwell instance | 6379 (see notes)
@@ -187,13 +188,13 @@ encrypt_all                    | BOOLEAN                             | encrypt t
 secret_key                     | STRING                              | specify the encryption key to be used               | null
 **monitoring**
 metrics_prefix | STRING | the prefix maxwell will apply to all metrics | MaxwellMetrics
-metrics_type         | [slf4j &#124; jmx &#124; http &#124; datadog]      | how maxwell metrics will be reported, at least one of slf4j &#124; jmx &#124; http &#124; datadog| 
+metrics_type         | [slf4j &#124; jmx &#124; http &#124; datadog]      | how maxwell metrics will be reported, at least one of slf4j &#124; jmx &#124; http &#124; datadog|
 metrics_slf4j_interval     | INT                                 | the frequency metrics are emitted to the log, in seconds, when slf4j reporting is configured | 60
 metrics_http_port         | INT                                 | the port the server will bind to when http reporting is configured | 8080
 metrics_datadog_type | [udp &#124; http] | when metrics_type includes `datadog` this is the way metrics will be reported, can only be one of [udp &#124; http] | udp
-metrics_datadog_tags | STRING | datadog tags that should be supplied, e.g. tag1:value1,tag2:value2 | 
+metrics_datadog_tags | STRING | datadog tags that should be supplied, e.g. tag1:value1,tag2:value2 |
 metrics_datadog_interval | INT | the frequency metrics are pushed to datadog, in seconds | 60
-metrics_datadog_apikey | STRING | the datadog api key to use when metrics_datadog_type = `http` | 
+metrics_datadog_apikey | STRING | the datadog api key to use when metrics_datadog_type = `http` |
 metrics_datadog_host | STRING | the host to publish metrics to when metrics_datadog_type = `udp` | localhost
 metrics_datadog_port | INT | the port to publish metrics to when metrics_datadog_type = `udp` | 8125
 &nbsp;
@@ -201,11 +202,3 @@ metrics_datadog_port | INT | the port to publish metrics to when metrics_datadog
 bootstrapper                   | [async &#124; sync &#124; none]                   | bootstrapper type.  See bootstrapping docs.        | async
 init_position                  | FILE:POSITION:HEARTBEAT             | ignore the information in maxwell.positions and start at the given binlog position. Not available in config.properties. |
 replay                         | BOOLEAN                             | enable maxwell's read-only "replay" mode: don't store a binlog position or schema changes.  Not available in config.properties. |
-
-
-<script>
-  jQuery(document).ready(function () {
-    jQuery("table").addClass("table table-condensed table-bordered table-hover");
-  });
-</script>
-

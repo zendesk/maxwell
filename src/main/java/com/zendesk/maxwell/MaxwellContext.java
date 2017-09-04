@@ -15,6 +15,7 @@ import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
 import com.zendesk.maxwell.metrics.Metrics;
 import com.zendesk.maxwell.producer.*;
 import com.zendesk.maxwell.recovery.RecoveryInfo;
+import com.zendesk.maxwell.replication.MysqlVersion;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.replication.Replicator;
 import com.zendesk.maxwell.row.RowMap;
@@ -46,8 +47,7 @@ public class MaxwellContext {
 	private TaskManager taskManager;
 	private volatile Exception error;
 
-	private Integer mysqlMajorVersion;
-	private Integer mysqlMinorVersion;
+	private MysqlVersion mysqlVersion;
 	private Replicator replicator;
 	private Thread terminationThread;
 
@@ -101,10 +101,11 @@ public class MaxwellContext {
 	public ConnectionPool getMaxwellConnectionPool() { return maxwellConnectionPool; }
 
 	public ConnectionPool getSchemaConnectionPool() {
-	    if (this.schemaConnectionPool != null) {
-		return schemaConnectionPool;
-	    }
-	    return replicationConnectionPool;
+		if (this.schemaConnectionPool != null) {
+			return schemaConnectionPool;
+		}
+
+		return replicationConnectionPool;
 	}
 
 	public Connection getMaxwellConnection() throws SQLException {
@@ -274,21 +275,17 @@ public class MaxwellContext {
 		}
 	}
 
-
-	private void fetchMysqlVersion() throws SQLException {
-		if ( mysqlMajorVersion == null ) {
+	public MysqlVersion getMysqlVersion() throws SQLException {
+		if ( mysqlVersion == null ) {
 			try ( Connection c = getReplicationConnection() ) {
-				DatabaseMetaData meta = c.getMetaData();
-				mysqlMajorVersion = meta.getDatabaseMajorVersion();
-				mysqlMinorVersion = meta.getDatabaseMinorVersion();
+				mysqlVersion = MysqlVersion.capture(c);
 			}
 		}
+		return mysqlVersion;
 	}
 
 	public boolean shouldHeartbeat() throws SQLException {
-		fetchMysqlVersion();
-		// 5.5 and above
-		return (mysqlMajorVersion >= 6) || (mysqlMajorVersion == 5 && mysqlMinorVersion >= 5);
+		return getMysqlVersion().atLeast(5,5);
 	}
 
 	public CaseSensitivity getCaseSensitivity() throws SQLException {
@@ -322,30 +319,37 @@ public class MaxwellContext {
 		if ( this.producer != null )
 			return this.producer;
 
-		switch ( this.config.producerType ) {
-		case "file":
-			this.producer = new FileProducer(this, this.config.outputFile);
-			break;
-		case "kafka":
-			this.producer = new MaxwellKafkaProducer(this, this.config.getKafkaProperties(), this.config.kafkaTopic);
-			break;
-		case "kinesis":
-			this.producer = new MaxwellKinesisProducer(this, this.config.kinesisStream);
-			break;
-		case "profiler":
-			this.producer = new ProfilerProducer(this);
-			break;
-		case "stdout":
-			this.producer = new StdoutProducer(this);
-			break;
-		case "buffer":
-			this.producer = new BufferedProducer(this, this.config.bufferedProducerSize);
-			break;
-		case "none":
-			this.producer = null;
-			break;
-		default:
-			throw new RuntimeException("Unknown producer type: " + this.config.producerType);
+		if ( this.config.producerFactory != null ) {
+			this.producer = this.config.producerFactory.createProducer(this);
+		} else {
+			switch ( this.config.producerType ) {
+			case "file":
+				this.producer = new FileProducer(this, this.config.outputFile);
+				break;
+			case "kafka":
+				this.producer = new MaxwellKafkaProducer(this, this.config.getKafkaProperties(), this.config.kafkaTopic);
+				break;
+			case "kinesis":
+				this.producer = new MaxwellKinesisProducer(this, this.config.kinesisStream);
+				break;
+			case "profiler":
+				this.producer = new ProfilerProducer(this);
+				break;
+			case "stdout":
+				this.producer = new StdoutProducer(this);
+				break;
+			case "buffer":
+				this.producer = new BufferedProducer(this, this.config.bufferedProducerSize);
+				break;
+			case "rabbitmq":
+				this.producer = new RabbitmqProducer(this);
+				break;
+			case "none":
+				this.producer = null;
+				break;
+			default:
+				throw new RuntimeException("Unknown producer type: " + this.config.producerType);
+			}
 		}
 
 		StoppableTask task = null;

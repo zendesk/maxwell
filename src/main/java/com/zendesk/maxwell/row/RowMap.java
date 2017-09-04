@@ -166,31 +166,31 @@ public class RowMap implements Serializable {
 		if (pkColumns.isEmpty()) {
 			return database + table;
 		}
-		String keys="";
+		StringBuilder keys = new StringBuilder();
 		for (String pk : pkColumns) {
 			Object pkValue = null;
 			if (data.containsKey(pk))
 				pkValue = data.get(pk);
 			if (pkValue != null)
-				keys += pkValue.toString();
+				keys.append(pkValue.toString());
 		}
-		if (keys.isEmpty())
+		if (keys.length() == 0)
 			return "None";
-		return keys;
+		return keys.toString();
 	}
 
 	public String buildPartitionKey(List<String> partitionColumns, String partitionKeyFallback) {
-		String partitionKey="";
+		StringBuilder partitionKey= new StringBuilder();
 		for (String pc : partitionColumns) {
 			Object pcValue = null;
 			if (data.containsKey(pc))
 				pcValue = data.get(pc);
 			if (pcValue != null)
-				partitionKey += pcValue.toString();
+				partitionKey.append(pcValue.toString());
 		}
-		if (partitionKey.isEmpty())
+		if (partitionKey.length() == 0)
 			return getPartitionKeyFallback(partitionKeyFallback);
-		return partitionKey;
+		return partitionKey.toString();
 	}
 
 	private String getPartitionKeyFallback(String partitionKeyFallback) {

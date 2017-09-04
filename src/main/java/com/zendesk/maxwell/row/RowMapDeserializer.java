@@ -64,8 +64,9 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 		if (ts == null) {
 			throw new ParseException("`ts` is required and cannot be null.");
 		}
-		
+
 		JsonNode xid = node.get("xid");
+		JsonNode commit = node.get("commit");
 		JsonNode data = node.get("data");
 		JsonNode oldData = node.get("old");
 
@@ -80,6 +81,10 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 
 		if (xid != null) {
 			rowMap.setXid(xid.asLong());
+		}
+
+		if (commit != null && commit.asBoolean()) {
+			rowMap.setTXCommit();
 		}
 
 		if (data == null){
@@ -141,16 +146,27 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 			return null;
 		}
 
+		if (value.numberType() != null) {
+			switch (value.numberType()) {
+				case LONG:
+					return value.longValue();
+				case DOUBLE:
+					return value.doubleValue();
+				case FLOAT:
+					return value.floatValue();
+				case INT:
+					return value.intValue();
+				case BIG_DECIMAL:
+					return value.decimalValue();
+				case BIG_INTEGER:
+					return value.bigIntegerValue();
+				default:
+					return value.asText();
+			}
+		}
+
 		if (value.isBoolean()) {
 			return value.asBoolean();
-		}
-
-		if (value.canConvertToInt()) {
-			return value.asInt();
-		}
-
-		if (value.canConvertToLong()) {
-			return value.asLong();
 		}
 
 		return value.asText();

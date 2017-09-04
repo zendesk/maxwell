@@ -1,5 +1,38 @@
 # Maxwell changelog
 
+### [v1.10.6](https://github.com/zendesk/maxwell/releases/tag/v1.10.6): "a new starter is here"
+
+
+ - Binlog-connector upgrade
+ - Bug-fix: when using literal string for an option that accepts Regex, Regex characters are no longer special
+ - If master recovery is enabled, Maxwell cleans up old positions for the same server and client id
+
+
+### [v1.10.5](https://github.com/zendesk/maxwell/releases/tag/v1.10.5): "half asleep on her couch"
+
+
+- Shyko's binlog-connector is now the default and only replication
+backend available for maxwell.
+
+
+### [v1.10.4](https://github.com/zendesk/maxwell/releases/tag/v1.10.4): "shutdown --harder"
+
+
+Notable changes:
+
+ - Shutdown hardening. If maxwell can't shut down (because the kafka
+   producer is in a bad state and `close()` never terminates, for example),
+   it would previously stall and process no messages. Now, shutdown is run
+   in a separate thread and there is an additional watchdog thread which
+   forcibly kills the maxwell process if it can't shut down within 10
+   seconds.
+ - Initial support for running maxwell from java, rather then as its own
+   process. This mode of operation is still experimental, but we'll
+   accept PRs to improve it (thanks Geoff Lywood).
+ - Fix incorrect handling of negative (pre-epoch dates) when using
+   binlog_connector mode (thanks Geoff Lywood).
+
+
 ### [v1.10.3](https://github.com/zendesk/maxwell/releases/tag/v1.10.3): "1.10.2-and-a-bit"
 
 
