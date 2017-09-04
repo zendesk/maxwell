@@ -12,46 +12,75 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 
 public class InflightMessageList {
+
 	class InflightMessage {
 		public final Position position;
 		public boolean isComplete;
+
 		InflightMessage(Position p) {
 			this.position = p;
 			this.isComplete = false;
 		}
 	}
 
-	private LinkedHashMap<Position, InflightMessage> linkedMap;
+	private static final int INIT_CAPACITY = 1000;
+
+	private final LinkedHashMap<Position, InflightMessage> linkedMap;
+	private final int capacity;
+	private volatile boolean isFull;
 
 	public InflightMessageList() {
-		this.linkedMap = new LinkedHashMap<>();
+		this(INIT_CAPACITY);
 	}
 
-	public synchronized void addMessage(Position p) {
-		InflightMessage m = new InflightMessage(p);
-		this.linkedMap.put(p, m);
+	public InflightMessageList(int capacity) {
+		this.linkedMap = new LinkedHashMap<>();
+		this.capacity = capacity;
+	}
+
+	public void addMessage(Position p) throws InterruptedException {
+		synchronized (this.linkedMap) {
+			while (isFull) {
+				this.linkedMap.wait();
+			}
+
+			InflightMessage m = new InflightMessage(p);
+			this.linkedMap.put(p, m);
+
+			if (linkedMap.size() >= capacity) {
+				isFull = true;
+			}
+		}
 	}
 
 	/* returns the position that stuff is complete up to, or null if there were no changes */
-	public synchronized Position completeMessage(Position p) {
-		InflightMessage m = this.linkedMap.get(p);
-		assert(m != null);
+	public Position completeMessage(Position p) {
+		synchronized (this.linkedMap) {
+			InflightMessage m = this.linkedMap.get(p);
+			assert(m != null);
 
-		m.isComplete = true;
+			m.isComplete = true;
 
-		Position completeUntil = null;
-		Iterator<InflightMessage> iterator = this.linkedMap.values().iterator();
+			Position completeUntil = null;
+			Iterator<InflightMessage> iterator = this.linkedMap.values().iterator();
 
-		while ( iterator.hasNext() ) {
-			InflightMessage msg = iterator.next();
-			if ( !msg.isComplete )
-				break;
+			while ( iterator.hasNext() ) {
+				InflightMessage msg = iterator.next();
+				if ( !msg.isComplete ) {
+					break;
+				}
 
-			completeUntil = msg.position;
-			iterator.remove();
+				completeUntil = msg.position;
+				iterator.remove();
+			}
+
+			if (isFull && linkedMap.size() < capacity) {
+				isFull = false;
+				this.linkedMap.notify();
+			}
+
+			return completeUntil;
 		}
-
-		return completeUntil;
 	}
 
 	public int size() {
