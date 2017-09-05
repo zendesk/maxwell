@@ -53,6 +53,11 @@ public class RowMap implements Serializable {
 				}
 			};
 
+	private static JsonGenerator resetJsonGenerator() {
+		byteArrayThreadLocal.get().reset();
+		return jsonGeneratorThreadLocal.get();
+	}
+
 	private static final ThreadLocal<JsonGenerator> jsonGeneratorThreadLocal =
 			new ThreadLocal<JsonGenerator>() {
 				@Override
@@ -113,7 +118,7 @@ public class RowMap implements Serializable {
 	}
 
 	private String pkToJsonHash() throws IOException {
-		JsonGenerator g = jsonGeneratorThreadLocal.get();
+		JsonGenerator g = resetJsonGenerator();
 
 		g.writeStartObject(); // start of row {
 
@@ -138,7 +143,7 @@ public class RowMap implements Serializable {
 	}
 
 	private String pkToJsonArray() throws IOException {
-		JsonGenerator g = jsonGeneratorThreadLocal.get();
+		JsonGenerator g = resetJsonGenerator();
 
 		g.writeStartArray();
 		g.writeString(database);
@@ -237,12 +242,12 @@ public class RowMap implements Serializable {
 		g.writeEndObject(); // end of 'jsonMapName: { }'
 	}
 
-	public String toJSON() throws IOException, NoSuchAlgorithmException {
+	public String toJSON() throws Exception {
 		return toJSON(new MaxwellOutputConfig());
 	}
 
-	public String toJSON(MaxwellOutputConfig outputConfig) throws IOException, NoSuchAlgorithmException {
-		JsonGenerator g = jsonGeneratorThreadLocal.get();
+	public String toJSON(MaxwellOutputConfig outputConfig) throws Exception {
+		JsonGenerator g = resetJsonGenerator();
 
 		g.writeStartObject(); // start of row {
 

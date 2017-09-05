@@ -45,7 +45,13 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 		if (encrypted != null) {
 			String iv = encrypted.get("iv").textValue();
 			String bytes = encrypted.get("bytes").textValue();
-			String decryptedData = RowEncrypt.decrypt(bytes, this.secret_key, iv);
+
+			String decryptedData;
+			try {
+				decryptedData = RowEncrypt.decrypt(bytes, this.secret_key, iv);
+			} catch (Exception e) {
+				throw new IOException(e);
+			}
 			JsonNode decrypted = mapper.readTree(decryptedData);
 			if (!(decrypted instanceof ObjectNode)) {
 				throw new ParseException("`encrypted` must be an object after decrypting.");

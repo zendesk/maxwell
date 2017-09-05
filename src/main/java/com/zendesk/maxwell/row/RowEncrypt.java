@@ -5,46 +5,40 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.codec.binary.Base64;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 
 public class RowEncrypt {
+	private final static String TEXT_ENCODING = "UTF-8";
+	private final static String BYTE_ENCODING = "ASCII";
 
-	static final Logger LOGGER = LoggerFactory.getLogger(RowEncrypt.class);
+	public static String encrypt(String value, String secretKey, byte[] initVector) throws Exception {
+		IvParameterSpec ivSpec = new IvParameterSpec(initVector);
+		Cipher cipher = getCipher();
+		cipher.init(Cipher.ENCRYPT_MODE, loadKey(secretKey), ivSpec);
 
-	public static String encrypt(String value, String secretKey, byte[] initVector) {
-		try {
-			IvParameterSpec iv = new IvParameterSpec(initVector);
-			SecretKeySpec skeySpec = new SecretKeySpec(secretKey.getBytes("ASCII"), "AES");
-
-			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
-			cipher.init(Cipher.ENCRYPT_MODE, skeySpec, iv);
-
-			byte[] encrypted = cipher.doFinal(value.getBytes("UTF-8"));
-
-			return Base64.encodeBase64String(encrypted);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-
-		return null;
+		byte[] encrypted = cipher.doFinal(value.getBytes(TEXT_ENCODING));
+		return Base64.encodeBase64String(encrypted);
 	}
 
-	public static String decrypt(String value, String secretKey, String initVector) {
-		try {
-			IvParameterSpec ivSpec = new IvParameterSpec(Base64.decodeBase64(initVector.getBytes("ASCII")));
-			SecretKeySpec skeySpec = new SecretKeySpec(secretKey.getBytes("ASCII"), "AES");
+	public static String decrypt(String value, String secretKey, String initVector) throws Exception {
+		IvParameterSpec ivSpec = new IvParameterSpec(base64Decode(initVector));
+		Cipher cipher = getCipher();
+		cipher.init(Cipher.DECRYPT_MODE, loadKey(secretKey), ivSpec);
 
-			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
-			cipher.init(Cipher.DECRYPT_MODE, skeySpec, ivSpec);
+		return new String(cipher.doFinal(base64Decode(value)), Charset.forName(TEXT_ENCODING));
+	}
 
-			return new String(cipher.doFinal(Base64.decodeBase64(value.getBytes("ASCII"))), Charset.forName("ASCII"));
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
+	private static Cipher getCipher() throws Exception {
+		return Cipher.getInstance("AES/CBC/PKCS5PADDING");
+	}
 
-		return null;
+	private static SecretKeySpec loadKey(String secretKey) throws IOException {
+		return new SecretKeySpec(secretKey.getBytes(TEXT_ENCODING), "AES");
+	}
+
+	private static byte[] base64Decode(String value) throws IOException {
+		return Base64.decodeBase64(value.getBytes(BYTE_ENCODING));
 	}
 }

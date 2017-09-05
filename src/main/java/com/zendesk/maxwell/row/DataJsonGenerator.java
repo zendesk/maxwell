@@ -19,7 +19,7 @@ interface DataJsonGenerator {
 
 	// outer object
 	JsonGenerator begin() throws IOException;
-	void end(EncryptionContext context) throws IOException;
+	void end(EncryptionContext context) throws Exception;
 }
 
 class PlaintextJsonGenerator implements DataJsonGenerator {
@@ -74,7 +74,7 @@ class EncryptingJsonGenerator implements DataJsonGenerator {
 	}
 
 	@Override
-	public void end(EncryptionContext ctx) throws IOException {
+	public void end(EncryptionContext ctx) throws Exception {
 		endObject(ctx);
 	}
 
@@ -83,25 +83,25 @@ class EncryptingJsonGenerator implements DataJsonGenerator {
 		return encryptedGenerator;
 	}
 
-	private void endRaw(EncryptionContext ctx) throws IOException {
+	private void endRaw(EncryptionContext ctx) throws Exception {
 		encryptedGenerator.flush();
 		String json = buffer.toString();
 		buffer.reset();
 		writeEncryptedField(json, ctx);
 	}
 
-	private void endObject(EncryptionContext ctx) throws IOException {
+	private void endObject(EncryptionContext ctx) throws Exception {
 		encryptedGenerator.writeEndObject();
 		endRaw(ctx);
 	}
 
-	public void writeEncryptedObject(String rawJson, EncryptionContext ctx) throws IOException {
+	public void writeEncryptedObject(String rawJson, EncryptionContext ctx) throws Exception {
 		rawGenerator.writeStartObject();
 		writeEncryptedField(rawJson, ctx);
 		rawGenerator.writeEndObject();
 	}
 
-	private  void writeEncryptedField(String rawJson, EncryptionContext ctx) throws IOException {
+	private  void writeEncryptedField(String rawJson, EncryptionContext ctx) throws Exception {
 		String encryptedJSON = RowEncrypt.encrypt(rawJson, ctx.secretKey, ctx.iv);
 		rawGenerator.writeObjectFieldStart("encrypted");
 		rawGenerator.writeStringField("iv", Base64.encodeBase64String(ctx.iv));
