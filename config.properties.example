@@ -15,6 +15,12 @@ password=maxwell
 # choose where to produce data to. currently this is one of: stdout|file|kafka
 #producer=kafka
 
+# set delivery timeout (including acknowledgement) in milliseconds for a COMMIT row message that has been sent by the producer,
+# where producer is either kafka or kinesis
+# maxwell may be terminated if the timeout has expired, when majority of the COMMIT row messages have been acknowledged
+# set it to 0 to turn off this check
+#producer_ack_timeout=120000 # default 0
+
 # set the log level.  note that you can configure things further in log4j2.xml
 #log_level=DEBUG # [DEBUG, INFO, WARN, ERROR]
 
