@@ -4,7 +4,14 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
+
 public class MaxwellOutputConfig {
+	public enum Encryption {
+		ENCRYPT_NONE,
+		ENCRYPT_DATA,
+		ENCRYPT_ALL
+	}
+
 	public boolean includesBinlogPosition;
 	public boolean includesGtidPosition;
 	public boolean includesCommitInfo;
@@ -13,9 +20,8 @@ public class MaxwellOutputConfig {
 	public boolean includesThreadId;
 	public boolean outputDDL;
 	public List<Pattern> excludeColumns;
-	public boolean encryptData;
-	public boolean encryptAll;
-	public String secret_key;
+	public Encryption encryptionMode;
+	public String secretKey;
 
 	public MaxwellOutputConfig() {
 		this.includesBinlogPosition = false;
@@ -26,12 +32,11 @@ public class MaxwellOutputConfig {
 		this.includesThreadId = false;
 		this.outputDDL = false;
 		this.excludeColumns = new ArrayList<>();
-		this.encryptData = false;
-		this.encryptAll = false;
-		this.secret_key = null;
+		this.encryptionMode = Encryption.ENCRYPT_NONE;
+		this.secretKey = null;
 	}
 
 	public boolean encryptionEnabled() {
-		return encryptData || encryptAll;
+		return encryptionMode != Encryption.ENCRYPT_NONE;
 	}
 }

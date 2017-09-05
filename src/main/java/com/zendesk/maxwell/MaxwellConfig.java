@@ -2,8 +2,6 @@ package com.zendesk.maxwell;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
-import com.zendesk.maxwell.metrics.Metrics;
-import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.producer.ProducerFactory;
 import com.zendesk.maxwell.replication.BinlogPosition;
@@ -390,13 +388,19 @@ public class MaxwellConfig extends AbstractConfig {
 		outputConfig.includesThreadId = fetchBooleanOption("output_thread_id", options, properties, false);
 		outputConfig.outputDDL	= fetchBooleanOption("output_ddl", options, properties, false);
 		this.excludeColumns     = fetchOption("exclude_columns", options, properties, null);
-		outputConfig.encryptData = fetchBooleanOption("encrypt_data", options, properties, false);
-		outputConfig.encryptAll = fetchBooleanOption("encrypt_all", options, properties, false);
-		outputConfig.secret_key = fetchOption("secret_key", options, properties, null);
 
-		if(outputConfig.encryptData && outputConfig.encryptAll) {
+		boolean encryptData = fetchBooleanOption("encrypt_data", options, properties, false);
+		boolean encryptAll = fetchBooleanOption("encrypt_all", options, properties, false);
+		if (encryptData && encryptAll) {
 			usage("You cannot specify both encrypt_data and encrypt_all");
 		}
+		if (encryptData) {
+			outputConfig.encryptionMode = MaxwellOutputConfig.Encryption.ENCRYPT_DATA;
+		} else if (encryptAll) {
+			outputConfig.encryptionMode = MaxwellOutputConfig.Encryption.ENCRYPT_ALL;
+		}
+
+		outputConfig.secretKey = fetchOption("secret_key", options, properties, null);
 
 		if ( this.excludeColumns != null ) {
 			for ( String s : this.excludeColumns.split(",") ) {

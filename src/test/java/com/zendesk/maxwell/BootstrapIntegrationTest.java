@@ -9,7 +9,9 @@ import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.binary.Base64;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -192,8 +194,6 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	private void testColumnType(String sqlType, String sqlValue, Object expectedJsonValue) throws Exception {
 		testColumnType(sqlType, sqlValue, expectedJsonValue, expectedJsonValue);
-		testEncryptedColumnType(sqlType, sqlValue, expectedJsonValue, expectedJsonValue);
-		testEncryptedAllColumnType(sqlType, sqlValue, expectedJsonValue, expectedJsonValue);
 	}
 
 	private void testColumnType(String sqlType, String sqlValue, Object expectedNormalJsonValue, Object expectedBootstrappedJsonValue) throws Exception {
@@ -205,92 +205,33 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 		};
 
 		List<RowMap> rows = getRowsForSQL(input);
+		testColumnTypeSerialization(MaxwellOutputConfig.Encryption.ENCRYPT_NONE, rows, expectedNormalJsonValue, expectedBootstrappedJsonValue);
+		testColumnTypeSerialization(MaxwellOutputConfig.Encryption.ENCRYPT_DATA, rows, expectedNormalJsonValue, expectedBootstrappedJsonValue);
+		testColumnTypeSerialization(MaxwellOutputConfig.Encryption.ENCRYPT_ALL, rows, expectedNormalJsonValue, expectedBootstrappedJsonValue);
+	}
+
+	private void testColumnTypeSerialization(MaxwellOutputConfig.Encryption encryptionMode, List<RowMap> rows, Object expectedNormalJsonValue, Object expectedBootstrappedJsonValue) throws Exception {
 		boolean foundNormalRow = false;
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
+		outputConfig.encryptionMode = encryptionMode;
+		outputConfig.secretKey = "aaaaaaaaaaaaaaaa";
 
 		for ( RowMap r : rows ) {
-			String json = r.toJSON();
+			Map<String, Object> output = MaxwellTestJSON.parseJSON(r.toJSON(outputConfig));
+			Map<String, Object> decrypted = MaxwellTestJSON.parseEncryptedJSON(output, outputConfig.secretKey);
 
-			Map<String, Object> data, output = MaxwellTestJSON.parseJSON(r.toJSON());
+			if (encryptionMode == MaxwellOutputConfig.Encryption.ENCRYPT_ALL) {
+				output = decrypted;
+			}
+
 			if ( output.get("table").equals("column_test") && output.get("type").equals("insert") ) {
-				data = (Map<String, Object>) output.get("data");
+				Map<String, Object> dataSource = encryptionMode == MaxwellOutputConfig.Encryption.ENCRYPT_DATA ? decrypted : output;
+				Map<String, Object> data = (Map<String, Object>) dataSource.get("data");
 				if ( !foundNormalRow ) {
 					foundNormalRow = true;
 					assertThat(data.get("col"), is(expectedNormalJsonValue));
 				} else {
 					assertThat(data.get("col"), is(expectedBootstrappedJsonValue));
-				}
-			}
-		}
-	}
-
-	private void testEncryptedColumnType(String sqlType, String sqlValue, Object expectedNormalJsonValue, Object expectedBootstrappedJsonValue) throws Exception {
-		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
-		outputConfig.encryptData = true;
-		outputConfig.secret_key = "aaaaaaaaaaaaaaaa";
-
-		String input[] = {
-				"DROP TABLE IF EXISTS shard_1.column_test",
-				String.format("CREATE TABLE IF NOT EXISTS shard_1.column_test (id int unsigned auto_increment NOT NULL primary key, col %s)", sqlType),
-				String.format("INSERT INTO shard_1.column_test SET col = %s", sqlValue),
-				"INSERT INTO maxwell.bootstrap set database_name = 'shard_1', table_name = 'column_test'"
-		};
-
-		List<RowMap> rows = getRowsForSQL(input);
-		boolean foundNormalRow = false;
-
-		for ( RowMap r : rows ) {
-			String json = r.toJSON(outputConfig);
-
-			Map<String, Object> data, output = MaxwellTestJSON.parseJSON(r.toJSON(outputConfig));
-
-			if ( output.get("table").equals("column_test") && output.get("type").equals("insert") ) {
-				IvParameterSpec ivSpec = new IvParameterSpec(Base64.decodeBase64(output.get("init_vector").toString().getBytes("ASCII")));
-				SecretKeySpec skeySpec = new SecretKeySpec(outputConfig.secret_key.getBytes("ASCII"), "AES");
-
-				Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
-				cipher.init(Cipher.DECRYPT_MODE, skeySpec, ivSpec);
-
-				output.put("data",MaxwellTestJSON.parseJSON(new String(cipher.doFinal(Base64.decodeBase64(output.get("data").toString().getBytes())), Charset.forName("ASCII"))));
-
-				data = (Map<String, Object>) output.get("data");
-				if ( !foundNormalRow ) {
-					foundNormalRow = true;
-					assertThat(data.get("col"), is(expectedNormalJsonValue));
-				} else {
-					assertThat(data.get("col"), is(expectedBootstrappedJsonValue));
-				}
-			}
-		}
-	}
-
-	private void testEncryptedAllColumnType(String sqlType, String sqlValue, Object expectedNormalJsonValue, Object expectedBootstrappedJsonValue) throws Exception {
-		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
-		outputConfig.encryptAll = true;
-		outputConfig.secret_key = "aaaaaaaaaaaaaaaa";
-
-		String input[] = {
-				"DROP TABLE IF EXISTS shard_1.column_test",
-				String.format("CREATE TABLE IF NOT EXISTS shard_1.column_test (id int unsigned auto_increment NOT NULL primary key, col %s)", sqlType),
-				String.format("INSERT INTO shard_1.column_test SET col = %s", sqlValue),
-				"INSERT INTO maxwell.bootstrap set database_name = 'shard_1', table_name = 'column_test'"
-		};
-
-		List<RowMap> rows = getRowsForSQL(input);
-		boolean foundNormalRow = false;
-
-		for ( RowMap r : rows ) {
-			String json = r.toJSON(outputConfig);
-			Map<String, Object> data = MaxwellTestJSON.parseJSON(json);
-
-			String init_vector = data.get("init_vector").toString();
-			Map<String,Object> output = MaxwellTestJSON.parseJSON(RowEncrypt.decrypt(data.get("data").toString(), outputConfig.secret_key, init_vector));
-			if ( output.get("table").equals("column_test") && output.get("type").equals("insert") ) {
-				output = (Map<String, Object>) output.get("data");
-				if ( !foundNormalRow ) {
-					foundNormalRow = true;
-					assertThat(output.get("col"), is(expectedNormalJsonValue));
-				} else {
-					assertThat(output.get("col"), is(expectedBootstrappedJsonValue));
 				}
 			}
 		}

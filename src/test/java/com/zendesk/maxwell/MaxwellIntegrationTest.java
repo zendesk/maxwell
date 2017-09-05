@@ -4,9 +4,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
-import com.zendesk.maxwell.row.RowEncrypt;
 import com.zendesk.maxwell.row.RowMap;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -23,15 +21,15 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testEncryptedData() throws Exception{
 		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
-		outputConfig.encryptData = true;
-		outputConfig.secret_key = "aaaaaaaaaaaaaaaa";
+		outputConfig.encryptionMode = MaxwellOutputConfig.Encryption.ENCRYPT_DATA;
+		outputConfig.secretKey = "aaaaaaaaaaaaaaaa";
 		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
 		list = getRowsForSQL(input);
 		String json = list.get(0).toJSON(outputConfig);
 
 		Map<String,Object> output = MaxwellTestJSON.parseJSON(json);
-		Map<String, Object> decrypted = MaxwellTestJSON.parseEncryptedJSON(output, outputConfig.secret_key);
+		Map<String, Object> decrypted = MaxwellTestJSON.parseEncryptedJSON(output, outputConfig.secretKey);
 
 		assertTrue(output.get("database").equals("shard_1"));
 		assertTrue(output.get("table").equals("minimal"));
@@ -46,15 +44,15 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testEncryptedAll() throws Exception{
 		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
-		outputConfig.encryptAll = true;
-		outputConfig.secret_key = "aaaaaaaaaaaaaaaa";
+		outputConfig.encryptionMode = MaxwellOutputConfig.Encryption.ENCRYPT_ALL;
+		outputConfig.secretKey = "aaaaaaaaaaaaaaaa";
 		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
 		list = getRowsForSQL(input);
 		String json = list.get(0).toJSON(outputConfig);
 
 		Map<String,Object> output = MaxwellTestJSON.parseJSON(json);
-		Map<String, Object> decrypted = MaxwellTestJSON.parseEncryptedJSON(output, outputConfig.secret_key);
+		Map<String, Object> decrypted = MaxwellTestJSON.parseEncryptedJSON(output, outputConfig.secretKey);
 
 		assertArrayEquals(output.keySet().toArray(), new String[]{ "encrypted" });
 

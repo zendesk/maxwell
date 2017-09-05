@@ -294,12 +294,12 @@ public class RowMap implements Serializable {
 
 		EncryptionContext encryptionContext = null;
 		if (outputConfig.encryptionEnabled()) {
-			encryptionContext = EncryptionContext.create(outputConfig.secret_key);
+			encryptionContext = EncryptionContext.create(outputConfig.secretKey);
 		}
 
-		DataJsonGenerator dataWriter = outputConfig.encryptData
-				? encryptingJsonGeneratorThreadLocal.get()
-				: plaintextDataGeneratorThreadLocal.get();
+		DataJsonGenerator dataWriter = outputConfig.encryptionMode == MaxwellOutputConfig.Encryption.ENCRYPT_DATA
+			? encryptingJsonGeneratorThreadLocal.get()
+			: plaintextDataGeneratorThreadLocal.get();
 
 		JsonGenerator dataGenerator = dataWriter.begin();
 		writeMapToJSON("data", this.data, dataGenerator, outputConfig.includesNulls);
@@ -311,7 +311,7 @@ public class RowMap implements Serializable {
 		g.writeEndObject(); // end of row
 		g.flush();
 
-		if(outputConfig.encryptAll){
+		if(outputConfig.encryptionMode == MaxwellOutputConfig.Encryption.ENCRYPT_ALL){
 			String plaintext = jsonFromStream();
 			encryptingJsonGeneratorThreadLocal.get().writeEncryptedObject(plaintext, encryptionContext);
 			g.flush();

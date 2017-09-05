@@ -27,6 +27,9 @@ public class MaxwellTestJSON {
 
 	public static Map<String, Object> parseEncryptedJSON(Map<String,Object> json, String secretKey) throws Exception {
 		Map<String, String> encrypted = (Map)json.get("encrypted");
+		if (encrypted == null) {
+			return null;
+		}
 		String init_vector = encrypted.get("iv");
 		String plaintext = RowEncrypt.decrypt(encrypted.get("bytes").toString(), secretKey, init_vector);
 		return parseJSON(plaintext);
