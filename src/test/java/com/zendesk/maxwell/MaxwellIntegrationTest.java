@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.row.RowEncrypt;
 import com.zendesk.maxwell.row.RowMap;
@@ -30,10 +31,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String json = list.get(0).toJSON(outputConfig);
 
 		Map<String,Object> output = MaxwellTestJSON.parseJSON(json);
-
-		String init_vector = output.get("init_vector").toString();
-
-		output.put("data",MaxwellTestJSON.parseJSON(RowEncrypt.decrypt(output.get("data").toString(), outputConfig.secret_key, init_vector)));
+		Map<String, Object> decrypted = MaxwellTestJSON.parseEncryptedJSON(output, outputConfig.secret_key);
 
 		assertTrue(output.get("database").equals("shard_1"));
 		assertTrue(output.get("table").equals("minimal"));
@@ -41,8 +39,8 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		assertTrue(output.get("type").equals("insert"));
 		assertTrue(Pattern.matches("\\d+",output.get("ts").toString()));
 		assertTrue(output.get("commit").equals(true));
-		assertTrue(((Map) output.get("data")).get("account_id").equals(1));
-		assertTrue(((Map) output.get("data")).get("text_field").equals("hello"));
+		assertTrue(((Map) decrypted.get("data")).get("account_id").equals(1));
+		assertTrue(((Map) decrypted.get("data")).get("text_field").equals("hello"));
 	}
 
 	@Test
@@ -56,45 +54,18 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String json = list.get(0).toJSON(outputConfig);
 
 		Map<String,Object> output = MaxwellTestJSON.parseJSON(json);
+		Map<String, Object> decrypted = MaxwellTestJSON.parseEncryptedJSON(output, outputConfig.secret_key);
 
-		String init_vector = output.get("init_vector").toString();
+		assertArrayEquals(output.keySet().toArray(), new String[]{ "encrypted" });
 
-		output = (MaxwellTestJSON.parseJSON(RowEncrypt.decrypt(output.get("data").toString(), outputConfig.secret_key, init_vector)));
-
-		assertTrue(output.get("database").equals("shard_1"));
-		assertTrue(output.get("table").equals("minimal"));
-		assertTrue(Pattern.matches("\\d+", output.get("xid").toString()));
-		assertTrue(output.get("type").equals("insert"));
-		assertTrue(Pattern.matches("\\d+",output.get("ts").toString()));
-		assertTrue(output.get("commit").equals(true));
-		assertTrue(((Map) output.get("data")).get("account_id").equals(1));
-		assertTrue(((Map) output.get("data")).get("text_field").equals("hello"));
-	}
-	@Test
-	public void testBothEncryptionsSet() throws Exception{
-		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
-		outputConfig.encryptAll = true;
-		outputConfig.encryptData = true;
-		outputConfig.secret_key = "aaaaaaaaaaaaaaaa";
-		List<RowMap> list;
-		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
-		list = getRowsForSQL(input);
-		String json = list.get(0).toJSON(outputConfig);
-
-		Map<String,Object> output = MaxwellTestJSON.parseJSON(json);
-
-		String init_vector = output.get("init_vector").toString();
-
-		output = (MaxwellTestJSON.parseJSON(RowEncrypt.decrypt(output.get("data").toString(), outputConfig.secret_key, init_vector)));
-
-		assertTrue(output.get("database").equals("shard_1"));
-		assertTrue(output.get("table").equals("minimal"));
-		assertTrue(Pattern.matches("\\d+", output.get("xid").toString()));
-		assertTrue(output.get("type").equals("insert"));
-		assertTrue(Pattern.matches("\\d+",output.get("ts").toString()));
-		assertTrue(output.get("commit").equals(true));
-		assertTrue(((Map) output.get("data")).get("account_id").equals(1));
-		assertTrue(((Map) output.get("data")).get("text_field").equals("hello"));
+		assertTrue(decrypted.get("database").equals("shard_1"));
+		assertTrue(decrypted.get("table").equals("minimal"));
+		assertTrue(Pattern.matches("\\d+", decrypted.get("xid").toString()));
+		assertTrue(decrypted.get("type").equals("insert"));
+		assertTrue(Pattern.matches("\\d+",decrypted.get("ts").toString()));
+		assertTrue(decrypted.get("commit").equals(true));
+		assertTrue(((Map) decrypted.get("data")).get("account_id").equals(1));
+		assertTrue(((Map) decrypted.get("data")).get("text_field").equals("hello"));
 	}
 	@Test
 	public void testGetEvent() throws Exception {

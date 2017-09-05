@@ -39,10 +39,18 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 
 	@Override
 	public RowMap deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
-		JsonNode node = jsonParser.getCodec().readTree(jsonParser);
+		ObjectNode node = jsonParser.getCodec().readTree(jsonParser);
 
-		if(!node.has("type")){
-			node = mapper.readTree(RowEncrypt.decrypt(node.get("data").toString(), this.secret_key, node.get("init_vector").toString()));
+		JsonNode encrypted = node.get("encrypted");
+		if (encrypted != null) {
+			String iv = encrypted.get("iv").textValue();
+			String bytes = encrypted.get("bytes").textValue();
+			String decryptedData = RowEncrypt.decrypt(bytes, this.secret_key, iv);
+			JsonNode decrypted = mapper.readTree(decryptedData);
+			if (!(decrypted instanceof ObjectNode)) {
+				throw new ParseException("`encrypted` must be an object after decrypting.");
+			}
+			node.setAll((ObjectNode) decrypted);
 		}
 
 		JsonNode type = node.get("type");
@@ -101,11 +109,6 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 	}
 
 	private void readDataInto(RowMap dest, JsonNode data, boolean isOld) throws IOException {
-		if (data.isTextual()) {
-			String decryptedData = RowEncrypt
-				.decrypt(data.textValue(), this.secret_key, data.get("init_vector").toString());
-			data = mapper.readTree(decryptedData);
-		}
 		if (!(data instanceof ObjectNode)) {
 			throw new ParseException("`" + (isOld ? "oldData" : "data") + "` cannot be parsed.");
 		}

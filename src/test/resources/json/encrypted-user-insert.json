@@ -1,1 +1,1 @@
-{"database":"shard_1","table":"minimal","type":"insert","ts":1500930425,"xid":161,"commit":true,"data":"Y8F1Oq2lb3Fgkn++FfnFVtQ7gXJpGbLMGQg3EfyYcceDd6l8h8wNrRxo60Xny1qN","init_vector":"suPzuGGEOv6lZhPsnJYShg=="}
+{"database":"shard_1","table":"minimal","type":"insert","ts":1504585129,"xid":161,"commit":true,"encrypted":{"iv":"lqiXoTdz6jed3XgJPpa7EQ==","bytes":"1soc4leskiIm6yuT2D49VA3AYVKCvN+0wh+8d1iwSZETK7N2pG4HDbqnVpJUUCOaKjpcPlP7Sc7Z3SPhGD5JeA=="}}

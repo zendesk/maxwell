@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.*;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.Position;
-import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,7 +11,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -206,13 +204,12 @@ public class RowMap implements Serializable {
 	}
 
 	private void writeMapToJSON(
-		String jsonMapName,
-		LinkedHashMap<String, Object> data,
-		DataJsonGenerator dataGenerator,
-		EncryptionContext encryptionContext,
-		boolean includeNullField
+			String jsonMapName,
+			LinkedHashMap<String, Object> data,
+			JsonGenerator g,
+			boolean includeNullField
 	) throws IOException, NoSuchAlgorithmException {
-		dataGenerator.begin(jsonMapName);
+		g.writeObjectFieldStart(jsonMapName);
 
 		for (String key : data.keySet()) {
 			Object value = data.get(key);
@@ -223,21 +220,21 @@ public class RowMap implements Serializable {
 			if (value instanceof List) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
 				List stringList = (List) value;
 
-				dataGenerator.writeArrayFieldStart(key);
+				g.writeArrayFieldStart(key);
 				for (Object s : stringList) {
-					dataGenerator.writeObject(s);
+					g.writeObject(s);
 				}
-				dataGenerator.writeEndArray();
+				g.writeEndArray();
 			} else if (value instanceof RawJSONString) {
 				// JSON column type, using binlog-connector's serializers.
-				dataGenerator.writeFieldName(key);
-				dataGenerator.writeRawValue(((RawJSONString) value).json);
+				g.writeFieldName(key);
+				g.writeRawValue(((RawJSONString) value).json);
 			} else {
-				dataGenerator.writeObjectField(key, value);
+				g.writeObjectField(key, value);
 			}
 		}
 
-		dataGenerator.end(encryptionContext); // end of 'jsonMapName: { }'
+		g.writeEndObject(); // end of 'jsonMapName: { }'
 	}
 
 	public String toJSON() throws IOException, NoSuchAlgorithmException {
@@ -248,7 +245,6 @@ public class RowMap implements Serializable {
 		JsonGenerator g = jsonGeneratorThreadLocal.get();
 
 		g.writeStartObject(); // start of row {
-
 
 		g.writeStringField("database", this.database);
 		g.writeStringField("table", this.table);
@@ -298,25 +294,27 @@ public class RowMap implements Serializable {
 
 		EncryptionContext encryptionContext = null;
 		if (outputConfig.encryptionEnabled()) {
-			encryptionContext = EncryptingJsonGenerator.createEncryptionContext(outputConfig.secret_key);
+			encryptionContext = EncryptionContext.create(outputConfig.secret_key);
 		}
 
-		DataJsonGenerator dataJsonGenerator = outputConfig.encryptData
-			? encryptingJsonGeneratorThreadLocal.get()
-			: plaintextDataGeneratorThreadLocal.get();
+		DataJsonGenerator dataWriter = outputConfig.encryptData
+				? encryptingJsonGeneratorThreadLocal.get()
+				: plaintextDataGeneratorThreadLocal.get();
 
-		dataJsonGenerator.writeMetadata(encryptionContext);
-
-		writeMapToJSON("data", this.data, dataJsonGenerator, encryptionContext, outputConfig.includesNulls);
+		JsonGenerator dataGenerator = dataWriter.begin();
+		writeMapToJSON("data", this.data, dataGenerator, outputConfig.includesNulls);
 		if( !this.oldData.isEmpty() ){
-			writeMapToJSON("old", this.oldData, dataJsonGenerator, encryptionContext, outputConfig.includesNulls);
+			writeMapToJSON("old", this.oldData, dataGenerator, outputConfig.includesNulls);
 		}
+		dataWriter.end(encryptionContext);
 
 		g.writeEndObject(); // end of row
 		g.flush();
 
 		if(outputConfig.encryptAll){
-			encryptJsonBuffer(g, encryptionContext);
+			String plaintext = jsonFromStream();
+			encryptingJsonGeneratorThreadLocal.get().writeEncryptedObject(plaintext, encryptionContext);
+			g.flush();
 		}
 		return jsonFromStream();
 	}
@@ -326,18 +324,6 @@ public class RowMap implements Serializable {
 		String s = b.toString();
 		b.reset();
 		return s;
-	}
-
-	private void encryptJsonBuffer(JsonGenerator g, EncryptionContext ctx) throws IOException, NoSuchAlgorithmException {
-		String plaintext = jsonFromStream();
-		String encryptedJSON = RowEncrypt.encrypt(plaintext, ctx.secretKey, ctx.iv);
-
-		g.writeStartObject();
-		EncryptingJsonGenerator.writeMetadata(g, ctx);
-
-		g.writeStringField("data", encryptedJSON);
-		g.writeEndObject();
-		g.flush();
 	}
 
 	public Object getData(String key) {

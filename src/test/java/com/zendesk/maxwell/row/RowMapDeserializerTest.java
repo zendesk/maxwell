@@ -72,7 +72,7 @@ public class RowMapDeserializerTest {
 		Assert.assertEquals("shard_1", rowMap.getDatabase());
 		Assert.assertEquals("minimal", rowMap.getTable());
 		Assert.assertEquals("insert", rowMap.getRowType());
-		Assert.assertEquals("1500930425", rowMap.getTimestamp().toString());
+		Assert.assertEquals("1504585129", rowMap.getTimestamp().toString());
 		Assert.assertEquals("161", rowMap.getXid().toString());
 		Assert.assertEquals(1, rowMap.getData("id"));
 		Assert.assertEquals(1, rowMap.getData("account_id"));
@@ -90,11 +90,11 @@ public class RowMapDeserializerTest {
 		Assert.assertEquals("shard_1", rowMap.getDatabase());
 		Assert.assertEquals("minimal", rowMap.getTable());
 		Assert.assertEquals("update", rowMap.getRowType());
-		Assert.assertEquals("1500934155", rowMap.getTimestamp().toString());
-		Assert.assertEquals("294", rowMap.getXid().toString());
+		Assert.assertEquals("1504584795", rowMap.getTimestamp().toString());
+		Assert.assertEquals("162", rowMap.getXid().toString());
 		Assert.assertEquals(1, rowMap.getData("id"));
 		Assert.assertEquals(1, rowMap.getData("account_id"));
-		Assert.assertEquals("goodbye", rowMap.getData("text_field"));
+		Assert.assertEquals("hello2", rowMap.getData("text_field"));
 	}
 
 	@Test
