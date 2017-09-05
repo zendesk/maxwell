@@ -145,7 +145,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "producer_partition_by", "database|table|primary_key|column, kafka/kinesis producers will partition by this value").withRequiredArg();
 		parser.accepts("producer_partition_columns",
 		    "with producer_partition_by=column, partition by the value of these columns.  "
-			+ "comma separated.");
+			+ "comma separated.").withRequiredArg();
 		parser.accepts( "producer_partition_by_fallback", "database|table|primary_key, fallback to this value when when sing 'column' partitioning and the columns are not present in the row").withRequiredArg();
 
 		parser.accepts( "kafka_partition_by", "[deprecated]").withRequiredArg();
