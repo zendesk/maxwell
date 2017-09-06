@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
@@ -121,20 +122,20 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "host", "mysql host with write access to maxwell database" ).withRequiredArg();
 		parser.accepts( "port", "port for host" ).withRequiredArg();
 		parser.accepts( "user", "username for host" ).withRequiredArg();
-		parser.accepts( "password", "password for host" ).withOptionalArg();
-		parser.accepts( "jdbc_options", "additional jdbc connection options" ).withOptionalArg();
+		parser.accepts( "password", "password for host" ).withRequiredArg();
+		parser.accepts( "jdbc_options", "additional jdbc connection options" ).withRequiredArg();
 		parser.accepts( "binlog_connector", "[deprecated]" ).withRequiredArg();
 
 		parser.accepts("__separator_2");
 
 		parser.accepts( "replication_host", "mysql host to replicate from (if using separate schema and replication servers)" ).withRequiredArg();
 		parser.accepts( "replication_user", "username for replication_host" ).withRequiredArg();
-		parser.accepts( "replication_password", "password for replication_host" ).withOptionalArg();
+		parser.accepts( "replication_password", "password for replication_host" ).withRequiredArg();
 		parser.accepts( "replication_port", "port for replication_host" ).withRequiredArg();
 
 		parser.accepts( "schema_host", "overrides replication_host for retrieving schema" ).withRequiredArg();
 		parser.accepts( "schema_user", "username for schema_host" ).withRequiredArg();
-		parser.accepts( "schema_password", "password for schema_host" ).withOptionalArg();
+		parser.accepts( "schema_password", "password for schema_host" ).withRequiredArg();
 		parser.accepts( "schema_port", "port for schema_host" ).withRequiredArg();
 
 		parser.accepts("__separator_3");
@@ -153,11 +154,11 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "kafka_partition_by_fallback", "[deprecated]").withRequiredArg();
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
 		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning").withRequiredArg();
-		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withOptionalArg();
-		parser.accepts( "kafka_key_format", "how to format the kafka key; array|hash").withOptionalArg();
+		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withRequiredArg();
+		parser.accepts( "kafka_key_format", "how to format the kafka key; array|hash").withRequiredArg();
 		parser.accepts( "kafka_version", "use kafka 0.8, 0.9, 0.10, 0.10.1, or 0.10.2 producer (default 0.9)");
 
-		parser.accepts( "kinesis_stream", "kinesis stream name").withOptionalArg();
+		parser.accepts( "kinesis_stream", "kinesis stream name").withRequiredArg();
 
 		parser.accepts("__separator_4");
 
@@ -168,7 +169,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "output_server_id", "produced records include server_id; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_thread_id", "produced records include thread_id; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_ddl", "produce DDL records to ddl_kafka_topic [true|false]. default: false" ).withOptionalArg();
-		parser.accepts( "ddl_kafka_topic", "optionally provide an alternate topic to push DDL records to. default: kafka_topic").withOptionalArg();
+		parser.accepts( "ddl_kafka_topic", "optionally provide an alternate topic to push DDL records to. default: kafka_topic").withRequiredArg();
 
 		parser.accepts( "__separator_5" );
 
@@ -179,7 +180,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "replica_server_id", "server_id that maxwell reports to the master.  See docs for full explanation.").withRequiredArg();
 		parser.accepts( "client_id", "unique identifier for this maxwell replicator").withRequiredArg();
 		parser.accepts( "schema_database", "database name for maxwell state (schema and binlog position)").withRequiredArg();
-		parser.accepts( "max_schemas", "deprecated.").withOptionalArg();
+		parser.accepts( "max_schemas", "deprecated.").withRequiredArg();
 		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION:HEARTBEAT").withRequiredArg();
 		parser.accepts( "replay", "replay mode, don't store any information to the server").withOptionalArg();
 		parser.accepts( "master_recovery", "(experimental) enable master position recovery code").withOptionalArg();
@@ -188,33 +189,33 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_7" );
 
-		parser.accepts( "include_dbs", "include these databases, formatted as include_dbs=db1,db2").withOptionalArg();
-		parser.accepts( "exclude_dbs", "exclude these databases, formatted as exclude_dbs=db1,db2").withOptionalArg();
-		parser.accepts( "include_tables", "include these tables, formatted as include_tables=db1,db2").withOptionalArg();
-		parser.accepts( "exclude_tables", "exclude these tables, formatted as exclude_tables=tb1,tb2").withOptionalArg();
-		parser.accepts( "exclude_columns", "exclude these columns, formatted as exclude_columns=col1,col2" ).withOptionalArg();
-		parser.accepts( "blacklist_dbs", "ignore data AND schema changes to these databases, formatted as blacklist_dbs=db1,db2. See the docs for details before setting this!").withOptionalArg();
-		parser.accepts( "blacklist_tables", "ignore data AND schema changes to these tables, formatted as blacklist_tables=tb1,tb2. See the docs for details before setting this!").withOptionalArg();
+		parser.accepts( "include_dbs", "include these databases, formatted as include_dbs=db1,db2").withRequiredArg();
+		parser.accepts( "exclude_dbs", "exclude these databases, formatted as exclude_dbs=db1,db2").withRequiredArg();
+		parser.accepts( "include_tables", "include these tables, formatted as include_tables=db1,db2").withRequiredArg();
+		parser.accepts( "exclude_tables", "exclude these tables, formatted as exclude_tables=tb1,tb2").withRequiredArg();
+		parser.accepts( "exclude_columns", "exclude these columns, formatted as exclude_columns=col1,col2" ).withRequiredArg();
+		parser.accepts( "blacklist_dbs", "ignore data AND schema changes to these databases, formatted as blacklist_dbs=db1,db2. See the docs for details before setting this!").withRequiredArg();
+		parser.accepts( "blacklist_tables", "ignore data AND schema changes to these tables, formatted as blacklist_tables=tb1,tb2. See the docs for details before setting this!").withRequiredArg();
 
 		parser.accepts( "__separator_8" );
 
-		parser.accepts("rabbitmq_host", "Host of Rabbitmq machine").withOptionalArg();
-		parser.accepts("rabbitmq_exchange", "Name of exchange for rabbitmq publisher").withOptionalArg();
-		parser.accepts("rabbitmq_exchange_type", "Exchange type for rabbitmq").withOptionalArg();
-		parser.accepts("rabbitmq_routing_key_template", "A string template for the routing key, '%db%' and '%table%' will be substituted. Default is '%db%.%table%'.").withOptionalArg();
+		parser.accepts("rabbitmq_host", "Host of Rabbitmq machine").withRequiredArg();
+		parser.accepts("rabbitmq_exchange", "Name of exchange for rabbitmq publisher").withRequiredArg();
+		parser.accepts("rabbitmq_exchange_type", "Exchange type for rabbitmq").withRequiredArg();
+		parser.accepts("rabbitmq_routing_key_template", "A string template for the routing key, '%db%' and '%table%' will be substituted. Default is '%db%.%table%'.").withRequiredArg();
 
 		parser.accepts( "__separator_9" );
 
-		parser.accepts( "metrics_prefix", "the prefix maxwell will apply to all metrics" ).withOptionalArg();
-		parser.accepts( "metrics_type", "how maxwell metrics will be reported, at least one of slf4j|jmx|http|datadog" ).withOptionalArg();
-		parser.accepts( "metrics_slf4j_interval", "the frequency metrics are emitted to the log, in seconds, when slf4j reporting is configured" ).withOptionalArg();
-		parser.accepts( "metrics_http_port", "the port the server will bind to when http reporting is configured" ).withOptionalArg();
-		parser.accepts( "metrics_datadog_type", "when metrics_type includes datadog this is the way metrics will be reported, one of udp|http" ).withOptionalArg();
-		parser.accepts( "metrics_datadog_tags", "datadog tags that should be supplied, e.g. tag1:value1,tag2:value2" ).withOptionalArg();
-		parser.accepts( "metrics_datadog_interval", "the frequency metrics are pushed to datadog, in seconds" ).withOptionalArg();
-		parser.accepts( "metrics_datadog_apikey", "the datadog api key to use when metrics_datadog_type = http" ).withOptionalArg();
-		parser.accepts( "metrics_datadog_host", "the host to publish metrics to when metrics_datadog_type = udp" ).withOptionalArg();
-		parser.accepts( "metrics_datadog_port", "the port to publish metrics to when metrics_datadog_type = udp" ).withOptionalArg();
+		parser.accepts( "metrics_prefix", "the prefix maxwell will apply to all metrics" ).withRequiredArg();
+		parser.accepts( "metrics_type", "how maxwell metrics will be reported, at least one of slf4j|jmx|http|datadog" ).withRequiredArg();
+		parser.accepts( "metrics_slf4j_interval", "the frequency metrics are emitted to the log, in seconds, when slf4j reporting is configured" ).withRequiredArg();
+		parser.accepts( "metrics_http_port", "the port the server will bind to when http reporting is configured" ).withRequiredArg();
+		parser.accepts( "metrics_datadog_type", "when metrics_type includes datadog this is the way metrics will be reported, one of udp|http" ).withRequiredArg();
+		parser.accepts( "metrics_datadog_tags", "datadog tags that should be supplied, e.g. tag1:value1,tag2:value2" ).withRequiredArg();
+		parser.accepts( "metrics_datadog_interval", "the frequency metrics are pushed to datadog, in seconds" ).withRequiredArg();
+		parser.accepts( "metrics_datadog_apikey", "the datadog api key to use when metrics_datadog_type = http" ).withRequiredArg();
+		parser.accepts( "metrics_datadog_host", "the host to publish metrics to when metrics_datadog_type = udp" ).withRequiredArg();
+		parser.accepts( "metrics_datadog_port", "the port to publish metrics to when metrics_datadog_type = udp" ).withRequiredArg();
 
 		parser.accepts( "__separator_10" );
 
@@ -260,6 +261,11 @@ public class MaxwellConfig extends AbstractConfig {
 			usage("Help for Maxwell:");
 
 		setup(options, properties);
+
+		List<?> arguments = options.nonOptionArguments();
+		if(!arguments.isEmpty()) {
+			usage("Unknown argument(s): " + arguments);
+		}
 	}
 
 	private void setup(OptionSet options, Properties properties) {
