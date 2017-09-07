@@ -1,5 +1,6 @@
 package com.zendesk.maxwell.replication;
 
+import com.codahale.metrics.Histogram;
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import com.github.shyiko.mysql.binlog.event.QueryEventData;
 import com.github.shyiko.mysql.binlog.event.TableMapEventData;
@@ -36,6 +37,8 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 	static final Logger LOGGER = LoggerFactory.getLogger(BinlogConnectorReplicator.class);
 	private final boolean stopOnEOF;
 	private boolean hitEOF = false;
+	private Histogram transactionRowCount;
+	private Histogram transactionExecutionTime;
 
 	public BinlogConnectorReplicator(
 		SchemaStore schemaStore,
@@ -51,6 +54,8 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 	) {
 		super(clientID, bootstrapper, maxwellSchemaDatabaseName, producer, metrics, start);
 		this.schemaStore = schemaStore;
+		transactionExecutionTime = metrics.getRegistry().histogram(metrics.metricName("transaction", "execution_time"));
+		transactionRowCount = metrics.getRegistry().histogram(metrics.metricName("transaction", "row_count"));
 
 		this.client = new BinaryLogClient(mysqlConfig.host, mysqlConfig.port, mysqlConfig.user, mysqlConfig.password);
 		BinlogPosition startBinlog = start.getBinlogPosition();
@@ -167,14 +172,14 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 					QueryEventData qe = event.queryData();
 					String sql = qe.getSql();
 
-					if ( sql.equals("COMMIT") ) {
+					if ( sql.equals(BinlogConnectorEvent.COMMIT) ) {
 						// MyISAM will output a "COMMIT" QUERY_EVENT instead of a XID_EVENT.
 						// There's no transaction ID but we can still set "commit: true"
 						if ( !buffer.isEmpty() )
 							buffer.getLast().setTXCommit();
 
 						return buffer;
-					} else if ( sql.toUpperCase().startsWith("SAVEPOINT")) {
+					} else if ( sql.toUpperCase().startsWith(BinlogConnectorEvent.SAVEPOINT)) {
 						LOGGER.info("Ignoring SAVEPOINT in transaction: " + qe);
 					} else if ( createTablePattern.matcher(sql).find() ) {
 						// CREATE TABLE `foo` SELECT * FROM `bar` will put a CREATE TABLE
@@ -256,6 +261,7 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 
 					queue.offerFirst(event);
 					rowBuffer = getTransactionRows();
+					instrumentTransaction(rowBuffer);
 					break;
 				case TABLE_MAP:
 					TableMapEventData data = event.tableMapData();
@@ -264,8 +270,9 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 				case QUERY:
 					QueryEventData qe = event.queryData();
 					String sql = qe.getSql();
-					if (sql.equals("BEGIN")) {
+					if (BinlogConnectorEvent.BEGIN.equals(sql)) {
 						rowBuffer = getTransactionRows();
+						instrumentTransaction(rowBuffer);
 						rowBuffer.setServerId(event.getEvent().getHeader().getServerId());
 						rowBuffer.setThreadId(qe.getThreadId());
 					} else {
@@ -285,6 +292,14 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 					break;
 			}
 
+		}
+	}
+
+	private void instrumentTransaction(RowMapBuffer rowBuffer) {
+		if (!rowBuffer.isEmpty()) {
+			long timeSpend = rowBuffer.getLast().getTimestampMillis() - rowBuffer.getFirst().getTimestampMillis();
+			transactionExecutionTime.update(timeSpend);
+			transactionRowCount.update(rowBuffer.size());
 		}
 	}
 

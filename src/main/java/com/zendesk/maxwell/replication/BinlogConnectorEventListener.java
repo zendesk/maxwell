@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.replication;
 
-import com.codahale.metrics.Gauge;
+import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Timer;
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import com.github.shyiko.mysql.binlog.event.Event;
@@ -24,9 +24,9 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener,
 	protected final AtomicBoolean mustStop = new AtomicBoolean(false);
 	private final BinaryLogClient client;
 	private String gtid;
-	private Long executionTime = 0L;
-	private Long replicationLag = 0L;
-	private long transactionStartTime = 0L;
+	private long eventSeenAt;
+	private boolean trackMetrics;
+	private final Histogram replicationLag;
 
 	public BinlogConnectorEventListener(
 		BinaryLogClient client,
@@ -35,30 +35,7 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener,
 		this.client = client;
 		this.queue = q;
 		this.queueTimer =  metrics.getRegistry().timer(metrics.metricName("replication", "queue", "time"));
-
-		final BinlogConnectorEventListener self = this;
-
-		String executionTimeGaugeName = metrics.metricName("mysql", "transaction", "execution", "time");
-		metrics.getRegistry().register(
-			executionTimeGaugeName,
-			new Gauge<Long>() {
-				@Override
-				public Long getValue() {
-					return self.executionTime;
-				}
-			}
-		);
-
-		String lagGaugeName = metrics.metricName("replication", "lag");
-		metrics.getRegistry().register(
-			lagGaugeName,
-			new Gauge<Long>() {
-				@Override
-				public Long getValue() {
-					return self.replicationLag;
-				}
-			}
-		);
+		this.replicationLag = metrics.getRegistry().histogram(metrics.metricName("replication", "lag"));
 	}
 
 	public void stop() {
@@ -67,24 +44,21 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener,
 
 	@Override
 	public void onEvent(Event event) {
-		long eventSeenAt = 0L;
-		boolean trackMetrics = false;
-
 		EventType eventType = event.getHeader().getEventType();
 
-		if (eventType == EventType.QUERY) {
-			transactionStartTime = event.getHeader().getTimestamp();
-		} else if (eventType == EventType.XID) {
-			trackMetrics = true;
-			eventSeenAt = System.currentTimeMillis();
-			long transactionCommitTime = event.getHeader().getTimestamp();
-			replicationLag = eventSeenAt - transactionCommitTime;
-			executionTime = transactionCommitTime - transactionStartTime;
-		} else if (eventType == EventType.GTID) {
+		if (eventType == EventType.GTID) {
 			gtid = ((GtidEventData)event.getData()).getGtid();
 		}
 
 		BinlogConnectorEvent ep = new BinlogConnectorEvent(event, client.getBinlogFilename(), client.getGtidSet(), gtid);
+
+		if (ep.isCommitEvent()) {
+			trackMetrics = true;
+			eventSeenAt = System.currentTimeMillis();
+			replicationLag.update(eventSeenAt - event.getHeader().getTimestamp());
+		} else {
+			trackMetrics = false;
+		}
 
 		while (mustStop.get() != true) {
 			try {
