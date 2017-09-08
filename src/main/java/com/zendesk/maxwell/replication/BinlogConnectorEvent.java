@@ -86,6 +86,8 @@ public class BinlogConnectorEvent {
 		if (eventType == EventType.XID) {
 			return true;
 		} else if (eventType == EventType.QUERY) {
+			// MyISAM will output a "COMMIT" QUERY_EVENT instead of a XID_EVENT.
+			// There's no transaction ID but we can still set "commit: true"
 			return COMMIT.equals(queryData().getSql());
 		}
 

@@ -2,6 +2,7 @@ package com.zendesk.maxwell.replication;
 
 import com.codahale.metrics.Histogram;
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
+import com.github.shyiko.mysql.binlog.event.EventType;
 import com.github.shyiko.mysql.binlog.event.QueryEventData;
 import com.github.shyiko.mysql.binlog.event.TableMapEventData;
 import com.github.shyiko.mysql.binlog.event.deserialization.EventDeserializer;
@@ -149,7 +150,21 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 				continue;
 			}
 
-			switch(event.getEvent().getHeader().getEventType()) {
+			EventType eventType = event.getEvent().getHeader().getEventType();
+			if (event.isCommitEvent()) {
+				if (!buffer.isEmpty()) {
+					buffer.getLast().setTXCommit();
+					long timeSpent = rowBuffer.getLast().getTimestampMillis() - rowBuffer.getFirst().getTimestampMillis();
+					transactionExecutionTime.update(timeSpent);
+					transactionRowCount.update(rowBuffer.size());
+				}
+				if(eventType == EventType.XID) {
+					buffer.setXid(event.xidData().getXid());
+				}
+				return buffer;
+			}
+
+			switch(eventType) {
 				case WRITE_ROWS:
 				case UPDATE_ROWS:
 				case DELETE_ROWS:
@@ -172,15 +187,8 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 					QueryEventData qe = event.queryData();
 					String sql = qe.getSql();
 
-					if ( sql.equals(BinlogConnectorEvent.COMMIT) ) {
-						// MyISAM will output a "COMMIT" QUERY_EVENT instead of a XID_EVENT.
-						// There's no transaction ID but we can still set "commit: true"
-						if ( !buffer.isEmpty() )
-							buffer.getLast().setTXCommit();
-
-						return buffer;
-					} else if ( sql.toUpperCase().startsWith(BinlogConnectorEvent.SAVEPOINT)) {
-						LOGGER.info("Ignoring SAVEPOINT in transaction: " + qe);
+					if ( sql.toUpperCase().startsWith(BinlogConnectorEvent.SAVEPOINT)) {
+						LOGGER.debug("Ignoring SAVEPOINT in transaction: " + qe);
 					} else if ( createTablePattern.matcher(sql).find() ) {
 						// CREATE TABLE `foo` SELECT * FROM `bar` will put a CREATE TABLE
 						// inside a transaction.  Note that this could, in rare cases, lead
@@ -195,13 +203,6 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 						LOGGER.warn("Unhandled QueryEvent inside transaction: " + qe);
 					}
 					break;
-				case XID:
-					buffer.setXid(event.xidData().getXid());
-
-					if ( !buffer.isEmpty() )
-						buffer.getLast().setTXCommit();
-
-					return buffer;
 			}
 		}
 	}
@@ -261,7 +262,6 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 
 					queue.offerFirst(event);
 					rowBuffer = getTransactionRows();
-					instrumentTransaction(rowBuffer);
 					break;
 				case TABLE_MAP:
 					TableMapEventData data = event.tableMapData();
@@ -272,7 +272,6 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 					String sql = qe.getSql();
 					if (BinlogConnectorEvent.BEGIN.equals(sql)) {
 						rowBuffer = getTransactionRows();
-						instrumentTransaction(rowBuffer);
 						rowBuffer.setServerId(event.getEvent().getHeader().getServerId());
 						rowBuffer.setThreadId(qe.getThreadId());
 					} else {
@@ -292,14 +291,6 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 					break;
 			}
 
-		}
-	}
-
-	private void instrumentTransaction(RowMapBuffer rowBuffer) {
-		if (!rowBuffer.isEmpty()) {
-			long timeSpend = rowBuffer.getLast().getTimestampMillis() - rowBuffer.getFirst().getTimestampMillis();
-			transactionExecutionTime.update(timeSpend);
-			transactionRowCount.update(rowBuffer.size());
 		}
 	}
 

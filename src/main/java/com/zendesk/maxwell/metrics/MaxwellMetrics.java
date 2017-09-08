@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.metrics;
 
 import com.codahale.metrics.JmxReporter;
+import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Slf4jReporter;
 import com.codahale.metrics.health.HealthCheckRegistry;
@@ -124,6 +125,11 @@ public class MaxwellMetrics implements Metrics {
 	@Override
 	public MetricRegistry getRegistry() {
 		return metricRegistry;
+	}
+
+	@Override
+	public <T extends Metric> void register(String name, T metric) throws IllegalArgumentException {
+		metricRegistry.register(name, metric);
 	}
 
 	public void startBackgroundTasks(MaxwellContext context) throws IOException {

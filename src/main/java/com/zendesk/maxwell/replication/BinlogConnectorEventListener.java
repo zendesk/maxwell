@@ -1,12 +1,11 @@
 package com.zendesk.maxwell.replication;
 
-import com.codahale.metrics.Histogram;
+import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Timer;
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import com.github.shyiko.mysql.binlog.event.Event;
 import com.github.shyiko.mysql.binlog.event.EventType;
 import com.github.shyiko.mysql.binlog.event.GtidEventData;
-import com.github.shyiko.mysql.binlog.event.QueryEventData;
 import com.zendesk.maxwell.metrics.Metrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,10 +22,7 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener,
 	private final Timer queueTimer;
 	protected final AtomicBoolean mustStop = new AtomicBoolean(false);
 	private final BinaryLogClient client;
-	private String gtid;
-	private long eventSeenAt;
-	private boolean trackMetrics;
-	private final Histogram replicationLag;
+	private long replicationLag;
 
 	public BinlogConnectorEventListener(
 		BinaryLogClient client,
@@ -35,7 +31,17 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener,
 		this.client = client;
 		this.queue = q;
 		this.queueTimer =  metrics.getRegistry().timer(metrics.metricName("replication", "queue", "time"));
-		this.replicationLag = metrics.getRegistry().histogram(metrics.metricName("replication", "lag"));
+
+		final BinlogConnectorEventListener self = this;
+		metrics.register(
+			metrics.metricName("replication", "lag"),
+			new Gauge<Long>() {
+				@Override
+				public Long getValue() {
+					return self.replicationLag;
+				}
+			}
+		);
 	}
 
 	public void stop() {
@@ -44,9 +50,11 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener,
 
 	@Override
 	public void onEvent(Event event) {
-		EventType eventType = event.getHeader().getEventType();
+		String gtid = null;
+		long eventSeenAt = 0;
+		boolean trackMetrics = false;
 
-		if (eventType == EventType.GTID) {
+		if (event.getHeader().getEventType() == EventType.GTID) {
 			gtid = ((GtidEventData)event.getData()).getGtid();
 		}
 
@@ -55,9 +63,7 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener,
 		if (ep.isCommitEvent()) {
 			trackMetrics = true;
 			eventSeenAt = System.currentTimeMillis();
-			replicationLag.update(eventSeenAt - event.getHeader().getTimestamp());
-		} else {
-			trackMetrics = false;
+			replicationLag = eventSeenAt - event.getHeader().getTimestamp();
 		}
 
 		while (mustStop.get() != true) {
