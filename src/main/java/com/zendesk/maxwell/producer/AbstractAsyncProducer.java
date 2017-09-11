@@ -61,7 +61,7 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 		MetricRegistry metricRegistry = metrics.getRegistry();
 
 		String gaugeName = metrics.metricName("inflightmessages", "count");
-		metricRegistry.register(
+		metrics.register(
 			gaugeName,
 			new Gauge<Long>() {
 				@Override
