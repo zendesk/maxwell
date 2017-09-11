@@ -23,6 +23,7 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener,
 	protected final AtomicBoolean mustStop = new AtomicBoolean(false);
 	private final BinaryLogClient client;
 	private long replicationLag;
+	private String gtid;
 
 	public BinlogConnectorEventListener(
 		BinaryLogClient client,
@@ -50,7 +51,6 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener,
 
 	@Override
 	public void onEvent(Event event) {
-		String gtid = null;
 		long eventSeenAt = 0;
 		boolean trackMetrics = false;
 
