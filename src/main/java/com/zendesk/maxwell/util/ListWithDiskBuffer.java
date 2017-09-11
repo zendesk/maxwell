@@ -51,7 +51,6 @@ public class ListWithDiskBuffer<T> {
 	public T getLast() {
 		return list.getLast();
 	}
-	public T getFirst() { return list.getFirst(); }
 
 	public T removeFirst(Class<T> clazz) throws IOException, ClassNotFoundException {
 		if ( elementsInFile > 0 ) {
