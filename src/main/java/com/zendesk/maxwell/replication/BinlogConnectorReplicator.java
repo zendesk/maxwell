@@ -138,7 +138,7 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 	 * @return A RowMapBuffer of rows; either in-memory or on disk.
 	 */
 
-	private RowMapBuffer getTransactionRows() throws Exception {
+	private RowMapBuffer getTransactionRows(BinlogConnectorEvent beginEvent) throws Exception {
 		BinlogConnectorEvent event;
 		RowMapBuffer buffer = new RowMapBuffer(MAX_TX_ELEMENTS);
 
@@ -154,9 +154,9 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 			if (event.isCommitEvent()) {
 				if (!buffer.isEmpty()) {
 					buffer.getLast().setTXCommit();
-					long timeSpent = rowBuffer.getLast().getTimestampMillis() - rowBuffer.getFirst().getTimestampMillis();
+					long timeSpent = buffer.getLast().getTimestampMillis() - beginEvent.getEvent().getHeader().getTimestamp();
 					transactionExecutionTime.update(timeSpent);
-					transactionRowCount.update(rowBuffer.size());
+					transactionRowCount.update(buffer.size());
 				}
 				if(eventType == EventType.XID) {
 					buffer.setXid(event.xidData().getXid());
@@ -261,7 +261,7 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 					LOGGER.warn("Assuming new transaction at unexpected event:" + event);
 
 					queue.offerFirst(event);
-					rowBuffer = getTransactionRows();
+					rowBuffer = getTransactionRows(event);
 					break;
 				case TABLE_MAP:
 					TableMapEventData data = event.tableMapData();
@@ -271,7 +271,7 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 					QueryEventData qe = event.queryData();
 					String sql = qe.getSql();
 					if (BinlogConnectorEvent.BEGIN.equals(sql)) {
-						rowBuffer = getTransactionRows();
+						rowBuffer = getTransactionRows(event);
 						rowBuffer.setServerId(event.getEvent().getHeader().getServerId());
 						rowBuffer.setThreadId(qe.getThreadId());
 					} else {
