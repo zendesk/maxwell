@@ -2,8 +2,7 @@ package com.zendesk.maxwell;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
-import com.zendesk.maxwell.metrics.Metrics;
-import com.zendesk.maxwell.producer.AbstractProducer;
+import com.zendesk.maxwell.monitoring.MaxwellDiagnosticContext;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.producer.ProducerFactory;
 import com.zendesk.maxwell.replication.BinlogPosition;
@@ -67,17 +66,19 @@ public class MaxwellConfig extends AbstractConfig {
 	public MetricRegistry metricRegistry;
 	public HealthCheckRegistry healthCheckRegistry;
 
+	public int httpPort;
+	public String httpPathPrefix;
 	public String metricsPrefix;
 	public String metricsReportingType;
 	public Long metricsSlf4jInterval;
-	public int metricsHTTPPort;
-
 	public String metricsDatadogType;
 	public String metricsDatadogTags;
 	public String metricsDatadogAPIKey;
 	public String metricsDatadogHost;
 	public int metricsDatadogPort;
 	public Long metricsDatadogInterval;
+
+	public MaxwellDiagnosticContext.Config diagnosticConfig;
 
 	public String clientID;
 	public Long replicaServerID;
@@ -209,13 +210,16 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "metrics_prefix", "the prefix maxwell will apply to all metrics" ).withRequiredArg();
 		parser.accepts( "metrics_type", "how maxwell metrics will be reported, at least one of slf4j|jmx|http|datadog" ).withRequiredArg();
 		parser.accepts( "metrics_slf4j_interval", "the frequency metrics are emitted to the log, in seconds, when slf4j reporting is configured" ).withRequiredArg();
-		parser.accepts( "metrics_http_port", "the port the server will bind to when http reporting is configured" ).withRequiredArg();
+		parser.accepts( "metrics_http_port", "[deprecated]" ).withRequiredArg();
+		parser.accepts( "http_port", "the port the server will bind to when http reporting is configured" ).withRequiredArg();
 		parser.accepts( "metrics_datadog_type", "when metrics_type includes datadog this is the way metrics will be reported, one of udp|http" ).withRequiredArg();
 		parser.accepts( "metrics_datadog_tags", "datadog tags that should be supplied, e.g. tag1:value1,tag2:value2" ).withRequiredArg();
 		parser.accepts( "metrics_datadog_interval", "the frequency metrics are pushed to datadog, in seconds" ).withRequiredArg();
 		parser.accepts( "metrics_datadog_apikey", "the datadog api key to use when metrics_datadog_type = http" ).withRequiredArg();
 		parser.accepts( "metrics_datadog_host", "the host to publish metrics to when metrics_datadog_type = udp" ).withRequiredArg();
 		parser.accepts( "metrics_datadog_port", "the port to publish metrics to when metrics_datadog_type = udp" ).withRequiredArg();
+		parser.accepts( "http_diagnostic", "enable http diagnostic endpoint: true|false. default: false" ).withOptionalArg();
+		parser.accepts( "http_diagnostic_timeout", "the http diagnostic response timeout in ms when http_diagnostic=true. default: 10000" ).withRequiredArg();
 
 		parser.accepts( "__separator_10" );
 
@@ -341,13 +345,28 @@ public class MaxwellConfig extends AbstractConfig {
 		this.metricsPrefix = fetchOption("metrics_prefix", options, properties, "MaxwellMetrics");
 		this.metricsReportingType = fetchOption("metrics_type", options, properties, null);
 		this.metricsSlf4jInterval = fetchLongOption("metrics_slf4j_interval", options, properties, 60L);
-		this.metricsHTTPPort = Integer.parseInt(fetchOption("metrics_http_port", options, properties, "8080"));
+		// TODO remove metrics_http_port support once hitting v1.11.x
+		int port = Integer.parseInt(fetchOption("metrics_http_port", options, properties, "8080"));
+		if (port != 8080) {
+			LOGGER.warn("metrics_http_port is deprecated, please use http_port");
+			this.httpPort = port;
+		} else {
+			this.httpPort = Integer.parseInt(fetchOption("http_port", options, properties, "8080"));
+		}
+		this.httpPathPrefix = fetchOption("http_path_prefix", options, properties, "/");
+		if (!this.httpPathPrefix.startsWith("/")) {
+			this.httpPathPrefix = "/" + this.httpPathPrefix;
+		}
 		this.metricsDatadogType = fetchOption("metrics_datadog_type", options, properties, "udp");
 		this.metricsDatadogTags = fetchOption("metrics_datadog_tags", options, properties, "");
 		this.metricsDatadogAPIKey = fetchOption("metrics_datadog_apikey", options, properties, "");
 		this.metricsDatadogHost = fetchOption("metrics_datadog_host", options, properties, "localhost");
 		this.metricsDatadogPort = Integer.parseInt(fetchOption("metrics_datadog_port", options, properties, "8125"));
 		this.metricsDatadogInterval = fetchLongOption("metrics_datadog_interval", options, properties, 60L);
+
+		this.diagnosticConfig = new MaxwellDiagnosticContext.Config();
+		this.diagnosticConfig.enable = fetchBooleanOption("http_diagnostic", options, properties, false);
+		this.diagnosticConfig.timeout = fetchLongOption("http_diagnostic_timeout", options, properties, 10000L);
 
 		this.includeDatabases   = fetchOption("include_dbs", options, properties, null);
 		this.excludeDatabases   = fetchOption("exclude_dbs", options, properties, null);

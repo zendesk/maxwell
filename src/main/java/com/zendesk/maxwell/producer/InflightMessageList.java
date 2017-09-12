@@ -6,12 +6,10 @@ package com.zendesk.maxwell.producer;
    Assumes .addInflight(position) will be call monotonically.
    */
 
-import com.codahale.metrics.Gauge;
-import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.Position;
 
-import java.util.LinkedHashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 public class InflightMessageList {
 	class InflightMessage {

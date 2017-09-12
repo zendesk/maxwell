@@ -6,7 +6,7 @@ import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import com.github.shyiko.mysql.binlog.event.Event;
 import com.github.shyiko.mysql.binlog.event.EventType;
 import com.github.shyiko.mysql.binlog.event.GtidEventData;
-import com.zendesk.maxwell.metrics.Metrics;
+import com.zendesk.maxwell.monitoring.Metrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,8 +14,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-class BinlogConnectorEventListener implements BinaryLogClient.EventListener,
-					      BinaryLogClient.LifecycleListener {
+class BinlogConnectorEventListener implements BinaryLogClient.EventListener, BinaryLogClient.LifecycleListener {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BinlogConnectorEventListener.class);
 
 	private final BlockingQueue<BinlogConnectorEvent> queue;
@@ -34,15 +33,7 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener,
 		this.queueTimer =  metrics.getRegistry().timer(metrics.metricName("replication", "queue", "time"));
 
 		final BinlogConnectorEventListener self = this;
-		metrics.register(
-			metrics.metricName("replication", "lag"),
-			new Gauge<Long>() {
-				@Override
-				public Long getValue() {
-					return self.replicationLag;
-				}
-			}
-		);
+		metrics.register(metrics.metricName("replication", "lag"), (Gauge<Long>) () -> self.replicationLag);
 	}
 
 	public void stop() {
