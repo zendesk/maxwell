@@ -21,31 +21,28 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 		private final MaxwellContext context;
 		private final Position position;
 		private final boolean isTXCommit;
-		private final long sendTimeMS;
-		private Long completeTimeMS;
+		private Long timeSinceSendMS = null;
 
 		public CallbackCompleter(InflightMessageList inflightMessages, Position position, boolean isTXCommit, MaxwellContext context) {
 			this.inflightMessages = inflightMessages;
 			this.context = context;
 			this.position = position;
 			this.isTXCommit = isTXCommit;
-			this.sendTimeMS = System.currentTimeMillis();
 		}
 
 		public void markCompleted() {
 			if(isTXCommit) {
-				Position newPosition = inflightMessages.completeMessage(position);
+				InflightMessageList.InflightMessage message = inflightMessages.completeMessage(position);
 
-				if(newPosition != null) {
-					context.setPosition(newPosition);
+				if (message != null) {
+					context.setPosition(message.position);
+					timeSinceSendMS = message.timeSinceSendMS();
 				}
 			}
-			completeTimeMS = System.currentTimeMillis();
 		}
 
-		public Long timeToSendMS() {
-			if ( completeTimeMS == null ) return null;
-			return completeTimeMS - sendTimeMS;
+		public Long timeSinceSendMS() {
+			return timeSinceSendMS;
 		}
 	}
 
@@ -54,7 +51,7 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 	public AbstractAsyncProducer(MaxwellContext context) {
 		super(context);
 
-		this.inflightMessages = new InflightMessageList();
+		this.inflightMessages = new InflightMessageList(context);
 
 		Metrics metrics = context.getMetrics();
 		MetricRegistry metricRegistry = metrics.getRegistry();
@@ -83,9 +80,9 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 		if(!r.shouldOutput(outputConfig)) {
 			inflightMessages.addMessage(position);
 
-			Position completed = inflightMessages.completeMessage(position);
+			InflightMessageList.InflightMessage completed = inflightMessages.completeMessage(position);
 			if(completed != null) {
-				context.setPosition(completed);
+				context.setPosition(completed.position);
 			}
 			return;
 		}

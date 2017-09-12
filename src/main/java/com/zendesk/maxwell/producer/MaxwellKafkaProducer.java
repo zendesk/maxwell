@@ -84,7 +84,7 @@ class KafkaCallback implements Callback {
 		}
 
 		cc.markCompleted();
-		timer.update(cc.timeToSendMS(), TimeUnit.MILLISECONDS);
+		timer.update(cc.timeSinceSendMS(), TimeUnit.MILLISECONDS);
 	}
 }
 
