@@ -2,7 +2,6 @@ package com.zendesk.maxwell.producer;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
-import com.codahale.metrics.Timer;
 import com.zendesk.maxwell.MaxwellConfig;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.replication.BinlogPosition;
@@ -24,7 +23,7 @@ public class KafkaCallbackTest {
 		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
 		KafkaCallback callback = new KafkaCallback(cc,
 			new Position(new BinlogPosition(1, "binlog-1"), 0L), "key", "value",
-			new Timer(), new Counter(), new Counter(), new Meter(), new Meter(),
+			new Counter(), new Counter(), new Meter(), new Meter(),
 			context);
 		NotEnoughReplicasException error = new NotEnoughReplicasException("blah");
 		callback.onCompletion(new RecordMetadata(new TopicPartition("topic", 1), 1, 1), error);
@@ -40,7 +39,7 @@ public class KafkaCallbackTest {
 		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
 		KafkaCallback callback = new KafkaCallback(cc,
 			new Position(new BinlogPosition(1, "binlog-1"), 0L), "key", "value",
-			new Timer(), new Counter(), new Counter(), new Meter(), new Meter(),
+			new Counter(), new Counter(), new Meter(), new Meter(),
 			context);
 		NotEnoughReplicasException error = new NotEnoughReplicasException("blah");
 		callback.onCompletion(new RecordMetadata(new TopicPartition("topic", 1), 1, 1), error);

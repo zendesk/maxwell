@@ -2,9 +2,7 @@ package com.zendesk.maxwell.producer;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
-import com.codahale.metrics.Timer;
 import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.monitoring.Metrics;
 import com.zendesk.maxwell.producer.partitioners.MaxwellKafkaPartitioner;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
@@ -24,9 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
 
 class KafkaCallback implements Callback {
 	public static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
@@ -34,7 +30,6 @@ class KafkaCallback implements Callback {
 	private final Position position;
 	private final String json;
 	private final String key;
-	private final Timer timer;
 	private final MaxwellContext context;
 
 	private Counter succeededMessageCount;
@@ -43,13 +38,12 @@ class KafkaCallback implements Callback {
 	private Meter failedMessageMeter;
 
 	public KafkaCallback(AbstractAsyncProducer.CallbackCompleter cc, Position position, String key, String json,
-	                     Timer timer, Counter producedMessageCount, Counter failedMessageCount, Meter producedMessageMeter,
+	                     Counter producedMessageCount, Counter failedMessageCount, Meter producedMessageMeter,
 	                     Meter failedMessageMeter, MaxwellContext context) {
 		this.cc = cc;
 		this.position = position;
 		this.key = key;
 		this.json = json;
-		this.timer = timer;
 		this.succeededMessageCount = producedMessageCount;
 		this.failedMessageCount = failedMessageCount;
 		this.succeededMessageMeter = producedMessageMeter;
@@ -84,10 +78,8 @@ class KafkaCallback implements Callback {
 		}
 
 		cc.markCompleted();
-		timer.update(cc.timeSinceSendMS(), TimeUnit.MILLISECONDS);
 	}
 }
-
 
 public class MaxwellKafkaProducer extends AbstractProducer {
 	private final ArrayBlockingQueue<RowMap> queue;
@@ -128,7 +120,6 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	private final MaxwellKafkaPartitioner ddlPartitioner;
 	private final KeyFormat keyFormat;
 	private final boolean interpolateTopic;
-	private final Timer metricsTimer;
 	private final ArrayBlockingQueue<RowMap> queue;
 	private Thread thread;
 	private StoppableTaskState taskState;
@@ -156,9 +147,6 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 			keyFormat = KeyFormat.HASH;
 		else
 			keyFormat = KeyFormat.ARRAY;
-
-		Metrics metrics = context.getMetrics();
-		this.metricsTimer = metrics.getRegistry().timer(metrics.metricName("message", "publish", "time"));
 
 		this.queue = queue;
 		this.taskState = new StoppableTaskState("MaxwellKafkaProducerWorker");
@@ -206,7 +194,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		/* if debug logging isn't enabled, release the reference to `value`, which can ease memory pressure somewhat */
 		String value = KafkaCallback.LOGGER.isDebugEnabled() ? record.value() : null;
 
-		KafkaCallback callback = new KafkaCallback(cc, r.getPosition(), record.key(), value, this.metricsTimer,
+		KafkaCallback callback = new KafkaCallback(cc, r.getPosition(), record.key(), value,
 				this.succeededMessageCount, this.failedMessageCount, this.succeededMessageMeter, this.failedMessageMeter, this.context);
 
 		sendAsync(record, callback);
