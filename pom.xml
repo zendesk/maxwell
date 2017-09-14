@@ -43,6 +43,73 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
+  <profiles>
+    <profile>
+      <id>kafka-0.8.2.2</id>
+      <activation>
+        <property>
+          <name>kafka_version</name>
+          <value>0.8.2.2</value>
+        </property>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.kafka</groupId>
+          <artifactId>kafka-clients</artifactId>
+          <version>0.8.2.2</version>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>kafka-0.10.0.1</id>
+      <activation>
+        <property>
+          <name>kafka_version</name>
+          <value>0.10.0.1</value>
+        </property>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.kafka</groupId>
+          <artifactId>kafka-clients</artifactId>
+          <version>0.10.0.1</version>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>kafka-0.10.1.0</id>
+      <activation>
+        <property>
+          <name>kafka_version</name>
+          <value>0.10.1.0</value>
+        </property>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.kafka</groupId>
+          <artifactId>kafka-clients</artifactId>
+          <version>0.10.1.0</version>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>kafka-0.10.2.1</id>
+      <activation>
+        <property>
+          <name>kafka_version</name>
+          <value>0.10.2.1</value>
+        </property>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.kafka</groupId>
+          <artifactId>kafka-clients</artifactId>
+          <version>0.10.2.1</version>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
+
   <dependencies>
     <dependency>
       <groupId>com.amazonaws</groupId>
@@ -271,6 +338,26 @@
             <id>antlr</id>
             <goals>
               <goal>antlr4</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+          <appendAssemblyId>false</appendAssemblyId>
+          <descriptors>
+            <descriptor>src/main/assembly/assembly.xml</descriptor>
+          </descriptors>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
             </goals>
           </execution>
         </executions>

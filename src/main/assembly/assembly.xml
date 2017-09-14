@@ -1,6 +1,6 @@
-<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.5.2"
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.5.2 http://maven.apache.org/xsd/assembly-1.5.2.xsd">
+  xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.0.0 http://maven.apache.org/xsd/assembly-2.0.0.xsd">
   <id>maxwell</id>
   <formats>
     <format>tar.gz</format>
@@ -8,31 +8,36 @@
   </formats>
   <!-- Adds the dependencies of our application to the lib directory -->
   <dependencySets>
-      <dependencySet>
-          <useProjectArtifact>false</useProjectArtifact>
-          <outputDirectory>lib</outputDirectory>
-          <unpack>false</unpack>
-      </dependencySet>
-    </dependencySets>
-
+    <dependencySet>
+      <useProjectArtifact>false</useProjectArtifact>
+      <outputDirectory>lib</outputDirectory>
+      <unpack>false</unpack>
+    </dependencySet>
+  </dependencySets>
   <fileSets>
+    <fileSet>
+      <directory>${project.build.directory}</directory>
+      <outputDirectory>lib</outputDirectory>
+      <includes>
+        <include>**/*.jar*</include>
+      </includes>
+      <excludes>
+        <exclude>*-sources.jar</exclude>
+        <exclude>*-javadoc.jar</exclude>
+      </excludes>
+    </fileSet>
     <fileSet>
       <directory>${project.basedir}</directory>
       <outputDirectory>/</outputDirectory>
       <includes>
         <include>bin/*</include>
+        <include>config.md</include>
         <include>config.properties.example</include>
+        <include>quickstart.md</include>
         <include>kinesis-producer-library.properties.example</include>
         <include>README*</include>
         <include>LICENSE*</include>
         <include>NOTICE*</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <directory>${project.build.directory}</directory>
-      <outputDirectory>lib</outputDirectory>
-      <includes>
-        <include>*.jar</include>
       </includes>
     </fileSet>
     <fileSet>
