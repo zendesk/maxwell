@@ -4,7 +4,7 @@ ENV KAFKA_VERSION 0.10.1.0
 
 RUN apt-get update && apt-get -y upgrade
 
-RUN apt-get install build-essential ruby -y
+RUN apt-get install build-essential ruby mysql-client -y
 
 COPY . /workspace
 WORKDIR /workspace
