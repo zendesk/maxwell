@@ -1,13 +1,12 @@
 package com.zendesk.maxwell.producer;
 
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.Gauge;
-import com.codahale.metrics.Meter;
-import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.*;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.monitoring.Metrics;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
+
+import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractAsyncProducer extends AbstractProducer {
 
@@ -15,13 +14,13 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 	protected final Meter succeededMessageMeter;
 	protected final Counter failedMessageCount;
 	protected final Meter failedMessageMeter;
+	protected final Timer metricsTimer;
 
 	public class CallbackCompleter {
 		private InflightMessageList inflightMessages;
 		private final MaxwellContext context;
 		private final Position position;
 		private final boolean isTXCommit;
-		private Long timeSinceSendMS = null;
 
 		public CallbackCompleter(InflightMessageList inflightMessages, Position position, boolean isTXCommit, MaxwellContext context) {
 			this.inflightMessages = inflightMessages;
@@ -36,13 +35,9 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 
 				if (message != null) {
 					context.setPosition(message.position);
-					timeSinceSendMS = message.timeSinceSendMS();
+					metricsTimer.update(message.timeSinceSendMS(), TimeUnit.MILLISECONDS);
 				}
 			}
-		}
-
-		public Long timeSinceSendMS() {
-			return timeSinceSendMS;
 		}
 	}
 
@@ -63,6 +58,7 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 		this.succeededMessageMeter = metricRegistry.meter(metrics.metricName("messages", "succeeded", "meter"));
 		this.failedMessageCount = metricRegistry.counter(metrics.metricName("messages", "failed"));
 		this.failedMessageMeter = metricRegistry.meter(metrics.metricName("messages", "failed", "meter"));
+		this.metricsTimer = metrics.getRegistry().timer(metrics.metricName("message", "publish", "time"));
 	}
 
 	public abstract void sendAsync(RowMap r, CallbackCompleter cc) throws Exception;
