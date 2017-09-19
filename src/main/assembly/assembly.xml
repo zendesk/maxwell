@@ -6,34 +6,12 @@
     <format>tar.gz</format>
     <format>dir</format>
   </formats>
-  <!-- Adds the dependencies of our application to the lib directory -->
-  <dependencySets>
-    <dependencySet>
-      <useProjectArtifact>false</useProjectArtifact>
-      <outputDirectory>lib</outputDirectory>
-      <unpack>false</unpack>
-    </dependencySet>
-  </dependencySets>
   <fileSets>
     <fileSet>
-      <directory>${project.build.directory}</directory>
-      <outputDirectory>lib</outputDirectory>
-      <includes>
-        <include>**/*.jar*</include>
-      </includes>
-      <excludes>
-        <exclude>*-sources.jar</exclude>
-        <exclude>*-javadoc.jar</exclude>
-      </excludes>
-    </fileSet>
-    <fileSet>
       <directory>${project.basedir}</directory>
-      <outputDirectory>/</outputDirectory>
       <includes>
         <include>bin/*</include>
-        <include>config.md</include>
         <include>config.properties.example</include>
-        <include>quickstart.md</include>
         <include>kinesis-producer-library.properties.example</include>
         <include>README*</include>
         <include>LICENSE*</include>
@@ -41,14 +19,26 @@
       </includes>
     </fileSet>
     <fileSet>
-      <directory>${project.build.directory}/site</directory>
-      <outputDirectory>docs</outputDirectory>
+      <directory>${project.build.directory}/lib</directory>
+      <outputDirectory>lib</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>${project.build.directory}</directory>
+      <outputDirectory>lib</outputDirectory>
+      <includes>
+        <include>maxwell-${project.version}.jar</include>
+      </includes>
     </fileSet>
   </fileSets>
   <files>
     <file>
       <source>src/main/resources/log4j2.xml</source>
-      <outputDirectory>/</outputDirectory>
+    </file>
+    <file>
+      <source>docs/docs/config.md</source>
+    </file>
+    <file>
+      <source>docs/docs/quickstart.md</source>
     </file>
   </files>
 </assembly>
