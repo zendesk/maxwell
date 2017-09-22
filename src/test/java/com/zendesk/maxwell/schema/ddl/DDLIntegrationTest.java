@@ -93,6 +93,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	public void testCreateAndDropDatabase() throws Exception {
 		String sql[] = {
 			"create DATABASE test_db default character set='utf8'",
+			"create DATABASE test_db_1 default char set='utf8'",
 			"create DATABASE if not exists test_db",
 			"create DATABASE test_db_2",
 			"drop DATABASE test_db"

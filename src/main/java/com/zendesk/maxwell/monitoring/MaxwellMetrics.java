@@ -1,11 +1,11 @@
-package com.zendesk.maxwell.metrics;
+package com.zendesk.maxwell.monitoring;
 
 import com.codahale.metrics.JmxReporter;
+import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Slf4jReporter;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.zendesk.maxwell.MaxwellConfig;
-import com.zendesk.maxwell.MaxwellContext;
 import org.apache.commons.lang.StringUtils;
 import org.coursera.metrics.datadog.DatadogReporter;
 import org.coursera.metrics.datadog.transport.HttpTransport;
@@ -14,7 +14,6 @@ import org.coursera.metrics.datadog.transport.UdpTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
@@ -22,22 +21,17 @@ import java.util.concurrent.TimeUnit;
 import static org.coursera.metrics.datadog.DatadogReporter.Expansion.*;
 
 public class MaxwellMetrics implements Metrics {
-	private final MetricRegistry metricRegistry;
-	private final HealthCheckRegistry healthCheckRegistry;
 
-	public static final String reportingTypeSlf4j = "slf4j";
-	public static final String reportingTypeJmx = "jmx";
-	public static final String reportingTypeHttp = "http";
-	public static final String reportingTypeDataDog = "datadog";
+	static final String reportingTypeSlf4j = "slf4j";
+	static final String reportingTypeJmx = "jmx";
+	static final String reportingTypeHttp = "http";
+	static final String reportingTypeDataDog = "datadog";
 
-	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellMetrics.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellMetrics.class);
 	private final MaxwellConfig config;
-
 	private String metricsPrefix;
 
 	public MaxwellMetrics(MaxwellConfig config) {
-		healthCheckRegistry = config.healthCheckRegistry;
-		metricRegistry = config.metricRegistry;
 		this.config = config;
 		setup(config);
 	}
@@ -51,7 +45,7 @@ public class MaxwellMetrics implements Metrics {
 		metricsPrefix = config.metricsPrefix;
 
 		if (config.metricsReportingType.contains(reportingTypeSlf4j)) {
-			final Slf4jReporter reporter = Slf4jReporter.forRegistry(metricRegistry)
+			final Slf4jReporter reporter = Slf4jReporter.forRegistry(config.metricRegistry)
 					.outputTo(LOGGER)
 					.convertRatesTo(TimeUnit.SECONDS)
 					.convertDurationsTo(TimeUnit.MILLISECONDS)
@@ -62,7 +56,7 @@ public class MaxwellMetrics implements Metrics {
 		}
 
 		if (config.metricsReportingType.contains(reportingTypeJmx)) {
-			final JmxReporter jmxReporter = JmxReporter.forRegistry(metricRegistry)
+			final JmxReporter jmxReporter = JmxReporter.forRegistry(config.metricRegistry)
 					.convertRatesTo(TimeUnit.SECONDS)
 					.convertDurationsTo(TimeUnit.MILLISECONDS)
 					.build();
@@ -95,7 +89,7 @@ public class MaxwellMetrics implements Metrics {
 						.build();
 			}
 
-			final DatadogReporter reporter = DatadogReporter.forRegistry(metricRegistry)
+			final DatadogReporter reporter = DatadogReporter.forRegistry(config.metricRegistry)
 					.withTransport(transport)
 					.withExpansions(EnumSet.of(COUNT, RATE_1_MINUTE, RATE_15_MINUTE, MEDIAN, P95, P99))
 					.withTags(getDatadogTags(config.metricsDatadogTags))
@@ -123,16 +117,21 @@ public class MaxwellMetrics implements Metrics {
 
 	@Override
 	public MetricRegistry getRegistry() {
-		return metricRegistry;
+		return config.metricRegistry;
 	}
 
-	public void startBackgroundTasks(MaxwellContext context) throws IOException {
-		String metricsReportingType = config.metricsReportingType;
-		if (metricsReportingType != null && metricsReportingType.contains(reportingTypeHttp)) {
-			LOGGER.info("Metrics http server starting");
-			new MaxwellHTTPServer(config.metricsHTTPPort, metricRegistry, healthCheckRegistry, context);
-			healthCheckRegistry.register("MaxwellHealth", new MaxwellHealthCheck(context.getProducer()));
-			LOGGER.info("Metrics http server started on port " + config.metricsHTTPPort);
+	@Override
+	public <T extends Metric> void register(String name, T metric) throws IllegalArgumentException {
+		getRegistry().register(name, metric);
+	}
+
+	static class Registries {
+		final MetricRegistry metricRegistry;
+		final HealthCheckRegistry healthCheckRegistry;
+
+		Registries(MetricRegistry metricRegistry, HealthCheckRegistry healthCheckRegistry) {
+			this.metricRegistry = metricRegistry;
+			this.healthCheckRegistry = healthCheckRegistry;
 		}
 	}
 }

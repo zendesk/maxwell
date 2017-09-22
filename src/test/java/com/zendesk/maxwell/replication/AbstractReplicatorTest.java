@@ -1,7 +1,5 @@
 package com.zendesk.maxwell.replication;
 
-import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.MaxwellTestSupport;
 import com.zendesk.maxwell.MaxwellTestWithIsolatedServer;
 import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
