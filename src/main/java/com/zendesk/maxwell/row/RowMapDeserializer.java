@@ -16,18 +16,48 @@ import java.util.Iterator;
 
 public class RowMapDeserializer extends StdDeserializer<RowMap> {
 	private static ObjectMapper mapper;
+	private String secret_key;
+
 
 	public RowMapDeserializer() {
-		this(null);
+		this(Class.class);
 	}
+
+	public RowMapDeserializer(String secret_key){
+		this(null,secret_key);
+	}
+
 
 	public RowMapDeserializer(Class<?> vc) {
 		super(vc);
 	}
 
+	public RowMapDeserializer(Class<?> vc, String secret_key){
+		super(vc);
+		this.secret_key = secret_key;
+	}
+
 	@Override
 	public RowMap deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
-		JsonNode node = jsonParser.getCodec().readTree(jsonParser);
+		ObjectNode node = jsonParser.getCodec().readTree(jsonParser);
+
+		JsonNode encrypted = node.get("encrypted");
+		if (encrypted != null) {
+			String iv = encrypted.get("iv").textValue();
+			String bytes = encrypted.get("bytes").textValue();
+
+			String decryptedData;
+			try {
+				decryptedData = RowEncrypt.decrypt(bytes, this.secret_key, iv);
+			} catch (Exception e) {
+				throw new IOException(e);
+			}
+			JsonNode decrypted = mapper.readTree(decryptedData);
+			if (!(decrypted instanceof ObjectNode)) {
+				throw new ParseException("`encrypted` must be an object after decrypting.");
+			}
+			node.setAll((ObjectNode) decrypted);
+		}
 
 		JsonNode type = node.get("type");
 		if (type == null) {
@@ -71,37 +101,39 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 			rowMap.setTXCommit();
 		}
 
-		if (data instanceof ObjectNode) {
-			Iterator keys = data.fieldNames();
-			if (keys != null) {
-				while (keys.hasNext()) {
-					String key = (String) keys.next();
-					JsonNode value = data.get(key);
-					if (value.isValueNode()) {
-						ValueNode valueNode = (ValueNode) value;
-						rowMap.putData(key, getValue(valueNode));
-					}
-				}
-			}
-		} else {
+		if (data == null){
 			throw new ParseException("`data` is required and cannot be null.");
 		}
 
-		if (oldData instanceof ObjectNode) {
-			Iterator keys = oldData.fieldNames();
-			if (keys != null) {
-				while (keys.hasNext()) {
-					String key = (String) keys.next();
-					JsonNode value = oldData.get(key);
-					if (value.isValueNode()) {
-						ValueNode valueNode = (ValueNode) value;
-						rowMap.putOldData(key, getValue(valueNode));
+		readDataInto(rowMap, data, false);
+
+		if (oldData != null) {
+			readDataInto(rowMap, oldData, true);
+		}
+
+		return rowMap;
+	}
+
+	private void readDataInto(RowMap dest, JsonNode data, boolean isOld) throws IOException {
+		if (!(data instanceof ObjectNode)) {
+			throw new ParseException("`" + (isOld ? "oldData" : "data") + "` cannot be parsed.");
+		}
+
+		Iterator keys = data.fieldNames();
+		if (keys != null) {
+			while (keys.hasNext()) {
+				String key = (String) keys.next();
+				JsonNode value = data.get(key);
+				if (value.isValueNode()) {
+					ValueNode valueNode = (ValueNode) value;
+					if(isOld) {
+						dest.putOldData(key, getValue(valueNode));
+					} else {
+						dest.putData(key, getValue(valueNode));
 					}
 				}
 			}
 		}
-
-		return rowMap;
 	}
 
 	private Object getValue(ValueNode value)
@@ -136,6 +168,18 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 		return value.asText();
 	}
 
+	private static ObjectMapper getMapper(String secret_key)
+	{
+		if (mapper == null) {
+			mapper = new ObjectMapper();
+			SimpleModule module = new SimpleModule();
+			module.addDeserializer(RowMap.class, new RowMapDeserializer(secret_key));
+			mapper.registerModule(module);
+		}
+
+		return mapper;
+	}
+
 	private static ObjectMapper getMapper()
 	{
 		if (mapper == null) {
@@ -150,6 +194,16 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 
 	public static RowMap createFromString(String json) throws IOException
 	{
+
 		return getMapper().readValue(json, RowMap.class);
+	}
+
+	public static RowMap createFromString(String json, String secret_key) throws IOException
+	{
+		return getMapper(secret_key).readValue(json, RowMap.class);
+	}
+
+	public static void resetMapper(){
+		mapper = null;
 	}
 }

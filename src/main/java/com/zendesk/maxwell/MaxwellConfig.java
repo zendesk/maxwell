@@ -2,6 +2,7 @@ package com.zendesk.maxwell;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
+import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.monitoring.MaxwellDiagnosticContext;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.producer.ProducerFactory;
@@ -174,6 +175,8 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "output_thread_id", "produced records include thread_id; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_ddl", "produce DDL records to ddl_kafka_topic [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "ddl_kafka_topic", "optionally provide an alternate topic to push DDL records to. default: kafka_topic").withRequiredArg();
+		parser.accepts("secret_key", "The secret key for the AES encryption").withRequiredArg();
+		parser.accepts("encrypt", "encryption mode: [none|data|all]. default: none").withRequiredArg();
 
 		parser.accepts( "__separator_5" );
 
@@ -416,6 +419,29 @@ public class MaxwellConfig extends AbstractConfig {
 		outputConfig.includesThreadId = fetchBooleanOption("output_thread_id", options, properties, false);
 		outputConfig.outputDDL	= fetchBooleanOption("output_ddl", options, properties, false);
 		this.excludeColumns     = fetchOption("exclude_columns", options, properties, null);
+
+		String encryptionMode = fetchOption("encryption", options, properties, "none");
+		switch (encryptionMode) {
+			case "none":
+				outputConfig.encryptionMode = EncryptionMode.ENCRYPT_NONE;
+				break;
+			case "data":
+				outputConfig.encryptionMode = EncryptionMode.ENCRYPT_DATA;
+				break;
+			case "all":
+				outputConfig.encryptionMode = EncryptionMode.ENCRYPT_ALL;
+				break;
+			default:
+				usage("Unknown encryption mode: " + encryptionMode);
+				break;
+		}
+
+		if (outputConfig.encryptionEnabled()) {
+			outputConfig.secretKey = fetchOption("secret_key", options, properties, null);
+			if (outputConfig.secretKey == null) {
+				usage("--secret_key required");
+			}
+		}
 
 		if ( this.excludeColumns != null ) {
 			for ( String s : this.excludeColumns.split(",") ) {

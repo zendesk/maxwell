@@ -6,6 +6,7 @@ pages:
   - 'Configuration': 'config.md'
   - 'Producers': 'producers.md'
   - 'Data Format': 'dataformat.md'
+  - 'Encryption': 'encryption.md'
   - 'Bootstrapping': 'bootstrapping.md'
   - 'Monitoring': 'monitoring.md'
   - 'Embedding': 'embedding.md'
