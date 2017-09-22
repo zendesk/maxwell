@@ -183,8 +183,7 @@ blacklist_dbs                  | PATTERN                             | ignore up
 blacklist_tables               | PATTERN                             | ignore updates AND schema changes from tables named like PATTERN (see warnings below) |
 &nbsp;
 **encryption**
-encrypt_data                   | BOOLEAN                             | encrypt the data field of the payload               | false
-encrypt_all                    | BOOLEAN                             | encrypt the entire payload                          | false
+encrypt                        | [ none &#124; data &#124; all ]     | encrypt mode: none = no encryption. "data": encrypt the `data` field only. `all`: encrypt entire maxwell message | none
 secret_key                     | STRING                              | specify the encryption key to be used               | null
 **monitoring**
 metrics_prefix | STRING | the prefix maxwell will apply to all metrics | MaxwellMetrics
