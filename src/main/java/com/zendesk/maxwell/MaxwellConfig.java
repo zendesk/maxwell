@@ -2,6 +2,7 @@ package com.zendesk.maxwell;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
+import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.producer.ProducerFactory;
 import com.zendesk.maxwell.replication.BinlogPosition;
@@ -168,8 +169,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "output_ddl", "produce DDL records to ddl_kafka_topic [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "ddl_kafka_topic", "optionally provide an alternate topic to push DDL records to. default: kafka_topic").withOptionalArg();
 		parser.accepts("secret_key", "The secret key for the AES encryption").withOptionalArg();
-		parser.accepts("encrypt_data", "boolean flag to encrypt the data element").withOptionalArg();
-		parser.accepts("encrypt_all", "boolean flag to encrypt all elements").withOptionalArg();
+		parser.accepts("encrypt", "encryption mode: [none|data|all]. default: none").withRequiredArg();
 
 		parser.accepts( "__separator_5" );
 
@@ -389,18 +389,28 @@ public class MaxwellConfig extends AbstractConfig {
 		outputConfig.outputDDL	= fetchBooleanOption("output_ddl", options, properties, false);
 		this.excludeColumns     = fetchOption("exclude_columns", options, properties, null);
 
-		boolean encryptData = fetchBooleanOption("encrypt_data", options, properties, false);
-		boolean encryptAll = fetchBooleanOption("encrypt_all", options, properties, false);
-		if (encryptData && encryptAll) {
-			usage("You cannot specify both encrypt_data and encrypt_all");
-		}
-		if (encryptData) {
-			outputConfig.encryptionMode = MaxwellOutputConfig.Encryption.ENCRYPT_DATA;
-		} else if (encryptAll) {
-			outputConfig.encryptionMode = MaxwellOutputConfig.Encryption.ENCRYPT_ALL;
+		String encryptionMode = fetchOption("encryption", options, properties, "none");
+		switch (encryptionMode) {
+			case "none":
+				outputConfig.encryptionMode = EncryptionMode.ENCRYPT_NONE;
+				break;
+			case "data":
+				outputConfig.encryptionMode = EncryptionMode.ENCRYPT_DATA;
+				break;
+			case "all":
+				outputConfig.encryptionMode = EncryptionMode.ENCRYPT_ALL;
+				break;
+			default:
+				usage("Unknown encryption mode: " + encryptionMode);
+				break;
 		}
 
-		outputConfig.secretKey = fetchOption("secret_key", options, properties, null);
+		if (outputConfig.encryptionEnabled()) {
+			outputConfig.secretKey = fetchOption("secret_key", options, properties, null);
+			if (outputConfig.secretKey == null) {
+				usage("--secret_key required");
+			}
+		}
 
 		if ( this.excludeColumns != null ) {
 			for ( String s : this.excludeColumns.split(",") ) {

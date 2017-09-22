@@ -1,21 +1,16 @@
 package com.zendesk.maxwell;
 
-import com.zendesk.maxwell.row.RowEncrypt;
-import com.zendesk.maxwell.row.RowMap;
+import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
-import javax.crypto.Cipher;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import org.apache.commons.codec.binary.Base64;
+import com.zendesk.maxwell.row.RowMap;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
@@ -205,12 +200,12 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 		};
 
 		List<RowMap> rows = getRowsForSQL(input);
-		testColumnTypeSerialization(MaxwellOutputConfig.Encryption.ENCRYPT_NONE, rows, expectedNormalJsonValue, expectedBootstrappedJsonValue);
-		testColumnTypeSerialization(MaxwellOutputConfig.Encryption.ENCRYPT_DATA, rows, expectedNormalJsonValue, expectedBootstrappedJsonValue);
-		testColumnTypeSerialization(MaxwellOutputConfig.Encryption.ENCRYPT_ALL, rows, expectedNormalJsonValue, expectedBootstrappedJsonValue);
+		testColumnTypeSerialization(EncryptionMode.ENCRYPT_NONE, rows, expectedNormalJsonValue, expectedBootstrappedJsonValue);
+		testColumnTypeSerialization(EncryptionMode.ENCRYPT_DATA, rows, expectedNormalJsonValue, expectedBootstrappedJsonValue);
+		testColumnTypeSerialization(EncryptionMode.ENCRYPT_ALL, rows, expectedNormalJsonValue, expectedBootstrappedJsonValue);
 	}
 
-	private void testColumnTypeSerialization(MaxwellOutputConfig.Encryption encryptionMode, List<RowMap> rows, Object expectedNormalJsonValue, Object expectedBootstrappedJsonValue) throws Exception {
+	private void testColumnTypeSerialization(EncryptionMode encryptionMode, List<RowMap> rows, Object expectedNormalJsonValue, Object expectedBootstrappedJsonValue) throws Exception {
 		boolean foundNormalRow = false;
 		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
 		outputConfig.encryptionMode = encryptionMode;
@@ -220,12 +215,12 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 			Map<String, Object> output = MaxwellTestJSON.parseJSON(r.toJSON(outputConfig));
 			Map<String, Object> decrypted = MaxwellTestJSON.parseEncryptedJSON(output, outputConfig.secretKey);
 
-			if (encryptionMode == MaxwellOutputConfig.Encryption.ENCRYPT_ALL) {
+			if (encryptionMode == EncryptionMode.ENCRYPT_ALL) {
 				output = decrypted;
 			}
 
 			if ( output.get("table").equals("column_test") && output.get("type").equals("insert") ) {
-				Map<String, Object> dataSource = encryptionMode == MaxwellOutputConfig.Encryption.ENCRYPT_DATA ? decrypted : output;
+				Map<String, Object> dataSource = encryptionMode == EncryptionMode.ENCRYPT_DATA ? decrypted : output;
 				Map<String, Object> data = (Map<String, Object>) dataSource.get("data");
 				if ( !foundNormalRow ) {
 					foundNormalRow = true;

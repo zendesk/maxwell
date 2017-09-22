@@ -1,27 +1,33 @@
 package com.zendesk.maxwell;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
-import static org.junit.Assume.assumeTrue;
-
+import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.row.RowMap;
+import com.zendesk.maxwell.schema.SchemaStoreSchema;
 import org.apache.commons.lang3.ArrayUtils;
+import org.junit.Test;
 
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.*;
+import java.util.regex.Pattern;
 
-import com.zendesk.maxwell.schema.SchemaStoreSchema;
-import org.junit.Test;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 
 public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testEncryptedData() throws Exception{
 		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
-		outputConfig.encryptionMode = MaxwellOutputConfig.Encryption.ENCRYPT_DATA;
+		outputConfig.encryptionMode = EncryptionMode.ENCRYPT_DATA;
 		outputConfig.secretKey = "aaaaaaaaaaaaaaaa";
 		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
@@ -44,7 +50,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testEncryptedAll() throws Exception{
 		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
-		outputConfig.encryptionMode = MaxwellOutputConfig.Encryption.ENCRYPT_ALL;
+		outputConfig.encryptionMode = EncryptionMode.ENCRYPT_ALL;
 		outputConfig.secretKey = "aaaaaaaaaaaaaaaa";
 		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};

@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.row;
 
 import com.fasterxml.jackson.core.*;
+import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.Position;
@@ -302,7 +303,7 @@ public class RowMap implements Serializable {
 			encryptionContext = EncryptionContext.create(outputConfig.secretKey);
 		}
 
-		DataJsonGenerator dataWriter = outputConfig.encryptionMode == MaxwellOutputConfig.Encryption.ENCRYPT_DATA
+		DataJsonGenerator dataWriter = outputConfig.encryptionMode == EncryptionMode.ENCRYPT_DATA
 			? encryptingJsonGeneratorThreadLocal.get()
 			: plaintextDataGeneratorThreadLocal.get();
 
@@ -316,7 +317,7 @@ public class RowMap implements Serializable {
 		g.writeEndObject(); // end of row
 		g.flush();
 
-		if(outputConfig.encryptionMode == MaxwellOutputConfig.Encryption.ENCRYPT_ALL){
+		if(outputConfig.encryptionMode == EncryptionMode.ENCRYPT_ALL){
 			String plaintext = jsonFromStream();
 			encryptingJsonGeneratorThreadLocal.get().writeEncryptedObject(plaintext, encryptionContext);
 			g.flush();
