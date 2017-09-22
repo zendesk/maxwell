@@ -175,7 +175,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "output_thread_id", "produced records include thread_id; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_ddl", "produce DDL records to ddl_kafka_topic [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "ddl_kafka_topic", "optionally provide an alternate topic to push DDL records to. default: kafka_topic").withRequiredArg();
-		parser.accepts("secret_key", "The secret key for the AES encryption").withOptionalArg();
+		parser.accepts("secret_key", "The secret key for the AES encryption").withRequiredArg();
 		parser.accepts("encrypt", "encryption mode: [none|data|all]. default: none").withRequiredArg();
 
 		parser.accepts( "__separator_5" );
