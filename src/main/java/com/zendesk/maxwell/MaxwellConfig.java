@@ -95,6 +95,8 @@ public class MaxwellConfig extends AbstractConfig {
 	public boolean masterRecovery;
 	public boolean ignoreProducerError;
 
+	public String rabbitmqUser;
+	public String rabbitmqPass;
 	public String rabbitmqHost;
 	public String rabbitmqVirtualHost;
 	public String rabbitmqExchange;
@@ -216,6 +218,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_8" );
 
+		parser.accepts("rabbitmq_user", "Username of Rabbitmq connection. Default is guest").withRequiredArg();
+		parser.accepts("rabbitmq_pass", "Password of Rabbitmq connection. Default is guest").withRequiredArg();
 		parser.accepts("rabbitmq_host", "Host of Rabbitmq machine").withRequiredArg();
 		parser.accepts("rabbitmq_virtual_host", "Virtual Host of Rabbitmq").withRequiredArg();
 		parser.accepts("rabbitmq_exchange", "Name of exchange for rabbitmq publisher").withRequiredArg();
@@ -321,6 +325,8 @@ public class MaxwellConfig extends AbstractConfig {
 		this.ddlPubsubTopic  = fetchOption("ddl_pubsub_topic", options, properties, this.pubsubTopic);
 
 		this.rabbitmqHost           = fetchOption("rabbitmq_host", options, properties, "localhost");
+		this.rabbitmqUser			= fetchOption("rabbitmq_user", options, properties, "guest");
+		this.rabbitmqPass			= fetchOption("rabbitmq_pass", options, properties, "guest");
 		this.rabbitmqVirtualHost    = fetchOption("rabbitmq_virtual_host", options, properties, "/");
 		this.rabbitmqExchange       = fetchOption("rabbitmq_exchange", options, properties, "maxwell");
 		this.rabbitmqExchangeType   = fetchOption("rabbitmq_exchange_type", options, properties, "fanout");
