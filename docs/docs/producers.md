@@ -120,6 +120,24 @@ See the [AWS docs](http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/cr
 ***
 Set the output stream in `config.properties` by setting the `kinesis_stream` property.
 
-The producer uses the [KPL (Kinesis Producer Library](http://docs.aws.amazon.com/streams/latest/dev/developing-producers-with-kpl.html) and uses the KPL built in configurations.
+The producer uses the [KPL (Kinesis Producer Library)](http://docs.aws.amazon.com/streams/latest/dev/developing-producers-with-kpl.html) and uses the KPL built in configurations.
 Copy `kinesis-producer-library.properties.example` to `kinesis-producer-library.properties` and configure the properties file to your needs.
-The most important option here is configuring the region.
+
+You are **required** to configure the region. For example:
+
+```
+# set explicitly
+Region=us-west-2
+# or set with an environment variable
+Region=$AWS_DEFAULT_REGION
+```
+
+By default, the KPL implements [record aggregation](http://docs.aws.amazon.com/streams/latest/dev/kinesis-kpl-concepts.html#w2ab1c12b7b7c19c11), which usually increases producer throughput by allowing you to increase the number of records sent per API call. However, aggregated records are encoded differently (using Google Protocol Buffers) than records that are not aggregated. Therefore, if you are not using the [KCL (Kinesis Client Library)](http://docs.aws.amazon.com/streams/latest/dev/developing-consumers-with-kcl.html) to consume records (for example, you are using AWS Lambda) you will need to either disaggregate the records in your consumer (for example, by using the [AWS Kinesis Aggregation library](https://github.com/awslabs/kinesis-aggregation)), or disable record aggregation in your `kinesis-producer-library.properties` configuration.
+
+To disable aggregation, add the following to your configuration:
+
+```
+AggregationEnabled=false
+```
+
+Remember: if you disable record aggregation, you will lose the benefit of potentially greater producer throughput.
