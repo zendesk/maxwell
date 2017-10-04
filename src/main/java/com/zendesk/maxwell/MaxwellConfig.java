@@ -373,14 +373,11 @@ public class MaxwellConfig extends AbstractConfig {
 		this.metricsDatadogPort = Integer.parseInt(fetchOption("metrics_datadog_port", options, properties, "8125"));
 		this.metricsDatadogInterval = fetchLongOption("metrics_datadog_interval", options, properties, 60L);
 
-<<<<<<< HEAD
 		
-=======
 		this.diagnosticConfig = new MaxwellDiagnosticContext.Config();
 		this.diagnosticConfig.enable = fetchBooleanOption("http_diagnostic", options, properties, false);
 		this.diagnosticConfig.timeout = fetchLongOption("http_diagnostic_timeout", options, properties, 10000L);
 
->>>>>>> aed36a1a5c6542485ce9b9664cd8e7a5bda8719d
 		this.includeDatabases   = fetchOption("include_dbs", options, properties, null);
 		this.excludeDatabases   = fetchOption("exclude_dbs", options, properties, null);
 		this.includeTables      = fetchOption("include_tables", options, properties, null);
