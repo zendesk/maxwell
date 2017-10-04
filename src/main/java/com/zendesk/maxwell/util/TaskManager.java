@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.concurrent.TimeoutException;
 
 public class TaskManager {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TaskManager.class);
@@ -28,7 +27,7 @@ public class TaskManager {
 		}
 	}
 
-	public synchronized void stop(Exception error) throws TimeoutException, InterruptedException {
+	public synchronized void stop(Exception error) throws Exception {
 		if (this.state == RunState.STOPPED) {
 			LOGGER.debug("Stop() called multiple times");
 			return;

@@ -9,6 +9,9 @@ import java.io.Serializable;
 import java.util.*;
 
 public class BinlogConnectorEvent {
+	public static final String BEGIN = "BEGIN";
+	public static final String COMMIT = "COMMIT";
+	public static final String SAVEPOINT = "SAVEPOINT";
 	private BinlogPosition position;
 	private BinlogPosition nextPosition;
 	private final Event event;
@@ -76,6 +79,19 @@ public class BinlogConnectorEvent {
 				return ((TableMapEventData) data).getTableId();
 		}
 		return null;
+	}
+
+	public boolean isCommitEvent() {
+		EventType eventType = getType();
+		if (eventType == EventType.XID) {
+			return true;
+		} else if (eventType == EventType.QUERY) {
+			// MyISAM will output a "COMMIT" QUERY_EVENT instead of a XID_EVENT.
+			// There's no transaction ID but we can still set "commit: true"
+			return COMMIT.equals(queryData().getSql());
+		}
+
+		return false;
 	}
 
 	private void writeData(Table table, RowMap row, Serializable[] data, BitSet includedColumns) {

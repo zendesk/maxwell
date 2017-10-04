@@ -182,6 +182,9 @@ exclude_tables                 | PATTERN                             | ignore up
 blacklist_dbs                  | PATTERN                             | ignore updates AND schema changes from databases (see warnings below) |
 blacklist_tables               | PATTERN                             | ignore updates AND schema changes from tables named like PATTERN (see warnings below) |
 &nbsp;
+**encryption**
+encrypt                        | [ none &#124; data &#124; all ]     | encrypt mode: none = no encryption. "data": encrypt the `data` field only. `all`: encrypt entire maxwell message | none
+secret_key                     | STRING                              | specify the encryption key to be used               | null
 **monitoring**
 metrics_prefix | STRING | the prefix maxwell will apply to all metrics | MaxwellMetrics
 metrics_type         | [slf4j &#124; jmx &#124; http &#124; datadog]      | how maxwell metrics will be reported, at least one of slf4j &#124; jmx &#124; http &#124; datadog|

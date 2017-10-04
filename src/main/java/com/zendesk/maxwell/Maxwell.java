@@ -26,8 +26,12 @@ public class Maxwell implements Runnable {
 	static final Logger LOGGER = LoggerFactory.getLogger(Maxwell.class);
 
 	public Maxwell(MaxwellConfig config) throws SQLException {
-		this.config = config;
-		this.context = new MaxwellContext(this.config);
+		this(new MaxwellContext(config));
+	}
+
+	protected Maxwell(MaxwellContext context) throws SQLException {
+		this.config = context.getConfig();
+		this.context = context;
 		this.context.probeConnections();
 	}
 
@@ -129,12 +133,15 @@ public class Maxwell implements Runnable {
 	}
 
 	protected void onReplicatorStart() {}
+	protected void onReplicatorEnd() {}
+
 	private void start() throws Exception {
 		try {
 			startInner();
 		} catch ( Exception e) {
 			this.context.terminate(e);
 		} finally {
+			onReplicatorEnd();
 			this.terminate();
 		}
 

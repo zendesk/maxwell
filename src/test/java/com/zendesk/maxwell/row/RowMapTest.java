@@ -176,7 +176,7 @@ public class RowMapTest {
 	}
 
 	@Test
-	public void testToJSONWithRawJSONData() throws IOException {
+	public void testToJSONWithRawJSONData() throws Exception {
 		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS,
 				new ArrayList<String>(), POSITION);
 
@@ -196,7 +196,7 @@ public class RowMapTest {
 	}
 
 	@Test
-	public void testToJSONWithListData() throws IOException {
+	public void testToJSONWithListData() throws Exception {
 		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS,
 				new ArrayList<String>(), POSITION);
 

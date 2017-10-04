@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.row;
 
 import com.fasterxml.jackson.core.*;
+import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.Position;
@@ -10,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -52,6 +54,11 @@ public class RowMap implements Serializable {
 				}
 			};
 
+	private static JsonGenerator resetJsonGenerator() {
+		byteArrayThreadLocal.get().reset();
+		return jsonGeneratorThreadLocal.get();
+	}
+
 	private static final ThreadLocal<JsonGenerator> jsonGeneratorThreadLocal =
 			new ThreadLocal<JsonGenerator>() {
 				@Override
@@ -65,6 +72,27 @@ public class RowMap implements Serializable {
 					}
 					g.setRootValueSeparator(null);
 					return g;
+				}
+			};
+
+	private static final ThreadLocal<DataJsonGenerator> plaintextDataGeneratorThreadLocal =
+			new ThreadLocal<DataJsonGenerator>() {
+				@Override
+				protected DataJsonGenerator initialValue() {
+					return new PlaintextJsonGenerator(jsonGeneratorThreadLocal.get());
+				}
+			};
+
+	private static final ThreadLocal<EncryptingJsonGenerator> encryptingJsonGeneratorThreadLocal =
+			new ThreadLocal<EncryptingJsonGenerator>() {
+				@Override
+				protected EncryptingJsonGenerator initialValue(){
+					try {
+						return new EncryptingJsonGenerator(jsonGeneratorThreadLocal.get(),jsonFactory);
+					} catch (IOException e) {
+						LOGGER.error("error initializing EncryptingJsonGenerator", e);
+						return null;
+					}
 				}
 			};
 
@@ -82,6 +110,7 @@ public class RowMap implements Serializable {
 		this.approximateSize = 100L; // more or less 100 bytes of overhead
 	}
 
+	//Do we want to encrypt this part?
 	public String pkToJson(KeyFormat keyFormat) throws IOException {
 		if ( keyFormat == KeyFormat.HASH )
 			return pkToJsonHash();
@@ -90,7 +119,7 @@ public class RowMap implements Serializable {
 	}
 
 	private String pkToJsonHash() throws IOException {
-		JsonGenerator g = jsonGeneratorThreadLocal.get();
+		JsonGenerator g = resetJsonGenerator();
 
 		g.writeStartObject(); // start of row {
 
@@ -115,7 +144,7 @@ public class RowMap implements Serializable {
 	}
 
 	private String pkToJsonArray() throws IOException {
-		JsonGenerator g = jsonGeneratorThreadLocal.get();
+		JsonGenerator g = resetJsonGenerator();
 
 		g.writeStartArray();
 		g.writeString(database);
@@ -180,42 +209,46 @@ public class RowMap implements Serializable {
 		}
 	}
 
-	private void writeMapToJSON(String jsonMapName, LinkedHashMap<String, Object> data, boolean includeNullField) throws IOException {
-		JsonGenerator generator = jsonGeneratorThreadLocal.get();
-		generator.writeObjectFieldStart(jsonMapName); // start of jsonMapName: {
+	private void writeMapToJSON(
+			String jsonMapName,
+			LinkedHashMap<String, Object> data,
+			JsonGenerator g,
+			boolean includeNullField
+	) throws IOException, NoSuchAlgorithmException {
+		g.writeObjectFieldStart(jsonMapName);
 
-		for ( String key: data.keySet() ) {
+		for (String key : data.keySet()) {
 			Object value = data.get(key);
 
-			if ( value == null && !includeNullField )
+			if (value == null && !includeNullField)
 				continue;
 
-			if ( value instanceof List ) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
+			if (value instanceof List) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
 				List stringList = (List) value;
 
-				generator.writeArrayFieldStart(key);
-				for ( Object s : stringList )  {
-					generator.writeObject(s);
+				g.writeArrayFieldStart(key);
+				for (Object s : stringList) {
+					g.writeObject(s);
 				}
-				generator.writeEndArray();
-			} else if ( value instanceof RawJSONString ) {
+				g.writeEndArray();
+			} else if (value instanceof RawJSONString) {
 				// JSON column type, using binlog-connector's serializers.
-				generator.writeFieldName(key);
-				generator.writeRawValue(((RawJSONString) value).json);
+				g.writeFieldName(key);
+				g.writeRawValue(((RawJSONString) value).json);
 			} else {
-				generator.writeObjectField(key, value);
+				g.writeObjectField(key, value);
 			}
 		}
 
-		generator.writeEndObject(); // end of 'jsonMapName: { }'
+		g.writeEndObject(); // end of 'jsonMapName: { }'
 	}
 
-	public String toJSON() throws IOException {
+	public String toJSON() throws Exception {
 		return toJSON(new MaxwellOutputConfig());
 	}
 
-	public String toJSON(MaxwellOutputConfig outputConfig) throws IOException {
-		JsonGenerator g = jsonGeneratorThreadLocal.get();
+	public String toJSON(MaxwellOutputConfig outputConfig) throws Exception {
+		JsonGenerator g = resetJsonGenerator();
 
 		g.writeStartObject(); // start of row {
 
@@ -235,6 +268,7 @@ public class RowMap implements Serializable {
 		BinlogPosition binlogPosition = this.nextPosition.getBinlogPosition();
 		if ( outputConfig.includesBinlogPosition )
 			g.writeStringField("position", binlogPosition.getFile() + ":" + binlogPosition.getOffset());
+
 
 		if ( outputConfig.includesGtidPosition)
 			g.writeStringField("gtid", binlogPosition.getGtid());
@@ -263,15 +297,31 @@ public class RowMap implements Serializable {
 			}
 		}
 
-		writeMapToJSON("data", this.data, outputConfig.includesNulls);
 
-		if ( !this.oldData.isEmpty() ) {
-			writeMapToJSON("old", this.oldData, true);
+		EncryptionContext encryptionContext = null;
+		if (outputConfig.encryptionEnabled()) {
+			encryptionContext = EncryptionContext.create(outputConfig.secretKey);
 		}
+
+		DataJsonGenerator dataWriter = outputConfig.encryptionMode == EncryptionMode.ENCRYPT_DATA
+			? encryptingJsonGeneratorThreadLocal.get()
+			: plaintextDataGeneratorThreadLocal.get();
+
+		JsonGenerator dataGenerator = dataWriter.begin();
+		writeMapToJSON("data", this.data, dataGenerator, outputConfig.includesNulls);
+		if( !this.oldData.isEmpty() ){
+			writeMapToJSON("old", this.oldData, dataGenerator, outputConfig.includesNulls);
+		}
+		dataWriter.end(encryptionContext);
 
 		g.writeEndObject(); // end of row
 		g.flush();
 
+		if(outputConfig.encryptionMode == EncryptionMode.ENCRYPT_ALL){
+			String plaintext = jsonFromStream();
+			encryptingJsonGeneratorThreadLocal.get().writeEncryptedObject(plaintext, encryptionContext);
+			g.flush();
+		}
 		return jsonFromStream();
 	}
 

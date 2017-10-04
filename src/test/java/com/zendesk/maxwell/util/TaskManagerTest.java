@@ -3,13 +3,11 @@ package com.zendesk.maxwell.util;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.junit.Test;
 
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
-import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -78,7 +76,7 @@ public class TaskManagerTest {
 	}
 
 	@Test
-	public void raisesOnAwaitTimeout() throws InterruptedException {
+	public void raisesOnAwaitTimeout() throws Exception {
 		List<Event> log = new ArrayList<>();
 		StoppableTask task1 = new UnstoppableTask();
 

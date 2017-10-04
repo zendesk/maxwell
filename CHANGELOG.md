@@ -1,5 +1,13 @@
 # Maxwell changelog
 
+### [v1.10.6](https://github.com/zendesk/maxwell/releases/tag/v1.10.6): "a new starter is here"
+
+
+ - Binlog-connector upgrade
+ - Bug-fix: when using literal string for an option that accepts Regex, Regex characters are no longer special
+ - If master recovery is enabled, Maxwell cleans up old positions for the same server and client id
+
+
 ### [v1.10.5](https://github.com/zendesk/maxwell/releases/tag/v1.10.5): "half asleep on her couch"
 
 

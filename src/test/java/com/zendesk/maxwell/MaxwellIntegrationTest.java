@@ -1,21 +1,76 @@
 package com.zendesk.maxwell;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
-import static org.junit.Assume.assumeTrue;
-
+import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.row.RowMap;
+import com.zendesk.maxwell.schema.SchemaStoreSchema;
 import org.apache.commons.lang3.ArrayUtils;
+import org.junit.Test;
 
 import java.sql.ResultSet;
 import java.util.List;
-import java.util.regex.*;
+import java.util.Map;
+import java.util.regex.Pattern;
 
-import com.zendesk.maxwell.schema.SchemaStoreSchema;
-import org.junit.Test;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
+
 
 public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
+	@Test
+	public void testEncryptedData() throws Exception{
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
+		outputConfig.encryptionMode = EncryptionMode.ENCRYPT_DATA;
+		outputConfig.secretKey = "aaaaaaaaaaaaaaaa";
+		List<RowMap> list;
+		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
+		list = getRowsForSQL(input);
+		String json = list.get(0).toJSON(outputConfig);
+
+		Map<String,Object> output = MaxwellTestJSON.parseJSON(json);
+		Map<String, Object> decrypted = MaxwellTestJSON.parseEncryptedJSON(output, outputConfig.secretKey);
+
+		assertTrue(output.get("database").equals("shard_1"));
+		assertTrue(output.get("table").equals("minimal"));
+		assertTrue(Pattern.matches("\\d+", output.get("xid").toString()));
+		assertTrue(output.get("type").equals("insert"));
+		assertTrue(Pattern.matches("\\d+",output.get("ts").toString()));
+		assertTrue(output.get("commit").equals(true));
+		assertTrue(((Map) decrypted.get("data")).get("account_id").equals(1));
+		assertTrue(((Map) decrypted.get("data")).get("text_field").equals("hello"));
+	}
+
+	@Test
+	public void testEncryptedAll() throws Exception{
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
+		outputConfig.encryptionMode = EncryptionMode.ENCRYPT_ALL;
+		outputConfig.secretKey = "aaaaaaaaaaaaaaaa";
+		List<RowMap> list;
+		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
+		list = getRowsForSQL(input);
+		String json = list.get(0).toJSON(outputConfig);
+
+		Map<String,Object> output = MaxwellTestJSON.parseJSON(json);
+		Map<String, Object> decrypted = MaxwellTestJSON.parseEncryptedJSON(output, outputConfig.secretKey);
+
+		assertArrayEquals(output.keySet().toArray(), new String[]{ "encrypted" });
+
+		assertTrue(decrypted.get("database").equals("shard_1"));
+		assertTrue(decrypted.get("table").equals("minimal"));
+		assertTrue(Pattern.matches("\\d+", decrypted.get("xid").toString()));
+		assertTrue(decrypted.get("type").equals("insert"));
+		assertTrue(Pattern.matches("\\d+",decrypted.get("ts").toString()));
+		assertTrue(decrypted.get("commit").equals(true));
+		assertTrue(((Map) decrypted.get("data")).get("account_id").equals(1));
+		assertTrue(((Map) decrypted.get("data")).get("text_field").equals("hello"));
+	}
 	@Test
 	public void testGetEvent() throws Exception {
 		List<RowMap> list;

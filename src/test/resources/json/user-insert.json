@@ -1,1 +1,1 @@
-{"database":"MyDatabase","table":"User","type":"insert","ts":1486439516,"xid":5694,"commit":true,"data":{"UserID":20,"FirstName":"Fiz","MiddleName":null,"LastName":"Buz","Version":1486703131000}}
+{"database":"MyDatabase","table":"User","type":"insert","ts":1486439516,"xid":5694,"commit":true,"data":{"UserID":20,"FirstName":"Fiz","MiddleName":null,"LastName":"Buz","DoubleField":4500000001.512456777,"Version":1486703131000}}

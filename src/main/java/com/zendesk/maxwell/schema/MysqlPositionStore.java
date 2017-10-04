@@ -255,7 +255,7 @@ public class MysqlPositionStore {
 		List<RecoveryInfo> allRecoveryInfos = getAllRecoveryInfos();
 		if (allRecoveryInfos.size() > 1) {
 			LOGGER.warn("Multiple recovery infos found: " + allRecoveryInfos);
-			LOGGER.warn("Cleaning up the old recovery infos");
+			LOGGER.info("Removing entries where server_id != " + serverID);
 			try (Connection c = connectionPool.getConnection()) {
 				PreparedStatement s = c.prepareStatement(
 					"DELETE FROM `positions` WHERE server_id <> ? AND client_id = ?"
