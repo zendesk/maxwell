@@ -40,6 +40,8 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 	private boolean hitEOF = false;
 	private Histogram transactionRowCount;
 	private Histogram transactionExecutionTime;
+	private MaxwellMysqlConfig mysqlConfig;
+	private long timeoutBinaryLogClient;
 
 	public BinlogConnectorReplicator(
 		SchemaStore schemaStore,
@@ -56,6 +58,7 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 	) {
 		super(clientID, bootstrapper, maxwellSchemaDatabaseName, producer, metrics, start, heartbeatNotifier);
 		this.schemaStore = schemaStore;
+		this.mysqlConfig = mysqlConfig;
 		transactionExecutionTime = metrics.getRegistry().histogram(metrics.metricName("transaction", "execution_time"));
 		transactionRowCount = metrics.getRegistry().histogram(metrics.metricName("transaction", "row_count"));
 
@@ -98,6 +101,8 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 			ctx.getConfig().clientID,
 			ctx.getHeartbeatNotifier()
 		);
+		
+		this.timeoutBinaryLogClient = ctx.getConfig().timeoutBinaryLogClient;
 	}
 
 	private void ensureReplicatorThread() throws Exception {
@@ -106,12 +111,12 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 			String binlogPos = client.getBinlogFilename() + ":" + client.getBinlogPosition();
 			String position = gtidStr == null ? binlogPos : gtidStr;
 			LOGGER.warn("replicator stopped at position: " + position + " -- restarting");
-			client.connect(5000);
+			client.connect(this.timeoutBinaryLogClient);
 		}
 	}
 
 	public void startReplicator() throws Exception {
-		this.client.connect(5000);
+		this.client.connect(this.timeoutBinaryLogClient);
 	}
 
 	@Override

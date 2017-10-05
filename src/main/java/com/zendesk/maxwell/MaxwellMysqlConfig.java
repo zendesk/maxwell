@@ -16,7 +16,7 @@ public class MaxwellMysqlConfig {
 	public String user;
 	public String password;
 	public ArrayList<String> jdbcOptions = new ArrayList<String>();
-	public Integer connectTimeoutMS = 5000;
+	public Integer connectTimeoutMS = 50000;
 
 	public MaxwellMysqlConfig() {
 		this.host = null;
