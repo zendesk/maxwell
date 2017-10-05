@@ -4,6 +4,9 @@ log_level=info
 producer=kafka
 kafka.bootstrap.servers=localhost:9092
 
+Set Timeout for connect to binary client, default is 5000ms
+#timeout_binary_log_client=50000
+
 # mysql login info
 host=localhost
 user=maxwell
