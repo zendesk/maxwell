@@ -37,7 +37,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public String databaseName;
 	
-	public long timeoutBinaryLogClient;
+	public long replicationConnectionTimeout; 
 	
 	public String includeDatabases, excludeDatabases, includeTables, excludeTables, excludeColumns, blacklistDatabases, blacklistTables;
 
@@ -132,7 +132,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "jdbc_options", "additional jdbc connection options" ).withRequiredArg();
 		parser.accepts( "binlog_connector", "[deprecated]" ).withRequiredArg();
 		
-		parser.accepts( "timeout_binary_log_client", "Timeout to connect client for mysql binary log" ).withRequiredArg();
+		parser.accepts( "replication_connection_timeout", "Timeout is used to connect to MySQL server to establish replication stream" ).withRequiredArg();
 
 		parser.accepts("__separator_2");
 
@@ -293,7 +293,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.databaseName       = fetchOption("schema_database", options, properties, "maxwell");
 		this.maxwellMysql.database = this.databaseName;
 			
-		this.timeoutBinaryLogClient = fetchLongOption("timeout_binary_log_client", options, properties, 50000L);
+		this.replicationConnectionTimeout = fetchLongOption("replication_connection_timeout", options, properties, 50000L);
 		
 		this.producerType       = fetchOption("producer", options, properties, "stdout");
 		this.producerAckTimeout = fetchLongOption("producer_ack_timeout", options, properties, 0L);
