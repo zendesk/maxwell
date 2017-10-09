@@ -10,6 +10,8 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Meter;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.producer.partitioners.MaxwellKinesisPartitioner;
 import com.zendesk.maxwell.replication.BinlogPosition;
@@ -33,12 +35,22 @@ class KinesisCallback implements FutureCallback<UserRecordResult> {
 	private final String json;
 	private MaxwellContext context;
 	private final String key;
+	private Counter succeededMessageCount;
+	private Counter failedMessageCount;
+	private Meter succeededMessageMeter;
+	private Meter failedMessageMeter;
 
-	public KinesisCallback(AbstractAsyncProducer.CallbackCompleter cc, Position position, String key, String json, MaxwellContext context) {
+	public KinesisCallback(AbstractAsyncProducer.CallbackCompleter cc, Position position, String key, String json,
+						   Counter producedMessageCount, Counter failedMessageCount, Meter producedMessageMeter,
+						   Meter failedMessageMeter, MaxwellContext context) {
 		this.cc = cc;
 		this.position = position;
 		this.key = key;
 		this.json = json;
+		this.succeededMessageCount = producedMessageCount;
+		this.failedMessageCount = failedMessageCount;
+		this.succeededMessageMeter = producedMessageMeter;
+		this.failedMessageMeter = failedMessageMeter;
 		this.context = context;
 	}
 
@@ -46,6 +58,8 @@ class KinesisCallback implements FutureCallback<UserRecordResult> {
 	public void onFailure(Throwable t) {
 		logger.error(t.getClass().getSimpleName() + " @ " + position + " -- " + key);
 		logger.error(t.getLocalizedMessage());
+		this.failedMessageCount.inc();
+		this.failedMessageMeter.mark();
 
 		if(t instanceof UserRecordFailedException) {
 			Attempt last = Iterables.getLast(((UserRecordFailedException) t).getResult().getAttempts());
@@ -63,6 +77,8 @@ class KinesisCallback implements FutureCallback<UserRecordResult> {
 
 	@Override
 	public void onSuccess(UserRecordResult result) {
+		this.succeededMessageCount.inc();
+		this.succeededMessageMeter.mark();
 		if(logger.isDebugEnabled()) {
 			logger.debug("->  key:" + key + ", shard id:" + result.getShardId() + ", sequence number:" + result.getSequenceNumber());
 			logger.debug("   " + json);
@@ -113,7 +129,8 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 			value = null;
 		}
 
-		FutureCallback<UserRecordResult> callback = new KinesisCallback(cc, r.getPosition(), key, value, this.context);
+		FutureCallback<UserRecordResult> callback = new KinesisCallback(cc, r.getPosition(), key, value,
+				this.succeededMessageCount, this.failedMessageCount, this.succeededMessageMeter, this.failedMessageMeter, this.context);
 
 		Futures.addCallback(future, callback);
 	}

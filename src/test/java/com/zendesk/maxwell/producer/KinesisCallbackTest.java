@@ -1,5 +1,7 @@
 package com.zendesk.maxwell.producer;
 
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Meter;
 import com.amazonaws.services.kinesis.producer.IrrecoverableError;
 import com.zendesk.maxwell.MaxwellConfig;
 import com.zendesk.maxwell.MaxwellContext;
@@ -19,7 +21,7 @@ public class KinesisCallbackTest {
 		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
 		KinesisCallback callback = new KinesisCallback(cc,
 			new Position(new BinlogPosition(1, "binlog-1"), 0L), "key", "value",
-			context);
+				new Counter(), new Counter(), new Meter(), new Meter(), context);
 		IrrecoverableError error = new IrrecoverableError("blah");
 		callback.onFailure(error);
 		verify(cc).markCompleted();
@@ -34,7 +36,7 @@ public class KinesisCallbackTest {
 		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
 		KinesisCallback callback = new KinesisCallback(cc,
 			new Position(new BinlogPosition(1, "binlog-1"), 0L), "key", "value",
-			context);
+				new Counter(), new Counter(), new Meter(), new Meter(), context);
 		IrrecoverableError error = new IrrecoverableError("blah");
 		callback.onFailure(error);
 		verify(context).terminate(any(RuntimeException.class));
