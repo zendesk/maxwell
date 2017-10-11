@@ -142,4 +142,47 @@ public class SchemaCaptureTest extends MaxwellTestWithIsolatedServer {
 		assertThat(columns[1].getName(), is("decimal_separator"));
 		assertArrayEquals(((EnumColumnDef) columns[1]).getEnumValues(), new String[] {",", "."});
 	}
+	
+	@Test
+	public void testExtractEnumValues() throws Exception {
+		String expandedType = "enum('a')";
+		String[] result = SchemaCapturer.extractEnumValues(expandedType);
+		assertEquals(1, result.length);
+		assertEquals("a", result[0]);
+
+		expandedType = "enum('a','b','c','d')";
+		result = SchemaCapturer.extractEnumValues(expandedType);
+		assertEquals(4, result.length);
+		assertEquals("a", result[0]);
+		assertEquals("b", result[1]);
+		assertEquals("c", result[2]);
+		assertEquals("d", result[3]);
+
+		expandedType = "enum('','b','c','d')";
+		result = SchemaCapturer.extractEnumValues(expandedType);
+		assertEquals(4, result.length);
+		assertEquals("", result[0]);
+		assertEquals("b", result[1]);
+		assertEquals("c", result[2]);
+		assertEquals("d", result[3]);
+		
+		expandedType = "enum('a','b\'b','c')";
+		result = SchemaCapturer.extractEnumValues(expandedType);
+		assertEquals(3, result.length);
+		assertEquals("a", result[0]);
+		assertEquals("b'b", result[1]);
+		assertEquals("c", result[2]);
+		
+		expandedType = "enum('','.',',','\\','\\'','\\,',','','b')";
+		result = SchemaCapturer.extractEnumValues(expandedType);
+		assertEquals(8, result.length);
+		assertEquals("", result[0]);
+		assertEquals(".", result[1]);
+		assertEquals(",", result[2]);
+		assertEquals("\\", result[3]);
+		assertEquals("\\'", result[4]);
+		assertEquals("\\,", result[5]);
+		assertEquals(",'", result[6]);
+		assertEquals("b", result[7]);
+	}
 }
