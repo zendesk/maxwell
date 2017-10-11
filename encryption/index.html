@@ -9,7 +9,7 @@
         
         <link rel="shortcut icon" href="../img/robut.ico">
 
-        <title>Quick Start - Maxwell's Daemon</title>
+        <title>Encryption - Maxwell's Daemon</title>
 
         <link href="../css/bootstrap.min.css" rel="stylesheet">
         <link href="../css/bootstrap-theme.min.css" rel="stylesheet">
@@ -56,8 +56,8 @@
             
             
             
-                <li class="active">
-                    <a href="./">Quick Start</a>
+                <li >
+                    <a href="../quickstart/">Quick Start</a>
                 </li>
             
             
@@ -80,8 +80,8 @@
             
             
             
-                <li >
-                    <a href="../encryption/">Encryption</a>
+                <li class="active">
+                    <a href="./">Encryption</a>
                 </li>
             
             
@@ -126,12 +126,12 @@
             <!-- Search, Navigation and Repo links -->
             <ul class="nav navbar-nav navbar-right">
                 <li >
-                    <a rel="next" href="..">
+                    <a rel="next" href="../dataformat/">
                         <i class="fa fa-arrow-left"></i> Previous
                     </a>
                 </li>
                 <li >
-                    <a rel="prev" href="../config/">
+                    <a rel="prev" href="../bootstrapping/">
                         Next <i class="fa fa-arrow-right"></i>
                     </a>
                 </li>
@@ -152,33 +152,8 @@
               
           </li>
         
-          <li class="active">
-              <a href="./">Quick Start</a>
-              
-                  <ul class="nav">
-                  
-                      <li class="toctree-l3"><a href="#download">Download</a></li>
-                      
-                  
-                      <li class="toctree-l3"><a href="#row-based-replication">Row based replication</a></li>
-                      
-                  
-                      <li class="toctree-l3"><a href="#mysql-permissions">Mysql permissions</a></li>
-                      
-                  
-                      <li class="toctree-l3"><a href="#stdout-producer">STDOUT producer</a></li>
-                      
-                  
-                      <li class="toctree-l3"><a href="#docker">Docker</a></li>
-                      
-                  
-                      <li class="toctree-l3"><a href="#kafka-producer">Kafka producer</a></li>
-                      
-                  
-                      <li class="toctree-l3"><a href="#kinesis-producer-docker">Kinesis Producer, docker</a></li>
-                      
-                  
-                  </ul>
+          <li >
+              <a href="../quickstart/">Quick Start</a>
               
           </li>
         
@@ -197,8 +172,21 @@
               
           </li>
         
-          <li >
-              <a href="../encryption/">Encryption</a>
+          <li class="active">
+              <a href="./">Encryption</a>
+              
+                  <ul class="nav">
+                  
+                      <li class="toctree-l3"><a href="#using-encryption">Using encryption</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#decryption">Decryption</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#examples">Examples</a></li>
+                      
+                  
+                  </ul>
               
           </li>
         
@@ -236,98 +224,26 @@
 </div></div>
             <div class="col-md-10" role="main">
 
-<h3 id="download">Download</h3>
+<h3 id="using-encryption">Using encryption</h3>
 <hr />
-<ul>
-<li>Download binary distro: <a href="https://github.com/zendesk/maxwell/releases/download/v1.10.7/maxwell-1.10.7.tar.gz">https://github.com/zendesk/maxwell/releases/download/v1.10.7/maxwell-1.10.7.tar.gz</a></li>
-<li>Sources and bug tracking is available on github: <a href="https://github.com/zendesk/maxwell">https://github.com/zendesk/maxwell</a></li>
-<li>Obligatory copy/paste to terminal:</li>
-</ul>
-<pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.10.7/maxwell-1.10.7.tar.gz \
-       | tar zxvf -
-cd maxwell-1.10.7
-</code></pre>
-
-<p>or get the docker image:</p>
-<pre><code>docker pull zendesk/maxwell
-</code></pre>
-
-<h3 id="row-based-replication">Row based replication</h3>
+<p>When encryption is enabled, maxwell will encrypt messages using your own encryption and secret keys using a AES/CBC/PKCS5PADDING cipher.
+Values are first encrypted and then base64 encoded, an initialization vector is randomly generated and put into the final message</p>
+<h3 id="decryption">Decryption</h3>
 <hr />
-<p>Maxwell can only operate if row-based replication is on.</p>
-<pre><code>$ vi my.cnf
-
-[mysqld]
-server-id=1
-log-bin=master
-binlog_format=row
-</code></pre>
-
-<p>Or on a running server:</p>
-<pre><code>mysql&gt; set global binlog_row_image=FULL;
-</code></pre>
-
-<p><em>note</em>: When changing the binlog format on a running server, currently connected mysql clients will generate binlog entries in STATEMENT format, leading
-to odd results.  In order to change to row-based replication in runtime, you must reconnect all active clients to the server.</p>
-<h3 id="mysql-permissions">Mysql permissions</h3>
+<p>To decrypt your data you must first decode the string from base64 and then apply the cipher to decrypt. A sample implementation is provided in RowEncrypt.decrypt().</p>
+<h3 id="examples">Examples</h3>
 <hr />
-<p>Maxwell stores all the state it needs within the mysql server itself, in the database called specified by the <em>schema_database</em> option. By default the database is named <code>maxwell</code>.</p>
-<pre><code>mysql&gt; GRANT ALL on maxwell.* to 'maxwell'@'%' identified by 'XXXXXX';
-mysql&gt; GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE on *.* to 'maxwell'@'%';
-
-# or for running maxwell locally:
-
-mysql&gt; GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE on *.* to 'maxwell'@'localhost' identified by 'XXXXXX';
-mysql&gt; GRANT ALL on maxwell.* to 'maxwell'@'localhost';
-
+<p>insert into minimal set account_id =1, text_field='hello'</p>
+<p>Unencrypted:</p>
+<pre><code>{&quot;database&quot;:&quot;shard_1&quot;,&quot;table&quot;:&quot;minimal&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;ts&quot;:1490115785,&quot;xid&quot;:153,&quot;commit&quot;:true,&quot;data&quot;:{&quot;id&quot;:1,&quot;account_id&quot;:1,&quot;text_field&quot;:&quot;hello&quot;}}
 </code></pre>
 
-<h3 id="stdout-producer">STDOUT producer</h3>
-<hr />
-<p>Useful for smoke-testing the thing.</p>
-<pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' --producer=stdout
+<p><code>encrypt=data</code>:</p>
+<pre><code>{&quot;database&quot;:&quot;shard_1&quot;,&quot;table&quot;:&quot;minimal&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;ts&quot;:1504585129,&quot;xid&quot;:161,&quot;commit&quot;:true,&quot;encrypted&quot;:{&quot;iv&quot;:&quot;lqiXoTdz6jed3XgJPpa7EQ==&quot;,&quot;bytes&quot;:&quot;1soc4leskiIm6yuT2D49VA3AYVKCvN+0wh+8d1iwSZETK7N2pG4HDbqnVpJUUCOaKjpcPlP7Sc7Z3SPhGD5JeA==&quot;}}
 </code></pre>
 
-<p>If all goes well you'll see maxwell replaying your inserts:</p>
-<pre><code>mysql&gt; insert into test.maxwell set id = 5, daemon = 'firebus!  firebus!';
-Query OK, 1 row affected (0.04 sec)
-
-(maxwell)
-{&quot;table&quot;:&quot;maxwell&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;data&quot;:{&quot;id&quot;:5,&quot;daemon&quot;:&quot;firebus!  firebus!&quot;},&quot;ts&quot;: 123456789}
-</code></pre>
-
-<h3 id="docker">Docker</h3>
-<pre><code>docker run -it --rm zendesk/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=stdout
-</code></pre>
-
-<p>If you're using a virtualbox-docker setup on OSX, you'll need to ensure that:</p>
-<ul>
-<li>You pass the proper docker IP address as <code>$MYSQL_HOST</code>.</li>
-<li>You will want to use the non-localhost way of granting permissions to
-  maxwell's mysql user.</li>
-<li>If you are specifying any files either for <code>config</code> location or for output of
-  <code>file</code> producer then make sure you are explicitly sharing volumes/files
-  present on the host. E.g. the above docker command then becomes,</li>
-</ul>
-<pre><code>docker run -v /Users:/Users -it --rm zendesk/maxwell bin/maxwell --config=/Users/demo/maxwell/config/basic.properties
-</code></pre>
-
-<p>(make a note of the <code>-v</code> option).</p>
-<h3 id="kafka-producer">Kafka producer</h3>
-<hr />
-<p>Boot kafka as described here:  <a href="http://kafka.apache.org/documentation.html#quickstart">http://kafka.apache.org/documentation.html#quickstart</a>, then:</p>
-<pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
-   --producer=kafka --kafka.bootstrap.servers=localhost:9092
-</code></pre>
-
-<p>(or docker):</p>
-<pre><code>docker run -it --rm zendesk/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kafka --kafka.bootstrap.servers=$KAFKA_HOST:$KAFKA_PORT
-</code></pre>
-
-<p>This will start writing to the topic "maxwell".</p>
-<h3 id="kinesis-producer-docker">Kinesis Producer, docker</h3>
-<hr />
-<pre><code>docker run -it --rm --name maxwell -v `cd &amp;&amp; pwd`/.aws:/root/.aws zendesk/maxwell sh -c 'cp /app/kinesis-producer-library.properties.example /app/kinesis-producer-library.properties &amp;&amp; echo &quot;Region=$AWS_DEFAULT_REGION&quot; &gt;&gt; /app/kinesis-producer-library.properties &amp;&amp; bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kinesis --kinesis_stream=$KINESIS_STREAM'
+<p><code>encrypt=all</code>:</p>
+<pre><code>{&quot;encrypted&quot;:{&quot;bytes&quot;:&quot;iZssjWfzS0NlqIj82ddpvoQeKSx4D3GIPSCgjdkpgQlCWzN2p3VVZOn3Oj1x4w+a6dVhoFmllWxBK6aAkdVK9t6Vt1+um6lWwSeXNQIL/RbknW5Q8I9emm5bC1Dd1LftBuX/1Uw0wjbsq8Qt3HErvmmiIMe2S27EIWshvBnmw9MibryjLD0brvIbFFxwDuSQuVA4OFyV9TN32N/ZXiBwIA==&quot;,&quot;iv&quot;:&quot;XXs6AePsXJWAAIrKyLlR0g==&quot;}}
 </code></pre></div>
         </div>
 

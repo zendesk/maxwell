@@ -81,6 +81,12 @@
             
             
                 <li >
+                    <a href="../encryption/">Encryption</a>
+                </li>
+            
+            
+            
+                <li >
                     <a href="../bootstrapping/">Bootstrapping</a>
                 </li>
             
@@ -94,6 +100,12 @@
             
                 <li >
                     <a href="../embedding/">Embedding</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../schemas/">Schemas</a>
                 </li>
             
             
@@ -186,6 +198,11 @@
           </li>
         
           <li >
+              <a href="../encryption/">Encryption</a>
+              
+          </li>
+        
+          <li >
               <a href="../bootstrapping/">Bootstrapping</a>
               
           </li>
@@ -197,6 +214,11 @@
         
           <li >
               <a href="../embedding/">Embedding</a>
+              
+          </li>
+        
+          <li >
+              <a href="../schemas/">Schemas</a>
               
           </li>
         
@@ -296,16 +318,34 @@ SchemaException: Error reading field 'throttle_time_ms': java.nio.BufferUnderflo
 <hr />
 <h3 id="kinesis-aws-credentials">Kinesis AWS credentials</h3>
 <hr />
-<p>You will need to obtain an IAM user that has the permission "kinesis:PutRecord" for the stream you are planning on producing to.
-See the <a href="http://docs.aws.amazon.com/streams/latest/dev/controlling-access.html#kinesis-using-iam-examples">AWS docs</a> for the latest examples on which permissions are needed.</p>
+<p>You will need to obtain an IAM user that has the following permissions for the stream you are planning on producing to:</p>
+<ul>
+<li>"kinesis:PutRecord"</li>
+<li>"kinesis:PutRecords"</li>
+<li>"kinesis:DescribeStream"</li>
+<li>"cloudwatch:PutMetricData"</li>
+</ul>
+<p>See the <a href="http://docs.aws.amazon.com/streams/latest/dev/controlling-access.html#kinesis-using-iam-examples">AWS docs</a> for the latest examples on which permissions are needed.</p>
 <p>The producer uses the <a href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html">DefaultAWSCredentialsProviderChain</a> class to gain aws credentials.
 See the <a href="http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html">AWS docs</a> on how to setup the IAM user with the Default Credential Provider Chain.</p>
 <h3 id="kinesis-options">Kinesis Options</h3>
 <hr />
 <p>Set the output stream in <code>config.properties</code> by setting the <code>kinesis_stream</code> property.</p>
-<p>The producer uses the <a href="http://docs.aws.amazon.com/streams/latest/dev/developing-producers-with-kpl.html">KPL (Kinesis Producer Library</a> and uses the KPL built in configurations.
-Copy <code>kinesis-producer-library.properties.example</code> to <code>kinesis-producer-library.properties</code> and configure the properties file to your needs.
-The most important option here is configuring the region.</p></div>
+<p>The producer uses the <a href="http://docs.aws.amazon.com/streams/latest/dev/developing-producers-with-kpl.html">KPL (Kinesis Producer Library)</a> and uses the KPL built in configurations.
+Copy <code>kinesis-producer-library.properties.example</code> to <code>kinesis-producer-library.properties</code> and configure the properties file to your needs.</p>
+<p>You are <strong>required</strong> to configure the region. For example:</p>
+<pre><code># set explicitly
+Region=us-west-2
+# or set with an environment variable
+Region=$AWS_DEFAULT_REGION
+</code></pre>
+
+<p>By default, the KPL implements <a href="http://docs.aws.amazon.com/streams/latest/dev/kinesis-kpl-concepts.html#w2ab1c12b7b7c19c11">record aggregation</a>, which usually increases producer throughput by allowing you to increase the number of records sent per API call. However, aggregated records are encoded differently (using Google Protocol Buffers) than records that are not aggregated. Therefore, if you are not using the <a href="http://docs.aws.amazon.com/streams/latest/dev/developing-consumers-with-kcl.html">KCL (Kinesis Client Library)</a> to consume records (for example, you are using AWS Lambda) you will need to either disaggregate the records in your consumer (for example, by using the <a href="https://github.com/awslabs/kinesis-aggregation">AWS Kinesis Aggregation library</a>), or disable record aggregation in your <code>kinesis-producer-library.properties</code> configuration.</p>
+<p>To disable aggregation, add the following to your configuration:</p>
+<pre><code>AggregationEnabled=false
+</code></pre>
+
+<p>Remember: if you disable record aggregation, you will lose the benefit of potentially greater producer throughput.</p></div>
         </div>
 
         

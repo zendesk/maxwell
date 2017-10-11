@@ -81,6 +81,12 @@
             
             
                 <li >
+                    <a href="../encryption/">Encryption</a>
+                </li>
+            
+            
+            
+                <li >
                     <a href="../bootstrapping/">Bootstrapping</a>
                 </li>
             
@@ -94,6 +100,12 @@
             
                 <li >
                     <a href="../embedding/">Embedding</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../schemas/">Schemas</a>
                 </li>
             
             
@@ -192,6 +204,11 @@
           </li>
         
           <li >
+              <a href="../encryption/">Encryption</a>
+              
+          </li>
+        
+          <li >
               <a href="../bootstrapping/">Bootstrapping</a>
               
           </li>
@@ -203,6 +220,11 @@
         
           <li >
               <a href="../embedding/">Embedding</a>
+              
+          </li>
+        
+          <li >
+              <a href="../schemas/">Schemas</a>
               
           </li>
         
@@ -676,6 +698,24 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 <td></td>
 <td></td>
 <td></td>
+</tr>
+<tr>
+<td><strong>encryption</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>encrypt</td>
+<td>[ none &#124; data &#124; all ]</td>
+<td>encrypt mode: none = no encryption. "data": encrypt the <code>data</code> field only. <code>all</code>: encrypt entire maxwell message</td>
+<td>none</td>
+</tr>
+<tr>
+<td>secret_key</td>
+<td>STRING</td>
+<td>specify the encryption key to be used</td>
+<td>null</td>
 </tr>
 <tr>
 <td><strong>monitoring</strong></td>
