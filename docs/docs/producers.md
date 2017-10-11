@@ -154,3 +154,19 @@ Set the output stream in `config.properties` by setting the `pubsub_project_id` 
 for DDL updates by setting the `ddl_pubsub_topic` property.
 
 The producer uses the [Google Cloud Java Library for Pub/Sub](https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-pubsub) and uses its built-in configurations.
+
+### RabbitMQ Options
+***
+To produce messages to RabbitMQ, you will need to specify a host in `config.properties` with `rabbitmq_host`. This is the only required property, everything else falls back to a sane default.
+
+The remaining configurable properties are:
+- `rabbitmq_user` - defaults to **guest**
+- `rabbitmq_pass` - defaults to **guest**
+- `rabbitmq_virtual_host` - defaults to **/**
+- `rabbitmq_exchange` - defaults to **maxwell**
+- `rabbitmq_exchange_type` - defaults to **fanout**
+- `rabbitmq_exchange_durable` - defaults to **false**
+- `rabbitmq_routing_key_template` - defaults to **%db%.%table%**
+    - This config controls the routing key, where `%db%` and `%table%` are placeholders that will be substituted at runtime
+
+For more details on these options, you are encouraged to the read official RabbitMQ documentation here: https://www.rabbitmq.com/documentation.html

@@ -128,3 +128,10 @@ bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
 ```
 docker run -it --rm zendesk/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=pubsub --pubsub_project_id='$PUBSUB_PROJECT_ID' --pubsub_topic='maxwell'
 ```
+
+### RabbitMQ Producer
+
+```
+bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
+    --producer=rabbitmq --rabbitmq_host='rabbitmq.hostname'
+```

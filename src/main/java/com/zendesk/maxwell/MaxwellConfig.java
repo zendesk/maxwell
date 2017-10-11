@@ -218,14 +218,14 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_8" );
 
-		parser.accepts("rabbitmq_user", "Username of Rabbitmq connection. Default is guest").withRequiredArg();
-		parser.accepts("rabbitmq_pass", "Password of Rabbitmq connection. Default is guest").withRequiredArg();
-		parser.accepts("rabbitmq_host", "Host of Rabbitmq machine").withRequiredArg();
-		parser.accepts("rabbitmq_virtual_host", "Virtual Host of Rabbitmq").withRequiredArg();
-		parser.accepts("rabbitmq_exchange", "Name of exchange for rabbitmq publisher").withRequiredArg();
-		parser.accepts("rabbitmq_exchange_type", "Exchange type for rabbitmq").withRequiredArg();
-		parser.accepts( "rabbitmq_exchange_durable", "Exchange durability. Default is disabled").withOptionalArg();
-		parser.accepts("rabbitmq_routing_key_template", "A string template for the routing key, '%db%' and '%table%' will be substituted. Default is '%db%.%table%'.").withRequiredArg();
+		parser.accepts( "rabbitmq_user", "Username of Rabbitmq connection. Default is guest" ).withRequiredArg();
+		parser.accepts( "rabbitmq_pass", "Password of Rabbitmq connection. Default is guest" ).withRequiredArg();
+		parser.accepts( "rabbitmq_host", "Host of Rabbitmq machine" ).withRequiredArg();
+		parser.accepts( "rabbitmq_virtual_host", "Virtual Host of Rabbitmq" ).withRequiredArg();
+		parser.accepts( "rabbitmq_exchange", "Name of exchange for rabbitmq publisher" ).withRequiredArg();
+		parser.accepts( "rabbitmq_exchange_type", "Exchange type for rabbitmq" ).withRequiredArg();
+		parser.accepts( "rabbitmq_exchange_durable", "Exchange durability. Default is disabled" ).withOptionalArg();
+		parser.accepts( "rabbitmq_routing_key_template", "A string template for the routing key, '%db%' and '%table%' will be substituted. Default is '%db%.%table%'." ).withRequiredArg();
 
 		parser.accepts( "__separator_9" );
 
