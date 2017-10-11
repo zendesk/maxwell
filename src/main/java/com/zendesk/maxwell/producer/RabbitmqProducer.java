@@ -21,9 +21,12 @@ public class RabbitmqProducer extends AbstractProducer {
 
 		ConnectionFactory factory = new ConnectionFactory();
 		factory.setHost(context.getConfig().rabbitmqHost);
+		factory.setUsername(context.getConfig().rabbitmqUser);
+		factory.setPassword(context.getConfig().rabbitmqPass);
+		factory.setVirtualHost(context.getConfig().rabbitmqVirtualHost);
 		try {
 			this.channel = factory.newConnection().createChannel();
-			this.channel.exchangeDeclare(exchangeName, context.getConfig().rabbitmqExchangeType);
+			this.channel.exchangeDeclare(exchangeName, context.getConfig().rabbitmqExchangeType, context.getConfig().rabbitMqExchangeDurable);
 		} catch (IOException | TimeoutException e) {
 			throw new RuntimeException(e);
 		}
