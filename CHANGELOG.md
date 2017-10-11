@@ -1,5 +1,14 @@
 # Maxwell changelog
 
+### [v1.10.7](https://github.com/zendesk/maxwell/releases/tag/v1.10.7): "it's never too l8!"
+
+
+- Java 8 upgrade
+- Diagnostic health check endpoint
+- Encryption
+- Documentation update: encryption, kinesis producer, schema storage fundamentals, etc.
+
+
 ### [v1.10.6](https://github.com/zendesk/maxwell/releases/tag/v1.10.6): "a new starter is here"
 
 
