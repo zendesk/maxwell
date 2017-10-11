@@ -115,3 +115,16 @@ This will start writing to the topic "maxwell".
 docker run -it --rm --name maxwell -v `cd && pwd`/.aws:/root/.aws zendesk/maxwell sh -c 'cp /app/kinesis-producer-library.properties.example /app/kinesis-producer-library.properties && echo "Region=$AWS_DEFAULT_REGION" >> /app/kinesis-producer-library.properties && bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kinesis --kinesis_stream=$KINESIS_STREAM'
 ```
 
+### Google Cloud Pub/Sub Producer
+
+```
+bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
+  --producer=pubsub --pubsub_project_id='$PUBSUB_PROJECT_ID' \
+  --pubsub_topic='maxwell'
+```
+
+(or docker):
+
+```
+docker run -it --rm zendesk/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=pubsub --pubsub_project_id='$PUBSUB_PROJECT_ID' --pubsub_topic='maxwell'
+```

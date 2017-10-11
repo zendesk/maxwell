@@ -12,7 +12,7 @@ password=maxwell
 
 ######### general stuff #############
 
-# choose where to produce data to. currently this is one of: stdout|file|kafka
+# choose where to produce data to. currently this is one of: stdout|file|kafka|pubsub
 #producer=kafka
 
 # set delivery timeout (including acknowledgement) in milliseconds for a COMMIT row message that has been sent by the producer,
@@ -145,6 +145,11 @@ kinesis_stream=maxwell
 # Values: true, false
 # Default: false
 #kinesis_md5_keys=true
+
+######### pub/sub #####################
+#pubsub_project_id=maxwell
+#pubsub_topic=maxwell
+#ddl_pubsub_topic=maxwell_ddl
 
 ######### filter stuff ###############
 

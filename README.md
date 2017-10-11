@@ -2,12 +2,12 @@
 </div>
 
 This is Maxwell's daemon, an application that reads MySQL binlogs and writes
-row updates to Kafka as JSON.  Maxwell has a low operational bar and produces a
-consistent, easy to ingest stream of updates.  It allows you to easily "bolt
-on" some of the benefits of stream processing systems without going through your
-entire code base to add (unreliable) instrumentation points.  Common use cases
-include ETL, cache building/expiring, metrics collection, search indexing and
-inter-service communication.
+row updates to Kafka, Kinesis, or Google Cloud Pub/Sub as JSON.  Maxwell has a
+low operational bar and produces a consistent, easy to ingest stream of updates.
+It allows you to easily "bolt on" some of the benefits of stream processing
+systems without going through your entire code base to add (unreliable)
+instrumentation points.  Common use cases include ETL, cache building/expiring,
+metrics collection, search indexing and inter-service communication.
 
 - Can do `SELECT * from table` (bootstrapping) initial loads of a table.
 - supports automatic position recover on master promotion

@@ -60,6 +60,10 @@ public class MaxwellConfig extends AbstractConfig {
 	public String kinesisStream;
 	public boolean kinesisMd5Keys;
 
+	public String pubsubProjectId;
+	public String pubsubTopic;
+	public String ddlPubsubTopic;
+
 	public Long producerAckTimeout;
 
 	public String outputFile;
@@ -144,7 +148,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts("__separator_3");
 
-		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis" ).withRequiredArg();
+		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|pubsub" ).withRequiredArg();
 		parser.accepts( "producer_ack_timeout", "producer message acknowledgement timeout" ).withRequiredArg();
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
 
@@ -164,6 +168,10 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "kafka_version", "use kafka 0.8, 0.9, 0.10, 0.10.1, or 0.10.2 producer (default 0.9)").withRequiredArg();
 
 		parser.accepts( "kinesis_stream", "kinesis stream name").withRequiredArg();
+
+		parser.accepts( "pubsub_project_id", "provide a google cloud platform project id associated with the pubsub topic").withRequiredArg();
+		parser.accepts( "pubsub_topic", "optionally provide a pubsub topic to push to. default: maxwell").withRequiredArg();
+		parser.accepts( "ddl_pubsub_topic", "optionally provide an alternate pubsub topic to push DDL records to. default: pubsub_topic").withRequiredArg();
 
 		parser.accepts("__separator_4");
 
@@ -303,6 +311,10 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.kafkaPartitionHash 	= fetchOption("kafka_partition_hash", options, properties, "default");
 		this.ddlKafkaTopic 		    = fetchOption("ddl_kafka_topic", options, properties, this.kafkaTopic);
+
+		this.pubsubProjectId = fetchOption("pubsub_project_id", options, properties, null);
+		this.pubsubTopic 		 = fetchOption("pubsub_topic", options, properties, "maxwell");
+		this.ddlPubsubTopic  = fetchOption("ddl_pubsub_topic", options, properties, this.pubsubTopic);
 
 		this.rabbitmqHost           = fetchOption("rabbitmq_host", options, properties, "localhost");
 		this.rabbitmqExchange       = fetchOption("rabbitmq_exchange", options, properties, "maxwell");
