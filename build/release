@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'bundler/setup'
+require 'tempfile'
 require 'octokit'
 
 REPO="zendesk/maxwell"
