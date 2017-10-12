@@ -188,6 +188,15 @@
                       <li class="toctree-l3"><a href="#kinesis-options">Kinesis Options</a></li>
                       
                   
+                      <li class="toctree-l3"><a href="#google-cloud-pubsub-options">Google Cloud Pub/Sub Options</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#google-cloud-pubsub-options_1">Google Cloud Pub/Sub Options</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#rabbitmq-options">RabbitMQ Options</a></li>
+                      
+                  
                   </ul>
               
           </li>
@@ -345,7 +354,29 @@ Region=$AWS_DEFAULT_REGION
 <pre><code>AggregationEnabled=false
 </code></pre>
 
-<p>Remember: if you disable record aggregation, you will lose the benefit of potentially greater producer throughput.</p></div>
+<p>Remember: if you disable record aggregation, you will lose the benefit of potentially greater producer throughput.</p>
+<h3 id="google-cloud-pubsub-options">Google Cloud Pub/Sub Options</h3>
+<hr />
+<p>In order to publish to Google Cloud Pub/Sub, you will need to obtain an IAM service account that has been granted the <code>roles/pubsub.publisher</code> role.</p>
+<p>See the Google Cloud Platform docs for the <a href="https://cloud.google.com/pubsub/docs/access_control">latest examples of which permissions are needed</a>, as well as <a href="https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances">how to properly configure service accounts</a>.</p>
+<h3 id="google-cloud-pubsub-options_1">Google Cloud Pub/Sub Options</h3>
+<hr />
+<p>Set the output stream in <code>config.properties</code> by setting the <code>pubsub_project_id</code> and <code>pubsub_topic</code> properties. Optionally configure a dedicated output topic
+for DDL updates by setting the <code>ddl_pubsub_topic</code> property.</p>
+<p>The producer uses the <a href="https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-pubsub">Google Cloud Java Library for Pub/Sub</a> and uses its built-in configurations.</p>
+<h3 id="rabbitmq-options">RabbitMQ Options</h3>
+<hr />
+<p>To produce messages to RabbitMQ, you will need to specify a host in <code>config.properties</code> with <code>rabbitmq_host</code>. This is the only required property, everything else falls back to a sane default.</p>
+<p>The remaining configurable properties are:
+- <code>rabbitmq_user</code> - defaults to <strong>guest</strong>
+- <code>rabbitmq_pass</code> - defaults to <strong>guest</strong>
+- <code>rabbitmq_virtual_host</code> - defaults to <strong>/</strong>
+- <code>rabbitmq_exchange</code> - defaults to <strong>maxwell</strong>
+- <code>rabbitmq_exchange_type</code> - defaults to <strong>fanout</strong>
+- <code>rabbitmq_exchange_durable</code> - defaults to <strong>false</strong>
+- <code>rabbitmq_routing_key_template</code> - defaults to <strong>%db%.%table%</strong>
+    - This config controls the routing key, where <code>%db%</code> and <code>%table%</code> are placeholders that will be substituted at runtime</p>
+<p>For more details on these options, you are encouraged to the read official RabbitMQ documentation here: https://www.rabbitmq.com/documentation.html</p></div>
         </div>
 
         
