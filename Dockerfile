@@ -1,5 +1,5 @@
 FROM java:openjdk-8
-ENV MAXWELL_VERSION=1.10.7 KAFKA_VERSION=0.10.1.0
+ENV MAXWELL_VERSION=1.10.8 KAFKA_VERSION=0.10.1.0
 
 RUN apt-get update \
     && apt-get -y upgrade \
