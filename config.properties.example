@@ -159,6 +159,7 @@ kinesis_stream=maxwell
 #rabbitmq_exchange=maxwell
 #rabbitmq_exchange_type=fanout
 #rabbitmq_exchange_durable=false
+#rabbitmq_exchange_autodelete=true
 #rabbitmq_routing_key_template=%db%.%table%
 
 ######### filter stuff ###############

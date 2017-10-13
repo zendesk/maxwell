@@ -166,6 +166,7 @@ The remaining configurable properties are:
 - `rabbitmq_exchange` - defaults to **maxwell**
 - `rabbitmq_exchange_type` - defaults to **fanout**
 - `rabbitmq_exchange_durable` - defaults to **false**
+- `rabbitmq_exchange_autodelete` - defaults to **true**
 - `rabbitmq_routing_key_template` - defaults to **%db%.%table%**
     - This config controls the routing key, where `%db%` and `%table%` are placeholders that will be substituted at runtime
 
