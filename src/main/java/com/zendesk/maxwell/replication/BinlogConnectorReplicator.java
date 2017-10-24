@@ -31,7 +31,8 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 
 	private final LinkedBlockingDeque<BinlogConnectorEvent> queue = new LinkedBlockingDeque<>(20);
 
-	protected BinlogConnectorEventListener binlogEventListener;
+	private BinlogConnectorEventListener binlogEventListener;
+	private BinlogConnectorLifecycleListener binlogLifecycleListener;
 
 	private final BinaryLogClient client;
 
@@ -76,9 +77,11 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 			EventDeserializer.CompatibilityMode.CHAR_AND_BINARY_AS_BYTE_ARRAY);
 		this.client.setEventDeserializer(eventDeserializer);
 		this.binlogEventListener = new BinlogConnectorEventListener(client, queue, metrics);
+		this.binlogLifecycleListener = new BinlogConnectorLifecycleListener();
 
 		this.client.setBlocking(!stopOnEOF);
 		this.client.registerEventListener(binlogEventListener);
+		this.client.registerLifecycleListener(binlogLifecycleListener);
 		this.client.setServerId(replicaServerID.intValue());
 
 		this.stopOnEOF = stopOnEOF;
@@ -122,6 +125,7 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 	@Override
 	protected void beforeStop() throws Exception {
 		this.binlogEventListener.stop();
+		this.binlogLifecycleListener.stop();
 		this.client.disconnect();
 	}
 
@@ -284,6 +288,7 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 					tableCache.clear();
 					if ( stopOnEOF && event.getPosition().getOffset() > 0 ) {
 						this.binlogEventListener.mustStop.set(true);
+						this.binlogLifecycleListener.mustStop.set(true);
 						this.client.disconnect();
 						this.hitEOF = true;
 						return null;
