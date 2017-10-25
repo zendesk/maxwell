@@ -1,18 +1,16 @@
 package com.zendesk.maxwell.producer;
 
-import com.zendesk.maxwell.util.StoppableTask;
-import redis.clients.jedis.Jedis;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.row.RowMap;
-
+import com.zendesk.maxwell.util.StoppableTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import redis.clients.jedis.Jedis;
 
 public class MaxwellRedisProducer extends AbstractProducer implements StoppableTask {
 	private static final Logger logger = LoggerFactory.getLogger(MaxwellRedisProducer.class);
 	private final String channel;
 	private final Jedis jedis;
-
 
 	public MaxwellRedisProducer(MaxwellContext context, String redisPubChannel) {
 		super(context);
@@ -34,8 +32,19 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 		}
 
 		String msg = r.toJSON(outputConfig);
+		try {
+			jedis.publish(this.channel, msg);
+			this.succeededMessageCount.inc();
+			this.succeededMessageMeter.mark();
+		} catch (Exception e) {
+			this.failedMessageCount.inc();
+			this.failedMessageMeter.mark();
+			logger.error("Exception during put", e);
 
-		jedis.publish(this.channel, msg);
+			if (!context.getConfig().ignoreProducerError) {
+				throw new RuntimeException(e);
+			}
+		}
 
 		if ( r.isTXCommit() ) {
 			context.setPosition(r.getPosition());
