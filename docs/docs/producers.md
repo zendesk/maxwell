@@ -180,3 +180,4 @@ Other configurable properties are:
 - `redis_host` - defaults to **localhost**
 - `redis_port` - defaults to **6379**
 - `redis_auth` - defaults to **null**
+- `redis_database` - defaults to **0**

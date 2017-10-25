@@ -22,6 +22,9 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 		if (context.getConfig().redisAuth != null) {
 			jedis.auth(context.getConfig().redisAuth);
 		}
+		if (context.getConfig().redisDatabase > 0) {
+			jedis.select(context.getConfig().redisDatabase);
+		}
 	}
 
 	@Override

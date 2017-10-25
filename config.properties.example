@@ -165,6 +165,7 @@ kinesis_stream=maxwell
 #redis_host=redis_host
 #redis_port=6379
 #redis_auth=redis_auth
+#redis_database=0
 #redis_pub_channel=maxwell
 
 ######### filter stuff ###############

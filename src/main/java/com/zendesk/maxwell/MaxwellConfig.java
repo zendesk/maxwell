@@ -107,6 +107,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public String redisHost;
 	public int redisPort;
 	public String redisAuth;
+	public int redisDatabase;
 	public String redisPubChannel;
 
 	public MaxwellConfig() { // argv is only null in tests
@@ -237,6 +238,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "redis_host", "Host of Redis server").withRequiredArg();
 		parser.accepts( "redis_port", "Port of Redis server").withRequiredArg();
 		parser.accepts( "redis_auth", "Authentication key for a password-protected Redis server").withRequiredArg();
+		parser.accepts( "redis_database", "Database of Redis server").withRequiredArg();
 		parser.accepts( "redis_pub_channel", "Redis Pub/Sub channel for publishing records").withRequiredArg();
 
 		parser.accepts( "__separator_10" );
@@ -348,6 +350,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.redisHost			= fetchOption("redis_host", options, properties, "localhost");
 		this.redisPort			= Integer.parseInt(fetchOption("redis_port", options, properties, "6379"));
 		this.redisAuth			= fetchOption("redis_auth", options, properties, null);
+		this.redisDatabase		= Integer.parseInt(fetchOption("redis_database", options, properties, "0"));
 		this.redisPubChannel	= fetchOption("redis_pub_channel", options, properties, "maxwell");
 
 		String kafkaBootstrapServers = fetchOption("kafka.bootstrap.servers", options, properties, null);
