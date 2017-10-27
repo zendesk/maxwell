@@ -1,6 +1,9 @@
 package com.zendesk.maxwell.producer;
 
-import com.codahale.metrics.*;
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.monitoring.MaxwellDiagnostic;
 import com.zendesk.maxwell.monitoring.Metrics;
