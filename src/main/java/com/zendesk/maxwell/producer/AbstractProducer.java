@@ -40,7 +40,7 @@ public abstract class AbstractProducer {
 	}
 
 	public Meter getFailedMessageMeter() {
-		return null;
+		return this.failedMessageMeter;
 	}
 
 	public MaxwellDiagnostic getDiagnostic() {
