@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.io.StringWriter;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -242,6 +243,41 @@ public class RowMap implements Serializable {
 
 		g.writeEndObject(); // end of 'jsonMapName: { }'
 	}
+	
+	private void writeMapToStringAsJSON(
+			String jsonMapName,
+			LinkedHashMap<String, Object> data,
+			JsonGenerator g,
+			boolean includeNullField
+	) throws IOException, NoSuchAlgorithmException {
+		StringWriter writer=new StringWriter();
+		JsonGenerator json=jsonFactory.createGenerator(new StringWriter());
+
+		for (String key : data.keySet()) {
+			Object value = data.get(key);
+
+			if (value == null && !includeNullField)
+				continue;
+
+			if (value instanceof List) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
+				List stringList = (List) value;
+
+				json.writeArrayFieldStart(key);
+				for (Object s : stringList) {
+					json.writeObject(s);
+				}
+				json.writeEndArray();
+			} else if (value instanceof RawJSONString) {
+				// JSON column type, using binlog-connector's serializers.
+				json.writeFieldName(key);
+				json.writeRawValue(((RawJSONString) value).json);
+			} else {
+				json.writeObjectField(key, value);
+			}
+		}
+		g.writeStringField(jsonMapName, writer.toString());
+	}
+
 
 	public String toJSON() throws Exception {
 		return toJSON(new MaxwellOutputConfig());
@@ -249,36 +285,40 @@ public class RowMap implements Serializable {
 
 	public String toJSON(MaxwellOutputConfig outputConfig) throws Exception {
 		JsonGenerator g = resetJsonGenerator();
+		
 
 		g.writeStartObject(); // start of row {
 
-		g.writeStringField("database", this.database);
-		g.writeStringField("table", this.table);
-		g.writeStringField("type", this.rowType);
-		g.writeNumberField("ts", this.timestampSeconds);
+		g.writeStringField(outputConfig.prefixString + "database", this.database);
+		g.writeStringField(outputConfig.prefixString + "table", this.table);
+		g.writeStringField(outputConfig.prefixString + "type", this.rowType);
+		g.writeNumberField(outputConfig.prefixString + "ts", this.timestampSeconds);
+		if (outputConfig.includesTimeStampMs) {
+			g.writeNumberField(outputConfig.prefixString + "tsm", this.timestampMillis);
+		}
 
 		if ( outputConfig.includesCommitInfo ) {
 			if ( this.xid != null )
-				g.writeNumberField("xid", this.xid);
+				g.writeNumberField(outputConfig.prefixString + "xid", this.xid);
 
 			if ( this.txCommit )
-				g.writeBooleanField("commit", true);
+				g.writeBooleanField(outputConfig.prefixString + "commit", true);
 		}
 
 		BinlogPosition binlogPosition = this.nextPosition.getBinlogPosition();
 		if ( outputConfig.includesBinlogPosition )
-			g.writeStringField("position", binlogPosition.getFile() + ":" + binlogPosition.getOffset());
+			g.writeStringField(outputConfig.prefixString + "position", binlogPosition.getFile() + ":" + binlogPosition.getOffset());
 
 
 		if ( outputConfig.includesGtidPosition)
-			g.writeStringField("gtid", binlogPosition.getGtid());
+			g.writeStringField(outputConfig.prefixString + "gtid", binlogPosition.getGtid());
 
 		if ( outputConfig.includesServerId && this.serverId != null ) {
-			g.writeNumberField("server_id", this.serverId);
+			g.writeNumberField(outputConfig.prefixString + "server_id", this.serverId);
 		}
 
 		if ( outputConfig.includesThreadId && this.threadId != null ) {
-			g.writeNumberField("thread_id", this.threadId);
+			g.writeNumberField(outputConfig.prefixString + "thread_id", this.threadId);
 		}
 
 		if ( outputConfig.excludeColumns.size() > 0 ) {
@@ -307,10 +347,19 @@ public class RowMap implements Serializable {
 			? encryptingJsonGeneratorThreadLocal.get()
 			: plaintextDataGeneratorThreadLocal.get();
 
+			
+			
 		JsonGenerator dataGenerator = dataWriter.begin();
-		writeMapToJSON("data", this.data, dataGenerator, outputConfig.includesNulls);
-		if( !this.oldData.isEmpty() ){
-			writeMapToJSON("old", this.oldData, dataGenerator, outputConfig.includesNulls);
+		if (outputConfig.flattenData) {
+			writeMapToJSON(outputConfig.prefixString + "data", this.data, dataGenerator, outputConfig.includesNulls);
+			if( !this.oldData.isEmpty() ){
+				writeMapToJSON(outputConfig.prefixString + "old", this.oldData, dataGenerator, outputConfig.includesNulls);
+			}			
+		} else {
+			writeMapToStringAsJSON(outputConfig.prefixString + "data", this.data, dataGenerator, outputConfig.includesNulls);
+				if( !this.oldData.isEmpty() ){
+					writeMapToStringAsJSON(outputConfig.prefixString + "old", this.oldData, dataGenerator, outputConfig.includesNulls);
+				}
 		}
 		dataWriter.end(encryptionContext);
 
