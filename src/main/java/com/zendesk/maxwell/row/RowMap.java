@@ -275,6 +275,8 @@ public class RowMap implements Serializable {
 				json.writeObjectField(key, value);
 			}
 		}
+		json.flush();
+		json.close();
 		g.writeStringField(jsonMapName, writer.toString());
 	}
 
@@ -351,15 +353,15 @@ public class RowMap implements Serializable {
 			
 		JsonGenerator dataGenerator = dataWriter.begin();
 		if (outputConfig.flattenData) {
+			writeMapToStringAsJSON(outputConfig.prefixString + "data", this.data, dataGenerator, outputConfig.includesNulls);
+			if( !this.oldData.isEmpty() ){
+				writeMapToStringAsJSON(outputConfig.prefixString + "old", this.oldData, dataGenerator, outputConfig.includesNulls);
+			}
+		} else {
 			writeMapToJSON(outputConfig.prefixString + "data", this.data, dataGenerator, outputConfig.includesNulls);
 			if( !this.oldData.isEmpty() ){
 				writeMapToJSON(outputConfig.prefixString + "old", this.oldData, dataGenerator, outputConfig.includesNulls);
 			}			
-		} else {
-			writeMapToStringAsJSON(outputConfig.prefixString + "data", this.data, dataGenerator, outputConfig.includesNulls);
-				if( !this.oldData.isEmpty() ){
-					writeMapToStringAsJSON(outputConfig.prefixString + "old", this.oldData, dataGenerator, outputConfig.includesNulls);
-				}
 		}
 		dataWriter.end(encryptionContext);
 
