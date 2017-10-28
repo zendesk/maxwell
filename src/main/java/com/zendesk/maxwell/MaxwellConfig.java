@@ -443,6 +443,9 @@ public class MaxwellConfig extends AbstractConfig {
 		outputConfig.includesThreadId = fetchBooleanOption("output_thread_id", options, properties, false);
 		outputConfig.outputDDL	= fetchBooleanOption("output_ddl", options, properties, false);
 		this.excludeColumns     = fetchOption("exclude_columns", options, properties, null);
+		outputConfig.flattenData = fetchBooleanOption("output_flatten_data", options, properties, false);
+		outputConfig.prefixString = fetchOption("output_prefix_string", options, properties, "");
+		outputConfig.includesTimeStampMs = fetchBooleanOption("output_timestamp_ms", options, properties, false);
 
 		String encryptionMode = fetchOption("encryption", options, properties, "none");
 		switch (encryptionMode) {
