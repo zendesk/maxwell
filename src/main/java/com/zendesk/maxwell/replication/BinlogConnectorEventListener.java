@@ -14,7 +14,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-class BinlogConnectorEventListener implements BinaryLogClient.EventListener, BinaryLogClient.LifecycleListener {
+class BinlogConnectorEventListener implements BinaryLogClient.EventListener {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BinlogConnectorEventListener.class);
 
 	private final BlockingQueue<BinlogConnectorEvent> queue;
@@ -70,26 +70,6 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener, Bin
 		if (trackMetrics) {
 			queueTimer.update(System.currentTimeMillis() - eventSeenAt, TimeUnit.MILLISECONDS);
 		}
-	}
-
-	@Override
-	public void onConnect(BinaryLogClient client) {
-		LOGGER.info("Binlog connected.");
-	};
-
-	@Override
-	public void onCommunicationFailure(BinaryLogClient client, Exception ex) {
-		LOGGER.warn("Communication failure.", ex);
-	}
-
-	@Override
-	public void onEventDeserializationFailure(BinaryLogClient client, Exception ex) {
-		LOGGER.warn("Event deserialization failure.", ex);
-	}
-
-	@Override
-	public void onDisconnect(BinaryLogClient client) {
-		LOGGER.info("Binlog disconnected.");
 	}
 }
 
