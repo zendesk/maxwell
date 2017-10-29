@@ -125,7 +125,6 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 	@Override
 	protected void beforeStop() throws Exception {
 		this.binlogEventListener.stop();
-		this.binlogLifecycleListener.stop();
 		this.client.disconnect();
 	}
 
@@ -288,7 +287,6 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 					tableCache.clear();
 					if ( stopOnEOF && event.getPosition().getOffset() > 0 ) {
 						this.binlogEventListener.mustStop.set(true);
-						this.binlogLifecycleListener.mustStop.set(true);
 						this.client.disconnect();
 						this.hitEOF = true;
 						return null;

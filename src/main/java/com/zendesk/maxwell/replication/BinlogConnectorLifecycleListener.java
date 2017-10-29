@@ -4,16 +4,8 @@ import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 class BinlogConnectorLifecycleListener implements BinaryLogClient.LifecycleListener {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BinlogConnectorLifecycleListener.class);
-
-	protected final AtomicBoolean mustStop = new AtomicBoolean(false);
-
-	public void stop() {
-		mustStop.set(true);
-	}
 
 	@Override
 	public void onConnect(BinaryLogClient client) {
