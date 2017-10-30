@@ -39,7 +39,7 @@ Notes:
 ### MySQL binlog connector
 ***
 
-As of 1.10.8, maxwell uses [shyiko/mysql-binlog-connector-java][] as its underlying
+As of 1.10.9, maxwell uses [shyiko/mysql-binlog-connector-java][] as its underlying
 replication library (previously it was opt-in via `--binlog_connector`). This is
 largely compatible with the previous OpenReplicator implementation, but there are some differences:
 
