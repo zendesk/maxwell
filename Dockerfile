@@ -4,7 +4,7 @@ ENV MAXWELL_VERSION=1.10.8 KAFKA_VERSION=0.10.1.0
 COPY . /workspace
 
 RUN apt-get update \
-    && apt-get upgrade \
+    && apt-get -y upgrade \
     && apt-get install -y build-essential \
     && cd /workspace \
     && KAFKA_VERSION=$KAFKA_VERSION make package MAXWELL_VERSION=$MAXWELL_VERSION \
