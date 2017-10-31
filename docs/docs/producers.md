@@ -170,3 +170,14 @@ The remaining configurable properties are:
     - This config controls the routing key, where `%db%` and `%table%` are placeholders that will be substituted at runtime
 
 For more details on these options, you are encouraged to the read official RabbitMQ documentation here: https://www.rabbitmq.com/documentation.html
+
+### Redis Options
+***
+Set the output stream in `config.properties` by setting the `redis_pub_channel` property.
+
+Other configurable properties are:
+
+- `redis_host` - defaults to **localhost**
+- `redis_port` - defaults to **6379**
+- `redis_auth` - defaults to **null**
+- `redis_database` - defaults to **0**

@@ -104,6 +104,12 @@ public class MaxwellConfig extends AbstractConfig {
 	public boolean rabbitMqExchangeDurable;
 	public String rabbitmqRoutingKeyTemplate;
 
+	public String redisHost;
+	public int redisPort;
+	public String redisAuth;
+	public int redisDatabase;
+	public String redisPubChannel;
+
 	public MaxwellConfig() { // argv is only null in tests
 		this.kafkaProperties = new Properties();
 		this.replayMode = false;
@@ -229,6 +235,14 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_9" );
 
+		parser.accepts( "redis_host", "Host of Redis server").withRequiredArg();
+		parser.accepts( "redis_port", "Port of Redis server").withRequiredArg();
+		parser.accepts( "redis_auth", "Authentication key for a password-protected Redis server").withRequiredArg();
+		parser.accepts( "redis_database", "Database of Redis server").withRequiredArg();
+		parser.accepts( "redis_pub_channel", "Redis Pub/Sub channel for publishing records").withRequiredArg();
+
+		parser.accepts( "__separator_10" );
+
 		parser.accepts( "metrics_prefix", "the prefix maxwell will apply to all metrics" ).withRequiredArg();
 		parser.accepts( "metrics_type", "how maxwell metrics will be reported, at least one of slf4j|jmx|http|datadog" ).withRequiredArg();
 		parser.accepts( "metrics_slf4j_interval", "the frequency metrics are emitted to the log, in seconds, when slf4j reporting is configured" ).withRequiredArg();
@@ -243,7 +257,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "http_diagnostic", "enable http diagnostic endpoint: true|false. default: false" ).withOptionalArg();
 		parser.accepts( "http_diagnostic_timeout", "the http diagnostic response timeout in ms when http_diagnostic=true. default: 10000" ).withRequiredArg();
 
-		parser.accepts( "__separator_10" );
+		parser.accepts( "__separator_11" );
 
 		parser.accepts( "help", "display help").forHelp();
 
@@ -332,6 +346,12 @@ public class MaxwellConfig extends AbstractConfig {
 		this.rabbitmqExchangeType   = fetchOption("rabbitmq_exchange_type", options, properties, "fanout");
 		this.rabbitMqExchangeDurable = fetchBooleanOption("rabbitmq_exchange_durable", options, properties, false);
 		this.rabbitmqRoutingKeyTemplate   = fetchOption("rabbitmq_routing_key_template", options, properties, "%db%.%table%");
+
+		this.redisHost			= fetchOption("redis_host", options, properties, "localhost");
+		this.redisPort			= Integer.parseInt(fetchOption("redis_port", options, properties, "6379"));
+		this.redisAuth			= fetchOption("redis_auth", options, properties, null);
+		this.redisDatabase		= Integer.parseInt(fetchOption("redis_database", options, properties, "0"));
+		this.redisPubChannel	= fetchOption("redis_pub_channel", options, properties, "maxwell");
 
 		String kafkaBootstrapServers = fetchOption("kafka.bootstrap.servers", options, properties, null);
 		if ( kafkaBootstrapServers != null )

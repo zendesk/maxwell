@@ -12,7 +12,7 @@ password=maxwell
 
 ######### general stuff #############
 
-# choose where to produce data to. currently this is one of: stdout|file|kafka|pubsub|rabbitmq
+# choose where to produce data to. currently this is one of: stdout|file|kafka|kinesis|pubsub|rabbitmq|redis
 #producer=kafka
 
 # set delivery timeout (including acknowledgement) in milliseconds for a COMMIT row message that has been sent by the producer,
@@ -160,6 +160,13 @@ kinesis_stream=maxwell
 #rabbitmq_exchange_type=fanout
 #rabbitmq_exchange_durable=false
 #rabbitmq_routing_key_template=%db%.%table%
+
+######### redis ######################
+#redis_host=redis_host
+#redis_port=6379
+#redis_auth=redis_auth
+#redis_database=0
+#redis_pub_channel=maxwell
 
 ######### filter stuff ###############
 
