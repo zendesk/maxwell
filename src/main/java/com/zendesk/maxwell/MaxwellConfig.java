@@ -102,6 +102,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public String rabbitmqExchange;
 	public String rabbitmqExchangeType;
 	public boolean rabbitMqExchangeDurable;
+	public boolean rabbitMqExchangeAutoDelete;
 	public String rabbitmqRoutingKeyTemplate;
 
 	public String redisHost;
@@ -231,6 +232,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "rabbitmq_exchange", "Name of exchange for rabbitmq publisher" ).withRequiredArg();
 		parser.accepts( "rabbitmq_exchange_type", "Exchange type for rabbitmq" ).withRequiredArg();
 		parser.accepts( "rabbitmq_exchange_durable", "Exchange durability. Default is disabled" ).withOptionalArg();
+		parser.accepts( "rabbitmq_exchange_autodelete", "If set, the exchange is deleted when all queues have finished using it. Defaults to false" ).withOptionalArg();
 		parser.accepts( "rabbitmq_routing_key_template", "A string template for the routing key, '%db%' and '%table%' will be substituted. Default is '%db%.%table%'." ).withRequiredArg();
 
 		parser.accepts( "__separator_9" );
@@ -345,6 +347,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.rabbitmqExchange       = fetchOption("rabbitmq_exchange", options, properties, "maxwell");
 		this.rabbitmqExchangeType   = fetchOption("rabbitmq_exchange_type", options, properties, "fanout");
 		this.rabbitMqExchangeDurable = fetchBooleanOption("rabbitmq_exchange_durable", options, properties, false);
+		this.rabbitMqExchangeAutoDelete = fetchBooleanOption("rabbitmq_exchange_autodelete", options, properties, false);
 		this.rabbitmqRoutingKeyTemplate   = fetchOption("rabbitmq_routing_key_template", options, properties, "%db%.%table%");
 
 		this.redisHost			= fetchOption("redis_host", options, properties, "localhost");
