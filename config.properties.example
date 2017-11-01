@@ -109,9 +109,8 @@ password=maxwell
 #kafka.batch.size=16384
 
 # a few defaults.
-# These are 0.9-specific. They may or may not work with other versions.
+# These are 0.11-specific. They may or may not work with other versions.
 kafka.compression.type=snappy
-kafka.metadata.fetch.timeout.ms=5000
 kafka.retries=0
 kafka.acks=1
 

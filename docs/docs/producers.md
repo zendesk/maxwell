@@ -9,7 +9,6 @@ Here's some decent kafka properties. You can set them in `config.properties`.
 ```
 kafka.acks = 1
 kafka.compression.type = snappy
-kafka.metadata.fetch.timeout.ms=5000
 kafka.retries=0
 ```
 
@@ -85,7 +84,7 @@ bin/kafka-topics.sh --zookeeper ZK_HOST:2181 --create \
 
 ### Kafka client version
 ***
-By default, maxwell runs with kafka clients 0.9.0.1. There is a flag (--kafka_version) that allows maxwell to run with either 0.8.2.2, 0.9.0.1, 0.10.0.1, 0.10.2.1 or 0.11.0.1.
+By default, maxwell runs with kafka clients 0.11.0.1. There is a flag (--kafka_version) that allows maxwell to run with either 0.8.2.2, 0.9.0.1, 0.10.0.1, 0.10.2.1 or 0.11.0.1.
 Noteables:
 - Kafka clients 0.9.0.1 are not compatible with brokers running kafka 0.8. The exception below will show in logs when that is the case:
 

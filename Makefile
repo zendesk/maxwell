@@ -1,4 +1,4 @@
-KAFKA_VERSION ?= 0.9.0.1
+KAFKA_VERSION ?= 0.11.0.1
 KAFKA_PROFILE = kafka-${KAFKA_VERSION}
 
 all: compile
