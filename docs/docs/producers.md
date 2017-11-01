@@ -85,7 +85,7 @@ bin/kafka-topics.sh --zookeeper ZK_HOST:2181 --create \
 
 ### Kafka client version
 ***
-By default, maxwell runs with kafka clients 0.9.0.1. There is a flag (--kafka_version) that allows maxwell to run with either 0.8.2.2, 0.9.0.1, 0.10.0.1 or 0.10.1.0.
+By default, maxwell runs with kafka clients 0.9.0.1. There is a flag (--kafka_version) that allows maxwell to run with either 0.8.2.2, 0.9.0.1, 0.10.0.1, 0.10.2.1 or 0.11.0.1.
 Noteables:
 - Kafka clients 0.9.0.1 are not compatible with brokers running kafka 0.8. The exception below will show in logs when that is the case:
 
@@ -94,10 +94,11 @@ ERROR Sender - Uncaught error in kafka producer I/O thread:
 SchemaException: Error reading field 'throttle_time_ms': java.nio.BufferUnderflowException
 ```
 
-- Kafka clients 0.8 and 0.9 are compatible with brokers running kafka 0.8.
+- Kafka clients 0.8 are compatible with brokers running kafka 0.8.
 - 0.10.0.x clients only support 0.10.0.x or later brokers.
 - Mixing Kafka 0.10 with other versions can lead to serious performance impacts.
   For More details, [read about it here](http://kafka.apache.org/0100/documentation.html#upgrade_10_performance_impact).
+- 0.11.0 clients can talk to version 0.10.0 or newer brokers.
 
 ***
 

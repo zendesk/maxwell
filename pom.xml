@@ -78,22 +78,22 @@
       </dependencies>
     </profile>
     <profile>
-      <id>kafka-0.10.1.0</id>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.kafka</groupId>
-          <artifactId>kafka-clients</artifactId>
-          <version>0.10.1.0</version>
-        </dependency>
-      </dependencies>
-    </profile>
-    <profile>
       <id>kafka-0.10.2.1</id>
       <dependencies>
         <dependency>
           <groupId>org.apache.kafka</groupId>
           <artifactId>kafka-clients</artifactId>
           <version>0.10.2.1</version>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>kafka-0.11.0.1</id>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.kafka</groupId>
+          <artifactId>kafka-clients</artifactId>
+          <version>0.11.0.1</version>
         </dependency>
       </dependencies>
     </profile>
