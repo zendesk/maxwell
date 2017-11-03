@@ -161,6 +161,7 @@ kinesis_stream=maxwell
 #rabbitmq_exchange_durable=false
 #rabbitmq_exchange_autodelete=false
 #rabbitmq_routing_key_template=%db%.%table%
+#rabbitmq_message_persistent=false
 
 ######### redis ######################
 #redis_host=redis_host
