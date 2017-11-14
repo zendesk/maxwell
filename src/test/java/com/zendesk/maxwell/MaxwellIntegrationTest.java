@@ -566,6 +566,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testRowQueryLogEventsIsOn() throws Exception {
+		requireMinimumVersion(server.VERSION_5_6);
 		String sql[] = {
 				"SET binlog_rows_query_log_events=true",
 				"CREATE TABLE `test`.`row_query` ( id int )",
