@@ -192,6 +192,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "output_nulls", "produced records include fields with NULL values [true|false]. default: true" ).withOptionalArg();
 		parser.accepts( "output_server_id", "produced records include server_id; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_thread_id", "produced records include thread_id; [true|false]. default: false" ).withOptionalArg();
+		parser.accepts( "output_row_query", "produced records include query, binlog option \"binlog_rows_query_log_events\" must be enabled; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_ddl", "produce DDL records to ddl_kafka_topic [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "ddl_kafka_topic", "optionally provide an alternate topic to push DDL records to. default: kafka_topic").withRequiredArg();
 		parser.accepts("secret_key", "The secret key for the AES encryption").withRequiredArg();
@@ -464,6 +465,7 @@ public class MaxwellConfig extends AbstractConfig {
 		outputConfig.includesNulls = fetchBooleanOption("output_nulls", options, properties, true);
 		outputConfig.includesServerId = fetchBooleanOption("output_server_id", options, properties, false);
 		outputConfig.includesThreadId = fetchBooleanOption("output_thread_id", options, properties, false);
+		outputConfig.includesRowQuery = fetchBooleanOption("output_row_query", options, properties, false);
 		outputConfig.outputDDL	= fetchBooleanOption("output_ddl", options, properties, false);
 		this.excludeColumns     = fetchOption("exclude_columns", options, properties, null);
 

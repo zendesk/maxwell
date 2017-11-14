@@ -26,6 +26,7 @@ public class RowMap implements Serializable {
 
 	static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
 
+	private final String rowQuery;
 	private final String rowType;
 	private final String database;
 	private final String table;
@@ -97,7 +98,8 @@ public class RowMap implements Serializable {
 			};
 
 	public RowMap(String type, String database, String table, Long timestampMillis, List<String> pkColumns,
-			Position nextPosition) {
+			Position nextPosition, String rowQuery) {
+		this.rowQuery = rowQuery;
 		this.rowType = type;
 		this.database = database;
 		this.table = table;
@@ -108,6 +110,11 @@ public class RowMap implements Serializable {
 		this.nextPosition = nextPosition;
 		this.pkColumns = pkColumns;
 		this.approximateSize = 100L; // more or less 100 bytes of overhead
+	}
+
+	public RowMap(String type, String database, String table, Long timestampMillis, List<String> pkColumns,
+				  Position nextPosition) {
+		this(type, database, table, timestampMillis, pkColumns, nextPosition, "");
 	}
 
 	//Do we want to encrypt this part?
@@ -254,6 +261,11 @@ public class RowMap implements Serializable {
 
 		g.writeStringField("database", this.database);
 		g.writeStringField("table", this.table);
+
+		if ( outputConfig.includesRowQuery ) {
+			g.writeStringField("query", this.rowQuery);
+		}
+
 		g.writeStringField("type", this.rowType);
 		g.writeNumberField("ts", this.timestampSeconds);
 

@@ -8,6 +8,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Test;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -561,5 +562,51 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		assertNull(config.schemaMysql.host);
 		assertNull(config.schemaMysql.user);
 		assertNull(config.schemaMysql.password);
+	}
+
+	@Test
+	public void testRowQueryLogEventsIsOn() throws Exception {
+		String sql[] = {
+				"SET binlog_rows_query_log_events=true",
+				"CREATE TABLE `test`.`row_query` ( id int )",
+				"insert into `test`.`row_query` set id = 10",
+				"insert into `test`.`row_query` set id = 20 /* comment:insert */",
+				"update `test`.`row_query` set id = 11 where id = 10",
+				"update `test`.`row_query` set id = 21 where id = 20 /* comment:update */",
+				"delete from `test`.`row_query` where id = 11",
+				"delete from `test`.`row_query` where id = 21 /* comment:delete */",
+		};
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
+		outputConfig.includesRowQuery = true;
+
+		List<RowMap> rows = getRowsForSQL(sql);
+
+		List<Map<String, Object>> eventJSON = new ArrayList<>();
+		List<Map<String, Object>> expectedJSON = new ArrayList<>();
+
+		for ( RowMap r : rows ) {
+
+			String s = r.toJSON(outputConfig);
+
+			Map<String, Object> outputMap = MaxwellTestJSON.parseJSON(s);
+
+			outputMap.remove("ts");
+			outputMap.remove("xid");
+			outputMap.remove("commit");
+
+			eventJSON.add(outputMap);
+		}
+
+		expectedJSON.add(MaxwellTestJSON.parseJSON("{\"database\":\"test\",\"table\":\"row_query\",\"query\":\"" + sql[2]+ "\",\"type\":\"insert\", \"data\":{id:10}}"));
+		expectedJSON.add(MaxwellTestJSON.parseJSON("{\"database\":\"test\",\"table\":\"row_query\",\"query\":\"" + sql[3]+ "\",\"type\":\"insert\", \"data\":{id:20}}"));
+
+		expectedJSON.add(MaxwellTestJSON.parseJSON("{\"database\":\"test\",\"table\":\"row_query\",\"query\":\"" + sql[4]+ "\",\"type\":\"update\", \"data\":{id:11}, \"old\":{id:10}}"));
+		expectedJSON.add(MaxwellTestJSON.parseJSON("{\"database\":\"test\",\"table\":\"row_query\",\"query\":\"" + sql[5]+ "\",\"type\":\"update\", \"data\":{id:21}, \"old\":{id:20}}"));
+
+		expectedJSON.add(MaxwellTestJSON.parseJSON("{\"database\":\"test\",\"table\":\"row_query\",\"query\":\"" + sql[6]+ "\",\"type\":\"delete\", \"data\":{id:11}}"));
+		expectedJSON.add(MaxwellTestJSON.parseJSON("{\"database\":\"test\",\"table\":\"row_query\",\"query\":\"" + sql[7]+ "\",\"type\":\"delete\", \"data\":{id:21}}"));
+
+		MaxwellTestJSON.assertJSON(eventJSON, expectedJSON);
+
 	}
 }

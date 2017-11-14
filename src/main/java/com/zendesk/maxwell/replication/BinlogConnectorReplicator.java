@@ -2,9 +2,7 @@ package com.zendesk.maxwell.replication;
 
 import com.codahale.metrics.Histogram;
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
-import com.github.shyiko.mysql.binlog.event.EventType;
-import com.github.shyiko.mysql.binlog.event.QueryEventData;
-import com.github.shyiko.mysql.binlog.event.TableMapEventData;
+import com.github.shyiko.mysql.binlog.event.*;
 import com.github.shyiko.mysql.binlog.event.deserialization.EventDeserializer;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.MaxwellMysqlConfig;
@@ -147,6 +145,8 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 		BinlogConnectorEvent event;
 		RowMapBuffer buffer = new RowMapBuffer(MAX_TX_ELEMENTS);
 
+		String temporaryQuery = "";
+
 		while ( true ) {
 			event = pollEvent();
 
@@ -179,14 +179,18 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 					Table table = tableCache.getTable(event.getTableID());
 
 					if ( table != null && shouldOutputEvent(table.getDatabase(), table.getName(), filter) ) {
-						for ( RowMap r : event.jsonMaps(table, lastHeartbeatPosition) )
+						for ( RowMap r : event.jsonMaps(table, lastHeartbeatPosition, temporaryQuery) )
 							buffer.add(r);
 					}
-
+					temporaryQuery = "";
 					break;
 				case TABLE_MAP:
 					TableMapEventData data = event.tableMapData();
 					tableCache.processEvent(getSchema(), this.filter, data.getTableId(), data.getDatabase(), data.getTable());
+					break;
+				case ROWS_QUERY:
+					RowsQueryEventData rqed = event.getEvent().getData();
+					temporaryQuery = rqed.getQuery();
 					break;
 				case QUERY:
 					QueryEventData qe = event.queryData();

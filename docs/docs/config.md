@@ -172,6 +172,7 @@ output_commit_info             | BOOLEAN                             | should pr
 output_nulls                   | BOOLEAN                             | produced records include fields with NULL values    | true
 output_server_id               | BOOLEAN                             | produced records include server_id                  | false
 output_thread_id               | BOOLEAN                             | produced records include thread_id                  | false
+output_row_query               | BOOLEAN                             | produced records include row query                  | false
 output_ddl                     | BOOLEAN                             | output DDL (table-alter, table-create, etc) events  | false
 &nbsp;
 **filtering**
