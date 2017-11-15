@@ -75,6 +75,8 @@ public class GraylogTest {
 		assertThat(messages.get(1).getAdditionalFields().get(GraylogProdcuer.COLUMN), is("filed"));
 		assertThat(messages.get(1).getAdditionalFields().get(GraylogProdcuer.BEFORE), is(""));
 		assertThat(messages.get(1).getAdditionalFields().get(GraylogProdcuer.AFTER), is("foo"));
+
+		RowMapDeserializer.resetMapper();
 	}
 
 	@Test
@@ -96,6 +98,8 @@ public class GraylogTest {
 		assertThat(messages.get(1).getAdditionalFields().get(GraylogProdcuer.COLUMN), is("filed"));
 		assertThat(messages.get(1).getAdditionalFields().get(GraylogProdcuer.BEFORE), is("foo"));
 		assertThat(messages.get(1).getAdditionalFields().get(GraylogProdcuer.AFTER), is("bar"));
+
+		RowMapDeserializer.resetMapper();
 	}
 
 	@Test
@@ -117,6 +121,8 @@ public class GraylogTest {
 		assertThat(messages.get(1).getAdditionalFields().get(GraylogProdcuer.COLUMN), is("filed"));
 		assertThat(messages.get(1).getAdditionalFields().get(GraylogProdcuer.BEFORE), is("bar"));
 		assertThat(messages.get(1).getAdditionalFields().get(GraylogProdcuer.AFTER), is(""));
+
+		RowMapDeserializer.resetMapper();
 	}
 
 	@Test
@@ -152,5 +158,7 @@ public class GraylogTest {
 		assertThat(messages.get(0).getAdditionalFields().get("type"), is("insert"));
 		assertThat(messages.get(0).getAdditionalFields().get("xid"), is(Long.valueOf("9")));
 		assertThat(messages.get(0).getTimestamp(), is(Double.valueOf("1449786341")));
+
+		RowMapDeserializer.resetMapper();
 	}
 }
