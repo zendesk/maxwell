@@ -111,6 +111,10 @@ public class MaxwellConfig extends AbstractConfig {
 	public int redisDatabase;
 	public String redisPubChannel;
 
+	public String graylogHost, graylogTransport, graylogSqlCommentAsAdditionalFieldPatterns;
+	public int graylogPort;
+	public Properties graylogAdditionalField;
+
 	public MaxwellConfig() { // argv is only null in tests
 		this.kafkaProperties = new Properties();
 		this.replayMode = false;
@@ -122,6 +126,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.bufferedProducerSize = 200;
 		this.metricRegistry = new MetricRegistry();
 		this.healthCheckRegistry = new HealthCheckRegistry();
+		this.graylogAdditionalField = new Properties();
 		setup(null, null); // setup defaults
 	}
 
@@ -261,6 +266,13 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_11" );
 
+		parser.accepts( "graylog_host", "Host of Graylog").withRequiredArg();
+		parser.accepts( "graylog_port", "Port of Graylog.  default: 12201").withOptionalArg();
+		parser.accepts( "graylog_transport", "GrayLog transport [udp|tcp].  default: udp").withOptionalArg();
+		parser.accepts( "graylog_additional_field", "These fields are in addition to everything").withOptionalArg();
+
+		parser.accepts( "__separator_12" );
+
 		parser.accepts( "help", "display help").forHelp();
 
 
@@ -356,6 +368,10 @@ public class MaxwellConfig extends AbstractConfig {
 		this.redisDatabase		= Integer.parseInt(fetchOption("redis_database", options, properties, "0"));
 		this.redisPubChannel	= fetchOption("redis_pub_channel", options, properties, "maxwell");
 
+		this.graylogHost				= fetchOption("graylog_host", options, properties, "localhost");
+		this.graylogPort				= Integer.parseInt(fetchOption("graylog_port", options, properties, "12201"));
+		this.graylogTransport			= fetchOption("graylog_transport", options, properties, "udp");
+
 		String kafkaBootstrapServers = fetchOption("kafka.bootstrap.servers", options, properties, null);
 		if ( kafkaBootstrapServers != null )
 			this.kafkaProperties.setProperty("bootstrap.servers", kafkaBootstrapServers);
@@ -368,6 +384,10 @@ public class MaxwellConfig extends AbstractConfig {
 						continue; // don't override command line bootstrap servers with config files'
 
 					this.kafkaProperties.setProperty(k.replace("kafka.", ""), properties.getProperty(k));
+				}
+
+				if (k.startsWith("graylog_additional_field.")) {
+					this.graylogAdditionalField.setProperty(k.replace("graylog_additional_field.", ""), properties.getProperty(k));
 				}
 			}
 		}

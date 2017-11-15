@@ -182,3 +182,12 @@ Other configurable properties are:
 - `redis_port` - defaults to **6379**
 - `redis_auth` - defaults to **null**
 - `redis_database` - defaults to **0**
+
+### Graylog Options
+***
+The configurable properties are:
+
+- `graylog_host` - defaults to **localhost**
+- `graylog_port` - defaults to **12201**
+- `graylog_transport` - defaults to **udp**
+- `graylog_additional_field.*` - optional to add additional field 
