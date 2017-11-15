@@ -203,14 +203,10 @@ kinesis_stream=maxwell
 
 ######### encryption ###############
 
-# convert the data field to a json string and encrypt it
-#encrypt_data=true
+# Encryption mode. Possible values are none, data, and all. (default none)
+#encrypt=none
 
-# convert the whole payload to a json string and encrypt it
-#encrypt_all=true
-
-# specify the encryption key and secret key
-#encryption_key=aaaaaaaaaaaaaaaa
+# Specify the secret key to be used
 #secret_key=RandomInitVector
 
 ######## monitoring stuff ###########

@@ -1,6 +1,6 @@
 ### Using encryption
 ***
-When encryption is enabled, maxwell will encrypt messages using your own encryption and secret keys using a AES/CBC/PKCS5PADDING cipher.
+When encryption is enabled, maxwell will encrypt messages using a AES/CBC/PKCS5PADDING cipher with your own encryption key.
 Values are first encrypted and then base64 encoded, an initialization vector is randomly generated and put into the final message
 
 ### Decryption
@@ -12,7 +12,7 @@ To decrypt your data you must first decode the string from base64 and then apply
 
 insert into minimal set account_id =1, text_field='hello'
 
-Unencrypted:
+`encrypt=none` (unencrypted):
 
 ```
 {"database":"shard_1","table":"minimal","type":"insert","ts":1490115785,"xid":153,"commit":true,"data":{"id":1,"account_id":1,"text_field":"hello"}}
