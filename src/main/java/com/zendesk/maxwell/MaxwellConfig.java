@@ -466,7 +466,7 @@ public class MaxwellConfig extends AbstractConfig {
 		outputConfig.outputDDL	= fetchBooleanOption("output_ddl", options, properties, false);
 		this.excludeColumns     = fetchOption("exclude_columns", options, properties, null);
 
-		String encryptionMode = fetchOption("encryption", options, properties, "none");
+		String encryptionMode = fetchOption("encrypt", options, properties, "none");
 		switch (encryptionMode) {
 			case "none":
 				outputConfig.encryptionMode = EncryptionMode.ENCRYPT_NONE;
