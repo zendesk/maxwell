@@ -184,6 +184,9 @@
                       <li class="toctree-l3"><a href="#rabbitmq-producer">RabbitMQ Producer</a></li>
                       
                   
+                      <li class="toctree-l3"><a href="#redis-producer">Redis Producer</a></li>
+                      
+                  
                   </ul>
               
           </li>
@@ -245,13 +248,13 @@
 <h3 id="download">Download</h3>
 <hr />
 <ul>
-<li>Download binary distro: <a href="https://github.com/zendesk/maxwell/releases/download/v1.10.9/maxwell-1.10.9.tar.gz">https://github.com/zendesk/maxwell/releases/download/v1.10.9/maxwell-1.10.9.tar.gz</a></li>
+<li>Download binary distro: <a href="https://github.com/zendesk/maxwell/releases/download/v1.11.0/maxwell-1.11.0.tar.gz">https://github.com/zendesk/maxwell/releases/download/v1.11.0/maxwell-1.11.0.tar.gz</a></li>
 <li>Sources and bug tracking is available on github: <a href="https://github.com/zendesk/maxwell">https://github.com/zendesk/maxwell</a></li>
 <li>Obligatory copy/paste to terminal:</li>
 </ul>
-<pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.10.9/maxwell-1.10.9.tar.gz \
+<pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.11.0/maxwell-1.11.0.tar.gz \
        | tar zxvf -
-cd maxwell-1.10.9
+cd maxwell-1.11.0
 </code></pre>
 
 <p>or get the docker image:</p>
@@ -349,6 +352,15 @@ Query OK, 1 row affected (0.04 sec)
 <h3 id="rabbitmq-producer">RabbitMQ Producer</h3>
 <pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
     --producer=rabbitmq --rabbitmq_host='rabbitmq.hostname'
+</code></pre>
+
+<h3 id="redis-producer">Redis Producer</h3>
+<pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
+    --producer=redis --redis_host=redis.hostname
+</code></pre>
+
+<p>(or docker):</p>
+<pre><code>docker run -it --rm zendesk/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=redis --redis_host=$REDIS_HOST
 </code></pre></div>
         </div>
 

@@ -197,6 +197,9 @@
                       <li class="toctree-l3"><a href="#rabbitmq-options">RabbitMQ Options</a></li>
                       
                   
+                      <li class="toctree-l3"><a href="#redis-options">Redis Options</a></li>
+                      
+                  
                   </ul>
               
           </li>
@@ -253,7 +256,6 @@
 <p>Here's some decent kafka properties. You can set them in <code>config.properties</code>.</p>
 <pre><code>kafka.acks = 1
 kafka.compression.type = snappy
-kafka.metadata.fetch.timeout.ms=5000
 kafka.retries=0
 </code></pre>
 
@@ -311,7 +313,7 @@ and with at least as many partitions as you have logical databases:</p>
 <p><a href="http://kafka.apache.org/documentation.html#quickstart">http://kafka.apache.org/documentation.html#quickstart</a></p>
 <h3 id="kafka-client-version">Kafka client version</h3>
 <hr />
-<p>By default, maxwell runs with kafka clients 0.9.0.1. There is a flag (--kafka_version) that allows maxwell to run with either 0.8.2.2, 0.9.0.1, 0.10.0.1 or 0.10.1.0.
+<p>By default, maxwell runs with kafka clients 0.11.0.1. There is a flag (--kafka_version) that allows maxwell to run with either 0.8.2.2, 0.9.0.1, 0.10.0.1, 0.10.2.1 or 0.11.0.1.
 Noteables:
 - Kafka clients 0.9.0.1 are not compatible with brokers running kafka 0.8. The exception below will show in logs when that is the case:</p>
 <pre><code>ERROR Sender - Uncaught error in kafka producer I/O thread:
@@ -319,10 +321,11 @@ SchemaException: Error reading field 'throttle_time_ms': java.nio.BufferUnderflo
 </code></pre>
 
 <ul>
-<li>Kafka clients 0.8 and 0.9 are compatible with brokers running kafka 0.8.</li>
+<li>Kafka clients 0.8 are compatible with brokers running kafka 0.8.</li>
 <li>0.10.0.x clients only support 0.10.0.x or later brokers.</li>
 <li>Mixing Kafka 0.10 with other versions can lead to serious performance impacts.
   For More details, <a href="http://kafka.apache.org/0100/documentation.html#upgrade_10_performance_impact">read about it here</a>.</li>
+<li>0.11.0 clients can talk to version 0.10.0 or newer brokers.</li>
 </ul>
 <hr />
 <h3 id="kinesis-aws-credentials">Kinesis AWS credentials</h3>
@@ -374,9 +377,20 @@ for DDL updates by setting the <code>ddl_pubsub_topic</code> property.</p>
 - <code>rabbitmq_exchange</code> - defaults to <strong>maxwell</strong>
 - <code>rabbitmq_exchange_type</code> - defaults to <strong>fanout</strong>
 - <code>rabbitmq_exchange_durable</code> - defaults to <strong>false</strong>
+- <code>rabbitmq_exchange_autodelete</code> - defaults to <strong>false</strong>
 - <code>rabbitmq_routing_key_template</code> - defaults to <strong>%db%.%table%</strong>
     - This config controls the routing key, where <code>%db%</code> and <code>%table%</code> are placeholders that will be substituted at runtime</p>
-<p>For more details on these options, you are encouraged to the read official RabbitMQ documentation here: https://www.rabbitmq.com/documentation.html</p></div>
+<p>For more details on these options, you are encouraged to the read official RabbitMQ documentation here: https://www.rabbitmq.com/documentation.html</p>
+<h3 id="redis-options">Redis Options</h3>
+<hr />
+<p>Set the output stream in <code>config.properties</code> by setting the <code>redis_pub_channel</code> property.</p>
+<p>Other configurable properties are:</p>
+<ul>
+<li><code>redis_host</code> - defaults to <strong>localhost</strong></li>
+<li><code>redis_port</code> - defaults to <strong>6379</strong></li>
+<li><code>redis_auth</code> - defaults to <strong>null</strong></li>
+<li><code>redis_database</code> - defaults to <strong>0</strong></li>
+</ul></div>
         </div>
 
         

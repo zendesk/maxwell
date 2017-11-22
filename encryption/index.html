@@ -226,7 +226,7 @@
 
 <h3 id="using-encryption">Using encryption</h3>
 <hr />
-<p>When encryption is enabled, maxwell will encrypt messages using your own encryption and secret keys using a AES/CBC/PKCS5PADDING cipher.
+<p>When encryption is enabled, maxwell will encrypt messages using a AES/CBC/PKCS5PADDING cipher with your own encryption key.
 Values are first encrypted and then base64 encoded, an initialization vector is randomly generated and put into the final message</p>
 <h3 id="decryption">Decryption</h3>
 <hr />
@@ -234,7 +234,7 @@ Values are first encrypted and then base64 encoded, an initialization vector is 
 <h3 id="examples">Examples</h3>
 <hr />
 <p>insert into minimal set account_id =1, text_field='hello'</p>
-<p>Unencrypted:</p>
+<p><code>encrypt=none</code> (unencrypted):</p>
 <pre><code>{&quot;database&quot;:&quot;shard_1&quot;,&quot;table&quot;:&quot;minimal&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;ts&quot;:1490115785,&quot;xid&quot;:153,&quot;commit&quot;:true,&quot;data&quot;:{&quot;id&quot;:1,&quot;account_id&quot;:1,&quot;text_field&quot;:&quot;hello&quot;}}
 </code></pre>
 
