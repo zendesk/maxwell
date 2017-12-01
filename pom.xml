@@ -216,7 +216,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-pubsub</artifactId>
-      <version>0.22.0-beta</version>
+      <version>0.30.0-beta</version>
     </dependency>
     <dependency>
       <groupId>com.google.protobuf</groupId>
