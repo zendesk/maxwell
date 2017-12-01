@@ -104,6 +104,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public boolean rabbitMqExchangeDurable;
 	public boolean rabbitMqExchangeAutoDelete;
 	public String rabbitmqRoutingKeyTemplate;
+	public boolean rabbitmqMessagePersistent;
 
 	public String redisHost;
 	public int redisPort;
@@ -233,6 +234,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "rabbitmq_exchange_durable", "Exchange durability. Default is disabled" ).withOptionalArg();
 		parser.accepts( "rabbitmq_exchange_autodelete", "If set, the exchange is deleted when all queues have finished using it. Defaults to false" ).withOptionalArg();
 		parser.accepts( "rabbitmq_routing_key_template", "A string template for the routing key, '%db%' and '%table%' will be substituted. Default is '%db%.%table%'." ).withRequiredArg();
+		parser.accepts( "rabbitmq_message_persistent", "Message persistence. Defaults to false" ).withOptionalArg();
 
 		parser.accepts( "__separator_9" );
 
@@ -348,6 +350,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.rabbitMqExchangeDurable = fetchBooleanOption("rabbitmq_exchange_durable", options, properties, false);
 		this.rabbitMqExchangeAutoDelete = fetchBooleanOption("rabbitmq_exchange_autodelete", options, properties, false);
 		this.rabbitmqRoutingKeyTemplate   = fetchOption("rabbitmq_routing_key_template", options, properties, "%db%.%table%");
+		this.rabbitmqMessagePersistent    = fetchBooleanOption("rabbitmq_message_persistent", options, properties, false);
 
 		this.redisHost			= fetchOption("redis_host", options, properties, "localhost");
 		this.redisPort			= Integer.parseInt(fetchOption("redis_port", options, properties, "6379"));
