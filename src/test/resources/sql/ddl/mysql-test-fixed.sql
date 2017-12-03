@@ -95,6 +95,7 @@ CREATE TABLE `t1` (   `nullif(1.1, 1.1)` decimal(2,1) DEFAULT NULL,   `nullif(1.
 CREATE TABLE `t1` (   `round(15.4,-1)` decimal(3,0) NOT NULL DEFAULT '0',   `truncate(-5678.123451,-3)` decimal(4,0) NOT NULL DEFAULT '0',   `abs(-1.1)` decimal(3,1) NOT NULL DEFAULT '0.0',   `-(-1.1)` decimal(2,1) NOT NULL DEFAULT '0.0' )
 CREATE TABLE `t1` (   `{t'10:10:10'}` time NOT NULL DEFAULT '00:00:00',   `{t'10:10:10.'}` time NOT NULL DEFAULT '00:00:00',   `{t'10:10:10.123456'}` time(6) NOT NULL DEFAULT '00:00:00.000000',   `2001-01-01` varchar(10) NOT NULL DEFAULT '' )
 CREATE TABLE `t1` (   `{ts'2001-01-01 10:10:10'}` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',   `{ts'2001-01-01 10:10:10.'}` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',   `{ts'2001-01-01 10:10:10.123456'}` datetime(6) NOT NULL DEFAULT '0000-00-00 00:00:00.000000',   `2001-01-01` varchar(10) NOT NULL DEFAULT '' )
+CREATE TABLE `t1` (id serial,intcol1 INT(32) ,intcol2 INT(32) ,charcol1 VARCHAR(128),charcol2 VARCHAR(128),charcol3 VARCHAR(128))
 CREATE TABLE `t2` (   `ADDTIME(a, '00:00:00.000001')` datetime(6) DEFAULT NULL,   `ADDTIME(a, '10:00:00.000001')` datetime(6) DEFAULT NULL,   `ADDTIME(CAST(a AS DATETIME(0)), 100000)` datetime DEFAULT NULL,   `ADDTIME(CAST(a AS DATETIME(0)), 100000.1)` datetime(1) DEFAULT NULL,   `ADDTIME(CAST(a AS DATETIME(0)), CAST('10:00:00' AS TIME(0)))` datetime DEFAULT NULL,   `ADDTIME(CAST(a AS DATETIME(6)), CAST('10:00:00' AS TIME(0)))` datetime(6) DEFAULT NULL,   `ADDTIME(CAST(a AS DATETIME(0)), CAST('10:00:00' AS TIME(6)))` datetime(6) DEFAULT NULL )
 CREATE TABLE `t2` (   `ADDTIME(a, '00:00:00.000001')` datetime(6) DEFAULT NULL,   `ADDTIME(a, '10:00:00.000001')` datetime(6) DEFAULT NULL,   `ADDTIME(CAST(a AS DATETIME(0)), 100000)` datetime DEFAULT NULL,   `ADDTIME(CAST(a AS DATETIME(0)), 100000.1)` datetime(1) DEFAULT NULL,   `ADDTIME(a,a)` datetime(6) DEFAULT NULL )
 CREATE TABLE `t2` (   `ADDTIME(a, '00:00:00.000001')` time(6) DEFAULT NULL,   `ADDTIME(a,a)` time(6) DEFAULT NULL,   `SUBTIME(a, '00:00:00.000001')` time(6) DEFAULT NULL,   `SUBTIME(a,a)` time(6) DEFAULT NULL,   `TIMEDIFF(a,'00:00:00.000001')` time(6) DEFAULT NULL,   `TIMEDIFF(a,a)` time(6) DEFAULT NULL,   `TIMEDIFF(CAST(a AS TIME(0)), CAST('10:10:10' AS TIME(0)))` time DEFAULT NULL )
@@ -186,6 +187,7 @@ CREATE TABLE t1 (s0 TIMESTAMP(0) NOT NULL DEFAULT CURRENT_TIMESTAMP(0) ON UPDATE
 CREATE TABLE t1 (s1 TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6))
 CREATE TABLE t1 (t6 TIME(6), d DATE, ts6 TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6), dt6 DATETIME(6))
 CREATE TABLE t1 (ts3 TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3), ts2 TIMESTAMP(2) NOT NULL DEFAULT '0000-00-00 00:00:00')
+CREATE TABLE t1(`FTS_DOC_ID` serial, no_fts_field VARCHAR(10), fts_field VARCHAR(10), FULLTEXT INDEX f(fts_field)) ENGINE=INNODB
 CREATE TABLE t1(a int) STORAGE DISK ENGINE=MyISAM
 CREATE TABLE t1(a int) STORAGE MEMORY ENGINE=MyISAM
 CREATE TABLE t1(кол INT)
@@ -284,6 +286,7 @@ create table t1 ( a int, b varchar(30), primary key(a) ) ENGINE = MERGE UNION=(t
 create table t1 ( type_bool bool not null default 0, type_tiny tinyint not null auto_increment primary key, type_short smallint(3), type_mediumint mediumint, type_bigint bigint, type_decimal decimal(5,2), type_numeric numeric(5,2), empty_char char(0), type_char char(2), type_varchar varchar(10), type_timestamp timestamp not null default current_timestamp on update current_timestamp, type_date date not null default '0000-00-00', type_time time not null default '00:00:00', type_datetime datetime not null default '0000-00-00 00:00:00', type_year year, type_enum enum ('red', 'green', 'blue'), type_set enum ('red', 'green', 'blue'), type_tinyblob tinyblob, type_blob blob, type_medium_blob mediumblob, type_long_blob longblob, index(type_short) ) AVG_ROW_LENGTH=10 CHECKSUM=1 COMMENT="test" ENGINE=MYISAM MIN_ROWS=10 MAX_ROWS=100 PACK_KEYS=1 DELAY_KEY_WRITE=1 ROW_FORMAT=fixed CHARSET=latin1
 create table t1 ( x_bigint BIGINT, x_integer INTEGER, x_smallint SMALLINT, x_decimal DECIMAL(5,3), x_numeric NUMERIC(5,3), x_real REAL, x_float FLOAT, x_double_precision DOUBLE PRECISION )
 create table t1 (a int ,b int, constraint abc check (a>b))
+create table t1 (a int check (a>0))
 create table t1 (a int not null auto_increment, primary key (a), t timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, c char(10) default "hello", i int)
 create table t1 (a int not null, b VARCHAR(10), INDEX (b) ) AVG_ROW_LENGTH=10 CHECKSUM=1 COMMENT="test" ENGINE=MYISAM MIN_ROWS=10 MAX_ROWS=100 PACK_KEYS=1 DELAY_KEY_WRITE=1 ROW_FORMAT=fixed
 create table t1 (a int primary key) engine=myisam data directory="/Users/ben/src/mysql-server/mysql-test/var/tmp"       index directory="/Users/ben/src/mysql-server/mysql-test/var/run"
@@ -365,6 +368,7 @@ create table tm(a int) engine=merge union=(t1, t2)
 create table İ (s1 int)
 create table İİ (s1 int)
 create table имя_таблицы_в_кодировке_утф8_длиной_больше_чем_48 ( имя_поля_в_кодировке_утф8_длиной_больше_чем_45 int, index имя_индекса_в_кодировке_утф8_длиной_больше_чем_48 (имя_поля_в_кодировке_утф8_длиной_больше_чем_45) )
+create table tst_signed_defaults (positive_int int DEFAULT +99, negative_int int DEFAULT +99, positive_float float DEFAULT -10.10, negative_float float DEFAULT -10.10)
 drop database if exists това_е_дълго_име_за_база_данни_нали
 drop database имя_базы_в_кодировке_утф8_длиной_больше_чем_45
 drop database това_е_дълго_име_за_база_данни_нали
