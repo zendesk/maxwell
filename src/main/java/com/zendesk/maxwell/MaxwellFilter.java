@@ -2,9 +2,7 @@ package com.zendesk.maxwell;
 
 import org.apache.commons.lang.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /*
@@ -19,8 +17,25 @@ public class MaxwellFilter {
 	private final ArrayList<Pattern> excludeTables = new ArrayList<>();
 	private final ArrayList<Pattern> blacklistDatabases = new ArrayList<>();
 	private final ArrayList<Pattern> blacklistTables = new ArrayList<>();
+	private final Map<String, String> includeColumnValues = new HashMap<>();
 
 	public MaxwellFilter() { }
+	public MaxwellFilter(String includeDatabases,
+						 String excludeDatabases,
+						 String includeTables,
+						 String excludeTables,
+						 String blacklistDatabases,
+						 String blacklistTables,
+						 String includeColumnValues) throws MaxwellInvalidFilterException {
+		this(includeDatabases, excludeDatabases, includeTables, excludeTables, blacklistDatabases, blacklistTables);
+
+		if (includeColumnValues != null && !"".equals(includeColumnValues)) {
+			for (String s : includeColumnValues.split(",")) {
+				String[] columnAndValue = s.split("=");
+				includeColumnValue(columnAndValue[0], columnAndValue[1]);
+			}
+		}
+	}
 	public MaxwellFilter(String includeDatabases,
 						 String excludeDatabases,
 						 String includeTables,
@@ -82,6 +97,10 @@ public class MaxwellFilter {
 		blacklistTables.add(compile(name));
 	}
 
+	public void includeColumnValue(String column, String value) throws MaxwellInvalidFilterException {
+		includeColumnValues.put(column, value);
+	}
+
 	public boolean isDatabaseWhitelist() {
 		return !includeDatabases.isEmpty();
 	}
@@ -128,6 +147,21 @@ public class MaxwellFilter {
 			return matchesDatabase(database);
 		}
 		return matchesDatabase(database) && matchesTable(table);
+	}
+
+	private boolean matchesValues(Map<String, Object> data) {
+		for (Map.Entry<String, String> entry : includeColumnValues.entrySet()) {
+			String column = entry.getKey();
+			String columnValue = entry.getValue();
+
+			Object value = data.get(column);
+			if (value == null) return false;
+
+			String valueString = value.toString();
+			if (!columnValue.equals(valueString)) return false;
+		}
+
+		return true;
 	}
 
 	public boolean isDatabaseBlacklisted(String databaseName) {
