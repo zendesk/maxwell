@@ -122,7 +122,6 @@ Set the output stream in `config.properties` by setting the `kinesis_stream` pro
 
 The producer uses the [KPL (Kinesis Producer Library)](http://docs.aws.amazon.com/streams/latest/dev/developing-producers-with-kpl.html) and uses the KPL built in configurations.
 Copy `kinesis-producer-library.properties.example` to `kinesis-producer-library.properties` and configure the properties file to your needs.
-The most important option here is configuring the region.
 
 You are **required** to configure the region. For example:
 
@@ -145,7 +144,7 @@ Remember: if you disable record aggregation, you will lose the benefit of potent
 
 ### SQS AWS credentials
 ***
-You will need to obtain an IAM user that has the permission to access the SQS service. The sqs producer also uses [DefaultAWSCredentialsProviderChain](http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html) to get aws credentials.
+You will need to obtain an IAM user that has the permission to access the SQS service. The SQS producer also uses [DefaultAWSCredentialsProviderChain](http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html) to get AWS credentials.
 
 See the [AWS docs](http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html) on how to setup the IAM user with the Default Credential Provider Chain.
 
@@ -153,7 +152,7 @@ In case you need to set up a different region also along with credentials then d
 
 ### SQS Options
 ***
-Set the output queue in the `config.properties` by setting the `sqs_queue_uri` property to full SQS queue uri from aws console.
+Set the output queue in the `config.properties` by setting the `sqs_queue_uri` property to full SQS queue uri from AWS console.
 
 The producer uses the [AWS SQS SDK](http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sqs/AmazonSQSClient.html).
 
