@@ -12,6 +12,9 @@ public class BinlogConnectorEvent {
 	public static final String BEGIN = "BEGIN";
 	public static final String COMMIT = "COMMIT";
 	public static final String SAVEPOINT = "SAVEPOINT";
+	public static final String INSERT = "insert";
+	public static final String UPDATE = "update";
+	public static final String DELETE = "delete";
 	private BinlogPosition position;
 	private BinlogPosition nextPosition;
 	private final Event event;
@@ -161,13 +164,13 @@ public class BinlogConnectorEvent {
 			case WRITE_ROWS:
 			case EXT_WRITE_ROWS:
 				for ( Serializable[] data : writeRowsData().getRows() ) {
-					list.add(buildRowMap("insert", nextPosition, data, table, writeRowsData().getIncludedColumns()));
+					list.add(buildRowMap(INSERT, nextPosition, data, table, writeRowsData().getIncludedColumns()));
 				}
 				break;
 			case DELETE_ROWS:
 			case EXT_DELETE_ROWS:
 				for ( Serializable[] data : deleteRowsData().getRows() ) {
-					list.add(buildRowMap("delete", nextPosition, data, table, deleteRowsData().getIncludedColumns()));
+					list.add(buildRowMap(DELETE, nextPosition, data, table, deleteRowsData().getIncludedColumns()));
 				}
 				break;
 			case UPDATE_ROWS:
@@ -176,7 +179,7 @@ public class BinlogConnectorEvent {
 					Serializable[] data = e.getValue();
 					Serializable[] oldData = e.getKey();
 
-					RowMap r = buildRowMap("update", nextPosition, data, table, updateRowsData().getIncludedColumns());
+					RowMap r = buildRowMap(UPDATE, nextPosition, data, table, updateRowsData().getIncludedColumns());
 					writeOldData(table, r, oldData, updateRowsData().getIncludedColumnsBeforeUpdate());
 					list.add(r);
 				}

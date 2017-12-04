@@ -12,7 +12,7 @@ password=maxwell
 
 ######### general stuff #############
 
-# choose where to produce data to. currently this is one of: stdout|file|kafka|kinesis|pubsub|rabbitmq|redis
+# choose where to produce data to. currently this is one of: stdout|file|kafka|kinesis|pubsub|rabbitmq|redis|graylog
 #producer=kafka
 
 # set delivery timeout (including acknowledgement) in milliseconds for a COMMIT row message that has been sent by the producer,
@@ -168,6 +168,13 @@ kinesis_stream=maxwell
 #redis_auth=redis_auth
 #redis_database=0
 #redis_pub_channel=maxwell
+
+######### graylog ######################
+#graylog_host=graylog_host
+#graylog_port=12201
+#graylog_transport=udp
+#graylog_additional_field.field_foo=foo
+#graylog_additional_field.field_bar=bar
 
 ######### filter stuff ###############
 

@@ -148,3 +148,23 @@ bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
 ```
 docker run -it --rm zendesk/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=redis --redis_host=$REDIS_HOST
 ```
+
+### Graylog Producer
+
+```
+bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
+    --producer=graylog \
+    --graylog_host=graylog.hostname \
+    --graylog_port=12201 \
+    --graylog_transport=udp
+```
+
+(or docker):
+
+```
+docker run -it --rm zendesk/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST \
+    --producer=graylog \
+    --graylog_host=$GRAYLOG_HOST \
+    --graylog_port=$GRAYLOG_PORT \
+    --graylog_transport=$GRAYLOG_TRANSPORT
+```

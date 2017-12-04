@@ -355,6 +355,9 @@ public class MaxwellContext {
 			case "redis":
 				this.producer = new MaxwellRedisProducer(this, this.config.redisPubChannel);
 				break;
+			case "graylog":
+				this.producer = new GraylogProdcuer(this);
+				break;
 			case "none":
 				this.producer = null;
 				break;
