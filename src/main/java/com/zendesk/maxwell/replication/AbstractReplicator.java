@@ -128,6 +128,11 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 			return MaxwellFilter.matches(filter, database, table);
 	}
 
+
+	protected boolean shouldOutputRowMap(String database, String table, RowMap rowMap, MaxwellFilter filter) {
+		return MaxwellFilter.matchesValues(filter, database, table, rowMap.getData());
+	}
+
 	/**
 	 * Get the last heartbeat that the replicator has processed.
 	 *

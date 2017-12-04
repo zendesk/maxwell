@@ -37,7 +37,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public String databaseName;
 
-	public String includeDatabases, excludeDatabases, includeTables, excludeTables, excludeColumns, blacklistDatabases, blacklistTables;
+	public String includeDatabases, excludeDatabases, includeTables, excludeTables, excludeColumns, blacklistDatabases, blacklistTables, includeColumnValues;
 
 	public ProducerFactory producerFactory; // producerFactory has precedence over producerType
 	public String producerType;
@@ -222,6 +222,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "exclude_columns", "exclude these columns, formatted as exclude_columns=col1,col2" ).withRequiredArg();
 		parser.accepts( "blacklist_dbs", "ignore data AND schema changes to these databases, formatted as blacklist_dbs=db1,db2. See the docs for details before setting this!").withRequiredArg();
 		parser.accepts( "blacklist_tables", "ignore data AND schema changes to these tables, formatted as blacklist_tables=tb1,tb2. See the docs for details before setting this!").withRequiredArg();
+		parser.accepts( "include_column_values", "include only rows with these values formatted as include_column_values=C=x,D=y").withRequiredArg();
 
 		parser.accepts( "__separator_8" );
 
@@ -424,12 +425,13 @@ public class MaxwellConfig extends AbstractConfig {
 		this.diagnosticConfig.enable = fetchBooleanOption("http_diagnostic", options, properties, false);
 		this.diagnosticConfig.timeout = fetchLongOption("http_diagnostic_timeout", options, properties, 10000L);
 
-		this.includeDatabases   = fetchOption("include_dbs", options, properties, null);
-		this.excludeDatabases   = fetchOption("exclude_dbs", options, properties, null);
-		this.includeTables      = fetchOption("include_tables", options, properties, null);
-		this.excludeTables      = fetchOption("exclude_tables", options, properties, null);
-		this.blacklistDatabases = fetchOption("blacklist_dbs", options, properties, null);
-		this.blacklistTables    = fetchOption("blacklist_tables", options, properties, null);
+		this.includeDatabases    = fetchOption("include_dbs", options, properties, null);
+		this.excludeDatabases    = fetchOption("exclude_dbs", options, properties, null);
+		this.includeTables       = fetchOption("include_tables", options, properties, null);
+		this.excludeTables       = fetchOption("exclude_tables", options, properties, null);
+		this.blacklistDatabases  = fetchOption("blacklist_dbs", options, properties, null);
+		this.blacklistTables     = fetchOption("blacklist_tables", options, properties, null);
+		this.includeColumnValues = fetchOption("include_column_values", options, properties, null);
 
 		if ( options != null && options.has("init_position")) {
 			String initPosition = (String) options.valueOf("init_position");
@@ -609,7 +611,8 @@ public class MaxwellConfig extends AbstractConfig {
 					includeTables,
 					excludeTables,
 					blacklistDatabases,
-					blacklistTables
+					blacklistTables,
+					includeColumnValues
 			);
 		} catch (MaxwellInvalidFilterException e) {
 			usage("Invalid filter options: " + e.getLocalizedMessage());
