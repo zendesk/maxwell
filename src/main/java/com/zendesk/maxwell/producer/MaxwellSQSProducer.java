@@ -66,10 +66,7 @@ class SQSCallback implements AsyncHandler<SendMessageRequest, SendMessageResult>
 	@Override
 	public void onSuccess(SendMessageRequest request, SendMessageResult result) {
 		if (logger.isDebugEnabled()) {
-			logger.debug("-> Message id:" + result.getMessageId() + ", sequence number:" + result.getSequenceNumber());
-			logger.debug("   " + json);
-			logger.debug("   " + position);
-			logger.debug("");
+			logger.debug("-> Message id:" + result.getMessageId() + ", sequence number:" + result.getSequenceNumber()+"  "+json+"  "+position);
 		}
 		cc.markCompleted();
 	}

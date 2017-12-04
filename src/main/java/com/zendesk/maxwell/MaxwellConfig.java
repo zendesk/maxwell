@@ -181,7 +181,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "kafka_key_format", "how to format the kafka key; array|hash").withRequiredArg();
 
 		parser.accepts( "kinesis_stream", "kinesis stream name").withOptionalArg();
-		parser.accepts("sqs_queue_uri", "SQS Queue uri").withOptionalArg();
+		parser.accepts("sqs_queue_uri", "SQS Queue uri").withRequiredArg();
 
 		parser.accepts( "pubsub_project_id", "provide a google cloud platform project id associated with the pubsub topic").withRequiredArg();
 		parser.accepts( "pubsub_topic", "optionally provide a pubsub topic to push to. default: maxwell").withRequiredArg();
