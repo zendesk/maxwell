@@ -190,7 +190,7 @@ public class MysqlIsolatedServer {
 
 	private String getVersionString() {
 		String mysqlVersion = System.getenv("MYSQL_VERSION");
-		return mysqlVersion == null ? "5.5" : mysqlVersion;
+		return mysqlVersion == null ? "5.6" : mysqlVersion;
 	}
 
 	public MysqlVersion getVersion() {

@@ -1,13 +1,13 @@
 ### Download
 ***
-- Download binary distro: [https://github.com/zendesk/maxwell/releases/download/v1.10.5/maxwell-1.10.5.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.10.5/maxwell-1.10.5.tar.gz)
+- Download binary distro: [https://github.com/zendesk/maxwell/releases/download/v1.11.0/maxwell-1.11.0.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.11.0/maxwell-1.11.0.tar.gz)
 - Sources and bug tracking is available on github: [https://github.com/zendesk/maxwell](https://github.com/zendesk/maxwell)
 - Obligatory copy/paste to terminal:
 
 ```
-curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.10.5/maxwell-1.10.5.tar.gz \
+curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.11.0/maxwell-1.11.0.tar.gz \
        | tar zxvf -
-cd maxwell-1.10.5
+cd maxwell-1.11.0
 ```
 
 or get the docker image:
@@ -115,3 +115,36 @@ This will start writing to the topic "maxwell".
 docker run -it --rm --name maxwell -v `cd && pwd`/.aws:/root/.aws zendesk/maxwell sh -c 'cp /app/kinesis-producer-library.properties.example /app/kinesis-producer-library.properties && echo "Region=$AWS_DEFAULT_REGION" >> /app/kinesis-producer-library.properties && bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kinesis --kinesis_stream=$KINESIS_STREAM'
 ```
 
+### Google Cloud Pub/Sub Producer
+
+```
+bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
+  --producer=pubsub --pubsub_project_id='$PUBSUB_PROJECT_ID' \
+  --pubsub_topic='maxwell'
+```
+
+(or docker):
+
+```
+docker run -it --rm zendesk/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=pubsub --pubsub_project_id='$PUBSUB_PROJECT_ID' --pubsub_topic='maxwell'
+```
+
+### RabbitMQ Producer
+
+```
+bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
+    --producer=rabbitmq --rabbitmq_host='rabbitmq.hostname'
+```
+
+### Redis Producer
+
+```
+bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
+    --producer=redis --redis_host=redis.hostname
+```
+
+(or docker):
+
+```
+docker run -it --rm zendesk/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=redis --redis_host=$REDIS_HOST
+```

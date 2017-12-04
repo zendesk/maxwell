@@ -6,6 +6,7 @@ import java.io.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
+import com.zendesk.maxwell.row.RowEncrypt;
 import com.zendesk.maxwell.row.RowMap;
 import org.apache.commons.lang3.StringUtils;
 
@@ -22,6 +23,16 @@ public class MaxwellTestJSON {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
 		return mapper.readValue(json, MAP_STRING_OBJECT_REF);
+	}
+
+	public static Map<String, Object> parseEncryptedJSON(Map<String,Object> json, String secretKey) throws Exception {
+		Map<String, String> encrypted = (Map)json.get("encrypted");
+		if (encrypted == null) {
+			return null;
+		}
+		String init_vector = encrypted.get("iv");
+		String plaintext = RowEncrypt.decrypt(encrypted.get("bytes").toString(), secretKey, init_vector);
+		return parseJSON(plaintext);
 	}
 
 	public static void assertJSON(List<Map<String, Object>> jsonOutput, List<Map<String, Object>> jsonAsserts) {

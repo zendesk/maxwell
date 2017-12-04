@@ -19,8 +19,8 @@ name: ( id | tokens_available_for_names | INTEGER_LITERAL);
 id: ( IDENT | QUOTED_IDENT );
 literal: (float_literal | integer_literal | string_literal | NULL | TRUE | FALSE);
 
-float_literal: '-'? INTEGER_LITERAL? '.' INTEGER_LITERAL;
-integer_literal: '-'? INTEGER_LITERAL;
+float_literal: ('+'|'-')? INTEGER_LITERAL? '.' INTEGER_LITERAL;
+integer_literal: ('+'|'-')? INTEGER_LITERAL;
 string_literal: (STRING_LITERAL | DBL_STRING_LITERAL);
 
 string: (IDENT | STRING_LITERAL);
@@ -31,7 +31,7 @@ default_character_set: DEFAULT? charset_token '='? charset_name collation?;
 default_collation: DEFAULT? collation;
 
 // it's not documented, but either "charset 'utf8'" or "character set 'utf8'" is valid.
-charset_token: (CHARSET | (CHARACTER SET));
+charset_token: (CHARSET | (CHARACTER SET) | (CHAR SET));
 collation: COLLATE '='? (IDENT | string_literal | QUOTED_IDENT);
 
 if_not_exists: IF NOT EXISTS;

@@ -14,6 +14,7 @@ import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
 import com.zendesk.maxwell.TestWithNameLogging;
+import com.zendesk.maxwell.row.RawJSONString;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -119,11 +120,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 
 	@Test
 	public void TestAsciiString() {
-		byte input[] = new byte[4];
-		input[0] = Byte.valueOf((byte) 126);
-		input[1] = Byte.valueOf((byte) 126);
-		input[2] = Byte.valueOf((byte) 126);
-		input[3] = Byte.valueOf((byte) 126);
+		byte input[] = new byte[] { (byte) 126, (byte) 126, (byte) 126, (byte) 126 };
 
 		ColumnDef d = ColumnDef.build("bar", "ascii", "varchar", 1, false, null, null);
 		assertThat((String) d.asJSON(input), is("~~~~"));
@@ -131,15 +128,32 @@ public class ColumnDefTest extends TestWithNameLogging {
 
 	@Test
 	public void TestStringAsJSON() {
-		byte input[] = new byte[4];
-		input[0] = Byte.valueOf((byte) 169);
-		input[1] = Byte.valueOf((byte) 169);
-		input[2] = Byte.valueOf((byte) 169);
-		input[3] = Byte.valueOf((byte) 169);
+		byte input[] = new byte[] { (byte) 169, (byte) 169, (byte) 169, (byte) 169 };
 
 		ColumnDef d = ColumnDef.build("bar", "latin1", "varchar", 1, false, null, null);
 
 		assertThat((String) d.asJSON(input), is("©©©©"));
+	}
+
+	@Test
+	public void TestJSON() {
+		byte input[] = new byte[] { (byte) 0, (byte) 1, (byte) 0, (byte) 13, (byte) 0, (byte) 11,
+				(byte) 0, (byte) 2, (byte) 0, (byte) 5, (byte) 3, (byte) 0, (byte) 105, (byte) 100 };
+
+		ColumnDef d = ColumnDef.build("bar", "ascii", "json", 1, false, null, null);
+
+		RawJSONString result = (RawJSONString) d.asJSON(input);
+		assertThat(result.json, is("{\"id\":3}"));
+	}
+
+	@Test
+	public void TestEmptyJSON() {
+		byte input[] = new byte[0];
+
+		ColumnDef d = ColumnDef.build("bar", "ascii", "json", 1, false, null, null);
+
+		RawJSONString result = (RawJSONString) d.asJSON(input);
+		assertThat(result.json, is("null"));
 	}
 
 	@Test

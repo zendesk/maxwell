@@ -2,7 +2,7 @@ package com.zendesk.maxwell.producer;
 
 import com.zendesk.maxwell.MaxwellConfig;
 import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.metrics.NoOpMetrics;
+import com.zendesk.maxwell.monitoring.NoOpMetrics;
 import org.junit.Test;
 
 import java.util.Properties;

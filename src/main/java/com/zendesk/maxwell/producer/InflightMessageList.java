@@ -6,57 +6,119 @@ package com.zendesk.maxwell.producer;
    Assumes .addInflight(position) will be call monotonically.
    */
 
-import com.codahale.metrics.Gauge;
-import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.replication.Position;
 
-import java.util.LinkedHashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 public class InflightMessageList {
+
 	class InflightMessage {
 		public final Position position;
 		public boolean isComplete;
+		public final long sendTimeMS;
+
 		InflightMessage(Position p) {
 			this.position = p;
 			this.isComplete = false;
+			this.sendTimeMS = System.currentTimeMillis();
+		}
+
+		long timeSinceSendMS() {
+			return System.currentTimeMillis() - sendTimeMS;
 		}
 	}
 
-	private LinkedHashMap<Position, InflightMessage> linkedMap;
+	private static final long INIT_CAPACITY = 1000;
+	private static final double COMPLETE_PERCENTAGE_THRESHOLD = 0.9;
 
-	public InflightMessageList() {
-		this.linkedMap = new LinkedHashMap<>();
+	private final LinkedHashMap<Position, InflightMessage> linkedMap;
+	private final MaxwellContext context;
+	private final long capacity;
+	private final long producerAckTimeoutMS;
+	private final double completePercentageThreshold;
+	private volatile boolean isFull;
+
+	public InflightMessageList(MaxwellContext context) {
+		this(context, INIT_CAPACITY, COMPLETE_PERCENTAGE_THRESHOLD);
 	}
 
-	public synchronized void addMessage(Position p) {
-		InflightMessage m = new InflightMessage(p);
-		this.linkedMap.put(p, m);
+	public InflightMessageList(MaxwellContext context, long capacity, double completePercentageThreshold) {
+		this.context = context;
+		this.producerAckTimeoutMS = context.getConfig().producerAckTimeout;
+		this.completePercentageThreshold = completePercentageThreshold;
+		this.linkedMap = new LinkedHashMap<>();
+		this.capacity = capacity;
+	}
+
+	public void addMessage(Position p) throws InterruptedException {
+		synchronized (this.linkedMap) {
+			while (isFull) {
+				this.linkedMap.wait();
+			}
+
+			InflightMessage m = new InflightMessage(p);
+			this.linkedMap.put(p, m);
+
+			if (linkedMap.size() >= capacity) {
+				isFull = true;
+			}
+		}
 	}
 
 	/* returns the position that stuff is complete up to, or null if there were no changes */
-	public synchronized Position completeMessage(Position p) {
-		InflightMessage m = this.linkedMap.get(p);
-		assert(m != null);
+	public InflightMessage completeMessage(Position p) {
+		synchronized (this.linkedMap) {
+			InflightMessage m = this.linkedMap.get(p);
+			assert(m != null);
 
-		m.isComplete = true;
+			m.isComplete = true;
 
-		Position completeUntil = null;
-		Iterator<InflightMessage> iterator = this.linkedMap.values().iterator();
+			InflightMessage completeUntil = null;
+			Iterator<InflightMessage> iterator = iterator();
 
-		while ( iterator.hasNext() ) {
-			InflightMessage msg = iterator.next();
-			if ( !msg.isComplete )
-				break;
+			while ( iterator.hasNext() ) {
+				InflightMessage msg = iterator.next();
+				if ( !msg.isComplete ) {
+					break;
+				}
 
-			completeUntil = msg.position;
-			iterator.remove();
+				completeUntil = msg;
+				iterator.remove();
+			}
+
+			if (isFull && linkedMap.size() < capacity) {
+				isFull = false;
+				this.linkedMap.notify();
+			}
+
+			// If the head is stuck for the length of time (configurable) and majority of the messages have completed,
+			// we assume the head will unlikely get acknowledged, hence terminate Maxwell.
+			// This gatekeeper is the last resort since if anything goes wrong,
+			// producer should have raised exceptions earlier than this point when all below conditions are met.
+			if (producerAckTimeoutMS > 0 && isFull) {
+				Iterator<InflightMessage> it = iterator();
+				if (it.hasNext() && it.next().timeSinceSendMS() > producerAckTimeoutMS && completePercentage() >= completePercentageThreshold) {
+					context.terminate(new IllegalStateException(
+							"Did not receive acknowledgement for the head of the inflight message list for " + producerAckTimeoutMS + " ms"));
+				}
+			}
+
+			return completeUntil;
 		}
-
-		return completeUntil;
 	}
 
 	public int size() {
 		return linkedMap.size();
+	}
+
+	private double completePercentage() {
+		long completed = linkedMap.values().stream().filter(m -> m.isComplete).count();
+		return completed / ((double) linkedMap.size());
+	}
+
+	private Iterator<InflightMessage> iterator() {
+		return this.linkedMap.values().iterator();
 	}
 }

@@ -1,71 +1,69 @@
 #!/bin/bash
 
-base_dir=$(dirname $0)/..
+set -e
 
-args="$@"
+base_dir="$(dirname "$0")/.."
+lib_dir="$base_dir/lib"
+lib_dir_development="$base_dir/target/lib"
+if [ ! -e "$lib_dir" -a -e "$lib_dir_development" ]; then
+	lib_dir="$lib_dir_development"
+	CLASSPATH="$CLASSPATH:$base_dir/target/classes"
+fi
 
-# Which version of kafka-clients will be loaded, based on the --kafka_version
-# flag. If none is specified default to 0.9.0
-# valid options are 0.8, 0.9, 0.10, 0.10.1, 0.10.2
+CLASSPATH="$CLASSPATH:$lib_dir/*"
 
-KAFKA_VERSION=0.9
+KAFKA_VERSION="0.11.0.1"
 
-KAFKA_08="0.8.2.2"
-KAFKA_09="0.9.0.1"
-KAFKA_10="0.10.0.1"
-KAFKA_101="0.10.1.0"
-KAFKA_102="0.10.2.1"
-
-WANTED_VERSION=""
-
-CLASSPATH=$CLASSPATH:$base_dir/target/classes:../open-replicator/target/classes
-for key in $args
-do
-	case $key in
-		--kafka_version)
-		KAFKA_VERSION="$2"
-		shift # past argument
+function use_kafka() {
+	wanted="$1"
+	# disambiguate versions into the latest,
+	# e.g. asking for 0.10 means you want the
+	# latest 0.10.x release
+	case "$wanted" in
+		0.11)
+		KAFKA_VERSION=0.11.0.1
 		;;
-		--kafka_version=*)
-		KAFKA_VERSION="${key#*=}"
-		shift # past argument
+
+		0.10)
+		KAFKA_VERSION=0.10.2.1
+		;;
+
+		*)
+		KAFKA_VERSION="$wanted"
 		;;
 	esac
-	shift # past argument or value
-done
+}
 
-case "$KAFKA_VERSION" in
-	0.8)
-	WANTED_VERSION=$KAFKA_08
-	;;
-	0.9)
-	WANTED_VERSION=$KAFKA_09
-	;;
-	0.10)
-	WANTED_VERSION=$KAFKA_10
-	;;
-	0.10.1)
-	WANTED_VERSION=$KAFKA_101
-	;;
-	0.10.2)
-	WANTED_VERSION=$KAFKA_102
-	;;
-	*)
-	echo "Unsupported --kafka_version: $KAFKA_VERSION" >&2
-	exit 1
-	;;
-esac
-
-for file in lib/*.jar target/dependency/*.jar;
+for key in "$@"
 do
-	# keep all non-kafka-client jars
-	# keep the kafka-client jar for the version we want
-	if [[ ! $file == *kafka-clients-* ]];then
-		CLASSPATH=$CLASSPATH:$file
-	elif [[ $file == *kafka-clients-$WANTED_VERSION.jar* ]]; then
-		CLASSPATH=$CLASSPATH:$file
-	fi
+	case "$key" in
+		--kafka_version)
+		use_kafka "$2"
+		;;
+
+		--kafka_version=*)
+		use_kafka "${key#*=}"
+		;;
+
+	esac
 done
+
+kafka_client_dir="$lib_dir/kafka-clients"
+kafka_client_jar="$(ls -1 "$kafka_client_dir/kafka-clients-$KAFKA_VERSION"*.jar 2>/dev/null || true)"
+if [ -z "$kafka_client_jar" -o "$(echo "$kafka_client_jar" | wc -l)" -gt 1 ]; then
+
+	if [ -z "$kafka_client_jar" ]; then
+		echo "Error: No matches for kafka version: $KAFKA_VERSION"
+	else
+		echo "Error: Multiple matches for kafka version: $KAFKA_VERSION"
+	fi
+	echo "Supported versions:"
+	ls -1 "$kafka_client_dir" | sed -e 's/^kafka-clients-/ - /' -e 's/\.jar$//'
+	exit 1
+else
+	echo "Using kafka version: $KAFKA_VERSION"
+	CLASSPATH="$CLASSPATH:$kafka_client_jar"
+fi
 
 if [ -z "$JAVA_HOME" ]; then
 	JAVA="java"
@@ -73,4 +71,4 @@ else
 	JAVA="$JAVA_HOME/bin/java"
 fi
 
-exec $JAVA $JAVA_OPTS -Dfile.encoding=UTF-8 -Dlog4j.shutdownCallbackRegistry=com.djdch.log4j.StaticShutdownCallbackRegistry -cp $CLASSPATH com.zendesk.maxwell.Maxwell $args
+exec $JAVA $JAVA_OPTS -Dfile.encoding=UTF-8 -Dlog4j.shutdownCallbackRegistry=com.djdch.log4j.StaticShutdownCallbackRegistry -cp $CLASSPATH com.zendesk.maxwell.Maxwell "$@"

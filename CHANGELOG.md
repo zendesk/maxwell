@@ -1,5 +1,44 @@
 # Maxwell changelog
 
+### [v1.11.0](https://github.com/zendesk/maxwell/releases/tag/v1.11.0): "the latest, the greatest"
+
+
+     - default kafka client upgrades to 0.11.0.1
+     - fix the encryption issue (https://github.com/zendesk/maxwell/issues/803)
+
+
+### [v1.10.9](https://github.com/zendesk/maxwell/releases/tag/v1.10.9): "no one left behind"
+
+We recommend all v1.10.7 and v1.10.8 users upgrade to v1.10.9.
+
+ - Add missing Kafka clients
+ - Listen and report on binlog connector lifecycle events for better visibility
+ - Reduce docker image size
+
+
+### [v1.10.8](https://github.com/zendesk/maxwell/releases/tag/v1.10.8): "what doesn't kill you makes you stronger"
+
+
+ - Fix docker builds
+ - Add Google Cloud Pub/Sub producer
+ - RabbitMQ producer enhancements
+
+
+### [v1.10.7](https://github.com/zendesk/maxwell/releases/tag/v1.10.7): "it's never too l8!"
+
+- Java 8 upgrade
+- Diagnostic health check endpoint
+- Encryption
+- Documentation update: encryption, kinesis producer, schema storage fundamentals, etc.
+
+### [v1.10.6](https://github.com/zendesk/maxwell/releases/tag/v1.10.6): "a new starter is here"
+
+
+ - Binlog-connector upgrade
+ - Bug-fix: when using literal string for an option that accepts Regex, Regex characters are no longer special
+ - If master recovery is enabled, Maxwell cleans up old positions for the same server and client id
+
+
 ### [v1.10.5](https://github.com/zendesk/maxwell/releases/tag/v1.10.5): "half asleep on her couch"
 
 

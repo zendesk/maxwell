@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'bundler/setup'
+require 'tempfile'
 require 'octokit'
 
 REPO="zendesk/maxwell"
@@ -18,7 +19,7 @@ end
 puts "Releasing version: #{$version}"
 
 if ( $command = ARGV[1] )
-  unless ["changelog", "bump", "build", "tag", "release"].include?($command)
+  unless ["changelog", "bump", "build", "tag", "release", "docs"].include?($command)
     abort("unknown subcommand: #{$command}")
   end
 end
@@ -72,6 +73,9 @@ def release
 
   release = client.create_release(REPO, 'v' + $version, name: release_title, body: release_body, prerelease: prerelease?)
   client.upload_asset(release.url, BINDIR + "/../target/maxwell-#{$version}.tar.gz")
+end
+
+def docs
   do_system(BINDIR + "/../docs/push")
 end
 
@@ -86,6 +90,7 @@ else
   build
   tag
   release
+  docs
   sleep 2
   changelog
 end

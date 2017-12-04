@@ -1,24 +1,25 @@
 package com.zendesk.maxwell.recovery;
 
-import com.zendesk.maxwell.*;
-import com.zendesk.maxwell.metrics.Metrics;
-import com.zendesk.maxwell.metrics.NoOpMetrics;
+import com.zendesk.maxwell.CaseSensitivity;
+import com.zendesk.maxwell.MaxwellMysqlConfig;
+import com.zendesk.maxwell.monitoring.Metrics;
+import com.zendesk.maxwell.monitoring.NoOpMetrics;
 import com.zendesk.maxwell.replication.BinlogConnectorReplicator;
 import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.replication.HeartbeatNotifier;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.replication.Replicator;
 import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import snaq.db.ConnectionPool;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
-import snaq.db.ConnectionPool;
 
 public class Recovery {
 	static final Logger LOGGER = LoggerFactory.getLogger(Recovery.class);
@@ -66,7 +67,8 @@ public class Recovery {
 					metrics,
 					position,
 					true,
-					recoveryInfo.clientID
+					recoveryInfo.clientID,
+					new HeartbeatNotifier()
 			);
 
 			replicator.setFilter(new RecoveryFilter(this.maxwellDatabaseName));

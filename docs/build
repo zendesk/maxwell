@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -eux
+cd $(dirname $0)
+./clean
+git worktree add site origin/gh-pages
+mkdocs build --clean && cp CNAME site
+

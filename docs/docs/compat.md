@@ -36,4 +36,15 @@ Notes:
 - on highly active servers, as much as 1 second of data may be duplicated.
 - master recovery is not available in GTID-mode.
 
+### MySQL binlog connector
+***
 
+As of 1.11.0, maxwell uses [shyiko/mysql-binlog-connector-java][] as its underlying
+replication library (previously it was opt-in via `--binlog_connector`). This is
+largely compatible with the previous OpenReplicator implementation, but there are some differences:
+
+ - TIMESTAMP columns are always treated as UTC, regardless of your timezone. See
+   [issue #681][issue-681] for more details.
+
+[shyiko/mysql-binlog-connector-java]: https://github.com/shyiko/mysql-binlog-connector-java
+[issue-681]: https://github.com/zendesk/maxwell/issues/681

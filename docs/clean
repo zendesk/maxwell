@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -eux
+cd $(dirname $0)
+rm -rf site
+git worktree prune
+

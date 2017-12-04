@@ -162,7 +162,7 @@ producer_partition_columns        | STRING                              | if par
 producer_partition_by_fallback    | [database &#124; table &#124; primary_key]        | required when producer_partition_by=column.  Used when the column is missing |
 kafka_partition_hash           | [default &#124; murmur3]                   | hash function to use when hoosing kafka partition   | default
 ddl_kafka_topic                | STRING                              | if output_ddl is true, kafka topic to write DDL changes to | *kafka_topic*
-kafka_version                  | [0.8 &#124; 0.9 &#124; 0.10 &#124; 0.10.1 &#124; 0.10.2]                      | run maxwell with kafka producer 0.8.2, 0.9.0, 0.10.0.1, 0.10.1.0 or 0.10.2.1.  Not available in config.properties. | 0.9.0
+kafka_version                  | [0.8.2.2 &#124; 0.9.0.1 &#124; 0.10.0.1 &#124; 0.10.2.1 &#124; 0.11.0.1]                      | run maxwell with kafka producer 0.8.2.2, 0.9.0.1, 0.10.0.1, 0.10.2.1 or 0.11.0.1  Not available in config.properties. | 0.11.0.1
 &nbsp;
 kinesis_stream                 | STRING                              | kinesis stream name |
 &nbsp;
@@ -182,6 +182,9 @@ exclude_tables                 | PATTERN                             | ignore up
 blacklist_dbs                  | PATTERN                             | ignore updates AND schema changes from databases (see warnings below) |
 blacklist_tables               | PATTERN                             | ignore updates AND schema changes from tables named like PATTERN (see warnings below) |
 &nbsp;
+**encryption**
+encrypt                        | [ none &#124; data &#124; all ]     | encrypt mode: none = no encryption. "data": encrypt the `data` field only. `all`: encrypt entire maxwell message | none
+secret_key                     | STRING                              | specify the encryption key to be used               | null
 **monitoring**
 metrics_prefix | STRING | the prefix maxwell will apply to all metrics | MaxwellMetrics
 metrics_type         | [slf4j &#124; jmx &#124; http &#124; datadog]      | how maxwell metrics will be reported, at least one of slf4j &#124; jmx &#124; http &#124; datadog|

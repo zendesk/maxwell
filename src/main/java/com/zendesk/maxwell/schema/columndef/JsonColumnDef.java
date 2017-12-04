@@ -20,7 +20,8 @@ public class JsonColumnDef extends ColumnDef {
 	@Override
 	public Object asJSON(Object value) {
 		try {
-			String jsonString = JsonBinary.parseAsString((byte[]) value);
+			byte[] bytes = (byte[]) value;
+			String jsonString = bytes.length > 0 ? JsonBinary.parseAsString(bytes) : "null";
 			return new RawJSONString(jsonString);
 		} catch (IOException e) {
 			throw new RuntimeException(e);

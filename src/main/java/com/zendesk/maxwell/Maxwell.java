@@ -26,8 +26,12 @@ public class Maxwell implements Runnable {
 	static final Logger LOGGER = LoggerFactory.getLogger(Maxwell.class);
 
 	public Maxwell(MaxwellConfig config) throws SQLException {
-		this.config = config;
-		this.context = new MaxwellContext(this.config);
+		this(new MaxwellContext(config));
+	}
+
+	protected Maxwell(MaxwellContext context) throws SQLException {
+		this.config = context.getConfig();
+		this.context = context;
 		this.context.probeConnections();
 	}
 
@@ -81,8 +85,6 @@ public class Maxwell implements Runnable {
 				);
 
 				oldServerSchemaStore.clone(context.getServerID(), recoveredPosition);
-
-				positionStore.delete(recoveryInfo.serverID, recoveryInfo.clientID, recoveryInfo.position);
 			}
 		}
 		return recoveredPosition;
@@ -105,10 +107,12 @@ public class Maxwell implements Runnable {
 				}
 			}
 
-			if (initial != null) {
-				/* if the initial position didn't come from the store, store it */
-				context.getPositionStore().set(initial);
-			}
+			/* if the initial position didn't come from the store, store it */
+			context.getPositionStore().set(initial);
+		}
+
+		if (config.masterRecovery) {
+			this.context.getPositionStore().cleanupOldRecoveryInfos();
 		}
 
 		return initial;
@@ -129,12 +133,15 @@ public class Maxwell implements Runnable {
 	}
 
 	protected void onReplicatorStart() {}
+	protected void onReplicatorEnd() {}
+
 	private void start() throws Exception {
 		try {
 			startInner();
 		} catch ( Exception e) {
 			this.context.terminate(e);
 		} finally {
+			onReplicatorEnd();
 			this.terminate();
 		}
 

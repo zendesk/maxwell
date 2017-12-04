@@ -93,6 +93,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	public void testCreateAndDropDatabase() throws Exception {
 		String sql[] = {
 			"create DATABASE test_db default character set='utf8'",
+			"create DATABASE test_db_1 default char set='utf8'",
 			"create DATABASE if not exists test_db",
 			"create DATABASE test_db_2",
 			"drop DATABASE test_db"
@@ -423,5 +424,18 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String[] sql = {"create database TestDatabaseCreate2"};
 		List<RowMap> rows = getRowsForDDLTransaction(sql, excludeDb("TestDatabaseCreate2"));
 		assertEquals(0, rows.size());
+	}
+
+	@Test
+	public void testDatabaseChangeWithTableFilter() throws Exception {
+		String[] sql = {
+				"create database TestDatabaseCreate3",
+				"create table `TestDatabaseCreate3`.`chicken` ( id int )",
+				"create table `TestDatabaseCreate3`.`burger` ( id int )"
+		};
+		List<RowMap> rows = getRowsForDDLTransaction(sql, excludeTable("chicken"));
+		assertEquals(2, rows.size());
+		assertTrue(rows.get(0).toJSON(ddlOutputConfig()).contains("\"type\":\"database-create\",\"database\":\"TestDatabaseCreate3\""));
+		assertTrue(rows.get(1).toJSON(ddlOutputConfig()).contains("\"type\":\"table-create\",\"database\":\"TestDatabaseCreate3\",\"table\":\"burger\""));
 	}
 }

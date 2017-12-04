@@ -124,6 +124,9 @@ public class MaxwellFilter {
 	}
 
 	public boolean matches(String database, String table) {
+		if (table == null) {
+			return matchesDatabase(database);
+		}
 		return matchesDatabase(database) && matchesTable(table);
 	}
 
