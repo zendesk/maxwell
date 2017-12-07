@@ -26,7 +26,7 @@
       <directory>${project.build.directory}</directory>
       <outputDirectory>lib</outputDirectory>
       <includes>
-        <include>maxwell-finnplay-${project.version}.jar</include>
+        <include>maxwell-${project.version}.jar</include>
       </includes>
     </fileSet>
   </fileSets>
