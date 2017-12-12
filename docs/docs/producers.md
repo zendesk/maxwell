@@ -142,6 +142,21 @@ AggregationEnabled=false
 
 Remember: if you disable record aggregation, you will lose the benefit of potentially greater producer throughput.
 
+### SQS AWS credentials
+***
+You will need to obtain an IAM user that has the permission to access the SQS service. The SQS producer also uses [DefaultAWSCredentialsProviderChain](http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html) to get AWS credentials.
+
+See the [AWS docs](http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html) on how to setup the IAM user with the Default Credential Provider Chain.
+
+In case you need to set up a different region also along with credentials then default one, see the [AWS docs](http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html#setup-credentials-setting-region).
+
+### SQS Options
+***
+Set the output queue in the `config.properties` by setting the `sqs_queue_uri` property to full SQS queue uri from AWS console.
+
+The producer uses the [AWS SQS SDK](http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sqs/AmazonSQSClient.html).
+
+
 ### Google Cloud Pub/Sub Options
 ***
 In order to publish to Google Cloud Pub/Sub, you will need to obtain an IAM service account that has been granted the `roles/pubsub.publisher` role.
