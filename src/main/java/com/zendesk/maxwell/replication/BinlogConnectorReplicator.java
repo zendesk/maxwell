@@ -145,7 +145,7 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 		BinlogConnectorEvent event;
 		RowMapBuffer buffer = new RowMapBuffer(MAX_TX_ELEMENTS);
 
-		String temporaryQuery = "";
+		String currentQuery = "";
 
 		while ( true ) {
 			event = pollEvent();
@@ -179,10 +179,10 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 					Table table = tableCache.getTable(event.getTableID());
 
 					if ( table != null && shouldOutputEvent(table.getDatabase(), table.getName(), filter) ) {
-						for ( RowMap r : event.jsonMaps(table, lastHeartbeatPosition, temporaryQuery) )
+						for ( RowMap r : event.jsonMaps(table, lastHeartbeatPosition, currentQuery) )
 							buffer.add(r);
 					}
-					temporaryQuery = "";
+					currentQuery = "";
 					break;
 				case TABLE_MAP:
 					TableMapEventData data = event.tableMapData();
@@ -190,7 +190,7 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 					break;
 				case ROWS_QUERY:
 					RowsQueryEventData rqed = event.getEvent().getData();
-					temporaryQuery = rqed.getQuery();
+					currentQuery = rqed.getQuery();
 					break;
 				case QUERY:
 					QueryEventData qe = event.queryData();
