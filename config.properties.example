@@ -4,6 +4,9 @@ log_level=info
 producer=kafka
 kafka.bootstrap.servers=localhost:9092
 
+# Timeout is used to connect to MySQL server to establish replication stream
+#replication_connection_timeout=50000
+
 # mysql login info
 host=localhost
 user=maxwell

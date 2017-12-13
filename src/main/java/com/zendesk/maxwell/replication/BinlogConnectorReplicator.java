@@ -41,6 +41,7 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 	private boolean hitEOF = false;
 	private Histogram transactionRowCount;
 	private Histogram transactionExecutionTime;
+	private long replicationConnectionTimeout;
 
 	public BinlogConnectorReplicator(
 		SchemaStore schemaStore,
@@ -53,10 +54,12 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 		Position start,
 		boolean stopOnEOF,
 		String clientID,
-		HeartbeatNotifier heartbeatNotifier
+		HeartbeatNotifier heartbeatNotifier,
+		Long replicationConnectionTimeout
 	) {
 		super(clientID, bootstrapper, maxwellSchemaDatabaseName, producer, metrics, start, heartbeatNotifier);
 		this.schemaStore = schemaStore;
+		this.replicationConnectionTimeout = replicationConnectionTimeout;
 		transactionExecutionTime = metrics.getRegistry().histogram(metrics.metricName("transaction", "execution_time"));
 		transactionRowCount = metrics.getRegistry().histogram(metrics.metricName("transaction", "row_count"));
 
@@ -99,7 +102,8 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 			start,
 			false,
 			ctx.getConfig().clientID,
-			ctx.getHeartbeatNotifier()
+			ctx.getHeartbeatNotifier(),
+			ctx.getConfig().replicationConnectionTimeout
 		);
 	}
 
@@ -109,12 +113,12 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 			String binlogPos = client.getBinlogFilename() + ":" + client.getBinlogPosition();
 			String position = gtidStr == null ? binlogPos : gtidStr;
 			LOGGER.warn("replicator stopped at position: " + position + " -- restarting");
-			client.connect(5000);
+			client.connect(this.replicationConnectionTimeout);
 		}
 	}
 
 	public void startReplicator() throws Exception {
-		this.client.connect(5000);
+		this.client.connect(this.replicationConnectionTimeout);
 	}
 
 	@Override
