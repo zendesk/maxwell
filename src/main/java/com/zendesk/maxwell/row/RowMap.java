@@ -262,7 +262,7 @@ public class RowMap implements Serializable {
 		g.writeStringField("database", this.database);
 		g.writeStringField("table", this.table);
 
-		if ( outputConfig.includesRowQuery ) {
+		if ( outputConfig.includesRowQuery && this.rowQuery != null) {
 			g.writeStringField("query", this.rowQuery);
 		}
 
