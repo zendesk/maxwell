@@ -65,7 +65,7 @@ public class UpdateRowsEvent extends AbstractRowsEvent {
 			RowMap rowMap = buildRowMap();
 
 			for ( ColumnWithDefinition cd : new ColumnWithDefinitionList(table, after, event.getUsedColumnsAfter())) {
-				rowMap.putData(cd.definition.getName(), cd.asJSON());
+				rowMap.putData(cd.definition.getName(), cd.asJSON(), cd.definition);
 			}
 
 			for ( ColumnWithDefinition cd : new ColumnWithDefinitionList(table, before, event.getUsedColumnsBefore())) {
@@ -81,10 +81,10 @@ public class UpdateRowsEvent extends AbstractRowsEvent {
 					   In order to reconstruct as much of the row as posssible, here we fill in
 					   missing data in the rowMap with values from the BEFORE image
 					 */
-					rowMap.putData(name, beforeValue);
+					rowMap.putData(name, beforeValue, cd.definition);
 				} else {
 					if (!Objects.equals(rowMap.getData(name), beforeValue)) {
-						rowMap.putOldData(name, beforeValue);
+						rowMap.putOldData(name, beforeValue, cd.definition);
 					}
 				}
 			}

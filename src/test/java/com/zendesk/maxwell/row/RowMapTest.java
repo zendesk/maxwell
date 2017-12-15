@@ -4,6 +4,10 @@ import com.zendesk.maxwell.MaxwellTestJSON;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.Position;
+import com.zendesk.maxwell.schema.columndef.ColumnDef;
+import com.zendesk.maxwell.schema.columndef.IntColumnDef;
+import com.zendesk.maxwell.schema.columndef.StringColumnDef;
+import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -21,12 +25,18 @@ public class RowMapTest {
 	@Test
 	public void testGetDataMaps() throws Exception {
 		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", 1234567890L, new ArrayList<String>(), null);
-		rowMap.putData("foo", "bar");
-		rowMap.putOldData("fiz", "buz");
+		rowMap.putData("foo", "bar", ColumnDef.build("foo", "utf-8", "varchar", 0, false, null, 100L));
+		rowMap.putData("foo2", 4294967290L, ColumnDef.build("foo2", null, "int", 1, true, null, null));
+		rowMap.putOldData("fiz", "buz", ColumnDef.build("fiz", "utf-8", "varchar", 2, false, null, 100L));
 
 		// Sanity check.
 		Assert.assertEquals("bar", rowMap.getData("foo"));
+		Assert.assertEquals(4294967290L, rowMap.getData("foo2"));
 		Assert.assertEquals("buz", rowMap.getOldData("fiz"));
+
+		Assert.assertTrue(rowMap.getDataColumnDef("foo") instanceof StringColumnDef);
+		Assert.assertTrue(rowMap.getDataColumnDef("foo2") instanceof IntColumnDef);
+		Assert.assertTrue(rowMap.getOldDataColumnDef("fiz") instanceof StringColumnDef);
 
 		// Get data maps.
 		LinkedHashMap<String, Object> data = rowMap.getData();

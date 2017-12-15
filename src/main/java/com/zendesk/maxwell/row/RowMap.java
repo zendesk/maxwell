@@ -5,6 +5,7 @@ import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.Position;
+import com.zendesk.maxwell.schema.columndef.ColumnDef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +40,9 @@ public class RowMap implements Serializable {
 	private Long threadId;
 
 	private final LinkedHashMap<String, Object> data;
+	private final LinkedHashMap<String, ColumnDef> dataColumnDef;
 	private final LinkedHashMap<String, Object> oldData;
+	private final LinkedHashMap<String, ColumnDef> oldDataColumnDef;
 	private final List<String> pkColumns;
 
 	private static final JsonFactory jsonFactory = new JsonFactory();
@@ -104,7 +107,9 @@ public class RowMap implements Serializable {
 		this.timestampMillis = timestampMillis;
 		this.timestampSeconds = timestampMillis / 1000;
 		this.data = new LinkedHashMap<>();
+		this.dataColumnDef = new LinkedHashMap<>();
 		this.oldData = new LinkedHashMap<>();
+		this.oldDataColumnDef = new LinkedHashMap<>();
 		this.nextPosition = nextPosition;
 		this.pkColumns = pkColumns;
 		this.approximateSize = 100L; // more or less 100 bytes of overhead
@@ -336,6 +341,9 @@ public class RowMap implements Serializable {
 		return this.data.get(key);
 	}
 
+	public ColumnDef getDataColumnDef(String key) {
+		return this.dataColumnDef.get(key);
+	}
 
 	public long getApproximateSize() {
 		return approximateSize;
@@ -356,8 +364,13 @@ public class RowMap implements Serializable {
 	}
 
 	public void putData(String key, Object value) {
-		this.data.put(key, value);
+		putData(key, value, null);
+	}
 
+	public void putData(String key, Object value, ColumnDef columnDef) {
+		this.data.put(key, value);
+		if(columnDef != null)
+			this.dataColumnDef.put(key, columnDef);
 		this.approximateSize += approximateKVSize(key, value);
 	}
 
@@ -365,9 +378,18 @@ public class RowMap implements Serializable {
 		return this.oldData.get(key);
 	}
 
-	public void putOldData(String key, Object value) {
-		this.oldData.put(key, value);
+	public ColumnDef getOldDataColumnDef(String key) {
+		return this.oldDataColumnDef.get(key);
+	}
 
+	public void putOldData(String key, Object value) {
+		putOldData(key, value, null);
+	}
+
+	public void putOldData(String key, Object value, ColumnDef columnDef) {
+		this.oldData.put(key, value);
+		if(oldDataColumnDef != null)
+			this.oldDataColumnDef.put(key, columnDef);
 		this.approximateSize += approximateKVSize(key, value);
 	}
 
