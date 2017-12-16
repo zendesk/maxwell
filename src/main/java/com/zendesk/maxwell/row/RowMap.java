@@ -13,6 +13,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -40,9 +41,9 @@ public class RowMap implements Serializable {
 	private Long threadId;
 
 	private final LinkedHashMap<String, Object> data;
-	private final LinkedHashMap<String, ColumnDef> dataColumnDef;
+	private final HashMap<String, ColumnDef> dataColumnDef;
 	private final LinkedHashMap<String, Object> oldData;
-	private final LinkedHashMap<String, ColumnDef> oldDataColumnDef;
+	private final HashMap<String, ColumnDef> oldDataColumnDef;
 	private final List<String> pkColumns;
 
 	private static final JsonFactory jsonFactory = new JsonFactory();
