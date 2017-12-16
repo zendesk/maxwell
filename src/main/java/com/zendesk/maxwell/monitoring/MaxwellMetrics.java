@@ -27,6 +27,10 @@ public class MaxwellMetrics implements Metrics {
 	static final String reportingTypeHttp = "http";
 	static final String reportingTypeDataDog = "datadog";
 
+	private Slf4jReporter slf4jReporter;
+	private JmxReporter jmxReporter;
+	private DatadogReporter datadogReporter;
+
 	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellMetrics.class);
 	private final MaxwellConfig config;
 	private String metricsPrefix;
@@ -45,18 +49,18 @@ public class MaxwellMetrics implements Metrics {
 		metricsPrefix = config.metricsPrefix;
 
 		if (config.metricsReportingType.contains(reportingTypeSlf4j)) {
-			final Slf4jReporter reporter = Slf4jReporter.forRegistry(config.metricRegistry)
+			slf4jReporter = Slf4jReporter.forRegistry(config.metricRegistry)
 					.outputTo(LOGGER)
 					.convertRatesTo(TimeUnit.SECONDS)
 					.convertDurationsTo(TimeUnit.MILLISECONDS)
 					.build();
 
-			reporter.start(config.metricsSlf4jInterval, TimeUnit.SECONDS);
+			slf4jReporter.start(config.metricsSlf4jInterval, TimeUnit.SECONDS);
 			LOGGER.info("Slf4j metrics reporter enabled");
 		}
 
 		if (config.metricsReportingType.contains(reportingTypeJmx)) {
-			final JmxReporter jmxReporter = JmxReporter.forRegistry(config.metricRegistry)
+			jmxReporter = JmxReporter.forRegistry(config.metricRegistry)
 					.convertRatesTo(TimeUnit.SECONDS)
 					.convertDurationsTo(TimeUnit.MILLISECONDS)
 					.build();
@@ -89,14 +93,28 @@ public class MaxwellMetrics implements Metrics {
 						.build();
 			}
 
-			final DatadogReporter reporter = DatadogReporter.forRegistry(config.metricRegistry)
+			datadogReporter = DatadogReporter.forRegistry(config.metricRegistry)
 					.withTransport(transport)
 					.withExpansions(EnumSet.of(COUNT, RATE_1_MINUTE, RATE_15_MINUTE, MEDIAN, P95, P99))
 					.withTags(getDatadogTags(config.metricsDatadogTags))
 					.build();
 
-			reporter.start(config.metricsDatadogInterval, TimeUnit.SECONDS);
+			datadogReporter.start(config.metricsDatadogInterval, TimeUnit.SECONDS);
 			LOGGER.info("Datadog reporting enabled");
+		}
+	}
+
+	public void stop() {
+		if(slf4jReporter != null) {
+			slf4jReporter.stop();
+		}
+
+		if(jmxReporter != null) {
+			jmxReporter.stop();
+		}
+
+		if(datadogReporter != null) {
+			datadogReporter.stop();
 		}
 	}
 
