@@ -145,6 +145,13 @@ kinesis_stream=maxwell
 # Default: false
 #kinesis_md5_keys=true
 
+######### sqs ####################
+sqs_queue_uri=aws_sqs_queue_uri
+
+# The sqs producer will need aws credentials configured in the default
+# root folder and file format. Please check below link on how to do it.
+# http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html
+
 ######### pub/sub #####################
 #pubsub_project_id=maxwell
 #pubsub_topic=maxwell

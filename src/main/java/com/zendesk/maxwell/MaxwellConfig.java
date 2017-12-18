@@ -60,6 +60,8 @@ public class MaxwellConfig extends AbstractConfig {
 	public String kinesisStream;
 	public boolean kinesisMd5Keys;
 
+	public String sqsQueueUri;
+	
 	public String pubsubProjectId;
 	public String pubsubTopic;
 	public String ddlPubsubTopic;
@@ -160,7 +162,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts("__separator_3");
 
-		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|pubsub" ).withRequiredArg();
+		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|pubsub|sqs" ).withRequiredArg();
 		parser.accepts( "producer_ack_timeout", "producer message acknowledgement timeout" ).withRequiredArg();
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
 
@@ -178,7 +180,8 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell").withRequiredArg();
 		parser.accepts( "kafka_key_format", "how to format the kafka key; array|hash").withRequiredArg();
 
-		parser.accepts( "kinesis_stream", "kinesis stream name").withRequiredArg();
+		parser.accepts( "kinesis_stream", "kinesis stream name").withOptionalArg();
+		parser.accepts("sqs_queue_uri", "SQS Queue uri").withRequiredArg();
 
 		parser.accepts( "pubsub_project_id", "provide a google cloud platform project id associated with the pubsub topic").withRequiredArg();
 		parser.accepts( "pubsub_topic", "optionally provide a pubsub topic to push to. default: maxwell").withRequiredArg();
@@ -396,6 +399,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.kinesisStream  = fetchOption("kinesis_stream", options, properties, null);
 		this.kinesisMd5Keys = fetchBooleanOption("kinesis_md5_keys", options, properties, false);
+		
+		this.sqsQueueUri = fetchOption("sqs_queue_uri", options, properties, null);
 
 		this.outputFile = fetchOption("output_file", options, properties, null);
 
@@ -548,6 +553,8 @@ public class MaxwellConfig extends AbstractConfig {
 			usageForOptions("please specify --output_file=FILE to use the file producer", "--producer", "--output_file");
 		} else if ( this.producerType.equals("kinesis") && this.kinesisStream == null) {
 			usageForOptions("please specify a stream name for kinesis", "kinesis_stream");
+		} else if (this.producerType.equals("sqs") && this.sqsQueueUri == null) {
+			usageForOptions("please specify a queue uri for sqs", "sqs_queue_uri");
 		}
 
 		if ( !this.bootstrapperType.equals("async")

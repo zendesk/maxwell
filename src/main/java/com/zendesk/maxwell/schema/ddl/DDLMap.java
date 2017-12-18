@@ -63,4 +63,8 @@ public class DDLMap extends RowMap {
 	public boolean shouldOutput(MaxwellOutputConfig outputConfig) {
 		return outputConfig.outputDDL;
 	}
+
+	public String getSql() {
+		return sql;
+	}
 }
