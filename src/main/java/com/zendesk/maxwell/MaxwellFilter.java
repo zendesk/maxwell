@@ -152,13 +152,16 @@ public class MaxwellFilter {
 	private boolean matchesValues(Map<String, Object> data) {
 		for (Map.Entry<String, String> entry : includeColumnValues.entrySet()) {
 			String column = entry.getKey();
-			String columnValue = entry.getValue();
 
-			Object value = data.get(column);
-			if (value == null) return false;
+			if (data.containsKey(column)) {
+				String columnValue = entry.getValue();
 
-			String valueString = value.toString();
-			if (!columnValue.equals(valueString)) return false;
+				Object value = data.get(column);
+				if (value == null) return false;
+
+				String valueString = value.toString();
+				if (!columnValue.equals(valueString)) return false;
+			}
 		}
 
 		return true;
