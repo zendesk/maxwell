@@ -10,3 +10,6 @@ config/*.yml
 /test.log
 .sw?
 /config
+.classpath
+.project
+.settings/
