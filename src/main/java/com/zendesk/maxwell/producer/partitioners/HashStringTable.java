@@ -9,6 +9,12 @@ import java.util.List;
  */
 public class HashStringTable implements HashStringProvider {
 	public String getHashString(RowMap r, List<String> partitionColumns, String partitionKeyFallback) {
-		return r.getTable();
+		String t = r.getTable();
+
+		// support table-to-database fallback for DDL that has no table associated
+		if ( t == null && partitionKeyFallback.equals("database") )
+			return r.getDatabase();
+		else
+			return r.getTable();
 	}
 }
