@@ -10,7 +10,11 @@ import com.zendesk.maxwell.producer.StdoutProducer;
 
 import org.junit.Test;
 
+import java.net.URI;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Optional;
 
 import joptsimple.OptionException;
 
@@ -26,9 +30,11 @@ public class MaxwellConfigTest
     }
     
     @Test
-    public void testFetchProducerFactoryFromConfigFile() {
-        URL configUrl = ClassLoader.getSystemResource("producer-factory-config.properties");
-        config = new MaxwellConfig(new String[] { "--config=" + configUrl.getPath() });
+    public void testFetchProducerFactoryFromConfigFile() throws Exception {
+        String configPath = getTestConfigDir() + "producer-factory-config.properties";
+        assertNotNull("Config file not found at: " + configPath, Paths.get(configPath));
+        
+        config = new MaxwellConfig(new String[] { "--config=" + configPath });
         assertNotNull(config.producerFactory);
         assertTrue(config.producerFactory instanceof TestProducerFactory);
     }
@@ -40,10 +46,16 @@ public class MaxwellConfigTest
     }
     
     @Test
-    public void testCustomPropertiesFromConfigFile() {
-        URL configUrl = ClassLoader.getSystemResource("custom-config.properties");
-        config = new MaxwellConfig(new String[] { "--config=" + configUrl.getPath() });
+    public void testCustomPropertiesFromConfigFile() throws Exception {
+        String configPath = getTestConfigDir() + "custom-config.properties";
+        assertNotNull("Config file not found at: " + configPath, Paths.get(configPath));
+        
+        config = new MaxwellConfig(new String[] { "--config=" + configPath });
         assertEquals("bar", config.customProperties.getProperty("foo"));
+    }
+    
+    private String getTestConfigDir() {
+        return System.getProperty("user.dir") + "/src/test/resources/config/";
     }
     
     public static class TestProducerFactory implements ProducerFactory {
