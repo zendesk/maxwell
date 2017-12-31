@@ -165,7 +165,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts("__separator_3");
 
 		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|pubsub|sqs" ).withRequiredArg();
-		parser.accepts( "producer_factory", "fully qualified custom producer factory class" ).withRequiredArg();
+		parser.accepts( "custom.producer_factory", "fully qualified custom producer factory class" ).withRequiredArg();
 		parser.accepts( "producer_ack_timeout", "producer message acknowledgement timeout" ).withRequiredArg();
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
 
@@ -374,8 +374,7 @@ public class MaxwellConfig extends AbstractConfig {
 				String k = (String) e.nextElement();
 				if (k.startsWith("custom.")) {
 				    this.customProperties.setProperty(k.replace("custom.", ""), properties.getProperty(k));
-				}
-				else if (k.startsWith("kafka.")) {
+				} else if (k.startsWith("kafka.")) {
 					if (k.equals("kafka.bootstrap.servers") && kafkaBootstrapServers != null)
 						continue; // don't override command line bootstrap servers with config files'
 
@@ -651,7 +650,7 @@ public class MaxwellConfig extends AbstractConfig {
 	}
 
        protected ProducerFactory fetchProducerFactory(OptionSet options, Properties properties) {
-            String name = "producer_factory";
+            String name = "custom.producer_factory";
             String strOption = fetchOption(name, options, properties, null);
             if ( strOption != null ) {
                 try {

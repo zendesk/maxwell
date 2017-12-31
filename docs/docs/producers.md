@@ -198,3 +198,66 @@ Other configurable properties are:
 - `redis_port` - defaults to **6379**
 - `redis_auth` - defaults to **null**
 - `redis_database` - defaults to **0**
+
+### Custom Producer
+***
+If none of the producers packaged with Maxwell meet your requirements, a custom producer can be added at runtime. The producer is responsible for processing the raw database events. Note that your producer may receive DDL and heartbeat rows as well, but your producer can easily filter them out (see example below).
+
+In order to register your custom producer, you must implement the `ProducerFactory` interface, which is responsible for creating your custom `AbstractProducer`. Next, set the `custom.producer_factory` configuration property to your `ProducerFactory`'s fully qualified class name. Then add the custom `ProducerFactory` and all its dependencies to the $MAXWELL_HOME/lib directory.
+
+Your custom producer will likely require configuration properties as well. For that, use the `custom.*` property namespace. Those properties will be exposed to your producer via `MaxwellConfig.customProperties`.
+
+The config.properties:
+```
+custom.producer_factory=com.test.CustomProducerFactory
+custom.foo=bar
+```
+
+The producer factory:
+```
+package com.test;
+
+import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.producer.AbstractProducer;
+import com.zendesk.maxwell.producer.ProducerFactory;
+
+public class CustomProducerFactory implements ProducerFactory
+{
+    @Override
+    public AbstractProducer createProducer(MaxwellContext context)
+    {
+        return new CustomProducer(context);
+    }
+}
+```
+
+The producer:
+```
+package com.test;
+
+import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.row.RowMap;
+
+public class CustomProducer extends AbstractProducer
+{
+	private final String customProperty;
+
+    private CustomProducer(MaxwellContext context)
+    {
+        super(context);
+        customProperty = context.getConfig().customProperties.getProperty("foo");
+    }
+
+    @Override
+    public void push(RowMap r) throws Exception
+    {
+    	// filtering out DDL and heartbeat rows
+        if(!r.shouldOutput(outputConfig))
+        {
+            context.setPosition(r.getPosition());
+            return;
+        }
+
+        // your custom producer logic here
+    }
+```
