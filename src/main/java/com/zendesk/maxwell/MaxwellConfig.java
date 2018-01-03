@@ -40,7 +40,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public String includeDatabases, excludeDatabases, includeTables, excludeTables, excludeColumns, blacklistDatabases, blacklistTables;
 
 	public ProducerFactory producerFactory; // producerFactory has precedence over producerType
-	public final Properties customProperties;
+	public final Properties customProducerProperties;
 	public String producerType;
 
 	public final Properties kafkaProperties;
@@ -116,7 +116,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public String redisPubChannel;
 
 	public MaxwellConfig() { // argv is only null in tests
-	        this.customProperties = new Properties();
+	        this.customProducerProperties = new Properties();
 		this.kafkaProperties = new Properties();
 		this.replayMode = false;
 		this.replicationMysql = new MaxwellMysqlConfig();
@@ -165,7 +165,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts("__separator_3");
 
 		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|pubsub|sqs" ).withRequiredArg();
-		parser.accepts( "custom.producer_factory", "fully qualified custom producer factory class" ).withRequiredArg();
+		parser.accepts( "custom_producer.factory", "fully qualified custom producer factory class" ).withRequiredArg();
 		parser.accepts( "producer_ack_timeout", "producer message acknowledgement timeout" ).withRequiredArg();
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
 
@@ -372,8 +372,8 @@ public class MaxwellConfig extends AbstractConfig {
 		if ( properties != null ) {
 			for (Enumeration<Object> e = properties.keys(); e.hasMoreElements(); ) {
 				String k = (String) e.nextElement();
-				if (k.startsWith("custom.")) {
-				    this.customProperties.setProperty(k.replace("custom.", ""), properties.getProperty(k));
+				if (k.startsWith("custom_producer.")) {
+				    this.customProducerProperties.setProperty(k.replace("custom_producer.", ""), properties.getProperty(k));
 				} else if (k.startsWith("kafka.")) {
 					if (k.equals("kafka.bootstrap.servers") && kafkaBootstrapServers != null)
 						continue; // don't override command line bootstrap servers with config files'
@@ -650,7 +650,7 @@ public class MaxwellConfig extends AbstractConfig {
 	}
 
        protected ProducerFactory fetchProducerFactory(OptionSet options, Properties properties) {
-            String name = "custom.producer_factory";
+            String name = "custom_producer.factory";
             String strOption = fetchOption(name, options, properties, null);
             if ( strOption != null ) {
                 try {

@@ -24,7 +24,7 @@ public class MaxwellConfigTest
     
     @Test
     public void testFetchProducerFactoryFromArgs() {
-        config = new MaxwellConfig(new String[] { "--custom.producer_factory=" + TestProducerFactory.class.getName() });
+        config = new MaxwellConfig(new String[] { "--custom_producer.factory=" + TestProducerFactory.class.getName() });
         assertNotNull(config.producerFactory);
         assertTrue(config.producerFactory instanceof TestProducerFactory);
     }
@@ -51,7 +51,7 @@ public class MaxwellConfigTest
         assertNotNull("Config file not found at: " + configPath, Paths.get(configPath));
         
         config = new MaxwellConfig(new String[] { "--config=" + configPath });
-        assertEquals("bar", config.customProperties.getProperty("foo"));
+        assertEquals("bar", config.customProducerProperties.getProperty("foo"));
     }
     
     private String getTestConfigDir() {
