@@ -114,7 +114,7 @@ public class RowMap implements Serializable {
 
 	public RowMap(String type, String database, String table, Long timestampMillis, List<String> pkColumns,
 				  Position nextPosition) {
-		this(type, database, table, timestampMillis, pkColumns, nextPosition, "");
+		this(type, database, table, timestampMillis, pkColumns, nextPosition, null);
 	}
 
 	//Do we want to encrypt this part?

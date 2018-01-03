@@ -145,7 +145,7 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 		BinlogConnectorEvent event;
 		RowMapBuffer buffer = new RowMapBuffer(MAX_TX_ELEMENTS);
 
-		String currentQuery = "";
+		String currentQuery = null;
 
 		while ( true ) {
 			event = pollEvent();
@@ -182,7 +182,7 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 						for ( RowMap r : event.jsonMaps(table, lastHeartbeatPosition, currentQuery) )
 							buffer.add(r);
 					}
-					currentQuery = "";
+					currentQuery = null;
 					break;
 				case TABLE_MAP:
 					TableMapEventData data = event.tableMapData();
