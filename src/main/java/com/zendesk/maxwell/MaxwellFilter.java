@@ -1,6 +1,9 @@
 package com.zendesk.maxwell;
 
+import com.zendesk.maxwell.schema.MysqlPositionStore;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -10,6 +13,8 @@ import java.util.regex.Pattern;
 	(includeDatabases.nil? || includeDatabases.include?()
  */
 public class MaxwellFilter {
+	static final Logger LOGGER = LoggerFactory.getLogger(MysqlPositionStore.class);
+
 	private static final List<Pattern> emptyList = Collections.unmodifiableList(new ArrayList<Pattern>());
 	private final ArrayList<Pattern> includeDatabases = new ArrayList<>();
 	private final ArrayList<Pattern> excludeDatabases = new ArrayList<>();
@@ -154,13 +159,19 @@ public class MaxwellFilter {
 			String column = entry.getKey();
 
 			if (data.containsKey(column)) {
-				String columnValue = entry.getValue();
-
+				String expectedColumnValue = entry.getValue();
 				Object value = data.get(column);
-				if (value == null) return false;
 
-				String valueString = value.toString();
-				if (!columnValue.equals(valueString)) return false;
+				if ("NULL".equals(expectedColumnValue)) {
+					// null or "null" (string) or "NULL" (string) is expected
+					if (value != null && !"null".equals(value) && !"NULL".equals(value)) {
+						return false;
+					}
+				} else {
+					if (value == null || !expectedColumnValue.equals(value.toString())) {
+						return false;
+					}
+				}
 			}
 		}
 
