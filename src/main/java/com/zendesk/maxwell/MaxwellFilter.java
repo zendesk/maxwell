@@ -1,9 +1,6 @@
 package com.zendesk.maxwell;
 
-import com.zendesk.maxwell.schema.MysqlPositionStore;
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -13,8 +10,6 @@ import java.util.regex.Pattern;
 	(includeDatabases.nil? || includeDatabases.include?()
  */
 public class MaxwellFilter {
-	static final Logger LOGGER = LoggerFactory.getLogger(MysqlPositionStore.class);
-
 	private static final List<Pattern> emptyList = Collections.unmodifiableList(new ArrayList<Pattern>());
 	private final ArrayList<Pattern> includeDatabases = new ArrayList<>();
 	private final ArrayList<Pattern> excludeDatabases = new ArrayList<>();
@@ -24,14 +19,17 @@ public class MaxwellFilter {
 	private final ArrayList<Pattern> blacklistTables = new ArrayList<>();
 	private final Map<String, String> includeColumnValues = new HashMap<>();
 
-	public MaxwellFilter() { }
-	public MaxwellFilter(String includeDatabases,
-						 String excludeDatabases,
-						 String includeTables,
-						 String excludeTables,
-						 String blacklistDatabases,
-						 String blacklistTables,
-						 String includeColumnValues) throws MaxwellInvalidFilterException {
+	public MaxwellFilter() {
+	}
+
+	public MaxwellFilter(
+			String includeDatabases,
+			String excludeDatabases,
+			String includeTables,
+			String excludeTables,
+			String blacklistDatabases,
+			String blacklistTables,
+			String includeColumnValues) throws MaxwellInvalidFilterException {
 		this(includeDatabases, excludeDatabases, includeTables, excludeTables, blacklistDatabases, blacklistTables);
 
 		if (includeColumnValues != null && !"".equals(includeColumnValues)) {
@@ -41,39 +39,41 @@ public class MaxwellFilter {
 			}
 		}
 	}
-	public MaxwellFilter(String includeDatabases,
-						 String excludeDatabases,
-						 String includeTables,
-						 String excludeTables,
-						 String blacklistDatabases,
-						 String blacklistTables) throws MaxwellInvalidFilterException {
-		if ( includeDatabases != null ) {
+
+	public MaxwellFilter(
+			String includeDatabases,
+			String excludeDatabases,
+			String includeTables,
+			String excludeTables,
+			String blacklistDatabases,
+			String blacklistTables) throws MaxwellInvalidFilterException {
+		if (includeDatabases != null) {
 			for (String s : includeDatabases.split(","))
 				includeDatabase(s);
 		}
 
-		if ( excludeDatabases != null ) {
+		if (excludeDatabases != null) {
 			for (String s : excludeDatabases.split(","))
 				excludeDatabase(s);
 		}
 
-		if ( includeTables != null ) {
-			for ( String s : includeTables.split(",") )
+		if (includeTables != null) {
+			for (String s : includeTables.split(","))
 				includeTable(s);
 		}
 
-		if ( excludeTables != null ) {
+		if (excludeTables != null) {
 			for (String s : excludeTables.split(","))
 				excludeTable(s);
 		}
 
-		if ( blacklistDatabases != null ) {
-			for ( String s : blacklistDatabases.split(",") )
+		if (blacklistDatabases != null) {
+			for (String s : blacklistDatabases.split(","))
 				blacklistDatabases(s);
 		}
 
-		if ( blacklistTables != null ) {
-			for ( String s : blacklistTables.split(",") )
+		if (blacklistTables != null) {
+			for (String s : blacklistTables.split(","))
 				blacklistTable(s);
 		}
 	}
@@ -119,20 +119,20 @@ public class MaxwellFilter {
 	}
 
 	private boolean filterListsInclude(List<Pattern> includeList, List<Pattern> excludeList, String name) {
-		if ( includeList.size() > 0 ) {
+		if (includeList.size() > 0) {
 			boolean found = false;
-			for ( Pattern p : includeList ) {
+			for (Pattern p : includeList) {
 				found = p.matcher(name).find();
 
-				if ( found )
+				if (found)
 					break;
 			}
-			if ( !found )
+			if (!found)
 				return false;
 		}
 
-		for ( Pattern p : excludeList ) {
-			if ( p.matcher(name).find() )
+		for (Pattern p : excludeList) {
+			if (p.matcher(name).find())
 				return false;
 		}
 
@@ -179,18 +179,18 @@ public class MaxwellFilter {
 	}
 
 	public boolean isDatabaseBlacklisted(String databaseName) {
-		return ! filterListsInclude(emptyList, blacklistDatabases, databaseName);
+		return !filterListsInclude(emptyList, blacklistDatabases, databaseName);
 	}
 
 	public boolean isTableBlacklisted(String databaseName, String tableName) {
 		return isSystemBlacklisted(databaseName, tableName)
-			   || isDatabaseBlacklisted(databaseName)
-			   || !filterListsInclude(emptyList, blacklistTables, tableName);
+				|| isDatabaseBlacklisted(databaseName)
+				|| !filterListsInclude(emptyList, blacklistTables, tableName);
 	}
 
 	public static boolean isSystemBlacklisted(String databaseName, String tableName) {
 		return "mysql".equals(databaseName) &&
-			("ha_health_check".equals(tableName) || StringUtils.startsWith(tableName, "rds_heartbeat"));
+				("ha_health_check".equals(tableName) || StringUtils.startsWith(tableName, "rds_heartbeat"));
 	}
 
 	public static boolean matches(MaxwellFilter filter, String database, String table) {
