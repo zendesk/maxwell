@@ -40,6 +40,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public String includeDatabases, excludeDatabases, includeTables, excludeTables, excludeColumns, blacklistDatabases, blacklistTables;
 
 	public ProducerFactory producerFactory; // producerFactory has precedence over producerType
+	public final Properties customProducerProperties;
 	public String producerType;
 
 	public final Properties kafkaProperties;
@@ -115,6 +116,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public String redisPubChannel;
 
 	public MaxwellConfig() { // argv is only null in tests
+		this.customProducerProperties = new Properties();
 		this.kafkaProperties = new Properties();
 		this.replayMode = false;
 		this.replicationMysql = new MaxwellMysqlConfig();
@@ -163,6 +165,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts("__separator_3");
 
 		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|pubsub|sqs" ).withRequiredArg();
+		parser.accepts( "custom_producer.factory", "fully qualified custom producer factory class" ).withRequiredArg();
 		parser.accepts( "producer_ack_timeout", "producer message acknowledgement timeout" ).withRequiredArg();
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
 
@@ -325,6 +328,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.databaseName       = fetchOption("schema_database", options, properties, "maxwell");
 		this.maxwellMysql.database = this.databaseName;
 
+		this.producerFactory    = fetchProducerFactory(options, properties);
 		this.producerType       = fetchOption("producer", options, properties, "stdout");
 		this.producerAckTimeout = fetchLongOption("producer_ack_timeout", options, properties, 0L);
 		this.bootstrapperType   = fetchOption("bootstrapper", options, properties, "async");
@@ -368,7 +372,9 @@ public class MaxwellConfig extends AbstractConfig {
 		if ( properties != null ) {
 			for (Enumeration<Object> e = properties.keys(); e.hasMoreElements(); ) {
 				String k = (String) e.nextElement();
-				if (k.startsWith("kafka.")) {
+				if (k.startsWith("custom_producer.")) {
+					this.customProducerProperties.setProperty(k.replace("custom_producer.", ""), properties.getProperty(k));
+				} else if (k.startsWith("kafka.")) {
 					if (k.equals("kafka.bootstrap.servers") && kafkaBootstrapServers != null)
 						continue; // don't override command line bootstrap servers with config files'
 
@@ -640,6 +646,24 @@ public class MaxwellConfig extends AbstractConfig {
 			return Pattern.compile(name.substring(1, name.length() - 1));
 		} else {
 			return Pattern.compile("^" + Pattern.quote(name) + "$");
+		}
+	}
+
+	protected ProducerFactory fetchProducerFactory(OptionSet options, Properties properties) {
+		String name = "custom_producer.factory";
+		String strOption = fetchOption(name, options, properties, null);
+		if ( strOption != null ) {
+			try {
+				Class<?> clazz = Class.forName(strOption);
+				return ProducerFactory.class.cast(clazz.newInstance());
+			} catch ( ClassNotFoundException e ) {
+				usageForOptions("Invalid value for " + name + ", class not found", "--" + name);
+			} catch ( IllegalAccessException | InstantiationException | ClassCastException e) {
+				usageForOptions("Invalid value for " + name + ", class instantiation error", "--" + name);
+			}
+			return null; // unreached
+		} else {
+			return null;
 		}
 	}
 }
