@@ -116,7 +116,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public String redisPubChannel;
 
 	public MaxwellConfig() { // argv is only null in tests
-	        this.customProducerProperties = new Properties();
+		this.customProducerProperties = new Properties();
 		this.kafkaProperties = new Properties();
 		this.replayMode = false;
 		this.replicationMysql = new MaxwellMysqlConfig();
@@ -373,7 +373,7 @@ public class MaxwellConfig extends AbstractConfig {
 			for (Enumeration<Object> e = properties.keys(); e.hasMoreElements(); ) {
 				String k = (String) e.nextElement();
 				if (k.startsWith("custom_producer.")) {
-				    this.customProducerProperties.setProperty(k.replace("custom_producer.", ""), properties.getProperty(k));
+					this.customProducerProperties.setProperty(k.replace("custom_producer.", ""), properties.getProperty(k));
 				} else if (k.startsWith("kafka.")) {
 					if (k.equals("kafka.bootstrap.servers") && kafkaBootstrapServers != null)
 						continue; // don't override command line bootstrap servers with config files'
@@ -649,22 +649,21 @@ public class MaxwellConfig extends AbstractConfig {
 		}
 	}
 
-       protected ProducerFactory fetchProducerFactory(OptionSet options, Properties properties) {
-            String name = "custom_producer.factory";
-            String strOption = fetchOption(name, options, properties, null);
-            if ( strOption != null ) {
-                try {
-                    Class<?> clazz = Class.forName(strOption);
-                    return ProducerFactory.class.cast(clazz.newInstance());
-                } catch ( ClassNotFoundException e ) {
-                    usageForOptions("Invalid value for " + name + ", class not found", "--" + name);
-                } catch ( IllegalAccessException | InstantiationException | ClassCastException e) {
-                    usageForOptions("Invalid value for " + name + ", class instantiation error", "--" + name);
-                }
-                return null; // unreached
-            }
-            else {
-                return null;
-            }
-        }
+	protected ProducerFactory fetchProducerFactory(OptionSet options, Properties properties) {
+		String name = "custom_producer.factory";
+		String strOption = fetchOption(name, options, properties, null);
+		if ( strOption != null ) {
+			try {
+				Class<?> clazz = Class.forName(strOption);
+				return ProducerFactory.class.cast(clazz.newInstance());
+			} catch ( ClassNotFoundException e ) {
+				usageForOptions("Invalid value for " + name + ", class not found", "--" + name);
+			} catch ( IllegalAccessException | InstantiationException | ClassCastException e) {
+				usageForOptions("Invalid value for " + name + ", class instantiation error", "--" + name);
+			}
+			return null; // unreached
+		} else {
+			return null;
+		}
+	}
 }
