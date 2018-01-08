@@ -201,4 +201,12 @@ public class MaxwellFilter {
 			return filter.matches(database, table);
 		}
 	}
+
+	public static boolean matchesValues(MaxwellFilter filter, String database, String table, Map<String, Object> data) {
+		if (filter == null) {
+			return true;
+		} else {
+			return filter.matchesValues(data);
+		}
+	}
 }

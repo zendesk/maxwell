@@ -206,6 +206,9 @@ sqs_queue_uri=aws_sqs_queue_uri
 # exclude these columns
 #exclude_columns=col1,/col\\d+/
 
+# include only rows where the column 'foo' contains the value 'bar', and the column 'baz' contains the value 0.5
+#include_column_values=foo=bar,baz=0.5
+
 # "blacklist" these dbs -- this means maxwell will ignore schema
 # changes happening to these databases.  Can be useful if you have a
 # high-churn schema that you want to completely ignore, but it's
