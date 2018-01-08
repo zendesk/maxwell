@@ -176,6 +176,14 @@ sqs_queue_uri=aws_sqs_queue_uri
 #redis_database=0
 #redis_pub_channel=maxwell
 
+######### custom producer ######################
+# the fully qualified class name for custom ProducerFactory
+# see the following link for more details.
+# http://maxwells-daemon.io/producers/#custom-producer
+#custom_producer.factory=
+# custom producer properties can be configured using the custom_producer.* property namespace
+#custom_producer.custom_prop=foo
+
 ######### filter stuff ###############
 
 # filter rows out of Maxwell's output.
