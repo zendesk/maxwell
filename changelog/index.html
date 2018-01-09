@@ -212,6 +212,10 @@
             <div class="col-md-10" role="main">
 
 <h1 id="maxwell-changelog">Maxwell changelog</h1>
+<h3 id="v1110-the-latest-the-greatest"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.11.0">v1.11.0</a>: "the latest, the greatest"</h3>
+<pre><code> - default kafka client upgrades to 0.11.0.1
+ - fix the encryption issue (https://github.com/zendesk/maxwell/issues/803)
+</code></pre>
 <h3 id="v1109-no-one-left-behind"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.10.9">v1.10.9</a>: "no one left behind"</h3>
 <p>We recommend all v1.10.7 and v1.10.8 users upgrade to v1.10.9.</p>
 <ul>
@@ -270,12 +274,12 @@ backend available for maxwell.</li>
 <li>documentation updates (thanks Chintan Tank)</li>
 </ul>
 <h3 id="v1101-forgive-and-forget"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.10.1">v1.10.1</a>: "forgive and forget"</h3>
-<p>The observable changes in this minor release are a new configuration for Kafka/Kinesis producer to abort processing on publish errors, and support of Kafka 0.10.2. Also a bunch of good refactoring has been done for heartbeat processing. List of changes:</p>
+<p>The observable changes in this minor release are a new configuration for Kafka/Kinesis producer to abort processing on publish errors, and support of Kafka 0.10.2. Also a bunch of good refactoring has been done for heartbeat processing. List of changes:   </p>
 <ul>
-<li>Support Kafka 0.10.2</li>
-<li>Stop procesing RDS hearbeats</li>
-<li>Keep maxwell heartbeat going every 10 seconds when database is quiet</li>
-<li>Allow for empty double-quoted string literals for database schema changes</li>
+<li>Support Kafka 0.10.2   </li>
+<li>Stop procesing RDS hearbeats   </li>
+<li>Keep maxwell heartbeat going every 10 seconds when database is quiet   </li>
+<li>Allow for empty double-quoted string literals for database schema changes   </li>
 <li>Ignore Kafka/Kinesis producer errors based on new configuration ignore_producer_error</li>
 </ul>
 <h3 id="v1100-slightly-more-ones-than-zeroes"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.10.0">v1.10.0</a>: "slightly more ones than zeroes"</h3>
@@ -596,16 +600,16 @@ changed.  Thanks @kristiankaufmann</p>
 </ul>
 <h3 id="v0142-maxwell-sandvik-88"><a href="https://github.com/zendesk/maxwell/releases/tag/v0.14.2">v0.14.2</a>: "Maxwell Sandvik 88"</h3>
 <ul>
-<li>capture the mysql database along with the rest of the schema.  Eliding it was a bad premature optimization that led to crashes when tables in the mysql database changed.</li>
+<li>capture the mysql database along with the rest of the schema.  Eliding it was a bad premature optimization that led to crashes when tables in the mysql database changed. </li>
 </ul>
 <h3 id="v0141-be-liberal-in-what-you-accept-even-if-nonsensical"><a href="https://github.com/zendesk/maxwell/releases/tag/v0.14.1">v0.14.1</a>: "be liberal in what you accept.  Even if nonsensical."</h3>
 <ul>
 <li>fixes a parser bug around named PRIMARY KEYs.</li>
 </ul>
 <h3 id="v0140-the-slow-but-inevitable-slide"><a href="https://github.com/zendesk/maxwell/releases/tag/v0.14.0">v0.14.0</a>: "the slow but inevitable slide"</h3>
-<p>This release introduces row filters, allowing you to include or exclude tables from maxwell's output based on names or regular expressions.</p>
+<p>This release introduces row filters, allowing you to include or exclude tables from maxwell's output based on names or regular expressions.  </p>
 <h3 id="v0131-well-that-was-somewhat-expected"><a href="https://github.com/zendesk/maxwell/releases/tag/v0.13.1">v0.13.1</a>: "well that was somewhat expected"</h3>
-<p>v0.13.1 is a bug fix of v0.13.0 -- fixes a bug where long rows were truncated.</p>
+<p>v0.13.1 is a bug fix of v0.13.0 -- fixes a bug where long rows were truncated. </p>
 <p>v0.13.0 contains:
 - Big performance boost for maxwell: 75% faster in some benchmarks
 - @davidsheldon contributed some nice bug fixes around <code>CREATE TABLE ... IF NOT EXISTS</code>, which were previously generating new, bogus copies of the schema.
@@ -618,7 +622,7 @@ changed.  Thanks @kristiankaufmann</p>
 <p><em>This release has a pretty bad bug.  do not use.</em></p>
 <h3 id="v0120-what-do-i-call-them-slippers-why-are-you-jealous"><a href="https://github.com/zendesk/maxwell/releases/tag/v0.12.0">v0.12.0</a>: "what do I call them?  Slippers?  Why, are you jealous?"</h3>
 <ul>
-<li>add support for BIT columns.</li>
+<li>add support for BIT columns.  </li>
 </ul>
 <h3 id="v0114-13-steps"><a href="https://github.com/zendesk/maxwell/releases/tag/v0.11.4">v0.11.4</a>: "13 steps"</h3>
 <p>this is another bugfix release that fixes a problem where the replication thread can die in the middle of processing a transaction event.  I really need to fix this at a lower level, ie the open-replicator level.</p>
@@ -653,7 +657,7 @@ changed.  Thanks @kristiankaufmann</p>
 <h3 id="v0100-the-first-word-is-french"><a href="https://github.com/zendesk/maxwell/releases/tag/v0.10.0">v0.10.0</a>: "The first word is French"</h3>
 <ul>
 <li>Mysql 5.6 checksum support!</li>
-<li>some more bugfixes with the SQL parser</li>
+<li>some more bugfixes with the SQL parser </li>
 </ul>
 <h3 id="v0110-pre4-except-for-that-other-thing"><a href="https://github.com/zendesk/maxwell/releases/tag/v0.11.0-PRE4">v0.11.0-PRE4</a>: "except for that other thing"</h3>
 <ul>
@@ -704,7 +708,7 @@ changed.  Thanks @kristiankaufmann</p>
 <h3 id="v092-cats-tongue"><a href="https://github.com/zendesk/maxwell/releases/tag/v0.9.2">v0.9.2</a>: "Cat's tongue"</h3>
 <ul>
 <li>bump open-replicator buffer to 50mb by default</li>
-<li>log to STDERR, not STDOUT</li>
+<li>log to STDERR, not STDOUT </li>
 <li><code>--output_file</code> option for file producer</li>
 </ul>
 <h3 id="v091-bugs-bugs-bugs-lies-statistics"><a href="https://github.com/zendesk/maxwell/releases/tag/v0.9.1">v0.9.1</a>: "bugs, bugs, bugs, lies, statistics"</h3>
@@ -713,7 +717,7 @@ changed.  Thanks @kristiankaufmann</p>
 <li>fix a nasty bug in which maxwell would store the wrong position after it lost its connection to the master.</li>
 </ul>
 <h3 id="v090-vanchi-says-eat"><a href="https://github.com/zendesk/maxwell/releases/tag/v0.9.0">v0.9.0</a>: Vanchi says "eat"</h3>
-<p>Also, vanchi is so paranoid he's worried immediately about this.
+<p>Also, vanchi is so paranoid he's worried immediately about this. 
 - mysql 5.6 support (without checksum support, yet)
 - fix a bunch of miscellaneous bugs @akshayi1 found (REAL, BOOL, BOOLEAN types, TRUNCATE TABLE)</p>
 <h3 id="v081-pascal-says-bonjour"><a href="https://github.com/zendesk/maxwell/releases/tag/v0.8.1">v0.8.1</a>: "Pascal says Bonjour"</h3>
@@ -762,20 +766,20 @@ changed.  Thanks @kristiankaufmann</p>
 <h3 id="v040-040-unboxed-cat"><a href="https://github.com/zendesk/maxwell/releases/tag/v0.4.0">v0.4.0</a>: 0.4.0, "unboxed cat"</h3>
 <p>v0.4.0 fixes some bugs with long-lived mysql connections by adding connection pooling support.</p>
 <h3 id="v030-030"><a href="https://github.com/zendesk/maxwell/releases/tag/v0.3.0">v0.3.0</a>: 0.3.0</h3>
-<p>This version fixes a fairly nasty bug in which the binlog-position flush thread was sharing a connection with the rest of the system, leading to crashes.</p>
+<p>This version fixes a fairly nasty bug in which the binlog-position flush thread was sharing a connection with the rest of the system, leading to crashes. </p>
 <p>It also enables kafka gzip compression by default.</p>
 <h3 id="v022-022"><a href="https://github.com/zendesk/maxwell/releases/tag/v0.2.2">v0.2.2</a>: 0.2.2</h3>
-<p>Version 0.2.2 sets up the LANG environment variable, which fixes a bug in utf-8 handling.</p>
+<p>Version 0.2.2 sets up the LANG environment variable, which fixes a bug in utf-8 handling. </p>
 <h3 id="v021-v021"><a href="https://github.com/zendesk/maxwell/releases/tag/v0.2.1">v0.2.1</a>: v0.2.1</h3>
 <p>version 0.2.1 makes Maxwell ignore CREATE INDEX ddl statements and others.</p>
 <h3 id="v020-020"><a href="https://github.com/zendesk/maxwell/releases/tag/v0.2.0">v0.2.0</a>: 0.2.0</h3>
-<p>This release gets Maxwell storing the last-written binlog position inside the mysql master itself.</p>
+<p>This release gets Maxwell storing the last-written binlog position inside the mysql master itself. </p>
 <h3 id="v014-014"><a href="https://github.com/zendesk/maxwell/releases/tag/v0.1.4">v0.1.4</a>: 0.1.4</h3>
 <p>support --position_file param</p>
 <h3 id="v013-013"><a href="https://github.com/zendesk/maxwell/releases/tag/v0.1.3">v0.1.3</a>: 0.1.3</h3>
 <p>Adds kafka command line options.</p>
 <h3 id="v011-011"><a href="https://github.com/zendesk/maxwell/releases/tag/v0.1.1">v0.1.1</a>: 0.1.1</h3>
-<p>v0.1.1, a small bugfix release.</p>
+<p>v0.1.1, a small bugfix release. </p>
 <h3 id="v01-01"><a href="https://github.com/zendesk/maxwell/releases/tag/v0.1">v0.1</a>: 0.1</h3>
 <p>This is the first possible release of Maxwell that might work.  It includes some exceedingly basic kafka support, and JSON output of binlog deltas.</p></div>
         </div>

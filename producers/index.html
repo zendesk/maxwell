@@ -188,6 +188,12 @@
                       <li class="toctree-l3"><a href="#kinesis-options">Kinesis Options</a></li>
                       
                   
+                      <li class="toctree-l3"><a href="#sqs-aws-credentials">SQS AWS credentials</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#sqs-options">SQS Options</a></li>
+                      
+                  
                       <li class="toctree-l3"><a href="#google-cloud-pubsub-options">Google Cloud Pub/Sub Options</a></li>
                       
                   
@@ -198,6 +204,9 @@
                       
                   
                       <li class="toctree-l3"><a href="#redis-options">Redis Options</a></li>
+                      
+                  
+                      <li class="toctree-l3"><a href="#custom-producer">Custom Producer</a></li>
                       
                   
                   </ul>
@@ -358,6 +367,15 @@ Region=$AWS_DEFAULT_REGION
 </code></pre>
 
 <p>Remember: if you disable record aggregation, you will lose the benefit of potentially greater producer throughput.</p>
+<h3 id="sqs-aws-credentials">SQS AWS credentials</h3>
+<hr />
+<p>You will need to obtain an IAM user that has the permission to access the SQS service. The SQS producer also uses <a href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html">DefaultAWSCredentialsProviderChain</a> to get AWS credentials.</p>
+<p>See the <a href="http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html">AWS docs</a> on how to setup the IAM user with the Default Credential Provider Chain.</p>
+<p>In case you need to set up a different region also along with credentials then default one, see the <a href="http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html#setup-credentials-setting-region">AWS docs</a>.</p>
+<h3 id="sqs-options">SQS Options</h3>
+<hr />
+<p>Set the output queue in the <code>config.properties</code> by setting the <code>sqs_queue_uri</code> property to full SQS queue uri from AWS console.</p>
+<p>The producer uses the <a href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sqs/AmazonSQSClient.html">AWS SQS SDK</a>.</p>
 <h3 id="google-cloud-pubsub-options">Google Cloud Pub/Sub Options</h3>
 <hr />
 <p>In order to publish to Google Cloud Pub/Sub, you will need to obtain an IAM service account that has been granted the <code>roles/pubsub.publisher</code> role.</p>
@@ -379,7 +397,8 @@ for DDL updates by setting the <code>ddl_pubsub_topic</code> property.</p>
 - <code>rabbitmq_exchange_durable</code> - defaults to <strong>false</strong>
 - <code>rabbitmq_exchange_autodelete</code> - defaults to <strong>false</strong>
 - <code>rabbitmq_routing_key_template</code> - defaults to <strong>%db%.%table%</strong>
-    - This config controls the routing key, where <code>%db%</code> and <code>%table%</code> are placeholders that will be substituted at runtime</p>
+    - This config controls the routing key, where <code>%db%</code> and <code>%table%</code> are placeholders that will be substituted at runtime
+- <code>rabbitmq_message_persistent</code> - defaults to <strong>false</strong></p>
 <p>For more details on these options, you are encouraged to the read official RabbitMQ documentation here: https://www.rabbitmq.com/documentation.html</p>
 <h3 id="redis-options">Redis Options</h3>
 <hr />
@@ -390,7 +409,13 @@ for DDL updates by setting the <code>ddl_pubsub_topic</code> property.</p>
 <li><code>redis_port</code> - defaults to <strong>6379</strong></li>
 <li><code>redis_auth</code> - defaults to <strong>null</strong></li>
 <li><code>redis_database</code> - defaults to <strong>0</strong></li>
-</ul></div>
+</ul>
+<h3 id="custom-producer">Custom Producer</h3>
+<hr />
+<p>If none of the producers packaged with Maxwell meet your requirements, a custom producer can be added at runtime. The producer is responsible for processing the raw database rows. Note that your producer may receive DDL and heartbeat rows as well, but your producer can easily filter them out (see example).</p>
+<p>In order to register your custom producer, you must implement the <code>ProducerFactory</code> interface, which is responsible for creating your custom <code>AbstractProducer</code>. Next, set the <code>custom_producer.factory</code> configuration property to your <code>ProducerFactory</code>'s fully qualified class name. Then add the custom <code>ProducerFactory</code> and all its dependencies to the $MAXWELL_HOME/lib directory.</p>
+<p>Your custom producer will likely require configuration properties as well. For that, use the <code>custom_producer.*</code> property namespace. Those properties will be exposed to your producer via <code>MaxwellConfig.customProducerProperties</code>.</p>
+<p>Custom producer factory and producer examples can be found here: <a href="https://github.com/zendesk/maxwell/tree/master/src/example/com/zendesk/maxwell/example/producerfactory">https://github.com/zendesk/maxwell/tree/master/src/example/com/zendesk/maxwell/example/producerfactory</a></p></div>
         </div>
 
         
