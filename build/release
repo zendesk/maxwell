@@ -31,6 +31,8 @@ end
 
 def bump
   do_system(BINDIR + "/bump", $version)
+  puts "Ok, bumped the version to #{$version}.  Dropping you to a shell with the changes in the workspace,"
+  puts "please verify that the version bump went well and then exit the shell."
   do_system("/bin/bash -i")
 end
 
