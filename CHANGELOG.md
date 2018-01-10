@@ -1,5 +1,18 @@
 # Maxwell changelog
 
+### [v1.12.0](https://github.com/zendesk/maxwell/releases/tag/v1.12.0): "Cold Feet, literally and metaphorically."
+
+
+- Support for injecting a custom producer, thanks @tomcollinsproject
+- New producer for Amazon SQS, thanks @vikrant2mahajan
+- Maxwell can now filter rows based on column values, thanks @finnplay
+- Fixes for the Google Pubsub producer (it was really broken), thanks @finnplay
+- DDL output can now optionally include the source SQL, thanks @sungjuly
+- Support for double-quoted table/database/etc names
+- rabbitmq option for persistent messages, thanks @d-babiak
+- SQL parser bugfix for values like +1.234, thanks @hexene
+
+
 ### [v1.11.0](https://github.com/zendesk/maxwell/releases/tag/v1.11.0): "the latest, the greatest"
 
 
