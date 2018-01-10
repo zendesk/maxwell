@@ -12,9 +12,9 @@ public class HashStringTable implements HashStringProvider {
 		String t = r.getTable();
 
 		// support table-to-database fallback for DDL that has no table associated
-		if ( t == null && partitionKeyFallback.equals("database") )
+		if ( t == null && "database".equals(partitionKeyFallback) )
 			return r.getDatabase();
 		else
-			return r.getTable();
+			return t;
 	}
 }
