@@ -13,7 +13,7 @@ public abstract class AbstractMaxwellPartitioner {
 
 	private PartitionBy partitionByForString(String key) {
 		if ( key == null )
-			return null;
+			return PartitionBy.DATABASE;
 
 		switch(key) {
 			case "table":
@@ -25,7 +25,7 @@ public abstract class AbstractMaxwellPartitioner {
 			case "column":
 				return PartitionBy.COLUMN;
 			default:
-				return null;
+				throw new RuntimeException("Unknown partitionBy string: " + key);
 		}
 	}
 
@@ -50,9 +50,6 @@ public abstract class AbstractMaxwellPartitioner {
 	}
 
 	public String getHashString(RowMap r, PartitionBy by) {
-		if ( by == null )
-			return UUID.randomUUID().toString();
-
 		switch ( by ) {
 			case TABLE:
 				String t = r.getTable();
