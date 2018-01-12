@@ -4,7 +4,7 @@
 
   <groupId>com.zendesk</groupId>
   <artifactId>maxwell</artifactId>
-  <version>1.11.0</version>
+  <version>1.12.0</version>
   <packaging>jar</packaging>
 
   <name>maxwell</name>
@@ -352,6 +352,7 @@
         <version>3.1.0</version>
         <configuration>
           <appendAssemblyId>false</appendAssemblyId>
+          <tarLongFileMode>posix</tarLongFileMode>
           <descriptors>
             <descriptor>src/main/assembly/assembly.xml</descriptor>
           </descriptors>

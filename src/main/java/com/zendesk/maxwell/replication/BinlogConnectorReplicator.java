@@ -180,7 +180,9 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 
 					if ( table != null && shouldOutputEvent(table.getDatabase(), table.getName(), filter) ) {
 						for ( RowMap r : event.jsonMaps(table, lastHeartbeatPosition) )
-							buffer.add(r);
+							if (shouldOutputRowMap(table.getDatabase(), table.getName(), r, filter)) {
+								buffer.add(r);
+							}
 					}
 
 					break;

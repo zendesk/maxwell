@@ -207,6 +207,7 @@ public class DDLParserTest {
 			"ALTER TABLE foo RENAME INDEX index_quote_request_follow_on_data_on_model_name TO index_quote_request_follow_on_data_on_model_class_name",
 			"ALTER TABLE foo DROP COLUMN `ducati` CASCADE",
 			"CREATE TABLE account_groups ( visible_to_all CHAR(1) DEFAULT 'N' NOT NULL CHECK (visible_to_all IN ('Y','N')))",
+			"ALTER TABLE \"foo\" drop column a", // ansi-double-quoted tables
 			"create table vc11( id serial, name varchar(10) not null default \"\")"
 
 		};

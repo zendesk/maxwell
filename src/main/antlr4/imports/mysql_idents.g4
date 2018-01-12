@@ -15,7 +15,7 @@ table_name: (db_name '.' name)
 user: user_token ('@' user_token)?;
 user_token: (IDENT | QUOTED_IDENT | string_literal);
 
-name: ( id | tokens_available_for_names | INTEGER_LITERAL);
+name: ( id | tokens_available_for_names | INTEGER_LITERAL | DBL_STRING_LITERAL );
 id: ( IDENT | QUOTED_IDENT );
 literal: (float_literal | integer_literal | string_literal | NULL | TRUE | FALSE);
 
