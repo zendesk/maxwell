@@ -50,6 +50,13 @@
     </body>
     <script>
         jQuery(document).ready(function () {
+            var shiftWindow = function() {
+                scrollBy(0, -50)
+            };
+
+            if (location.hash) shiftWindow();
+            window.addEventListener("hashchange", shiftWindow);
+
             jQuery("table").addClass("table table-condensed table-bordered table-hover");
             jQuery("#maxwell-header").append(
                 jQuery("<img alt='The Daemon, maybe' src='/img/cyberiad_1.jpg' id='maxwell-daemon-image'>")

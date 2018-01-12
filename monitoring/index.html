@@ -196,9 +196,6 @@
                       <li class="toctree-l3"><a href="#http-endpoints">HTTP Endpoints</a></li>
                       
                   
-                      <li class="toctree-l3"><a href="#healthcheck">Healthcheck</a></li>
-                      
-                  
                       <li class="toctree-l3"><a href="#jmx-configuration">JMX Configuration</a></li>
                       
                   
@@ -236,6 +233,7 @@
 or the <code>config.properties</code> file. These can provide insight into system health.
 At present certain metrics are Kafka-specific - that is, not yet supported other producers.</p>
 <h3 id="metrics">Metrics</h3>
+<hr />
 <p>All metrics are prepended with the configured <code>metrics_prefix.</code></p>
 <table>
 <thead>
@@ -304,6 +302,7 @@ At present certain metrics are Kafka-specific - that is, not yet supported other
 </tbody>
 </table>
 <h3 id="http-endpoints">HTTP Endpoints</h3>
+<hr />
 <p>When the HTTP server is enabled the following endpoints are exposed:</p>
 <table>
 <thead>
@@ -319,7 +318,7 @@ At present certain metrics are Kafka-specific - that is, not yet supported other
 </tr>
 <tr>
 <td align="left"><code>/healthcheck</code></td>
-<td align="left">run Maxwell's healthcheck(s) and return success or failure based on the result</td>
+<td align="left">run Maxwell's healthchecks.  Considered unhealthy if &gt;0 messages have failed in the last 15 minutes.</td>
 </tr>
 <tr>
 <td align="left"><code>/ping</code></td>
@@ -327,9 +326,8 @@ At present certain metrics are Kafka-specific - that is, not yet supported other
 </tr>
 </tbody>
 </table>
-<h3 id="healthcheck">Healthcheck</h3>
-<p>The <code>/healthcheck</code> endpoint will return unhealthy when there is more than 1 message that failed to be sent to Kafka in the past 15 minutes.</p>
 <h3 id="jmx-configuration">JMX Configuration</h3>
+<hr />
 <p>Standard configuration is either via commandline args or the <code>config.properties</code> file. However, when exposing JMX metrics
 additional configuration is required to allow remote access. In this case Maxwell makes use of the <code>JAVA_OPTS</code> environment variable.
 To make use of this set <code>JAVA_OPTS</code> before starting Maxwell.</p>
@@ -351,6 +349,13 @@ To make use of this set <code>JAVA_OPTS</code> before starting Maxwell.</p>
     </body>
     <script>
         jQuery(document).ready(function () {
+            var shiftWindow = function() {
+                scrollBy(0, -50)
+            };
+
+            if (location.hash) shiftWindow();
+            window.addEventListener("hashchange", shiftWindow);
+
             jQuery("table").addClass("table table-condensed table-bordered table-hover");
             jQuery("#maxwell-header").append(
                 jQuery("<img alt='The Daemon, maybe' src='/img/cyberiad_1.jpg' id='maxwell-daemon-image'>")

@@ -212,6 +212,17 @@
             <div class="col-md-10" role="main">
 
 <h1 id="maxwell-changelog">Maxwell changelog</h1>
+<h3 id="v1120-cold-feet-literally-and-metaphorically"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.12.0">v1.12.0</a>: "Cold Feet, literally and metaphorically."</h3>
+<ul>
+<li>Support for injecting a custom producer, thanks @tomcollinsproject</li>
+<li>New producer for Amazon SQS, thanks @vikrant2mahajan</li>
+<li>Maxwell can now filter rows based on column values, thanks @finnplay</li>
+<li>Fixes for the Google Pubsub producer (it was really broken), thanks @finnplay</li>
+<li>DDL output can now optionally include the source SQL, thanks @sungjuly</li>
+<li>Support for double-quoted table/database/etc names</li>
+<li>rabbitmq option for persistent messages, thanks @d-babiak</li>
+<li>SQL parser bugfix for values like +1.234, thanks @hexene</li>
+</ul>
 <h3 id="v1110-the-latest-the-greatest"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.11.0">v1.11.0</a>: "the latest, the greatest"</h3>
 <pre><code> - default kafka client upgrades to 0.11.0.1
  - fix the encryption issue (https://github.com/zendesk/maxwell/issues/803)
@@ -792,6 +803,13 @@ changed.  Thanks @kristiankaufmann</p>
     </body>
     <script>
         jQuery(document).ready(function () {
+            var shiftWindow = function() {
+                scrollBy(0, -50)
+            };
+
+            if (location.hash) shiftWindow();
+            window.addEventListener("hashchange", shiftWindow);
+
             jQuery("table").addClass("table table-condensed table-bordered table-hover");
             jQuery("#maxwell-header").append(
                 jQuery("<img alt='The Daemon, maybe' src='/img/cyberiad_1.jpg' id='maxwell-daemon-image'>")

@@ -167,43 +167,43 @@
               
                   <ul class="nav">
                   
-                      <li class="toctree-l3"><a href="#kafka-options">Kafka options</a></li>
+                      <li class="toctree-l3"><a href="#kafka">Kafka</a></li>
+                      
+                          <li><a class="toctree-l4" href="#topic">Topic</a></li>
+                      
+                          <li><a class="toctree-l4" href="#client-version">Client version</a></li>
+                      
+                          <li><a class="toctree-l4" href="#extended-options">Extended options</a></li>
+                      
+                          <li><a class="toctree-l4" href="#keys">Keys</a></li>
                       
                   
-                      <li class="toctree-l3"><a href="#kafka-topic">Kafka topic</a></li>
+                      <li class="toctree-l3"><a href="#partitioning">Partitioning</a></li>
+                      
+                          <li><a class="toctree-l4" href="#kafka-partitioning">Kafka partitioning</a></li>
                       
                   
-                      <li class="toctree-l3"><a href="#kafka-key">Kafka key</a></li>
+                      <li class="toctree-l3"><a href="#kinesis">Kinesis</a></li>
+                      
+                          <li><a class="toctree-l4" href="#aws-credentials">AWS Credentials</a></li>
+                      
+                          <li><a class="toctree-l4" href="#options">Options</a></li>
                       
                   
-                      <li class="toctree-l3"><a href="#kafka-partitioning">Kafka Partitioning</a></li>
+                      <li class="toctree-l3"><a href="#sqs">SQS</a></li>
+                      
+                          <li><a class="toctree-l4" href="#aws-credentials_1">AWS Credentials</a></li>
+                      
+                          <li><a class="toctree-l4" href="#options_1">Options</a></li>
                       
                   
-                      <li class="toctree-l3"><a href="#kafka-client-version">Kafka client version</a></li>
+                      <li class="toctree-l3"><a href="#google-cloud-pubsub">Google Cloud Pub/Sub</a></li>
                       
                   
-                      <li class="toctree-l3"><a href="#kinesis-aws-credentials">Kinesis AWS credentials</a></li>
+                      <li class="toctree-l3"><a href="#rabbitmq">RabbitMQ</a></li>
                       
                   
-                      <li class="toctree-l3"><a href="#kinesis-options">Kinesis Options</a></li>
-                      
-                  
-                      <li class="toctree-l3"><a href="#sqs-aws-credentials">SQS AWS credentials</a></li>
-                      
-                  
-                      <li class="toctree-l3"><a href="#sqs-options">SQS Options</a></li>
-                      
-                  
-                      <li class="toctree-l3"><a href="#google-cloud-pubsub-options">Google Cloud Pub/Sub Options</a></li>
-                      
-                  
-                      <li class="toctree-l3"><a href="#google-cloud-pubsub-options_1">Google Cloud Pub/Sub Options</a></li>
-                      
-                  
-                      <li class="toctree-l3"><a href="#rabbitmq-options">RabbitMQ Options</a></li>
-                      
-                  
-                      <li class="toctree-l3"><a href="#redis-options">Redis Options</a></li>
+                      <li class="toctree-l3"><a href="#redis">Redis</a></li>
                       
                   
                       <li class="toctree-l3"><a href="#custom-producer">Custom Producer</a></li>
@@ -257,8 +257,29 @@
 </div></div>
             <div class="col-md-10" role="main">
 
-<h3 id="kafka-options">Kafka options</h3>
+<h3 id="kafka">Kafka</h3>
 <hr />
+<h4 id="topic">Topic</h4>
+<p>Maxwell writes to a kafka topic named "maxwell" by default. It can be static,
+e.g. 'maxwell', or dynamic, e.g. <code>namespace_%{database}_%{table}</code>. In the
+latter case 'database' and 'table' will be replaced with the values for the row
+being processed. This can be changed with the <code>kafka_topic</code> option.</p>
+<h4 id="client-version">Client version</h4>
+<p>By default, maxwell runs with kafka clients 0.11.0.1. There is a flag (--kafka_version) that allows maxwell to run with either 0.8.2.2, 0.9.0.1, 0.10.0.1, 0.10.2.1 or 0.11.0.1.
+Noteables:
+- Kafka clients 0.9.0.1 are not compatible with brokers running kafka 0.8. The exception below will show in logs when that is the case:</p>
+<pre><code>ERROR Sender - Uncaught error in kafka producer I/O thread:
+SchemaException: Error reading field 'throttle_time_ms': java.nio.BufferUnderflowException
+</code></pre>
+
+<ul>
+<li>Kafka clients 0.8 are compatible with brokers running kafka 0.8.</li>
+<li>0.10.0.x clients only support 0.10.0.x or later brokers.</li>
+<li>Mixing Kafka 0.10 with other versions can lead to serious performance impacts.
+  For More details, <a href="http://kafka.apache.org/0100/documentation.html#upgrade_10_performance_impact">read about it here</a>.</li>
+<li>0.11.0 clients can talk to version 0.10.0 or newer brokers.</li>
+</ul>
+<h4 id="extended-options">Extended options</h4>
 <p>Any options given to Maxwell that are prefixed with <code>kafka.</code> will be passed directly into the Kafka producer configuration
 (with <code>kafka.</code> stripped off).  We use the "new producer" configuration, as described here:
 <a href="http://kafka.apache.org/documentation.html#newproducerconfigs">http://kafka.apache.org/documentation.html#newproducerconfigs</a></p>
@@ -275,14 +296,7 @@ kafka.retries = 5 # or some larger number
 </code></pre>
 
 <p>And you will also want to set <code>min.insync.replicas</code> on Maxwell's output topic.</p>
-<h3 id="kafka-topic">Kafka topic</h3>
-<hr />
-<p>Maxwell writes to a kafka topic named "maxwell" by default. It can be static,
-e.g. 'maxwell', or dynamic, e.g. <code>namespace_%{database}_%{table}</code>. In the
-latter case 'database' and 'table' will be replaced with the values for the row
-being processed. This can be changed with the <code>kafka_topic</code> option.</p>
-<h3 id="kafka-key">Kafka key</h3>
-<hr />
+<h4 id="keys">Keys</h4>
 <p>Maxwell generates keys for its Kafka messages based upon a mysql row's primary key in JSON format:</p>
 <pre><code>{ &quot;database&quot;:&quot;test_tb&quot;,&quot;table&quot;:&quot;test_tbl&quot;,&quot;pk.id&quot;:4,&quot;pk.part2&quot;:&quot;hello&quot;}
 </code></pre>
@@ -290,8 +304,29 @@ being processed. This can be changed with the <code>kafka_topic</code> option.</
 <p>This key is designed to co-operate with Kafka's log compaction, which will save the last-known
 value for a key, allowing Maxwell's Kafka stream to retain the last-known value for a row and act
 as a source of truth.</p>
-<h3 id="kafka-partitioning">Kafka Partitioning</h3>
+<p>The JSON-hash based key format is tricky to regenerate in a stable fashion.  If you have an
+application in which you need to parse and re-generate keys, it's advised you enable
+<code>--kafka_key_format=array</code>, which will generate kafka keys that can be parsed and re-output byte-for-byte.</p>
+<h3 id="partitioning">Partitioning</h3>
 <hr />
+<p>Both Kafka and AWS Kinesis support the notion of partitioned streams.
+Partitioning is controlled by <code>producer_partition_by</code>, which gives you the
+option to split your stream by database, table, primary
+key, or embedded columns.  How you choose to partition your streams influences
+quite a bit in downstream applications; generally the rule of thumb is to use
+the finest-grained partition scheme that one can without sacrificing
+serialization needs.</p>
+<p>When using <code>producer_partition_by</code>=<em>column</em> you must set
+<code>producer_partition_columns</code> with the column name(s) to partition by (e.g.
+<code>producer_partition_columns</code>=user_id or
+<code>producer_partition_columns</code>=user_id,create_date). You must also set
+<code>producer_partiton_by_fallback</code>. This may be (<em>database</em>, <em>table</em>, <em>primary_key</em>).
+It is used when the column(s) specified does not exist in the current row. The
+default is <em>database</em>.  When partitioning by <em>column</em> Maxwell will treat the
+values for the specified columns as strings, concatenate them and use that
+value to partition the data. The above example, partitioning by user_id +
+create_date would have a partition key similar to <em>1178532016-10-10 18:29:04</em>.</p>
+<h4 id="kafka-partitioning">Kafka partitioning</h4>
 <p>A binlog event's partition is determined by the selected hash function and hash string as follows</p>
 <pre><code>  HASH_FUNCTION(HASH_STRING) % TOPIC.NUMBER_OF_PARTITIONS
 </code></pre>
@@ -303,16 +338,6 @@ hardcoded to 25342 in the MaxwellKafkaPartitioner class.</p>
 <p>The HASH_STRING may be (<em>database</em>, <em>table</em>, <em>primary_key</em>, <em>column</em>).  The
 default HASH_STRING is the <em>database</em>. The partitioning field can be configured
 using the <code>producer_partition_by</code> option.</p>
-<p>When using <code>producer_partition_by</code>=<em>column</em> you must set
-<code>producer_partition_columns</code> with the column name(s) to partition by (e.g.
-<code>producer_partition_columns</code>=user_id or
-<code>producer_partition_columns</code>=user_id,create_date). You must also set
-<code>kafka_partiton_by_fallback</code>. This may be (<em>database</em>, <em>table</em>, <em>primary_key</em>).
-It is used when the column(s) specified does not exist in the current row. The
-default is <em>database</em>.  When partitioning by <em>column</em> Maxwell will treat the
-values for the specified columns as strings, concatenate them and use that
-value to partition the data. The above example, partitioning by user_id +
-create_date would have a partition key similar to <em>1178532016-10-10 18:29:04</em>.</p>
 <p>Maxwell will discover the number of partitions in its kafka topic upon boot.  This means that you should pre-create your kafka topics,
 and with at least as many partitions as you have logical databases:</p>
 <pre><code>bin/kafka-topics.sh --zookeeper ZK_HOST:2181 --create \
@@ -320,25 +345,9 @@ and with at least as many partitions as you have logical databases:</p>
 </code></pre>
 
 <p><a href="http://kafka.apache.org/documentation.html#quickstart">http://kafka.apache.org/documentation.html#quickstart</a></p>
-<h3 id="kafka-client-version">Kafka client version</h3>
+<h3 id="kinesis">Kinesis</h3>
 <hr />
-<p>By default, maxwell runs with kafka clients 0.11.0.1. There is a flag (--kafka_version) that allows maxwell to run with either 0.8.2.2, 0.9.0.1, 0.10.0.1, 0.10.2.1 or 0.11.0.1.
-Noteables:
-- Kafka clients 0.9.0.1 are not compatible with brokers running kafka 0.8. The exception below will show in logs when that is the case:</p>
-<pre><code>ERROR Sender - Uncaught error in kafka producer I/O thread:
-SchemaException: Error reading field 'throttle_time_ms': java.nio.BufferUnderflowException
-</code></pre>
-
-<ul>
-<li>Kafka clients 0.8 are compatible with brokers running kafka 0.8.</li>
-<li>0.10.0.x clients only support 0.10.0.x or later brokers.</li>
-<li>Mixing Kafka 0.10 with other versions can lead to serious performance impacts.
-  For More details, <a href="http://kafka.apache.org/0100/documentation.html#upgrade_10_performance_impact">read about it here</a>.</li>
-<li>0.11.0 clients can talk to version 0.10.0 or newer brokers.</li>
-</ul>
-<hr />
-<h3 id="kinesis-aws-credentials">Kinesis AWS credentials</h3>
-<hr />
+<h4 id="aws-credentials">AWS Credentials</h4>
 <p>You will need to obtain an IAM user that has the following permissions for the stream you are planning on producing to:</p>
 <ul>
 <li>"kinesis:PutRecord"</li>
@@ -349,8 +358,7 @@ SchemaException: Error reading field 'throttle_time_ms': java.nio.BufferUnderflo
 <p>See the <a href="http://docs.aws.amazon.com/streams/latest/dev/controlling-access.html#kinesis-using-iam-examples">AWS docs</a> for the latest examples on which permissions are needed.</p>
 <p>The producer uses the <a href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html">DefaultAWSCredentialsProviderChain</a> class to gain aws credentials.
 See the <a href="http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html">AWS docs</a> on how to setup the IAM user with the Default Credential Provider Chain.</p>
-<h3 id="kinesis-options">Kinesis Options</h3>
-<hr />
+<h4 id="options">Options</h4>
 <p>Set the output stream in <code>config.properties</code> by setting the <code>kinesis_stream</code> property.</p>
 <p>The producer uses the <a href="http://docs.aws.amazon.com/streams/latest/dev/developing-producers-with-kpl.html">KPL (Kinesis Producer Library)</a> and uses the KPL built in configurations.
 Copy <code>kinesis-producer-library.properties.example</code> to <code>kinesis-producer-library.properties</code> and configure the properties file to your needs.</p>
@@ -367,25 +375,23 @@ Region=$AWS_DEFAULT_REGION
 </code></pre>
 
 <p>Remember: if you disable record aggregation, you will lose the benefit of potentially greater producer throughput.</p>
-<h3 id="sqs-aws-credentials">SQS AWS credentials</h3>
+<h3 id="sqs">SQS</h3>
 <hr />
+<h4 id="aws-credentials_1">AWS Credentials</h4>
 <p>You will need to obtain an IAM user that has the permission to access the SQS service. The SQS producer also uses <a href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html">DefaultAWSCredentialsProviderChain</a> to get AWS credentials.</p>
 <p>See the <a href="http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html">AWS docs</a> on how to setup the IAM user with the Default Credential Provider Chain.</p>
 <p>In case you need to set up a different region also along with credentials then default one, see the <a href="http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html#setup-credentials-setting-region">AWS docs</a>.</p>
-<h3 id="sqs-options">SQS Options</h3>
-<hr />
+<h4 id="options_1">Options</h4>
 <p>Set the output queue in the <code>config.properties</code> by setting the <code>sqs_queue_uri</code> property to full SQS queue uri from AWS console.</p>
 <p>The producer uses the <a href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sqs/AmazonSQSClient.html">AWS SQS SDK</a>.</p>
-<h3 id="google-cloud-pubsub-options">Google Cloud Pub/Sub Options</h3>
+<h3 id="google-cloud-pubsub">Google Cloud Pub/Sub</h3>
 <hr />
 <p>In order to publish to Google Cloud Pub/Sub, you will need to obtain an IAM service account that has been granted the <code>roles/pubsub.publisher</code> role.</p>
 <p>See the Google Cloud Platform docs for the <a href="https://cloud.google.com/pubsub/docs/access_control">latest examples of which permissions are needed</a>, as well as <a href="https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances">how to properly configure service accounts</a>.</p>
-<h3 id="google-cloud-pubsub-options_1">Google Cloud Pub/Sub Options</h3>
-<hr />
 <p>Set the output stream in <code>config.properties</code> by setting the <code>pubsub_project_id</code> and <code>pubsub_topic</code> properties. Optionally configure a dedicated output topic
 for DDL updates by setting the <code>ddl_pubsub_topic</code> property.</p>
 <p>The producer uses the <a href="https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-pubsub">Google Cloud Java Library for Pub/Sub</a> and uses its built-in configurations.</p>
-<h3 id="rabbitmq-options">RabbitMQ Options</h3>
+<h3 id="rabbitmq">RabbitMQ</h3>
 <hr />
 <p>To produce messages to RabbitMQ, you will need to specify a host in <code>config.properties</code> with <code>rabbitmq_host</code>. This is the only required property, everything else falls back to a sane default.</p>
 <p>The remaining configurable properties are:
@@ -400,7 +406,7 @@ for DDL updates by setting the <code>ddl_pubsub_topic</code> property.</p>
     - This config controls the routing key, where <code>%db%</code> and <code>%table%</code> are placeholders that will be substituted at runtime
 - <code>rabbitmq_message_persistent</code> - defaults to <strong>false</strong></p>
 <p>For more details on these options, you are encouraged to the read official RabbitMQ documentation here: https://www.rabbitmq.com/documentation.html</p>
-<h3 id="redis-options">Redis Options</h3>
+<h3 id="redis">Redis</h3>
 <hr />
 <p>Set the output stream in <code>config.properties</code> by setting the <code>redis_pub_channel</code> property.</p>
 <p>Other configurable properties are:</p>
@@ -426,6 +432,13 @@ for DDL updates by setting the <code>ddl_pubsub_topic</code> property.</p>
     </body>
     <script>
         jQuery(document).ready(function () {
+            var shiftWindow = function() {
+                scrollBy(0, -50)
+            };
+
+            if (location.hash) shiftWindow();
+            window.addEventListener("hashchange", shiftWindow);
+
             jQuery("table").addClass("table table-condensed table-bordered table-hover");
             jQuery("#maxwell-header").append(
                 jQuery("<img alt='The Daemon, maybe' src='/img/cyberiad_1.jpg' id='maxwell-daemon-image'>")

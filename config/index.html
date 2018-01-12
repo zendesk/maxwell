@@ -165,16 +165,22 @@
                       <li class="toctree-l3"><a href="#mysql-server-configuration">Mysql Server configuration</a></li>
                       
                   
-                      <li class="toctree-l3"><a href="#gtid-support">GTID support</a></li>
+                      <li class="toctree-l3"><a href="#properties-file">Properties file</a></li>
                       
                   
-                      <li class="toctree-l3"><a href="#properties-file">Properties file</a></li>
+                      <li class="toctree-l3"><a href="#gtid-support">GTID support</a></li>
                       
                   
                       <li class="toctree-l3"><a href="#rds-configuration">RDS configuration</a></li>
                       
                   
                       <li class="toctree-l3"><a href="#filters">Filters</a></li>
+                      
+                          <li><a class="toctree-l4" href="#includeexclude">Include/Exclude</a></li>
+                      
+                          <li><a class="toctree-l4" href="#supressing-columns">Supressing columns</a></li>
+                      
+                          <li><a class="toctree-l4" href="#filtering-on-column-values">Filtering on column values</a></li>
                       
                   
                       <li class="toctree-l3"><a href="#schema-storage-host-vs-replica-host">Schema storage host vs replica host</a></li>
@@ -243,6 +249,7 @@
             <div class="col-md-10" role="main">
 
 <h3 id="mysql-server-configuration">Mysql Server configuration</h3>
+<hr />
 <p>At a minimum, Maxwell needs row-level-replication turned on into order to
 operate:</p>
 <pre><code>[mysqld]
@@ -251,7 +258,20 @@ log-bin=master
 binlog_format=row
 </code></pre>
 
+<h3 id="properties-file">Properties file</h3>
+<hr />
+<p>If maxwell finds the file <code>config.properties</code> in $PWD it will use it.  Any
+command line options (except <code>init_position</code>, <code>replay</code>, and <code>kafka_version</code>) may be given as
+"key=value" pairs.</p>
+<p>Additionally, any configuration file options prefixed with 'kafka.' will be
+passed into the kafka producer library, after having 'kafka.' stripped off the
+front of the key.  So, for example if config.properties contains</p>
+<pre><code>kafka.batch.size=16384
+</code></pre>
+
+<p>then Maxwell will send <code>batch.size=16384</code> to the kafka producer library.</p>
 <h3 id="gtid-support">GTID support</h3>
+<hr />
 <p>As of 1.8.0, Maxwell contains support for
 <a href="https://dev.mysql.com/doc/refman/5.6/en/replication-gtids.html">GTID-based replication</a>.  Enable it with the <code>--gtid_mode</code> configuration param.</p>
 <p>Here's how you might configure your mysql server for GTID mode:</p>
@@ -274,18 +294,6 @@ Maxwell is unable to transparently upgrade from a traditional-replication
 scenario to a GTID-replication scenario; currently, when you enable gtid mode
 Maxwell will recapture the schema and GTID-position from "wherever the master
 is at".</p>
-<h3 id="properties-file">Properties file</h3>
-<hr />
-<p>If maxwell finds the file <code>config.properties</code> in $PWD it will use it.  Any
-command line options (except <code>init_position</code>, <code>replay</code>, and <code>kafka_version</code>) may be given as
-"key=value" pairs.</p>
-<p>Additionally, any configuration file options prefixed with 'kafka.' will be
-passed into the kafka producer library, after having 'kafka.' stripped off the
-front of the key.  So, for example if config.properties contains</p>
-<pre><code>kafka.batch.size=16384
-</code></pre>
-
-<p>then Maxwell will send <code>batch.size=16384</code> to the kafka producer library.</p>
 <h3 id="rds-configuration">RDS configuration</h3>
 <hr />
 <p>To run Maxwell against RDS, (either Aurora or Mysql) you will need to do the following:</p>
@@ -297,6 +305,7 @@ front of the key.  So, for example if config.properties contains</p>
 </ul>
 <h3 id="filters">Filters</h3>
 <hr />
+<h4 id="includeexclude">Include/Exclude</h4>
 <p>The options <code>include_dbs</code>, <code>exclude_dbs</code>, <code>include_tables</code>, and <code>exclude_tables</code> control whether
 Maxwell will send an update for a given row to its producer.  All the options take a single value PATTERN,
 which may either be a literal table/database name, given as <code>option=name</code>, or a regular expression,
@@ -312,6 +321,12 @@ given as <code>option=/regex/</code>.  The options are evaluated as follows:</p>
 it captures schema changes for that table or database. Note that once Maxwell has been running with a table or database marked as blacklisted,
 you <em>must</em> continue to run Maxwell with that table or database blacklisted or else Maxwell will halt. If you want to stop
 blacklisting a table or database, you will have to drop the maxwell schema first.</p>
+<h4 id="supressing-columns">Supressing columns</h4>
+<p>If you wish to suppress columns from Maxwell's output (for instance, a password field),
+you can use <code>exclude_columns</code> to filter out columns by name.</p>
+<h4 id="filtering-on-column-values">Filtering on column values</h4>
+<p>Maxwell can filter rows to only match when a column contains a specific value.  The <code>include_column_values</code> option takes a comma-separated
+list of column/value pairs: "bar=x,foo=y".  Note that if a column does not exist in a table, it will ignore the value-filter.</p>
 <h3 id="schema-storage-host-vs-replica-host">Schema storage host vs replica host</h3>
 <hr />
 <p>Maxwell needs two sets of mysql permissions to operate properly: a mysql database in which to store schema snapshots,
@@ -333,6 +348,7 @@ running in different configurations, for example producing different groups of
 tables to different topics.  Each instance of Maxwell must be configured with a
 unique <code>client_id</code>, in order to store unique binlog positions.</p>
 <h3 id="multiple-instances-on-a-55-server">multiple instances on a 5.5 server</h3>
+<hr />
 <p>With MySQL 5.5 and below, each replicator (be it mysql, maxwell, whatever) must
 also be configured with a unique <code>replica_server_id</code>.  This is a 32-bit integer
 that corresponds to mysql's <code>server_id</code> parameter.  The value you configure
@@ -825,6 +841,13 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
     </body>
     <script>
         jQuery(document).ready(function () {
+            var shiftWindow = function() {
+                scrollBy(0, -50)
+            };
+
+            if (location.hash) shiftWindow();
+            window.addEventListener("hashchange", shiftWindow);
+
             jQuery("table").addClass("table table-condensed table-bordered table-hover");
             jQuery("#maxwell-header").append(
                 jQuery("<img alt='The Daemon, maybe' src='/img/cyberiad_1.jpg' id='maxwell-daemon-image'>")
