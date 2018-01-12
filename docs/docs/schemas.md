@@ -1,5 +1,5 @@
 ### Schema storage
-
+***
 This document describes Maxwell's internal schema storage mechanism. Most users won't need to know how this works, but it can be useful in the rare case where something goes wrong.
 
 MySQL binlogs give maxwell access to the raw bytes for each update that happens. In order to generate useful output, Maxwell needs to know the data type of every column, so that it can interpret the bytes as a number, string, boolean, etc.
@@ -19,7 +19,7 @@ This information creates a concrete timeline of the history of your schema for a
 "Most recent" should be fairly intuitive - firstly we sort by `last_heartbeat_read`, then by `binlog_file`, then `binlog_position`. We limit the search to values "before" the binlog position we're searching for, because we don't want to use a schema corresponding to a change that is "in the future" - i.e. further ahead in the binlog than our current position.
 
 ### Master failover
-
+***
 Schemas are important for master failover. When Maxwell detects that it is talking to a new `server_id` (one that differs from its stored `position`), it attempts a master failover (if enabled). It searches backwards in the new servers binlog files, looking for an update to `maxwell.heartbeats` corresponding to the timestamp stored in its position table.
 
 Once it finds this (unique) update, it knows the binlog location for both the old and new master which correspond to the exact same event.

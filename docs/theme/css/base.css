@@ -213,6 +213,18 @@ h3 {
       padding-right: 30px;
       margin-top: 5px;
     }
+
+    h4 {
+      font-size: 120%;
+      padding-left: 30px;
+      padding-right: 30px;
+      margin-top: 15px;
+      margin-bottom: 0px;
+    }
+
+    .toctree-l4 {
+      margin-left: 10px;
+    }
 }
 
 @media (min-width: 1200px) {
