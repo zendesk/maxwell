@@ -2,6 +2,10 @@ package com.zendesk.maxwell.schema.columndef;
 
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.TimeZone;
 
 import com.google.code.or.common.util.MySQLConstants;
 
@@ -23,8 +27,12 @@ public class TimeColumnDef extends ColumnDefWithLength {
 			return appendFractionalSeconds(timeAsStr, ((Timestamp) value).getNanos(), this.columnLength);
 
 		} else if ( value instanceof Long ) {
-			Time time = new Time((Long) value / 1000);
-			String timeAsStr = String.valueOf(time);
+		    
+		    //need to set timezone to GMT before converting long to date
+		    long millisSinceEpoch = (Long) value / 1000 + (new Date(0)).getTime();
+		    LocalDateTime localDateTime = LocalDateTime.ofInstant(Instant.ofEpochMilli(millisSinceEpoch), TimeZone.getTimeZone("GMT").toZoneId());
+		    
+		    String timeAsStr = String.valueOf(Time.valueOf(localDateTime.getHour() + ":" + localDateTime.getMinute() + ":" + localDateTime.getSecond()));
 
 			return appendFractionalSeconds(timeAsStr, (int) ((Long) value % 1000000) * 1000, this.columnLength);
 		} else {
