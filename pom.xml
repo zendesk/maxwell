@@ -108,7 +108,7 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>amazon-kinesis-producer</artifactId>
-      <version>0.12.3</version>
+      <version>0.12.8</version>
     </dependency>
     <dependency>
       <groupId>mysql</groupId>
