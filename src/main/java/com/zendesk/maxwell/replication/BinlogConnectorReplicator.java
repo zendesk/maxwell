@@ -313,6 +313,7 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 					return mode;
 				}
 			}
+			LOGGER.warn("Invalid binlog SSL mode string: " + sslMode + " - defaulting to DISABLED");
 		}
 		return SSLMode.DISABLED;
 	}
