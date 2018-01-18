@@ -183,7 +183,7 @@ public class RowMap implements Serializable {
 		return keys.toString();
 	}
 
-	public String buildPartitionKey(List<String> partitionColumns, String partitionKeyFallback) {
+	public String buildPartitionKey(List<String> partitionColumns) {
 		StringBuilder partitionKey= new StringBuilder();
 		for (String pc : partitionColumns) {
 			Object pcValue = null;
@@ -192,21 +192,8 @@ public class RowMap implements Serializable {
 			if (pcValue != null)
 				partitionKey.append(pcValue.toString());
 		}
-		if (partitionKey.length() == 0)
-			return getPartitionKeyFallback(partitionKeyFallback);
-		return partitionKey.toString();
-	}
 
-	private String getPartitionKeyFallback(String partitionKeyFallback) {
-		switch (partitionKeyFallback) {
-			case "table":
-				return this.table;
-			case "primary_key":
-				return pkAsConcatString();
-			case "database":
-			default:
-				return this.database;
-		}
+		return partitionKey.toString();
 	}
 
 	private void writeMapToJSON(
