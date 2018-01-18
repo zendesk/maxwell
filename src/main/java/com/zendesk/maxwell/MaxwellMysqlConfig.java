@@ -15,6 +15,7 @@ public class MaxwellMysqlConfig {
 	public String database;
 	public String user;
 	public String password;
+	public String sslMode;
 	public ArrayList<String> jdbcOptions = new ArrayList<String>();
 	public Integer connectTimeoutMS = 5000;
 
@@ -24,18 +25,21 @@ public class MaxwellMysqlConfig {
 		this.database = null;
 		this.user = null;
 		this.password = null;
+		this.sslMode = null;
 
 		this.jdbcOptions = new ArrayList<>();
 		this.jdbcOptions.add("zeroDateTimeBehavior=convertToNull");
 		this.jdbcOptions.add(String.format("connectTimeout=%d", connectTimeoutMS));
 	}
 
-	public MaxwellMysqlConfig(String host, Integer port, String database, String user, String password) {
+	public MaxwellMysqlConfig(String host, Integer port, String database, String user, String password,
+			String sslMode) {
 		this.host = host;
 		this.port = port;
 		this.database = database;
 		this.user = user;
 		this.password = password;
+		this.sslMode = sslMode;
 	}
 
 	public void setJDBCOptions(String opts) {

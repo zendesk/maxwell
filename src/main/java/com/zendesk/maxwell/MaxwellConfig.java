@@ -149,6 +149,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "password", "password for host" ).withRequiredArg();
 		parser.accepts( "jdbc_options", "additional jdbc connection options" ).withRequiredArg();
 		parser.accepts( "binlog_connector", "[deprecated]" ).withRequiredArg();
+		parser.accepts( "binlog_sslmode", "one of DISABLED, PREFERRED, REQUIRED, VERIFY_CA, or VERIFY_IDENTITY. default: DISABLED").withOptionalArg();
 
 		parser.accepts("__separator_2");
 
@@ -325,6 +326,8 @@ public class MaxwellConfig extends AbstractConfig {
 		this.replicationMysql   = parseMysqlConfig("replication_", options, properties);
 		this.schemaMysql        = parseMysqlConfig("schema_", options, properties);
 		this.gtidMode           = fetchBooleanOption("gtid_mode", options, properties, System.getenv(GTID_MODE_ENV) != null);
+
+		this.maxwellMysql.sslMode = fetchOption("binlog_sslmode", options, properties, "DISABLED");
 
 		this.databaseName       = fetchOption("schema_database", options, properties, "maxwell");
 		this.maxwellMysql.database = this.databaseName;
@@ -593,7 +596,8 @@ public class MaxwellConfig extends AbstractConfig {
 				this.maxwellMysql.port,
 				null,
 				this.maxwellMysql.user,
-				this.maxwellMysql.password
+				this.maxwellMysql.password,
+				this.maxwellMysql.sslMode
 			);
 
 			this.replicationMysql.jdbcOptions = this.maxwellMysql.jdbcOptions;

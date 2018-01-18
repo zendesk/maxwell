@@ -6,6 +6,7 @@ import com.github.shyiko.mysql.binlog.event.EventType;
 import com.github.shyiko.mysql.binlog.event.QueryEventData;
 import com.github.shyiko.mysql.binlog.event.TableMapEventData;
 import com.github.shyiko.mysql.binlog.event.deserialization.EventDeserializer;
+import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.MaxwellMysqlConfig;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
@@ -61,6 +62,8 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 		transactionRowCount = metrics.getRegistry().histogram(metrics.metricName("transaction", "row_count"));
 
 		this.client = new BinaryLogClient(mysqlConfig.host, mysqlConfig.port, mysqlConfig.user, mysqlConfig.password);
+		this.client.setSSLMode(getBinlogSSLMode(mysqlConfig.sslMode));
+
 		BinlogPosition startBinlog = start.getBinlogPosition();
 		if (startBinlog.getGtidSetStr() != null) {
 			String gtidStr = startBinlog.getGtidSetStr();
@@ -301,6 +304,17 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 			}
 
 		}
+	}
+
+	private SSLMode getBinlogSSLMode(String sslMode) {
+		if (sslMode != null) {
+			for (SSLMode mode : SSLMode.values()) {
+				if (mode.toString().equals(sslMode)) {
+					return mode;
+				}
+			}
+		}
+		return SSLMode.DISABLED;
 	}
 
 	protected BinlogConnectorEvent pollEvent() throws InterruptedException {
