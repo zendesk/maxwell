@@ -47,15 +47,12 @@ password=maxwell
 #schema_database=maxwell
 
 # SSL/TLS options
-# To use any mode other than DISABLED, the following criteria must be met:
-###   set JAVA_OPTS="-Djavax.net.ssl.keyStore=<keystore> -Djavax.net.ssl.keyStorePassword=<password>
-###       -Djavax.net.ssl.trustStore=<truststore> -Djavax.net.ssl.trustStorePassword=<password>"
-###   set binlog_connector=true (to run with the new binlog connector library)
+# To use any mode other than DISABLED, you must set the trust and key stores:
+#   set JAVA_OPTS="-Djavax.net.ssl.keyStore=<keystore> -Djavax.net.ssl.keyStorePassword=<password>
+#       -Djavax.net.ssl.trustStore=<truststore> -Djavax.net.ssl.trustStorePassword=<password>"
 # binlog_sslmode must be one of DISABLED, PREFERRED, REQUIRED, VERIFY_CA, or VERIFY_IDENTITY
 #
-#
 #binlog_sslmode=DISABLED
-#binlog_connector=true
 
 # maxwell can optionally replicate from a different server than where it stores
 # schema and binlog position info.  Specify that different server here:
