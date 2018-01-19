@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -51,12 +52,13 @@ public class RecoveryTest extends TestWithNameLogging {
 		config.maxwellMysql.user = "maxwell";
 		config.maxwellMysql.password = "maxwell";
 		config.masterRecovery = masterRecovery;
-		config.maxwellMysql.jdbcOptions.add("useSSL=false");
+		config.maxwellMysql.useSSL(false);
 		config.validate();
 		return config;
 	}
 
-	private MaxwellContext getContext(int port, boolean masterRecovery) throws SQLException {
+	private MaxwellContext getContext(int port, boolean masterRecovery)
+			throws SQLException, URISyntaxException {
 		MaxwellConfig config = getConfig(port, masterRecovery);
 		return new MaxwellContext(config);
 	}

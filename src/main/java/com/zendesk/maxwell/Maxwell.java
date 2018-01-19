@@ -15,6 +15,7 @@ import com.zendesk.maxwell.util.Logging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -25,11 +26,11 @@ public class Maxwell implements Runnable {
 
 	static final Logger LOGGER = LoggerFactory.getLogger(Maxwell.class);
 
-	public Maxwell(MaxwellConfig config) throws SQLException {
+	public Maxwell(MaxwellConfig config) throws SQLException, URISyntaxException {
 		this(new MaxwellContext(config));
 	}
 
-	protected Maxwell(MaxwellContext context) throws SQLException {
+	protected Maxwell(MaxwellContext context) throws SQLException, URISyntaxException {
 		this.config = context.getConfig();
 		this.context = context;
 		this.context.probeConnections();
@@ -213,6 +214,11 @@ public class Maxwell implements Runnable {
 			// catch SQLException explicitly because we likely don't care about the stacktrace
 			LOGGER.error("SQLException: " + e.getLocalizedMessage());
 			LOGGER.error(e.getLocalizedMessage());
+			System.exit(1);
+		} catch ( URISyntaxException e ) {
+			// catch URISyntaxException explicitly as well to provide more information to the user
+			LOGGER.error("Syntax issue with URI, check for misconfigured host, port, database, or JDBC options (see RFC 2396)");
+			LOGGER.error("URISyntaxException: " + e.getLocalizedMessage());
 			System.exit(1);
 		} catch ( Exception e ) {
 			e.printStackTrace();

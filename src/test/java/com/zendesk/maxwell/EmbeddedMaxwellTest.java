@@ -68,7 +68,7 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 		config.maxwellMysql.password = "maxwell";
 		config.maxwellMysql.host = "localhost";
 		config.maxwellMysql.port = mysql.getPort();
-		config.maxwellMysql.jdbcOptions.add("useSSL=false");
+		config.maxwellMysql.useSSL(false);
 		config.replicationMysql = config.maxwellMysql;
 		return config;
 	}

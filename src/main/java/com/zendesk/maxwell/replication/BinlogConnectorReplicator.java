@@ -62,7 +62,10 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 		transactionRowCount = metrics.getRegistry().histogram(metrics.metricName("transaction", "row_count"));
 
 		this.client = new BinaryLogClient(mysqlConfig.host, mysqlConfig.port, mysqlConfig.user, mysqlConfig.password);
-		this.client.setSSLMode(getBinlogSSLMode(mysqlConfig.sslMode));
+
+		SSLMode binlogSslMode = (mysqlConfig.replicationSslMode != null) ? mysqlConfig.replicationSslMode
+				: mysqlConfig.sslMode;
+		this.client.setSSLMode(binlogSslMode);
 
 		BinlogPosition startBinlog = start.getBinlogPosition();
 		if (startBinlog.getGtidSetStr() != null) {
@@ -304,18 +307,6 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 			}
 
 		}
-	}
-
-	private SSLMode getBinlogSSLMode(String sslMode) {
-		if (sslMode != null) {
-			for (SSLMode mode : SSLMode.values()) {
-				if (mode.toString().equals(sslMode)) {
-					return mode;
-				}
-			}
-			LOGGER.warn("Invalid binlog SSL mode string: " + sslMode + " - defaulting to DISABLED");
-		}
-		return SSLMode.DISABLED;
 	}
 
 	protected BinlogConnectorEvent pollEvent() throws InterruptedException {
