@@ -143,7 +143,7 @@ public class RowMapTest {
 
 		List<String> partitionColumns = Arrays.asList("id", "first_name", "middle_name", "last_name", "salary", "department");
 
-		String partitionKey = rowMap.buildPartitionKey(partitionColumns, "primary_key");
+		String partitionKey = rowMap.buildPartitionKey(partitionColumns);
 
 		Assert.assertEquals("9001foobuzzbar4000science", partitionKey);
 
@@ -169,9 +169,9 @@ public class RowMapTest {
 
 		List<String> partitionColumns = new ArrayList<>();
 
-		String partitionKey = rowMap.buildPartitionKey(partitionColumns, "primary_key");
+		String partitionKey = rowMap.buildPartitionKey(partitionColumns);
 
-		Assert.assertEquals("9001foo", partitionKey);
+		Assert.assertEquals("", partitionKey);
 
 	}
 

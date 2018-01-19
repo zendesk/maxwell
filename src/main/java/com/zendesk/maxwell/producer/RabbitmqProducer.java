@@ -1,7 +1,9 @@
 package com.zendesk.maxwell.producer;
 
+import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.MessageProperties;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.row.RowMap;
 import org.slf4j.Logger;
@@ -14,10 +16,12 @@ public class RabbitmqProducer extends AbstractProducer {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(RabbitmqProducer.class);
 	private static String exchangeName;
+	private static BasicProperties props;
 	private Channel channel;
 	public RabbitmqProducer(MaxwellContext context) {
 		super(context);
 		exchangeName = context.getConfig().rabbitmqExchange;
+		props = context.getConfig().rabbitmqMessagePersistent ? MessageProperties.MINIMAL_PERSISTENT_BASIC : null;
 
 		ConnectionFactory factory = new ConnectionFactory();
 		factory.setHost(context.getConfig().rabbitmqHost);
@@ -43,7 +47,7 @@ public class RabbitmqProducer extends AbstractProducer {
 		String value = r.toJSON(outputConfig);
 		String routingKey = getRoutingKeyFromTemplate(r);
 
-		channel.basicPublish(exchangeName, routingKey, null, value.getBytes());
+		channel.basicPublish(exchangeName, routingKey, props, value.getBytes());
 		if ( r.isTXCommit() ) {
 			context.setPosition(r.getPosition());
 		}

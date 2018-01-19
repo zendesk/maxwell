@@ -19,7 +19,7 @@ public class DDLMap extends RowMap {
 	private Position nextPosition;
 
 	public DDLMap(ResolvedSchemaChange change, Long timestamp, String sql, Position nextPosition) {
-		super("ddl", "database", "table", timestamp, new ArrayList<String>(0), nextPosition);
+		super("ddl", change.databaseName(), change.tableName(), timestamp, new ArrayList<>(0), nextPosition);
 		this.change = change;
 		this.timestamp = timestamp;
 		this.sql = sql;
@@ -62,5 +62,9 @@ public class DDLMap extends RowMap {
 	@Override
 	public boolean shouldOutput(MaxwellOutputConfig outputConfig) {
 		return outputConfig.outputDDL;
+	}
+
+	public String getSql() {
+		return sql;
 	}
 }

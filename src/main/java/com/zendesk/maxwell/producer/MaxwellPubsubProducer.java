@@ -4,6 +4,7 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
+import com.google.api.core.ApiFutures;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
@@ -41,7 +42,7 @@ class PubsubCallback implements ApiFutureCallback<String> {
   public PubsubCallback(AbstractAsyncProducer.CallbackCompleter cc,
                         Position position, String json,
                         Counter producedMessageCount, Counter failedMessageCount,
-                        Meter producedMessageMeter, Meter failedMessageMeter,
+                        Meter succeededMessageMeter, Meter failedMessageMeter,
                         MaxwellContext context) {
     this.cc = cc;
     this.position = position;
@@ -180,9 +181,17 @@ class MaxwellPubsubProducerWorker
     PubsubMessage pubsubMessage = PubsubMessage.newBuilder().setData(data).build();
 
     if ( r instanceof DDLMap ) {
-      ddlPubsub.publish(pubsubMessage);
+	  ApiFuture<String> apiFuture = ddlPubsub.publish(pubsubMessage);
+	  PubsubCallback callback = new PubsubCallback(cc, r.getPosition(), message,
+			  this.succeededMessageCount, this.failedMessageCount, this.succeededMessageMeter, this.failedMessageMeter, this.context);
+
+	  ApiFutures.addCallback(apiFuture, callback);
     } else {
-      pubsub.publish(pubsubMessage);
+	  ApiFuture<String> apiFuture = pubsub.publish(pubsubMessage);
+	  PubsubCallback callback = new PubsubCallback(cc, r.getPosition(), message,
+			  this.succeededMessageCount, this.failedMessageCount, this.succeededMessageMeter, this.failedMessageMeter, this.context);
+
+	  ApiFutures.addCallback(apiFuture, callback);
     }
   }
 

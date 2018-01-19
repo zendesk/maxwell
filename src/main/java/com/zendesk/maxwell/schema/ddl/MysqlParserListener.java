@@ -40,7 +40,10 @@ public class MysqlParserListener extends mysqlBaseListener {
 	}
 
 	private String unquote(String ident) {
-		return ident.replaceFirst("^`", "").replaceFirst("`$", "");
+		if ( ident.startsWith("`") || ident.startsWith("\"")) {
+			return ident.substring(1, ident.length() - 1);
+		} else
+			return ident;
 	}
 
 	private String unquote_literal(String ident) {

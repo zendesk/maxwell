@@ -4,7 +4,7 @@
 
   <groupId>com.zendesk</groupId>
   <artifactId>maxwell</artifactId>
-  <version>1.10.9</version>
+  <version>1.12.0</version>
   <packaging>jar</packaging>
 
   <name>maxwell</name>
@@ -56,9 +56,6 @@
     </profile>
     <profile>
       <id>kafka-0.9.0.1</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
       <dependencies>
         <dependency>
           <groupId>org.apache.kafka</groupId>
@@ -78,22 +75,25 @@
       </dependencies>
     </profile>
     <profile>
-      <id>kafka-0.10.1.0</id>
-      <dependencies>
-        <dependency>
-          <groupId>org.apache.kafka</groupId>
-          <artifactId>kafka-clients</artifactId>
-          <version>0.10.1.0</version>
-        </dependency>
-      </dependencies>
-    </profile>
-    <profile>
       <id>kafka-0.10.2.1</id>
       <dependencies>
         <dependency>
           <groupId>org.apache.kafka</groupId>
           <artifactId>kafka-clients</artifactId>
           <version>0.10.2.1</version>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>kafka-0.11.0.1</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.kafka</groupId>
+          <artifactId>kafka-clients</artifactId>
+          <version>0.11.0.1</version>
         </dependency>
       </dependencies>
     </profile>
@@ -108,7 +108,7 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>amazon-kinesis-producer</artifactId>
-      <version>0.12.3</version>
+      <version>0.12.8</version>
     </dependency>
     <dependency>
       <groupId>mysql</groupId>
@@ -216,7 +216,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-pubsub</artifactId>
-      <version>0.22.0-beta</version>
+      <version>0.30.0-beta</version>
     </dependency>
     <dependency>
       <groupId>com.google.protobuf</groupId>
@@ -252,6 +252,11 @@
       <groupId>org.coursera</groupId>
       <artifactId>metrics-datadog</artifactId>
       <version>1.1.10</version>
+    </dependency>
+    <dependency>
+    	<groupId>com.amazonaws</groupId>
+    	<artifactId>aws-java-sdk-sqs</artifactId>
+    	<version>1.11.68</version>
     </dependency>
   </dependencies>
 
@@ -347,6 +352,7 @@
         <version>3.1.0</version>
         <configuration>
           <appendAssemblyId>false</appendAssemblyId>
+          <tarLongFileMode>posix</tarLongFileMode>
           <descriptors>
             <descriptor>src/main/assembly/assembly.xml</descriptor>
           </descriptors>

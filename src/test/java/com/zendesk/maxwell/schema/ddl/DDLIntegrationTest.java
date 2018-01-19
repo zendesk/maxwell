@@ -299,6 +299,23 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
+	public void testDoubleQuotedTables() throws Exception {
+		String sql[] = {
+			"create DATABASE \"tt_db\"",
+			"create table \"tt_db\".\"tt_tt\" ( \"id\" int )",
+			"create table \"tt_db\".\"`weird_quote`\" ( \"id\" int )",
+		};
+
+		server.execute("SET @old_mode = @@SESSION.sql_mode");
+		server.execute("SET SESSION sql_mode = CONCAT('ANSI_QUOTES,', @@SESSION.sql_mode)");
+
+
+		testIntegration(sql);
+		server.execute("SET SESSION sql_mode = @old_mode");
+	}
+
+
+	@Test
 	public void testNationChar() throws Exception {
 		testIntegration("create table t1 ( a CHAR(10) CHARACTER SET utf8, " +
 			"b NATIONAL CHARACTER(10), " +

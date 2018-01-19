@@ -112,9 +112,8 @@ password=maxwell
 #kafka.batch.size=16384
 
 # a few defaults.
-# These are 0.9-specific. They may or may not work with other versions.
+# These are 0.11-specific. They may or may not work with other versions.
 kafka.compression.type=snappy
-kafka.metadata.fetch.timeout.ms=5000
 kafka.retries=0
 kafka.acks=1
 
@@ -149,6 +148,13 @@ kinesis_stream=maxwell
 # Default: false
 #kinesis_md5_keys=true
 
+######### sqs ####################
+sqs_queue_uri=aws_sqs_queue_uri
+
+# The sqs producer will need aws credentials configured in the default
+# root folder and file format. Please check below link on how to do it.
+# http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html
+
 ######### pub/sub #####################
 #pubsub_project_id=maxwell
 #pubsub_topic=maxwell
@@ -164,6 +170,7 @@ kinesis_stream=maxwell
 #rabbitmq_exchange_durable=false
 #rabbitmq_exchange_autodelete=false
 #rabbitmq_routing_key_template=%db%.%table%
+#rabbitmq_message_persistent=false
 
 ######### redis ######################
 #redis_host=redis_host
@@ -171,6 +178,14 @@ kinesis_stream=maxwell
 #redis_auth=redis_auth
 #redis_database=0
 #redis_pub_channel=maxwell
+
+######### custom producer ######################
+# the fully qualified class name for custom ProducerFactory
+# see the following link for more details.
+# http://maxwells-daemon.io/producers/#custom-producer
+#custom_producer.factory=
+# custom producer properties can be configured using the custom_producer.* property namespace
+#custom_producer.custom_prop=foo
 
 ######### filter stuff ###############
 
@@ -194,6 +209,9 @@ kinesis_stream=maxwell
 # exclude these columns
 #exclude_columns=col1,/col\\d+/
 
+# include only rows where the column 'foo' contains the value 'bar', and the column 'baz' contains the value 0.5
+#include_column_values=foo=bar,baz=0.5
+
 # "blacklist" these dbs -- this means maxwell will ignore schema
 # changes happening to these databases.  Can be useful if you have a
 # high-churn schema that you want to completely ignore, but it's
@@ -207,14 +225,10 @@ kinesis_stream=maxwell
 
 ######### encryption ###############
 
-# convert the data field to a json string and encrypt it
-#encrypt_data=true
+# Encryption mode. Possible values are none, data, and all. (default none)
+#encrypt=none
 
-# convert the whole payload to a json string and encrypt it
-#encrypt_all=true
-
-# specify the encryption key and secret key
-#encryption_key=aaaaaaaaaaaaaaaa
+# Specify the secret key to be used
 #secret_key=RandomInitVector
 
 ######## monitoring stuff ###########

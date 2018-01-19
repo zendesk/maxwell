@@ -337,6 +337,8 @@ public class MaxwellContext {
 			case "kinesis":
 				this.producer = new MaxwellKinesisProducer(this, this.config.kinesisStream);
 				break;
+			case "sqs":
+				this.producer = new MaxwellSQSProducer(this, this.config.sqsQueueUri);
 			case "pubsub":
 				this.producer = new MaxwellPubsubProducer(this, this.config.pubsubProjectId, this.config.pubsubTopic, this.config.ddlPubsubTopic);
 				break;

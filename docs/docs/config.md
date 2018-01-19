@@ -1,5 +1,5 @@
 ### Mysql Server configuration
-
+***
 At a minimum, Maxwell needs row-level-replication turned on into order to
 operate:
 
@@ -10,8 +10,25 @@ log-bin=master
 binlog_format=row
 ```
 
-### GTID support
+### Properties file
+***
+If maxwell finds the file `config.properties` in $PWD it will use it.  Any
+command line options (except `init_position`, `replay`, and `kafka_version`) may be given as
+"key=value" pairs.
 
+Additionally, any configuration file options prefixed with 'kafka.' will be
+passed into the kafka producer library, after having 'kafka.' stripped off the
+front of the key.  So, for example if config.properties contains
+
+```
+kafka.batch.size=16384
+```
+
+then Maxwell will send `batch.size=16384` to the kafka producer library.
+
+
+### GTID support
+***
 As of 1.8.0, Maxwell contains support for
 [GTID-based replication](https://dev.mysql.com/doc/refman/5.6/en/replication-gtids.html).  Enable it with the `--gtid_mode` configuration param.
 
@@ -40,22 +57,6 @@ Maxwell will recapture the schema and GTID-position from "wherever the master
 is at".
 
 
-### Properties file
-***
-If maxwell finds the file `config.properties` in $PWD it will use it.  Any
-command line options (except `init_position`, `replay`, and `kafka_version`) may be given as
-"key=value" pairs.
-
-Additionally, any configuration file options prefixed with 'kafka.' will be
-passed into the kafka producer library, after having 'kafka.' stripped off the
-front of the key.  So, for example if config.properties contains
-
-```
-kafka.batch.size=16384
-```
-
-then Maxwell will send `batch.size=16384` to the kafka producer library.
-
 ### RDS configuration
 ***
 To run Maxwell against RDS, (either Aurora or Mysql) you will need to do the following:
@@ -65,9 +66,9 @@ To run Maxwell against RDS, (either Aurora or Mysql) you will need to do the fol
 - setup RDS binlog retention as described [here](http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.Concepts.MySQL.html).
   The tl;dr is to execute `call mysql.rds_set_configuration('binlog retention hours', 24)` on the server.
 
-
 ### Filters
 ***
+#### Include/Exclude
 The options `include_dbs`, `exclude_dbs`, `include_tables`, and `exclude_tables` control whether
 Maxwell will send an update for a given row to its producer.  All the options take a single value PATTERN,
 which may either be a literal table/database name, given as `option=name`, or a regular expression,
@@ -84,6 +85,15 @@ The option `blacklist_tables` and `blacklist_dbs` controls whether Maxwell will 
 it captures schema changes for that table or database. Note that once Maxwell has been running with a table or database marked as blacklisted,
 you *must* continue to run Maxwell with that table or database blacklisted or else Maxwell will halt. If you want to stop
 blacklisting a table or database, you will have to drop the maxwell schema first.
+
+#### Supressing columns
+
+If you wish to suppress columns from Maxwell's output (for instance, a password field),
+you can use `exclude_columns` to filter out columns by name.
+
+#### Filtering on column values
+Maxwell can filter rows to only match when a column contains a specific value.  The `include_column_values` option takes a comma-separated
+list of column/value pairs: "bar=x,foo=y".  Note that if a column does not exist in a table, it will ignore the value-filter.
 
 ### Schema storage host vs replica host
 ***
@@ -110,7 +120,7 @@ tables to different topics.  Each instance of Maxwell must be configured with a
 unique `client_id`, in order to store unique binlog positions.
 
 ### multiple instances on a 5.5 server
-
+***
 With MySQL 5.5 and below, each replicator (be it mysql, maxwell, whatever) must
 also be configured with a unique `replica_server_id`.  This is a 32-bit integer
 that corresponds to mysql's `server_id` parameter.  The value you configure
@@ -162,7 +172,7 @@ producer_partition_columns        | STRING                              | if par
 producer_partition_by_fallback    | [database &#124; table &#124; primary_key]        | required when producer_partition_by=column.  Used when the column is missing |
 kafka_partition_hash           | [default &#124; murmur3]                   | hash function to use when hoosing kafka partition   | default
 ddl_kafka_topic                | STRING                              | if output_ddl is true, kafka topic to write DDL changes to | *kafka_topic*
-kafka_version                  | [0.8 &#124; 0.9 &#124; 0.10 &#124; 0.10.1 &#124; 0.10.2]                      | run maxwell with kafka producer 0.8.2, 0.9.0, 0.10.0.1, 0.10.1.0 or 0.10.2.1.  Not available in config.properties. | 0.9.0
+kafka_version                  | [0.8.2.2 &#124; 0.9.0.1 &#124; 0.10.0.1 &#124; 0.10.2.1 &#124; 0.11.0.1]                      | run maxwell with kafka producer 0.8.2.2, 0.9.0.1, 0.10.0.1, 0.10.2.1 or 0.11.0.1  Not available in config.properties. | 0.11.0.1
 &nbsp;
 kinesis_stream                 | STRING                              | kinesis stream name |
 &nbsp;

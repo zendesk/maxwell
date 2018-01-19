@@ -12,7 +12,7 @@ fi
 
 CLASSPATH="$CLASSPATH:$lib_dir/*"
 
-KAFKA_VERSION="0.9"
+KAFKA_VERSION="0.11.0.1"
 
 function use_kafka() {
 	wanted="$1"
@@ -20,6 +20,10 @@ function use_kafka() {
 	# e.g. asking for 0.10 means you want the
 	# latest 0.10.x release
 	case "$wanted" in
+		0.11)
+		KAFKA_VERSION=0.11.0.1
+		;;
+
 		0.10)
 		KAFKA_VERSION=0.10.2.1
 		;;

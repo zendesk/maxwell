@@ -5,6 +5,7 @@ or the `config.properties` file. These can provide insight into system health.
 At present certain metrics are Kafka-specific - that is, not yet supported other producers.
 
 ### Metrics
+***
 All metrics are prepended with the configured `metrics_prefix.`
 
 metric                         | description
@@ -25,18 +26,18 @@ metric                         | description
 `replication.queue.time`       | the time it took to enqueue a given binlog event for processing, in milliseconds
 
 ### HTTP Endpoints
+***
 When the HTTP server is enabled the following endpoints are exposed:
 
 | endpoint       | description                                                                    |
 |:---------------|:-------------------------------------------------------------------------------|
 | `/metrics`     | return all metrics as JSON                                                     |
-| `/healthcheck` | run Maxwell's healthcheck(s) and return success or failure based on the result |
+| `/healthcheck` | run Maxwell's healthchecks.  Considered unhealthy if &gt;0 messages have failed in the last 15 minutes. |
 | `/ping`        | a simple ping test, responds with `pong`                                       |
 
-### Healthcheck
-The `/healthcheck` endpoint will return unhealthy when there is more than 1 message that failed to be sent to Kafka in the past 15 minutes.
 
 ### JMX Configuration
+***
 Standard configuration is either via commandline args or the `config.properties` file. However, when exposing JMX metrics
 additional configuration is required to allow remote access. In this case Maxwell makes use of the `JAVA_OPTS` environment variable.
 To make use of this set `JAVA_OPTS` before starting Maxwell.

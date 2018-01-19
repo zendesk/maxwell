@@ -19,7 +19,7 @@ end
 puts "Releasing version: #{$version}"
 
 if ( $command = ARGV[1] )
-  unless ["changelog", "bump", "build", "tag", "release"].include?($command)
+  unless ["changelog", "bump", "build", "tag", "release", "docs"].include?($command)
     abort("unknown subcommand: #{$command}")
   end
 end
@@ -31,6 +31,8 @@ end
 
 def bump
   do_system(BINDIR + "/bump", $version)
+  puts "Ok, bumped the version to #{$version}.  Dropping you to a shell with the changes in the workspace,"
+  puts "please verify that the version bump went well and then exit the shell."
   do_system("/bin/bash -i")
 end
 
@@ -73,6 +75,9 @@ def release
 
   release = client.create_release(REPO, 'v' + $version, name: release_title, body: release_body, prerelease: prerelease?)
   client.upload_asset(release.url, BINDIR + "/../target/maxwell-#{$version}.tar.gz")
+end
+
+def docs
   do_system(BINDIR + "/../docs/push")
 end
 
@@ -87,6 +92,7 @@ else
   build
   tag
   release
+  docs
   sleep 2
   changelog
 end
