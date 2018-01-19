@@ -130,4 +130,29 @@ public class MaxwellMysqlConfigTest {
 
 	}
 
+	@Test
+	public void testSSLOverrideSchema() {
+
+		MaxwellMysqlConfig config = new MaxwellMysqlConfig();
+
+		config.host = "localhost";
+		config.port = 3306;
+		config.user = "maxwell";
+		config.password = "maxwell";
+		config.database = "maxwell";
+		config.sslMode = SSLMode.DISABLED;
+		config.schemaSslMode = SSLMode.VERIFY_IDENTITY;
+
+		try {
+			final String uri = config.getConnectionURI();
+			assertThat(uri, is(containsString("requireSSL=true")));
+			assertThat(uri, is(containsString("useSSL=true")));
+			assertThat(uri, is(containsString("verifyServerCertificate=true")));
+		}
+		catch (URISyntaxException e) {
+			fail();
+		}
+
+	}
+
 }
