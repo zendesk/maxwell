@@ -63,8 +63,7 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 
 		this.client = new BinaryLogClient(mysqlConfig.host, mysqlConfig.port, mysqlConfig.user, mysqlConfig.password);
 
-		SSLMode binlogSslMode = (mysqlConfig.replicationSslMode != null) ? mysqlConfig.replicationSslMode
-				: mysqlConfig.sslMode;
+		SSLMode binlogSslMode = mysqlConfig.sslMode;
 		this.client.setSSLMode(binlogSslMode);
 
 		BinlogPosition startBinlog = start.getBinlogPosition();

@@ -23,8 +23,6 @@ public class MaxwellMysqlConfig {
 	public String user;
 	public String password;
 	public SSLMode sslMode;
-	public SSLMode replicationSslMode;
-	public SSLMode schemaSslMode;
 	public Map<String, String> jdbcOptions = new HashMap<>();
 	public Integer connectTimeoutMS = 5000;
 
@@ -35,8 +33,6 @@ public class MaxwellMysqlConfig {
 		this.user = null;
 		this.password = null;
 		this.sslMode = null;
-		this.replicationSslMode = null;
-		this.schemaSslMode = null;
 
 		this.jdbcOptions = new HashMap<>();
 		this.jdbcOptions.put("zeroDateTimeBehavior", "convertToNull");
@@ -44,15 +40,13 @@ public class MaxwellMysqlConfig {
 	}
 
 	public MaxwellMysqlConfig(String host, Integer port, String database, String user, String password,
-			SSLMode sslMode, SSLMode replicationSslMode, SSLMode schemaSslMode) {
+			SSLMode sslMode) {
 		this.host = host;
 		this.port = port;
 		this.database = database;
 		this.user = user;
 		this.password = password;
 		this.sslMode = sslMode;
-		this.replicationSslMode = replicationSslMode;
-		this.schemaSslMode = schemaSslMode;
 	}
 
 	public void useSSL(boolean should) {
@@ -80,21 +74,18 @@ public class MaxwellMysqlConfig {
 	}
 
 	private void setSSLOptions() {
-		// use the schema ssl mode and fallback to general ssl if undefined
-		SSLMode jdbcSslMode = (schemaSslMode != null) ? schemaSslMode : sslMode;
-
-		if (jdbcSslMode != null && jdbcSslMode != SSLMode.DISABLED) {
+		if (sslMode != null && sslMode != SSLMode.DISABLED) {
 			this.useSSL(true); // for all SSL modes other than DISABLED, use SSL
 
 			this.verifyServerCertificate(false); // default to not verify server cert
 			this.requireSSL(false); // default to not require SSL
 
-			if (jdbcSslMode == SSLMode.REQUIRED || jdbcSslMode == SSLMode.VERIFY_CA
-					|| jdbcSslMode == SSLMode.VERIFY_IDENTITY) {
+			if (sslMode == SSLMode.REQUIRED || sslMode == SSLMode.VERIFY_CA
+					|| sslMode == SSLMode.VERIFY_IDENTITY) {
 				this.requireSSL(true);
 			}
 
-			if (jdbcSslMode == SSLMode.VERIFY_IDENTITY) {
+			if (sslMode == SSLMode.VERIFY_IDENTITY) {
 				this.verifyServerCertificate(true);
 			}
 		}
@@ -137,8 +128,6 @@ public class MaxwellMysqlConfig {
 				Objects.equals(user, that.user) &&
 				Objects.equals(password, that.password) &&
 				sslMode == that.sslMode &&
-				replicationSslMode == that.replicationSslMode &&
-				schemaSslMode == that.schemaSslMode &&
 				Objects.equals(jdbcOptions, that.jdbcOptions) &&
 				Objects.equals(connectTimeoutMS, that.connectTimeoutMS);
 	}
@@ -146,7 +135,6 @@ public class MaxwellMysqlConfig {
 	@Override
 	public int hashCode() {
 		return Objects
-				.hash(host, port, database, user, password, sslMode, replicationSslMode, schemaSslMode,
-						jdbcOptions, connectTimeoutMS);
+				.hash(host, port, database, user, password, sslMode, jdbcOptions, connectTimeoutMS);
 	}
 }

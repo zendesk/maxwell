@@ -371,13 +371,9 @@ public class MaxwellConfig extends AbstractConfig {
 		this.redisDatabase		= Integer.parseInt(fetchOption("redis_database", options, properties, "0"));
 		this.redisPubChannel	= fetchOption("redis_pub_channel", options, properties, "maxwell");
 
-		String sslString = fetchOption("ssl", options, properties, "DISABLED");
-		String replicationSslString = fetchOption("replication_ssl", options, properties, null);
-		String schemaSslString = fetchOption("schema_ssl", options, properties, null);
-
-		this.maxwellMysql.sslMode = this.getSslModeFromString(sslString);
-		this.maxwellMysql.replicationSslMode = this.getSslModeFromString(replicationSslString);
-		this.maxwellMysql.schemaSslMode = this.getSslModeFromString(schemaSslString);
+		if (this.maxwellMysql.sslMode == null) {
+			this.maxwellMysql.sslMode = SSLMode.DISABLED;
+		}
 
 		String kafkaBootstrapServers = fetchOption("kafka.bootstrap.servers", options, properties, null);
 		if ( kafkaBootstrapServers != null )
@@ -607,12 +603,14 @@ public class MaxwellConfig extends AbstractConfig {
 				null,
 				this.maxwellMysql.user,
 				this.maxwellMysql.password,
-				this.maxwellMysql.sslMode,
-				this.maxwellMysql.replicationSslMode,
-				this.maxwellMysql.schemaSslMode
+				this.maxwellMysql.sslMode
 			);
 
 			this.replicationMysql.jdbcOptions = this.maxwellMysql.jdbcOptions;
+		}
+
+		if (this.replicationMysql.sslMode == null) {
+			this.replicationMysql.sslMode = this.maxwellMysql.sslMode;
 		}
 
 		if (gtidMode && masterRecovery) {
@@ -631,6 +629,10 @@ public class MaxwellConfig extends AbstractConfig {
 			if (this.replicationMysql.host == null) {
 				usageForOptions("Specifying schema_host only makes sense along with replication_host");
 			}
+		}
+
+		if (this.schemaMysql.sslMode == null) {
+			this.schemaMysql.sslMode = this.maxwellMysql.sslMode;
 		}
 
 		try {
@@ -684,18 +686,5 @@ public class MaxwellConfig extends AbstractConfig {
 		} else {
 			return null;
 		}
-	}
-
-	private SSLMode getSslModeFromString(String sslMode) {
-		if (sslMode != null) {
-			for (SSLMode mode : SSLMode.values()) {
-				if (mode.toString().equals(sslMode)) {
-					return mode;
-				}
-			}
-			LOGGER.warn("Invalid binlog SSL mode string: " + sslMode + " - defaulting to DISABLED");
-			return SSLMode.DISABLED;
-		}
-		return null;
 	}
 }
