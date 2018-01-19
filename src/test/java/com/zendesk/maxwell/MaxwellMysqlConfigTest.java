@@ -71,7 +71,7 @@ public class MaxwellMysqlConfigTest {
 		config.sslMode = SSLMode.REQUIRED;
 
 		try {
-			final String uri = config.getConnectionURI();
+			String uri = config.getConnectionURI();
 			assertThat(uri, is(containsString("requireSSL=true")));
 			assertThat(uri, is(containsString("useSSL=true")));
 			assertThat(uri, is(containsString("verifyServerCertificate=false")));
