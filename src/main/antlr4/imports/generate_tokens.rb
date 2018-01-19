@@ -253,6 +253,9 @@ VIRTUAL
 STORED
 GENERATED
 ALWAYS
+
+LOCALTIME
+LOCALTIMESTAMP
 )
 
 tokens_allowed_in_names = []
