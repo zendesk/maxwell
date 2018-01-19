@@ -67,11 +67,15 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 	}
 
 	protected void runJSON(String filename) throws Exception {
-		MaxwellTestJSON.runJSONTestFile(server, filename, null);
+		MaxwellTestJSON.runJSONTestFile(server, filename, null, null);
 	}
 
 	protected void runJSON(String filename, MaxwellFilter filter) throws Exception {
-		MaxwellTestJSON.runJSONTestFile(server, filename, filter);
+		MaxwellTestJSON.runJSONTestFile(server, filename, filter, null);
+	}
+
+	protected void runJSON(String filename, MaxwellOutputConfig outputConfig) throws Exception {
+		MaxwellTestJSON.runJSONTestFile(server, filename, null, outputConfig);
 	}
 
 	protected MaxwellContext buildContext() throws Exception {
