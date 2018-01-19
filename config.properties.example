@@ -12,18 +12,11 @@ password=maxwell
 
 ######### general stuff #############
 
-# choose where to produce data to. currently this is one of: stdout|file|kafka|kinesis|pubsub|rabbitmq|redis
+# choose where to produce data to. stdout|file|kafka|kinesis|pubsub|sqs|rabbitmq|redis
 #producer=kafka
-
-# set delivery timeout (including acknowledgement) in milliseconds for a COMMIT row message that has been sent by the producer,
-# where producer is either kafka or kinesis
-# maxwell may be terminated if the timeout has expired, when majority of the COMMIT row messages have been acknowledged
-# set it to 0 to turn off this check
-#producer_ack_timeout=120000 # default 0
 
 # set the log level.  note that you can configure things further in log4j2.xml
 #log_level=DEBUG # [DEBUG, INFO, WARN, ERROR]
-
 
 ######### mysql stuff ###############
 
@@ -56,12 +49,25 @@ password=maxwell
 #replication_password=password
 #replication_port=3306
 
+# This may be useful when using MaxScale's binlog mirroring host.
+# Specifies that Maxwell should capture schema from a different server than
+# it replicates from:
+#
+#schema_host=other
+#schema_user=username
+#schema_password=password
+#schema_port=3306
+
 ######### output format stuff ###############
 
 # records include binlog position (default false)
 #output_binlog_position=true
 
-# records output null values (default true)
+# records include a gtid string (default false)
+#output_gtid_position=true
+
+# records include fields with null values (default true).  If this is false,
+# fiels where the value is null will be omitted entirely from output.
 #output_nulls=true
 
 # records include server_id (default false)
@@ -73,7 +79,9 @@ password=maxwell
 # records include commit and xid (default true)
 #output_commit_info=true
 
-# produce DDL records to ddl_kafka_topic (default: false)
+# This controls whether maxwell will output JSON information containing
+# DDL (ALTER/CREATE TABLE/ETC) infromation. (default: false)
+# See also: ddl_kafka_topic
 #output_ddl=true
 
 ######### kafka stuff ###############
@@ -86,11 +94,10 @@ password=maxwell
 # in the latter case 'database' and 'table' will be replaced with the values for the row being processed
 #kafka_topic=maxwell
 
-# kafka topic to write DDL to
+# alternative kafka topic to write DDL (alter/create/drop) to.  Defaults to kafka_topic
 #ddl_kafka_topic=maxwell_ddl
 
-# hash function to use.  "default" is just the JVM's 'hashCode'
-# function.
+# hash function to use.  "default" is just the JVM's 'hashCode' function.
 #kafka_partition_hash=default # [default, murmur3]
 
 # how maxwell writes its kafka key.
@@ -101,36 +108,40 @@ password=maxwell
 # 'array' looks like:
 # ["test","tickets",[{"id":10001}]]
 #
-# currently the default is "hash"
+# default: "hash"
 #kafka_key_format=hash # [hash, array]
 
-# other kafka options.  Anything prefixed "kafka." will get
+# extra kafka options.  Anything prefixed "kafka." will get
 # passed directly into the kafka-producer's config.
-#kafka.batch.size=16384
 
 # a few defaults.
 # These are 0.11-specific. They may or may not work with other versions.
 kafka.compression.type=snappy
 kafka.retries=0
 kafka.acks=1
+#kafka.batch.size=16384
+
+# controls a heuristic check that maxwell may use to detect messages that
+# we never heard back from.  The heuristic check looks for "stuck" messages, and
+# will timeout maxwell after this many milliseconds.
+#
+# See https://github.com/zendesk/maxwell/blob/master/src/main/java/com/zendesk/maxwell/producer/InflightMessageList.java
+# if you really want to get into it.
+#producer_ack_timeout=120000 # default 0
+
 
 ####### producer partitioning #######
 # used by kafka and kinesis
 
-# controls the input input into the hash function.  Note that this defines
-# which transactions keep ordering with respect to each other.  Generally
-# here you're making a trade-off between inter-row consistency and balanced
-# partitions.
+# What part of the data do we partition by?
 #producer_partition_by=database # [database, table, primary_key, column]
 
-# required when using producer_partition_by=column
-# otherwise the partitioner will revert to table
-# can be a single or multiple columns, e.g. aggregate_id or aggregate_id,event_type
-#producer_partition_columns=
+# specify what fields to partition by when using producer_partition_by=column
+# column separated list.
+#producer_partition_columns=id,foo,bar
 
-# required when using producer_partition_by=column
-# the fallback partitioning behavior when the specified column(s) do not exist
-# can be any one of [database, table, primary_key]
+# when using producer_partition_by=column, partition by this when
+# the specified column(s) don't exist.
 #producer_partition_by_fallback=database
 
 ######### kinesis ####################

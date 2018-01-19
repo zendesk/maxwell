@@ -164,7 +164,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts("__separator_3");
 
-		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|pubsub|sqs" ).withRequiredArg();
+		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|pubsub|sqs|rabbitmq|redis" ).withRequiredArg();
 		parser.accepts( "custom_producer.factory", "fully qualified custom producer factory class" ).withRequiredArg();
 		parser.accepts( "producer_ack_timeout", "producer message acknowledgement timeout" ).withRequiredArg();
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
