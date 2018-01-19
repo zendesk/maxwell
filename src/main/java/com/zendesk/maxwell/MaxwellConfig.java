@@ -152,8 +152,8 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "binlog_connector", "[deprecated]" ).withRequiredArg();
 
 		parser.accepts( "ssl", "enables SSL for all connections: DISABLED|PREFERRED|REQUIRED|VERIFY_CA|VERIFY_IDENTITY. default: DISABLED").withOptionalArg();
-		parser.accepts( "replication_ssl", "overrides SSL setting for binlog connection: DISABLED|PREFERRED|REQUIRED|VERIFY_CA|VERIFY_IDENTITY. default: DISABLED").withOptionalArg();
-		parser.accepts( "schema_ssl", "overrides SSL setting for schema capture connection: DISABLED|PREFERRED|REQUIRED|VERIFY_CA|VERIFY_IDENTITY. default: DISABLED").withOptionalArg();
+		parser.accepts( "replication_ssl", "overrides SSL setting for binlog connection: DISABLED|PREFERRED|REQUIRED|VERIFY_CA|VERIFY_IDENTITY").withOptionalArg();
+		parser.accepts( "schema_ssl", "overrides SSL setting for schema capture connection: DISABLED|PREFERRED|REQUIRED|VERIFY_CA|VERIFY_IDENTITY").withOptionalArg();
 
 		parser.accepts("__separator_2");
 
@@ -376,8 +376,8 @@ public class MaxwellConfig extends AbstractConfig {
 		String schemaSslString = fetchOption("schema_ssl", options, properties, null);
 
 		this.maxwellMysql.sslMode = this.getSslModeFromString(sslString);
-		this.maxwellMysql.sslMode = this.getSslModeFromString(replicationSslString);
-		this.maxwellMysql.sslMode = this.getSslModeFromString(schemaSslString);
+		this.maxwellMysql.replicationSslMode = this.getSslModeFromString(replicationSslString);
+		this.maxwellMysql.schemaSslMode = this.getSslModeFromString(schemaSslString);
 
 		String kafkaBootstrapServers = fetchOption("kafka.bootstrap.servers", options, properties, null);
 		if ( kafkaBootstrapServers != null )
