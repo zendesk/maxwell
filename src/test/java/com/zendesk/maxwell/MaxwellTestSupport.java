@@ -1,6 +1,7 @@
 package com.zendesk.maxwell;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
@@ -102,13 +103,13 @@ public class MaxwellTestSupport {
 		config.replicationMysql.port = port;
 		config.replicationMysql.user = "maxwell";
 		config.replicationMysql.password = "maxwell";
-		config.replicationMysql.useSSL(false);
+		config.replicationMysql.sslMode = SSLMode.DISABLED;
 
 		config.maxwellMysql.host = "127.0.0.1";
 		config.maxwellMysql.port = port;
 		config.maxwellMysql.user = "maxwell";
 		config.maxwellMysql.password = "maxwell";
-		config.maxwellMysql.useSSL(false);
+		config.maxwellMysql.sslMode = SSLMode.DISABLED;
 
 		config.databaseName = "maxwell";
 
@@ -158,7 +159,7 @@ public class MaxwellTestSupport {
 		config.maxwellMysql.password = "maxwell";
 		config.maxwellMysql.host = "localhost";
 		config.maxwellMysql.port = mysql.getPort();
-		config.maxwellMysql.useSSL(false);
+		config.maxwellMysql.sslMode = SSLMode.DISABLED;
 		config.replicationMysql = config.maxwellMysql;
 		if (outputConfig == null) {
 			outputConfig = new MaxwellOutputConfig();

@@ -21,7 +21,7 @@ public class MaxwellMysqlConfigTest {
 		config.user = "maxwell";
 		config.password = "maxwell";
 		config.database = "maxwell";
-		config.useSSL(false);
+		config.sslMode = SSLMode.DISABLED;
 		config.setJDBCOptions("autoReconnect=true&initialTimeout=2&maxReconnects=10");
 
 		try {

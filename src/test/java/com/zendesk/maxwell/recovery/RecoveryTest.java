@@ -1,5 +1,6 @@
 package com.zendesk.maxwell.recovery;
 
+import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.*;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.HeartbeatRowMap;
@@ -52,7 +53,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		config.maxwellMysql.user = "maxwell";
 		config.maxwellMysql.password = "maxwell";
 		config.masterRecovery = masterRecovery;
-		config.maxwellMysql.useSSL(false);
+		config.maxwellMysql.sslMode = SSLMode.DISABLED;
 		config.validate();
 		return config;
 	}

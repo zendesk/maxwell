@@ -49,15 +49,15 @@ public class MaxwellMysqlConfig {
 		this.sslMode = sslMode;
 	}
 
-	public void useSSL(boolean should) {
+	private void useSSL(boolean should) {
 		this.jdbcOptions.put("useSSL", String.valueOf(should));
 	}
 
-	public void requireSSL(boolean should) {
+	private void requireSSL(boolean should) {
 		this.jdbcOptions.put("requireSSL", String.valueOf(should));
 	}
 
-	public void verifyServerCertificate(boolean should) {
+	private void verifyServerCertificate(boolean should) {
 		this.jdbcOptions.put("verifyServerCertificate", String.valueOf(should));
 	}
 
@@ -88,6 +88,9 @@ public class MaxwellMysqlConfig {
 			if (sslMode == SSLMode.VERIFY_IDENTITY) {
 				this.verifyServerCertificate(true);
 			}
+		}
+		else {
+			this.useSSL(false);
 		}
 	}
 
