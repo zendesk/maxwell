@@ -80,14 +80,10 @@ public class MaxwellMysqlConfig {
 			this.verifyServerCertificate(false); // default to not verify server cert
 			this.requireSSL(false); // default to not require SSL
 
-			if (sslMode == SSLMode.REQUIRED || sslMode == SSLMode.VERIFY_CA
-					|| sslMode == SSLMode.VERIFY_IDENTITY) {
-				this.requireSSL(true);
-			}
+			this.requireSSL(sslMode == SSLMode.REQUIRED || sslMode == SSLMode.VERIFY_CA
+					|| sslMode == SSLMode.VERIFY_IDENTITY);
 
-			if (sslMode == SSLMode.VERIFY_IDENTITY) {
-				this.verifyServerCertificate(true);
-			}
+			this.verifyServerCertificate(sslMode == SSLMode.VERIFY_IDENTITY);
 		}
 		else {
 			this.useSSL(false);
