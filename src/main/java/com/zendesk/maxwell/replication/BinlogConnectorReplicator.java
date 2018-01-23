@@ -62,7 +62,6 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 		transactionRowCount = metrics.getRegistry().histogram(metrics.metricName("transaction", "row_count"));
 
 		this.client = new BinaryLogClient(mysqlConfig.host, mysqlConfig.port, mysqlConfig.user, mysqlConfig.password);
-
 		this.client.setSSLMode(mysqlConfig.sslMode);
 
 		BinlogPosition startBinlog = start.getBinlogPosition();
