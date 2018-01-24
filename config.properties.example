@@ -40,8 +40,9 @@ password=maxwell
 #schema_database=maxwell
 
 # SSL/TLS options
-# To use any modes other than DISABLED, you must set the trust store:
-#   set JAVA_OPTS="-Djavax.net.ssl.trustStore=<truststore> -Djavax.net.ssl.trustStorePassword=<password>"
+# To use VERIFY_CA or VERIFY_IDENTITY, you must set the trust store with Java opts:
+#   -Djavax.net.ssl.trustStore=<truststore> -Djavax.net.ssl.trustStorePassword=<password>
+# or import the MySQL cert into the global Java cacerts.
 # MODE must be one of DISABLED, PREFERRED, REQUIRED, VERIFY_CA, or VERIFY_IDENTITY
 #
 # turns on ssl for the maxwell-store connection, other connections inherit this setting unless specified
