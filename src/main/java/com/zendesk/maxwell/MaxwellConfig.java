@@ -2,6 +2,7 @@ package com.zendesk.maxwell;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
+import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.monitoring.MaxwellDiagnosticContext;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
@@ -149,6 +150,10 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "password", "password for host" ).withRequiredArg();
 		parser.accepts( "jdbc_options", "additional jdbc connection options" ).withRequiredArg();
 		parser.accepts( "binlog_connector", "[deprecated]" ).withRequiredArg();
+
+		parser.accepts( "ssl", "enables SSL for all connections: DISABLED|PREFERRED|REQUIRED|VERIFY_CA|VERIFY_IDENTITY. default: DISABLED").withOptionalArg();
+		parser.accepts( "replication_ssl", "overrides SSL setting for binlog connection: DISABLED|PREFERRED|REQUIRED|VERIFY_CA|VERIFY_IDENTITY").withOptionalArg();
+		parser.accepts( "schema_ssl", "overrides SSL setting for schema capture connection: DISABLED|PREFERRED|REQUIRED|VERIFY_CA|VERIFY_IDENTITY").withOptionalArg();
 
 		parser.accepts("__separator_2");
 
@@ -365,6 +370,10 @@ public class MaxwellConfig extends AbstractConfig {
 		this.redisAuth			= fetchOption("redis_auth", options, properties, null);
 		this.redisDatabase		= Integer.parseInt(fetchOption("redis_database", options, properties, "0"));
 		this.redisPubChannel	= fetchOption("redis_pub_channel", options, properties, "maxwell");
+
+		if (this.maxwellMysql.sslMode == null) {
+			this.maxwellMysql.sslMode = SSLMode.DISABLED;
+		}
 
 		String kafkaBootstrapServers = fetchOption("kafka.bootstrap.servers", options, properties, null);
 		if ( kafkaBootstrapServers != null )
@@ -593,10 +602,15 @@ public class MaxwellConfig extends AbstractConfig {
 				this.maxwellMysql.port,
 				null,
 				this.maxwellMysql.user,
-				this.maxwellMysql.password
+				this.maxwellMysql.password,
+				this.maxwellMysql.sslMode
 			);
 
 			this.replicationMysql.jdbcOptions = this.maxwellMysql.jdbcOptions;
+		}
+
+		if (this.replicationMysql.sslMode == null) {
+			this.replicationMysql.sslMode = this.maxwellMysql.sslMode;
 		}
 
 		if (gtidMode && masterRecovery) {
@@ -615,6 +629,10 @@ public class MaxwellConfig extends AbstractConfig {
 			if (this.replicationMysql.host == null) {
 				usageForOptions("Specifying schema_host only makes sense along with replication_host");
 			}
+		}
+
+		if (this.schemaMysql.sslMode == null) {
+			this.schemaMysql.sslMode = this.maxwellMysql.sslMode;
 		}
 
 		try {

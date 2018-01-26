@@ -1,5 +1,6 @@
 package com.zendesk.maxwell;
 
+import com.google.common.collect.Lists;
 import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.row.RowMap;
@@ -8,10 +9,14 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Test;
 
 import java.sql.ResultSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -515,11 +520,26 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	public void testJdbcConnectionOptions() throws Exception {
 		String[] opts = {"--jdbc_options= netTimeoutForStreamingResults=123& profileSQL=true  ", "--host=no-soup-spoons"};
 		MaxwellConfig config = new MaxwellConfig(opts);
-		assertEquals(config.maxwellMysql.getConnectionURI(),
-				"jdbc:mysql://no-soup-spoons:3306/maxwell?zeroDateTimeBehavior=convertToNull&connectTimeout=5000&netTimeoutForStreamingResults=123&profileSQL=true");
-		assertEquals(config.replicationMysql.getConnectionURI(),
-				"jdbc:mysql://no-soup-spoons:3306?zeroDateTimeBehavior=convertToNull&connectTimeout=5000&netTimeoutForStreamingResults=123&profileSQL=true");
+		assertThat(config.maxwellMysql.getConnectionURI(), containsString("jdbc:mysql://no-soup-spoons:3306/maxwell?"));
+		assertThat(config.replicationMysql.getConnectionURI(), containsString("jdbc:mysql://no-soup-spoons:3306?"));
 
+		Set<String> maxwellMysqlParams = new HashSet<>();
+		maxwellMysqlParams.addAll(Lists.newArrayList(config.maxwellMysql.getConnectionURI()
+				.split("\\?")[1].split("&")));
+
+		assertThat(maxwellMysqlParams, hasItem("zeroDateTimeBehavior=convertToNull"));
+		assertThat(maxwellMysqlParams, hasItem("connectTimeout=5000"));
+		assertThat(maxwellMysqlParams, hasItem("netTimeoutForStreamingResults=123"));
+		assertThat(maxwellMysqlParams, hasItem("profileSQL=true"));
+
+		Set<String> replicationMysqlParams = new HashSet<>();
+		replicationMysqlParams.addAll(Lists.newArrayList(config.replicationMysql.getConnectionURI()
+				.split("\\?")[1].split("&")));
+
+		assertThat(replicationMysqlParams, hasItem("zeroDateTimeBehavior=convertToNull"));
+		assertThat(replicationMysqlParams, hasItem("connectTimeout=5000"));
+		assertThat(replicationMysqlParams, hasItem("netTimeoutForStreamingResults=123"));
+		assertThat(replicationMysqlParams, hasItem("profileSQL=true"));
 	}
 
 	@Test
