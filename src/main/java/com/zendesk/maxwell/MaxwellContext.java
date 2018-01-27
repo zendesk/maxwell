@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import snaq.db.ConnectionPool;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -52,7 +53,7 @@ public class MaxwellContext {
 	private final HeartbeatNotifier heartbeatNotifier;
 	private final MaxwellDiagnosticContext diagnosticContext;
 
-	public MaxwellContext(MaxwellConfig config) throws SQLException {
+	public MaxwellContext(MaxwellConfig config) throws SQLException, URISyntaxException {
 		this.config = config;
 		this.taskManager = new TaskManager();
 		this.metrics = new MaxwellMetrics(config);
@@ -408,7 +409,7 @@ public class MaxwellContext {
 		}
 	}
 
-	public void probeConnections() throws SQLException {
+	public void probeConnections() throws SQLException, URISyntaxException {
 		probePool(this.rawMaxwellConnectionPool, this.config.maxwellMysql.getConnectionURI(false));
 
 		if ( this.maxwellConnectionPool != this.replicationConnectionPool )

@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.sql.*;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -98,7 +99,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		return conn;
 	}
 
-	protected Connection getStreamingConnection() throws SQLException {
+	protected Connection getStreamingConnection() throws SQLException, URISyntaxException {
 		Connection conn = DriverManager.getConnection(context.getConfig().replicationMysql.getConnectionURI(), context.getConfig().replicationMysql.user, context.getConfig().replicationMysql.password);
 		conn.setCatalog(context.getConfig().databaseName);
 		return conn;

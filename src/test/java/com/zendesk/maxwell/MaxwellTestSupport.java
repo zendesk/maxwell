@@ -1,6 +1,7 @@
 package com.zendesk.maxwell;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
@@ -12,6 +13,7 @@ import com.zendesk.maxwell.schema.ddl.SchemaChange;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -93,20 +95,21 @@ public class MaxwellTestSupport {
 	}
 
 
-	public static MaxwellContext buildContext(int port, Position p, MaxwellFilter filter) throws SQLException {
+	public static MaxwellContext buildContext(int port, Position p, MaxwellFilter filter)
+			throws SQLException, URISyntaxException {
 		MaxwellConfig config = new MaxwellConfig();
 
 		config.replicationMysql.host = "127.0.0.1";
 		config.replicationMysql.port = port;
 		config.replicationMysql.user = "maxwell";
 		config.replicationMysql.password = "maxwell";
-		config.replicationMysql.jdbcOptions.add("useSSL=false");
+		config.replicationMysql.sslMode = SSLMode.DISABLED;
 
 		config.maxwellMysql.host = "127.0.0.1";
 		config.maxwellMysql.port = port;
 		config.maxwellMysql.user = "maxwell";
 		config.maxwellMysql.password = "maxwell";
-		config.maxwellMysql.jdbcOptions.add("useSSL=false");
+		config.maxwellMysql.sslMode = SSLMode.DISABLED;
 
 		config.databaseName = "maxwell";
 
@@ -156,7 +159,7 @@ public class MaxwellTestSupport {
 		config.maxwellMysql.password = "maxwell";
 		config.maxwellMysql.host = "localhost";
 		config.maxwellMysql.port = mysql.getPort();
-		config.maxwellMysql.jdbcOptions.add("useSSL=false");
+		config.maxwellMysql.sslMode = SSLMode.DISABLED;
 		config.replicationMysql = config.maxwellMysql;
 		if (outputConfig == null) {
 			outputConfig = new MaxwellOutputConfig();

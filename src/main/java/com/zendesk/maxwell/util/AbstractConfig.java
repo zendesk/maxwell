@@ -5,6 +5,8 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import java.util.*;
+
+import com.github.shyiko.mysql.binlog.network.SSLMode;
 import joptsimple.*;
 
 import com.zendesk.maxwell.MaxwellMysqlConfig;
@@ -127,10 +129,22 @@ public abstract class AbstractConfig {
 		config.password = fetchOption(prefix + "password", options, properties, null);
 		config.user     = fetchOption(prefix + "user", options, properties, null);
 		config.port     = Integer.valueOf(fetchOption(prefix + "port", options, properties, "3306"));
+		config.sslMode  = this.getSslModeFromString(fetchOption(prefix + "ssl", options, properties, null));
 		config.setJDBCOptions(
 		    fetchOption(prefix + "jdbc_options", options, properties, null));
 		return config;
 	}
 
-
+	private SSLMode getSslModeFromString(String sslMode) {
+		if (sslMode != null) {
+			for (SSLMode mode : SSLMode.values()) {
+				if (mode.toString().equals(sslMode)) {
+					return mode;
+				}
+			}
+			System.err.println("Invalid binlog SSL mode string: " + sslMode);
+			System.exit(1);
+		}
+		return null;
+	}
 }
