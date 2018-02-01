@@ -136,7 +136,7 @@ bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
     --producer=rabbitmq --rabbitmq_host='rabbitmq.hostname'
 ```
 
-### Redis Pub/Sub Producer
+### Redis Producer
 
 ```
 bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
@@ -147,17 +147,4 @@ bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
 
 ```
 docker run -it --rm zendesk/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=redis --redis_host=$REDIS_HOST
-```
-
-### Redis LPUSH Producer
-
-```
-bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
-    --producer=redis-lpush --redis_host=redis.hostname
-```
-
-(or docker):
-
-```
-docker run -it --rm zendesk/maxwell bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=redis-lpush --redis_host=$REDIS_HOST
 ```

@@ -116,6 +116,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public int redisDatabase;
 	public String redisPubChannel;
 	public String redisListKey;
+	public String redisType;
 
 	public MaxwellConfig() { // argv is only null in tests
 		this.customProducerProperties = new Properties();
@@ -259,6 +260,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "redis_database", "Database of Redis server" ).withRequiredArg();
 		parser.accepts( "redis_pub_channel", "Redis Pub/Sub channel for publishing records" ).withRequiredArg();
 		parser.accepts( "redis_list_key", "Redis LPUSH List Key for adding to a queue" ).withRequiredArg();
+		parser.accepts( "redis_type", "Selects either Redis Pub/Sub or LPUSH. Default to Pub/Sub" ).withRequiredArg();
 
 		parser.accepts( "__separator_10" );
 
@@ -373,8 +375,9 @@ public class MaxwellConfig extends AbstractConfig {
 		this.redisPort			= Integer.parseInt(fetchOption("redis_port", options, properties, "6379"));
 		this.redisAuth			= fetchOption("redis_auth", options, properties, null);
 		this.redisDatabase		= Integer.parseInt(fetchOption("redis_database", options, properties, "0"));
-		this.redisPubChannel		= fetchOption("redis_pub_channel", options, properties, "maxwell");
+		this.redisPubChannel	= fetchOption("redis_pub_channel", options, properties, "maxwell");
 		this.redisListKey		= fetchOption("redis_list_key", options, properties, "maxwell");
+		this.redisType			= fetchOption("redis_type", options, properties, "pubsub");
 
 		if (this.maxwellMysql.sslMode == null) {
 			this.maxwellMysql.sslMode = SSLMode.DISABLED;
