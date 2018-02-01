@@ -1,5 +1,15 @@
 # Maxwell changelog
 
+### [v1.13.0](https://github.com/zendesk/maxwell/releases/tag/v1.13.0): "sorry, I burned your clothes"
+
+
+- proper SSL connection support, thanks @cadams5
+- support for including original SQL in insert/update/deletes, thanks @saimon7
+- fixes for float4, float8 and other non-mysql datatypes
+- bump kinesis lib to 0.12.8
+- fix for bug when two databases share a single table
+
+
 ### [v1.12.0](https://github.com/zendesk/maxwell/releases/tag/v1.12.0): "Cold Feet, literally and metaphorically."
 
 
