@@ -30,7 +30,7 @@ generic_type:
 
 
 signed_type: // we need the UNSIGNED flag here
-      col_type=(TINYINT | INT1 | SMALLINT | INT2 | MEDIUMINT | INT3 | INT | INTEGER | INT4 | BIGINT | INT8 )
+      col_type=(TINYINT | INT1 | SMALLINT | INT2 | MEDIUMINT | INT3 | INT | INTEGER | INT4 | BIGINT | INT8 | FIXED | FLOAT4 | FLOAT8 | MIDDLEINT )
                 length?
                 int_flags*
                 column_options*
