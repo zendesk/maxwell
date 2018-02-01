@@ -200,7 +200,7 @@ For more details on these options, you are encouraged to the read official Rabbi
 
 ### Redis
 ***
-Set the output stream in `config.properties` by setting the `redis_pub_channel` property.
+Set the output stream in `config.properties` by setting the `redis_pub_channel` property or for LPUSH, set the `redis_list_key` property.
 
 Other configurable properties are:
 

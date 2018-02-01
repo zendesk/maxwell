@@ -12,7 +12,7 @@ password=maxwell
 
 ######### general stuff #############
 
-# choose where to produce data to. stdout|file|kafka|kinesis|pubsub|sqs|rabbitmq|redis
+# choose where to produce data to. stdout|file|kafka|kinesis|pubsub|sqs|rabbitmq|redis|redis-lpush
 #producer=kafka
 
 # set the log level.  note that you can configure things further in log4j2.xml
@@ -201,6 +201,7 @@ sqs_queue_uri=aws_sqs_queue_uri
 #redis_auth=redis_auth
 #redis_database=0
 #redis_pub_channel=maxwell
+#redis_list_key=maxwell
 
 ######### custom producer ######################
 # the fully qualified class name for custom ProducerFactory
