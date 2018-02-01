@@ -486,6 +486,8 @@ public class MysqlSavedSchema {
 			if (currentDatabase == null || !currentDatabase.getName().equals(dbName)) {
 				currentDatabase = new Database(dbName, dbCharset);
 				this.schema.addDatabase(currentDatabase);
+				// make sure two tables named the same in different dbs are picked up.
+				currentTable = null;
 				LOGGER.debug("Restoring database " + dbName + "...");
 			}
 
