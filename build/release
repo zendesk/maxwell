@@ -11,7 +11,7 @@ BINDIR=File.dirname(__FILE__)
 CURRENT_REV=`#{BINDIR}/current_rev`
 
 if !( ($version = ARGV[0]) && $version =~ /^\d+\.\d+\.\d+(-\w+)?$/)
-  message =  "usage: #{$0} VERSION [bump|build|tag|release|changelog]|\n"
+  message =  "usage: #{$0} VERSION [bump|build|tag|release|changelog|docs]|\n"
   message += "  (current version is #{CURRENT_REV})"
   abort(message)
 end
@@ -83,6 +83,8 @@ end
 
 def changelog
   do_system(BINDIR + "/mkchangelog > " + BINDIR + "/../CHANGELOG.md")
+  do_system("git commit -am 'update changelog'")
+  do_system("git push")
 end
 
 if $command
@@ -92,8 +94,8 @@ else
   build
   tag
   release
-  docs
   sleep 2
   changelog
+  docs
 end
 
