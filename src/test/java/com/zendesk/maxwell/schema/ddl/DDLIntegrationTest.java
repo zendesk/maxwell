@@ -290,6 +290,20 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
+	public void testCompatibilityColumnTypes() throws Exception {
+		String sql[] = {
+			"create TABLE t1( a FIXED )",
+			"create TABLE t2( a float4 )",
+			"create TABLE t3( a float8 )",
+			"create table t4( a middleint )",
+			"create table t5( a numeric )",
+
+		};
+
+		testIntegration(sql);
+	}
+
+	@Test
 	public void testASCIICharset() throws Exception {
 		String sql[] = {
 			"create TABLE t1( a varchar(255) ASCII, b enum('a', 'b') ASCII )"
