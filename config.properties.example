@@ -196,11 +196,14 @@ sqs_queue_uri=aws_sqs_queue_uri
 #rabbitmq_message_persistent=false
 
 ######### redis ######################
+# Valid values for redis_type = pubsub|lpush. Defaults to pubsub
 #redis_host=redis_host
 #redis_port=6379
 #redis_auth=redis_auth
 #redis_database=0
 #redis_pub_channel=maxwell
+#redis_list_key=maxwell
+#redis_type=pubsub
 
 ######### custom producer ######################
 # the fully qualified class name for custom ProducerFactory

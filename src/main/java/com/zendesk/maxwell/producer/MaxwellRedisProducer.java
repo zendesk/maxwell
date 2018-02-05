@@ -10,12 +10,16 @@ import redis.clients.jedis.Jedis;
 public class MaxwellRedisProducer extends AbstractProducer implements StoppableTask {
 	private static final Logger logger = LoggerFactory.getLogger(MaxwellRedisProducer.class);
 	private final String channel;
+	private final String listkey;
+	private final String redistype;
 	private final Jedis jedis;
 
-	public MaxwellRedisProducer(MaxwellContext context, String redisPubChannel) {
+	public MaxwellRedisProducer(MaxwellContext context, String redisPubChannel, String redisListKey, String redisType) {
 		super(context);
 
 		channel = redisPubChannel;
+		listkey = redisListKey;
+		redistype = redisType;
 
 		jedis = new Jedis(context.getConfig().redisHost, context.getConfig().redisPort);
 		jedis.connect();
@@ -36,7 +40,15 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 
 		String msg = r.toJSON(outputConfig);
 		try {
-			jedis.publish(this.channel, msg);
+			switch (redistype){
+				case "lpush":
+					jedis.lpush(this.listkey, msg);
+					break;
+				case "pubsub":
+				default:
+					jedis.publish(this.channel, msg);
+					break;
+			}
 			this.succeededMessageCount.inc();
 			this.succeededMessageMeter.mark();
 		} catch (Exception e) {
@@ -54,7 +66,15 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 		}
 
 		if ( logger.isDebugEnabled()) {
-			logger.debug("->  channel:" + channel + ", msg:" + msg);
+			switch (redistype){
+				case "lpush":
+					logger.debug("->  queue:" + listkey + ", msg:" + msg);
+					break;
+				case "pubsub":
+				default:
+					logger.debug("->  channel:" + channel + ", msg:" + msg);
+					break;
+			}
 		}
 	}
 
