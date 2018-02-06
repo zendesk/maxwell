@@ -12,7 +12,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 
@@ -37,7 +41,9 @@ public class RowMap implements Serializable {
 
 	private final LinkedHashMap<String, Object> data;
 	private final LinkedHashMap<String, Object> oldData;
+
 	private final LinkedHashMap<String, Object> extraAttributes;
+
 	private final List<String> pkColumns;
 
 	private static final JsonFactory jsonFactory = new JsonFactory();
