@@ -12,11 +12,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Pattern;
 
 
@@ -41,6 +37,7 @@ public class RowMap implements Serializable {
 
 	private final LinkedHashMap<String, Object> data;
 	private final LinkedHashMap<String, Object> oldData;
+	private final LinkedHashMap<String, Object> extraAttributes;
 	private final List<String> pkColumns;
 
 	private static final JsonFactory jsonFactory = new JsonFactory();
@@ -107,6 +104,7 @@ public class RowMap implements Serializable {
 		this.timestampSeconds = timestampMillis / 1000;
 		this.data = new LinkedHashMap<>();
 		this.oldData = new LinkedHashMap<>();
+		this.extraAttributes = new LinkedHashMap<>();
 		this.nextPosition = nextPosition;
 		this.pkColumns = pkColumns;
 		this.approximateSize = 100L; // more or less 100 bytes of overhead
@@ -280,6 +278,10 @@ public class RowMap implements Serializable {
 			g.writeNumberField("thread_id", this.threadId);
 		}
 
+		for ( Map.Entry<String, Object> entry : this.extraAttributes.entrySet() ) {
+			g.writeObjectField(entry.getKey(), entry.getValue());
+		}
+
 		if ( outputConfig.excludeColumns.size() > 0 ) {
 			// NOTE: to avoid concurrent modification.
 			Set<String> keys = new HashSet<>();
@@ -335,6 +337,9 @@ public class RowMap implements Serializable {
 		return this.data.get(key);
 	}
 
+	public Object getExtraAttribute(String key) {
+		return this.extraAttributes.get(key);
+	}
 
 	public long getApproximateSize() {
 		return approximateSize;
@@ -356,6 +361,12 @@ public class RowMap implements Serializable {
 
 	public void putData(String key, Object value) {
 		this.data.put(key, value);
+
+		this.approximateSize += approximateKVSize(key, value);
+	}
+
+	public void putExtraAttribute(String key, Object value) {
+		this.extraAttributes.put(key, value);
 
 		this.approximateSize += approximateKVSize(key, value);
 	}
@@ -440,6 +451,11 @@ public class RowMap implements Serializable {
 	public LinkedHashMap<String, Object> getData()
 	{
 		return new LinkedHashMap<>(data);
+	}
+
+	public LinkedHashMap<String, Object> getExtraAttributes()
+	{
+		return new LinkedHashMap<>(extraAttributes);
 	}
 
 	public LinkedHashMap<String, Object> getOldData()
