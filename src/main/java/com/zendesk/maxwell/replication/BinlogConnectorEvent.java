@@ -103,7 +103,7 @@ public class BinlogConnectorEvent {
 				if ( data[dataIdx] != null ) {
 					json = cd.asJSON(data[dataIdx]);
 				}
-				row.putData(cd.getName(), json);
+				row.putData(cd.getName(), json, cd);
 				dataIdx++;
 			}
 			colIdx++;
@@ -127,10 +127,10 @@ public class BinlogConnectorEvent {
 					   as a sort of WHERE clause to update rows with the new values (present in the AFTER image),
 					   In this case we should put what's in the "before" image into the "data" section, not the "old".
 					 */
-					row.putData(cd.getName(), json);
+					row.putData(cd.getName(), json, cd);
 				} else {
 					if (!Objects.equals(row.getData(cd.getName()), json)) {
-						row.putOldData(cd.getName(), json);
+						row.putOldData(cd.getName(), json, cd);
 					}
 				}
 				dataIdx++;

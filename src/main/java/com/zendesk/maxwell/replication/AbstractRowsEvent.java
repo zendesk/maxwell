@@ -163,7 +163,7 @@ public abstract class AbstractRowsEvent extends AbstractRowEvent {
 			RowMap rowMap = buildRowMap();
 
 			for ( ColumnWithDefinition cd : new ColumnWithDefinitionList(table, r, getUsedColumns()) )
-				rowMap.putData(cd.definition.getName(), cd.asJSON());
+				rowMap.putData(cd.definition.getName(), cd.asJSON(), cd.definition);
 
 			list.add(rowMap);
 		}
