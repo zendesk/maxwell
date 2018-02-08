@@ -101,8 +101,6 @@ public class RowMapTest {
 
 		Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\",\"pk.id\":\"9001\",\"pk.name\":\"example\"}",
 				jsonString);
-
-
 	}
 
 

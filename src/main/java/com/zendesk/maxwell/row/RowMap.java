@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.row;
 
 import com.fasterxml.jackson.core.*;
+import com.zendesk.maxwell.errors.ProtectedAttributeNameException;
 import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
@@ -135,11 +136,11 @@ public class RowMap implements Serializable {
 
 		g.writeStartObject(); // start of row {
 
-		g.writeStringField("database", database);
-		g.writeStringField("table", table);
+		g.writeStringField(FieldNames.DATABASE, database);
+		g.writeStringField(FieldNames.TABLE, table);
 
 		if (pkColumns.isEmpty()) {
-			g.writeStringField("_uuid", UUID.randomUUID().toString());
+			g.writeStringField(FieldNames.UUID, UUID.randomUUID().toString());
 		} else {
 			for (String pk : pkColumns) {
 				Object pkValue = null;
@@ -251,38 +252,38 @@ public class RowMap implements Serializable {
 
 		g.writeStartObject(); // start of row {
 
-		g.writeStringField("database", this.database);
-		g.writeStringField("table", this.table);
+		g.writeStringField(FieldNames.DATABASE, this.database);
+		g.writeStringField(FieldNames.TABLE, this.table);
 
 		if ( outputConfig.includesRowQuery && this.rowQuery != null) {
-			g.writeStringField("query", this.rowQuery);
+			g.writeStringField(FieldNames.QUERY, this.rowQuery);
 		}
 
-		g.writeStringField("type", this.rowType);
-		g.writeNumberField("ts", this.timestampSeconds);
+		g.writeStringField(FieldNames.TYPE, this.rowType);
+		g.writeNumberField(FieldNames.TIMESTAMP, this.timestampSeconds);
 
 		if ( outputConfig.includesCommitInfo ) {
 			if ( this.xid != null )
-				g.writeNumberField("xid", this.xid);
+				g.writeNumberField(FieldNames.TRANSACTION_ID, this.xid);
 
 			if ( this.txCommit )
-				g.writeBooleanField("commit", true);
+				g.writeBooleanField(FieldNames.COMMIT, true);
 		}
 
 		BinlogPosition binlogPosition = this.nextPosition.getBinlogPosition();
 		if ( outputConfig.includesBinlogPosition )
-			g.writeStringField("position", binlogPosition.getFile() + ":" + binlogPosition.getOffset());
+			g.writeStringField(FieldNames.POSITION, binlogPosition.getFile() + ":" + binlogPosition.getOffset());
 
 
 		if ( outputConfig.includesGtidPosition)
-			g.writeStringField("gtid", binlogPosition.getGtid());
+			g.writeStringField(FieldNames.GTID, binlogPosition.getGtid());
 
 		if ( outputConfig.includesServerId && this.serverId != null ) {
-			g.writeNumberField("server_id", this.serverId);
+			g.writeNumberField(FieldNames.SERVER_ID, this.serverId);
 		}
 
 		if ( outputConfig.includesThreadId && this.threadId != null ) {
-			g.writeNumberField("thread_id", this.threadId);
+			g.writeNumberField(FieldNames.THREAD_ID, this.threadId);
 		}
 
 		for ( Map.Entry<String, Object> entry : this.extraAttributes.entrySet() ) {
@@ -316,9 +317,9 @@ public class RowMap implements Serializable {
 			: plaintextDataGeneratorThreadLocal.get();
 
 		JsonGenerator dataGenerator = dataWriter.begin();
-		writeMapToJSON("data", this.data, dataGenerator, outputConfig.includesNulls);
+		writeMapToJSON(FieldNames.DATA, this.data, dataGenerator, outputConfig.includesNulls);
 		if( !this.oldData.isEmpty() ){
-			writeMapToJSON("old", this.oldData, dataGenerator, outputConfig.includesNulls);
+			writeMapToJSON(FieldNames.OLD, this.oldData, dataGenerator, outputConfig.includesNulls);
 		}
 		dataWriter.end(encryptionContext);
 
@@ -373,6 +374,11 @@ public class RowMap implements Serializable {
 	}
 
 	public void putExtraAttribute(String key, Object value) {
+		if (FieldNames.isProtected(key)) {
+			throw new ProtectedAttributeNameException("Extra attribute key name '" + key + "' is " +
+					"a protected name. Must not be any of: " +
+					String.join(", ", FieldNames.getFieldnames()));
+		}
 		this.extraAttributes.put(key, value);
 
 		this.approximateSize += approximateKVSize(key, value);
