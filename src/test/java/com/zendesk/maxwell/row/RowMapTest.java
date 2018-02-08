@@ -48,6 +48,28 @@ public class RowMapTest {
 	}
 
 	@Test
+	public void testGetExtraAttributesMaps() throws Exception {
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", 1234567890L, new ArrayList<String>(), null);
+		rowMap.putExtraAttribute("foo", "bar");
+
+		// Sanity check.
+		Assert.assertEquals("bar", rowMap.getExtraAttribute("foo"));
+
+		// Get extra attributes map.
+		LinkedHashMap<String, Object> extraAttributes = rowMap.getExtraAttributes();
+		Assert.assertEquals("bar", extraAttributes.get("foo"));
+
+		// Manipulate extra attributes map extracted from RowMap.
+		extraAttributes.put("foo", "BAR");
+
+		// Another sanity check.
+		Assert.assertEquals("BAR", extraAttributes.get("foo"));
+
+		// Assert original extra RowMap attributes was not changed.
+		Assert.assertEquals("bar", rowMap.getExtraAttribute("foo"));
+	}
+
+	@Test
 	public void testTimestampConversion() throws Exception {
 		long timestampSeconds = 1496712943;
 
