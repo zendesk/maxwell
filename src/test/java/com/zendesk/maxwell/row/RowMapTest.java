@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.row;
 
 import com.zendesk.maxwell.MaxwellTestJSON;
+import com.zendesk.maxwell.errors.ProtectedAttributeNameException;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.Position;
@@ -67,6 +68,12 @@ public class RowMapTest {
 
 		// Assert original extra RowMap attributes was not changed.
 		Assert.assertEquals("bar", rowMap.getExtraAttribute("foo"));
+	}
+
+	@Test(expected = ProtectedAttributeNameException.class)
+	public void testFailOnProtectedAttributes() throws Exception {
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", 1234567890L, new ArrayList<String>(), null);
+		rowMap.putExtraAttribute("table", "bar");
 	}
 
 	@Test
