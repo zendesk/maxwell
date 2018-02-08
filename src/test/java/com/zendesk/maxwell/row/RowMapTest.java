@@ -205,15 +205,20 @@ public class RowMapTest {
 		rowMap.setServerId(7653213L);
 		rowMap.setThreadId(6532312L);
 
+		rowMap.putExtraAttribute("int", 1234);
+		rowMap.putExtraAttribute("str", "foo");
+
 		rowMap.putData("id", "9001");
 		rowMap.putData("first_name", "foo");
 		rowMap.putData("last_name", "bar");
         rowMap.putData("rawJSON", new RawJSONString("{\"UserID\":20}"));
+
 		MaxwellOutputConfig outputConfig = getMaxwellOutputConfig();
 
 		Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\",\"type\":\"insert\"," +
-				"\"ts\":1496712943,\"position\":\"binlog-0001:1\",\"gtid\":null,\"server_id\":7653213,\"thread_id\":6532312," +
-				"\"data\":{\"id\":\"9001\",\"first_name\":\"foo\",\"last_name\":\"bar\",\"rawJSON\":{\"UserID\":20}}}", rowMap.toJSON(outputConfig));
+				"\"ts\":1496712943,\"position\":\"binlog-0001:1\",\"gtid\":null,\"server_id\":7653213," +
+				"\"thread_id\":6532312,\"int\":1234,\"str\":\"foo\",\"data\":{\"id\":\"9001\",\"first_name\":\"foo\"," +
+				"\"last_name\":\"bar\",\"rawJSON\":{\"UserID\":20}}}", rowMap.toJSON(outputConfig));
 
 	}
 
@@ -222,17 +227,23 @@ public class RowMapTest {
 		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS,
 				new ArrayList<String>(), POSITION);
 
+		rowMap.setServerId(7653213L);
+		rowMap.setThreadId(6532312L);
+
+		rowMap.putExtraAttribute("int", 1234);
+		rowMap.putExtraAttribute("str", "foo");
+
 		rowMap.putData("id", "9001");
 		rowMap.putData("first_name", "foo");
 		rowMap.putData("last_name", "bar");
 		rowMap.putData("interests", Arrays.asList("hiking", "programming"));
-		rowMap.setServerId(7653213L);
-		rowMap.setThreadId(6532312L);
+
 		MaxwellOutputConfig outputConfig = getMaxwellOutputConfig(Pattern.compile("^.*name.*$"));
 
-		Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\",\"type\":\"insert\",\"ts\":1496712943," +
-				"\"position\":\"binlog-0001:1\",\"gtid\":null,\"server_id\":7653213,\"thread_id\":6532312," +
-				"\"data\":{\"id\":\"9001\",\"interests\":[\"hiking\",\"programming\"]}}", rowMap.toJSON(outputConfig));
+		Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\",\"type\":\"insert\"," +
+				"\"ts\":1496712943,\"position\":\"binlog-0001:1\",\"gtid\":null,\"server_id\":7653213," +
+				"\"thread_id\":6532312,\"int\":1234,\"str\":\"foo\",\"data\":{\"id\":\"9001\"," +
+				"\"interests\":[\"hiking\",\"programming\"]}}", rowMap.toJSON(outputConfig));
 	}
 
 	private MaxwellOutputConfig getMaxwellOutputConfig(Pattern... patterns) {
