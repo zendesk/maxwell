@@ -24,7 +24,7 @@ Maxwell can only operate if row-based replication is on.
 $ vi my.cnf
 
 [mysqld]
-server-id=1
+server_id=1
 log-bin=master
 binlog_format=row
 ```

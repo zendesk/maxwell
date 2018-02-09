@@ -5,7 +5,7 @@ operate:
 
 ```
 [mysqld]
-server-id=1
+server_id=1
 log-bin=master
 binlog_format=row
 ```
@@ -38,7 +38,7 @@ Here's how you might configure your mysql server for GTID mode:
 $ vi my.cnf
 
 [mysqld]
-server-id=1
+server_id=1
 log-bin=master
 binlog_format=row
 gtid-mode=ON
