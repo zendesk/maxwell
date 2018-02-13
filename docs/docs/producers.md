@@ -8,7 +8,7 @@ latter case 'database' and 'table' will be replaced with the values for the row
 being processed. This can be changed with the `kafka_topic` option.
 
 #### Client version
-By default, maxwell runs with kafka clients 0.11.0.1. There is a flag (--kafka_version) that allows maxwell to run with either 0.8.2.2, 0.9.0.1, 0.10.0.1, 0.10.2.1 or 0.11.0.1.
+By default, maxwell runs with kafka clients 1.0.0. There is a flag (--kafka_version) that allows maxwell to run with either 0.8.2.2, 0.9.0.1, 0.10.0.1, 0.10.2.1, 0.11.0.1 or 1.0.0.
 Noteables:
 - Kafka clients 0.9.0.1 are not compatible with brokers running kafka 0.8. The exception below will show in logs when that is the case:
 

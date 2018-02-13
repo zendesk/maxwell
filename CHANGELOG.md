@@ -26,7 +26,7 @@
 ### [v1.11.0](https://github.com/zendesk/maxwell/releases/tag/v1.11.0): "the latest, the greatest"
 
 
-     - default kafka client upgrades to 0.11.0.1
+     - default kafka client upgrades to 1.0.0
      - fix the encryption issue (https://github.com/zendesk/maxwell/issues/803)
 
 
