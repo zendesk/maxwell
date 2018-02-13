@@ -66,7 +66,7 @@ public class MaxwellMysqlConfig {
 			return;
 
 		for ( String opt : opts.split("&") ) {
-			String[] valueKeySplit = opt.trim().split("=");
+			String[] valueKeySplit = opt.trim().split("=", 2);
 			if (valueKeySplit.length == 2) {
 				this.jdbcOptions.put(valueKeySplit[0], valueKeySplit[1]);
 			}
