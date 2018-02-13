@@ -86,9 +86,6 @@
     </profile>
     <profile>
       <id>kafka-0.11.0.1</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
       <dependencies>
         <dependency>
           <groupId>org.apache.kafka</groupId>
