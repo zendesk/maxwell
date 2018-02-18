@@ -157,7 +157,7 @@ public class BinlogConnectorFileReader extends AbstractReplicator implements
 						&& shouldOutputEvent(table.getDatabase(),
 								table.getName(), filter)) {
 					for (RowMap r : event
-							.jsonMaps(table, lastHeartbeatPosition))
+							.jsonMaps(table, lastHeartbeatPosition,null))
 						buffer.add(r);
 				}
 

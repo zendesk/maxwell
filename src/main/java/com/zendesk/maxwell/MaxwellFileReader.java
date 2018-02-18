@@ -52,11 +52,11 @@ public class MaxwellFileReader {
 	protected MaxwellContext context;
 	protected Replicator replicator;
 	
-	public MaxwellFileReader(MaxwellConfig config) throws SQLException {
+	public MaxwellFileReader(MaxwellConfig config) throws Exception {
 		this(new MaxwellContext(config));
 	}
 	
-	protected MaxwellFileReader(MaxwellContext context) throws SQLException {
+	protected MaxwellFileReader(MaxwellContext context) throws Exception {
 		this.config = context.getConfig();
 		this.context = context;
 		this.context.probeConnections();
