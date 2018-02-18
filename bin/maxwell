@@ -62,7 +62,7 @@ if [ "x$DAEMON_MODE" = "xtrue" ]; then
     if [ ! -d "$LOG_DIR" ]; then
         mkdir -p "$LOG_DIR"
     fi
-    # Console output file when daemonized
+    # Console output file when maxwell runs as a daemon
     CONSOLE_OUTPUT_FILE=$LOG_DIR/$DAEMON_NAME.out
 fi
 
