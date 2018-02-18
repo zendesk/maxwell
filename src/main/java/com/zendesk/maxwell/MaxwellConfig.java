@@ -143,6 +143,7 @@ public class MaxwellConfig extends AbstractConfig {
 		final OptionParser parser = new OptionParser();
 		parser.accepts( "config", "location of config file" ).withRequiredArg();
 		parser.accepts( "log_level", "log level, one of DEBUG|INFO|WARN|ERROR" ).withRequiredArg();
+		parser.accepts( "daemon", "daemon, running maxwell as a daemon" ).withOptionalArg();
 
 		parser.accepts("__separator_1");
 
