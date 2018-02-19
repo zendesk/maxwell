@@ -247,7 +247,7 @@ public class MaxwellContext {
 	}
 
 	public Position getOtherClientPosition() throws SQLException {
-		return this.positionStore.getAny();
+		return this.positionStore.getLatestFromAnyClient();
 	}
 
 	public RecoveryInfo getRecoveryInfo() throws SQLException {

@@ -171,9 +171,9 @@ public class MysqlPositionStore {
 		return new Position(pos, rs.getLong("last_heartbeat_read"));
 	}
 
-	public Position getAny() throws SQLException {
+	public Position getLatestFromAnyClient() throws SQLException {
 		try ( Connection c = connectionPool.getConnection() ) {
-			PreparedStatement s = c.prepareStatement("SELECT * from `positions` where server_id = ?");
+			PreparedStatement s = c.prepareStatement("SELECT * from `positions` where server_id = ? ORDER BY last_heartbeat_read desc limit 1");
 			s.setLong(1, serverID);
 
 			return positionFromResultSet(s.executeQuery());
