@@ -70,6 +70,7 @@ public class MaxwellTestJSON {
 
 			outputMap.remove("ts");
 			outputMap.remove("xid");
+			outputMap.remove("xoffset");
 			outputMap.remove("commit");
 
 			eventJSON.add(outputMap);
