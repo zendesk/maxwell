@@ -15,9 +15,11 @@ import com.zendesk.maxwell.util.Logging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Properties;
 
 public class Maxwell implements Runnable {
 	protected MaxwellConfig config;
@@ -121,6 +123,15 @@ public class Maxwell implements Runnable {
 
 	public String getMaxwellVersion() {
 		String packageVersion = getClass().getPackage().getImplementationVersion();
+		if ( packageVersion == null ) {
+		    final Properties properties = new Properties();
+	        try {
+	            properties.load(getClass().getClassLoader().getResourceAsStream("maxwell.properties"));
+                packageVersion = properties.getProperty("version");
+	        } catch (IOException e) {
+                LOGGER.info ("Maxwell version not found.");
+	        }
+		}
 		if ( packageVersion == null )
 			return "??";
 		else
