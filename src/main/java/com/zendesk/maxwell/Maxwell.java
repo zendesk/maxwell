@@ -124,13 +124,13 @@ public class Maxwell implements Runnable {
 	public String getMaxwellVersion() {
 		String packageVersion = getClass().getPackage().getImplementationVersion();
 		if ( packageVersion == null ) {
-		    final Properties properties = new Properties();
-	        try {
-	            properties.load(getClass().getClassLoader().getResourceAsStream("maxwell.properties"));
-                packageVersion = properties.getProperty("version");
-	        } catch (IOException e) {
-                LOGGER.info ("Maxwell version not found.");
-	        }
+			final Properties properties = new Properties();
+			try {
+				properties.load(getClass().getClassLoader().getResourceAsStream("maxwell.properties"));
+				packageVersion = properties.getProperty("version");
+			} catch (IOException e) {
+				LOGGER.info ("Maxwell version not found.");
+			}
 		}
 		if ( packageVersion == null )
 			return "??";
