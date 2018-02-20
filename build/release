@@ -10,8 +10,10 @@ BINDIR=File.dirname(__FILE__)
 
 CURRENT_REV=`#{BINDIR}/current_rev`
 
+SUBCOMMANDS=%w(changelog bump build tag release docs nexus)
+
 if !( ($version = ARGV[0]) && $version =~ /^\d+\.\d+\.\d+(-\w+)?$/)
-  message =  "usage: #{$0} VERSION [bump|build|tag|release|changelog|docs]|\n"
+  message =  "usage: #{$0} VERSION [#{SUBCOMMANDS.join('|')}]\n"
   message += "  (current version is #{CURRENT_REV})"
   abort(message)
 end
@@ -19,7 +21,7 @@ end
 puts "Releasing version: #{$version}"
 
 if ( $command = ARGV[1] )
-  unless ["changelog", "bump", "build", "tag", "release", "docs"].include?($command)
+  unless SUBCOMMANDS.include?($command)
     abort("unknown subcommand: #{$command}")
   end
 end
@@ -87,6 +89,10 @@ def changelog
   do_system("git push")
 end
 
+def nexus
+  do_system("mvn deploy -DskipTests=true")
+end
+
 if $command
   send($command)
 else
@@ -97,5 +103,6 @@ else
   sleep 2
   changelog
   docs
+  nexus
 end
 
