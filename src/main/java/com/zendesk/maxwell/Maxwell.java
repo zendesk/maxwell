@@ -101,7 +101,18 @@ public class Maxwell implements Runnable {
 			if ( config.masterRecovery )
 				initial = attemptMasterRecovery();
 
-			/* third method: capture the current master position. */
+			/* third method: is there a previous client_id?
+			   if so we have to start at that position or else
+			   we could miss schema changes, see https://github.com/zendesk/maxwell/issues/782 */
+
+			if ( initial == null ) {
+				initial = this.context.getOtherClientPosition();
+				if ( initial != null ) {
+					LOGGER.info("Found previous client position: " + initial);
+				}
+			}
+
+			/* fourth method: capture the current master position. */
 			if ( initial == null ) {
 				try ( Connection c = context.getReplicationConnection() ) {
 					initial = Position.capture(c, config.gtidMode);
