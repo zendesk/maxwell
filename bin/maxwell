@@ -46,9 +46,9 @@ do
 		;;
 
         --daemon)
-        DAEMON_MODE="true"
-        DAEMON_NAME="MaxwellDaemon"
-        ;;
+		DAEMON_MODE="true"
+		DAEMON_NAME="MaxwellDaemon"
+		;;
 
 	esac
 done
@@ -64,6 +64,7 @@ if [ "x$DAEMON_MODE" = "xtrue" ]; then
     fi
     # Console output file when maxwell runs as a daemon
     CONSOLE_OUTPUT_FILE=$LOG_DIR/$DAEMON_NAME.out
+    echo "Redirecting STDOUT to $CONSOLE_OUTPUT_FILE"
 fi
 
 kafka_client_dir="$lib_dir/kafka-clients"
