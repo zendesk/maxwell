@@ -45,8 +45,27 @@ do
 		use_kafka "${key#*=}"
 		;;
 
+        --daemon)
+		DAEMON_MODE="true"
+		DAEMON_NAME="MaxwellDaemon"
+		;;
+
 	esac
 done
+
+if [ "x$DAEMON_MODE" = "xtrue" ]; then
+    # Log directory to use
+    if [ "x$LOG_DIR" = "x" ]; then
+        LOG_DIR="$base_dir/logs"
+    fi
+    # Create logs directory
+    if [ ! -d "$LOG_DIR" ]; then
+        mkdir -p "$LOG_DIR"
+    fi
+    # Console output file when maxwell runs as a daemon
+    CONSOLE_OUTPUT_FILE=$LOG_DIR/$DAEMON_NAME.out
+    echo "Redirecting STDOUT to $CONSOLE_OUTPUT_FILE"
+fi
 
 kafka_client_dir="$lib_dir/kafka-clients"
 kafka_client_jar="$(ls -1 "$kafka_client_dir/kafka-clients-$KAFKA_VERSION"*.jar 2>/dev/null || true)"
@@ -71,4 +90,9 @@ else
 	JAVA="$JAVA_HOME/bin/java"
 fi
 
-exec $JAVA $JAVA_OPTS -Dfile.encoding=UTF-8 -Dlog4j.shutdownCallbackRegistry=com.djdch.log4j.StaticShutdownCallbackRegistry -cp $CLASSPATH com.zendesk.maxwell.Maxwell "$@"
+# Launch mode
+if [ "x$DAEMON_MODE" = "xtrue" ]; then
+    nohup $JAVA $JAVA_OPTS -Dfile.encoding=UTF-8 -Dlog4j.shutdownCallbackRegistry=com.djdch.log4j.StaticShutdownCallbackRegistry -cp $CLASSPATH com.zendesk.maxwell.Maxwell "$@" > "$CONSOLE_OUTPUT_FILE" 2>&1 < /dev/null &
+else
+    exec $JAVA $JAVA_OPTS -Dfile.encoding=UTF-8 -Dlog4j.shutdownCallbackRegistry=com.djdch.log4j.StaticShutdownCallbackRegistry -cp $CLASSPATH com.zendesk.maxwell.Maxwell "$@"
+fi
