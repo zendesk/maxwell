@@ -1,5 +1,17 @@
 # Maxwell changelog
 
+### [v1.13.1](https://github.com/zendesk/maxwell/releases/tag/v1.13.1): "line up your exes in song"
+
+
+- redis producer now supports LPUSH, thx @m-denton
+- RowMap can now contain artbitrary attributes for embedded maxwell, thx @jkgeyti
+- bugfix: fix jdbc option parsing when value contains `=`
+- bugfix: apparently the SQS producer was disabled
+- bugfix: fix a situation where adding a second client could cause
+  schemas to become out of sync
+- support for --daemon
+
+
 ### [v1.13.0](https://github.com/zendesk/maxwell/releases/tag/v1.13.0): "sorry, I burned your clothes"
 
 
