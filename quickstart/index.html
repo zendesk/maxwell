@@ -248,13 +248,13 @@
 <h3 id="download">Download</h3>
 <hr />
 <ul>
-<li>Download binary distro: <a href="https://github.com/zendesk/maxwell/releases/download/v1.13.0/maxwell-1.13.0.tar.gz">https://github.com/zendesk/maxwell/releases/download/v1.13.0/maxwell-1.13.0.tar.gz</a></li>
+<li>Download binary distro: <a href="https://github.com/zendesk/maxwell/releases/download/v1.13.1/maxwell-1.13.1.tar.gz">https://github.com/zendesk/maxwell/releases/download/v1.13.1/maxwell-1.13.1.tar.gz</a></li>
 <li>Sources and bug tracking is available on github: <a href="https://github.com/zendesk/maxwell">https://github.com/zendesk/maxwell</a></li>
 <li>Obligatory copy/paste to terminal:</li>
 </ul>
-<pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.13.0/maxwell-1.13.0.tar.gz \
+<pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.13.1/maxwell-1.13.1.tar.gz \
        | tar zxvf -
-cd maxwell-1.13.0
+cd maxwell-1.13.1
 </code></pre>
 
 <p>or get the docker image:</p>
@@ -267,7 +267,7 @@ cd maxwell-1.13.0
 <pre><code>$ vi my.cnf
 
 [mysqld]
-server-id=1
+server_id=1
 log-bin=master
 binlog_format=row
 </code></pre>

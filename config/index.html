@@ -253,7 +253,7 @@
 <p>At a minimum, Maxwell needs row-level-replication turned on into order to
 operate:</p>
 <pre><code>[mysqld]
-server-id=1
+server_id=1
 log-bin=master
 binlog_format=row
 </code></pre>
@@ -278,7 +278,7 @@ front of the key.  So, for example if config.properties contains</p>
 <pre><code>$ vi my.cnf
 
 [mysqld]
-server-id=1
+server_id=1
 log-bin=master
 binlog_format=row
 gtid-mode=ON
