@@ -137,6 +137,7 @@ option                         | argument                            | descripti
 **general options**
 config                         | STRING                              | location of `config.properties` file                | $PWD/config.properties
 log_level                      | [debug &#124; info &#124; warn &#124; error]             | log level                                           | INFO
+daemon                         |                                     | running maxwell as a daemon                         |    
 &nbsp;
 **mysql options**
 host                           | STRING                              | mysql host                                          | localhost
