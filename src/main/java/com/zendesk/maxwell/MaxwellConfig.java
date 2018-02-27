@@ -78,6 +78,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public HealthCheckRegistry healthCheckRegistry;
 
 	public int httpPort;
+	public String httpBindAddress;
 	public String httpPathPrefix;
 	public String metricsPrefix;
 	public String metricsReportingType;
@@ -143,6 +144,7 @@ public class MaxwellConfig extends AbstractConfig {
 		final OptionParser parser = new OptionParser();
 		parser.accepts( "config", "location of config file" ).withRequiredArg();
 		parser.accepts( "log_level", "log level, one of DEBUG|INFO|WARN|ERROR" ).withRequiredArg();
+		parser.accepts( "daemon", "daemon, running maxwell as a daemon" ).withOptionalArg();
 
 		parser.accepts("__separator_1");
 
@@ -270,6 +272,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "metrics_slf4j_interval", "the frequency metrics are emitted to the log, in seconds, when slf4j reporting is configured" ).withRequiredArg();
 		parser.accepts( "metrics_http_port", "[deprecated]" ).withRequiredArg();
 		parser.accepts( "http_port", "the port the server will bind to when http reporting is configured" ).withRequiredArg();
+		parser.accepts( "http_bind_address", "the ip address the server will bind to when http reporting is configured" ).withRequiredArg();
 		parser.accepts( "metrics_datadog_type", "when metrics_type includes datadog this is the way metrics will be reported, one of udp|http" ).withRequiredArg();
 		parser.accepts( "metrics_datadog_tags", "datadog tags that should be supplied, e.g. tag1:value1,tag2:value2" ).withRequiredArg();
 		parser.accepts( "metrics_datadog_interval", "the frequency metrics are pushed to datadog, in seconds" ).withRequiredArg();
@@ -439,6 +442,7 @@ public class MaxwellConfig extends AbstractConfig {
 		} else {
 			this.httpPort = Integer.parseInt(fetchOption("http_port", options, properties, "8080"));
 		}
+		this.httpBindAddress = fetchOption("http_bind_address", options, properties, null);
 		this.httpPathPrefix = fetchOption("http_path_prefix", options, properties, "/");
 		if (!this.httpPathPrefix.startsWith("/")) {
 			this.httpPathPrefix = "/" + this.httpPathPrefix;

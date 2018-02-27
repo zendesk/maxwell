@@ -246,6 +246,10 @@ public class MaxwellContext {
 		return this.initialPosition;
 	}
 
+	public Position getOtherClientPosition() throws SQLException {
+		return this.positionStore.getLatestFromAnyClient();
+	}
+
 	public RecoveryInfo getRecoveryInfo() throws SQLException {
 		return this.positionStore.getRecoveryInfo(config);
 	}
@@ -340,6 +344,7 @@ public class MaxwellContext {
 				break;
 			case "sqs":
 				this.producer = new MaxwellSQSProducer(this, this.config.sqsQueueUri);
+				break;
 			case "pubsub":
 				this.producer = new MaxwellPubsubProducer(this, this.config.pubsubProjectId, this.config.pubsubTopic, this.config.ddlPubsubTopic);
 				break;

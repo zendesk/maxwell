@@ -4,7 +4,7 @@
 
   <groupId>com.zendesk</groupId>
   <artifactId>maxwell</artifactId>
-  <version>1.13.0</version>
+  <version>1.13.1</version>
   <packaging>jar</packaging>
 
   <name>maxwell</name>
@@ -254,9 +254,9 @@
       <version>1.1.10</version>
     </dependency>
     <dependency>
-    	<groupId>com.amazonaws</groupId>
-    	<artifactId>aws-java-sdk-sqs</artifactId>
-    	<version>1.11.68</version>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-sqs</artifactId>
+      <version>1.11.68</version>
     </dependency>
   </dependencies>
 
@@ -368,6 +368,19 @@
       </plugin>
 
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+              <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+
+      <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
         <executions>
           <execution>
@@ -381,7 +394,6 @@
               <includeScope>runtime</includeScope>
             </configuration>
           </execution>
-
           <execution>
             <id>kafka-clients</id>
             <phase>compile</phase>
@@ -397,5 +409,34 @@
       </plugin>
 
     </plugins>
+    <pluginManagement>
+      <plugins>
+        <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+        <plugin>
+          <groupId>org.eclipse.m2e</groupId>
+          <artifactId>lifecycle-mapping</artifactId>
+          <version>1.0.0</version>
+          <configuration>
+            <lifecycleMappingMetadata>
+              <pluginExecutions>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <versionRange>[2.8,)</versionRange>
+                    <goals>
+                      <goal>copy-dependencies</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
+              </pluginExecutions>
+            </lifecycleMappingMetadata>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
   </build>
 </project>

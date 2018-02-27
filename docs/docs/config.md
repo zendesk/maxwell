@@ -5,7 +5,7 @@ operate:
 
 ```
 [mysqld]
-server-id=1
+server_id=1
 log-bin=master
 binlog_format=row
 ```
@@ -38,7 +38,7 @@ Here's how you might configure your mysql server for GTID mode:
 $ vi my.cnf
 
 [mysqld]
-server-id=1
+server_id=1
 log-bin=master
 binlog_format=row
 gtid-mode=ON
@@ -137,6 +137,7 @@ option                         | argument                            | descripti
 **general options**
 config                         | STRING                              | location of `config.properties` file                | $PWD/config.properties
 log_level                      | [debug &#124; info &#124; warn &#124; error]             | log level                                           | INFO
+daemon                         |                                     | running maxwell as a daemon                         |    
 &nbsp;
 **mysql options**
 host                           | STRING                              | mysql host                                          | localhost
@@ -200,7 +201,9 @@ secret_key                     | STRING                              | specify t
 metrics_prefix | STRING | the prefix maxwell will apply to all metrics | MaxwellMetrics
 metrics_type         | [slf4j &#124; jmx &#124; http &#124; datadog]      | how maxwell metrics will be reported, at least one of slf4j &#124; jmx &#124; http &#124; datadog|
 metrics_slf4j_interval     | INT                                 | the frequency metrics are emitted to the log, in seconds, when slf4j reporting is configured | 60
-metrics_http_port         | INT                                 | the port the server will bind to when http reporting is configured | 8080
+metrics_http_port         | INT                                 | the port the server will bind to when http reporting is configured (deprecated: use http_port) | 8080
+http_port                 | INT                                 | the port the server will bind to when http reporting is configured | 8080
+http_bind_address         | STRING                              | the address the server will bind to when http reporting is configured | (default with no value is to bind to all interfaces)
 metrics_datadog_type | [udp &#124; http] | when metrics_type includes `datadog` this is the way metrics will be reported, can only be one of [udp &#124; http] | udp
 metrics_datadog_tags | STRING | datadog tags that should be supplied, e.g. tag1:value1,tag2:value2 |
 metrics_datadog_interval | INT | the frequency metrics are pushed to datadog, in seconds | 60
