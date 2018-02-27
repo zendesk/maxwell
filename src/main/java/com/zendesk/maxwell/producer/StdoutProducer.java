@@ -12,7 +12,7 @@ public class StdoutProducer extends AbstractProducer {
 	public void push(RowMap r) throws Exception {
 		String output = r.toJSON(outputConfig);
 
-		if ( output != null )
+		if ( output != null && r.shouldOutput(outputConfig) )
 			System.out.println(output);
 
 		this.context.setPosition(r);

@@ -35,6 +35,8 @@ public class RowMap implements Serializable {
 	private final Long timestampMillis;
 	private final Long timestampSeconds;
 	private Position nextPosition;
+	private String kafkaTopic;
+	protected boolean suppressed;
 
 	private Long xid;
 	private boolean txCommit;
@@ -115,6 +117,7 @@ public class RowMap implements Serializable {
 		this.extraAttributes = new LinkedHashMap<>();
 		this.nextPosition = nextPosition;
 		this.pkColumns = pkColumns;
+		this.suppressed = false;
 		this.approximateSize = 100L; // more or less 100 bytes of overhead
 	}
 
@@ -458,21 +461,32 @@ public class RowMap implements Serializable {
 	// override this for extended classes that don't output a value
 	// return false when there is a heartbeat row or other row with suppressed output
 	public boolean shouldOutput(MaxwellOutputConfig outputConfig) {
-		return true;
+		return !suppressed;
 	}
 
 	public LinkedHashMap<String, Object> getData()
 	{
-		return new LinkedHashMap<>(data);
+		return data;
 	}
 
 	public LinkedHashMap<String, Object> getExtraAttributes()
 	{
-		return new LinkedHashMap<>(extraAttributes);
+		return extraAttributes;
 	}
 
 	public LinkedHashMap<String, Object> getOldData()
 	{
-		return new LinkedHashMap<>(oldData);
+		return oldData;
+	}
+
+	public void suppress() {
+		this.suppressed = true;
+	}
+
+	public String getKafkaTopic() {
+		return this.kafkaTopic;
+	}
+	public void setKafkaTopic(String topic) {
+		this.kafkaTopic = topic;
 	}
 }

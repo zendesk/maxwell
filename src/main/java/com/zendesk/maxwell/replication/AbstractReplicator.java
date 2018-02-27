@@ -1,9 +1,9 @@
 package com.zendesk.maxwell.replication;
 
 import com.codahale.metrics.Counter;
-import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Meter;
 import com.zendesk.maxwell.MaxwellFilter;
+import com.zendesk.maxwell.scripting.Scripting;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.monitoring.Metrics;
 import com.zendesk.maxwell.producer.AbstractProducer;
@@ -27,6 +27,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	protected final AbstractBootstrapper bootstrapper;
 	protected final String maxwellSchemaDatabaseName;
 	protected final TableCache tableCache = new TableCache();
+	private final Scripting scripting;
 	protected Position lastHeartbeatPosition;
 	protected final HeartbeatNotifier heartbeatNotifier;
 	protected Long stopAtHeartbeat;
@@ -42,7 +43,8 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 		AbstractProducer producer,
 		Metrics metrics,
 		Position initialPosition,
-		HeartbeatNotifier heartbeatNotifier
+		HeartbeatNotifier heartbeatNotifier,
+		Scripting scripting
 	) {
 		this.clientID = clientID;
 		this.bootstrapper = bootstrapper;
@@ -50,6 +52,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 		this.producer = producer;
 		this.lastHeartbeatPosition = initialPosition;
 		this.heartbeatNotifier = heartbeatNotifier;
+		this.scripting = scripting;
 
 		rowCounter = metrics.getRegistry().counter(
 			metrics.metricName("row", "count")
@@ -144,6 +147,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 		return lastHeartbeatPosition.getLastHeartbeatRead();
 	}
 
+
 	/**
 	 * get a single row from the replicator and pass it to the producer or bootstrapper.
 	 *
@@ -157,6 +161,9 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 
 		rowCounter.inc();
 		rowMeter.mark();
+
+		if ( scripting != null )
+			scripting.invoke(row);
 
 		processRow(row);
 	}

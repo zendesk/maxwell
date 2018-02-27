@@ -4,9 +4,9 @@ import com.codahale.metrics.Histogram;
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import com.github.shyiko.mysql.binlog.event.*;
 import com.github.shyiko.mysql.binlog.event.deserialization.EventDeserializer;
-import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.MaxwellMysqlConfig;
+import com.zendesk.maxwell.scripting.Scripting;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.monitoring.Metrics;
 import com.zendesk.maxwell.producer.AbstractProducer;
@@ -52,9 +52,10 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 		Position start,
 		boolean stopOnEOF,
 		String clientID,
-		HeartbeatNotifier heartbeatNotifier
+		HeartbeatNotifier heartbeatNotifier,
+		Scripting scripting
 	) {
-		super(clientID, bootstrapper, maxwellSchemaDatabaseName, producer, metrics, start, heartbeatNotifier);
+		super(clientID, bootstrapper, maxwellSchemaDatabaseName, producer, metrics, start, heartbeatNotifier, scripting);
 		this.schemaStore = schemaStore;
 		transactionExecutionTime = metrics.getRegistry().histogram(metrics.metricName("transaction", "execution_time"));
 		transactionRowCount = metrics.getRegistry().histogram(metrics.metricName("transaction", "row_count"));
@@ -100,7 +101,8 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 			start,
 			false,
 			ctx.getConfig().clientID,
-			ctx.getHeartbeatNotifier()
+			ctx.getHeartbeatNotifier(),
+			ctx.getConfig().scripting
 		);
 	}
 

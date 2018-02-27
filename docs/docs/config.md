@@ -95,6 +95,26 @@ you can use `exclude_columns` to filter out columns by name.
 Maxwell can filter rows to only match when a column contains a specific value.  The `include_column_values` option takes a comma-separated
 list of column/value pairs: "bar=x,foo=y".  Note that if a column does not exist in a table, it will ignore the value-filter.
 
+### Javascript Filtering / Munging
+If you need more flexibility than the native filters provide, you can write a small chunk of
+javascript for Maxwell to pass each row through with `--javascript FILE`.  This file should contain
+at least a javascript function named `process_row`.  This function will be passed a [`RowMap`]()
+object and is free to make filtering and data munging decisions:
+
+```
+function process_row(row) {
+	if ( row.database == "test" && row.table == "bar" ) {
+		var username = row.data.get("username");
+		if ( username == "osheroff" )
+			row.suppress();
+
+		row.data.put("username", username.toUpperCase());
+	}
+}
+```
+
+There's a longer example [here]().
+
 ### Schema storage host vs replica host
 ***
 Maxwell needs two sets of mysql permissions to operate properly: a mysql database in which to store schema snapshots,
@@ -164,6 +184,7 @@ schema_user                    | STRING                              | user on s
 **producer options**
 producer                       | [stdout &#124; kafka &#124; file &#124; profiler]        | type of producer to use                             | stdout
 output_file                    | STRING                              | output file for `file` producer                     |
+javascript                     | STRING                              | file containing javascript filters |
 &nbsp;
 kafka.bootstrap.servers        | STRING                              | kafka brokers, given as `HOST:PORT[,HOST:PORT]`     |
 kafka_topic                    | STRING                              | kafka topic to write to. static string or variable replacement                            | maxwell

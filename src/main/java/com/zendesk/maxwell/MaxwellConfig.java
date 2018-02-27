@@ -9,6 +9,7 @@ import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.producer.ProducerFactory;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.Position;
+import com.zendesk.maxwell.scripting.Scripting;
 import com.zendesk.maxwell.util.AbstractConfig;
 import joptsimple.BuiltinHelpFormatter;
 import joptsimple.OptionDescriptor;
@@ -117,6 +118,8 @@ public class MaxwellConfig extends AbstractConfig {
 	public String redisPubChannel;
 	public String redisListKey;
 	public String redisType;
+	public String javascriptFile;
+	public Scripting scripting;
 
 	public MaxwellConfig() { // argv is only null in tests
 		this.customProducerProperties = new Properties();
@@ -175,6 +178,8 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|pubsub|sqs|rabbitmq|redis" ).withRequiredArg();
 		parser.accepts( "custom_producer.factory", "fully qualified custom producer factory class" ).withRequiredArg();
 		parser.accepts( "producer_ack_timeout", "producer message acknowledgement timeout" ).withRequiredArg();
+		parser.accepts( "javascript", "file containing per-row javascript to execute" ).withRequiredArg();
+
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
 
 		parser.accepts( "producer_partition_by", "database|table|primary_key|column, kafka/kinesis producers will partition by this value").withRequiredArg();
@@ -347,6 +352,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.bootstrapperType   = fetchOption("bootstrapper", options, properties, "async");
 		this.clientID           = fetchOption("client_id", options, properties, "maxwell");
 		this.replicaServerID    = fetchLongOption("replica_server_id", options, properties, 6379L);
+		this.javascriptFile         = fetchOption("javascript", options, properties, null);
 
 		this.kafkaTopic         	= fetchOption("kafka_topic", options, properties, "maxwell");
 		this.kafkaKeyFormat     	= fetchOption("kafka_key_format", options, properties, "hash");
@@ -531,6 +537,15 @@ public class MaxwellConfig extends AbstractConfig {
 				} catch ( MaxwellInvalidFilterException e ) {
 					usage("invalid exclude_columns: '" + this.excludeColumns + "': " + e.getMessage());
 				}
+			}
+		}
+
+		if ( this.javascriptFile != null ) {
+			try {
+				this.scripting = new Scripting(this.javascriptFile);
+			} catch ( Exception e ) {
+				LOGGER.error("Error setting up javascript: ", e);
+				System.exit(1);
 			}
 		}
 	}

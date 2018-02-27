@@ -61,7 +61,7 @@ public class DDLMap extends RowMap {
 
 	@Override
 	public boolean shouldOutput(MaxwellOutputConfig outputConfig) {
-		return outputConfig.outputDDL;
+		return outputConfig.outputDDL && !this.suppressed;
 	}
 
 	public String getSql() {
