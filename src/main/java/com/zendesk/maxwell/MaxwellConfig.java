@@ -182,7 +182,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts("producer_partition_columns",
 		    "with producer_partition_by=column, partition by the value of these columns.  "
 			+ "comma separated.").withRequiredArg();
-		parser.accepts( "producer_partition_by_fallback", "database|table|primary_key, fallback to this value when when sing 'column' partitioning and the columns are not present in the row").withRequiredArg();
+		parser.accepts( "producer_partition_by_fallback", "database|table|primary_key, fallback to this value when using 'column' partitioning and the columns are not present in the row").withRequiredArg();
 
 		parser.accepts( "kafka_version", "kafka client library version: 0.8.2.2|0.9.0.1|0.10.0.1|0.10.2.1|0.11.0.1").withRequiredArg();
 		parser.accepts( "kafka_partition_by", "[deprecated]").withRequiredArg();
@@ -301,14 +301,6 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.formatHelpWith(helpFormatter);
 		return parser;
 	}
-
-	private String parseLogLevel(String level) {
-		level = level.toLowerCase();
-		if ( !( level.equals("debug") || level.equals("info") || level.equals("warn") || level.equals("error")))
-			usageForOptions("unknown log level: " + level, "--log_level");
-		return level;
-	}
-
 
 	private void parse(String [] argv) {
 		OptionSet options = buildOptionParser().parse(argv);
