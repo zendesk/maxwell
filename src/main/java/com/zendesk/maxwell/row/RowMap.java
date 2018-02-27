@@ -266,7 +266,8 @@ public class RowMap implements Serializable {
 		if ( outputConfig.includesCommitInfo ) {
 			if ( this.xid != null )
 				g.writeNumberField(FieldNames.TRANSACTION_ID, this.xid);
-			if ( this.xoffset != null && !this.isTXCommit() )
+
+			if ( outputConfig.includesXOffset && this.xoffset != null && !this.txCommit )
 				g.writeNumberField(FieldNames.TRANSACTION_OFFSET, this.xoffset);
 
 			if ( this.txCommit )

@@ -9,6 +9,7 @@ public class MaxwellOutputConfig {
 	public boolean includesBinlogPosition;
 	public boolean includesGtidPosition;
 	public boolean includesCommitInfo;
+	public boolean includesXOffset;
 	public boolean includesNulls;
 	public boolean includesServerId;
 	public boolean includesThreadId;

@@ -203,6 +203,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "output_binlog_position", "produced records include binlog position; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_gtid_position", "produced records include gtid position; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_commit_info", "produced records include commit and xid; [true|false]. default: true" ).withOptionalArg();
+		parser.accepts( "output_xoffset", "produced records include xoffset, option \"output_commit_info\" must be enabled; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_nulls", "produced records include fields with NULL values [true|false]. default: true" ).withOptionalArg();
 		parser.accepts( "output_server_id", "produced records include server_id; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_thread_id", "produced records include thread_id; [true|false]. default: false" ).withOptionalArg();
@@ -493,6 +494,7 @@ public class MaxwellConfig extends AbstractConfig {
 		outputConfig.includesBinlogPosition = fetchBooleanOption("output_binlog_position", options, properties, false);
 		outputConfig.includesGtidPosition = fetchBooleanOption("output_gtid_position", options, properties, false);
 		outputConfig.includesCommitInfo = fetchBooleanOption("output_commit_info", options, properties, true);
+		outputConfig.includesXOffset = fetchBooleanOption("output_xoffset", options, properties, true);
 		outputConfig.includesNulls = fetchBooleanOption("output_nulls", options, properties, true);
 		outputConfig.includesServerId = fetchBooleanOption("output_server_id", options, properties, false);
 		outputConfig.includesThreadId = fetchBooleanOption("output_thread_id", options, properties, false);
