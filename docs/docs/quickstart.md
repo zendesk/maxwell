@@ -14,7 +14,13 @@ or get the docker image:
 
 ```
 docker pull zendesk/maxwell
+```  
+
+or on Mac OS X with homebrew installed:
+
 ```
+brew install maxwell
+```  
 
 ### Row based replication
 ***
