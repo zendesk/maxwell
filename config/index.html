@@ -386,6 +386,12 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 <td>INFO</td>
 </tr>
 <tr>
+<td>daemon</td>
+<td></td>
+<td>running maxwell as a daemon</td>
+<td></td>
+</tr>
+<tr>
 <td>&nbsp;</td>
 <td></td>
 <td></td>
@@ -766,8 +772,20 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 <tr>
 <td>metrics_http_port</td>
 <td>INT</td>
+<td>the port the server will bind to when http reporting is configured (deprecated: use http_port)</td>
+<td>8080</td>
+</tr>
+<tr>
+<td>http_port</td>
+<td>INT</td>
 <td>the port the server will bind to when http reporting is configured</td>
 <td>8080</td>
+</tr>
+<tr>
+<td>http_bind_address</td>
+<td>STRING</td>
+<td>the address the server will bind to when http reporting is configured</td>
+<td>(default with no value is to bind to all interfaces)</td>
 </tr>
 <tr>
 <td>metrics_datadog_type</td>
