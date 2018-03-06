@@ -1,5 +1,13 @@
 # Maxwell changelog
 
+### [v1.13.2](https://github.com/zendesk/maxwell/releases/tag/v1.13.2): "I just bought them to sleep in"
+
+
+- fix a bug with CHARACTER SET = DEFAULT
+- maxwell now eclipse-friendly.
+- configurable bind-address for maxwell's http server
+
+
 ### [v1.13.1](https://github.com/zendesk/maxwell/releases/tag/v1.13.1): "line up your exes in song"
 
 
