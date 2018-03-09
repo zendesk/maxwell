@@ -107,6 +107,17 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
+	public void testPrimaryKeyWithSetType() throws Exception {
+		List<RowMap> list;
+		String before[] = { "create table pksen (Id set('android','iphone','ipad'), primary key(ID))" };
+		String input[] = {"insert into pksen set id ='android'"};
+		String expectedJSON = "{\"database\":\"shard_1\",\"table\":\"pksen\",\"pk.id\":[\"android\"]}";
+		list = getRowsForSQL(null, input, before);
+		assertThat(list.size(), is(1));
+		assertThat(list.get(0).pkToJson(RowMap.KeyFormat.HASH), is(expectedJSON));
+	}
+
+	@Test
 	public void testAlternativePKString() throws Exception {
 		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
