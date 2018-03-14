@@ -185,6 +185,7 @@ sqs_queue_uri=aws_sqs_queue_uri
 
 ######### rabbitmq ###################
 #rabbitmq_host=rabbitmq_hostname
+#rabbitmq_port=5672
 #rabbitmq_user=guest
 #rabbitmq_pass=guest
 #rabbitmq_virtual_host=/
