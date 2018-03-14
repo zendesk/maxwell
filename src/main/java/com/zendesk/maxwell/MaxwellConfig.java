@@ -102,7 +102,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public String rabbitmqUser;
 	public String rabbitmqPass;
-	public String rabbitmqHost;
+	public int rabbitmqHost;
+	public String rabbitmqPort;
 	public String rabbitmqVirtualHost;
 	public String rabbitmqExchange;
 	public String rabbitmqExchangeType;
@@ -246,6 +247,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "rabbitmq_user", "Username of Rabbitmq connection. Default is guest" ).withRequiredArg();
 		parser.accepts( "rabbitmq_pass", "Password of Rabbitmq connection. Default is guest" ).withRequiredArg();
 		parser.accepts( "rabbitmq_host", "Host of Rabbitmq machine" ).withRequiredArg();
+		parser.accepts( "rabbitmq_port", "Port of Rabbitmq machine" ).withRequiredArg();
 		parser.accepts( "rabbitmq_virtual_host", "Virtual Host of Rabbitmq" ).withRequiredArg();
 		parser.accepts( "rabbitmq_exchange", "Name of exchange for rabbitmq publisher" ).withRequiredArg();
 		parser.accepts( "rabbitmq_exchange_type", "Exchange type for rabbitmq" ).withRequiredArg();
@@ -355,16 +357,17 @@ public class MaxwellConfig extends AbstractConfig {
 		this.pubsubTopic 		 = fetchOption("pubsub_topic", options, properties, "maxwell");
 		this.ddlPubsubTopic  = fetchOption("ddl_pubsub_topic", options, properties, this.pubsubTopic);
 
-		this.rabbitmqHost           = fetchOption("rabbitmq_host", options, properties, "localhost");
-		this.rabbitmqUser			= fetchOption("rabbitmq_user", options, properties, "guest");
+		this.rabbitmqHost           		= fetchOption("rabbitmq_host", options, properties, "localhost");
+		this.rabbitmqPort 			= Integer.parseInt(fetchOption("rabbitmq_port", options, properties, "5672"));
+		this.rabbitmqUser 			= fetchOption("rabbitmq_user", options, properties, "guest");
 		this.rabbitmqPass			= fetchOption("rabbitmq_pass", options, properties, "guest");
-		this.rabbitmqVirtualHost    = fetchOption("rabbitmq_virtual_host", options, properties, "/");
-		this.rabbitmqExchange       = fetchOption("rabbitmq_exchange", options, properties, "maxwell");
-		this.rabbitmqExchangeType   = fetchOption("rabbitmq_exchange_type", options, properties, "fanout");
-		this.rabbitMqExchangeDurable = fetchBooleanOption("rabbitmq_exchange_durable", options, properties, false);
-		this.rabbitMqExchangeAutoDelete = fetchBooleanOption("rabbitmq_exchange_autodelete", options, properties, false);
-		this.rabbitmqRoutingKeyTemplate   = fetchOption("rabbitmq_routing_key_template", options, properties, "%db%.%table%");
-		this.rabbitmqMessagePersistent    = fetchBooleanOption("rabbitmq_message_persistent", options, properties, false);
+		this.rabbitmqVirtualHost    		= fetchOption("rabbitmq_virtual_host", options, properties, "/");
+		this.rabbitmqExchange       		= fetchOption("rabbitmq_exchange", options, properties, "maxwell");
+		this.rabbitmqExchangeType   		= fetchOption("rabbitmq_exchange_type", options, properties, "fanout");
+		this.rabbitMqExchangeDurable 		= fetchBooleanOption("rabbitmq_exchange_durable", options, properties, false);
+		this.rabbitMqExchangeAutoDelete 	= fetchBooleanOption("rabbitmq_exchange_autodelete", options, properties, false);
+		this.rabbitmqRoutingKeyTemplate   	= fetchOption("rabbitmq_routing_key_template", options, properties, "%db%.%table%");
+		this.rabbitmqMessagePersistent    	= fetchBooleanOption("rabbitmq_message_persistent", options, properties, false);
 
 		this.redisHost			= fetchOption("redis_host", options, properties, "localhost");
 		this.redisPort			= Integer.parseInt(fetchOption("redis_port", options, properties, "6379"));
