@@ -102,8 +102,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public String rabbitmqUser;
 	public String rabbitmqPass;
-	public int rabbitmqHost;
-	public String rabbitmqPort;
+	public String rabbitmqHost;
+	public int rabbitmqPort;
 	public String rabbitmqVirtualHost;
 	public String rabbitmqExchange;
 	public String rabbitmqExchangeType;
