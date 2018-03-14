@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import com.google.common.collect.Lists;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.Position;
 import org.apache.commons.lang3.StringUtils;
@@ -56,7 +57,9 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 		this.position = MaxwellTestSupport.capture(server.getConnection());
 		this.context = buildContext(position);
 		this.schema = new SchemaCapturer(server.getConnection(), context.getCaseSensitivity()).capture();
-		this.savedSchema = new MysqlSavedSchema(this.context, this.schema, position);
+		this.savedSchema = new MysqlSavedSchema(this.context.getServerID(), this.context.getCaseSensitivity(),
+				this.schema, makePosition(position.getBinlogPosition().getOffset() - 1L,
+				position.getBinlogPosition().getFile(), position.getLastHeartbeatRead()));
 	}
 
 	@Test
@@ -195,7 +198,9 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 
 		server.executeList(sql);
 		this.schema = new SchemaCapturer(server.getConnection(), context.getCaseSensitivity()).capture();
-		this.savedSchema = new MysqlSavedSchema(this.context, this.schema, position);
+		this.savedSchema = new MysqlSavedSchema(this.context.getServerID(), this.context.getCaseSensitivity(),
+				this.schema, makePosition(position.getBinlogPosition().getOffset() - 1L,
+				position.getBinlogPosition().getFile(), position.getLastHeartbeatRead()));
 
 		Connection c = context.getMaxwellConnection();
 		this.savedSchema.save(c);
@@ -299,6 +304,40 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 			serverId, caseSensitivity, targetBinlogPosition);
 		assertThat(foundSchema.getBinlogPosition(), equalTo(expectedSchema.getBinlogPosition()));
 		assertThat(foundSchema.getSchemaID(), equalTo(expectedSchema.getSchemaID()));
+	}
+
+	@Test
+	public void testFindBaseSchemaIdIfTheLatestSchemaPositionIsTheCurrentPosition() throws Exception {
+		if (context.getConfig().gtidMode) {
+			return;
+		}
+		Connection c = context.getMaxwellConnection();
+		long serverId = 100;
+		long targetPosition = 500;
+		long lastHeartbeat = 9000L;
+		String targetFile = "binlog01";
+		Position targetBinlogPosition = makePosition(targetPosition, targetFile, lastHeartbeat + 10L);
+
+		//base binlog position
+		MysqlSavedSchema baseSchema = new MysqlSavedSchema(
+				serverId, caseSensitivity,
+				buildSchema(),
+				makePosition(targetPosition - 200L, targetFile, lastHeartbeat)
+		);
+		baseSchema.save(c);
+
+		MysqlSavedSchema newSchema = new MysqlSavedSchema(serverId, caseSensitivity,
+				buildSchema(),
+				makePosition(targetPosition, targetFile, lastHeartbeat),
+				baseSchema.getSchemaID(),
+				Lists.newArrayList()
+		);
+		newSchema.save(c);
+
+		MysqlSavedSchema foundSchema = MysqlSavedSchema.restore(context.getMaxwellConnectionPool(),
+				serverId, caseSensitivity, targetBinlogPosition);
+
+		assertThat(foundSchema.getSchemaID(), equalTo(baseSchema.getSchemaID()));
 	}
 
 	@Test
