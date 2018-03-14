@@ -2,6 +2,7 @@ package com.zendesk.maxwell.recovery;
 
 import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.*;
+import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
@@ -360,8 +361,10 @@ public class RecoveryTest extends TestWithNameLogging {
 		MysqlSavedSchema savedSchema = MysqlSavedSchema.restore(context, oldlogPosition);
 		if (savedSchema == null) {
 			Connection c = context.getMaxwellConnection();
+			Position schemaPosition = new Position(new BinlogPosition(oldlogPosition.getBinlogPosition().getOffset() - 1L,
+					oldlogPosition.getBinlogPosition().getFile()), oldlogPosition.getLastHeartbeatRead());
 			Schema newSchema = new SchemaCapturer(c, context.getCaseSensitivity()).capture();
-			savedSchema = new MysqlSavedSchema(context, newSchema, context.getInitialPosition());
+			savedSchema = new MysqlSavedSchema(context, newSchema, schemaPosition);
 			savedSchema.save(c);
 		}
 		Long oldSchemaId = savedSchema.getSchemaID();
