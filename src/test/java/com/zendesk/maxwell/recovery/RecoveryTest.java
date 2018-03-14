@@ -361,10 +361,8 @@ public class RecoveryTest extends TestWithNameLogging {
 		MysqlSavedSchema savedSchema = MysqlSavedSchema.restore(context, oldlogPosition);
 		if (savedSchema == null) {
 			Connection c = context.getMaxwellConnection();
-			Position schemaPosition = new Position(new BinlogPosition(oldlogPosition.getBinlogPosition().getOffset() - 1L,
-					oldlogPosition.getBinlogPosition().getFile()), oldlogPosition.getLastHeartbeatRead());
 			Schema newSchema = new SchemaCapturer(c, context.getCaseSensitivity()).capture();
-			savedSchema = new MysqlSavedSchema(context, newSchema, schemaPosition);
+			savedSchema = SavedSchemaSupport.getSavedSchema(context, newSchema, context.getInitialPosition());
 			savedSchema.save(c);
 		}
 		Long oldSchemaId = savedSchema.getSchemaID();

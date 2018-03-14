@@ -57,9 +57,7 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 		this.position = MaxwellTestSupport.capture(server.getConnection());
 		this.context = buildContext(position);
 		this.schema = new SchemaCapturer(server.getConnection(), context.getCaseSensitivity()).capture();
-		this.savedSchema = new MysqlSavedSchema(this.context.getServerID(), this.context.getCaseSensitivity(),
-				this.schema, makePosition(position.getBinlogPosition().getOffset() - 1L,
-				position.getBinlogPosition().getFile(), position.getLastHeartbeatRead()));
+		this.savedSchema = SavedSchemaSupport.getSavedSchema(this.context, this.schema, this.position);
 	}
 
 	@Test
@@ -198,10 +196,7 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 
 		server.executeList(sql);
 		this.schema = new SchemaCapturer(server.getConnection(), context.getCaseSensitivity()).capture();
-		this.savedSchema = new MysqlSavedSchema(this.context.getServerID(), this.context.getCaseSensitivity(),
-				this.schema, makePosition(position.getBinlogPosition().getOffset() - 1L,
-				position.getBinlogPosition().getFile(), position.getLastHeartbeatRead()));
-
+		this.savedSchema = SavedSchemaSupport.getSavedSchema(this.context, this.schema, this.position);
 		Connection c = context.getMaxwellConnection();
 		this.savedSchema.save(c);
 
