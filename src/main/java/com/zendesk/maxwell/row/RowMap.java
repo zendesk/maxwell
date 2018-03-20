@@ -159,7 +159,7 @@ public class RowMap implements Serializable {
 				if ( data.containsKey(pk) )
 					pkValue = data.get(pk);
 
-				writeValueToJSON(g, false, "pk." + pk.toLowerCase(), pkValue);
+				writeValueToJSON(g, true, "pk." + pk.toLowerCase(), pkValue);
 			}
 		}
 
@@ -182,7 +182,7 @@ public class RowMap implements Serializable {
 				pkValue = data.get(pk);
 
 			g.writeStartObject();
-			writeValueToJSON(g, false, pk.toLowerCase(), pkValue);
+			writeValueToJSON(g, true, pk.toLowerCase(), pkValue);
 			g.writeEndObject();
 		}
 		g.writeEndArray();
