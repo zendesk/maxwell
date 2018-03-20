@@ -1,5 +1,6 @@
 package com.zendesk.maxwell.row;
 
+import com.google.common.collect.Lists;
 import com.zendesk.maxwell.MaxwellTestJSON;
 import com.zendesk.maxwell.errors.ProtectedAttributeNameException;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
@@ -151,6 +152,26 @@ public class RowMapTest {
 
 	}
 
+	@Test
+	public void testPkToJsonArrayWithListData() throws Exception {
+		List<String> pKeys = new ArrayList<>();
+
+		pKeys.add("id");
+
+		pKeys.add("name");
+
+		Position position = new Position(new BinlogPosition(1L, "binlog-0001"), 0L);
+
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, position);
+
+		rowMap.putData("id", "9001");
+		rowMap.putData("name", Lists.newArrayList("example"));
+
+		String jsonString = rowMap.pkToJson(RowMap.KeyFormat.ARRAY);
+
+		Assert.assertEquals("[\"MyDatabase\",\"MyTable\",[{\"id\":\"9001\"},{\"name\":[\"example\"]}]]",
+				jsonString);
+	}
 	@Test
 	public void testBuildPartitionKey() {
 		List<String> pKeys = new ArrayList<>();

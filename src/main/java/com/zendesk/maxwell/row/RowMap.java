@@ -21,6 +21,18 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zendesk.maxwell.errors.ProtectedAttributeNameException;
+import com.zendesk.maxwell.producer.EncryptionMode;
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.replication.Position;
+
 
 public class RowMap implements Serializable {
 
@@ -147,7 +159,7 @@ public class RowMap implements Serializable {
 				if ( data.containsKey(pk) )
 					pkValue = data.get(pk);
 
-				g.writeObjectField("pk." + pk.toLowerCase(), pkValue);
+				writeValueToJSON(g, true, "pk." + pk.toLowerCase(), pkValue);
 			}
 		}
 
@@ -170,7 +182,7 @@ public class RowMap implements Serializable {
 				pkValue = data.get(pk);
 
 			g.writeStartObject();
-			g.writeObjectField(pk.toLowerCase(), pkValue);
+			writeValueToJSON(g, true, pk.toLowerCase(), pkValue);
 			g.writeEndObject();
 		}
 		g.writeEndArray();
@@ -220,27 +232,31 @@ public class RowMap implements Serializable {
 		for (String key : data.keySet()) {
 			Object value = data.get(key);
 
-			if (value == null && !includeNullField)
-				continue;
-
-			if (value instanceof List) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
-				List stringList = (List) value;
-
-				g.writeArrayFieldStart(key);
-				for (Object s : stringList) {
-					g.writeObject(s);
-				}
-				g.writeEndArray();
-			} else if (value instanceof RawJSONString) {
-				// JSON column type, using binlog-connector's serializers.
-				g.writeFieldName(key);
-				g.writeRawValue(((RawJSONString) value).json);
-			} else {
-				g.writeObjectField(key, value);
-			}
+			writeValueToJSON(g, includeNullField, key, value);
 		}
 
 		g.writeEndObject(); // end of 'jsonMapName: { }'
+	}
+
+	private void writeValueToJSON(JsonGenerator g, boolean includeNullField, String key, Object value) throws IOException {
+		if (value == null && !includeNullField)
+			return;
+
+		if (value instanceof List) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
+			List stringList = (List) value;
+
+			g.writeArrayFieldStart(key);
+			for (Object s : stringList) {
+				g.writeObject(s);
+			}
+			g.writeEndArray();
+		} else if (value instanceof RawJSONString) {
+			// JSON column type, using binlog-connector's serializers.
+			g.writeFieldName(key);
+			g.writeRawValue(((RawJSONString) value).json);
+		} else {
+			g.writeObjectField(key, value);
+		}
 	}
 
 	public String toJSON() throws Exception {
