@@ -195,6 +195,7 @@ sqs_queue_uri=aws_sqs_queue_uri
 #rabbitmq_exchange_autodelete=false
 #rabbitmq_routing_key_template=%db%.%table%
 #rabbitmq_message_persistent=false
+#rabbitmq_declare_exchange=true
 
 ######### redis ######################
 # Valid values for redis_type = pubsub|lpush. Defaults to pubsub
