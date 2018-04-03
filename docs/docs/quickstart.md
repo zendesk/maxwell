@@ -1,13 +1,13 @@
 ### Download
 ***
-- Download binary distro: [https://github.com/zendesk/maxwell/releases/download/v1.13.3/maxwell-1.13.3.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.13.3/maxwell-1.13.3.tar.gz)
+- Download binary distro: [https://github.com/zendesk/maxwell/releases/download/v1.13.4/maxwell-1.13.4.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.13.4/maxwell-1.13.4.tar.gz)
 - Sources and bug tracking is available on github: [https://github.com/zendesk/maxwell](https://github.com/zendesk/maxwell)
 - Obligatory copy/paste to terminal:
 
 ```
-curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.13.3/maxwell-1.13.3.tar.gz \
+curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.13.4/maxwell-1.13.4.tar.gz \
        | tar zxvf -
-cd maxwell-1.13.3
+cd maxwell-1.13.4
 ```
 
 or get the docker image:
