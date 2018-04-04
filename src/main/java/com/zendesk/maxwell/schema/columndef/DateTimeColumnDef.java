@@ -21,6 +21,11 @@ public class DateTimeColumnDef extends ColumnDefWithLength {
 	}
 
 	protected String formatValue(Object value) {
+		// special case for those broken mysql dates.
+		if ( value instanceof Long && (Long) value == 0L ) {
+			return appendFractionalSeconds("0000-00-00 00:00:00", 0, columnLength);
+		}
+
 		Timestamp ts = DateFormatter.extractTimestamp(value);
 		String dateString = DateFormatter.formatDateTime(value, ts);
 		if ( dateString == null )

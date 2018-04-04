@@ -1,0 +1,20 @@
+create database timedb
+use timedb
+
+set global time_zone = '-0:00';
+
+CREATE TABLE tt ( t time(6), small_t time(3), dt datetime(6), small_dt datetime(3), ts timestamp(4) NULL, raw_dt datetime );
+
+set sql_mode = "ALLOW_INVALID_DATES"
+
+insert into tt values (0, 0, 0, 0, 0, 0);
+-> { "database": "timedb", "table": "tt", "type": "insert",
+     "data": {
+        "t": "00:00:00.000000",
+        "small_t": "00:00:00.000",
+        "dt": "0000-00-00 00:00:00.000000",
+        "small_dt": "0000-00-00 00:00:00.000",
+        "ts": "0000-00-00 00:00:00.0000",
+        "raw_dt": "0000-00-00 00:00:00"
+    } }
+

@@ -487,6 +487,11 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
+	public void testInvalid() throws Exception {
+		requireMinimumVersion(server.VERSION_5_6);
+		runJSON("/json/test_invalid_time");
+	}
+	@Test
 	public void testUCS2() throws Exception {
 		runJSON("/json/test_ucs2");
 	}
