@@ -1,5 +1,18 @@
 # Maxwell changelog
 
+### [v1.13.4](https://github.com/zendesk/maxwell/releases/tag/v1.13.4): "it was just a dream"
+
+- Added possibility to do not declare the rabbitmq exchange.
+
+### [v1.13.3](https://github.com/zendesk/maxwell/releases/tag/v1.13.3): "winner winner chicken dinner"
+
+
+ - Add logging for binlog errors
+ - Maven warning fix
+ - Do not include current position DDL schema to avoid processing DDL twice
+ - Always write null fields in primary key fields
+ - Bugfix: fix http_path_prefix command line option issue
+
 ### [v1.13.2](https://github.com/zendesk/maxwell/releases/tag/v1.13.2): "I just bought them to sleep in"
 
 
