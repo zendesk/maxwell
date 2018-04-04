@@ -3,19 +3,20 @@ package com.zendesk.maxwell;
 import com.google.common.collect.Lists;
 import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.SchemaStoreSchema;
+import com.zendesk.maxwell.schema.ddl.MaxwellSQLSyntaxError;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.Range;
 import org.junit.Test;
 
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.sql.SQLException;
+import java.util.*;
 import java.util.regex.Pattern;
 
+import static com.zendesk.maxwell.MaxwellTestSupport.inGtidMode;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
@@ -602,5 +603,62 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		outputConfig.includesRowQuery = true;
 
 		runJSON("/json/test_row_query_log_is_on", outputConfig);
+	}
+
+	private List<RowMap> getRowsWithSkip(String[] beforeSkip, String[] skip, String[] afterSkip) throws Exception {
+		MaxwellTestSupportCallback callback = new MaxwellTestSupportCallback() {
+			@Override
+			public void afterReplicatorStart(MysqlIsolatedServer mysql) {
+			}
+
+			@Override
+			public void beforeReplicatorStart(MysqlIsolatedServer mysql, MaxwellConfig config) throws SQLException {
+				config.initPosition = Position.capture(mysql.getConnection(), inGtidMode());
+				mysql.executeList(beforeSkip);
+				Position b = Position.capture(mysql.getConnection(), inGtidMode());
+				mysql.executeList(skip);
+				Position e = Position.capture(mysql.getConnection(), inGtidMode());
+				System.out.println(e);
+				mysql.executeList(afterSkip);
+
+				config.skipPositions = new HashMap<>();
+				assertEquals(b.getBinlogPosition().getFile(), e.getBinlogPosition().getFile());
+				config.skipPositions.put(b.getBinlogPosition().getFile(), Collections.singletonList(Range.between(b.getBinlogPosition().getOffset(), e.getBinlogPosition().getOffset()-1)));
+			}
+		};
+		return MaxwellTestSupport.getRowsWithReplicator(server, null, callback, null);
+	}
+
+	@Test
+	public void testSkipPositions() throws Exception {
+		final String beforeSkip[] = { "drop table if exists pksen", "create table pksen (Id Int, primary key(ID))", "insert into pksen set id = 5" };
+		final String skip[] = { "insert into pksen set id = 42" };
+		final String afterSkip[] = { "insert into pksen set id = 15" };
+		final String[] expectedJSON = new String[] {"{\"database\":\"shard_1\",\"table\":\"pksen\",\"pk.id\":5}", "{\"database\":\"shard_1\",\"table\":\"pksen\",\"pk.id\":15}"};
+
+		List<RowMap> list = getRowsWithSkip(beforeSkip, skip, afterSkip);
+
+		assertThat(list.size(), is(2));
+		for (int i=0; i<2; ++i) assertThat(list.get(i).pkToJson(RowMap.KeyFormat.HASH), is(expectedJSON[i]));
+	}
+
+	@Test(expected = MaxwellSQLSyntaxError.class)
+	public void testThatSkipPositionsDoesNotParseCrashes() throws Exception {
+		// Our statement should crash maxwell for this to be useful
+		final String input[] = {"drop table if exists pksen", "create table pksen (Id Int, primary key(ID))", "alter table pksen charset = default;"};
+		getRowsForSQL(null, input, null);
+	}
+
+	@Test
+	public void testThatSkipPositionsDoesNotParse() throws Exception {
+		final String beforeSkip[] = { "drop table if exists pksen", "create table pksen (Id Int, primary key(ID))", "insert into pksen set id = 5" };
+		final String skip[] = { "alter table pksen charset = default" };
+		final String afterSkip[] = { "insert into pksen set id = 15" };
+		final String[] expectedJSON = new String[] {"{\"database\":\"shard_1\",\"table\":\"pksen\",\"pk.id\":5}", "{\"database\":\"shard_1\",\"table\":\"pksen\",\"pk.id\":15}"};
+
+		List<RowMap> list = getRowsWithSkip(beforeSkip, skip, afterSkip);
+
+		assertThat(list.size(), is(2));
+		for (int i=0; i<2; ++i) assertThat(list.get(i).pkToJson(RowMap.KeyFormat.HASH), is(expectedJSON[i]));
 	}
 }

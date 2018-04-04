@@ -14,14 +14,12 @@ import joptsimple.BuiltinHelpFormatter;
 import joptsimple.OptionDescriptor;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
+import org.apache.commons.lang3.Range;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class MaxwellConfig extends AbstractConfig {
@@ -96,6 +94,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public Long replicaServerID;
 
 	public Position initPosition;
+	public Map<String, List<Range<Long>>> skipPositions;
 	public boolean replayMode;
 	public boolean masterRecovery;
 	public boolean ignoreProducerError;
@@ -227,6 +226,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "schema_database", "database name for maxwell state (schema and binlog position)" ).withRequiredArg();
 		parser.accepts( "max_schemas", "deprecated." ).withRequiredArg();
 		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION:HEARTBEAT" ).withRequiredArg();
+		parser.accepts( "skip_positions", "skip binlog positions, given as BINLOG_FILE:POSITION1-POSITION2,... inclusive" ).withRequiredArg();
 		parser.accepts( "replay", "replay mode, don't store any information to the server" ).withOptionalArg();
 		parser.accepts( "master_recovery", "(experimental) enable master position recovery code" ).withOptionalArg();
 		parser.accepts( "gtid_mode", "(experimental) enable gtid mode" ).withOptionalArg();
@@ -486,6 +486,28 @@ public class MaxwellConfig extends AbstractConfig {
 			}
 
 			this.initPosition = new Position(new BinlogPosition(pos, initPositionSplit[0]), lastHeartbeat);
+		}
+
+		if ( options != null && options.has("skip_positions")) {
+			String ranges = (String) options.valueOf("skip_positions");
+			String[] rangesSplit = ranges.split(",");
+
+			HashMap<String, List<Range<Long>>> skipPositions = new HashMap<>();
+
+			for (String range : rangesSplit) {
+				String[] vals = range.split(":");
+				if (vals.length != 2)
+					usageForOptions("Invalid skip_position range: " + range, "--skip_positions");
+				String[] nums = vals[1].split("-");
+				if (nums.length != 2)
+					usageForOptions("Invalid skip_position range: " + vals[1], "--skip_positions");
+
+				List<Range<Long>> positionsForFile = skipPositions.getOrDefault(vals[0], new ArrayList<>());
+				positionsForFile.add(Range.between(Long.parseLong(nums[0]), Long.parseLong(nums[1])));
+				skipPositions.put(vals[0], positionsForFile);
+			}
+
+			this.skipPositions = skipPositions;
 		}
 
 		this.replayMode =     fetchBooleanOption("replay", options, null, false);

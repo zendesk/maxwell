@@ -4,7 +4,6 @@ import com.codahale.metrics.Histogram;
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import com.github.shyiko.mysql.binlog.event.*;
 import com.github.shyiko.mysql.binlog.event.deserialization.EventDeserializer;
-import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.MaxwellMysqlConfig;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
@@ -16,10 +15,13 @@ import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaStore;
 import com.zendesk.maxwell.schema.SchemaStoreException;
 import com.zendesk.maxwell.schema.Table;
+import org.apache.commons.lang3.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
@@ -50,6 +52,7 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 		String maxwellSchemaDatabaseName,
 		Metrics metrics,
 		Position start,
+		Map<String, List<Range<Long>>> skip,
 		boolean stopOnEOF,
 		String clientID,
 		HeartbeatNotifier heartbeatNotifier
@@ -77,7 +80,7 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 		eventDeserializer.setCompatibilityMode(EventDeserializer.CompatibilityMode.DATE_AND_TIME_AS_LONG_MICRO,
 			EventDeserializer.CompatibilityMode.CHAR_AND_BINARY_AS_BYTE_ARRAY);
 		this.client.setEventDeserializer(eventDeserializer);
-		this.binlogEventListener = new BinlogConnectorEventListener(client, queue, metrics);
+		this.binlogEventListener = new BinlogConnectorEventListener(client, queue, skip, metrics);
 		this.binlogLifecycleListener = new BinlogConnectorLifecycleListener();
 
 		this.client.setBlocking(!stopOnEOF);
@@ -98,6 +101,7 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 			ctx.getConfig().databaseName,
 			ctx.getMetrics(),
 			start,
+			ctx.getConfig().skipPositions,
 			false,
 			ctx.getConfig().clientID,
 			ctx.getHeartbeatNotifier()
