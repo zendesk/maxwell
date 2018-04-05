@@ -18,11 +18,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class MaxwellConfig extends AbstractConfig {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfig.class);
@@ -319,11 +318,18 @@ public class MaxwellConfig extends AbstractConfig {
 			properties = parseFile(DEFAULT_CONFIG_FILE, false);
 		}
 
-		if (options.has("env_config_prefix")) {
-			String prefix = ((String) options.valueOf("env_config_prefix")).toLowerCase();
-			System.getenv().entrySet().stream().filter(map -> map.getKey().toLowerCase().startsWith(prefix))
-					.forEach(config -> properties.put(config.getKey().toLowerCase().replaceFirst(prefix, ""), config.getValue()));
-		}
+		Optional<String> prefix = Stream.<Supplier<Optional<String>>>of(
+				() -> Optional.ofNullable((String) options.valueOf("env_config_prefix")),
+				() -> Optional.ofNullable(properties.getProperty("env_config_prefix")))
+				.map(Supplier::get)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.map(String::toLowerCase)
+				.findFirst();
+
+		prefix.ifPresent(p -> System.getenv().entrySet().stream()
+				.filter(map -> map.getKey().toLowerCase().startsWith(p))
+				.forEach(config -> properties.put(config.getKey().toLowerCase().replaceFirst(p, ""), config.getValue())));
 
 		if (options.has("help"))
 			usage("Help for Maxwell:");

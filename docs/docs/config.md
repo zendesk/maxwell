@@ -28,7 +28,7 @@ then Maxwell will send `batch.size=16384` to the kafka producer library.
 
 ### Scoped environment variables
 ***
-If `--env_config_prefix` configuration param is defined, for example, `--env_config_prefix=MAXWELL_`, Maxwell will look up
+If `--env_config_prefix` configuration param is defined, for example, `--env_config_prefix=MAXWELL_`, or it is defined in the `config.properties` file, Maxwell will look up
 all the environment variables that start with `MAXWELL_` and strip off the prefix. The scoped environment variable names are case insensitive.
 For instance if env contains
 ```

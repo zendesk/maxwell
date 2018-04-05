@@ -10,9 +10,7 @@ import org.junit.contrib.java.lang.system.EnvironmentVariables;
 
 import java.nio.file.Paths;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class MaxwellConfigTest
 {
@@ -54,13 +52,30 @@ public class MaxwellConfigTest
 	}
 
 	@Test
-	public void testEnvVarConfig() {
+	public void testEnvVarConfigViaOption() {
 		environmentVariables.set("MAXWELL_USER", "foo");
 		environmentVariables.set("maxwell_password", "bar");
 		environmentVariables.set("maxwell_host", "remotehost");
 		environmentVariables.set("MAXWELL_KAFKA.RETRIES", "100");
 		environmentVariables.set("USER", "mysql");
 		config = new MaxwellConfig(new String[] { "--env_config_prefix=MAXWELL_", "--host=localhost" });
+		assertEquals("foo", config.maxwellMysql.user);
+		assertEquals("bar", config.maxwellMysql.password);
+		assertEquals("localhost", config.maxwellMysql.host);
+		assertEquals("100", config.kafkaProperties.getProperty("retries"));
+	}
+
+	@Test
+	public void testEnvVarConfigViaConfigFile() {
+		environmentVariables.set("FOO_USER", "foo");
+		environmentVariables.set("foo_password", "bar");
+		environmentVariables.set("foo_host", "remotehost");
+		environmentVariables.set("FOO_KAFKA.RETRIES", "100");
+		environmentVariables.set("USER", "mysql");
+		String configPath = getTestConfigDir() + "env-var-config.properties";
+		assertNotNull("Config file not found at: " + configPath, Paths.get(configPath));
+
+		config = new MaxwellConfig(new String[] { "--config=" + configPath, "--host=localhost" });
 		assertEquals("foo", config.maxwellMysql.user);
 		assertEquals("bar", config.maxwellMysql.password);
 		assertEquals("localhost", config.maxwellMysql.host);
