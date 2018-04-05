@@ -145,6 +145,7 @@ public class MaxwellConfig extends AbstractConfig {
 	protected OptionParser buildOptionParser() {
 		final OptionParser parser = new OptionParser();
 		parser.accepts( "config", "location of config file" ).withRequiredArg();
+		parser.accepts( "env_config_prefix", "prefix of env var based config, case insensitive" ).withRequiredArg();
 		parser.accepts( "log_level", "log level, one of DEBUG|INFO|WARN|ERROR" ).withRequiredArg();
 		parser.accepts( "daemon", "daemon, running maxwell as a daemon" ).withOptionalArg();
 
@@ -316,6 +317,12 @@ public class MaxwellConfig extends AbstractConfig {
 			properties = parseFile((String) options.valueOf("config"), true);
 		} else {
 			properties = parseFile(DEFAULT_CONFIG_FILE, false);
+		}
+
+		if (options.has("env_config_prefix")) {
+			String prefix = ((String) options.valueOf("env_config_prefix")).toLowerCase();
+			System.getenv().entrySet().stream().filter(map -> map.getKey().toLowerCase().startsWith(prefix))
+					.forEach(config -> properties.put(config.getKey().toLowerCase().replaceFirst(prefix, ""), config.getValue()));
 		}
 
 		if (options.has("help"))

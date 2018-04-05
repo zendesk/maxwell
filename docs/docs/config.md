@@ -12,7 +12,7 @@ binlog_format=row
 
 ### Properties file
 ***
-If maxwell finds the file `config.properties` in $PWD it will use it.  Any
+If Maxwell finds the file `config.properties` in $PWD it will use it.  Any
 command line options (except `init_position`, `replay`, and `kafka_version`) may be given as
 "key=value" pairs.
 
@@ -26,6 +26,20 @@ kafka.batch.size=16384
 
 then Maxwell will send `batch.size=16384` to the kafka producer library.
 
+### Scoped environment variables
+***
+If `--env_config_prefix` configuration param is defined, for example, `--env_config_prefix=MAXWELL_`, Maxwell will look up
+all the environment variables that start with `MAXWELL_` and strip off the prefix. The scoped environment variable names are case insensitive.
+For instance if env contains
+```
+MAXWELL_USER=mysql_user
+```
+then Maxwell will get `user=mysql_user` config.
+
+The configuration priority is
+```
+command line options > scoped env vars > properties file > default values
+```
 
 ### GTID support
 ***
