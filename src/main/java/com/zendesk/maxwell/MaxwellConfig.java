@@ -18,10 +18,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-import java.util.function.Supplier;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 public class MaxwellConfig extends AbstractConfig {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfig.class);
@@ -318,18 +319,13 @@ public class MaxwellConfig extends AbstractConfig {
 			properties = parseFile(DEFAULT_CONFIG_FILE, false);
 		}
 
-		Optional<String> prefix = Stream.<Supplier<Optional<String>>>of(
-				() -> Optional.ofNullable((String) options.valueOf("env_config_prefix")),
-				() -> Optional.ofNullable(properties.getProperty("env_config_prefix")))
-				.map(Supplier::get)
-				.filter(Optional::isPresent)
-				.map(Optional::get)
-				.map(String::toLowerCase)
-				.findFirst();
+		String prefix = getEnvConfigPrefix(options, properties);
 
-		prefix.ifPresent(p -> System.getenv().entrySet().stream()
-				.filter(map -> map.getKey().toLowerCase().startsWith(p))
-				.forEach(config -> properties.put(config.getKey().toLowerCase().replaceFirst(p, ""), config.getValue())));
+		if (prefix != null) {
+			System.getenv().entrySet().stream()
+					.filter(map -> map.getKey().toLowerCase().startsWith(prefix.toLowerCase()))
+					.forEach(config -> properties.put(config.getKey().toLowerCase().replaceFirst(prefix.toLowerCase(), ""), config.getValue()));
+		}
 
 		if (options.has("help"))
 			usage("Help for Maxwell:");
@@ -340,6 +336,11 @@ public class MaxwellConfig extends AbstractConfig {
 		if(!arguments.isEmpty()) {
 			usage("Unknown argument(s): " + arguments);
 		}
+	}
+
+	private String getEnvConfigPrefix(OptionSet options, Properties properties) {
+		String prefix = (String) options.valueOf("env_config_prefix");
+		return prefix != null ? prefix : properties.getProperty("env_config_prefix");
 	}
 
 	private void setup(OptionSet options, Properties properties) {
