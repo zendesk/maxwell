@@ -168,6 +168,9 @@
                       <li class="toctree-l3"><a href="#properties-file">Properties file</a></li>
                       
                   
+                      <li class="toctree-l3"><a href="#scoped-environment-variables">Scoped environment variables</a></li>
+                      
+                  
                       <li class="toctree-l3"><a href="#gtid-support">GTID support</a></li>
                       
                   
@@ -260,7 +263,7 @@ binlog_format=row
 
 <h3 id="properties-file">Properties file</h3>
 <hr />
-<p>If maxwell finds the file <code>config.properties</code> in $PWD it will use it.  Any
+<p>If Maxwell finds the file <code>config.properties</code> in $PWD it will use it.  Any
 command line options (except <code>init_position</code>, <code>replay</code>, and <code>kafka_version</code>) may be given as
 "key=value" pairs.</p>
 <p>Additionally, any configuration file options prefixed with 'kafka.' will be
@@ -270,6 +273,19 @@ front of the key.  So, for example if config.properties contains</p>
 </code></pre>
 
 <p>then Maxwell will send <code>batch.size=16384</code> to the kafka producer library.</p>
+<h3 id="scoped-environment-variables">Scoped environment variables</h3>
+<hr />
+<p>If <code>--env_config_prefix</code> configuration param is defined, for example, <code>--env_config_prefix=MAXWELL_</code>, or it is defined in the <code>config.properties</code> file, Maxwell will look up
+all the environment variables that start with <code>MAXWELL_</code> and strip off the prefix. The scoped environment variable names are case insensitive.
+For instance if env contains</p>
+<pre><code>MAXWELL_USER=mysql_user
+</code></pre>
+
+<p>then Maxwell will get <code>user=mysql_user</code> config.</p>
+<p>The configuration priority is</p>
+<pre><code>command line options &gt; scoped env vars &gt; properties file &gt; default values
+</code></pre>
+
 <h3 id="gtid-support">GTID support</h3>
 <hr />
 <p>As of 1.8.0, Maxwell contains support for
