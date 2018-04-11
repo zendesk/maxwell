@@ -319,12 +319,13 @@ public class MaxwellConfig extends AbstractConfig {
 			properties = parseFile(DEFAULT_CONFIG_FILE, false);
 		}
 
-		String prefix = getEnvConfigPrefix(options, properties);
+		String envConfigPrefix = fetchOption("env_config_prefix", options, properties, null);
 
-		if (prefix != null) {
+		if (envConfigPrefix != null) {
+			String prefix = envConfigPrefix.toLowerCase();
 			System.getenv().entrySet().stream()
-					.filter(map -> map.getKey().toLowerCase().startsWith(prefix.toLowerCase()))
-					.forEach(config -> properties.put(config.getKey().toLowerCase().replaceFirst(prefix.toLowerCase(), ""), config.getValue()));
+					.filter(map -> map.getKey().toLowerCase().startsWith(prefix))
+					.forEach(config -> properties.put(config.getKey().toLowerCase().replaceFirst(prefix, ""), config.getValue()));
 		}
 
 		if (options.has("help"))
@@ -336,11 +337,6 @@ public class MaxwellConfig extends AbstractConfig {
 		if(!arguments.isEmpty()) {
 			usage("Unknown argument(s): " + arguments);
 		}
-	}
-
-	private String getEnvConfigPrefix(OptionSet options, Properties properties) {
-		String prefix = (String) options.valueOf("env_config_prefix");
-		return prefix != null ? prefix : properties.getProperty("env_config_prefix");
 	}
 
 	private void setup(OptionSet options, Properties properties) {
