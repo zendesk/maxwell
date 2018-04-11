@@ -1,5 +1,9 @@
 # Maxwell changelog
 
+### [v1.13.5](https://github.com/zendesk/maxwell/releases/tag/v1.13.5): "cyclone keni is real"
+
+- Support environment variable based configuration
+
 ### [v1.13.4](https://github.com/zendesk/maxwell/releases/tag/v1.13.4): "it was just a dream"
 
 - Added possibility to do not declare the rabbitmq exchange.
