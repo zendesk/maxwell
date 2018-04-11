@@ -145,6 +145,7 @@ public class MaxwellConfig extends AbstractConfig {
 	protected OptionParser buildOptionParser() {
 		final OptionParser parser = new OptionParser();
 		parser.accepts( "config", "location of config file" ).withRequiredArg();
+		parser.accepts( "env_config_prefix", "prefix of env var based config, case insensitive" ).withRequiredArg();
 		parser.accepts( "log_level", "log level, one of DEBUG|INFO|WARN|ERROR" ).withRequiredArg();
 		parser.accepts( "daemon", "daemon, running maxwell as a daemon" ).withOptionalArg();
 
@@ -318,6 +319,14 @@ public class MaxwellConfig extends AbstractConfig {
 			properties = parseFile(DEFAULT_CONFIG_FILE, false);
 		}
 
+		String prefix = getEnvConfigPrefix(options, properties);
+
+		if (prefix != null) {
+			System.getenv().entrySet().stream()
+					.filter(map -> map.getKey().toLowerCase().startsWith(prefix.toLowerCase()))
+					.forEach(config -> properties.put(config.getKey().toLowerCase().replaceFirst(prefix.toLowerCase(), ""), config.getValue()));
+		}
+
 		if (options.has("help"))
 			usage("Help for Maxwell:");
 
@@ -327,6 +336,11 @@ public class MaxwellConfig extends AbstractConfig {
 		if(!arguments.isEmpty()) {
 			usage("Unknown argument(s): " + arguments);
 		}
+	}
+
+	private String getEnvConfigPrefix(OptionSet options, Properties properties) {
+		String prefix = (String) options.valueOf("env_config_prefix");
+		return prefix != null ? prefix : properties.getProperty("env_config_prefix");
 	}
 
 	private void setup(OptionSet options, Properties properties) {
