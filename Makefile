@@ -4,7 +4,7 @@ KAFKA_PROFILE = kafka-${KAFKA_VERSION}
 all: compile
 
 test:
-	mvn test -P ${KAFKA_PROFILE}
+	mvn test -P ${KAFKA_PROFILE} -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
 compile:
 	mvn compile -P ${KAFKA_PROFILE}

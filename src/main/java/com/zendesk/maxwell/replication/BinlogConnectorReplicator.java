@@ -77,7 +77,7 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 		eventDeserializer.setCompatibilityMode(
 			EventDeserializer.CompatibilityMode.DATE_AND_TIME_AS_LONG_MICRO,
 			EventDeserializer.CompatibilityMode.CHAR_AND_BINARY_AS_BYTE_ARRAY,
-			EventDeserializer.CompatibilityMode.INVALID_DATE_AND_TIME_AS_ZERO
+			EventDeserializer.CompatibilityMode.INVALID_DATE_AND_TIME_AS_MIN_VALUE
 		);
 		this.client.setEventDeserializer(eventDeserializer);
 		this.binlogEventListener = new BinlogConnectorEventListener(client, queue, metrics);
