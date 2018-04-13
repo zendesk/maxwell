@@ -5,7 +5,7 @@ export JAVA_TOOL_OPTIONS = -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.tra
 all: compile
 
 test:
-	mvn test -P ${KAFKA_PROFILE}
+	mvn -B test -P ${KAFKA_PROFILE}
 
 compile:
 	mvn compile -P ${KAFKA_PROFILE}

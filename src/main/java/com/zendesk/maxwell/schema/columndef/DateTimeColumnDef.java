@@ -21,7 +21,7 @@ public class DateTimeColumnDef extends ColumnDefWithLength {
 		}
 	}
 
-	final private boolean isTimestamp = !getType().equals("datetime");
+	final private boolean isTimestamp = getType().equals("timestamp");
 	protected String formatValue(Object value) {
 		// special case for those broken mysql dates.
 		if ( value instanceof Long ) {
