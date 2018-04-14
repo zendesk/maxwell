@@ -1,10 +1,11 @@
 KAFKA_VERSION ?= 0.11.0.1
 KAFKA_PROFILE = kafka-${KAFKA_VERSION}
+export JAVA_TOOL_OPTIONS = -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
 all: compile
 
 test:
-	mvn test -P ${KAFKA_PROFILE}
+	mvn -B test -P ${KAFKA_PROFILE}
 
 compile:
 	mvn compile -P ${KAFKA_PROFILE}
