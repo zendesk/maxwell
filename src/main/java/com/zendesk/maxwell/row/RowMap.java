@@ -49,6 +49,7 @@ public class RowMap implements Serializable {
 	private Position nextPosition;
 
 	private Long xid;
+	private Long xoffset;
 	private boolean txCommit;
 	private Long serverId;
 	private Long threadId;
@@ -282,6 +283,9 @@ public class RowMap implements Serializable {
 			if ( this.xid != null )
 				g.writeNumberField(FieldNames.TRANSACTION_ID, this.xid);
 
+			if ( outputConfig.includesXOffset && this.xoffset != null && !this.txCommit )
+				g.writeNumberField(FieldNames.TRANSACTION_OFFSET, this.xoffset);
+
 			if ( this.txCommit )
 				g.writeBooleanField(FieldNames.COMMIT, true);
 		}
@@ -420,6 +424,14 @@ public class RowMap implements Serializable {
 
 	public void setXid(Long xid) {
 		this.xid = xid;
+	}
+
+	public Long getXoffset() {
+		return xoffset;
+	}
+
+	public void setXoffset(Long xoffset) {
+		this.xoffset = xoffset;
 	}
 
 	public void setTXCommit() {
