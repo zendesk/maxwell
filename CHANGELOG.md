@@ -1,5 +1,42 @@
 # Maxwell changelog
 
+### [v1.13.5](https://github.com/zendesk/maxwell/releases/tag/v1.13.5): "cyclone keni is real"
+
+- Support environment variable based configuration
+
+### [v1.13.4](https://github.com/zendesk/maxwell/releases/tag/v1.13.4): "it was just a dream"
+
+- Added possibility to do not declare the rabbitmq exchange.
+
+### [v1.13.3](https://github.com/zendesk/maxwell/releases/tag/v1.13.3): "winner winner chicken dinner"
+
+
+ - Add logging for binlog errors
+ - Maven warning fix
+ - Do not include current position DDL schema to avoid processing DDL twice
+ - Always write null fields in primary key fields
+ - Bugfix: fix http_path_prefix command line option issue
+
+### [v1.13.2](https://github.com/zendesk/maxwell/releases/tag/v1.13.2): "I just bought them to sleep in"
+
+
+- fix a bug with CHARACTER SET = DEFAULT
+- maxwell now eclipse-friendly.
+- configurable bind-address for maxwell's http server
+
+
+### [v1.13.1](https://github.com/zendesk/maxwell/releases/tag/v1.13.1): "line up your exes in song"
+
+
+- redis producer now supports LPUSH, thx @m-denton
+- RowMap can now contain artbitrary attributes for embedded maxwell, thx @jkgeyti
+- bugfix: fix jdbc option parsing when value contains `=`
+- bugfix: apparently the SQS producer was disabled
+- bugfix: fix a situation where adding a second client could cause
+  schemas to become out of sync
+- support for --daemon
+
+
 ### [v1.13.0](https://github.com/zendesk/maxwell/releases/tag/v1.13.0): "sorry, I burned your clothes"
 
 

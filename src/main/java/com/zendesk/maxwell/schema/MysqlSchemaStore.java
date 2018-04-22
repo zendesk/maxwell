@@ -89,7 +89,14 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 
 
 	public List<ResolvedSchemaChange> processSQL(String sql, String currentDatabase, Position position) throws SchemaStoreException, InvalidSchemaError {
-		List<ResolvedSchemaChange> resolvedSchemaChanges = resolveSQL(getSchema(), sql, currentDatabase);
+		List<ResolvedSchemaChange> resolvedSchemaChanges;
+		try {
+			resolvedSchemaChanges = resolveSQL(getSchema(), sql, currentDatabase);
+		} catch (Exception e) {
+			LOGGER.error("Error on bin log position " + position.toString());
+			e.printStackTrace();
+			throw e;
+		}
 
 		if ( resolvedSchemaChanges.size() > 0 ) {
 			try {

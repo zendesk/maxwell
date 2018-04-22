@@ -195,6 +195,7 @@ The remaining configurable properties are:
 - `rabbitmq_routing_key_template` - defaults to **%db%.%table%**
     - This config controls the routing key, where `%db%` and `%table%` are placeholders that will be substituted at runtime
 - `rabbitmq_message_persistent` - defaults to **false**
+- `rabbitmq_declare_exchange` - defaults to **true**
 
 For more details on these options, you are encouraged to the read official RabbitMQ documentation here: https://www.rabbitmq.com/documentation.html
 

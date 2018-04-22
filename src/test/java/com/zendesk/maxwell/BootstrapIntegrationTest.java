@@ -120,9 +120,9 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 		testColumnType("datetime", "'2015-11-07 01:02:03'","2015-11-07 01:02:03");
 
 		if (server.supportsZeroDates()) {
-			testColumnType("date", "'0000-00-00'",null);
-			testColumnType("datetime", "'0000-00-00 00:00:00'", null);
-			testColumnType("timestamp", "'0000-00-00 00:00:00'","" + epoch.substring(0, epoch.length() - 2) + "", null);
+			testColumnType("date", "'0000-00-00'", "0000-00-00");
+			testColumnType("datetime", "'0000-00-00 00:00:00'", "0000-00-00 00:00:00");
+			testColumnType("timestamp", "'0000-00-00 00:00:00'", "0000-00-00 00:00:00");
 		}
 
 		testColumnType("datetime", "'1000-01-01 00:00:00'","1000-01-01 00:00:00");

@@ -74,8 +74,11 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 		}
 
 		EventDeserializer eventDeserializer = new EventDeserializer();
-		eventDeserializer.setCompatibilityMode(EventDeserializer.CompatibilityMode.DATE_AND_TIME_AS_LONG_MICRO,
-			EventDeserializer.CompatibilityMode.CHAR_AND_BINARY_AS_BYTE_ARRAY);
+		eventDeserializer.setCompatibilityMode(
+			EventDeserializer.CompatibilityMode.DATE_AND_TIME_AS_LONG_MICRO,
+			EventDeserializer.CompatibilityMode.CHAR_AND_BINARY_AS_BYTE_ARRAY,
+			EventDeserializer.CompatibilityMode.INVALID_DATE_AND_TIME_AS_MIN_VALUE
+		);
 		this.client.setEventDeserializer(eventDeserializer);
 		this.binlogEventListener = new BinlogConnectorEventListener(client, queue, metrics);
 		this.binlogLifecycleListener = new BinlogConnectorLifecycleListener();

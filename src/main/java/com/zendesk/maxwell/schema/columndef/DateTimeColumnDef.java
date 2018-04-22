@@ -9,6 +9,7 @@ public class DateTimeColumnDef extends ColumnDefWithLength {
 		super(name, type, pos, columnLength);
 	}
 
+
 	@Override
 	public boolean matchesMysqlType(int type) {
 		if ( getType().equals("datetime") ) {
@@ -20,7 +21,15 @@ public class DateTimeColumnDef extends ColumnDefWithLength {
 		}
 	}
 
+	final private boolean isTimestamp = getType().equals("timestamp");
 	protected String formatValue(Object value) {
+		// special case for those broken mysql dates.
+		if ( value instanceof Long ) {
+			Long v = (Long) value;
+			if ( v == Long.MIN_VALUE || (v == 0L && isTimestamp) )
+				return appendFractionalSeconds("0000-00-00 00:00:00", 0, columnLength);
+		}
+
 		Timestamp ts = DateFormatter.extractTimestamp(value);
 		String dateString = DateFormatter.formatDateTime(value, ts);
 		if ( dateString == null )

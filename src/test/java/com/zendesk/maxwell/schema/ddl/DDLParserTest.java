@@ -466,6 +466,12 @@ public class DDLParserTest {
 	}
 
 	@Test
+	public void testCreateSchemaCharSet() {
+		List<SchemaChange> changes = parse("CREATE SCHEMA IF NOT EXISTS `tblname` CHARACTER SET = default");
+		assertThat(changes.size(), is(1));
+	}
+
+	@Test
 	public void testMysqlTestFixedSQL() throws Exception {
 		int i = 1;
 		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test-fixed.sql"), Charset.defaultCharset());
