@@ -5,6 +5,9 @@ set global time_zone = '-0:00';
 
 CREATE TABLE tt ( t time(6), small_t time(3), dt datetime(6), small_dt datetime(3), ts timestamp(4) NULL );
 
+insert into tt set dt = '0001-01-01 00-00-00';
+-> { "database": "timedb", "table": "tt", "type": "insert", "data": {"t": null, "small_t": null, "dt": "0001-01-01 00:00:00.000000", "small_dt": null, "ts": null } }
+
 insert into tt set t = '12:23:33.123456', small_t = '12:23:33.345', dt = '2012-01-01 22:32:34.222222', small_dt = '2012-01-01 22:32:34.123', ts = '2012-01-01 22:32:34.1234';
 -> { "database": "timedb", "table": "tt", "type": "insert", "data": {"t": "12:23:33.123456", "small_t": "12:23:33.345", "dt": "2012-01-01 22:32:34.222222", "small_dt": "2012-01-01 22:32:34.123", "ts": "2012-01-01 22:32:34.1234" } }
 
