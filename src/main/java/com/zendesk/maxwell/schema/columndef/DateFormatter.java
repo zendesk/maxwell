@@ -36,15 +36,9 @@ public class DateFormatter {
 			throw new RuntimeException("couldn't extract date/time out of " + value);
 	}
 
-	private static Timestamp MIN_DATE = Timestamp.valueOf("1000-01-01 00:00:00");
-
 	private static String format(SimpleDateFormat formatter, Timestamp ts) {
-		if ( ts.before(MIN_DATE) ) {
-			return null;
-		} else {
-			synchronized(formatter) {
-					return formatter.format(ts);
-			}
+		synchronized(formatter) {
+			return formatter.format(ts);
 		}
 	}
 
