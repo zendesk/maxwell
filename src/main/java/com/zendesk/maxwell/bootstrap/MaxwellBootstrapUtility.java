@@ -47,7 +47,7 @@ public class MaxwellBootstrapUtility {
 				rowId = config.monitorBootstrapID;
 			} else {
 				Long totalRows = calculateRowCount(connection, config.databaseName, config.tableName, config.whereClause);
-				rowId = insertBootstrapStartRow(connection, config.databaseName, config.tableName, config.whereClause, totalRows);
+				rowId = insertBootstrapStartRow(connection, config.databaseName, config.tableName, config.whereClause, config.clientID, totalRows);
 			}
 
 			try {
@@ -161,10 +161,9 @@ public class MaxwellBootstrapUtility {
 		return resultSet.getLong(1);
 	}
 
-	private long insertBootstrapStartRow(Connection connection, String db, String table, String whereClause, Long totalRows) throws SQLException {
+	private long insertBootstrapStartRow(Connection connection, String db, String table, String whereClause, String clientID,Long totalRows) throws SQLException {
 		LOGGER.info("inserting bootstrap start row");
-		String sql = null;
-		sql = "insert into `bootstrap` (database_name, table_name, where_clause, total_rows) values(?, ?, ?, ?)";
+		String sql = "insert into `bootstrap` (database_name, table_name, where_clause, total_rows, client_id) values(?, ?, ?, ?, ?)";
 
 		PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
 		preparedStatement.setString(1, db);
@@ -172,6 +171,7 @@ public class MaxwellBootstrapUtility {
 
 		preparedStatement.setString(3, whereClause);
 		preparedStatement.setLong(4, totalRows);
+		preparedStatement.setString(5, clientID);
 
 		preparedStatement.execute();
 		ResultSet generatedKeys = preparedStatement.getGeneratedKeys();

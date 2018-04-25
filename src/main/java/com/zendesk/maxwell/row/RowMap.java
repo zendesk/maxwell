@@ -6,6 +6,7 @@ import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.Position;
+import com.zendesk.maxwell.schema.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +36,6 @@ import com.zendesk.maxwell.replication.Position;
 
 
 public class RowMap implements Serializable {
-
 	public enum KeyFormat { HASH, ARRAY }
 
 	static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
