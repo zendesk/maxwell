@@ -1,5 +1,14 @@
 # Maxwell changelog
 
+### [v1.14.0](https://github.com/zendesk/maxwell/releases/tag/v1.14.0): "cats, cats, more cats.  sadness at lack of cats."
+
+
+- new feature `--output_xoffset` to uniquely identify rows within transactions,
+  thx Jens Gyti
+- Bug fixes around "0000-00-00" times.
+- Bug fixes around dates pre 1000 AD
+
+
 ### [v1.13.5](https://github.com/zendesk/maxwell/releases/tag/v1.13.5): "cyclone keni is real"
 
 - Support environment variable based configuration

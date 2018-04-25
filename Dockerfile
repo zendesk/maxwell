@@ -1,4 +1,5 @@
 FROM maven:3.5-jdk-8
+
 ENV MAXWELL_VERSION=1.13.5 KAFKA_VERSION=1.0.0
 
 COPY . /workspace
