@@ -5,7 +5,7 @@ insert into maxwell.bootstrap set database_name = 'shard_1', table_name = 'minim
 -> { database: "shard_1", table: "minimal", type: "insert",          data: {id: 1, account_id: 1, text_field: "hello"} }
 -> { database: "shard_1", table: "minimal", type: "insert",          data: {id: 2, account_id: 2, text_field: "bonjour"} }
 -> { database: "shard_1", table: "minimal", type: "insert",          data: {id: 3, account_id: 3, text_field: "goeiedag"} }
--> { database: "maxwell", table: "bootstrap", type: "insert",        data: {id: 1, database_name: "shard_1", table_name: "minimal", is_complete: 0, inserted_rows: 0, binlog_position:0, total_rows: 0, created_at: null, started_at: null, completed_at: null, binlog_file: null, where_clause: null }}
+-> { database: "maxwell", table: "bootstrap", type: "insert",        data: {id: 1, database_name: "shard_1", table_name: "minimal", is_complete: 0, inserted_rows: 0, binlog_position:0, total_rows: 0, created_at: null, started_at: null, completed_at: null, binlog_file: null, where_clause: null, client_id: "maxwell" }}
 -> { database: "shard_1", table: "minimal", type: "bootstrap-start", data: {} }
 -> { database: "shard_1", table: "minimal", type: "bootstrap-insert",          data: {id: 1, account_id: 1, text_field: "hello" } }
 -> { database: "shard_1", table: "minimal", type: "bootstrap-insert",          data: {id: 2, account_id: 2, text_field: "bonjour"} }
