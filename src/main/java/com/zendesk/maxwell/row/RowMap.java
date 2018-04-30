@@ -6,7 +6,6 @@ import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.Position;
-import com.zendesk.maxwell.schema.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
