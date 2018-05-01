@@ -1,13 +1,16 @@
 #!/bin/bash
 
-base_dir=$(dirname $0)/..
+set -e
 
-CLASSPATH=$CLASSPATH:$base_dir/target/classes:../open-replicator/target/classes
+base_dir="$(dirname "$0")/.."
+lib_dir="$base_dir/lib"
+lib_dir_development="$base_dir/target/lib"
+if [ ! -e "$lib_dir" -a -e "$lib_dir_development" ]; then
+	lib_dir="$lib_dir_development"
+	CLASSPATH="$CLASSPATH:$base_dir/target/classes"
+fi
 
-for file in lib/*.jar
-do
-  CLASSPATH=$CLASSPATH:$file
-done
+CLASSPATH="$CLASSPATH:$lib_dir/*"
 
 if [ -z "$JAVA_HOME" ]; then
   JAVA="java"
