@@ -55,6 +55,7 @@ public class MaxwellContext {
 
 	public MaxwellContext(MaxwellConfig config) throws SQLException, URISyntaxException {
 		this.config = config;
+		this.config.validate();
 		this.taskManager = new TaskManager();
 		this.metrics = new MaxwellMetrics(config);
 
