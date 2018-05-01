@@ -1,17 +1,16 @@
-FROM maven:3.5-jdk-8
+FROM openjdk:8u151-jdk-alpine
 ENV MAXWELL_VERSION=1.14.3 KAFKA_VERSION=0.11.0.1
 
 COPY . /workspace
 
-RUN apt-get update \
-    && apt-get -y upgrade \
-    && apt-get install -y build-essential \
+RUN apk --no-cache add --virtual .build-dependencies make maven \
+    && apk --no-cache add java-snappy-native \
     && cd /workspace \
     && KAFKA_VERSION=$KAFKA_VERSION make package MAXWELL_VERSION=$MAXWELL_VERSION \
     && mkdir /app \
     && mv /workspace/target/maxwell-$MAXWELL_VERSION/maxwell-$MAXWELL_VERSION/* /app/ \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/* /workspace/ \
+    && apk del .build-dependencies \
+    && rm -rf /tmp/* /var/tmp/* /usr/share/doc/* /workspace/ /root/.m2/ \
     && echo "$MAXWELL_VERSION" > /REVISION
 
 WORKDIR /app
