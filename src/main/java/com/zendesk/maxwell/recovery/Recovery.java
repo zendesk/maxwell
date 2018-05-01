@@ -66,6 +66,7 @@ public class Recovery {
 					maxwellDatabaseName,
 					metrics,
 					position,
+					null,
 					true,
 					recoveryInfo.clientID,
 					new HeartbeatNotifier()

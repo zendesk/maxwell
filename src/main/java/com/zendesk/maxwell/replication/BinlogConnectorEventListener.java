@@ -7,9 +7,13 @@ import com.github.shyiko.mysql.binlog.event.Event;
 import com.github.shyiko.mysql.binlog.event.EventType;
 import com.github.shyiko.mysql.binlog.event.GtidEventData;
 import com.zendesk.maxwell.monitoring.Metrics;
+import org.apache.commons.lang3.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -18,6 +22,7 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BinlogConnectorEventListener.class);
 
 	private final BlockingQueue<BinlogConnectorEvent> queue;
+	private final Map<String, List<Range<Long>>> skipPositions;
 	private final Timer queueTimer;
 	protected final AtomicBoolean mustStop = new AtomicBoolean(false);
 	private final BinaryLogClient client;
@@ -27,9 +32,11 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener {
 	public BinlogConnectorEventListener(
 		BinaryLogClient client,
 		BlockingQueue<BinlogConnectorEvent> q,
+		Map<String, List<Range<Long>>> skipPositions,
 		Metrics metrics) {
 		this.client = client;
 		this.queue = q;
+		this.skipPositions = skipPositions;
 		this.queueTimer =  metrics.getRegistry().timer(metrics.metricName("replication", "queue", "time"));
 
 		final BinlogConnectorEventListener self = this;
@@ -50,6 +57,15 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener {
 		}
 
 		BinlogConnectorEvent ep = new BinlogConnectorEvent(event, client.getBinlogFilename(), client.getGtidSet(), gtid);
+
+		if (skipPositions != null) {
+			for (Range<Long> r : skipPositions.getOrDefault(ep.getPosition().getFile(), new ArrayList<>())) {
+				if (r.contains(ep.getPosition().getOffset())) {
+					LOGGER.info("Skipping position " + ep.getPosition() + " specified in --skip-positions");
+					return;
+				}
+			}
+		}
 
 		if (ep.isCommitEvent()) {
 			trackMetrics = true;

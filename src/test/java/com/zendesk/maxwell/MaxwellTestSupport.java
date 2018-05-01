@@ -175,9 +175,8 @@ public class MaxwellTestSupport {
 		config.filter = filter;
 		config.bootstrapperType = "sync";
 
-		callback.beforeReplicatorStart(mysql);
+		callback.beforeReplicatorStart(mysql, config);
 
-		config.initPosition = capture(mysql.getConnection());
 		final String waitObject = new String("");
 		final BufferedMaxwell maxwell = new BufferedMaxwell(config) {
 			@Override
