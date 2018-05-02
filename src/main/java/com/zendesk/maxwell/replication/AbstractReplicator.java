@@ -118,7 +118,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	 */
 	protected boolean shouldOutputEvent(String database, String table, MaxwellFilter filter) {
 		Boolean isSystemWhitelisted = this.maxwellSchemaDatabaseName.equals(database)
-			&& "bootstrap".equals(table);
+			&& ("bootstrap".equals(table) || "heartbeats".equals(table));
 
 		if ( MaxwellFilter.isSystemBlacklisted(database, table) )
 			return false;
