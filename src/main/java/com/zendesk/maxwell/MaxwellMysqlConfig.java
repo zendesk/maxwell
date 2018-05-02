@@ -131,6 +131,11 @@ public class MaxwellMysqlConfig {
 				Objects.equals(connectTimeoutMS, that.connectTimeoutMS);
 	}
 
+	public boolean sameServerAs(MaxwellMysqlConfig other) {
+		return Objects.equals(host, other.host) &&
+			Objects.equals(port, other.port);
+	}
+
 	@Override
 	public int hashCode() {
 		return Objects
