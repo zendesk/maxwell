@@ -595,11 +595,6 @@ public class MaxwellConfig extends AbstractConfig {
 			this.maxwellMysql.host = "localhost";
 		}
 
-		if ( !Objects.equals(replicationMysql, maxwellMysql) && !this.bootstrapperType.equals("none") ) {
-			LOGGER.warn("disabling bootstrapping; not available when using a separate replication host.");
-			this.bootstrapperType = "none";
-		}
-
 		if ( this.replicationMysql.host == null
 				|| this.replicationMysql.user == null ) {
 
@@ -679,6 +674,12 @@ public class MaxwellConfig extends AbstractConfig {
 
 		if (outputConfig.encryptionEnabled() && outputConfig.secretKey == null)
 			usage("--secret_key required");
+
+		if ( !maxwellMysql.sameServerAs(replicationMysql) && !this.bootstrapperType.equals("none") ) {
+			LOGGER.warn("disabling bootstrapping; not available when using a separate replication host.");
+			this.bootstrapperType = "none";
+		}
+
 	}
 
 	public Properties getKafkaProperties() {
