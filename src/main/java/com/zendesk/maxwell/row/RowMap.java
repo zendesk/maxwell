@@ -35,7 +35,6 @@ import com.zendesk.maxwell.replication.Position;
 
 
 public class RowMap implements Serializable {
-
 	public enum KeyFormat { HASH, ARRAY }
 
 	static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);

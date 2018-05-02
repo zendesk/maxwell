@@ -1,5 +1,12 @@
 # Maxwell changelog
 
+### [v1.14.1](https://github.com/zendesk/maxwell/releases/tag/v1.14.1): "half asleep in frog pajamas"
+
+
+- bootstraps can now take a client_id
+- improved config validation for embedded mode
+
+
 ### [v1.14.0](https://github.com/zendesk/maxwell/releases/tag/v1.14.0): "cats, cats, more cats.  sadness at lack of cats."
 
 

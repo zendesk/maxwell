@@ -14,14 +14,12 @@ import joptsimple.BuiltinHelpFormatter;
 import joptsimple.OptionDescriptor;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class MaxwellConfig extends AbstractConfig {
@@ -133,13 +131,13 @@ public class MaxwellConfig extends AbstractConfig {
 		this.bufferedProducerSize = 200;
 		this.metricRegistry = new MetricRegistry();
 		this.healthCheckRegistry = new HealthCheckRegistry();
+		this.outputConfig = new MaxwellOutputConfig();
 		setup(null, null); // setup defaults
 	}
 
 	public MaxwellConfig(String argv[]) {
 		this();
 		this.parse(argv);
-		this.validate();
 	}
 
 	protected OptionParser buildOptionParser() {
@@ -392,10 +390,6 @@ public class MaxwellConfig extends AbstractConfig {
 		this.redisListKey		= fetchOption("redis_list_key", options, properties, "maxwell");
 		this.redisType			= fetchOption("redis_type", options, properties, "pubsub");
 
-		if (this.maxwellMysql.sslMode == null) {
-			this.maxwellMysql.sslMode = SSLMode.DISABLED;
-		}
-
 		String kafkaBootstrapServers = fetchOption("kafka.bootstrap.servers", options, properties, null);
 		if ( kafkaBootstrapServers != null )
 			this.kafkaProperties.setProperty("bootstrap.servers", kafkaBootstrapServers);
@@ -418,21 +412,6 @@ public class MaxwellConfig extends AbstractConfig {
 		this.producerPartitionColumns = fetchOption("producer_partition_columns", options, properties, null);
 		this.producerPartitionFallback = fetchOption("producer_partition_by_fallback", options, properties, null);
 
-		if(this.kafkaPartitionKey != null && !this.kafkaPartitionKey.equals("database")) {
-			LOGGER.warn("kafka_partition_by is deprecated, please use producer_partition_by");
-			this.producerPartitionKey = this.kafkaPartitionKey;
-		}
-
-		if(this.kafkaPartitionColumns != null) {
-			LOGGER.warn("kafka_partition_columns is deprecated, please use producer_partition_columns");
-			this.producerPartitionColumns = this.kafkaPartitionColumns;
-		}
-
-		if(this.kafkaPartitionFallback != null) {
-			LOGGER.warn("kafka_partition_by_fallback is deprecated, please use producer_partition_by_fallback");
-			this.producerPartitionFallback = this.kafkaPartitionFallback;
-		}
-
 		this.kinesisStream  = fetchOption("kinesis_stream", options, properties, null);
 		this.kinesisMd5Keys = fetchBooleanOption("kinesis_md5_keys", options, properties, false);
 
@@ -453,6 +432,7 @@ public class MaxwellConfig extends AbstractConfig {
 		}
 		this.httpBindAddress = fetchOption("http_bind_address", options, properties, null);
 		this.httpPathPrefix = fetchOption("http_path_prefix", options, properties, "/");
+
 		if (!this.httpPathPrefix.startsWith("/")) {
 			this.httpPathPrefix = "/" + this.httpPathPrefix;
 		}
@@ -503,7 +483,6 @@ public class MaxwellConfig extends AbstractConfig {
 		this.masterRecovery = fetchBooleanOption("master_recovery", options, properties, false);
 		this.ignoreProducerError = fetchBooleanOption("ignore_producer_error", options, properties, true);
 
-		this.outputConfig = new MaxwellOutputConfig();
 		outputConfig.includesBinlogPosition = fetchBooleanOption("output_binlog_position", options, properties, false);
 		outputConfig.includesGtidPosition = fetchBooleanOption("output_gtid_position", options, properties, false);
 		outputConfig.includesCommitInfo = fetchBooleanOption("output_commit_info", options, properties, true);
@@ -533,19 +512,6 @@ public class MaxwellConfig extends AbstractConfig {
 
 		if (outputConfig.encryptionEnabled()) {
 			outputConfig.secretKey = fetchOption("secret_key", options, properties, null);
-			if (outputConfig.secretKey == null) {
-				usage("--secret_key required");
-			}
-		}
-
-		if ( this.excludeColumns != null ) {
-			for ( String s : this.excludeColumns.split(",") ) {
-				try {
-					outputConfig.excludeColumns.add(compileStringToPattern(s));
-				} catch ( MaxwellInvalidFilterException e ) {
-					usage("invalid exclude_columns: '" + this.excludeColumns + "': " + e.getMessage());
-				}
-			}
 		}
 	}
 
@@ -558,7 +524,38 @@ public class MaxwellConfig extends AbstractConfig {
 		return p;
 	}
 
+	private void validatePartitionBy() {
+		if ( this.producerPartitionKey == null && this.kafkaPartitionKey != null ) {
+			LOGGER.warn("kafka_partition_by is deprecated, please use producer_partition_by");
+			this.producerPartitionKey = this.kafkaPartitionKey;
+		}
+
+		if ( this.producerPartitionColumns == null && this.kafkaPartitionColumns != null) {
+			LOGGER.warn("kafka_partition_columns is deprecated, please use producer_partition_columns");
+			this.producerPartitionColumns = this.kafkaPartitionColumns;
+		}
+
+		if ( this.producerPartitionFallback == null && this.kafkaPartitionFallback != null ) {
+			LOGGER.warn("kafka_partition_by_fallback is deprecated, please use producer_partition_by_fallback");
+			this.producerPartitionFallback = this.kafkaPartitionFallback;
+		}
+
+		String[] validPartitionBy = {"database", "table", "primary_key", "column"};
+		if ( this.producerPartitionKey == null ) {
+			this.producerPartitionKey = "database";
+		} else if ( !ArrayUtils.contains(validPartitionBy, this.producerPartitionKey) ) {
+			usageForOptions("please specify --producer_partition_by=database|table|primary_key|column", "producer_partition_by");
+		} else if ( this.producerPartitionKey.equals("column") && StringUtils.isEmpty(this.producerPartitionColumns) ) {
+			usageForOptions("please specify --producer_partition_columns=column1 when using producer_partition_by=column", "producer_partition_columns");
+		} else if ( this.producerPartitionKey.equals("column") && StringUtils.isEmpty(this.producerPartitionFallback) ) {
+			usageForOptions("please specify --producer_partition_by_fallback=[database, table, primary_key] when using producer_partition_by=column", "producer_partition_by_fallback");
+		}
+
+	}
+
 	public void validate() {
+		validatePartitionBy();
+
 		if ( this.producerType.equals("kafka") ) {
 			if ( !this.kafkaProperties.containsKey("bootstrap.servers") ) {
 				usageForOptions("You must specify kafka.bootstrap.servers for the kafka producer!", "kafka");
@@ -569,19 +566,6 @@ public class MaxwellConfig extends AbstractConfig {
 			} else if ( !this.kafkaPartitionHash.equals("default")
 					&& !this.kafkaPartitionHash.equals("murmur3") ) {
 				usageForOptions("please specify --kafka_partition_hash=default|murmur3", "kafka_partition_hash");
-			}
-
-			if ( this.kafkaPartitionKey == null ) {
-				this.kafkaPartitionKey = "database";
-			} else if ( !this.kafkaPartitionKey.equals("database")
-					&& !this.kafkaPartitionKey.equals("table")
-					&& !this.kafkaPartitionKey.equals("primary_key")
-					&& !this.kafkaPartitionKey.equals("column") ) {
-				usageForOptions("please specify --kafka_partition_by=database|table|primary_key|column", "kafka_partition_by");
-			} else if ( this.kafkaPartitionKey.equals("column") && StringUtils.isEmpty(this.kafkaPartitionColumns) ) {
-				usageForOptions("please specify --kafka_partition_columns=column1 when using kafka_partition_by=column", "kafka_partition_columns");
-			} else if ( this.kafkaPartitionKey.equals("column") && StringUtils.isEmpty(this.kafkaPartitionFallback) ) {
-				usageForOptions("please specify --kafka_partition_by_fallback=[database, table, primary_key] when using kafka_partition_by=column", "kafka_partition_by_fallback");
 			}
 
 			if ( !this.kafkaKeyFormat.equals("hash") && !this.kafkaKeyFormat.equals("array") )
@@ -602,12 +586,16 @@ public class MaxwellConfig extends AbstractConfig {
 			usageForOptions("please specify --bootstrapper=async|sync|none", "--bootstrapper");
 		}
 
+		if (this.maxwellMysql.sslMode == null) {
+			this.maxwellMysql.sslMode = SSLMode.DISABLED;
+		}
+
 		if ( this.maxwellMysql.host == null ) {
 			LOGGER.warn("maxwell mysql host not specified, defaulting to localhost");
 			this.maxwellMysql.host = "localhost";
 		}
 
-		if ( this.replicationMysql.host != null && !this.bootstrapperType.equals("none") ) {
+		if ( !Objects.equals(replicationMysql, maxwellMysql) && !this.bootstrapperType.equals("none") ) {
 			LOGGER.warn("disabling bootstrapping; not available when using a separate replication host.");
 			this.bootstrapperType = "none";
 		}
@@ -659,8 +647,9 @@ public class MaxwellConfig extends AbstractConfig {
 			this.schemaMysql.sslMode = this.maxwellMysql.sslMode;
 		}
 
-		try {
-			this.filter = new MaxwellFilter(
+		if ( this.filter == null ) {
+			try {
+				this.filter = new MaxwellFilter(
 					includeDatabases,
 					excludeDatabases,
 					includeTables,
@@ -668,14 +657,28 @@ public class MaxwellConfig extends AbstractConfig {
 					blacklistDatabases,
 					blacklistTables,
 					includeColumnValues
-			);
-		} catch (MaxwellInvalidFilterException e) {
-			usage("Invalid filter options: " + e.getLocalizedMessage());
+				);
+			} catch (MaxwellInvalidFilterException e) {
+				usage("Invalid filter options: " + e.getLocalizedMessage());
+			}
 		}
 
 		if ( this.metricsDatadogType.contains("http") && StringUtils.isEmpty(this.metricsDatadogAPIKey) ) {
 			usageForOptions("please specify metrics_datadog_apikey when metrics_datadog_type = http");
 		}
+
+		if ( this.excludeColumns != null ) {
+			for ( String s : this.excludeColumns.split(",") ) {
+				try {
+					outputConfig.excludeColumns.add(compileStringToPattern(s));
+				} catch ( MaxwellInvalidFilterException e ) {
+					usage("invalid exclude_columns: '" + this.excludeColumns + "': " + e.getMessage());
+				}
+			}
+		}
+
+		if (outputConfig.encryptionEnabled() && outputConfig.secretKey == null)
+			usage("--secret_key required");
 	}
 
 	public Properties getKafkaProperties() {
