@@ -214,6 +214,7 @@ secret_key                     | STRING                              | specify t
 **monitoring**
 metrics_prefix | STRING | the prefix maxwell will apply to all metrics | MaxwellMetrics
 metrics_type         | [slf4j &#124; jmx &#124; http &#124; datadog]      | how maxwell metrics will be reported, at least one of slf4j &#124; jmx &#124; http &#124; datadog|
+metrics_jvm          | BOOLEAN                                            | enable jvm metrics, e.g. memory usage, GC stats, etc.| false
 metrics_slf4j_interval     | INT                                 | the frequency metrics are emitted to the log, in seconds, when slf4j reporting is configured | 60
 metrics_http_port         | INT                                 | the port the server will bind to when http reporting is configured (deprecated: use http_port) | 8080
 http_port                 | INT                                 | the port the server will bind to when http reporting is configured | 8080
