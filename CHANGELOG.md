@@ -1,5 +1,12 @@
 # Maxwell changelog
 
+### [v1.14.2](https://github.com/zendesk/maxwell/releases/tag/v1.14.2): "bork bork bork"
+
+
+- fix regression in 1.14.1 around bootstrapping host detection
+- fix heartbeating code around table includes
+
+
 ### [v1.14.1](https://github.com/zendesk/maxwell/releases/tag/v1.14.1): "half asleep in frog pajamas"
 
 
