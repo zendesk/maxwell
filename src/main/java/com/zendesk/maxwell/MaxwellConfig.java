@@ -87,6 +87,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public String metricsDatadogHost;
 	public int metricsDatadogPort;
 	public Long metricsDatadogInterval;
+	public boolean metricsJvm;
 
 	public MaxwellDiagnosticContext.Config diagnosticConfig;
 
@@ -285,6 +286,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "metrics_datadog_port", "the port to publish metrics to when metrics_datadog_type = udp" ).withRequiredArg();
 		parser.accepts( "http_diagnostic", "enable http diagnostic endpoint: true|false. default: false" ).withOptionalArg();
 		parser.accepts( "http_diagnostic_timeout", "the http diagnostic response timeout in ms when http_diagnostic=true. default: 10000" ).withRequiredArg();
+		parser.accepts( "metrics_jvm", "enable jvm metrics: true|false. default: false" ).withRequiredArg();
 
 		parser.accepts( "__separator_11" );
 
@@ -442,6 +444,8 @@ public class MaxwellConfig extends AbstractConfig {
 		this.metricsDatadogHost = fetchOption("metrics_datadog_host", options, properties, "localhost");
 		this.metricsDatadogPort = Integer.parseInt(fetchOption("metrics_datadog_port", options, properties, "8125"));
 		this.metricsDatadogInterval = fetchLongOption("metrics_datadog_interval", options, properties, 60L);
+
+		this.metricsJvm = fetchBooleanOption("metrics_jvm", options, properties, false);
 
 		this.diagnosticConfig = new MaxwellDiagnosticContext.Config();
 		this.diagnosticConfig.enable = fetchBooleanOption("http_diagnostic", options, properties, false);

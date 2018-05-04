@@ -273,6 +273,9 @@ sqs_queue_uri=aws_sqs_queue_uri
 # The prefix maxwell will apply to all metrics
 #metrics_prefix=MaxwellMetrics # default MaxwellMetrics
 
+# Enable (dropwizard) JVM metrics, default false
+#metrics_jvm=true
+
 # When metrics_type includes slf4j this is the frequency metrics are emitted to the log, in seconds
 #metrics_slf4j_interval=60
 
