@@ -1,5 +1,11 @@
 # Maxwell changelog
 
+### [v1.14.4](https://github.com/zendesk/maxwell/releases/tag/v1.14.4): "chinese food"
+
+
+ - Fix race condition in SchemaCapturer
+
+
 ### [v1.14.3](https://github.com/zendesk/maxwell/releases/tag/v1.14.3): "what's for lunch?"
 
 - Enable jvm metrics
