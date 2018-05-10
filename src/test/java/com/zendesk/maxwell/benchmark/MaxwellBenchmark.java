@@ -64,6 +64,7 @@ public class MaxwellBenchmark {
 			nRows -= toGenerate;
 			pb.stepBy(toGenerate);
 		}
+		pb.stop();
 	}
 
 	private static void generate(int nRows) throws Exception {
