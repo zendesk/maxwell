@@ -21,6 +21,7 @@ public class FieldNames {
 	public static final String THREAD_ID = "thread_id";
 	public static final String TIMESTAMP = "ts";
 	public static final String TRANSACTION_ID = "xid";
+	public static final String TRANSACTION_OFFSET = "xoffset";
 	public static final String TYPE = "type";
 	public static final String UUID = "_uuid";
 

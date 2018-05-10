@@ -107,6 +107,17 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
+	public void testPrimaryKeyWithSetType() throws Exception {
+		List<RowMap> list;
+		String before[] = { "create table pksen (Id set('android','iphone','ipad'), primary key(ID))" };
+		String input[] = {"insert into pksen set id ='android'"};
+		String expectedJSON = "{\"database\":\"shard_1\",\"table\":\"pksen\",\"pk.id\":[\"android\"]}";
+		list = getRowsForSQL(null, input, before);
+		assertThat(list.size(), is(1));
+		assertThat(list.get(0).pkToJson(RowMap.KeyFormat.HASH), is(expectedJSON));
+	}
+
+	@Test
 	public void testAlternativePKString() throws Exception {
 		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
@@ -476,6 +487,11 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
+	public void testInvalid() throws Exception {
+		requireMinimumVersion(server.VERSION_5_6);
+		runJSON("/json/test_invalid_time");
+	}
+	@Test
 	public void testUCS2() throws Exception {
 		runJSON("/json/test_ucs2");
 	}
@@ -521,6 +537,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	public void testJdbcConnectionOptions() throws Exception {
 		String[] opts = {"--jdbc_options= netTimeoutForStreamingResults=123& profileSQL=true  ", "--host=no-soup-spoons"};
 		MaxwellConfig config = new MaxwellConfig(opts);
+		config.validate();
 		assertThat(config.maxwellMysql.getConnectionURI(), containsString("jdbc:mysql://no-soup-spoons:3306/maxwell?"));
 		assertThat(config.replicationMysql.getConnectionURI(), containsString("jdbc:mysql://no-soup-spoons:3306?"));
 

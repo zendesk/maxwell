@@ -1,5 +1,63 @@
 # Maxwell changelog
 
+### [v1.14.4](https://github.com/zendesk/maxwell/releases/tag/v1.14.4): "chinese food"
+
+
+ - Fix race condition in SchemaCapturer
+
+
+### [v1.14.3](https://github.com/zendesk/maxwell/releases/tag/v1.14.3): "what's for lunch?"
+
+- Enable jvm metrics
+
+### [v1.14.2](https://github.com/zendesk/maxwell/releases/tag/v1.14.2): "bork bork bork"
+
+
+- fix regression in 1.14.1 around bootstrapping host detection
+- fix heartbeating code around table includes
+
+
+### [v1.14.1](https://github.com/zendesk/maxwell/releases/tag/v1.14.1): "half asleep in frog pajamas"
+
+
+- bootstraps can now take a client_id
+- improved config validation for embedded mode
+
+
+### [v1.14.0](https://github.com/zendesk/maxwell/releases/tag/v1.14.0): "cats, cats, more cats.  sadness at lack of cats."
+
+
+- new feature `--output_xoffset` to uniquely identify rows within transactions,
+  thx Jens Gyti
+- Bug fixes around "0000-00-00" times.
+- Bug fixes around dates pre 1000 AD
+
+
+### [v1.13.5](https://github.com/zendesk/maxwell/releases/tag/v1.13.5): "cyclone keni is real"
+
+- Support environment variable based configuration
+
+### [v1.13.4](https://github.com/zendesk/maxwell/releases/tag/v1.13.4): "it was just a dream"
+
+- Added possibility to do not declare the rabbitmq exchange.
+
+### [v1.13.3](https://github.com/zendesk/maxwell/releases/tag/v1.13.3): "winner winner chicken dinner"
+
+
+ - Add logging for binlog errors
+ - Maven warning fix
+ - Do not include current position DDL schema to avoid processing DDL twice
+ - Always write null fields in primary key fields
+ - Bugfix: fix http_path_prefix command line option issue
+
+### [v1.13.2](https://github.com/zendesk/maxwell/releases/tag/v1.13.2): "I just bought them to sleep in"
+
+
+- fix a bug with CHARACTER SET = DEFAULT
+- maxwell now eclipse-friendly.
+- configurable bind-address for maxwell's http server
+
+
 ### [v1.13.1](https://github.com/zendesk/maxwell/releases/tag/v1.13.1): "line up your exes in song"
 
 

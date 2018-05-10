@@ -8,6 +8,7 @@ import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.MysqlVersion;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
+import com.zendesk.maxwell.util.Logging;
 import org.junit.*;
 
 import static org.junit.Assume.assumeTrue;
@@ -21,6 +22,7 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 
 	@BeforeClass
 	public static void setupTest() throws Exception {
+		Logging.setupLogBridging();
 		server = MaxwellTestSupport.setupServer();
 	}
 

@@ -18,6 +18,9 @@ password=maxwell
 # set the log level.  note that you can configure things further in log4j2.xml
 #log_level=DEBUG # [DEBUG, INFO, WARN, ERROR]
 
+# if set, maxwell will look up the scoped environment variables, strip off the prefix and inject the configs
+#env_config_prefix=MAXWELL_
+
 ######### mysql stuff ###############
 
 # mysql host to connect to
@@ -185,6 +188,7 @@ sqs_queue_uri=aws_sqs_queue_uri
 
 ######### rabbitmq ###################
 #rabbitmq_host=rabbitmq_hostname
+#rabbitmq_port=5672
 #rabbitmq_user=guest
 #rabbitmq_pass=guest
 #rabbitmq_virtual_host=/
@@ -194,6 +198,7 @@ sqs_queue_uri=aws_sqs_queue_uri
 #rabbitmq_exchange_autodelete=false
 #rabbitmq_routing_key_template=%db%.%table%
 #rabbitmq_message_persistent=false
+#rabbitmq_declare_exchange=true
 
 ######### redis ######################
 # Valid values for redis_type = pubsub|lpush. Defaults to pubsub
@@ -267,6 +272,9 @@ sqs_queue_uri=aws_sqs_queue_uri
 
 # The prefix maxwell will apply to all metrics
 #metrics_prefix=MaxwellMetrics # default MaxwellMetrics
+
+# Enable (dropwizard) JVM metrics, default false
+#metrics_jvm=true
 
 # When metrics_type includes slf4j this is the frequency metrics are emitted to the log, in seconds
 #metrics_slf4j_interval=60
