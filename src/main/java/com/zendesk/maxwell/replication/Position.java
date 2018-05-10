@@ -40,6 +40,14 @@ public class Position implements Serializable {
 		return "Position[" + binlogPosition + ", lastHeartbeat=" + lastHeartbeatRead + "]";
 	}
 
+	public String toCommandline() {
+		String gtid = binlogPosition.getGtidSetStr();
+		if ( gtid != null )
+			return gtid;
+		else
+			return binlogPosition.getFile() + ":" + binlogPosition.getOffset();
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		if ( !(o instanceof Position) ) {
