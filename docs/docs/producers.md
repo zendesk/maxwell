@@ -46,6 +46,13 @@ kafka.retries = 5 # or some larger number
 
 And you will also want to set `min.insync.replicas` on Maxwell's output topic.
 
+#### Snappy compression
+If Maxwell is run in a container and snappy compression is enabled,
+```
+-Dorg.xerial.snappy.use.systemlib=true
+```
+should be added to the `$JAVA_OPTS`.
+
 #### Keys
 Maxwell generates keys for its Kafka messages based upon a mysql row's primary key in JSON format:
 

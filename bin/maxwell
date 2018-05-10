@@ -92,7 +92,7 @@ fi
 
 # Launch mode
 if [ "x$DAEMON_MODE" = "xtrue" ]; then
-    nohup $JAVA $JAVA_OPTS -Dfile.encoding=UTF-8 -Dlog4j.shutdownCallbackRegistry=com.djdch.log4j.StaticShutdownCallbackRegistry -Dorg.xerial.snappy.use.systemlib=true -cp $CLASSPATH com.zendesk.maxwell.Maxwell "$@" > "$CONSOLE_OUTPUT_FILE" 2>&1 < /dev/null &
+    nohup $JAVA $JAVA_OPTS -Dfile.encoding=UTF-8 -Dlog4j.shutdownCallbackRegistry=com.djdch.log4j.StaticShutdownCallbackRegistry -cp $CLASSPATH com.zendesk.maxwell.Maxwell "$@" > "$CONSOLE_OUTPUT_FILE" 2>&1 < /dev/null &
 else
-    exec $JAVA $JAVA_OPTS -Dfile.encoding=UTF-8 -Dlog4j.shutdownCallbackRegistry=com.djdch.log4j.StaticShutdownCallbackRegistry -Dorg.xerial.snappy.use.systemlib=true -cp $CLASSPATH com.zendesk.maxwell.Maxwell "$@"
+    exec $JAVA $JAVA_OPTS -Dfile.encoding=UTF-8 -Dlog4j.shutdownCallbackRegistry=com.djdch.log4j.StaticShutdownCallbackRegistry -cp $CLASSPATH com.zendesk.maxwell.Maxwell "$@"
 fi
