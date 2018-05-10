@@ -53,6 +53,7 @@ public class MaxwellBenchmark {
 			ps.clearParameters();
 		}
 		ps.executeBatch();
+		ps.close();
 	}
 
 	private static void generateData(Connection cx, long nRows) throws SQLException {
