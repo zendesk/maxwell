@@ -227,7 +227,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "client_id", "unique identifier for this maxwell replicator" ).withRequiredArg();
 		parser.accepts( "schema_database", "database name for maxwell state (schema and binlog position)" ).withRequiredArg();
 		parser.accepts( "max_schemas", "deprecated." ).withRequiredArg();
-		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION:HEARTBEAT" ).withRequiredArg();
+		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION[:HEARTBEAT]" ).withRequiredArg();
 		parser.accepts( "replay", "replay mode, don't store any information to the server" ).withOptionalArg();
 		parser.accepts( "master_recovery", "(experimental) enable master position recovery code" ).withOptionalArg();
 		parser.accepts( "gtid_mode", "(experimental) enable gtid mode" ).withOptionalArg();
@@ -463,7 +463,7 @@ public class MaxwellConfig extends AbstractConfig {
 			String initPosition = (String) options.valueOf("init_position");
 			String[] initPositionSplit = initPosition.split(":");
 
-			if (initPositionSplit.length != 3)
+			if (initPositionSplit.length < 2)
 				usageForOptions("Invalid init_position: " + initPosition, "--init_position");
 
 			Long pos = 0L;
@@ -474,10 +474,12 @@ public class MaxwellConfig extends AbstractConfig {
 			}
 
 			Long lastHeartbeat = 0L;
-			try {
-				lastHeartbeat = Long.valueOf(initPositionSplit[2]);
-			} catch (NumberFormatException e) {
-				usageForOptions("Invalid init_position: " + initPosition, "--init_position");
+			if ( initPositionSplit.length > 2 ) {
+				try {
+					lastHeartbeat = Long.valueOf(initPositionSplit[2]);
+				} catch (NumberFormatException e) {
+					usageForOptions("Invalid init_position: " + initPosition, "--init_position");
+				}
 			}
 
 			this.initPosition = new Position(new BinlogPosition(pos, initPositionSplit[0]), lastHeartbeat);

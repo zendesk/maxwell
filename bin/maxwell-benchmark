@@ -1,0 +1,94 @@
+#!/bin/bash
+
+set -e
+
+base_dir="$(dirname "$0")/.."
+lib_dir="$base_dir/lib"
+lib_dir_development="$base_dir/target/lib"
+
+if [ ! -e "$lib_dir" -a -e "$lib_dir_development" ]; then
+	lib_dir="$lib_dir_development"
+	CLASSPATH="$CLASSPATH:$base_dir/target/classes:$base_dir/target/test-classes:$base_dir/target/lib"
+fi
+
+CLASSPATH="$CLASSPATH:$lib_dir/*"
+
+KAFKA_VERSION="0.11.0.1"
+
+function use_kafka() {
+	wanted="$1"
+	# disambiguate versions into the latest,
+	# e.g. asking for 0.10 means you want the
+	# latest 0.10.x release
+	case "$wanted" in
+		0.11)
+		KAFKA_VERSION=0.11.0.1
+		;;
+
+		0.10)
+		KAFKA_VERSION=0.10.2.1
+		;;
+
+		*)
+		KAFKA_VERSION="$wanted"
+		;;
+	esac
+}
+
+for key in "$@"
+do
+	case "$key" in
+		--kafka_version)
+		use_kafka "$2"
+		;;
+
+		--kafka_version=*)
+		use_kafka "${key#*=}"
+		;;
+
+        --daemon)
+		DAEMON_MODE="true"
+		DAEMON_NAME="MaxwellDaemon"
+		;;
+
+	esac
+done
+
+if [ "x$DAEMON_MODE" = "xtrue" ]; then
+    # Log directory to use
+    if [ "x$LOG_DIR" = "x" ]; then
+        LOG_DIR="$base_dir/logs"
+    fi
+    # Create logs directory
+    if [ ! -d "$LOG_DIR" ]; then
+        mkdir -p "$LOG_DIR"
+    fi
+    # Console output file when maxwell runs as a daemon
+    CONSOLE_OUTPUT_FILE=$LOG_DIR/$DAEMON_NAME.out
+    echo "Redirecting STDOUT to $CONSOLE_OUTPUT_FILE"
+fi
+
+kafka_client_dir="$lib_dir/kafka-clients"
+kafka_client_jar="$(ls -1 "$kafka_client_dir/kafka-clients-$KAFKA_VERSION"*.jar 2>/dev/null || true)"
+if [ -z "$kafka_client_jar" -o "$(echo "$kafka_client_jar" | wc -l)" -gt 1 ]; then
+
+	if [ -z "$kafka_client_jar" ]; then
+		echo "Error: No matches for kafka version: $KAFKA_VERSION"
+	else
+		echo "Error: Multiple matches for kafka version: $KAFKA_VERSION"
+	fi
+	echo "Supported versions:"
+	ls -1 "$kafka_client_dir" | sed -e 's/^kafka-clients-/ - /' -e 's/\.jar$//'
+	exit 1
+else
+	echo "Using kafka version: $KAFKA_VERSION"
+	CLASSPATH="$CLASSPATH:$kafka_client_jar"
+fi
+
+if [ -z "$JAVA_HOME" ]; then
+	JAVA="java"
+else
+	JAVA="$JAVA_HOME/bin/java"
+fi
+
+exec $JAVA $JAVA_OPTS -Dfile.encoding=UTF-8 -Dlog4j.shutdownCallbackRegistry=com.djdch.log4j.StaticShutdownCallbackRegistry -cp $CLASSPATH com.zendesk.maxwell.benchmark.MaxwellBenchmark "$@"
