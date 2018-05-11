@@ -107,7 +107,7 @@ then
   echo "exec: " $CACHE_DIR/wrapper $DEBUG $BLOCK $MYSQL_VERSION -ppid $PARENT_PID -type mysql -- $EXTRA_ARGS 1>&2
 fi
 
-GO_ARGS="$DEBUG $DEBUG $BLOCK $MYSQL_VERSION $NO_CLEAN $REUSE -ppid $PARENT_PID -type mysql"
+GO_ARGS="$DEBUG $BLOCK $MYSQL_VERSION $NO_CLEAN $REUSE -ppid $PARENT_PID -type mysql"
 if [ "$BLOCK" == "1" ]
 then
   $CACHE_DIR/wrapper $GO_ARGS -- $EXTRA_ARGS &
