@@ -56,7 +56,7 @@ public class MaxwellBenchmark {
 		ps.close();
 	}
 
-	private static void generateData(Connection cx, long nRows) throws SQLException {
+	private static void generateData(Connection cx, int nRows) throws SQLException {
 		ProgressBar pb = new ProgressBar("generating rows", nRows);
 		pb.start();
 		while ( nRows > 0 ) {
