@@ -118,6 +118,9 @@ password=maxwell
 # hash function to use.  "default" is just the JVM's 'hashCode' function.
 #kafka_partition_hash=default # [default, murmur3]
 
+# for predefined database name to partition mapping
+#kafka_partition_config_file=./maxwell-partitions.properties.example
+
 # how maxwell writes its kafka key.
 #
 # 'hash' looks like:

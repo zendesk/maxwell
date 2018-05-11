@@ -3,7 +3,9 @@ package com.zendesk.maxwell.producer;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
 import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.producer.partitioners.AbstractMaxwellKafkaPartitioner;
 import com.zendesk.maxwell.producer.partitioners.MaxwellKafkaPartitioner;
+import com.zendesk.maxwell.producer.partitioners.MaxwellKafkaDBNamePartitioner;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMap.KeyFormat;
@@ -116,7 +118,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	private final KafkaProducer<String, String> kafka;
 	private String topic;
 	private final String ddlTopic;
-	private final MaxwellKafkaPartitioner partitioner;
+	private final AbstractMaxwellKafkaPartitioner partitioner;
 	private final MaxwellKafkaPartitioner ddlPartitioner;
 	private final KeyFormat keyFormat;
 	private final boolean interpolateTopic;
@@ -147,7 +149,12 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		String partitionKey = context.getConfig().producerPartitionKey;
 		String partitionColumns = context.getConfig().producerPartitionColumns;
 		String partitionFallback = context.getConfig().producerPartitionFallback;
-		this.partitioner = new MaxwellKafkaPartitioner(hash, partitionKey, partitionColumns, partitionFallback);
+
+		if (context.getConfig().kafkaPartitionMap == null) {
+			this.partitioner = new MaxwellKafkaPartitioner(hash, partitionKey, partitionColumns, partitionFallback);
+		} else {
+			this.partitioner = new MaxwellKafkaDBNamePartitioner(context.getConfig().kafkaPartitionMap);
+		}
 
 		this.ddlPartitioner = makeDDLPartitioner(hash, partitionKey);
 		this.ddlTopic =  context.getConfig().ddlKafkaTopic;

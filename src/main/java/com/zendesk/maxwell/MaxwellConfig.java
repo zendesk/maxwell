@@ -50,6 +50,8 @@ public class MaxwellConfig extends AbstractConfig {
 	public String kafkaPartitionKey;
 	public String kafkaPartitionColumns;
 	public String kafkaPartitionFallback;
+	public String kafkaPartitionConfigFile;
+	public Map<String, Integer> kafkaPartitionMap;
 	public String bootstrapperType;
 	public int bufferedProducerSize;
 
@@ -363,6 +365,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.kafkaPartitionKey  	= fetchOption("kafka_partition_by", options, properties, null);
 		this.kafkaPartitionColumns  = fetchOption("kafka_partition_columns", options, properties, null);
 		this.kafkaPartitionFallback = fetchOption("kafka_partition_by_fallback", options, properties, null);
+		this.kafkaPartitionConfigFile = fetchOption("kafka_partition_config_file", options, properties, null);
 
 		this.kafkaPartitionHash 	= fetchOption("kafka_partition_hash", options, properties, "default");
 		this.ddlKafkaTopic 		    = fetchOption("ddl_kafka_topic", options, properties, this.kafkaTopic);
@@ -517,6 +520,15 @@ public class MaxwellConfig extends AbstractConfig {
 		if (outputConfig.encryptionEnabled()) {
 			outputConfig.secretKey = fetchOption("secret_key", options, properties, null);
 		}
+
+		if (this.kafkaPartitionConfigFile != null) {
+			kafkaPartitionMap = new HashMap<>();
+			Properties partitionProps = readPropertiesFile(this.kafkaPartitionConfigFile, true);
+
+			for (String databaseName: partitionProps.stringPropertyNames()) {
+				kafkaPartitionMap.put(databaseName, Integer.parseInt(partitionProps.getProperty(databaseName)));
+			}
+		}
 	}
 
 	private Properties parseFile(String filename, Boolean abortOnMissing) {
@@ -554,7 +566,6 @@ public class MaxwellConfig extends AbstractConfig {
 		} else if ( this.producerPartitionKey.equals("column") && StringUtils.isEmpty(this.producerPartitionFallback) ) {
 			usageForOptions("please specify --producer_partition_by_fallback=[database, table, primary_key] when using producer_partition_by=column", "producer_partition_by_fallback");
 		}
-
 	}
 
 	public void validate() {
