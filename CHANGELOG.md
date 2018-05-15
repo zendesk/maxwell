@@ -1,5 +1,14 @@
 # Maxwell changelog
 
+### [v1.14.5](https://github.com/zendesk/maxwell/releases/tag/v1.14.5): "he looks funny, he moves funny"
+
+
+- reduce docker image footprint
+- add benchmarking framework
+- performance improvements for date/datetime columns
+- fix parser error on UPGRADE PARTITIONING
+
+
 ### [v1.14.4](https://github.com/zendesk/maxwell/releases/tag/v1.14.4): "chinese food"
 
 
