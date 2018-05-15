@@ -1,11 +1,11 @@
 FROM openjdk:8u151-jdk-alpine
 ENV MAXWELL_VERSION=1.14.5 KAFKA_VERSION=0.11.0.1
 
-COPY . /workspace
+RUN apk --no-cache add --virtual .build-dependencies make maven
+RUN apk --no-cache add java-snappy-native bash
 
-RUN apk --no-cache add --virtual .build-dependencies make maven \
-    && apk --no-cache add java-snappy-native \
-    && cd /workspace \
+COPY . /workspace
+RUN cd /workspace \
     && KAFKA_VERSION=$KAFKA_VERSION make package MAXWELL_VERSION=$MAXWELL_VERSION \
     && mkdir /app \
     && mv /workspace/target/maxwell-$MAXWELL_VERSION/maxwell-$MAXWELL_VERSION/* /app/ \
