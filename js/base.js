@@ -7,6 +7,7 @@ $( document ).ready(function() {
 
 $('body').scrollspy({
     target: '.bs-sidebar',
+		offset: 100
 });
 
 

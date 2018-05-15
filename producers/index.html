@@ -167,49 +167,77 @@
               
                   <ul class="nav">
                   
-                      <li class="toctree-l3"><a href="#kafka">Kafka</a></li>
+                      <li class="toctree-l3"><a href="#kafka">Kafka</a>
+                      <ul class="toctree-subnav">
                       
-                          <li><a class="toctree-l4" href="#topic">Topic</a></li>
+                          <li class="toctree-l4" ><a href="#topic">Topic</a></li>
                       
-                          <li><a class="toctree-l4" href="#client-version">Client version</a></li>
+                          <li class="toctree-l4" ><a href="#client-version">Client version</a></li>
                       
-                          <li><a class="toctree-l4" href="#extended-options">Extended options</a></li>
+                          <li class="toctree-l4" ><a href="#extended-options">Extended options</a></li>
                       
-                          <li><a class="toctree-l4" href="#snappy-compression">Snappy compression</a></li>
+                          <li class="toctree-l4" ><a href="#performant-properties">Performant properties</a></li>
                       
-                          <li><a class="toctree-l4" href="#keys">Keys</a></li>
+                          <li class="toctree-l4" ><a href="#at-least-once-properties">At-least-once properties</a></li>
                       
+                          <li class="toctree-l4" ><a href="#snappy-compression">Snappy compression</a></li>
+                      
+                          <li class="toctree-l4" ><a href="#keys">Keys</a></li>
+                      
+                      </li>
+                      </uL>
                   
-                      <li class="toctree-l3"><a href="#partitioning">Partitioning</a></li>
+                      <li class="toctree-l3"><a href="#partitioning">Partitioning</a>
+                      <ul class="toctree-subnav">
                       
-                          <li><a class="toctree-l4" href="#kafka-partitioning">Kafka partitioning</a></li>
+                          <li class="toctree-l4" ><a href="#kafka-partitioning">Kafka partitioning</a></li>
                       
+                      </li>
+                      </uL>
                   
-                      <li class="toctree-l3"><a href="#kinesis">Kinesis</a></li>
+                      <li class="toctree-l3"><a href="#kinesis">Kinesis</a>
+                      <ul class="toctree-subnav">
                       
-                          <li><a class="toctree-l4" href="#aws-credentials">AWS Credentials</a></li>
+                          <li class="toctree-l4" ><a href="#aws-credentials">AWS Credentials</a></li>
                       
-                          <li><a class="toctree-l4" href="#options">Options</a></li>
+                          <li class="toctree-l4" ><a href="#options">Options</a></li>
                       
+                      </li>
+                      </uL>
                   
-                      <li class="toctree-l3"><a href="#sqs">SQS</a></li>
+                      <li class="toctree-l3"><a href="#sqs">SQS</a>
+                      <ul class="toctree-subnav">
                       
-                          <li><a class="toctree-l4" href="#aws-credentials_1">AWS Credentials</a></li>
+                          <li class="toctree-l4" ><a href="#aws-credentials_1">AWS Credentials</a></li>
                       
-                          <li><a class="toctree-l4" href="#options_1">Options</a></li>
+                          <li class="toctree-l4" ><a href="#options_1">Options</a></li>
                       
+                      </li>
+                      </uL>
                   
-                      <li class="toctree-l3"><a href="#google-cloud-pubsub">Google Cloud Pub/Sub</a></li>
+                      <li class="toctree-l3"><a href="#google-cloud-pubsub">Google Cloud Pub/Sub</a>
+                      <ul class="toctree-subnav">
                       
+                      </li>
+                      </uL>
                   
-                      <li class="toctree-l3"><a href="#rabbitmq">RabbitMQ</a></li>
+                      <li class="toctree-l3"><a href="#rabbitmq">RabbitMQ</a>
+                      <ul class="toctree-subnav">
                       
+                      </li>
+                      </uL>
                   
-                      <li class="toctree-l3"><a href="#redis">Redis</a></li>
+                      <li class="toctree-l3"><a href="#redis">Redis</a>
+                      <ul class="toctree-subnav">
                       
+                      </li>
+                      </uL>
                   
-                      <li class="toctree-l3"><a href="#custom-producer">Custom Producer</a></li>
+                      <li class="toctree-l3"><a href="#custom-producer">Custom Producer</a>
+                      <ul class="toctree-subnav">
                       
+                      </li>
+                      </uL>
                   
                   </ul>
               
@@ -267,32 +295,34 @@ e.g. 'maxwell', or dynamic, e.g. <code>namespace_%{database}_%{table}</code>. In
 latter case 'database' and 'table' will be replaced with the values for the row
 being processed. This can be changed with the <code>kafka_topic</code> option.</p>
 <h4 id="client-version">Client version</h4>
-<p>By default, maxwell runs with kafka clients 0.11.0.1. There is a flag (--kafka_version) that allows maxwell to run with either 0.8.2.2, 0.9.0.1, 0.10.0.1, 0.10.2.1 or 0.11.0.1.
-Noteables:
-- Kafka clients 0.9.0.1 are not compatible with brokers running kafka 0.8. The exception below will show in logs when that is the case:</p>
+<p>By default, maxwell uses the kafka 0.11.0.1 library. The <code>--kafka_version</code> flag
+lets you choose an alternate library version: 0.8.2.2, 0.9.0.1, 0.10.0.1, 0.10.2.1 or
+0.11.0.1.  This flag is only available on the command line.</p>
+<ul>
+<li>The 0.8.2.2 client is only compatible with brokers running kafka 0.8.</li>
+<li>The 0.10.0.x client is only compatible with brokers 0.10.0.x or later.</li>
+<li>Mixing the 0.10 client with other versions can lead to serious performance impacts.
+  For More details, <a href="http://kafka.apache.org/0100/documentation.html#upgrade_10_performance_impact">read about it here</a>.</li>
+<li>The 0.11.0 client can talk to version 0.10.0 or newer brokers.</li>
+<li>The 0.9.0.1 client is not compatible with brokers running kafka 0.8. The exception below will show in logs when that is the case:</li>
+</ul>
 <pre><code>ERROR Sender - Uncaught error in kafka producer I/O thread:
 SchemaException: Error reading field 'throttle_time_ms': java.nio.BufferUnderflowException
 </code></pre>
 
-<ul>
-<li>Kafka clients 0.8 are compatible with brokers running kafka 0.8.</li>
-<li>0.10.0.x clients only support 0.10.0.x or later brokers.</li>
-<li>Mixing Kafka 0.10 with other versions can lead to serious performance impacts.
-  For More details, <a href="http://kafka.apache.org/0100/documentation.html#upgrade_10_performance_impact">read about it here</a>.</li>
-<li>0.11.0 clients can talk to version 0.10.0 or newer brokers.</li>
-</ul>
 <h4 id="extended-options">Extended options</h4>
 <p>Any options given to Maxwell that are prefixed with <code>kafka.</code> will be passed directly into the Kafka producer configuration
 (with <code>kafka.</code> stripped off).  We use the "new producer" configuration, as described here:
 <a href="http://kafka.apache.org/documentation.html#newproducerconfigs">http://kafka.apache.org/documentation.html#newproducerconfigs</a></p>
-<p>Here's some decent kafka properties. You can set them in <code>config.properties</code>.</p>
+<h4 id="performant-properties">Performant properties</h4>
+<p>These properties would give high throughput performance.</p>
 <pre><code>kafka.acks = 1
 kafka.compression.type = snappy
 kafka.retries=0
 </code></pre>
 
-<p>Note that these settings are optimized for throughput rather than full
-consistency.  For at-least-once delivery, you will want something more like:</p>
+<h4 id="at-least-once-properties">At-least-once properties</h4>
+<p>For at-least-once delivery, you will want something more like:</p>
 <pre><code>kafka.acks = all
 kafka.retries = 5 # or some larger number
 </code></pre>
@@ -320,20 +350,18 @@ application in which you need to parse and re-generate keys, it's advised you en
 <p>Both Kafka and AWS Kinesis support the notion of partitioned streams.
 Partitioning is controlled by <code>producer_partition_by</code>, which gives you the
 option to split your stream by database, table, primary
-key, or embedded columns.  How you choose to partition your streams influences
-quite a bit in downstream applications; generally the rule of thumb is to use
-the finest-grained partition scheme that one can without sacrificing
-serialization needs.</p>
-<p>When using <code>producer_partition_by</code>=<em>column</em> you must set
-<code>producer_partition_columns</code> with the column name(s) to partition by (e.g.
-<code>producer_partition_columns</code>=user_id or
-<code>producer_partition_columns</code>=user_id,create_date). You must also set
-<code>producer_partiton_by_fallback</code>. This may be (<em>database</em>, <em>table</em>, <em>primary_key</em>).
-It is used when the column(s) specified does not exist in the current row. The
-default is <em>database</em>.  When partitioning by <em>column</em> Maxwell will treat the
-values for the specified columns as strings, concatenate them and use that
-value to partition the data. The above example, partitioning by user_id +
-create_date would have a partition key similar to <em>1178532016-10-10 18:29:04</em>.</p>
+key, or column data.  How you choose to partition will influence the consumers
+of the maxwell stream.  A good rule of thumb is to use the finest-grained
+partition scheme possible given serialization constraints.</p>
+<p>To partition by column data, you must set both:</p>
+<ul>
+<li><code>producer_partition_columns</code>, a comma-separated list of column names, and</li>
+<li><code>producer_partiton_by_fallback</code>. This may be (<em>database</em>, <em>table</em>,
+  <em>primary_key</em>), and will be used as a default value when the column does not
+  exist.</li>
+</ul>
+<p>When partitioning by column Maxwell will treat the values for the specified
+columns as strings, concatenate them and use that value to partition the data.</p>
 <h4 id="kafka-partitioning">Kafka partitioning</h4>
 <p>A binlog event's partition is determined by the selected hash function and hash string as follows</p>
 <pre><code>  HASH_FUNCTION(HASH_STRING) % TOPIC.NUMBER_OF_PARTITIONS
