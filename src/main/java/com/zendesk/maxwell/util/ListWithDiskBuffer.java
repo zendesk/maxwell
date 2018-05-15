@@ -80,7 +80,8 @@ public class ListWithDiskBuffer<T> {
 	@Override
 	protected void finalize() throws Throwable {
 		try {
-			file.delete();
+			if ( file != null )
+				file.delete();
 		} finally {
 			super.finalize();
 		}
