@@ -50,6 +50,7 @@ alter_partition_specification:
     | REBUILD PARTITION partition_names
     | REPAIR PARTITION partition_names
     | REMOVE PARTITIONING
+    | UPGRADE PARTITIONING
     | partition_by;
 
 ignored_alter_specifications:
