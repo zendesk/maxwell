@@ -162,7 +162,7 @@
               
                   <ul class="nav">
                   
-                      <li class="toctree-l3"><a href="#reference">reference</a>
+                      <li class="toctree-l3"><a href="#reference">Reference</a>
                       <ul class="toctree-subnav">
                       
                       </li>
@@ -196,6 +196,8 @@
                       <ul class="toctree-subnav">
                       
                           <li class="toctree-l4" ><a href="#includeexclude">Include/Exclude</a></li>
+                      
+                          <li class="toctree-l4" ><a href="#blacklisting-tables">Blacklisting tables</a></li>
                       
                           <li class="toctree-l4" ><a href="#supressing-columns">Supressing columns</a></li>
                       
@@ -257,7 +259,7 @@
 </div></div>
             <div class="col-md-10" role="main">
 
-<h3 id="reference">reference</h3>
+<h3 id="reference">Reference</h3>
 <hr />
 <p>At the minimum, you will need to specify 'host', 'user', 'password', 'producer'.
 The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requires 'kinesis_stream'.</p>
@@ -287,7 +289,7 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 <td>log_level</td>
 <td>[debug &#124; info &#124; warn &#124; error]</td>
 <td>log level</td>
-<td>INFO</td>
+<td>info</td>
 </tr>
 <tr>
 <td>daemon</td>
@@ -365,7 +367,7 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 <td>replica_server_id</td>
 <td>LONG</td>
 <td>unique numeric identifier for this maxwell instance</td>
-<td>6379 (see notes)</td>
+<td>6379 (see <a href="#multiple-maxwell-instances">notes</a>)</td>
 </tr>
 <tr>
 <td>master_recovery</td>
@@ -378,12 +380,6 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 <td>BOOLEAN</td>
 <td>enable GTID-based replication</td>
 <td>false</td>
-</tr>
-<tr>
-<td>ignore_producer_error</td>
-<td>BOOLEAN</td>
-<td>Maxwell will be terminated on kafka/kinesis errors when false. Otherwise, those producer errors are only logged.</td>
-<td>true</td>
 </tr>
 <tr>
 <td>&nbsp;</td>
@@ -476,6 +472,54 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 <td>stdout</td>
 </tr>
 <tr>
+<td>custom_producer.factory</td>
+<td>CLASS_NAME</td>
+<td>fully qualified custom producer factory class, see <a href="https://github.com/zendesk/maxwell/blob/master/src/example/com/zendesk/maxwell/example/producerfactory/CustomProducerFactory.java">example</a></td>
+<td></td>
+</tr>
+<tr>
+<td>producer_ack_timeout</td>
+<td><a href="#ack_timeout">PRODUCER_ACK_TIMEOUT</a></td>
+<td>time in milliseconds before async producers consider a message lost</td>
+<td></td>
+</tr>
+<tr>
+<td>producer_partition_by</td>
+<td><a href="#partition_by">PARTITION_BY</a></td>
+<td>input to kafka/kinesis partition function</td>
+<td>database</td>
+</tr>
+<tr>
+<td>producer_partition_columns</td>
+<td>STRING</td>
+<td>if partitioning by 'column', a comma separated list of columns</td>
+<td></td>
+</tr>
+<tr>
+<td>producer_partition_by_fallback</td>
+<td><a href="#partition_by_fallback">PARTITION_BY_FALLBACK</a></td>
+<td>required when producer_partition_by=column.  Used when the column is missing</td>
+<td></td>
+</tr>
+<tr>
+<td>ignore_producer_error</td>
+<td>BOOLEAN</td>
+<td>Maxwell will be terminated on kafka/kinesis errors when false. Otherwise, those producer errors are only logged.</td>
+<td>true</td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>"file" producer options</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
 <td>output_file</td>
 <td>STRING</td>
 <td>output file for <code>file</code> producer</td>
@@ -483,6 +527,12 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 </tr>
 <tr>
 <td>&nbsp;</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>"kafka" producer options </strong></td>
 <td></td>
 <td></td>
 <td></td>
@@ -500,28 +550,22 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 <td>maxwell</td>
 </tr>
 <tr>
-<td>producer_partition_by</td>
-<td><a href="#partition_by">PARTITION_BY</a></td>
-<td>input to kafka/kinesis partition function</td>
-<td>database</td>
-</tr>
-<tr>
-<td>producer_partition_columns</td>
-<td>STRING</td>
-<td>if partitioning by 'column', a comma separated list of columns</td>
-<td></td>
-</tr>
-<tr>
-<td>producer_partition_by_fallback</td>
-<td>[database &#124; table &#124; primary_key]</td>
-<td>required when producer_partition_by=column.  Used when the column is missing</td>
-<td></td>
+<td>kafka_version</td>
+<td><a href="#kafka_version">KAFKA_VERSION</a></td>
+<td>run maxwell with specified kafka producer version.  Not available in config.properties.</td>
+<td>0.11.0.1</td>
 </tr>
 <tr>
 <td>kafka_partition_hash</td>
-<td>[default &#124; murmur3]</td>
-<td>hash function to use when hoosing kafka partition</td>
+<td>[ default &#124; murmur3 ]</td>
+<td>hash function to use when choosing kafka partition</td>
 <td>default</td>
+</tr>
+<tr>
+<td>kafka_key_format</td>
+<td>[ array &#124; hash ]</td>
+<td>how maxwell outputs kafka keys, either a hash or and array of hashes</td>
+<td>hash</td>
 </tr>
 <tr>
 <td>ddl_kafka_topic</td>
@@ -530,13 +574,13 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 <td><em>kafka_topic</em></td>
 </tr>
 <tr>
-<td>kafka_version</td>
-<td>[0.8.2.2 &#124; 0.9.0.1 &#124; 0.10.0.1 &#124; 0.10.2.1 &#124; 0.11.0.1]</td>
-<td>run maxwell with kafka producer 0.8.2.2, 0.9.0.1, 0.10.0.1, 0.10.2.1 or 0.11.0.1  Not available in config.properties.</td>
-<td>0.11.0.1</td>
+<td>&nbsp;</td>
+<td></td>
+<td></td>
+<td></td>
 </tr>
 <tr>
-<td>&nbsp;</td>
+<td><strong>"kinesis" producer options </strong></td>
 <td></td>
 <td></td>
 <td></td>
@@ -554,6 +598,192 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 <td></td>
 </tr>
 <tr>
+<td><strong>"sqs" producer options </strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>sqs_queue_uri</td>
+<td>STRING</td>
+<td>SQS Queue URI</td>
+<td></td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>"pubsub" producer options </strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>pubsub_topic</td>
+<td>STRING</td>
+<td>Google Cloud pub-sub topic</td>
+<td></td>
+</tr>
+<tr>
+<td>pubsub_platform_id</td>
+<td>STRING</td>
+<td>Google Cloud platform id associated with topic</td>
+<td></td>
+</tr>
+<tr>
+<td>ddl_pubsub_topic</td>
+<td>STRING</td>
+<td>Google Cloud pub-sub topic to send DDL events to</td>
+<td></td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>"rabbitmq" producer options </strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>rabbitmq_user</td>
+<td>STRING</td>
+<td>Username of Rabbitmq connection</td>
+<td>guest</td>
+</tr>
+<tr>
+<td>rabbitmq_pass</td>
+<td>STRING</td>
+<td>Password of Rabbitmq connection</td>
+<td>guest</td>
+</tr>
+<tr>
+<td>rabbitmq_host</td>
+<td>STRING</td>
+<td>Host of Rabbitmq machine</td>
+<td></td>
+</tr>
+<tr>
+<td>rabbitmq_port</td>
+<td>INT</td>
+<td>Port of Rabbitmq machine</td>
+<td></td>
+</tr>
+<tr>
+<td>rabbitmq_virtual_host</td>
+<td>STRING</td>
+<td>Virtual Host of Rabbitmq</td>
+<td></td>
+</tr>
+<tr>
+<td>rabbitmq_exchange</td>
+<td>STRING</td>
+<td>Name of exchange for rabbitmq publisher</td>
+<td></td>
+</tr>
+<tr>
+<td>rabbitmq_exchange_type</td>
+<td>STRING</td>
+<td>Exchange type for rabbitmq</td>
+<td></td>
+</tr>
+<tr>
+<td>rabbitmq_exchange_durable</td>
+<td>BOOLEAN</td>
+<td>Exchange durability.</td>
+<td>false</td>
+</tr>
+<tr>
+<td>rabbitmq_exchange_autodelete</td>
+<td>BOOLEAN</td>
+<td>If set, the exchange is deleted when all queues have finished using it.</td>
+<td>false</td>
+</tr>
+<tr>
+<td>rabbitmq_routing_key_template</td>
+<td>STRING</td>
+<td>A string template for the routing key, <code>%db%</code> and <code>%table%</code> will be substituted.</td>
+<td><code>%db%.%table%</code>.</td>
+</tr>
+<tr>
+<td>rabbitmq_message_persistent</td>
+<td>BOOLEAN</td>
+<td>Eanble message persistence.</td>
+<td>false</td>
+</tr>
+<tr>
+<td>rabbitmq_declare_exchange</td>
+<td>BOOLEAN</td>
+<td>Should declare the exchange for rabbitmq publisher</td>
+<td>true</td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>"redis" producer options </strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>redis_host</td>
+<td>STRING</td>
+<td>Host of Redis server</td>
+<td>localhost</td>
+</tr>
+<tr>
+<td>redis_port</td>
+<td>INT</td>
+<td>Port of Redis server</td>
+<td>6379</td>
+</tr>
+<tr>
+<td>redis_auth</td>
+<td>STRING</td>
+<td>Authentication key for a password-protected Redis server</td>
+<td></td>
+</tr>
+<tr>
+<td>redis_database</td>
+<td>INT</td>
+<td>Database of Redis server</td>
+<td>0</td>
+</tr>
+<tr>
+<td>redis_pub_channel</td>
+<td>STRING</td>
+<td>Redis Pub/Sub channel</td>
+<td>maxwell</td>
+</tr>
+<tr>
+<td>redis_list_key</td>
+<td>STRING</td>
+<td>Redis LPUSH List Key</td>
+<td>maxwell</td>
+</tr>
+<tr>
+<td>redis_type</td>
+<td>[ pubsub &#124; lpush ]</td>
+<td>Selects either Redis Pub/Sub or LPUSH.</td>
+<td>pubsub</td>
+</tr>
+<tr>
+<td>&nbsp;</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
 <td><strong>formatting</strong></td>
 <td></td>
 <td></td>
@@ -562,37 +792,49 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 <tr>
 <td>output_binlog_position</td>
 <td>BOOLEAN</td>
-<td>should produced records include binlog position</td>
+<td>records include binlog position</td>
+<td>false</td>
+</tr>
+<tr>
+<td>output_gtid_position</td>
+<td>BOOLEAN</td>
+<td>records include gtid position, if available</td>
 <td>false</td>
 </tr>
 <tr>
 <td>output_commit_info</td>
 <td>BOOLEAN</td>
-<td>should produced records include commit and xid</td>
+<td>records include commit and xid</td>
 <td>true</td>
+</tr>
+<tr>
+<td>output_xoffset</td>
+<td>BOOLEAN</td>
+<td>records include virtual tx-row offset</td>
+<td>false</td>
 </tr>
 <tr>
 <td>output_nulls</td>
 <td>BOOLEAN</td>
-<td>produced records include fields with NULL values</td>
+<td>records include fields with NULL values</td>
 <td>true</td>
 </tr>
 <tr>
 <td>output_server_id</td>
 <td>BOOLEAN</td>
-<td>produced records include server_id</td>
+<td>records include server_id</td>
 <td>false</td>
 </tr>
 <tr>
 <td>output_thread_id</td>
 <td>BOOLEAN</td>
-<td>produced records include thread_id</td>
+<td>records include thread_id</td>
 <td>false</td>
 </tr>
 <tr>
 <td>output_row_query</td>
 <td>BOOLEAN</td>
-<td>produced records include row query</td>
+<td>records include INSERT/UPDATE/DELETE statement. Mysql option "binlog_rows_query_log_events" must be enabled</td>
 <td>false</td>
 </tr>
 <tr>
@@ -640,13 +882,19 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 <tr>
 <td>blacklist_dbs</td>
 <td>PATTERN</td>
-<td>ignore updates AND schema changes from databases (see warnings below)</td>
+<td>ignore updates AND schema changes from databases (see <a href="#blacklisting-tables">warnings</a>)</td>
 <td></td>
 </tr>
 <tr>
 <td>blacklist_tables</td>
 <td>PATTERN</td>
-<td>ignore updates AND schema changes from tables named like PATTERN (see warnings below)</td>
+<td>ignore updates AND schema changes from tables named like PATTERN (see <a href="#blacklisting-tables">warnings</a>)</td>
+<td></td>
+</tr>
+<tr>
+<td>include_column_values</td>
+<td>COL=val[,COL=val]</td>
+<td>include only rows that match these values</td>
 <td></td>
 </tr>
 <tr>
@@ -674,7 +922,13 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 <td>null</td>
 </tr>
 <tr>
-<td><strong>monitoring</strong></td>
+<td>&nbsp;</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>monitoring / metrics</strong></td>
 <td></td>
 <td></td>
 <td></td>
@@ -688,26 +942,20 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 <tr>
 <td>metrics_type</td>
 <td>[slf4j &#124; jmx &#124; http &#124; datadog]</td>
-<td>how maxwell metrics will be reported, at least one of slf4j &#124; jmx &#124; http &#124; datadog</td>
+<td>how maxwell metrics will be reported</td>
 <td></td>
 </tr>
 <tr>
 <td>metrics_jvm</td>
 <td>BOOLEAN</td>
-<td>enable jvm metrics, e.g. memory usage, GC stats, etc.</td>
+<td>enable jvm metrics: memory usage, GC stats, etc.</td>
 <td>false</td>
 </tr>
 <tr>
 <td>metrics_slf4j_interval</td>
-<td>INT</td>
+<td>SECONDS</td>
 <td>the frequency metrics are emitted to the log, in seconds, when slf4j reporting is configured</td>
 <td>60</td>
-</tr>
-<tr>
-<td>metrics_http_port</td>
-<td>INT</td>
-<td>the port the server will bind to when http reporting is configured (deprecated: use http_port)</td>
-<td>8080</td>
 </tr>
 <tr>
 <td>http_port</td>
@@ -716,10 +964,28 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 <td>8080</td>
 </tr>
 <tr>
+<td>http_path_prefix</td>
+<td>STRING</td>
+<td>http path prefix for the server</td>
+<td>/</td>
+</tr>
+<tr>
 <td>http_bind_address</td>
 <td>STRING</td>
 <td>the address the server will bind to when http reporting is configured</td>
-<td>(default with no value is to bind to all interfaces)</td>
+<td>all addresses</td>
+</tr>
+<tr>
+<td>http_diagnostic</td>
+<td>BOOLEAN</td>
+<td>enable http diagnostic endpoint</td>
+<td>false</td>
+</tr>
+<tr>
+<td>http_diagnostic_timeout</td>
+<td>MILLISECONDS</td>
+<td>the http diagnostic response timeout</td>
+<td>10000</td>
 </tr>
 <tr>
 <td>metrics_datadog_type</td>
@@ -777,7 +1043,7 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 </tr>
 <tr>
 <td>init_position</td>
-<td>FILE:POSITION:HEARTBEAT</td>
+<td>FILE:POSITION[:HEARTBEAT]</td>
 <td>ignore the information in maxwell.positions and start at the given binlog position. Not available in config.properties.</td>
 <td></td>
 </tr>
@@ -803,6 +1069,20 @@ DEFAULT_JDBC_OPTS: zeroDateTimeBehavior=convertToNull&amp;connectTimeout=5000
 
 <p id="partition_by" class="jumptarget">
 PARTITION_BY: [ database &#124; table &#124; primary_key &#124; column ]
+</p>
+
+<p id="partition_by_fallback" class="jumptarget">
+PARTITION_BY_FALLBACK: [ database &#124; table &#124; primary_key ]
+</p>
+
+<p id="kafka_version" class="jumptarget">
+KAFKA_VERSION: [ 0.8.2.2 &#124; 0.9.0.1 &#124; 0.10.0.1 &#124; 0.10.2.1 &#124; 0.11.0.1 ]
+</p>
+
+<p id="ack_timeout" class="jumptarget">
+PRODUCER_ACK_TIMEOUT: In certain failure modes, async producers (kafka, kinesis, pubsub, sqs) may simply disappear
+a message, never notifying maxwell of success or failure.  This timeout can be set as a heuristic; after this many
+milliseconds, maxwell will consider an outstanding message lost and fail it.
 </p>
 
 <h3 id="configuration-methods">Configuration methods</h3>
@@ -906,6 +1186,8 @@ given as <code>option=/regex/</code>.  The options are evaluated as follows:</p>
 <li>reject tables in <code>exclude_tables</code></li>
 </ol>
 <p>So an example like <code>--include_dbs=/foo.*/ --exclude_tables=bar</code> will include <code>footy.zab</code> and exclude <code>footy.bar</code></p>
+<h4 id="blacklisting-tables">Blacklisting tables</h4>
+<p>In general, don't use this.</p>
 <p>The option <code>blacklist_tables</code> and <code>blacklist_dbs</code> controls whether Maxwell will send updates for a table to its producer AND whether
 it captures schema changes for that table or database. Note that once Maxwell has been running with a table or database marked as blacklisted,
 you <em>must</em> continue to run Maxwell with that table or database blacklisted or else Maxwell will halt. If you want to stop
