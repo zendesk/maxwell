@@ -226,7 +226,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "replica_server_id", "server_id that maxwell reports to the master.  See docs for full explanation. ").withRequiredArg();
 		parser.accepts( "client_id", "unique identifier for this maxwell replicator" ).withRequiredArg();
 		parser.accepts( "schema_database", "database name for maxwell state (schema and binlog position)" ).withRequiredArg();
-		parser.accepts( "max_schemas", "deprecated." ).withRequiredArg();
+		parser.accepts( "max_schemas", "[deprecated]" ).withRequiredArg();
 		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION[:HEARTBEAT]" ).withRequiredArg();
 		parser.accepts( "replay", "replay mode, don't store any information to the server" ).withOptionalArg();
 		parser.accepts( "master_recovery", "(experimental) enable master position recovery code" ).withOptionalArg();
@@ -267,7 +267,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "redis_database", "Database of Redis server" ).withRequiredArg();
 		parser.accepts( "redis_pub_channel", "Redis Pub/Sub channel for publishing records" ).withRequiredArg();
 		parser.accepts( "redis_list_key", "Redis LPUSH List Key for adding to a queue" ).withRequiredArg();
-		parser.accepts( "redis_type", "Selects either Redis Pub/Sub or LPUSH. Default to Pub/Sub" ).withRequiredArg();
+		parser.accepts( "redis_type", "[pubsub|lpush] Selects either Redis Pub/Sub or LPUSH. Defaults to 'pubsub'" ).withRequiredArg();
 
 		parser.accepts( "__separator_10" );
 
