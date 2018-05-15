@@ -1,5 +1,5 @@
 FROM openjdk:8u151-jdk-alpine
-ENV MAXWELL_VERSION=1.14.5 KAFKA_VERSION=0.11.0.1
+ENV MAXWELL_VERSION=1.14.6 KAFKA_VERSION=0.11.0.1
 
 RUN apk --no-cache add --virtual .build-dependencies make maven
 RUN apk --no-cache add java-snappy-native bash
