@@ -175,6 +175,8 @@
                       
                           <li><a class="toctree-l4" href="#extended-options">Extended options</a></li>
                       
+                          <li><a class="toctree-l4" href="#snappy-compression">Snappy compression</a></li>
+                      
                           <li><a class="toctree-l4" href="#keys">Keys</a></li>
                       
                   
@@ -296,6 +298,12 @@ kafka.retries = 5 # or some larger number
 </code></pre>
 
 <p>And you will also want to set <code>min.insync.replicas</code> on Maxwell's output topic.</p>
+<h4 id="snappy-compression">Snappy compression</h4>
+<p>If Maxwell is run in a container and snappy compression is enabled,</p>
+<pre><code>-Dorg.xerial.snappy.use.systemlib=true
+</code></pre>
+
+<p>should be added to the <code>$JAVA_OPTS</code>.</p>
 <h4 id="keys">Keys</h4>
 <p>Maxwell generates keys for its Kafka messages based upon a mysql row's primary key in JSON format:</p>
 <pre><code>{ &quot;database&quot;:&quot;test_tb&quot;,&quot;table&quot;:&quot;test_tbl&quot;,&quot;pk.id&quot;:4,&quot;pk.part2&quot;:&quot;hello&quot;}
