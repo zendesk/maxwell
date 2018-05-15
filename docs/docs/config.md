@@ -1,145 +1,3 @@
-### Mysql Server configuration
-***
-At a minimum, Maxwell needs row-level-replication turned on into order to
-operate:
-
-```
-[mysqld]
-server_id=1
-log-bin=master
-binlog_format=row
-```
-
-### Properties file
-***
-If Maxwell finds the file `config.properties` in $PWD it will use it.  Any
-command line options (except `init_position`, `replay`, and `kafka_version`) may be given as
-"key=value" pairs.
-
-Additionally, any configuration file options prefixed with 'kafka.' will be
-passed into the kafka producer library, after having 'kafka.' stripped off the
-front of the key.  So, for example if config.properties contains
-
-```
-kafka.batch.size=16384
-```
-
-then Maxwell will send `batch.size=16384` to the kafka producer library.
-
-### Scoped environment variables
-***
-If `--env_config_prefix` configuration param is defined, for example, `--env_config_prefix=MAXWELL_`, or it is defined in the `config.properties` file, Maxwell will look up
-all the environment variables that start with `MAXWELL_` and strip off the prefix. The scoped environment variable names are case insensitive.
-For instance if env contains
-```
-MAXWELL_USER=mysql_user
-```
-then Maxwell will get `user=mysql_user` config.
-
-The configuration priority is
-```
-command line options > scoped env vars > properties file > default values
-```
-
-### GTID support
-***
-As of 1.8.0, Maxwell contains support for
-[GTID-based replication](https://dev.mysql.com/doc/refman/5.6/en/replication-gtids.html).  Enable it with the `--gtid_mode` configuration param.
-
-Here's how you might configure your mysql server for GTID mode:
-
-```
-$ vi my.cnf
-
-[mysqld]
-server_id=1
-log-bin=master
-binlog_format=row
-gtid-mode=ON
-log-slave-updates=ON
-enforce-gtid-consistency=true
-```
-
-When in GTID-mode, Maxwell will transparently pick up a new replication
-position after a master change.  Note that you will still have to re-point
-maxwell to the new master.
-
-GTID support in Maxwell is considered alpha-quality at the moment; notably,
-Maxwell is unable to transparently upgrade from a traditional-replication
-scenario to a GTID-replication scenario; currently, when you enable gtid mode
-Maxwell will recapture the schema and GTID-position from "wherever the master
-is at".
-
-
-### RDS configuration
-***
-To run Maxwell against RDS, (either Aurora or Mysql) you will need to do the following:
-
-- set binlog_format to "ROW".  Do this in the "parameter groups" section.  For a Mysql-RDS instance this parameter will be
-  in a "DB Parameter Group", for Aurora it will be in a "DB Cluster Parameter Group".
-- setup RDS binlog retention as described [here](http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.Concepts.MySQL.html).
-  The tl;dr is to execute `call mysql.rds_set_configuration('binlog retention hours', 24)` on the server.
-
-### Filters
-***
-#### Include/Exclude
-The options `include_dbs`, `exclude_dbs`, `include_tables`, and `exclude_tables` control whether
-Maxwell will send an update for a given row to its producer.  All the options take a single value PATTERN,
-which may either be a literal table/database name, given as `option=name`, or a regular expression,
-given as `option=/regex/`.  The options are evaluated as follows:
-
-1. only accept databases in `include_dbs` if non-empty
-1. reject databases in `exclude_dbs`
-1. only accept tables in `include_tables` if non-empty
-1. reject tables in `exclude_tables`
-
-So an example like `--include_dbs=/foo.*/ --exclude_tables=bar` will include `footy.zab` and exclude `footy.bar`
-
-The option `blacklist_tables` and `blacklist_dbs` controls whether Maxwell will send updates for a table to its producer AND whether
-it captures schema changes for that table or database. Note that once Maxwell has been running with a table or database marked as blacklisted,
-you *must* continue to run Maxwell with that table or database blacklisted or else Maxwell will halt. If you want to stop
-blacklisting a table or database, you will have to drop the maxwell schema first.
-
-#### Supressing columns
-
-If you wish to suppress columns from Maxwell's output (for instance, a password field),
-you can use `exclude_columns` to filter out columns by name.
-
-#### Filtering on column values
-Maxwell can filter rows to only match when a column contains a specific value.  The `include_column_values` option takes a comma-separated
-list of column/value pairs: "bar=x,foo=y".  Note that if a column does not exist in a table, it will ignore the value-filter.
-
-### Schema storage host vs replica host
-***
-Maxwell needs two sets of mysql permissions to operate properly: a mysql database in which to store schema snapshots,
-and a mysql host to replicate from.  The recommended configuration is that
-these two functions are provided by a single mysql host.  In this case, just
-specify `host`, `user`, etc.
-
-Some configurations, however, may need to write data to a different server than it replicates from.  In this case,
-the host described by `host`, `user`, ..., will be used to write schema information to, and Maxwell will replicate
-events from the host described by `replication_host`, `replication_user`, ...  Note that bootstrapping is not available
-in this configuration.
-
-It's also possible to specify a different host to capture schema from than to
-replicate from, via `schema_host`, ...  This is useful when using Maxscale as a
-replication proxy.
-
-### running multiple instances of maxwell against the same master
-***
-Maxwell can operate with multiple instances running against a single master, in
-different configurations.  This can be useful if you wish to have producers
-running in different configurations, for example producing different groups of
-tables to different topics.  Each instance of Maxwell must be configured with a
-unique `client_id`, in order to store unique binlog positions.
-
-### multiple instances on a 5.5 server
-***
-With MySQL 5.5 and below, each replicator (be it mysql, maxwell, whatever) must
-also be configured with a unique `replica_server_id`.  This is a 32-bit integer
-that corresponds to mysql's `server_id` parameter.  The value you configure
-should be unique across all mysql and maxwell instances.
-
 ### reference
 ***
 
@@ -151,7 +9,8 @@ option                         | argument                            | descripti
 **general options**
 config                         | STRING                              | location of `config.properties` file                | $PWD/config.properties
 log_level                      | [debug &#124; info &#124; warn &#124; error]             | log level                                           | INFO
-daemon                         |                                     | running maxwell as a daemon                         |    
+daemon                         |                                     | running maxwell as a daemon                         |
+env_config_prefix              | STRING                              | env vars matching prefix are treated as config values |
 &nbsp;
 **mysql options**
 host                           | STRING                              | mysql host                                          | localhost
@@ -159,6 +18,7 @@ user                           | STRING                              | mysql use
 password                       | STRING                              | mysql password                                      | (no password)
 port                           | INT                                 | mysql port                                          | 3306
 jdbc_options                   | STRING                              | mysql jdbc connection options                       | zeroDateTimeBehavior=convertToNull&amp;connectTimeout=5000
+ssl                            | [SSL_OPT](#sslopt)                  | SSL behavior for mysql cx                           | DISABLED
 schema_database                | STRING                              | database to store schema and position in            | maxwell
 client_id                      | STRING                              | unique text identifier for maxwell instance         | maxwell
 replica_server_id              | LONG                                | unique numeric identifier for this maxwell instance | 6379 (see notes)
@@ -167,17 +27,19 @@ gtid_mode                      | BOOLEAN                             | enable GT
 ignore_producer_error          | BOOLEAN                             | Maxwell will be terminated on kafka/kinesis errors when false. Otherwise, those producer errors are only logged. | true
 &nbsp;
 replication_host               | STRING                              | mysql host to replicate from.  Only specify if different from `host` (see notes) | *schema-store host*
-replication_password           | STRING                              | password on replication server | (none)
-replication_port               | INT                                 | port on replication server | 3306
-replication_user               | STRING                              | user on replication server |
+replication_password           | STRING                              | password on replication server                      | (none)
+replication_port               | INT                                 | port on replication server                          | 3306
+replication_user               | STRING                              | user on replication server                          |
+replication_ssl                | [SSL_OPT](#sslopt)                  | SSL behavior for replication cx cx                  | DISABLED
 &nbsp;
 schema_host                    | STRING                              | mysql host to capture schema from.  Useful for using Maxscale as a binlog-proxy | *schema-store host*
-schema_password                | STRING                              | password on schema-capture server | (none)
-schema_port                    | INT                                 | port on schema-capture server | 3306
-schema_user                    | STRING                              | user on schema-capture server |
+schema_password                | STRING                              | password on schema-capture server                   | (none)
+schema_port                    | INT                                 | port on schema-capture server                       | 3306
+schema_user                    | STRING                              | user on schema-capture server                       |
+schema_ssl                     | [SSL_OPT](#sslopt)                  | SSL behavior for schema-capture server              | DISABLED
 &nbsp;
 **producer options**
-producer                       | [stdout &#124; kafka &#124; file &#124; profiler]        | type of producer to use                             | stdout
+producer                       | [PRODUCER_TYPE](#producer_type)         | type of producer to use                             | stdout
 output_file                    | STRING                              | output file for `file` producer                     |
 &nbsp;
 kafka.bootstrap.servers        | STRING                              | kafka brokers, given as `HOST:PORT[,HOST:PORT]`     |
@@ -230,3 +92,153 @@ metrics_datadog_port | INT | the port to publish metrics to when metrics_datadog
 bootstrapper                   | [async &#124; sync &#124; none]                   | bootstrapper type.  See bootstrapping docs.        | async
 init_position                  | FILE:POSITION:HEARTBEAT             | ignore the information in maxwell.positions and start at the given binlog position. Not available in config.properties. |
 replay                         | BOOLEAN                             | enable maxwell's read-only "replay" mode: don't store a binlog position or schema changes.  Not available in config.properties. |
+
+<p id="sslopt" class="jumptarget">
+SSL_OPTION: [ DISABLED &#124; PREFERRED &#124; REQUIRED &#124; VERIFY_CA &#124; VERIFY_IDENTITY ]
+</p>
+<p id="producer_type" class="jumptarget">
+PRODUCER_TYPE: [ stdout &#124; file &#124; kafka &#124; kinesis &#124; pubsub &#124; sqs &#124; rabbitmq &#124; redis ]
+</p>
+
+
+### Configuration methods
+***
+
+Maxwell is configurable via the command-line, a properties file, or the environment.
+The configuration priority is:
+
+```
+command line options > scoped env vars > properties file > default values
+```
+
+#### config.properties
+
+If Maxwell finds the file `config.properties` in $PWD it will use it.  Any
+command line options (except `init_position`, `replay`, `kafka_version` and
+`daemon`) may be given as "key=value" pairs.
+
+Additionally, any configuration file options prefixed with 'kafka.' will be
+passed into the kafka producer library, after having 'kafka.' stripped off the
+front of the key.  So, for example if config.properties contains
+
+```
+kafka.batch.size=16384
+```
+
+then Maxwell will send `batch.size=16384` to the kafka producer library.
+
+#### via environment
+If `env_config_prefix` given via command line or in `config.properties`, Maxwell
+will configure itself with all environment variables that match the prefix. The
+environment variable names are case insensitive.  For example, if maxwell is
+started with `--env_config_prefix=FOO_` and the environment contains `FOO_USER=auser`,
+this would be equivalent to passing `--user=auser`.
+
+
+### Deployment scenarios
+***
+
+At a minimum, Maxwell needs row-level-replication turned on into order to
+operate:
+
+```
+[mysqld]
+server_id=1
+log-bin=master
+binlog_format=row
+```
+
+#### GTID support
+As of 1.8.0, Maxwell contains support for
+[GTID-based replication](https://dev.mysql.com/doc/refman/5.6/en/replication-gtids.html).  Enable it with the `--gtid_mode` configuration param.
+
+Here's how you might configure your mysql server for GTID mode:
+
+```
+$ vi my.cnf
+
+[mysqld]
+server_id=1
+log-bin=master
+binlog_format=row
+gtid-mode=ON
+log-slave-updates=ON
+enforce-gtid-consistency=true
+```
+
+When in GTID-mode, Maxwell will transparently pick up a new replication
+position after a master change.  Note that you will still have to re-point
+maxwell to the new master.
+
+GTID support in Maxwell is considered alpha-quality at the moment; notably,
+Maxwell is unable to transparently upgrade from a traditional-replication
+scenario to a GTID-replication scenario; currently, when you enable gtid mode
+Maxwell will recapture the schema and GTID-position from "wherever the master
+is at".
+
+
+#### RDS configuration
+To run Maxwell against RDS, (either Aurora or Mysql) you will need to do the following:
+
+- set binlog_format to "ROW".  Do this in the "parameter groups" section.  For a Mysql-RDS instance this parameter will be
+  in a "DB Parameter Group", for Aurora it will be in a "DB Cluster Parameter Group".
+- setup RDS binlog retention as described [here](http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.Concepts.MySQL.html).
+  The tl;dr is to execute `call mysql.rds_set_configuration('binlog retention hours', 24)` on the server.
+
+#### Split server roles
+
+Maxwell uses MySQL for 3 different functions:
+
+1. A host to store the captured schema in (`--host`).
+2. A host to replicate from (`--replication_host`).
+3. A host to capture the schema from (`--schema_host`).
+
+Often, all three hosts are the same.  `host` and `replication_host` should be different
+if mysql is chained off a slave.  `schema_host` should only be used when using the
+maxscale replication proxy.
+
+Note that bootstrapping is currently not available when `host` and
+`replication_host` are separate, due to some implementation details.
+
+#### Multiple Maxwell Instances
+
+Maxwell can operate with multiple instances running against a single master, in
+different configurations.  This can be useful if you wish to have producers
+running in different configurations, for example producing different groups of
+tables to different topics.  Each instance of Maxwell must be configured with a
+unique `client_id`, in order to store unique binlog positions.
+
+With MySQL 5.5 and below, each replicator (be it mysql, maxwell, whatever) must
+also be configured with a unique `replica_server_id`.  This is a 32-bit integer
+that corresponds to mysql's `server_id` parameter.  The value you configure
+should be unique across all mysql and maxwell instances.
+
+### Filtering
+***
+#### Include/Exclude
+The options `include_dbs`, `exclude_dbs`, `include_tables`, and `exclude_tables` control whether
+Maxwell will send an update for a given row to its producer.  All the options take a single value PATTERN,
+which may either be a literal table/database name, given as `option=name`, or a regular expression,
+given as `option=/regex/`.  The options are evaluated as follows:
+
+1. only accept databases in `include_dbs` if non-empty
+1. reject databases in `exclude_dbs`
+1. only accept tables in `include_tables` if non-empty
+1. reject tables in `exclude_tables`
+
+So an example like `--include_dbs=/foo.*/ --exclude_tables=bar` will include `footy.zab` and exclude `footy.bar`
+
+The option `blacklist_tables` and `blacklist_dbs` controls whether Maxwell will send updates for a table to its producer AND whether
+it captures schema changes for that table or database. Note that once Maxwell has been running with a table or database marked as blacklisted,
+you *must* continue to run Maxwell with that table or database blacklisted or else Maxwell will halt. If you want to stop
+blacklisting a table or database, you will have to drop the maxwell schema first.
+
+#### Supressing columns
+
+If you wish to suppress columns from Maxwell's output (for instance, a password field),
+you can use `exclude_columns` to filter out columns by name.
+
+#### Filtering on column values
+Maxwell can filter rows to only match when a column contains a specific value.  The `include_column_values` option takes a comma-separated
+list of column/value pairs: "bar=x,foo=y".  Note that if a column does not exist in a table, it will ignore the value-filter.
+

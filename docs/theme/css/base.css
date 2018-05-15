@@ -215,15 +215,31 @@ h3 {
     }
 
     h4 {
-      font-size: 120%;
+      font-size: 110%;
       padding-left: 30px;
       padding-right: 30px;
-      margin-top: 15px;
+      margin-top: 30px;
       margin-bottom: 0px;
+      font-style: italic;
+      text-decoration: underline;
     }
 
-    .toctree-l4 {
-      margin-left: 10px;
+    hr + h4 {
+      margin-top: 15px;
+    }
+
+    li.toctree-l3 ul {
+      display: none;
+    }
+
+    li.toctree-l3.active ul {
+      display: block;
+    }
+
+    li .toctree-l4 {
+      list-style-type: none;
+      font-size: 80%;
+      margin-bottom: 3px;
     }
 }
 
@@ -246,6 +262,13 @@ hr {
 
 .content-title {
   font-size: 150%;
+}
+
+.jumptarget::before {
+  content:"";
+  display:block;
+  height:50px; /* fixed header height*/
+  margin:-50px 0 0; /* negative fixed header height */
 }
 
 h3:before {
