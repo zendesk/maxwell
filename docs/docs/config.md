@@ -17,7 +17,7 @@ host                           | STRING                              | mysql hos
 user                           | STRING                              | mysql username                                      |
 password                       | STRING                              | mysql password                                      | (no password)
 port                           | INT                                 | mysql port                                          | 3306
-jdbc_options                   | STRING                              | mysql jdbc connection options                       | zeroDateTimeBehavior=convertToNull&amp;connectTimeout=5000
+jdbc_options                   | STRING                              | mysql jdbc connection options                       | [DEFAULT_JDBC_OPTS](#jdbcopts)
 ssl                            | [SSL_OPT](#sslopt)                  | SSL behavior for mysql cx                           | DISABLED
 schema_database                | STRING                              | database to store schema and position in            | maxwell
 client_id                      | STRING                              | unique text identifier for maxwell instance         | maxwell
@@ -26,25 +26,25 @@ master_recovery                | BOOLEAN                             | enable ex
 gtid_mode                      | BOOLEAN                             | enable GTID-based replication                       | false
 ignore_producer_error          | BOOLEAN                             | Maxwell will be terminated on kafka/kinesis errors when false. Otherwise, those producer errors are only logged. | true
 &nbsp;
-replication_host               | STRING                              | mysql host to replicate from.  Only specify if different from `host` (see notes) | *schema-store host*
+replication_host               | STRING                              | server to replicate from.  See [split server roles](#split-server-roles) | *schema-store host*
 replication_password           | STRING                              | password on replication server                      | (none)
 replication_port               | INT                                 | port on replication server                          | 3306
 replication_user               | STRING                              | user on replication server                          |
 replication_ssl                | [SSL_OPT](#sslopt)                  | SSL behavior for replication cx cx                  | DISABLED
 &nbsp;
-schema_host                    | STRING                              | mysql host to capture schema from.  Useful for using Maxscale as a binlog-proxy | *schema-store host*
+schema_host                    | STRING                              | server to capture schema from.  See [split server roles](#split-server-roles) | *schema-store host*
 schema_password                | STRING                              | password on schema-capture server                   | (none)
 schema_port                    | INT                                 | port on schema-capture server                       | 3306
 schema_user                    | STRING                              | user on schema-capture server                       |
 schema_ssl                     | [SSL_OPT](#sslopt)                  | SSL behavior for schema-capture server              | DISABLED
 &nbsp;
 **producer options**
-producer                       | [PRODUCER_TYPE](#producer_type)         | type of producer to use                             | stdout
+producer                       | [PRODUCER_TYPE](#producer_type)     | type of producer to use                             | stdout
 output_file                    | STRING                              | output file for `file` producer                     |
 &nbsp;
 kafka.bootstrap.servers        | STRING                              | kafka brokers, given as `HOST:PORT[,HOST:PORT]`     |
-kafka_topic                    | STRING                              | kafka topic to write to. static string or variable replacement                            | maxwell
-producer_partition_by             | [database &#124; table &#124; primary_key &#124; column] | input to kafka partition function                   | database
+kafka_topic                    | STRING                              | kafka topic to write to.                            | maxwell
+producer_partition_by          | [PARTITION_BY](#partition_by)       | input to kafka/kinesis partition function           | database
 producer_partition_columns        | STRING                              | if partitioning by 'column', a comma separated list of columns |
 producer_partition_by_fallback    | [database &#124; table &#124; primary_key]        | required when producer_partition_by=column.  Used when the column is missing |
 kafka_partition_hash           | [default &#124; murmur3]                   | hash function to use when hoosing kafka partition   | default
@@ -99,7 +99,12 @@ SSL_OPTION: [ DISABLED &#124; PREFERRED &#124; REQUIRED &#124; VERIFY_CA &#124; 
 <p id="producer_type" class="jumptarget">
 PRODUCER_TYPE: [ stdout &#124; file &#124; kafka &#124; kinesis &#124; pubsub &#124; sqs &#124; rabbitmq &#124; redis ]
 </p>
-
+<p id="jdbcopts" class="jumptarget">
+DEFAULT_JDBC_OPTS: zeroDateTimeBehavior=convertToNull&amp;connectTimeout=5000
+</p>
+<p id="partition_by" class="jumptarget">
+PARTITION_BY: [ database &#124; table &#124; primary_key &#124; column ]
+</p>
 
 ### Configuration methods
 ***

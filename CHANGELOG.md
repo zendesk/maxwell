@@ -1,5 +1,11 @@
 # Maxwell changelog
 
+### [v1.14.6](https://github.com/zendesk/maxwell/releases/tag/v1.14.6): "gimme one sec, I need to grab something"
+
+
+- Fix docker image
+
+
 ### [v1.14.5](https://github.com/zendesk/maxwell/releases/tag/v1.14.5): "he looks funny, he moves funny"
 
 
