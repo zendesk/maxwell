@@ -41,7 +41,7 @@
 
         {% if include_search %}{% include "search.html" %}{% endif %}
 
-        <script src="{{ base_url }}/js/bootstrap-3.0.3.min.js"></script>
+        <script src="{{ base_url }}/js/bootstrap-3.3.7.min.js"></script>
         <script src="{{ base_url }}/js/prettify-1.0.min.js"></script>
         <script src="{{ base_url }}/js/base.js"></script>
         {%- for path in extra_javascript %}
@@ -54,8 +54,8 @@
                 scrollBy(0, -50)
             };
 
-            if (location.hash) shiftWindow();
-            window.addEventListener("hashchange", shiftWindow);
+            //if (location.hash) shiftWindow();
+            //window.addEventListener("hashchange", shiftWindow);
 
             jQuery("table").addClass("table table-condensed table-bordered table-hover");
             jQuery("#maxwell-header").append(
