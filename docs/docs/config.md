@@ -54,7 +54,7 @@ kafka.bootstrap.servers        | STRING                              | kafka bro
 kafka_topic                    | STRING                              | kafka topic to write to.                            | maxwell
 kafka_version                  | [KAFKA_VERSION](#kafka_version)     | run maxwell with specified kafka producer version.  Not available in config.properties. | 0.11.0.1
 kafka_partition_hash           | [ default &#124; murmur3 ]          | hash function to use when choosing kafka partition   | default
-kafka_key_format               | [ array &#124; hash ]               | how maxwell outputs kafka keys, either a hash or and array of hashes | hash
+kafka_key_format               | [ array &#124; hash ]               | how maxwell outputs kafka keys, either a hash or an array of hashes | hash
 ddl_kafka_topic                | STRING                              | if output_ddl is true, kafka topic to write DDL changes to | *kafka_topic*
 &nbsp;
 **"kinesis" producer options **
