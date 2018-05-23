@@ -2,7 +2,6 @@ package com.zendesk.maxwell.replication;
 
 import java.util.HashMap;
 
-import com.google.code.or.binlog.impl.event.TableMapEvent;
 import com.zendesk.maxwell.MaxwellFilter;
 import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
@@ -32,14 +31,6 @@ public class TableCache {
 			}
 		}
 
-	}
-
-	// open-replicator keeps a very similar cache, but we can't get access to it.
-	public void processEvent(Schema schema, MaxwellFilter filter, TableMapEvent event) {
-		String dbName = new String(event.getDatabaseName().getValue());
-		String tblName = new String(event.getTableName().getValue());
-
-		processEvent(schema, filter, event.getTableId(), dbName, tblName);
 	}
 
 	public Table getTable(Long tableId) {
