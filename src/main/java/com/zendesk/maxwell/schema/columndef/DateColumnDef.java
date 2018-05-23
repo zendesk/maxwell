@@ -1,15 +1,8 @@
 package com.zendesk.maxwell.schema.columndef;
 
-import com.google.code.or.common.util.MySQLConstants;
-
 public class DateColumnDef extends ColumnDef {
 	public DateColumnDef(String name, String type, int pos) {
 		super(name, type, pos);
-	}
-
-	@Override
-	public boolean matchesMysqlType(int type) {
-		return type == MySQLConstants.TYPE_DATE;
 	}
 
 	@Override

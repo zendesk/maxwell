@@ -19,7 +19,6 @@ public abstract class ColumnDef {
 		this.pos = pos;
 	}
 
-	public abstract boolean matchesMysqlType(int type);
 	public abstract String toSQL(Object value);
 
 	public Object asJSON(Object value) {

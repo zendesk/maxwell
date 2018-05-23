@@ -1,7 +1,5 @@
 package com.zendesk.maxwell.schema.columndef;
 
-import com.google.code.or.common.util.MySQLConstants;
-
 public class FloatColumnDef extends ColumnDef {
 	public FloatColumnDef() { }
 	public FloatColumnDef(String name, String type, int pos) {
@@ -9,14 +7,6 @@ public class FloatColumnDef extends ColumnDef {
 	}
 
 	public boolean signed;
-
-	@Override
-	public boolean matchesMysqlType(int type) {
-		if ( getType().equals("float") )
-			return type == MySQLConstants.TYPE_FLOAT;
-		else
-			return type == MySQLConstants.TYPE_DOUBLE;
-	}
 
 	@Override
 	public String toSQL(Object value) {

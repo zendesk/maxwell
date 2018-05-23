@@ -13,11 +13,6 @@ public class JsonColumnDef extends ColumnDef {
 	}
 
 	@Override
-	public boolean matchesMysqlType(int type) {
-		return JSON.getCode() == type;
-	}
-
-	@Override
 	public Object asJSON(Object value) {
 		try {
 			byte[] bytes = (byte[]) value;
