@@ -477,6 +477,10 @@ public class RowMap implements Serializable {
 		return this.data.containsKey(name);
 	}
 
+	public String getRowQuery() {
+		return rowQuery;
+	}
+
 	public String getRowType() {
 		return this.rowType;
 	}
