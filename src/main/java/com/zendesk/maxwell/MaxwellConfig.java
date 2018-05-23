@@ -3,6 +3,7 @@ package com.zendesk.maxwell;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.github.shyiko.mysql.binlog.network.SSLMode;
+import com.zendesk.maxwell.filtering.FilterV2;
 import com.zendesk.maxwell.monitoring.MaxwellDiagnosticContext;
 import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
@@ -31,12 +32,13 @@ public class MaxwellConfig extends AbstractConfig {
 	public MaxwellMysqlConfig schemaMysql;
 
 	public MaxwellMysqlConfig maxwellMysql;
-	public MaxwellFilter filter;
+	public FilterV2 filter;
 	public Boolean gtidMode;
 
 	public String databaseName;
 
 	public String includeDatabases, excludeDatabases, includeTables, excludeTables, excludeColumns, blacklistDatabases, blacklistTables, includeColumnValues;
+	public String filterList;
 
 	public ProducerFactory producerFactory; // producerFactory has precedence over producerType
 	public final Properties customProducerProperties;
@@ -242,6 +244,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "exclude_columns", "exclude these columns, formatted as exclude_columns=col1,col2" ).withRequiredArg();
 		parser.accepts( "blacklist_dbs", "ignore data AND schema changes to these databases, formatted as blacklist_dbs=db1,db2. See the docs for details before setting this!" ).withRequiredArg();
 		parser.accepts( "blacklist_tables", "ignore data AND schema changes to these tables, formatted as blacklist_tables=tb1,tb2. See the docs for details before setting this!" ).withRequiredArg();
+		parser.accepts( "filter", "filter specs.  specify like \"include:db.*, exclude:*.tbl, include: foo./.*bar$/\"");
 		parser.accepts( "include_column_values", "include only rows with these values formatted as include_column_values=C=x,D=y" ).withRequiredArg();
 
 		parser.accepts( "__separator_8" );
@@ -457,6 +460,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.excludeTables       = fetchOption("exclude_tables", options, properties, null);
 		this.blacklistDatabases  = fetchOption("blacklist_dbs", options, properties, null);
 		this.blacklistTables     = fetchOption("blacklist_tables", options, properties, null);
+		this.filterList          = fetchOption("filter", options, properties, null);
 		this.includeColumnValues = fetchOption("include_column_values", options, properties, null);
 
 		if ( options != null && options.has("init_position")) {
@@ -649,8 +653,16 @@ public class MaxwellConfig extends AbstractConfig {
 		}
 
 		if ( this.filter == null ) {
+			if ( this.filterList != null ) {
+				try {
+					this.filter = new FilterV2(filterList, includeColumnValues);
+				} catch (MaxwellInvalidFilterException e) {
+					usage("Invalid filter options: " + e.getLocalizedMessage());
+				}
+			}
+
 			try {
-				this.filter = new MaxwellFilter(
+				this.filter = new FilterV2(
 					includeDatabases,
 					excludeDatabases,
 					includeTables,

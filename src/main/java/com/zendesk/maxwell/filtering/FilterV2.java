@@ -60,7 +60,8 @@ public class FilterV2 {
 		FilterResult match = new FilterResult();
 
 		for ( FilterPattern p : patterns ) {
-			p.match(database, table, match);
+			if ( p.getType() != FilterPatternType.BLACKLIST )
+				p.match(database, table, match);
 		}
 
 		return match.include;

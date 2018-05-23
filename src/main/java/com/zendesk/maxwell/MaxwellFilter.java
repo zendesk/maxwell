@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 	filters compile down to:
 	(includeDatabases.nil? || includeDatabases.include?()
  */
-public class MaxwellFilter {
+public class MaxwellFilterOld {
 	private static final List<Pattern> emptyList = Collections.unmodifiableList(new ArrayList<Pattern>());
 	private final ArrayList<Pattern> includeDatabases = new ArrayList<>();
 	private final ArrayList<Pattern> excludeDatabases = new ArrayList<>();
@@ -19,9 +19,9 @@ public class MaxwellFilter {
 	private final ArrayList<Pattern> blacklistTables = new ArrayList<>();
 	private final Map<String, String> includeColumnValues = new HashMap<>();
 
-	public MaxwellFilter() { }
+	public MaxwellFilterOld() { }
 
-	public MaxwellFilter(
+	public MaxwellFilterOld(
 		String includeDatabases,
 		String excludeDatabases,
 		String includeTables,
@@ -40,7 +40,7 @@ public class MaxwellFilter {
 		}
 	}
 
-	public MaxwellFilter(
+	public MaxwellFilterOld(
 		String includeDatabases,
 		String excludeDatabases,
 		String includeTables,
@@ -194,7 +194,7 @@ public class MaxwellFilter {
 			("ha_health_check".equals(tableName) || StringUtils.startsWith(tableName, "rds_heartbeat"));
 	}
 
-	public static boolean matches(MaxwellFilter filter, String database, String table) {
+	public static boolean matches(MaxwellFilterOld filter, String database, String table) {
 		if (filter == null) {
 			return true;
 		} else {
@@ -202,7 +202,7 @@ public class MaxwellFilter {
 		}
 	}
 
-	public static boolean matchesValues(MaxwellFilter filter, String database, String table, Map<String, Object> data) {
+	public static boolean matchesValues(MaxwellFilterOld filter, String database, String table, Map<String, Object> data) {
 		if (filter == null) {
 			return true;
 		} else {

@@ -3,7 +3,7 @@ package com.zendesk.maxwell.replication;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Meter;
-import com.zendesk.maxwell.MaxwellFilter;
+import com.zendesk.maxwell.filtering.FilterV2;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.monitoring.Metrics;
 import com.zendesk.maxwell.producer.AbstractProducer;
@@ -30,7 +30,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	protected Position lastHeartbeatPosition;
 	protected final HeartbeatNotifier heartbeatNotifier;
 	protected Long stopAtHeartbeat;
-	protected MaxwellFilter filter;
+	protected FilterV2 filter;
 
 	private final Counter rowCounter;
 	private final Meter rowMeter;
@@ -116,21 +116,21 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	 * @param filter A table-filter, or null
 	 * @return Whether we should write the event to the producer
 	 */
-	protected boolean shouldOutputEvent(String database, String table, MaxwellFilter filter) {
+	protected boolean shouldOutputEvent(String database, String table, FilterV2 filter) {
 		Boolean isSystemWhitelisted = this.maxwellSchemaDatabaseName.equals(database)
 			&& ("bootstrap".equals(table) || "heartbeats".equals(table));
 
-		if ( MaxwellFilter.isSystemBlacklisted(database, table) )
+		if ( FilterV2.isSystemBlacklisted(database, table) )
 			return false;
-		else if ( isSystemWhitelisted)
+		else if ( isSystemWhitelisted )
 			return true;
 		else
-			return MaxwellFilter.matches(filter, database, table);
+			return FilterV2.includes(filter, database, table);
 	}
 
 
-	protected boolean shouldOutputRowMap(String database, String table, RowMap rowMap, MaxwellFilter filter) {
-		return MaxwellFilter.matchesValues(filter, database, table, rowMap.getData());
+	protected boolean shouldOutputRowMap(String database, String table, RowMap rowMap, FilterV2 filter) {
+		return FilterV2.matchesValues(filter, database, table, rowMap.getData());
 	}
 
 	/**
@@ -206,7 +206,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	 */
 	public abstract RowMap getRow() throws Exception;
 
-	public void setFilter(MaxwellFilter filter) {
+	public void setFilter(FilterV2 filter) {
 		this.filter = filter;
 	}
 }
