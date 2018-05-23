@@ -28,6 +28,7 @@ public class FilterParser {
 		tokenizer.quoteChar('"');
 		tokenizer.ordinaryChar('.');
 		tokenizer.ordinaryChar('/');
+		tokenizer.wordChars('_', '_');
 		tokenizer.quoteChar('`');
 		tokenizer.quoteChar('\'');
 		tokenizer.quoteChar('"');

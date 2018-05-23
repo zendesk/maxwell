@@ -13,8 +13,8 @@ public class FilterPattern {
 	}
 
 	public void match(String database, String table, FilterResult match) {
-		if ( (dbPattern == null || database == null || dbPattern.matcher(database).find())
-		  && (tablePattern == null || table == null || tablePattern.matcher(table).find()) )
+		if ( (database == null || dbPattern.matcher(database).find())
+		  && (table == null || tablePattern.matcher(table).find()) )
 			match.include = (this.type == FilterPatternType.INCLUDE);
 	}
 

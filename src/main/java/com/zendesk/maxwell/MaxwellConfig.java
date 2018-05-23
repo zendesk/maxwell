@@ -653,24 +653,32 @@ public class MaxwellConfig extends AbstractConfig {
 		}
 
 		if ( this.filter == null ) {
-			if ( this.filterList != null ) {
-				try {
-					this.filter = new FilterV2(filterList, includeColumnValues);
-				} catch (MaxwellInvalidFilterException e) {
-					usage("Invalid filter options: " + e.getLocalizedMessage());
-				}
-			}
-
 			try {
-				this.filter = new FilterV2(
-					includeDatabases,
-					excludeDatabases,
-					includeTables,
-					excludeTables,
-					blacklistDatabases,
-					blacklistTables,
-					includeColumnValues
-				);
+				if ( this.filterList != null ) {
+					this.filter = new FilterV2(filterList, includeColumnValues);
+				} else {
+					boolean hasOldStyleFilters =
+						includeDatabases != null ||
+							excludeDatabases != null ||
+							includeTables != null ||
+							excludeTables != null ||
+							blacklistDatabases != null ||
+							blacklistTables != null;
+
+					if ( hasOldStyleFilters ) {
+						this.filter = FilterV2.fromOldFormat(
+							includeDatabases,
+							excludeDatabases,
+							includeTables,
+							excludeTables,
+							blacklistDatabases,
+							blacklistTables,
+							includeColumnValues
+						);
+					} else {
+						this.filter = new FilterV2();
+					}
+				}
 			} catch (MaxwellInvalidFilterException e) {
 				usage("Invalid filter options: " + e.getLocalizedMessage());
 			}

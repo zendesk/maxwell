@@ -130,7 +130,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 
 
 	protected boolean shouldOutputRowMap(String database, String table, RowMap rowMap, FilterV2 filter) {
-		return FilterV2.matchesValues(filter, database, table, rowMap.getData());
+		return FilterV2.matchesValues(filter, rowMap.getData());
 	}
 
 	/**

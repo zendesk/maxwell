@@ -5,6 +5,7 @@ import org.apache.commons.lang.StringUtils;
 
 import java.io.*;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class FilterV2 {
 
@@ -12,7 +13,7 @@ public class FilterV2 {
 	private final Map<String, String> includeColumnValues = new HashMap<>();
 
 	public FilterV2() {
-
+		patterns = new ArrayList<>();
 	}
 
 	public FilterV2(String filterString, String valueString) throws MaxwellInvalidFilterException {
@@ -26,7 +27,15 @@ public class FilterV2 {
 		}
 
 		try {
-			patterns = new FilterParser(filterString).parse();
+			patterns.addAll(new FilterParser(filterString).parse());
+		} catch ( IOException e ) {
+			throw new MaxwellInvalidFilterException(e.getMessage());
+		}
+	}
+
+	public void addRule(String filterString) throws MaxwellInvalidFilterException {
+		try {
+			this.patterns.addAll(new FilterParser(filterString).parse());
 		} catch ( IOException e ) {
 			throw new MaxwellInvalidFilterException(e.getMessage());
 		}
@@ -59,12 +68,32 @@ public class FilterV2 {
 	public boolean includes(String database, String table) {
 		FilterResult match = new FilterResult();
 
+		for ( FilterPattern p : patterns )
+			p.match(database, table, match);
+
+		return match.include;
+	}
+
+	public boolean isTableBlacklisted(String database, String table) {
+		FilterResult match = new FilterResult();
+
 		for ( FilterPattern p : patterns ) {
-			if ( p.getType() != FilterPatternType.BLACKLIST )
+			if ( p.getType() == FilterPatternType.BLACKLIST )
 				p.match(database, table, match);
 		}
 
-		return match.include;
+		return !match.include;
+	}
+
+	public boolean isDatabaseBlacklisted(String database) {
+		for ( FilterPattern p : patterns ) {
+			if (p.getType() == FilterPatternType.BLACKLIST &&
+				p.getDatabasePattern().matcher(database).find() &&
+				p.getTablePattern().toString().equals(""))
+				return true;
+		}
+
+		return false;
 	}
 
 	public static boolean isSystemBlacklisted(String databaseName, String tableName) {
@@ -87,4 +116,55 @@ public class FilterV2 {
 			return filter.matchesValues(data);
 		}
 	}
+
+	public static FilterV2 fromOldFormat(
+		String includeDatabases,
+		String excludeDatabases,
+		String includeTables,
+		String excludeTables,
+		String blacklistDatabases,
+		String blacklistTables,
+		String includeValues
+	) throws MaxwellInvalidFilterException {
+		ArrayList<String> filterRules = new ArrayList<>();
+
+		if ( blacklistDatabases != null ) {
+			for ( String s : blacklistDatabases.split(",") )
+				filterRules.add("blacklist: " + s + ".*");
+		}
+
+		if ( blacklistTables != null ) {
+			for (String s : blacklistTables.split(","))
+				filterRules.add("blacklist: *." + s);
+		}
+
+		/* any include in old-filters is actually exclude *.* */
+		if ( includeDatabases != null || includeTables != null ) {
+			filterRules.add("exclude: *.*");
+		}
+
+		if ( includeDatabases != null ) {
+			for ( String s : includeDatabases.split(",") )
+				filterRules.add("include: " + s + ".*");
+
+		}
+
+		if ( excludeDatabases != null ) {
+			for (String s : includeDatabases.split(","))
+				filterRules.add("exclude: " + s + ".*");
+		}
+
+		if ( includeTables != null ) {
+			for ( String s : includeTables.split(",") )
+				filterRules.add("include: *." + s);
+		}
+
+		if ( excludeTables != null ) {
+			for ( String s : excludeTables.split(",") )
+				filterRules.add("exclude: *." + s);
+		}
+
+		return new FilterV2(String.join(", ", filterRules), includeValues);
+	}
+
 }
