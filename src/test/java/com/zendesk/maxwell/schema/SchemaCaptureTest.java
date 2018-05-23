@@ -20,7 +20,6 @@ import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.*;
 
-import com.google.code.or.common.util.MySQLConstants;
 import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
@@ -84,9 +83,6 @@ public class SchemaCaptureTest extends MaxwellTestWithIsolatedServer {
 		assertThat(columns[0], instanceOf(BigIntColumnDef.class));
 		assertThat(columns[0].getName(), is("id"));
 		assertEquals(0, columns[0].getPos());
-
-		assertTrue(columns[0].matchesMysqlType(MySQLConstants.TYPE_LONGLONG));
-		assertFalse(columns[0].matchesMysqlType(MySQLConstants.TYPE_DECIMAL));
 
 		assertThat(columns[1], allOf(notNullValue(), instanceOf(IntColumnDef.class)));
 		assertThat(columns[1].getName(), is("account_id"));
