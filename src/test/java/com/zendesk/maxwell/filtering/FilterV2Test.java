@@ -33,4 +33,25 @@ public class FilterV2Test {
 		assertEquals(FilterPatternType.BLACKLIST, filters.get(0).getType());
 		assertEquals(Pattern.compile("^foo$").toString(), filters.get(0).getDatabasePattern().toString());
 	}
+
+	@Test
+	public void TestQuoting() throws Exception {
+		String tests[] = {
+			"include:`foo`.*",
+			"include:'foo'.*",
+			"include:\"foo\".*"
+		};
+		for ( String test : tests ) {
+			filters = runParserTest(test);
+			assertEquals(1, filters.size());
+			assertEquals(Pattern.compile("^foo$").toString(), filters.get(0).getDatabasePattern().toString());
+		}
+	}
+
+	@Test
+	public void TestAdvancedRegexp() throws Exception {
+		filters = runParserTest("include: /\\w+ \\/[a-z]*1/.*");
+		assertEquals(1, filters.size());
+		assertEquals(Pattern.compile("\\w \\/+[a-z]*1").toString(), filters.get(0).getDatabasePattern().toString());
+	}
 }

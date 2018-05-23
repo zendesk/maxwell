@@ -14,11 +14,13 @@ import static java.io.StreamTokenizer.*;
 
 public class FilterParser {
 	private final StreamTokenizer tokenizer;
+	private final InputStreamReader inputStream;
 
 	public FilterParser(
 		String input
 	) throws UnsupportedEncodingException {
-		this.tokenizer = new StreamTokenizer(new InputStreamReader(new StringInputStream(input)));
+		this.inputStream = new InputStreamReader(new StringInputStream(input));
+		this.tokenizer = new StreamTokenizer(inputStream);
 	}
 
 	public List<FilterPattern> parse() throws IOException {
@@ -26,6 +28,9 @@ public class FilterParser {
 		tokenizer.quoteChar('"');
 		tokenizer.ordinaryChar('.');
 		tokenizer.ordinaryChar('/');
+		tokenizer.quoteChar('`');
+		tokenizer.quoteChar('\'');
+		tokenizer.quoteChar('"');
 		tokenizer.nextToken();
 
 		FilterPattern p;
@@ -50,7 +55,7 @@ public class FilterParser {
 			return null;
 
 		if ( tokenizer.ttype != TT_WORD )
-			throw new IOException();
+			throw new IOException("expected [include, exclude, blacklist] in filter definition.");
 
 		switch(tokenizer.sval.toLowerCase()) {
 			case "include":
@@ -81,37 +86,37 @@ public class FilterParser {
 
 	private Pattern parsePattern() throws IOException {
 		Pattern pattern;
-		if ( tokenizer.ttype == '/' ) {
-			pattern = Pattern.compile(parseRegexp());
-		} else if ( tokenizer.ttype == '*' ) {
-			pattern = Pattern.compile("");
-		} else if ( tokenizer.ttype == TT_WORD ){
-			pattern = Pattern.compile("^" + tokenizer.sval + "$");
-		} else {
-			throw new IOException();
+		switch ( tokenizer.ttype ) {
+			case '/':
+				pattern = Pattern.compile(parseRegexp());
+				break;
+			case '*':
+				pattern = Pattern.compile("");
+				break;
+			case TT_WORD:
+			case '`':
+			case '\'':
+			case '"':
+				pattern = Pattern.compile("^" + tokenizer.sval + "$");
+				break;
+			default:
+				throw new IOException();
 		}
 		tokenizer.nextToken();
 		return pattern;
 	}
 
 	private String parseRegexp() throws IOException {
+		char ch, lastChar = 0;
 		String s = "";
 		while ( true ) {
-			tokenizer.nextToken();
-			switch ( tokenizer.ttype ) {
-				case TT_WORD:
-					s += tokenizer.sval;
-					break;
-				case TT_NUMBER:
-					s += tokenizer.nval;
-					break;
-				default:
-					if (tokenizer.ttype == '/' || tokenizer.ttype == TT_EOL)
-						return s;
+			ch = (char) inputStream.read();
+			if ( ch == '/' && lastChar != '\\' )
+				break;
 
-					s += Character.toString((char) tokenizer.ttype);
-					break;
-			}
+			s += ch;
+			lastChar = ch;
 		}
+		return s;
 	}
 }
