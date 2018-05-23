@@ -237,13 +237,13 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_7" );
 
-		parser.accepts( "include_dbs", "include these databases, formatted as include_dbs=db1,db2" ).withRequiredArg();
-		parser.accepts( "exclude_dbs", "exclude these databases, formatted as exclude_dbs=db1,db2" ).withRequiredArg();
-		parser.accepts( "include_tables", "include these tables, formatted as include_tables=db1,db2" ).withRequiredArg();
-		parser.accepts( "exclude_tables", "exclude these tables, formatted as exclude_tables=tb1,tb2" ).withRequiredArg();
-		parser.accepts( "exclude_columns", "exclude these columns, formatted as exclude_columns=col1,col2" ).withRequiredArg();
-		parser.accepts( "blacklist_dbs", "ignore data AND schema changes to these databases, formatted as blacklist_dbs=db1,db2. See the docs for details before setting this!" ).withRequiredArg();
-		parser.accepts( "blacklist_tables", "ignore data AND schema changes to these tables, formatted as blacklist_tables=tb1,tb2. See the docs for details before setting this!" ).withRequiredArg();
+		parser.accepts( "include_dbs", "[deprecated]" ).withRequiredArg();
+		parser.accepts( "exclude_dbs", "[deprecated]" ).withRequiredArg();
+		parser.accepts( "include_tables", "[deprecated]" ).withRequiredArg();
+		parser.accepts( "exclude_tables", "[deprecated]" ).withRequiredArg();
+		parser.accepts( "exclude_columns", "[deprecated]" ).withRequiredArg();
+		parser.accepts( "blacklist_dbs", "[deprecated]" ).withRequiredArg();
+		parser.accepts( "blacklist_tables", "[deprecated]" ).withRequiredArg();
 		parser.accepts( "filter", "filter specs.  specify like \"include:db.*, exclude:*.tbl, include: foo./.*bar$/\"");
 		parser.accepts( "include_column_values", "include only rows with these values formatted as include_column_values=C=x,D=y" ).withRequiredArg();
 
