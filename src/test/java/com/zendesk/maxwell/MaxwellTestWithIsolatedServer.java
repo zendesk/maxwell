@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import com.zendesk.maxwell.filtering.Filter;
+import com.zendesk.maxwell.filtering.MaxwellInvalidFilterException;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.MysqlVersion;
 import com.zendesk.maxwell.replication.Position;

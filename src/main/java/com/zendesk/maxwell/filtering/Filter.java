@@ -1,18 +1,16 @@
 package com.zendesk.maxwell.filtering;
 
-import com.zendesk.maxwell.MaxwellInvalidFilterException;
 import org.apache.commons.lang.StringUtils;
 
-import java.io.*;
 import java.util.*;
 
 public class Filter {
 
-	private List<FilterPattern> patterns;
+	private final List<FilterPattern> patterns;
 	private final Map<String, String> includeColumnValues = new HashMap<>();
 
 	public Filter() {
-		patterns = new ArrayList<>();
+		this.patterns = new ArrayList<>();
 	}
 
 	public Filter(String filterString, String valueString) throws MaxwellInvalidFilterException {

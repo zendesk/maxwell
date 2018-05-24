@@ -1,7 +1,6 @@
 package com.zendesk.maxwell.filtering;
 
 import com.amazonaws.util.StringInputStream;
-import com.zendesk.maxwell.MaxwellInvalidFilterException;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
