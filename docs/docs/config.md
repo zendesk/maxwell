@@ -103,12 +103,7 @@ output_row_query               | BOOLEAN  | records include INSERT/UPDATE/DELETE
 output_ddl                     | BOOLEAN  | output DDL (table-alter, table-create, etc) events  | false
 &nbsp;
 **filtering**
-include_dbs                    | PATTERN           | only send updates from these databases |
-exclude_dbs                    | PATTERN           | ignore updates from these databases |
-include_tables                 | PATTERN           | only send updates from tables named like PATTERN |
-exclude_tables                 | PATTERN           | ignore updates from tables named like PATTERN |
-blacklist_dbs                  | PATTERN           | ignore updates AND schema changes from databases (see [warnings](#blacklisting-tables)) |
-blacklist_tables               | PATTERN           | ignore updates AND schema changes from tables named like PATTERN (see [warnings](#blacklisting-tables)) |
+fliter                         | STRING            | filter rules, eg `exclude: db.*, include: *.tbl, include: *./.*bar$/` |
 include_column_values          | COL=val[,COL=val] | include only rows that match these values |
 &nbsp;
 **encryption**
@@ -276,26 +271,38 @@ should be unique across all mysql and maxwell instances.
 
 ### Filtering
 ***
-#### Include/Exclude
-The options `include_dbs`, `exclude_dbs`, `include_tables`, and `exclude_tables` control whether
-Maxwell will send an update for a given row to its producer.  All the options take a single value PATTERN,
-which may either be a literal table/database name, given as `option=name`, or a regular expression,
-given as `option=/regex/`.  The options are evaluated as follows:
 
-1. only accept databases in `include_dbs` if non-empty
-1. reject databases in `exclude_dbs`
-1. only accept tables in `include_tables` if non-empty
-1. reject tables in `exclude_tables`
+Maxwell can be configured to filter out updates from specific tables.  This is controlled
+by the `--filter` command line flag.  Here's how that flag looks:
 
-So an example like `--include_dbs=/foo.*/ --exclude_tables=bar` will include `footy.zab` and exclude `footy.bar`
+```
+bin/maxwell --filter = "exclude: foodb.*, include: foodb.tbl, include: foodb./table_\d+/"
+```
+
+This example tells Maxwell to suppress all updates that happen on `foodb`, except for updates
+to `tbl` and any table in foodb matching the regexp `/table_\d+/`.
+
+
+```
+bin/maxwell --filter = "exclude: *.*, include: db1.*"
+```
+
+Filter options are evaluated in the order specified, so in this example we
+suppress everything except updates in the `db1` database.
+
 
 #### Blacklisting tables
 
-In general, don't use this.
+In rare cases, you may wish to tell Maxwell to completely ignore a database or
+table, including schema changes.  In general, don't use this.  If you must use this:
 
-The option `blacklist_tables` and `blacklist_dbs` controls whether Maxwell will send updates for a table to its producer AND whether
-it captures schema changes for that table or database. Note that once Maxwell has been running with a table or database marked as blacklisted,
-you *must* continue to run Maxwell with that table or database blacklisted or else Maxwell will halt. If you want to stop
+```
+bin/maxwell --filter = "blacklist: bad_db.*"
+```
+
+Note that once Maxwell has been running with a table or database marked as
+blacklisted, you *must* continue to run Maxwell with that table or database
+blacklisted or else Maxwell will halt. If you want to stop
 blacklisting a table or database, you will have to drop the maxwell schema first.
 
 #### Supressing columns

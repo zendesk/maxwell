@@ -220,25 +220,11 @@ sqs_queue_uri=aws_sqs_queue_uri
 
 ######### filter stuff ###############
 
-# filter rows out of Maxwell's output.
-# all filters may be given either as literal names, or as java-style regular expressions.
-# This is a literal name: "exclude_tables=tblname".
-# This is a regexp:       "exclude_tables=/tblname_\\d+/"
-
-# include *only* these databases
-#include_dbs=db1,/db\\d+/
-
-# exclude these databases (will override an include)
-#exclude_dbs=db3,/db\\d+/
-
-# include *only* these tables
-#include_tables=tbl1,/tbl\\d+/
-
-# exclude these tables
-#exclude_tables=tbl1,/tbl\\d+/
-
-# exclude these columns
-#exclude_columns=col1,/col\\d+/
+# filter rows out of Maxwell's output.  Command separated list of filter-rules, evaluated in sequence.
+# A filter rule is:
+#   [include|exclude|blacklist]: [/REGEXP/ | string | `string` | *].[/REGEXP/ | string | `string` | *]
+#
+#filter= exclude: *.*, include: foo.*, include: bar.baz
 
 # include only rows where the column 'foo' contains the value 'bar', and the column 'baz' contains the value 0.5
 #include_column_values=foo=bar,baz=0.5
