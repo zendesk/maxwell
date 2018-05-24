@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 
 import static org.junit.Assert.*;
 
-public class FilterV2Test {
+public class FilterTest {
 	private List<FilterPattern> filters;
 
 	private List<FilterPattern> runParserTest(String input) throws Exception {

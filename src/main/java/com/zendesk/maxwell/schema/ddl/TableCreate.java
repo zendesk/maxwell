@@ -3,12 +3,11 @@ package com.zendesk.maxwell.schema.ddl;
 import java.util.ArrayList;
 import java.util.List;
 import com.zendesk.maxwell.CaseSensitivity;
-import com.zendesk.maxwell.filtering.FilterV2;
+import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
-import com.zendesk.maxwell.schema.columndef.StringColumnDef;
 
 public class TableCreate extends SchemaChange {
 	public String database;
@@ -72,7 +71,7 @@ public class TableCreate extends SchemaChange {
 	}
 
 	@Override
-	public boolean isBlacklisted(FilterV2 filter) {
+	public boolean isBlacklisted(Filter filter) {
 		if ( filter == null ) {
 			return false;
 		} else {

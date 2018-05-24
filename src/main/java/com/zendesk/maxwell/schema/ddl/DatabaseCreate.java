@@ -1,8 +1,7 @@
 package com.zendesk.maxwell.schema.ddl;
 
-import com.zendesk.maxwell.filtering.FilterV2;
+import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.schema.*;
-import com.zendesk.maxwell.schema.ddl.ResolvedDatabaseCreate;
 
 public class DatabaseCreate extends SchemaChange {
 	public final String database;
@@ -30,7 +29,7 @@ public class DatabaseCreate extends SchemaChange {
 	}
 
 	@Override
-	public boolean isBlacklisted(FilterV2 filter) {
+	public boolean isBlacklisted(Filter filter) {
 		if ( filter == null ) {
 			return false;
 		} else {

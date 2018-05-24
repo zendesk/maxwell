@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import com.zendesk.maxwell.filtering.FilterV2;
+import com.zendesk.maxwell.filtering.Filter;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -112,5 +112,5 @@ public abstract class SchemaChange {
 		}
 	}
 
-	public abstract boolean isBlacklisted(FilterV2 filter);
+	public abstract boolean isBlacklisted(Filter filter);
 }

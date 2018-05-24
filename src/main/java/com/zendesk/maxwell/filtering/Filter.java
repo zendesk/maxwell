@@ -5,18 +5,17 @@ import org.apache.commons.lang.StringUtils;
 
 import java.io.*;
 import java.util.*;
-import java.util.regex.Pattern;
 
-public class FilterV2 {
+public class Filter {
 
 	private List<FilterPattern> patterns;
 	private final Map<String, String> includeColumnValues = new HashMap<>();
 
-	public FilterV2() {
+	public Filter() {
 		patterns = new ArrayList<>();
 	}
 
-	public FilterV2(String filterString, String valueString) throws MaxwellInvalidFilterException {
+	public Filter(String filterString, String valueString) throws MaxwellInvalidFilterException {
 		this();
 
 		if (valueString != null && !"".equals(valueString)) {
@@ -101,7 +100,7 @@ public class FilterV2 {
 			("ha_health_check".equals(tableName) || StringUtils.startsWith(tableName, "rds_heartbeat"));
 	}
 
-	public static boolean includes(FilterV2 filter, String database, String table) {
+	public static boolean includes(Filter filter, String database, String table) {
 		if (filter == null) {
 			return true;
 		} else {
@@ -109,7 +108,7 @@ public class FilterV2 {
 		}
 	}
 
-	public static boolean matchesValues(FilterV2 filter, Map<String, Object> data) {
+	public static boolean matchesValues(Filter filter, Map<String, Object> data) {
 		if (filter == null) {
 			return true;
 		} else {
@@ -117,7 +116,7 @@ public class FilterV2 {
 		}
 	}
 
-	public static FilterV2 fromOldFormat(
+	public static Filter fromOldFormat(
 		String includeDatabases,
 		String excludeDatabases,
 		String includeTables,
@@ -164,7 +163,7 @@ public class FilterV2 {
 				filterRules.add("exclude: *." + s);
 		}
 
-		return new FilterV2(String.join(", ", filterRules), includeValues);
+		return new Filter(String.join(", ", filterRules), includeValues);
 	}
 
 }

@@ -3,7 +3,7 @@ package com.zendesk.maxwell;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.github.shyiko.mysql.binlog.network.SSLMode;
-import com.zendesk.maxwell.filtering.FilterV2;
+import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.monitoring.MaxwellDiagnosticContext;
 import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
@@ -32,7 +32,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public MaxwellMysqlConfig schemaMysql;
 
 	public MaxwellMysqlConfig maxwellMysql;
-	public FilterV2 filter;
+	public Filter filter;
 	public Boolean gtidMode;
 
 	public String databaseName;
@@ -655,7 +655,7 @@ public class MaxwellConfig extends AbstractConfig {
 		if ( this.filter == null ) {
 			try {
 				if ( this.filterList != null ) {
-					this.filter = new FilterV2(filterList, includeColumnValues);
+					this.filter = new Filter(filterList, includeColumnValues);
 				} else {
 					boolean hasOldStyleFilters =
 						includeDatabases != null ||
@@ -666,7 +666,7 @@ public class MaxwellConfig extends AbstractConfig {
 							blacklistTables != null;
 
 					if ( hasOldStyleFilters ) {
-						this.filter = FilterV2.fromOldFormat(
+						this.filter = Filter.fromOldFormat(
 							includeDatabases,
 							excludeDatabases,
 							includeTables,
@@ -676,7 +676,7 @@ public class MaxwellConfig extends AbstractConfig {
 							includeColumnValues
 						);
 					} else {
-						this.filter = new FilterV2();
+						this.filter = new Filter();
 					}
 				}
 			} catch (MaxwellInvalidFilterException e) {
