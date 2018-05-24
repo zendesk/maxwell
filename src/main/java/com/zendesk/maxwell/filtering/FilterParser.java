@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.filtering;
 
 import com.amazonaws.util.StringInputStream;
+import com.zendesk.maxwell.MaxwellInvalidFilterException;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -13,17 +14,30 @@ import java.util.regex.Pattern;
 import static java.io.StreamTokenizer.*;
 
 public class FilterParser {
-	private final StreamTokenizer tokenizer;
-	private final InputStreamReader inputStream;
+	private StreamTokenizer tokenizer;
+	private InputStreamReader inputStream;
+	private final String input;
 
-	public FilterParser(
-		String input
-	) throws UnsupportedEncodingException {
-		this.inputStream = new InputStreamReader(new StringInputStream(input));
-		this.tokenizer = new StreamTokenizer(inputStream);
+	public FilterParser(String input) {
+		this.input = input;
 	}
 
-	public List<FilterPattern> parse() throws IOException {
+	public List<FilterPattern> parse() throws MaxwellInvalidFilterException {
+		try {
+			this.inputStream = new InputStreamReader(new StringInputStream(input));
+		} catch ( UnsupportedEncodingException e ) {
+			throw new MaxwellInvalidFilterException(e.getMessage());
+		}
+
+		this.tokenizer = new StreamTokenizer(inputStream);
+		try {
+			return doParse();
+		} catch ( IOException e ) {
+			throw new MaxwellInvalidFilterException(e.getMessage());
+		}
+	}
+
+	private List<FilterPattern> doParse() throws IOException {
 		ArrayList<FilterPattern> patterns = new ArrayList<>();
 		tokenizer.quoteChar('"');
 		tokenizer.ordinaryChar('.');

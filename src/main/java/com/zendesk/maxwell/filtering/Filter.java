@@ -25,19 +25,11 @@ public class Filter {
 			}
 		}
 
-		try {
-			patterns.addAll(new FilterParser(filterString).parse());
-		} catch ( IOException e ) {
-			throw new MaxwellInvalidFilterException(e.getMessage());
-		}
+		patterns.addAll(new FilterParser(filterString).parse());
 	}
 
 	public void addRule(String filterString) throws MaxwellInvalidFilterException {
-		try {
-			this.patterns.addAll(new FilterParser(filterString).parse());
-		} catch ( IOException e ) {
-			throw new MaxwellInvalidFilterException(e.getMessage());
-		}
+		this.patterns.addAll(new FilterParser(filterString).parse());
 	}
 
 	private boolean matchesValues(Map<String, Object> data) {
