@@ -10,65 +10,15 @@
 
     <artifactId>maxwell-standalone</artifactId>
     <name>maxwell-standalone</name>
-    <description>Maxwell's daemon standalone application. Watches mysql, outputs to JSON.</description>
-
-    <profiles>
-        <profile>
-            <id>kafka-0.8.2.2</id>
-            <dependencies>
-                <dependency>
-                    <groupId>org.apache.kafka</groupId>
-                    <artifactId>kafka-clients</artifactId>
-                    <version>0.8.2.2</version>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>kafka-0.9.0.1</id>
-            <dependencies>
-                <dependency>
-                    <groupId>org.apache.kafka</groupId>
-                    <artifactId>kafka-clients</artifactId>
-                    <version>0.9.0.1</version>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>kafka-0.10.0.1</id>
-            <dependencies>
-                <dependency>
-                    <groupId>org.apache.kafka</groupId>
-                    <artifactId>kafka-clients</artifactId>
-                    <version>0.10.0.1</version>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>kafka-0.10.2.1</id>
-            <dependencies>
-                <dependency>
-                    <groupId>org.apache.kafka</groupId>
-                    <artifactId>kafka-clients</artifactId>
-                    <version>0.10.2.1</version>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>kafka-0.11.0.1</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>org.apache.kafka</groupId>
-                    <artifactId>kafka-clients</artifactId>
-                    <version>0.11.0.1</version>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
+    <description>Maxwell's daemon standalone application.</description>
 
     <dependencies>
+        <dependency>
+            <groupId>com.zendesk</groupId>
+            <artifactId>maxwell-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-core</artifactId>

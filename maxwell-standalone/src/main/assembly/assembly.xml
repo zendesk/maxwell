@@ -35,10 +35,10 @@
       <source>src/main/resources/log4j2.xml</source>
     </file>
     <file>
-      <source>docs/docs/config.md</source>
+      <source>../docs/docs/config.md</source>
     </file>
     <file>
-      <source>docs/docs/quickstart.md</source>
+      <source>../docs/docs/quickstart.md</source>
     </file>
   </files>
 </assembly>
