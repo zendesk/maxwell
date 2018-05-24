@@ -49,9 +49,33 @@ public class FilterTest {
 	}
 
 	@Test
+	public void TestOddNames() throws Exception {
+		runParserTest("include: 1foo.bar");
+		runParserTest("include: _foo._bar");
+
+	}
+
+	@Test
 	public void TestAdvancedRegexp() throws Exception {
-		filters = runParserTest("include: /\\w+ \\/[a-z]*1/.*");
+		String pattern = "\\w+ \\/[a-z]*1";
+		filters = runParserTest("include: /" + pattern + "/.*");
 		assertEquals(1, filters.size());
-		assertEquals(Pattern.compile("\\w \\/+[a-z]*1").toString(), filters.get(0).getDatabasePattern().toString());
+		assertEquals(Pattern.compile(pattern).toString(), filters.get(0).getDatabasePattern().toString());
+	}
+
+	@Test
+	public void TestExcludeAll() throws Exception {
+		Filter f = new Filter("exclude: *.*, include: foo.bar", "");
+		assertTrue(f.includes("foo", "bar"));
+		assertFalse(f.includes("anything", "else"));
+	}
+
+	@Test
+	public void TestBlacklist() throws Exception {
+		Filter f = new Filter("blacklist: seria.*", "");
+		assertTrue(f.includes("foo", "bar"));
+		assertFalse(f.includes("seria", "var"));
+		assertTrue(f.isDatabaseBlacklisted("seria"));
+		assertTrue(f.isTableBlacklisted("seria", "anything"));
 	}
 }

@@ -38,13 +38,17 @@ public class FilterParser {
 
 	private List<FilterPattern> doParse() throws IOException {
 		ArrayList<FilterPattern> patterns = new ArrayList<>();
-		tokenizer.quoteChar('"');
 		tokenizer.ordinaryChar('.');
 		tokenizer.ordinaryChar('/');
 		tokenizer.wordChars('_', '_');
+
+		tokenizer.ordinaryChars('0', '9');
+		tokenizer.wordChars('0', '9');
+
 		tokenizer.quoteChar('`');
 		tokenizer.quoteChar('\'');
 		tokenizer.quoteChar('"');
+
 		tokenizer.nextToken();
 
 		FilterPattern p;
