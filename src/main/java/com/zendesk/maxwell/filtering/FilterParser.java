@@ -21,18 +21,18 @@ public class FilterParser {
 		this.input = input;
 	}
 
-	public List<FilterPattern> parse() throws MaxwellInvalidFilterException {
+	public List<FilterPattern> parse() throws InvalidFilterException {
 		try {
 			this.inputStream = new InputStreamReader(new StringInputStream(input));
 		} catch ( UnsupportedEncodingException e ) {
-			throw new MaxwellInvalidFilterException(e.getMessage());
+			throw new InvalidFilterException(e.getMessage());
 		}
 
 		this.tokenizer = new StreamTokenizer(inputStream);
 		try {
 			return doParse();
 		} catch ( IOException e ) {
-			throw new MaxwellInvalidFilterException(e.getMessage());
+			throw new InvalidFilterException(e.getMessage());
 		}
 	}
 

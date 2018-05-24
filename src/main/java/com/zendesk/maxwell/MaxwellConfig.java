@@ -4,7 +4,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.filtering.Filter;
-import com.zendesk.maxwell.filtering.MaxwellInvalidFilterException;
+import com.zendesk.maxwell.filtering.InvalidFilterException;
 import com.zendesk.maxwell.monitoring.MaxwellDiagnosticContext;
 import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
@@ -680,7 +680,7 @@ public class MaxwellConfig extends AbstractConfig {
 						this.filter = new Filter();
 					}
 				}
-			} catch (MaxwellInvalidFilterException e) {
+			} catch (InvalidFilterException e) {
 				usage("Invalid filter options: " + e.getLocalizedMessage());
 			}
 		}
@@ -693,7 +693,7 @@ public class MaxwellConfig extends AbstractConfig {
 			for ( String s : this.excludeColumns.split(",") ) {
 				try {
 					outputConfig.excludeColumns.add(compileStringToPattern(s));
-				} catch ( MaxwellInvalidFilterException e ) {
+				} catch ( InvalidFilterException e ) {
 					usage("invalid exclude_columns: '" + this.excludeColumns + "': " + e.getMessage());
 				}
 			}
@@ -713,11 +713,11 @@ public class MaxwellConfig extends AbstractConfig {
 		return this.kafkaProperties;
 	}
 
-	public static Pattern compileStringToPattern(String name) throws MaxwellInvalidFilterException {
+	public static Pattern compileStringToPattern(String name) throws InvalidFilterException {
 		name = name.trim();
 		if ( name.startsWith("/") ) {
 			if ( !name.endsWith("/") ) {
-				throw new MaxwellInvalidFilterException("Invalid regular expression: " + name);
+				throw new InvalidFilterException("Invalid regular expression: " + name);
 			}
 			return Pattern.compile(name.substring(1, name.length() - 1));
 		} else {

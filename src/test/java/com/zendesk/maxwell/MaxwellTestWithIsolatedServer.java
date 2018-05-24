@@ -5,7 +5,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 import com.zendesk.maxwell.filtering.Filter;
-import com.zendesk.maxwell.filtering.MaxwellInvalidFilterException;
+import com.zendesk.maxwell.filtering.InvalidFilterException;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.MysqlVersion;
 import com.zendesk.maxwell.replication.Position;
@@ -90,12 +90,12 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 		return MaxwellTestSupport.buildContext(server.getPort(), p, null);
 	}
 
-	protected Filter excludeTable(String name) throws MaxwellInvalidFilterException {
+	protected Filter excludeTable(String name) throws InvalidFilterException {
 		Filter filter = new Filter("exclude: *." + name, "");
 		return filter;
 	}
 
-	protected Filter excludeDb(String name) throws MaxwellInvalidFilterException {
+	protected Filter excludeDb(String name) throws InvalidFilterException {
 		Filter filter = new Filter("exclude: " + name + ".*", "");
 		return filter;
 	}

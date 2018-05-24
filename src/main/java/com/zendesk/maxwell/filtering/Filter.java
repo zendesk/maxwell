@@ -13,7 +13,7 @@ public class Filter {
 		this.patterns = new ArrayList<>();
 	}
 
-	public Filter(String filterString, String valueString) throws MaxwellInvalidFilterException {
+	public Filter(String filterString, String valueString) throws InvalidFilterException {
 		this();
 
 		if (valueString != null && !"".equals(valueString)) {
@@ -26,7 +26,7 @@ public class Filter {
 		patterns.addAll(new FilterParser(filterString).parse());
 	}
 
-	public void addRule(String filterString) throws MaxwellInvalidFilterException {
+	public void addRule(String filterString) throws InvalidFilterException {
 		this.patterns.addAll(new FilterParser(filterString).parse());
 	}
 
@@ -114,7 +114,7 @@ public class Filter {
 		String blacklistDatabases,
 		String blacklistTables,
 		String includeValues
-	) throws MaxwellInvalidFilterException {
+	) throws InvalidFilterException {
 		ArrayList<String> filterRules = new ArrayList<>();
 
 		if ( blacklistDatabases != null ) {
