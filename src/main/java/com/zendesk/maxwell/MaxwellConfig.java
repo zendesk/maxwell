@@ -564,8 +564,43 @@ public class MaxwellConfig extends AbstractConfig {
 
 	}
 
+	private void validateFilter() {
+		if ( this.filter != null )
+			return;
+		try {
+			if ( this.filterList != null ) {
+				this.filter = new Filter(filterList, includeColumnValues);
+			} else {
+				boolean hasOldStyleFilters =
+					includeDatabases != null ||
+						excludeDatabases != null ||
+						includeTables != null ||
+						excludeTables != null ||
+						blacklistDatabases != null ||
+						blacklistTables != null;
+
+				if ( hasOldStyleFilters ) {
+					this.filter = Filter.fromOldFormat(
+						includeDatabases,
+						excludeDatabases,
+						includeTables,
+						excludeTables,
+						blacklistDatabases,
+						blacklistTables,
+						includeColumnValues
+					);
+				} else {
+					this.filter = new Filter();
+				}
+			}
+		} catch (InvalidFilterException e) {
+			usage("Invalid filter options: " + e.getLocalizedMessage());
+		}
+	}
+
 	public void validate() {
 		validatePartitionBy();
+		validateFilter();
 
 		if ( this.producerType.equals("kafka") ) {
 			if ( !this.kafkaProperties.containsKey("bootstrap.servers") ) {
@@ -653,37 +688,6 @@ public class MaxwellConfig extends AbstractConfig {
 			this.schemaMysql.sslMode = this.maxwellMysql.sslMode;
 		}
 
-		if ( this.filter == null ) {
-			try {
-				if ( this.filterList != null ) {
-					this.filter = new Filter(filterList, includeColumnValues);
-				} else {
-					boolean hasOldStyleFilters =
-						includeDatabases != null ||
-							excludeDatabases != null ||
-							includeTables != null ||
-							excludeTables != null ||
-							blacklistDatabases != null ||
-							blacklistTables != null;
-
-					if ( hasOldStyleFilters ) {
-						this.filter = Filter.fromOldFormat(
-							includeDatabases,
-							excludeDatabases,
-							includeTables,
-							excludeTables,
-							blacklistDatabases,
-							blacklistTables,
-							includeColumnValues
-						);
-					} else {
-						this.filter = new Filter();
-					}
-				}
-			} catch (InvalidFilterException e) {
-				usage("Invalid filter options: " + e.getLocalizedMessage());
-			}
-		}
 
 		if ( this.metricsDatadogType.contains("http") && StringUtils.isEmpty(this.metricsDatadogAPIKey) ) {
 			usageForOptions("please specify metrics_datadog_apikey when metrics_datadog_type = http");
