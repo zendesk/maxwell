@@ -16,6 +16,7 @@ import com.zendesk.maxwell.core.schema.PositionStoreThread;
 import com.zendesk.maxwell.core.schema.ReadOnlyMysqlPositionStore;
 import com.zendesk.maxwell.core.util.StoppableTask;
 import com.zendesk.maxwell.core.util.TaskManager;
+import joptsimple.OptionParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import snaq.db.ConnectionPool;
@@ -28,7 +29,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 public class MaxwellContext {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellContext.class);
@@ -54,6 +57,9 @@ public class MaxwellContext {
 
 	private final HeartbeatNotifier heartbeatNotifier;
 	private final MaxwellDiagnosticContext diagnosticContext;
+
+	private Consumer<MaxwellContext> onReplicationStartEventHandler;
+	private Consumer<MaxwellContext> onReplicationCompletedEventHandler;
 
 	public MaxwellContext(MaxwellConfig config) throws SQLException, URISyntaxException {
 		this.config = config;
@@ -439,5 +445,21 @@ public class MaxwellContext {
 
 	public MaxwellDiagnosticContext getDiagnosticContext() {
 		return this.diagnosticContext;
+	}
+
+	public void configureOnReplicationStartEventHandler(Consumer<MaxwellContext> onReplicationStartEventHandler){
+		this.onReplicationStartEventHandler = onReplicationStartEventHandler;
+	}
+
+	public Optional<Consumer<MaxwellContext>> getOnReplicationStartEventHandler(){
+		return Optional.of(onReplicationStartEventHandler);
+	}
+
+	public void configureOnReplicationCompletedEventHandler(Consumer<MaxwellContext> onReplicationCompletedEventHandler){
+		this.onReplicationCompletedEventHandler = onReplicationCompletedEventHandler;
+	}
+
+	public Optional<Consumer<MaxwellContext>> getOnReplicationCompletedEventHandler(){
+		return Optional.of(onReplicationCompletedEventHandler);
 	}
 }

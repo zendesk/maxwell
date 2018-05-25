@@ -2,14 +2,12 @@ package com.zendesk.maxwell.core.monitoring;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.zendesk.maxwell.core.MaxwellContext;
-import com.zendesk.maxwell.core.MaxwellRunner;
-import com.zendesk.maxwell.core.MaxwellTestWithIsolatedServer;
-import com.zendesk.maxwell.core.MaxwellWithContextRunner;
+import com.zendesk.maxwell.core.*;
 import com.zendesk.maxwell.core.replication.BinlogConnectorDiagnostic;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -27,6 +25,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class DiagnosticMaxwellTest extends MaxwellTestWithIsolatedServer {
+
+	@Autowired
+	private MaxwellRunner maxwellRunner;
 
 	private ByteArrayOutputStream outputStream;
 	private PrintWriter writer;
@@ -57,13 +58,8 @@ public class DiagnosticMaxwellTest extends MaxwellTestWithIsolatedServer {
 		when(response.getWriter()).thenReturn(writer);
 
 		final CountDownLatch latch = new CountDownLatch(1);
-		MaxwellRunner maxwell = new MaxwellWithContextRunner(maxwellContext) {
-			@Override
-			protected void onReplicatorStart() {
-				latch.countDown();
-			}
-		};
-		new Thread(maxwell).start();
+		maxwellContext.configureOnReplicationStartEventHandler(context -> latch.countDown());
+		new Thread(() -> maxwellRunner.run(maxwellContext)).start();
 		latch.await();
 
 		// When
@@ -76,7 +72,7 @@ public class DiagnosticMaxwellTest extends MaxwellTestWithIsolatedServer {
 		assertThat(binlogNode.get("success").asBoolean(), is(true));
 		assertTrue(binlogNode.get("mandatory").asBoolean());
 		assertTrue(binlogNode.get("message").asText().contains("Binlog replication lag"));
-		maxwell.terminate();
+		maxwellRunner.terminate(maxwellContext);
 	}
 
 	@Test

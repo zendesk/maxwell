@@ -70,6 +70,7 @@
         <protobuf-java.version>3.4.0</protobuf-java.version>
         <rabbitmq.amqp-client.version>4.0.0</rabbitmq.amqp-client.version>
         <slf4j.version>1.7.21</slf4j.version>
+        <spring.version>5.0.6.RELEASE</spring.version>
         <system-rules.version>1.17.0</system-rules.version>
 
         <!-- Plugin Dependencies -->
@@ -299,6 +300,18 @@
             </dependency>
 
             <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-test</artifactId>
+                <version>${spring.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
                 <groupId>com.github.stefanbirkner</groupId>
                 <artifactId>system-rules</artifactId>
                 <version>${system-rules.version}</version>
@@ -330,7 +343,16 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
 
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-all</artifactId>

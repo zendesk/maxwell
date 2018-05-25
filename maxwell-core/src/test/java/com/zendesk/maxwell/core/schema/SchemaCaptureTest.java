@@ -1,9 +1,9 @@
 package com.zendesk.maxwell.core.schema;
 
-import com.zendesk.maxwell.core.CaseSensitivity;
-import com.zendesk.maxwell.core.MaxwellTestWithIsolatedServer;
+import com.zendesk.maxwell.core.*;
 import com.zendesk.maxwell.core.schema.columndef.*;
 import com.zendesk.maxwell.core.schema.ddl.InvalidSchemaError;
+import com.zendesk.maxwell.core.support.MysqlIsolatedServerTestSupport;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +15,6 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
-import static com.zendesk.maxwell.core.MaxwellTestSupport.getSQLDir;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
@@ -110,7 +109,7 @@ public class SchemaCaptureTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testEnums() throws SQLException, InvalidSchemaError, IOException {
-		byte[] sql = Files.readAllBytes(Paths.get(getSQLDir() + "/schema/enum.sql"));
+		byte[] sql = Files.readAllBytes(Paths.get(MysqlIsolatedServerTestSupport.getSQLDir() + "/schema/enum.sql"));
 		server.executeList(Collections.singletonList(new String(sql)));
 
 		Schema s = capturer.capture();

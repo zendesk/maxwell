@@ -1,10 +1,13 @@
 package com.zendesk.maxwell.core.config;
 
+import org.springframework.stereotype.Service;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
 
+@Service
 public class ConfigurationFileParser {
 	
 	public Properties parseFile(String filename, boolean abortOnMissing) {

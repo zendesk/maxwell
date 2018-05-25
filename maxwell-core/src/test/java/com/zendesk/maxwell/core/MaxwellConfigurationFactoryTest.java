@@ -9,21 +9,29 @@ import joptsimple.OptionException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.nio.file.Paths;
 
 import static org.junit.Assert.*;
 
-public class MaxwellConfigTest
-{
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = {SpringTestContextConfiguration.class})
+public class MaxwellConfigurationFactoryTest {
 	private MaxwellConfig config;
 
 	@Rule
 	public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
 	
+	@Autowired
+	private MaxwellConfigFactory maxwellConfigFactory;
+	
 	@Test
 	public void testFetchProducerFactoryFromArgs() {
-		config = new MaxwellConfigFactory().createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(new String[] { "--custom_producer.factory=" + TestProducerFactory.class.getName() });
+		config = maxwellConfigFactory.createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(new String[] { "--custom_producer.factory=" + TestProducerFactory.class.getName() });
 		assertNotNull(config.producerFactory);
 		assertTrue(config.producerFactory instanceof TestProducerFactory);
 	}
@@ -33,7 +41,7 @@ public class MaxwellConfigTest
 		String configPath = getTestConfigDir() + "producer-factory-config.properties";
 		assertNotNull("Config file not found at: " + configPath, Paths.get(configPath));
 		
-		config = new MaxwellConfigFactory().createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(new String[] { "--config=" + configPath });
+		config = maxwellConfigFactory.createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(new String[] { "--config=" + configPath });
 		assertNotNull(config.producerFactory);
 		assertTrue(config.producerFactory instanceof TestProducerFactory);
 	}
@@ -41,7 +49,7 @@ public class MaxwellConfigTest
 	@Test(expected = OptionException.class)
 	public void testCustomProperties() {
 		// custom properties are not supported on the command line just like 'kafka.*' properties
-		new MaxwellConfigFactory().createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(new String[] { "--custom.foo=bar" });
+		maxwellConfigFactory.createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(new String[] { "--custom.foo=bar" });
 	}
 	
 	@Test
@@ -49,7 +57,7 @@ public class MaxwellConfigTest
 		String configPath = getTestConfigDir() + "producer-factory-config.properties";
 		assertNotNull("Config file not found at: " + configPath, Paths.get(configPath));
 		
-		config = new MaxwellConfigFactory().createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(new String[] { "--config=" + configPath });
+		config = maxwellConfigFactory.createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(new String[] { "--config=" + configPath });
 		assertEquals("bar", config.customProducerProperties.getProperty("foo"));
 	}
 
@@ -60,7 +68,7 @@ public class MaxwellConfigTest
 		environmentVariables.set("maxwell_host", "remotehost");
 		environmentVariables.set("MAXWELL_KAFKA.RETRIES", "100");
 		environmentVariables.set("USER", "mysql");
-		config = new MaxwellConfigFactory().createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(new String[] { "--env_config_prefix=MAXWELL_", "--host=localhost" });
+		config = maxwellConfigFactory.createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(new String[] { "--env_config_prefix=MAXWELL_", "--host=localhost" });
 		assertEquals("foo", config.maxwellMysql.user);
 		assertEquals("bar", config.maxwellMysql.password);
 		assertEquals("localhost", config.maxwellMysql.host);
@@ -77,7 +85,7 @@ public class MaxwellConfigTest
 		String configPath = getTestConfigDir() + "env-var-config.properties";
 		assertNotNull("Config file not found at: " + configPath, Paths.get(configPath));
 
-		config = new MaxwellConfigFactory().createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(new String[] { "--config=" + configPath, "--host=localhost" });
+		config = maxwellConfigFactory.createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(new String[] { "--config=" + configPath, "--host=localhost" });
 		assertEquals("foo", config.maxwellMysql.user);
 		assertEquals("bar", config.maxwellMysql.password);
 		assertEquals("localhost", config.maxwellMysql.host);

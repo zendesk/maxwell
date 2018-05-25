@@ -9,6 +9,7 @@ import com.zendesk.maxwell.core.producer.AbstractProducer;
 import com.zendesk.maxwell.core.producer.ProducerFactory;
 import com.zendesk.maxwell.core.row.RowMap;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
@@ -24,6 +25,13 @@ import static org.junit.Assert.assertTrue;
  * @author Geoff Lywood (geoff@addepar.com)
  */
 public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
+
+	@Autowired
+	private MaxwellConfigFactory maxwellConfigFactory;
+	@Autowired
+	private MaxwellContextFactory maxwellContextFactory;
+	@Autowired
+	private MaxwellRunner maxwell;
 
 	@Test
 	public void testCustomMetricsAndProducer() throws Exception {
@@ -43,20 +51,16 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 		};
 
 		final CountDownLatch latch = new CountDownLatch(1);
-		MaxwellRunner maxwell = new MaxwellRunner(config) {
-			@Override
-			protected void onReplicatorStart() {
-				latch.countDown();
-			}
-		};
-		new Thread(maxwell).start();
+		final MaxwellContext maxwellContext = maxwellContextFactory.createFor(config);
+		maxwellContext.configureOnReplicationStartEventHandler((context) -> latch.countDown());
+		new Thread(() -> maxwell.run(maxwellContext)).start();
 		latch.await();
 
 		server.execute("insert into minimal set account_id = 1, text_field='hello'");
 		RowMap rowMap = rowBuffer.poll(10, TimeUnit.SECONDS);
 
-		maxwell.terminate();
-		Exception maxwellError = maxwell.context.getError();
+		maxwell.terminate(maxwellContext);
+		Exception maxwellError = maxwellContext.getError();
 		if (maxwellError != null) {
 			throw maxwellError;
 		}
@@ -66,7 +70,7 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	private MaxwellConfig getConfig(MysqlIsolatedServer mysql) {
-		MaxwellConfig config = new MaxwellConfigFactory().createNewDefaultConfiguration();
+		MaxwellConfig config = maxwellConfigFactory.createNewDefaultConfiguration();
 		config.maxwellMysql.user = "maxwell";
 		config.maxwellMysql.password = "maxwell";
 		config.maxwellMysql.host = "localhost";

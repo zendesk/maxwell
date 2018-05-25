@@ -30,10 +30,6 @@
             <groupId>org.slf4j</groupId>
             <artifactId>jul-to-slf4j</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.djdch.log4j</groupId>
-            <artifactId>log4j-staticshutdown</artifactId>
-        </dependency>
     </dependencies>
 
     <build>

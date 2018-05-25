@@ -7,7 +7,11 @@ import com.zendesk.maxwell.core.config.MaxwellFilter;
 import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.row.RowEncrypt;
 import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.core.support.MaxwellTestSupport;
+import com.zendesk.maxwell.core.support.MysqlIsolatedServerTestSupport;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,18 +23,21 @@ import java.util.Map;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-
+@Service
 public class MaxwellTestJSON {
 	/* methods around running JSON test files */
 	public static final TypeReference<Map<String, Object>> MAP_STRING_OBJECT_REF = new TypeReference<Map<String, Object>>() {};
 
-	public static Map<String, Object> parseJSON(String json) throws Exception {
+	@Autowired
+	private MaxwellTestSupport maxwellTestSupport;
+
+	public Map<String, Object> parseJSON(String json) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
 		return mapper.readValue(json, MAP_STRING_OBJECT_REF);
 	}
 
-	public static Map<String, Object> parseEncryptedJSON(Map<String,Object> json, String secretKey) throws Exception {
+	public Map<String, Object> parseEncryptedJSON(Map<String,Object> json, String secretKey) throws Exception {
 		Map<String, String> encrypted = (Map)json.get("encrypted");
 		if (encrypted == null) {
 			return null;
@@ -40,7 +47,7 @@ public class MaxwellTestJSON {
 		return parseJSON(plaintext);
 	}
 
-	public static void assertJSON(List<Map<String, Object>> jsonOutput, List<Map<String, Object>> jsonAsserts) {
+	public void assertJSON(List<Map<String, Object>> jsonOutput, List<Map<String, Object>> jsonAsserts) {
 		ArrayList<Map<String, Object>> missing = new ArrayList<>();
 
 		for ( Map m : jsonAsserts ) {
@@ -57,10 +64,10 @@ public class MaxwellTestJSON {
 		}
 	}
 
-	private static void runJSONTest(MysqlIsolatedServer server, List<String> sql, List<Map<String, Object>> expectedJSON,
+	private void runJSONTest(MysqlIsolatedServer server, List<String> sql, List<Map<String, Object>> expectedJSON,
 									MaxwellFilter filter, MaxwellOutputConfig outputConfig) throws Exception {
 		List<Map<String, Object>> eventJSON = new ArrayList<>();
-		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(server, filter, sql.toArray(new String[sql.size()]), null);
+		List<RowMap> rows = maxwellTestSupport.getRowsWithReplicator(server, filter, sql.toArray(new String[sql.size()]), null);
 
 		for ( RowMap r : rows ) {
 			String s;
@@ -93,8 +100,8 @@ public class MaxwellTestJSON {
 		}
 	}
 
-	static final String JSON_PATTERN = "^\\s*\\->\\s*\\{.*";
-	public static SQLAndJSON parseJSONTestFile(String fname) throws Exception {
+	private static final String JSON_PATTERN = "^\\s*\\->\\s*\\{.*";
+	public SQLAndJSON parseJSONTestFile(String fname) throws Exception {
 		File file = new File(fname);
 		SQLAndJSON ret = new SQLAndJSON();
 		BufferedReader reader = new BufferedReader(new FileReader(file));
@@ -147,14 +154,14 @@ public class MaxwellTestJSON {
 		return ret;
 	}
 
-	protected static void runJSONTestFile(MysqlIsolatedServer server, String dir, String fname, MaxwellFilter filter,
+	protected void runJSONTestFile(MysqlIsolatedServer server, String dir, String fname, MaxwellFilter filter,
 										  MaxwellOutputConfig outputConfig) throws Exception {
 		SQLAndJSON testResources = parseJSONTestFile(new File(dir, fname).toString());
 		runJSONTest(server, testResources.inputSQL, testResources.jsonAsserts, filter, outputConfig);
 	}
 
-	protected static void runJSONTestFile(MysqlIsolatedServer server, String fname, MaxwellFilter filter,
+	protected void runJSONTestFile(MysqlIsolatedServer server, String fname, MaxwellFilter filter,
 										  MaxwellOutputConfig outputConfig) throws Exception {
-		runJSONTestFile(server, MaxwellTestSupport.getSQLDir(), fname, filter, outputConfig);
+		runJSONTestFile(server, MysqlIsolatedServerTestSupport.getSQLDir(), fname, filter, outputConfig);
 	}
 }

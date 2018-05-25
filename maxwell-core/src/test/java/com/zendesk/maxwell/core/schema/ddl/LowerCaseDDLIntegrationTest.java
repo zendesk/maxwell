@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.core.schema.ddl;
 
-import com.zendesk.maxwell.core.MaxwellTestSupport;
 import com.zendesk.maxwell.core.MysqlIsolatedServer;
+import com.zendesk.maxwell.core.support.MysqlIsolatedServerTestSupport;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -13,12 +13,12 @@ public class LowerCaseDDLIntegrationTest {
 
 	@BeforeClass
 	public static void setupServers() throws Exception {
-		convertServer = MaxwellTestSupport.setupServer("--lower-case-table-names=1");
-		MaxwellTestSupport.setupSchema(convertServer);
+		convertServer = MysqlIsolatedServerTestSupport.setupServer("--lower-case-table-names=1");
+		MysqlIsolatedServerTestSupport.setupSchema(convertServer);
 
 		if ( isFileSystemCaseSensitive() ) {
-			caseSensitiveServer = MaxwellTestSupport.setupServer("--lower-case-table-names=0");
-			MaxwellTestSupport.setupSchema(caseSensitiveServer);
+			caseSensitiveServer = MysqlIsolatedServerTestSupport.setupServer("--lower-case-table-names=0");
+			MysqlIsolatedServerTestSupport.setupSchema(caseSensitiveServer);
 		}
 	}
 
@@ -46,7 +46,7 @@ public class LowerCaseDDLIntegrationTest {
 			"drop table TAYBAL"
 		};
 
-		MaxwellTestSupport.testDDLFollowing(convertServer, sql);
+		MysqlIsolatedServerTestSupport.testDDLFollowing(convertServer, sql);
 	}
 
 	@Test
@@ -57,6 +57,6 @@ public class LowerCaseDDLIntegrationTest {
 			"create table ttRR like tttt"
 		};
 
-		MaxwellTestSupport.testDDLFollowing(convertServer, sql);
+		MysqlIsolatedServerTestSupport.testDDLFollowing(convertServer, sql);
 	}
 }

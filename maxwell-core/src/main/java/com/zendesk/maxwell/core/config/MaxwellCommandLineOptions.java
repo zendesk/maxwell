@@ -3,10 +3,12 @@ package com.zendesk.maxwell.core.config;
 import joptsimple.BuiltinHelpFormatter;
 import joptsimple.OptionDescriptor;
 import joptsimple.OptionParser;
+import org.springframework.stereotype.Service;
 
 import java.util.Map;
 import java.util.regex.Pattern;
 
+@Service
 public class MaxwellCommandLineOptions extends AbstractCommandLineOptions {
 
 	@Override

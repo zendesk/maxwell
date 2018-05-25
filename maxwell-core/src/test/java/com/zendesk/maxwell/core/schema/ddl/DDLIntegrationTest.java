@@ -1,11 +1,9 @@
 package com.zendesk.maxwell.core.schema.ddl;
 
-import com.zendesk.maxwell.core.CaseSensitivity;
-import com.zendesk.maxwell.core.MaxwellTestSupport;
-import com.zendesk.maxwell.core.MaxwellTestWithIsolatedServer;
-import com.zendesk.maxwell.core.Mysql57Tests;
+import com.zendesk.maxwell.core.*;
 import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.core.support.MysqlIsolatedServerTestSupport;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -22,7 +20,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	private void testIntegration(String[] alters) throws Exception {
-		MaxwellTestSupport.testDDLFollowing(server, alters);
+		MysqlIsolatedServerTestSupport.testDDLFollowing(server, alters);
 	}
 
 	private void testIntegration(String sql) throws Exception {

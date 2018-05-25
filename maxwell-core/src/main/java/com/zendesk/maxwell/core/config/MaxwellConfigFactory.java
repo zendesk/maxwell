@@ -8,11 +8,14 @@ import com.zendesk.maxwell.core.replication.Position;
 import joptsimple.OptionSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
+@Service
 public class MaxwellConfigFactory extends AbstractConfigurationFactory {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfigFactory.class);
 
@@ -21,10 +24,7 @@ public class MaxwellConfigFactory extends AbstractConfigurationFactory {
 	private final MaxwellCommandLineOptions maxwellCommandLineOptions;
 	private final ConfigurationFileParser configurationFileParser;
 
-	public MaxwellConfigFactory() {
-		this(new MaxwellCommandLineOptions(), new ConfigurationFileParser());
-	}
-
+	@Autowired
 	public MaxwellConfigFactory(MaxwellCommandLineOptions maxwellCommandLineOptions, ConfigurationFileParser configurationFileParser) {
 		this.maxwellCommandLineOptions = maxwellCommandLineOptions;
 		this.configurationFileParser = configurationFileParser;

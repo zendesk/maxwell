@@ -9,6 +9,7 @@ import com.zendesk.maxwell.core.schema.columndef.DateTimeColumnDef;
 import com.zendesk.maxwell.core.schema.columndef.IntColumnDef;
 import com.zendesk.maxwell.core.schema.columndef.TimeColumnDef;
 import com.zendesk.maxwell.core.schema.ddl.InvalidSchemaError;
+import com.zendesk.maxwell.core.support.MysqlIsolatedServerTestSupport;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,7 +54,7 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 
 		server.executeList(schemaSQL);
 
-		this.position = MaxwellTestSupport.capture(server.getConnection());
+		this.position = MysqlIsolatedServerTestSupport.capture(server.getConnection());
 		this.context = buildContext(position);
 		this.schema = new SchemaCapturer(server.getConnection(), context.getCaseSensitivity()).capture();
 		this.savedSchema = SavedSchemaSupport.getSavedSchema(this.context, this.schema, this.position);

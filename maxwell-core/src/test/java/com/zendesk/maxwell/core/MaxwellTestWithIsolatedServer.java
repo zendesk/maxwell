@@ -5,45 +5,60 @@ import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.replication.MysqlVersion;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.core.support.MaxwellContextTestSupport;
+import com.zendesk.maxwell.core.support.MaxwellTestSupport;
+import com.zendesk.maxwell.core.support.MysqlIsolatedServerTestSupport;
 import com.zendesk.maxwell.core.util.Logging;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 import java.util.TimeZone;
 
 import static org.junit.Assume.assumeTrue;
 
 
-public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = { SpringTestContextConfiguration.class })
+public abstract class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 	protected static MysqlIsolatedServer server;
 	static {
 		TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 	}
 
+	@Autowired
+	protected MaxwellTestSupport maxwellTestSupport;
+	@Autowired
+	protected MaxwellTestJSON maxwellTestJSON;
+
 	@BeforeClass
 	public static void setupTest() throws Exception {
 		Logging.setupLogBridging();
-		server = MaxwellTestSupport.setupServer();
+		server = MysqlIsolatedServerTestSupport.setupServer();
 	}
 
 	@Before
 	public void setupSchema() throws Exception {
-		MaxwellTestSupport.setupSchema(server);
+		MysqlIsolatedServerTestSupport.setupSchema(server);
 	}
 
 	protected List<RowMap> getRowsForSQL(MaxwellFilter filter, String[] input) throws Exception {
-		return MaxwellTestSupport.getRowsWithReplicator(server, filter, input, null);
+		return maxwellTestSupport.getRowsWithReplicator(server, filter, input, null);
 	}
 
 	protected List<RowMap> getRowsForSQL(MaxwellFilter filter, String[] input, String[] before) throws Exception {
-		return MaxwellTestSupport.getRowsWithReplicator(server, filter, input, before);
+		return maxwellTestSupport.getRowsWithReplicator(server, filter, input, before);
 	}
 
 	protected List<RowMap> getRowsForSQL(String[] input) throws Exception {
-		return MaxwellTestSupport.getRowsWithReplicator(server, null, input, null);
+		return maxwellTestSupport.getRowsWithReplicator(server, null, input, null);
 	}
 
 	protected List<RowMap> getRowsForSQLTransactional(final String[] input) throws Exception {
@@ -62,7 +77,7 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 				c.commit();
 			}
 		};
-		return MaxwellTestSupport.getRowsWithReplicator(server, filter, callback, outputConfig);
+		return maxwellTestSupport.getRowsWithReplicator(server, filter, callback, Optional.ofNullable(outputConfig));
 	}
 
 	protected List<RowMap> getRowsForDDLTransaction(String[] sql, MaxwellFilter filter) throws Exception {
@@ -72,23 +87,23 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 	}
 
 	protected void runJSON(String filename) throws Exception {
-		MaxwellTestJSON.runJSONTestFile(server, filename, null, null);
+		maxwellTestJSON.runJSONTestFile(server, filename, null, null);
 	}
 
 	protected void runJSON(String filename, MaxwellFilter filter) throws Exception {
-		MaxwellTestJSON.runJSONTestFile(server, filename, filter, null);
+		maxwellTestJSON.runJSONTestFile(server, filename, filter, null);
 	}
 
 	protected void runJSON(String filename, MaxwellOutputConfig outputConfig) throws Exception {
-		MaxwellTestJSON.runJSONTestFile(server, filename, null, outputConfig);
+		maxwellTestJSON.runJSONTestFile(server, filename, null, outputConfig);
 	}
 
 	protected MaxwellContext buildContext() throws Exception {
-		return MaxwellTestSupport.buildContext(server.getPort(), null, null);
+		return MaxwellContextTestSupport.buildContext(server.getPort(), null, null);
 	}
 
 	protected MaxwellContext buildContext(Position p) throws Exception {
-		return MaxwellTestSupport.buildContext(server.getPort(), p, null);
+		return MaxwellContextTestSupport.buildContext(server.getPort(), p, null);
 	}
 
 	protected MaxwellFilter excludeTable(String name) throws MaxwellInvalidFilterException {

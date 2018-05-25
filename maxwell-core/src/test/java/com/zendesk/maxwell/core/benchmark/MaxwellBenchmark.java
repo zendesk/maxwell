@@ -1,15 +1,13 @@
 package com.zendesk.maxwell.core.benchmark;
 
-import com.zendesk.maxwell.core.MaxwellRunner;
-import com.zendesk.maxwell.core.MaxwellTestSupport;
-import com.zendesk.maxwell.core.MysqlIsolatedServer;
-import com.zendesk.maxwell.core.config.MaxwellConfig;
-import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
+import com.zendesk.maxwell.core.*;
 import com.zendesk.maxwell.core.replication.Position;
+import com.zendesk.maxwell.core.support.MysqlIsolatedServerTestSupport;
 import joptsimple.BuiltinHelpFormatter;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import me.tongfei.progressbar.ProgressBar;
+
 
 import java.sql.Connection;
 import java.sql.Date;
@@ -73,32 +71,40 @@ public class MaxwellBenchmark {
 	}
 
 	private static void generate(int nRows) throws Exception {
-		MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--no-clean");
-		MaxwellTestSupport.setupSchema(server, false);
+		SpringLauncher.launch((ctx) -> {
+			try {
+				MysqlIsolatedServer server = MysqlIsolatedServerTestSupport.setupServer("--no-clean");
+				MysqlIsolatedServerTestSupport.setupSchema(server, false);
 
-		// generate 1 row of data before we capture position so that we can use the schema.
-		generateData(server.getConnection(), 1);
+				// generate 1 row of data before we capture position so that we can use the schema.
+				generateData(server.getConnection(), 1);
 
-		Position initPosition = Position.capture(server.getConnection(), false);
-		generateData(server.getConnection(), nRows);
-		System.out.println("generated data.  you may now run:");
-		System.out.println("bin/maxwell-benchmark --input=" +  server.path + " --init_position=" + initPosition.toCommandline());
+				Position initPosition = Position.capture(server.getConnection(), false);
+				generateData(server.getConnection(), nRows);
+				System.out.println("generated data.  you may now run:");
+				System.out.println("bin/maxwell-benchmark --input=" + server.path + " --init_position=" + initPosition.toCommandline());
+			}catch (Exception e){
+				throw new LauncherException("Failed to generate benchmark environment", e);
+			}
+		});
+
 	}
 
 	private static void benchmark(String path, String args[]) throws Exception {
-		MaxwellConfig config = new MaxwellConfigFactory().createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(args);
-		MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--no-clean --reuse=" + path);
+		SpringLauncher.launchMaxwell(args, (config, ctx) -> {
+			try {
+				MysqlIsolatedServer server = MysqlIsolatedServerTestSupport.setupServer("--no-clean --reuse=" + path);
 
-
-		config.maxwellMysql.host = "127.0.0.1";
-		config.maxwellMysql.port = server.getPort();
-		config.maxwellMysql.user = "root";
-		config.maxwellMysql.password = "";
-		config.replicationMysql = config.schemaMysql = config.maxwellMysql;
-		config.producerFactory = new BenchmarkProducerFactory();
-
-		MaxwellRunner m = new MaxwellRunner(config);
-		m.run();
+				config.maxwellMysql.host = "127.0.0.1";
+				config.maxwellMysql.port = server.getPort();
+				config.maxwellMysql.user = "root";
+				config.maxwellMysql.password = "";
+				config.replicationMysql = config.schemaMysql = config.maxwellMysql;
+				config.producerFactory = new BenchmarkProducerFactory();
+			} catch (Exception e) {
+				throw new LauncherException("Failed to setup mysql test server for benchmark", e);
+			}
+		});
 	}
 
 	private static OptionParser buildOptionParser() {

@@ -3,6 +3,7 @@ package com.zendesk.maxwell.core;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zendesk.maxwell.core.replication.MysqlVersion;
+import com.zendesk.maxwell.core.support.MysqlIsolatedServerTestSupport;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,19 +20,19 @@ import java.util.List;
 import java.util.Map;
 
 public class MysqlIsolatedServer {
-	public static final Long SERVER_ID = 4321L;
+	private static final Long SERVER_ID = 4321L;
 
-	public final MysqlVersion VERSION_5_5 = new MysqlVersion(5, 5);
-	public final MysqlVersion VERSION_5_6 = new MysqlVersion(5, 6);
-	public final MysqlVersion VERSION_5_7 = new MysqlVersion(5, 7);
+	private static final Logger LOGGER = LoggerFactory.getLogger(MysqlIsolatedServer.class);
+	private static final TypeReference<Map<String, Object>> MAP_STRING_OBJECT_REF = new TypeReference<Map<String, Object>>() {};
+
+	public static final MysqlVersion VERSION_5_5 = new MysqlVersion(5, 5);
+	public static final MysqlVersion VERSION_5_6 = new MysqlVersion(5, 6);
+	public static final MysqlVersion VERSION_5_7 = new MysqlVersion(5, 7);
 
 	private Connection connection;
 	private int port;
 	private int serverPid;
 	public String path;
-
-	static final Logger LOGGER = LoggerFactory.getLogger(MysqlIsolatedServer.class);
-	public static final TypeReference<Map<String, Object>> MAP_STRING_OBJECT_REF = new TypeReference<Map<String, Object>>() {};
 
 	public void boot(String xtraParams) throws IOException, SQLException, InterruptedException {
         final String dir = System.getProperty("user.dir");
@@ -45,7 +46,7 @@ public class MysqlIsolatedServer {
 		boolean isRoot = System.getProperty("user.name").equals("root");
 
 		String gtidParams = "";
-		if (MaxwellTestSupport.inGtidMode()) {
+		if (MysqlIsolatedServerTestSupport.inGtidMode()) {
 			LOGGER.info("In gtid test mode.");
 			gtidParams =
 				"--gtid-mode=ON " +
@@ -101,7 +102,7 @@ public class MysqlIsolatedServer {
 		}.start();
 
 		String json = reader.readLine();
-		String outputFile = null;
+		String outputFile;
 		try {
 			ObjectMapper mapper = new ObjectMapper();
 			Map<String, Object> output = mapper.readValue(json, MAP_STRING_OBJECT_REF);

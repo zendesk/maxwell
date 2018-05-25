@@ -2,23 +2,32 @@ package com.zendesk.maxwell.core.row;
 
 import com.google.common.collect.Lists;
 import com.zendesk.maxwell.core.MaxwellTestJSON;
+import com.zendesk.maxwell.core.SpringTestContextConfiguration;
 import com.zendesk.maxwell.core.errors.ProtectedAttributeNameException;
 import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.replication.BinlogPosition;
 import com.zendesk.maxwell.core.replication.Position;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.regex.Pattern;
 
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = { SpringTestContextConfiguration.class })
 public class RowMapTest {
 
 	private static final long TIMESTAMP_MILLISECONDS = 1496712943447L;
 
 	private static final Position POSITION = new Position(new BinlogPosition(1L, "binlog-0001"), 0L);
 
+	@Autowired
+	protected MaxwellTestJSON maxwellTestJSON;
 
 	@Test
 	public void testGetDataMaps() throws Exception {
@@ -85,7 +94,7 @@ public class RowMapTest {
 
 		Assert.assertEquals(timestampSeconds, rowMap.getTimestamp().longValue());
 		Assert.assertEquals(TIMESTAMP_MILLISECONDS, rowMap.getTimestampMillis().longValue());
-		Map<String, Object> output = MaxwellTestJSON.parseJSON(rowMap.toJSON());
+		Map<String, Object> output = maxwellTestJSON.parseJSON(rowMap.toJSON());
 
 		int ts = (int) output.get("ts");
 		Assert.assertEquals(ts, timestampSeconds);
@@ -119,7 +128,7 @@ public class RowMapTest {
 
 		String jsonString = rowMap.pkToJson(RowMap.KeyFormat.HASH);
 
-		Map<String, Object> jsonMap = MaxwellTestJSON.parseJSON(jsonString);
+		Map<String, Object> jsonMap = maxwellTestJSON.parseJSON(jsonString);
 
 		Assert.assertTrue(jsonMap.containsKey("_uuid"));
 		Assert.assertEquals("MyDatabase", jsonMap.get("database"));

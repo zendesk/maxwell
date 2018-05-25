@@ -13,38 +13,25 @@ import com.zendesk.maxwell.core.schema.MysqlSchemaStore;
 import com.zendesk.maxwell.core.schema.SchemaStoreSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
-import java.net.URISyntaxException;
 import java.sql.Connection;
-import java.sql.SQLException;
 
-public class MaxwellRunner implements Runnable {
-	protected MaxwellConfig config;
-	protected MaxwellContext context;
-	protected Replicator replicator;
+@Service
+public class MaxwellRunner {
 
-	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellRunner.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellRunner.class);
 
-	public MaxwellRunner(MaxwellConfig config) throws SQLException, URISyntaxException {
-		this(new MaxwellContext(config));
-	}
-
-	protected MaxwellRunner(MaxwellContext context) throws SQLException, URISyntaxException {
-		this.config = context.getConfig();
-		this.context = context;
-		this.context.probeConnections();
-	}
-
-	public void run() {
+	public void run(final MaxwellContext context) {
 		try {
-			start();
+			start(context);
 		} catch (Exception e) {
 			LOGGER.error("maxwell encountered an exception", e);
 		}
 	}
 
-	public void terminate() {
-		Thread terminationThread = this.context.terminate();
+	public void terminate(final MaxwellContext context) {
+		Thread terminationThread = context.terminate();
 		if (terminationThread != null) {
 			try {
 				terminationThread.join();
@@ -54,17 +41,18 @@ public class MaxwellRunner implements Runnable {
 		}
 	}
 
-	private Position attemptMasterRecovery() throws Exception {
+	private Position attemptMasterRecovery(final MaxwellContext context) throws Exception {
+		final MysqlPositionStore positionStore = context.getPositionStore();
+		final MaxwellConfig config = context.getConfig();
 		Position recoveredPosition = null;
-		MysqlPositionStore positionStore = this.context.getPositionStore();
 		RecoveryInfo recoveryInfo = positionStore.getRecoveryInfo(config);
 
 		if ( recoveryInfo != null ) {
 			Recovery masterRecovery = new Recovery(
 				config.replicationMysql,
 				config.databaseName,
-				this.context.getReplicationConnectionPool(),
-				this.context.getCaseSensitivity(),
+				context.getReplicationConnectionPool(),
+				context.getCaseSensitivity(),
 				recoveryInfo
 			);
 
@@ -90,22 +78,23 @@ public class MaxwellRunner implements Runnable {
 		return recoveredPosition;
 	}
 
-	protected Position getInitialPosition() throws Exception {
+	private Position getInitialPosition(final MaxwellContext context) throws Exception {
 		/* first method:  do we have a stored position for this server? */
-		Position initial = this.context.getInitialPosition();
+		Position initial = context.getInitialPosition();
+		MaxwellConfig config = context.getConfig();
 
 		if (initial == null) {
 
 			/* second method: are we recovering from a master swap? */
 			if ( config.masterRecovery )
-				initial = attemptMasterRecovery();
+				initial = attemptMasterRecovery(context);
 
 			/* third method: is there a previous client_id?
 			   if so we have to start at that position or else
 			   we could miss schema changes, see https://github.com/zendesk/maxwell/issues/782 */
 
 			if ( initial == null ) {
-				initial = this.context.getOtherClientPosition();
+				initial = context.getOtherClientPosition();
 				if ( initial != null ) {
 					LOGGER.info("Found previous client position: " + initial);
 				}
@@ -122,14 +111,13 @@ public class MaxwellRunner implements Runnable {
 			context.getPositionStore().set(initial);
 		}
 
-		if (config.masterRecovery) {
-			this.context.getPositionStore().cleanupOldRecoveryInfos();
+		if (config.masterRecovery) { context.getPositionStore().cleanupOldRecoveryInfos();
 		}
 
 		return initial;
 	}
 
-	public String getMaxwellVersion() {
+	private String getMaxwellVersion() {
 		String packageVersion = getClass().getPackage().getImplementationVersion();
 		if ( packageVersion == null )
 			return "??";
@@ -143,61 +131,69 @@ public class MaxwellRunner implements Runnable {
 		LOGGER.info(String.format(bootString, getMaxwellVersion(), producerName, initialPosition.toString()));
 	}
 
-	protected void onReplicatorStart() {}
-	protected void onReplicatorEnd() {}
-
-	public void start() throws Exception {
+	public void start(final MaxwellContext context) throws Exception {
 		try {
-			startInner();
+			context.probeConnections();
+			startInner(context);
 		} catch ( Exception e) {
-			this.context.terminate(e);
+			context.terminate(e);
 		} finally {
-			onReplicatorEnd();
-			this.terminate();
+			onReplicatorEnd(context);
+			this.terminate(context);
 		}
 
-		Exception error = this.context.getError();
+		Exception error = context.getError();
 		if (error != null) {
 			throw error;
 		}
 	}
 
-	private void startInner() throws Exception {
-		try ( Connection connection = this.context.getReplicationConnection();
-		      Connection rawConnection = this.context.getRawMaxwellConnection() ) {
+	private void startInner(final MaxwellContext context) throws Exception {
+		final MaxwellConfig config = context.getConfig();
+		try ( Connection connection = context.getReplicationConnection();
+		      Connection rawConnection = context.getRawMaxwellConnection() ) {
 			MaxwellMysqlStatus.ensureReplicationMysqlState(connection);
 			MaxwellMysqlStatus.ensureMaxwellMysqlState(rawConnection);
 			if (config.gtidMode) {
 				MaxwellMysqlStatus.ensureGtidMysqlState(connection);
 			}
 
-			SchemaStoreSchema.ensureMaxwellSchema(rawConnection, this.config.databaseName);
+			SchemaStoreSchema.ensureMaxwellSchema(rawConnection, config.databaseName);
 
-			try ( Connection schemaConnection = this.context.getMaxwellConnection() ) {
+			try ( Connection schemaConnection = context.getMaxwellConnection() ) {
 				SchemaStoreSchema.upgradeSchemaStoreSchema(schemaConnection);
 			}
 		}
 
-		AbstractProducer producer = this.context.getProducer();
-		AbstractBootstrapper bootstrapper = this.context.getBootstrapper();
+		AbstractProducer producer = context.getProducer();
+		AbstractBootstrapper bootstrapper = context.getBootstrapper();
 
-		Position initPosition = getInitialPosition();
+		Position initPosition = getInitialPosition(context);
 		logBanner(producer, initPosition);
-		this.context.setPosition(initPosition);
+		context.setPosition(initPosition);
 
-		MysqlSchemaStore mysqlSchemaStore = new MysqlSchemaStore(this.context, initPosition);
+		MysqlSchemaStore mysqlSchemaStore = new MysqlSchemaStore(context, initPosition);
 		mysqlSchemaStore.getSchema(); // trigger schema to load / capture before we start the replicator.
 
-		this.replicator = new BinlogConnectorReplicator(mysqlSchemaStore, producer, bootstrapper, this.context, initPosition);
+		Replicator replicator = new BinlogConnectorReplicator(mysqlSchemaStore, producer, bootstrapper, context, initPosition);
 
 		bootstrapper.resume(producer, replicator);
 
 		replicator.setFilter(context.getFilter());
 
 		context.setReplicator(replicator);
-		this.context.start();
-		this.onReplicatorStart();
+		context.start();
+
+		this.onReplicatorStart(context);
 
 		replicator.runLoop();
+	}
+
+	private void onReplicatorStart(MaxwellContext maxwellContext){
+		maxwellContext.getOnReplicationStartEventHandler().ifPresent(c -> c.accept(maxwellContext));
+	}
+
+	private void onReplicatorEnd(MaxwellContext maxwellContext){
+		maxwellContext.getOnReplicationCompletedEventHandler().ifPresent(c -> c.accept(maxwellContext));
 	}
 }

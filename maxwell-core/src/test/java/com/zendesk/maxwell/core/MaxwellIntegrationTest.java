@@ -8,9 +8,11 @@ import com.zendesk.maxwell.core.producer.EncryptionMode;
 import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.schema.SchemaStoreSchema;
+import com.zendesk.maxwell.core.support.MaxwellContextTestSupport;
+import com.zendesk.maxwell.core.support.MysqlIsolatedServerTestSupport;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Test;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import java.sql.ResultSet;
 import java.util.HashSet;
 import java.util.List;
@@ -24,6 +26,10 @@ import static org.junit.Assume.assumeTrue;
 
 
 public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
+
+	@Autowired
+	private MaxwellConfigFactory maxwellConfigFactory;
+
 	@Test
 	public void testEncryptedData() throws Exception{
 		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
@@ -34,8 +40,8 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		list = getRowsForSQL(input);
 		String json = list.get(0).toJSON(outputConfig);
 
-		Map<String,Object> output = MaxwellTestJSON.parseJSON(json);
-		Map<String, Object> decrypted = MaxwellTestJSON.parseEncryptedJSON(output, outputConfig.secretKey);
+		Map<String,Object> output = maxwellTestJSON.parseJSON(json);
+		Map<String, Object> decrypted = maxwellTestJSON.parseEncryptedJSON(output, outputConfig.secretKey);
 
 		assertTrue(output.get("database").equals("shard_1"));
 		assertTrue(output.get("table").equals("minimal"));
@@ -57,8 +63,8 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		list = getRowsForSQL(input);
 		String json = list.get(0).toJSON(outputConfig);
 
-		Map<String,Object> output = MaxwellTestJSON.parseJSON(json);
-		Map<String, Object> decrypted = MaxwellTestJSON.parseEncryptedJSON(output, outputConfig.secretKey);
+		Map<String,Object> output = maxwellTestJSON.parseJSON(json);
+		Map<String, Object> decrypted = maxwellTestJSON.parseEncryptedJSON(output, outputConfig.secretKey);
 
 		assertArrayEquals(output.keySet().toArray(), new String[]{ "encrypted" });
 
@@ -135,7 +141,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String json = list.get(0).toJSON(outputConfig);
 
 		// Binlog
-		if (MaxwellTestSupport.inGtidMode()) {
+		if (MysqlIsolatedServerTestSupport.inGtidMode()) {
 			assertTrue(Pattern.matches(".*\"gtid\":\".*:.*\".*", json));
 		} else {
 			assertTrue(Pattern.matches(".*\"position\":\"master.0+1.\\d+\".*", json));
@@ -187,12 +193,12 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		assertTrue(Pattern.matches(".*\"thread_id\":"+actualThreadId+",.*", json));
 	}
 
-	static String createDBs[] = {
+	private static String createDBs[] = {
 		"CREATE database if not exists foo",
 		"CREATE table if not exists foo.bars ( id int(11) auto_increment not null, something text, primary key (id) )",
 	};
 
-	static String insertSQL[] = {
+	private static String insertSQL[] = {
 		"INSERT into foo.bars set something = 'hi'",
 		"INSERT into shard_1.minimal set account_id = 2, text_field='sigh'"
 	};
@@ -276,13 +282,13 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		assertTrue(Pattern.compile("\"account_id\":2").matcher(json).find());
 	}
 
-	static String blacklistSQLDDL[] = {
+	private static String blacklistSQLDDL[] = {
 		"CREATE DATABASE nodatabase",
 		"CREATE TABLE nodatabase.noseeum (i int)",
 		"CREATE TABLE nodatabase.oicu (i int)"
 	};
 
-	static String blacklistSQLDML[] = {
+	private static String blacklistSQLDML[] = {
 		"insert into nodatabase.noseeum set i = 1",
 		"insert into nodatabase.oicu set i = 1"
 	};
@@ -312,7 +318,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		assertThat(rows.size(), is(0));
 	}
 
-	String testAlterSQL[] = {
+	private String testAlterSQL[] = {
 			"insert into minimal set account_id = 1, text_field='hello'",
 			"ALTER table minimal drop column text_field",
 			"insert into minimal set account_id = 2",
@@ -355,7 +361,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		assertThat(list.size(), is(0));
 	}
 
-	String testTransactions[] = {
+	private String testTransactions[] = {
 			"create table if not exists minimal ( account_id int, text_field text )",
 			"BEGIN",
 			"insert into minimal set account_id = 1, text_field = 's'",
@@ -387,7 +393,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testRunMinimalBinlog() throws Exception {
-		requireMinimumVersion(server.VERSION_5_6);
+		requireMinimumVersion(MysqlIsolatedServer.VERSION_5_6);
 
 		try {
 			server.getConnection().createStatement().execute("set global binlog_row_image='minimal'");
@@ -412,7 +418,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testCreateSelectJSON() throws Exception {
-		if (MaxwellTestSupport.inGtidMode()) {
+		if (MysqlIsolatedServerTestSupport.inGtidMode()) {
 			// "CREATE TABLE ... SELECT is forbidden when @@GLOBAL.ENFORCE_GTID_CONSISTENCY = 1"
 			return;
 		}
@@ -446,7 +452,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 
 		lowerCaseServer.boot("--lower-case-table-names=1");
-		MaxwellContext context = MaxwellTestSupport.buildContext(lowerCaseServer.getPort(), null, null);
+		MaxwellContext context = MaxwellContextTestSupport.buildContext(lowerCaseServer.getPort(), null, null);
 		SchemaStoreSchema.ensureMaxwellSchema(lowerCaseServer.getConnection(), context.getConfig().databaseName);
 
 		String[] sql = {
@@ -454,7 +460,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 			"insert into `test`.`tootootwee` set id = 5"
 		};
 
-		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(lowerCaseServer, null, sql, null);
+		List<RowMap> rows = maxwellTestSupport.getRowsWithReplicator(lowerCaseServer, null, sql, null);
 		assertThat(rows.size(), is(1));
 		assertThat(rows.get(0).getTable(), is("tootootwee"));
 	}
@@ -476,13 +482,13 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testTime() throws Exception {
-		requireMinimumVersion(server.VERSION_5_6);
+		requireMinimumVersion(MysqlIsolatedServer.VERSION_5_6);
 		runJSON("/json/test_time");
 	}
 
 	@Test
 	public void testInvalid() throws Exception {
-		requireMinimumVersion(server.VERSION_5_6);
+		requireMinimumVersion(MysqlIsolatedServer.VERSION_5_6);
 		runJSON("/json/test_invalid_time");
 	}
 	@Test
@@ -507,15 +513,15 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testJson() throws Exception {
-		requireMinimumVersion(server.VERSION_5_7);
+		requireMinimumVersion(MysqlIsolatedServer.VERSION_5_7);
 		runJSON("/json/test_json");
 	}
 
-	static String[] createDBSql = {
+	private static String[] createDBSql = {
 			"CREATE database if not exists `foo`",
 			"CREATE TABLE if not exists `foo`.`ordered_output` ( id int, account_id int, user_id int )"
 	};
-	static String[] insertDBSql = {
+	private static String[] insertDBSql = {
 			"insert into `foo`.`ordered_output` set id = 1, account_id = 2, user_id = 3"
 	};
 
@@ -530,7 +536,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testJdbcConnectionOptions() throws Exception {
 		String[] opts = {"--jdbc_options= netTimeoutForStreamingResults=123& profileSQL=true  ", "--host=no-soup-spoons"};
-		MaxwellConfig config = new MaxwellConfigFactory().createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(opts);
+		MaxwellConfig config = maxwellConfigFactory.createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(opts);
 		config.validate();
 		assertThat(config.maxwellMysql.getConnectionURI(), containsString("jdbc:mysql://no-soup-spoons:3306/maxwell?"));
 		assertThat(config.replicationMysql.getConnectionURI(), containsString("jdbc:mysql://no-soup-spoons:3306?"));
@@ -566,7 +572,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 			"--schema_user=schemauser",
 			"--schema_password=schemapass"
 		};
-		MaxwellConfig config = new MaxwellConfigFactory().createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(opts);
+		MaxwellConfig config = maxwellConfigFactory.createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(opts);
 		assertEquals(config.replicationMysql.host, "replhost");
 		assertThat(config.replicationMysql.port, is(1001));
 		assertEquals(config.replicationMysql.user, "repluser");
@@ -585,7 +591,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 			"--replication_user=repluser",
 			"--replication_password=replpass",
 		};
-		MaxwellConfig config = new MaxwellConfigFactory().createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(opts);
+		MaxwellConfig config = maxwellConfigFactory.createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(opts);
 		assertEquals(config.replicationMysql.host, "replhost");
 		assertThat(config.replicationMysql.port, is(1001));
 		assertEquals(config.replicationMysql.user, "repluser");
@@ -597,7 +603,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testRowQueryLogEventsIsOn() throws Exception {
-		requireMinimumVersion(server.VERSION_5_6);
+		requireMinimumVersion(MysqlIsolatedServer.VERSION_5_6);
 		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
 		outputConfig.includesRowQuery = true;
 
