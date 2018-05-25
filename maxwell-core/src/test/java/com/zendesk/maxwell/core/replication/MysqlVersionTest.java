@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.replication;
 
-import com.zendesk.maxwell.TestWithNameLogging;
+import com.zendesk.maxwell.core.TestWithNameLogging;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;

@@ -1,7 +1,5 @@
 package com.zendesk.maxwell.core;
 
-import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
-import com.zendesk.maxwell.config.MaxwellConfig;
 import com.zendesk.maxwell.core.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.producer.AbstractProducer;
@@ -13,15 +11,6 @@ import com.zendesk.maxwell.core.replication.Replicator;
 import com.zendesk.maxwell.core.schema.MysqlPositionStore;
 import com.zendesk.maxwell.core.schema.MysqlSchemaStore;
 import com.zendesk.maxwell.core.schema.SchemaStoreSchema;
-import com.zendesk.maxwell.producer.AbstractProducer;
-import com.zendesk.maxwell.recovery.Recovery;
-import com.zendesk.maxwell.recovery.RecoveryInfo;
-import com.zendesk.maxwell.replication.BinlogConnectorReplicator;
-import com.zendesk.maxwell.replication.Position;
-import com.zendesk.maxwell.replication.Replicator;
-import com.zendesk.maxwell.schema.MysqlPositionStore;
-import com.zendesk.maxwell.schema.MysqlSchemaStore;
-import com.zendesk.maxwell.schema.SchemaStoreSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

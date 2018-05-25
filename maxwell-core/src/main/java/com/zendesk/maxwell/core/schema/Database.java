@@ -1,13 +1,11 @@
 package com.zendesk.maxwell.core.schema;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import com.zendesk.maxwell.CaseSensitivity;
+import com.zendesk.maxwell.core.CaseSensitivity;
 import com.zendesk.maxwell.core.schema.columndef.ColumnDef;
 import com.zendesk.maxwell.core.schema.ddl.InvalidSchemaError;
-import com.zendesk.maxwell.schema.columndef.ColumnDef;
-import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Database {
 	private final String name;

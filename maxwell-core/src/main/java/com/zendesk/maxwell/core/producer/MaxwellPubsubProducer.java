@@ -9,23 +9,18 @@ import com.google.cloud.pubsub.v1.Publisher;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.TopicName;
-import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.monitoring.Metrics;
 import com.zendesk.maxwell.core.replication.Position;
-import com.zendesk.maxwell.monitoring.Metrics;
-import com.zendesk.maxwell.replication.Position;
-import com.zendesk.maxwell.row.RowMap;
-import com.zendesk.maxwell.schema.ddl.DDLMap;
-import com.zendesk.maxwell.util.Logging;
-import com.zendesk.maxwell.util.StoppableTask;
-import com.zendesk.maxwell.util.StoppableTaskState;
+import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.core.schema.ddl.DDLMap;
+import com.zendesk.maxwell.core.util.StoppableTask;
+import com.zendesk.maxwell.core.util.StoppableTaskState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 class PubsubCallback implements ApiFutureCallback<String> {

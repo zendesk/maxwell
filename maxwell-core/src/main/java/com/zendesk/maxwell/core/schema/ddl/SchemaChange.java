@@ -1,20 +1,20 @@
 package com.zendesk.maxwell.core.schema.ddl;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Pattern;
-
-import com.zendesk.maxwell.config.MaxwellFilter;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
-import org.antlr.v4.runtime.*;
+import com.zendesk.maxwell.core.schema.Schema;
+import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.zendesk.maxwell.schema.Schema;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 public abstract class SchemaChange {
     final static Logger LOGGER = LoggerFactory.getLogger(SchemaChange.class);

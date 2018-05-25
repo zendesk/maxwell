@@ -3,9 +3,6 @@ package com.zendesk.maxwell.core.schema;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.core.schema.ddl.ResolvedSchemaChange;
-import com.zendesk.maxwell.replication.Position;
-import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
-import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 
 import java.util.List;
 

@@ -1,8 +1,7 @@
 package com.zendesk.maxwell.core.schema;
 
-import com.zendesk.maxwell.CaseSensitivity;
+import com.zendesk.maxwell.core.CaseSensitivity;
 import com.zendesk.maxwell.core.schema.columndef.ColumnDef;
-import com.zendesk.maxwell.schema.columndef.ColumnDef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

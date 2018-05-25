@@ -1,9 +1,9 @@
 package com.zendesk.maxwell.core.replication;
 
 import com.github.shyiko.mysql.binlog.event.*;
-import com.zendesk.maxwell.row.RowMap;
-import com.zendesk.maxwell.schema.Table;
-import com.zendesk.maxwell.schema.columndef.ColumnDef;
+import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.core.schema.Table;
+import com.zendesk.maxwell.core.schema.columndef.ColumnDef;
 
 import java.io.Serializable;
 import java.util.*;

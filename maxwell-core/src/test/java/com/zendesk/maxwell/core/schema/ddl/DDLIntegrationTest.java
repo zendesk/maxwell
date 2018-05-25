@@ -1,10 +1,12 @@
 package com.zendesk.maxwell.core.schema.ddl;
 
-import com.zendesk.maxwell.*;
-import com.zendesk.maxwell.producer.MaxwellOutputConfig;
-import com.zendesk.maxwell.row.RowMap;
+import com.zendesk.maxwell.core.CaseSensitivity;
+import com.zendesk.maxwell.core.MaxwellTestSupport;
+import com.zendesk.maxwell.core.MaxwellTestWithIsolatedServer;
+import com.zendesk.maxwell.core.Mysql57Tests;
+import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.core.row.RowMap;
 import org.junit.Test;
-
 import org.junit.experimental.categories.Category;
 
 import java.util.List;

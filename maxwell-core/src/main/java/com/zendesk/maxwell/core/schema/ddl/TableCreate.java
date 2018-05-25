@@ -1,15 +1,14 @@
 package com.zendesk.maxwell.core.schema.ddl;
 
+import com.zendesk.maxwell.core.CaseSensitivity;
+import com.zendesk.maxwell.core.config.MaxwellFilter;
+import com.zendesk.maxwell.core.schema.Database;
+import com.zendesk.maxwell.core.schema.Schema;
+import com.zendesk.maxwell.core.schema.Table;
+import com.zendesk.maxwell.core.schema.columndef.ColumnDef;
+
 import java.util.ArrayList;
 import java.util.List;
-import com.zendesk.maxwell.config.MaxwellFilter;
-import com.zendesk.maxwell.CaseSensitivity;
-import com.zendesk.maxwell.core.config.MaxwellFilter;
-import com.zendesk.maxwell.core.schema.columndef.ColumnDef;
-import com.zendesk.maxwell.schema.Database;
-import com.zendesk.maxwell.schema.Schema;
-import com.zendesk.maxwell.schema.Table;
-import com.zendesk.maxwell.schema.columndef.ColumnDef;
 
 public class TableCreate extends SchemaChange {
 	public String database;

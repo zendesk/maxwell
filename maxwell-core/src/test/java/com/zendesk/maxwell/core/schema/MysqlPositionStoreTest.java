@@ -1,20 +1,21 @@
 package com.zendesk.maxwell.core.schema;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.*;
-import com.zendesk.maxwell.*;
+import com.zendesk.maxwell.core.MaxwellContext;
+import com.zendesk.maxwell.core.MaxwellTestSupport;
+import com.zendesk.maxwell.core.MaxwellTestWithIsolatedServer;
+import com.zendesk.maxwell.core.errors.DuplicateProcessException;
+import com.zendesk.maxwell.core.recovery.RecoveryInfo;
+import com.zendesk.maxwell.core.replication.BinlogPosition;
+import com.zendesk.maxwell.core.replication.Position;
+import org.apache.commons.lang.StringUtils;
+import org.junit.Test;
+
 import java.sql.ResultSet;
 import java.util.List;
 
-import com.zendesk.maxwell.recovery.RecoveryInfo;
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.errors.DuplicateProcessException;
-import com.zendesk.maxwell.replication.Position;
-import org.apache.commons.lang.StringUtils;
-import org.junit.Test;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 public class MysqlPositionStoreTest extends MaxwellTestWithIsolatedServer {
 	private MysqlPositionStore buildStore() throws Exception {

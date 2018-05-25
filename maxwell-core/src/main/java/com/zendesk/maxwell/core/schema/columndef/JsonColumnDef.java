@@ -1,11 +1,9 @@
 package com.zendesk.maxwell.core.schema.columndef;
 
 import com.github.shyiko.mysql.binlog.event.deserialization.json.JsonBinary;
-import com.zendesk.maxwell.row.RawJSONString;
+import com.zendesk.maxwell.core.row.RawJSONString;
 
 import java.io.IOException;
-
-import static com.github.shyiko.mysql.binlog.event.deserialization.ColumnType.*;
 
 public class JsonColumnDef extends ColumnDef {
 	public JsonColumnDef(String name, String type, int pos) {

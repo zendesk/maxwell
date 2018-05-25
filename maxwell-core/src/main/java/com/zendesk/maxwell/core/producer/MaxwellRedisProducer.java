@@ -1,8 +1,8 @@
 package com.zendesk.maxwell.core.producer;
 
-import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.row.RowMap;
-import com.zendesk.maxwell.util.StoppableTask;
+import com.zendesk.maxwell.core.MaxwellContext;
+import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.core.util.StoppableTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;

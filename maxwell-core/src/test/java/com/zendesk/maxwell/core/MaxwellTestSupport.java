@@ -2,19 +2,20 @@ package com.zendesk.maxwell.core;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.shyiko.mysql.binlog.network.SSLMode;
-import com.zendesk.maxwell.config.MaxwellConfig;
-import com.zendesk.maxwell.config.MaxwellFilter;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
+import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
-import com.zendesk.maxwell.producer.MaxwellOutputConfig;
-import com.zendesk.maxwell.replication.Position;
-import com.zendesk.maxwell.row.RowMap;
-import com.zendesk.maxwell.schema.Schema;
-import com.zendesk.maxwell.schema.SchemaCapturer;
-import com.zendesk.maxwell.schema.SchemaStoreSchema;
-import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
-import com.zendesk.maxwell.schema.ddl.SchemaChange;
+import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.core.replication.Position;
+import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.core.schema.Schema;
+import com.zendesk.maxwell.core.schema.SchemaCapturer;
+import com.zendesk.maxwell.core.schema.SchemaStoreSchema;
+import com.zendesk.maxwell.core.schema.ddl.ResolvedSchemaChange;
+import com.zendesk.maxwell.core.schema.ddl.SchemaChange;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -24,9 +25,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -102,7 +100,7 @@ public class MaxwellTestSupport {
 
 	public static MaxwellContext buildContext(int port, Position p, MaxwellFilter filter)
 			throws SQLException, URISyntaxException {
-		MaxwellConfig config = new MaxwellConfig();
+		MaxwellConfig config = new MaxwellConfigFactory().createNewDefaultConfiguration();
 
 		config.replicationMysql.host = "127.0.0.1";
 		config.replicationMysql.port = port;
@@ -158,7 +156,7 @@ public class MaxwellTestSupport {
 
 		clearSchemaStore(mysql);
 
-		MaxwellConfig config = new MaxwellConfig();
+		MaxwellConfig config = new MaxwellConfigFactory().createNewDefaultConfiguration();
 
 		config.maxwellMysql.user = "maxwell";
 		config.maxwellMysql.password = "maxwell";

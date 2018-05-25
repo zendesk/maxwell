@@ -1,8 +1,8 @@
 package com.zendesk.maxwell.core.benchmark;
 
-import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.producer.AbstractProfilingProducer;
-import com.zendesk.maxwell.row.RowMap;
+import com.zendesk.maxwell.core.MaxwellContext;
+import com.zendesk.maxwell.core.producer.AbstractProfilingProducer;
+import com.zendesk.maxwell.core.row.RowMap;
 
 public class BenchmarkProducer extends AbstractProfilingProducer {
 	private long lastRowReceivedAt = 0;

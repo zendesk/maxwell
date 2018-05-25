@@ -1,7 +1,6 @@
 package com.zendesk.maxwell.core.replication;
 
 import com.github.shyiko.mysql.binlog.GtidSet;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

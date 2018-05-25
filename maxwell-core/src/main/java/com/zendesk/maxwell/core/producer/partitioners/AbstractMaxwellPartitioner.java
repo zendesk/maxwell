@@ -1,11 +1,10 @@
 package com.zendesk.maxwell.core.producer.partitioners;
 
-import com.zendesk.maxwell.row.RowMap;
+import com.zendesk.maxwell.core.row.RowMap;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 public abstract class AbstractMaxwellPartitioner {
 	List<String> partitionColumns = new ArrayList<String>();

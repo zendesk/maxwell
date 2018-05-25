@@ -1,18 +1,15 @@
 package com.zendesk.maxwell.core.producer;
 
-import com.zendesk.maxwell.core.replication.Position;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.amazonaws.handlers.AsyncHandler;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
-import com.amazonaws.services.sqs.AmazonSQSAsyncClient;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.amazonaws.services.sqs.model.SendMessageResult;
-import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.replication.Position;
-import com.zendesk.maxwell.row.RowMap;
+import com.zendesk.maxwell.core.MaxwellContext;
+import com.zendesk.maxwell.core.replication.Position;
+import com.zendesk.maxwell.core.row.RowMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MaxwellSQSProducer extends AbstractAsyncProducer {
 

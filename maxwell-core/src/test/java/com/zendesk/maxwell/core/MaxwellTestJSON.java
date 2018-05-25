@@ -1,21 +1,23 @@
 package com.zendesk.maxwell.core;
 
-import java.util.*;
-import java.io.*;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-
-import com.zendesk.maxwell.config.MaxwellFilter;
-import com.zendesk.maxwell.core.config.MaxwellFilter;
-import com.zendesk.maxwell.producer.MaxwellOutputConfig;
-import com.zendesk.maxwell.row.RowEncrypt;
-import com.zendesk.maxwell.row.RowMap;
-import org.apache.commons.lang3.StringUtils;
-
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zendesk.maxwell.core.config.MaxwellFilter;
+import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.core.row.RowEncrypt;
+import com.zendesk.maxwell.core.row.RowMap;
+import org.apache.commons.lang3.StringUtils;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 
 public class MaxwellTestJSON {

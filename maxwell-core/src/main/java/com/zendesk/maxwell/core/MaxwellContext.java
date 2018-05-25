@@ -1,11 +1,5 @@
 package com.zendesk.maxwell.core;
 
-import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
-import com.zendesk.maxwell.bootstrap.AsynchronousBootstrapper;
-import com.zendesk.maxwell.bootstrap.NoOpBootstrapper;
-import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
-import com.zendesk.maxwell.config.MaxwellConfig;
-import com.zendesk.maxwell.config.MaxwellFilter;
 import com.zendesk.maxwell.core.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.core.bootstrap.AsynchronousBootstrapper;
 import com.zendesk.maxwell.core.bootstrap.NoOpBootstrapper;
@@ -22,16 +16,6 @@ import com.zendesk.maxwell.core.schema.PositionStoreThread;
 import com.zendesk.maxwell.core.schema.ReadOnlyMysqlPositionStore;
 import com.zendesk.maxwell.core.util.StoppableTask;
 import com.zendesk.maxwell.core.util.TaskManager;
-import com.zendesk.maxwell.monitoring.*;
-import com.zendesk.maxwell.producer.*;
-import com.zendesk.maxwell.recovery.RecoveryInfo;
-import com.zendesk.maxwell.replication.*;
-import com.zendesk.maxwell.row.RowMap;
-import com.zendesk.maxwell.schema.MysqlPositionStore;
-import com.zendesk.maxwell.schema.PositionStoreThread;
-import com.zendesk.maxwell.schema.ReadOnlyMysqlPositionStore;
-import com.zendesk.maxwell.util.StoppableTask;
-import com.zendesk.maxwell.util.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import snaq.db.ConnectionPool;

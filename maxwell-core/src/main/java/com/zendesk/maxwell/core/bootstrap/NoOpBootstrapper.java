@@ -1,10 +1,9 @@
 package com.zendesk.maxwell.core.bootstrap;
 
-import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.core.MaxwellContext;
+import com.zendesk.maxwell.core.producer.AbstractProducer;
 import com.zendesk.maxwell.core.replication.Replicator;
-import com.zendesk.maxwell.replication.Replicator;
-import com.zendesk.maxwell.row.RowMap;
-import com.zendesk.maxwell.producer.AbstractProducer;
+import com.zendesk.maxwell.core.row.RowMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

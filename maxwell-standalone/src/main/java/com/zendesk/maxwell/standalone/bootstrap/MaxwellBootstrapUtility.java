@@ -1,9 +1,7 @@
 package com.zendesk.maxwell.standalone.bootstrap;
 
-import com.zendesk.maxwell.bootstrap.MaxwellBootstrapUtilityRunner;
-import com.zendesk.maxwell.standalone.bootstrap.config.MaxwellBootstrapUtilityCommandLineOptions;
-import com.zendesk.maxwell.config.InvalidOptionException;
-import com.zendesk.maxwell.config.InvalidUsageException;
+import com.zendesk.maxwell.core.bootstrap.MaxwellBootstrapUtilityRunner;
+import com.zendesk.maxwell.core.bootstrap.config.MaxwellBootstrapUtilityCommandLineOptions;
 import com.zendesk.maxwell.core.config.InvalidOptionException;
 import com.zendesk.maxwell.core.config.InvalidUsageException;
 import org.slf4j.Logger;

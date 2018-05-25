@@ -1,10 +1,7 @@
 package com.zendesk.maxwell.core.producer;
 
-import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.row.RowMap;
-
-import java.io.File;
-import java.io.FileOutputStream;
+import com.zendesk.maxwell.core.MaxwellContext;
+import com.zendesk.maxwell.core.row.RowMap;
 
 public class ProfilerProducer extends AbstractProfilingProducer {
 	public ProfilerProducer(MaxwellContext context) {

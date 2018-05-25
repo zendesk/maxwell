@@ -1,11 +1,10 @@
 package com.zendesk.maxwell.core.replication;
 
-import com.zendesk.maxwell.config.MaxwellFilter;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
-import com.zendesk.maxwell.row.RowMap;
-import com.zendesk.maxwell.schema.SchemaStoreException;
-import com.zendesk.maxwell.schema.Schema;
-import com.zendesk.maxwell.util.StoppableTask;
+import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.core.schema.Schema;
+import com.zendesk.maxwell.core.schema.SchemaStoreException;
+import com.zendesk.maxwell.core.util.StoppableTask;
 
 /**
  * Created by ben on 10/23/16.

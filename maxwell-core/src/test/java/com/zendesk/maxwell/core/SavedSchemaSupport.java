@@ -1,9 +1,9 @@
 package com.zendesk.maxwell.core;
 
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.replication.Position;
-import com.zendesk.maxwell.schema.MysqlSavedSchema;
-import com.zendesk.maxwell.schema.Schema;
+import com.zendesk.maxwell.core.replication.BinlogPosition;
+import com.zendesk.maxwell.core.replication.Position;
+import com.zendesk.maxwell.core.schema.MysqlSavedSchema;
+import com.zendesk.maxwell.core.schema.Schema;
 
 final public class SavedSchemaSupport {
 	private SavedSchemaSupport() { }

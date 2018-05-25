@@ -1,14 +1,14 @@
 package com.zendesk.maxwell.core.row;
 
-import com.zendesk.maxwell.TestWithNameLogging;
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.replication.Position;
+import com.zendesk.maxwell.core.TestWithNameLogging;
+import com.zendesk.maxwell.core.replication.BinlogPosition;
+import com.zendesk.maxwell.core.replication.Position;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class RowMapBufferTest extends TestWithNameLogging {

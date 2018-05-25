@@ -1,11 +1,11 @@
 package com.zendesk.maxwell.core.row;
 
 import com.google.common.collect.Lists;
-import com.zendesk.maxwell.MaxwellTestJSON;
-import com.zendesk.maxwell.errors.ProtectedAttributeNameException;
-import com.zendesk.maxwell.producer.MaxwellOutputConfig;
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.replication.Position;
+import com.zendesk.maxwell.core.MaxwellTestJSON;
+import com.zendesk.maxwell.core.errors.ProtectedAttributeNameException;
+import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.core.replication.BinlogPosition;
+import com.zendesk.maxwell.core.replication.Position;
 import org.junit.Assert;
 import org.junit.Test;
 

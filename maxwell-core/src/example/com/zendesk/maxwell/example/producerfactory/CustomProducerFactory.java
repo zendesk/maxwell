@@ -1,8 +1,8 @@
 package com.zendesk.maxwell.example.producerfactory;
 
-import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.producer.AbstractProducer;
-import com.zendesk.maxwell.producer.ProducerFactory;
+import com.zendesk.maxwell.core.MaxwellContext;
+import com.zendesk.maxwell.core.producer.AbstractProducer;
+import com.zendesk.maxwell.core.producer.ProducerFactory;
 
 /**
  * Custom {@link ProducerFactory} example that creates a new {@link CustomProducer}. To register your custom producer, 

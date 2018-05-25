@@ -2,7 +2,7 @@ package com.zendesk.maxwell.core.monitoring;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.health.HealthCheck;
-import com.zendesk.maxwell.producer.AbstractProducer;
+import com.zendesk.maxwell.core.producer.AbstractProducer;
 
 
 public class MaxwellHealthCheck extends HealthCheck {

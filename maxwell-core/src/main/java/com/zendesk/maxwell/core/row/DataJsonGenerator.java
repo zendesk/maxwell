@@ -2,10 +2,10 @@ package com.zendesk.maxwell.core.row;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
+import org.apache.commons.codec.binary.Base64;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import org.apache.commons.codec.binary.Base64;
 
 interface DataJsonGenerator {
 	// A wrapper around JsonGenerator for the `data` (and `old`) payload in a RowMap,

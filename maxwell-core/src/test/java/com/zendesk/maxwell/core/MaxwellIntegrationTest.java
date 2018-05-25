@@ -1,14 +1,13 @@
 package com.zendesk.maxwell.core;
 
 import com.google.common.collect.Lists;
-import com.zendesk.maxwell.config.MaxwellConfig;
-import com.zendesk.maxwell.config.MaxwellFilter;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
+import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
-import com.zendesk.maxwell.producer.EncryptionMode;
-import com.zendesk.maxwell.producer.MaxwellOutputConfig;
-import com.zendesk.maxwell.row.RowMap;
-import com.zendesk.maxwell.schema.SchemaStoreSchema;
+import com.zendesk.maxwell.core.producer.EncryptionMode;
+import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.core.schema.SchemaStoreSchema;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Test;
 
@@ -19,16 +18,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
 
@@ -539,7 +530,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testJdbcConnectionOptions() throws Exception {
 		String[] opts = {"--jdbc_options= netTimeoutForStreamingResults=123& profileSQL=true  ", "--host=no-soup-spoons"};
-		MaxwellConfig config = new MaxwellConfig(opts);
+		MaxwellConfig config = new MaxwellConfigFactory().createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(opts);
 		config.validate();
 		assertThat(config.maxwellMysql.getConnectionURI(), containsString("jdbc:mysql://no-soup-spoons:3306/maxwell?"));
 		assertThat(config.replicationMysql.getConnectionURI(), containsString("jdbc:mysql://no-soup-spoons:3306?"));
@@ -575,7 +566,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 			"--schema_user=schemauser",
 			"--schema_password=schemapass"
 		};
-		MaxwellConfig config = new MaxwellConfig(opts);
+		MaxwellConfig config = new MaxwellConfigFactory().createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(opts);
 		assertEquals(config.replicationMysql.host, "replhost");
 		assertThat(config.replicationMysql.port, is(1001));
 		assertEquals(config.replicationMysql.user, "repluser");
@@ -594,7 +585,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 			"--replication_user=repluser",
 			"--replication_password=replpass",
 		};
-		MaxwellConfig config = new MaxwellConfig(opts);
+		MaxwellConfig config = new MaxwellConfigFactory().createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(opts);
 		assertEquals(config.replicationMysql.host, "replhost");
 		assertThat(config.replicationMysql.port, is(1001));
 		assertEquals(config.replicationMysql.user, "repluser");

@@ -1,20 +1,14 @@
 package com.zendesk.maxwell.core.bootstrap;
 
-import com.zendesk.maxwell.bootstrap.config.MaxwellBootstrapUtilityConfig;
-import com.zendesk.maxwell.bootstrap.config.MaxwellBootstrapUtilityConfigFactory;
 import com.zendesk.maxwell.core.bootstrap.config.MaxwellBootstrapUtilityConfig;
 import com.zendesk.maxwell.core.bootstrap.config.MaxwellBootstrapUtilityConfigFactory;
-import com.zendesk.maxwell.util.Logging;
+import com.zendesk.maxwell.core.util.Logging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import snaq.db.ConnectionPool;
 
 import java.io.Console;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 public class MaxwellBootstrapUtilityRunner {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellBootstrapUtilityRunner.class);

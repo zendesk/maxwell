@@ -3,11 +3,11 @@ package com.zendesk.maxwell.core;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.github.shyiko.mysql.binlog.network.SSLMode;
-import com.zendesk.maxwell.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
-import com.zendesk.maxwell.producer.AbstractProducer;
-import com.zendesk.maxwell.producer.ProducerFactory;
-import com.zendesk.maxwell.row.RowMap;
+import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
+import com.zendesk.maxwell.core.producer.AbstractProducer;
+import com.zendesk.maxwell.core.producer.ProducerFactory;
+import com.zendesk.maxwell.core.row.RowMap;
 import org.junit.Test;
 
 import java.util.concurrent.BlockingQueue;
@@ -66,7 +66,7 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	private MaxwellConfig getConfig(MysqlIsolatedServer mysql) {
-		MaxwellConfig config = new MaxwellConfig();
+		MaxwellConfig config = new MaxwellConfigFactory().createNewDefaultConfiguration();
 		config.maxwellMysql.user = "maxwell";
 		config.maxwellMysql.password = "maxwell";
 		config.maxwellMysql.host = "localhost";

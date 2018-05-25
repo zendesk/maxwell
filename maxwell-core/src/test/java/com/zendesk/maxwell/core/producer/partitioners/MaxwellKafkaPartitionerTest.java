@@ -1,15 +1,14 @@
 package com.zendesk.maxwell.core.producer.partitioners;
 
-import com.zendesk.maxwell.row.RowMap;
-import com.zendesk.maxwell.schema.ddl.DDLMap;
-import com.zendesk.maxwell.schema.ddl.ResolvedDatabaseAlter;
-import com.zendesk.maxwell.schema.ddl.ResolvedTableDrop;
+import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.core.schema.ddl.DDLMap;
+import com.zendesk.maxwell.core.schema.ddl.ResolvedDatabaseAlter;
+import com.zendesk.maxwell.core.schema.ddl.ResolvedTableDrop;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-
 import java.util.ArrayList;
+
+import static org.junit.Assert.assertEquals;
 
 public class MaxwellKafkaPartitionerTest {
 	@Test

@@ -4,13 +4,11 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.monitoring.MaxwellDiagnostic;
 import com.zendesk.maxwell.core.monitoring.Metrics;
-import com.zendesk.maxwell.monitoring.MaxwellDiagnostic;
-import com.zendesk.maxwell.monitoring.Metrics;
-import com.zendesk.maxwell.row.RowMap;
-import com.zendesk.maxwell.util.StoppableTask;
+import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.core.util.StoppableTask;
 
 public abstract class AbstractProducer {
 	protected final MaxwellContext context;

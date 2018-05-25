@@ -6,9 +6,8 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 
-import java.util.*;
-
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class ColumnDefDeserializer extends JsonDeserializer<ColumnDef> {
 	@Override

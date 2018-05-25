@@ -1,10 +1,10 @@
 package com.zendesk.maxwell.core.config;
 
-import com.zendesk.maxwell.monitoring.MaxwellDiagnosticContext;
-import com.zendesk.maxwell.producer.EncryptionMode;
-import com.zendesk.maxwell.producer.ProducerFactory;
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.replication.Position;
+import com.zendesk.maxwell.core.monitoring.MaxwellDiagnosticContext;
+import com.zendesk.maxwell.core.producer.EncryptionMode;
+import com.zendesk.maxwell.core.producer.ProducerFactory;
+import com.zendesk.maxwell.core.replication.BinlogPosition;
+import com.zendesk.maxwell.core.replication.Position;
 import joptsimple.OptionSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +28,10 @@ public class MaxwellConfigFactory extends AbstractConfigurationFactory {
 	public MaxwellConfigFactory(MaxwellCommandLineOptions maxwellCommandLineOptions, ConfigurationFileParser configurationFileParser) {
 		this.maxwellCommandLineOptions = maxwellCommandLineOptions;
 		this.configurationFileParser = configurationFileParser;
+	}
+
+	public MaxwellConfig createNewDefaultConfiguration() {
+		return createFrom(null, null);
 	}
 
 	public MaxwellConfig createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(String[] args) {
@@ -260,5 +264,4 @@ public class MaxwellConfigFactory extends AbstractConfigurationFactory {
 			return null;
 		}
 	}
-
 }

@@ -1,15 +1,12 @@
 package com.zendesk.maxwell.core.schema.ddl;
 
-import com.zendesk.maxwell.schema.*;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.zendesk.maxwell.MaxwellContext;
-
-import com.zendesk.maxwell.MaxwellTestSupport;
-import com.zendesk.maxwell.MaxwellTestJSON;
-import com.zendesk.maxwell.MaxwellTestJSON.SQLAndJSON;
-import com.zendesk.maxwell.MaxwellTestWithIsolatedServer;
+import com.zendesk.maxwell.core.MaxwellTestJSON;
+import com.zendesk.maxwell.core.MaxwellTestJSON.SQLAndJSON;
+import com.zendesk.maxwell.core.MaxwellTestSupport;
+import com.zendesk.maxwell.core.MaxwellTestWithIsolatedServer;
+import com.zendesk.maxwell.core.schema.Schema;
+import com.zendesk.maxwell.core.schema.SchemaCapturer;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -17,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 /**
  * Created by ben on 1/29/16.

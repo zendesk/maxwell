@@ -1,8 +1,7 @@
 package com.zendesk.maxwell.core.schema.ddl;
 
+import com.zendesk.maxwell.core.schema.Table;
 import com.zendesk.maxwell.core.schema.columndef.ColumnDef;
-import com.zendesk.maxwell.schema.Table;
-import com.zendesk.maxwell.schema.columndef.ColumnDef;
 
 class AddColumnMod extends ColumnMod {
 	public ColumnDef definition;

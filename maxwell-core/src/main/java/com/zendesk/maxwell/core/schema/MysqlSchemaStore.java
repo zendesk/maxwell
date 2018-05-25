@@ -1,23 +1,17 @@
 package com.zendesk.maxwell.core.schema;
 
-import com.zendesk.maxwell.CaseSensitivity;
-import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.config.MaxwellFilter;
+import com.zendesk.maxwell.core.CaseSensitivity;
+import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.core.schema.ddl.ResolvedSchemaChange;
-import com.zendesk.maxwell.replication.Position;
-import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
-import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 import snaq.db.ConnectionPool;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
-
-import static com.zendesk.maxwell.schema.MysqlSavedSchema.restore;
 
 public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore {
 	private final ConnectionPool maxwellConnectionPool;

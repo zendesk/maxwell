@@ -1,8 +1,8 @@
 package com.zendesk.maxwell.example.producerfactory;
 
-import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.producer.AbstractProducer;
-import com.zendesk.maxwell.row.RowMap;
+import com.zendesk.maxwell.core.MaxwellContext;
+import com.zendesk.maxwell.core.producer.AbstractProducer;
+import com.zendesk.maxwell.core.row.RowMap;
 
 import java.util.ArrayList;
 import java.util.Collection;

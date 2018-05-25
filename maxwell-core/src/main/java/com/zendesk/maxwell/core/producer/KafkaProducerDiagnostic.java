@@ -1,13 +1,10 @@
 package com.zendesk.maxwell.core.producer;
 
-import com.zendesk.maxwell.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.monitoring.MaxwellDiagnostic;
 import com.zendesk.maxwell.core.monitoring.MaxwellDiagnosticResult;
-import com.zendesk.maxwell.monitoring.MaxwellDiagnostic;
-import com.zendesk.maxwell.monitoring.MaxwellDiagnosticResult;
-import com.zendesk.maxwell.row.RowMap;
-import com.zendesk.maxwell.schema.PositionStoreThread;
+import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.core.schema.PositionStoreThread;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;

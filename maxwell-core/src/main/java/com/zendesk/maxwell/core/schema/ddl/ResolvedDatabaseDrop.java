@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.core.schema.ddl;
 
-import com.zendesk.maxwell.schema.Database;
-import com.zendesk.maxwell.schema.Schema;
+import com.zendesk.maxwell.core.schema.Database;
+import com.zendesk.maxwell.core.schema.Schema;
 
 public class ResolvedDatabaseDrop extends ResolvedSchemaChange {
 	public String database;

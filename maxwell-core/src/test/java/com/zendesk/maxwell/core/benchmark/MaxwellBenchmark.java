@@ -1,17 +1,20 @@
 package com.zendesk.maxwell.core.benchmark;
 
-import com.zendesk.maxwell.MaxwellRunner;
-import com.zendesk.maxwell.config.MaxwellConfig;
-import com.zendesk.maxwell.MaxwellTestSupport;
-import com.zendesk.maxwell.MysqlIsolatedServer;
+import com.zendesk.maxwell.core.MaxwellRunner;
+import com.zendesk.maxwell.core.MaxwellTestSupport;
+import com.zendesk.maxwell.core.MysqlIsolatedServer;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
-import com.zendesk.maxwell.replication.Position;
+import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
+import com.zendesk.maxwell.core.replication.Position;
 import joptsimple.BuiltinHelpFormatter;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import me.tongfei.progressbar.ProgressBar;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.Random;
 import java.util.UUID;
 
@@ -83,7 +86,7 @@ public class MaxwellBenchmark {
 	}
 
 	private static void benchmark(String path, String args[]) throws Exception {
-		MaxwellConfig config = new MaxwellConfig(args);
+		MaxwellConfig config = new MaxwellConfigFactory().createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(args);
 		MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--no-clean --reuse=" + path);
 
 

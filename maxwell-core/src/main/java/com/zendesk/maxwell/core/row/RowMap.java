@@ -1,16 +1,12 @@
 package com.zendesk.maxwell.core.row;
 
-import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.zendesk.maxwell.core.errors.ProtectedAttributeNameException;
 import com.zendesk.maxwell.core.producer.EncryptionMode;
 import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.replication.BinlogPosition;
 import com.zendesk.maxwell.core.replication.Position;
-import com.zendesk.maxwell.errors.ProtectedAttributeNameException;
-import com.zendesk.maxwell.producer.EncryptionMode;
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.producer.MaxwellOutputConfig;
-import com.zendesk.maxwell.replication.Position;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,25 +14,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Pattern;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.zendesk.maxwell.errors.ProtectedAttributeNameException;
-import com.zendesk.maxwell.producer.EncryptionMode;
-import com.zendesk.maxwell.producer.MaxwellOutputConfig;
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.replication.Position;
 
 
 public class RowMap implements Serializable {

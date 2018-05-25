@@ -2,8 +2,6 @@ package com.zendesk.maxwell.core;
 
 import com.zendesk.maxwell.core.schema.SchemaCaptureTest;
 import com.zendesk.maxwell.core.schema.ddl.DDLIntegrationTest;
-import com.zendesk.maxwell.schema.SchemaCaptureTest;
-import com.zendesk.maxwell.schema.ddl.DDLIntegrationTest;
 import org.junit.experimental.categories.Categories;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;

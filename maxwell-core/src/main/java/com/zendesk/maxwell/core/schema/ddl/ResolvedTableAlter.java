@@ -1,11 +1,10 @@
 package com.zendesk.maxwell.core.schema.ddl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.zendesk.maxwell.config.MaxwellFilter;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
-import com.zendesk.maxwell.schema.Database;
-import com.zendesk.maxwell.schema.Schema;
-import com.zendesk.maxwell.schema.Table;
+import com.zendesk.maxwell.core.schema.Database;
+import com.zendesk.maxwell.core.schema.Schema;
+import com.zendesk.maxwell.core.schema.Table;
 
 public class ResolvedTableAlter extends ResolvedSchemaChange {
 	public String database;

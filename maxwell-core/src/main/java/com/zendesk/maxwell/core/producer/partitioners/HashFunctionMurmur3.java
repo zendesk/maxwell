@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.producer.partitioners;
 
-import com.zendesk.maxwell.util.MurmurHash3;
+import com.zendesk.maxwell.core.util.MurmurHash3;
 
 /**
  * Created by kaufmannkr on 1/18/16.

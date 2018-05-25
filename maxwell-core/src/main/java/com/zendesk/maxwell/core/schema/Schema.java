@@ -1,10 +1,8 @@
 package com.zendesk.maxwell.core.schema;
 
-import com.zendesk.maxwell.CaseSensitivity;
+import com.zendesk.maxwell.core.CaseSensitivity;
 import com.zendesk.maxwell.core.schema.columndef.ColumnDef;
 import com.zendesk.maxwell.core.schema.ddl.InvalidSchemaError;
-import com.zendesk.maxwell.schema.columndef.ColumnDef;
-import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;

@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.ValueNode;
 import com.zendesk.maxwell.core.errors.ParseException;
-import com.zendesk.maxwell.errors.ParseException;
 
 import java.io.IOException;
 import java.util.ArrayList;

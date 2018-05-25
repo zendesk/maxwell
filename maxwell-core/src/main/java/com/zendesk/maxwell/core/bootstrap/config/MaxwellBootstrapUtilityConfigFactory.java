@@ -1,8 +1,8 @@
 package com.zendesk.maxwell.core.bootstrap.config;
 
-import com.zendesk.maxwell.config.AbstractConfigurationFactory;
-import com.zendesk.maxwell.config.ConfigurationFileParser;
-import com.zendesk.maxwell.config.InvalidUsageException;
+import com.zendesk.maxwell.core.config.AbstractConfigurationFactory;
+import com.zendesk.maxwell.core.config.ConfigurationFileParser;
+import com.zendesk.maxwell.core.config.InvalidUsageException;
 import joptsimple.OptionSet;
 import org.apache.commons.lang3.StringUtils;
 

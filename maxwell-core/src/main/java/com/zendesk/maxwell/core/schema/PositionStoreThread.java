@@ -1,16 +1,13 @@
 package com.zendesk.maxwell.core.schema;
 
-import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.replication.BinlogPosition;
 import com.zendesk.maxwell.core.replication.Position;
-import com.zendesk.maxwell.replication.Position;
+import com.zendesk.maxwell.core.util.RunLoopProcess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
-
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.util.RunLoopProcess;
 
 public class PositionStoreThread extends RunLoopProcess implements Runnable {
 	static final Logger LOGGER = LoggerFactory.getLogger(PositionStoreThread.class);

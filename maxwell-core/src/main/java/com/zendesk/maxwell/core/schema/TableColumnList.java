@@ -1,9 +1,10 @@
 package com.zendesk.maxwell.core.schema;
 
-import java.util.*;
-
 import com.zendesk.maxwell.core.schema.columndef.ColumnDef;
-import com.zendesk.maxwell.schema.columndef.ColumnDef;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 
 public class TableColumnList implements Iterable<ColumnDef> {

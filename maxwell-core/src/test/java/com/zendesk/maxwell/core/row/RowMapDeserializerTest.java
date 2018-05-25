@@ -1,18 +1,8 @@
 package com.zendesk.maxwell.core.row;
 
-import com.fasterxml.jackson.databind.node.BigIntegerNode;
-import com.fasterxml.jackson.databind.node.DecimalNode;
-import com.fasterxml.jackson.databind.node.DoubleNode;
-import com.fasterxml.jackson.databind.node.FloatNode;
-import com.fasterxml.jackson.databind.node.IntNode;
-import com.fasterxml.jackson.databind.node.LongNode;
-import com.fasterxml.jackson.databind.node.ValueNode;
 import com.google.common.io.ByteStreams;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.math.BigDecimal;
-import java.math.BigInteger;
 
 public class RowMapDeserializerTest {
 	@Test

@@ -1,20 +1,12 @@
 package com.zendesk.maxwell.core.recovery;
 
-import com.zendesk.maxwell.CaseSensitivity;
-import com.zendesk.maxwell.config.MaxwellMysqlConfig;
+import com.zendesk.maxwell.core.CaseSensitivity;
 import com.zendesk.maxwell.core.config.MaxwellMysqlConfig;
 import com.zendesk.maxwell.core.monitoring.Metrics;
 import com.zendesk.maxwell.core.monitoring.NoOpMetrics;
 import com.zendesk.maxwell.core.replication.*;
-import com.zendesk.maxwell.monitoring.Metrics;
-import com.zendesk.maxwell.monitoring.NoOpMetrics;
-import com.zendesk.maxwell.replication.BinlogConnectorReplicator;
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.replication.HeartbeatNotifier;
-import com.zendesk.maxwell.replication.Position;
-import com.zendesk.maxwell.replication.Replicator;
-import com.zendesk.maxwell.row.HeartbeatRowMap;
-import com.zendesk.maxwell.row.RowMap;
+import com.zendesk.maxwell.core.row.HeartbeatRowMap;
+import com.zendesk.maxwell.core.row.RowMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import snaq.db.ConnectionPool;

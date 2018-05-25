@@ -1,11 +1,11 @@
 package com.zendesk.maxwell.core.schema.ddl;
 
+import com.zendesk.maxwell.core.MaxwellTestSupport;
+import com.zendesk.maxwell.core.MysqlIsolatedServer;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import java.io.File;
-
-import com.zendesk.maxwell.MysqlIsolatedServer;
-import com.zendesk.maxwell.MaxwellTestSupport;
-
-import org.junit.*;
 
 public class LowerCaseDDLIntegrationTest {
 	protected static MysqlIsolatedServer convertServer;

@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.core.schema.columndef;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 @JsonSerialize(using=ColumnDefSerializer.class)
 @JsonDeserialize(using=ColumnDefDeserializer.class)

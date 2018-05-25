@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.producer.partitioners;
 
-import com.zendesk.maxwell.row.RowMap;
+import com.zendesk.maxwell.core.row.RowMap;
 
 public class MaxwellKafkaPartitioner extends AbstractMaxwellPartitioner {
 	HashFunction hashFunc;

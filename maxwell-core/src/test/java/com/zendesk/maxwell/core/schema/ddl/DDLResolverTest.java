@@ -1,20 +1,18 @@
 package com.zendesk.maxwell.core.schema.ddl;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-
-import java.util.List;
-
-import org.junit.After;
-import org.junit.Before;
+import com.zendesk.maxwell.core.MaxwellTestWithIsolatedServer;
+import com.zendesk.maxwell.core.schema.Schema;
+import com.zendesk.maxwell.core.schema.SchemaCapturer;
+import com.zendesk.maxwell.core.schema.columndef.StringColumnDef;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.zendesk.maxwell.MaxwellTestWithIsolatedServer;
-import com.zendesk.maxwell.schema.Schema;
-import com.zendesk.maxwell.schema.SchemaCapturer;
+import java.util.List;
 
-import com.zendesk.maxwell.schema.columndef.StringColumnDef;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 public class DDLResolverTest extends MaxwellTestWithIsolatedServer {
 	@BeforeClass

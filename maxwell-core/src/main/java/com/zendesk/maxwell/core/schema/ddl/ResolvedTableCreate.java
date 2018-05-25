@@ -1,8 +1,8 @@
 package com.zendesk.maxwell.core.schema.ddl;
 
-import com.zendesk.maxwell.schema.Database;
-import com.zendesk.maxwell.schema.Schema;
-import com.zendesk.maxwell.schema.Table;
+import com.zendesk.maxwell.core.schema.Database;
+import com.zendesk.maxwell.core.schema.Schema;
+import com.zendesk.maxwell.core.schema.Table;
 
 public class ResolvedTableCreate extends ResolvedSchemaChange {
 	public String database;

@@ -1,17 +1,18 @@
 package com.zendesk.maxwell.core;
 
+import com.zendesk.maxwell.core.config.MaxwellFilter;
+import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.core.replication.MysqlVersion;
+import com.zendesk.maxwell.core.replication.Position;
+import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.core.util.Logging;
+import org.junit.Before;
+import org.junit.BeforeClass;
+
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.*;
-
-import com.zendesk.maxwell.config.MaxwellFilter;
-import com.zendesk.maxwell.core.config.MaxwellFilter;
-import com.zendesk.maxwell.producer.MaxwellOutputConfig;
-import com.zendesk.maxwell.replication.MysqlVersion;
-import com.zendesk.maxwell.replication.Position;
-import com.zendesk.maxwell.row.RowMap;
-import com.zendesk.maxwell.util.Logging;
-import org.junit.*;
+import java.util.List;
+import java.util.TimeZone;
 
 import static org.junit.Assume.assumeTrue;
 

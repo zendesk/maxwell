@@ -1,9 +1,9 @@
 package com.zendesk.maxwell.core.schema.columndef;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
 import java.util.Arrays;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class SetColumnDef extends EnumeratedColumnDef {
 	public SetColumnDef(String name, String type, int pos, String[] enumValues) {

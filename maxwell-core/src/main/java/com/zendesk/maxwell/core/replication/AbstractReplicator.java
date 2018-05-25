@@ -2,17 +2,16 @@ package com.zendesk.maxwell.core.replication;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
-import com.zendesk.maxwell.config.MaxwellFilter;
-import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
+import com.zendesk.maxwell.core.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
-import com.zendesk.maxwell.monitoring.Metrics;
-import com.zendesk.maxwell.producer.AbstractProducer;
-import com.zendesk.maxwell.row.HeartbeatRowMap;
-import com.zendesk.maxwell.row.RowMap;
-import com.zendesk.maxwell.schema.SchemaStore;
-import com.zendesk.maxwell.schema.ddl.DDLMap;
-import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
-import com.zendesk.maxwell.util.RunLoopProcess;
+import com.zendesk.maxwell.core.monitoring.Metrics;
+import com.zendesk.maxwell.core.producer.AbstractProducer;
+import com.zendesk.maxwell.core.row.HeartbeatRowMap;
+import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.core.schema.SchemaStore;
+import com.zendesk.maxwell.core.schema.ddl.DDLMap;
+import com.zendesk.maxwell.core.schema.ddl.ResolvedSchemaChange;
+import com.zendesk.maxwell.core.util.RunLoopProcess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,6 +1,5 @@
 package com.zendesk.maxwell.core.recovery;
 
-import com.zendesk.maxwell.config.MaxwellFilter;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
 
 /**

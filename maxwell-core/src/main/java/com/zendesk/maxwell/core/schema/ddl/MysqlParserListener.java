@@ -1,20 +1,17 @@
 package com.zendesk.maxwell.core.schema.ddl;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-
 import com.zendesk.maxwell.core.schema.columndef.ColumnDef;
+import com.zendesk.maxwell.core.schema.ddl.mysqlParser.*;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.TokenStreamRewriter;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 import org.antlr.v4.runtime.tree.ErrorNode;
-
-import com.zendesk.maxwell.schema.columndef.ColumnDef;
-import com.zendesk.maxwell.schema.ddl.mysqlParser.*;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 public class MysqlParserListener extends mysqlBaseListener {
     final Logger LOGGER = LoggerFactory.getLogger(MysqlParserListener.class);

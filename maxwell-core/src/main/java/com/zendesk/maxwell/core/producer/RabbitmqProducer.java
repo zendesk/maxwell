@@ -4,8 +4,8 @@ import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.MessageProperties;
-import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.row.RowMap;
+import com.zendesk.maxwell.core.MaxwellContext;
+import com.zendesk.maxwell.core.row.RowMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

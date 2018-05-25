@@ -1,33 +1,23 @@
 package com.zendesk.maxwell.core.producer;
 
-import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
+import com.amazonaws.services.kinesis.producer.*;
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Meter;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.Meter;
-import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.producer.partitioners.MaxwellKinesisPartitioner;
 import com.zendesk.maxwell.core.replication.Position;
-import com.zendesk.maxwell.producer.partitioners.MaxwellKinesisPartitioner;
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.replication.Position;
-import com.zendesk.maxwell.row.RowMap;
-
-import com.amazonaws.services.kinesis.producer.Attempt;
-import com.amazonaws.services.kinesis.producer.KinesisProducer;
-import com.amazonaws.services.kinesis.producer.KinesisProducerConfiguration;
-import com.amazonaws.services.kinesis.producer.UserRecordFailedException;
-import com.amazonaws.services.kinesis.producer.UserRecordResult;
-
+import com.zendesk.maxwell.core.row.RowMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 class KinesisCallback implements FutureCallback<UserRecordResult> {
 	public static final Logger logger = LoggerFactory.getLogger(KinesisCallback.class);

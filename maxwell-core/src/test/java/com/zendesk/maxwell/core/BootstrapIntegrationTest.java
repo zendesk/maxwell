@@ -1,10 +1,9 @@
 package com.zendesk.maxwell.core;
 
-import com.zendesk.maxwell.config.MaxwellFilter;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
-import com.zendesk.maxwell.producer.EncryptionMode;
-import com.zendesk.maxwell.producer.MaxwellOutputConfig;
-import com.zendesk.maxwell.row.RowMap;
+import com.zendesk.maxwell.core.producer.EncryptionMode;
+import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.core.row.RowMap;
 import org.junit.Test;
 
 import java.sql.Timestamp;

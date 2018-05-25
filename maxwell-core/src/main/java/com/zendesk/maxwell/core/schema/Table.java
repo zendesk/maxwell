@@ -1,23 +1,13 @@
 package com.zendesk.maxwell.core.schema;
 
-import java.util.*;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.zendesk.maxwell.core.schema.columndef.*;
 import com.zendesk.maxwell.core.schema.ddl.ColumnPosition;
 import com.zendesk.maxwell.core.schema.ddl.InvalidSchemaError;
-import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
-import com.zendesk.maxwell.schema.ddl.ColumnPosition;
-
-import com.zendesk.maxwell.schema.columndef.IntColumnDef;
-import com.zendesk.maxwell.schema.columndef.BigIntColumnDef;
-import com.zendesk.maxwell.schema.columndef.EnumeratedColumnDef;
 import org.apache.commons.lang3.StringUtils;
 
-import com.zendesk.maxwell.schema.columndef.ColumnDef;
-import com.zendesk.maxwell.schema.columndef.StringColumnDef;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.*;
 
 public class Table {
 	public String database;

@@ -1,7 +1,11 @@
 package com.zendesk.maxwell.core.schema.ddl;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import com.zendesk.maxwell.core.schema.columndef.BigIntColumnDef;
+import com.zendesk.maxwell.core.schema.columndef.ColumnDef;
+import com.zendesk.maxwell.core.schema.columndef.IntColumnDef;
+import com.zendesk.maxwell.core.schema.columndef.StringColumnDef;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -12,12 +16,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.zendesk.maxwell.schema.columndef.ColumnDef;
-import org.junit.*;
-
-import com.zendesk.maxwell.schema.columndef.*;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
 
 public class DDLParserTest {
 	public String getSQLDir() {

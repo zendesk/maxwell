@@ -1,7 +1,6 @@
 package com.zendesk.maxwell.core;
 
 import com.github.shyiko.mysql.binlog.network.SSLMode;
-import com.zendesk.maxwell.config.MaxwellMysqlConfig;
 import com.zendesk.maxwell.core.config.MaxwellMysqlConfig;
 import org.junit.Test;
 

@@ -1,13 +1,13 @@
 package com.zendesk.maxwell.core.support;
 
-import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.monitoring.NoOpMetrics;
-import com.zendesk.maxwell.producer.BufferedProducer;
-import com.zendesk.maxwell.replication.AbstractReplicator;
-import com.zendesk.maxwell.row.RowMap;
-import com.zendesk.maxwell.schema.Schema;
-import com.zendesk.maxwell.schema.SchemaStoreException;
-import com.zendesk.maxwell.util.RunState;
+import com.zendesk.maxwell.core.MaxwellContext;
+import com.zendesk.maxwell.core.monitoring.NoOpMetrics;
+import com.zendesk.maxwell.core.producer.BufferedProducer;
+import com.zendesk.maxwell.core.replication.AbstractReplicator;
+import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.core.schema.Schema;
+import com.zendesk.maxwell.core.schema.SchemaStoreException;
+import com.zendesk.maxwell.core.util.RunState;
 
 public class TestReplicator extends AbstractReplicator {
 

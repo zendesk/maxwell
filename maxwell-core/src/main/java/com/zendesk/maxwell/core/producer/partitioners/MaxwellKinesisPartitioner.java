@@ -1,7 +1,6 @@
 package com.zendesk.maxwell.core.producer.partitioners;
 
-import com.zendesk.maxwell.row.RowMap;
-
+import com.zendesk.maxwell.core.row.RowMap;
 import org.apache.commons.codec.digest.DigestUtils;
 
 public class MaxwellKinesisPartitioner extends AbstractMaxwellPartitioner {

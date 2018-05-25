@@ -6,25 +6,23 @@ package com.zendesk.maxwell.core.schema;
  * TODO: move all this into MysqlSchemaStore
  */
 
-import java.sql.*;
-import java.util.HashMap;
-import java.util.ArrayList;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.BufferedReader;
-import java.io.IOException;
-
 import com.zendesk.maxwell.core.replication.BinlogPosition;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.schema.ddl.InvalidSchemaError;
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.replication.Position;
 import org.apache.commons.lang3.StringUtils;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class SchemaStoreSchema {
 	static final Logger LOGGER = LoggerFactory.getLogger(SchemaStoreSchema.class);

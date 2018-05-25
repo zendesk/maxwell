@@ -1,17 +1,13 @@
 package com.zendesk.maxwell.core.recovery;
 
 import com.github.shyiko.mysql.binlog.network.SSLMode;
-import com.zendesk.maxwell.*;
-import com.zendesk.maxwell.config.MaxwellConfig;
+import com.zendesk.maxwell.core.*;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
-import com.zendesk.maxwell.replication.Position;
-import com.zendesk.maxwell.row.HeartbeatRowMap;
-import com.zendesk.maxwell.row.RowMap;
-import com.zendesk.maxwell.schema.MysqlPositionStore;
-import com.zendesk.maxwell.schema.MysqlSavedSchema;
-import com.zendesk.maxwell.schema.Schema;
-import com.zendesk.maxwell.schema.SchemaCapturer;
-import com.zendesk.maxwell.schema.SchemaStoreSchema;
+import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
+import com.zendesk.maxwell.core.replication.Position;
+import com.zendesk.maxwell.core.row.HeartbeatRowMap;
+import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.core.schema.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -26,10 +22,9 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.*;
 
 public class RecoveryTest extends TestWithNameLogging {
 	private static MysqlIsolatedServer masterServer, slaveServer;
@@ -49,7 +44,7 @@ public class RecoveryTest extends TestWithNameLogging {
 	}
 
 	private MaxwellConfig getConfig(int port, boolean masterRecovery) {
-		MaxwellConfig config = new MaxwellConfig();
+		MaxwellConfig config = new MaxwellConfigFactory().createNewDefaultConfiguration();
 		config.maxwellMysql.host = "localhost";
 		config.maxwellMysql.port = port;
 		config.maxwellMysql.user = "maxwell";

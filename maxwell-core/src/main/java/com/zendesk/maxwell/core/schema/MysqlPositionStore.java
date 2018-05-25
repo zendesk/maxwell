@@ -1,5 +1,15 @@
 package com.zendesk.maxwell.core.schema;
 
+import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
+import com.zendesk.maxwell.core.config.MaxwellConfig;
+import com.zendesk.maxwell.core.errors.DuplicateProcessException;
+import com.zendesk.maxwell.core.recovery.RecoveryInfo;
+import com.zendesk.maxwell.core.replication.BinlogPosition;
+import com.zendesk.maxwell.core.replication.Position;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import snaq.db.ConnectionPool;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -7,23 +17,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
-
-import com.zendesk.maxwell.config.MaxwellConfig;
-import com.zendesk.maxwell.core.config.MaxwellConfig;
-import com.zendesk.maxwell.core.recovery.RecoveryInfo;
-import com.zendesk.maxwell.core.replication.BinlogPosition;
-import com.zendesk.maxwell.core.replication.Position;
-import com.zendesk.maxwell.recovery.RecoveryInfo;
-
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.errors.DuplicateProcessException;
-import com.zendesk.maxwell.replication.Position;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import snaq.db.ConnectionPool;
 
 public class MysqlPositionStore {
 	static final Logger LOGGER = LoggerFactory.getLogger(MysqlPositionStore.class);

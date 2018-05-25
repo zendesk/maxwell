@@ -1,7 +1,9 @@
 package com.zendesk.maxwell.core.schema.columndef;
 
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
 
 public class DateFormatter {
 	private static TimeZone UTC_ZONE = TimeZone.getTimeZone("UTC");

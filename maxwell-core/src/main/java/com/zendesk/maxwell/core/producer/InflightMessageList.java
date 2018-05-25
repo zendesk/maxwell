@@ -6,9 +6,8 @@ package com.zendesk.maxwell.core.producer;
    Assumes .addInflight(position) will be call monotonically.
    */
 
-import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.replication.Position;
-import com.zendesk.maxwell.replication.Position;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;

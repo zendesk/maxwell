@@ -3,10 +3,9 @@ package com.zendesk.maxwell.core.monitoring;
 import com.codahale.metrics.servlets.HealthCheckServlet;
 import com.codahale.metrics.servlets.MetricsServlet;
 import com.codahale.metrics.servlets.PingServlet;
-import com.zendesk.maxwell.config.MaxwellConfig;
-import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
-import com.zendesk.maxwell.util.StoppableTask;
+import com.zendesk.maxwell.core.util.StoppableTask;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -14,11 +13,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.concurrent.TimeoutException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-
-import static com.zendesk.maxwell.monitoring.MaxwellMetrics.reportingTypeHttp;
+import java.util.concurrent.TimeoutException;
 
 public class MaxwellHTTPServer {
 

@@ -1,7 +1,6 @@
 package com.zendesk.maxwell.core.row;
 
 import com.zendesk.maxwell.core.util.ListWithDiskBuffer;
-import com.zendesk.maxwell.util.ListWithDiskBuffer;
 
 import java.io.IOException;
 

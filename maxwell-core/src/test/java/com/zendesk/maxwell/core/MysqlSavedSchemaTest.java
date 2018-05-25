@@ -1,30 +1,29 @@
 package com.zendesk.maxwell.core;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertEquals;
-
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.sql.SQLException;
-import java.sql.Connection;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Arrays;
-
 import com.google.common.collect.Lists;
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.replication.Position;
+import com.zendesk.maxwell.core.replication.BinlogPosition;
+import com.zendesk.maxwell.core.replication.Position;
+import com.zendesk.maxwell.core.schema.*;
+import com.zendesk.maxwell.core.schema.columndef.ColumnDef;
+import com.zendesk.maxwell.core.schema.columndef.DateTimeColumnDef;
+import com.zendesk.maxwell.core.schema.columndef.IntColumnDef;
+import com.zendesk.maxwell.core.schema.columndef.TimeColumnDef;
+import com.zendesk.maxwell.core.schema.ddl.InvalidSchemaError;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.zendesk.maxwell.schema.*;
-import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
-import com.zendesk.maxwell.schema.columndef.IntColumnDef;
-import com.zendesk.maxwell.schema.columndef.ColumnDef;
-import com.zendesk.maxwell.schema.columndef.DateTimeColumnDef;
-import com.zendesk.maxwell.schema.columndef.TimeColumnDef;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 	private Schema schema;

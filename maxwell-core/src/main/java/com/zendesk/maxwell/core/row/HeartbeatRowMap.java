@@ -2,9 +2,6 @@ package com.zendesk.maxwell.core.row;
 
 import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.replication.Position;
-import com.zendesk.maxwell.producer.MaxwellOutputConfig;
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.replication.Position;
 
 import java.io.IOException;
 import java.util.ArrayList;

@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.bootstrap.config;
 
-import com.zendesk.maxwell.config.MaxwellMysqlConfig;
+import com.zendesk.maxwell.core.config.MaxwellMysqlConfig;
 
 public class MaxwellBootstrapUtilityConfig {
 	public MaxwellMysqlConfig mysql;

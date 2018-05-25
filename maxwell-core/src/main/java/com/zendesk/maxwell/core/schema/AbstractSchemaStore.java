@@ -1,24 +1,19 @@
 package com.zendesk.maxwell.core.schema;
 
-import java.sql.SQLException;
-import java.sql.Connection;
-import java.util.List;
-import java.util.ArrayList;
-
-import com.zendesk.maxwell.CaseSensitivity;
-import com.zendesk.maxwell.config.MaxwellFilter;
+import com.zendesk.maxwell.core.CaseSensitivity;
+import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
 import com.zendesk.maxwell.core.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.core.schema.ddl.ResolvedSchemaChange;
 import com.zendesk.maxwell.core.schema.ddl.SchemaChange;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.schema.ddl.SchemaChange;
-import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
-import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import snaq.db.ConnectionPool;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class AbstractSchemaStore {
 	static final Logger LOGGER = LoggerFactory.getLogger(AbstractSchemaStore.class);

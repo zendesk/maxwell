@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.bootstrap.config;
 
-import com.zendesk.maxwell.config.AbstractCommandLineOptions;
+import com.zendesk.maxwell.core.config.AbstractCommandLineOptions;
 import joptsimple.BuiltinHelpFormatter;
 import joptsimple.OptionDescriptor;
 import joptsimple.OptionParser;

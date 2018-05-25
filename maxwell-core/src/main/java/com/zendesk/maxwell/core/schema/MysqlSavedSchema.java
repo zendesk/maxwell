@@ -1,38 +1,27 @@
 package com.zendesk.maxwell.core.schema;
 
-import java.sql.*;
-import java.util.*;
-
-import java.io.IOException;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.shyiko.mysql.binlog.GtidSet;
 import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
-
-import com.fasterxml.jackson.databind.JavaType;
-import com.zendesk.maxwell.CaseSensitivity;
-import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.core.CaseSensitivity;
+import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.replication.BinlogPosition;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.schema.columndef.*;
 import com.zendesk.maxwell.core.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.core.schema.ddl.ResolvedSchemaChange;
-import com.zendesk.maxwell.replication.Position;
-import com.zendesk.maxwell.schema.columndef.*;
-
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.text.StrTokenizer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
-import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import snaq.db.ConnectionPool;
+
+import java.io.IOException;
+import java.sql.*;
+import java.util.*;
 
 
 public class MysqlSavedSchema {

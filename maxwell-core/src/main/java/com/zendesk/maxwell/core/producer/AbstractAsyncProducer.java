@@ -1,12 +1,10 @@
 package com.zendesk.maxwell.core.producer;
 
 import com.codahale.metrics.Gauge;
-import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.monitoring.Metrics;
 import com.zendesk.maxwell.core.replication.Position;
-import com.zendesk.maxwell.monitoring.Metrics;
-import com.zendesk.maxwell.replication.Position;
-import com.zendesk.maxwell.row.RowMap;
+import com.zendesk.maxwell.core.row.RowMap;
 
 import java.util.concurrent.TimeUnit;
 

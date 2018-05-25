@@ -1,10 +1,10 @@
 package com.zendesk.maxwell.core.schema;
 
-import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.MaxwellTestSupport;
-import com.zendesk.maxwell.MaxwellTestWithIsolatedServer;
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.replication.Position;
+import com.zendesk.maxwell.core.MaxwellContext;
+import com.zendesk.maxwell.core.MaxwellTestSupport;
+import com.zendesk.maxwell.core.MaxwellTestWithIsolatedServer;
+import com.zendesk.maxwell.core.replication.BinlogPosition;
+import com.zendesk.maxwell.core.replication.Position;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;

@@ -1,14 +1,11 @@
 package com.zendesk.maxwell.core.schema.columndef;
 
-import java.nio.charset.Charset;
-import java.nio.charset.UnsupportedCharsetException;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
-
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.nio.charset.Charset;
 
 public class StringColumnDef extends ColumnDef {
 	public String charset;

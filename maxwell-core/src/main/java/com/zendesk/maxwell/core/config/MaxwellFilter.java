@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.config;
 
-import com.zendesk.maxwell.MaxwellInvalidFilterException;
+import com.zendesk.maxwell.core.MaxwellInvalidFilterException;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.*;

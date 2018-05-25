@@ -1,10 +1,10 @@
 package com.zendesk.maxwell.core.schema.columndef;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import com.zendesk.maxwell.core.TestWithNameLogging;
+import com.zendesk.maxwell.core.row.RawJSONString;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -13,11 +13,9 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
-import com.zendesk.maxwell.TestWithNameLogging;
-import com.zendesk.maxwell.row.RawJSONString;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 public class ColumnDefTest extends TestWithNameLogging {
 	private ColumnDef build(String type, boolean signed) {

@@ -1,10 +1,10 @@
 package com.zendesk.maxwell.core.producer;
 
-import com.zendesk.maxwell.config.MaxwellConfig;
-import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.replication.Position;
+import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
+import com.zendesk.maxwell.core.replication.BinlogPosition;
+import com.zendesk.maxwell.core.replication.Position;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -164,7 +164,7 @@ public class InflightMessageListTest {
 
 	private void setupWithInflightRequestTimeout(long timeout, double completePercentageThreshold) throws InterruptedException {
 		context = mock(MaxwellContext.class);
-		MaxwellConfig config = new MaxwellConfig();
+		MaxwellConfig config = new MaxwellConfigFactory().createNewDefaultConfiguration();
 		config.producerAckTimeout = timeout;
 		when(context.getConfig()).thenReturn(config);
 		list = new InflightMessageList(context, capacity, completePercentageThreshold);

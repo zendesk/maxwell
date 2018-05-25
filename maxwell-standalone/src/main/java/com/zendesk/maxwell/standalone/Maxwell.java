@@ -1,12 +1,12 @@
 package com.zendesk.maxwell.standalone;
 
 import com.djdch.log4j.StaticShutdownCallbackRegistry;
-import com.zendesk.maxwell.MaxwellRunner;
-import com.zendesk.maxwell.config.*;
+import com.zendesk.maxwell.core.MaxwellRunner;
+import com.zendesk.maxwell.core.config.*;
 import com.zendesk.maxwell.core.config.InvalidOptionException;
 import com.zendesk.maxwell.core.config.InvalidUsageException;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
-import com.zendesk.maxwell.util.Logging;
+import com.zendesk.maxwell.core.util.Logging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,9 +47,9 @@ public class Maxwell {
 			LOGGER.error("URISyntaxException: " + e.getLocalizedMessage());
 			System.exit(1);
 		} catch (InvalidUsageException e){
-			new com.zendesk.maxwell.standalone.config.MaxwellCommandLineOptions().usage(e.getMessage());
+			new MaxwellCommandLineOptions().usage(e.getMessage());
 		} catch (InvalidOptionException e){
-			new com.zendesk.maxwell.standalone.config.MaxwellCommandLineOptions().usageForOptions(e.getMessage(), e.getFilterOptions());
+			new MaxwellCommandLineOptions().usageForOptions(e.getMessage(), e.getFilterOptions());
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(1);

@@ -1,9 +1,13 @@
 package com.zendesk.maxwell.core.schema;
 
-import static com.zendesk.maxwell.MaxwellTestSupport.getSQLDir;
-import static org.junit.Assert.*;
+import com.zendesk.maxwell.core.CaseSensitivity;
+import com.zendesk.maxwell.core.MaxwellTestWithIsolatedServer;
+import com.zendesk.maxwell.core.schema.columndef.*;
+import com.zendesk.maxwell.core.schema.ddl.InvalidSchemaError;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.Before;
+import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -11,21 +15,9 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
-import com.zendesk.maxwell.CaseSensitivity;
-import com.zendesk.maxwell.MaxwellTestWithIsolatedServer;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
+import static com.zendesk.maxwell.core.MaxwellTestSupport.getSQLDir;
 import static org.hamcrest.CoreMatchers.*;
-
-import com.zendesk.maxwell.schema.Database;
-import com.zendesk.maxwell.schema.Schema;
-import com.zendesk.maxwell.schema.SchemaCapturer;
-import com.zendesk.maxwell.schema.Table;
-import com.zendesk.maxwell.schema.columndef.*;
-import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
+import static org.junit.Assert.*;
 
 public class SchemaCaptureTest extends MaxwellTestWithIsolatedServer {
 	private SchemaCapturer capturer;

@@ -1,11 +1,8 @@
 package com.zendesk.maxwell.core;
 
-import com.zendesk.maxwell.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.producer.BufferedProducer;
 import com.zendesk.maxwell.core.row.RowMap;
-import com.zendesk.maxwell.producer.BufferedProducer;
-import com.zendesk.maxwell.row.RowMap;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
