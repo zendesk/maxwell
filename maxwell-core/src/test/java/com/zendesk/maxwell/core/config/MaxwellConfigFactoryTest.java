@@ -1,7 +1,7 @@
-package com.zendesk.maxwell.core;
+package com.zendesk.maxwell.core.config;
 
-import com.zendesk.maxwell.core.config.MaxwellConfig;
-import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
+import com.zendesk.maxwell.core.MaxwellContext;
+import com.zendesk.maxwell.core.SpringTestContextConfiguration;
 import com.zendesk.maxwell.core.producer.AbstractProducer;
 import com.zendesk.maxwell.core.producer.ProducerFactory;
 import com.zendesk.maxwell.core.producer.StdoutProducer;
@@ -20,7 +20,7 @@ import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {SpringTestContextConfiguration.class})
-public class MaxwellConfigurationFactoryTest {
+public class MaxwellConfigFactoryTest {
 	private MaxwellConfig config;
 
 	@Rule
@@ -95,7 +95,7 @@ public class MaxwellConfigurationFactoryTest {
 	private String getTestConfigDir() {
 		return System.getProperty("user.dir") + "/src/test/resources/config/";
 	}
-	
+
 	public static class TestProducerFactory implements ProducerFactory {
 		public AbstractProducer createProducer(MaxwellContext context) {
 			return new StdoutProducer(context);

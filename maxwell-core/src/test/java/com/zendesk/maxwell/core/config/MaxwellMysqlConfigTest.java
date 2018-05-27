@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core;
+package com.zendesk.maxwell.core.config;
 
 import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.core.config.MaxwellMysqlConfig;
