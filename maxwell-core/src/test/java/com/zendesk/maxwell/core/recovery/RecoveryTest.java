@@ -194,7 +194,7 @@ public class RecoveryTest extends TestWithNameLogging {
 
 		int initialRowCount = rows.size();
 		for ( ;; ) {
-			RowMap r = maxwellTestSupport.pollRowFromBufferedProducer(context,4000);
+			RowMap r = maxwellTestSupport.pollRowFromBufferedProducer(context,1000);
 			if ( r == null ) {
 				throw new RuntimeException("Timed out waiting for heartbeat row: " + heartbeat);
 			}
