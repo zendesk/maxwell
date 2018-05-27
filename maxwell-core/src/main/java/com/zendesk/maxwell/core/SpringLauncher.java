@@ -1,6 +1,8 @@
 package com.zendesk.maxwell.core;
 
 import com.djdch.log4j.StaticShutdownCallbackRegistry;
+import com.zendesk.maxwell.core.bootstrap.MaxwellBootstrapUtilityRunner;
+import com.zendesk.maxwell.core.bootstrap.config.MaxwellBootstrapUtilityConfigFactory;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import org.springframework.context.ApplicationContext;
@@ -16,15 +18,15 @@ public class SpringLauncher {
 		launchMaxwell(args, Optional.empty());
 	}
 
-	public static void launchMaxwell(final String[] args, BiConsumer<MaxwellConfig,ApplicationContext> beforeStartEventHandler){
+	public static void launchMaxwell(final String[] args, final BiConsumer<MaxwellConfig,ApplicationContext> beforeStartEventHandler){
 		launchMaxwell(args, Optional.of(beforeStartEventHandler));
 	}
 
-	private static void launchMaxwell(final String[] args, Optional<BiConsumer<MaxwellConfig,ApplicationContext>> beforeStartEventHandler){
+	private static void launchMaxwell(final String[] args, final Optional<BiConsumer<MaxwellConfig,ApplicationContext>> beforeStartEventHandler){
 		launch((applicationContext -> runMaxwell(args, beforeStartEventHandler, applicationContext)));
 	}
 
-	private static void runMaxwell(final String[] args, Optional<BiConsumer<MaxwellConfig,ApplicationContext>> beforeStartEventHandler, ApplicationContext applicationContext) {
+	private static void runMaxwell(final String[] args, final Optional<BiConsumer<MaxwellConfig,ApplicationContext>> beforeStartEventHandler, final ApplicationContext applicationContext) {
 		try {
 			final MaxwellConfigFactory maxwellConfigFactory = applicationContext.getBean(MaxwellConfigFactory.class);
 			final MaxwellContextFactory maxwellContextFactory = applicationContext.getBean(MaxwellContextFactory.class);
@@ -42,6 +44,20 @@ public class SpringLauncher {
 			maxwellRunner.start(context);
 		}catch (Exception e){
 			throw new LauncherException("Error while running Maxwell", e);
+		}
+	}
+
+	public static void launchBootstrapperUtility(final String[] args){
+		launch(applicationContext -> runBootstrapperUtility(args, applicationContext));
+	}
+
+	private static void runBootstrapperUtility(final String[] args, final ApplicationContext applicationContext){
+		try {
+			MaxwellBootstrapUtilityConfigFactory maxwellBootstrapUtilityConfigFactory = applicationContext.getBean(MaxwellBootstrapUtilityConfigFactory.class);
+			MaxwellBootstrapUtilityRunner maxwellBootstrapUtilityRunner = new MaxwellBootstrapUtilityRunner(maxwellBootstrapUtilityConfigFactory);
+			maxwellBootstrapUtilityRunner.run(args);
+		}catch (Exception e){
+			throw new LauncherException("Error while running Maxwell Bootstrapper Utility", e);
 		}
 	}
 

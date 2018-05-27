@@ -5,13 +5,17 @@ import com.zendesk.maxwell.core.bootstrap.config.MaxwellBootstrapUtilityConfigFa
 import com.zendesk.maxwell.core.util.Logging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import snaq.db.ConnectionPool;
 
 import java.io.Console;
 import java.sql.*;
 
+@Service
 public class MaxwellBootstrapUtilityRunner {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellBootstrapUtilityRunner.class);
+
 	protected class MissingBootstrapRowException extends Exception {
 		MissingBootstrapRowException(Long rowID) { super("Could not find bootstrap row with id: " + rowID); }
 	}
@@ -24,8 +28,15 @@ public class MaxwellBootstrapUtilityRunner {
 
 	private boolean isComplete = false;
 
+	private final MaxwellBootstrapUtilityConfigFactory maxwellBootstrapUtilityConfigFactory;
+
+	@Autowired
+	public MaxwellBootstrapUtilityRunner(MaxwellBootstrapUtilityConfigFactory maxwellBootstrapUtilityConfigFactory) {
+		this.maxwellBootstrapUtilityConfigFactory = maxwellBootstrapUtilityConfigFactory;
+	}
+
 	public void run(String[] argv) throws Exception {
-		MaxwellBootstrapUtilityConfig config = new MaxwellBootstrapUtilityConfigFactory().createConfigurationFromArgumentsAndConfigurationFile(argv);
+		MaxwellBootstrapUtilityConfig config = maxwellBootstrapUtilityConfigFactory.createConfigurationFromArgumentsAndConfigurationFile(argv);
 
 		if ( config.log_level != null ) {
 			Logging.setLevel(config.log_level);

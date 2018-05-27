@@ -4,9 +4,11 @@ import com.zendesk.maxwell.core.config.AbstractCommandLineOptions;
 import joptsimple.BuiltinHelpFormatter;
 import joptsimple.OptionDescriptor;
 import joptsimple.OptionParser;
+import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
+@Service
 public class MaxwellBootstrapUtilityCommandLineOptions extends AbstractCommandLineOptions  {
 
 	@Override

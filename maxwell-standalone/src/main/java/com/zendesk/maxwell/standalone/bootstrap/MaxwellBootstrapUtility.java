@@ -1,24 +1,20 @@
 package com.zendesk.maxwell.standalone.bootstrap;
 
-import com.zendesk.maxwell.core.bootstrap.MaxwellBootstrapUtilityRunner;
+import com.zendesk.maxwell.core.SpringLauncher;
 import com.zendesk.maxwell.core.bootstrap.config.MaxwellBootstrapUtilityCommandLineOptions;
-import com.zendesk.maxwell.core.config.InvalidOptionException;
-import com.zendesk.maxwell.core.config.InvalidUsageException;
+import com.zendesk.maxwell.standalone.ExceptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MaxwellBootstrapUtility {
-	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellBootstrapUtility.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellBootstrapUtility.class);
+	private static final ExceptionHandler EXCEPTION_HANDLER = new ExceptionHandler(LOGGER, new MaxwellBootstrapUtilityCommandLineOptions());
 
 	public static void main(String[] args) {
 		try {
-			new MaxwellBootstrapUtilityRunner().run(args);
-		} catch (InvalidUsageException e){
-			new MaxwellBootstrapUtilityCommandLineOptions().usage(e.getMessage());
-		} catch (InvalidOptionException e){
-			new MaxwellBootstrapUtilityCommandLineOptions().usageForOptions(e.getMessage(), e.getFilterOptions());
+			SpringLauncher.launchBootstrapperUtility(args);
 		} catch ( Exception e ) {
-			e.printStackTrace();
+			EXCEPTION_HANDLER.handleException(e);
 			System.exit(1);
 		} finally {
 			LOGGER.info("done.");

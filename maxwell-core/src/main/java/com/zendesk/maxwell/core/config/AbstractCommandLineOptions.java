@@ -14,7 +14,6 @@ public abstract class AbstractCommandLineOptions {
 		System.err.println();
 		try {
 			createParser().printHelpOn(System.err);
-			System.exit(1);
 		} catch (IOException e) { }
 	}
 
@@ -53,7 +52,6 @@ public abstract class AbstractCommandLineOptions {
 		p.formatHelpWith(filteredHelpFormatter);
 		try {
 			p.printHelpOn(System.err);
-			System.exit(1);
 		} catch (IOException e) { }
 	}
 

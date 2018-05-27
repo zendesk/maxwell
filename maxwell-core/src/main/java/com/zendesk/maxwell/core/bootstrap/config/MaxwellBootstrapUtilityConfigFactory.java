@@ -5,18 +5,18 @@ import com.zendesk.maxwell.core.config.ConfigurationFileParser;
 import com.zendesk.maxwell.core.config.InvalidUsageException;
 import joptsimple.OptionSet;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.Properties;
 
+@Service
 public class MaxwellBootstrapUtilityConfigFactory extends AbstractConfigurationFactory {
 
 	private final MaxwellBootstrapUtilityCommandLineOptions maxwellBootstrapUtilityCommandLineOptions;
 	private final ConfigurationFileParser configurationFileParser;
 
-	public MaxwellBootstrapUtilityConfigFactory(){
-		this(new MaxwellBootstrapUtilityCommandLineOptions(), new ConfigurationFileParser());
-	}
-
+	@Autowired
 	public MaxwellBootstrapUtilityConfigFactory(MaxwellBootstrapUtilityCommandLineOptions maxwellBootstrapUtilityCommandLineOptions, ConfigurationFileParser configurationFileParser) {
 		this.maxwellBootstrapUtilityCommandLineOptions = maxwellBootstrapUtilityCommandLineOptions;
 		this.configurationFileParser = configurationFileParser;
