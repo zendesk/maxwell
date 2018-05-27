@@ -60,6 +60,7 @@ public class MaxwellContext {
 
 	private Consumer<MaxwellContext> onReplicationStartEventHandler;
 	private Consumer<MaxwellContext> onReplicationCompletedEventHandler;
+	private Consumer<MaxwellContext> onExecutionCompletedEventHandler;
 
 	public MaxwellContext(MaxwellConfig config) throws SQLException, URISyntaxException {
 		this.config = config;
@@ -452,7 +453,7 @@ public class MaxwellContext {
 	}
 
 	public Optional<Consumer<MaxwellContext>> getOnReplicationStartEventHandler(){
-		return Optional.of(onReplicationStartEventHandler);
+		return Optional.ofNullable(onReplicationStartEventHandler);
 	}
 
 	public void configureOnReplicationCompletedEventHandler(Consumer<MaxwellContext> onReplicationCompletedEventHandler){
@@ -460,6 +461,14 @@ public class MaxwellContext {
 	}
 
 	public Optional<Consumer<MaxwellContext>> getOnReplicationCompletedEventHandler(){
-		return Optional.of(onReplicationCompletedEventHandler);
+		return Optional.ofNullable(onReplicationCompletedEventHandler);
+	}
+
+	public void configureOnExecutionCompletedEventHandler(Consumer<MaxwellContext> onExecutionCompletedEventHandler) {
+		this.onExecutionCompletedEventHandler = onExecutionCompletedEventHandler;
+	}
+
+	public Optional<Consumer<MaxwellContext>> getOnExecutionCompletedEventHandler(){
+		return Optional.ofNullable(onExecutionCompletedEventHandler);
 	}
 }

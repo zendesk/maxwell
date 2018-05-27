@@ -91,7 +91,7 @@ public class MaxwellTestSupport {
 				waitObject.notify();
 			}
 		});
-		maxwellContext.configureOnReplicationCompletedEventHandler((c) -> {
+		maxwellContext.configureOnExecutionCompletedEventHandler((c) -> {
 			synchronized(waitObject) {
 				waitObject.notify();
 			}

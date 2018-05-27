@@ -10,7 +10,6 @@ import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.schema.*;
 import com.zendesk.maxwell.core.support.MaxwellTestSupport;
 import com.zendesk.maxwell.core.support.MysqlIsolatedServerTestSupport;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -61,7 +60,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		MysqlIsolatedServerTestSupport.setupSchema(masterServer, false);
 	}
 
-	private MaxwellConfig getConfig(int port, boolean masterRecovery) {
+	private MaxwellConfig getConfig(int port, boolean masterRecovery){
 		MaxwellConfig config = maxwellConfigFactory.createNewDefaultConfiguration();
 		config.maxwellMysql.host = "localhost";
 		config.maxwellMysql.port = port;
@@ -74,10 +73,10 @@ public class RecoveryTest extends TestWithNameLogging {
 		return config;
 	}
 
-	private MaxwellContext getContext(int port, boolean masterRecovery)
-			throws SQLException, URISyntaxException {
+	private MaxwellConfig getBufferedConfig(int port, boolean masterRecovery) {
 		MaxwellConfig config = getConfig(port, masterRecovery);
-		return maxwellContextFactory.createFor(config);
+		config.producerType = "buffer";
+		return config;
 	}
 
 	private String[] generateMasterData() throws Exception {
@@ -104,7 +103,7 @@ public class RecoveryTest extends TestWithNameLogging {
 			return;
 		}
 
-		MaxwellContext slaveContext = getContext(slaveServer.getPort(), true);
+		MaxwellContext slaveContext = maxwellContextFactory.createFor(getBufferedConfig(slaveServer.getPort(), true));
 
 		String[] input = generateMasterData();
 		/* run the execution through with the replicator running so we get heartbeats */
@@ -116,7 +115,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		RecoveryInfo recoveryInfo = slaveContext.getRecoveryInfo();
 
 		assertThat(recoveryInfo, notNullValue());
-		MaxwellConfig slaveConfig = getConfig(slaveServer.getPort(), true);
+		MaxwellConfig slaveConfig = getBufferedConfig(slaveServer.getPort(), true);
 		Recovery recovery = new Recovery(
 			slaveConfig.maxwellMysql,
 			slaveConfig.databaseName,
@@ -145,7 +144,7 @@ public class RecoveryTest extends TestWithNameLogging {
 			return;
 		}
 
-		MaxwellContext slaveContext = getContext(slaveServer.getPort(), true);
+		MaxwellContext slaveContext = maxwellContextFactory.createFor(getBufferedConfig(slaveServer.getPort(), true));
 
 		String[] input = generateMasterData();
 		maxwellTestSupport.getRowsWithReplicator(masterServer, null, input, null);
@@ -157,7 +156,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		/* pretend that we're a seperate client trying to recover now */
 		recoveryInfo.clientID = "another_client";
 
-		MaxwellConfig slaveConfig = getConfig(slaveServer.getPort(), true);
+		MaxwellConfig slaveConfig = getBufferedConfig(slaveServer.getPort(), true);
 		Recovery recovery = new Recovery(
 			slaveConfig.maxwellMysql,
 			slaveConfig.databaseName,
@@ -224,7 +223,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		LOGGER.warn("slave master position at time of cut: " + approximateRecoverPosition);
 		generateNewMasterData(false, DATA_SIZE);
 
-		final MaxwellContext context = maxwellContextFactory.createFor(getConfig(slaveServer.getPort(), true));
+		final MaxwellContext context = maxwellContextFactory.createFor(getBufferedConfig(slaveServer.getPort(), true));
 		new Thread(() -> maxwellRunner.run(context)).start();
 		drainReplication(context, rows);
 
@@ -293,7 +292,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		generateNewMasterData(false, DATA_SIZE);
 		expectedRows += NEW_DATA_SIZE;
 
-		MaxwellContext context = maxwellContextFactory.createFor(getConfig(slaveServer.getPort(), true));
+		MaxwellContext context = maxwellContextFactory.createFor(getBufferedConfig(slaveServer.getPort(), true));
 		new Thread(() -> maxwellRunner.run(context)).start();
 		drainReplication(context, rows);
 		assertEquals(expectedRows, rows.size());
@@ -336,7 +335,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		// connect to slave, maxwell should get these 100 rows from slave
 		boolean masterRecovery = !MysqlIsolatedServerTestSupport.inGtidMode();
 
-		final MaxwellContext context1 = maxwellContextFactory.createFor(getConfig(slaveServer.getPort(), masterRecovery));
+		final MaxwellContext context1 = maxwellContextFactory.createFor(getBufferedConfig(slaveServer.getPort(), masterRecovery));
 		new Thread(() -> maxwellRunner.run(context1)).start();
 		drainReplication(context1, rows);
 		maxwellRunner.terminate(context1);
@@ -351,7 +350,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		expectedRowCount += NEW_DATA_SIZE;
 		// reconnect to slave to resume, maxwell should get the new 100 rows
 
-		final MaxwellContext context2 = maxwellContextFactory.createFor(getConfig(slaveServer.getPort(), false));
+		final MaxwellContext context2 = maxwellContextFactory.createFor(getBufferedConfig(slaveServer.getPort(), false));
 		new Thread(() -> maxwellRunner.run(context2)).start();
 		drainReplication(context2, rows);
 		assertEquals(expectedRowCount, rows.size());
@@ -372,7 +371,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		MysqlIsolatedServer server = masterServer;
 		Position oldlogPosition = MysqlIsolatedServerTestSupport.capture(server.getConnection());
 		LOGGER.info("Initial pos: " + oldlogPosition);
-		MaxwellContext context1 = getContext(server.getPort(), false);
+		MaxwellContext context1 = maxwellContextFactory.createFor(getConfig(server.getPort(), false));
 		context1.getPositionStore().set(oldlogPosition);
 		MysqlSavedSchema savedSchema = MysqlSavedSchema.restore(context1, oldlogPosition);
 		if (savedSchema == null) {
@@ -386,7 +385,7 @@ public class RecoveryTest extends TestWithNameLogging {
 
 		server.execute("CREATE TABLE shard_1.new (id int(11))");
 
-		final MaxwellContext context2 = maxwellContextFactory.createFor(getConfig(slaveServer.getPort(), false));
+		final MaxwellContext context2 = maxwellContextFactory.createFor(getBufferedConfig(server.getPort(), false));
 		List<RowMap> rows = new ArrayList<>();
 		new Thread(() -> maxwellRunner.run(context2)).start();
 		drainReplication(context2, rows);
@@ -394,12 +393,12 @@ public class RecoveryTest extends TestWithNameLogging {
 
 		Position newPosition = MysqlIsolatedServerTestSupport.capture(server.getConnection());
 		LOGGER.info("New pos: " + newPosition);
-		MysqlSavedSchema newSavedSchema = MysqlSavedSchema.restore(context2, newPosition);
+		MysqlSavedSchema newSavedSchema = MysqlSavedSchema.restore(context1, newPosition);
 		LOGGER.info("New schema id: " + newSavedSchema.getSchemaID());
 		assertEquals(new Long(oldSchemaId + 1), newSavedSchema.getSchemaID());
 		assertTrue(newPosition.newerThan(savedSchema.getPosition()));
 
-		MysqlSavedSchema restored = MysqlSavedSchema.restore(context2, oldlogPosition);
+		MysqlSavedSchema restored = MysqlSavedSchema.restore(context1, oldlogPosition);
 		assertEquals(oldSchemaId, restored.getSchemaID());
 	}
 

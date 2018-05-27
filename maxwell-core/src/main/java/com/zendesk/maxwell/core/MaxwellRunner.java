@@ -27,6 +27,8 @@ public class MaxwellRunner {
 			start(context);
 		} catch (Exception e) {
 			LOGGER.error("maxwell encountered an exception", e);
+		} finally {
+			context.getOnExecutionCompletedEventHandler().ifPresent(c -> c.accept(context));
 		}
 	}
 
