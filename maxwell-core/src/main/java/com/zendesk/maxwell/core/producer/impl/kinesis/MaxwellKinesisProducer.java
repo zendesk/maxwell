@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core.producer;
+package com.zendesk.maxwell.core.producer.impl.kinesis;
 
 import com.amazonaws.services.kinesis.producer.*;
 import com.codahale.metrics.Counter;
@@ -8,6 +8,7 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.zendesk.maxwell.core.MaxwellContext;
+import com.zendesk.maxwell.core.producer.AbstractAsyncProducer;
 import com.zendesk.maxwell.core.producer.partitioners.MaxwellKinesisPartitioner;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.row.RowMap;

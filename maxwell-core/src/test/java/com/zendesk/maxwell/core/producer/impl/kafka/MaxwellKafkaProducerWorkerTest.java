@@ -1,10 +1,11 @@
-package com.zendesk.maxwell.core.producer;
+package com.zendesk.maxwell.core.producer.impl.kafka;
 
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.SpringTestContextConfiguration;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.monitoring.NoOpMetrics;
+import com.zendesk.maxwell.core.producer.impl.kafka.MaxwellKafkaProducerWorker;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

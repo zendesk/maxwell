@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core.producer;
+package com.zendesk.maxwell.core.producer.impl.pubsub;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
@@ -11,6 +11,8 @@ import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.TopicName;
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.monitoring.Metrics;
+import com.zendesk.maxwell.core.producer.AbstractAsyncProducer;
+import com.zendesk.maxwell.core.producer.AbstractProducer;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.schema.ddl.DDLMap;

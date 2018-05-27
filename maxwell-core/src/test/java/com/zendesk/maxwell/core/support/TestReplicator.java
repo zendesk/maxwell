@@ -2,7 +2,7 @@ package com.zendesk.maxwell.core.support;
 
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.monitoring.NoOpMetrics;
-import com.zendesk.maxwell.core.producer.BufferedProducer;
+import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducer;
 import com.zendesk.maxwell.core.replication.AbstractReplicator;
 import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.schema.Schema;

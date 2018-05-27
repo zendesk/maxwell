@@ -4,7 +4,7 @@ import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.SpringTestContextConfiguration;
 import com.zendesk.maxwell.core.producer.AbstractProducer;
 import com.zendesk.maxwell.core.producer.ProducerFactory;
-import com.zendesk.maxwell.core.producer.StdoutProducer;
+import com.zendesk.maxwell.core.producer.impl.stdout.StdoutProducer;
 import joptsimple.OptionException;
 import org.junit.Rule;
 import org.junit.Test;
