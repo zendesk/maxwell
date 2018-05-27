@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.core;
 
-import com.zendesk.maxwell.core.bootstrap.AbstractBootstrapper;
+import com.zendesk.maxwell.core.bootstrap.Bootstrapper;
+import com.zendesk.maxwell.core.bootstrap.BootstrapperFactory;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.producer.AbstractProducer;
 import com.zendesk.maxwell.core.recovery.Recovery;
@@ -13,6 +14,7 @@ import com.zendesk.maxwell.core.schema.MysqlSchemaStore;
 import com.zendesk.maxwell.core.schema.SchemaStoreSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
@@ -21,6 +23,13 @@ import java.sql.Connection;
 public class MaxwellRunner {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellRunner.class);
+
+	private final BootstrapperFactory bootstrapperFactory;
+
+	@Autowired
+	public MaxwellRunner(BootstrapperFactory bootstrapperFactory) {
+		this.bootstrapperFactory = bootstrapperFactory;
+	}
 
 	public void run(final MaxwellContext context) {
 		try {
@@ -168,7 +177,7 @@ public class MaxwellRunner {
 		}
 
 		AbstractProducer producer = context.getProducer();
-		AbstractBootstrapper bootstrapper = context.getBootstrapper();
+		Bootstrapper bootstrapper = bootstrapperFactory.createFor(context);
 
 		Position initPosition = getInitialPosition(context);
 		logBanner(producer, initPosition);

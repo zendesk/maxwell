@@ -5,10 +5,7 @@ import com.zendesk.maxwell.core.producer.AbstractProducer;
 import com.zendesk.maxwell.core.replication.Replicator;
 import com.zendesk.maxwell.core.row.RowMap;
 
-import java.io.IOException;
-import java.sql.SQLException;
-
-public abstract class AbstractBootstrapper {
+public abstract class AbstractBootstrapper implements Bootstrapper {
 
 	protected MaxwellContext context;
 
@@ -46,15 +43,8 @@ public abstract class AbstractBootstrapper {
 		return (String) rowmap.getData("where_clause");
 	}
 
-	abstract public boolean shouldSkip(RowMap row) throws SQLException, IOException;
-
 	abstract public void startBootstrap(RowMap startBootstrapRow, AbstractProducer producer, Replicator replicator) throws Exception;
 
 	abstract public void completeBootstrap(RowMap completeBootstrapRow, AbstractProducer producer, Replicator replicator) throws Exception;
 
-	public abstract void resume(AbstractProducer producer, Replicator replicator) throws Exception;
-
-	public abstract boolean isRunning();
-
-	public abstract void work(RowMap row, AbstractProducer producer, Replicator replicator) throws Exception;
 }

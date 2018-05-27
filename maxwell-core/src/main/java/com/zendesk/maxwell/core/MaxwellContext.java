@@ -1,9 +1,5 @@
 package com.zendesk.maxwell.core;
 
-import com.zendesk.maxwell.core.bootstrap.AbstractBootstrapper;
-import com.zendesk.maxwell.core.bootstrap.AsynchronousBootstrapper;
-import com.zendesk.maxwell.core.bootstrap.NoOpBootstrapper;
-import com.zendesk.maxwell.core.bootstrap.SynchronousBootstrapper;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
 import com.zendesk.maxwell.core.monitoring.*;
@@ -16,7 +12,6 @@ import com.zendesk.maxwell.core.schema.PositionStoreThread;
 import com.zendesk.maxwell.core.schema.ReadOnlyMysqlPositionStore;
 import com.zendesk.maxwell.core.util.StoppableTask;
 import com.zendesk.maxwell.core.util.TaskManager;
-import joptsimple.OptionParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import snaq.db.ConnectionPool;
@@ -393,18 +388,6 @@ public class MaxwellContext {
 			addTask(task);
 		}
 		return this.producer;
-	}
-
-	public AbstractBootstrapper getBootstrapper() throws IOException {
-		switch ( this.config.bootstrapperType ) {
-			case "async":
-				return new AsynchronousBootstrapper(this);
-			case "sync":
-				return new SynchronousBootstrapper(this);
-			default:
-				return new NoOpBootstrapper(this);
-		}
-
 	}
 
 	public MaxwellFilter getFilter() {

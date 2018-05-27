@@ -8,7 +8,7 @@ import com.github.shyiko.mysql.binlog.event.RowsQueryEventData;
 import com.github.shyiko.mysql.binlog.event.TableMapEventData;
 import com.github.shyiko.mysql.binlog.event.deserialization.EventDeserializer;
 import com.zendesk.maxwell.core.MaxwellContext;
-import com.zendesk.maxwell.core.bootstrap.AbstractBootstrapper;
+import com.zendesk.maxwell.core.bootstrap.Bootstrapper;
 import com.zendesk.maxwell.core.config.MaxwellMysqlConfig;
 import com.zendesk.maxwell.core.monitoring.Metrics;
 import com.zendesk.maxwell.core.producer.AbstractProducer;
@@ -46,7 +46,7 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 	public BinlogConnectorReplicator(
 		SchemaStore schemaStore,
 		AbstractProducer producer,
-		AbstractBootstrapper bootstrapper,
+		Bootstrapper bootstrapper,
 		MaxwellMysqlConfig mysqlConfig,
 		Long replicaServerID,
 		String maxwellSchemaDatabaseName,
@@ -93,7 +93,7 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 		this.stopOnEOF = stopOnEOF;
 	}
 
-	public BinlogConnectorReplicator(SchemaStore schemaStore, AbstractProducer producer, AbstractBootstrapper bootstrapper, MaxwellContext ctx, Position start) throws SQLException {
+	public BinlogConnectorReplicator(SchemaStore schemaStore, AbstractProducer producer, Bootstrapper bootstrapper, MaxwellContext ctx, Position start) throws SQLException {
 		this(
 			schemaStore,
 			producer,
