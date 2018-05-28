@@ -1,0 +1,29 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
+    <parent>
+        <groupId>com.zendesk</groupId>
+        <artifactId>maxwell-parent</artifactId>
+        <version>1.14.6</version>
+    </parent>
+
+    <artifactId>maxwell-producers</artifactId>
+    <packaging>pom</packaging>
+
+    <name>maxwell-producers</name>
+    <description>Maxwell's producers parent.</description>
+
+    <modules>
+        <module>maxwell-producer-buffer</module>
+        <module>maxwell-producer-file</module>
+        <module>maxwell-producer-kafka</module>
+        <module>maxwell-producer-kinesis</module>
+        <module>maxwell-producer-profiler</module>
+        <module>maxwell-producer-pubsub</module>
+        <module>maxwell-producer-rabbitmq</module>
+        <module>maxwell-producer-redis</module>
+        <module>maxwell-producer-sqs</module>
+        <module>maxwell-producer-stdout</module>
+    </modules>
+</project>
