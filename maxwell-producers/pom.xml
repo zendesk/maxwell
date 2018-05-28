@@ -15,6 +15,7 @@
     <description>Maxwell's producers parent.</description>
 
     <modules>
+        <module>maxwell-producer-api</module>
         <module>maxwell-producer-buffer</module>
         <module>maxwell-producer-file</module>
         <module>maxwell-producer-kafka</module>

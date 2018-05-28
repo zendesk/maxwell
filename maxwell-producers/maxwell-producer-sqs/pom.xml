@@ -11,6 +11,13 @@
     <artifactId>maxwell-producer-sqs</artifactId>
 
     <name>maxwell-producer-sqs</name>
-    <description>Maxwell's sqs producers.</description>
+    <description>Maxwell's AWS SQS producer.</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.zendesk</groupId>
+            <artifactId>maxwell-producer-api</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>

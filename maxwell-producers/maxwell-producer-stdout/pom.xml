@@ -11,6 +11,12 @@
     <artifactId>maxwell-producer-stdout</artifactId>
 
     <name>maxwell-producer-stdout</name>
-    <description>Maxwell's stdout producers.</description>
+    <description>Maxwell's standard output producer.</description>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.zendesk</groupId>
+            <artifactId>maxwell-producer-api</artifactId>
+        </dependency>
+    </dependencies>
 </project>

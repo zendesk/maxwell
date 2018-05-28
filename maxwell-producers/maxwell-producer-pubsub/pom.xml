@@ -11,6 +11,13 @@
     <artifactId>maxwell-producer-pubsub</artifactId>
 
     <name>maxwell-producer-pubsub</name>
-    <description>Maxwell's pubsub producers.</description>
+    <description>Maxwell's Google Cloud Pub/Sub producer.</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.zendesk</groupId>
+            <artifactId>maxwell-producer-api</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>

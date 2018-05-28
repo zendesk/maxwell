@@ -11,6 +11,13 @@
     <artifactId>maxwell-producer-redis</artifactId>
 
     <name>maxwell-producer-redis</name>
-    <description>Maxwell's redis producers.</description>
+    <description>Maxwell's Redis producer.</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.zendesk</groupId>
+            <artifactId>maxwell-producer-api</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>

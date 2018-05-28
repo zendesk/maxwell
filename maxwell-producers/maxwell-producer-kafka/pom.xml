@@ -11,6 +11,13 @@
     <artifactId>maxwell-producer-kafka</artifactId>
 
     <name>maxwell-producer-kafka</name>
-    <description>Maxwell's kafka producers.</description>
+    <description>Maxwell's Kafka producer.</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.zendesk</groupId>
+            <artifactId>maxwell-producer-api</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>

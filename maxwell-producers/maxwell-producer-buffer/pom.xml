@@ -11,6 +11,13 @@
     <artifactId>maxwell-producer-buffer</artifactId>
 
     <name>maxwell-producer-buffer</name>
-    <description>Maxwell's buffer producers.</description>
+    <description>Maxwell's buffer producer.</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.zendesk</groupId>
+            <artifactId>maxwell-producer-api</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>

@@ -11,6 +11,13 @@
     <artifactId>maxwell-producer-profiler</artifactId>
 
     <name>maxwell-producer-profiler</name>
-    <description>Maxwell's profiler producers.</description>
+    <description>Maxwell's profiler producer.</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.zendesk</groupId>
+            <artifactId>maxwell-producer-api</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>
