@@ -10,7 +10,7 @@ import com.zendesk.maxwell.core.monitoring.Metrics;
 import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.util.StoppableTask;
 
-public abstract class AbstractProducer {
+public abstract class AbstractProducer implements Producer {
 	protected final MaxwellContext context;
 	protected final MaxwellOutputConfig outputConfig;
 	protected final Counter succeededMessageCount;
@@ -33,16 +33,16 @@ public abstract class AbstractProducer {
 		this.metricsTimer = metrics.getRegistry().timer(metrics.metricName("message", "publish", "time"));
 	}
 
-	abstract public void push(RowMap r) throws Exception;
-
 	public StoppableTask getStoppableTask() {
 		return null;
 	}
 
+	@Override
 	public Meter getFailedMessageMeter() {
 		return this.failedMessageMeter;
 	}
 
+	@Override
 	public MaxwellDiagnostic getDiagnostic() {
 		return null;
 	}

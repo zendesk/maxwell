@@ -4,7 +4,7 @@ import com.zendesk.maxwell.core.LauncherException;
 import com.zendesk.maxwell.core.config.AbstractCommandLineOptions;
 import com.zendesk.maxwell.core.config.InvalidOptionException;
 import com.zendesk.maxwell.core.config.InvalidUsageException;
-import com.zendesk.maxwell.core.config.MaxwellCommandLineOptions;
+import com.zendesk.maxwell.core.producer.ProducerInstantiationException;
 import org.slf4j.Logger;
 
 import java.net.URISyntaxException;
@@ -38,6 +38,10 @@ public class ExceptionHandler {
 	}
 
 	private Throwable unwrap(Exception e){
-		return e instanceof LauncherException ? e.getCause() : e;
+		return isWrapperException(e) ? e.getCause() : e;
+	}
+
+	private boolean isWrapperException(Exception e) {
+		return e instanceof LauncherException || e instanceof ProducerInstantiationException;
 	}
 }

@@ -5,7 +5,7 @@ import com.codahale.metrics.Meter;
 import com.zendesk.maxwell.core.bootstrap.Bootstrapper;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
 import com.zendesk.maxwell.core.monitoring.Metrics;
-import com.zendesk.maxwell.core.producer.AbstractProducer;
+import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.core.row.HeartbeatRowMap;
 import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.schema.SchemaStore;
@@ -22,7 +22,7 @@ import java.util.Objects;
 public abstract class AbstractReplicator extends RunLoopProcess implements Replicator {
 	private static Logger LOGGER = LoggerFactory.getLogger(AbstractReplicator.class);
 	protected final String clientID;
-	protected final AbstractProducer producer;
+	protected final Producer producer;
 	protected final Bootstrapper bootstrapper;
 	protected final String maxwellSchemaDatabaseName;
 	protected final TableCache tableCache = new TableCache();
@@ -38,7 +38,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 		String clientID,
 		Bootstrapper bootstrapper,
 		String maxwellSchemaDatabaseName,
-		AbstractProducer producer,
+		Producer producer,
 		Metrics metrics,
 		Position initialPosition,
 		HeartbeatNotifier heartbeatNotifier

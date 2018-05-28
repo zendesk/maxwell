@@ -3,12 +3,13 @@ package com.zendesk.maxwell.core.monitoring;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.health.HealthCheck;
 import com.zendesk.maxwell.core.producer.AbstractProducer;
+import com.zendesk.maxwell.core.producer.Producer;
 
 
 public class MaxwellHealthCheck extends HealthCheck {
 	private final Meter failedMessageMeter;
 
-	public MaxwellHealthCheck(AbstractProducer producer) {
+	public MaxwellHealthCheck(Producer producer) {
 		this.failedMessageMeter = producer.getFailedMessageMeter();
 	}
 

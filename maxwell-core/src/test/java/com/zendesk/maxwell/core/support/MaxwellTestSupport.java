@@ -1,26 +1,40 @@
 package com.zendesk.maxwell.core.support;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.core.*;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
+import com.zendesk.maxwell.core.producer.Producers;
 import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducer;
 import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.core.schema.Schema;
+import com.zendesk.maxwell.core.schema.SchemaCapturer;
+import com.zendesk.maxwell.core.schema.SchemaStoreSchema;
+import com.zendesk.maxwell.core.schema.ddl.ResolvedSchemaChange;
+import com.zendesk.maxwell.core.schema.ddl.SchemaChange;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 @Service
 public class MaxwellTestSupport {
@@ -32,6 +46,76 @@ public class MaxwellTestSupport {
 	private MaxwellContextFactory maxwellContextFactory;
 	@Autowired
 	private MaxwellConfigFactory maxwellConfigFactory;
+	@Autowired
+	private MaxwellConfigTestSupport maxwellConfigTestSupport;
+	@Autowired
+	private Producers producers;
+
+	public MysqlIsolatedServer setupServer(String extraParams) throws Exception {
+		MysqlIsolatedServer server = new MysqlIsolatedServer();
+		server.boot(extraParams);
+
+		Connection conn = server.getConnection();
+		SchemaStoreSchema.ensureMaxwellSchema(conn, "maxwell");
+		conn.createStatement().executeQuery("use maxwell");
+		SchemaStoreSchema.upgradeSchemaStoreSchema(conn);
+		return server;
+	}
+
+	public MysqlIsolatedServer setupServer() throws Exception {
+		return setupServer(null);
+	}
+
+	public void setupSchema(MysqlIsolatedServer server, boolean resetBinlogs) throws Exception {
+		List<String> queries = new ArrayList<String>(Arrays.asList(
+				"CREATE DATABASE if not exists shard_2",
+				"DROP DATABASE if exists shard_1",
+				"CREATE DATABASE shard_1",
+				"USE shard_1"
+		));
+
+		for (File file : new File(getSQLDir() + "/schema").listFiles()) {
+			if (!file.getName().endsWith(".sql"))
+				continue;
+
+			if (file.getName().contains("sharded"))
+				continue;
+
+			byte[] sql = Files.readAllBytes(file.toPath());
+			String s = new String(sql);
+			if (s != null) {
+				queries.add(s);
+			}
+		}
+
+		String shardedFileName;
+		if (server.getVersion().atLeast(server.VERSION_5_6))
+			shardedFileName = "sharded.sql";
+		else
+			shardedFileName = "sharded_55.sql";
+
+		File shardedFile = new File(getSQLDir() + "/schema/" + shardedFileName);
+		byte[] sql = Files.readAllBytes(shardedFile.toPath());
+		String s = new String(sql);
+		if (s != null) {
+			queries.add(s);
+		}
+
+		if (resetBinlogs)
+			queries.add("RESET MASTER");
+
+		server.executeList(queries);
+	}
+
+	public void setupSchema(MysqlIsolatedServer server) throws Exception {
+		setupSchema(server, true);
+	}
+
+	public String getSQLDir() {
+		final String dir = System.getProperty("user.dir");
+		return dir + "/src/test/resources/sql/";
+	}
+
 
 	private void clearSchemaStore(MysqlIsolatedServer mysql) throws Exception {
 		mysql.execute("drop database if exists maxwell");
@@ -41,7 +125,7 @@ public class MaxwellTestSupport {
 		MaxwellTestSupportCallback callback = new MaxwellTestSupportCallback() {
 			@Override
 			public void afterReplicatorStart(MysqlIsolatedServer mysql) throws SQLException {
-				 mysql.executeList(Arrays.asList(queries));
+				mysql.executeList(Arrays.asList(queries));
 			}
 
 			@Override
@@ -52,6 +136,14 @@ public class MaxwellTestSupport {
 		};
 
 		return getRowsWithReplicator(mysql, filter, callback, Optional.empty());
+	}
+
+	public boolean inGtidMode() {
+		return MysqlIsolatedServer.inGtidMode();
+	}
+
+	public Position capture(Connection c) throws SQLException {
+		return Position.capture(c, inGtidMode());
 	}
 
 	public List<RowMap> getRowsWithReplicator(final MysqlIsolatedServer mysql, final MaxwellFilter filter, final MaxwellTestSupportCallback callback, final Optional<MaxwellOutputConfig> optionalOutputConfig) throws Exception {
@@ -82,7 +174,7 @@ public class MaxwellTestSupport {
 
 		callback.beforeReplicatorStart(mysql);
 
-		config.initPosition = MysqlIsolatedServerTestSupport.capture(mysql.getConnection());
+		config.initPosition = capture(mysql.getConnection());
 		final String waitObject = "";
 
 		final MaxwellContext maxwellContext = maxwellContextFactory.createFor(config);
@@ -154,8 +246,40 @@ public class MaxwellTestSupport {
 		return list;
 	}
 
+	public void testDDLFollowing(MysqlIsolatedServer server, String alters[]) throws Exception {
+		SchemaCapturer capturer = new SchemaCapturer(server.getConnection(), maxwellConfigTestSupport.buildContext(server.getPort(), null, null).getCaseSensitivity());
+		Schema topSchema = capturer.capture();
+
+		server.executeList(Arrays.asList(alters));
+
+		ObjectMapper m = new ObjectMapper();
+
+		for ( String alterSQL : alters) {
+			List<SchemaChange> changes = SchemaChange.parse("shard_1", alterSQL);
+			if ( changes != null ) {
+				for ( SchemaChange change : changes ) {
+					ResolvedSchemaChange resolvedChange = change.resolve(topSchema);
+
+					if ( resolvedChange == null )
+						continue;
+
+					// go to and from json
+					String json = m.writeValueAsString(resolvedChange);
+					ResolvedSchemaChange fromJson = m.readValue(json, ResolvedSchemaChange.class);
+
+					fromJson.apply(topSchema);
+				}
+			}
+		}
+
+		Schema bottomSchema = capturer.capture();
+
+		List<String> diff = topSchema.diff(bottomSchema, "followed schema", "recaptured schema");
+		assertThat(StringUtils.join(diff.iterator(), "\n"), diff.size(), is(0));
+	}
+
 	public RowMap pollRowFromBufferedProducer(MaxwellContext context, long ms) throws IOException, InterruptedException {
-		BufferedProducer p = (BufferedProducer) context.getProducer();
+		BufferedProducer p = (BufferedProducer) producers.getProducer(context);
 		return p.poll(ms, TimeUnit.MILLISECONDS);
 	}
 }

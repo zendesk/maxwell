@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.core.bootstrap;
 
 import com.zendesk.maxwell.core.MaxwellContext;
-import com.zendesk.maxwell.core.producer.AbstractProducer;
+import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.core.replication.BinlogPosition;
 import com.zendesk.maxwell.core.replication.Replicator;
 import com.zendesk.maxwell.core.row.RowMap;
@@ -64,7 +64,7 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	@Override
-	public void startBootstrap(final RowMap bootstrapStartRow, final AbstractProducer producer, final Replicator replicator) throws Exception {
+	public void startBootstrap(final RowMap bootstrapStartRow, final Producer producer, final Replicator replicator) throws Exception {
 		if (thread == null) {
 			bootstrappedRow = bootstrapStartRow;
 			thread = new Thread(new Runnable() {
@@ -93,7 +93,7 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	@Override
-	public void completeBootstrap(RowMap bootstrapCompleteRow, AbstractProducer producer, Replicator replicator) throws Exception {
+	public void completeBootstrap(RowMap bootstrapCompleteRow, Producer producer, Replicator replicator) throws Exception {
 		String databaseName = bootstrapDatabase(bootstrapCompleteRow);
 		String tableName = bootstrapTable(bootstrapCompleteRow);
 
@@ -113,7 +113,7 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 		}
 	}
 
-	public void cancelBootstrap(RowMap bootstrapStartRow, AbstractProducer producer, Replicator replicator) {
+	public void cancelBootstrap(RowMap bootstrapStartRow, Producer producer, Replicator replicator) {
 		try {
 			replaySkippedRows(bootstrapDatabase(bootstrapStartRow), bootstrapTable(bootstrapStartRow), producer, bootstrapStartRow);
 			thread = null;
@@ -126,7 +126,7 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 		}
 	}
 
-	private void replaySkippedRows(String databaseName, String tableName, AbstractProducer producer, RowMap bootstrapCompleteRow) throws Exception {
+	private void replaySkippedRows(String databaseName, String tableName, Producer producer, RowMap bootstrapCompleteRow) throws Exception {
 		BinlogPosition bootstrapStartBinlogPosition = getBootstrapStartBinlogPosition(bootstrapCompleteRow);
 		LOGGER.info("async bootstrapping: replaying " + skippedRows.size(databaseName, tableName) + " skipped rows...");
 		skippedRows.flushToDisk(databaseName, tableName);
@@ -153,7 +153,7 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	@Override
-	public void resume(AbstractProducer producer, Replicator replicator) throws Exception {
+	public void resume(Producer producer, Replicator replicator) throws Exception {
 		synchronousBootstrapper.resume(producer, replicator);
 	}
 
@@ -169,7 +169,7 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	@Override
-	public void work(RowMap row, AbstractProducer producer, Replicator replicator) throws Exception {
+	public void work(RowMap row, Producer producer, Replicator replicator) throws Exception {
 		if ( isStartBootstrapRow(row) ) {
 			startBootstrap(row, producer, replicator);
 		} else if ( isCompleteBootstrapRow(row) ) {

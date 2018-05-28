@@ -4,16 +4,6 @@ import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
 import com.zendesk.maxwell.core.monitoring.*;
 import com.zendesk.maxwell.core.producer.*;
-import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducer;
-import com.zendesk.maxwell.core.producer.impl.file.FileProducer;
-import com.zendesk.maxwell.core.producer.impl.kafka.MaxwellKafkaProducer;
-import com.zendesk.maxwell.core.producer.impl.kinesis.MaxwellKinesisProducer;
-import com.zendesk.maxwell.core.producer.impl.profiler.ProfilerProducer;
-import com.zendesk.maxwell.core.producer.impl.pubsub.MaxwellPubsubProducer;
-import com.zendesk.maxwell.core.producer.impl.rabbitmq.RabbitmqProducer;
-import com.zendesk.maxwell.core.producer.impl.redis.MaxwellRedisProducer;
-import com.zendesk.maxwell.core.producer.impl.sqs.MaxwellSQSProducer;
-import com.zendesk.maxwell.core.producer.impl.stdout.StdoutProducer;
 import com.zendesk.maxwell.core.recovery.RecoveryInfo;
 import com.zendesk.maxwell.core.replication.*;
 import com.zendesk.maxwell.core.row.RowMap;
@@ -67,11 +57,18 @@ public class MaxwellContext {
 	private Consumer<MaxwellContext> onReplicationCompletedEventHandler;
 	private Consumer<MaxwellContext> onExecutionCompletedEventHandler;
 
+	private final List<ContextStartListener> contextStartListenersEventHandler;
+
 	public MaxwellContext(MaxwellConfig config) throws SQLException, URISyntaxException {
+		this(config, Collections.EMPTY_LIST);
+	}
+
+	public MaxwellContext(MaxwellConfig config, List<ContextStartListener> contextStartListenersEventHandler) throws SQLException, URISyntaxException {
 		this.config = config;
 		this.config.validate();
 		this.taskManager = new TaskManager();
 		this.metrics = new MaxwellMetrics(config);
+		this.contextStartListenersEventHandler = contextStartListenersEventHandler;
 
 		this.replicationConnectionPool = new ConnectionPool("ReplicationConnectionPool", 10, 0, 10,
 				config.replicationMysql.getConnectionURI(false), config.replicationMysql.user, config.replicationMysql.password);
@@ -138,7 +135,7 @@ public class MaxwellContext {
 	}
 
 	public void start() throws IOException {
-		MaxwellHTTPServer.startIfRequired(this);
+		contextStartListenersEventHandler.forEach(h -> h.onContextStart(this));
 		getPositionStoreThread(); // boot up thread explicitly.
 	}
 
@@ -338,66 +335,6 @@ public class MaxwellContext {
 			}
 			return this.caseSensitivity;
 		}
-	}
-
-	public AbstractProducer getProducer() throws IOException {
-		if ( this.producer != null )
-			return this.producer;
-
-		if ( this.config.producerFactory != null ) {
-			this.producer = this.config.producerFactory.createProducer(this);
-		} else {
-			switch ( this.config.producerType ) {
-			case "file":
-				this.producer = new FileProducer(this, this.config.outputFile);
-				break;
-			case "kafka":
-				this.producer = new MaxwellKafkaProducer(this, this.config.getKafkaProperties(), this.config.kafkaTopic);
-				break;
-			case "kinesis":
-				this.producer = new MaxwellKinesisProducer(this, this.config.kinesisStream);
-				break;
-			case "sqs":
-				this.producer = new MaxwellSQSProducer(this, this.config.sqsQueueUri);
-				break;
-			case "pubsub":
-				this.producer = new MaxwellPubsubProducer(this, this.config.pubsubProjectId, this.config.pubsubTopic, this.config.ddlPubsubTopic);
-				break;
-			case "profiler":
-				this.producer = new ProfilerProducer(this);
-				break;
-			case "stdout":
-				this.producer = new StdoutProducer(this);
-				break;
-			case "buffer":
-				this.producer = new BufferedProducer(this, this.config.bufferedProducerSize);
-				break;
-			case "rabbitmq":
-				this.producer = new RabbitmqProducer(this);
-				break;
-			case "redis":
-				this.producer = new MaxwellRedisProducer(this, this.config.redisPubChannel, this.config.redisListKey, this.config.redisType);
-				break;
-			case "none":
-				this.producer = null;
-				break;
-			default:
-				throw new RuntimeException("Unknown producer type: " + this.config.producerType);
-			}
-		}
-
-		if (this.producer != null && this.producer.getDiagnostic() != null) {
-			diagnosticContext.diagnostics.add(producer.getDiagnostic());
-		}
-
-		StoppableTask task = null;
-		if (producer != null) {
-			task = producer.getStoppableTask();
-		}
-		if (task != null) {
-			addTask(task);
-		}
-		return this.producer;
 	}
 
 	public MaxwellFilter getFilter() {

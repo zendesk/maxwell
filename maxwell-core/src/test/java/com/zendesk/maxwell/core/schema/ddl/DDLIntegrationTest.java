@@ -3,7 +3,6 @@ package com.zendesk.maxwell.core.schema.ddl;
 import com.zendesk.maxwell.core.*;
 import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.row.RowMap;
-import com.zendesk.maxwell.core.support.MysqlIsolatedServerTestSupport;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -20,7 +19,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	private void testIntegration(String[] alters) throws Exception {
-		MysqlIsolatedServerTestSupport.testDDLFollowing(server, alters);
+		maxwellTestSupport.testDDLFollowing(server, alters);
 	}
 
 	private void testIntegration(String sql) throws Exception {
@@ -81,7 +80,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testJSON() throws Exception {
-		requireMinimumVersion(server.VERSION_5_7);
+		requireMinimumVersion(MysqlIsolatedServer.VERSION_5_7);
 		String sql[] = {
 			"create table shard_1.testJSON ( j json )",
 		};

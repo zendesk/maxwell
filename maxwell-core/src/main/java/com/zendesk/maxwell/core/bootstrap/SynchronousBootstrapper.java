@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.core.bootstrap;
 
 import com.zendesk.maxwell.core.MaxwellContext;
-import com.zendesk.maxwell.core.producer.AbstractProducer;
+import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.core.replication.BinlogPosition;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.replication.Replicator;
@@ -35,7 +35,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	@Override
-	public void startBootstrap(RowMap startBootstrapRow, AbstractProducer producer, Replicator replicator) throws Exception {
+	public void startBootstrap(RowMap startBootstrapRow, Producer producer, Replicator replicator) throws Exception {
 		String databaseName = bootstrapDatabase(startBootstrapRow);
 		String tableName = bootstrapTable(startBootstrapRow);
 
@@ -124,7 +124,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	@Override
-	public void completeBootstrap(RowMap completeBootstrapRow, AbstractProducer producer, Replicator replicator) throws Exception {
+	public void completeBootstrap(RowMap completeBootstrapRow, Producer producer, Replicator replicator) throws Exception {
 		String databaseName = bootstrapDatabase(completeBootstrapRow);
 		String tableName = bootstrapTable(completeBootstrapRow);
 
@@ -140,7 +140,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	@Override
-	public void resume(AbstractProducer producer, Replicator replicator) throws Exception {
+	public void resume(Producer producer, Replicator replicator) throws Exception {
 		try ( Connection connection = context.getMaxwellConnection() ) {
 			// This update resets all rows of incomplete bootstraps to their original state.
 			// These updates are treated as fresh bootstrap requests and trigger a restart
@@ -156,7 +156,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	@Override
-	public void work(RowMap row, AbstractProducer producer, Replicator replicator) throws Exception {
+	public void work(RowMap row, Producer producer, Replicator replicator) throws Exception {
 		try {
 			if ( isStartBootstrapRow(row) ) {
 				startBootstrap(row, producer, replicator);

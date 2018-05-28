@@ -3,25 +3,41 @@ package com.zendesk.maxwell.core.monitoring;
 import com.codahale.metrics.servlets.HealthCheckServlet;
 import com.codahale.metrics.servlets.MetricsServlet;
 import com.codahale.metrics.servlets.PingServlet;
+import com.zendesk.maxwell.core.ContextStartListener;
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
+import com.zendesk.maxwell.core.producer.Producers;
 import com.zendesk.maxwell.core.util.StoppableTask;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeoutException;
 
-public class MaxwellHTTPServer {
+@Service
+public class MaxwellHTTPServer implements ContextStartListener {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellHTTPServer.class);
 
-	public static void startIfRequired(MaxwellContext context) throws IOException {
+	private final Producers producers;
+
+	@Autowired
+	public MaxwellHTTPServer(Producers producers) {
+		this.producers = producers;
+	}
+
+	@Override
+	public void onContextStart(MaxwellContext context) {
+		startIfRequired(context);
+	}
+
+	private void startIfRequired(MaxwellContext context) {
 		MaxwellMetrics.Registries metricsRegistries = getMetricsRegistries(context);
 		MaxwellDiagnosticContext diagnosticContext = getDiagnosticContext(context);
 		if (metricsRegistries != null || diagnosticContext != null) {
@@ -44,18 +60,18 @@ public class MaxwellHTTPServer {
 		}
 	}
 
-	private static MaxwellMetrics.Registries getMetricsRegistries(MaxwellContext context) throws IOException {
+	private MaxwellMetrics.Registries getMetricsRegistries(MaxwellContext context) {
 		MaxwellConfig config = context.getConfig();
 		String reportingType = config.metricsReportingType;
 		if (reportingType != null && reportingType.contains(MaxwellMetrics.reportingTypeHttp)) {
-			config.healthCheckRegistry.register("MaxwellHealth", new MaxwellHealthCheck(context.getProducer()));
+			config.healthCheckRegistry.register("MaxwellHealth", new MaxwellHealthCheck(producers.getProducer(context)));
 			return new MaxwellMetrics.Registries(config.metricRegistry, config.healthCheckRegistry);
 		} else {
 			return null;
 		}
 	}
 
-	private static MaxwellDiagnosticContext getDiagnosticContext(MaxwellContext context) {
+	private MaxwellDiagnosticContext getDiagnosticContext(MaxwellContext context) {
 		MaxwellDiagnosticContext.Config diagnosticConfig = context.getConfig().diagnosticConfig;
 		if (diagnosticConfig.enable) {
 			return context.getDiagnosticContext();

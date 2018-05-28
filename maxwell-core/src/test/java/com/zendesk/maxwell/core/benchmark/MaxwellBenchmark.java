@@ -2,7 +2,7 @@ package com.zendesk.maxwell.core.benchmark;
 
 import com.zendesk.maxwell.core.*;
 import com.zendesk.maxwell.core.replication.Position;
-import com.zendesk.maxwell.core.support.MysqlIsolatedServerTestSupport;
+import com.zendesk.maxwell.core.support.MaxwellTestSupport;
 import joptsimple.BuiltinHelpFormatter;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -73,8 +73,10 @@ public class MaxwellBenchmark {
 	private static void generate(int nRows) throws Exception {
 		SpringLauncher.launch((ctx) -> {
 			try {
-				MysqlIsolatedServer server = MysqlIsolatedServerTestSupport.setupServer("--no-clean");
-				MysqlIsolatedServerTestSupport.setupSchema(server, false);
+				MaxwellTestSupport maxwellTestSupport = ctx.getBean(MaxwellTestSupport.class);
+
+				MysqlIsolatedServer server = maxwellTestSupport.setupServer("--no-clean");
+				maxwellTestSupport.setupSchema(server, false);
 
 				// generate 1 row of data before we capture position so that we can use the schema.
 				generateData(server.getConnection(), 1);
@@ -93,7 +95,8 @@ public class MaxwellBenchmark {
 	private static void benchmark(String path, String args[]) throws Exception {
 		SpringLauncher.launchMaxwell(args, (config, ctx) -> {
 			try {
-				MysqlIsolatedServer server = MysqlIsolatedServerTestSupport.setupServer("--no-clean --reuse=" + path);
+				MaxwellTestSupport maxwellTestSupport = ctx.getBean(MaxwellTestSupport.class);
+				MysqlIsolatedServer server = maxwellTestSupport.setupServer("--no-clean --reuse=" + path);
 
 				config.maxwellMysql.host = "127.0.0.1";
 				config.maxwellMysql.port = server.getPort();

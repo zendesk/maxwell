@@ -2,7 +2,6 @@ package com.zendesk.maxwell.core.schema;
 
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.MaxwellTestWithIsolatedServer;
-import com.zendesk.maxwell.core.support.MysqlIsolatedServerTestSupport;
 import com.zendesk.maxwell.core.replication.BinlogPosition;
 import com.zendesk.maxwell.core.replication.Position;
 import org.junit.Test;
@@ -13,7 +12,7 @@ import static org.junit.Assert.assertThat;
 
 public class PositionStoreThreadTest extends MaxwellTestWithIsolatedServer {
 	private MysqlPositionStore buildStore(MaxwellContext context) throws Exception {
-		return new MysqlPositionStore(context.getMaxwellConnectionPool(), context.getServerID(), "maxwell", MysqlIsolatedServerTestSupport.inGtidMode());
+		return new MysqlPositionStore(context.getMaxwellConnectionPool(), context.getServerID(), "maxwell", maxwellTestSupport.inGtidMode());
 	}
 
 	@Test

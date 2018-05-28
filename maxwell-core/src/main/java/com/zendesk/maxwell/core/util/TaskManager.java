@@ -2,9 +2,14 @@ package com.zendesk.maxwell.core.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 
+@Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
+@Service
 public class TaskManager {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TaskManager.class);
 

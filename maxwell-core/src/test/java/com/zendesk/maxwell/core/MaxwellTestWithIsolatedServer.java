@@ -5,9 +5,9 @@ import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.replication.MysqlVersion;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.row.RowMap;
-import com.zendesk.maxwell.core.support.MaxwellContextTestSupport;
+import com.zendesk.maxwell.core.support.MaxwellConfigTestSupport;
 import com.zendesk.maxwell.core.support.MaxwellTestSupport;
-import com.zendesk.maxwell.core.support.MysqlIsolatedServerTestSupport;
+import com.zendesk.maxwell.core.support.MaxwellTestSupportCallback;
 import com.zendesk.maxwell.core.util.Logging;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -36,17 +36,21 @@ public abstract class MaxwellTestWithIsolatedServer extends TestWithNameLogging 
 	@Autowired
 	protected MaxwellTestSupport maxwellTestSupport;
 	@Autowired
+	protected MaxwellConfigTestSupport maxwellConfigTestSupport;
+	@Autowired
 	protected MaxwellTestJSON maxwellTestJSON;
 
 	@BeforeClass
-	public static void setupTest() throws Exception {
+	public static void setupTest() {
 		Logging.setupLogBridging();
-		server = MysqlIsolatedServerTestSupport.setupServer();
 	}
 
 	@Before
 	public void setupSchema() throws Exception {
-		MysqlIsolatedServerTestSupport.setupSchema(server);
+		if(server == null){
+			server = maxwellTestSupport.setupServer();
+		}
+		maxwellTestSupport.setupSchema(server);
 	}
 
 	protected List<RowMap> getRowsForSQL(MaxwellFilter filter, String[] input) throws Exception {
@@ -99,11 +103,11 @@ public abstract class MaxwellTestWithIsolatedServer extends TestWithNameLogging 
 	}
 
 	protected MaxwellContext buildContext() throws Exception {
-		return MaxwellContextTestSupport.buildContext(server.getPort(), null, null);
+		return maxwellConfigTestSupport.buildContext(server.getPort(), null, null);
 	}
 
 	protected MaxwellContext buildContext(Position p) throws Exception {
-		return MaxwellContextTestSupport.buildContext(server.getPort(), p, null);
+		return maxwellConfigTestSupport.buildContext(server.getPort(), p, null);
 	}
 
 	protected MaxwellFilter excludeTable(String name) throws MaxwellInvalidFilterException {

@@ -1,30 +1,42 @@
 package com.zendesk.maxwell.core.schema.ddl;
 
 import com.zendesk.maxwell.core.MysqlIsolatedServer;
-import com.zendesk.maxwell.core.support.MysqlIsolatedServerTestSupport;
-import org.junit.BeforeClass;
+import com.zendesk.maxwell.core.SpringTestContextConfiguration;
+import com.zendesk.maxwell.core.support.MaxwellTestSupport;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.File;
 
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = { SpringTestContextConfiguration.class })
 public class LowerCaseDDLIntegrationTest {
-	protected static MysqlIsolatedServer convertServer;
-	protected static MysqlIsolatedServer caseSensitiveServer;
+	private static MysqlIsolatedServer convertServer;
+	private static MysqlIsolatedServer caseSensitiveServer;
+	private static Boolean caseSensitive = null;
 
-	@BeforeClass
-	public static void setupServers() throws Exception {
-		convertServer = MysqlIsolatedServerTestSupport.setupServer("--lower-case-table-names=1");
-		MysqlIsolatedServerTestSupport.setupSchema(convertServer);
+	@Autowired
+	private MaxwellTestSupport maxwellTestSupport;
 
-		if ( isFileSystemCaseSensitive() ) {
-			caseSensitiveServer = MysqlIsolatedServerTestSupport.setupServer("--lower-case-table-names=0");
-			MysqlIsolatedServerTestSupport.setupSchema(caseSensitiveServer);
+	@Before
+	public void setupServers() throws Exception {
+		if(convertServer == null) {
+			convertServer = maxwellTestSupport.setupServer("--lower-case-table-names=1");
+			maxwellTestSupport.setupSchema(convertServer);
+		}
+
+		if ( caseSensitiveServer == null && isFileSystemCaseSensitive() ) {
+			caseSensitiveServer = maxwellTestSupport.setupServer("--lower-case-table-names=0");
+			maxwellTestSupport.setupSchema(caseSensitiveServer);
 		}
 	}
 
 
-	static Boolean caseSensitive = null;
-	public static boolean isFileSystemCaseSensitive() throws Exception {
+	public boolean isFileSystemCaseSensitive() throws Exception {
 		if ( caseSensitive != null )
 			return caseSensitive;
 
@@ -46,7 +58,7 @@ public class LowerCaseDDLIntegrationTest {
 			"drop table TAYBAL"
 		};
 
-		MysqlIsolatedServerTestSupport.testDDLFollowing(convertServer, sql);
+		maxwellTestSupport.testDDLFollowing(convertServer, sql);
 	}
 
 	@Test
@@ -57,6 +69,6 @@ public class LowerCaseDDLIntegrationTest {
 			"create table ttRR like tttt"
 		};
 
-		MysqlIsolatedServerTestSupport.testDDLFollowing(convertServer, sql);
+		maxwellTestSupport.testDDLFollowing(convertServer, sql);
 	}
 }

@@ -2,8 +2,8 @@ package com.zendesk.maxwell.core;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.replication.MysqlVersion;
-import com.zendesk.maxwell.core.support.MysqlIsolatedServerTestSupport;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +34,10 @@ public class MysqlIsolatedServer {
 	private int serverPid;
 	public String path;
 
+	public static boolean inGtidMode() {
+		return System.getenv(MaxwellConfig.GTID_MODE_ENV) != null;
+	}
+
 	public void boot(String xtraParams) throws IOException, SQLException, InterruptedException {
         final String dir = System.getProperty("user.dir");
 
@@ -46,7 +50,7 @@ public class MysqlIsolatedServer {
 		boolean isRoot = System.getProperty("user.name").equals("root");
 
 		String gtidParams = "";
-		if (MysqlIsolatedServerTestSupport.inGtidMode()) {
+		if (inGtidMode()) {
 			LOGGER.info("In gtid test mode.");
 			gtidParams =
 				"--gtid-mode=ON " +
