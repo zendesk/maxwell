@@ -1,7 +1,5 @@
 package com.zendesk.maxwell.core;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.health.HealthCheckRegistry;
 import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
@@ -36,12 +34,8 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testCustomMetricsAndProducer() throws Exception {
 		MaxwellConfig config = getConfig(server);
-		MetricRegistry metrics = new MetricRegistry();
-		HealthCheckRegistry healthChecks = new HealthCheckRegistry();
 		final BlockingQueue<RowMap> rowBuffer = new LinkedBlockingQueue<>();
 		config.metricsReportingType = "embedded";
-		config.metricRegistry = metrics;
-		config.healthCheckRegistry = healthChecks;
 		config.metricsPrefix = "prefix";
 		config.producerFactory = new ProducerFactory() {
 			@Override
@@ -66,7 +60,7 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 		}
 
 		assertThat(rowMap, is(notNullValue()));
-		assertTrue(metrics.getCounters().get("prefix.row.count").getCount() > 0);
+		assertTrue(config.metricRegistry.getCounters().get("prefix.row.count").getCount() > 0);
 	}
 
 	private MaxwellConfig getConfig(MysqlIsolatedServer mysql) {

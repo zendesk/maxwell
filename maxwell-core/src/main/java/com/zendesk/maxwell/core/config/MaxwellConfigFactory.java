@@ -19,8 +19,6 @@ import java.util.Properties;
 public class MaxwellConfigFactory extends AbstractConfigurationFactory {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfigFactory.class);
 
-	static final String GTID_MODE_ENV = "GTID_MODE";
-
 	private final MaxwellCommandLineOptions maxwellCommandLineOptions;
 	private final ConfigurationFileParser configurationFileParser;
 
@@ -67,13 +65,13 @@ public class MaxwellConfigFactory extends AbstractConfigurationFactory {
 	}
 
 	private MaxwellConfig createFrom(OptionSet options, Properties properties) {
-		MaxwellConfig config = MaxwellConfig.newDefault();
+		MaxwellConfig config = new MaxwellConfig();
 		config.log_level = fetchOption("log_level", options, properties, null);
 
 		config.maxwellMysql = parseMysqlConfig("", options, properties);
 		config.replicationMysql = parseMysqlConfig("replication_", options, properties);
 		config.schemaMysql = parseMysqlConfig("schema_", options, properties);
-		config.gtidMode = fetchBooleanOption("gtid_mode", options, properties, System.getenv(GTID_MODE_ENV) != null);
+		config.gtidMode = fetchBooleanOption("gtid_mode", options, properties, System.getenv(MaxwellConfig.GTID_MODE_ENV) != null);
 
 		config.databaseName = fetchOption("schema_database", options, properties, "maxwell");
 		config.maxwellMysql.database = config.databaseName;

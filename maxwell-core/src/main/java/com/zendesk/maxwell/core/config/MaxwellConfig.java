@@ -5,7 +5,6 @@ import com.codahale.metrics.health.HealthCheckRegistry;
 import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.core.MaxwellInvalidFilterException;
 import com.zendesk.maxwell.core.monitoring.MaxwellDiagnosticContext;
-import com.zendesk.maxwell.core.producer.EncryptionMode;
 import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.producer.ProducerFactory;
 import com.zendesk.maxwell.core.replication.Position;
@@ -19,125 +18,6 @@ import java.util.regex.Pattern;
 
 public class MaxwellConfig {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfig.class);
-
-	public static MaxwellConfig newDefault() {
-		MaxwellConfig config = new MaxwellConfig();
-		config.replayMode = false;
-		config.replicationMysql = new MaxwellMysqlConfig();
-		config.maxwellMysql = new MaxwellMysqlConfig();
-		config.schemaMysql = new MaxwellMysqlConfig();
-		config.masterRecovery = false;
-		config.gtidMode = false;
-		config.bufferedProducerSize = 200;
-		config.metricRegistry = new MetricRegistry();
-		config.healthCheckRegistry = new HealthCheckRegistry();
-		config.outputConfig = new MaxwellOutputConfig();
-
-		config.log_level = null;
-
-		config.gtidMode           = System.getenv(GTID_MODE_ENV) != null;
-
-		config.databaseName       = "maxwell";
-		config.maxwellMysql.database = config.databaseName;
-
-		config.producerType       = "stdout";
-		config.producerAckTimeout = 0L;
-		config.bootstrapperType   = "async";
-		config.clientID           = "maxwell";
-		config.replicaServerID    = 6379L;
-
-		config.kafkaTopic         	= "maxwell";
-		config.kafkaKeyFormat     	= "hash";
-		config.kafkaPartitionKey  	= null;
-		config.kafkaPartitionColumns  = null;
-		config.kafkaPartitionFallback = null;
-
-		config.kafkaPartitionHash 	= "default";
-		config.ddlKafkaTopic 		    = config.kafkaTopic;
-
-		config.pubsubProjectId = null;
-		config.pubsubTopic 		 = "maxwell";
-		config.ddlPubsubTopic  = config.pubsubTopic;
-
-		config.rabbitmqHost           		= "localhost";
-		config.rabbitmqPort 			= 5672;
-		config.rabbitmqUser 			= "guest";
-		config.rabbitmqPass			= "guest";
-		config.rabbitmqVirtualHost    		= "/";
-		config.rabbitmqExchange       		= "maxwell";
-		config.rabbitmqExchangeType   		= "fanout";
-		config.rabbitMqExchangeDurable 		= false;
-		config.rabbitMqExchangeAutoDelete 	= false;
-		config.rabbitmqRoutingKeyTemplate   	= "%db%.%table%";
-		config.rabbitmqMessagePersistent    	= false;
-		config.rabbitmqDeclareExchange		= true;
-
-		config.redisHost			= "localhost";
-		config.redisPort			= 6379;
-		config.redisAuth			= null;
-		config.redisDatabase		= 0;
-		config.redisPubChannel	= "maxwell";
-		config.redisListKey		= "maxwell";
-		config.redisType			= "pubsub";
-
-
-		config.producerPartitionKey = "database";
-		config.producerPartitionColumns = null;
-		config.producerPartitionFallback = null;
-
-		config.kinesisStream  = null;
-		config.kinesisMd5Keys = false;
-
-		config.sqsQueueUri = null;
-
-		config.outputFile = null;
-
-		config.metricsPrefix = "MaxwellMetrics";
-		config.metricsReportingType = null;
-		config.metricsSlf4jInterval = 60L;
-		// TODO remove metrics_http_port support once hitting v1.11.x
-		config.httpPort = 8080;
-		config.httpBindAddress = null;
-		config.httpPathPrefix = "/";
-		config.metricsDatadogType = "udp";
-		config.metricsDatadogTags = "";
-		config.metricsDatadogAPIKey = "";
-		config.metricsDatadogHost = "localhost";
-		config.metricsDatadogPort = 8125;
-		config.metricsDatadogInterval = 60L;
-
-		config.metricsJvm = false;
-
-		config.diagnosticConfig = new MaxwellDiagnosticContext.Config();
-		config.diagnosticConfig.enable = false;
-		config.diagnosticConfig.timeout = 10000L;
-
-		config.includeDatabases    = null;
-		config.excludeDatabases    = null;
-		config.includeTables       = null;
-		config.excludeTables       = null;
-		config.blacklistDatabases  = null;
-		config.blacklistTables     = null;
-		config.includeColumnValues = null;
-
-		config.replayMode =     false;
-		config.masterRecovery = false;
-		config.ignoreProducerError = true;
-
-		config.outputConfig.includesBinlogPosition = false;
-		config.outputConfig.includesGtidPosition = false;
-		config.outputConfig.includesCommitInfo = true;
-		config.outputConfig.includesXOffset = true;
-		config.outputConfig.includesNulls = true;
-		config.outputConfig.includesServerId = false;
-		config.outputConfig.includesThreadId = false;
-		config.outputConfig.includesRowQuery = false;
-		config.outputConfig.outputDDL	= false;
-		config.excludeColumns     = null;
-
-		config.outputConfig.encryptionMode = EncryptionMode.ENCRYPT_NONE;
-		return config;
-	}
 
 	public static final String GTID_MODE_ENV = "GTID_MODE";
 
@@ -190,11 +70,11 @@ public class MaxwellConfig {
 	public Long producerAckTimeout;
 
 	public String outputFile;
-	public MaxwellOutputConfig outputConfig;
+	public final MaxwellOutputConfig outputConfig;
 	public String log_level;
 
-	public MetricRegistry metricRegistry;
-	public HealthCheckRegistry healthCheckRegistry;
+	public final MetricRegistry metricRegistry;
+	public final HealthCheckRegistry healthCheckRegistry;
 
 	public int httpPort;
 	public String httpBindAddress;
@@ -241,9 +121,19 @@ public class MaxwellConfig {
 	public String redisListKey;
 	public String redisType;
 
-	private MaxwellConfig() {
+	public MaxwellConfig() {
 		this.customProducerProperties = new Properties();
 		this.kafkaProperties = new Properties();
+		this.replayMode = false;
+		this.replicationMysql = new MaxwellMysqlConfig();
+		this.maxwellMysql = new MaxwellMysqlConfig();
+		this.schemaMysql = new MaxwellMysqlConfig();
+		this.masterRecovery = false;
+		this.gtidMode = false;
+		this.bufferedProducerSize = 200;
+		this.metricRegistry = new MetricRegistry();
+		this.healthCheckRegistry = new HealthCheckRegistry();
+		this.outputConfig = new MaxwellOutputConfig();
 	}
 
 	public void validate() {
