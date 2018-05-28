@@ -41,16 +41,14 @@ public abstract class MaxwellTestWithIsolatedServer extends TestWithNameLogging 
 	protected MaxwellTestJSON maxwellTestJSON;
 
 	@BeforeClass
-	public static void setupTest() {
+	public static void setupTest() throws Exception {
 		Logging.setupLogBridging();
+		server = MaxwellTestSupport.setupServer();
 	}
 
 	@Before
 	public void setupSchema() throws Exception {
-		if(server == null){
-			server = maxwellTestSupport.setupServer();
-		}
-		maxwellTestSupport.setupSchema(server);
+		MaxwellTestSupport.setupSchema(server);
 	}
 
 	protected List<RowMap> getRowsForSQL(MaxwellFilter filter, String[] input) throws Exception {

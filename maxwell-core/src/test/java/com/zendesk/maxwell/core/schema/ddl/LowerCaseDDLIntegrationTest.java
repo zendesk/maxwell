@@ -25,13 +25,13 @@ public class LowerCaseDDLIntegrationTest {
 	@Before
 	public void setupServers() throws Exception {
 		if(convertServer == null) {
-			convertServer = maxwellTestSupport.setupServer("--lower-case-table-names=1");
-			maxwellTestSupport.setupSchema(convertServer);
+			convertServer = MaxwellTestSupport.setupServer("--lower-case-table-names=1");
+			MaxwellTestSupport.setupSchema(convertServer);
 		}
 
 		if ( caseSensitiveServer == null && isFileSystemCaseSensitive() ) {
-			caseSensitiveServer = maxwellTestSupport.setupServer("--lower-case-table-names=0");
-			maxwellTestSupport.setupSchema(caseSensitiveServer);
+			caseSensitiveServer = MaxwellTestSupport.setupServer("--lower-case-table-names=0");
+			MaxwellTestSupport.setupSchema(caseSensitiveServer);
 		}
 	}
 

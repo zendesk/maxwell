@@ -54,9 +54,9 @@ public class RecoveryTest extends TestWithNameLogging {
 		masterServer.boot();
 		SchemaStoreSchema.ensureMaxwellSchema(masterServer.getConnection(), "maxwell");
 
-		slaveServer = maxwellTestSupport.setupServer("--server_id=12345 --max_binlog_size=100000 --log_bin=slave");
+		slaveServer = MaxwellTestSupport.setupServer("--server_id=12345 --max_binlog_size=100000 --log_bin=slave");
 		slaveServer.setupSlave(masterServer.getPort());
-		maxwellTestSupport.setupSchema(masterServer, false);
+		MaxwellTestSupport.setupSchema(masterServer, false);
 	}
 
 	private MaxwellConfig getConfig(int port, boolean masterRecovery){
@@ -97,7 +97,7 @@ public class RecoveryTest extends TestWithNameLogging {
 
 	@Test
 	public void testBasicRecovery() throws Exception {
-		if (maxwellTestSupport.inGtidMode()) {
+		if (MaxwellTestSupport.inGtidMode()) {
 			LOGGER.info("No need to test recovery under gtid-mode");
 			return;
 		}
@@ -108,7 +108,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		/* run the execution through with the replicator running so we get heartbeats */
 		maxwellTestSupport.getRowsWithReplicator(masterServer, null, input, null);
 
-		Position slavePosition = maxwellTestSupport.capture(slaveServer.getConnection());
+		Position slavePosition = MaxwellTestSupport.capture(slaveServer.getConnection());
 
 		generateNewMasterData(false, DATA_SIZE);
 		RecoveryInfo recoveryInfo = slaveContext.getRecoveryInfo();
@@ -138,7 +138,7 @@ public class RecoveryTest extends TestWithNameLogging {
 
 	@Test
 	public void testOtherClientID() throws Exception {
-		if (maxwellTestSupport.inGtidMode()) {
+		if (MaxwellTestSupport.inGtidMode()) {
 			LOGGER.info("No need to test recovery under gtid-mode");
 			return;
 		}
@@ -210,7 +210,7 @@ public class RecoveryTest extends TestWithNameLogging {
 
 	@Test
 	public void testRecoveryIntegration() throws Exception {
-		if (maxwellTestSupport.inGtidMode()) {
+		if (MaxwellTestSupport.inGtidMode()) {
 			LOGGER.info("No need to test recovery under gtid-mode");
 			return;
 		}
@@ -218,7 +218,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		/* run the execution through with the replicator running so we get heartbeats */
 		List<RowMap> rows = maxwellTestSupport.getRowsWithReplicator(masterServer, null, input, null);
 
-		Position approximateRecoverPosition = maxwellTestSupport.capture(slaveServer.getConnection());
+		Position approximateRecoverPosition = MaxwellTestSupport.capture(slaveServer.getConnection());
 		LOGGER.warn("slave master position at time of cut: " + approximateRecoverPosition);
 		generateNewMasterData(false, DATA_SIZE);
 
@@ -253,7 +253,7 @@ public class RecoveryTest extends TestWithNameLogging {
 
 	@Test
 	public void testRecoveryIntegrationWithLaggedMaxwell() throws Exception {
-		if (maxwellTestSupport.inGtidMode()) {
+		if (MaxwellTestSupport.inGtidMode()) {
 			LOGGER.info("No need to test recovery under gtid-mode");
 			return;
 		}
@@ -269,7 +269,7 @@ public class RecoveryTest extends TestWithNameLogging {
 			public void beforeTerminate(MysqlIsolatedServer mysql) {
 				/* record some queries.  maxwell may continue to heartbeat but we will be behind. */
 				try {
-					LOGGER.warn("slave master position at time of cut: " + maxwellTestSupport.capture(slaveServer.getConnection()));
+					LOGGER.warn("slave master position at time of cut: " + MaxwellTestSupport.capture(slaveServer.getConnection()));
 					mysql.executeList(Arrays.asList(input));
 					mysql.execute("FLUSH LOGS");
 					mysql.executeList(Arrays.asList(input));
@@ -324,7 +324,7 @@ public class RecoveryTest extends TestWithNameLogging {
 			LOGGER.info("Got ex: " + ex);
 		}
 
-		Position slavePosition1 = maxwellTestSupport.capture(slaveServer.getConnection());
+		Position slavePosition1 = MaxwellTestSupport.capture(slaveServer.getConnection());
 		LOGGER.info("slave master position at time of cut: " + slavePosition1 + " rows: " + rows.size());
 		assertEquals(expectedRowCount, rows.size());
 
@@ -332,7 +332,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		generateNewMasterData(true, DATA_SIZE);
 		expectedRowCount += NEW_DATA_SIZE;
 		// connect to slave, maxwell should get these 100 rows from slave
-		boolean masterRecovery = !maxwellTestSupport.inGtidMode();
+		boolean masterRecovery = !MaxwellTestSupport.inGtidMode();
 
 		final MaxwellContext context1 = maxwellContextFactory.createFor(getBufferedConfig(slaveServer.getPort(), masterRecovery));
 		new Thread(() -> maxwellRunner.run(context1)).start();
@@ -340,7 +340,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		maxwellRunner.terminate(context1);
 		assertEquals(expectedRowCount, rows.size());
 
-		Position slavePosition2 = maxwellTestSupport.capture(slaveServer.getConnection());
+		Position slavePosition2 = MaxwellTestSupport.capture(slaveServer.getConnection());
 		LOGGER.info("slave master position after failover: " + slavePosition2 + " rows: " + rows.size());
 		assertTrue(slavePosition2.newerThan(slavePosition1));
 
@@ -368,7 +368,7 @@ public class RecoveryTest extends TestWithNameLogging {
 	@Test
 	public void testSchemaIdRestore() throws Exception {
 		MysqlIsolatedServer server = masterServer;
-		Position oldlogPosition = maxwellTestSupport.capture(server.getConnection());
+		Position oldlogPosition = MaxwellTestSupport.capture(server.getConnection());
 		LOGGER.info("Initial pos: " + oldlogPosition);
 		MaxwellContext context1 = maxwellContextFactory.createFor(getConfig(server.getPort(), false));
 		context1.getPositionStore().set(oldlogPosition);
@@ -390,7 +390,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		drainReplication(context2, rows);
 		maxwellRunner.terminate(context2);
 
-		Position newPosition = maxwellTestSupport.capture(server.getConnection());
+		Position newPosition = MaxwellTestSupport.capture(server.getConnection());
 		LOGGER.info("New pos: " + newPosition);
 		MysqlSavedSchema newSavedSchema = MysqlSavedSchema.restore(context1, newPosition);
 		LOGGER.info("New schema id: " + newSavedSchema.getSchemaID());

@@ -161,6 +161,6 @@ public class MaxwellTestJSON {
 
 	protected void runJSONTestFile(MysqlIsolatedServer server, String fname, MaxwellFilter filter,
 										  MaxwellOutputConfig outputConfig) throws Exception {
-		runJSONTestFile(server, maxwellTestSupport.getSQLDir(), fname, filter, outputConfig);
+		runJSONTestFile(server, MaxwellTestSupport.getSQLDir(), fname, filter, outputConfig);
 	}
 }

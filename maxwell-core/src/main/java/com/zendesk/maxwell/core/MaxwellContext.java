@@ -3,7 +3,7 @@ package com.zendesk.maxwell.core;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
 import com.zendesk.maxwell.core.monitoring.*;
-import com.zendesk.maxwell.core.producer.*;
+import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.core.recovery.RecoveryInfo;
 import com.zendesk.maxwell.core.replication.*;
 import com.zendesk.maxwell.core.row.RowMap;
@@ -16,7 +16,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import snaq.db.ConnectionPool;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -29,7 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 public class MaxwellContext {
-	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellContext.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellContext.class);
 
 	private final ConnectionPool replicationConnectionPool;
 	private final ConnectionPool maxwellConnectionPool;
@@ -42,7 +41,7 @@ public class MaxwellContext {
 	private Long serverID;
 	private Position initialPosition;
 	private CaseSensitivity caseSensitivity;
-	private AbstractProducer producer;
+	private Producer producer;
 	private final TaskManager taskManager;
 	private volatile Exception error;
 
@@ -60,7 +59,7 @@ public class MaxwellContext {
 	private final List<ContextStartListener> contextStartListenersEventHandler;
 
 	public MaxwellContext(MaxwellConfig config) throws SQLException, URISyntaxException {
-		this(config, Collections.EMPTY_LIST);
+		this(config, Collections.emptyList());
 	}
 
 	public MaxwellContext(MaxwellConfig config, List<ContextStartListener> contextStartListenersEventHandler) throws SQLException, URISyntaxException {
@@ -134,7 +133,7 @@ public class MaxwellContext {
 		return rawMaxwellConnectionPool.getConnection();
 	}
 
-	public void start() throws IOException {
+	public void start() {
 		contextStartListenersEventHandler.forEach(h -> h.onContextStart(this));
 		getPositionStoreThread(); // boot up thread explicitly.
 	}
@@ -376,6 +375,14 @@ public class MaxwellContext {
 
 	public MaxwellDiagnosticContext getDiagnosticContext() {
 		return this.diagnosticContext;
+	}
+
+	public Optional<Producer> getProducer() {
+		return Optional.ofNullable(producer);
+	}
+
+	public void setProducer(Producer producer) {
+		this.producer = producer;
 	}
 
 	public void configureOnReplicationStartEventHandler(Consumer<MaxwellContext> onReplicationStartEventHandler){

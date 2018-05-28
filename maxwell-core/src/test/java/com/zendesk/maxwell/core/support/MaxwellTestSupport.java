@@ -51,7 +51,7 @@ public class MaxwellTestSupport {
 	@Autowired
 	private Producers producers;
 
-	public MysqlIsolatedServer setupServer(String extraParams) throws Exception {
+	public static MysqlIsolatedServer setupServer(String extraParams) throws Exception {
 		MysqlIsolatedServer server = new MysqlIsolatedServer();
 		server.boot(extraParams);
 
@@ -62,11 +62,11 @@ public class MaxwellTestSupport {
 		return server;
 	}
 
-	public MysqlIsolatedServer setupServer() throws Exception {
+	public static MysqlIsolatedServer setupServer() throws Exception {
 		return setupServer(null);
 	}
 
-	public void setupSchema(MysqlIsolatedServer server, boolean resetBinlogs) throws Exception {
+	public static void setupSchema(MysqlIsolatedServer server, boolean resetBinlogs) throws Exception {
 		List<String> queries = new ArrayList<String>(Arrays.asList(
 				"CREATE DATABASE if not exists shard_2",
 				"DROP DATABASE if exists shard_1",
@@ -107,17 +107,17 @@ public class MaxwellTestSupport {
 		server.executeList(queries);
 	}
 
-	public void setupSchema(MysqlIsolatedServer server) throws Exception {
+	public static void setupSchema(MysqlIsolatedServer server) throws Exception {
 		setupSchema(server, true);
 	}
 
-	public String getSQLDir() {
+	public static String getSQLDir() {
 		final String dir = System.getProperty("user.dir");
 		return dir + "/src/test/resources/sql/";
 	}
 
 
-	private void clearSchemaStore(MysqlIsolatedServer mysql) throws Exception {
+	private static void clearSchemaStore(MysqlIsolatedServer mysql) throws Exception {
 		mysql.execute("drop database if exists maxwell");
 	}
 
@@ -138,11 +138,11 @@ public class MaxwellTestSupport {
 		return getRowsWithReplicator(mysql, filter, callback, Optional.empty());
 	}
 
-	public boolean inGtidMode() {
+	public static boolean inGtidMode() {
 		return MysqlIsolatedServer.inGtidMode();
 	}
 
-	public Position capture(Connection c) throws SQLException {
+	public static Position capture(Connection c) throws SQLException {
 		return Position.capture(c, inGtidMode());
 	}
 

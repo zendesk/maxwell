@@ -8,6 +8,7 @@ import com.zendesk.maxwell.core.producer.EncryptionMode;
 import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.schema.SchemaStoreSchema;
+import com.zendesk.maxwell.core.support.MaxwellTestSupport;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -139,7 +140,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String json = list.get(0).toJSON(outputConfig);
 
 		// Binlog
-		if (maxwellTestSupport.inGtidMode()) {
+		if (MaxwellTestSupport.inGtidMode()) {
 			assertTrue(Pattern.matches(".*\"gtid\":\".*:.*\".*", json));
 		} else {
 			assertTrue(Pattern.matches(".*\"position\":\"master.0+1.\\d+\".*", json));
@@ -416,7 +417,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testCreateSelectJSON() throws Exception {
-		if (maxwellTestSupport.inGtidMode()) {
+		if (MaxwellTestSupport.inGtidMode()) {
 			// "CREATE TABLE ... SELECT is forbidden when @@GLOBAL.ENFORCE_GTID_CONSISTENCY = 1"
 			return;
 		}

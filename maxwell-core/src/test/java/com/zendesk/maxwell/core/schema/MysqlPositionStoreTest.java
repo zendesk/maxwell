@@ -6,6 +6,7 @@ import com.zendesk.maxwell.core.errors.DuplicateProcessException;
 import com.zendesk.maxwell.core.recovery.RecoveryInfo;
 import com.zendesk.maxwell.core.replication.BinlogPosition;
 import com.zendesk.maxwell.core.replication.Position;
+import com.zendesk.maxwell.core.support.MaxwellTestSupport;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 
@@ -25,12 +26,12 @@ public class MysqlPositionStoreTest extends MaxwellTestWithIsolatedServer {
 		return buildStore(context, context.getServerID());
 	}
 
-	private MysqlPositionStore buildStore(MaxwellContext context, Long serverID) throws Exception {
-		return new MysqlPositionStore(context.getMaxwellConnectionPool(), serverID, "maxwell", maxwellTestSupport.inGtidMode());
+	private MysqlPositionStore buildStore(MaxwellContext context, Long serverID) {
+		return new MysqlPositionStore(context.getMaxwellConnectionPool(), serverID, "maxwell", MaxwellTestSupport.inGtidMode());
 	}
 
-	private MysqlPositionStore buildStore(MaxwellContext context, Long serverID, String clientId) throws Exception {
-		return new MysqlPositionStore(context.getMaxwellConnectionPool(), serverID, clientId, maxwellTestSupport.inGtidMode());
+	private MysqlPositionStore buildStore(MaxwellContext context, Long serverID, String clientId) {
+		return new MysqlPositionStore(context.getMaxwellConnectionPool(), serverID, clientId, MaxwellTestSupport.inGtidMode());
 	}
 
 	@Test
@@ -38,7 +39,7 @@ public class MysqlPositionStoreTest extends MaxwellTestWithIsolatedServer {
 		MysqlPositionStore store = buildStore();
 		long lastHeartbeatRead = 100L;
 		BinlogPosition binlogPosition;
-		if (maxwellTestSupport.inGtidMode()) {
+		if (MaxwellTestSupport.inGtidMode()) {
 			String gtid = "123:1-100";
 			binlogPosition = new BinlogPosition(gtid, null, 12345, "foo");
 		} else {
@@ -117,7 +118,7 @@ public class MysqlPositionStoreTest extends MaxwellTestWithIsolatedServer {
 
 		List<RecoveryInfo> recoveries = store.getAllRecoveryInfos();
 
-		if (maxwellTestSupport.inGtidMode()) {
+		if (MaxwellTestSupport.inGtidMode()) {
 			assertThat(recoveries.size(), is(1));
 			// gtid mode can't get into a multiple recovery state
 			return;
@@ -136,7 +137,7 @@ public class MysqlPositionStoreTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testCleanupOldRecoveryInfos() throws Exception {
-		if (maxwellTestSupport.inGtidMode()) {
+		if (MaxwellTestSupport.inGtidMode()) {
 			// gtid mode can't get into a multiple recovery state
 			return;
 		}

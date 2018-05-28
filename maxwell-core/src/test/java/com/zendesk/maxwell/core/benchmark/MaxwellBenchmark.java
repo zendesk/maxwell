@@ -73,10 +73,8 @@ public class MaxwellBenchmark {
 	private static void generate(int nRows) throws Exception {
 		SpringLauncher.launch((ctx) -> {
 			try {
-				MaxwellTestSupport maxwellTestSupport = ctx.getBean(MaxwellTestSupport.class);
-
-				MysqlIsolatedServer server = maxwellTestSupport.setupServer("--no-clean");
-				maxwellTestSupport.setupSchema(server, false);
+				MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--no-clean");
+				MaxwellTestSupport.setupSchema(server, false);
 
 				// generate 1 row of data before we capture position so that we can use the schema.
 				generateData(server.getConnection(), 1);
@@ -95,8 +93,7 @@ public class MaxwellBenchmark {
 	private static void benchmark(String path, String args[]) throws Exception {
 		SpringLauncher.launchMaxwell(args, (config, ctx) -> {
 			try {
-				MaxwellTestSupport maxwellTestSupport = ctx.getBean(MaxwellTestSupport.class);
-				MysqlIsolatedServer server = maxwellTestSupport.setupServer("--no-clean --reuse=" + path);
+				MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--no-clean --reuse=" + path);
 
 				config.maxwellMysql.host = "127.0.0.1";
 				config.maxwellMysql.port = server.getPort();
