@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core.producer.partitioners;
+package com.zendesk.maxwell.core.producer.impl.kafka;
 
 import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.schema.ddl.DDLMap;
