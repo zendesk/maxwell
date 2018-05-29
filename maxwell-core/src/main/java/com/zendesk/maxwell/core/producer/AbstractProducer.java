@@ -7,7 +7,6 @@ import com.codahale.metrics.Timer;
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.monitoring.MaxwellDiagnostic;
 import com.zendesk.maxwell.core.monitoring.Metrics;
-import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.util.StoppableTask;
 
 public abstract class AbstractProducer implements Producer {
@@ -21,7 +20,7 @@ public abstract class AbstractProducer implements Producer {
 
 	public AbstractProducer(MaxwellContext context) {
 		this.context = context;
-		this.outputConfig = context.getConfig().outputConfig;
+		this.outputConfig = context.getConfig().getOutputConfig();
 
 		Metrics metrics = context.getMetrics();
 		MetricRegistry metricRegistry = metrics.getRegistry();

@@ -9,7 +9,7 @@ import java.io.IOException;
 public class BootstrapperFactory {
 
 	public Bootstrapper createFor(MaxwellContext maxwellContext) throws IOException {
-		switch ( maxwellContext.getConfig().bootstrapperType ) {
+		switch (maxwellContext.getConfig().getBootstrapperType()) {
 			case "async":
 				return new AsynchronousBootstrapper(maxwellContext);
 			case "sync":

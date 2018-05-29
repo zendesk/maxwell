@@ -14,6 +14,6 @@ public class RedisProducerFactory implements NamedProducerFactory {
 
 	@Override
 	public Producer createProducer(MaxwellContext context) {
-		return new MaxwellRedisProducer(context, context.getConfig().redisPubChannel, context.getConfig().redisListKey, context.getConfig().redisType);
+		return new MaxwellRedisProducer(context, context.getConfig().getRedisPubChannel(), context.getConfig().getRedisListKey(), context.getConfig().getRedisType());
 	}
 }

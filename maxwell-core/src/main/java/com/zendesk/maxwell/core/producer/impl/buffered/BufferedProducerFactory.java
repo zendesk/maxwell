@@ -14,6 +14,6 @@ public class BufferedProducerFactory implements NamedProducerFactory {
 
 	@Override
 	public Producer createProducer(MaxwellContext context) {
-		return new BufferedProducer(context, context.getConfig().bufferedProducerSize);
+		return new BufferedProducer(context, context.getConfig().getBufferedProducerSize());
 	}
 }

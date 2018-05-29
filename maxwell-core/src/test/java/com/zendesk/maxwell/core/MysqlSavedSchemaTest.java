@@ -259,7 +259,7 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testFindSchemaReturnsTheLatestSchemaForTheCurrentBinlog() throws Exception {
-		if (context.getConfig().gtidMode) {
+		if (context.getConfig().getGtidMode()) {
 			return;
 		}
 
@@ -303,7 +303,7 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testFindBaseSchemaIdIfTheLatestSchemaPositionIsTheCurrentPosition() throws Exception {
-		if (context.getConfig().gtidMode) {
+		if (context.getConfig().getGtidMode()) {
 			return;
 		}
 		Connection c = context.getMaxwellConnection();
@@ -337,7 +337,7 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testFindSchemaReturnsTheLatestSchemaForPreviousBinlog() throws Exception {
-		if (context.getConfig().gtidMode) {
+		if (context.getConfig().getGtidMode()) {
 			return;
 		}
 

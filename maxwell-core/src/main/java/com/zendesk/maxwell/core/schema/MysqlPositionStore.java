@@ -256,7 +256,7 @@ public class MysqlPositionStore {
 
 		result.add("Most likely the first is the most recent master, in which case you should:");
 		result.add("1. stop maxwell");
-		result.add("2. execute: DELETE FROM " + config.databaseName + ".positions WHERE server_id <> " + mostRecentMaster + " AND client_id = '<your_client_id>';");
+		result.add("2. execute: DELETE FROM " + config.getDatabaseName() + ".positions WHERE server_id <> " + mostRecentMaster + " AND client_id = '<your_client_id>';");
 		result.add("3. restart maxwell");
 		return result;
 	}

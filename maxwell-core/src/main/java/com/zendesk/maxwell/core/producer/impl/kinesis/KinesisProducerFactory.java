@@ -14,6 +14,6 @@ public class KinesisProducerFactory implements NamedProducerFactory {
 
 	@Override
 	public Producer createProducer(MaxwellContext context) {
-		return new MaxwellKinesisProducer(context, context.getConfig().kinesisStream);
+		return new MaxwellKinesisProducer(context, context.getConfig().getKinesisStream());
 	}
 }

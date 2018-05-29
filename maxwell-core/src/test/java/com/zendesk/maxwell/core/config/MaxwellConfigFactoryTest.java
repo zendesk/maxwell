@@ -32,8 +32,8 @@ public class MaxwellConfigFactoryTest {
 	@Test
 	public void testFetchProducerFactoryFromArgs() {
 		config = maxwellConfigFactory.createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(new String[] { "--custom_producer.factory=" + TestProducerFactory.class.getName() });
-		assertNotNull(config.producerFactory);
-		assertTrue(config.producerFactory instanceof TestProducerFactory);
+		assertNotNull(config.getProducerFactory());
+		assertTrue(config.getProducerFactory() instanceof TestProducerFactory);
 	}
 	
 	@Test
@@ -42,8 +42,8 @@ public class MaxwellConfigFactoryTest {
 		assertNotNull("Config file not found at: " + configPath, Paths.get(configPath));
 		
 		config = maxwellConfigFactory.createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(new String[] { "--config=" + configPath });
-		assertNotNull(config.producerFactory);
-		assertTrue(config.producerFactory instanceof TestProducerFactory);
+		assertNotNull(config.getProducerFactory());
+		assertTrue(config.getProducerFactory() instanceof TestProducerFactory);
 	}
 	
 	@Test(expected = OptionException.class)
@@ -58,7 +58,7 @@ public class MaxwellConfigFactoryTest {
 		assertNotNull("Config file not found at: " + configPath, Paths.get(configPath));
 		
 		config = maxwellConfigFactory.createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(new String[] { "--config=" + configPath });
-		assertEquals("bar", config.customProducerProperties.getProperty("foo"));
+		assertEquals("bar", config.getCustomProducerProperties().getProperty("foo"));
 	}
 
 	@Test
@@ -69,10 +69,10 @@ public class MaxwellConfigFactoryTest {
 		environmentVariables.set("MAXWELL_KAFKA.RETRIES", "100");
 		environmentVariables.set("USER", "mysql");
 		config = maxwellConfigFactory.createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(new String[] { "--env_config_prefix=MAXWELL_", "--host=localhost" });
-		assertEquals("foo", config.maxwellMysql.user);
-		assertEquals("bar", config.maxwellMysql.password);
-		assertEquals("localhost", config.maxwellMysql.host);
-		assertEquals("100", config.kafkaProperties.getProperty("retries"));
+		assertEquals("foo", config.getMaxwellMysql().user);
+		assertEquals("bar", config.getMaxwellMysql().password);
+		assertEquals("localhost", config.getMaxwellMysql().host);
+		assertEquals("100", config.getKafkaProperties().getProperty("retries"));
 	}
 
 	@Test
@@ -86,10 +86,10 @@ public class MaxwellConfigFactoryTest {
 		assertNotNull("Config file not found at: " + configPath, Paths.get(configPath));
 
 		config = maxwellConfigFactory.createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(new String[] { "--config=" + configPath, "--host=localhost" });
-		assertEquals("foo", config.maxwellMysql.user);
-		assertEquals("bar", config.maxwellMysql.password);
-		assertEquals("localhost", config.maxwellMysql.host);
-		assertEquals("100", config.kafkaProperties.getProperty("retries"));
+		assertEquals("foo", config.getMaxwellMysql().user);
+		assertEquals("bar", config.getMaxwellMysql().password);
+		assertEquals("localhost", config.getMaxwellMysql().host);
+		assertEquals("100", config.getKafkaProperties().getProperty("retries"));
 	}
 	
 	private String getTestConfigDir() {

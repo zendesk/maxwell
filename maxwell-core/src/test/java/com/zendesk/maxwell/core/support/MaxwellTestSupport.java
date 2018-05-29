@@ -153,12 +153,12 @@ public class MaxwellTestSupport {
 
 		MaxwellConfig config = maxwellConfigFactory.createNewDefaultConfiguration();
 
-		config.maxwellMysql.user = "maxwell";
-		config.maxwellMysql.password = "maxwell";
-		config.maxwellMysql.host = "localhost";
-		config.maxwellMysql.port = mysql.getPort();
-		config.maxwellMysql.sslMode = SSLMode.DISABLED;
-		config.replicationMysql = config.maxwellMysql;
+		config.getMaxwellMysql().user = "maxwell";
+		config.getMaxwellMysql().password = "maxwell";
+		config.getMaxwellMysql().host = "localhost";
+		config.getMaxwellMysql().port = mysql.getPort();
+		config.getMaxwellMysql().sslMode = SSLMode.DISABLED;
+		config.setReplicationMysql(config.getMaxwellMysql());
 		final MaxwellOutputConfig outputConfig = optionalOutputConfig.orElseGet(MaxwellOutputConfig::new);
 
 		if ( filter != null ) {
@@ -168,13 +168,13 @@ public class MaxwellTestSupport {
 				filter.includeTable("boundary");
 		}
 
-		config.filter = filter;
-		config.bootstrapperType = "sync";
-		config.producerType = "buffer";
+		config.setFilter(filter);
+		config.setBootstrapperType("sync");
+		config.setProducerType("buffer");
 
 		callback.beforeReplicatorStart(mysql);
 
-		config.initPosition = capture(mysql.getConnection());
+		config.setInitPosition(capture(mysql.getConnection()));
 		final String waitObject = "";
 
 		final MaxwellContext maxwellContext = maxwellContextFactory.createFor(config);

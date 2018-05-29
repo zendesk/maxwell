@@ -61,20 +61,20 @@ public class RecoveryTest extends TestWithNameLogging {
 
 	private MaxwellConfig getConfig(int port, boolean masterRecovery){
 		MaxwellConfig config = maxwellConfigFactory.createNewDefaultConfiguration();
-		config.maxwellMysql.host = "localhost";
-		config.maxwellMysql.port = port;
-		config.maxwellMysql.user = "maxwell";
-		config.maxwellMysql.password = "maxwell";
-		config.masterRecovery = masterRecovery;
-		config.maxwellMysql.sslMode = SSLMode.DISABLED;
-		config.producerType = "buffer";
+		config.getMaxwellMysql().host = "localhost";
+		config.getMaxwellMysql().port = port;
+		config.getMaxwellMysql().user = "maxwell";
+		config.getMaxwellMysql().password = "maxwell";
+		config.setMasterRecovery(masterRecovery);
+		config.getMaxwellMysql().sslMode = SSLMode.DISABLED;
+		config.setProducerType("buffer");
 		config.validate();
 		return config;
 	}
 
 	private MaxwellConfig getBufferedConfig(int port, boolean masterRecovery) {
 		MaxwellConfig config = getConfig(port, masterRecovery);
-		config.producerType = "buffer";
+		config.setProducerType("buffer");
 		return config;
 	}
 
@@ -116,8 +116,8 @@ public class RecoveryTest extends TestWithNameLogging {
 		assertThat(recoveryInfo, notNullValue());
 		MaxwellConfig slaveConfig = getBufferedConfig(slaveServer.getPort(), true);
 		Recovery recovery = new Recovery(
-			slaveConfig.maxwellMysql,
-			slaveConfig.databaseName,
+				slaveConfig.getMaxwellMysql(),
+				slaveConfig.getDatabaseName(),
 			slaveContext.getReplicationConnectionPool(),
 			slaveContext.getCaseSensitivity(),
 			recoveryInfo
@@ -157,8 +157,8 @@ public class RecoveryTest extends TestWithNameLogging {
 
 		MaxwellConfig slaveConfig = getBufferedConfig(slaveServer.getPort(), true);
 		Recovery recovery = new Recovery(
-			slaveConfig.maxwellMysql,
-			slaveConfig.databaseName,
+				slaveConfig.getMaxwellMysql(),
+				slaveConfig.getDatabaseName(),
 			slaveContext.getReplicationConnectionPool(),
 			slaveContext.getCaseSensitivity(),
 			recoveryInfo

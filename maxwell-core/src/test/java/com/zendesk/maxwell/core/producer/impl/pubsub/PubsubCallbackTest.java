@@ -42,7 +42,7 @@ public class PubsubCallbackTest {
 	public void shouldTerminateWhenNotIgnoreProducerError() {
 		MaxwellContext context = mock(MaxwellContext.class);
 		MaxwellConfig config = maxwellConfigFactory.createNewDefaultConfiguration();
-		config.ignoreProducerError = false;
+		config.setIgnoreProducerError(false);
 		when(context.getConfig()).thenReturn(config);
 		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
 		PubsubCallback callback = new PubsubCallback(cc,

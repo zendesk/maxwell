@@ -62,7 +62,7 @@ class KafkaCallback implements Callback {
 			LOGGER.error(e.getLocalizedMessage());
 			if ( e instanceof RecordTooLargeException ) {
 				LOGGER.error("Considering raising max.request.size broker-side.");
-			} else if (!this.context.getConfig().ignoreProducerError) {
+			} else if (!this.context.getConfig().isIgnoreProducerError()) {
 				this.context.terminate(e);
 				return;
 			}
@@ -144,16 +144,16 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		this.interpolateTopic = this.topic.contains("%{");
 		this.kafka = new KafkaProducer<>(kafkaProperties, new StringSerializer(), new StringSerializer());
 
-		String hash = context.getConfig().kafkaPartitionHash;
-		String partitionKey = context.getConfig().producerPartitionKey;
-		String partitionColumns = context.getConfig().producerPartitionColumns;
-		String partitionFallback = context.getConfig().producerPartitionFallback;
+		String hash = context.getConfig().getKafkaPartitionHash();
+		String partitionKey = context.getConfig().getProducerPartitionKey();
+		String partitionColumns = context.getConfig().getProducerPartitionColumns();
+		String partitionFallback = context.getConfig().getProducerPartitionFallback();
 		this.partitioner = new MaxwellKafkaPartitioner(hash, partitionKey, partitionColumns, partitionFallback);
 
 		this.ddlPartitioner = makeDDLPartitioner(hash, partitionKey);
-		this.ddlTopic =  context.getConfig().ddlKafkaTopic;
+		this.ddlTopic = context.getConfig().getDdlKafkaTopic();
 
-		if ( context.getConfig().kafkaKeyFormat.equals("hash") )
+		if ( context.getConfig().getKafkaKeyFormat().equals("hash") )
 			keyFormat = KeyFormat.HASH;
 		else
 			keyFormat = KeyFormat.ARRAY;

@@ -22,13 +22,13 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 		listkey = redisListKey;
 		redistype = redisType;
 
-		jedis = new Jedis(context.getConfig().redisHost, context.getConfig().redisPort);
+		jedis = new Jedis(context.getConfig().getRedisHost(), context.getConfig().getRedisPort());
 		jedis.connect();
-		if (context.getConfig().redisAuth != null) {
-			jedis.auth(context.getConfig().redisAuth);
+		if (context.getConfig().getRedisAuth() != null) {
+			jedis.auth(context.getConfig().getRedisAuth());
 		}
-		if (context.getConfig().redisDatabase > 0) {
-			jedis.select(context.getConfig().redisDatabase);
+		if (context.getConfig().getRedisDatabase() > 0) {
+			jedis.select(context.getConfig().getRedisDatabase());
 		}
 	}
 
@@ -57,7 +57,7 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 			this.failedMessageMeter.mark();
 			logger.error("Exception during put", e);
 
-			if (!context.getConfig().ignoreProducerError) {
+			if (!context.getConfig().isIgnoreProducerError()) {
 				throw new RuntimeException(e);
 			}
 		}

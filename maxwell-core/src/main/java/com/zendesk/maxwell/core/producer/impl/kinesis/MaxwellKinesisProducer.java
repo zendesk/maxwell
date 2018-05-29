@@ -60,7 +60,7 @@ class KinesisCallback implements FutureCallback<UserRecordResult> {
 
 		logger.error("Exception during put", t);
 
-		if (!context.getConfig().ignoreProducerError) {
+		if (!context.getConfig().isIgnoreProducerError()) {
 			context.terminate(new RuntimeException(t));
 		} else {
 			cc.markCompleted();
@@ -92,10 +92,10 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 	public MaxwellKinesisProducer(MaxwellContext context, String kinesisStream) {
 		super(context);
 
-		String partitionKey = context.getConfig().producerPartitionKey;
-		String partitionColumns = context.getConfig().producerPartitionColumns;
-		String partitionFallback = context.getConfig().producerPartitionFallback;
-		boolean kinesisMd5Keys = context.getConfig().kinesisMd5Keys;
+		String partitionKey = context.getConfig().getProducerPartitionKey();
+		String partitionColumns = context.getConfig().getProducerPartitionColumns();
+		String partitionFallback = context.getConfig().getProducerPartitionFallback();
+		boolean kinesisMd5Keys = context.getConfig().isKinesisMd5Keys();
 		this.partitioner = new MaxwellKinesisPartitioner(partitionKey, partitionColumns, partitionFallback, kinesisMd5Keys);
 		this.kinesisStream = kinesisStream;
 

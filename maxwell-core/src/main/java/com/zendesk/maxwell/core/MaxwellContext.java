@@ -70,9 +70,9 @@ public class MaxwellContext {
 		this.contextStartListenersEventHandler = contextStartListenersEventHandler;
 
 		this.replicationConnectionPool = new ConnectionPool("ReplicationConnectionPool", 10, 0, 10,
-				config.replicationMysql.getConnectionURI(false), config.replicationMysql.user, config.replicationMysql.password);
+				config.getReplicationMysql().getConnectionURI(false), config.getReplicationMysql().user, config.getReplicationMysql().password);
 
-		if (config.schemaMysql.host == null) {
+		if (config.getSchemaMysql().host == null) {
 			this.schemaConnectionPool = null;
 		} else {
 			this.schemaConnectionPool = new ConnectionPool(
@@ -80,30 +80,30 @@ public class MaxwellContext {
 					10,
 					0,
 					10,
-					config.schemaMysql.getConnectionURI(false),
-					config.schemaMysql.user,
-					config.schemaMysql.password);
+					config.getSchemaMysql().getConnectionURI(false),
+					config.getSchemaMysql().user,
+					config.getSchemaMysql().password);
 		}
 
 		this.rawMaxwellConnectionPool = new ConnectionPool("RawMaxwellConnectionPool", 1, 2, 100,
-			config.maxwellMysql.getConnectionURI(false), config.maxwellMysql.user, config.maxwellMysql.password);
+			config.getMaxwellMysql().getConnectionURI(false), config.getMaxwellMysql().user, config.getMaxwellMysql().password);
 
 		this.maxwellConnectionPool = new ConnectionPool("MaxwellConnectionPool", 10, 0, 10,
-					config.maxwellMysql.getConnectionURI(), config.maxwellMysql.user, config.maxwellMysql.password);
+					config.getMaxwellMysql().getConnectionURI(), config.getMaxwellMysql().user, config.getMaxwellMysql().password);
 		this.maxwellConnectionPool.setCaching(false);
 
-		if ( this.config.initPosition != null )
-			this.initialPosition = this.config.initPosition;
+		if ( this.config.getInitPosition() != null )
+			this.initialPosition = this.config.getInitPosition();
 
-		if ( this.config.replayMode ) {
-			this.positionStore = new ReadOnlyMysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.clientID, config.gtidMode);
+		if (this.config.isReplayMode()) {
+			this.positionStore = new ReadOnlyMysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.getClientID(), config.getGtidMode());
 		} else {
-			this.positionStore = new MysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.clientID, config.gtidMode);
+			this.positionStore = new MysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.getClientID(), config.getGtidMode());
 		}
 
 		this.heartbeatNotifier = new HeartbeatNotifier();
 		List<MaxwellDiagnostic> diagnostics = new ArrayList<>(Collections.singletonList(new BinlogConnectorDiagnostic(this)));
-		this.diagnosticContext = new MaxwellDiagnosticContext(config.diagnosticConfig, diagnostics);
+		this.diagnosticContext = new MaxwellDiagnosticContext(config.getDiagnosticConfig(), diagnostics);
 	}
 
 	public MaxwellConfig getConfig() {
@@ -337,11 +337,11 @@ public class MaxwellContext {
 	}
 
 	public MaxwellFilter getFilter() {
-		return config.filter;
+		return config.getFilter();
 	}
 
 	public boolean getReplayMode() {
-		return this.config.replayMode;
+		return this.config.isReplayMode();
 	}
 
 	private void probePool( ConnectionPool pool, String uri ) throws SQLException {
@@ -354,10 +354,10 @@ public class MaxwellContext {
 	}
 
 	public void probeConnections() throws SQLException, URISyntaxException {
-		probePool(this.rawMaxwellConnectionPool, this.config.maxwellMysql.getConnectionURI(false));
+		probePool(this.rawMaxwellConnectionPool, this.config.getMaxwellMysql().getConnectionURI(false));
 
 		if ( this.maxwellConnectionPool != this.replicationConnectionPool )
-			probePool(this.replicationConnectionPool, this.config.replicationMysql.getConnectionURI());
+			probePool(this.replicationConnectionPool, this.config.getReplicationMysql().getConnectionURI());
 	}
 
 	public void setReplicator(Replicator replicator) {

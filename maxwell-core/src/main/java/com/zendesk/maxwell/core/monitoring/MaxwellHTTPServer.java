@@ -42,9 +42,9 @@ public class MaxwellHTTPServer implements ContextStartListener {
 		MaxwellDiagnosticContext diagnosticContext = getDiagnosticContext(context);
 		if (metricsRegistries != null || diagnosticContext != null) {
 			LOGGER.info("Maxwell http server starting");
-			int port = context.getConfig().httpPort;
-			String httpBindAddress = context.getConfig().httpBindAddress;
-			String pathPrefix = context.getConfig().httpPathPrefix;
+			int port = context.getConfig().getHttpPort();
+			String httpBindAddress = context.getConfig().getHttpBindAddress();
+			String pathPrefix = context.getConfig().getHttpPathPrefix();
 			MaxwellHTTPServerWorker maxwellHTTPServerWorker = new MaxwellHTTPServerWorker(httpBindAddress, port, pathPrefix, metricsRegistries, diagnosticContext);
 			Thread thread = new Thread(maxwellHTTPServerWorker);
 
@@ -62,17 +62,17 @@ public class MaxwellHTTPServer implements ContextStartListener {
 
 	private MaxwellMetrics.Registries getMetricsRegistries(MaxwellContext context) {
 		MaxwellConfig config = context.getConfig();
-		String reportingType = config.metricsReportingType;
+		String reportingType = config.getMetricsReportingType();
 		if (reportingType != null && reportingType.contains(MaxwellMetrics.reportingTypeHttp)) {
-			config.healthCheckRegistry.register("MaxwellHealth", new MaxwellHealthCheck(producers.getProducer(context)));
-			return new MaxwellMetrics.Registries(config.metricRegistry, config.healthCheckRegistry);
+			config.getHealthCheckRegistry().register("MaxwellHealth", new MaxwellHealthCheck(producers.getProducer(context)));
+			return new MaxwellMetrics.Registries(config.getMetricRegistry(), config.getHealthCheckRegistry());
 		} else {
 			return null;
 		}
 	}
 
 	private MaxwellDiagnosticContext getDiagnosticContext(MaxwellContext context) {
-		MaxwellDiagnosticContext.Config diagnosticConfig = context.getConfig().diagnosticConfig;
+		MaxwellDiagnosticContext.Config diagnosticConfig = context.getConfig().getDiagnosticConfig();
 		if (diagnosticConfig.enable) {
 			return context.getDiagnosticContext();
 		} else {

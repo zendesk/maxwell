@@ -9,7 +9,7 @@ final public class SavedSchemaSupport {
 	private SavedSchemaSupport() { }
 
 	public static MysqlSavedSchema getSavedSchema(MaxwellContext context, Schema schema, Position position) throws Exception {
-		if (context.getConfig().gtidMode) {
+		if (context.getConfig().getGtidMode()) {
 			return new MysqlSavedSchema(context, schema, position);
 		}
 

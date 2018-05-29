@@ -38,34 +38,34 @@ public class MaxwellMetrics implements Metrics {
 	}
 
 	private void setup(MaxwellConfig config) {
-		if (config.metricsReportingType == null) {
+		if (config.getMetricsReportingType() == null) {
 			LOGGER.warn("Metrics will not be exposed: metricsReportingType not configured.");
 			return;
 		}
 
-		metricsPrefix = config.metricsPrefix;
+		metricsPrefix = config.getMetricsPrefix();
 
-		if (config.metricsJvm) {
-			config.metricRegistry.register(metricName("jvm", "memory_usage"), new MemoryUsageGaugeSet());
-			config.metricRegistry.register(metricName("jvm", "gc"), new GarbageCollectorMetricSet());
-			config.metricRegistry.register(metricName("jvm", "class_loading"), new ClassLoadingGaugeSet());
-			config.metricRegistry.register(metricName("jvm", "file_descriptor_ratio"), new FileDescriptorRatioGauge());
-			config.metricRegistry.register(metricName("jvm", "thread_states"), new CachedThreadStatesGaugeSet(60, TimeUnit.SECONDS));
+		if (config.isMetricsJvm()) {
+			config.getMetricRegistry().register(metricName("jvm", "memory_usage"), new MemoryUsageGaugeSet());
+			config.getMetricRegistry().register(metricName("jvm", "gc"), new GarbageCollectorMetricSet());
+			config.getMetricRegistry().register(metricName("jvm", "class_loading"), new ClassLoadingGaugeSet());
+			config.getMetricRegistry().register(metricName("jvm", "file_descriptor_ratio"), new FileDescriptorRatioGauge());
+			config.getMetricRegistry().register(metricName("jvm", "thread_states"), new CachedThreadStatesGaugeSet(60, TimeUnit.SECONDS));
 		}
 
-		if (config.metricsReportingType.contains(reportingTypeSlf4j)) {
-			final Slf4jReporter reporter = Slf4jReporter.forRegistry(config.metricRegistry)
+		if (config.getMetricsReportingType().contains(reportingTypeSlf4j)) {
+			final Slf4jReporter reporter = Slf4jReporter.forRegistry(config.getMetricRegistry())
 					.outputTo(LOGGER)
 					.convertRatesTo(TimeUnit.SECONDS)
 					.convertDurationsTo(TimeUnit.MILLISECONDS)
 					.build();
 
-			reporter.start(config.metricsSlf4jInterval, TimeUnit.SECONDS);
+			reporter.start(config.getMetricsSlf4jInterval(), TimeUnit.SECONDS);
 			LOGGER.info("Slf4j metrics reporter enabled");
 		}
 
-		if (config.metricsReportingType.contains(reportingTypeJmx)) {
-			final JmxReporter jmxReporter = JmxReporter.forRegistry(config.metricRegistry)
+		if (config.getMetricsReportingType().contains(reportingTypeJmx)) {
+			final JmxReporter jmxReporter = JmxReporter.forRegistry(config.getMetricRegistry())
 					.convertRatesTo(TimeUnit.SECONDS)
 					.convertDurationsTo(TimeUnit.MILLISECONDS)
 					.build();
@@ -82,29 +82,29 @@ public class MaxwellMetrics implements Metrics {
 			}
 		}
 
-		if (config.metricsReportingType.contains(reportingTypeDataDog)) {
+		if (config.getMetricsReportingType().contains(reportingTypeDataDog)) {
 			Transport transport;
-			if (config.metricsDatadogType.contains("http")) {
+			if (config.getMetricsDatadogType().contains("http")) {
 				LOGGER.info("Enabling HTTP Datadog reporting");
 				transport = new HttpTransport.Builder()
-						.withApiKey(config.metricsDatadogAPIKey)
+						.withApiKey(config.getMetricsDatadogAPIKey())
 						.build();
 			} else {
-				LOGGER.info("Enabling UDP Datadog reporting with host " + config.metricsDatadogHost
-						+ ", port " + config.metricsDatadogPort);
+				LOGGER.info("Enabling UDP Datadog reporting with host " + config.getMetricsDatadogHost()
+						+ ", port " + config.getMetricsDatadogPort());
 				transport = new UdpTransport.Builder()
-						.withStatsdHost(config.metricsDatadogHost)
-						.withPort(config.metricsDatadogPort)
+						.withStatsdHost(config.getMetricsDatadogHost())
+						.withPort(config.getMetricsDatadogPort())
 						.build();
 			}
 
-			final DatadogReporter reporter = DatadogReporter.forRegistry(config.metricRegistry)
+			final DatadogReporter reporter = DatadogReporter.forRegistry(config.getMetricRegistry())
 					.withTransport(transport)
 					.withExpansions(EnumSet.of(COUNT, RATE_1_MINUTE, RATE_15_MINUTE, MEDIAN, P95, P99))
-					.withTags(getDatadogTags(config.metricsDatadogTags))
+					.withTags(getDatadogTags(config.getMetricsDatadogTags()))
 					.build();
 
-			reporter.start(config.metricsDatadogInterval, TimeUnit.SECONDS);
+			reporter.start(config.getMetricsDatadogInterval(), TimeUnit.SECONDS);
 			LOGGER.info("Datadog reporting enabled");
 		}
 	}
@@ -126,7 +126,7 @@ public class MaxwellMetrics implements Metrics {
 
 	@Override
 	public MetricRegistry getRegistry() {
-		return config.metricRegistry;
+		return config.getMetricRegistry();
 	}
 
 	@Override

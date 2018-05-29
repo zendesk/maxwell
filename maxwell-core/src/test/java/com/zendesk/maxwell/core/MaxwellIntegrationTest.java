@@ -452,7 +452,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 		lowerCaseServer.boot("--lower-case-table-names=1");
 		MaxwellContext context = maxwellConfigTestSupport.buildContext(lowerCaseServer.getPort(), null, null);
-		SchemaStoreSchema.ensureMaxwellSchema(lowerCaseServer.getConnection(), context.getConfig().databaseName);
+		SchemaStoreSchema.ensureMaxwellSchema(lowerCaseServer.getConnection(), context.getConfig().getDatabaseName());
 
 		String[] sql = {
 			"CREATE TABLE `test`.`TOOTOOTWEE` ( id int )",
@@ -537,11 +537,11 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String[] opts = {"--jdbc_options= netTimeoutForStreamingResults=123& profileSQL=true  ", "--host=no-soup-spoons"};
 		MaxwellConfig config = maxwellConfigFactory.createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(opts);
 		config.validate();
-		assertThat(config.maxwellMysql.getConnectionURI(), containsString("jdbc:mysql://no-soup-spoons:3306/maxwell?"));
-		assertThat(config.replicationMysql.getConnectionURI(), containsString("jdbc:mysql://no-soup-spoons:3306?"));
+		assertThat(config.getMaxwellMysql().getConnectionURI(), containsString("jdbc:mysql://no-soup-spoons:3306/maxwell?"));
+		assertThat(config.getReplicationMysql().getConnectionURI(), containsString("jdbc:mysql://no-soup-spoons:3306?"));
 
 		Set<String> maxwellMysqlParams = new HashSet<>();
-		maxwellMysqlParams.addAll(Lists.newArrayList(config.maxwellMysql.getConnectionURI()
+		maxwellMysqlParams.addAll(Lists.newArrayList(config.getMaxwellMysql().getConnectionURI()
 				.split("\\?")[1].split("&")));
 
 		assertThat(maxwellMysqlParams, hasItem("zeroDateTimeBehavior=convertToNull"));
@@ -550,7 +550,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		assertThat(maxwellMysqlParams, hasItem("profileSQL=true"));
 
 		Set<String> replicationMysqlParams = new HashSet<>();
-		replicationMysqlParams.addAll(Lists.newArrayList(config.replicationMysql.getConnectionURI()
+		replicationMysqlParams.addAll(Lists.newArrayList(config.getReplicationMysql().getConnectionURI()
 				.split("\\?")[1].split("&")));
 
 		assertThat(replicationMysqlParams, hasItem("zeroDateTimeBehavior=convertToNull"));
@@ -572,14 +572,14 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 			"--schema_password=schemapass"
 		};
 		MaxwellConfig config = maxwellConfigFactory.createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(opts);
-		assertEquals(config.replicationMysql.host, "replhost");
-		assertThat(config.replicationMysql.port, is(1001));
-		assertEquals(config.replicationMysql.user, "repluser");
-		assertEquals(config.replicationMysql.password, "replpass");
-		assertEquals(config.schemaMysql.host, "schemahost");
-		assertThat(config.schemaMysql.port, is(2002));
-		assertEquals(config.schemaMysql.user, "schemauser");
-		assertEquals(config.schemaMysql.password, "schemapass");
+		assertEquals(config.getReplicationMysql().host, "replhost");
+		assertThat(config.getReplicationMysql().port, is(1001));
+		assertEquals(config.getReplicationMysql().user, "repluser");
+		assertEquals(config.getReplicationMysql().password, "replpass");
+		assertEquals(config.getSchemaMysql().host, "schemahost");
+		assertThat(config.getSchemaMysql().port, is(2002));
+		assertEquals(config.getSchemaMysql().user, "schemauser");
+		assertEquals(config.getSchemaMysql().password, "schemapass");
 	}
 
 	@Test
@@ -591,13 +591,13 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 			"--replication_password=replpass",
 		};
 		MaxwellConfig config = maxwellConfigFactory.createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(opts);
-		assertEquals(config.replicationMysql.host, "replhost");
-		assertThat(config.replicationMysql.port, is(1001));
-		assertEquals(config.replicationMysql.user, "repluser");
-		assertEquals(config.replicationMysql.password, "replpass");
-		assertNull(config.schemaMysql.host);
-		assertNull(config.schemaMysql.user);
-		assertNull(config.schemaMysql.password);
+		assertEquals(config.getReplicationMysql().host, "replhost");
+		assertThat(config.getReplicationMysql().port, is(1001));
+		assertEquals(config.getReplicationMysql().user, "repluser");
+		assertEquals(config.getReplicationMysql().password, "replpass");
+		assertNull(config.getSchemaMysql().host);
+		assertNull(config.getSchemaMysql().user);
+		assertNull(config.getSchemaMysql().password);
 	}
 
 	@Test

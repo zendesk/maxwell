@@ -37,7 +37,7 @@ public class BinlogConnectorDiagnostic implements MaxwellDiagnostic {
 
 	@Override
 	public String getResource() {
-		MaxwellMysqlConfig mysql = context.getConfig().maxwellMysql;
+		MaxwellMysqlConfig mysql = context.getConfig().getMaxwellMysql();
 		return mysql.host + ":" + mysql.port;
 	}
 

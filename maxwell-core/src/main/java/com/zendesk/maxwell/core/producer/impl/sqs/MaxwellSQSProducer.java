@@ -55,7 +55,7 @@ class SQSCallback implements AsyncHandler<SendMessageRequest, SendMessageResult>
 		logger.error(t.getLocalizedMessage());
 		logger.error("Exception during put", t);
 
-		if (!context.getConfig().ignoreProducerError) {
+		if (!context.getConfig().isIgnoreProducerError()) {
 			context.terminate(new RuntimeException(t));
 		} else {
 			cc.markCompleted();

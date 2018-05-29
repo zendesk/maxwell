@@ -16,8 +16,8 @@ public class Maxwell {
 		try {
 			Logging.setupLogBridging();
 			SpringLauncher.launchMaxwell(args, (config,ctx) -> {
-				if ( config.log_level != null ){
-					Logging.setLevel(config.log_level);
+				if ( config.getLog_level() != null ){
+					Logging.setLevel(config.getLog_level());
 				}
 			});
 		} catch ( Exception e ) {

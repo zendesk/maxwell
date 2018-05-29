@@ -49,7 +49,7 @@ public class KafkaProducerDiagnostic implements MaxwellDiagnostic {
 	public CompletableFuture<Long> getLatency() {
 		DiagnosticCallback callback = new DiagnosticCallback();
 		try {
-			RowMap rowMap = new RowMap("insert", config.databaseName, "dummy", System.currentTimeMillis(),
+			RowMap rowMap = new RowMap("insert", config.getDatabaseName(), "dummy", System.currentTimeMillis(),
 					new ArrayList<>(), positionStoreThread.getPosition());
 			rowMap.setTXCommit();
 			ProducerRecord<String, String> record = producer.makeProducerRecord(rowMap);

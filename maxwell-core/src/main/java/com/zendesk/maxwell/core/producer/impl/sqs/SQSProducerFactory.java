@@ -14,6 +14,6 @@ public class SQSProducerFactory implements NamedProducerFactory {
 
 	@Override
 	public Producer createProducer(MaxwellContext context) {
-		return new MaxwellSQSProducer(context, context.getConfig().sqsQueueUri);
+		return new MaxwellSQSProducer(context, context.getConfig().getSqsQueueUri());
 	}
 }

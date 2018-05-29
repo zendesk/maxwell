@@ -26,22 +26,22 @@ public class MaxwellConfigTestSupport {
 	private MaxwellConfig buildConfig(int port, Position p, MaxwellFilter filter) {
 		MaxwellConfig config = maxwellConfigFactory.createNewDefaultConfiguration();
 
-		config.replicationMysql.host = "127.0.0.1";
-		config.replicationMysql.port = port;
-		config.replicationMysql.user = "maxwell";
-		config.replicationMysql.password = "maxwell";
-		config.replicationMysql.sslMode = SSLMode.DISABLED;
+		config.getReplicationMysql().host = "127.0.0.1";
+		config.getReplicationMysql().port = port;
+		config.getReplicationMysql().user = "maxwell";
+		config.getReplicationMysql().password = "maxwell";
+		config.getReplicationMysql().sslMode = SSLMode.DISABLED;
 
-		config.maxwellMysql.host = "127.0.0.1";
-		config.maxwellMysql.port = port;
-		config.maxwellMysql.user = "maxwell";
-		config.maxwellMysql.password = "maxwell";
-		config.maxwellMysql.sslMode = SSLMode.DISABLED;
+		config.getMaxwellMysql().host = "127.0.0.1";
+		config.getMaxwellMysql().port = port;
+		config.getMaxwellMysql().user = "maxwell";
+		config.getMaxwellMysql().password = "maxwell";
+		config.getMaxwellMysql().sslMode = SSLMode.DISABLED;
 
-		config.databaseName = "maxwell";
+		config.setDatabaseName("maxwell");
 
-		config.filter = filter;
-		config.initPosition = p;
+		config.setFilter(filter);
+		config.setInitPosition(p);
 		return config;
 	}
 

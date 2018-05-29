@@ -35,14 +35,14 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 	public void testCustomMetricsAndProducer() throws Exception {
 		MaxwellConfig config = getConfig(server);
 		final BlockingQueue<RowMap> rowBuffer = new LinkedBlockingQueue<>();
-		config.metricsReportingType = "embedded";
-		config.metricsPrefix = "prefix";
-		config.producerFactory = new ProducerFactory() {
+		config.setMetricsReportingType("embedded");
+		config.setMetricsPrefix("prefix");
+		config.setProducerFactory(new ProducerFactory() {
 			@Override
 			public AbstractProducer createProducer(MaxwellContext context) {
 				return new EmbeddedTestProducer(context, rowBuffer);
 			}
-		};
+		});
 
 		final CountDownLatch latch = new CountDownLatch(1);
 		final MaxwellContext maxwellContext = maxwellContextFactory.createFor(config);
@@ -60,17 +60,17 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 		}
 
 		assertThat(rowMap, is(notNullValue()));
-		assertTrue(config.metricRegistry.getCounters().get("prefix.row.count").getCount() > 0);
+		assertTrue(config.getMetricRegistry().getCounters().get("prefix.row.count").getCount() > 0);
 	}
 
 	private MaxwellConfig getConfig(MysqlIsolatedServer mysql) {
 		MaxwellConfig config = maxwellConfigFactory.createNewDefaultConfiguration();
-		config.maxwellMysql.user = "maxwell";
-		config.maxwellMysql.password = "maxwell";
-		config.maxwellMysql.host = "localhost";
-		config.maxwellMysql.port = mysql.getPort();
-		config.maxwellMysql.sslMode = SSLMode.DISABLED;
-		config.replicationMysql = config.maxwellMysql;
+		config.getMaxwellMysql().user = "maxwell";
+		config.getMaxwellMysql().password = "maxwell";
+		config.getMaxwellMysql().host = "localhost";
+		config.getMaxwellMysql().port = mysql.getPort();
+		config.getMaxwellMysql().sslMode = SSLMode.DISABLED;
+		config.setReplicationMysql(config.getMaxwellMysql());
 		return config;
 	}
 

@@ -36,15 +36,15 @@ public class Producers {
 
 	private Producer createProducer(MaxwellContext maxwellContext){
 		MaxwellConfig config = maxwellContext.getConfig();
-		if ( config.producerFactory != null ) {
-			return config.producerFactory.createProducer(maxwellContext);
+		if ( config.getProducerFactory() != null ) {
+			return config.getProducerFactory().createProducer(maxwellContext);
 		} else {
 			return createProducerForType(maxwellContext);
 		}
 	}
 
 	private Producer createProducerForType(MaxwellContext context){
-		String producerType = context.getConfig().producerType;
+		String producerType = context.getConfig().getProducerType();
 		return NONE_PRODUCER_TYPE.equals(producerType) ? null : createProducerFactory(producerType).createProducer(context);
 	}
 

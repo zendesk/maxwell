@@ -98,13 +98,13 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 			schemaStore,
 			producer,
 			bootstrapper,
-			ctx.getConfig().replicationMysql,
-			ctx.getConfig().replicaServerID,
-			ctx.getConfig().databaseName,
+				ctx.getConfig().getReplicationMysql(),
+				ctx.getConfig().getReplicaServerID(),
+				ctx.getConfig().getDatabaseName(),
 			ctx.getMetrics(),
 			start,
 			false,
-			ctx.getConfig().clientID,
+				ctx.getConfig().getClientID(),
 			ctx.getHeartbeatNotifier()
 		);
 	}

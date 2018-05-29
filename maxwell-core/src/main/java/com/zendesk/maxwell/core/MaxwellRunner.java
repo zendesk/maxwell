@@ -63,8 +63,8 @@ public class MaxwellRunner {
 
 		if ( recoveryInfo != null ) {
 			Recovery masterRecovery = new Recovery(
-				config.replicationMysql,
-				config.databaseName,
+					config.getReplicationMysql(),
+					config.getDatabaseName(),
 				context.getReplicationConnectionPool(),
 				context.getCaseSensitivity(),
 				recoveryInfo
@@ -82,7 +82,7 @@ public class MaxwellRunner {
 					recoveryInfo.serverID,
 					recoveryInfo.position,
 					context.getCaseSensitivity(),
-					config.filter,
+						config.getFilter(),
 					false
 				);
 
@@ -100,7 +100,7 @@ public class MaxwellRunner {
 		if (initial == null) {
 
 			/* second method: are we recovering from a master swap? */
-			if ( config.masterRecovery )
+			if (config.isMasterRecovery())
 				initial = attemptMasterRecovery(context);
 
 			/* third method: is there a previous client_id?
@@ -117,7 +117,7 @@ public class MaxwellRunner {
 			/* fourth method: capture the current master position. */
 			if ( initial == null ) {
 				try ( Connection c = context.getReplicationConnection() ) {
-					initial = Position.capture(c, config.gtidMode);
+					initial = Position.capture(c, config.getGtidMode());
 				}
 			}
 
@@ -125,7 +125,7 @@ public class MaxwellRunner {
 			context.getPositionStore().set(initial);
 		}
 
-		if (config.masterRecovery) { context.getPositionStore().cleanupOldRecoveryInfos();
+		if (config.isMasterRecovery()) { context.getPositionStore().cleanupOldRecoveryInfos();
 		}
 
 		return initial;
@@ -168,11 +168,11 @@ public class MaxwellRunner {
 		      Connection rawConnection = context.getRawMaxwellConnection() ) {
 			MaxwellMysqlStatus.ensureReplicationMysqlState(connection);
 			MaxwellMysqlStatus.ensureMaxwellMysqlState(rawConnection);
-			if (config.gtidMode) {
+			if (config.getGtidMode()) {
 				MaxwellMysqlStatus.ensureGtidMysqlState(connection);
 			}
 
-			SchemaStoreSchema.ensureMaxwellSchema(rawConnection, config.databaseName);
+			SchemaStoreSchema.ensureMaxwellSchema(rawConnection, config.getDatabaseName());
 
 			try ( Connection schemaConnection = context.getMaxwellConnection() ) {
 				SchemaStoreSchema.upgradeSchemaStoreSchema(schemaConnection);

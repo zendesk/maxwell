@@ -95,12 +95,13 @@ public class MaxwellBenchmark {
 			try {
 				MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--no-clean --reuse=" + path);
 
-				config.maxwellMysql.host = "127.0.0.1";
-				config.maxwellMysql.port = server.getPort();
-				config.maxwellMysql.user = "root";
-				config.maxwellMysql.password = "";
-				config.replicationMysql = config.schemaMysql = config.maxwellMysql;
-				config.producerFactory = new BenchmarkProducerFactory();
+				config.getMaxwellMysql().host = "127.0.0.1";
+				config.getMaxwellMysql().port = server.getPort();
+				config.getMaxwellMysql().user = "root";
+				config.getMaxwellMysql().password = "";
+				config.setSchemaMysql(config.getMaxwellMysql());
+				config.setReplicationMysql(config.getMaxwellMysql());
+				config.setProducerFactory(new BenchmarkProducerFactory());
 			} catch (Exception e) {
 				throw new LauncherException("Failed to setup mysql test server for benchmark", e);
 			}

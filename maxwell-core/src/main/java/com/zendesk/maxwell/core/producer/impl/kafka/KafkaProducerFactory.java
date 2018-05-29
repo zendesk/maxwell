@@ -14,6 +14,6 @@ public class KafkaProducerFactory implements NamedProducerFactory  {
 
 	@Override
 	public Producer createProducer(MaxwellContext context) {
-		return new MaxwellKafkaProducer(context, context.getConfig().getKafkaProperties(), context.getConfig().kafkaTopic);
+		return new MaxwellKafkaProducer(context, context.getConfig().getKafkaProperties(), context.getConfig().getKafkaTopic());
 	}
 }

@@ -18,7 +18,7 @@ public class FileProducerFactory implements NamedProducerFactory {
 	@Override
 	public Producer createProducer(MaxwellContext context) {
 		try {
-			return new FileProducer(context, context.getConfig().outputFile);
+			return new FileProducer(context, context.getConfig().getOutputFile());
 		} catch (IOException e) {
 			throw new ProducerInstantiationException(e);
 		}

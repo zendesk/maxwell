@@ -75,7 +75,7 @@ class PubsubCallback implements ApiFutureCallback<String> {
     LOGGER.error(t.getClass().getSimpleName() + " @ " + position);
     LOGGER.error(t.getLocalizedMessage());
 
-    if ( !this.context.getConfig().ignoreProducerError ) {
+    if ( !this.context.getConfig().isIgnoreProducerError()) {
       this.context.terminate(new RuntimeException(t));
       return;
     }
@@ -138,7 +138,7 @@ class MaxwellPubsubProducerWorker
     this.topic = TopicName.create(pubsubProjectId, pubsubTopic);
     this.pubsub = Publisher.defaultBuilder(this.topic).build();
 
-    if ( context.getConfig().outputConfig.outputDDL == true &&
+    if ( context.getConfig().getOutputConfig().outputDDL == true &&
          ddlPubsubTopic != pubsubTopic ) {
       this.ddlTopic = TopicName.create(pubsubProjectId, ddlPubsubTopic);
       this.ddlPubsub = Publisher.defaultBuilder(this.ddlTopic).build();
