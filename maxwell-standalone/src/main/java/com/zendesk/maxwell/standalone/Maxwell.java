@@ -9,8 +9,7 @@ import org.slf4j.LoggerFactory;
 public class Maxwell {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Maxwell.class);
-	private static final ExceptionHandler EXCEPTION_HANDLER = new ExceptionHandler(LOGGER, new MaxwellCommandLineOptions());
-
+	private static final ExceptionHandler EXCEPTION_HANDLER = new ExceptionHandler(LOGGER, MaxwellCommandLineOptions.getInstance());
 
 	public static void main(String[] args) {
 		try {

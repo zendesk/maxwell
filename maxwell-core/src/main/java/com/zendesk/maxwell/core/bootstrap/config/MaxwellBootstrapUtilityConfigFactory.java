@@ -23,7 +23,7 @@ public class MaxwellBootstrapUtilityConfigFactory extends AbstractConfigurationF
 	}
 
 	public MaxwellBootstrapUtilityConfig createConfigurationFromArgumentsAndConfigurationFile(String [] argv) {
-		OptionSet options = maxwellBootstrapUtilityCommandLineOptions.createParser().parse(argv);
+		OptionSet options = maxwellBootstrapUtilityCommandLineOptions.parse(argv);
 		Properties properties;
 
 		if ( options.has("config") ) {

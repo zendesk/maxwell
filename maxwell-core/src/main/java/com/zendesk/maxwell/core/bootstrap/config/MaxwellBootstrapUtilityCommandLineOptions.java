@@ -12,7 +12,7 @@ import java.util.Map;
 public class MaxwellBootstrapUtilityCommandLineOptions extends AbstractCommandLineOptions  {
 
 	@Override
-	public OptionParser createParser() {OptionParser parser = new OptionParser();
+	protected OptionParser createParser() {OptionParser parser = new OptionParser();
 		parser.accepts( "config", "location of config file" ).withRequiredArg();
 		parser.accepts( "__separator_1", "" );
 		parser.accepts( "database", "database that contains the table to bootstrap").withRequiredArg();

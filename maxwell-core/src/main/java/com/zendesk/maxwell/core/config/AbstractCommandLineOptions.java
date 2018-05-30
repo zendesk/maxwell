@@ -3,20 +3,38 @@ package com.zendesk.maxwell.core.config;
 import joptsimple.BuiltinHelpFormatter;
 import joptsimple.OptionDescriptor;
 import joptsimple.OptionParser;
+import joptsimple.OptionSet;
 
 import java.io.IOException;
 import java.util.Map;
 
-public abstract class AbstractCommandLineOptions {
+public abstract class AbstractCommandLineOptions implements CommandLineOptions {
 
+	private static OptionParser parser;
+
+	@Override
+	public OptionSet parse(String[] args){
+		return getParser().parse(args);
+	}
+
+	@Override
+	public OptionParser getParser(){
+		if(parser == null){
+			parser = createParser();
+		}
+		return parser;
+	}
+
+	@Override
 	public void usage(String string) {
 		System.err.println(string);
 		System.err.println();
 		try {
-			createParser().printHelpOn(System.err);
+			getParser().printHelpOn(System.err);
 		} catch (IOException e) { }
 	}
 
+	@Override
 	public void usageForOptions(String string, final String... filterOptions) {
 		BuiltinHelpFormatter filteredHelpFormatter = new BuiltinHelpFormatter(200, 4) {
 			@Override
@@ -48,7 +66,7 @@ public abstract class AbstractCommandLineOptions {
 		System.err.println(string);
 		System.err.println();
 
-		OptionParser p = createParser();
+		OptionParser p = getParser();
 		p.formatHelpWith(filteredHelpFormatter);
 		try {
 			p.printHelpOn(System.err);

@@ -33,7 +33,7 @@ public class MaxwellConfigFactory extends AbstractConfigurationFactory {
 	}
 
 	public MaxwellConfig createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(String[] args) {
-		OptionSet options = maxwellCommandLineOptions.createParser().parse(args);
+		OptionSet options = maxwellCommandLineOptions.parse(args);
 
 		Properties properties;
 

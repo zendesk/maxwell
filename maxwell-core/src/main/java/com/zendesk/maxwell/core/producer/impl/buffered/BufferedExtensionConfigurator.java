@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core.producer.impl.stdout;
+package com.zendesk.maxwell.core.producer.impl.buffered;
 
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.config.ExtensionConfigurator;
@@ -7,10 +7,10 @@ import com.zendesk.maxwell.core.producer.Producer;
 import org.springframework.stereotype.Service;
 
 @Service
-public class StdoutProducerFactory implements ExtensionConfigurator<Producer> {
+public class BufferedExtensionConfigurator implements ExtensionConfigurator<Producer> {
 	@Override
 	public String getExtensionIdentifier() {
-		return "stdout";
+		return "buffer";
 	}
 
 	@Override
@@ -20,6 +20,6 @@ public class StdoutProducerFactory implements ExtensionConfigurator<Producer> {
 
 	@Override
 	public Producer createInstance(MaxwellContext context) {
-		return new StdoutProducer(context);
+		return new BufferedProducer(context, context.getConfig().getBufferedProducerSize());
 	}
 }

@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.standalone;
 
 import com.zendesk.maxwell.core.LauncherException;
-import com.zendesk.maxwell.core.config.AbstractCommandLineOptions;
+import com.zendesk.maxwell.core.config.CommandLineOptions;
 import com.zendesk.maxwell.core.config.InvalidOptionException;
 import com.zendesk.maxwell.core.config.InvalidUsageException;
 import com.zendesk.maxwell.core.producer.ProducerInstantiationException;
@@ -12,9 +12,9 @@ import java.sql.SQLException;
 
 public class ExceptionHandler {
 	private final Logger logger;
-	private final AbstractCommandLineOptions commandLineOptions;
+	private final CommandLineOptions commandLineOptions;
 
-	public ExceptionHandler(Logger logger, AbstractCommandLineOptions commandLineOptions) {
+	public ExceptionHandler(Logger logger, CommandLineOptions commandLineOptions) {
 		this.logger = logger;
 		this.commandLineOptions = commandLineOptions;
 	}

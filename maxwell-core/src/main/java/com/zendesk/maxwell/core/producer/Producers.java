@@ -1,6 +1,8 @@
 package com.zendesk.maxwell.core.producer;
 
 import com.zendesk.maxwell.core.MaxwellContext;
+import com.zendesk.maxwell.core.config.ExtensionConfigurator;
+import com.zendesk.maxwell.core.config.ExtensionType;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.util.StoppableTask;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,11 +17,11 @@ import java.util.List;
 public class Producers {
 
 	private static final String NONE_PRODUCER_TYPE = "none";
-	private final List<NamedProducerFactory> producerFactories;
+	private final List<ExtensionConfigurator<Producer>> extensionConfigurator;
 
 	@Autowired
-	public Producers(List<NamedProducerFactory> producerFactories) {
-		this.producerFactories = producerFactories;
+	public Producers(List<ExtensionConfigurator<Producer>> extensionConfigurator) {
+		this.extensionConfigurator = extensionConfigurator;
 	}
 
 	public Producer getProducer(MaxwellContext maxwellContext){
@@ -45,11 +47,19 @@ public class Producers {
 
 	private Producer createProducerForType(MaxwellContext context){
 		String producerType = context.getConfig().getProducerType();
-		return NONE_PRODUCER_TYPE.equals(producerType) ? null : createProducerFactory(producerType).createProducer(context);
+		return NONE_PRODUCER_TYPE.equals(producerType) ? null : createProducerFromConfigurator(context, producerType);
 	}
 
-	private ProducerFactory createProducerFactory(String type){
-		return producerFactories.stream().filter(pf -> pf.getName().equals(type)).findFirst().orElseThrow(() -> new RuntimeException("Unknown producer type: " + type));
+	private Producer createProducerFromConfigurator(MaxwellContext context, String identifier){
+		return extensionConfigurator.stream()
+				.filter(e -> isProducerWithIdentifier(identifier, e))
+				.findFirst()
+				.map(e -> e.createInstance(context))
+				.orElseThrow(() -> new RuntimeException("Unknown producer identifier: " + identifier));
+	}
+
+	private boolean isProducerWithIdentifier(String type, ExtensionConfigurator<Producer> e) {
+		return e.getExtensionType() == ExtensionType.PROVIDER && e.getExtensionIdentifier().equals(type);
 	}
 
 	private void registerDiagnostics(Producer producer, MaxwellContext maxwellContext) {

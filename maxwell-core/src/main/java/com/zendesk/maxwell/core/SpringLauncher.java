@@ -14,16 +14,8 @@ import java.util.function.Consumer;
 
 public class SpringLauncher {
 
-	public static void launchMaxwell(final String[] args){
-		launchMaxwell(args, Optional.empty());
-	}
-
 	public static void launchMaxwell(final String[] args, final BiConsumer<MaxwellConfig,ApplicationContext> beforeStartEventHandler){
-		launchMaxwell(args, Optional.of(beforeStartEventHandler));
-	}
-
-	private static void launchMaxwell(final String[] args, final Optional<BiConsumer<MaxwellConfig,ApplicationContext>> beforeStartEventHandler){
-		launch((applicationContext -> runMaxwell(args, beforeStartEventHandler, applicationContext)));
+		launch((applicationContext -> runMaxwell(args, Optional.of(beforeStartEventHandler), applicationContext)));
 	}
 
 	private static void runMaxwell(final String[] args, final Optional<BiConsumer<MaxwellConfig,ApplicationContext>> beforeStartEventHandler, final ApplicationContext applicationContext) {
