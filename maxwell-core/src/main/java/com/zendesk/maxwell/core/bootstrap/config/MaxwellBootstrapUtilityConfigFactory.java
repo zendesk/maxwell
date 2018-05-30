@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.core.bootstrap.config;
 
-import com.zendesk.maxwell.core.config.AbstractConfigurationFactory;
 import com.zendesk.maxwell.core.config.ConfigurationFileParser;
+import com.zendesk.maxwell.core.config.ConfigurationSupport;
 import com.zendesk.maxwell.core.config.InvalidUsageException;
 import joptsimple.OptionSet;
 import org.apache.commons.lang3.StringUtils;
@@ -11,15 +11,17 @@ import org.springframework.stereotype.Service;
 import java.util.Properties;
 
 @Service
-public class MaxwellBootstrapUtilityConfigFactory extends AbstractConfigurationFactory {
+public class MaxwellBootstrapUtilityConfigFactory {
 
 	private final MaxwellBootstrapUtilityCommandLineOptions maxwellBootstrapUtilityCommandLineOptions;
 	private final ConfigurationFileParser configurationFileParser;
+	private final ConfigurationSupport configurationSupport;
 
 	@Autowired
-	public MaxwellBootstrapUtilityConfigFactory(MaxwellBootstrapUtilityCommandLineOptions maxwellBootstrapUtilityCommandLineOptions, ConfigurationFileParser configurationFileParser) {
+	public MaxwellBootstrapUtilityConfigFactory(MaxwellBootstrapUtilityCommandLineOptions maxwellBootstrapUtilityCommandLineOptions, ConfigurationFileParser configurationFileParser, ConfigurationSupport configurationSupport) {
 		this.maxwellBootstrapUtilityCommandLineOptions = maxwellBootstrapUtilityCommandLineOptions;
 		this.configurationFileParser = configurationFileParser;
+		this.configurationSupport = configurationSupport;
 	}
 
 	public MaxwellBootstrapUtilityConfig createConfigurationFromArgumentsAndConfigurationFile(String [] argv) {
@@ -29,7 +31,7 @@ public class MaxwellBootstrapUtilityConfigFactory extends AbstractConfigurationF
 		if ( options.has("config") ) {
 			properties = configurationFileParser.parseFile((String) options.valueOf("config"), true);
 		} else {
-			properties = configurationFileParser.parseFile(DEFAULT_CONFIG_FILE, false);
+			properties = configurationFileParser.parseFile(ConfigurationSupport.DEFAULT_CONFIG_FILE, false);
 		}
 
 		if ( options.has("help") )
@@ -43,11 +45,11 @@ public class MaxwellBootstrapUtilityConfigFactory extends AbstractConfigurationF
 		if ( options.has("log_level"))
 			config.log_level = parseLogLevel((String) options.valueOf("log_level"));
 
-		config.mysql = parseMysqlConfig("", options, properties);
+		config.mysql = configurationSupport.parseMysqlConfig("", options, properties);
 		if ( config.mysql.host == null )
 			config.mysql.host = "localhost";
 
-		config.schemaDatabaseName = fetchOption("schema_database", options, properties, "maxwell");
+		config.schemaDatabaseName = configurationSupport.fetchOption("schema_database", options, properties, "maxwell");
 
 		if ( options.has("database") )
 			config.databaseName = (String) options.valueOf("database");

@@ -4,10 +4,7 @@ import com.amazonaws.services.kinesis.producer.IrrecoverableError;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
 import com.zendesk.maxwell.core.MaxwellContext;
-import com.zendesk.maxwell.core.config.ConfigurationFileParser;
-import com.zendesk.maxwell.core.config.MaxwellCommandLineOptions;
-import com.zendesk.maxwell.core.config.MaxwellConfig;
-import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
+import com.zendesk.maxwell.core.config.*;
 import com.zendesk.maxwell.core.producer.AbstractAsyncProducer;
 import com.zendesk.maxwell.core.replication.BinlogPosition;
 import com.zendesk.maxwell.core.replication.Position;
@@ -20,7 +17,7 @@ public class KinesisCallbackTest {
 	@Test
 	public void shouldIgnoreProducerErrorByDefault() {
 		MaxwellContext context = mock(MaxwellContext.class);
-		MaxwellConfig config = new MaxwellConfigFactory(mock(MaxwellCommandLineOptions.class), mock(ConfigurationFileParser.class)).createNewDefaultConfiguration();
+		MaxwellConfig config = new MaxwellConfigFactory(mock(MaxwellCommandLineOptions.class), mock(ConfigurationFileParser.class), mock(ConfigurationSupport.class)).createNewDefaultConfiguration();
 		when(context.getConfig()).thenReturn(config);
 		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
 		KinesisCallback callback = new KinesisCallback(cc,
@@ -34,7 +31,7 @@ public class KinesisCallbackTest {
 	@Test
 	public void shouldTerminateWhenNotIgnoreProducerError() {
 		MaxwellContext context = mock(MaxwellContext.class);
-		MaxwellConfig config = new MaxwellConfigFactory(mock(MaxwellCommandLineOptions.class), mock(ConfigurationFileParser.class)).createNewDefaultConfiguration();
+		MaxwellConfig config = new MaxwellConfigFactory(mock(MaxwellCommandLineOptions.class), mock(ConfigurationFileParser.class), mock(ConfigurationSupport.class)).createNewDefaultConfiguration();
 		config.setIgnoreProducerError(false);
 		when(context.getConfig()).thenReturn(config);
 		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);

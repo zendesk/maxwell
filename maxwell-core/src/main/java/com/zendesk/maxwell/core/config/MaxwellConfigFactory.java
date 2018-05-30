@@ -16,16 +16,18 @@ import java.util.List;
 import java.util.Properties;
 
 @Service
-public class MaxwellConfigFactory extends AbstractConfigurationFactory {
+public class MaxwellConfigFactory {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfigFactory.class);
 
 	private final MaxwellCommandLineOptions maxwellCommandLineOptions;
 	private final ConfigurationFileParser configurationFileParser;
+	private final ConfigurationSupport configurationSupport;
 
 	@Autowired
-	public MaxwellConfigFactory(MaxwellCommandLineOptions maxwellCommandLineOptions, ConfigurationFileParser configurationFileParser) {
+	public MaxwellConfigFactory(MaxwellCommandLineOptions maxwellCommandLineOptions, ConfigurationFileParser configurationFileParser, ConfigurationSupport configurationSupport) {
 		this.maxwellCommandLineOptions = maxwellCommandLineOptions;
 		this.configurationFileParser = configurationFileParser;
+		this.configurationSupport = configurationSupport;
 	}
 
 	public MaxwellConfig createNewDefaultConfiguration() {
@@ -40,10 +42,10 @@ public class MaxwellConfigFactory extends AbstractConfigurationFactory {
 		if (options.has("config")) {
 			properties = configurationFileParser.parseFile((String) options.valueOf("config"), true);
 		} else {
-			properties = configurationFileParser.parseFile(DEFAULT_CONFIG_FILE, false);
+			properties = configurationFileParser.parseFile(ConfigurationSupport.DEFAULT_CONFIG_FILE, false);
 		}
 
-		String envConfigPrefix = fetchOption("env_config_prefix", options, properties, null);
+		String envConfigPrefix = configurationSupport.fetchOption("env_config_prefix", options, properties, null);
 
 		if (envConfigPrefix != null) {
 			String prefix = envConfigPrefix.toLowerCase();
@@ -66,58 +68,58 @@ public class MaxwellConfigFactory extends AbstractConfigurationFactory {
 
 	private MaxwellConfig createFrom(OptionSet options, Properties properties) {
 		MaxwellConfig config = new MaxwellConfig();
-		config.setLog_level(fetchOption("log_level", options, properties, null));
+		config.setLog_level(configurationSupport.fetchOption("log_level", options, properties, null));
 
-		config.setMaxwellMysql(parseMysqlConfig("", options, properties));
-		config.setReplicationMysql(parseMysqlConfig("replication_", options, properties));
-		config.setSchemaMysql(parseMysqlConfig("schema_", options, properties));
-		config.setGtidMode(fetchBooleanOption("gtid_mode", options, properties, System.getenv(MaxwellConfig.GTID_MODE_ENV) != null));
+		config.setMaxwellMysql(configurationSupport.parseMysqlConfig("", options, properties));
+		config.setReplicationMysql(configurationSupport.parseMysqlConfig("replication_", options, properties));
+		config.setSchemaMysql(configurationSupport.parseMysqlConfig("schema_", options, properties));
+		config.setGtidMode(configurationSupport.fetchBooleanOption("gtid_mode", options, properties, System.getenv(MaxwellConfig.GTID_MODE_ENV) != null));
 
-		config.setDatabaseName(fetchOption("schema_database", options, properties, "maxwell"));
+		config.setDatabaseName(configurationSupport.fetchOption("schema_database", options, properties, "maxwell"));
 		config.getMaxwellMysql().database = config.getDatabaseName();
 
 		config.setProducerFactory(fetchProducerFactory(options, properties));
-		config.setProducerType(fetchOption("producer", options, properties, "stdout"));
-		config.setProducerAckTimeout(fetchLongOption("producer_ack_timeout", options, properties, 0L));
-		config.setBootstrapperType(fetchOption("bootstrapper", options, properties, "async"));
-		config.setClientID(fetchOption("client_id", options, properties, "maxwell"));
-		config.setReplicaServerID(fetchLongOption("replica_server_id", options, properties, 6379L));
+		config.setProducerType(configurationSupport.fetchOption("producer", options, properties, "stdout"));
+		config.setProducerAckTimeout(configurationSupport.fetchLongOption("producer_ack_timeout", options, properties, 0L));
+		config.setBootstrapperType(configurationSupport.fetchOption("bootstrapper", options, properties, "async"));
+		config.setClientID(configurationSupport.fetchOption("client_id", options, properties, "maxwell"));
+		config.setReplicaServerID(configurationSupport.fetchLongOption("replica_server_id", options, properties, 6379L));
 
-		config.setKafkaTopic(fetchOption("kafka_topic", options, properties, "maxwell"));
-		config.setKafkaKeyFormat(fetchOption("kafka_key_format", options, properties, "hash"));
-		config.setKafkaPartitionKey(fetchOption("kafka_partition_by", options, properties, null));
-		config.setKafkaPartitionColumns(fetchOption("kafka_partition_columns", options, properties, null));
-		config.setKafkaPartitionFallback(fetchOption("kafka_partition_by_fallback", options, properties, null));
+		config.setKafkaTopic(configurationSupport.fetchOption("kafka_topic", options, properties, "maxwell"));
+		config.setKafkaKeyFormat(configurationSupport.fetchOption("kafka_key_format", options, properties, "hash"));
+		config.setKafkaPartitionKey(configurationSupport.fetchOption("kafka_partition_by", options, properties, null));
+		config.setKafkaPartitionColumns(configurationSupport.fetchOption("kafka_partition_columns", options, properties, null));
+		config.setKafkaPartitionFallback(configurationSupport.fetchOption("kafka_partition_by_fallback", options, properties, null));
 
-		config.setKafkaPartitionHash(fetchOption("kafka_partition_hash", options, properties, "default"));
-		config.setDdlKafkaTopic(fetchOption("ddl_kafka_topic", options, properties, config.getKafkaTopic()));
+		config.setKafkaPartitionHash(configurationSupport.fetchOption("kafka_partition_hash", options, properties, "default"));
+		config.setDdlKafkaTopic(configurationSupport.fetchOption("ddl_kafka_topic", options, properties, config.getKafkaTopic()));
 
-		config.setPubsubProjectId(fetchOption("pubsub_project_id", options, properties, null));
-		config.setPubsubTopic(fetchOption("pubsub_topic", options, properties, "maxwell"));
-		config.setDdlPubsubTopic(fetchOption("ddl_pubsub_topic", options, properties, config.getPubsubTopic()));
+		config.setPubsubProjectId(configurationSupport.fetchOption("pubsub_project_id", options, properties, null));
+		config.setPubsubTopic(configurationSupport.fetchOption("pubsub_topic", options, properties, "maxwell"));
+		config.setDdlPubsubTopic(configurationSupport.fetchOption("ddl_pubsub_topic", options, properties, config.getPubsubTopic()));
 
-		config.setRabbitmqHost(fetchOption("rabbitmq_host", options, properties, "localhost"));
-		config.setRabbitmqPort(Integer.parseInt(fetchOption("rabbitmq_port", options, properties, "5672")));
-		config.setRabbitmqUser(fetchOption("rabbitmq_user", options, properties, "guest"));
-		config.setRabbitmqPass(fetchOption("rabbitmq_pass", options, properties, "guest"));
-		config.setRabbitmqVirtualHost(fetchOption("rabbitmq_virtual_host", options, properties, "/"));
-		config.setRabbitmqExchange(fetchOption("rabbitmq_exchange", options, properties, "maxwell"));
-		config.setRabbitmqExchangeType(fetchOption("rabbitmq_exchange_type", options, properties, "fanout"));
-		config.setRabbitMqExchangeDurable(fetchBooleanOption("rabbitmq_exchange_durable", options, properties, false));
-		config.setRabbitMqExchangeAutoDelete(fetchBooleanOption("rabbitmq_exchange_autodelete", options, properties, false));
-		config.setRabbitmqRoutingKeyTemplate(fetchOption("rabbitmq_routing_key_template", options, properties, "%db%.%table%"));
-		config.setRabbitmqMessagePersistent(fetchBooleanOption("rabbitmq_message_persistent", options, properties, false));
-		config.setRabbitmqDeclareExchange(fetchBooleanOption("rabbitmq_declare_exchange", options, properties, true));
+		config.setRabbitmqHost(configurationSupport.fetchOption("rabbitmq_host", options, properties, "localhost"));
+		config.setRabbitmqPort(Integer.parseInt(configurationSupport.fetchOption("rabbitmq_port", options, properties, "5672")));
+		config.setRabbitmqUser(configurationSupport.fetchOption("rabbitmq_user", options, properties, "guest"));
+		config.setRabbitmqPass(configurationSupport.fetchOption("rabbitmq_pass", options, properties, "guest"));
+		config.setRabbitmqVirtualHost(configurationSupport.fetchOption("rabbitmq_virtual_host", options, properties, "/"));
+		config.setRabbitmqExchange(configurationSupport.fetchOption("rabbitmq_exchange", options, properties, "maxwell"));
+		config.setRabbitmqExchangeType(configurationSupport.fetchOption("rabbitmq_exchange_type", options, properties, "fanout"));
+		config.setRabbitMqExchangeDurable(configurationSupport.fetchBooleanOption("rabbitmq_exchange_durable", options, properties, false));
+		config.setRabbitMqExchangeAutoDelete(configurationSupport.fetchBooleanOption("rabbitmq_exchange_autodelete", options, properties, false));
+		config.setRabbitmqRoutingKeyTemplate(configurationSupport.fetchOption("rabbitmq_routing_key_template", options, properties, "%db%.%table%"));
+		config.setRabbitmqMessagePersistent(configurationSupport.fetchBooleanOption("rabbitmq_message_persistent", options, properties, false));
+		config.setRabbitmqDeclareExchange(configurationSupport.fetchBooleanOption("rabbitmq_declare_exchange", options, properties, true));
 
-		config.setRedisHost(fetchOption("redis_host", options, properties, "localhost"));
-		config.setRedisPort(Integer.parseInt(fetchOption("redis_port", options, properties, "6379")));
-		config.setRedisAuth(fetchOption("redis_auth", options, properties, null));
-		config.setRedisDatabase(Integer.parseInt(fetchOption("redis_database", options, properties, "0")));
-		config.setRedisPubChannel(fetchOption("redis_pub_channel", options, properties, "maxwell"));
-		config.setRedisListKey(fetchOption("redis_list_key", options, properties, "maxwell"));
-		config.setRedisType(fetchOption("redis_type", options, properties, "pubsub"));
+		config.setRedisHost(configurationSupport.fetchOption("redis_host", options, properties, "localhost"));
+		config.setRedisPort(Integer.parseInt(configurationSupport.fetchOption("redis_port", options, properties, "6379")));
+		config.setRedisAuth(configurationSupport.fetchOption("redis_auth", options, properties, null));
+		config.setRedisDatabase(Integer.parseInt(configurationSupport.fetchOption("redis_database", options, properties, "0")));
+		config.setRedisPubChannel(configurationSupport.fetchOption("redis_pub_channel", options, properties, "maxwell"));
+		config.setRedisListKey(configurationSupport.fetchOption("redis_list_key", options, properties, "maxwell"));
+		config.setRedisType(configurationSupport.fetchOption("redis_type", options, properties, "pubsub"));
 
-		String kafkaBootstrapServers = fetchOption("kafka.bootstrap.servers", options, properties, null);
+		String kafkaBootstrapServers = configurationSupport.fetchOption("kafka.bootstrap.servers", options, properties, null);
 		if (kafkaBootstrapServers != null)
 			config.getKafkaProperties().setProperty("bootstrap.servers", kafkaBootstrapServers);
 
@@ -135,54 +137,54 @@ public class MaxwellConfigFactory extends AbstractConfigurationFactory {
 			}
 		}
 
-		config.setProducerPartitionKey(fetchOption("producer_partition_by", options, properties, "database"));
-		config.setProducerPartitionColumns(fetchOption("producer_partition_columns", options, properties, null));
-		config.setProducerPartitionFallback(fetchOption("producer_partition_by_fallback", options, properties, null));
+		config.setProducerPartitionKey(configurationSupport.fetchOption("producer_partition_by", options, properties, "database"));
+		config.setProducerPartitionColumns(configurationSupport.fetchOption("producer_partition_columns", options, properties, null));
+		config.setProducerPartitionFallback(configurationSupport.fetchOption("producer_partition_by_fallback", options, properties, null));
 
-		config.setKinesisStream(fetchOption("kinesis_stream", options, properties, null));
-		config.setKinesisMd5Keys(fetchBooleanOption("kinesis_md5_keys", options, properties, false));
+		config.setKinesisStream(configurationSupport.fetchOption("kinesis_stream", options, properties, null));
+		config.setKinesisMd5Keys(configurationSupport.fetchBooleanOption("kinesis_md5_keys", options, properties, false));
 
-		config.setSqsQueueUri(fetchOption("sqs_queue_uri", options, properties, null));
+		config.setSqsQueueUri(configurationSupport.fetchOption("sqs_queue_uri", options, properties, null));
 
-		config.setOutputFile(fetchOption("output_file", options, properties, null));
+		config.setOutputFile(configurationSupport.fetchOption("output_file", options, properties, null));
 
-		config.setMetricsPrefix(fetchOption("metrics_prefix", options, properties, "MaxwellMetrics"));
-		config.setMetricsReportingType(fetchOption("metrics_type", options, properties, null));
-		config.setMetricsSlf4jInterval(fetchLongOption("metrics_slf4j_interval", options, properties, 60L));
+		config.setMetricsPrefix(configurationSupport.fetchOption("metrics_prefix", options, properties, "MaxwellMetrics"));
+		config.setMetricsReportingType(configurationSupport.fetchOption("metrics_type", options, properties, null));
+		config.setMetricsSlf4jInterval(configurationSupport.fetchLongOption("metrics_slf4j_interval", options, properties, 60L));
 		// TODO remove metrics_http_port support once hitting v1.11.x
-		int port = Integer.parseInt(fetchOption("metrics_http_port", options, properties, "8080"));
+		int port = Integer.parseInt(configurationSupport.fetchOption("metrics_http_port", options, properties, "8080"));
 		if (port != 8080) {
 			LOGGER.warn("metrics_http_port is deprecated, please use http_port");
 			config.setHttpPort(port);
 		} else {
-			config.setHttpPort(Integer.parseInt(fetchOption("http_port", options, properties, "8080")));
+			config.setHttpPort(Integer.parseInt(configurationSupport.fetchOption("http_port", options, properties, "8080")));
 		}
-		config.setHttpBindAddress(fetchOption("http_bind_address", options, properties, null));
-		config.setHttpPathPrefix(fetchOption("http_path_prefix", options, properties, "/"));
+		config.setHttpBindAddress(configurationSupport.fetchOption("http_bind_address", options, properties, null));
+		config.setHttpPathPrefix(configurationSupport.fetchOption("http_path_prefix", options, properties, "/"));
 
 		if (!config.getHttpPathPrefix().startsWith("/")) {
 			config.setHttpPathPrefix("/" + config.getHttpPathPrefix());
 		}
-		config.setMetricsDatadogType(fetchOption("metrics_datadog_type", options, properties, "udp"));
-		config.setMetricsDatadogTags(fetchOption("metrics_datadog_tags", options, properties, ""));
-		config.setMetricsDatadogAPIKey(fetchOption("metrics_datadog_apikey", options, properties, ""));
-		config.setMetricsDatadogHost(fetchOption("metrics_datadog_host", options, properties, "localhost"));
-		config.setMetricsDatadogPort(Integer.parseInt(fetchOption("metrics_datadog_port", options, properties, "8125")));
-		config.setMetricsDatadogInterval(fetchLongOption("metrics_datadog_interval", options, properties, 60L));
+		config.setMetricsDatadogType(configurationSupport.fetchOption("metrics_datadog_type", options, properties, "udp"));
+		config.setMetricsDatadogTags(configurationSupport.fetchOption("metrics_datadog_tags", options, properties, ""));
+		config.setMetricsDatadogAPIKey(configurationSupport.fetchOption("metrics_datadog_apikey", options, properties, ""));
+		config.setMetricsDatadogHost(configurationSupport.fetchOption("metrics_datadog_host", options, properties, "localhost"));
+		config.setMetricsDatadogPort(Integer.parseInt(configurationSupport.fetchOption("metrics_datadog_port", options, properties, "8125")));
+		config.setMetricsDatadogInterval(configurationSupport.fetchLongOption("metrics_datadog_interval", options, properties, 60L));
 
-		config.setMetricsJvm(fetchBooleanOption("metrics_jvm", options, properties, false));
+		config.setMetricsJvm(configurationSupport.fetchBooleanOption("metrics_jvm", options, properties, false));
 
 		config.setDiagnosticConfig(new MaxwellDiagnosticContext.Config());
-		config.getDiagnosticConfig().enable = fetchBooleanOption("http_diagnostic", options, properties, false);
-		config.getDiagnosticConfig().timeout = fetchLongOption("http_diagnostic_timeout", options, properties, 10000L);
+		config.getDiagnosticConfig().enable = configurationSupport.fetchBooleanOption("http_diagnostic", options, properties, false);
+		config.getDiagnosticConfig().timeout = configurationSupport.fetchLongOption("http_diagnostic_timeout", options, properties, 10000L);
 
-		config.setIncludeDatabases(fetchOption("include_dbs", options, properties, null));
-		config.setExcludeDatabases(fetchOption("exclude_dbs", options, properties, null));
-		config.setIncludeTables(fetchOption("include_tables", options, properties, null));
-		config.setExcludeTables(fetchOption("exclude_tables", options, properties, null));
-		config.setBlacklistDatabases(fetchOption("blacklist_dbs", options, properties, null));
-		config.setBlacklistTables(fetchOption("blacklist_tables", options, properties, null));
-		config.setIncludeColumnValues(fetchOption("include_column_values", options, properties, null));
+		config.setIncludeDatabases(configurationSupport.fetchOption("include_dbs", options, properties, null));
+		config.setExcludeDatabases(configurationSupport.fetchOption("exclude_dbs", options, properties, null));
+		config.setIncludeTables(configurationSupport.fetchOption("include_tables", options, properties, null));
+		config.setExcludeTables(configurationSupport.fetchOption("exclude_tables", options, properties, null));
+		config.setBlacklistDatabases(configurationSupport.fetchOption("blacklist_dbs", options, properties, null));
+		config.setBlacklistTables(configurationSupport.fetchOption("blacklist_tables", options, properties, null));
+		config.setIncludeColumnValues(configurationSupport.fetchOption("include_column_values", options, properties, null));
 
 		if (options != null && options.has("init_position")) {
 			String initPosition = (String) options.valueOf("init_position");
@@ -210,22 +212,22 @@ public class MaxwellConfigFactory extends AbstractConfigurationFactory {
 			config.setInitPosition(new Position(new BinlogPosition(pos, initPositionSplit[0]), lastHeartbeat));
 		}
 
-		config.setReplayMode(fetchBooleanOption("replay", options, null, false));
-		config.setMasterRecovery(fetchBooleanOption("master_recovery", options, properties, false));
-		config.setIgnoreProducerError(fetchBooleanOption("ignore_producer_error", options, properties, true));
+		config.setReplayMode(configurationSupport.fetchBooleanOption("replay", options, null, false));
+		config.setMasterRecovery(configurationSupport.fetchBooleanOption("master_recovery", options, properties, false));
+		config.setIgnoreProducerError(configurationSupport.fetchBooleanOption("ignore_producer_error", options, properties, true));
 
-		config.getOutputConfig().includesBinlogPosition = fetchBooleanOption("output_binlog_position", options, properties, false);
-		config.getOutputConfig().includesGtidPosition = fetchBooleanOption("output_gtid_position", options, properties, false);
-		config.getOutputConfig().includesCommitInfo = fetchBooleanOption("output_commit_info", options, properties, true);
-		config.getOutputConfig().includesXOffset = fetchBooleanOption("output_xoffset", options, properties, true);
-		config.getOutputConfig().includesNulls = fetchBooleanOption("output_nulls", options, properties, true);
-		config.getOutputConfig().includesServerId = fetchBooleanOption("output_server_id", options, properties, false);
-		config.getOutputConfig().includesThreadId = fetchBooleanOption("output_thread_id", options, properties, false);
-		config.getOutputConfig().includesRowQuery = fetchBooleanOption("output_row_query", options, properties, false);
-		config.getOutputConfig().outputDDL = fetchBooleanOption("output_ddl", options, properties, false);
-		config.setExcludeColumns(fetchOption("exclude_columns", options, properties, null));
+		config.getOutputConfig().includesBinlogPosition = configurationSupport.fetchBooleanOption("output_binlog_position", options, properties, false);
+		config.getOutputConfig().includesGtidPosition = configurationSupport.fetchBooleanOption("output_gtid_position", options, properties, false);
+		config.getOutputConfig().includesCommitInfo = configurationSupport.fetchBooleanOption("output_commit_info", options, properties, true);
+		config.getOutputConfig().includesXOffset = configurationSupport.fetchBooleanOption("output_xoffset", options, properties, true);
+		config.getOutputConfig().includesNulls = configurationSupport.fetchBooleanOption("output_nulls", options, properties, true);
+		config.getOutputConfig().includesServerId = configurationSupport.fetchBooleanOption("output_server_id", options, properties, false);
+		config.getOutputConfig().includesThreadId = configurationSupport.fetchBooleanOption("output_thread_id", options, properties, false);
+		config.getOutputConfig().includesRowQuery = configurationSupport.fetchBooleanOption("output_row_query", options, properties, false);
+		config.getOutputConfig().outputDDL = configurationSupport.fetchBooleanOption("output_ddl", options, properties, false);
+		config.setExcludeColumns(configurationSupport.fetchOption("exclude_columns", options, properties, null));
 
-		String encryptionMode = fetchOption("encrypt", options, properties, "none");
+		String encryptionMode = configurationSupport.fetchOption("encrypt", options, properties, "none");
 		switch (encryptionMode) {
 			case "none":
 				config.getOutputConfig().encryptionMode = EncryptionMode.ENCRYPT_NONE;
@@ -241,14 +243,14 @@ public class MaxwellConfigFactory extends AbstractConfigurationFactory {
 		}
 
 		if (config.getOutputConfig().encryptionEnabled()) {
-			config.getOutputConfig().secretKey = fetchOption("secret_key", options, properties, null);
+			config.getOutputConfig().secretKey = configurationSupport.fetchOption("secret_key", options, properties, null);
 		}
 		return config;
 	}
 
 	private ProducerFactory fetchProducerFactory(OptionSet options, Properties properties) {
 		String name = "custom_producer.factory";
-		String strOption = fetchOption(name, options, properties, null);
+		String strOption = configurationSupport.fetchOption(name, options, properties, null);
 		if (strOption != null) {
 			try {
 				Class<?> clazz = Class.forName(strOption);
