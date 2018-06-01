@@ -216,6 +216,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "output_thread_id", "produced records include thread_id; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_row_query", "produced records include query, binlog option \"binlog_rows_query_log_events\" must be enabled; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_ddl", "produce DDL records to ddl_kafka_topic [true|false]. default: false" ).withOptionalArg();
+		parser.accepts( "exclude_columns", "suppress these comma-separated columns from output" ).withRequiredArg();
 		parser.accepts( "ddl_kafka_topic", "optionally provide an alternate topic to push DDL records to. default: kafka_topic" ).withRequiredArg();
 		parser.accepts("secret_key", "The secret key for the AES encryption" ).withRequiredArg();
 		parser.accepts("encrypt", "encryption mode: [none|data|all]. default: none" ).withRequiredArg();
@@ -242,7 +243,6 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "exclude_dbs", "[deprecated]" ).withRequiredArg();
 		parser.accepts( "include_tables", "[deprecated]" ).withRequiredArg();
 		parser.accepts( "exclude_tables", "[deprecated]" ).withRequiredArg();
-		parser.accepts( "exclude_columns", "[deprecated]" ).withRequiredArg();
 		parser.accepts( "blacklist_dbs", "[deprecated]" ).withRequiredArg();
 		parser.accepts( "blacklist_tables", "[deprecated]" ).withRequiredArg();
 		parser.accepts( "filter", "filter specs.  specify like \"include:db.*, exclude:*.tbl, include: foo./.*bar$/\"");
