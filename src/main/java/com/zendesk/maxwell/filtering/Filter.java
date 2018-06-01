@@ -30,6 +30,10 @@ public class Filter {
 		this.patterns.addAll(new FilterParser(filterString).parse());
 	}
 
+	public List<FilterPattern> getRules() {
+		return new ArrayList<>(this.patterns);
+	}
+
 	private boolean matchesValues(Map<String, Object> data) {
 		for (Map.Entry<String, String> entry : includeColumnValues.entrySet()) {
 			String column = entry.getKey();
@@ -139,7 +143,7 @@ public class Filter {
 		}
 
 		if ( excludeDatabases != null ) {
-			for (String s : includeDatabases.split(","))
+			for (String s : excludeDatabases.split(","))
 				filterRules.add("exclude: " + s + ".*");
 		}
 

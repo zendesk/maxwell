@@ -29,4 +29,34 @@ public class FilterPattern {
 	public Pattern getTablePattern() {
 		return tablePattern;
 	}
+
+	private String patternToString(Pattern p) {
+		String s = p.pattern();
+
+		if ( s.equals("") ) {
+			return "*";
+		} else if ( s.startsWith("^") && s.endsWith("$") ) {
+			return s.substring(1, s.length() - 1);
+		} else {
+			return "/" + s + "/";
+		}
+	}
+
+	@Override
+	public String toString() {
+		String s = "";
+		switch ( type ) {
+			case INCLUDE:
+				s += "include: ";
+				break;
+			case EXCLUDE:
+				s += "exclude: ";
+				break;
+			case BLACKLIST:
+				s += "blacklist: ";
+				break;
+		}
+
+		return s + patternToString(dbPattern) + "." + patternToString(tablePattern);
+	}
 }

@@ -78,4 +78,39 @@ public class FilterTest {
 		assertTrue(f.isDatabaseBlacklisted("seria"));
 		assertTrue(f.isTableBlacklisted("seria", "anything"));
 	}
+
+	@Test
+	public void TestOldFiltersExcludeDB() throws Exception {
+		Filter f = Filter.fromOldFormat(null, "foo, /bar/", null, null, null, null, null);
+		List<FilterPattern> rules = f.getRules();
+		assertEquals(2, rules.size());
+		assertEquals("exclude: foo.*", rules.get(0).toString());
+		assertEquals("exclude: /bar/.*", rules.get(1).toString());
+	}
+
+	@Test
+	public void TestOldFiltersIncludeDB() throws Exception {
+		Filter f = Filter.fromOldFormat("foo", null, null, null, null, null, null);
+		List<FilterPattern> rules = f.getRules();
+		assertEquals(2, rules.size());
+		assertEquals("exclude: *.*", rules.get(0).toString());
+		assertEquals("include: foo.*", rules.get(1).toString());
+	}
+
+	@Test
+	public void TestOldFiltersExcludeTable() throws Exception {
+		Filter f = Filter.fromOldFormat(null, null, null, "tbl", null, null, null);
+		List<FilterPattern> rules = f.getRules();
+		assertEquals(1, rules.size());
+		assertEquals("exclude: *.tbl", rules.get(0).toString());
+	}
+
+	@Test
+	public void TestOldFiltersIncludeTable() throws Exception {
+		Filter f = Filter.fromOldFormat(null, null, "/foo.*bar/", null, null, null, null);
+		List<FilterPattern> rules = f.getRules();
+		assertEquals(2, rules.size());
+		assertEquals("exclude: *.*", rules.get(0).toString());
+		assertEquals("include: *./foo.*bar/", rules.get(1).toString());
+	}
 }
