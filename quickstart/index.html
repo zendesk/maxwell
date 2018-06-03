@@ -250,13 +250,13 @@
 <h3 id="download">Download</h3>
 <hr />
 <ul>
-<li>Download binary distro: <a href="https://github.com/zendesk/maxwell/releases/download/v1.14.6/maxwell-1.14.6.tar.gz">https://github.com/zendesk/maxwell/releases/download/v1.14.6/maxwell-1.14.6.tar.gz</a></li>
+<li>Download binary distro: <a href="https://github.com/zendesk/maxwell/releases/download/v1.14.7/maxwell-1.14.7.tar.gz">https://github.com/zendesk/maxwell/releases/download/v1.14.7/maxwell-1.14.7.tar.gz</a></li>
 <li>Sources and bug tracking is available on github: <a href="https://github.com/zendesk/maxwell">https://github.com/zendesk/maxwell</a></li>
 <li>Obligatory copy/paste to terminal:</li>
 </ul>
-<pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.14.6/maxwell-1.14.6.tar.gz \
+<pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.14.7/maxwell-1.14.7.tar.gz \
        | tar zxvf -
-cd maxwell-1.14.6
+cd maxwell-1.14.7
 </code></pre>
 
 <p>or get the docker image:</p>
@@ -342,7 +342,7 @@ mysql&gt; GRANT ALL on maxwell.* to 'maxwell'@'localhost';
 
         
 
-        <script src="../js/bootstrap-3.0.3.min.js"></script>
+        <script src="../js/bootstrap-3.3.7.min.js"></script>
         <script src="../js/prettify-1.0.min.js"></script>
         <script src="../js/base.js"></script>
     </body>
@@ -352,8 +352,8 @@ mysql&gt; GRANT ALL on maxwell.* to 'maxwell'@'localhost';
                 scrollBy(0, -50)
             };
 
-            if (location.hash) shiftWindow();
-            window.addEventListener("hashchange", shiftWindow);
+            //if (location.hash) shiftWindow();
+            //window.addEventListener("hashchange", shiftWindow);
 
             jQuery("table").addClass("table table-condensed table-bordered table-hover");
             jQuery("#maxwell-header").append(

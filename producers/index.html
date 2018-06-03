@@ -180,8 +180,6 @@
                       
                           <li class="toctree-l4" ><a href="#at-least-once-properties">At-least-once properties</a></li>
                       
-                          <li class="toctree-l4" ><a href="#snappy-compression">Snappy compression</a></li>
-                      
                           <li class="toctree-l4" ><a href="#keys">Keys</a></li>
                       
                       </li>
@@ -328,12 +326,6 @@ kafka.retries = 5 # or some larger number
 </code></pre>
 
 <p>And you will also want to set <code>min.insync.replicas</code> on Maxwell's output topic.</p>
-<h4 id="snappy-compression">Snappy compression</h4>
-<p>If Maxwell is run in a container and snappy compression is enabled,</p>
-<pre><code>-Dorg.xerial.snappy.use.systemlib=true
-</code></pre>
-
-<p>should be added to the <code>$JAVA_OPTS</code>.</p>
 <h4 id="keys">Keys</h4>
 <p>Maxwell generates keys for its Kafka messages based upon a mysql row's primary key in JSON format:</p>
 <pre><code>{ &quot;database&quot;:&quot;test_tb&quot;,&quot;table&quot;:&quot;test_tbl&quot;,&quot;pk.id&quot;:4,&quot;pk.part2&quot;:&quot;hello&quot;}
@@ -465,7 +457,7 @@ for DDL updates by setting the <code>ddl_pubsub_topic</code> property.</p>
 
         
 
-        <script src="../js/bootstrap-3.0.3.min.js"></script>
+        <script src="../js/bootstrap-3.3.7.min.js"></script>
         <script src="../js/prettify-1.0.min.js"></script>
         <script src="../js/base.js"></script>
     </body>
@@ -475,8 +467,8 @@ for DDL updates by setting the <code>ddl_pubsub_topic</code> property.</p>
                 scrollBy(0, -50)
             };
 
-            if (location.hash) shiftWindow();
-            window.addEventListener("hashchange", shiftWindow);
+            //if (location.hash) shiftWindow();
+            //window.addEventListener("hashchange", shiftWindow);
 
             jQuery("table").addClass("table table-condensed table-bordered table-hover");
             jQuery("#maxwell-header").append(
