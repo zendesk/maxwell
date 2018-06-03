@@ -1,5 +1,13 @@
 # Maxwell changelog
 
+### [v1.14.7](https://github.com/zendesk/maxwell/releases/tag/v1.14.7): "casamir pulaski day"
+
+
+- add RowMap#getRowQuery, thx @saimon7
+- revert alpine-linux docker image fiasco
+- fix RawJSONString not serializable, thx @niuhaifeng
+
+
 ### [v1.14.6](https://github.com/zendesk/maxwell/releases/tag/v1.14.6): "gimme one sec, I need to grab something"
 
 
