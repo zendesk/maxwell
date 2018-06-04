@@ -86,6 +86,7 @@
     </properties>
 
     <modules>
+        <module>maxwell-api</module>
         <module>maxwell-core</module>
         <module>maxwell-producers</module>
         <module>maxwell-standalone</module>
@@ -132,6 +133,11 @@
             <dependency>
                 <groupId>com.zendesk</groupId>
                 <artifactId>maxwell-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.zendesk</groupId>
+                <artifactId>maxwell-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
