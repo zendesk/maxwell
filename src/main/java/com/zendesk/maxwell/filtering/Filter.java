@@ -1,10 +1,13 @@
 package com.zendesk.maxwell.filtering;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 public class Filter {
+	static final Logger LOGGER = LoggerFactory.getLogger(Filter.class);
 
 	private final List<FilterPattern> patterns;
 	private final Map<String, String> includeColumnValues = new HashMap<>();
@@ -157,7 +160,10 @@ public class Filter {
 				filterRules.add("exclude: *." + s);
 		}
 
-		return new Filter(String.join(", ", filterRules), includeValues);
-	}
+		String filterRulesAsString = String.join(", ", filterRules);
+		LOGGER.warn("using exclude/include is deprecated.  Please update your configuration to use: ");
+		LOGGER.warn("filter = \"" + filterRulesAsString + "\"");
 
+		return new Filter(filterRulesAsString, includeValues);
+	}
 }
