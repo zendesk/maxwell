@@ -1,7 +1,6 @@
 package com.zendesk.maxwell.core.config;
 
 import com.github.shyiko.mysql.binlog.network.SSLMode;
-import joptsimple.OptionSet;
 import org.springframework.stereotype.Service;
 
 import java.util.Properties;
@@ -10,29 +9,22 @@ import java.util.Properties;
 public class ConfigurationSupport {
 	public static final String DEFAULT_CONFIG_FILE = "config.properties";
 
-	public String fetchOption(String name, OptionSet options, Properties properties, String defaultVal) {
-		if ( options != null && options.has(name) )
-			return (String) options.valueOf(name);
-		else if ( (properties != null) && properties.containsKey(name) )
+	public String fetchOption(String name, Properties properties, String defaultVal) {
+		if (properties.containsKey(name) )
 			return properties.getProperty(name);
 		else
 			return defaultVal;
 	}
 
-	public boolean fetchBooleanOption(String name, OptionSet options, Properties properties, boolean defaultVal) {
-		if ( options != null && options.has(name) ) {
-			if ( !options.hasArgument(name) )
-				return true;
-			else
-				return Boolean.valueOf((String) options.valueOf(name));
-		} else if ( (properties != null) && properties.containsKey(name) )
+	public boolean fetchBooleanOption(String name, Properties properties, boolean defaultVal) {
+		if (properties.containsKey(name) )
 			return Boolean.valueOf(properties.getProperty(name));
 		else
 			return defaultVal;
 	}
 
-	public Long fetchLongOption(String name, OptionSet options, Properties properties, Long defaultVal) {
-		String strOption = fetchOption(name, options, properties, null);
+	public Long fetchLongOption(String name, Properties properties, Long defaultVal) {
+		String strOption = fetchOption(name, properties, null);
 		if ( strOption == null )
 			return defaultVal;
 		else {
@@ -44,15 +36,14 @@ public class ConfigurationSupport {
 		}
 	}
 
-	public MaxwellMysqlConfig parseMysqlConfig(String prefix, OptionSet options, Properties properties) {
+	public MaxwellMysqlConfig parseMysqlConfig(String prefix, Properties properties) {
 		MaxwellMysqlConfig config = new MaxwellMysqlConfig();
-		config.host     = fetchOption(prefix + "host", options, properties, null);
-		config.password = fetchOption(prefix + "password", options, properties, null);
-		config.user     = fetchOption(prefix + "user", options, properties, null);
-		config.port     = Integer.valueOf(fetchOption(prefix + "port", options, properties, "3306"));
-		config.sslMode  = this.getSslModeFromString(fetchOption(prefix + "ssl", options, properties, null));
-		config.setJDBCOptions(
-				fetchOption(prefix + "jdbc_options", options, properties, null));
+		config.host     = fetchOption(prefix + "host", properties, null);
+		config.password = fetchOption(prefix + "password", properties, null);
+		config.user     = fetchOption(prefix + "user", properties, null);
+		config.port     = Integer.valueOf(fetchOption(prefix + "port", properties, "3306"));
+		config.sslMode  = this.getSslModeFromString(fetchOption(prefix + "ssl", properties, null));
+		config.setJDBCOptions(fetchOption(prefix + "jdbc_options", properties, null));
 		return config;
 	}
 

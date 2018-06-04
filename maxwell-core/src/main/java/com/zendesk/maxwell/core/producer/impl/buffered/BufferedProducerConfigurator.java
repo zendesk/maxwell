@@ -5,7 +5,6 @@ import com.zendesk.maxwell.core.config.ExtensionConfiguration;
 import com.zendesk.maxwell.core.config.ExtensionConfigurator;
 import com.zendesk.maxwell.core.config.ExtensionType;
 import com.zendesk.maxwell.core.producer.Producer;
-import joptsimple.OptionSet;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -24,7 +23,7 @@ public class BufferedProducerConfigurator implements ExtensionConfigurator<Produ
 	}
 
 	@Override
-	public Optional<ExtensionConfiguration> parseConfiguration(OptionSet commandLineArguments, Properties configurationValues) {
+	public Optional<ExtensionConfiguration> parseConfiguration(Properties configurationValues) {
 		return Optional.of(new BufferedProducerConfiguration());
 	}
 

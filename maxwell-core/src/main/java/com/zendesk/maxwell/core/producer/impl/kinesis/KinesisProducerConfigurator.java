@@ -3,7 +3,6 @@ package com.zendesk.maxwell.core.producer.impl.kinesis;
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.config.*;
 import com.zendesk.maxwell.core.producer.Producer;
-import joptsimple.OptionSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,9 +35,9 @@ public class KinesisProducerConfigurator implements ExtensionConfigurator<Produc
 	}
 
 	@Override
-	public Optional<ExtensionConfiguration> parseConfiguration(OptionSet commandLineArguments, Properties configurationValues) {
-		String stream = configurationSupport.fetchOption("kinesis_stream", commandLineArguments, configurationValues, null);
-		boolean md5keys = configurationSupport.fetchBooleanOption("kinesis_md5_keys", commandLineArguments, configurationValues, false);
+	public Optional<ExtensionConfiguration> parseConfiguration(Properties configurationValues) {
+		String stream = configurationSupport.fetchOption("kinesis_stream", configurationValues, null);
+		boolean md5keys = configurationSupport.fetchBooleanOption("kinesis_md5_keys", configurationValues, false);
 		return Optional.of(new KinesisProducerConfiguration(stream, md5keys));
 	}
 

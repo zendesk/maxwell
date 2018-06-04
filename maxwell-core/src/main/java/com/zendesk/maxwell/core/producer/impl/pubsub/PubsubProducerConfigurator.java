@@ -4,7 +4,6 @@ import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.config.*;
 import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.core.producer.ProducerInstantiationException;
-import joptsimple.OptionSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,11 +39,11 @@ public class PubsubProducerConfigurator implements ExtensionConfigurator<Produce
 	}
 
 	@Override
-	public Optional<ExtensionConfiguration> parseConfiguration(OptionSet commandLineArguments, Properties configurationValues) {
+	public Optional<ExtensionConfiguration> parseConfiguration(Properties configurationValues) {
 		PubsubProducerConfiguration config = new PubsubProducerConfiguration();
-		config.setPubsubProjectId(configurationSupport.fetchOption("pubsub_project_id", commandLineArguments, configurationValues, null));
-		config.setPubsubTopic(configurationSupport.fetchOption("pubsub_topic", commandLineArguments, configurationValues, "maxwell"));
-		config.setDdlPubsubTopic(configurationSupport.fetchOption("ddl_pubsub_topic", commandLineArguments, configurationValues, config.getPubsubTopic()));
+		config.setPubsubProjectId(configurationSupport.fetchOption("pubsub_project_id", configurationValues, null));
+		config.setPubsubTopic(configurationSupport.fetchOption("pubsub_topic", configurationValues, "maxwell"));
+		config.setDdlPubsubTopic(configurationSupport.fetchOption("ddl_pubsub_topic", configurationValues, config.getPubsubTopic()));
 		return Optional.of(config);
 	}
 

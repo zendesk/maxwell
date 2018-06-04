@@ -3,7 +3,6 @@ package com.zendesk.maxwell.core.producer.impl.kafka;
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.config.*;
 import com.zendesk.maxwell.core.producer.Producer;
-import joptsimple.OptionSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -44,18 +43,18 @@ public class KafkaProducerConfigurator implements ExtensionConfigurator<Producer
 	}
 
 	@Override
-	public Optional<ExtensionConfiguration> parseConfiguration(OptionSet commandLineArguments, Properties configurationValues) {
+	public Optional<ExtensionConfiguration> parseConfiguration(Properties configurationValues) {
 		KafkaProducerConfiguration config = new KafkaProducerConfiguration();
-		config.setKafkaTopic(configurationSupport.fetchOption("kafka_topic", commandLineArguments, configurationValues, "maxwell"));
-		config.setKafkaKeyFormat(configurationSupport.fetchOption("kafka_key_format", commandLineArguments, configurationValues, "hash"));
-		config.setKafkaPartitionKey(configurationSupport.fetchOption("kafka_partition_by", commandLineArguments, configurationValues, null));
-		config.setKafkaPartitionColumns(configurationSupport.fetchOption("kafka_partition_columns", commandLineArguments, configurationValues, null));
-		config.setKafkaPartitionFallback(configurationSupport.fetchOption("kafka_partition_by_fallback", commandLineArguments, configurationValues, null));
+		config.setKafkaTopic(configurationSupport.fetchOption("kafka_topic", configurationValues, "maxwell"));
+		config.setKafkaKeyFormat(configurationSupport.fetchOption("kafka_key_format", configurationValues, "hash"));
+		config.setKafkaPartitionKey(configurationSupport.fetchOption("kafka_partition_by", configurationValues, null));
+		config.setKafkaPartitionColumns(configurationSupport.fetchOption("kafka_partition_columns", configurationValues, null));
+		config.setKafkaPartitionFallback(configurationSupport.fetchOption("kafka_partition_by_fallback", configurationValues, null));
 
-		config.setKafkaPartitionHash(configurationSupport.fetchOption("kafka_partition_hash", commandLineArguments, configurationValues, "default"));
-		config.setDdlKafkaTopic(configurationSupport.fetchOption("ddl_kafka_topic", commandLineArguments, configurationValues, config.getKafkaTopic()));
+		config.setKafkaPartitionHash(configurationSupport.fetchOption("kafka_partition_hash", configurationValues, "default"));
+		config.setDdlKafkaTopic(configurationSupport.fetchOption("ddl_kafka_topic", configurationValues, config.getKafkaTopic()));
 
-		String kafkaBootstrapServers = configurationSupport.fetchOption("kafka.bootstrap.servers", commandLineArguments, configurationValues, null);
+		String kafkaBootstrapServers = configurationSupport.fetchOption("kafka.bootstrap.servers", configurationValues, null);
 		if (kafkaBootstrapServers != null){
 			config.getKafkaProperties().setProperty("bootstrap.servers", kafkaBootstrapServers);
 		}

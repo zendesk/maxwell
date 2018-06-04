@@ -7,6 +7,7 @@ import com.zendesk.maxwell.core.producer.ProducerFactory;
 import com.zendesk.maxwell.core.replication.BinlogPosition;
 import com.zendesk.maxwell.core.replication.Position;
 import joptsimple.OptionSet;
+import joptsimple.OptionSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import java.util.Properties;
 @Service
 public class MaxwellConfigFactory {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfigFactory.class);
+	public static final String ENV_CONFIG_PREFIX = "env_config_prefix";
 
 	private final MaxwellCommandLineOptions maxwellCommandLineOptions;
 	private final ConfigurationFileParser configurationFileParser;
@@ -34,104 +36,130 @@ public class MaxwellConfigFactory {
 	}
 
 	public MaxwellConfig createNewDefaultConfiguration() {
-		return createFrom(null, null);
+		return createFrom(new Properties());
 	}
 
-	public MaxwellConfig createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(String[] args) {
+	public MaxwellConfig createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(final String[] args) {
 		OptionSet options = maxwellCommandLineOptions.parse(args);
-
-
-		Properties properties;
-
-		if (options.has("config")) {
-			properties = configurationFileParser.parseFile((String) options.valueOf("config"), true);
-		} else {
-			properties = configurationFileParser.parseFile(ConfigurationSupport.DEFAULT_CONFIG_FILE, false);
+		if (options.has("help")){
+			throw new InvalidUsageException("Help for Maxwell:");
 		}
 
-		String envConfigPrefix = configurationSupport.fetchOption("env_config_prefix", options, properties, null);
+		List<?> arguments = options.nonOptionArguments();
+		if (!arguments.isEmpty()) {
+			throw new InvalidUsageException("Unknown argument(s): " + arguments);
+		}
 
+		Properties properties = readConfigurationFile(options);
+		overwriteConfigurationFromEnvironment(options, properties);
+		Properties mergedProperties = mergeCommandLineParametersAndConfiguration(options, properties);
+
+		return createFrom(mergedProperties);
+	}
+
+	private Properties readConfigurationFile(OptionSet options) {
+		if (options.has("config")) {
+			return configurationFileParser.parseFile((String) options.valueOf("config"), true);
+		} else {
+			return configurationFileParser.parseFile(ConfigurationSupport.DEFAULT_CONFIG_FILE, false);
+		}
+	}
+
+	private void overwriteConfigurationFromEnvironment(final OptionSet optionSet, final Properties properties) {
+		String envConfigPrefix = optionSet.has(ENV_CONFIG_PREFIX) ? (String)optionSet.valueOf(ENV_CONFIG_PREFIX) : configurationSupport.fetchOption(ENV_CONFIG_PREFIX, properties, null);
 		if (envConfigPrefix != null) {
 			String prefix = envConfigPrefix.toLowerCase();
 			System.getenv().entrySet().stream()
 					.filter(map -> map.getKey().toLowerCase().startsWith(prefix))
 					.forEach(config -> properties.put(config.getKey().toLowerCase().replaceFirst(prefix, ""), config.getValue()));
 		}
-
-		if (options.has("help"))
-			throw new InvalidUsageException("Help for Maxwell:");
-
-		MaxwellConfig config = createFrom(options, properties);
-
-		List<?> arguments = options.nonOptionArguments();
-		if (!arguments.isEmpty()) {
-			throw new InvalidUsageException("Unknown argument(s): " + arguments);
-		}
-		return config;
 	}
 
-	private MaxwellConfig createFrom(OptionSet options, Properties properties) {
+	private Properties mergeCommandLineParametersAndConfiguration(final OptionSet options, final Properties properties) {
+		final Properties result = new Properties();
+
+		if(options != null){
+			for(OptionSpec<?> spec : options.specs()){
+				String value = (String)options.valueOf(spec);
+				for(String option : spec.options()){
+					result.put(option, value);
+				}
+			}
+		}
+
+		if(properties != null){
+			properties.forEach((k,v) -> {
+				if(!result.containsKey(k)) {
+					result.put(k, v);
+				}
+			});
+		}
+
+		return result;
+	}
+
+	private MaxwellConfig createFrom(final Properties properties) {
 		MaxwellConfig config = new MaxwellConfig();
-		config.setLogLevel(configurationSupport.fetchOption("log_level", options, properties, null));
+		config.setLogLevel(configurationSupport.fetchOption("log_level", properties, null));
 
-		config.setMaxwellMysql(configurationSupport.parseMysqlConfig("", options, properties));
-		config.setReplicationMysql(configurationSupport.parseMysqlConfig("replication_", options, properties));
-		config.setSchemaMysql(configurationSupport.parseMysqlConfig("schema_", options, properties));
-		config.setGtidMode(configurationSupport.fetchBooleanOption("gtid_mode", options, properties, System.getenv(MaxwellConfig.GTID_MODE_ENV) != null));
+		config.setMaxwellMysql(configurationSupport.parseMysqlConfig("", properties));
+		config.setReplicationMysql(configurationSupport.parseMysqlConfig("replication_", properties));
+		config.setSchemaMysql(configurationSupport.parseMysqlConfig("schema_", properties));
+		config.setGtidMode(configurationSupport.fetchBooleanOption("gtid_mode", properties, System.getenv(MaxwellConfig.GTID_MODE_ENV) != null));
 
-		config.setDatabaseName(configurationSupport.fetchOption("schema_database", options, properties, "maxwell"));
+		config.setDatabaseName(configurationSupport.fetchOption("schema_database", properties, "maxwell"));
 		config.getMaxwellMysql().database = config.getDatabaseName();
 
 
-		configureProducer(options, properties, config);
+		configureProducer(properties, config);
 
-		config.setBootstrapperType(configurationSupport.fetchOption("bootstrapper", options, properties, "async"));
-		config.setClientID(configurationSupport.fetchOption("client_id", options, properties, "maxwell"));
-		config.setReplicaServerID(configurationSupport.fetchLongOption("replica_server_id", options, properties, 6379L));
+		config.setBootstrapperType(configurationSupport.fetchOption("bootstrapper", properties, "async"));
+		config.setClientID(configurationSupport.fetchOption("client_id", properties, "maxwell"));
+		config.setReplicaServerID(configurationSupport.fetchLongOption("replica_server_id", properties, 6379L));
 
 
-		config.setMetricsPrefix(configurationSupport.fetchOption("metrics_prefix", options, properties, "MaxwellMetrics"));
-		config.setMetricsReportingType(configurationSupport.fetchOption("metrics_type", options, properties, null));
-		config.setMetricsSlf4jInterval(configurationSupport.fetchLongOption("metrics_slf4j_interval", options, properties, 60L));
+		config.setMetricsPrefix(configurationSupport.fetchOption("metrics_prefix", properties, "MaxwellMetrics"));
+		config.setMetricsReportingType(configurationSupport.fetchOption("metrics_type", properties, null));
+		config.setMetricsSlf4jInterval(configurationSupport.fetchLongOption("metrics_slf4j_interval", properties, 60L));
 
 		// TODO remove metrics_http_port support once hitting v1.11.x
-		String metricsHttpPort = configurationSupport.fetchOption("metrics_http_port", options, properties, null);
+		String metricsHttpPort = configurationSupport.fetchOption("metrics_http_port", properties, null);
 		if (metricsHttpPort != null) {
 			LOGGER.warn("metrics_http_port is deprecated, please use http_port");
 			config.setHttpPort(Integer.parseInt(metricsHttpPort));
 		} else {
-			config.setHttpPort(Integer.parseInt(configurationSupport.fetchOption("http_port", options, properties, "8080")));
+			config.setHttpPort(Integer.parseInt(configurationSupport.fetchOption("http_port", properties, "8080")));
 		}
-		config.setHttpBindAddress(configurationSupport.fetchOption("http_bind_address", options, properties, null));
-		config.setHttpPathPrefix(configurationSupport.fetchOption("http_path_prefix", options, properties, "/"));
+		config.setHttpBindAddress(configurationSupport.fetchOption("http_bind_address", properties, null));
+		config.setHttpPathPrefix(configurationSupport.fetchOption("http_path_prefix", properties, "/"));
 
 		if (!config.getHttpPathPrefix().startsWith("/")) {
 			config.setHttpPathPrefix("/" + config.getHttpPathPrefix());
 		}
-		config.setMetricsDatadogType(configurationSupport.fetchOption("metrics_datadog_type", options, properties, "udp"));
-		config.setMetricsDatadogTags(configurationSupport.fetchOption("metrics_datadog_tags", options, properties, ""));
-		config.setMetricsDatadogAPIKey(configurationSupport.fetchOption("metrics_datadog_apikey", options, properties, ""));
-		config.setMetricsDatadogHost(configurationSupport.fetchOption("metrics_datadog_host", options, properties, "localhost"));
-		config.setMetricsDatadogPort(Integer.parseInt(configurationSupport.fetchOption("metrics_datadog_port", options, properties, "8125")));
-		config.setMetricsDatadogInterval(configurationSupport.fetchLongOption("metrics_datadog_interval", options, properties, 60L));
+		config.setMetricsDatadogType(configurationSupport.fetchOption("metrics_datadog_type", properties, "udp"));
+		config.setMetricsDatadogTags(configurationSupport.fetchOption("metrics_datadog_tags", properties, ""));
+		config.setMetricsDatadogAPIKey(configurationSupport.fetchOption("metrics_datadog_apikey", properties, ""));
+		config.setMetricsDatadogHost(configurationSupport.fetchOption("metrics_datadog_host", properties, "localhost"));
+		config.setMetricsDatadogPort(Integer.parseInt(configurationSupport.fetchOption("metrics_datadog_port", properties, "8125")));
+		config.setMetricsDatadogInterval(configurationSupport.fetchLongOption("metrics_datadog_interval", properties, 60L));
 
-		config.setMetricsJvm(configurationSupport.fetchBooleanOption("metrics_jvm", options, properties, false));
+		config.setMetricsJvm(configurationSupport.fetchBooleanOption("metrics_jvm", properties, false));
 
-		configureDiagnostics(options, properties, config);
+		configureDiagnostics(properties, config);
 
-		configureReplicationSettings(options, properties, config);
-		configureOutputConfig(options, properties, config);
-		configureEncryption(options, properties, config);
+		configureReplicationSettings(properties, config);
+		configureOutputConfig(properties, config);
+		configureEncryption(properties, config);
 		return config;
 	}
 
-	private void configureProducer(OptionSet options, Properties properties, MaxwellConfig config) {
-		config.setProducerAckTimeout(configurationSupport.fetchLongOption("producer_ack_timeout", options, properties, 0L));
-		config.setProducerPartitionKey(configurationSupport.fetchOption("producer_partition_by", options, properties, "database"));
-		config.setProducerPartitionColumns(configurationSupport.fetchOption("producer_partition_columns", options, properties, null));
-		config.setProducerPartitionFallback(configurationSupport.fetchOption("producer_partition_by_fallback", options, properties, null));
-		config.setProducerFactory(fetchProducerFactory(options, properties));
-		String producerType = configurationSupport.fetchOption("producer", options, properties, "stdout");
+	private void configureProducer(final Properties properties, final MaxwellConfig config) {
+		config.setProducerAckTimeout(configurationSupport.fetchLongOption("producer_ack_timeout", properties, 0L));
+		config.setProducerPartitionKey(configurationSupport.fetchOption("producer_partition_by", properties, "database"));
+		config.setProducerPartitionColumns(configurationSupport.fetchOption("producer_partition_columns", properties, null));
+		config.setProducerPartitionFallback(configurationSupport.fetchOption("producer_partition_by_fallback", properties, null));
+		config.setProducerFactory(fetchProducerFactory(properties));
+		String producerType = configurationSupport.fetchOption("producer", properties, "stdout");
 		config.setProducerType(producerType);
 		if (properties != null) {
 			for (Enumeration<Object> e = properties.keys(); e.hasMoreElements(); ) {
@@ -144,29 +172,46 @@ public class MaxwellConfigFactory {
 
 		//configurators should be executed as last step as they might overwrite existing settings.
 		if(producerType != null){
-			ExtensionConfiguration producerConfig = producerExtensionConfigurators.getByIdentifier(producerType).parseConfiguration(options, properties).orElse(null);
+			ExtensionConfiguration producerConfig = producerExtensionConfigurators.getByIdentifier(producerType).parseConfiguration(properties).orElse(null);
 			config.setProducerConfig(producerConfig);
 		}
 	}
 
-	private void configureDiagnostics(OptionSet options, Properties properties, MaxwellConfig config) {
-		config.setDiagnosticConfig(new MaxwellDiagnosticContext.Config());
-		config.getDiagnosticConfig().enable = configurationSupport.fetchBooleanOption("http_diagnostic", options, properties, false);
-		config.getDiagnosticConfig().timeout = configurationSupport.fetchLongOption("http_diagnostic_timeout", options, properties, 10000L);
+	private ProducerFactory fetchProducerFactory(final Properties properties) {
+		String name = "custom_producer.factory";
+		String strOption = configurationSupport.fetchOption(name, properties, null);
+		if (strOption != null) {
+			try {
+				Class<?> clazz = Class.forName(strOption);
+				return ProducerFactory.class.cast(clazz.newInstance());
+			} catch (ClassNotFoundException e) {
+				throw new InvalidOptionException("Invalid value for " + name + ", class not found", "--" + name);
+			} catch (IllegalAccessException | InstantiationException | ClassCastException e) {
+				throw new InvalidOptionException("Invalid value for " + name + ", class instantiation error", "--" + name);
+			}
+		} else {
+			return null;
+		}
 	}
 
-	private void configureReplicationSettings(OptionSet options, Properties properties, MaxwellConfig config) {
-		config.setIncludeDatabases(configurationSupport.fetchOption("include_dbs", options, properties, null));
-		config.setExcludeDatabases(configurationSupport.fetchOption("exclude_dbs", options, properties, null));
-		config.setIncludeTables(configurationSupport.fetchOption("include_tables", options, properties, null));
-		config.setExcludeTables(configurationSupport.fetchOption("exclude_tables", options, properties, null));
-		config.setBlacklistDatabases(configurationSupport.fetchOption("blacklist_dbs", options, properties, null));
-		config.setBlacklistTables(configurationSupport.fetchOption("blacklist_tables", options, properties, null));
-		config.setIncludeColumnValues(configurationSupport.fetchOption("include_column_values", options, properties, null));
-		config.setExcludeColumns(configurationSupport.fetchOption("exclude_columns", options, properties, null));
+	private void configureDiagnostics(final Properties properties, final MaxwellConfig config) {
+		config.setDiagnosticConfig(new MaxwellDiagnosticContext.Config());
+		config.getDiagnosticConfig().enable = configurationSupport.fetchBooleanOption("http_diagnostic", properties, false);
+		config.getDiagnosticConfig().timeout = configurationSupport.fetchLongOption("http_diagnostic_timeout", properties, 10000L);
+	}
 
-		if (options != null && options.has("init_position")) {
-			String initPosition = (String) options.valueOf("init_position");
+	private void configureReplicationSettings(final Properties properties, final MaxwellConfig config) {
+		config.setIncludeDatabases(configurationSupport.fetchOption("include_dbs", properties, null));
+		config.setExcludeDatabases(configurationSupport.fetchOption("exclude_dbs", properties, null));
+		config.setIncludeTables(configurationSupport.fetchOption("include_tables", properties, null));
+		config.setExcludeTables(configurationSupport.fetchOption("exclude_tables", properties, null));
+		config.setBlacklistDatabases(configurationSupport.fetchOption("blacklist_dbs", properties, null));
+		config.setBlacklistTables(configurationSupport.fetchOption("blacklist_tables", properties, null));
+		config.setIncludeColumnValues(configurationSupport.fetchOption("include_column_values", properties, null));
+		config.setExcludeColumns(configurationSupport.fetchOption("exclude_columns", properties, null));
+
+		if (properties.containsKey("init_position")) {
+			String initPosition = properties.getProperty("init_position");
 			String[] initPositionSplit = initPosition.split(":");
 
 			if (initPositionSplit.length < 2)
@@ -191,25 +236,25 @@ public class MaxwellConfigFactory {
 			config.setInitPosition(new Position(new BinlogPosition(pos, initPositionSplit[0]), lastHeartbeat));
 		}
 
-		config.setReplayMode(configurationSupport.fetchBooleanOption("replay", options, null, false));
-		config.setMasterRecovery(configurationSupport.fetchBooleanOption("master_recovery", options, properties, false));
-		config.setIgnoreProducerError(configurationSupport.fetchBooleanOption("ignore_producer_error", options, properties, true));
+		config.setReplayMode(configurationSupport.fetchBooleanOption("replay", properties, false));
+		config.setMasterRecovery(configurationSupport.fetchBooleanOption("master_recovery", properties, false));
+		config.setIgnoreProducerError(configurationSupport.fetchBooleanOption("ignore_producer_error", properties, true));
 	}
 
-	private void configureOutputConfig(OptionSet options, Properties properties, MaxwellConfig config) {
-		config.getOutputConfig().includesBinlogPosition = configurationSupport.fetchBooleanOption("output_binlog_position", options, properties, false);
-		config.getOutputConfig().includesGtidPosition = configurationSupport.fetchBooleanOption("output_gtid_position", options, properties, false);
-		config.getOutputConfig().includesCommitInfo = configurationSupport.fetchBooleanOption("output_commit_info", options, properties, true);
-		config.getOutputConfig().includesXOffset = configurationSupport.fetchBooleanOption("output_xoffset", options, properties, true);
-		config.getOutputConfig().includesNulls = configurationSupport.fetchBooleanOption("output_nulls", options, properties, true);
-		config.getOutputConfig().includesServerId = configurationSupport.fetchBooleanOption("output_server_id", options, properties, false);
-		config.getOutputConfig().includesThreadId = configurationSupport.fetchBooleanOption("output_thread_id", options, properties, false);
-		config.getOutputConfig().includesRowQuery = configurationSupport.fetchBooleanOption("output_row_query", options, properties, false);
-		config.getOutputConfig().outputDDL = configurationSupport.fetchBooleanOption("output_ddl", options, properties, false);
+	private void configureOutputConfig(final Properties properties, final MaxwellConfig config) {
+		config.getOutputConfig().includesBinlogPosition = configurationSupport.fetchBooleanOption("output_binlog_position", properties, false);
+		config.getOutputConfig().includesGtidPosition = configurationSupport.fetchBooleanOption("output_gtid_position", properties, false);
+		config.getOutputConfig().includesCommitInfo = configurationSupport.fetchBooleanOption("output_commit_info", properties, true);
+		config.getOutputConfig().includesXOffset = configurationSupport.fetchBooleanOption("output_xoffset", properties, true);
+		config.getOutputConfig().includesNulls = configurationSupport.fetchBooleanOption("output_nulls", properties, true);
+		config.getOutputConfig().includesServerId = configurationSupport.fetchBooleanOption("output_server_id", properties, false);
+		config.getOutputConfig().includesThreadId = configurationSupport.fetchBooleanOption("output_thread_id", properties, false);
+		config.getOutputConfig().includesRowQuery = configurationSupport.fetchBooleanOption("output_row_query", properties, false);
+		config.getOutputConfig().outputDDL = configurationSupport.fetchBooleanOption("output_ddl", properties, false);
 	}
 
-	private void configureEncryption(OptionSet options, Properties properties, MaxwellConfig config) {
-		String encryptionMode = configurationSupport.fetchOption("encrypt", options, properties, "none");
+	private void configureEncryption(final Properties properties, final MaxwellConfig config) {
+		String encryptionMode = configurationSupport.fetchOption("encrypt", properties, "none");
 		switch (encryptionMode) {
 			case "none":
 				config.getOutputConfig().encryptionMode = EncryptionMode.ENCRYPT_NONE;
@@ -225,24 +270,7 @@ public class MaxwellConfigFactory {
 		}
 
 		if (config.getOutputConfig().encryptionEnabled()) {
-			config.getOutputConfig().secretKey = configurationSupport.fetchOption("secret_key", options, properties, null);
-		}
-	}
-
-	private ProducerFactory fetchProducerFactory(OptionSet options, Properties properties) {
-		String name = "custom_producer.factory";
-		String strOption = configurationSupport.fetchOption(name, options, properties, null);
-		if (strOption != null) {
-			try {
-				Class<?> clazz = Class.forName(strOption);
-				return ProducerFactory.class.cast(clazz.newInstance());
-			} catch (ClassNotFoundException e) {
-				throw new InvalidOptionException("Invalid value for " + name + ", class not found", "--" + name);
-			} catch (IllegalAccessException | InstantiationException | ClassCastException e) {
-				throw new InvalidOptionException("Invalid value for " + name + ", class instantiation error", "--" + name);
-			}
-		} else {
-			return null;
+			config.getOutputConfig().secretKey = configurationSupport.fetchOption("secret_key", properties, null);
 		}
 	}
 }

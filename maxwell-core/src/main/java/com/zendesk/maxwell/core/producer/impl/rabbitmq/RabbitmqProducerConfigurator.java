@@ -3,7 +3,6 @@ package com.zendesk.maxwell.core.producer.impl.rabbitmq;
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.config.*;
 import com.zendesk.maxwell.core.producer.Producer;
-import joptsimple.OptionSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -47,20 +46,20 @@ public class RabbitmqProducerConfigurator implements ExtensionConfigurator<Produ
 	}
 
 	@Override
-	public Optional<ExtensionConfiguration> parseConfiguration(OptionSet commandLineArguments, Properties configurationValues) {
+	public Optional<ExtensionConfiguration> parseConfiguration(Properties configurationValues) {
 		RabbitmqProducerConfiguration config = new RabbitmqProducerConfiguration();
-		config.setRabbitmqHost(configurationSupport.fetchOption("rabbitmq_host", commandLineArguments, configurationValues, "localhost"));
-		config.setRabbitmqPort(Integer.parseInt(configurationSupport.fetchOption("rabbitmq_port", commandLineArguments, configurationValues, "5672")));
-		config.setRabbitmqUser(configurationSupport.fetchOption("rabbitmq_user", commandLineArguments, configurationValues, "guest"));
-		config.setRabbitmqPass(configurationSupport.fetchOption("rabbitmq_pass", commandLineArguments, configurationValues, "guest"));
-		config.setRabbitmqVirtualHost(configurationSupport.fetchOption("rabbitmq_virtual_host", commandLineArguments, configurationValues, "/"));
-		config.setRabbitmqExchange(configurationSupport.fetchOption("rabbitmq_exchange", commandLineArguments, configurationValues, "maxwell"));
-		config.setRabbitmqExchangeType(configurationSupport.fetchOption("rabbitmq_exchange_type", commandLineArguments, configurationValues, "fanout"));
-		config.setRabbitMqExchangeDurable(configurationSupport.fetchBooleanOption("rabbitmq_exchange_durable", commandLineArguments, configurationValues, false));
-		config.setRabbitMqExchangeAutoDelete(configurationSupport.fetchBooleanOption("rabbitmq_exchange_autodelete", commandLineArguments, configurationValues, false));
-		config.setRabbitmqRoutingKeyTemplate(configurationSupport.fetchOption("rabbitmq_routing_key_template", commandLineArguments, configurationValues, "%db%.%table%"));
-		config.setRabbitmqMessagePersistent(configurationSupport.fetchBooleanOption("rabbitmq_message_persistent", commandLineArguments, configurationValues, false));
-		config.setRabbitmqDeclareExchange(configurationSupport.fetchBooleanOption("rabbitmq_declare_exchange", commandLineArguments, configurationValues, true));
+		config.setRabbitmqHost(configurationSupport.fetchOption("rabbitmq_host", configurationValues, "localhost"));
+		config.setRabbitmqPort(Integer.parseInt(configurationSupport.fetchOption("rabbitmq_port", configurationValues, "5672")));
+		config.setRabbitmqUser(configurationSupport.fetchOption("rabbitmq_user", configurationValues, "guest"));
+		config.setRabbitmqPass(configurationSupport.fetchOption("rabbitmq_pass", configurationValues, "guest"));
+		config.setRabbitmqVirtualHost(configurationSupport.fetchOption("rabbitmq_virtual_host", configurationValues, "/"));
+		config.setRabbitmqExchange(configurationSupport.fetchOption("rabbitmq_exchange", configurationValues, "maxwell"));
+		config.setRabbitmqExchangeType(configurationSupport.fetchOption("rabbitmq_exchange_type", configurationValues, "fanout"));
+		config.setRabbitMqExchangeDurable(configurationSupport.fetchBooleanOption("rabbitmq_exchange_durable", configurationValues, false));
+		config.setRabbitMqExchangeAutoDelete(configurationSupport.fetchBooleanOption("rabbitmq_exchange_autodelete", configurationValues, false));
+		config.setRabbitmqRoutingKeyTemplate(configurationSupport.fetchOption("rabbitmq_routing_key_template", configurationValues, "%db%.%table%"));
+		config.setRabbitmqMessagePersistent(configurationSupport.fetchBooleanOption("rabbitmq_message_persistent", configurationValues, false));
+		config.setRabbitmqDeclareExchange(configurationSupport.fetchBooleanOption("rabbitmq_declare_exchange", configurationValues, true));
 		return Optional.of(config);
 	}
 

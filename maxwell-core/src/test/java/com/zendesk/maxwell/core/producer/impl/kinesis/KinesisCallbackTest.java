@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.Optional;
+import java.util.Properties;
 
 import static org.mockito.Mockito.*;
 
@@ -37,13 +38,13 @@ public class KinesisCallbackTest {
 		ExtensionConfigurator<Producer> configurator = mock(ExtensionConfigurator.class);
 		ExtensionConfiguration configuration = mock(ExtensionConfiguration.class);
 
-		when(configurationSupport.fetchOption(anyString(), isNull(), isNull(), nullable(String.class))).thenCallRealMethod();
-		when(configurationSupport.fetchBooleanOption(anyString(), isNull(), isNull(), nullable(Boolean.class))).thenCallRealMethod();
-		when(configurationSupport.fetchLongOption(anyString(), isNull(), isNull(), nullable(Long.class))).thenCallRealMethod();
-		when(configurationSupport.parseMysqlConfig(anyString(), isNull(), isNull())).thenCallRealMethod();
+		when(configurationSupport.fetchOption(anyString(), any(Properties.class), nullable(String.class))).thenCallRealMethod();
+		when(configurationSupport.fetchBooleanOption(anyString(), any(Properties.class), nullable(Boolean.class))).thenCallRealMethod();
+		when(configurationSupport.fetchLongOption(anyString(), any(Properties.class), nullable(Long.class))).thenCallRealMethod();
+		when(configurationSupport.parseMysqlConfig(anyString(), any(Properties.class))).thenCallRealMethod();
 
 		when(producerExtensionConfigurators.getByIdentifier(anyString())).thenReturn(configurator);
-		when(configurator.parseConfiguration(isNull(), isNull())).thenReturn(Optional.of(configuration));
+		when(configurator.parseConfiguration(isNull())).thenReturn(Optional.of(configuration));
 	}
 
 	@Test

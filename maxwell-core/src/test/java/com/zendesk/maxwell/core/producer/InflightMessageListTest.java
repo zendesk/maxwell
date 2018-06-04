@@ -12,6 +12,8 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import java.util.Properties;
+
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
@@ -46,10 +48,10 @@ public class InflightMessageListTest {
 
 	@Before
 	public void init(){
-		when(configurationSupport.fetchOption(anyString(), isNull(), isNull(), anyString())).thenCallRealMethod();
-		when(configurationSupport.fetchLongOption(anyString(), isNull(), isNull(), anyLong())).thenCallRealMethod();
-		when(configurationSupport.fetchBooleanOption(anyString(), isNull(), isNull(), anyBoolean())).thenCallRealMethod();
-		when(configurationSupport.parseMysqlConfig(anyString(), isNull(), isNull())).thenCallRealMethod();
+		when(configurationSupport.fetchOption(anyString(), any(Properties.class), anyString())).thenCallRealMethod();
+		when(configurationSupport.fetchLongOption(anyString(), any(Properties.class), anyLong())).thenCallRealMethod();
+		when(configurationSupport.fetchBooleanOption(anyString(), any(Properties.class), anyBoolean())).thenCallRealMethod();
+		when(configurationSupport.parseMysqlConfig(anyString(), any(Properties.class))).thenCallRealMethod();
 
 		ExtensionConfigurator<Producer> extensionConfigurator = mock(ExtensionConfigurator.class);
 		when(producerExtensionConfigurators.getByIdentifier(anyString())).thenReturn(extensionConfigurator);

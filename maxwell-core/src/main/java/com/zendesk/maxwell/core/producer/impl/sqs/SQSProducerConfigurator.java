@@ -3,7 +3,6 @@ package com.zendesk.maxwell.core.producer.impl.sqs;
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.config.*;
 import com.zendesk.maxwell.core.producer.Producer;
-import joptsimple.OptionSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -36,8 +35,8 @@ public class SQSProducerConfigurator implements ExtensionConfigurator<Producer> 
 	}
 
 	@Override
-	public Optional<ExtensionConfiguration> parseConfiguration(OptionSet commandLineArguments, Properties configurationValues) {
-		final String sqsQueueName = configurationSupport.fetchOption("sqs_queue_uri", commandLineArguments, configurationValues, null);
+	public Optional<ExtensionConfiguration> parseConfiguration(Properties configurationValues) {
+		final String sqsQueueName = configurationSupport.fetchOption("sqs_queue_uri", configurationValues, null);
 		return Optional.of(new SQSProducerConfiguration(sqsQueueName));
 	}
 
