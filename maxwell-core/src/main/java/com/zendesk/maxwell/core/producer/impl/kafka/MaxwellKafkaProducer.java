@@ -144,16 +144,17 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		this.interpolateTopic = this.topic.contains("%{");
 		this.kafka = new KafkaProducer<>(kafkaProperties, new StringSerializer(), new StringSerializer());
 
-		String hash = context.getConfig().getKafkaPartitionHash();
+		KafkaProducerConfiguration configuration = context.getConfig().getProducerConfigOrThrowExceptionWhenNotDefined();
+		String hash = configuration.getKafkaPartitionHash();
 		String partitionKey = context.getConfig().getProducerPartitionKey();
 		String partitionColumns = context.getConfig().getProducerPartitionColumns();
 		String partitionFallback = context.getConfig().getProducerPartitionFallback();
 		this.partitioner = new MaxwellKafkaPartitioner(hash, partitionKey, partitionColumns, partitionFallback);
 
 		this.ddlPartitioner = makeDDLPartitioner(hash, partitionKey);
-		this.ddlTopic = context.getConfig().getDdlKafkaTopic();
+		this.ddlTopic = configuration.getDdlKafkaTopic();
 
-		if ( context.getConfig().getKafkaKeyFormat().equals("hash") )
+		if ( configuration.getKafkaKeyFormat().equals("hash") )
 			keyFormat = KeyFormat.HASH;
 		else
 			keyFormat = KeyFormat.ARRAY;

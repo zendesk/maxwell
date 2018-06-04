@@ -4,6 +4,7 @@ import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.core.*;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
+import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducerConfiguration;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.row.HeartbeatRowMap;
 import com.zendesk.maxwell.core.row.RowMap;
@@ -67,7 +68,6 @@ public class RecoveryTest extends TestWithNameLogging {
 		config.getMaxwellMysql().password = "maxwell";
 		config.setMasterRecovery(masterRecovery);
 		config.getMaxwellMysql().sslMode = SSLMode.DISABLED;
-		config.setProducerType("buffer");
 		config.validate();
 		return config;
 	}
@@ -75,6 +75,7 @@ public class RecoveryTest extends TestWithNameLogging {
 	private MaxwellConfig getBufferedConfig(int port, boolean masterRecovery) {
 		MaxwellConfig config = getConfig(port, masterRecovery);
 		config.setProducerType("buffer");
+		config.setProducerConfig(new BufferedProducerConfiguration());
 		return config;
 	}
 

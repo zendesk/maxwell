@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.config;
 
 public enum ExtensionType {
-	PROVIDER,
+	PRODUCER,
 	METRICS_REPORTER
 }

@@ -19,21 +19,25 @@ public class RabbitmqProducer extends AbstractProducer {
 	private static String exchangeName;
 	private static BasicProperties props;
 	private Channel channel;
+	private final RabbitmqProducerConfiguration config;
+
 	public RabbitmqProducer(MaxwellContext context) {
 		super(context);
-		exchangeName = context.getConfig().getRabbitmqExchange();
-		props = context.getConfig().isRabbitmqMessagePersistent() ? MessageProperties.MINIMAL_PERSISTENT_BASIC : null;
+		config = context.getConfig().getProducerConfigOrThrowExceptionWhenNotDefined();
+
+		exchangeName = config.getRabbitmqExchange();
+		props = config.isRabbitmqMessagePersistent() ? MessageProperties.MINIMAL_PERSISTENT_BASIC : null;
 
 		ConnectionFactory factory = new ConnectionFactory();
-		factory.setHost(context.getConfig().getRabbitmqHost());
-		factory.setPort(context.getConfig().getRabbitmqPort());
-		factory.setUsername(context.getConfig().getRabbitmqUser());
-		factory.setPassword(context.getConfig().getRabbitmqPass());
-		factory.setVirtualHost(context.getConfig().getRabbitmqVirtualHost());
+		factory.setHost(config.getRabbitmqHost());
+		factory.setPort(config.getRabbitmqPort());
+		factory.setUsername(config.getRabbitmqUser());
+		factory.setPassword(config.getRabbitmqPass());
+		factory.setVirtualHost(config.getRabbitmqVirtualHost());
 		try {
 			this.channel = factory.newConnection().createChannel();
-			if(context.getConfig().isRabbitmqDeclareExchange()) {
-				this.channel.exchangeDeclare(exchangeName, context.getConfig().getRabbitmqExchangeType(), context.getConfig().isRabbitMqExchangeDurable(), context.getConfig().isRabbitMqExchangeAutoDelete(), null);
+			if(config.isRabbitmqDeclareExchange()) {
+				this.channel.exchangeDeclare(exchangeName, config.getRabbitmqExchangeType(), config.isRabbitMqExchangeDurable(), config.isRabbitMqExchangeAutoDelete(), null);
 			}
 		} catch (IOException | TimeoutException e) {
 			throw new RuntimeException(e);
@@ -61,9 +65,7 @@ public class RabbitmqProducer extends AbstractProducer {
 	}
 
 	private String getRoutingKeyFromTemplate(RowMap r) {
-		return context
-				.getConfig()
-				.getRabbitmqRoutingKeyTemplate()
+		return config.getRabbitmqRoutingKeyTemplate()
 				.replace("%db%", r.getDatabase())
 				.replace("%table%", r.getTable());
 	}

@@ -4,6 +4,7 @@ import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.config.*;
 import com.zendesk.maxwell.core.replication.BinlogPosition;
 import com.zendesk.maxwell.core.replication.Position;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -37,9 +38,22 @@ public class InflightMessageListTest {
 	private MaxwellCommandLineOptions maxwellCommandLineOptions;
 	@Mock
 	private ConfigurationFileParser configurationFileParser;
+	@Mock
+	private ProducerExtensionConfigurators producerExtensionConfigurators;
 
 	@Captor
 	private ArgumentCaptor<RuntimeException> captor;
+
+	@Before
+	public void init(){
+		when(configurationSupport.fetchOption(anyString(), isNull(), isNull(), anyString())).thenCallRealMethod();
+		when(configurationSupport.fetchLongOption(anyString(), isNull(), isNull(), anyLong())).thenCallRealMethod();
+		when(configurationSupport.fetchBooleanOption(anyString(), isNull(), isNull(), anyBoolean())).thenCallRealMethod();
+		when(configurationSupport.parseMysqlConfig(anyString(), isNull(), isNull())).thenCallRealMethod();
+
+		ExtensionConfigurator<Producer> extensionConfigurator = mock(ExtensionConfigurator.class);
+		when(producerExtensionConfigurators.getByIdentifier(anyString())).thenReturn(extensionConfigurator);
+	}
 
 	@Test
 	public void testInOrderCompletion() throws InterruptedException {
@@ -172,7 +186,7 @@ public class InflightMessageListTest {
 
 	private void setupWithInflightRequestTimeout(long timeout, double completePercentageThreshold) throws InterruptedException {
 		context = mock(MaxwellContext.class);
-		MaxwellConfig config = new MaxwellConfigFactory(maxwellCommandLineOptions, configurationFileParser, configurationSupport).createNewDefaultConfiguration();
+		MaxwellConfig config = new MaxwellConfigFactory(maxwellCommandLineOptions, configurationFileParser, configurationSupport, producerExtensionConfigurators).createNewDefaultConfiguration();
 		config.setProducerAckTimeout(timeout);
 		when(context.getConfig()).thenReturn(config);
 		list = new InflightMessageList(context, capacity, completePercentageThreshold);

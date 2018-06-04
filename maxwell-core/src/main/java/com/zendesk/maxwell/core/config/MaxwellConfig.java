@@ -13,6 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Optional;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
@@ -43,35 +44,18 @@ public class MaxwellConfig {
 	private final Properties customProducerProperties;
 	private String producerType;
 
-	private final Properties kafkaProperties;
-	private String kafkaTopic;
-	private String ddlKafkaTopic;
-	private String kafkaKeyFormat;
-	private String kafkaPartitionHash;
-	private String kafkaPartitionKey;
-	private String kafkaPartitionColumns;
-	private String kafkaPartitionFallback;
 	private String bootstrapperType;
-	private int bufferedProducerSize;
+
+	private ExtensionConfiguration producerConfig;
 
 	private String producerPartitionKey;
 	private String producerPartitionColumns;
 	private String producerPartitionFallback;
 
-	private String kinesisStream;
-	private boolean kinesisMd5Keys;
-
-	private String sqsQueueUri;
-
-	private String pubsubProjectId;
-	private String pubsubTopic;
-	private String ddlPubsubTopic;
-
 	private Long producerAckTimeout;
 
-	private String outputFile;
 	private final MaxwellOutputConfig outputConfig;
-	private String log_level;
+	private String logLevel;
 
 	private final MetricRegistry metricRegistry;
 	private final HealthCheckRegistry healthCheckRegistry;
@@ -100,37 +84,15 @@ public class MaxwellConfig {
 	private boolean masterRecovery;
 	private boolean ignoreProducerError;
 
-	private String rabbitmqUser;
-	private String rabbitmqPass;
-	private String rabbitmqHost;
-	private int rabbitmqPort;
-	private String rabbitmqVirtualHost;
-	private String rabbitmqExchange;
-	private String rabbitmqExchangeType;
-	private boolean rabbitMqExchangeDurable;
-	private boolean rabbitMqExchangeAutoDelete;
-	private String rabbitmqRoutingKeyTemplate;
-	private boolean rabbitmqMessagePersistent;
-	private boolean rabbitmqDeclareExchange;
-
-	private String redisHost;
-	private int redisPort;
-	private String redisAuth;
-	private int redisDatabase;
-	private String redisPubChannel;
-	private String redisListKey;
-	private String redisType;
 
 	public MaxwellConfig() {
 		this.customProducerProperties = new Properties();
-		this.kafkaProperties = new Properties();
 		this.setReplayMode(false);
 		this.setReplicationMysql(new MaxwellMysqlConfig());
 		this.setMaxwellMysql(new MaxwellMysqlConfig());
 		this.setSchemaMysql(new MaxwellMysqlConfig());
 		this.setMasterRecovery(false);
 		this.setGtidMode(false);
-		this.setBufferedProducerSize(200);
 		this.metricRegistry = new MetricRegistry();
 		this.healthCheckRegistry = new HealthCheckRegistry();
 		this.outputConfig = new MaxwellOutputConfig();
@@ -138,30 +100,6 @@ public class MaxwellConfig {
 
 	public void validate() {
 		validatePartitionBy();
-
-		if ( this.getProducerType().equals("kafka") ) {
-			if ( !this.getKafkaProperties().containsKey("bootstrap.servers") ) {
-				throw new InvalidOptionException("You must specify kafka.bootstrap.servers for the kafka producer!", "kafka");
-			}
-
-			if ( this.getKafkaPartitionHash() == null ) {
-				this.setKafkaPartitionHash("default");
-			} else if ( !this.getKafkaPartitionHash().equals("default")
-					&& !this.getKafkaPartitionHash().equals("murmur3") ) {
-				throw new InvalidOptionException("please specify --kafka_partition_hash=default|murmur3", "kafka_partition_hash");
-			}
-
-			if ( !this.getKafkaKeyFormat().equals("hash") && !this.getKafkaKeyFormat().equals("array") )
-				throw new InvalidOptionException("invalid kafka_key_format: " + this.getKafkaKeyFormat(), "kafka_key_format");
-
-		} else if ( this.getProducerType().equals("file")
-				&& this.getOutputFile() == null) {
-			throw new InvalidOptionException("please specify --output_file=FILE to use the file producer", "--producer", "--output_file");
-		} else if ( this.getProducerType().equals("kinesis") && this.getKinesisStream() == null) {
-			throw new InvalidOptionException("please specify a stream name for kinesis", "kinesis_stream");
-		} else if (this.getProducerType().equals("sqs") && this.getSqsQueueUri() == null) {
-			throw new InvalidOptionException("please specify a queue uri for sqs", "sqs_queue_uri");
-		}
 
 		if ( !this.getBootstrapperType().equals("async")
 				&& !this.getBootstrapperType().equals("sync")
@@ -263,24 +201,12 @@ public class MaxwellConfig {
 			this.setBootstrapperType("none");
 		}
 
+		if(producerConfig != null){
+			producerConfig.validate(this);
+		}
 	}
 
 	private void validatePartitionBy() {
-		if ( this.getProducerPartitionKey() == null && this.getKafkaPartitionKey() != null ) {
-			LOGGER.warn("kafka_partition_by is deprecated, please use producer_partition_by");
-			this.setProducerPartitionKey(this.getKafkaPartitionKey());
-		}
-
-		if ( this.getProducerPartitionColumns() == null && this.getKafkaPartitionColumns() != null) {
-			LOGGER.warn("kafka_partition_columns is deprecated, please use producer_partition_columns");
-			this.setProducerPartitionColumns(this.getKafkaPartitionColumns());
-		}
-
-		if ( this.getProducerPartitionFallback() == null && this.getKafkaPartitionFallback() != null ) {
-			LOGGER.warn("kafka_partition_by_fallback is deprecated, please use producer_partition_by_fallback");
-			this.setProducerPartitionFallback(this.getKafkaPartitionFallback());
-		}
-
 		String[] validPartitionBy = {"database", "table", "primary_key", "column"};
 		if ( this.getProducerPartitionKey() == null ) {
 			this.setProducerPartitionKey("database");
@@ -292,10 +218,6 @@ public class MaxwellConfig {
 			throw new InvalidOptionException("please specify --producer_partition_by_fallback=[database, table, primary_key] when using producer_partition_by=column", "producer_partition_by_fallback");
 		}
 
-	}
-
-	public Properties getKafkaProperties() {
-		return this.kafkaProperties;
 	}
 
 	public static Pattern compileStringToPattern(String name) throws MaxwellInvalidFilterException {
@@ -442,76 +364,12 @@ public class MaxwellConfig {
 		this.producerType = producerType;
 	}
 
-	public String getKafkaTopic() {
-		return kafkaTopic;
-	}
-
-	public void setKafkaTopic(String kafkaTopic) {
-		this.kafkaTopic = kafkaTopic;
-	}
-
-	public String getDdlKafkaTopic() {
-		return ddlKafkaTopic;
-	}
-
-	public void setDdlKafkaTopic(String ddlKafkaTopic) {
-		this.ddlKafkaTopic = ddlKafkaTopic;
-	}
-
-	public String getKafkaKeyFormat() {
-		return kafkaKeyFormat;
-	}
-
-	public void setKafkaKeyFormat(String kafkaKeyFormat) {
-		this.kafkaKeyFormat = kafkaKeyFormat;
-	}
-
-	public String getKafkaPartitionHash() {
-		return kafkaPartitionHash;
-	}
-
-	public void setKafkaPartitionHash(String kafkaPartitionHash) {
-		this.kafkaPartitionHash = kafkaPartitionHash;
-	}
-
-	public String getKafkaPartitionKey() {
-		return kafkaPartitionKey;
-	}
-
-	public void setKafkaPartitionKey(String kafkaPartitionKey) {
-		this.kafkaPartitionKey = kafkaPartitionKey;
-	}
-
-	public String getKafkaPartitionColumns() {
-		return kafkaPartitionColumns;
-	}
-
-	public void setKafkaPartitionColumns(String kafkaPartitionColumns) {
-		this.kafkaPartitionColumns = kafkaPartitionColumns;
-	}
-
-	public String getKafkaPartitionFallback() {
-		return kafkaPartitionFallback;
-	}
-
-	public void setKafkaPartitionFallback(String kafkaPartitionFallback) {
-		this.kafkaPartitionFallback = kafkaPartitionFallback;
-	}
-
 	public String getBootstrapperType() {
 		return bootstrapperType;
 	}
 
 	public void setBootstrapperType(String bootstrapperType) {
 		this.bootstrapperType = bootstrapperType;
-	}
-
-	public int getBufferedProducerSize() {
-		return bufferedProducerSize;
-	}
-
-	public void setBufferedProducerSize(int bufferedProducerSize) {
-		this.bufferedProducerSize = bufferedProducerSize;
 	}
 
 	public String getProducerPartitionKey() {
@@ -538,54 +396,6 @@ public class MaxwellConfig {
 		this.producerPartitionFallback = producerPartitionFallback;
 	}
 
-	public String getKinesisStream() {
-		return kinesisStream;
-	}
-
-	public void setKinesisStream(String kinesisStream) {
-		this.kinesisStream = kinesisStream;
-	}
-
-	public boolean isKinesisMd5Keys() {
-		return kinesisMd5Keys;
-	}
-
-	public void setKinesisMd5Keys(boolean kinesisMd5Keys) {
-		this.kinesisMd5Keys = kinesisMd5Keys;
-	}
-
-	public String getSqsQueueUri() {
-		return sqsQueueUri;
-	}
-
-	public void setSqsQueueUri(String sqsQueueUri) {
-		this.sqsQueueUri = sqsQueueUri;
-	}
-
-	public String getPubsubProjectId() {
-		return pubsubProjectId;
-	}
-
-	public void setPubsubProjectId(String pubsubProjectId) {
-		this.pubsubProjectId = pubsubProjectId;
-	}
-
-	public String getPubsubTopic() {
-		return pubsubTopic;
-	}
-
-	public void setPubsubTopic(String pubsubTopic) {
-		this.pubsubTopic = pubsubTopic;
-	}
-
-	public String getDdlPubsubTopic() {
-		return ddlPubsubTopic;
-	}
-
-	public void setDdlPubsubTopic(String ddlPubsubTopic) {
-		this.ddlPubsubTopic = ddlPubsubTopic;
-	}
-
 	public Long getProducerAckTimeout() {
 		return producerAckTimeout;
 	}
@@ -594,24 +404,16 @@ public class MaxwellConfig {
 		this.producerAckTimeout = producerAckTimeout;
 	}
 
-	public String getOutputFile() {
-		return outputFile;
-	}
-
-	public void setOutputFile(String outputFile) {
-		this.outputFile = outputFile;
-	}
-
 	public MaxwellOutputConfig getOutputConfig() {
 		return outputConfig;
 	}
 
-	public String getLog_level() {
-		return log_level;
+	public String getLogLevel() {
+		return logLevel;
 	}
 
-	public void setLog_level(String log_level) {
-		this.log_level = log_level;
+	public void setLogLevel(String logLevel) {
+		this.logLevel = logLevel;
 	}
 
 	public MetricRegistry getMetricRegistry() {
@@ -782,155 +584,15 @@ public class MaxwellConfig {
 		this.ignoreProducerError = ignoreProducerError;
 	}
 
-	public String getRabbitmqUser() {
-		return rabbitmqUser;
+	public <T extends  ExtensionConfiguration> T getProducerConfigOrThrowExceptionWhenNotDefined() {
+		return this.<T>getProducerConfig().orElseThrow(() -> new IllegalStateException("Producer configuration not initialized"));
 	}
 
-	public void setRabbitmqUser(String rabbitmqUser) {
-		this.rabbitmqUser = rabbitmqUser;
+	public <T extends  ExtensionConfiguration> Optional<T> getProducerConfig() {
+		return Optional.ofNullable((T)producerConfig);
 	}
 
-	public String getRabbitmqPass() {
-		return rabbitmqPass;
-	}
-
-	public void setRabbitmqPass(String rabbitmqPass) {
-		this.rabbitmqPass = rabbitmqPass;
-	}
-
-	public String getRabbitmqHost() {
-		return rabbitmqHost;
-	}
-
-	public void setRabbitmqHost(String rabbitmqHost) {
-		this.rabbitmqHost = rabbitmqHost;
-	}
-
-	public int getRabbitmqPort() {
-		return rabbitmqPort;
-	}
-
-	public void setRabbitmqPort(int rabbitmqPort) {
-		this.rabbitmqPort = rabbitmqPort;
-	}
-
-	public String getRabbitmqVirtualHost() {
-		return rabbitmqVirtualHost;
-	}
-
-	public void setRabbitmqVirtualHost(String rabbitmqVirtualHost) {
-		this.rabbitmqVirtualHost = rabbitmqVirtualHost;
-	}
-
-	public String getRabbitmqExchange() {
-		return rabbitmqExchange;
-	}
-
-	public void setRabbitmqExchange(String rabbitmqExchange) {
-		this.rabbitmqExchange = rabbitmqExchange;
-	}
-
-	public String getRabbitmqExchangeType() {
-		return rabbitmqExchangeType;
-	}
-
-	public void setRabbitmqExchangeType(String rabbitmqExchangeType) {
-		this.rabbitmqExchangeType = rabbitmqExchangeType;
-	}
-
-	public boolean isRabbitMqExchangeDurable() {
-		return rabbitMqExchangeDurable;
-	}
-
-	public void setRabbitMqExchangeDurable(boolean rabbitMqExchangeDurable) {
-		this.rabbitMqExchangeDurable = rabbitMqExchangeDurable;
-	}
-
-	public boolean isRabbitMqExchangeAutoDelete() {
-		return rabbitMqExchangeAutoDelete;
-	}
-
-	public void setRabbitMqExchangeAutoDelete(boolean rabbitMqExchangeAutoDelete) {
-		this.rabbitMqExchangeAutoDelete = rabbitMqExchangeAutoDelete;
-	}
-
-	public String getRabbitmqRoutingKeyTemplate() {
-		return rabbitmqRoutingKeyTemplate;
-	}
-
-	public void setRabbitmqRoutingKeyTemplate(String rabbitmqRoutingKeyTemplate) {
-		this.rabbitmqRoutingKeyTemplate = rabbitmqRoutingKeyTemplate;
-	}
-
-	public boolean isRabbitmqMessagePersistent() {
-		return rabbitmqMessagePersistent;
-	}
-
-	public void setRabbitmqMessagePersistent(boolean rabbitmqMessagePersistent) {
-		this.rabbitmqMessagePersistent = rabbitmqMessagePersistent;
-	}
-
-	public boolean isRabbitmqDeclareExchange() {
-		return rabbitmqDeclareExchange;
-	}
-
-	public void setRabbitmqDeclareExchange(boolean rabbitmqDeclareExchange) {
-		this.rabbitmqDeclareExchange = rabbitmqDeclareExchange;
-	}
-
-	public String getRedisHost() {
-		return redisHost;
-	}
-
-	public void setRedisHost(String redisHost) {
-		this.redisHost = redisHost;
-	}
-
-	public int getRedisPort() {
-		return redisPort;
-	}
-
-	public void setRedisPort(int redisPort) {
-		this.redisPort = redisPort;
-	}
-
-	public String getRedisAuth() {
-		return redisAuth;
-	}
-
-	public void setRedisAuth(String redisAuth) {
-		this.redisAuth = redisAuth;
-	}
-
-	public int getRedisDatabase() {
-		return redisDatabase;
-	}
-
-	public void setRedisDatabase(int redisDatabase) {
-		this.redisDatabase = redisDatabase;
-	}
-
-	public String getRedisPubChannel() {
-		return redisPubChannel;
-	}
-
-	public void setRedisPubChannel(String redisPubChannel) {
-		this.redisPubChannel = redisPubChannel;
-	}
-
-	public String getRedisListKey() {
-		return redisListKey;
-	}
-
-	public void setRedisListKey(String redisListKey) {
-		this.redisListKey = redisListKey;
-	}
-
-	public String getRedisType() {
-		return redisType;
-	}
-
-	public void setRedisType(String redisType) {
-		this.redisType = redisType;
+	public void setProducerConfig(ExtensionConfiguration producerConfig) {
+		this.producerConfig = producerConfig;
 	}
 }

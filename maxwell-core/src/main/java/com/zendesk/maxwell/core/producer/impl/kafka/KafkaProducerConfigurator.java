@@ -1,0 +1,83 @@
+package com.zendesk.maxwell.core.producer.impl.kafka;
+
+import com.zendesk.maxwell.core.MaxwellContext;
+import com.zendesk.maxwell.core.config.*;
+import com.zendesk.maxwell.core.producer.Producer;
+import joptsimple.OptionSet;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.Enumeration;
+import java.util.Optional;
+import java.util.Properties;
+
+@Service
+public class KafkaProducerConfigurator implements ExtensionConfigurator<Producer> {
+
+	private final ConfigurationSupport configurationSupport;
+
+	@Autowired
+	public KafkaProducerConfigurator(ConfigurationSupport configurationSupport) {
+		this.configurationSupport = configurationSupport;
+	}
+
+	@Override
+	public String getExtensionIdentifier() {
+		return "kafka";
+	}
+
+	@Override
+	public ExtensionType getExtensionType() {
+		return ExtensionType.PRODUCER;
+	}
+
+	@Override
+	public void configureCommandLineOptions(CommandLineOptionParserContext context) {
+		context.addOptionWithRequiredArgument( "kafka_version", "kafka client library version: 0.8.2.2|0.9.0.1|0.10.0.1|0.10.2.1|0.11.0.1");
+		context.addOptionWithRequiredArgument( "kafka_partition_by", "[deprecated]");
+		context.addOptionWithRequiredArgument( "kafka_partition_columns", "[deprecated]");
+		context.addOptionWithRequiredArgument( "kafka_partition_by_fallback", "[deprecated]");
+		context.addOptionWithRequiredArgument( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" );
+		context.addOptionWithRequiredArgument( "kafka_partition_hash", "default|murmur3, hash function for partitioning" );
+		context.addOptionWithRequiredArgument( "kafka_topic", "optionally provide a topic name to push to. default: maxwell" );
+		context.addOptionWithRequiredArgument( "kafka_key_format", "how to format the kafka key; array|hash" );
+	}
+
+	@Override
+	public Optional<ExtensionConfiguration> parseConfiguration(OptionSet commandLineArguments, Properties configurationValues) {
+		KafkaProducerConfiguration config = new KafkaProducerConfiguration();
+		config.setKafkaTopic(configurationSupport.fetchOption("kafka_topic", commandLineArguments, configurationValues, "maxwell"));
+		config.setKafkaKeyFormat(configurationSupport.fetchOption("kafka_key_format", commandLineArguments, configurationValues, "hash"));
+		config.setKafkaPartitionKey(configurationSupport.fetchOption("kafka_partition_by", commandLineArguments, configurationValues, null));
+		config.setKafkaPartitionColumns(configurationSupport.fetchOption("kafka_partition_columns", commandLineArguments, configurationValues, null));
+		config.setKafkaPartitionFallback(configurationSupport.fetchOption("kafka_partition_by_fallback", commandLineArguments, configurationValues, null));
+
+		config.setKafkaPartitionHash(configurationSupport.fetchOption("kafka_partition_hash", commandLineArguments, configurationValues, "default"));
+		config.setDdlKafkaTopic(configurationSupport.fetchOption("ddl_kafka_topic", commandLineArguments, configurationValues, config.getKafkaTopic()));
+
+		String kafkaBootstrapServers = configurationSupport.fetchOption("kafka.bootstrap.servers", commandLineArguments, configurationValues, null);
+		if (kafkaBootstrapServers != null){
+			config.getKafkaProperties().setProperty("bootstrap.servers", kafkaBootstrapServers);
+		}
+
+		if (configurationValues != null) {
+			for (Enumeration<Object> e = configurationValues.keys(); e.hasMoreElements(); ) {
+				String k = (String) e.nextElement();
+				if (k.startsWith("kafka.")) {
+					if (k.equals("kafka.bootstrap.servers") && kafkaBootstrapServers != null){
+						continue; // don't override command line bootstrap servers with config files'
+					}
+					config.getKafkaProperties().setProperty(k.replace("kafka.", ""), configurationValues.getProperty(k));
+				}
+			}
+		}
+
+		return Optional.of(config);
+	}
+
+	@Override
+	public Producer createInstance(MaxwellContext context) {
+		KafkaProducerConfiguration configuration = context.getConfig().getProducerConfigOrThrowExceptionWhenNotDefined();
+		return new MaxwellKafkaProducer(context, configuration.getKafkaProperties(), configuration.getKafkaTopic());
+	}
+}

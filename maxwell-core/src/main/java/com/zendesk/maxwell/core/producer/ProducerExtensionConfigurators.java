@@ -14,14 +14,22 @@ import java.util.List;
 
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
 @Service
-public class Producers {
+public class ProducerExtensionConfigurators {
 
 	private static final String NONE_PRODUCER_TYPE = "none";
 	private final List<ExtensionConfigurator<Producer>> extensionConfigurator;
 
 	@Autowired
-	public Producers(List<ExtensionConfigurator<Producer>> extensionConfigurator) {
+	public ProducerExtensionConfigurators(List<ExtensionConfigurator<Producer>> extensionConfigurator) {
 		this.extensionConfigurator = extensionConfigurator;
+	}
+
+	public ExtensionConfigurator<Producer> getByIdentifier(final String identifier){
+		return extensionConfigurator.stream().filter(e -> isProducerWithIdentifier(identifier, e)).findFirst().orElseThrow(() -> new RuntimeException("Unknown producer identifier: " + identifier));
+	}
+
+	private boolean isProducerWithIdentifier(String identitfier, ExtensionConfigurator<Producer> e) {
+		return e.getExtensionType() == ExtensionType.PRODUCER && e.getExtensionIdentifier().equals(identitfier);
 	}
 
 	public Producer getProducer(MaxwellContext maxwellContext){
@@ -30,9 +38,11 @@ public class Producers {
 
 	private Producer createAndRegisterProducer(MaxwellContext maxwellContext) {
 		Producer producer = createProducer(maxwellContext);
-		maxwellContext.setProducer(producer);
-		registerDiagnostics(producer, maxwellContext);
-		registerStoppableTask(producer, maxwellContext);
+		if(producer != null) {
+			maxwellContext.setProducer(producer);
+			registerDiagnostics(producer, maxwellContext);
+			registerStoppableTask(producer, maxwellContext);
+		}
 		return producer;
 	}
 
@@ -51,15 +61,7 @@ public class Producers {
 	}
 
 	private Producer createProducerFromConfigurator(MaxwellContext context, String identifier){
-		return extensionConfigurator.stream()
-				.filter(e -> isProducerWithIdentifier(identifier, e))
-				.findFirst()
-				.map(e -> e.createInstance(context))
-				.orElseThrow(() -> new RuntimeException("Unknown producer identifier: " + identifier));
-	}
-
-	private boolean isProducerWithIdentifier(String type, ExtensionConfigurator<Producer> e) {
-		return e.getExtensionType() == ExtensionType.PROVIDER && e.getExtensionIdentifier().equals(type);
+		return getByIdentifier(identifier).createInstance(context);
 	}
 
 	private void registerDiagnostics(Producer producer, MaxwellContext maxwellContext) {

@@ -4,6 +4,7 @@ import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.SpringTestContextConfiguration;
 import com.zendesk.maxwell.core.producer.AbstractProducer;
 import com.zendesk.maxwell.core.producer.ProducerFactory;
+import com.zendesk.maxwell.core.producer.impl.kafka.KafkaProducerConfiguration;
 import com.zendesk.maxwell.core.producer.impl.stdout.StdoutProducer;
 import joptsimple.OptionException;
 import org.junit.Rule;
@@ -67,12 +68,13 @@ public class MaxwellConfigFactoryTest {
 		environmentVariables.set("maxwell_password", "bar");
 		environmentVariables.set("maxwell_host", "remotehost");
 		environmentVariables.set("MAXWELL_KAFKA.RETRIES", "100");
+		environmentVariables.set("MAXWELL_PRODUCER", "kafka");
 		environmentVariables.set("USER", "mysql");
 		config = maxwellConfigFactory.createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(new String[] { "--env_config_prefix=MAXWELL_", "--host=localhost" });
 		assertEquals("foo", config.getMaxwellMysql().user);
 		assertEquals("bar", config.getMaxwellMysql().password);
 		assertEquals("localhost", config.getMaxwellMysql().host);
-		assertEquals("100", config.getKafkaProperties().getProperty("retries"));
+		assertEquals("100", config.<KafkaProducerConfiguration>getProducerConfigOrThrowExceptionWhenNotDefined().getKafkaProperties().getProperty("retries"));
 	}
 
 	@Test
@@ -81,6 +83,7 @@ public class MaxwellConfigFactoryTest {
 		environmentVariables.set("foo_password", "bar");
 		environmentVariables.set("foo_host", "remotehost");
 		environmentVariables.set("FOO_KAFKA.RETRIES", "100");
+		environmentVariables.set("FOO_PRODUCER", "kafka");
 		environmentVariables.set("USER", "mysql");
 		String configPath = getTestConfigDir() + "env-var-config.properties";
 		assertNotNull("Config file not found at: " + configPath, Paths.get(configPath));
@@ -89,7 +92,7 @@ public class MaxwellConfigFactoryTest {
 		assertEquals("foo", config.getMaxwellMysql().user);
 		assertEquals("bar", config.getMaxwellMysql().password);
 		assertEquals("localhost", config.getMaxwellMysql().host);
-		assertEquals("100", config.getKafkaProperties().getProperty("retries"));
+		assertEquals("100", config.<KafkaProducerConfiguration>getProducerConfigOrThrowExceptionWhenNotDefined().getKafkaProperties().getProperty("retries"));
 	}
 	
 	private String getTestConfigDir() {

@@ -4,7 +4,7 @@ import com.zendesk.maxwell.core.bootstrap.Bootstrapper;
 import com.zendesk.maxwell.core.bootstrap.BootstrapperFactory;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.producer.Producer;
-import com.zendesk.maxwell.core.producer.Producers;
+import com.zendesk.maxwell.core.producer.ProducerExtensionConfigurators;
 import com.zendesk.maxwell.core.recovery.Recovery;
 import com.zendesk.maxwell.core.recovery.RecoveryInfo;
 import com.zendesk.maxwell.core.replication.BinlogConnectorReplicator;
@@ -26,12 +26,12 @@ public class MaxwellRunner {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellRunner.class);
 
 	private final BootstrapperFactory bootstrapperFactory;
-	private final Producers producers;
+	private final ProducerExtensionConfigurators producerExtensionConfigurators;
 
 	@Autowired
-	public MaxwellRunner(BootstrapperFactory bootstrapperFactory, Producers producers) {
+	public MaxwellRunner(BootstrapperFactory bootstrapperFactory, ProducerExtensionConfigurators producerExtensionConfigurators) {
 		this.bootstrapperFactory = bootstrapperFactory;
-		this.producers = producers;
+		this.producerExtensionConfigurators = producerExtensionConfigurators;
 	}
 
 	public void run(final MaxwellContext context) {
@@ -179,7 +179,7 @@ public class MaxwellRunner {
 			}
 		}
 
-		Producer producer = producers.getProducer(context);
+		Producer producer = producerExtensionConfigurators.getProducer(context);
 		Bootstrapper bootstrapper = bootstrapperFactory.createFor(context);
 
 		Position initPosition = getInitialPosition(context);

@@ -6,9 +6,10 @@ import com.zendesk.maxwell.core.*;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
-import com.zendesk.maxwell.core.producer.Producers;
+import com.zendesk.maxwell.core.producer.ProducerExtensionConfigurators;
 import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducer;
 import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducerConfiguration;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.schema.Schema;
@@ -49,7 +50,7 @@ public class MaxwellTestSupport {
 	@Autowired
 	private MaxwellConfigTestSupport maxwellConfigTestSupport;
 	@Autowired
-	private Producers producers;
+	private ProducerExtensionConfigurators producerExtensionConfigurators;
 
 	public static MysqlIsolatedServer setupServer(String extraParams) throws Exception {
 		MysqlIsolatedServer server = new MysqlIsolatedServer();
@@ -171,6 +172,7 @@ public class MaxwellTestSupport {
 		config.setFilter(filter);
 		config.setBootstrapperType("sync");
 		config.setProducerType("buffer");
+		config.setProducerConfig(new BufferedProducerConfiguration());
 
 		callback.beforeReplicatorStart(mysql);
 
@@ -279,7 +281,7 @@ public class MaxwellTestSupport {
 	}
 
 	public RowMap pollRowFromBufferedProducer(MaxwellContext context, long ms) throws IOException, InterruptedException {
-		BufferedProducer p = (BufferedProducer) producers.getProducer(context);
+		BufferedProducer p = (BufferedProducer) producerExtensionConfigurators.getProducer(context);
 		return p.poll(ms, TimeUnit.MILLISECONDS);
 	}
 }

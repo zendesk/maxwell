@@ -1,0 +1,33 @@
+package com.zendesk.maxwell.core.producer.impl.pubsub;
+
+import com.zendesk.maxwell.core.config.ExtensionConfiguration;
+
+public class PubsubProducerConfiguration implements ExtensionConfiguration {
+	private String pubsubProjectId;
+	private String pubsubTopic;
+	private String ddlPubsubTopic;
+
+	public String getPubsubProjectId() {
+		return pubsubProjectId;
+	}
+
+	public void setPubsubProjectId(String pubsubProjectId) {
+		this.pubsubProjectId = pubsubProjectId;
+	}
+
+	public String getPubsubTopic() {
+		return pubsubTopic;
+	}
+
+	public void setPubsubTopic(String pubsubTopic) {
+		this.pubsubTopic = pubsubTopic;
+	}
+
+	public String getDdlPubsubTopic() {
+		return ddlPubsubTopic;
+	}
+
+	public void setDdlPubsubTopic(String ddlPubsubTopic) {
+		this.ddlPubsubTopic = ddlPubsubTopic;
+	}
+}

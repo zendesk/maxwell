@@ -83,25 +83,25 @@ class KinesisCallback implements FutureCallback<UserRecordResult> {
 }
 
 public class MaxwellKinesisProducer extends AbstractAsyncProducer {
-	private static final Logger logger = LoggerFactory.getLogger(MaxwellKinesisProducer.class);
-
 	private final MaxwellKinesisPartitioner partitioner;
 	private final KinesisProducer kinesisProducer;
 	private final String kinesisStream;
 
-	public MaxwellKinesisProducer(MaxwellContext context, String kinesisStream) {
+	public MaxwellKinesisProducer(MaxwellContext context) {
 		super(context);
 
 		String partitionKey = context.getConfig().getProducerPartitionKey();
 		String partitionColumns = context.getConfig().getProducerPartitionColumns();
 		String partitionFallback = context.getConfig().getProducerPartitionFallback();
-		boolean kinesisMd5Keys = context.getConfig().isKinesisMd5Keys();
+
+		KinesisProducerConfiguration kinesisProducerConfiguration = context.getConfig().getProducerConfigOrThrowExceptionWhenNotDefined();
+		boolean kinesisMd5Keys = kinesisProducerConfiguration.isKinesisMd5Keys();
 		this.partitioner = new MaxwellKinesisPartitioner(partitionKey, partitionColumns, partitionFallback, kinesisMd5Keys);
-		this.kinesisStream = kinesisStream;
+		this.kinesisStream = kinesisProducerConfiguration.getKinesisStream();
 
 		Path path = Paths.get("kinesis-producer-library.properties");
 		if(Files.exists(path) && Files.isRegularFile(path)) {
-			KinesisProducerConfiguration config = KinesisProducerConfiguration.fromPropertiesFile(path.toString());
+			com.amazonaws.services.kinesis.producer.KinesisProducerConfiguration config = com.amazonaws.services.kinesis.producer.KinesisProducerConfiguration.fromPropertiesFile(path.toString());
 			this.kinesisProducer = new KinesisProducer(config);
 		} else {
 			this.kinesisProducer = new KinesisProducer();

@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core.producer.impl.profiler;
+package com.zendesk.maxwell.core.producer.impl.stdout;
 
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.config.ExtensionConfigurator;
@@ -7,21 +7,19 @@ import com.zendesk.maxwell.core.producer.Producer;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ProfilerExtensionConfigurator implements ExtensionConfigurator<Producer> {
-
+public class StdoutProducerConfigurator implements ExtensionConfigurator<Producer> {
 	@Override
 	public String getExtensionIdentifier() {
-		return "profiler";
+		return "stdout";
 	}
 
 	@Override
 	public ExtensionType getExtensionType() {
-		return ExtensionType.PROVIDER;
+		return ExtensionType.PRODUCER;
 	}
 
 	@Override
 	public Producer createInstance(MaxwellContext context) {
-		return  new ProfilerProducer(context);
+		return new StdoutProducer(context);
 	}
-
 }

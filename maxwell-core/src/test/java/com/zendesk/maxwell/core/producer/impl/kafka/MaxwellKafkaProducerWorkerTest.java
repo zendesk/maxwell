@@ -28,6 +28,7 @@ public class MaxwellKafkaProducerWorkerTest {
 	public void constructNewWorkerWithNullTopic() {
 		MaxwellContext context = mock(MaxwellContext.class);
 		MaxwellConfig config = maxwellConfigFactory.createNewDefaultConfiguration();
+		config.setProducerConfig(new KafkaProducerConfiguration());
 		when(context.getConfig()).thenReturn(config);
 		when(context.getMetrics()).thenReturn(new NoOpMetrics());
 		Properties kafkaProperties = new Properties();

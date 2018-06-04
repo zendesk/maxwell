@@ -6,7 +6,7 @@ import com.codahale.metrics.servlets.PingServlet;
 import com.zendesk.maxwell.core.ContextStartListener;
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
-import com.zendesk.maxwell.core.producer.Producers;
+import com.zendesk.maxwell.core.producer.ProducerExtensionConfigurators;
 import com.zendesk.maxwell.core.util.StoppableTask;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -25,11 +25,11 @@ public class MaxwellHTTPServer implements ContextStartListener {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellHTTPServer.class);
 
-	private final Producers producers;
+	private final ProducerExtensionConfigurators producerExtensionConfigurators;
 
 	@Autowired
-	public MaxwellHTTPServer(Producers producers) {
-		this.producers = producers;
+	public MaxwellHTTPServer(ProducerExtensionConfigurators producerExtensionConfigurators) {
+		this.producerExtensionConfigurators = producerExtensionConfigurators;
 	}
 
 	@Override
@@ -64,7 +64,7 @@ public class MaxwellHTTPServer implements ContextStartListener {
 		MaxwellConfig config = context.getConfig();
 		String reportingType = config.getMetricsReportingType();
 		if (reportingType != null && reportingType.contains(MaxwellMetrics.reportingTypeHttp)) {
-			config.getHealthCheckRegistry().register("MaxwellHealth", new MaxwellHealthCheck(producers.getProducer(context)));
+			config.getHealthCheckRegistry().register("MaxwellHealth", new MaxwellHealthCheck(producerExtensionConfigurators.getProducer(context)));
 			return new MaxwellMetrics.Registries(config.getMetricRegistry(), config.getHealthCheckRegistry());
 		} else {
 			return null;

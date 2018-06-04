@@ -43,7 +43,8 @@ public class KafkaProducerDiagnostic implements MaxwellDiagnostic {
 
 	@Override
 	public String getResource() {
-		return config.getKafkaProperties().getProperty("bootstrap.servers");
+		KafkaProducerConfiguration kafkaProducerConfiguration = config.getProducerConfigOrThrowExceptionWhenNotDefined();
+		return kafkaProducerConfiguration.getKafkaProperties().getProperty("bootstrap.servers");
 	}
 
 	public CompletableFuture<Long> getLatency() {
