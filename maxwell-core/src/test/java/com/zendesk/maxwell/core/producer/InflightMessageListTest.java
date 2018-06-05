@@ -37,10 +37,6 @@ public class InflightMessageListTest {
 	@Mock
 	private ConfigurationSupport configurationSupport;
 	@Mock
-	private MaxwellCommandLineOptions maxwellCommandLineOptions;
-	@Mock
-	private ConfigurationFileParser configurationFileParser;
-	@Mock
 	private ProducerExtensionConfigurators producerExtensionConfigurators;
 
 	@Captor
@@ -188,7 +184,7 @@ public class InflightMessageListTest {
 
 	private void setupWithInflightRequestTimeout(long timeout, double completePercentageThreshold) throws InterruptedException {
 		context = mock(MaxwellContext.class);
-		MaxwellConfig config = new MaxwellConfigFactory(maxwellCommandLineOptions, configurationFileParser, configurationSupport, producerExtensionConfigurators).createNewDefaultConfiguration();
+		MaxwellConfig config = new MaxwellConfigFactory(configurationSupport, producerExtensionConfigurators).createNewDefaultConfiguration();
 		config.setProducerAckTimeout(timeout);
 		when(context.getConfig()).thenReturn(config);
 		list = new InflightMessageList(context, capacity, completePercentageThreshold);

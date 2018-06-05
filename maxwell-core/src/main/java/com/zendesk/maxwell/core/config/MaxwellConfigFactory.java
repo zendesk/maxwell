@@ -6,99 +6,32 @@ import com.zendesk.maxwell.core.producer.ProducerExtensionConfigurators;
 import com.zendesk.maxwell.core.producer.ProducerFactory;
 import com.zendesk.maxwell.core.replication.BinlogPosition;
 import com.zendesk.maxwell.core.replication.Position;
-import joptsimple.OptionSet;
-import joptsimple.OptionSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Properties;
 
 @Service
 public class MaxwellConfigFactory {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfigFactory.class);
-	public static final String ENV_CONFIG_PREFIX = "env_config_prefix";
 
-	private final MaxwellCommandLineOptions maxwellCommandLineOptions;
-	private final ConfigurationFileParser configurationFileParser;
 	private final ConfigurationSupport configurationSupport;
 	private final ProducerExtensionConfigurators producerExtensionConfigurators;
 
 	@Autowired
-	public MaxwellConfigFactory(MaxwellCommandLineOptions maxwellCommandLineOptions, ConfigurationFileParser configurationFileParser, ConfigurationSupport configurationSupport, ProducerExtensionConfigurators producerExtensionConfigurators) {
-		this.maxwellCommandLineOptions = maxwellCommandLineOptions;
-		this.configurationFileParser = configurationFileParser;
+	public MaxwellConfigFactory(ConfigurationSupport configurationSupport, ProducerExtensionConfigurators producerExtensionConfigurators) {
 		this.configurationSupport = configurationSupport;
 		this.producerExtensionConfigurators = producerExtensionConfigurators;
 	}
 
 	public MaxwellConfig createNewDefaultConfiguration() {
-		return createFrom(new Properties());
+		return createFor(new Properties());
 	}
 
-	public MaxwellConfig createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(final String[] args) {
-		OptionSet options = maxwellCommandLineOptions.parse(args);
-		if (options.has("help")){
-			throw new InvalidUsageException("Help for Maxwell:");
-		}
-
-		List<?> arguments = options.nonOptionArguments();
-		if (!arguments.isEmpty()) {
-			throw new InvalidUsageException("Unknown argument(s): " + arguments);
-		}
-
-		Properties properties = readConfigurationFile(options);
-		overwriteConfigurationFromEnvironment(options, properties);
-		Properties mergedProperties = mergeCommandLineParametersAndConfiguration(options, properties);
-
-		return createFrom(mergedProperties);
-	}
-
-	private Properties readConfigurationFile(OptionSet options) {
-		if (options.has("config")) {
-			return configurationFileParser.parseFile((String) options.valueOf("config"), true);
-		} else {
-			return configurationFileParser.parseFile(ConfigurationSupport.DEFAULT_CONFIG_FILE, false);
-		}
-	}
-
-	private void overwriteConfigurationFromEnvironment(final OptionSet optionSet, final Properties properties) {
-		String envConfigPrefix = optionSet.has(ENV_CONFIG_PREFIX) ? (String)optionSet.valueOf(ENV_CONFIG_PREFIX) : configurationSupport.fetchOption(ENV_CONFIG_PREFIX, properties, null);
-		if (envConfigPrefix != null) {
-			String prefix = envConfigPrefix.toLowerCase();
-			System.getenv().entrySet().stream()
-					.filter(map -> map.getKey().toLowerCase().startsWith(prefix))
-					.forEach(config -> properties.put(config.getKey().toLowerCase().replaceFirst(prefix, ""), config.getValue()));
-		}
-	}
-
-	private Properties mergeCommandLineParametersAndConfiguration(final OptionSet options, final Properties properties) {
-		final Properties result = new Properties();
-
-		if(options != null){
-			for(OptionSpec<?> spec : options.specs()){
-				String value = (String)options.valueOf(spec);
-				for(String option : spec.options()){
-					result.put(option, value);
-				}
-			}
-		}
-
-		if(properties != null){
-			properties.forEach((k,v) -> {
-				if(!result.containsKey(k)) {
-					result.put(k, v);
-				}
-			});
-		}
-
-		return result;
-	}
-
-	private MaxwellConfig createFrom(final Properties properties) {
+	public MaxwellConfig createFor(final Properties properties) {
 		MaxwellConfig config = new MaxwellConfig();
 		config.setLogLevel(configurationSupport.fetchOption("log_level", properties, null));
 

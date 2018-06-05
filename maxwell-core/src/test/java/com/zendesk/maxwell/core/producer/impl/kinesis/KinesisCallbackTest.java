@@ -25,10 +25,6 @@ public class KinesisCallbackTest {
 	@Mock
 	private ConfigurationSupport configurationSupport;
 	@Mock
-	private MaxwellCommandLineOptions maxwellCommandLineOptions;
-	@Mock
-	private ConfigurationFileParser configurationFileParser;
-	@Mock
 	private ProducerExtensionConfigurators producerExtensionConfigurators;
 
 	@Before
@@ -50,7 +46,7 @@ public class KinesisCallbackTest {
 	@Test
 	public void shouldIgnoreProducerErrorByDefault() {
 		MaxwellContext context = mock(MaxwellContext.class);
-		MaxwellConfig config = new MaxwellConfigFactory(maxwellCommandLineOptions, configurationFileParser, configurationSupport, producerExtensionConfigurators).createNewDefaultConfiguration();
+		MaxwellConfig config = new MaxwellConfigFactory(configurationSupport, producerExtensionConfigurators).createNewDefaultConfiguration();
 		when(context.getConfig()).thenReturn(config);
 		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
 		KinesisCallback callback = new KinesisCallback(cc,
@@ -64,7 +60,7 @@ public class KinesisCallbackTest {
 	@Test
 	public void shouldTerminateWhenNotIgnoreProducerError() {
 		MaxwellContext context = mock(MaxwellContext.class);
-		MaxwellConfig config = new MaxwellConfigFactory(maxwellCommandLineOptions, configurationFileParser, configurationSupport, producerExtensionConfigurators).createNewDefaultConfiguration();
+		MaxwellConfig config = new MaxwellConfigFactory(configurationSupport, producerExtensionConfigurators).createNewDefaultConfiguration();
 		config.setIgnoreProducerError(false);
 		when(context.getConfig()).thenReturn(config);
 		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);

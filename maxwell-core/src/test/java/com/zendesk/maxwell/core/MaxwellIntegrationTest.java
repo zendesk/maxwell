@@ -13,10 +13,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.sql.ResultSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -534,8 +531,11 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testJdbcConnectionOptions() throws Exception {
-		String[] opts = {"--jdbc_options= netTimeoutForStreamingResults=123& profileSQL=true  ", "--host=no-soup-spoons"};
-		MaxwellConfig config = maxwellConfigFactory.createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(opts);
+		Properties options = new Properties();
+		options.put("jdbc_options", "netTimeoutForStreamingResults=123& profileSQL=true ");
+		options.put("host", "no-soup-spoons");
+
+		MaxwellConfig config = maxwellConfigFactory.createFor(options);
 		config.validate();
 		assertThat(config.getMaxwellMysql().getConnectionURI(), containsString("jdbc:mysql://no-soup-spoons:3306/maxwell?"));
 		assertThat(config.getReplicationMysql().getConnectionURI(), containsString("jdbc:mysql://no-soup-spoons:3306?"));
@@ -561,17 +561,17 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testSchemaServerDifferentThanReplicationServer() throws Exception {
-		String[] opts = {
-			"--replication_host=replhost",
-			"--replication_port=1001",
-			"--replication_user=repluser",
-			"--replication_password=replpass",
-			"--schema_host=schemahost",
-			"--schema_port=2002",
-			"--schema_user=schemauser",
-			"--schema_password=schemapass"
-		};
-		MaxwellConfig config = maxwellConfigFactory.createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(opts);
+		Properties options = new Properties();
+		options.put("replication_host", "replhost");
+		options.put("replication_port", "1001");
+		options.put("replication_user", "repluser");
+		options.put("replication_password", "replpass");
+		options.put("schema_host", "schemahost");
+		options.put("schema_port", "2002");
+		options.put("schema_user", "schemauser");
+		options.put("schema_password", "schemapass");
+
+		MaxwellConfig config = maxwellConfigFactory.createFor(options);
 		assertEquals(config.getReplicationMysql().host, "replhost");
 		assertThat(config.getReplicationMysql().port, is(1001));
 		assertEquals(config.getReplicationMysql().user, "repluser");
@@ -584,13 +584,13 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testSchemaServerNotSet() throws Exception {
-		String[] opts = {
-			"--replication_host=replhost",
-			"--replication_port=1001",
-			"--replication_user=repluser",
-			"--replication_password=replpass",
-		};
-		MaxwellConfig config = maxwellConfigFactory.createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(opts);
+		Properties options = new Properties();
+		options.put("replication_host", "replhost");
+		options.put("replication_port", "1001");
+		options.put("replication_user", "repluser");
+		options.put("replication_password", "replpass");
+
+		MaxwellConfig config = maxwellConfigFactory.createFor(options);
 		assertEquals(config.getReplicationMysql().host, "replhost");
 		assertThat(config.getReplicationMysql().port, is(1001));
 		assertEquals(config.getReplicationMysql().user, "repluser");

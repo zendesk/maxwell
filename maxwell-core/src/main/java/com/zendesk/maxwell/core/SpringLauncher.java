@@ -5,10 +5,12 @@ import com.zendesk.maxwell.core.bootstrap.MaxwellBootstrapUtilityRunner;
 import com.zendesk.maxwell.core.bootstrap.config.MaxwellBootstrapUtilityConfigFactory;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
+import com.zendesk.maxwell.core.config.MaxwellConfigurationOptionMerger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.util.Optional;
+import java.util.Properties;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -20,11 +22,13 @@ public class SpringLauncher {
 
 	private static void runMaxwell(final String[] args, final Optional<BiConsumer<MaxwellConfig,ApplicationContext>> beforeStartEventHandler, final ApplicationContext applicationContext) {
 		try {
+			final MaxwellConfigurationOptionMerger configurationOptionMerger = applicationContext.getBean(MaxwellConfigurationOptionMerger.class);
 			final MaxwellConfigFactory maxwellConfigFactory = applicationContext.getBean(MaxwellConfigFactory.class);
 			final MaxwellContextFactory maxwellContextFactory = applicationContext.getBean(MaxwellContextFactory.class);
 			final MaxwellRunner maxwellRunner = applicationContext.getBean(MaxwellRunner.class);
 
-			final MaxwellConfig config = maxwellConfigFactory.createConfigurationFromArgumentsAndConfigurationFileAndEnvironmentVariables(args);
+			final Properties configurationOptions = configurationOptionMerger.merge(args);
+			final MaxwellConfig config = maxwellConfigFactory.createFor(configurationOptions);
 			beforeStartEventHandler.ifPresent((c) -> c.accept(config, applicationContext));
 
 			final MaxwellContext context = maxwellContextFactory.createFor(config);
