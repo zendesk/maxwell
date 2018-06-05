@@ -21,23 +21,23 @@ public class RabbitmqProducer extends AbstractProducer {
 	private Channel channel;
 	private final RabbitmqProducerConfiguration config;
 
-	public RabbitmqProducer(MaxwellContext context) {
+	public RabbitmqProducer(MaxwellContext context, RabbitmqProducerConfiguration config) {
 		super(context);
-		config = context.getConfig().getProducerConfigOrThrowExceptionWhenNotDefined();
+		this.config = config;
 
-		exchangeName = config.getRabbitmqExchange();
-		props = config.isRabbitmqMessagePersistent() ? MessageProperties.MINIMAL_PERSISTENT_BASIC : null;
+		exchangeName = this.config.getRabbitmqExchange();
+		props = this.config.isRabbitmqMessagePersistent() ? MessageProperties.MINIMAL_PERSISTENT_BASIC : null;
 
 		ConnectionFactory factory = new ConnectionFactory();
-		factory.setHost(config.getRabbitmqHost());
-		factory.setPort(config.getRabbitmqPort());
-		factory.setUsername(config.getRabbitmqUser());
-		factory.setPassword(config.getRabbitmqPass());
-		factory.setVirtualHost(config.getRabbitmqVirtualHost());
+		factory.setHost(this.config.getRabbitmqHost());
+		factory.setPort(this.config.getRabbitmqPort());
+		factory.setUsername(this.config.getRabbitmqUser());
+		factory.setPassword(this.config.getRabbitmqPass());
+		factory.setVirtualHost(this.config.getRabbitmqVirtualHost());
 		try {
 			this.channel = factory.newConnection().createChannel();
-			if(config.isRabbitmqDeclareExchange()) {
-				this.channel.exchangeDeclare(exchangeName, config.getRabbitmqExchangeType(), config.isRabbitMqExchangeDurable(), config.isRabbitMqExchangeAutoDelete(), null);
+			if(this.config.isRabbitmqDeclareExchange()) {
+				this.channel.exchangeDeclare(exchangeName, this.config.getRabbitmqExchangeType(), this.config.isRabbitMqExchangeDurable(), this.config.isRabbitMqExchangeAutoDelete(), null);
 			}
 		} catch (IOException | TimeoutException e) {
 			throw new RuntimeException(e);

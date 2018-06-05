@@ -2,6 +2,7 @@ package com.zendesk.maxwell.core.producer.impl.kafka;
 
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.config.*;
+import com.zendesk.maxwell.core.producer.ProducerConfigurator;
 import com.zendesk.maxwell.core.producer.Producer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,7 +12,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 @Service
-public class KafkaProducerConfigurator implements ExtensionConfigurator<Producer> {
+public class KafkaProducerConfigurator implements ProducerConfigurator<KafkaProducerConfiguration> {
 
 	private final ConfigurationSupport configurationSupport;
 
@@ -23,11 +24,6 @@ public class KafkaProducerConfigurator implements ExtensionConfigurator<Producer
 	@Override
 	public String getExtensionIdentifier() {
 		return "kafka";
-	}
-
-	@Override
-	public ExtensionType getExtensionType() {
-		return ExtensionType.PRODUCER;
 	}
 
 	@Override
@@ -43,7 +39,7 @@ public class KafkaProducerConfigurator implements ExtensionConfigurator<Producer
 	}
 
 	@Override
-	public Optional<ExtensionConfiguration> parseConfiguration(Properties configurationValues) {
+	public Optional<KafkaProducerConfiguration> parseConfiguration(Properties configurationValues) {
 		KafkaProducerConfiguration config = new KafkaProducerConfiguration();
 		config.setKafkaTopic(configurationSupport.fetchOption("kafka_topic", configurationValues, "maxwell"));
 		config.setKafkaKeyFormat(configurationSupport.fetchOption("kafka_key_format", configurationValues, "hash"));
@@ -75,8 +71,7 @@ public class KafkaProducerConfigurator implements ExtensionConfigurator<Producer
 	}
 
 	@Override
-	public Producer createInstance(MaxwellContext context) {
-		KafkaProducerConfiguration configuration = context.getConfig().getProducerConfigOrThrowExceptionWhenNotDefined();
-		return new MaxwellKafkaProducer(context, configuration.getKafkaProperties(), configuration.getKafkaTopic());
+	public Producer createInstance(MaxwellContext context, KafkaProducerConfiguration configuration) {
+		return new MaxwellKafkaProducer(context, configuration);
 	}
 }

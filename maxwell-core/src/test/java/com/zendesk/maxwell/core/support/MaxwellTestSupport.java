@@ -6,7 +6,7 @@ import com.zendesk.maxwell.core.*;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
-import com.zendesk.maxwell.core.producer.ProducerExtensionConfigurators;
+import com.zendesk.maxwell.core.producer.ProducerConfigurators;
 import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducer;
 import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducerConfiguration;
@@ -28,10 +28,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -50,7 +47,7 @@ public class MaxwellTestSupport {
 	@Autowired
 	private MaxwellConfigTestSupport maxwellConfigTestSupport;
 	@Autowired
-	private ProducerExtensionConfigurators producerExtensionConfigurators;
+	private ProducerConfigurators producerConfigurators;
 
 	public static MysqlIsolatedServer setupServer(String extraParams) throws Exception {
 		MysqlIsolatedServer server = new MysqlIsolatedServer();
@@ -149,19 +146,28 @@ public class MaxwellTestSupport {
 
 	public List<RowMap> getRowsWithReplicator(final MysqlIsolatedServer mysql, final MaxwellFilter filter, final MaxwellTestSupportCallback callback, final Optional<MaxwellOutputConfig> optionalOutputConfig) throws Exception {
 		final ArrayList<RowMap> list = new ArrayList<>();
-
 		clearSchemaStore(mysql);
 
-		MaxwellConfig config = maxwellConfigFactory.createNewDefaultConfiguration();
+		Properties configurationOptions = new Properties();
+		configurationOptions.put("user", "maxwell");
+		configurationOptions.put("password", "maxwell");
+		configurationOptions.put("host", "localhost");
+		configurationOptions.put("port", ""+mysql.getPort());
+		configurationOptions.put("sslMode", SSLMode.DISABLED.name());
+		configurationOptions.put("replication_user", "maxwell");
+		configurationOptions.put("replication_password", "maxwell");
+		configurationOptions.put("replication_host", "localhost");
+		configurationOptions.put("replication_port", ""+mysql.getPort());
+		configurationOptions.put("replication_sslMode", SSLMode.DISABLED.name());
+		configurationOptions.put("bootstrapper", "sync");
+		configurationOptions.put("producer", "buffer");
+		Position initialPosition = capture(mysql.getConnection());
+		configurationOptions.put("init_position", initialPosition.toCommandline());
 
-		config.getMaxwellMysql().user = "maxwell";
-		config.getMaxwellMysql().password = "maxwell";
-		config.getMaxwellMysql().host = "localhost";
-		config.getMaxwellMysql().port = mysql.getPort();
-		config.getMaxwellMysql().sslMode = SSLMode.DISABLED;
-		config.setReplicationMysql(config.getMaxwellMysql());
+		MaxwellConfig config = maxwellConfigFactory.createFor(configurationOptions);
+		config.setFilter(filter);
+
 		final MaxwellOutputConfig outputConfig = optionalOutputConfig.orElseGet(MaxwellOutputConfig::new);
-
 		if ( filter != null ) {
 			if ( filter.isDatabaseWhitelist() )
 				filter.includeDatabase("test");
@@ -169,17 +175,11 @@ public class MaxwellTestSupport {
 				filter.includeTable("boundary");
 		}
 
-		config.setFilter(filter);
-		config.setBootstrapperType("sync");
-		config.setProducerType("buffer");
-		config.setProducerConfig(new BufferedProducerConfiguration());
-
 		callback.beforeReplicatorStart(mysql);
 
-		config.setInitPosition(capture(mysql.getConnection()));
 		final String waitObject = "";
-
 		final MaxwellContext maxwellContext = maxwellContextFactory.createFor(config);
+		producerConfigurators.createAndRegister(maxwellContext, configurationOptions);
 		maxwellContext.configureOnReplicationStartEventHandler((c) -> {
 			synchronized(waitObject) {
 				waitObject.notify();
@@ -281,7 +281,7 @@ public class MaxwellTestSupport {
 	}
 
 	public RowMap pollRowFromBufferedProducer(MaxwellContext context, long ms) throws IOException, InterruptedException {
-		BufferedProducer p = (BufferedProducer) producerExtensionConfigurators.getProducer(context);
+		BufferedProducer p = (BufferedProducer) context.getProducer();
 		return p.poll(ms, TimeUnit.MILLISECONDS);
 	}
 }

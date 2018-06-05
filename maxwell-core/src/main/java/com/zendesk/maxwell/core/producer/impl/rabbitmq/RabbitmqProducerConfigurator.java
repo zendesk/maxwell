@@ -2,6 +2,7 @@ package com.zendesk.maxwell.core.producer.impl.rabbitmq;
 
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.config.*;
+import com.zendesk.maxwell.core.producer.ProducerConfigurator;
 import com.zendesk.maxwell.core.producer.Producer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,7 +11,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 @Service
-public class RabbitmqProducerConfigurator implements ExtensionConfigurator<Producer> {
+public class RabbitmqProducerConfigurator implements ProducerConfigurator<RabbitmqProducerConfiguration> {
 
 	private final ConfigurationSupport configurationSupport;
 
@@ -22,11 +23,6 @@ public class RabbitmqProducerConfigurator implements ExtensionConfigurator<Produ
 	@Override
 	public String getExtensionIdentifier() {
 		return "rabbitmq";
-	}
-
-	@Override
-	public ExtensionType getExtensionType() {
-		return ExtensionType.PRODUCER;
 	}
 
 	@Override
@@ -46,7 +42,7 @@ public class RabbitmqProducerConfigurator implements ExtensionConfigurator<Produ
 	}
 
 	@Override
-	public Optional<ExtensionConfiguration> parseConfiguration(Properties configurationValues) {
+	public Optional<RabbitmqProducerConfiguration> parseConfiguration(Properties configurationValues) {
 		RabbitmqProducerConfiguration config = new RabbitmqProducerConfiguration();
 		config.setRabbitmqHost(configurationSupport.fetchOption("rabbitmq_host", configurationValues, "localhost"));
 		config.setRabbitmqPort(Integer.parseInt(configurationSupport.fetchOption("rabbitmq_port", configurationValues, "5672")));
@@ -64,8 +60,8 @@ public class RabbitmqProducerConfigurator implements ExtensionConfigurator<Produ
 	}
 
 	@Override
-	public Producer createInstance(MaxwellContext context) {
-		return new RabbitmqProducer(context);
+	public Producer createInstance(MaxwellContext context, RabbitmqProducerConfiguration configuration) {
+		return new RabbitmqProducer(context, configuration);
 	}
 
 }

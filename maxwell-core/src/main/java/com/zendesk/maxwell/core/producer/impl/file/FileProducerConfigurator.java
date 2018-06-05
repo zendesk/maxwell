@@ -2,9 +2,7 @@ package com.zendesk.maxwell.core.producer.impl.file;
 
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.config.ConfigurationSupport;
-import com.zendesk.maxwell.core.config.ExtensionConfiguration;
-import com.zendesk.maxwell.core.config.ExtensionConfigurator;
-import com.zendesk.maxwell.core.config.ExtensionType;
+import com.zendesk.maxwell.core.producer.ProducerConfigurator;
 import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.core.producer.ProducerInstantiationException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +13,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 @Service
-public class FileProducerConfigurator implements ExtensionConfigurator<Producer> {
+public class FileProducerConfigurator implements ProducerConfigurator<FileProducerConfiguration> {
 	private final ConfigurationSupport configurationSupport;
 
 	@Autowired
@@ -29,22 +27,16 @@ public class FileProducerConfigurator implements ExtensionConfigurator<Producer>
 	}
 
 	@Override
-	public ExtensionType getExtensionType() {
-		return ExtensionType.PRODUCER;
-	}
-
-	@Override
-	public Optional<ExtensionConfiguration> parseConfiguration(Properties configurationValues) {
+	public Optional<FileProducerConfiguration> parseConfiguration(Properties configurationValues) {
 
 		String outputFile = configurationSupport.fetchOption("output_file", configurationValues, null);
 		return Optional.of(new FileProducerConfiguration(outputFile));
 	}
 
 	@Override
-	public Producer createInstance(MaxwellContext context) {
+	public Producer createInstance(MaxwellContext context, FileProducerConfiguration configuration) {
 		try {
-			FileProducerConfiguration config = context.getConfig().getProducerConfigOrThrowExceptionWhenNotDefined();
-			return new FileProducer(context, config.getOutputFile());
+			return new FileProducer(context, configuration.getOutputFile());
 		} catch (IOException e) {
 			throw new ProducerInstantiationException(e);
 		}

@@ -1,13 +1,13 @@
 package com.zendesk.maxwell.core.producer.impl.profiler;
 
 import com.zendesk.maxwell.core.MaxwellContext;
-import com.zendesk.maxwell.core.config.ExtensionConfigurator;
-import com.zendesk.maxwell.core.config.ExtensionType;
+import com.zendesk.maxwell.core.producer.ProducerConfiguration;
+import com.zendesk.maxwell.core.producer.ProducerConfigurator;
 import com.zendesk.maxwell.core.producer.Producer;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ProfilerProducerConfigurator implements ExtensionConfigurator<Producer> {
+public class ProfilerProducerConfigurator implements ProducerConfigurator<ProducerConfiguration> {
 
 	@Override
 	public String getExtensionIdentifier() {
@@ -15,12 +15,7 @@ public class ProfilerProducerConfigurator implements ExtensionConfigurator<Produ
 	}
 
 	@Override
-	public ExtensionType getExtensionType() {
-		return ExtensionType.PRODUCER;
-	}
-
-	@Override
-	public Producer createInstance(MaxwellContext context) {
+	public Producer createInstance(MaxwellContext context, ProducerConfiguration configuration) {
 		return  new ProfilerProducer(context);
 	}
 

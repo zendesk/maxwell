@@ -1,8 +1,8 @@
 package com.zendesk.maxwell.core.producer.impl.redis;
 
-import com.zendesk.maxwell.core.config.ExtensionConfiguration;
+import com.zendesk.maxwell.core.producer.ProducerConfiguration;
 
-public class RedisProducerConfiguration implements ExtensionConfiguration {
+public class RedisProducerConfiguration implements ProducerConfiguration {
 	private String redisHost;
 	private int redisPort;
 	private String redisAuth;

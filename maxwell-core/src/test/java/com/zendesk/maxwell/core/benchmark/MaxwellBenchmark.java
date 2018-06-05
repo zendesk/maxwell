@@ -91,10 +91,9 @@ public class MaxwellBenchmark {
 	}
 
 	private static void benchmark(String path, String args[]) throws Exception {
-		SpringLauncher.launchMaxwell(args, (config, ctx) -> {
+		MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--no-clean --reuse=" + path);
+		SpringLauncher.launchMaxwell(args, (config) -> {
 			try {
-				MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--no-clean --reuse=" + path);
-
 				config.getMaxwellMysql().host = "127.0.0.1";
 				config.getMaxwellMysql().port = server.getPort();
 				config.getMaxwellMysql().user = "root";

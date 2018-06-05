@@ -1,8 +1,8 @@
 package com.zendesk.maxwell.core.producer.impl.pubsub;
 
-import com.zendesk.maxwell.core.config.ExtensionConfiguration;
+import com.zendesk.maxwell.core.producer.ProducerConfiguration;
 
-public class PubsubProducerConfiguration implements ExtensionConfiguration {
+public class PubsubProducerConfiguration implements ProducerConfiguration {
 	private String pubsubProjectId;
 	private String pubsubTopic;
 	private String ddlPubsubTopic;

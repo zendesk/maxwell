@@ -1,8 +1,8 @@
 package com.zendesk.maxwell.core.producer.impl.rabbitmq;
 
-import com.zendesk.maxwell.core.config.ExtensionConfiguration;
+import com.zendesk.maxwell.core.producer.ProducerConfiguration;
 
-public class RabbitmqProducerConfiguration implements ExtensionConfiguration {
+public class RabbitmqProducerConfiguration implements ProducerConfiguration {
 	private String rabbitmqUser;
 	private String rabbitmqPass;
 	private String rabbitmqHost;

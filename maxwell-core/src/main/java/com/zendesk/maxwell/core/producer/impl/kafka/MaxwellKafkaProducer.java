@@ -86,10 +86,10 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	private final ArrayBlockingQueue<RowMap> queue;
 	private final MaxwellKafkaProducerWorker worker;
 
-	public MaxwellKafkaProducer(MaxwellContext context, Properties kafkaProperties, String kafkaTopic) {
+	public MaxwellKafkaProducer(MaxwellContext context, KafkaProducerConfiguration configuration) {
 		super(context);
 		this.queue = new ArrayBlockingQueue<>(100);
-		this.worker = new MaxwellKafkaProducerWorker(context, kafkaProperties, kafkaTopic, this.queue);
+		this.worker = new MaxwellKafkaProducerWorker(context, configuration, this.queue);
 		Thread thread = new Thread(this.worker, "maxwell-kafka-worker");
 		thread.setDaemon(true);
 		thread.start();
@@ -107,7 +107,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 
 	@Override
 	public KafkaProducerDiagnostic getDiagnostic() {
-		return new KafkaProducerDiagnostic(worker, context.getConfig(), context.getPositionStoreThread());
+		return new KafkaProducerDiagnostic(worker, context);
 	}
 }
 
@@ -133,18 +133,17 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		}
 	}
 
-	public MaxwellKafkaProducerWorker(MaxwellContext context, Properties kafkaProperties, String kafkaTopic, ArrayBlockingQueue<RowMap> queue) {
+	public MaxwellKafkaProducerWorker(MaxwellContext context, KafkaProducerConfiguration configuration, ArrayBlockingQueue<RowMap> queue) {
 		super(context);
 
-		this.topic = kafkaTopic;
+		this.topic = configuration.getKafkaTopic();
 		if ( this.topic == null ) {
 			this.topic = "maxwell";
 		}
 
 		this.interpolateTopic = this.topic.contains("%{");
-		this.kafka = new KafkaProducer<>(kafkaProperties, new StringSerializer(), new StringSerializer());
+		this.kafka = new KafkaProducer<>(configuration.getKafkaProperties(), new StringSerializer(), new StringSerializer());
 
-		KafkaProducerConfiguration configuration = context.getConfig().getProducerConfigOrThrowExceptionWhenNotDefined();
 		String hash = configuration.getKafkaPartitionHash();
 		String partitionKey = context.getConfig().getProducerPartitionKey();
 		String partitionColumns = context.getConfig().getProducerPartitionColumns();

@@ -29,17 +29,19 @@ public class MaxwellBootstrapUtilityRunner {
 	private boolean isComplete = false;
 
 	private final MaxwellBootstrapUtilityConfigFactory maxwellBootstrapUtilityConfigFactory;
+	private final Logging logging;
 
 	@Autowired
-	public MaxwellBootstrapUtilityRunner(MaxwellBootstrapUtilityConfigFactory maxwellBootstrapUtilityConfigFactory) {
+	public MaxwellBootstrapUtilityRunner(MaxwellBootstrapUtilityConfigFactory maxwellBootstrapUtilityConfigFactory, Logging logging) {
 		this.maxwellBootstrapUtilityConfigFactory = maxwellBootstrapUtilityConfigFactory;
+		this.logging = logging;
 	}
 
 	public void run(String[] argv) throws Exception {
 		MaxwellBootstrapUtilityConfig config = maxwellBootstrapUtilityConfigFactory.createConfigurationFromArgumentsAndConfigurationFile(argv);
 
 		if ( config.log_level != null ) {
-			Logging.setLevel(config.log_level);
+			logging.setLevel(config.log_level);
 		}
 
 		ConnectionPool connectionPool = getConnectionPool(config);

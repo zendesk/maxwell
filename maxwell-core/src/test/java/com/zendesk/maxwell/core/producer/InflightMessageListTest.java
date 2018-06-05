@@ -36,8 +36,6 @@ public class InflightMessageListTest {
 
 	@Mock
 	private ConfigurationSupport configurationSupport;
-	@Mock
-	private ProducerExtensionConfigurators producerExtensionConfigurators;
 
 	@Captor
 	private ArgumentCaptor<RuntimeException> captor;
@@ -48,9 +46,6 @@ public class InflightMessageListTest {
 		when(configurationSupport.fetchLongOption(anyString(), any(Properties.class), anyLong())).thenCallRealMethod();
 		when(configurationSupport.fetchBooleanOption(anyString(), any(Properties.class), anyBoolean())).thenCallRealMethod();
 		when(configurationSupport.parseMysqlConfig(anyString(), any(Properties.class))).thenCallRealMethod();
-
-		ExtensionConfigurator<Producer> extensionConfigurator = mock(ExtensionConfigurator.class);
-		when(producerExtensionConfigurators.getByIdentifier(anyString())).thenReturn(extensionConfigurator);
 	}
 
 	@Test
@@ -184,7 +179,7 @@ public class InflightMessageListTest {
 
 	private void setupWithInflightRequestTimeout(long timeout, double completePercentageThreshold) throws InterruptedException {
 		context = mock(MaxwellContext.class);
-		MaxwellConfig config = new MaxwellConfigFactory(configurationSupport, producerExtensionConfigurators).createNewDefaultConfiguration();
+		MaxwellConfig config = new MaxwellConfigFactory(configurationSupport).createNewDefaultConfiguration();
 		config.setProducerAckTimeout(timeout);
 		when(context.getConfig()).thenReturn(config);
 		list = new InflightMessageList(context, capacity, completePercentageThreshold);

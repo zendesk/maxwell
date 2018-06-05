@@ -1,0 +1,88 @@
+package com.zendesk.maxwell.core.producer;
+
+import com.zendesk.maxwell.core.MaxwellContext;
+import com.zendesk.maxwell.core.config.MaxwellConfig;
+import com.zendesk.maxwell.core.util.StoppableTask;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Properties;
+
+@Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
+@Service
+public class ProducerConfigurators {
+
+	private static final String NONE_PRODUCER_TYPE = "none";
+	private final List<ProducerConfigurator> producerConfigurator;
+
+	@Autowired
+	public ProducerConfigurators(List<ProducerConfigurator> producerConfigurator) {
+		this.producerConfigurator = producerConfigurator;
+	}
+
+	public void createAndRegister(final MaxwellContext maxwellContext, final Properties settings){
+		final MaxwellConfig config = maxwellContext.getConfig();
+		ProducerContext producerContext = create(maxwellContext, settings, config);
+		register(maxwellContext, producerContext);
+	}
+
+	private ProducerContext create(MaxwellContext maxwellContext, Properties settings, MaxwellConfig config) {
+		if ( config.getProducerFactory() != null ) {
+			return createContextForCustomProducer(maxwellContext, config);
+		} else {
+			return createContextForPredefinedProducer(maxwellContext, settings);
+		}
+	}
+
+	private ProducerContext createContextForCustomProducer(MaxwellContext maxwellContext, MaxwellConfig config) {
+		PropertiesProducerConfiguration configuration = new PropertiesProducerConfiguration(config.getCustomProducerProperties());
+		Producer producer = config.getProducerFactory().createProducer(maxwellContext);
+		return new ProducerContext(configuration, producer);
+	}
+
+	private ProducerContext createContextForPredefinedProducer(MaxwellContext maxwellContext, Properties settings) {
+		String producerType = maxwellContext.getConfig().getProducerType();
+		if(producerType == null || NONE_PRODUCER_TYPE.equals(producerType)){
+			return new ProducerContext(new PropertiesProducerConfiguration(new Properties()), new NoopProducer(maxwellContext));
+		}
+
+		ProducerConfigurator configurator = getByIdentifier(producerType);
+		return configurator.createProducerContext(maxwellContext, settings);
+	}
+
+	private ProducerConfigurator getByIdentifier(final String identifier){
+		return producerConfigurator.stream().filter(e -> isProducerWithIdentifier(identifier, e)).findFirst().orElseThrow(() -> new RuntimeException("Unknown producer identifier: " + identifier));
+	}
+
+	private void register(MaxwellContext maxwellContext, ProducerContext producerContext) {
+		maxwellContext.setProducerContext(producerContext);
+
+		registerDiagnostics(producerContext.getProducer(), maxwellContext);
+		registerStoppableTask(producerContext.getProducer(), maxwellContext);
+
+	}
+
+	private boolean isProducerWithIdentifier(String identifier, ProducerConfigurator e) {
+		return e.getExtensionIdentifier().equals(identifier);
+	}
+
+	private void registerDiagnostics(Producer producer, MaxwellContext maxwellContext) {
+		if (producer != null && producer.getDiagnostic() != null) {
+			maxwellContext.getDiagnosticContext().diagnostics.add(producer.getDiagnostic());
+		}
+	}
+
+	private void registerStoppableTask(Producer producer, MaxwellContext maxwellContext) {
+		StoppableTask task = null;
+		if (producer != null) {
+			task = producer.getStoppableTask();
+		}
+		if (task != null) {
+			maxwellContext.addTask(task);
+		}
+	}
+
+}

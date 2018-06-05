@@ -4,6 +4,7 @@ import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
 import com.zendesk.maxwell.core.monitoring.*;
 import com.zendesk.maxwell.core.producer.Producer;
+import com.zendesk.maxwell.core.producer.ProducerContext;
 import com.zendesk.maxwell.core.recovery.RecoveryInfo;
 import com.zendesk.maxwell.core.replication.*;
 import com.zendesk.maxwell.core.row.RowMap;
@@ -41,7 +42,7 @@ public class MaxwellContext {
 	private Long serverID;
 	private Position initialPosition;
 	private CaseSensitivity caseSensitivity;
-	private Producer producer;
+	private ProducerContext producerContext;
 	private final TaskManager taskManager;
 	private volatile Exception error;
 
@@ -377,12 +378,20 @@ public class MaxwellContext {
 		return this.diagnosticContext;
 	}
 
-	public Optional<Producer> getProducer() {
-		return Optional.ofNullable(producer);
+	public Producer getProducer(){
+		return getProducerContext().getProducer();
 	}
 
-	public void setProducer(Producer producer) {
-		this.producer = producer;
+	public ProducerContext getProducerContext(){
+		return getOptionalProducerContext().orElseThrow(() -> new IllegalStateException("No producer context initialized"));
+	}
+
+	public Optional<ProducerContext> getOptionalProducerContext() {
+		return Optional.ofNullable(producerContext);
+	}
+
+	public void setProducerContext(ProducerContext producerContext) {
+		this.producerContext = producerContext;
 	}
 
 	public void configureOnReplicationStartEventHandler(Consumer<MaxwellContext> onReplicationStartEventHandler){

@@ -6,9 +6,11 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.slf4j.bridge.SLF4JBridgeHandler;
+import org.springframework.stereotype.Service;
 
+@Service
 public class Logging {
-	public static void setLevel(String level) {
+	public void setLevel(String level) {
 		LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
 		Configuration config = ctx.getConfiguration();
 		LoggerConfig loggerConfig = config.getLoggerConfig(LogManager.ROOT_LOGGER_NAME);

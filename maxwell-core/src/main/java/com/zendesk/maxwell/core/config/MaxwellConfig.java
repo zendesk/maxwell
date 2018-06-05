@@ -13,7 +13,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
@@ -45,8 +44,6 @@ public class MaxwellConfig {
 	private String producerType;
 
 	private String bootstrapperType;
-
-	private ExtensionConfiguration producerConfig;
 
 	private String producerPartitionKey;
 	private String producerPartitionColumns;
@@ -199,10 +196,6 @@ public class MaxwellConfig {
 		if ( !getMaxwellMysql().sameServerAs(getReplicationMysql()) && !this.getBootstrapperType().equals("none") ) {
 			LOGGER.warn("disabling bootstrapping; not available when using a separate replication host.");
 			this.setBootstrapperType("none");
-		}
-
-		if(producerConfig != null){
-			producerConfig.validate(this);
 		}
 	}
 
@@ -584,15 +577,4 @@ public class MaxwellConfig {
 		this.ignoreProducerError = ignoreProducerError;
 	}
 
-	public <T extends  ExtensionConfiguration> T getProducerConfigOrThrowExceptionWhenNotDefined() {
-		return this.<T>getProducerConfig().orElseThrow(() -> new IllegalStateException("Producer configuration not initialized"));
-	}
-
-	public <T extends  ExtensionConfiguration> Optional<T> getProducerConfig() {
-		return Optional.ofNullable((T)producerConfig);
-	}
-
-	public void setProducerConfig(ExtensionConfiguration producerConfig) {
-		this.producerConfig = producerConfig;
-	}
 }

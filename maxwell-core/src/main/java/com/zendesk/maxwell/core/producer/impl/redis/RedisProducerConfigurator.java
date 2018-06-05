@@ -2,6 +2,7 @@ package com.zendesk.maxwell.core.producer.impl.redis;
 
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.config.*;
+import com.zendesk.maxwell.core.producer.ProducerConfigurator;
 import com.zendesk.maxwell.core.producer.Producer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,7 +11,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 @Service
-public class RedisProducerConfigurator implements ExtensionConfigurator<Producer> {
+public class RedisProducerConfigurator implements ProducerConfigurator<RedisProducerConfiguration> {
 
 	private final ConfigurationSupport configurationSupport;
 
@@ -25,11 +26,6 @@ public class RedisProducerConfigurator implements ExtensionConfigurator<Producer
 	}
 
 	@Override
-	public ExtensionType getExtensionType() {
-		return ExtensionType.PRODUCER;
-	}
-
-	@Override
 	public void configureCommandLineOptions(CommandLineOptionParserContext context) {
 		context.addOptionWithRequiredArgument( "redis_host", "Host of Redis server" );
 		context.addOptionWithRequiredArgument( "redis_port", "Port of Redis server" );
@@ -41,7 +37,7 @@ public class RedisProducerConfigurator implements ExtensionConfigurator<Producer
 	}
 
 	@Override
-	public Optional<ExtensionConfiguration> parseConfiguration(Properties configurationValues) {
+	public Optional<RedisProducerConfiguration> parseConfiguration(Properties configurationValues) {
 		RedisProducerConfiguration config = new RedisProducerConfiguration();
 		config.setRedisHost(configurationSupport.fetchOption("redis_host", configurationValues, "localhost"));
 		config.setRedisPort(Integer.parseInt(configurationSupport.fetchOption("redis_port", configurationValues, "6379")));
@@ -54,7 +50,7 @@ public class RedisProducerConfigurator implements ExtensionConfigurator<Producer
 	}
 
 	@Override
-	public Producer createInstance(MaxwellContext context) {
-		return new MaxwellRedisProducer(context);
+	public Producer createInstance(MaxwellContext context, RedisProducerConfiguration configuration) {
+		return new MaxwellRedisProducer(context, configuration);
 	}
 }

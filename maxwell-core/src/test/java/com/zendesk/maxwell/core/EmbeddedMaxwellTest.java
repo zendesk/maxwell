@@ -4,7 +4,6 @@ import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.producer.AbstractProducer;
-import com.zendesk.maxwell.core.producer.ProducerFactory;
 import com.zendesk.maxwell.core.row.RowMap;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,12 +36,7 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 		final BlockingQueue<RowMap> rowBuffer = new LinkedBlockingQueue<>();
 		config.setMetricsReportingType("embedded");
 		config.setMetricsPrefix("prefix");
-		config.setProducerFactory(new ProducerFactory() {
-			@Override
-			public AbstractProducer createProducer(MaxwellContext context) {
-				return new EmbeddedTestProducer(context, rowBuffer);
-			}
-		});
+		config.setProducerFactory(context -> new EmbeddedTestProducer(context, rowBuffer));
 
 		final CountDownLatch latch = new CountDownLatch(1);
 		final MaxwellContext maxwellContext = maxwellContextFactory.createFor(config);

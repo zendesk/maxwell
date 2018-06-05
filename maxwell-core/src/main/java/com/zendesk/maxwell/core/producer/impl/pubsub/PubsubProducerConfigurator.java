@@ -2,8 +2,7 @@ package com.zendesk.maxwell.core.producer.impl.pubsub;
 
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.config.*;
-import com.zendesk.maxwell.core.producer.Producer;
-import com.zendesk.maxwell.core.producer.ProducerInstantiationException;
+import com.zendesk.maxwell.core.producer.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +11,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 @Service
-public class PubsubProducerConfigurator implements ExtensionConfigurator<Producer> {
+public class PubsubProducerConfigurator implements ProducerConfigurator<PubsubProducerConfiguration> {
 
 	private final ConfigurationSupport configurationSupport;
 
@@ -27,11 +26,6 @@ public class PubsubProducerConfigurator implements ExtensionConfigurator<Produce
 	}
 
 	@Override
-	public ExtensionType getExtensionType() {
-		return ExtensionType.PRODUCER;
-	}
-
-	@Override
 	public void configureCommandLineOptions(CommandLineOptionParserContext context) {
 		context.addOptionWithRequiredArgument( "pubsub_project_id", "provide a google cloud platform project id associated with the pubsub topic" );
 		context.addOptionWithRequiredArgument( "pubsub_topic", "optionally provide a pubsub topic to push to. default: maxwell" );
@@ -39,7 +33,7 @@ public class PubsubProducerConfigurator implements ExtensionConfigurator<Produce
 	}
 
 	@Override
-	public Optional<ExtensionConfiguration> parseConfiguration(Properties configurationValues) {
+	public Optional<PubsubProducerConfiguration> parseConfiguration(Properties configurationValues) {
 		PubsubProducerConfiguration config = new PubsubProducerConfiguration();
 		config.setPubsubProjectId(configurationSupport.fetchOption("pubsub_project_id", configurationValues, null));
 		config.setPubsubTopic(configurationSupport.fetchOption("pubsub_topic", configurationValues, "maxwell"));
@@ -48,10 +42,9 @@ public class PubsubProducerConfigurator implements ExtensionConfigurator<Produce
 	}
 
 	@Override
-	public Producer createInstance(MaxwellContext context) {
+	public Producer createInstance(MaxwellContext context, PubsubProducerConfiguration configuration) {
 		try {
-			PubsubProducerConfiguration config = context.getConfig().getProducerConfigOrThrowExceptionWhenNotDefined();
-			return new MaxwellPubsubProducer(context, config.getPubsubProjectId(), config.getPubsubTopic(), config.getDdlPubsubTopic());
+			return new MaxwellPubsubProducer(context, configuration.getPubsubProjectId(), configuration.getPubsubTopic(), configuration.getDdlPubsubTopic());
 		} catch (IOException e) {
 			throw new ProducerInstantiationException(e);
 		}

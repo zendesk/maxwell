@@ -87,14 +87,13 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 	private final KinesisProducer kinesisProducer;
 	private final String kinesisStream;
 
-	public MaxwellKinesisProducer(MaxwellContext context) {
+	public MaxwellKinesisProducer(MaxwellContext context, KinesisProducerConfiguration kinesisProducerConfiguration) {
 		super(context);
 
 		String partitionKey = context.getConfig().getProducerPartitionKey();
 		String partitionColumns = context.getConfig().getProducerPartitionColumns();
 		String partitionFallback = context.getConfig().getProducerPartitionFallback();
 
-		KinesisProducerConfiguration kinesisProducerConfiguration = context.getConfig().getProducerConfigOrThrowExceptionWhenNotDefined();
 		boolean kinesisMd5Keys = kinesisProducerConfiguration.isKinesisMd5Keys();
 		this.partitioner = new MaxwellKinesisPartitioner(partitionKey, partitionColumns, partitionFallback, kinesisMd5Keys);
 		this.kinesisStream = kinesisProducerConfiguration.getKinesisStream();

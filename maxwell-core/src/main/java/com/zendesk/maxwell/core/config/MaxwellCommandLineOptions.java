@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.core.config;
 
 import com.zendesk.maxwell.core.SpringLauncher;
+import com.zendesk.maxwell.core.producer.ProducerConfigurator;
 import joptsimple.BuiltinHelpFormatter;
 import joptsimple.OptionDescriptor;
 import joptsimple.OptionParser;
@@ -26,10 +27,10 @@ public class MaxwellCommandLineOptions extends AbstractCommandLineOptions {
 		return INSTANCE;
 	}
 
-	private final List<ExtensionConfigurator> configurators;
+	private final List<ProducerConfigurator> configurators;
 
 	@Autowired
-	public MaxwellCommandLineOptions(Optional<List<ExtensionConfigurator>> configurators) {
+	public MaxwellCommandLineOptions(Optional<List<ProducerConfigurator>> configurators) {
 		this.configurators = configurators.orElseGet(ArrayList::new);
 	}
 

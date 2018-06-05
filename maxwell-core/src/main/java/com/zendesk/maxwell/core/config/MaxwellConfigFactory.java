@@ -2,7 +2,6 @@ package com.zendesk.maxwell.core.config;
 
 import com.zendesk.maxwell.core.monitoring.MaxwellDiagnosticContext;
 import com.zendesk.maxwell.core.producer.EncryptionMode;
-import com.zendesk.maxwell.core.producer.ProducerExtensionConfigurators;
 import com.zendesk.maxwell.core.producer.ProducerFactory;
 import com.zendesk.maxwell.core.replication.BinlogPosition;
 import com.zendesk.maxwell.core.replication.Position;
@@ -19,12 +18,10 @@ public class MaxwellConfigFactory {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfigFactory.class);
 
 	private final ConfigurationSupport configurationSupport;
-	private final ProducerExtensionConfigurators producerExtensionConfigurators;
 
 	@Autowired
-	public MaxwellConfigFactory(ConfigurationSupport configurationSupport, ProducerExtensionConfigurators producerExtensionConfigurators) {
+	public MaxwellConfigFactory(ConfigurationSupport configurationSupport) {
 		this.configurationSupport = configurationSupport;
-		this.producerExtensionConfigurators = producerExtensionConfigurators;
 	}
 
 	public MaxwellConfig createNewDefaultConfiguration() {
@@ -42,7 +39,6 @@ public class MaxwellConfigFactory {
 
 		config.setDatabaseName(configurationSupport.fetchOption("schema_database", properties, "maxwell"));
 		config.getMaxwellMysql().database = config.getDatabaseName();
-
 
 		configureProducer(properties, config);
 
@@ -102,12 +98,6 @@ public class MaxwellConfigFactory {
 				}
 			}
 		}
-
-		//configurators should be executed as last step as they might overwrite existing settings.
-		if(producerType != null){
-			ExtensionConfiguration producerConfig = producerExtensionConfigurators.getByIdentifier(producerType).parseConfiguration(properties).orElse(null);
-			config.setProducerConfig(producerConfig);
-		}
 	}
 
 	private ProducerFactory fetchProducerFactory(final Properties properties) {
@@ -150,7 +140,7 @@ public class MaxwellConfigFactory {
 			if (initPositionSplit.length < 2)
 				throw new InvalidOptionException("Invalid init_position: " + initPosition, "--init_position");
 
-			Long pos = 0L;
+			Long pos;
 			try {
 				pos = Long.valueOf(initPositionSplit[1]);
 			} catch (NumberFormatException e) {

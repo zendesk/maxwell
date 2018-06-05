@@ -1,10 +1,9 @@
 package com.zendesk.maxwell.core.producer.impl.sqs;
 
-import com.zendesk.maxwell.core.config.ExtensionConfiguration;
+import com.zendesk.maxwell.core.producer.ProducerConfiguration;
 import com.zendesk.maxwell.core.config.InvalidOptionException;
-import com.zendesk.maxwell.core.config.MaxwellConfig;
 
-public class SQSProducerConfiguration implements ExtensionConfiguration {
+public class SQSProducerConfiguration implements ProducerConfiguration {
 	private final String sqsQueueUri;
 
 	public SQSProducerConfiguration(String sqsQueueUri) {
@@ -16,7 +15,7 @@ public class SQSProducerConfiguration implements ExtensionConfiguration {
 	}
 
 	@Override
-	public void validate(MaxwellConfig maxwellConfig) {
+	public void validate() {
 		if(sqsQueueUri == null) {
 			throw new InvalidOptionException("please specify a queue uri for sqs", "sqs_queue_uri");
 		}

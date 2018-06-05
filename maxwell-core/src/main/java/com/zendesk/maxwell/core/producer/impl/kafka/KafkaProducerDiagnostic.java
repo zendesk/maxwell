@@ -1,5 +1,6 @@
 package com.zendesk.maxwell.core.producer.impl.kafka;
 
+import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.monitoring.MaxwellDiagnostic;
 import com.zendesk.maxwell.core.monitoring.MaxwellDiagnosticResult;
@@ -16,14 +17,16 @@ import java.util.concurrent.CompletableFuture;
 
 public class KafkaProducerDiagnostic implements MaxwellDiagnostic {
 
-	private final MaxwellKafkaProducerWorker producer;
-	private final MaxwellConfig config;
+	private final MaxwellKafkaProducerWorker kafkaProducerWorker;
+	private final MaxwellConfig maxwellConfig;
+	private final KafkaProducerConfiguration producerConfiguration;
 	private final PositionStoreThread positionStoreThread;
 
-	public KafkaProducerDiagnostic(MaxwellKafkaProducerWorker producer, MaxwellConfig config, PositionStoreThread positionStoreThread) {
-		this.producer = producer;
-		this.config = config;
-		this.positionStoreThread = positionStoreThread;
+	public KafkaProducerDiagnostic(MaxwellKafkaProducerWorker kafkaProducerWorker, MaxwellContext context) {
+		this.kafkaProducerWorker = kafkaProducerWorker;
+		this.maxwellConfig = context.getConfig();
+		this.producerConfiguration = context.getProducerContext().getConfiguration();
+		this.positionStoreThread = context.getPositionStoreThread();
 	}
 
 	@Override
@@ -43,18 +46,17 @@ public class KafkaProducerDiagnostic implements MaxwellDiagnostic {
 
 	@Override
 	public String getResource() {
-		KafkaProducerConfiguration kafkaProducerConfiguration = config.getProducerConfigOrThrowExceptionWhenNotDefined();
-		return kafkaProducerConfiguration.getKafkaProperties().getProperty("bootstrap.servers");
+		return producerConfiguration.getKafkaProperties().getProperty("bootstrap.servers");
 	}
 
 	public CompletableFuture<Long> getLatency() {
 		DiagnosticCallback callback = new DiagnosticCallback();
 		try {
-			RowMap rowMap = new RowMap("insert", config.getDatabaseName(), "dummy", System.currentTimeMillis(),
+			RowMap rowMap = new RowMap("insert", maxwellConfig.getDatabaseName(), "dummy", System.currentTimeMillis(),
 					new ArrayList<>(), positionStoreThread.getPosition());
 			rowMap.setTXCommit();
-			ProducerRecord<String, String> record = producer.makeProducerRecord(rowMap);
-			producer.sendAsync(record, callback);
+			ProducerRecord<String, String> record = kafkaProducerWorker.makeProducerRecord(rowMap);
+			kafkaProducerWorker.sendAsync(record, callback);
 		} catch (Exception e) {
 			callback.latency.completeExceptionally(e);
 		}

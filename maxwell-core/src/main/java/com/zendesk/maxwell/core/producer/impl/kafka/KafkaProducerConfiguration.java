@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.producer.impl.kafka;
 
-import com.zendesk.maxwell.core.config.ExtensionConfiguration;
+import com.zendesk.maxwell.core.producer.ProducerConfiguration;
 import com.zendesk.maxwell.core.config.InvalidOptionException;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import org.slf4j.Logger;
@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 
-public class KafkaProducerConfiguration implements ExtensionConfiguration {
+public class KafkaProducerConfiguration implements ProducerConfiguration {
 	private static final Logger LOGGER = LoggerFactory.getLogger(KafkaProducerConfiguration.class);
 
 	public static final String DEFAULT_TOPIC = "maxwell";
@@ -87,21 +87,7 @@ public class KafkaProducerConfiguration implements ExtensionConfiguration {
 	}
 
 	@Override
-	public void validate(MaxwellConfig maxwellConfig) {
-		if ( !kafkaProperties.containsKey("bootstrap.servers") ) {
-			throw new InvalidOptionException("You must specify kafka.bootstrap.servers for the kafka producer!", "kafka");
-		}
-
-		if ( kafkaPartitionHash == null ) {
-			this.setKafkaPartitionHash(PARTITION_HASH_DEFAULT);
-		} else if ( !PARTITION_HASH_DEFAULT.equals(kafkaPartitionHash) && !PARTITION_HASH_MURMUR3.equals(kafkaPartitionHash) ) {
-			throw new InvalidOptionException("please specify --kafka_partition_hash=default|murmur3", "kafka_partition_hash");
-		}
-
-		if ( !KEY_FORMAT_HASH.equals(kafkaKeyFormat) && !KEY_FORMAT_ARRAY.equals(kafkaKeyFormat) ){
-			throw new InvalidOptionException("invalid kafka_key_format: " + this.getKafkaKeyFormat(), "kafka_key_format");
-		}
-
+	public void mergeWith(MaxwellConfig maxwellConfig) {
 		if (maxwellConfig.getProducerPartitionKey() == null && kafkaPartitionKey != null) {
 			LOGGER.warn("kafka_partition_by is deprecated, please use producer_partition_by");
 			maxwellConfig.setProducerPartitionKey(this.getKafkaPartitionKey());
@@ -115,6 +101,23 @@ public class KafkaProducerConfiguration implements ExtensionConfiguration {
 		if (maxwellConfig.getProducerPartitionFallback() == null && kafkaPartitionFallback != null) {
 			LOGGER.warn("kafka_partition_by_fallback is deprecated, please use producer_partition_by_fallback");
 			maxwellConfig.setProducerPartitionFallback(this.getKafkaPartitionFallback());
+		}
+	}
+
+	@Override
+	public void validate() {
+		if ( !kafkaProperties.containsKey("bootstrap.servers") ) {
+			throw new InvalidOptionException("You must specify kafka.bootstrap.servers for the kafka producer!", "kafka");
+		}
+
+		if ( kafkaPartitionHash == null ) {
+			this.setKafkaPartitionHash(PARTITION_HASH_DEFAULT);
+		} else if ( !PARTITION_HASH_DEFAULT.equals(kafkaPartitionHash) && !PARTITION_HASH_MURMUR3.equals(kafkaPartitionHash) ) {
+			throw new InvalidOptionException("please specify --kafka_partition_hash=default|murmur3", "kafka_partition_hash");
+		}
+
+		if ( !KEY_FORMAT_HASH.equals(kafkaKeyFormat) && !KEY_FORMAT_ARRAY.equals(kafkaKeyFormat) ){
+			throw new InvalidOptionException("invalid kafka_key_format: " + this.getKafkaKeyFormat(), "kafka_key_format");
 		}
 	}
 }
