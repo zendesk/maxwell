@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zendesk.maxwell.core.*;
 import com.zendesk.maxwell.core.config.BaseMaxwellDiagnosticConfig;
-import com.zendesk.maxwell.core.config.MaxwellDiagnosticConfig;
+import com.zendesk.maxwell.api.config.MaxwellDiagnosticConfig;
 import com.zendesk.maxwell.core.replication.BinlogConnectorDiagnostic;
 import org.junit.After;
 import org.junit.Before;

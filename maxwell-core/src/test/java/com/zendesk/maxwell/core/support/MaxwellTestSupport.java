@@ -2,6 +2,8 @@ package com.zendesk.maxwell.core.support;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.shyiko.mysql.binlog.network.SSLMode;
+import com.zendesk.maxwell.api.config.MaxwellFilter;
+import com.zendesk.maxwell.api.config.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.*;
 import com.zendesk.maxwell.core.config.*;
 import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducer;

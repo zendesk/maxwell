@@ -1,5 +1,6 @@
 package com.zendesk.maxwell.core.config;
 
+import com.zendesk.maxwell.api.config.MaxwellFilter;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.Map;

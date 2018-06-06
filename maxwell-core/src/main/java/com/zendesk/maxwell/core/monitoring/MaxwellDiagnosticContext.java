@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.monitoring;
 
-import com.zendesk.maxwell.core.config.MaxwellDiagnosticConfig;
+import com.zendesk.maxwell.api.config.MaxwellDiagnosticConfig;
 
 import java.util.List;
 

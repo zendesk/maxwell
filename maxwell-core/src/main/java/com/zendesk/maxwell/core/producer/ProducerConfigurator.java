@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.core.producer;
 
 import com.zendesk.maxwell.core.MaxwellContext;
-import com.zendesk.maxwell.core.config.CommandLineOptionParserContext;
+import com.zendesk.maxwell.api.config.CommandLineOptionParserContext;
 
 import java.util.Optional;
 import java.util.Properties;

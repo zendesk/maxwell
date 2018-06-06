@@ -1,6 +1,6 @@
-package com.zendesk.maxwell.core.config;
+package com.zendesk.maxwell.api.config;
 
-import com.zendesk.maxwell.core.MaxwellInvalidFilterException;
+import com.zendesk.maxwell.api.config.MaxwellInvalidFilterException;
 
 import java.util.Map;
 

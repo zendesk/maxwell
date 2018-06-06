@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.schema.ddl;
 
-import com.zendesk.maxwell.core.config.MaxwellFilter;
+import com.zendesk.maxwell.api.config.MaxwellFilter;
 import com.zendesk.maxwell.core.schema.Schema;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;

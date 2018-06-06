@@ -3,7 +3,7 @@ package com.zendesk.maxwell.core;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
-import com.zendesk.maxwell.core.config.MaxwellFilter;
+import com.zendesk.maxwell.api.config.MaxwellFilter;
 import com.zendesk.maxwell.core.monitoring.MaxwellDiagnosticContext;
 import com.zendesk.maxwell.core.monitoring.Metrics;
 import com.zendesk.maxwell.core.producer.Producer;

@@ -5,7 +5,7 @@ import com.zendesk.maxwell.core.MaxwellTestJSON;
 import com.zendesk.maxwell.core.SpringTestContextConfiguration;
 import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
 import com.zendesk.maxwell.core.errors.ProtectedAttributeNameException;
-import com.zendesk.maxwell.core.config.MaxwellOutputConfig;
+import com.zendesk.maxwell.api.config.MaxwellOutputConfig;
 import com.zendesk.maxwell.api.replication.BinlogPosition;
 import com.zendesk.maxwell.api.replication.Position;
 import org.junit.Assert;

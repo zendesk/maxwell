@@ -1,5 +1,6 @@
 package com.zendesk.maxwell.core.config;
 
+import com.zendesk.maxwell.api.config.CommandLineOptionParserContext;
 import joptsimple.OptionParser;
 
 public class BaseCommandLineOptionParserContext implements CommandLineOptionParserContext {

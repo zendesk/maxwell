@@ -2,7 +2,7 @@ package com.zendesk.maxwell.core.schema.ddl;
 
 import com.zendesk.maxwell.core.*;
 import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
-import com.zendesk.maxwell.core.config.MaxwellOutputConfig;
+import com.zendesk.maxwell.api.config.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.row.RowMap;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;

@@ -1,5 +1,6 @@
 package com.zendesk.maxwell.core.producer.impl.pubsub;
 
+import com.zendesk.maxwell.api.config.CommandLineOptionParserContext;
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.config.*;
 import com.zendesk.maxwell.core.producer.*;

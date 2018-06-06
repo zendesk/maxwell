@@ -8,7 +8,7 @@ import com.codahale.metrics.servlets.PingServlet;
 import com.zendesk.maxwell.core.ContextStartListener;
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
-import com.zendesk.maxwell.core.config.MaxwellDiagnosticConfig;
+import com.zendesk.maxwell.api.config.MaxwellDiagnosticConfig;
 import com.zendesk.maxwell.core.producer.ProducerConfigurators;
 import com.zendesk.maxwell.core.util.StoppableTask;
 import org.eclipse.jetty.server.Server;

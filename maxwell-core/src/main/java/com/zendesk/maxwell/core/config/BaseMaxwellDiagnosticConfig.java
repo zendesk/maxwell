@@ -1,5 +1,7 @@
 package com.zendesk.maxwell.core.config;
 
+import com.zendesk.maxwell.api.config.MaxwellDiagnosticConfig;
+
 public class BaseMaxwellDiagnosticConfig implements MaxwellDiagnosticConfig {
 	private boolean enable;
 	private long timeout;

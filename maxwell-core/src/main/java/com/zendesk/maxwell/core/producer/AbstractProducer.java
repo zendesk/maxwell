@@ -5,7 +5,7 @@ import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.zendesk.maxwell.core.MaxwellContext;
-import com.zendesk.maxwell.core.config.MaxwellOutputConfig;
+import com.zendesk.maxwell.api.config.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.monitoring.MaxwellDiagnostic;
 import com.zendesk.maxwell.core.monitoring.Metrics;
 import com.zendesk.maxwell.core.util.StoppableTask;

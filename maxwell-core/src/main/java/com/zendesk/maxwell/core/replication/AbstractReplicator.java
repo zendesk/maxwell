@@ -4,7 +4,7 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
 import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.core.bootstrap.Bootstrapper;
-import com.zendesk.maxwell.core.config.MaxwellFilter;
+import com.zendesk.maxwell.api.config.MaxwellFilter;
 import com.zendesk.maxwell.core.config.MaxwellFilterSupport;
 import com.zendesk.maxwell.core.monitoring.Metrics;
 import com.zendesk.maxwell.core.producer.Producer;

@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core.config;
+package com.zendesk.maxwell.api.config;
 
 public interface CommandLineOptionParserContext {
 	void addOption(String name, String description);
