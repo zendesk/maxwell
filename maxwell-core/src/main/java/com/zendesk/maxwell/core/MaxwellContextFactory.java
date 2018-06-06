@@ -3,7 +3,6 @@ package com.zendesk.maxwell.core;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.producer.ProducerConfigurators;
-import com.zendesk.maxwell.core.util.Logging;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -42,7 +41,7 @@ public class MaxwellContextFactory {
 	}
 
 	private MaxwellContext createFor(MaxwellConfig config, Properties configurationOptions) throws SQLException, URISyntaxException {
-		MaxwellContext context = new MaxwellContext(config, contextStartListeners);
+		MaxwellContext context = new BaseMaxwellContext(config, contextStartListeners);
 		producerConfigurators.createAndRegister(context, configurationOptions);
 		context.probeConnections();
 		return context;
