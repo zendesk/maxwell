@@ -105,7 +105,7 @@ public class MaxwellBenchmark {
 					maxwellMysqlConfig.setPassword("");
 					maxwellConfig.setSchemaMysql(maxwellMysqlConfig);
 					maxwellConfig.setReplicationMysql(maxwellMysqlConfig);
-					maxwellConfig.setProducerFactory(new BenchmarkProducerFactory());
+					maxwellConfig.setCustomProducerFactory(BenchmarkProducerFactory.class.getName());
 				}
 			} catch (Exception e) {
 				throw new LauncherException("Failed to setup mysql test server for benchmark", e);

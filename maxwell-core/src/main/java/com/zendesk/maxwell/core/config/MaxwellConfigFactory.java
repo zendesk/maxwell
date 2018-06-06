@@ -2,7 +2,6 @@ package com.zendesk.maxwell.core.config;
 
 import com.zendesk.maxwell.api.config.MaxwellInvalidFilterException;
 import com.zendesk.maxwell.api.producer.EncryptionMode;
-import com.zendesk.maxwell.core.producer.ProducerFactory;
 import com.zendesk.maxwell.api.replication.BinlogPosition;
 import com.zendesk.maxwell.api.replication.Position;
 import org.slf4j.Logger;
@@ -87,7 +86,8 @@ public class MaxwellConfigFactory {
 		config.setProducerPartitionKey(configurationSupport.fetchOption("producer_partition_by", properties, "database"));
 		config.setProducerPartitionColumns(configurationSupport.fetchOption("producer_partition_columns", properties, null));
 		config.setProducerPartitionFallback(configurationSupport.fetchOption("producer_partition_by_fallback", properties, null));
-		config.setProducerFactory(fetchProducerFactory(properties));
+		config.setCustomProducerFactory(configurationSupport.fetchOption("custom_producer.factory", properties, null));
+
 		String producerType = configurationSupport.fetchOption("producer", properties, "stdout");
 		config.setProducerType(producerType);
 		if (properties != null) {
@@ -97,23 +97,6 @@ public class MaxwellConfigFactory {
 					config.getCustomProducerProperties().setProperty(k.replace("custom_producer.", ""), properties.getProperty(k));
 				}
 			}
-		}
-	}
-
-	private ProducerFactory fetchProducerFactory(final Properties properties) {
-		String name = "custom_producer.factory";
-		String strOption = configurationSupport.fetchOption(name, properties, null);
-		if (strOption != null) {
-			try {
-				Class<?> clazz = Class.forName(strOption);
-				return ProducerFactory.class.cast(clazz.newInstance());
-			} catch (ClassNotFoundException e) {
-				throw new InvalidOptionException("Invalid value for " + name + ", class not found", "--" + name);
-			} catch (IllegalAccessException | InstantiationException | ClassCastException e) {
-				throw new InvalidOptionException("Invalid value for " + name + ", class instantiation error", "--" + name);
-			}
-		} else {
-			return null;
 		}
 	}
 
@@ -205,7 +188,7 @@ public class MaxwellConfigFactory {
 		if (excludeColumns != null) {
 			for (String s : excludeColumns.split(",")) {
 				try {
-					outputConfig.getExcludeColumns().add(MaxwellConfig.compileStringToPattern(s));
+					outputConfig.getExcludeColumns().add(MaxwellFilterSupport.compileStringToPattern(s));
 				} catch (MaxwellInvalidFilterException e) {
 					throw new InvalidUsageException("invalid exclude_columns: '" + excludeColumns + "': " + e.getMessage());
 				}

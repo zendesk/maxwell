@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.core.producer;
 
 import com.zendesk.maxwell.core.MaxwellContext;
+import com.zendesk.maxwell.core.config.InvalidOptionException;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.util.StoppableTask;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,7 @@ public class ProducerConfigurators {
 	}
 
 	private ProducerContext create(MaxwellContext maxwellContext, Properties settings, MaxwellConfig config) {
-		if ( config.getProducerFactory() != null ) {
+		if ( config.getCustomProducerFactory() != null ) {
 			return createContextForCustomProducer(maxwellContext, config);
 		} else {
 			return createContextForPredefinedProducer(maxwellContext, settings);
@@ -39,8 +40,20 @@ public class ProducerConfigurators {
 
 	private ProducerContext createContextForCustomProducer(MaxwellContext maxwellContext, MaxwellConfig config) {
 		PropertiesProducerConfiguration configuration = new PropertiesProducerConfiguration(config.getCustomProducerProperties());
-		Producer producer = config.getProducerFactory().createProducer(maxwellContext);
+		ProducerFactory producerFactory = initializeCustomProducerFactory(config);
+		Producer producer = producerFactory.createProducer(maxwellContext);
 		return new ProducerContext(configuration, producer);
+	}
+
+	private ProducerFactory initializeCustomProducerFactory(final MaxwellConfig config) {
+		try {
+			Class<?> clazz = Class.forName(config.getCustomProducerFactory());
+			return ProducerFactory.class.cast(clazz.newInstance());
+		} catch (ClassNotFoundException e) {
+			throw new InvalidOptionException("Invalid value for custom_producer.factory, class "+config.getCustomProducerFactory()+" not found", e, "--custom_producer.factory");
+		} catch (IllegalAccessException | InstantiationException | ClassCastException e) {
+			throw new InvalidOptionException("Invalid value for custom_producer.factory, class instantiation error", e, "--custom_producer.factory");
+		}
 	}
 
 	private ProducerContext createContextForPredefinedProducer(MaxwellContext maxwellContext, Properties settings) {

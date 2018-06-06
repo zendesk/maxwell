@@ -1,9 +1,11 @@
 package com.zendesk.maxwell.core.config;
 
 import com.zendesk.maxwell.api.config.MaxwellFilter;
+import com.zendesk.maxwell.api.config.MaxwellInvalidFilterException;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class MaxwellFilterSupport {
 	public static boolean isSystemBlacklisted(String databaseName, String tableName) {
@@ -24,6 +26,18 @@ public class MaxwellFilterSupport {
 			return true;
 		} else {
 			return filter.matchesValues(data);
+		}
+	}
+
+	public static Pattern compileStringToPattern(String name) throws MaxwellInvalidFilterException {
+		name = name.trim();
+		if ( name.startsWith("/") ) {
+			if ( !name.endsWith("/") ) {
+				throw new MaxwellInvalidFilterException("Invalid regular expression: " + name);
+			}
+			return Pattern.compile(name.substring(1, name.length() - 1));
+		} else {
+			return Pattern.compile("^" + Pattern.quote(name) + "$");
 		}
 	}
 }

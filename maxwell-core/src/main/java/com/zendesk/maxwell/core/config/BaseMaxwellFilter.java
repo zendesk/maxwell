@@ -126,7 +126,7 @@ public class BaseMaxwellFilter implements MaxwellFilter {
 	}
 
 	private Pattern compile(String name) throws MaxwellInvalidFilterException {
-		return MaxwellConfig.compileStringToPattern(name);
+		return MaxwellFilterSupport.compileStringToPattern(name);
 	}
 
 	private boolean filterListsInclude(List<Pattern> includeList, List<Pattern> excludeList, String name) {

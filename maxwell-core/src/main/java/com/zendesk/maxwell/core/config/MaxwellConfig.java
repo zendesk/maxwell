@@ -1,26 +1,12 @@
 package com.zendesk.maxwell.core.config;
 
 import com.zendesk.maxwell.api.config.*;
-import com.zendesk.maxwell.core.producer.ProducerFactory;
 import com.zendesk.maxwell.api.replication.Position;
 
 import java.util.Properties;
-import java.util.regex.Pattern;
 
 public interface MaxwellConfig {
 	String GTID_MODE_ENV = "GTID_MODE";
-
-	static Pattern compileStringToPattern(String name) throws MaxwellInvalidFilterException {
-		name = name.trim();
-		if ( name.startsWith("/") ) {
-			if ( !name.endsWith("/") ) {
-				throw new MaxwellInvalidFilterException("Invalid regular expression: " + name);
-			}
-			return Pattern.compile(name.substring(1, name.length() - 1));
-		} else {
-			return Pattern.compile("^" + Pattern.quote(name) + "$");
-		}
-	}
 
 	void validate();
 
@@ -36,7 +22,7 @@ public interface MaxwellConfig {
 
 	String getDatabaseName();
 
-	ProducerFactory getProducerFactory();
+	String getCustomProducerFactory();
 
 	Properties getCustomProducerProperties();
 

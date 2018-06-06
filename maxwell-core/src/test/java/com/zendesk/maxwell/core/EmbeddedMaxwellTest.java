@@ -5,6 +5,8 @@ import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
 import com.zendesk.maxwell.core.config.BaseMaxwellMysqlConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.producer.AbstractProducer;
+import com.zendesk.maxwell.core.producer.Producer;
+import com.zendesk.maxwell.core.producer.ProducerFactory;
 import com.zendesk.maxwell.core.row.RowMap;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,10 +36,9 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testCustomMetricsAndProducer() throws Exception {
 		BaseMaxwellConfig config = getConfig(server);
-		final BlockingQueue<RowMap> rowBuffer = new LinkedBlockingQueue<>();
 		config.setMetricsReportingType("embedded");
 		config.setMetricsPrefix("prefix");
-		config.setProducerFactory(context -> new EmbeddedTestProducer(context, rowBuffer));
+		config.setCustomProducerFactory(EmbeddedTestProducerFactory.class.getName());
 
 		final CountDownLatch latch = new CountDownLatch(1);
 		final MaxwellContext maxwellContext = maxwellContextFactory.createFor(config);
@@ -46,7 +47,7 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 		latch.await();
 
 		server.execute("insert into minimal set account_id = 1, text_field='hello'");
-		RowMap rowMap = rowBuffer.poll(10, TimeUnit.SECONDS);
+		RowMap rowMap = ((EmbeddedTestProducer)maxwellContext.getProducer()).poll(10, TimeUnit.SECONDS);
 
 		maxwell.terminate(maxwellContext);
 		Exception maxwellError = maxwellContext.getError();
@@ -70,17 +71,27 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 		return config;
 	}
 
-	private static class EmbeddedTestProducer extends AbstractProducer {
-		private BlockingQueue<RowMap> rowBuffer;
+	public static class EmbeddedTestProducerFactory implements ProducerFactory {
+		@Override
+		public Producer createProducer(MaxwellContext context) {
+			return new EmbeddedTestProducer(context);
+		}
+	}
 
-		EmbeddedTestProducer(MaxwellContext context, BlockingQueue<RowMap> rowBuffer) {
+	public static class EmbeddedTestProducer extends AbstractProducer {
+		private final BlockingQueue<RowMap> rowBuffer = new LinkedBlockingQueue<>();
+
+		EmbeddedTestProducer(MaxwellContext context) {
 			super(context);
-			this.rowBuffer = rowBuffer;
 		}
 
 		@Override
 		public void push(RowMap r) throws Exception {
 			rowBuffer.put(r);
+		}
+
+		public RowMap poll(long timeout, TimeUnit timeUnit) throws InterruptedException {
+			return rowBuffer.poll(timeout, timeUnit);
 		}
 	}
 }

@@ -5,7 +5,6 @@ import com.zendesk.maxwell.api.config.MaxwellFilter;
 import com.zendesk.maxwell.api.config.MaxwellMysqlConfig;
 import com.zendesk.maxwell.api.config.MaxwellDiagnosticConfig;
 import com.zendesk.maxwell.api.config.MaxwellOutputConfig;
-import com.zendesk.maxwell.core.producer.ProducerFactory;
 import com.zendesk.maxwell.api.replication.Position;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -24,7 +23,7 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 	private Boolean gtidMode;
 	private String databaseName;
 
-	private ProducerFactory producerFactory; // producerFactory has precedence over producerType
+	private String customProducerFactory; // customProducerFactory has precedence over producerType
 	private final Properties customProducerProperties;
 	private String producerType;
 
@@ -208,12 +207,12 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 	}
 
 	@Override
-	public ProducerFactory getProducerFactory() {
-		return producerFactory;
+	public String getCustomProducerFactory() {
+		return customProducerFactory;
 	}
 
-	public void setProducerFactory(ProducerFactory producerFactory) {
-		this.producerFactory = producerFactory;
+	public void setCustomProducerFactory(String customProducerFactory) {
+		this.customProducerFactory = customProducerFactory;
 	}
 
 	@Override
