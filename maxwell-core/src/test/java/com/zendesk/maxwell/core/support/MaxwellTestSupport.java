@@ -6,10 +6,8 @@ import com.zendesk.maxwell.core.*;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
-import com.zendesk.maxwell.core.producer.ProducerConfigurators;
 import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducer;
 import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
-import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducerConfiguration;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.schema.Schema;
@@ -46,8 +44,6 @@ public class MaxwellTestSupport {
 	private MaxwellConfigFactory maxwellConfigFactory;
 	@Autowired
 	private MaxwellConfigTestSupport maxwellConfigTestSupport;
-	@Autowired
-	private ProducerConfigurators producerConfigurators;
 
 	public static MysqlIsolatedServer setupServer(String extraParams) throws Exception {
 		MysqlIsolatedServer server = new MysqlIsolatedServer();
@@ -146,28 +142,19 @@ public class MaxwellTestSupport {
 
 	public List<RowMap> getRowsWithReplicator(final MysqlIsolatedServer mysql, final MaxwellFilter filter, final MaxwellTestSupportCallback callback, final Optional<MaxwellOutputConfig> optionalOutputConfig) throws Exception {
 		final ArrayList<RowMap> list = new ArrayList<>();
+
 		clearSchemaStore(mysql);
 
-		Properties configurationOptions = new Properties();
-		configurationOptions.put("user", "maxwell");
-		configurationOptions.put("password", "maxwell");
-		configurationOptions.put("host", "localhost");
-		configurationOptions.put("port", ""+mysql.getPort());
-		configurationOptions.put("sslMode", SSLMode.DISABLED.name());
-		configurationOptions.put("replication_user", "maxwell");
-		configurationOptions.put("replication_password", "maxwell");
-		configurationOptions.put("replication_host", "localhost");
-		configurationOptions.put("replication_port", ""+mysql.getPort());
-		configurationOptions.put("replication_sslMode", SSLMode.DISABLED.name());
-		configurationOptions.put("bootstrapper", "sync");
-		configurationOptions.put("producer", "buffer");
-		Position initialPosition = capture(mysql.getConnection());
-		configurationOptions.put("init_position", initialPosition.toCommandline());
+		MaxwellConfig config = maxwellConfigFactory.createNewDefaultConfiguration();
 
-		MaxwellConfig config = maxwellConfigFactory.createFor(configurationOptions);
-		config.setFilter(filter);
-
+		config.getMaxwellMysql().user = "maxwell";
+		config.getMaxwellMysql().password = "maxwell";
+		config.getMaxwellMysql().host = "localhost";
+		config.getMaxwellMysql().port = mysql.getPort();
+		config.getMaxwellMysql().sslMode = SSLMode.DISABLED;
+		config.setReplicationMysql(config.getMaxwellMysql());
 		final MaxwellOutputConfig outputConfig = optionalOutputConfig.orElseGet(MaxwellOutputConfig::new);
+
 		if ( filter != null ) {
 			if ( filter.isDatabaseWhitelist() )
 				filter.includeDatabase("test");
@@ -175,11 +162,16 @@ public class MaxwellTestSupport {
 				filter.includeTable("boundary");
 		}
 
+		config.setFilter(filter);
+		config.setBootstrapperType("sync");
+		config.setProducerType("buffer");
+
 		callback.beforeReplicatorStart(mysql);
 
+		config.setInitPosition(capture(mysql.getConnection()));
 		final String waitObject = "";
+
 		final MaxwellContext maxwellContext = maxwellContextFactory.createFor(config);
-		producerConfigurators.createAndRegister(maxwellContext, configurationOptions);
 		maxwellContext.configureOnReplicationStartEventHandler((c) -> {
 			synchronized(waitObject) {
 				waitObject.notify();
