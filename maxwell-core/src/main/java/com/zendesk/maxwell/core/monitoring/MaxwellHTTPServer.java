@@ -29,10 +29,14 @@ public class MaxwellHTTPServer implements ContextStartListener {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellHTTPServer.class);
 
 	private final Producers producers;
+	private final MetricRegistry metricRegistry;
+	private final HealthCheckRegistry healthCheckRegistry;
 
 	@Autowired
-	public MaxwellHTTPServer(Producers producers) {
+	public MaxwellHTTPServer(Producers producers, MetricRegistry metricRegistry, HealthCheckRegistry healthCheckRegistry) {
 		this.producers = producers;
+		this.metricRegistry = metricRegistry;
+		this.healthCheckRegistry = healthCheckRegistry;
 	}
 
 	@Override
@@ -48,8 +52,8 @@ public class MaxwellHTTPServer implements ContextStartListener {
 			int port = context.getConfig().getHttpPort();
 			String httpBindAddress = context.getConfig().getHttpBindAddress();
 			String pathPrefix = context.getConfig().getHttpPathPrefix();
-			context.getHealthCheckRegistry().register("MaxwellHealth", new MaxwellHealthCheck(context.getProducer()));
-			MaxwellHTTPServerWorker maxwellHTTPServerWorker = new MaxwellHTTPServerWorker(httpBindAddress, port, pathPrefix, context.getMetricRegistry(), context.getHealthCheckRegistry(), diagnosticContext);
+			healthCheckRegistry.register("MaxwellHealth", new MaxwellHealthCheck(context.getProducer()));
+			MaxwellHTTPServerWorker maxwellHTTPServerWorker = new MaxwellHTTPServerWorker(httpBindAddress, port, pathPrefix, metricRegistry, healthCheckRegistry, diagnosticContext);
 			Thread thread = new Thread(maxwellHTTPServerWorker);
 
 			context.addTask(maxwellHTTPServerWorker);

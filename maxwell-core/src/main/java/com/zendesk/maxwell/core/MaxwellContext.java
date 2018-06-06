@@ -28,10 +28,6 @@ import java.util.function.Consumer;
 public interface MaxwellContext {
 	MaxwellConfig getConfig();
 
-	MetricRegistry getMetricRegistry();
-
-	HealthCheckRegistry getHealthCheckRegistry();
-
 	Connection getReplicationConnection() throws SQLException;
 
 	ConnectionPool getReplicationConnectionPool();

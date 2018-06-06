@@ -56,7 +56,7 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 		}
 
 		assertThat(rowMap, is(notNullValue()));
-		assertTrue(maxwellContext.getMetricRegistry().getCounters().get("prefix.row.count").getCount() > 0);
+		assertTrue(maxwellContext.getMetrics().getRegistry().getCounters().get("prefix.row.count").getCount() > 0);
 	}
 
 	private BaseMaxwellConfig getConfig(MysqlIsolatedServer mysql) {

@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.coursera.metrics.datadog.DatadogReporter.Expansion.*;
@@ -30,6 +31,7 @@ public class MaxwellMetrics implements Metrics {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellMetrics.class);
 	private final MetricRegistry metricRegistry;
 	private String metricsPrefix;
+	private final List<String> registeredMetrics = new ArrayList<>();
 
 	public MaxwellMetrics(MaxwellConfig config, MetricRegistry metricRegistry) {
 		this.metricRegistry = metricRegistry;
@@ -130,6 +132,14 @@ public class MaxwellMetrics implements Metrics {
 
 	@Override
 	public <T extends Metric> void register(String name, T metric) throws IllegalArgumentException {
+		registeredMetrics.add(name);
 		getRegistry().register(name, metric);
+	}
+
+	@Override
+	public void unregisterAll(){
+		for(String name : registeredMetrics){
+			getRegistry().remove(name);
+		}
 	}
 }

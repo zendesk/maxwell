@@ -48,8 +48,6 @@ public class BaseMaxwellContext implements MaxwellContext {
 	private ProducerContext producerContext;
 
 	private final TaskManager taskManager;
-	private final MetricRegistry metricRegistry;
-	private final HealthCheckRegistry healthCheckRegistry;
 
 	private volatile Exception error;
 
@@ -66,17 +64,11 @@ public class BaseMaxwellContext implements MaxwellContext {
 
 	private final List<ContextStartListener> contextStartListenersEventHandler;
 
-	public BaseMaxwellContext(MaxwellConfig config) throws SQLException, URISyntaxException {
-		this(config, Collections.emptyList());
-	}
-
-	public BaseMaxwellContext(MaxwellConfig config, List<ContextStartListener> contextStartListenersEventHandler) throws SQLException, URISyntaxException {
+	public BaseMaxwellContext(MaxwellConfig config, MetricRegistry metricRegistry, List<ContextStartListener> contextStartListenersEventHandler) throws SQLException, URISyntaxException {
 		this.config = config;
 		this.config.validate();
 
 		this.taskManager = new TaskManager();
-		this.metricRegistry = new MetricRegistry();
-		this.healthCheckRegistry = new HealthCheckRegistry();
 
 		this.metrics = new MaxwellMetrics(config, metricRegistry);
 		this.contextStartListenersEventHandler = contextStartListenersEventHandler;
@@ -121,16 +113,6 @@ public class BaseMaxwellContext implements MaxwellContext {
 	@Override
 	public MaxwellConfig getConfig() {
 		return this.config;
-	}
-
-	@Override
-	public MetricRegistry getMetricRegistry() {
-		return metricRegistry;
-	}
-
-	@Override
-	public HealthCheckRegistry getHealthCheckRegistry() {
-		return healthCheckRegistry;
 	}
 
 	@Override
@@ -259,6 +241,8 @@ public class BaseMaxwellContext implements MaxwellContext {
 		if (this.error == null) {
 			this.error = error;
 		}
+
+		metrics.unregisterAll();
 
 		if (taskManager.requestStop()) {
 			if (this.error == null && this.replicator != null) {
