@@ -112,7 +112,7 @@ public class MaxwellTestSupport {
 		mysql.execute("drop database if exists maxwell");
 	}
 
-	public List<RowMap> getRowsWithReplicator(final MysqlIsolatedServer mysql, BaseMaxwellFilter filter, final String queries[], final String before[]) throws Exception {
+	public List<RowMap> getRowsWithReplicator(final MysqlIsolatedServer mysql, MaxwellFilter filter, final String queries[], final String before[]) throws Exception {
 		MaxwellTestSupportCallback callback = new MaxwellTestSupportCallback() {
 			@Override
 			public void afterReplicatorStart(MysqlIsolatedServer mysql) throws SQLException {
@@ -137,7 +137,7 @@ public class MaxwellTestSupport {
 		return Position.capture(c, inGtidMode());
 	}
 
-	public List<RowMap> getRowsWithReplicator(final MysqlIsolatedServer mysql, final BaseMaxwellFilter filter, final MaxwellTestSupportCallback callback, final Optional<MaxwellOutputConfig> optionalOutputConfig) throws Exception {
+	public List<RowMap> getRowsWithReplicator(final MysqlIsolatedServer mysql, final MaxwellFilter filter, final MaxwellTestSupportCallback callback, final Optional<MaxwellOutputConfig> optionalOutputConfig) throws Exception {
 		final ArrayList<RowMap> list = new ArrayList<>();
 
 		clearSchemaStore(mysql);

@@ -16,7 +16,7 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 	private BaseMaxwellMysqlConfig replicationMysql;
 	private BaseMaxwellMysqlConfig schemaMysql;
 	private BaseMaxwellMysqlConfig maxwellMysql;
-	private BaseMaxwellFilter filter;
+	private MaxwellFilter filter;
 	private Boolean gtidMode;
 	private String databaseName;
 
@@ -32,7 +32,7 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 
 	private Long producerAckTimeout;
 
-	private BaseMaxwellOutputConfig outputConfig;
+	private MaxwellOutputConfig outputConfig;
 	private String logLevel;
 
 	private int httpPort;
@@ -177,11 +177,11 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 	}
 
 	@Override
-	public BaseMaxwellFilter getFilter() {
+	public MaxwellFilter getFilter() {
 		return filter;
 	}
 
-	public void setFilter(BaseMaxwellFilter filter) {
+	public void setFilter(MaxwellFilter filter) {
 		this.filter = filter;
 	}
 
@@ -279,7 +279,7 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 		return outputConfig != null ? outputConfig : new BaseMaxwellOutputConfig();
 	}
 
-	public void setOutputConfig(BaseMaxwellOutputConfig outputConfig) {
+	public void setOutputConfig(MaxwellOutputConfig outputConfig) {
 		this.outputConfig = outputConfig;
 	}
 
