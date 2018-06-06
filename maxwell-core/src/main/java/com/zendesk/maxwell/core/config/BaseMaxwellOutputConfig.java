@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-
 public class BaseMaxwellOutputConfig implements MaxwellOutputConfig {
 	private boolean includesBinlogPosition;
 	private boolean includesGtidPosition;
@@ -22,17 +21,16 @@ public class BaseMaxwellOutputConfig implements MaxwellOutputConfig {
 	private String secretKey;
 
 	public BaseMaxwellOutputConfig() {
-		this.setIncludesBinlogPosition(false);
-		this.setIncludesGtidPosition(false);
-		this.setIncludesCommitInfo(true);
-		this.setIncludesNulls(true);
-		this.setIncludesServerId(false);
-		this.setIncludesThreadId(false);
-		this.setIncludesRowQuery(false);
-		this.setOutputDDL(false);
-		this.setExcludeColumns(new ArrayList<>());
-		this.setEncryptionMode(EncryptionMode.ENCRYPT_NONE);
-		this.setSecretKey(null);
+		includesBinlogPosition = false;
+		includesGtidPosition = false;
+		includesCommitInfo = true;
+		includesNulls = true;
+		includesServerId = false;
+		includesThreadId = false;
+		includesRowQuery = false;
+		outputDDL = false;
+		excludeColumns = new ArrayList<>();
+		encryptionMode = EncryptionMode.ENCRYPT_NONE;
 	}
 
 	@Override

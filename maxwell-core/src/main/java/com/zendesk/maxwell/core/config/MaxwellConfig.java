@@ -38,22 +38,6 @@ public interface MaxwellConfig {
 
 	String getDatabaseName();
 
-	String getIncludeDatabases();
-
-	String getExcludeDatabases();
-
-	String getIncludeTables();
-
-	String getExcludeTables();
-
-	String getExcludeColumns();
-
-	String getBlacklistDatabases();
-
-	String getBlacklistTables();
-
-	String getIncludeColumnValues();
-
 	ProducerFactory getProducerFactory();
 
 	Properties getCustomProducerProperties();

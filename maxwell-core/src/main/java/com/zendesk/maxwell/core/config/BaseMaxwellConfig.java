@@ -3,7 +3,6 @@ package com.zendesk.maxwell.core.config;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.github.shyiko.mysql.binlog.network.SSLMode;
-import com.zendesk.maxwell.core.MaxwellInvalidFilterException;
 import com.zendesk.maxwell.core.producer.ProducerFactory;
 import com.zendesk.maxwell.core.replication.Position;
 import org.apache.commons.lang3.ArrayUtils;
@@ -18,21 +17,10 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 
 	private BaseMaxwellMysqlConfig replicationMysql;
 	private BaseMaxwellMysqlConfig schemaMysql;
-
 	private BaseMaxwellMysqlConfig maxwellMysql;
 	private MaxwellFilter filter;
 	private Boolean gtidMode;
-
 	private String databaseName;
-
-	private String includeDatabases;
-	private String excludeDatabases;
-	private String includeTables;
-	private String excludeTables;
-	private String excludeColumns;
-	private String blacklistDatabases;
-	private String blacklistTables;
-	private String includeColumnValues;
 
 	private ProducerFactory producerFactory; // producerFactory has precedence over producerType
 	private final Properties customProducerProperties;
@@ -141,26 +129,8 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 			schemaMysql.setSslMode(maxwellMysql.getSslMode());
 		}
 
-		if (filter == null) {
-			try {
-				filter = new MaxwellFilter(includeDatabases, excludeDatabases, includeTables, excludeTables, blacklistDatabases, blacklistTables, includeColumnValues);
-			} catch (MaxwellInvalidFilterException e) {
-				throw new InvalidUsageException("Invalid filter options: " + e.getLocalizedMessage());
-			}
-		}
-
 		if (metricsDatadogType != null && metricsDatadogType.contains("http") && StringUtils.isEmpty(metricsDatadogAPIKey)) {
 			throw new InvalidOptionException("please specify metrics_datadog_apikey when metrics_datadog_type = http");
-		}
-
-		if (excludeColumns != null) {
-			for (String s : excludeColumns.split(",")) {
-				try {
-					getOutputConfig().getExcludeColumns().add(MaxwellConfig.compileStringToPattern(s));
-				} catch (MaxwellInvalidFilterException e) {
-					throw new InvalidUsageException("invalid exclude_columns: '" + excludeColumns + "': " + e.getMessage());
-				}
-			}
 		}
 
 		if (getOutputConfig().isEncryptionEnabled() && getOutputConfig().getSecretKey() == null)
@@ -238,78 +208,6 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 
 	public void setDatabaseName(String databaseName) {
 		this.databaseName = databaseName;
-	}
-
-	@Override
-	public String getIncludeDatabases() {
-		return includeDatabases;
-	}
-
-	public void setIncludeDatabases(String includeDatabases) {
-		this.includeDatabases = includeDatabases;
-	}
-
-	@Override
-	public String getExcludeDatabases() {
-		return excludeDatabases;
-	}
-
-	public void setExcludeDatabases(String excludeDatabases) {
-		this.excludeDatabases = excludeDatabases;
-	}
-
-	@Override
-	public String getIncludeTables() {
-		return includeTables;
-	}
-
-	public void setIncludeTables(String includeTables) {
-		this.includeTables = includeTables;
-	}
-
-	@Override
-	public String getExcludeTables() {
-		return excludeTables;
-	}
-
-	public void setExcludeTables(String excludeTables) {
-		this.excludeTables = excludeTables;
-	}
-
-	@Override
-	public String getExcludeColumns() {
-		return excludeColumns;
-	}
-
-	public void setExcludeColumns(String excludeColumns) {
-		this.excludeColumns = excludeColumns;
-	}
-
-	@Override
-	public String getBlacklistDatabases() {
-		return blacklistDatabases;
-	}
-
-	public void setBlacklistDatabases(String blacklistDatabases) {
-		this.blacklistDatabases = blacklistDatabases;
-	}
-
-	@Override
-	public String getBlacklistTables() {
-		return blacklistTables;
-	}
-
-	public void setBlacklistTables(String blacklistTables) {
-		this.blacklistTables = blacklistTables;
-	}
-
-	@Override
-	public String getIncludeColumnValues() {
-		return includeColumnValues;
-	}
-
-	public void setIncludeColumnValues(String includeColumnValues) {
-		this.includeColumnValues = includeColumnValues;
 	}
 
 	@Override

@@ -1,5 +1,6 @@
 package com.zendesk.maxwell.core.config;
 
+import com.zendesk.maxwell.core.MaxwellInvalidFilterException;
 import com.zendesk.maxwell.core.producer.EncryptionMode;
 import com.zendesk.maxwell.core.producer.ProducerFactory;
 import com.zendesk.maxwell.core.replication.BinlogPosition;
@@ -76,6 +77,7 @@ public class MaxwellConfigFactory {
 		configureDiagnostics(properties, config);
 
 		configureReplicationSettings(properties, config);
+		configureFilter(properties, config);
 		configureOutputConfig(properties, config);
 		return config;
 	}
@@ -123,15 +125,6 @@ public class MaxwellConfigFactory {
 	}
 
 	private void configureReplicationSettings(final Properties properties, final BaseMaxwellConfig config) {
-		config.setIncludeDatabases(configurationSupport.fetchOption("include_dbs", properties, null));
-		config.setExcludeDatabases(configurationSupport.fetchOption("exclude_dbs", properties, null));
-		config.setIncludeTables(configurationSupport.fetchOption("include_tables", properties, null));
-		config.setExcludeTables(configurationSupport.fetchOption("exclude_tables", properties, null));
-		config.setBlacklistDatabases(configurationSupport.fetchOption("blacklist_dbs", properties, null));
-		config.setBlacklistTables(configurationSupport.fetchOption("blacklist_tables", properties, null));
-		config.setIncludeColumnValues(configurationSupport.fetchOption("include_column_values", properties, null));
-		config.setExcludeColumns(configurationSupport.fetchOption("exclude_columns", properties, null));
-
 		if (properties.containsKey("init_position")) {
 			String initPosition = properties.getProperty("init_position");
 			String[] initPositionSplit = initPosition.split(":");
@@ -163,6 +156,21 @@ public class MaxwellConfigFactory {
 		config.setIgnoreProducerError(configurationSupport.fetchBooleanOption("ignore_producer_error", properties, true));
 	}
 
+	private void configureFilter(Properties properties, BaseMaxwellConfig config) {
+		try {
+			String includeDatabases = configurationSupport.fetchOption("include_dbs", properties, null);
+			String excludeDatabases = configurationSupport.fetchOption("exclude_dbs", properties, null);
+			String includeTables = configurationSupport.fetchOption("include_tables", properties, null);
+			String excludeTables = configurationSupport.fetchOption("exclude_tables", properties, null);
+			String blacklistDatabases = configurationSupport.fetchOption("blacklist_dbs", properties, null);
+			String blacklistTables = configurationSupport.fetchOption("blacklist_tables", properties, null);
+			String includeColumnValues = configurationSupport.fetchOption("include_column_values", properties, null);
+			config.setFilter(new MaxwellFilter(includeDatabases, excludeDatabases, includeTables, excludeTables, blacklistDatabases, blacklistTables, includeColumnValues));
+		} catch (MaxwellInvalidFilterException e) {
+			throw new InvalidUsageException("Invalid filter options: " + e.getLocalizedMessage());
+		}
+	}
+
 	private void configureOutputConfig(final Properties properties, final BaseMaxwellConfig config) {
 		BaseMaxwellOutputConfig outputConfig = new BaseMaxwellOutputConfig();
 		outputConfig.setIncludesBinlogPosition(configurationSupport.fetchBooleanOption("output_binlog_position", properties, false));
@@ -191,6 +199,17 @@ public class MaxwellConfigFactory {
 
 		if (outputConfig.isEncryptionEnabled()) {
 			outputConfig.setSecretKey(configurationSupport.fetchOption("secret_key", properties, null));
+		}
+
+		String excludeColumns = configurationSupport.fetchOption("exclude_columns", properties, null);
+		if (excludeColumns != null) {
+			for (String s : excludeColumns.split(",")) {
+				try {
+					outputConfig.getExcludeColumns().add(MaxwellConfig.compileStringToPattern(s));
+				} catch (MaxwellInvalidFilterException e) {
+					throw new InvalidUsageException("invalid exclude_columns: '" + excludeColumns + "': " + e.getMessage());
+				}
+			}
 		}
 		config.setOutputConfig(outputConfig);
 	}
