@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.core.replication;
 
-import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.api.config.MaxwellMysqlConfig;
+import com.zendesk.maxwell.core.MaxwellSystemContext;
 import com.zendesk.maxwell.core.monitoring.MaxwellDiagnostic;
 import com.zendesk.maxwell.core.monitoring.MaxwellDiagnosticResult;
 
@@ -14,9 +14,9 @@ import java.util.concurrent.CompletableFuture;
 
 public class BinlogConnectorDiagnostic implements MaxwellDiagnostic {
 
-	private final MaxwellContext context;
+	private final MaxwellSystemContext context;
 
-	public BinlogConnectorDiagnostic(MaxwellContext context) {
+	public BinlogConnectorDiagnostic(MaxwellSystemContext context) {
 			this.context = context;
 	}
 

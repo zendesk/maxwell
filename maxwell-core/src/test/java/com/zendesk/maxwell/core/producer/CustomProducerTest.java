@@ -3,6 +3,7 @@ package com.zendesk.maxwell.core.producer;
 import com.codahale.metrics.MetricRegistry;
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
+import com.zendesk.maxwell.core.MaxwellSystemContext;
 import com.zendesk.maxwell.core.monitoring.Metrics;
 import com.zendesk.maxwell.core.row.RowMap;
 import org.junit.Before;
@@ -32,7 +33,7 @@ public class CustomProducerTest {
 		MaxwellConfig config = mock(MaxwellConfig.class);
 		MetricRegistry metricRegistry = mock(MetricRegistry.class);
 		Metrics metrics = mock(Metrics.class);
-		MaxwellContext context = mock(MaxwellContext.class);
+		MaxwellSystemContext context = mock(MaxwellSystemContext.class);
 		Properties properties = mock(Properties.class);
 
 		when(config.getCustomProducerFactory()).thenReturn(TestProducerFactory.class.getName());

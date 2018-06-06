@@ -3,6 +3,7 @@ package com.zendesk.maxwell.core.producer;
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.api.config.InvalidOptionException;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
+import com.zendesk.maxwell.core.MaxwellSystemContext;
 import com.zendesk.maxwell.core.util.StoppableTask;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -24,7 +25,7 @@ public class Producers {
 		this.producerConfigurator = producerConfigurator;
 	}
 
-	public void createAndRegister(final MaxwellContext maxwellContext, final Properties settings){
+	public void createAndRegister(final MaxwellSystemContext maxwellContext, final Properties settings){
 		final MaxwellConfig config = maxwellContext.getConfig();
 		ProducerContext producerContext = create(maxwellContext, settings, config);
 		register(maxwellContext, producerContext);
@@ -70,7 +71,7 @@ public class Producers {
 		return producerConfigurator.stream().filter(e -> isProducerWithIdentifier(identifier, e)).findFirst().orElseThrow(() -> new RuntimeException("Unknown producer identifier: " + identifier));
 	}
 
-	private void register(MaxwellContext maxwellContext, ProducerContext producerContext) {
+	private void register(MaxwellSystemContext maxwellContext, ProducerContext producerContext) {
 		maxwellContext.setProducerContext(producerContext);
 
 		registerDiagnostics(producerContext.getProducer(), maxwellContext);

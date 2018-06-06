@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.bootstrap;
 
-import com.zendesk.maxwell.core.MaxwellContext;
+import com.zendesk.maxwell.core.MaxwellSystemContext;
 import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.api.replication.BinlogPosition;
 import com.zendesk.maxwell.api.replication.Position;
@@ -25,7 +25,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 
 	private long lastInsertedRowsUpdateTimeMillis = 0;
 
-	public SynchronousBootstrapper(MaxwellContext context) { super(context); }
+	public SynchronousBootstrapper(MaxwellSystemContext context) { super(context); }
 
 	@Override
 	public boolean shouldSkip(RowMap row) {

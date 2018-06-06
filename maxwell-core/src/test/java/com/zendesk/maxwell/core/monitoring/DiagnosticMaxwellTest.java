@@ -51,7 +51,7 @@ public class DiagnosticMaxwellTest extends MaxwellTestWithIsolatedServer {
 		// Given
 		BaseMaxwellDiagnosticConfig config = new BaseMaxwellDiagnosticConfig();
 		config.setTimeout(5000);
-		MaxwellContext maxwellContext = buildContext();
+		MaxwellSystemContext maxwellContext = buildContext();
 
 		DiagnosticHealthCheck healthCheck = getDiagnosticHealthCheck(config, maxwellContext);
 
@@ -82,7 +82,7 @@ public class DiagnosticMaxwellTest extends MaxwellTestWithIsolatedServer {
 		// Given
 		BaseMaxwellDiagnosticConfig config = new BaseMaxwellDiagnosticConfig();
 		config.setTimeout(100);
-		MaxwellContext maxwellContext = buildContext();
+		MaxwellSystemContext maxwellContext = buildContext();
 
 		DiagnosticHealthCheck healthCheck = getDiagnosticHealthCheck(config, maxwellContext);
 
@@ -102,7 +102,7 @@ public class DiagnosticMaxwellTest extends MaxwellTestWithIsolatedServer {
 		assertTrue(binlogNode.get("message").asText().contains("check did not return after 100 ms"));
 	}
 
-	private DiagnosticHealthCheck getDiagnosticHealthCheck(MaxwellDiagnosticConfig config, MaxwellContext maxwellContext) throws ServletException {
+	private DiagnosticHealthCheck getDiagnosticHealthCheck(MaxwellDiagnosticConfig config, MaxwellSystemContext maxwellContext) throws ServletException {
 		MaxwellDiagnosticContext diagnosticContext = new MaxwellDiagnosticContext(config,
 				Collections.singletonList(new BinlogConnectorDiagnostic(maxwellContext)));
 		DiagnosticHealthCheck healthCheck = new DiagnosticHealthCheck(diagnosticContext);

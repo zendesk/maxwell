@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.bootstrap;
 
-import com.zendesk.maxwell.core.MaxwellContext;
+import com.zendesk.maxwell.core.MaxwellSystemContext;
 import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.core.replication.Replicator;
 import com.zendesk.maxwell.core.row.RowMap;
@@ -11,7 +11,7 @@ public class NoOpBootstrapper extends AbstractBootstrapper {
 
 	static final Logger LOGGER = LoggerFactory.getLogger( NoOpBootstrapper.class );
 
-	public NoOpBootstrapper(MaxwellContext context) { super( context ); }
+	public NoOpBootstrapper(MaxwellSystemContext context) { super( context ); }
 
 	@Override
 	public boolean shouldSkip(RowMap row) {

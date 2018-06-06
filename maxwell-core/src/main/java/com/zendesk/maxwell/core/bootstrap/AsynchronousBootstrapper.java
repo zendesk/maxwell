@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.bootstrap;
 
-import com.zendesk.maxwell.core.MaxwellContext;
+import com.zendesk.maxwell.core.MaxwellSystemContext;
 import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.api.replication.BinlogPosition;
 import com.zendesk.maxwell.core.replication.Replicator;
@@ -28,7 +28,7 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 	private RowMapBufferByTable skippedRows = null;
 	private SynchronousBootstrapper synchronousBootstrapper = getSynchronousBootstrapper();
 
-	public AsynchronousBootstrapper( MaxwellContext context ) throws IOException {
+	public AsynchronousBootstrapper( MaxwellSystemContext context ) throws IOException {
 		super(context);
 		skippedRows = new RowMapBufferByTable();
 	}

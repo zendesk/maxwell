@@ -1,11 +1,9 @@
 package com.zendesk.maxwell.core.producer.impl.kafka;
 
 import com.zendesk.maxwell.core.MaxwellContext;
-import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.core.monitoring.MaxwellDiagnostic;
 import com.zendesk.maxwell.core.monitoring.MaxwellDiagnosticResult;
 import com.zendesk.maxwell.core.row.RowMap;
-import com.zendesk.maxwell.core.schema.PositionStoreThread;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
@@ -18,15 +16,13 @@ import java.util.concurrent.CompletableFuture;
 public class KafkaProducerDiagnostic implements MaxwellDiagnostic {
 
 	private final MaxwellKafkaProducerWorker kafkaProducerWorker;
-	private final MaxwellConfig maxwellConfig;
 	private final KafkaProducerConfiguration producerConfiguration;
-	private final PositionStoreThread positionStoreThread;
+	private final MaxwellContext context;
 
 	public KafkaProducerDiagnostic(MaxwellKafkaProducerWorker kafkaProducerWorker, MaxwellContext context) {
 		this.kafkaProducerWorker = kafkaProducerWorker;
-		this.maxwellConfig = context.getConfig();
 		this.producerConfiguration = context.getProducerContext().getConfiguration();
-		this.positionStoreThread = context.getPositionStoreThread();
+		this.context = context;
 	}
 
 	@Override
@@ -52,8 +48,8 @@ public class KafkaProducerDiagnostic implements MaxwellDiagnostic {
 	public CompletableFuture<Long> getLatency() {
 		DiagnosticCallback callback = new DiagnosticCallback();
 		try {
-			RowMap rowMap = new RowMap("insert", maxwellConfig.getDatabaseName(), "dummy", System.currentTimeMillis(),
-					new ArrayList<>(), positionStoreThread.getPosition());
+			RowMap rowMap = new RowMap("insert", context.getConfig().getDatabaseName(), "dummy", System.currentTimeMillis(),
+					new ArrayList<>(), context.getPosition());
 			rowMap.setTXCommit();
 			ProducerRecord<String, String> record = kafkaProducerWorker.makeProducerRecord(rowMap);
 			kafkaProducerWorker.sendAsync(record, callback);

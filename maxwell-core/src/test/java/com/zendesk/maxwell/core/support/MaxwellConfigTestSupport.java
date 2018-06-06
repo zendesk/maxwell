@@ -3,8 +3,8 @@ package com.zendesk.maxwell.core.support;
 import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.config.MaxwellFilter;
-import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.MaxwellContextFactory;
+import com.zendesk.maxwell.core.MaxwellSystemContext;
 import com.zendesk.maxwell.core.config.*;
 import com.zendesk.maxwell.api.replication.Position;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +49,7 @@ public class MaxwellConfigTestSupport {
 		return config;
 	}
 
-	public MaxwellContext buildContext(int port, Position p, MaxwellFilter filter) throws SQLException, URISyntaxException {
+	public MaxwellSystemContext buildContext(int port, Position p, MaxwellFilter filter) throws SQLException, URISyntaxException {
 		MaxwellConfig config = buildConfig(port, p, filter);
 		return maxwellContextFactory.createFor(config);
 	}

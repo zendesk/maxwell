@@ -41,7 +41,7 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 		config.setCustomProducerFactory(EmbeddedTestProducerFactory.class.getName());
 
 		final CountDownLatch latch = new CountDownLatch(1);
-		final MaxwellContext maxwellContext = maxwellContextFactory.createFor(config);
+		final MaxwellSystemContext maxwellContext = maxwellContextFactory.createFor(config);
 		maxwellContext.configureOnReplicationStartEventHandler((context) -> latch.countDown());
 		new Thread(() -> maxwell.run(maxwellContext)).start();
 		latch.await();

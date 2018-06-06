@@ -31,7 +31,7 @@ public class MaxwellRunner {
 		this.bootstrapperFactory = bootstrapperFactory;
 	}
 
-	public void run(final MaxwellContext context) {
+	public void run(final MaxwellSystemContext context) {
 		try {
 			start(context);
 		} catch (Exception e) {
@@ -52,7 +52,7 @@ public class MaxwellRunner {
 		}
 	}
 
-	private Position attemptMasterRecovery(final MaxwellContext context) throws Exception {
+	private Position attemptMasterRecovery(final MaxwellSystemContext context) throws Exception {
 		final MysqlPositionStore positionStore = context.getPositionStore();
 		final MaxwellConfig config = context.getConfig();
 		Position recoveredPosition = null;
@@ -89,7 +89,7 @@ public class MaxwellRunner {
 		return recoveredPosition;
 	}
 
-	private Position getInitialPosition(final MaxwellContext context) throws Exception {
+	private Position getInitialPosition(final MaxwellSystemContext context) throws Exception {
 		/* first method:  do we have a stored position for this server? */
 		Position initial = context.getInitialPosition();
 		MaxwellConfig config = context.getConfig();
@@ -142,7 +142,7 @@ public class MaxwellRunner {
 		LOGGER.info(String.format(bootString, getMaxwellVersion(), producerName, initialPosition.toString()));
 	}
 
-	public void start(final MaxwellContext context) throws Exception {
+	public void start(final MaxwellSystemContext context) throws Exception {
 		try {
 			context.probeConnections();
 			startInner(context);
@@ -159,7 +159,7 @@ public class MaxwellRunner {
 		}
 	}
 
-	private void startInner(final MaxwellContext context) throws Exception {
+	private void startInner(final MaxwellSystemContext context) throws Exception {
 		final MaxwellConfig config = context.getConfig();
 		try ( Connection connection = context.getReplicationConnection();
 		      Connection rawConnection = context.getRawMaxwellConnection() ) {
@@ -200,11 +200,11 @@ public class MaxwellRunner {
 		replicator.runLoop();
 	}
 
-	private void onReplicatorStart(MaxwellContext maxwellContext){
+	private void onReplicatorStart(MaxwellSystemContext maxwellContext){
 		maxwellContext.getOnReplicationStartEventHandler().ifPresent(c -> c.accept(maxwellContext));
 	}
 
-	private void onReplicatorEnd(MaxwellContext maxwellContext){
+	private void onReplicatorEnd(MaxwellSystemContext maxwellContext){
 		maxwellContext.getOnReplicationCompletedEventHandler().ifPresent(c -> c.accept(maxwellContext));
 	}
 }

@@ -171,7 +171,7 @@ public class MaxwellTestSupport {
 		config.setInitPosition(capture(mysql.getConnection()));
 		final String waitObject = "";
 
-		final MaxwellContext maxwellContext = maxwellContextFactory.createFor(config);
+		final MaxwellSystemContext maxwellContext = maxwellContextFactory.createFor(config);
 		maxwellContext.configureOnReplicationStartEventHandler((c) -> {
 			synchronized(waitObject) {
 				waitObject.notify();

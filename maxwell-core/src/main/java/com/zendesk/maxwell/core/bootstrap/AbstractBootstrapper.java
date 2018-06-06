@@ -1,15 +1,15 @@
 package com.zendesk.maxwell.core.bootstrap;
 
-import com.zendesk.maxwell.core.MaxwellContext;
+import com.zendesk.maxwell.core.MaxwellSystemContext;
 import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.core.replication.Replicator;
 import com.zendesk.maxwell.core.row.RowMap;
 
 public abstract class AbstractBootstrapper implements Bootstrapper {
 
-	protected MaxwellContext context;
+	protected MaxwellSystemContext context;
 
-	public AbstractBootstrapper(MaxwellContext context) { this.context = context; }
+	public AbstractBootstrapper(MaxwellSystemContext context) { this.context = context; }
 
 	public boolean isStartBootstrapRow(RowMap row) {
 		return isBootstrapRow(row) &&

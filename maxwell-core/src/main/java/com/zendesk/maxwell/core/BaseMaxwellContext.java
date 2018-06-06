@@ -1,7 +1,6 @@
 package com.zendesk.maxwell.core;
 
 import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.health.HealthCheckRegistry;
 import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.config.MaxwellFilter;
@@ -31,7 +30,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
-public class BaseMaxwellContext implements MaxwellContext {
+public class BaseMaxwellContext implements MaxwellSystemContext {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BaseMaxwellContext.class);
 
 	private final ConnectionPool replicationConnectionPool;
@@ -258,8 +257,7 @@ public class BaseMaxwellContext implements MaxwellContext {
 		return error;
 	}
 
-	@Override
-	public PositionStoreThread getPositionStoreThread() {
+	private PositionStoreThread getPositionStoreThread() {
 		if ( this.positionStoreThread == null ) {
 			this.positionStoreThread = new PositionStoreThread(this.positionStore, this);
 			this.positionStoreThread.start();
@@ -267,7 +265,6 @@ public class BaseMaxwellContext implements MaxwellContext {
 		}
 		return this.positionStoreThread;
 	}
-
 
 	@Override
 	public Position getInitialPosition() throws SQLException {
@@ -324,8 +321,7 @@ public class BaseMaxwellContext implements MaxwellContext {
 		}
 	}
 
-	@Override
-	public MysqlVersion getMysqlVersion() throws SQLException {
+	private MysqlVersion getMysqlVersion() throws SQLException {
 		if ( mysqlVersion == null ) {
 			try ( Connection c = getReplicationConnection() ) {
 				mysqlVersion = MysqlVersion.capture(c);
@@ -334,7 +330,6 @@ public class BaseMaxwellContext implements MaxwellContext {
 		return mysqlVersion;
 	}
 
-	@Override
 	public boolean shouldHeartbeat() throws SQLException {
 		return getMysqlVersion().atLeast(5,5);
 	}
@@ -425,8 +420,7 @@ public class BaseMaxwellContext implements MaxwellContext {
 		return getOptionalProducerContext().orElseThrow(() -> new IllegalStateException("No producer context initialized"));
 	}
 
-	@Override
-	public Optional<ProducerContext> getOptionalProducerContext() {
+	private Optional<ProducerContext> getOptionalProducerContext() {
 		return Optional.ofNullable(producerContext);
 	}
 

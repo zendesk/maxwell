@@ -33,18 +33,18 @@ public class MaxwellContextFactory {
 		return createFor(configurationOptions, (c) -> {});
 	}
 
-	public MaxwellContext createFor(Properties configurationOptions, Consumer<MaxwellConfig> configurationAdopter) throws SQLException, URISyntaxException {
+	public MaxwellSystemContext createFor(Properties configurationOptions, Consumer<MaxwellConfig> configurationAdopter) throws SQLException, URISyntaxException {
 		final MaxwellConfig config = maxwellConfigFactory.createFor(configurationOptions);
 		configurationAdopter.accept(config);
 		return createFor(config, configurationOptions);
 	}
 
-	public MaxwellContext createFor(MaxwellConfig config) throws SQLException, URISyntaxException {
+	public MaxwellSystemContext createFor(MaxwellConfig config) throws SQLException, URISyntaxException {
 		return createFor(config, new Properties());
 	}
 
-	private MaxwellContext createFor(MaxwellConfig config, Properties configurationOptions) throws SQLException, URISyntaxException {
-		MaxwellContext context = new BaseMaxwellContext(config, metricRegistry, contextStartListeners);
+	private MaxwellSystemContext createFor(MaxwellConfig config, Properties configurationOptions) throws SQLException, URISyntaxException {
+		MaxwellSystemContext context = new BaseMaxwellContext(config, metricRegistry, contextStartListeners);
 		producers.createAndRegister(context, configurationOptions);
 		context.probeConnections();
 		return context;

@@ -12,7 +12,6 @@ import com.zendesk.maxwell.core.support.MaxwellConfigTestSupport;
 import com.zendesk.maxwell.core.support.MaxwellTestSupport;
 import com.zendesk.maxwell.core.support.MaxwellTestSupportCallback;
 import com.zendesk.maxwell.core.util.Logging;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -104,11 +103,11 @@ public abstract class MaxwellTestWithIsolatedServer extends TestWithNameLogging 
 		maxwellTestJSON.runJSONTestFile(server, filename, null, outputConfig);
 	}
 
-	protected MaxwellContext buildContext() throws Exception {
+	protected MaxwellSystemContext buildContext() throws Exception {
 		return maxwellConfigTestSupport.buildContext(server.getPort(), null, null);
 	}
 
-	protected MaxwellContext buildContext(Position p) throws Exception {
+	protected MaxwellSystemContext buildContext(Position p) throws Exception {
 		return maxwellConfigTestSupport.buildContext(server.getPort(), p, null);
 	}
 

@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.bootstrap;
 
-import com.zendesk.maxwell.core.MaxwellContext;
+import com.zendesk.maxwell.core.MaxwellSystemContext;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -8,7 +8,7 @@ import java.io.IOException;
 @Service
 public class BootstrapperFactory {
 
-	public Bootstrapper createFor(MaxwellContext maxwellContext) throws IOException {
+	public Bootstrapper createFor(MaxwellSystemContext maxwellContext) throws IOException {
 		switch (maxwellContext.getConfig().getBootstrapperType()) {
 			case "async":
 				return new AsynchronousBootstrapper(maxwellContext);
