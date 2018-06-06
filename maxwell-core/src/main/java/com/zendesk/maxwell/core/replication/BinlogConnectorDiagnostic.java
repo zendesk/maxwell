@@ -2,8 +2,8 @@ package com.zendesk.maxwell.core.replication;
 
 import com.zendesk.maxwell.api.config.MaxwellMysqlConfig;
 import com.zendesk.maxwell.core.MaxwellSystemContext;
-import com.zendesk.maxwell.core.monitoring.MaxwellDiagnostic;
-import com.zendesk.maxwell.core.monitoring.MaxwellDiagnosticResult;
+import com.zendesk.maxwell.api.monitoring.MaxwellDiagnostic;
+import com.zendesk.maxwell.api.monitoring.MaxwellDiagnosticResult;
 
 import java.time.Clock;
 import java.util.HashMap;

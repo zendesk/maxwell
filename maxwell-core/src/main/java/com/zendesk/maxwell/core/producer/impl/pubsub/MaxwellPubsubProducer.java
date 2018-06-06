@@ -10,7 +10,7 @@ import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.TopicName;
 import com.zendesk.maxwell.core.MaxwellContext;
-import com.zendesk.maxwell.core.monitoring.Metrics;
+import com.zendesk.maxwell.api.monitoring.Metrics;
 import com.zendesk.maxwell.core.producer.AbstractAsyncProducer;
 import com.zendesk.maxwell.core.producer.AbstractProducer;
 import com.zendesk.maxwell.api.replication.Position;

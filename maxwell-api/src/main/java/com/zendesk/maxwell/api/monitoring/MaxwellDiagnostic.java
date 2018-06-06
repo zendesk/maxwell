@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core.monitoring;
+package com.zendesk.maxwell.api.monitoring;
 
 import java.util.concurrent.CompletableFuture;
 

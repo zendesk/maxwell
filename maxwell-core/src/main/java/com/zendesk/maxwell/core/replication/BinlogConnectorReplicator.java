@@ -12,7 +12,7 @@ import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.core.MaxwellSystemContext;
 import com.zendesk.maxwell.core.bootstrap.Bootstrapper;
 import com.zendesk.maxwell.api.config.MaxwellMysqlConfig;
-import com.zendesk.maxwell.core.monitoring.Metrics;
+import com.zendesk.maxwell.api.monitoring.Metrics;
 import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.row.RowMapBuffer;

@@ -1,6 +1,9 @@
 package com.zendesk.maxwell.core.monitoring;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zendesk.maxwell.api.monitoring.MaxwellDiagnostic;
+import com.zendesk.maxwell.api.monitoring.MaxwellDiagnosticContext;
+import com.zendesk.maxwell.api.monitoring.MaxwellDiagnosticResult;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;

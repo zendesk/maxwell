@@ -2,6 +2,7 @@ package com.zendesk.maxwell.core.monitoring;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zendesk.maxwell.api.monitoring.MaxwellDiagnosticContext;
 import com.zendesk.maxwell.core.*;
 import com.zendesk.maxwell.core.config.BaseMaxwellDiagnosticConfig;
 import com.zendesk.maxwell.api.config.MaxwellDiagnosticConfig;

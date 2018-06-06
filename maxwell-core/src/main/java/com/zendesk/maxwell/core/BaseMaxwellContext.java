@@ -1,6 +1,9 @@
 package com.zendesk.maxwell.core;
 
 import com.codahale.metrics.MetricRegistry;
+import com.zendesk.maxwell.api.monitoring.MaxwellDiagnostic;
+import com.zendesk.maxwell.api.monitoring.MaxwellDiagnosticContext;
+import com.zendesk.maxwell.api.monitoring.Metrics;
 import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.config.MaxwellFilter;

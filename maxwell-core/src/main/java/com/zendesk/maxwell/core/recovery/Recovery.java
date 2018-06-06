@@ -4,7 +4,7 @@ import com.zendesk.maxwell.api.replication.BinlogPosition;
 import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.core.CaseSensitivity;
 import com.zendesk.maxwell.api.config.MaxwellMysqlConfig;
-import com.zendesk.maxwell.core.monitoring.Metrics;
+import com.zendesk.maxwell.api.monitoring.Metrics;
 import com.zendesk.maxwell.core.monitoring.NoOpMetrics;
 import com.zendesk.maxwell.core.replication.*;
 import com.zendesk.maxwell.core.row.HeartbeatRowMap;

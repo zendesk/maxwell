@@ -2,8 +2,8 @@ package com.zendesk.maxwell.core;
 
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.replication.Position;
-import com.zendesk.maxwell.core.monitoring.MaxwellDiagnosticContext;
-import com.zendesk.maxwell.core.monitoring.Metrics;
+import com.zendesk.maxwell.api.monitoring.MaxwellDiagnosticContext;
+import com.zendesk.maxwell.api.monitoring.Metrics;
 import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.core.producer.ProducerContext;
 import com.zendesk.maxwell.core.row.RowMap;
