@@ -14,7 +14,7 @@ import com.zendesk.maxwell.core.bootstrap.Bootstrapper;
 import com.zendesk.maxwell.api.config.MaxwellMysqlConfig;
 import com.zendesk.maxwell.api.monitoring.Metrics;
 import com.zendesk.maxwell.core.producer.Producer;
-import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.api.row.RowMap;
 import com.zendesk.maxwell.core.row.RowMapBuffer;
 import com.zendesk.maxwell.core.schema.Schema;
 import com.zendesk.maxwell.core.schema.SchemaStore;

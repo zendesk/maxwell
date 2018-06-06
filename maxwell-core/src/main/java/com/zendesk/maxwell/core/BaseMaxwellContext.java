@@ -12,7 +12,7 @@ import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.core.producer.ProducerContext;
 import com.zendesk.maxwell.core.recovery.RecoveryInfo;
 import com.zendesk.maxwell.core.replication.*;
-import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.api.row.RowMap;
 import com.zendesk.maxwell.core.schema.MysqlPositionStore;
 import com.zendesk.maxwell.core.schema.PositionStoreThread;
 import com.zendesk.maxwell.core.schema.ReadOnlyMysqlPositionStore;

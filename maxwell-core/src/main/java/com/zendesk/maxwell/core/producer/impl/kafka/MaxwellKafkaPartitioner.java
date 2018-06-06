@@ -4,7 +4,7 @@ import com.zendesk.maxwell.core.producer.partitioners.AbstractMaxwellPartitioner
 import com.zendesk.maxwell.core.producer.partitioners.HashFunction;
 import com.zendesk.maxwell.core.producer.partitioners.HashFunctionDefault;
 import com.zendesk.maxwell.core.producer.partitioners.HashFunctionMurmur3;
-import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.api.row.RowMap;
 
 public class MaxwellKafkaPartitioner extends AbstractMaxwellPartitioner {
 	HashFunction hashFunc;

@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zendesk.maxwell.api.config.MaxwellFilter;
 import com.zendesk.maxwell.api.config.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.row.RowEncrypt;
-import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.api.row.RowMap;
 import com.zendesk.maxwell.core.support.MaxwellTestSupport;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;

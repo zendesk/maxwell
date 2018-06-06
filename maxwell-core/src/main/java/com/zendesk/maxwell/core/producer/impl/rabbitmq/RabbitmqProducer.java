@@ -6,7 +6,7 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.MessageProperties;
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.producer.AbstractProducer;
-import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.api.row.RowMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

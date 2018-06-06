@@ -3,13 +3,17 @@ package com.zendesk.maxwell.core.bootstrap;
 import com.zendesk.maxwell.core.MaxwellSystemContext;
 import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.core.replication.Replicator;
-import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.api.row.RowMap;
+import com.zendesk.maxwell.api.row.RowMapFactory;
 
 public abstract class AbstractBootstrapper implements Bootstrapper {
 
-	protected MaxwellSystemContext context;
+	protected final MaxwellSystemContext context;
+	protected final RowMapFactory rowMapFactory;
 
-	public AbstractBootstrapper(MaxwellSystemContext context) { this.context = context; }
+	public AbstractBootstrapper(MaxwellSystemContext context, RowMapFactory rowMapFactory) { this.context = context;
+		this.rowMapFactory = rowMapFactory;
+	}
 
 	public boolean isStartBootstrapRow(RowMap row) {
 		return isBootstrapRow(row) &&

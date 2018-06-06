@@ -2,7 +2,7 @@ package com.zendesk.maxwell.core.producer.impl.stdout;
 
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.producer.AbstractProducer;
-import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.api.row.RowMap;
 
 public class StdoutProducer extends AbstractProducer {
 	public StdoutProducer(MaxwellContext context) {

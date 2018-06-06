@@ -8,7 +8,7 @@ import com.zendesk.maxwell.core.*;
 import com.zendesk.maxwell.core.config.*;
 import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducer;
 import com.zendesk.maxwell.api.replication.Position;
-import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.api.row.RowMap;
 import com.zendesk.maxwell.core.schema.Schema;
 import com.zendesk.maxwell.core.schema.SchemaCapturer;
 import com.zendesk.maxwell.core.schema.SchemaStoreSchema;

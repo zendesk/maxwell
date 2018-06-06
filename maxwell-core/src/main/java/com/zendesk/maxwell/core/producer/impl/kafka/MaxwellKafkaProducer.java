@@ -6,8 +6,9 @@ import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.producer.AbstractAsyncProducer;
 import com.zendesk.maxwell.core.producer.AbstractProducer;
 import com.zendesk.maxwell.api.replication.Position;
-import com.zendesk.maxwell.core.row.RowMap;
-import com.zendesk.maxwell.core.row.RowMap.KeyFormat;
+import com.zendesk.maxwell.api.row.RowMap;
+import com.zendesk.maxwell.api.row.RowMap.KeyFormat;
+import com.zendesk.maxwell.api.row.RowMapFactory;
 import com.zendesk.maxwell.core.schema.ddl.DDLMap;
 import com.zendesk.maxwell.core.util.StoppableTask;
 import com.zendesk.maxwell.core.util.StoppableTaskState;
@@ -84,11 +85,13 @@ class KafkaCallback implements Callback {
 public class MaxwellKafkaProducer extends AbstractProducer {
 	private final ArrayBlockingQueue<RowMap> queue;
 	private final MaxwellKafkaProducerWorker worker;
+	private final RowMapFactory rowMapFactory;
 
-	public MaxwellKafkaProducer(MaxwellContext context, KafkaProducerConfiguration configuration) {
+	public MaxwellKafkaProducer(MaxwellContext context, KafkaProducerConfiguration configuration, RowMapFactory rowMapFactory) {
 		super(context);
 		this.queue = new ArrayBlockingQueue<>(100);
 		this.worker = new MaxwellKafkaProducerWorker(context, configuration, this.queue);
+		this.rowMapFactory = rowMapFactory;
 		Thread thread = new Thread(this.worker, "maxwell-kafka-worker");
 		thread.setDaemon(true);
 		thread.start();
@@ -106,7 +109,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 
 	@Override
 	public KafkaProducerDiagnostic getDiagnostic() {
-		return new KafkaProducerDiagnostic(worker, context);
+		return new KafkaProducerDiagnostic(worker, context, rowMapFactory);
 	}
 }
 

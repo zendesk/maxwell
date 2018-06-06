@@ -9,7 +9,7 @@ import com.zendesk.maxwell.core.config.MaxwellFilterSupport;
 import com.zendesk.maxwell.api.monitoring.Metrics;
 import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.core.row.HeartbeatRowMap;
-import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.api.row.RowMap;
 import com.zendesk.maxwell.core.schema.SchemaStore;
 import com.zendesk.maxwell.core.schema.ddl.DDLMap;
 import com.zendesk.maxwell.core.schema.ddl.ResolvedSchemaChange;

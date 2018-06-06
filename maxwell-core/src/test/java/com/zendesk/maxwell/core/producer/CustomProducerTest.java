@@ -5,7 +5,7 @@ import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.core.MaxwellSystemContext;
 import com.zendesk.maxwell.api.monitoring.Metrics;
-import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.api.row.RowMap;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;

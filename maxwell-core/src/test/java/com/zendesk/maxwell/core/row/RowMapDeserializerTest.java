@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.core.row;
 
 import com.google.common.io.ByteStreams;
+import com.zendesk.maxwell.api.row.RowMap;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -3,7 +3,8 @@ package com.zendesk.maxwell.core.replication;
 import com.github.shyiko.mysql.binlog.event.*;
 import com.zendesk.maxwell.api.replication.BinlogPosition;
 import com.zendesk.maxwell.api.replication.Position;
-import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.core.row.BaseRowMap;
+import com.zendesk.maxwell.api.row.RowMap;
 import com.zendesk.maxwell.core.schema.Table;
 import com.zendesk.maxwell.core.schema.columndef.ColumnDef;
 
@@ -142,7 +143,7 @@ public class BinlogConnectorEvent {
 	}
 
 	private RowMap buildRowMap(String type, Position position, Serializable[] data, Table table, BitSet includedColumns, String rowQuery) {
-		RowMap map = new RowMap(
+		RowMap map = new BaseRowMap(
 			type,
 			table.getDatabase(),
 			table.getName(),

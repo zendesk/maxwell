@@ -6,14 +6,14 @@ import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
 import com.zendesk.maxwell.api.config.MaxwellOutputConfig;
 import com.zendesk.maxwell.api.replication.BinlogPosition;
 import com.zendesk.maxwell.api.replication.Position;
-import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.core.row.BaseRowMap;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
 
-public class DDLMap extends RowMap {
+public class DDLMap extends BaseRowMap {
 	private final ResolvedSchemaChange change;
 	private final Long timestamp;
 	private final String sql;

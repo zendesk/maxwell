@@ -2,6 +2,7 @@ package com.zendesk.maxwell.core.row;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.zendesk.maxwell.api.row.RowMap;
 import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
 import com.zendesk.maxwell.core.errors.ProtectedAttributeNameException;
 import com.zendesk.maxwell.api.producer.EncryptionMode;
@@ -19,10 +20,9 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 
-public class RowMap implements Serializable {
-	public enum KeyFormat { HASH, ARRAY }
+public class BaseRowMap implements Serializable, RowMap {
 
-	static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
+	static final Logger LOGGER = LoggerFactory.getLogger(BaseRowMap.class);
 
 	private final String rowQuery;
 	private final String rowType;
@@ -99,8 +99,8 @@ public class RowMap implements Serializable {
 				}
 			};
 
-	public RowMap(String type, String database, String table, Long timestampMillis, List<String> pkColumns,
-			Position nextPosition, String rowQuery) {
+	public BaseRowMap(String type, String database, String table, Long timestampMillis, List<String> pkColumns,
+					  Position nextPosition, String rowQuery) {
 		this.rowQuery = rowQuery;
 		this.rowType = type;
 		this.database = database;
@@ -115,12 +115,13 @@ public class RowMap implements Serializable {
 		this.approximateSize = 100L; // more or less 100 bytes of overhead
 	}
 
-	public RowMap(String type, String database, String table, Long timestampMillis, List<String> pkColumns,
-				  Position nextPosition) {
+	public BaseRowMap(String type, String database, String table, Long timestampMillis, List<String> pkColumns,
+					  Position nextPosition) {
 		this(type, database, table, timestampMillis, pkColumns, nextPosition, null);
 	}
 
 	//Do we want to encrypt this part?
+	@Override
 	public String pkToJson(KeyFormat keyFormat) throws IOException {
 		if ( keyFormat == KeyFormat.HASH )
 			return pkToJsonHash();
@@ -176,6 +177,7 @@ public class RowMap implements Serializable {
 		return jsonFromStream();
 	}
 
+	@Override
 	public String pkAsConcatString() {
 		if (pkColumns.isEmpty()) {
 			return database + table;
@@ -193,6 +195,7 @@ public class RowMap implements Serializable {
 		return keys.toString();
 	}
 
+	@Override
 	public String buildPartitionKey(List<String> partitionColumns) {
 		StringBuilder partitionKey= new StringBuilder();
 		for (String pc : partitionColumns) {
@@ -244,10 +247,12 @@ public class RowMap implements Serializable {
 		}
 	}
 
+	@Override
 	public String toJSON() throws Exception {
 		return toJSON(new BaseMaxwellOutputConfig());
 	}
 
+	@Override
 	public String toJSON(MaxwellOutputConfig outputConfig) throws Exception {
 		JsonGenerator g = resetJsonGenerator();
 
@@ -345,14 +350,17 @@ public class RowMap implements Serializable {
 		return s;
 	}
 
+	@Override
 	public Object getData(String key) {
 		return this.data.get(key);
 	}
 
+	@Override
 	public Object getExtraAttribute(String key) {
 		return this.extraAttributes.get(key);
 	}
 
+	@Override
 	public long getApproximateSize() {
 		return approximateSize;
 	}
@@ -371,12 +379,14 @@ public class RowMap implements Serializable {
 		return length;
 	}
 
+	@Override
 	public void putData(String key, Object value) {
 		this.data.put(key, value);
 
 		this.approximateSize += approximateKVSize(key, value);
 	}
 
+	@Override
 	public void putExtraAttribute(String key, Object value) {
 		if (FieldNames.isProtected(key)) {
 			throw new ProtectedAttributeNameException("Extra attribute key name '" + key + "' is " +
@@ -388,84 +398,104 @@ public class RowMap implements Serializable {
 		this.approximateSize += approximateKVSize(key, value);
 	}
 
+	@Override
 	public Object getOldData(String key) {
 		return this.oldData.get(key);
 	}
 
+	@Override
 	public void putOldData(String key, Object value) {
 		this.oldData.put(key, value);
 
 		this.approximateSize += approximateKVSize(key, value);
 	}
 
+	@Override
 	public Position getPosition() {
 		return nextPosition;
 	}
 
+	@Override
 	public Long getXid() {
 		return xid;
 	}
 
+	@Override
 	public void setXid(Long xid) {
 		this.xid = xid;
 	}
 
+	@Override
 	public Long getXoffset() {
 		return xoffset;
 	}
 
+	@Override
 	public void setXoffset(Long xoffset) {
 		this.xoffset = xoffset;
 	}
 
+	@Override
 	public void setTXCommit() {
 		this.txCommit = true;
 	}
 
+	@Override
 	public boolean isTXCommit() {
 		return this.txCommit;
 	}
 
+	@Override
 	public Long getServerId() {
 		return serverId;
 	}
 
+	@Override
 	public void setServerId(Long serverId) {
 		this.serverId = serverId;
 	}
 
+	@Override
 	public Long getThreadId() {
 		return threadId;
 	}
 
+	@Override
 	public void setThreadId(Long threadId) {
 		this.threadId = threadId;
 	}
 
+	@Override
 	public String getDatabase() {
 		return database;
 	}
 
+	@Override
 	public String getTable() {
 		return table;
 	}
 
+	@Override
 	public Long getTimestamp() {
 		return timestampSeconds;
 	}
 
+	@Override
 	public Long getTimestampMillis() {
 		return timestampMillis;
 	}
 
+	@Override
 	public boolean hasData(String name) {
 		return this.data.containsKey(name);
 	}
 
+	@Override
 	public String getRowQuery() {
 		return rowQuery;
 	}
 
+	@Override
 	public String getRowType() {
 		return this.rowType;
 	}
@@ -473,20 +503,24 @@ public class RowMap implements Serializable {
 	// determines whether there is anything for the producer to output
 	// override this for extended classes that don't output a value
 	// return false when there is a heartbeat row or other row with suppressed output
+	@Override
 	public boolean shouldOutput(MaxwellOutputConfig outputConfig) {
 		return true;
 	}
 
+	@Override
 	public LinkedHashMap<String, Object> getData()
 	{
 		return new LinkedHashMap<>(data);
 	}
 
+	@Override
 	public LinkedHashMap<String, Object> getExtraAttributes()
 	{
 		return new LinkedHashMap<>(extraAttributes);
 	}
 
+	@Override
 	public LinkedHashMap<String, Object> getOldData()
 	{
 		return new LinkedHashMap<>(oldData);

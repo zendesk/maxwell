@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.ValueNode;
+import com.zendesk.maxwell.api.row.RowMap;
 import com.zendesk.maxwell.core.errors.ParseException;
 
 import java.io.IOException;
@@ -84,7 +85,7 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 		JsonNode data = node.get("data");
 		JsonNode oldData = node.get("old");
 
-		RowMap rowMap = new RowMap(
+		RowMap rowMap = new BaseRowMap(
 				type.asText(),
 				database.asText(),
 				table.asText(),
@@ -173,7 +174,7 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 		if (mapper == null) {
 			mapper = new ObjectMapper();
 			SimpleModule module = new SimpleModule();
-			module.addDeserializer(RowMap.class, new RowMapDeserializer(secret_key));
+			module.addDeserializer(BaseRowMap.class, new RowMapDeserializer(secret_key));
 			mapper.registerModule(module);
 		}
 
@@ -185,7 +186,7 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 		if (mapper == null) {
 			mapper = new ObjectMapper();
 			SimpleModule module = new SimpleModule();
-			module.addDeserializer(RowMap.class, new RowMapDeserializer());
+			module.addDeserializer(BaseRowMap.class, new RowMapDeserializer());
 			mapper.registerModule(module);
 		}
 
@@ -195,12 +196,12 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 	public static RowMap createFromString(String json) throws IOException
 	{
 
-		return getMapper().readValue(json, RowMap.class);
+		return getMapper().readValue(json, BaseRowMap.class);
 	}
 
 	public static RowMap createFromString(String json, String secret_key) throws IOException
 	{
-		return getMapper(secret_key).readValue(json, RowMap.class);
+		return getMapper(secret_key).readValue(json, BaseRowMap.class);
 	}
 
 	public static void resetMapper(){

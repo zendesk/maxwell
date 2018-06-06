@@ -4,8 +4,9 @@ import com.zendesk.maxwell.core.MaxwellSystemContext;
 import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.api.replication.BinlogPosition;
 import com.zendesk.maxwell.core.replication.Replicator;
-import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.api.row.RowMap;
 import com.zendesk.maxwell.core.row.RowMapBufferByTable;
+import com.zendesk.maxwell.api.row.RowMapFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,13 +29,13 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 	private RowMapBufferByTable skippedRows = null;
 	private SynchronousBootstrapper synchronousBootstrapper = getSynchronousBootstrapper();
 
-	public AsynchronousBootstrapper( MaxwellSystemContext context ) throws IOException {
-		super(context);
+	public AsynchronousBootstrapper( MaxwellSystemContext context, RowMapFactory rowMapFactory ) throws IOException {
+		super(context, rowMapFactory);
 		skippedRows = new RowMapBufferByTable();
 	}
 
 	protected SynchronousBootstrapper getSynchronousBootstrapper( ) {
-		return new SynchronousBootstrapper(context);
+		return new SynchronousBootstrapper(context, rowMapFactory);
 	}
 
 	@Override

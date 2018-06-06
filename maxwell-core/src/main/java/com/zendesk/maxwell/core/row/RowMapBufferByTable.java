@@ -1,5 +1,7 @@
 package com.zendesk.maxwell.core.row;
 
+import com.zendesk.maxwell.api.row.RowMap;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;

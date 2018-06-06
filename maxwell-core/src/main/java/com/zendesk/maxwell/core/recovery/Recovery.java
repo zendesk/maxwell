@@ -8,7 +8,7 @@ import com.zendesk.maxwell.api.monitoring.Metrics;
 import com.zendesk.maxwell.core.monitoring.NoOpMetrics;
 import com.zendesk.maxwell.core.replication.*;
 import com.zendesk.maxwell.core.row.HeartbeatRowMap;
-import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.api.row.RowMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import snaq.db.ConnectionPool;

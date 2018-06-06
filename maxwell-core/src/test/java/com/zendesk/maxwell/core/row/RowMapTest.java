@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.core.row;
 
 import com.google.common.collect.Lists;
+import com.zendesk.maxwell.api.row.RowMap;
 import com.zendesk.maxwell.core.MaxwellTestJSON;
 import com.zendesk.maxwell.core.SpringTestContextConfiguration;
 import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
@@ -32,7 +33,7 @@ public class RowMapTest {
 
 	@Test
 	public void testGetDataMaps() throws Exception {
-		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", 1234567890L, new ArrayList<String>(), null);
+		RowMap rowMap = new BaseRowMap("insert", "MyDatabase", "MyTable", 1234567890L, new ArrayList<String>(), null);
 		rowMap.putData("foo", "bar");
 		rowMap.putOldData("fiz", "buz");
 
@@ -61,7 +62,7 @@ public class RowMapTest {
 
 	@Test
 	public void testGetExtraAttributesMaps() throws Exception {
-		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", 1234567890L, new ArrayList<String>(), null);
+		RowMap rowMap = new BaseRowMap("insert", "MyDatabase", "MyTable", 1234567890L, new ArrayList<String>(), null);
 		rowMap.putExtraAttribute("foo", "bar");
 
 		// Sanity check.
@@ -83,7 +84,7 @@ public class RowMapTest {
 
 	@Test(expected = ProtectedAttributeNameException.class)
 	public void testFailOnProtectedAttributes() throws Exception {
-		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", 1234567890L, new ArrayList<String>(), null);
+		RowMap rowMap = new BaseRowMap("insert", "MyDatabase", "MyTable", 1234567890L, new ArrayList<String>(), null);
 		rowMap.putExtraAttribute("table", "bar");
 	}
 
@@ -91,7 +92,7 @@ public class RowMapTest {
 	public void testTimestampConversion() throws Exception {
 		long timestampSeconds = 1496712943;
 
-		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, new ArrayList<String>(), POSITION);
+		RowMap rowMap = new BaseRowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, new ArrayList<String>(), POSITION);
 
 		Assert.assertEquals(timestampSeconds, rowMap.getTimestamp().longValue());
 		Assert.assertEquals(TIMESTAMP_MILLISECONDS, rowMap.getTimestampMillis().longValue());
@@ -110,12 +111,12 @@ public class RowMapTest {
 
 		pKeys.add("name");
 
-		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
+		RowMap rowMap = new BaseRowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
 
 		rowMap.putData("id", "9001");
 		rowMap.putData("name", "example");
 
-		String jsonString = rowMap.pkToJson(RowMap.KeyFormat.HASH);
+		String jsonString = rowMap.pkToJson(BaseRowMap.KeyFormat.HASH);
 
 		Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\",\"pk.id\":\"9001\",\"pk.name\":\"example\"}",
 				jsonString);
@@ -125,9 +126,9 @@ public class RowMapTest {
 	@Test
 	public void testPkToJsonHashWithEmptyData() throws Exception {
 
-		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, new ArrayList<String>(), POSITION);
+		RowMap rowMap = new BaseRowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, new ArrayList<String>(), POSITION);
 
-		String jsonString = rowMap.pkToJson(RowMap.KeyFormat.HASH);
+		String jsonString = rowMap.pkToJson(BaseRowMap.KeyFormat.HASH);
 
 		Map<String, Object> jsonMap = maxwellTestJSON.parseJSON(jsonString);
 
@@ -149,12 +150,12 @@ public class RowMapTest {
 
 		Position position = new Position(new BinlogPosition(1L, "binlog-0001"), 0L);
 
-		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, position);
+		RowMap rowMap = new BaseRowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, position);
 
 		rowMap.putData("id", "9001");
 		rowMap.putData("name", "example");
 
-		String jsonString = rowMap.pkToJson(RowMap.KeyFormat.ARRAY);
+		String jsonString = rowMap.pkToJson(BaseRowMap.KeyFormat.ARRAY);
 
 		Assert.assertEquals("[\"MyDatabase\",\"MyTable\",[{\"id\":\"9001\"},{\"name\":\"example\"}]]",
 				jsonString);
@@ -172,12 +173,12 @@ public class RowMapTest {
 
 		Position position = new Position(new BinlogPosition(1L, "binlog-0001"), 0L);
 
-		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, position);
+		RowMap rowMap = new BaseRowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, position);
 
 		rowMap.putData("id", "9001");
 		rowMap.putData("name", Lists.newArrayList("example"));
 
-		String jsonString = rowMap.pkToJson(RowMap.KeyFormat.ARRAY);
+		String jsonString = rowMap.pkToJson(BaseRowMap.KeyFormat.ARRAY);
 
 		Assert.assertEquals("[\"MyDatabase\",\"MyTable\",[{\"id\":\"9001\"},{\"name\":[\"example\"]}]]",
 				jsonString);
@@ -190,7 +191,7 @@ public class RowMapTest {
 
 		pKeys.add("first_name");
 
-		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
+		RowMap rowMap = new BaseRowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
 
 		rowMap.putData("id", "9001");
 		rowMap.putData("first_name", "foo");
@@ -216,7 +217,7 @@ public class RowMapTest {
 
 		pKeys.add("first_name");
 
-		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
+		RowMap rowMap = new BaseRowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
 
 		rowMap.putData("id", "9001");
 		rowMap.putData("first_name", "foo");
@@ -235,7 +236,7 @@ public class RowMapTest {
 
 	@Test
 	public void testToJSONWithRawJSONData() throws Exception {
-		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS,
+		RowMap rowMap = new BaseRowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS,
 				new ArrayList<String>(), POSITION);
 
 		rowMap.setServerId(7653213L);
@@ -260,7 +261,7 @@ public class RowMapTest {
 
 	@Test
 	public void testToJSONWithListData() throws Exception {
-		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS,
+		RowMap rowMap = new BaseRowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS,
 				new ArrayList<String>(), POSITION);
 
 		rowMap.setServerId(7653213L);

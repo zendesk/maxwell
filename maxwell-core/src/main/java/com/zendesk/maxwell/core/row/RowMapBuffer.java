@@ -1,5 +1,6 @@
 package com.zendesk.maxwell.core.row;
 
+import com.zendesk.maxwell.api.row.RowMap;
 import com.zendesk.maxwell.core.util.ListWithDiskBuffer;
 
 import java.io.IOException;
@@ -53,7 +54,7 @@ public class RowMapBuffer extends ListWithDiskBuffer<RowMap> {
 	}
 
 	public RowMap removeFirst() throws IOException, ClassNotFoundException {
-		RowMap r = super.removeFirst(RowMap.class);
+		RowMap r = super.removeFirst(BaseRowMap.class);
 		r.setXid(this.xid);
 		r.setXoffset(this.xoffset++);
 		r.setServerId(this.serverId);
