@@ -142,11 +142,6 @@
             </dependency>
             <dependency>
                 <groupId>com.zendesk</groupId>
-                <artifactId>maxwell-producer-api</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.zendesk</groupId>
                 <artifactId>maxwell-producer-buffer</artifactId>
                 <version>${project.version}</version>
             </dependency>

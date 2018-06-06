@@ -54,7 +54,7 @@ public class RowMapBuffer extends ListWithDiskBuffer<RowMap> {
 	}
 
 	public RowMap removeFirst() throws IOException, ClassNotFoundException {
-		RowMap r = super.removeFirst(BaseRowMap.class);
+		RowMap r = super.removeFirst(RowMap.class);
 		r.setXid(this.xid);
 		r.setXoffset(this.xoffset++);
 		r.setServerId(this.serverId);

@@ -15,11 +15,11 @@
     <dependencies>
         <dependency>
             <groupId>com.zendesk</groupId>
-            <artifactId>maxwell-core</artifactId>
+            <artifactId>maxwell-api</artifactId>
         </dependency>
         <dependency>
             <groupId>com.zendesk</groupId>
-            <artifactId>maxwell-producer-api</artifactId>
+            <artifactId>maxwell-core</artifactId>
         </dependency>
         <dependency>
             <groupId>com.zendesk</groupId>

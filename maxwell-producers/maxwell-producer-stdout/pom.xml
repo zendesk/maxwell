@@ -16,7 +16,7 @@
     <dependencies>
         <dependency>
             <groupId>com.zendesk</groupId>
-            <artifactId>maxwell-producer-api</artifactId>
+            <artifactId>maxwell-api</artifactId>
         </dependency>
     </dependencies>
 </project>

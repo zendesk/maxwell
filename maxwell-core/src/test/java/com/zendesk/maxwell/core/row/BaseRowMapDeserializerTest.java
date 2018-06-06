@@ -5,13 +5,13 @@ import com.zendesk.maxwell.api.row.RowMap;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class RowMapDeserializerTest {
+public class BaseRowMapDeserializerTest {
 	@Test
 	public void testInsert() throws Exception {
 		byte[] bytes = ByteStreams.toByteArray(this.getClass().getResourceAsStream("/json/user-insert.json"));
 		Assert.assertNotNull(bytes);
 
-		RowMap rowMap = RowMapDeserializer.createFromString(new String(bytes));
+		RowMap rowMap = BaseRowMapDeserializer.createFromString(new String(bytes));
 		Assert.assertNotNull(rowMap);
 
 		Assert.assertEquals("MyDatabase", rowMap.getDatabase());
@@ -33,7 +33,7 @@ public class RowMapDeserializerTest {
 		byte[] bytes = ByteStreams.toByteArray(this.getClass().getResourceAsStream("/json/user-update.json"));
 		Assert.assertNotNull(bytes);
 
-		RowMap rowMap = RowMapDeserializer.createFromString(new String(bytes));
+		RowMap rowMap = BaseRowMapDeserializer.createFromString(new String(bytes));
 		Assert.assertNotNull(rowMap);
 
 		Assert.assertEquals("MyDatabase", rowMap.getDatabase());
@@ -57,7 +57,7 @@ public class RowMapDeserializerTest {
 		byte[] bytes = ByteStreams.toByteArray(this.getClass().getResourceAsStream("/json/encrypted-user-insert.json"));
 		Assert.assertNotNull(bytes);
 
-		RowMap rowMap = RowMapDeserializer.createFromString(new String(bytes),"aaaaaaaaaaaaaaaa");
+		RowMap rowMap = BaseRowMapDeserializer.createFromString(new String(bytes),"aaaaaaaaaaaaaaaa");
 		Assert.assertNotNull(rowMap);
 
 		Assert.assertEquals("shard_1", rowMap.getDatabase());
@@ -75,7 +75,7 @@ public class RowMapDeserializerTest {
 		byte[] bytes = ByteStreams.toByteArray(this.getClass().getResourceAsStream("/json/encrypted-user-update.json"));
 		Assert.assertNotNull(bytes);
 
-		RowMap rowMap = RowMapDeserializer.createFromString(new String(bytes),"aaaaaaaaaaaaaaaa");
+		RowMap rowMap = BaseRowMapDeserializer.createFromString(new String(bytes),"aaaaaaaaaaaaaaaa");
 		Assert.assertNotNull(rowMap);
 
 		Assert.assertEquals("shard_1", rowMap.getDatabase());
@@ -93,7 +93,7 @@ public class RowMapDeserializerTest {
 		byte[] bytes = ByteStreams.toByteArray(this.getClass().getResourceAsStream("/json/all-encrypted-user-insert.json"));
 		Assert.assertNotNull(bytes);
 
-		RowMap rowMap = RowMapDeserializer.createFromString(new String(bytes),"aaaaaaaaaaaaaaaa");
+		RowMap rowMap = BaseRowMapDeserializer.createFromString(new String(bytes),"aaaaaaaaaaaaaaaa");
 		Assert.assertNotNull(rowMap);
 
 		Assert.assertEquals("shard_1", rowMap.getDatabase());
@@ -111,7 +111,7 @@ public class RowMapDeserializerTest {
 		byte[] bytes = ByteStreams.toByteArray(this.getClass().getResourceAsStream("/json/all-encrypted-user-update.json"));
 		Assert.assertNotNull(bytes);
 
-		RowMap rowMap = RowMapDeserializer.createFromString(new String(bytes),"aaaaaaaaaaaaaaaa");
+		RowMap rowMap = BaseRowMapDeserializer.createFromString(new String(bytes),"aaaaaaaaaaaaaaaa");
 		Assert.assertNotNull(rowMap);
 
 		Assert.assertEquals("shard_1", rowMap.getDatabase());

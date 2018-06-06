@@ -8,38 +8,37 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.ValueNode;
-import com.zendesk.maxwell.api.row.RowMap;
 import com.zendesk.maxwell.core.errors.ParseException;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class RowMapDeserializer extends StdDeserializer<RowMap> {
+public class BaseRowMapDeserializer extends StdDeserializer<BaseRowMap> {
 	private static ObjectMapper mapper;
 	private String secret_key;
 
 
-	public RowMapDeserializer() {
+	public BaseRowMapDeserializer() {
 		this(Class.class);
 	}
 
-	public RowMapDeserializer(String secret_key){
+	public BaseRowMapDeserializer(String secret_key){
 		this(null,secret_key);
 	}
 
 
-	public RowMapDeserializer(Class<?> vc) {
+	public BaseRowMapDeserializer(Class<?> vc) {
 		super(vc);
 	}
 
-	public RowMapDeserializer(Class<?> vc, String secret_key){
+	public BaseRowMapDeserializer(Class<?> vc, String secret_key){
 		super(vc);
 		this.secret_key = secret_key;
 	}
 
 	@Override
-	public RowMap deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+	public BaseRowMap deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
 		ObjectNode node = jsonParser.getCodec().readTree(jsonParser);
 
 		JsonNode encrypted = node.get("encrypted");
@@ -85,7 +84,7 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 		JsonNode data = node.get("data");
 		JsonNode oldData = node.get("old");
 
-		RowMap rowMap = new BaseRowMap(
+		BaseRowMap rowMap = new BaseRowMap(
 				type.asText(),
 				database.asText(),
 				table.asText(),
@@ -115,7 +114,7 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 		return rowMap;
 	}
 
-	private void readDataInto(RowMap dest, JsonNode data, boolean isOld) throws IOException {
+	private void readDataInto(BaseRowMap dest, JsonNode data, boolean isOld) throws IOException {
 		if (!(data instanceof ObjectNode)) {
 			throw new ParseException("`" + (isOld ? "oldData" : "data") + "` cannot be parsed.");
 		}
@@ -174,7 +173,7 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 		if (mapper == null) {
 			mapper = new ObjectMapper();
 			SimpleModule module = new SimpleModule();
-			module.addDeserializer(BaseRowMap.class, new RowMapDeserializer(secret_key));
+			module.addDeserializer(BaseRowMap.class, new BaseRowMapDeserializer(secret_key));
 			mapper.registerModule(module);
 		}
 
@@ -186,20 +185,20 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 		if (mapper == null) {
 			mapper = new ObjectMapper();
 			SimpleModule module = new SimpleModule();
-			module.addDeserializer(BaseRowMap.class, new RowMapDeserializer());
+			module.addDeserializer(BaseRowMap.class, new BaseRowMapDeserializer());
 			mapper.registerModule(module);
 		}
 
 		return mapper;
 	}
 
-	public static RowMap createFromString(String json) throws IOException
+	public static BaseRowMap createFromString(String json) throws IOException
 	{
 
 		return getMapper().readValue(json, BaseRowMap.class);
 	}
 
-	public static RowMap createFromString(String json, String secret_key) throws IOException
+	public static BaseRowMap createFromString(String json, String secret_key) throws IOException
 	{
 		return getMapper(secret_key).readValue(json, BaseRowMap.class);
 	}
