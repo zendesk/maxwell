@@ -11,7 +11,7 @@ import com.zendesk.maxwell.core.producer.ProducerContext;
 import com.zendesk.maxwell.core.recovery.RecoveryInfo;
 import com.zendesk.maxwell.core.replication.HeartbeatNotifier;
 import com.zendesk.maxwell.core.replication.MysqlVersion;
-import com.zendesk.maxwell.core.replication.Position;
+import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.core.replication.Replicator;
 import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.schema.MysqlPositionStore;

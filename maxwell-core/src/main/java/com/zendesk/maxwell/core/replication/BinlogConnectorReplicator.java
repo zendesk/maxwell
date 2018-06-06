@@ -7,6 +7,8 @@ import com.github.shyiko.mysql.binlog.event.QueryEventData;
 import com.github.shyiko.mysql.binlog.event.RowsQueryEventData;
 import com.github.shyiko.mysql.binlog.event.TableMapEventData;
 import com.github.shyiko.mysql.binlog.event.deserialization.EventDeserializer;
+import com.zendesk.maxwell.api.replication.BinlogPosition;
+import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.bootstrap.Bootstrapper;
 import com.zendesk.maxwell.core.config.MaxwellMysqlConfig;

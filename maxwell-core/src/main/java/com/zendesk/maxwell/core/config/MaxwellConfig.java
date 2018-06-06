@@ -2,7 +2,7 @@ package com.zendesk.maxwell.core.config;
 
 import com.zendesk.maxwell.core.MaxwellInvalidFilterException;
 import com.zendesk.maxwell.core.producer.ProducerFactory;
-import com.zendesk.maxwell.core.replication.Position;
+import com.zendesk.maxwell.api.replication.Position;
 
 import java.util.Properties;
 import java.util.regex.Pattern;

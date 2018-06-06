@@ -2,8 +2,8 @@ package com.zendesk.maxwell.core.producer;
 
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.config.*;
-import com.zendesk.maxwell.core.replication.BinlogPosition;
-import com.zendesk.maxwell.core.replication.Position;
+import com.zendesk.maxwell.api.replication.BinlogPosition;
+import com.zendesk.maxwell.api.replication.Position;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

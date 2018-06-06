@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core.replication;
+package com.zendesk.maxwell.api.replication;
 
 import com.github.shyiko.mysql.binlog.GtidSet;
 import org.slf4j.Logger;

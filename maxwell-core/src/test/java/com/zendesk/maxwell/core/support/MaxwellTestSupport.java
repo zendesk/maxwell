@@ -5,7 +5,7 @@ import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.core.*;
 import com.zendesk.maxwell.core.config.*;
 import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducer;
-import com.zendesk.maxwell.core.replication.Position;
+import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.schema.Schema;
 import com.zendesk.maxwell.core.schema.SchemaCapturer;

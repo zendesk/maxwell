@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.core;
 
-import com.zendesk.maxwell.core.replication.BinlogPosition;
-import com.zendesk.maxwell.core.replication.Position;
+import com.zendesk.maxwell.api.replication.BinlogPosition;
+import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.core.schema.MysqlSavedSchema;
 import com.zendesk.maxwell.core.schema.Schema;
 

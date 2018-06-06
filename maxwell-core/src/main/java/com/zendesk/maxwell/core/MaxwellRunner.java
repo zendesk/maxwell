@@ -7,7 +7,7 @@ import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.core.recovery.Recovery;
 import com.zendesk.maxwell.core.recovery.RecoveryInfo;
 import com.zendesk.maxwell.core.replication.BinlogConnectorReplicator;
-import com.zendesk.maxwell.core.replication.Position;
+import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.core.replication.Replicator;
 import com.zendesk.maxwell.core.schema.MysqlPositionStore;
 import com.zendesk.maxwell.core.schema.MysqlSchemaStore;

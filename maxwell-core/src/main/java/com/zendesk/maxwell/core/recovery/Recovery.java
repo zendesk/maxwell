@@ -1,5 +1,7 @@
 package com.zendesk.maxwell.core.recovery;
 
+import com.zendesk.maxwell.api.replication.BinlogPosition;
+import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.core.CaseSensitivity;
 import com.zendesk.maxwell.core.config.MaxwellMysqlConfig;
 import com.zendesk.maxwell.core.monitoring.Metrics;

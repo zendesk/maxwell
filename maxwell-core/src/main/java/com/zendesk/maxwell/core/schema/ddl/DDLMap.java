@@ -4,8 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
 import com.zendesk.maxwell.core.config.MaxwellOutputConfig;
-import com.zendesk.maxwell.core.replication.BinlogPosition;
-import com.zendesk.maxwell.core.replication.Position;
+import com.zendesk.maxwell.api.replication.BinlogPosition;
+import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.core.row.RowMap;
 
 import java.io.IOException;

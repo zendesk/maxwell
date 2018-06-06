@@ -2,8 +2,8 @@ package com.zendesk.maxwell.core.bootstrap;
 
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.producer.Producer;
-import com.zendesk.maxwell.core.replication.BinlogPosition;
-import com.zendesk.maxwell.core.replication.Position;
+import com.zendesk.maxwell.api.replication.BinlogPosition;
+import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.core.replication.Replicator;
 import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.schema.Database;

@@ -6,8 +6,8 @@ import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
 import com.zendesk.maxwell.core.errors.ProtectedAttributeNameException;
 import com.zendesk.maxwell.core.producer.EncryptionMode;
 import com.zendesk.maxwell.core.config.MaxwellOutputConfig;
-import com.zendesk.maxwell.core.replication.BinlogPosition;
-import com.zendesk.maxwell.core.replication.Position;
+import com.zendesk.maxwell.api.replication.BinlogPosition;
+import com.zendesk.maxwell.api.replication.Position;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

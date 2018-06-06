@@ -13,4 +13,11 @@
     <name>maxwell-api</name>
     <description>Maxwell's API.</description>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.github.shyiko</groupId>
+            <artifactId>mysql-binlog-connector-java</artifactId>
+        </dependency>
+    </dependencies>
+
 </project>
