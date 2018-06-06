@@ -2,6 +2,7 @@ package com.zendesk.maxwell.core;
 
 import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
+import com.zendesk.maxwell.core.config.BaseMaxwellMysqlConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.producer.AbstractProducer;
 import com.zendesk.maxwell.core.row.RowMap;
@@ -59,12 +60,13 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 
 	private BaseMaxwellConfig getConfig(MysqlIsolatedServer mysql) {
 		BaseMaxwellConfig config = maxwellConfigFactory.createNewDefaultConfiguration();
-		config.getMaxwellMysql().setUser("maxwell");
-		config.getMaxwellMysql().setPassword("maxwell");
-		config.getMaxwellMysql().setHost("localhost");
-		config.getMaxwellMysql().setPort(mysql.getPort());
-		config.getMaxwellMysql().setSslMode(SSLMode.DISABLED);
-		config.setReplicationMysql(config.getMaxwellMysql());
+		BaseMaxwellMysqlConfig maxwellMysql = (BaseMaxwellMysqlConfig) config.getMaxwellMysql();
+		maxwellMysql.setUser("maxwell");
+		maxwellMysql.setPassword("maxwell");
+		maxwellMysql.setHost("localhost");
+		maxwellMysql.setPort(mysql.getPort());
+		maxwellMysql.setSslMode(SSLMode.DISABLED);
+		config.setReplicationMysql(maxwellMysql);
 		return config;
 	}
 

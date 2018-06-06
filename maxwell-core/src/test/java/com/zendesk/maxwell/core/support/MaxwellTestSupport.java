@@ -144,12 +144,13 @@ public class MaxwellTestSupport {
 
 		BaseMaxwellConfig config = maxwellConfigFactory.createNewDefaultConfiguration();
 
-		config.getMaxwellMysql().setUser("maxwell");
-		config.getMaxwellMysql().setPassword("maxwell");
-		config.getMaxwellMysql().setHost("localhost");
-		config.getMaxwellMysql().setPort(mysql.getPort());
-		config.getMaxwellMysql().setSslMode(SSLMode.DISABLED);
-		config.setReplicationMysql(config.getMaxwellMysql());
+		BaseMaxwellMysqlConfig maxwellMysql = (BaseMaxwellMysqlConfig) config.getMaxwellMysql();
+		maxwellMysql.setUser("maxwell");
+		maxwellMysql.setPassword("maxwell");
+		maxwellMysql.setHost("localhost");
+		maxwellMysql.setPort(mysql.getPort());
+		maxwellMysql.setSslMode(SSLMode.DISABLED);
+		config.setReplicationMysql(maxwellMysql);
 		final MaxwellOutputConfig outputConfig = optionalOutputConfig.orElseGet(BaseMaxwellOutputConfig::new);
 
 		if ( filter != null ) {

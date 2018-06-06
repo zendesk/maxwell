@@ -26,17 +26,19 @@ public class MaxwellConfigTestSupport {
 	private MaxwellConfig buildConfig(int port, Position p, MaxwellFilter filter) {
 		BaseMaxwellConfig config = maxwellConfigFactory.createNewDefaultConfiguration();
 
-		config.getReplicationMysql().setHost("127.0.0.1");
-		config.getReplicationMysql().setPort(port);
-		config.getReplicationMysql().setUser("maxwell");
-		config.getReplicationMysql().setPassword("maxwell");
-		config.getReplicationMysql().setSslMode(SSLMode.DISABLED);
+		BaseMaxwellMysqlConfig replicationMysql = (BaseMaxwellMysqlConfig) config.getReplicationMysql();
+		replicationMysql.setHost("127.0.0.1");
+		replicationMysql.setPort(port);
+		replicationMysql.setUser("maxwell");
+		replicationMysql.setPassword("maxwell");
+		replicationMysql.setSslMode(SSLMode.DISABLED);
 
-		config.getMaxwellMysql().setHost("127.0.0.1");
-		config.getMaxwellMysql().setPort(port);
-		config.getMaxwellMysql().setUser("maxwell");
-		config.getMaxwellMysql().setPassword("maxwell");
-		config.getMaxwellMysql().setSslMode(SSLMode.DISABLED);
+		BaseMaxwellMysqlConfig maxwellMysql = (BaseMaxwellMysqlConfig) config.getMaxwellMysql();
+		maxwellMysql.setHost("127.0.0.1");
+		maxwellMysql.setPort(port);
+		maxwellMysql.setUser("maxwell");
+		maxwellMysql.setPassword("maxwell");
+		maxwellMysql.setSslMode(SSLMode.DISABLED);
 
 		config.setDatabaseName("maxwell");
 

@@ -3,6 +3,7 @@ package com.zendesk.maxwell.core.recovery;
 import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.core.*;
 import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
+import com.zendesk.maxwell.core.config.BaseMaxwellMysqlConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.replication.Position;
@@ -62,12 +63,12 @@ public class RecoveryTest extends TestWithNameLogging {
 
 	private BaseMaxwellConfig getConfig(int port, boolean masterRecovery){
 		BaseMaxwellConfig config = maxwellConfigFactory.createNewDefaultConfiguration();
-		config.getMaxwellMysql().setHost("localhost");
-		config.getMaxwellMysql().setPort(port);
-		config.getMaxwellMysql().setUser("maxwell");
-		config.getMaxwellMysql().setPassword("maxwell");
+		((BaseMaxwellMysqlConfig)config.getMaxwellMysql()).setHost("localhost");
+		((BaseMaxwellMysqlConfig)config.getMaxwellMysql()).setPort(port);
+		((BaseMaxwellMysqlConfig)config.getMaxwellMysql()).setUser("maxwell");
+		((BaseMaxwellMysqlConfig)config.getMaxwellMysql()).setPassword("maxwell");
+		((BaseMaxwellMysqlConfig)config.getMaxwellMysql()).setSslMode(SSLMode.DISABLED);
 		config.setMasterRecovery(masterRecovery);
-		config.getMaxwellMysql().setSslMode(SSLMode.DISABLED);
 		config.validate();
 		return config;
 	}

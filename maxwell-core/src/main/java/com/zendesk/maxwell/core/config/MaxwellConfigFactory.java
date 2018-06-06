@@ -37,7 +37,7 @@ public class MaxwellConfigFactory {
 		config.setGtidMode(configurationSupport.fetchBooleanOption("gtid_mode", properties, System.getenv(MaxwellConfig.GTID_MODE_ENV) != null));
 
 		config.setDatabaseName(configurationSupport.fetchOption("schema_database", properties, "maxwell"));
-		config.getMaxwellMysql().setDatabase(config.getDatabaseName());
+		((BaseMaxwellMysqlConfig)config.getMaxwellMysql()).setDatabase(config.getDatabaseName());
 
 		configureProducer(properties, config);
 
@@ -77,7 +77,6 @@ public class MaxwellConfigFactory {
 
 		configureReplicationSettings(properties, config);
 		configureOutputConfig(properties, config);
-		configureEncryption(properties, config);
 		return config;
 	}
 
@@ -117,9 +116,10 @@ public class MaxwellConfigFactory {
 	}
 
 	private void configureDiagnostics(final Properties properties, final BaseMaxwellConfig config) {
-		config.setDiagnosticConfig(new BaseMaxwellDiagnosticConfig());
-		config.getDiagnosticConfig().setEnable(configurationSupport.fetchBooleanOption("http_diagnostic", properties, false));
-		config.getDiagnosticConfig().setTimeout(configurationSupport.fetchLongOption("http_diagnostic_timeout", properties, 10000L));
+		BaseMaxwellDiagnosticConfig diagnosticConfig = new BaseMaxwellDiagnosticConfig();
+		diagnosticConfig.setEnable(configurationSupport.fetchBooleanOption("http_diagnostic", properties, false));
+		diagnosticConfig.setTimeout(configurationSupport.fetchLongOption("http_diagnostic_timeout", properties, 10000L));
+		config.setDiagnosticConfig(diagnosticConfig);
 	}
 
 	private void configureReplicationSettings(final Properties properties, final BaseMaxwellConfig config) {
@@ -163,36 +163,35 @@ public class MaxwellConfigFactory {
 		config.setIgnoreProducerError(configurationSupport.fetchBooleanOption("ignore_producer_error", properties, true));
 	}
 
-	private void configureOutputConfig(final Properties properties, final MaxwellConfig config) {
-		config.getOutputConfig().setIncludesBinlogPosition(configurationSupport.fetchBooleanOption("output_binlog_position", properties, false));
-		config.getOutputConfig().setIncludesGtidPosition(configurationSupport.fetchBooleanOption("output_gtid_position", properties, false));
-		config.getOutputConfig().setIncludesCommitInfo(configurationSupport.fetchBooleanOption("output_commit_info", properties, true));
-		config.getOutputConfig().setIncludesXOffset(configurationSupport.fetchBooleanOption("output_xoffset", properties, true));
-		config.getOutputConfig().setIncludesNulls(configurationSupport.fetchBooleanOption("output_nulls", properties, true));
-		config.getOutputConfig().setIncludesServerId(configurationSupport.fetchBooleanOption("output_server_id", properties, false));
-		config.getOutputConfig().setIncludesThreadId(configurationSupport.fetchBooleanOption("output_thread_id", properties, false));
-		config.getOutputConfig().setIncludesRowQuery(configurationSupport.fetchBooleanOption("output_row_query", properties, false));
-		config.getOutputConfig().setOutputDDL(configurationSupport.fetchBooleanOption("output_ddl", properties, false));
-	}
-
-	private void configureEncryption(final Properties properties, final MaxwellConfig config) {
+	private void configureOutputConfig(final Properties properties, final BaseMaxwellConfig config) {
+		BaseMaxwellOutputConfig outputConfig = new BaseMaxwellOutputConfig();
+		outputConfig.setIncludesBinlogPosition(configurationSupport.fetchBooleanOption("output_binlog_position", properties, false));
+		outputConfig.setIncludesGtidPosition(configurationSupport.fetchBooleanOption("output_gtid_position", properties, false));
+		outputConfig.setIncludesCommitInfo(configurationSupport.fetchBooleanOption("output_commit_info", properties, true));
+		outputConfig.setIncludesXOffset(configurationSupport.fetchBooleanOption("output_xoffset", properties, true));
+		outputConfig.setIncludesNulls(configurationSupport.fetchBooleanOption("output_nulls", properties, true));
+		outputConfig.setIncludesServerId(configurationSupport.fetchBooleanOption("output_server_id", properties, false));
+		outputConfig.setIncludesThreadId(configurationSupport.fetchBooleanOption("output_thread_id", properties, false));
+		outputConfig.setIncludesRowQuery(configurationSupport.fetchBooleanOption("output_row_query", properties, false));
+		outputConfig.setOutputDDL(configurationSupport.fetchBooleanOption("output_ddl", properties, false));
 		String encryptionMode = configurationSupport.fetchOption("encrypt", properties, "none");
 		switch (encryptionMode) {
 			case "none":
-				config.getOutputConfig().setEncryptionMode(EncryptionMode.ENCRYPT_NONE);
+				outputConfig.setEncryptionMode(EncryptionMode.ENCRYPT_NONE);
 				break;
 			case "data":
-				config.getOutputConfig().setEncryptionMode(EncryptionMode.ENCRYPT_DATA);
+				outputConfig.setEncryptionMode(EncryptionMode.ENCRYPT_DATA);
 				break;
 			case "all":
-				config.getOutputConfig().setEncryptionMode(EncryptionMode.ENCRYPT_ALL);
+				outputConfig.setEncryptionMode(EncryptionMode.ENCRYPT_ALL);
 				break;
 			default:
 				throw new InvalidUsageException("Unknown encryption mode: " + encryptionMode);
 		}
 
-		if (config.getOutputConfig().isEncryptionEnabled()) {
-			config.getOutputConfig().setSecretKey(configurationSupport.fetchOption("secret_key", properties, null));
+		if (outputConfig.isEncryptionEnabled()) {
+			outputConfig.setSecretKey(configurationSupport.fetchOption("secret_key", properties, null));
 		}
+		config.setOutputConfig(outputConfig);
 	}
 }

@@ -1,6 +1,8 @@
 package com.zendesk.maxwell.core.benchmark;
 
 import com.zendesk.maxwell.core.*;
+import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
+import com.zendesk.maxwell.core.config.BaseMaxwellMysqlConfig;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.support.MaxwellTestSupport;
 import joptsimple.BuiltinHelpFormatter;
@@ -94,13 +96,17 @@ public class MaxwellBenchmark {
 		MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--no-clean --reuse=" + path);
 		SpringLauncher.launchMaxwell(args, (config) -> {
 			try {
-				config.getMaxwellMysql().setHost("127.0.0.1");
-				config.getMaxwellMysql().setPort(server.getPort());
-				config.getMaxwellMysql().setUser("root");
-				config.getMaxwellMysql().setPassword("");
-				config.setSchemaMysql(config.getMaxwellMysql());
-				config.setReplicationMysql(config.getMaxwellMysql());
-				config.setProducerFactory(new BenchmarkProducerFactory());
+				if(config instanceof BaseMaxwellConfig) {
+					BaseMaxwellConfig maxwellConfig = (BaseMaxwellConfig)config;
+					BaseMaxwellMysqlConfig maxwellMysqlConfig = (BaseMaxwellMysqlConfig)maxwellConfig.getMaxwellMysql();
+					maxwellMysqlConfig.setHost("127.0.0.1");
+					maxwellMysqlConfig.setPort(server.getPort());
+					maxwellMysqlConfig.setUser("root");
+					maxwellMysqlConfig.setPassword("");
+					maxwellConfig.setSchemaMysql(maxwellMysqlConfig);
+					maxwellConfig.setReplicationMysql(maxwellMysqlConfig);
+					maxwellConfig.setProducerFactory(new BenchmarkProducerFactory());
+				}
 			} catch (Exception e) {
 				throw new LauncherException("Failed to setup mysql test server for benchmark", e);
 			}

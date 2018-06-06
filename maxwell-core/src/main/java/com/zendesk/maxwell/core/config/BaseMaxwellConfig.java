@@ -46,7 +46,7 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 
 	private Long producerAckTimeout;
 
-	private final BaseMaxwellOutputConfig outputConfig;
+	private BaseMaxwellOutputConfig outputConfig;
 	private String logLevel;
 
 	private final MetricRegistry metricRegistry;
@@ -87,54 +87,39 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 		this.setGtidMode(false);
 		this.metricRegistry = new MetricRegistry();
 		this.healthCheckRegistry = new HealthCheckRegistry();
-		this.outputConfig = new BaseMaxwellOutputConfig();
 	}
 
 	@Override
 	public void validate() {
 		validatePartitionBy();
 
-		if ( !this.getBootstrapperType().equals("async")
-				&& !this.getBootstrapperType().equals("sync")
-				&& !this.getBootstrapperType().equals("none") ) {
+		if (!bootstrapperType.equals("async") && !bootstrapperType.equals("sync") && !bootstrapperType.equals("none")) {
 			throw new InvalidOptionException("please specify --bootstrapper=async|sync|none", "--bootstrapper");
 		}
 
-		if (this.getMaxwellMysql().getSslMode() == null) {
-			this.getMaxwellMysql().setSslMode(SSLMode.DISABLED);
+		if (maxwellMysql.getSslMode() == null) {
+			maxwellMysql.setSslMode(SSLMode.DISABLED);
 		}
 
-		if ( this.getMaxwellMysql().getHost() == null ) {
+		if (maxwellMysql.getHost() == null) {
 			LOGGER.warn("maxwell mysql host not specified, defaulting to localhost");
-			this.getMaxwellMysql().setHost("localhost");
+			maxwellMysql.setHost("localhost");
 		}
 
-		if ( this.getReplicationMysql().getHost() == null
-				|| this.getReplicationMysql().getUser() == null ) {
-
-			if (this.getReplicationMysql().getHost() != null
-					|| this.getReplicationMysql().getUser() != null
-					|| this.getReplicationMysql().getPassword() != null) {
+		if (replicationMysql.getHost() == null || replicationMysql.getUser() == null) {
+			if (replicationMysql.getHost() != null || replicationMysql.getUser() != null || replicationMysql.getPassword() != null) {
 				throw new InvalidOptionException("Please specify all of: replication_host, replication_user, replication_password", "--replication");
 			}
 
-			this.setReplicationMysql(new BaseMaxwellMysqlConfig(
-					this.getMaxwellMysql().getHost(),
-					this.getMaxwellMysql().getPort(),
-				null,
-					this.getMaxwellMysql().getUser(),
-					this.getMaxwellMysql().getPassword(),
-					this.getMaxwellMysql().getSslMode()
-			));
-
-			this.getReplicationMysql().setJdbcOptions(this.getMaxwellMysql().getJdbcOptions());
+			replicationMysql = new BaseMaxwellMysqlConfig(maxwellMysql.getHost(), maxwellMysql.getPort(), null, maxwellMysql.getUser(), maxwellMysql.getPassword(), maxwellMysql.getSslMode());
+			replicationMysql.setJdbcOptions(maxwellMysql.getJdbcOptions());
 		}
 
-		if (this.getReplicationMysql().getSslMode() == null) {
-			this.getReplicationMysql().setSslMode(this.getMaxwellMysql().getSslMode());
+		if (replicationMysql.getSslMode() == null) {
+			replicationMysql.setSslMode(maxwellMysql.getSslMode());
 		}
 
-		if (getGtidMode() && isMasterRecovery()) {
+		if (gtidMode && masterRecovery) {
 			throw new InvalidOptionException("There is no need to perform master_recovery under gtid_mode", "--gtid_mode");
 		}
 
@@ -142,46 +127,38 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 			throw new InvalidOptionException("output_gtid_position is only support with gtid mode.", "--output_gtid_position");
 		}
 
-		if (this.getSchemaMysql().getHost() != null) {
-			if (this.getSchemaMysql().getUser() == null || this.getSchemaMysql().getPassword() == null) {
+		if (schemaMysql.getHost() != null) {
+			if (schemaMysql.getUser() == null || schemaMysql.getPassword() == null) {
 				throw new InvalidOptionException("Please specify all of: schema_host, schema_user, schema_password", "--schema");
 			}
 
-			if (this.getReplicationMysql().getHost() == null) {
+			if (replicationMysql.getHost() == null) {
 				throw new InvalidOptionException("Specifying schema_host only makes sense along with replication_host");
 			}
 		}
 
-		if (this.getSchemaMysql().getSslMode() == null) {
-			this.getSchemaMysql().setSslMode(this.getMaxwellMysql().getSslMode());
+		if (schemaMysql.getSslMode() == null) {
+			schemaMysql.setSslMode(maxwellMysql.getSslMode());
 		}
 
-		if ( this.getFilter() == null ) {
+		if (filter == null) {
 			try {
-				this.setFilter(new MaxwellFilter(
-						getIncludeDatabases(),
-						getExcludeDatabases(),
-						getIncludeTables(),
-						getExcludeTables(),
-						getBlacklistDatabases(),
-						getBlacklistTables(),
-						getIncludeColumnValues()
-				));
+				filter = new MaxwellFilter(includeDatabases, excludeDatabases, includeTables, excludeTables, blacklistDatabases, blacklistTables, includeColumnValues);
 			} catch (MaxwellInvalidFilterException e) {
 				throw new InvalidUsageException("Invalid filter options: " + e.getLocalizedMessage());
 			}
 		}
 
-		if ( this.getMetricsDatadogType().contains("http") && StringUtils.isEmpty(this.getMetricsDatadogAPIKey()) ) {
+		if (metricsDatadogType != null && metricsDatadogType.contains("http") && StringUtils.isEmpty(metricsDatadogAPIKey)) {
 			throw new InvalidOptionException("please specify metrics_datadog_apikey when metrics_datadog_type = http");
 		}
 
-		if ( this.getExcludeColumns() != null ) {
-			for ( String s : this.getExcludeColumns().split(",") ) {
+		if (excludeColumns != null) {
+			for (String s : excludeColumns.split(",")) {
 				try {
 					getOutputConfig().getExcludeColumns().add(MaxwellConfig.compileStringToPattern(s));
-				} catch ( MaxwellInvalidFilterException e ) {
-					throw new InvalidUsageException("invalid exclude_columns: '" + this.getExcludeColumns() + "': " + e.getMessage());
+				} catch (MaxwellInvalidFilterException e) {
+					throw new InvalidUsageException("invalid exclude_columns: '" + excludeColumns + "': " + e.getMessage());
 				}
 			}
 		}
@@ -189,28 +166,28 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 		if (getOutputConfig().isEncryptionEnabled() && getOutputConfig().getSecretKey() == null)
 			throw new InvalidUsageException("--secret_key required");
 
-		if ( !getMaxwellMysql().isSameServerAs(getReplicationMysql()) && !this.getBootstrapperType().equals("none") ) {
+		if (!maxwellMysql.isSameServerAs(replicationMysql) && !bootstrapperType.equals("none")) {
 			LOGGER.warn("disabling bootstrapping; not available when using a separate replication host.");
-			this.setBootstrapperType("none");
+			bootstrapperType = "none";
 		}
 	}
 
 	private void validatePartitionBy() {
 		String[] validPartitionBy = {"database", "table", "primary_key", "column"};
-		if ( this.getProducerPartitionKey() == null ) {
+		if (this.getProducerPartitionKey() == null) {
 			this.setProducerPartitionKey("database");
-		} else if ( !ArrayUtils.contains(validPartitionBy, this.getProducerPartitionKey()) ) {
+		} else if (!ArrayUtils.contains(validPartitionBy, this.getProducerPartitionKey())) {
 			throw new InvalidOptionException("please specify --producer_partition_by=database|table|primary_key|column", "producer_partition_by");
-		} else if ( this.getProducerPartitionKey().equals("column") && StringUtils.isEmpty(this.getProducerPartitionColumns()) ) {
+		} else if (this.getProducerPartitionKey().equals("column") && StringUtils.isEmpty(this.getProducerPartitionColumns())) {
 			throw new InvalidOptionException("please specify --producer_partition_columns=column1 when using producer_partition_by=column", "producer_partition_columns");
-		} else if ( this.getProducerPartitionKey().equals("column") && StringUtils.isEmpty(this.getProducerPartitionFallback()) ) {
+		} else if (this.getProducerPartitionKey().equals("column") && StringUtils.isEmpty(this.getProducerPartitionFallback())) {
 			throw new InvalidOptionException("please specify --producer_partition_by_fallback=[database, table, primary_key] when using producer_partition_by=column", "producer_partition_by_fallback");
 		}
 
 	}
 
 	@Override
-	public BaseMaxwellMysqlConfig getReplicationMysql() {
+	public MaxwellMysqlConfig getReplicationMysql() {
 		return replicationMysql;
 	}
 
@@ -219,7 +196,7 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 	}
 
 	@Override
-	public BaseMaxwellMysqlConfig getSchemaMysql() {
+	public MaxwellMysqlConfig getSchemaMysql() {
 		return schemaMysql;
 	}
 
@@ -228,7 +205,7 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 	}
 
 	@Override
-	public BaseMaxwellMysqlConfig getMaxwellMysql() {
+	public MaxwellMysqlConfig getMaxwellMysql() {
 		return maxwellMysql;
 	}
 
@@ -407,8 +384,12 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 	}
 
 	@Override
-	public BaseMaxwellOutputConfig getOutputConfig() {
-		return outputConfig;
+	public MaxwellOutputConfig getOutputConfig() {
+		return outputConfig != null ? outputConfig : new BaseMaxwellOutputConfig();
+	}
+
+	public void setOutputConfig(BaseMaxwellOutputConfig outputConfig) {
+		this.outputConfig = outputConfig;
 	}
 
 	@Override
@@ -548,7 +529,7 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 	}
 
 	@Override
-	public BaseMaxwellDiagnosticConfig getDiagnosticConfig() {
+	public MaxwellDiagnosticConfig getDiagnosticConfig() {
 		return diagnosticConfig;
 	}
 

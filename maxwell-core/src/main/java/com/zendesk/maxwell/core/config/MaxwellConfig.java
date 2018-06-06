@@ -26,11 +26,11 @@ public interface MaxwellConfig {
 
 	void validate();
 
-	BaseMaxwellMysqlConfig getReplicationMysql();
+	MaxwellMysqlConfig getReplicationMysql();
 
-	BaseMaxwellMysqlConfig getSchemaMysql();
+	MaxwellMysqlConfig getSchemaMysql();
 
-	BaseMaxwellMysqlConfig getMaxwellMysql();
+	MaxwellMysqlConfig getMaxwellMysql();
 
 	MaxwellFilter getFilter();
 
@@ -76,7 +76,7 @@ public interface MaxwellConfig {
 
 	Long getProducerAckTimeout();
 
-	BaseMaxwellOutputConfig getOutputConfig();
+	MaxwellOutputConfig getOutputConfig();
 
 	String getLogLevel();
 
@@ -110,7 +110,7 @@ public interface MaxwellConfig {
 
 	boolean isMetricsJvm();
 
-	BaseMaxwellDiagnosticConfig getDiagnosticConfig();
+	MaxwellDiagnosticConfig getDiagnosticConfig();
 
 	String getClientID();
 
