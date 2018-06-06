@@ -2,6 +2,7 @@ package com.zendesk.maxwell.core.schema.ddl;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
+import com.zendesk.maxwell.core.config.MaxwellFilterSupport;
 import com.zendesk.maxwell.core.schema.Database;
 import com.zendesk.maxwell.core.schema.Schema;
 import com.zendesk.maxwell.core.schema.Table;
@@ -52,7 +53,7 @@ public class ResolvedTableAlter extends ResolvedSchemaChange {
 
 	@Override
 	public boolean shouldOutput(MaxwellFilter filter) {
-		return MaxwellFilter.matches(filter, database, oldTable.getName()) &&
-			MaxwellFilter.matches(filter, database, newTable.getName());
+		return MaxwellFilterSupport.matches(filter, database, oldTable.getName()) &&
+				MaxwellFilterSupport.matches(filter, database, newTable.getName());
 	}
 }

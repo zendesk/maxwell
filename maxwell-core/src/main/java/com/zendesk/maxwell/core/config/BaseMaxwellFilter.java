@@ -197,7 +197,7 @@ public class BaseMaxwellFilter implements MaxwellFilter {
 
 	@Override
 	public boolean isTableBlacklisted(String databaseName, String tableName) {
-		return MaxwellFilter.isSystemBlacklisted(databaseName, tableName)
+		return MaxwellFilterSupport.isSystemBlacklisted(databaseName, tableName)
 			|| isDatabaseBlacklisted(databaseName)
 			|| !filterListsInclude(emptyList, blacklistTables, tableName);
 	}

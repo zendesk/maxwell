@@ -4,6 +4,7 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
 import com.zendesk.maxwell.core.bootstrap.Bootstrapper;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
+import com.zendesk.maxwell.core.config.MaxwellFilterSupport;
 import com.zendesk.maxwell.core.monitoring.Metrics;
 import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.core.row.HeartbeatRowMap;
@@ -119,17 +120,17 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 		Boolean isSystemWhitelisted = this.maxwellSchemaDatabaseName.equals(database)
 			&& ("bootstrap".equals(table) || "heartbeats".equals(table));
 
-		if ( MaxwellFilter.isSystemBlacklisted(database, table) )
+		if ( MaxwellFilterSupport.isSystemBlacklisted(database, table) )
 			return false;
 		else if ( isSystemWhitelisted)
 			return true;
 		else
-			return MaxwellFilter.matches(filter, database, table);
+			return MaxwellFilterSupport.matches(filter, database, table);
 	}
 
 
 	protected boolean shouldOutputRowMap(RowMap rowMap, MaxwellFilter filter) {
-		return MaxwellFilter.matchesValues(filter, rowMap.getData());
+		return MaxwellFilterSupport.matchesValues(filter, rowMap.getData());
 	}
 
 	/**

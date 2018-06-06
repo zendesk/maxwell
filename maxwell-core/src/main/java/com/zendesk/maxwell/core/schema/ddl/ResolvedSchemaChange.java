@@ -3,6 +3,7 @@ package com.zendesk.maxwell.core.schema.ddl;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
+import com.zendesk.maxwell.core.config.MaxwellFilterSupport;
 import com.zendesk.maxwell.core.schema.Schema;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.NAME, include=JsonTypeInfo.As.PROPERTY, property="type")
@@ -23,6 +24,6 @@ public abstract class ResolvedSchemaChange {
 	public abstract String tableName();
 
 	public boolean shouldOutput(MaxwellFilter filter) {
-		return MaxwellFilter.matches(filter, databaseName(), tableName());
+		return MaxwellFilterSupport.matches(filter, databaseName(), tableName());
 	};
 }
