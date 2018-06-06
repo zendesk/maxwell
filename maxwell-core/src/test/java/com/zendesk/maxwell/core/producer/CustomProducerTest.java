@@ -2,23 +2,12 @@ package com.zendesk.maxwell.core.producer;
 
 import com.codahale.metrics.MetricRegistry;
 import com.zendesk.maxwell.core.MaxwellContext;
-import com.zendesk.maxwell.core.MaxwellContextFactory;
-import com.zendesk.maxwell.core.SpringTestContextConfiguration;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
-import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.monitoring.Metrics;
-import com.zendesk.maxwell.core.producer.AbstractProducer;
-import com.zendesk.maxwell.core.producer.Producer;
-import com.zendesk.maxwell.core.producer.ProducerFactory;
 import com.zendesk.maxwell.core.row.RowMap;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.Collections;
 import java.util.Properties;
@@ -31,11 +20,11 @@ import static org.mockito.Mockito.when;
 
 public class CustomProducerTest {
 
-	private ProducerConfigurators sut;
+	private Producers sut;
 
 	@Before
 	public void init(){
-		sut = new ProducerConfigurators(Collections.EMPTY_LIST);
+		sut = new Producers(Collections.EMPTY_LIST);
 	}
 	
 	@Test

@@ -2,7 +2,7 @@ package com.zendesk.maxwell.core;
 
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
-import com.zendesk.maxwell.core.producer.ProducerConfigurators;
+import com.zendesk.maxwell.core.producer.Producers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,14 +15,14 @@ import java.util.function.Consumer;
 @Service
 public class MaxwellContextFactory {
 	private final MaxwellConfigFactory maxwellConfigFactory;
-	private final ProducerConfigurators producerConfigurators;
+	private final Producers producers;
 
 	private final List<ContextStartListener> contextStartListeners;
 
 	@Autowired
-	public MaxwellContextFactory(MaxwellConfigFactory maxwellConfigFactory, ProducerConfigurators producerConfigurators, List<ContextStartListener> contextStartListeners) {
+	public MaxwellContextFactory(MaxwellConfigFactory maxwellConfigFactory, Producers producers, List<ContextStartListener> contextStartListeners) {
 		this.maxwellConfigFactory = maxwellConfigFactory;
-		this.producerConfigurators = producerConfigurators;
+		this.producers = producers;
 		this.contextStartListeners = contextStartListeners;
 	}
 
@@ -42,7 +42,7 @@ public class MaxwellContextFactory {
 
 	private MaxwellContext createFor(MaxwellConfig config, Properties configurationOptions) throws SQLException, URISyntaxException {
 		MaxwellContext context = new BaseMaxwellContext(config, contextStartListeners);
-		producerConfigurators.createAndRegister(context, configurationOptions);
+		producers.createAndRegister(context, configurationOptions);
 		context.probeConnections();
 		return context;
 	}

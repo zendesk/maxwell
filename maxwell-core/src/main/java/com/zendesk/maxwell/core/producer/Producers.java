@@ -14,13 +14,13 @@ import java.util.Properties;
 
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
 @Service
-public class ProducerConfigurators {
+public class Producers {
 
 	private static final String NONE_PRODUCER_TYPE = "none";
 	private final List<ProducerConfigurator> producerConfigurator;
 
 	@Autowired
-	public ProducerConfigurators(List<ProducerConfigurator> producerConfigurator) {
+	public Producers(List<ProducerConfigurator> producerConfigurator) {
 		this.producerConfigurator = producerConfigurator;
 	}
 
