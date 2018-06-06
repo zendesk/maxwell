@@ -1,11 +1,14 @@
 package com.zendesk.maxwell.core.producer;
 
 import com.codahale.metrics.MetricRegistry;
-import com.zendesk.maxwell.core.MaxwellContext;
+import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
-import com.zendesk.maxwell.core.MaxwellSystemContext;
 import com.zendesk.maxwell.api.monitoring.Metrics;
+import com.zendesk.maxwell.api.producer.Producer;
+import com.zendesk.maxwell.api.producer.ProducerContext;
+import com.zendesk.maxwell.api.producer.ProducerFactory;
 import com.zendesk.maxwell.api.row.RowMap;
+import com.zendesk.maxwell.core.MaxwellSystemContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -14,10 +17,9 @@ import java.util.Collections;
 import java.util.Properties;
 
 import static org.hamcrest.Matchers.instanceOf;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.*;
 
 public class CustomProducerTest {
 

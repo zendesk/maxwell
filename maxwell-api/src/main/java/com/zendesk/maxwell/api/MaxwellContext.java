@@ -1,13 +1,12 @@
-package com.zendesk.maxwell.core;
+package com.zendesk.maxwell.api;
 
 import com.zendesk.maxwell.api.config.MaxwellConfig;
-import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.api.monitoring.MaxwellDiagnosticContext;
 import com.zendesk.maxwell.api.monitoring.Metrics;
-import com.zendesk.maxwell.core.producer.Producer;
-import com.zendesk.maxwell.core.producer.ProducerContext;
+import com.zendesk.maxwell.api.producer.Producer;
+import com.zendesk.maxwell.api.producer.ProducerContext;
+import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.api.row.RowMap;
-import com.zendesk.maxwell.core.util.StoppableTask;
 
 import java.sql.SQLException;
 

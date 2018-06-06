@@ -1,8 +1,8 @@
 package com.zendesk.maxwell.core.benchmark;
 
-import com.zendesk.maxwell.core.MaxwellContext;
+import com.zendesk.maxwell.api.MaxwellContext;
+import com.zendesk.maxwell.api.producer.ProducerFactory;
 import com.zendesk.maxwell.core.producer.AbstractProducer;
-import com.zendesk.maxwell.core.producer.ProducerFactory;
 
 public class BenchmarkProducerFactory implements ProducerFactory {
 	@Override

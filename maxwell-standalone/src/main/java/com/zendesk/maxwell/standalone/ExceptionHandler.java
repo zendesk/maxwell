@@ -4,7 +4,7 @@ import com.zendesk.maxwell.api.LauncherException;
 import com.zendesk.maxwell.core.config.CommandLineOptions;
 import com.zendesk.maxwell.api.config.InvalidOptionException;
 import com.zendesk.maxwell.api.config.InvalidUsageException;
-import com.zendesk.maxwell.core.producer.ProducerInstantiationException;
+import com.zendesk.maxwell.api.producer.ProducerInstantiationException;
 import org.slf4j.Logger;
 
 import java.net.URISyntaxException;

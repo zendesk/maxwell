@@ -1,8 +1,8 @@
 package com.zendesk.maxwell.core.producer.impl.kafka;
 
-import com.zendesk.maxwell.core.SpringTestContextConfiguration;
 import com.zendesk.maxwell.api.row.RowMap;
 import com.zendesk.maxwell.api.row.RowMapFactory;
+import com.zendesk.maxwell.core.SpringTestContextConfiguration;
 import com.zendesk.maxwell.core.schema.ddl.DDLMap;
 import com.zendesk.maxwell.core.schema.ddl.ResolvedDatabaseAlter;
 import com.zendesk.maxwell.core.schema.ddl.ResolvedTableDrop;

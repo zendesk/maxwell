@@ -1,7 +1,5 @@
 package com.zendesk.maxwell.api.config;
 
-import com.zendesk.maxwell.api.config.MaxwellInvalidFilterException;
-
 import java.util.Map;
 
 public interface MaxwellFilter {

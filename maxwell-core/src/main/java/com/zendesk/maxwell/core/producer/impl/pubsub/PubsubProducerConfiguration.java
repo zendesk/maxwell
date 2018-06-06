@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.producer.impl.pubsub;
 
-import com.zendesk.maxwell.core.producer.ProducerConfiguration;
+import com.zendesk.maxwell.api.producer.ProducerConfiguration;
 
 public class PubsubProducerConfiguration implements ProducerConfiguration {
 	private String pubsubProjectId;

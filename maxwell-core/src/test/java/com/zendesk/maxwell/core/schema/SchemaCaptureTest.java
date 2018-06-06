@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.core.schema;
 
-import com.zendesk.maxwell.core.*;
+import com.zendesk.maxwell.core.CaseSensitivity;
+import com.zendesk.maxwell.core.MaxwellTestWithIsolatedServer;
 import com.zendesk.maxwell.core.schema.columndef.*;
 import com.zendesk.maxwell.core.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.core.support.MaxwellTestSupport;

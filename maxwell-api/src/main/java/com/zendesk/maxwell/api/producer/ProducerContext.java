@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core.producer;
+package com.zendesk.maxwell.api.producer;
 
 public class ProducerContext {
 	private final ProducerConfiguration configuration;

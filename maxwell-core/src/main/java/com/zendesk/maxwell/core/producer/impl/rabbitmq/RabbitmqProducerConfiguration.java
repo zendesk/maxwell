@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.producer.impl.rabbitmq;
 
-import com.zendesk.maxwell.core.producer.ProducerConfiguration;
+import com.zendesk.maxwell.api.producer.ProducerConfiguration;
 
 public class RabbitmqProducerConfiguration implements ProducerConfiguration {
 	private String rabbitmqUser;

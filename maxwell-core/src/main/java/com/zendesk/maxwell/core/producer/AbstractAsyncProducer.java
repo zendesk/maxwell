@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.core.producer;
 
 import com.codahale.metrics.Gauge;
-import com.zendesk.maxwell.core.MaxwellContext;
+import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.monitoring.Metrics;
 import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.api.row.RowMap;

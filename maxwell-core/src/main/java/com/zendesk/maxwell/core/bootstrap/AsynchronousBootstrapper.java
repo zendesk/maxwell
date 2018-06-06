@@ -1,12 +1,12 @@
 package com.zendesk.maxwell.core.bootstrap;
 
-import com.zendesk.maxwell.core.MaxwellSystemContext;
-import com.zendesk.maxwell.core.producer.Producer;
+import com.zendesk.maxwell.api.producer.Producer;
 import com.zendesk.maxwell.api.replication.BinlogPosition;
-import com.zendesk.maxwell.core.replication.Replicator;
 import com.zendesk.maxwell.api.row.RowMap;
-import com.zendesk.maxwell.core.row.RowMapBufferByTable;
 import com.zendesk.maxwell.api.row.RowMapFactory;
+import com.zendesk.maxwell.core.MaxwellSystemContext;
+import com.zendesk.maxwell.core.replication.Replicator;
+import com.zendesk.maxwell.core.row.RowMapBufferByTable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

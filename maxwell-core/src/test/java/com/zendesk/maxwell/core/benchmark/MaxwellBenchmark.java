@@ -1,16 +1,16 @@
 package com.zendesk.maxwell.core.benchmark;
 
 import com.zendesk.maxwell.api.LauncherException;
-import com.zendesk.maxwell.core.*;
+import com.zendesk.maxwell.api.replication.Position;
+import com.zendesk.maxwell.core.MysqlIsolatedServer;
+import com.zendesk.maxwell.core.SpringLauncher;
 import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
 import com.zendesk.maxwell.core.config.BaseMaxwellMysqlConfig;
-import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.core.support.MaxwellTestSupport;
 import joptsimple.BuiltinHelpFormatter;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import me.tongfei.progressbar.ProgressBar;
-
 
 import java.sql.Connection;
 import java.sql.Date;

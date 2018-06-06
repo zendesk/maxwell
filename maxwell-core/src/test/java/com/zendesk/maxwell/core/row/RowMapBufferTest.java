@@ -1,9 +1,9 @@
 package com.zendesk.maxwell.core.row;
 
-import com.zendesk.maxwell.api.row.RowMap;
-import com.zendesk.maxwell.core.TestWithNameLogging;
 import com.zendesk.maxwell.api.replication.BinlogPosition;
 import com.zendesk.maxwell.api.replication.Position;
+import com.zendesk.maxwell.api.row.RowMap;
+import com.zendesk.maxwell.core.TestWithNameLogging;
 import org.junit.Test;
 
 import java.io.IOException;

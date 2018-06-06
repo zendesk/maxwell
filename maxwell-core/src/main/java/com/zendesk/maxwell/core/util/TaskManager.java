@@ -1,5 +1,6 @@
 package com.zendesk.maxwell.core.util;
 
+import com.zendesk.maxwell.api.StoppableTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

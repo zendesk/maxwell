@@ -1,5 +1,7 @@
 package com.zendesk.maxwell.core.util;
 
+import com.zendesk.maxwell.api.StoppableTask;
+
 import java.util.concurrent.TimeoutException;
 
 abstract public class RunLoopProcess implements StoppableTask {

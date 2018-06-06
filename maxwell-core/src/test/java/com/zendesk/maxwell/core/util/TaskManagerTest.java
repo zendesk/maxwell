@@ -1,5 +1,6 @@
 package com.zendesk.maxwell.core.util;
 
+import com.zendesk.maxwell.api.StoppableTask;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.junit.Test;
 

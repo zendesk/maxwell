@@ -2,10 +2,12 @@ package com.zendesk.maxwell.core.monitoring;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.zendesk.maxwell.api.monitoring.MaxwellDiagnosticContext;
-import com.zendesk.maxwell.core.*;
-import com.zendesk.maxwell.core.config.BaseMaxwellDiagnosticConfig;
 import com.zendesk.maxwell.api.config.MaxwellDiagnosticConfig;
+import com.zendesk.maxwell.api.monitoring.MaxwellDiagnosticContext;
+import com.zendesk.maxwell.core.MaxwellRunner;
+import com.zendesk.maxwell.core.MaxwellSystemContext;
+import com.zendesk.maxwell.core.MaxwellTestWithIsolatedServer;
+import com.zendesk.maxwell.core.config.BaseMaxwellDiagnosticConfig;
 import com.zendesk.maxwell.core.replication.BinlogConnectorDiagnostic;
 import org.junit.After;
 import org.junit.Before;

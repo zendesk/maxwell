@@ -1,18 +1,22 @@
 package com.zendesk.maxwell.core;
 
 import com.google.common.collect.Lists;
+import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.config.MaxwellFilter;
 import com.zendesk.maxwell.api.config.MaxwellOutputConfig;
-import com.zendesk.maxwell.core.config.*;
 import com.zendesk.maxwell.api.producer.EncryptionMode;
-import com.zendesk.maxwell.core.row.BaseRowMap;
 import com.zendesk.maxwell.api.row.RowMap;
+import com.zendesk.maxwell.core.config.BaseMaxwellFilter;
+import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
+import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
+import com.zendesk.maxwell.core.row.BaseRowMap;
 import com.zendesk.maxwell.core.schema.SchemaStoreSchema;
 import com.zendesk.maxwell.core.support.MaxwellTestSupport;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import java.sql.ResultSet;
 import java.util.*;
 import java.util.regex.Pattern;

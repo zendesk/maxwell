@@ -1,6 +1,5 @@
 package com.zendesk.maxwell.api.config;
 
-import com.zendesk.maxwell.api.config.*;
 import com.zendesk.maxwell.api.replication.Position;
 
 import java.util.Properties;

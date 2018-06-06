@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.core.producer.impl.file;
 
-import com.zendesk.maxwell.core.producer.ProducerConfiguration;
 import com.zendesk.maxwell.api.config.InvalidOptionException;
+import com.zendesk.maxwell.api.producer.ProducerConfiguration;
 
 public class FileProducerConfiguration implements ProducerConfiguration {
 	private final String outputFile;

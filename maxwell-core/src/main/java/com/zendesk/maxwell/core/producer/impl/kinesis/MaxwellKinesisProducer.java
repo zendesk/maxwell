@@ -1,16 +1,19 @@
 package com.zendesk.maxwell.core.producer.impl.kinesis;
 
-import com.amazonaws.services.kinesis.producer.*;
+import com.amazonaws.services.kinesis.producer.Attempt;
+import com.amazonaws.services.kinesis.producer.KinesisProducer;
+import com.amazonaws.services.kinesis.producer.UserRecordFailedException;
+import com.amazonaws.services.kinesis.producer.UserRecordResult;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.zendesk.maxwell.core.MaxwellContext;
-import com.zendesk.maxwell.core.producer.AbstractAsyncProducer;
+import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.api.row.RowMap;
+import com.zendesk.maxwell.core.producer.AbstractAsyncProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

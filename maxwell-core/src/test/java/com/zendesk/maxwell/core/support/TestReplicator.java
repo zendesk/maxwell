@@ -1,10 +1,10 @@
 package com.zendesk.maxwell.core.support;
 
-import com.zendesk.maxwell.core.MaxwellContext;
+import com.zendesk.maxwell.api.MaxwellContext;
+import com.zendesk.maxwell.api.row.RowMap;
 import com.zendesk.maxwell.core.monitoring.NoOpMetrics;
 import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducer;
 import com.zendesk.maxwell.core.replication.AbstractReplicator;
-import com.zendesk.maxwell.api.row.RowMap;
 import com.zendesk.maxwell.core.schema.Schema;
 import com.zendesk.maxwell.core.schema.SchemaStoreException;
 import com.zendesk.maxwell.core.util.RunState;

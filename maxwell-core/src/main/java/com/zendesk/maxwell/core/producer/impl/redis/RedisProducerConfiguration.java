@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.producer.impl.redis;
 
-import com.zendesk.maxwell.core.producer.ProducerConfiguration;
+import com.zendesk.maxwell.api.producer.ProducerConfiguration;
 
 public class RedisProducerConfiguration implements ProducerConfiguration {
 	private String redisHost;

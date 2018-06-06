@@ -1,8 +1,8 @@
 package com.zendesk.maxwell.core.config;
 
 import com.zendesk.maxwell.api.config.CommandLineOptionParserContext;
+import com.zendesk.maxwell.api.producer.ProducerConfigurator;
 import com.zendesk.maxwell.core.SpringLauncher;
-import com.zendesk.maxwell.core.producer.ProducerConfigurator;
 import joptsimple.BuiltinHelpFormatter;
 import joptsimple.OptionDescriptor;
 import joptsimple.OptionParser;

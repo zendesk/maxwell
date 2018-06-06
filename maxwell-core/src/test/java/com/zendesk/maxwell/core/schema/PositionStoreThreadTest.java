@@ -1,9 +1,9 @@
 package com.zendesk.maxwell.core.schema;
 
-import com.zendesk.maxwell.core.MaxwellSystemContext;
-import com.zendesk.maxwell.core.MaxwellTestWithIsolatedServer;
 import com.zendesk.maxwell.api.replication.BinlogPosition;
 import com.zendesk.maxwell.api.replication.Position;
+import com.zendesk.maxwell.core.MaxwellSystemContext;
+import com.zendesk.maxwell.core.MaxwellTestWithIsolatedServer;
 import com.zendesk.maxwell.core.support.MaxwellTestSupport;
 import org.junit.Test;
 

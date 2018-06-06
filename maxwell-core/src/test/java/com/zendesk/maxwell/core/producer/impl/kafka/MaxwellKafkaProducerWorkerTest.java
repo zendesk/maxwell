@@ -1,8 +1,8 @@
 package com.zendesk.maxwell.core.producer.impl.kafka;
 
-import com.zendesk.maxwell.core.MaxwellContext;
-import com.zendesk.maxwell.core.SpringTestContextConfiguration;
+import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
+import com.zendesk.maxwell.core.SpringTestContextConfiguration;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.monitoring.NoOpMetrics;
 import org.junit.Test;

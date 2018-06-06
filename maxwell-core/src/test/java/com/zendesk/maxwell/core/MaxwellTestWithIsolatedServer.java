@@ -1,13 +1,13 @@
 package com.zendesk.maxwell.core;
 
-import com.zendesk.maxwell.api.config.MaxwellInvalidFilterException;
-import com.zendesk.maxwell.core.config.BaseMaxwellFilter;
-import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
 import com.zendesk.maxwell.api.config.MaxwellFilter;
+import com.zendesk.maxwell.api.config.MaxwellInvalidFilterException;
 import com.zendesk.maxwell.api.config.MaxwellOutputConfig;
-import com.zendesk.maxwell.core.replication.MysqlVersion;
 import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.api.row.RowMap;
+import com.zendesk.maxwell.core.config.BaseMaxwellFilter;
+import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
+import com.zendesk.maxwell.core.replication.MysqlVersion;
 import com.zendesk.maxwell.core.support.MaxwellConfigTestSupport;
 import com.zendesk.maxwell.core.support.MaxwellTestSupport;
 import com.zendesk.maxwell.core.support.MaxwellTestSupportCallback;
