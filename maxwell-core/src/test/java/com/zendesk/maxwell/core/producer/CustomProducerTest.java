@@ -2,7 +2,7 @@ package com.zendesk.maxwell.core.producer;
 
 import com.codahale.metrics.MetricRegistry;
 import com.zendesk.maxwell.core.MaxwellContext;
-import com.zendesk.maxwell.core.config.MaxwellConfig;
+import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.core.monitoring.Metrics;
 import com.zendesk.maxwell.core.row.RowMap;
 import org.junit.Before;

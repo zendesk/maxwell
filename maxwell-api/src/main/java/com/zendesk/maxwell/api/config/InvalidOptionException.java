@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core.config;
+package com.zendesk.maxwell.api.config;
 
 public class InvalidOptionException extends RuntimeException {
 	private final String[] filterOptions;

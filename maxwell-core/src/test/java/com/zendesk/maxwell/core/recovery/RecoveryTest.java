@@ -4,7 +4,7 @@ import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.core.*;
 import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
 import com.zendesk.maxwell.core.config.BaseMaxwellMysqlConfig;
-import com.zendesk.maxwell.core.config.MaxwellConfig;
+import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.core.row.HeartbeatRowMap;

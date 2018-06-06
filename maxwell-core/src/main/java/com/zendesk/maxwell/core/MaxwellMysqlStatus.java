@@ -1,5 +1,6 @@
 package com.zendesk.maxwell.core;
 
+import com.zendesk.maxwell.api.MaxwellCompatibilityError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

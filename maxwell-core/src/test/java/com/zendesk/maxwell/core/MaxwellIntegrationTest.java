@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.core;
 
 import com.google.common.collect.Lists;
+import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.config.MaxwellFilter;
 import com.zendesk.maxwell.api.config.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.config.*;

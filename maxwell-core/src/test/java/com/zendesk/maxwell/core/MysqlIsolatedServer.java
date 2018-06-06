@@ -2,7 +2,7 @@ package com.zendesk.maxwell.core;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.zendesk.maxwell.core.config.MaxwellConfig;
+import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.core.replication.MysqlVersion;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

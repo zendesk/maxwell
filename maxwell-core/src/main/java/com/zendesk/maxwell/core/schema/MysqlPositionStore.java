@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.core.schema;
 
 import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
-import com.zendesk.maxwell.core.config.MaxwellConfig;
+import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.core.errors.DuplicateProcessException;
 import com.zendesk.maxwell.core.recovery.RecoveryInfo;
 import com.zendesk.maxwell.api.replication.BinlogPosition;

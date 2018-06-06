@@ -2,7 +2,7 @@ package com.zendesk.maxwell.core;
 
 import com.zendesk.maxwell.core.bootstrap.Bootstrapper;
 import com.zendesk.maxwell.core.bootstrap.BootstrapperFactory;
-import com.zendesk.maxwell.core.config.MaxwellConfig;
+import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.core.recovery.Recovery;
 import com.zendesk.maxwell.core.recovery.RecoveryInfo;

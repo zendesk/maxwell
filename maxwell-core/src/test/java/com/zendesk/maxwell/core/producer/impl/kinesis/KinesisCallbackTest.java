@@ -3,6 +3,7 @@ package com.zendesk.maxwell.core.producer.impl.kinesis;
 import com.amazonaws.services.kinesis.producer.IrrecoverableError;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
+import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.config.*;
 import com.zendesk.maxwell.core.producer.AbstractAsyncProducer;

@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.core.producer.impl.kafka;
 
 import com.zendesk.maxwell.core.MaxwellContext;
-import com.zendesk.maxwell.core.config.MaxwellConfig;
+import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.core.monitoring.MaxwellDiagnostic;
 import com.zendesk.maxwell.core.monitoring.MaxwellDiagnosticResult;
 import com.zendesk.maxwell.core.row.RowMap;

@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.producer;
 
-import com.zendesk.maxwell.core.config.MaxwellConfig;
+import com.zendesk.maxwell.api.config.MaxwellConfig;
 
 public interface ProducerConfiguration {
 	default void mergeWith(MaxwellConfig config){}

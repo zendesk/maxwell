@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.core.producer.impl.sqs;
 
 import com.zendesk.maxwell.core.producer.ProducerConfiguration;
-import com.zendesk.maxwell.core.config.InvalidOptionException;
+import com.zendesk.maxwell.api.config.InvalidOptionException;
 
 public class SQSProducerConfiguration implements ProducerConfiguration {
 	private final String sqsQueueUri;

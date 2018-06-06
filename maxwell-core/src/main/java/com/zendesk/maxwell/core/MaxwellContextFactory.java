@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core;
 
-import com.zendesk.maxwell.core.config.MaxwellConfig;
+import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.producer.Producers;
 import org.springframework.beans.factory.annotation.Autowired;

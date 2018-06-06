@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core;
+package com.zendesk.maxwell.api;
 
 public class LauncherException extends RuntimeException {
 	public LauncherException(String message, Throwable cause) {

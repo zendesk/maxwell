@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.core.config;
 
 import com.github.shyiko.mysql.binlog.network.SSLMode;
+import com.zendesk.maxwell.api.config.InvalidOptionException;
 import org.springframework.stereotype.Service;
 
 import java.util.Properties;

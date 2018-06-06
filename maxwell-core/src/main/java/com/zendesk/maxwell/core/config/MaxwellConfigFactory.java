@@ -1,5 +1,8 @@
 package com.zendesk.maxwell.core.config;
 
+import com.zendesk.maxwell.api.config.InvalidOptionException;
+import com.zendesk.maxwell.api.config.InvalidUsageException;
+import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.config.MaxwellInvalidFilterException;
 import com.zendesk.maxwell.api.producer.EncryptionMode;
 import com.zendesk.maxwell.api.replication.BinlogPosition;

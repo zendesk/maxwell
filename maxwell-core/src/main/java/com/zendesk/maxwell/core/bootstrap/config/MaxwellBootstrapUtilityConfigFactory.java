@@ -2,7 +2,7 @@ package com.zendesk.maxwell.core.bootstrap.config;
 
 import com.zendesk.maxwell.core.config.ConfigurationFileParser;
 import com.zendesk.maxwell.core.config.ConfigurationSupport;
-import com.zendesk.maxwell.core.config.InvalidUsageException;
+import com.zendesk.maxwell.api.config.InvalidUsageException;
 import joptsimple.OptionSet;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;

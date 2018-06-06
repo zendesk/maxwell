@@ -1,7 +1,8 @@
 package com.zendesk.maxwell.core;
 
+import com.zendesk.maxwell.api.LauncherException;
 import com.zendesk.maxwell.core.bootstrap.MaxwellBootstrapUtilityRunner;
-import com.zendesk.maxwell.core.config.MaxwellConfig;
+import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigurationOptionMerger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;

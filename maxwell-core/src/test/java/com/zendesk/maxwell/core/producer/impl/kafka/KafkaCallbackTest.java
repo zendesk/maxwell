@@ -5,7 +5,7 @@ import com.codahale.metrics.Meter;
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.SpringTestContextConfiguration;
 import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
-import com.zendesk.maxwell.core.config.MaxwellConfig;
+import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.producer.AbstractAsyncProducer;
 import com.zendesk.maxwell.api.replication.BinlogPosition;
