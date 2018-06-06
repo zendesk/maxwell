@@ -573,16 +573,22 @@ public class MysqlSavedSchema {
 			// Only consider binlog positions before the target position on the current server.
 			// Within those, sort for the latest binlog file, then the latest binlog position.
 			PreparedStatement s = connection.prepareStatement(
-				"SELECT id from `schemas` "
-				+ "WHERE deleted = 0 "
-				+ "AND last_heartbeat_read <= ? AND ((binlog_file < ?) OR (binlog_file = ? and binlog_position < ?)) AND server_id = ? "
-				+ "ORDER BY last_heartbeat_read DESC, binlog_file DESC, binlog_position DESC limit 1");
+				"SELECT id from `schemas` " +
+				"WHERE deleted = 0 AND " +
+				"last_heartbeat_read <= ? AND " +
+			    "((binlog_file < ?) OR " +
+				"(binlog_file = ? AND binlog_position < ?) OR " +
+				"(binlog_file = ? AND binlog_position = ? AND deltas = '[]')) AND " + // master failover
+				"server_id = ? " +
+				"ORDER BY last_heartbeat_read DESC, binlog_file DESC, binlog_position DESC limit 1");
 
 			s.setLong(1, targetPosition.getLastHeartbeatRead());
 			s.setString(2, targetBinlogPosition.getFile());
 			s.setString(3, targetBinlogPosition.getFile());
 			s.setLong(4, targetBinlogPosition.getOffset());
-			s.setLong(5, serverID);
+			s.setString(5, targetBinlogPosition.getFile());
+			s.setLong(6, targetBinlogPosition.getOffset());
+			s.setLong(7, serverID);
 
 			ResultSet rs = s.executeQuery();
 			if (rs.next()) {
