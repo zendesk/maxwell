@@ -201,7 +201,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		List<RowMap> list;
 		RowMap r;
 
-		MaxwellFilter filter = new MaxwellFilter();
+		BaseMaxwellFilter filter = new BaseMaxwellFilter();
 
 		list = getRowsForSQL(filter, insertSQL, createDBs);
 		assertThat(list.size(), is(2));
@@ -219,7 +219,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	public void testExcludeDB() throws Exception {
 		List<RowMap> list;
 
-		MaxwellFilter filter = new MaxwellFilter();
+		BaseMaxwellFilter filter = new BaseMaxwellFilter();
 		filter.excludeDatabase("shard_1");
 		list = getRowsForSQL(filter, insertSQL, createDBs);
 		assertThat(list.size(), is(1));
@@ -231,7 +231,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	public void testIncludeTable() throws Exception {
 		List<RowMap> list;
 
-		MaxwellFilter filter = new MaxwellFilter();
+		BaseMaxwellFilter filter = new BaseMaxwellFilter();
 		filter.includeTable("minimal");
 
 		list = getRowsForSQL(filter, insertSQL, createDBs);
@@ -245,7 +245,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	public void testExcludeTable() throws Exception {
 		List<RowMap> list;
 
-		MaxwellFilter filter = new MaxwellFilter();
+		BaseMaxwellFilter filter = new BaseMaxwellFilter();
 		filter.excludeTable("minimal");
 
 		list = getRowsForSQL(filter, insertSQL, createDBs);
@@ -258,7 +258,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testExcludeColumns() throws Exception {
 		List<RowMap> list;
-		MaxwellFilter filter = new MaxwellFilter();
+		BaseMaxwellFilter filter = new BaseMaxwellFilter();
 
 		list = getRowsForSQL(filter, insertSQL, createDBs);
 		String json = list.get(1).toJSON();
@@ -289,7 +289,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testDDLTableBlacklist() throws Exception {
 		server.execute("drop database if exists nodatabase");
-		MaxwellFilter filter = new MaxwellFilter();
+		BaseMaxwellFilter filter = new BaseMaxwellFilter();
 		filter.blacklistTable("noseeum");
 
 		String[] allSQL = (String[])ArrayUtils.addAll(blacklistSQLDDL, blacklistSQLDML);
@@ -302,7 +302,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	public void testDDLDatabaseBlacklist() throws Exception {
 		server.execute("drop database if exists nodatabase");
 
-		MaxwellFilter filter = new MaxwellFilter();
+		BaseMaxwellFilter filter = new BaseMaxwellFilter();
 		filter.blacklistDatabases("nodatabase");
 
 		String[] allSQL = (String[])ArrayUtils.addAll(blacklistSQLDDL, blacklistSQLDML);
@@ -520,7 +520,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testOrderedOutput() throws Exception {
-		MaxwellFilter filter = new MaxwellFilter();
+		BaseMaxwellFilter filter = new BaseMaxwellFilter();
 		List<RowMap> rows = getRowsForSQL(filter, insertDBSql, createDBSql);
 		String ordered_data = "\"data\":\\{\"id\":1,\"account_id\":2,\"user_id\":3\\}";
 		assertTrue(Pattern.compile(ordered_data).matcher(rows.get(0).toJSON()).find());

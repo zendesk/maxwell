@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.core;
 
+import com.zendesk.maxwell.core.config.BaseMaxwellFilter;
 import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
-import com.zendesk.maxwell.core.config.MaxwellFilter;
 import com.zendesk.maxwell.core.config.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.replication.MysqlVersion;
 import com.zendesk.maxwell.core.replication.Position;
@@ -52,11 +52,11 @@ public abstract class MaxwellTestWithIsolatedServer extends TestWithNameLogging 
 		MaxwellTestSupport.setupSchema(server);
 	}
 
-	protected List<RowMap> getRowsForSQL(MaxwellFilter filter, String[] input) throws Exception {
+	protected List<RowMap> getRowsForSQL(BaseMaxwellFilter filter, String[] input) throws Exception {
 		return maxwellTestSupport.getRowsWithReplicator(server, filter, input, null);
 	}
 
-	protected List<RowMap> getRowsForSQL(MaxwellFilter filter, String[] input, String[] before) throws Exception {
+	protected List<RowMap> getRowsForSQL(BaseMaxwellFilter filter, String[] input, String[] before) throws Exception {
 		return maxwellTestSupport.getRowsWithReplicator(server, filter, input, before);
 	}
 
@@ -68,7 +68,7 @@ public abstract class MaxwellTestWithIsolatedServer extends TestWithNameLogging 
 		return getRowsForSQLTransactional(input, null, null);
 	}
 
-	protected List<RowMap> getRowsForSQLTransactional(final String[] input, MaxwellFilter filter, MaxwellOutputConfig outputConfig) throws Exception {
+	protected List<RowMap> getRowsForSQLTransactional(final String[] input, BaseMaxwellFilter filter, MaxwellOutputConfig outputConfig) throws Exception {
 		MaxwellTestSupportCallback callback = new MaxwellTestSupportCallback() {
 			@Override
 			public void afterReplicatorStart(MysqlIsolatedServer mysql) throws SQLException {
@@ -83,7 +83,7 @@ public abstract class MaxwellTestWithIsolatedServer extends TestWithNameLogging 
 		return maxwellTestSupport.getRowsWithReplicator(server, filter, callback, Optional.ofNullable(outputConfig));
 	}
 
-	protected List<RowMap> getRowsForDDLTransaction(String[] sql, MaxwellFilter filter) throws Exception {
+	protected List<RowMap> getRowsForDDLTransaction(String[] sql, BaseMaxwellFilter filter) throws Exception {
 		BaseMaxwellOutputConfig outputConfig = new BaseMaxwellOutputConfig();
 		outputConfig.setOutputDDL(true);
 		return getRowsForSQLTransactional(sql, filter, outputConfig);
@@ -93,7 +93,7 @@ public abstract class MaxwellTestWithIsolatedServer extends TestWithNameLogging 
 		maxwellTestJSON.runJSONTestFile(server, filename, null, null);
 	}
 
-	protected void runJSON(String filename, MaxwellFilter filter) throws Exception {
+	protected void runJSON(String filename, BaseMaxwellFilter filter) throws Exception {
 		maxwellTestJSON.runJSONTestFile(server, filename, filter, null);
 	}
 
@@ -109,14 +109,14 @@ public abstract class MaxwellTestWithIsolatedServer extends TestWithNameLogging 
 		return maxwellConfigTestSupport.buildContext(server.getPort(), p, null);
 	}
 
-	protected MaxwellFilter excludeTable(String name) throws MaxwellInvalidFilterException {
-		MaxwellFilter filter = new MaxwellFilter();
+	protected BaseMaxwellFilter excludeTable(String name) throws MaxwellInvalidFilterException {
+		BaseMaxwellFilter filter = new BaseMaxwellFilter();
 		filter.excludeTable(name);
 		return filter;
 	}
 
-	protected MaxwellFilter excludeDb(String name) throws MaxwellInvalidFilterException {
-		MaxwellFilter filter = new MaxwellFilter();
+	protected BaseMaxwellFilter excludeDb(String name) throws MaxwellInvalidFilterException {
+		BaseMaxwellFilter filter = new BaseMaxwellFilter();
 		filter.excludeDatabase(name);
 		return filter;
 	}

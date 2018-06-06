@@ -23,7 +23,7 @@ public class MaxwellConfigTestSupport {
 		this.maxwellContextFactory = maxwellContextFactory;
 	}
 
-	private MaxwellConfig buildConfig(int port, Position p, MaxwellFilter filter) {
+	private MaxwellConfig buildConfig(int port, Position p, BaseMaxwellFilter filter) {
 		BaseMaxwellConfig config = maxwellConfigFactory.createNewDefaultConfiguration();
 
 		BaseMaxwellMysqlConfig replicationMysql = (BaseMaxwellMysqlConfig) config.getReplicationMysql();
@@ -47,7 +47,7 @@ public class MaxwellConfigTestSupport {
 		return config;
 	}
 
-	public MaxwellContext buildContext(int port, Position p, MaxwellFilter filter) throws SQLException, URISyntaxException {
+	public MaxwellContext buildContext(int port, Position p, BaseMaxwellFilter filter) throws SQLException, URISyntaxException {
 		MaxwellConfig config = buildConfig(port, p, filter);
 		return maxwellContextFactory.createFor(config);
 	}

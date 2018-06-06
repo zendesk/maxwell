@@ -3,7 +3,7 @@ package com.zendesk.maxwell.core;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.zendesk.maxwell.core.config.MaxwellFilter;
+import com.zendesk.maxwell.core.config.BaseMaxwellFilter;
 import com.zendesk.maxwell.core.config.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.row.RowEncrypt;
 import com.zendesk.maxwell.core.row.RowMap;
@@ -64,7 +64,7 @@ public class MaxwellTestJSON {
 	}
 
 	private void runJSONTest(MysqlIsolatedServer server, List<String> sql, List<Map<String, Object>> expectedJSON,
-									MaxwellFilter filter, MaxwellOutputConfig outputConfig) throws Exception {
+							 BaseMaxwellFilter filter, MaxwellOutputConfig outputConfig) throws Exception {
 		List<Map<String, Object>> eventJSON = new ArrayList<>();
 		List<RowMap> rows = maxwellTestSupport.getRowsWithReplicator(server, filter, sql.toArray(new String[sql.size()]), null);
 
@@ -153,13 +153,13 @@ public class MaxwellTestJSON {
 		return ret;
 	}
 
-	protected void runJSONTestFile(MysqlIsolatedServer server, String dir, String fname, MaxwellFilter filter,
+	protected void runJSONTestFile(MysqlIsolatedServer server, String dir, String fname, BaseMaxwellFilter filter,
 										  MaxwellOutputConfig outputConfig) throws Exception {
 		SQLAndJSON testResources = parseJSONTestFile(new File(dir, fname).toString());
 		runJSONTest(server, testResources.inputSQL, testResources.jsonAsserts, filter, outputConfig);
 	}
 
-	protected void runJSONTestFile(MysqlIsolatedServer server, String fname, MaxwellFilter filter,
+	protected void runJSONTestFile(MysqlIsolatedServer server, String fname, BaseMaxwellFilter filter,
 										  MaxwellOutputConfig outputConfig) throws Exception {
 		runJSONTestFile(server, MaxwellTestSupport.getSQLDir(), fname, filter, outputConfig);
 	}

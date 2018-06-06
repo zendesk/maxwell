@@ -128,8 +128,8 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	}
 
 
-	protected boolean shouldOutputRowMap(String database, String table, RowMap rowMap, MaxwellFilter filter) {
-		return MaxwellFilter.matchesValues(filter, database, table, rowMap.getData());
+	protected boolean shouldOutputRowMap(RowMap rowMap, MaxwellFilter filter) {
+		return MaxwellFilter.matchesValues(filter, rowMap.getData());
 	}
 
 	/**

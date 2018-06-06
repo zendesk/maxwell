@@ -165,7 +165,7 @@ public class MaxwellConfigFactory {
 			String blacklistDatabases = configurationSupport.fetchOption("blacklist_dbs", properties, null);
 			String blacklistTables = configurationSupport.fetchOption("blacklist_tables", properties, null);
 			String includeColumnValues = configurationSupport.fetchOption("include_column_values", properties, null);
-			config.setFilter(new MaxwellFilter(includeDatabases, excludeDatabases, includeTables, excludeTables, blacklistDatabases, blacklistTables, includeColumnValues));
+			config.setFilter(new BaseMaxwellFilter(includeDatabases, excludeDatabases, includeTables, excludeTables, blacklistDatabases, blacklistTables, includeColumnValues));
 		} catch (MaxwellInvalidFilterException e) {
 			throw new InvalidUsageException("Invalid filter options: " + e.getLocalizedMessage());
 		}

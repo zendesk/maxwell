@@ -17,7 +17,6 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 	private final ConnectionPool maxwellConnectionPool;
 	private final Position initialPosition;
 	private final boolean readOnly;
-	private final MaxwellFilter filter;
 	private Long serverID;
 
 	private MysqlSavedSchema savedSchema;
@@ -32,7 +31,6 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 							boolean readOnly) {
 		super(replicationConnectionPool, schemaConnectionPool, caseSensitivity, filter);
 		this.serverID = serverID;
-		this.filter = filter;
 		this.maxwellConnectionPool = maxwellConnectionPool;
 		this.initialPosition = initialPosition;
 		this.readOnly = readOnly;

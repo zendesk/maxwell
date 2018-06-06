@@ -16,7 +16,7 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 	private BaseMaxwellMysqlConfig replicationMysql;
 	private BaseMaxwellMysqlConfig schemaMysql;
 	private BaseMaxwellMysqlConfig maxwellMysql;
-	private MaxwellFilter filter;
+	private BaseMaxwellFilter filter;
 	private Boolean gtidMode;
 	private String databaseName;
 
@@ -177,11 +177,11 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 	}
 
 	@Override
-	public MaxwellFilter getFilter() {
+	public BaseMaxwellFilter getFilter() {
 		return filter;
 	}
 
-	public void setFilter(MaxwellFilter filter) {
+	public void setFilter(BaseMaxwellFilter filter) {
 		this.filter = filter;
 	}
 
