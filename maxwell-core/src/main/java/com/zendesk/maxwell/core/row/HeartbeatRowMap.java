@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.row;
 
-import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.core.config.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.replication.Position;
 
 import java.io.IOException;

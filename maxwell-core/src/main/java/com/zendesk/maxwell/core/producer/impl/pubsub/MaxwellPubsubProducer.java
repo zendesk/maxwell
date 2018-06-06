@@ -138,7 +138,7 @@ class MaxwellPubsubProducerWorker
     this.topic = TopicName.create(pubsubProjectId, pubsubTopic);
     this.pubsub = Publisher.defaultBuilder(this.topic).build();
 
-    if ( context.getConfig().getOutputConfig().outputDDL == true &&
+    if ( context.getConfig().getOutputConfig().isOutputDDL() == true &&
          ddlPubsubTopic != pubsubTopic ) {
       this.ddlTopic = TopicName.create(pubsubProjectId, ddlPubsubTopic);
       this.ddlPubsub = Publisher.defaultBuilder(this.ddlTopic).build();

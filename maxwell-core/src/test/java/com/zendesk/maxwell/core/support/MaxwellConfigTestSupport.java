@@ -24,7 +24,7 @@ public class MaxwellConfigTestSupport {
 	}
 
 	private MaxwellConfig buildConfig(int port, Position p, MaxwellFilter filter) {
-		MaxwellConfig config = maxwellConfigFactory.createNewDefaultConfiguration();
+		BaseMaxwellConfig config = maxwellConfigFactory.createNewDefaultConfiguration();
 
 		config.getReplicationMysql().setHost("127.0.0.1");
 		config.getReplicationMysql().setPort(port);

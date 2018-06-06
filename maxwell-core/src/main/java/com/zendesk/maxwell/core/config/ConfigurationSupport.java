@@ -36,8 +36,8 @@ public class ConfigurationSupport {
 		}
 	}
 
-	public MaxwellMysqlConfig parseMysqlConfig(String prefix, Properties properties) {
-		MaxwellMysqlConfig config = new MaxwellMysqlConfig();
+	public BaseMaxwellMysqlConfig parseMysqlConfig(String prefix, Properties properties) {
+		BaseMaxwellMysqlConfig config = new BaseMaxwellMysqlConfig();
 		config.setHost(fetchOption(prefix + "host", properties, null));
 		config.setPassword(fetchOption(prefix + "password", properties, null));
 		config.setUser(fetchOption(prefix + "user", properties, null));

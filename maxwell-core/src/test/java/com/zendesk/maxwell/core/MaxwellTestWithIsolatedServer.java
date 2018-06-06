@@ -1,7 +1,8 @@
 package com.zendesk.maxwell.core;
 
+import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
-import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.core.config.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.replication.MysqlVersion;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.row.RowMap;
@@ -83,8 +84,8 @@ public abstract class MaxwellTestWithIsolatedServer extends TestWithNameLogging 
 	}
 
 	protected List<RowMap> getRowsForDDLTransaction(String[] sql, MaxwellFilter filter) throws Exception {
-		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
-		outputConfig.outputDDL = true;
+		BaseMaxwellOutputConfig outputConfig = new BaseMaxwellOutputConfig();
+		outputConfig.setOutputDDL(true);
 		return getRowsForSQLTransactional(sql, filter, outputConfig);
 	}
 

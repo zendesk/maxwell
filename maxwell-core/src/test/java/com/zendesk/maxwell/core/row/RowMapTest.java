@@ -3,8 +3,9 @@ package com.zendesk.maxwell.core.row;
 import com.google.common.collect.Lists;
 import com.zendesk.maxwell.core.MaxwellTestJSON;
 import com.zendesk.maxwell.core.SpringTestContextConfiguration;
+import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
 import com.zendesk.maxwell.core.errors.ProtectedAttributeNameException;
-import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.core.config.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.replication.BinlogPosition;
 import com.zendesk.maxwell.core.replication.Position;
 import org.junit.Assert;
@@ -282,15 +283,15 @@ public class RowMapTest {
 	}
 
 	private MaxwellOutputConfig getMaxwellOutputConfig(Pattern... patterns) {
-		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
+		BaseMaxwellOutputConfig outputConfig = new BaseMaxwellOutputConfig();
 
-		outputConfig.includesBinlogPosition = true;
-		outputConfig.includesCommitInfo = true;
-		outputConfig.includesGtidPosition = true;
-		outputConfig.includesServerId = true;
-		outputConfig.includesThreadId = true;
-		outputConfig.includesNulls = true;
-		outputConfig.excludeColumns = Arrays.asList(patterns);
+		outputConfig.setIncludesBinlogPosition(true);
+		outputConfig.setIncludesCommitInfo(true);
+		outputConfig.setIncludesGtidPosition(true);
+		outputConfig.setIncludesServerId(true);
+		outputConfig.setIncludesThreadId(true);
+		outputConfig.setIncludesNulls(true);
+		outputConfig.setExcludeColumns(Arrays.asList(patterns));
 
 		return outputConfig;
 	}

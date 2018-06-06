@@ -1,8 +1,8 @@
 package com.zendesk.maxwell.core;
 
+import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
 import com.zendesk.maxwell.core.producer.EncryptionMode;
-import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.row.RowMap;
 import org.junit.Test;
 
@@ -208,13 +208,13 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	private void testColumnTypeSerialization(EncryptionMode encryptionMode, List<RowMap> rows, Object expectedNormalJsonValue, Object expectedBootstrappedJsonValue) throws Exception {
 		boolean foundNormalRow = false;
-		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
-		outputConfig.encryptionMode = encryptionMode;
-		outputConfig.secretKey = "aaaaaaaaaaaaaaaa";
+		BaseMaxwellOutputConfig outputConfig = new BaseMaxwellOutputConfig();
+		outputConfig.setEncryptionMode(encryptionMode);
+		outputConfig.setSecretKey("aaaaaaaaaaaaaaaa");
 
 		for ( RowMap r : rows ) {
 			Map<String, Object> output = maxwellTestJSON.parseJSON(r.toJSON(outputConfig));
-			Map<String, Object> decrypted = maxwellTestJSON.parseEncryptedJSON(output, outputConfig.secretKey);
+			Map<String, Object> decrypted = maxwellTestJSON.parseEncryptedJSON(output, outputConfig.getSecretKey());
 
 			if (encryptionMode == EncryptionMode.ENCRYPT_ALL) {
 				output = decrypted;

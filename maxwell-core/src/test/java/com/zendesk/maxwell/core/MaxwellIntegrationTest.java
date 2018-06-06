@@ -1,11 +1,8 @@
 package com.zendesk.maxwell.core;
 
 import com.google.common.collect.Lists;
-import com.zendesk.maxwell.core.config.MaxwellConfig;
-import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
-import com.zendesk.maxwell.core.config.MaxwellFilter;
+import com.zendesk.maxwell.core.config.*;
 import com.zendesk.maxwell.core.producer.EncryptionMode;
-import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.schema.SchemaStoreSchema;
 import com.zendesk.maxwell.core.support.MaxwellTestSupport;
@@ -28,16 +25,16 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testEncryptedData() throws Exception{
-		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
-		outputConfig.encryptionMode = EncryptionMode.ENCRYPT_DATA;
-		outputConfig.secretKey = "aaaaaaaaaaaaaaaa";
+		BaseMaxwellOutputConfig outputConfig = new BaseMaxwellOutputConfig();
+		outputConfig.setEncryptionMode(EncryptionMode.ENCRYPT_DATA);
+		outputConfig.setSecretKey("aaaaaaaaaaaaaaaa");
 		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
 		list = getRowsForSQL(input);
 		String json = list.get(0).toJSON(outputConfig);
 
 		Map<String,Object> output = maxwellTestJSON.parseJSON(json);
-		Map<String, Object> decrypted = maxwellTestJSON.parseEncryptedJSON(output, outputConfig.secretKey);
+		Map<String, Object> decrypted = maxwellTestJSON.parseEncryptedJSON(output, outputConfig.getSecretKey());
 
 		assertTrue(output.get("database").equals("shard_1"));
 		assertTrue(output.get("table").equals("minimal"));
@@ -51,16 +48,16 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testEncryptedAll() throws Exception{
-		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
-		outputConfig.encryptionMode = EncryptionMode.ENCRYPT_ALL;
-		outputConfig.secretKey = "aaaaaaaaaaaaaaaa";
+		BaseMaxwellOutputConfig outputConfig = new BaseMaxwellOutputConfig();
+		outputConfig.setEncryptionMode(EncryptionMode.ENCRYPT_ALL);
+		outputConfig.setSecretKey("aaaaaaaaaaaaaaaa");
 		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
 		list = getRowsForSQL(input);
 		String json = list.get(0).toJSON(outputConfig);
 
 		Map<String,Object> output = maxwellTestJSON.parseJSON(json);
-		Map<String, Object> decrypted = maxwellTestJSON.parseEncryptedJSON(output, outputConfig.secretKey);
+		Map<String, Object> decrypted = maxwellTestJSON.parseEncryptedJSON(output, outputConfig.getSecretKey());
 
 		assertArrayEquals(output.keySet().toArray(), new String[]{ "encrypted" });
 
@@ -127,11 +124,11 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	public void testOutputConfig() throws Exception {
 		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
-		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
+		BaseMaxwellOutputConfig outputConfig = new BaseMaxwellOutputConfig();
 
-		outputConfig.includesCommitInfo = true;
-		outputConfig.includesBinlogPosition = true;
-		outputConfig.includesGtidPosition = true;
+		outputConfig.setIncludesCommitInfo(true);
+		outputConfig.setIncludesBinlogPosition(true);
+		outputConfig.setIncludesGtidPosition(true);
 
 		list = getRowsForSQL(input);
 		String json = list.get(0).toJSON(outputConfig);
@@ -160,9 +157,9 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
-		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
+		BaseMaxwellOutputConfig outputConfig = new BaseMaxwellOutputConfig();
 
-		outputConfig.includesServerId = true;
+		outputConfig.setIncludesServerId(true);
 
 		list = getRowsForSQL(input);
 		String json = list.get(0).toJSON(outputConfig);
@@ -179,9 +176,9 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
-		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
+		BaseMaxwellOutputConfig outputConfig = new BaseMaxwellOutputConfig();
 
-		outputConfig.includesThreadId = true;
+		outputConfig.setIncludesThreadId(true);
 
 		list = getRowsForSQL(input);
 		String json = list.get(0).toJSON(outputConfig);
@@ -268,8 +265,8 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		assertTrue(Pattern.compile("\"id\":1").matcher(json).find());
 		assertTrue(Pattern.compile("\"account_id\":2").matcher(json).find());
 
-		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
-		outputConfig.excludeColumns.add(Pattern.compile("id"));
+		MaxwellOutputConfig outputConfig = new BaseMaxwellOutputConfig();
+		outputConfig.getExcludeColumns().add(Pattern.compile("id"));
 
 		list = getRowsForSQL(filter, insertSQL, createDBs);
 		json = list.get(1).toJSON(outputConfig);
@@ -603,8 +600,8 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testRowQueryLogEventsIsOn() throws Exception {
 		requireMinimumVersion(MysqlIsolatedServer.VERSION_5_6);
-		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
-		outputConfig.includesRowQuery = true;
+		BaseMaxwellOutputConfig outputConfig = new BaseMaxwellOutputConfig();
+		outputConfig.setIncludesRowQuery(true);
 
 		runJSON("/json/test_row_query_log_is_on", outputConfig);
 	}

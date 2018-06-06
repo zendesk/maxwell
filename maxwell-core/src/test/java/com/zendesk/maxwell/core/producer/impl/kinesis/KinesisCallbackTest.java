@@ -49,7 +49,7 @@ public class KinesisCallbackTest {
 	@Test
 	public void shouldTerminateWhenNotIgnoreProducerError() {
 		MaxwellContext context = mock(MaxwellContext.class);
-		MaxwellConfig config = new MaxwellConfigFactory(configurationSupport).createNewDefaultConfiguration();
+		BaseMaxwellConfig config = new MaxwellConfigFactory(configurationSupport).createNewDefaultConfiguration();
 		config.setIgnoreProducerError(false);
 		when(context.getConfig()).thenReturn(config);
 		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);

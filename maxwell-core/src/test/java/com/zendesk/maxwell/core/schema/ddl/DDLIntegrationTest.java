@@ -1,7 +1,8 @@
 package com.zendesk.maxwell.core.schema.ddl;
 
 import com.zendesk.maxwell.core.*;
-import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
+import com.zendesk.maxwell.core.config.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.row.RowMap;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -13,8 +14,8 @@ import static org.junit.Assert.assertTrue;
 
 public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	private MaxwellOutputConfig ddlOutputConfig() {
-		MaxwellOutputConfig config = new MaxwellOutputConfig();
-		config.outputDDL = true;
+		BaseMaxwellOutputConfig config = new BaseMaxwellOutputConfig();
+		config.setOutputDDL(true);
 		return config;
 	}
 

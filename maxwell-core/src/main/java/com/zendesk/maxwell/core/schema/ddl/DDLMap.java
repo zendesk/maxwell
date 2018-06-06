@@ -2,7 +2,8 @@ package com.zendesk.maxwell.core.schema.ddl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
+import com.zendesk.maxwell.core.config.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.replication.BinlogPosition;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.row.RowMap;
@@ -35,13 +36,13 @@ public class DDLMap extends RowMap {
 	}
 
 	public String toJSON() throws IOException {
-		return toJSON(new MaxwellOutputConfig());
+		return toJSON(new BaseMaxwellOutputConfig());
 	}
 
 	@Override
 	public String toJSON(MaxwellOutputConfig outputConfig) throws IOException {
 
-		if(!outputConfig.outputDDL)
+		if(!outputConfig.isOutputDDL())
 		return null;
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -50,10 +51,10 @@ public class DDLMap extends RowMap {
 		changeMixin.put("ts", timestamp);
 		changeMixin.put("sql", sql);
 		BinlogPosition binlogPosition = nextPosition.getBinlogPosition();
-		if ( outputConfig.includesBinlogPosition ) {
+		if (outputConfig.isIncludesBinlogPosition()) {
 			changeMixin.put("position", binlogPosition.getFile() + ":" + binlogPosition.getOffset());
 		}
-		if ( outputConfig.includesGtidPosition) {
+		if (outputConfig.isIncludesGtidPosition()) {
 			changeMixin.put("gtid", binlogPosition.getGtid());
 		}
 		return mapper.writeValueAsString(changeMixin);
@@ -61,7 +62,7 @@ public class DDLMap extends RowMap {
 
 	@Override
 	public boolean shouldOutput(MaxwellOutputConfig outputConfig) {
-		return outputConfig.outputDDL;
+		return outputConfig.isOutputDDL();
 	}
 
 	public String getSql() {

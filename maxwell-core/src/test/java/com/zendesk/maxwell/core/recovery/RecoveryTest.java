@@ -2,6 +2,7 @@ package com.zendesk.maxwell.core.recovery;
 
 import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.core.*;
+import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.replication.Position;
@@ -59,8 +60,8 @@ public class RecoveryTest extends TestWithNameLogging {
 		MaxwellTestSupport.setupSchema(masterServer, false);
 	}
 
-	private MaxwellConfig getConfig(int port, boolean masterRecovery){
-		MaxwellConfig config = maxwellConfigFactory.createNewDefaultConfiguration();
+	private BaseMaxwellConfig getConfig(int port, boolean masterRecovery){
+		BaseMaxwellConfig config = maxwellConfigFactory.createNewDefaultConfiguration();
 		config.getMaxwellMysql().setHost("localhost");
 		config.getMaxwellMysql().setPort(port);
 		config.getMaxwellMysql().setUser("maxwell");
@@ -72,7 +73,7 @@ public class RecoveryTest extends TestWithNameLogging {
 	}
 
 	private MaxwellConfig getBufferedConfig(int port, boolean masterRecovery) {
-		MaxwellConfig config = getConfig(port, masterRecovery);
+		BaseMaxwellConfig config = getConfig(port, masterRecovery);
 		config.setProducerType("buffer");
 		return config;
 	}

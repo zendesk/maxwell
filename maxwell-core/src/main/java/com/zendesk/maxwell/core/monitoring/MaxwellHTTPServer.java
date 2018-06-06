@@ -6,6 +6,7 @@ import com.codahale.metrics.servlets.PingServlet;
 import com.zendesk.maxwell.core.ContextStartListener;
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
+import com.zendesk.maxwell.core.config.MaxwellDiagnosticConfig;
 import com.zendesk.maxwell.core.producer.ProducerConfigurators;
 import com.zendesk.maxwell.core.util.StoppableTask;
 import org.eclipse.jetty.server.Server;
@@ -72,8 +73,8 @@ public class MaxwellHTTPServer implements ContextStartListener {
 	}
 
 	private MaxwellDiagnosticContext getDiagnosticContext(MaxwellContext context) {
-		MaxwellDiagnosticContext.Config diagnosticConfig = context.getConfig().getDiagnosticConfig();
-		if (diagnosticConfig.enable) {
+		MaxwellDiagnosticConfig diagnosticConfig = context.getConfig().getDiagnosticConfig();
+		if (diagnosticConfig.isEnable()) {
 			return context.getDiagnosticContext();
 		} else {
 			return null;

@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.core;
 
 import com.github.shyiko.mysql.binlog.network.SSLMode;
-import com.zendesk.maxwell.core.config.MaxwellConfig;
+import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.producer.AbstractProducer;
 import com.zendesk.maxwell.core.row.RowMap;
@@ -32,7 +32,7 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testCustomMetricsAndProducer() throws Exception {
-		MaxwellConfig config = getConfig(server);
+		BaseMaxwellConfig config = getConfig(server);
 		final BlockingQueue<RowMap> rowBuffer = new LinkedBlockingQueue<>();
 		config.setMetricsReportingType("embedded");
 		config.setMetricsPrefix("prefix");
@@ -57,8 +57,8 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 		assertTrue(config.getMetricRegistry().getCounters().get("prefix.row.count").getCount() > 0);
 	}
 
-	private MaxwellConfig getConfig(MysqlIsolatedServer mysql) {
-		MaxwellConfig config = maxwellConfigFactory.createNewDefaultConfiguration();
+	private BaseMaxwellConfig getConfig(MysqlIsolatedServer mysql) {
+		BaseMaxwellConfig config = maxwellConfigFactory.createNewDefaultConfiguration();
 		config.getMaxwellMysql().setUser("maxwell");
 		config.getMaxwellMysql().setPassword("maxwell");
 		config.getMaxwellMysql().setHost("localhost");

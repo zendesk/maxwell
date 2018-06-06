@@ -3,6 +3,8 @@ package com.zendesk.maxwell.core.monitoring;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zendesk.maxwell.core.*;
+import com.zendesk.maxwell.core.config.BaseMaxwellDiagnosticConfig;
+import com.zendesk.maxwell.core.config.MaxwellDiagnosticConfig;
 import com.zendesk.maxwell.core.replication.BinlogConnectorDiagnostic;
 import org.junit.After;
 import org.junit.Before;
@@ -47,8 +49,8 @@ public class DiagnosticMaxwellTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testNormalBinlogReplicationDiagnostic() throws Exception {
 		// Given
-		MaxwellDiagnosticContext.Config config = new MaxwellDiagnosticContext.Config();
-		config.timeout = 5000;
+		BaseMaxwellDiagnosticConfig config = new BaseMaxwellDiagnosticConfig();
+		config.setTimeout(5000);
 		MaxwellContext maxwellContext = buildContext();
 
 		DiagnosticHealthCheck healthCheck = getDiagnosticHealthCheck(config, maxwellContext);
@@ -78,8 +80,8 @@ public class DiagnosticMaxwellTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testBinlogReplicationDiagnosticTimeout() throws Exception {
 		// Given
-		MaxwellDiagnosticContext.Config config = new MaxwellDiagnosticContext.Config();
-		config.timeout = 100;
+		BaseMaxwellDiagnosticConfig config = new BaseMaxwellDiagnosticConfig();
+		config.setTimeout(100);
 		MaxwellContext maxwellContext = buildContext();
 
 		DiagnosticHealthCheck healthCheck = getDiagnosticHealthCheck(config, maxwellContext);
@@ -100,7 +102,7 @@ public class DiagnosticMaxwellTest extends MaxwellTestWithIsolatedServer {
 		assertTrue(binlogNode.get("message").asText().contains("check did not return after 100 ms"));
 	}
 
-	private DiagnosticHealthCheck getDiagnosticHealthCheck(MaxwellDiagnosticContext.Config config, MaxwellContext maxwellContext) throws ServletException {
+	private DiagnosticHealthCheck getDiagnosticHealthCheck(MaxwellDiagnosticConfig config, MaxwellContext maxwellContext) throws ServletException {
 		MaxwellDiagnosticContext diagnosticContext = new MaxwellDiagnosticContext(config,
 				Collections.singletonList(new BinlogConnectorDiagnostic(maxwellContext)));
 		DiagnosticHealthCheck healthCheck = new DiagnosticHealthCheck(diagnosticContext);

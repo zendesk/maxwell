@@ -3,11 +3,8 @@ package com.zendesk.maxwell.core.support;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.core.*;
-import com.zendesk.maxwell.core.config.MaxwellConfig;
-import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
-import com.zendesk.maxwell.core.config.MaxwellFilter;
+import com.zendesk.maxwell.core.config.*;
 import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducer;
-import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.schema.Schema;
@@ -145,7 +142,7 @@ public class MaxwellTestSupport {
 
 		clearSchemaStore(mysql);
 
-		MaxwellConfig config = maxwellConfigFactory.createNewDefaultConfiguration();
+		BaseMaxwellConfig config = maxwellConfigFactory.createNewDefaultConfiguration();
 
 		config.getMaxwellMysql().setUser("maxwell");
 		config.getMaxwellMysql().setPassword("maxwell");
@@ -153,7 +150,7 @@ public class MaxwellTestSupport {
 		config.getMaxwellMysql().setPort(mysql.getPort());
 		config.getMaxwellMysql().setSslMode(SSLMode.DISABLED);
 		config.setReplicationMysql(config.getMaxwellMysql());
-		final MaxwellOutputConfig outputConfig = optionalOutputConfig.orElseGet(MaxwellOutputConfig::new);
+		final MaxwellOutputConfig outputConfig = optionalOutputConfig.orElseGet(BaseMaxwellOutputConfig::new);
 
 		if ( filter != null ) {
 			if ( filter.isDatabaseWhitelist() )

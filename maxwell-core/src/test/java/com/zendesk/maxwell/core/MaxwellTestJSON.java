@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
-import com.zendesk.maxwell.core.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.core.config.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.row.RowEncrypt;
 import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.support.MaxwellTestSupport;
