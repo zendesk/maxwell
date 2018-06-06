@@ -46,8 +46,8 @@ public class MaxwellBootstrapUtilityConfigFactory {
 			config.log_level = parseLogLevel((String) options.valueOf("log_level"));
 
 		config.mysql = configurationSupport.parseMysqlConfig("", properties);
-		if ( config.mysql.host == null )
-			config.mysql.host = "localhost";
+		if ( config.mysql.getHost() == null )
+			config.mysql.setHost("localhost");
 
 		config.schemaDatabaseName = configurationSupport.fetchOption("schema_database", properties, "maxwell");
 

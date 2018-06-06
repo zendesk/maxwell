@@ -1,7 +1,6 @@
 package com.zendesk.maxwell.core.config;
 
 import com.github.shyiko.mysql.binlog.network.SSLMode;
-import com.zendesk.maxwell.core.config.MaxwellMysqlConfig;
 import org.junit.Test;
 
 import java.net.URISyntaxException;
@@ -17,12 +16,12 @@ public class MaxwellMysqlConfigTest {
 
 		MaxwellMysqlConfig config = new MaxwellMysqlConfig();
 
-		config.host = "localhost";
-		config.port = 3306;
-		config.user = "maxwell";
-		config.password = "maxwell";
-		config.database = "maxwell";
-		config.sslMode = SSLMode.DISABLED;
+		config.setHost("localhost");
+		config.setPort(3306);
+		config.setUser("maxwell");
+		config.setPassword("maxwell");
+		config.setDatabase("maxwell");
+		config.setSslMode(SSLMode.DISABLED);
 		config.setJDBCOptions("autoReconnect=true&initialTimeout=2&maxReconnects=10");
 
 		try {
@@ -40,12 +39,12 @@ public class MaxwellMysqlConfigTest {
 
 		MaxwellMysqlConfig config = new MaxwellMysqlConfig();
 
-		config.host = "localhost";
-		config.port = 3306;
-		config.user = "maxwell";
-		config.password = "maxwell";
-		config.database = "maxwell";
-		config.sslMode = SSLMode.PREFERRED;
+		config.setHost("localhost");
+		config.setPort(3306);
+		config.setUser("maxwell");
+		config.setPassword("maxwell");
+		config.setDatabase("maxwell");
+		config.setSslMode(SSLMode.PREFERRED);
 
 		try {
 			final String uri = config.getConnectionURI();
@@ -64,12 +63,12 @@ public class MaxwellMysqlConfigTest {
 
 		MaxwellMysqlConfig config = new MaxwellMysqlConfig();
 
-		config.host = "localhost";
-		config.port = 3306;
-		config.user = "maxwell";
-		config.password = "maxwell";
-		config.database = "maxwell";
-		config.sslMode = SSLMode.REQUIRED;
+		config.setHost("localhost");
+		config.setPort(3306);
+		config.setUser("maxwell");
+		config.setPassword("maxwell");
+		config.setDatabase("maxwell");
+		config.setSslMode(SSLMode.REQUIRED);
 
 		try {
 			String uri = config.getConnectionURI();
@@ -88,12 +87,12 @@ public class MaxwellMysqlConfigTest {
 
 		MaxwellMysqlConfig config = new MaxwellMysqlConfig();
 
-		config.host = "localhost";
-		config.port = 3306;
-		config.user = "maxwell";
-		config.password = "maxwell";
-		config.database = "maxwell";
-		config.sslMode = SSLMode.VERIFY_CA;
+		config.setHost("localhost");
+		config.setPort(3306);
+		config.setUser("maxwell");
+		config.setPassword("maxwell");
+		config.setDatabase("maxwell");
+		config.setSslMode(SSLMode.VERIFY_CA);
 
 		try {
 			final String uri = config.getConnectionURI();
@@ -112,12 +111,12 @@ public class MaxwellMysqlConfigTest {
 
 		MaxwellMysqlConfig config = new MaxwellMysqlConfig();
 
-		config.host = "localhost";
-		config.port = 3306;
-		config.user = "maxwell";
-		config.password = "maxwell";
-		config.database = "maxwell";
-		config.sslMode = SSLMode.VERIFY_IDENTITY;
+		config.setHost("localhost");
+		config.setPort(3306);
+		config.setUser("maxwell");
+		config.setPassword("maxwell");
+		config.setDatabase("maxwell");
+		config.setSslMode(SSLMode.VERIFY_IDENTITY);
 
 		try {
 			final String uri = config.getConnectionURI();

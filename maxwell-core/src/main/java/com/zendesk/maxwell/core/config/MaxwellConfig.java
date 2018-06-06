@@ -104,38 +104,38 @@ public class MaxwellConfig {
 			throw new InvalidOptionException("please specify --bootstrapper=async|sync|none", "--bootstrapper");
 		}
 
-		if (this.getMaxwellMysql().sslMode == null) {
-			this.getMaxwellMysql().sslMode = SSLMode.DISABLED;
+		if (this.getMaxwellMysql().getSslMode() == null) {
+			this.getMaxwellMysql().setSslMode(SSLMode.DISABLED);
 		}
 
-		if ( this.getMaxwellMysql().host == null ) {
+		if ( this.getMaxwellMysql().getHost() == null ) {
 			LOGGER.warn("maxwell mysql host not specified, defaulting to localhost");
-			this.getMaxwellMysql().host = "localhost";
+			this.getMaxwellMysql().setHost("localhost");
 		}
 
-		if ( this.getReplicationMysql().host == null
-				|| this.getReplicationMysql().user == null ) {
+		if ( this.getReplicationMysql().getHost() == null
+				|| this.getReplicationMysql().getUser() == null ) {
 
-			if (this.getReplicationMysql().host != null
-					|| this.getReplicationMysql().user != null
-					|| this.getReplicationMysql().password != null) {
+			if (this.getReplicationMysql().getHost() != null
+					|| this.getReplicationMysql().getUser() != null
+					|| this.getReplicationMysql().getPassword() != null) {
 				throw new InvalidOptionException("Please specify all of: replication_host, replication_user, replication_password", "--replication");
 			}
 
 			this.setReplicationMysql(new MaxwellMysqlConfig(
-				this.getMaxwellMysql().host,
-				this.getMaxwellMysql().port,
+					this.getMaxwellMysql().getHost(),
+					this.getMaxwellMysql().getPort(),
 				null,
-				this.getMaxwellMysql().user,
-				this.getMaxwellMysql().password,
-				this.getMaxwellMysql().sslMode
+					this.getMaxwellMysql().getUser(),
+					this.getMaxwellMysql().getPassword(),
+					this.getMaxwellMysql().getSslMode()
 			));
 
-			this.getReplicationMysql().jdbcOptions = this.getMaxwellMysql().jdbcOptions;
+			this.getReplicationMysql().setJdbcOptions(this.getMaxwellMysql().getJdbcOptions());
 		}
 
-		if (this.getReplicationMysql().sslMode == null) {
-			this.getReplicationMysql().sslMode = this.getMaxwellMysql().sslMode;
+		if (this.getReplicationMysql().getSslMode() == null) {
+			this.getReplicationMysql().setSslMode(this.getMaxwellMysql().getSslMode());
 		}
 
 		if (getGtidMode() && isMasterRecovery()) {
@@ -146,18 +146,18 @@ public class MaxwellConfig {
 			throw new InvalidOptionException("output_gtid_position is only support with gtid mode.", "--output_gtid_position");
 		}
 
-		if (this.getSchemaMysql().host != null) {
-			if (this.getSchemaMysql().user == null || this.getSchemaMysql().password == null) {
+		if (this.getSchemaMysql().getHost() != null) {
+			if (this.getSchemaMysql().getUser() == null || this.getSchemaMysql().getPassword() == null) {
 				throw new InvalidOptionException("Please specify all of: schema_host, schema_user, schema_password", "--schema");
 			}
 
-			if (this.getReplicationMysql().host == null) {
+			if (this.getReplicationMysql().getHost() == null) {
 				throw new InvalidOptionException("Specifying schema_host only makes sense along with replication_host");
 			}
 		}
 
-		if (this.getSchemaMysql().sslMode == null) {
-			this.getSchemaMysql().sslMode = this.getMaxwellMysql().sslMode;
+		if (this.getSchemaMysql().getSslMode() == null) {
+			this.getSchemaMysql().setSslMode(this.getMaxwellMysql().getSslMode());
 		}
 
 		if ( this.getFilter() == null ) {

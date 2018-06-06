@@ -59,11 +59,11 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 
 	private MaxwellConfig getConfig(MysqlIsolatedServer mysql) {
 		MaxwellConfig config = maxwellConfigFactory.createNewDefaultConfiguration();
-		config.getMaxwellMysql().user = "maxwell";
-		config.getMaxwellMysql().password = "maxwell";
-		config.getMaxwellMysql().host = "localhost";
-		config.getMaxwellMysql().port = mysql.getPort();
-		config.getMaxwellMysql().sslMode = SSLMode.DISABLED;
+		config.getMaxwellMysql().setUser("maxwell");
+		config.getMaxwellMysql().setPassword("maxwell");
+		config.getMaxwellMysql().setHost("localhost");
+		config.getMaxwellMysql().setPort(mysql.getPort());
+		config.getMaxwellMysql().setSslMode(SSLMode.DISABLED);
 		config.setReplicationMysql(config.getMaxwellMysql());
 		return config;
 	}

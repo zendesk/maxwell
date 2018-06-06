@@ -94,10 +94,10 @@ public class MaxwellBenchmark {
 		MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--no-clean --reuse=" + path);
 		SpringLauncher.launchMaxwell(args, (config) -> {
 			try {
-				config.getMaxwellMysql().host = "127.0.0.1";
-				config.getMaxwellMysql().port = server.getPort();
-				config.getMaxwellMysql().user = "root";
-				config.getMaxwellMysql().password = "";
+				config.getMaxwellMysql().setHost("127.0.0.1");
+				config.getMaxwellMysql().setPort(server.getPort());
+				config.getMaxwellMysql().setUser("root");
+				config.getMaxwellMysql().setPassword("");
 				config.setSchemaMysql(config.getMaxwellMysql());
 				config.setReplicationMysql(config.getMaxwellMysql());
 				config.setProducerFactory(new BenchmarkProducerFactory());

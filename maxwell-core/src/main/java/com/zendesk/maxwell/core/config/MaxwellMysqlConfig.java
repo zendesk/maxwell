@@ -13,48 +13,48 @@ import java.util.Objects;
  */
 public class MaxwellMysqlConfig {
 
-	public String host;
-	public Integer port;
-	public String database;
-	public String user;
-	public String password;
-	public SSLMode sslMode;
-	public Map<String, String> jdbcOptions = new HashMap<>();
-	public Integer connectTimeoutMS = 5000;
+	private String host;
+	private Integer port;
+	private String database;
+	private String user;
+	private String password;
+	private SSLMode sslMode;
+	private Map<String, String> jdbcOptions = new HashMap<>();
+	private Integer connectTimeoutMS = 5000;
 
 	public MaxwellMysqlConfig() {
-		this.host = null;
-		this.port = null;
-		this.database = null;
-		this.user = null;
-		this.password = null;
-		this.sslMode = null;
+		this.setHost(null);
+		this.setPort(null);
+		this.setDatabase(null);
+		this.setUser(null);
+		this.setPassword(null);
+		this.setSslMode(null);
 
-		this.jdbcOptions = new HashMap<>();
-		this.jdbcOptions.put("zeroDateTimeBehavior", "convertToNull");
-		this.jdbcOptions.put("connectTimeout", String.valueOf(connectTimeoutMS));
+		this.setJdbcOptions(new HashMap<>());
+		this.getJdbcOptions().put("zeroDateTimeBehavior", "convertToNull");
+		this.getJdbcOptions().put("connectTimeout", String.valueOf(getConnectTimeoutMS()));
 	}
 
 	public MaxwellMysqlConfig(String host, Integer port, String database, String user, String password,
 			SSLMode sslMode) {
-		this.host = host;
-		this.port = port;
-		this.database = database;
-		this.user = user;
-		this.password = password;
-		this.sslMode = sslMode;
+		this.setHost(host);
+		this.setPort(port);
+		this.setDatabase(database);
+		this.setUser(user);
+		this.setPassword(password);
+		this.setSslMode(sslMode);
 	}
 
 	private void useSSL(boolean should) {
-		this.jdbcOptions.put("useSSL", String.valueOf(should));
+		this.getJdbcOptions().put("useSSL", String.valueOf(should));
 	}
 
 	private void requireSSL(boolean should) {
-		this.jdbcOptions.put("requireSSL", String.valueOf(should));
+		this.getJdbcOptions().put("requireSSL", String.valueOf(should));
 	}
 
 	private void verifyServerCertificate(boolean should) {
-		this.jdbcOptions.put("verifyServerCertificate", String.valueOf(should));
+		this.getJdbcOptions().put("verifyServerCertificate", String.valueOf(should));
 	}
 
 	public void setJDBCOptions(String opts) {
@@ -64,22 +64,22 @@ public class MaxwellMysqlConfig {
 		for ( String opt : opts.split("&") ) {
 			String[] valueKeySplit = opt.trim().split("=", 2);
 			if (valueKeySplit.length == 2) {
-				this.jdbcOptions.put(valueKeySplit[0], valueKeySplit[1]);
+				this.getJdbcOptions().put(valueKeySplit[0], valueKeySplit[1]);
 			}
 		}
 	}
 
 	private void setSSLOptions() {
-		if (sslMode != null && sslMode != SSLMode.DISABLED) {
+		if (getSslMode() != null && getSslMode() != SSLMode.DISABLED) {
 			this.useSSL(true); // for all SSL modes other than DISABLED, use SSL
 
 			this.verifyServerCertificate(false); // default to not verify server cert
 			this.requireSSL(false); // default to not require SSL
 
-			this.requireSSL(sslMode == SSLMode.REQUIRED || sslMode == SSLMode.VERIFY_CA
-					|| sslMode == SSLMode.VERIFY_IDENTITY);
+			this.requireSSL(getSslMode() == SSLMode.REQUIRED || getSslMode() == SSLMode.VERIFY_CA
+					|| getSslMode() == SSLMode.VERIFY_IDENTITY);
 
-			this.verifyServerCertificate(sslMode == SSLMode.VERIFY_IDENTITY);
+			this.verifyServerCertificate(getSslMode() == SSLMode.VERIFY_IDENTITY);
 		}
 		else {
 			this.useSSL(false);
@@ -92,14 +92,14 @@ public class MaxwellMysqlConfig {
 		URIBuilder uriBuilder = new URIBuilder();
 
 		uriBuilder.setScheme("jdbc:mysql");
-		uriBuilder.setHost(host);
-		uriBuilder.setPort(port);
+		uriBuilder.setHost(getHost());
+		uriBuilder.setPort(getPort());
 
-		if (database != null && includeDatabase) {
-			uriBuilder.setPath("/" + database);
+		if (getDatabase() != null && includeDatabase) {
+			uriBuilder.setPath("/" + getDatabase());
 		}
 
-		for (Map.Entry<String, String> jdbcOption : jdbcOptions.entrySet()) {
+		for (Map.Entry<String, String> jdbcOption : getJdbcOptions().entrySet()) {
 			uriBuilder.addParameter(jdbcOption.getKey(), jdbcOption.getValue());
 		}
 
@@ -117,24 +117,88 @@ public class MaxwellMysqlConfig {
 			return false;
 		}
 		MaxwellMysqlConfig that = (MaxwellMysqlConfig) o;
-		return Objects.equals(host, that.host) &&
-				Objects.equals(port, that.port) &&
-				Objects.equals(database, that.database) &&
-				Objects.equals(user, that.user) &&
-				Objects.equals(password, that.password) &&
-				sslMode == that.sslMode &&
-				Objects.equals(jdbcOptions, that.jdbcOptions) &&
-				Objects.equals(connectTimeoutMS, that.connectTimeoutMS);
+		return Objects.equals(getHost(), that.getHost()) &&
+				Objects.equals(getPort(), that.getPort()) &&
+				Objects.equals(getDatabase(), that.getDatabase()) &&
+				Objects.equals(getUser(), that.getUser()) &&
+				Objects.equals(getPassword(), that.getPassword()) &&
+				getSslMode() == that.getSslMode() &&
+				Objects.equals(getJdbcOptions(), that.getJdbcOptions()) &&
+				Objects.equals(getConnectTimeoutMS(), that.getConnectTimeoutMS());
 	}
 
 	public boolean sameServerAs(MaxwellMysqlConfig other) {
-		return Objects.equals(host, other.host) &&
-			Objects.equals(port, other.port);
+		return Objects.equals(getHost(), other.getHost()) &&
+			Objects.equals(getPort(), other.getPort());
 	}
 
 	@Override
 	public int hashCode() {
 		return Objects
-				.hash(host, port, database, user, password, sslMode, jdbcOptions, connectTimeoutMS);
+				.hash(getHost(), getPort(), getDatabase(), getUser(), getPassword(), getSslMode(), getJdbcOptions(), getConnectTimeoutMS());
+	}
+
+	public String getHost() {
+		return host;
+	}
+
+	public void setHost(String host) {
+		this.host = host;
+	}
+
+	public Integer getPort() {
+		return port;
+	}
+
+	public void setPort(Integer port) {
+		this.port = port;
+	}
+
+	public String getDatabase() {
+		return database;
+	}
+
+	public void setDatabase(String database) {
+		this.database = database;
+	}
+
+	public String getUser() {
+		return user;
+	}
+
+	public void setUser(String user) {
+		this.user = user;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public SSLMode getSslMode() {
+		return sslMode;
+	}
+
+	public void setSslMode(SSLMode sslMode) {
+		this.sslMode = sslMode;
+	}
+
+	public Map<String, String> getJdbcOptions() {
+		return jdbcOptions;
+	}
+
+	public void setJdbcOptions(Map<String, String> jdbcOptions) {
+		this.jdbcOptions = jdbcOptions;
+	}
+
+	public Integer getConnectTimeoutMS() {
+		return connectTimeoutMS;
+	}
+
+	public void setConnectTimeoutMS(Integer connectTimeoutMS) {
+		this.connectTimeoutMS = connectTimeoutMS;
 	}
 }

@@ -147,7 +147,7 @@ public class MaxwellBootstrapUtilityRunner {
 		int maxSize = 0;
 		int idleTimeout = 10;
 		String connectionURI = config.getConnectionURI();
-		return new ConnectionPool(name, maxPool, maxSize, idleTimeout, connectionURI, config.mysql.user, config.mysql.password);
+		return new ConnectionPool(name, maxPool, maxSize, idleTimeout, connectionURI, config.mysql.getUser(), config.mysql.getPassword());
 	}
 
 	private Long getTotalRowCount(Connection connection, Long bootstrapRowID) throws SQLException, MissingBootstrapRowException {

@@ -38,7 +38,7 @@ public class MaxwellConfigFactory {
 		config.setGtidMode(configurationSupport.fetchBooleanOption("gtid_mode", properties, System.getenv(MaxwellConfig.GTID_MODE_ENV) != null));
 
 		config.setDatabaseName(configurationSupport.fetchOption("schema_database", properties, "maxwell"));
-		config.getMaxwellMysql().database = config.getDatabaseName();
+		config.getMaxwellMysql().setDatabase(config.getDatabaseName());
 
 		configureProducer(properties, config);
 

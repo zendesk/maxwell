@@ -38,11 +38,11 @@ public class ConfigurationSupport {
 
 	public MaxwellMysqlConfig parseMysqlConfig(String prefix, Properties properties) {
 		MaxwellMysqlConfig config = new MaxwellMysqlConfig();
-		config.host     = fetchOption(prefix + "host", properties, null);
-		config.password = fetchOption(prefix + "password", properties, null);
-		config.user     = fetchOption(prefix + "user", properties, null);
-		config.port     = Integer.valueOf(fetchOption(prefix + "port", properties, "3306"));
-		config.sslMode  = this.getSslModeFromString(fetchOption(prefix + "ssl", properties, null));
+		config.setHost(fetchOption(prefix + "host", properties, null));
+		config.setPassword(fetchOption(prefix + "password", properties, null));
+		config.setUser(fetchOption(prefix + "user", properties, null));
+		config.setPort(Integer.valueOf(fetchOption(prefix + "port", properties, "3306")));
+		config.setSslMode(this.getSslModeFromString(fetchOption(prefix + "ssl", properties, null)));
 		config.setJDBCOptions(fetchOption(prefix + "jdbc_options", properties, null));
 		return config;
 	}

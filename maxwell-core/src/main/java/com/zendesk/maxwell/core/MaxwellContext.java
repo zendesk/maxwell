@@ -71,9 +71,9 @@ public class MaxwellContext {
 		this.contextStartListenersEventHandler = contextStartListenersEventHandler;
 
 		this.replicationConnectionPool = new ConnectionPool("ReplicationConnectionPool", 10, 0, 10,
-				config.getReplicationMysql().getConnectionURI(false), config.getReplicationMysql().user, config.getReplicationMysql().password);
+				config.getReplicationMysql().getConnectionURI(false), config.getReplicationMysql().getUser(), config.getReplicationMysql().getPassword());
 
-		if (config.getSchemaMysql().host == null) {
+		if (config.getSchemaMysql().getHost() == null) {
 			this.schemaConnectionPool = null;
 		} else {
 			this.schemaConnectionPool = new ConnectionPool(
@@ -82,15 +82,15 @@ public class MaxwellContext {
 					0,
 					10,
 					config.getSchemaMysql().getConnectionURI(false),
-					config.getSchemaMysql().user,
-					config.getSchemaMysql().password);
+					config.getSchemaMysql().getUser(),
+					config.getSchemaMysql().getPassword());
 		}
 
 		this.rawMaxwellConnectionPool = new ConnectionPool("RawMaxwellConnectionPool", 1, 2, 100,
-			config.getMaxwellMysql().getConnectionURI(false), config.getMaxwellMysql().user, config.getMaxwellMysql().password);
+			config.getMaxwellMysql().getConnectionURI(false), config.getMaxwellMysql().getUser(), config.getMaxwellMysql().getPassword());
 
 		this.maxwellConnectionPool = new ConnectionPool("MaxwellConnectionPool", 10, 0, 10,
-					config.getMaxwellMysql().getConnectionURI(), config.getMaxwellMysql().user, config.getMaxwellMysql().password);
+					config.getMaxwellMysql().getConnectionURI(), config.getMaxwellMysql().getUser(), config.getMaxwellMysql().getPassword());
 		this.maxwellConnectionPool.setCaching(false);
 
 		if ( this.config.getInitPosition() != null )

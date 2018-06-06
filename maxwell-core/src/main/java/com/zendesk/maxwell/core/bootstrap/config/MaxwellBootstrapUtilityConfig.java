@@ -19,7 +19,7 @@ public class MaxwellBootstrapUtilityConfig {
 	}
 
 	public String getConnectionURI( ) {
-		return "jdbc:mysql://" + mysql.host + ":" + mysql.port + "/" + schemaDatabaseName;
+		return "jdbc:mysql://" + mysql.getHost() + ":" + mysql.getPort() + "/" + schemaDatabaseName;
 	}
 
 	private void setDefaults() {
