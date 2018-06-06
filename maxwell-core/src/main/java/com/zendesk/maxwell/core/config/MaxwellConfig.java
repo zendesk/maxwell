@@ -1,7 +1,5 @@
 package com.zendesk.maxwell.core.config;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.health.HealthCheckRegistry;
 import com.zendesk.maxwell.core.MaxwellInvalidFilterException;
 import com.zendesk.maxwell.core.producer.ProducerFactory;
 import com.zendesk.maxwell.core.replication.Position;
@@ -63,10 +61,6 @@ public interface MaxwellConfig {
 	MaxwellOutputConfig getOutputConfig();
 
 	String getLogLevel();
-
-	MetricRegistry getMetricRegistry();
-
-	HealthCheckRegistry getHealthCheckRegistry();
 
 	int getHttpPort();
 

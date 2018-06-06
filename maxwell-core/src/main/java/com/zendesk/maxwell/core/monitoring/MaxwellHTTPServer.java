@@ -1,5 +1,7 @@
 package com.zendesk.maxwell.core.monitoring;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.health.HealthCheckRegistry;
 import com.codahale.metrics.servlets.HealthCheckServlet;
 import com.codahale.metrics.servlets.MetricsServlet;
 import com.codahale.metrics.servlets.PingServlet;
@@ -39,14 +41,15 @@ public class MaxwellHTTPServer implements ContextStartListener {
 	}
 
 	private void startIfRequired(MaxwellContext context) {
-		MaxwellMetrics.Registries metricsRegistries = getMetricsRegistries(context);
+		boolean httpReportingEnabled = isHttpReportingEnabled(context);
 		MaxwellDiagnosticContext diagnosticContext = getDiagnosticContext(context);
-		if (metricsRegistries != null || diagnosticContext != null) {
+		if (httpReportingEnabled || diagnosticContext != null) {
 			LOGGER.info("Maxwell http server starting");
 			int port = context.getConfig().getHttpPort();
 			String httpBindAddress = context.getConfig().getHttpBindAddress();
 			String pathPrefix = context.getConfig().getHttpPathPrefix();
-			MaxwellHTTPServerWorker maxwellHTTPServerWorker = new MaxwellHTTPServerWorker(httpBindAddress, port, pathPrefix, metricsRegistries, diagnosticContext);
+			context.getHealthCheckRegistry().register("MaxwellHealth", new MaxwellHealthCheck(context.getProducer()));
+			MaxwellHTTPServerWorker maxwellHTTPServerWorker = new MaxwellHTTPServerWorker(httpBindAddress, port, pathPrefix, context.getMetricRegistry(), context.getHealthCheckRegistry(), diagnosticContext);
 			Thread thread = new Thread(maxwellHTTPServerWorker);
 
 			context.addTask(maxwellHTTPServerWorker);
@@ -61,15 +64,10 @@ public class MaxwellHTTPServer implements ContextStartListener {
 		}
 	}
 
-	private MaxwellMetrics.Registries getMetricsRegistries(MaxwellContext context) {
+	private boolean isHttpReportingEnabled(MaxwellContext context) {
 		MaxwellConfig config = context.getConfig();
 		String reportingType = config.getMetricsReportingType();
-		if (reportingType != null && reportingType.contains(MaxwellMetrics.reportingTypeHttp)) {
-			config.getHealthCheckRegistry().register("MaxwellHealth", new MaxwellHealthCheck(context.getProducer()));
-			return new MaxwellMetrics.Registries(config.getMetricRegistry(), config.getHealthCheckRegistry());
-		} else {
-			return null;
-		}
+		return (reportingType != null && reportingType.contains(MaxwellMetrics.reportingTypeHttp));
 	}
 
 	private MaxwellDiagnosticContext getDiagnosticContext(MaxwellContext context) {
@@ -87,15 +85,17 @@ class MaxwellHTTPServerWorker implements StoppableTask, Runnable {
 	private final String bindAddress;
 	private int port;
 	private final String pathPrefix;
-	private final MaxwellMetrics.Registries metricsRegistries;
+	private final MetricRegistry metricRegistry;
+	private final HealthCheckRegistry healthCheckRegistry;
 	private final MaxwellDiagnosticContext diagnosticContext;
 	private Server server;
 
-	public MaxwellHTTPServerWorker(String bindAddress, int port, String pathPrefix, MaxwellMetrics.Registries metricsRegistries, MaxwellDiagnosticContext diagnosticContext) {
+	public MaxwellHTTPServerWorker(String bindAddress, int port, String pathPrefix, MetricRegistry metricRegistry, HealthCheckRegistry healthCheckRegistry, MaxwellDiagnosticContext diagnosticContext) {
 		this.bindAddress = bindAddress;
 		this.port = port;
 		this.pathPrefix = pathPrefix;
-		this.metricsRegistries = metricsRegistries;
+		this.metricRegistry = metricRegistry;
+		this.healthCheckRegistry = healthCheckRegistry;
 		this.diagnosticContext = diagnosticContext;
 	}
 
@@ -107,13 +107,9 @@ class MaxwellHTTPServerWorker implements StoppableTask, Runnable {
 			this.server = new Server(this.port);
 		}
 		ServletContextHandler handler = new ServletContextHandler(this.server, pathPrefix);
-
-		if (metricsRegistries != null) {
-			// TODO: there is a way to wire these up automagically via the AdminServlet, but it escapes me right now
-			handler.addServlet(new ServletHolder(new MetricsServlet(metricsRegistries.metricRegistry)), "/metrics");
-			handler.addServlet(new ServletHolder(new HealthCheckServlet(metricsRegistries.healthCheckRegistry)), "/healthcheck");
-			handler.addServlet(new ServletHolder(new PingServlet()), "/ping");
-		}
+		handler.addServlet(new ServletHolder(new MetricsServlet(metricRegistry)), "/metrics");
+		handler.addServlet(new ServletHolder(new HealthCheckServlet(healthCheckRegistry)), "/healthcheck");
+		handler.addServlet(new ServletHolder(new PingServlet()), "/ping");
 
 		if (diagnosticContext != null) {
 			handler.addServlet(new ServletHolder(new DiagnosticHealthCheck(diagnosticContext)), "/diagnostic");

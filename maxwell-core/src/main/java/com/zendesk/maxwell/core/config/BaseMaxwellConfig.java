@@ -1,7 +1,5 @@
 package com.zendesk.maxwell.core.config;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.health.HealthCheckRegistry;
 import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.core.producer.ProducerFactory;
 import com.zendesk.maxwell.core.replication.Position;
@@ -37,9 +35,6 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 	private BaseMaxwellOutputConfig outputConfig;
 	private String logLevel;
 
-	private final MetricRegistry metricRegistry;
-	private final HealthCheckRegistry healthCheckRegistry;
-
 	private int httpPort;
 	private String httpBindAddress;
 	private String httpPathPrefix;
@@ -73,8 +68,6 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 		this.setSchemaMysql(new BaseMaxwellMysqlConfig());
 		this.setMasterRecovery(false);
 		this.setGtidMode(false);
-		this.metricRegistry = new MetricRegistry();
-		this.healthCheckRegistry = new HealthCheckRegistry();
 	}
 
 	@Override
@@ -297,16 +290,6 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 
 	public void setLogLevel(String logLevel) {
 		this.logLevel = logLevel;
-	}
-
-	@Override
-	public MetricRegistry getMetricRegistry() {
-		return metricRegistry;
-	}
-
-	@Override
-	public HealthCheckRegistry getHealthCheckRegistry() {
-		return healthCheckRegistry;
 	}
 
 	@Override

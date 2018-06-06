@@ -1,5 +1,7 @@
 package com.zendesk.maxwell.core;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.health.HealthCheckRegistry;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
 import com.zendesk.maxwell.core.monitoring.*;
@@ -43,7 +45,11 @@ public class MaxwellContext {
 	private Position initialPosition;
 	private CaseSensitivity caseSensitivity;
 	private ProducerContext producerContext;
+
 	private final TaskManager taskManager;
+	private final MetricRegistry metricRegistry;
+	private final HealthCheckRegistry healthCheckRegistry;
+
 	private volatile Exception error;
 
 	private MysqlVersion mysqlVersion;
@@ -66,8 +72,12 @@ public class MaxwellContext {
 	public MaxwellContext(MaxwellConfig config, List<ContextStartListener> contextStartListenersEventHandler) throws SQLException, URISyntaxException {
 		this.config = config;
 		this.config.validate();
+
 		this.taskManager = new TaskManager();
-		this.metrics = new MaxwellMetrics(config);
+		this.metricRegistry = new MetricRegistry();
+		this.healthCheckRegistry = new HealthCheckRegistry();
+
+		this.metrics = new MaxwellMetrics(config, metricRegistry);
 		this.contextStartListenersEventHandler = contextStartListenersEventHandler;
 
 		this.replicationConnectionPool = new ConnectionPool("ReplicationConnectionPool", 10, 0, 10,
@@ -109,6 +119,14 @@ public class MaxwellContext {
 
 	public MaxwellConfig getConfig() {
 		return this.config;
+	}
+
+	public MetricRegistry getMetricRegistry() {
+		return metricRegistry;
+	}
+
+	public HealthCheckRegistry getHealthCheckRegistry() {
+		return healthCheckRegistry;
 	}
 
 	public Connection getReplicationConnection() throws SQLException {

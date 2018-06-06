@@ -4,7 +4,6 @@ import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Slf4jReporter;
-import com.codahale.metrics.health.HealthCheckRegistry;
 import com.codahale.metrics.jvm.*;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import org.apache.commons.lang.StringUtils;
@@ -29,11 +28,11 @@ public class MaxwellMetrics implements Metrics {
 	static final String reportingTypeDataDog = "datadog";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellMetrics.class);
-	private final MaxwellConfig config;
+	private final MetricRegistry metricRegistry;
 	private String metricsPrefix;
 
-	public MaxwellMetrics(MaxwellConfig config) {
-		this.config = config;
+	public MaxwellMetrics(MaxwellConfig config, MetricRegistry metricRegistry) {
+		this.metricRegistry = metricRegistry;
 		setup(config);
 	}
 
@@ -46,15 +45,15 @@ public class MaxwellMetrics implements Metrics {
 		metricsPrefix = config.getMetricsPrefix();
 
 		if (config.isMetricsJvm()) {
-			config.getMetricRegistry().register(metricName("jvm", "memory_usage"), new MemoryUsageGaugeSet());
-			config.getMetricRegistry().register(metricName("jvm", "gc"), new GarbageCollectorMetricSet());
-			config.getMetricRegistry().register(metricName("jvm", "class_loading"), new ClassLoadingGaugeSet());
-			config.getMetricRegistry().register(metricName("jvm", "file_descriptor_ratio"), new FileDescriptorRatioGauge());
-			config.getMetricRegistry().register(metricName("jvm", "thread_states"), new CachedThreadStatesGaugeSet(60, TimeUnit.SECONDS));
+			metricRegistry.register(metricName("jvm", "memory_usage"), new MemoryUsageGaugeSet());
+			metricRegistry.register(metricName("jvm", "gc"), new GarbageCollectorMetricSet());
+			metricRegistry.register(metricName("jvm", "class_loading"), new ClassLoadingGaugeSet());
+			metricRegistry.register(metricName("jvm", "file_descriptor_ratio"), new FileDescriptorRatioGauge());
+			metricRegistry.register(metricName("jvm", "thread_states"), new CachedThreadStatesGaugeSet(60, TimeUnit.SECONDS));
 		}
 
 		if (config.getMetricsReportingType().contains(reportingTypeSlf4j)) {
-			final Slf4jReporter reporter = Slf4jReporter.forRegistry(config.getMetricRegistry())
+			final Slf4jReporter reporter = Slf4jReporter.forRegistry(metricRegistry)
 					.outputTo(LOGGER)
 					.convertRatesTo(TimeUnit.SECONDS)
 					.convertDurationsTo(TimeUnit.MILLISECONDS)
@@ -65,7 +64,7 @@ public class MaxwellMetrics implements Metrics {
 		}
 
 		if (config.getMetricsReportingType().contains(reportingTypeJmx)) {
-			final JmxReporter jmxReporter = JmxReporter.forRegistry(config.getMetricRegistry())
+			final JmxReporter jmxReporter = JmxReporter.forRegistry(metricRegistry)
 					.convertRatesTo(TimeUnit.SECONDS)
 					.convertDurationsTo(TimeUnit.MILLISECONDS)
 					.build();
@@ -98,7 +97,7 @@ public class MaxwellMetrics implements Metrics {
 						.build();
 			}
 
-			final DatadogReporter reporter = DatadogReporter.forRegistry(config.getMetricRegistry())
+			final DatadogReporter reporter = DatadogReporter.forRegistry(metricRegistry)
 					.withTransport(transport)
 					.withExpansions(EnumSet.of(COUNT, RATE_1_MINUTE, RATE_15_MINUTE, MEDIAN, P95, P99))
 					.withTags(getDatadogTags(config.getMetricsDatadogTags()))
@@ -126,21 +125,11 @@ public class MaxwellMetrics implements Metrics {
 
 	@Override
 	public MetricRegistry getRegistry() {
-		return config.getMetricRegistry();
+		return metricRegistry;
 	}
 
 	@Override
 	public <T extends Metric> void register(String name, T metric) throws IllegalArgumentException {
 		getRegistry().register(name, metric);
-	}
-
-	static class Registries {
-		final MetricRegistry metricRegistry;
-		final HealthCheckRegistry healthCheckRegistry;
-
-		Registries(MetricRegistry metricRegistry, HealthCheckRegistry healthCheckRegistry) {
-			this.metricRegistry = metricRegistry;
-			this.healthCheckRegistry = healthCheckRegistry;
-		}
 	}
 }
