@@ -12,6 +12,7 @@ import com.zendesk.maxwell.core.row.HeartbeatRowMap;
 import com.zendesk.maxwell.core.schema.*;
 import com.zendesk.maxwell.core.support.MaxwellTestSupport;
 import com.zendesk.maxwell.core.support.MaxwellTestSupportCallback;
+import com.zendesk.maxwell.test.mysql.MysqlIsolatedServer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

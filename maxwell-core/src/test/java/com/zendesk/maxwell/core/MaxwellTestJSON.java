@@ -8,6 +8,7 @@ import com.zendesk.maxwell.api.config.MaxwellOutputConfig;
 import com.zendesk.maxwell.api.row.RowMap;
 import com.zendesk.maxwell.core.row.RowEncrypt;
 import com.zendesk.maxwell.core.support.MaxwellTestSupport;
+import com.zendesk.maxwell.test.mysql.MysqlIsolatedServer;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -7,11 +7,14 @@ import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.api.row.RowMap;
 import com.zendesk.maxwell.core.config.BaseMaxwellFilter;
 import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
-import com.zendesk.maxwell.core.replication.MysqlVersion;
+import com.zendesk.maxwell.api.replication.MysqlVersion;
 import com.zendesk.maxwell.core.support.MaxwellConfigTestSupport;
 import com.zendesk.maxwell.core.support.MaxwellTestSupport;
 import com.zendesk.maxwell.core.support.MaxwellTestSupportCallback;
 import com.zendesk.maxwell.core.util.Logging;
+import com.zendesk.maxwell.test.mysql.MysqlIsolatedServer;
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -31,7 +34,6 @@ import static org.junit.Assume.assumeTrue;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { SpringTestContextConfiguration.class })
 public abstract class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
-	protected static MysqlIsolatedServer server;
 	static {
 		TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 	}
@@ -43,15 +45,27 @@ public abstract class MaxwellTestWithIsolatedServer extends TestWithNameLogging 
 	@Autowired
 	protected MaxwellTestJSON maxwellTestJSON;
 
+	protected static MysqlIsolatedServer server;
+
 	@BeforeClass
 	public static void setupTest() throws Exception {
 		Logging.setupLogBridging();
-		server = MaxwellTestSupport.setupServer();
 	}
 
 	@Before
-	public void setupSchema() throws Exception {
+	public void setupDatabase() throws Exception {
+		if(server == null){
+			server = MaxwellTestSupport.setupServer();
+		}
 		MaxwellTestSupport.setupSchema(server);
+	}
+
+	@AfterClass
+	public static void cleanupDatabase(){
+		if(server != null){
+			server.shutDown();
+			server = null;
+		}
 	}
 
 	protected List<RowMap> getRowsForSQL(MaxwellFilter filter, String[] input) throws Exception {

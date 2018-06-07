@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.schema.ddl;
 
-import com.zendesk.maxwell.core.MysqlIsolatedServer;
+import com.zendesk.maxwell.test.mysql.MysqlIsolatedServer;
 import com.zendesk.maxwell.core.SpringTestContextConfiguration;
 import com.zendesk.maxwell.core.support.MaxwellTestSupport;
 import org.junit.Before;

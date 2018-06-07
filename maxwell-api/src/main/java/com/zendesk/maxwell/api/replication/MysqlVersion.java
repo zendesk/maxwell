@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core.replication;
+package com.zendesk.maxwell.api.replication;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;

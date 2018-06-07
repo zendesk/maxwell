@@ -16,7 +16,7 @@ import com.zendesk.maxwell.core.monitoring.MaxwellMetrics;
 import com.zendesk.maxwell.core.recovery.RecoveryInfo;
 import com.zendesk.maxwell.core.replication.BinlogConnectorDiagnostic;
 import com.zendesk.maxwell.core.replication.HeartbeatNotifier;
-import com.zendesk.maxwell.core.replication.MysqlVersion;
+import com.zendesk.maxwell.api.replication.MysqlVersion;
 import com.zendesk.maxwell.core.replication.Replicator;
 import com.zendesk.maxwell.core.schema.MysqlPositionStore;
 import com.zendesk.maxwell.core.schema.PositionStoreThread;

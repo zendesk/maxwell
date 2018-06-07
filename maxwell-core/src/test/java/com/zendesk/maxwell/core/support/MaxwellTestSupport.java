@@ -10,7 +10,7 @@ import com.zendesk.maxwell.api.row.RowMap;
 import com.zendesk.maxwell.core.MaxwellContextFactory;
 import com.zendesk.maxwell.core.MaxwellRunner;
 import com.zendesk.maxwell.core.MaxwellSystemContext;
-import com.zendesk.maxwell.core.MysqlIsolatedServer;
+import com.zendesk.maxwell.test.mysql.MysqlIsolatedServer;
 import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
 import com.zendesk.maxwell.core.config.BaseMaxwellMysqlConfig;
 import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;

@@ -4,7 +4,7 @@ import com.zendesk.maxwell.core.MaxwellTestWithIsolatedServer;
 import com.zendesk.maxwell.core.schema.Schema;
 import com.zendesk.maxwell.core.schema.SchemaCapturer;
 import com.zendesk.maxwell.core.schema.columndef.StringColumnDef;
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
@@ -15,9 +15,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 public class DDLResolverTest extends MaxwellTestWithIsolatedServer {
-	@BeforeClass
-	public static void setUp() throws Exception {
-		server.executeQuery("create database already_there");
+	private static boolean dbSetupCompleted = false;
+
+	@Before
+	public void setupDatabaseForTestCase() throws Exception {
+		if(!dbSetupCompleted){
+			server.executeQuery("create database already_there");
+			dbSetupCompleted = true;
+		}
 	}
 
 	private <T extends SchemaChange> T parse(String sql, String database, Class<T> type) {

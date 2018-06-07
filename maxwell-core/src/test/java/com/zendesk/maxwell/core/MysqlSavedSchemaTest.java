@@ -9,6 +9,7 @@ import com.zendesk.maxwell.core.schema.columndef.IntColumnDef;
 import com.zendesk.maxwell.core.schema.columndef.TimeColumnDef;
 import com.zendesk.maxwell.core.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.core.support.MaxwellTestSupport;
+import com.zendesk.maxwell.test.mysql.MysqlIsolatedServer;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;

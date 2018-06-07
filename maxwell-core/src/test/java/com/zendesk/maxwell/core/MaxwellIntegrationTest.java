@@ -11,7 +11,7 @@ import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.row.BaseRowMap;
 import com.zendesk.maxwell.core.schema.SchemaStoreSchema;
-import com.zendesk.maxwell.core.support.MaxwellTestSupport;
+import com.zendesk.maxwell.test.mysql.MysqlIsolatedServer;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;

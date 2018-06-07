@@ -1,5 +1,6 @@
 package com.zendesk.maxwell.core.replication;
 
+import com.zendesk.maxwell.api.replication.MysqlVersion;
 import com.zendesk.maxwell.core.TestWithNameLogging;
 import org.junit.Test;
 

@@ -107,6 +107,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.zendesk</groupId>
+            <artifactId>maxwell-test-support</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <scope>test</scope>
