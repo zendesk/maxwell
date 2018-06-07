@@ -23,14 +23,6 @@
         </dependency>
         <dependency>
             <groupId>com.zendesk</groupId>
-            <artifactId>maxwell-producer-buffer</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.zendesk</groupId>
-            <artifactId>maxwell-producer-file</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.zendesk</groupId>
             <artifactId>maxwell-producer-kafka</artifactId>
         </dependency>
         <dependency>

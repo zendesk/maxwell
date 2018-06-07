@@ -142,16 +142,6 @@
             </dependency>
             <dependency>
                 <groupId>com.zendesk</groupId>
-                <artifactId>maxwell-producer-buffer</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.zendesk</groupId>
-                <artifactId>maxwell-producer-file</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.zendesk</groupId>
                 <artifactId>maxwell-producer-kafka</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -183,11 +173,6 @@
             <dependency>
                 <groupId>com.zendesk</groupId>
                 <artifactId>maxwell-producer-sqs</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.zendesk</groupId>
-                <artifactId>maxwell-producer-stdout</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

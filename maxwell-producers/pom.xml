@@ -15,8 +15,6 @@
     <description>Maxwell's producers parent.</description>
 
     <modules>
-        <module>maxwell-producer-buffer</module>
-        <module>maxwell-producer-file</module>
         <module>maxwell-producer-kafka</module>
         <module>maxwell-producer-kinesis</module>
         <module>maxwell-producer-profiler</module>
@@ -24,6 +22,5 @@
         <module>maxwell-producer-rabbitmq</module>
         <module>maxwell-producer-redis</module>
         <module>maxwell-producer-sqs</module>
-        <module>maxwell-producer-stdout</module>
     </modules>
 </project>
