@@ -53,7 +53,7 @@ public class Recovery {
 		List<BinlogPosition> list = getBinlogInfo();
 		for ( int i = list.size() - 1; i >= 0 ; i-- ) {
 			BinlogPosition binlogPosition = list.get(i);
-			Position position = recoveryInfo.position.withBinlogPosition(binlogPosition);
+			Position position = Position.valueOf(binlogPosition, recoveryInfo.getHeartbeat());
 			Metrics metrics = new NoOpMetrics();
 
 			LOGGER.debug("scanning binlog: " + binlogPosition);
@@ -95,7 +95,7 @@ public class Recovery {
 				continue;
 			}
 			HeartbeatRowMap heartbeatRow = (HeartbeatRowMap) row;
-			Position heartbeatPosition = heartbeatRow.getPosition();
+			Position heartbeatPosition = heartbeatRow.getNextPosition();
 			if (heartbeatPosition.getLastHeartbeatRead() == recoveryInfo.getHeartbeat())
 				return heartbeatPosition;
 		}

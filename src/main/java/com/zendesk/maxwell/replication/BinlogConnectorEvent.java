@@ -163,7 +163,7 @@ public class BinlogConnectorEvent {
 		ArrayList<RowMap> list = new ArrayList<>();
 
 		Position position     = Position.valueOf(this.position, lastHeartbeatRead);
-		Position nextPosition = Position.valueOf(this.position, lastHeartbeatRead);
+		Position nextPosition = Position.valueOf(this.nextPosition, lastHeartbeatRead);
 
 		switch ( getType() ) {
 			case WRITE_ROWS:

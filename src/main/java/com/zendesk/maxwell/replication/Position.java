@@ -19,10 +19,6 @@ public class Position implements Serializable {
 		return new Position(binlogPosition, lastHeartbeatRead);
 	}
 
-	public Position withBinlogPosition(BinlogPosition position) {
-		return new Position(position, getLastHeartbeatRead());
-	}
-
 	public Position withHeartbeat(long lastHeartbeatRead) {
 		return new Position(getBinlogPosition(), lastHeartbeatRead);
 	}
