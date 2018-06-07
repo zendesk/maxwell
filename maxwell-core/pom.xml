@@ -84,17 +84,11 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-clients</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.vividsolutions</groupId>
             <artifactId>jts</artifactId>
         </dependency>
-        <dependency>
-            <groupId>net.jpountz.lz4</groupId>
-            <artifactId>lz4</artifactId>
-        </dependency>
+
+
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-pubsub</artifactId>

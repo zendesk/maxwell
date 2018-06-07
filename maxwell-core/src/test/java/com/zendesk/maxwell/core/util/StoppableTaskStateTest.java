@@ -1,5 +1,7 @@
 package com.zendesk.maxwell.core.util;
 
+import com.zendesk.maxwell.api.RunState;
+import com.zendesk.maxwell.api.StoppableTaskState;
 import org.junit.Test;
 
 import java.util.concurrent.TimeoutException;

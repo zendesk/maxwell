@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core.util;
+package com.zendesk.maxwell.api;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zendesk.maxwell.api.config.MaxwellOutputConfig;
 import com.zendesk.maxwell.api.replication.BinlogPosition;
 import com.zendesk.maxwell.api.replication.Position;
+import com.zendesk.maxwell.api.row.DDLMap;
 import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
 import com.zendesk.maxwell.core.row.BaseRowMap;
 
@@ -13,13 +14,13 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
 
-public class DDLMap extends BaseRowMap {
+public class BaseDDLMap extends BaseRowMap implements DDLMap {
 	private final ResolvedSchemaChange change;
 	private final Long timestamp;
 	private final String sql;
 	private Position nextPosition;
 
-	public DDLMap(ResolvedSchemaChange change, Long timestamp, String sql, Position nextPosition) {
+	public BaseDDLMap(ResolvedSchemaChange change, Long timestamp, String sql, Position nextPosition) {
 		super("ddl", change.databaseName(), change.tableName(), timestamp, new ArrayList<>(0), nextPosition);
 		this.change = change;
 		this.timestamp = timestamp;
@@ -27,14 +28,17 @@ public class DDLMap extends BaseRowMap {
 		this.nextPosition = nextPosition;
 	}
 
+	@Override
 	public String pkToJson(KeyFormat keyFormat) throws IOException {
 		return UUID.randomUUID().toString();
 	}
 
+	@Override
 	public boolean isTXCommit() {
 		return false;
 	}
 
+	@Override
 	public String toJSON() throws IOException {
 		return toJSON(new BaseMaxwellOutputConfig());
 	}
@@ -65,6 +69,7 @@ public class DDLMap extends BaseRowMap {
 		return outputConfig.isOutputDDL();
 	}
 
+	@Override
 	public String getSql() {
 		return sql;
 	}

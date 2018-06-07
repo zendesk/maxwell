@@ -6,7 +6,7 @@ import com.zendesk.maxwell.api.row.RowMap;
 import com.zendesk.maxwell.core.MaxwellTestWithIsolatedServer;
 import com.zendesk.maxwell.core.row.HeartbeatRowMap;
 import com.zendesk.maxwell.core.support.TestReplicator;
-import com.zendesk.maxwell.core.util.RunState;
+import com.zendesk.maxwell.api.RunState;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;

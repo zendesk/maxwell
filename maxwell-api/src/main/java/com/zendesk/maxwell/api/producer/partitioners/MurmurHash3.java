@@ -9,7 +9,7 @@
  *  https://github.com/yonik/java_util/blob/master/src/util/hash/MurmurHash3.java.
  */
 
-package com.zendesk.maxwell.core.util;
+package com.zendesk.maxwell.api.producer.partitioners;
 
 /**
  *  The MurmurHash3 algorithm was created by Austin Appleby and placed in the public domain.

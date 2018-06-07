@@ -1,8 +1,8 @@
-package com.zendesk.maxwell.core.producer.impl.kafka;
+package com.zendesk.maxwell.producer.kafka;
 
 import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
-import com.zendesk.maxwell.core.SpringTestContextConfiguration;
+import com.zendesk.maxwell.core.SpringLauncherScanConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.monitoring.NoOpMetrics;
 import org.junit.Test;
@@ -15,7 +15,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { SpringTestContextConfiguration.class })
+@ContextConfiguration(classes = { SpringLauncherScanConfig.class })
 public class MaxwellKafkaProducerWorkerTest {
 
 	@Autowired

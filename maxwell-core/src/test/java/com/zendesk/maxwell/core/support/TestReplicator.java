@@ -7,7 +7,7 @@ import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducer;
 import com.zendesk.maxwell.core.replication.AbstractReplicator;
 import com.zendesk.maxwell.core.schema.Schema;
 import com.zendesk.maxwell.core.schema.SchemaStoreException;
-import com.zendesk.maxwell.core.util.RunState;
+import com.zendesk.maxwell.api.RunState;
 
 public class TestReplicator extends AbstractReplicator {
 

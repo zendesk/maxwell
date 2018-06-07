@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core.producer.impl.kafka;
+package com.zendesk.maxwell.producer.kafka;
 
 import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.config.CommandLineOptionParserContext;

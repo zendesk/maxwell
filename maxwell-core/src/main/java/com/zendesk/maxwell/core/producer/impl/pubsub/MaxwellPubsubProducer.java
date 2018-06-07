@@ -16,8 +16,8 @@ import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.api.row.RowMap;
 import com.zendesk.maxwell.api.producer.AbstractAsyncProducer;
 import com.zendesk.maxwell.api.producer.AbstractProducer;
-import com.zendesk.maxwell.core.schema.ddl.DDLMap;
-import com.zendesk.maxwell.core.util.StoppableTaskState;
+import com.zendesk.maxwell.core.schema.ddl.BaseDDLMap;
+import com.zendesk.maxwell.api.StoppableTaskState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -179,7 +179,7 @@ class MaxwellPubsubProducerWorker
     ByteString data = ByteString.copyFromUtf8(message);
     PubsubMessage pubsubMessage = PubsubMessage.newBuilder().setData(data).build();
 
-    if ( r instanceof DDLMap ) {
+    if ( r instanceof BaseDDLMap) {
 	  ApiFuture<String> apiFuture = ddlPubsub.publish(pubsubMessage);
 	  PubsubCallback callback = new PubsubCallback(cc, r.getPosition(), message,
 			  this.succeededMessageCount, this.failedMessageCount, this.succeededMessageMeter, this.failedMessageMeter, this.context);

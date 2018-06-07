@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core.producer.impl.kafka;
+package com.zendesk.maxwell.producer.kafka;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
@@ -10,8 +10,8 @@ import com.zendesk.maxwell.api.row.RowMap.KeyFormat;
 import com.zendesk.maxwell.api.row.RowMapFactory;
 import com.zendesk.maxwell.api.producer.AbstractAsyncProducer;
 import com.zendesk.maxwell.api.producer.AbstractProducer;
-import com.zendesk.maxwell.core.schema.ddl.DDLMap;
-import com.zendesk.maxwell.core.util.StoppableTaskState;
+import com.zendesk.maxwell.api.row.DDLMap;
+import com.zendesk.maxwell.api.StoppableTaskState;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
