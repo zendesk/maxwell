@@ -80,7 +80,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 		LOGGER.debug("replicator picked up heartbeat: " + lastHeartbeatRead);
 		this.lastHeartbeatPosition = row.getPosition().withHeartbeat(lastHeartbeatRead);
 		heartbeatNotifier.heartbeat(lastHeartbeatRead);
-		return HeartbeatRowMap.valueOf(row.getDatabase(), this.lastHeartbeatPosition, row.getNextPosition());
+		return HeartbeatRowMap.valueOf(row.getDatabase(), this.lastHeartbeatPosition, row.getNextPosition().withHeartbeat(lastHeartbeatRead));
 	}
 
 	/**
