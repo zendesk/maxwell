@@ -1,5 +1,6 @@
 package com.zendesk.maxwell.core.config;
 
+import com.zendesk.maxwell.api.config.ConfigurationSupport;
 import com.zendesk.maxwell.api.config.InvalidUsageException;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;

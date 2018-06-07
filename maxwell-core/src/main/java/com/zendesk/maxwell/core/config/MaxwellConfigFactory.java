@@ -1,9 +1,6 @@
 package com.zendesk.maxwell.core.config;
 
-import com.zendesk.maxwell.api.config.InvalidOptionException;
-import com.zendesk.maxwell.api.config.InvalidUsageException;
-import com.zendesk.maxwell.api.config.MaxwellConfig;
-import com.zendesk.maxwell.api.config.MaxwellInvalidFilterException;
+import com.zendesk.maxwell.api.config.*;
 import com.zendesk.maxwell.api.producer.EncryptionMode;
 import com.zendesk.maxwell.api.replication.BinlogPosition;
 import com.zendesk.maxwell.api.replication.Position;
@@ -20,10 +17,12 @@ public class MaxwellConfigFactory {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfigFactory.class);
 
 	private final ConfigurationSupport configurationSupport;
+	private final MySqlConfigurationSupport mySqlConfigurationSupport;
 
 	@Autowired
-	public MaxwellConfigFactory(ConfigurationSupport configurationSupport) {
+	public MaxwellConfigFactory(ConfigurationSupport configurationSupport, MySqlConfigurationSupport mySqlConfigurationSupport) {
 		this.configurationSupport = configurationSupport;
+		this.mySqlConfigurationSupport = mySqlConfigurationSupport;
 	}
 
 	public BaseMaxwellConfig createNewDefaultConfiguration() {
@@ -34,9 +33,9 @@ public class MaxwellConfigFactory {
 		BaseMaxwellConfig config = new BaseMaxwellConfig();
 		config.setLogLevel(configurationSupport.fetchOption("log_level", properties, null));
 
-		config.setMaxwellMysql(configurationSupport.parseMysqlConfig("", properties));
-		config.setReplicationMysql(configurationSupport.parseMysqlConfig("replication_", properties));
-		config.setSchemaMysql(configurationSupport.parseMysqlConfig("schema_", properties));
+		config.setMaxwellMysql(mySqlConfigurationSupport.parseMysqlConfig("", properties));
+		config.setReplicationMysql(mySqlConfigurationSupport.parseMysqlConfig("replication_", properties));
+		config.setSchemaMysql(mySqlConfigurationSupport.parseMysqlConfig("schema_", properties));
 		config.setGtidMode(configurationSupport.fetchBooleanOption("gtid_mode", properties, System.getenv(MaxwellConfig.GTID_MODE_ENV) != null));
 
 		config.setDatabaseName(configurationSupport.fetchOption("schema_database", properties, "maxwell"));
@@ -85,6 +84,7 @@ public class MaxwellConfigFactory {
 	}
 
 	private void configureProducer(final Properties properties, final BaseMaxwellConfig config) {
+		config.setIgnoreProducerError(configurationSupport.fetchBooleanOption("ignore_producer_error", properties, true));
 		config.setProducerAckTimeout(configurationSupport.fetchLongOption("producer_ack_timeout", properties, 0L));
 		config.setProducerPartitionKey(configurationSupport.fetchOption("producer_partition_by", properties, "database"));
 		config.setProducerPartitionColumns(configurationSupport.fetchOption("producer_partition_columns", properties, null));
@@ -139,7 +139,6 @@ public class MaxwellConfigFactory {
 
 		config.setReplayMode(configurationSupport.fetchBooleanOption("replay", properties, false));
 		config.setMasterRecovery(configurationSupport.fetchBooleanOption("master_recovery", properties, false));
-		config.setIgnoreProducerError(configurationSupport.fetchBooleanOption("ignore_producer_error", properties, true));
 	}
 
 	private void configureFilter(Properties properties, BaseMaxwellConfig config) {

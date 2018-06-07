@@ -1,20 +1,14 @@
 package com.zendesk.maxwell.core.producer;
 
 import com.zendesk.maxwell.api.MaxwellContext;
+import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.replication.BinlogPosition;
 import com.zendesk.maxwell.api.replication.Position;
-import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
-import com.zendesk.maxwell.core.config.ConfigurationSupport;
-import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-
-import java.util.Properties;
 
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
@@ -36,19 +30,8 @@ public class InflightMessageListTest {
 	private InflightMessageList list;
 	private MaxwellContext context;
 
-	@Mock
-	private ConfigurationSupport configurationSupport;
-
 	@Captor
 	private ArgumentCaptor<RuntimeException> captor;
-
-	@Before
-	public void init(){
-		when(configurationSupport.fetchOption(anyString(), any(Properties.class), anyString())).thenCallRealMethod();
-		when(configurationSupport.fetchLongOption(anyString(), any(Properties.class), anyLong())).thenCallRealMethod();
-		when(configurationSupport.fetchBooleanOption(anyString(), any(Properties.class), anyBoolean())).thenCallRealMethod();
-		when(configurationSupport.parseMysqlConfig(anyString(), any(Properties.class))).thenCallRealMethod();
-	}
 
 	@Test
 	public void testInOrderCompletion() throws InterruptedException {
@@ -57,15 +40,15 @@ public class InflightMessageListTest {
 		Position ret;
 
 		ret = list.completeMessage(p1).position;
-		assert(ret.equals(p1));
+		assert (ret.equals(p1));
 
 		ret = list.completeMessage(p2).position;
-		assert(ret.equals(p2));
+		assert (ret.equals(p2));
 
 		ret = list.completeMessage(p3).position;
-		assert(ret.equals(p3));
+		assert (ret.equals(p3));
 
-		assert(list.size() == 0);
+		assert (list.size() == 0);
 	}
 
 	@Test
@@ -76,10 +59,10 @@ public class InflightMessageListTest {
 		InflightMessageList.InflightMessage m;
 
 		m = list.completeMessage(p3);
-		assert(m == null);
+		assert (m == null);
 
 		m = list.completeMessage(p2);
-		assert(m == null);
+		assert (m == null);
 
 		ret = list.completeMessage(p1).position;
 		assertEquals(p3, ret);
@@ -181,8 +164,8 @@ public class InflightMessageListTest {
 
 	private void setupWithInflightRequestTimeout(long timeout, double completePercentageThreshold) throws InterruptedException {
 		context = mock(MaxwellContext.class);
-		BaseMaxwellConfig config = new MaxwellConfigFactory(configurationSupport).createNewDefaultConfiguration();
-		config.setProducerAckTimeout(timeout);
+		final MaxwellConfig config = mock(MaxwellConfig.class);
+		when(config.getProducerAckTimeout()).thenReturn(timeout);
 		when(context.getConfig()).thenReturn(config);
 		list = new InflightMessageList(context, capacity, completePercentageThreshold);
 		list.addMessage(p1);

@@ -7,60 +7,46 @@ import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.replication.BinlogPosition;
 import com.zendesk.maxwell.api.replication.Position;
-import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
-import com.zendesk.maxwell.core.config.ConfigurationSupport;
-import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.producer.AbstractAsyncProducer;
-import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-import java.util.Properties;
 
 import static org.mockito.Mockito.*;
 
 public class KinesisCallbackTest {
 
-	@Mock
-	private ConfigurationSupport configurationSupport;
-
-	@Before
-	public void init(){
-		MockitoAnnotations.initMocks(this);
-
-		when(configurationSupport.fetchOption(anyString(), any(Properties.class), nullable(String.class))).thenCallRealMethod();
-		when(configurationSupport.fetchBooleanOption(anyString(), any(Properties.class), nullable(Boolean.class))).thenCallRealMethod();
-		when(configurationSupport.fetchLongOption(anyString(), any(Properties.class), nullable(Long.class))).thenCallRealMethod();
-		when(configurationSupport.parseMysqlConfig(anyString(), any(Properties.class))).thenCallRealMethod();
-	}
-
 	@Test
 	public void shouldIgnoreProducerErrorByDefault() {
-		MaxwellContext context = mock(MaxwellContext.class);
-		MaxwellConfig config = new MaxwellConfigFactory(configurationSupport).createNewDefaultConfiguration();
+		final MaxwellContext context = mock(MaxwellContext.class);
+		final MaxwellConfig config = mock(MaxwellConfig.class);
 		when(context.getConfig()).thenReturn(config);
-		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
-		KinesisCallback callback = new KinesisCallback(cc,
-			new Position(new BinlogPosition(1, "binlog-1"), 0L), "key", "value",
-				new Counter(), new Counter(), new Meter(), new Meter(), context);
+		when(config.isIgnoreProducerError()).thenReturn(true);
+
+		final AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
+		final BinlogPosition binlogPosition = new BinlogPosition(1, "binlog-1");
+		final Position position = new Position(binlogPosition, 0L);
+
+		KinesisCallback callback = new KinesisCallback(cc, position, "key", "value", new Counter(), new Counter(), new Meter(), new Meter(), context);
 		IrrecoverableError error = new IrrecoverableError("blah");
 		callback.onFailure(error);
+
 		verify(cc).markCompleted();
 	}
 
 	@Test
 	public void shouldTerminateWhenNotIgnoreProducerError() {
-		MaxwellContext context = mock(MaxwellContext.class);
-		BaseMaxwellConfig config = new MaxwellConfigFactory(configurationSupport).createNewDefaultConfiguration();
-		config.setIgnoreProducerError(false);
+		final MaxwellContext context = mock(MaxwellContext.class);
+		final MaxwellConfig config = mock(MaxwellConfig.class);
+		when(config.isIgnoreProducerError()).thenReturn(false);
 		when(context.getConfig()).thenReturn(config);
-		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
-		KinesisCallback callback = new KinesisCallback(cc,
-			new Position(new BinlogPosition(1, "binlog-1"), 0L), "key", "value",
-				new Counter(), new Counter(), new Meter(), new Meter(), context);
+
+		final AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
+		final BinlogPosition binlogPosition = new BinlogPosition(1, "binlog-1");
+		final Position position = new Position(binlogPosition, 0L);
+
+		KinesisCallback callback = new KinesisCallback(cc, position, "key", "value", new Counter(), new Counter(), new Meter(), new Meter(), context);
 		IrrecoverableError error = new IrrecoverableError("blah");
 		callback.onFailure(error);
+
 		verify(context).terminate(any(RuntimeException.class));
 		verifyZeroInteractions(cc);
 	}
