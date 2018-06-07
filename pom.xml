@@ -91,6 +91,7 @@
         <module>maxwell-core</module>
         <module>maxwell-producers</module>
         <module>maxwell-standalone</module>
+        <module>maxwell-test-support</module>
     </modules>
 
     <profiles>
@@ -175,6 +176,12 @@
                 <groupId>com.zendesk</groupId>
                 <artifactId>maxwell-standalone</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.zendesk</groupId>
+                <artifactId>maxwell-test-support</artifactId>
+                <version>${project.version}</version>
+                <scope>test</scope>
             </dependency>
 
 
