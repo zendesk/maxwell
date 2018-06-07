@@ -212,4 +212,8 @@ public class MysqlIsolatedServer {
 		// https://dev.mysql.com/doc/refman/5.7/en/sql-mode.html#sqlmode_no_zero_date
 		return !getVersion().atLeast(VERSION_5_7);
 	}
+
+	public void clearSchemaStore() throws SQLException {
+		execute("drop database if exists maxwell");
+	}
 }

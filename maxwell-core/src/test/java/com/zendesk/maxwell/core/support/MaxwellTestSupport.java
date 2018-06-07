@@ -119,11 +119,6 @@ public class MaxwellTestSupport {
 		return dir + "/src/test/resources/sql/";
 	}
 
-
-	private static void clearSchemaStore(MysqlIsolatedServer mysql) throws Exception {
-		mysql.execute("drop database if exists maxwell");
-	}
-
 	public List<RowMap> getRowsWithReplicator(final MysqlIsolatedServer mysql, MaxwellFilter filter, final String queries[], final String before[]) throws Exception {
 		MaxwellTestSupportCallback callback = new MaxwellTestSupportCallback() {
 			@Override
@@ -141,18 +136,14 @@ public class MaxwellTestSupport {
 		return getRowsWithReplicator(mysql, filter, callback, Optional.empty());
 	}
 
-	public static boolean inGtidMode() {
-		return MysqlIsolatedServer.inGtidMode();
-	}
-
 	public static Position capture(Connection c) throws SQLException {
-		return Position.capture(c, inGtidMode());
+		return Position.capture(c, MysqlIsolatedServer.inGtidMode());
 	}
 
 	public List<RowMap> getRowsWithReplicator(final MysqlIsolatedServer mysql, final MaxwellFilter filter, final MaxwellTestSupportCallback callback, final Optional<MaxwellOutputConfig> optionalOutputConfig) throws Exception {
 		final ArrayList<RowMap> list = new ArrayList<>();
 
-		clearSchemaStore(mysql);
+		mysql.clearSchemaStore();
 
 		BaseMaxwellConfig config = maxwellConfigFactory.createNewDefaultConfiguration();
 

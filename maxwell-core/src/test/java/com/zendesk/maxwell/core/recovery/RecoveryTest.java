@@ -98,7 +98,7 @@ public class RecoveryTest extends TestWithNameLogging {
 
 	@Test
 	public void testBasicRecovery() throws Exception {
-		if (MaxwellTestSupport.inGtidMode()) {
+		if (MysqlIsolatedServer.inGtidMode()) {
 			LOGGER.info("No need to test recovery under gtid-mode");
 			return;
 		}
@@ -139,7 +139,7 @@ public class RecoveryTest extends TestWithNameLogging {
 
 	@Test
 	public void testOtherClientID() throws Exception {
-		if (MaxwellTestSupport.inGtidMode()) {
+		if (MysqlIsolatedServer.inGtidMode()) {
 			LOGGER.info("No need to test recovery under gtid-mode");
 			return;
 		}
@@ -211,7 +211,7 @@ public class RecoveryTest extends TestWithNameLogging {
 
 	@Test
 	public void testRecoveryIntegration() throws Exception {
-		if (MaxwellTestSupport.inGtidMode()) {
+		if (MysqlIsolatedServer.inGtidMode()) {
 			LOGGER.info("No need to test recovery under gtid-mode");
 			return;
 		}
@@ -254,7 +254,7 @@ public class RecoveryTest extends TestWithNameLogging {
 
 	@Test
 	public void testRecoveryIntegrationWithLaggedMaxwell() throws Exception {
-		if (MaxwellTestSupport.inGtidMode()) {
+		if (MysqlIsolatedServer.inGtidMode()) {
 			LOGGER.info("No need to test recovery under gtid-mode");
 			return;
 		}
@@ -333,7 +333,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		generateNewMasterData(true, DATA_SIZE);
 		expectedRowCount += NEW_DATA_SIZE;
 		// connect to slave, maxwell should get these 100 rows from slave
-		boolean masterRecovery = !MaxwellTestSupport.inGtidMode();
+		boolean masterRecovery = !MysqlIsolatedServer.inGtidMode();
 
 		final MaxwellSystemContext context1 = maxwellContextFactory.createFor(getBufferedConfig(slaveServer.getPort(), masterRecovery));
 		new Thread(() -> maxwellRunner.run(context1)).start();
