@@ -1,6 +1,5 @@
 package com.zendesk.maxwell.core;
 
-import com.google.common.collect.Lists;
 import com.zendesk.maxwell.api.replication.BinlogPosition;
 import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.core.schema.*;
@@ -14,7 +13,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -32,7 +30,7 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 	private MysqlSavedSchema savedSchema;
 	private CaseSensitivity caseSensitivity = CaseSensitivity.CASE_SENSITIVE;
 
-	String ary[] = {
+	private String ary[] = {
 			"delete from `maxwell`.`positions`",
 			"delete from `maxwell`.`schemas`",
 			"CREATE TABLE shard_1.latin1 (id int(11), str1 varchar(255), str2 varchar(255) character set 'utf8') charset = 'latin1'",
@@ -41,13 +39,13 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 			"CREATE TABLE shard_1.pks_case (id int(11), Col2 varchar(255), COL3 datetime, PRIMARY KEY(col2, col3))",
 			"CREATE TABLE shard_1.signed (badcol int(10) unsigned, CaseCol char)"
 	};
-	ArrayList<String> schemaSQL = new ArrayList(Arrays.asList(ary));
+	private ArrayList<String> schemaSQL = new ArrayList<>(Arrays.asList(ary));
 
 	private MaxwellSystemContext context;
 
 	@Before
 	public void setUp() throws Exception {
-		if ( server.getVersion().atLeast(server.VERSION_5_6) ) {
+		if ( server.getVersion().atLeast(MysqlIsolatedServer.VERSION_5_6) ) {
 			schemaSQL.add("CREATE TABLE shard_1.time_with_length (id int (11), dt2 datetime(3), ts2 timestamp(6), t2 time(6))");
 			schemaSQL.add("CREATE TABLE shard_1.without_col_length (badcol datetime(3))");
 		}
@@ -61,7 +59,7 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
-	public void testSave() throws SQLException, IOException, InvalidSchemaError {
+	public void testSave() throws SQLException, InvalidSchemaError {
 		this.savedSchema.save(context.getMaxwellConnection());
 
 		MysqlSavedSchema restoredSchema = MysqlSavedSchema.restore(context, context.getInitialPosition());
@@ -96,7 +94,7 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testTimeWithLengthCase() throws Exception {
-		requireMinimumVersion(server.VERSION_5_6);
+		requireMinimumVersion(MysqlIsolatedServer.VERSION_5_6);
 
 		this.savedSchema.save(context.getMaxwellConnection());
 
@@ -151,7 +149,7 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testUpgradeAddColumnLength() throws Exception {
-		requireMinimumVersion(server.VERSION_5_6);
+		requireMinimumVersion(MysqlIsolatedServer.VERSION_5_6);
 
 		Connection c = context.getMaxwellConnection();
 		this.savedSchema.save(c);
@@ -166,7 +164,7 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testUpgradeAddColumnLengthForExistingSchemas() throws Exception {
-		requireMinimumVersion(server.VERSION_5_6);
+		requireMinimumVersion(MysqlIsolatedServer.VERSION_5_6);
 
 		Connection c = context.getMaxwellConnection();
 		this.savedSchema.save(c);
@@ -325,7 +323,7 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 				buildSchema(),
 				makePosition(targetPosition, targetFile, lastHeartbeat),
 				baseSchema.getSchemaID(),
-				Lists.newArrayList()
+				new ArrayList<>()
 		);
 		newSchema.save(c);
 

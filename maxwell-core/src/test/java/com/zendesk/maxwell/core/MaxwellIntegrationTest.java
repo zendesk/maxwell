@@ -1,6 +1,5 @@
 package com.zendesk.maxwell.core;
 
-import com.google.common.collect.Lists;
 import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.config.MaxwellFilter;
@@ -546,8 +545,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		assertThat(config.getReplicationMysql().getConnectionURI(), containsString("jdbc:mysql://no-soup-spoons:3306?"));
 
 		Set<String> maxwellMysqlParams = new HashSet<>();
-		maxwellMysqlParams.addAll(Lists.newArrayList(config.getMaxwellMysql().getConnectionURI()
-				.split("\\?")[1].split("&")));
+		maxwellMysqlParams.addAll(Arrays.asList(config.getMaxwellMysql().getConnectionURI().split("\\?")[1].split("&")));
 
 		assertThat(maxwellMysqlParams, hasItem("zeroDateTimeBehavior=convertToNull"));
 		assertThat(maxwellMysqlParams, hasItem("connectTimeout=5000"));
@@ -555,8 +553,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		assertThat(maxwellMysqlParams, hasItem("profileSQL=true"));
 
 		Set<String> replicationMysqlParams = new HashSet<>();
-		replicationMysqlParams.addAll(Lists.newArrayList(config.getReplicationMysql().getConnectionURI()
-				.split("\\?")[1].split("&")));
+		replicationMysqlParams.addAll(Arrays.asList(config.getReplicationMysql().getConnectionURI().split("\\?")[1].split("&")));
 
 		assertThat(replicationMysqlParams, hasItem("zeroDateTimeBehavior=convertToNull"));
 		assertThat(replicationMysqlParams, hasItem("connectTimeout=5000"));
