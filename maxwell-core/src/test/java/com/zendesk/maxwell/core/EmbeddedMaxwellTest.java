@@ -8,7 +8,7 @@ import com.zendesk.maxwell.api.row.RowMap;
 import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
 import com.zendesk.maxwell.core.config.BaseMaxwellMysqlConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
-import com.zendesk.maxwell.core.producer.AbstractProducer;
+import com.zendesk.maxwell.api.producer.AbstractProducer;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 

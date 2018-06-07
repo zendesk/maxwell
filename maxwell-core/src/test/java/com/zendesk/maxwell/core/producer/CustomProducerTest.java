@@ -4,6 +4,7 @@ import com.codahale.metrics.MetricRegistry;
 import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.monitoring.Metrics;
+import com.zendesk.maxwell.api.producer.AbstractProducer;
 import com.zendesk.maxwell.api.producer.Producer;
 import com.zendesk.maxwell.api.producer.ProducerContext;
 import com.zendesk.maxwell.api.producer.ProducerFactory;

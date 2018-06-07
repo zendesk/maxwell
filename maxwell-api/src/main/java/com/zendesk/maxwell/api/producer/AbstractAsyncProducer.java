@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core.producer;
+package com.zendesk.maxwell.api.producer;
 
 import com.codahale.metrics.Gauge;
 import com.zendesk.maxwell.api.MaxwellContext;

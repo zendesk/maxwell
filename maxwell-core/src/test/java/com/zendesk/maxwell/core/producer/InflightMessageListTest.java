@@ -2,6 +2,7 @@ package com.zendesk.maxwell.core.producer;
 
 import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
+import com.zendesk.maxwell.api.producer.InflightMessageList;
 import com.zendesk.maxwell.api.replication.BinlogPosition;
 import com.zendesk.maxwell.api.replication.Position;
 import org.junit.Test;

@@ -7,7 +7,7 @@ import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.replication.BinlogPosition;
 import com.zendesk.maxwell.api.replication.Position;
-import com.zendesk.maxwell.core.producer.AbstractAsyncProducer;
+import com.zendesk.maxwell.api.producer.AbstractAsyncProducer;
 import org.junit.Test;
 
 import static org.mockito.Mockito.*;

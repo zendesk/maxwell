@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core.producer.impl.redis;
+package com.zendesk.maxwell.producer.redis;
 
 import com.zendesk.maxwell.api.producer.ProducerConfiguration;
 

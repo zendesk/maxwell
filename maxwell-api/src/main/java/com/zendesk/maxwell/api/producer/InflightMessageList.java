@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core.producer;
+package com.zendesk.maxwell.api.producer;
 /* respresents a list of inflight messages -- stuff being sent over the
    network, that may complete in any order.  Allows for only bumping
    the binlog position upon completion of the oldest outstanding item.

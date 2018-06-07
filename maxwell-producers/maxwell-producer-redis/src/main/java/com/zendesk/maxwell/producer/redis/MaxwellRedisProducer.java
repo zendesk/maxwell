@@ -1,9 +1,9 @@
-package com.zendesk.maxwell.core.producer.impl.redis;
+package com.zendesk.maxwell.producer.redis;
 
 import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.StoppableTask;
 import com.zendesk.maxwell.api.row.RowMap;
-import com.zendesk.maxwell.core.producer.AbstractProducer;
+import com.zendesk.maxwell.api.producer.AbstractProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
