@@ -18,6 +18,14 @@
             <groupId>com.zendesk</groupId>
             <artifactId>maxwell-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-sqs</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

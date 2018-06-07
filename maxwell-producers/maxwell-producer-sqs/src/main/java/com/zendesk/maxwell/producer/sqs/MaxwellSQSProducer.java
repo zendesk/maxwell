@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core.producer.impl.sqs;
+package com.zendesk.maxwell.producer.sqs;
 
 import com.amazonaws.handlers.AsyncHandler;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
