@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core.benchmark;
+package com.zendesk.maxwell.standalone.benchmark;
 
 import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.producer.ProducerFactory;

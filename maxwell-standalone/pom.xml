@@ -45,6 +45,11 @@
             <groupId>com.zendesk</groupId>
             <artifactId>maxwell-producer-sqs</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.zendesk</groupId>
+            <artifactId>maxwell-test-support</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
