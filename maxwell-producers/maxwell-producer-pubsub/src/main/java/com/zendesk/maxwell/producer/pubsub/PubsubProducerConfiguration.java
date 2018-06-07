@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core.producer.impl.pubsub;
+package com.zendesk.maxwell.producer.pubsub;
 
 import com.zendesk.maxwell.api.producer.ProducerConfiguration;
 

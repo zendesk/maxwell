@@ -7,7 +7,7 @@ import com.codahale.metrics.Slf4jReporter;
 import com.codahale.metrics.jvm.*;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.monitoring.Metrics;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.coursera.metrics.datadog.DatadogReporter;
 import org.coursera.metrics.datadog.transport.HttpTransport;
 import org.coursera.metrics.datadog.transport.Transport;
