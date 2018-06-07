@@ -17,7 +17,6 @@
     <modules>
         <module>maxwell-producer-kafka</module>
         <module>maxwell-producer-kinesis</module>
-        <module>maxwell-producer-profiler</module>
         <module>maxwell-producer-pubsub</module>
         <module>maxwell-producer-rabbitmq</module>
         <module>maxwell-producer-redis</module>

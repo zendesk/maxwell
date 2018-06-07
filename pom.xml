@@ -152,11 +152,6 @@
             </dependency>
             <dependency>
                 <groupId>com.zendesk</groupId>
-                <artifactId>maxwell-producer-profiler</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.zendesk</groupId>
                 <artifactId>maxwell-producer-pubsub</artifactId>
                 <version>${project.version}</version>
             </dependency>
