@@ -18,6 +18,10 @@
             <groupId>com.zendesk</groupId>
             <artifactId>maxwell-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.rabbitmq</groupId>
+            <artifactId>amqp-client</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

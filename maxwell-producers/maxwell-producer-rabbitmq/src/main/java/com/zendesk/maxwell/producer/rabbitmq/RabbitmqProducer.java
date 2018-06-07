@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core.producer.impl.rabbitmq;
+package com.zendesk.maxwell.producer.rabbitmq;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;

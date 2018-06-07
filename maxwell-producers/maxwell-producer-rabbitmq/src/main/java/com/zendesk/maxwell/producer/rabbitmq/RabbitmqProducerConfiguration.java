@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core.producer.impl.rabbitmq;
+package com.zendesk.maxwell.producer.rabbitmq;
 
 import com.zendesk.maxwell.api.producer.ProducerConfiguration;
 
