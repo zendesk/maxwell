@@ -12,7 +12,7 @@ import com.zendesk.maxwell.core.config.MaxwellFilterSupport;
 import com.zendesk.maxwell.core.row.HeartbeatRowMap;
 import com.zendesk.maxwell.core.schema.SchemaStore;
 import com.zendesk.maxwell.core.schema.ddl.BaseDDLMap;
-import com.zendesk.maxwell.api.row.DDLMap;
+import com.zendesk.maxwell.api.schema.ddl.DDLMap;
 import com.zendesk.maxwell.core.schema.ddl.ResolvedSchemaChange;
 import com.zendesk.maxwell.core.util.RunLoopProcess;
 import org.slf4j.Logger;

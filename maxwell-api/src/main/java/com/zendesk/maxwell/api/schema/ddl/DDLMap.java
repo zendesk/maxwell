@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.api.row;
+package com.zendesk.maxwell.api.schema.ddl;
 
 import com.zendesk.maxwell.api.config.MaxwellOutputConfig;
 import com.zendesk.maxwell.api.row.RowMap;

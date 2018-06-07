@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core.producer.impl.kinesis;
+package com.zendesk.maxwell.producer.kinesis;
 
 import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.config.CommandLineOptionParserContext;

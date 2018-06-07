@@ -10,7 +10,7 @@ import com.zendesk.maxwell.api.row.RowMap.KeyFormat;
 import com.zendesk.maxwell.api.row.RowMapFactory;
 import com.zendesk.maxwell.api.producer.AbstractAsyncProducer;
 import com.zendesk.maxwell.api.producer.AbstractProducer;
-import com.zendesk.maxwell.api.row.DDLMap;
+import com.zendesk.maxwell.api.schema.ddl.DDLMap;
 import com.zendesk.maxwell.api.StoppableTaskState;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;

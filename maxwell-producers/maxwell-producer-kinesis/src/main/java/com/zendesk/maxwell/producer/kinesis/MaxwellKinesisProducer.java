@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core.producer.impl.kinesis;
+package com.zendesk.maxwell.producer.kinesis;
 
 import com.amazonaws.services.kinesis.producer.Attempt;
 import com.amazonaws.services.kinesis.producer.KinesisProducer;

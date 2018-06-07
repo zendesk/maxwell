@@ -4,7 +4,7 @@ import com.zendesk.maxwell.api.row.RowMap;
 import com.zendesk.maxwell.api.row.RowMapFactory;
 import com.zendesk.maxwell.core.SpringLauncherScanConfig;
 import com.zendesk.maxwell.core.schema.ddl.BaseDDLMap;
-import com.zendesk.maxwell.api.row.DDLMap;
+import com.zendesk.maxwell.api.schema.ddl.DDLMap;
 import com.zendesk.maxwell.core.schema.ddl.ResolvedDatabaseAlter;
 import com.zendesk.maxwell.core.schema.ddl.ResolvedTableDrop;
 import org.junit.Test;
