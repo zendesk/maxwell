@@ -15,6 +15,10 @@ public class Position implements Serializable {
 		this.lastHeartbeatRead = lastHeartbeatRead;
 	}
 
+	public static Position valueOf(BinlogPosition binlogPosition, Long lastHeartbeatRead) {
+		return new Position(binlogPosition, lastHeartbeatRead);
+	}
+
 	public Position withBinlogPosition(BinlogPosition position) {
 		return new Position(position, getLastHeartbeatRead());
 	}

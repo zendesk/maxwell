@@ -129,7 +129,7 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 			value = null;
 		}
 
-		FutureCallback<UserRecordResult> callback = new KinesisCallback(cc, r.getPosition(), key, value,
+		FutureCallback<UserRecordResult> callback = new KinesisCallback(cc, r.getNextPosition(), key, value,
 				this.succeededMessageCount, this.failedMessageCount, this.succeededMessageMeter, this.failedMessageMeter, this.context);
 
 		Futures.addCallback(future, callback);

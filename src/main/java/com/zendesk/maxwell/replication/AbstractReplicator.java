@@ -70,6 +70,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	 *
 	 * @return either a RowMap or a HeartbeatRowMap
 	 */
+
 	protected RowMap processHeartbeats(RowMap row) throws SQLException {
 		String hbClientID = (String) row.getData("client_id");
 		if ( !Objects.equals(hbClientID, this.clientID) )
@@ -79,7 +80,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 		LOGGER.debug("replicator picked up heartbeat: " + lastHeartbeatRead);
 		this.lastHeartbeatPosition = row.getPosition().withHeartbeat(lastHeartbeatRead);
 		heartbeatNotifier.heartbeat(lastHeartbeatRead);
-		return HeartbeatRowMap.valueOf(row.getDatabase(), this.lastHeartbeatPosition);
+		return HeartbeatRowMap.valueOf(row.getDatabase(), this.lastHeartbeatPosition, row.getNextPosition());
 	}
 
 	/**
@@ -91,11 +92,11 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	 * @param position The position that the SQL happened at
 	 * @param timestamp The timestamp of the SQL binlog event
 	 */
-	protected void processQueryEvent(String dbName, String sql, SchemaStore schemaStore, Position position, Long timestamp) throws Exception {
+	protected void processQueryEvent(String dbName, String sql, SchemaStore schemaStore, Position position, Position nextPosition, Long timestamp) throws Exception {
 		List<ResolvedSchemaChange> changes = schemaStore.processSQL(sql, dbName, position);
 		for (ResolvedSchemaChange change : changes) {
 			if (change.shouldOutput(filter)) {
-				DDLMap ddl = new DDLMap(change, timestamp, sql, position);
+				DDLMap ddl = new DDLMap(change, timestamp, sql, position, nextPosition);
 				producer.push(ddl);
 			}
 		}

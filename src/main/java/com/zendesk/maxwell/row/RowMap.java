@@ -21,9 +21,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,6 +32,7 @@ import com.zendesk.maxwell.replication.Position;
 
 
 public class RowMap implements Serializable {
+
 	public enum KeyFormat { HASH, ARRAY }
 
 	static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
@@ -45,6 +43,7 @@ public class RowMap implements Serializable {
 	private final String table;
 	private final Long timestampMillis;
 	private final Long timestampSeconds;
+	private final Position position;
 	private Position nextPosition;
 
 	private Long xid;
@@ -115,7 +114,7 @@ public class RowMap implements Serializable {
 			};
 
 	public RowMap(String type, String database, String table, Long timestampMillis, List<String> pkColumns,
-			Position nextPosition, String rowQuery) {
+			Position position, Position nextPosition, String rowQuery) {
 		this.rowQuery = rowQuery;
 		this.rowType = type;
 		this.database = database;
@@ -125,9 +124,15 @@ public class RowMap implements Serializable {
 		this.data = new LinkedHashMap<>();
 		this.oldData = new LinkedHashMap<>();
 		this.extraAttributes = new LinkedHashMap<>();
+		this.position = position;
 		this.nextPosition = nextPosition;
 		this.pkColumns = pkColumns;
 		this.approximateSize = 100L; // more or less 100 bytes of overhead
+	}
+
+	public RowMap(String type, String database, String table, Long timestampMillis, List<String> pkColumns,
+				  Position nextPosition, String rowQuery) {
+		this(type, database, table, timestampMillis, pkColumns, nextPosition, nextPosition, rowQuery);
 	}
 
 	public RowMap(String type, String database, String table, Long timestampMillis, List<String> pkColumns,
@@ -413,9 +418,8 @@ public class RowMap implements Serializable {
 		this.approximateSize += approximateKVSize(key, value);
 	}
 
-	public Position getPosition() {
-		return nextPosition;
-	}
+	public Position getNextPosition() { return nextPosition; }
+	public Position getPosition() { return position; }
 
 	public Long getXid() {
 		return xid;

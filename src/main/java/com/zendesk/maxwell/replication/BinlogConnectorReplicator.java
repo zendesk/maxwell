@@ -185,7 +185,7 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 					Table table = tableCache.getTable(event.getTableID());
 
 					if ( table != null && shouldOutputEvent(table.getDatabase(), table.getName(), filter) ) {
-						for ( RowMap r : event.jsonMaps(table, lastHeartbeatPosition, currentQuery) )
+						for ( RowMap r : event.jsonMaps(table, getLastHeartbeatRead(), currentQuery) )
 							if (shouldOutputRowMap(table.getDatabase(), table.getName(), r, filter)) {
 								buffer.add(r);
 							}
@@ -323,7 +323,8 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 			data.getDatabase(),
 			data.getSql(),
 			this.schemaStore,
-			lastHeartbeatPosition.withBinlogPosition(event.getPosition()),
+			Position.valueOf(event.getPosition(), getLastHeartbeatRead()),
+			Position.valueOf(event.getNextPosition(), getLastHeartbeatRead()),
 			event.getEvent().getHeader().getTimestamp()
 		);
 	}
