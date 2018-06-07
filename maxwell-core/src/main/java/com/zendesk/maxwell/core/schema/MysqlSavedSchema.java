@@ -10,7 +10,7 @@ import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.core.CaseSensitivity;
 import com.zendesk.maxwell.core.MaxwellSystemContext;
 import com.zendesk.maxwell.core.schema.columndef.*;
-import com.zendesk.maxwell.core.schema.ddl.InvalidSchemaError;
+import com.zendesk.maxwell.api.schema.InvalidSchemaError;
 import com.zendesk.maxwell.core.schema.ddl.ResolvedSchemaChange;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;

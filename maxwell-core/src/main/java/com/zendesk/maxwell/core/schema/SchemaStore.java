@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.core.schema;
 
 import com.zendesk.maxwell.api.replication.Position;
-import com.zendesk.maxwell.core.schema.ddl.InvalidSchemaError;
+import com.zendesk.maxwell.api.schema.InvalidSchemaError;
 import com.zendesk.maxwell.core.schema.ddl.ResolvedSchemaChange;
 
 import java.util.List;

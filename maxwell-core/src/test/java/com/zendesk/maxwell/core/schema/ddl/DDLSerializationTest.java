@@ -6,7 +6,6 @@ import com.zendesk.maxwell.core.MaxwellTestJSON.SQLAndJSON;
 import com.zendesk.maxwell.core.MaxwellTestWithIsolatedServer;
 import com.zendesk.maxwell.core.schema.Schema;
 import com.zendesk.maxwell.core.schema.SchemaCapturer;
-import com.zendesk.maxwell.core.support.MaxwellTestSupport;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -19,7 +18,6 @@ import static org.junit.Assert.assertThat;
 /**
  * Created by ben on 1/29/16.
  */
-
 public class DDLSerializationTest extends MaxwellTestWithIsolatedServer {
 	private List<SchemaChange> parse(String sql) {
 		return SchemaChange.parse("default_db", sql);
@@ -65,24 +63,24 @@ public class DDLSerializationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void TestCreateDatabaseSerialization() throws Exception {
-		TestDDLSerialization(MaxwellTestSupport.getSQLDir() + "/serialization/create_database");
+		TestDDLSerialization("serialization/create_database");
 	}
 
 	@Test
 	public void TestCreateTableSerialization() throws Exception {
 		if ( server.getVersion().atLeast(server.VERSION_5_6) )
-			TestDDLSerialization(MaxwellTestSupport.getSQLDir() + "/serialization/create_table");
+			TestDDLSerialization("serialization/create_table");
 		else
-			TestDDLSerialization(MaxwellTestSupport.getSQLDir() + "/serialization/create_table_55");
+			TestDDLSerialization("serialization/create_table_55");
 	}
 
 	@Test
 	public void TestAlterTableSerialization() throws Exception {
-		TestDDLSerialization(MaxwellTestSupport.getSQLDir() + "/serialization/alter_table");
+		TestDDLSerialization("serialization/alter_table");
 	}
 
 	@Test
 	public void TestDropTableSerialization() throws Exception {
-		TestDDLSerialization(MaxwellTestSupport.getSQLDir() + "/serialization/drop_table");
+		TestDDLSerialization("serialization/drop_table");
 	}
 }

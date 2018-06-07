@@ -3,6 +3,7 @@ package com.zendesk.maxwell.core.schema.ddl;
 import com.zendesk.maxwell.test.mysql.MysqlIsolatedServer;
 import com.zendesk.maxwell.core.SpringTestContextConfiguration;
 import com.zendesk.maxwell.core.support.MaxwellTestSupport;
+import com.zendesk.maxwell.test.mysql.MysqlIsolatedServerSupport;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,17 +22,19 @@ public class LowerCaseDDLIntegrationTest {
 
 	@Autowired
 	private MaxwellTestSupport maxwellTestSupport;
+	@Autowired
+	private MysqlIsolatedServerSupport mysqlIsolatedServerSupport;
 
 	@Before
 	public void setupServers() throws Exception {
 		if(convertServer == null) {
-			convertServer = MaxwellTestSupport.setupServer("--lower-case-table-names=1");
-			MaxwellTestSupport.setupSchema(convertServer);
+			convertServer = mysqlIsolatedServerSupport.setupServer("--lower-case-table-names=1");
+			mysqlIsolatedServerSupport.setupSchema(convertServer);
 		}
 
 		if ( caseSensitiveServer == null && isFileSystemCaseSensitive() ) {
-			caseSensitiveServer = MaxwellTestSupport.setupServer("--lower-case-table-names=0");
-			MaxwellTestSupport.setupSchema(caseSensitiveServer);
+			caseSensitiveServer = mysqlIsolatedServerSupport.setupServer("--lower-case-table-names=0");
+			mysqlIsolatedServerSupport.setupSchema(caseSensitiveServer);
 		}
 	}
 

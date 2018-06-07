@@ -13,6 +13,7 @@ import com.zendesk.maxwell.core.support.MaxwellTestSupport;
 import com.zendesk.maxwell.core.support.MaxwellTestSupportCallback;
 import com.zendesk.maxwell.core.util.Logging;
 import com.zendesk.maxwell.test.mysql.MysqlIsolatedServer;
+import com.zendesk.maxwell.test.mysql.MysqlIsolatedServerSupport;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -44,6 +45,8 @@ public abstract class MaxwellTestWithIsolatedServer extends TestWithNameLogging 
 	protected MaxwellConfigTestSupport maxwellConfigTestSupport;
 	@Autowired
 	protected MaxwellTestJSON maxwellTestJSON;
+	@Autowired
+	protected MysqlIsolatedServerSupport mysqlIsolatedServerSupport;
 
 	protected static MysqlIsolatedServer server;
 
@@ -55,9 +58,9 @@ public abstract class MaxwellTestWithIsolatedServer extends TestWithNameLogging 
 	@Before
 	public void setupDatabase() throws Exception {
 		if(server == null){
-			server = MaxwellTestSupport.setupServer();
+			server = mysqlIsolatedServerSupport.setupServer();
 		}
-		MaxwellTestSupport.setupSchema(server);
+		mysqlIsolatedServerSupport.setupSchema(server);
 	}
 
 	@AfterClass

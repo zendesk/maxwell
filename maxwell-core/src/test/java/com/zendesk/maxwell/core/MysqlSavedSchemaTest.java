@@ -2,17 +2,19 @@ package com.zendesk.maxwell.core;
 
 import com.zendesk.maxwell.api.replication.BinlogPosition;
 import com.zendesk.maxwell.api.replication.Position;
+import com.zendesk.maxwell.api.schema.SchemaStoreSchema;
 import com.zendesk.maxwell.core.schema.*;
 import com.zendesk.maxwell.core.schema.columndef.ColumnDef;
 import com.zendesk.maxwell.core.schema.columndef.DateTimeColumnDef;
 import com.zendesk.maxwell.core.schema.columndef.IntColumnDef;
 import com.zendesk.maxwell.core.schema.columndef.TimeColumnDef;
-import com.zendesk.maxwell.core.schema.ddl.InvalidSchemaError;
+import com.zendesk.maxwell.api.schema.InvalidSchemaError;
 import com.zendesk.maxwell.core.support.MaxwellTestSupport;
 import com.zendesk.maxwell.test.mysql.MysqlIsolatedServer;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.nio.charset.Charset;
 import java.sql.Connection;
@@ -26,6 +28,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
+	@Autowired
+	private SchemaStoreSchema schemaStoreSchema;
+
 	private Schema schema;
 	private Position position;
 	private MysqlSavedSchema savedSchema;
@@ -145,7 +150,7 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 		c.createStatement().executeUpdate("alter table maxwell.positions drop column client_id");
 		c.createStatement().executeUpdate("alter table maxwell.positions drop column gtid_set");
 		c.createStatement().executeUpdate("alter table maxwell.schemas drop column gtid_set");
-		SchemaStoreSchema.upgradeSchemaStoreSchema(c); // just verify no-crash.
+		schemaStoreSchema.upgradeSchemaStoreSchema(c); // just verify no-crash.
 	}
 
 	@Test
@@ -155,7 +160,7 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 		Connection c = context.getMaxwellConnection();
 		this.savedSchema.save(c);
 		c.createStatement().executeUpdate("alter table `maxwell`.`columns` drop column column_length");
-		SchemaStoreSchema.upgradeSchemaStoreSchema(c); // just verify no-crash.
+		schemaStoreSchema.upgradeSchemaStoreSchema(c); // just verify no-crash.
 
 		Schema schemaBefore = MysqlSavedSchema.restoreFromSchemaID(this.savedSchema, context).getSchema();
 		DateTimeColumnDef cd1 = (DateTimeColumnDef) schemaBefore.findDatabase("shard_1").findTable("without_col_length").findColumn("badcol");
@@ -172,7 +177,7 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 		c.createStatement().executeUpdate("update maxwell.schemas set version = 2 where id = " + this.savedSchema.getSchemaID());
 		c.createStatement().executeUpdate("update maxwell.columns set column_length = NULL where name = 'badcol'");
 
-		SchemaStoreSchema.upgradeSchemaStoreSchema(c);
+		schemaStoreSchema.upgradeSchemaStoreSchema(c);
 		Schema schemaBefore = MysqlSavedSchema.restoreFromSchemaID(savedSchema, context).getSchema();
 		DateTimeColumnDef cd1 = (DateTimeColumnDef) schemaBefore.findDatabase("shard_1").findTable("without_col_length").findColumn("badcol");
 		assertEquals((Long) 0L, (Long) cd1.getColumnLength());

@@ -16,11 +16,7 @@ public class SpringLauncher {
 		launch((applicationContext -> runMaxwell(args, (c) -> {}, applicationContext)));
 	}
 
-	public static void launchMaxwell(final String[] args, Consumer<MaxwellConfig> configurationAdopter){
-		launch((applicationContext -> runMaxwell(args, configurationAdopter, applicationContext)));
-	}
-
-	private static void runMaxwell(final String[] args, Consumer<MaxwellConfig> configurationAdopter, final ApplicationContext applicationContext) {
+	public static void runMaxwell(final String[] args, Consumer<MaxwellConfig> configurationAdopter, final ApplicationContext applicationContext) {
 		try {
 			final MaxwellConfigurationOptionMerger configurationOptionMerger = applicationContext.getBean(MaxwellConfigurationOptionMerger.class);
 			final MaxwellLauncher maxwellLauncher = applicationContext.getBean(MaxwellLauncher.class);

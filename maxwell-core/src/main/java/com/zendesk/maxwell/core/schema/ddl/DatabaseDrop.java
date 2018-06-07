@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.core.schema.ddl;
 
 import com.zendesk.maxwell.api.config.MaxwellFilter;
+import com.zendesk.maxwell.api.schema.InvalidSchemaError;
 import com.zendesk.maxwell.core.schema.Schema;
 
 public class DatabaseDrop extends SchemaChange {

@@ -4,6 +4,7 @@ import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.api.row.RowMap;
+import com.zendesk.maxwell.api.schema.SchemaStoreSchema;
 import com.zendesk.maxwell.core.*;
 import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
 import com.zendesk.maxwell.core.config.BaseMaxwellMysqlConfig;
@@ -13,6 +14,7 @@ import com.zendesk.maxwell.core.schema.*;
 import com.zendesk.maxwell.core.support.MaxwellTestSupport;
 import com.zendesk.maxwell.core.support.MaxwellTestSupportCallback;
 import com.zendesk.maxwell.test.mysql.MysqlIsolatedServer;
+import com.zendesk.maxwell.test.mysql.MysqlIsolatedServerSupport;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,6 +49,10 @@ public class RecoveryTest extends TestWithNameLogging {
 	private MaxwellContextFactory maxwellContextFactory;
 	@Autowired
 	private MaxwellConfigFactory maxwellConfigFactory;
+	@Autowired
+	private SchemaStoreSchema schemaStoreSchema;
+	@Autowired
+	private MysqlIsolatedServerSupport mysqlIsolatedServerSupport;
 
 	private MysqlIsolatedServer masterServer;
 	private MysqlIsolatedServer slaveServer;
@@ -55,11 +61,11 @@ public class RecoveryTest extends TestWithNameLogging {
 	public void setupServers() throws Exception {
 		masterServer = new MysqlIsolatedServer();
 		masterServer.boot();
-		SchemaStoreSchema.ensureMaxwellSchema(masterServer.getConnection(), "maxwell");
+		schemaStoreSchema.ensureMaxwellSchema(masterServer.getConnection(), "maxwell");
 
-		slaveServer = MaxwellTestSupport.setupServer("--server_id=12345 --max_binlog_size=100000 --log_bin=slave");
+		slaveServer = mysqlIsolatedServerSupport.setupServer("--server_id=12345 --max_binlog_size=100000 --log_bin=slave");
 		slaveServer.setupSlave(masterServer.getPort());
-		MaxwellTestSupport.setupSchema(masterServer, false);
+		mysqlIsolatedServerSupport.setupSchema(masterServer, false);
 	}
 
 	private BaseMaxwellConfig getConfig(int port, boolean masterRecovery){

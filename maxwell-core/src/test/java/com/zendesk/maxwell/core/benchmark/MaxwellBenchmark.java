@@ -1,12 +1,13 @@
 package com.zendesk.maxwell.core.benchmark;
 
 import com.zendesk.maxwell.api.LauncherException;
+import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.test.mysql.MysqlIsolatedServer;
 import com.zendesk.maxwell.core.SpringLauncher;
 import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
 import com.zendesk.maxwell.core.config.BaseMaxwellMysqlConfig;
-import com.zendesk.maxwell.core.support.MaxwellTestSupport;
+import com.zendesk.maxwell.test.mysql.MysqlIsolatedServerSupport;
 import joptsimple.BuiltinHelpFormatter;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
@@ -18,6 +19,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Random;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 public class MaxwellBenchmark {
 	/*
@@ -76,8 +78,9 @@ public class MaxwellBenchmark {
 	private static void generate(int nRows) throws Exception {
 		SpringLauncher.launch((ctx) -> {
 			try {
-				MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--no-clean");
-				MaxwellTestSupport.setupSchema(server, false);
+				MysqlIsolatedServerSupport mysqlIsolatedServerSupport = ctx.getBean(MysqlIsolatedServerSupport.class);
+				MysqlIsolatedServer server = mysqlIsolatedServerSupport.setupServer("--no-clean");
+				mysqlIsolatedServerSupport.setupSchema(server, false);
 
 				// generate 1 row of data before we capture position so that we can use the schema.
 				generateData(server.getConnection(), 1);
@@ -93,11 +96,14 @@ public class MaxwellBenchmark {
 
 	}
 
-	private static void benchmark(String path, String args[]) throws Exception {
-		MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--no-clean --reuse=" + path);
-		SpringLauncher.launchMaxwell(args, (config) -> {
+	private static void benchmark(final String path, final String args[]) throws Exception {
+		SpringLauncher.launch((ctx) -> {
 			try {
-				if(config instanceof BaseMaxwellConfig) {
+				MysqlIsolatedServerSupport mysqlIsolatedServerSupport = ctx.getBean(MysqlIsolatedServerSupport.class);
+				MysqlIsolatedServer server = mysqlIsolatedServerSupport.setupServer("--no-clean --reuse=" + path);
+
+				Consumer<MaxwellConfig> configurationAdopter = (config) -> {
+					if(config instanceof BaseMaxwellConfig) {
 					BaseMaxwellConfig maxwellConfig = (BaseMaxwellConfig)config;
 					BaseMaxwellMysqlConfig maxwellMysqlConfig = (BaseMaxwellMysqlConfig)maxwellConfig.getMaxwellMysql();
 					maxwellMysqlConfig.setHost("127.0.0.1");
@@ -107,7 +113,9 @@ public class MaxwellBenchmark {
 					maxwellConfig.setSchemaMysql(maxwellMysqlConfig);
 					maxwellConfig.setReplicationMysql(maxwellMysqlConfig);
 					maxwellConfig.setCustomProducerFactory(BenchmarkProducerFactory.class.getName());
-				}
+					}
+				};
+				SpringLauncher.runMaxwell(args, configurationAdopter, ctx);
 			} catch (Exception e) {
 				throw new LauncherException("Failed to setup mysql test server for benchmark", e);
 			}

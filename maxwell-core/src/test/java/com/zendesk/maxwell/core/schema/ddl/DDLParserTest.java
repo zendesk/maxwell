@@ -1,30 +1,30 @@
 package com.zendesk.maxwell.core.schema.ddl;
 
+import com.zendesk.maxwell.core.SpringTestContextConfiguration;
 import com.zendesk.maxwell.core.schema.columndef.BigIntColumnDef;
 import com.zendesk.maxwell.core.schema.columndef.ColumnDef;
 import com.zendesk.maxwell.core.schema.columndef.IntColumnDef;
 import com.zendesk.maxwell.core.schema.columndef.StringColumnDef;
+import com.zendesk.maxwell.test.mysql.MysqlTestData;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = { SpringTestContextConfiguration.class })
 public class DDLParserTest {
-	public String getSQLDir() {
-		final String dir = System.getProperty("user.dir");
-		return dir + "/src/test/resources/sql/";
-	}
-
 	private List<SchemaChange> parse(String sql) {
 		return SchemaChange.parse("default_db", sql);
 	}
@@ -36,6 +36,9 @@ public class DDLParserTest {
 	private TableCreate parseCreate(String sql) {
 		return (TableCreate) parse(sql).get(0);
 	}
+
+	@Autowired
+	private MysqlTestData mysqlTestData;
 
 	@Test
 	public void testBasic() {
@@ -474,7 +477,7 @@ public class DDLParserTest {
 	@Test
 	public void testMysqlTestFixedSQL() throws Exception {
 		int i = 1;
-		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test-fixed.sql"), Charset.defaultCharset());
+		List<String> lines = mysqlTestData.getSqlFile("ddl/mysql-test-fixed.sql").getDataLines();
 		for ( String sql: lines ) {
 				parse(sql);
 		}
@@ -484,7 +487,7 @@ public class DDLParserTest {
 	public void testMysqlTestPartitionSQL() throws Exception {
 		int i = 1;
 		boolean outputFirst = false;
-		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test-partition.sql"), Charset.defaultCharset());
+		List<String> lines = mysqlTestData.getSqlFile("ddl/mysql-test-partition.sql").getDataLines();
 		for ( String sql: lines ) {
 			try {
 				parse(sql);
@@ -497,7 +500,7 @@ public class DDLParserTest {
 
 	@Test
 	public void testMysqlGIS() throws Exception {
-		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test-gis.sql"), Charset.defaultCharset());
+		List<String> lines = mysqlTestData.getSqlFile("ddl/mysql-test-gis.sql").getDataLines();
 		for ( String sql: lines ) {
 			parse(sql);
 		}
@@ -507,7 +510,7 @@ public class DDLParserTest {
 	@Test
 	public void testMysqlTestSQL() throws Exception {
 		int i = 1;
-		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test-errors.sql"), Charset.defaultCharset());
+		List<String> lines = mysqlTestData.getSqlFile("ddl/mysql-test-errors.sql").getDataLines();
 		for ( String sql: lines ) {
 			parse(sql);
 		}
@@ -516,12 +519,12 @@ public class DDLParserTest {
 	@Ignore
 	@Test
 	public void generateTestFiles() throws Exception {
-		FileOutputStream problems = new FileOutputStream(new File(getSQLDir() + "/ddl/mysql-test-errors.sql"));
-		FileOutputStream fixed = new FileOutputStream(new File(getSQLDir() + "/ddl/mysql-test-fixed.sql"));
+		FileOutputStream problems = new FileOutputStream(new File("debug/mysql-test-errors.sql"));
+		FileOutputStream fixed = new FileOutputStream(new File("debug//mysql-test-fixed.sql"));
 
 		int nFixed = 0, nErr = 0;
 		List<String> assertions = new ArrayList<>();
-		List<String> lines = Files.readAllLines(Paths.get(getSQLDir() + "/ddl/mysql-test.sql"), Charset.defaultCharset());
+		List<String> lines = mysqlTestData.getSqlFile("ddl/mysql-test.sql").getDataLines();
 		for ( String sql: lines ) {
 			try {
 				parse(sql);

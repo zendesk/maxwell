@@ -12,7 +12,7 @@ import com.zendesk.maxwell.core.replication.BinlogConnectorReplicator;
 import com.zendesk.maxwell.core.replication.Replicator;
 import com.zendesk.maxwell.core.schema.MysqlPositionStore;
 import com.zendesk.maxwell.core.schema.MysqlSchemaStore;
-import com.zendesk.maxwell.core.schema.SchemaStoreSchema;
+import com.zendesk.maxwell.api.schema.SchemaStoreSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,14 +22,16 @@ import java.sql.Connection;
 
 @Service
 public class MaxwellRunner {
-
 	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellRunner.class);
+	private static final String BOOT_STRING = "Maxwell v%s is booting (%s), starting at %s";
 
 	private final BootstrapperFactory bootstrapperFactory;
+	private final SchemaStoreSchema schemaStoreSchema;
 
 	@Autowired
-	public MaxwellRunner(BootstrapperFactory bootstrapperFactory) {
+	public MaxwellRunner(BootstrapperFactory bootstrapperFactory, SchemaStoreSchema schemaStoreSchema) {
 		this.bootstrapperFactory = bootstrapperFactory;
+		this.schemaStoreSchema = schemaStoreSchema;
 	}
 
 	public void run(final MaxwellSystemContext context) {
@@ -137,10 +139,9 @@ public class MaxwellRunner {
 			return packageVersion;
 	}
 
-	static String bootString = "Maxwell v%s is booting (%s), starting at %s";
 	private void logBanner(Producer producer, Position initialPosition) {
 		String producerName = producer.getClass().getSimpleName();
-		LOGGER.info(String.format(bootString, getMaxwellVersion(), producerName, initialPosition.toString()));
+		LOGGER.info(String.format(BOOT_STRING, getMaxwellVersion(), producerName, initialPosition.toString()));
 	}
 
 	public void start(final MaxwellSystemContext context) throws Exception {
@@ -170,10 +171,10 @@ public class MaxwellRunner {
 				MaxwellMysqlStatus.ensureGtidMysqlState(connection);
 			}
 
-			SchemaStoreSchema.ensureMaxwellSchema(rawConnection, config.getDatabaseName());
+			schemaStoreSchema.ensureMaxwellSchema(rawConnection, config.getDatabaseName());
 
 			try ( Connection schemaConnection = context.getMaxwellConnection() ) {
-				SchemaStoreSchema.upgradeSchemaStoreSchema(schemaConnection);
+				schemaStoreSchema.upgradeSchemaStoreSchema(schemaConnection);
 			}
 		}
 

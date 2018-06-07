@@ -8,10 +8,12 @@ package com.zendesk.maxwell.core.schema;
 
 import com.zendesk.maxwell.api.replication.BinlogPosition;
 import com.zendesk.maxwell.api.replication.Position;
-import com.zendesk.maxwell.core.schema.ddl.InvalidSchemaError;
+import com.zendesk.maxwell.api.schema.InvalidSchemaError;
+import com.zendesk.maxwell.api.schema.SchemaStoreSchema;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -24,16 +26,18 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class SchemaStoreSchema {
-	static final Logger LOGGER = LoggerFactory.getLogger(SchemaStoreSchema.class);
+@Service
+public class SchemaStoreSchemaBean implements SchemaStoreSchema {
+	private static final Logger LOGGER = LoggerFactory.getLogger(SchemaStoreSchemaBean.class);
 
-	public static void ensureMaxwellSchema(Connection connection, String schemaDatabaseName) throws SQLException, IOException, InvalidSchemaError {
+	@Override
+	public void ensureMaxwellSchema(Connection connection, String schemaDatabaseName) throws SQLException, IOException, InvalidSchemaError {
 		if ( !storeDatabaseExists(connection, schemaDatabaseName) ) {
 			createStoreDatabase(connection, schemaDatabaseName);
 		}
 	}
 
-	private static boolean storeDatabaseExists(Connection connection, String schemaDatabaseName) throws SQLException {
+	private boolean storeDatabaseExists(Connection connection, String schemaDatabaseName) throws SQLException {
 		Statement s = connection.createStatement();
 		ResultSet rs = s.executeQuery("show databases like '" + schemaDatabaseName + "'");
 
@@ -44,7 +48,7 @@ public class SchemaStoreSchema {
 		return rs.next();
 	}
 
-	private static void executeSQLInputStream(Connection connection, InputStream schemaSQL, String schemaDatabaseName) throws SQLException, IOException {
+	private void executeSQLInputStream(Connection connection, InputStream schemaSQL, String schemaDatabaseName) throws SQLException, IOException {
 		BufferedReader r = new BufferedReader(new InputStreamReader(schemaSQL));
 		String sql = "", line;
 
@@ -65,14 +69,14 @@ public class SchemaStoreSchema {
 		}
 	}
 
-	private static void createStoreDatabase(Connection connection, String schemaDatabaseName) throws SQLException, IOException {
+	private void createStoreDatabase(Connection connection, String schemaDatabaseName) throws SQLException, IOException {
 		LOGGER.info("Creating " + schemaDatabaseName + " database");
-		executeSQLInputStream(connection, SchemaStoreSchema.class.getResourceAsStream("/sql/maxwell_schema.sql"), schemaDatabaseName);
-		executeSQLInputStream(connection, SchemaStoreSchema.class.getResourceAsStream("/sql/maxwell_schema_bootstrap.sql"), schemaDatabaseName);
-		executeSQLInputStream(connection, SchemaStoreSchema.class.getResourceAsStream("/sql/maxwell_schema_heartbeats.sql"), schemaDatabaseName);
+		executeSQLInputStream(connection, SchemaStoreSchemaBean.class.getResourceAsStream("/sql/maxwell_schema.sql"), schemaDatabaseName);
+		executeSQLInputStream(connection, SchemaStoreSchemaBean.class.getResourceAsStream("/sql/maxwell_schema_bootstrap.sql"), schemaDatabaseName);
+		executeSQLInputStream(connection, SchemaStoreSchemaBean.class.getResourceAsStream("/sql/maxwell_schema_heartbeats.sql"), schemaDatabaseName);
 	}
 
-	private static HashMap<String, String> getTableColumns(String table, Connection c) throws SQLException {
+	private HashMap<String, String> getTableColumns(String table, Connection c) throws SQLException {
 		HashMap<String, String> map = new HashMap<>();
 		ResultSet rs = c.createStatement().executeQuery("show columns from `" + table + "`");
 		while (rs.next()) {
@@ -81,7 +85,7 @@ public class SchemaStoreSchema {
 		return map;
 	}
 
-	private static ArrayList<String> getMaxwellTables(Connection c) throws SQLException {
+	private ArrayList<String> getMaxwellTables(Connection c) throws SQLException {
 		ArrayList<String> l = new ArrayList<>();
 
 		ResultSet rs = c.createStatement().executeQuery("show tables");
@@ -91,12 +95,13 @@ public class SchemaStoreSchema {
 		return l;
 	}
 
-	private static void performAlter(Connection c, String sql) throws SQLException {
+	private void performAlter(Connection c, String sql) throws SQLException {
 		LOGGER.info("Maxwell is upgrading its own schema: '" + sql + "'");
 		c.createStatement().execute(sql);
 	}
 
-	public static void upgradeSchemaStoreSchema(Connection c) throws SQLException, IOException {
+	@Override
+	public void upgradeSchemaStoreSchema(Connection c) throws SQLException, IOException {
 		ArrayList<String> maxwellTables = getMaxwellTables(c);
 		if ( !getTableColumns("schemas", c).containsKey("deleted") ) {
 			performAlter(c, "alter table `schemas` add column deleted tinyint(1) not null default 0");
@@ -182,7 +187,7 @@ public class SchemaStoreSchema {
 		}
 	}
 
-	private static void backfillPositionSHAs(Connection c) throws SQLException {
+	private void backfillPositionSHAs(Connection c) throws SQLException {
 		ResultSet rs = c.createStatement().executeQuery("select * from `schemas`");
 		while (rs.next()) {
 			Long id = rs.getLong("id");

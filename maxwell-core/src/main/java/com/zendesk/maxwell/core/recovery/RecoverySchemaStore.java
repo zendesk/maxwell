@@ -6,7 +6,7 @@ import com.zendesk.maxwell.core.schema.Schema;
 import com.zendesk.maxwell.core.schema.SchemaCapturer;
 import com.zendesk.maxwell.core.schema.SchemaStore;
 import com.zendesk.maxwell.core.schema.SchemaStoreException;
-import com.zendesk.maxwell.core.schema.ddl.InvalidSchemaError;
+import com.zendesk.maxwell.api.schema.InvalidSchemaError;
 import com.zendesk.maxwell.core.schema.ddl.ResolvedSchemaChange;
 import snaq.db.ConnectionPool;
 

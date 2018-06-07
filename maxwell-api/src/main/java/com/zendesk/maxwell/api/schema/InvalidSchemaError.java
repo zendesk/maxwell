@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core.schema.ddl;
+package com.zendesk.maxwell.api.schema;
 
 public class InvalidSchemaError extends Exception {
 	public InvalidSchemaError (String message) { super(message); }
