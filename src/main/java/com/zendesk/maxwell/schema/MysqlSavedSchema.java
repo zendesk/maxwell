@@ -576,7 +576,7 @@ public class MysqlSavedSchema {
 				"SELECT id from `schemas` " +
 				"WHERE deleted = 0 AND " +
 				"last_heartbeat_read <= ? AND " +
-			    "((binlog_file < ?) OR " +
+				"((binlog_file < ?) OR " +
 				"(binlog_file = ? AND binlog_position < ?) OR " +
 				"(binlog_file = ? AND binlog_position = ? AND deltas = '[]')) AND " + // master failover
 				"server_id = ? " +
