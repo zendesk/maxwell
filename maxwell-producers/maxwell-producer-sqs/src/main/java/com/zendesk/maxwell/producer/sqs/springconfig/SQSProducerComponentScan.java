@@ -5,5 +5,5 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @ComponentScan(basePackages = "com.zendesk.maxwell.producer.sqs")
-public class SqsProducerComponentScan {
+public class SQSProducerComponentScan {
 }
