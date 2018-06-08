@@ -79,7 +79,7 @@ public class MaxwellTestSupport {
 
 		mysql.clearSchemaStore();
 
-		BaseMaxwellConfig config = new BaseMaxwellConfig();
+		BaseMaxwellConfig config = maxwellConfigFactory.create();
 
 		BaseMaxwellMysqlConfig maxwellMysql = (BaseMaxwellMysqlConfig) config.getMaxwellMysql();
 		maxwellMysql.setUser("maxwell");

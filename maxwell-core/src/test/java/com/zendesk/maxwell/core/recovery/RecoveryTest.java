@@ -8,6 +8,7 @@ import com.zendesk.maxwell.api.schema.SchemaStoreSchema;
 import com.zendesk.maxwell.core.*;
 import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
 import com.zendesk.maxwell.core.config.BaseMaxwellMysqlConfig;
+import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducerConfiguration;
 import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducerFactory;
 import com.zendesk.maxwell.core.row.HeartbeatRowMap;
@@ -49,6 +50,8 @@ public class RecoveryTest extends TestWithNameLogging {
 	@Autowired
 	private MaxwellContextFactory maxwellContextFactory;
 	@Autowired
+	private MaxwellConfigFactory maxwellConfigFactory;
+	@Autowired
 	private SchemaStoreSchema schemaStoreSchema;
 	@Autowired
 	private MysqlIsolatedServerSupport mysqlIsolatedServerSupport;
@@ -68,7 +71,7 @@ public class RecoveryTest extends TestWithNameLogging {
 	}
 
 	private BaseMaxwellConfig getConfig(int port, boolean masterRecovery){
-		BaseMaxwellConfig config = new BaseMaxwellConfig();
+		BaseMaxwellConfig config = maxwellConfigFactory.create();
 		((BaseMaxwellMysqlConfig)config.getMaxwellMysql()).setHost("localhost");
 		((BaseMaxwellMysqlConfig)config.getMaxwellMysql()).setPort(port);
 		((BaseMaxwellMysqlConfig)config.getMaxwellMysql()).setUser("maxwell");

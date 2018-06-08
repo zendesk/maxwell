@@ -33,7 +33,7 @@ public class MaxwellConfigFactory {
 	}
 
 	public BaseMaxwellConfig create() {
-		return new BaseMaxwellConfig();
+		return createFor(new Properties());
 	}
 
 	public BaseMaxwellConfig createFor(final Properties properties) {

@@ -8,6 +8,7 @@ import com.zendesk.maxwell.api.row.RowMap;
 import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
 import com.zendesk.maxwell.core.config.BaseMaxwellMysqlConfig;
 import com.zendesk.maxwell.api.producer.AbstractProducer;
+import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.test.mysql.MysqlIsolatedServer;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,8 @@ import static org.junit.Assert.assertTrue;
  */
 public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 
+	@Autowired
+	private MaxwellConfigFactory maxwellConfigFactory;
 	@Autowired
 	private MaxwellContextFactory maxwellContextFactory;
 	@Autowired
@@ -59,7 +62,7 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	private BaseMaxwellConfig getConfig(MysqlIsolatedServer mysql) {
-		BaseMaxwellConfig config = new BaseMaxwellConfig();
+		BaseMaxwellConfig config = maxwellConfigFactory.create();
 		BaseMaxwellMysqlConfig maxwellMysql = (BaseMaxwellMysqlConfig) config.getMaxwellMysql();
 		maxwellMysql.setUser("maxwell");
 		maxwellMysql.setPassword("maxwell");

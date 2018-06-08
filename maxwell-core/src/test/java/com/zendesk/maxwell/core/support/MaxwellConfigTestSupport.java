@@ -20,10 +20,12 @@ import java.sql.SQLException;
 @Service
 public class MaxwellConfigTestSupport {
 
+	private final MaxwellConfigFactory maxwellConfigFactory;
 	private final MaxwellContextFactory maxwellContextFactory;
 
 	@Autowired
-	public MaxwellConfigTestSupport(MaxwellContextFactory maxwellContextFactory) {
+	public MaxwellConfigTestSupport(MaxwellConfigFactory maxwellConfigFactory, MaxwellContextFactory maxwellContextFactory) {
+		this.maxwellConfigFactory = maxwellConfigFactory;
 		this.maxwellContextFactory = maxwellContextFactory;
 	}
 
@@ -40,7 +42,7 @@ public class MaxwellConfigTestSupport {
 	}
 
 	private BaseMaxwellConfig buildConfig(int port, Position p, MaxwellFilter filter) {
-		BaseMaxwellConfig config = new BaseMaxwellConfig();
+		BaseMaxwellConfig config = maxwellConfigFactory.create();
 
 		BaseMaxwellMysqlConfig replicationMysql = (BaseMaxwellMysqlConfig) config.getReplicationMysql();
 		replicationMysql.setHost("127.0.0.1");
