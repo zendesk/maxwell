@@ -1,0 +1,14 @@
+#!/bin/bash
+
+MAXWELL_PRODUCER=${MAXWELL_PRODUCER:-kafka}
+
+if [ "$MAXWELL_PRODUCER" == "kafka" ]
+then
+  if [ -z "$KAFKA_BROKERS" ]
+  then
+    KAFKA_BROKERS="$KAFKA_HOST:$KAFKA_PORT"
+  fi
+  MAXWELL_OPTIONS="$MAXWELL_OPTIONS --kafka.bootstrap.servers=$KAFKA_BROKERS"
+fi
+
+exec `dirname $0`/maxwell  --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=$MAXWELL_PRODUCER $MAXWELL_OPTIONS
