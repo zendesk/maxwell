@@ -454,7 +454,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 
 		lowerCaseServer.boot("--lower-case-table-names=1");
-		MaxwellContext context = maxwellConfigTestSupport.buildContext(lowerCaseServer.getPort(), null, null);
+		MaxwellContext context = maxwellConfigTestSupport.buildContextWithBufferedProducerFor(lowerCaseServer.getPort(), null, null);
 		schemaStoreSchema.ensureMaxwellSchema(lowerCaseServer.getConnection(), context.getConfig().getDatabaseName());
 
 		String[] sql = {

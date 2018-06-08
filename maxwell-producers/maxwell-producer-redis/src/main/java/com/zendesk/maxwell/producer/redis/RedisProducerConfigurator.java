@@ -1,10 +1,10 @@
 package com.zendesk.maxwell.producer.redis;
 
-import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.config.CommandLineOptionParserContext;
-import com.zendesk.maxwell.api.producer.Producer;
-import com.zendesk.maxwell.api.producer.ProducerConfigurator;
 import com.zendesk.maxwell.api.config.ConfigurationSupport;
+import com.zendesk.maxwell.api.producer.ProducerConfiguration;
+import com.zendesk.maxwell.api.producer.ProducerConfigurator;
+import com.zendesk.maxwell.api.producer.ProducerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 @Service
-public class RedisProducerConfigurator implements ProducerConfigurator<RedisProducerConfiguration> {
+public class RedisProducerConfigurator implements ProducerConfigurator {
 
 	private final ConfigurationSupport configurationSupport;
 
@@ -22,7 +22,7 @@ public class RedisProducerConfigurator implements ProducerConfigurator<RedisProd
 	}
 
 	@Override
-	public String getExtensionIdentifier() {
+	public String getIdentifier() {
 		return "redis";
 	}
 
@@ -38,7 +38,7 @@ public class RedisProducerConfigurator implements ProducerConfigurator<RedisProd
 	}
 
 	@Override
-	public Optional<RedisProducerConfiguration> parseConfiguration(Properties configurationValues) {
+	public Optional<ProducerConfiguration> parseConfiguration(Properties configurationValues) {
 		RedisProducerConfiguration config = new RedisProducerConfiguration();
 		config.setRedisHost(configurationSupport.fetchOption("redis_host", configurationValues, "localhost"));
 		config.setRedisPort(Integer.parseInt(configurationSupport.fetchOption("redis_port", configurationValues, "6379")));
@@ -51,7 +51,7 @@ public class RedisProducerConfigurator implements ProducerConfigurator<RedisProd
 	}
 
 	@Override
-	public Producer createInstance(MaxwellContext context, RedisProducerConfiguration configuration) {
-		return new MaxwellRedisProducer(context, configuration);
+	public Class<? extends ProducerFactory> getFactory() {
+		return RedisProducerFactory.class;
 	}
 }

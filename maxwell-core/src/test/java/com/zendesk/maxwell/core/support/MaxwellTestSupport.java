@@ -10,6 +10,8 @@ import com.zendesk.maxwell.api.row.RowMap;
 import com.zendesk.maxwell.core.MaxwellContextFactory;
 import com.zendesk.maxwell.core.MaxwellRunner;
 import com.zendesk.maxwell.core.MaxwellSystemContext;
+import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducerConfiguration;
+import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducerFactory;
 import com.zendesk.maxwell.test.mysql.MysqlIsolatedServer;
 import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
 import com.zendesk.maxwell.core.config.BaseMaxwellMysqlConfig;
@@ -77,7 +79,7 @@ public class MaxwellTestSupport {
 
 		mysql.clearSchemaStore();
 
-		BaseMaxwellConfig config = maxwellConfigFactory.createNewDefaultConfiguration();
+		BaseMaxwellConfig config = new BaseMaxwellConfig();
 
 		BaseMaxwellMysqlConfig maxwellMysql = (BaseMaxwellMysqlConfig) config.getMaxwellMysql();
 		maxwellMysql.setUser("maxwell");
@@ -98,6 +100,9 @@ public class MaxwellTestSupport {
 		config.setFilter(filter);
 		config.setBootstrapperType("sync");
 		config.setProducerType("buffer");
+		config.setProducerFactory(BufferedProducerFactory.class.getCanonicalName());
+		config.setProducerConfiguration(new BufferedProducerConfiguration());
+		config.validate();
 
 		callback.beforeReplicatorStart(mysql);
 
@@ -174,7 +179,7 @@ public class MaxwellTestSupport {
 	}
 
 	public void testDDLFollowing(MysqlIsolatedServer server, String alters[]) throws Exception {
-		SchemaCapturer capturer = new SchemaCapturer(server.getConnection(), maxwellConfigTestSupport.buildContext(server.getPort(), null, null).getCaseSensitivity());
+		SchemaCapturer capturer = new SchemaCapturer(server.getConnection(), maxwellConfigTestSupport.buildContextWithBufferedProducerFor(server.getPort(), null, null).getCaseSensitivity());
 		Schema topSchema = capturer.capture();
 
 		server.executeList(Arrays.asList(alters));

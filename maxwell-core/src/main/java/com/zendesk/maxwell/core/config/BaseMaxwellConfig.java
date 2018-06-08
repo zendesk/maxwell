@@ -2,7 +2,10 @@ package com.zendesk.maxwell.core.config;
 
 import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.api.config.*;
+import com.zendesk.maxwell.api.producer.ProducerConfiguration;
+import com.zendesk.maxwell.api.producer.PropertiesProducerConfiguration;
 import com.zendesk.maxwell.api.replication.Position;
+import com.zendesk.maxwell.core.producer.impl.stdout.StdoutProducerFactory;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -20,11 +23,14 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 	private Boolean gtidMode;
 	private String databaseName;
 
-	private String customProducerFactory; // customProducerFactory has precedence over producerType
+	private String producerFactory; // customProducerFactory has precedence over producerType
 	private final Properties customProducerProperties;
-	private String producerType;
 
 	private String bootstrapperType;
+
+	private String producerType;
+	private ProducerConfiguration producerConfiguration;
+	private boolean ignoreProducerError;
 
 	private String producerPartitionKey;
 	private String producerPartitionColumns;
@@ -57,17 +63,46 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 	private Position initPosition;
 	private boolean replayMode;
 	private boolean masterRecovery;
-	private boolean ignoreProducerError;
-
 
 	public BaseMaxwellConfig() {
-		this.customProducerProperties = new Properties();
-		this.setReplayMode(false);
 		this.setReplicationMysql(new BaseMaxwellMysqlConfig());
 		this.setMaxwellMysql(new BaseMaxwellMysqlConfig());
 		this.setSchemaMysql(new BaseMaxwellMysqlConfig());
+		this.setGtidMode(System.getenv(MaxwellConfig.GTID_MODE_ENV) != null);
+
+		this.setDatabaseName(DEFAULT_DATABASE_NAME);
+		this.setBootstrapperType(DEFAULT_BOOTSTRAPPER_TYPE);
+		this.setClientID(DEFAULT_CLIENT_ID);
+
+		this.setReplicaServerID(DEFAULT_REPLICA_SERVER_ID);
+		this.setReplayMode(DEFAULT_REPLICATION_REPLAY_MODE);
+		this.setMasterRecovery(DEFAULT_REPLICATION_MASTER_RECOVERY);
+
+		this.setIgnoreProducerError(DEFAULT_PRODUCER_IGNORE_ERROR);
+		this.setProducerAckTimeout(DEFAULT_PRODUCER_ACK_TIMEOUT);
+		this.setProducerPartitionKey(DEFAULT_PRODUCER_PARTITION_KEY);
+		this.setProducerType(DEFAULT_PRODUCER_TYPE);
+		this.setProducerFactory(StdoutProducerFactory.class.getCanonicalName());
+		this.setProducerConfiguration(new PropertiesProducerConfiguration());
+		this.customProducerProperties = new Properties();
+
+		this.setHttpPort(DEFAULT_HTTP_PORT);
+		this.setHttpPathPrefix(DEFAULT_HTTP_PATH_PREFIX);
+
+		this.setMetricsPrefix(DEFAULT_METRICS_PREFIX);
+		this.setMetricsSlf4jInterval(DEFAULT_METRITCS_SLF4J_INTERVAL);
+		this.setMetricsDatadogType(DEFAULT_METRICS_DATADOG_TYPE);
+		this.setMetricsDatadogTags(DEFAULT_METRICS_DATADOG_TAGS);
+		this.setMetricsDatadogAPIKey(DEFAULT_METRICS_DATADOG_APIKEY);
+		this.setMetricsDatadogHost(DEFAULT_METRICS_DATADOG_HOST);
+		this.setMetricsDatadogPort(DEFAULT_METRICS_DATADOG_PORT);
+		this.setMetricsDatadogInterval(DEFAULT_METRICS_DATADOG_INTERVAL);
+		this.setMetricsJvm(DEFAULT_METRCS_JVM);
+
 		this.setMasterRecovery(false);
-		this.setGtidMode(false);
+		this.setFilter(new BaseMaxwellFilter());
+		this.setDiagnosticConfig(new BaseMaxwellDiagnosticConfig());
+		this.setOutputConfig(new BaseMaxwellOutputConfig());
 	}
 
 	@Override
@@ -204,17 +239,12 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 	}
 
 	@Override
-	public String getCustomProducerFactory() {
-		return customProducerFactory;
+	public String getBootstrapperType() {
+		return bootstrapperType;
 	}
 
-	public void setCustomProducerFactory(String customProducerFactory) {
-		this.customProducerFactory = customProducerFactory;
-	}
-
-	@Override
-	public Properties getCustomProducerProperties() {
-		return customProducerProperties;
+	public void setBootstrapperType(String bootstrapperType) {
+		this.bootstrapperType = bootstrapperType;
 	}
 
 	@Override
@@ -227,12 +257,35 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 	}
 
 	@Override
-	public String getBootstrapperType() {
-		return bootstrapperType;
+	public ProducerConfiguration getProducerConfiguration() {
+		return producerConfiguration;
 	}
 
-	public void setBootstrapperType(String bootstrapperType) {
-		this.bootstrapperType = bootstrapperType;
+	public void setProducerConfiguration(ProducerConfiguration producerConfiguration) {
+		this.producerConfiguration = producerConfiguration;
+	}
+
+	@Override
+	public String getProducerFactory() {
+		return producerFactory;
+	}
+
+	public void setProducerFactory(String producerFactory) {
+		this.producerFactory = producerFactory;
+	}
+
+	@Override
+	public Properties getCustomProducerProperties() {
+		return customProducerProperties;
+	}
+
+	@Override
+	public boolean isIgnoreProducerError() {
+		return ignoreProducerError;
+	}
+
+	public void setIgnoreProducerError(boolean ignoreProducerError) {
+		this.ignoreProducerError = ignoreProducerError;
 	}
 
 	@Override
@@ -461,15 +514,6 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 
 	public void setMasterRecovery(boolean masterRecovery) {
 		this.masterRecovery = masterRecovery;
-	}
-
-	@Override
-	public boolean isIgnoreProducerError() {
-		return ignoreProducerError;
-	}
-
-	public void setIgnoreProducerError(boolean ignoreProducerError) {
-		this.ignoreProducerError = ignoreProducerError;
 	}
 
 }

@@ -1,8 +1,6 @@
 package com.zendesk.maxwell.api.producer;
 
-import com.zendesk.maxwell.api.config.MaxwellConfig;
+import com.zendesk.maxwell.api.config.ModuleConfiguration;
 
-public interface ProducerConfiguration {
-	default void mergeWith(MaxwellConfig config){}
-	default void validate(){}
+public interface ProducerConfiguration extends ModuleConfiguration {
 }

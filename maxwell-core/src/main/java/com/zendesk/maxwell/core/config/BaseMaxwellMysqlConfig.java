@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.core.config;
 
 import com.github.shyiko.mysql.binlog.network.SSLMode;
+import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.config.MaxwellMysqlConfig;
 import org.apache.http.client.utils.URIBuilder;
 
@@ -25,8 +26,8 @@ public class BaseMaxwellMysqlConfig implements MaxwellMysqlConfig {
 
 	public BaseMaxwellMysqlConfig() {
 		this.setHost(null);
-		this.setPort(null);
-		this.setDatabase(null);
+		this.setPort(DEFAULT_MYSQL_PORT);
+		this.setDatabase(MaxwellConfig.DEFAULT_DATABASE_NAME);
 		this.setUser(null);
 		this.setPassword(null);
 		this.setSslMode(null);

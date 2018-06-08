@@ -3,11 +3,10 @@ package com.zendesk.maxwell.core;
 import com.zendesk.maxwell.api.LauncherException;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.core.bootstrap.MaxwellBootstrapUtilityRunner;
-import com.zendesk.maxwell.core.config.MaxwellConfigurationOptionMerger;
+import com.zendesk.maxwell.core.config.MaxwellConfigurator;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import java.util.Properties;
 import java.util.function.Consumer;
 
 public class SpringLauncher {
@@ -18,12 +17,13 @@ public class SpringLauncher {
 
 	public static void runMaxwell(final String[] args, Consumer<MaxwellConfig> configurationAdopter, final ApplicationContext applicationContext) {
 		try {
-			final MaxwellConfigurationOptionMerger configurationOptionMerger = applicationContext.getBean(MaxwellConfigurationOptionMerger.class);
+			final MaxwellConfigurator maxwellConfigurator = applicationContext.getBean(MaxwellConfigurator.class);
 			final MaxwellLauncher maxwellLauncher = applicationContext.getBean(MaxwellLauncher.class);
 
-			final Properties configurationOptions = configurationOptionMerger.merge(args);
+			final MaxwellConfig config = maxwellConfigurator.prepareMaxwell(args);
+			configurationAdopter.accept(config);
 
-			maxwellLauncher.launch(configurationOptions, configurationAdopter);
+			maxwellLauncher.launch(config);
 		}catch (Exception e){
 			throw new LauncherException("Error while running Maxwell", e);
 		}

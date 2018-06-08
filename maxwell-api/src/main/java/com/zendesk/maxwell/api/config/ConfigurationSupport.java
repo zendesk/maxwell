@@ -10,4 +10,6 @@ public interface ConfigurationSupport {
 	boolean fetchBooleanOption(String name, Properties properties, boolean defaultVal);
 
 	Long fetchLongOption(String name, Properties properties, Long defaultVal);
+
+	Integer fetchIntegerOption(String name, Properties properties, Integer defaultVal);
 }

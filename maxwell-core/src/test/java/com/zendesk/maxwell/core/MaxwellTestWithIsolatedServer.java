@@ -121,11 +121,11 @@ public abstract class MaxwellTestWithIsolatedServer extends TestWithNameLogging 
 	}
 
 	protected MaxwellSystemContext buildContext() throws Exception {
-		return maxwellConfigTestSupport.buildContext(server.getPort(), null, null);
+		return maxwellConfigTestSupport.buildContextWithBufferedProducerFor(server.getPort(), null, null);
 	}
 
 	protected MaxwellSystemContext buildContext(Position p) throws Exception {
-		return maxwellConfigTestSupport.buildContext(server.getPort(), p, null);
+		return maxwellConfigTestSupport.buildContextWithBufferedProducerFor(server.getPort(), p, null);
 	}
 
 	protected MaxwellFilter excludeTable(String name) throws MaxwellInvalidFilterException {

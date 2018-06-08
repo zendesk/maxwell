@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core.producer;
+package com.zendesk.maxwell.core.producer.impl.noop;
 
 import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.producer.AbstractProducer;

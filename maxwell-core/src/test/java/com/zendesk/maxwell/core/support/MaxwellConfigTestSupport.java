@@ -9,6 +9,8 @@ import com.zendesk.maxwell.core.MaxwellSystemContext;
 import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
 import com.zendesk.maxwell.core.config.BaseMaxwellMysqlConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
+import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducerConfiguration;
+import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,17 +20,27 @@ import java.sql.SQLException;
 @Service
 public class MaxwellConfigTestSupport {
 
-	private final MaxwellConfigFactory maxwellConfigFactory;
 	private final MaxwellContextFactory maxwellContextFactory;
 
 	@Autowired
-	public MaxwellConfigTestSupport(MaxwellConfigFactory maxwellConfigFactory, MaxwellContextFactory maxwellContextFactory) {
-		this.maxwellConfigFactory = maxwellConfigFactory;
+	public MaxwellConfigTestSupport(MaxwellContextFactory maxwellContextFactory) {
 		this.maxwellContextFactory = maxwellContextFactory;
 	}
 
-	private MaxwellConfig buildConfig(int port, Position p, MaxwellFilter filter) {
-		BaseMaxwellConfig config = maxwellConfigFactory.createNewDefaultConfiguration();
+	public MaxwellConfig createDefaultConfigurationWithBufferedProducerFor(int port, Position p, MaxwellFilter filter){
+		BaseMaxwellConfig config = buildConfig(port, p, filter);
+		config.setProducerType("bufffer");
+		config.setProducerFactory(BufferedProducerFactory.class.getCanonicalName());
+		config.setProducerConfiguration(new BufferedProducerConfiguration());
+		return config;
+	}
+
+	public MaxwellConfig createDefaultConfigurationFor(int port, Position p, MaxwellFilter filter){
+		return buildConfig(port, p, filter);
+	}
+
+	private BaseMaxwellConfig buildConfig(int port, Position p, MaxwellFilter filter) {
+		BaseMaxwellConfig config = new BaseMaxwellConfig();
 
 		BaseMaxwellMysqlConfig replicationMysql = (BaseMaxwellMysqlConfig) config.getReplicationMysql();
 		replicationMysql.setHost("127.0.0.1");
@@ -49,6 +61,11 @@ public class MaxwellConfigTestSupport {
 		config.setFilter(filter);
 		config.setInitPosition(p);
 		return config;
+	}
+
+	public MaxwellSystemContext buildContextWithBufferedProducerFor(int port, Position p, MaxwellFilter filter) throws SQLException, URISyntaxException {
+		MaxwellConfig config = createDefaultConfigurationWithBufferedProducerFor(port, p, filter);
+		return maxwellContextFactory.createFor(config);
 	}
 
 	public MaxwellSystemContext buildContext(int port, Position p, MaxwellFilter filter) throws SQLException, URISyntaxException {

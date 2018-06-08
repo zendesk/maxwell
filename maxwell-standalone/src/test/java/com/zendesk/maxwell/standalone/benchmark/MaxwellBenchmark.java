@@ -112,7 +112,7 @@ public class MaxwellBenchmark {
 					maxwellMysqlConfig.setPassword("");
 					maxwellConfig.setSchemaMysql(maxwellMysqlConfig);
 					maxwellConfig.setReplicationMysql(maxwellMysqlConfig);
-					maxwellConfig.setCustomProducerFactory(BenchmarkProducerFactory.class.getName());
+					maxwellConfig.setProducerFactory(BenchmarkProducerFactory.class.getName());
 					}
 				};
 				SpringLauncher.runMaxwell(args, configurationAdopter, ctx);

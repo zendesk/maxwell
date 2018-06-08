@@ -6,6 +6,11 @@ public class BaseMaxwellDiagnosticConfig implements MaxwellDiagnosticConfig {
 	private boolean enable;
 	private long timeout;
 
+	public BaseMaxwellDiagnosticConfig(){
+		this.enable = DEFAULT_DIAGNOSTIC_HTTP;
+		this.timeout = DEFAULT_DIAGNOSTIC_HTTP_TIMEOUT;
+	}
+
 	@Override
 	public boolean isEnable() {
 		return enable;

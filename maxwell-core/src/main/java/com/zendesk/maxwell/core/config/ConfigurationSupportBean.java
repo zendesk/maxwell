@@ -38,4 +38,18 @@ public class ConfigurationSupportBean implements ConfigurationSupport {
 			}
 		}
 	}
+
+	@Override
+	public Integer fetchIntegerOption(String name, Properties properties, Integer defaultVal) {
+		String strOption = fetchOption(name, properties, null);
+		if ( strOption == null )
+			return defaultVal;
+		else {
+			try {
+				return Integer.valueOf(strOption);
+			} catch ( NumberFormatException e ) {
+				throw new InvalidOptionException("Invalid value for " + name + ", integer required", "--" + name);
+			}
+		}
+	}
 }

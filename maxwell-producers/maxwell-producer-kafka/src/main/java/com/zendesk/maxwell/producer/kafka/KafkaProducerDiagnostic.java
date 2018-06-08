@@ -23,7 +23,7 @@ public class KafkaProducerDiagnostic implements MaxwellDiagnostic {
 
 	public KafkaProducerDiagnostic(MaxwellKafkaProducerWorker kafkaProducerWorker, MaxwellContext context, RowMapFactory rowMapFactory) {
 		this.kafkaProducerWorker = kafkaProducerWorker;
-		this.producerConfiguration = context.getProducerContext().getConfiguration();
+		this.producerConfiguration = (KafkaProducerConfiguration)context.getConfig().getProducerConfiguration();
 		this.context = context;
 		this.rowMapFactory = rowMapFactory;
 	}

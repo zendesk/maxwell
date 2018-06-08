@@ -6,6 +6,10 @@ public class PropertiesProducerConfiguration implements ProducerConfiguration {
 
 	private final Properties properties;
 
+	public PropertiesProducerConfiguration() {
+		this(new Properties());
+	}
+
 	public PropertiesProducerConfiguration(Properties properties) {
 		this.properties = properties;
 	}

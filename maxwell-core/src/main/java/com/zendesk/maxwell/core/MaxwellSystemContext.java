@@ -2,7 +2,7 @@ package com.zendesk.maxwell.core;
 
 import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.config.MaxwellFilter;
-import com.zendesk.maxwell.api.producer.ProducerContext;
+import com.zendesk.maxwell.api.producer.Producer;
 import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.core.recovery.RecoveryInfo;
 import com.zendesk.maxwell.core.replication.HeartbeatNotifier;
@@ -58,7 +58,7 @@ public interface MaxwellSystemContext extends MaxwellContext {
 
 	HeartbeatNotifier getHeartbeatNotifier();
 
-	void setProducerContext(ProducerContext producerContext);
+	void setProducer(Producer producer);
 
 	void configureOnReplicationStartEventHandler(Consumer<MaxwellContext> onReplicationStartEventHandler);
 

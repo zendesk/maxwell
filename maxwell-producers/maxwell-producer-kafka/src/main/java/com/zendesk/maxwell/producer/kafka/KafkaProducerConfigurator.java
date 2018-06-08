@@ -1,11 +1,10 @@
 package com.zendesk.maxwell.producer.kafka;
 
-import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.config.CommandLineOptionParserContext;
-import com.zendesk.maxwell.api.producer.Producer;
-import com.zendesk.maxwell.api.producer.ProducerConfigurator;
-import com.zendesk.maxwell.api.row.RowMapFactory;
 import com.zendesk.maxwell.api.config.ConfigurationSupport;
+import com.zendesk.maxwell.api.producer.ProducerConfiguration;
+import com.zendesk.maxwell.api.producer.ProducerConfigurator;
+import com.zendesk.maxwell.api.producer.ProducerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,19 +13,17 @@ import java.util.Optional;
 import java.util.Properties;
 
 @Service
-public class KafkaProducerConfigurator implements ProducerConfigurator<KafkaProducerConfiguration> {
+public class KafkaProducerConfigurator implements ProducerConfigurator {
 
 	private final ConfigurationSupport configurationSupport;
-	private final RowMapFactory rowMapFactory;
 
 	@Autowired
-	public KafkaProducerConfigurator(ConfigurationSupport configurationSupport, RowMapFactory rowMapFactory) {
+	public KafkaProducerConfigurator(ConfigurationSupport configurationSupport) {
 		this.configurationSupport = configurationSupport;
-		this.rowMapFactory = rowMapFactory;
 	}
 
 	@Override
-	public String getExtensionIdentifier() {
+	public String getIdentifier() {
 		return "kafka";
 	}
 
@@ -43,7 +40,7 @@ public class KafkaProducerConfigurator implements ProducerConfigurator<KafkaProd
 	}
 
 	@Override
-	public Optional<KafkaProducerConfiguration> parseConfiguration(Properties configurationValues) {
+	public Optional<ProducerConfiguration> parseConfiguration(Properties configurationValues) {
 		KafkaProducerConfiguration config = new KafkaProducerConfiguration();
 		config.setKafkaTopic(configurationSupport.fetchOption("kafka_topic", configurationValues, "maxwell"));
 		config.setKafkaKeyFormat(configurationSupport.fetchOption("kafka_key_format", configurationValues, "hash"));
@@ -75,7 +72,8 @@ public class KafkaProducerConfigurator implements ProducerConfigurator<KafkaProd
 	}
 
 	@Override
-	public Producer createInstance(MaxwellContext context, KafkaProducerConfiguration configuration) {
-		return new MaxwellKafkaProducer(context, configuration, rowMapFactory);
+	public Class<? extends ProducerFactory> getFactory() {
+		return KafkaProducerFactory.class;
 	}
+
 }

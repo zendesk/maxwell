@@ -1,20 +1,18 @@
 package com.zendesk.maxwell.producer.pubsub;
 
-import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.config.CommandLineOptionParserContext;
-import com.zendesk.maxwell.api.producer.Producer;
-import com.zendesk.maxwell.api.producer.ProducerConfigurator;
-import com.zendesk.maxwell.api.producer.ProducerInstantiationException;
 import com.zendesk.maxwell.api.config.ConfigurationSupport;
+import com.zendesk.maxwell.api.producer.ProducerConfiguration;
+import com.zendesk.maxwell.api.producer.ProducerConfigurator;
+import com.zendesk.maxwell.api.producer.ProducerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.Optional;
 import java.util.Properties;
 
 @Service
-public class PubsubProducerConfigurator implements ProducerConfigurator<PubsubProducerConfiguration> {
+public class PubsubProducerConfigurator implements ProducerConfigurator{
 
 	private final ConfigurationSupport configurationSupport;
 
@@ -24,7 +22,7 @@ public class PubsubProducerConfigurator implements ProducerConfigurator<PubsubPr
 	}
 
 	@Override
-	public String getExtensionIdentifier() {
+	public String getIdentifier() {
 		return "pubsub";
 	}
 
@@ -36,7 +34,7 @@ public class PubsubProducerConfigurator implements ProducerConfigurator<PubsubPr
 	}
 
 	@Override
-	public Optional<PubsubProducerConfiguration> parseConfiguration(Properties configurationValues) {
+	public Optional<ProducerConfiguration> parseConfiguration(Properties configurationValues) {
 		PubsubProducerConfiguration config = new PubsubProducerConfiguration();
 		config.setPubsubProjectId(configurationSupport.fetchOption("pubsub_project_id", configurationValues, null));
 		config.setPubsubTopic(configurationSupport.fetchOption("pubsub_topic", configurationValues, "maxwell"));
@@ -45,11 +43,7 @@ public class PubsubProducerConfigurator implements ProducerConfigurator<PubsubPr
 	}
 
 	@Override
-	public Producer createInstance(MaxwellContext context, PubsubProducerConfiguration configuration) {
-		try {
-			return new MaxwellPubsubProducer(context, configuration.getPubsubProjectId(), configuration.getPubsubTopic(), configuration.getDdlPubsubTopic());
-		} catch (IOException e) {
-			throw new ProducerInstantiationException(e);
-		}
+	public Class<? extends ProducerFactory> getFactory() {
+		return PubSubProducerFactory.class;
 	}
 }

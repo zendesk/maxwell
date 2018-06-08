@@ -11,7 +11,6 @@ import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.config.MaxwellDiagnosticConfig;
 import com.zendesk.maxwell.api.monitoring.MaxwellDiagnosticContext;
 import com.zendesk.maxwell.core.ContextStartListener;
-import com.zendesk.maxwell.core.producer.Producers;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -29,13 +28,11 @@ public class MaxwellHTTPServer implements ContextStartListener {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellHTTPServer.class);
 
-	private final Producers producers;
 	private final MetricRegistry metricRegistry;
 	private final HealthCheckRegistry healthCheckRegistry;
 
 	@Autowired
-	public MaxwellHTTPServer(Producers producers, MetricRegistry metricRegistry, HealthCheckRegistry healthCheckRegistry) {
-		this.producers = producers;
+	public MaxwellHTTPServer(MetricRegistry metricRegistry, HealthCheckRegistry healthCheckRegistry) {
 		this.metricRegistry = metricRegistry;
 		this.healthCheckRegistry = healthCheckRegistry;
 	}

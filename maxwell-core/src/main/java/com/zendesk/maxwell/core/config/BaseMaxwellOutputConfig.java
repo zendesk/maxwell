@@ -22,14 +22,15 @@ public class BaseMaxwellOutputConfig implements MaxwellOutputConfig {
 	private String secretKey;
 
 	public BaseMaxwellOutputConfig() {
-		includesBinlogPosition = false;
-		includesGtidPosition = false;
-		includesCommitInfo = true;
-		includesNulls = true;
-		includesServerId = false;
-		includesThreadId = false;
-		includesRowQuery = false;
-		outputDDL = false;
+		includesBinlogPosition = DEFAULT_INCLUDE_BINLOG_POSITION;
+		includesGtidPosition = DEFAULT_INCLUDE_GTID_POSITION;
+		includesCommitInfo = DEFAULT_INCLUDE_COMMIT_INFO;
+		includesXOffset = DEFAULT_INCLUDE_XOFFSET;
+		includesNulls = DEFAULT_INCLUDE_NULLS;
+		includesServerId = DEFAULT_INCLUDE_SERVER_ID;
+		includesThreadId = DEFAULT_INCLUDE_THREAD_ID;
+		includesRowQuery = DEFAULT_INCLUDE_ROW_QUERY;
+		outputDDL = DEFAULT_OUTPUT_DDL;
 		excludeColumns = new ArrayList<>();
 		encryptionMode = EncryptionMode.ENCRYPT_NONE;
 	}

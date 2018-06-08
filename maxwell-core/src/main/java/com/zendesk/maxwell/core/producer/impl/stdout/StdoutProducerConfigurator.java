@@ -1,20 +1,18 @@
 package com.zendesk.maxwell.core.producer.impl.stdout;
 
-import com.zendesk.maxwell.api.MaxwellContext;
-import com.zendesk.maxwell.api.producer.Producer;
-import com.zendesk.maxwell.api.producer.ProducerConfiguration;
 import com.zendesk.maxwell.api.producer.ProducerConfigurator;
+import com.zendesk.maxwell.api.producer.ProducerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
-public class StdoutProducerConfigurator implements ProducerConfigurator<ProducerConfiguration> {
+public class StdoutProducerConfigurator implements ProducerConfigurator {
 	@Override
-	public String getExtensionIdentifier() {
+	public String getIdentifier() {
 		return "stdout";
 	}
 
 	@Override
-	public Producer createInstance(MaxwellContext context, ProducerConfiguration configuration) {
-		return new StdoutProducer(context);
+	public Class<? extends ProducerFactory> getFactory() {
+		return StdoutProducerFactory.class;
 	}
 }

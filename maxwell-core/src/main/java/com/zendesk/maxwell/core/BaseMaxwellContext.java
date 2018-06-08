@@ -9,7 +9,6 @@ import com.zendesk.maxwell.api.monitoring.MaxwellDiagnostic;
 import com.zendesk.maxwell.api.monitoring.MaxwellDiagnosticContext;
 import com.zendesk.maxwell.api.monitoring.Metrics;
 import com.zendesk.maxwell.api.producer.Producer;
-import com.zendesk.maxwell.api.producer.ProducerContext;
 import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.api.row.RowMap;
 import com.zendesk.maxwell.core.monitoring.MaxwellMetrics;
@@ -51,7 +50,7 @@ public class BaseMaxwellContext implements MaxwellSystemContext {
 	private Long serverID;
 	private Position initialPosition;
 	private CaseSensitivity caseSensitivity;
-	private ProducerContext producerContext;
+	private Producer producer;
 
 	private final TaskManager taskManager;
 
@@ -419,21 +418,12 @@ public class BaseMaxwellContext implements MaxwellSystemContext {
 
 	@Override
 	public Producer getProducer(){
-		return getProducerContext().getProducer();
+		return producer;
 	}
 
 	@Override
-	public ProducerContext getProducerContext(){
-		return getOptionalProducerContext().orElseThrow(() -> new IllegalStateException("No producer context initialized"));
-	}
-
-	private Optional<ProducerContext> getOptionalProducerContext() {
-		return Optional.ofNullable(producerContext);
-	}
-
-	@Override
-	public void setProducerContext(ProducerContext producerContext) {
-		this.producerContext = producerContext;
+	public void setProducer(Producer producer) {
+		this.producer = producer;
 	}
 
 	@Override

@@ -1,10 +1,10 @@
 package com.zendesk.maxwell.producer.rabbitmq;
 
-import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.config.CommandLineOptionParserContext;
-import com.zendesk.maxwell.api.producer.Producer;
-import com.zendesk.maxwell.api.producer.ProducerConfigurator;
 import com.zendesk.maxwell.api.config.ConfigurationSupport;
+import com.zendesk.maxwell.api.producer.ProducerConfiguration;
+import com.zendesk.maxwell.api.producer.ProducerConfigurator;
+import com.zendesk.maxwell.api.producer.ProducerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +12,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 @Service
-public class RabbitmqProducerConfigurator implements ProducerConfigurator<RabbitmqProducerConfiguration> {
+public class RabbitmqProducerConfigurator implements ProducerConfigurator {
 
 	private final ConfigurationSupport configurationSupport;
 
@@ -22,7 +22,7 @@ public class RabbitmqProducerConfigurator implements ProducerConfigurator<Rabbit
 	}
 
 	@Override
-	public String getExtensionIdentifier() {
+	public String getIdentifier() {
 		return "rabbitmq";
 	}
 
@@ -43,7 +43,7 @@ public class RabbitmqProducerConfigurator implements ProducerConfigurator<Rabbit
 	}
 
 	@Override
-	public Optional<RabbitmqProducerConfiguration> parseConfiguration(Properties configurationValues) {
+	public Optional<ProducerConfiguration> parseConfiguration(Properties configurationValues) {
 		RabbitmqProducerConfiguration config = new RabbitmqProducerConfiguration();
 		config.setRabbitmqHost(configurationSupport.fetchOption("rabbitmq_host", configurationValues, "localhost"));
 		config.setRabbitmqPort(Integer.parseInt(configurationSupport.fetchOption("rabbitmq_port", configurationValues, "5672")));
@@ -61,8 +61,7 @@ public class RabbitmqProducerConfigurator implements ProducerConfigurator<Rabbit
 	}
 
 	@Override
-	public Producer createInstance(MaxwellContext context, RabbitmqProducerConfiguration configuration) {
-		return new RabbitmqProducer(context, configuration);
+	public Class<? extends ProducerFactory> getFactory() {
+		return RabbitmqProducerFactory.class;
 	}
-
 }

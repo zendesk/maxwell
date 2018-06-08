@@ -6,6 +6,8 @@ import java.net.URISyntaxException;
 import java.util.Map;
 
 public interface MaxwellMysqlConfig {
+	int DEFAULT_MYSQL_PORT = 3306;
+
 	String getConnectionURI(boolean includeDatabase) throws URISyntaxException;
 
 	String getConnectionURI() throws URISyntaxException;
