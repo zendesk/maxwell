@@ -5,6 +5,7 @@ import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.core.springconfig.CoreComponentScanConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.monitoring.NoOpMetrics;
+import com.zendesk.maxwell.test.springconfig.TestSupportComponentScan;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { CoreComponentScanConfig.class })
+@ContextConfiguration(classes = { CoreComponentScanConfig.class, TestSupportComponentScan.class })
 public class MaxwellKafkaProducerWorkerTest {
 
 	@Autowired

@@ -315,6 +315,11 @@
                 <version>${dropwizard.metrics.version}</version>
             </dependency>
             <dependency>
+                <groupId>io.dropwizard.metrics</groupId>
+                <artifactId>metrics-healthchecks</artifactId>
+                <version>${dropwizard.metrics.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.coursera</groupId>
                 <artifactId>metrics-datadog</artifactId>
                 <version>${metrics-datadog.version}</version>

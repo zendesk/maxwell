@@ -1,9 +1,11 @@
 package com.zendesk.maxwell.core.springconfig;
 
-import org.springframework.context.annotation.ComponentScan;
+import com.zendesk.maxwell.test.springconfig.TestSupportComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
 @Configuration
-@ComponentScan(basePackages = {"com.zendesk.maxwell.core"})
+@Import({CoreComponentScanConfig.class,TestSupportComponentScan.class})
 public class SpringTestContextConfiguration {
+
 }

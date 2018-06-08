@@ -10,6 +10,7 @@ import com.zendesk.maxwell.core.springconfig.CoreComponentScanConfig;
 import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.api.producer.AbstractAsyncProducer;
+import com.zendesk.maxwell.test.springconfig.TestSupportComponentScan;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.NotEnoughReplicasException;
@@ -22,7 +23,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import static org.mockito.Mockito.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { CoreComponentScanConfig.class })
+@ContextConfiguration(classes = { CoreComponentScanConfig.class, TestSupportComponentScan.class })
 public class KafkaCallbackTest {
 
 	@Autowired

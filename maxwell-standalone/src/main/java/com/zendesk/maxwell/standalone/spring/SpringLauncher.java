@@ -3,11 +3,11 @@ package com.zendesk.maxwell.standalone.spring;
 import com.zendesk.maxwell.api.LauncherException;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.core.MaxwellLauncher;
-import com.zendesk.maxwell.core.springconfig.CoreComponentScanConfig;
 import com.zendesk.maxwell.core.bootstrap.MaxwellBootstrapUtilityLauncher;
 import com.zendesk.maxwell.standalone.config.MaxwellBootstrapUtilConfigurationOptionMerger;
 import com.zendesk.maxwell.standalone.config.ConfigurationOptionMerger;
 import com.zendesk.maxwell.standalone.config.MaxwellConfigurationOptionMerger;
+import com.zendesk.maxwell.standalone.springconfig.StandaloneApplicationComponentScanConfig;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
@@ -49,7 +49,7 @@ public class SpringLauncher {
 
 	public static void launch(Consumer<ApplicationContext> applicationContextConsumer){
 		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext()) {
-			ctx.register(CoreComponentScanConfig.class);
+			ctx.register(StandaloneApplicationComponentScanConfig.class);
 			ctx.refresh();
 
 			applicationContextConsumer.accept(ctx);
