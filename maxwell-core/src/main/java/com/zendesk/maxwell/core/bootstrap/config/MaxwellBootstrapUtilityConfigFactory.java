@@ -1,10 +1,8 @@
 package com.zendesk.maxwell.core.bootstrap.config;
 
 import com.zendesk.maxwell.api.config.InvalidUsageException;
-import com.zendesk.maxwell.core.config.ConfigurationFileParser;
 import com.zendesk.maxwell.api.config.ConfigurationSupport;
 import com.zendesk.maxwell.core.config.MySqlConfigurationSupport;
-import joptsimple.OptionSet;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -14,39 +12,19 @@ import java.util.Properties;
 @Service
 public class MaxwellBootstrapUtilityConfigFactory {
 
-	private final MaxwellBootstrapUtilityCommandLineOptions maxwellBootstrapUtilityCommandLineOptions;
-	private final ConfigurationFileParser configurationFileParser;
 	private final ConfigurationSupport configurationSupport;
 	private final MySqlConfigurationSupport mySqlConfigurationSupport;
 
 	@Autowired
-	public MaxwellBootstrapUtilityConfigFactory(MaxwellBootstrapUtilityCommandLineOptions maxwellBootstrapUtilityCommandLineOptions, ConfigurationFileParser configurationFileParser, ConfigurationSupport configurationSupport, MySqlConfigurationSupport mySqlConfigurationSupport) {
-		this.maxwellBootstrapUtilityCommandLineOptions = maxwellBootstrapUtilityCommandLineOptions;
-		this.configurationFileParser = configurationFileParser;
+	public MaxwellBootstrapUtilityConfigFactory(ConfigurationSupport configurationSupport, MySqlConfigurationSupport mySqlConfigurationSupport) {
 		this.configurationSupport = configurationSupport;
 		this.mySqlConfigurationSupport = mySqlConfigurationSupport;
 	}
 
-	public MaxwellBootstrapUtilityConfig createConfigurationFromArgumentsAndConfigurationFile(String [] argv) {
-		OptionSet options = maxwellBootstrapUtilityCommandLineOptions.parse(argv);
-		Properties properties;
-
-		if ( options.has("config") ) {
-			properties = configurationFileParser.parseFile((String) options.valueOf("config"), true);
-		} else {
-			properties = configurationFileParser.parseFile(ConfigurationSupport.DEFAULT_CONFIG_FILE, false);
-		}
-
-		if ( options.has("help") )
-			throw new InvalidUsageException("Help for Maxwell Bootstrap Utility:\n\nPlease provide one of:\n--database AND --table, --abort ID, or --monitor ID");
-
-		return createConfigFrom(options, properties);
-	}
-
-	private MaxwellBootstrapUtilityConfig createConfigFrom(OptionSet options, Properties properties) {
+	public MaxwellBootstrapUtilityConfig createFor(Properties properties) {
 		MaxwellBootstrapUtilityConfig config = new MaxwellBootstrapUtilityConfig();
-		if ( options.has("log_level"))
-			config.log_level = parseLogLevel((String) options.valueOf("log_level"));
+		if ( properties.containsKey("log_level"))
+			config.log_level = parseLogLevel(properties.getProperty("log_level"));
 
 		config.mysql = mySqlConfigurationSupport.parseMysqlConfig("", properties);
 		if ( config.mysql.getHost() == null )
@@ -54,15 +32,15 @@ public class MaxwellBootstrapUtilityConfigFactory {
 
 		config.schemaDatabaseName = configurationSupport.fetchOption("schema_database", properties, "maxwell");
 
-		if ( options.has("database") )
-			config.databaseName = (String) options.valueOf("database");
-		else if ( !options.has("abort") && !options.has("monitor") )
+		if ( properties.containsKey("database") )
+			config.databaseName = properties.getProperty("database");
+		else if ( !properties.containsKey("abort") && !properties.containsKey("monitor") )
 			throw new InvalidUsageException("please specify a database");
 
-		if ( options.has("abort") )
-			config.abortBootstrapID = Long.valueOf((String) options.valueOf("abort"));
-		else if ( options.has("monitor") )
-			config.monitorBootstrapID = Long.valueOf((String) options.valueOf("monitor"));
+		if ( properties.containsKey("abort") )
+			config.abortBootstrapID = Long.valueOf(properties.getProperty("abort"));
+		else if ( properties.containsKey("monitor") )
+			config.monitorBootstrapID = Long.valueOf(properties.getProperty("monitor"));
 
 		if ( config.abortBootstrapID != null ) {
 			if ( config.monitorBootstrapID != null )
@@ -76,16 +54,16 @@ public class MaxwellBootstrapUtilityConfigFactory {
 				throw new InvalidUsageException("--monitor is incompatible with --database and --table");
 		}
 
-		if ( options.has("table") )
-			config.tableName = (String) options.valueOf("table");
-		else if ( !options.has("abort") && !options.has("monitor") )
+		if ( properties.containsKey("table") )
+			config.tableName = properties.getProperty("table");
+		else if ( !properties.containsKey("abort") && !properties.containsKey("monitor") )
 			throw new InvalidUsageException("please specify a table");
 
-		if ( options.has("where")  && !StringUtils.isEmpty(((String) options.valueOf("where"))) )
-			config.whereClause = (String) options.valueOf("where");
+		if ( properties.containsKey("where")  && !StringUtils.isEmpty((properties.getProperty("where"))) )
+			config.whereClause = properties.getProperty("where");
 
-		if ( options.has("client_id") )
-			config.clientID = (String) options.valueOf("client_id");
+		if ( properties.containsKey("client_id") )
+			config.clientID = properties.getProperty("client_id");
 		return config;
 	}
 

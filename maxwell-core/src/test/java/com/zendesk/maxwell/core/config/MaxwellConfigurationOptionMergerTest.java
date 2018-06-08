@@ -28,7 +28,7 @@ public class MaxwellConfigurationOptionMergerTest {
 	@Test(expected = OptionException.class)
 	public void testCustomProperties() {
 		// custom properties are not supported on the command line just like 'kafka.*' properties
-		sut.merge(new String[] { "--custom.foo=bar" });
+		sut.mergeCommandLineOptionsWithConfigurationAndSystemEnvironment(new String[] { "--custom.foo=bar" });
 	}
 
 	@Test
@@ -36,7 +36,7 @@ public class MaxwellConfigurationOptionMergerTest {
 		String configPath = getTestConfigDir() + "producer-factory-config.properties";
 		assertNotNull("Config file not found at: " + configPath, Paths.get(configPath));
 
-		Properties result = sut.merge(new String[] { "--config=" + configPath });
+		Properties result = sut.mergeCommandLineOptionsWithConfigurationAndSystemEnvironment(new String[] { "--config=" + configPath });
 		assertEquals("bar", result.getProperty("custom_producer.foo"));
 	}
 
@@ -49,7 +49,7 @@ public class MaxwellConfigurationOptionMergerTest {
 		environmentVariables.set("MAXWELL_PRODUCER", "kafka");
 		environmentVariables.set("USER", "mysql");
 
-		Properties result = sut.merge(new String[] { "--env_config_prefix=MAXWELL_", "--host=localhost" });
+		Properties result = sut.mergeCommandLineOptionsWithConfigurationAndSystemEnvironment(new String[] { "--env_config_prefix=MAXWELL_", "--host=localhost" });
 		assertEquals("foo", result.getProperty("user"));
 		assertEquals("bar", result.getProperty("password"));
 		assertEquals("localhost", result.getProperty("host"));
@@ -67,7 +67,7 @@ public class MaxwellConfigurationOptionMergerTest {
 		String configPath = getTestConfigDir() + "env-var-config.properties";
 		assertNotNull("Config file not found at: " + configPath, Paths.get(configPath));
 
-		Properties result = sut.merge(new String[] { "--config=" + configPath, "--host=localhost" });
+		Properties result = sut.mergeCommandLineOptionsWithConfigurationAndSystemEnvironment(new String[] { "--config=" + configPath, "--host=localhost" });
 		assertEquals("foo", result.getProperty("user"));
 		assertEquals("bar", result.getProperty("password"));
 		assertEquals("localhost", result.getProperty("host"));

@@ -30,6 +30,7 @@ public class MaxwellLauncher {
 	}
 
 	public void launch(Properties configurationProperties, Consumer<MaxwellConfig> configurationAdopter) throws Exception {
+		setupLogging(configurationProperties);
 		final MaxwellConfig configuration = maxwellConfigFactory.createFor(configurationProperties);
 		configurationAdopter.accept(configuration);
 		final MaxwellSystemContext context = maxwellContextFactory.createFor(configuration);

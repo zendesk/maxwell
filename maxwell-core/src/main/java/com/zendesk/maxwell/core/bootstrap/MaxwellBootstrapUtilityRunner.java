@@ -1,11 +1,8 @@
 package com.zendesk.maxwell.core.bootstrap;
 
 import com.zendesk.maxwell.core.bootstrap.config.MaxwellBootstrapUtilityConfig;
-import com.zendesk.maxwell.core.bootstrap.config.MaxwellBootstrapUtilityConfigFactory;
-import com.zendesk.maxwell.core.util.Logging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import snaq.db.ConnectionPool;
 
@@ -28,22 +25,8 @@ public class MaxwellBootstrapUtilityRunner {
 
 	private boolean isComplete = false;
 
-	private final MaxwellBootstrapUtilityConfigFactory maxwellBootstrapUtilityConfigFactory;
-	private final Logging logging;
 
-	@Autowired
-	public MaxwellBootstrapUtilityRunner(MaxwellBootstrapUtilityConfigFactory maxwellBootstrapUtilityConfigFactory, Logging logging) {
-		this.maxwellBootstrapUtilityConfigFactory = maxwellBootstrapUtilityConfigFactory;
-		this.logging = logging;
-	}
-
-	public void run(String[] argv) throws Exception {
-		MaxwellBootstrapUtilityConfig config = maxwellBootstrapUtilityConfigFactory.createConfigurationFromArgumentsAndConfigurationFile(argv);
-
-		if ( config.log_level != null ) {
-			logging.setLevel(config.log_level);
-		}
-
+	public void run(MaxwellBootstrapUtilityConfig config) throws Exception {
 		ConnectionPool connectionPool = getConnectionPool(config);
 		try ( final Connection connection = connectionPool.getConnection() ) {
 			if ( config.abortBootstrapID != null ) {
