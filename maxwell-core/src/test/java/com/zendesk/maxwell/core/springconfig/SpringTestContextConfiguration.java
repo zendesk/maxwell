@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core;
+package com.zendesk.maxwell.core.springconfig;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;

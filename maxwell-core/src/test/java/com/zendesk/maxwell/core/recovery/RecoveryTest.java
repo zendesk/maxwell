@@ -13,6 +13,7 @@ import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducerConfigura
 import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducerFactory;
 import com.zendesk.maxwell.core.row.HeartbeatRowMap;
 import com.zendesk.maxwell.core.schema.*;
+import com.zendesk.maxwell.core.springconfig.SpringTestContextConfiguration;
 import com.zendesk.maxwell.core.support.MaxwellTestSupport;
 import com.zendesk.maxwell.core.support.MaxwellTestSupportCallback;
 import com.zendesk.maxwell.test.mysql.MysqlIsolatedServer;

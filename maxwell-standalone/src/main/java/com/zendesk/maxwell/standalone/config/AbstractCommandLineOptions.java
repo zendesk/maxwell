@@ -1,5 +1,6 @@
-package com.zendesk.maxwell.core.config;
+package com.zendesk.maxwell.standalone.config;
 
+import com.zendesk.maxwell.core.config.CommandLineOptions;
 import joptsimple.BuiltinHelpFormatter;
 import joptsimple.OptionDescriptor;
 import joptsimple.OptionParser;

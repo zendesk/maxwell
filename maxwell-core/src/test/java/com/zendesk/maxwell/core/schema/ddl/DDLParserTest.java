@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.schema.ddl;
 
-import com.zendesk.maxwell.core.SpringTestContextConfiguration;
+import com.zendesk.maxwell.core.springconfig.SpringTestContextConfiguration;
 import com.zendesk.maxwell.core.schema.columndef.BigIntColumnDef;
 import com.zendesk.maxwell.core.schema.columndef.ColumnDef;
 import com.zendesk.maxwell.core.schema.columndef.IntColumnDef;

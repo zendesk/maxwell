@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core.config;
+package com.zendesk.maxwell.standalone.config;
 
 import java.util.Properties;
 

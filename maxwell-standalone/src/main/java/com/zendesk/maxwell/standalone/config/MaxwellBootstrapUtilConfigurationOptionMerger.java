@@ -1,22 +1,22 @@
-package com.zendesk.maxwell.core.config;
+package com.zendesk.maxwell.standalone.config;
 
-import com.zendesk.maxwell.api.config.ConfigurationSupport;
 import com.zendesk.maxwell.api.config.InvalidUsageException;
 import joptsimple.OptionSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Properties;
 
 @Service
-public class MaxwellConfigurationOptionMerger extends AbstractConfigurationOptionMerger {
+public class MaxwellBootstrapUtilConfigurationOptionMerger extends AbstractConfigurationOptionMerger {
 
-	private final MaxwellCommandLineOptions maxwellCommandLineOptions;
+	private final MaxwellBootstrapUtilityCommandLineOptions maxwellBootstrapUtilityCommandLineOptions;
 
 	@Autowired
-	public MaxwellConfigurationOptionMerger(MaxwellCommandLineOptions maxwellCommandLineOptions, ConfigurationFileParser configurationFileParser, ConfigurationSupport configurationSupport) {
-		super(configurationFileParser, configurationSupport);
-		this.maxwellCommandLineOptions = maxwellCommandLineOptions;
+	public MaxwellBootstrapUtilConfigurationOptionMerger(MaxwellBootstrapUtilityCommandLineOptions maxwellBootstrapUtilityCommandLineOptions, ConfigurationFileParser configurationFileParser) {
+		super(configurationFileParser);
+		this.maxwellBootstrapUtilityCommandLineOptions = maxwellBootstrapUtilityCommandLineOptions;
 	}
 
 	/**
@@ -34,9 +34,14 @@ public class MaxwellConfigurationOptionMerger extends AbstractConfigurationOptio
 	 */
 	@Override
 	public Properties mergeCommandLineOptionsWithConfigurationAndSystemEnvironment(String[] args){
-		OptionSet options = maxwellCommandLineOptions.parse(args);
+		OptionSet options = maxwellBootstrapUtilityCommandLineOptions.parse(args);
 		if (options.has("help")){
 			throw new InvalidUsageException("Help for Maxwell:");
+		}
+
+		List<?> arguments = options.nonOptionArguments();
+		if (!arguments.isEmpty()) {
+			throw new InvalidUsageException("Unknown argument(s): " + arguments);
 		}
 
 		Properties properties = readConfigurationFile(options);

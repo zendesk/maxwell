@@ -1,6 +1,6 @@
-package com.zendesk.maxwell.core.config;
+package com.zendesk.maxwell.standalone.config;
 
-import com.zendesk.maxwell.core.SpringTestContextConfiguration;
+import com.zendesk.maxwell.standalone.springconfig.StandaloneComponentScanConfig;
 import joptsimple.OptionException;
 import org.junit.Rule;
 import org.junit.Test;
@@ -17,7 +17,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {SpringTestContextConfiguration.class})
+@ContextConfiguration(classes = {StandaloneComponentScanConfig.class, })
 public class MaxwellConfigurationOptionMergerTest {
 	@Rule
 	public final EnvironmentVariables environmentVariables = new EnvironmentVariables();

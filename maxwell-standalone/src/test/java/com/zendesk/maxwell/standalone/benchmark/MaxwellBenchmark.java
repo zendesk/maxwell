@@ -4,7 +4,7 @@ import com.zendesk.maxwell.api.LauncherException;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.test.mysql.MysqlIsolatedServer;
-import com.zendesk.maxwell.core.SpringLauncher;
+import com.zendesk.maxwell.standalone.spring.SpringLauncher;
 import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
 import com.zendesk.maxwell.core.config.BaseMaxwellMysqlConfig;
 import com.zendesk.maxwell.test.mysql.MysqlIsolatedServerSupport;

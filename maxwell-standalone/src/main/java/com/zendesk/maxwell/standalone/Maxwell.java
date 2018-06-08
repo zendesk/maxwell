@@ -1,8 +1,8 @@
 package com.zendesk.maxwell.standalone;
 
-import com.zendesk.maxwell.core.*;
-import com.zendesk.maxwell.core.config.MaxwellCommandLineOptions;
+import com.zendesk.maxwell.standalone.config.MaxwellCommandLineOptions;
 import com.zendesk.maxwell.core.util.Logging;
+import com.zendesk.maxwell.standalone.spring.SpringLauncher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

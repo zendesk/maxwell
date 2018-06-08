@@ -1,25 +1,21 @@
-package com.zendesk.maxwell.core.bootstrap.config;
+package com.zendesk.maxwell.standalone.config;
 
-import com.zendesk.maxwell.api.config.ConfigurationSupport;
 import com.zendesk.maxwell.api.config.InvalidUsageException;
-import com.zendesk.maxwell.core.config.AbstractConfigurationOptionMerger;
-import com.zendesk.maxwell.core.config.ConfigurationFileParser;
 import joptsimple.OptionSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Properties;
 
 @Service
-public class MaxwellBootstrapUtilConfigurationOptionMerger extends AbstractConfigurationOptionMerger {
+public class MaxwellConfigurationOptionMerger extends AbstractConfigurationOptionMerger {
 
-	private final MaxwellBootstrapUtilityCommandLineOptions maxwellBootstrapUtilityCommandLineOptions;
+	private final MaxwellCommandLineOptions maxwellCommandLineOptions;
 
 	@Autowired
-	public MaxwellBootstrapUtilConfigurationOptionMerger(MaxwellBootstrapUtilityCommandLineOptions maxwellBootstrapUtilityCommandLineOptions, ConfigurationFileParser configurationFileParser, ConfigurationSupport configurationSupport) {
-		super(configurationFileParser, configurationSupport);
-		this.maxwellBootstrapUtilityCommandLineOptions = maxwellBootstrapUtilityCommandLineOptions;
+	public MaxwellConfigurationOptionMerger(MaxwellCommandLineOptions maxwellCommandLineOptions, ConfigurationFileParser configurationFileParser) {
+		super(configurationFileParser);
+		this.maxwellCommandLineOptions = maxwellCommandLineOptions;
 	}
 
 	/**
@@ -37,14 +33,9 @@ public class MaxwellBootstrapUtilConfigurationOptionMerger extends AbstractConfi
 	 */
 	@Override
 	public Properties mergeCommandLineOptionsWithConfigurationAndSystemEnvironment(String[] args){
-		OptionSet options = maxwellBootstrapUtilityCommandLineOptions.parse(args);
+		OptionSet options = maxwellCommandLineOptions.parse(args);
 		if (options.has("help")){
 			throw new InvalidUsageException("Help for Maxwell:");
-		}
-
-		List<?> arguments = options.nonOptionArguments();
-		if (!arguments.isEmpty()) {
-			throw new InvalidUsageException("Unknown argument(s): " + arguments);
 		}
 
 		Properties properties = readConfigurationFile(options);

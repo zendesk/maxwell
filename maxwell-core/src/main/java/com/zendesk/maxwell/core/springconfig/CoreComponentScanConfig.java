@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core;
+package com.zendesk.maxwell.core.springconfig;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @ComponentScan(basePackages = "com.zendesk.maxwell")
-public class SpringLauncherScanConfig {
+public class CoreComponentScanConfig {
 
 	@Bean
 	public MetricRegistry metricRegistry(){
