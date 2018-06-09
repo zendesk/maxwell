@@ -15,8 +15,8 @@
     <description>Maxwell's metrics reporter parent.</description>
 
     <modules>
-        <module>maxwell-metric-reporter-setup</module>
-        <module>maxwell-metric-reporter-http</module>
-        <module>maxwell-metric-reporter-datadog</module>
+        <module>maxwell-metrics-reporter-setup</module>
+        <module>maxwell-metrics-reporter-http</module>
+        <module>maxwell-metrics-reporter-datadog</module>
     </modules>
 </project>
