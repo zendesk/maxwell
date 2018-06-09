@@ -109,7 +109,8 @@ public class RecoveryTest extends TestWithNameLogging {
 			recoveryInfo
 		);
 
-		Position recoveredPosition = recovery.recover();
+		Position recoveredPosition = recovery.recover().getPosition();
+
 		// lousy tests, but it's very hard to make firm assertions about the correct position.
 		// It's in a ballpark.
 
@@ -150,8 +151,7 @@ public class RecoveryTest extends TestWithNameLogging {
 			recoveryInfo
 		);
 
-		Position recoveredPosition = recovery.recover();
-		assertEquals(null, recoveredPosition);
+		assertEquals(null, recovery.recover());
 	}
 
 	private void drainReplication(BufferedMaxwell maxwell, List<RowMap> rows) throws Exception {
