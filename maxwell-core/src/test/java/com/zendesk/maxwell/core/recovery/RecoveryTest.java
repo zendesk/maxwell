@@ -9,8 +9,6 @@ import com.zendesk.maxwell.core.*;
 import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
 import com.zendesk.maxwell.core.config.BaseMaxwellMysqlConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
-import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducerConfiguration;
-import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducerFactory;
 import com.zendesk.maxwell.core.row.HeartbeatRowMap;
 import com.zendesk.maxwell.core.schema.*;
 import com.zendesk.maxwell.core.springconfig.SpringTestContextConfiguration;
@@ -86,8 +84,6 @@ public class RecoveryTest extends TestWithNameLogging {
 	private MaxwellConfig getBufferedConfig(int port, boolean masterRecovery) {
 		BaseMaxwellConfig config = getConfig(port, masterRecovery);
 		config.setProducerType("buffer");
-		config.setProducerFactory(BufferedProducerFactory.class.getCanonicalName());
-		config.setProducerConfiguration(new BufferedProducerConfiguration());
 		return config;
 	}
 

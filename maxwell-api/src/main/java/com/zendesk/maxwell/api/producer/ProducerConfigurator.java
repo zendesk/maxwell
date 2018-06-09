@@ -1,5 +1,6 @@
 package com.zendesk.maxwell.api.producer;
 
+import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.config.ModuleConfigurator;
 import com.zendesk.maxwell.api.config.ModuleType;
 
@@ -10,6 +11,6 @@ public interface ProducerConfigurator extends ModuleConfigurator<ProducerConfigu
 		return ModuleType.PRODUCER;
 	}
 
-	Class<? extends ProducerFactory> getFactory();
+	Producer configure(MaxwellContext maxwellContext, ProducerConfiguration configuration);
 
 }

@@ -26,7 +26,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeoutException;
 
 class KafkaCallback implements Callback {
-	public static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
+	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
 	private final AbstractAsyncProducer.CallbackCompleter cc;
 	private final Position position;
 	private final String json;
@@ -38,7 +38,7 @@ class KafkaCallback implements Callback {
 	private Meter succeededMessageMeter;
 	private Meter failedMessageMeter;
 
-	public KafkaCallback(AbstractAsyncProducer.CallbackCompleter cc, Position position, String key, String json,
+	KafkaCallback(AbstractAsyncProducer.CallbackCompleter cc, Position position, String key, String json,
 	                     Counter producedMessageCount, Counter failedMessageCount, Meter producedMessageMeter,
 	                     Meter failedMessageMeter, MaxwellContext context) {
 		this.cc = cc;
@@ -85,12 +85,14 @@ class KafkaCallback implements Callback {
 public class MaxwellKafkaProducer extends AbstractProducer {
 	private final ArrayBlockingQueue<RowMap> queue;
 	private final MaxwellKafkaProducerWorker worker;
+	private final KafkaProducerConfiguration configuration;
 	private final RowMapFactory rowMapFactory;
 
-	public MaxwellKafkaProducer(MaxwellContext context, KafkaProducerConfiguration configuration, RowMapFactory rowMapFactory) {
+	MaxwellKafkaProducer(MaxwellContext context, KafkaProducerConfiguration configuration, RowMapFactory rowMapFactory) {
 		super(context);
 		this.queue = new ArrayBlockingQueue<>(100);
 		this.worker = new MaxwellKafkaProducerWorker(context, configuration, this.queue);
+		this.configuration = configuration;
 		this.rowMapFactory = rowMapFactory;
 		Thread thread = new Thread(this.worker, "maxwell-kafka-worker");
 		thread.setDaemon(true);
@@ -109,12 +111,12 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 
 	@Override
 	public KafkaProducerDiagnostic getDiagnostic() {
-		return new KafkaProducerDiagnostic(worker, context, rowMapFactory);
+		return new KafkaProducerDiagnostic(worker, configuration, context, rowMapFactory);
 	}
 }
 
 class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnable, StoppableTask {
-	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
 
 	private final KafkaProducer<String, String> kafka;
 	private String topic;
@@ -127,15 +129,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	private Thread thread;
 	private StoppableTaskState taskState;
 
-	public static MaxwellKafkaPartitioner makeDDLPartitioner(String partitionHashFunc, String partitionKey) {
-		if ( partitionKey.equals("table") ) {
-			return new MaxwellKafkaPartitioner(partitionHashFunc, "table", null, "database");
-		} else {
-			return new MaxwellKafkaPartitioner(partitionHashFunc, "database", null, null);
-		}
-	}
-
-	public MaxwellKafkaProducerWorker(MaxwellContext context, KafkaProducerConfiguration configuration, ArrayBlockingQueue<RowMap> queue) {
+	MaxwellKafkaProducerWorker(MaxwellContext context, KafkaProducerConfiguration configuration, ArrayBlockingQueue<RowMap> queue) {
 		super(context);
 
 		this.topic = configuration.getKafkaTopic();
@@ -162,6 +156,14 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 
 		this.queue = queue;
 		this.taskState = new StoppableTaskState("MaxwellKafkaProducerWorker");
+	}
+
+	private static MaxwellKafkaPartitioner makeDDLPartitioner(String partitionHashFunc, String partitionKey) {
+		if ( partitionKey.equals("table") ) {
+			return new MaxwellKafkaPartitioner(partitionHashFunc, "table", null, "database");
+		} else {
+			return new MaxwellKafkaPartitioner(partitionHashFunc, "database", null, null);
+		}
 	}
 
 	@Override
@@ -212,7 +214,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		sendAsync(record, callback);
 	}
 
-	void sendAsync(ProducerRecord<String, String> record, Callback callback) throws Exception {
+	void sendAsync(ProducerRecord<String, String> record, Callback callback) {
 		kafka.send(record, callback);
 	}
 

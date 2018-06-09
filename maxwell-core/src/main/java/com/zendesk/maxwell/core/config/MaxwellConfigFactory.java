@@ -2,34 +2,27 @@ package com.zendesk.maxwell.core.config;
 
 import com.zendesk.maxwell.api.config.*;
 import com.zendesk.maxwell.api.producer.EncryptionMode;
-import com.zendesk.maxwell.api.producer.ProducerConfigurator;
-import com.zendesk.maxwell.api.producer.PropertiesProducerConfiguration;
 import com.zendesk.maxwell.api.replication.BinlogPosition;
 import com.zendesk.maxwell.api.replication.Position;
-import com.zendesk.maxwell.core.producer.impl.noop.NoopProducerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Enumeration;
-import java.util.List;
 import java.util.Properties;
 
 @Service
 public class MaxwellConfigFactory {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfigFactory.class);
-	private static final String NONE_PRODUCER_TYPE = "none";
 
 	private final ConfigurationSupport configurationSupport;
 	private final MySqlConfigurationSupport mySqlConfigurationSupport;
-	private final List<ProducerConfigurator> producerConfigurators;
 
 	@Autowired
-	public MaxwellConfigFactory(ConfigurationSupport configurationSupport, MySqlConfigurationSupport mySqlConfigurationSupport, List<ProducerConfigurator> producerConfigurators) {
+	public MaxwellConfigFactory(ConfigurationSupport configurationSupport, MySqlConfigurationSupport mySqlConfigurationSupport) {
 		this.configurationSupport = configurationSupport;
 		this.mySqlConfigurationSupport = mySqlConfigurationSupport;
-		this.producerConfigurators = producerConfigurators;
 	}
 
 	public BaseMaxwellConfig create() {
@@ -108,29 +101,6 @@ public class MaxwellConfigFactory {
 				}
 			}
 		}
-
-		appendProducerConfiguration(config, properties);
-	}
-
-	private void appendProducerConfiguration(BaseMaxwellConfig maxwellConfig, Properties configurationOptions) {
-		final String producerType = maxwellConfig.getProducerType();
-		if(producerType != null){
-			if(NONE_PRODUCER_TYPE.equalsIgnoreCase(producerType)){
-				maxwellConfig.setProducerConfiguration(new PropertiesProducerConfiguration());
-				maxwellConfig.setProducerFactory(NoopProducerFactory.class.getCanonicalName());
-			}else {
-				ProducerConfigurator configurator = getProducerConfigurator(producerType);
-				maxwellConfig.setProducerConfiguration(configurator.parseConfiguration(configurationOptions).orElseGet(PropertiesProducerConfiguration::new));
-				maxwellConfig.setProducerFactory(configurator.getFactory().getCanonicalName());
-			}
-		}
-	}
-
-	private ProducerConfigurator getProducerConfigurator(String type){
-		return producerConfigurators.stream()
-				.filter(c -> type.equalsIgnoreCase(c.getIdentifier()))
-				.findFirst()
-				.orElseThrow(() -> new InvalidOptionException("No producer available of type " +  type, "--producer_type"));
 	}
 
 	private void configureDiagnostics(final Properties properties, final BaseMaxwellConfig config) {

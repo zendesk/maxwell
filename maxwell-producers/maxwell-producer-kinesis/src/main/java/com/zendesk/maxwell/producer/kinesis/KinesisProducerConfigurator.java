@@ -1,10 +1,11 @@
 package com.zendesk.maxwell.producer.kinesis;
 
+import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.config.CommandLineOptionParserContext;
 import com.zendesk.maxwell.api.config.ConfigurationSupport;
+import com.zendesk.maxwell.api.producer.Producer;
 import com.zendesk.maxwell.api.producer.ProducerConfiguration;
 import com.zendesk.maxwell.api.producer.ProducerConfigurator;
-import com.zendesk.maxwell.api.producer.ProducerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,7 +40,8 @@ public class KinesisProducerConfigurator implements ProducerConfigurator {
 	}
 
 	@Override
-	public Class<? extends ProducerFactory> getFactory() {
-		return KinesisProducerFactory.class;
+	public Producer configure(MaxwellContext maxwellContext, ProducerConfiguration configuration) {
+		KinesisProducerConfiguration kinesisProducerConfiguration = (KinesisProducerConfiguration)configuration;
+		return new MaxwellKinesisProducer(maxwellContext, kinesisProducerConfiguration);
 	}
 }

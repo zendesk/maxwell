@@ -1,13 +1,13 @@
 package com.zendesk.maxwell.producer.pubsub;
 
+import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.config.CommandLineOptionParserContext;
 import com.zendesk.maxwell.api.config.ConfigurationSupport;
-import com.zendesk.maxwell.api.producer.ProducerConfiguration;
-import com.zendesk.maxwell.api.producer.ProducerConfigurator;
-import com.zendesk.maxwell.api.producer.ProducerFactory;
+import com.zendesk.maxwell.api.producer.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -43,7 +43,12 @@ public class PubsubProducerConfigurator implements ProducerConfigurator{
 	}
 
 	@Override
-	public Class<? extends ProducerFactory> getFactory() {
-		return PubSubProducerFactory.class;
+	public Producer configure(MaxwellContext maxwellContext, ProducerConfiguration configuration) {
+		try {
+			PubsubProducerConfiguration pubsubProducerConfiguration = (PubsubProducerConfiguration)configuration;
+			return new MaxwellPubsubProducer(maxwellContext, pubsubProducerConfiguration);
+		} catch (IOException e) {
+			throw new ProducerInstantiationException(e);
+		}
 	}
 }

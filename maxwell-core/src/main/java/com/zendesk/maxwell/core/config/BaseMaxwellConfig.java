@@ -2,10 +2,7 @@ package com.zendesk.maxwell.core.config;
 
 import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.api.config.*;
-import com.zendesk.maxwell.api.producer.ProducerConfiguration;
-import com.zendesk.maxwell.api.producer.PropertiesProducerConfiguration;
 import com.zendesk.maxwell.api.replication.Position;
-import com.zendesk.maxwell.core.producer.impl.stdout.StdoutProducerFactory;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -29,7 +26,6 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 	private String bootstrapperType;
 
 	private String producerType;
-	private ProducerConfiguration producerConfiguration;
 	private boolean ignoreProducerError;
 
 	private String producerPartitionKey;
@@ -82,8 +78,6 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 		this.setProducerAckTimeout(DEFAULT_PRODUCER_ACK_TIMEOUT);
 		this.setProducerPartitionKey(DEFAULT_PRODUCER_PARTITION_KEY);
 		this.setProducerType(DEFAULT_PRODUCER_TYPE);
-		this.setProducerFactory(StdoutProducerFactory.class.getCanonicalName());
-		this.setProducerConfiguration(new PropertiesProducerConfiguration());
 		this.customProducerProperties = new Properties();
 
 		this.setHttpPort(DEFAULT_HTTP_PORT);
@@ -254,15 +248,6 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 
 	public void setProducerType(String producerType) {
 		this.producerType = producerType;
-	}
-
-	@Override
-	public ProducerConfiguration getProducerConfiguration() {
-		return producerConfiguration;
-	}
-
-	public void setProducerConfiguration(ProducerConfiguration producerConfiguration) {
-		this.producerConfiguration = producerConfiguration;
 	}
 
 	@Override

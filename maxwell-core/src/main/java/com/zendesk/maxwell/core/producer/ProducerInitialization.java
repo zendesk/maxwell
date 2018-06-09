@@ -6,76 +6,62 @@ import com.zendesk.maxwell.api.config.InvalidOptionException;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.producer.*;
 import com.zendesk.maxwell.core.MaxwellSystemContext;
-import org.springframework.beans.BeansException;
+import com.zendesk.maxwell.core.producer.impl.noop.NoopProducer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
+import java.util.Properties;
 
 @Scope(ConfigurableBeanFactory.SCOPE_SINGLETON)
 @Service
 public class ProducerInitialization {
+	private static final String NONE_PRODUCER_TYPE = "none";
 
-	private final ApplicationContext applicationContext;
+	private final ProducerConfigurators producerConfigurators;
 
 	@Autowired
-	public ProducerInitialization(ApplicationContext applicationContext) {
-		this.applicationContext = applicationContext;
+	public ProducerInitialization(ProducerConfigurators producerConfigurators) {
+		this.producerConfigurators = producerConfigurators;
 	}
 
-	public void createAndRegister(final MaxwellSystemContext maxwellContext){
+	public void initialize(final MaxwellSystemContext maxwellContext, final Properties configurationSettings){
+		Producer producer = create(maxwellContext, configurationSettings);
+		maxwellContext.setProducer(producer);
+		registerDiagnostics(producer, maxwellContext);
+		registerStoppableTask(producer, maxwellContext);
+	}
+
+	private Producer create(final MaxwellContext maxwellContext, final Properties configurationSettings) {
 		final MaxwellConfig config = maxwellContext.getConfig();
-		Producer producer = create(maxwellContext, config);
-		register(maxwellContext, producer);
-	}
-
-	private Producer create(MaxwellContext maxwellContext, MaxwellConfig config) {
 		if ( config.getProducerFactory() != null ) {
 			return createProducerThroughFactory(maxwellContext, config);
-		} else {
-			throw new IllegalStateException("No producer configured");
+		} else if (config.getProducerType() != null) {
+			return createProducerThroughConfigurator(config.getProducerType(), maxwellContext, configurationSettings);
 		}
+		throw new IllegalStateException("No producer configured");
 	}
 
 	private Producer createProducerThroughFactory(MaxwellContext maxwellContext, MaxwellConfig config) {
-		final Class<? extends ProducerFactory> clazz = getProducerFactoryClass(config);
-		final ProducerFactory producerFactory = getProducerFactoryFromSpringContext(clazz).orElseGet(() -> initializeProducerFactoryByClass(clazz));
-		return producerFactory.createProducer(maxwellContext);
-	}
-
-	private Optional<ProducerFactory> getProducerFactoryFromSpringContext(Class<? extends ProducerFactory> clazz) {
 		try {
-			return Optional.of(applicationContext.getBean(clazz));
-		}catch (BeansException e){
-			return Optional.empty();
-		}
-	}
-
-	private ProducerFactory initializeProducerFactoryByClass(Class<? extends ProducerFactory> clazz) {
-		try {
-			return clazz.newInstance();
+			final Class<?> clazz = Class.forName(config.getProducerFactory());
+			final ProducerFactory producerFactory = ProducerFactory.class.cast(clazz.newInstance());
+			return producerFactory.createProducer(maxwellContext);
+		} catch (ClassNotFoundException e) {
+			throw new InvalidOptionException("Invalid value for custom_producer.factory, class "+config.getProducerFactory()+" not found", e, "--custom_producer.factory");
 		} catch (IllegalAccessException | InstantiationException | ClassCastException e) {
 			throw new InvalidOptionException("Invalid value for custom_producer.factory, class instantiation error", e, "--custom_producer.factory");
 		}
 	}
 
-	private Class<? extends ProducerFactory> getProducerFactoryClass(MaxwellConfig config) {
-		try {
-			return (Class<? extends ProducerFactory>)Class.forName(config.getProducerFactory());
-		} catch (ClassNotFoundException e) {
-			throw new InvalidOptionException("Invalid value for custom_producer.factory or invalid producer_type, class "+config.getProducerFactory()+" not found", e, "--custom_producer.factory", "--producer_type");
+	public Producer createProducerThroughConfigurator(String type, MaxwellContext maxwellContext, Properties configurationSettings){
+		if(NONE_PRODUCER_TYPE.equals(type)){
+			return new NoopProducer(maxwellContext);
 		}
-	}
-
-	private void register(MaxwellSystemContext maxwellContext, Producer producer) {
-		maxwellContext.setProducer(producer);
-
-		registerDiagnostics(producer, maxwellContext);
-		registerStoppableTask(producer, maxwellContext);
-
+		ProducerConfigurator configurator = producerConfigurators.getByIdentifier(type);
+		ProducerConfiguration configuration = configurator.parseConfiguration(configurationSettings).orElseGet(PropertiesProducerConfiguration::new);
+		return configurator.configure(maxwellContext, configuration);
 	}
 
 	private void registerDiagnostics(Producer producer, MaxwellContext maxwellContext) {

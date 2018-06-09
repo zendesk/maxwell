@@ -71,9 +71,14 @@ public class SchemaStoreSchemaBean implements SchemaStoreSchema {
 
 	private void createStoreDatabase(Connection connection, String schemaDatabaseName) throws SQLException, IOException {
 		LOGGER.info("Creating " + schemaDatabaseName + " database");
-		executeSQLInputStream(connection, SchemaStoreSchemaBean.class.getResourceAsStream("/sql/maxwell_schema.sql"), schemaDatabaseName);
-		executeSQLInputStream(connection, SchemaStoreSchemaBean.class.getResourceAsStream("/sql/maxwell_schema_bootstrap.sql"), schemaDatabaseName);
-		executeSQLInputStream(connection, SchemaStoreSchemaBean.class.getResourceAsStream("/sql/maxwell_schema_heartbeats.sql"), schemaDatabaseName);
+		executeSQLInputStream(connection, getSchemaResource("/sql/maxwell_schema.sql"), schemaDatabaseName);
+		executeSQLInputStream(connection, getSchemaResource("/sql/maxwell_schema_bootstrap.sql"), schemaDatabaseName);
+		executeSQLInputStream(connection, getSchemaResource("/sql/maxwell_schema_heartbeats.sql"), schemaDatabaseName);
+	}
+
+	private InputStream getSchemaResource(String file){
+		InputStream is = SchemaStoreSchemaBean.class.getResourceAsStream(file);
+		return is != null ? is : SchemaStoreSchemaBean.class.getClassLoader().getResourceAsStream(file);
 	}
 
 	private HashMap<String, String> getTableColumns(String table, Connection c) throws SQLException {

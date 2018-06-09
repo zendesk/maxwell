@@ -1,10 +1,12 @@
 package com.zendesk.maxwell.producer.kafka;
 
+import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.config.CommandLineOptionParserContext;
 import com.zendesk.maxwell.api.config.ConfigurationSupport;
+import com.zendesk.maxwell.api.producer.Producer;
 import com.zendesk.maxwell.api.producer.ProducerConfiguration;
 import com.zendesk.maxwell.api.producer.ProducerConfigurator;
-import com.zendesk.maxwell.api.producer.ProducerFactory;
+import com.zendesk.maxwell.api.row.RowMapFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,10 +18,12 @@ import java.util.Properties;
 public class KafkaProducerConfigurator implements ProducerConfigurator {
 
 	private final ConfigurationSupport configurationSupport;
+	private final RowMapFactory rowMapFactory;
 
 	@Autowired
-	public KafkaProducerConfigurator(ConfigurationSupport configurationSupport) {
+	public KafkaProducerConfigurator(ConfigurationSupport configurationSupport, RowMapFactory rowMapFactory) {
 		this.configurationSupport = configurationSupport;
+		this.rowMapFactory = rowMapFactory;
 	}
 
 	@Override
@@ -72,8 +76,9 @@ public class KafkaProducerConfigurator implements ProducerConfigurator {
 	}
 
 	@Override
-	public Class<? extends ProducerFactory> getFactory() {
-		return KafkaProducerFactory.class;
+	public Producer configure(MaxwellContext maxwellContext, ProducerConfiguration configuration) {
+		KafkaProducerConfiguration kafkaProducerConfiguration = (KafkaProducerConfiguration)configuration;
+		return new MaxwellKafkaProducer(maxwellContext, kafkaProducerConfiguration, rowMapFactory);
 	}
 
 }

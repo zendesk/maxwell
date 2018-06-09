@@ -10,8 +10,6 @@ import com.zendesk.maxwell.api.row.RowMap;
 import com.zendesk.maxwell.core.MaxwellContextFactory;
 import com.zendesk.maxwell.core.MaxwellRunner;
 import com.zendesk.maxwell.core.MaxwellSystemContext;
-import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducerConfiguration;
-import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducerFactory;
 import com.zendesk.maxwell.test.mysql.MysqlIsolatedServer;
 import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
 import com.zendesk.maxwell.core.config.BaseMaxwellMysqlConfig;
@@ -100,8 +98,6 @@ public class MaxwellTestSupport {
 		config.setFilter(filter);
 		config.setBootstrapperType("sync");
 		config.setProducerType("buffer");
-		config.setProducerFactory(BufferedProducerFactory.class.getCanonicalName());
-		config.setProducerConfiguration(new BufferedProducerConfiguration());
 		config.validate();
 
 		callback.beforeReplicatorStart(mysql);

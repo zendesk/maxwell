@@ -1,15 +1,33 @@
 package com.zendesk.maxwell.core.util;
 
+import com.zendesk.maxwell.api.config.ConfigurationSupport;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.slf4j.bridge.SLF4JBridgeHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Properties;
 
 @Service
 public class Logging {
+	private final ConfigurationSupport configurationSupport;
+
+	@Autowired
+	public Logging(ConfigurationSupport configurationSupport) {
+		this.configurationSupport = configurationSupport;
+	}
+
+	public void configureLevelFrom(final Properties configurationOptions){
+		String logLevel = configurationSupport.fetchOption("log_level", configurationOptions, null);
+		if(logLevel != null){
+			setLevel(logLevel);
+		}
+	}
+
 	public void setLevel(String level) {
 		LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
 		Configuration config = ctx.getConfiguration();

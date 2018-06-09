@@ -1,8 +1,9 @@
 package com.zendesk.maxwell.core.producer.impl.buffered;
 
+import com.zendesk.maxwell.api.MaxwellContext;
+import com.zendesk.maxwell.api.producer.Producer;
 import com.zendesk.maxwell.api.producer.ProducerConfiguration;
 import com.zendesk.maxwell.api.producer.ProducerConfigurator;
-import com.zendesk.maxwell.api.producer.ProducerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -21,8 +22,9 @@ public class BufferedProducerConfigurator implements ProducerConfigurator {
 	}
 
 	@Override
-	public Class<? extends ProducerFactory> getFactory() {
-		return BufferedProducerFactory.class;
+	public Producer configure(MaxwellContext maxwellContext, ProducerConfiguration configuration) {
+		BufferedProducerConfiguration bufferedProducerConfiguration = (BufferedProducerConfiguration)configuration;
+		return new BufferedProducer(maxwellContext, bufferedProducerConfiguration.getBufferedProducerSize());
 	}
 
 }

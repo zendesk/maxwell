@@ -1,12 +1,12 @@
 package com.zendesk.maxwell.core.producer.impl.file;
 
+import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.config.ConfigurationSupport;
-import com.zendesk.maxwell.api.producer.ProducerConfiguration;
-import com.zendesk.maxwell.api.producer.ProducerConfigurator;
-import com.zendesk.maxwell.api.producer.ProducerFactory;
+import com.zendesk.maxwell.api.producer.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -32,7 +32,12 @@ public class FileProducerConfigurator implements ProducerConfigurator {
 	}
 
 	@Override
-	public Class<? extends ProducerFactory> getFactory() {
-		return FileProducerFactory.class;
+	public Producer configure(MaxwellContext maxwellContext, ProducerConfiguration configuration) {
+		try {
+			FileProducerConfiguration fileProducerConfiguration = (FileProducerConfiguration)configuration;
+			return new FileProducer(maxwellContext, fileProducerConfiguration.getOutputFile());
+		} catch (IOException e) {
+			throw new ProducerInstantiationException(e);
+		}
 	}
 }

@@ -85,18 +85,14 @@ class PubsubCallback implements ApiFutureCallback<String> {
 }
 
 public class MaxwellPubsubProducer extends AbstractProducer {
-  public static final Logger LOGGER = LoggerFactory.getLogger(MaxwellPubsubProducer.class);
-
   private final ArrayBlockingQueue<RowMap> queue;
   private final MaxwellPubsubProducerWorker worker;
 
-  public MaxwellPubsubProducer(MaxwellContext context, String pubsubProjectId,
-                               String pubsubTopic, String ddlPubsubTopic)
+  public MaxwellPubsubProducer(MaxwellContext context, PubsubProducerConfiguration configuration)
                                throws IOException {
     super(context);
     this.queue = new ArrayBlockingQueue<>(100);
-    this.worker = new MaxwellPubsubProducerWorker(context, pubsubProjectId,
-                                                  pubsubTopic, ddlPubsubTopic,
+    this.worker = new MaxwellPubsubProducerWorker(context, configuration.getPubsubProjectId(), configuration.getPubsubTopic(), configuration.getDdlPubsubTopic(),
                                                   this.queue);
     Thread thread = new Thread(this.worker, "maxwell-pubsub-worker");
     thread.setDaemon(true);

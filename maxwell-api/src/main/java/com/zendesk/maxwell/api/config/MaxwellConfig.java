@@ -1,6 +1,5 @@
 package com.zendesk.maxwell.api.config;
 
-import com.zendesk.maxwell.api.producer.ProducerConfiguration;
 import com.zendesk.maxwell.api.replication.Position;
 
 import java.util.Properties;
@@ -51,8 +50,6 @@ public interface MaxwellConfig {
 	String getBootstrapperType();
 
 	String getProducerType();
-
-	ProducerConfiguration getProducerConfiguration();
 
 	String getProducerFactory();
 

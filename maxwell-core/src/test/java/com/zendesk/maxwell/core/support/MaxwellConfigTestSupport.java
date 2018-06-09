@@ -9,8 +9,6 @@ import com.zendesk.maxwell.core.MaxwellSystemContext;
 import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
 import com.zendesk.maxwell.core.config.BaseMaxwellMysqlConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
-import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducerConfiguration;
-import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,14 +29,8 @@ public class MaxwellConfigTestSupport {
 
 	public MaxwellConfig createDefaultConfigurationWithBufferedProducerFor(int port, Position p, MaxwellFilter filter){
 		BaseMaxwellConfig config = buildConfig(port, p, filter);
-		config.setProducerType("bufffer");
-		config.setProducerFactory(BufferedProducerFactory.class.getCanonicalName());
-		config.setProducerConfiguration(new BufferedProducerConfiguration());
+		config.setProducerType("buffer");
 		return config;
-	}
-
-	public MaxwellConfig createDefaultConfigurationFor(int port, Position p, MaxwellFilter filter){
-		return buildConfig(port, p, filter);
 	}
 
 	private BaseMaxwellConfig buildConfig(int port, Position p, MaxwellFilter filter) {
@@ -70,8 +62,4 @@ public class MaxwellConfigTestSupport {
 		return maxwellContextFactory.createFor(config);
 	}
 
-	public MaxwellSystemContext buildContext(int port, Position p, MaxwellFilter filter) throws SQLException, URISyntaxException {
-		MaxwellConfig config = buildConfig(port, p, filter);
-		return maxwellContextFactory.createFor(config);
-	}
 }
