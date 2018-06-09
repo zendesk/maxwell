@@ -91,6 +91,7 @@
         <module>maxwell-api</module>
         <module>maxwell-core</module>
         <module>maxwell-producers</module>
+        <module>maxwell-metrics-reporter</module>
         <module>maxwell-standalone</module>
         <module>maxwell-test-support</module>
     </modules>
@@ -171,6 +172,21 @@
             <dependency>
                 <groupId>com.zendesk</groupId>
                 <artifactId>maxwell-producer-sqs</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.zendesk</groupId>
+                <artifactId>maxwell-metrics-reporter-setup</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.zendesk</groupId>
+                <artifactId>maxwell-metrics-reporter-datadog</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.zendesk</groupId>
+                <artifactId>maxwell-metrics-reporter-http</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

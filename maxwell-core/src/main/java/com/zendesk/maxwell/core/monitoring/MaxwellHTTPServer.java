@@ -69,7 +69,7 @@ public class MaxwellHTTPServer implements ContextStartListener {
 	private boolean isHttpReportingEnabled(MaxwellContext context) {
 		MaxwellConfig config = context.getConfig();
 		String reportingType = config.getMetricsReportingType();
-		return (reportingType != null && reportingType.contains(MaxwellMetrics.reportingTypeHttp));
+		return (reportingType != null && reportingType.contains(MaxwellMetrics.REPORTING_TYPE_HTTP));
 	}
 
 	private MaxwellDiagnosticContext getDiagnosticContext(MaxwellContext context) {

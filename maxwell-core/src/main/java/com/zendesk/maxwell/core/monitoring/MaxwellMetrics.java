@@ -24,11 +24,6 @@ import static org.coursera.metrics.datadog.DatadogReporter.Expansion.*;
 
 public class MaxwellMetrics implements Metrics {
 
-	static final String reportingTypeSlf4j = "slf4j";
-	static final String reportingTypeJmx = "jmx";
-	static final String reportingTypeHttp = "http";
-	static final String reportingTypeDataDog = "datadog";
-
 	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellMetrics.class);
 	private final MetricRegistry metricRegistry;
 	private String metricsPrefix;
@@ -55,7 +50,7 @@ public class MaxwellMetrics implements Metrics {
 			metricRegistry.register(metricName("jvm", "thread_states"), new CachedThreadStatesGaugeSet(60, TimeUnit.SECONDS));
 		}
 
-		if (config.getMetricsReportingType().contains(reportingTypeSlf4j)) {
+		if (config.getMetricsReportingType().contains(REPORTING_TYPE_SLF4J)) {
 			final Slf4jReporter reporter = Slf4jReporter.forRegistry(metricRegistry)
 					.outputTo(LOGGER)
 					.convertRatesTo(TimeUnit.SECONDS)
@@ -66,7 +61,7 @@ public class MaxwellMetrics implements Metrics {
 			LOGGER.info("Slf4j metrics reporter enabled");
 		}
 
-		if (config.getMetricsReportingType().contains(reportingTypeJmx)) {
+		if (config.getMetricsReportingType().contains(REPORTING_TYPE_JMX)) {
 			final JmxReporter jmxReporter = JmxReporter.forRegistry(metricRegistry)
 					.convertRatesTo(TimeUnit.SECONDS)
 					.convertDurationsTo(TimeUnit.MILLISECONDS)
@@ -84,7 +79,7 @@ public class MaxwellMetrics implements Metrics {
 			}
 		}
 
-		if (config.getMetricsReportingType().contains(reportingTypeDataDog)) {
+		if (config.getMetricsReportingType().contains(REPORTING_TYPE_DATADOG)) {
 			Transport transport;
 			if (config.getMetricsDatadogType().contains("http")) {
 				LOGGER.info("Enabling HTTP Datadog reporting");
