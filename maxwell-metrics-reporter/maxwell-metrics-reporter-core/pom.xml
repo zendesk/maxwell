@@ -8,10 +8,10 @@
         <version>1.14.6</version>
     </parent>
 
-    <artifactId>maxwell-metrics-reporter-setup</artifactId>
+    <artifactId>maxwell-metrics-reporter-core</artifactId>
 
-    <name>maxwell-metrics-reporter-setup</name>
-    <description>Maxwell's Metrics Reporter Setup</description>
+    <name>maxwell-metrics-reporter-core</name>
+    <description>Maxwell's Metrics Reporter Core Module</description>
 
     <dependencies>
         <dependency>

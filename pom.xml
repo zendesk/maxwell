@@ -176,7 +176,7 @@
             </dependency>
             <dependency>
                 <groupId>com.zendesk</groupId>
-                <artifactId>maxwell-metrics-reporter-setup</artifactId>
+                <artifactId>maxwell-metrics-reporter-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

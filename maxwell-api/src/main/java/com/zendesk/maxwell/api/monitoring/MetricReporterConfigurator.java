@@ -9,4 +9,6 @@ public interface MetricReporterConfigurator extends ModuleConfigurator<MetricRep
     default ModuleType getType() {
         return ModuleType.METRIC_REPORTER;
     }
+
+    void enableReporter(MetricReporterConfiguration configuration);
 }
