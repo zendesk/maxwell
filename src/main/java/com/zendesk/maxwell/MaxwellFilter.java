@@ -50,32 +50,38 @@ public class MaxwellFilter {
 	) throws MaxwellInvalidFilterException {
 		if ( includeDatabases != null ) {
 			for ( String s : includeDatabases.split(",") )
-				includeDatabase(s);
+				//includeDatabase(s);
+			    includeDatabase(s.toUpperCase()); // toUpperCase
 		}
 
 		if ( excludeDatabases != null ) {
 			for ( String s : excludeDatabases.split(",") )
-				excludeDatabase(s);
+				//excludeDatabase(s);
+				excludeDatabase(s.toUpperCase()); // toUpperCase
 		}
 
 		if ( includeTables != null ) {
 			for ( String s : includeTables.split(",") )
-				includeTable(s);
+				//includeTable(s);
+				includeTable(s.toUpperCase()); // toUpperCase
 		}
 
 		if ( excludeTables != null ) {
 			for ( String s : excludeTables.split(",") )
-				excludeTable(s);
+				//excludeTable(s);
+				excludeTable(s.toUpperCase()); // toUpperCase
 		}
 
 		if ( blacklistDatabases != null ) {
 			for ( String s : blacklistDatabases.split(",") )
-				blacklistDatabases(s);
+				//blacklistDatabases(s);
+				blacklistDatabases(s.toUpperCase()); // toUpperCase
 		}
 
 		if ( blacklistTables != null ) {
 			for ( String s : blacklistTables.split(",") )
-				blacklistTable(s);
+				//blacklistTable(s);
+				blacklistTable(s.toUpperCase()); // toUpperCase
 		}
 	}
 
@@ -120,11 +126,12 @@ public class MaxwellFilter {
 	}
 
 	private boolean filterListsInclude(List<Pattern> includeList, List<Pattern> excludeList, String name) {
+		name = name.toUpperCase(); //toUpperCase
+
 		if ( includeList.size() > 0 ) {
 			boolean found = false;
 			for ( Pattern p : includeList ) {
-				found = p.matcher(name).find();
-
+				found = p.matcher(name).find(); //Case problems, so the values of p and name should be capitalized.
 				if ( found )
 					break;
 			}
@@ -210,3 +217,4 @@ public class MaxwellFilter {
 		}
 	}
 }
+
