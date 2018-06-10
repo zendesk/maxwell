@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Properties;
-import java.util.function.Consumer;
 
 @Service
 public class MaxwellLauncher {
@@ -29,10 +28,9 @@ public class MaxwellLauncher {
 		this.maxwellRunner = maxwellRunner;
 	}
 
-	public void launch(Properties configurationProperties, Consumer<MaxwellConfig> configurationAdopter) throws Exception {
+	public void launch(Properties configurationProperties) throws Exception {
 		logging.configureLevelFrom(configurationProperties);
 		final MaxwellConfig configuration = maxwellConfigFactory.createFor(configurationProperties);
-		configurationAdopter.accept(configuration);
 		final MaxwellSystemContext context = maxwellContextFactory.createFor(configuration, configurationProperties);
 
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {

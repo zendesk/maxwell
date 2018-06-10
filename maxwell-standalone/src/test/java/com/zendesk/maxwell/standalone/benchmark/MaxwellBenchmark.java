@@ -2,11 +2,10 @@ package com.zendesk.maxwell.standalone.benchmark;
 
 import com.zendesk.maxwell.api.LauncherException;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
+import com.zendesk.maxwell.api.config.MaxwellMysqlConfig;
 import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.test.mysql.MysqlIsolatedServer;
 import com.zendesk.maxwell.standalone.spring.SpringLauncher;
-import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
-import com.zendesk.maxwell.core.config.BaseMaxwellMysqlConfig;
 import com.zendesk.maxwell.test.mysql.MysqlIsolatedServerSupport;
 import joptsimple.BuiltinHelpFormatter;
 import joptsimple.OptionParser;
@@ -17,9 +16,9 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Properties;
 import java.util.Random;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 public class MaxwellBenchmark {
 	/*
@@ -102,24 +101,24 @@ public class MaxwellBenchmark {
 				MysqlIsolatedServerSupport mysqlIsolatedServerSupport = ctx.getBean(MysqlIsolatedServerSupport.class);
 				MysqlIsolatedServer server = mysqlIsolatedServerSupport.setupServer("--no-clean --reuse=" + path);
 
-				Consumer<MaxwellConfig> configurationAdopter = (config) -> {
-					if(config instanceof BaseMaxwellConfig) {
-					BaseMaxwellConfig maxwellConfig = (BaseMaxwellConfig)config;
-					BaseMaxwellMysqlConfig maxwellMysqlConfig = (BaseMaxwellMysqlConfig)maxwellConfig.getMaxwellMysql();
-					maxwellMysqlConfig.setHost("127.0.0.1");
-					maxwellMysqlConfig.setPort(server.getPort());
-					maxwellMysqlConfig.setUser("root");
-					maxwellMysqlConfig.setPassword("");
-					maxwellConfig.setSchemaMysql(maxwellMysqlConfig);
-					maxwellConfig.setReplicationMysql(maxwellMysqlConfig);
-					maxwellConfig.setProducerFactory(BenchmarkProducerFactory.class.getName());
-					}
-				};
-				SpringLauncher.runMaxwell(args, configurationAdopter, ctx);
+				Properties configuration = new Properties();
+				appendMySQLSetting(configuration,"", server);
+				appendMySQLSetting(configuration, MaxwellMysqlConfig.CONFIGURATION_OPTION_PREFIX_REPLICATION, server);
+				appendMySQLSetting(configuration, MaxwellMysqlConfig.CONFIGURATION_OPTION_PREFIX_SCHEMA, server);
+				configuration.put(MaxwellConfig.CONFIGURATION_OPTION_CUSTOM_PRODUCER_FACTORY, BenchmarkProducerFactory.class.getCanonicalName());
+
+				SpringLauncher.runMaxwell(configuration, ctx);
 			} catch (Exception e) {
 				throw new LauncherException("Failed to setup mysql test server for benchmark", e);
 			}
 		});
+	}
+
+	private static void appendMySQLSetting(Properties properties, String prefix, MysqlIsolatedServer server) {
+		properties.put(prefix+MaxwellMysqlConfig.CONFIGURATION_OPTION_HOST, "127.0.0.1");
+		properties.put(prefix+MaxwellMysqlConfig.CONFIGURATION_OPTION_PORT, ""+server.getPort());
+		properties.put(prefix+MaxwellMysqlConfig.CONFIGURATION_OPTION_USER, "root");
+		properties.put(prefix+MaxwellMysqlConfig.CONFIGURATION_OPTION_PASSWORD, "");
 	}
 
 	private static OptionParser buildOptionParser() {

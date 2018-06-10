@@ -1,7 +1,6 @@
 package com.zendesk.maxwell.standalone.spring;
 
 import com.zendesk.maxwell.api.LauncherException;
-import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.core.MaxwellLauncher;
 import com.zendesk.maxwell.core.bootstrap.MaxwellBootstrapUtilityLauncher;
 import com.zendesk.maxwell.standalone.config.MaxwellBootstrapUtilConfigurationOptionMerger;
@@ -17,16 +16,24 @@ import java.util.function.Consumer;
 public class SpringLauncher {
 
 	public static void launchMaxwell(final String[] args){
-		launch((applicationContext -> runMaxwell(args, (c) -> {}, applicationContext)));
+		launch((applicationContext -> runMaxwell(args, applicationContext)));
 	}
 
-	public static void runMaxwell(final String[] args, Consumer<MaxwellConfig> configurationAdopter, final ApplicationContext applicationContext) {
+	public static void runMaxwell(final String[] args, final ApplicationContext applicationContext) {
 		try {
 			final ConfigurationOptionMerger configurationOptionMerger = applicationContext.getBean(MaxwellConfigurationOptionMerger.class);
-			final MaxwellLauncher maxwellLauncher = applicationContext.getBean(MaxwellLauncher.class);
 			final Properties configurationOptions = configurationOptionMerger.mergeCommandLineOptionsWithConfigurationAndSystemEnvironment(args);
 
-			maxwellLauncher.launch(configurationOptions, configurationAdopter);
+			runMaxwell(configurationOptions, applicationContext);
+		}catch (Exception e){
+			throw new LauncherException("Error while running Maxwell", e);
+		}
+	}
+
+	public static void runMaxwell(final Properties configurationOptions, final ApplicationContext applicationContext) {
+		try {
+			final MaxwellLauncher maxwellLauncher = applicationContext.getBean(MaxwellLauncher.class);
+			maxwellLauncher.launch(configurationOptions);
 		}catch (Exception e){
 			throw new LauncherException("Error while running Maxwell", e);
 		}

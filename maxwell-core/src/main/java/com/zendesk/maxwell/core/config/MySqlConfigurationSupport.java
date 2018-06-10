@@ -8,9 +8,10 @@ import org.springframework.stereotype.Service;
 
 import java.util.Properties;
 
+import static com.zendesk.maxwell.api.config.MaxwellMysqlConfig.*;
+
 @Service
 public class MySqlConfigurationSupport {
-
 	private final ConfigurationSupport configurationSupport;
 
 	@Autowired
@@ -20,12 +21,12 @@ public class MySqlConfigurationSupport {
 
 	public BaseMaxwellMysqlConfig parseMysqlConfig(String prefix, Properties properties) {
 		BaseMaxwellMysqlConfig config = new BaseMaxwellMysqlConfig();
-		config.setHost(configurationSupport.fetchOption(prefix + "host", properties, null));
-		config.setPassword(configurationSupport.fetchOption(prefix + "password", properties, null));
-		config.setUser(configurationSupport.fetchOption(prefix + "user", properties, null));
-		config.setPort(configurationSupport.fetchIntegerOption(prefix + "port", properties, MaxwellMysqlConfig.DEFAULT_MYSQL_PORT));
-		config.setSslMode(this.getSslModeFromString(configurationSupport.fetchOption(prefix + "ssl", properties, null)));
-		config.setJDBCOptions(configurationSupport.fetchOption(prefix + "jdbc_options", properties, null));
+		config.setHost(configurationSupport.fetchOption(prefix + CONFIGURATION_OPTION_HOST, properties, null));
+		config.setPassword(configurationSupport.fetchOption(prefix + CONFIGURATION_OPTION_PASSWORD, properties, null));
+		config.setUser(configurationSupport.fetchOption(prefix + CONFIGURATION_OPTION_USER, properties, null));
+		config.setPort(configurationSupport.fetchIntegerOption(prefix + CONFIGURATION_OPTION_PORT, properties, MaxwellMysqlConfig.DEFAULT_MYSQL_PORT));
+		config.setSslMode(this.getSslModeFromString(configurationSupport.fetchOption(prefix + CONFIGURATION_OPTION_SSL, properties, null)));
+		config.setJDBCOptions(configurationSupport.fetchOption(prefix + CONFIGURATION_OPTION_JDBC_OPTIONS, properties, null));
 		return config;
 	}
 

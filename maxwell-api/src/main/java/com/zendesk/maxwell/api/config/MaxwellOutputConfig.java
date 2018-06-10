@@ -6,6 +6,17 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 public interface MaxwellOutputConfig {
+	String CONFIGURATION_OPTION_OUTPUT_BINLOG_POSITION = "output_binlog_position";
+	String CONFIGURATION_OPTION_OUTPUT_GTID_POSITION = "output_gtid_position";
+	String CONFIGURATION_OPTION_OUTPUT_COMMIT_INFO = "output_commit_info";
+	String CONFIGURATION_OPTION_OUTPUT_XOFFSET = "output_xoffset";
+	String CONFIGURATION_OPTION_OUTPUT_NULLS = "output_nulls";
+	String CONFIGURATION_OPTION_OUTPUT_SERVER_ID = "output_server_id";
+	String CONFIGURATION_OPTION_OUTPUT_THREAD_ID = "output_thread_id";
+	String CONFIGURATION_OPTION_OUTPUT_ROW_QUERY = "output_row_query";
+	String CONFIGURATION_OPTION_OUTPUT_DDL = "output_ddl";
+	String CONFIGURATION_OPTION_ENCRYPT = "encrypt";
+
 	boolean DEFAULT_INCLUDE_BINLOG_POSITION = false;
 	boolean DEFAULT_INCLUDE_GTID_POSITION = false;
 	boolean DEFAULT_INCLUDE_COMMIT_INFO = true;
