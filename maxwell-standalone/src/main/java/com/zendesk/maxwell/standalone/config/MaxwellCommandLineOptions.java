@@ -29,11 +29,11 @@ public class MaxwellCommandLineOptions extends AbstractCommandLineOptions {
 		return INSTANCE;
 	}
 
-	private final List<ProducerConfigurator> configurators;
+	private final List<ProducerConfigurator> producerConfigurators;
 
 	@Autowired
-	public MaxwellCommandLineOptions(Optional<List<ProducerConfigurator>> configurators) {
-		this.configurators = configurators.orElseGet(ArrayList::new);
+	public MaxwellCommandLineOptions(Optional<List<ProducerConfigurator>> producerConfigurators) {
+		this.producerConfigurators = producerConfigurators.orElseGet(ArrayList::new);
 	}
 
 	@PostConstruct
@@ -153,7 +153,7 @@ public class MaxwellCommandLineOptions extends AbstractCommandLineOptions {
 
 		context.addSeparator();
 
-		configurators.forEach(c -> {
+		producerConfigurators.forEach(c -> {
 			c.configureCommandLineOptions(context);
 			context.addSeparator();
 		});

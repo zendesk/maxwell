@@ -19,12 +19,15 @@ public class MetricsReporterInitialization {
         this.metricReporterConfigurators = metricReporterConfigurators;
     }
 
-    public void setup(MaxwellConfig config, Properties configurationSettings){
-        metricReporterConfigurators.stream().filter(c -> isConfigured(c, config)).forEach(c -> enableReporter(c, configurationSettings));
+    public void setup(Properties configurationSettings){
+        final String configuredMetricsReporters = configurationSettings.getProperty(MaxwellConfig.CONFIGURATION_OPTION_METRICS_TYPE);
+        if(configuredMetricsReporters != null){
+            metricReporterConfigurators.stream().filter(c -> isConfigured(c, configuredMetricsReporters)).forEach(c -> enableReporter(c, configurationSettings));
+        }
     }
 
-    private boolean isConfigured(MetricReporterConfigurator configurator, MaxwellConfig config){
-        return config.getMetricsReportingType() != null && config.getMetricsReportingType().toLowerCase().contains(configurator.getIdentifier().toLowerCase());
+    private boolean isConfigured(MetricReporterConfigurator configurator, String configuredReporterTypes){
+        return configuredReporterTypes.toLowerCase().contains(configurator.getIdentifier().toLowerCase());
     }
 
     private void enableReporter(MetricReporterConfigurator configurator, Properties configurationSettings){

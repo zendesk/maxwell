@@ -19,7 +19,7 @@ public class SpringLauncher {
 		launch((applicationContext -> runMaxwell(args, applicationContext)));
 	}
 
-	public static void runMaxwell(final String[] args, final ApplicationContext applicationContext) {
+	private static void runMaxwell(final String[] args, final ApplicationContext applicationContext) {
 		try {
 			final ConfigurationOptionMerger configurationOptionMerger = applicationContext.getBean(MaxwellConfigurationOptionMerger.class);
 			final Properties configurationOptions = configurationOptionMerger.mergeCommandLineOptionsWithConfigurationAndSystemEnvironment(args);
