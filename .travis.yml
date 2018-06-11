@@ -12,7 +12,7 @@ before_install:
   - sudo apt-get install pastebinit
 install: true
 script:
-  - travis.sh
+  - ./travis.sh
 after_script:
   - pastebinit -i test.log
 env:
