@@ -91,12 +91,12 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 	}
 
 	protected Filter excludeTable(String name) throws InvalidFilterException {
-		Filter filter = new Filter("exclude: *." + name, "");
+		Filter filter = new Filter("exclude: *." + name);
 		return filter;
 	}
 
 	protected Filter excludeDb(String name) throws InvalidFilterException {
-		Filter filter = new Filter("exclude: " + name + ".*", "");
+		Filter filter = new Filter("exclude: " + name + ".*");
 		return filter;
 	}
 

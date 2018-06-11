@@ -74,14 +74,14 @@ public class FilterTest {
 
 	@Test
 	public void TestExcludeAll() throws Exception {
-		Filter f = new Filter("exclude: *.*, include: foo.bar", "");
+		Filter f = new Filter("exclude: *.*, include: foo.bar");
 		assertTrue(f.includes("foo", "bar"));
 		assertFalse(f.includes("anything", "else"));
 	}
 
 	@Test
 	public void TestBlacklist() throws Exception {
-		Filter f = new Filter("blacklist: seria.*", "");
+		Filter f = new Filter("blacklist: seria.*");
 		assertTrue(f.includes("foo", "bar"));
 		assertFalse(f.includes("seria", "var"));
 		assertTrue(f.isDatabaseBlacklisted("seria"));
@@ -90,7 +90,7 @@ public class FilterTest {
 
 	@Test
 	public void TestColumnFiltersAreIgnoredByIncludes() throws Exception {
-		Filter f = new Filter("exclude: *.*, include: foo.bar.col=val", "");
+		Filter f = new Filter("exclude: *.*, include: foo.bar.col=val");
 		assertFalse(f.includes("foo", "bar"));
 	}
 
@@ -98,7 +98,7 @@ public class FilterTest {
 	public void TestColumnFilters() throws Exception {
 		Map<String, Object> map = new HashMap<>();
 		map.put("col", "val");
-		Filter f = new Filter("exclude: *.*, include: foo.bar.col=val", "");
+		Filter f = new Filter("exclude: *.*, include: foo.bar.col=val");
 		assertFalse(f.includes("foo", "bar"));
 		assertTrue(f.includes("foo", "bar", map));
 	}
@@ -107,7 +107,7 @@ public class FilterTest {
 	public void TestColumnFiltersFromOtherTables() throws Exception {
 		Map<String, Object> map = new HashMap<>();
 		map.put("col", "val");
-		Filter f = new Filter("exclude: *.*, include: no.go.col=val", "");
+		Filter f = new Filter("exclude: *.*, include: no.go.col=val");
 		assertFalse(f.includes("foo", "bar"));
 		assertFalse(f.includes("foo", "bar", map));
 	}
@@ -116,7 +116,7 @@ public class FilterTest {
 	public void TestNullValuesInData() throws Exception {
 		Map<String, Object> map = new HashMap<>();
 		map.put("col", null);
-		Filter f = new Filter("exclude: *.*, include: foo.bar.col=null", "");
+		Filter f = new Filter("exclude: *.*, include: foo.bar.col=null");
 		assertFalse(f.includes("foo", "bar"));
 		assertTrue(f.includes("foo", "bar", map));
 
@@ -163,5 +163,13 @@ public class FilterTest {
 		assertEquals("include: *./foo.*bar/", rules.get(1).toString());
 	}
 
+	@Test
+	public void TestOldFiltersIncludeColumnValues() throws Exception {
+		Filter f = Filter.fromOldFormat(null, null, null, null, null, null, "foo=bar");
+		List<FilterPattern> rules = f.getRules();
+		assertEquals(2, rules.size());
+		assertEquals("exclude: *.*.foo=*", rules.get(0).toString());
+		assertEquals("include: *.*.foo=bar", rules.get(1).toString());
+	}
 }
 

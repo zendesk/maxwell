@@ -282,6 +282,59 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		assertTrue(Pattern.compile("\"account_id\":2").matcher(json).find());
 	}
 
+	static String insertColumnSQL[] = {
+		"INSERT into foo.bars set something = 'accept'",
+		"INSERT into foo.bars set something = 'reject'"
+	};
+
+	@Test
+	public void testExcludeColumnValues() throws Exception {
+		List<RowMap> list;
+
+		Filter filter = new Filter();
+		filter.addRule("exclude: foo.bars.something=reject");
+
+		list = getRowsForSQL(filter, insertColumnSQL, createDBs);
+
+		assertThat(list.size(), is(1));
+	}
+
+	@Test
+	public void testExcludeTableIncludeColumns() throws Exception {
+		List<RowMap> list;
+
+		Filter filter = new Filter();
+		filter.addRule("exclude: foo.bars, include: foo.bars.something=accept");
+
+		list = getRowsForSQL(filter, insertColumnSQL, createDBs);
+
+		assertThat(list.size(), is(1));
+	}
+
+	@Test
+	public void testExcludeIncludeColumns() throws Exception {
+		List<RowMap> list;
+
+		Filter filter = new Filter();
+		filter.addRule("exclude: foo.bars.something=*, include: foo.bars.something=accept");
+
+		list = getRowsForSQL(filter, insertColumnSQL, createDBs);
+
+		assertThat(list.size(), is(1));
+	}
+
+	@Test
+	public void testExcludeMissingColumns() throws Exception {
+		List<RowMap> list;
+
+		Filter filter = new Filter();
+		filter.addRule("exclude: foo.bars.notacolumn=*");
+
+		list = getRowsForSQL(filter, insertColumnSQL, createDBs);
+
+		assertThat(list.size(), is(2));
+	}
+
 	static String blacklistSQLDDL[] = {
 		"CREATE DATABASE nodatabase",
 		"CREATE TABLE nodatabase.noseeum (i int)",

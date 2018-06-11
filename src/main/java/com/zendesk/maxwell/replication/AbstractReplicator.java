@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public abstract class AbstractReplicator extends RunLoopProcess implements Replicator {
 	private static Logger LOGGER = LoggerFactory.getLogger(AbstractReplicator.class);
@@ -110,12 +111,15 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	 * mechanisms for bootstrap), the blacklist gets rid of the
 	 * `ha_health_check` table which shows up erroneously in Alibaba RDS.
 	 *
+	 * Additionally, if we decide to exclude a table we check the filter to
+	 * see if it's possible that a column-value filter could include certain column values
+	 *
 	 * @param database The database of the DML
 	 * @param table The table of the DML
 	 * @param filter A table-filter, or null
 	 * @return Whether we should write the event to the producer
 	 */
-	protected boolean shouldOutputEvent(String database, String table, Filter filter) {
+	protected boolean shouldOutputEvent(String database, String table, Filter filter, Set<String> columnNames) {
 		Boolean isSystemWhitelisted = this.maxwellSchemaDatabaseName.equals(database)
 			&& ("bootstrap".equals(table) || "heartbeats".equals(table));
 
@@ -123,8 +127,12 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 			return false;
 		else if ( isSystemWhitelisted )
 			return true;
-		else
-			return Filter.includes(filter, database, table);
+		else {
+			if ( Filter.includes(filter, database, table) )
+				return true;
+			else
+				return Filter.couldIncludeFromColumnFilters(filter, database, table, columnNames);
+		}
 	}
 
 

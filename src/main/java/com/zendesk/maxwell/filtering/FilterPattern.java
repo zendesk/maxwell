@@ -1,6 +1,8 @@
 package com.zendesk.maxwell.filtering;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 public class FilterPattern {
@@ -66,5 +68,9 @@ public class FilterPattern {
 		}
 
 		return s + patternToString(dbPattern) + "." + patternToString(tablePattern);
+	}
+
+	public boolean couldIncludeColumn(String database, String table, Set<String> columns) {
+		return false;
 	}
 }

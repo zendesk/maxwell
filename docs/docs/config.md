@@ -272,23 +272,43 @@ should be unique across all mysql and maxwell instances.
 ### Filtering
 ***
 
+#### Example 1
 Maxwell can be configured to filter out updates from specific tables.  This is controlled
 by the `--filter` command line flag.  Here's how that flag looks:
 
 ```
-bin/maxwell --filter = "exclude: foodb.*, include: foodb.tbl, include: foodb./table_\d+/"
+--filter = "exclude: foodb.*, include: foodb.tbl, include: foodb./table_\d+/"
 ```
 
 This example tells Maxwell to suppress all updates that happen on `foodb`, except for updates
 to `tbl` and any table in foodb matching the regexp `/table_\d+/`.
-
-
-```
-bin/maxwell --filter = "exclude: *.*, include: db1.*"
-```
+#### Example 2
 
 Filter options are evaluated in the order specified, so in this example we
 suppress everything except updates in the `db1` database.
+
+```
+--filter = "exclude: *.*, include: db1.*"
+```
+
+
+#### Column Filters
+Maxwell can also include/exclude based on column values:
+
+```
+--filter = "exclude: db.tbl.col = reject"
+```
+
+will reject any row in `db.tbl` that contains `col` and where the stringified value of "col" is "reject".
+
+#### Column Filters / Missing Columns
+Column filters are ignored if the specified column is not present, so:
+
+```
+--filter = "exclude: *.*.col_a = *"
+```
+
+will exclude updates to any table that contains `col_a`, but include every other table.
 
 
 #### Blacklisting tables
@@ -297,7 +317,7 @@ In rare cases, you may wish to tell Maxwell to completely ignore a database or
 table, including schema changes.  In general, don't use this.  If you must use this:
 
 ```
-bin/maxwell --filter = "blacklist: bad_db.*"
+--filter = "blacklist: bad_db.*"
 ```
 
 Note that once Maxwell has been running with a table or database marked as
@@ -310,7 +330,4 @@ blacklisting a table or database, you will have to drop the maxwell schema first
 If you wish to suppress columns from Maxwell's output (for instance, a password field),
 you can use `exclude_columns` to filter out columns by name.
 
-#### Filtering on column values
-Maxwell can filter rows to only match when a column contains a specific value.  The `include_column_values` option takes a comma-separated
-list of column/value pairs: "bar=x,foo=y".  Note that if a column does not exist in a table, it will ignore the value-filter.
 

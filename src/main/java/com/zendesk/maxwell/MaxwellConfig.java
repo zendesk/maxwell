@@ -245,8 +245,8 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "exclude_tables", "[deprecated]" ).withRequiredArg();
 		parser.accepts( "blacklist_dbs", "[deprecated]" ).withRequiredArg();
 		parser.accepts( "blacklist_tables", "[deprecated]" ).withRequiredArg();
-		parser.accepts( "filter", "filter specs.  specify like \"include:db.*, exclude:*.tbl, include: foo./.*bar$/\"");
-		parser.accepts( "include_column_values", "include only rows with these values formatted as include_column_values=C=x,D=y" ).withRequiredArg();
+		parser.accepts( "filter", "filter specs.  specify like \"include:db.*, exclude:*.tbl, include: foo./.*bar$/, exclude:foo.bar.baz=reject\"").withRequiredArg();
+		parser.accepts( "include_column_values", "[deprecated]" ).withRequiredArg();
 
 		parser.accepts( "__separator_8" );
 
@@ -569,7 +569,7 @@ public class MaxwellConfig extends AbstractConfig {
 			return;
 		try {
 			if ( this.filterList != null ) {
-				this.filter = new Filter(filterList, includeColumnValues);
+				this.filter = new Filter(filterList);
 			} else {
 				boolean hasOldStyleFilters =
 					includeDatabases != null ||
@@ -577,7 +577,8 @@ public class MaxwellConfig extends AbstractConfig {
 						includeTables != null ||
 						excludeTables != null ||
 						blacklistDatabases != null ||
-						blacklistTables != null;
+						blacklistTables != null ||
+						includeColumnValues != null;
 
 				if ( hasOldStyleFilters ) {
 					this.filter = Filter.fromOldFormat(
@@ -594,7 +595,7 @@ public class MaxwellConfig extends AbstractConfig {
 				}
 			}
 		} catch (InvalidFilterException e) {
-			usage("Invalid filter options: " + e.getLocalizedMessage());
+			usageForOptions("Invalid filter options: " + e.getLocalizedMessage(), "filter");
 		}
 	}
 

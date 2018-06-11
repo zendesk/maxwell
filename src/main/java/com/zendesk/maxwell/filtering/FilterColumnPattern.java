@@ -1,9 +1,15 @@
 package com.zendesk.maxwell.filtering;
 
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 public class FilterColumnPattern extends FilterPattern {
+	private static final Logger LOGGER = LoggerFactory.getLogger(FilterColumnPattern.class);
 	private final String columnName;
 	private final Pattern columnPattern;
 	private final boolean columnPatternIsNull;
@@ -40,6 +46,13 @@ public class FilterColumnPattern extends FilterPattern {
 				}
 			}
 		}
+	}
+
+	@Override
+	public boolean couldIncludeColumn(String database, String table, Set<String> columns) {
+		return type == FilterPatternType.INCLUDE
+			&& appliesTo(database, table)
+			&& columns.contains(columnName);
 	}
 
 	@Override
