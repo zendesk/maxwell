@@ -3,7 +3,7 @@ package com.zendesk.maxwell.standalone.spring;
 import com.zendesk.maxwell.api.LauncherException;
 import com.zendesk.maxwell.core.MaxwellLauncher;
 import com.zendesk.maxwell.core.bootstrap.MaxwellBootstrapUtilityLauncher;
-import com.zendesk.maxwell.metricsreporter.core.MetricsReporterInitialization;
+import com.zendesk.maxwell.metricreporter.core.MetricsReporterInitialization;
 import com.zendesk.maxwell.standalone.config.MaxwellBootstrapUtilConfigurationOptionMerger;
 import com.zendesk.maxwell.standalone.config.ConfigurationOptionMerger;
 import com.zendesk.maxwell.standalone.config.MaxwellConfigurationOptionMerger;

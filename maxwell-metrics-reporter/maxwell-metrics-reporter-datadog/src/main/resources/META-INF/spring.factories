@@ -1,1 +1,0 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.zendesk.maxwell.metricsreporter.datadog.springconfig.DatadogMetricReporterComponentScanConfig
