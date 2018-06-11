@@ -6,20 +6,22 @@ import com.zendesk.maxwell.api.monitoring.MetricReporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.concurrent.TimeUnit;
 
-public class Slf4jMetricReporter implements MetricReporter {
+@Service
+public class Slf4jMetricReporter implements MetricReporter<Slf4jMetricReporterConfiguration> {
     private final static Logger LOGGER = LoggerFactory.getLogger(Slf4jMetricReporter.class);
 
-    private final Slf4jMetricReporterConfiguration configuration;
-
-    public Slf4jMetricReporter(Slf4jMetricReporterConfiguration configuration) {
-        this.configuration = configuration;
-    }
+    private final MetricRegistry metricRegistry;
 
     @Autowired
-    public void start(MetricRegistry metricRegistry){
+    public Slf4jMetricReporter(MetricRegistry metricRegistry) {
+        this.metricRegistry = metricRegistry;
+    }
+
+    public void start(Slf4jMetricReporterConfiguration configuration){
         final Slf4jReporter reporter = Slf4jReporter.forRegistry(metricRegistry)
                 .outputTo(LOGGER)
                 .convertRatesTo(TimeUnit.SECONDS)

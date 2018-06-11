@@ -1,6 +1,5 @@
 package com.zendesk.maxwell.metricsreporter.core.slf4j;
 
-import com.codahale.metrics.MetricRegistry;
 import com.zendesk.maxwell.api.config.CommandLineOptionParserContext;
 import com.zendesk.maxwell.api.config.ConfigurationSupport;
 import com.zendesk.maxwell.api.monitoring.MetricReporterConfiguration;
@@ -14,10 +13,12 @@ import java.util.Properties;
 
 @Service
 public class Slf4jMetricReporterConfigurator implements MetricReporterConfigurator {
+    private final Slf4jMetricReporter reporter;
     private final ConfigurationSupport configurationSupport;
 
     @Autowired
-    public Slf4jMetricReporterConfigurator(ConfigurationSupport configurationSupport) {
+    public Slf4jMetricReporterConfigurator(Slf4jMetricReporter reporter, ConfigurationSupport configurationSupport) {
+        this.reporter = reporter;
         this.configurationSupport = configurationSupport;
     }
 
@@ -38,9 +39,7 @@ public class Slf4jMetricReporterConfigurator implements MetricReporterConfigurat
     }
 
     @Override
-    public void enableReporter(MetricReporterConfiguration configuration, MetricRegistry metricRegistry) {
-        Slf4jMetricReporterConfiguration config = (Slf4jMetricReporterConfiguration)configuration;
-        Slf4jMetricReporter reporter = new Slf4jMetricReporter(config);
-        reporter.start(metricRegistry);
+    public void enableReporter(MetricReporterConfiguration configuration) {
+        reporter.start((Slf4jMetricReporterConfiguration)configuration);
     }
 }

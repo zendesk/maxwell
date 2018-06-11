@@ -1,6 +1,5 @@
 package com.zendesk.maxwell.metricsreporter.core;
 
-import com.codahale.metrics.MetricRegistry;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.monitoring.MetricReporterConfiguration;
 import com.zendesk.maxwell.api.monitoring.MetricReporterConfigurator;
@@ -13,12 +12,10 @@ import java.util.Properties;
 @Service
 public class MetricsReporterInitialization {
 
-    private final MetricRegistry metricRegistry;
     private final List<MetricReporterConfigurator> metricReporterConfigurators;
 
     @Autowired
-    public MetricsReporterInitialization(MetricRegistry metricRegistry, List<MetricReporterConfigurator> metricReporterConfigurators) {
-        this.metricRegistry = metricRegistry;
+    public MetricsReporterInitialization(List<MetricReporterConfigurator> metricReporterConfigurators) {
         this.metricReporterConfigurators = metricReporterConfigurators;
     }
 
@@ -35,7 +32,7 @@ public class MetricsReporterInitialization {
 
     private void enableReporter(MetricReporterConfigurator configurator, Properties configurationSettings){
         MetricReporterConfiguration configuration = configurator.parseConfiguration(configurationSettings).orElse(MetricReporterConfiguration.EMTPY);
-        configurator.enableReporter(configuration, metricRegistry);
+        configurator.enableReporter(configuration);
     }
 
 }

@@ -1,9 +1,7 @@
 package com.zendesk.maxwell.core.monitoring;
 
-import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Slf4jReporter;
 import com.codahale.metrics.jvm.*;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.monitoring.Metrics;
@@ -48,24 +46,6 @@ public class MaxwellMetrics implements Metrics {
 			metricRegistry.register(metricName("jvm", "class_loading"), new ClassLoadingGaugeSet());
 			metricRegistry.register(metricName("jvm", "file_descriptor_ratio"), new FileDescriptorRatioGauge());
 			metricRegistry.register(metricName("jvm", "thread_states"), new CachedThreadStatesGaugeSet(60, TimeUnit.SECONDS));
-		}
-
-		if (config.getMetricsReportingType().contains(REPORTING_TYPE_JMX)) {
-			final JmxReporter jmxReporter = JmxReporter.forRegistry(metricRegistry)
-					.convertRatesTo(TimeUnit.SECONDS)
-					.convertDurationsTo(TimeUnit.MILLISECONDS)
-					.build();
-			jmxReporter.start();
-			LOGGER.info("JMX metrics reporter enabled");
-
-			if (System.getProperty("com.sun.management.jmxremote") == null) {
-				LOGGER.warn("JMX remote is disabled");
-			} else {
-				String portString = System.getProperty("com.sun.management.jmxremote.port");
-				if (portString != null) {
-					LOGGER.info("JMX running on port " + Integer.parseInt(portString));
-				}
-			}
 		}
 
 		if (config.getMetricsReportingType().contains(REPORTING_TYPE_DATADOG)) {
