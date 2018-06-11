@@ -4,7 +4,7 @@
 
     <groupId>com.zendesk</groupId>
     <artifactId>maxwell-parent</artifactId>
-    <version>1.14.6</version>
+    <version>1.14.7</version>
     <packaging>pom</packaging>
 
     <name>maxwell</name>
