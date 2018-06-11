@@ -17,9 +17,11 @@ import com.zendesk.maxwell.metricreporter.http.springconfig.HttpMetricReporterCo
 import com.zendesk.maxwell.metricreporter.http.springconfig.MetricsTestConfig;
 import com.zendesk.maxwell.test.mysql.MysqlIsolatedServer;
 import com.zendesk.maxwell.test.mysql.MysqlIsolatedServerSupport;
+import com.zendesk.maxwell.test.springconfig.TestSupportComponentScan;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -41,7 +43,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {MetricsTestConfig.class, CoreComponentScanConfig.class, MetricsReporterCoreComponentScanConfig.class, HttpMetricReporterComponentScanConfig.class})
+@ContextConfiguration(classes = {MetricsTestConfig.class, CoreComponentScanConfig.class, MetricsReporterCoreComponentScanConfig.class, HttpMetricReporterComponentScanConfig.class, TestSupportComponentScan.class })
 public class DiagnosticMaxwellTest {
 
 	@Autowired
@@ -58,26 +60,16 @@ public class DiagnosticMaxwellTest {
 	private ByteArrayOutputStream outputStream;
 	private PrintWriter writer;
 
-	private static MysqlIsolatedServer server;
+	private MysqlIsolatedServer server;
 
 	@BeforeClass
 	public static void setupTest() throws Exception {
 		Logging.setupLogBridging();
 	}
 
-	@AfterClass
-	public static void cleanupDatabase(){
-		if(server != null){
-			server.shutDown();
-			server = null;
-		}
-	}
-
 	@Before
 	public void setup() throws Exception {
-		if(server == null){
-			server = mysqlIsolatedServerSupport.setupServer();
-		}
+		server = mysqlIsolatedServerSupport.setupServer();
 		mysqlIsolatedServerSupport.setupSchema(server);
 
 		outputStream = new ByteArrayOutputStream();
@@ -88,6 +80,7 @@ public class DiagnosticMaxwellTest {
 	public void cleanup() throws IOException {
 		writer.close();
 		outputStream.close();
+		server.shutDown();
 	}
 
 	@Test

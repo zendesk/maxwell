@@ -19,6 +19,7 @@ public class MysqlIsolatedServerSupport {
 
 
     public MysqlIsolatedServer setupServer(String extraParams) throws Exception {
+        ensureMySqlDriverIsLoaded();
         MysqlIsolatedServer server = new MysqlIsolatedServer();
         server.boot(extraParams);
 
@@ -27,6 +28,14 @@ public class MysqlIsolatedServerSupport {
         conn.createStatement().executeQuery("use maxwell");
         schemaStoreSchema.upgradeSchemaStoreSchema(conn);
         return server;
+    }
+
+    private void ensureMySqlDriverIsLoaded() {
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("MySQL Driver not available", e);
+        }
     }
 
     public MysqlIsolatedServer setupServer() throws Exception {

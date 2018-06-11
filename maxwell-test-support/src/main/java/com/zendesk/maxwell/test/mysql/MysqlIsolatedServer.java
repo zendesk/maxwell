@@ -2,15 +2,18 @@ package com.zendesk.maxwell.test.mysql;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.io.ByteStreams;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.replication.MysqlVersion;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -20,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 public class MysqlIsolatedServer {
-	private static final Long SERVER_ID = 4321L;
+    private static final Long SERVER_ID = 4321L;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(MysqlIsolatedServer.class);
 	private static final TypeReference<Map<String, Object>> MAP_STRING_OBJECT_REF = new TypeReference<Map<String, Object>>() {};
@@ -29,7 +32,9 @@ public class MysqlIsolatedServer {
 	public static final MysqlVersion VERSION_5_6 = new MysqlVersion(5, 6);
 	public static final MysqlVersion VERSION_5_7 = new MysqlVersion(5, 7);
 
-	private Connection connection;
+    public static final String ONETIMESERVER_EXECUTEABLE = "onetimeserver";
+
+    private Connection connection;
 	private int port;
 	private int serverPid;
 	public String path;
@@ -39,7 +44,7 @@ public class MysqlIsolatedServer {
 	}
 
 	public void boot(String xtraParams) throws IOException, SQLException, InterruptedException {
-        final String dir = System.getProperty("user.dir");
+		final File onetimerserverFile = writeOnetimerserverToDisk();
 
 		if ( xtraParams == null )
 			xtraParams = "";
@@ -62,7 +67,7 @@ public class MysqlIsolatedServer {
 			serverID = "--server_id=" + SERVER_ID;
 
 		ProcessBuilder pb = new ProcessBuilder(
-			dir + "/src/test/onetimeserver",
+				onetimerserverFile.getAbsolutePath(),
 			"--mysql-version=" + this.getVersionString(),
 			"--log-slave-updates",
 			"--log-bin=master",
@@ -125,6 +130,39 @@ public class MysqlIsolatedServer {
 		this.connection.createStatement().executeUpdate("GRANT ALL on *.* to 'maxwell'@'127.0.0.1'");
 		this.connection.createStatement().executeUpdate("CREATE DATABASE if not exists test");
 		LOGGER.info("booted at port " + this.port + ", outputting to file " + outputFile);
+	}
+
+	private File writeOnetimerserverToDisk(){
+        final String dir = System.getProperty("user.dir");
+		File mysqlFolder = new File(dir+File.separator+"target", "mysql-onetimeserver");
+		if(!mysqlFolder.exists()){
+			if(!mysqlFolder.mkdir()){
+				throw new RuntimeException("Failed to create directory " + mysqlFolder.getAbsolutePath() + " for onetimeserver");
+			}
+		}else if(mysqlFolder.isFile()){
+			throw new RuntimeException("Failed to create directory for onetimeserver; file with the same name already exists");
+		}
+
+		File onetimerserverFile = new File(mysqlFolder, ONETIMESERVER_EXECUTEABLE);
+		if(!onetimerserverFile.exists()){
+			try {
+				Path onetimeserverFilePath = Paths.get(onetimerserverFile.toURI());
+				Files.createFile(onetimeserverFilePath, PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwxrwxr-x")));
+				Files.write(onetimeserverFilePath, getOnetimeServerContent());
+			}catch (IOException e){
+				throw new IllegalStateException("Failed to write onetimeserver executable");
+			}
+		}
+		return onetimerserverFile;
+	}
+
+	private byte[] getOnetimeServerContent() throws IOException {
+		InputStream is = MysqlIsolatedServer.class.getResourceAsStream(ONETIMESERVER_EXECUTEABLE);
+		is = is != null ? is : MysqlIsolatedServer.class.getClassLoader().getResourceAsStream(ONETIMESERVER_EXECUTEABLE);
+		if(is == null){
+			throw new IllegalStateException("Cannot locate onetimeserver executable");
+		}
+		return ByteStreams.toByteArray(is);
 	}
 
 	public void setupSlave(int masterPort) throws SQLException {

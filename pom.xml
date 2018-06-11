@@ -54,6 +54,7 @@
         <google-cloud-pubsub.version>0.30.0-beta</google-cloud-pubsub.version>
         <guava.version>20.0</guava.version>
         <hamcrest.version>1.3</hamcrest.version>
+        <httpclient.version>4.3.6</httpclient.version>
         <jackson.version>2.6.3</jackson.version>
         <jedis.version>2.9.0</jedis.version>
         <jetty.version>9.2.21.v20170120</jetty.version>
@@ -246,6 +247,11 @@
                 <version>${commons-codec.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${httpclient.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.antlr</groupId>
                 <artifactId>antlr4-runtime</artifactId>
                 <version>${antlr4-runtime.version}</version>
@@ -339,6 +345,11 @@
             <dependency>
                 <groupId>io.dropwizard.metrics</groupId>
                 <artifactId>metrics-healthchecks</artifactId>
+                <version>${dropwizard.metrics.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.dropwizard.metrics</groupId>
+                <artifactId>metrics-jvm</artifactId>
                 <version>${dropwizard.metrics.version}</version>
             </dependency>
             <dependency>

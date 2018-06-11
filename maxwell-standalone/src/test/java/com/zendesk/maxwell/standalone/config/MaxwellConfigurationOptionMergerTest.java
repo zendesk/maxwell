@@ -17,7 +17,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {StandaloneApplicationComponentScanConfig.class, })
+@ContextConfiguration(classes = { StandaloneApplicationComponentScanConfig.class, })
 public class MaxwellConfigurationOptionMergerTest {
 	@Rule
 	public final EnvironmentVariables environmentVariables = new EnvironmentVariables();

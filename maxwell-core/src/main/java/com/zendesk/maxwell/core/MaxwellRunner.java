@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.core;
 
 import com.zendesk.maxwell.api.MaxwellContext;
+import com.zendesk.maxwell.api.MaxwellTerminationListener;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.producer.Producer;
 import com.zendesk.maxwell.api.replication.Position;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
+import java.util.List;
 
 @Service
 public class MaxwellRunner {
@@ -27,11 +29,13 @@ public class MaxwellRunner {
 
 	private final BootstrapperFactory bootstrapperFactory;
 	private final SchemaStoreSchema schemaStoreSchema;
+	private final List<MaxwellTerminationListener> terminationListeners;
 
 	@Autowired
-	public MaxwellRunner(BootstrapperFactory bootstrapperFactory, SchemaStoreSchema schemaStoreSchema) {
+	public MaxwellRunner(BootstrapperFactory bootstrapperFactory, SchemaStoreSchema schemaStoreSchema, List<MaxwellTerminationListener> terminationListeners) {
 		this.bootstrapperFactory = bootstrapperFactory;
 		this.schemaStoreSchema = schemaStoreSchema;
+		this.terminationListeners = terminationListeners;
 	}
 
 	public void run(final MaxwellSystemContext context) {
@@ -53,6 +57,7 @@ public class MaxwellRunner {
 				// ignore
 			}
 		}
+		terminationListeners.stream().forEach(l -> l.onTermination());
 	}
 
 	private Position attemptMasterRecovery(final MaxwellSystemContext context) throws Exception {

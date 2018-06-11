@@ -41,7 +41,6 @@
             <artifactId>maxwell-core</artifactId>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>com.zendesk</groupId>
             <artifactId>maxwell-metric-reporter-core</artifactId>

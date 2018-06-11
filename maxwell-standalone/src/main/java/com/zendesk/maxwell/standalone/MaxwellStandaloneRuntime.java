@@ -6,7 +6,7 @@ import com.zendesk.maxwell.api.MaxwellLauncher;
 import com.zendesk.maxwell.metricreporter.core.MetricsReporterInitialization;
 import com.zendesk.maxwell.standalone.api.MaxwellRuntime;
 import com.zendesk.maxwell.standalone.api.SystemShutdownListener;
-import com.zendesk.maxwell.standalone.config.ConfigurationOptionMerger;
+import com.zendesk.maxwell.standalone.config.MaxwellConfigurationOptionMerger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,24 +20,20 @@ import java.util.Properties;
 public class MaxwellStandaloneRuntime implements MaxwellRuntime {
 	private final static Logger LOGGER = LoggerFactory.getLogger(MaxwellStandaloneRuntime.class);
 
-	private final ConfigurationOptionMerger configurationOptionMerger;
-	private final MaxwellLauncher maxwellLauncher;
-	private final MetricsReporterInitialization metricsReporterInitialization;
-	private final List<SystemShutdownListener> shutdownListeners;
+	@Autowired
+	private MaxwellConfigurationOptionMerger maxwellConfigurationOptionMerger;
+	@Autowired
+	private MaxwellLauncher maxwellLauncher;
+	@Autowired
+	private MetricsReporterInitialization metricsReporterInitialization;
+	@Autowired
+	private List<SystemShutdownListener> shutdownListeners;
 
 	private static MaxwellContext context;
 
-	@Autowired
-	public MaxwellStandaloneRuntime(ConfigurationOptionMerger configurationOptionMerger, MaxwellLauncher maxwellLauncher, MetricsReporterInitialization metricsReporterInitialization, List<SystemShutdownListener> shutdownListeners) {
-		this.configurationOptionMerger = configurationOptionMerger;
-		this.maxwellLauncher = maxwellLauncher;
-		this.metricsReporterInitialization = metricsReporterInitialization;
-		this.shutdownListeners = shutdownListeners;
-	}
-
 	public void runMaxwell(final String[] args) {
 		try {
-			final Properties configurationOptions = configurationOptionMerger.mergeCommandLineOptionsWithConfigurationAndSystemEnvironment(args);
+			final Properties configurationOptions = maxwellConfigurationOptionMerger.mergeCommandLineOptionsWithConfigurationAndSystemEnvironment(args);
 			runMaxwell(configurationOptions);
 		}catch (Exception e){
 			throw new LauncherException("Error while running Maxwell", e);
