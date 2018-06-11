@@ -1,9 +1,10 @@
 package com.zendesk.maxwell.filtering;
 
+import java.util.Map;
 import java.util.regex.Pattern;
 
 public class FilterPattern {
-	private final FilterPatternType type;
+	protected final FilterPatternType type;
 	private final Pattern dbPattern, tablePattern;
 
 	public FilterPattern(FilterPatternType type, Pattern dbPattern, Pattern tablePattern) {
@@ -12,10 +13,17 @@ public class FilterPattern {
 		this.tablePattern = tablePattern;
 	}
 
+	protected boolean appliesTo(String database, String table) {
+		return (database == null || dbPattern.matcher(database).find())
+			&& (table == null || tablePattern.matcher(table).find());
+	}
 	public void match(String database, String table, FilterResult match) {
-		if ( (database == null || dbPattern.matcher(database).find())
-		  && (table == null || tablePattern.matcher(table).find()) )
+		if ( appliesTo(database, table) )
 			match.include = (this.type == FilterPatternType.INCLUDE);
+	}
+
+	public void matchValue(String database, String table, Map<String, Object> data, FilterResult match) {
+		match(database, table, match);
 	}
 
 	public FilterPatternType getType() {
@@ -30,7 +38,7 @@ public class FilterPattern {
 		return tablePattern;
 	}
 
-	private String patternToString(Pattern p) {
+	protected String patternToString(Pattern p) {
 		String s = p.pattern();
 
 		if ( s.equals("") ) {

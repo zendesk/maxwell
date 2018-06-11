@@ -1,5 +1,6 @@
 package com.zendesk.maxwell.filtering;
 
+import com.zendesk.maxwell.schema.Table;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,35 +38,21 @@ public class Filter {
 		return new ArrayList<>(this.patterns);
 	}
 
-	private boolean matchesValues(Map<String, Object> data) {
-		for (Map.Entry<String, String> entry : includeColumnValues.entrySet()) {
-			String column = entry.getKey();
-
-			if (data.containsKey(column)) {
-				String expectedColumnValue = entry.getValue();
-				Object value = data.get(column);
-
-				if ("NULL".equals(expectedColumnValue)) {
-					// null or "null" (string) or "NULL" (string) is expected
-					if (value != null && !"null".equals(value) && !"NULL".equals(value)) {
-						return false;
-					}
-				} else {
-					if (value == null || !expectedColumnValue.equals(value.toString())) {
-						return false;
-					}
-				}
-			}
-		}
-
-		return true;
-	}
 
 	public boolean includes(String database, String table) {
 		FilterResult match = new FilterResult();
 
 		for ( FilterPattern p : patterns )
 			p.match(database, table, match);
+
+		return match.include;
+	}
+
+	public boolean includes(String database, String table, Map<String, Object> values) {
+		FilterResult match = new FilterResult();
+
+		for ( FilterPattern p : patterns )
+			p.matchValue(database, table, values, match);
 
 		return match.include;
 	}
@@ -105,11 +92,11 @@ public class Filter {
 		}
 	}
 
-	public static boolean matchesValues(Filter filter, Map<String, Object> data) {
+	public static boolean includes(Filter filter, String database, String table, Map<String, Object> data) {
 		if (filter == null) {
 			return true;
 		} else {
-			return filter.matchesValues(data);
+			return filter.includes(database, table, data);
 		}
 	}
 

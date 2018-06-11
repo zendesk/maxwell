@@ -68,6 +68,7 @@ public class FilterParser {
 
 	private FilterPattern parseFilterPattern() throws IOException {
 		FilterPatternType type;
+		FilterPattern ret;
 
 		if ( tokenizer.ttype == TT_EOF )
 			return null;
@@ -96,10 +97,28 @@ public class FilterParser {
 		skipToken('.');
 		Pattern tablePattern = parsePattern();
 
-		if ( tokenizer.ttype == ',' )
+		if ( tokenizer.ttype == '.' ) {
+			// column-value filter
 			tokenizer.nextToken();
 
-		return new FilterPattern(type, dbPattern, tablePattern);
+			if ( tokenizer.ttype != TT_WORD )
+				throw new IOException("expected column name, got" + tokenizer.nextToken());
+
+			String columnName = tokenizer.sval;
+			tokenizer.nextToken();
+
+			skipToken('=');
+			Pattern valuePattern = parsePattern();
+			ret = new FilterColumnPattern(type, dbPattern, tablePattern, columnName, valuePattern);
+		} else {
+			ret = new FilterPattern(type, dbPattern, tablePattern);
+		}
+
+		if ( tokenizer.ttype == ',' ) {
+			tokenizer.nextToken();
+		}
+
+		return ret;
 	}
 
 	private Pattern parsePattern() throws IOException {
