@@ -70,12 +70,7 @@ public class MaxwellConfigFactory {
 		if (!config.getHttpPathPrefix().startsWith("/")) {
 			config.setHttpPathPrefix("/" + config.getHttpPathPrefix());
 		}
-		config.setMetricsDatadogType(configurationSupport.fetchOption("metrics_datadog_type", properties, DEFAULT_METRICS_DATADOG_TYPE));
-		config.setMetricsDatadogTags(configurationSupport.fetchOption("metrics_datadog_tags", properties, DEFAULT_METRICS_DATADOG_TAGS));
-		config.setMetricsDatadogAPIKey(configurationSupport.fetchOption("metrics_datadog_apikey", properties, DEFAULT_METRICS_DATADOG_APIKEY));
-		config.setMetricsDatadogHost(configurationSupport.fetchOption("metrics_datadog_host", properties, DEFAULT_METRICS_DATADOG_HOST));
-		config.setMetricsDatadogPort(configurationSupport.fetchIntegerOption("metrics_datadog_port", properties, DEFAULT_METRICS_DATADOG_PORT));
-		config.setMetricsDatadogInterval(configurationSupport.fetchLongOption("metrics_datadog_interval", properties, DEFAULT_METRICS_DATADOG_INTERVAL));
+
 
 		config.setMetricsJvm(configurationSupport.fetchBooleanOption(CONFIGURATION_OPTION_METRICS_JVM, properties, DEFAULT_METRCS_JVM));
 

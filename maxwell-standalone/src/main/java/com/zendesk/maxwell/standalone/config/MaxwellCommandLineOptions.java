@@ -163,12 +163,6 @@ public class MaxwellCommandLineOptions extends AbstractCommandLineOptions {
 		context.addOptionWithRequiredArgument( "http_port", "the port the server will bind to when http reporting is configured" );
 		context.addOptionWithRequiredArgument( "http_path_prefix", "the http path prefix when metrics_type includes http or diagnostic is enabled, default /" );
 		context.addOptionWithRequiredArgument( "http_bind_address", "the ip address the server will bind to when http reporting is configured" );
-		context.addOptionWithRequiredArgument( "metrics_datadog_type", "when metrics_type includes datadog this is the way metrics will be reported, one of udp|http" );
-		context.addOptionWithRequiredArgument( "metrics_datadog_tags", "datadog tags that should be supplied, e.g. tag1:value1,tag2:value2" );
-		context.addOptionWithRequiredArgument( "metrics_datadog_interval", "the frequency metrics are pushed to datadog, in seconds" );
-		context.addOptionWithRequiredArgument( "metrics_datadog_apikey", "the datadog api key to use when metrics_datadog_type = http" );
-		context.addOptionWithRequiredArgument( "metrics_datadog_host", "the host to publish metrics to when metrics_datadog_type = udp" );
-		context.addOptionWithRequiredArgument( "metrics_datadog_port", "the port to publish metrics to when metrics_datadog_type = udp" );
 		context.addOptionWithRequiredArgument( "http_diagnostic", "enable http diagnostic endpoint: true|false. default: false" );
 		context.addOptionWithRequiredArgument( "http_diagnostic_timeout", "the http diagnostic response timeout in ms when http_diagnostic=true. default: 10000" );
 		context.addOptionWithRequiredArgument( "metrics_jvm", "enable jvm metrics: true|false. default: false" );

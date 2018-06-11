@@ -42,12 +42,6 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 	private String httpPathPrefix;
 	private String metricsPrefix;
 	private String metricsReportingType;
-	private String metricsDatadogType;
-	private String metricsDatadogTags;
-	private String metricsDatadogAPIKey;
-	private String metricsDatadogHost;
-	private int metricsDatadogPort;
-	private Long metricsDatadogInterval;
 	private boolean metricsJvm;
 
 	private BaseMaxwellDiagnosticConfig diagnosticConfig;
@@ -83,12 +77,6 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 		this.setHttpPathPrefix(DEFAULT_HTTP_PATH_PREFIX);
 
 		this.setMetricsPrefix(DEFAULT_METRICS_PREFIX);
-		this.setMetricsDatadogType(DEFAULT_METRICS_DATADOG_TYPE);
-		this.setMetricsDatadogTags(DEFAULT_METRICS_DATADOG_TAGS);
-		this.setMetricsDatadogAPIKey(DEFAULT_METRICS_DATADOG_APIKEY);
-		this.setMetricsDatadogHost(DEFAULT_METRICS_DATADOG_HOST);
-		this.setMetricsDatadogPort(DEFAULT_METRICS_DATADOG_PORT);
-		this.setMetricsDatadogInterval(DEFAULT_METRICS_DATADOG_INTERVAL);
 		this.setMetricsJvm(DEFAULT_METRCS_JVM);
 
 		this.setMasterRecovery(false);
@@ -147,10 +135,6 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 
 		if (schemaMysql.getSslMode() == null) {
 			schemaMysql.setSslMode(maxwellMysql.getSslMode());
-		}
-
-		if (metricsDatadogType != null && metricsDatadogType.contains("http") && StringUtils.isEmpty(metricsDatadogAPIKey)) {
-			throw new InvalidOptionException("please specify metrics_datadog_apikey when metrics_datadog_type = http");
 		}
 
 		if (getOutputConfig().isEncryptionEnabled() && getOutputConfig().getSecretKey() == null)
@@ -371,60 +355,6 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 
 	public void setMetricsReportingType(String metricsReportingType) {
 		this.metricsReportingType = metricsReportingType;
-	}
-
-	@Override
-	public String getMetricsDatadogType() {
-		return metricsDatadogType;
-	}
-
-	public void setMetricsDatadogType(String metricsDatadogType) {
-		this.metricsDatadogType = metricsDatadogType;
-	}
-
-	@Override
-	public String getMetricsDatadogTags() {
-		return metricsDatadogTags;
-	}
-
-	public void setMetricsDatadogTags(String metricsDatadogTags) {
-		this.metricsDatadogTags = metricsDatadogTags;
-	}
-
-	@Override
-	public String getMetricsDatadogAPIKey() {
-		return metricsDatadogAPIKey;
-	}
-
-	public void setMetricsDatadogAPIKey(String metricsDatadogAPIKey) {
-		this.metricsDatadogAPIKey = metricsDatadogAPIKey;
-	}
-
-	@Override
-	public String getMetricsDatadogHost() {
-		return metricsDatadogHost;
-	}
-
-	public void setMetricsDatadogHost(String metricsDatadogHost) {
-		this.metricsDatadogHost = metricsDatadogHost;
-	}
-
-	@Override
-	public int getMetricsDatadogPort() {
-		return metricsDatadogPort;
-	}
-
-	public void setMetricsDatadogPort(int metricsDatadogPort) {
-		this.metricsDatadogPort = metricsDatadogPort;
-	}
-
-	@Override
-	public Long getMetricsDatadogInterval() {
-		return metricsDatadogInterval;
-	}
-
-	public void setMetricsDatadogInterval(Long metricsDatadogInterval) {
-		this.metricsDatadogInterval = metricsDatadogInterval;
 	}
 
 	@Override

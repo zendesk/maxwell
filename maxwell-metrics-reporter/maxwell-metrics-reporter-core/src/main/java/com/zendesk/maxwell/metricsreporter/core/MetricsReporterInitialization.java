@@ -32,6 +32,7 @@ public class MetricsReporterInitialization {
 
     private void enableReporter(MetricReporterConfigurator configurator, Properties configurationSettings){
         MetricReporterConfiguration configuration = configurator.parseConfiguration(configurationSettings).orElse(MetricReporterConfiguration.EMTPY);
+        configuration.validate();
         configurator.enableReporter(configuration);
     }
 

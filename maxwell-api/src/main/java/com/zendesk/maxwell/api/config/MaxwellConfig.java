@@ -51,12 +51,6 @@ public interface MaxwellConfig {
 	String DEFAULT_HTTP_PATH_PREFIX = "/";
 
     String DEFAULT_METRICS_PREFIX = "MaxwellMetrics";
-	String DEFAULT_METRICS_DATADOG_TYPE = "udp";
-	String DEFAULT_METRICS_DATADOG_TAGS = "";
-	String DEFAULT_METRICS_DATADOG_APIKEY = "";
-	String DEFAULT_METRICS_DATADOG_HOST = "localhost";
-	int DEFAULT_METRICS_DATADOG_PORT = 8125;
-	long DEFAULT_METRICS_DATADOG_INTERVAL = 60L;
 	boolean DEFAULT_METRCS_JVM = false;
 
 	String GTID_MODE_ENV = "GTID_MODE";
@@ -112,18 +106,6 @@ public interface MaxwellConfig {
 	String getMetricsPrefix();
 
 	String getMetricsReportingType();
-
-	String getMetricsDatadogType();
-
-	String getMetricsDatadogTags();
-
-	String getMetricsDatadogAPIKey();
-
-	String getMetricsDatadogHost();
-
-	int getMetricsDatadogPort();
-
-	Long getMetricsDatadogInterval();
 
 	boolean isMetricsJvm();
 
