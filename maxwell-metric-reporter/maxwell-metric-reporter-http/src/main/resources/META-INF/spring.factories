@@ -1,0 +1,1 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.zendesk.maxwell.metricreporter.http.springconfig.HttpMetricReporterComponentScanConfig

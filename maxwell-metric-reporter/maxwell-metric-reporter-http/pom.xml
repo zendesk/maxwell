@@ -1,0 +1,56 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
+    <parent>
+        <groupId>com.zendesk</groupId>
+        <artifactId>maxwell-metric-reporter</artifactId>
+        <version>1.14.7</version>
+    </parent>
+
+    <artifactId>maxwell-metric-reporter-http</artifactId>
+
+    <name>maxwell-metric-reporter-http</name>
+    <description>Maxwell's Metric Reporter HTTP Module.</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.zendesk</groupId>
+            <artifactId>maxwell-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.zendesk</groupId>
+            <artifactId>maxwell-standalone-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlet</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-servlets</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.zendesk</groupId>
+            <artifactId>maxwell-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.zendesk</groupId>
+            <artifactId>maxwell-metric-reporter-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.zendesk</groupId>
+            <artifactId>maxwell-test-support</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+</project>

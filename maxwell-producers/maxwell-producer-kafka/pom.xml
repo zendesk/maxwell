@@ -1,0 +1,42 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.zendesk</groupId>
+        <artifactId>maxwell-producers</artifactId>
+        <version>1.14.7</version>
+    </parent>
+
+    <artifactId>maxwell-producer-kafka</artifactId>
+
+    <name>maxwell-producer-kafka</name>
+    <description>Maxwell's Kafka producer.</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.zendesk</groupId>
+            <artifactId>maxwell-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.jpountz.lz4</groupId>
+            <artifactId>lz4</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.zendesk</groupId>
+            <artifactId>maxwell-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.zendesk</groupId>
+            <artifactId>maxwell-test-support</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+</project>

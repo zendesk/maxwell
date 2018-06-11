@@ -1,0 +1,15 @@
+data/*.yaml
+config/*.yml
+/target
+/config.properties
+/maxwell.position
+/.idea
+/*.iml
+.*.sw*
+.DS_Store
+/test.log
+.sw?
+/config
+.classpath
+.project
+.settings/
