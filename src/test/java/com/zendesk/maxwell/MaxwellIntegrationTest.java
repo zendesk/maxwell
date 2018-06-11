@@ -335,6 +335,23 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		assertThat(list.size(), is(2));
 	}
 
+	@Test
+	public void testWildCardMatchesNull() throws Exception {
+		List<RowMap> list;
+
+		String nullInsert[] = {
+			"INSERT into foo.bars set something = NULL",
+			"INSERT into foo.bars set something = 'accept'"
+		};
+
+		Filter filter = new Filter();
+		filter.addRule("exclude: foo.bars.something=*");
+
+		list = getRowsForSQL(filter, nullInsert, createDBs);
+
+		assertThat(list.size(), is(0));
+	}
+
 	static String blacklistSQLDDL[] = {
 		"CREATE DATABASE nodatabase",
 		"CREATE TABLE nodatabase.noseeum (i int)",

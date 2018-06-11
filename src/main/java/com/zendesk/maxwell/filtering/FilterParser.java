@@ -110,7 +110,6 @@ public class FilterParser {
 			skipToken('=');
 			Pattern valuePattern = parsePattern();
 			ret = new FilterColumnPattern(type, dbPattern, tablePattern, columnName, valuePattern);
-			System.out.println("weird. " + ret.toString());
 		} else {
 			ret = new FilterPattern(type, dbPattern, tablePattern);
 		}
