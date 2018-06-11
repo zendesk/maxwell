@@ -1,6 +1,8 @@
 package com.zendesk.maxwell.standalone.config;
 
 import com.zendesk.maxwell.api.config.CommandLineOptionParserContext;
+import com.zendesk.maxwell.api.config.ModuleConfigurator;
+import com.zendesk.maxwell.api.config.ModuleType;
 import com.zendesk.maxwell.api.producer.ProducerConfigurator;
 import com.zendesk.maxwell.core.config.BaseCommandLineOptionParserContext;
 import com.zendesk.maxwell.standalone.spring.SpringLauncher;
@@ -11,10 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Pattern;
 
 @Service
@@ -29,11 +28,11 @@ public class MaxwellCommandLineOptions extends AbstractCommandLineOptions {
 		return INSTANCE;
 	}
 
-	private final List<ProducerConfigurator> producerConfigurators;
+	private final List<ModuleConfigurator<?>> moduleConfigurators;
 
 	@Autowired
-	public MaxwellCommandLineOptions(Optional<List<ProducerConfigurator>> producerConfigurators) {
-		this.producerConfigurators = producerConfigurators.orElseGet(ArrayList::new);
+	public MaxwellCommandLineOptions(Optional<List<ModuleConfigurator<?>>> moduleConfigurators) {
+		this.moduleConfigurators = moduleConfigurators.orElseGet(ArrayList::new);
 	}
 
 	@PostConstruct
@@ -153,14 +152,13 @@ public class MaxwellCommandLineOptions extends AbstractCommandLineOptions {
 
 		context.addSeparator();
 
-		producerConfigurators.forEach(c -> {
+		moduleConfigurators.stream().filter(mc -> mc.getType() == ModuleType.PRODUCER).sorted(Comparator.comparing(ModuleConfigurator::getIdentifier)).forEach(c -> {
 			c.configureCommandLineOptions(context);
 			context.addSeparator();
 		});
 
 		context.addOptionWithRequiredArgument( "metrics_prefix", "the prefix maxwell will apply to all metrics" );
 		context.addOptionWithRequiredArgument( "metrics_type", "how maxwell metrics will be reported, at least one of slf4j|jmx|http|datadog" );
-		context.addOptionWithRequiredArgument( "metrics_slf4j_interval", "the frequency metrics are emitted to the log, in seconds, when slf4j reporting is configured" );
 		context.addOptionWithRequiredArgument( "metrics_http_port", "[deprecated]" );
 		context.addOptionWithRequiredArgument( "http_port", "the port the server will bind to when http reporting is configured" );
 		context.addOptionWithRequiredArgument( "http_path_prefix", "the http path prefix when metrics_type includes http or diagnostic is enabled, default /" );
@@ -174,6 +172,11 @@ public class MaxwellCommandLineOptions extends AbstractCommandLineOptions {
 		context.addOptionWithRequiredArgument( "http_diagnostic", "enable http diagnostic endpoint: true|false. default: false" );
 		context.addOptionWithRequiredArgument( "http_diagnostic_timeout", "the http diagnostic response timeout in ms when http_diagnostic=true. default: 10000" );
 		context.addOptionWithRequiredArgument( "metrics_jvm", "enable jvm metrics: true|false. default: false" );
+
+		moduleConfigurators.stream().filter(mc -> mc.getType() == ModuleType.METRIC_REPORTER).sorted(Comparator.comparing(ModuleConfigurator::getIdentifier)).forEach(c -> {
+			c.configureCommandLineOptions(context);
+			context.addSeparator();
+		});
 
 		context.addSeparator();
 	}

@@ -42,7 +42,6 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 	private String httpPathPrefix;
 	private String metricsPrefix;
 	private String metricsReportingType;
-	private Long metricsSlf4jInterval;
 	private String metricsDatadogType;
 	private String metricsDatadogTags;
 	private String metricsDatadogAPIKey;
@@ -84,7 +83,6 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 		this.setHttpPathPrefix(DEFAULT_HTTP_PATH_PREFIX);
 
 		this.setMetricsPrefix(DEFAULT_METRICS_PREFIX);
-		this.setMetricsSlf4jInterval(DEFAULT_METRITCS_SLF4J_INTERVAL);
 		this.setMetricsDatadogType(DEFAULT_METRICS_DATADOG_TYPE);
 		this.setMetricsDatadogTags(DEFAULT_METRICS_DATADOG_TAGS);
 		this.setMetricsDatadogAPIKey(DEFAULT_METRICS_DATADOG_APIKEY);
@@ -373,15 +371,6 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 
 	public void setMetricsReportingType(String metricsReportingType) {
 		this.metricsReportingType = metricsReportingType;
-	}
-
-	@Override
-	public Long getMetricsSlf4jInterval() {
-		return metricsSlf4jInterval;
-	}
-
-	public void setMetricsSlf4jInterval(Long metricsSlf4jInterval) {
-		this.metricsSlf4jInterval = metricsSlf4jInterval;
 	}
 
 	@Override

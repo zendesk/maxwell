@@ -51,7 +51,6 @@ public interface MaxwellConfig {
 	String DEFAULT_HTTP_PATH_PREFIX = "/";
 
     String DEFAULT_METRICS_PREFIX = "MaxwellMetrics";
-    long DEFAULT_METRITCS_SLF4J_INTERVAL = 60L;
 	String DEFAULT_METRICS_DATADOG_TYPE = "udp";
 	String DEFAULT_METRICS_DATADOG_TAGS = "";
 	String DEFAULT_METRICS_DATADOG_APIKEY = "";
@@ -113,8 +112,6 @@ public interface MaxwellConfig {
 	String getMetricsPrefix();
 
 	String getMetricsReportingType();
-
-	Long getMetricsSlf4jInterval();
 
 	String getMetricsDatadogType();
 

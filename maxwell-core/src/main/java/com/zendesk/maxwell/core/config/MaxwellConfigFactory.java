@@ -55,7 +55,6 @@ public class MaxwellConfigFactory {
 
 		config.setMetricsPrefix(configurationSupport.fetchOption(CONFIGURATION_OPTION_METRICS_PREFIX, properties, DEFAULT_METRICS_PREFIX));
 		config.setMetricsReportingType(configurationSupport.fetchOption(CONFIGURATION_OPTION_METRICS_TYPE, properties, null));
-		config.setMetricsSlf4jInterval(configurationSupport.fetchLongOption("metrics_slf4j_interval", properties, DEFAULT_METRITCS_SLF4J_INTERVAL));
 
 		// TODO remove metrics_http_port support once hitting v1.11.x
 		String metricsHttpPort = configurationSupport.fetchOption(CONFIGURATION_OPTION_METRICS_HTTP_PORT, properties, null);

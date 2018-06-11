@@ -47,6 +47,19 @@
         </dependency>
         <dependency>
             <groupId>com.zendesk</groupId>
+            <artifactId>maxwell-metrics-reporter-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.zendesk</groupId>
+            <artifactId>maxwell-metrics-reporter-http</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.zendesk</groupId>
+            <artifactId>maxwell-metrics-reporter-datadog</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.zendesk</groupId>
             <artifactId>maxwell-test-support</artifactId>
             <scope>test</scope>
         </dependency>

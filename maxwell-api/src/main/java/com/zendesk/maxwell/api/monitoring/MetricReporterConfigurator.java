@@ -1,5 +1,6 @@
 package com.zendesk.maxwell.api.monitoring;
 
+import com.codahale.metrics.MetricRegistry;
 import com.zendesk.maxwell.api.config.ModuleConfigurator;
 import com.zendesk.maxwell.api.config.ModuleType;
 
@@ -10,5 +11,5 @@ public interface MetricReporterConfigurator extends ModuleConfigurator<MetricRep
         return ModuleType.METRIC_REPORTER;
     }
 
-    void enableReporter(MetricReporterConfiguration configuration);
+    void enableReporter(MetricReporterConfiguration configuration, MetricRegistry metricRegistry);
 }

@@ -50,17 +50,6 @@ public class MaxwellMetrics implements Metrics {
 			metricRegistry.register(metricName("jvm", "thread_states"), new CachedThreadStatesGaugeSet(60, TimeUnit.SECONDS));
 		}
 
-		if (config.getMetricsReportingType().contains(REPORTING_TYPE_SLF4J)) {
-			final Slf4jReporter reporter = Slf4jReporter.forRegistry(metricRegistry)
-					.outputTo(LOGGER)
-					.convertRatesTo(TimeUnit.SECONDS)
-					.convertDurationsTo(TimeUnit.MILLISECONDS)
-					.build();
-
-			reporter.start(config.getMetricsSlf4jInterval(), TimeUnit.SECONDS);
-			LOGGER.info("Slf4j metrics reporter enabled");
-		}
-
 		if (config.getMetricsReportingType().contains(REPORTING_TYPE_JMX)) {
 			final JmxReporter jmxReporter = JmxReporter.forRegistry(metricRegistry)
 					.convertRatesTo(TimeUnit.SECONDS)
