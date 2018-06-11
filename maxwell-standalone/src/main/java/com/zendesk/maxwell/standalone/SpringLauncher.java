@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.standalone;
 
 import com.zendesk.maxwell.api.LauncherException;
-import com.zendesk.maxwell.core.bootstrap.MaxwellBootstrapUtilityLauncher;
+import com.zendesk.maxwell.api.bootstrap.MaxwellBootstrapUtilityLauncher;
 import com.zendesk.maxwell.standalone.config.MaxwellBootstrapUtilConfigurationOptionMerger;
 import com.zendesk.maxwell.standalone.config.ConfigurationOptionMerger;
 import com.zendesk.maxwell.standalone.springconfig.StandaloneApplicationComponentScanConfig;

@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core.config;
+package com.zendesk.maxwell.standalone.config;
 
 import com.zendesk.maxwell.api.config.CommandLineOptionParserContext;
 import joptsimple.OptionParser;

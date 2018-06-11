@@ -3,7 +3,6 @@ package com.zendesk.maxwell.standalone.config;
 import com.zendesk.maxwell.api.config.CommandLineOptionParserContext;
 import com.zendesk.maxwell.api.config.ModuleConfigurator;
 import com.zendesk.maxwell.api.config.ModuleType;
-import com.zendesk.maxwell.core.config.BaseCommandLineOptionParserContext;
 import com.zendesk.maxwell.standalone.SpringLauncher;
 import joptsimple.BuiltinHelpFormatter;
 import joptsimple.OptionDescriptor;
