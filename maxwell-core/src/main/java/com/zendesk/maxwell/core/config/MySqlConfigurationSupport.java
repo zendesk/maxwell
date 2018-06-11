@@ -2,6 +2,7 @@ package com.zendesk.maxwell.core.config;
 
 import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.api.config.ConfigurationSupport;
+import com.zendesk.maxwell.api.config.InvalidOptionException;
 import com.zendesk.maxwell.api.config.MaxwellMysqlConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,8 +38,7 @@ public class MySqlConfigurationSupport {
 					return mode;
 				}
 			}
-			System.err.println("Invalid binlog SSL mode string: " + sslMode);
-			System.exit(1);
+			throw new InvalidOptionException("Invalid binlog SSL mode string: " + sslMode, "--" + CONFIGURATION_OPTION_SSL);
 		}
 		return null;
 	}

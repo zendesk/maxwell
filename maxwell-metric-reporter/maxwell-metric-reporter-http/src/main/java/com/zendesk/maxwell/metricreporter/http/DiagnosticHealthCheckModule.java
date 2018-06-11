@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.core.monitoring;
+package com.zendesk.maxwell.metricreporter.http;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.Version;

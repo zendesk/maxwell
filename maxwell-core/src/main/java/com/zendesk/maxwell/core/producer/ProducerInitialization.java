@@ -1,9 +1,11 @@
 package com.zendesk.maxwell.core.producer;
 
+import com.codahale.metrics.health.HealthCheckRegistry;
 import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.StoppableTask;
 import com.zendesk.maxwell.api.config.InvalidOptionException;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
+import com.zendesk.maxwell.api.monitoring.MaxwellDiagnosticRegistry;
 import com.zendesk.maxwell.api.producer.*;
 import com.zendesk.maxwell.core.MaxwellSystemContext;
 import com.zendesk.maxwell.core.producer.impl.noop.NoopProducer;
@@ -20,16 +22,20 @@ public class ProducerInitialization {
 	private static final String NONE_PRODUCER_TYPE = "none";
 
 	private final ProducerConfigurators producerConfigurators;
+	private final MaxwellDiagnosticRegistry maxwellDiagnosticRegistry;
+	private final HealthCheckRegistry healthCheckRegistry;
 
 	@Autowired
-	public ProducerInitialization(ProducerConfigurators producerConfigurators) {
+	public ProducerInitialization(ProducerConfigurators producerConfigurators, MaxwellDiagnosticRegistry maxwellDiagnosticRegistry, HealthCheckRegistry healthCheckRegistry) {
 		this.producerConfigurators = producerConfigurators;
+		this.maxwellDiagnosticRegistry = maxwellDiagnosticRegistry;
+		this.healthCheckRegistry = healthCheckRegistry;
 	}
 
 	public void initialize(final MaxwellSystemContext maxwellContext, final Properties configurationSettings){
 		Producer producer = create(maxwellContext, configurationSettings);
 		maxwellContext.setProducer(producer);
-		registerDiagnostics(producer, maxwellContext);
+		registerDiagnostics(producer);
 		registerStoppableTask(producer, maxwellContext);
 	}
 
@@ -65,9 +71,15 @@ public class ProducerInitialization {
 		return configurator.configure(maxwellContext, configuration);
 	}
 
-	private void registerDiagnostics(Producer producer, MaxwellContext maxwellContext) {
+	private void registerDiagnostics(Producer producer) {
 		if (producer != null && producer.getDiagnostic() != null) {
-			maxwellContext.getDiagnosticContext().diagnostics.add(producer.getDiagnostic());
+			maxwellDiagnosticRegistry.registerDiagnostic(producer.getDiagnostic());
+		}
+	}
+
+	private void registerHealthCheck(String identifier, Producer producer) {
+		if (producer != null && producer.getDiagnostic() != null) {
+			healthCheckRegistry.register("MaxwellHealth.Producer", new ProducerHealthCheck(producer));
 		}
 	}
 

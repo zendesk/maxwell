@@ -19,6 +19,10 @@
         </dependency>
         <dependency>
             <groupId>com.zendesk</groupId>
+            <artifactId>maxwell-standalone-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.zendesk</groupId>
             <artifactId>maxwell-core</artifactId>
         </dependency>
         <dependency>
@@ -75,6 +79,11 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jul-to-slf4j</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>me.tongfei</groupId>
+            <artifactId>progressbar</artifactId>
         </dependency>
         
         <dependency>

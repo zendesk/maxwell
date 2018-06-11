@@ -5,15 +5,13 @@ import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.StoppableTask;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.config.MaxwellFilter;
-import com.zendesk.maxwell.api.monitoring.MaxwellDiagnostic;
-import com.zendesk.maxwell.api.monitoring.MaxwellDiagnosticContext;
+import com.zendesk.maxwell.api.monitoring.MaxwellDiagnosticRegistry;
 import com.zendesk.maxwell.api.monitoring.Metrics;
 import com.zendesk.maxwell.api.producer.Producer;
 import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.api.row.RowMap;
 import com.zendesk.maxwell.core.monitoring.MaxwellMetrics;
 import com.zendesk.maxwell.core.recovery.RecoveryInfo;
-import com.zendesk.maxwell.core.replication.BinlogConnectorDiagnostic;
 import com.zendesk.maxwell.core.replication.HeartbeatNotifier;
 import com.zendesk.maxwell.api.replication.MysqlVersion;
 import com.zendesk.maxwell.core.replication.Replicator;
@@ -29,9 +27,6 @@ import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -61,22 +56,18 @@ public class BaseMaxwellContext implements MaxwellSystemContext {
 	private Thread terminationThread;
 
 	private final HeartbeatNotifier heartbeatNotifier;
-	private final MaxwellDiagnosticContext diagnosticContext;
 
 	private Consumer<MaxwellContext> onReplicationStartEventHandler;
 	private Consumer<MaxwellContext> onReplicationCompletedEventHandler;
 	private Consumer<MaxwellContext> onExecutionCompletedEventHandler;
 
-	private final List<ContextStartListener> contextStartListenersEventHandler;
-
-	public BaseMaxwellContext(MaxwellConfig config, MetricRegistry metricRegistry, List<ContextStartListener> contextStartListenersEventHandler) throws SQLException, URISyntaxException {
+	public BaseMaxwellContext(MaxwellConfig config, MetricRegistry metricRegistry) throws SQLException, URISyntaxException {
 		this.config = config;
 		this.config.validate();
 
 		this.taskManager = new TaskManager();
 
 		this.metrics = new MaxwellMetrics(config, metricRegistry);
-		this.contextStartListenersEventHandler = contextStartListenersEventHandler;
 
 		this.replicationConnectionPool = new ConnectionPool("ReplicationConnectionPool", 10, 0, 10,
 				config.getReplicationMysql().getConnectionURI(false), config.getReplicationMysql().getUser(), config.getReplicationMysql().getPassword());
@@ -111,8 +102,6 @@ public class BaseMaxwellContext implements MaxwellSystemContext {
 		}
 
 		this.heartbeatNotifier = new HeartbeatNotifier();
-		List<MaxwellDiagnostic> diagnostics = new ArrayList<>(Collections.singletonList(new BinlogConnectorDiagnostic(this)));
-		this.diagnosticContext = new MaxwellDiagnosticContext(config.getDiagnosticConfig(), diagnostics);
 	}
 
 	@Override
@@ -151,7 +140,6 @@ public class BaseMaxwellContext implements MaxwellSystemContext {
 
 	@Override
 	public void start() {
-		contextStartListenersEventHandler.forEach(h -> h.onContextStart(this));
 		getPositionStoreThread(); // boot up thread explicitly.
 	}
 
@@ -409,11 +397,6 @@ public class BaseMaxwellContext implements MaxwellSystemContext {
 	@Override
 	public HeartbeatNotifier getHeartbeatNotifier() {
 		return heartbeatNotifier;
-	}
-
-	@Override
-	public MaxwellDiagnosticContext getDiagnosticContext() {
-		return this.diagnosticContext;
 	}
 
 	@Override

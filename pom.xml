@@ -92,6 +92,7 @@
         <module>maxwell-core</module>
         <module>maxwell-producers</module>
         <module>maxwell-metric-reporter</module>
+        <module>maxwell-standalone-api</module>
         <module>maxwell-standalone</module>
         <module>maxwell-test-support</module>
     </modules>
@@ -187,6 +188,11 @@
             <dependency>
                 <groupId>com.zendesk</groupId>
                 <artifactId>maxwell-metric-reporter-http</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.zendesk</groupId>
+                <artifactId>maxwell-standalone-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

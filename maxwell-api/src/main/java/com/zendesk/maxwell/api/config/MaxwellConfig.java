@@ -14,10 +14,6 @@ public interface MaxwellConfig {
 	String CONFIGURATION_OPTION_REPLICA_SERVER_ID = "replica_server_id";
 	String CONFIGURATION_OPTION_METRICS_PREFIX = "metrics_prefix";
 	String CONFIGURATION_OPTION_METRICS_TYPE = "metrics_type";
-	String CONFIGURATION_OPTION_HTTP_PORT = "http_port";
-	String CONFIGURATION_OPTION_HTTP_BIND_ADDRESS = "http_bind_address";
-	String CONFIGURATION_OPTION_HTTP_PATH_PREFIX = "http_path_prefix";
-	String CONFIGURATION_OPTION_METRICS_HTTP_PORT = "metrics_http_port";
 	String CONFIGURATION_OPTION_METRICS_JVM = "metrics_jvm";
 	String CONFIGURATION_OPTION_IGNORE_PRODUCER_ERROR = "ignore_producer_error";
 	String CONFIGURATION_OPTION_PRODUCER_ACK_TIMEOUT = "producer_ack_timeout";
@@ -27,8 +23,6 @@ public interface MaxwellConfig {
 	String CONFIGURATION_OPTION_CUSTOM_PRODUCER_FACTORY = "custom_producer.factory";
 	String CONFIGURATION_OPTION_PRODUCER = "producer";
 	String CONFIGURATION_OPTION_CUSTOM_PRODUCER_CONFIG_PREFIX = "custom_producer.";
-	String CONFIGURATION_OPTION_HTTP_DIAGNOSTIC = "http_diagnostic";
-	String CONFIGURATION_OPTION_HTTP_DIAGNOSTIC_TIMEOUT = "http_diagnostic_timeout";
 	String CONFIGURATION_OPTION_INIT_POSITION = "init_position";
 	String CONFIGURATION_OPTION_REPLAY = "replay";
 	String CONFIGURATION_OPTION_MASTER_RECOVERY = "master_recovery";
@@ -46,9 +40,6 @@ public interface MaxwellConfig {
 	long DEFAULT_PRODUCER_ACK_TIMEOUT = 0L;
 	String DEFAULT_PRODUCER_PARTITION_KEY = "database";
 	String DEFAULT_PRODUCER_TYPE = "stdout";
-
-	int DEFAULT_HTTP_PORT = 8080;
-	String DEFAULT_HTTP_PATH_PREFIX = "/";
 
     String DEFAULT_METRICS_PREFIX = "MaxwellMetrics";
 	boolean DEFAULT_METRCS_JVM = false;
@@ -97,19 +88,11 @@ public interface MaxwellConfig {
 
 	String getLogLevel();
 
-	int getHttpPort();
-
-	String getHttpBindAddress();
-
-	String getHttpPathPrefix();
-
 	String getMetricsPrefix();
 
 	String getMetricsReportingType();
 
 	boolean isMetricsJvm();
-
-	MaxwellDiagnosticConfig getDiagnosticConfig();
 
 	String getClientID();
 

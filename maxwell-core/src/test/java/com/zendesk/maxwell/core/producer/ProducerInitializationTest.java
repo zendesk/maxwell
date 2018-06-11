@@ -1,8 +1,10 @@
 package com.zendesk.maxwell.core.producer;
 
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.health.HealthCheckRegistry;
 import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
+import com.zendesk.maxwell.api.monitoring.MaxwellDiagnosticRegistry;
 import com.zendesk.maxwell.api.monitoring.Metrics;
 import com.zendesk.maxwell.api.producer.*;
 import com.zendesk.maxwell.api.row.RowMap;
@@ -22,12 +24,18 @@ import static org.mockito.Mockito.*;
 public class ProducerInitializationTest {
 
 	private ProducerConfigurators producerConfigurators;
+	private MaxwellDiagnosticRegistry maxwellDiagnosticRegistry;
+	private HealthCheckRegistry healthCheckRegistry;
+
 	private ProducerInitialization sut;
 
 	@Before
 	public void init(){
 		producerConfigurators = mock(ProducerConfigurators.class);
-		sut = new ProducerInitialization(producerConfigurators);
+		maxwellDiagnosticRegistry = mock(MaxwellDiagnosticRegistry.class);
+		healthCheckRegistry = mock(HealthCheckRegistry.class);
+
+		sut = new ProducerInitialization(producerConfigurators, maxwellDiagnosticRegistry, healthCheckRegistry);
 	}
 	
 	@Test

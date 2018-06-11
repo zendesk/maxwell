@@ -37,14 +37,9 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 	private MaxwellOutputConfig outputConfig;
 	private String logLevel;
 
-	private int httpPort;
-	private String httpBindAddress;
-	private String httpPathPrefix;
 	private String metricsPrefix;
 	private String metricsReportingType;
 	private boolean metricsJvm;
-
-	private BaseMaxwellDiagnosticConfig diagnosticConfig;
 
 	private String clientID;
 	private Long replicaServerID;
@@ -73,15 +68,11 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 		this.setProducerType(DEFAULT_PRODUCER_TYPE);
 		this.customProducerProperties = new Properties();
 
-		this.setHttpPort(DEFAULT_HTTP_PORT);
-		this.setHttpPathPrefix(DEFAULT_HTTP_PATH_PREFIX);
-
 		this.setMetricsPrefix(DEFAULT_METRICS_PREFIX);
 		this.setMetricsJvm(DEFAULT_METRCS_JVM);
 
 		this.setMasterRecovery(false);
 		this.setFilter(new BaseMaxwellFilter());
-		this.setDiagnosticConfig(new BaseMaxwellDiagnosticConfig());
 		this.setOutputConfig(new BaseMaxwellOutputConfig());
 	}
 
@@ -313,33 +304,6 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 	}
 
 	@Override
-	public int getHttpPort() {
-		return httpPort;
-	}
-
-	public void setHttpPort(int httpPort) {
-		this.httpPort = httpPort;
-	}
-
-	@Override
-	public String getHttpBindAddress() {
-		return httpBindAddress;
-	}
-
-	public void setHttpBindAddress(String httpBindAddress) {
-		this.httpBindAddress = httpBindAddress;
-	}
-
-	@Override
-	public String getHttpPathPrefix() {
-		return httpPathPrefix;
-	}
-
-	public void setHttpPathPrefix(String httpPathPrefix) {
-		this.httpPathPrefix = httpPathPrefix;
-	}
-
-	@Override
 	public String getMetricsPrefix() {
 		return metricsPrefix;
 	}
@@ -364,15 +328,6 @@ public class BaseMaxwellConfig implements MaxwellConfig {
 
 	public void setMetricsJvm(boolean metricsJvm) {
 		this.metricsJvm = metricsJvm;
-	}
-
-	@Override
-	public MaxwellDiagnosticConfig getDiagnosticConfig() {
-		return diagnosticConfig;
-	}
-
-	public void setDiagnosticConfig(BaseMaxwellDiagnosticConfig diagnosticConfig) {
-		this.diagnosticConfig = diagnosticConfig;
 	}
 
 	@Override

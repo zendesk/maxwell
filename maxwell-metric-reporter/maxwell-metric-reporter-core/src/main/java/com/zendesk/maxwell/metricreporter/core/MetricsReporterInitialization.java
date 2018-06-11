@@ -1,6 +1,5 @@
 package com.zendesk.maxwell.metricreporter.core;
 
-import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.monitoring.MetricReporterConfiguration;
 import com.zendesk.maxwell.api.monitoring.MetricReporterConfigurator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,14 +19,7 @@ public class MetricsReporterInitialization {
     }
 
     public void setup(Properties configurationSettings){
-        final String configuredMetricsReporters = configurationSettings.getProperty(MaxwellConfig.CONFIGURATION_OPTION_METRICS_TYPE);
-        if(configuredMetricsReporters != null){
-            metricReporterConfigurators.stream().filter(c -> isConfigured(c, configuredMetricsReporters)).forEach(c -> enableReporter(c, configurationSettings));
-        }
-    }
-
-    private boolean isConfigured(MetricReporterConfigurator configurator, String configuredReporterTypes){
-        return configuredReporterTypes.toLowerCase().contains(configurator.getIdentifier().toLowerCase());
+        metricReporterConfigurators.stream().filter(c -> c.isConfigured(configurationSettings)).forEach(c -> enableReporter(c, configurationSettings));
     }
 
     private void enableReporter(MetricReporterConfigurator configurator, Properties configurationSettings){

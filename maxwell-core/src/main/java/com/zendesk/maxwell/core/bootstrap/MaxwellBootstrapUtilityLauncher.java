@@ -1,9 +1,6 @@
 package com.zendesk.maxwell.core.bootstrap;
 
-import com.djdch.log4j.StaticShutdownCallbackRegistry;
 import com.zendesk.maxwell.api.config.ConfigurationSupport;
-import com.zendesk.maxwell.api.config.MaxwellConfig;
-import com.zendesk.maxwell.core.MaxwellSystemContext;
 import com.zendesk.maxwell.core.bootstrap.config.MaxwellBootstrapUtilityConfig;
 import com.zendesk.maxwell.core.bootstrap.config.MaxwellBootstrapUtilityConfigFactory;
 import com.zendesk.maxwell.core.util.Logging;

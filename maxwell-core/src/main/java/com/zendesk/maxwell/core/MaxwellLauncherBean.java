@@ -1,6 +1,8 @@
 package com.zendesk.maxwell.core;
 
 import com.djdch.log4j.StaticShutdownCallbackRegistry;
+import com.zendesk.maxwell.api.MaxwellContext;
+import com.zendesk.maxwell.api.MaxwellLauncher;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.util.Logging;
@@ -10,7 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.Properties;
 
 @Service
-public class MaxwellLauncher {
+public class MaxwellLauncherBean implements MaxwellLauncher {
 
 	private final MaxwellConfigFactory maxwellConfigFactory;
 	private final MaxwellContextFactory maxwellContextFactory;
@@ -18,17 +20,18 @@ public class MaxwellLauncher {
 	private final MaxwellRunner maxwellRunner;
 
 	@Autowired
-	public MaxwellLauncher(MaxwellConfigFactory maxwellConfigFactory,
-						   MaxwellContextFactory maxwellContextFactory,
-						   Logging logging,
-						   MaxwellRunner maxwellRunner) {
+	public MaxwellLauncherBean(MaxwellConfigFactory maxwellConfigFactory,
+							   MaxwellContextFactory maxwellContextFactory,
+							   Logging logging,
+							   MaxwellRunner maxwellRunner) {
 		this.maxwellConfigFactory = maxwellConfigFactory;
 		this.maxwellContextFactory = maxwellContextFactory;
 		this.logging = logging;
 		this.maxwellRunner = maxwellRunner;
 	}
 
-	public void launch(Properties configurationProperties) throws Exception {
+	@Override
+	public MaxwellContext launch(Properties configurationProperties) throws Exception {
 		logging.configureLevelFrom(configurationProperties);
 		final MaxwellConfig configuration = maxwellConfigFactory.createFor(configurationProperties);
 		final MaxwellSystemContext context = maxwellContextFactory.createFor(configuration, configurationProperties);
@@ -39,6 +42,7 @@ public class MaxwellLauncher {
 		}));
 
 		maxwellRunner.start(context);
+		return context;
 	}
 
 }

@@ -1,7 +1,6 @@
 package com.zendesk.maxwell.api;
 
 import com.zendesk.maxwell.api.config.MaxwellConfig;
-import com.zendesk.maxwell.api.monitoring.MaxwellDiagnosticContext;
 import com.zendesk.maxwell.api.monitoring.Metrics;
 import com.zendesk.maxwell.api.producer.Producer;
 import com.zendesk.maxwell.api.replication.Position;
@@ -25,8 +24,6 @@ public interface MaxwellContext {
 	Position getPosition() throws SQLException;
 
 	Metrics getMetrics();
-
-	MaxwellDiagnosticContext getDiagnosticContext();
 
 	Producer getProducer();
 }

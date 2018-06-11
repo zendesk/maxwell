@@ -1,1 +1,1 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.zendesk.maxwell.core.springconfig.CoreComponentScanConfig
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.zendesk.maxwell.producer.rabbitmq.springconfig.RabbitmqProducerComponentScan

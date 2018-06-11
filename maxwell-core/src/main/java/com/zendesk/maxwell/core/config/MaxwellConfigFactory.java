@@ -4,8 +4,6 @@ import com.zendesk.maxwell.api.config.*;
 import com.zendesk.maxwell.api.producer.EncryptionMode;
 import com.zendesk.maxwell.api.replication.BinlogPosition;
 import com.zendesk.maxwell.api.replication.Position;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,8 +17,6 @@ import static com.zendesk.maxwell.api.config.MaxwellMysqlConfig.*;
 
 @Service
 public class MaxwellConfigFactory {
-	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfigFactory.class);
-
 	private final ConfigurationSupport configurationSupport;
 	private final MySqlConfigurationSupport mySqlConfigurationSupport;
 
@@ -52,29 +48,9 @@ public class MaxwellConfigFactory {
 		config.setClientID(configurationSupport.fetchOption(CONFIGURATION_OPTION_CLIENT_ID, properties, DEFAULT_CLIENT_ID));
 		config.setReplicaServerID(configurationSupport.fetchLongOption(CONFIGURATION_OPTION_REPLICA_SERVER_ID, properties, DEFAULT_REPLICA_SERVER_ID));
 
-
 		config.setMetricsPrefix(configurationSupport.fetchOption(CONFIGURATION_OPTION_METRICS_PREFIX, properties, DEFAULT_METRICS_PREFIX));
 		config.setMetricsReportingType(configurationSupport.fetchOption(CONFIGURATION_OPTION_METRICS_TYPE, properties, null));
-
-		// TODO remove metrics_http_port support once hitting v1.11.x
-		String metricsHttpPort = configurationSupport.fetchOption(CONFIGURATION_OPTION_METRICS_HTTP_PORT, properties, null);
-		if (metricsHttpPort != null) {
-			LOGGER.warn("metrics_http_port is deprecated, please use http_port");
-			config.setHttpPort(Integer.parseInt(metricsHttpPort));
-		} else {
-			config.setHttpPort(configurationSupport.fetchIntegerOption(CONFIGURATION_OPTION_HTTP_PORT, properties, DEFAULT_HTTP_PORT));
-		}
-		config.setHttpBindAddress(configurationSupport.fetchOption(CONFIGURATION_OPTION_HTTP_BIND_ADDRESS, properties, null));
-		config.setHttpPathPrefix(configurationSupport.fetchOption(CONFIGURATION_OPTION_HTTP_PATH_PREFIX, properties, DEFAULT_HTTP_PATH_PREFIX));
-
-		if (!config.getHttpPathPrefix().startsWith("/")) {
-			config.setHttpPathPrefix("/" + config.getHttpPathPrefix());
-		}
-
-
 		config.setMetricsJvm(configurationSupport.fetchBooleanOption(CONFIGURATION_OPTION_METRICS_JVM, properties, DEFAULT_METRCS_JVM));
-
-		configureDiagnostics(properties, config);
 
 		configureReplicationSettings(properties, config);
 		configureFilter(properties, config);
@@ -100,13 +76,6 @@ public class MaxwellConfigFactory {
 				}
 			}
 		}
-	}
-
-	private void configureDiagnostics(final Properties properties, final BaseMaxwellConfig config) {
-		BaseMaxwellDiagnosticConfig diagnosticConfig = new BaseMaxwellDiagnosticConfig();
-		diagnosticConfig.setEnable(configurationSupport.fetchBooleanOption(CONFIGURATION_OPTION_HTTP_DIAGNOSTIC, properties, MaxwellDiagnosticConfig.DEFAULT_DIAGNOSTIC_HTTP));
-		diagnosticConfig.setTimeout(configurationSupport.fetchLongOption(CONFIGURATION_OPTION_HTTP_DIAGNOSTIC_TIMEOUT, properties, MaxwellDiagnosticConfig.DEFAULT_DIAGNOSTIC_HTTP_TIMEOUT));
-		config.setDiagnosticConfig(diagnosticConfig);
 	}
 
 	private void configureReplicationSettings(final Properties properties, final BaseMaxwellConfig config) {
@@ -182,10 +151,10 @@ public class MaxwellConfigFactory {
 		}
 
 		if (outputConfig.isEncryptionEnabled()) {
-			outputConfig.setSecretKey(configurationSupport.fetchOption("secret_key", properties, null));
+			outputConfig.setSecretKey(configurationSupport.fetchOption(CONFIGURATION_OPTION_SECRET_KEY, properties, null));
 		}
 
-		String excludeColumns = configurationSupport.fetchOption("exclude_columns", properties, null);
+		String excludeColumns = configurationSupport.fetchOption(CONFIGURATION_OPTION_EXCLUDE_COLUMNS, properties, null);
 		if (excludeColumns != null) {
 			for (String s : excludeColumns.split(",")) {
 				try {

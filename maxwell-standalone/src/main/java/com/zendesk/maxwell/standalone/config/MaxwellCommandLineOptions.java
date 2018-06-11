@@ -3,9 +3,8 @@ package com.zendesk.maxwell.standalone.config;
 import com.zendesk.maxwell.api.config.CommandLineOptionParserContext;
 import com.zendesk.maxwell.api.config.ModuleConfigurator;
 import com.zendesk.maxwell.api.config.ModuleType;
-import com.zendesk.maxwell.api.producer.ProducerConfigurator;
 import com.zendesk.maxwell.core.config.BaseCommandLineOptionParserContext;
-import com.zendesk.maxwell.standalone.spring.SpringLauncher;
+import com.zendesk.maxwell.standalone.SpringLauncher;
 import joptsimple.BuiltinHelpFormatter;
 import joptsimple.OptionDescriptor;
 import joptsimple.OptionParser;
@@ -159,12 +158,6 @@ public class MaxwellCommandLineOptions extends AbstractCommandLineOptions {
 
 		context.addOptionWithRequiredArgument( "metrics_prefix", "the prefix maxwell will apply to all metrics" );
 		context.addOptionWithRequiredArgument( "metrics_type", "how maxwell metrics will be reported, at least one of slf4j|jmx|http|datadog" );
-		context.addOptionWithRequiredArgument( "metrics_http_port", "[deprecated]" );
-		context.addOptionWithRequiredArgument( "http_port", "the port the server will bind to when http reporting is configured" );
-		context.addOptionWithRequiredArgument( "http_path_prefix", "the http path prefix when metrics_type includes http or diagnostic is enabled, default /" );
-		context.addOptionWithRequiredArgument( "http_bind_address", "the ip address the server will bind to when http reporting is configured" );
-		context.addOptionWithRequiredArgument( "http_diagnostic", "enable http diagnostic endpoint: true|false. default: false" );
-		context.addOptionWithRequiredArgument( "http_diagnostic_timeout", "the http diagnostic response timeout in ms when http_diagnostic=true. default: 10000" );
 		context.addOptionWithRequiredArgument( "metrics_jvm", "enable jvm metrics: true|false. default: false" );
 
 		moduleConfigurators.stream().filter(mc -> mc.getType() == ModuleType.METRIC_REPORTER).sorted(Comparator.comparing(ModuleConfigurator::getIdentifier)).forEach(c -> {

@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.standalone.bootstrap;
 
-import com.zendesk.maxwell.standalone.spring.SpringLauncher;
+import com.zendesk.maxwell.standalone.SpringLauncher;
 import com.zendesk.maxwell.standalone.config.MaxwellBootstrapUtilityCommandLineOptions;
 import com.zendesk.maxwell.standalone.ExceptionHandler;
 import org.slf4j.Logger;

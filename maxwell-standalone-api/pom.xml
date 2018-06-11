@@ -1,0 +1,22 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
+    <parent>
+        <groupId>com.zendesk</groupId>
+        <artifactId>maxwell-parent</artifactId>
+        <version>1.14.6</version>
+    </parent>
+
+    <artifactId>maxwell-standalone-api</artifactId>
+
+    <name>maxwell-standalone-api</name>
+    <description>Maxwell's Standalone Application API.</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.zendesk</groupId>
+            <artifactId>maxwell-api</artifactId>
+        </dependency>
+    </dependencies>
+</project>

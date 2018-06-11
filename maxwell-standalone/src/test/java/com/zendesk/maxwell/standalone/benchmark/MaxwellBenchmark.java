@@ -4,8 +4,9 @@ import com.zendesk.maxwell.api.LauncherException;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.config.MaxwellMysqlConfig;
 import com.zendesk.maxwell.api.replication.Position;
+import com.zendesk.maxwell.standalone.MaxwellStandaloneRuntime;
 import com.zendesk.maxwell.test.mysql.MysqlIsolatedServer;
-import com.zendesk.maxwell.standalone.spring.SpringLauncher;
+import com.zendesk.maxwell.standalone.SpringLauncher;
 import com.zendesk.maxwell.test.mysql.MysqlIsolatedServerSupport;
 import joptsimple.BuiltinHelpFormatter;
 import joptsimple.OptionParser;
@@ -99,6 +100,7 @@ public class MaxwellBenchmark {
 		SpringLauncher.launch((ctx) -> {
 			try {
 				MysqlIsolatedServerSupport mysqlIsolatedServerSupport = ctx.getBean(MysqlIsolatedServerSupport.class);
+				MaxwellStandaloneRuntime launcher = ctx.getBean(MaxwellStandaloneRuntime.class);
 				MysqlIsolatedServer server = mysqlIsolatedServerSupport.setupServer("--no-clean --reuse=" + path);
 
 				Properties configuration = new Properties();
@@ -107,7 +109,7 @@ public class MaxwellBenchmark {
 				appendMySQLSetting(configuration, MaxwellMysqlConfig.CONFIGURATION_OPTION_PREFIX_SCHEMA, server);
 				configuration.put(MaxwellConfig.CONFIGURATION_OPTION_CUSTOM_PRODUCER_FACTORY, BenchmarkProducerFactory.class.getCanonicalName());
 
-				SpringLauncher.runMaxwell(configuration, ctx);
+				launcher.runMaxwell(configuration);
 			} catch (Exception e) {
 				throw new LauncherException("Failed to setup mysql test server for benchmark", e);
 			}

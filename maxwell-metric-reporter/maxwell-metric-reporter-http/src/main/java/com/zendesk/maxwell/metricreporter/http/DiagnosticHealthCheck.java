@@ -1,8 +1,8 @@
-package com.zendesk.maxwell.core.monitoring;
+package com.zendesk.maxwell.metricreporter.http;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zendesk.maxwell.api.monitoring.MaxwellDiagnostic;
-import com.zendesk.maxwell.api.monitoring.MaxwellDiagnosticContext;
+import com.zendesk.maxwell.api.monitoring.MaxwellDiagnosticRegistry;
 import com.zendesk.maxwell.api.monitoring.MaxwellDiagnosticResult;
 
 import javax.servlet.ServletConfig;
@@ -26,11 +26,14 @@ public class DiagnosticHealthCheck extends HttpServlet {
 	private static final String CONTENT_TYPE = "text/json";
 	private static final String CACHE_CONTROL = "Cache-Control";
 	private static final String NO_CACHE = "must-revalidate,no-cache,no-store";
-	private final MaxwellDiagnosticContext diagnosticContext;
+
+	private final HttpMetricReporterConfiguration configuration;
+	private final MaxwellDiagnosticRegistry diagnosticRegistry;
 	protected transient ObjectMapper mapper;
 
-	public DiagnosticHealthCheck(MaxwellDiagnosticContext diagnosticContext) {
-		this.diagnosticContext = diagnosticContext;
+	public DiagnosticHealthCheck(HttpMetricReporterConfiguration configuration, MaxwellDiagnosticRegistry diagnosticRegistry) {
+		this.configuration = configuration;
+		this.diagnosticRegistry = diagnosticRegistry;
 	}
 
 	@Override
@@ -41,21 +44,21 @@ public class DiagnosticHealthCheck extends HttpServlet {
 	}
 
 	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		resp.setHeader(CACHE_CONTROL, NO_CACHE);
 		resp.setContentType(CONTENT_TYPE);
-		Map<MaxwellDiagnostic, CompletableFuture<MaxwellDiagnosticResult.Check>> futureChecks = diagnosticContext.diagnostics.stream()
+		Map<MaxwellDiagnostic, CompletableFuture<MaxwellDiagnosticResult.Check>> futureChecks = diagnosticRegistry.getDiagnostics().stream()
 				.collect(Collectors.toMap(diagnostic -> diagnostic, MaxwellDiagnostic::check));
 
 		List<MaxwellDiagnosticResult.Check> checks = futureChecks.entrySet().stream().map(future -> {
 			CompletableFuture<MaxwellDiagnosticResult.Check> futureCheck = future.getValue();
 			try {
-				return futureCheck.get(diagnosticContext.config.getTimeout(), TimeUnit.MILLISECONDS);
+				return futureCheck.get(configuration.getDiagnoticTimeout(), TimeUnit.MILLISECONDS);
 			} catch (InterruptedException | ExecutionException | TimeoutException e) {
 				futureCheck.cancel(true);
 				MaxwellDiagnostic diagnostic = future.getKey();
 				Map<String, String> info = new HashMap<>();
-				info.put("message", "check did not return after " + diagnosticContext.config.getTimeout() + " ms");
+				info.put("message", "check did not return after " + configuration.getDiagnoticTimeout() + " ms");
 				return new MaxwellDiagnosticResult.Check(diagnostic, false, info);
 			}
 		}).collect(Collectors.toList());

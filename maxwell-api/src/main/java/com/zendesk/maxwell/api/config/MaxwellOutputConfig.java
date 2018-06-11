@@ -16,6 +16,8 @@ public interface MaxwellOutputConfig {
 	String CONFIGURATION_OPTION_OUTPUT_ROW_QUERY = "output_row_query";
 	String CONFIGURATION_OPTION_OUTPUT_DDL = "output_ddl";
 	String CONFIGURATION_OPTION_ENCRYPT = "encrypt";
+	String CONFIGURATION_OPTION_SECRET_KEY = "secret_key";
+	String CONFIGURATION_OPTION_EXCLUDE_COLUMNS = "exclude_columns";
 
 	boolean DEFAULT_INCLUDE_BINLOG_POSITION = false;
 	boolean DEFAULT_INCLUDE_GTID_POSITION = false;

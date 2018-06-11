@@ -1,12 +1,9 @@
-package com.zendesk.maxwell.standalone.spring;
+package com.zendesk.maxwell.standalone;
 
 import com.zendesk.maxwell.api.LauncherException;
-import com.zendesk.maxwell.core.MaxwellLauncher;
 import com.zendesk.maxwell.core.bootstrap.MaxwellBootstrapUtilityLauncher;
-import com.zendesk.maxwell.metricreporter.core.MetricsReporterInitialization;
 import com.zendesk.maxwell.standalone.config.MaxwellBootstrapUtilConfigurationOptionMerger;
 import com.zendesk.maxwell.standalone.config.ConfigurationOptionMerger;
-import com.zendesk.maxwell.standalone.config.MaxwellConfigurationOptionMerger;
 import com.zendesk.maxwell.standalone.springconfig.StandaloneApplicationComponentScanConfig;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -17,30 +14,14 @@ import java.util.function.Consumer;
 public class SpringLauncher {
 
 	public static void launchMaxwell(final String[] args){
-		launch((applicationContext -> runMaxwell(args, applicationContext)));
+		launch(withMaxWellSpringLauncher( m -> m.runMaxwell(args)));
 	}
 
-	private static void runMaxwell(final String[] args, final ApplicationContext applicationContext) {
-		try {
-			final ConfigurationOptionMerger configurationOptionMerger = applicationContext.getBean(MaxwellConfigurationOptionMerger.class);
-			final Properties configurationOptions = configurationOptionMerger.mergeCommandLineOptionsWithConfigurationAndSystemEnvironment(args);
-
-			runMaxwell(configurationOptions, applicationContext);
-		}catch (Exception e){
-			throw new LauncherException("Error while running Maxwell", e);
-		}
-	}
-
-	public static void runMaxwell(final Properties configurationOptions, final ApplicationContext applicationContext) {
-		try {
-			final MetricsReporterInitialization metricsReporterInitialization = applicationContext.getBean(MetricsReporterInitialization.class);
-			final MaxwellLauncher maxwellLauncher = applicationContext.getBean(MaxwellLauncher.class);
-
-			metricsReporterInitialization.setup(configurationOptions);
-			maxwellLauncher.launch(configurationOptions);
-		}catch (Exception e){
-			throw new LauncherException("Error while running Maxwell", e);
-		}
+	private static Consumer<ApplicationContext> withMaxWellSpringLauncher(Consumer<MaxwellStandaloneRuntime> consumer){
+		return (ctx) -> {
+			MaxwellStandaloneRuntime launcher = ctx.getBean(MaxwellStandaloneRuntime.class);
+			consumer.accept(launcher);
+		};
 	}
 
 	public static void launchBootstrapperUtility(final String[] args){
