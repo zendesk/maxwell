@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.standalone;
 
-import com.zendesk.maxwell.api.LauncherException;
+import com.zendesk.maxwell.core.LauncherException;
 import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.MaxwellLauncher;
 import com.zendesk.maxwell.metricreporter.core.MetricsReporterInitialization;

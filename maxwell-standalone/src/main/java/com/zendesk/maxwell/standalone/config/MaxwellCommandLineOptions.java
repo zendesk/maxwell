@@ -1,7 +1,6 @@
 package com.zendesk.maxwell.standalone.config;
 
 import com.zendesk.maxwell.api.config.CommandLineOptionParserContext;
-import com.zendesk.maxwell.api.config.ModuleConfigurator;
 import com.zendesk.maxwell.metricreporter.core.MetricReporterConfigurator;
 import com.zendesk.maxwell.api.producer.ProducerConfigurator;
 import com.zendesk.maxwell.standalone.SpringLauncher;
@@ -153,7 +152,7 @@ public class MaxwellCommandLineOptions extends AbstractCommandLineOptions {
 
 		context.addSeparator();
 
-		producerConfigurators.stream().sorted(Comparator.comparing(ModuleConfigurator::getIdentifier)).forEach(c -> {
+		producerConfigurators.stream().sorted(Comparator.comparing(ProducerConfigurator::getIdentifier)).forEach(c -> {
 			c.configureCommandLineOptions(context);
 			context.addSeparator();
 		});
@@ -162,7 +161,7 @@ public class MaxwellCommandLineOptions extends AbstractCommandLineOptions {
 		context.addOptionWithRequiredArgument( "metrics_type", "how maxwell metrics will be reported, at least one of slf4j|jmx|http|datadog" );
 		context.addOptionWithRequiredArgument( "metrics_jvm", "enable jvm metrics: true|false. default: false" );
 
-		metricReporterConfigurators.stream().sorted(Comparator.comparing(ModuleConfigurator::getIdentifier)).forEach(c -> {
+		metricReporterConfigurators.stream().sorted(Comparator.comparing(MetricReporterConfigurator::getIdentifier)).forEach(c -> {
 			c.configureCommandLineOptions(context);
 			context.addSeparator();
 		});

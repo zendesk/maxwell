@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.api;
+package com.zendesk.maxwell.core;
 
 public class MaxwellCompatibilityError extends Exception {
 	public MaxwellCompatibilityError(String message) {

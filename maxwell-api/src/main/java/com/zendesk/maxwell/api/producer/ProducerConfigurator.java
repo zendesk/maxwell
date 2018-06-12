@@ -1,14 +1,20 @@
 package com.zendesk.maxwell.api.producer;
 
 import com.zendesk.maxwell.api.MaxwellContext;
-import com.zendesk.maxwell.api.config.ModuleConfigurator;
-import com.zendesk.maxwell.api.config.ModuleType;
+import com.zendesk.maxwell.api.config.CommandLineOptionParserContext;
 
-public interface ProducerConfigurator extends ModuleConfigurator<ProducerConfiguration> {
+import java.util.Optional;
+import java.util.Properties;
 
-	@Override
-	default ModuleType getType() {
-		return ModuleType.PRODUCER;
+public interface ProducerConfigurator {
+
+	String getIdentifier();
+
+	default void configureCommandLineOptions(CommandLineOptionParserContext context) {
+	}
+
+	default Optional<ProducerConfiguration> parseConfiguration(Properties configurationValues) {
+		return Optional.empty();
 	}
 
 	Producer configure(MaxwellContext maxwellContext, ProducerConfiguration configuration);

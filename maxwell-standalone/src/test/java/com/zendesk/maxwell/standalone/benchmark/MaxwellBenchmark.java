@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.standalone.benchmark;
 
-import com.zendesk.maxwell.api.LauncherException;
+import com.zendesk.maxwell.core.LauncherException;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.config.MaxwellMysqlConfig;
 import com.zendesk.maxwell.api.replication.Position;

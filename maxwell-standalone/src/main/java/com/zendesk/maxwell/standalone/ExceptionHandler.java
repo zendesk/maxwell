@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.standalone;
 
-import com.zendesk.maxwell.api.LauncherException;
+import com.zendesk.maxwell.core.LauncherException;
 import com.zendesk.maxwell.standalone.config.CommandLineOptions;
 import com.zendesk.maxwell.api.config.InvalidOptionException;
 import com.zendesk.maxwell.api.config.InvalidUsageException;
