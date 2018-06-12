@@ -294,7 +294,7 @@ public class RowMap implements Serializable {
 				g.writeBooleanField(FieldNames.COMMIT, true);
 		}
 
-		BinlogPosition binlogPosition = this.nextPosition.getBinlogPosition();
+		BinlogPosition binlogPosition = this.position.getBinlogPosition();
 		if ( outputConfig.includesBinlogPosition )
 			g.writeStringField(FieldNames.POSITION, binlogPosition.getFile() + ":" + binlogPosition.getOffset());
 
