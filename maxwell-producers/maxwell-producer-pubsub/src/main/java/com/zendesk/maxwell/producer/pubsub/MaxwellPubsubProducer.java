@@ -11,7 +11,6 @@ import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.TopicName;
 import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.StoppableTask;
-import com.zendesk.maxwell.api.monitoring.Metrics;
 import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.api.row.RowMap;
 import com.zendesk.maxwell.api.producer.AbstractAsyncProducer;
@@ -142,8 +141,6 @@ class MaxwellPubsubProducerWorker
       this.ddlTopic = this.topic;
       this.ddlPubsub = this.pubsub;
     }
-
-    Metrics metrics = context.getMetrics();
 
     this.queue = queue;
     this.taskState = new StoppableTaskState("MaxwellPubsubProducerWorker");

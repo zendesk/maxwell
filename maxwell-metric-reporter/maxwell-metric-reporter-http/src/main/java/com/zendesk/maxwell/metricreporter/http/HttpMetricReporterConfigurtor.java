@@ -3,9 +3,8 @@ package com.zendesk.maxwell.metricreporter.http;
 import com.zendesk.maxwell.api.config.CommandLineOptionParserContext;
 import com.zendesk.maxwell.api.config.ConfigurationSupport;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
-import com.zendesk.maxwell.api.monitoring.MetricReporterConfiguration;
-import com.zendesk.maxwell.api.monitoring.MetricReporterConfigurator;
-import com.zendesk.maxwell.api.monitoring.Metrics;
+import com.zendesk.maxwell.metricreporter.core.MetricReporterConfiguration;
+import com.zendesk.maxwell.metricreporter.core.MetricReporterConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +35,7 @@ public class HttpMetricReporterConfigurtor implements MetricReporterConfigurator
 
     @Override
     public String getIdentifier() {
-        return Metrics.REPORTING_TYPE_HTTP;
+        return "http";
     }
 
     @Override

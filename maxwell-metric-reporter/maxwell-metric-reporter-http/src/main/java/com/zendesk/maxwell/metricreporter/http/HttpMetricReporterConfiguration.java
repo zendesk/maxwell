@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.metricreporter.http;
 
-import com.zendesk.maxwell.api.monitoring.MetricReporterConfiguration;
+import com.zendesk.maxwell.metricreporter.core.MetricReporterConfiguration;
 
 public class HttpMetricReporterConfiguration implements MetricReporterConfiguration {
 

@@ -5,7 +5,6 @@ import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.StoppableTask;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.config.MaxwellFilter;
-import com.zendesk.maxwell.api.monitoring.MaxwellDiagnosticRegistry;
 import com.zendesk.maxwell.api.monitoring.Metrics;
 import com.zendesk.maxwell.api.producer.Producer;
 import com.zendesk.maxwell.api.replication.Position;

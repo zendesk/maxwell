@@ -2,7 +2,7 @@ package com.zendesk.maxwell.metricreporter.core.slf4j;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Slf4jReporter;
-import com.zendesk.maxwell.api.monitoring.MetricReporter;
+import com.zendesk.maxwell.metricreporter.core.MetricReporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

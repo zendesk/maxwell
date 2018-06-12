@@ -2,8 +2,8 @@ package com.zendesk.maxwell.metricreporter.http;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
-import com.zendesk.maxwell.api.monitoring.MaxwellDiagnosticRegistry;
-import com.zendesk.maxwell.api.monitoring.MetricReporter;
+import com.zendesk.maxwell.core.monitoring.MaxwellDiagnosticRegistry;
+import com.zendesk.maxwell.metricreporter.core.MetricReporter;
 import com.zendesk.maxwell.standalone.api.MaxwellRuntime;
 import com.zendesk.maxwell.standalone.api.SystemShutdownListener;
 import org.slf4j.Logger;

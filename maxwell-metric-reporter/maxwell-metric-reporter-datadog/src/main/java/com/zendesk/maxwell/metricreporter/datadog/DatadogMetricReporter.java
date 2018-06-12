@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.metricreporter.datadog;
 
 import com.codahale.metrics.MetricRegistry;
-import com.zendesk.maxwell.api.monitoring.MetricReporter;
+import com.zendesk.maxwell.metricreporter.core.MetricReporter;
 import org.apache.commons.lang3.StringUtils;
 import org.coursera.metrics.datadog.DatadogReporter;
 import org.coursera.metrics.datadog.transport.HttpTransport;

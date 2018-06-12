@@ -1,7 +1,5 @@
 package com.zendesk.maxwell.metricreporter.core;
 
-import com.zendesk.maxwell.api.monitoring.MetricReporterConfiguration;
-import com.zendesk.maxwell.api.monitoring.MetricReporterConfigurator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

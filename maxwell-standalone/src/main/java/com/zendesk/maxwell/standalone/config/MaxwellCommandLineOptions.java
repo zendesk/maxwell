@@ -2,7 +2,8 @@ package com.zendesk.maxwell.standalone.config;
 
 import com.zendesk.maxwell.api.config.CommandLineOptionParserContext;
 import com.zendesk.maxwell.api.config.ModuleConfigurator;
-import com.zendesk.maxwell.api.config.ModuleType;
+import com.zendesk.maxwell.metricreporter.core.MetricReporterConfigurator;
+import com.zendesk.maxwell.api.producer.ProducerConfigurator;
 import com.zendesk.maxwell.standalone.SpringLauncher;
 import joptsimple.BuiltinHelpFormatter;
 import joptsimple.OptionDescriptor;
@@ -26,11 +27,13 @@ public class MaxwellCommandLineOptions extends AbstractCommandLineOptions {
 		return INSTANCE;
 	}
 
-	private final List<ModuleConfigurator<?>> moduleConfigurators;
+	private final List<ProducerConfigurator> producerConfigurators;
+	private final List<MetricReporterConfigurator> metricReporterConfigurators;
 
 	@Autowired
-	public MaxwellCommandLineOptions(Optional<List<ModuleConfigurator<?>>> moduleConfigurators) {
-		this.moduleConfigurators = moduleConfigurators.orElseGet(ArrayList::new);
+	public MaxwellCommandLineOptions(List<ProducerConfigurator> producerConfigurators, Optional<List<MetricReporterConfigurator>> metricReporterConfigurators) {
+		this.producerConfigurators = producerConfigurators;
+		this.metricReporterConfigurators = metricReporterConfigurators.orElseGet(ArrayList::new);
 	}
 
 	@PostConstruct
@@ -150,7 +153,7 @@ public class MaxwellCommandLineOptions extends AbstractCommandLineOptions {
 
 		context.addSeparator();
 
-		moduleConfigurators.stream().filter(mc -> mc.getType() == ModuleType.PRODUCER).sorted(Comparator.comparing(ModuleConfigurator::getIdentifier)).forEach(c -> {
+		producerConfigurators.stream().sorted(Comparator.comparing(ModuleConfigurator::getIdentifier)).forEach(c -> {
 			c.configureCommandLineOptions(context);
 			context.addSeparator();
 		});
@@ -159,7 +162,7 @@ public class MaxwellCommandLineOptions extends AbstractCommandLineOptions {
 		context.addOptionWithRequiredArgument( "metrics_type", "how maxwell metrics will be reported, at least one of slf4j|jmx|http|datadog" );
 		context.addOptionWithRequiredArgument( "metrics_jvm", "enable jvm metrics: true|false. default: false" );
 
-		moduleConfigurators.stream().filter(mc -> mc.getType() == ModuleType.METRIC_REPORTER).sorted(Comparator.comparing(ModuleConfigurator::getIdentifier)).forEach(c -> {
+		metricReporterConfigurators.stream().sorted(Comparator.comparing(ModuleConfigurator::getIdentifier)).forEach(c -> {
 			c.configureCommandLineOptions(context);
 			context.addSeparator();
 		});

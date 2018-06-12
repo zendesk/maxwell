@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.metricreporter.datadog;
 
 import com.zendesk.maxwell.api.config.InvalidOptionException;
-import com.zendesk.maxwell.api.monitoring.MetricReporterConfiguration;
+import com.zendesk.maxwell.metricreporter.core.MetricReporterConfiguration;
 import org.apache.commons.lang3.StringUtils;
 
 public class DatadogMetricReporterConfiguration implements MetricReporterConfiguration {

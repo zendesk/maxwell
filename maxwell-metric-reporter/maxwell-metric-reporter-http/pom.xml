@@ -20,6 +20,14 @@
         </dependency>
         <dependency>
             <groupId>com.zendesk</groupId>
+            <artifactId>maxwell-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.zendesk</groupId>
+            <artifactId>maxwell-metric-reporter-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.zendesk</groupId>
             <artifactId>maxwell-standalone-api</artifactId>
         </dependency>
 
@@ -36,16 +44,6 @@
             <artifactId>metrics-servlets</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>com.zendesk</groupId>
-            <artifactId>maxwell-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.zendesk</groupId>
-            <artifactId>maxwell-metric-reporter-core</artifactId>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>com.zendesk</groupId>
             <artifactId>maxwell-test-support</artifactId>

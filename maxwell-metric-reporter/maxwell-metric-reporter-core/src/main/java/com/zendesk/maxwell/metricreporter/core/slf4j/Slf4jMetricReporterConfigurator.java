@@ -2,9 +2,8 @@ package com.zendesk.maxwell.metricreporter.core.slf4j;
 
 import com.zendesk.maxwell.api.config.CommandLineOptionParserContext;
 import com.zendesk.maxwell.api.config.ConfigurationSupport;
-import com.zendesk.maxwell.api.monitoring.MetricReporterConfiguration;
-import com.zendesk.maxwell.api.monitoring.MetricReporterConfigurator;
-import com.zendesk.maxwell.api.monitoring.Metrics;
+import com.zendesk.maxwell.metricreporter.core.MetricReporterConfiguration;
+import com.zendesk.maxwell.metricreporter.core.MetricReporterConfigurator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +23,7 @@ public class Slf4jMetricReporterConfigurator implements MetricReporterConfigurat
 
     @Override
     public String getIdentifier() {
-        return Metrics.REPORTING_TYPE_SLF4J;
+        return "slf4j";
     }
 
     @Override

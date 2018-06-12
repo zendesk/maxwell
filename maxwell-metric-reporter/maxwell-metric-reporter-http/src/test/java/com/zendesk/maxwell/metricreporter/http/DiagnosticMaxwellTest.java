@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.config.MaxwellMysqlConfig;
-import com.zendesk.maxwell.api.monitoring.MaxwellDiagnosticRegistry;
+import com.zendesk.maxwell.core.monitoring.MaxwellDiagnosticRegistry;
 import com.zendesk.maxwell.core.MaxwellContextFactory;
 import com.zendesk.maxwell.core.MaxwellRunner;
 import com.zendesk.maxwell.core.MaxwellSystemContext;
@@ -21,7 +21,6 @@ import com.zendesk.maxwell.test.springconfig.TestSupportComponentScan;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
