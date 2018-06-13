@@ -51,7 +51,7 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 
 	@Override
 	public final void push(RowMap r) throws Exception {
-		Position position = r.getPosition();
+		Position position = r.getNextPosition();
 		// Rows that do not get sent to a target will be automatically marked as complete.
 		// We will attempt to commit a checkpoint up to the current row.
 		if(!r.shouldOutput(outputConfig)) {

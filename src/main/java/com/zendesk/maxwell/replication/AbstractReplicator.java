@@ -60,16 +60,14 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	}
 
 	/**
-	 * Possibly convert a RowMap object into a HeartbeatRowMap
-	 *
-	 * Process a rowmap that represents a write to `maxwell`.`heartbeats`.
-	 * If it's a write for a different client_id, we return the input (which
-	 * will signify to the rest of the chain to ignore it).  Otherwise, we
-	 * transform it into a HeartbeatRowMap (which will not be output, but will
-	 * advance the binlog position) and set `this.lastHeartbeatPosition`
+	 * If the input RowMap is one of the heartbeat pulses we sent out,
+	 * process it.  If it's one of our heartbeats, we build a `HeartbeatRowMap`,
+	 * which will be handled specially in producers (namely, it causes the binlog position to advance).
+	 * It is isn't, we leave the row as a RowMap and the rest of the chain will ignore it.
 	 *
 	 * @return either a RowMap or a HeartbeatRowMap
 	 */
+
 	protected RowMap processHeartbeats(RowMap row) throws SQLException {
 		String hbClientID = (String) row.getData("client_id");
 		if ( !Objects.equals(hbClientID, this.clientID) )
@@ -79,7 +77,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 		LOGGER.debug("replicator picked up heartbeat: " + lastHeartbeatRead);
 		this.lastHeartbeatPosition = row.getPosition().withHeartbeat(lastHeartbeatRead);
 		heartbeatNotifier.heartbeat(lastHeartbeatRead);
-		return HeartbeatRowMap.valueOf(row.getDatabase(), this.lastHeartbeatPosition);
+		return HeartbeatRowMap.valueOf(row.getDatabase(), this.lastHeartbeatPosition, row.getNextPosition().withHeartbeat(lastHeartbeatRead));
 	}
 
 	/**
@@ -91,11 +89,11 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	 * @param position The position that the SQL happened at
 	 * @param timestamp The timestamp of the SQL binlog event
 	 */
-	protected void processQueryEvent(String dbName, String sql, SchemaStore schemaStore, Position position, Long timestamp) throws Exception {
+	protected void processQueryEvent(String dbName, String sql, SchemaStore schemaStore, Position position, Position nextPosition, Long timestamp) throws Exception {
 		List<ResolvedSchemaChange> changes = schemaStore.processSQL(sql, dbName, position);
 		for (ResolvedSchemaChange change : changes) {
 			if (change.shouldOutput(filter)) {
-				DDLMap ddl = new DDLMap(change, timestamp, sql, position);
+				DDLMap ddl = new DDLMap(change, timestamp, sql, position, nextPosition);
 				producer.push(ddl);
 			}
 		}

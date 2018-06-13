@@ -8,6 +8,7 @@ import com.zendesk.maxwell.recovery.RecoveryInfo;
 import com.zendesk.maxwell.replication.BinlogConnectorReplicator;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.replication.Replicator;
+import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.schema.MysqlPositionStore;
 import com.zendesk.maxwell.schema.MysqlSchemaStore;
 import com.zendesk.maxwell.schema.SchemaStoreSchema;
@@ -56,7 +57,7 @@ public class Maxwell implements Runnable {
 	}
 
 	private Position attemptMasterRecovery() throws Exception {
-		Position recoveredPosition = null;
+		HeartbeatRowMap recoveredHeartbeat = null;
 		MysqlPositionStore positionStore = this.context.getPositionStore();
 		RecoveryInfo recoveryInfo = positionStore.getRecoveryInfo(config);
 
@@ -69,9 +70,9 @@ public class Maxwell implements Runnable {
 				recoveryInfo
 			);
 
-			recoveredPosition = masterRecovery.recover();
+			recoveredHeartbeat = masterRecovery.recover();
 
-			if (recoveredPosition != null) {
+			if (recoveredHeartbeat != null) {
 				// load up the schema from the recovery position and chain it into the
 				// new server_id
 				MysqlSchemaStore oldServerSchemaStore = new MysqlSchemaStore(
@@ -85,10 +86,13 @@ public class Maxwell implements Runnable {
 					false
 				);
 
-				oldServerSchemaStore.clone(context.getServerID(), recoveredPosition);
+				// Note we associate this schema to the start position of the heartbeat event, so that
+				// we pick it up when resuming at the event after the heartbeat.
+				oldServerSchemaStore.clone(context.getServerID(), recoveredHeartbeat.getPosition());
+				return recoveredHeartbeat.getNextPosition();
 			}
 		}
-		return recoveredPosition;
+		return null;
 	}
 
 	protected Position getInitialPosition() throws Exception {

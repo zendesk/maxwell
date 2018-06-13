@@ -42,7 +42,7 @@ public class RabbitmqProducer extends AbstractProducer {
 	@Override
 	public void push(RowMap r) throws Exception {
 		if ( !r.shouldOutput(outputConfig) ) {
-			context.setPosition(r.getPosition());
+			context.setPosition(r.getNextPosition());
 
 			return;
 		}
@@ -52,7 +52,7 @@ public class RabbitmqProducer extends AbstractProducer {
 
 		channel.basicPublish(exchangeName, routingKey, props, value.getBytes());
 		if ( r.isTXCommit() ) {
-			context.setPosition(r.getPosition());
+			context.setPosition(r.getNextPosition());
 		}
 		if ( LOGGER.isDebugEnabled()) {
 			LOGGER.debug("->  routing key:" + routingKey + ", partition:" + value);

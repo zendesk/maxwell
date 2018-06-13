@@ -11,12 +11,12 @@ import java.util.ArrayList;
  * Created by ben on 9/7/16.
  */
 public class HeartbeatRowMap extends RowMap {
-	public HeartbeatRowMap(String database, Position position) {
-		super("heartbeat", database, "heartbeats", position.getLastHeartbeatRead(), new ArrayList<String>(), position);
+	public HeartbeatRowMap(String database, Position position, Position nextPosition) {
+		super("heartbeat", database, "heartbeats", position.getLastHeartbeatRead(), new ArrayList<String>(), position, nextPosition, null);
 	}
 
-	public static HeartbeatRowMap valueOf(String database, Position position) {
-		return new HeartbeatRowMap(database, position);
+	public static HeartbeatRowMap valueOf(String database, Position position, Position nextPosition) {
+		return new HeartbeatRowMap(database, position, nextPosition);
 	}
 
 	@Override
