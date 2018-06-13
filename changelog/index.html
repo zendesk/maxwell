@@ -212,6 +212,20 @@
             <div class="col-md-10" role="main">
 
 <h1 id="maxwell-changelog">Maxwell changelog</h1>
+<h3 id="v1150-im-sure-im-being-supportive-here"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.15.0">v1.15.0</a>: "I'm sure I'm being supportive here."</h3>
+<p>This is a bug-fix release, but it's big enough I'm giving it a minor
+version.</p>
+<ul>
+<li>Fix a very old bug in which DDL rows were writing the <em>start</em> of the
+row into <code>maxwell.positions</code>, leading to chaos in some scenarios where
+maxwell managed to stop on the row and double-process it, as well as to
+a few well-meaning patches.</li>
+<li>Fix the fact that maxwell was outputting "next-position" instead of
+"position" of a row into JSON.</li>
+<li>Fix the master-recovery code to store schema that corresponds to the
+start of a row, and points the replicator at the next-position.</li>
+</ul>
+<p>Much thanks to Tim, Likun and others in sorting this mess out.</p>
 <h3 id="v1147-casamir-pulaski-day"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.14.7">v1.14.7</a>: "casamir pulaski day"</h3>
 <ul>
 <li>add RowMap#getRowQuery, thx @saimon7</li>
