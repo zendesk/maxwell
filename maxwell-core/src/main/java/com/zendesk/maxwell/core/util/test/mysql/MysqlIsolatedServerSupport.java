@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.util.test.mysql;
 
-import com.zendesk.maxwell.api.schema.SchemaStoreSchema;
+import com.zendesk.maxwell.core.schema.SchemaStoreSchema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

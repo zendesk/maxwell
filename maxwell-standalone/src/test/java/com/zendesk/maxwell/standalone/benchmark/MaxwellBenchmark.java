@@ -1,9 +1,9 @@
 package com.zendesk.maxwell.standalone.benchmark;
 
 import com.zendesk.maxwell.core.LauncherException;
-import com.zendesk.maxwell.api.config.MaxwellConfig;
-import com.zendesk.maxwell.api.config.MaxwellMysqlConfig;
-import com.zendesk.maxwell.api.replication.Position;
+import com.zendesk.maxwell.core.config.MaxwellConfig;
+import com.zendesk.maxwell.core.config.MaxwellMysqlConfig;
+import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.standalone.MaxwellStandaloneRuntime;
 import com.zendesk.maxwell.core.util.test.mysql.MysqlIsolatedServer;
 import com.zendesk.maxwell.standalone.SpringLauncher;

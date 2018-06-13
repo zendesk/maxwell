@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.api.replication;
+package com.zendesk.maxwell.core.replication;
 
 import java.io.Serializable;
 import java.sql.Connection;

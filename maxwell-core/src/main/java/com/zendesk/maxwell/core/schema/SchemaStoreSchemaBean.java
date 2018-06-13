@@ -6,10 +6,8 @@ package com.zendesk.maxwell.core.schema;
  * TODO: move all this into MysqlSchemaStore
  */
 
-import com.zendesk.maxwell.api.replication.BinlogPosition;
-import com.zendesk.maxwell.api.replication.Position;
-import com.zendesk.maxwell.api.schema.InvalidSchemaError;
-import com.zendesk.maxwell.api.schema.SchemaStoreSchema;
+import com.zendesk.maxwell.core.replication.BinlogPosition;
+import com.zendesk.maxwell.core.replication.Position;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

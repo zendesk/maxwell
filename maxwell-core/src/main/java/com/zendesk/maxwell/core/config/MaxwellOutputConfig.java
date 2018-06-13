@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.api.config;
+package com.zendesk.maxwell.core.config;
 
 import java.util.List;
 import java.util.regex.Pattern;

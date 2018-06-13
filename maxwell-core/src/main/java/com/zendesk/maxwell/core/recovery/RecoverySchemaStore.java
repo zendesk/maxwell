@@ -1,12 +1,12 @@
 package com.zendesk.maxwell.core.recovery;
 
-import com.zendesk.maxwell.api.replication.Position;
+import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.CaseSensitivity;
 import com.zendesk.maxwell.core.schema.Schema;
 import com.zendesk.maxwell.core.schema.SchemaCapturer;
 import com.zendesk.maxwell.core.schema.SchemaStore;
 import com.zendesk.maxwell.core.schema.SchemaStoreException;
-import com.zendesk.maxwell.api.schema.InvalidSchemaError;
+import com.zendesk.maxwell.core.schema.InvalidSchemaError;
 import com.zendesk.maxwell.core.schema.ddl.ResolvedSchemaChange;
 import snaq.db.ConnectionPool;
 

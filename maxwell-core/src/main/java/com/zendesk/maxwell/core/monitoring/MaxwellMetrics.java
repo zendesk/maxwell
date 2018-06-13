@@ -3,7 +3,7 @@ package com.zendesk.maxwell.core.monitoring;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.jvm.*;
-import com.zendesk.maxwell.api.config.MaxwellConfig;
+import com.zendesk.maxwell.core.config.MaxwellConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

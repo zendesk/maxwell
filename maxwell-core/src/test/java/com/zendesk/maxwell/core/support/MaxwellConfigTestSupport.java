@@ -1,9 +1,9 @@
 package com.zendesk.maxwell.core.support;
 
 import com.github.shyiko.mysql.binlog.network.SSLMode;
-import com.zendesk.maxwell.api.config.MaxwellConfig;
-import com.zendesk.maxwell.api.config.MaxwellFilter;
-import com.zendesk.maxwell.api.replication.Position;
+import com.zendesk.maxwell.core.config.MaxwellConfig;
+import com.zendesk.maxwell.core.config.MaxwellFilter;
+import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.MaxwellContextFactory;
 import com.zendesk.maxwell.core.MaxwellSystemContext;
 import com.zendesk.maxwell.core.config.BaseMaxwellConfig;

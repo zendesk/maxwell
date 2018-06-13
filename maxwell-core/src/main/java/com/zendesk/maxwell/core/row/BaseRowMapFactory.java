@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.row;
 
-import com.zendesk.maxwell.api.replication.Position;
+import com.zendesk.maxwell.core.replication.Position;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

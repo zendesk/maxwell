@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.core.row;
 
-import com.zendesk.maxwell.api.replication.BinlogPosition;
-import com.zendesk.maxwell.api.replication.Position;
+import com.zendesk.maxwell.core.replication.BinlogPosition;
+import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.TestWithNameLogging;
 import org.junit.Test;
 

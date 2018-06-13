@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.replication;
 
-import com.zendesk.maxwell.api.config.MaxwellFilter;
+import com.zendesk.maxwell.core.config.MaxwellFilter;
 import com.zendesk.maxwell.core.schema.Database;
 import com.zendesk.maxwell.core.schema.Schema;
 import com.zendesk.maxwell.core.schema.Table;

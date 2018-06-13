@@ -7,7 +7,7 @@ package com.zendesk.maxwell.core.producer;
    */
 
 import com.zendesk.maxwell.core.MaxwellContext;
-import com.zendesk.maxwell.api.replication.Position;
+import com.zendesk.maxwell.core.replication.Position;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;

@@ -1,19 +1,18 @@
 package com.zendesk.maxwell.core.config;
 
 import com.zendesk.maxwell.api.config.*;
-import com.zendesk.maxwell.api.config.EncryptionMode;
-import com.zendesk.maxwell.api.replication.BinlogPosition;
-import com.zendesk.maxwell.api.replication.Position;
+import com.zendesk.maxwell.core.replication.BinlogPosition;
+import com.zendesk.maxwell.core.replication.Position;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Enumeration;
 import java.util.Properties;
 
-import static com.zendesk.maxwell.api.config.MaxwellConfig.*;
-import static com.zendesk.maxwell.api.config.MaxwellOutputConfig.*;
-import static com.zendesk.maxwell.api.config.MaxwellFilter.*;
-import static com.zendesk.maxwell.api.config.MaxwellMysqlConfig.*;
+import static com.zendesk.maxwell.core.config.MaxwellConfig.*;
+import static com.zendesk.maxwell.core.config.MaxwellOutputConfig.*;
+import static com.zendesk.maxwell.core.config.MaxwellFilter.*;
+import static com.zendesk.maxwell.core.config.MaxwellMysqlConfig.*;
 
 @Service
 public class MaxwellConfigFactory {

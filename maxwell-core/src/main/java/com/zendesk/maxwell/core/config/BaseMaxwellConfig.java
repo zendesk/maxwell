@@ -2,7 +2,7 @@ package com.zendesk.maxwell.core.config;
 
 import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.api.config.*;
-import com.zendesk.maxwell.api.replication.Position;
+import com.zendesk.maxwell.core.replication.Position;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

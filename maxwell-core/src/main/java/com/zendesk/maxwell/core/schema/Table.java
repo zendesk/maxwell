@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.zendesk.maxwell.core.schema.columndef.*;
 import com.zendesk.maxwell.core.schema.ddl.ColumnPosition;
-import com.zendesk.maxwell.api.schema.InvalidSchemaError;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;

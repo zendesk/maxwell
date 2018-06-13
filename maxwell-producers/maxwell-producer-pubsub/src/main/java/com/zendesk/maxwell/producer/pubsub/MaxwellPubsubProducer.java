@@ -11,7 +11,7 @@ import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.TopicName;
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.StoppableTask;
-import com.zendesk.maxwell.api.replication.Position;
+import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.producer.AbstractAsyncProducer;
 import com.zendesk.maxwell.core.producer.AbstractProducer;

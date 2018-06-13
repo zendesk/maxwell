@@ -2,8 +2,8 @@ package com.zendesk.maxwell.core.schema.ddl;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.zendesk.maxwell.api.config.MaxwellFilter;
-import com.zendesk.maxwell.api.schema.InvalidSchemaError;
+import com.zendesk.maxwell.core.config.MaxwellFilter;
+import com.zendesk.maxwell.core.schema.InvalidSchemaError;
 import com.zendesk.maxwell.core.config.MaxwellFilterSupport;
 import com.zendesk.maxwell.core.schema.Schema;
 

@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.replication;
 
-import com.zendesk.maxwell.api.config.MaxwellMysqlConfig;
+import com.zendesk.maxwell.core.config.MaxwellMysqlConfig;
 import com.zendesk.maxwell.core.monitoring.MaxwellDiagnostic;
 import com.zendesk.maxwell.core.monitoring.MaxwellDiagnosticResult;
 import com.zendesk.maxwell.core.MaxwellSystemContext;

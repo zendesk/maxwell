@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.api.schema;
+package com.zendesk.maxwell.core.schema;
 
 import java.io.IOException;
 import java.sql.Connection;

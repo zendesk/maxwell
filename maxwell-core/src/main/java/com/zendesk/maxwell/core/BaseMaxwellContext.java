@@ -1,16 +1,16 @@
 package com.zendesk.maxwell.core;
 
 import com.codahale.metrics.MetricRegistry;
-import com.zendesk.maxwell.api.config.MaxwellConfig;
-import com.zendesk.maxwell.api.config.MaxwellFilter;
+import com.zendesk.maxwell.core.config.MaxwellConfig;
+import com.zendesk.maxwell.core.config.MaxwellFilter;
 import com.zendesk.maxwell.core.monitoring.Metrics;
-import com.zendesk.maxwell.api.replication.Position;
+import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.monitoring.MaxwellMetrics;
 import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.core.recovery.RecoveryInfo;
 import com.zendesk.maxwell.core.replication.HeartbeatNotifier;
-import com.zendesk.maxwell.api.replication.MysqlVersion;
+import com.zendesk.maxwell.core.replication.MysqlVersion;
 import com.zendesk.maxwell.core.replication.Replicator;
 import com.zendesk.maxwell.core.schema.MysqlPositionStore;
 import com.zendesk.maxwell.core.schema.PositionStoreThread;

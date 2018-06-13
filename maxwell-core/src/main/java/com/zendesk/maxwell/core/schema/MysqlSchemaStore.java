@@ -1,10 +1,9 @@
 package com.zendesk.maxwell.core.schema;
 
-import com.zendesk.maxwell.api.config.MaxwellFilter;
-import com.zendesk.maxwell.api.replication.Position;
+import com.zendesk.maxwell.core.config.MaxwellFilter;
+import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.CaseSensitivity;
 import com.zendesk.maxwell.core.MaxwellSystemContext;
-import com.zendesk.maxwell.api.schema.InvalidSchemaError;
 import com.zendesk.maxwell.core.schema.ddl.ResolvedSchemaChange;
 import snaq.db.ConnectionPool;
 

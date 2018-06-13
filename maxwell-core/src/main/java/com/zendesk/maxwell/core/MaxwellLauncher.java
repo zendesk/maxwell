@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.core;
 
 import com.djdch.log4j.StaticShutdownCallbackRegistry;
-import com.zendesk.maxwell.api.config.MaxwellConfig;
+import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.util.Logging;
 import org.springframework.beans.factory.annotation.Autowired;

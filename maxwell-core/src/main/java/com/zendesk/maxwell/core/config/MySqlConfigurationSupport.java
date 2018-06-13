@@ -3,13 +3,12 @@ package com.zendesk.maxwell.core.config;
 import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.api.config.ConfigurationSupport;
 import com.zendesk.maxwell.api.config.InvalidOptionException;
-import com.zendesk.maxwell.api.config.MaxwellMysqlConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Properties;
 
-import static com.zendesk.maxwell.api.config.MaxwellMysqlConfig.*;
+import static com.zendesk.maxwell.core.config.MaxwellMysqlConfig.*;
 
 @Service
 public class MySqlConfigurationSupport {

@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.core;
 
 import com.codahale.metrics.MetricRegistry;
-import com.zendesk.maxwell.api.config.MaxwellConfig;
+import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.monitoring.MaxwellDiagnosticRegistry;
 import com.zendesk.maxwell.core.producer.ProducerInitialization;
 import com.zendesk.maxwell.core.replication.BinlogConnectorDiagnostic;

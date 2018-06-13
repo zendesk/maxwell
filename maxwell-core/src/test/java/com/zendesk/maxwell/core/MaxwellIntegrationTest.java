@@ -1,15 +1,15 @@
 package com.zendesk.maxwell.core;
 
-import com.zendesk.maxwell.api.config.MaxwellConfig;
-import com.zendesk.maxwell.api.config.MaxwellFilter;
-import com.zendesk.maxwell.api.config.MaxwellOutputConfig;
-import com.zendesk.maxwell.api.config.EncryptionMode;
+import com.zendesk.maxwell.core.config.MaxwellConfig;
+import com.zendesk.maxwell.core.config.MaxwellFilter;
+import com.zendesk.maxwell.core.config.MaxwellOutputConfig;
+import com.zendesk.maxwell.core.config.EncryptionMode;
 import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.config.BaseMaxwellFilter;
 import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.row.BaseRowMap;
-import com.zendesk.maxwell.api.schema.SchemaStoreSchema;
+import com.zendesk.maxwell.core.schema.SchemaStoreSchema;
 import com.zendesk.maxwell.core.util.test.mysql.MysqlIsolatedServer;
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Test;

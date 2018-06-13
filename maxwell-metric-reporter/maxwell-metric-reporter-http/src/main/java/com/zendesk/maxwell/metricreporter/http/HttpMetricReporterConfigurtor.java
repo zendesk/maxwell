@@ -2,7 +2,7 @@ package com.zendesk.maxwell.metricreporter.http;
 
 import com.zendesk.maxwell.api.config.CommandLineOptionParserContext;
 import com.zendesk.maxwell.api.config.ConfigurationSupport;
-import com.zendesk.maxwell.api.config.MaxwellConfig;
+import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.metricreporter.core.MetricReporterConfiguration;
 import com.zendesk.maxwell.metricreporter.core.MetricReporterConfigurator;
 import org.slf4j.Logger;

@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.core;
 
-import com.zendesk.maxwell.api.config.MaxwellConfig;
-import com.zendesk.maxwell.api.replication.Position;
+import com.zendesk.maxwell.core.config.MaxwellConfig;
+import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.bootstrap.Bootstrapper;
 import com.zendesk.maxwell.core.bootstrap.BootstrapperFactory;
 import com.zendesk.maxwell.core.producer.Producer;
@@ -11,7 +11,7 @@ import com.zendesk.maxwell.core.replication.BinlogConnectorReplicator;
 import com.zendesk.maxwell.core.replication.Replicator;
 import com.zendesk.maxwell.core.schema.MysqlPositionStore;
 import com.zendesk.maxwell.core.schema.MysqlSchemaStore;
-import com.zendesk.maxwell.api.schema.SchemaStoreSchema;
+import com.zendesk.maxwell.core.schema.SchemaStoreSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

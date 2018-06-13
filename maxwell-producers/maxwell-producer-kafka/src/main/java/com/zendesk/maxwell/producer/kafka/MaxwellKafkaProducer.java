@@ -4,7 +4,7 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.StoppableTask;
-import com.zendesk.maxwell.api.replication.Position;
+import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.row.RowMap.KeyFormat;
 import com.zendesk.maxwell.core.row.RowMapFactory;

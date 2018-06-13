@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.api.config;
+package com.zendesk.maxwell.core.config;
 
 import com.zendesk.maxwell.api.replication.Position;
 

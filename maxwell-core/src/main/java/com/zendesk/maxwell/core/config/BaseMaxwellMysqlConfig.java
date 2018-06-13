@@ -1,8 +1,6 @@
 package com.zendesk.maxwell.core.config;
 
 import com.github.shyiko.mysql.binlog.network.SSLMode;
-import com.zendesk.maxwell.api.config.MaxwellConfig;
-import com.zendesk.maxwell.api.config.MaxwellMysqlConfig;
 import org.apache.http.client.utils.URIBuilder;
 
 import java.net.URISyntaxException;

@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.recovery;
 
-import com.zendesk.maxwell.api.replication.Position;
+import com.zendesk.maxwell.core.replication.Position;
 
 public class RecoveryInfo {
 	public Position position;

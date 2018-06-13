@@ -4,7 +4,7 @@ import com.codahale.metrics.health.HealthCheckRegistry;
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.StoppableTask;
 import com.zendesk.maxwell.api.config.InvalidOptionException;
-import com.zendesk.maxwell.api.config.MaxwellConfig;
+import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.monitoring.MaxwellDiagnosticRegistry;
 import com.zendesk.maxwell.core.MaxwellSystemContext;
 import com.zendesk.maxwell.core.producer.impl.noop.NoopProducer;

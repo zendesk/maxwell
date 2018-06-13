@@ -1,14 +1,14 @@
 package com.zendesk.maxwell.core;
 
-import com.zendesk.maxwell.api.replication.BinlogPosition;
-import com.zendesk.maxwell.api.replication.Position;
-import com.zendesk.maxwell.api.schema.SchemaStoreSchema;
+import com.zendesk.maxwell.core.replication.BinlogPosition;
+import com.zendesk.maxwell.core.replication.Position;
+import com.zendesk.maxwell.core.schema.SchemaStoreSchema;
 import com.zendesk.maxwell.core.schema.*;
 import com.zendesk.maxwell.core.schema.columndef.ColumnDef;
 import com.zendesk.maxwell.core.schema.columndef.DateTimeColumnDef;
 import com.zendesk.maxwell.core.schema.columndef.IntColumnDef;
 import com.zendesk.maxwell.core.schema.columndef.TimeColumnDef;
-import com.zendesk.maxwell.api.schema.InvalidSchemaError;
+import com.zendesk.maxwell.core.schema.InvalidSchemaError;
 import com.zendesk.maxwell.core.support.MaxwellTestSupport;
 import com.zendesk.maxwell.core.util.test.mysql.MysqlIsolatedServer;
 import org.apache.commons.lang3.StringUtils;

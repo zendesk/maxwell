@@ -2,7 +2,6 @@ package com.zendesk.maxwell.core.schema;
 
 import com.zendesk.maxwell.core.CaseSensitivity;
 import com.zendesk.maxwell.core.schema.columndef.ColumnDef;
-import com.zendesk.maxwell.api.schema.InvalidSchemaError;
 
 import java.util.ArrayList;
 import java.util.List;
