@@ -3,7 +3,7 @@ package com.zendesk.maxwell.core.schema;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.CaseSensitivity;
-import com.zendesk.maxwell.core.MaxwellSystemContext;
+import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.schema.ddl.ResolvedSchemaChange;
 import snaq.db.ConnectionPool;
 
@@ -35,7 +35,7 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 		this.readOnly = readOnly;
 	}
 
-	public MysqlSchemaStore(MaxwellSystemContext context, Position initialPosition) throws SQLException {
+	public MysqlSchemaStore(MaxwellContext context, Position initialPosition) throws SQLException {
 		this(
 			context.getMaxwellConnectionPool(),
 			context.getReplicationConnectionPool(),

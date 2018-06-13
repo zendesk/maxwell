@@ -5,7 +5,7 @@ import com.zendesk.maxwell.core.replication.BinlogPosition;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.row.RowMapFactory;
-import com.zendesk.maxwell.core.MaxwellSystemContext;
+import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.replication.Replicator;
 import com.zendesk.maxwell.core.schema.Database;
 import com.zendesk.maxwell.core.schema.Schema;
@@ -26,7 +26,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 
 	private long lastInsertedRowsUpdateTimeMillis = 0;
 
-	public SynchronousBootstrapper(MaxwellSystemContext context, RowMapFactory rowMapFactory) { super(context, rowMapFactory); }
+	public SynchronousBootstrapper(MaxwellContext context, RowMapFactory rowMapFactory) { super(context, rowMapFactory); }
 
 	@Override
 	public boolean shouldSkip(RowMap row) {

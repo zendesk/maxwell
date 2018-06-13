@@ -111,7 +111,7 @@ public class RecoveryTest extends TestWithNameLogging {
 			return;
 		}
 
-		MaxwellSystemContext slaveContext = maxwellContextFactory.createFor(getBufferedConfig(slaveServer.getPort(), true));
+		MaxwellContext slaveContext = maxwellContextFactory.createFor(getBufferedConfig(slaveServer.getPort(), true));
 
 		String[] input = generateMasterData();
 		/* run the execution through with the replicator running so we get heartbeats */
@@ -152,7 +152,7 @@ public class RecoveryTest extends TestWithNameLogging {
 			return;
 		}
 
-		MaxwellSystemContext slaveContext = maxwellContextFactory.createFor(getBufferedConfig(slaveServer.getPort(), true));
+		MaxwellContext slaveContext = maxwellContextFactory.createFor(getBufferedConfig(slaveServer.getPort(), true));
 
 		String[] input = generateMasterData();
 		maxwellTestSupport.getRowsWithReplicator(masterServer, null, input, null);
@@ -177,7 +177,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		assertEquals(null, recoveredPosition);
 	}
 
-	private void drainReplication(final MaxwellSystemContext context, List<RowMap> rows) throws Exception {
+	private void drainReplication(final MaxwellContext context, List<RowMap> rows) throws Exception {
 		MysqlPositionStore positionStore = context.getPositionStore();
 
 		// Wait for position store to send initial heartbeat, to ensure we
@@ -231,7 +231,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		LOGGER.warn("slave master position at time of cut: " + approximateRecoverPosition);
 		generateNewMasterData(false, DATA_SIZE);
 
-		final MaxwellSystemContext context = maxwellContextFactory.createFor(getBufferedConfig(slaveServer.getPort(), true));
+		final MaxwellContext context = maxwellContextFactory.createFor(getBufferedConfig(slaveServer.getPort(), true));
 		new Thread(() -> maxwellRunner.run(context)).start();
 		drainReplication(context, rows);
 
@@ -300,7 +300,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		generateNewMasterData(false, DATA_SIZE);
 		expectedRows += NEW_DATA_SIZE;
 
-		MaxwellSystemContext context = maxwellContextFactory.createFor(getBufferedConfig(slaveServer.getPort(), true));
+		MaxwellContext context = maxwellContextFactory.createFor(getBufferedConfig(slaveServer.getPort(), true));
 		new Thread(() -> maxwellRunner.run(context)).start();
 		drainReplication(context, rows);
 		assertEquals(expectedRows, rows.size());
@@ -343,7 +343,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		// connect to slave, maxwell should get these 100 rows from slave
 		boolean masterRecovery = !MysqlIsolatedServer.inGtidMode();
 
-		final MaxwellSystemContext context1 = maxwellContextFactory.createFor(getBufferedConfig(slaveServer.getPort(), masterRecovery));
+		final MaxwellContext context1 = maxwellContextFactory.createFor(getBufferedConfig(slaveServer.getPort(), masterRecovery));
 		new Thread(() -> maxwellRunner.run(context1)).start();
 		drainReplication(context1, rows);
 		maxwellRunner.terminate(context1);
@@ -358,7 +358,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		expectedRowCount += NEW_DATA_SIZE;
 		// reconnect to slave to resume, maxwell should get the new 100 rows
 
-		final MaxwellSystemContext context2 = maxwellContextFactory.createFor(getBufferedConfig(slaveServer.getPort(), false));
+		final MaxwellContext context2 = maxwellContextFactory.createFor(getBufferedConfig(slaveServer.getPort(), false));
 		new Thread(() -> maxwellRunner.run(context2)).start();
 		drainReplication(context2, rows);
 		assertEquals(expectedRowCount, rows.size());
@@ -379,7 +379,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		MysqlIsolatedServer server = masterServer;
 		Position oldlogPosition = MaxwellTestSupport.capture(server.getConnection());
 		LOGGER.info("Initial pos: " + oldlogPosition);
-		MaxwellSystemContext context1 = maxwellContextFactory.createFor(getConfig(server.getPort(), false));
+		MaxwellContext context1 = maxwellContextFactory.createFor(getConfig(server.getPort(), false));
 		context1.getPositionStore().set(oldlogPosition);
 		MysqlSavedSchema savedSchema = MysqlSavedSchema.restore(context1, oldlogPosition);
 		if (savedSchema == null) {
@@ -393,7 +393,7 @@ public class RecoveryTest extends TestWithNameLogging {
 
 		server.execute("CREATE TABLE shard_1.new (id int(11))");
 
-		final MaxwellSystemContext context2 = maxwellContextFactory.createFor(getBufferedConfig(server.getPort(), false));
+		final MaxwellContext context2 = maxwellContextFactory.createFor(getBufferedConfig(server.getPort(), false));
 		List<RowMap> rows = new ArrayList<>();
 		new Thread(() -> maxwellRunner.run(context2)).start();
 		drainReplication(context2, rows);

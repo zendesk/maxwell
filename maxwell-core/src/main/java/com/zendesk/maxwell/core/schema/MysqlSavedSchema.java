@@ -8,7 +8,7 @@ import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationExceptio
 import com.zendesk.maxwell.core.replication.BinlogPosition;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.CaseSensitivity;
-import com.zendesk.maxwell.core.MaxwellSystemContext;
+import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.schema.columndef.*;
 import com.zendesk.maxwell.core.schema.ddl.ResolvedSchemaChange;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -58,7 +58,7 @@ public class MysqlSavedSchema {
 		setPosition(position);
 	}
 
-	public MysqlSavedSchema(MaxwellSystemContext context, Schema schema, Position position) throws SQLException {
+	public MysqlSavedSchema(MaxwellContext context, Schema schema, Position position) throws SQLException {
 		this(context.getServerID(), context.getCaseSensitivity(), schema, position);
 	}
 
@@ -277,7 +277,7 @@ public class MysqlSavedSchema {
 		columnData.clear();
 	}
 
-	public static MysqlSavedSchema restore(MaxwellSystemContext context, Position targetPosition) throws SQLException, InvalidSchemaError {
+	public static MysqlSavedSchema restore(MaxwellContext context, Position targetPosition) throws SQLException, InvalidSchemaError {
 		return restore(context.getMaxwellConnectionPool(), context.getServerID(), context.getCaseSensitivity(), targetPosition);
 	}
 
@@ -301,7 +301,7 @@ public class MysqlSavedSchema {
 		}
 	}
 
-	public static MysqlSavedSchema restoreFromSchemaID(MysqlSavedSchema savedSchema, MaxwellSystemContext context) throws SQLException, InvalidSchemaError {
+	public static MysqlSavedSchema restoreFromSchemaID(MysqlSavedSchema savedSchema, MaxwellContext context) throws SQLException, InvalidSchemaError {
 		try ( Connection conn = context.getMaxwellConnectionPool().getConnection() ) {
 			Long schemaID = savedSchema.getSchemaID();
 			if (schemaID == null)

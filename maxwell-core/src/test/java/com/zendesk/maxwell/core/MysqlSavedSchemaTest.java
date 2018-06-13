@@ -47,7 +47,7 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 	};
 	private ArrayList<String> schemaSQL = new ArrayList<>(Arrays.asList(ary));
 
-	private MaxwellSystemContext context;
+	private MaxwellContext context;
 
 	@Before
 	public void setUp() throws Exception {

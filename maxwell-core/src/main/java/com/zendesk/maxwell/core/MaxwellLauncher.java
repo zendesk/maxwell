@@ -31,7 +31,7 @@ public class MaxwellLauncher {
 	public MaxwellContext launch(Properties configurationProperties) throws Exception {
 		logging.configureLevelFrom(configurationProperties);
 		final MaxwellConfig configuration = maxwellConfigFactory.createFor(configurationProperties);
-		final MaxwellSystemContext context = maxwellContextFactory.createFor(configuration, configurationProperties);
+		final MaxwellContext context = maxwellContextFactory.createFor(configuration, configurationProperties);
 
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			maxwellRunner.terminate(context);

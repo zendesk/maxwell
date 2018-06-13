@@ -2,7 +2,7 @@ package com.zendesk.maxwell.core.schema;
 
 import com.zendesk.maxwell.core.config.MaxwellFilter;
 import com.zendesk.maxwell.core.CaseSensitivity;
-import com.zendesk.maxwell.core.MaxwellSystemContext;
+import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.schema.ddl.ResolvedSchemaChange;
 import com.zendesk.maxwell.core.schema.ddl.SchemaChange;
 import org.slf4j.Logger;
@@ -31,7 +31,7 @@ public abstract class AbstractSchemaStore {
 		this.filter = filter;
 	}
 
-	protected AbstractSchemaStore(MaxwellSystemContext context) throws SQLException {
+	protected AbstractSchemaStore(MaxwellContext context) throws SQLException {
 		this(context.getReplicationConnectionPool(), context.getSchemaConnectionPool(), context.getCaseSensitivity(), context.getFilter());
 	}
 

@@ -25,12 +25,12 @@ public class MaxwellContextFactory {
 		this.maxwellDiagnosticRegistry = maxwellDiagnosticRegistry;
 	}
 
-	public MaxwellSystemContext createFor(MaxwellConfig config) throws SQLException, URISyntaxException {
+	public MaxwellContext createFor(MaxwellConfig config) throws SQLException, URISyntaxException {
 		return createFor(config, new Properties());
 	}
 
-	public MaxwellSystemContext createFor(MaxwellConfig config, Properties configurationProperties) throws SQLException, URISyntaxException {
-		MaxwellSystemContext context = new BaseMaxwellContext(config, metricRegistry);
+	public MaxwellContext createFor(MaxwellConfig config, Properties configurationProperties) throws SQLException, URISyntaxException {
+		MaxwellContext context = new MaxwellContext(config, metricRegistry);
 		producerInitialization.initialize(context, configurationProperties);
 		maxwellDiagnosticRegistry.registerDiagnostic(new BinlogConnectorDiagnostic(context));
 		context.probeConnections();

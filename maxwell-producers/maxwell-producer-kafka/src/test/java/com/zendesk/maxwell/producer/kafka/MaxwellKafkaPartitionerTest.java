@@ -2,11 +2,11 @@ package com.zendesk.maxwell.producer.kafka;
 
 import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.row.RowMapFactory;
-import com.zendesk.maxwell.core.springconfig.CoreComponentScanConfig;
 import com.zendesk.maxwell.core.schema.ddl.BaseDDLMap;
 import com.zendesk.maxwell.core.schema.ddl.DDLMap;
 import com.zendesk.maxwell.core.schema.ddl.ResolvedDatabaseAlter;
 import com.zendesk.maxwell.core.schema.ddl.ResolvedTableDrop;
+import com.zendesk.maxwell.producer.kafka.springconfig.SpringTestContextConfiguration;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { CoreComponentScanConfig.class })
+@ContextConfiguration(classes = { SpringTestContextConfiguration.class })
 public class MaxwellKafkaPartitionerTest {
 
 	@Autowired

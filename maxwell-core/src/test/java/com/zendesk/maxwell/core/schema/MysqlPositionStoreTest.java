@@ -2,7 +2,7 @@ package com.zendesk.maxwell.core.schema;
 
 import com.zendesk.maxwell.core.replication.BinlogPosition;
 import com.zendesk.maxwell.core.replication.Position;
-import com.zendesk.maxwell.core.MaxwellSystemContext;
+import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.MaxwellTestWithIsolatedServer;
 import com.zendesk.maxwell.core.util.test.mysql.MysqlIsolatedServer;
 import com.zendesk.maxwell.core.errors.DuplicateProcessException;
@@ -22,15 +22,15 @@ public class MysqlPositionStoreTest extends MaxwellTestWithIsolatedServer {
 		return buildStore(buildContext());
 	}
 
-	private MysqlPositionStore buildStore(MaxwellSystemContext context) throws Exception {
+	private MysqlPositionStore buildStore(MaxwellContext context) throws Exception {
 		return buildStore(context, context.getServerID());
 	}
 
-	private MysqlPositionStore buildStore(MaxwellSystemContext context, Long serverID) {
+	private MysqlPositionStore buildStore(MaxwellContext context, Long serverID) {
 		return new MysqlPositionStore(context.getMaxwellConnectionPool(), serverID, "maxwell", MysqlIsolatedServer.inGtidMode());
 	}
 
-	private MysqlPositionStore buildStore(MaxwellSystemContext context, Long serverID, String clientId) {
+	private MysqlPositionStore buildStore(MaxwellContext context, Long serverID, String clientId) {
 		return new MysqlPositionStore(context.getMaxwellConnectionPool(), serverID, clientId, MysqlIsolatedServer.inGtidMode());
 	}
 
@@ -86,7 +86,7 @@ public class MysqlPositionStoreTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testEmptyPositionRecovery() throws Exception {
-		MaxwellSystemContext context = buildContext();
+		MaxwellContext context = buildContext();
 		MysqlPositionStore store = buildStore(context);
 		List<RecoveryInfo> recoveries = store.getAllRecoveryInfos();
 
@@ -99,7 +99,7 @@ public class MysqlPositionStoreTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testMultiplePositionRecovery() throws Exception {
-		MaxwellSystemContext context = buildContext();
+		MaxwellContext context = buildContext();
 		Long activeServerID = context.getServerID();
 
 		Long newestServerID = activeServerID + 1;
@@ -142,7 +142,7 @@ public class MysqlPositionStoreTest extends MaxwellTestWithIsolatedServer {
 			return;
 		}
 
-		MaxwellSystemContext context = buildContext();
+		MaxwellContext context = buildContext();
 		Long activeServerID = context.getServerID();
 		Long oldServerID1 = activeServerID + 1;
 		Long oldServerID2 = activeServerID + 2;

@@ -8,7 +8,7 @@ import com.zendesk.maxwell.core.schema.Schema;
 final public class SavedSchemaSupport {
 	private SavedSchemaSupport() { }
 
-	public static MysqlSavedSchema getSavedSchema(MaxwellSystemContext context, Schema schema, Position position) throws Exception {
+	public static MysqlSavedSchema getSavedSchema(MaxwellContext context, Schema schema, Position position) throws Exception {
 		if (context.getConfig().getGtidMode()) {
 			return new MysqlSavedSchema(context, schema, position);
 		}

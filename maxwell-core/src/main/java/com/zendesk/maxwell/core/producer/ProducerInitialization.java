@@ -6,7 +6,6 @@ import com.zendesk.maxwell.core.StoppableTask;
 import com.zendesk.maxwell.api.config.InvalidOptionException;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.monitoring.MaxwellDiagnosticRegistry;
-import com.zendesk.maxwell.core.MaxwellSystemContext;
 import com.zendesk.maxwell.core.producer.impl.noop.NoopProducer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -31,7 +30,7 @@ public class ProducerInitialization {
 		this.healthCheckRegistry = healthCheckRegistry;
 	}
 
-	public void initialize(final MaxwellSystemContext maxwellContext, final Properties configurationSettings){
+	public void initialize(final MaxwellContext maxwellContext, final Properties configurationSettings){
 		Producer producer = create(maxwellContext, configurationSettings);
 		maxwellContext.setProducer(producer);
 		registerDiagnostics(producer);

@@ -9,7 +9,6 @@ import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.MaxwellContextFactory;
 import com.zendesk.maxwell.core.MaxwellRunner;
-import com.zendesk.maxwell.core.MaxwellSystemContext;
 import com.zendesk.maxwell.core.util.test.mysql.MysqlIsolatedServer;
 import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
 import com.zendesk.maxwell.core.config.BaseMaxwellMysqlConfig;
@@ -105,7 +104,7 @@ public class MaxwellTestSupport {
 		config.setInitPosition(capture(mysql.getConnection()));
 		final String waitObject = "";
 
-		final MaxwellSystemContext maxwellContext = maxwellContextFactory.createFor(config);
+		final MaxwellContext maxwellContext = maxwellContextFactory.createFor(config);
 		maxwellContext.configureOnReplicationStartEventHandler((c) -> {
 			synchronized(waitObject) {
 				waitObject.notify();

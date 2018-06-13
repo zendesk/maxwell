@@ -8,7 +8,7 @@ import com.zendesk.maxwell.core.config.MaxwellMysqlConfig;
 import com.zendesk.maxwell.core.monitoring.MaxwellDiagnosticRegistry;
 import com.zendesk.maxwell.core.MaxwellContextFactory;
 import com.zendesk.maxwell.core.MaxwellRunner;
-import com.zendesk.maxwell.core.MaxwellSystemContext;
+import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.springconfig.CoreComponentScanConfig;
 import com.zendesk.maxwell.core.util.Logging;
@@ -88,7 +88,7 @@ public class DiagnosticMaxwellTest {
 		configuration.setDiagnoticTimeout(5000);
 
 		//Start context to register diagnostics
-		MaxwellSystemContext maxwellContext = buildContext();
+		MaxwellContext maxwellContext = buildContext();
 		DiagnosticHealthCheck healthCheck = getDiagnosticHealthCheck(configuration);
 
 		HttpServletRequest request = mock(HttpServletRequest.class);
@@ -153,7 +153,7 @@ public class DiagnosticMaxwellTest {
 		return checksNode.get(0);
 	}
 
-	private MaxwellSystemContext buildContext() throws SQLException, URISyntaxException {
+	private MaxwellContext buildContext() throws SQLException, URISyntaxException {
 		return maxwellContextFactory.createFor(buildConfiguration());
 	}
 

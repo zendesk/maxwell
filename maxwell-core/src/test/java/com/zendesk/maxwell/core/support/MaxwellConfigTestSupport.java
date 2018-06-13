@@ -5,7 +5,7 @@ import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.MaxwellContextFactory;
-import com.zendesk.maxwell.core.MaxwellSystemContext;
+import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
 import com.zendesk.maxwell.core.config.BaseMaxwellMysqlConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
@@ -57,7 +57,7 @@ public class MaxwellConfigTestSupport {
 		return config;
 	}
 
-	public MaxwellSystemContext buildContextWithBufferedProducerFor(int port, Position p, MaxwellFilter filter) throws SQLException, URISyntaxException {
+	public MaxwellContext buildContextWithBufferedProducerFor(int port, Position p, MaxwellFilter filter) throws SQLException, URISyntaxException {
 		MaxwellConfig config = createDefaultConfigurationWithBufferedProducerFor(port, p, filter);
 		return maxwellContextFactory.createFor(config);
 	}

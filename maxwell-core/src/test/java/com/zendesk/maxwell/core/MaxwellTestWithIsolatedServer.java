@@ -120,11 +120,11 @@ public abstract class MaxwellTestWithIsolatedServer extends TestWithNameLogging 
 		maxwellTestJSON.runJSONTestFile(server, filename, null, outputConfig);
 	}
 
-	protected MaxwellSystemContext buildContext() throws Exception {
+	protected MaxwellContext buildContext() throws Exception {
 		return maxwellConfigTestSupport.buildContextWithBufferedProducerFor(server.getPort(), null, null);
 	}
 
-	protected MaxwellSystemContext buildContext(Position p) throws Exception {
+	protected MaxwellContext buildContext(Position p) throws Exception {
 		return maxwellConfigTestSupport.buildContextWithBufferedProducerFor(server.getPort(), p, null);
 	}
 

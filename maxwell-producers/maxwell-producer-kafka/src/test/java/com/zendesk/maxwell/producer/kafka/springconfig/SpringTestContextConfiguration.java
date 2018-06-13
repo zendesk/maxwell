@@ -1,7 +1,8 @@
-package com.zendesk.maxwell.core.springconfig;
+package com.zendesk.maxwell.producer.kafka.springconfig;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
+import com.zendesk.maxwell.core.springconfig.CoreComponentScanConfig;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;

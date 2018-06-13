@@ -7,7 +7,6 @@ import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.monitoring.MaxwellDiagnosticRegistry;
 import com.zendesk.maxwell.core.monitoring.Metrics;
 import com.zendesk.maxwell.core.row.RowMap;
-import com.zendesk.maxwell.core.MaxwellSystemContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -44,7 +43,7 @@ public class ProducerInitializationTest {
 		MaxwellConfig config = mock(MaxwellConfig.class);
 		MetricRegistry metricRegistry = mock(MetricRegistry.class);
 		Metrics metrics = mock(Metrics.class);
-		MaxwellSystemContext context = mock(MaxwellSystemContext.class);
+		MaxwellContext context = mock(MaxwellContext.class);
 		ProducerConfigurator producerConfigurator = mock(ProducerConfigurator.class);
 		ProducerConfiguration producerConfiguration = mock(ProducerConfiguration.class);
 		Producer producer = mock(Producer.class);
@@ -72,7 +71,7 @@ public class ProducerInitializationTest {
 		MaxwellConfig config = mock(MaxwellConfig.class);
 		MetricRegistry metricRegistry = mock(MetricRegistry.class);
 		Metrics metrics = mock(Metrics.class);
-		MaxwellSystemContext context = mock(MaxwellSystemContext.class);
+		MaxwellContext context = mock(MaxwellContext.class);
 
 		when(config.getProducerFactory()).thenReturn(TestProducerFactory.class.getName());
 		when(metrics.getRegistry()).thenReturn(metricRegistry);

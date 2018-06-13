@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.core.bootstrap;
 
 import com.zendesk.maxwell.core.row.RowMapFactory;
-import com.zendesk.maxwell.core.MaxwellSystemContext;
+import com.zendesk.maxwell.core.MaxwellContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +17,7 @@ public class BootstrapperFactory {
 		this.rowMapFactory = rowMapFactory;
 	}
 
-	public Bootstrapper createFor(MaxwellSystemContext maxwellContext) throws IOException {
+	public Bootstrapper createFor(MaxwellContext maxwellContext) throws IOException {
 		switch (maxwellContext.getConfig().getBootstrapperType()) {
 			case "async":
 				return new AsynchronousBootstrapper(maxwellContext, rowMapFactory);

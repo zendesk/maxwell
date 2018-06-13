@@ -3,7 +3,7 @@ package com.zendesk.maxwell.core.bootstrap;
 import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.row.RowMapFactory;
-import com.zendesk.maxwell.core.MaxwellSystemContext;
+import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.replication.Replicator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +12,7 @@ public class NoOpBootstrapper extends AbstractBootstrapper {
 
 	static final Logger LOGGER = LoggerFactory.getLogger( NoOpBootstrapper.class );
 
-	public NoOpBootstrapper(MaxwellSystemContext context, RowMapFactory rowMapFactory) { super( context, rowMapFactory); }
+	public NoOpBootstrapper(MaxwellContext context, RowMapFactory rowMapFactory) { super( context, rowMapFactory); }
 
 	@Override
 	public boolean shouldSkip(RowMap row) {

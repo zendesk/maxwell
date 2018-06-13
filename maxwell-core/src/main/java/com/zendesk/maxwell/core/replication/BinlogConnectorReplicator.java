@@ -11,7 +11,7 @@ import com.zendesk.maxwell.core.config.MaxwellMysqlConfig;
 import com.zendesk.maxwell.core.monitoring.Metrics;
 import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.core.row.RowMap;
-import com.zendesk.maxwell.core.MaxwellSystemContext;
+import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.bootstrap.Bootstrapper;
 import com.zendesk.maxwell.core.row.RowMapBuffer;
 import com.zendesk.maxwell.core.schema.Schema;
@@ -93,7 +93,7 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 		this.stopOnEOF = stopOnEOF;
 	}
 
-	public BinlogConnectorReplicator(SchemaStore schemaStore, Producer producer, Bootstrapper bootstrapper, MaxwellSystemContext ctx, Position start) throws SQLException {
+	public BinlogConnectorReplicator(SchemaStore schemaStore, Producer producer, Bootstrapper bootstrapper, MaxwellContext ctx, Position start) throws SQLException {
 		this(
 			schemaStore,
 			producer,
