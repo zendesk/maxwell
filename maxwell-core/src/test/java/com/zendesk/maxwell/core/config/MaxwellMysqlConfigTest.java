@@ -13,15 +13,13 @@ public class MaxwellMysqlConfigTest {
 
 	@Test
 	public void testBasicUri() {
-
 		MaxwellMysqlConfig config = new MaxwellMysqlConfig();
-
-		config.setHost("localhost");
-		config.setPort(3306);
-		config.setUser("maxwell");
-		config.setPassword("maxwell");
-		config.setDatabase("maxwell");
-		config.setSslMode(SSLMode.DISABLED);
+		config.host = "localhost";
+		config.port = 3306;
+		config.user = "maxwell";
+		config.password = "maxwell";
+		config.database = "maxwell";
+		config.sslMode = SSLMode.DISABLED;
 		config.setJDBCOptions("autoReconnect=true&initialTimeout=2&maxReconnects=10");
 
 		try {
@@ -36,15 +34,13 @@ public class MaxwellMysqlConfigTest {
 
 	@Test
 	public void testSSLPreferred() {
-
 		MaxwellMysqlConfig config = new MaxwellMysqlConfig();
-
-		config.setHost("localhost");
-		config.setPort(3306);
-		config.setUser("maxwell");
-		config.setPassword("maxwell");
-		config.setDatabase("maxwell");
-		config.setSslMode(SSLMode.PREFERRED);
+		config.host = "localhost";
+		config.port = 3306;
+		config.user = "maxwell";
+		config.password = "maxwell";
+		config.database = "maxwell";
+		config.sslMode = SSLMode.PREFERRED;
 
 		try {
 			final String uri = config.getConnectionURI();
@@ -60,15 +56,13 @@ public class MaxwellMysqlConfigTest {
 
 	@Test
 	public void testSSLRequired() {
-
 		MaxwellMysqlConfig config = new MaxwellMysqlConfig();
-
-		config.setHost("localhost");
-		config.setPort(3306);
-		config.setUser("maxwell");
-		config.setPassword("maxwell");
-		config.setDatabase("maxwell");
-		config.setSslMode(SSLMode.REQUIRED);
+		config.host = "localhost";
+		config.port = 3306;
+		config.user = "maxwell";
+		config.password = "maxwell";
+		config.database = "maxwell";
+		config.sslMode = SSLMode.REQUIRED;
 
 		try {
 			String uri = config.getConnectionURI();
@@ -84,15 +78,13 @@ public class MaxwellMysqlConfigTest {
 
 	@Test
 	public void testSSLVerifyCA() {
-
 		MaxwellMysqlConfig config = new MaxwellMysqlConfig();
-
-		config.setHost("localhost");
-		config.setPort(3306);
-		config.setUser("maxwell");
-		config.setPassword("maxwell");
-		config.setDatabase("maxwell");
-		config.setSslMode(SSLMode.VERIFY_CA);
+		config.host = "localhost";
+		config.port = 3306;
+		config.user = "maxwell";
+		config.password = "maxwell";
+		config.database = "maxwell";
+		config.sslMode = SSLMode.VERIFY_CA;
 
 		try {
 			final String uri = config.getConnectionURI();
@@ -108,15 +100,13 @@ public class MaxwellMysqlConfigTest {
 
 	@Test
 	public void testSSLVerifyId() {
-
 		MaxwellMysqlConfig config = new MaxwellMysqlConfig();
-
-		config.setHost("localhost");
-		config.setPort(3306);
-		config.setUser("maxwell");
-		config.setPassword("maxwell");
-		config.setDatabase("maxwell");
-		config.setSslMode(SSLMode.VERIFY_IDENTITY);
+		config.host = "localhost";
+		config.port = 3306;
+		config.user = "maxwell";
+		config.password = "maxwell";
+		config.database = "maxwell";
+		config.sslMode = SSLMode.VERIFY_IDENTITY;
 
 		try {
 			final String uri = config.getConnectionURI();

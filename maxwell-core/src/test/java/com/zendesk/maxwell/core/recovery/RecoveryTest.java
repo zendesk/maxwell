@@ -69,11 +69,11 @@ public class RecoveryTest extends TestWithNameLogging {
 
 	private MaxwellConfig getConfig(int port, boolean masterRecovery){
 		MaxwellConfig config = maxwellConfigFactory.create();
-		config.getMaxwellMysql().setHost("localhost");
-		config.getMaxwellMysql().setPort(port);
-		config.getMaxwellMysql().setUser("maxwell");
-		config.getMaxwellMysql().setPassword("maxwell");
-		config.getMaxwellMysql().setSslMode(SSLMode.DISABLED);
+		config.getMaxwellMysql().host = "localhost";
+		config.getMaxwellMysql().port = port;
+		config.getMaxwellMysql().user = "maxwell";
+		config.getMaxwellMysql().password = "maxwell";
+		config.getMaxwellMysql().sslMode = SSLMode.DISABLED;
 		config.setMasterRecovery(masterRecovery);
 		config.validate();
 		return config;

@@ -35,20 +35,14 @@ public class MaxwellConfigTestSupport {
 	private MaxwellConfig buildConfig(int port, Position p, MaxwellFilter filter) {
 		MaxwellConfig config = maxwellConfigFactory.create();
 
-		MaxwellMysqlConfig replicationMysql = config.getReplicationMysql();
-		replicationMysql.setHost("127.0.0.1");
-		replicationMysql.setPort(port);
-		replicationMysql.setUser("maxwell");
-		replicationMysql.setPassword("maxwell");
-		replicationMysql.setSslMode(SSLMode.DISABLED);
-
 		MaxwellMysqlConfig maxwellMysql = config.getMaxwellMysql();
-		maxwellMysql.setHost("127.0.0.1");
-		maxwellMysql.setPort(port);
-		maxwellMysql.setUser("maxwell");
-		maxwellMysql.setPassword("maxwell");
-		maxwellMysql.setSslMode(SSLMode.DISABLED);
+		maxwellMysql.host = "localhost";
+		maxwellMysql.port = port;
+		maxwellMysql.user = "maxwell";
+		maxwellMysql.password = "maxwell";
+		maxwellMysql.sslMode = SSLMode.DISABLED;
 
+		config.setReplicationMysql(maxwellMysql);
 		config.setDatabaseName("maxwell");
 
 		config.setFilter(filter);

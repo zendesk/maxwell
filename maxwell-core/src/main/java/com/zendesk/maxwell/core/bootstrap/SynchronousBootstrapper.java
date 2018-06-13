@@ -101,7 +101,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	protected Connection getStreamingConnection() throws SQLException, URISyntaxException {
-		Connection conn = DriverManager.getConnection(context.getConfig().getReplicationMysql().getConnectionURI(), context.getConfig().getReplicationMysql().getUser(), context.getConfig().getReplicationMysql().getPassword());
+		Connection conn = DriverManager.getConnection(context.getConfig().getReplicationMysql().getConnectionURI(), context.getConfig().getReplicationMysql().user, context.getConfig().getReplicationMysql().password);
 		conn.setCatalog(context.getConfig().getDatabaseName());
 		return conn;
 	}

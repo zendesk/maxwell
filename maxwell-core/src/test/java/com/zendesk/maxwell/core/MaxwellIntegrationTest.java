@@ -569,14 +569,14 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		options.put("schema_password", "schemapass");
 
 		MaxwellConfig config = maxwellConfigFactory.createFor(options);
-		assertEquals(config.getReplicationMysql().getHost(), "replhost");
-		assertThat(config.getReplicationMysql().getPort(), is(1001));
-		assertEquals(config.getReplicationMysql().getUser(), "repluser");
-		assertEquals(config.getReplicationMysql().getPassword(), "replpass");
-		assertEquals(config.getSchemaMysql().getHost(), "schemahost");
-		assertThat(config.getSchemaMysql().getPort(), is(2002));
-		assertEquals(config.getSchemaMysql().getUser(), "schemauser");
-		assertEquals(config.getSchemaMysql().getPassword(), "schemapass");
+		assertEquals(config.getReplicationMysql().host, "replhost");
+		assertThat(config.getReplicationMysql().port, is(1001));
+		assertEquals(config.getReplicationMysql().user, "repluser");
+		assertEquals(config.getReplicationMysql().password, "replpass");
+		assertEquals(config.getSchemaMysql().host, "schemahost");
+		assertThat(config.getSchemaMysql().port, is(2002));
+		assertEquals(config.getSchemaMysql().user, "schemauser");
+		assertEquals(config.getSchemaMysql().password, "schemapass");
 	}
 
 	@Test
@@ -588,13 +588,13 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		options.put("replication_password", "replpass");
 
 		MaxwellConfig config = maxwellConfigFactory.createFor(options);
-		assertEquals(config.getReplicationMysql().getHost(), "replhost");
-		assertThat(config.getReplicationMysql().getPort(), is(1001));
-		assertEquals(config.getReplicationMysql().getUser(), "repluser");
-		assertEquals(config.getReplicationMysql().getPassword(), "replpass");
-		assertNull(config.getSchemaMysql().getHost());
-		assertNull(config.getSchemaMysql().getUser());
-		assertNull(config.getSchemaMysql().getPassword());
+		assertEquals(config.getReplicationMysql().host, "replhost");
+		assertThat(config.getReplicationMysql().port, is(1001));
+		assertEquals(config.getReplicationMysql().user, "repluser");
+		assertEquals(config.getReplicationMysql().password, "replpass");
+		assertNull(config.getSchemaMysql().host);
+		assertNull(config.getSchemaMysql().user);
+		assertNull(config.getSchemaMysql().password);
 	}
 
 	@Test

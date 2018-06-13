@@ -102,26 +102,26 @@ public class MaxwellConfig {
 			throw new InvalidOptionException("please specify --bootstrapper=async|sync|none", "--bootstrapper");
 		}
 
-		if (maxwellMysql.getSslMode() == null) {
-			maxwellMysql.setSslMode(SSLMode.DISABLED);
+		if (maxwellMysql.sslMode == null) {
+			maxwellMysql.sslMode = SSLMode.DISABLED;
 		}
 
-		if (maxwellMysql.getHost() == null) {
+		if (maxwellMysql.host == null) {
 			LOGGER.warn("maxwell mysql host not specified, defaulting to localhost");
-			maxwellMysql.setHost("localhost");
+			maxwellMysql.host = "localhost";
 		}
 
-		if (replicationMysql.getHost() == null || replicationMysql.getUser() == null) {
-			if (replicationMysql.getHost() != null || replicationMysql.getUser() != null || replicationMysql.getPassword() != null) {
+		if (replicationMysql.host == null || replicationMysql.sslMode == null) {
+			if (replicationMysql.host != null || replicationMysql.user != null || replicationMysql.password != null) {
 				throw new InvalidOptionException("Please specify all of: replication_host, replication_user, replication_password", "--replication");
 			}
 
-			replicationMysql = new MaxwellMysqlConfig(maxwellMysql.getHost(), maxwellMysql.getPort(), null, maxwellMysql.getUser(), maxwellMysql.getPassword(), maxwellMysql.getSslMode());
-			replicationMysql.setJdbcOptions(maxwellMysql.getJdbcOptions());
+			replicationMysql = new MaxwellMysqlConfig(maxwellMysql.host, maxwellMysql.port, null, maxwellMysql.user, maxwellMysql.password, maxwellMysql.sslMode);
+			replicationMysql.jdbcOptions = maxwellMysql.jdbcOptions;
 		}
 
-		if (replicationMysql.getSslMode() == null) {
-			replicationMysql.setSslMode(maxwellMysql.getSslMode());
+		if (replicationMysql.sslMode== null) {
+			replicationMysql.sslMode = maxwellMysql.sslMode;
 		}
 
 		if (gtidMode && masterRecovery) {
@@ -132,18 +132,18 @@ public class MaxwellConfig {
 			throw new InvalidOptionException("output_gtid_position is only support with gtid mode.", "--output_gtid_position");
 		}
 
-		if (schemaMysql.getHost() != null) {
-			if (schemaMysql.getUser() == null || schemaMysql.getPassword() == null) {
+		if (schemaMysql.host != null) {
+			if (schemaMysql.user == null || schemaMysql.password == null) {
 				throw new InvalidOptionException("Please specify all of: schema_host, schema_user, schema_password", "--schema");
 			}
 
-			if (replicationMysql.getHost() == null) {
+			if (replicationMysql.host == null) {
 				throw new InvalidOptionException("Specifying schema_host only makes sense along with replication_host");
 			}
 		}
 
-		if (schemaMysql.getSslMode() == null) {
-			schemaMysql.setSslMode(maxwellMysql.getSslMode());
+		if (schemaMysql.sslMode == null) {
+			schemaMysql.sslMode = maxwellMysql.sslMode;
 		}
 
 		if (outputConfig.isEncryptionEnabled() && outputConfig.secretKey == null)

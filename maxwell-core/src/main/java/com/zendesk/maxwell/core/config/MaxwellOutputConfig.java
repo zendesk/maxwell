@@ -44,7 +44,7 @@ public class MaxwellOutputConfig {
 	}
 
 	public boolean isEncryptionEnabled() {
-		return encryptionMode != EncryptionMode.ENCRYPT_NONE;
+		return encryptionMode != null && encryptionMode != EncryptionMode.ENCRYPT_NONE;
 	}
 
 }
