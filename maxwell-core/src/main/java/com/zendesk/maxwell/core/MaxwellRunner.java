@@ -1,7 +1,6 @@
 package com.zendesk.maxwell.core;
 
 import com.zendesk.maxwell.api.MaxwellContext;
-import com.zendesk.maxwell.api.MaxwellTerminationListener;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.producer.Producer;
 import com.zendesk.maxwell.api.replication.Position;

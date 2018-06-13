@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.monitoring;
 
-import com.zendesk.maxwell.api.MaxwellTerminationListener;
+import com.zendesk.maxwell.core.MaxwellTerminationListener;
 import com.zendesk.maxwell.api.monitoring.MaxwellDiagnostic;
 import org.springframework.stereotype.Service;
 
