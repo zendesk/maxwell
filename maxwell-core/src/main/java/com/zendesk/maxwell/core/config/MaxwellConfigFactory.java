@@ -11,7 +11,6 @@ import java.util.Properties;
 
 import static com.zendesk.maxwell.core.config.MaxwellConfig.*;
 import static com.zendesk.maxwell.core.config.MaxwellOutputConfig.*;
-import static com.zendesk.maxwell.core.config.MaxwellFilter.*;
 import static com.zendesk.maxwell.core.config.MaxwellMysqlConfig.*;
 
 @Service
@@ -110,14 +109,14 @@ public class MaxwellConfigFactory {
 
 	private void configureFilter(Properties properties, MaxwellConfig config) {
 		try {
-			String includeDatabases = configurationSupport.fetchOption(CONFIGURATION_OPTION_INCLUDE_DBS, properties, null);
-			String excludeDatabases = configurationSupport.fetchOption(CONFIGURATION_OPTION_EXCLUDE_DBS, properties, null);
-			String includeTables = configurationSupport.fetchOption(CONFIGURATION_OPTION_INCLUDE_TABLES, properties, null);
-			String excludeTables = configurationSupport.fetchOption(CONFIGURATION_OPTION_EXCLUDE_TABLES, properties, null);
-			String blacklistDatabases = configurationSupport.fetchOption(CONFIGURATION_OPTION_BLACKLIST_DBS, properties, null);
-			String blacklistTables = configurationSupport.fetchOption(CONFIGURATION_OPTION_BLACKLIST_TABLES, properties, null);
-			String includeColumnValues = configurationSupport.fetchOption(CONFIGURATION_OPTION_INCLUDE_COLUMN_VALUES, properties, null);
-			config.setFilter(new BaseMaxwellFilter(includeDatabases, excludeDatabases, includeTables, excludeTables, blacklistDatabases, blacklistTables, includeColumnValues));
+			String includeDatabases = configurationSupport.fetchOption("include_dbs", properties, null);
+			String excludeDatabases = configurationSupport.fetchOption("exclude_dbs", properties, null);
+			String includeTables = configurationSupport.fetchOption("include_tables", properties, null);
+			String excludeTables = configurationSupport.fetchOption("exclude_tables", properties, null);
+			String blacklistDatabases = configurationSupport.fetchOption("blacklist_dbs", properties, null);
+			String blacklistTables = configurationSupport.fetchOption("blacklist_tables", properties, null);
+			String includeColumnValues = configurationSupport.fetchOption("include_column_values", properties, null);
+			config.setFilter(new MaxwellFilter(includeDatabases, excludeDatabases, includeTables, excludeTables, blacklistDatabases, blacklistTables, includeColumnValues));
 		} catch (MaxwellInvalidFilterException e) {
 			throw new InvalidUsageException("Invalid filter options: " + e.getLocalizedMessage());
 		}

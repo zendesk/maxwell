@@ -3,7 +3,6 @@ package com.zendesk.maxwell.core;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
 import com.zendesk.maxwell.core.config.EncryptionMode;
 import com.zendesk.maxwell.core.row.RowMap;
-import com.zendesk.maxwell.core.config.BaseMaxwellFilter;
 import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
 import org.junit.Test;
 
@@ -43,7 +42,7 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testBootstrapIsWhitelisted() throws Exception {
-		MaxwellFilter filter = new BaseMaxwellFilter();
+		MaxwellFilter filter = new MaxwellFilter();
 		filter.includeDatabase("shard_1");
 		runJSON("json/bootstrap-whitelist", filter);
 	}

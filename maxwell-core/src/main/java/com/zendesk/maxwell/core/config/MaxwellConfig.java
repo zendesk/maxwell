@@ -91,7 +91,7 @@ public class MaxwellConfig {
 		this.setMetricsJvm(DEFAULT_METRCS_JVM);
 
 		this.setMasterRecovery(false);
-		this.setFilter(new BaseMaxwellFilter());
+		this.setFilter(new MaxwellFilter());
 		this.setOutputConfig(new BaseMaxwellOutputConfig());
 	}
 

@@ -1,12 +1,12 @@
 package com.zendesk.maxwell.core.recovery;
 
-import com.zendesk.maxwell.core.config.BaseMaxwellFilter;
+import com.zendesk.maxwell.core.config.MaxwellFilter;
 
 /**
  * filter out (via a blacklist) everything except for `maxwell`.`positions`.
  * this makes a possibly out of sync schema harmless.
  */
-public class RecoveryFilter extends BaseMaxwellFilter {
+public class RecoveryFilter extends MaxwellFilter {
 	private final String maxwellDatabaseName;
 
 	public RecoveryFilter(String maxwellDatabaseName) {

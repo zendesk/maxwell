@@ -5,7 +5,6 @@ import com.zendesk.maxwell.core.config.MaxwellInvalidFilterException;
 import com.zendesk.maxwell.core.config.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.row.RowMap;
-import com.zendesk.maxwell.core.config.BaseMaxwellFilter;
 import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
 import com.zendesk.maxwell.core.replication.MysqlVersion;
 import com.zendesk.maxwell.core.springconfig.SpringTestContextConfiguration;
@@ -129,13 +128,13 @@ public abstract class MaxwellTestWithIsolatedServer extends TestWithNameLogging 
 	}
 
 	protected MaxwellFilter excludeTable(String name) throws MaxwellInvalidFilterException {
-		MaxwellFilter filter = new BaseMaxwellFilter();
+		MaxwellFilter filter = new MaxwellFilter();
 		filter.excludeTable(name);
 		return filter;
 	}
 
 	protected MaxwellFilter excludeDb(String name) throws MaxwellInvalidFilterException {
-		MaxwellFilter filter = new BaseMaxwellFilter();
+		MaxwellFilter filter = new MaxwellFilter();
 		filter.excludeDatabase(name);
 		return filter;
 	}
