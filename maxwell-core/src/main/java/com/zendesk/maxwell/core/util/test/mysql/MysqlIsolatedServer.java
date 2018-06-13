@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.test.mysql;
+package com.zendesk.maxwell.core.util.test.mysql;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

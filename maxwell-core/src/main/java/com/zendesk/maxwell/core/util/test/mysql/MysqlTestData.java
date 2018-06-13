@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.test.mysql;
+package com.zendesk.maxwell.core.util.test.mysql;
 
 import org.springframework.stereotype.Service;
 
@@ -28,7 +28,7 @@ public class MysqlTestData {
 
     private <R> R readSqlTestResource(String resourceSubPath, Function<Path,R> processingFunction){
         try {
-            final String resourcePath = "test-sql/"+resourceSubPath;
+            final String resourcePath = "sql/test/" +resourceSubPath;
             URL resource = MysqlIsolatedServerSupport.class.getResource(resourcePath);
             resource = resource != null ? resource : MysqlIsolatedServerSupport.class.getClassLoader().getResource(resourcePath);
             if(resource == null){

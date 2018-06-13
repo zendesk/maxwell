@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.support;
 
-import com.zendesk.maxwell.test.mysql.MysqlIsolatedServer;
+import com.zendesk.maxwell.core.util.test.mysql.MysqlIsolatedServer;
 
 import java.sql.SQLException;
 

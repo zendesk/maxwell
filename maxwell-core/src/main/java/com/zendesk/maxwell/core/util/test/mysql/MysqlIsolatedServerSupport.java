@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.test.mysql;
+package com.zendesk.maxwell.core.util.test.mysql;
 
 import com.zendesk.maxwell.api.schema.SchemaStoreSchema;
 import org.springframework.beans.factory.annotation.Autowired;

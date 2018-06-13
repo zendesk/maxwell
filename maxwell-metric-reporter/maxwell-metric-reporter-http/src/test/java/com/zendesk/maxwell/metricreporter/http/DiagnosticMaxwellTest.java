@@ -15,9 +15,8 @@ import com.zendesk.maxwell.core.util.Logging;
 import com.zendesk.maxwell.metricreporter.core.springconfig.MetricsReporterCoreComponentScanConfig;
 import com.zendesk.maxwell.metricreporter.http.springconfig.HttpMetricReporterComponentScanConfig;
 import com.zendesk.maxwell.metricreporter.http.springconfig.MetricsTestConfig;
-import com.zendesk.maxwell.test.mysql.MysqlIsolatedServer;
-import com.zendesk.maxwell.test.mysql.MysqlIsolatedServerSupport;
-import com.zendesk.maxwell.test.springconfig.TestSupportComponentScan;
+import com.zendesk.maxwell.core.util.test.mysql.MysqlIsolatedServer;
+import com.zendesk.maxwell.core.util.test.mysql.MysqlIsolatedServerSupport;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +41,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {MetricsTestConfig.class, CoreComponentScanConfig.class, MetricsReporterCoreComponentScanConfig.class, HttpMetricReporterComponentScanConfig.class, TestSupportComponentScan.class })
+@ContextConfiguration(classes = {MetricsTestConfig.class, CoreComponentScanConfig.class, MetricsReporterCoreComponentScanConfig.class, HttpMetricReporterComponentScanConfig.class })
 public class DiagnosticMaxwellTest {
 
 	@Autowired

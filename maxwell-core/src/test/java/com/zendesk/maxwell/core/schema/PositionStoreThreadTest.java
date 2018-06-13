@@ -4,7 +4,7 @@ import com.zendesk.maxwell.api.replication.BinlogPosition;
 import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.core.MaxwellSystemContext;
 import com.zendesk.maxwell.core.MaxwellTestWithIsolatedServer;
-import com.zendesk.maxwell.test.mysql.MysqlIsolatedServer;
+import com.zendesk.maxwell.core.util.test.mysql.MysqlIsolatedServer;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;

@@ -1,9 +1,9 @@
 package com.zendesk.maxwell.core.schema.ddl;
 
-import com.zendesk.maxwell.test.mysql.MysqlIsolatedServer;
+import com.zendesk.maxwell.core.util.test.mysql.MysqlIsolatedServer;
 import com.zendesk.maxwell.core.springconfig.SpringTestContextConfiguration;
 import com.zendesk.maxwell.core.support.MaxwellTestSupport;
-import com.zendesk.maxwell.test.mysql.MysqlIsolatedServerSupport;
+import com.zendesk.maxwell.core.util.test.mysql.MysqlIsolatedServerSupport;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

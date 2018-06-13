@@ -4,7 +4,7 @@ import com.zendesk.maxwell.core.CaseSensitivity;
 import com.zendesk.maxwell.core.MaxwellTestWithIsolatedServer;
 import com.zendesk.maxwell.core.schema.columndef.*;
 import com.zendesk.maxwell.api.schema.InvalidSchemaError;
-import com.zendesk.maxwell.test.mysql.MysqlTestData;
+import com.zendesk.maxwell.core.util.test.mysql.MysqlTestData;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;

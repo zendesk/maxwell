@@ -5,7 +5,7 @@ import com.zendesk.maxwell.core.schema.columndef.BigIntColumnDef;
 import com.zendesk.maxwell.core.schema.columndef.ColumnDef;
 import com.zendesk.maxwell.core.schema.columndef.IntColumnDef;
 import com.zendesk.maxwell.core.schema.columndef.StringColumnDef;
-import com.zendesk.maxwell.test.mysql.MysqlTestData;
+import com.zendesk.maxwell.core.util.test.mysql.MysqlTestData;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;

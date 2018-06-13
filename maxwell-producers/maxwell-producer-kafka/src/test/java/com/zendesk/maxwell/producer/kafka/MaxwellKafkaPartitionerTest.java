@@ -7,7 +7,6 @@ import com.zendesk.maxwell.core.schema.ddl.BaseDDLMap;
 import com.zendesk.maxwell.core.schema.ddl.DDLMap;
 import com.zendesk.maxwell.core.schema.ddl.ResolvedDatabaseAlter;
 import com.zendesk.maxwell.core.schema.ddl.ResolvedTableDrop;
-import com.zendesk.maxwell.test.springconfig.TestSupportComponentScan;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +18,7 @@ import java.util.ArrayList;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { CoreComponentScanConfig.class, TestSupportComponentScan.class })
+@ContextConfiguration(classes = { CoreComponentScanConfig.class })
 public class MaxwellKafkaPartitionerTest {
 
 	@Autowired

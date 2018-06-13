@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.test.mysql;
+package com.zendesk.maxwell.core.util.test.mysql;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
