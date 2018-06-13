@@ -6,7 +6,6 @@ import com.zendesk.maxwell.core.config.MaxwellFilter;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.MaxwellContextFactory;
 import com.zendesk.maxwell.core.MaxwellContext;
-import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
 import com.zendesk.maxwell.core.config.BaseMaxwellMysqlConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,13 +27,13 @@ public class MaxwellConfigTestSupport {
 	}
 
 	public MaxwellConfig createDefaultConfigurationWithBufferedProducerFor(int port, Position p, MaxwellFilter filter){
-		BaseMaxwellConfig config = buildConfig(port, p, filter);
+		MaxwellConfig config = buildConfig(port, p, filter);
 		config.setProducerType("buffer");
 		return config;
 	}
 
-	private BaseMaxwellConfig buildConfig(int port, Position p, MaxwellFilter filter) {
-		BaseMaxwellConfig config = maxwellConfigFactory.create();
+	private MaxwellConfig buildConfig(int port, Position p, MaxwellFilter filter) {
+		MaxwellConfig config = maxwellConfigFactory.create();
 
 		BaseMaxwellMysqlConfig replicationMysql = (BaseMaxwellMysqlConfig) config.getReplicationMysql();
 		replicationMysql.setHost("127.0.0.1");

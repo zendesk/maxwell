@@ -10,7 +10,7 @@ import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.MaxwellContextFactory;
 import com.zendesk.maxwell.core.MaxwellRunner;
 import com.zendesk.maxwell.core.util.test.mysql.MysqlIsolatedServer;
-import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
+import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.BaseMaxwellMysqlConfig;
 import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
@@ -76,7 +76,7 @@ public class MaxwellTestSupport {
 
 		mysql.clearSchemaStore();
 
-		BaseMaxwellConfig config = maxwellConfigFactory.create();
+		MaxwellConfig config = maxwellConfigFactory.create();
 
 		BaseMaxwellMysqlConfig maxwellMysql = (BaseMaxwellMysqlConfig) config.getMaxwellMysql();
 		maxwellMysql.setUser("maxwell");

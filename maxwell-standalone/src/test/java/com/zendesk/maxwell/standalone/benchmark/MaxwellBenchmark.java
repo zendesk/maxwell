@@ -1,7 +1,6 @@
 package com.zendesk.maxwell.standalone.benchmark;
 
 import com.zendesk.maxwell.core.LauncherException;
-import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellMysqlConfig;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.standalone.MaxwellStandaloneRuntime;
@@ -107,7 +106,7 @@ public class MaxwellBenchmark {
 				appendMySQLSetting(configuration,"", server);
 				appendMySQLSetting(configuration, MaxwellMysqlConfig.CONFIGURATION_OPTION_PREFIX_REPLICATION, server);
 				appendMySQLSetting(configuration, MaxwellMysqlConfig.CONFIGURATION_OPTION_PREFIX_SCHEMA, server);
-				configuration.put(MaxwellConfig.CONFIGURATION_OPTION_CUSTOM_PRODUCER_FACTORY, BenchmarkProducerFactory.class.getCanonicalName());
+				configuration.put("custom_producer.factory", BenchmarkProducerFactory.class.getCanonicalName());
 
 				launcher.runMaxwell(configuration);
 			} catch (Exception e) {

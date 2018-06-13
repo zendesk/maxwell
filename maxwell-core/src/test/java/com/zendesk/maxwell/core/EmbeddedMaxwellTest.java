@@ -4,7 +4,7 @@ import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.core.producer.ProducerFactory;
 import com.zendesk.maxwell.core.row.RowMap;
-import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
+import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.BaseMaxwellMysqlConfig;
 import com.zendesk.maxwell.core.producer.AbstractProducer;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
@@ -36,7 +36,7 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testCustomMetricsAndProducer() throws Exception {
-		BaseMaxwellConfig config = getConfig(server);
+		MaxwellConfig config = getConfig(server);
 		config.setMetricsReportingType("embedded");
 		config.setMetricsPrefix("prefix");
 		config.setProducerFactory(EmbeddedTestProducerFactory.class.getName());
@@ -60,8 +60,8 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 		assertTrue(maxwellContext.getMetrics().getRegistry().getCounters().get("prefix.row.count").getCount() > 0);
 	}
 
-	private BaseMaxwellConfig getConfig(MysqlIsolatedServer mysql) {
-		BaseMaxwellConfig config = maxwellConfigFactory.create();
+	private MaxwellConfig getConfig(MysqlIsolatedServer mysql) {
+		MaxwellConfig config = maxwellConfigFactory.create();
 		BaseMaxwellMysqlConfig maxwellMysql = (BaseMaxwellMysqlConfig) config.getMaxwellMysql();
 		maxwellMysql.setUser("maxwell");
 		maxwellMysql.setPassword("maxwell");

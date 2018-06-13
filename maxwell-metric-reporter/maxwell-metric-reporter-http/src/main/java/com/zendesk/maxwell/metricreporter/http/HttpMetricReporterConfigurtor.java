@@ -2,7 +2,6 @@ package com.zendesk.maxwell.metricreporter.http;
 
 import com.zendesk.maxwell.api.config.CommandLineOptionParserContext;
 import com.zendesk.maxwell.api.config.ConfigurationSupport;
-import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.metricreporter.core.MetricReporterConfiguration;
 import com.zendesk.maxwell.metricreporter.core.MetricReporterConfigurator;
 import org.slf4j.Logger;
@@ -75,7 +74,7 @@ public class HttpMetricReporterConfigurtor implements MetricReporterConfigurator
 
     @Override
     public boolean isConfigured(Properties configurationOptions) {
-        final String metricTypes = configurationOptions.getProperty(MaxwellConfig.CONFIGURATION_OPTION_METRICS_TYPE);
+        final String metricTypes = configurationOptions.getProperty("metrics_type");
         final String diagnosticsEnabled = configurationOptions.getProperty(CONFIGURATION_OPTION_HTTP_DIAGNOSTIC);
         return getIdentifier().toLowerCase().equalsIgnoreCase(metricTypes) || Boolean.TRUE.toString().equalsIgnoreCase(diagnosticsEnabled);
     }

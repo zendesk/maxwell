@@ -25,31 +25,31 @@ public class MaxwellConfigFactory {
 		this.mySqlConfigurationSupport = mySqlConfigurationSupport;
 	}
 
-	public BaseMaxwellConfig create() {
+	public MaxwellConfig create() {
 		return createFor(new Properties());
 	}
 
-	public BaseMaxwellConfig createFor(final Properties properties) {
-		BaseMaxwellConfig config = new BaseMaxwellConfig();
-		config.setLogLevel(configurationSupport.fetchOption(CONFIGURATION_OPTION_LOG_LEVEL, properties, null));
+	public MaxwellConfig createFor(final Properties properties) {
+		MaxwellConfig config = new MaxwellConfig();
+		config.setLogLevel(configurationSupport.fetchOption("log_level", properties, null));
 
 		config.setMaxwellMysql(mySqlConfigurationSupport.parseMysqlConfig("", properties));
 		config.setReplicationMysql(mySqlConfigurationSupport.parseMysqlConfig(CONFIGURATION_OPTION_PREFIX_REPLICATION, properties));
 		config.setSchemaMysql(mySqlConfigurationSupport.parseMysqlConfig(CONFIGURATION_OPTION_PREFIX_SCHEMA, properties));
-		config.setGtidMode(configurationSupport.fetchBooleanOption(CONFIGURATION_OPTION_GTID_MODE, properties, System.getenv(GTID_MODE_ENV) != null));
+		config.setGtidMode(configurationSupport.fetchBooleanOption("gtid_mode", properties, System.getenv(GTID_MODE_ENV) != null));
 
-		config.setDatabaseName(configurationSupport.fetchOption(CONFIGURATION_OPTION_SCHEMA_DATABASE, properties, DEFAULT_DATABASE_NAME));
+		config.setDatabaseName(configurationSupport.fetchOption("schema_database", properties, DEFAULT_DATABASE_NAME));
 		((BaseMaxwellMysqlConfig)config.getMaxwellMysql()).setDatabase(config.getDatabaseName());
 
 		configureProducer(properties, config);
 
-		config.setBootstrapperType(configurationSupport.fetchOption(CONFIGURATION_OPTION_BOOTSTRAPPER, properties, DEFAULT_BOOTSTRAPPER_TYPE));
-		config.setClientID(configurationSupport.fetchOption(CONFIGURATION_OPTION_CLIENT_ID, properties, DEFAULT_CLIENT_ID));
-		config.setReplicaServerID(configurationSupport.fetchLongOption(CONFIGURATION_OPTION_REPLICA_SERVER_ID, properties, DEFAULT_REPLICA_SERVER_ID));
+		config.setBootstrapperType(configurationSupport.fetchOption("bootstrapper", properties, DEFAULT_BOOTSTRAPPER_TYPE));
+		config.setClientID(configurationSupport.fetchOption("client_id", properties, DEFAULT_CLIENT_ID));
+		config.setReplicaServerID(configurationSupport.fetchLongOption("replica_server_id", properties, DEFAULT_REPLICA_SERVER_ID));
 
-		config.setMetricsPrefix(configurationSupport.fetchOption(CONFIGURATION_OPTION_METRICS_PREFIX, properties, DEFAULT_METRICS_PREFIX));
-		config.setMetricsReportingType(configurationSupport.fetchOption(CONFIGURATION_OPTION_METRICS_TYPE, properties, null));
-		config.setMetricsJvm(configurationSupport.fetchBooleanOption(CONFIGURATION_OPTION_METRICS_JVM, properties, DEFAULT_METRCS_JVM));
+		config.setMetricsPrefix(configurationSupport.fetchOption("metrics_prefix", properties, DEFAULT_METRICS_PREFIX));
+		config.setMetricsReportingType(configurationSupport.fetchOption("metrics_type", properties, null));
+		config.setMetricsJvm(configurationSupport.fetchBooleanOption("metrics_jvm", properties, DEFAULT_METRCS_JVM));
 
 		configureReplicationSettings(properties, config);
 		configureFilter(properties, config);
@@ -57,29 +57,29 @@ public class MaxwellConfigFactory {
 		return config;
 	}
 
-	private void configureProducer(final Properties properties, final BaseMaxwellConfig config) {
-		config.setIgnoreProducerError(configurationSupport.fetchBooleanOption(CONFIGURATION_OPTION_IGNORE_PRODUCER_ERROR, properties, DEFAULT_PRODUCER_IGNORE_ERROR));
-		config.setProducerAckTimeout(configurationSupport.fetchLongOption(CONFIGURATION_OPTION_PRODUCER_ACK_TIMEOUT, properties, DEFAULT_PRODUCER_ACK_TIMEOUT));
-		config.setProducerPartitionKey(configurationSupport.fetchOption(CONFIGURATION_OPTION_PRODUCER_PARTITION_BY, properties, DEFAULT_PRODUCER_PARTITION_KEY));
-		config.setProducerPartitionColumns(configurationSupport.fetchOption(CONFIGURATION_OPTION_PRODUCER_PARTITION_COLUMNS, properties, null));
-		config.setProducerPartitionFallback(configurationSupport.fetchOption(CONFIGURATION_OPTION_PRODUCER_PARTITION_BY_FALLBACK, properties, null));
-		config.setProducerFactory(configurationSupport.fetchOption(CONFIGURATION_OPTION_CUSTOM_PRODUCER_FACTORY, properties, null));
+	private void configureProducer(final Properties properties, final MaxwellConfig config) {
+		config.setIgnoreProducerError(configurationSupport.fetchBooleanOption("ignore_producer_error", properties, DEFAULT_PRODUCER_IGNORE_ERROR));
+		config.setProducerAckTimeout(configurationSupport.fetchLongOption("producer_ack_timeout", properties, DEFAULT_PRODUCER_ACK_TIMEOUT));
+		config.setProducerPartitionKey(configurationSupport.fetchOption("producer_partition_by", properties, DEFAULT_PRODUCER_PARTITION_KEY));
+		config.setProducerPartitionColumns(configurationSupport.fetchOption("producer_partition_columns", properties, null));
+		config.setProducerPartitionFallback(configurationSupport.fetchOption("producer_partition_by_fallback", properties, null));
+		config.setProducerFactory(configurationSupport.fetchOption("custom_producer.factory", properties, null));
 
-		String producerType = configurationSupport.fetchOption(CONFIGURATION_OPTION_PRODUCER, properties, DEFAULT_PRODUCER_TYPE);
+		String producerType = configurationSupport.fetchOption("producer", properties, DEFAULT_PRODUCER_TYPE);
 		config.setProducerType(producerType);
 		if (properties != null) {
 			for (Enumeration<Object> e = properties.keys(); e.hasMoreElements(); ) {
 				String k = (String) e.nextElement();
-				if (k.startsWith(CONFIGURATION_OPTION_CUSTOM_PRODUCER_CONFIG_PREFIX)) {
-					config.getCustomProducerProperties().setProperty(k.replace(CONFIGURATION_OPTION_CUSTOM_PRODUCER_CONFIG_PREFIX, ""), properties.getProperty(k));
+				if (k.startsWith("custom_producer.")) {
+					config.getCustomProducerProperties().setProperty(k.replace("custom_producer.", ""), properties.getProperty(k));
 				}
 			}
 		}
 	}
 
-	private void configureReplicationSettings(final Properties properties, final BaseMaxwellConfig config) {
-		if (properties.containsKey(CONFIGURATION_OPTION_INIT_POSITION)) {
-			String initPosition = properties.getProperty(CONFIGURATION_OPTION_INIT_POSITION);
+	private void configureReplicationSettings(final Properties properties, final MaxwellConfig config) {
+		if (properties.containsKey("init_position")) {
+			String initPosition = properties.getProperty("init_position");
 			String[] initPositionSplit = initPosition.split(":");
 
 			if (initPositionSplit.length < 2)
@@ -104,11 +104,11 @@ public class MaxwellConfigFactory {
 			config.setInitPosition(new Position(new BinlogPosition(pos, initPositionSplit[0]), lastHeartbeat));
 		}
 
-		config.setReplayMode(configurationSupport.fetchBooleanOption(CONFIGURATION_OPTION_REPLAY, properties, DEFAULT_REPLICATION_REPLAY_MODE));
-		config.setMasterRecovery(configurationSupport.fetchBooleanOption(CONFIGURATION_OPTION_MASTER_RECOVERY, properties, DEFAULT_REPLICATION_MASTER_RECOVERY));
+		config.setReplayMode(configurationSupport.fetchBooleanOption("replay", properties, DEFAULT_REPLICATION_REPLAY_MODE));
+		config.setMasterRecovery(configurationSupport.fetchBooleanOption("master_recovery", properties, DEFAULT_REPLICATION_MASTER_RECOVERY));
 	}
 
-	private void configureFilter(Properties properties, BaseMaxwellConfig config) {
+	private void configureFilter(Properties properties, MaxwellConfig config) {
 		try {
 			String includeDatabases = configurationSupport.fetchOption(CONFIGURATION_OPTION_INCLUDE_DBS, properties, null);
 			String excludeDatabases = configurationSupport.fetchOption(CONFIGURATION_OPTION_EXCLUDE_DBS, properties, null);
@@ -123,7 +123,7 @@ public class MaxwellConfigFactory {
 		}
 	}
 
-	private void configureOutputConfig(final Properties properties, final BaseMaxwellConfig config) {
+	private void configureOutputConfig(final Properties properties, final MaxwellConfig config) {
 		BaseMaxwellOutputConfig outputConfig = new BaseMaxwellOutputConfig();
 		outputConfig.setIncludesBinlogPosition(configurationSupport.fetchBooleanOption(CONFIGURATION_OPTION_OUTPUT_BINLOG_POSITION, properties, DEFAULT_INCLUDE_BINLOG_POSITION));
 		outputConfig.setIncludesGtidPosition(configurationSupport.fetchBooleanOption(CONFIGURATION_OPTION_OUTPUT_GTID_POSITION, properties, DEFAULT_INCLUDE_GTID_POSITION));

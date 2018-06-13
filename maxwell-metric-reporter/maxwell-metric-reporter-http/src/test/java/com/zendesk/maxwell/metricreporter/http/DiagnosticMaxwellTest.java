@@ -164,8 +164,8 @@ public class DiagnosticMaxwellTest {
 		properties.put(MaxwellMysqlConfig.CONFIGURATION_OPTION_USER, "maxwell");
 		properties.put(MaxwellMysqlConfig.CONFIGURATION_OPTION_PASSWORD, "maxwell");
 		properties.put(MaxwellMysqlConfig.CONFIGURATION_OPTION_SSL, SSLMode.DISABLED.name());
-		properties.put(MaxwellConfig.CONFIGURATION_OPTION_SCHEMA_DATABASE, "maxwell");
-		properties.put(MaxwellConfig.CONFIGURATION_OPTION_PRODUCER, "buffer");
+		properties.put("schema_database", "maxwell");
+		properties.put("producer", "buffer");
 		return maxwellConfigFactory.createFor(properties);
 	}
 }

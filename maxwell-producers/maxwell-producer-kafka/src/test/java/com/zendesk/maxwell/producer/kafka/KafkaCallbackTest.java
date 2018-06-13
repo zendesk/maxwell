@@ -6,7 +6,6 @@ import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.replication.BinlogPosition;
 import com.zendesk.maxwell.core.replication.Position;
-import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.producer.AbstractAsyncProducer;
 import com.zendesk.maxwell.producer.kafka.springconfig.SpringTestContextConfiguration;
@@ -46,7 +45,7 @@ public class KafkaCallbackTest {
 	@Test
 	public void shouldTerminateWhenNotIgnoreProducerError() {
 		MaxwellContext context = mock(MaxwellContext.class);
-		BaseMaxwellConfig config = maxwellConfigFactory.create();
+		MaxwellConfig config = maxwellConfigFactory.create();
 		config.setIgnoreProducerError(false);
 		when(context.getConfig()).thenReturn(config);
 		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
