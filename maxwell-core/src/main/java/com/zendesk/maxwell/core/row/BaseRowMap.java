@@ -6,7 +6,6 @@ import com.zendesk.maxwell.core.config.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.config.EncryptionMode;
 import com.zendesk.maxwell.core.replication.BinlogPosition;
 import com.zendesk.maxwell.core.replication.Position;
-import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
 import com.zendesk.maxwell.core.errors.ProtectedAttributeNameException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -248,7 +247,7 @@ public class BaseRowMap implements Serializable, RowMap {
 
 	@Override
 	public String toJSON() throws Exception {
-		return toJSON(new BaseMaxwellOutputConfig());
+		return toJSON(new MaxwellOutputConfig());
 	}
 
 	@Override

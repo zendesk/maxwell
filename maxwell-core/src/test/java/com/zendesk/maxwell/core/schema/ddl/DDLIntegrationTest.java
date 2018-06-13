@@ -6,7 +6,6 @@ import com.zendesk.maxwell.core.CaseSensitivity;
 import com.zendesk.maxwell.core.MaxwellTestWithIsolatedServer;
 import com.zendesk.maxwell.core.Mysql57Tests;
 import com.zendesk.maxwell.core.util.test.mysql.MysqlIsolatedServer;
-import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -17,7 +16,7 @@ import static org.junit.Assert.assertTrue;
 
 public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	private MaxwellOutputConfig ddlOutputConfig() {
-		BaseMaxwellOutputConfig config = new BaseMaxwellOutputConfig();
+		MaxwellOutputConfig config = new MaxwellOutputConfig();
 		config.setOutputDDL(true);
 		return config;
 	}

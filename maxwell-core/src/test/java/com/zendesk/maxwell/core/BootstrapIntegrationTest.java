@@ -3,7 +3,7 @@ package com.zendesk.maxwell.core;
 import com.zendesk.maxwell.core.config.MaxwellFilter;
 import com.zendesk.maxwell.core.config.EncryptionMode;
 import com.zendesk.maxwell.core.row.RowMap;
-import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
+import com.zendesk.maxwell.core.config.MaxwellOutputConfig;
 import org.junit.Test;
 
 import java.sql.Timestamp;
@@ -208,7 +208,7 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	private void testColumnTypeSerialization(EncryptionMode encryptionMode, List<RowMap> rows, Object expectedNormalJsonValue, Object expectedBootstrappedJsonValue) throws Exception {
 		boolean foundNormalRow = false;
-		BaseMaxwellOutputConfig outputConfig = new BaseMaxwellOutputConfig();
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
 		outputConfig.setEncryptionMode(encryptionMode);
 		outputConfig.setSecretKey("aaaaaaaaaaaaaaaa");
 

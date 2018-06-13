@@ -5,7 +5,6 @@ import com.zendesk.maxwell.core.replication.BinlogPosition;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.MaxwellTestJSON;
 import com.zendesk.maxwell.core.springconfig.SpringTestContextConfiguration;
-import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
 import com.zendesk.maxwell.core.errors.ProtectedAttributeNameException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -280,7 +279,7 @@ public class RowMapTest {
 	}
 
 	private MaxwellOutputConfig getMaxwellOutputConfig(Pattern... patterns) {
-		BaseMaxwellOutputConfig outputConfig = new BaseMaxwellOutputConfig();
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
 
 		outputConfig.setIncludesBinlogPosition(true);
 		outputConfig.setIncludesCommitInfo(true);

@@ -5,7 +5,6 @@ import com.zendesk.maxwell.core.config.MaxwellFilter;
 import com.zendesk.maxwell.core.config.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.config.EncryptionMode;
 import com.zendesk.maxwell.core.row.RowMap;
-import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.row.BaseRowMap;
 import com.zendesk.maxwell.core.schema.SchemaStoreSchema;
@@ -32,7 +31,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testEncryptedData() throws Exception{
-		BaseMaxwellOutputConfig outputConfig = new BaseMaxwellOutputConfig();
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
 		outputConfig.setEncryptionMode(EncryptionMode.ENCRYPT_DATA);
 		outputConfig.setSecretKey("aaaaaaaaaaaaaaaa");
 		List<RowMap> list;
@@ -55,7 +54,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testEncryptedAll() throws Exception{
-		BaseMaxwellOutputConfig outputConfig = new BaseMaxwellOutputConfig();
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
 		outputConfig.setEncryptionMode(EncryptionMode.ENCRYPT_ALL);
 		outputConfig.setSecretKey("aaaaaaaaaaaaaaaa");
 		List<RowMap> list;
@@ -131,7 +130,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	public void testOutputConfig() throws Exception {
 		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
-		BaseMaxwellOutputConfig outputConfig = new BaseMaxwellOutputConfig();
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
 
 		outputConfig.setIncludesCommitInfo(true);
 		outputConfig.setIncludesBinlogPosition(true);
@@ -164,7 +163,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
-		BaseMaxwellOutputConfig outputConfig = new BaseMaxwellOutputConfig();
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
 
 		outputConfig.setIncludesServerId(true);
 
@@ -183,7 +182,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
-		BaseMaxwellOutputConfig outputConfig = new BaseMaxwellOutputConfig();
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
 
 		outputConfig.setIncludesThreadId(true);
 
@@ -272,7 +271,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		assertTrue(Pattern.compile("\"id\":1").matcher(json).find());
 		assertTrue(Pattern.compile("\"account_id\":2").matcher(json).find());
 
-		MaxwellOutputConfig outputConfig = new BaseMaxwellOutputConfig();
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
 		outputConfig.getExcludeColumns().add(Pattern.compile("id"));
 
 		list = getRowsForSQL(filter, insertSQL, createDBs);
@@ -601,7 +600,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testRowQueryLogEventsIsOn() throws Exception {
 		requireMinimumVersion(MysqlIsolatedServer.VERSION_5_6);
-		BaseMaxwellOutputConfig outputConfig = new BaseMaxwellOutputConfig();
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
 		outputConfig.setIncludesRowQuery(true);
 
 		runJSON("json/test_row_query_log_is_on", outputConfig);

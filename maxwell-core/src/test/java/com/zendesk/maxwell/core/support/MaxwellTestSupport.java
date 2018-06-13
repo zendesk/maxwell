@@ -12,7 +12,6 @@ import com.zendesk.maxwell.core.MaxwellRunner;
 import com.zendesk.maxwell.core.util.test.mysql.MysqlIsolatedServer;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
 import com.zendesk.maxwell.core.config.MaxwellMysqlConfig;
-import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducer;
 import com.zendesk.maxwell.core.schema.Schema;
@@ -78,14 +77,14 @@ public class MaxwellTestSupport {
 
 		MaxwellConfig config = maxwellConfigFactory.create();
 
-		MaxwellMysqlConfig maxwellMysql = (MaxwellMysqlConfig) config.getMaxwellMysql();
+		MaxwellMysqlConfig maxwellMysql = config.getMaxwellMysql();
 		maxwellMysql.setUser("maxwell");
 		maxwellMysql.setPassword("maxwell");
 		maxwellMysql.setHost("localhost");
 		maxwellMysql.setPort(mysql.getPort());
 		maxwellMysql.setSslMode(SSLMode.DISABLED);
 		config.setReplicationMysql(maxwellMysql);
-		final MaxwellOutputConfig outputConfig = optionalOutputConfig.orElseGet(BaseMaxwellOutputConfig::new);
+		final MaxwellOutputConfig outputConfig = optionalOutputConfig.orElseGet(MaxwellOutputConfig::new);
 
 		if ( filter != null ) {
 			if ( filter.isDatabaseWhitelist() )

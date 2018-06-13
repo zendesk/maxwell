@@ -5,7 +5,6 @@ import com.zendesk.maxwell.core.config.MaxwellInvalidFilterException;
 import com.zendesk.maxwell.core.config.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.row.RowMap;
-import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
 import com.zendesk.maxwell.core.replication.MysqlVersion;
 import com.zendesk.maxwell.core.springconfig.SpringTestContextConfiguration;
 import com.zendesk.maxwell.core.support.MaxwellConfigTestSupport;
@@ -102,7 +101,7 @@ public abstract class MaxwellTestWithIsolatedServer extends TestWithNameLogging 
 	}
 
 	protected List<RowMap> getRowsForDDLTransaction(String[] sql, MaxwellFilter filter) throws Exception {
-		BaseMaxwellOutputConfig outputConfig = new BaseMaxwellOutputConfig();
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
 		outputConfig.setOutputDDL(true);
 		return getRowsForSQLTransactional(sql, filter, outputConfig);
 	}

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zendesk.maxwell.core.config.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.replication.BinlogPosition;
 import com.zendesk.maxwell.core.replication.Position;
-import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
 import com.zendesk.maxwell.core.row.BaseRowMap;
 
 import java.io.IOException;
@@ -39,7 +38,7 @@ public class BaseDDLMap extends BaseRowMap implements DDLMap {
 
 	@Override
 	public String toJSON() throws IOException {
-		return toJSON(new BaseMaxwellOutputConfig());
+		return toJSON(new MaxwellOutputConfig());
 	}
 
 	@Override

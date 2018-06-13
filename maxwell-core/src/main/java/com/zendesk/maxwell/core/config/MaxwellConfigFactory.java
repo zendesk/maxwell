@@ -37,7 +37,7 @@ public class MaxwellConfigFactory {
 		config.setGtidMode(configurationSupport.fetchBooleanOption("gtid_mode", properties, System.getenv(GTID_MODE_ENV) != null));
 
 		config.setDatabaseName(configurationSupport.fetchOption("schema_database", properties, DEFAULT_DATABASE_NAME));
-		((MaxwellMysqlConfig)config.getMaxwellMysql()).setDatabase(config.getDatabaseName());
+		config.getMaxwellMysql().setDatabase(config.getDatabaseName());
 
 		configureProducer(properties, config);
 
@@ -122,17 +122,17 @@ public class MaxwellConfigFactory {
 	}
 
 	private void configureOutputConfig(final Properties properties, final MaxwellConfig config) {
-		BaseMaxwellOutputConfig outputConfig = new BaseMaxwellOutputConfig();
-		outputConfig.setIncludesBinlogPosition(configurationSupport.fetchBooleanOption(CONFIGURATION_OPTION_OUTPUT_BINLOG_POSITION, properties, DEFAULT_INCLUDE_BINLOG_POSITION));
-		outputConfig.setIncludesGtidPosition(configurationSupport.fetchBooleanOption(CONFIGURATION_OPTION_OUTPUT_GTID_POSITION, properties, DEFAULT_INCLUDE_GTID_POSITION));
-		outputConfig.setIncludesCommitInfo(configurationSupport.fetchBooleanOption(CONFIGURATION_OPTION_OUTPUT_COMMIT_INFO, properties, DEFAULT_INCLUDE_COMMIT_INFO));
-		outputConfig.setIncludesXOffset(configurationSupport.fetchBooleanOption(CONFIGURATION_OPTION_OUTPUT_XOFFSET, properties, DEFAULT_INCLUDE_XOFFSET));
-		outputConfig.setIncludesNulls(configurationSupport.fetchBooleanOption(CONFIGURATION_OPTION_OUTPUT_NULLS, properties, DEFAULT_INCLUDE_NULLS));
-		outputConfig.setIncludesServerId(configurationSupport.fetchBooleanOption(CONFIGURATION_OPTION_OUTPUT_SERVER_ID, properties, DEFAULT_INCLUDE_SERVER_ID));
-		outputConfig.setIncludesThreadId(configurationSupport.fetchBooleanOption(CONFIGURATION_OPTION_OUTPUT_THREAD_ID, properties, DEFAULT_INCLUDE_THREAD_ID));
-		outputConfig.setIncludesRowQuery(configurationSupport.fetchBooleanOption(CONFIGURATION_OPTION_OUTPUT_ROW_QUERY, properties, DEFAULT_INCLUDE_ROW_QUERY));
-		outputConfig.setOutputDDL(configurationSupport.fetchBooleanOption(CONFIGURATION_OPTION_OUTPUT_DDL, properties, DEFAULT_OUTPUT_DDL));
-		String encryptionMode = configurationSupport.fetchOption(CONFIGURATION_OPTION_ENCRYPT, properties, DEFAULT_ENCRYPTION_MODE);
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
+		outputConfig.setIncludesBinlogPosition(configurationSupport.fetchBooleanOption("output_binlog_position", properties, DEFAULT_INCLUDE_BINLOG_POSITION));
+		outputConfig.setIncludesGtidPosition(configurationSupport.fetchBooleanOption("output_gtid_position", properties, DEFAULT_INCLUDE_GTID_POSITION));
+		outputConfig.setIncludesCommitInfo(configurationSupport.fetchBooleanOption("output_commit_info", properties, DEFAULT_INCLUDE_COMMIT_INFO));
+		outputConfig.setIncludesXOffset(configurationSupport.fetchBooleanOption("output_xoffset", properties, DEFAULT_INCLUDE_XOFFSET));
+		outputConfig.setIncludesNulls(configurationSupport.fetchBooleanOption("output_nulls", properties, DEFAULT_INCLUDE_NULLS));
+		outputConfig.setIncludesServerId(configurationSupport.fetchBooleanOption("output_server_id", properties, DEFAULT_INCLUDE_SERVER_ID));
+		outputConfig.setIncludesThreadId(configurationSupport.fetchBooleanOption("output_thread_id", properties, DEFAULT_INCLUDE_THREAD_ID));
+		outputConfig.setIncludesRowQuery(configurationSupport.fetchBooleanOption("output_row_query", properties, DEFAULT_INCLUDE_ROW_QUERY));
+		outputConfig.setOutputDDL(configurationSupport.fetchBooleanOption("output_ddl", properties, DEFAULT_OUTPUT_DDL));
+		String encryptionMode = configurationSupport.fetchOption("encrypt", properties, DEFAULT_ENCRYPTION_MODE);
 		switch (encryptionMode) {
 			case "none":
 				outputConfig.setEncryptionMode(EncryptionMode.ENCRYPT_NONE);
@@ -148,10 +148,10 @@ public class MaxwellConfigFactory {
 		}
 
 		if (outputConfig.isEncryptionEnabled()) {
-			outputConfig.setSecretKey(configurationSupport.fetchOption(CONFIGURATION_OPTION_SECRET_KEY, properties, null));
+			outputConfig.setSecretKey(configurationSupport.fetchOption("secret_key", properties, null));
 		}
 
-		String excludeColumns = configurationSupport.fetchOption(CONFIGURATION_OPTION_EXCLUDE_COLUMNS, properties, null);
+		String excludeColumns = configurationSupport.fetchOption("exclude_columns", properties, null);
 		if (excludeColumns != null) {
 			for (String s : excludeColumns.split(",")) {
 				try {

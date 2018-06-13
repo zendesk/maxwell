@@ -1,56 +1,145 @@
 package com.zendesk.maxwell.core.config;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public interface MaxwellOutputConfig {
-	String CONFIGURATION_OPTION_OUTPUT_BINLOG_POSITION = "output_binlog_position";
-	String CONFIGURATION_OPTION_OUTPUT_GTID_POSITION = "output_gtid_position";
-	String CONFIGURATION_OPTION_OUTPUT_COMMIT_INFO = "output_commit_info";
-	String CONFIGURATION_OPTION_OUTPUT_XOFFSET = "output_xoffset";
-	String CONFIGURATION_OPTION_OUTPUT_NULLS = "output_nulls";
-	String CONFIGURATION_OPTION_OUTPUT_SERVER_ID = "output_server_id";
-	String CONFIGURATION_OPTION_OUTPUT_THREAD_ID = "output_thread_id";
-	String CONFIGURATION_OPTION_OUTPUT_ROW_QUERY = "output_row_query";
-	String CONFIGURATION_OPTION_OUTPUT_DDL = "output_ddl";
-	String CONFIGURATION_OPTION_ENCRYPT = "encrypt";
-	String CONFIGURATION_OPTION_SECRET_KEY = "secret_key";
-	String CONFIGURATION_OPTION_EXCLUDE_COLUMNS = "exclude_columns";
+public class MaxwellOutputConfig {
+	public static final boolean DEFAULT_INCLUDE_BINLOG_POSITION = false;
+	public static final boolean DEFAULT_INCLUDE_GTID_POSITION = false;
+	public static final boolean DEFAULT_INCLUDE_COMMIT_INFO = true;
+	public static final boolean DEFAULT_INCLUDE_XOFFSET = true;
+	public static final boolean DEFAULT_INCLUDE_NULLS = true;
+	public static final boolean DEFAULT_INCLUDE_SERVER_ID = false;
+	public static final boolean DEFAULT_INCLUDE_THREAD_ID = false;
+	public static final boolean DEFAULT_INCLUDE_ROW_QUERY = false;
+	public static final boolean DEFAULT_OUTPUT_DDL = false;
+	public static final String DEFAULT_ENCRYPTION_MODE = "none";
 
-	boolean DEFAULT_INCLUDE_BINLOG_POSITION = false;
-	boolean DEFAULT_INCLUDE_GTID_POSITION = false;
-	boolean DEFAULT_INCLUDE_COMMIT_INFO = true;
-	boolean DEFAULT_INCLUDE_XOFFSET = true;
-	boolean DEFAULT_INCLUDE_NULLS = true;
-	boolean DEFAULT_INCLUDE_SERVER_ID = false;
-	boolean DEFAULT_INCLUDE_THREAD_ID = false;
-	boolean DEFAULT_INCLUDE_ROW_QUERY = false;
-	boolean DEFAULT_OUTPUT_DDL = false;
-	String DEFAULT_ENCRYPTION_MODE = "none";
+	private boolean includesBinlogPosition;
+	private boolean includesGtidPosition;
+	private boolean includesCommitInfo;
+	private boolean includesXOffset;
+	private boolean includesNulls;
+	private boolean includesServerId;
+	private boolean includesThreadId;
+	private boolean includesRowQuery;
+	private boolean outputDDL;
+	private List<Pattern> excludeColumns;
+	private EncryptionMode encryptionMode;
+	private String secretKey;
 
-	boolean isEncryptionEnabled();
+	public MaxwellOutputConfig() {
+		includesBinlogPosition = DEFAULT_INCLUDE_BINLOG_POSITION;
+		includesGtidPosition = DEFAULT_INCLUDE_GTID_POSITION;
+		includesCommitInfo = DEFAULT_INCLUDE_COMMIT_INFO;
+		includesXOffset = DEFAULT_INCLUDE_XOFFSET;
+		includesNulls = DEFAULT_INCLUDE_NULLS;
+		includesServerId = DEFAULT_INCLUDE_SERVER_ID;
+		includesThreadId = DEFAULT_INCLUDE_THREAD_ID;
+		includesRowQuery = DEFAULT_INCLUDE_ROW_QUERY;
+		outputDDL = DEFAULT_OUTPUT_DDL;
+		excludeColumns = new ArrayList<>();
+		encryptionMode = EncryptionMode.ENCRYPT_NONE;
+	}
 
-	boolean isIncludesBinlogPosition();
+	public boolean isEncryptionEnabled() {
+		return getEncryptionMode() != EncryptionMode.ENCRYPT_NONE;
+	}
 
-	boolean isIncludesGtidPosition();
+	public boolean isIncludesBinlogPosition() {
+		return includesBinlogPosition;
+	}
 
-	boolean isIncludesCommitInfo();
+	public void setIncludesBinlogPosition(boolean includesBinlogPosition) {
+		this.includesBinlogPosition = includesBinlogPosition;
+	}
 
-	boolean isIncludesXOffset();
+	public boolean isIncludesGtidPosition() {
+		return includesGtidPosition;
+	}
 
-	boolean isIncludesNulls();
+	public void setIncludesGtidPosition(boolean includesGtidPosition) {
+		this.includesGtidPosition = includesGtidPosition;
+	}
 
-	boolean isIncludesServerId();
+	public boolean isIncludesCommitInfo() {
+		return includesCommitInfo;
+	}
 
-	boolean isIncludesThreadId();
+	public void setIncludesCommitInfo(boolean includesCommitInfo) {
+		this.includesCommitInfo = includesCommitInfo;
+	}
 
-	boolean isIncludesRowQuery();
+	public boolean isIncludesXOffset() {
+		return includesXOffset;
+	}
 
-	boolean isOutputDDL();
+	public void setIncludesXOffset(boolean includesXOffset) {
+		this.includesXOffset = includesXOffset;
+	}
 
-	List<Pattern> getExcludeColumns();
+	public boolean isIncludesNulls() {
+		return includesNulls;
+	}
 
-	EncryptionMode getEncryptionMode();
+	public void setIncludesNulls(boolean includesNulls) {
+		this.includesNulls = includesNulls;
+	}
 
-	String getSecretKey();
+	public boolean isIncludesServerId() {
+		return includesServerId;
+	}
+
+	public void setIncludesServerId(boolean includesServerId) {
+		this.includesServerId = includesServerId;
+	}
+
+	public boolean isIncludesThreadId() {
+		return includesThreadId;
+	}
+
+	public void setIncludesThreadId(boolean includesThreadId) {
+		this.includesThreadId = includesThreadId;
+	}
+
+	public boolean isIncludesRowQuery() {
+		return includesRowQuery;
+	}
+
+	public void setIncludesRowQuery(boolean includesRowQuery) {
+		this.includesRowQuery = includesRowQuery;
+	}
+
+	public boolean isOutputDDL() {
+		return outputDDL;
+	}
+
+	public void setOutputDDL(boolean outputDDL) {
+		this.outputDDL = outputDDL;
+	}
+
+	public List<Pattern> getExcludeColumns() {
+		return excludeColumns;
+	}
+
+	public void setExcludeColumns(List<Pattern> excludeColumns) {
+		this.excludeColumns = excludeColumns;
+	}
+
+	public EncryptionMode getEncryptionMode() {
+		return encryptionMode;
+	}
+
+	public void setEncryptionMode(EncryptionMode encryptionMode) {
+		this.encryptionMode = encryptionMode;
+	}
+
+	public String getSecretKey() {
+		return secretKey;
+	}
+
+	public void setSecretKey(String secretKey) {
+		this.secretKey = secretKey;
+	}
 }

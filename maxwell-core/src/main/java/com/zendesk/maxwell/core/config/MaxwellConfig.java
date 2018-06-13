@@ -92,7 +92,7 @@ public class MaxwellConfig {
 
 		this.setMasterRecovery(false);
 		this.setFilter(new MaxwellFilter());
-		this.setOutputConfig(new BaseMaxwellOutputConfig());
+		this.setOutputConfig(new MaxwellOutputConfig());
 	}
 
 	public void validate() {
@@ -286,7 +286,7 @@ public class MaxwellConfig {
 	}
 
 	public MaxwellOutputConfig getOutputConfig() {
-		return outputConfig != null ? outputConfig : new BaseMaxwellOutputConfig();
+		return outputConfig != null ? outputConfig : new MaxwellOutputConfig();
 	}
 
 	public void setOutputConfig(MaxwellOutputConfig outputConfig) {

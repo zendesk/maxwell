@@ -6,7 +6,6 @@ import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.schema.SchemaStoreSchema;
 import com.zendesk.maxwell.core.*;
-import com.zendesk.maxwell.core.config.MaxwellMysqlConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.row.HeartbeatRowMap;
 import com.zendesk.maxwell.core.schema.*;
@@ -70,11 +69,11 @@ public class RecoveryTest extends TestWithNameLogging {
 
 	private MaxwellConfig getConfig(int port, boolean masterRecovery){
 		MaxwellConfig config = maxwellConfigFactory.create();
-		((MaxwellMysqlConfig)config.getMaxwellMysql()).setHost("localhost");
-		((MaxwellMysqlConfig)config.getMaxwellMysql()).setPort(port);
-		((MaxwellMysqlConfig)config.getMaxwellMysql()).setUser("maxwell");
-		((MaxwellMysqlConfig)config.getMaxwellMysql()).setPassword("maxwell");
-		((MaxwellMysqlConfig)config.getMaxwellMysql()).setSslMode(SSLMode.DISABLED);
+		config.getMaxwellMysql().setHost("localhost");
+		config.getMaxwellMysql().setPort(port);
+		config.getMaxwellMysql().setUser("maxwell");
+		config.getMaxwellMysql().setPassword("maxwell");
+		config.getMaxwellMysql().setSslMode(SSLMode.DISABLED);
 		config.setMasterRecovery(masterRecovery);
 		config.validate();
 		return config;
