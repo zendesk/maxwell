@@ -1,6 +1,5 @@
 package com.zendesk.maxwell.core.producer;
 
-import com.zendesk.maxwell.api.producer.ProducerConfigurator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

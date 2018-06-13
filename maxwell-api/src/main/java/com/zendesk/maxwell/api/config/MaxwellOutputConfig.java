@@ -1,7 +1,5 @@
 package com.zendesk.maxwell.api.config;
 
-import com.zendesk.maxwell.api.producer.EncryptionMode;
-
 import java.util.List;
 import java.util.regex.Pattern;
 

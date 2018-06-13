@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.producer.impl.buffered;
 
-import com.zendesk.maxwell.api.producer.ProducerConfiguration;
+import com.zendesk.maxwell.core.producer.ProducerConfiguration;
 
 public class BufferedProducerConfiguration implements ProducerConfiguration {
 	public static final int DEFAULT_BUFFER_SIZE = 200;

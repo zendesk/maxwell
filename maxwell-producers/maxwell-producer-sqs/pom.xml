@@ -19,6 +19,10 @@
             <artifactId>maxwell-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>com.zendesk</groupId>
+            <artifactId>maxwell-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-core</artifactId>
         </dependency>

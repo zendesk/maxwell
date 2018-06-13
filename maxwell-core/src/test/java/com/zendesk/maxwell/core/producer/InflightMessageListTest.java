@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.api.producer;
+package com.zendesk.maxwell.core.producer;
 
 import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.config.MaxwellConfig;

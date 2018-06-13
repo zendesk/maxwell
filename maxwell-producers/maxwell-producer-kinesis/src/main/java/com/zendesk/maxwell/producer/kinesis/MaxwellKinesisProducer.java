@@ -13,7 +13,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.api.row.RowMap;
-import com.zendesk.maxwell.api.producer.AbstractAsyncProducer;
+import com.zendesk.maxwell.core.producer.AbstractAsyncProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

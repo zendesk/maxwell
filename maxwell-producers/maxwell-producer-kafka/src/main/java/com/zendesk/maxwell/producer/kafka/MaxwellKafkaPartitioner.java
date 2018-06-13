@@ -1,10 +1,10 @@
 package com.zendesk.maxwell.producer.kafka;
 
 import com.zendesk.maxwell.api.row.RowMap;
-import com.zendesk.maxwell.api.producer.partitioners.AbstractMaxwellPartitioner;
-import com.zendesk.maxwell.api.producer.partitioners.HashFunction;
-import com.zendesk.maxwell.api.producer.partitioners.HashFunctionDefault;
-import com.zendesk.maxwell.api.producer.partitioners.HashFunctionMurmur3;
+import com.zendesk.maxwell.core.producer.partitioners.AbstractMaxwellPartitioner;
+import com.zendesk.maxwell.core.producer.partitioners.HashFunction;
+import com.zendesk.maxwell.core.producer.partitioners.HashFunctionDefault;
+import com.zendesk.maxwell.core.producer.partitioners.HashFunctionMurmur3;
 
 public class MaxwellKafkaPartitioner extends AbstractMaxwellPartitioner {
 	HashFunction hashFunc;

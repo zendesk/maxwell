@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.api.producer;
+package com.zendesk.maxwell.core.producer;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;

@@ -2,7 +2,7 @@ package com.zendesk.maxwell.producer.kafka;
 
 import com.zendesk.maxwell.api.config.InvalidOptionException;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
-import com.zendesk.maxwell.api.producer.ProducerConfiguration;
+import com.zendesk.maxwell.core.producer.ProducerConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

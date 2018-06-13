@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.api.producer;
+package com.zendesk.maxwell.api.config;
 
 public enum EncryptionMode {
 	ENCRYPT_NONE,

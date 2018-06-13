@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.producer.kinesis;
 
 import com.zendesk.maxwell.api.config.InvalidOptionException;
-import com.zendesk.maxwell.api.producer.ProducerConfiguration;
+import com.zendesk.maxwell.core.producer.ProducerConfiguration;
 
 public class KinesisProducerConfiguration implements ProducerConfiguration {
 	private final String kinesisStream;

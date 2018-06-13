@@ -2,7 +2,7 @@ package com.zendesk.maxwell.standalone.config;
 
 import com.zendesk.maxwell.api.config.CommandLineOptionParserContext;
 import com.zendesk.maxwell.metricreporter.core.MetricReporterConfigurator;
-import com.zendesk.maxwell.api.producer.ProducerConfigurator;
+import com.zendesk.maxwell.core.producer.ProducerConfigurator;
 import com.zendesk.maxwell.standalone.SpringLauncher;
 import joptsimple.BuiltinHelpFormatter;
 import joptsimple.OptionDescriptor;

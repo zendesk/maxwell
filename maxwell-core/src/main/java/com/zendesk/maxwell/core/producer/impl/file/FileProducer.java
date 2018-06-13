@@ -2,7 +2,7 @@ package com.zendesk.maxwell.core.producer.impl.file;
 
 import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.row.RowMap;
-import com.zendesk.maxwell.api.producer.AbstractProducer;
+import com.zendesk.maxwell.core.producer.AbstractProducer;
 
 import java.io.File;
 import java.io.FileWriter;

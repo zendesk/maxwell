@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.api.producer.partitioners;
+package com.zendesk.maxwell.core.producer.partitioners;
 
 public enum PartitionBy {
 	DATABASE,

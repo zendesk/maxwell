@@ -2,8 +2,8 @@ package com.zendesk.maxwell.core.producer.impl.buffered;
 
 import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.producer.Producer;
-import com.zendesk.maxwell.api.producer.ProducerConfiguration;
-import com.zendesk.maxwell.api.producer.ProducerConfigurator;
+import com.zendesk.maxwell.core.producer.ProducerConfiguration;
+import com.zendesk.maxwell.core.producer.ProducerConfigurator;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;

@@ -1,7 +1,6 @@
 package com.zendesk.maxwell.core.producer;
 
 import com.zendesk.maxwell.api.MaxwellContext;
-import com.zendesk.maxwell.api.producer.AbstractProducer;
 import com.zendesk.maxwell.api.row.RowMap;
 
 import java.io.File;

@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.core.config;
 
 import com.zendesk.maxwell.api.config.*;
-import com.zendesk.maxwell.api.producer.EncryptionMode;
+import com.zendesk.maxwell.api.config.EncryptionMode;
 import com.zendesk.maxwell.api.replication.BinlogPosition;
 import com.zendesk.maxwell.api.replication.Position;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -3,6 +3,9 @@ package com.zendesk.maxwell.core.producer.impl.file;
 import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.config.ConfigurationSupport;
 import com.zendesk.maxwell.api.producer.*;
+import com.zendesk.maxwell.core.producer.ProducerConfiguration;
+import com.zendesk.maxwell.core.producer.ProducerConfigurator;
+import com.zendesk.maxwell.core.producer.ProducerInstantiationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
