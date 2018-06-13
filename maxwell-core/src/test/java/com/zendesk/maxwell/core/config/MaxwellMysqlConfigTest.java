@@ -14,7 +14,7 @@ public class MaxwellMysqlConfigTest {
 	@Test
 	public void testBasicUri() {
 
-		BaseMaxwellMysqlConfig config = new BaseMaxwellMysqlConfig();
+		MaxwellMysqlConfig config = new MaxwellMysqlConfig();
 
 		config.setHost("localhost");
 		config.setPort(3306);
@@ -37,7 +37,7 @@ public class MaxwellMysqlConfigTest {
 	@Test
 	public void testSSLPreferred() {
 
-		BaseMaxwellMysqlConfig config = new BaseMaxwellMysqlConfig();
+		MaxwellMysqlConfig config = new MaxwellMysqlConfig();
 
 		config.setHost("localhost");
 		config.setPort(3306);
@@ -61,7 +61,7 @@ public class MaxwellMysqlConfigTest {
 	@Test
 	public void testSSLRequired() {
 
-		BaseMaxwellMysqlConfig config = new BaseMaxwellMysqlConfig();
+		MaxwellMysqlConfig config = new MaxwellMysqlConfig();
 
 		config.setHost("localhost");
 		config.setPort(3306);
@@ -85,7 +85,7 @@ public class MaxwellMysqlConfigTest {
 	@Test
 	public void testSSLVerifyCA() {
 
-		BaseMaxwellMysqlConfig config = new BaseMaxwellMysqlConfig();
+		MaxwellMysqlConfig config = new MaxwellMysqlConfig();
 
 		config.setHost("localhost");
 		config.setPort(3306);
@@ -109,7 +109,7 @@ public class MaxwellMysqlConfigTest {
 	@Test
 	public void testSSLVerifyId() {
 
-		BaseMaxwellMysqlConfig config = new BaseMaxwellMysqlConfig();
+		MaxwellMysqlConfig config = new MaxwellMysqlConfig();
 
 		config.setHost("localhost");
 		config.setPort(3306);

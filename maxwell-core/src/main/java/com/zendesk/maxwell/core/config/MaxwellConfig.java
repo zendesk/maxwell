@@ -32,9 +32,9 @@ public class MaxwellConfig {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfig.class);
 
-	private BaseMaxwellMysqlConfig replicationMysql;
-	private BaseMaxwellMysqlConfig schemaMysql;
-	private BaseMaxwellMysqlConfig maxwellMysql;
+	private MaxwellMysqlConfig replicationMysql;
+	private MaxwellMysqlConfig schemaMysql;
+	private MaxwellMysqlConfig maxwellMysql;
 	private MaxwellFilter filter;
 	private Boolean gtidMode;
 	private String databaseName;
@@ -68,9 +68,9 @@ public class MaxwellConfig {
 	private boolean masterRecovery;
 
 	public MaxwellConfig() {
-		this.setReplicationMysql(new BaseMaxwellMysqlConfig());
-		this.setMaxwellMysql(new BaseMaxwellMysqlConfig());
-		this.setSchemaMysql(new BaseMaxwellMysqlConfig());
+		this.setReplicationMysql(new MaxwellMysqlConfig());
+		this.setMaxwellMysql(new MaxwellMysqlConfig());
+		this.setSchemaMysql(new MaxwellMysqlConfig());
 		this.setGtidMode(System.getenv(GTID_MODE_ENV) != null);
 
 		this.setDatabaseName(DEFAULT_DATABASE_NAME);
@@ -116,7 +116,7 @@ public class MaxwellConfig {
 				throw new InvalidOptionException("Please specify all of: replication_host, replication_user, replication_password", "--replication");
 			}
 
-			replicationMysql = new BaseMaxwellMysqlConfig(maxwellMysql.getHost(), maxwellMysql.getPort(), null, maxwellMysql.getUser(), maxwellMysql.getPassword(), maxwellMysql.getSslMode());
+			replicationMysql = new MaxwellMysqlConfig(maxwellMysql.getHost(), maxwellMysql.getPort(), null, maxwellMysql.getUser(), maxwellMysql.getPassword(), maxwellMysql.getSslMode());
 			replicationMysql.setJdbcOptions(maxwellMysql.getJdbcOptions());
 		}
 
@@ -173,7 +173,7 @@ public class MaxwellConfig {
 		return replicationMysql;
 	}
 
-	public void setReplicationMysql(BaseMaxwellMysqlConfig replicationMysql) {
+	public void setReplicationMysql(MaxwellMysqlConfig replicationMysql) {
 		this.replicationMysql = replicationMysql;
 	}
 
@@ -181,7 +181,7 @@ public class MaxwellConfig {
 		return schemaMysql;
 	}
 
-	public void setSchemaMysql(BaseMaxwellMysqlConfig schemaMysql) {
+	public void setSchemaMysql(MaxwellMysqlConfig schemaMysql) {
 		this.schemaMysql = schemaMysql;
 	}
 
@@ -189,7 +189,7 @@ public class MaxwellConfig {
 		return maxwellMysql;
 	}
 
-	public void setMaxwellMysql(BaseMaxwellMysqlConfig maxwellMysql) {
+	public void setMaxwellMysql(MaxwellMysqlConfig maxwellMysql) {
 		this.maxwellMysql = maxwellMysql;
 	}
 

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
-import com.zendesk.maxwell.core.config.MaxwellMysqlConfig;
 import com.zendesk.maxwell.core.monitoring.MaxwellDiagnosticRegistry;
 import com.zendesk.maxwell.core.MaxwellContextFactory;
 import com.zendesk.maxwell.core.MaxwellRunner;
@@ -159,11 +158,11 @@ public class DiagnosticMaxwellTest {
 
 	private MaxwellConfig buildConfiguration(){
 		Properties properties = new Properties();
-		properties.put(MaxwellMysqlConfig.CONFIGURATION_OPTION_HOST, "127.0.0.1");
-		properties.put(MaxwellMysqlConfig.CONFIGURATION_OPTION_PORT, "" + server.getPort());
-		properties.put(MaxwellMysqlConfig.CONFIGURATION_OPTION_USER, "maxwell");
-		properties.put(MaxwellMysqlConfig.CONFIGURATION_OPTION_PASSWORD, "maxwell");
-		properties.put(MaxwellMysqlConfig.CONFIGURATION_OPTION_SSL, SSLMode.DISABLED.name());
+		properties.put("host", "127.0.0.1");
+		properties.put("port", "" + server.getPort());
+		properties.put("user", "maxwell");
+		properties.put("password", "maxwell");
+		properties.put("ssl", SSLMode.DISABLED.name());
 		properties.put("schema_database", "maxwell");
 		properties.put("producer", "buffer");
 		return maxwellConfigFactory.createFor(properties);

@@ -8,8 +8,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Properties;
 
-import static com.zendesk.maxwell.core.config.MaxwellMysqlConfig.*;
-
 @Service
 public class MySqlConfigurationSupport {
 	private final ConfigurationSupport configurationSupport;
@@ -19,14 +17,14 @@ public class MySqlConfigurationSupport {
 		this.configurationSupport = configurationSupport;
 	}
 
-	public BaseMaxwellMysqlConfig parseMysqlConfig(String prefix, Properties properties) {
-		BaseMaxwellMysqlConfig config = new BaseMaxwellMysqlConfig();
-		config.setHost(configurationSupport.fetchOption(prefix + CONFIGURATION_OPTION_HOST, properties, null));
-		config.setPassword(configurationSupport.fetchOption(prefix + CONFIGURATION_OPTION_PASSWORD, properties, null));
-		config.setUser(configurationSupport.fetchOption(prefix + CONFIGURATION_OPTION_USER, properties, null));
-		config.setPort(configurationSupport.fetchIntegerOption(prefix + CONFIGURATION_OPTION_PORT, properties, MaxwellMysqlConfig.DEFAULT_MYSQL_PORT));
-		config.setSslMode(this.getSslModeFromString(configurationSupport.fetchOption(prefix + CONFIGURATION_OPTION_SSL, properties, null)));
-		config.setJDBCOptions(configurationSupport.fetchOption(prefix + CONFIGURATION_OPTION_JDBC_OPTIONS, properties, null));
+	public MaxwellMysqlConfig parseMysqlConfig(String prefix, Properties properties) {
+		MaxwellMysqlConfig config = new MaxwellMysqlConfig();
+		config.setHost(configurationSupport.fetchOption(prefix + "host", properties, null));
+		config.setPassword(configurationSupport.fetchOption(prefix + "password", properties, null));
+		config.setUser(configurationSupport.fetchOption(prefix + "user", properties, null));
+		config.setPort(configurationSupport.fetchIntegerOption(prefix + "port", properties, MaxwellMysqlConfig.DEFAULT_MYSQL_PORT));
+		config.setSslMode(this.getSslModeFromString(configurationSupport.fetchOption(prefix + "ssl", properties, null)));
+		config.setJDBCOptions(configurationSupport.fetchOption(prefix + "jdbc_options", properties, null));
 		return config;
 	}
 
@@ -37,7 +35,7 @@ public class MySqlConfigurationSupport {
 					return mode;
 				}
 			}
-			throw new InvalidOptionException("Invalid binlog SSL mode string: " + sslMode, "--" + CONFIGURATION_OPTION_SSL);
+			throw new InvalidOptionException("Invalid binlog SSL mode string: " + sslMode, "--ssl");
 		}
 		return null;
 	}

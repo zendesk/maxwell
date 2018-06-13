@@ -11,7 +11,7 @@ import com.zendesk.maxwell.core.MaxwellContextFactory;
 import com.zendesk.maxwell.core.MaxwellRunner;
 import com.zendesk.maxwell.core.util.test.mysql.MysqlIsolatedServer;
 import com.zendesk.maxwell.core.config.MaxwellConfig;
-import com.zendesk.maxwell.core.config.BaseMaxwellMysqlConfig;
+import com.zendesk.maxwell.core.config.MaxwellMysqlConfig;
 import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import com.zendesk.maxwell.core.producer.impl.buffered.BufferedProducer;
@@ -78,7 +78,7 @@ public class MaxwellTestSupport {
 
 		MaxwellConfig config = maxwellConfigFactory.create();
 
-		BaseMaxwellMysqlConfig maxwellMysql = (BaseMaxwellMysqlConfig) config.getMaxwellMysql();
+		MaxwellMysqlConfig maxwellMysql = (MaxwellMysqlConfig) config.getMaxwellMysql();
 		maxwellMysql.setUser("maxwell");
 		maxwellMysql.setPassword("maxwell");
 		maxwellMysql.setHost("localhost");

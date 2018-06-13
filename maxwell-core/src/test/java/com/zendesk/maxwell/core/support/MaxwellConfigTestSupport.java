@@ -6,7 +6,7 @@ import com.zendesk.maxwell.core.config.MaxwellFilter;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.MaxwellContextFactory;
 import com.zendesk.maxwell.core.MaxwellContext;
-import com.zendesk.maxwell.core.config.BaseMaxwellMysqlConfig;
+import com.zendesk.maxwell.core.config.MaxwellMysqlConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,14 +35,14 @@ public class MaxwellConfigTestSupport {
 	private MaxwellConfig buildConfig(int port, Position p, MaxwellFilter filter) {
 		MaxwellConfig config = maxwellConfigFactory.create();
 
-		BaseMaxwellMysqlConfig replicationMysql = (BaseMaxwellMysqlConfig) config.getReplicationMysql();
+		MaxwellMysqlConfig replicationMysql = (MaxwellMysqlConfig) config.getReplicationMysql();
 		replicationMysql.setHost("127.0.0.1");
 		replicationMysql.setPort(port);
 		replicationMysql.setUser("maxwell");
 		replicationMysql.setPassword("maxwell");
 		replicationMysql.setSslMode(SSLMode.DISABLED);
 
-		BaseMaxwellMysqlConfig maxwellMysql = (BaseMaxwellMysqlConfig) config.getMaxwellMysql();
+		MaxwellMysqlConfig maxwellMysql = (MaxwellMysqlConfig) config.getMaxwellMysql();
 		maxwellMysql.setHost("127.0.0.1");
 		maxwellMysql.setPort(port);
 		maxwellMysql.setUser("maxwell");

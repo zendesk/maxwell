@@ -11,7 +11,6 @@ import java.util.Properties;
 
 import static com.zendesk.maxwell.core.config.MaxwellConfig.*;
 import static com.zendesk.maxwell.core.config.MaxwellOutputConfig.*;
-import static com.zendesk.maxwell.core.config.MaxwellMysqlConfig.*;
 
 @Service
 public class MaxwellConfigFactory {
@@ -33,12 +32,12 @@ public class MaxwellConfigFactory {
 		config.setLogLevel(configurationSupport.fetchOption("log_level", properties, null));
 
 		config.setMaxwellMysql(mySqlConfigurationSupport.parseMysqlConfig("", properties));
-		config.setReplicationMysql(mySqlConfigurationSupport.parseMysqlConfig(CONFIGURATION_OPTION_PREFIX_REPLICATION, properties));
-		config.setSchemaMysql(mySqlConfigurationSupport.parseMysqlConfig(CONFIGURATION_OPTION_PREFIX_SCHEMA, properties));
+		config.setReplicationMysql(mySqlConfigurationSupport.parseMysqlConfig("replication_", properties));
+		config.setSchemaMysql(mySqlConfigurationSupport.parseMysqlConfig("schema_", properties));
 		config.setGtidMode(configurationSupport.fetchBooleanOption("gtid_mode", properties, System.getenv(GTID_MODE_ENV) != null));
 
 		config.setDatabaseName(configurationSupport.fetchOption("schema_database", properties, DEFAULT_DATABASE_NAME));
-		((BaseMaxwellMysqlConfig)config.getMaxwellMysql()).setDatabase(config.getDatabaseName());
+		((MaxwellMysqlConfig)config.getMaxwellMysql()).setDatabase(config.getDatabaseName());
 
 		configureProducer(properties, config);
 

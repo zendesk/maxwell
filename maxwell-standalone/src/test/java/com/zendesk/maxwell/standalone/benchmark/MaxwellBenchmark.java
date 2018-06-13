@@ -1,7 +1,6 @@
 package com.zendesk.maxwell.standalone.benchmark;
 
 import com.zendesk.maxwell.core.LauncherException;
-import com.zendesk.maxwell.core.config.MaxwellMysqlConfig;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.standalone.MaxwellStandaloneRuntime;
 import com.zendesk.maxwell.core.util.test.mysql.MysqlIsolatedServer;
@@ -104,8 +103,8 @@ public class MaxwellBenchmark {
 
 				Properties configuration = new Properties();
 				appendMySQLSetting(configuration,"", server);
-				appendMySQLSetting(configuration, MaxwellMysqlConfig.CONFIGURATION_OPTION_PREFIX_REPLICATION, server);
-				appendMySQLSetting(configuration, MaxwellMysqlConfig.CONFIGURATION_OPTION_PREFIX_SCHEMA, server);
+				appendMySQLSetting(configuration, "replication_", server);
+				appendMySQLSetting(configuration, "schema_", server);
 				configuration.put("custom_producer.factory", BenchmarkProducerFactory.class.getCanonicalName());
 
 				launcher.runMaxwell(configuration);
@@ -116,10 +115,10 @@ public class MaxwellBenchmark {
 	}
 
 	private static void appendMySQLSetting(Properties properties, String prefix, MysqlIsolatedServer server) {
-		properties.put(prefix+MaxwellMysqlConfig.CONFIGURATION_OPTION_HOST, "127.0.0.1");
-		properties.put(prefix+MaxwellMysqlConfig.CONFIGURATION_OPTION_PORT, ""+server.getPort());
-		properties.put(prefix+MaxwellMysqlConfig.CONFIGURATION_OPTION_USER, "root");
-		properties.put(prefix+MaxwellMysqlConfig.CONFIGURATION_OPTION_PASSWORD, "");
+		properties.put(prefix + "host", "127.0.0.1");
+		properties.put(prefix + "port", ""+server.getPort());
+		properties.put(prefix + "user", "root");
+		properties.put(prefix + "password", "");
 	}
 
 	private static OptionParser buildOptionParser() {
