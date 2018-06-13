@@ -2,7 +2,7 @@ package com.zendesk.maxwell.producer.partitioners;
 
 import com.zendesk.maxwell.row.RowMap;
 
-public class MaxwellKafkaPartitioner extends AbstractMaxwellPartitioner {
+public class MaxwellKafkaPartitioner extends AbstractMaxwellKafkaPartitioner {
 	HashFunction hashFunc;
 
 	public MaxwellKafkaPartitioner(String hashFunction, String partitionKey, String csvPartitionColumns, String partitionKeyFallback) {
@@ -19,6 +19,7 @@ public class MaxwellKafkaPartitioner extends AbstractMaxwellPartitioner {
 		}
 	}
 
+	@Override
 	public int kafkaPartition(RowMap r, int numPartitions) {
 		return Math.abs(hashFunc.hashCode(this.getHashString(r)) % numPartitions);
 	}

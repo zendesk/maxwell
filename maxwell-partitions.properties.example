@@ -1,0 +1,4 @@
+#database name to partition mapping
+db1=1
+db2=2
+db3=3
