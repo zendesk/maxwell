@@ -102,7 +102,7 @@ public abstract class MaxwellTestWithIsolatedServer extends TestWithNameLogging 
 
 	protected List<RowMap> getRowsForDDLTransaction(String[] sql, MaxwellFilter filter) throws Exception {
 		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
-		outputConfig.setOutputDDL(true);
+		outputConfig.outputDDL = true;
 		return getRowsForSQLTransactional(sql, filter, outputConfig);
 	}
 

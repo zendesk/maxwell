@@ -281,13 +281,13 @@ public class RowMapTest {
 	private MaxwellOutputConfig getMaxwellOutputConfig(Pattern... patterns) {
 		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
 
-		outputConfig.setIncludesBinlogPosition(true);
-		outputConfig.setIncludesCommitInfo(true);
-		outputConfig.setIncludesGtidPosition(true);
-		outputConfig.setIncludesServerId(true);
-		outputConfig.setIncludesThreadId(true);
-		outputConfig.setIncludesNulls(true);
-		outputConfig.setExcludeColumns(Arrays.asList(patterns));
+		outputConfig.includesBinlogPosition = true;
+		outputConfig.includesCommitInfo = true;
+		outputConfig.includesGtidPosition = true;
+		outputConfig.includesServerId = true;
+		outputConfig.includesThreadId = true;
+		outputConfig.includesNulls = true;
+		outputConfig.excludeColumns = Arrays.asList(patterns);
 
 		return outputConfig;
 	}

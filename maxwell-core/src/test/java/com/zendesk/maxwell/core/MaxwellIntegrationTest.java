@@ -32,15 +32,15 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testEncryptedData() throws Exception{
 		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
-		outputConfig.setEncryptionMode(EncryptionMode.ENCRYPT_DATA);
-		outputConfig.setSecretKey("aaaaaaaaaaaaaaaa");
+		outputConfig.encryptionMode = EncryptionMode.ENCRYPT_DATA;
+		outputConfig.secretKey = "aaaaaaaaaaaaaaaa";
 		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
 		list = getRowsForSQL(input);
 		String json = list.get(0).toJSON(outputConfig);
 
 		Map<String,Object> output = maxwellTestJSON.parseJSON(json);
-		Map<String, Object> decrypted = maxwellTestJSON.parseEncryptedJSON(output, outputConfig.getSecretKey());
+		Map<String, Object> decrypted = maxwellTestJSON.parseEncryptedJSON(output, outputConfig.secretKey);
 
 		assertTrue(output.get("database").equals("shard_1"));
 		assertTrue(output.get("table").equals("minimal"));
@@ -55,15 +55,15 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testEncryptedAll() throws Exception{
 		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
-		outputConfig.setEncryptionMode(EncryptionMode.ENCRYPT_ALL);
-		outputConfig.setSecretKey("aaaaaaaaaaaaaaaa");
+		outputConfig.encryptionMode = EncryptionMode.ENCRYPT_ALL;
+		outputConfig.secretKey = "aaaaaaaaaaaaaaaa";
 		List<RowMap> list;
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
 		list = getRowsForSQL(input);
 		String json = list.get(0).toJSON(outputConfig);
 
 		Map<String,Object> output = maxwellTestJSON.parseJSON(json);
-		Map<String, Object> decrypted = maxwellTestJSON.parseEncryptedJSON(output, outputConfig.getSecretKey());
+		Map<String, Object> decrypted = maxwellTestJSON.parseEncryptedJSON(output, outputConfig.secretKey);
 
 		assertArrayEquals(output.keySet().toArray(), new String[]{ "encrypted" });
 
@@ -132,9 +132,9 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
 		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
 
-		outputConfig.setIncludesCommitInfo(true);
-		outputConfig.setIncludesBinlogPosition(true);
-		outputConfig.setIncludesGtidPosition(true);
+		outputConfig.includesCommitInfo = true;
+		outputConfig.includesBinlogPosition = true;
+		outputConfig.includesGtidPosition = true;
 
 		list = getRowsForSQL(input);
 		String json = list.get(0).toJSON(outputConfig);
@@ -165,7 +165,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
 		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
 
-		outputConfig.setIncludesServerId(true);
+		outputConfig.includesServerId = true;
 
 		list = getRowsForSQL(input);
 		String json = list.get(0).toJSON(outputConfig);
@@ -184,7 +184,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String input[] = {"insert into minimal set account_id =1, text_field='hello'"};
 		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
 
-		outputConfig.setIncludesThreadId(true);
+		outputConfig.includesThreadId = true;
 
 		list = getRowsForSQL(input);
 		String json = list.get(0).toJSON(outputConfig);
@@ -272,7 +272,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		assertTrue(Pattern.compile("\"account_id\":2").matcher(json).find());
 
 		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
-		outputConfig.getExcludeColumns().add(Pattern.compile("id"));
+		outputConfig.excludeColumns.add(Pattern.compile("id"));
 
 		list = getRowsForSQL(filter, insertSQL, createDBs);
 		json = list.get(1).toJSON(outputConfig);
@@ -601,7 +601,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	public void testRowQueryLogEventsIsOn() throws Exception {
 		requireMinimumVersion(MysqlIsolatedServer.VERSION_5_6);
 		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
-		outputConfig.setIncludesRowQuery(true);
+		outputConfig.includesRowQuery = true;
 
 		runJSON("json/test_row_query_log_is_on", outputConfig);
 	}

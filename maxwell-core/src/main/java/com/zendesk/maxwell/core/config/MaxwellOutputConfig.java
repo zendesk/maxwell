@@ -16,18 +16,18 @@ public class MaxwellOutputConfig {
 	public static final boolean DEFAULT_OUTPUT_DDL = false;
 	public static final String DEFAULT_ENCRYPTION_MODE = "none";
 
-	private boolean includesBinlogPosition;
-	private boolean includesGtidPosition;
-	private boolean includesCommitInfo;
-	private boolean includesXOffset;
-	private boolean includesNulls;
-	private boolean includesServerId;
-	private boolean includesThreadId;
-	private boolean includesRowQuery;
-	private boolean outputDDL;
-	private List<Pattern> excludeColumns;
-	private EncryptionMode encryptionMode;
-	private String secretKey;
+	public boolean includesBinlogPosition;
+	public boolean includesGtidPosition;
+	public boolean includesCommitInfo;
+	public boolean includesXOffset;
+	public boolean includesNulls;
+	public boolean includesServerId;
+	public boolean includesThreadId;
+	public boolean includesRowQuery;
+	public boolean outputDDL;
+	public List<Pattern> excludeColumns;
+	public EncryptionMode encryptionMode;
+	public String secretKey;
 
 	public MaxwellOutputConfig() {
 		includesBinlogPosition = DEFAULT_INCLUDE_BINLOG_POSITION;
@@ -44,102 +44,7 @@ public class MaxwellOutputConfig {
 	}
 
 	public boolean isEncryptionEnabled() {
-		return getEncryptionMode() != EncryptionMode.ENCRYPT_NONE;
+		return encryptionMode != EncryptionMode.ENCRYPT_NONE;
 	}
 
-	public boolean isIncludesBinlogPosition() {
-		return includesBinlogPosition;
-	}
-
-	public void setIncludesBinlogPosition(boolean includesBinlogPosition) {
-		this.includesBinlogPosition = includesBinlogPosition;
-	}
-
-	public boolean isIncludesGtidPosition() {
-		return includesGtidPosition;
-	}
-
-	public void setIncludesGtidPosition(boolean includesGtidPosition) {
-		this.includesGtidPosition = includesGtidPosition;
-	}
-
-	public boolean isIncludesCommitInfo() {
-		return includesCommitInfo;
-	}
-
-	public void setIncludesCommitInfo(boolean includesCommitInfo) {
-		this.includesCommitInfo = includesCommitInfo;
-	}
-
-	public boolean isIncludesXOffset() {
-		return includesXOffset;
-	}
-
-	public void setIncludesXOffset(boolean includesXOffset) {
-		this.includesXOffset = includesXOffset;
-	}
-
-	public boolean isIncludesNulls() {
-		return includesNulls;
-	}
-
-	public void setIncludesNulls(boolean includesNulls) {
-		this.includesNulls = includesNulls;
-	}
-
-	public boolean isIncludesServerId() {
-		return includesServerId;
-	}
-
-	public void setIncludesServerId(boolean includesServerId) {
-		this.includesServerId = includesServerId;
-	}
-
-	public boolean isIncludesThreadId() {
-		return includesThreadId;
-	}
-
-	public void setIncludesThreadId(boolean includesThreadId) {
-		this.includesThreadId = includesThreadId;
-	}
-
-	public boolean isIncludesRowQuery() {
-		return includesRowQuery;
-	}
-
-	public void setIncludesRowQuery(boolean includesRowQuery) {
-		this.includesRowQuery = includesRowQuery;
-	}
-
-	public boolean isOutputDDL() {
-		return outputDDL;
-	}
-
-	public void setOutputDDL(boolean outputDDL) {
-		this.outputDDL = outputDDL;
-	}
-
-	public List<Pattern> getExcludeColumns() {
-		return excludeColumns;
-	}
-
-	public void setExcludeColumns(List<Pattern> excludeColumns) {
-		this.excludeColumns = excludeColumns;
-	}
-
-	public EncryptionMode getEncryptionMode() {
-		return encryptionMode;
-	}
-
-	public void setEncryptionMode(EncryptionMode encryptionMode) {
-		this.encryptionMode = encryptionMode;
-	}
-
-	public String getSecretKey() {
-		return secretKey;
-	}
-
-	public void setSecretKey(String secretKey) {
-		this.secretKey = secretKey;
-	}
 }

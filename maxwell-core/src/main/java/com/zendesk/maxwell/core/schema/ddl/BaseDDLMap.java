@@ -44,7 +44,7 @@ public class BaseDDLMap extends BaseRowMap implements DDLMap {
 	@Override
 	public String toJSON(MaxwellOutputConfig outputConfig) throws IOException {
 
-		if(!outputConfig.isOutputDDL())
+		if(!outputConfig.outputDDL)
 		return null;
 
 		ObjectMapper mapper = new ObjectMapper();
@@ -53,10 +53,10 @@ public class BaseDDLMap extends BaseRowMap implements DDLMap {
 		changeMixin.put("ts", timestamp);
 		changeMixin.put("sql", sql);
 		BinlogPosition binlogPosition = nextPosition.getBinlogPosition();
-		if (outputConfig.isIncludesBinlogPosition()) {
+		if (outputConfig.includesBinlogPosition) {
 			changeMixin.put("position", binlogPosition.getFile() + ":" + binlogPosition.getOffset());
 		}
-		if (outputConfig.isIncludesGtidPosition()) {
+		if (outputConfig.includesGtidPosition) {
 			changeMixin.put("gtid", binlogPosition.getGtid());
 		}
 		return mapper.writeValueAsString(changeMixin);
@@ -64,7 +64,7 @@ public class BaseDDLMap extends BaseRowMap implements DDLMap {
 
 	@Override
 	public boolean shouldOutput(MaxwellOutputConfig outputConfig) {
-		return outputConfig.isOutputDDL();
+		return outputConfig.outputDDL;
 	}
 
 	@Override

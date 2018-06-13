@@ -128,7 +128,7 @@ public class MaxwellConfig {
 			throw new InvalidOptionException("There is no need to perform master_recovery under gtid_mode", "--gtid_mode");
 		}
 
-		if (getOutputConfig().isIncludesGtidPosition() && !getGtidMode()) {
+		if (outputConfig != null && outputConfig.includesGtidPosition && !gtidMode) {
 			throw new InvalidOptionException("output_gtid_position is only support with gtid mode.", "--output_gtid_position");
 		}
 
@@ -146,7 +146,7 @@ public class MaxwellConfig {
 			schemaMysql.setSslMode(maxwellMysql.getSslMode());
 		}
 
-		if (getOutputConfig().isEncryptionEnabled() && getOutputConfig().getSecretKey() == null)
+		if (outputConfig.isEncryptionEnabled() && outputConfig.secretKey == null)
 			throw new InvalidUsageException("--secret_key required");
 
 		if (!maxwellMysql.isSameServerAs(replicationMysql) && !bootstrapperType.equals("none")) {

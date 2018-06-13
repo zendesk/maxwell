@@ -17,7 +17,7 @@ import static org.junit.Assert.assertTrue;
 public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	private MaxwellOutputConfig ddlOutputConfig() {
 		MaxwellOutputConfig config = new MaxwellOutputConfig();
-		config.setOutputDDL(true);
+		config.outputDDL = true;
 		return config;
 	}
 

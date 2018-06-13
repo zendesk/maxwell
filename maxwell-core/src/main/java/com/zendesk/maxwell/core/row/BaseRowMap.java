@@ -259,18 +259,18 @@ public class BaseRowMap implements Serializable, RowMap {
 		g.writeStringField(FieldNames.DATABASE, this.database);
 		g.writeStringField(FieldNames.TABLE, this.table);
 
-		if ( outputConfig.isIncludesRowQuery() && this.rowQuery != null) {
+		if ( outputConfig.includesRowQuery && this.rowQuery != null) {
 			g.writeStringField(FieldNames.QUERY, this.rowQuery);
 		}
 
 		g.writeStringField(FieldNames.TYPE, this.rowType);
 		g.writeNumberField(FieldNames.TIMESTAMP, this.timestampSeconds);
 
-		if (outputConfig.isIncludesCommitInfo()) {
+		if (outputConfig.includesCommitInfo) {
 			if ( this.xid != null )
 				g.writeNumberField(FieldNames.TRANSACTION_ID, this.xid);
 
-			if ( outputConfig.isIncludesXOffset() && this.xoffset != null && !this.txCommit )
+			if ( outputConfig.includesXOffset && this.xoffset != null && !this.txCommit )
 				g.writeNumberField(FieldNames.TRANSACTION_OFFSET, this.xoffset);
 
 			if ( this.txCommit )
@@ -278,18 +278,18 @@ public class BaseRowMap implements Serializable, RowMap {
 		}
 
 		BinlogPosition binlogPosition = this.nextPosition.getBinlogPosition();
-		if (outputConfig.isIncludesBinlogPosition())
+		if (outputConfig.includesBinlogPosition)
 			g.writeStringField(FieldNames.POSITION, binlogPosition.getFile() + ":" + binlogPosition.getOffset());
 
 
-		if (outputConfig.isIncludesGtidPosition())
+		if (outputConfig.includesGtidPosition)
 			g.writeStringField(FieldNames.GTID, binlogPosition.getGtid());
 
-		if ( outputConfig.isIncludesServerId() && this.serverId != null ) {
+		if ( outputConfig.includesServerId && this.serverId != null ) {
 			g.writeNumberField(FieldNames.SERVER_ID, this.serverId);
 		}
 
-		if ( outputConfig.isIncludesThreadId() && this.threadId != null ) {
+		if ( outputConfig.includesThreadId && this.threadId != null ) {
 			g.writeNumberField(FieldNames.THREAD_ID, this.threadId);
 		}
 
@@ -297,13 +297,13 @@ public class BaseRowMap implements Serializable, RowMap {
 			g.writeObjectField(entry.getKey(), entry.getValue());
 		}
 
-		if ( outputConfig.getExcludeColumns().size() > 0 ) {
+		if ( outputConfig.excludeColumns.size() > 0 ) {
 			// NOTE: to avoid concurrent modification.
 			Set<String> keys = new HashSet<>();
 			keys.addAll(this.data.keySet());
 			keys.addAll(this.oldData.keySet());
 
-			for ( Pattern p : outputConfig.getExcludeColumns()) {
+			for ( Pattern p : outputConfig.excludeColumns) {
 				for ( String key : keys ) {
 					if ( p.matcher(key).matches() ) {
 						this.data.remove(key);
@@ -316,24 +316,24 @@ public class BaseRowMap implements Serializable, RowMap {
 
 		EncryptionContext encryptionContext = null;
 		if (outputConfig.isEncryptionEnabled()) {
-			encryptionContext = EncryptionContext.create(outputConfig.getSecretKey());
+			encryptionContext = EncryptionContext.create(outputConfig.secretKey);
 		}
 
-		DataJsonGenerator dataWriter = outputConfig.getEncryptionMode() == EncryptionMode.ENCRYPT_DATA
+		DataJsonGenerator dataWriter = outputConfig.encryptionMode == EncryptionMode.ENCRYPT_DATA
 			? encryptingJsonGeneratorThreadLocal.get()
 			: plaintextDataGeneratorThreadLocal.get();
 
 		JsonGenerator dataGenerator = dataWriter.begin();
-		writeMapToJSON(FieldNames.DATA, this.data, dataGenerator, outputConfig.isIncludesNulls());
+		writeMapToJSON(FieldNames.DATA, this.data, dataGenerator, outputConfig.includesNulls);
 		if( !this.oldData.isEmpty() ){
-			writeMapToJSON(FieldNames.OLD, this.oldData, dataGenerator, outputConfig.isIncludesNulls());
+			writeMapToJSON(FieldNames.OLD, this.oldData, dataGenerator, outputConfig.includesNulls);
 		}
 		dataWriter.end(encryptionContext);
 
 		g.writeEndObject(); // end of row
 		g.flush();
 
-		if(outputConfig.getEncryptionMode() == EncryptionMode.ENCRYPT_ALL){
+		if(outputConfig.encryptionMode == EncryptionMode.ENCRYPT_ALL){
 			String plaintext = jsonFromStream();
 			encryptingJsonGeneratorThreadLocal.get().writeEncryptedObject(plaintext, encryptionContext);
 			g.flush();

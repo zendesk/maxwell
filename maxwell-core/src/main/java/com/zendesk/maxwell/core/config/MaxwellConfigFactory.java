@@ -123,39 +123,39 @@ public class MaxwellConfigFactory {
 
 	private void configureOutputConfig(final Properties properties, final MaxwellConfig config) {
 		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
-		outputConfig.setIncludesBinlogPosition(configurationSupport.fetchBooleanOption("output_binlog_position", properties, DEFAULT_INCLUDE_BINLOG_POSITION));
-		outputConfig.setIncludesGtidPosition(configurationSupport.fetchBooleanOption("output_gtid_position", properties, DEFAULT_INCLUDE_GTID_POSITION));
-		outputConfig.setIncludesCommitInfo(configurationSupport.fetchBooleanOption("output_commit_info", properties, DEFAULT_INCLUDE_COMMIT_INFO));
-		outputConfig.setIncludesXOffset(configurationSupport.fetchBooleanOption("output_xoffset", properties, DEFAULT_INCLUDE_XOFFSET));
-		outputConfig.setIncludesNulls(configurationSupport.fetchBooleanOption("output_nulls", properties, DEFAULT_INCLUDE_NULLS));
-		outputConfig.setIncludesServerId(configurationSupport.fetchBooleanOption("output_server_id", properties, DEFAULT_INCLUDE_SERVER_ID));
-		outputConfig.setIncludesThreadId(configurationSupport.fetchBooleanOption("output_thread_id", properties, DEFAULT_INCLUDE_THREAD_ID));
-		outputConfig.setIncludesRowQuery(configurationSupport.fetchBooleanOption("output_row_query", properties, DEFAULT_INCLUDE_ROW_QUERY));
-		outputConfig.setOutputDDL(configurationSupport.fetchBooleanOption("output_ddl", properties, DEFAULT_OUTPUT_DDL));
+		outputConfig.includesBinlogPosition = configurationSupport.fetchBooleanOption("output_binlog_position", properties, DEFAULT_INCLUDE_BINLOG_POSITION);
+		outputConfig.includesGtidPosition = configurationSupport.fetchBooleanOption("output_gtid_position", properties, DEFAULT_INCLUDE_GTID_POSITION);
+		outputConfig.includesCommitInfo = configurationSupport.fetchBooleanOption("output_commit_info", properties, DEFAULT_INCLUDE_COMMIT_INFO);
+		outputConfig.includesXOffset = configurationSupport.fetchBooleanOption("output_xoffset", properties, DEFAULT_INCLUDE_XOFFSET);
+		outputConfig.includesNulls = configurationSupport.fetchBooleanOption("output_nulls", properties, DEFAULT_INCLUDE_NULLS);
+		outputConfig.includesServerId = configurationSupport.fetchBooleanOption("output_server_id", properties, DEFAULT_INCLUDE_SERVER_ID);
+		outputConfig.includesThreadId = configurationSupport.fetchBooleanOption("output_thread_id", properties, DEFAULT_INCLUDE_THREAD_ID);
+		outputConfig.includesRowQuery = configurationSupport.fetchBooleanOption("output_row_query", properties, DEFAULT_INCLUDE_ROW_QUERY);
+		outputConfig.outputDDL = configurationSupport.fetchBooleanOption("output_ddl", properties, DEFAULT_OUTPUT_DDL);
 		String encryptionMode = configurationSupport.fetchOption("encrypt", properties, DEFAULT_ENCRYPTION_MODE);
 		switch (encryptionMode) {
 			case "none":
-				outputConfig.setEncryptionMode(EncryptionMode.ENCRYPT_NONE);
+				outputConfig.encryptionMode = EncryptionMode.ENCRYPT_NONE;
 				break;
 			case "data":
-				outputConfig.setEncryptionMode(EncryptionMode.ENCRYPT_DATA);
+				outputConfig.encryptionMode = EncryptionMode.ENCRYPT_DATA;
 				break;
 			case "all":
-				outputConfig.setEncryptionMode(EncryptionMode.ENCRYPT_ALL);
+				outputConfig.encryptionMode = EncryptionMode.ENCRYPT_ALL;
 				break;
 			default:
 				throw new InvalidUsageException("Unknown encryption mode: " + encryptionMode);
 		}
 
 		if (outputConfig.isEncryptionEnabled()) {
-			outputConfig.setSecretKey(configurationSupport.fetchOption("secret_key", properties, null));
+			outputConfig.secretKey = configurationSupport.fetchOption("secret_key", properties, null);
 		}
 
 		String excludeColumns = configurationSupport.fetchOption("exclude_columns", properties, null);
 		if (excludeColumns != null) {
 			for (String s : excludeColumns.split(",")) {
 				try {
-					outputConfig.getExcludeColumns().add(MaxwellFilterSupport.compileStringToPattern(s));
+					outputConfig.excludeColumns.add(MaxwellFilterSupport.compileStringToPattern(s));
 				} catch (MaxwellInvalidFilterException e) {
 					throw new InvalidUsageException("invalid exclude_columns: '" + excludeColumns + "': " + e.getMessage());
 				}
