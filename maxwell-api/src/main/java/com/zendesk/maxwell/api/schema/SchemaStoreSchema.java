@@ -1,7 +1,5 @@
 package com.zendesk.maxwell.api.schema;
 
-import com.zendesk.maxwell.api.schema.InvalidSchemaError;
-
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;

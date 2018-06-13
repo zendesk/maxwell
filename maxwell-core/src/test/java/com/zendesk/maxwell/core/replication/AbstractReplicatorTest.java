@@ -2,11 +2,11 @@ package com.zendesk.maxwell.core.replication;
 
 import com.zendesk.maxwell.api.replication.BinlogPosition;
 import com.zendesk.maxwell.api.replication.Position;
-import com.zendesk.maxwell.api.row.RowMap;
+import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.MaxwellTestWithIsolatedServer;
 import com.zendesk.maxwell.core.row.HeartbeatRowMap;
 import com.zendesk.maxwell.core.support.TestReplicator;
-import com.zendesk.maxwell.api.RunState;
+import com.zendesk.maxwell.core.RunState;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;

@@ -6,7 +6,7 @@ package com.zendesk.maxwell.core.producer;
    Assumes .addInflight(position) will be call monotonically.
    */
 
-import com.zendesk.maxwell.api.MaxwellContext;
+import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.api.replication.Position;
 
 import java.util.Iterator;

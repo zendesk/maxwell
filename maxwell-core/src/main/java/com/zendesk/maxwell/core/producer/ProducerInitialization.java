@@ -1,12 +1,11 @@
 package com.zendesk.maxwell.core.producer;
 
 import com.codahale.metrics.health.HealthCheckRegistry;
-import com.zendesk.maxwell.api.MaxwellContext;
-import com.zendesk.maxwell.api.StoppableTask;
+import com.zendesk.maxwell.core.MaxwellContext;
+import com.zendesk.maxwell.core.StoppableTask;
 import com.zendesk.maxwell.api.config.InvalidOptionException;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.core.monitoring.MaxwellDiagnosticRegistry;
-import com.zendesk.maxwell.api.producer.*;
 import com.zendesk.maxwell.core.MaxwellSystemContext;
 import com.zendesk.maxwell.core.producer.impl.noop.NoopProducer;
 import org.springframework.beans.factory.annotation.Autowired;

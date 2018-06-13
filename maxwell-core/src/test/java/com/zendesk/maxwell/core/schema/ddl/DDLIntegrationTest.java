@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.core.schema.ddl;
 
 import com.zendesk.maxwell.api.config.MaxwellOutputConfig;
-import com.zendesk.maxwell.api.row.RowMap;
+import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.CaseSensitivity;
 import com.zendesk.maxwell.core.MaxwellTestWithIsolatedServer;
 import com.zendesk.maxwell.core.Mysql57Tests;

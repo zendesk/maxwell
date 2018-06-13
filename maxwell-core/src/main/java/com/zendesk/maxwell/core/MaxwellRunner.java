@@ -1,11 +1,10 @@
 package com.zendesk.maxwell.core;
 
-import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
-import com.zendesk.maxwell.api.producer.Producer;
 import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.core.bootstrap.Bootstrapper;
 import com.zendesk.maxwell.core.bootstrap.BootstrapperFactory;
+import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.core.recovery.Recovery;
 import com.zendesk.maxwell.core.recovery.RecoveryInfo;
 import com.zendesk.maxwell.core.replication.BinlogConnectorReplicator;

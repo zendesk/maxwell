@@ -4,7 +4,6 @@ import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.jvm.*;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
-import com.zendesk.maxwell.api.monitoring.Metrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

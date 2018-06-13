@@ -2,7 +2,6 @@ package com.zendesk.maxwell.core.producer;
 
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.health.HealthCheck;
-import com.zendesk.maxwell.api.producer.Producer;
 
 public class ProducerHealthCheck extends HealthCheck {
 	private final Meter failedMessageMeter;

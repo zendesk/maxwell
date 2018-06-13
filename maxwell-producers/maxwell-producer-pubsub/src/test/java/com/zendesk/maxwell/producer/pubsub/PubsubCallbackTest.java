@@ -2,7 +2,7 @@ package com.zendesk.maxwell.producer.pubsub;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
-import com.zendesk.maxwell.api.MaxwellContext;
+import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.replication.BinlogPosition;
 import com.zendesk.maxwell.api.replication.Position;

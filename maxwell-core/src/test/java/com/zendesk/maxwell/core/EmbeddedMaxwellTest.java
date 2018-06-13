@@ -1,10 +1,9 @@
 package com.zendesk.maxwell.core;
 
 import com.github.shyiko.mysql.binlog.network.SSLMode;
-import com.zendesk.maxwell.api.MaxwellContext;
-import com.zendesk.maxwell.api.producer.Producer;
+import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.core.producer.ProducerFactory;
-import com.zendesk.maxwell.api.row.RowMap;
+import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.config.BaseMaxwellConfig;
 import com.zendesk.maxwell.core.config.BaseMaxwellMysqlConfig;
 import com.zendesk.maxwell.core.producer.AbstractProducer;

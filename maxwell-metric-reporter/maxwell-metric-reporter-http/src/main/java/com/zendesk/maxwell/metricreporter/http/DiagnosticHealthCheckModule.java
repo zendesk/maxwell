@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleSerializers;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import com.zendesk.maxwell.api.monitoring.MaxwellDiagnosticResult;
+import com.zendesk.maxwell.core.monitoring.MaxwellDiagnosticResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

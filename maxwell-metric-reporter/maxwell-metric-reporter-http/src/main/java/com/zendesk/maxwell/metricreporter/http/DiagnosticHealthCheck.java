@@ -1,9 +1,9 @@
 package com.zendesk.maxwell.metricreporter.http;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.zendesk.maxwell.api.monitoring.MaxwellDiagnostic;
+import com.zendesk.maxwell.core.monitoring.MaxwellDiagnostic;
 import com.zendesk.maxwell.core.monitoring.MaxwellDiagnosticRegistry;
-import com.zendesk.maxwell.api.monitoring.MaxwellDiagnosticResult;
+import com.zendesk.maxwell.core.monitoring.MaxwellDiagnosticResult;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;

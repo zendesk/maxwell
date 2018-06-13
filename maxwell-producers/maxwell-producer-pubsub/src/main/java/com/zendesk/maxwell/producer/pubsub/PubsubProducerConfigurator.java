@@ -1,9 +1,9 @@
 package com.zendesk.maxwell.producer.pubsub;
 
-import com.zendesk.maxwell.api.MaxwellContext;
+import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.api.config.CommandLineOptionParserContext;
 import com.zendesk.maxwell.api.config.ConfigurationSupport;
-import com.zendesk.maxwell.api.producer.*;
+import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.core.producer.ProducerConfiguration;
 import com.zendesk.maxwell.core.producer.ProducerConfigurator;
 import com.zendesk.maxwell.core.producer.ProducerInstantiationException;

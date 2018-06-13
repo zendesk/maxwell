@@ -3,7 +3,7 @@ package com.zendesk.maxwell.core.recovery;
 import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.api.replication.Position;
-import com.zendesk.maxwell.api.row.RowMap;
+import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.api.schema.SchemaStoreSchema;
 import com.zendesk.maxwell.core.*;
 import com.zendesk.maxwell.core.config.BaseMaxwellConfig;

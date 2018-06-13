@@ -1,10 +1,10 @@
 package com.zendesk.maxwell.producer.kafka;
 
-import com.zendesk.maxwell.api.row.RowMap;
-import com.zendesk.maxwell.api.row.RowMapFactory;
+import com.zendesk.maxwell.core.row.RowMap;
+import com.zendesk.maxwell.core.row.RowMapFactory;
 import com.zendesk.maxwell.core.springconfig.CoreComponentScanConfig;
 import com.zendesk.maxwell.core.schema.ddl.BaseDDLMap;
-import com.zendesk.maxwell.api.schema.ddl.DDLMap;
+import com.zendesk.maxwell.core.schema.ddl.DDLMap;
 import com.zendesk.maxwell.core.schema.ddl.ResolvedDatabaseAlter;
 import com.zendesk.maxwell.core.schema.ddl.ResolvedTableDrop;
 import com.zendesk.maxwell.test.springconfig.TestSupportComponentScan;

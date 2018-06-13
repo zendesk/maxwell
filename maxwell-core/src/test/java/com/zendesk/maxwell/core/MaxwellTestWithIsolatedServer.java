@@ -4,7 +4,7 @@ import com.zendesk.maxwell.api.config.MaxwellFilter;
 import com.zendesk.maxwell.api.config.MaxwellInvalidFilterException;
 import com.zendesk.maxwell.api.config.MaxwellOutputConfig;
 import com.zendesk.maxwell.api.replication.Position;
-import com.zendesk.maxwell.api.row.RowMap;
+import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.config.BaseMaxwellFilter;
 import com.zendesk.maxwell.core.config.BaseMaxwellOutputConfig;
 import com.zendesk.maxwell.api.replication.MysqlVersion;

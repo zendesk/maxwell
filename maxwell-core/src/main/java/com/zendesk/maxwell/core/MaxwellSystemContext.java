@@ -1,9 +1,8 @@
 package com.zendesk.maxwell.core;
 
-import com.zendesk.maxwell.api.MaxwellContext;
 import com.zendesk.maxwell.api.config.MaxwellFilter;
-import com.zendesk.maxwell.api.producer.Producer;
 import com.zendesk.maxwell.api.replication.Position;
+import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.core.recovery.RecoveryInfo;
 import com.zendesk.maxwell.core.replication.HeartbeatNotifier;
 import com.zendesk.maxwell.core.replication.Replicator;

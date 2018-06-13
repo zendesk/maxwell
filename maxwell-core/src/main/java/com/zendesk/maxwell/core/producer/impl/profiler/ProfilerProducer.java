@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.core.producer.impl.profiler;
 
-import com.zendesk.maxwell.api.MaxwellContext;
-import com.zendesk.maxwell.api.row.RowMap;
+import com.zendesk.maxwell.core.MaxwellContext;
+import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.producer.AbstractProfilingProducer;
 
 public class ProfilerProducer extends AbstractProfilingProducer {

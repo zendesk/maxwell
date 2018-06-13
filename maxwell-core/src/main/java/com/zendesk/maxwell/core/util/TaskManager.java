@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.core.util;
 
-import com.zendesk.maxwell.api.RunState;
-import com.zendesk.maxwell.api.StoppableTask;
+import com.zendesk.maxwell.core.RunState;
+import com.zendesk.maxwell.core.StoppableTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

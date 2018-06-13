@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.producer.kafka;
 
-import com.zendesk.maxwell.api.row.RowMap;
+import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.producer.partitioners.AbstractMaxwellPartitioner;
 import com.zendesk.maxwell.core.producer.partitioners.HashFunction;
 import com.zendesk.maxwell.core.producer.partitioners.HashFunctionDefault;

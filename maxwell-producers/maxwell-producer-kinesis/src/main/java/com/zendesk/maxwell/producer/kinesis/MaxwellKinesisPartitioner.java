@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.producer.kinesis;
 
-import com.zendesk.maxwell.api.row.RowMap;
+import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.producer.partitioners.AbstractMaxwellPartitioner;
 import org.apache.commons.codec.digest.DigestUtils;
 

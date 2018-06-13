@@ -6,7 +6,7 @@ import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import com.github.shyiko.mysql.binlog.event.Event;
 import com.github.shyiko.mysql.binlog.event.EventType;
 import com.github.shyiko.mysql.binlog.event.GtidEventData;
-import com.zendesk.maxwell.api.monitoring.Metrics;
+import com.zendesk.maxwell.core.monitoring.Metrics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

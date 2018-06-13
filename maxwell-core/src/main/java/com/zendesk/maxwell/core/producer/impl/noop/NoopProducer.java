@@ -1,8 +1,8 @@
 package com.zendesk.maxwell.core.producer.impl.noop;
 
-import com.zendesk.maxwell.api.MaxwellContext;
+import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.producer.AbstractProducer;
-import com.zendesk.maxwell.api.row.RowMap;
+import com.zendesk.maxwell.core.row.RowMap;
 
 public class NoopProducer extends AbstractProducer {
 

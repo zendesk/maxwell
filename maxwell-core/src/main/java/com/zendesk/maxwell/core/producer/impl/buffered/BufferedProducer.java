@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.core.producer.impl.buffered;
 
-import com.zendesk.maxwell.api.MaxwellContext;
-import com.zendesk.maxwell.api.row.RowMap;
+import com.zendesk.maxwell.core.MaxwellContext;
+import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.producer.AbstractProducer;
 import com.zendesk.maxwell.core.row.HeartbeatRowMap;
 

@@ -2,7 +2,6 @@ package com.zendesk.maxwell.core.monitoring;
 
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
-import com.zendesk.maxwell.api.monitoring.Metrics;
 
 public class NoOpMetrics implements Metrics {
 	public final MetricRegistry metricRegistry;

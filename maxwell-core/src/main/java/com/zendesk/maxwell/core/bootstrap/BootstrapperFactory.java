@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.bootstrap;
 
-import com.zendesk.maxwell.api.row.RowMapFactory;
+import com.zendesk.maxwell.core.row.RowMapFactory;
 import com.zendesk.maxwell.core.MaxwellSystemContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

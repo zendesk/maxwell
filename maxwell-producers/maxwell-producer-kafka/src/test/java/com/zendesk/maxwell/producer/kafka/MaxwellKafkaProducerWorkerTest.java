@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.producer.kafka;
 
-import com.zendesk.maxwell.api.MaxwellContext;
+import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.api.config.MaxwellConfig;
 import com.zendesk.maxwell.core.springconfig.CoreComponentScanConfig;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;

@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.api.monitoring;
+package com.zendesk.maxwell.core.monitoring;
 
 import java.util.List;
 import java.util.Map;

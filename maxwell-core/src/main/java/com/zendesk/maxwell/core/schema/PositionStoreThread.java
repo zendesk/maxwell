@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.core.schema;
 
-import com.zendesk.maxwell.api.MaxwellContext;
+import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.api.replication.BinlogPosition;
 import com.zendesk.maxwell.api.replication.Position;
 import com.zendesk.maxwell.core.util.RunLoopProcess;

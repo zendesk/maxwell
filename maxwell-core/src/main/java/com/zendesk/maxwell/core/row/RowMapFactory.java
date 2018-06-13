@@ -1,4 +1,4 @@
-package com.zendesk.maxwell.api.row;
+package com.zendesk.maxwell.core.row;
 
 import com.zendesk.maxwell.api.replication.Position;
 

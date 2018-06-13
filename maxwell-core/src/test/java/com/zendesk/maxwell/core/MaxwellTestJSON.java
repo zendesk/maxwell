@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zendesk.maxwell.api.config.MaxwellFilter;
 import com.zendesk.maxwell.api.config.MaxwellOutputConfig;
-import com.zendesk.maxwell.api.row.RowMap;
+import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.row.RowEncrypt;
 import com.zendesk.maxwell.core.support.MaxwellTestSupport;
 import com.zendesk.maxwell.test.mysql.MysqlIsolatedServer;
