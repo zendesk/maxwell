@@ -10,7 +10,6 @@ import com.zendesk.maxwell.core.bootstrap.Bootstrapper;
 import com.zendesk.maxwell.core.config.MaxwellFilterSupport;
 import com.zendesk.maxwell.core.row.HeartbeatRowMap;
 import com.zendesk.maxwell.core.schema.SchemaStore;
-import com.zendesk.maxwell.core.schema.ddl.BaseDDLMap;
 import com.zendesk.maxwell.core.schema.ddl.DDLMap;
 import com.zendesk.maxwell.core.schema.ddl.ResolvedSchemaChange;
 import com.zendesk.maxwell.core.util.RunLoopProcess;
@@ -96,7 +95,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 		List<ResolvedSchemaChange> changes = schemaStore.processSQL(sql, dbName, position);
 		for (ResolvedSchemaChange change : changes) {
 			if (change.shouldOutput(filter)) {
-				DDLMap ddl = new BaseDDLMap(change, timestamp, sql, position);
+				DDLMap ddl = new DDLMap(change, timestamp, sql, position);
 				producer.push(ddl);
 			}
 		}

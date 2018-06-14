@@ -2,7 +2,6 @@ package com.zendesk.maxwell.producer.kafka;
 
 import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.row.RowMapFactory;
-import com.zendesk.maxwell.core.schema.ddl.BaseDDLMap;
 import com.zendesk.maxwell.core.schema.ddl.DDLMap;
 import com.zendesk.maxwell.core.schema.ddl.ResolvedDatabaseAlter;
 import com.zendesk.maxwell.core.schema.ddl.ResolvedTableDrop;
@@ -28,7 +27,7 @@ public class MaxwellKafkaPartitionerTest {
 	public void testRowMapEqualsDDLPartitioning() {
 		RowMap r = rowMapFactory.createFor("insert", "db", "tbl", 0L, new ArrayList<>(), null);
 		ResolvedDatabaseAlter m = new ResolvedDatabaseAlter("db", "utf8");
-		DDLMap d = new BaseDDLMap(m, 0L, "alter-sql", null);
+		DDLMap d = new DDLMap(m, 0L, "alter-sql", null);
 
 		MaxwellKafkaPartitioner p = new MaxwellKafkaPartitioner("murmur3", "database", null, null);
 		assertEquals(p.kafkaPartition(r, 15), p.kafkaPartition(d, 15));
@@ -37,11 +36,11 @@ public class MaxwellKafkaPartitionerTest {
 	@Test
 	public void testDDLFallBack() {
 		ResolvedDatabaseAlter m = new ResolvedDatabaseAlter("some_db", "utf8");
-		DDLMap d = new BaseDDLMap(m, 0L, "alter-sql", null);
+		DDLMap d = new DDLMap(m, 0L, "alter-sql", null);
 		MaxwellKafkaPartitioner p = new MaxwellKafkaPartitioner("murmur3", "table", null, "database");
 
 		ResolvedTableDrop m2 = new ResolvedTableDrop("some_db", "some_table");
-		DDLMap d2 = new BaseDDLMap(m2, 0L, "alter-sql", null);
+		DDLMap d2 = new DDLMap(m2, 0L, "alter-sql", null);
 		MaxwellKafkaPartitioner p2 = new MaxwellKafkaPartitioner("murmur3", "database", null, "database");
 
 		assertEquals(p2.kafkaPartition(d2, 15), p.kafkaPartition(d, 15));
