@@ -132,7 +132,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	MaxwellKafkaProducerWorker(MaxwellContext context, KafkaProducerConfiguration configuration, ArrayBlockingQueue<RowMap> queue) {
 		super(context);
 
-		this.topic = configuration.kafkaTopic;
+		this.topic = configuration.topic;
 		if ( this.topic == null ) {
 			this.topic = "maxwell";
 		}
@@ -140,16 +140,16 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		this.interpolateTopic = this.topic.contains("%{");
 		this.kafka = new KafkaProducer<>(configuration.kafkaProperties, new StringSerializer(), new StringSerializer());
 
-		String hash = configuration.kafkaPartitionHash;
+		String hash = configuration.partitionHash;
 		String partitionKey = context.getConfig().producerPartitionKey;
 		String partitionColumns = context.getConfig().producerPartitionColumns;
 		String partitionFallback = context.getConfig().producerPartitionFallback;
 		this.partitioner = new MaxwellKafkaPartitioner(hash, partitionKey, partitionColumns, partitionFallback);
 
 		this.ddlPartitioner = makeDDLPartitioner(hash, partitionKey);
-		this.ddlTopic = configuration.ddlKafkaTopic;
+		this.ddlTopic = configuration.ddlTopic;
 
-		if ( configuration.kafkaKeyFormat.equals("hash") )
+		if ( configuration.keyFormat.equals("hash") )
 			keyFormat = KeyFormat.HASH;
 		else
 			keyFormat = KeyFormat.ARRAY;

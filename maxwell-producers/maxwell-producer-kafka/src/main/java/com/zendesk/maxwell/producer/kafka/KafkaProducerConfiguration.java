@@ -18,29 +18,29 @@ public class KafkaProducerConfiguration implements ProducerConfiguration {
 	public static final String PARTITION_HASH_MURMUR3 = "murmur3";
 
 	public final Properties kafkaProperties = new Properties();
-	public String kafkaTopic = DEFAULT_TOPIC;
-	public String ddlKafkaTopic;
-	public String kafkaKeyFormat = KEY_FORMAT_HASH;
-	public String kafkaPartitionHash = PARTITION_HASH_DEFAULT;
-	public String kafkaPartitionKey;
-	public String kafkaPartitionColumns;
-	public String kafkaPartitionFallback;
+	public String topic = DEFAULT_TOPIC;
+	public String ddlTopic;
+	public String keyFormat = KEY_FORMAT_HASH;
+	public String partitionHash = PARTITION_HASH_DEFAULT;
+	public String partitionKey;
+	public String partitionColumns;
+	public String partitionFallback;
 
 	@Override
 	public void mergeWith(MaxwellConfig maxwellConfig) {
-		if (maxwellConfig.producerPartitionKey == null && kafkaPartitionKey != null) {
+		if (maxwellConfig.producerPartitionKey == null && partitionKey != null) {
 			LOGGER.warn("kafka_partition_by is deprecated, please use producer_partition_by");
-			maxwellConfig.producerPartitionKey = this.kafkaPartitionKey;
+			maxwellConfig.producerPartitionKey = this.partitionKey;
 		}
 
-		if (maxwellConfig.producerPartitionColumns == null && kafkaPartitionColumns != null) {
+		if (maxwellConfig.producerPartitionColumns == null && partitionColumns != null) {
 			LOGGER.warn("kafka_partition_columns is deprecated, please use producer_partition_columns");
-			maxwellConfig.producerPartitionColumns = this.kafkaPartitionColumns;
+			maxwellConfig.producerPartitionColumns = this.partitionColumns;
 		}
 
-		if (maxwellConfig.producerPartitionFallback == null && kafkaPartitionFallback != null) {
+		if (maxwellConfig.producerPartitionFallback == null && partitionFallback != null) {
 			LOGGER.warn("kafka_partition_by_fallback is deprecated, please use producer_partition_by_fallback");
-			maxwellConfig.producerPartitionFallback = this.kafkaPartitionFallback;
+			maxwellConfig.producerPartitionFallback = this.partitionFallback;
 		}
 	}
 
@@ -50,14 +50,14 @@ public class KafkaProducerConfiguration implements ProducerConfiguration {
 			throw new InvalidOptionException("You must specify kafka.bootstrap.servers for the kafka producer!", "kafka");
 		}
 
-		if ( kafkaPartitionHash == null ) {
-			this.kafkaPartitionHash = PARTITION_HASH_DEFAULT;
-		} else if ( !PARTITION_HASH_DEFAULT.equals(kafkaPartitionHash) && !PARTITION_HASH_MURMUR3.equals(kafkaPartitionHash) ) {
+		if ( partitionHash == null ) {
+			this.partitionHash = PARTITION_HASH_DEFAULT;
+		} else if ( !PARTITION_HASH_DEFAULT.equals(partitionHash) && !PARTITION_HASH_MURMUR3.equals(partitionHash) ) {
 			throw new InvalidOptionException("please specify --kafka_partition_hash=default|murmur3", "kafka_partition_hash");
 		}
 
-		if ( !KEY_FORMAT_HASH.equals(kafkaKeyFormat) && !KEY_FORMAT_ARRAY.equals(kafkaKeyFormat) ){
-			throw new InvalidOptionException("invalid kafka_key_format: " + this.kafkaKeyFormat, "kafka_key_format");
+		if ( !KEY_FORMAT_HASH.equals(keyFormat) && !KEY_FORMAT_ARRAY.equals(keyFormat) ){
+			throw new InvalidOptionException("invalid kafka_key_format: " + this.keyFormat, "kafka_key_format");
 		}
 	}
 }

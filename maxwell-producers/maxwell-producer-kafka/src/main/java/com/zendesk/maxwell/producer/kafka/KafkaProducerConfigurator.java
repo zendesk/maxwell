@@ -46,14 +46,14 @@ public class KafkaProducerConfigurator implements ProducerConfigurator {
 	@Override
 	public Optional<ProducerConfiguration> parseConfiguration(Properties configurationValues) {
 		KafkaProducerConfiguration config = new KafkaProducerConfiguration();
-		config.kafkaTopic = configurationSupport.fetchOption("kafka_topic", configurationValues, "maxwell");
-		config.kafkaKeyFormat = configurationSupport.fetchOption("kafka_key_format", configurationValues, "hash");
-		config.kafkaPartitionKey = configurationSupport.fetchOption("kafka_partition_by", configurationValues, null);
-		config.kafkaPartitionColumns = configurationSupport.fetchOption("kafka_partition_columns", configurationValues, null);
-		config.kafkaPartitionFallback = configurationSupport.fetchOption("kafka_partition_by_fallback", configurationValues, null);
+		config.topic = configurationSupport.fetchOption("kafka_topic", configurationValues, "maxwell");
+		config.keyFormat = configurationSupport.fetchOption("kafka_key_format", configurationValues, "hash");
+		config.partitionKey = configurationSupport.fetchOption("kafka_partition_by", configurationValues, null);
+		config.partitionColumns = configurationSupport.fetchOption("kafka_partition_columns", configurationValues, null);
+		config.partitionFallback = configurationSupport.fetchOption("kafka_partition_by_fallback", configurationValues, null);
 
-		config.kafkaPartitionHash = configurationSupport.fetchOption("kafka_partition_hash", configurationValues, "default");
-		config.ddlKafkaTopic = configurationSupport.fetchOption("ddl_kafka_topic", configurationValues, config.kafkaTopic);
+		config.partitionHash = configurationSupport.fetchOption("kafka_partition_hash", configurationValues, "default");
+		config.ddlTopic = configurationSupport.fetchOption("ddl_kafka_topic", configurationValues, config.topic);
 
 		String kafkaBootstrapServers = configurationSupport.fetchOption("kafka.bootstrap.servers", configurationValues, null);
 		if (kafkaBootstrapServers != null){
