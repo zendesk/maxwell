@@ -104,19 +104,25 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	}
 
 	/**
-	 * Should we output an event for the given database and table?
+	 * Should we output a batch of rows for the given database and table?
 	 *
-	 * Here we check against a whitelist/blacklist/filter.  The whitelist
-	 * passes updates to `maxwell.bootstrap` through (those are control
-	 * mechanisms for bootstrap), the blacklist gets rid of the
-	 * `ha_health_check` table which shows up erroneously in Alibaba RDS.
+	 * First against a whitelist/blacklist/filter.  The whitelist
+	 * ensures events that maxwell needs (maxwell.bootstrap, maxwell.heartbeats)
+	 * are always passed along.
 	 *
-	 * Additionally, if we decide to exclude a table we check the filter to
-	 * see if it's possible that a column-value filter could include certain column values
+	 * The system the blacklist gets rid of the
+	 * `ha_health_check` and `rds_heartbeat` tables which are weird
+	 * replication-control mechanism events in Alibaba RDS (and maybe amazon?)
+	 *
+	 * Then we check the configured filters.
+	 *
+	 * Finall, if we decide to exclude a table we check the filter to
+	 * see if it's possible that a column-value filter could reverse this decision
 	 *
 	 * @param database The database of the DML
 	 * @param table The table of the DML
 	 * @param filter A table-filter, or null
+	 * @param columnNames Names of the columns this table contains
 	 * @return Whether we should write the event to the producer
 	 */
 	protected boolean shouldOutputEvent(String database, String table, Filter filter, Set<String> columnNames) {
