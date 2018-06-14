@@ -4,14 +4,10 @@ import com.zendesk.maxwell.api.config.InvalidOptionException;
 import com.zendesk.maxwell.core.producer.ProducerConfiguration;
 
 public class FileProducerConfiguration implements ProducerConfiguration {
-	private final String outputFile;
+	public final String outputFile;
 
 	public FileProducerConfiguration(String outputFile) {
 		this.outputFile = outputFile;
-	}
-
-	public String getOutputFile() {
-		return outputFile;
 	}
 
 	@Override

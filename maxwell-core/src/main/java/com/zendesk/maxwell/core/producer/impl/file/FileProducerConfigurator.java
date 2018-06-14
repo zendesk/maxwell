@@ -38,7 +38,7 @@ public class FileProducerConfigurator implements ProducerConfigurator {
 	public Producer configure(MaxwellContext maxwellContext, ProducerConfiguration configuration) {
 		try {
 			FileProducerConfiguration fileProducerConfiguration = (FileProducerConfiguration)configuration;
-			return new FileProducer(maxwellContext, fileProducerConfiguration.getOutputFile());
+			return new FileProducer(maxwellContext, fileProducerConfiguration.outputFile);
 		} catch (IOException e) {
 			throw new ProducerInstantiationException(e);
 		}
