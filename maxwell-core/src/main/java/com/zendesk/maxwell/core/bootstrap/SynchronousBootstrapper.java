@@ -96,13 +96,13 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 
 	protected Connection getConnection() throws SQLException {
 		Connection conn = context.getReplicationConnection();
-		conn.setCatalog(context.getConfig().getDatabaseName());
+		conn.setCatalog(context.getConfig().databaseName);
 		return conn;
 	}
 
 	protected Connection getStreamingConnection() throws SQLException, URISyntaxException {
-		Connection conn = DriverManager.getConnection(context.getConfig().getReplicationMysql().getConnectionURI(), context.getConfig().getReplicationMysql().user, context.getConfig().getReplicationMysql().password);
-		conn.setCatalog(context.getConfig().getDatabaseName());
+		Connection conn = DriverManager.getConnection(context.getConfig().replicationMysql.getConnectionURI(), context.getConfig().replicationMysql.user, context.getConfig().replicationMysql.password);
+		conn.setCatalog(context.getConfig().databaseName);
 		return conn;
 	}
 

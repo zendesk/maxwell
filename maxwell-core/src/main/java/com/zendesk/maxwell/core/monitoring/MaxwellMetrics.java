@@ -24,14 +24,14 @@ public class MaxwellMetrics implements Metrics {
 	}
 
 	private void setup(MaxwellConfig config) {
-		if (config.getMetricsReportingType() == null) {
+		if (config.metricsReportingType == null) {
 			LOGGER.warn("Metrics will not be exposed: metricsReportingType not configured.");
 			return;
 		}
 
-		metricsPrefix = config.getMetricsPrefix();
+		metricsPrefix = config.metricsPrefix;
 
-		if (config.isMetricsJvm()) {
+		if (config.metricsJvmEnabled) {
 			metricRegistry.register(metricName("jvm", "memory_usage"), new MemoryUsageGaugeSet());
 			metricRegistry.register(metricName("jvm", "gc"), new GarbageCollectorMetricSet());
 			metricRegistry.register(metricName("jvm", "class_loading"), new ClassLoadingGaugeSet());

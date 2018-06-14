@@ -15,10 +15,9 @@ public class PubsubCallbackTest {
 
 	@Test
 	public void shouldIgnoreProducerErrorByDefault() {
+		final MaxwellConfig config = new MaxwellConfig();
+		config.ignoreProducerError = true;
 		final MaxwellContext context = mock(MaxwellContext.class);
-		final MaxwellConfig config = mock(MaxwellConfig.class);
-		when(context.getConfig()).thenReturn(config);
-		when(config.isIgnoreProducerError()).thenReturn(true);
 		when(context.getConfig()).thenReturn(config);
 
 		final AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
@@ -34,10 +33,9 @@ public class PubsubCallbackTest {
 
 	@Test
 	public void shouldTerminateWhenNotIgnoreProducerError() {
+		final MaxwellConfig config = new MaxwellConfig();
+		config.ignoreProducerError = false;
 		final MaxwellContext context = mock(MaxwellContext.class);
-		final MaxwellConfig config = mock(MaxwellConfig.class);
-		when(context.getConfig()).thenReturn(config);
-		when(config.isIgnoreProducerError()).thenReturn(false);
 		when(context.getConfig()).thenReturn(config);
 
 		final AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);

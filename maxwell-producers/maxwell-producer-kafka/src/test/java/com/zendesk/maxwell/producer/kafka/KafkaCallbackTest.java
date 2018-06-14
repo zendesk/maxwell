@@ -46,7 +46,7 @@ public class KafkaCallbackTest {
 	public void shouldTerminateWhenNotIgnoreProducerError() {
 		MaxwellContext context = mock(MaxwellContext.class);
 		MaxwellConfig config = maxwellConfigFactory.create();
-		config.setIgnoreProducerError(false);
+		config.ignoreProducerError = false;
 		when(context.getConfig()).thenReturn(config);
 		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
 		KafkaCallback callback = new KafkaCallback(cc,

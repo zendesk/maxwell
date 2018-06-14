@@ -30,9 +30,9 @@ public abstract class AbstractBootstrapper implements Bootstrapper {
 	}
 
 	public boolean isBootstrapRow(RowMap row) {
-		return row.getDatabase().equals(this.context.getConfig().getDatabaseName()) &&
+		return row.getDatabase().equals(this.context.getConfig().databaseName) &&
 			row.getTable().equals("bootstrap") &&
-			row.getData("client_id").equals(this.context.getConfig().getClientID());
+			row.getData("client_id").equals(this.context.getConfig().clientID);
 	}
 
 	protected String bootstrapDatabase(RowMap rowmap) {

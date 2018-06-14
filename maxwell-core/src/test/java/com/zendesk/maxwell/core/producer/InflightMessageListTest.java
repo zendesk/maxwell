@@ -164,8 +164,8 @@ public class InflightMessageListTest {
 
 	private void setupWithInflightRequestTimeout(long timeout, double completePercentageThreshold) throws InterruptedException {
 		context = mock(MaxwellContext.class);
-		final MaxwellConfig config = mock(MaxwellConfig.class);
-		when(config.getProducerAckTimeout()).thenReturn(timeout);
+		final MaxwellConfig config = new MaxwellConfig();
+		config.producerAckTimeout = timeout;
 		when(context.getConfig()).thenReturn(config);
 		list = new InflightMessageList(context, capacity, completePercentageThreshold);
 		list.addMessage(p1);

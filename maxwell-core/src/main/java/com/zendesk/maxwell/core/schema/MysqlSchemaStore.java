@@ -44,7 +44,7 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 			initialPosition,
 			context.getCaseSensitivity(),
 			context.getFilter(),
-			context.getReplayMode()
+			context.isReplayMode()
 		);
 	}
 

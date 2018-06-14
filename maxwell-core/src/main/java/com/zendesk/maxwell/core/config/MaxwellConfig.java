@@ -32,67 +32,67 @@ public class MaxwellConfig {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfig.class);
 
-	private MaxwellMysqlConfig replicationMysql;
-	private MaxwellMysqlConfig schemaMysql;
-	private MaxwellMysqlConfig maxwellMysql;
-	private MaxwellFilter filter;
-	private Boolean gtidMode;
-	private String databaseName;
+	public MaxwellMysqlConfig replicationMysql;
+	public MaxwellMysqlConfig schemaMysql;
+	public MaxwellMysqlConfig maxwellMysql;
+	public MaxwellFilter filter;
+	public Boolean gtidMode;
+	public String databaseName;
 
-	private String producerFactory; // customProducerFactory has precedence over producerType
-	private final Properties customProducerProperties;
+	public String producerFactory; // customProducerFactory has precedence over producerType
+	public final Properties customProducerProperties;
 
-	private String bootstrapperType;
+	public String bootstrapperType;
 
-	private String producerType;
-	private boolean ignoreProducerError;
+	public String producerType;
+	public boolean ignoreProducerError;
 
-	private String producerPartitionKey;
-	private String producerPartitionColumns;
-	private String producerPartitionFallback;
+	public String producerPartitionKey;
+	public String producerPartitionColumns;
+	public String producerPartitionFallback;
 
-	private Long producerAckTimeout;
+	public Long producerAckTimeout;
 
-	private MaxwellOutputConfig outputConfig;
-	private String logLevel;
+	public MaxwellOutputConfig outputConfig;
+	public String logLevel;
 
-	private String metricsPrefix;
-	private String metricsReportingType;
-	private boolean metricsJvm;
+	public String metricsPrefix;
+	public String metricsReportingType;
+	public boolean metricsJvmEnabled;
 
-	private String clientID;
-	private Long replicaServerID;
+	public String clientID;
+	public Long replicaServerID;
 
-	private Position initPosition;
-	private boolean replayMode;
-	private boolean masterRecovery;
+	public Position initPosition;
+	public boolean replayModeEnabled;
+	public boolean masterRecoveryEnabled;
 
 	public MaxwellConfig() {
-		this.setReplicationMysql(new MaxwellMysqlConfig());
-		this.setMaxwellMysql(new MaxwellMysqlConfig());
-		this.setSchemaMysql(new MaxwellMysqlConfig());
-		this.setGtidMode(System.getenv(GTID_MODE_ENV) != null);
+		this.replicationMysql = new MaxwellMysqlConfig();
+		this.maxwellMysql = new MaxwellMysqlConfig();
+		this.schemaMysql = new MaxwellMysqlConfig();
+		this.gtidMode = System.getenv(GTID_MODE_ENV) != null;
 
-		this.setDatabaseName(DEFAULT_DATABASE_NAME);
-		this.setBootstrapperType(DEFAULT_BOOTSTRAPPER_TYPE);
-		this.setClientID(DEFAULT_CLIENT_ID);
+		this.databaseName = DEFAULT_DATABASE_NAME;
+		this.bootstrapperType = DEFAULT_BOOTSTRAPPER_TYPE;
+		this.clientID = DEFAULT_CLIENT_ID;
 
-		this.setReplicaServerID(DEFAULT_REPLICA_SERVER_ID);
-		this.setReplayMode(DEFAULT_REPLICATION_REPLAY_MODE);
-		this.setMasterRecovery(DEFAULT_REPLICATION_MASTER_RECOVERY);
+		this.replicaServerID = DEFAULT_REPLICA_SERVER_ID;
+		this.replayModeEnabled = DEFAULT_REPLICATION_REPLAY_MODE;
+		this.masterRecoveryEnabled = DEFAULT_REPLICATION_MASTER_RECOVERY;
 
-		this.setIgnoreProducerError(DEFAULT_PRODUCER_IGNORE_ERROR);
-		this.setProducerAckTimeout(DEFAULT_PRODUCER_ACK_TIMEOUT);
-		this.setProducerPartitionKey(DEFAULT_PRODUCER_PARTITION_KEY);
-		this.setProducerType(DEFAULT_PRODUCER_TYPE);
+		this.ignoreProducerError = DEFAULT_PRODUCER_IGNORE_ERROR;
+		this.producerAckTimeout = DEFAULT_PRODUCER_ACK_TIMEOUT;
+		this.producerPartitionKey = DEFAULT_PRODUCER_PARTITION_KEY;
+		this.producerType = DEFAULT_PRODUCER_TYPE;
 		this.customProducerProperties = new Properties();
 
-		this.setMetricsPrefix(DEFAULT_METRICS_PREFIX);
-		this.setMetricsJvm(DEFAULT_METRCS_JVM);
+		this.metricsPrefix = DEFAULT_METRICS_PREFIX;
+		this.metricsJvmEnabled = DEFAULT_METRCS_JVM;
 
-		this.setMasterRecovery(false);
-		this.setFilter(new MaxwellFilter());
-		this.setOutputConfig(new MaxwellOutputConfig());
+		this.masterRecoveryEnabled = false;
+		this.filter = new MaxwellFilter();
+		this.outputConfig = new MaxwellOutputConfig();
 	}
 
 	public void validate() {
@@ -124,7 +124,7 @@ public class MaxwellConfig {
 			replicationMysql.sslMode = maxwellMysql.sslMode;
 		}
 
-		if (gtidMode && masterRecovery) {
+		if (gtidMode && masterRecoveryEnabled) {
 			throw new InvalidOptionException("There is no need to perform master_recovery under gtid_mode", "--gtid_mode");
 		}
 
@@ -157,212 +157,16 @@ public class MaxwellConfig {
 
 	private void validatePartitionBy() {
 		String[] validPartitionBy = {"database", "table", "primary_key", "column"};
-		if (this.getProducerPartitionKey() == null) {
-			this.setProducerPartitionKey("database");
-		} else if (!ArrayUtils.contains(validPartitionBy, this.getProducerPartitionKey())) {
+		if (this.producerPartitionKey == null) {
+			this.producerPartitionKey = "database";
+		} else if (!ArrayUtils.contains(validPartitionBy, this.producerPartitionKey)) {
 			throw new InvalidOptionException("please specify --producer_partition_by=database|table|primary_key|column", "producer_partition_by");
-		} else if (this.getProducerPartitionKey().equals("column") && StringUtils.isEmpty(this.getProducerPartitionColumns())) {
+		} else if (this.producerPartitionKey.equals("column") && StringUtils.isEmpty(this.producerPartitionColumns)) {
 			throw new InvalidOptionException("please specify --producer_partition_columns=column1 when using producer_partition_by=column", "producer_partition_columns");
-		} else if (this.getProducerPartitionKey().equals("column") && StringUtils.isEmpty(this.getProducerPartitionFallback())) {
+		} else if (this.producerPartitionKey.equals("column") && StringUtils.isEmpty(this.producerPartitionFallback)) {
 			throw new InvalidOptionException("please specify --producer_partition_by_fallback=[database, table, primary_key] when using producer_partition_by=column", "producer_partition_by_fallback");
 		}
 
-	}
-
-	public MaxwellMysqlConfig getReplicationMysql() {
-		return replicationMysql;
-	}
-
-	public void setReplicationMysql(MaxwellMysqlConfig replicationMysql) {
-		this.replicationMysql = replicationMysql;
-	}
-
-	public MaxwellMysqlConfig getSchemaMysql() {
-		return schemaMysql;
-	}
-
-	public void setSchemaMysql(MaxwellMysqlConfig schemaMysql) {
-		this.schemaMysql = schemaMysql;
-	}
-
-	public MaxwellMysqlConfig getMaxwellMysql() {
-		return maxwellMysql;
-	}
-
-	public void setMaxwellMysql(MaxwellMysqlConfig maxwellMysql) {
-		this.maxwellMysql = maxwellMysql;
-	}
-
-	public MaxwellFilter getFilter() {
-		return filter;
-	}
-
-	public void setFilter(MaxwellFilter filter) {
-		this.filter = filter;
-	}
-
-	public Boolean getGtidMode() {
-		return gtidMode;
-	}
-
-	public void setGtidMode(Boolean gtidMode) {
-		this.gtidMode = gtidMode;
-	}
-
-	public String getDatabaseName() {
-		return databaseName;
-	}
-
-	public void setDatabaseName(String databaseName) {
-		this.databaseName = databaseName;
-	}
-
-	public String getBootstrapperType() {
-		return bootstrapperType;
-	}
-
-	public void setBootstrapperType(String bootstrapperType) {
-		this.bootstrapperType = bootstrapperType;
-	}
-
-	public String getProducerType() {
-		return producerType;
-	}
-
-	public void setProducerType(String producerType) {
-		this.producerType = producerType;
-	}
-
-	public String getProducerFactory() {
-		return producerFactory;
-	}
-
-	public void setProducerFactory(String producerFactory) {
-		this.producerFactory = producerFactory;
-	}
-
-	public Properties getCustomProducerProperties() {
-		return customProducerProperties;
-	}
-
-	public boolean isIgnoreProducerError() {
-		return ignoreProducerError;
-	}
-
-	public void setIgnoreProducerError(boolean ignoreProducerError) {
-		this.ignoreProducerError = ignoreProducerError;
-	}
-
-	public String getProducerPartitionKey() {
-		return producerPartitionKey;
-	}
-
-	public void setProducerPartitionKey(String producerPartitionKey) {
-		this.producerPartitionKey = producerPartitionKey;
-	}
-
-	public String getProducerPartitionColumns() {
-		return producerPartitionColumns;
-	}
-
-	public void setProducerPartitionColumns(String producerPartitionColumns) {
-		this.producerPartitionColumns = producerPartitionColumns;
-	}
-
-	public String getProducerPartitionFallback() {
-		return producerPartitionFallback;
-	}
-
-	public void setProducerPartitionFallback(String producerPartitionFallback) {
-		this.producerPartitionFallback = producerPartitionFallback;
-	}
-
-	public Long getProducerAckTimeout() {
-		return producerAckTimeout;
-	}
-
-	public void setProducerAckTimeout(Long producerAckTimeout) {
-		this.producerAckTimeout = producerAckTimeout;
-	}
-
-	public MaxwellOutputConfig getOutputConfig() {
-		return outputConfig != null ? outputConfig : new MaxwellOutputConfig();
-	}
-
-	public void setOutputConfig(MaxwellOutputConfig outputConfig) {
-		this.outputConfig = outputConfig;
-	}
-
-	public String getLogLevel() {
-		return logLevel;
-	}
-
-	public void setLogLevel(String logLevel) {
-		this.logLevel = logLevel;
-	}
-
-	public String getMetricsPrefix() {
-		return metricsPrefix;
-	}
-
-	public void setMetricsPrefix(String metricsPrefix) {
-		this.metricsPrefix = metricsPrefix;
-	}
-
-	public String getMetricsReportingType() {
-		return metricsReportingType;
-	}
-
-	public void setMetricsReportingType(String metricsReportingType) {
-		this.metricsReportingType = metricsReportingType;
-	}
-
-	public boolean isMetricsJvm() {
-		return metricsJvm;
-	}
-
-	public void setMetricsJvm(boolean metricsJvm) {
-		this.metricsJvm = metricsJvm;
-	}
-
-	public String getClientID() {
-		return clientID;
-	}
-
-	public void setClientID(String clientID) {
-		this.clientID = clientID;
-	}
-
-	public Long getReplicaServerID() {
-		return replicaServerID;
-	}
-
-	public void setReplicaServerID(Long replicaServerID) {
-		this.replicaServerID = replicaServerID;
-	}
-
-	public Position getInitPosition() {
-		return initPosition;
-	}
-
-	public void setInitPosition(Position initPosition) {
-		this.initPosition = initPosition;
-	}
-
-	public boolean isReplayMode() {
-		return replayMode;
-	}
-
-	public void setReplayMode(boolean replayMode) {
-		this.replayMode = replayMode;
-	}
-
-	public boolean isMasterRecovery() {
-		return masterRecovery;
-	}
-
-	public void setMasterRecovery(boolean masterRecovery) {
-		this.masterRecovery = masterRecovery;
 	}
 
 }

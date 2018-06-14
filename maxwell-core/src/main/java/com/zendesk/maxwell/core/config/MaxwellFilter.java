@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 	(includeDatabases.nil? || includeDatabases.include?()
  */
 public class MaxwellFilter {
-	private static final List<Pattern> emptyList = Collections.unmodifiableList(new ArrayList<Pattern>());
+	private static final List<Pattern> emptyList = Collections.unmodifiableList(new ArrayList<>());
 	private final ArrayList<Pattern> includeDatabases = new ArrayList<>();
 	private final ArrayList<Pattern> excludeDatabases = new ArrayList<>();
 	private final ArrayList<Pattern> includeTables = new ArrayList<>();

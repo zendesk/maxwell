@@ -28,25 +28,25 @@ public class MaxwellConfigTestSupport {
 
 	public MaxwellConfig createDefaultConfigurationWithBufferedProducerFor(int port, Position p, MaxwellFilter filter){
 		MaxwellConfig config = buildConfig(port, p, filter);
-		config.setProducerType("buffer");
+		config.producerType = "buffer";
 		return config;
 	}
 
 	private MaxwellConfig buildConfig(int port, Position p, MaxwellFilter filter) {
 		MaxwellConfig config = maxwellConfigFactory.create();
 
-		MaxwellMysqlConfig maxwellMysql = config.getMaxwellMysql();
+		MaxwellMysqlConfig maxwellMysql = config.maxwellMysql;
 		maxwellMysql.host = "localhost";
 		maxwellMysql.port = port;
 		maxwellMysql.user = "maxwell";
 		maxwellMysql.password = "maxwell";
 		maxwellMysql.sslMode = SSLMode.DISABLED;
 
-		config.setReplicationMysql(maxwellMysql);
-		config.setDatabaseName("maxwell");
+		config.replicationMysql = maxwellMysql;
+		config.databaseName = "maxwell";
 
-		config.setFilter(filter);
-		config.setInitPosition(p);
+		config.filter = filter;
+		config.initPosition = p;
 		return config;
 	}
 

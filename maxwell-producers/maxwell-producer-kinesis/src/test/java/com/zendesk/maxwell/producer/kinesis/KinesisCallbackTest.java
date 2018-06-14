@@ -16,10 +16,10 @@ public class KinesisCallbackTest {
 
 	@Test
 	public void shouldIgnoreProducerErrorByDefault() {
+		final MaxwellConfig config = new MaxwellConfig();
+		config.ignoreProducerError = true;
 		final MaxwellContext context = mock(MaxwellContext.class);
-		final MaxwellConfig config = mock(MaxwellConfig.class);
 		when(context.getConfig()).thenReturn(config);
-		when(config.isIgnoreProducerError()).thenReturn(true);
 
 		final AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
 		final BinlogPosition binlogPosition = new BinlogPosition(1, "binlog-1");
@@ -34,9 +34,9 @@ public class KinesisCallbackTest {
 
 	@Test
 	public void shouldTerminateWhenNotIgnoreProducerError() {
+		final MaxwellConfig config = new MaxwellConfig();
+		config.ignoreProducerError = false;
 		final MaxwellContext context = mock(MaxwellContext.class);
-		final MaxwellConfig config = mock(MaxwellConfig.class);
-		when(config.isIgnoreProducerError()).thenReturn(false);
 		when(context.getConfig()).thenReturn(config);
 
 		final AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);

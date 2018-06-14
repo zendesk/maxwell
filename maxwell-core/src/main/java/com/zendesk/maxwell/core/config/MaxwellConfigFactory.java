@@ -29,25 +29,25 @@ public class MaxwellConfigFactory {
 
 	public MaxwellConfig createFor(final Properties properties) {
 		MaxwellConfig config = new MaxwellConfig();
-		config.setLogLevel(configurationSupport.fetchOption("log_level", properties, null));
+		config.logLevel = configurationSupport.fetchOption("log_level", properties, null);
 
-		config.setMaxwellMysql(mySqlConfigurationSupport.parseMysqlConfig("", properties));
-		config.setReplicationMysql(mySqlConfigurationSupport.parseMysqlConfig("replication_", properties));
-		config.setSchemaMysql(mySqlConfigurationSupport.parseMysqlConfig("schema_", properties));
-		config.setGtidMode(configurationSupport.fetchBooleanOption("gtid_mode", properties, System.getenv(GTID_MODE_ENV) != null));
+		config.maxwellMysql = mySqlConfigurationSupport.parseMysqlConfig("", properties);
+		config.replicationMysql = mySqlConfigurationSupport.parseMysqlConfig("replication_", properties);
+		config.schemaMysql = mySqlConfigurationSupport.parseMysqlConfig("schema_", properties);
+		config.gtidMode = configurationSupport.fetchBooleanOption("gtid_mode", properties, System.getenv(GTID_MODE_ENV) != null);
 
-		config.setDatabaseName(configurationSupport.fetchOption("schema_database", properties, DEFAULT_DATABASE_NAME));
-		config.getMaxwellMysql().database = config.getDatabaseName();
+		config.databaseName = configurationSupport.fetchOption("schema_database", properties, DEFAULT_DATABASE_NAME);
+		config.maxwellMysql.database = config.databaseName;
 
 		configureProducer(properties, config);
 
-		config.setBootstrapperType(configurationSupport.fetchOption("bootstrapper", properties, DEFAULT_BOOTSTRAPPER_TYPE));
-		config.setClientID(configurationSupport.fetchOption("client_id", properties, DEFAULT_CLIENT_ID));
-		config.setReplicaServerID(configurationSupport.fetchLongOption("replica_server_id", properties, DEFAULT_REPLICA_SERVER_ID));
+		config.bootstrapperType = configurationSupport.fetchOption("bootstrapper", properties, DEFAULT_BOOTSTRAPPER_TYPE);
+		config.clientID = configurationSupport.fetchOption("client_id", properties, DEFAULT_CLIENT_ID);
+		config.replicaServerID = configurationSupport.fetchLongOption("replica_server_id", properties, DEFAULT_REPLICA_SERVER_ID);
 
-		config.setMetricsPrefix(configurationSupport.fetchOption("metrics_prefix", properties, DEFAULT_METRICS_PREFIX));
-		config.setMetricsReportingType(configurationSupport.fetchOption("metrics_type", properties, null));
-		config.setMetricsJvm(configurationSupport.fetchBooleanOption("metrics_jvm", properties, DEFAULT_METRCS_JVM));
+		config.metricsPrefix = configurationSupport.fetchOption("metrics_prefix", properties, DEFAULT_METRICS_PREFIX);
+		config.metricsReportingType = configurationSupport.fetchOption("metrics_type", properties, null);
+		config.metricsJvmEnabled = configurationSupport.fetchBooleanOption("metrics_jvm", properties, DEFAULT_METRCS_JVM);
 
 		configureReplicationSettings(properties, config);
 		configureFilter(properties, config);
@@ -56,20 +56,20 @@ public class MaxwellConfigFactory {
 	}
 
 	private void configureProducer(final Properties properties, final MaxwellConfig config) {
-		config.setIgnoreProducerError(configurationSupport.fetchBooleanOption("ignore_producer_error", properties, DEFAULT_PRODUCER_IGNORE_ERROR));
-		config.setProducerAckTimeout(configurationSupport.fetchLongOption("producer_ack_timeout", properties, DEFAULT_PRODUCER_ACK_TIMEOUT));
-		config.setProducerPartitionKey(configurationSupport.fetchOption("producer_partition_by", properties, DEFAULT_PRODUCER_PARTITION_KEY));
-		config.setProducerPartitionColumns(configurationSupport.fetchOption("producer_partition_columns", properties, null));
-		config.setProducerPartitionFallback(configurationSupport.fetchOption("producer_partition_by_fallback", properties, null));
-		config.setProducerFactory(configurationSupport.fetchOption("custom_producer.factory", properties, null));
+		config.ignoreProducerError = configurationSupport.fetchBooleanOption("ignore_producer_error", properties, DEFAULT_PRODUCER_IGNORE_ERROR);
+		config.producerAckTimeout = configurationSupport.fetchLongOption("producer_ack_timeout", properties, DEFAULT_PRODUCER_ACK_TIMEOUT);
+		config.producerPartitionKey = configurationSupport.fetchOption("producer_partition_by", properties, DEFAULT_PRODUCER_PARTITION_KEY);
+		config.producerPartitionColumns = configurationSupport.fetchOption("producer_partition_columns", properties, null);
+		config.producerPartitionFallback = configurationSupport.fetchOption("producer_partition_by_fallback", properties, null);
+		config.producerFactory = configurationSupport.fetchOption("custom_producer.factory", properties, null);
 
 		String producerType = configurationSupport.fetchOption("producer", properties, DEFAULT_PRODUCER_TYPE);
-		config.setProducerType(producerType);
+		config.producerType = producerType;
 		if (properties != null) {
 			for (Enumeration<Object> e = properties.keys(); e.hasMoreElements(); ) {
 				String k = (String) e.nextElement();
 				if (k.startsWith("custom_producer.")) {
-					config.getCustomProducerProperties().setProperty(k.replace("custom_producer.", ""), properties.getProperty(k));
+					config.customProducerProperties.setProperty(k.replace("custom_producer.", ""), properties.getProperty(k));
 				}
 			}
 		}
@@ -99,11 +99,11 @@ public class MaxwellConfigFactory {
 				}
 			}
 
-			config.setInitPosition(new Position(new BinlogPosition(pos, initPositionSplit[0]), lastHeartbeat));
+			config.initPosition = (new Position(new BinlogPosition(pos, initPositionSplit[0]), lastHeartbeat));
 		}
 
-		config.setReplayMode(configurationSupport.fetchBooleanOption("replay", properties, DEFAULT_REPLICATION_REPLAY_MODE));
-		config.setMasterRecovery(configurationSupport.fetchBooleanOption("master_recovery", properties, DEFAULT_REPLICATION_MASTER_RECOVERY));
+		config.replayModeEnabled = configurationSupport.fetchBooleanOption("replay", properties, DEFAULT_REPLICATION_REPLAY_MODE);
+		config.masterRecoveryEnabled = configurationSupport.fetchBooleanOption("master_recovery", properties, DEFAULT_REPLICATION_MASTER_RECOVERY);
 	}
 
 	private void configureFilter(Properties properties, MaxwellConfig config) {
@@ -115,7 +115,7 @@ public class MaxwellConfigFactory {
 			String blacklistDatabases = configurationSupport.fetchOption("blacklist_dbs", properties, null);
 			String blacklistTables = configurationSupport.fetchOption("blacklist_tables", properties, null);
 			String includeColumnValues = configurationSupport.fetchOption("include_column_values", properties, null);
-			config.setFilter(new MaxwellFilter(includeDatabases, excludeDatabases, includeTables, excludeTables, blacklistDatabases, blacklistTables, includeColumnValues));
+			config.filter = new MaxwellFilter(includeDatabases, excludeDatabases, includeTables, excludeTables, blacklistDatabases, blacklistTables, includeColumnValues);
 		} catch (MaxwellInvalidFilterException e) {
 			throw new InvalidUsageException("Invalid filter options: " + e.getLocalizedMessage());
 		}
@@ -161,6 +161,6 @@ public class MaxwellConfigFactory {
 				}
 			}
 		}
-		config.setOutputConfig(outputConfig);
+		config.outputConfig =  outputConfig;
 	}
 }

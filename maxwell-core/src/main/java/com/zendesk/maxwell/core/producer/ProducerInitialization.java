@@ -34,26 +34,27 @@ public class ProducerInitialization {
 		Producer producer = create(maxwellContext, configurationSettings);
 		maxwellContext.setProducer(producer);
 		registerDiagnostics(producer);
+		registerHealthCheck(producer);
 		registerStoppableTask(producer, maxwellContext);
 	}
 
 	private Producer create(final MaxwellContext maxwellContext, final Properties configurationSettings) {
 		final MaxwellConfig config = maxwellContext.getConfig();
-		if ( config.getProducerFactory() != null ) {
+		if ( config.producerFactory != null ) {
 			return createProducerThroughFactory(maxwellContext, config);
-		} else if (config.getProducerType() != null) {
-			return createProducerThroughConfigurator(config.getProducerType(), maxwellContext, configurationSettings);
+		} else if (config.producerType != null) {
+			return createProducerThroughConfigurator(config.producerType, maxwellContext, configurationSettings);
 		}
 		throw new IllegalStateException("No producer configured");
 	}
 
 	private Producer createProducerThroughFactory(MaxwellContext maxwellContext, MaxwellConfig config) {
 		try {
-			final Class<?> clazz = Class.forName(config.getProducerFactory());
+			final Class<?> clazz = Class.forName(config.producerFactory);
 			final ProducerFactory producerFactory = ProducerFactory.class.cast(clazz.newInstance());
 			return producerFactory.createProducer(maxwellContext);
 		} catch (ClassNotFoundException e) {
-			throw new InvalidOptionException("Invalid value for custom_producer.factory, class "+config.getProducerFactory()+" not found", e, "--custom_producer.factory");
+			throw new InvalidOptionException("Invalid value for custom_producer.factory, class "+config.producerFactory+" not found", e, "--custom_producer.factory");
 		} catch (IllegalAccessException | InstantiationException | ClassCastException e) {
 			throw new InvalidOptionException("Invalid value for custom_producer.factory, class instantiation error", e, "--custom_producer.factory");
 		}
@@ -75,7 +76,7 @@ public class ProducerInitialization {
 		}
 	}
 
-	private void registerHealthCheck(String identifier, Producer producer) {
+	private void registerHealthCheck(Producer producer) {
 		if (producer != null && producer.getDiagnostic() != null) {
 			healthCheckRegistry.register("MaxwellHealth.Producer", new ProducerHealthCheck(producer));
 		}

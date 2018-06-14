@@ -88,19 +88,19 @@ public class KafkaProducerConfiguration implements ProducerConfiguration {
 
 	@Override
 	public void mergeWith(MaxwellConfig maxwellConfig) {
-		if (maxwellConfig.getProducerPartitionKey() == null && kafkaPartitionKey != null) {
+		if (maxwellConfig.producerPartitionKey == null && kafkaPartitionKey != null) {
 			LOGGER.warn("kafka_partition_by is deprecated, please use producer_partition_by");
-			maxwellConfig.setProducerPartitionKey(this.getKafkaPartitionKey());
+			maxwellConfig.producerPartitionKey = this.getKafkaPartitionKey();
 		}
 
-		if (maxwellConfig.getProducerPartitionColumns() == null && kafkaPartitionColumns != null) {
+		if (maxwellConfig.producerPartitionColumns == null && kafkaPartitionColumns != null) {
 			LOGGER.warn("kafka_partition_columns is deprecated, please use producer_partition_columns");
-			maxwellConfig.setProducerPartitionColumns(this.getKafkaPartitionColumns());
+			maxwellConfig.producerPartitionColumns = this.getKafkaPartitionColumns();
 		}
 
-		if (maxwellConfig.getProducerPartitionFallback() == null && kafkaPartitionFallback != null) {
+		if (maxwellConfig.producerPartitionFallback == null && kafkaPartitionFallback != null) {
 			LOGGER.warn("kafka_partition_by_fallback is deprecated, please use producer_partition_by_fallback");
-			maxwellConfig.setProducerPartitionFallback(this.getKafkaPartitionFallback());
+			maxwellConfig.producerPartitionFallback = this.getKafkaPartitionFallback();
 		}
 	}
 

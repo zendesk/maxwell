@@ -46,7 +46,7 @@ public class InflightMessageList {
 
 	public InflightMessageList(MaxwellContext context, long capacity, double completePercentageThreshold) {
 		this.context = context;
-		this.producerAckTimeoutMS = context.getConfig().getProducerAckTimeout();
+		this.producerAckTimeoutMS = context.getConfig().producerAckTimeout;
 		this.completePercentageThreshold = completePercentageThreshold;
 		this.linkedMap = new LinkedHashMap<>();
 		this.capacity = capacity;

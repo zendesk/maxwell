@@ -18,7 +18,7 @@ public class BootstrapperFactory {
 	}
 
 	public Bootstrapper createFor(MaxwellContext maxwellContext) throws IOException {
-		switch (maxwellContext.getConfig().getBootstrapperType()) {
+		switch (maxwellContext.getConfig().bootstrapperType) {
 			case "async":
 				return new AsynchronousBootstrapper(maxwellContext, rowMapFactory);
 			case "sync":

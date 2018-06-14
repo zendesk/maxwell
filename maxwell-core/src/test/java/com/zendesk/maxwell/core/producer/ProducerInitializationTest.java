@@ -40,7 +40,8 @@ public class ProducerInitializationTest {
 	public void shouldSetupProducerFromSpringContext() {
 		String producerType = "producerType";
 		Properties configurationSettings = mock(Properties.class);
-		MaxwellConfig config = mock(MaxwellConfig.class);
+		MaxwellConfig config = new MaxwellConfig();
+		config.producerType = producerType;
 		MetricRegistry metricRegistry = mock(MetricRegistry.class);
 		Metrics metrics = mock(Metrics.class);
 		MaxwellContext context = mock(MaxwellContext.class);
@@ -48,7 +49,6 @@ public class ProducerInitializationTest {
 		ProducerConfiguration producerConfiguration = mock(ProducerConfiguration.class);
 		Producer producer = mock(Producer.class);
 
-		when(config.getProducerType()).thenReturn(producerType);
 		when(metrics.getRegistry()).thenReturn(metricRegistry);
 		when(context.getMetrics()).thenReturn(metrics);
 		when(context.getConfig()).thenReturn(config);
@@ -68,12 +68,12 @@ public class ProducerInitializationTest {
 	@Test
 	public void shouldSetupProducerThroughCustomProducerFactoryClass() {
 		Properties configurationSettings = mock(Properties.class);
-		MaxwellConfig config = mock(MaxwellConfig.class);
+		MaxwellConfig config = new MaxwellConfig();
+		config.producerFactory = TestProducerFactory.class.getName();
 		MetricRegistry metricRegistry = mock(MetricRegistry.class);
 		Metrics metrics = mock(Metrics.class);
 		MaxwellContext context = mock(MaxwellContext.class);
 
-		when(config.getProducerFactory()).thenReturn(TestProducerFactory.class.getName());
 		when(metrics.getRegistry()).thenReturn(metricRegistry);
 		when(context.getMetrics()).thenReturn(metrics);
 		when(context.getConfig()).thenReturn(config);

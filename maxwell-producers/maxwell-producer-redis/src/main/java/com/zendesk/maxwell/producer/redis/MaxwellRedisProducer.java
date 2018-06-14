@@ -57,7 +57,7 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 			this.failedMessageMeter.mark();
 			logger.error("Exception during put", e);
 
-			if (!context.getConfig().isIgnoreProducerError()) {
+			if (!context.getConfig().ignoreProducerError) {
 				throw new RuntimeException(e);
 			}
 		}

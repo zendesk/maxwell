@@ -21,7 +21,7 @@ public abstract class AbstractProducer implements Producer {
 
 	public AbstractProducer(MaxwellContext context) {
 		this.context = context;
-		this.outputConfig = context.getConfig().getOutputConfig();
+		this.outputConfig = context.getConfig().outputConfig;
 
 		Metrics metrics = context.getMetrics();
 		MetricRegistry metricRegistry = metrics.getRegistry();

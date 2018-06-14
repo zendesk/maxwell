@@ -37,9 +37,9 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testCustomMetricsAndProducer() throws Exception {
 		MaxwellConfig config = getConfig(server);
-		config.setMetricsReportingType("embedded");
-		config.setMetricsPrefix("prefix");
-		config.setProducerFactory(EmbeddedTestProducerFactory.class.getName());
+		config.metricsReportingType = "embedded";
+		config.metricsPrefix = "prefix";
+		config.producerFactory = EmbeddedTestProducerFactory.class.getName();
 
 		final CountDownLatch latch = new CountDownLatch(1);
 		final MaxwellContext maxwellContext = maxwellContextFactory.createFor(config);
@@ -62,13 +62,13 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 
 	private MaxwellConfig getConfig(MysqlIsolatedServer mysql) {
 		MaxwellConfig config = maxwellConfigFactory.create();
-		MaxwellMysqlConfig maxwellMysql = config.getMaxwellMysql();
+		MaxwellMysqlConfig maxwellMysql = config.maxwellMysql;
 		maxwellMysql.user = "maxwell";
 		maxwellMysql.password = "maxwell";
 		maxwellMysql.host = "localhost";
 		maxwellMysql.port = mysql.getPort();
 		maxwellMysql.sslMode = SSLMode.DISABLED;
-		config.setReplicationMysql(maxwellMysql);
+		config.replicationMysql = maxwellMysql;
 		return config;
 	}
 
