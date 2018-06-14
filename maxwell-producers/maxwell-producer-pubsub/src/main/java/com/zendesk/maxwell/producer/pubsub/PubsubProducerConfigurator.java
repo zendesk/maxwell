@@ -3,10 +3,7 @@ package com.zendesk.maxwell.producer.pubsub;
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.api.config.CommandLineOptionParserContext;
 import com.zendesk.maxwell.api.config.ConfigurationSupport;
-import com.zendesk.maxwell.core.producer.Producer;
-import com.zendesk.maxwell.core.producer.ProducerConfiguration;
-import com.zendesk.maxwell.core.producer.ProducerConfigurator;
-import com.zendesk.maxwell.core.producer.ProducerInstantiationException;
+import com.zendesk.maxwell.core.producer.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,11 +35,10 @@ public class PubsubProducerConfigurator implements ProducerConfigurator {
 
 	@Override
 	public Optional<ProducerConfiguration> parseConfiguration(Properties configurationValues) {
-		PubsubProducerConfiguration config = new PubsubProducerConfiguration();
-		config.setPubsubProjectId(configurationSupport.fetchOption("pubsub_project_id", configurationValues, null));
-		config.setPubsubTopic(configurationSupport.fetchOption("pubsub_topic", configurationValues, "maxwell"));
-		config.setDdlPubsubTopic(configurationSupport.fetchOption("ddl_pubsub_topic", configurationValues, config.getPubsubTopic()));
-		return Optional.of(config);
+		String projectId = configurationSupport.fetchOption("pubsub_project_id", configurationValues, null);
+		String topic = configurationSupport.fetchOption("pubsub_topic", configurationValues, "maxwell");
+		String ddlTopic = configurationSupport.fetchOption("ddl_pubsub_topic", configurationValues, topic);
+		return Optional.of(new PubsubProducerConfiguration(projectId, topic, ddlTopic));
 	}
 
 	@Override

@@ -87,12 +87,10 @@ public class MaxwellPubsubProducer extends AbstractProducer {
   private final ArrayBlockingQueue<RowMap> queue;
   private final MaxwellPubsubProducerWorker worker;
 
-  public MaxwellPubsubProducer(MaxwellContext context, PubsubProducerConfiguration configuration)
-                               throws IOException {
+  public MaxwellPubsubProducer(MaxwellContext context, PubsubProducerConfiguration configuration) throws IOException {
     super(context);
     this.queue = new ArrayBlockingQueue<>(100);
-    this.worker = new MaxwellPubsubProducerWorker(context, configuration.getPubsubProjectId(), configuration.getPubsubTopic(), configuration.getDdlPubsubTopic(),
-                                                  this.queue);
+    this.worker = new MaxwellPubsubProducerWorker(context, configuration.projectId, configuration.topic, configuration.ddlTopic, this.queue);
     Thread thread = new Thread(this.worker, "maxwell-pubsub-worker");
     thread.setDaemon(true);
     thread.start();
