@@ -46,18 +46,18 @@ public class RabbitmqProducerConfigurator implements ProducerConfigurator {
 	@Override
 	public Optional<ProducerConfiguration> parseConfiguration(Properties configurationValues) {
 		RabbitmqProducerConfiguration config = new RabbitmqProducerConfiguration();
-		config.setRabbitmqHost(configurationSupport.fetchOption("rabbitmq_host", configurationValues, "localhost"));
-		config.setRabbitmqPort(Integer.parseInt(configurationSupport.fetchOption("rabbitmq_port", configurationValues, "5672")));
-		config.setRabbitmqUser(configurationSupport.fetchOption("rabbitmq_user", configurationValues, "guest"));
-		config.setRabbitmqPass(configurationSupport.fetchOption("rabbitmq_pass", configurationValues, "guest"));
-		config.setRabbitmqVirtualHost(configurationSupport.fetchOption("rabbitmq_virtual_host", configurationValues, "/"));
-		config.setRabbitmqExchange(configurationSupport.fetchOption("rabbitmq_exchange", configurationValues, "maxwell"));
-		config.setRabbitmqExchangeType(configurationSupport.fetchOption("rabbitmq_exchange_type", configurationValues, "fanout"));
-		config.setRabbitMqExchangeDurable(configurationSupport.fetchBooleanOption("rabbitmq_exchange_durable", configurationValues, false));
-		config.setRabbitMqExchangeAutoDelete(configurationSupport.fetchBooleanOption("rabbitmq_exchange_autodelete", configurationValues, false));
-		config.setRabbitmqRoutingKeyTemplate(configurationSupport.fetchOption("rabbitmq_routing_key_template", configurationValues, "%db%.%table%"));
-		config.setRabbitmqMessagePersistent(configurationSupport.fetchBooleanOption("rabbitmq_message_persistent", configurationValues, false));
-		config.setRabbitmqDeclareExchange(configurationSupport.fetchBooleanOption("rabbitmq_declare_exchange", configurationValues, true));
+		config.host = configurationSupport.fetchOption("rabbitmq_host", configurationValues, "localhost");
+		config.port = Integer.parseInt(configurationSupport.fetchOption("rabbitmq_port", configurationValues, "5672"));
+		config.user = configurationSupport.fetchOption("rabbitmq_user", configurationValues, "guest");
+		config.password = configurationSupport.fetchOption("rabbitmq_pass", configurationValues, "guest");
+		config.virtualHost = configurationSupport.fetchOption("rabbitmq_virtual_host", configurationValues, "/");
+		config.exchange = configurationSupport.fetchOption("rabbitmq_exchange", configurationValues, "maxwell");
+		config.exchangeType = configurationSupport.fetchOption("rabbitmq_exchange_type", configurationValues, "fanout");
+		config.durableExchange = configurationSupport.fetchBooleanOption("rabbitmq_exchange_durable", configurationValues, false);
+		config.autoDeleteExchange = configurationSupport.fetchBooleanOption("rabbitmq_exchange_autodelete", configurationValues, false);
+		config.routingKeyTemplate = configurationSupport.fetchOption("rabbitmq_routing_key_template", configurationValues, "%db%.%table%");
+		config.persistentMessages = configurationSupport.fetchBooleanOption("rabbitmq_message_persistent", configurationValues, false);
+		config.declareExchange = configurationSupport.fetchBooleanOption("rabbitmq_declare_exchange", configurationValues, true);
 		return Optional.of(config);
 	}
 

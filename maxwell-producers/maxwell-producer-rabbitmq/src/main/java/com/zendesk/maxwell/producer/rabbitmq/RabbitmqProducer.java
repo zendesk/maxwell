@@ -25,19 +25,19 @@ public class RabbitmqProducer extends AbstractProducer {
 		super(context);
 		this.config = config;
 
-		exchangeName = this.config.getRabbitmqExchange();
-		props = this.config.isRabbitmqMessagePersistent() ? MessageProperties.MINIMAL_PERSISTENT_BASIC : null;
+		exchangeName = this.config.exchange;
+		props = this.config.persistentMessages ? MessageProperties.MINIMAL_PERSISTENT_BASIC : null;
 
 		ConnectionFactory factory = new ConnectionFactory();
-		factory.setHost(this.config.getRabbitmqHost());
-		factory.setPort(this.config.getRabbitmqPort());
-		factory.setUsername(this.config.getRabbitmqUser());
-		factory.setPassword(this.config.getRabbitmqPass());
-		factory.setVirtualHost(this.config.getRabbitmqVirtualHost());
+		factory.setHost(this.config.host);
+		factory.setPort(this.config.port);
+		factory.setUsername(this.config.user);
+		factory.setPassword(this.config.password);
+		factory.setVirtualHost(this.config.virtualHost);
 		try {
 			this.channel = factory.newConnection().createChannel();
-			if(this.config.isRabbitmqDeclareExchange()) {
-				this.channel.exchangeDeclare(exchangeName, this.config.getRabbitmqExchangeType(), this.config.isRabbitMqExchangeDurable(), this.config.isRabbitMqExchangeAutoDelete(), null);
+			if(this.config.declareExchange) {
+				this.channel.exchangeDeclare(exchangeName, this.config.exchangeType, this.config.durableExchange, this.config.autoDeleteExchange, null);
 			}
 		} catch (IOException | TimeoutException e) {
 			throw new RuntimeException(e);
@@ -65,7 +65,7 @@ public class RabbitmqProducer extends AbstractProducer {
 	}
 
 	private String getRoutingKeyFromTemplate(RowMap r) {
-		return config.getRabbitmqRoutingKeyTemplate()
+		return config.routingKeyTemplate
 				.replace("%db%", r.getDatabase())
 				.replace("%table%", r.getTable());
 	}
