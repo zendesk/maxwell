@@ -33,27 +33,26 @@ public class DatadogMetricReporter implements MetricReporter<DatadogMetricReport
     @Override
     public void start(DatadogMetricReporterConfiguration configuration) {
         Transport transport;
-        if (configuration.getType().contains("http")) {
+        if (configuration.type.contains("http")) {
             LOGGER.info("Enabling HTTP Datadog reporting");
             transport = new HttpTransport.Builder()
-                    .withApiKey(configuration.getApiKey())
+                    .withApiKey(configuration.apiKey)
                     .build();
         } else {
-            LOGGER.info("Enabling UDP Datadog reporting with host " + configuration.getHost()
-                    + ", port " + configuration.getPort());
+            LOGGER.info("Enabling UDP Datadog reporting with host " + configuration.host + ", port " + configuration.port);
             transport = new UdpTransport.Builder()
-                    .withStatsdHost(configuration.getHost())
-                    .withPort(configuration.getPort())
+                    .withStatsdHost(configuration.host)
+                    .withPort(configuration.port)
                     .build();
         }
 
         final DatadogReporter reporter = DatadogReporter.forRegistry(metricRegistry)
                 .withTransport(transport)
                 .withExpansions(EnumSet.of(COUNT, RATE_1_MINUTE, RATE_15_MINUTE, MEDIAN, P95, P99))
-                .withTags(getTags(configuration.getTags()))
+                .withTags(getTags(configuration.tags))
                 .build();
 
-        reporter.start(configuration.getInterval(), TimeUnit.SECONDS);
+        reporter.start(configuration.interval, TimeUnit.SECONDS);
         LOGGER.info("Datadog reporting enabled");
     }
 

@@ -39,12 +39,12 @@ public class DatadogMetricReporterConfigurator implements MetricReporterConfigur
     @Override
     public Optional<MetricReporterConfiguration> parseConfiguration(Properties configurationValues) {
         DatadogMetricReporterConfiguration config = new DatadogMetricReporterConfiguration();
-        config.setType(configurationSupport.fetchOption("metrics_datadog_type", configurationValues, DatadogMetricReporterConfiguration.DEFAULT_METRICS_DATADOG_TYPE));
-        config.setTags(configurationSupport.fetchOption("metrics_datadog_tags", configurationValues, DatadogMetricReporterConfiguration.DEFAULT_METRICS_DATADOG_TAGS));
-        config.setApiKey(configurationSupport.fetchOption("metrics_datadog_apikey", configurationValues, DatadogMetricReporterConfiguration.DEFAULT_METRICS_DATADOG_APIKEY));
-        config.setHost(configurationSupport.fetchOption("metrics_datadog_host", configurationValues, DatadogMetricReporterConfiguration.DEFAULT_METRICS_DATADOG_HOST));
-        config.setPort(configurationSupport.fetchIntegerOption("metrics_datadog_port", configurationValues, DatadogMetricReporterConfiguration.DEFAULT_METRICS_DATADOG_PORT));
-        config.setInterval(configurationSupport.fetchLongOption("metrics_datadog_interval", configurationValues, DatadogMetricReporterConfiguration.DEFAULT_METRICS_DATADOG_INTERVAL));
+        config.type = configurationSupport.fetchOption("metrics_datadog_type", configurationValues, DatadogMetricReporterConfiguration.DEFAULT_METRICS_DATADOG_TYPE);
+        config.tags = configurationSupport.fetchOption("metrics_datadog_tags", configurationValues, DatadogMetricReporterConfiguration.DEFAULT_METRICS_DATADOG_TAGS);
+        config.apiKey = configurationSupport.fetchOption("metrics_datadog_apikey", configurationValues, DatadogMetricReporterConfiguration.DEFAULT_METRICS_DATADOG_APIKEY);
+        config.host = configurationSupport.fetchOption("metrics_datadog_host", configurationValues, DatadogMetricReporterConfiguration.DEFAULT_METRICS_DATADOG_HOST);
+        config.port = configurationSupport.fetchIntegerOption("metrics_datadog_port", configurationValues, DatadogMetricReporterConfiguration.DEFAULT_METRICS_DATADOG_PORT);
+        config.interval = configurationSupport.fetchLongOption("metrics_datadog_interval", configurationValues, DatadogMetricReporterConfiguration.DEFAULT_METRICS_DATADOG_INTERVAL);
         return Optional.empty();
     }
 
