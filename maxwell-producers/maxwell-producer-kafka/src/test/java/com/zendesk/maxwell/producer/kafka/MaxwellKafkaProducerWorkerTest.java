@@ -26,7 +26,7 @@ public class MaxwellKafkaProducerWorkerTest {
 		MaxwellContext context = mock(MaxwellContext.class);
 
 		KafkaProducerConfiguration configuration = new KafkaProducerConfiguration();
-		configuration.getKafkaProperties().put("bootstrap.servers", "localhost:9092");
+		configuration.kafkaProperties.put("bootstrap.servers", "localhost:9092");
 
 		MaxwellConfig config = maxwellConfigFactory.create();
 		when(context.getConfig()).thenReturn(config);

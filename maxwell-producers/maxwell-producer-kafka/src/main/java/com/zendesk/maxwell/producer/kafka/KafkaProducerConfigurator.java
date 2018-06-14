@@ -46,18 +46,18 @@ public class KafkaProducerConfigurator implements ProducerConfigurator {
 	@Override
 	public Optional<ProducerConfiguration> parseConfiguration(Properties configurationValues) {
 		KafkaProducerConfiguration config = new KafkaProducerConfiguration();
-		config.setKafkaTopic(configurationSupport.fetchOption("kafka_topic", configurationValues, "maxwell"));
-		config.setKafkaKeyFormat(configurationSupport.fetchOption("kafka_key_format", configurationValues, "hash"));
-		config.setKafkaPartitionKey(configurationSupport.fetchOption("kafka_partition_by", configurationValues, null));
-		config.setKafkaPartitionColumns(configurationSupport.fetchOption("kafka_partition_columns", configurationValues, null));
-		config.setKafkaPartitionFallback(configurationSupport.fetchOption("kafka_partition_by_fallback", configurationValues, null));
+		config.kafkaTopic = configurationSupport.fetchOption("kafka_topic", configurationValues, "maxwell");
+		config.kafkaKeyFormat = configurationSupport.fetchOption("kafka_key_format", configurationValues, "hash");
+		config.kafkaPartitionKey = configurationSupport.fetchOption("kafka_partition_by", configurationValues, null);
+		config.kafkaPartitionColumns = configurationSupport.fetchOption("kafka_partition_columns", configurationValues, null);
+		config.kafkaPartitionFallback = configurationSupport.fetchOption("kafka_partition_by_fallback", configurationValues, null);
 
-		config.setKafkaPartitionHash(configurationSupport.fetchOption("kafka_partition_hash", configurationValues, "default"));
-		config.setDdlKafkaTopic(configurationSupport.fetchOption("ddl_kafka_topic", configurationValues, config.getKafkaTopic()));
+		config.kafkaPartitionHash = configurationSupport.fetchOption("kafka_partition_hash", configurationValues, "default");
+		config.ddlKafkaTopic = configurationSupport.fetchOption("ddl_kafka_topic", configurationValues, config.kafkaTopic);
 
 		String kafkaBootstrapServers = configurationSupport.fetchOption("kafka.bootstrap.servers", configurationValues, null);
 		if (kafkaBootstrapServers != null){
-			config.getKafkaProperties().setProperty("bootstrap.servers", kafkaBootstrapServers);
+			config.kafkaProperties.setProperty("bootstrap.servers", kafkaBootstrapServers);
 		}
 
 		if (configurationValues != null) {
@@ -67,7 +67,7 @@ public class KafkaProducerConfigurator implements ProducerConfigurator {
 					if (k.equals("kafka.bootstrap.servers") && kafkaBootstrapServers != null){
 						continue; // don't override command line bootstrap servers with config files'
 					}
-					config.getKafkaProperties().setProperty(k.replace("kafka.", ""), configurationValues.getProperty(k));
+					config.kafkaProperties.setProperty(k.replace("kafka.", ""), configurationValues.getProperty(k));
 				}
 			}
 		}
