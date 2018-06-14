@@ -1,10 +1,5 @@
 package com.zendesk.maxwell.schema.columndef;
 
-import java.sql.Time;
-import java.sql.Timestamp;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-
 public abstract class ColumnDefWithLength extends ColumnDef {
 	protected Long columnLength;
 
@@ -48,14 +43,6 @@ public abstract class ColumnDefWithLength extends ColumnDef {
 
 	protected abstract String formatValue(Object value);
 
-	protected static String buildStrFormatForColLength(Long columnLength) {
-		StringBuilder result = threadLocalBuilder.get();
-		result.append("%0");
-		result.append(columnLength);
-		result.append("d");
-		return result.toString();
-	}
-
 	protected static String appendFractionalSeconds(String value, int nanos, Long columnLength) {
 		if ( columnLength == 0L )
 			return value;
@@ -65,13 +52,15 @@ public abstract class ColumnDefWithLength extends ColumnDef {
 		int divideBy = (int) Math.pow(10, 6 + 3 - columnLength);
 		int fractional = nanos / divideBy;
 
-		String strFractional = String.format(buildStrFormatForColLength(columnLength), fractional);
-
 		StringBuilder result = threadLocalBuilder.get();
 		result.append(value);
 		result.append(".");
-		result.append(strFractional);
 
+		String asStr = String.valueOf(fractional);
+		for ( int i = 0 ; i < columnLength - asStr.length(); i++ )
+			result.append("0");
+
+		result.append(asStr);
 		return result.toString();
 	}
 }

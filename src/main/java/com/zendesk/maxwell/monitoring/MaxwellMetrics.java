@@ -5,6 +5,7 @@ import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Slf4jReporter;
 import com.codahale.metrics.health.HealthCheckRegistry;
+import com.codahale.metrics.jvm.*;
 import com.zendesk.maxwell.MaxwellConfig;
 import org.apache.commons.lang.StringUtils;
 import org.coursera.metrics.datadog.DatadogReporter;
@@ -43,6 +44,14 @@ public class MaxwellMetrics implements Metrics {
 		}
 
 		metricsPrefix = config.metricsPrefix;
+
+		if (config.metricsJvm) {
+			config.metricRegistry.register(metricName("jvm", "memory_usage"), new MemoryUsageGaugeSet());
+			config.metricRegistry.register(metricName("jvm", "gc"), new GarbageCollectorMetricSet());
+			config.metricRegistry.register(metricName("jvm", "class_loading"), new ClassLoadingGaugeSet());
+			config.metricRegistry.register(metricName("jvm", "file_descriptor_ratio"), new FileDescriptorRatioGauge());
+			config.metricRegistry.register(metricName("jvm", "thread_states"), new CachedThreadStatesGaugeSet(60, TimeUnit.SECONDS));
+		}
 
 		if (config.metricsReportingType.contains(reportingTypeSlf4j)) {
 			final Slf4jReporter reporter = Slf4jReporter.forRegistry(config.metricRegistry)

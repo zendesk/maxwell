@@ -175,6 +175,10 @@ public class SchemaStoreSchema {
 			// default 0 makes sorting easier (rows before this migration are older than those after)
 			performAlter(c, "alter table `schemas` add column `last_heartbeat_read` bigint null default 0");
 		}
+
+		if ( !getTableColumns("bootstrap", c).containsKey("client_id") ) {
+			performAlter(c, "alter table `bootstrap` add column `client_id` varchar(255) charset 'latin1' not null default 'maxwell'");
+		}
 	}
 
 	private static void backfillPositionSHAs(Connection c) throws SQLException {

@@ -2,6 +2,7 @@ package com.zendesk.maxwell;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.shyiko.mysql.binlog.network.SSLMode;
+import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
@@ -36,6 +37,7 @@ public class MaxwellTestSupport {
 
 		Connection conn = server.getConnection();
 		SchemaStoreSchema.ensureMaxwellSchema(conn, "maxwell");
+		conn.createStatement().executeQuery("use maxwell");
 		SchemaStoreSchema.upgradeSchemaStoreSchema(conn);
 		return server;
 	}
@@ -95,7 +97,7 @@ public class MaxwellTestSupport {
 	}
 
 
-	public static MaxwellContext buildContext(int port, Position p, MaxwellFilter filter)
+	public static MaxwellContext buildContext(int port, Position p, Filter filter)
 			throws SQLException, URISyntaxException {
 		MaxwellConfig config = new MaxwellConfig();
 
@@ -123,7 +125,7 @@ public class MaxwellTestSupport {
 		mysql.execute("drop database if exists maxwell");
 	}
 
-	public static List<RowMap> getRowsWithReplicator(final MysqlIsolatedServer mysql, MaxwellFilter filter, final String queries[], final String before[]) throws Exception {
+	public static List<RowMap> getRowsWithReplicator(final MysqlIsolatedServer mysql, Filter filter, final String queries[], final String before[]) throws Exception {
 		MaxwellTestSupportCallback callback = new MaxwellTestSupportCallback() {
 			@Override
 			public void afterReplicatorStart(MysqlIsolatedServer mysql) throws SQLException {
@@ -148,7 +150,7 @@ public class MaxwellTestSupport {
 		return Position.capture(c, inGtidMode());
 	}
 
-	public static List<RowMap> getRowsWithReplicator(final MysqlIsolatedServer mysql, MaxwellFilter filter, MaxwellTestSupportCallback callback, MaxwellOutputConfig outputConfig) throws Exception {
+	public static List<RowMap> getRowsWithReplicator(final MysqlIsolatedServer mysql, Filter filter, MaxwellTestSupportCallback callback, MaxwellOutputConfig outputConfig) throws Exception {
 		final ArrayList<RowMap> list = new ArrayList<>();
 
 		clearSchemaStore(mysql);
@@ -166,10 +168,7 @@ public class MaxwellTestSupport {
 		}
 
 		if ( filter != null ) {
-			if ( filter.isDatabaseWhitelist() )
-				filter.includeDatabase("test");
-			if ( filter.isTableWhitelist() )
-				filter.includeTable("boundary");
+			filter.addRule("include: test.*");
 		}
 
 		config.filter = filter;

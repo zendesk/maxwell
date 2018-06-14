@@ -11,7 +11,7 @@ ONETIMESERVER_URL="https://raw.githubusercontent.com/osheroff/onetimeserver-bina
 CACHE_DIR=$HOME/.onetimeserver/$PLATFORM
 
 function usage() {
-  echo "usage: onetimeserver [--mysql-version=VERSION|-m VERSION] [-v|--verbose] [mysql_args...]"
+  echo "usage: onetimeserver [--mysql-version=VERSION|-m VERSION] [-v|--verbose] [--parent-pid=PID] [--no-clean] [--reuse PATH] [mysql_args...]"
   echo "       onetimeserver update"
 }
 
@@ -24,12 +24,24 @@ do
       echo "onetimeserver updated"
       exit
       ;;
+    --parent-pid=*)
+      PARENT_PID="${1#*=}"
+      ;;
     --mysql-version=*)
       MYSQL_VERSION="-mysql-version ${1#*=}"
       ;;
     -m)
       shift
       MYSQL_VERSION="-mysql-version $1"
+      ;;
+    --reuse=*)
+      REUSE="-reuse ${1#*=}"
+      ;;
+    -b|--block)
+      BLOCK="1"
+      ;;
+    --no-clean)
+      NO_CLEAN="-no-clean"
       ;;
     -d|--debug)
       DEBUG="-debug"
@@ -82,9 +94,24 @@ then
   chmod +x $CACHE_DIR/onetimeserver-go
 fi
 
-if [ "$DEBUG" == "-debug" ]
+if ! [ -z "$BLOCK" ]
 then
-  echo "exec: " $CACHE_DIR/wrapper $DEBUG $MYSQL_VERSION -ppid $PPID -type mysql -- $EXTRA_ARGS 1>&2
+  PARENT_PID=$$
+elif  [ -z "$PARENT_PID" ]
+then
+  PARENT_PID=$PPID
 fi
 
-exec $CACHE_DIR/wrapper $DEBUG $MYSQL_VERSION -ppid $PPID -type mysql -- $EXTRA_ARGS
+if [ "$DEBUG" == "-debug" ]
+then
+  echo "exec: " $CACHE_DIR/wrapper $DEBUG $BLOCK $MYSQL_VERSION -ppid $PARENT_PID -type mysql -- $EXTRA_ARGS 1>&2
+fi
+
+GO_ARGS="$DEBUG $BLOCK $MYSQL_VERSION $NO_CLEAN $REUSE -ppid $PARENT_PID -type mysql"
+if [ "$BLOCK" == "1" ]
+then
+  $CACHE_DIR/wrapper $GO_ARGS -- $EXTRA_ARGS &
+  sleep 2000000
+else
+  exec $CACHE_DIR/wrapper $GO_ARGS -- $EXTRA_ARGS
+fi

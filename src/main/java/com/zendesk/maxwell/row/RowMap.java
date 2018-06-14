@@ -21,6 +21,15 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zendesk.maxwell.errors.ProtectedAttributeNameException;
+import com.zendesk.maxwell.producer.EncryptionMode;
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.replication.Position;
+
 
 public class RowMap implements Serializable {
 
@@ -34,11 +43,13 @@ public class RowMap implements Serializable {
 	private final String table;
 	private final Long timestampMillis;
 	private final Long timestampSeconds;
+	private final Position position;
 	private Position nextPosition;
 	private String kafkaTopic;
 	protected boolean suppressed;
 
 	private Long xid;
+	private Long xoffset;
 	private boolean txCommit;
 	private Long serverId;
 	private Long threadId;
@@ -105,7 +116,7 @@ public class RowMap implements Serializable {
 			};
 
 	public RowMap(String type, String database, String table, Long timestampMillis, List<String> pkColumns,
-			Position nextPosition, String rowQuery) {
+			Position position, Position nextPosition, String rowQuery) {
 		this.rowQuery = rowQuery;
 		this.rowType = type;
 		this.database = database;
@@ -115,10 +126,16 @@ public class RowMap implements Serializable {
 		this.data = new LinkedHashMap<>();
 		this.oldData = new LinkedHashMap<>();
 		this.extraAttributes = new LinkedHashMap<>();
+		this.position = position;
 		this.nextPosition = nextPosition;
 		this.pkColumns = pkColumns;
 		this.suppressed = false;
 		this.approximateSize = 100L; // more or less 100 bytes of overhead
+	}
+
+	public RowMap(String type, String database, String table, Long timestampMillis, List<String> pkColumns,
+				  Position nextPosition, String rowQuery) {
+		this(type, database, table, timestampMillis, pkColumns, nextPosition, nextPosition, rowQuery);
 	}
 
 	public RowMap(String type, String database, String table, Long timestampMillis, List<String> pkColumns,
@@ -150,7 +167,7 @@ public class RowMap implements Serializable {
 				if ( data.containsKey(pk) )
 					pkValue = data.get(pk);
 
-				g.writeObjectField("pk." + pk.toLowerCase(), pkValue);
+				writeValueToJSON(g, true, "pk." + pk.toLowerCase(), pkValue);
 			}
 		}
 
@@ -173,7 +190,7 @@ public class RowMap implements Serializable {
 				pkValue = data.get(pk);
 
 			g.writeStartObject();
-			g.writeObjectField(pk.toLowerCase(), pkValue);
+			writeValueToJSON(g, true, pk.toLowerCase(), pkValue);
 			g.writeEndObject();
 		}
 		g.writeEndArray();
@@ -223,27 +240,31 @@ public class RowMap implements Serializable {
 		for (String key : data.keySet()) {
 			Object value = data.get(key);
 
-			if (value == null && !includeNullField)
-				continue;
-
-			if (value instanceof List) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
-				List stringList = (List) value;
-
-				g.writeArrayFieldStart(key);
-				for (Object s : stringList) {
-					g.writeObject(s);
-				}
-				g.writeEndArray();
-			} else if (value instanceof RawJSONString) {
-				// JSON column type, using binlog-connector's serializers.
-				g.writeFieldName(key);
-				g.writeRawValue(((RawJSONString) value).json);
-			} else {
-				g.writeObjectField(key, value);
-			}
+			writeValueToJSON(g, includeNullField, key, value);
 		}
 
 		g.writeEndObject(); // end of 'jsonMapName: { }'
+	}
+
+	private void writeValueToJSON(JsonGenerator g, boolean includeNullField, String key, Object value) throws IOException {
+		if (value == null && !includeNullField)
+			return;
+
+		if (value instanceof List) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
+			List stringList = (List) value;
+
+			g.writeArrayFieldStart(key);
+			for (Object s : stringList) {
+				g.writeObject(s);
+			}
+			g.writeEndArray();
+		} else if (value instanceof RawJSONString) {
+			// JSON column type, using binlog-connector's serializers.
+			g.writeFieldName(key);
+			g.writeRawValue(((RawJSONString) value).json);
+		} else {
+			g.writeObjectField(key, value);
+		}
 	}
 
 	public String toJSON() throws Exception {
@@ -269,11 +290,14 @@ public class RowMap implements Serializable {
 			if ( this.xid != null )
 				g.writeNumberField(FieldNames.TRANSACTION_ID, this.xid);
 
+			if ( outputConfig.includesXOffset && this.xoffset != null && !this.txCommit )
+				g.writeNumberField(FieldNames.TRANSACTION_OFFSET, this.xoffset);
+
 			if ( this.txCommit )
 				g.writeBooleanField(FieldNames.COMMIT, true);
 		}
 
-		BinlogPosition binlogPosition = this.nextPosition.getBinlogPosition();
+		BinlogPosition binlogPosition = this.position.getBinlogPosition();
 		if ( outputConfig.includesBinlogPosition )
 			g.writeStringField(FieldNames.POSITION, binlogPosition.getFile() + ":" + binlogPosition.getOffset());
 
@@ -397,9 +421,8 @@ public class RowMap implements Serializable {
 		this.approximateSize += approximateKVSize(key, value);
 	}
 
-	public Position getPosition() {
-		return nextPosition;
-	}
+	public Position getNextPosition() { return nextPosition; }
+	public Position getPosition() { return position; }
 
 	public Long getXid() {
 		return xid;
@@ -407,6 +430,14 @@ public class RowMap implements Serializable {
 
 	public void setXid(Long xid) {
 		this.xid = xid;
+	}
+
+	public Long getXoffset() {
+		return xoffset;
+	}
+
+	public void setXoffset(Long xoffset) {
+		this.xoffset = xoffset;
 	}
 
 	public void setTXCommit() {
@@ -451,6 +482,10 @@ public class RowMap implements Serializable {
 
 	public boolean hasData(String name) {
 		return this.data.containsKey(name);
+	}
+
+	public String getRowQuery() {
+		return rowQuery;
 	}
 
 	public String getRowType() {

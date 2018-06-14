@@ -28,7 +28,7 @@ public class MaxwellSQSProducer extends AbstractAsyncProducer {
 	public void sendAsync(RowMap r, CallbackCompleter cc) throws Exception {
 		String value = r.toJSON();
 		SendMessageRequest messageRequest = new SendMessageRequest(queueUri, value);
-		SQSCallback callback = new SQSCallback(cc, r.getPosition(), value, context);
+		SQSCallback callback = new SQSCallback(cc, r.getNextPosition(), value, context);
 		client.sendMessageAsync(messageRequest, callback);
 	}
 

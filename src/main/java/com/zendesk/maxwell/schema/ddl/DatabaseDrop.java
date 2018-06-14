@@ -1,9 +1,7 @@
 package com.zendesk.maxwell.schema.ddl;
 
-import com.zendesk.maxwell.MaxwellFilter;
-import com.zendesk.maxwell.schema.Database;
+import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.schema.Schema;
-import com.zendesk.maxwell.schema.ddl.ResolvedDatabaseDrop;
 
 public class DatabaseDrop extends SchemaChange {
 	public String database;
@@ -23,7 +21,7 @@ public class DatabaseDrop extends SchemaChange {
 	}
 
 	@Override
-	public boolean isBlacklisted(MaxwellFilter filter) {
+	public boolean isBlacklisted(Filter filter) {
 		if ( filter == null ) {
 			return false;
 		} else {

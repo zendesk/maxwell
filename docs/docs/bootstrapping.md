@@ -12,6 +12,7 @@ option                                        | description
 --database DATABASE                           | mysql database containing the table to bootstrap
 --table TABLE                                 | mysql table to bootstrap
 --where WHERE_CLAUSE                          | where clause to restrict the rows bootstrapped from the specified table
+--client_id CLIENT_ID                         | specify which maxwell instance should perform the bootstrap operation
 
 ### Using the maxwell.bootstrap table
 ***

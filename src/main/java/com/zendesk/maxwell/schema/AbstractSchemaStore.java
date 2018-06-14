@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 import com.zendesk.maxwell.CaseSensitivity;
-import com.zendesk.maxwell.MaxwellFilter;
+import com.zendesk.maxwell.filtering.Filter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,12 +21,12 @@ public abstract class AbstractSchemaStore {
 	protected final ConnectionPool replicationConnectionPool;
 	protected final ConnectionPool schemaConnectionPool;
 	protected final CaseSensitivity caseSensitivity;
-	private final MaxwellFilter filter;
+	private final Filter filter;
 
 	protected AbstractSchemaStore(ConnectionPool replicationConnectionPool,
 								  ConnectionPool schemaConnectionPool,
 								  CaseSensitivity caseSensitivity,
-								  MaxwellFilter filter) {
+								  Filter filter) {
 		this.replicationConnectionPool = replicationConnectionPool;
 		this.schemaConnectionPool = schemaConnectionPool;
 		this.caseSensitivity = caseSensitivity;

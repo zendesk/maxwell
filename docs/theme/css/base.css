@@ -189,12 +189,14 @@ h3 {
     }
 
     h3 {
-      font-size: 120%;
-      padding: 8px;
+      font-size: 150%;
+      font-family: "times";
+      /*padding: 8px; */
       width: 80%;
       padding-bottom:2px;
       margin-bottom: 0px;
       margin-top: 20px;
+      margin-left: 30px;
     }
 
     pre, table {
@@ -215,15 +217,31 @@ h3 {
     }
 
     h4 {
-      font-size: 120%;
+      font-size: 100%;
       padding-left: 30px;
       padding-right: 30px;
-      margin-top: 15px;
+      margin-top: 30px;
       margin-bottom: 0px;
+      font-style: italic;
+      text-decoration: underline;
     }
 
-    .toctree-l4 {
-      margin-left: 10px;
+    hr + h4 {
+      margin-top: 15px;
+    }
+
+    li.toctree-l3 ul {
+      display: none;
+    }
+
+    li.toctree-l3.active ul {
+      display: block;
+    }
+
+    li .toctree-l4 {
+      list-style-type: none;
+      font-size: 80%;
+      margin-bottom: 3px;
     }
 }
 
@@ -241,16 +259,34 @@ hr {
   margin-left: 28px;
   margin-right: 0px;
   border-color: #788F96;
-  width: 80%;
+  width: 90%;
 }
 
 .content-title {
   font-size: 150%;
 }
 
+.jumptarget::before {
+  content:"";
+  display:block;
+  height:55px; /* fixed header height*/
+  margin:-55px 0 0; /* negative fixed header height */
+}
+
 h3:before {
-  content: "\27A1  ";
-  width: 30px;
+  display: block;
+  content: "";
+  margin-top: -55px;
+  height: 55px;
+  visibility: hidden;
+}
+
+h4:before {
+  display: block;
+  content: "";
+  margin-top: -50px;
+  height: 50px;
+  visibility: hidden;
 }
 
 h3:nth-of-type(1) {

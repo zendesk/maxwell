@@ -25,7 +25,7 @@ string_literal: (STRING_LITERAL | DBL_STRING_LITERAL);
 
 string: (IDENT | STRING_LITERAL);
 integer: INTEGER_LITERAL;
-charset_name: (IDENT | string_literal | QUOTED_IDENT | BINARY | ASCII);
+charset_name: (IDENT | string_literal | QUOTED_IDENT | BINARY | ASCII | DEFAULT);
 
 default_character_set: DEFAULT? charset_token '='? charset_name collation?;
 default_collation: DEFAULT? collation;

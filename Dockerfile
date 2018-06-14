@@ -1,17 +1,17 @@
 FROM maven:3.5-jdk-8
-ENV MAXWELL_VERSION=1.13.1 KAFKA_VERSION=0.11.0.1
+ENV MAXWELL_VERSION=1.15.0 KAFKA_VERSION=0.11.0.1
 
 COPY . /workspace
 
 RUN apt-get update \
     && apt-get -y upgrade \
-    && apt-get install -y build-essential \
+    && apt-get install -y make \
     && cd /workspace \
     && KAFKA_VERSION=$KAFKA_VERSION make package MAXWELL_VERSION=$MAXWELL_VERSION \
     && mkdir /app \
     && mv /workspace/target/maxwell-$MAXWELL_VERSION/maxwell-$MAXWELL_VERSION/* /app/ \
     && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/* /workspace/ \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/* /workspace/ /root/.m2/ \
     && echo "$MAXWELL_VERSION" > /REVISION
 
 WORKDIR /app

@@ -4,6 +4,7 @@ import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.bootstrap.AsynchronousBootstrapper;
 import com.zendesk.maxwell.bootstrap.NoOpBootstrapper;
 import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
+import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.monitoring.*;
 import com.zendesk.maxwell.producer.*;
 import com.zendesk.maxwell.recovery.RecoveryInfo;
@@ -55,6 +56,7 @@ public class MaxwellContext {
 
 	public MaxwellContext(MaxwellConfig config) throws SQLException, URISyntaxException {
 		this.config = config;
+		this.config.validate();
 		this.taskManager = new TaskManager();
 		this.metrics = new MaxwellMetrics(config);
 
@@ -256,7 +258,7 @@ public class MaxwellContext {
 
 	public void setPosition(RowMap r) {
 		if ( r.isTXCommit() )
-			this.setPosition(r.getPosition());
+			this.setPosition(r.getNextPosition());
 	}
 
 	public void setPosition(Position position) {
@@ -397,7 +399,7 @@ public class MaxwellContext {
 
 	}
 
-	public MaxwellFilter getFilter() {
+	public Filter getFilter() {
 		return config.filter;
 	}
 

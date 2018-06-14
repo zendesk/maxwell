@@ -25,12 +25,15 @@ public class RabbitmqProducer extends AbstractProducer {
 
 		ConnectionFactory factory = new ConnectionFactory();
 		factory.setHost(context.getConfig().rabbitmqHost);
+		factory.setPort(context.getConfig().rabbitmqPort);
 		factory.setUsername(context.getConfig().rabbitmqUser);
 		factory.setPassword(context.getConfig().rabbitmqPass);
 		factory.setVirtualHost(context.getConfig().rabbitmqVirtualHost);
 		try {
 			this.channel = factory.newConnection().createChannel();
-			this.channel.exchangeDeclare(exchangeName, context.getConfig().rabbitmqExchangeType, context.getConfig().rabbitMqExchangeDurable, context.getConfig().rabbitMqExchangeAutoDelete, null);
+			if(context.getConfig().rabbitmqDeclareExchange) {
+				this.channel.exchangeDeclare(exchangeName, context.getConfig().rabbitmqExchangeType, context.getConfig().rabbitMqExchangeDurable, context.getConfig().rabbitMqExchangeAutoDelete, null);
+			}
 		} catch (IOException | TimeoutException e) {
 			throw new RuntimeException(e);
 		}
@@ -39,7 +42,7 @@ public class RabbitmqProducer extends AbstractProducer {
 	@Override
 	public void push(RowMap r) throws Exception {
 		if ( !r.shouldOutput(outputConfig) ) {
-			context.setPosition(r.getPosition());
+			context.setPosition(r.getNextPosition());
 
 			return;
 		}
@@ -49,7 +52,7 @@ public class RabbitmqProducer extends AbstractProducer {
 
 		channel.basicPublish(exchangeName, routingKey, props, value.getBytes());
 		if ( r.isTXCommit() ) {
-			context.setPosition(r.getPosition());
+			context.setPosition(r.getNextPosition());
 		}
 		if ( LOGGER.isDebugEnabled()) {
 			LOGGER.debug("->  routing key:" + routingKey + ", partition:" + value);
