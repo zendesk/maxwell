@@ -67,6 +67,7 @@ public class ProducerInitialization {
 		ProducerConfigurator configurator = producerConfigurators.getByIdentifier(type);
 		ProducerConfiguration configuration = configurator.parseConfiguration(configurationSettings).orElseGet(PropertiesProducerConfiguration::new);
 		configuration.validate();
+		configuration.mergeWith(maxwellContext.getConfig());
 		return configurator.configure(maxwellContext, configuration);
 	}
 
