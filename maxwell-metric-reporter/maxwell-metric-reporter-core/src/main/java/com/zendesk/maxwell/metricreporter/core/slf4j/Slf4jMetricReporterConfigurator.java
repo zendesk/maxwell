@@ -33,7 +33,7 @@ public class Slf4jMetricReporterConfigurator implements MetricReporterConfigurat
 
     @Override
     public Optional<MetricReporterConfiguration> parseConfiguration(Properties configurationValues) {
-        final Long interval = configurationSupport.fetchLongOption("metrics_slf4j_interval", configurationValues, Slf4jMetricReporterConfiguration.DEFAULT_METRITCS_SLF4J_INTERVAL);
+        final Long interval = configurationSupport.fetchLongOption("metrics_slf4j_interval", configurationValues, Slf4jMetricReporterConfiguration.DEFAULT_SLF4J_INTERVAL);
         return Optional.of(new Slf4jMetricReporterConfiguration(interval));
     }
 

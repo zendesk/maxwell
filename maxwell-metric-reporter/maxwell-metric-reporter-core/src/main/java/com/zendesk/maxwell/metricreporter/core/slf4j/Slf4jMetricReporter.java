@@ -28,7 +28,7 @@ public class Slf4jMetricReporter implements MetricReporter<Slf4jMetricReporterCo
                 .convertDurationsTo(TimeUnit.MILLISECONDS)
                 .build();
 
-        reporter.start(configuration.getInterval(), TimeUnit.SECONDS);
+        reporter.start(configuration.interval, TimeUnit.SECONDS);
         LOGGER.info("Slf4j metrics reporter enabled");
     }
 }
