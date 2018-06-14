@@ -32,13 +32,13 @@ public class HttpMetricServerWorker implements Runnable {
     }
 
     public void startServer() throws Exception {
-        if (this.configuration.getHttpBindAddress() != null) {
-            this.server = new Server(new InetSocketAddress(InetAddress.getByName(configuration.getHttpBindAddress()), configuration.getHttpPort()));
+        if (this.configuration.httpBindAddress != null) {
+            this.server = new Server(new InetSocketAddress(InetAddress.getByName(configuration.httpBindAddress), configuration.httpPort));
         }
         else {
-            this.server = new Server(configuration.getHttpPort());
+            this.server = new Server(configuration.httpPort);
         }
-        ServletContextHandler handler = new ServletContextHandler(this.server, configuration.getHttpPathPrefix());
+        ServletContextHandler handler = new ServletContextHandler(this.server, configuration.httpPathPrefix);
         handler.addServlet(new ServletHolder(new MetricsServlet(metricRegistry)), "/metrics");
         handler.addServlet(new ServletHolder(new HealthCheckServlet(healthCheckRegistry)), "/healthcheck");
         handler.addServlet(new ServletHolder(new PingServlet()), "/ping");

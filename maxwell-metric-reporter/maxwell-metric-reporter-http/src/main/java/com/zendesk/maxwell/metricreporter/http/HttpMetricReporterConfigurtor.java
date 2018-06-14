@@ -55,19 +55,19 @@ public class HttpMetricReporterConfigurtor implements MetricReporterConfigurator
         String metricsHttpPort = configurationSupport.fetchOption(CONFIGURATION_OPTION_METRICS_HTTP_PORT, configurationValues, null);
         if (metricsHttpPort != null) {
             LOGGER.warn("metrics_http_port is deprecated, please use http_port");
-            config.setHttpPort(Integer.parseInt(metricsHttpPort));
+            config.httpPort = Integer.parseInt(metricsHttpPort);
         } else {
-            config.setHttpPort(configurationSupport.fetchIntegerOption(CONFIGURATION_OPTION_HTTP_PORT, configurationValues, HttpMetricReporterConfiguration.DEFAULT_HTTP_PORT));
+            config.httpPort = configurationSupport.fetchIntegerOption(CONFIGURATION_OPTION_HTTP_PORT, configurationValues, HttpMetricReporterConfiguration.DEFAULT_HTTP_PORT);
         }
-        config.setHttpBindAddress(configurationSupport.fetchOption(CONFIGURATION_OPTION_HTTP_BIND_ADDRESS, configurationValues, null));
-        config.setHttpPathPrefix(configurationSupport.fetchOption(CONFIGURATION_OPTION_HTTP_PATH_PREFIX, configurationValues, HttpMetricReporterConfiguration.DEFAULT_HTTP_PATH_PREFIX));
+        config.httpBindAddress = configurationSupport.fetchOption(CONFIGURATION_OPTION_HTTP_BIND_ADDRESS, configurationValues, null);
+        config.httpPathPrefix = configurationSupport.fetchOption(CONFIGURATION_OPTION_HTTP_PATH_PREFIX, configurationValues, HttpMetricReporterConfiguration.DEFAULT_HTTP_PATH_PREFIX);
 
-        if (!config.getHttpPathPrefix().startsWith("/")) {
-            config.setHttpPathPrefix("/" + config.getHttpPathPrefix());
+        if (!config.httpPathPrefix.startsWith("/")) {
+            config.httpPathPrefix = "/" + config.httpPathPrefix;
         }
 
-        config.setDiagnoticEnabled(configurationSupport.fetchBooleanOption(CONFIGURATION_OPTION_HTTP_DIAGNOSTIC, configurationValues, HttpMetricReporterConfiguration.DEFAULT_DIAGNOSTIC_HTTP));
-        config.setDiagnoticTimeout(configurationSupport.fetchLongOption(CONFIGURATION_OPTION_HTTP_DIAGNOSTIC_TIMEOUT, configurationValues, HttpMetricReporterConfiguration.DEFAULT_DIAGNOSTIC_HTTP_TIMEOUT));
+        config.diagnosticEnabled = configurationSupport.fetchBooleanOption(CONFIGURATION_OPTION_HTTP_DIAGNOSTIC, configurationValues, HttpMetricReporterConfiguration.DEFAULT_DIAGNOSTIC_HTTP);
+        config.diagnosticTimeout = configurationSupport.fetchLongOption(CONFIGURATION_OPTION_HTTP_DIAGNOSTIC_TIMEOUT, configurationValues, HttpMetricReporterConfiguration.DEFAULT_DIAGNOSTIC_HTTP_TIMEOUT);
 
         return Optional.of(config);
     }

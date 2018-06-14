@@ -31,7 +31,7 @@ public class HttpMetricReporter implements MetricReporter<HttpMetricReporterConf
     @Override
     public void start(HttpMetricReporterConfiguration configuration) {
         LOGGER.info("Maxwell http server starting");
-        int port = configuration.getHttpPort();
+        int port = configuration.httpPort;
 
         serverWorker = new HttpMetricServerWorker(configuration, metricRegistry, healthCheckRegistry, diagnosticRegistry);
         Thread thread = new Thread(serverWorker);

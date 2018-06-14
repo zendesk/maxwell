@@ -53,12 +53,12 @@ public class DiagnosticHealthCheck extends HttpServlet {
 		List<MaxwellDiagnosticResult.Check> checks = futureChecks.entrySet().stream().map(future -> {
 			CompletableFuture<MaxwellDiagnosticResult.Check> futureCheck = future.getValue();
 			try {
-				return futureCheck.get(configuration.getDiagnoticTimeout(), TimeUnit.MILLISECONDS);
+				return futureCheck.get(configuration.diagnosticTimeout, TimeUnit.MILLISECONDS);
 			} catch (InterruptedException | ExecutionException | TimeoutException e) {
 				futureCheck.cancel(true);
 				MaxwellDiagnostic diagnostic = future.getKey();
 				Map<String, String> info = new HashMap<>();
-				info.put("message", "check did not return after " + configuration.getDiagnoticTimeout() + " ms");
+				info.put("message", "check did not return after " + configuration.diagnosticTimeout + " ms");
 				return new MaxwellDiagnosticResult.Check(diagnostic, false, info);
 			}
 		}).collect(Collectors.toList());

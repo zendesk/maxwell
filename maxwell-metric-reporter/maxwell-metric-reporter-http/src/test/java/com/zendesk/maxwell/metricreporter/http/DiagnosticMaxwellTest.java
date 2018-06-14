@@ -84,7 +84,7 @@ public class DiagnosticMaxwellTest {
 	public void testNormalBinlogReplicationDiagnostic() throws Exception {
 		// Given
 		HttpMetricReporterConfiguration configuration = new HttpMetricReporterConfiguration();
-		configuration.setDiagnoticTimeout(5000);
+		configuration.diagnosticTimeout = 5000;
 
 		//Start context to register diagnostics
 		MaxwellContext maxwellContext = buildContext();
@@ -116,7 +116,7 @@ public class DiagnosticMaxwellTest {
 	public void testBinlogReplicationDiagnosticTimeout() throws Exception {
 		// Given
 		HttpMetricReporterConfiguration configuration = new HttpMetricReporterConfiguration();
-		configuration.setDiagnoticTimeout(100);
+		configuration.diagnosticTimeout = 100;
 
 		//Start context to register diagnostics
 		buildContext();
