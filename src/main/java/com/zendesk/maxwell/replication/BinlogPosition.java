@@ -9,11 +9,13 @@ import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class BinlogPosition implements Serializable {
 	static final Logger LOGGER = LoggerFactory.getLogger(BinlogPosition.class);
 
 	private static final String FILE_COLUMN = "File";
+	private static final String LOG_COLUMN = "Log_name";
 	private static final String POSITION_COLUMN = "Position";
 	private static final String GTID_COLUMN = "Executed_Gtid_Set";
 
@@ -44,6 +46,18 @@ public class BinlogPosition implements Serializable {
 			gtidSetStr = rs.getString(GTID_COLUMN);
 		}
 		return new BinlogPosition(gtidSetStr, null, l, file);
+	}
+
+	public static ArrayList<String> showLogs(Connection c)
+			throws SQLException {
+		ArrayList<String> l = new ArrayList<String>();
+		ResultSet rs;
+		rs = c.createStatement().executeQuery("SHOW MASTER LOGS");
+		while (rs.next()) {
+			String log = rs.getString(LOG_COLUMN);
+			l.add(log);
+		}
+		return l;
 	}
 
 	public static BinlogPosition at(BinlogPosition position) {

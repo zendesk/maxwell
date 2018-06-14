@@ -120,6 +120,14 @@ public class MaxwellConfig extends AbstractConfig {
 	public String redisListKey;
 	public String redisType;
 
+    //add support for file reader
+	public String filePath = null;//path for the binlog file
+	public boolean download = false;//whether we should download binlog from Aliyun OSS or skip downloading(download it manually)
+	//aliyun credentials:
+	public String accessKey = null;
+	public String accessSecret = null;
+	public String regionID = null;
+
 	public MaxwellConfig() { // argv is only null in tests
 		this.customProducerProperties = new Properties();
 		this.kafkaProperties = new Properties();
@@ -458,6 +466,12 @@ public class MaxwellConfig extends AbstractConfig {
 		this.blacklistDatabases  = fetchOption("blacklist_dbs", options, properties, null);
 		this.blacklistTables     = fetchOption("blacklist_tables", options, properties, null);
 		this.includeColumnValues = fetchOption("include_column_values", options, properties, null);
+     
+        this.filePath   = fetchOption("file_path", options, properties, null);
+		this.download   = fetchBooleanOption("download", options, properties, true);
+		this.regionID   = fetchOption("region_ID", options, properties, null);
+		this.accessKey   = fetchOption("access_key", options, properties, null);
+		this.accessSecret   = fetchOption("access_secret", options, properties, null);
 
 		if ( options != null && options.has("init_position")) {
 			String initPosition = (String) options.valueOf("init_position");

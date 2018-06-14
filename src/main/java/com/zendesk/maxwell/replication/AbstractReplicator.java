@@ -32,7 +32,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	protected Long stopAtHeartbeat;
 	protected MaxwellFilter filter;
 
-	private final Counter rowCounter;
+	protected final Counter rowCounter;
 	private final Meter rowMeter;
 
 	public AbstractReplicator(
