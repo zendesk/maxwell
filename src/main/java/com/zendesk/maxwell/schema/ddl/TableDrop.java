@@ -1,6 +1,6 @@
 package com.zendesk.maxwell.schema.ddl;
 
-import com.zendesk.maxwell.MaxwellFilter;
+import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.schema.*;
 
 public class TableDrop extends SchemaChange {
@@ -26,7 +26,7 @@ public class TableDrop extends SchemaChange {
 	}
 
 	@Override
-	public boolean isBlacklisted(MaxwellFilter filter) {
+	public boolean isBlacklisted(Filter filter) {
 		if ( filter == null ) {
 			return false;
 		} else {

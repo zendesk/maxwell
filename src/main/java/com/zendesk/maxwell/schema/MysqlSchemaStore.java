@@ -2,8 +2,7 @@ package com.zendesk.maxwell.schema;
 
 import com.zendesk.maxwell.CaseSensitivity;
 import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.MaxwellFilter;
+import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
@@ -20,7 +19,7 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 	private final ConnectionPool maxwellConnectionPool;
 	private final Position initialPosition;
 	private final boolean readOnly;
-	private final MaxwellFilter filter;
+	private final Filter filter;
 	private Long serverID;
 
 	private MysqlSavedSchema savedSchema;
@@ -31,7 +30,7 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 							Long serverID,
 							Position initialPosition,
 							CaseSensitivity caseSensitivity,
-							MaxwellFilter filter,
+							Filter filter,
 							boolean readOnly) {
 		super(replicationConnectionPool, schemaConnectionPool, caseSensitivity, filter);
 		this.serverID = serverID;

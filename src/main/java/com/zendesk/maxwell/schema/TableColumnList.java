@@ -23,6 +23,10 @@ public class TableColumnList implements Iterable<ColumnDef> {
 		return columns;
 	}
 
+	public Set<String> columnNames() {
+		return columnOffsetMap.keySet();
+	}
+
 	public synchronized int indexOf(String name) {
 		String lcName = name.toLowerCase();
 

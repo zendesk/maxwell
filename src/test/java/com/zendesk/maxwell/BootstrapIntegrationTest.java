@@ -1,5 +1,6 @@
 package com.zendesk.maxwell;
 
+import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.row.RowMap;
@@ -41,8 +42,8 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testBootstrapIsWhitelisted() throws Exception {
-		MaxwellFilter filter = new MaxwellFilter();
-		filter.includeDatabase("shard_1");
+		Filter filter = new Filter();
+		filter.addRule("exclude: *.*, include: shard_1.*");
 		runJSON("json/bootstrap-whitelist", filter);
 	}
 

@@ -1,9 +1,8 @@
 package com.zendesk.maxwell.replication;
 
 import com.codahale.metrics.Counter;
-import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Meter;
-import com.zendesk.maxwell.MaxwellFilter;
+import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.monitoring.Metrics;
 import com.zendesk.maxwell.producer.AbstractProducer;
@@ -19,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public abstract class AbstractReplicator extends RunLoopProcess implements Replicator {
 	private static Logger LOGGER = LoggerFactory.getLogger(AbstractReplicator.class);
@@ -30,7 +30,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	protected Position lastHeartbeatPosition;
 	protected final HeartbeatNotifier heartbeatNotifier;
 	protected Long stopAtHeartbeat;
-	protected MaxwellFilter filter;
+	protected Filter filter;
 
 	private final Counter rowCounter;
 	private final Meter rowMeter;
@@ -102,33 +102,46 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	}
 
 	/**
-	 * Should we output an event for the given database and table?
+	 * Should we output a batch of rows for the given database and table?
 	 *
-	 * Here we check against a whitelist/blacklist/filter.  The whitelist
-	 * passes updates to `maxwell.bootstrap` through (those are control
-	 * mechanisms for bootstrap), the blacklist gets rid of the
-	 * `ha_health_check` table which shows up erroneously in Alibaba RDS.
+	 * First against a whitelist/blacklist/filter.  The whitelist
+	 * ensures events that maxwell needs (maxwell.bootstrap, maxwell.heartbeats)
+	 * are always passed along.
+	 *
+	 * The system the blacklist gets rid of the
+	 * `ha_health_check` and `rds_heartbeat` tables which are weird
+	 * replication-control mechanism events in Alibaba RDS (and maybe amazon?)
+	 *
+	 * Then we check the configured filters.
+	 *
+	 * Finall, if we decide to exclude a table we check the filter to
+	 * see if it's possible that a column-value filter could reverse this decision
 	 *
 	 * @param database The database of the DML
 	 * @param table The table of the DML
 	 * @param filter A table-filter, or null
+	 * @param columnNames Names of the columns this table contains
 	 * @return Whether we should write the event to the producer
 	 */
-	protected boolean shouldOutputEvent(String database, String table, MaxwellFilter filter) {
+	protected boolean shouldOutputEvent(String database, String table, Filter filter, Set<String> columnNames) {
 		Boolean isSystemWhitelisted = this.maxwellSchemaDatabaseName.equals(database)
 			&& ("bootstrap".equals(table) || "heartbeats".equals(table));
 
-		if ( MaxwellFilter.isSystemBlacklisted(database, table) )
+		if ( Filter.isSystemBlacklisted(database, table) )
 			return false;
-		else if ( isSystemWhitelisted)
+		else if ( isSystemWhitelisted )
 			return true;
-		else
-			return MaxwellFilter.matches(filter, database, table);
+		else {
+			if ( Filter.includes(filter, database, table) )
+				return true;
+			else
+				return Filter.couldIncludeFromColumnFilters(filter, database, table, columnNames);
+		}
 	}
 
 
-	protected boolean shouldOutputRowMap(String database, String table, RowMap rowMap, MaxwellFilter filter) {
-		return MaxwellFilter.matchesValues(filter, database, table, rowMap.getData());
+	protected boolean shouldOutputRowMap(String database, String table, RowMap rowMap, Filter filter) {
+		return Filter.includes(filter, database, table, rowMap.getData());
 	}
 
 	/**
@@ -204,7 +217,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	 */
 	public abstract RowMap getRow() throws Exception;
 
-	public void setFilter(MaxwellFilter filter) {
+	public void setFilter(Filter filter) {
 		this.filter = filter;
 	}
 }

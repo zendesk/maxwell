@@ -103,13 +103,7 @@ output_row_query               | BOOLEAN  | records include INSERT/UPDATE/DELETE
 output_ddl                     | BOOLEAN  | output DDL (table-alter, table-create, etc) events  | false
 &nbsp;
 **filtering**
-include_dbs                    | PATTERN           | only send updates from these databases |
-exclude_dbs                    | PATTERN           | ignore updates from these databases |
-include_tables                 | PATTERN           | only send updates from tables named like PATTERN |
-exclude_tables                 | PATTERN           | ignore updates from tables named like PATTERN |
-blacklist_dbs                  | PATTERN           | ignore updates AND schema changes from databases (see [warnings](#blacklisting-tables)) |
-blacklist_tables               | PATTERN           | ignore updates AND schema changes from tables named like PATTERN (see [warnings](#blacklisting-tables)) |
-include_column_values          | COL=val[,COL=val] | include only rows that match these values |
+filter                         | STRING            | filter rules, eg `exclude: db.*, include: *.tbl, include: *./bar(bar)?/, exclude: foo.bar.col=val` |
 &nbsp;
 **encryption**
 encrypt                        | [ none &#124; data &#124; all ]     | encrypt mode: none = no encryption. "data": encrypt the `data` field only. `all`: encrypt entire maxwell message | none
@@ -276,26 +270,58 @@ should be unique across all mysql and maxwell instances.
 
 ### Filtering
 ***
-#### Include/Exclude
-The options `include_dbs`, `exclude_dbs`, `include_tables`, and `exclude_tables` control whether
-Maxwell will send an update for a given row to its producer.  All the options take a single value PATTERN,
-which may either be a literal table/database name, given as `option=name`, or a regular expression,
-given as `option=/regex/`.  The options are evaluated as follows:
 
-1. only accept databases in `include_dbs` if non-empty
-1. reject databases in `exclude_dbs`
-1. only accept tables in `include_tables` if non-empty
-1. reject tables in `exclude_tables`
+#### Example 1
+Maxwell can be configured to filter out updates from specific tables.  This is controlled
+by the `--filter` command line flag.  Here's how that flag looks:
 
-So an example like `--include_dbs=/foo.*/ --exclude_tables=bar` will include `footy.zab` and exclude `footy.bar`
+```
+--filter = "exclude: foodb.*, include: foodb.tbl, include: foodb./table_\d+/"
+```
+
+This example tells Maxwell to suppress all updates that happen on `foodb`, except for updates
+to `tbl` and any table in foodb matching the regexp `/table_\d+/`.
+#### Example 2
+
+Filter options are evaluated in the order specified, so in this example we
+suppress everything except updates in the `db1` database.
+
+```
+--filter = "exclude: *.*, include: db1.*"
+```
+
+
+#### Column Filters
+Maxwell can also include/exclude based on column values:
+
+```
+--filter = "exclude: db.tbl.col = reject"
+```
+
+will reject any row in `db.tbl` that contains `col` and where the stringified value of "col" is "reject".
+
+#### Column Filters / Missing Columns
+Column filters are ignored if the specified column is not present, so:
+
+```
+--filter = "exclude: *.*.col_a = *"
+```
+
+will exclude updates to any table that contains `col_a`, but include every other table.
+
 
 #### Blacklisting tables
 
-In general, don't use this.
+In rare cases, you may wish to tell Maxwell to completely ignore a database or
+table, including schema changes.  In general, don't use this.  If you must use this:
 
-The option `blacklist_tables` and `blacklist_dbs` controls whether Maxwell will send updates for a table to its producer AND whether
-it captures schema changes for that table or database. Note that once Maxwell has been running with a table or database marked as blacklisted,
-you *must* continue to run Maxwell with that table or database blacklisted or else Maxwell will halt. If you want to stop
+```
+--filter = "blacklist: bad_db.*"
+```
+
+Note that once Maxwell has been running with a table or database marked as
+blacklisted, you *must* continue to run Maxwell with that table or database
+blacklisted or else Maxwell will halt. If you want to stop
 blacklisting a table or database, you will have to drop the maxwell schema first.
 
 #### Supressing columns
@@ -303,7 +329,4 @@ blacklisting a table or database, you will have to drop the maxwell schema first
 If you wish to suppress columns from Maxwell's output (for instance, a password field),
 you can use `exclude_columns` to filter out columns by name.
 
-#### Filtering on column values
-Maxwell can filter rows to only match when a column contains a specific value.  The `include_column_values` option takes a comma-separated
-list of column/value pairs: "bar=x,foo=y".  Note that if a column does not exist in a table, it will ignore the value-filter.
 

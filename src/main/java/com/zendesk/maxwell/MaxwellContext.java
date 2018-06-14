@@ -4,6 +4,7 @@ import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.bootstrap.AsynchronousBootstrapper;
 import com.zendesk.maxwell.bootstrap.NoOpBootstrapper;
 import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
+import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.monitoring.*;
 import com.zendesk.maxwell.producer.*;
 import com.zendesk.maxwell.recovery.RecoveryInfo;
@@ -398,7 +399,7 @@ public class MaxwellContext {
 
 	}
 
-	public MaxwellFilter getFilter() {
+	public Filter getFilter() {
 		return config.filter;
 	}
 
