@@ -41,6 +41,6 @@ public class SQSProducerConfigurator implements ProducerConfigurator {
 	@Override
 	public Producer configure(MaxwellContext maxwellContext, ProducerConfiguration configuration) {
 		SQSProducerConfiguration sqsConfiguration = (SQSProducerConfiguration)configuration;
-		return new MaxwellSQSProducer(maxwellContext, sqsConfiguration.getSqsQueueUri());
+		return new MaxwellSQSProducer(maxwellContext, sqsConfiguration.queueUri);
 	}
 }
