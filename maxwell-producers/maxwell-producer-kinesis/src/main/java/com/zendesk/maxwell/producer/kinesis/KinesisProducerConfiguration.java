@@ -4,20 +4,12 @@ import com.zendesk.maxwell.api.config.InvalidOptionException;
 import com.zendesk.maxwell.core.producer.ProducerConfiguration;
 
 public class KinesisProducerConfiguration implements ProducerConfiguration {
-	private final String kinesisStream;
-	private final boolean kinesisMd5Keys;
+	public final String kinesisStream;
+	public final boolean kinesisMd5Keys;
 
 	public KinesisProducerConfiguration(String kinesisStream, boolean kinesisMd5Keys) {
 		this.kinesisStream = kinesisStream;
 		this.kinesisMd5Keys = kinesisMd5Keys;
-	}
-
-	public String getKinesisStream() {
-		return kinesisStream;
-	}
-
-	public boolean isKinesisMd5Keys() {
-		return kinesisMd5Keys;
 	}
 
 	@Override
