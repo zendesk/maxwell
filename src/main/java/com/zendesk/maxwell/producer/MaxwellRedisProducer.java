@@ -34,7 +34,7 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 	@Override
 	public void push(RowMap r) throws Exception {
 		if ( !r.shouldOutput(outputConfig) ) {
-			context.setPosition(r.getPosition());
+			context.setPosition(r.getNextPosition());
 			return;
 		}
 
@@ -62,7 +62,7 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 		}
 
 		if ( r.isTXCommit() ) {
-			context.setPosition(r.getPosition());
+			context.setPosition(r.getNextPosition());
 		}
 
 		if ( logger.isDebugEnabled()) {

@@ -13,7 +13,8 @@ import static org.junit.Assert.assertThat;
 public class AbstractReplicatorTest extends MaxwellTestWithIsolatedServer {
 
 	private RowMap heartbeatRow(long ts) {
-		return new HeartbeatRowMap("db", new Position(new BinlogPosition(0L, "binlog-file"), ts));
+		Position p = new Position(new BinlogPosition(0L, "binlog-file"), ts);
+		return new HeartbeatRowMap("db", p, p);
 	}
 
 	@Test

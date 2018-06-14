@@ -55,8 +55,7 @@ public class SchemaCapturer {
 				"ORDINAL_POSITION, " +
 				"COLUMN_TYPE, " +
 				dateTimePrecision +
-				"COLUMN_KEY, " +
-				"COLUMN_TYPE " +
+				"COLUMN_KEY " +
 				"FROM `information_schema`.`COLUMNS` WHERE TABLE_SCHEMA = ?";
 
 		columnPreparedStatement = connection.prepareStatement(columnSql);

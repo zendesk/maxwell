@@ -258,7 +258,7 @@ public class MaxwellContext {
 
 	public void setPosition(RowMap r) {
 		if ( r.isTXCommit() )
-			this.setPosition(r.getPosition());
+			this.setPosition(r.getNextPosition());
 	}
 
 	public void setPosition(Position position) {

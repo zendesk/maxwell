@@ -1,5 +1,31 @@
 # Maxwell changelog
 
+### [v1.15.0](https://github.com/zendesk/maxwell/releases/tag/v1.15.0): "I'm sure I'm being supportive here."
+
+
+This is a bug-fix release, but it's big enough I'm giving it a minor
+version.
+
+- Fix a very old bug in which DDL rows were writing the *start* of the
+row into `maxwell.positions`, leading to chaos in some scenarios where
+maxwell managed to stop on the row and double-process it, as well as to
+a few well-meaning patches.
+- Fix the fact that maxwell was outputting "next-position" instead of
+"position" of a row into JSON.
+- Fix the master-recovery code to store schema that corresponds to the
+start of a row, and points the replicator at the next-position.
+
+Much thanks to Tim, Likun and others in sorting this mess out.
+
+
+### [v1.14.7](https://github.com/zendesk/maxwell/releases/tag/v1.14.7): "casamir pulaski day"
+
+
+- add RowMap#getRowQuery, thx @saimon7
+- revert alpine-linux docker image fiasco
+- fix RawJSONString not serializable, thx @niuhaifeng
+
+
 ### [v1.14.6](https://github.com/zendesk/maxwell/releases/tag/v1.14.6): "gimme one sec, I need to grab something"
 
 

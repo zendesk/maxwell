@@ -2,7 +2,6 @@ package com.zendesk.maxwell.recovery;
 
 import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.*;
-import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
@@ -110,7 +109,8 @@ public class RecoveryTest extends TestWithNameLogging {
 			recoveryInfo
 		);
 
-		Position recoveredPosition = recovery.recover();
+		Position recoveredPosition = recovery.recover().getPosition();
+
 		// lousy tests, but it's very hard to make firm assertions about the correct position.
 		// It's in a ballpark.
 
@@ -151,8 +151,7 @@ public class RecoveryTest extends TestWithNameLogging {
 			recoveryInfo
 		);
 
-		Position recoveredPosition = recovery.recover();
-		assertEquals(null, recoveredPosition);
+		assertEquals(null, recovery.recover());
 	}
 
 	private void drainReplication(BufferedMaxwell maxwell, List<RowMap> rows) throws Exception {
@@ -362,7 +361,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		if (savedSchema == null) {
 			Connection c = context.getMaxwellConnection();
 			Schema newSchema = new SchemaCapturer(c, context.getCaseSensitivity()).capture();
-			savedSchema = SavedSchemaSupport.getSavedSchema(context, newSchema, context.getInitialPosition());
+			savedSchema = new MysqlSavedSchema(context, newSchema, context.getInitialPosition());
 			savedSchema.save(c);
 		}
 		Long oldSchemaId = savedSchema.getSchemaID();
