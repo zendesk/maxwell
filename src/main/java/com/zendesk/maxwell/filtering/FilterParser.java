@@ -137,7 +137,7 @@ public class FilterParser {
 				pattern = Pattern.compile("^" + tokenizer.sval + "$");
 				break;
 			default:
-				throw new IOException();
+				throw new IOException("Expected string or regexp, saw '" + Character.toString((char) tokenizer.ttype));
 		}
 		tokenizer.nextToken();
 		return pattern;
