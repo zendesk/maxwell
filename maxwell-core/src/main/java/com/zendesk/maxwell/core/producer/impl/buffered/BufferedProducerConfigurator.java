@@ -24,7 +24,7 @@ public class BufferedProducerConfigurator implements ProducerConfigurator {
 	@Override
 	public Producer configure(MaxwellContext maxwellContext, ProducerConfiguration configuration) {
 		BufferedProducerConfiguration bufferedProducerConfiguration = (BufferedProducerConfiguration)configuration;
-		return new BufferedProducer(maxwellContext, bufferedProducerConfiguration.getBufferedProducerSize());
+		return new BufferedProducer(maxwellContext, bufferedProducerConfiguration.bufferSize);
 	}
 
 }

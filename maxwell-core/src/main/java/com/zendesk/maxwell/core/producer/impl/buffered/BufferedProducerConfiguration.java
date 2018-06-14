@@ -4,17 +4,13 @@ import com.zendesk.maxwell.core.producer.ProducerConfiguration;
 
 public class BufferedProducerConfiguration implements ProducerConfiguration {
 	public static final int DEFAULT_BUFFER_SIZE = 200;
-	private final int bufferedProducerSize;
+	public final int bufferSize;
 
 	public BufferedProducerConfiguration() {
 		this(DEFAULT_BUFFER_SIZE);
 	}
 
-	public BufferedProducerConfiguration(int bufferedProducerSize) {
-		this.bufferedProducerSize = bufferedProducerSize;
-	}
-
-	public int getBufferedProducerSize() {
-		return bufferedProducerSize;
+	public BufferedProducerConfiguration(int bufferSize) {
+		this.bufferSize = bufferSize;
 	}
 }
