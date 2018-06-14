@@ -103,8 +103,7 @@ output_row_query               | BOOLEAN  | records include INSERT/UPDATE/DELETE
 output_ddl                     | BOOLEAN  | output DDL (table-alter, table-create, etc) events  | false
 &nbsp;
 **filtering**
-fliter                         | STRING            | filter rules, eg `exclude: db.*, include: *.tbl, include: *./.*bar$/` |
-include_column_values          | COL=val[,COL=val] | include only rows that match these values |
+filter                         | STRING            | filter rules, eg `exclude: db.*, include: *.tbl, include: *./bar(bar)?/, exclude: foo.bar.col=val` |
 &nbsp;
 **encryption**
 encrypt                        | [ none &#124; data &#124; all ]     | encrypt mode: none = no encryption. "data": encrypt the `data` field only. `all`: encrypt entire maxwell message | none
