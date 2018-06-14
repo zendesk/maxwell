@@ -41,13 +41,13 @@ public class RedisProducerConfigurator implements ProducerConfigurator {
 	@Override
 	public Optional<ProducerConfiguration> parseConfiguration(Properties configurationValues) {
 		RedisProducerConfiguration config = new RedisProducerConfiguration();
-		config.setRedisHost(configurationSupport.fetchOption("redis_host", configurationValues, "localhost"));
-		config.setRedisPort(Integer.parseInt(configurationSupport.fetchOption("redis_port", configurationValues, "6379")));
-		config.setRedisAuth(configurationSupport.fetchOption("redis_auth", configurationValues, null));
-		config.setRedisDatabase(Integer.parseInt(configurationSupport.fetchOption("redis_database", configurationValues, "0")));
-		config.setRedisPubChannel(configurationSupport.fetchOption("redis_pub_channel", configurationValues, "maxwell"));
-		config.setRedisListKey(configurationSupport.fetchOption("redis_list_key", configurationValues, "maxwell"));
-		config.setRedisType(configurationSupport.fetchOption("redis_type", configurationValues, "pubsub"));
+		config.host = configurationSupport.fetchOption("redis_host", configurationValues, "localhost");
+		config.port = Integer.parseInt(configurationSupport.fetchOption("redis_port", configurationValues, "6379"));
+		config.auth = configurationSupport.fetchOption("redis_auth", configurationValues, null);
+		config.database = Integer.parseInt(configurationSupport.fetchOption("redis_database", configurationValues, "0"));
+		config.pubChannel = configurationSupport.fetchOption("redis_pub_channel", configurationValues, "maxwell");
+		config.listKey = configurationSupport.fetchOption("redis_list_key", configurationValues, "maxwell");
+		config.type = configurationSupport.fetchOption("redis_type", configurationValues, "pubsub");
 		return Optional.of(config);
 	}
 

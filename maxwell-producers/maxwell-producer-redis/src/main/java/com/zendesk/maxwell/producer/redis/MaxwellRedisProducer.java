@@ -18,17 +18,17 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 	public MaxwellRedisProducer(MaxwellContext context, RedisProducerConfiguration redisProducerConfiguration) {
 		super(context);
 
-		channel = redisProducerConfiguration.getRedisPubChannel();
-		listkey = redisProducerConfiguration.getRedisListKey();
-		redistype = redisProducerConfiguration.getRedisType();
+		channel = redisProducerConfiguration.pubChannel;
+		listkey = redisProducerConfiguration.listKey;
+		redistype = redisProducerConfiguration.type;
 
-		jedis = new Jedis(redisProducerConfiguration.getRedisHost(), redisProducerConfiguration.getRedisPort());
+		jedis = new Jedis(redisProducerConfiguration.host, redisProducerConfiguration.port);
 		jedis.connect();
-		if (redisProducerConfiguration.getRedisAuth() != null) {
-			jedis.auth(redisProducerConfiguration.getRedisAuth());
+		if (redisProducerConfiguration.auth != null) {
+			jedis.auth(redisProducerConfiguration.auth);
 		}
-		if (redisProducerConfiguration.getRedisDatabase() > 0) {
-			jedis.select(redisProducerConfiguration.getRedisDatabase());
+		if (redisProducerConfiguration.database > 0) {
+			jedis.select(redisProducerConfiguration.database);
 		}
 	}
 
