@@ -81,7 +81,7 @@ public class MaxwellBenchmark {
 		System.out.println("bin/maxwell-benchmark --input=" +  server.path + " --init_position=" + initPosition.toCommandline());
 	}
 
-	private static void benchmark(String path, String args[]) throws Exception {
+	private static void benchmark(String path, long skipRows, String args[]) throws Exception {
 		MaxwellConfig config = new MaxwellConfig(args);
 		MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--no-clean --reuse=" + path);
 
@@ -91,7 +91,7 @@ public class MaxwellBenchmark {
 		config.maxwellMysql.user = "root";
 		config.maxwellMysql.password = "";
 		config.replicationMysql = config.schemaMysql = config.maxwellMysql;
-		config.producerFactory = new BenchmarkProducerFactory();
+		config.producerFactory = new BenchmarkProducerFactory(skipRows);
 
 		Maxwell m = new Maxwell(config);
 		m.run();
@@ -101,6 +101,7 @@ public class MaxwellBenchmark {
 		final OptionParser parser = new OptionParser();
 		parser.accepts("generate", "generate this many rows of benchmark data").withRequiredArg();
 		parser.accepts("input", "run benchmark using this mysql data-path").withRequiredArg();
+		parser.accepts("skip", "warm-up by processing this many rows before profiling").withRequiredArg();
 		parser.allowsUnrecognizedOptions();
 		parser.formatHelpWith(new BuiltinHelpFormatter(120, 5));
 		return parser;
@@ -121,7 +122,11 @@ public class MaxwellBenchmark {
 				maxwellArgs[i++] = o.toString();
 			}
 
-			benchmark((String) options.valueOf("input"), maxwellArgs);
+			long skipNRows = 0;
+			if ( options.has("skip") )
+				skipNRows = Long.parseLong((String) options.valueOf("skip"));
+
+			benchmark((String) options.valueOf("input"), skipNRows, maxwellArgs);
 		} else {
 			p.printHelpOn(System.out);
 			System.exit(1);
