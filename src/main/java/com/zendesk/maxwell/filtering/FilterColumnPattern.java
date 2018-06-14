@@ -46,9 +46,8 @@ public class FilterColumnPattern extends FilterPattern {
 				if ( columnPattern.pattern().length() == 0 )
 					applyFilter = true;
 			} else {
-				if ( columnPattern.matcher(value.toString()).find() ) {
-					match.include = (this.type == FilterPatternType.INCLUDE);
-				}
+				if ( columnPattern.matcher(value.toString()).find() )
+					applyFilter = true;
 			}
 		}
 
