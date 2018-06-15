@@ -195,13 +195,17 @@
                       <li class="toctree-l3"><a href="#filtering">Filtering</a>
                       <ul class="toctree-subnav">
                       
-                          <li class="toctree-l4" ><a href="#includeexclude">Include/Exclude</a></li>
+                          <li class="toctree-l4" ><a href="#example-1">Example 1</a></li>
+                      
+                          <li class="toctree-l4" ><a href="#example-2">Example 2</a></li>
+                      
+                          <li class="toctree-l4" ><a href="#column-filters">Column Filters</a></li>
+                      
+                          <li class="toctree-l4" ><a href="#column-filters-missing-columns">Column Filters / Missing Columns</a></li>
                       
                           <li class="toctree-l4" ><a href="#blacklisting-tables">Blacklisting tables</a></li>
                       
                           <li class="toctree-l4" ><a href="#supressing-columns">Supressing columns</a></li>
-                      
-                          <li class="toctree-l4" ><a href="#filtering-on-column-values">Filtering on column values</a></li>
                       
                       </li>
                       </uL>
@@ -856,45 +860,9 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 <td></td>
 </tr>
 <tr>
-<td>include_dbs</td>
-<td>PATTERN</td>
-<td>only send updates from these databases</td>
-<td></td>
-</tr>
-<tr>
-<td>exclude_dbs</td>
-<td>PATTERN</td>
-<td>ignore updates from these databases</td>
-<td></td>
-</tr>
-<tr>
-<td>include_tables</td>
-<td>PATTERN</td>
-<td>only send updates from tables named like PATTERN</td>
-<td></td>
-</tr>
-<tr>
-<td>exclude_tables</td>
-<td>PATTERN</td>
-<td>ignore updates from tables named like PATTERN</td>
-<td></td>
-</tr>
-<tr>
-<td>blacklist_dbs</td>
-<td>PATTERN</td>
-<td>ignore updates AND schema changes from databases (see <a href="#blacklisting-tables">warnings</a>)</td>
-<td></td>
-</tr>
-<tr>
-<td>blacklist_tables</td>
-<td>PATTERN</td>
-<td>ignore updates AND schema changes from tables named like PATTERN (see <a href="#blacklisting-tables">warnings</a>)</td>
-<td></td>
-</tr>
-<tr>
-<td>include_column_values</td>
-<td>COL=val[,COL=val]</td>
-<td>include only rows that match these values</td>
+<td>filter</td>
+<td>STRING</td>
+<td>filter rules, eg <code>exclude: db.*, include: *.tbl, include: *./bar(bar)?/, exclude: foo.bar.col=val</code></td>
 <td></td>
 </tr>
 <tr>
@@ -1174,30 +1142,45 @@ that corresponds to mysql's <code>server_id</code> parameter.  The value you con
 should be unique across all mysql and maxwell instances.</p>
 <h3 id="filtering">Filtering</h3>
 <hr />
-<h4 id="includeexclude">Include/Exclude</h4>
-<p>The options <code>include_dbs</code>, <code>exclude_dbs</code>, <code>include_tables</code>, and <code>exclude_tables</code> control whether
-Maxwell will send an update for a given row to its producer.  All the options take a single value PATTERN,
-which may either be a literal table/database name, given as <code>option=name</code>, or a regular expression,
-given as <code>option=/regex/</code>.  The options are evaluated as follows:</p>
-<ol>
-<li>only accept databases in <code>include_dbs</code> if non-empty</li>
-<li>reject databases in <code>exclude_dbs</code></li>
-<li>only accept tables in <code>include_tables</code> if non-empty</li>
-<li>reject tables in <code>exclude_tables</code></li>
-</ol>
-<p>So an example like <code>--include_dbs=/foo.*/ --exclude_tables=bar</code> will include <code>footy.zab</code> and exclude <code>footy.bar</code></p>
+<h4 id="example-1">Example 1</h4>
+<p>Maxwell can be configured to filter out updates from specific tables.  This is controlled
+by the <code>--filter</code> command line flag.  Here's how that flag looks:</p>
+<pre><code>--filter = &quot;exclude: foodb.*, include: foodb.tbl, include: foodb./table_\d+/&quot;
+</code></pre>
+
+<p>This example tells Maxwell to suppress all updates that happen on <code>foodb</code>, except for updates
+to <code>tbl</code> and any table in foodb matching the regexp <code>/table_\d+/</code>.</p>
+<h4 id="example-2">Example 2</h4>
+<p>Filter options are evaluated in the order specified, so in this example we
+suppress everything except updates in the <code>db1</code> database.</p>
+<pre><code>--filter = &quot;exclude: *.*, include: db1.*&quot;
+</code></pre>
+
+<h4 id="column-filters">Column Filters</h4>
+<p>Maxwell can also include/exclude based on column values:</p>
+<pre><code>--filter = &quot;exclude: db.tbl.col = reject&quot;
+</code></pre>
+
+<p>will reject any row in <code>db.tbl</code> that contains <code>col</code> and where the stringified value of "col" is "reject".</p>
+<h4 id="column-filters-missing-columns">Column Filters / Missing Columns</h4>
+<p>Column filters are ignored if the specified column is not present, so:</p>
+<pre><code>--filter = &quot;exclude: *.*.col_a = *&quot;
+</code></pre>
+
+<p>will exclude updates to any table that contains <code>col_a</code>, but include every other table.</p>
 <h4 id="blacklisting-tables">Blacklisting tables</h4>
-<p>In general, don't use this.</p>
-<p>The option <code>blacklist_tables</code> and <code>blacklist_dbs</code> controls whether Maxwell will send updates for a table to its producer AND whether
-it captures schema changes for that table or database. Note that once Maxwell has been running with a table or database marked as blacklisted,
-you <em>must</em> continue to run Maxwell with that table or database blacklisted or else Maxwell will halt. If you want to stop
+<p>In rare cases, you may wish to tell Maxwell to completely ignore a database or
+table, including schema changes.  In general, don't use this.  If you must use this:</p>
+<pre><code>--filter = &quot;blacklist: bad_db.*&quot;
+</code></pre>
+
+<p>Note that once Maxwell has been running with a table or database marked as
+blacklisted, you <em>must</em> continue to run Maxwell with that table or database
+blacklisted or else Maxwell will halt. If you want to stop
 blacklisting a table or database, you will have to drop the maxwell schema first.</p>
 <h4 id="supressing-columns">Supressing columns</h4>
 <p>If you wish to suppress columns from Maxwell's output (for instance, a password field),
-you can use <code>exclude_columns</code> to filter out columns by name.</p>
-<h4 id="filtering-on-column-values">Filtering on column values</h4>
-<p>Maxwell can filter rows to only match when a column contains a specific value.  The <code>include_column_values</code> option takes a comma-separated
-list of column/value pairs: "bar=x,foo=y".  Note that if a column does not exist in a table, it will ignore the value-filter.</p></div>
+you can use <code>exclude_columns</code> to filter out columns by name.</p></div>
         </div>
 
         
