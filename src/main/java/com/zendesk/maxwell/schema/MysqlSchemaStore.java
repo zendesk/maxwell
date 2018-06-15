@@ -86,6 +86,15 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 		}
 	}
 
+	public void destroy() throws SQLException {
+		try ( Connection conn = maxwellConnectionPool.getConnection() ) {
+			String[] tables = { "databases", "tables", "columns", "schemas" };
+			LOGGER.info("Maxwell is cleaning out existing schema store");
+			for ( String tName : tables ) {
+				conn.createStatement().execute("TRUNCATE TABLE `" + tName + "`");
+			}
+		}
+	}
 
 	public List<ResolvedSchemaChange> processSQL(String sql, String currentDatabase, Position position) throws SchemaStoreException, InvalidSchemaError {
 		List<ResolvedSchemaChange> resolvedSchemaChanges;

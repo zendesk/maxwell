@@ -101,6 +101,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public boolean replayMode;
 	public boolean masterRecovery;
 	public boolean ignoreProducerError;
+	public boolean resetSchemaStore;
 
 	public String rabbitmqUser;
 	public String rabbitmqPass;
@@ -236,6 +237,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "master_recovery", "(experimental) enable master position recovery code" ).withOptionalArg();
 		parser.accepts( "gtid_mode", "(experimental) enable gtid mode" ).withOptionalArg();
 		parser.accepts( "ignore_producer_error", "Maxwell will be terminated on kafka/kinesis errors when false. Otherwise, those producer errors are only logged. Default to true" ).withOptionalArg();
+		parser.accepts( "reset_schema_store", "Clean out the existing schema store by truncating tables: `databases`, `tables`, `columns`, and `schemas` then recapture the latest schema." ).withOptionalArg();
 
 		parser.accepts( "__separator_7" );
 
@@ -493,6 +495,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.replayMode =     fetchBooleanOption("replay", options, null, false);
 		this.masterRecovery = fetchBooleanOption("master_recovery", options, properties, false);
 		this.ignoreProducerError = fetchBooleanOption("ignore_producer_error", options, properties, true);
+		this.resetSchemaStore = fetchBooleanOption("reset_schema_store", options, properties, false);
 
 		outputConfig.includesBinlogPosition = fetchBooleanOption("output_binlog_position", options, properties, false);
 		outputConfig.includesGtidPosition = fetchBooleanOption("output_gtid_position", options, properties, false);
