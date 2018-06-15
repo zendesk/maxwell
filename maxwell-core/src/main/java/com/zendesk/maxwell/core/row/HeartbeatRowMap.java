@@ -9,7 +9,7 @@ import java.util.ArrayList;
 /**
  * Created by ben on 9/7/16.
  */
-public class HeartbeatRowMap extends BaseRowMap {
+public class HeartbeatRowMap extends RowMap {
 	public HeartbeatRowMap(String database, Position position) {
 		super("heartbeat", database, "heartbeats", position.getLastHeartbeatRead(), new ArrayList<String>(), position);
 	}

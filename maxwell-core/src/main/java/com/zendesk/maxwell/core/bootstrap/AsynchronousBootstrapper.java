@@ -3,7 +3,6 @@ package com.zendesk.maxwell.core.bootstrap;
 import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.core.replication.BinlogPosition;
 import com.zendesk.maxwell.core.row.RowMap;
-import com.zendesk.maxwell.core.row.RowMapFactory;
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.replication.Replicator;
 import com.zendesk.maxwell.core.row.RowMapBufferByTable;
@@ -29,13 +28,13 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 	private RowMapBufferByTable skippedRows = null;
 	private SynchronousBootstrapper synchronousBootstrapper = getSynchronousBootstrapper();
 
-	public AsynchronousBootstrapper(MaxwellContext context, RowMapFactory rowMapFactory ) throws IOException {
-		super(context, rowMapFactory);
+	public AsynchronousBootstrapper(MaxwellContext context ) throws IOException {
+		super(context);
 		skippedRows = new RowMapBufferByTable();
 	}
 
 	protected SynchronousBootstrapper getSynchronousBootstrapper( ) {
-		return new SynchronousBootstrapper(context, rowMapFactory);
+		return new SynchronousBootstrapper(context);
 	}
 
 	@Override

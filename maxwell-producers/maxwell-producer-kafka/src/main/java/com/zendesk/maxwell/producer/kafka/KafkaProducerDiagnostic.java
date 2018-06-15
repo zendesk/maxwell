@@ -4,7 +4,6 @@ import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.monitoring.MaxwellDiagnostic;
 import com.zendesk.maxwell.core.monitoring.MaxwellDiagnosticResult;
 import com.zendesk.maxwell.core.row.RowMap;
-import com.zendesk.maxwell.core.row.RowMapFactory;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
@@ -19,13 +18,11 @@ public class KafkaProducerDiagnostic implements MaxwellDiagnostic {
 	private final MaxwellKafkaProducerWorker kafkaProducerWorker;
 	private final KafkaProducerConfiguration producerConfiguration;
 	private final MaxwellContext context;
-	private final RowMapFactory rowMapFactory;
 
-	public KafkaProducerDiagnostic(MaxwellKafkaProducerWorker kafkaProducerWorker, KafkaProducerConfiguration configuration, MaxwellContext context, RowMapFactory rowMapFactory) {
+	public KafkaProducerDiagnostic(MaxwellKafkaProducerWorker kafkaProducerWorker, KafkaProducerConfiguration configuration, MaxwellContext context) {
 		this.kafkaProducerWorker = kafkaProducerWorker;
 		this.producerConfiguration = configuration;
 		this.context = context;
-		this.rowMapFactory = rowMapFactory;
 	}
 
 	@Override
@@ -51,7 +48,7 @@ public class KafkaProducerDiagnostic implements MaxwellDiagnostic {
 	public CompletableFuture<Long> getLatency() {
 		DiagnosticCallback callback = new DiagnosticCallback();
 		try {
-			RowMap rowMap = rowMapFactory.createFor("insert", context.getConfig().databaseName, "dummy", System.currentTimeMillis(),
+			RowMap rowMap = new RowMap("insert", context.getConfig().databaseName, "dummy", System.currentTimeMillis(),
 					new ArrayList<>(), context.getPosition());
 			rowMap.setTXCommit();
 			ProducerRecord<String, String> record = kafkaProducerWorker.makeProducerRecord(rowMap);

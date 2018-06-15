@@ -5,14 +5,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zendesk.maxwell.core.config.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.replication.BinlogPosition;
 import com.zendesk.maxwell.core.replication.Position;
-import com.zendesk.maxwell.core.row.BaseRowMap;
+import com.zendesk.maxwell.core.row.RowMap;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.UUID;
 
-public class DDLMap extends BaseRowMap {
+public class DDLMap extends RowMap {
 	private final ResolvedSchemaChange change;
 	private final Long timestamp;
 	private final String sql;

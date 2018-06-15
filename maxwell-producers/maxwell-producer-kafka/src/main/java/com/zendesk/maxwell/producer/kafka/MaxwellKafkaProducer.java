@@ -7,7 +7,6 @@ import com.zendesk.maxwell.core.StoppableTask;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.row.RowMap.KeyFormat;
-import com.zendesk.maxwell.core.row.RowMapFactory;
 import com.zendesk.maxwell.core.producer.AbstractAsyncProducer;
 import com.zendesk.maxwell.core.producer.AbstractProducer;
 import com.zendesk.maxwell.core.schema.ddl.DDLMap;
@@ -86,14 +85,12 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	private final ArrayBlockingQueue<RowMap> queue;
 	private final MaxwellKafkaProducerWorker worker;
 	private final KafkaProducerConfiguration configuration;
-	private final RowMapFactory rowMapFactory;
 
-	MaxwellKafkaProducer(MaxwellContext context, KafkaProducerConfiguration configuration, RowMapFactory rowMapFactory) {
+	MaxwellKafkaProducer(MaxwellContext context, KafkaProducerConfiguration configuration) {
 		super(context);
 		this.queue = new ArrayBlockingQueue<>(100);
 		this.worker = new MaxwellKafkaProducerWorker(context, configuration, this.queue);
 		this.configuration = configuration;
-		this.rowMapFactory = rowMapFactory;
 		Thread thread = new Thread(this.worker, "maxwell-kafka-worker");
 		thread.setDaemon(true);
 		thread.start();
@@ -111,7 +108,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 
 	@Override
 	public KafkaProducerDiagnostic getDiagnostic() {
-		return new KafkaProducerDiagnostic(worker, configuration, context, rowMapFactory);
+		return new KafkaProducerDiagnostic(worker, configuration, context);
 	}
 }
 

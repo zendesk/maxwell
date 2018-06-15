@@ -6,7 +6,6 @@ import com.zendesk.maxwell.core.config.MaxwellOutputConfig;
 import com.zendesk.maxwell.core.config.EncryptionMode;
 import com.zendesk.maxwell.core.row.RowMap;
 import com.zendesk.maxwell.core.config.MaxwellConfigFactory;
-import com.zendesk.maxwell.core.row.BaseRowMap;
 import com.zendesk.maxwell.core.schema.SchemaStoreSchema;
 import com.zendesk.maxwell.core.util.test.mysql.MysqlIsolatedServer;
 import org.apache.commons.lang3.ArrayUtils;
@@ -91,7 +90,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String expectedJSON = "{\"database\":\"shard_1\",\"table\":\"minimal\",\"pk.id\":1,\"pk.text_field\":\"hello\"}";
 		list = getRowsForSQL(input);
 		assertThat(list.size(), is(1));
-		assertThat(list.get(0).pkToJson(BaseRowMap.KeyFormat.HASH), is(expectedJSON));
+		assertThat(list.get(0).pkToJson(RowMap.KeyFormat.HASH), is(expectedJSON));
 	}
 
 	@Test
@@ -102,7 +101,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String expectedJSON = "{\"database\":\"shard_1\",\"table\":\"pksen\",\"pk.id\":1}";
 		list = getRowsForSQL(null, input, before);
 		assertThat(list.size(), is(1));
-		assertThat(list.get(0).pkToJson(BaseRowMap.KeyFormat.HASH), is(expectedJSON));
+		assertThat(list.get(0).pkToJson(RowMap.KeyFormat.HASH), is(expectedJSON));
 	}
 
 	@Test
@@ -113,7 +112,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String expectedJSON = "{\"database\":\"shard_1\",\"table\":\"pksen\",\"pk.id\":[\"android\"]}";
 		list = getRowsForSQL(null, input, before);
 		assertThat(list.size(), is(1));
-		assertThat(list.get(0).pkToJson(BaseRowMap.KeyFormat.HASH), is(expectedJSON));
+		assertThat(list.get(0).pkToJson(RowMap.KeyFormat.HASH), is(expectedJSON));
 	}
 
 	@Test
@@ -123,7 +122,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String expectedJSON = "[\"shard_1\",\"minimal\",[{\"id\":1},{\"text_field\":\"hello\"}]]";
 		list = getRowsForSQL(input);
 		assertThat(list.size(), is(1));
-		assertThat(list.get(0).pkToJson(BaseRowMap.KeyFormat.ARRAY), is(expectedJSON));
+		assertThat(list.get(0).pkToJson(RowMap.KeyFormat.ARRAY), is(expectedJSON));
 	}
 
 	@Test

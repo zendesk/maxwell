@@ -30,7 +30,7 @@ public class RowMapTest {
 
 	@Test
 	public void testGetDataMaps() {
-		RowMap rowMap = new BaseRowMap("insert", "MyDatabase", "MyTable", 1234567890L, new ArrayList<>(), null);
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", 1234567890L, new ArrayList<>(), null);
 		rowMap.putData("foo", "bar");
 		rowMap.putOldData("fiz", "buz");
 
@@ -59,7 +59,7 @@ public class RowMapTest {
 
 	@Test
 	public void testGetExtraAttributesMaps() {
-		RowMap rowMap = new BaseRowMap("insert", "MyDatabase", "MyTable", 1234567890L, new ArrayList<>(), null);
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", 1234567890L, new ArrayList<>(), null);
 		rowMap.putExtraAttribute("foo", "bar");
 
 		// Sanity check.
@@ -81,7 +81,7 @@ public class RowMapTest {
 
 	@Test(expected = ProtectedAttributeNameException.class)
 	public void testFailOnProtectedAttributes() {
-		RowMap rowMap = new BaseRowMap("insert", "MyDatabase", "MyTable", 1234567890L, new ArrayList<>(), null);
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", 1234567890L, new ArrayList<>(), null);
 		rowMap.putExtraAttribute("table", "bar");
 	}
 
@@ -89,7 +89,7 @@ public class RowMapTest {
 	public void testTimestampConversion() throws Exception {
 		long timestampSeconds = 1496712943;
 
-		RowMap rowMap = new BaseRowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, new ArrayList<>(), POSITION);
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, new ArrayList<>(), POSITION);
 
 		Assert.assertEquals(timestampSeconds, rowMap.getTimestamp().longValue());
 		Assert.assertEquals(TIMESTAMP_MILLISECONDS, rowMap.getTimestampMillis().longValue());
@@ -108,12 +108,12 @@ public class RowMapTest {
 
 		pKeys.add("name");
 
-		RowMap rowMap = new BaseRowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
 
 		rowMap.putData("id", "9001");
 		rowMap.putData("name", "example");
 
-		String jsonString = rowMap.pkToJson(BaseRowMap.KeyFormat.HASH);
+		String jsonString = rowMap.pkToJson(RowMap.KeyFormat.HASH);
 
 		Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\",\"pk.id\":\"9001\",\"pk.name\":\"example\"}",
 				jsonString);
@@ -123,9 +123,9 @@ public class RowMapTest {
 	@Test
 	public void testPkToJsonHashWithEmptyData() throws Exception {
 
-		RowMap rowMap = new BaseRowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, new ArrayList<>(), POSITION);
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, new ArrayList<>(), POSITION);
 
-		String jsonString = rowMap.pkToJson(BaseRowMap.KeyFormat.HASH);
+		String jsonString = rowMap.pkToJson(RowMap.KeyFormat.HASH);
 
 		Map<String, Object> jsonMap = maxwellTestJSON.parseJSON(jsonString);
 
@@ -147,12 +147,12 @@ public class RowMapTest {
 
 		Position position = new Position(new BinlogPosition(1L, "binlog-0001"), 0L);
 
-		RowMap rowMap = new BaseRowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, position);
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, position);
 
 		rowMap.putData("id", "9001");
 		rowMap.putData("name", "example");
 
-		String jsonString = rowMap.pkToJson(BaseRowMap.KeyFormat.ARRAY);
+		String jsonString = rowMap.pkToJson(RowMap.KeyFormat.ARRAY);
 
 		Assert.assertEquals("[\"MyDatabase\",\"MyTable\",[{\"id\":\"9001\"},{\"name\":\"example\"}]]",
 				jsonString);
@@ -170,12 +170,12 @@ public class RowMapTest {
 
 		Position position = new Position(new BinlogPosition(1L, "binlog-0001"), 0L);
 
-		RowMap rowMap = new BaseRowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, position);
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, position);
 
 		rowMap.putData("id", "9001");
 		rowMap.putData("name", Collections.singletonList("example"));
 
-		String jsonString = rowMap.pkToJson(BaseRowMap.KeyFormat.ARRAY);
+		String jsonString = rowMap.pkToJson(RowMap.KeyFormat.ARRAY);
 
 		Assert.assertEquals("[\"MyDatabase\",\"MyTable\",[{\"id\":\"9001\"},{\"name\":[\"example\"]}]]",
 				jsonString);
@@ -188,7 +188,7 @@ public class RowMapTest {
 
 		pKeys.add("first_name");
 
-		RowMap rowMap = new BaseRowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
 
 		rowMap.putData("id", "9001");
 		rowMap.putData("first_name", "foo");
@@ -214,7 +214,7 @@ public class RowMapTest {
 
 		pKeys.add("first_name");
 
-		RowMap rowMap = new BaseRowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
 
 		rowMap.putData("id", "9001");
 		rowMap.putData("first_name", "foo");
@@ -233,7 +233,7 @@ public class RowMapTest {
 
 	@Test
 	public void testToJSONWithRawJSONData() throws Exception {
-		RowMap rowMap = new BaseRowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS,	new ArrayList<>(), POSITION);
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS,	new ArrayList<>(), POSITION);
 
 		rowMap.setServerId(7653213L);
 		rowMap.setThreadId(6532312L);
@@ -257,7 +257,7 @@ public class RowMapTest {
 
 	@Test
 	public void testToJSONWithListData() throws Exception {
-		RowMap rowMap = new BaseRowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS,	new ArrayList<>(), POSITION);
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS,	new ArrayList<>(), POSITION);
 
 		rowMap.setServerId(7653213L);
 		rowMap.setThreadId(6532312L);

@@ -14,31 +14,31 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class BaseRowMapDeserializer extends StdDeserializer<BaseRowMap> {
+public class RowMapDeserializer extends StdDeserializer<RowMap> {
 	private static ObjectMapper mapper;
 	private String secret_key;
 
 
-	public BaseRowMapDeserializer() {
+	public RowMapDeserializer() {
 		this(Class.class);
 	}
 
-	public BaseRowMapDeserializer(String secret_key){
+	public RowMapDeserializer(String secret_key){
 		this(null,secret_key);
 	}
 
 
-	public BaseRowMapDeserializer(Class<?> vc) {
+	public RowMapDeserializer(Class<?> vc) {
 		super(vc);
 	}
 
-	public BaseRowMapDeserializer(Class<?> vc, String secret_key){
+	public RowMapDeserializer(Class<?> vc, String secret_key){
 		super(vc);
 		this.secret_key = secret_key;
 	}
 
 	@Override
-	public BaseRowMap deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+	public RowMap deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
 		ObjectNode node = jsonParser.getCodec().readTree(jsonParser);
 
 		JsonNode encrypted = node.get("encrypted");
@@ -84,7 +84,7 @@ public class BaseRowMapDeserializer extends StdDeserializer<BaseRowMap> {
 		JsonNode data = node.get("data");
 		JsonNode oldData = node.get("old");
 
-		BaseRowMap rowMap = new BaseRowMap(
+		RowMap rowMap = new RowMap(
 				type.asText(),
 				database.asText(),
 				table.asText(),
@@ -114,7 +114,7 @@ public class BaseRowMapDeserializer extends StdDeserializer<BaseRowMap> {
 		return rowMap;
 	}
 
-	private void readDataInto(BaseRowMap dest, JsonNode data, boolean isOld) throws IOException {
+	private void readDataInto(RowMap dest, JsonNode data, boolean isOld) throws IOException {
 		if (!(data instanceof ObjectNode)) {
 			throw new ParseException("`" + (isOld ? "oldData" : "data") + "` cannot be parsed.");
 		}
@@ -173,7 +173,7 @@ public class BaseRowMapDeserializer extends StdDeserializer<BaseRowMap> {
 		if (mapper == null) {
 			mapper = new ObjectMapper();
 			SimpleModule module = new SimpleModule();
-			module.addDeserializer(BaseRowMap.class, new BaseRowMapDeserializer(secret_key));
+			module.addDeserializer(RowMap.class, new RowMapDeserializer(secret_key));
 			mapper.registerModule(module);
 		}
 
@@ -185,22 +185,22 @@ public class BaseRowMapDeserializer extends StdDeserializer<BaseRowMap> {
 		if (mapper == null) {
 			mapper = new ObjectMapper();
 			SimpleModule module = new SimpleModule();
-			module.addDeserializer(BaseRowMap.class, new BaseRowMapDeserializer());
+			module.addDeserializer(RowMap.class, new RowMapDeserializer());
 			mapper.registerModule(module);
 		}
 
 		return mapper;
 	}
 
-	public static BaseRowMap createFromString(String json) throws IOException
+	public static RowMap createFromString(String json) throws IOException
 	{
 
-		return getMapper().readValue(json, BaseRowMap.class);
+		return getMapper().readValue(json, RowMap.class);
 	}
 
-	public static BaseRowMap createFromString(String json, String secret_key) throws IOException
+	public static RowMap createFromString(String json, String secret_key) throws IOException
 	{
-		return getMapper(secret_key).readValue(json, BaseRowMap.class);
+		return getMapper(secret_key).readValue(json, RowMap.class);
 	}
 
 	public static void resetMapper(){

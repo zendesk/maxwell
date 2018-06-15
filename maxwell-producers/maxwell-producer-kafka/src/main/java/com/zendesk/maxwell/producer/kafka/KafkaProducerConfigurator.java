@@ -6,7 +6,6 @@ import com.zendesk.maxwell.api.config.ConfigurationSupport;
 import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.core.producer.ProducerConfiguration;
 import com.zendesk.maxwell.core.producer.ProducerConfigurator;
-import com.zendesk.maxwell.core.row.RowMapFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,12 +17,10 @@ import java.util.Properties;
 public class KafkaProducerConfigurator implements ProducerConfigurator {
 
 	private final ConfigurationSupport configurationSupport;
-	private final RowMapFactory rowMapFactory;
 
 	@Autowired
-	public KafkaProducerConfigurator(ConfigurationSupport configurationSupport, RowMapFactory rowMapFactory) {
+	public KafkaProducerConfigurator(ConfigurationSupport configurationSupport) {
 		this.configurationSupport = configurationSupport;
-		this.rowMapFactory = rowMapFactory;
 	}
 
 	@Override
@@ -78,7 +75,7 @@ public class KafkaProducerConfigurator implements ProducerConfigurator {
 	@Override
 	public Producer configure(MaxwellContext maxwellContext, ProducerConfiguration configuration) {
 		KafkaProducerConfiguration kafkaProducerConfiguration = (KafkaProducerConfiguration)configuration;
-		return new MaxwellKafkaProducer(maxwellContext, kafkaProducerConfiguration, rowMapFactory);
+		return new MaxwellKafkaProducer(maxwellContext, kafkaProducerConfiguration);
 	}
 
 }

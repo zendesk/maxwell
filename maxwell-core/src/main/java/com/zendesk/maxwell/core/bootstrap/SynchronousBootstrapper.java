@@ -4,7 +4,6 @@ import com.zendesk.maxwell.core.producer.Producer;
 import com.zendesk.maxwell.core.replication.BinlogPosition;
 import com.zendesk.maxwell.core.replication.Position;
 import com.zendesk.maxwell.core.row.RowMap;
-import com.zendesk.maxwell.core.row.RowMapFactory;
 import com.zendesk.maxwell.core.MaxwellContext;
 import com.zendesk.maxwell.core.replication.Replicator;
 import com.zendesk.maxwell.core.schema.Database;
@@ -26,7 +25,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 
 	private long lastInsertedRowsUpdateTimeMillis = 0;
 
-	public SynchronousBootstrapper(MaxwellContext context, RowMapFactory rowMapFactory) { super(context, rowMapFactory); }
+	public SynchronousBootstrapper(MaxwellContext context) { super(context); }
 
 	@Override
 	public boolean shouldSkip(RowMap row) {
@@ -115,7 +114,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	private RowMap bootstrapEventRowMap(String type, Table table, Position position) {
-		return rowMapFactory.createFor(type, table.getDatabase(), table.getName(), System.currentTimeMillis(), table.getPKList(), position);
+		return new RowMap(type, table.getDatabase(), table.getName(), System.currentTimeMillis(), table.getPKList(), position);
 	}
 
 	@Override

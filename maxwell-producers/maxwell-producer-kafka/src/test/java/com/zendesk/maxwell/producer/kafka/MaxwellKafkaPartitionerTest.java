@@ -1,31 +1,20 @@
 package com.zendesk.maxwell.producer.kafka;
 
 import com.zendesk.maxwell.core.row.RowMap;
-import com.zendesk.maxwell.core.row.RowMapFactory;
 import com.zendesk.maxwell.core.schema.ddl.DDLMap;
 import com.zendesk.maxwell.core.schema.ddl.ResolvedDatabaseAlter;
 import com.zendesk.maxwell.core.schema.ddl.ResolvedTableDrop;
-import com.zendesk.maxwell.producer.kafka.springconfig.SpringTestContextConfiguration;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.ArrayList;
 
 import static org.junit.Assert.assertEquals;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = { SpringTestContextConfiguration.class })
 public class MaxwellKafkaPartitionerTest {
-
-	@Autowired
-	private RowMapFactory rowMapFactory;
 
 	@Test
 	public void testRowMapEqualsDDLPartitioning() {
-		RowMap r = rowMapFactory.createFor("insert", "db", "tbl", 0L, new ArrayList<>(), null);
+		RowMap r = new RowMap("insert", "db", "tbl", 0L, new ArrayList<>(), null);
 		ResolvedDatabaseAlter m = new ResolvedDatabaseAlter("db", "utf8");
 		DDLMap d = new DDLMap(m, 0L, "alter-sql", null);
 
