@@ -679,4 +679,5 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 		runJSON("/json/test_row_query_log_is_on", outputConfig);
 	}
+
 }

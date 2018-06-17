@@ -3,6 +3,7 @@ package com.zendesk.maxwell;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.filtering.Filter;
+import com.zendesk.maxwell.filtering.InvalidFilterException;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
@@ -21,6 +22,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -151,6 +154,24 @@ public class MaxwellTestSupport {
 	}
 
 	public static List<RowMap> getRowsWithReplicator(final MysqlIsolatedServer mysql, Filter filter, MaxwellTestSupportCallback callback, MaxwellOutputConfig outputConfig) throws Exception {
+		return getRowsWithReplicator(mysql, callback, (config) -> {
+			if (outputConfig == null) {
+				config.outputConfig = new MaxwellOutputConfig();
+			} else {
+				config.outputConfig = outputConfig;
+			}
+
+			if ( filter != null ) {
+				try {
+					filter.addRule("include: test.*");
+				} catch (InvalidFilterException e) { }
+			}
+
+			config.filter = filter;
+		});
+	}
+
+	public static List<RowMap> getRowsWithReplicator(final MysqlIsolatedServer mysql, MaxwellTestSupportCallback callback, Consumer<MaxwellConfig> configLambda) throws Exception {
 		final ArrayList<RowMap> list = new ArrayList<>();
 
 		clearSchemaStore(mysql);
@@ -163,15 +184,8 @@ public class MaxwellTestSupport {
 		config.maxwellMysql.port = mysql.getPort();
 		config.maxwellMysql.sslMode = SSLMode.DISABLED;
 		config.replicationMysql = config.maxwellMysql;
-		if (outputConfig == null) {
-			outputConfig = new MaxwellOutputConfig();
-		}
+		configLambda.accept(config);
 
-		if ( filter != null ) {
-			filter.addRule("include: test.*");
-		}
-
-		config.filter = filter;
 		config.bootstrapperType = "sync";
 
 		callback.beforeReplicatorStart(mysql);
@@ -233,13 +247,13 @@ public class MaxwellTestSupport {
 					if ( r == null )
 						break;
 
-					if ( r.toJSON(outputConfig) != null )
+					if ( r.toJSON(config.outputConfig) != null )
 						list.add(r);
 				}
 
 				break;
 			}
-			if ( row.toJSON(outputConfig) != null )
+			if ( row.toJSON(config.outputConfig) != null )
 				list.add(row);
 		}
 
