@@ -6,6 +6,7 @@ import java.io.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
+import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.row.RowEncrypt;
 import com.zendesk.maxwell.row.RowMap;
@@ -54,7 +55,7 @@ public class MaxwellTestJSON {
 	}
 
 	private static void runJSONTest(MysqlIsolatedServer server, List<String> sql, List<Map<String, Object>> expectedJSON,
-									MaxwellFilter filter, MaxwellOutputConfig outputConfig) throws Exception {
+									Filter filter, MaxwellOutputConfig outputConfig) throws Exception {
 		List<Map<String, Object>> eventJSON = new ArrayList<>();
 		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(server, filter, sql.toArray(new String[sql.size()]), null);
 
@@ -143,13 +144,13 @@ public class MaxwellTestJSON {
 		return ret;
 	}
 
-	protected static void runJSONTestFile(MysqlIsolatedServer server, String dir, String fname, MaxwellFilter filter,
+	protected static void runJSONTestFile(MysqlIsolatedServer server, String dir, String fname, Filter filter,
 										  MaxwellOutputConfig outputConfig) throws Exception {
 		SQLAndJSON testResources = parseJSONTestFile(new File(dir, fname).toString());
 		runJSONTest(server, testResources.inputSQL, testResources.jsonAsserts, filter, outputConfig);
 	}
 
-	protected static void runJSONTestFile(MysqlIsolatedServer server, String fname, MaxwellFilter filter,
+	protected static void runJSONTestFile(MysqlIsolatedServer server, String fname, Filter filter,
 										  MaxwellOutputConfig outputConfig) throws Exception {
 		runJSONTestFile(server, MaxwellTestSupport.getSQLDir(), fname, filter, outputConfig);
 	}

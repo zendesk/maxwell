@@ -47,6 +47,11 @@ public class Table {
 		return columns.getList();
 	}
 
+	@JsonIgnore
+	public Set<String> getColumnNames() {
+		return columns.columnNames();
+	}
+
 	@JsonProperty("columns")
 	public void setColumnList(List<ColumnDef> list) {
 		this.columns = new TableColumnList(list);

@@ -1,6 +1,7 @@
 package com.zendesk.maxwell;
 
 import com.google.common.collect.Lists;
+import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.row.RowMap;
@@ -9,7 +10,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Test;
 
 import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -208,7 +208,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		List<RowMap> list;
 		RowMap r;
 
-		MaxwellFilter filter = new MaxwellFilter();
+		Filter filter = new Filter();
 
 		list = getRowsForSQL(filter, insertSQL, createDBs);
 		assertThat(list.size(), is(2));
@@ -216,7 +216,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		r = list.get(0);
 		assertThat(r.getTable(), is("bars"));
 
-		filter.includeDatabase("shard_1");
+		filter.addRule("exclude: *.*, include: shard_1.minimal");
 		list = getRowsForSQL(filter, insertSQL);
 		assertThat(list.size(), is(1));
 		assertThat(list.get(0).getTable(), is("minimal"));
@@ -226,8 +226,8 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	public void testExcludeDB() throws Exception {
 		List<RowMap> list;
 
-		MaxwellFilter filter = new MaxwellFilter();
-		filter.excludeDatabase("shard_1");
+		Filter filter = new Filter();
+		filter.addRule("exclude: shard_1.*");
 		list = getRowsForSQL(filter, insertSQL, createDBs);
 		assertThat(list.size(), is(1));
 
@@ -238,8 +238,8 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	public void testIncludeTable() throws Exception {
 		List<RowMap> list;
 
-		MaxwellFilter filter = new MaxwellFilter();
-		filter.includeTable("minimal");
+		Filter filter = new Filter();
+		filter.addRule("exclude: *.*, include: *.minimal");
 
 		list = getRowsForSQL(filter, insertSQL, createDBs);
 
@@ -252,8 +252,8 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	public void testExcludeTable() throws Exception {
 		List<RowMap> list;
 
-		MaxwellFilter filter = new MaxwellFilter();
-		filter.excludeTable("minimal");
+		Filter filter = new Filter();
+		filter.addRule("exclude: *.minimal");
 
 		list = getRowsForSQL(filter, insertSQL, createDBs);
 
@@ -265,7 +265,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testExcludeColumns() throws Exception {
 		List<RowMap> list;
-		MaxwellFilter filter = new MaxwellFilter();
+		Filter filter = new Filter();
 
 		list = getRowsForSQL(filter, insertSQL, createDBs);
 		String json = list.get(1).toJSON();
@@ -282,6 +282,76 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		assertTrue(Pattern.compile("\"account_id\":2").matcher(json).find());
 	}
 
+	static String insertColumnSQL[] = {
+		"INSERT into foo.bars set something = 'accept'",
+		"INSERT into foo.bars set something = 'reject'"
+	};
+
+	@Test
+	public void testExcludeColumnValues() throws Exception {
+		List<RowMap> list;
+
+		Filter filter = new Filter();
+		filter.addRule("exclude: foo.bars.something=reject");
+
+		list = getRowsForSQL(filter, insertColumnSQL, createDBs);
+
+		assertThat(list.size(), is(1));
+	}
+
+	@Test
+	public void testExcludeTableIncludeColumns() throws Exception {
+		List<RowMap> list;
+
+		Filter filter = new Filter();
+		filter.addRule("exclude: foo.bars, include: foo.bars.something=accept");
+
+		list = getRowsForSQL(filter, insertColumnSQL, createDBs);
+
+		assertThat(list.size(), is(1));
+	}
+
+	@Test
+	public void testExcludeIncludeColumns() throws Exception {
+		List<RowMap> list;
+
+		Filter filter = new Filter();
+		filter.addRule("exclude: foo.bars.something=*, include: foo.bars.something=accept");
+
+		list = getRowsForSQL(filter, insertColumnSQL, createDBs);
+
+		assertThat(list.size(), is(1));
+	}
+
+	@Test
+	public void testExcludeMissingColumns() throws Exception {
+		List<RowMap> list;
+
+		Filter filter = new Filter();
+		filter.addRule("exclude: foo.bars.notacolumn=*");
+
+		list = getRowsForSQL(filter, insertColumnSQL, createDBs);
+
+		assertThat(list.size(), is(2));
+	}
+
+	@Test
+	public void testWildCardMatchesNull() throws Exception {
+		List<RowMap> list;
+
+		String nullInsert[] = {
+			"INSERT into foo.bars set something = NULL",
+			"INSERT into foo.bars set something = 'accept'"
+		};
+
+		Filter filter = new Filter();
+		filter.addRule("exclude: foo.bars.something=*");
+
+		list = getRowsForSQL(filter, nullInsert, createDBs);
+
+		assertThat(list.size(), is(0));
+	}
+
 	static String blacklistSQLDDL[] = {
 		"CREATE DATABASE nodatabase",
 		"CREATE TABLE nodatabase.noseeum (i int)",
@@ -296,8 +366,8 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testDDLTableBlacklist() throws Exception {
 		server.execute("drop database if exists nodatabase");
-		MaxwellFilter filter = new MaxwellFilter();
-		filter.blacklistTable("noseeum");
+		Filter filter = new Filter();
+		filter.addRule("blacklist: *.noseeum");
 
 		String[] allSQL = (String[])ArrayUtils.addAll(blacklistSQLDDL, blacklistSQLDML);
 
@@ -309,8 +379,8 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	public void testDDLDatabaseBlacklist() throws Exception {
 		server.execute("drop database if exists nodatabase");
 
-		MaxwellFilter filter = new MaxwellFilter();
-		filter.blacklistDatabases("nodatabase");
+		Filter filter = new Filter();
+		filter.addRule("blacklist: nodatabase.*");
 
 		String[] allSQL = (String[])ArrayUtils.addAll(blacklistSQLDDL, blacklistSQLDML);
 
@@ -527,7 +597,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testOrderedOutput() throws Exception {
-		MaxwellFilter filter = new MaxwellFilter();
+		Filter filter = new Filter();
 		List<RowMap> rows = getRowsForSQL(filter, insertDBSql, createDBSql);
 		String ordered_data = "\"data\":\\{\"id\":1,\"account_id\":2,\"user_id\":3\\}";
 		assertTrue(Pattern.compile(ordered_data).matcher(rows.get(0).toJSON()).find());

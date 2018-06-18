@@ -220,39 +220,20 @@ sqs_queue_uri=aws_sqs_queue_uri
 
 ######### filter stuff ###############
 
-# filter rows out of Maxwell's output.
-# all filters may be given either as literal names, or as java-style regular expressions.
-# This is a literal name: "exclude_tables=tblname".
-# This is a regexp:       "exclude_tables=/tblname_\\d+/"
-
-# include *only* these databases
-#include_dbs=db1,/db\\d+/
-
-# exclude these databases (will override an include)
-#exclude_dbs=db3,/db\\d+/
-
-# include *only* these tables
-#include_tables=tbl1,/tbl\\d+/
-
-# exclude these tables
-#exclude_tables=tbl1,/tbl\\d+/
-
-# exclude these columns
-#exclude_columns=col1,/col\\d+/
-
-# include only rows where the column 'foo' contains the value 'bar', and the column 'baz' contains the value 0.5
-#include_column_values=foo=bar,baz=0.5
-
-# "blacklist" these dbs -- this means maxwell will ignore schema
-# changes happening to these databases.  Can be useful if you have a
-# high-churn schema that you want to completely ignore, but it's
-# a bit dangerous: once you set this option, you must leave it set, or
-# else maxwell will likely blow up.
+# filter rows out of Maxwell's output.  Command separated list of filter-rules, evaluated in sequence.
+# A filter rule is:
+#  <type> ":" <db> "." <tbl> [ "." <col> "=" <col_val> ]
+#  type    ::= [ "include" | "exclude" | "blacklist" ]
+#  db      ::= [ "/regexp/" | "string" | "`string`" | "*" ]
+#  tbl     ::= [ "/regexp/" | "string" | "`string`" | "*" ]
+#  col_val ::= "column_name"
+#  tbl     ::= [ "/regexp/" | "string" | "`string`" | "*" ]
 #
-# All of this is to say: don't set this unless you know what you're doing.
-#blacklist_dbs=db1,/db\\d+/
-#blacklist_tables=table1,table_no
+# example:
 #
+# filter= exclude: *.*, include: foo.*, include: bar.baz, include: foo.bar.col_eg = "value_to_match"
+#
+# See http://maxwells-daemon.io/config/#filtering for more details
 
 ######### encryption ###############
 

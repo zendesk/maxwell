@@ -8,6 +8,7 @@ import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.MaxwellMysqlConfig;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
+import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.monitoring.Metrics;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.row.RowMap;
@@ -184,8 +185,8 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 				case EXT_DELETE_ROWS:
 					Table table = tableCache.getTable(event.getTableID());
 
-					if ( table != null && shouldOutputEvent(table.getDatabase(), table.getName(), filter) ) {
-						for ( RowMap r : event.jsonMaps(table, lastHeartbeatPosition, currentQuery) )
+					if ( table != null && shouldOutputEvent(table.getDatabase(), table.getName(), filter, table.getColumnNames()) ) {
+						for ( RowMap r : event.jsonMaps(table, getLastHeartbeatRead(), currentQuery) )
 							if (shouldOutputRowMap(table.getDatabase(), table.getName(), r, filter)) {
 								buffer.add(r);
 							}
@@ -323,7 +324,8 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 			data.getDatabase(),
 			data.getSql(),
 			this.schemaStore,
-			lastHeartbeatPosition.withBinlogPosition(event.getPosition()),
+			Position.valueOf(event.getPosition(), getLastHeartbeatRead()),
+			Position.valueOf(event.getNextPosition(), getLastHeartbeatRead()),
 			event.getEvent().getHeader().getTimestamp()
 		);
 	}

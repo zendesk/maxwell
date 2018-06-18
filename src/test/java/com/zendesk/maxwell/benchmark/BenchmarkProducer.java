@@ -6,9 +6,12 @@ import com.zendesk.maxwell.row.RowMap;
 
 public class BenchmarkProducer extends AbstractProfilingProducer {
 	private long lastRowReceivedAt = 0;
-	public BenchmarkProducer(MaxwellContext context) {
+	private long rowsDiscarded = 0, discardFirstRows;
+
+	public BenchmarkProducer(MaxwellContext context, long discardFirstRows) {
 		super(context);
 
+		this.discardFirstRows = discardFirstRows;
 		new Thread(() -> {
 			while (true) {
 				checkDone();
@@ -36,7 +39,12 @@ public class BenchmarkProducer extends AbstractProfilingProducer {
 
 	@Override
 	public void push(RowMap r) throws Exception {
-		super.push(r);
-		this.lastRowReceivedAt = System.currentTimeMillis();
+		if ( rowsDiscarded < discardFirstRows ) {
+			String value = r.toJSON();
+			rowsDiscarded++;
+		} else {
+			super.push(r);
+			this.lastRowReceivedAt = System.currentTimeMillis();
+		}
 	}
 }

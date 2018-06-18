@@ -182,13 +182,13 @@ class MaxwellPubsubProducerWorker
 
     if ( r instanceof DDLMap ) {
 	  ApiFuture<String> apiFuture = ddlPubsub.publish(pubsubMessage);
-	  PubsubCallback callback = new PubsubCallback(cc, r.getPosition(), message,
+	  PubsubCallback callback = new PubsubCallback(cc, r.getNextPosition(), message,
 			  this.succeededMessageCount, this.failedMessageCount, this.succeededMessageMeter, this.failedMessageMeter, this.context);
 
 	  ApiFutures.addCallback(apiFuture, callback);
     } else {
 	  ApiFuture<String> apiFuture = pubsub.publish(pubsubMessage);
-	  PubsubCallback callback = new PubsubCallback(cc, r.getPosition(), message,
+	  PubsubCallback callback = new PubsubCallback(cc, r.getNextPosition(), message,
 			  this.succeededMessageCount, this.failedMessageCount, this.succeededMessageMeter, this.failedMessageMeter, this.context);
 
 	  ApiFutures.addCallback(apiFuture, callback);

@@ -575,14 +575,20 @@ public class MysqlSavedSchema {
 			PreparedStatement s = connection.prepareStatement(
 				"SELECT id from `schemas` "
 				+ "WHERE deleted = 0 "
-				+ "AND last_heartbeat_read <= ? AND ((binlog_file < ?) OR (binlog_file = ? and binlog_position < ?)) AND server_id = ? "
+				+ "AND last_heartbeat_read <= ? AND ("
+				+ "(binlog_file < ?) OR "
+				+ "(binlog_file = ? and binlog_position < ? and base_schema_id is not null) OR "
+				+ "(binlog_file = ? and binlog_position <= ? and base_schema_id is null) "
+				+ ") AND server_id = ? "
 				+ "ORDER BY last_heartbeat_read DESC, binlog_file DESC, binlog_position DESC limit 1");
 
 			s.setLong(1, targetPosition.getLastHeartbeatRead());
 			s.setString(2, targetBinlogPosition.getFile());
 			s.setString(3, targetBinlogPosition.getFile());
 			s.setLong(4, targetBinlogPosition.getOffset());
-			s.setLong(5, serverID);
+			s.setString(5, targetBinlogPosition.getFile());
+			s.setLong(6, targetBinlogPosition.getOffset());
+			s.setLong(7, serverID);
 
 			ResultSet rs = s.executeQuery();
 			if (rs.next()) {
