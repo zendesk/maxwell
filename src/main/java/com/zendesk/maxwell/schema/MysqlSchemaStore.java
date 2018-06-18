@@ -60,22 +60,12 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 	}
 
 	private MysqlSavedSchema restoreOrCaptureSchema() throws SchemaStoreException {
-		try ( Connection conn = maxwellConnectionPool.getConnection() ) {
+		try {
 			MysqlSavedSchema savedSchema =
 				restore(maxwellConnectionPool, serverID, caseSensitivity, initialPosition);
 
 			if ( savedSchema == null ) {
-				Schema capturedSchema = captureSchema();
-				savedSchema = new MysqlSavedSchema(serverID, caseSensitivity, capturedSchema, initialPosition);
-				if (!readOnly)
-					if (conn.isValid(30)) {
-						savedSchema.save(conn);
-					} else {
-						// The capture time might be long and the conn connection might be closed already. Consulting the pool
-						// again for a new connection
-						Connection newConn = maxwellConnectionPool.getConnection();
-						savedSchema.save(newConn);
-					}
+				savedSchema = recaptureSchema();
 			}
 
 			return savedSchema;
@@ -86,13 +76,20 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 		}
 	}
 
-	public void destroy() throws SQLException {
+	public MysqlSavedSchema recaptureSchema() throws SQLException {
 		try ( Connection conn = maxwellConnectionPool.getConnection() ) {
-			String[] tables = { "databases", "tables", "columns", "schemas" };
-			LOGGER.info("Maxwell is cleaning out existing schema store");
-			for ( String tName : tables ) {
-				conn.createStatement().execute("TRUNCATE TABLE `" + tName + "`");
-			}
+			MysqlSavedSchema savedSchema = new MysqlSavedSchema(serverID, caseSensitivity, captureSchema(), initialPosition);
+			if (!readOnly)
+				if (conn.isValid(30)) {
+					savedSchema.save(conn);
+				} else {
+					// The capture time might be long and the conn connection might be closed already. Consulting the pool
+					// again for a new connection
+					Connection newConn = maxwellConnectionPool.getConnection();
+					savedSchema.save(newConn);
+					newConn.close();
+				}
+			return savedSchema;
 		}
 	}
 
