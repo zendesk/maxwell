@@ -193,7 +193,19 @@ public class Maxwell implements Runnable {
 		MysqlSchemaStore mysqlSchemaStore = new MysqlSchemaStore(this.context, initPosition);
 		mysqlSchemaStore.getSchema(); // trigger schema to load / capture before we start the replicator.
 
-		this.replicator = new BinlogConnectorReplicator(mysqlSchemaStore, producer, bootstrapper, this.context, initPosition);
+		this.replicator = new BinlogConnectorReplicator(
+			mysqlSchemaStore,
+			producer,
+			bootstrapper,
+			config.replicationMysql,
+			config.replicaServerID,
+			config.databaseName,
+			context.getMetrics(),
+			initPosition,
+			false,
+			config.clientID,
+			context.getHeartbeatNotifier()
+		);
 
 		bootstrapper.resume(producer, replicator);
 
