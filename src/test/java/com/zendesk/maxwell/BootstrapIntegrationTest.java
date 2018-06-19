@@ -41,6 +41,12 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
+	public void testJSONType() throws Exception {
+		requireMinimumVersion(server.VERSION_5_7);
+		runJSON("json/bootstrap-json-type");
+	}
+
+	@Test
 	public void testBootstrapIsWhitelisted() throws Exception {
 		Filter filter = new Filter();
 		filter.addRule("exclude: *.*, include: shard_1.*");
