@@ -45,7 +45,7 @@ producer_partition_by          | [PARTITION_BY](#partition_by)       | input to 
 producer_partition_columns     | STRING                              | if partitioning by 'column', a comma separated list of columns |
 producer_partition_by_fallback | [PARTITION_BY_FALLBACK](#partition_by_fallback) | required when producer_partition_by=column.  Used when the column is missing |
 ignore_producer_error          | BOOLEAN              | Maxwell will be terminated on kafka/kinesis errors when false. Otherwise, those producer errors are only logged. | true
-recapture_schema               | BOOLEAN              | recapture the latest schema. | false
+recapture_schema               | BOOLEAN              | recapture the latest schema. Not available in config.properties. | false
 &nbsp;
 **"file" producer options**
 output_file                    | STRING                              | output file for `file` producer                     |

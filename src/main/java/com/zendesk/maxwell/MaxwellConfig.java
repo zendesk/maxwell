@@ -495,7 +495,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.replayMode =     fetchBooleanOption("replay", options, null, false);
 		this.masterRecovery = fetchBooleanOption("master_recovery", options, properties, false);
 		this.ignoreProducerError = fetchBooleanOption("ignore_producer_error", options, properties, true);
-		this.recaptureSchema = fetchBooleanOption("recapture_schema", options, properties, false);
+		this.recaptureSchema = fetchBooleanOption("recapture_schema", options, null, false);
 
 		outputConfig.includesBinlogPosition = fetchBooleanOption("output_binlog_position", options, properties, false);
 		outputConfig.includesGtidPosition = fetchBooleanOption("output_gtid_position", options, properties, false);
