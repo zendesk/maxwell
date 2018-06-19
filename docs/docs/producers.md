@@ -8,9 +8,9 @@ latter case 'database' and 'table' will be replaced with the values for the row
 being processed. This can be changed with the `kafka_topic` option.
 
 #### Client version
-By default, maxwell uses the kafka 0.11.0.1 library. The `--kafka_version` flag
+By default, maxwell uses the kafka 1.0.0 library. The `--kafka_version` flag
 lets you choose an alternate library version: 0.8.2.2, 0.9.0.1, 0.10.0.1, 0.10.2.1 or
-0.11.0.1.  This flag is only available on the command line.
+0.11.0.1, 1.0.0.  This flag is only available on the command line.
 
 
 - The 0.8.2.2 client is only compatible with brokers running kafka 0.8.
