@@ -65,7 +65,7 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 				restore(maxwellConnectionPool, serverID, caseSensitivity, initialPosition);
 
 			if ( savedSchema == null ) {
-				savedSchema = recaptureSchema();
+				savedSchema = captureAndSaveSchema();
 			}
 
 			return savedSchema;
@@ -76,7 +76,7 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 		}
 	}
 
-	public MysqlSavedSchema recaptureSchema() throws SQLException {
+	public MysqlSavedSchema captureAndSaveSchema() throws SQLException {
 		try ( Connection conn = maxwellConnectionPool.getConnection() ) {
 			MysqlSavedSchema savedSchema = new MysqlSavedSchema(serverID, caseSensitivity, captureSchema(), initialPosition);
 			if (!readOnly)

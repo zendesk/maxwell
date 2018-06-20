@@ -193,7 +193,7 @@ public class Maxwell implements Runnable {
 		MysqlSchemaStore mysqlSchemaStore = new MysqlSchemaStore(this.context, initPosition);
 
 		if (config.recaptureSchema) {
-			mysqlSchemaStore.recaptureSchema();
+			mysqlSchemaStore.captureAndSaveSchema();
 		}
 
 		mysqlSchemaStore.getSchema(); // trigger schema to load / capture before we start the replicator.
