@@ -24,6 +24,7 @@ client_id                      | STRING               | unique text identifier f
 replica_server_id              | LONG                 | unique numeric identifier for this maxwell instance | 6379 (see [notes](#multiple-maxwell-instances))
 master_recovery                | BOOLEAN              | enable experimental master recovery code            | false
 gtid_mode                      | BOOLEAN              | enable GTID-based replication                       | false
+recapture_schema               | BOOLEAN              | recapture the latest schema. Not available in config.properties. | false
 &nbsp;
 replication_host               | STRING               | server to replicate from.  See [split server roles](#split-server-roles) | *schema-store host*
 replication_password           | STRING               | password on replication server                      | (none)
@@ -45,7 +46,6 @@ producer_partition_by          | [PARTITION_BY](#partition_by)       | input to 
 producer_partition_columns     | STRING                              | if partitioning by 'column', a comma separated list of columns |
 producer_partition_by_fallback | [PARTITION_BY_FALLBACK](#partition_by_fallback) | required when producer_partition_by=column.  Used when the column is missing |
 ignore_producer_error          | BOOLEAN              | Maxwell will be terminated on kafka/kinesis errors when false. Otherwise, those producer errors are only logged. | true
-recapture_schema               | BOOLEAN              | recapture the latest schema. Not available in config.properties. | false
 &nbsp;
 **"file" producer options**
 output_file                    | STRING                              | output file for `file` producer                     |
