@@ -1,5 +1,13 @@
 # Maxwell changelog
 
+### [v1.16.1](https://github.com/zendesk/maxwell/releases/tag/v1.16.1): "the 90 degree angle thing"
+
+
+- Fix Bootstrapping for JSON columns
+- add --recapture_schema flag for when ya wanna start over
+- add kafka 1.0 libraries, make them default
+
+
 ### [v1.16.0](https://github.com/zendesk/maxwell/releases/tag/v1.16.0): "kind of sort of a reference to something"
 
 
