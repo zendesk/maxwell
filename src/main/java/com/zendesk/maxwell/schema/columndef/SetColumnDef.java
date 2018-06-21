@@ -5,16 +5,9 @@ import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.google.code.or.common.util.MySQLConstants;
-
 public class SetColumnDef extends EnumeratedColumnDef {
 	public SetColumnDef(String name, String type, int pos, String[] enumValues) {
 		super(name, type, pos, enumValues);
-	}
-
-	@Override
-	public boolean matchesMysqlType(int type) {
-		return type == MySQLConstants.TYPE_SET;
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package com.zendesk.maxwell;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
+import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.producer.ProducerFactory;
 import com.zendesk.maxwell.row.RowMap;
@@ -68,7 +69,7 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 		config.maxwellMysql.password = "maxwell";
 		config.maxwellMysql.host = "localhost";
 		config.maxwellMysql.port = mysql.getPort();
-		config.maxwellMysql.jdbcOptions.add("useSSL=false");
+		config.maxwellMysql.sslMode = SSLMode.DISABLED;
 		config.replicationMysql = config.maxwellMysql;
 		return config;
 	}

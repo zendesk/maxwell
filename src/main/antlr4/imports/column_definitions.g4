@@ -30,7 +30,7 @@ generic_type:
 
 
 signed_type: // we need the UNSIGNED flag here
-      col_type=(TINYINT | INT1 | SMALLINT | INT2 | MEDIUMINT | INT3 | INT | INTEGER | INT4 | BIGINT | INT8 )
+      col_type=(TINYINT | INT1 | SMALLINT | INT2 | MEDIUMINT | INT3 | INT | INTEGER | INT4 | BIGINT | INT8 | FIXED | FLOAT4 | FLOAT8 | MIDDLEINT )
                 length?
                 int_flags*
                 column_options*
@@ -96,10 +96,11 @@ charset_def: character_set | ASCII;
 character_set: ((CHARACTER SET) | CHARSET) charset_name;
 
 nullability: (NOT NULL | NULL);
-default_value: DEFAULT (literal | CURRENT_TIMESTAMP current_timestamp_length? | now_function);
+default_value: DEFAULT (literal | CURRENT_TIMESTAMP current_timestamp_length? | now_function | localtime_function);
 length: '(' INTEGER_LITERAL ')';
 int_flags: ( SIGNED | UNSIGNED | ZEROFILL );
 decimal_length: '(' INTEGER_LITERAL ( ',' INTEGER_LITERAL )? ')';
 
 now_function: NOW '(' ')';
 current_timestamp_length: length | '(' ')';
+localtime_function: (LOCALTIME | LOCALTIMESTAMP) ('(' ')')?;

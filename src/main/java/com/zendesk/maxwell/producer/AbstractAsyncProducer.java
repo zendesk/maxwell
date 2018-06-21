@@ -10,12 +10,6 @@ import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractAsyncProducer extends AbstractProducer {
 
-	protected final Counter succeededMessageCount;
-	protected final Meter succeededMessageMeter;
-	protected final Counter failedMessageCount;
-	protected final Meter failedMessageMeter;
-	protected final Timer metricsTimer;
-
 	public class CallbackCompleter {
 		private InflightMessageList inflightMessages;
 		private final MaxwellContext context;
@@ -50,27 +44,22 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 
 		Metrics metrics = context.getMetrics();
 		MetricRegistry metricRegistry = metrics.getRegistry();
-
+		
 		String gaugeName = metrics.metricName("inflightmessages", "count");
-		//metrics.register(gaugeName, (Gauge<Long>) () -> (long) inflightMessages.size());
 
-		this.succeededMessageCount = metricRegistry.counter(metrics.metricName("messages", "succeeded"));
-		this.succeededMessageMeter = metricRegistry.meter(metrics.metricName("messages", "succeeded", "meter"));
-		this.failedMessageCount = metricRegistry.counter(metrics.metricName("messages", "failed"));
-		this.failedMessageMeter = metricRegistry.meter(metrics.metricName("messages", "failed", "meter"));
-		this.metricsTimer = metrics.getRegistry().timer(metrics.metricName("message", "publish", "time"));
+//		this.succeededMessageCount = metricRegistry.counter(metrics.metricName("messages", "succeeded"));
+//		this.succeededMessageMeter = metricRegistry.meter(metrics.metricName("messages", "succeeded", "meter"));
+//		this.failedMessageCount = metricRegistry.counter(metrics.metricName("messages", "failed"));
+//		this.failedMessageMeter = metricRegistry.meter(metrics.metricName("messages", "failed", "meter"));
+//		this.metricsTimer = metrics.getRegistry().timer(metrics.metricName("message", "publish", "time"));
+//		metrics.register(gaugeName, (Gauge<Long>) () -> (long) inflightMessages.size());
 	}
 
 	public abstract void sendAsync(RowMap r, CallbackCompleter cc) throws Exception;
 
 	@Override
-	public Meter getFailedMessageMeter() {
-		return this.failedMessageMeter;
-	}
-
-	@Override
 	public final void push(RowMap r) throws Exception {
-		Position position = r.getPosition();
+		Position position = r.getNextPosition();
 		// Rows that do not get sent to a target will be automatically marked as complete.
 		// We will attempt to commit a checkpoint up to the current row.
 		if(!r.shouldOutput(outputConfig)) {

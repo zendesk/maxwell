@@ -7,16 +7,9 @@ import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.TimeZone;
 
-import com.google.code.or.common.util.MySQLConstants;
-
 public class TimeColumnDef extends ColumnDefWithLength {
 	public TimeColumnDef(String name, String type, int pos, Long columnLength) {
 		super(name, type, pos, columnLength);
-	}
-
-	@Override
-	public boolean matchesMysqlType(int type) {
-		return type == MySQLConstants.TYPE_TIME || type == MySQLConstants.TYPE_TIME2;
 	}
 
 	protected String formatValue(Object value) {

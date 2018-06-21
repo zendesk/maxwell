@@ -6,10 +6,13 @@
               {% if nav_item == current_page and current_page.title != 'Changelog' %}
                   <ul class="nav">
                   {% for toc_item in toc %}
-                      <li class="toctree-l3"><a href="{{ toc_item.url }}">{{ toc_item.title }}</a></li>
+                      <li class="toctree-l3"><a href="{{ toc_item.url }}">{{ toc_item.title }}</a>
+                      <ul class="toctree-subnav">
                       {% for toc_item in toc_item.children %}
-                          <li><a class="toctree-l4" href="{{ toc_item.url }}">{{ toc_item.title }}</a></li>
+                          <li class="toctree-l4" ><a href="{{ toc_item.url }}">{{ toc_item.title }}</a></li>
                       {% endfor %}
+                      </li>
+                      </uL>
                   {% endfor %}
                   </ul>
               {% endif %}

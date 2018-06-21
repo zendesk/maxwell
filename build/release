@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'bundler/setup'
+require 'tempfile'
 require 'octokit'
 
 REPO="zendesk/maxwell"
@@ -9,8 +10,10 @@ BINDIR=File.dirname(__FILE__)
 
 CURRENT_REV=`#{BINDIR}/current_rev`
 
+SUBCOMMANDS=%w(changelog bump build tag release docs nexus)
+
 if !( ($version = ARGV[0]) && $version =~ /^\d+\.\d+\.\d+(-\w+)?$/)
-  message =  "usage: #{$0} VERSION [bump|build|tag|release|changelog]|\n"
+  message =  "usage: #{$0} VERSION [#{SUBCOMMANDS.join('|')}]\n"
   message += "  (current version is #{CURRENT_REV})"
   abort(message)
 end
@@ -18,7 +21,7 @@ end
 puts "Releasing version: #{$version}"
 
 if ( $command = ARGV[1] )
-  unless ["changelog", "bump", "build", "tag", "release"].include?($command)
+  unless SUBCOMMANDS.include?($command)
     abort("unknown subcommand: #{$command}")
   end
 end
@@ -30,6 +33,8 @@ end
 
 def bump
   do_system(BINDIR + "/bump", $version)
+  puts "Ok, bumped the version to #{$version}.  Dropping you to a shell with the changes in the workspace,"
+  puts "please verify that the version bump went well and then exit the shell."
   do_system("/bin/bash -i")
 end
 
@@ -72,11 +77,20 @@ def release
 
   release = client.create_release(REPO, 'v' + $version, name: release_title, body: release_body, prerelease: prerelease?)
   client.upload_asset(release.url, BINDIR + "/../target/maxwell-#{$version}.tar.gz")
+end
+
+def docs
   do_system(BINDIR + "/../docs/push")
 end
 
 def changelog
   do_system(BINDIR + "/mkchangelog > " + BINDIR + "/../CHANGELOG.md")
+  do_system("git commit -am 'update changelog'")
+  do_system("git push")
+end
+
+def nexus
+  do_system("mvn deploy -DskipTests=true")
 end
 
 if $command
@@ -88,5 +102,7 @@ else
   release
   sleep 2
   changelog
+  docs
+  nexus
 end
 

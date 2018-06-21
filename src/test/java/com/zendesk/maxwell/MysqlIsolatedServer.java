@@ -14,6 +14,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -25,9 +26,10 @@ public class MysqlIsolatedServer {
 	public final MysqlVersion VERSION_5_6 = new MysqlVersion(5, 6);
 	public final MysqlVersion VERSION_5_7 = new MysqlVersion(5, 7);
 
-	private Connection connection; private String baseDir;
+	private Connection connection;
 	private int port;
 	private int serverPid;
+	public String path;
 
 	static final Logger LOGGER = LoggerFactory.getLogger(MysqlIsolatedServer.class);
 	public static final TypeReference<Map<String, Object>> MAP_STRING_OBJECT_REF = new TypeReference<Map<String, Object>>() {};
@@ -56,21 +58,24 @@ public class MysqlIsolatedServer {
 			serverID = "--server_id=" + SERVER_ID;
 
 		ProcessBuilder pb = new ProcessBuilder(
-				dir + "/src/test/onetimeserver",
-				"--mysql-version=" + this.getVersionString(),
-				"--log-slave-updates",
-				"--log-bin=master",
-				"--binlog_format=row",
-				"--innodb_flush_log_at_trx_commit=0",
-				serverID,
-				"--character-set-server=utf8",
-				"--sync_binlog=0",
-				"--default-time-zone=+00:00",
-				"--verbose",
-				isRoot ? "--user=root" : "",
-				gtidParams,
-				xtraParams
+			dir + "/src/test/onetimeserver",
+			"--mysql-version=" + this.getVersionString(),
+			"--log-slave-updates",
+			"--log-bin=master",
+			"--binlog_format=row",
+			"--innodb_flush_log_at_trx_commit=0",
+			serverID,
+			"--character-set-server=utf8",
+			"--sync_binlog=0",
+			"--default-time-zone=+00:00",
+			"--verbose",
+			isRoot ? "--user=root" : "",
+			gtidParams
 		);
+
+		for ( String s : xtraParams.split(" ") ) {
+			pb.command().add(s);
+		}
 
 		LOGGER.info("booting onetimeserver: " + StringUtils.join(pb.command(), " "));
 		Process p = pb.start();
@@ -103,6 +108,7 @@ public class MysqlIsolatedServer {
 			Map<String, Object> output = mapper.readValue(json, MAP_STRING_OBJECT_REF);
 			this.port = (int) output.get("port");
 			this.serverPid = (int) output.get("server_pid");
+			this.path = (String) output.get("mysql_path");
 			outputFile = (String) output.get("output");
 		} catch ( Exception e ) {
 			LOGGER.error("got exception while parsing " + json, e);

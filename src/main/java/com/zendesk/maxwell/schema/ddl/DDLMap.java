@@ -16,14 +16,14 @@ public class DDLMap extends RowMap {
 	private final ResolvedSchemaChange change;
 	private final Long timestamp;
 	private final String sql;
-	private Position nextPosition;
+	private Position position;
 
-	public DDLMap(ResolvedSchemaChange change, Long timestamp, String sql, Position nextPosition) {
-		super("ddl", "database", "table", timestamp, new ArrayList<String>(0), nextPosition);
+	public DDLMap(ResolvedSchemaChange change, Long timestamp, String sql, Position position, Position nextPosition) {
+		super("ddl", change.databaseName(), change.tableName(), timestamp, new ArrayList<>(0), position, nextPosition, sql);
 		this.change = change;
 		this.timestamp = timestamp;
 		this.sql = sql;
-		this.nextPosition = nextPosition;
+		this.position = position;
 	}
 
 	public String pkToJson(KeyFormat keyFormat) throws IOException {
@@ -52,7 +52,7 @@ public class DDLMap extends RowMap {
 		changeMixin.put("__cluster", outputConfig.cluster);
 		changeMixin.put("__shard", outputConfig.shard);
 		
-		BinlogPosition binlogPosition = nextPosition.getBinlogPosition();
+		BinlogPosition binlogPosition = position.getBinlogPosition();
 		if ( outputConfig.includesBinlogPosition ) {
 			changeMixin.put("position", binlogPosition.getFile() + ":" + binlogPosition.getOffset());
 		}
@@ -65,5 +65,9 @@ public class DDLMap extends RowMap {
 	@Override
 	public boolean shouldOutput(MaxwellOutputConfig outputConfig) {
 		return outputConfig.outputDDL;
+	}
+
+	public String getSql() {
+		return sql;
 	}
 }

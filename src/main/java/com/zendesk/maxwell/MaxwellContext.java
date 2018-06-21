@@ -4,6 +4,7 @@ import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.bootstrap.AsynchronousBootstrapper;
 import com.zendesk.maxwell.bootstrap.NoOpBootstrapper;
 import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
+import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.monitoring.*;
 import com.zendesk.maxwell.producer.*;
 import com.zendesk.maxwell.recovery.RecoveryInfo;
@@ -19,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import snaq.db.ConnectionPool;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -52,8 +54,9 @@ public class MaxwellContext {
 	private final HeartbeatNotifier heartbeatNotifier;
 	private final MaxwellDiagnosticContext diagnosticContext;
 
-	public MaxwellContext(MaxwellConfig config) throws SQLException {
+	public MaxwellContext(MaxwellConfig config) throws SQLException, URISyntaxException {
 		this.config = config;
+		this.config.validate();
 		this.taskManager = new TaskManager();
 		this.metrics = new MaxwellMetrics(config);
 
@@ -245,13 +248,17 @@ public class MaxwellContext {
 		return this.initialPosition;
 	}
 
+	public Position getOtherClientPosition() throws SQLException {
+		return this.positionStore.getLatestFromAnyClient();
+	}
+
 	public RecoveryInfo getRecoveryInfo() throws SQLException {
 		return this.positionStore.getRecoveryInfo(config);
 	}
 
 	public void setPosition(RowMap r) {
 		if ( r.isTXCommit() )
-			this.setPosition(r.getPosition());
+			this.setPosition(r.getNextPosition());
 	}
 
 	public void setPosition(Position position) {
@@ -337,6 +344,12 @@ public class MaxwellContext {
 			case "kinesis":
 				this.producer = new MaxwellKinesisProducer(this, this.config.kinesisStream);
 				break;
+			case "sqs":
+				this.producer = new MaxwellSQSProducer(this, this.config.sqsQueueUri);
+				break;
+			case "pubsub":
+				this.producer = new MaxwellPubsubProducer(this, this.config.pubsubProjectId, this.config.pubsubTopic, this.config.ddlPubsubTopic);
+				break;
 			case "profiler":
 				this.producer = new ProfilerProducer(this);
 				break;
@@ -348,6 +361,9 @@ public class MaxwellContext {
 				break;
 			case "rabbitmq":
 				this.producer = new RabbitmqProducer(this);
+				break;
+			case "redis":
+				this.producer = new MaxwellRedisProducer(this, this.config.redisPubChannel, this.config.redisListKey, this.config.redisType);
 				break;
 			case "none":
 				this.producer = null;
@@ -383,7 +399,7 @@ public class MaxwellContext {
 
 	}
 
-	public MaxwellFilter getFilter() {
+	public Filter getFilter() {
 		return config.filter;
 	}
 
@@ -400,7 +416,7 @@ public class MaxwellContext {
 		}
 	}
 
-	public void probeConnections() throws SQLException {
+	public void probeConnections() throws SQLException, URISyntaxException {
 		probePool(this.rawMaxwellConnectionPool, this.config.maxwellMysql.getConnectionURI(false));
 
 		if ( this.maxwellConnectionPool != this.replicationConnectionPool )

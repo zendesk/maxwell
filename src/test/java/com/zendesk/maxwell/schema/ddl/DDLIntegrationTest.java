@@ -290,6 +290,20 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
+	public void testCompatibilityColumnTypes() throws Exception {
+		String sql[] = {
+			"create TABLE t1( a FIXED )",
+			"create TABLE t2( a float4 )",
+			"create TABLE t3( a float8 )",
+			"create table t4( a middleint )",
+			"create table t5( a numeric )",
+
+		};
+
+		testIntegration(sql);
+	}
+
+	@Test
 	public void testASCIICharset() throws Exception {
 		String sql[] = {
 			"create TABLE t1( a varchar(255) ASCII, b enum('a', 'b') ASCII )"
@@ -297,6 +311,23 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 		testIntegration(sql);
 	}
+
+	@Test
+	public void testDoubleQuotedTables() throws Exception {
+		String sql[] = {
+			"create DATABASE \"tt_db\"",
+			"create table \"tt_db\".\"tt_tt\" ( \"id\" int )",
+			"create table \"tt_db\".\"`weird_quote`\" ( \"id\" int )",
+		};
+
+		server.execute("SET @old_mode = @@SESSION.sql_mode");
+		server.execute("SET SESSION sql_mode = CONCAT('ANSI_QUOTES,', @@SESSION.sql_mode)");
+
+
+		testIntegration(sql);
+		server.execute("SET SESSION sql_mode = @old_mode");
+	}
+
 
 	@Test
 	public void testNationChar() throws Exception {

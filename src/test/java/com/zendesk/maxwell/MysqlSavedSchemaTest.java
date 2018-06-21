@@ -183,6 +183,30 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 		assertEquals((Long) 3L, (Long) cd.getColumnLength());
 	}
 
+	@Test
+	public void testTableWithSameNameInTwoDBs() throws Exception {
+		String sql[] = {
+			"create database dd1",
+			"create database dd2",
+			"create TABLE dd1.t1( i int )",
+			"create TABLE dd2.t1( i int )",
+
+		};
+
+		server.executeList(sql);
+		this.schema = new SchemaCapturer(server.getConnection(), context.getCaseSensitivity()).capture();
+		this.savedSchema = new MysqlSavedSchema(this.context, this.schema, position);
+
+		Connection c = context.getMaxwellConnection();
+		this.savedSchema.save(c);
+
+		MysqlSavedSchema restoredSchema = MysqlSavedSchema.restore(context, context.getInitialPosition());
+
+		Table t = restoredSchema.getSchema().findDatabase("dd2").findTable("t1");
+		assertThat(t, not(nullValue()));
+	}
+
+
 	private Schema buildSchema() {
 		String charset = Charset.defaultCharset().toString();
 		List<Database> databases = new ArrayList<>();

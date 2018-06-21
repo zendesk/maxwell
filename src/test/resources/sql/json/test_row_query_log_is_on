@@ -1,0 +1,21 @@
+SET binlog_rows_query_log_events=true;
+CREATE DATABASE `test_row_query`;
+CREATE TABLE `test_row_query`.`row_query` ( id int );
+
+insert into `test_row_query`.`row_query` set id = 10;
+    -> { "database": "test_row_query", "table": "row_query", "query" : "insert into `test_row_query`.`row_query` set id = 10", "type": "insert", "data": { "id": 10 } }
+
+insert into `test_row_query`.`row_query` set id = 20 /* comment:insert */
+    -> { "database": "test_row_query", "table": "row_query", "query" : "insert into `test_row_query`.`row_query` set id = 20 /* comment:insert */", "type": "insert", "data": { "id": 20 } }
+
+update `test_row_query`.`row_query` set id = 11 where id = 10
+    -> { "database": "test_row_query", "table": "row_query", "query" : "update `test_row_query`.`row_query` set id = 11 where id = 10", "type": "update", "data": { "id": 11 }, old: { "id": 10} }
+
+update `test_row_query`.`row_query` set id = 21 where id = 20 /* comment:update */
+    -> { "database": "test_row_query", "table": "row_query", "query" : "update `test_row_query`.`row_query` set id = 21 where id = 20 /* comment:update */", "type": "update", "data": { "id": 21 }, old: { "id": 20} }
+
+delete from `test_row_query`.`row_query` where id = 11
+    -> { "database": "test_row_query", "table": "row_query", "query" : "delete from `test_row_query`.`row_query` where id = 11", "type": "delete", "data": { "id": 11 } }
+
+delete from `test_row_query`.`row_query` where id = 21 /* comment:delete */
+    -> { "database": "test_row_query", "table": "row_query", "query" : "delete from `test_row_query`.`row_query` where id = 21 /* comment:delete */", "type": "delete", "data": { "id": 21 } }

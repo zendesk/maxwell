@@ -26,7 +26,7 @@ public class KafkaCallbackTest {
 			new Counter(), new Counter(), new Meter(), new Meter(),
 			context);
 		NotEnoughReplicasException error = new NotEnoughReplicasException("blah");
-		callback.onCompletion(new RecordMetadata(new TopicPartition("topic", 1), 1, 1), error);
+		callback.onCompletion(new RecordMetadata(new TopicPartition("topic", 1), 1, 1, 1, new Long(1), 1, 1), error);
 		verify(cc).markCompleted();
 	}
 
@@ -42,7 +42,7 @@ public class KafkaCallbackTest {
 			new Counter(), new Counter(), new Meter(), new Meter(),
 			context);
 		NotEnoughReplicasException error = new NotEnoughReplicasException("blah");
-		callback.onCompletion(new RecordMetadata(new TopicPartition("topic", 1), 1, 1), error);
+		callback.onCompletion(new RecordMetadata(new TopicPartition("topic", 1), 1, 1, 1, new Long(1), 1, 1), error);
 		verify(context).terminate(error);
 		verifyZeroInteractions(cc);
 	}

@@ -6,6 +6,8 @@ import java.io.*;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
+import com.zendesk.maxwell.filtering.Filter;
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.row.RowEncrypt;
 import com.zendesk.maxwell.row.RowMap;
 import org.apache.commons.lang3.StringUtils;
@@ -52,17 +54,24 @@ public class MaxwellTestJSON {
 		}
 	}
 
-	private static void runJSONTest(MysqlIsolatedServer server, List<String> sql, List<Map<String, Object>> expectedJSON, MaxwellFilter filter) throws Exception {
+	private static void runJSONTest(MysqlIsolatedServer server, List<String> sql, List<Map<String, Object>> expectedJSON,
+									Filter filter, MaxwellOutputConfig outputConfig) throws Exception {
 		List<Map<String, Object>> eventJSON = new ArrayList<>();
 		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(server, filter, sql.toArray(new String[sql.size()]), null);
 
 		for ( RowMap r : rows ) {
-			String s = r.toJSON();
+			String s;
+			if ( outputConfig == null ) {
+				s = r.toJSON();
+			} else {
+				s = r.toJSON(outputConfig);
+			}
 
 			Map<String, Object> outputMap = parseJSON(s);
 
 			outputMap.remove("ts");
 			outputMap.remove("xid");
+			outputMap.remove("xoffset");
 			outputMap.remove("commit");
 
 			eventJSON.add(outputMap);
@@ -135,12 +144,14 @@ public class MaxwellTestJSON {
 		return ret;
 	}
 
-	protected static void runJSONTestFile(MysqlIsolatedServer server, String dir, String fname, MaxwellFilter filter) throws Exception {
+	protected static void runJSONTestFile(MysqlIsolatedServer server, String dir, String fname, Filter filter,
+										  MaxwellOutputConfig outputConfig) throws Exception {
 		SQLAndJSON testResources = parseJSONTestFile(new File(dir, fname).toString());
-		runJSONTest(server, testResources.inputSQL, testResources.jsonAsserts, filter);
+		runJSONTest(server, testResources.inputSQL, testResources.jsonAsserts, filter, outputConfig);
 	}
 
-	protected static void runJSONTestFile(MysqlIsolatedServer server, String fname, MaxwellFilter filter) throws Exception {
-		runJSONTestFile(server, MaxwellTestSupport.getSQLDir(), fname, filter);
+	protected static void runJSONTestFile(MysqlIsolatedServer server, String fname, Filter filter,
+										  MaxwellOutputConfig outputConfig) throws Exception {
+		runJSONTestFile(server, MaxwellTestSupport.getSQLDir(), fname, filter, outputConfig);
 	}
 }

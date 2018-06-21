@@ -2,7 +2,7 @@ package com.zendesk.maxwell.schema.ddl;
 
 import java.util.*;
 
-import com.zendesk.maxwell.MaxwellFilter;
+import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.Table;
@@ -72,7 +72,7 @@ public class TableAlter extends SchemaChange {
 	}
 
 	@Override
-	public boolean isBlacklisted(MaxwellFilter filter) {
+	public boolean isBlacklisted(Filter filter) {
 		if ( filter == null ) {
 			return false;
 		} else {

@@ -13,3 +13,6 @@ config/*.yml
 /.classpath
 /.project
 /config
+.classpath
+.project
+.settings/

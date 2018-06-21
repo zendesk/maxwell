@@ -2,7 +2,6 @@ package com.zendesk.maxwell.schema;
 
 import com.zendesk.maxwell.CaseSensitivity;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
-import org.apache.commons.lang3.text.StrTokenizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,8 +55,7 @@ public class SchemaCapturer {
 				"ORDINAL_POSITION, " +
 				"COLUMN_TYPE, " +
 				dateTimePrecision +
-				"COLUMN_KEY, " +
-				"COLUMN_TYPE " +
+				"COLUMN_KEY " +
 				"FROM `information_schema`.`COLUMNS` WHERE TABLE_SCHEMA = ?";
 
 		columnPreparedStatement = connection.prepareStatement(columnSql);
@@ -193,10 +191,10 @@ public class SchemaCapturer {
 		pkPreparedStatement.setString(1, db.getName());
 		ResultSet rs = pkPreparedStatement.executeQuery();
 
-		HashMap<String, ArrayList<String>> l = new HashMap<>();
+		HashMap<String, ArrayList<String>> tablePKMap = new HashMap<>();
 
 		for (String tableName : tables.keySet()) {
-			l.put(tableName, new ArrayList<String>());
+			tablePKMap.put(tableName, new ArrayList<String>());
 		}
 
 		while (rs.next()) {
@@ -204,7 +202,9 @@ public class SchemaCapturer {
 			String tableName = rs.getString("TABLE_NAME");
 			String columnName = rs.getString("COLUMN_NAME");
 
-			l.get(tableName).add(ordinalPosition - 1, columnName);
+			ArrayList<String> pkList = tablePKMap.get(tableName);
+			if ( pkList != null )
+				pkList.add(ordinalPosition - 1, columnName);
 		}
 		rs.close();
 
@@ -212,14 +212,34 @@ public class SchemaCapturer {
 			String key = entry.getKey();
 			Table table = entry.getValue();
 
-			table.setPKList(l.get(key));
+			table.setPKList(tablePKMap.get(key));
 		}
 	}
 
-	private static String[] extractEnumValues(String expandedType) {
+	static String[] extractEnumValues(String expandedType) {
 		Matcher matcher = Pattern.compile("(enum|set)\\((.*)\\)").matcher(expandedType);
 		matcher.matches(); // why do you tease me so.
+		String enumValues = matcher.group(2);
 
-		return new StrTokenizer(matcher.group(2), ',', '\'').getTokenArray();
+		if (!(enumValues.endsWith(","))) {
+			enumValues += ",";
+		}
+
+		String regex = "('.*?'),";
+		Pattern pattern = Pattern.compile(regex);
+		Matcher enumMatcher = pattern.matcher(enumValues);
+
+		List<String> result = new ArrayList<>();
+		while(enumMatcher.find()) {
+			String value = enumMatcher.group(0);
+			if (value.startsWith("'"))
+				value = value.substring(1);
+			if (value.endsWith("',")) {
+				value = value.substring(0, value.length() - 2);
+			}
+			result.add(value);
+		}
+		return result.toArray(new String[0]);
 	}
+
 }

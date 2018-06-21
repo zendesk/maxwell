@@ -3,7 +3,7 @@ insert into minimal set account_id = 1, text_field='hello'
 insert into maxwell.bootstrap set database_name = 'shard_1', table_name = 'minimal'
 
 -> { database: "shard_1", table: "minimal", type:"insert", data: { id: 1, account_id: 1, text_field: "hello"} }
--> { database: "maxwell", table: "bootstrap",type: "insert", data: { database_name: "shard_1", inserted_rows: 0, total_rows: 0, binlog_position: 0, id: 1, is_complete: 0, table_name: "minimal", created_at: null, started_at: null, completed_at: null, binlog_file: null, where_clause: null  } }
+-> { database: "maxwell", table: "bootstrap",type: "insert", data: { database_name: "shard_1", inserted_rows: 0, total_rows: 0, binlog_position: 0, id: 1, is_complete: 0, table_name: "minimal", created_at: null, started_at: null, completed_at: null, binlog_file: null, where_clause: null, client_id: "maxwell"  } }
 -> { database: "shard_1", table: "minimal", type: "bootstrap-start", data: {} }
 -> { database: "shard_1", table: "minimal", type: "bootstrap-insert", data: { id: 1, account_id: 1, text_field: "hello"} }
 -> { database: "shard_1", table: "minimal", type: "bootstrap-complete", data: {}}

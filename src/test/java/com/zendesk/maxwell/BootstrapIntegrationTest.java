@@ -1,5 +1,6 @@
 package com.zendesk.maxwell;
 
+import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.row.RowMap;
@@ -41,8 +42,8 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testBootstrapIsWhitelisted() throws Exception {
-		MaxwellFilter filter = new MaxwellFilter();
-		filter.includeDatabase("shard_1");
+		Filter filter = new Filter();
+		filter.addRule("exclude: *.*, include: shard_1.*");
 		runJSON("json/bootstrap-whitelist", filter);
 	}
 
@@ -120,9 +121,9 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 		testColumnType("datetime", "'2015-11-07 01:02:03'","2015-11-07 01:02:03");
 
 		if (server.supportsZeroDates()) {
-			testColumnType("date", "'0000-00-00'",null);
-			testColumnType("datetime", "'0000-00-00 00:00:00'", null);
-			testColumnType("timestamp", "'0000-00-00 00:00:00'","" + epoch.substring(0, epoch.length() - 2) + "", null);
+			testColumnType("date", "'0000-00-00'", "0000-00-00");
+			testColumnType("datetime", "'0000-00-00 00:00:00'", "0000-00-00 00:00:00");
+			testColumnType("timestamp", "'0000-00-00 00:00:00'", "0000-00-00 00:00:00");
 		}
 
 		testColumnType("datetime", "'1000-01-01 00:00:00'","1000-01-01 00:00:00");

@@ -1,9 +1,8 @@
 package com.zendesk.maxwell.replication;
 
 import com.codahale.metrics.Counter;
-import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Meter;
-import com.zendesk.maxwell.MaxwellFilter;
+import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.monitoring.Metrics;
 import com.zendesk.maxwell.producer.AbstractProducer;
@@ -19,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public abstract class AbstractReplicator extends RunLoopProcess implements Replicator {
 	private static Logger LOGGER = LoggerFactory.getLogger(AbstractReplicator.class);
@@ -30,7 +30,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	protected Position lastHeartbeatPosition;
 	protected final HeartbeatNotifier heartbeatNotifier;
 	protected Long stopAtHeartbeat;
-	protected MaxwellFilter filter;
+	protected Filter filter;
 
 	private final Counter rowCounter;
 	private final Meter rowMeter;
@@ -60,16 +60,14 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	}
 
 	/**
-	 * Possibly convert a RowMap object into a HeartbeatRowMap
-	 *
-	 * Process a rowmap that represents a write to `maxwell`.`heartbeats`.
-	 * If it's a write for a different client_id, we return the input (which
-	 * will signify to the rest of the chain to ignore it).  Otherwise, we
-	 * transform it into a HeartbeatRowMap (which will not be output, but will
-	 * advance the binlog position) and set `this.lastHeartbeatPosition`
+	 * If the input RowMap is one of the heartbeat pulses we sent out,
+	 * process it.  If it's one of our heartbeats, we build a `HeartbeatRowMap`,
+	 * which will be handled specially in producers (namely, it causes the binlog position to advance).
+	 * It is isn't, we leave the row as a RowMap and the rest of the chain will ignore it.
 	 *
 	 * @return either a RowMap or a HeartbeatRowMap
 	 */
+
 	protected RowMap processHeartbeats(RowMap row) throws SQLException {
 		String hbClientID = (String) row.getData("client_id");
 		if ( !Objects.equals(hbClientID, this.clientID) )
@@ -79,7 +77,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 		LOGGER.debug("replicator picked up heartbeat: " + lastHeartbeatRead);
 		this.lastHeartbeatPosition = row.getPosition().withHeartbeat(lastHeartbeatRead);
 		heartbeatNotifier.heartbeat(lastHeartbeatRead);
-		return HeartbeatRowMap.valueOf(row.getDatabase(), this.lastHeartbeatPosition);
+		return HeartbeatRowMap.valueOf(row.getDatabase(), this.lastHeartbeatPosition, row.getNextPosition().withHeartbeat(lastHeartbeatRead));
 	}
 
 	/**
@@ -91,11 +89,11 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	 * @param position The position that the SQL happened at
 	 * @param timestamp The timestamp of the SQL binlog event
 	 */
-	protected void processQueryEvent(String dbName, String sql, SchemaStore schemaStore, Position position, Long timestamp) throws Exception {
+	protected void processQueryEvent(String dbName, String sql, SchemaStore schemaStore, Position position, Position nextPosition, Long timestamp) throws Exception {
 		List<ResolvedSchemaChange> changes = schemaStore.processSQL(sql, dbName, position);
 		for (ResolvedSchemaChange change : changes) {
 			if (change.shouldOutput(filter)) {
-				DDLMap ddl = new DDLMap(change, timestamp, sql, position);
+				DDLMap ddl = new DDLMap(change, timestamp, sql, position, nextPosition);
 				producer.push(ddl);
 			}
 		}
@@ -104,28 +102,46 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	}
 
 	/**
-	 * Should we output an event for the given database and table?
+	 * Should we output a batch of rows for the given database and table?
 	 *
-	 * Here we check against a whitelist/blacklist/filter.  The whitelist
-	 * passes updates to `maxwell.bootstrap` through (those are control
-	 * mechanisms for bootstrap), the blacklist gets rid of the
-	 * `ha_health_check` table which shows up erroneously in Alibaba RDS.
+	 * First against a whitelist/blacklist/filter.  The whitelist
+	 * ensures events that maxwell needs (maxwell.bootstrap, maxwell.heartbeats)
+	 * are always passed along.
+	 *
+	 * The system the blacklist gets rid of the
+	 * `ha_health_check` and `rds_heartbeat` tables which are weird
+	 * replication-control mechanism events in Alibaba RDS (and maybe amazon?)
+	 *
+	 * Then we check the configured filters.
+	 *
+	 * Finall, if we decide to exclude a table we check the filter to
+	 * see if it's possible that a column-value filter could reverse this decision
 	 *
 	 * @param database The database of the DML
 	 * @param table The table of the DML
 	 * @param filter A table-filter, or null
+	 * @param columnNames Names of the columns this table contains
 	 * @return Whether we should write the event to the producer
 	 */
-	protected boolean shouldOutputEvent(String database, String table, MaxwellFilter filter) {
+	protected boolean shouldOutputEvent(String database, String table, Filter filter, Set<String> columnNames) {
 		Boolean isSystemWhitelisted = this.maxwellSchemaDatabaseName.equals(database)
-			&& "bootstrap".equals(table);
+			&& ("bootstrap".equals(table) || "heartbeats".equals(table));
 
-		if ( MaxwellFilter.isSystemBlacklisted(database, table) )
+		if ( Filter.isSystemBlacklisted(database, table) )
 			return false;
-		else if ( isSystemWhitelisted)
+		else if ( isSystemWhitelisted )
 			return true;
-		else
-			return MaxwellFilter.matches(filter, database, table);
+		else {
+			if ( Filter.includes(filter, database, table) )
+				return true;
+			else
+				return Filter.couldIncludeFromColumnFilters(filter, database, table, columnNames);
+		}
+	}
+
+
+	protected boolean shouldOutputRowMap(String database, String table, RowMap rowMap, Filter filter) {
+		return Filter.includes(filter, database, table, rowMap.getData());
 	}
 
 	/**
@@ -201,7 +217,7 @@ public abstract class AbstractReplicator extends RunLoopProcess implements Repli
 	 */
 	public abstract RowMap getRow() throws Exception;
 
-	public void setFilter(MaxwellFilter filter) {
+	public void setFilter(Filter filter) {
 		this.filter = filter;
 	}
 }

@@ -124,6 +124,14 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	private Thread thread;
 	private StoppableTaskState taskState;
 
+	public static MaxwellKafkaPartitioner makeDDLPartitioner(String partitionHashFunc, String partitionKey) {
+		if ( partitionKey.equals("table") ) {
+			return new MaxwellKafkaPartitioner(partitionHashFunc, "table", null, "database");
+		} else {
+			return new MaxwellKafkaPartitioner(partitionHashFunc, "database", null, null);
+		}
+	}
+
 	public MaxwellKafkaProducerWorker(MaxwellContext context, Properties kafkaProperties, String kafkaTopic, ArrayBlockingQueue<RowMap> queue) {
 		super(context);
 
@@ -140,7 +148,8 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		String partitionColumns = context.getConfig().producerPartitionColumns;
 		String partitionFallback = context.getConfig().producerPartitionFallback;
 		this.partitioner = new MaxwellKafkaPartitioner(hash, partitionKey, partitionColumns, partitionFallback);
-		this.ddlPartitioner = new MaxwellKafkaPartitioner(hash, "database", null,"database");
+
+		this.ddlPartitioner = makeDDLPartitioner(hash, partitionKey);
 		this.ddlTopic =  context.getConfig().ddlKafkaTopic;
 
 		if ( context.getConfig().kafkaKeyFormat.equals("hash") )
@@ -194,7 +203,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		/* if debug logging isn't enabled, release the reference to `value`, which can ease memory pressure somewhat */
 		String value = KafkaCallback.LOGGER.isDebugEnabled() ? record.value() : null;
 
-		KafkaCallback callback = new KafkaCallback(cc, r.getPosition(), record.key(), value,
+		KafkaCallback callback = new KafkaCallback(cc, r.getNextPosition(), record.key(), value,
 				this.succeededMessageCount, this.failedMessageCount, this.succeededMessageMeter, this.failedMessageMeter, this.context);
 
 		sendAsync(record, callback);

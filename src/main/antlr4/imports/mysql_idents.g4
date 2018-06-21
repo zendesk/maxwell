@@ -15,17 +15,17 @@ table_name: (db_name '.' name)
 user: user_token ('@' user_token)?;
 user_token: (IDENT | QUOTED_IDENT | string_literal);
 
-name: ( id | tokens_available_for_names | INTEGER_LITERAL);
+name: ( id | tokens_available_for_names | INTEGER_LITERAL | DBL_STRING_LITERAL );
 id: ( IDENT | QUOTED_IDENT );
 literal: (float_literal | integer_literal | string_literal | NULL | TRUE | FALSE);
 
-float_literal: '-'? INTEGER_LITERAL? '.' INTEGER_LITERAL;
-integer_literal: '-'? INTEGER_LITERAL;
+float_literal: ('+'|'-')? INTEGER_LITERAL? '.' INTEGER_LITERAL;
+integer_literal: ('+'|'-')? INTEGER_LITERAL;
 string_literal: (STRING_LITERAL | DBL_STRING_LITERAL);
 
 string: (IDENT | STRING_LITERAL);
 integer: INTEGER_LITERAL;
-charset_name: (IDENT | string_literal | QUOTED_IDENT | BINARY | ASCII);
+charset_name: (IDENT | string_literal | QUOTED_IDENT | BINARY | ASCII | DEFAULT);
 
 default_character_set: DEFAULT? charset_token '='? charset_name collation?;
 default_collation: DEFAULT? collation;

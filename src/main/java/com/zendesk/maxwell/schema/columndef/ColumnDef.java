@@ -19,7 +19,6 @@ public abstract class ColumnDef {
 		this.pos = pos;
 	}
 
-	public abstract boolean matchesMysqlType(int type);
 	public abstract String toSQL(Object value);
 
 	public Object asJSON(Object value) {
@@ -151,6 +150,7 @@ public abstract class ColumnDef {
 			case "int2":
 				return "smallint";
 			case "int3":
+			case "middleint":
 				return "mediumint";
 			case "int4":
 			case "integer":
@@ -158,9 +158,14 @@ public abstract class ColumnDef {
 			case "int8":
 			case "serial":
 				return "bigint";
+			case "float4":
+				return "float";
 			case "real":
-			case "numeric":
+			case "float8":
 				return "double";
+			case "numeric":
+			case "fixed":
+				return "decimal";
 			case "long":
 				return "mediumtext";
 			default:
