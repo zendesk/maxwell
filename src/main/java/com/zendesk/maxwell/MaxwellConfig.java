@@ -102,6 +102,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public boolean replayMode;
 	public boolean masterRecovery;
 	public boolean ignoreProducerError;
+	public boolean recaptureSchema;
 
 	public String rabbitmqUser;
 	public String rabbitmqPass;
@@ -194,7 +195,7 @@ public class MaxwellConfig extends AbstractConfig {
 			+ "comma separated.").withRequiredArg();
 		parser.accepts( "producer_partition_by_fallback", "database|table|primary_key, fallback to this value when using 'column' partitioning and the columns are not present in the row").withRequiredArg();
 
-		parser.accepts( "kafka_version", "kafka client library version: 0.8.2.2|0.9.0.1|0.10.0.1|0.10.2.1|0.11.0.1").withRequiredArg();
+		parser.accepts( "kafka_version", "kafka client library version: 0.8.2.2|0.9.0.1|0.10.0.1|0.10.2.1|0.11.0.1|1.0.0").withRequiredArg();
 		parser.accepts( "kafka_partition_by", "[deprecated]").withRequiredArg();
 		parser.accepts( "kafka_partition_columns", "[deprecated]").withRequiredArg();
 		parser.accepts( "kafka_partition_by_fallback", "[deprecated]").withRequiredArg();
@@ -241,6 +242,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "master_recovery", "(experimental) enable master position recovery code" ).withOptionalArg();
 		parser.accepts( "gtid_mode", "(experimental) enable gtid mode" ).withOptionalArg();
 		parser.accepts( "ignore_producer_error", "Maxwell will be terminated on kafka/kinesis errors when false. Otherwise, those producer errors are only logged. Default to true" ).withOptionalArg();
+		parser.accepts( "recapture_schema", "recapture the latest schema" ).withOptionalArg();
 
 		parser.accepts( "__separator_7" );
 
@@ -499,6 +501,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.replayMode =     fetchBooleanOption("replay", options, null, false);
 		this.masterRecovery = fetchBooleanOption("master_recovery", options, properties, false);
 		this.ignoreProducerError = fetchBooleanOption("ignore_producer_error", options, properties, true);
+		this.recaptureSchema = fetchBooleanOption("recapture_schema", options, null, false);
 
 		outputConfig.includesBinlogPosition = fetchBooleanOption("output_binlog_position", options, properties, false);
 		outputConfig.includesGtidPosition = fetchBooleanOption("output_gtid_position", options, properties, false);

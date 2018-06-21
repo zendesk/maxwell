@@ -1,5 +1,23 @@
 # Maxwell changelog
 
+### [v1.16.1](https://github.com/zendesk/maxwell/releases/tag/v1.16.1): "the 90 degree angle thing"
+
+
+- Fix Bootstrapping for JSON columns
+- add --recapture_schema flag for when ya wanna start over
+- add kafka 1.0 libraries, make them default
+
+
+### [v1.16.0](https://github.com/zendesk/maxwell/releases/tag/v1.16.0): "kind of sort of a reference to something"
+
+
+v1.16.0 brings a rewrite of Maxwell's filtering system, giving it a
+concise list of rules that are executed in sequence.  It's now possible
+to exclude tables from a particular database, exclude columns matching a
+value, and probably some other use cases.
+See http://maxwells-daemon.io/config/#filtering for details.
+
+
 ### [v1.15.0](https://github.com/zendesk/maxwell/releases/tag/v1.15.0): "I'm sure I'm being supportive here."
 
 

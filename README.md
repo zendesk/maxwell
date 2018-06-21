@@ -16,7 +16,7 @@ metrics collection, search indexing and inter-service communication.
   parser for create/alter/drop statements (nope, there was no other way).
 
 &rarr; Download:
-[https://github.com/zendesk/maxwell/releases/download/v1.15.0/maxwell-1.15.0.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.15.0/maxwell-1.15.0.tar.gz)
+[https://github.com/zendesk/maxwell/releases/download/v1.16.1/maxwell-1.16.1.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.16.1/maxwell-1.16.1.tar.gz)
 <br/>
 &rarr; Source:
 [https://github.com/zendesk/maxwell](https://github.com/zendesk/maxwell)
