@@ -60,22 +60,12 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 	}
 
 	private MysqlSavedSchema restoreOrCaptureSchema() throws SchemaStoreException {
-		try ( Connection conn = maxwellConnectionPool.getConnection() ) {
+		try {
 			MysqlSavedSchema savedSchema =
 				restore(maxwellConnectionPool, serverID, caseSensitivity, initialPosition);
 
 			if ( savedSchema == null ) {
-				Schema capturedSchema = captureSchema();
-				savedSchema = new MysqlSavedSchema(serverID, caseSensitivity, capturedSchema, initialPosition);
-				if (!readOnly)
-					if (conn.isValid(30)) {
-						savedSchema.save(conn);
-					} else {
-						// The capture time might be long and the conn connection might be closed already. Consulting the pool
-						// again for a new connection
-						Connection newConn = maxwellConnectionPool.getConnection();
-						savedSchema.save(newConn);
-					}
+				savedSchema = captureAndSaveSchema();
 			}
 
 			return savedSchema;
@@ -86,6 +76,22 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 		}
 	}
 
+	public MysqlSavedSchema captureAndSaveSchema() throws SQLException {
+		try ( Connection conn = maxwellConnectionPool.getConnection() ) {
+			MysqlSavedSchema savedSchema = new MysqlSavedSchema(serverID, caseSensitivity, captureSchema(), initialPosition);
+			if (!readOnly)
+				if (conn.isValid(30)) {
+					savedSchema.save(conn);
+				} else {
+					// The capture time might be long and the conn connection might be closed already. Consulting the pool
+					// again for a new connection
+					Connection newConn = maxwellConnectionPool.getConnection();
+					savedSchema.save(newConn);
+					newConn.close();
+				}
+			return savedSchema;
+		}
+	}
 
 	public List<ResolvedSchemaChange> processSQL(String sql, String currentDatabase, Position position) throws SchemaStoreException, InvalidSchemaError {
 		List<ResolvedSchemaChange> resolvedSchemaChanges;

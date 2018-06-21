@@ -606,35 +606,12 @@ public class MysqlSavedSchema {
 		this.schema = s;
 	}
 
-	private void ensureSchemaID() {
-		if ( this.schemaID == null ) {
-			throw new RuntimeException("Can't destroy uninitialized schema!");
-		}
-	}
-
 	private void setPosition(Position position) {
 		this.position = position;
 	}
 
 	public static void delete(Connection connection, long schema_id) throws SQLException {
 		connection.createStatement().execute("update `schemas` set deleted = 1 where id = " + schema_id);
-	}
-
-	public void destroy(Connection connection) throws SQLException {
-		ensureSchemaID();
-
-		String[] tables = { "databases", "tables", "columns" };
-		connection.createStatement().execute("delete from `schemas` where id = " + schemaID);
-		for ( String tName : tables ) {
-			connection.createStatement().execute("delete from `" + tName + "` where schema_id = " + schemaID);
-		}
-	}
-
-	public boolean schemaExists(Connection connection, long schema_id) throws SQLException {
-		if ( this.schemaID == null )
-			return false;
-		ResultSet rs = connection.createStatement().executeQuery("select id from `schemas` where id = " + schema_id);
-		return rs.next();
 	}
 
 	public BinlogPosition getBinlogPosition() {
