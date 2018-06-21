@@ -124,15 +124,32 @@ public class MaxwellTestSupport {
 		return new MaxwellContext(config);
 	}
 
+	public static boolean inGtidMode() {
+		return System.getenv(MaxwellConfig.GTID_MODE_ENV) != null;
+	}
+
+	public static Position capture(Connection c) throws SQLException {
+		return Position.capture(c, inGtidMode());
+	}
+
+
 	private static void clearSchemaStore(MysqlIsolatedServer mysql) throws Exception {
 		mysql.execute("drop database if exists maxwell");
 	}
 
-	public static List<RowMap> getRowsWithReplicator(final MysqlIsolatedServer mysql, Filter filter, final String queries[], final String before[]) throws Exception {
+	//public static List<RowMap> getRowsWithReplicator(final MysqlIsolatedServer mysql, Filter filter, final String queries[], final String before[]) throws Exception {
+	//}
+
+	public static List<RowMap> getRowsWithReplicator(
+		final MysqlIsolatedServer mysql,
+		final String queries[],
+		final String before[],
+		final Consumer<MaxwellConfig> configLambda
+	) throws Exception {
 		MaxwellTestSupportCallback callback = new MaxwellTestSupportCallback() {
 			@Override
 			public void afterReplicatorStart(MysqlIsolatedServer mysql) throws SQLException {
-				 mysql.executeList(Arrays.asList(queries));
+				mysql.executeList(Arrays.asList(queries));
 			}
 
 			@Override
@@ -142,36 +159,14 @@ public class MaxwellTestSupport {
 			}
 		};
 
-		return getRowsWithReplicator(mysql, filter, callback, null);
+		return getRowsWithReplicator(mysql, callback, configLambda);
 	}
 
-	public static boolean inGtidMode() {
-		return System.getenv(MaxwellConfig.GTID_MODE_ENV) != null;
-	}
-
-	public static Position capture(Connection c) throws SQLException {
-		return Position.capture(c, inGtidMode());
-	}
-
-	public static List<RowMap> getRowsWithReplicator(final MysqlIsolatedServer mysql, Filter filter, MaxwellTestSupportCallback callback, MaxwellOutputConfig outputConfig) throws Exception {
-		return getRowsWithReplicator(mysql, callback, (config) -> {
-			if (outputConfig == null) {
-				config.outputConfig = new MaxwellOutputConfig();
-			} else {
-				config.outputConfig = outputConfig;
-			}
-
-			if ( filter != null ) {
-				try {
-					filter.addRule("include: test.*");
-				} catch (InvalidFilterException e) { }
-			}
-
-			config.filter = filter;
-		});
-	}
-
-	public static List<RowMap> getRowsWithReplicator(final MysqlIsolatedServer mysql, MaxwellTestSupportCallback callback, Consumer<MaxwellConfig> configLambda) throws Exception {
+	public static List<RowMap> getRowsWithReplicator(
+		final MysqlIsolatedServer mysql,
+		MaxwellTestSupportCallback callback,
+		Consumer<MaxwellConfig> configLambda
+	) throws Exception {
 		final ArrayList<RowMap> list = new ArrayList<>();
 
 		clearSchemaStore(mysql);
@@ -184,9 +179,11 @@ public class MaxwellTestSupport {
 		config.maxwellMysql.port = mysql.getPort();
 		config.maxwellMysql.sslMode = SSLMode.DISABLED;
 		config.replicationMysql = config.maxwellMysql;
-		configLambda.accept(config);
+		if ( configLambda != null )
+			configLambda.accept(config);
 
 		config.bootstrapperType = "sync";
+		config.validate();
 
 		callback.beforeReplicatorStart(mysql);
 

@@ -534,14 +534,6 @@ public class MaxwellConfig extends AbstractConfig {
 			outputConfig.secretKey = fetchOption("secret_key", options, properties, null);
 		}
 
-		if ( this.javascriptFile != null ) {
-			try {
-				this.scripting = new Scripting(this.javascriptFile);
-			} catch ( Exception e ) {
-				LOGGER.error("Error setting up javascript: ", e);
-				System.exit(1);
-			}
-		}
 	}
 
 	private Properties parseFile(String filename, Boolean abortOnMissing) {
@@ -730,6 +722,14 @@ public class MaxwellConfig extends AbstractConfig {
 			this.bootstrapperType = "none";
 		}
 
+		if ( this.javascriptFile != null ) {
+			try {
+				this.scripting = new Scripting(this.javascriptFile);
+			} catch ( Exception e ) {
+				LOGGER.error("Error setting up javascript: ", e);
+				System.exit(1);
+			}
+		}
 	}
 
 	public Properties getKafkaProperties() {

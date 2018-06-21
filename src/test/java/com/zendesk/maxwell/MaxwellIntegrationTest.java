@@ -530,7 +530,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 			"insert into `test`.`tootootwee` set id = 5"
 		};
 
-		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(lowerCaseServer, null, sql, null);
+		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(lowerCaseServer, sql, null, null);
 		assertThat(rows.size(), is(1));
 		assertThat(rows.get(0).getTable(), is("tootootwee"));
 	}
@@ -585,6 +585,12 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	public void testJson() throws Exception {
 		requireMinimumVersion(server.VERSION_5_7);
 		runJSON("/json/test_json");
+	}
+
+	@Test
+	public void testJavascriptFilters() throws Exception {
+		String dir = MaxwellTestSupport.getSQLDir();
+		runJSON("/json/test_javascript_filters", (c) -> c.javascriptFile = dir + "/json/filter.javascript");
 	}
 
 	static String[] createDBSql = {
@@ -674,10 +680,10 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testRowQueryLogEventsIsOn() throws Exception {
 		requireMinimumVersion(server.VERSION_5_6);
-		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
+		final MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
 		outputConfig.includesRowQuery = true;
 
-		runJSON("/json/test_row_query_log_is_on", outputConfig);
+		runJSON("/json/test_row_query_log_is_on", (c) -> c.outputConfig = outputConfig);
 	}
 
 }

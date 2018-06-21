@@ -2,6 +2,7 @@ package com.zendesk.maxwell;
 
 import java.util.*;
 import java.io.*;
+import java.util.function.Consumer;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -55,9 +56,14 @@ public class MaxwellTestJSON {
 	}
 
 	private static void runJSONTest(MysqlIsolatedServer server, List<String> sql, List<Map<String, Object>> expectedJSON,
-									Filter filter, MaxwellOutputConfig outputConfig) throws Exception {
+									Consumer<MaxwellConfig> configLambda) throws Exception {
 		List<Map<String, Object>> eventJSON = new ArrayList<>();
-		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(server, filter, sql.toArray(new String[sql.size()]), null);
+
+		final MaxwellConfig captureConfig = new MaxwellConfig();
+		configLambda.accept(captureConfig);
+		MaxwellOutputConfig outputConfig = captureConfig.outputConfig;
+
+		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(server, sql.toArray(new String[sql.size()]), null, configLambda);
 
 		for ( RowMap r : rows ) {
 			String s;
@@ -144,14 +150,10 @@ public class MaxwellTestJSON {
 		return ret;
 	}
 
-	protected static void runJSONTestFile(MysqlIsolatedServer server, String dir, String fname, Filter filter,
-										  MaxwellOutputConfig outputConfig) throws Exception {
+	protected static void runJSONTestFile(MysqlIsolatedServer server, String fname, Consumer<MaxwellConfig> configLambda) throws Exception {
+		String dir = MaxwellTestSupport.getSQLDir();
 		SQLAndJSON testResources = parseJSONTestFile(new File(dir, fname).toString());
-		runJSONTest(server, testResources.inputSQL, testResources.jsonAsserts, filter, outputConfig);
-	}
 
-	protected static void runJSONTestFile(MysqlIsolatedServer server, String fname, Filter filter,
-										  MaxwellOutputConfig outputConfig) throws Exception {
-		runJSONTestFile(server, MaxwellTestSupport.getSQLDir(), fname, filter, outputConfig);
+		runJSONTest(server, testResources.inputSQL, testResources.jsonAsserts, configLambda);
 	}
 }
