@@ -35,7 +35,6 @@ public class Scripting {
 		ScriptEngineManager manager = new ScriptEngineManager();
 		ScriptEngine engine = manager.getEngineByName("nashorn");
 
-		// evaluate JavaScript code that defines a function with one parameter
 		String externJS = new String(Files.readAllBytes(Paths.get(filename)));
 		engine.put("logger", LOGGER);
 		engine.eval(externJS);
