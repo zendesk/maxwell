@@ -241,13 +241,6 @@ Maxwell uses MySQL for 3 different functions:
 2. A host to replicate from (`--replication_host`).
 3. A host to capture the schema from (`--schema_host`).
 
-### Schema storage host vs replica host
-***
-Maxwell needs two sets of mysql permissions to operate properly: a mysql database in which to store schema snapshots,
-and a mysql host to replicate from.  The recommended configuration is that
-these two functions are provided by a single mysql host.  In this case, just
-specify `host`, `user`, etc.
-
 Often, all three hosts are the same.  `host` and `replication_host` should be different
 if mysql is chained off a slave.  `schema_host` should only be used when using the
 maxscale replication proxy.
