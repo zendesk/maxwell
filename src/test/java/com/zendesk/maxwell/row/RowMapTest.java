@@ -197,6 +197,26 @@ public class RowMapTest {
 
 	}
 
+
+	@Test
+	public void testBuildPartionPriorityKey(){
+		List<String> pKeys = new ArrayList<>();
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
+
+//		rowMap.putData("subject_id", "9001");
+//		rowMap.putData("sharding_value", "foo");
+//		rowMap.putData("id", "buzz");
+		rowMap.putData("last_name", "bar");
+		rowMap.putData("salary", "4000");
+		rowMap.putData("department", "science");
+
+		List<String> partitionColumns = Arrays.asList("subject_id",  "sharding_value","id");
+		String partitionKey = rowMap.buildPartionPriorityKey(partitionColumns);
+
+		Assert.assertEquals("9001", partitionKey);
+	}
+
+
 	@Test
 	public void testBuildPartitionKeyWithEmptyList() {
 

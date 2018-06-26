@@ -1,10 +1,11 @@
 package com.zendesk.maxwell.row;
 
-import com.fasterxml.jackson.core.*;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.zendesk.maxwell.errors.ProtectedAttributeNameException;
 import com.zendesk.maxwell.producer.EncryptionMode;
-import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.Position;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,22 +14,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Pattern;
-
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.zendesk.maxwell.errors.ProtectedAttributeNameException;
-import com.zendesk.maxwell.producer.EncryptionMode;
-import com.zendesk.maxwell.producer.MaxwellOutputConfig;
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.replication.Position;
 
 
 public class RowMap implements Serializable {
@@ -224,6 +211,26 @@ public class RowMap implements Serializable {
 		}
 
 		return partitionKey.toString();
+	}
+
+	public String buildPartionPriorityKey(List<String> partitionColums){
+		Object pcValue = null;
+		for(String pc:partitionColums){
+			if (data.containsKey(pc)){
+				pcValue = data.get(pc);
+			}
+
+			if (pcValue != null){
+				break;
+			}else{
+				continue;
+			}
+		}
+		if(pcValue != null){
+			return pcValue.toString();
+		}else{
+			return "";
+		}
 	}
 
 	private void writeMapToJSON(

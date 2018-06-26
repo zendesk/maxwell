@@ -4,5 +4,6 @@ public enum PartitionBy {
 	DATABASE,
 	TABLE,
 	PRIMARY_KEY,
-	COLUMN
+	COLUMN,
+	PRIORITY_COLUMN
 }
