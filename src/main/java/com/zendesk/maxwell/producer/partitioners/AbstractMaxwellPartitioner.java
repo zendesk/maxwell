@@ -23,8 +23,8 @@ public abstract class AbstractMaxwellPartitioner {
 				return PartitionBy.PRIMARY_KEY;
 			case "column":
 				return PartitionBy.COLUMN;
-			case "priority_column":
-				return PartitionBy.PRIORITY_COLUMN;
+			case "first_column":
+				return PartitionBy.FIRST_COLUMN;
 			default:
 				throw new RuntimeException("Unknown partitionBy string: " + key);
 		}
@@ -68,7 +68,7 @@ public abstract class AbstractMaxwellPartitioner {
 					return s;
 				else
 					return getHashString(r, partitionByFallback);
-			case PRIORITY_COLUMN:
+			case FIRST_COLUMN:
 				String sp = r.buildPartionPriorityKey(partitionColumns);
 				if ( sp.length() > 0 )
 					return sp;

@@ -215,20 +215,19 @@ public class RowMap implements Serializable {
 
 	public String buildPartionPriorityKey(List<String> partitionColums){
 		Object pcValue = null;
-		for(String pc:partitionColums){
-			if (data.containsKey(pc)){
+		for (String pc : partitionColums) {
+			if (data.containsKey(pc)) {
 				pcValue = data.get(pc);
 			}
 
-			if (pcValue != null){
+			if (pcValue != null) {
 				break;
-			}else{
-				continue;
 			}
 		}
-		if(pcValue != null){
+
+		if (pcValue != null) {
 			return pcValue.toString();
-		}else{
+		} else {
 			return "";
 		}
 	}
