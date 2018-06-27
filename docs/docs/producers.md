@@ -91,7 +91,7 @@ When partitioning by column Maxwell will treat the values for the specified
 columns as strings, concatenate them and use that value to partition the data. 
 
 As partition by first_column,Maxwell will try get the producer_partition_columns specified column from start to end,
-when the first failed,it'll try the follow  column,if none of them match,
+when the first failed,it'll try the following  column,if none of them match,
 will use the fallback strategy.
 
 #### Kafka partitioning
