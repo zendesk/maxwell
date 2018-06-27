@@ -75,7 +75,7 @@ application in which you need to parse and re-generate keys, it's advised you en
 Both Kafka and AWS Kinesis support the notion of partitioned streams.
 Partitioning is controlled by `producer_partition_by`, which gives you the
 option to split your stream by database, table, primary
-key, or column data.  How you choose to partition will influence the consumers
+key, column or first_column data.  How you choose to partition will influence the consumers
 of the maxwell stream.  A good rule of thumb is to use the finest-grained
 partition scheme possible given serialization constraints.
 
@@ -85,9 +85,14 @@ To partition by column data, you must set both:
 - `producer_partiton_by_fallback`. This may be (_database_, _table_,
   _primary_key_), and will be used as a default value when the column does not
   exist.
+ 
 
 When partitioning by column Maxwell will treat the values for the specified
-columns as strings, concatenate them and use that value to partition the data.
+columns as strings, concatenate them and use that value to partition the data. 
+
+As partition by first_column,Maxwell will try get the producer_partition_columns specified column from start to end,
+when the first failed,it'll try the follow  column,if none of them match,
+will use the fallback strategy.
 
 #### Kafka partitioning
 
