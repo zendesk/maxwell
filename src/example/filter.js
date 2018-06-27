@@ -46,7 +46,7 @@ function process_row(row) {
  * .table -> table name
  * .database -> database name
  * .position -> binlog position of event as string
- * .timestamp -> row timestamp
+ * .timestamp -> row timestamp in utc seconds
  * .change -> hash-map representing the DDL change.  different for each type of DDL.
  */
 
@@ -64,8 +64,8 @@ function process_ddl(ddl) {
 /*
  * `process_heartbeat` must take one parameter, an instance of `WrappedHeartbeatMap`.  WrappedHeartbeatMap responds to:
  * .position -> binlog position of event as string
- * .timestamp -> row timestamp
- * .heartbeat -> timestamp of when heartbeat was sent
+ * .timestamp -> row timestamp in utc seconds
+ * .heartbeat -> timestamp of when heartbeat was sent, in utc milliseconds
  */
 
 function process_heartbeat(heartbeat) {

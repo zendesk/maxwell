@@ -49,7 +49,7 @@ public class Scripting {
 
 	public void invoke(RowMap row) {
 		if ( row instanceof HeartbeatRowMap && processHeartbeatFunc != null )
-			processHeartbeatFunc.call(null, new WrappedRowMap(row));
+			processHeartbeatFunc.call(null, new WrappedHeartbeatMap((HeartbeatRowMap) row));
 		else if ( row instanceof DDLMap && processDDLFunc != null )
 			processDDLFunc.call(null, new WrappedDDLMap((DDLMap) row));
 		else if ( row instanceof RowMap && processRowFunc != null )
