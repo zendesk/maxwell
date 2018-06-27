@@ -2,9 +2,7 @@
  * your javascript filter should define at least
  * one of (process_row, process_heartbeat, process_ddl).
  *
- *
- * if you define `process_row` it will be called, after filters
- * are run, for all rows.
+ * `process_row` is called post-filter, for all unfiltered data rows
  *
  * process_row must take one parameter, an instance of `WrappedRowMap`.  WrappedRowMap's javascript api looks like:
  *
@@ -38,3 +36,41 @@ function process_row(row) {
 		}
 	}
 }
+
+/*
+ * `process_ddl` must take one parameter, an instance of `WrappedDDLMap`.  WrappedDDLMap responds to:
+ * .suppress() -> call this to remove row from output
+ * .kafka_topic = "topic" -> override the default kafka topic for this row
+ * .extra_attributes -> if you set values in this hash, they will be output at the top level of the final JSON
+ * .type -> DDL-TYPE
+ * .table -> table name
+ * .database -> database name
+ * .position -> binlog position of event as string
+ * .timestamp -> row timestamp
+ * .change -> hash-map representing the DDL change.  different for each type of DDL.
+ */
+
+function process_ddl(ddl) {
+	logger.info(ddl.change);
+	logger.info(ddl.table);
+	logger.info(ddl.database);
+
+	ddl.extra_attributes['hello'] = 'world';
+	if ( ddl.table == "foo" )
+		ddl.suppress();
+}
+
+
+/*
+ * `process_heartbeat` must take one parameter, an instance of `WrappedHeartbeatMap`.  WrappedHeartbeatMap responds to:
+ * .position -> binlog position of event as string
+ * .timestamp -> row timestamp
+ * .heartbeat -> timestamp of when heartbeat was sent
+ */
+
+function process_heartbeat(heartbeat) {
+	logger.info(heartbeat.position);
+	logger.info(heartbeat.timestamp);
+	logger.info(heartbeat.heartbeat);
+}
+

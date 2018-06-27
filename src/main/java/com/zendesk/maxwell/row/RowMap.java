@@ -1,6 +1,5 @@
 package com.zendesk.maxwell.row;
 
-import com.fasterxml.jackson.core.*;
 import com.zendesk.maxwell.errors.ProtectedAttributeNameException;
 import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.replication.BinlogPosition;
@@ -23,12 +22,6 @@ import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.zendesk.maxwell.errors.ProtectedAttributeNameException;
-import com.zendesk.maxwell.producer.EncryptionMode;
-import com.zendesk.maxwell.producer.MaxwellOutputConfig;
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.replication.Position;
 
 
 public class RowMap implements Serializable {

@@ -38,25 +38,30 @@ public class DDLMap extends RowMap {
 		return toJSON(new MaxwellOutputConfig());
 	}
 
+	public Map<String, Object> getChangeMap() {
+		ObjectMapper mapper = new ObjectMapper();
+		return mapper.convertValue(change, new TypeReference<Map<String, Object>>() { });
+	}
+
 	@Override
 	public String toJSON(MaxwellOutputConfig outputConfig) throws IOException {
-
 		if(!outputConfig.outputDDL)
-		return null;
+			return null;
 
-		ObjectMapper mapper = new ObjectMapper();
+		Map<String, Object> map = getChangeMap();
+		map.put("ts", timestamp);
+		map.put("sql", sql);
 
-		Map<String, Object> changeMixin = mapper.convertValue(change, new TypeReference<Map<String, Object>>() { });
-		changeMixin.put("ts", timestamp);
-		changeMixin.put("sql", sql);
+		map.putAll(getExtraAttributes());
+
 		BinlogPosition binlogPosition = position.getBinlogPosition();
 		if ( outputConfig.includesBinlogPosition ) {
-			changeMixin.put("position", binlogPosition.getFile() + ":" + binlogPosition.getOffset());
+			map.put("position", binlogPosition.getFile() + ":" + binlogPosition.getOffset());
 		}
 		if ( outputConfig.includesGtidPosition) {
-			changeMixin.put("gtid", binlogPosition.getGtid());
+			map.put("gtid", binlogPosition.getGtid());
 		}
-		return mapper.writeValueAsString(changeMixin);
+		return new ObjectMapper().writeValueAsString(map);
 	}
 
 	@Override

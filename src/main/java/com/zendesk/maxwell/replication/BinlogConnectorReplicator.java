@@ -244,6 +244,10 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		for (ResolvedSchemaChange change : changes) {
 			if (change.shouldOutput(filter)) {
 				DDLMap ddl = new DDLMap(change, timestamp, sql, position, nextPosition);
+
+				if ( scripting != null )
+					scripting.invoke(ddl);
+
 				producer.push(ddl);
 			}
 		}

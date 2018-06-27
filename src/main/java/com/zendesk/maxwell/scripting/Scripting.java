@@ -51,7 +51,7 @@ public class Scripting {
 		if ( row instanceof HeartbeatRowMap && processHeartbeatFunc != null )
 			processHeartbeatFunc.call(null, new WrappedRowMap(row));
 		else if ( row instanceof DDLMap && processDDLFunc != null )
-			processDDLFunc.call(null, new WrappedRowMap(row));
+			processDDLFunc.call(null, new WrappedDDLMap((DDLMap) row));
 		else if ( row instanceof RowMap && processRowFunc != null )
 			processRowFunc.call(null, new WrappedRowMap(row));
 	}
