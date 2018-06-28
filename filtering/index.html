@@ -9,7 +9,7 @@
         
         <link rel="shortcut icon" href="../img/robut.ico">
 
-        <title>Encryption - Maxwell's Daemon</title>
+        <title>Filtering - Maxwell's Daemon</title>
 
         <link href="../css/bootstrap.min.css" rel="stylesheet">
         <link href="../css/bootstrap-theme.min.css" rel="stylesheet">
@@ -74,8 +74,8 @@
             
             
             
-                <li >
-                    <a href="../filtering/">Filtering</a>
+                <li class="active">
+                    <a href="./">Filtering</a>
                 </li>
             
             
@@ -86,8 +86,8 @@
             
             
             
-                <li class="active">
-                    <a href="./">Encryption</a>
+                <li >
+                    <a href="../encryption/">Encryption</a>
                 </li>
             
             
@@ -132,12 +132,12 @@
             <!-- Search, Navigation and Repo links -->
             <ul class="nav navbar-nav navbar-right">
                 <li >
-                    <a rel="next" href="../dataformat/">
+                    <a rel="next" href="../producers/">
                         <i class="fa fa-arrow-left"></i> Previous
                     </a>
                 </li>
                 <li >
-                    <a rel="prev" href="../bootstrapping/">
+                    <a rel="prev" href="../dataformat/">
                         Next <i class="fa fa-arrow-right"></i>
                     </a>
                 </li>
@@ -173,8 +173,42 @@
               
           </li>
         
-          <li >
-              <a href="../filtering/">Filtering</a>
+          <li class="active">
+              <a href="./">Filtering</a>
+              
+                  <ul class="nav">
+                  
+                      <li class="toctree-l3"><a href="#basic-filters">Basic Filters</a>
+                      <ul class="toctree-subnav">
+                      
+                          <li class="toctree-l4" ><a href="#example-1">Example 1</a></li>
+                      
+                          <li class="toctree-l4" ><a href="#example-2">Example 2</a></li>
+                      
+                      </li>
+                      </uL>
+                  
+                      <li class="toctree-l3"><a href="#column-filters">Column Filters</a>
+                      <ul class="toctree-subnav">
+                      
+                          <li class="toctree-l4" ><a href="#missing-columns">Missing Columns</a></li>
+                      
+                      </li>
+                      </uL>
+                  
+                      <li class="toctree-l3"><a href="#blacklisting">Blacklisting</a>
+                      <ul class="toctree-subnav">
+                      
+                      </li>
+                      </uL>
+                  
+                      <li class="toctree-l3"><a href="#javascript-filters">Javascript Filters</a>
+                      <ul class="toctree-subnav">
+                      
+                      </li>
+                      </uL>
+                  
+                  </ul>
               
           </li>
         
@@ -183,30 +217,8 @@
               
           </li>
         
-          <li class="active">
-              <a href="./">Encryption</a>
-              
-                  <ul class="nav">
-                  
-                      <li class="toctree-l3"><a href="#using-encryption">Using encryption</a>
-                      <ul class="toctree-subnav">
-                      
-                      </li>
-                      </uL>
-                  
-                      <li class="toctree-l3"><a href="#decryption">Decryption</a>
-                      <ul class="toctree-subnav">
-                      
-                      </li>
-                      </uL>
-                  
-                      <li class="toctree-l3"><a href="#examples">Examples</a>
-                      <ul class="toctree-subnav">
-                      
-                      </li>
-                      </uL>
-                  
-                  </ul>
+          <li >
+              <a href="../encryption/">Encryption</a>
               
           </li>
         
@@ -244,27 +256,64 @@
 </div></div>
             <div class="col-md-10" role="main">
 
-<h3 id="using-encryption">Using encryption</h3>
+<h3 id="basic-filters">Basic Filters</h3>
 <hr />
-<p>When encryption is enabled, maxwell will encrypt messages using a AES/CBC/PKCS5PADDING cipher with your own encryption key.
-Values are first encrypted and then base64 encoded, an initialization vector is randomly generated and put into the final message</p>
-<h3 id="decryption">Decryption</h3>
-<hr />
-<p>To decrypt your data you must first decode the string from base64 and then apply the cipher to decrypt. A sample implementation is provided in RowEncrypt.decrypt().</p>
-<h3 id="examples">Examples</h3>
-<hr />
-<p>insert into minimal set account_id =1, text_field='hello'</p>
-<p><code>encrypt=none</code> (unencrypted):</p>
-<pre><code>{&quot;database&quot;:&quot;shard_1&quot;,&quot;table&quot;:&quot;minimal&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;ts&quot;:1490115785,&quot;xid&quot;:153,&quot;commit&quot;:true,&quot;data&quot;:{&quot;id&quot;:1,&quot;account_id&quot;:1,&quot;text_field&quot;:&quot;hello&quot;}}
+<p>Maxwell can be configured to filter out updates from specific tables.  This is controlled
+by the <code>--filter</code> command line flag.</p>
+<h4 id="example-1">Example 1</h4>
+<pre><code>--filter = 'exclude: foodb.*, include: foodb.tbl, include: foodb./table_\d+/'
 </code></pre>
 
-<p><code>encrypt=data</code>:</p>
-<pre><code>{&quot;database&quot;:&quot;shard_1&quot;,&quot;table&quot;:&quot;minimal&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;ts&quot;:1504585129,&quot;xid&quot;:161,&quot;commit&quot;:true,&quot;encrypted&quot;:{&quot;iv&quot;:&quot;lqiXoTdz6jed3XgJPpa7EQ==&quot;,&quot;bytes&quot;:&quot;1soc4leskiIm6yuT2D49VA3AYVKCvN+0wh+8d1iwSZETK7N2pG4HDbqnVpJUUCOaKjpcPlP7Sc7Z3SPhGD5JeA==&quot;}}
+<p>This example tells Maxwell to suppress all updates that happen on <code>foodb</code>, except for updates
+to <code>tbl</code> and any table in foodb matching the regexp <code>/table_\d+/</code>.</p>
+<h4 id="example-2">Example 2</h4>
+<p>Filter options are evaluated in the order specified, so in this example we
+suppress everything except updates in the <code>db1</code> database.</p>
+<pre><code>--filter = 'exclude: *.*, include: db1.*'
 </code></pre>
 
-<p><code>encrypt=all</code>:</p>
-<pre><code>{&quot;encrypted&quot;:{&quot;bytes&quot;:&quot;iZssjWfzS0NlqIj82ddpvoQeKSx4D3GIPSCgjdkpgQlCWzN2p3VVZOn3Oj1x4w+a6dVhoFmllWxBK6aAkdVK9t6Vt1+um6lWwSeXNQIL/RbknW5Q8I9emm5bC1Dd1LftBuX/1Uw0wjbsq8Qt3HErvmmiIMe2S27EIWshvBnmw9MibryjLD0brvIbFFxwDuSQuVA4OFyV9TN32N/ZXiBwIA==&quot;,&quot;iv&quot;:&quot;XXs6AePsXJWAAIrKyLlR0g==&quot;}}
-</code></pre></div>
+<h3 id="column-filters">Column Filters</h3>
+<hr />
+<p>Maxwell can also include/exclude based on column values:</p>
+<pre><code>--filter = 'exclude: db.tbl.col = reject'
+</code></pre>
+
+<p>will reject any row in <code>db.tbl</code> that contains <code>col</code> and where the stringified value of "col" is "reject".</p>
+<h4 id="missing-columns">Missing Columns</h4>
+<p>Column filters are ignored if the specified column is not present, so:</p>
+<pre><code>--filter = 'exclude: *.*.col_a = *'
+</code></pre>
+
+<p>will exclude updates to any table that contains <code>col_a</code>, but include every other table.</p>
+<h3 id="blacklisting">Blacklisting</h3>
+<hr />
+<p>In rare cases, you may wish to tell Maxwell to completely ignore a database or
+table, including schema changes.  In general, don't use this.  If you must use this:</p>
+<pre><code>--filter = 'blacklist: bad_db.*'
+</code></pre>
+
+<p>Note that once Maxwell has been running with a table or database marked as
+blacklisted, you <em>must</em> continue to run Maxwell with that table or database
+blacklisted or else Maxwell will halt. If you want to stop
+blacklisting a table or database, you will have to drop the maxwell schema first.</p>
+<h3 id="javascript-filters">Javascript Filters</h3>
+<hr />
+<p>If you need more flexibility than the native filters provide, you can write a small chunk of
+javascript for Maxwell to pass each row through with <code>--javascript FILE</code>.  This file should contain
+at least a javascript function named <code>process_row</code>.  This function will be passed a <a href=""><code>WrappedRowMap</code></a>
+object and is free to make filtering and data munging decisions:</p>
+<pre><code>function process_row(row) {
+    if ( row.database == &quot;test&quot; &amp;&amp; row.table == &quot;bar&quot; ) {
+        var username = row.data.get(&quot;username&quot;);
+        if ( username == &quot;osheroff&quot; )
+            row.suppress();
+
+        row.data.put(&quot;username&quot;, username.toUpperCase());
+    }
+}
+</code></pre>
+
+<p>There's a longer example here: <a href="https://github.com/zendesk/maxwell/blob/master/src/example/filter.js">https://github.com/zendesk/maxwell/blob/master/src/example/filter.js</a>.</p></div>
         </div>
 
         

@@ -75,6 +75,12 @@
             
             
                 <li >
+                    <a href="../filtering/">Filtering</a>
+                </li>
+            
+            
+            
+                <li >
                     <a href="../dataformat/">Data Format</a>
                 </li>
             
@@ -192,30 +198,17 @@
                       </li>
                       </uL>
                   
-                      <li class="toctree-l3"><a href="#filtering">Filtering</a>
-                      <ul class="toctree-subnav">
-                      
-                          <li class="toctree-l4" ><a href="#example-1">Example 1</a></li>
-                      
-                          <li class="toctree-l4" ><a href="#example-2">Example 2</a></li>
-                      
-                          <li class="toctree-l4" ><a href="#column-filters">Column Filters</a></li>
-                      
-                          <li class="toctree-l4" ><a href="#column-filters-missing-columns">Column Filters / Missing Columns</a></li>
-                      
-                          <li class="toctree-l4" ><a href="#blacklisting-tables">Blacklisting tables</a></li>
-                      
-                          <li class="toctree-l4" ><a href="#supressing-columns">Supressing columns</a></li>
-                      
-                      </li>
-                      </uL>
-                  
                   </ul>
               
           </li>
         
           <li >
               <a href="../producers/">Producers</a>
+              
+          </li>
+        
+          <li >
+              <a href="../filtering/">Filtering</a>
               
           </li>
         
@@ -533,6 +526,12 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 <td>output_file</td>
 <td>STRING</td>
 <td>output file for <code>file</code> producer</td>
+<td></td>
+</tr>
+<tr>
+<td>javascript</td>
+<td>STRING</td>
+<td>file containing javascript filters</td>
 <td></td>
 </tr>
 <tr>
@@ -1067,16 +1066,10 @@ The configuration priority is:</p>
 </code></pre>
 
 <h4 id="configproperties">config.properties</h4>
-<p>If Maxwell finds the file <code>config.properties</code> in $PWD it will use it.  Any
-command line options (except <code>init_position</code>, <code>replay</code>, <code>kafka_version</code> and
-<code>daemon</code>) may be given as "key=value" pairs.</p>
-<p>Additionally, any configuration file options prefixed with 'kafka.' will be
-passed into the kafka producer library, after having 'kafka.' stripped off the
-front of the key.  So, for example if config.properties contains</p>
-<pre><code>kafka.batch.size=16384
-</code></pre>
-
-<p>then Maxwell will send <code>batch.size=16384</code> to the kafka producer library.</p>
+<p>Maxwell can be configured via a java properties file, specified via <code>--config</code>
+or named "config.properties" in the current working directory.
+Any command line options (except <code>init_position</code>, <code>replay</code>, <code>kafka_version</code> and
+<code>daemon</code>) may be specified as "key=value" pairs.</p>
 <h4 id="via-environment">via environment</h4>
 <p>If <code>env_config_prefix</code> given via command line or in <code>config.properties</code>, Maxwell
 will configure itself with all environment variables that match the prefix. The
@@ -1145,48 +1138,7 @@ unique <code>client_id</code>, in order to store unique binlog positions.</p>
 <p>With MySQL 5.5 and below, each replicator (be it mysql, maxwell, whatever) must
 also be configured with a unique <code>replica_server_id</code>.  This is a 32-bit integer
 that corresponds to mysql's <code>server_id</code> parameter.  The value you configure
-should be unique across all mysql and maxwell instances.</p>
-<h3 id="filtering">Filtering</h3>
-<hr />
-<h4 id="example-1">Example 1</h4>
-<p>Maxwell can be configured to filter out updates from specific tables.  This is controlled
-by the <code>--filter</code> command line flag.  Here's how that flag looks:</p>
-<pre><code>--filter = &quot;exclude: foodb.*, include: foodb.tbl, include: foodb./table_\d+/&quot;
-</code></pre>
-
-<p>This example tells Maxwell to suppress all updates that happen on <code>foodb</code>, except for updates
-to <code>tbl</code> and any table in foodb matching the regexp <code>/table_\d+/</code>.</p>
-<h4 id="example-2">Example 2</h4>
-<p>Filter options are evaluated in the order specified, so in this example we
-suppress everything except updates in the <code>db1</code> database.</p>
-<pre><code>--filter = &quot;exclude: *.*, include: db1.*&quot;
-</code></pre>
-
-<h4 id="column-filters">Column Filters</h4>
-<p>Maxwell can also include/exclude based on column values:</p>
-<pre><code>--filter = &quot;exclude: db.tbl.col = reject&quot;
-</code></pre>
-
-<p>will reject any row in <code>db.tbl</code> that contains <code>col</code> and where the stringified value of "col" is "reject".</p>
-<h4 id="column-filters-missing-columns">Column Filters / Missing Columns</h4>
-<p>Column filters are ignored if the specified column is not present, so:</p>
-<pre><code>--filter = &quot;exclude: *.*.col_a = *&quot;
-</code></pre>
-
-<p>will exclude updates to any table that contains <code>col_a</code>, but include every other table.</p>
-<h4 id="blacklisting-tables">Blacklisting tables</h4>
-<p>In rare cases, you may wish to tell Maxwell to completely ignore a database or
-table, including schema changes.  In general, don't use this.  If you must use this:</p>
-<pre><code>--filter = &quot;blacklist: bad_db.*&quot;
-</code></pre>
-
-<p>Note that once Maxwell has been running with a table or database marked as
-blacklisted, you <em>must</em> continue to run Maxwell with that table or database
-blacklisted or else Maxwell will halt. If you want to stop
-blacklisting a table or database, you will have to drop the maxwell schema first.</p>
-<h4 id="supressing-columns">Supressing columns</h4>
-<p>If you wish to suppress columns from Maxwell's output (for instance, a password field),
-you can use <code>exclude_columns</code> to filter out columns by name.</p></div>
+should be unique across all mysql and maxwell instances.</p></div>
         </div>
 
         
