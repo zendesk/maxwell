@@ -48,9 +48,9 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testBootstrapIsWhitelisted() throws Exception {
-		Filter filter = new Filter();
+		final Filter filter = new Filter();
 		filter.addRule("exclude: *.*, include: shard_1.*");
-		runJSON("json/bootstrap-whitelist", filter);
+		runJSON("json/bootstrap-whitelist", (c) -> c.filter = filter);
 	}
 
 	@Test

@@ -11,6 +11,7 @@ import com.github.shyiko.mysql.binlog.event.TableMapEventData;
 import com.github.shyiko.mysql.binlog.event.deserialization.EventDeserializer;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.MaxwellMysqlConfig;
+import com.zendesk.maxwell.scripting.Scripting;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.monitoring.Metrics;
@@ -48,6 +49,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private BinlogConnectorLifecycleListener binlogLifecycleListener;
 	private final LinkedBlockingDeque<BinlogConnectorEvent> queue = new LinkedBlockingDeque<>(20);
 	private final TableCache tableCache = new TableCache();
+	private final Scripting scripting;
 
 	private final boolean stopOnEOF;
 	private boolean hitEOF = false;
@@ -83,7 +85,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		Position start,
 		boolean stopOnEOF,
 		String clientID,
-		HeartbeatNotifier heartbeatNotifier
+		HeartbeatNotifier heartbeatNotifier,
+		Scripting scripting
 	) {
 		this.clientID = clientID;
 		this.bootstrapper = bootstrapper;
@@ -92,6 +95,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		this.lastHeartbeatPosition = start;
 		this.heartbeatNotifier = heartbeatNotifier;
 		this.stopOnEOF = stopOnEOF;
+		this.scripting = scripting;
 		this.schemaStore = schemaStore;
 
 		/* setup metrics */
@@ -150,6 +154,9 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 		rowCounter.inc();
 		rowMeter.mark();
+
+		if ( scripting != null )
+			scripting.invoke(row);
 
 		processRow(row);
 	}
@@ -237,6 +244,10 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		for (ResolvedSchemaChange change : changes) {
 			if (change.shouldOutput(filter)) {
 				DDLMap ddl = new DDLMap(change, timestamp, sql, position, nextPosition);
+
+				if ( scripting != null )
+					scripting.invoke(ddl);
+
 				producer.push(ddl);
 			}
 		}

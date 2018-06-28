@@ -5,6 +5,7 @@ pages:
   - 'Quick Start': 'quickstart.md'
   - 'Configuration': 'config.md'
   - 'Producers': 'producers.md'
+  - 'Filtering': 'filtering.md'
   - 'Data Format': 'dataformat.md'
   - 'Encryption': 'encryption.md'
   - 'Bootstrapping': 'bootstrapping.md'

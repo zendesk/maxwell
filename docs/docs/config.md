@@ -49,6 +49,7 @@ ignore_producer_error          | BOOLEAN              | Maxwell will be terminat
 &nbsp;
 **"file" producer options**
 output_file                    | STRING                              | output file for `file` producer                     |
+javascript                     | STRING                              | file containing javascript filters |
 &nbsp;
 **"kafka" producer options **
 kafka.bootstrap.servers        | STRING                              | kafka brokers, given as `HOST:PORT[,HOST:PORT]`     |
@@ -169,19 +170,10 @@ command line options > scoped env vars > properties file > default values
 
 #### config.properties
 
-If Maxwell finds the file `config.properties` in $PWD it will use it.  Any
-command line options (except `init_position`, `replay`, `kafka_version` and
-`daemon`) may be given as "key=value" pairs.
-
-Additionally, any configuration file options prefixed with 'kafka.' will be
-passed into the kafka producer library, after having 'kafka.' stripped off the
-front of the key.  So, for example if config.properties contains
-
-```
-kafka.batch.size=16384
-```
-
-then Maxwell will send `batch.size=16384` to the kafka producer library.
+Maxwell can be configured via a java properties file, specified via `--config`
+or named "config.properties" in the current working directory.
+Any command line options (except `init_position`, `replay`, `kafka_version` and
+`daemon`) may be specified as "key=value" pairs.
 
 #### via environment
 If `env_config_prefix` given via command line or in `config.properties`, Maxwell
@@ -268,66 +260,4 @@ With MySQL 5.5 and below, each replicator (be it mysql, maxwell, whatever) must
 also be configured with a unique `replica_server_id`.  This is a 32-bit integer
 that corresponds to mysql's `server_id` parameter.  The value you configure
 should be unique across all mysql and maxwell instances.
-
-### Filtering
-***
-
-#### Example 1
-Maxwell can be configured to filter out updates from specific tables.  This is controlled
-by the `--filter` command line flag.  Here's how that flag looks:
-
-```
---filter = "exclude: foodb.*, include: foodb.tbl, include: foodb./table_\d+/"
-```
-
-This example tells Maxwell to suppress all updates that happen on `foodb`, except for updates
-to `tbl` and any table in foodb matching the regexp `/table_\d+/`.
-#### Example 2
-
-Filter options are evaluated in the order specified, so in this example we
-suppress everything except updates in the `db1` database.
-
-```
---filter = "exclude: *.*, include: db1.*"
-```
-
-
-#### Column Filters
-Maxwell can also include/exclude based on column values:
-
-```
---filter = "exclude: db.tbl.col = reject"
-```
-
-will reject any row in `db.tbl` that contains `col` and where the stringified value of "col" is "reject".
-
-#### Column Filters / Missing Columns
-Column filters are ignored if the specified column is not present, so:
-
-```
---filter = "exclude: *.*.col_a = *"
-```
-
-will exclude updates to any table that contains `col_a`, but include every other table.
-
-
-#### Blacklisting tables
-
-In rare cases, you may wish to tell Maxwell to completely ignore a database or
-table, including schema changes.  In general, don't use this.  If you must use this:
-
-```
---filter = "blacklist: bad_db.*"
-```
-
-Note that once Maxwell has been running with a table or database marked as
-blacklisted, you *must* continue to run Maxwell with that table or database
-blacklisted or else Maxwell will halt. If you want to stop
-blacklisting a table or database, you will have to drop the maxwell schema first.
-
-#### Supressing columns
-
-If you wish to suppress columns from Maxwell's output (for instance, a password field),
-you can use `exclude_columns` to filter out columns by name.
-
 
