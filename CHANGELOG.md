@@ -1,5 +1,14 @@
 # Maxwell changelog
 
+### [v1.17.0](https://github.com/zendesk/maxwell/releases/tag/v1.17.0): "monday, not sunday tuesday"
+
+
+v1.17.0 brings a new level of configurability by allowing you to inject
+a bit of javascript into maxwell's processing.  Should be useful!  Also:
+
+- fix regression for Alibaba RDS tables
+
+
 ### [v1.16.1](https://github.com/zendesk/maxwell/releases/tag/v1.16.1): "the 90 degree angle thing"
 
 
