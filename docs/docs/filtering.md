@@ -7,7 +7,7 @@ by the `--filter` command line flag.
 #### Example 1
 
 ```
---filter = "exclude: foodb.*, include: foodb.tbl, include: foodb./table_\d+/"
+--filter = 'exclude: foodb.*, include: foodb.tbl, include: foodb./table_\d+/'
 ```
 
 This example tells Maxwell to suppress all updates that happen on `foodb`, except for updates
@@ -18,7 +18,7 @@ Filter options are evaluated in the order specified, so in this example we
 suppress everything except updates in the `db1` database.
 
 ```
---filter = "exclude: *.*, include: db1.*"
+--filter = 'exclude: *.*, include: db1.*'
 ```
 
 
@@ -27,7 +27,7 @@ suppress everything except updates in the `db1` database.
 Maxwell can also include/exclude based on column values:
 
 ```
---filter = "exclude: db.tbl.col = reject"
+--filter = 'exclude: db.tbl.col = reject'
 ```
 
 will reject any row in `db.tbl` that contains `col` and where the stringified value of "col" is "reject".
@@ -36,7 +36,7 @@ will reject any row in `db.tbl` that contains `col` and where the stringified va
 Column filters are ignored if the specified column is not present, so:
 
 ```
---filter = "exclude: *.*.col_a = *"
+--filter = 'exclude: *.*.col_a = *'
 ```
 
 will exclude updates to any table that contains `col_a`, but include every other table.
@@ -48,7 +48,7 @@ In rare cases, you may wish to tell Maxwell to completely ignore a database or
 table, including schema changes.  In general, don't use this.  If you must use this:
 
 ```
---filter = "blacklist: bad_db.*"
+--filter = 'blacklist: bad_db.*'
 ```
 
 Note that once Maxwell has been running with a table or database marked as
@@ -76,6 +76,6 @@ function process_row(row) {
 }
 ```
 
-There's a longer example [here]().
+There's a longer example here: [https://github.com/zendesk/maxwell/blob/master/src/example/filter.js](https://github.com/zendesk/maxwell/blob/master/src/example/filter.js).
 
 
