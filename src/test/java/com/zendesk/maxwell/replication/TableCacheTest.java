@@ -10,7 +10,7 @@ public class TableCacheTest extends MaxwellTestWithIsolatedServer {
 	public void testHaTables() throws Exception {
 		Schema schema = new SchemaCapturer(server.getConnection(), buildContext().getCaseSensitivity()).capture();
 		TableCache cache = new TableCache();
-		// ensure we don't crash on alibaba BS tables
+		// ensure we don't crash on not-really-existant alibaba tables
 		cache.processEvent(schema, null, 1L, "mysql", "ha_health_check");
 	}
 }
