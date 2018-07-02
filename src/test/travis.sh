@@ -10,5 +10,5 @@ KAFKA_VERSION=0.10.2.1 make depclean compile | grep -vE "$MAVEN_STUPID_PATTERN"
 KAFKA_VERSION=0.11.0.1 make depclean compile | grep -vE "$MAVEN_STUPID_PATTERN"
 make depclean 2>&1 | grep -vE "$MAVEN_STUPID_PATTERN"
 echo travis_fold:end:compile
-set -o pipefail
 make test 2>&1 | grep -vE "$MAVEN_STUPID_PATTERN"
+exit ${PIPESTATUS[0]}
