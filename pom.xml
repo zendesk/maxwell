@@ -4,7 +4,7 @@
 
   <groupId>com.zendesk</groupId>
   <artifactId>maxwell</artifactId>
-  <version>1.17.0</version>
+  <version>1.17.1</version>
   <packaging>jar</packaging>
 
   <name>maxwell</name>
@@ -161,7 +161,7 @@
     <dependency>
       <groupId>com.github.stefanbirkner</groupId>
       <artifactId>system-rules</artifactId>
-      <version>1.17.0</version>
+      <version>1.17.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
