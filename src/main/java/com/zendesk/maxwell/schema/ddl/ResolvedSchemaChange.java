@@ -23,6 +23,10 @@ public abstract class ResolvedSchemaChange {
 	public abstract String tableName();
 
 	public boolean shouldOutput(Filter filter) {
-		return Filter.includes(filter, databaseName(), tableName());
+		String table = tableName();
+		if ( table == null )
+			table = "";
+
+		return Filter.includes(filter, databaseName(), table);
 	};
 }

@@ -81,6 +81,7 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 		return MaxwellTestSupport.getRowsWithReplicator(server, cb, (config) -> {
 			config.outputConfig = new MaxwellOutputConfig();
 			config.outputConfig.outputDDL = true;
+			config.filter = filter;
 		});
 	}
 
