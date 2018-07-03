@@ -1,0 +1,7 @@
+truncate maxwell.bootstrap;
+use shard_1;
+create table if not exists bootstrap_json_type ( j json );
+insert into shard_1.bootstrap_json_type set j = '{"hello": "world"}';
+insert into maxwell.bootstrap set database_name = 'shard_1', table_name = 'bootstrap_json_type'
+
+-> { database: "shard_1", table: "bootstrap_json_type", type: "bootstrap-insert", data: { j: {hello: "world"} } }

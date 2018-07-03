@@ -267,6 +267,10 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		);
 	}
 
+	private boolean isSystemWhitelisted(String database, String table) {
+		return this.maxwellSchemaDatabaseName.equals(database)
+			&& ("bootstrap".equals(table) || "heartbeats".equals(table));
+	}
 
 	/**
 	 * Should we output a batch of rows for the given database and table?
@@ -291,12 +295,9 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	 * @return Whether we should write the event to the producer
 	 */
 	private boolean shouldOutputEvent(String database, String table, Filter filter, Set<String> columnNames) {
-		Boolean isSystemWhitelisted = this.maxwellSchemaDatabaseName.equals(database)
-			&& ("bootstrap".equals(table) || "heartbeats".equals(table));
-
 		if ( Filter.isSystemBlacklisted(database, table) )
 			return false;
-		else if ( isSystemWhitelisted )
+		else if ( isSystemWhitelisted(database, table) )
 			return true;
 		else {
 			if ( Filter.includes(filter, database, table) )
@@ -308,7 +309,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 
 	private boolean shouldOutputRowMap(String database, String table, RowMap rowMap, Filter filter) {
-		return Filter.includes(filter, database, table, rowMap.getData());
+		return isSystemWhitelisted(database, table) ||
+			Filter.includes(filter, database, table, rowMap.getData());
 	}
 
 	/**

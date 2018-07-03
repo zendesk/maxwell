@@ -60,7 +60,9 @@ public class MaxwellTestJSON {
 		List<Map<String, Object>> eventJSON = new ArrayList<>();
 
 		final MaxwellConfig captureConfig = new MaxwellConfig();
-		configLambda.accept(captureConfig);
+		if ( configLambda != null )
+			configLambda.accept(captureConfig);
+
 		MaxwellOutputConfig outputConfig = captureConfig.outputConfig;
 
 		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(server, sql.toArray(new String[sql.size()]), null, configLambda);

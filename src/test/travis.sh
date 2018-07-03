@@ -11,3 +11,4 @@ KAFKA_VERSION=0.11.0.1 make depclean compile | grep -vE "$MAVEN_STUPID_PATTERN"
 make depclean 2>&1 | grep -vE "$MAVEN_STUPID_PATTERN"
 echo travis_fold:end:compile
 make test 2>&1 | grep -vE "$MAVEN_STUPID_PATTERN"
+exit ${PIPESTATUS[0]}
