@@ -10,8 +10,7 @@ user=maxwell
 password=maxwell
 
 
-######### general stuff #############
-
+#     *** general ***
 # choose where to produce data to. stdout|file|kafka|kinesis|pubsub|sqs|rabbitmq|redis
 #producer=kafka
 
@@ -21,7 +20,7 @@ password=maxwell
 # if set, maxwell will look up the scoped environment variables, strip off the prefix and inject the configs
 #env_config_prefix=MAXWELL_
 
-######### mysql stuff ###############
+#     *** mysql ***
 
 # mysql host to connect to
 #host=hostname
@@ -57,8 +56,7 @@ password=maxwell
 
 # maxwell can optionally replicate from a different server than where it stores
 # schema and binlog position info.  Specify that different server here:
-#
-#
+
 #replication_host=other
 #replication_user=username
 #replication_password=password
@@ -67,13 +65,13 @@ password=maxwell
 # This may be useful when using MaxScale's binlog mirroring host.
 # Specifies that Maxwell should capture schema from a different server than
 # it replicates from:
-#
+
 #schema_host=other
 #schema_user=username
 #schema_password=password
 #schema_port=3306
 
-######### output format stuff ###############
+#       *** output format ***
 
 # records include binlog position (default false)
 #output_binlog_position=true
@@ -102,7 +100,7 @@ password=maxwell
 # See also: ddl_kafka_topic
 #output_ddl=true
 
-######### kafka stuff ###############
+#       *** kafka ***
 
 # list of kafka brokers
 #kafka.bootstrap.servers=hosta:9092,hostb:9092
@@ -148,8 +146,7 @@ kafka.acks=1
 #producer_ack_timeout=120000 # default 0
 
 
-####### producer partitioning #######
-# used by kafka and kinesis
+#           *** partitioning ***
 
 # What part of the data do we partition by?
 #producer_partition_by=database # [database, table, primary_key, column]
@@ -162,8 +159,9 @@ kafka.acks=1
 # the specified column(s) don't exist.
 #producer_partition_by_fallback=database
 
-######### kinesis ####################
-kinesis_stream=maxwell
+#            *** kinesis ***
+
+#kinesis_stream=maxwell
 
 # AWS places a 256 unicode character limit on the max key length of a record
 # http://docs.aws.amazon.com/kinesis/latest/APIReference/API_PutRecord.html
@@ -174,19 +172,22 @@ kinesis_stream=maxwell
 # Default: false
 #kinesis_md5_keys=true
 
-######### sqs ####################
-sqs_queue_uri=aws_sqs_queue_uri
+#            *** sqs ***
+
+#sqs_queue_uri=aws_sqs_queue_uri
 
 # The sqs producer will need aws credentials configured in the default
 # root folder and file format. Please check below link on how to do it.
 # http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html
 
-######### pub/sub #####################
+#            *** pub/sub ***
+
 #pubsub_project_id=maxwell
 #pubsub_topic=maxwell
 #ddl_pubsub_topic=maxwell_ddl
 
-######### rabbitmq ###################
+#            *** rabbit-mq ***
+
 #rabbitmq_host=rabbitmq_hostname
 #rabbitmq_port=5672
 #rabbitmq_user=guest
@@ -200,25 +201,28 @@ sqs_queue_uri=aws_sqs_queue_uri
 #rabbitmq_message_persistent=false
 #rabbitmq_declare_exchange=true
 
-######### redis ######################
-# Valid values for redis_type = pubsub|lpush. Defaults to pubsub
+#           *** redis ***
+
 #redis_host=redis_host
 #redis_port=6379
 #redis_auth=redis_auth
 #redis_database=0
 #redis_pub_channel=maxwell
 #redis_list_key=maxwell
+# Valid values for redis_type = pubsub|lpush. Defaults to pubsub
 #redis_type=pubsub
 
-######### custom producer ######################
+#           *** custom producer ***
+
 # the fully qualified class name for custom ProducerFactory
 # see the following link for more details.
 # http://maxwells-daemon.io/producers/#custom-producer
 #custom_producer.factory=
+
 # custom producer properties can be configured using the custom_producer.* property namespace
 #custom_producer.custom_prop=foo
 
-######### filter stuff ###############
+#          *** filtering ***
 
 # filter rows out of Maxwell's output.  Command separated list of filter-rules, evaluated in sequence.
 # A filter rule is:
@@ -229,13 +233,17 @@ sqs_queue_uri=aws_sqs_queue_uri
 #  col_val ::= "column_name"
 #  tbl     ::= [ "/regexp/" | "string" | "`string`" | "*" ]
 #
-# example:
+# See http://maxwells-daemon.io/filtering for more details
 #
-# filter= exclude: *.*, include: foo.*, include: bar.baz, include: foo.bar.col_eg = "value_to_match"
-#
-# See http://maxwells-daemon.io/config/#filtering for more details
+#filter= exclude: *.*, include: foo.*, include: bar.baz, include: foo.bar.col_eg = "value_to_match"
 
-######### encryption ###############
+# javascript filter
+# maxwell can run a bit of javascript for each row if you need very custom filtering/data munging.
+# See http://maxwells-daemon.io/filtering/#javascript_filters for more details
+#
+#javascript=/path/to/javascript_filter_file
+
+#       *** encryption ***
 
 # Encryption mode. Possible values are none, data, and all. (default none)
 #encrypt=none
@@ -243,7 +251,7 @@ sqs_queue_uri=aws_sqs_queue_uri
 # Specify the secret key to be used
 #secret_key=RandomInitVector
 
-######## monitoring stuff ###########
+#       *** monitoring ***
 
 # Maxwell collects metrics via dropwizard. These can be exposed through the
 # base logging mechanism (slf4j), JMX, HTTP or pushed to Datadog.
@@ -295,7 +303,7 @@ sqs_queue_uri=aws_sqs_queue_uri
 # Diagnostic check timeout in milliseconds, required if diagnostic = true
 #http_diagnostic_timeout=10000 # default 10000
 
-######### misc stuff ###############
+#    *** misc ***
 
 # maxwell's bootstrapping functionality has a couple of modes.
 #

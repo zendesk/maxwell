@@ -92,7 +92,7 @@ public class RecoveryTest extends TestWithNameLogging {
 
 		String[] input = generateMasterData();
 		/* run the execution through with the replicator running so we get heartbeats */
-		MaxwellTestSupport.getRowsWithReplicator(masterServer, null, input, null);
+		MaxwellTestSupport.getRowsWithReplicator(masterServer, input, null, null);
 
 		Position slavePosition = MaxwellTestSupport.capture(slaveServer.getConnection());
 
@@ -133,7 +133,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		MaxwellContext slaveContext = getContext(slaveServer.getPort(), true);
 
 		String[] input = generateMasterData();
-		MaxwellTestSupport.getRowsWithReplicator(masterServer, null, input, null);
+		MaxwellTestSupport.getRowsWithReplicator(masterServer, input, null, null);
 
 		generateNewMasterData(false, DATA_SIZE);
 		RecoveryInfo recoveryInfo = slaveContext.getRecoveryInfo();
@@ -202,7 +202,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		}
 		String[] input = generateMasterData();
 		/* run the execution through with the replicator running so we get heartbeats */
-		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(masterServer, null, input, null);
+		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(masterServer, input, null, null);
 
 		Position approximateRecoverPosition = MaxwellTestSupport.capture(slaveServer.getConnection());
 		LOGGER.warn("slave master position at time of cut: " + approximateRecoverPosition);
@@ -267,7 +267,7 @@ public class RecoveryTest extends TestWithNameLogging {
 			}
 		};
 
-		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(masterServer, null, callback, null);
+		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(masterServer, callback, (c) -> {});
 		int expectedRows = input.length;
 		assertEquals(expectedRows, rows.size());
 
@@ -302,7 +302,7 @@ public class RecoveryTest extends TestWithNameLogging {
 	public void testFailOver() throws Exception {
 		String[] input = generateMasterData();
 		// Have maxwell connect to master first
-		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(masterServer, null, input, null);
+		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(masterServer, input, null, null);
 		int expectedRowCount = DATA_SIZE;
 		try {
 			// sleep a bit for slave to catch up

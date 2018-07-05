@@ -13,7 +13,7 @@ public class TableCache {
 
 	public void processEvent(Schema schema, Filter filter, Long tableId, String dbName, String tblName) {
 		if ( !tableMapCache.containsKey(tableId) ) {
-			if ( filter != null && filter.isTableBlacklisted(dbName, tblName) ) {
+			if ( Filter.isTableBlacklisted(filter, dbName, tblName) ) {
 				blacklistedTableCache.put(tableId, tblName);
 				return;
 			}

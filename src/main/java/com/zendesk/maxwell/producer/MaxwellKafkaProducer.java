@@ -220,7 +220,13 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		if (r instanceof DDLMap) {
 			record = new ProducerRecord<>(this.ddlTopic, this.ddlPartitioner.kafkaPartition(r, getNumPartitions(this.ddlTopic)), key, value);
 		} else {
-			String topic = generateTopic(this.topic, r);
+			String topic;
+
+			// javascript topic override
+			topic = r.getKafkaTopic();
+			if ( topic == null )
+				topic = generateTopic(this.topic, r);
+
 			record = new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, getNumPartitions(topic)), key, value);
 		}
 		return record;

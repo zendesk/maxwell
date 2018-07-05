@@ -83,6 +83,16 @@ public class Filter {
 			("ha_health_check".equals(tableName) || StringUtils.startsWith(tableName, "rds_heartbeat"));
 	}
 
+	public static boolean isTableBlacklisted(Filter filter, String database, String table) {
+		if ( isSystemBlacklisted(database, table) )
+			return true;
+
+		if ( filter == null )
+			return false;
+
+		return filter.isTableBlacklisted(database, table);
+	}
+
 	public static boolean includes(Filter filter, String database, String table) {
 		if (filter == null) {
 			return true;
