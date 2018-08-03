@@ -241,9 +241,10 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	 */
 	private void processQueryEvent(String dbName, String sql, SchemaStore schemaStore, Position position, Position nextPosition, Long timestamp) throws Exception {
 		List<ResolvedSchemaChange> changes = schemaStore.processSQL(sql, dbName, position);
+		Long schemaId = this.schemaStore.getSchemaID();
 		for (ResolvedSchemaChange change : changes) {
 			if (change.shouldOutput(filter)) {
-				DDLMap ddl = new DDLMap(change, timestamp, sql, position, nextPosition);
+				DDLMap ddl = new DDLMap(change, timestamp, sql, position, nextPosition, schemaId);
 
 				if ( scripting != null )
 					scripting.invoke(ddl);
@@ -490,6 +491,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 						rowBuffer = getTransactionRows(event);
 						rowBuffer.setServerId(event.getEvent().getHeader().getServerId());
 						rowBuffer.setThreadId(qe.getThreadId());
+						rowBuffer.setSchemaId(this.schemaStore.getSchemaID());
 					} else {
 						processQueryEvent(event);
 					}

@@ -13,6 +13,7 @@ public class MaxwellOutputConfig {
 	public boolean includesNulls;
 	public boolean includesServerId;
 	public boolean includesThreadId;
+	public boolean includesSchemaId;
 	public boolean includesRowQuery;
 	public boolean outputDDL;
 	public List<Pattern> excludeColumns;
@@ -26,6 +27,7 @@ public class MaxwellOutputConfig {
 		this.includesNulls = true;
 		this.includesServerId = false;
 		this.includesThreadId = false;
+		this.includesSchemaId = false;
 		this.includesRowQuery = false;
 		this.outputDDL = false;
 		this.excludeColumns = new ArrayList<>();

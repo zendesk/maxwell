@@ -101,6 +101,7 @@ output_xoffset                 | BOOLEAN  | records include virtual tx-row offse
 output_nulls                   | BOOLEAN  | records include fields with NULL values    | true
 output_server_id               | BOOLEAN  | records include server_id                  | false
 output_thread_id               | BOOLEAN  | records include thread_id                  | false
+output_schema_id               | BOOLEAN  | records include schema_id, schema_id is the id of the latest schema tracked by maxwell and doesn't relate to any mysql tracked value                  | false
 output_row_query               | BOOLEAN  | records include INSERT/UPDATE/DELETE statement. Mysql option "binlog_rows_query_log_events" must be enabled | false
 output_ddl                     | BOOLEAN  | output DDL (table-alter, table-create, etc) events  | false
 &nbsp;
