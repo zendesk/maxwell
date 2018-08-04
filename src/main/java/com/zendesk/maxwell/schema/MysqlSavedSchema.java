@@ -330,6 +330,7 @@ public class MysqlSavedSchema {
 		}
 	}
 
+	/* build up a map-of-maps from schema_id -> { col -> val } */
 	private HashMap<Long, HashMap<String, Object>> buildSchemaMap(Connection conn) throws SQLException {
 		HashMap<Long, HashMap<String, Object>> schemas = new HashMap<>();
 
@@ -346,6 +347,12 @@ public class MysqlSavedSchema {
 		rs.close();
 		return schemas;
 	}
+
+	/*
+		builds a linked list of schema_ids in which the head of the list
+		is the fullly-captured inital schema, and the tail is the final
+		delta-schema
+	 */
 
 	private LinkedList<Long> buildSchemaChain(HashMap<Long, HashMap<String, Object>> schemas, Long schema_id) {
 		LinkedList<Long> schemaChain = new LinkedList<>();
