@@ -1,5 +1,9 @@
 CREATE DATABASE `test_json`
-create table `test_json`.`json` ( j json )
+create table `test_json`.`json` ( j json, i int )
 use test_json
-insert into `json` set `j` = '{"foo": "bar", "baz": [1,2,3,{"hello": "inside an array"}], "bar": 123.4321}';
--> {"database": "test_json", "table": "json", "type": "insert", "data": {"j": {"foo": "bar", "baz": [1,2,3,{"hello": "inside an array"}], "bar": 123.4321}}}
+insert into `json` set `j` = '{"foo": "bar", "baz": [1,2,3,{"hello": "inside an array"}], "bar": 123.4321}', i = 0;
+-> {"database": "test_json", "table": "json", "type": "insert", "data": {"j": {"foo": "bar", "baz": [1,2,3,{"hello": "inside an array"}], "bar": 123.4321}, i: 0}}
+
+update `json` set i = 1;
+
+-> {"database": "test_json", "table": "json", "type": "update", "data": {i: 1, j: {"foo": "bar", "baz": [1,2,3,{"hello": "inside an array"}], "bar": 123.4321}}, old: {i: 0}}
