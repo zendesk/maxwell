@@ -181,4 +181,21 @@ public class SchemaCaptureTest extends MaxwellTestWithIsolatedServer {
 		assertEquals(",'", result[6]);
 		assertEquals("b", result[7]);
 	}
+
+	private long getUsedMem() {
+		Runtime r = Runtime.getRuntime();
+		return r.totalMemory() - r.freeMemory();
+	}
+	@Test
+	public void testHugeCaptureMemUsage() throws Exception {
+		Runtime.getRuntime().gc();
+		System.out.println("usage before: " + getUsedMem());
+		generateHugeSchema();
+		Schema s = capturer.capture();
+		Runtime.getRuntime().gc();
+		System.out.println("usage after: " + getUsedMem());
+		System.out.println(s.getCharset());
+
+
+	}
 }

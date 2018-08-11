@@ -54,6 +54,23 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 		});
 	}
 
+	final int HUGE_NUM_DBS = 100;
+	final int HUGE_NUM_TABLES = 2000;
+
+	protected void generateHugeSchema() throws Exception {
+		for ( int i = 0 ; i < HUGE_NUM_DBS; i++ ) {
+			String dbName = "huge_test_" + i;
+			server.execute("create database " + dbName);
+			for ( int j = 0; j < HUGE_NUM_TABLES; j++) {
+				server.execute("create table " + dbName + ".huge_tbl_" + j + "("
+					+ "intcol" + j + " int NOT NULL PRIMARY KEY AUTO_INCREMENT, "
+					+ "strcol" + j + " varchar(255), "
+					+ "othercol" + j + " text"
+					+ ")");
+			}
+		}
+	}
+
 
 	private class MaxwellTestSupportTXCallback extends MaxwellTestSupportCallback {
 		private final String[] input;
