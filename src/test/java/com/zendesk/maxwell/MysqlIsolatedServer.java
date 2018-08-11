@@ -10,10 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -164,7 +161,19 @@ public class MysqlIsolatedServer {
 	}
 
 	public void execute(String query) throws SQLException {
-		getConnection().createStatement().executeUpdate(query);
+		Statement s = getConnection().createStatement();
+		s.executeUpdate(query);
+		s.close();
+	}
+
+	private Connection cachedCX;
+	public void executeCached(String query) throws SQLException {
+		if ( cachedCX == null )
+			cachedCX = getConnection();
+
+		Statement s = cachedCX.createStatement();
+		s.executeUpdate(query);
+		s.close();
 	}
 
 	public void executeList(List<String> queries) throws SQLException {
