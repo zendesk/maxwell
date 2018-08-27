@@ -45,6 +45,11 @@ public class Table {
 		this.setPKList(pks);
 	}
 
+	@JsonProperty("table")
+	public void setTable(String name) {
+		this.name = name.intern();
+	}
+
 	@JsonProperty("columns")
 	public List<ColumnDef> getColumnList() {
 		return columns.getList();
@@ -246,11 +251,17 @@ public class Table {
 	}
 
 	public void setDatabase(String database) {
-		this.database = database;
+		this.database = database.intern();
 	}
 
 	public String getCharset() {
 		return charset;
+	}
+
+	public void setCharset(String charset) {
+		this.charset = charset;
+		if ( this.charset != null )
+			this.charset = charset.intern();
 	}
 
 	@JsonProperty("primary-key")
