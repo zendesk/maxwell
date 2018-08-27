@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.schema;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.schema.ddl.ColumnPosition;
@@ -25,15 +26,17 @@ public class Table {
 	private List<String> pkColumnNames;
 	private List<String> normalizedPKColumnNames;
 
-	private HashMap<String, Integer> columnOffsetMap;
 	@JsonIgnore
 	public int pkIndex;
 
 	public Table() { }
 	public Table(String database, String name, String charset, List<ColumnDef> list, List<String> pks) {
-		this.database = database;
-		this.name = name;
+		this.database = database.intern();
+		this.name = name.intern();
 		this.charset = charset;
+		if ( this.charset != null )
+			this.charset = this.charset.intern();
+
 		this.setColumnList(list);
 
 		if ( pks == null )
@@ -265,7 +268,7 @@ public class Table {
 
 	@JsonProperty("primary-key")
 	public synchronized void setPKList(List<String> pkColumnNames) {
-		this.pkColumnNames = pkColumnNames;
+		this.pkColumnNames = pkColumnNames.stream().map((n) -> n.intern()).collect(Collectors.toList());
 		this.normalizedPKColumnNames = null;
 	}
 

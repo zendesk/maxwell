@@ -193,9 +193,8 @@ public class SchemaCaptureTest extends MaxwellTestWithIsolatedServer {
 		generateHugeSchema();
 		Schema s = capturer.capture();
 		Runtime.getRuntime().gc();
+		Runtime.getRuntime().gc();
 		System.out.println("usage after: " + getUsedMem());
 		System.out.println(s.getCharset());
-
-
 	}
 }

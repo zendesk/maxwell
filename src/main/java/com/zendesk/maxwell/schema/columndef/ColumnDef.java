@@ -26,6 +26,13 @@ public abstract class ColumnDef {
 	}
 
 	public static ColumnDef build(String name, String charset, String type, int pos, boolean signed, String enumValues[], Long columnLength) {
+		name = name.intern();
+		if ( charset != null )
+			charset = charset.intern();
+
+		if ( type != null )
+			type = type.intern();
+
 		switch(type) {
 		case "tinyint":
 		case "smallint":

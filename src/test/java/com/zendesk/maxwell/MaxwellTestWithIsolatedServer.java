@@ -54,7 +54,7 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 		});
 	}
 
-	final int HUGE_NUM_DBS = 100;
+	final int HUGE_NUM_DBS = 1000;
 	final int HUGE_NUM_TABLES = 200;
 
 	protected void generateHugeSchema() throws Exception {
