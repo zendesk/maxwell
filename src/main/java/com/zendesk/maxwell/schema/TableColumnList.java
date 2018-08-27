@@ -76,7 +76,7 @@ public class TableColumnList implements Iterable<ColumnDef> {
 	}
 
 	private void renumberColumns() {
-		int i = 0 ;
+		short i = 0 ;
 		for ( ColumnDef c : columns ) {
 			c.setPos(i++);
 		}

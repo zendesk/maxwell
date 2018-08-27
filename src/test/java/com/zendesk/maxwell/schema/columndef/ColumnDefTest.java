@@ -21,11 +21,11 @@ import org.junit.Test;
 
 public class ColumnDefTest extends TestWithNameLogging {
 	private ColumnDef build(String type, boolean signed) {
-		return ColumnDef.build("bar", "", type, 1, signed, null, null);
+		return ColumnDef.build("bar", "", type, (short) 1, signed, null, null);
 	}
 
 	private ColumnDef build(String type, boolean signed, Long columnLength) {
-		return ColumnDef.build("bar", "", type, 1, signed, null, columnLength);
+		return ColumnDef.build("bar", "", type, (short) 1, signed, null, columnLength);
 	}
 
 	@Before
@@ -100,7 +100,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 
 	@Test
 	public void testUTF8String() {
-		ColumnDef d = ColumnDef.build("bar", "utf8", "varchar", 1, false, null, null);
+		ColumnDef d = ColumnDef.build("bar", "utf8", "varchar", (short) 1, false, null, null);
 
 		assertThat(d, instanceOf(StringColumnDef.class));
 		byte input[] = "He∆˚ß∆".getBytes();
@@ -111,7 +111,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	public void TestUTF8MB4String() {
 		String utf8_4 = "😁";
 
-		ColumnDef d = ColumnDef.build("bar", "utf8mb4", "varchar", 1, false, null, null);
+		ColumnDef d = ColumnDef.build("bar", "utf8mb4", "varchar", (short) 1, false, null, null);
 		byte input[] = utf8_4.getBytes();
 		assertThat(d.toSQL(input), is("'😁'"));
 	}
@@ -120,7 +120,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	public void TestAsciiString() {
 		byte input[] = new byte[] { (byte) 126, (byte) 126, (byte) 126, (byte) 126 };
 
-		ColumnDef d = ColumnDef.build("bar", "ascii", "varchar", 1, false, null, null);
+		ColumnDef d = ColumnDef.build("bar", "ascii", "varchar", (short) 1, false, null, null);
 		assertThat((String) d.asJSON(input), is("~~~~"));
 	}
 
@@ -128,7 +128,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	public void TestStringAsJSON() {
 		byte input[] = new byte[] { (byte) 169, (byte) 169, (byte) 169, (byte) 169 };
 
-		ColumnDef d = ColumnDef.build("bar", "latin1", "varchar", 1, false, null, null);
+		ColumnDef d = ColumnDef.build("bar", "latin1", "varchar", (short) 1, false, null, null);
 
 		assertThat((String) d.asJSON(input), is("©©©©"));
 	}
@@ -138,7 +138,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 		byte input[] = new byte[] { (byte) 0, (byte) 1, (byte) 0, (byte) 13, (byte) 0, (byte) 11,
 				(byte) 0, (byte) 2, (byte) 0, (byte) 5, (byte) 3, (byte) 0, (byte) 105, (byte) 100 };
 
-		ColumnDef d = ColumnDef.build("bar", "ascii", "json", 1, false, null, null);
+		ColumnDef d = ColumnDef.build("bar", "ascii", "json", (short) 1, false, null, null);
 
 		RawJSONString result = (RawJSONString) d.asJSON(input);
 		assertThat(result.json, is("{\"id\":3}"));
@@ -148,7 +148,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	public void TestEmptyJSON() {
 		byte input[] = new byte[0];
 
-		ColumnDef d = ColumnDef.build("bar", "ascii", "json", 1, false, null, null);
+		ColumnDef d = ColumnDef.build("bar", "ascii", "json", (short) 1, false, null, null);
 
 		RawJSONString result = (RawJSONString) d.asJSON(input);
 		assertThat(result.json, is("null"));

@@ -3,7 +3,7 @@ package com.zendesk.maxwell.schema.columndef;
 import java.sql.Timestamp;
 
 public class DateTimeColumnDef extends ColumnDefWithLength {
-	public DateTimeColumnDef(String name, String type, int pos, Long columnLength) {
+	public DateTimeColumnDef(String name, String type, short pos, Long columnLength) {
 		super(name, type, pos, columnLength);
 	}
 

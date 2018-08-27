@@ -463,7 +463,7 @@ public class MysqlSavedSchema {
 
 		Database currentDatabase = null;
 		Table currentTable = null;
-		int columnIndex = 0;
+		short columnIndex = 0;
 
 		while (rs.next()) {
 			// Database

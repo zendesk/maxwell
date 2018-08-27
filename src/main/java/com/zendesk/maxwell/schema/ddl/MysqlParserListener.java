@@ -381,7 +381,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 		  name,
 		  colCharset,
 		  colType.toLowerCase(),
-		  -1,
+		  (short) -1,
 		  signed,
 		  enumValues,
 		  columnLength

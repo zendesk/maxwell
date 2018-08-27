@@ -10,10 +10,10 @@ public abstract class ColumnDef {
 	protected String name;
 	protected String type;
 
-	protected int pos;
+	protected short pos;
 
 	public ColumnDef() { }
-	public ColumnDef(String name, String type, int pos) {
+	public ColumnDef(String name, String type, short pos) {
 		this.name = name;
 		this.type = type;
 		this.pos = pos;
@@ -25,7 +25,7 @@ public abstract class ColumnDef {
 		return value;
 	}
 
-	public static ColumnDef build(String name, String charset, String type, int pos, boolean signed, String enumValues[], Long columnLength) {
+	public static ColumnDef build(String name, String charset, String type, short pos, boolean signed, String enumValues[], Long columnLength) {
 		name = name.intern();
 		if ( charset != null )
 			charset = charset.intern();
@@ -196,7 +196,7 @@ public abstract class ColumnDef {
 		return pos;
 	}
 
-	public void setPos(int i) {
+	public void setPos(short i) {
 		this.pos = i;
 	}
 }
