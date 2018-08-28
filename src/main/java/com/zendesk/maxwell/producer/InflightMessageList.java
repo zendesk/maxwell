@@ -8,6 +8,7 @@ package com.zendesk.maxwell.producer;
 
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.replication.Position;
+import com.zendesk.maxwell.row.RowMap;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -18,11 +19,13 @@ public class InflightMessageList {
 		public final Position position;
 		public boolean isComplete;
 		public final long sendTimeMS;
+		public final long eventTimeMS;
 
-		InflightMessage(Position p) {
+		InflightMessage(Position p, long eventTimeMS) {
 			this.position = p;
 			this.isComplete = false;
 			this.sendTimeMS = System.currentTimeMillis();
+			this.eventTimeMS = eventTimeMS;
 		}
 
 		long timeSinceSendMS() {
@@ -52,13 +55,13 @@ public class InflightMessageList {
 		this.capacity = capacity;
 	}
 
-	public void addMessage(Position p) throws InterruptedException {
+	public void addMessage(Position p, long eventTimestampMillis) throws InterruptedException {
 		synchronized (this.linkedMap) {
 			while (isFull) {
 				this.linkedMap.wait();
 			}
 
-			InflightMessage m = new InflightMessage(p);
+			InflightMessage m = new InflightMessage(p, eventTimestampMillis);
 			this.linkedMap.put(p, m);
 
 			if (linkedMap.size() >= capacity) {

@@ -29,7 +29,9 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 
 				if (message != null) {
 					context.setPosition(message.position);
-					metricsTimer.update(message.timeSinceSendMS(), TimeUnit.MILLISECONDS);
+					long currentTime = System.currentTimeMillis();
+					messagePublishTimer.update(currentTime - message.sendTimeMS, TimeUnit.MILLISECONDS);
+					messageLatencyTimer.update(Math.max(0L, currentTime - message.eventTimeMS), TimeUnit.MILLISECONDS);
 				}
 			}
 		}
@@ -55,7 +57,7 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 		// Rows that do not get sent to a target will be automatically marked as complete.
 		// We will attempt to commit a checkpoint up to the current row.
 		if(!r.shouldOutput(outputConfig)) {
-			inflightMessages.addMessage(position);
+			inflightMessages.addMessage(position, r.getTimestampMillis());
 
 			InflightMessageList.InflightMessage completed = inflightMessages.completeMessage(position);
 			if(completed != null) {
@@ -65,7 +67,7 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 		}
 
 		if(r.isTXCommit()) {
-			inflightMessages.addMessage(position);
+			inflightMessages.addMessage(position, r.getTimestampMillis());
 		}
 
 		CallbackCompleter cc = new CallbackCompleter(inflightMessages, position, r.isTXCommit(), context);
