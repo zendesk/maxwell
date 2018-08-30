@@ -8,7 +8,9 @@ abstract public class EnumeratedColumnDef extends ColumnDef  {
 
 	public EnumeratedColumnDef(String name, String type, short pos, String [] enumValues) {
 		super(name, type, pos);
-		this.enumValues = enumValues;
+		this.enumValues = new String[enumValues.length];
+		for ( int i = 0; i < enumValues.length; i++)
+			this.enumValues[i] = enumValues[i].intern();
 	}
 
 	public String[] getEnumValues() {
