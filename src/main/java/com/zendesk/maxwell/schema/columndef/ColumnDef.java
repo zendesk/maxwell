@@ -2,21 +2,22 @@ package com.zendesk.maxwell.schema.columndef;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.zendesk.maxwell.util.DynamicEnum;
 
 @JsonSerialize(using=ColumnDefSerializer.class)
 @JsonDeserialize(using=ColumnDefDeserializer.class)
 
 public abstract class ColumnDef {
+	private static DynamicEnum dynamicEnum = new DynamicEnum(Byte.MAX_VALUE);
 	protected String name;
-	protected String type;
-
+	protected byte type;
 	protected short pos;
 
 	public ColumnDef() { }
 	public ColumnDef(String name, String type, short pos) {
 		this.name = name;
-		this.type = type;
 		this.pos = pos;
+		this.type = (byte) dynamicEnum.get(type);
 	}
 
 	public abstract String toSQL(Object value);
@@ -29,9 +30,6 @@ public abstract class ColumnDef {
 		name = name.intern();
 		if ( charset != null )
 			charset = charset.intern();
-
-		if ( type != null )
-			type = type.intern();
 
 		switch(type) {
 		case "tinyint":
@@ -189,7 +187,7 @@ public abstract class ColumnDef {
 	}
 
 	public String getType() {
-		return type;
+		return dynamicEnum.get(type);
 	}
 
 	public int getPos() {
