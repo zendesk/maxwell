@@ -92,6 +92,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public int metricsDatadogPort;
 	public Long metricsDatadogInterval;
 	public boolean metricsJvm;
+	public boolean enableCrossReplay;
 
 	public MaxwellDiagnosticContext.Config diagnosticConfig;
 
@@ -126,6 +127,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public String redisType;
 	public String javascriptFile;
 	public Scripting scripting;
+
 
 	public MaxwellConfig() { // argv is only null in tests
 		this.customProducerProperties = new Properties();
@@ -298,6 +300,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "http_diagnostic", "enable http diagnostic endpoint: true|false. default: false" ).withOptionalArg();
 		parser.accepts( "http_diagnostic_timeout", "the http diagnostic response timeout in ms when http_diagnostic=true. default: 10000" ).withRequiredArg();
 		parser.accepts( "metrics_jvm", "enable jvm metrics: true|false. default: false" ).withRequiredArg();
+		parser.accepts( "enable_cross_replay", "enable replay with separate streaming host: true|false. default: false" ).withRequiredArg();
 
 		parser.accepts( "__separator_11" );
 
@@ -458,6 +461,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.metricsDatadogInterval = fetchLongOption("metrics_datadog_interval", options, properties, 60L);
 
 		this.metricsJvm = fetchBooleanOption("metrics_jvm", options, properties, false);
+		this.enableCrossReplay = fetchBooleanOption("enable_cross_replay", options, properties, false);
 
 		this.diagnosticConfig = new MaxwellDiagnosticContext.Config();
 		this.diagnosticConfig.enable = fetchBooleanOption("http_diagnostic", options, properties, false);
@@ -717,7 +721,7 @@ public class MaxwellConfig extends AbstractConfig {
 		if (outputConfig.encryptionEnabled() && outputConfig.secretKey == null)
 			usage("--secret_key required");
 
-		if ( !maxwellMysql.sameServerAs(replicationMysql) && !this.bootstrapperType.equals("none") ) {
+		if ( !maxwellMysql.sameServerAs(replicationMysql) && !this.bootstrapperType.equals("none") && !this.enableCrossReplay) {
 			LOGGER.warn("disabling bootstrapping; not available when using a separate replication host.");
 			this.bootstrapperType = "none";
 		}
