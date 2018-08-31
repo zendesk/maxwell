@@ -31,7 +31,7 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 					context.setPosition(message.position);
 					long currentTime = System.currentTimeMillis();
 					messagePublishTimer.update(currentTime - message.sendTimeMS, TimeUnit.MILLISECONDS);
-					messageLatencyTimer.update(Math.max(0L, currentTime - message.eventTimeMS), TimeUnit.MILLISECONDS);
+					messageLatencyTimer.update(Math.max(0L, currentTime - message.eventTimeMS - 500L), TimeUnit.MILLISECONDS);
 				}
 			}
 		}
