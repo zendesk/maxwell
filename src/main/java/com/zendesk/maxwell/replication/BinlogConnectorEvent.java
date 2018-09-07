@@ -105,7 +105,14 @@ public class BinlogConnectorEvent {
 			if ( includedColumns.get(colIdx) ) {
 				Object json = null;
 				if ( data[dataIdx] != null ) {
-					json = cd.asJSON(data[dataIdx]);
+					//catch and throw , show which column error
+					try {
+						json = cd.asJSON(data[dataIdx]);
+					}catch (Exception e) {
+						String columnDataString= columnDataToString(cd,data[dataIdx]);
+						String rowDataString=rowDataToString(table,data,includedColumns);
+						throw new RuntimeException(String.format("column to json error at: %s , column:%s ,row:[%s]", table.fullName(),columnDataString,rowDataString),e);
+					}
 				}
 				row.putData(cd.getName(), json);
 				dataIdx++;
@@ -114,6 +121,32 @@ public class BinlogConnectorEvent {
 		}
 	}
 
+	private static String rowDataToString(Table table,Serializable[] data, BitSet includedColumns) {
+		int dataIdx = 0, colIdx = 0;
+		StringBuilder sb=new StringBuilder();
+		for ( ColumnDef cd : table.getColumnList() ) {
+			if ( includedColumns.get(colIdx) ) {
+				if ( data[dataIdx] != null ) {
+					sb.append(columnDataToString(cd,data[dataIdx]));
+				}
+				dataIdx++;
+			}
+			colIdx++;
+		}
+		return sb.toString();
+	}
+
+	private static String columnDataToString(ColumnDef cd, Object columnData){
+		if(columnData==null){
+			return String.format("%s(%s):null(?), ", cd.getName(),cd.getType());
+		}
+		Object dataType=columnData.getClass();
+		String dataString=Objects.toString(columnData);
+		int MAX_LENGTH=100;
+		dataString = dataString.length()<=MAX_LENGTH?dataString:dataString.substring(0,MAX_LENGTH);
+		return String.format("%s(%s):%s(%s), ", cd.getName(),cd.getType(),dataString,dataType);
+
+	}
 	private void writeOldData(Table table, RowMap row, Serializable[] oldData, BitSet oldIncludedColumns) {
 		int dataIdx = 0, colIdx = 0;
 
