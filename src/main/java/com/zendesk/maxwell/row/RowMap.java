@@ -46,6 +46,7 @@ public class RowMap implements Serializable {
 	private boolean txCommit;
 	private Long serverId;
 	private Long threadId;
+	private Long schemaId;
 
 	private final LinkedHashMap<String, Object> data;
 	private final LinkedHashMap<String, Object> oldData;
@@ -294,7 +295,6 @@ public class RowMap implements Serializable {
 		if ( outputConfig.includesBinlogPosition )
 			g.writeStringField(FieldNames.POSITION, binlogPosition.getFile() + ":" + binlogPosition.getOffset());
 
-
 		if ( outputConfig.includesGtidPosition)
 			g.writeStringField(FieldNames.GTID, binlogPosition.getGtid());
 
@@ -304,6 +304,10 @@ public class RowMap implements Serializable {
 
 		if ( outputConfig.includesThreadId && this.threadId != null ) {
 			g.writeNumberField(FieldNames.THREAD_ID, this.threadId);
+		}
+
+		if ( outputConfig.includesSchemaId && this.schemaId != null ) {
+			 g.writeNumberField(FieldNames.SCHEMA_ID, this.schemaId);
 		}
 
 		for ( Map.Entry<String, Object> entry : this.extraAttributes.entrySet() ) {
@@ -455,6 +459,14 @@ public class RowMap implements Serializable {
 
 	public void setThreadId(Long threadId) {
 		this.threadId = threadId;
+	}
+
+	public Long getSchemaId() {
+		return schemaId;
+	}
+
+	public void setSchemaId(Long schemaId) {
+		this.schemaId = schemaId;
 	}
 
 	public String getDatabase() {
