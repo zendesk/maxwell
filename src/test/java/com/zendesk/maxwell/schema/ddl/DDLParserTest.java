@@ -182,6 +182,7 @@ public class DDLParserTest {
 			"ALTER TABLE `test` ENGINE=`InnoDB` CHARACTER SET latin1",
 			"alter table t DROP PRIMARY KEY",
 			"alter table t drop index `foo`",
+			"alter table t \n drop index `foo`",
 			"alter table t disable keys",
 			"alter table t enable keys",
 			"alter table t order by `foor`, bar",
