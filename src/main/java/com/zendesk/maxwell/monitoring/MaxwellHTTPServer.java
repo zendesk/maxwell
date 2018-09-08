@@ -96,6 +96,7 @@ class MaxwellHTTPServerWorker implements StoppableTask, Runnable {
 		if (metricsRegistries != null) {
 			// TODO: there is a way to wire these up automagically via the AdminServlet, but it escapes me right now
 			handler.addServlet(new ServletHolder(new MetricsServlet(metricsRegistries.metricRegistry)), "/metrics");
+			handler.addServlet(new ServletHolder(new io.prometheus.client.exporter.MetricsServlet()), "/prometheus");
 			handler.addServlet(new ServletHolder(new HealthCheckServlet(metricsRegistries.healthCheckRegistry)), "/healthcheck");
 			handler.addServlet(new ServletHolder(new PingServlet()), "/ping");
 		}
