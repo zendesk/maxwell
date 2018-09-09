@@ -72,6 +72,7 @@ public class WrappedRowMap {
 	}
 
 	public void setQuery(String query) {
+		row.setRowQuery(query);
 	}
 
 	public void suppress() {
