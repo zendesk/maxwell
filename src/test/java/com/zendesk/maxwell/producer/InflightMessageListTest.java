@@ -136,7 +136,7 @@ public class InflightMessageListTest {
 		assertThat("Should never exceed capacity", list.size(), is(capacity));
 
 		long wait = 500;
-		Thread.sleep(wait);
+		Thread.sleep(wait + 100);
 		list.completeMessage(p1);
 
 		add.join();
