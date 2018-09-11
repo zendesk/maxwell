@@ -30,7 +30,7 @@ public class RowMap implements Serializable {
 
 	static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
 
-	private final String rowQuery;
+	private String rowQuery;
 	private final String rowType;
 	private final String database;
 	private final String table;
@@ -491,6 +491,10 @@ public class RowMap implements Serializable {
 
 	public String getRowQuery() {
 		return rowQuery;
+	}
+
+	public void setRowQuery(String query) {
+		this.rowQuery = query;
 	}
 
 	public String getRowType() {
