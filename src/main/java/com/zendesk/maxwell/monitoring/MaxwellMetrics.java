@@ -7,6 +7,8 @@ import com.codahale.metrics.Slf4jReporter;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.codahale.metrics.jvm.*;
 import com.zendesk.maxwell.MaxwellConfig;
+import io.prometheus.client.CollectorRegistry;
+import io.prometheus.client.dropwizard.DropwizardExports;
 import org.apache.commons.lang.StringUtils;
 import org.coursera.metrics.datadog.DatadogReporter;
 import org.coursera.metrics.datadog.transport.HttpTransport;
@@ -106,6 +108,10 @@ public class MaxwellMetrics implements Metrics {
 
 			reporter.start(config.metricsDatadogInterval, TimeUnit.SECONDS);
 			LOGGER.info("Datadog reporting enabled");
+		}
+
+		if (config.metricsReportingType.contains(reportingTypeHttp)) {
+			CollectorRegistry.defaultRegistry.register(new DropwizardExports(config.metricRegistry));
 		}
 	}
 

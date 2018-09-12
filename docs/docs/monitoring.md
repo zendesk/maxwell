@@ -33,6 +33,7 @@ When the HTTP server is enabled the following endpoints are exposed:
 | endpoint       | description                                                                    |
 |:---------------|:-------------------------------------------------------------------------------|
 | `/metrics`     | return all metrics as JSON                                                     |
+| `/prometheus`  | return all metrics as Prometheus format                                        |
 | `/healthcheck` | run Maxwell's healthchecks.  Considered unhealthy if &gt;0 messages have failed in the last 15 minutes. |
 | `/ping`        | a simple ping test, responds with `pong`                                       |
 
