@@ -528,5 +528,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		assertEquals(2, rows.size());
 		assertTrue(rows.get(0).toJSON(ddlOutputConfig()).contains("\"type\":\"database-create\",\"database\":\"測試資料庫三\""));
 		assertTrue(rows.get(1).toJSON(ddlOutputConfig()).contains("\"type\":\"table-create\",\"database\":\"測試資料庫三\",\"table\":\"表格二\""));
+		// test if non-Latin column name outputs correctly
+		assertTrue(rows.get(1).toJSON(ddlOutputConfig()).contains("\"type\":\"int\",\"name\":\"中文欄位\""));
 	}
 }
