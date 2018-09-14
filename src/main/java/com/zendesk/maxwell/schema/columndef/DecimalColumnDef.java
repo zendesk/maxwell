@@ -3,7 +3,7 @@ package com.zendesk.maxwell.schema.columndef;
 import java.math.BigDecimal;
 
 public class DecimalColumnDef extends ColumnDef {
-	public DecimalColumnDef(String name, String type, int pos) {
+	public DecimalColumnDef(String name, String type, short pos) {
 		super(name, type, pos);
 	}
 
