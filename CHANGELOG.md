@@ -1,5 +1,18 @@
 # Maxwell changelog
 
+### [v1.18.0](https://github.com/zendesk/maxwell/releases/tag/v1.18.0): "hello from the Andes"
+
+
+- memory optimizations for large schemas (especially shareded schemas with lots of duplicates)
+- add support for an http endpoint to support Prometheus metrics
+- allow javascript filters to access the row query object
+- javascript filters now run in the bootstrap process
+- support for non-latin1 column names
+- add `--output_schema_id` option
+- better handling of packet-too-big errors from Kinesis
+- add message.publish.age metric
+
+
 ### [v1.17.1](https://github.com/zendesk/maxwell/releases/tag/v1.17.1): "ay, ay, ay"
 
 
