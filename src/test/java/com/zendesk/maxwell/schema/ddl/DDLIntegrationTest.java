@@ -402,6 +402,19 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
+	public void testDatabaseAlterMySqlTableCharset() throws Exception {
+		testIntegration("ALTER TABLE mysql.columns_priv " +
+				"MODIFY Host char(60) NOT NULL default '', " +
+				"MODIFY Db char(64) NOT NULL default '', " +
+				"MODIFY User char(16) NOT NULL default '', " +
+				"MODIFY Table_name char(64) NOT NULL default '', " +
+				"MODIFY Column_name char(64) NOT NULL default '', " +
+				"ENGINE=MyISAM, " +
+				"CONVERT TO CHARACTER SET utf8 COLLATE utf8_bin, " +
+				"COMMENT='Column privileges'");
+	}
+
+	@Test
 	@Category(Mysql57Tests.class)
 	public void testGeneratedColumns() throws Exception {
 		requireMinimumVersion(server.VERSION_5_7);

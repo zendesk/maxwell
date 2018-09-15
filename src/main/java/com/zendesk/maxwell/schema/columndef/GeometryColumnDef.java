@@ -10,7 +10,7 @@ import java.util.Arrays;
  * Created by ben on 12/30/15.
  */
 public class GeometryColumnDef extends ColumnDef {
-	public GeometryColumnDef(String name, String type, int pos) {
+	public GeometryColumnDef(String name, String type, short pos) {
 		super(name, type, pos);
 	}
 

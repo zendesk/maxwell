@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.schema.columndef;
 
 public class EnumColumnDef extends EnumeratedColumnDef {
-	public EnumColumnDef(String name, String type, int pos, String[] enumValues) {
+	public EnumColumnDef(String name, String type, short pos, String[] enumValues) {
 		super(name, type, pos, enumValues);
 	}
 

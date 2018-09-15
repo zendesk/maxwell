@@ -11,11 +11,11 @@ public class ColumnDefSerializer extends JsonSerializer<ColumnDef> {
 	@Override
 	public void serialize(ColumnDef def, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonProcessingException {
 		jgen.writeStartObject();
-		jgen.writeStringField("type", def.type);
+		jgen.writeStringField("type", def.getType());
 		jgen.writeStringField("name", def.name);
 
 		if ( def instanceof StringColumnDef ) {
-			jgen.writeStringField("charset", ((StringColumnDef) def).charset);
+			jgen.writeStringField("charset", ((StringColumnDef) def).getCharset());
 		} else if ( def instanceof IntColumnDef ) {
 			jgen.writeBooleanField("signed", ((IntColumnDef) def).isSigned());
 		} else if ( def instanceof BigIntColumnDef ) {
