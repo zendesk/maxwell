@@ -62,6 +62,10 @@ password=maxwell
 #replication_password=password
 #replication_port=3306
 
+# This will enable bootstrapping when replication host is on separate host than maxwell.
+# Helpfull when using read replica for streaming logs.
+#enable_cross_replay=false
+
 # This may be useful when using MaxScale's binlog mirroring host.
 # Specifies that Maxwell should capture schema from a different server than
 # it replicates from:

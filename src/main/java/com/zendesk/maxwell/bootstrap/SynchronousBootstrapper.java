@@ -94,7 +94,13 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	protected Connection getConnection() throws SQLException {
-		Connection conn = context.getReplicationConnection();
+                Connection conn = null;
+                if (context.getConfig().enableCrossReplay) {
+                        conn = context.getMaxwellConnection();
+	        } else {
+	                conn = context.getReplicationConnection();
+	        }
+
 		conn.setCatalog(context.getConfig().databaseName);
 		return conn;
 	}
