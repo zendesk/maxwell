@@ -54,6 +54,11 @@ public class MysqlIsolatedServer {
 		if ( !xtraParams.contains("--server_id") )
 			serverID = "--server_id=" + SERVER_ID;
 
+		String authPlugin = "";
+		if ( this.getVersion().atLeast(8, 0) ) {
+			authPlugin = "--default-authentication-plugin=mysql_native_password";
+		}
+
 		ProcessBuilder pb = new ProcessBuilder(
 			dir + "/src/test/onetimeserver",
 			"--mysql-version=" + this.getVersionString(),
@@ -65,8 +70,8 @@ public class MysqlIsolatedServer {
 			"--character-set-server=utf8",
 			"--sync_binlog=0",
 			"--default-time-zone=+00:00",
-			"--verbose",
 			isRoot ? "--user=root" : "",
+			authPlugin,
 			gtidParams
 		);
 
@@ -114,7 +119,8 @@ public class MysqlIsolatedServer {
 
 
 		resetConnection();
-		this.connection.createStatement().executeUpdate("GRANT REPLICATION SLAVE on *.* to 'maxwell'@'127.0.0.1' IDENTIFIED BY 'maxwell'");
+		this.connection.createStatement().executeUpdate("CREATE USER 'maxwell'@'127.0.0.1' IDENTIFIED BY 'maxwell'");
+		this.connection.createStatement().executeUpdate("GRANT REPLICATION SLAVE on *.* to 'maxwell'@'127.0.0.1'");
 		this.connection.createStatement().executeUpdate("GRANT ALL on *.* to 'maxwell'@'127.0.0.1'");
 		this.connection.createStatement().executeUpdate("CREATE DATABASE if not exists test");
 		LOGGER.info("booted at port " + this.port + ", outputting to file " + outputFile);
@@ -203,12 +209,12 @@ public class MysqlIsolatedServer {
 		} catch ( IOException e ) {}
 	}
 
-	private String getVersionString() {
+	private static String getVersionString() {
 		String mysqlVersion = System.getenv("MYSQL_VERSION");
 		return mysqlVersion == null ? "5.6" : mysqlVersion;
 	}
 
-	public MysqlVersion getVersion() {
+	public static MysqlVersion getVersion() {
 		String[] parts = getVersionString().split("\\.");
 		return new MysqlVersion(Integer.valueOf(parts[0]), Integer.valueOf(parts[1]));
 	}
