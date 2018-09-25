@@ -215,6 +215,13 @@ kafka.acks=1
 # Valid values for redis_type = pubsub|lpush. Defaults to pubsub
 #redis_type=pubsub
 
+#           *** nats ***
+
+#nats_url=nats://localhost:4222
+#nats_cluster_id=test-cluster
+#nats_client_id=test-client
+#nats_subject=test
+
 #           *** custom producer ***
 
 # the fully qualified class name for custom ProducerFactory

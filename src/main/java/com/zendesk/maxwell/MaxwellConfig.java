@@ -127,6 +127,12 @@ public class MaxwellConfig extends AbstractConfig {
 	public String javascriptFile;
 	public Scripting scripting;
 
+	public String natsUrl;
+	public String natsClusterId;
+	public String natsClientId;
+	public String natsSubject;
+
+
 	public MaxwellConfig() { // argv is only null in tests
 		this.customProducerProperties = new Properties();
 		this.kafkaProperties = new Properties();
@@ -304,6 +310,12 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "help", "display help" ).forHelp();
 
+		parser.accepts( "__separator_12" );
+
+		parser.accepts( "nats_url", "Nats Url(nats://localhost:4222)" ).withRequiredArg();
+		parser.accepts( "nats_cluster_id", "Nats Cluster ID" ).withRequiredArg();
+		parser.accepts( "nats_client_id", "Nats Client Id" ).withRequiredArg();
+		parser.accepts( "nats_subject", "Nats Subject" ).withRequiredArg();
 
 		BuiltinHelpFormatter helpFormatter = new BuiltinHelpFormatter(200, 4) {
 			@Override
@@ -404,6 +416,11 @@ public class MaxwellConfig extends AbstractConfig {
 		this.redisPubChannel	= fetchOption("redis_pub_channel", options, properties, "maxwell");
 		this.redisListKey		= fetchOption("redis_list_key", options, properties, "maxwell");
 		this.redisType			= fetchOption("redis_type", options, properties, "pubsub");
+
+		this.natsUrl = fetchOption("nats_url", options, properties, "nats://localhost:4222");
+		this.natsClusterId = fetchOption("nats_cluster_id", options, properties, "test-cluster");
+		this.natsClientId = fetchOption("nats_client_id", options, properties, "test-client");
+		this.natsSubject = fetchOption("nats_subject", options, properties, "test-subject");
 
 		String kafkaBootstrapServers = fetchOption("kafka.bootstrap.servers", options, properties, null);
 		if ( kafkaBootstrapServers != null )
