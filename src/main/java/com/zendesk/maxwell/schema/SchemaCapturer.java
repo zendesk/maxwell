@@ -56,12 +56,12 @@ public class SchemaCapturer {
 				"COLUMN_TYPE, " +
 				dateTimePrecision +
 				"COLUMN_KEY " +
-				"FROM `information_schema`.`COLUMNS` WHERE TABLE_SCHEMA = ?";
+				"FROM `information_schema`.`COLUMNS` WHERE TABLE_SCHEMA = ? ORDER BY ORDINAL_POSITION";
 
 		columnPreparedStatement = connection.prepareStatement(columnSql);
 
 		String pkSql = "SELECT TABLE_NAME, COLUMN_NAME, ORDINAL_POSITION FROM information_schema.KEY_COLUMN_USAGE "
-				+ "WHERE CONSTRAINT_NAME = 'PRIMARY' AND TABLE_SCHEMA = ?";
+				+ "WHERE CONSTRAINT_NAME = 'PRIMARY' AND TABLE_SCHEMA = ? ORDER BY TABLE_NAME, ORDINAL_POSITION";
 
 		pkPreparedStatement = connection.prepareStatement(pkSql);
 
