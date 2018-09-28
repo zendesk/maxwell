@@ -77,7 +77,7 @@ public class SchemaCapturer {
 		ArrayList<Database> databases = new ArrayList<>();
 
 		ResultSet rs = connection.createStatement().executeQuery(
-				"SELECT SCHEMA_NAME, DEFAULT_CHARACTER_SET_NAME FROM INFORMATION_SCHEMA.SCHEMATA"
+				"SELECT SCHEMA_NAME, DEFAULT_CHARACTER_SET_NAME FROM INFORMATION_SCHEMA.SCHEMATA ORDER BY SCHEMA_NAME"
 		);
 		while (rs.next()) {
 			String dbName = rs.getString("SCHEMA_NAME");
