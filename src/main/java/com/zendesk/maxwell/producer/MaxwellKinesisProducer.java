@@ -116,6 +116,13 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 		}
 	}
 
+	protected void finalize() throws Throwable {
+		try {
+			this.kinesisProducer.destroy();
+		} finally {
+			super.finalize();
+		}
+	}
 	@Override
 	public void sendAsync(RowMap r, AbstractAsyncProducer.CallbackCompleter cc) throws Exception {
 		String key = this.partitioner.getKinesisKey(r);
