@@ -140,8 +140,17 @@ public class MysqlIsolatedServer {
 			+ "master_log_file = '%s', master_log_pos = %d, master_port = %d",
 			file, position, masterPort
 		);
+		LOGGER.info("starting up slave: " + changeSQL);
 		getConnection().createStatement().execute(changeSQL);
 		getConnection().createStatement().execute("START SLAVE");
+
+		rs.close();
+
+		rs = getConnection().createStatement().executeQuery("show slave status");
+		rs.next();
+		for ( int i = 1 ; i <= rs.getMetaData().getColumnCount() ; i++) {
+			LOGGER.info("{}: {}", rs.getMetaData().getColumnName(i), rs.getObject(i));
+		}
 	}
 
 	public void boot() throws Exception {
