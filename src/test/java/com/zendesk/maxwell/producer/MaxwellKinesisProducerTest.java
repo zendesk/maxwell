@@ -38,5 +38,6 @@ public class MaxwellKinesisProducerTest {
 
 		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
 		producer.sendAsync(rowMap, cc);
+		producer.close();
 	}
 }
