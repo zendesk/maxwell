@@ -97,6 +97,8 @@ public class RecoveryTest extends TestWithNameLogging {
 		Position slavePosition = MaxwellTestSupport.capture(slaveServer.getConnection());
 
 		generateNewMasterData(false, DATA_SIZE);
+		slaveServer.waitForSlaveToBeCurrent(masterServer);
+
 		RecoveryInfo recoveryInfo = slaveContext.getRecoveryInfo();
 
 		assertThat(recoveryInfo, notNullValue());
