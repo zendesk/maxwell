@@ -223,7 +223,7 @@ public class MaxwellTestSupport {
 
 		LOGGER.debug("running replicator up to heartbeat: " + finalHeartbeat);
 
-		Long pollTime = 2000L;
+		Long pollTime = 5000L;
 		Position lastPositionRead = null;
 
 		for ( ;; ) {
