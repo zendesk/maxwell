@@ -307,12 +307,8 @@ public class RecoveryTest extends TestWithNameLogging {
 		// Have maxwell connect to master first
 		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(masterServer, input, null, null);
 		int expectedRowCount = DATA_SIZE;
-		try {
-			// sleep a bit for slave to catch up
-			Thread.sleep(1000);
-		} catch (InterruptedException ex) {
-			LOGGER.info("Got ex: " + ex);
-		}
+
+		slaveServer.waitForSlaveToBeCurrent(masterServer);
 
 		Position slavePosition1 = MaxwellTestSupport.capture(slaveServer.getConnection());
 		LOGGER.info("slave master position at time of cut: " + slavePosition1 + " rows: " + rows.size());
