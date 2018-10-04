@@ -145,12 +145,15 @@ public class MysqlIsolatedServer {
 		getConnection().createStatement().execute("START SLAVE");
 
 		rs.close();
+	}
 
-		rs = getConnection().createStatement().executeQuery("show slave status");
+	public void dumpQuery(String query) throws Exception {
+		ResultSet rs = getConnection().createStatement().executeQuery(query);
 		rs.next();
 		for ( int i = 1 ; i <= rs.getMetaData().getColumnCount() ; i++) {
 			LOGGER.info("{}: {}", rs.getMetaData().getColumnName(i), rs.getObject(i));
 		}
+
 	}
 
 	public void boot() throws Exception {
@@ -206,6 +209,10 @@ public class MysqlIsolatedServer {
 
 	public void executeQuery(String sql) throws SQLException {
 		getConnection().createStatement().executeUpdate(sql);
+	}
+
+	public ResultSet query(String sql) throws SQLException {
+		return getConnection().createStatement().executeQuery(sql);
 	}
 
 	public int getPort() {

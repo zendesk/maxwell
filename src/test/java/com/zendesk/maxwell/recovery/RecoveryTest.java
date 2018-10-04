@@ -132,11 +132,27 @@ public class RecoveryTest extends TestWithNameLogging {
 
 		MaxwellContext slaveContext = getContext(slaveServer.getPort(), true);
 
+		LOGGER.info("dumping slave status before generating data");
+		slaveServer.dumpQuery("SHOW SLAVE STATUS");
 		String[] input = generateMasterData();
 		MaxwellTestSupport.getRowsWithReplicator(masterServer, input, null, null);
 
+		LOGGER.info("dumping slave status after runnning maxwell");
+		slaveServer.dumpQuery("SHOW SLAVE STATUS");
+
 		generateNewMasterData(false, DATA_SIZE);
+
+		LOGGER.info("show master status");
+		masterServer.dumpQuery("SHOW MASTER STATUS");
+		LOGGER.info("maxwell.positions on master: what does positions look like on the master?");
+		masterServer.dumpQuery("select * from maxwell.positions");
+
+		LOGGER.info("what does positions look like on the slave?");
+		slaveServer.dumpQuery("select * from maxwell.positions");
+
 		RecoveryInfo recoveryInfo = slaveContext.getRecoveryInfo();
+
+
 		assertThat(recoveryInfo, notNullValue());
 
 		/* pretend that we're a seperate client trying to recover now */
