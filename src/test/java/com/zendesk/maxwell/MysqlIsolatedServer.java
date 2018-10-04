@@ -239,4 +239,22 @@ public class MysqlIsolatedServer {
 		// https://dev.mysql.com/doc/refman/5.7/en/sql-mode.html#sqlmode_no_zero_date
 		return !getVersion().atLeast(VERSION_5_7);
 	}
+
+	public void waitForSlaveToBeCurrent(MysqlIsolatedServer master) throws Exception {
+		ResultSet ms = master.query("show master status");
+		ms.next();
+		String masterFile = ms.getString("File");
+		Long masterPos = ms.getLong("Position");
+		ms.close();
+
+		while ( true ) {
+			ResultSet rs = query("show slave status");
+			rs.next();
+			if ( rs.getString("Relay_Master_Log_File").equals(masterFile) &&
+				rs.getLong("Exec_Master_Log_Pos") >= masterPos )
+				return;
+
+			Thread.sleep(200);
+		}
+	}
 }
