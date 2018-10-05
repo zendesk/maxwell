@@ -131,6 +131,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public String natsClusterId;
 	public String natsClientId;
 	public String natsSubject;
+	public Long natsPubAckTimeout;
 
 
 	public MaxwellConfig() { // argv is only null in tests
@@ -188,7 +189,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts("__separator_3");
 
-		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|pubsub|sqs|rabbitmq|redis" ).withRequiredArg();
+		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|pubsub|sqs|rabbitmq|redis|nats" ).withRequiredArg();
 		parser.accepts( "custom_producer.factory", "fully qualified custom producer factory class" ).withRequiredArg();
 		parser.accepts( "producer_ack_timeout", "producer message acknowledgement timeout" ).withRequiredArg();
 		parser.accepts( "javascript", "file containing per-row javascript to execute" ).withRequiredArg();
@@ -312,10 +313,12 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_12" );
 
-		parser.accepts( "nats_url", "Nats Url(nats://localhost:4222)" ).withRequiredArg();
+		parser.accepts( "nats_url", "Nats Url" ).withRequiredArg();
 		parser.accepts( "nats_cluster_id", "Nats Cluster ID" ).withRequiredArg();
 		parser.accepts( "nats_client_id", "Nats Client Id" ).withRequiredArg();
 		parser.accepts( "nats_subject", "Nats Subject" ).withRequiredArg();
+		parser.accepts( "nats_pub_ack_timeout", "Nats Publisher Ack Timeout" ).withRequiredArg();
+
 
 		BuiltinHelpFormatter helpFormatter = new BuiltinHelpFormatter(200, 4) {
 			@Override
@@ -421,6 +424,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.natsClusterId = fetchOption("nats_cluster_id", options, properties, "test-cluster");
 		this.natsClientId = fetchOption("nats_client_id", options, properties, "test-client");
 		this.natsSubject = fetchOption("nats_subject", options, properties, "test-subject");
+		this.natsPubAckTimeout = fetchLongOption("nats_pub_ack_timeout", options, properties, null);
 
 		String kafkaBootstrapServers = fetchOption("kafka.bootstrap.servers", options, properties, null);
 		if ( kafkaBootstrapServers != null )
