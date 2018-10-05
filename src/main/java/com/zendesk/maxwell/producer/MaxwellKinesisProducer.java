@@ -140,4 +140,8 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 			logger.error("Database:" + r.getDatabase() + ", Table:" + r.getTable() + ", PK:" + r.pkAsConcatString() + ", Size:" + Integer.toString(vsize));
 		}
 	}
+
+	public void close() {
+		this.kinesisProducer.destroy();
+	}
 }

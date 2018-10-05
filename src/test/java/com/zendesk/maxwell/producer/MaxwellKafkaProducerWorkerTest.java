@@ -6,6 +6,7 @@ import com.zendesk.maxwell.monitoring.NoOpMetrics;
 import org.junit.Test;
 
 import java.util.Properties;
+import java.util.concurrent.TimeoutException;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -13,7 +14,7 @@ import static org.mockito.Mockito.when;
 public class MaxwellKafkaProducerWorkerTest {
 
 	@Test
-	public void constructNewWorkerWithNullTopic() {
+	public void constructNewWorkerWithNullTopic() throws TimeoutException {
 		MaxwellContext context = mock(MaxwellContext.class);
 		MaxwellConfig config = new MaxwellConfig();
 		when(context.getConfig()).thenReturn(config);
@@ -22,6 +23,7 @@ public class MaxwellKafkaProducerWorkerTest {
 		kafkaProperties.put("bootstrap.servers", "localhost:9092");
 		String kafkaTopic = null;
 		//shouldn't throw NPE
-		new MaxwellKafkaProducerWorker(context, kafkaProperties, kafkaTopic, null);
+		MaxwellKafkaProducerWorker worker = new MaxwellKafkaProducerWorker(context, kafkaProperties, kafkaTopic, null);
+		worker.close();
 	}
 }

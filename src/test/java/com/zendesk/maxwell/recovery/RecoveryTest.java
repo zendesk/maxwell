@@ -97,6 +97,8 @@ public class RecoveryTest extends TestWithNameLogging {
 		Position slavePosition = MaxwellTestSupport.capture(slaveServer.getConnection());
 
 		generateNewMasterData(false, DATA_SIZE);
+		slaveServer.waitForSlaveToBeCurrent(masterServer);
+
 		RecoveryInfo recoveryInfo = slaveContext.getRecoveryInfo();
 
 		assertThat(recoveryInfo, notNullValue());
@@ -136,7 +138,10 @@ public class RecoveryTest extends TestWithNameLogging {
 		MaxwellTestSupport.getRowsWithReplicator(masterServer, input, null, null);
 
 		generateNewMasterData(false, DATA_SIZE);
+		slaveServer.waitForSlaveToBeCurrent(masterServer);
+
 		RecoveryInfo recoveryInfo = slaveContext.getRecoveryInfo();
+
 		assertThat(recoveryInfo, notNullValue());
 
 		/* pretend that we're a seperate client trying to recover now */
@@ -304,12 +309,8 @@ public class RecoveryTest extends TestWithNameLogging {
 		// Have maxwell connect to master first
 		List<RowMap> rows = MaxwellTestSupport.getRowsWithReplicator(masterServer, input, null, null);
 		int expectedRowCount = DATA_SIZE;
-		try {
-			// sleep a bit for slave to catch up
-			Thread.sleep(1000);
-		} catch (InterruptedException ex) {
-			LOGGER.info("Got ex: " + ex);
-		}
+
+		slaveServer.waitForSlaveToBeCurrent(masterServer);
 
 		Position slavePosition1 = MaxwellTestSupport.capture(slaveServer.getConnection());
 		LOGGER.info("slave master position at time of cut: " + slavePosition1 + " rows: " + rows.size());

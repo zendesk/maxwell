@@ -54,6 +54,11 @@ public class MysqlIsolatedServer {
 		if ( !xtraParams.contains("--server_id") )
 			serverID = "--server_id=" + SERVER_ID;
 
+		String authPlugin = "";
+		if ( this.getVersion().atLeast(8, 0) ) {
+			authPlugin = "--default-authentication-plugin=mysql_native_password";
+		}
+
 		ProcessBuilder pb = new ProcessBuilder(
 			dir + "/src/test/onetimeserver",
 			"--mysql-version=" + this.getVersionString(),
@@ -65,8 +70,8 @@ public class MysqlIsolatedServer {
 			"--character-set-server=utf8",
 			"--sync_binlog=0",
 			"--default-time-zone=+00:00",
-			"--verbose",
 			isRoot ? "--user=root" : "",
+			authPlugin,
 			gtidParams
 		);
 
@@ -114,7 +119,8 @@ public class MysqlIsolatedServer {
 
 
 		resetConnection();
-		this.connection.createStatement().executeUpdate("GRANT REPLICATION SLAVE on *.* to 'maxwell'@'127.0.0.1' IDENTIFIED BY 'maxwell'");
+		this.connection.createStatement().executeUpdate("CREATE USER 'maxwell'@'127.0.0.1' IDENTIFIED BY 'maxwell'");
+		this.connection.createStatement().executeUpdate("GRANT REPLICATION SLAVE on *.* to 'maxwell'@'127.0.0.1'");
 		this.connection.createStatement().executeUpdate("GRANT ALL on *.* to 'maxwell'@'127.0.0.1'");
 		this.connection.createStatement().executeUpdate("CREATE DATABASE if not exists test");
 		LOGGER.info("booted at port " + this.port + ", outputting to file " + outputFile);
@@ -134,8 +140,20 @@ public class MysqlIsolatedServer {
 			+ "master_log_file = '%s', master_log_pos = %d, master_port = %d",
 			file, position, masterPort
 		);
+		LOGGER.info("starting up slave: " + changeSQL);
 		getConnection().createStatement().execute(changeSQL);
 		getConnection().createStatement().execute("START SLAVE");
+
+		rs.close();
+	}
+
+	public void dumpQuery(String query) throws Exception {
+		ResultSet rs = getConnection().createStatement().executeQuery(query);
+		rs.next();
+		for ( int i = 1 ; i <= rs.getMetaData().getColumnCount() ; i++) {
+			LOGGER.info("{}: {}", rs.getMetaData().getColumnName(i), rs.getObject(i));
+		}
+
 	}
 
 	public void boot() throws Exception {
@@ -193,6 +211,10 @@ public class MysqlIsolatedServer {
 		getConnection().createStatement().executeUpdate(sql);
 	}
 
+	public ResultSet query(String sql) throws SQLException {
+		return getConnection().createStatement().executeQuery(sql);
+	}
+
 	public int getPort() {
 		return port;
 	}
@@ -203,12 +225,12 @@ public class MysqlIsolatedServer {
 		} catch ( IOException e ) {}
 	}
 
-	private String getVersionString() {
+	private static String getVersionString() {
 		String mysqlVersion = System.getenv("MYSQL_VERSION");
 		return mysqlVersion == null ? "5.6" : mysqlVersion;
 	}
 
-	public MysqlVersion getVersion() {
+	public static MysqlVersion getVersion() {
 		String[] parts = getVersionString().split("\\.");
 		return new MysqlVersion(Integer.valueOf(parts[0]), Integer.valueOf(parts[1]));
 	}
@@ -216,5 +238,23 @@ public class MysqlIsolatedServer {
 	public boolean supportsZeroDates() {
 		// https://dev.mysql.com/doc/refman/5.7/en/sql-mode.html#sqlmode_no_zero_date
 		return !getVersion().atLeast(VERSION_5_7);
+	}
+
+	public void waitForSlaveToBeCurrent(MysqlIsolatedServer master) throws Exception {
+		ResultSet ms = master.query("show master status");
+		ms.next();
+		String masterFile = ms.getString("File");
+		Long masterPos = ms.getLong("Position");
+		ms.close();
+
+		while ( true ) {
+			ResultSet rs = query("show slave status");
+			rs.next();
+			if ( rs.getString("Relay_Master_Log_File").equals(masterFile) &&
+				rs.getLong("Exec_Master_Log_Pos") >= masterPos )
+				return;
+
+			Thread.sleep(200);
+		}
 	}
 }

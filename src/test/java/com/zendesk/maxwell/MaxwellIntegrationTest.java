@@ -7,6 +7,7 @@ import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.SchemaStoreSchema;
 import org.apache.commons.lang3.ArrayUtils;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.sql.ResultSet;
@@ -518,6 +519,8 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testLowerCasingSensitivity() throws Exception {
+		org.junit.Assume.assumeTrue(MysqlIsolatedServer.getVersion().lessThan(8,0));
+
 		MysqlIsolatedServer lowerCaseServer = new MysqlIsolatedServer();
 
 
