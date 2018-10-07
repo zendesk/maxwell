@@ -427,7 +427,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.natsClientId = fetchOption("nats_client_id", options, properties, "test-client");
 		this.natsSubject = fetchOption("nats_subject", options, properties, "test-subject");
 		this.natsPubAckTimeout = fetchLongOption("nats_pub_ack_timeout", options, properties, null);
-		this.natsMaxReconnects = Integer.parseInt(fetchOption("nats_max_reconnects", options, properties, null));
+		this.natsMaxReconnects = Integer.parseInt(fetchOption("nats_max_reconnects", options, properties, "0"));
 		this.natsReconnectWait = fetchLongOption("nats_reconnect_wait", options, properties, null);
 
 
