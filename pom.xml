@@ -289,6 +289,11 @@
       <artifactId>java-nats-streaming</artifactId>
       <version>2.1.0</version>
     </dependency>
+    <dependency>
+      <groupId>io.nats</groupId>
+      <artifactId>jnats</artifactId>
+      <version>2.1.0</version>
+    </dependency>
   </dependencies>
 
   <build>

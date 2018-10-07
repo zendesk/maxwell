@@ -366,7 +366,7 @@ public class MaxwellContext {
 				this.producer = new MaxwellRedisProducer(this, this.config.redisPubChannel, this.config.redisListKey, this.config.redisType);
 				break;
 			case "nats":
-				this.producer = new MaxwellNatsProducer(this, this.config.natsSubject);
+				this.producer = new MaxwellNatsProducer(this, this.config.natsSubject, this.config.natsClusterId, this.config.natsClientId);
 				break;
 			case "none":
 				this.producer = null;

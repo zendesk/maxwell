@@ -222,6 +222,11 @@ kafka.acks=1
 #nats_client_id=test-client
 #nats_subject=test
 
+# not compulsory
+#nats_max_reconnects=100
+#nats_reconnect_wait=1000
+#nats_pub_ack_timeout=100
+
 #           *** custom producer ***
 
 # the fully qualified class name for custom ProducerFactory

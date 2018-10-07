@@ -132,6 +132,8 @@ public class MaxwellConfig extends AbstractConfig {
 	public String natsClientId;
 	public String natsSubject;
 	public Long natsPubAckTimeout;
+	public Long natsReconnectWait;
+	public int natsMaxReconnects;
 
 
 	public MaxwellConfig() { // argv is only null in tests
@@ -425,6 +427,9 @@ public class MaxwellConfig extends AbstractConfig {
 		this.natsClientId = fetchOption("nats_client_id", options, properties, "test-client");
 		this.natsSubject = fetchOption("nats_subject", options, properties, "test-subject");
 		this.natsPubAckTimeout = fetchLongOption("nats_pub_ack_timeout", options, properties, null);
+		this.natsMaxReconnects = Integer.parseInt(fetchOption("nats_max_reconnects", options, properties, null));
+		this.natsReconnectWait = fetchLongOption("nats_reconnect_wait", options, properties, null);
+
 
 		String kafkaBootstrapServers = fetchOption("kafka.bootstrap.servers", options, properties, null);
 		if ( kafkaBootstrapServers != null )
