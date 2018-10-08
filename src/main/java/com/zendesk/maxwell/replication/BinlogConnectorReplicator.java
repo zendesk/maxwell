@@ -523,6 +523,10 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	public Schema getSchema() throws SchemaStoreException {
 		return this.schemaStore.getSchema();
 	}
+	
+	public String getClientID() throws SchemaStoreException {
+		return this.clientID;
+	}
 
 
 }

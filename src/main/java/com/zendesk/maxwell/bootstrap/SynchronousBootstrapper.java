@@ -2,6 +2,7 @@ package com.zendesk.maxwell.bootstrap;
 
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.replication.BinlogConnectorReplicator;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.replication.Replicator;
 import com.zendesk.maxwell.row.RowMap;
@@ -11,6 +12,7 @@ import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
 import com.zendesk.maxwell.scripting.Scripting;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -150,7 +152,8 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 			// This update resets all rows of incomplete bootstraps to their original state.
 			// These updates are treated as fresh bootstrap requests and trigger a restart
 			// of the bootstrap process from the beginning.
-			String sql = "update `bootstrap` set started_at = NULL where is_complete = 0 and started_at is not NULL";
+			String clientid = ((BinlogConnectorReplicator)replicator).getClientID();
+			String sql = "update `bootstrap` set started_at = NULL where is_complete = 0 and started_at is not NULL and client_id = '" + clientid + "'";
 			connection.prepareStatement(sql).execute();
 		}
 	}
