@@ -1,0 +1,5 @@
+CREATE TABLESPACE tablespace_name
+    ADD DATAFILE 'file_name'
+    [FILE_BLOCK_SIZE = value]
+    [ENCRYPTION [=] {'Y' | 'N'}]
+    [ENGINE [=] engine_name]

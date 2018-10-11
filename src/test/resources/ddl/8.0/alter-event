@@ -1,0 +1,9 @@
+ALTER
+    [DEFINER = { user | CURRENT_USER }]
+    EVENT event_name
+    [ON SCHEDULE schedule]
+    [ON COMPLETION [NOT] PRESERVE]
+    [RENAME TO new_event_name]
+    [ENABLE | DISABLE | DISABLE ON SLAVE]
+    [COMMENT 'string']
+    [DO event_body]

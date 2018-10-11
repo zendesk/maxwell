@@ -1,0 +1,4 @@
+ALTER TABLESPACE tablespace_name
+    [RENAME TO tablespace_name] 
+    [ENCRYPTION [=] {'Y' | 'N'}]
+    [ENGINE [=] engine_name]
