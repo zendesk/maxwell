@@ -1,0 +1,10 @@
+CACHE INDEX
+  tbl_index_list [, tbl_index_list] ...
+  [PARTITION (partition_list | ALL)]
+  IN key_cache_name
+
+tbl_index_list:
+  tbl_name [[INDEX|KEY] (index_name[, index_name] ...)]
+
+partition_list:
+  partition_name[, partition_name][, ...]

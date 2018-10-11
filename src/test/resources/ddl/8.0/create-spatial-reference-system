@@ -1,0 +1,15 @@
+CREATE OR REPLACE SPATIAL REFERENCE SYSTEM
+    srid srs_attribute ...
+
+CREATE SPATIAL REFERENCE SYSTEM
+    [IF NOT EXISTS]
+    srid srs_attribute ...
+
+srs_attribute: {
+    NAME 'srs_name'
+  | DEFINITION 'definition'
+  | ORGANIZATION 'org_name' IDENTIFIED BY org_id
+  | DESCRIPTION 'description'
+}
+
+srid, org_id: 32-bit unsigned integer

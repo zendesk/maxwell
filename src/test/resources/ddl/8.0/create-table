@@ -40,7 +40,7 @@ column_definition:
       [COMMENT 'string']
 
 data_type:
-    (see Chapter 11, Data Types)
+    (see Chapter 11, Data Types)
 
 key_part: {col_name [(length)] | (expr)} [ASC | DESC]
 

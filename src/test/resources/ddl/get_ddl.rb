@@ -13,7 +13,12 @@ def parse_url(url)
 end
 
 def extract_code(link_name, doc)
-  puts doc.at_css("code").text
+  code = doc.at_css("code")
+  return unless code
+  filename = VERSION + "/" + link_name.sub(/\..*$?/, '')
+  File.open(filename, "w+") do |file|
+    file.write(code.text)
+  end
 end
 
 
@@ -22,6 +27,6 @@ base_doc.css(".docs-submenu .docs-sidebar-nav-link a").each do |link|
   new_link = URL.sub(%r{/[^/]*$}, '') + "/" + link.attr("href").to_s
 
   sub_doc = parse_url(new_link)
-  extract_code(link, sub_doc)
+  extract_code(link.attr("href").to_s, sub_doc)
 end
 

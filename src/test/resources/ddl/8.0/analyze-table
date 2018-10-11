@@ -1,0 +1,11 @@
+ANALYZE [NO_WRITE_TO_BINLOG | LOCAL]
+    TABLE tbl_name [, tbl_name] ...
+
+ANALYZE [NO_WRITE_TO_BINLOG | LOCAL]
+    TABLE tbl_name
+    UPDATE HISTOGRAM ON col_name [, col_name] ...
+        [WITH N BUCKETS]
+
+ANALYZE [NO_WRITE_TO_BINLOG | LOCAL]
+    TABLE tbl_name
+    DROP HISTOGRAM ON col_name [, col_name] ...

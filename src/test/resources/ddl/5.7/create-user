@@ -1,0 +1,43 @@
+CREATE USER [IF NOT EXISTS]
+    user [auth_option] [, user [auth_option]] ...
+    [REQUIRE {NONE | tls_option [[AND] tls_option] ...}]
+    [WITH resource_option [resource_option] ...]
+    [password_option | lock_option] ...
+
+user:
+    (see Section 6.2.3, “Specifying Account Names”)
+
+auth_option: {
+    IDENTIFIED BY 'auth_string'
+  | IDENTIFIED WITH auth_plugin
+  | IDENTIFIED WITH auth_plugin BY 'auth_string'
+  | IDENTIFIED WITH auth_plugin AS 'hash_string'
+  | IDENTIFIED BY PASSWORD 'hash_string'
+}
+
+tls_option: {
+   SSL
+ | X509
+ | CIPHER 'cipher'
+ | ISSUER 'issuer'
+ | SUBJECT 'subject'
+}
+
+resource_option: {
+    MAX_QUERIES_PER_HOUR count
+  | MAX_UPDATES_PER_HOUR count
+  | MAX_CONNECTIONS_PER_HOUR count
+  | MAX_USER_CONNECTIONS count
+}
+
+password_option: {
+    PASSWORD EXPIRE
+  | PASSWORD EXPIRE DEFAULT
+  | PASSWORD EXPIRE NEVER
+  | PASSWORD EXPIRE INTERVAL N DAY
+}
+
+lock_option: {
+    ACCOUNT LOCK
+  | ACCOUNT UNLOCK
+}
