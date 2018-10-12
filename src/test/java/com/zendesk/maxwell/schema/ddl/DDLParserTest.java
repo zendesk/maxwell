@@ -192,6 +192,7 @@ public class DDLParserTest {
 			"alter table t add column `foo` int, auto_increment = 5 engine=innodb, modify column bar int",
 			"alter table t add column `foo` int,  ALGORITHM=copy",
 			"alter table t add column `foo` int, algorithm copy",
+			"alter table t add column `foo` int, algorithm instant",
 			"alter table t add column `foo` int, algorithm copy, lock shared",
 			"alter table t add column `foo` int, algorithm copy, lock=exclusive",
 			"create table t (id int) engine=memory",

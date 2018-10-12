@@ -67,7 +67,7 @@ ignored_alter_specifications:
     | LOCK '='? lock_type
     | RENAME (INDEX|KEY) name TO name
     ;
-  algorithm_type: DEFAULT | INPLACE | COPY;
+  algorithm_type: DEFAULT | INPLACE | COPY | INSTANT;
   lock_type: DEFAULT | NONE | SHARED | EXCLUSIVE;
 
 partition_names: id (',' id)*;
