@@ -32,6 +32,7 @@ index_options:
   | index_type
   | WITH PARSER name
   | COMMENT string_literal
+  | ( VISIBLE | INVISIBLE )
   ;
 
 index_column_list: '(' index_columns ')';
