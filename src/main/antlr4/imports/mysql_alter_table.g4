@@ -14,6 +14,7 @@ alter_specification:
   | change_column
   | drop_column
   | modify_column
+  | rename_column
   | drop_key
   | drop_primary_key
   | alter_rename_table
@@ -34,6 +35,7 @@ drop_key: DROP FOREIGN? (INDEX|KEY) name;
 drop_primary_key: DROP PRIMARY KEY;
 alter_rename_table: RENAME (TO | AS)? table_name;
 convert_to_character_set: CONVERT TO charset_token charset_name collation?;
+rename_column: RENAME COLUMN name TO name;
 
 alter_partition_specification:
       ADD PARTITION skip_parens
