@@ -1,0 +1,7 @@
+CREATE RESOURCE GROUP group_name
+    TYPE = {SYSTEM|USER}
+    [VCPU [=] vcpu_spec [, vcpu_spec] ...]
+    [THREAD_PRIORITY [=] N]
+    [ENABLE|DISABLE]
+
+vcpu_spec: {N | M - N}

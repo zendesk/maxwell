@@ -1,0 +1,2 @@
+DROP TABLESPACE tablespace_name
+    [ENGINE [=] engine_name]

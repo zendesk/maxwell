@@ -7,7 +7,7 @@ import com.zendesk.maxwell.util.DynamicEnum;
 @JsonSerialize(using=ColumnDefSerializer.class)
 @JsonDeserialize(using=ColumnDefDeserializer.class)
 
-public abstract class ColumnDef {
+public abstract class ColumnDef implements Cloneable {
 	private static DynamicEnum dynamicEnum = new DynamicEnum(Byte.MAX_VALUE);
 	protected String name;
 	protected byte type;
@@ -24,6 +24,15 @@ public abstract class ColumnDef {
 
 	public Object asJSON(Object value) {
 		return value;
+	}
+
+
+	public ColumnDef clone() {
+		try {
+			return (ColumnDef) super.clone();
+		} catch (CloneNotSupportedException e) {
+			return null;
+		}
 	}
 
 	public static ColumnDef build(String name, String charset, String type, short pos, boolean signed, String enumValues[], Long columnLength) {
