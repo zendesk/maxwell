@@ -85,6 +85,11 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
+	public void testTinyInt1() throws Exception {
+		testColumnType("tinyint(1)", "9", 9);
+	}
+
+	@Test
 	public void testSmallInt() throws Exception {
 		testColumnType("smallint", "-32768", -32768);
 		testColumnType("smallint", "32767", 32767);
@@ -232,7 +237,7 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 				output = decrypted;
 			}
 
-			if ( output.get("table").equals("column_test") && output.get("type").equals("insert") ) {
+			if ( output.get("table").equals("column_test") && output.get("type").toString().contains("insert") ) {
 				Map<String, Object> dataSource = encryptionMode == EncryptionMode.ENCRYPT_DATA ? decrypted : output;
 				Map<String, Object> data = (Map<String, Object>) dataSource.get("data");
 				if ( !foundNormalRow ) {

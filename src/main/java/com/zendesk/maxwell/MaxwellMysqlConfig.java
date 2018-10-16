@@ -109,7 +109,8 @@ public class MaxwellMysqlConfig {
 
 		// added by d8888 2018/09/10, force JDBC to use UTF-8 to support using non-english db, table & column names
 		uriBuilder.addParameter("characterEncoding", "UTF-8");
-		
+		uriBuilder.addParameter("tinyInt1isBit", "false");
+
 		return uriBuilder.build().toString();
 	}
 
