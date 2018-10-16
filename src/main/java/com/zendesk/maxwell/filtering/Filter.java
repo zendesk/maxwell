@@ -21,6 +21,11 @@ public class Filter {
 		patterns.addAll(new FilterParser(filterString).parse());
 	}
 
+	public static boolean isSystemWhitelisted(String maxwellDB, String database, String table) {
+		return maxwellDB.equals(database)
+			&& ("bootstrap".equals(table) || "heartbeats".equals(table));
+	}
+
 	public void addRule(String filterString) throws InvalidFilterException {
 		this.patterns.addAll(new FilterParser(filterString).parse());
 	}
