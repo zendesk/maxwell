@@ -48,7 +48,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private BinlogConnectorEventListener binlogEventListener;
 	private BinlogConnectorLifecycleListener binlogLifecycleListener;
 	private final LinkedBlockingDeque<BinlogConnectorEvent> queue = new LinkedBlockingDeque<>(20);
-	private final TableCache tableCache = new TableCache();
+	private final TableCache tableCache;
 	private final Scripting scripting;
 
 	private final boolean stopOnEOF;
@@ -97,6 +97,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		this.stopOnEOF = stopOnEOF;
 		this.scripting = scripting;
 		this.schemaStore = schemaStore;
+		this.tableCache = new TableCache(maxwellSchemaDatabaseName);
 
 		/* setup metrics */
 		rowCounter = metrics.getRegistry().counter(
@@ -268,11 +269,6 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		);
 	}
 
-	private boolean isSystemWhitelisted(String database, String table) {
-		return this.maxwellSchemaDatabaseName.equals(database)
-			&& ("bootstrap".equals(table) || "heartbeats".equals(table));
-	}
-
 	/**
 	 * Should we output a batch of rows for the given database and table?
 	 *
@@ -298,7 +294,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private boolean shouldOutputEvent(String database, String table, Filter filter, Set<String> columnNames) {
 		if ( Filter.isSystemBlacklisted(database, table) )
 			return false;
-		else if ( isSystemWhitelisted(database, table) )
+		else if ( Filter.isSystemWhitelisted(maxwellSchemaDatabaseName, database, table) )
 			return true;
 		else {
 			if ( Filter.includes(filter, database, table) )
@@ -310,7 +306,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 
 	private boolean shouldOutputRowMap(String database, String table, RowMap rowMap, Filter filter) {
-		return isSystemWhitelisted(database, table) ||
+		return Filter.isSystemWhitelisted(maxwellSchemaDatabaseName, database, table) ||
 			Filter.includes(filter, database, table, rowMap.getData());
 	}
 

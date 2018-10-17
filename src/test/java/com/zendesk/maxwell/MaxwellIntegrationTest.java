@@ -463,6 +463,18 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
+	public void testHeartbeatsWithBlacklist() throws Exception {
+		Filter filter = new Filter("blacklist: maxwell.*");
+		getRowsForSQL(filter, testTransactions);
+
+		ResultSet rs = server.query("select * from maxwell.positions");
+		rs.next();
+
+		Long heartbeatRead = rs.getLong("last_heartbeat_read");
+		assertTrue(heartbeatRead > 0);
+	}
+
+	@Test
 	public void testRunMinimalBinlog() throws Exception {
 		requireMinimumVersion(server.VERSION_5_6);
 
