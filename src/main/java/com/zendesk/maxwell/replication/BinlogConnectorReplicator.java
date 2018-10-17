@@ -524,4 +524,5 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		return this.schemaStore.getSchema();
 	}
 	
+
 }
