@@ -2,6 +2,7 @@ package com.zendesk.maxwell.schema.ddl;
 
 import com.zendesk.maxwell.*;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.replication.MysqlVersion;
 import com.zendesk.maxwell.row.RowMap;
 import org.junit.Test;
 
@@ -423,6 +424,16 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 			+ "b int AS (a + 0) STORED PRIMARY KEY"
 			+ ")"
 		);
+	}
+
+	@Test
+	public void testRenameColumn() throws Exception {
+		requireMinimumVersion(8,0);
+		String sql[] = {
+			"CREATE TABLE foo ( i int )",
+			"ALTER TABLE foo rename column i to j"
+		};
+		testIntegration(sql);
 	}
 
 	@Test

@@ -1,0 +1,20 @@
+CREATE TABLESPACE tablespace_name
+
+  InnoDB and NDB:
+    ADD DATAFILE 'file_name'
+
+  InnoDB only:
+    [FILE_BLOCK_SIZE = value]
+
+  NDB only:
+    USE LOGFILE GROUP logfile_group
+    [EXTENT_SIZE [=] extent_size]
+    [INITIAL_SIZE [=] initial_size]
+    [AUTOEXTEND_SIZE [=] autoextend_size]
+    [MAX_SIZE [=] max_size]
+    [NODEGROUP [=] nodegroup_id]
+    [WAIT]
+    [COMMENT [=] 'string']
+
+  InnoDB and NDB:
+    [ENGINE [=] engine_name]
