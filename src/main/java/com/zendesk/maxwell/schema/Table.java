@@ -240,6 +240,13 @@ public class Table {
 		columns.remove(idx);
 	}
 
+	public void renameColumn(int idx, String name) throws InvalidSchemaError {
+		ColumnDef column = columns.get(idx).clone();
+		column.setName(name);
+		columns.remove(idx);
+		columns.add(idx, column);
+	}
+
 	public void changeColumn(int idx, ColumnPosition position, ColumnDef definition) throws InvalidSchemaError {
 		// when we go to rename the PK column, we need to make sure the old column name
 		// is still there for (for normalization of pk-columns).

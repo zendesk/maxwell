@@ -1,0 +1,40 @@
+GRANT
+    priv_type [(column_list)]
+      [, priv_type [(column_list)]] ...
+    ON [object_type] priv_level
+    TO user_or_role [, user_or_role] ...
+    [WITH GRANT OPTION]
+
+GRANT PROXY ON user_or_role
+    TO user_or_role [, user_or_role] ...
+    [WITH GRANT OPTION]
+
+GRANT role [, role] ...
+    TO user_or_role [, user_or_role] ...
+    [WITH ADMIN OPTION]
+
+object_type: {
+    TABLE
+  | FUNCTION
+  | PROCEDURE
+}
+
+priv_level: {
+    *
+  | *.*
+  | db_name.*
+  | db_name.tbl_name
+  | tbl_name
+  | db_name.routine_name
+}
+
+user_or_role: {
+    user
+  | role
+}
+
+user:
+    (see Section 6.2.4, “Specifying Account Names”)
+
+role:
+    (see Section 6.2.5, “Specifying Role Names”)

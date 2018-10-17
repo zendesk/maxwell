@@ -1,0 +1,3 @@
+RENAME TABLE
+    tbl_name TO new_tbl_name
+    [, tbl_name2 TO new_tbl_name2] ...

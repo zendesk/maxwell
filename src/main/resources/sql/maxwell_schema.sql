@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS `columns` (
   charset     varchar(255),
   coltype     varchar(255),
   is_signed   tinyint(1) unsigned,
-  enum_values text,
+  enum_values text charset 'utf8',
   column_length tinyint unsigned,
   index (schema_id),
   index (table_id)
