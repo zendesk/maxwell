@@ -162,6 +162,8 @@ kafka.acks=1
 #            *** kinesis ***
 
 #kinesis_stream=maxwell
+#kinesis_throttle_limit=10000
+#kinesis_throttle_sleep=1000
 
 # AWS places a 256 unicode character limit on the max key length of a record
 # http://docs.aws.amazon.com/kinesis/latest/APIReference/API_PutRecord.html

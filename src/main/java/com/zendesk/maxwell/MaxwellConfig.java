@@ -63,6 +63,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public String kinesisStream;
 	public boolean kinesisMd5Keys;
+	public Long kinesisThrottleLimit;
+	public Long kinesisThrottleSleep;
 
 	public String sqsQueueUri;
 
@@ -205,6 +207,9 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "kafka_key_format", "how to format the kafka key; array|hash" ).withRequiredArg();
 
 		parser.accepts( "kinesis_stream", "kinesis stream name" ).withOptionalArg();
+		parser.accepts( "kinesis_throttle_limit", "Something default: 10000" ).withRequiredArg();
+		parser.accepts( "kinesis_throttle_sleep", "Something default: 1000" ).withRequiredArg();
+	    
 		parser.accepts( "sqs_queue_uri", "SQS Queue uri" ).withRequiredArg();
 
 		parser.accepts( "pubsub_project_id", "provide a google cloud platform project id associated with the pubsub topic" ).withRequiredArg();
@@ -427,6 +432,10 @@ public class MaxwellConfig extends AbstractConfig {
 		this.producerPartitionFallback = fetchOption("producer_partition_by_fallback", options, properties, null);
 
 		this.kinesisStream  = fetchOption("kinesis_stream", options, properties, null);
+		this.kinesisThrottleLimit = fetchLongOption("kinesis_throttle_limit", options, properties, 10000L);
+		this.kinesisThrottleSleep = fetchLongOption("kinesis_throttle_sleep", options, properties, 1000L);
+	    
+
 		this.kinesisMd5Keys = fetchBooleanOption("kinesis_md5_keys", options, properties, false);
 
 		this.sqsQueueUri = fetchOption("sqs_queue_uri", options, properties, null);

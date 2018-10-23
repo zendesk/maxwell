@@ -96,7 +96,9 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 	private final MaxwellKinesisPartitioner partitioner;
 	private final KinesisProducer kinesisProducer;
 	private final String kinesisStream;
-
+	private final Long kinesisThrottleLimt;
+	private final Long kinesisThrottleSleep;
+	
 	public MaxwellKinesisProducer(MaxwellContext context, String kinesisStream) {
 		super(context);
 
@@ -106,6 +108,8 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 		boolean kinesisMd5Keys = context.getConfig().kinesisMd5Keys;
 		this.partitioner = new MaxwellKinesisPartitioner(partitionKey, partitionColumns, partitionFallback, kinesisMd5Keys);
 		this.kinesisStream = kinesisStream;
+		this.kinesisThrottleLimt = context.getConfig().kinesisThrottleLimit;
+		this.kinesisThrottleSleep = context.getConfig().kinesisThrottleSleep;
 
 		Path path = Paths.get("kinesis-producer-library.properties");
 		if(Files.exists(path) && Files.isRegularFile(path)) {
@@ -121,6 +125,12 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 		String key = this.partitioner.getKinesisKey(r);
 		String value = r.toJSON(outputConfig);
 
+		int pendingCount;
+		while((pendingCount = kinesisProducer.getOutstandingRecordsCount()) > this.kinesisThrottleLimt) {
+		    logger.info("Waiting " + this.kinesisThrottleSleep + "for records " + pendingCount);
+		    Thread.sleep(this.kinesisThrottleSleep);
+		}
+		
 		ByteBuffer encodedValue = ByteBuffer.wrap(value.getBytes("UTF-8"));
 		ListenableFuture<UserRecordResult> future = kinesisProducer.addUserRecord(kinesisStream, key, encodedValue);
 
