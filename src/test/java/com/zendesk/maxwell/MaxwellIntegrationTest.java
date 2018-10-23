@@ -589,8 +589,13 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testJavascriptFilters() throws Exception {
+		requireMinimumVersion(server.VERSION_5_6);
+
 		String dir = MaxwellTestSupport.getSQLDir();
-		runJSON("/json/test_javascript_filters", (c) -> c.javascriptFile = dir + "/json/filter.javascript");
+		runJSON("/json/test_javascript_filters", (c) -> {
+			c.javascriptFile = dir + "/json/filter.javascript";
+			c.outputConfig.includesRowQuery = true;
+		});
 	}
 
 	static String[] createDBSql = {

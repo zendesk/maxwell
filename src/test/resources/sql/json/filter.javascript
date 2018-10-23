@@ -5,4 +5,8 @@ function process_row(rowmap) {
 
 		rowmap.data.a = rowmap.data.a.toUpperCase();
 	}
+
+	if ( rowmap.query && rowmap.query.match(/mangle/) ) {
+		rowmap.query = "mangled";
+	}
 }

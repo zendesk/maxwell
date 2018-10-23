@@ -14,7 +14,7 @@ public class StringColumnDef extends ColumnDef {
 	public String charset;
 
 	static final Logger LOGGER = LoggerFactory.getLogger(StringColumnDef.class);
-	public StringColumnDef(String name, String type, int pos, String charset) {
+	public StringColumnDef(String name, String type, short pos, String charset) {
 		super(name, type, pos);
 		this.charset = charset;
 	}

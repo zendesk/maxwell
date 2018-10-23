@@ -4,7 +4,7 @@ import java.sql.Time;
 import java.sql.Timestamp;
 
 public class TimeColumnDef extends ColumnDefWithLength {
-	public TimeColumnDef(String name, String type, int pos, Long columnLength) {
+	public TimeColumnDef(String name, String type, short pos, Long columnLength) {
 		super(name, type, pos, columnLength);
 	}
 

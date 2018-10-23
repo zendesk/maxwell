@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.schema.columndef;
 
 public class DateColumnDef extends ColumnDef {
-	public DateColumnDef(String name, String type, int pos) {
+	public DateColumnDef(String name, String type, short pos) {
 		super(name, type, pos);
 	}
 

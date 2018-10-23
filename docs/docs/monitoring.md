@@ -23,6 +23,7 @@ metric                         | description
 `inflightmessages.count`       | the number of messages that are currently in-flight (awaiting acknowledgement from the destination, or ahead of messages which are)
 **Timers**
 `message.publish.time`         | the time it took to send a given record to Kafka, in milliseconds
+`message.publish.age`          | the time between an event occurring on the DB and being published to kafka, in milliseconds. Note: since MySQL timestamps are accurate to the second, this is only accurate to +/- 500ms.
 `replication.queue.time`       | the time it took to enqueue a given binlog event for processing, in milliseconds
 
 ### HTTP Endpoints
@@ -32,6 +33,7 @@ When the HTTP server is enabled the following endpoints are exposed:
 | endpoint       | description                                                                    |
 |:---------------|:-------------------------------------------------------------------------------|
 | `/metrics`     | return all metrics as JSON                                                     |
+| `/prometheus`  | return all metrics as Prometheus format                                        |
 | `/healthcheck` | run Maxwell's healthchecks.  Considered unhealthy if &gt;0 messages have failed in the last 15 minutes. |
 | `/ping`        | a simple ping test, responds with `pong`                                       |
 

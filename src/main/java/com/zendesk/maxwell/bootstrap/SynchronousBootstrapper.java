@@ -10,6 +10,7 @@ import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
+import com.zendesk.maxwell.scripting.Scripting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,6 +65,10 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 			while ( resultSet.next() ) {
 				RowMap row = bootstrapEventRowMap("bootstrap-insert", table, position);
 				setRowValues(row, resultSet, table);
+
+				Scripting scripting = context.getConfig().scripting;
+				if ( scripting != null )
+					scripting.invoke(row);
 
 				if ( LOGGER.isDebugEnabled() )
 					LOGGER.debug("bootstrapping row : " + row.toJSON());

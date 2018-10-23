@@ -80,7 +80,7 @@ password=maxwell
 #output_gtid_position=true
 
 # records include fields with null values (default true).  If this is false,
-# fiels where the value is null will be omitted entirely from output.
+# fields where the value is null will be omitted entirely from output.
 #output_nulls=true
 
 # records include server_id (default false)
@@ -88,6 +88,9 @@ password=maxwell
 
 # records include thread_id (default false)
 #output_thread_id=true
+
+# records include schema_id (default false)
+#output_schema_id=true
 
 # records include row query, binlog option "binlog_rows_query_log_events" must be enabled" (default false)
 #output_row_query=true

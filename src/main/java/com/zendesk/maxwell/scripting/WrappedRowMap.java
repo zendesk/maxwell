@@ -67,6 +67,14 @@ public class WrappedRowMap {
 		return row.getTimestamp();
 	}
 
+	public String getQuery() {
+		return row.getRowQuery();
+	}
+
+	public void setQuery(String query) {
+		row.setRowQuery(query);
+	}
+
 	public void suppress() {
 		row.suppress();
 	}

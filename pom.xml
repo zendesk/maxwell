@@ -4,7 +4,7 @@
 
   <groupId>com.zendesk</groupId>
   <artifactId>maxwell</artifactId>
-  <version>1.19.0</version>
+  <version>1.18.1</version>
   <packaging>jar</packaging>
 
   <name>maxwell</name>
@@ -123,7 +123,7 @@
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
-      <version>5.1.39</version>
+      <version>5.1.47</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -161,7 +161,7 @@
     <dependency>
       <groupId>com.github.stefanbirkner</groupId>
       <artifactId>system-rules</artifactId>
-      <version>1.17.1</version>
+      <version>1.18.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -273,6 +273,16 @@
       <groupId>me.tongfei</groupId>
       <artifactId>progressbar</artifactId>
       <version>0.6.0</version>
+    </dependency>
+    <dependency>
+      <groupId>io.prometheus</groupId>
+      <artifactId>simpleclient_dropwizard</artifactId>
+      <version>0.5.0</version>
+    </dependency>
+    <dependency>
+      <groupId>io.prometheus</groupId>
+      <artifactId>simpleclient_servlet</artifactId>
+      <version>0.5.0</version>
     </dependency>
   </dependencies>
 

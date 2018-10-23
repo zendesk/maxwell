@@ -59,6 +59,12 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
+	public void testBootstrapJSFilters() throws Exception {
+		String dir = MaxwellTestSupport.getSQLDir();
+		runJSON("json/bootstrap-js-filters", (c) -> c.javascriptFile = dir + "/json/filter.javascript");
+	}
+
+	@Test
 	public void testBool() throws Exception {
 		testColumnType("bool", "0", 0);
 		testColumnType("bool", "1", 1);

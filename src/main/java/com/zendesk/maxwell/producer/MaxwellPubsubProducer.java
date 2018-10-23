@@ -136,13 +136,13 @@ class MaxwellPubsubProducerWorker
     super(context);
 
     this.projectId = pubsubProjectId;
-    this.topic = TopicName.create(pubsubProjectId, pubsubTopic);
-    this.pubsub = Publisher.defaultBuilder(this.topic).build();
+    this.topic = TopicName.of(pubsubProjectId, pubsubTopic);
+    this.pubsub = Publisher.newBuilder(this.topic).build();
 
     if ( context.getConfig().outputConfig.outputDDL == true &&
          ddlPubsubTopic != pubsubTopic ) {
-      this.ddlTopic = TopicName.create(pubsubProjectId, ddlPubsubTopic);
-      this.ddlPubsub = Publisher.defaultBuilder(this.ddlTopic).build();
+      this.ddlTopic = TopicName.of(pubsubProjectId, ddlPubsubTopic);
+      this.ddlPubsub = Publisher.newBuilder(this.ddlTopic).build();
     } else {
       this.ddlTopic = this.topic;
       this.ddlPubsub = this.pubsub;

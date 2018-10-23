@@ -1,0 +1,6 @@
+truncate maxwell.bootstrap;
+create table shard_1.bootstrap_js (id int auto_increment primary key, a varchar(255))
+insert into shard_1.bootstrap_js set a = 'abcdef'
+insert into maxwell.bootstrap set database_name = 'shard_1', table_name = 'bootstrap_js'
+
+-> { database: "shard_1", table: "bootstrap_js", type:"bootstrap-insert", data: { id: 1, a: "ABCDEF" } }

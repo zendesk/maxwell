@@ -1,5 +1,12 @@
 # Maxwell changelog
 
+### [v1.17.1](https://github.com/zendesk/maxwell/releases/tag/v1.17.1): "ay, ay, ay"
+
+
+- fix a regression around filters + bootstrapping
+- fix a regression around filters + database-only-ddl
+
+
 ### [v1.17.0](https://github.com/zendesk/maxwell/releases/tag/v1.17.0): "monday, not sunday tuesday"
 
 

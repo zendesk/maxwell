@@ -19,6 +19,7 @@ public class FieldNames {
 	public static final String SERVER_ID = "server_id";
 	public static final String TABLE = "table";
 	public static final String THREAD_ID = "thread_id";
+	public static final String SCHEMA_ID = "schema_id";
 	public static final String TIMESTAMP = "ts";
 	public static final String TRANSACTION_ID = "xid";
 	public static final String TRANSACTION_OFFSET = "xoffset";

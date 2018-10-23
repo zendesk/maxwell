@@ -27,4 +27,13 @@ public interface SchemaStore {
 	 * @return A list of the schema changes parsed from the SQL.
 	 */
 	List<ResolvedSchemaChange> processSQL(String sql, String currentDatabase, Position position) throws SchemaStoreException, InvalidSchemaError;
+
+	/**
+	 * Retrieve current schema id
+	 *
+	 * Schema id should be an always increasing integer, not current intended for use
+	 * to refernce the schema, simply as a schema generation indicator.
+	 * @return The current schema id
+	 */
+	Long getSchemaID() throws SchemaStoreException;
 }

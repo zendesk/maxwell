@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS `bootstrap` (
   id              int unsigned auto_increment NOT NULL primary key,
-  database_name   varchar(255) NOT NULL,
-  table_name      varchar(255) NOT NULL,
+  database_name   varchar(255) charset 'utf8' NOT NULL,
+  table_name      varchar(255) charset 'utf8' NOT NULL,
   where_clause    varchar(255),
   is_complete     tinyint(1) unsigned NOT NULL default 0,
   inserted_rows   bigint(20) unsigned NOT NULL DEFAULT 0,

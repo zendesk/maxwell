@@ -59,6 +59,11 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 		return savedSchema.getSchema();
 	}
 
+	public Long getSchemaID() throws SchemaStoreException {
+		getSchema();
+		return savedSchema.getSchemaID();
+	}
+
 	private MysqlSavedSchema restoreOrCaptureSchema() throws SchemaStoreException {
 		try {
 			MysqlSavedSchema savedSchema =
