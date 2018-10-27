@@ -61,6 +61,15 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
+	public void testMultiLineSQLWithBlacklists() throws Exception {
+		String sql[] = {
+			"create table foo (\nbegin_field int)",
+		};
+
+		testIntegration(sql);
+	}
+
+	@Test
 	public void testAlterMultipleColumns() throws Exception {
 		String sql[] = {
 			"create table shard_1.test_foo ( id int )",
