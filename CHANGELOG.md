@@ -1,5 +1,17 @@
 # Maxwell changelog
 
+### [v1.19.0](https://github.com/zendesk/maxwell/releases/tag/v1.19.0): "whole lotta milka"
+
+
+- mysql 8 support!
+- utf8 enum values are supported now
+- fix #1125, bootstrapping issue for TINYINT(1)
+- fix #1145, nasty bug around SQL blacklist and columns starting with "begin"
+- only resume bootstraps that are targeted at this client_id
+- fixes for blacklists and heartbeats.  Did I ever mention blacklists
+  are a terrible idea?
+
+
 ### [v1.18.0](https://github.com/zendesk/maxwell/releases/tag/v1.18.0): "hello from the Andes"
 
 
