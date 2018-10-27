@@ -150,8 +150,11 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 			// This update resets all rows of incomplete bootstraps to their original state.
 			// These updates are treated as fresh bootstrap requests and trigger a restart
 			// of the bootstrap process from the beginning.
-			String sql = "update `bootstrap` set started_at = NULL where is_complete = 0 and started_at is not NULL";
-			connection.prepareStatement(sql).execute();
+			String clientID = this.context.getConfig().clientID;
+			String sql = "update `bootstrap` set started_at = NULL where is_complete = 0 and started_at is not NULL and client_id = ?";
+			PreparedStatement s = connection.prepareStatement(sql);
+			s.setString(1, clientID);
+			s.execute();
 		}
 	}
 
