@@ -157,6 +157,9 @@ public class DDLParserTest {
 	@Test
 	public void testParsingSomeAlters() {
 		String testSQL[] = {
+			"alter table t add column mortgage_item BIT(4) NOT NULL DEFAULT 0b0000",
+			"alter table t add column mortgage_item BIT(4) NOT NULL DEFAULT 'b'01010",
+			"alter table t add column mortgage_item BIT(4) NOT NULL DEFAULT 'B'01010",
 			"alter database d DEFAULT CHARACTER SET = 'utf8'",
 			"alter database d UPGRADE DATA DIRECTORY NAME",
 			"alter schema d COLLATE foo",

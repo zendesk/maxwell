@@ -17,11 +17,14 @@ user_token: (IDENT | QUOTED_IDENT | string_literal);
 
 name: ( id | tokens_available_for_names | INTEGER_LITERAL | DBL_STRING_LITERAL );
 id: ( IDENT | QUOTED_IDENT );
-literal: (float_literal | integer_literal | string_literal | NULL | TRUE | FALSE);
+literal: (float_literal | integer_literal | string_literal | byte_literal | NULL | TRUE | FALSE);
 
 float_literal: ('+'|'-')? INTEGER_LITERAL? '.' INTEGER_LITERAL;
 integer_literal: ('+'|'-')? INTEGER_LITERAL;
 string_literal: (STRING_LITERAL | DBL_STRING_LITERAL);
+byte_literal:
+            IDENT // a bit hacky, but IDENT matches byte literals (0b010101) and honestly we don't care.
+            | STRING_LITERAL INTEGER_LITERAL; // matches 'b'01010, 'B'101010
 
 string: (IDENT | STRING_LITERAL);
 integer: INTEGER_LITERAL;
