@@ -243,7 +243,11 @@ public class DDLParserTest {
 			"DROP TEMPORARY TABLE IF EXISTS 172898_16841_transmem",
 			"ALTER TEMPORARY TABLE 172898_16841_transmem ADD something VARCHAR(1)",
 			"/* hi bob */ CREATE EVENT FOO",
-			"DELETE FROM `foo`.`bar`"
+			"DELETE FROM `foo`.`bar`",
+			"CREATE ROLE 'administrator', 'developer'",
+			"SET ROLE 'role1', 'role2'",
+			"SET DEFAULT ROLE administrator, developer TO 'joe'@'10.0.0.1'",
+			"DROP ROLE 'role1'"
 		};
 
 		for ( String s : testSQL ) {
