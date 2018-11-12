@@ -41,6 +41,9 @@ password=maxwell
 # name of the mysql database where maxwell keeps its own state
 #schema_database=maxwell
 
+# whether to use GTID or not for positioning
+#gtid_mode=true
+
 # SSL/TLS options
 # To use VERIFY_CA or VERIFY_IDENTITY, you must set the trust store with Java opts:
 #   -Djavax.net.ssl.trustStore=<truststore> -Djavax.net.ssl.trustStorePassword=<password>
