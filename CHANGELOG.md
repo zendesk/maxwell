@@ -1,5 +1,13 @@
 # Maxwell changelog
 
+### [v1.19.1](https://github.com/zendesk/maxwell/releases/tag/v1.19.1): "the swoop here doesn't change things one bit"
+
+
+- Handle mysql bit literals in DEFAULT statements
+- blacklist out CREATE ROLE etc
+- upgrade dependencies to pick up security issues
+
+
 ### [v1.19.0](https://github.com/zendesk/maxwell/releases/tag/v1.19.0): "whole lotta milka"
 
 
