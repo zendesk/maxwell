@@ -415,7 +415,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					} else if (sql.toUpperCase().startsWith("DROP TEMPORARY TABLE")) {
 						// Ignore temporary table drop statements inside transactions
 					} else {
-						LOGGER.warn("Unhandled QueryEvent inside transaction: " + qe);
+						LOGGER.warn("Unhandled QueryEvent @ {} inside transaction: {}", event.getPosition().fullPosition(), qe);
 					}
 					break;
 			}
