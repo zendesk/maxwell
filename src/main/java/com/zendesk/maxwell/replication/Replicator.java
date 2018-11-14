@@ -15,6 +15,7 @@ public interface Replicator extends StoppableTask {
 	RowMap getRow() throws Exception;
 	Long getLastHeartbeatRead();
 	Schema getSchema() throws SchemaStoreException;
+	Long getSchemaId() throws SchemaStoreException;
 
 	void stopAtHeartbeat(long heartbeat);
 	void runLoop() throws Exception;

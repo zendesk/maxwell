@@ -53,6 +53,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		Database database = findDatabase(schema, databaseName);
 		Table table = findTable(tableName, database);
 
+		Long schemaId = replicator.getSchemaId();
 		Position position = startBootstrapRow.getPosition();
 		producer.push(startBootstrapRow);
 		producer.push(bootstrapStartRowMap(table, position));
@@ -66,6 +67,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 			while ( resultSet.next() ) {
 				RowMap row = bootstrapEventRowMap("bootstrap-insert", table, position);
 				setRowValues(row, resultSet, table);
+				row.setSchemaId(schemaId);
 
 				Scripting scripting = context.getConfig().scripting;
 				if ( scripting != null )
