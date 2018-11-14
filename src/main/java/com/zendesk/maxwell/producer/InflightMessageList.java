@@ -68,7 +68,7 @@ public class InflightMessageList {
 		// we assume the head will unlikely get acknowledged, hence terminate Maxwell.
 		// This gatekeeper is the last resort since if anything goes wrong,
 		// producer should have raised exceptions earlier than this point when all below conditions are met.
-		if (producerAckTimeoutMS > 0 && outstanding >= capacity) {
+		if (producerAckTimeoutMS > 0) {
 			Iterator<InflightMessage> it = iterator();
 			if (it.hasNext() && it.next().timeSinceSendMS() > producerAckTimeoutMS && completePercentage() >= completePercentageThreshold) {
 				context.terminate(new IllegalStateException(

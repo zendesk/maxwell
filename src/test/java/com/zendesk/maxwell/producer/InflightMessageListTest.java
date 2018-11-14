@@ -74,10 +74,12 @@ public class InflightMessageListTest {
 		long inflightRequestTimeout = 100;
 		setupWithInflightRequestTimeout(inflightRequestTimeout, 0.1);
 		list.completeMessage(p2);
+		list.freeSlot();
 		Thread.sleep(inflightRequestTimeout + 5);
 
 		// When
 		list.completeMessage(p3);
+		list.freeSlot();
 
 		// Then
 		verify(context).terminate(captor.capture());
@@ -89,9 +91,11 @@ public class InflightMessageListTest {
 		// Given
 		setupWithInflightRequestTimeout(0, 0.1);
 		list.completeMessage(p2);
+		list.freeSlot();
 
 		// When
 		list.completeMessage(p3);
+		list.freeSlot();
 
 		// Then
 		verify(context, never()).terminate(any(RuntimeException.class));
@@ -103,10 +107,12 @@ public class InflightMessageListTest {
 		long inflightRequestTimeout = 100;
 		setupWithInflightRequestTimeout(inflightRequestTimeout, 0.1);
 		list.completeMessage(p1);
+		list.freeSlot();
 		Thread.sleep(inflightRequestTimeout + 5);
 
 		// When
 		list.completeMessage(p3);
+		list.freeSlot();
 
 		// Then
 		verify(context, never()).terminate(any(RuntimeException.class));
@@ -118,10 +124,12 @@ public class InflightMessageListTest {
 		long inflightRequestTimeout = 100;
 		setupWithInflightRequestTimeout(inflightRequestTimeout, 0.9);
 		list.completeMessage(p2);
+		list.freeSlot();
 		Thread.sleep(inflightRequestTimeout + 5);
 
 		// When
 		list.completeMessage(p3);
+		list.freeSlot();
 
 		// Then
 		verify(context, never()).terminate(any(RuntimeException.class));
@@ -129,7 +137,7 @@ public class InflightMessageListTest {
 
 	@Test
 	@Ignore
-	public void testAddMessageWillWaitWhenCapacityIsFull() throws InterruptedException {
+	public void testWaitForSlotWillWaitWhenCapacityIsFull() throws InterruptedException {
 		setupWithInflightRequestTimeout(0, 0.1);
 
 		AddMessage addMessage = new AddMessage();
@@ -140,6 +148,7 @@ public class InflightMessageListTest {
 		long wait = 500;
 		Thread.sleep(wait + 100);
 		list.completeMessage(p1);
+		list.freeSlot();
 
 		add.join();
 		assertThat("Should never exceed capacity", list.size(), is(capacity));
@@ -155,7 +164,7 @@ public class InflightMessageListTest {
 		public void run() {
 			start = System.currentTimeMillis();
 			try {
-				list.addMessage(p4, start);
+				list.waitForSlot();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -169,8 +178,11 @@ public class InflightMessageListTest {
 		config.producerAckTimeout = timeout;
 		when(context.getConfig()).thenReturn(config);
 		list = new InflightMessageList(context, capacity, completePercentageThreshold);
+		list.waitForSlot();
 		list.addMessage(p1, 0L);
+		list.waitForSlot();
 		list.addMessage(p2, 0L);
+		list.waitForSlot();
 		list.addMessage(p3, 0L);
 	}
 }
