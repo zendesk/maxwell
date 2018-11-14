@@ -56,7 +56,6 @@ public class InflightMessageList {
 		this.outstanding = 0;
 	}
 
-
 	public synchronized void waitForSlot() throws InterruptedException {
 		while ( this.outstanding >= this.capacity )
 			this.wait();
@@ -65,6 +64,18 @@ public class InflightMessageList {
 	}
 
 	public synchronized void freeSlot() {
+		// If the head is stuck for the length of time (configurable) and majority of the messages have completed,
+		// we assume the head will unlikely get acknowledged, hence terminate Maxwell.
+		// This gatekeeper is the last resort since if anything goes wrong,
+		// producer should have raised exceptions earlier than this point when all below conditions are met.
+		if (producerAckTimeoutMS > 0 && outstanding >= capacity) {
+			Iterator<InflightMessage> it = iterator();
+			if (it.hasNext() && it.next().timeSinceSendMS() > producerAckTimeoutMS && completePercentage() >= completePercentageThreshold) {
+				context.terminate(new IllegalStateException(
+					"Did not receive acknowledgement for the head of the inflight message list for " + producerAckTimeoutMS + " ms"));
+			}
+		}
+
 		this.outstanding--;
 		this.notify();
 	}
@@ -92,18 +103,6 @@ public class InflightMessageList {
 
 			completeUntil = msg;
 			iterator.remove();
-		}
-
-		// If the head is stuck for the length of time (configurable) and majority of the messages have completed,
-		// we assume the head will unlikely get acknowledged, hence terminate Maxwell.
-		// This gatekeeper is the last resort since if anything goes wrong,
-		// producer should have raised exceptions earlier than this point when all below conditions are met.
-		if (producerAckTimeoutMS > 0 && linkedMap.size() >= capacity) {
-			Iterator<InflightMessage> it = iterator();
-			if (it.hasNext() && it.next().timeSinceSendMS() > producerAckTimeoutMS && completePercentage() >= completePercentageThreshold) {
-				context.terminate(new IllegalStateException(
-					"Did not receive acknowledgement for the head of the inflight message list for " + producerAckTimeoutMS + " ms"));
-			}
 		}
 
 		return completeUntil;
