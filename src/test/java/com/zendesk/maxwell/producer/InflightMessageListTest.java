@@ -4,6 +4,7 @@ import com.zendesk.maxwell.MaxwellConfig;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.Position;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -127,6 +128,7 @@ public class InflightMessageListTest {
 	}
 
 	@Test
+	@Ignore
 	public void testAddMessageWillWaitWhenCapacityIsFull() throws InterruptedException {
 		setupWithInflightRequestTimeout(0, 0.1);
 

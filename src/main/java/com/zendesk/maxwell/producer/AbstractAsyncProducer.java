@@ -24,6 +24,7 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 		}
 
 		public void markCompleted() {
+			inflightMessages.freeSlot();
 			if(isTXCommit) {
 				InflightMessageList.InflightMessage message = inflightMessages.completeMessage(position);
 
@@ -65,6 +66,9 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 			}
 			return;
 		}
+
+		// back-pressure from slow producers
+		inflightMessages.waitForSlot();
 
 		if(r.isTXCommit()) {
 			inflightMessages.addMessage(position, r.getTimestampMillis());
