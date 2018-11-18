@@ -95,7 +95,7 @@ public class MaxwellNatsProducer  extends AbstractProducer {
 	public MaxwellNatsProducer(MaxwellContext context, String natsSubject, String clusterId, String clientId) {
 		super(context);
 
-		this.queue = new ArrayBlockingQueue<>(1000);
+		this.queue = new ArrayBlockingQueue<>(5000);
 		try {
 			this.worker = new MaxwellNatsProducerWorker(context, natsSubject, clusterId, clientId, queue);
 		} catch (Exception e) {
@@ -116,12 +116,12 @@ class MaxwellNatsProducerWorker extends AbstractAsyncProducer implements Runnabl
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellNatsProducer.class);
 
 	private final String natsSubject;
+	private final int natsMaxAttempts;
 
 	private Connection natsConnection;
 	private NatsConnectionListener connectionListener;
 	private StreamingConnection streamingConnection;
 	private final ArrayBlockingQueue<RowMap> queue;
-	private Thread thread;
 
 
 	public MaxwellNatsProducerWorker(MaxwellContext context, String natsSubject, String clusterId,
@@ -130,7 +130,9 @@ class MaxwellNatsProducerWorker extends AbstractAsyncProducer implements Runnabl
 
 		this.natsSubject = natsSubject;
 		this.queue = queue;
+		this.natsMaxAttempts = context.getConfig().natsMaxAttempts;
 		this.connectionListener = new NatsConnectionListener(context);
+
 
 		String natsUrl = context.getConfig().natsUrl;
 		Long pubAckTimeout = context.getConfig().natsPubAckTimeout;
@@ -163,22 +165,36 @@ class MaxwellNatsProducerWorker extends AbstractAsyncProducer implements Runnabl
 
 	@Override
 	public void run() {
-		this.thread = Thread.currentThread();
-		while ( true ) {
-			try {
-				//Irrespective of Nats is working or not, heartbeat should be pushed
-				if (queue.peek() instanceof HeartbeatRowMap) {
+		//Waiting for Nats connection
+		int attempts = 0;
+		try {
+			Thread.sleep(1000L);
+			while ( true ) {
+				// Irrespective of Nats is working or not, heartbeat should be pushed
+				if (connectionListener.isNatsRunning()){
+					attempts = 0;
 					RowMap row = queue.take();
 					this.push(row);
-				} else if (connectionListener.isNatsRunning()){
-					RowMap row = queue.take();
-					this.push(row);
+				} else {
+					if (queue.peek() instanceof HeartbeatRowMap) {
+						RowMap row = queue.take();
+						this.push(row);
+					}
+
+					if (attempts < natsMaxAttempts) {
+						long sleepTime = (long) (Math.pow(2, attempts++) * 1000);
+						Thread.sleep(sleepTime);
+					} else {
+						this.context.terminate(new RuntimeException("Nats Disconnected"));
+						return;
+					}
 				}
 
-			} catch ( Exception e ) {
-				LOGGER.info("Error: ", e);
 			}
+		} catch ( Exception e ) {
+			LOGGER.info("Error: ", e);
 		}
+
 	}
 
 	@Override
@@ -206,14 +222,11 @@ class NatsConnectionListener implements ConnectionListener {
 			case DISCONNECTED:
 				isNatsRunning = false;
 				LOGGER.error("Nats connection disconnected");
-				if (!context.getConfig().ignoreProducerError) {
-					this.context.terminate(new RuntimeException("Nats Disconnected"));
-					return;
-				}
 				break;
 			case CLOSED:
 				isNatsRunning = false;
 				LOGGER.error("Nats connection closed");
+				this.context.terminate(new RuntimeException("Nats Disconnected"));
 				break;
 			case RECONNECTED:
 				isNatsRunning = true;

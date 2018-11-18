@@ -226,6 +226,10 @@ kafka.acks=1
 #nats_max_reconnects=100
 #nats_reconnect_wait=1000
 #nats_pub_ack_timeout=100
+#nats_max_reconnects=10
+#nats_reconnect_wait=2000
+#nats_max_attempts=5
+
 
 #           *** custom producer ***
 
