@@ -11,21 +11,22 @@ import com.zendesk.maxwell.replication.Position;
 
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.concurrent.Semaphore;
 
 public class InflightMessageList {
-
-
 	class InflightMessage {
 		public final Position position;
 		public boolean isComplete;
+		public final long messageID;
 		public final long sendTimeMS;
 		public final long eventTimeMS;
 
-		InflightMessage(Position p, long eventTimeMS) {
+		InflightMessage(Position p, long eventTimeMS, long messageID) {
 			this.position = p;
 			this.isComplete = false;
 			this.sendTimeMS = System.currentTimeMillis();
 			this.eventTimeMS = eventTimeMS;
+			this.messageID = messageID;
 		}
 
 		long timeSinceSendMS() {
@@ -33,55 +34,60 @@ public class InflightMessageList {
 		}
 	}
 
-	private static final long DEFAULT_CAPACITY = 10000;
-	private static final double COMPLETE_PERCENTAGE_THRESHOLD = 0.9;
+	// number of total messages we allow to be outstanding at once
+	private static final int DEFAULT_CAPACITY = 10000;
+
+	// number of messages we allow to be processed while the head of the queue is stuck
+	private static final int DEFAULT_STUCK_HEAD_DETECTION = 3000;
+
+	// how long before we consider the head of the queue stuck
+	private final long producerAckTimeoutMS;
+
+	private final int stuckHeadDetection;
 
 	private final LinkedHashMap<Position, InflightMessage> linkedMap;
 	private final MaxwellContext context;
-	private final long capacity;
-	private long outstanding;
-	private final long producerAckTimeoutMS;
-	private final double completePercentageThreshold;
+	private final Semaphore semaphore;
+	private long messageCount = 0;
 
 	public InflightMessageList(MaxwellContext context) {
-		this(context, DEFAULT_CAPACITY, COMPLETE_PERCENTAGE_THRESHOLD);
+		this(context, DEFAULT_CAPACITY, DEFAULT_STUCK_HEAD_DETECTION);
 	}
 
-	public InflightMessageList(MaxwellContext context, long capacity, double completePercentageThreshold) {
+	public InflightMessageList(MaxwellContext context, int capacity, int stuckHeadDetection) {
 		this.context = context;
 		this.producerAckTimeoutMS = context.getConfig().producerAckTimeout;
-		this.completePercentageThreshold = completePercentageThreshold;
+		this.stuckHeadDetection = stuckHeadDetection;
 		this.linkedMap = new LinkedHashMap<>();
-		this.capacity = capacity;
-		this.outstanding = 0;
+		this.semaphore = new Semaphore(capacity);
 	}
 
-	public synchronized void waitForSlot() throws InterruptedException {
-		while ( this.outstanding >= this.capacity )
-			this.wait();
-
-		this.outstanding++;
+	public long waitForSlot() throws InterruptedException {
+		this.semaphore.acquire();
+		return ++this.messageCount;
 	}
 
-	public synchronized void freeSlot() {
+	public void freeSlot(long messaageID) {
 		// If the head is stuck for the length of time (configurable) and majority of the messages have completed,
 		// we assume the head will unlikely get acknowledged, hence terminate Maxwell.
 		// This gatekeeper is the last resort since if anything goes wrong,
 		// producer should have raised exceptions earlier than this point when all below conditions are met.
 		if (producerAckTimeoutMS > 0) {
 			Iterator<InflightMessage> it = iterator();
-			if (it.hasNext() && it.next().timeSinceSendMS() > producerAckTimeoutMS && completePercentage() >= completePercentageThreshold) {
-				context.terminate(new IllegalStateException(
-					"Did not receive acknowledgement for the head of the inflight message list for " + producerAckTimeoutMS + " ms"));
+			if ( it.hasNext() ) {
+				InflightMessage message = it.next();
+				if ( message.timeSinceSendMS() > producerAckTimeoutMS
+					&& messaageID - message.messageID > stuckHeadDetection)
+					context.terminate(new IllegalStateException(
+						"Did not receive acknowledgement for the head of the inflight message list for " + producerAckTimeoutMS + " ms"));
 			}
 		}
 
-		this.outstanding--;
-		this.notify();
+		this.semaphore.release();
 	}
 
-	public void addMessage(Position p, long eventTimestampMillis) throws InterruptedException {
-		InflightMessage m = new InflightMessage(p, eventTimestampMillis);
+	public void addMessage(Position p, long eventTimestampMillis, long messageID) throws InterruptedException {
+		InflightMessage m = new InflightMessage(p, eventTimestampMillis, messageID);
 		this.linkedMap.put(p, m);
 	}
 
