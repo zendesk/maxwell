@@ -20,6 +20,7 @@ class BinlogConnectorLifecycleListener implements BinaryLogClient.LifecycleListe
 	@Override
 	public void onEventDeserializationFailure(BinaryLogClient client, Exception ex) {
 		LOGGER.warn("Event deserialization failure.", ex);
+		LOGGER.warn("cause: ", ex.getCause());
 	}
 
 	@Override
