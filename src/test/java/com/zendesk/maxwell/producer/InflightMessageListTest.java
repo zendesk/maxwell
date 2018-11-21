@@ -35,7 +35,7 @@ public class InflightMessageListTest {
 
 	@Test
 	public void testInOrderCompletion() throws InterruptedException {
-		setupWithInflightRequestTimeout(0, 0.1);
+		setupWithInflightRequestTimeout(0);
 
 		Position ret;
 
@@ -53,7 +53,7 @@ public class InflightMessageListTest {
 
 	@Test
 	public void testOutOfOrderComplete() throws InterruptedException {
-		setupWithInflightRequestTimeout(0, 0.1);
+		setupWithInflightRequestTimeout(0);
 
 		Position ret;
 		InflightMessageList.InflightMessage m;
@@ -72,7 +72,7 @@ public class InflightMessageListTest {
 	public void testMaxwellWillTerminateWhenHeadOfInflightMsgListIsStuckAndListFullAndMostCompletedAndCheckTurnedOn() throws InterruptedException {
 		// Given
 		long inflightRequestTimeout = 100;
-		setupWithInflightRequestTimeout(inflightRequestTimeout, 0.1);
+		setupWithInflightRequestTimeout(inflightRequestTimeout);
 		list.completeMessage(p2);
 		list.freeSlot(2);
 		Thread.sleep(inflightRequestTimeout + 5);
@@ -89,7 +89,7 @@ public class InflightMessageListTest {
 	@Test
 	public void testMaxwellWillNotTerminateWhenHeadOfInflightMsgListIsStuckAndCheckTurnedOff() throws InterruptedException {
 		// Given
-		setupWithInflightRequestTimeout(0, 0.1);
+		setupWithInflightRequestTimeout(0);
 		list.completeMessage(p2);
 		list.freeSlot(2);
 
@@ -103,7 +103,7 @@ public class InflightMessageListTest {
 
 	@Test
 	public void testWaitForSlotWillWaitWhenCapacityIsFull() throws InterruptedException {
-		setupWithInflightRequestTimeout(0, 0.1);
+		setupWithInflightRequestTimeout(0);
 
 		AddMessage addMessage = new AddMessage();
 		Thread add = new Thread(addMessage);
@@ -136,7 +136,7 @@ public class InflightMessageListTest {
 		}
 	}
 
-	private void setupWithInflightRequestTimeout(long timeout, double completePercentageThreshold) throws InterruptedException {
+	private void setupWithInflightRequestTimeout(long timeout) throws InterruptedException {
 		context = mock(MaxwellContext.class);
 		MaxwellConfig config = new MaxwellConfig();
 		config.producerAckTimeout = timeout;
