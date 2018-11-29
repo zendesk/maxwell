@@ -20,6 +20,7 @@ public class InflightMessageList {
 		public final long messageID;
 		public final long sendTimeMS;
 		public final long eventTimeMS;
+		private Long blockedHeadTimeMS;
 
 		InflightMessage(Position p, long eventTimeMS, long messageID) {
 			this.position = p;
@@ -32,18 +33,27 @@ public class InflightMessageList {
 		long timeSinceSendMS() {
 			return System.currentTimeMillis() - sendTimeMS;
 		}
+
+
+		private void markBlockedHead() {
+			if ( this.blockedHeadTimeMS == null )
+				this.blockedHeadTimeMS = System.currentTimeMillis();
+		}
+
+		private long timeAsBlockedHead() {
+			if ( this.blockedHeadTimeMS == null )
+				return 0L;
+			else
+				return System.currentTimeMillis() - this.blockedHeadTimeMS;
+
+		}
 	}
 
 	// number of total messages we allow to be outstanding at once
 	private static final int DEFAULT_CAPACITY = 10000;
 
-	// number of messages we allow to be processed while the head of the queue is stuck
-	private static final int DEFAULT_STUCK_HEAD_DETECTION = 3000;
-
 	// how long before we consider the head of the queue stuck
 	private final long producerAckTimeoutMS;
-
-	private final int stuckHeadDetection;
 
 	private final LinkedHashMap<Position, InflightMessage> linkedMap;
 	private final MaxwellContext context;
@@ -51,13 +61,12 @@ public class InflightMessageList {
 	private long messageCount = 0;
 
 	public InflightMessageList(MaxwellContext context) {
-		this(context, DEFAULT_CAPACITY, DEFAULT_STUCK_HEAD_DETECTION);
+		this(context, DEFAULT_CAPACITY);
 	}
 
-	public InflightMessageList(MaxwellContext context, int capacity, int stuckHeadDetection) {
+	public InflightMessageList(MaxwellContext context, int capacity) {
 		this.context = context;
 		this.producerAckTimeoutMS = context.getConfig().producerAckTimeout;
-		this.stuckHeadDetection = stuckHeadDetection;
 		this.linkedMap = new LinkedHashMap<>();
 		this.semaphore = new Semaphore(capacity);
 	}
@@ -67,32 +76,51 @@ public class InflightMessageList {
 		return ++this.messageCount;
 	}
 
-	public void freeSlot(long messaageID) {
-		// If the head is stuck for the length of time (configurable) and majority of the messages have completed,
-		// we assume the head will unlikely get acknowledged, hence terminate Maxwell.
-		// This gatekeeper is the last resort since if anything goes wrong,
-		// producer should have raised exceptions earlier than this point when all below conditions are met.
-		if (producerAckTimeoutMS > 0) {
-			Iterator<InflightMessage> it = iterator();
-			if ( it.hasNext() ) {
-				InflightMessage message = it.next();
-				if ( message.timeSinceSendMS() > producerAckTimeoutMS
-					&& messaageID - message.messageID > stuckHeadDetection)
-					context.terminate(new IllegalStateException(
-						"Did not receive acknowledgement for the head of the inflight message list for " + producerAckTimeoutMS + " ms"));
-			}
-		}
-
-		this.semaphore.release();
+	private synchronized InflightMessage head() {
+		Iterator<InflightMessage> it = iterator();
+		if ( it.hasNext() )
+			return it.next();
+		else
+			return null;
 	}
 
-	public void addMessage(Position p, long eventTimestampMillis, long messageID) throws InterruptedException {
+	private void checkStuckHead(long messageID) {
+		// If the head is stuck for the length of time (configurable)
+		// we assume the head will unlikely get acknowledged, hence terminate Maxwell.
+		// This gatekeeper is the last resort since if anything goes wrong,
+		// producer should have raised exceptions earlier, but sometimes kafka just goes to lunch and eats
+		// a message entirely
+
+		if (producerAckTimeoutMS ==  0)
+			return;
+
+		InflightMessage message = head();
+		if ( message == null || message.messageID == messageID )
+			return;
+
+		if ( message.timeAsBlockedHead() > producerAckTimeoutMS ) {
+			IllegalStateException e = new IllegalStateException(
+				"Did not receive acknowledgement for the head of the inflight message list for " + producerAckTimeoutMS + " ms"
+			);
+			context.terminate(e);
+		} else {
+			message.markBlockedHead();
+		}
+	}
+
+	public void freeSlot(long messageID) {
+		this.semaphore.release();
+
+		checkStuckHead(messageID);
+	}
+
+	public synchronized void addMessage(Position p, long eventTimestampMillis, long messageID) throws InterruptedException {
 		InflightMessage m = new InflightMessage(p, eventTimestampMillis, messageID);
 		this.linkedMap.put(p, m);
 	}
 
 	/* returns the position that stuff is complete up to, or null if there were no changes */
-	public InflightMessage completeMessage(Position p) {
+	public synchronized InflightMessage completeMessage(Position p) {
 		InflightMessage m = this.linkedMap.get(p);
 		assert(m != null);
 
@@ -116,11 +144,6 @@ public class InflightMessageList {
 
 	public int size() {
 		return linkedMap.size();
-	}
-
-	private double completePercentage() {
-		long completed = linkedMap.values().stream().filter(m -> m.isComplete).count();
-		return completed / ((double) linkedMap.size());
 	}
 
 	private Iterator<InflightMessage> iterator() {

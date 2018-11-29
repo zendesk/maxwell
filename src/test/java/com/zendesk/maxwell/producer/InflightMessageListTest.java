@@ -69,7 +69,7 @@ public class InflightMessageListTest {
 	}
 
 	@Test
-	public void testMaxwellWillTerminateWhenHeadOfInflightMsgListIsStuckAndListFullAndMostCompletedAndCheckTurnedOn() throws InterruptedException {
+	public void testMaxwellWillTerminateWhenHeadOfInflightMsgListIsStuckAndCheckTurnedOn() throws InterruptedException {
 		// Given
 		long inflightRequestTimeout = 100;
 		setupWithInflightRequestTimeout(inflightRequestTimeout);
@@ -141,7 +141,7 @@ public class InflightMessageListTest {
 		MaxwellConfig config = new MaxwellConfig();
 		config.producerAckTimeout = timeout;
 		when(context.getConfig()).thenReturn(config);
-		list = new InflightMessageList(context, capacity, 1);
+		list = new InflightMessageList(context, capacity);
 		list.waitForSlot();
 		list.addMessage(p1, 0L, 1);
 		list.waitForSlot();
