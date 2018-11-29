@@ -9,9 +9,7 @@ import com.github.shyiko.mysql.binlog.event.QueryEventData;
 import com.github.shyiko.mysql.binlog.event.RowsQueryEventData;
 import com.github.shyiko.mysql.binlog.event.TableMapEventData;
 import com.github.shyiko.mysql.binlog.event.deserialization.EventDeserializer;
-import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.MaxwellMysqlConfig;
-import com.zendesk.maxwell.scripting.Scripting;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.monitoring.Metrics;
@@ -25,11 +23,11 @@ import com.zendesk.maxwell.schema.SchemaStoreException;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.ddl.DDLMap;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
+import com.zendesk.maxwell.scripting.Scripting;
 import com.zendesk.maxwell.util.RunLoopProcess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -399,8 +397,9 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 				case QUERY:
 					QueryEventData qe = event.queryData();
 					String sql = qe.getSql();
+					String upperCaseSql = sql.toUpperCase();
 
-					if ( sql.toUpperCase().startsWith(BinlogConnectorEvent.SAVEPOINT)) {
+					if ( upperCaseSql.startsWith(BinlogConnectorEvent.SAVEPOINT)) {
 						LOGGER.debug("Ignoring SAVEPOINT in transaction: " + qe);
 					} else if ( createTablePattern.matcher(sql).find() ) {
 						// CREATE TABLE `foo` SELECT * FROM `bar` will put a CREATE TABLE
@@ -408,11 +407,16 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 						// to us starting on a WRITE_ROWS event -- we sync the schema position somewhere
 						// kinda unsafe.
 						processQueryEvent(event);
-					} else if (sql.toUpperCase().startsWith("INSERT INTO MYSQL.RDS_HEARTBEAT")) {
+					} else if (upperCaseSql.startsWith("INSERT INTO MYSQL.RDS_") || upperCaseSql.startsWith("DELETE FROM MYSQL.RDS_")) {
 						// RDS heartbeat events take the following form:
 						// INSERT INTO mysql.rds_heartbeat2(id, value) values (1,1483041015005) ON DUPLICATE KEY UPDATE value = 1483041015005
+
+						// Other RDS internal events like below:
+						// INSERT INTO mysql.rds_sysinfo(name, value) values ('innodb_txn_key','Thu Nov 15 10:30:07 UTC 2018')
+						// DELETE FROM mysql.rds_sysinfo where name = 'innodb_txn_key'
+
 						// We don't need to process them, just ignore
-					} else if (sql.toUpperCase().startsWith("DROP TEMPORARY TABLE")) {
+					} else if (upperCaseSql.startsWith("DROP TEMPORARY TABLE")) {
 						// Ignore temporary table drop statements inside transactions
 					} else {
 						LOGGER.warn("Unhandled QueryEvent @ {} inside transaction: {}", event.getPosition().fullPosition(), qe);
