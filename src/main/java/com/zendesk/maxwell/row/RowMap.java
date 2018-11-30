@@ -5,6 +5,8 @@ import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.Position;
+import com.zendesk.maxwell.scripting.Scripting;
+import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +24,10 @@ import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
+
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 
 
 public class RowMap implements Serializable {
@@ -244,7 +250,14 @@ public class RowMap implements Serializable {
 		if (value == null && !includeNullField)
 			return;
 
-		if (value instanceof List) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
+		if (value instanceof ScriptObjectMirror) {
+			try {
+				String json = Scripting.stringify((ScriptObjectMirror) value);
+				writeValueToJSON(g, includeNullField, key, new RawJSONString(json));
+			} catch (ScriptException e) {
+				LOGGER.error("error stringifying json object:", e);
+			}
+		} else if (value instanceof List) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
 			List stringList = (List) value;
 
 			g.writeArrayFieldStart(key);
