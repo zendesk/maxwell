@@ -60,11 +60,10 @@ public class Scripting {
 	private static ThreadLocal<ScriptEngine> stringifyEngineThreadLocal = ThreadLocal.withInitial(() -> {
 		ScriptEngineManager manager = new ScriptEngineManager();
 		return manager.getEngineByName("nashorn");
-
 	});
 
 	public static String stringify(ScriptObjectMirror mirror) throws ScriptException {
 		ScriptObjectMirror json = (ScriptObjectMirror) stringifyEngineThreadLocal.get().eval("JSON");
-		return (String) json.callMember("stringify", ScriptUtils.unwrap(mirror));
+		return (String) json.callMember("stringify", mirror);
 	}
 }
