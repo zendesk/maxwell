@@ -32,34 +32,37 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 		}
 	}
 
+	private void sendToRedis(String msg) {
+		switch (redistype) {
+			case "lpush":
+				jedis.lpush(this.listkey, msg);
+				break;
+			case "pubsub":
+			default:
+				jedis.publish(this.channel, msg);
+				break;
+		}
+		this.succeededMessageCount.inc();
+		this.succeededMessageMeter.mark();
+	}
+
 	@Override
 	public void push(RowMap r) throws Exception {
-		int cxErrors = 0;
 		if ( !r.shouldOutput(outputConfig) ) {
 			context.setPosition(r.getNextPosition());
 			return;
 		}
 
 		String msg = r.toJSON(outputConfig);
-		while ( true ) {
+		for (int cxErrors = 0; cxErrors < 2; cxErrors++) {
 			try {
-				switch (redistype) {
-					case "lpush":
-						jedis.lpush(this.listkey, msg);
-						break;
-					case "pubsub":
-					default:
-						jedis.publish(this.channel, msg);
-						break;
-				}
-				this.succeededMessageCount.inc();
-				this.succeededMessageMeter.mark();
+				sendToRedis(msg);
+				break;
 			} catch (Exception e) {
-				if (e instanceof JedisConnectionException && cxErrors++ < 2) {
+				if (e instanceof JedisConnectionException) {
 					logger.warn("lost connection to server, trying to reconnect...", e);
 					jedis.disconnect();
 					jedis.connect();
-					continue;
 				} else {
 					this.failedMessageCount.inc();
 					this.failedMessageMeter.mark();
@@ -70,24 +73,22 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 					}
 				}
 			}
+		}
 
-			if (r.isTXCommit()) {
-				context.setPosition(r.getNextPosition());
+		if (r.isTXCommit()) {
+			context.setPosition(r.getNextPosition());
+		}
+
+		if (logger.isDebugEnabled()) {
+			switch (redistype) {
+				case "lpush":
+					logger.debug("->  queue:" + listkey + ", msg:" + msg);
+					break;
+				case "pubsub":
+				default:
+					logger.debug("->  channel:" + channel + ", msg:" + msg);
+					break;
 			}
-
-			if (logger.isDebugEnabled()) {
-				switch (redistype) {
-					case "lpush":
-						logger.debug("->  queue:" + listkey + ", msg:" + msg);
-						break;
-					case "pubsub":
-					default:
-						logger.debug("->  channel:" + channel + ", msg:" + msg);
-						break;
-				}
-			}
-
-			break;
 		}
 	}
 
