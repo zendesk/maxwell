@@ -1,5 +1,17 @@
 # Maxwell changelog
 
+### [v1.19.2](https://github.com/zendesk/maxwell/releases/tag/v1.19.2): "the same I wore last night"
+
+
+- Include schema_id in bootstrap events
+- add more logging around binlog connector losing connection
+- add retry logic to redis
+- some aws fixes
+- allow pushing JS hashes/arrays into data from js filters
+
+ - list changes
+
+
 ### [v1.19.1](https://github.com/zendesk/maxwell/releases/tag/v1.19.1): "the swoop here doesn't change things one bit"
 
 
