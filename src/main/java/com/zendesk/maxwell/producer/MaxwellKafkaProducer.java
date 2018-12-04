@@ -5,6 +5,7 @@ import com.codahale.metrics.Meter;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.producer.partitioners.MaxwellKafkaPartitioner;
 import com.zendesk.maxwell.replication.Position;
+import com.zendesk.maxwell.row.PrimaryKeyRowMap;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMap.KeyFormat;
 import com.zendesk.maxwell.schema.ddl.DDLMap;
@@ -20,6 +21,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeoutException;
@@ -29,7 +31,7 @@ class KafkaCallback implements Callback {
 	private final AbstractAsyncProducer.CallbackCompleter cc;
 	private final Position position;
 	private final String json;
-	private final String key;
+	private final PrimaryKeyRowMap key;
 	private final MaxwellContext context;
 
 	private Counter succeededMessageCount;
@@ -37,9 +39,9 @@ class KafkaCallback implements Callback {
 	private Meter succeededMessageMeter;
 	private Meter failedMessageMeter;
 
-	public KafkaCallback(AbstractAsyncProducer.CallbackCompleter cc, Position position, String key, String json,
-	                     Counter producedMessageCount, Counter failedMessageCount, Meter producedMessageMeter,
-	                     Meter failedMessageMeter, MaxwellContext context) {
+	public KafkaCallback(AbstractAsyncProducer.CallbackCompleter cc, Position position, PrimaryKeyRowMap key, String json,
+						 Counter producedMessageCount, Counter failedMessageCount, Meter producedMessageMeter,
+						 Meter failedMessageMeter, MaxwellContext context) {
 		this.cc = cc;
 		this.position = position;
 		this.key = key;
@@ -61,6 +63,10 @@ class KafkaCallback implements Callback {
 			LOGGER.error(e.getLocalizedMessage());
 			if ( e instanceof RecordTooLargeException ) {
 				LOGGER.error("Considering raising max.request.size broker-side.");
+				String kafkaFallbackTopic = this.context.getConfig().kafkaFallbackTopic;
+				if (kafkaFallbackTopic != null) {
+					publishFallbackTopic(kafkaFallbackTopic);
+				}
 			} else if (!this.context.getConfig().ignoreProducerError) {
 				this.context.terminate(e);
 				return;
@@ -78,6 +84,17 @@ class KafkaCallback implements Callback {
 		}
 
 		cc.markCompleted();
+	}
+
+	private void publishFallbackTopic(String topic) {
+		MaxwellKafkaFallBackProducer fallBackProducer = MaxwellKafkaFallBackProducer.getInstance(context.getConfig().getKafkaProperties());
+		try {
+			ProducerRecord<String, String> record = new ProducerRecord<>(topic, key.toJsonHash(), key.toJsonHashWithReason("message too large"));
+			fallBackProducer.sendRecord(record);
+		} catch (IOException e) {
+			LOGGER.error(e.getLocalizedMessage());
+			e.printStackTrace();
+		}
 	}
 }
 
@@ -200,10 +217,12 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	public void sendAsync(RowMap r, AbstractAsyncProducer.CallbackCompleter cc) throws Exception {
 		ProducerRecord<String, String> record = makeProducerRecord(r);
 
+		PrimaryKeyRowMap primaryKeyRowMap = r.toPrimaryKeyRowMap();
+
 		/* if debug logging isn't enabled, release the reference to `value`, which can ease memory pressure somewhat */
 		String value = KafkaCallback.LOGGER.isDebugEnabled() ? record.value() : null;
 
-		KafkaCallback callback = new KafkaCallback(cc, r.getNextPosition(), record.key(), value,
+		KafkaCallback callback = new KafkaCallback(cc, r.getNextPosition(), primaryKeyRowMap, value,
 				this.succeededMessageCount, this.failedMessageCount, this.succeededMessageMeter, this.failedMessageMeter, this.context);
 
 		sendAsync(record, callback);
