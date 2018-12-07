@@ -55,6 +55,7 @@ class KafkaCallback implements Callback {
 
 	@Override
 	public void onCompletion(RecordMetadata md, Exception e) {
+		boolean markCompleted = true;
 		if ( e != null ) {
 			this.failedMessageCount.inc();
 			this.failedMessageMeter.mark();
@@ -65,6 +66,7 @@ class KafkaCallback implements Callback {
 				LOGGER.error("Considering raising max.request.size broker-side.");
 				String kafkaFallbackTopic = this.context.getConfig().kafkaFallbackTopic;
 				if (kafkaFallbackTopic != null) {
+					markCompleted = false;
 					publishFallbackTopic(kafkaFallbackTopic);
 				}
 			} else if (!this.context.getConfig().ignoreProducerError) {
@@ -83,14 +85,16 @@ class KafkaCallback implements Callback {
 			}
 		}
 
-		cc.markCompleted();
+		if (markCompleted) {
+			cc.markCompleted();
+		}
 	}
 
 	private void publishFallbackTopic(String topic) {
-		MaxwellKafkaFallBackProducer fallBackProducer = MaxwellKafkaFallBackProducer.getInstance(context.getConfig().getKafkaProperties());
+		MaxwellKafkaFallbackProducer fallBackProducer = MaxwellKafkaFallbackProducer.getInstance(context.getConfig().getKafkaProperties());
 		try {
 			ProducerRecord<String, String> record = new ProducerRecord<>(topic, key.toJsonHash(), key.toJsonHashWithReason("message too large"));
-			fallBackProducer.sendRecord(record);
+			fallBackProducer.sendRecord(record, cc);
 		} catch (IOException e) {
 			LOGGER.error(e.getLocalizedMessage());
 			e.printStackTrace();

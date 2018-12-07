@@ -17,7 +17,7 @@ public class PrimaryKeyRowMapTest {
 
 		String jsonString = keyRowMap.toJsonHash();
 
-		Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\",\"data\":{\"id\":111}}",
+		Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\",\"pk.id\":111}",
 				jsonString);
 	}
 

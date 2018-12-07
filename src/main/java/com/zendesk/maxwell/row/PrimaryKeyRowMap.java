@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
+import java.util.UUID;
 
 public class PrimaryKeyRowMap implements Serializable {
 
@@ -20,7 +21,27 @@ public class PrimaryKeyRowMap implements Serializable {
 	}
 
 	public String toJsonHash() throws IOException {
-		return toJsonHashWithReason(null);
+		JsonGenerator g = serializer.resetJsonGenerator();
+
+		g.writeStartObject(); // start of row {
+
+		g.writeStringField(FieldNames.DATABASE, database);
+		g.writeStringField(FieldNames.TABLE, table);
+
+
+		if (primaryKeyColumns != null) {
+			if (primaryKeyColumns.isEmpty()) {
+				g.writeStringField(FieldNames.UUID, UUID.randomUUID().toString());
+			} else {
+				for (String pk : primaryKeyColumns.keySet()) {
+					serializer.writeValueToJSON(g, true, "pk." + pk.toLowerCase(), primaryKeyColumns.get(pk));
+				}
+			}
+		}
+
+		g.writeEndObject();
+		g.flush();
+		return serializer.jsonFromStream();
 	}
 
 	public String toJsonHashWithReason(String reason) throws IOException {
