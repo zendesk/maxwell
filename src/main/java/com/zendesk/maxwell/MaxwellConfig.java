@@ -48,7 +48,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public final Properties kafkaProperties;
 	public String kafkaTopic;
-	public String kafkaFallbackTopic;
+	public String deadLetterTopic;
 	public String ddlKafkaTopic;
 	public String kafkaKeyFormat;
 	public String kafkaPartitionHash;
@@ -203,7 +203,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
 		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning" ).withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell" ).withRequiredArg();
-		parser.accepts( "kafka_fallback_topic", "the fallback topic to be published to when RecordTooLargeException is received on publishing to the initial topic" ).withRequiredArg();
+		parser.accepts( "dead_letter_topic", "the topic to write to when publishing to the initial topic is not possible, for example RecordTooLargeException for kafka" ).withRequiredArg();
 		parser.accepts( "kafka_key_format", "how to format the kafka key; array|hash" ).withRequiredArg();
 
 		parser.accepts( "kinesis_stream", "kinesis stream name" ).withOptionalArg();
@@ -374,7 +374,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.javascriptFile         = fetchOption("javascript", options, properties, null);
 
 		this.kafkaTopic         	= fetchOption("kafka_topic", options, properties, "maxwell");
-		this.kafkaFallbackTopic     = fetchOption("kafka_fallback_topic", options, properties, null);
+		this.deadLetterTopic        = fetchOption("dead_letter_topic", options, properties, null);
 		this.kafkaKeyFormat     	= fetchOption("kafka_key_format", options, properties, "hash");
 		this.kafkaPartitionKey  	= fetchOption("kafka_partition_by", options, properties, null);
 		this.kafkaPartitionColumns  = fetchOption("kafka_partition_columns", options, properties, null);

@@ -54,7 +54,7 @@ javascript                     | STRING                              | file cont
 **"kafka" producer options **
 kafka.bootstrap.servers        | STRING                              | kafka brokers, given as `HOST:PORT[,HOST:PORT]`     |
 kafka_topic                    | STRING                              | kafka topic to write to.                            | maxwell
-kafka_fallback_topic           | STRING                              | kafka topic to write to when RecordTooLargeException is received on writing to the initial topic. | 
+dead_letter_topic              | STRING                              | the topic to write to when publishing to the initial topic is not possible, for example RecordTooLargeException for kafka | 
 kafka_version                  | [KAFKA_VERSION](#kafka_version)     | run maxwell with specified kafka producer version.  Not available in config.properties. | 0.11.0.1
 kafka_partition_hash           | [ default &#124; murmur3 ]          | hash function to use when choosing kafka partition   | default
 kafka_key_format               | [ array &#124; hash ]               | how maxwell outputs kafka keys, either a hash or an array of hashes | hash

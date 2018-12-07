@@ -64,7 +64,7 @@ class KafkaCallback implements Callback {
 			LOGGER.error(e.getLocalizedMessage());
 			if ( e instanceof RecordTooLargeException ) {
 				LOGGER.error("Considering raising max.request.size broker-side.");
-				String kafkaFallbackTopic = this.context.getConfig().kafkaFallbackTopic;
+				String kafkaFallbackTopic = this.context.getConfig().deadLetterTopic;
 				if (kafkaFallbackTopic != null) {
 					markCompleted = false;
 					publishFallbackTopic(kafkaFallbackTopic);
