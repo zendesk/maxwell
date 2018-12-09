@@ -15,15 +15,18 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 		private final MaxwellContext context;
 		private final Position position;
 		private final boolean isTXCommit;
+		private final long messageID;
 
-		public CallbackCompleter(InflightMessageList inflightMessages, Position position, boolean isTXCommit, MaxwellContext context) {
+		public CallbackCompleter(InflightMessageList inflightMessages, Position position, boolean isTXCommit, MaxwellContext context, long messageID) {
 			this.inflightMessages = inflightMessages;
 			this.context = context;
 			this.position = position;
 			this.isTXCommit = isTXCommit;
+			this.messageID = messageID;
 		}
 
 		public void markCompleted() {
+			inflightMessages.freeSlot(messageID);
 			if(isTXCommit) {
 				InflightMessageList.InflightMessage message = inflightMessages.completeMessage(position);
 
@@ -57,7 +60,7 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 		// Rows that do not get sent to a target will be automatically marked as complete.
 		// We will attempt to commit a checkpoint up to the current row.
 		if(!r.shouldOutput(outputConfig)) {
-			inflightMessages.addMessage(position, r.getTimestampMillis());
+			inflightMessages.addMessage(position, r.getTimestampMillis(), 0L);
 
 			InflightMessageList.InflightMessage completed = inflightMessages.completeMessage(position);
 			if(completed != null) {
@@ -66,11 +69,15 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 			return;
 		}
 
+		// back-pressure from slow producers
+
+		long messageID = inflightMessages.waitForSlot();
+
 		if(r.isTXCommit()) {
-			inflightMessages.addMessage(position, r.getTimestampMillis());
+			inflightMessages.addMessage(position, r.getTimestampMillis(), messageID);
 		}
 
-		CallbackCompleter cc = new CallbackCompleter(inflightMessages, position, r.isTXCommit(), context);
+		CallbackCompleter cc = new CallbackCompleter(inflightMessages, position, r.isTXCommit(), context, messageID);
 
 		sendAsync(r, cc);
 	}
