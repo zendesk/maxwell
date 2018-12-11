@@ -613,6 +613,14 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		});
 	}
 
+	@Test
+	public void testJavascriptFiltersInjectRichValues() throws Exception {
+		String dir = MaxwellTestSupport.getSQLDir();
+		runJSON("/json/test_javascript_filters_rich_values", (c) -> {
+			c.javascriptFile = dir + "/json/filter_rich.javascript";
+		});
+	}
+
 	static String[] createDBSql = {
 			"CREATE database if not exists `foo`",
 			"CREATE TABLE if not exists `foo`.`ordered_output` ( id int, account_id int, user_id int )"

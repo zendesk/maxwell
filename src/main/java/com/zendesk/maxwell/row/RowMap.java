@@ -1,18 +1,20 @@
 package com.zendesk.maxwell.row;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.zendesk.maxwell.errors.ProtectedAttributeNameException;
 import com.zendesk.maxwell.producer.EncryptionMode;
-import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.Position;
+import com.zendesk.maxwell.scripting.Scripting;
+import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
+import javax.script.ScriptException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.regex.Pattern;
-
-import com.fasterxml.jackson.core.JsonGenerator;
 
 
 public class RowMap implements Serializable {
