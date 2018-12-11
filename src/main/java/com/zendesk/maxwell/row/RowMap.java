@@ -6,10 +6,7 @@ import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.Position;
-import com.zendesk.maxwell.scripting.Scripting;
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
-import javax.script.ScriptException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
