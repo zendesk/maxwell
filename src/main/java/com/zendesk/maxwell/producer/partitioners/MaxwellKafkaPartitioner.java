@@ -22,4 +22,8 @@ public class MaxwellKafkaPartitioner extends AbstractMaxwellPartitioner {
 	public int kafkaPartition(RowMap r, int numPartitions) {
 		return Math.abs(hashFunc.hashCode(this.getHashString(r)) % numPartitions);
 	}
+
+	public int kafkaPartition(RowMap r, int numPartitions, PartitionBy by) {
+		return Math.abs(hashFunc.hashCode(this.getHashString(r)) % numPartitions);
+	}
 }

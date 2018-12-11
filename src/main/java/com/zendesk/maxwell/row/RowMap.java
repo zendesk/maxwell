@@ -9,13 +9,7 @@ import com.zendesk.maxwell.replication.Position;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -49,6 +43,7 @@ public class RowMap implements Serializable {
 	private final LinkedHashMap<String, Object> extraAttributes;
 
 	private final List<String> pkColumns;
+	private RowIdentity rowIdentity;
 
 	private long approximateSize;
 
@@ -82,86 +77,19 @@ public class RowMap implements Serializable {
 		this(type, database, table, timestampMillis, pkColumns, nextPosition, null);
 	}
 
-	//Do we want to encrypt this part?
-	public String pkToJson(KeyFormat keyFormat) throws IOException {
-		if ( keyFormat == KeyFormat.HASH )
-			return pkToJsonHash();
-		else
-			return pkToJsonArray();
-	}
-
-	public PrimaryKeyRowMap toPrimaryKeyRowMap() {
-		Map<String, Object> kvs = new HashMap<>();
-		for (String pk: pkColumns) {
-			kvs.put(pk, data.get(pk));
-		}
-
-		return new PrimaryKeyRowMap(database, table, kvs);
-	}
-
-	private String pkToJsonHash() throws IOException {
-		JsonGenerator g = serializer.resetJsonGenerator();
-
-		g.writeStartObject(); // start of row {
-
-		g.writeStringField(FieldNames.DATABASE, database);
-		g.writeStringField(FieldNames.TABLE, table);
-
-		if (pkColumns.isEmpty()) {
-			g.writeStringField(FieldNames.UUID, UUID.randomUUID().toString());
-		} else {
-			for (String pk : pkColumns) {
-				Object pkValue = null;
-				if ( data.containsKey(pk) )
-					pkValue = data.get(pk);
-
-				serializer.writeValueToJSON(g, true, "pk." + pk.toLowerCase(), pkValue);
+	public RowIdentity getRowIdentity() {
+		if (rowIdentity == null) {
+			List<AbstractMap.SimpleImmutableEntry<String, Object>> entries = new ArrayList<>(pkColumns.size());
+			for (String pk: pkColumns) {
+				entries.add(RowIdentity.pair(pk, data.get(pk)));
 			}
+			rowIdentity = new RowIdentity(database, table, entries);
 		}
-
-		g.writeEndObject(); // end of 'data: { }'
-		g.flush();
-		return serializer.jsonFromStream();
+		return rowIdentity;
 	}
 
-	private String pkToJsonArray() throws IOException {
-		JsonGenerator g = serializer.resetJsonGenerator();
-
-		g.writeStartArray();
-		g.writeString(database);
-		g.writeString(table);
-
-		g.writeStartArray();
-		for (String pk : pkColumns) {
-			Object pkValue = null;
-			if ( data.containsKey(pk) )
-				pkValue = data.get(pk);
-
-			g.writeStartObject();
-			serializer.writeValueToJSON(g, true, pk.toLowerCase(), pkValue);
-			g.writeEndObject();
-		}
-		g.writeEndArray();
-		g.writeEndArray();
-		g.flush();
-		return serializer.jsonFromStream();
-	}
-
-	public String pkAsConcatString() {
-		if (pkColumns.isEmpty()) {
-			return database + table;
-		}
-		StringBuilder keys = new StringBuilder();
-		for (String pk : pkColumns) {
-			Object pkValue = null;
-			if (data.containsKey(pk))
-				pkValue = data.get(pk);
-			if (pkValue != null)
-				keys.append(pkValue.toString());
-		}
-		if (keys.length() == 0)
-			return "None";
-		return keys.toString();
+	public String pkToJson(KeyFormat format) throws IOException {
+		return getRowIdentity().toKeyJson(format);
 	}
 
 	public String buildPartitionKey(List<String> partitionColumns) {
