@@ -51,8 +51,8 @@ class KafkaCallback implements Callback {
 			this.maxwell = maxwell;
 		}
 
-		public ProducerContext withFallbackTopic(String fallbackTopic) {
-			return new ProducerContext(producer, maxwell, fallbackTopic,
+		public ProducerContext withoutFallbackTopic() {
+			return new ProducerContext(producer, maxwell, null,
 				producedMessageCount, failedMessageCount, producedMessageMeter, failedMessageMeter);
 		}
 	}
@@ -89,23 +89,17 @@ class KafkaCallback implements Callback {
 
 			LOGGER.error(e.getClass().getSimpleName() + " @ " + position + " -- " + key);
 			LOGGER.error(e.getLocalizedMessage());
-			if ( e instanceof RecordTooLargeException ) {
-				LOGGER.error("Considering raising max.request.size broker-side.");
-				if (context.fallbackTopic != null) {
-					// When publishing a fallback record, make a callback
-					// with no fallback topic to avoid infinite loops
-					ProducerContext fallbackContext = context.withFallbackTopic(null);
-					KafkaCallback cb = this.withContext(fallbackContext);
-					try {
-						context.producer.sendFallbackAsync(context.fallbackTopic, key, cb, e);
-					} catch (Exception fallbackEx) {
-						cb.onCompletion(md, fallbackEx);
-					}
-					return; // don't mark completed (yet)
+
+			boolean nonFatal = e instanceof RecordTooLargeException || context.maxwell.getConfig().ignoreProducerError;
+
+			if (nonFatal) {
+				if (context.fallbackTopic == null) {
+					cc.markCompleted();
+				} else {
+					publishFallback(md, e);
 				}
-			} else if (!context.maxwell.getConfig().ignoreProducerError) {
-				this.context.maxwell.terminate(e);
-				return;
+			} else {
+				context.maxwell.terminate(e);
 			}
 		} else {
 			context.producedMessageCount.inc();
@@ -117,10 +111,22 @@ class KafkaCallback implements Callback {
 				LOGGER.debug("   " + position);
 				LOGGER.debug("");
 			}
+			cc.markCompleted();
 		}
-
-		cc.markCompleted();
 	}
+
+	private void publishFallback(RecordMetadata md, Exception e) {
+		// When publishing a fallback record, make a callback
+		// with no fallback topic to avoid infinite loops
+		ProducerContext fallbackContext = context.withoutFallbackTopic();
+		KafkaCallback cb = this.withContext(fallbackContext);
+		try {
+			context.producer.sendFallbackAsync(context.fallbackTopic, key, cb, e);
+		} catch (Exception fallbackEx) {
+			cb.onCompletion(md, fallbackEx);
+		}
+	}
+
 }
 
 public class MaxwellKafkaProducer extends AbstractProducer {
