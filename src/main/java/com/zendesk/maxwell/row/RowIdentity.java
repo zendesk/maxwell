@@ -7,22 +7,22 @@ import java.io.Serializable;
 import java.util.*;
 
 public class RowIdentity implements Serializable {
-	private final List<AbstractMap.SimpleImmutableEntry<String, Object>> primaryKeyColumns;
+	private final List<Map.Entry<String, Object>> primaryKeyColumns;
 
 	private String database;
 	private String table;
 	private JsonSerializer serializer = new JsonSerializer();
 
 	// slightly less verbose pair construction
-	public static AbstractMap.SimpleImmutableEntry<String, Object> pair(String key, Object value) {
+	public static Map.Entry<String, Object> pair(String key, Object value) {
 		return new AbstractMap.SimpleImmutableEntry<>(key, value);
 	}
 
-	public static List<AbstractMap.SimpleImmutableEntry<String, Object>> pairs(AbstractMap.SimpleImmutableEntry<String, Object> ... entries) {
+	public static List<Map.Entry<String, Object>> pairs(Map.Entry<String, Object> ... entries) {
 		return Arrays.asList(entries);
 	}
 
-	public RowIdentity(String database, String table, List<AbstractMap.SimpleImmutableEntry<String, Object>> primaryKeyColumns) {
+	public RowIdentity(String database, String table, List<Map.Entry<String, Object>> primaryKeyColumns) {
 		this.database = database;
 		this.table = table;
 		this.primaryKeyColumns = primaryKeyColumns;
@@ -94,7 +94,7 @@ public class RowIdentity implements Serializable {
 			return database + table;
 		}
 		StringBuilder keys = new StringBuilder();
-		for (AbstractMap.SimpleImmutableEntry<String, Object> pk : primaryKeyColumns) {
+		for (Map.Entry<String, Object> pk : primaryKeyColumns) {
 			Object pkValue = pk.getValue();
 			if (pkValue != null) {
 				keys.append(pkValue.toString());

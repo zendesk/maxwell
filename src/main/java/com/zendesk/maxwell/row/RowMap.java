@@ -78,7 +78,7 @@ public class RowMap implements Serializable {
 
 	public RowIdentity getRowIdentity() {
 		if (rowIdentity == null) {
-			List<AbstractMap.SimpleImmutableEntry<String, Object>> entries = new ArrayList<>(pkColumns.size());
+			List<Map.Entry<String, Object>> entries = new ArrayList<>(pkColumns.size());
 			for (String pk: pkColumns) {
 				entries.add(RowIdentity.pair(pk, data.get(pk)));
 			}
