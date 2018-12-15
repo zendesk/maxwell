@@ -604,7 +604,7 @@ public class MaxwellConfig extends AbstractConfig {
 						includeColumnValues
 					);
 				} else {
-					this.filter = new Filter(this.databaseName);
+					this.filter = new Filter(this.databaseName, "");
 				}
 			}
 		} catch (InvalidFilterException e) {
