@@ -280,7 +280,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	 *
 	 * Then we check the configured filters.
 	 *
-	 * Finall, if we decide to exclude a table we check the filter to
+	 * Finally, if we decide to exclude a table we check the filter to
 	 * see if it's possible that a column-value filter could reverse this decision
 	 *
 	 * @param database The database of the DML
@@ -311,7 +311,9 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	/**
 	 * Is this RowMap an update to one of maxwell's own tables?
 	 *
-	 * If so we will often suppress the output.
+	 * We don't output updates to maxwell.positions, and updates to maxwell.heartbeats
+	 * are always treated specially.
+	 *
 	 * @param row The RowMap in question
 	 * @return whether the update is something maxwell itself generated
 	 */
