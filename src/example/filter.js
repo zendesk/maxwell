@@ -33,6 +33,10 @@ function process_row(row) {
 			}
 		} else if ( row.table == "other" ) {
 			row.kafka_topic = "other_kafka_topic";
+		} else if ( row.table == "iterate_me" ) {
+			for each (var key in row.data.keySet()) {
+				logger.info(row.data[key]);
+			}
 		}
 	}
 }
