@@ -10,14 +10,20 @@ public class Filter {
 	static final Logger LOGGER = LoggerFactory.getLogger(Filter.class);
 
 	private final List<FilterPattern> patterns;
+	private String maxwellDB;
 
 	public Filter() {
 		this.patterns = new ArrayList<>();
+		this.maxwellDB = "maxwell";
 	}
-
 	public Filter(String filterString) throws InvalidFilterException {
 		this();
+		patterns.addAll(new FilterParser(filterString).parse());
+	}
 
+	public Filter(String maxwellDB, String filterString) throws InvalidFilterException {
+		this();
+		this.maxwellDB = maxwellDB;
 		patterns.addAll(new FilterParser(filterString).parse());
 	}
 
@@ -123,6 +129,7 @@ public class Filter {
 	}
 
 	public static Filter fromOldFormat(
+		String maxwellDB,
 		String includeDatabases,
 		String excludeDatabases,
 		String includeTables,
@@ -181,6 +188,6 @@ public class Filter {
 		LOGGER.warn("using exclude/include/includeColumns is deprecated.  Please update your configuration to use: ");
 		LOGGER.warn("filter = \"" + filterRulesAsString + "\"");
 
-		return new Filter(filterRulesAsString);
+		return new Filter(maxwellDB, filterRulesAsString);
 	}
 }
