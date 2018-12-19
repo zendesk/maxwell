@@ -292,7 +292,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private boolean shouldOutputEvent(String database, String table, Filter filter, Set<String> columnNames) {
 		if ( Filter.isSystemBlacklisted(database, table) )
 			return false;
-		else if ( Filter.isSystemWhitelisted(maxwellSchemaDatabaseName, database, table) )
+		else if ( filter.isSystemWhitelisted(database, table) )
 			return true;
 		else {
 			if ( Filter.includes(filter, database, table) )
@@ -304,8 +304,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 
 	private boolean shouldOutputRowMap(String database, String table, RowMap rowMap, Filter filter) {
-		return Filter.isSystemWhitelisted(maxwellSchemaDatabaseName, database, table) ||
-			Filter.includes(filter, database, table, rowMap.getData());
+		return filter.isSystemWhitelisted(database, table) ||
+			filter.includes(database, table, rowMap.getData());
 	}
 
 	/**
