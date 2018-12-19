@@ -1,5 +1,12 @@
 # Maxwell changelog
 
+### [v1.19.3](https://github.com/zendesk/maxwell/releases/tag/v1.19.3): "through the roof"
+
+
+- Add a universal backpressure mechanism.  This should help people who
+were running into out-of-memory situations while bootstrapping.
+
+
 ### [v1.19.2](https://github.com/zendesk/maxwell/releases/tag/v1.19.2): "the same I wore last night"
 
 
