@@ -114,7 +114,6 @@ public class RowMap implements Serializable {
 		}
 
 		g.writeEndObject(); // end of 'data: { }'
-		g.flush();
 		return json.consume();
 	}
 
@@ -138,7 +137,6 @@ public class RowMap implements Serializable {
 		}
 		g.writeEndArray();
 		g.writeEndArray();
-		g.flush();
 		return json.consume();
 	}
 
@@ -277,7 +275,6 @@ public class RowMap implements Serializable {
 		dataWriter.end(encryptionContext);
 
 		g.writeEndObject(); // end of row
-		g.flush();
 
 		if(outputConfig.encryptionMode == EncryptionMode.ENCRYPT_ALL){
 			String plaintext = json.consume();

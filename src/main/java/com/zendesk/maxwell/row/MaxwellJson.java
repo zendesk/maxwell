@@ -21,18 +21,14 @@ public class MaxwellJson {
 	private final PlaintextJsonGenerator plaintextGenerator;
 	private final EncryptingJsonGenerator encryptingGenerator;
 
-	private static final ThreadLocal<MaxwellJson> instance =
-			new ThreadLocal<MaxwellJson>(){
-				@Override
-				protected MaxwellJson initialValue() {
-					try {
-						return new MaxwellJson();
-					} catch (IOException e) {
-						LOGGER.error("error initializing MaxwellJson", e);
-						return null;
-					}
-				}
-			};
+	private static final ThreadLocal<MaxwellJson> instance = ThreadLocal.withInitial(() -> {
+		try {
+			return new MaxwellJson();
+		} catch (IOException e) {
+			LOGGER.error("error initializing MaxwellJson", e);
+			return null;
+		}
+	});
 
 	private MaxwellJson() throws IOException {
 		buffer = new ByteArrayOutputStream();
