@@ -28,8 +28,12 @@ public class Filter {
 	}
 
 	public boolean isSystemWhitelisted(String database, String table) {
-		return maxwellDB.equals(database)
+		return isMaxwellDB(database)
 			&& ("bootstrap".equals(table) || "heartbeats".equals(table));
+	}
+
+	public boolean isMaxwellDB(String database) {
+		return maxwellDB.equals(database);
 	}
 
 	public void addRule(String filterString) throws InvalidFilterException {
@@ -67,9 +71,13 @@ public class Filter {
 		return false;
 	}
 
+
 	public boolean isTableBlacklisted(String database, String table) {
 		if ( isSystemBlacklisted(database, table) )
 			return true;
+
+		if ( isMaxwellDB(database) )
+			return false;
 
 		FilterResult match = new FilterResult();
 
@@ -82,6 +90,9 @@ public class Filter {
 	}
 
 	public boolean isDatabaseBlacklisted(String database) {
+		if ( isMaxwellDB(database) )
+			return false;
+
 		for ( FilterPattern p : patterns ) {
 			if (p.getType() == FilterPatternType.BLACKLIST &&
 				p.getDatabasePattern().matcher(database).find() &&
