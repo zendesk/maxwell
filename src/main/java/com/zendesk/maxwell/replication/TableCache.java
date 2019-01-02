@@ -18,7 +18,7 @@ public class TableCache {
 
 	public void processEvent(Schema schema, Filter filter, Long tableId, String dbName, String tblName) {
 		if ( !tableMapCache.containsKey(tableId) ) {
-			if ( Filter.isTableBlacklisted(filter, dbName, tblName) && !Filter.isSystemWhitelisted(maxwellDB, dbName, tblName)) {
+			if ( filter.isTableBlacklisted(dbName, tblName) && !filter.isSystemWhitelisted(dbName, tblName)) {
 				blacklistedTableCache.put(tableId, tblName);
 				return;
 			}

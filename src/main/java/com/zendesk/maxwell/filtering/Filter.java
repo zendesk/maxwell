@@ -10,18 +10,24 @@ public class Filter {
 	static final Logger LOGGER = LoggerFactory.getLogger(Filter.class);
 
 	private final List<FilterPattern> patterns;
+	private String maxwellDB;
 
 	public Filter() {
 		this.patterns = new ArrayList<>();
+		this.maxwellDB = "maxwell";
 	}
-
 	public Filter(String filterString) throws InvalidFilterException {
 		this();
-
 		patterns.addAll(new FilterParser(filterString).parse());
 	}
 
-	public static boolean isSystemWhitelisted(String maxwellDB, String database, String table) {
+	public Filter(String maxwellDB, String filterString) throws InvalidFilterException {
+		this();
+		this.maxwellDB = maxwellDB;
+		patterns.addAll(new FilterParser(filterString).parse());
+	}
+
+	public boolean isSystemWhitelisted(String database, String table) {
 		return maxwellDB.equals(database)
 			&& ("bootstrap".equals(table) || "heartbeats".equals(table));
 	}
@@ -62,6 +68,9 @@ public class Filter {
 	}
 
 	public boolean isTableBlacklisted(String database, String table) {
+		if ( isSystemBlacklisted(database, table) )
+			return true;
+
 		FilterResult match = new FilterResult();
 
 		for ( FilterPattern p : patterns ) {
@@ -86,16 +95,6 @@ public class Filter {
 	public static boolean isSystemBlacklisted(String databaseName, String tableName) {
 		return "mysql".equals(databaseName) &&
 			("ha_health_check".equals(tableName) || StringUtils.startsWith(tableName, "rds_heartbeat"));
-	}
-
-	public static boolean isTableBlacklisted(Filter filter, String database, String table) {
-		if ( isSystemBlacklisted(database, table) )
-			return true;
-
-		if ( filter == null )
-			return false;
-
-		return filter.isTableBlacklisted(database, table);
 	}
 
 	public static boolean includes(Filter filter, String database, String table) {
@@ -123,6 +122,7 @@ public class Filter {
 	}
 
 	public static Filter fromOldFormat(
+		String maxwellDB,
 		String includeDatabases,
 		String excludeDatabases,
 		String includeTables,
@@ -181,6 +181,6 @@ public class Filter {
 		LOGGER.warn("using exclude/include/includeColumns is deprecated.  Please update your configuration to use: ");
 		LOGGER.warn("filter = \"" + filterRulesAsString + "\"");
 
-		return new Filter(filterRulesAsString);
+		return new Filter(maxwellDB, filterRulesAsString);
 	}
 }

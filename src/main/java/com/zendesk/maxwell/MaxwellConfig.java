@@ -581,7 +581,7 @@ public class MaxwellConfig extends AbstractConfig {
 			return;
 		try {
 			if ( this.filterList != null ) {
-				this.filter = new Filter(filterList);
+				this.filter = new Filter(this.databaseName, filterList);
 			} else {
 				boolean hasOldStyleFilters =
 					includeDatabases != null ||
@@ -594,6 +594,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 				if ( hasOldStyleFilters ) {
 					this.filter = Filter.fromOldFormat(
+						this.databaseName,
 						includeDatabases,
 						excludeDatabases,
 						includeTables,
@@ -603,7 +604,7 @@ public class MaxwellConfig extends AbstractConfig {
 						includeColumnValues
 					);
 				} else {
-					this.filter = new Filter();
+					this.filter = new Filter(this.databaseName, "");
 				}
 			}
 		} catch (InvalidFilterException e) {
