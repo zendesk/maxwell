@@ -69,10 +69,9 @@ public class Recovery {
 					true,
 					recoveryInfo.clientID,
 					new HeartbeatNotifier(),
-					null
+					null,
+					new RecoveryFilter(this.maxwellDatabaseName)
 			);
-
-			replicator.setFilter(new RecoveryFilter(this.maxwellDatabaseName));
 
 			HeartbeatRowMap h = findHeartbeat(replicator);
 			if ( h != null ) {

@@ -210,12 +210,11 @@ public class Maxwell implements Runnable {
 			false,
 			config.clientID,
 			context.getHeartbeatNotifier(),
-			config.scripting
+			config.scripting,
+			context.getFilter()
 		);
 
 		bootstrapper.resume(producer, replicator);
-
-		replicator.setFilter(context.getFilter());
 
 		context.setReplicator(replicator);
 		this.context.start();

@@ -84,7 +84,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		boolean stopOnEOF,
 		String clientID,
 		HeartbeatNotifier heartbeatNotifier,
-		Scripting scripting
+		Scripting scripting,
+		Filter filter
 	) {
 		this.clientID = clientID;
 		this.bootstrapper = bootstrapper;
@@ -96,6 +97,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		this.scripting = scripting;
 		this.schemaStore = schemaStore;
 		this.tableCache = new TableCache(maxwellSchemaDatabaseName);
+		this.filter = filter;
 
 		/* setup metrics */
 		rowCounter = metrics.getRegistry().counter(
@@ -512,10 +514,6 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 			}
 
 		}
-	}
-
-	public void setFilter(Filter filter) {
-		this.filter = filter;
 	}
 
 	protected BinlogConnectorEvent pollEvent() throws InterruptedException {
