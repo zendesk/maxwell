@@ -42,7 +42,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private final String clientID;
 	private final String maxwellSchemaDatabaseName;
 
-	private final BinaryLogClient client;
+	protected final BinaryLogClient client;
 	private BinlogConnectorEventListener binlogEventListener;
 	private BinlogConnectorLifecycleListener binlogLifecycleListener;
 	private final LinkedBlockingDeque<BinlogConnectorEvent> queue = new LinkedBlockingDeque<>(20);
@@ -63,6 +63,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 	private final Counter rowCounter;
 	private final Meter rowMeter;
+
+
 	private SchemaStore schemaStore;
 	private Histogram transactionRowCount;
 	private Histogram transactionExecutionTime;
@@ -162,8 +164,10 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		processRow(row);
 	}
 
+	private boolean replicatorStarted = false;
 	public void startReplicator() throws Exception {
 		this.client.connect(5000);
+		replicatorStarted = true;
 	}
 
 	@Override
@@ -446,6 +450,9 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 		if ( stopOnEOF && hitEOF )
 			return null;
+
+		if ( !replicatorStarted )
+			throw new ReplicatorNotReadyException("replicator not started!");
 
 		while (true) {
 			if (rowBuffer != null && !rowBuffer.isEmpty()) {
