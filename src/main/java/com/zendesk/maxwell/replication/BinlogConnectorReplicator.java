@@ -368,8 +368,12 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 			event = pollEvent();
 
 			if (event == null) {
-				ensureReplicatorThread();
-				continue;
+				if ( ensureReplicatorThread() ) {
+					// thread was restarted.
+					if ( client.getGtidSet() != null )
+						return null;
+				} else
+					continue;
 			}
 
 			EventType eventType = event.getEvent().getHeader().getEventType();
@@ -509,9 +513,11 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					String sql = qe.getSql();
 					if (BinlogConnectorEvent.BEGIN.equals(sql)) {
 						rowBuffer = getTransactionRows(event);
-						rowBuffer.setServerId(event.getEvent().getHeader().getServerId());
-						rowBuffer.setThreadId(qe.getThreadId());
-						rowBuffer.setSchemaId(getSchemaId());
+						if ( rowBuffer != null ) {
+							rowBuffer.setServerId(event.getEvent().getHeader().getServerId());
+							rowBuffer.setThreadId(qe.getThreadId());
+							rowBuffer.setSchemaId(getSchemaId());
+						}
 					} else {
 						processQueryEvent(event);
 					}
