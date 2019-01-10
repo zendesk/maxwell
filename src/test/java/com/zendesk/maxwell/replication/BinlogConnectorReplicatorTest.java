@@ -71,6 +71,7 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 	@Test
 	public void testGTIDReconnects() throws Exception {
 		MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--gtid_mode=ON --enforce-gtid-consistency=true");
+		MaxwellTestSupport.requireMinimumVersion(server, MysqlIsolatedServer.VERSION_5_6);
 		MaxwellTestSupport.setupSchema(server, false);
 
 		server.execute("create table test.t ( i int )");

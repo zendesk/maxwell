@@ -132,8 +132,7 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 	}
 
 	protected void requireMinimumVersion(MysqlVersion minimum) {
-		// skips this test if running an older MYSQL version
-		assumeTrue(server.getVersion().atLeast(minimum));
+		MaxwellTestSupport.requireMinimumVersion(server, minimum);
 	}
 
 	protected void requireMinimumVersion(int major, int minor) {
