@@ -84,18 +84,14 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 		Position position = Position.capture(server.getConnection(), true);
 		MaxwellContext context = MaxwellTestSupport.buildContext(server.getPort(), position, null);
 
-		BufferedProducer producer = new BufferedProducer(context, 1);
-		NoOpMetrics metrics = new NoOpMetrics();
-
-
 		BinlogConnectorReplicator replicator = new BinlogConnectorReplicator(
 			new MysqlSchemaStore(context, position),
-			producer,
+			new BufferedProducer(context, 1),
 			new SynchronousBootstrapper(context),
 			context.getConfig().maxwellMysql,
 			333098L,
 			"maxwell",
-			metrics,
+			new NoOpMetrics(),
 			position,
 			false,
 			"maxwell-client",

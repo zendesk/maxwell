@@ -64,15 +64,16 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private final Counter rowCounter;
 	private final Meter rowMeter;
 
-
 	private SchemaStore schemaStore;
 	private Histogram transactionRowCount;
 	private Histogram transactionExecutionTime;
 
+	private final Boolean gtidPositioning;
 
 	private static Pattern createTablePattern =
 		Pattern.compile("^CREATE\\s+TABLE", Pattern.CASE_INSENSITIVE);
 
+	private class ClientReconnectedException extends Exception {}
 
 	public BinlogConnectorReplicator(
 		SchemaStore schemaStore,
@@ -125,10 +126,12 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 			String gtidStr = startBinlog.getGtidSetStr();
 			LOGGER.info("Setting initial gtid to: " + gtidStr);
 			this.client.setGtidSet(gtidStr);
+			this.gtidPositioning = true;
 		} else {
 			LOGGER.info("Setting initial binlog pos to: " + startBinlog.getFile() + ":" + startBinlog.getOffset());
 			this.client.setBinlogFilename(startBinlog.getFile());
 			this.client.setBinlogPosition(startBinlog.getOffset());
+			this.gtidPositioning = false;
 		}
 
 		EventDeserializer eventDeserializer = new EventDeserializer();
@@ -328,22 +331,29 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		return row.getDatabase().equals(this.maxwellSchemaDatabaseName);
 	}
 
-	private boolean ensureReplicatorThread() throws Exception {
+	private void ensureReplicatorThread() throws Exception {
 		if ( !client.isConnected() && !stopOnEOF ) {
-			String gtidStr = client.getGtidSet();
-			String binlogPos = client.getBinlogFilename() + ":" + client.getBinlogPosition();
-			String position = gtidStr == null ? binlogPos : gtidStr;
+			if (this.gtidPositioning) {
+				// When using gtid positioning, reconnecting should take us to the top
+				// of the gtid event.  We throw away any binlog position we have
+				// (other than GTID) and bail out of getTransactionRows()
 
-			LOGGER.warn("replicator stopped at position: " + position + " -- restarting");
-			if ( gtidStr != null ) {
+				LOGGER.warn("replicator stopped at position: {} -- restarting", client.getGtidSet());
+
 				client.setBinlogFilename("");
 				client.setBinlogPosition(4L);
-			}
 
-			client.connect(5000);
-			return true;
-		} else
-			return false;
+				client.connect(5000);
+
+				throw new ClientReconnectedException();
+			} else {
+				// standard binlog positioning is a lot easier; we can really reconnect anywhere
+				// we like, so we don't have to bail out of the middle of an event.
+				LOGGER.warn("replicator stopped at position: {} -- restarting", client.getBinlogFilename() + ":" + client.getBinlogPosition());
+
+				client.connect(5000);
+			}
+		}
 	}
 
 	/**
@@ -368,12 +378,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 			event = pollEvent();
 
 			if (event == null) {
-				if ( ensureReplicatorThread() ) {
-					// thread was restarted.
-					if ( client.getGtidSet() != null )
-						return null;
-				} else
-					continue;
+				ensureReplicatorThread();
+				continue;
 			}
 
 			EventType eventType = event.getEvent().getHeader().getEventType();
@@ -486,7 +492,9 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					else
 						return null;
 				} else {
-					ensureReplicatorThread();
+					try {
+						ensureReplicatorThread();
+					} catch ( ClientReconnectedException e ) {}
 					return null;
 				}
 			}
@@ -512,12 +520,12 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					QueryEventData qe = event.queryData();
 					String sql = qe.getSql();
 					if (BinlogConnectorEvent.BEGIN.equals(sql)) {
-						rowBuffer = getTransactionRows(event);
-						if ( rowBuffer != null ) {
+						try {
+							rowBuffer = getTransactionRows(event);
 							rowBuffer.setServerId(event.getEvent().getHeader().getServerId());
 							rowBuffer.setThreadId(qe.getThreadId());
 							rowBuffer.setSchemaId(getSchemaId());
-						}
+						} catch ( ClientReconnectedException e ) {}
 					} else {
 						processQueryEvent(event);
 					}
