@@ -115,6 +115,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 		/* setup binlog */
 		this.binlogLifecycleListener = new BinlogConnectorLifecycleListener();
+
 		this.client = new BinaryLogClient(mysqlConfig.host, mysqlConfig.port, mysqlConfig.user, mysqlConfig.password);
 
 		this.client.setSSLMode(mysqlConfig.sslMode);
@@ -327,14 +328,22 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		return row.getDatabase().equals(this.maxwellSchemaDatabaseName);
 	}
 
-	private void ensureReplicatorThread() throws Exception {
+	private boolean ensureReplicatorThread() throws Exception {
 		if ( !client.isConnected() && !stopOnEOF ) {
 			String gtidStr = client.getGtidSet();
 			String binlogPos = client.getBinlogFilename() + ":" + client.getBinlogPosition();
 			String position = gtidStr == null ? binlogPos : gtidStr;
+
 			LOGGER.warn("replicator stopped at position: " + position + " -- restarting");
+			if ( gtidStr != null ) {
+				client.setBinlogFilename("");
+				client.setBinlogPosition(4L);
+			}
+
 			client.connect(5000);
-		}
+			return true;
+		} else
+			return false;
 	}
 
 	/**
