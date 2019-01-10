@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
 
 public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 
@@ -70,8 +71,9 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 
 	@Test
 	public void testGTIDReconnects() throws Exception {
+		assumeTrue(MysqlIsolatedServer.getVersion().atLeast(MysqlIsolatedServer.VERSION_5_6));
+
 		MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--gtid_mode=ON --enforce-gtid-consistency=true");
-		MaxwellTestSupport.requireMinimumVersion(server, MysqlIsolatedServer.VERSION_5_6);
 		MaxwellTestSupport.setupSchema(server, false);
 
 		server.execute("create table test.t ( i int )");
