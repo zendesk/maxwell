@@ -1,5 +1,7 @@
 package com.zendesk.maxwell.schema.columndef;
 
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+
 public class IntColumnDef extends ColumnDef {
 	public int bits;
 
@@ -44,7 +46,7 @@ public class IntColumnDef extends ColumnDef {
 	}
 
 	@Override
-	public Object asJSON(Object value) {
+	public Object asJSON(Object value, MaxwellOutputConfig config) {
 		return toLong(value);
 	}
 

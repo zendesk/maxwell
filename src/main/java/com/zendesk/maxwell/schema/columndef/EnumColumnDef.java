@@ -1,5 +1,7 @@
 package com.zendesk.maxwell.schema.columndef;
 
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+
 public class EnumColumnDef extends EnumeratedColumnDef {
 	public EnumColumnDef(String name, String type, short pos, String[] enumValues) {
 		super(name, type, pos, enumValues);
@@ -11,7 +13,7 @@ public class EnumColumnDef extends EnumeratedColumnDef {
 	}
 
 	@Override
-	public String asJSON(Object value) {
+	public String asJSON(Object value, MaxwellOutputConfig config) {
 		return asString(value);
 	}
 

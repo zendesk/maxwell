@@ -14,6 +14,7 @@ import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.monitoring.Metrics;
 import com.zendesk.maxwell.producer.AbstractProducer;
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMapBuffer;
@@ -84,7 +85,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		boolean stopOnEOF,
 		String clientID,
 		HeartbeatNotifier heartbeatNotifier,
-		Scripting scripting
+		Scripting scripting,
+		MaxwellOutputConfig outputConfig
 	) {
 		this.clientID = clientID;
 		this.bootstrapper = bootstrapper;
@@ -133,7 +135,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 			EventDeserializer.CompatibilityMode.INVALID_DATE_AND_TIME_AS_MIN_VALUE
 		);
 		this.client.setEventDeserializer(eventDeserializer);
-		this.binlogEventListener = new BinlogConnectorEventListener(client, queue, metrics);
+		this.binlogEventListener = new BinlogConnectorEventListener(client, queue, metrics, outputConfig);
 		this.client.setBlocking(!stopOnEOF);
 		this.client.registerEventListener(binlogEventListener);
 		this.client.registerLifecycleListener(binlogLifecycleListener);
