@@ -2,26 +2,19 @@
 </div>
 
 This is Maxwell's daemon, an application that reads MySQL binlogs and writes
-row updates to Kafka, Kinesis, RabbitMQ, Google Cloud Pub/Sub, or Redis (Pub/Sub or LPUSH) as JSON.  Maxwell has a
-low operational bar and produces a consistent, easy to ingest stream of updates.
-It allows you to easily "bolt on" some of the benefits of stream processing
-systems without going through your entire code base to add (unreliable)
-instrumentation points.  Common use cases include ETL, cache building/expiring,
-metrics collection, search indexing and inter-service communication.
+row updates as JSON to Kafka, Kinesis, or other streaming platforms.  Maxwell has
+low operational overhead, requiring nothing but mysql and a place to write to.
+Its common use cases include ETL, cache building/expiring, metrics collection,
+search indexing and inter-service communication.  Maxwell gives you some of the
+benefits of event sourcing without having to re-architect your entire platform.
 
-- Can do `SELECT * from table` (bootstrapping) initial loads of a table.
-- supports automatic position recover on master promotion
-- flexible partitioning schemes for Kakfa - by database, table, primary key, or column
-- Maxwell pulls all this off by acting as a full mysql replica, including a SQL
-  parser for create/alter/drop statements (nope, there was no other way).
-
-&rarr; Download:
+<b>Download:</b><br>
 [https://github.com/zendesk/maxwell/releases/download/v1.19.3/maxwell-1.19.3.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.19.3/maxwell-1.19.3.tar.gz)
 <br/>
-&rarr; Source:
+<b>Source:</b><br>
 [https://github.com/zendesk/maxwell](https://github.com/zendesk/maxwell)
 
-<br style="clear:both"/>
+<br clear="all">
 
 
 ```
