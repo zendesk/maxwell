@@ -23,6 +23,7 @@ public abstract class ColumnDef implements Cloneable {
 
 	public abstract String toSQL(Object value);
 
+	@Deprecated
 	public Object asJSON(Object value) {
 		return asJSON(value, new MaxwellOutputConfig());
 	}
