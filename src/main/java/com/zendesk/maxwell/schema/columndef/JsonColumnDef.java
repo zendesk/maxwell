@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.schema.columndef;
 
 import com.github.shyiko.mysql.binlog.event.deserialization.json.JsonBinary;
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.row.RawJSONString;
 
 import java.io.IOException;
@@ -13,7 +14,7 @@ public class JsonColumnDef extends ColumnDef {
 	}
 
 	@Override
-	public Object asJSON(Object value) {
+	public Object asJSON(Object value, MaxwellOutputConfig config) {
 		String jsonString;
 
 		if ( value instanceof String ) {

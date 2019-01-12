@@ -1,5 +1,7 @@
 package com.zendesk.maxwell.schema.columndef;
 
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+
 import java.math.BigInteger;
 import java.util.BitSet;
 
@@ -9,7 +11,7 @@ public class BitColumnDef extends ColumnDef {
 	}
 
 	@Override
-	public Object asJSON(Object value) {
+	public Object asJSON(Object value, MaxwellOutputConfig outputConfig) {
 		byte[] bytes;
 		if( value instanceof Boolean ){
 			bytes = new byte[]{(byte) (( Boolean ) value ? 1 : 0)};
