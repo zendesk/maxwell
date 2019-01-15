@@ -1,5 +1,13 @@
 # Maxwell changelog
 
+### [v1.19.5](https://github.com/zendesk/maxwell/releases/tag/v1.19.5): "when there is trap"
+
+
+- Fixes for unreliable connections wrt to GTID events; previously we
+  restart in any old position, now we throw away the current transaction
+  and restart the replicator again at the head of the GTID event.
+
+
 ### [v1.19.4](https://github.com/zendesk/maxwell/releases/tag/v1.19.4): "and underground"
 
 
