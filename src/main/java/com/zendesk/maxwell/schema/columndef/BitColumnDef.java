@@ -49,6 +49,6 @@ public class BitColumnDef extends ColumnDef {
 
 	@Override
 	public String toSQL(Object value) {
-		return asJSON(value).toString();
+		return asJSON(value, null).toString();
 	}
 }

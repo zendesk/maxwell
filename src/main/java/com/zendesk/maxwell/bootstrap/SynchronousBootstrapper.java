@@ -1,5 +1,6 @@
 package com.zendesk.maxwell.bootstrap;
 
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.replication.Position;
@@ -255,7 +256,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 
 			row.putData(
 				columnDefinition.getName(),
-				columnValue == null ? null : columnDefinition.asJSON(columnValue)
+				columnValue == null ? null : columnDefinition.asJSON(columnValue, new MaxwellOutputConfig())
 			);
 
 			++columnIndex;

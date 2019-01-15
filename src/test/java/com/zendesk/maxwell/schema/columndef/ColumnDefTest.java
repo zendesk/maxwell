@@ -120,7 +120,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 		byte input[] = new byte[] { (byte) 126, (byte) 126, (byte) 126, (byte) 126 };
 
 		ColumnDef d = ColumnDef.build("bar", "ascii", "varchar", (short) 1, false, null, null);
-		assertThat((String) d.asJSON(input), is("~~~~"));
+		assertThat((String) d.asJSON(input, null), is("~~~~"));
 	}
 
 	@Test
@@ -129,7 +129,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 
 		ColumnDef d = ColumnDef.build("bar", "latin1", "varchar", (short) 1, false, null, null);
 
-		assertThat((String) d.asJSON(input), is("©©©©"));
+		assertThat((String) d.asJSON(input, null), is("©©©©"));
 	}
 
 	@Test
@@ -139,7 +139,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 
 		ColumnDef d = ColumnDef.build("bar", "ascii", "json", (short) 1, false, null, null);
 
-		RawJSONString result = (RawJSONString) d.asJSON(input);
+		RawJSONString result = (RawJSONString) d.asJSON(input, null);
 		assertThat(result.json, is("{\"id\":3}"));
 	}
 
@@ -149,7 +149,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 
 		ColumnDef d = ColumnDef.build("bar", "ascii", "json", (short) 1, false, null, null);
 
-		RawJSONString result = (RawJSONString) d.asJSON(input);
+		RawJSONString result = (RawJSONString) d.asJSON(input, null);
 		assertThat(result.json, is("null"));
 	}
 

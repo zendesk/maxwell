@@ -14,6 +14,7 @@ import com.zendesk.maxwell.TestWithNameLogging;
 import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
 import com.zendesk.maxwell.monitoring.NoOpMetrics;
 import com.zendesk.maxwell.producer.BufferedProducer;
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.MysqlSchemaStore;
 import org.junit.Test;
@@ -97,7 +98,8 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 			"maxwell-client",
 			new HeartbeatNotifier(),
 			null,
-			context.getFilter()
+			context.getFilter(),
+			new MaxwellOutputConfig()
 		);
 
 		EventDeserializer eventDeserializer = new EventDeserializer();
