@@ -5,6 +5,7 @@ import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.filtering.InvalidFilterException;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.replication.MysqlVersion;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.Schema;
@@ -30,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assume.assumeTrue;
 
 public class MaxwellTestSupport {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellTestSupport.class);
@@ -295,5 +297,10 @@ public class MaxwellTestSupport {
 
 		List<String> diff = topSchema.diff(bottomSchema, "followed schema", "recaptured schema");
 		assertThat(StringUtils.join(diff.iterator(), "\n"), diff.size(), is(0));
+	}
+
+	public static void requireMinimumVersion(MysqlIsolatedServer server, MysqlVersion minimum) {
+		// skips this test if running an older MYSQL version
+		assumeTrue(server.getVersion().atLeast(minimum));
 	}
 }
