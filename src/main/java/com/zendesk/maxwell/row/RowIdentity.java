@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.row;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -9,14 +10,9 @@ import java.util.*;
 public class RowIdentity implements Serializable {
 	private String database;
 	private String table;
-	private final List<Map.Entry<String, Object>> primaryKeyColumns;
+	private final List<Pair<String, Object>> primaryKeyColumns;
 
-	// slightly less verbose pair construction
-	public static Map.Entry<String, Object> pair(String key, Object value) {
-		return new AbstractMap.SimpleImmutableEntry<>(key, value);
-	}
-
-	public RowIdentity(String database, String table, List<Map.Entry<String, Object>> primaryKeyColumns) {
+	public RowIdentity(String database, String table, List<Pair<String, Object>> primaryKeyColumns) {
 		this.database = database;
 		this.table = table;
 		this.primaryKeyColumns = primaryKeyColumns;
@@ -33,41 +29,47 @@ public class RowIdentity implements Serializable {
 	public String toKeyJson(RowMap.KeyFormat keyFormat) throws IOException {
 		MaxwellJson json = MaxwellJson.getInstance();
 		JsonGenerator g = json.reset();
-		if ( keyFormat == RowMap.KeyFormat.HASH )
-			writeKeyJsonHash(g);
-		else
-			writeKeyJsonArray(g);
+		if ( keyFormat == RowMap.KeyFormat.HASH ) {
+			// kafka_key_format = "hash":
+			// Primary key column names are prefixed with "pk."
+			// e.g. { "database": "db1", "table": "users", "pk.id": 123 }
+
+			g.writeStartObject(); // start of row {
+
+			g.writeStringField(FieldNames.DATABASE, database);
+			g.writeStringField(FieldNames.TABLE, table);
+			if (primaryKeyColumns.isEmpty()) {
+				g.writeStringField(FieldNames.UUID, UUID.randomUUID().toString());
+			} else {
+				for (Map.Entry<String,Object> pk : primaryKeyColumns) {
+					MaxwellJson.writeValueToJSON(g, true, "pk." + pk.getKey().toLowerCase(), pk.getValue());
+				}
+			}
+			g.writeEndObject();
+		}
+		else {
+			// kafka_key_format = "array":
+			// The order of the array values is [ database, table, primary_keys_hash ]
+			// e.g. [ "db1", "users", { "id": 123 } ]
+			g.writeStartArray();
+			g.writeString(database);
+			g.writeString(table);
+
+			g.writeStartArray();
+			for (Map.Entry<String,Object> pk : primaryKeyColumns) {
+				g.writeStartObject();
+				MaxwellJson.writeValueToJSON(g, true, pk.getKey().toLowerCase(), pk.getValue());
+				g.writeEndObject();
+			}
+			g.writeEndArray();
+			g.writeEndArray();
+		}
 		return json.consume();
 	}
 
-	private void writeKeyJsonHash(JsonGenerator g) throws IOException {
-		writeStartCommon(g);
-		if (primaryKeyColumns.isEmpty()) {
-			g.writeStringField(FieldNames.UUID, UUID.randomUUID().toString());
-		} else {
-			for (Map.Entry<String,Object> pk : primaryKeyColumns) {
-				writePrimaryKey(g, "pk." + pk.getKey().toLowerCase(), pk.getValue());
-			}
-		}
-		g.writeEndObject();
-	}
-
-	private void writeKeyJsonArray(JsonGenerator g) throws IOException {
-		g.writeStartArray();
-		g.writeString(database);
-		g.writeString(table);
-
-		g.writeStartArray();
-		for (Map.Entry<String,Object> pk : primaryKeyColumns) {
-			g.writeStartObject();
-			MaxwellJson.writeValueToJSON(g, true, pk.getKey().toLowerCase(), pk.getValue());
-			g.writeEndObject();
-		}
-		g.writeEndArray();
-		g.writeEndArray();
-	}
-
 	public String toConcatString() {
+		// Generates a concise, lossy representation of this identity (i.e you can't easily parse it).
+		// Simpler than generating real JSON, used as a hash input for partition calculation.
 		if (primaryKeyColumns.isEmpty()) {
 			return database + table;
 		}
@@ -82,22 +84,6 @@ public class RowIdentity implements Serializable {
 			return "None";
 		}
 		return keys.toString();
-	}
-
-	private void writePrimaryKey(JsonGenerator g, String jsonKey, Object value) throws IOException {
-		MaxwellJson.writeValueToJSON(g, true, jsonKey, value);
-	}
-
-	private void writePrimaryKey(JsonGenerator g, Map.Entry<String,Object> pk) throws IOException {
-		writePrimaryKey(g, pk.getKey(), pk.getValue());
-	}
-
-	private JsonGenerator writeStartCommon(JsonGenerator g) throws IOException {
-		g.writeStartObject(); // start of row {
-
-		g.writeStringField(FieldNames.DATABASE, database);
-		g.writeStringField(FieldNames.TABLE, table);
-		return g;
 	}
 
 	@Override

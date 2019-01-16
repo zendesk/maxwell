@@ -3,6 +3,7 @@ package com.zendesk.maxwell.row;
 
 import com.google.common.collect.Lists;
 import com.zendesk.maxwell.MaxwellTestJSON;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,7 +16,7 @@ public class RowIdentityTest {
 	@Test
 	public void testToJson() throws IOException {
 		RowIdentity rowId = new RowIdentity("MyDatabase", "MyTable",
-			Arrays.asList(RowIdentity.pair("id", 111), RowIdentity.pair("account", 123)));
+			Arrays.asList(Pair.of("id", 111), Pair.of("account", 123)));
 
 		String jsonHash = rowId.toKeyJson(RowMap.KeyFormat.HASH);
 		Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\",\"pk.id\":111,\"pk.account\":123}", jsonHash);
@@ -27,7 +28,7 @@ public class RowIdentityTest {
 	@Test
 	public void testPkToJsonArrayWithListData() throws Exception {
 		RowIdentity rowId = new RowIdentity("MyDatabase", "MyTable",
-			Arrays.asList(RowIdentity.pair("id", "9001"), RowIdentity.pair("name", Lists.newArrayList("example"))));
+			Arrays.asList(Pair.of("id", "9001"), Pair.of("name", Lists.newArrayList("example"))));
 
 		String jsonString = rowId.toKeyJson(RowMap.KeyFormat.ARRAY);
 

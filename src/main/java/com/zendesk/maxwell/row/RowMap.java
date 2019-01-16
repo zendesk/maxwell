@@ -5,6 +5,7 @@ import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.Position;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,9 +82,9 @@ public class RowMap implements Serializable {
 
 	public RowIdentity getRowIdentity() {
 		if (rowIdentity == null) {
-			List<Map.Entry<String, Object>> entries = new ArrayList<>(pkColumns.size());
+			List<Pair<String, Object>> entries = new ArrayList<>(pkColumns.size());
 			for (String pk: pkColumns) {
-				entries.add(RowIdentity.pair(pk, data.get(pk)));
+				entries.add(Pair.of(pk, data.get(pk)));
 			}
 			rowIdentity = new RowIdentity(database, table, entries);
 		}
