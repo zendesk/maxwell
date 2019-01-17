@@ -116,7 +116,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		transactionRowCount = metrics.getRegistry().histogram(metrics.metricName("transaction", "row_count"));
 		transactionExecutionTime = metrics.getRegistry().histogram(metrics.metricName("transaction", "execution_time"));
 
-		/* setup binlog */
+		/* setup binlog-connector */
 		this.binlogLifecycleListener = new BinlogConnectorLifecycleListener();
 
 		this.client = new BinaryLogClient(mysqlConfig.host, mysqlConfig.port, mysqlConfig.user, mysqlConfig.password);
@@ -134,6 +134,17 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 			this.client.setBinlogFilename(startBinlog.getFile());
 			this.client.setBinlogPosition(startBinlog.getOffset());
 			this.gtidPositioning = false;
+		}
+
+		/*
+			for the moment, the reconnection code in keep-alive is broken;
+			it sends along a binlog file as well as the GTID set,
+			which triggers mysql to jump ahead a binlog.
+			At some point I presume shyko will fix it and we can remove this.
+		 */
+
+		if ( this.gtidPositioning ) {
+			this.client.setKeepAlive(false);
 		}
 
 		EventDeserializer eventDeserializer = new EventDeserializer();
