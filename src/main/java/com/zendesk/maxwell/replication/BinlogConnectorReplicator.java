@@ -524,10 +524,15 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					if (BinlogConnectorEvent.BEGIN.equals(sql)) {
 						try {
 							rowBuffer = getTransactionRows(event);
-							rowBuffer.setServerId(event.getEvent().getHeader().getServerId());
-							rowBuffer.setThreadId(qe.getThreadId());
-							rowBuffer.setSchemaId(getSchemaId());
-						} catch ( ClientReconnectedException e ) {}
+						} catch ( ClientReconnectedException e ) {
+							// rowBuffer should already be empty by the time we get to this switch
+							// statement, but we null it for clarity
+							rowBuffer = null;
+							break;
+						}
+						rowBuffer.setServerId(event.getEvent().getHeader().getServerId());
+						rowBuffer.setThreadId(qe.getThreadId());
+						rowBuffer.setSchemaId(getSchemaId());
 					} else {
 						processQueryEvent(event);
 					}
