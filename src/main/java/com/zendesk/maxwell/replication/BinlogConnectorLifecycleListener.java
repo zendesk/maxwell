@@ -6,6 +6,11 @@ import org.slf4j.LoggerFactory;
 
 class BinlogConnectorLifecycleListener implements BinaryLogClient.LifecycleListener {
 	private static final Logger LOGGER = LoggerFactory.getLogger(BinlogConnectorLifecycleListener.class);
+	private BinlogConnectorReplicator replicator;
+
+	public BinlogConnectorLifecycleListener(BinlogConnectorReplicator replicator) {
+		this.replicator = replicator;
+	}
 
 	@Override
 	public void onConnect(BinaryLogClient client) {
@@ -15,6 +20,7 @@ class BinlogConnectorLifecycleListener implements BinaryLogClient.LifecycleListe
 	@Override
 	public void onCommunicationFailure(BinaryLogClient client, Exception ex) {
 		LOGGER.warn("Communication failure.", ex);
+		replicator.onCommunicationFailure(ex);
 	}
 
 	@Override

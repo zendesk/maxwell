@@ -1,6 +1,5 @@
 package com.zendesk.maxwell.row;
 
-import com.google.common.collect.Lists;
 import com.zendesk.maxwell.MaxwellTestJSON;
 import com.zendesk.maxwell.errors.ProtectedAttributeNameException;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
@@ -9,8 +8,10 @@ import com.zendesk.maxwell.replication.Position;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 public class RowMapTest {
@@ -41,8 +42,7 @@ public class RowMapTest {
 	}
 
 	@Test
-	public void testPkToJsonHash() throws IOException {
-
+	public void testGetRowIdentity() {
 		List<String> pKeys = new ArrayList<>();
 
 		pKeys.add("id");
@@ -54,73 +54,10 @@ public class RowMapTest {
 		rowMap.putData("id", "9001");
 		rowMap.putData("name", "example");
 
-		String jsonString = rowMap.pkToJson(RowMap.KeyFormat.HASH);
-
-		Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\",\"pk.id\":\"9001\",\"pk.name\":\"example\"}",
-				jsonString);
+		RowIdentity pk = rowMap.getRowIdentity();
+		Assert.assertEquals("9001example", pk.toConcatString());
 	}
 
-
-	@Test
-	public void testPkToJsonHashWithEmptyData() throws Exception {
-
-		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, new ArrayList<String>(), POSITION);
-
-		String jsonString = rowMap.pkToJson(RowMap.KeyFormat.HASH);
-
-		Map<String, Object> jsonMap = MaxwellTestJSON.parseJSON(jsonString);
-
-		Assert.assertTrue(jsonMap.containsKey("_uuid"));
-		Assert.assertEquals("MyDatabase", jsonMap.get("database"));
-		Assert.assertEquals("MyTable", jsonMap.get("table"));
-
-
-	}
-
-	@Test
-	public void testPkToJsonArray() throws IOException {
-
-		List<String> pKeys = new ArrayList<>();
-
-		pKeys.add("id");
-
-		pKeys.add("name");
-
-		Position position = new Position(new BinlogPosition(1L, "binlog-0001"), 0L);
-
-		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, position);
-
-		rowMap.putData("id", "9001");
-		rowMap.putData("name", "example");
-
-		String jsonString = rowMap.pkToJson(RowMap.KeyFormat.ARRAY);
-
-		Assert.assertEquals("[\"MyDatabase\",\"MyTable\",[{\"id\":\"9001\"},{\"name\":\"example\"}]]",
-				jsonString);
-
-
-	}
-
-	@Test
-	public void testPkToJsonArrayWithListData() throws Exception {
-		List<String> pKeys = new ArrayList<>();
-
-		pKeys.add("id");
-
-		pKeys.add("name");
-
-		Position position = new Position(new BinlogPosition(1L, "binlog-0001"), 0L);
-
-		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, position);
-
-		rowMap.putData("id", "9001");
-		rowMap.putData("name", Lists.newArrayList("example"));
-
-		String jsonString = rowMap.pkToJson(RowMap.KeyFormat.ARRAY);
-
-		Assert.assertEquals("[\"MyDatabase\",\"MyTable\",[{\"id\":\"9001\"},{\"name\":[\"example\"]}]]",
-				jsonString);
-	}
 	@Test
 	public void testBuildPartitionKey() {
 		List<String> pKeys = new ArrayList<>();

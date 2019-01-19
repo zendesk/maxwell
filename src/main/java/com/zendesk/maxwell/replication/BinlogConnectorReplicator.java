@@ -9,6 +9,7 @@ import com.github.shyiko.mysql.binlog.event.QueryEventData;
 import com.github.shyiko.mysql.binlog.event.RowsQueryEventData;
 import com.github.shyiko.mysql.binlog.event.TableMapEventData;
 import com.github.shyiko.mysql.binlog.event.deserialization.EventDeserializer;
+import com.github.shyiko.mysql.binlog.network.ServerException;
 import com.zendesk.maxwell.MaxwellMysqlConfig;
 import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
 import com.zendesk.maxwell.filtering.Filter;
@@ -39,6 +40,7 @@ import java.util.regex.Pattern;
 public class BinlogConnectorReplicator extends RunLoopProcess implements Replicator {
 	static final Logger LOGGER = LoggerFactory.getLogger(BinlogConnectorReplicator.class);
 	private static final long MAX_TX_ELEMENTS = 10000;
+	public static final int BAD_BINLOG_ERROR_CODE = 1236;
 
 	private final String clientID;
 	private final String maxwellSchemaDatabaseName;
@@ -49,6 +51,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private final LinkedBlockingDeque<BinlogConnectorEvent> queue = new LinkedBlockingDeque<>(20);
 	private final TableCache tableCache;
 	private final Scripting scripting;
+	private ServerException lastCommError;
 
 	private final boolean stopOnEOF;
 	private boolean hitEOF = false;
@@ -103,6 +106,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		this.schemaStore = schemaStore;
 		this.tableCache = new TableCache(maxwellSchemaDatabaseName);
 		this.filter = filter;
+		this.lastCommError = null;
 
 		/* setup metrics */
 		rowCounter = metrics.getRegistry().counter(
@@ -116,8 +120,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		transactionRowCount = metrics.getRegistry().histogram(metrics.metricName("transaction", "row_count"));
 		transactionExecutionTime = metrics.getRegistry().histogram(metrics.metricName("transaction", "execution_time"));
 
-		/* setup binlog-connector */
-		this.binlogLifecycleListener = new BinlogConnectorLifecycleListener();
+		/* setup binlog */
+		this.binlogLifecycleListener = new BinlogConnectorLifecycleListener(this);
 
 		this.client = new BinaryLogClient(mysqlConfig.host, mysqlConfig.port, mysqlConfig.user, mysqlConfig.password);
 
@@ -199,6 +203,21 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	}
 
 	/**
+	 * Listener for communication errors so we can stop everything and exit on this case
+	 * @param ex Exception thrown by the BinaryLogClient
+	 */
+	public void onCommunicationFailure(Exception ex) {
+
+		// Stopping Maxwell only in case we cannot read binlogs from the current server
+		if (ex instanceof ServerException) {
+			ServerException serverEx = (ServerException) ex;
+			if (serverEx.getErrorCode() == BAD_BINLOG_ERROR_CODE) {
+				lastCommError = serverEx;
+			}
+		}
+	}
+
+	/**
 	 * Get the last heartbeat that the replicator has processed.
 	 *
 	 * We pass along the value of the heartbeat to the producer inside the row map.
@@ -211,6 +230,17 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 	public void stopAtHeartbeat(long heartbeat) {
 		stopAtHeartbeat = heartbeat;
+	}
+
+	/**
+	 * Checks if any communications errors in the last update loop.
+	 * @throws ServerException with the details of the communication error.
+	 */
+	private void checkCommErrors() throws ServerException {
+		if (lastCommError != null) {
+			LOGGER.error("Shutting down due to communication errors to Mysql", lastCommError);
+			throw lastCommError;
+		}
 	}
 
 	protected void processRow(RowMap row) throws Exception {
@@ -345,6 +375,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	}
 
 	private void ensureReplicatorThread() throws Exception {
+		checkCommErrors();
 		if ( !client.isConnected() && !stopOnEOF ) {
 			if (this.gtidPositioning) {
 				// When using gtid positioning, reconnecting should take us to the top
@@ -535,10 +566,15 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					if (BinlogConnectorEvent.BEGIN.equals(sql)) {
 						try {
 							rowBuffer = getTransactionRows(event);
-							rowBuffer.setServerId(event.getEvent().getHeader().getServerId());
-							rowBuffer.setThreadId(qe.getThreadId());
-							rowBuffer.setSchemaId(getSchemaId());
-						} catch ( ClientReconnectedException e ) {}
+						} catch ( ClientReconnectedException e ) {
+							// rowBuffer should already be empty by the time we get to this switch
+							// statement, but we null it for clarity
+							rowBuffer = null;
+							break;
+						}
+						rowBuffer.setServerId(event.getEvent().getHeader().getServerId());
+						rowBuffer.setThreadId(qe.getThreadId());
+						rowBuffer.setSchemaId(getSchemaId());
 					} else {
 						processQueryEvent(event);
 					}
