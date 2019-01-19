@@ -5,21 +5,16 @@ import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.Position;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Pattern;
 
-import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 
 
@@ -53,6 +48,7 @@ public class RowMap implements Serializable {
 	private final LinkedHashMap<String, Object> extraAttributes;
 
 	private final List<String> pkColumns;
+	private RowIdentity rowIdentity;
 
 	private long approximateSize;
 
@@ -84,77 +80,20 @@ public class RowMap implements Serializable {
 		this(type, database, table, timestampMillis, pkColumns, nextPosition, null);
 	}
 
-	//Do we want to encrypt this part?
-	public String pkToJson(KeyFormat keyFormat) throws IOException {
-		if ( keyFormat == KeyFormat.HASH )
-			return pkToJsonHash();
-		else
-			return pkToJsonArray();
-	}
-
-	private String pkToJsonHash() throws IOException {
-		MaxwellJson json = MaxwellJson.getInstance();
-		JsonGenerator g = json.reset();
-
-		g.writeStartObject(); // start of row {
-
-		g.writeStringField(FieldNames.DATABASE, database);
-		g.writeStringField(FieldNames.TABLE, table);
-
-		if (pkColumns.isEmpty()) {
-			g.writeStringField(FieldNames.UUID, UUID.randomUUID().toString());
-		} else {
-			for (String pk : pkColumns) {
-				Object pkValue = null;
-				if ( data.containsKey(pk) )
-					pkValue = data.get(pk);
-
-				MaxwellJson.writeValueToJSON(g, true, "pk." + pk.toLowerCase(), pkValue);
+	public RowIdentity getRowIdentity() {
+		if (rowIdentity == null) {
+			List<Pair<String, Object>> entries = new ArrayList<>(pkColumns.size());
+			for (String pk: pkColumns) {
+				entries.add(Pair.of(pk, data.get(pk)));
 			}
+			rowIdentity = new RowIdentity(database, table, entries);
 		}
 
-		g.writeEndObject(); // end of 'data: { }'
-		return json.consume();
+		return rowIdentity;
 	}
 
-	private String pkToJsonArray() throws IOException {
-		MaxwellJson json = MaxwellJson.getInstance();
-		JsonGenerator g = json.reset();
-
-		g.writeStartArray();
-		g.writeString(database);
-		g.writeString(table);
-
-		g.writeStartArray();
-		for (String pk : pkColumns) {
-			Object pkValue = null;
-			if ( data.containsKey(pk) )
-				pkValue = data.get(pk);
-
-			g.writeStartObject();
-			MaxwellJson.writeValueToJSON(g, true, pk.toLowerCase(), pkValue);
-			g.writeEndObject();
-		}
-		g.writeEndArray();
-		g.writeEndArray();
-		return json.consume();
-	}
-
-	public String pkAsConcatString() {
-		if (pkColumns.isEmpty()) {
-			return database + table;
-		}
-		StringBuilder keys = new StringBuilder();
-		for (String pk : pkColumns) {
-			Object pkValue = null;
-			if (data.containsKey(pk))
-				pkValue = data.get(pk);
-			if (pkValue != null)
-				keys.append(pkValue.toString());
-		}
-		if (keys.length() == 0)
-			return "None";
-		return keys.toString();
+	public String pkToJson(KeyFormat format) throws IOException {
+		return getRowIdentity().toKeyJson(format);
 	}
 
 	public String buildPartitionKey(List<String> partitionColumns) {
