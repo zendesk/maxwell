@@ -1,5 +1,13 @@
 # Maxwell changelog
 
+### [v1.19.6](https://github.com/zendesk/maxwell/releases/tag/v1.19.6): "set up for you"
+
+
+- Further fixes for GTID-reconnection issues.
+- Crash sanely when GTID-enabled maxwell is connected to clearly the wrong master,
+  thanks @acampoh
+
+
 ### [v1.19.5](https://github.com/zendesk/maxwell/releases/tag/v1.19.5): "when there is trap"
 
 
