@@ -140,6 +140,17 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 			this.gtidPositioning = false;
 		}
 
+		/*
+			for the moment, the reconnection code in keep-alive is broken;
+			it sends along a binlog file as well as the GTID set,
+			which triggers mysql to jump ahead a binlog.
+			At some point I presume shyko will fix it and we can remove this.
+		 */
+
+		if ( this.gtidPositioning ) {
+			this.client.setKeepAlive(false);
+		}
+
 		EventDeserializer eventDeserializer = new EventDeserializer();
 		eventDeserializer.setCompatibilityMode(
 			EventDeserializer.CompatibilityMode.DATE_AND_TIME_AS_LONG_MICRO,
