@@ -124,6 +124,14 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
+	public void TestLatin1String() {
+		byte input[] = new byte[] { (byte) 128, (byte) 128, (byte) 128, (byte) 128 };
+
+		ColumnDef d = ColumnDef.build("bar", "latin1", "varchar", (short) 1, false, null, null);
+		assertThat((String) d.asJSON(input, null), is("€€€€"));
+	}
+
+	@Test
 	public void TestStringAsJSON() {
 		byte input[] = new byte[] { (byte) 169, (byte) 169, (byte) 169, (byte) 169 };
 
