@@ -49,7 +49,7 @@ public class StringColumnDef extends ColumnDef {
 		case "utf8": case "utf8mb4":
 			return Charset.forName("UTF-8");
 		case "latin1": case "ascii":
-			return Charset.forName("ISO-8859-1");
+			return Charset.forName("Windows-1252");
 		case "ucs2":
 			return Charset.forName("UTF-16");
 		default:
