@@ -1,5 +1,12 @@
 # Maxwell changelog
 
+### [v1.19.7](https://github.com/zendesk/maxwell/releases/tag/v1.19.7): "in every corner of your room"
+
+
+- fix a parser error with empty sql comments
+- interpret latin-1 as windows-1252, not iso-whatever, thx @borleaandrei
+
+
 ### [v1.19.6](https://github.com/zendesk/maxwell/releases/tag/v1.19.6): "set up for you"
 
 
