@@ -155,7 +155,7 @@ kafka.acks=1
 #           *** partitioning ***
 
 # What part of the data do we partition by?
-#producer_partition_by=database # [database, table, primary_key, column]
+#producer_partition_by=database # [database, table, primary_key, transaction_id, column]
 
 # specify what fields to partition by when using producer_partition_by=column
 # column separated list.

@@ -21,6 +21,8 @@ public abstract class AbstractMaxwellPartitioner {
 				return PartitionBy.DATABASE;
 			case "primary_key":
 				return PartitionBy.PRIMARY_KEY;
+			case "transaction_id":
+				return PartitionBy.TRANSACTION_ID;
 			case "column":
 				return PartitionBy.COLUMN;
 			default:
@@ -56,6 +58,8 @@ public abstract class AbstractMaxwellPartitioner {
 				return r.getDatabase();
 			case PRIMARY_KEY:
 				return r.getRowIdentity().toConcatString();
+			case TRANSACTION_ID:
+				return String.valueOf(r.getXid());
 			case COLUMN:
 				String s = r.buildPartitionKey(partitionColumns);
 				if ( s.length() > 0 )
