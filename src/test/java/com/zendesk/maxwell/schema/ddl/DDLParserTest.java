@@ -426,6 +426,12 @@ public class DDLParserTest {
 	}
 
 	@Test
+	public void testCommentSyntax3() {
+		List<SchemaChange> changes = parse("/**/ CREATE DATABASE if not exists `foo`");
+		assertThat(changes.size(), is(1));
+	}
+
+	@Test
 	public void testCurrentTimestamp() {
 		List<SchemaChange> changes = parse("CREATE TABLE `foo` ( `id` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP )");
 		assertThat(changes.size(), is(1));

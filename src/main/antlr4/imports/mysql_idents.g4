@@ -46,6 +46,7 @@ SQL_UPGRADE_ENDCOMMENT: '*/' -> skip;
 MAXWELL_ELIDED_PARSE_ISSUE: '/__MAXWELL__/';
 
 SQL_COMMENT: '/*' ~'!' (.)*? '*/' -> skip;
+SQL_EMPTY_COMMENT: '/**/' -> skip;
 
 SQL_LINE_COMMENT: ('#' | '--') (~'\n')* ('\n' | EOF) -> skip;
 
