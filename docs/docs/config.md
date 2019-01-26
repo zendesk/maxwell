@@ -145,10 +145,10 @@ PRODUCER_TYPE: [ stdout &#124; file &#124; kafka &#124; kinesis &#124; pubsub &#
 DEFAULT_JDBC_OPTS: zeroDateTimeBehavior=convertToNull&amp;connectTimeout=5000
 </p>
 <p id="partition_by" class="jumptarget">
-PARTITION_BY: [ database &#124; table &#124; primary_key &#124; column ]
+PARTITION_BY: [ database &#124; table &#124; primary_key &#124; transaction_id &#124; column ]
 </p>
 <p id="partition_by_fallback" class="jumptarget">
-PARTITION_BY_FALLBACK: [ database &#124; table &#124; primary_key ]
+PARTITION_BY_FALLBACK: [ database &#124; table &#124; primary_key &#124; transaction_id ]
 </p>
 <p id="kafka_version" class="jumptarget">
 KAFKA_VERSION: [ 0.8.2.2 &#124; 0.9.0.1 &#124; 0.10.0.1 &#124; 0.10.2.1 &#124; 0.11.0.1 ]

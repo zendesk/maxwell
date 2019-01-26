@@ -189,11 +189,11 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
 
-		parser.accepts( "producer_partition_by", "database|table|primary_key|column, kafka/kinesis producers will partition by this value").withRequiredArg();
+		parser.accepts( "producer_partition_by", "database|table|primary_key|transaction_id|column, kafka/kinesis producers will partition by this value").withRequiredArg();
 		parser.accepts("producer_partition_columns",
 		    "with producer_partition_by=column, partition by the value of these columns.  "
 			+ "comma separated.").withRequiredArg();
-		parser.accepts( "producer_partition_by_fallback", "database|table|primary_key, fallback to this value when using 'column' partitioning and the columns are not present in the row").withRequiredArg();
+		parser.accepts( "producer_partition_by_fallback", "database|table|primary_key|transaction_id, fallback to this value when using 'column' partitioning and the columns are not present in the row").withRequiredArg();
 
 		parser.accepts( "kafka_version", "kafka client library version: 0.8.2.2|0.9.0.1|0.10.0.1|0.10.2.1|0.11.0.1|1.0.0").withRequiredArg();
 		parser.accepts( "kafka_partition_by", "[deprecated]").withRequiredArg();
@@ -565,15 +565,15 @@ public class MaxwellConfig extends AbstractConfig {
 			this.producerPartitionFallback = this.kafkaPartitionFallback;
 		}
 
-		String[] validPartitionBy = {"database", "table", "primary_key", "column"};
+		String[] validPartitionBy = {"database", "table", "primary_key", "transaction_id", "column"};
 		if ( this.producerPartitionKey == null ) {
 			this.producerPartitionKey = "database";
 		} else if ( !ArrayUtils.contains(validPartitionBy, this.producerPartitionKey) ) {
-			usageForOptions("please specify --producer_partition_by=database|table|primary_key|column", "producer_partition_by");
+			usageForOptions("please specify --producer_partition_by=database|table|primary_key|transaction_id|column", "producer_partition_by");
 		} else if ( this.producerPartitionKey.equals("column") && StringUtils.isEmpty(this.producerPartitionColumns) ) {
 			usageForOptions("please specify --producer_partition_columns=column1 when using producer_partition_by=column", "producer_partition_columns");
 		} else if ( this.producerPartitionKey.equals("column") && StringUtils.isEmpty(this.producerPartitionFallback) ) {
-			usageForOptions("please specify --producer_partition_by_fallback=[database, table, primary_key] when using producer_partition_by=column", "producer_partition_by_fallback");
+			usageForOptions("please specify --producer_partition_by_fallback=[database, table, primary_key, transaction_id] when using producer_partition_by=column", "producer_partition_by_fallback");
 		}
 
 	}
