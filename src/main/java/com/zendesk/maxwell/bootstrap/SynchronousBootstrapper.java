@@ -1,10 +1,8 @@
 package com.zendesk.maxwell.bootstrap;
 
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
-import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.producer.AbstractProducer;
-import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.replication.Replicator;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.Database;
@@ -157,6 +155,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 	public void work(RowMap row, AbstractProducer producer, Replicator replicator) throws Exception {
 		try {
 			if ( isStartBootstrapRow(row) ) {
+				producer.push(row);
 				startBootstrap(BootstrapTask.valueOf(row), producer, replicator);
 			}
 		} catch ( NoSuchElementException e ) {
