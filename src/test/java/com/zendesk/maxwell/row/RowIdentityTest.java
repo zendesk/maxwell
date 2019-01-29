@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 
 public class RowIdentityTest {
@@ -23,6 +24,15 @@ public class RowIdentityTest {
 
 		String jsonArray = rowId.toKeyJson(RowMap.KeyFormat.ARRAY);
 		Assert.assertEquals("[\"MyDatabase\",\"MyTable\",[{\"id\":111},{\"account\":123}]]", jsonArray);
+	}
+
+	@Test
+	public void testToFallbackValueWithReason() throws IOException {
+		RowIdentity rowId = new RowIdentity("MyDatabase", "MyTable",
+			Collections.singletonList(Pair.of("id", 111)));
+
+		String jsonString = rowId.toFallbackValueWithReason("too big");
+		Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\",\"reason\":\"too big\",\"data\":{\"id\":111}}", jsonString);
 	}
 
 	@Test

@@ -6,6 +6,7 @@ import com.zendesk.maxwell.MaxwellConfig;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.Position;
+import com.zendesk.maxwell.row.RowIdentity;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.NotEnoughReplicasException;
@@ -18,13 +19,14 @@ public class KafkaCallbackTest {
 	@Test
 	public void shouldIgnoreProducerErrorByDefault() {
 		MaxwellContext context = mock(MaxwellContext.class);
+		MaxwellKafkaProducerWorker producer = mock(MaxwellKafkaProducerWorker.class);
 		MaxwellConfig config = new MaxwellConfig();
 		when(context.getConfig()).thenReturn(config);
 		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
 		KafkaCallback callback = new KafkaCallback(cc,
-			new Position(new BinlogPosition(1, "binlog-1"), 0L), "key", "value",
+			new Position(new BinlogPosition(1, "binlog-1"), 0L), new RowIdentity("a", "b", null), "value",
 			new Counter(), new Counter(), new Meter(), new Meter(),
-			context);
+			null, context, producer);
 		NotEnoughReplicasException error = new NotEnoughReplicasException("blah");
 		callback.onCompletion(new RecordMetadata(new TopicPartition("topic", 1), 1, 1, 1, new Long(1), 1, 1), error);
 		verify(cc).markCompleted();
@@ -33,14 +35,15 @@ public class KafkaCallbackTest {
 	@Test
 	public void shouldTerminateWhenNotIgnoreProducerError() {
 		MaxwellContext context = mock(MaxwellContext.class);
+		MaxwellKafkaProducerWorker producer = mock(MaxwellKafkaProducerWorker.class);
 		MaxwellConfig config = new MaxwellConfig();
 		config.ignoreProducerError = false;
 		when(context.getConfig()).thenReturn(config);
 		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
 		KafkaCallback callback = new KafkaCallback(cc,
-			new Position(new BinlogPosition(1, "binlog-1"), 0L), "key", "value",
+			new Position(new BinlogPosition(1, "binlog-1"), 0L), new RowIdentity("a", "b", null), "value",
 			new Counter(), new Counter(), new Meter(), new Meter(),
-			context);
+			null, context, producer);
 		NotEnoughReplicasException error = new NotEnoughReplicasException("blah");
 		callback.onCompletion(new RecordMetadata(new TopicPartition("topic", 1), 1, 1, 1, new Long(1), 1, 1), error);
 		verify(context).terminate(error);
