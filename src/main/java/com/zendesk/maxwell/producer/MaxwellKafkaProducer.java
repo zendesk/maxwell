@@ -103,6 +103,9 @@ class KafkaCallback implements Callback {
 		}
 	}
 
+	String getFallbackTopic() {
+		return fallbackTopic;
+	}
 }
 
 public class MaxwellKafkaProducer extends AbstractProducer {
