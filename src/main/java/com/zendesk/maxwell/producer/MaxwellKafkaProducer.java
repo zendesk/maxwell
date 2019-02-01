@@ -150,6 +150,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	private final ArrayBlockingQueue<RowMap> queue;
 	private Thread thread;
 	private StoppableTaskState taskState;
+	private String deadLetterTopic;
 
 	public static MaxwellKafkaPartitioner makeDDLPartitioner(String partitionHashFunc, String partitionKey) {
 		if ( partitionKey.equals("table") ) {
@@ -179,6 +180,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 
 		this.ddlPartitioner = makeDDLPartitioner(hash, partitionKey);
 		this.ddlTopic =  context.getConfig().ddlKafkaTopic;
+		this.deadLetterTopic = context.getConfig().deadLetterTopic;
 
 		if ( context.getConfig().kafkaKeyFormat.equals("hash") )
 			keyFormat = KeyFormat.HASH;
@@ -233,7 +235,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 
 		KafkaCallback callback = new KafkaCallback(cc, r.getNextPosition(), r.getRowIdentity(), value,
 				this.succeededMessageCount, this.failedMessageCount, this.succeededMessageMeter, this.failedMessageMeter,
-				this.context.getConfig().deadLetterTopic, this.context, this);
+				this.deadLetterTopic, this.context, this);
 
 		sendAsync(record, callback);
 	}
