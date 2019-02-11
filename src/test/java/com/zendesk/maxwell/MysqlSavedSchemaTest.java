@@ -1,8 +1,7 @@
 package com.zendesk.maxwell;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -14,6 +13,8 @@ import java.util.Arrays;
 
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.Position;
+import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
+import com.zendesk.maxwell.schema.ddl.SchemaChange;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -336,5 +337,92 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 			serverId, caseSensitivity, targetBinlogPosition);
 		assertThat(foundSchema.getBinlogPosition(), equalTo(expectedSchema.getBinlogPosition()));
 		assertThat(foundSchema.getSchemaID(), equalTo(expectedSchema.getSchemaID()));
+	}
+
+	@Test
+	public void testCompact() throws Exception {
+		Connection c = context.getMaxwellConnection();
+		savedSchema.save(c);
+		assertEquals(0, savedSchema.getSchemaChainLength());
+
+		Position p = null;
+		for (int i = 1; i <= 10; i++) {
+			p = derive("test", "CREATE TABLE `compact_test_" + i + "` (`foo` VARCHAR(255))");
+			assertEquals(i, savedSchema.getSchemaChainLength());
+		}
+		assertNotNull(p);
+		p = new Position(
+			new BinlogPosition(
+				p.getBinlogPosition().getOffset() + 1,
+				p.getBinlogPosition().getFile()
+			),
+			1
+		);
+
+		// actual length 10 < 50, compaction won't trigger
+		assertEquals(0, savedSchema.compact(c, 50, 5));
+		assertEquals(10, savedSchema.getSchemaChainLength());
+
+		// compaction triggered, some schemas in chain left
+		{
+			assertEquals(3, savedSchema.compact(c, 8, 7));
+			assertEquals(7, savedSchema.getSchemaChainLength());
+
+			MysqlSavedSchema restoredSchema = MysqlSavedSchema.restore(context, p);
+			assertEquals(savedSchema.getSchemaID(), restoredSchema.getSchemaID());
+			List<String> diff = savedSchema.getSchema().diff(restoredSchema.getSchema(), "compacted", "restored");
+			assertThat(StringUtils.join(diff, "\n"), diff.size(), is(0));
+		}
+
+		// compaction trigger, NO schemas in chain left
+		{
+			assertEquals(7, savedSchema.compact(c, 5, 0));
+			assertEquals(0, savedSchema.getSchemaChainLength());
+
+			MysqlSavedSchema restoredSchema = MysqlSavedSchema.restore(context, p);
+			assertEquals(savedSchema.getSchemaID(), restoredSchema.getSchemaID());
+			List<String> diff = savedSchema.getSchema().diff(restoredSchema.getSchema(), "compacted", "restored");
+			assertThat(StringUtils.join(diff, "\n"), diff.size(), is(0));
+		}
+	}
+
+	private Position derive(String currentDB, String sql) throws InvalidSchemaError, SQLException {
+		Schema schema = savedSchema.getSchema();
+
+		List<SchemaChange> changes = SchemaChange.parse(currentDB, sql);
+		List<ResolvedSchemaChange> resolvedChanges = new ArrayList<>();
+		if (changes != null) {
+			for (SchemaChange change : changes) {
+				ResolvedSchemaChange resolvedChange = change.resolve(schema);
+				if (resolvedChange != null) {
+					resolvedChange.apply(schema);
+					resolvedChanges.add(resolvedChange);
+				}
+			}
+		}
+
+		BinlogPosition bp = new BinlogPosition(
+			savedSchema.getBinlogPosition().getOffset() + 1,
+			savedSchema.getBinlogPosition().getFile()
+		);
+		Position p = new Position(bp, 1);
+
+		savedSchema = savedSchema.createDerivedSchema(schema, p, resolvedChanges);
+		savedSchema.save(context.getMaxwellConnection());
+
+		return p;
+	}
+
+	@Test(expected = RuntimeException.class)
+	public void testCompactThrowsUnlessSchemaSaved() throws Exception {
+		Connection c = context.getMaxwellConnection();
+		savedSchema.compact(c, 10, 0);
+	}
+
+	@Test(expected = AssertionError.class)
+	public void testCompactThrowsIfChainMaxLengthLessThanLength() throws Exception {
+		Connection c = context.getMaxwellConnection();
+		savedSchema.save(c);
+		savedSchema.compact(c, 5, 100);
 	}
 }

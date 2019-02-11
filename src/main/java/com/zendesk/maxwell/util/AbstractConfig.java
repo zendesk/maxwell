@@ -122,6 +122,19 @@ public abstract class AbstractConfig {
 		}
 	}
 
+	protected int fetchIntOption(String name, OptionSet options, Properties properties, int defaultValue) {
+		String strOption = fetchOption(name, options, properties, null);
+		if (strOption == null) {
+			return defaultValue;
+		}
+
+		try {
+			return Integer.parseInt(strOption);
+		} catch (NumberFormatException e) {
+			usageForOptions("Invalid value for " + name + ", integer required", "--" + name);
+			return defaultValue; // unreached
+		}
+	}
 
 	protected MaxwellMysqlConfig parseMysqlConfig(String prefix, OptionSet options, Properties properties) {
 		MaxwellMysqlConfig config = new MaxwellMysqlConfig();

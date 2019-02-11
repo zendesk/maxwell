@@ -104,6 +104,8 @@ public class MaxwellConfig extends AbstractConfig {
 	public boolean masterRecovery;
 	public boolean ignoreProducerError;
 	public boolean recaptureSchema;
+	public int schemaChainLength;
+	public int schemaChainMaxLength;
 
 	public String rabbitmqUser;
 	public String rabbitmqPass;
@@ -247,6 +249,8 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "gtid_mode", "(experimental) enable gtid mode" ).withOptionalArg();
 		parser.accepts( "ignore_producer_error", "Maxwell will be terminated on kafka/kinesis errors when false. Otherwise, those producer errors are only logged. Default to true" ).withOptionalArg();
 		parser.accepts( "recapture_schema", "recapture the latest schema" ).withOptionalArg();
+		parser.accepts( "schema_chain_length", "length of schema chain after compaction" ).withRequiredArg();
+		parser.accepts( "schema_chain_max_length", "if schema chain reaches this length, it will be compacted to `schema_chain_length`" ).withRequiredArg();
 
 		parser.accepts( "__separator_7" );
 
@@ -507,6 +511,17 @@ public class MaxwellConfig extends AbstractConfig {
 		this.masterRecovery = fetchBooleanOption("master_recovery", options, properties, false);
 		this.ignoreProducerError = fetchBooleanOption("ignore_producer_error", options, properties, true);
 		this.recaptureSchema = fetchBooleanOption("recapture_schema", options, null, false);
+
+		this.schemaChainLength = fetchIntOption("schema_chain_length", options, properties, -1);
+		this.schemaChainMaxLength = fetchIntOption("schema_chain_max_length", options, properties, -1);
+		if (this.schemaChainMaxLength >= 0) {
+			if (this.schemaChainLength < 0) {
+				usageForOptions("Invalid schema_chain_length: must not be negative", "--schema_chain_length");
+			}
+			if (this.schemaChainLength > this.schemaChainMaxLength) {
+				usageForOptions("Invalid schema_chain_length: must not be greater than schema_chain_max_length", "--schema_chain_length", "--schema_chain_max_length");
+			}
+		}
 
 		outputConfig.includesBinlogPosition = fetchBooleanOption("output_binlog_position", options, properties, false);
 		outputConfig.includesGtidPosition = fetchBooleanOption("output_gtid_position", options, properties, false);

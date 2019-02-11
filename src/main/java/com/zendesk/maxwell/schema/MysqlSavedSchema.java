@@ -16,7 +16,6 @@ import com.zendesk.maxwell.schema.columndef.*;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.text.StrTokenizer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,28 +28,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import snaq.db.ConnectionPool;
 
-
 public class MysqlSavedSchema {
-	static int SchemaStoreVersion = 4;
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(MysqlSavedSchema.class);
+	private static final int SCHEMA_STORE_VERSION = 4;
+	private static final ObjectMapper mapper = new ObjectMapper();
+	private static final JavaType listOfResolvedSchemaChangeType = mapper.getTypeFactory().constructCollectionType(List.class, ResolvedSchemaChange.class);
+
+	private final Long serverID;
+	private final CaseSensitivity sensitivity;
 
 	private Schema schema;
 	private Position position;
 	private Long schemaID;
 	private int schemaVersion;
-
-	private Long baseSchemaID;
+	private SchemaChain schemaChain = new SchemaChain();
 	private List<ResolvedSchemaChange> deltas;
-
-	private static final ObjectMapper mapper = new ObjectMapper();
-	private static final JavaType listOfResolvedSchemaChangeType = mapper.getTypeFactory().constructCollectionType(List.class, ResolvedSchemaChange.class);
-
-	static final Logger LOGGER = LoggerFactory.getLogger(MysqlSavedSchema.class);
-
-	private final static String columnInsertSQL =
-		"INSERT INTO `columns` (schema_id, table_id, name, charset, coltype, is_signed, enum_values, column_length) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-
-	private final CaseSensitivity sensitivity;
-	private final Long serverID;
 
 	private boolean shouldSnapshotNextSchema = false;
 
@@ -62,34 +55,31 @@ public class MysqlSavedSchema {
 	public MysqlSavedSchema(Long serverID, CaseSensitivity sensitivity, Schema schema, Position position) throws SQLException {
 		this(serverID, sensitivity);
 		this.schema = schema;
-		setPosition(position);
+		this.position = position;
 	}
 
 	public MysqlSavedSchema(MaxwellContext context, Schema schema, Position position) throws SQLException {
 		this(context.getServerID(), context.getCaseSensitivity(), schema, position);
 	}
 
-	public MysqlSavedSchema(Long serverID, CaseSensitivity sensitivity, Schema schema, Position position,
-							long baseSchemaID, List<ResolvedSchemaChange> deltas) throws SQLException {
+	public MysqlSavedSchema(Long serverID, CaseSensitivity sensitivity, Schema schema, Position position, List<ResolvedSchemaChange> deltas, MysqlSavedSchema base) throws SQLException {
 		this(serverID, sensitivity, schema, position);
-
-		this.baseSchemaID = baseSchemaID;
 		this.deltas = deltas;
+		this.schemaChain = base.schemaChain.with(base.schemaID);
 	}
 
 	public MysqlSavedSchema createDerivedSchema(Schema newSchema, Position position, List<ResolvedSchemaChange> deltas) throws SQLException {
 		if ( this.shouldSnapshotNextSchema )
-			return new MysqlSavedSchema(this.serverID, this.sensitivity, newSchema, position);
+			return new MysqlSavedSchema(serverID, sensitivity, newSchema, position);
 		else
-			return new MysqlSavedSchema(this.serverID, this.sensitivity, newSchema, position, this.schemaID, deltas);
+			return new MysqlSavedSchema(serverID, sensitivity, newSchema, position, deltas, this);
 	}
 
 	public Long getSchemaID() {
 		return schemaID;
 	}
 
-	private static Long executeInsert(PreparedStatement preparedStatement,
-			Object... values) throws SQLException {
+	private static Long executeInsert(PreparedStatement preparedStatement, Object... values) throws SQLException {
 		for (int i = 0; i < values.length; i++) {
 			preparedStatement.setObject(i + 1, values[i]);
 		}
@@ -162,13 +152,13 @@ public class MysqlSavedSchema {
 
 		return executeInsert(
 			insert,
-			this.baseSchemaID,
+			this.schemaChain.id(),
 			deltaString,
 			binlogPosition.getFile(),
 			binlogPosition.getOffset(),
 			serverID,
 			schema.getCharset(),
-			SchemaStoreVersion,
+			SCHEMA_STORE_VERSION,
 			getPositionSHA(),
 			binlogPosition.getGtidSetStr(),
 			position.getLastHeartbeatRead()
@@ -177,15 +167,27 @@ public class MysqlSavedSchema {
 	}
 
 	public Long saveSchema(Connection conn) throws SQLException {
-		if ( this.baseSchemaID != null )
+		if (this.schemaChain.length() > 0) {
 			return saveDerivedSchema(conn);
-
-		PreparedStatement schemaInsert, databaseInsert, tableInsert;
-
-		schemaInsert = conn.prepareStatement(
+		} else {
+			PreparedStatement schemaInsert = conn.prepareStatement(
 				"INSERT INTO `schemas` SET binlog_file = ?, binlog_position = ?, server_id = ?, charset = ?, version = ?, position_sha = ?, gtid_set = ?, last_heartbeat_read = ?",
 				Statement.RETURN_GENERATED_KEYS
-		);
+			);
+
+			BinlogPosition binlogPosition = position.getBinlogPosition();
+			Long schemaId = executeInsert(schemaInsert, binlogPosition.getFile(),
+				binlogPosition.getOffset(), serverID, schema.getCharset(), SCHEMA_STORE_VERSION,
+				getPositionSHA(), binlogPosition.getGtidSetStr(), position.getLastHeartbeatRead());
+
+			saveFullSchemaData(conn, schemaId);
+
+			return schemaId;
+		}
+	}
+
+	private void saveFullSchemaData(Connection conn, Long schemaId) throws SQLException {
+		PreparedStatement databaseInsert, tableInsert;
 
 		databaseInsert = conn.prepareStatement(
 				"INSERT INTO `databases` SET schema_id = ?, name = ?, charset=?",
@@ -196,11 +198,6 @@ public class MysqlSavedSchema {
 				"INSERT INTO `tables` SET schema_id = ?, database_id = ?, name = ?, charset=?, pk=?",
 				Statement.RETURN_GENERATED_KEYS
 		);
-
-		BinlogPosition binlogPosition = position.getBinlogPosition();
-		Long schemaId = executeInsert(schemaInsert, binlogPosition.getFile(),
-				binlogPosition.getOffset(), serverID, schema.getCharset(), SchemaStoreVersion,
-				getPositionSHA(), binlogPosition.getGtidSetStr(), position.getLastHeartbeatRead());
 
 		ArrayList<Object> columnData = new ArrayList<Object>();
 
@@ -262,12 +259,10 @@ public class MysqlSavedSchema {
 		}
 		if ( columnData.size() > 0 )
 			executeColumnInsert(conn, columnData);
-
-		return schemaId;
 	}
 
 	private void executeColumnInsert(Connection conn, ArrayList<Object> columnData) throws SQLException {
-		String insertColumnSQL = this.columnInsertSQL;
+		String insertColumnSQL = "INSERT INTO `columns` (schema_id, table_id, name, charset, coltype, is_signed, enum_values, column_length) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
 		for (int i=1; i < columnData.size() / 8; i++) {
 			insertColumnSQL = insertColumnSQL + ", (?, ?, ?, ?, ?, ?, ?, ?)";
@@ -354,29 +349,32 @@ public class MysqlSavedSchema {
 		delta-schema
 	 */
 
-	private LinkedList<Long> buildSchemaChain(HashMap<Long, HashMap<String, Object>> schemas, Long schema_id) {
-		LinkedList<Long> schemaChain = new LinkedList<>();
+	private SchemaChain buildSchemaChain(HashMap<Long, HashMap<String, Object>> schemas, Long schema_id) {
+		SchemaChain schemaChain = new SchemaChain();
 
 		while ( schema_id != null ) {
 			if ( !schemas.containsKey(schema_id) )
 				throw new RuntimeException("Couldn't find chained schema: " + schema_id);
 
-			schemaChain.addFirst(schema_id);
+			schemaChain.push(schema_id);
 
 			schema_id = (Long) schemas.get(schema_id).get("base_schema_id");
 		}
 		return schemaChain;
 	}
 
-	private void restoreDerivedSchema(Connection conn, Long schema_id) throws SQLException, InvalidSchemaError {
+	private void restoreDerivedSchema(Connection conn) throws SQLException, InvalidSchemaError {
 		/* build hashmap of schemaID -> schema properties (as hash) */
 		HashMap<Long, HashMap<String, Object>> schemas = buildSchemaMap(conn);
 
 		/* walk backwards to build linked list with base schema at the
 		 * head, and the rest of the delta schemas following */
-		LinkedList<Long> schemaChain = buildSchemaChain(schemas, schema_id);
+		SchemaChain deltasChain = buildSchemaChain(schemas, schemaID);
 
-		Long firstSchemaId = schemaChain.removeFirst();
+		Long firstSchemaId = deltasChain.id();
+		deltasChain.pop();
+		schemaChain = new SchemaChain();
+		schemaChain.push(firstSchemaId);
 
 		/* do the "full" restore of the schema snapshot */
 		MysqlSavedSchema firstSchema = new MysqlSavedSchema(serverID, sensitivity);
@@ -388,8 +386,9 @@ public class MysqlSavedSchema {
 		long startTime = System.currentTimeMillis();
 
 		/* now walk the chain and play each schema's deltas on top of the snapshot */
-		for ( Long id : schemaChain ) {
-			List<ResolvedSchemaChange> deltas = parseDeltas((String) schemas.get(id).get("deltas"));
+		for (Long deltaSchemaID : deltasChain) {
+			List<ResolvedSchemaChange> deltas = parseDeltas((String) schemas.get(deltaSchemaID).get("deltas"));
+			schemaChain.push(deltaSchemaID);
 			for ( ResolvedSchemaChange delta : deltas ) {
 				delta.apply(schema);
 			}
@@ -401,48 +400,46 @@ public class MysqlSavedSchema {
 		LOGGER.info("played " + count + " deltas in " + elapsed + "ms");
 	}
 
-	protected void restoreFromSchemaID(Connection conn, Long schemaID) throws SQLException, InvalidSchemaError {
-		restoreSchemaMetadata(conn, schemaID);
-
-		if (this.baseSchemaID != null) {
-			LOGGER.debug("Restoring derived schema");
-			restoreDerivedSchema(conn, schemaID);
-		} else {
+	private void restoreFromSchemaID(Connection conn, Long schemaID) throws SQLException, InvalidSchemaError {
+		boolean isFullSchema = restoreSchemaMetadata(conn, schemaID);
+		if (isFullSchema) {
 			LOGGER.debug("Restoring full schema");
-			restoreFullSchema(conn, schemaID);
+			restoreFullSchema(conn);
+		} else {
+			LOGGER.debug("Restoring derived schema");
+			restoreDerivedSchema(conn);
 		}
 	}
 
-	private void restoreSchemaMetadata(Connection conn, Long schemaID) throws SQLException {
+	private boolean restoreSchemaMetadata(Connection conn, Long schemaID) throws SQLException {
 		PreparedStatement p = conn.prepareStatement("select * from `schemas` where id = " + schemaID);
 		ResultSet schemaRS = p.executeQuery();
 
 		schemaRS.next();
 
-		setPosition(new Position(
+		this.position = new Position(
 			new BinlogPosition(
 				schemaRS.getString("gtid_set"),
 				null,
 				schemaRS.getInt("binlog_position"),
 				schemaRS.getString("binlog_file")
-			), schemaRS.getLong("last_heartbeat_read")
-		));
+			),
+			schemaRS.getLong("last_heartbeat_read")
+		);
 
 		LOGGER.info("Restoring schema id " + schemaRS.getInt("id") + " (last modified at " + this.position + ")");
 
 		this.schemaID = schemaRS.getLong("id");
-		this.baseSchemaID = schemaRS.getLong("base_schema_id");
-
-		if ( schemaRS.wasNull() )
-			this.baseSchemaID = null;
-
 		this.deltas = parseDeltas(schemaRS.getString("deltas"));
 		this.schemaVersion = schemaRS.getInt("version");
 		this.schema = new Schema(new ArrayList<Database>(), schemaRS.getString("charset"), this.sensitivity);
+
+		// FIXME: single call?
+		schemaRS.getLong("base_schema_id");
+		return schemaRS.wasNull();
 	}
 
-
-	private void restoreFullSchema(Connection conn, Long schemaID) throws SQLException, InvalidSchemaError {
+	private void restoreFullSchema(Connection conn) throws SQLException, InvalidSchemaError {
 		PreparedStatement p = conn.prepareStatement(
 				"SELECT " +
 						"d.id AS dbId," +
@@ -465,7 +462,7 @@ public class MysqlSavedSchema {
 						"ORDER BY d.id, t.id, c.id"
 		);
 
-		p.setLong(1, this.schemaID);
+		p.setLong(1, schemaID);
 		ResultSet rs = p.executeQuery();
 
 		Database currentDatabase = null;
@@ -613,10 +610,6 @@ public class MysqlSavedSchema {
 		this.schema = s;
 	}
 
-	private void setPosition(Position position) {
-		this.position = position;
-	}
-
 	public static void delete(Connection connection, long schema_id) throws SQLException {
 		connection.createStatement().execute("update `schemas` set deleted = 1 where id = " + schema_id);
 	}
@@ -761,4 +754,199 @@ public class MysqlSavedSchema {
 		);
 		return DigestUtils.shaHex(shaString);
 	}
+
+	public int getSchemaChainLength() {
+		return schemaChain.length();
+	}
+
+	public int compact(Connection connection, int chainMaxLength, int chainLength) throws SQLException {
+		if (chainMaxLength < 0) {
+			return 0;
+		}
+
+		assert chainLength <= chainMaxLength;
+
+		if (schemaID == null) {
+			throw new RuntimeException("Schema not saved yet.");
+		}
+		if (schemaChain.length() <= chainLength || schemaChain.length() < chainMaxLength) {
+			return 0;
+		}
+
+		long[] removeIds;
+		SchemaChain newSchemaChain = new SchemaChain();
+
+		connection.setAutoCommit(false);
+		try {
+			Long newBaseSchemaID;
+
+			if (chainLength == 0) {
+				// remove all base schemas
+
+				removeIds = new long[schemaChain.length()];
+				int n = 0;
+				for (long id : schemaChain) {
+					removeIds[n++] = id;
+				}
+				newBaseSchemaID = schemaID;
+				saveFullSchemaData(connection, schemaID);
+
+			} else {
+				// split chain between schemas to keep and to remove
+
+				long[] keepIds = new long[chainLength];
+				removeIds = new long[schemaChain.length() - chainLength];
+				int n = 0;
+				for (long id : schemaChain) {
+					if (n < chainLength) {
+						keepIds[n++] = id;
+					} else {
+						removeIds[n++ - chainLength] = id;
+					}
+				}
+
+				// save new base schema data
+				newBaseSchemaID = keepIds[chainLength - 1];
+
+				MysqlSavedSchema newBase = new MysqlSavedSchema(serverID, sensitivity);
+				try {
+					newBase.restoreFromSchemaID(connection, newBaseSchemaID);
+				} catch (InvalidSchemaError e) {
+					throw new RuntimeException("Couldn't restore schema " + newBaseSchemaID + ".", e);
+				}
+
+				newBase.saveFullSchemaData(connection, newBase.schemaID);
+
+				for (int i = keepIds.length - 1; i >= 0; i--) {
+					newSchemaChain.push(keepIds[i]);
+				}
+			}
+
+			// remove reference to parent of the new base
+			try (PreparedStatement stmt = connection.prepareStatement(
+				"UPDATE `schemas` SET `base_schema_id` = NULL, `deltas` = NULL WHERE `id`= ?"
+			)) {
+				stmt.setLong(1, newBaseSchemaID);
+				stmt.executeUpdate();
+			}
+
+			// clean up
+			StringBuilder inSQL = new StringBuilder();
+			for (int i = 0; i < removeIds.length; i++) {
+				if (inSQL.length() > 0) {
+					inSQL.append(", ");
+				}
+				inSQL.append("?");
+			}
+			for (String tableName : new String[]{"columns", "tables", "databases"}) {
+				try (PreparedStatement stmt = connection.prepareStatement(
+					"DELETE FROM `" + tableName + "` WHERE `schema_id` IN (" + inSQL + ")"
+				)) {
+					for (int i = 0; i < removeIds.length; i++) {
+						stmt.setLong(i + 1, removeIds[i]);
+					}
+					stmt.executeUpdate();
+				}
+			}
+
+			try (PreparedStatement stmt = connection.prepareStatement(
+				"DELETE FROM `schemas` WHERE `id` IN (" + inSQL + ")"
+			)) {
+				for (int i = 0; i < removeIds.length; i++) {
+					stmt.setLong(i + 1, removeIds[i]);
+				}
+				stmt.executeUpdate();
+			}
+
+			connection.commit();
+
+		} catch (Throwable e) {
+			connection.rollback();
+			throw e;
+
+		} finally {
+			connection.setAutoCommit(true);
+		}
+
+		schemaChain = newSchemaChain;
+		if (schemaChain.length() == 0) {
+			deltas = null;
+		}
+
+		return removeIds.length;
+	}
+
+	private static class SchemaChain implements Iterable<Long> {
+		private Node head;
+		private int length;
+
+		public Long id() {
+			if (head == null) {
+				return null;
+			}
+			return head.id;
+		}
+
+		public void push(long id) {
+			head = new Node(id, head);
+			length++;
+		}
+
+		public void pop() {
+			if (head == null) {
+				throw new NullPointerException("Chain is empty.");
+			}
+			head = head.next;
+			length--;
+		}
+
+		public SchemaChain with(long id) {
+			SchemaChain copy = new SchemaChain();
+			copy.head = head;
+			copy.length = length;
+			copy.push(id);
+			return copy;
+		}
+
+		public int length() {
+			return length;
+		}
+
+		@Override
+		public java.util.Iterator<Long> iterator() {
+			return new Iterator(head);
+		}
+
+		private static class Node {
+			final long id;
+			final Node next;
+
+			Node(long id, Node next) {
+				this.id = id;
+				this.next = next;
+			}
+		}
+
+		private static class Iterator implements java.util.Iterator<Long> {
+			Node head;
+
+			Iterator(Node head) {
+				this.head = head;
+			}
+
+			@Override
+			public boolean hasNext() {
+				return head != null;
+			}
+
+			@Override
+			public Long next() {
+				Long value = head.id;
+				head = head.next;
+				return value;
+			}
+		}
+
+	}
+
 }
