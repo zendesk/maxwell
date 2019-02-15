@@ -157,6 +157,7 @@ public class DDLParserTest {
 	@Test
 	public void testParsingSomeAlters() {
 		String testSQL[] = {
+			"alter table t add column c varchar(255) default 'string1' 'string2'",
 			"alter table t add column mortgage_item BIT(4) NOT NULL DEFAULT 0b0000",
 			"alter table t add column mortgage_item BIT(4) NOT NULL DEFAULT 'b'01010",
 			"alter table t add column mortgage_item BIT(4) NOT NULL DEFAULT 'B'01010",

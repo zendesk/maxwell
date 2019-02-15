@@ -96,7 +96,7 @@ charset_def: character_set | ASCII;
 character_set: ((CHARACTER SET) | CHARSET) charset_name;
 
 nullability: (NOT NULL | NULL);
-default_value: DEFAULT (literal | CURRENT_TIMESTAMP current_timestamp_length? | now_function | localtime_function);
+default_value: DEFAULT (literal_with_weirdo_multistring | CURRENT_TIMESTAMP current_timestamp_length? | now_function | localtime_function);
 length: '(' INTEGER_LITERAL ')';
 int_flags: ( SIGNED | UNSIGNED | ZEROFILL );
 decimal_length: '(' INTEGER_LITERAL ( ',' INTEGER_LITERAL )? ')';

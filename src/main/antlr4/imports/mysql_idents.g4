@@ -18,6 +18,7 @@ user_token: (IDENT | QUOTED_IDENT | string_literal);
 name: ( id | tokens_available_for_names | INTEGER_LITERAL | DBL_STRING_LITERAL );
 id: ( IDENT | QUOTED_IDENT );
 literal: (float_literal | integer_literal | string_literal | byte_literal | NULL | TRUE | FALSE);
+literal_with_weirdo_multistring: (float_literal | integer_literal | string_literal+ | byte_literal | NULL | TRUE | FALSE);
 
 float_literal: ('+'|'-')? INTEGER_LITERAL? '.' INTEGER_LITERAL;
 integer_literal: ('+'|'-')? INTEGER_LITERAL;
