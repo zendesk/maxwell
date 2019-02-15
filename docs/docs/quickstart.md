@@ -49,14 +49,15 @@ to row-based replication.
 
 *Permissions:* Maxwell needs permissions to store state in the database specified by the `schema_database` option (default `maxwell`).
 ```
-mysql> GRANT ALL on maxwell.* to 'maxwell'@'%' identified by 'XXXXXX';
-mysql> GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE on *.* to 'maxwell'@'%';
+mysql> CREATE USER 'maxwell'@'%' IDENTIFIED BY 'XXXXXX';
+mysql> GRANT ALL ON maxwell.* TO 'maxwell'@'%';
+mysql> GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'maxwell'@'%';
 
 # or for running maxwell locally:
 
-mysql> GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE on *.* to 'maxwell'@'localhost' identified by 'XXXXXX';
-mysql> GRANT ALL on maxwell.* to 'maxwell'@'localhost';
-
+mysql> CREATE USER 'maxwell'@'localhost' IDENTIFIED BY 'XXXXXX';
+mysql> GRANT ALL ON maxwell.* TO 'maxwell'@'localhost';
+mysql> GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'maxwell'@'localhost';
 ```
 
 ### Run Maxwell
