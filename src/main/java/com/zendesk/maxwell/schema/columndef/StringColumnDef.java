@@ -52,6 +52,8 @@ public class StringColumnDef extends ColumnDef {
 			return Charset.forName("Windows-1252");
 		case "ucs2":
 			return Charset.forName("UTF-16");
+		case "ujis":
+			return Charset.forName("EUC-JP");
 		default:
 			try {
 				return Charset.forName(charset.toLowerCase());
