@@ -2,6 +2,8 @@ package com.zendesk.maxwell.schema.ddl;
 
 import com.zendesk.maxwell.schema.Table;
 
+import java.util.List;
+
 abstract class ColumnMod {
 	public String name;
 
@@ -18,5 +20,5 @@ abstract class ColumnMod {
 		return originalIndex;
 	}
 
-	public abstract void apply(Table table) throws InvalidSchemaError;
+	public abstract void apply(Table table, List<DeferredPositionUpdate> deferred) throws InvalidSchemaError;
 }
