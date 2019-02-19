@@ -96,11 +96,7 @@ class KafkaCallback implements Callback {
 		KafkaCallback cb = new KafkaCallback(cc, position, key, json,
 			succeededMessageCount, failedMessageCount, succeededMessageMeter,
 			failedMessageMeter, null, context, producer);
-		try {
-			producer.sendFallbackAsync(fallbackTopic, key, cb, e);
-		} catch (Exception fallbackEx) {
-			cb.onCompletion(md, fallbackEx);
-		}
+		producer.sendFallbackAsync(fallbackTopic, key, cb, md, e);
 	}
 
 	String getFallbackTopic() {
@@ -240,9 +236,13 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		sendAsync(record, callback);
 	}
 
-	public void sendFallbackAsync(String topic, RowIdentity fallbackRecord, KafkaCallback callback, Exception reason) throws Exception {
-		ProducerRecord<String, String> record = makeFallbackRecord(topic, fallbackRecord, reason);
-		sendAsync(record, callback);
+	public void sendFallbackAsync(String topic, RowIdentity fallbackRecord, KafkaCallback callback, RecordMetadata md, Exception reason) {
+		try {
+			ProducerRecord<String, String> record = makeFallbackRecord(topic, fallbackRecord, reason);
+			sendAsync(record, callback);
+		} catch (Exception fallbackEx) {
+			callback.onCompletion(md, fallbackEx);
+		}
 	}
 
 	void sendAsync(ProducerRecord<String, String> record, Callback callback) {
