@@ -297,14 +297,15 @@ mysql&gt; set global binlog_row_image=FULL;
 <p>note: <code>binlog_format</code> is a session-based property.  You will need to shutdown all active connections to fully convert
 to row-based replication.</p>
 <p><em>Permissions:</em> Maxwell needs permissions to store state in the database specified by the <code>schema_database</code> option (default <code>maxwell</code>).</p>
-<pre><code>mysql&gt; GRANT ALL on maxwell.* to 'maxwell'@'%' identified by 'XXXXXX';
-mysql&gt; GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE on *.* to 'maxwell'@'%';
+<pre><code>mysql&gt; CREATE USER 'maxwell'@'%' IDENTIFIED BY 'XXXXXX';
+mysql&gt; GRANT ALL ON maxwell.* TO 'maxwell'@'%';
+mysql&gt; GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'maxwell'@'%';
 
 # or for running maxwell locally:
 
-mysql&gt; GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE on *.* to 'maxwell'@'localhost' identified by 'XXXXXX';
-mysql&gt; GRANT ALL on maxwell.* to 'maxwell'@'localhost';
-
+mysql&gt; CREATE USER 'maxwell'@'localhost' IDENTIFIED BY 'XXXXXX';
+mysql&gt; GRANT ALL ON maxwell.* TO 'maxwell'@'localhost';
+mysql&gt; GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'maxwell'@'localhost';
 </code></pre>
 
 <h3 id="run-maxwell">Run Maxwell</h3>

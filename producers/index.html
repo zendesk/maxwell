@@ -374,7 +374,7 @@ columns as strings, concatenate them and use that value to partition the data.</
 HASH_FUNCTION is <em>hashCode</em>. Murmurhash3 may be set with the
 <code>kafka_partition_hash</code> option. The seed value for the murmurhash function is
 hardcoded to 25342 in the MaxwellKafkaPartitioner class.</p>
-<p>The HASH_STRING may be (<em>database</em>, <em>table</em>, <em>primary_key</em>, <em>column</em>).  The
+<p>The HASH_STRING may be (<em>database</em>, <em>table</em>, <em>primary_key</em>, <em>transaction_id</em>, <em>column</em>).  The
 default HASH_STRING is the <em>database</em>. The partitioning field can be configured
 using the <code>producer_partition_by</code> option.</p>
 <p>Maxwell will discover the number of partitions in its kafka topic upon boot.  This means that you should pre-create your kafka topics,
