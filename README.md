@@ -13,10 +13,6 @@ benefits of event sourcing without having to re-architect your entire platform.
 <br/>
 <b>Source:</b><br>
 [https://github.com/zendesk/maxwell](https://github.com/zendesk/maxwell)
-<br/>
-<b>Forum:</b><br>
-[https://discourse.maxwells-daemon.io/](https://discourse.maxwells-daemon.io/)
-
 <br clear="all">
 
 
