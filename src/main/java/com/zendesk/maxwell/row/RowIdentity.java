@@ -34,10 +34,7 @@ public class RowIdentity implements Serializable {
 			// Primary key column names are prefixed with "pk."
 			// e.g. { "database": "db1", "table": "users", "pk.id": 123 }
 
-			g.writeStartObject(); // start of row {
-
-			g.writeStringField(FieldNames.DATABASE, database);
-			g.writeStringField(FieldNames.TABLE, table);
+			startCommonHashFields(g);
 			if (primaryKeyColumns.isEmpty()) {
 				g.writeStringField(FieldNames.UUID, UUID.randomUUID().toString());
 			} else {
@@ -67,6 +64,28 @@ public class RowIdentity implements Serializable {
 		return json.consume();
 	}
 
+	public String toFallbackValueWithReason(String reason) throws IOException {
+		// The "skeleton row" format used when writing to `dead_letter_topic`.
+		// Similar to the regular "hash" key format, except:
+		//  - an additional `reason` field, which describes why the original message failed
+		//  - instead of merging `pk.id` with the other fields, we populate a `data` object.
+		//    This is consistent with the RowMap value format, allowing for easy parsing.
+		MaxwellJson json = MaxwellJson.getInstance();
+		JsonGenerator g = json.reset();
+		startCommonHashFields(g);
+
+		g.writeStringField(FieldNames.REASON, reason);
+
+		g.writeObjectFieldStart(FieldNames.DATA);
+		for (Map.Entry<String,Object> pk : primaryKeyColumns) {
+			writePrimaryKey(g, pk);
+		}
+		g.writeEndObject(); // end of 'data: { }'
+
+		g.writeEndObject();
+		return json.consume();
+	}
+
 	public String toConcatString() {
 		// Generates a concise, lossy representation of this identity (i.e you can't easily parse it).
 		// Simpler than generating real JSON, used as a hash input for partition calculation.
@@ -90,4 +109,20 @@ public class RowIdentity implements Serializable {
 	public String toString() {
 		return database + ":" + table + ":" + primaryKeyColumns;
 	}
+
+	private void startCommonHashFields(JsonGenerator g) throws IOException {
+		g.writeStartObject(); // start of row {
+
+		g.writeStringField(FieldNames.DATABASE, database);
+		g.writeStringField(FieldNames.TABLE, table);
+	}
+
+	private void writePrimaryKey(JsonGenerator g, String jsonKey, Object value) throws IOException {
+		MaxwellJson.writeValueToJSON(g, true, jsonKey, value);
+	}
+
+	private void writePrimaryKey(JsonGenerator g, Map.Entry<String,Object> pk) throws IOException {
+		writePrimaryKey(g, pk.getKey(), pk.getValue());
+	}
+
 }
