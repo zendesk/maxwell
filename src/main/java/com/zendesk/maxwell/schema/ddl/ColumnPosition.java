@@ -4,7 +4,7 @@ import com.zendesk.maxwell.schema.Table;
 
 public class ColumnPosition {
 	enum Position { FIRST, AFTER, DEFAULT };
-	public static final int DEFER = -999;
+	public static final int AFTER_NOT_FOUND = -999;
 
 	public Position position;
 	public String afterColumn;
@@ -28,7 +28,7 @@ public class ColumnPosition {
 
 			// see issue #1216
 			if ( afterIdx == -1 )
-				return DEFER;
+				return AFTER_NOT_FOUND;
 
 			return afterIdx + 1;
 		}

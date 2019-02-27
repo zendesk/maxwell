@@ -257,7 +257,7 @@ public class Table {
 		columns.remove(idx);
 
 		int index = position.index(this, idx);
-		if ( index == ColumnPosition.DEFER ) {
+		if ( index == ColumnPosition.AFTER_NOT_FOUND) {
 			deferred.add(new DeferredPositionUpdate(definition.getName(), position));
 			index = 0;
 		}
@@ -270,7 +270,7 @@ public class Table {
 		ColumnDef def = columns.remove(idx);
 		int newIndex = position.index(this, idx);
 
-		if ( newIndex == ColumnPosition.DEFER )
+		if ( newIndex == ColumnPosition.AFTER_NOT_FOUND)
 			throw new InvalidSchemaError("Couldn't find column " + position.afterColumn + " to place after");
 
 		columns.add(newIndex, def);
