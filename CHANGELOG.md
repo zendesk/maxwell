@@ -1,5 +1,17 @@
 # Maxwell changelog
 
+### [v1.20.0](https://github.com/zendesk/maxwell/releases/tag/v1.20.0): "and so you learn the only way to go is"
+
+
+- add support for partitioning by transaction ID thx @hexene
+- add support for a kafka "fallback" topic to write to
+  when a message fails to write
+- add UJIS charset support
+- parser bug: multiple strings concatenate to make one default string
+- parser bug: deal with bizarre column renames which are then referenced
+  in AFTER column statements
+
+
 ### [v1.19.7](https://github.com/zendesk/maxwell/releases/tag/v1.19.7): "in every corner of your room"
 
 
