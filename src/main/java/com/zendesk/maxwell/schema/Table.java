@@ -3,6 +3,7 @@ package com.zendesk.maxwell.schema;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.zendesk.maxwell.schema.ddl.DeferredPositionUpdate;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.schema.ddl.ColumnPosition;
 
@@ -247,14 +248,32 @@ public class Table {
 		columns.add(idx, column);
 	}
 
-	public void changeColumn(int idx, ColumnPosition position, ColumnDef definition) throws InvalidSchemaError {
+	public void changeColumn(int idx, ColumnPosition position, ColumnDef definition, List<DeferredPositionUpdate> deferred) throws InvalidSchemaError {
 		// when we go to rename the PK column, we need to make sure the old column name
 		// is still there for (for normalization of pk-columns).
 		ColumnDef oldColumn = columns.get(idx);
 		renamePKColumn(oldColumn.getName(), definition.getName());
 
 		columns.remove(idx);
-		columns.add(position.index(this, idx), definition);
+
+		int index = position.index(this, idx);
+		if ( index == ColumnPosition.AFTER_NOT_FOUND) {
+			deferred.add(new DeferredPositionUpdate(definition.getName(), position));
+			index = 0;
+		}
+
+		columns.add(index, definition);
+	}
+
+	public void moveColumn(String name, ColumnPosition position) throws InvalidSchemaError {
+		int idx = columns.indexOf(name);
+		ColumnDef def = columns.remove(idx);
+		int newIndex = position.index(this, idx);
+
+		if ( newIndex == ColumnPosition.AFTER_NOT_FOUND)
+			throw new InvalidSchemaError("Couldn't find column " + position.afterColumn + " to place after");
+
+		columns.add(newIndex, def);
 	}
 
 	public void setDatabase(String database) {
