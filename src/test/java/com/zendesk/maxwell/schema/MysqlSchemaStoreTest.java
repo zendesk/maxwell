@@ -36,23 +36,4 @@ public class MysqlSchemaStoreTest extends MaxwellTestWithIsolatedServer {
 		}
 	}
 
-	@Test
-	public void testSavedSchemaChain() throws Exception {
-		MaxwellContext context = buildContext();
-
-		Position p = new Position(new BinlogPosition(0, "mysql.1234"), 1);
-		MysqlSchemaStore store = new MysqlSchemaStore(context, p);
-		store.getSchema();
-		assertThat(store.savedSchema.getSchemaID(), is(1L));
-		assertThat(store.savedSchema.getSchemaChainLength(), is(0));
-
-		for (int i = 1; i <= 10; i++) {
-			String db = String.format("testdb_%d", i);
-			Position q = new Position(new BinlogPosition(i, "mysql.1234"), 1);
-			store.processSQL(String.format("CREATE DATABASE `%s`;", db), db, q);
-			assertThat(store.savedSchema.getSchemaID(), is((long)i + 1));
-			assertThat(store.savedSchema.getSchemaChainLength(), is(i));
-		}
-	}
-
 }

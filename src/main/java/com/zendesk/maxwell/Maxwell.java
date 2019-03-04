@@ -76,10 +76,14 @@ public class Maxwell implements Runnable {
 				// load up the schema from the recovery position and chain it into the
 				// new server_id
 				MysqlSchemaStore oldServerSchemaStore = new MysqlSchemaStore(
-					context,
+					context.getMaxwellConnectionPool(),
+					context.getReplicationConnectionPool(),
+					context.getSchemaConnectionPool(),
 					recoveryInfo.serverID,
 					recoveryInfo.position,
+					context.getCaseSensitivity(),
 					config.filter,
+					config.schemaChainMaxLength,
 					false
 				);
 

@@ -759,80 +759,33 @@ public class MysqlSavedSchema {
 		return schemaChain.length();
 	}
 
-	public int compact(Connection connection, int chainMaxLength, int chainLength) throws SQLException {
+	public boolean compact(Connection connection, int chainMaxLength) throws SQLException {
 		if (chainMaxLength < 0) {
-			return 0;
+			return false;
 		}
-
-		assert chainLength <= chainMaxLength;
-
 		if (schemaID == null) {
 			throw new RuntimeException("Schema not saved yet.");
 		}
-		if (schemaChain.length() <= chainLength || schemaChain.length() < chainMaxLength) {
-			return 0;
+		if (schemaChain.length() < chainMaxLength) {
+			return false;
 		}
-
-		long[] removeIds;
-		SchemaChain newSchemaChain = new SchemaChain();
 
 		connection.setAutoCommit(false);
 		try {
-			Long newBaseSchemaID;
+			// save schema data
+			saveFullSchemaData(connection, schemaID);
 
-			if (chainLength == 0) {
-				// remove all base schemas
-
-				removeIds = new long[schemaChain.length()];
-				int n = 0;
-				for (long id : schemaChain) {
-					removeIds[n++] = id;
-				}
-				newBaseSchemaID = schemaID;
-				saveFullSchemaData(connection, schemaID);
-
-			} else {
-				// split chain between schemas to keep and to remove
-
-				long[] keepIds = new long[chainLength];
-				removeIds = new long[schemaChain.length() - chainLength];
-				int n = 0;
-				for (long id : schemaChain) {
-					if (n < chainLength) {
-						keepIds[n++] = id;
-					} else {
-						removeIds[n++ - chainLength] = id;
-					}
-				}
-
-				// save new base schema data
-				newBaseSchemaID = keepIds[chainLength - 1];
-
-				MysqlSavedSchema newBase = new MysqlSavedSchema(serverID, sensitivity);
-				try {
-					newBase.restoreFromSchemaID(connection, newBaseSchemaID);
-				} catch (InvalidSchemaError e) {
-					throw new RuntimeException("Couldn't restore schema " + newBaseSchemaID + ".", e);
-				}
-
-				newBase.saveFullSchemaData(connection, newBase.schemaID);
-
-				for (int i = keepIds.length - 1; i >= 0; i--) {
-					newSchemaChain.push(keepIds[i]);
-				}
-			}
-
-			// remove reference to parent of the new base
+			// remove reference to base
 			try (PreparedStatement stmt = connection.prepareStatement(
 				"UPDATE `schemas` SET `base_schema_id` = NULL, `deltas` = NULL WHERE `id`= ?"
 			)) {
-				stmt.setLong(1, newBaseSchemaID);
+				stmt.setLong(1, schemaID);
 				stmt.executeUpdate();
 			}
 
 			// clean up
 			StringBuilder inSQL = new StringBuilder();
-			for (int i = 0; i < removeIds.length; i++) {
+			for (int i = 0; i < schemaChain.length(); i++) {
 				if (inSQL.length() > 0) {
 					inSQL.append(", ");
 				}
@@ -842,8 +795,9 @@ public class MysqlSavedSchema {
 				try (PreparedStatement stmt = connection.prepareStatement(
 					"DELETE FROM `" + tableName + "` WHERE `schema_id` IN (" + inSQL + ")"
 				)) {
-					for (int i = 0; i < removeIds.length; i++) {
-						stmt.setLong(i + 1, removeIds[i]);
+					int i = 1;
+					for (Long id : schemaChain) {
+						stmt.setLong(i++, id);
 					}
 					stmt.executeUpdate();
 				}
@@ -852,8 +806,9 @@ public class MysqlSavedSchema {
 			try (PreparedStatement stmt = connection.prepareStatement(
 				"DELETE FROM `schemas` WHERE `id` IN (" + inSQL + ")"
 			)) {
-				for (int i = 0; i < removeIds.length; i++) {
-					stmt.setLong(i + 1, removeIds[i]);
+				int i = 1;
+				for (Long id : schemaChain) {
+					stmt.setLong(i++, id);
 				}
 				stmt.executeUpdate();
 			}
@@ -868,12 +823,10 @@ public class MysqlSavedSchema {
 			connection.setAutoCommit(true);
 		}
 
-		schemaChain = newSchemaChain;
-		if (schemaChain.length() == 0) {
-			deltas = null;
-		}
+		schemaChain = new SchemaChain();
+		deltas = null;
 
-		return removeIds.length;
+		return true;
 	}
 
 	private static class SchemaChain implements Iterable<Long> {

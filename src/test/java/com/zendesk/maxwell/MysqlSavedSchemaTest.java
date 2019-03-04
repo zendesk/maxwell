@@ -360,23 +360,14 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 		);
 
 		// actual length 10 < 50, compaction won't trigger
-		assertEquals(0, savedSchema.compact(c, 50, 5));
-		assertEquals(10, savedSchema.getSchemaChainLength());
+		{
+			assertFalse(savedSchema.compact(c, 50));
+			assertEquals(10, savedSchema.getSchemaChainLength());
+		}
 
 		// compaction triggered, some schemas in chain left
 		{
-			assertEquals(3, savedSchema.compact(c, 8, 7));
-			assertEquals(7, savedSchema.getSchemaChainLength());
-
-			MysqlSavedSchema restoredSchema = MysqlSavedSchema.restore(context, p);
-			assertEquals(savedSchema.getSchemaID(), restoredSchema.getSchemaID());
-			List<String> diff = savedSchema.getSchema().diff(restoredSchema.getSchema(), "compacted", "restored");
-			assertThat(StringUtils.join(diff, "\n"), diff.size(), is(0));
-		}
-
-		// compaction trigger, NO schemas in chain left
-		{
-			assertEquals(7, savedSchema.compact(c, 5, 0));
+			assertTrue(savedSchema.compact(c, 8));
 			assertEquals(0, savedSchema.getSchemaChainLength());
 
 			MysqlSavedSchema restoredSchema = MysqlSavedSchema.restore(context, p);
@@ -416,13 +407,7 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 	@Test(expected = RuntimeException.class)
 	public void testCompactThrowsUnlessSchemaSaved() throws Exception {
 		Connection c = context.getMaxwellConnection();
-		savedSchema.compact(c, 10, 0);
+		savedSchema.compact(c, 10);
 	}
 
-	@Test(expected = AssertionError.class)
-	public void testCompactThrowsIfChainMaxLengthLessThanLength() throws Exception {
-		Connection c = context.getMaxwellConnection();
-		savedSchema.save(c);
-		savedSchema.compact(c, 5, 100);
-	}
 }
