@@ -219,7 +219,9 @@ public class DDLParserTest {
 			"ALTER TABLE foo DROP COLUMN `ducati` CASCADE",
 			"CREATE TABLE account_groups ( visible_to_all CHAR(1) DEFAULT 'N' NOT NULL CHECK (visible_to_all IN ('Y','N')))",
 			"ALTER TABLE \"foo\" drop column a", // ansi-double-quoted tables
-			"create table vc11( id serial, name varchar(10) not null default \"\")"
+			"create table vc11( id serial, name varchar(10) not null default \"\")",
+			"create table foo.order ( i int )",
+			"alter table foo.int add column bar varchar(255)"
 
 		};
 
