@@ -182,7 +182,7 @@
     <dependency>
       <groupId>com.github.shyiko</groupId>
       <artifactId>mysql-binlog-connector-java</artifactId>
-      <version>0.17.0</version>
+      <version>0.19.0</version>
     </dependency>
     <dependency>
       <groupId>net.sf.jopt-simple</groupId>
