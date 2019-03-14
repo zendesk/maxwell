@@ -31,6 +31,7 @@ class KafkaCallback implements Callback {
 	private final Position position;
 	private final String json;
 	private final RowIdentity key;
+	private final String topic;
 	private final String fallbackTopic;
 	private final MaxwellKafkaProducerWorker producer;
 	private final MaxwellContext context;
@@ -42,7 +43,7 @@ class KafkaCallback implements Callback {
 
 	public KafkaCallback(AbstractAsyncProducer.CallbackCompleter cc, Position position, RowIdentity key, String json,
 	                     Counter producedMessageCount, Counter failedMessageCount, Meter producedMessageMeter,
-	                     Meter failedMessageMeter, String fallbackTopic, MaxwellContext context,
+	                     Meter failedMessageMeter, String topic, String fallbackTopic, MaxwellContext context,
 	                     MaxwellKafkaProducerWorker producer) {
 		this.cc = cc;
 		this.position = position;
@@ -52,6 +53,7 @@ class KafkaCallback implements Callback {
 		this.failedMessageCount = failedMessageCount;
 		this.succeededMessageMeter = producedMessageMeter;
 		this.failedMessageMeter = failedMessageMeter;
+		this.topic = topic;
 		this.fallbackTopic = fallbackTopic;
 		this.producer = producer;
 		this.context = context;
@@ -63,7 +65,7 @@ class KafkaCallback implements Callback {
 			this.failedMessageCount.inc();
 			this.failedMessageMeter.mark();
 
-			LOGGER.error(e.getClass().getSimpleName() + " @ " + position + " -- " + key);
+			LOGGER.error(e.getClass().getSimpleName() + " @ " + position + " -- " + topic + ": " + key);
 			LOGGER.error(e.getLocalizedMessage());
 
 			boolean nonFatal = e instanceof RecordTooLargeException || context.getConfig().ignoreProducerError;
@@ -95,7 +97,7 @@ class KafkaCallback implements Callback {
 		// with no fallback topic to avoid infinite loops
 		KafkaCallback cb = new KafkaCallback(cc, position, key, json,
 			succeededMessageCount, failedMessageCount, succeededMessageMeter,
-			failedMessageMeter, null, context, producer);
+			failedMessageMeter, topic, null, context, producer);
 		producer.sendFallbackAsync(fallbackTopic, key, cb, md, e);
 	}
 
@@ -231,12 +233,13 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 
 		KafkaCallback callback = new KafkaCallback(cc, r.getNextPosition(), r.getRowIdentity(), value,
 				this.succeededMessageCount, this.failedMessageCount, this.succeededMessageMeter, this.failedMessageMeter,
-				this.deadLetterTopic, this.context, this);
+				this.topic, this.deadLetterTopic, this.context, this);
 
 		sendAsync(record, callback);
 	}
 
 	public void sendFallbackAsync(String topic, RowIdentity fallbackRecord, KafkaCallback callback, RecordMetadata md, Exception reason) {
+		LOGGER.info("publishing fallback record to " + topic + ": " + fallbackRecord);
 		try {
 			ProducerRecord<String, String> record = makeFallbackRecord(topic, fallbackRecord, reason);
 			sendAsync(record, callback);

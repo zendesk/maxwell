@@ -41,7 +41,7 @@ public class KafkaCallbackTest {
 
 		return new KafkaCallback(cc, position, id, "value",
 				new Counter(), new Counter(), new Meter(), new Meter(),
-				context.getConfig().deadLetterTopic, context, producer);
+				"maxwell", context.getConfig().deadLetterTopic, context, producer);
 	}
 
 	@Test
