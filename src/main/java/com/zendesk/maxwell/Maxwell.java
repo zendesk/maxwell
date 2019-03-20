@@ -109,7 +109,7 @@ public class Maxwell implements Runnable {
 			   if so we have to start at that position or else
 			   we could miss schema changes, see https://github.com/zendesk/maxwell/issues/782 */
 
-			if ( initial == null ) {
+			if ( initial == null && !config.gtidMode) {
 				initial = this.context.getOtherClientPosition();
 				if ( initial != null ) {
 					LOGGER.info("Found previous client position: " + initial);
