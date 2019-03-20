@@ -221,7 +221,8 @@ public class DDLParserTest {
 			"ALTER TABLE \"foo\" drop column a", // ansi-double-quoted tables
 			"create table vc11( id serial, name varchar(10) not null default \"\")",
 			"create table foo.order ( i int )",
-			"alter table foo.int add column bar varchar(255)"
+			"alter table foo.int add column bar varchar(255)",
+			"alter table something collate = default"
 
 		};
 

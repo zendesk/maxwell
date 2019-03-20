@@ -37,7 +37,7 @@ default_collation: DEFAULT? collation;
 
 // it's not documented, but either "charset 'utf8'" or "character set 'utf8'" is valid.
 charset_token: (CHARSET | (CHARACTER SET) | (CHAR SET));
-collation: COLLATE '='? (IDENT | string_literal | QUOTED_IDENT);
+collation: COLLATE '='? (IDENT | string_literal | QUOTED_IDENT | DEFAULT);
 
 if_not_exists: IF NOT EXISTS;
 
