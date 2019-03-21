@@ -239,7 +239,7 @@ public class MaxwellTestSupport {
 
 			lastPositionRead = row.getPosition();
 
-			if ( lastPositionRead.getLastHeartbeatRead() >= finalHeartbeat ) {
+			if ( lastPositionRead != null && lastPositionRead.getLastHeartbeatRead() >= finalHeartbeat ) {
 				// consume whatever's left over in the buffer.
 				for ( ;; ) {
 					RowMap r = maxwell.poll(100);
