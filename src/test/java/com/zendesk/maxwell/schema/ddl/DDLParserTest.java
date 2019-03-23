@@ -155,6 +155,16 @@ public class DDLParserTest {
 	}
 
 	@Test
+	public void testConstraintWithFullTableName() {
+		parseCreate("CREATE TABLE table_name ( " +
+			"id_agency bigint(18) unsigned NOT NULL DEFAULT '0', " +
+			"CONSTRAINT 112923b397c621505a97cfc4119f9f98abae0fb4a3bdb7a037ad3531712f5614 FOREIGN KEY (id_agency) REFERENCES agencies (id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+			"CONSTRAINT agencies_offer_gift_types.id_type FOREIGN KEY (id_type) REFERENCES insurance_gift_types (id) ON DELETE CASCADE ON UPDATE CASCADE ) "
+		);
+	}
+
+
+	@Test
 	public void testParsingSomeAlters() {
 		String testSQL[] = {
 			"alter table t add column c varchar(255) default 'string1' 'string2'",

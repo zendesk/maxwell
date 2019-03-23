@@ -24,7 +24,9 @@ index_type_check:
   index_constraint? CHECK skip_parens;
 
 index_or_key: (INDEX|KEY);
-index_constraint: (CONSTRAINT name?);
+index_constraint: (CONSTRAINT constraint_name?);
+constraint_name: name | ( name '.' name );
+
 index_name: name;
 index_type: USING (BTREE | HASH);
 index_options:
