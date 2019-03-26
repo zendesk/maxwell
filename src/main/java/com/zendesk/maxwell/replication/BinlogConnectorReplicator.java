@@ -257,7 +257,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		} else if (!bootstrapper.shouldSkip(row) && !isMaxwellRow(row))
 			producer.push(row);
 		else
-			bootstrapper.work(row, producer, this);
+			bootstrapper.work(row, producer, this.getSchemaId());
 	}
 
 

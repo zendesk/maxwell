@@ -70,6 +70,14 @@ public class SchemaCaptureTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
+	public void testTablefilter() throws Exception {
+		SchemaCapturer sc =
+			new SchemaCapturer(server.getConnection(), CaseSensitivity.CASE_SENSITIVE, "shard_1", "ints");
+		Schema schema = sc.capture();
+		assertEquals(1, schema.getDatabases().get(0).getTableList().size());
+	}
+
+	@Test
 	public void testColumns() throws SQLException, InvalidSchemaError {
 		Schema s = capturer.capture();
 
