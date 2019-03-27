@@ -160,6 +160,8 @@ kafka.acks=1
 # specify what fields to partition by when using producer_partition_by=column
 # column separated list.
 #producer_partition_columns=id,foo,bar
+# & means id or uid ,if one of them is empty
+#producer_partition_columns=id&uid,foo,bar
 
 # when using producer_partition_by=column, partition by this when
 # the specified column(s) don't exist.

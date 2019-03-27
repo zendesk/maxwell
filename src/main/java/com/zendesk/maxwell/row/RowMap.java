@@ -1,9 +1,10 @@
 package com.zendesk.maxwell.row;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.zendesk.maxwell.errors.ProtectedAttributeNameException;
 import com.zendesk.maxwell.producer.EncryptionMode;
-import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.Position;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
@@ -14,8 +15,6 @@ import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.regex.Pattern;
-
-import com.fasterxml.jackson.core.JsonGenerator;
 
 
 public class RowMap implements Serializable {
@@ -100,10 +99,24 @@ public class RowMap implements Serializable {
 		StringBuilder partitionKey= new StringBuilder();
 		for (String pc : partitionColumns) {
 			Object pcValue = null;
-			if (data.containsKey(pc))
-				pcValue = data.get(pc);
-			if (pcValue != null)
-				partitionKey.append(pcValue.toString());
+			if(pc.indexOf("&") != -1){
+				String[]  sourcePc = pc.split("&", 5);
+				for (int i = 0; i < sourcePc.length; i++) {
+					if (data.containsKey(sourcePc[i])){
+						pcValue = data.get(sourcePc[i]);
+						if (pcValue != null){
+							partitionKey.append(pcValue.toString());
+							break;
+						}
+					}
+				}
+			}else {
+				if (data.containsKey(pc))
+					pcValue = data.get(pc);
+				if (pcValue != null)
+					partitionKey.append(pcValue.toString());
+			}
+
 		}
 
 		return partitionKey.toString();
