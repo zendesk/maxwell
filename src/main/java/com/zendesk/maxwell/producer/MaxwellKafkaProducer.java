@@ -11,10 +11,7 @@ import com.zendesk.maxwell.row.RowMap.KeyFormat;
 import com.zendesk.maxwell.schema.ddl.DDLMap;
 import com.zendesk.maxwell.util.StoppableTask;
 import com.zendesk.maxwell.util.StoppableTaskState;
-import org.apache.kafka.clients.producer.Callback;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.KafkaException;
 import org.apache.kafka.common.errors.RecordTooLargeException;
 import org.apache.kafka.common.serialization.StringSerializer;
@@ -22,8 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 class KafkaCallback implements Callback {
 	public static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
@@ -138,7 +134,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnable, StoppableTask {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
 
-	private final KafkaProducer<String, String> kafka;
+	private final Producer<String, String> kafka;
 	private final String topic;
 	private final String ddlTopic;
 	private final MaxwellKafkaPartitioner partitioner;
@@ -149,6 +145,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	private Thread thread;
 	private StoppableTaskState taskState;
 	private String deadLetterTopic;
+	private ExecutorService backgroundExecutor;
 
 	public static MaxwellKafkaPartitioner makeDDLPartitioner(String partitionHashFunc, String partitionKey) {
 		if ( partitionKey.equals("table") ) {
@@ -158,7 +155,9 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		}
 	}
 
-	public MaxwellKafkaProducerWorker(MaxwellContext context, Properties kafkaProperties, String kafkaTopic, ArrayBlockingQueue<RowMap> queue) {
+	public MaxwellKafkaProducerWorker(MaxwellContext context, String kafkaTopic, ArrayBlockingQueue<RowMap> queue,
+		Producer<String,String> producer)
+	{
 		super(context);
 
 		if ( kafkaTopic == null ) {
@@ -168,7 +167,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		}
 
 		this.interpolateTopic = this.topic.contains("%{");
-		this.kafka = new KafkaProducer<>(kafkaProperties, new StringSerializer(), new StringSerializer());
+		this.kafka = producer;
 
 		String hash = context.getConfig().kafkaPartitionHash;
 		String partitionKey = context.getConfig().producerPartitionKey;
@@ -187,6 +186,13 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 
 		this.queue = queue;
 		this.taskState = new StoppableTaskState("MaxwellKafkaProducerWorker");
+	}
+
+	public MaxwellKafkaProducerWorker(MaxwellContext context, Properties kafkaProperties, String kafkaTopic,
+		ArrayBlockingQueue<RowMap> queue)
+	{
+		this(context, kafkaTopic, queue,
+			new KafkaProducer<String,String>(kafkaProperties, new StringSerializer(), new StringSerializer()));
 	}
 
 	@Override
@@ -238,14 +244,31 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		sendAsync(record, callback);
 	}
 
-	public void sendFallbackAsync(String topic, RowIdentity fallbackRecord, KafkaCallback callback, RecordMetadata md, Exception reason) {
-		LOGGER.info("publishing fallback record to " + topic + ": " + fallbackRecord);
-		try {
-			ProducerRecord<String, String> record = makeFallbackRecord(topic, fallbackRecord, reason);
-			sendAsync(record, callback);
-		} catch (Exception fallbackEx) {
-			callback.onCompletion(md, fallbackEx);
+	private ExecutorService getBackgroundExecutor() {
+		if (this.backgroundExecutor == null) {
+			this.backgroundExecutor = Executors.newSingleThreadExecutor();
 		}
+		return this.backgroundExecutor;
+	}
+
+	public void sendFallbackAsync(String topic, RowIdentity fallbackRecord, KafkaCallback callback, RecordMetadata md, Exception reason) {
+		// Note: this code may be executed from two different threads:
+		//  - client rejection: invoked synchronously from the  MaxwellKafkaProducerWorker thread (in sendAsync())
+		//  - broker rejection: invoked asynchronously from kafka's `kafka-producer-network-thread`
+		// We can't call `sendAsync` on kafka's own network thread, it causes a deadlock. So we
+		// invoke the send via an Executor with its own thread.
+		getBackgroundExecutor().submit(new Runnable() {
+			@Override
+			public void run() {
+				LOGGER.info("publishing fallback record to " + topic + ": " + fallbackRecord);
+				try {
+					ProducerRecord<String, String> record = makeFallbackRecord(topic, fallbackRecord, reason);
+					sendAsync(record, callback);
+				} catch (Exception fallbackEx) {
+					callback.onCompletion(md, fallbackEx);
+				}
+			}
+		});
 	}
 
 	void sendAsync(ProducerRecord<String, String> record, Callback callback) {
