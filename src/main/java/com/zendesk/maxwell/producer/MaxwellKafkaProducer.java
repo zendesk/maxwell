@@ -11,6 +11,7 @@ import com.zendesk.maxwell.row.RowMap.KeyFormat;
 import com.zendesk.maxwell.schema.ddl.DDLMap;
 import com.zendesk.maxwell.util.StoppableTask;
 import com.zendesk.maxwell.util.StoppableTaskState;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.KafkaException;
 import org.apache.kafka.common.errors.RecordTooLargeException;
@@ -19,7 +20,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
-import java.util.concurrent.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeoutException;
 
 class KafkaCallback implements Callback {
 	public static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
@@ -145,7 +148,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	private Thread thread;
 	private StoppableTaskState taskState;
 	private String deadLetterTopic;
-	private ExecutorService backgroundExecutor;
+	private final ConcurrentLinkedQueue<Pair<ProducerRecord<String,String>, KafkaCallback>> deadLetterQueue;
 
 	public static MaxwellKafkaPartitioner makeDDLPartitioner(String partitionHashFunc, String partitionKey) {
 		if ( partitionKey.equals("table") ) {
@@ -178,6 +181,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		this.ddlPartitioner = makeDDLPartitioner(hash, partitionKey);
 		this.ddlTopic =  context.getConfig().ddlKafkaTopic;
 		this.deadLetterTopic = context.getConfig().deadLetterTopic;
+		this.deadLetterQueue = this.deadLetterTopic == null ? null : new ConcurrentLinkedQueue<>();
 
 		if ( context.getConfig().kafkaKeyFormat.equals("hash") )
 			keyFormat = KeyFormat.HASH;
@@ -200,6 +204,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		this.thread = Thread.currentThread();
 		while ( true ) {
 			try {
+				drainDeadLetterQueue();
 				RowMap row = queue.take();
 				if (!taskState.isRunning()) {
 					taskState.stopped();
@@ -210,6 +215,19 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 				taskState.stopped();
 				context.terminate(e);
 				return;
+			}
+		}
+	}
+
+	void drainDeadLetterQueue() {
+		if (this.deadLetterQueue != null) {
+			Pair<ProducerRecord<String, String>, KafkaCallback> pair;
+			while (true) {
+				pair = deadLetterQueue.poll();
+				if (pair == null) {
+					break;
+				}
+				sendAsync(pair.getLeft(), pair.getRight());
 			}
 		}
 	}
@@ -244,31 +262,16 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		sendAsync(record, callback);
 	}
 
-	private ExecutorService getBackgroundExecutor() {
-		if (this.backgroundExecutor == null) {
-			this.backgroundExecutor = Executors.newSingleThreadExecutor();
-		}
-		return this.backgroundExecutor;
-	}
-
 	public void sendFallbackAsync(String topic, RowIdentity fallbackRecord, KafkaCallback callback, RecordMetadata md, Exception reason) {
-		// Note: this code may be executed from two different threads:
-		//  - client rejection: invoked synchronously from the  MaxwellKafkaProducerWorker thread (in sendAsync())
-		//  - broker rejection: invoked asynchronously from kafka's `kafka-producer-network-thread`
-		// We can't call `sendAsync` on kafka's own network thread, it causes a deadlock. So we
-		// invoke the send via an Executor with its own thread.
-		getBackgroundExecutor().submit(new Runnable() {
-			@Override
-			public void run() {
-				LOGGER.info("publishing fallback record to " + topic + ": " + fallbackRecord);
-				try {
-					ProducerRecord<String, String> record = makeFallbackRecord(topic, fallbackRecord, reason);
-					sendAsync(record, callback);
-				} catch (Exception fallbackEx) {
-					callback.onCompletion(md, fallbackEx);
-				}
-			}
-		});
+		// This code may be executed from the `kafka-producer-network-thread`, which will deadlock if we try to directly call send().
+		// So enqueue a message for the worker thread to pick up.
+		LOGGER.info("publishing fallback record to " + topic + ": " + fallbackRecord);
+		try {
+			ProducerRecord<String, String> record = makeFallbackRecord(topic, fallbackRecord, reason);
+			deadLetterQueue.add(Pair.of(record, callback));
+		} catch (Exception fallbackEx) {
+			callback.onCompletion(md, fallbackEx);
+		}
 	}
 
 	void sendAsync(ProducerRecord<String, String> record, Callback callback) {
