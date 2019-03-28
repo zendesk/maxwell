@@ -222,11 +222,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	void drainDeadLetterQueue() {
 		if (this.deadLetterQueue != null) {
 			Pair<ProducerRecord<String, String>, KafkaCallback> pair;
-			while (true) {
-				pair = deadLetterQueue.poll();
-				if (pair == null) {
-					break;
-				}
+			while ((pair = deadLetterQueue.poll()) != null) {
 				sendAsync(pair.getLeft(), pair.getRight());
 			}
 		}
