@@ -1,5 +1,20 @@
 # Maxwell changelog
 
+### [v1.21.1](https://github.com/zendesk/maxwell/releases/tag/v1.21.1): "ohhhhhh oh oh"
+
+
+- Upgrade binlog connector.  Should fix issues around deserialization
+errors.
+
+
+### [v1.21.0](https://github.com/zendesk/maxwell/releases/tag/v1.21.0): "through the roof"
+
+
+- Bootstrapping output no longer contain binlog positions.  Please update
+  any code that relies on this.
+- Fix 3 parser issues.
+
+
 ### [v1.20.0](https://github.com/zendesk/maxwell/releases/tag/v1.20.0): "and so you learn the only way to go is"
 
 
