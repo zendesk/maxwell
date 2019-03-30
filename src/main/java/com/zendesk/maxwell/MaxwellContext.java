@@ -62,6 +62,7 @@ public class MaxwellContext {
 
 		this.replicationConnectionPool = new ConnectionPool("ReplicationConnectionPool", 10, 0, 10,
 				config.replicationMysql.getConnectionURI(false), config.replicationMysql.user, config.replicationMysql.password);
+		this.replicationConnectionPool.setCaching(false);
 
 		if (config.schemaMysql.host == null) {
 			this.schemaConnectionPool = null;
