@@ -20,6 +20,7 @@ import java.net.URISyntaxException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 public class SynchronousBootstrapper extends AbstractBootstrapper {
@@ -67,7 +68,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 			int insertedRows = 0;
 			lastInsertedRowsUpdateTimeMillis = 0; // ensure updateInsertedRowsColumn is called at least once
 			while ( resultSet.next() ) {
-				RowMap row = bootstrapEventRowMap("bootstrap-insert", table);
+				RowMap row = bootstrapEventRowMap("bootstrap-insert", table.database, table.name, table.getPKList());
 				setRowValues(row, resultSet, table);
 				row.setSchemaId(currentSchemaID);
 
@@ -115,31 +116,21 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	private RowMap bootstrapStartRowMap(Table table) {
-		return bootstrapEventRowMap("bootstrap-start", table);
+		return bootstrapEventRowMap("bootstrap-start", table.database, table.name, table.getPKList());
 	}
 
-	private RowMap bootstrapEventRowMap(String type, Table table) {
-		return new RowMap(
-				type,
-				table.getDatabase(),
-				table.getName(),
-				System.currentTimeMillis(),
-				table.getPKList(),
-				null);
-	}
-
-	private RowMap bootstrapEventRowMap(String type, String db, String tbl) {
+	private RowMap bootstrapEventRowMap(String type, String db, String tbl, List<String> pkList) {
 		return new RowMap(
 			type,
 			db,
 			tbl,
 			System.currentTimeMillis(),
-			new ArrayList<>(),
+			pkList,
 			null);
 	}
 
 	public void completeBootstrap(BootstrapTask task, AbstractProducer producer) throws Exception {
-		producer.push(bootstrapEventRowMap("bootstrap-complete", task.database, task.table));
+		producer.push(bootstrapEventRowMap("bootstrap-complete", task.database, task.table, new ArrayList<>()));
 		LOGGER.info("bootstrapping ended for " + task.logString());
 	}
 
@@ -186,10 +177,6 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		if ( database == null )
 			throw new RuntimeException("Couldn't find database " + databaseName);
 		return database;
-	}
-
-	private void ensureTable(String tableName, Database database) {
-		findTable(tableName, database);
 	}
 
 	private ResultSet getAllRows(String databaseName, String tableName, Table table, String whereClause,
