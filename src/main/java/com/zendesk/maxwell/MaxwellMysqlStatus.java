@@ -84,4 +84,22 @@ public class MaxwellMysqlStatus {
 		m.ensureVariableState("log_slave_updates", "ON");
 		m.ensureVariableState("enforce_gtid_consistency", "ON");
 	}
+
+	public static CaseSensitivity captureCaseSensitivity(Connection c) throws SQLException {
+		ResultSet rs = c.createStatement().executeQuery("select @@lower_case_table_names");
+		if ( !rs.next() )
+			throw new RuntimeException("Could not retrieve @@lower_case_table_names!");
+
+		int value = rs.getInt(1);
+		switch(value) {
+			case 0:
+				return CaseSensitivity.CASE_SENSITIVE;
+			case 1:
+				return CaseSensitivity.CONVERT_TO_LOWER;
+			case 2:
+				return CaseSensitivity.CONVERT_ON_COMPARE;
+			default:
+				throw new RuntimeException("Unknown value for @@lower_case_table_names: " + value);
+		}
+	}
 }

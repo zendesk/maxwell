@@ -56,18 +56,18 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 		return row.getDatabase().equals(activeTask.database) && row.getTable().equals(activeTask.table);
 	}
 
-	public void startBootstrap(final BootstrapTask task, final AbstractProducer producer, final Replicator replicator) {
+	public void startBootstrap(final BootstrapTask task, final AbstractProducer producer, Long currentSchemaID) {
 		if (thread == null) {
 			activeTask = task;
 			thread = new Thread(() -> {
 				try {
-					synchronousBootstrapper.performBootstrap(task, producer, replicator);
+					synchronousBootstrapper.performBootstrap(task, producer, currentSchemaID);
 				} catch ( Exception e ) {
 					e.printStackTrace();
 					System.exit(1);
 				} finally {
 					activeTask = null;
-					completeBootstrap(task, producer, replicator);
+					completeBootstrap(task, producer, currentSchemaID);
 				}
 			});
 			thread.start();
@@ -81,10 +81,10 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 		LOGGER.info(String.format("async bootstrapping: queued table %s.%s for bootstrapping", task.database, task.table));
 	}
 
-	private void completeBootstrap(BootstrapTask task, AbstractProducer producer, Replicator replicator) {
+	private void completeBootstrap(BootstrapTask task, AbstractProducer producer, Long currentSchemaID) {
 		try {
 			replaySkippedRows(task, producer);
-			synchronousBootstrapper.completeBootstrap(task, producer, replicator);
+			synchronousBootstrapper.completeBootstrap(task, producer);
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(1);
@@ -92,7 +92,7 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 			thread = null;
 		}
 		if ( !queue.isEmpty() ) {
-			startBootstrap(queue.remove(), producer, replicator);
+			startBootstrap(queue.remove(), producer, currentSchemaID);
 		}
 	}
 
@@ -112,14 +112,14 @@ public class AsynchronousBootstrapper extends AbstractBootstrapper {
 
 
 	@Override
-	public void resume(AbstractProducer producer, Replicator replicator) throws SQLException {
-		synchronousBootstrapper.resume(producer, replicator);
+	public void resume(AbstractProducer producer) throws SQLException {
+		synchronousBootstrapper.resume(producer);
 	}
 
 	@Override
-	public void work(RowMap row, AbstractProducer producer, Replicator replicator) {
+	public void work(RowMap row, AbstractProducer producer, Long currentSchemaID) {
 		if ( isStartBootstrapRow(row) ) {
-			startBootstrap(BootstrapTask.valueOf(row), producer, replicator);
+			startBootstrap(BootstrapTask.valueOf(row), producer, currentSchemaID);
 		}
 	}
 

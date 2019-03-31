@@ -62,6 +62,7 @@ public class MaxwellContext {
 
 		this.replicationConnectionPool = new ConnectionPool("ReplicationConnectionPool", 10, 0, 10,
 				config.replicationMysql.getConnectionURI(false), config.replicationMysql.user, config.replicationMysql.password);
+		this.replicationConnectionPool.setCaching(false);
 
 		if (config.schemaMysql.host == null) {
 			this.schemaConnectionPool = null;
@@ -301,30 +302,12 @@ public class MaxwellContext {
 	}
 
 	public CaseSensitivity getCaseSensitivity() throws SQLException {
-		if ( this.caseSensitivity != null )
-			return this.caseSensitivity;
-
-		try ( Connection c = getReplicationConnection()) {
-			ResultSet rs = c.createStatement().executeQuery("select @@lower_case_table_names");
-			if ( !rs.next() )
-				throw new RuntimeException("Could not retrieve @@lower_case_table_names!");
-
-			int value = rs.getInt(1);
-			switch(value) {
-				case 0:
-					this.caseSensitivity = CaseSensitivity.CASE_SENSITIVE;
-					break;
-				case 1:
-					this.caseSensitivity = CaseSensitivity.CONVERT_TO_LOWER;
-					break;
-				case 2:
-					this.caseSensitivity = CaseSensitivity.CONVERT_ON_COMPARE;
-					break;
-				default:
-					throw new RuntimeException("Unknown value for @@lower_case_table_names: " + value);
+		if ( this.caseSensitivity == null ) {
+			try (Connection c = getReplicationConnection()) {
+				this.caseSensitivity = MaxwellMysqlStatus.captureCaseSensitivity(c);
 			}
-			return this.caseSensitivity;
 		}
+		return this.caseSensitivity;
 	}
 
 	public AbstractProducer getProducer() throws IOException {

@@ -2,7 +2,6 @@ package com.zendesk.maxwell.bootstrap;
 
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.producer.AbstractProducer;
-import com.zendesk.maxwell.replication.Replicator;
 import com.zendesk.maxwell.row.RowMap;
 
 import java.io.IOException;
@@ -30,9 +29,9 @@ public abstract class AbstractBootstrapper {
 
 	abstract public boolean shouldSkip(RowMap row) throws SQLException, IOException;
 
-	public abstract void resume(AbstractProducer producer, Replicator replicator) throws SQLException;
+	public abstract void resume(AbstractProducer producer) throws SQLException;
 
 	public abstract boolean isRunning();
 
-	public abstract void work(RowMap row, AbstractProducer producer, Replicator replicator) throws Exception;
+	public abstract void work(RowMap row, AbstractProducer producer, Long currentSchemaID) throws Exception;
 }

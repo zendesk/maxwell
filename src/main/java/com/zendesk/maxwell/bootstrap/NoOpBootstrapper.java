@@ -18,7 +18,7 @@ public class NoOpBootstrapper extends AbstractBootstrapper {
 	}
 
 	@Override
-	public void resume(AbstractProducer producer, Replicator replicator) { }
+	public void resume(AbstractProducer producer) { }
 
 	@Override
 	public boolean isRunning( ) {
@@ -26,6 +26,6 @@ public class NoOpBootstrapper extends AbstractBootstrapper {
 	}
 
 	@Override
-	public void work(RowMap row, AbstractProducer producer, Replicator replicator) {}
+	public void work(RowMap row, AbstractProducer producer, Long currentSchemaID) {}
 
 }

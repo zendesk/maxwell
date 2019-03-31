@@ -215,7 +215,7 @@ public class Maxwell implements Runnable {
 			config.outputConfig
 		);
 
-		bootstrapper.resume(producer, replicator);
+		bootstrapper.resume(producer);
 
 		context.setReplicator(replicator);
 		this.context.start();

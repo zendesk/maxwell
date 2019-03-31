@@ -1,12 +1,14 @@
 package com.zendesk.maxwell.bootstrap;
 
+import com.zendesk.maxwell.CaseSensitivity;
+import com.zendesk.maxwell.MaxwellMysqlStatus;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.producer.AbstractProducer;
-import com.zendesk.maxwell.replication.Replicator;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
+import com.zendesk.maxwell.schema.SchemaCapturer;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
 import com.zendesk.maxwell.schema.columndef.TimeColumnDef;
@@ -16,7 +18,9 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URISyntaxException;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 public class SynchronousBootstrapper extends AbstractBootstrapper {
@@ -34,19 +38,26 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		return false;
 	}
 
-	public void startBootstrap(BootstrapTask task, AbstractProducer producer, Replicator replicator) throws Exception {
-		performBootstrap(task, producer, replicator);
-		completeBootstrap(task, producer, replicator);
+	public void startBootstrap(BootstrapTask task, AbstractProducer producer, Long currentSchemaID) throws Exception {
+		performBootstrap(task, producer, currentSchemaID);
+		completeBootstrap(task, producer);
 	}
 
-	public void performBootstrap(BootstrapTask task, AbstractProducer producer, Replicator replicator) throws Exception {
+	private Schema captureSchemaForBootstrap(BootstrapTask task) throws SQLException {
+		try ( Connection cx = getConnection() ) {
+			CaseSensitivity s = MaxwellMysqlStatus.captureCaseSensitivity(cx);
+			SchemaCapturer c = new SchemaCapturer(cx, s, task.database, task.table);
+			return c.capture();
+		}
+	}
+
+	public void performBootstrap(BootstrapTask task, AbstractProducer producer, Long currentSchemaID) throws Exception {
 		LOGGER.debug("bootstrapping requested for " + task.logString());
 
-		Schema schema = replicator.getSchema();
+		Schema schema = captureSchemaForBootstrap(task);
 		Database database = findDatabase(schema, task.database);
 		Table table = findTable(task.table, database);
 
-		Long schemaId = replicator.getSchemaId();
 		producer.push(bootstrapStartRowMap(table));
 		LOGGER.info(String.format("bootstrapping started for %s.%s", task.database, task.table));
 
@@ -57,9 +68,9 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 			int insertedRows = 0;
 			lastInsertedRowsUpdateTimeMillis = 0; // ensure updateInsertedRowsColumn is called at least once
 			while ( resultSet.next() ) {
-				RowMap row = bootstrapEventRowMap("bootstrap-insert", table);
+				RowMap row = bootstrapEventRowMap("bootstrap-insert", table.database, table.name, table.getPKList());
 				setRowValues(row, resultSet, table);
-				row.setSchemaId(schemaId);
+				row.setSchemaId(currentSchemaID);
 
 				Scripting scripting = context.getConfig().scripting;
 				if ( scripting != null )
@@ -105,35 +116,26 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	private RowMap bootstrapStartRowMap(Table table) {
-		return bootstrapEventRowMap("bootstrap-start", table);
+		return bootstrapEventRowMap("bootstrap-start", table.database, table.name, table.getPKList());
 	}
 
-	private RowMap bootstrapCompleteRowMap(Table table) {
-		return bootstrapEventRowMap("bootstrap-complete", table);
-	}
-
-	private RowMap bootstrapEventRowMap(String type, Table table) {
+	private RowMap bootstrapEventRowMap(String type, String db, String tbl, List<String> pkList) {
 		return new RowMap(
-				type,
-				table.getDatabase(),
-				table.getName(),
-				System.currentTimeMillis(),
-				table.getPKList(),
-				null);
+			type,
+			db,
+			tbl,
+			System.currentTimeMillis(),
+			pkList,
+			null);
 	}
 
-	public void completeBootstrap(BootstrapTask task, AbstractProducer producer, Replicator replicator) throws Exception {
-		Database database = findDatabase(replicator.getSchema(), task.database);
-		ensureTable(task.table, database);
-		Table table = findTable(task.table, database);
-
-		producer.push(bootstrapCompleteRowMap(table));
-
+	public void completeBootstrap(BootstrapTask task, AbstractProducer producer) throws Exception {
+		producer.push(bootstrapEventRowMap("bootstrap-complete", task.database, task.table, new ArrayList<>()));
 		LOGGER.info("bootstrapping ended for " + task.logString());
 	}
 
 	@Override
-	public void resume(AbstractProducer producer, Replicator replicator) throws SQLException {
+	public void resume(AbstractProducer producer) throws SQLException {
 		try (Connection connection = context.getMaxwellConnection()) {
 			// This update resets all rows of incomplete bootstraps to their original state.
 			// These updates are treated as fresh bootstrap requests and trigger a restart
@@ -152,11 +154,11 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 	}
 
 	@Override
-	public void work(RowMap row, AbstractProducer producer, Replicator replicator) throws Exception {
+	public void work(RowMap row, AbstractProducer producer, Long currentSchemaID) throws Exception {
 		try {
 			if ( isStartBootstrapRow(row) ) {
 				producer.push(row);
-				startBootstrap(BootstrapTask.valueOf(row), producer, replicator);
+				startBootstrap(BootstrapTask.valueOf(row), producer, currentSchemaID);
 			}
 		} catch ( NoSuchElementException e ) {
 			LOGGER.info(String.format("bootstrapping cancelled for %s.%s", row.getDatabase(), row.getTable()));
@@ -175,10 +177,6 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		if ( database == null )
 			throw new RuntimeException("Couldn't find database " + databaseName);
 		return database;
-	}
-
-	private void ensureTable(String tableName, Database database) {
-		findTable(tableName, database);
 	}
 
 	private ResultSet getAllRows(String databaseName, String tableName, Table table, String whereClause,
