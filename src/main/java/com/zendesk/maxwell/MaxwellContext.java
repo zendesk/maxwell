@@ -367,17 +367,6 @@ public class MaxwellContext {
 		return this.producer;
 	}
 
-	public AbstractBootstrapper getBootstrapper() throws IOException {
-		switch ( this.config.bootstrapperType ) {
-			case "async":
-				return new AsynchronousBootstrapper(this);
-			case "sync":
-				return new SynchronousBootstrapper(this);
-			default:
-				return new NoOpBootstrapper(this);
-		}
-
-	}
 	public BootstrapController startBootstrapController(long currentSchemaID) throws IOException {
 		SynchronousBootstrapper bootstrapper = new SynchronousBootstrapper(this);
 		BootstrapController controller = new BootstrapController(
