@@ -11,7 +11,7 @@ import com.github.shyiko.mysql.binlog.event.TableMapEventData;
 import com.github.shyiko.mysql.binlog.event.deserialization.EventDeserializer;
 import com.github.shyiko.mysql.binlog.network.ServerException;
 import com.zendesk.maxwell.MaxwellMysqlConfig;
-import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
+import com.zendesk.maxwell.bootstrap.BootstrapController;
 import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.monitoring.Metrics;
 import com.zendesk.maxwell.producer.AbstractProducer;
@@ -61,7 +61,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private Long stopAtHeartbeat;
 	private Filter filter;
 
-	private final AbstractBootstrapper bootstrapper;
+	private final BootstrapController bootstrapper;
 	private final AbstractProducer producer;
 	private RowMapBuffer rowBuffer;
 
@@ -82,7 +82,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	public BinlogConnectorReplicator(
 		SchemaStore schemaStore,
 		AbstractProducer producer,
-		AbstractBootstrapper bootstrapper,
+		BootstrapController bootstrapper,
 		MaxwellMysqlConfig mysqlConfig,
 		Long replicaServerID,
 		String maxwellSchemaDatabaseName,
@@ -256,8 +256,6 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 			}
 		} else if (!bootstrapper.shouldSkip(row) && !isMaxwellRow(row))
 			producer.push(row);
-		else
-			bootstrapper.work(row, producer, this.getSchemaId());
 	}
 
 

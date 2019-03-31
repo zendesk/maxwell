@@ -1,9 +1,6 @@
 package com.zendesk.maxwell;
 
-import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
-import com.zendesk.maxwell.bootstrap.AsynchronousBootstrapper;
-import com.zendesk.maxwell.bootstrap.NoOpBootstrapper;
-import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
+import com.zendesk.maxwell.bootstrap.*;
 import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.monitoring.*;
 import com.zendesk.maxwell.producer.*;
@@ -381,6 +378,27 @@ public class MaxwellContext {
 		}
 
 	}
+	public BootstrapController startBootstrapController(long currentSchemaID) throws IOException {
+		SynchronousBootstrapper bootstrapper = new SynchronousBootstrapper(this);
+		BootstrapController controller = new BootstrapController(
+			this.getMaxwellConnectionPool(),
+			this.getProducer(),
+			bootstrapper,
+			this.config.clientID,
+			this.config.bootstrapperType.equals("sync"),
+			currentSchemaID
+		);
+
+		new Thread(() -> {
+			try {
+				controller.runLoop();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}, "maxwell-bootstrap-controller").start();
+
+		return controller;
+	}
 
 	public Filter getFilter() {
 		return config.filter;
@@ -422,4 +440,5 @@ public class MaxwellContext {
 	public MaxwellDiagnosticContext getDiagnosticContext() {
 		return this.diagnosticContext;
 	}
+
 }

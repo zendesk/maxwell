@@ -53,4 +53,9 @@ public class BootstrapTask {
 		t.startPosition = BinlogPosition.at(binlogOffset, binlogFile);
 		return t;
 	}
+
+	public boolean matches(RowMap row) {
+		return database.equalsIgnoreCase(row.getDatabase())
+			&& table.equalsIgnoreCase(row.getTable());
+	}
 }
