@@ -190,7 +190,7 @@ public class MaxwellTestSupport {
 		callback.beforeReplicatorStart(mysql);
 
 		config.initPosition = capture(mysql.getConnection());
-		final String waitObject = new String("");
+		final String waitObject = "";
 		final BufferedMaxwell maxwell = new BufferedMaxwell(config) {
 			@Override
 			protected void onReplicatorStart() {
@@ -221,6 +221,8 @@ public class MaxwellTestSupport {
 		}
 
 		callback.afterReplicatorStart(mysql);
+		maxwell.context.getBootstrapController(null).interrupt();
+
 		long finalHeartbeat = maxwell.context.getPositionStore().heartbeat();
 
 		LOGGER.debug("running replicator up to heartbeat: " + finalHeartbeat);

@@ -190,7 +190,7 @@ public class Maxwell implements Runnable {
 		this.context.setPosition(initPosition);
 
 		MysqlSchemaStore mysqlSchemaStore = new MysqlSchemaStore(this.context, initPosition);
-		BootstrapController bootstrapController = this.context.startBootstrapController(mysqlSchemaStore.getSchemaID());
+		BootstrapController bootstrapController = this.context.getBootstrapController(mysqlSchemaStore.getSchemaID());
 
 		if (config.recaptureSchema) {
 			mysqlSchemaStore.captureAndSaveSchema();

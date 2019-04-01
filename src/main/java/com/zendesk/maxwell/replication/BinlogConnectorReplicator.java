@@ -254,9 +254,10 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					this.taskState.stopped();
 				}
 			}
-		} else if (!bootstrapper.shouldSkip(row) && !isMaxwellRow(row))
+		} else if (!bootstrapper.shouldSkip(row) && (!isMaxwellRow(row) || isBootstrapInsert(row)))
 			producer.push(row);
 	}
+
 
 
 	/**
@@ -370,6 +371,12 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	 */
 	protected boolean isMaxwellRow(RowMap row) {
 		return row.getDatabase().equals(this.maxwellSchemaDatabaseName);
+	}
+
+	private boolean isBootstrapInsert(RowMap row) {
+		return row.getDatabase().equals(this.maxwellSchemaDatabaseName)
+			&& row.getRowType().equals("insert")
+			&& row.getTable().equals("bootstrap");
 	}
 
 	private void ensureReplicatorThread() throws Exception {

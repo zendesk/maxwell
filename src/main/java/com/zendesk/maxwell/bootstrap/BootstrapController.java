@@ -4,6 +4,8 @@ import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMapBuffer;
 import com.zendesk.maxwell.util.RunLoopProcess;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import snaq.db.ConnectionPool;
 
 import java.io.IOException;
@@ -16,6 +18,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class BootstrapController extends RunLoopProcess  {
+	static final Logger LOGGER = LoggerFactory.getLogger(BootstrapController.class);
 	private final long MAX_TX_ELEMENTS = 10000;
 
 	private final ConnectionPool maxwellConnectionPool;
@@ -55,6 +58,7 @@ public class BootstrapController extends RunLoopProcess  {
 		List<BootstrapTask> tasks = getIncompleteTasks();
 		synchronized(bootstrapMutex) {
 			for ( BootstrapTask task : tasks ) {
+				LOGGER.debug("starting bootstrap task: {}", task.logString());
 				synchronized(completionMutex) {
 					activeTask.set(task);
 				}
@@ -78,6 +82,10 @@ public class BootstrapController extends RunLoopProcess  {
 
 	public synchronized void setCurrentSchemaID(long schemaID) {
 		this.currentSchemaID = schemaID;
+	}
+
+	public void pollNow() {
+		this.interrupt();
 	}
 
 	private List<BootstrapTask> getIncompleteTasks() throws SQLException {
