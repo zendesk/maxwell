@@ -1,6 +1,7 @@
 package com.zendesk.maxwell;
 
-import com.zendesk.maxwell.bootstrap.*;
+import com.zendesk.maxwell.bootstrap.BootstrapController;
+import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
 import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.monitoring.*;
 import com.zendesk.maxwell.producer.*;
@@ -435,5 +436,4 @@ public class MaxwellContext {
 	public MaxwellDiagnosticContext getDiagnosticContext() {
 		return this.diagnosticContext;
 	}
-
 }

@@ -15,7 +15,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class BootstrapController extends RunLoopProcess  {
 	static final Logger LOGGER = LoggerFactory.getLogger(BootstrapController.class);
@@ -50,7 +49,7 @@ public class BootstrapController extends RunLoopProcess  {
 
 	// this one is used to protect against races in an async producer.
 	private Object completionMutex = new Object();
-	private AtomicReference<BootstrapTask> activeTask = new AtomicReference<>();
+	private BootstrapTask activeTask;
 	private RowMapBuffer skippedRows = new RowMapBuffer(MAX_TX_ELEMENTS);
 
 	@Override
@@ -60,14 +59,14 @@ public class BootstrapController extends RunLoopProcess  {
 			for ( BootstrapTask task : tasks ) {
 				LOGGER.debug("starting bootstrap task: {}", task.logString());
 				synchronized(completionMutex) {
-					activeTask.set(task);
+					activeTask = task;
 				}
 
 				bootstrapper.startBootstrap(task, producer, getCurrentSchemaID());
 
 				synchronized(completionMutex) {
 					pushSkippedRows();
-					activeTask.set(null);
+					activeTask = null;
 				}
 			}
 		}
@@ -82,10 +81,6 @@ public class BootstrapController extends RunLoopProcess  {
 
 	public synchronized void setCurrentSchemaID(long schemaID) {
 		this.currentSchemaID = schemaID;
-	}
-
-	public void pollNow() {
-		this.interrupt();
 	}
 
 	private List<BootstrapTask> getIncompleteTasks() throws SQLException {
@@ -112,12 +107,11 @@ public class BootstrapController extends RunLoopProcess  {
 			synchronized(bootstrapMutex) { return false; }
 		else {
 			synchronized (completionMutex) {
-				BootstrapTask task = activeTask.get();
-				if (task == null)
+				if (activeTask == null)
 					return false;
 
 				// async mode with an active task
-				if (task.matches(row)) {
+				if (activeTask.matches(row)) {
 					skippedRows.add(row);
 					return true;
 				} else
