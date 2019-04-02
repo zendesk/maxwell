@@ -42,7 +42,7 @@ public class MaxwellKafkaProducerWorkerTest {
 		RowIdentity rowId = new RowIdentity("MyDatabase", "MyTable", Collections.emptyList());
 		MaxwellKafkaProducerWorker worker = new MaxwellKafkaProducerWorker(context, kafkaTopic, null, producer);
 
-		worker.sendFallbackAsync("maxwell.errors", rowId, callback, null, new Exception("The broker is grumpy"));
+		worker.enqueueFallbackRow("maxwell.errors", rowId, callback, null, new Exception("The broker is grumpy"));
 		verify(callback, never()).onCompletion(any(), isNotNull());
 		verify(producer, never()).send(any(), any());
 

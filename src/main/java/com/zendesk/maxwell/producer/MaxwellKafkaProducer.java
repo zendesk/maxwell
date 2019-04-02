@@ -97,7 +97,7 @@ class KafkaCallback implements Callback {
 		KafkaCallback cb = new KafkaCallback(cc, position, key, json,
 			succeededMessageCount, failedMessageCount, succeededMessageMeter,
 			failedMessageMeter, topic, null, context, producer);
-		producer.sendFallbackAsync(fallbackTopic, key, cb, md, e);
+		producer.enqueueFallbackRow(fallbackTopic, key, cb, md, e);
 	}
 
 	String getFallbackTopic() {
@@ -181,7 +181,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		this.ddlPartitioner = makeDDLPartitioner(hash, partitionKey);
 		this.ddlTopic =  context.getConfig().ddlKafkaTopic;
 		this.deadLetterTopic = context.getConfig().deadLetterTopic;
-		this.deadLetterQueue = this.deadLetterTopic == null ? null : new ConcurrentLinkedQueue<>();
+		this.deadLetterQueue = new ConcurrentLinkedQueue<>();
 
 		if ( context.getConfig().kafkaKeyFormat.equals("hash") )
 			keyFormat = KeyFormat.HASH;
@@ -220,11 +220,9 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	}
 
 	void drainDeadLetterQueue() {
-		if (this.deadLetterQueue != null) {
-			Pair<ProducerRecord<String, String>, KafkaCallback> pair;
-			while ((pair = deadLetterQueue.poll()) != null) {
-				sendAsync(pair.getLeft(), pair.getRight());
-			}
+		Pair<ProducerRecord<String, String>, KafkaCallback> pair;
+		while ((pair = deadLetterQueue.poll()) != null) {
+			sendAsync(pair.getLeft(), pair.getRight());
 		}
 	}
 
@@ -258,7 +256,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		sendAsync(record, callback);
 	}
 
-	public void sendFallbackAsync(String topic, RowIdentity fallbackRecord, KafkaCallback callback, RecordMetadata md, Exception reason) {
+	public void enqueueFallbackRow(String topic, RowIdentity fallbackRecord, KafkaCallback callback, RecordMetadata md, Exception reason) {
 		// This code may be executed from the `kafka-producer-network-thread`, which will deadlock if we try to directly call send().
 		// So enqueue a message for the worker thread to pick up.
 		LOGGER.info("publishing fallback record to " + topic + ": " + fallbackRecord);
