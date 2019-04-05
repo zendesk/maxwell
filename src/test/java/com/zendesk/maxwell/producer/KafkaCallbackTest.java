@@ -41,7 +41,7 @@ public class KafkaCallbackTest {
 
 		return new KafkaCallback(cc, position, id, "value",
 				new Counter(), new Counter(), new Meter(), new Meter(),
-				context.getConfig().deadLetterTopic, context, producer);
+				"maxwell", context.getConfig().deadLetterTopic, context, producer);
 	}
 
 	@Test
@@ -88,7 +88,7 @@ public class KafkaCallbackTest {
 		verifyZeroInteractions(cc);
 
 		ArgumentCaptor<KafkaCallback> cbCaptor = ArgumentCaptor.forClass(KafkaCallback.class);
-		verify(producer).sendFallbackAsync(eq("dead_letters"), eq(id), cbCaptor.capture(), any(), eq(error));
+		verify(producer).enqueueFallbackRow(eq("dead_letters"), eq(id), cbCaptor.capture(), any(), eq(error));
 		Assert.assertEquals(null, cbCaptor.getValue().getFallbackTopic());
 		cbCaptor.getValue().onCompletion(recordMetadata, null);
 		verify(cc).markCompleted();
@@ -114,7 +114,7 @@ public class KafkaCallbackTest {
 		verifyZeroInteractions(cc);
 
 		ArgumentCaptor<KafkaCallback> cbCaptor = ArgumentCaptor.forClass(KafkaCallback.class);
-		verify(producer).sendFallbackAsync(eq("dead_letters"), eq(id), cbCaptor.capture(), any(), eq(error));
+		verify(producer).enqueueFallbackRow(eq("dead_letters"), eq(id), cbCaptor.capture(), any(), eq(error));
 		Assert.assertEquals(null, cbCaptor.getValue().getFallbackTopic());
 		cbCaptor.getValue().onCompletion(recordMetadata, null);
 		verify(cc).markCompleted();
