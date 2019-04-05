@@ -201,7 +201,8 @@ binlog_format=row
 
 #### GTID support
 As of 1.8.0, Maxwell contains support for
-[GTID-based replication](https://dev.mysql.com/doc/refman/5.6/en/replication-gtids.html).  Enable it with the `--gtid_mode` configuration param.
+[GTID-based replication](https://dev.mysql.com/doc/refman/5.6/en/replication-gtids.html).
+Enable it with the `--gtid_mode` configuration param.
 
 Here's how you might configure your mysql server for GTID mode:
 
@@ -221,7 +222,7 @@ When in GTID-mode, Maxwell will transparently pick up a new replication
 position after a master change.  Note that you will still have to re-point
 maxwell to the new master.
 
-GTID support in Maxwell is considered alpha-quality at the moment; notably,
+GTID support in Maxwell is considered beta-quality at the moment; notably,
 Maxwell is unable to transparently upgrade from a traditional-replication
 scenario to a GTID-replication scenario; currently, when you enable gtid mode
 Maxwell will recapture the schema and GTID-position from "wherever the master
@@ -245,11 +246,8 @@ Maxwell uses MySQL for 3 different functions:
 3. A host to capture the schema from (`--schema_host`).
 
 Often, all three hosts are the same.  `host` and `replication_host` should be different
-if mysql is chained off a slave.  `schema_host` should only be used when using the
+if maxwell is chained off a replica.  `schema_host` should only be used when using the
 maxscale replication proxy.
-
-Note that bootstrapping is currently not available when `host` and
-`replication_host` are separate, due to some implementation details.
 
 #### Multiple Maxwell Instances
 
