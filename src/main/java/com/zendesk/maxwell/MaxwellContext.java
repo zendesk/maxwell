@@ -374,6 +374,9 @@ public class MaxwellContext {
 			return this.bootstrapController;
 		}
 
+		if ( this.config.bootstrapperType.equals("none") )
+			return null;
+
 		SynchronousBootstrapper bootstrapper = new SynchronousBootstrapper(this);
 		this.bootstrapController = new BootstrapController(
 			this.getMaxwellConnectionPool(),
