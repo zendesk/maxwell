@@ -11,7 +11,7 @@ import com.github.shyiko.mysql.binlog.event.TableMapEventData;
 import com.github.shyiko.mysql.binlog.event.deserialization.EventDeserializer;
 import com.github.shyiko.mysql.binlog.network.ServerException;
 import com.zendesk.maxwell.MaxwellMysqlConfig;
-import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
+import com.zendesk.maxwell.bootstrap.BootstrapController;
 import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.monitoring.Metrics;
 import com.zendesk.maxwell.producer.AbstractProducer;
@@ -30,6 +30,7 @@ import com.zendesk.maxwell.util.RunLoopProcess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -61,7 +62,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private Long stopAtHeartbeat;
 	private Filter filter;
 
-	private final AbstractBootstrapper bootstrapper;
+	private final BootstrapController bootstrapper;
 	private final AbstractProducer producer;
 	private RowMapBuffer rowBuffer;
 
@@ -82,7 +83,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	public BinlogConnectorReplicator(
 		SchemaStore schemaStore,
 		AbstractProducer producer,
-		AbstractBootstrapper bootstrapper,
+		BootstrapController bootstrapper,
 		MaxwellMysqlConfig mysqlConfig,
 		Long replicaServerID,
 		String maxwellSchemaDatabaseName,
@@ -243,6 +244,20 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		}
 	}
 
+	private boolean shouldSkipRow(RowMap row) throws IOException {
+		if ( isMaxwellRow(row) && !isBootstrapInsert(row))
+			return true;
+
+		/* NOTE: bootstrapper.shouldSkip will block us if
+		   we're in synchronous bootstrapping mode.  It also
+		   has the side affect of taking the row into a queue if
+		   we're in async bootstrapping mode */
+		if ( bootstrapper != null && bootstrapper.shouldSkip(row) )
+			return true;
+
+		return false;
+	}
+
 	protected void processRow(RowMap row) throws Exception {
 		if ( row instanceof HeartbeatRowMap) {
 			producer.push(row);
@@ -254,11 +269,10 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					this.taskState.stopped();
 				}
 			}
-		} else if (!bootstrapper.shouldSkip(row) && !isMaxwellRow(row))
+		} else if ( !shouldSkipRow(row) )
 			producer.push(row);
-		else
-			bootstrapper.work(row, producer, this.getSchemaId());
 	}
+
 
 
 	/**
@@ -294,6 +308,10 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private void processQueryEvent(String dbName, String sql, SchemaStore schemaStore, Position position, Position nextPosition, Long timestamp) throws Exception {
 		List<ResolvedSchemaChange> changes = schemaStore.processSQL(sql, dbName, position);
 		Long schemaId = getSchemaId();
+
+		if ( bootstrapper != null)
+			bootstrapper.setCurrentSchemaID(schemaId);
+
 		for (ResolvedSchemaChange change : changes) {
 			if (change.shouldOutput(filter)) {
 				DDLMap ddl = new DDLMap(change, timestamp, sql, position, nextPosition, schemaId);
@@ -372,6 +390,12 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	 */
 	protected boolean isMaxwellRow(RowMap row) {
 		return row.getDatabase().equals(this.maxwellSchemaDatabaseName);
+	}
+
+	private boolean isBootstrapInsert(RowMap row) {
+		return row.getDatabase().equals(this.maxwellSchemaDatabaseName)
+			&& row.getRowType().equals("insert")
+			&& row.getTable().equals("bootstrap");
 	}
 
 	private void ensureReplicatorThread() throws Exception {

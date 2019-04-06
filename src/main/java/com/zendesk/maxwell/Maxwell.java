@@ -1,7 +1,7 @@
 package com.zendesk.maxwell;
 
 import com.djdch.log4j.StaticShutdownCallbackRegistry;
-import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
+import com.zendesk.maxwell.bootstrap.BootstrapController;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.recovery.Recovery;
 import com.zendesk.maxwell.recovery.RecoveryInfo;
@@ -184,13 +184,13 @@ public class Maxwell implements Runnable {
 		}
 
 		AbstractProducer producer = this.context.getProducer();
-		AbstractBootstrapper bootstrapper = this.context.getBootstrapper();
 
 		Position initPosition = getInitialPosition();
 		logBanner(producer, initPosition);
 		this.context.setPosition(initPosition);
 
 		MysqlSchemaStore mysqlSchemaStore = new MysqlSchemaStore(this.context, initPosition);
+		BootstrapController bootstrapController = this.context.getBootstrapController(mysqlSchemaStore.getSchemaID());
 
 		if (config.recaptureSchema) {
 			mysqlSchemaStore.captureAndSaveSchema();
@@ -201,7 +201,7 @@ public class Maxwell implements Runnable {
 		this.replicator = new BinlogConnectorReplicator(
 			mysqlSchemaStore,
 			producer,
-			bootstrapper,
+			bootstrapController,
 			config.replicationMysql,
 			config.replicaServerID,
 			config.databaseName,
@@ -214,8 +214,6 @@ public class Maxwell implements Runnable {
 			context.getFilter(),
 			config.outputConfig
 		);
-
-		bootstrapper.resume(producer);
 
 		context.setReplicator(replicator);
 		this.context.start();

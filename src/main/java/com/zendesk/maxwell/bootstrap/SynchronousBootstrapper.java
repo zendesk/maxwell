@@ -23,20 +23,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-public class SynchronousBootstrapper extends AbstractBootstrapper {
+public class SynchronousBootstrapper {
 	static final Logger LOGGER = LoggerFactory.getLogger(SynchronousBootstrapper.class);
 	private static final long INSERTED_ROWS_UPDATE_PERIOD_MILLIS = 250;
+	private final MaxwellContext context;
 
 	private long lastInsertedRowsUpdateTimeMillis = 0;
 
-	public SynchronousBootstrapper(MaxwellContext context) { super(context); }
-
-	@Override
-	public boolean shouldSkip(RowMap row) {
-		// the synchronous bootstrapper blocks other incoming messages
-		// to the replication stream so there's nothing to skip
-		return false;
+	public SynchronousBootstrapper(MaxwellContext context) { 
+		this.context = context; 
 	}
+
 
 	public void startBootstrap(BootstrapTask task, AbstractProducer producer, Long currentSchemaID) throws Exception {
 		performBootstrap(task, producer, currentSchemaID);
@@ -132,37 +129,6 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 	public void completeBootstrap(BootstrapTask task, AbstractProducer producer) throws Exception {
 		producer.push(bootstrapEventRowMap("bootstrap-complete", task.database, task.table, new ArrayList<>()));
 		LOGGER.info("bootstrapping ended for " + task.logString());
-	}
-
-	@Override
-	public void resume(AbstractProducer producer) throws SQLException {
-		try (Connection connection = context.getMaxwellConnection()) {
-			// This update resets all rows of incomplete bootstraps to their original state.
-			// These updates are treated as fresh bootstrap requests and trigger a restart
-			// of the bootstrap process from the beginning.
-			String clientID = this.context.getConfig().clientID;
-			String sql = "update `bootstrap` set started_at = NULL where is_complete = 0 and started_at is not NULL and client_id = ?";
-			PreparedStatement s = connection.prepareStatement(sql);
-			s.setString(1, clientID);
-			s.execute();
-		}
-	}
-
-	@Override
-	public boolean isRunning( ) {
-		return false;
-	}
-
-	@Override
-	public void work(RowMap row, AbstractProducer producer, Long currentSchemaID) throws Exception {
-		try {
-			if ( isStartBootstrapRow(row) ) {
-				producer.push(row);
-				startBootstrap(BootstrapTask.valueOf(row), producer, currentSchemaID);
-			}
-		} catch ( NoSuchElementException e ) {
-			LOGGER.info(String.format("bootstrapping cancelled for %s.%s", row.getDatabase(), row.getTable()));
-		}
 	}
 
 	private Table findTable(String tableName, Database database) {

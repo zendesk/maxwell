@@ -1,8 +1,6 @@
 package com.zendesk.maxwell;
 
-import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
-import com.zendesk.maxwell.bootstrap.AsynchronousBootstrapper;
-import com.zendesk.maxwell.bootstrap.NoOpBootstrapper;
+import com.zendesk.maxwell.bootstrap.BootstrapController;
 import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
 import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.monitoring.*;
@@ -53,6 +51,7 @@ public class MaxwellContext {
 
 	private final HeartbeatNotifier heartbeatNotifier;
 	private final MaxwellDiagnosticContext diagnosticContext;
+	private BootstrapController bootstrapController;
 
 	public MaxwellContext(MaxwellConfig config) throws SQLException, URISyntaxException {
 		this.config = config;
@@ -370,16 +369,34 @@ public class MaxwellContext {
 		return this.producer;
 	}
 
-	public AbstractBootstrapper getBootstrapper() throws IOException {
-		switch ( this.config.bootstrapperType ) {
-			case "async":
-				return new AsynchronousBootstrapper(this);
-			case "sync":
-				return new SynchronousBootstrapper(this);
-			default:
-				return new NoOpBootstrapper(this);
+	public synchronized BootstrapController getBootstrapController(Long currentSchemaID) throws IOException {
+		if ( this.bootstrapController != null ) {
+			return this.bootstrapController;
 		}
 
+		if ( this.config.bootstrapperType.equals("none") )
+			return null;
+
+		SynchronousBootstrapper bootstrapper = new SynchronousBootstrapper(this);
+		this.bootstrapController = new BootstrapController(
+			this.getMaxwellConnectionPool(),
+			this.getProducer(),
+			bootstrapper,
+			this.config.clientID,
+			this.config.bootstrapperType.equals("sync"),
+			currentSchemaID
+		);
+
+		new Thread(() -> {
+			try {
+				this.bootstrapController.runLoop();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}, "maxwell-bootstrap-controller").start();
+
+		addTask(this.bootstrapController);
+		return this.bootstrapController;
 	}
 
 	public Filter getFilter() {
