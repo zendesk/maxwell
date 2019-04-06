@@ -30,6 +30,7 @@ import com.zendesk.maxwell.util.RunLoopProcess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -243,6 +244,20 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		}
 	}
 
+	private boolean shouldSkipRow(RowMap row) throws IOException {
+		if ( isMaxwellRow(row) && !isBootstrapInsert(row))
+			return true;
+
+		/* NOTE: bootstrapper.shouldSkip will block us if
+		   we're in synchronous bootstrapping mode.  It also
+		   has the side affect of taking the row into a queue if
+		   we're in async bootstrapping mode */
+		if ( bootstrapper != null && bootstrapper.shouldSkip(row) )
+			return true;
+
+		return false;
+	}
+
 	protected void processRow(RowMap row) throws Exception {
 		if ( row instanceof HeartbeatRowMap) {
 			producer.push(row);
@@ -254,7 +269,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					this.taskState.stopped();
 				}
 			}
-		} else if (!bootstrapper.shouldSkip(row) && (!isMaxwellRow(row) || isBootstrapInsert(row)))
+		} else if ( !shouldSkipRow(row) )
 			producer.push(row);
 	}
 
