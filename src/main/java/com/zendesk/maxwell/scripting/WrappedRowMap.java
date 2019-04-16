@@ -82,4 +82,8 @@ public class WrappedRowMap {
 	public void setKafka_topic(String topic) {
 		row.setKafkaTopic(topic);
 	}
+
+	public void setPartition_string(String partitionString) {
+		row.setPartitionString(partitionString);
+	}
 }

@@ -20,6 +20,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 
 public class RowMap implements Serializable {
 
+
 	public enum KeyFormat { HASH, ARRAY }
 
 	static final Logger LOGGER = LoggerFactory.getLogger(RowMap.class);
@@ -33,6 +34,7 @@ public class RowMap implements Serializable {
 	private final Position position;
 	private Position nextPosition;
 	private String kafkaTopic;
+	private String partitionString;
 	protected boolean suppressed;
 
 	private Long xid;
@@ -393,4 +395,13 @@ public class RowMap implements Serializable {
 	public void setKafkaTopic(String topic) {
 		this.kafkaTopic = topic;
 	}
+
+	public String getPartitionString() {
+		return this.partitionString;
+	}
+
+	public void setPartitionString(String partitionString) {
+		this.partitionString = partitionString;
+	}
+
 }

@@ -105,12 +105,12 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 		});
 	}
 
-	protected void runJSON(String filename) throws Exception {
-		MaxwellTestJSON.runJSONTestFile(server, filename, null);
+	protected List<RowMap> runJSON(String filename) throws Exception {
+		return MaxwellTestJSON.runJSONTestFile(server, filename, null);
 	}
 
-	protected void runJSON(String filename, Consumer<MaxwellConfig> configLambda) throws Exception {
-		MaxwellTestJSON.runJSONTestFile(server, filename, configLambda);
+	protected List<RowMap> runJSON(String filename, Consumer<MaxwellConfig> configLambda) throws Exception {
+		return MaxwellTestJSON.runJSONTestFile(server, filename, configLambda);
 	}
 
 	protected MaxwellContext buildContext() throws Exception {
