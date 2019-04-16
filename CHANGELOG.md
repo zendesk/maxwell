@@ -1,5 +1,14 @@
 # Maxwell changelog
 
+### [v1.22.0](https://github.com/zendesk/maxwell/releases/tag/v1.22.0): "through the roof, and underground"
+
+
+- Bootstrapping has been reworked and is now available in all setups,
+including those in which the maxwell store is split from the replicator.
+- cleanup and fix a deadlock in the kafka fallback queue logic
+- add .partition_string = to javascript filters
+
+
 ### [v1.21.1](https://github.com/zendesk/maxwell/releases/tag/v1.21.1): "ohhhhhh oh oh"
 
 
