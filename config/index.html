@@ -1106,7 +1106,8 @@ binlog_format=row
 
 <h4 id="gtid-support">GTID support</h4>
 <p>As of 1.8.0, Maxwell contains support for
-<a href="https://dev.mysql.com/doc/refman/5.6/en/replication-gtids.html">GTID-based replication</a>.  Enable it with the <code>--gtid_mode</code> configuration param.</p>
+<a href="https://dev.mysql.com/doc/refman/5.6/en/replication-gtids.html">GTID-based replication</a>.
+Enable it with the <code>--gtid_mode</code> configuration param.</p>
 <p>Here's how you might configure your mysql server for GTID mode:</p>
 <pre><code>$ vi my.cnf
 
@@ -1122,7 +1123,7 @@ enforce-gtid-consistency=true
 <p>When in GTID-mode, Maxwell will transparently pick up a new replication
 position after a master change.  Note that you will still have to re-point
 maxwell to the new master.</p>
-<p>GTID support in Maxwell is considered alpha-quality at the moment; notably,
+<p>GTID support in Maxwell is considered beta-quality at the moment; notably,
 Maxwell is unable to transparently upgrade from a traditional-replication
 scenario to a GTID-replication scenario; currently, when you enable gtid mode
 Maxwell will recapture the schema and GTID-position from "wherever the master
@@ -1143,10 +1144,8 @@ is at".</p>
 <li>A host to capture the schema from (<code>--schema_host</code>).</li>
 </ol>
 <p>Often, all three hosts are the same.  <code>host</code> and <code>replication_host</code> should be different
-if mysql is chained off a slave.  <code>schema_host</code> should only be used when using the
+if maxwell is chained off a replica.  <code>schema_host</code> should only be used when using the
 maxscale replication proxy.</p>
-<p>Note that bootstrapping is currently not available when <code>host</code> and
-<code>replication_host</code> are separate, due to some implementation details.</p>
 <h4 id="multiple-maxwell-instances">Multiple Maxwell Instances</h4>
 <p>Maxwell can operate with multiple instances running against a single master, in
 different configurations.  This can be useful if you wish to have producers

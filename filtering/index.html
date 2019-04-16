@@ -191,8 +191,6 @@
                       <li class="toctree-l3"><a href="#column-filters">Column Filters</a>
                       <ul class="toctree-subnav">
                       
-                          <li class="toctree-l4" ><a href="#missing-columns">Missing Columns</a></li>
-                      
                       </li>
                       </uL>
                   
@@ -278,13 +276,9 @@ suppress everything except updates in the <code>db1</code> database.</p>
 <pre><code>--filter = 'exclude: db.tbl.col = reject'
 </code></pre>
 
-<p>will reject any row in <code>db.tbl</code> that contains <code>col</code> and where the stringified value of "col" is "reject".</p>
-<h4 id="missing-columns">Missing Columns</h4>
-<p>Column filters are ignored if the specified column is not present, so:</p>
-<pre><code>--filter = 'exclude: *.*.col_a = *'
-</code></pre>
-
-<p>will exclude updates to any table that contains <code>col_a</code>, but include every other table.</p>
+<p>will reject any row in <code>db.tbl</code> that contains <code>col</code> and where the stringified value of "col" is "reject".
+Column filters are ignored if the specified column is not present, so <code>--filter = 'exclude: *.*.col_a = *'</code>
+will exclude updates to any table that contains <code>col_a</code>, but include every other table.</p>
 <h3 id="blacklisting">Blacklisting</h3>
 <hr />
 <p>In rare cases, you may wish to tell Maxwell to completely ignore a database or
@@ -295,7 +289,8 @@ table, including schema changes.  In general, don't use this.  If you must use t
 <p>Note that once Maxwell has been running with a table or database marked as
 blacklisted, you <em>must</em> continue to run Maxwell with that table or database
 blacklisted or else Maxwell will halt. If you want to stop
-blacklisting a table or database, you will have to drop the maxwell schema first.</p>
+blacklisting a table or database, you will have to drop the maxwell schema first.
+Also note that this is the feature I most regret writing.</p>
 <h3 id="javascript-filters">Javascript Filters</h3>
 <hr />
 <p>If you need more flexibility than the native filters provide, you can write a small chunk of
