@@ -71,6 +71,9 @@ public abstract class AbstractMaxwellPartitioner {
 	}
 
 	public String getHashString(RowMap r) {
-		return getHashString(r, partitionBy);
+		if ( r.getPartitionString() != null )
+			return r.getPartitionString();
+		else
+			return getHashString(r, partitionBy);
 	}
 }
