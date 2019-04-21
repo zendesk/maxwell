@@ -60,10 +60,15 @@ public class RabbitmqProducer extends AbstractProducer {
 	}
 
 	private String getRoutingKeyFromTemplate(RowMap r) {
+		String table = r.getTable();
+
+		if ( table == null )
+			table = "";
+
 		return context
 				.getConfig()
 				.rabbitmqRoutingKeyTemplate
 				.replace("%db%", r.getDatabase())
-				.replace("%table%", r.getTable());
+				.replace("%table%", table);
 	}
 }
