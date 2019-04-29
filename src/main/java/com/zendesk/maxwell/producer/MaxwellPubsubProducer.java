@@ -5,8 +5,14 @@ import com.codahale.metrics.Meter;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
+import com.google.api.gax.batching.BatchingSettings;
+import com.google.api.gax.batching.FlowControlSettings;
+import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.pubsub.v1.Publisher;
+import com.google.cloud.pubsub.v1.stub.GrpcPublisherCallableFactory;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
+import com.google.pubsub.v1.ProjectTopicName;
 import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.TopicName;
 import com.zendesk.maxwell.MaxwellContext;
@@ -19,10 +25,12 @@ import com.zendesk.maxwell.util.StoppableTask;
 import com.zendesk.maxwell.util.StoppableTaskState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.threeten.bp.Duration;
 
 import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -121,8 +129,8 @@ class MaxwellPubsubProducerWorker
 
   private final String projectId;
   private Publisher pubsub;
-  private final TopicName topic;
-  private final TopicName ddlTopic;
+  private final ProjectTopicName topic;
+  private final ProjectTopicName ddlTopic;
   private Publisher ddlPubsub;
   private final ArrayBlockingQueue<RowMap> queue;
   private Thread thread;
@@ -136,12 +144,12 @@ class MaxwellPubsubProducerWorker
     super(context);
 
     this.projectId = pubsubProjectId;
-    this.topic = TopicName.of(pubsubProjectId, pubsubTopic);
+    this.topic = ProjectTopicName.of(pubsubProjectId, pubsubTopic);
     this.pubsub = Publisher.newBuilder(this.topic).build();
 
     if ( context.getConfig().outputConfig.outputDDL == true &&
          ddlPubsubTopic != pubsubTopic ) {
-      this.ddlTopic = TopicName.of(pubsubProjectId, ddlPubsubTopic);
+      this.ddlTopic = ProjectTopicName.of(pubsubProjectId, ddlPubsubTopic);
       this.ddlPubsub = Publisher.newBuilder(this.ddlTopic).build();
     } else {
       this.ddlTopic = this.topic;
@@ -185,13 +193,13 @@ class MaxwellPubsubProducerWorker
 	  PubsubCallback callback = new PubsubCallback(cc, r.getNextPosition(), message,
 			  this.succeededMessageCount, this.failedMessageCount, this.succeededMessageMeter, this.failedMessageMeter, this.context);
 
-	  ApiFutures.addCallback(apiFuture, callback);
+	  ApiFutures.addCallback(apiFuture, callback, MoreExecutors.directExecutor());
     } else {
 	  ApiFuture<String> apiFuture = pubsub.publish(pubsubMessage);
 	  PubsubCallback callback = new PubsubCallback(cc, r.getNextPosition(), message,
 			  this.succeededMessageCount, this.failedMessageCount, this.succeededMessageMeter, this.failedMessageMeter, this.context);
 
-	  ApiFutures.addCallback(apiFuture, callback);
+	  ApiFutures.addCallback(apiFuture, callback, MoreExecutors.directExecutor());
     }
   }
 
