@@ -1,5 +1,6 @@
 package com.zendesk.maxwell.row;
 
+import com.google.api.client.util.Lists;
 import com.zendesk.maxwell.errors.ProtectedAttributeNameException;
 import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.replication.BinlogPosition;
@@ -13,6 +14,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -200,6 +202,16 @@ public class RowMap implements Serializable {
 			}
 		}
 
+		if ( outputConfig.includesPrimaryKeys ) {
+			List<Object> pkValues = Lists.newArrayList();
+			new CopyOnWriteArrayList<>(pkColumns).forEach(pkColumn ->
+					pkValues.add(this.data.get(pkColumn))
+			);
+			g.writeStringField(FieldNames.PRIMARY_KEY, pkValues.toString());
+		}
+		if ( outputConfig.includesPrimaryKeyColumns ) {
+			g.writeStringField(FieldNames.PRIMARY_KEY_COLUMNS, pkColumns.toString());
+		}
 
 		EncryptionContext encryptionContext = null;
 		if (outputConfig.encryptionEnabled()) {
