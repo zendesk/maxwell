@@ -98,6 +98,12 @@ password=maxwell
 # records include row query, binlog option "binlog_rows_query_log_events" must be enabled" (default false)
 #output_row_query=true
 
+# DML records include list of values that make up a row's primary key (default false)
+#output_primary_keys=true
+
+# DML records include list of columns that make up a row's primary key (default false)
+#output_primary_key_columns=true
+
 # records include commit and xid (default true)
 #output_commit_info=true
 

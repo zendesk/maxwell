@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -112,7 +113,7 @@ public class RowMapTest {
 	@Test
 	public void testToJSONWithRawJSONData() throws Exception {
 		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS,
-				new ArrayList<String>(), POSITION);
+				Collections.singletonList("id"), POSITION);
 
 		rowMap.setServerId(7653213L);
 		rowMap.setThreadId(6532312L);
@@ -130,8 +131,9 @@ public class RowMapTest {
 
 		Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\",\"type\":\"insert\"," +
 				"\"ts\":1496712943,\"position\":\"binlog-0001:1\",\"gtid\":null,\"server_id\":7653213," +
-				"\"thread_id\":6532312,\"schema_id\":298,\"int\":1234,\"str\":\"foo\",\"data\":" +
-				"{\"id\":\"9001\",\"first_name\":\"foo\",\"last_name\":\"bar\",\"rawJSON\":{\"UserID\":20}}}",
+				"\"thread_id\":6532312,\"schema_id\":298,\"int\":1234,\"str\":\"foo\",\"primary_key\":\"[9001]\"," +
+				"\"primary_key_columns\":\"[id]\",\"data\":" + "{\"id\":\"9001\",\"first_name\":\"foo\",\"last_name\"" +
+				":\"bar\",\"rawJSON\":{\"UserID\":20}}}",
 				rowMap.toJSON(outputConfig));
 
 	}
@@ -139,7 +141,7 @@ public class RowMapTest {
 	@Test
 	public void testToJSONWithListData() throws Exception {
 		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS,
-				new ArrayList<String>(), POSITION);
+				Collections.singletonList("id"), POSITION);
 
 		rowMap.setServerId(7653213L);
 		rowMap.setThreadId(6532312L);
@@ -157,8 +159,9 @@ public class RowMapTest {
 
 		Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\",\"type\":\"insert\"," +
 				"\"ts\":1496712943,\"position\":\"binlog-0001:1\",\"gtid\":null,\"server_id\":7653213," +
-				"\"thread_id\":6532312,\"schema_id\":298,\"int\":1234,\"str\":\"foo\",\"data\":{\"id\":\"9001\"," +
-				"\"interests\":[\"hiking\",\"programming\"]}}", rowMap.toJSON(outputConfig));
+				"\"thread_id\":6532312,\"schema_id\":298,\"int\":1234,\"str\":\"foo\",\"primary_key\":\"[9001]\"," +
+				"\"primary_key_columns\":\"[id]\",\"data\":{\"id\":\"9001\",\"interests\"" +
+				":[\"hiking\",\"programming\"]}}", rowMap.toJSON(outputConfig));
 	}
 
 	private MaxwellOutputConfig getMaxwellOutputConfig(Pattern... patterns) {
@@ -171,6 +174,8 @@ public class RowMapTest {
 		outputConfig.includesThreadId = true;
 		outputConfig.includesSchemaId = true;
 		outputConfig.includesNulls = true;
+		outputConfig.includesPrimaryKeys = true;
+		outputConfig.includesPrimaryKeyColumns = true;
 		outputConfig.excludeColumns = Arrays.asList(patterns);
 
 		return outputConfig;
