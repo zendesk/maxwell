@@ -202,17 +202,6 @@ public class RowMap implements Serializable {
 			}
 		}
 
-		if ( outputConfig.includesPrimaryKeys ) {
-			List<Object> pkValues = Lists.newArrayList();
-			new CopyOnWriteArrayList<>(pkColumns).forEach(pkColumn ->
-					pkValues.add(this.data.get(pkColumn))
-			);
-			g.writeStringField(FieldNames.PRIMARY_KEY, pkValues.toString());
-		}
-		if ( outputConfig.includesPrimaryKeyColumns ) {
-			g.writeStringField(FieldNames.PRIMARY_KEY_COLUMNS, pkColumns.toString());
-		}
-
 		EncryptionContext encryptionContext = null;
 		if (outputConfig.encryptionEnabled()) {
 			encryptionContext = EncryptionContext.create(outputConfig.secretKey);
@@ -226,6 +215,16 @@ public class RowMap implements Serializable {
 		writeMapToJSON(FieldNames.DATA, this.data, dataGenerator, outputConfig.includesNulls);
 		if( !this.oldData.isEmpty() ){
 			writeMapToJSON(FieldNames.OLD, this.oldData, dataGenerator, outputConfig.includesNulls);
+		}
+		if ( outputConfig.includesPrimaryKeys ) {
+			List<Object> pkValues = Lists.newArrayList();
+			pkColumns.forEach(pkColumn ->
+					pkValues.add(this.data.get(pkColumn))
+			);
+			MaxwellJson.writeValueToJSON(g, outputConfig.includesNulls, FieldNames.PRIMARY_KEY, pkValues);
+		}
+		if ( outputConfig.includesPrimaryKeyColumns ) {
+			MaxwellJson.writeValueToJSON(g, outputConfig.includesNulls, FieldNames.PRIMARY_KEY_COLUMNS, pkColumns);
 		}
 		dataWriter.end(encryptionContext);
 
