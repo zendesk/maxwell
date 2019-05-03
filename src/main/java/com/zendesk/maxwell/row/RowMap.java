@@ -212,10 +212,6 @@ public class RowMap implements Serializable {
 			: json.getPlaintextGenerator();
 
 		JsonGenerator dataGenerator = dataWriter.begin();
-		writeMapToJSON(FieldNames.DATA, this.data, dataGenerator, outputConfig.includesNulls);
-		if( !this.oldData.isEmpty() ){
-			writeMapToJSON(FieldNames.OLD, this.oldData, dataGenerator, outputConfig.includesNulls);
-		}
 		if ( outputConfig.includesPrimaryKeys ) {
 			List<Object> pkValues = Lists.newArrayList();
 			pkColumns.forEach(pkColumn ->
@@ -225,6 +221,10 @@ public class RowMap implements Serializable {
 		}
 		if ( outputConfig.includesPrimaryKeyColumns ) {
 			MaxwellJson.writeValueToJSON(g, outputConfig.includesNulls, FieldNames.PRIMARY_KEY_COLUMNS, pkColumns);
+		}
+		writeMapToJSON(FieldNames.DATA, this.data, dataGenerator, outputConfig.includesNulls);
+		if( !this.oldData.isEmpty() ){
+			writeMapToJSON(FieldNames.OLD, this.oldData, dataGenerator, outputConfig.includesNulls);
 		}
 		dataWriter.end(encryptionContext);
 

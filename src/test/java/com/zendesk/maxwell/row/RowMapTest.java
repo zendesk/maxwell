@@ -131,9 +131,9 @@ public class RowMapTest {
 
 		Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\",\"type\":\"insert\"," +
 				"\"ts\":1496712943,\"position\":\"binlog-0001:1\",\"gtid\":null,\"server_id\":7653213," +
-				"\"thread_id\":6532312,\"schema_id\":298,\"int\":1234,\"str\":\"foo\",\"primary_key\":\"[9001]\"," +
-				"\"primary_key_columns\":\"[id]\",\"data\":" + "{\"id\":\"9001\",\"first_name\":\"foo\",\"last_name\"" +
-				":\"bar\",\"rawJSON\":{\"UserID\":20}}}",
+				"\"thread_id\":6532312,\"schema_id\":298,\"int\":1234,\"str\":\"foo\",\"primary_key\":[\"9001\"]," +
+				"\"primary_key_columns\":[\"id\"],\"data\":" + "{\"id\":\"9001\",\"first_name\":\"foo\"," +
+				"\"last_name\":\"bar\",\"rawJSON\":{\"UserID\":20}}}",
 				rowMap.toJSON(outputConfig));
 
 	}
@@ -159,8 +159,8 @@ public class RowMapTest {
 
 		Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\",\"type\":\"insert\"," +
 				"\"ts\":1496712943,\"position\":\"binlog-0001:1\",\"gtid\":null,\"server_id\":7653213," +
-				"\"thread_id\":6532312,\"schema_id\":298,\"int\":1234,\"str\":\"foo\",\"primary_key\":\"[9001]\"," +
-				"\"primary_key_columns\":\"[id]\",\"data\":{\"id\":\"9001\",\"interests\"" +
+				"\"thread_id\":6532312,\"schema_id\":298,\"int\":1234,\"str\":\"foo\",\"primary_key\":[\"9001\"]," +
+				"\"primary_key_columns\":[\"id\"],\"data\":{\"id\":\"9001\",\"interests\"" +
 				":[\"hiking\",\"programming\"]}}", rowMap.toJSON(outputConfig));
 	}
 
