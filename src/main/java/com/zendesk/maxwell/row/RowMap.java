@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -186,22 +185,6 @@ public class RowMap implements Serializable {
 			g.writeObjectField(entry.getKey(), entry.getValue());
 		}
 
-		if ( outputConfig.excludeColumns.size() > 0 ) {
-			// NOTE: to avoid concurrent modification.
-			Set<String> keys = new HashSet<>();
-			keys.addAll(this.data.keySet());
-			keys.addAll(this.oldData.keySet());
-
-			for ( Pattern p : outputConfig.excludeColumns ) {
-				for ( String key : keys ) {
-					if ( p.matcher(key).matches() ) {
-						this.data.remove(key);
-						this.oldData.remove(key);
-					}
-				}
-			}
-		}
-
 		EncryptionContext encryptionContext = null;
 		if (outputConfig.encryptionEnabled()) {
 			encryptionContext = EncryptionContext.create(outputConfig.secretKey);
@@ -222,6 +205,23 @@ public class RowMap implements Serializable {
 		if ( outputConfig.includesPrimaryKeyColumns ) {
 			MaxwellJson.writeValueToJSON(g, outputConfig.includesNulls, FieldNames.PRIMARY_KEY_COLUMNS, pkColumns);
 		}
+
+		if ( outputConfig.excludeColumns.size() > 0 ) {
+			// NOTE: to avoid concurrent modification.
+			Set<String> keys = new HashSet<>();
+			keys.addAll(this.data.keySet());
+			keys.addAll(this.oldData.keySet());
+
+			for ( Pattern p : outputConfig.excludeColumns ) {
+				for ( String key : keys ) {
+					if ( p.matcher(key).matches() ) {
+						this.data.remove(key);
+						this.oldData.remove(key);
+					}
+				}
+			}
+		}
+
 		writeMapToJSON(FieldNames.DATA, this.data, dataGenerator, outputConfig.includesNulls);
 		if( !this.oldData.isEmpty() ){
 			writeMapToJSON(FieldNames.OLD, this.oldData, dataGenerator, outputConfig.includesNulls);
