@@ -26,7 +26,7 @@ public class TableColumnList implements Iterable<ColumnDef> {
 		if ( columnNames == null ) {
 			columnNames = new HashSet<>();
 			for ( ColumnDef cf : columns )
-				columnNames.add(cf.getName().toLowerCase().intern());
+				columnNames.add(cf.getName().intern());
 		}
 		return columnNames;
 	}
