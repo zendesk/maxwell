@@ -26,7 +26,7 @@ public class TableColumnList implements Iterable<ColumnDef> {
 		if ( columnNames == null ) {
 			columnNames = new HashSet<>();
 			for ( ColumnDef cf : columns )
-				columnNames.add(cf.getName().toLowerCase().intern());
+				columnNames.add(cf.getName().intern());
 		}
 		return columnNames;
 	}
@@ -53,7 +53,7 @@ public class TableColumnList implements Iterable<ColumnDef> {
 		columns.add(index, definition);
 
 		if ( columnNames != null )
-			columnNames.add(definition.getName().toLowerCase());
+			columnNames.add(definition.getName());
 
 		renumberColumns();
 	}
@@ -62,7 +62,7 @@ public class TableColumnList implements Iterable<ColumnDef> {
 		ColumnDef c = columns.remove(index);
 
 		if ( columnNames != null )
-			columnNames.remove(c.getName().toLowerCase());
+			columnNames.remove(c.getName());
 		renumberColumns();
 		return c;
 	}
