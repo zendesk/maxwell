@@ -105,12 +105,12 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 		});
 	}
 
-	protected void runJSON(String filename) throws Exception {
-		MaxwellTestJSON.runJSONTestFile(server, filename, null);
+	protected List<RowMap> runJSON(String filename) throws Exception {
+		return MaxwellTestJSON.runJSONTestFile(server, filename, null);
 	}
 
-	protected void runJSON(String filename, Consumer<MaxwellConfig> configLambda) throws Exception {
-		MaxwellTestJSON.runJSONTestFile(server, filename, configLambda);
+	protected List<RowMap> runJSON(String filename, Consumer<MaxwellConfig> configLambda) throws Exception {
+		return MaxwellTestJSON.runJSONTestFile(server, filename, configLambda);
 	}
 
 	protected MaxwellContext buildContext() throws Exception {
@@ -132,8 +132,7 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 	}
 
 	protected void requireMinimumVersion(MysqlVersion minimum) {
-		// skips this test if running an older MYSQL version
-		assumeTrue(server.getVersion().atLeast(minimum));
+		MaxwellTestSupport.requireMinimumVersion(server, minimum);
 	}
 
 	protected void requireMinimumVersion(int major, int minor) {

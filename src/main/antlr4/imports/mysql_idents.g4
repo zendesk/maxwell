@@ -7,7 +7,7 @@ import mysql_literal_tokens;
 skip_parens: '(' | MAXWELL_ELIDED_PARSE_ISSUE;
 
 db_name: name;
-table_name: (db_name '.' name)
+table_name: (db_name '.' name_all_tokens)
             | '.' name // *shakes head in sadness*
             | name
             ;
@@ -16,8 +16,10 @@ user: user_token ('@' user_token)?;
 user_token: (IDENT | QUOTED_IDENT | string_literal);
 
 name: ( id | tokens_available_for_names | INTEGER_LITERAL | DBL_STRING_LITERAL );
+name_all_tokens: ( id | all_tokens | INTEGER_LITERAL | DBL_STRING_LITERAL );
 id: ( IDENT | QUOTED_IDENT );
 literal: (float_literal | integer_literal | string_literal | byte_literal | NULL | TRUE | FALSE);
+literal_with_weirdo_multistring: (float_literal | integer_literal | string_literal+ | byte_literal | NULL | TRUE | FALSE);
 
 float_literal: ('+'|'-')? INTEGER_LITERAL? '.' INTEGER_LITERAL;
 integer_literal: ('+'|'-')? INTEGER_LITERAL;
@@ -35,7 +37,7 @@ default_collation: DEFAULT? collation;
 
 // it's not documented, but either "charset 'utf8'" or "character set 'utf8'" is valid.
 charset_token: (CHARSET | (CHARACTER SET) | (CHAR SET));
-collation: COLLATE '='? (IDENT | string_literal | QUOTED_IDENT);
+collation: COLLATE '='? (IDENT | string_literal | QUOTED_IDENT | DEFAULT);
 
 if_not_exists: IF NOT EXISTS;
 
@@ -46,6 +48,7 @@ SQL_UPGRADE_ENDCOMMENT: '*/' -> skip;
 MAXWELL_ELIDED_PARSE_ISSUE: '/__MAXWELL__/';
 
 SQL_COMMENT: '/*' ~'!' (.)*? '*/' -> skip;
+SQL_EMPTY_COMMENT: '/**/' -> skip;
 
 SQL_LINE_COMMENT: ('#' | '--') (~'\n')* ('\n' | EOF) -> skip;
 

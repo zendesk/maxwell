@@ -243,8 +243,7 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 			if ( output.get("table").equals("column_test") && output.get("type").toString().contains("insert") ) {
 				Map<String, Object> dataSource = encryptionMode == EncryptionMode.ENCRYPT_DATA ? decrypted : output;
 				Map<String, Object> data = (Map<String, Object>) dataSource.get("data");
-				if ( !foundNormalRow ) {
-					foundNormalRow = true;
+				if ( output.get("type").equals("insert") ) {
 					assertThat(data.get("col"), is(expectedNormalJsonValue));
 				} else {
 					assertThat(data.get("col"), is(expectedBootstrappedJsonValue));

@@ -564,4 +564,16 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		// test if non-Latin column name outputs correctly
 		assertTrue(rows.get(1).toJSON(ddlOutputConfig()).contains("\"type\":\"int\",\"name\":\"中文欄位\""));
 	}
+
+	@Test
+	public void testHandleReferencingRenamedColumn() throws Exception {
+		String [] sql = {
+			"create table t ( a int, b varchar(255))",
+			"alter table t change column a a int after b_gets_renamed, change column b b_gets_renamed varchar(255)",
+			"create table tt ( a int, b smallint )",
+			"alter table tt add column c int after a_gets_renamed, change column a a_gets_renamed int"
+		};
+
+		testIntegration(sql);
+	}
 }

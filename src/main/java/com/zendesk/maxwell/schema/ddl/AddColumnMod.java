@@ -3,6 +3,8 @@ package com.zendesk.maxwell.schema.ddl;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
 
+import java.util.List;
+
 class AddColumnMod extends ColumnMod {
 	public ColumnDef definition;
 	public ColumnPosition position;
@@ -14,8 +16,16 @@ class AddColumnMod extends ColumnMod {
 	}
 
 	@Override
-	public void apply(Table table) throws InvalidSchemaError {
-		table.addColumn(position.index(table, null), this.definition);
+	public void apply(Table table, List<DeferredPositionUpdate> deferred) throws InvalidSchemaError {
+		int index = position.index(table, null);
+
+		if ( index == ColumnPosition.AFTER_NOT_FOUND) {
+			deferred.add(new DeferredPositionUpdate(definition.getName(), position));
+			index = 0;
+		}
+
+		table.addColumn(index, this.definition);
+
 	}
 }
 

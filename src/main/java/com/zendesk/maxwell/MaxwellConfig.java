@@ -48,6 +48,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public final Properties kafkaProperties;
 	public String kafkaTopic;
+	public String deadLetterTopic;
 	public String ddlKafkaTopic;
 	public String kafkaKeyFormat;
 	public String kafkaPartitionHash;
@@ -189,11 +190,11 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
 
-		parser.accepts( "producer_partition_by", "database|table|primary_key|column, kafka/kinesis producers will partition by this value").withRequiredArg();
+		parser.accepts( "producer_partition_by", "database|table|primary_key|transaction_id|column, kafka/kinesis producers will partition by this value").withRequiredArg();
 		parser.accepts("producer_partition_columns",
 		    "with producer_partition_by=column, partition by the value of these columns.  "
 			+ "comma separated.").withRequiredArg();
-		parser.accepts( "producer_partition_by_fallback", "database|table|primary_key, fallback to this value when using 'column' partitioning and the columns are not present in the row").withRequiredArg();
+		parser.accepts( "producer_partition_by_fallback", "database|table|primary_key|transaction_id, fallback to this value when using 'column' partitioning and the columns are not present in the row").withRequiredArg();
 
 		parser.accepts( "kafka_version", "kafka client library version: 0.8.2.2|0.9.0.1|0.10.0.1|0.10.2.1|0.11.0.1|1.0.0").withRequiredArg();
 		parser.accepts( "kafka_partition_by", "[deprecated]").withRequiredArg();
@@ -202,6 +203,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
 		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning" ).withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell" ).withRequiredArg();
+		parser.accepts( "dead_letter_topic", "the topic to write to when publishing to the initial topic is not possible, for example RecordTooLargeException for kafka" ).withRequiredArg();
 		parser.accepts( "kafka_key_format", "how to format the kafka key; array|hash" ).withRequiredArg();
 
 		parser.accepts( "kinesis_stream", "kinesis stream name" ).withOptionalArg();
@@ -222,6 +224,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "output_thread_id", "produced records include thread_id; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_schema_id", "produced records include schema_id; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_row_query", "produced records include query, binlog option \"binlog_rows_query_log_events\" must be enabled; [true|false]. default: false" ).withOptionalArg();
+		parser.accepts( "output_null_zerodates", "convert '0000-00-00' dates/datetimes to null default: false" ).withOptionalArg();
 		parser.accepts( "output_ddl", "produce DDL records to ddl_kafka_topic [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "exclude_columns", "suppress these comma-separated columns from output" ).withRequiredArg();
 		parser.accepts( "ddl_kafka_topic", "optionally provide an alternate topic to push DDL records to. default: kafka_topic" ).withRequiredArg();
@@ -372,6 +375,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.javascriptFile         = fetchOption("javascript", options, properties, null);
 
 		this.kafkaTopic         	= fetchOption("kafka_topic", options, properties, "maxwell");
+		this.deadLetterTopic        = fetchOption("dead_letter_topic", options, properties, null);
 		this.kafkaKeyFormat     	= fetchOption("kafka_key_format", options, properties, "hash");
 		this.kafkaPartitionKey  	= fetchOption("kafka_partition_by", options, properties, null);
 		this.kafkaPartitionColumns  = fetchOption("kafka_partition_columns", options, properties, null);
@@ -514,6 +518,7 @@ public class MaxwellConfig extends AbstractConfig {
 		outputConfig.includesSchemaId = fetchBooleanOption("output_schema_id", options, properties, false);
 		outputConfig.includesRowQuery = fetchBooleanOption("output_row_query", options, properties, false);
 		outputConfig.outputDDL	= fetchBooleanOption("output_ddl", options, properties, false);
+		outputConfig.zeroDatesAsNull = fetchBooleanOption("output_null_zerodates", options, properties, false);
 		this.excludeColumns     = fetchOption("exclude_columns", options, properties, null);
 
 		String encryptionMode = fetchOption("encrypt", options, properties, "none");
@@ -563,15 +568,15 @@ public class MaxwellConfig extends AbstractConfig {
 			this.producerPartitionFallback = this.kafkaPartitionFallback;
 		}
 
-		String[] validPartitionBy = {"database", "table", "primary_key", "column"};
+		String[] validPartitionBy = {"database", "table", "primary_key", "transaction_id", "column"};
 		if ( this.producerPartitionKey == null ) {
 			this.producerPartitionKey = "database";
 		} else if ( !ArrayUtils.contains(validPartitionBy, this.producerPartitionKey) ) {
-			usageForOptions("please specify --producer_partition_by=database|table|primary_key|column", "producer_partition_by");
+			usageForOptions("please specify --producer_partition_by=database|table|primary_key|transaction_id|column", "producer_partition_by");
 		} else if ( this.producerPartitionKey.equals("column") && StringUtils.isEmpty(this.producerPartitionColumns) ) {
 			usageForOptions("please specify --producer_partition_columns=column1 when using producer_partition_by=column", "producer_partition_columns");
 		} else if ( this.producerPartitionKey.equals("column") && StringUtils.isEmpty(this.producerPartitionFallback) ) {
-			usageForOptions("please specify --producer_partition_by_fallback=[database, table, primary_key] when using producer_partition_by=column", "producer_partition_by_fallback");
+			usageForOptions("please specify --producer_partition_by_fallback=[database, table, primary_key, transaction_id] when using producer_partition_by=column", "producer_partition_by_fallback");
 		}
 
 	}
@@ -581,7 +586,7 @@ public class MaxwellConfig extends AbstractConfig {
 			return;
 		try {
 			if ( this.filterList != null ) {
-				this.filter = new Filter(filterList);
+				this.filter = new Filter(this.databaseName, filterList);
 			} else {
 				boolean hasOldStyleFilters =
 					includeDatabases != null ||
@@ -594,6 +599,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 				if ( hasOldStyleFilters ) {
 					this.filter = Filter.fromOldFormat(
+						this.databaseName,
 						includeDatabases,
 						excludeDatabases,
 						includeTables,
@@ -603,7 +609,7 @@ public class MaxwellConfig extends AbstractConfig {
 						includeColumnValues
 					);
 				} else {
-					this.filter = new Filter();
+					this.filter = new Filter(this.databaseName, "");
 				}
 			}
 		} catch (InvalidFilterException e) {

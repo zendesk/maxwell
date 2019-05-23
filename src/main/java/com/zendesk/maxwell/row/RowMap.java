@@ -5,26 +5,21 @@ import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.Position;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Pattern;
 
-import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 
 
 public class RowMap implements Serializable {
+
 
 	public enum KeyFormat { HASH, ARRAY }
 
@@ -39,6 +34,7 @@ public class RowMap implements Serializable {
 	private final Position position;
 	private Position nextPosition;
 	private String kafkaTopic;
+	private String partitionString;
 	protected boolean suppressed;
 
 	private Long xid;
@@ -54,60 +50,9 @@ public class RowMap implements Serializable {
 	private final LinkedHashMap<String, Object> extraAttributes;
 
 	private final List<String> pkColumns;
-
-	private static final JsonFactory jsonFactory = new JsonFactory();
+	private RowIdentity rowIdentity;
 
 	private long approximateSize;
-
-	private static final ThreadLocal<ByteArrayOutputStream> byteArrayThreadLocal =
-			new ThreadLocal<ByteArrayOutputStream>(){
-				@Override
-				protected ByteArrayOutputStream initialValue() {
-					return new ByteArrayOutputStream();
-				}
-			};
-
-	private static JsonGenerator resetJsonGenerator() {
-		byteArrayThreadLocal.get().reset();
-		return jsonGeneratorThreadLocal.get();
-	}
-
-	private static final ThreadLocal<JsonGenerator> jsonGeneratorThreadLocal =
-			new ThreadLocal<JsonGenerator>() {
-				@Override
-				protected JsonGenerator initialValue() {
-					JsonGenerator g = null;
-					try {
-						g = jsonFactory.createGenerator(byteArrayThreadLocal.get());
-					} catch (IOException e) {
-						LOGGER.error("error initializing jsonGenerator", e);
-						return null;
-					}
-					g.setRootValueSeparator(null);
-					return g;
-				}
-			};
-
-	private static final ThreadLocal<DataJsonGenerator> plaintextDataGeneratorThreadLocal =
-			new ThreadLocal<DataJsonGenerator>() {
-				@Override
-				protected DataJsonGenerator initialValue() {
-					return new PlaintextJsonGenerator(jsonGeneratorThreadLocal.get());
-				}
-			};
-
-	private static final ThreadLocal<EncryptingJsonGenerator> encryptingJsonGeneratorThreadLocal =
-			new ThreadLocal<EncryptingJsonGenerator>() {
-				@Override
-				protected EncryptingJsonGenerator initialValue(){
-					try {
-						return new EncryptingJsonGenerator(jsonGeneratorThreadLocal.get(),jsonFactory);
-					} catch (IOException e) {
-						LOGGER.error("error initializing EncryptingJsonGenerator", e);
-						return null;
-					}
-				}
-			};
 
 	public RowMap(String type, String database, String table, Long timestampMillis, List<String> pkColumns,
 			Position position, Position nextPosition, String rowQuery) {
@@ -137,77 +82,20 @@ public class RowMap implements Serializable {
 		this(type, database, table, timestampMillis, pkColumns, nextPosition, null);
 	}
 
-	//Do we want to encrypt this part?
-	public String pkToJson(KeyFormat keyFormat) throws IOException {
-		if ( keyFormat == KeyFormat.HASH )
-			return pkToJsonHash();
-		else
-			return pkToJsonArray();
-	}
-
-	private String pkToJsonHash() throws IOException {
-		JsonGenerator g = resetJsonGenerator();
-
-		g.writeStartObject(); // start of row {
-
-		g.writeStringField(FieldNames.DATABASE, database);
-		g.writeStringField(FieldNames.TABLE, table);
-
-		if (pkColumns.isEmpty()) {
-			g.writeStringField(FieldNames.UUID, UUID.randomUUID().toString());
-		} else {
-			for (String pk : pkColumns) {
-				Object pkValue = null;
-				if ( data.containsKey(pk) )
-					pkValue = data.get(pk);
-
-				writeValueToJSON(g, true, "pk." + pk.toLowerCase(), pkValue);
+	public RowIdentity getRowIdentity() {
+		if (rowIdentity == null) {
+			List<Pair<String, Object>> entries = new ArrayList<>(pkColumns.size());
+			for (String pk: pkColumns) {
+				entries.add(Pair.of(pk, data.get(pk)));
 			}
+			rowIdentity = new RowIdentity(database, table, entries);
 		}
 
-		g.writeEndObject(); // end of 'data: { }'
-		g.flush();
-		return jsonFromStream();
+		return rowIdentity;
 	}
 
-	private String pkToJsonArray() throws IOException {
-		JsonGenerator g = resetJsonGenerator();
-
-		g.writeStartArray();
-		g.writeString(database);
-		g.writeString(table);
-
-		g.writeStartArray();
-		for (String pk : pkColumns) {
-			Object pkValue = null;
-			if ( data.containsKey(pk) )
-				pkValue = data.get(pk);
-
-			g.writeStartObject();
-			writeValueToJSON(g, true, pk.toLowerCase(), pkValue);
-			g.writeEndObject();
-		}
-		g.writeEndArray();
-		g.writeEndArray();
-		g.flush();
-		return jsonFromStream();
-	}
-
-	public String pkAsConcatString() {
-		if (pkColumns.isEmpty()) {
-			return database + table;
-		}
-		StringBuilder keys = new StringBuilder();
-		for (String pk : pkColumns) {
-			Object pkValue = null;
-			if (data.containsKey(pk))
-				pkValue = data.get(pk);
-			if (pkValue != null)
-				keys.append(pkValue.toString());
-		}
-		if (keys.length() == 0)
-			return "None";
-		return keys.toString();
+	public String pkToJson(KeyFormat format) throws IOException {
+		return getRowIdentity().toKeyJson(format);
 	}
 
 	public String buildPartitionKey(List<String> partitionColumns) {
@@ -234,31 +122,10 @@ public class RowMap implements Serializable {
 		for (String key : data.keySet()) {
 			Object value = data.get(key);
 
-			writeValueToJSON(g, includeNullField, key, value);
+			MaxwellJson.writeValueToJSON(g, includeNullField, key, value);
 		}
 
 		g.writeEndObject(); // end of 'jsonMapName: { }'
-	}
-
-	private void writeValueToJSON(JsonGenerator g, boolean includeNullField, String key, Object value) throws IOException {
-		if (value == null && !includeNullField)
-			return;
-
-		if (value instanceof List) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.
-			List stringList = (List) value;
-
-			g.writeArrayFieldStart(key);
-			for (Object s : stringList) {
-				g.writeObject(s);
-			}
-			g.writeEndArray();
-		} else if (value instanceof RawJSONString) {
-			// JSON column type, using binlog-connector's serializers.
-			g.writeFieldName(key);
-			g.writeRawValue(((RawJSONString) value).json);
-		} else {
-			g.writeObjectField(key, value);
-		}
 	}
 
 	public String toJSON() throws Exception {
@@ -266,7 +133,8 @@ public class RowMap implements Serializable {
 	}
 
 	public String toJSON(MaxwellOutputConfig outputConfig) throws Exception {
-		JsonGenerator g = resetJsonGenerator();
+		MaxwellJson json = MaxwellJson.getInstance();
+		JsonGenerator g = json.reset();
 
 		g.writeStartObject(); // start of row {
 
@@ -291,12 +159,14 @@ public class RowMap implements Serializable {
 				g.writeBooleanField(FieldNames.COMMIT, true);
 		}
 
-		BinlogPosition binlogPosition = this.position.getBinlogPosition();
-		if ( outputConfig.includesBinlogPosition )
-			g.writeStringField(FieldNames.POSITION, binlogPosition.getFile() + ":" + binlogPosition.getOffset());
+		if ( this.position != null ) {
+			BinlogPosition binlogPosition = this.position.getBinlogPosition();
+			if ( outputConfig.includesBinlogPosition )
+				g.writeStringField(FieldNames.POSITION, binlogPosition.getFile() + ":" + binlogPosition.getOffset());
 
-		if ( outputConfig.includesGtidPosition)
-			g.writeStringField(FieldNames.GTID, binlogPosition.getGtid());
+			if ( outputConfig.includesGtidPosition)
+				g.writeStringField(FieldNames.GTID, binlogPosition.getGtid());
+		}
 
 		if ( outputConfig.includesServerId && this.serverId != null ) {
 			g.writeNumberField(FieldNames.SERVER_ID, this.serverId);
@@ -307,7 +177,7 @@ public class RowMap implements Serializable {
 		}
 
 		if ( outputConfig.includesSchemaId && this.schemaId != null ) {
-			 g.writeNumberField(FieldNames.SCHEMA_ID, this.schemaId);
+			g.writeNumberField(FieldNames.SCHEMA_ID, this.schemaId);
 		}
 
 		for ( Map.Entry<String, Object> entry : this.extraAttributes.entrySet() ) {
@@ -337,8 +207,8 @@ public class RowMap implements Serializable {
 		}
 
 		DataJsonGenerator dataWriter = outputConfig.encryptionMode == EncryptionMode.ENCRYPT_DATA
-			? encryptingJsonGeneratorThreadLocal.get()
-			: plaintextDataGeneratorThreadLocal.get();
+			? json.getEncryptingGenerator()
+			: json.getPlaintextGenerator();
 
 		JsonGenerator dataGenerator = dataWriter.begin();
 		writeMapToJSON(FieldNames.DATA, this.data, dataGenerator, outputConfig.includesNulls);
@@ -348,21 +218,13 @@ public class RowMap implements Serializable {
 		dataWriter.end(encryptionContext);
 
 		g.writeEndObject(); // end of row
-		g.flush();
 
 		if(outputConfig.encryptionMode == EncryptionMode.ENCRYPT_ALL){
-			String plaintext = jsonFromStream();
-			encryptingJsonGeneratorThreadLocal.get().writeEncryptedObject(plaintext, encryptionContext);
-			g.flush();
+			String plaintext = json.consume();
+			json.getEncryptingGenerator().writeEncryptedObject(plaintext, encryptionContext);
 		}
-		return jsonFromStream();
-	}
 
-	private String jsonFromStream() {
-		ByteArrayOutputStream b = byteArrayThreadLocal.get();
-		String s = b.toString();
-		b.reset();
-		return s;
+		return json.consume();
 	}
 
 	public Object getData(String key) {
@@ -533,4 +395,13 @@ public class RowMap implements Serializable {
 	public void setKafkaTopic(String topic) {
 		this.kafkaTopic = topic;
 	}
+
+	public String getPartitionString() {
+		return this.partitionString;
+	}
+
+	public void setPartitionString(String partitionString) {
+		this.partitionString = partitionString;
+	}
+
 }

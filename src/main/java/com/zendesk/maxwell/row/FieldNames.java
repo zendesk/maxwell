@@ -25,6 +25,7 @@ public class FieldNames {
 	public static final String TRANSACTION_OFFSET = "xoffset";
 	public static final String TYPE = "type";
 	public static final String UUID = "_uuid";
+	public static final String REASON = "reason";
 
 	private static List<String> fieldNamesList = Arrays.asList(COMMIT, DATA, DATABASE,
 	GTID, OLD, POSITION, QUERY, SERVER_ID, TABLE, THREAD_ID, TIMESTAMP, TRANSACTION_ID, TYPE, UUID);

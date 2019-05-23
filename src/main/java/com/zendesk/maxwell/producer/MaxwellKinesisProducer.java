@@ -14,7 +14,6 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.producer.partitioners.MaxwellKinesisPartitioner;
-import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
 
@@ -137,7 +136,7 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 			Futures.addCallback(future, callback);
 		} catch(IllegalArgumentException t) {
 			callback.onFailure(t);
-			logger.error("Database:" + r.getDatabase() + ", Table:" + r.getTable() + ", PK:" + r.pkAsConcatString() + ", Size:" + Integer.toString(vsize));
+			logger.error("Database:" + r.getDatabase() + ", Table:" + r.getTable() + ", PK:" + r.getRowIdentity().toConcatString() + ", Size:" + Integer.toString(vsize));
 		}
 	}
 

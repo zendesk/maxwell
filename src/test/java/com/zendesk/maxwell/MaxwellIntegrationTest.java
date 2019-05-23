@@ -607,9 +607,24 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		requireMinimumVersion(server.VERSION_5_6);
 
 		String dir = MaxwellTestSupport.getSQLDir();
-		runJSON("/json/test_javascript_filters", (c) -> {
+		List<RowMap> rows = runJSON("/json/test_javascript_filters", (c) -> {
 			c.javascriptFile = dir + "/json/filter.javascript";
 			c.outputConfig.includesRowQuery = true;
+		});
+
+		boolean foundPartitionString = false;
+		for ( RowMap row : rows ) {
+			if ( row.getPartitionString() != null )
+				foundPartitionString = true;
+		}
+		assertTrue(foundPartitionString);
+	}
+
+	@Test
+	public void testJavascriptFiltersInjectRichValues() throws Exception {
+		String dir = MaxwellTestSupport.getSQLDir();
+		runJSON("/json/test_javascript_filters_rich_values", (c) -> {
+			c.javascriptFile = dir + "/json/filter_rich.javascript";
 		});
 	}
 

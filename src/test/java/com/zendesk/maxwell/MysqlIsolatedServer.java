@@ -19,9 +19,9 @@ import java.util.Map;
 public class MysqlIsolatedServer {
 	public static final Long SERVER_ID = 4321L;
 
-	public final MysqlVersion VERSION_5_5 = new MysqlVersion(5, 5);
-	public final MysqlVersion VERSION_5_6 = new MysqlVersion(5, 6);
-	public final MysqlVersion VERSION_5_7 = new MysqlVersion(5, 7);
+	public static final MysqlVersion VERSION_5_5 = new MysqlVersion(5, 5);
+	public static final MysqlVersion VERSION_5_6 = new MysqlVersion(5, 6);
+	public static final MysqlVersion VERSION_5_7 = new MysqlVersion(5, 7);
 
 	private Connection connection;
 	private int port;

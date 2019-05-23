@@ -58,7 +58,13 @@ public class MysqlParserListener extends mysqlBaseListener {
 	}
 
 	private String getTable(Table_nameContext t) {
-		return unquote(t.name().getText());
+		String name;
+		if ( t.name() != null )
+			name = t.name().getText();
+		else
+			name = t.name_all_tokens().getText();
+
+		return unquote(name);
 	}
 
 	private TableAlter alterStatement() {

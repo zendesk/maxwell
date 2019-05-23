@@ -31,14 +31,7 @@ Maxwell can also include/exclude based on column values:
 ```
 
 will reject any row in `db.tbl` that contains `col` and where the stringified value of "col" is "reject".
-
-#### Missing Columns
-Column filters are ignored if the specified column is not present, so:
-
-```
---filter = 'exclude: *.*.col_a = *'
-```
-
+Column filters are ignored if the specified column is not present, so `--filter = 'exclude: *.*.col_a = *'`
 will exclude updates to any table that contains `col_a`, but include every other table.
 
 
@@ -55,6 +48,7 @@ Note that once Maxwell has been running with a table or database marked as
 blacklisted, you *must* continue to run Maxwell with that table or database
 blacklisted or else Maxwell will halt. If you want to stop
 blacklisting a table or database, you will have to drop the maxwell schema first.
+Also note that this is the feature I most regret writing.
 
 
 ### Javascript Filters

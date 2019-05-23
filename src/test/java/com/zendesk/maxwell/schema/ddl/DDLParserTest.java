@@ -155,8 +155,19 @@ public class DDLParserTest {
 	}
 
 	@Test
+	public void testConstraintWithFullTableName() {
+		parseCreate("CREATE TABLE table_name ( " +
+			"id_agency bigint(18) unsigned NOT NULL DEFAULT '0', " +
+			"CONSTRAINT 112923b397c621505a97cfc4119f9f98abae0fb4a3bdb7a037ad3531712f5614 FOREIGN KEY (id_agency) REFERENCES agencies (id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+			"CONSTRAINT agencies_offer_gift_types.id_type FOREIGN KEY (id_type) REFERENCES insurance_gift_types (id) ON DELETE CASCADE ON UPDATE CASCADE ) "
+		);
+	}
+
+
+	@Test
 	public void testParsingSomeAlters() {
 		String testSQL[] = {
+			"alter table t add column c varchar(255) default 'string1' 'string2'",
 			"alter table t add column mortgage_item BIT(4) NOT NULL DEFAULT 0b0000",
 			"alter table t add column mortgage_item BIT(4) NOT NULL DEFAULT 'b'01010",
 			"alter table t add column mortgage_item BIT(4) NOT NULL DEFAULT 'B'01010",
@@ -218,7 +229,10 @@ public class DDLParserTest {
 			"ALTER TABLE foo DROP COLUMN `ducati` CASCADE",
 			"CREATE TABLE account_groups ( visible_to_all CHAR(1) DEFAULT 'N' NOT NULL CHECK (visible_to_all IN ('Y','N')))",
 			"ALTER TABLE \"foo\" drop column a", // ansi-double-quoted tables
-			"create table vc11( id serial, name varchar(10) not null default \"\")"
+			"create table vc11( id serial, name varchar(10) not null default \"\")",
+			"create table foo.order ( i int )",
+			"alter table foo.int add column bar varchar(255)",
+			"alter table something collate = default"
 
 		};
 
@@ -422,6 +436,12 @@ public class DDLParserTest {
 	@Test
 	public void testCommentSyntax2() {
 		List<SchemaChange> changes = parse("CREATE DATABASE if not exists `foo` -- inline comment!\n default character # another one\nset='latin1' --one at the end");
+		assertThat(changes.size(), is(1));
+	}
+
+	@Test
+	public void testCommentSyntax3() {
+		List<SchemaChange> changes = parse("/**/ CREATE DATABASE if not exists `foo`");
 		assertThat(changes.size(), is(1));
 	}
 

@@ -11,6 +11,7 @@ import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.ddl.DDLMap;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import jdk.nashorn.api.scripting.ScriptUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,5 +55,15 @@ public class Scripting {
 			processDDLFunc.call(null, new WrappedDDLMap((DDLMap) row));
 		else if ( row instanceof RowMap && processRowFunc != null )
 			processRowFunc.call(null, new WrappedRowMap(row));
+	}
+
+	private static ThreadLocal<ScriptEngine> stringifyEngineThreadLocal = ThreadLocal.withInitial(() -> {
+		ScriptEngineManager manager = new ScriptEngineManager();
+		return manager.getEngineByName("nashorn");
+	});
+
+	public static String stringify(ScriptObjectMirror mirror) throws ScriptException {
+		ScriptObjectMirror json = (ScriptObjectMirror) stringifyEngineThreadLocal.get().eval("JSON");
+		return (String) json.callMember("stringify", mirror);
 	}
 }

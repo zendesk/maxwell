@@ -5,6 +5,7 @@ import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.filtering.InvalidFilterException;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.replication.MysqlVersion;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.Schema;
@@ -30,6 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assume.assumeTrue;
 
 public class MaxwellTestSupport {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellTestSupport.class);
@@ -188,7 +190,7 @@ public class MaxwellTestSupport {
 		callback.beforeReplicatorStart(mysql);
 
 		config.initPosition = capture(mysql.getConnection());
-		final String waitObject = new String("");
+		final String waitObject = "";
 		final BufferedMaxwell maxwell = new BufferedMaxwell(config) {
 			@Override
 			protected void onReplicatorStart() {
@@ -219,6 +221,8 @@ public class MaxwellTestSupport {
 		}
 
 		callback.afterReplicatorStart(mysql);
+		maxwell.context.getBootstrapController(null).interrupt();
+
 		long finalHeartbeat = maxwell.context.getPositionStore().heartbeat();
 
 		LOGGER.debug("running replicator up to heartbeat: " + finalHeartbeat);
@@ -237,7 +241,7 @@ public class MaxwellTestSupport {
 
 			lastPositionRead = row.getPosition();
 
-			if ( lastPositionRead.getLastHeartbeatRead() >= finalHeartbeat ) {
+			if ( lastPositionRead != null && lastPositionRead.getLastHeartbeatRead() >= finalHeartbeat ) {
 				// consume whatever's left over in the buffer.
 				for ( ;; ) {
 					RowMap r = maxwell.poll(100);
@@ -295,5 +299,10 @@ public class MaxwellTestSupport {
 
 		List<String> diff = topSchema.diff(bottomSchema, "followed schema", "recaptured schema");
 		assertThat(StringUtils.join(diff.iterator(), "\n"), diff.size(), is(0));
+	}
+
+	public static void requireMinimumVersion(MysqlIsolatedServer server, MysqlVersion minimum) {
+		// skips this test if running an older MYSQL version
+		assumeTrue(server.getVersion().atLeast(minimum));
 	}
 }

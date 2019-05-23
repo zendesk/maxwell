@@ -102,7 +102,7 @@ HASH_FUNCTION is _hashCode_. Murmurhash3 may be set with the
 `kafka_partition_hash` option. The seed value for the murmurhash function is
 hardcoded to 25342 in the MaxwellKafkaPartitioner class.
 
-The HASH_STRING may be (_database_, _table_, _primary_key_, _column_).  The
+The HASH_STRING may be (_database_, _table_, _primary_key_, _transaction_id_, _column_).  The
 default HASH_STRING is the _database_. The partitioning field can be configured
 using the `producer_partition_by` option.
 

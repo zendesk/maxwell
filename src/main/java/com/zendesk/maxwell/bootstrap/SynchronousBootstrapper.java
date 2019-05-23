@@ -1,13 +1,14 @@
 package com.zendesk.maxwell.bootstrap;
 
-import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.CaseSensitivity;
+import com.zendesk.maxwell.MaxwellMysqlStatus;
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.replication.Position;
-import com.zendesk.maxwell.replication.Replicator;
-import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.producer.AbstractProducer;
+import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
+import com.zendesk.maxwell.schema.SchemaCapturer;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
 import com.zendesk.maxwell.schema.columndef.TimeColumnDef;
@@ -15,57 +16,58 @@ import com.zendesk.maxwell.scripting.Scripting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 
-public class SynchronousBootstrapper extends AbstractBootstrapper {
+public class SynchronousBootstrapper {
 	static final Logger LOGGER = LoggerFactory.getLogger(SynchronousBootstrapper.class);
 	private static final long INSERTED_ROWS_UPDATE_PERIOD_MILLIS = 250;
+	private final MaxwellContext context;
 
 	private long lastInsertedRowsUpdateTimeMillis = 0;
 
-	public SynchronousBootstrapper(MaxwellContext context) { super(context); }
-
-	@Override
-	public boolean shouldSkip(RowMap row) {
-		// the synchronous bootstrapper blocks other incoming messages
-		// to the replication stream so there's nothing to skip
-		return false;
+	public SynchronousBootstrapper(MaxwellContext context) { 
+		this.context = context; 
 	}
 
-	@Override
-	public void startBootstrap(RowMap startBootstrapRow, AbstractProducer producer, Replicator replicator) throws Exception {
-		String databaseName = bootstrapDatabase(startBootstrapRow);
-		String tableName = bootstrapTable(startBootstrapRow);
 
-		String whereClause = bootstrapWhere(startBootstrapRow);
+	public void startBootstrap(BootstrapTask task, AbstractProducer producer, Long currentSchemaID) throws Exception {
+		performBootstrap(task, producer, currentSchemaID);
+		completeBootstrap(task, producer);
+	}
 
-		String logString = String.format("bootstrapping request for %s.%s", databaseName, tableName);
-		if ( whereClause != null ) {
-			logString += String.format(" with where clause %s", whereClause);
+	private Schema captureSchemaForBootstrap(BootstrapTask task) throws SQLException {
+		try ( Connection cx = getConnection() ) {
+			CaseSensitivity s = MaxwellMysqlStatus.captureCaseSensitivity(cx);
+			SchemaCapturer c = new SchemaCapturer(cx, s, task.database, task.table);
+			return c.capture();
 		}
-		LOGGER.debug(logString);
+	}
 
-		Schema schema = replicator.getSchema();
-		Database database = findDatabase(schema, databaseName);
-		Table table = findTable(tableName, database);
+	public void performBootstrap(BootstrapTask task, AbstractProducer producer, Long currentSchemaID) throws Exception {
+		LOGGER.debug("bootstrapping requested for " + task.logString());
 
-		Position position = startBootstrapRow.getPosition();
-		producer.push(startBootstrapRow);
-		producer.push(bootstrapStartRowMap(table, position));
-		LOGGER.info(String.format("bootstrapping started for %s.%s, binlog position is %s", databaseName, tableName, position.toString()));
+		Schema schema = captureSchemaForBootstrap(task);
+		Database database = findDatabase(schema, task.database);
+		Table table = findTable(task.table, database);
+
+		producer.push(bootstrapStartRowMap(table));
+		LOGGER.info(String.format("bootstrapping started for %s.%s", task.database, task.table));
+
 		try ( Connection connection = getConnection();
 			  Connection streamingConnection = getStreamingConnection()) {
-			setBootstrapRowToStarted(startBootstrapRow, connection);
-			ResultSet resultSet = getAllRows(databaseName, tableName, schema, whereClause, streamingConnection);
+			setBootstrapRowToStarted(task.id, connection);
+			ResultSet resultSet = getAllRows(task.database, task.table, table, task.whereClause, streamingConnection);
 			int insertedRows = 0;
 			lastInsertedRowsUpdateTimeMillis = 0; // ensure updateInsertedRowsColumn is called at least once
 			while ( resultSet.next() ) {
-				RowMap row = bootstrapEventRowMap("bootstrap-insert", table, position);
+				RowMap row = bootstrapEventRowMap("bootstrap-insert", table.database, table.name, table.getPKList());
 				setRowValues(row, resultSet, table);
+				row.setSchemaId(currentSchemaID);
 
 				Scripting scripting = context.getConfig().scripting;
 				if ( scripting != null )
@@ -76,22 +78,21 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 
 				producer.push(row);
 				++insertedRows;
-				updateInsertedRowsColumn(insertedRows, startBootstrapRow, position.getBinlogPosition(), connection);
+				updateInsertedRowsColumn(insertedRows, task.id, connection);
 			}
-			setBootstrapRowToCompleted(insertedRows, startBootstrapRow, connection);
+			setBootstrapRowToCompleted(insertedRows, task.id, connection);
+		} catch ( NoSuchElementException e ) {
+			LOGGER.info("bootstrapping aborted for " + task.logString());
 		}
 	}
 
-	private void updateInsertedRowsColumn(int insertedRows, RowMap startBootstrapRow, BinlogPosition position, Connection connection) throws SQLException, NoSuchElementException {
+	private void updateInsertedRowsColumn(int insertedRows, Long id, Connection connection) throws SQLException, NoSuchElementException {
 		long now = System.currentTimeMillis();
 		if ( now - lastInsertedRowsUpdateTimeMillis > INSERTED_ROWS_UPDATE_PERIOD_MILLIS ) {
-			long rowId = ( long ) startBootstrapRow.getData("id");
-			String sql = "update `bootstrap` set inserted_rows = ?, binlog_file = ?, binlog_position = ? where id = ?";
+			String sql = "update `bootstrap` set inserted_rows = ? where id = ?";
 			PreparedStatement preparedStatement = connection.prepareStatement(sql);
 			preparedStatement.setInt(1, insertedRows);
-			preparedStatement.setString(2, position.getFile());
-			preparedStatement.setLong(3, position.getOffset());
-			preparedStatement.setLong(4, rowId);
+			preparedStatement.setLong(2, id);
 			if ( preparedStatement.executeUpdate() == 0 ) {
 				throw new NoSuchElementException();
 			}
@@ -111,70 +112,23 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		return conn;
 	}
 
-	private RowMap bootstrapStartRowMap(Table table, Position position) {
-		return bootstrapEventRowMap("bootstrap-start", table, position);
+	private RowMap bootstrapStartRowMap(Table table) {
+		return bootstrapEventRowMap("bootstrap-start", table.database, table.name, table.getPKList());
 	}
 
-	private RowMap bootstrapCompleteRowMap(Table table, Position position) {
-		return bootstrapEventRowMap("bootstrap-complete", table, position);
-	}
-
-	private RowMap bootstrapEventRowMap(String type, Table table, Position position) {
+	private RowMap bootstrapEventRowMap(String type, String db, String tbl, List<String> pkList) {
 		return new RowMap(
-				type,
-				table.getDatabase(),
-				table.getName(),
-				System.currentTimeMillis(),
-				table.getPKList(),
-				position);
+			type,
+			db,
+			tbl,
+			System.currentTimeMillis(),
+			pkList,
+			null);
 	}
 
-	@Override
-	public void completeBootstrap(RowMap completeBootstrapRow, AbstractProducer producer, Replicator replicator) throws Exception {
-		String databaseName = bootstrapDatabase(completeBootstrapRow);
-		String tableName = bootstrapTable(completeBootstrapRow);
-
-		Database database = findDatabase(replicator.getSchema(), databaseName);
-		ensureTable(tableName, database);
-		Table table = findTable(tableName, database);
-
-		Position position = completeBootstrapRow.getPosition();
-		producer.push(completeBootstrapRow);
-		producer.push(bootstrapCompleteRowMap(table, position));
-
-		LOGGER.info(String.format("bootstrapping ended for %s.%s", databaseName, tableName));
-	}
-
-	@Override
-	public void resume(AbstractProducer producer, Replicator replicator) throws Exception {
-		try ( Connection connection = context.getMaxwellConnection() ) {
-			// This update resets all rows of incomplete bootstraps to their original state.
-			// These updates are treated as fresh bootstrap requests and trigger a restart
-			// of the bootstrap process from the beginning.
-			String clientID = this.context.getConfig().clientID;
-			String sql = "update `bootstrap` set started_at = NULL where is_complete = 0 and started_at is not NULL and client_id = ?";
-			PreparedStatement s = connection.prepareStatement(sql);
-			s.setString(1, clientID);
-			s.execute();
-		}
-	}
-
-	@Override
-	public boolean isRunning( ) {
-		return false;
-	}
-
-	@Override
-	public void work(RowMap row, AbstractProducer producer, Replicator replicator) throws Exception {
-		try {
-			if ( isStartBootstrapRow(row) ) {
-				startBootstrap(row, producer, replicator);
-			} else if ( isCompleteBootstrapRow(row) ) {
-				completeBootstrap(row, producer, replicator);
-			}
-		} catch ( NoSuchElementException e ) {
-			LOGGER.info(String.format("bootstrapping cancelled for %s.%s", row.getDatabase(), row.getTable()));
-		}
+	public void completeBootstrap(BootstrapTask task, AbstractProducer producer) throws Exception {
+		producer.push(bootstrapEventRowMap("bootstrap-complete", task.database, task.table, new ArrayList<>()));
+		LOGGER.info("bootstrapping ended for " + task.logString());
 	}
 
 	private Table findTable(String tableName, Database database) {
@@ -191,14 +145,10 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		return database;
 	}
 
-	private void ensureTable(String tableName, Database database) {
-		findTable(tableName, database);
-	}
-
-	private ResultSet getAllRows(String databaseName, String tableName, Schema schema, String whereClause,
-								Connection connection) throws SQLException, InterruptedException {
+	private ResultSet getAllRows(String databaseName, String tableName, Table table, String whereClause,
+								Connection connection) throws SQLException {
 		Statement statement = createBatchStatement(connection);
-		String pk = schema.findDatabase(databaseName).findTable(tableName).getPKString();
+		String pk = table.getPKString();
 
 		String sql = String.format("select * from `%s`.%s", databaseName, tableName);
 
@@ -213,32 +163,32 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 		return statement.executeQuery(sql);
 	}
 
-	private Statement createBatchStatement(Connection connection) throws SQLException, InterruptedException {
+	private Statement createBatchStatement(Connection connection) throws SQLException {
 		Statement statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 		statement.setFetchSize(Integer.MIN_VALUE);
 		return statement;
 	}
 
-	private void setBootstrapRowToStarted(RowMap startBootstrapRow, Connection connection) throws SQLException, NoSuchElementException {
-		String sql = "update `bootstrap` set started_at=NOW() where id=?";
-		PreparedStatement preparedStatement = connection.prepareStatement(sql);
-		preparedStatement.setLong(1, ( Long ) startBootstrapRow.getData("id"));
+	private final String startBootstrapSQL = "update `bootstrap` set started_at=NOW() where id=?";
+	private void setBootstrapRowToStarted(Long id, Connection connection) throws SQLException, NoSuchElementException {
+		PreparedStatement preparedStatement = connection.prepareStatement(startBootstrapSQL);
+		preparedStatement.setLong(1, id);
 		if ( preparedStatement.executeUpdate() == 0) {
 			throw new NoSuchElementException();
 		}
 	}
 
-	private void setBootstrapRowToCompleted(int insertedRows, RowMap startBootstrapRow, Connection connection) throws SQLException, NoSuchElementException {
-		String sql = "update `bootstrap` set is_complete=1, inserted_rows=?, completed_at=NOW() where id=?";
-		PreparedStatement preparedStatement = connection.prepareStatement(sql);
+	private final String completeBootstrapSQL = "update `bootstrap` set is_complete=1, inserted_rows=?, completed_at=NOW() where id=?";
+	private void setBootstrapRowToCompleted(int insertedRows, Long id, Connection connection) throws SQLException, NoSuchElementException {
+		PreparedStatement preparedStatement = connection.prepareStatement(completeBootstrapSQL);
 		preparedStatement.setInt(1, insertedRows);
-		preparedStatement.setLong(2, ( Long ) startBootstrapRow.getData("id"));
+		preparedStatement.setLong(2, id);
 		if ( preparedStatement.executeUpdate() == 0) {
 			throw new NoSuchElementException();
 		}
 	}
 
-	private void setRowValues(RowMap row, ResultSet resultSet, Table table) throws SQLException, IOException {
+	private void setRowValues(RowMap row, ResultSet resultSet, Table table) throws SQLException {
 		Iterator<ColumnDef> columnDefinitions = table.getColumnList().iterator();
 		int columnIndex = 1;
 		while ( columnDefinitions.hasNext() ) {
@@ -253,7 +203,7 @@ public class SynchronousBootstrapper extends AbstractBootstrapper {
 
 			row.putData(
 				columnDefinition.getName(),
-				columnValue == null ? null : columnDefinition.asJSON(columnValue)
+				columnValue == null ? null : columnDefinition.asJSON(columnValue, new MaxwellOutputConfig())
 			);
 
 			++columnIndex;
