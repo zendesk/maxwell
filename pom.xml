@@ -252,12 +252,12 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-server</artifactId>
-      <version>9.3.25.v20180904</version>
+      <version>9.3.27.v20190418</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
-      <version>9.3.25.v20180904</version>
+      <version>9.3.27.v20190418</version>
     </dependency>
     <dependency>
       <groupId>org.coursera</groupId>
