@@ -1,6 +1,5 @@
 package com.zendesk.maxwell.row;
 
-import com.google.api.client.util.Lists;
 import com.zendesk.maxwell.errors.ProtectedAttributeNameException;
 import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.replication.BinlogPosition;
@@ -196,12 +195,11 @@ public class RowMap implements Serializable {
 
 		JsonGenerator dataGenerator = dataWriter.begin();
 		if ( outputConfig.includesPrimaryKeys ) {
-			List<Object> pkValues = Lists.newArrayList();
-			pkColumns.forEach(pkColumn ->
-					pkValues.add(this.data.get(pkColumn))
-			);
+			Set<Object> pkValues = new HashSet<>();
+			pkColumns.forEach(pkColumn -> pkValues.add(this.data.get(pkColumn)));
 			MaxwellJson.writeValueToJSON(g, outputConfig.includesNulls, FieldNames.PRIMARY_KEY, pkValues);
 		}
+
 		if ( outputConfig.includesPrimaryKeyColumns ) {
 			MaxwellJson.writeValueToJSON(g, outputConfig.includesNulls, FieldNames.PRIMARY_KEY_COLUMNS, pkColumns);
 		}
