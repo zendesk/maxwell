@@ -195,7 +195,7 @@ public class RowMap implements Serializable {
 
 		JsonGenerator dataGenerator = dataWriter.begin();
 		if ( outputConfig.includesPrimaryKeys ) {
-			Set<Object> pkValues = new HashSet<>();
+			List<Object> pkValues = new ArrayList<>();
 			pkColumns.forEach(pkColumn -> pkValues.add(this.data.get(pkColumn)));
 			MaxwellJson.writeValueToJSON(g, outputConfig.includesNulls, FieldNames.PRIMARY_KEY, pkValues);
 		}
