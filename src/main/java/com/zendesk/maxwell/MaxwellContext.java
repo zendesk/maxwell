@@ -348,7 +348,7 @@ public class MaxwellContext {
 				this.producer = new MaxwellRedisProducer(this, this.config.redisPubChannel, this.config.redisListKey, this.config.redisType);
 				break;
 			case "none":
-				this.producer = null;
+				this.producer = new NoneProducer(this);
 				break;
 			default:
 				throw new RuntimeException("Unknown producer type: " + this.config.producerType);
