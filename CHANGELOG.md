@@ -1,5 +1,14 @@
 # Maxwell changelog
 
+### [v1.22.1](https://github.com/zendesk/maxwell/releases/tag/v1.22.1): "a snow covered field"
+
+
+- fix crash in rabbit-mq producer
+- better support for maxwell + azure-mysql
+- remove bogus different-host bootstrap check
+- some security upgrades
+
+
 ### [v1.22.0](https://github.com/zendesk/maxwell/releases/tag/v1.22.0): "through the roof, and underground"
 
 
