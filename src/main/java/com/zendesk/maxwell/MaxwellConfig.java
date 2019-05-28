@@ -725,11 +725,6 @@ public class MaxwellConfig extends AbstractConfig {
 		if (outputConfig.encryptionEnabled() && outputConfig.secretKey == null)
 			usage("--secret_key required");
 
-		if ( !maxwellMysql.sameServerAs(replicationMysql) && !this.bootstrapperType.equals("none") ) {
-			LOGGER.warn("disabling bootstrapping; not available when using a separate replication host.");
-			this.bootstrapperType = "none";
-		}
-
 		if ( this.javascriptFile != null ) {
 			try {
 				this.scripting = new Scripting(this.javascriptFile);
