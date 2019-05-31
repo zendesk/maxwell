@@ -58,7 +58,7 @@ public class SynchronousBootstrapper {
 		producer.push(bootstrapStartRowMap(table));
 		LOGGER.info(String.format("bootstrapping started for %s.%s", task.database, task.table));
 
-		try ( Connection connection = getConnection();
+		try ( Connection connection = getMaxwellConnection();
 			  Connection streamingConnection = getStreamingConnection()) {
 			setBootstrapRowToStarted(task.id, connection);
 			ResultSet resultSet = getAllRows(task.database, task.table, table, task.whereClause, streamingConnection);
@@ -108,6 +108,12 @@ public class SynchronousBootstrapper {
 
 	protected Connection getStreamingConnection() throws SQLException, URISyntaxException {
 		Connection conn = DriverManager.getConnection(context.getConfig().replicationMysql.getConnectionURI(), context.getConfig().replicationMysql.user, context.getConfig().replicationMysql.password);
+		conn.setCatalog(context.getConfig().databaseName);
+		return conn;
+	}
+
+	protected Connection getMaxwellConnection() throws SQLException {
+		Connection conn = context.getMaxwellConnection();
 		conn.setCatalog(context.getConfig().databaseName);
 		return conn;
 	}
