@@ -227,12 +227,12 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-pubsub</artifactId>
-      <version>0.30.0-beta</version>
+      <version>1.66.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
-      <version>3.4.0</version>
+      <version>3.7.0</version>
     </dependency>
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>

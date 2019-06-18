@@ -25,10 +25,12 @@ public class FieldNames {
 	public static final String TRANSACTION_OFFSET = "xoffset";
 	public static final String TYPE = "type";
 	public static final String UUID = "_uuid";
+	public static final String PRIMARY_KEY = "primary_key";
+	public static final String PRIMARY_KEY_COLUMNS = "primary_key_columns";
 	public static final String REASON = "reason";
 
 	private static List<String> fieldNamesList = Arrays.asList(COMMIT, DATA, DATABASE,
-	GTID, OLD, POSITION, QUERY, SERVER_ID, TABLE, THREAD_ID, TIMESTAMP, TRANSACTION_ID, TYPE, UUID);
+	GTID, OLD, POSITION, PRIMARY_KEY, PRIMARY_KEY_COLUMNS, QUERY, SERVER_ID, TABLE, THREAD_ID, TIMESTAMP, TRANSACTION_ID, TYPE, UUID);
 
 	private static final Set<String> fieldNamesSet = new HashSet<>(fieldNamesList);
 

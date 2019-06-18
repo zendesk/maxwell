@@ -184,6 +184,26 @@ public class RowMap implements Serializable {
 			g.writeObjectField(entry.getKey(), entry.getValue());
 		}
 
+		EncryptionContext encryptionContext = null;
+		if (outputConfig.encryptionEnabled()) {
+			encryptionContext = EncryptionContext.create(outputConfig.secretKey);
+		}
+
+		DataJsonGenerator dataWriter = outputConfig.encryptionMode == EncryptionMode.ENCRYPT_DATA
+			? json.getEncryptingGenerator()
+			: json.getPlaintextGenerator();
+
+		JsonGenerator dataGenerator = dataWriter.begin();
+		if ( outputConfig.includesPrimaryKeys ) {
+			List<Object> pkValues = new ArrayList<>();
+			pkColumns.forEach(pkColumn -> pkValues.add(this.data.get(pkColumn)));
+			MaxwellJson.writeValueToJSON(g, outputConfig.includesNulls, FieldNames.PRIMARY_KEY, pkValues);
+		}
+
+		if ( outputConfig.includesPrimaryKeyColumns ) {
+			MaxwellJson.writeValueToJSON(g, outputConfig.includesNulls, FieldNames.PRIMARY_KEY_COLUMNS, pkColumns);
+		}
+
 		if ( outputConfig.excludeColumns.size() > 0 ) {
 			// NOTE: to avoid concurrent modification.
 			Set<String> keys = new HashSet<>();
@@ -200,17 +220,6 @@ public class RowMap implements Serializable {
 			}
 		}
 
-
-		EncryptionContext encryptionContext = null;
-		if (outputConfig.encryptionEnabled()) {
-			encryptionContext = EncryptionContext.create(outputConfig.secretKey);
-		}
-
-		DataJsonGenerator dataWriter = outputConfig.encryptionMode == EncryptionMode.ENCRYPT_DATA
-			? json.getEncryptingGenerator()
-			: json.getPlaintextGenerator();
-
-		JsonGenerator dataGenerator = dataWriter.begin();
 		writeMapToJSON(FieldNames.DATA, this.data, dataGenerator, outputConfig.includesNulls);
 		if( !this.oldData.isEmpty() ){
 			writeMapToJSON(FieldNames.OLD, this.oldData, dataGenerator, outputConfig.includesNulls);
