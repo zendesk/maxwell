@@ -314,6 +314,8 @@ drop table test.e;
    &quot;position&quot;:&quot;master.000006:800911&quot;,
    &quot;server_id&quot;:23042,
    &quot;thread_id&quot;:108,
+   &quot;primary_key&quot;: [1, &quot;2016-10-21 05:33:37.523000&quot;],
+   &quot;primary_key_columns&quot;: [&quot;id&quot;, &quot;c&quot;],
    &quot;data&quot;:{
       &quot;id&quot;:1,
       &quot;m&quot;:4.2341,
@@ -347,6 +349,12 @@ this field and <code>xid</code> to do so.  The data will look like:</p>
 <li>row with no <code>commit</code>, xid=155</li>
 <li>...</li>
 </ul>
+<p>↳ <code>"primary_key": [1,"2016-10-21 05:33:37.523000"],</code></p>
+<p>You only get this with --output_primary_key. List of values that make up the
+primary key for this row.</p>
+<p>↳ <code>"primary_key_columns": ["id","c"],</code></p>
+<p>You only get this with --output_primary_key_columns. List of columns that make
+make up the primary key for this row.</p>
 <h3 id="update">UPDATE</h3>
 <hr />
 <pre><code>mysql&gt; update test.e set m = 5.444, c = now(3) where id = 1;
