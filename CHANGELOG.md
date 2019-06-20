@@ -1,5 +1,11 @@
 # Maxwell changelog
 
+### [v1.22.3](https://github.com/zendesk/maxwell/releases/tag/v1.22.3): "my doubt, my failings"
+
+
+- fix issue with google pubsub in 1.22.2
+
+
 ### [v1.22.2](https://github.com/zendesk/maxwell/releases/tag/v1.22.2): "some girls"
 
 
