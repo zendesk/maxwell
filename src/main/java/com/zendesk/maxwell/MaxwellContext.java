@@ -59,18 +59,17 @@ public class MaxwellContext {
 		this.taskManager = new TaskManager();
 		this.metrics = new MaxwellMetrics(config);
 
+		setupConnectionPools();
+
 		if (config.retry) {
 			while(true) {
-				setupConnectionPools();
 				if (databaseConnectionReady()) {
 					break;
 				} else {
-					LOGGER.info("Sleeping for 10 seconds before trying to re-create connection pools...");
-					Thread.sleep(10000);
+					LOGGER.info("Sleeping for 5 seconds before trying to re-create connection pools...");
+					Thread.sleep(5000);
 				}
 			}
-		} else {
-			setupConnectionPools();
 		}
 
 		if ( this.config.initPosition != null )
