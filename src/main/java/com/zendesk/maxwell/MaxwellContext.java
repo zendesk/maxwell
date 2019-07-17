@@ -61,12 +61,11 @@ public class MaxwellContext {
 
 		if (config.retry) {
 			while(true) {
-				try {
-					setupConnectionPools();
-					maxwellConnectionPool.getConnection();//check if connection is up
+				setupConnectionPools();
+				if (databaseConnectionReady()) {
 					break;
-				} catch (SQLException e) {
-					System.out.println("Waiting 10seconds before trying to reconnect...");
+				} else {
+					LOGGER.info("Sleeping for 10 seconds before trying to re-create connection pools...");
 					Thread.sleep(10000);
 				}
 			}
@@ -80,7 +79,7 @@ public class MaxwellContext {
 		if ( this.config.replayMode ) {
 			this.positionStore = new ReadOnlyMysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.clientID, config.gtidMode);
 		} else {
-			//this is where it all breaks. ConneectionPool throws an error because the database is not up
+
 			this.positionStore = new MysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.clientID, config.gtidMode);
 		}
 
@@ -89,7 +88,7 @@ public class MaxwellContext {
 		this.diagnosticContext = new MaxwellDiagnosticContext(config.diagnosticConfig, diagnostics);
 	}
 
-	public void setupConnectionPools() throws URISyntaxException {
+	private void setupConnectionPools() throws URISyntaxException {
 
 		this.replicationConnectionPool = new ConnectionPool("ReplicationConnectionPool", 10, 0, 10,
 			config.replicationMysql.getConnectionURI(false), config.replicationMysql.user, config.replicationMysql.password);
@@ -114,6 +113,16 @@ public class MaxwellContext {
 		this.maxwellConnectionPool = new ConnectionPool("MaxwellConnectionPool", 10, 0, 10,
 			config.maxwellMysql.getConnectionURI(), config.maxwellMysql.user, config.maxwellMysql.password);
 		this.maxwellConnectionPool.setCaching(false);
+	}
+
+	private boolean databaseConnectionReady() {
+		try {
+			maxwellConnectionPool.getConnection();
+			return true;
+		} catch (SQLException e) {
+			return false;
+		}
+
 	}
 
 	public MaxwellConfig getConfig() {
