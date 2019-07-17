@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
  * Created by ben on 8/27/16.
  */
 public class BufferedMaxwell extends Maxwell {
-	public BufferedMaxwell(MaxwellConfig config) throws SQLException, URISyntaxException {
+	public BufferedMaxwell(MaxwellConfig config) throws SQLException, URISyntaxException, InterruptedException {
 		super(config);
 		config.producerType = "buffer";
 	}

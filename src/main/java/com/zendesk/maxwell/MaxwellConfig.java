@@ -127,6 +127,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public String redisType;
 	public String javascriptFile;
 	public Scripting scripting;
+	public boolean retry;
 
 	public MaxwellConfig() { // argv is only null in tests
 		this.customProducerProperties = new Properties();
@@ -164,6 +165,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "password", "password for host" ).withRequiredArg();
 		parser.accepts( "jdbc_options", "additional jdbc connection options" ).withRequiredArg();
 		parser.accepts( "binlog_connector", "[deprecated]" ).withRequiredArg();
+		parser.accepts("retry", "Retry to connect to the database if the connection drops at launch").withOptionalArg();
 
 		parser.accepts( "ssl", "enables SSL for all connections: DISABLED|PREFERRED|REQUIRED|VERIFY_CA|VERIFY_IDENTITY. default: DISABLED").withOptionalArg();
 		parser.accepts( "replication_ssl", "overrides SSL setting for binlog connection: DISABLED|PREFERRED|REQUIRED|VERIFY_CA|VERIFY_IDENTITY").withOptionalArg();
@@ -359,6 +361,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 	private void setup(OptionSet options, Properties properties) {
 		this.log_level = fetchOption("log_level", options, properties, null);
+		this.retry 	   = fetchBooleanOption("retry", options, properties, false);
 
 		this.maxwellMysql       = parseMysqlConfig("", options, properties);
 		this.replicationMysql   = parseMysqlConfig("replication_", options, properties);
@@ -374,7 +377,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.bootstrapperType   = fetchOption("bootstrapper", options, properties, "async");
 		this.clientID           = fetchOption("client_id", options, properties, "maxwell");
 		this.replicaServerID    = fetchLongOption("replica_server_id", options, properties, 6379L);
-		this.javascriptFile         = fetchOption("javascript", options, properties, null);
+		this.javascriptFile     = fetchOption("javascript", options, properties, null);
 
 		this.kafkaTopic         	= fetchOption("kafka_topic", options, properties, "maxwell");
 		this.deadLetterTopic        = fetchOption("dead_letter_topic", options, properties, null);

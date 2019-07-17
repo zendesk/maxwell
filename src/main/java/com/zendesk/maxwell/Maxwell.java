@@ -12,10 +12,12 @@ import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.schema.MysqlPositionStore;
 import com.zendesk.maxwell.schema.MysqlSchemaStore;
 import com.zendesk.maxwell.schema.SchemaStoreSchema;
+import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.util.Logging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -27,7 +29,7 @@ public class Maxwell implements Runnable {
 
 	static final Logger LOGGER = LoggerFactory.getLogger(Maxwell.class);
 
-	public Maxwell(MaxwellConfig config) throws SQLException, URISyntaxException {
+	public Maxwell(MaxwellConfig config) throws SQLException, URISyntaxException, InterruptedException {
 		this(new MaxwellContext(config));
 	}
 
@@ -182,7 +184,6 @@ public class Maxwell implements Runnable {
 				SchemaStoreSchema.upgradeSchemaStoreSchema(schemaConnection);
 			}
 		}
-
 		AbstractProducer producer = this.context.getProducer();
 
 		Position initPosition = getInitialPosition();
