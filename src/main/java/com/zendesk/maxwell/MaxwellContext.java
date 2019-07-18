@@ -61,7 +61,7 @@ public class MaxwellContext {
 
 		setupConnectionPools();
 
-		if (config.retry) {
+		if (config.startupPersistentConnection) {
 			while(true) {
 				if (databaseConnectionReady()) {
 					break;
