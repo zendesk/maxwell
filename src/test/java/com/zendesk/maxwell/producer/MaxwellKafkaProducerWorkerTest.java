@@ -39,7 +39,7 @@ public class MaxwellKafkaProducerWorkerTest {
 		Producer<String,String> producer = (Producer<String,String>) mock(Producer.class);
 		KafkaCallback callback = mock(KafkaCallback.class);
 		String kafkaTopic = "maxwell";
-		RowIdentity rowId = new RowIdentity("MyDatabase", "MyTable", Collections.emptyList());
+		RowIdentity rowId = new RowIdentity("MyDatabase", "MyTable", "insert", Collections.emptyList());
 		MaxwellKafkaProducerWorker worker = new MaxwellKafkaProducerWorker(context, kafkaTopic, null, producer);
 
 		worker.enqueueFallbackRow("maxwell.errors", rowId, callback, null, new Exception("The broker is grumpy"));

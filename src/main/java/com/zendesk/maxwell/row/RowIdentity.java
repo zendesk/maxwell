@@ -10,12 +10,14 @@ import java.util.*;
 public class RowIdentity implements Serializable {
 	private String database;
 	private String table;
+	private String rowType;
 	private final List<Pair<String, Object>> primaryKeyColumns;
 
-	public RowIdentity(String database, String table, List<Pair<String, Object>> primaryKeyColumns) {
+	public RowIdentity(String database, String table, String rowType, List<Pair<String, Object>> primaryKeyColumns) {
 		this.database = database;
 		this.table = table;
 		this.primaryKeyColumns = primaryKeyColumns;
+		this.rowType = rowType;
 	}
 
 	public String getDatabase() {
@@ -74,8 +76,8 @@ public class RowIdentity implements Serializable {
 		JsonGenerator g = json.reset();
 		startCommonHashFields(g);
 
+		g.writeStringField(FieldNames.TYPE, this.rowType);
 		g.writeStringField(FieldNames.REASON, reason);
-
 		g.writeObjectFieldStart(FieldNames.DATA);
 		for (Map.Entry<String,Object> pk : primaryKeyColumns) {
 			writePrimaryKey(g, pk);
