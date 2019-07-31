@@ -59,6 +59,8 @@ public class StringColumnDef extends ColumnDef {
 				return Charset.forName(charset.toLowerCase());
 			} catch ( java.nio.charset.UnsupportedCharsetException e ) {
 				throw new RuntimeException("error: unhandled character set '" + charset + "'");
+			} catch ( java.nio.charset.IllegalCharsetNameException e ) {
+				throw new RuntimeException("error: illegal character set '" + charset + "' for " + getType() + " '" + name + "'");
 			}
 		}
 	}

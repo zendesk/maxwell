@@ -60,6 +60,8 @@ public abstract class ColumnDef implements Cloneable {
 		case "varchar":
 		case "char":
 			return new StringColumnDef(name, type, pos, charset);
+		case "json":
+			return new StringColumnDef(name, type, pos, "utf8");
 		case "tinyblob":
 		case "blob":
 		case "mediumblob":
@@ -96,8 +98,6 @@ public abstract class ColumnDef implements Cloneable {
 			return new SetColumnDef(name, type, pos, enumValues);
 		case "bit":
 			return new BitColumnDef(name, type, pos);
-		case "json":
-			return new JsonColumnDef(name, type, pos);
 
 		default:
 			throw new IllegalArgumentException("unsupported column type " + type);

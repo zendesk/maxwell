@@ -142,23 +142,12 @@ public class ColumnDefTest extends TestWithNameLogging {
 
 	@Test
 	public void TestJSON() {
-		byte input[] = new byte[] { (byte) 0, (byte) 1, (byte) 0, (byte) 13, (byte) 0, (byte) 11,
-				(byte) 0, (byte) 2, (byte) 0, (byte) 5, (byte) 3, (byte) 0, (byte) 105, (byte) 100 };
+		String input = "{\"id\":3}";
 
 		ColumnDef d = ColumnDef.build("bar", "ascii", "json", (short) 1, false, null, null);
 
-		RawJSONString result = (RawJSONString) d.asJSON(input, null);
-		assertThat(result.json, is("{\"id\":3}"));
-	}
-
-	@Test
-	public void TestEmptyJSON() {
-		byte input[] = new byte[0];
-
-		ColumnDef d = ColumnDef.build("bar", "ascii", "json", (short) 1, false, null, null);
-
-		RawJSONString result = (RawJSONString) d.asJSON(input, null);
-		assertThat(result.json, is("null"));
+		String result = (String) d.asJSON(input, null);
+		assertThat(result, is("{\"id\":3}"));
 	}
 
 	@Test
