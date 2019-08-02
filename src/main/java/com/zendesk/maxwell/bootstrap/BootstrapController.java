@@ -4,6 +4,7 @@ import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMapBuffer;
 import com.zendesk.maxwell.util.RunLoopProcess;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import snaq.db.ConnectionPool;
@@ -81,6 +82,21 @@ public class BootstrapController extends RunLoopProcess  {
 
 	public synchronized void setCurrentSchemaID(long schemaID) {
 		this.currentSchemaID = schemaID;
+	}
+
+	public boolean hasIncompleteTasks() {
+		try ( Connection cx = maxwellConnectionPool.getConnection() ) {
+			PreparedStatement s = cx.prepareStatement("select count(id) from bootstrap where is_complete = 0 and client_id = ?");
+			s.setString(1, this.clientID);
+
+			ResultSet rs = s.executeQuery();
+
+			while (rs.next()) {
+				return rs.getInt(1) > 0;
+			}
+		} catch (Exception ex){}
+
+		return false;
 	}
 
 	private List<BootstrapTask> getIncompleteTasks() throws SQLException {

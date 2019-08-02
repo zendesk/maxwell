@@ -2,11 +2,13 @@ package com.zendesk.maxwell;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.shyiko.mysql.binlog.network.SSLMode;
+import com.zendesk.maxwell.bootstrap.BootstrapController;
 import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.filtering.InvalidFilterException;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.MysqlVersion;
 import com.zendesk.maxwell.replication.Position;
+import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
@@ -221,7 +223,7 @@ public class MaxwellTestSupport {
 		}
 
 		callback.afterReplicatorStart(mysql);
-		maxwell.context.getBootstrapController(null).interrupt();
+		BootstrapController bootstrapController = maxwell.context.getBootstrapController(null);
 
 		long finalHeartbeat = maxwell.context.getPositionStore().heartbeat();
 
@@ -232,30 +234,46 @@ public class MaxwellTestSupport {
 
 		for ( ;; ) {
 			RowMap row = maxwell.poll(pollTime);
-			pollTime = 500L; // after the first row is receive, we go into a tight loop.
+			pollTime = 500L; // after the first row is received, we go into a tight loop.
 
-			if ( row == null ) {
-				LOGGER.debug("timed out waiting for final row.  Last position we saw: " + lastPositionRead);
-				break;
-			}
-
-			lastPositionRead = row.getPosition();
-
-			if ( lastPositionRead != null && lastPositionRead.getLastHeartbeatRead() >= finalHeartbeat ) {
-				// consume whatever's left over in the buffer.
-				for ( ;; ) {
-					RowMap r = maxwell.poll(100);
-					if ( r == null )
-						break;
-
-					if ( r.toJSON(config.outputConfig) != null )
-						list.add(r);
+			if ( row != null ) {
+				if ( row.toJSON(config.outputConfig) != null ) {
+					LOGGER.debug("getRowsWithReplicator: saw: " + row.toJSON(config.outputConfig));
+					list.add(row);
 				}
+				lastPositionRead = row.getPosition();
+			}
 
+			boolean replicationComplete = lastPositionRead != null && lastPositionRead.getLastHeartbeatRead() >= finalHeartbeat;
+			boolean bootstrapComplete = !bootstrapController.hasIncompleteTasks();
+			boolean timedOut = !replicationComplete && row == null;
+
+			if (timedOut) {
+				LOGGER.debug("timed out waiting for final row. Last position we saw: " + lastPositionRead);
 				break;
 			}
-			if ( row.toJSON(config.outputConfig) != null )
-				list.add(row);
+
+			if (bootstrapComplete && replicationComplete) {
+				// For sanity testing, we wait another 2s to verify that no additional changes were pending.
+				// This slows down the test suite, so only enable when debugging.
+				boolean checkHasNoPendingChanges = false;
+				if (checkHasNoPendingChanges) {
+					long deadline = System.currentTimeMillis() + 2000;
+					while(true) {
+						RowMap extraRow = maxwell.poll(100);
+						if (extraRow instanceof HeartbeatRowMap) {
+							continue;
+						}
+						if (extraRow != null) {
+							maxwell.context.terminate(new RuntimeException("getRowsWithReplicator expected no further rows, saw: " + extraRow.toJSON()));
+						}
+						if (System.currentTimeMillis() > deadline) {
+							break;
+						}
+					}
+				}
+				break;
+			}
 		}
 
 		callback.beforeTerminate(mysql);
