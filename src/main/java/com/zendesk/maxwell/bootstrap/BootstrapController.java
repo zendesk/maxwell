@@ -83,21 +83,6 @@ public class BootstrapController extends RunLoopProcess  {
 		this.currentSchemaID = schemaID;
 	}
 
-	public boolean hasIncompleteTasks() {
-		try ( Connection cx = maxwellConnectionPool.getConnection() ) {
-			PreparedStatement s = cx.prepareStatement("select count(id) from bootstrap where is_complete = 0 and client_id = ?");
-			s.setString(1, this.clientID);
-
-			ResultSet rs = s.executeQuery();
-
-			while (rs.next()) {
-				return rs.getInt(1) > 0;
-			}
-		} catch (Exception ex){}
-
-		return false;
-	}
-
 	private List<BootstrapTask> getIncompleteTasks() throws SQLException {
 		ArrayList<BootstrapTask> list = new ArrayList<>();
 		try ( Connection cx = maxwellConnectionPool.getConnection() ) {

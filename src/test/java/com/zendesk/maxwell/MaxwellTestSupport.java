@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.bootstrap.BootstrapController;
 import com.zendesk.maxwell.filtering.Filter;
-import com.zendesk.maxwell.filtering.InvalidFilterException;
-import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.MysqlVersion;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.HeartbeatRowMap;
@@ -16,20 +14,20 @@ import com.zendesk.maxwell.schema.SchemaStoreSchema;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 import com.zendesk.maxwell.schema.ddl.SchemaChange;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -245,7 +243,7 @@ public class MaxwellTestSupport {
 			}
 
 			boolean replicationComplete = lastPositionRead != null && lastPositionRead.getLastHeartbeatRead() >= finalHeartbeat;
-			boolean bootstrapComplete = !bootstrapController.hasIncompleteTasks();
+			boolean bootstrapComplete = getIncompleteBootstrapTaskCount(maxwell, config.clientID) == 0;
 			boolean timedOut = !replicationComplete && row == null;
 
 			if (timedOut) {
@@ -257,7 +255,7 @@ public class MaxwellTestSupport {
 				// For sanity testing, we wait another 2s to verify that no additional changes were pending.
 				// This slows down the test suite, so only enable when debugging.
 				boolean checkHasNoPendingChanges = false;
-				
+
 				if (checkHasNoPendingChanges) {
 
 					long deadline = System.currentTimeMillis() + 2000;
@@ -325,5 +323,22 @@ public class MaxwellTestSupport {
 	public static void requireMinimumVersion(MysqlIsolatedServer server, MysqlVersion minimum) {
 		// skips this test if running an older MYSQL version
 		assumeTrue(server.getVersion().atLeast(minimum));
+	}
+
+	private static int getIncompleteBootstrapTaskCount(Maxwell maxwell, String clientID) {
+		try ( Connection cx = maxwell.context.getMaxwellConnection() ) {
+			PreparedStatement s = cx.prepareStatement("select count(id) from bootstrap where is_complete = 0 and client_id = ?");
+			s.setString(1, clientID);
+
+			ResultSet rs = s.executeQuery();
+
+			while (rs.next()) {
+				return rs.getInt(1);
+			}
+		} catch(SQLException ex) {
+			maxwell.context.terminate(new RuntimeException("failed to get incomplete task count"));
+		}
+
+		return 0;
 	}
 }
