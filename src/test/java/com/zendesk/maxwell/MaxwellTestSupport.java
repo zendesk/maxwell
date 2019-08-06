@@ -325,18 +325,16 @@ public class MaxwellTestSupport {
 		assumeTrue(server.getVersion().atLeast(minimum));
 	}
 
-	private static int getIncompleteBootstrapTaskCount(Maxwell maxwell, String clientID) {
+	private static int getIncompleteBootstrapTaskCount(Maxwell maxwell, String clientID) throws SQLException {
 		try ( Connection cx = maxwell.context.getMaxwellConnection() ) {
 			PreparedStatement s = cx.prepareStatement("select count(id) from bootstrap where is_complete = 0 and client_id = ?");
 			s.setString(1, clientID);
 
 			ResultSet rs = s.executeQuery();
 
-			while (rs.next()) {
+			if (rs.next()) {
 				return rs.getInt(1);
 			}
-		} catch(SQLException ex) {
-			maxwell.context.terminate(new RuntimeException("failed to get incomplete task count"));
 		}
 
 		return 0;
