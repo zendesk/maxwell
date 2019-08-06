@@ -19,10 +19,13 @@ import com.zendesk.maxwell.row.RowMap;
 public class SpannerProducer extends AbstractProducer {
     private final DatabaseClient dbClient;
 
-    public SpannerProducer(MaxwellContext context, String project, String instance, String database) throws IOException {
+    public SpannerProducer(MaxwellContext context) throws IOException {
         super(context);
         SpannerOptions options = SpannerOptions.newBuilder().build();
         Spanner spanner = options.getService();
+        String project = context.getConfig().spannerProject;
+        String instance = context.getConfig().spannerInstance;
+        String database = context.getConfig().spannerDatabase;
         DatabaseId db = DatabaseId.of(project, instance, database);
         this.dbClient = spanner.getDatabaseClient(db);
     }
