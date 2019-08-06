@@ -257,20 +257,23 @@ public class MaxwellTestSupport {
 				// For sanity testing, we wait another 2s to verify that no additional changes were pending.
 				// This slows down the test suite, so only enable when debugging.
 				boolean checkHasNoPendingChanges = false;
+				
 				if (checkHasNoPendingChanges) {
+
 					long deadline = System.currentTimeMillis() + 2000;
-					while(true) {
+
+					do {
 						RowMap extraRow = maxwell.poll(100);
+
 						if (extraRow instanceof HeartbeatRowMap) {
 							continue;
 						}
+
 						if (extraRow != null) {
 							maxwell.context.terminate(new RuntimeException("getRowsWithReplicator expected no further rows, saw: " + extraRow.toJSON()));
 						}
-						if (System.currentTimeMillis() > deadline) {
-							break;
-						}
-					}
+
+					} while(System.currentTimeMillis() <= deadline);
 				}
 				break;
 			}
