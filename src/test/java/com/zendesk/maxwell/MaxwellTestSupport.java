@@ -134,13 +134,9 @@ public class MaxwellTestSupport {
 		return Position.capture(c, inGtidMode());
 	}
 
-
 	private static void clearSchemaStore(MysqlIsolatedServer mysql) throws Exception {
 		mysql.execute("drop database if exists maxwell");
 	}
-
-	//public static List<RowMap> getRowsWithReplicator(final MysqlIsolatedServer mysql, Filter filter, final String queries[], final String before[]) throws Exception {
-	//}
 
 	public static List<RowMap> getRowsWithReplicator(
 		final MysqlIsolatedServer mysql,
@@ -221,7 +217,6 @@ public class MaxwellTestSupport {
 		}
 
 		callback.afterReplicatorStart(mysql);
-		BootstrapController bootstrapController = maxwell.context.getBootstrapController(null);
 
 		long finalHeartbeat = maxwell.context.getPositionStore().heartbeat();
 
