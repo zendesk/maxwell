@@ -34,7 +34,7 @@ public class KafkaCallbackTest {
 			producer = mock(MaxwellKafkaProducerWorker.class);
 		}
 		if (id == null) {
-			id = new RowIdentity("a","b", null);
+			id = new RowIdentity("a","b", "insert", null);
 		}
 
 		Position position = new Position(new BinlogPosition(1, "binlog-1"), 0L);
@@ -77,7 +77,7 @@ public class KafkaCallbackTest {
 		MaxwellContext context = makeContext(config);
 		MaxwellKafkaProducerWorker producer = mock(MaxwellKafkaProducerWorker.class);
 		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
-		RowIdentity id = new RowIdentity("a","b", null);
+		RowIdentity id = new RowIdentity("a","b", "insert", null);
 		KafkaCallback callback = makeCallback(context, cc, producer, id);
 
 		Exception error = new RecordTooLargeException();
@@ -102,7 +102,7 @@ public class KafkaCallbackTest {
 		MaxwellContext context = makeContext(config);
 		MaxwellKafkaProducerWorker producer = mock(MaxwellKafkaProducerWorker.class);
 		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
-		RowIdentity id = new RowIdentity("a","b", null);
+		RowIdentity id = new RowIdentity("a","b", "insert", null);
 
 		KafkaCallback callback = makeCallback(context, cc, producer, id);
 
@@ -127,7 +127,7 @@ public class KafkaCallbackTest {
 		MaxwellContext context = makeContext(config);
 		MaxwellKafkaProducerWorker producer = mock(MaxwellKafkaProducerWorker.class);
 		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
-		RowIdentity id = new RowIdentity("a","b", null);
+		RowIdentity id = new RowIdentity("a","b", "insert", null);
 		KafkaCallback callback = makeCallback(context, cc, producer, id);
 
 		Exception error = new RecordTooLargeException();
