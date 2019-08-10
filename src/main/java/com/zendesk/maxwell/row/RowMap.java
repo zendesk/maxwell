@@ -88,7 +88,7 @@ public class RowMap implements Serializable {
 			for (String pk: pkColumns) {
 				entries.add(Pair.of(pk, data.get(pk)));
 			}
-			rowIdentity = new RowIdentity(database, table, entries);
+			rowIdentity = new RowIdentity(database, table, rowType, entries);
 		}
 
 		return rowIdentity;
