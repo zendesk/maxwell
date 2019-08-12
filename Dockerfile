@@ -1,4 +1,4 @@
-FROM maven:3.5-jdk-8
+FROM maven:3.6-jdk-8
 ENV MAXWELL_VERSION=1.22.3 KAFKA_VERSION=1.0.0
 
 RUN apt-get update \
