@@ -65,6 +65,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private final BootstrapController bootstrapper;
 	private final AbstractProducer producer;
 	private RowMapBuffer rowBuffer;
+	private final float bufferMemoryUsage;
 
 	private final Counter rowCounter;
 	private final Meter rowMeter;
@@ -94,7 +95,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		HeartbeatNotifier heartbeatNotifier,
 		Scripting scripting,
 		Filter filter,
-		MaxwellOutputConfig outputConfig
+		MaxwellOutputConfig outputConfig,
+		float bufferMemoryUsage
 	) {
 		this.clientID = clientID;
 		this.bootstrapper = bootstrapper;
@@ -108,6 +110,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		this.tableCache = new TableCache(maxwellSchemaDatabaseName);
 		this.filter = filter;
 		this.lastCommError = null;
+		this.bufferMemoryUsage = bufferMemoryUsage;
 
 		/* setup metrics */
 		rowCounter = metrics.getRegistry().counter(
@@ -438,7 +441,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 	private RowMapBuffer getTransactionRows(BinlogConnectorEvent beginEvent) throws Exception {
 		BinlogConnectorEvent event;
-		RowMapBuffer buffer = new RowMapBuffer(MAX_TX_ELEMENTS);
+		RowMapBuffer buffer = new RowMapBuffer(MAX_TX_ELEMENTS, this.bufferMemoryUsage);
 
 		String currentQuery = null;
 

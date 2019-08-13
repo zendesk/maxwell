@@ -104,6 +104,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public boolean masterRecovery;
 	public boolean ignoreProducerError;
 	public boolean recaptureSchema;
+	public float bufferMemoryUsage;
 
 	public String rabbitmqUser;
 	public String rabbitmqPass;
@@ -249,6 +250,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "gtid_mode", "(experimental) enable gtid mode" ).withOptionalArg();
 		parser.accepts( "ignore_producer_error", "Maxwell will be terminated on kafka/kinesis errors when false. Otherwise, those producer errors are only logged. Default to true" ).withOptionalArg();
 		parser.accepts( "recapture_schema", "recapture the latest schema" ).withOptionalArg();
+		parser.accepts( "buffer_memory_usage", "Determines how much memory the Maxwell event buffer will use from the jvm max memory. Size of the buffer is: buffer_memory_usage * -Xmx" ).withOptionalArg();
 
 		parser.accepts( "__separator_7" );
 
@@ -509,6 +511,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.masterRecovery = fetchBooleanOption("master_recovery", options, properties, false);
 		this.ignoreProducerError = fetchBooleanOption("ignore_producer_error", options, properties, true);
 		this.recaptureSchema = fetchBooleanOption("recapture_schema", options, null, false);
+		this.bufferMemoryUsage = Float.parseFloat(fetchOption("buffer_memory_usage", options, properties, "0.25"));
 
 		outputConfig.includesBinlogPosition = fetchBooleanOption("output_binlog_position", options, properties, false);
 		outputConfig.includesGtidPosition = fetchBooleanOption("output_gtid_position", options, properties, false);
@@ -728,6 +731,9 @@ public class MaxwellConfig extends AbstractConfig {
 
 		if (outputConfig.encryptionEnabled() && outputConfig.secretKey == null)
 			usage("--secret_key required");
+
+		if (this.bufferMemoryUsage > 1f)
+			usage("--buffer_memory_usage must be <= 1.0");
 
 		if ( this.javascriptFile != null ) {
 			try {
