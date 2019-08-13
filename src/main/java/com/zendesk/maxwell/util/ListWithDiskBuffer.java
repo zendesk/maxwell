@@ -95,7 +95,6 @@ public class ListWithDiskBuffer<T> {
 		}
 
 		if ( elementsInFile == 0 ) {
-			LOGGER.info("Max Memory: " + Runtime.getRuntime().maxMemory());
 			LOGGER.info("Overflowed in-memory buffer, spilling over into " + file);
 		}
 		
