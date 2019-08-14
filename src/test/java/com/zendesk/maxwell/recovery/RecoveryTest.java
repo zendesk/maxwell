@@ -108,7 +108,8 @@ public class RecoveryTest extends TestWithNameLogging {
 			slaveConfig.databaseName,
 			slaveContext.getReplicationConnectionPool(),
 			slaveContext.getCaseSensitivity(),
-			recoveryInfo
+			recoveryInfo,
+			slaveConfig.bufferMemoryUsage
 		);
 
 		Position recoveredPosition = recovery.recover().getPosition();
@@ -153,7 +154,8 @@ public class RecoveryTest extends TestWithNameLogging {
 			slaveConfig.databaseName,
 			slaveContext.getReplicationConnectionPool(),
 			slaveContext.getCaseSensitivity(),
-			recoveryInfo
+			recoveryInfo,
+			slaveConfig.bufferMemoryUsage
 		);
 
 		assertEquals(null, recovery.recover());

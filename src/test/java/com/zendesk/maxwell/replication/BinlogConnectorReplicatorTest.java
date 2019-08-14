@@ -99,7 +99,8 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 			new HeartbeatNotifier(),
 			null,
 			context.getFilter(),
-			new MaxwellOutputConfig()
+			new MaxwellOutputConfig(),
+			context.getConfig().bufferMemoryUsage
 		);
 
 		EventDeserializer eventDeserializer = new EventDeserializer();
