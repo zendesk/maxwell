@@ -66,7 +66,7 @@ public class SpannerProducer extends AbstractProducer {
 
             this.context.setPosition(r);
         } catch (Exception e) {
-            LOGGER.info("Error:" + e.getMessage());
+            LOGGER.info("Error: " + e.getMessage() + ", Data: " + r.toJSON(outputConfig));
         }
     }
 
