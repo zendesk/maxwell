@@ -664,6 +664,8 @@ public class MaxwellConfig extends AbstractConfig {
 			usageForOptions("please specify a stream name for kinesis", "kinesis_stream");
 		} else if (this.producerType.equals("sqs") && this.sqsQueueUri == null) {
 			usageForOptions("please specify a queue uri for sqs", "sqs_queue_uri");
+		} else if (this.producerType.equals("spanner") && this.spannerProject == null) {
+			usageForOptions("please specify a spanner project", "spanner_project_id");
 		}
 
 		if ( !this.bootstrapperType.equals("async")
