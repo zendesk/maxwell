@@ -14,6 +14,7 @@ import com.google.cloud.spanner.Statement;
 import com.google.cloud.spanner.TransactionContext;
 import com.google.cloud.spanner.TransactionRunner.TransactionCallable;
 import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.row.RowIdentity;
 import com.zendesk.maxwell.row.RowMap;
 
 import org.slf4j.Logger;
@@ -24,12 +25,15 @@ public class SpannerProducer extends AbstractProducer {
 
     private final DatabaseClient dbClient;
 
-    public SpannerProducer(MaxwellContext context, String project, String instance, String database) throws IOException {
+    private String sourceDatabase;
+
+    public SpannerProducer(MaxwellContext context, String project, String instance, String database, String sourceDatabase) throws IOException {
         super(context);
         SpannerOptions options = SpannerOptions.newBuilder().build();
         Spanner spanner = options.getService();
         DatabaseId db = DatabaseId.of(project, instance, database);
         this.dbClient = spanner.getDatabaseClient(db);
+        this.sourceDatabase = sourceDatabase;
         LOGGER.info("Spanner Producer initialized with client" + this.dbClient.toString() + ", Project: "+ project);
     }
 
@@ -50,6 +54,10 @@ public class SpannerProducer extends AbstractProducer {
     public void push(RowMap r) throws Exception {
         try {
             String db = r.getDatabase();
+            if (!db.equalsIgnoreCase(sourceDatabase)) {
+                LOGGER.info("Replication not whitelisted for DB: " + db);
+                return;
+            }
             String table = r.getTable();
             String type = r.getRowType();
             LOGGER.info("Table:" + table);
@@ -57,7 +65,11 @@ public class SpannerProducer extends AbstractProducer {
             String sql = "";
             if (type == "insert" || type == "replace") {
                 sql = this.getInsertSql(r);
-            } else if (type == "update" || type == "delete") {
+            } else if (type == "update") {
+                sql = this.getUpdateSql(r);
+            } else if (type == "delete") {
+                sql = this.getDeleteSql(r);
+            } else {
                 sql = r.getRowQuery();
             }
 
@@ -100,6 +112,75 @@ public class SpannerProducer extends AbstractProducer {
             sql = sql.substring(0, sql.length() - 1);
         }
         sql += ")";
+        return sql;
+    }
+
+    private String getUpdateSql(RowMap r) {
+        String table = r.getTable();
+        LinkedHashMap<String, Object> data = r.getData();
+        LinkedHashMap<String, Object> oldData = r.getOldData();
+        String sql = "";
+        sql = "UPDATE " + table + " SET ";
+        Iterator<String> oldKeys = oldData.keySet().iterator();
+        while (oldKeys.hasNext()) {
+            String oldKey = oldKeys.next();
+            sql += oldKey + " = ";
+            Object valueObject = data.get(oldKey);
+            if (valueObject instanceof Long) {
+                sql += (Long) valueObject + ",";
+            } else if (valueObject instanceof Integer) {
+                sql += (String) valueObject + ",";
+            } else if (valueObject instanceof String) {
+                sql += "'" + (String) valueObject + "'" + ",";
+            } else {
+                sql += (String) valueObject + ",";
+            }
+        }
+        if (sql.endsWith(",")) {
+            sql = sql.substring(0, sql.length() - 1);
+        }
+        sql += " WHERE ";
+        for (String pkColumn : r.getPKColumns()) {
+            sql += pkColumn + " = ";
+            Object valueObject = data.get(pkColumn);
+            if (valueObject instanceof Long) {
+                sql += (Long) valueObject + " AND ";
+            } else if (valueObject instanceof Integer) {
+                sql += (String) valueObject + " AND ";
+            } else if (valueObject instanceof String) {
+                sql += "'" + (String) valueObject + "'" + " AND ";
+            } else {
+                sql += (String) valueObject + " AND ";
+            }
+        }
+        if (sql.endsWith(" AND ")) {
+            sql = sql.substring(0, sql.length() - 5);
+        }
+        return sql;
+    }
+
+    private String getDeleteSql(RowMap r) {
+        String table = r.getTable();
+        LinkedHashMap<String, Object> data = r.getData();
+        LinkedHashMap<String, Object> oldData = r.getOldData();
+        String sql = "";
+        sql = "DELETE FROM " + table + " WHERE ";
+        for (String pkColumn : r.getPKColumns()) {
+            sql += pkColumn + " = ";
+            Object valueObject = data.get(pkColumn);
+            if (valueObject instanceof Long) {
+                sql += (Long) valueObject + " AND ";
+            } else if (valueObject instanceof Integer) {
+                sql += (String) valueObject + " AND ";
+            } else if (valueObject instanceof String) {
+                sql += "'" + (String) valueObject + "'" + " AND ";
+            } else {
+                sql += (String) valueObject + " AND ";
+            }
+        }
+        if (sql.endsWith(" AND ")) {
+            sql = sql.substring(0, sql.length() - 5);
+        }
         return sql;
     }
 }

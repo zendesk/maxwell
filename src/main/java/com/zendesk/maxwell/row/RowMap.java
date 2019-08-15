@@ -372,6 +372,10 @@ public class RowMap implements Serializable {
 		return this.rowType;
 	}
 
+	public List<String> getPKColumns() {
+		return this.pkColumns;
+	}
+
 	// determines whether there is anything for the producer to output
 	// override this for extended classes that don't output a value
 	// return false when there is a heartbeat row or other row with suppressed output

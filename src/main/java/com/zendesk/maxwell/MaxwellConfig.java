@@ -121,6 +121,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public String spannerProject;
 	public String spannerInstance;
 	public String spannerDatabase;
+	public String spannerSourceDatabase;
 
 	public String redisHost;
 	public int redisPort;
@@ -299,6 +300,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts("spanner_database",
 				"provide a spanner database")
 				.withRequiredArg();
+		parser.accepts("spanner_source_database", "provide a source database from which replication is setup").withRequiredArg();
 
 		parser.accepts( "__separator_11" );
 
@@ -427,6 +429,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.spannerProject		= fetchOption("spanner_project_id", options, properties, null);
 		this.spannerInstance	= fetchOption("spanner_instance", options, properties, null);
 		this.spannerDatabase	= fetchOption("spanner_database", options, properties, null);
+		this.spannerSourceDatabase = fetchOption("spanner_source_database", options, properties, null);
 
 		String kafkaBootstrapServers = fetchOption("kafka.bootstrap.servers", options, properties, null);
 		if ( kafkaBootstrapServers != null )
@@ -664,8 +667,8 @@ public class MaxwellConfig extends AbstractConfig {
 			usageForOptions("please specify a stream name for kinesis", "kinesis_stream");
 		} else if (this.producerType.equals("sqs") && this.sqsQueueUri == null) {
 			usageForOptions("please specify a queue uri for sqs", "sqs_queue_uri");
-		} else if (this.producerType.equals("spanner") && this.spannerProject == null) {
-			usageForOptions("please specify a spanner project", "spanner_project_id");
+		} else if (this.producerType.equals("spanner") && (this.spannerProject == null || this.spannerInstance == null || this.spannerDatabase == null || this.spannerSourceDatabase == null)) {
+			usageForOptions("please specify a spanner project, instance, database and source_database", "spanner_project_id", "spanner_instance", "spanner_database", "spanner_source_database");
 		}
 
 		if ( !this.bootstrapperType.equals("async")
