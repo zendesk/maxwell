@@ -21,5 +21,3 @@ env:
     - GTID_MODE=1
       MYSQL_VERSION=5.7
     - MYSQL_VERSION=8.0
-addons:
-    srcclr: false
