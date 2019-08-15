@@ -67,7 +67,6 @@ public class SpannerProducer extends AbstractProducer {
             this.context.setPosition(r);
         } catch (Exception e) {
             LOGGER.info("Error:" + e.getMessage());
-            throw e;
         }
     }
 
@@ -87,10 +86,13 @@ public class SpannerProducer extends AbstractProducer {
         Iterator<Object> values = data.values().iterator();
         while (values.hasNext()) {
             Object nextObject = values.next();
-            if (nextObject instanceof Integer) {
-                sql += (Integer) nextObject + ",";
-            }
-            if (nextObject instanceof String) {
+            if (nextObject instanceof Long) {
+                sql += (Long) nextObject + ",";
+            } else if (nextObject instanceof Integer) {
+                sql += (String) nextObject + ",";
+            } else if (nextObject instanceof String) {
+                sql += "'" + (String) nextObject + "'" + ",";
+            } else {
                 sql += (String) nextObject + ",";
             }
         }
