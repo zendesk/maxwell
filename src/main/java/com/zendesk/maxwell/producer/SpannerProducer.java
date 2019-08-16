@@ -1,7 +1,9 @@
 package com.zendesk.maxwell.producer;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -42,9 +44,12 @@ public class SpannerProducer extends AbstractProducer {
             .readWriteTransaction()
             .run(new TransactionCallable<Void>() {
                 public Void run(TransactionContext tx) throws Exception {
+                    long startTime = System.nanoTime();
                     List<Statement> stmts = new ArrayList<Statement>();
                     stmts.add(Statement.newBuilder(sql).build());
                     tx.batchUpdate(stmts);
+                    long endTime = System.nanoTime() - startTime;
+                    LOGGER.info("Took " + endTime + "ns");
                     return null;
                 }
             });
@@ -103,7 +108,7 @@ public class SpannerProducer extends AbstractProducer {
             } else if (nextObject instanceof Integer) {
                 sql += (String) nextObject + ",";
             } else if (nextObject instanceof String) {
-                sql += "'" + (String) nextObject + "'" + ",";
+                sql += "'" + this.escapeString((String) nextObject) + "'" + ",";
             } else {
                 sql += (String) nextObject + ",";
             }
@@ -131,7 +136,7 @@ public class SpannerProducer extends AbstractProducer {
             } else if (valueObject instanceof Integer) {
                 sql += (String) valueObject + ",";
             } else if (valueObject instanceof String) {
-                sql += "'" + (String) valueObject + "'" + ",";
+                sql += "'" + this.escapeString((String) valueObject) + "'" + ",";
             } else {
                 sql += (String) valueObject + ",";
             }
@@ -148,7 +153,7 @@ public class SpannerProducer extends AbstractProducer {
             } else if (valueObject instanceof Integer) {
                 sql += (String) valueObject + " AND ";
             } else if (valueObject instanceof String) {
-                sql += "'" + (String) valueObject + "'" + " AND ";
+                sql += "'" + this.escapeString((String) valueObject) + "'" + " AND ";
             } else {
                 sql += (String) valueObject + " AND ";
             }
@@ -173,7 +178,7 @@ public class SpannerProducer extends AbstractProducer {
             } else if (valueObject instanceof Integer) {
                 sql += (String) valueObject + " AND ";
             } else if (valueObject instanceof String) {
-                sql += "'" + (String) valueObject + "'" + " AND ";
+                sql += "'" + this.escapeString((String) valueObject) + "'" + " AND ";
             } else {
                 sql += (String) valueObject + " AND ";
             }
@@ -182,5 +187,25 @@ public class SpannerProducer extends AbstractProducer {
             sql = sql.substring(0, sql.length() - 5);
         }
         return sql;
+    }
+
+    private String escapeString(String in) {
+        String out = "";
+        out = in.replaceAll("'", "\''");
+        return out;
+    }
+
+    private Boolean checkBase64(String in) {
+        if (in.endsWith("=")) {
+            Base64.Decoder decoder = Base64.getDecoder();
+            try {
+                decoder.decode(in);
+                return true;
+            } catch (Exception e) {
+                return false;
+            }
+        } else {
+            return false;
+        }
     }
 }
