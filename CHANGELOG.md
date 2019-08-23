@@ -1,5 +1,12 @@
 # Maxwell changelog
 
+### [v1.22.4](https://github.com/zendesk/maxwell/releases/tag/v1.22.4): "Last Christmans, I gave you my heart"
+
+
+ - Add row type to fallback message
+ - Upgrade jackson-databind
+
+
 ### [v1.22.3](https://github.com/zendesk/maxwell/releases/tag/v1.22.3): "my doubt, my failings"
 
 
