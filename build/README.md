@@ -87,11 +87,11 @@ To release a new version simply cd into the build folder and run the release scr
 
 ```shell
 cd ./build
-bundle exec ./release
+bundle exec ./release <the-new-version-number>
 ```
 
 Note: this script is not idempotent so if any errors occure, you will need to run each step manually. The release script takes the step as an option.
 
 ```shell
-bundle exec ./release [publishing-version] [build | tag | release | changelog | docs | nexus]
+bundle exec ./release <the-new-version-number> <build | tag | release | changelog | docs | nexus>
 ```
