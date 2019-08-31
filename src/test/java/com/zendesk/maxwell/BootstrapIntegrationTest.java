@@ -65,6 +65,14 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
+	public void testBootstrapOnSeparateServer() throws Exception {
+		MysqlIsolatedServer otherServer = MaxwellTestSupport.setupServer("--server_id=12313");
+		runJSON("json/bootstrap-second-server", (c) -> {
+			c.replicationMysql.port = otherServer.getPort();
+		});
+	}
+
+	@Test
 	public void testBool() throws Exception {
 		testColumnType("bool", "0", 0);
 		testColumnType("bool", "1", 1);

@@ -176,7 +176,7 @@ public class MaxwellTestSupport {
 		config.maxwellMysql.host = "localhost";
 		config.maxwellMysql.port = mysql.getPort();
 		config.maxwellMysql.sslMode = SSLMode.DISABLED;
-		config.replicationMysql = config.maxwellMysql;
+		config.replicationMysql = new MaxwellMysqlConfig(config.maxwellMysql);
 		if ( configLambda != null )
 			configLambda.accept(config);
 
