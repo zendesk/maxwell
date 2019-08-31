@@ -180,6 +180,8 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testAddQualifiedColumn() throws Exception {
+		MaxwellTestSupport.assertMaximumVersion(server, new MysqlVersion(8, 0));
+
 		String sql[] = {
 			"create TABLE `foo` (id int(11) unsigned primary KEY)",
 			"alter table foo add column foo.a varchar(255)",
