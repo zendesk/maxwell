@@ -4,7 +4,9 @@ import mysql_indices; // for REFERENCES
 
 
 column_definition:
-	col_name=name
+	( col_name=name |
+	  name '.' col_name=name |
+	  name '.' name '.' col_name=name )
 	data_type
 	;
 

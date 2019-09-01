@@ -315,6 +315,10 @@ public class MaxwellTestSupport {
 		assertThat(StringUtils.join(diff.iterator(), "\n"), diff.size(), is(0));
 	}
 
+	public static void assertMaximumVersion(MysqlIsolatedServer server, MysqlVersion maximum) {
+		assumeTrue(server.getVersion().lessThan(maximum.getMajor(), maximum.getMinor()));
+	}
+
 	public static void requireMinimumVersion(MysqlIsolatedServer server, MysqlVersion minimum) {
 		// skips this test if running an older MYSQL version
 		assumeTrue(server.getVersion().atLeast(minimum));
