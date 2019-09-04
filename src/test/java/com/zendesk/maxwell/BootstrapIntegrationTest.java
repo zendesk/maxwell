@@ -6,6 +6,7 @@ import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.row.RowMap;
 import org.junit.Test;
 
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,9 +67,14 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testBootstrapOnSeparateServer() throws Exception {
-		MysqlIsolatedServer otherServer = MaxwellTestSupport.setupServer("--server_id=12313");
+		MysqlIsolatedServer otherServer = new MysqlIsolatedServer();
+		otherServer.boot("--server_id=1231231");
 		runJSON("json/bootstrap-second-server", (c) -> {
 			c.replicationMysql.port = otherServer.getPort();
+			try {
+				c.initPosition = MaxwellTestSupport.capture(otherServer.getConnection());
+			} catch (SQLException e) {
+			}
 		});
 	}
 

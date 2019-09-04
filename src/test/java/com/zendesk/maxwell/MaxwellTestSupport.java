@@ -185,7 +185,9 @@ public class MaxwellTestSupport {
 
 		callback.beforeReplicatorStart(mysql);
 
-		config.initPosition = capture(mysql.getConnection());
+		if ( config.initPosition == null )
+			config.initPosition = capture(mysql.getConnection());
+
 		final String waitObject = "";
 		final BufferedMaxwell maxwell = new BufferedMaxwell(config) {
 			@Override
