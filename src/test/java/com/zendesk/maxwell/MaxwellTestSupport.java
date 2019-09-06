@@ -176,7 +176,7 @@ public class MaxwellTestSupport {
 		config.maxwellMysql.host = "localhost";
 		config.maxwellMysql.port = mysql.getPort();
 		config.maxwellMysql.sslMode = SSLMode.DISABLED;
-		config.replicationMysql = config.maxwellMysql;
+		config.replicationMysql = new MaxwellMysqlConfig(config.maxwellMysql);
 		if ( configLambda != null )
 			configLambda.accept(config);
 
@@ -185,7 +185,9 @@ public class MaxwellTestSupport {
 
 		callback.beforeReplicatorStart(mysql);
 
-		config.initPosition = capture(mysql.getConnection());
+		if ( config.initPosition == null )
+			config.initPosition = capture(mysql.getConnection());
+
 		final String waitObject = "";
 		final BufferedMaxwell maxwell = new BufferedMaxwell(config) {
 			@Override

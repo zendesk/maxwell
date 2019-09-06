@@ -49,6 +49,15 @@ public class MaxwellMysqlConfig {
 		this.sslMode = sslMode;
 	}
 
+	public MaxwellMysqlConfig(MaxwellMysqlConfig c) {
+		this.host = c.host;
+		this.port = c.port;
+		this.database = c.database;
+		this.user = c.user;
+		this.password = c.password;
+		this.sslMode = c.sslMode;
+	}
+
 	private void useSSL(boolean should) {
 		this.jdbcOptions.put("useSSL", String.valueOf(should));
 	}
