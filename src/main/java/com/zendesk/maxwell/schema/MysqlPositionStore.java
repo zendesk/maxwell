@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-//import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 
 import com.zendesk.maxwell.MaxwellConfig;
 import com.zendesk.maxwell.recovery.RecoveryInfo;
