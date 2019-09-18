@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import com.zendesk.maxwell.schema.Schema;
 
 public abstract class SchemaChange {
-    final static Logger LOGGER = LoggerFactory.getLogger(SchemaChange.class);
+	final static Logger LOGGER = LoggerFactory.getLogger(SchemaChange.class);
 	public abstract ResolvedSchemaChange resolve(Schema schema) throws InvalidSchemaError;
 
 	private static final Set<Pattern> SQL_BLACKLIST = new HashSet<Pattern>();
@@ -44,6 +44,8 @@ public abstract class SchemaChange {
 		SQL_BLACKLIST.add(Pattern.compile("\\A\\s*OPTIMIZE\\s+", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
 
 		SQL_BLACKLIST.add(Pattern.compile("\\A\\s*REPAIR\\s+", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
+
+		SQL_BLACKLIST.add(Pattern.compile("\\s*XA\\s+", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
 	}
 
 	private static final Pattern DELETE_BLACKLIST = Pattern.compile("^\\s*DELETE\\s*FROM", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);

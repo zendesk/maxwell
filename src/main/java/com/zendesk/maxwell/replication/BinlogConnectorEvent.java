@@ -13,6 +13,11 @@ public class BinlogConnectorEvent {
 	public static final String BEGIN = "BEGIN";
 	public static final String COMMIT = "COMMIT";
 	public static final String SAVEPOINT = "SAVEPOINT";
+	public static final String XABEGIN = "XA BEGIN";
+	public static final String XASTART = "XA START";
+	public static final String XAEND = "XA END";
+	public static final String XACOMMIT = "XA COMMIT";
+	public static final String XAROLLBACK = "XA ROLLBACK";
 	private final MaxwellOutputConfig outputConfig;
 	private BinlogPosition position;
 	private BinlogPosition nextPosition;
