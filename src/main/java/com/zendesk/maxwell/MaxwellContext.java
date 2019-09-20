@@ -262,6 +262,9 @@ public class MaxwellContext {
 	}
 
 	public void setPosition(Position position) {
+		if ( position == null )
+			return;
+
 		this.getPositionStoreThread().setPosition(position);
 	}
 
