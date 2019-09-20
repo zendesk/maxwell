@@ -1,5 +1,13 @@
 # Maxwell changelog
 
+### [v1.22.6](https://github.com/zendesk/maxwell/releases/tag/v1.22.6): "the things that keep your, like, dresses, like"
+
+
+- upgrade mysql-connector-java to 8.0.17
+- use a newer docker image as base
+ - list changes
+
+
 ### [v1.22.5](https://github.com/zendesk/maxwell/releases/tag/v1.22.5): "all of the names"
 
 
