@@ -90,7 +90,7 @@ def changelog
 end
 
 def nexus
-  do_system("cd .. && mvn deploy -DskipTests=true")
+  do_system("cd #{BINDIR}/.. && mvn deploy -DskipTests=true")
 end
 
 if $command
