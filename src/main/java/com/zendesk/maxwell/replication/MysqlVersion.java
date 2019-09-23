@@ -29,4 +29,12 @@ public class MysqlVersion {
 		DatabaseMetaData meta = c.getMetaData();
 		return new MysqlVersion(meta.getDatabaseMajorVersion(), meta.getDatabaseMinorVersion());
 	}
+
+	public int getMajor() {
+		return this.major;
+	}
+
+	public int getMinor() {
+		return this.minor;
+	}
 }

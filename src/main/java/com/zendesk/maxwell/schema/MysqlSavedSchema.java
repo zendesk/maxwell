@@ -6,7 +6,6 @@ import java.util.*;
 import java.io.IOException;
 
 import com.github.shyiko.mysql.binlog.GtidSet;
-import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.zendesk.maxwell.CaseSensitivity;
@@ -117,7 +116,7 @@ public class MysqlSavedSchema {
 			connection.setAutoCommit(false);
 			this.schemaID = saveSchema(connection);
 			connection.commit();
-		} catch ( MySQLIntegrityConstraintViolationException e ) {
+		} catch ( SQLIntegrityConstraintViolationException e ) {
 			connection.rollback();
 
 			connection.setAutoCommit(true);

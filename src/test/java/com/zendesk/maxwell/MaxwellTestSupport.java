@@ -176,7 +176,7 @@ public class MaxwellTestSupport {
 		config.maxwellMysql.host = "localhost";
 		config.maxwellMysql.port = mysql.getPort();
 		config.maxwellMysql.sslMode = SSLMode.DISABLED;
-		config.replicationMysql = config.maxwellMysql;
+		config.replicationMysql = new MaxwellMysqlConfig(config.maxwellMysql);
 		if ( configLambda != null )
 			configLambda.accept(config);
 
@@ -185,7 +185,9 @@ public class MaxwellTestSupport {
 
 		callback.beforeReplicatorStart(mysql);
 
-		config.initPosition = capture(mysql.getConnection());
+		if ( config.initPosition == null )
+			config.initPosition = capture(mysql.getConnection());
+
 		final String waitObject = "";
 		final BufferedMaxwell maxwell = new BufferedMaxwell(config) {
 			@Override
@@ -313,6 +315,10 @@ public class MaxwellTestSupport {
 
 		List<String> diff = topSchema.diff(bottomSchema, "followed schema", "recaptured schema");
 		assertThat(StringUtils.join(diff.iterator(), "\n"), diff.size(), is(0));
+	}
+
+	public static void assertMaximumVersion(MysqlIsolatedServer server, MysqlVersion maximum) {
+		assumeTrue(server.getVersion().lessThan(maximum.getMajor(), maximum.getMinor()));
 	}
 
 	public static void requireMinimumVersion(MysqlIsolatedServer server, MysqlVersion minimum) {
