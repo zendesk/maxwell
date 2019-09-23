@@ -30,21 +30,18 @@ public class Recovery {
 	private final MaxwellMysqlConfig replicationConfig;
 	private final String maxwellDatabaseName;
 	private final RecoverySchemaStore schemaStore;
-	private final float bufferMemoryUsage;
 
 
 	public Recovery(MaxwellMysqlConfig replicationConfig,
 					String maxwellDatabaseName,
 					ConnectionPool replicationConnectionPool,
 					CaseSensitivity caseSensitivity,
-					RecoveryInfo recoveryInfo,
-					float bufferMemoryUsage) {
+					RecoveryInfo recoveryInfo) {
 		this.replicationConfig = replicationConfig;
 		this.replicationConnectionPool = replicationConnectionPool;
 		this.recoveryInfo = recoveryInfo;
 		this.schemaStore = new RecoverySchemaStore(replicationConnectionPool, maxwellDatabaseName, caseSensitivity);
 		this.maxwellDatabaseName = maxwellDatabaseName;
-		this.bufferMemoryUsage = bufferMemoryUsage;
 	}
 
 	public HeartbeatRowMap recover() throws Exception {
@@ -77,7 +74,7 @@ public class Recovery {
 					null,
 					new RecoveryFilter(this.maxwellDatabaseName),
 					new MaxwellOutputConfig(),
-					this.bufferMemoryUsage
+					0.25 // Default memory usage size, not used 
 			);
 
 			HeartbeatRowMap h = findHeartbeat(replicator);
