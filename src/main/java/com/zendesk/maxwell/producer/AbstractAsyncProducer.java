@@ -60,11 +60,13 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 		// Rows that do not get sent to a target will be automatically marked as complete.
 		// We will attempt to commit a checkpoint up to the current row.
 		if(!r.shouldOutput(outputConfig)) {
-			inflightMessages.addMessage(position, r.getTimestampMillis(), 0L);
+			if ( position != null ) {
+				inflightMessages.addMessage(position, r.getTimestampMillis(), 0L);
 
-			InflightMessageList.InflightMessage completed = inflightMessages.completeMessage(position);
-			if(completed != null) {
-				context.setPosition(completed.position);
+				InflightMessageList.InflightMessage completed = inflightMessages.completeMessage(position);
+				if (completed != null) {
+					context.setPosition(completed.position);
+				}
 			}
 			return;
 		}

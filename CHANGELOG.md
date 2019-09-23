@@ -1,5 +1,28 @@
 # Maxwell changelog
 
+### [v1.22.6](https://github.com/zendesk/maxwell/releases/tag/v1.22.6): "the things that keep your, like, dresses, like"
+
+
+- upgrade mysql-connector-java to 8.0.17
+- use a newer docker image as base
+ - list changes
+
+
+### [v1.22.5](https://github.com/zendesk/maxwell/releases/tag/v1.22.5): "all of the names"
+
+
+- bugfix for bootstrapping off a split replica that doesn't contain a
+  "maxwell" database
+- Fix a parser issue with db.table.column style column names
+
+
+### [v1.22.4](https://github.com/zendesk/maxwell/releases/tag/v1.22.4): "Last Christmans, I gave you my heart"
+
+
+ - Add row type to fallback message
+ - Upgrade jackson-databind
+
+
 ### [v1.22.3](https://github.com/zendesk/maxwell/releases/tag/v1.22.3): "my doubt, my failings"
 
 

@@ -30,8 +30,8 @@ public class SynchronousBootstrapper {
 
 	private long lastInsertedRowsUpdateTimeMillis = 0;
 
-	public SynchronousBootstrapper(MaxwellContext context) { 
-		this.context = context; 
+	public SynchronousBootstrapper(MaxwellContext context) {
+		this.context = context;
 	}
 
 
@@ -41,7 +41,7 @@ public class SynchronousBootstrapper {
 	}
 
 	private Schema captureSchemaForBootstrap(BootstrapTask task) throws SQLException {
-		try ( Connection cx = getConnection() ) {
+		try ( Connection cx = getConnection(task.database) ) {
 			CaseSensitivity s = MaxwellMysqlStatus.captureCaseSensitivity(cx);
 			SchemaCapturer c = new SchemaCapturer(cx, s, task.database, task.table);
 			return c.capture();
@@ -59,7 +59,7 @@ public class SynchronousBootstrapper {
 		LOGGER.info(String.format("bootstrapping started for %s.%s", task.database, task.table));
 
 		try ( Connection connection = getMaxwellConnection();
-			  Connection streamingConnection = getStreamingConnection()) {
+			  Connection streamingConnection = getStreamingConnection(task.database)) {
 			setBootstrapRowToStarted(task.id, connection);
 			ResultSet resultSet = getAllRows(task.database, task.table, table, task.whereClause, streamingConnection);
 			int insertedRows = 0;
@@ -100,15 +100,15 @@ public class SynchronousBootstrapper {
 		}
 	}
 
-	protected Connection getConnection() throws SQLException {
+	protected Connection getConnection(String databaseName) throws SQLException {
 		Connection conn = context.getReplicationConnection();
-		conn.setCatalog(context.getConfig().databaseName);
+		conn.setCatalog(databaseName);
 		return conn;
 	}
 
-	protected Connection getStreamingConnection() throws SQLException, URISyntaxException {
-		Connection conn = DriverManager.getConnection(context.getConfig().replicationMysql.getConnectionURI(), context.getConfig().replicationMysql.user, context.getConfig().replicationMysql.password);
-		conn.setCatalog(context.getConfig().databaseName);
+	protected Connection getStreamingConnection(String databaseName) throws SQLException, URISyntaxException {
+		Connection conn = DriverManager.getConnection(context.getConfig().replicationMysql.getConnectionURI(false), context.getConfig().replicationMysql.user, context.getConfig().replicationMysql.password);
+		conn.setCatalog(databaseName);
 		return conn;
 	}
 
@@ -152,7 +152,7 @@ public class SynchronousBootstrapper {
 	}
 
 	private ResultSet getAllRows(String databaseName, String tableName, Table table, String whereClause,
-								Connection connection) throws SQLException {
+								 Connection connection) throws SQLException {
 		Statement statement = createBatchStatement(connection);
 		String pk = table.getPKString();
 
