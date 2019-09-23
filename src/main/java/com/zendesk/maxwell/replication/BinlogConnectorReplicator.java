@@ -648,7 +648,10 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	}
 
 	private String getXAid(String sql) {
+<<<<<<< HEAD
 		// XA START X'31302e32372e392e322e746d313536383531353533373035333139393539',X'31302e32372e392e322e746d323134343737',1096044365
+=======
+>>>>>>> 9f984fa649c3b3db9213dfa9ed0aecd45019ca2c
 		return sql.split(",")[0].split(" ")[2].replace("X'", "").replace("'", "");
 	}
 
