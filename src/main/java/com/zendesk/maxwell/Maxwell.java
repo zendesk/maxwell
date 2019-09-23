@@ -67,8 +67,7 @@ public class Maxwell implements Runnable {
 				config.databaseName,
 				this.context.getReplicationConnectionPool(),
 				this.context.getCaseSensitivity(),
-				recoveryInfo,
-				config.bufferMemoryUsage
+				recoveryInfo
 			);
 
 			recoveredHeartbeat = masterRecovery.recover();
