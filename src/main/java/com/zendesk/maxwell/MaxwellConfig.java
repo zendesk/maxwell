@@ -118,6 +118,11 @@ public class MaxwellConfig extends AbstractConfig {
 	public boolean rabbitmqMessagePersistent;
 	public boolean rabbitmqDeclareExchange;
 
+	public String spannerProject;
+	public String spannerInstance;
+	public String spannerDatabase;
+	public String spannerSourceDatabase;
+
 	public String redisHost;
 	public int redisPort;
 	public String redisAuth;
@@ -288,6 +293,17 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "__separator_10" );
 
+		parser.accepts("spanner_project_id",
+				"provide a google cloud platform project id associated with the Spanner instance").withRequiredArg();
+		parser.accepts("spanner_instance", "provide a spanner instance")
+				.withRequiredArg();
+		parser.accepts("spanner_database",
+				"provide a spanner database")
+				.withRequiredArg();
+		parser.accepts("spanner_source_database", "provide a source database from which replication is setup").withRequiredArg();
+
+		parser.accepts( "__separator_11" );
+
 		parser.accepts( "metrics_prefix", "the prefix maxwell will apply to all metrics" ).withRequiredArg();
 		parser.accepts( "metrics_type", "how maxwell metrics will be reported, at least one of slf4j|jmx|http|datadog" ).withRequiredArg();
 		parser.accepts( "metrics_slf4j_interval", "the frequency metrics are emitted to the log, in seconds, when slf4j reporting is configured" ).withRequiredArg();
@@ -305,7 +321,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "http_diagnostic_timeout", "the http diagnostic response timeout in ms when http_diagnostic=true. default: 10000" ).withRequiredArg();
 		parser.accepts( "metrics_jvm", "enable jvm metrics: true|false. default: false" ).withRequiredArg();
 
-		parser.accepts( "__separator_11" );
+		parser.accepts( "__separator_12" );
 
 		parser.accepts( "help", "display help" ).forHelp();
 
@@ -410,6 +426,10 @@ public class MaxwellConfig extends AbstractConfig {
 		this.redisPubChannel	= fetchOption("redis_pub_channel", options, properties, "maxwell");
 		this.redisListKey		= fetchOption("redis_list_key", options, properties, "maxwell");
 		this.redisType			= fetchOption("redis_type", options, properties, "pubsub");
+		this.spannerProject		= fetchOption("spanner_project_id", options, properties, null);
+		this.spannerInstance	= fetchOption("spanner_instance", options, properties, null);
+		this.spannerDatabase	= fetchOption("spanner_database", options, properties, null);
+		this.spannerSourceDatabase = fetchOption("spanner_source_database", options, properties, null);
 
 		String kafkaBootstrapServers = fetchOption("kafka.bootstrap.servers", options, properties, null);
 		if ( kafkaBootstrapServers != null )
@@ -647,6 +667,8 @@ public class MaxwellConfig extends AbstractConfig {
 			usageForOptions("please specify a stream name for kinesis", "kinesis_stream");
 		} else if (this.producerType.equals("sqs") && this.sqsQueueUri == null) {
 			usageForOptions("please specify a queue uri for sqs", "sqs_queue_uri");
+		} else if (this.producerType.equals("spanner") && (this.spannerProject == null || this.spannerInstance == null || this.spannerDatabase == null || this.spannerSourceDatabase == null)) {
+			usageForOptions("please specify a spanner project, instance, database and source_database", "spanner_project_id", "spanner_instance", "spanner_database", "spanner_source_database");
 		}
 
 		if ( !this.bootstrapperType.equals("async")

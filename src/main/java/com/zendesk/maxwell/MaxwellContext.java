@@ -350,6 +350,9 @@ public class MaxwellContext {
 			case "redis":
 				this.producer = new MaxwellRedisProducer(this, this.config.redisPubChannel, this.config.redisListKey, this.config.redisType);
 				break;
+			case "spanner":
+				this.producer = new SpannerProducer(this, this.config.spannerProject, this.config.spannerInstance, this.config.spannerDatabase, this.config.spannerSourceDatabase);
+				break;
 			case "none":
 				this.producer = new NoneProducer(this);
 				break;
