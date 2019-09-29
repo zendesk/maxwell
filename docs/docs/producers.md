@@ -206,7 +206,7 @@ For more details on these options, you are encouraged to the read official Rabbi
 
 ### Redis
 ***
-Set the output stream in `config.properties` by setting the `redis_pub_channel` property for redis_type = pubsub or set the `redis_list_key` property when using redis_type = lpush.
+Set the output stream in `config.properties` by setting the `redis_pub_channel` property for redis_type = pubsub, `redis_stream_key` property for redis_type = xadd, or set the `redis_list_key` property when using redis_type = lpush.
 
 Other configurable properties are:
 
@@ -215,7 +215,10 @@ Other configurable properties are:
 - `redis_auth` - defaults to **null**
 - `redis_database` - defaults to **0**
 - `redis_type` - defaults to **pubsub**
+- `redis_pub_channel` - defaults to **maxwell**
 - `redis_list_key` - defaults to **maxwell**
+- `redis_stream_key` - defaults to **maxwell**
+- `redis_stream_json_key` - defaults to **message**
 
 ### Custom Producer
 ***
