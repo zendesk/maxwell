@@ -125,10 +125,36 @@ You will need to obtain an IAM user that has the following permissions for the s
 - "kinesis:PutRecord"
 - "kinesis:PutRecords"
 - "kinesis:DescribeStream"
+
+Additionally, the producer will need to be able to produce CloudWatch metrics which requires the following permission applied to the resource `*``:
 - "cloudwatch:PutMetricData"
 
-See the [AWS docs](http://docs.aws.amazon.com/streams/latest/dev/controlling-access.html#kinesis-using-iam-examples) for the latest examples on which permissions are needed.
+The resulting IAM policy document may look like this:
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "kinesis:PutRecord",
+                "kinesis:PutRecords",
+                "kinesis:DescribeStream"
+            ],
+            "Resource": "arn:aws:kinesis:us-west-2:123456789012:stream/my-stream"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "cloudwatch:PutMetricData"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+```
 
+See the [AWS docs](http://docs.aws.amazon.com/streams/latest/dev/controlling-access.html#kinesis-using-iam-examples) for the latest examples on which permissions are needed.
 
 The producer uses the [DefaultAWSCredentialsProviderChain](http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html) class to gain aws credentials.
 See the [AWS docs](http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html) on how to setup the IAM user with the Default Credential Provider Chain.
