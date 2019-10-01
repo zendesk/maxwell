@@ -18,7 +18,7 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 	private final Jedis jedis;
 
 	@Deprecated
-    public MaxwellRedisProducer(MaxwellContext context, String redisPubChannel, String redisListKey, String redisType) {
+	public MaxwellRedisProducer(MaxwellContext context, String redisPubChannel, String redisListKey, String redisType) {
 		this(context, redisType);
 	}
 
