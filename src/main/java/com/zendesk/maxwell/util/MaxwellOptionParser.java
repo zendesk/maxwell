@@ -11,7 +11,7 @@ import java.util.HashMap;
 public class MaxwellOptionParser extends OptionParser {
 	private String currentSection = null;
 	private ArrayList<String> sectionNames = new ArrayList<>();
-	private HashMap<String, ArrayList<OptionSpecBuilder>> sections = new HashMap<>();
+	private HashMap<String, ArrayList<String>> sections = new HashMap<>();
 	private MaxwellHelpFormatter helpFormatter = new MaxwellHelpFormatter(200, 4, sections, sectionNames);
 
 	public MaxwellOptionParser() {
@@ -22,8 +22,8 @@ public class MaxwellOptionParser extends OptionParser {
 	public OptionSpecBuilder accepts(String option, String description) {
 		OptionSpecBuilder builder =  super.accepts(option, description);
 
-		ArrayList<OptionSpecBuilder> list = sections.computeIfAbsent(currentSection, k -> new ArrayList<>());
-		list.add(builder);
+		ArrayList<String> list = sections.computeIfAbsent(currentSection, k -> new ArrayList<>());
+		list.add(option);
 
 		return builder;
 	}

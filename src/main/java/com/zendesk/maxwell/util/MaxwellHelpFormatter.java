@@ -12,13 +12,13 @@ import java.util.regex.Pattern;
 
 public class MaxwellHelpFormatter extends BuiltinHelpFormatter {
 	private String section = null;
-	private Map<String, ArrayList<OptionSpecBuilder>> sections;
+	private Map<String, ArrayList<String>> sections;
 	private List<String> sectionNames;
 
 	public MaxwellHelpFormatter(
 		int desiredOverallWidth,
 		int desiredColumnSeparatorWidth,
-		Map<String, ArrayList<OptionSpecBuilder>> sections,
+		Map<String, ArrayList<String>> sections,
 		List<String> sectionNames
 	) {
 		super(desiredOverallWidth, desiredColumnSeparatorWidth);
@@ -32,7 +32,7 @@ public class MaxwellHelpFormatter extends BuiltinHelpFormatter {
 		if ( section != null && section.equalsIgnoreCase("all") )
 			this.addRows(options.values());
 		else {
-			ArrayList<OptionSpecBuilder> list = sections.get(section);
+			ArrayList<String> list = sections.get(section);
 			if ( list == null ) {
 				return "Unknown help section: " + section + "\n";
 			}
@@ -40,10 +40,10 @@ public class MaxwellHelpFormatter extends BuiltinHelpFormatter {
 			ArrayList l = new ArrayList();
 			l.add(options.values().toArray()[0]);
 
-			for ( OptionSpecBuilder builder : list ) {
+			for ( String name : list ) {
 				// add the "non-options" arg-spec.
 
-				l.add(options.get(builder.options().get(0)));
+				l.add(options.get(name));
 			}
 			this.addRows(l);
 		}
