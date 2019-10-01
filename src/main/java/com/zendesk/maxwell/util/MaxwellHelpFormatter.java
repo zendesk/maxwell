@@ -38,13 +38,14 @@ public class MaxwellHelpFormatter extends BuiltinHelpFormatter {
 			}
 
 			ArrayList l = new ArrayList();
+
+			// add the "non-options" arg-spec.
 			l.add(options.values().toArray()[0]);
 
 			for ( String name : list ) {
-				// add the "non-options" arg-spec.
-
 				l.add(options.get(name));
 			}
+
 			this.addRows(l);
 		}
 
