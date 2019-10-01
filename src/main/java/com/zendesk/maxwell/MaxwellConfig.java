@@ -224,26 +224,37 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.section( "kafka" );
 
-		parser.accepts( "kafka_version", "kafka client library version: 0.8.2.2|0.9.0.1|0.10.0.1|0.10.2.1|0.11.0.1|1.0.0").withRequiredArg();
-		parser.accepts( "kafka_partition_by", "[deprecated]").withRequiredArg();
-		parser.accepts( "kafka_partition_columns", "[deprecated]").withRequiredArg();
-		parser.accepts( "kafka_partition_by_fallback", "[deprecated]").withRequiredArg();
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
-		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning" ).withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell" ).withRequiredArg();
-		parser.accepts( "dead_letter_topic", "the topic to write to when publishing to the initial topic is not possible, for example RecordTooLargeException for kafka" ).withRequiredArg();
-		parser.accepts( "kafka_key_format", "how to format the kafka key; array|hash" ).withRequiredArg();
-		parser.accepts( "producer_partition_by", "database|table|primary_key|transaction_id|column, kafka/kinesis producers will partition by this value").withRequiredArg();
-
+		parser.separator();
+		parser.accepts( "producer_partition_by", "database|table|primary_key|transaction_id|column, producer will partition by this value").withRequiredArg();
 		parser.accepts("producer_partition_columns",
 			"with producer_partition_by=column, partition by the value of these columns.  "
 				+ "comma separated.").withRequiredArg();
 		parser.accepts( "producer_partition_by_fallback", "database|table|primary_key|transaction_id, fallback to this value when using 'column' partitioning and the columns are not present in the row").withRequiredArg();
 		parser.accepts( "producer_ack_timeout", "producer message acknowledgement timeout" ).withRequiredArg();
 
+		parser.separator();
+
+		parser.accepts( "kafka_version", "kafka client library version: 0.8.2.2|0.9.0.1|0.10.0.1|0.10.2.1|0.11.0.1|1.0.0").withRequiredArg();
+		parser.accepts( "kafka_key_format", "how to format the kafka key; array|hash" ).withRequiredArg();
+		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning" ).withRequiredArg();
+		parser.accepts( "dead_letter_topic", "the topic to write to when publishing to the initial topic is not possible, for example RecordTooLargeException for kafka" ).withRequiredArg();
+
+		parser.accepts( "kafka_partition_by", "[deprecated]").withRequiredArg();
+		parser.accepts( "kafka_partition_columns", "[deprecated]").withRequiredArg();
+		parser.accepts( "kafka_partition_by_fallback", "[deprecated]").withRequiredArg();
+
+
 		parser.section( "kinesis" );
 		parser.accepts( "kinesis_stream", "kinesis stream name" ).withOptionalArg();
 		parser.accepts( "sqs_queue_uri", "SQS Queue uri" ).withRequiredArg();
+		parser.separator();
+		parser.addToSection("producer_partition_by");
+		parser.addToSection("producer_partition_columns");
+		parser.addToSection("producer_partition_by_fallback");
+		parser.addToSection("producer_ack_timeout");
+
 
 		parser.section( "pubsub" );
 		parser.accepts( "pubsub_project_id", "provide a google cloud platform project id associated with the pubsub topic" ).withRequiredArg();

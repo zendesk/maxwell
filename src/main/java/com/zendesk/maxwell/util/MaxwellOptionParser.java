@@ -18,14 +18,15 @@ public class MaxwellOptionParser extends OptionParser {
 		this.formatHelpWith(helpFormatter);
 	}
 
+	public void addToSection(String optionName)  {
+		ArrayList<String> list = sections.computeIfAbsent(currentSection, k -> new ArrayList<>());
+		list.add(optionName);
+	}
+
 	@Override
 	public OptionSpecBuilder accepts(String option, String description) {
-		OptionSpecBuilder builder =  super.accepts(option, description);
-
-		ArrayList<String> list = sections.computeIfAbsent(currentSection, k -> new ArrayList<>());
-		list.add(option);
-
-		return builder;
+		addToSection(option);
+		return super.accepts(option, description);
 	}
 
 	private int separatorIndex = 0;
