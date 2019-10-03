@@ -75,7 +75,7 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 				//      	CDC events will natively emit second precision timestamp
 				// TODO configuration option for if we want the msg timestamp to become the message ID
 				//			Requires completion of previous TODO
-				jedis.xadd(this.channel, new StreamEntryID(), message);
+				jedis.xadd(this.channel, StreamEntryID.NEW_ENTRY, message);
 				break;
 			case "pubsub":
 			default:
