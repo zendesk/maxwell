@@ -104,6 +104,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public int metricsDatadogPort;
 	public Long metricsDatadogInterval;
 	public boolean metricsJvm;
+	public int metricsAgeSlo;
 
 	public MaxwellDiagnosticContext.Config diagnosticConfig;
 
@@ -313,6 +314,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "metrics_type", "how maxwell metrics will be reported, at least one of slf4j|jmx|http|datadog" ).withRequiredArg();
 		parser.accepts( "metrics_slf4j_interval", "the frequency metrics are emitted to the log, in seconds, when slf4j reporting is configured" ).withRequiredArg();
 		parser.accepts( "metrics_http_port", "[deprecated]" ).withRequiredArg();
+		parser.accepts( "metrics_age_slo", "the threshold in seconds for message age service level objective" ).withRequiredArg();
 		parser.accepts( "http_port", "the port the server will bind to when http reporting is configured" ).withRequiredArg();
 		parser.accepts( "http_path_prefix", "the http path prefix when metrics_type includes http or diagnostic is enabled, default /" ).withRequiredArg();
 		parser.accepts( "http_bind_address", "the ip address the server will bind to when http reporting is configured" ).withRequiredArg();
@@ -494,8 +496,8 @@ public class MaxwellConfig extends AbstractConfig {
 		this.metricsDatadogHost = fetchOption("metrics_datadog_host", options, properties, "localhost");
 		this.metricsDatadogPort = Integer.parseInt(fetchOption("metrics_datadog_port", options, properties, "8125"));
 		this.metricsDatadogInterval = fetchLongOption("metrics_datadog_interval", options, properties, 60L);
-
 		this.metricsJvm = fetchBooleanOption("metrics_jvm", options, properties, false);
+		this.metricsAgeSlo = Integer.parseInt(fetchOption("metrics_age_slo", options, properties, Integer.toString(Integer.MAX_VALUE)));
 
 		this.diagnosticConfig = new MaxwellDiagnosticContext.Config();
 		this.diagnosticConfig.enable = fetchBooleanOption("http_diagnostic", options, properties, false);
