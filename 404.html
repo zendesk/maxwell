@@ -4,14 +4,14 @@
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="description" content="None">
         
         
-        <link rel="shortcut icon" href="img/favicon.ico">
+        
+        <link rel="shortcut icon" href="/img/favicon.ico">
         <title>Maxwell's Daemon</title>
-        <link href="css/bootstrap-custom.min.css" rel="stylesheet">
-        <link href="css/font-awesome.min.css" rel="stylesheet">
-        <link href="css/base.css" rel="stylesheet">
+        <link href="/css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="/css/font-awesome.min.css" rel="stylesheet">
+        <link href="/css/base.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
         <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
         <!--[if lt IE 9]>
@@ -19,13 +19,13 @@
             <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
         <![endif]-->
 
-        <script src="js/jquery-1.10.2.min.js" defer></script>
-        <script src="js/bootstrap-3.0.3.min.js" defer></script>
+        <script src="/js/jquery-1.10.2.min.js" defer></script>
+        <script src="/js/bootstrap-3.0.3.min.js" defer></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
         <script>hljs.initHighlightingOnLoad();</script> 
     </head>
 
-    <body class="homepage">
+    <body>
 
         <div class="navbar navbar-default navbar-fixed-top" role="navigation">
             <div class="container">
@@ -39,51 +39,51 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href=".">Maxwell's Daemon</a>
+                    <a class="navbar-brand" href="/.">Maxwell's Daemon</a>
                 </div>
 
                 <!-- Expanded navigation -->
                 <div class="navbar-collapse collapse">
                         <!-- Main navigation -->
                         <ul class="nav navbar-nav">
-                            <li class="active">
-                                <a href=".">Overview</a>
+                            <li >
+                                <a href="/.">Overview</a>
                             </li>
                             <li >
-                                <a href="quickstart/">Quick Start</a>
+                                <a href="/quickstart/">Quick Start</a>
                             </li>
                             <li >
-                                <a href="config/">Configuration</a>
+                                <a href="/config/">Configuration</a>
                             </li>
                             <li >
-                                <a href="producers/">Producers</a>
+                                <a href="/producers/">Producers</a>
                             </li>
                             <li >
-                                <a href="filtering/">Filtering</a>
+                                <a href="/filtering/">Filtering</a>
                             </li>
                             <li >
-                                <a href="dataformat/">Data Format</a>
+                                <a href="/dataformat/">Data Format</a>
                             </li>
                             <li >
-                                <a href="encryption/">Encryption</a>
+                                <a href="/encryption/">Encryption</a>
                             </li>
                             <li >
-                                <a href="bootstrapping/">Bootstrapping</a>
+                                <a href="/bootstrapping/">Bootstrapping</a>
                             </li>
                             <li >
-                                <a href="monitoring/">Monitoring</a>
+                                <a href="/monitoring/">Monitoring</a>
                             </li>
                             <li >
-                                <a href="embedding/">Embedding</a>
+                                <a href="/embedding/">Embedding</a>
                             </li>
                             <li >
-                                <a href="schemas/">Schemas</a>
+                                <a href="/schemas/">Schemas</a>
                             </li>
                             <li >
-                                <a href="compat/">Compat / Caveats</a>
+                                <a href="/compat/">Compat / Caveats</a>
                             </li>
                             <li >
-                                <a href="changelog/">Changelog</a>
+                                <a href="/changelog/">Changelog</a>
                             </li>
                         </ul>
 
@@ -93,67 +93,21 @@
                                 <i class="fa fa-search"></i> Search
                             </a>
                         </li>
-                            <li class="disabled">
-                                <a rel="next" >
-                                    <i class="fa fa-arrow-left"></i> Previous
-                                </a>
-                            </li>
-                            <li >
-                                <a rel="prev" href="quickstart/">
-                                    Next <i class="fa fa-arrow-right"></i>
-                                </a>
-                            </li>
                     </ul>
                 </div>
             </div>
         </div>
 
         <div class="container">
-                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
-    <ul class="nav bs-sidenav">
-    </ul>
-</div></div>
-                <div class="col-md-9" role="main">
 
-<div id="maxwell-header">
-</div>
+    <div class="row-fluid">
+      <div id="main-content" class="span12">
+        <h1 id="404-page-not-found" style="text-align: center">404</h1>
+        <p style="text-align: center"><strong>Page not found</strong></p>
+      </div>
+    </div>
 
-<p>This is Maxwell's daemon, an application that reads MySQL binlogs and writes
-row updates as JSON to Kafka, Kinesis, or other streaming platforms.  Maxwell has
-low operational overhead, requiring nothing but mysql and a place to write to.
-Its common use cases include ETL, cache building/expiring, metrics collection,
-search indexing and inter-service communication.  Maxwell gives you some of the
-benefits of event sourcing without having to re-architect your entire platform.</p>
-<p><b>Download:</b><br>
-<a href="https://github.com/zendesk/maxwell/releases/download/v1.23.0/maxwell-1.23.0.tar.gz">https://github.com/zendesk/maxwell/releases/download/v1.23.0/maxwell-1.23.0.tar.gz</a>
-<br/>
-<b>Source:</b><br>
-<a href="https://github.com/zendesk/maxwell">https://github.com/zendesk/maxwell</a>
-<br clear="all"></p>
-<pre><code>  mysql&gt; insert into `test`.`maxwell` set id = 1, daemon = 'Stanislaw Lem';
-  maxwell: {
-    &quot;database&quot;: &quot;test&quot;,
-    &quot;table&quot;: &quot;maxwell&quot;,
-    &quot;type&quot;: &quot;insert&quot;,
-    &quot;ts&quot;: 1449786310,
-    &quot;xid&quot;: 940752,
-    &quot;commit&quot;: true,
-    &quot;data&quot;: { &quot;id&quot;:1, &quot;daemon&quot;: &quot;Stanislaw Lem&quot; }
-  }
-</code></pre>
 
-<pre><code>  mysql&gt; update test.maxwell set daemon = 'firebus!  firebus!' where id = 1;
-  maxwell: {
-    &quot;database&quot;: &quot;test&quot;,
-    &quot;table&quot;: &quot;maxwell&quot;,
-    &quot;type&quot;: &quot;update&quot;,
-    &quot;ts&quot;: 1449786341,
-    &quot;xid&quot;: 940786,
-    &quot;commit&quot;: true,
-    &quot;data&quot;: {&quot;id&quot;:1, &quot;daemon&quot;: &quot;Firebus!  Firebus!&quot;},
-    &quot;old&quot;:  {&quot;daemon&quot;: &quot;Stanislaw Lem&quot;}
-  }
-</code></pre></div>
         </div>
 
         <footer class="col-md-12">
@@ -161,11 +115,11 @@ benefits of event sourcing without having to re-architect your entire platform.<
             <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
         </footer>
         <script>
-            var base_url = ".",
+            var base_url = "/",
                 shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
         </script>
-        <script src="js/base.js" defer></script>
-        <script src="search/main.js" defer></script>
+        <script src="/js/base.js" defer></script>
+        <script src="/search/main.js" defer></script>
 
         <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
     <div class="modal-dialog">
@@ -233,8 +187,3 @@ benefits of event sourcing without having to re-architect your entire platform.<
 
     </body>
 </html>
-
-<!--
-MkDocs version : 1.0.4
-Build Date UTC : 2019-10-08 03:56:59
--->
