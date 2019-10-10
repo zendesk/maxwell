@@ -90,7 +90,7 @@ machine api.github.com
 ```
 
 ### Setup GPG
-Put the following into your shell's profile so that the gpg-agent knows the right tty to use.
+If you have a passphrase on your gpg keys, put the following into your ~/.profile so that the gpg-agent knows the right tty to use.
 
 ```
 export GPG_TTY=$(tty)
@@ -99,7 +99,7 @@ export GPG_TTY=$(tty)
 Run the following command to list your gpg keys
 ```
 gpg --list-keys
-``
+```
 
 run the following to send your public gpg key to the server.
 This will take a little time to replicate, so maybe go grab a snack.
