@@ -103,7 +103,7 @@ public class MaxwellTestSupport {
 
 
 	public static MaxwellContext buildContext(int port, Position p, Filter filter)
-			throws SQLException, URISyntaxException {
+		throws SQLException, URISyntaxException, InterruptedException {
 		MaxwellConfig config = new MaxwellConfig();
 
 		config.replicationMysql.host = "127.0.0.1";

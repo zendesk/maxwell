@@ -59,7 +59,7 @@ public class RecoveryTest extends TestWithNameLogging {
 	}
 
 	private MaxwellContext getContext(int port, boolean masterRecovery)
-			throws SQLException, URISyntaxException {
+		throws SQLException, URISyntaxException, InterruptedException {
 		MaxwellConfig config = getConfig(port, masterRecovery);
 		return new MaxwellContext(config);
 	}
