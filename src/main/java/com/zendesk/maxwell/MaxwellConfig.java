@@ -13,6 +13,7 @@ import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.scripting.Scripting;
 import com.zendesk.maxwell.util.AbstractConfig;
+import com.zendesk.maxwell.util.MaxwellOptionParser;
 import joptsimple.BuiltinHelpFormatter;
 import joptsimple.OptionDescriptor;
 import joptsimple.OptionParser;
@@ -161,66 +162,102 @@ public class MaxwellConfig extends AbstractConfig {
 		this.parse(argv);
 	}
 
-	protected OptionParser buildOptionParser() {
-		final OptionParser parser = new OptionParser();
+	protected MaxwellOptionParser buildOptionParser() {
+		final MaxwellOptionParser parser = new MaxwellOptionParser();
 		parser.accepts( "config", "location of config file" ).withRequiredArg();
 		parser.accepts( "env_config_prefix", "prefix of env var based config, case insensitive" ).withRequiredArg();
 		parser.accepts( "log_level", "log level, one of DEBUG|INFO|WARN|ERROR" ).withRequiredArg();
-		parser.accepts( "daemon", "daemon, running maxwell as a daemon" ).withOptionalArg();
+		parser.accepts( "daemon", "run maxwell in the background" ).withOptionalArg();
 
-		parser.accepts("__separator_1");
+		parser.separator();
 
 		parser.accepts( "host", "mysql host with write access to maxwell database" ).withRequiredArg();
 		parser.accepts( "port", "port for host" ).withRequiredArg();
 		parser.accepts( "user", "username for host" ).withRequiredArg();
 		parser.accepts( "password", "password for host" ).withRequiredArg();
+		parser.accepts( "client_id", "unique identifier for this maxwell instance, use when running multiple maxwells" ).withRequiredArg();
+
+		parser.separator();
+
+		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|pubsub|sqs|rabbitmq|redis" ).withRequiredArg();
+		parser.accepts( "custom_producer.factory", "fully qualified custom producer factory class" ).withRequiredArg();
+
+		parser.section("mysql");
+
 		parser.accepts( "jdbc_options", "additional jdbc connection options" ).withRequiredArg();
-		parser.accepts( "binlog_connector", "[deprecated]" ).withRequiredArg();
 
 		parser.accepts( "ssl", "enables SSL for all connections: DISABLED|PREFERRED|REQUIRED|VERIFY_CA|VERIFY_IDENTITY. default: DISABLED").withOptionalArg();
 		parser.accepts( "replication_ssl", "overrides SSL setting for binlog connection: DISABLED|PREFERRED|REQUIRED|VERIFY_CA|VERIFY_IDENTITY").withOptionalArg();
 		parser.accepts( "schema_ssl", "overrides SSL setting for schema capture connection: DISABLED|PREFERRED|REQUIRED|VERIFY_CA|VERIFY_IDENTITY").withOptionalArg();
 
-		parser.accepts("__separator_2");
+		parser.accepts( "schema_database", "database name for maxwell state (schema and binlog position)" ).withRequiredArg();
+		parser.accepts( "replica_server_id", "server_id that maxwell reports to the master.  See docs for full explanation. ").withRequiredArg();
+
+		parser.separator();
 
 		parser.accepts( "replication_host", "mysql host to replicate from (if using separate schema and replication servers)" ).withRequiredArg();
 		parser.accepts( "replication_user", "username for replication_host" ).withRequiredArg();
 		parser.accepts( "replication_password", "password for replication_host" ).withRequiredArg();
 		parser.accepts( "replication_port", "port for replication_host" ).withRequiredArg();
 
+		parser.separator();
+
 		parser.accepts( "schema_host", "overrides replication_host for retrieving schema" ).withRequiredArg();
 		parser.accepts( "schema_user", "username for schema_host" ).withRequiredArg();
 		parser.accepts( "schema_password", "password for schema_host" ).withRequiredArg();
 		parser.accepts( "schema_port", "port for schema_host" ).withRequiredArg();
 
-		parser.accepts("__separator_3");
+		parser.section("operation");
 
-		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|pubsub|sqs|rabbitmq|redis" ).withRequiredArg();
-		parser.accepts( "custom_producer.factory", "fully qualified custom producer factory class" ).withRequiredArg();
-		parser.accepts( "producer_ack_timeout", "producer message acknowledgement timeout" ).withRequiredArg();
-		parser.accepts( "javascript", "file containing per-row javascript to execute" ).withRequiredArg();
+		parser.accepts( "bootstrapper", "bootstrapper type: async|sync|none. default: async" ).withRequiredArg();
+		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION[:HEARTBEAT]" ).withRequiredArg();
+		parser.accepts( "replay", "replay mode, don't store any information to the server" ).withOptionalArg();
+		parser.accepts( "master_recovery", "(experimental) enable master position recovery code" ).withOptionalArg();
+		parser.accepts( "gtid_mode", "(experimental) enable gtid mode" ).withOptionalArg();
+		parser.accepts( "ignore_producer_error", "Maxwell will be terminated on kafka/kinesis errors when false. Otherwise, those producer errors are only logged. Default to true" ).withOptionalArg();
+		parser.accepts( "recapture_schema", "recapture the latest schema" ).withOptionalArg();
+
+		parser.accepts( "max_schemas", "[deprecated]" ).withRequiredArg();
+
+		parser.section( "file_producer" );
 
 		parser.accepts( "output_file", "output file for 'file' producer" ).withRequiredArg();
 
-		parser.accepts( "producer_partition_by", "database|table|primary_key|transaction_id|column, kafka/kinesis producers will partition by this value").withRequiredArg();
+		parser.section( "kafka" );
+
+		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
+		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell" ).withRequiredArg();
+		parser.separator();
+		parser.accepts( "producer_partition_by", "database|table|primary_key|transaction_id|column, producer will partition by this value").withRequiredArg();
 		parser.accepts("producer_partition_columns",
-		    "with producer_partition_by=column, partition by the value of these columns.  "
-			+ "comma separated.").withRequiredArg();
+			"with producer_partition_by=column, partition by the value of these columns.  "
+				+ "comma separated.").withRequiredArg();
 		parser.accepts( "producer_partition_by_fallback", "database|table|primary_key|transaction_id, fallback to this value when using 'column' partitioning and the columns are not present in the row").withRequiredArg();
+		parser.accepts( "producer_ack_timeout", "producer message acknowledgement timeout" ).withRequiredArg();
+
+		parser.separator();
 
 		parser.accepts( "kafka_version", "kafka client library version: 0.8.2.2|0.9.0.1|0.10.0.1|0.10.2.1|0.11.0.1|1.0.0").withRequiredArg();
+		parser.accepts( "kafka_key_format", "how to format the kafka key; array|hash" ).withRequiredArg();
+		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning" ).withRequiredArg();
+		parser.accepts( "dead_letter_topic", "the topic to write to when publishing to the initial topic is not possible, for example RecordTooLargeException for kafka" ).withRequiredArg();
+
 		parser.accepts( "kafka_partition_by", "[deprecated]").withRequiredArg();
 		parser.accepts( "kafka_partition_columns", "[deprecated]").withRequiredArg();
 		parser.accepts( "kafka_partition_by_fallback", "[deprecated]").withRequiredArg();
-		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
-		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning" ).withRequiredArg();
-		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell" ).withRequiredArg();
-		parser.accepts( "dead_letter_topic", "the topic to write to when publishing to the initial topic is not possible, for example RecordTooLargeException for kafka" ).withRequiredArg();
-		parser.accepts( "kafka_key_format", "how to format the kafka key; array|hash" ).withRequiredArg();
 
+
+		parser.section( "kinesis" );
 		parser.accepts( "kinesis_stream", "kinesis stream name" ).withOptionalArg();
 		parser.accepts( "sqs_queue_uri", "SQS Queue uri" ).withRequiredArg();
+		parser.separator();
+		parser.addToSection("producer_partition_by");
+		parser.addToSection("producer_partition_columns");
+		parser.addToSection("producer_partition_by_fallback");
+		parser.addToSection("producer_ack_timeout");
 
+
+		parser.section( "pubsub" );
 		parser.accepts( "pubsub_project_id", "provide a google cloud platform project id associated with the pubsub topic" ).withRequiredArg();
 		parser.accepts( "pubsub_topic", "optionally provide a pubsub topic to push to. default: maxwell" ).withRequiredArg();
 		parser.accepts( "ddl_pubsub_topic", "optionally provide an alternate pubsub topic to push DDL records to. default: pubsub_topic" ).withRequiredArg();
@@ -235,7 +272,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "pubsub_max_rpc_timeout", "optionally puts a limit on the value in seconds of the RPC timeout. default: 600 seconds" ).withRequiredArg();
 		parser.accepts( "pubsub_total_timeout", "optionally puts a limit on the value in seconds of the retry delay, so that the RetryDelayMultiplier can't increase the retry delay higher than this amount. default: 600 seconds" ).withRequiredArg();
 
-		parser.accepts("__separator_4");
+		parser.section( "output" );
 
 		parser.accepts( "output_binlog_position", "produced records include binlog position; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_gtid_position", "produced records include gtid position; [true|false]. default: false" ).withOptionalArg();
@@ -255,24 +292,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts("secret_key", "The secret key for the AES encryption" ).withRequiredArg();
 		parser.accepts("encrypt", "encryption mode: [none|data|all]. default: none" ).withRequiredArg();
 
-		parser.accepts( "__separator_5" );
-
-		parser.accepts( "bootstrapper", "bootstrapper type: async|sync|none. default: async" ).withRequiredArg();
-
-		parser.accepts( "__separator_6" );
-
-		parser.accepts( "replica_server_id", "server_id that maxwell reports to the master.  See docs for full explanation. ").withRequiredArg();
-		parser.accepts( "client_id", "unique identifier for this maxwell replicator" ).withRequiredArg();
-		parser.accepts( "schema_database", "database name for maxwell state (schema and binlog position)" ).withRequiredArg();
-		parser.accepts( "max_schemas", "[deprecated]" ).withRequiredArg();
-		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION[:HEARTBEAT]" ).withRequiredArg();
-		parser.accepts( "replay", "replay mode, don't store any information to the server" ).withOptionalArg();
-		parser.accepts( "master_recovery", "(experimental) enable master position recovery code" ).withOptionalArg();
-		parser.accepts( "gtid_mode", "(experimental) enable gtid mode" ).withOptionalArg();
-		parser.accepts( "ignore_producer_error", "Maxwell will be terminated on kafka/kinesis errors when false. Otherwise, those producer errors are only logged. Default to true" ).withOptionalArg();
-		parser.accepts( "recapture_schema", "recapture the latest schema" ).withOptionalArg();
-
-		parser.accepts( "__separator_7" );
+		parser.section( "filtering" );
 
 		parser.accepts( "include_dbs", "[deprecated]" ).withRequiredArg();
 		parser.accepts( "exclude_dbs", "[deprecated]" ).withRequiredArg();
@@ -282,8 +302,9 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "blacklist_tables", "[deprecated]" ).withRequiredArg();
 		parser.accepts( "filter", "filter specs.  specify like \"include:db.*, exclude:*.tbl, include: foo./.*bar$/, exclude:foo.bar.baz=reject\"").withRequiredArg();
 		parser.accepts( "include_column_values", "[deprecated]" ).withRequiredArg();
+		parser.accepts( "javascript", "file containing per-row javascript to execute" ).withRequiredArg();
 
-		parser.accepts( "__separator_8" );
+		parser.section( "rabbitmq" );
 
 		parser.accepts( "rabbitmq_user", "Username of Rabbitmq connection. Default is guest" ).withRequiredArg();
 		parser.accepts( "rabbitmq_pass", "Password of Rabbitmq connection. Default is guest" ).withRequiredArg();
@@ -298,7 +319,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "rabbitmq_message_persistent", "Message persistence. Defaults to false" ).withOptionalArg();
 		parser.accepts( "rabbitmq_declare_exchange", "Should declare the exchange for rabbitmq publisher. Defaults to true" ).withOptionalArg();
 
-		parser.accepts( "__separator_9" );
+		parser.section( "redis" );
 
 		parser.accepts( "redis_host", "Host of Redis server" ).withRequiredArg();
 		parser.accepts( "redis_port", "Port of Redis server" ).withRequiredArg();
@@ -308,7 +329,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "redis_list_key", "Redis LPUSH List Key for adding to a queue" ).withRequiredArg();
 		parser.accepts( "redis_type", "[pubsub|lpush] Selects either Redis Pub/Sub or LPUSH. Defaults to 'pubsub'" ).withRequiredArg();
 
-		parser.accepts( "__separator_10" );
+		parser.section("metrics");
 
 		parser.accepts( "metrics_prefix", "the prefix maxwell will apply to all metrics" ).withRequiredArg();
 		parser.accepts( "metrics_type", "how maxwell metrics will be reported, at least one of slf4j|jmx|http|datadog" ).withRequiredArg();
@@ -328,29 +349,15 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "http_diagnostic_timeout", "the http diagnostic response timeout in ms when http_diagnostic=true. default: 10000" ).withRequiredArg();
 		parser.accepts( "metrics_jvm", "enable jvm metrics: true|false. default: false" ).withRequiredArg();
 
-		parser.accepts( "__separator_11" );
-
-		parser.accepts( "help", "display help" ).forHelp();
+		parser.accepts( "help", "display help" ).withOptionalArg().forHelp();
 
 
-		BuiltinHelpFormatter helpFormatter = new BuiltinHelpFormatter(200, 4) {
-			@Override
-			public String format(Map<String, ? extends OptionDescriptor> options) {
-				this.addRows(options.values());
-				String output = this.formattedHelpOutput();
-				output = output.replaceAll("--__separator_.*", "");
-
-				Pattern deprecated = Pattern.compile("^.*\\[deprecated\\].*\\n", Pattern.MULTILINE);
-				return deprecated.matcher(output).replaceAll("");
-			}
-		};
-
-		parser.formatHelpWith(helpFormatter);
 		return parser;
 	}
 
 	private void parse(String [] argv) {
-		OptionSet options = buildOptionParser().parse(argv);
+		MaxwellOptionParser parser = buildOptionParser();
+		OptionSet options = parser.parse(argv);
 
 		Properties properties;
 
@@ -370,7 +377,7 @@ public class MaxwellConfig extends AbstractConfig {
 		}
 
 		if (options.has("help"))
-			usage("Help for Maxwell:");
+			usage("Help for Maxwell:", parser, (String) options.valueOf("help"));
 
 		setup(options, properties);
 
