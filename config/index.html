@@ -841,6 +841,18 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 <td>maxwell</td>
 </tr>
 <tr>
+<td>redis_stream_key</td>
+<td>STRING</td>
+<td>Redis XADD Stream Key</td>
+<td>maxwell</td>
+</tr>
+<tr>
+<td>redis_stream_json_key</td>
+<td>STRING</td>
+<td>Redis XADD Stream Message Field Name</td>
+<td>message</td>
+</tr>
+<tr>
 <td>redis_list_key</td>
 <td>STRING</td>
 <td>Redis LPUSH List Key</td>
@@ -848,8 +860,8 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 </tr>
 <tr>
 <td>redis_type</td>
-<td>[ pubsub &#124; lpush ]</td>
-<td>Selects either Redis Pub/Sub or LPUSH.</td>
+<td>[ pubsub &#124; xadd &#124; lpush &#124; rpush ]</td>
+<td>Selects either Redis Pub/Sub, Stream, or List.</td>
 <td>pubsub</td>
 </tr>
 <tr>
@@ -1121,6 +1133,12 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 <td>BOOLEAN</td>
 <td>enable maxwell's read-only "replay" mode: don't store a binlog position or schema changes.  Not available in config.properties.</td>
 <td></td>
+</tr>
+<tr>
+<td>buffer_memory_usage</td>
+<td>FLOAT</td>
+<td>Determines how much memory the Maxwell event buffer will use from the jvm max memory. Size of the buffer is: buffer_memory_usage * -Xmx"</td>
+<td>0.25</td>
 </tr>
 </tbody>
 </table>

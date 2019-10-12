@@ -473,7 +473,7 @@ for DDL updates by setting the <code>ddl_pubsub_topic</code> property.</p>
 <p>For more details on these options, you are encouraged to the read official RabbitMQ documentation here: https://www.rabbitmq.com/documentation.html</p>
 <h3 id="redis">Redis</h3>
 <hr />
-<p>Set the output stream in <code>config.properties</code> by setting the <code>redis_pub_channel</code> property for redis_type = pubsub or set the <code>redis_list_key</code> property when using redis_type = lpush.</p>
+<p>Set the output stream in <code>config.properties</code> by setting the <code>redis_pub_channel</code> property for redis_type = pubsub, <code>redis_stream_key</code> property for redis_type = xadd, or set the <code>redis_list_key</code> property when using redis_type = lpush.</p>
 <p>Other configurable properties are:</p>
 <ul>
 <li><code>redis_host</code> - defaults to <strong>localhost</strong></li>
@@ -481,7 +481,10 @@ for DDL updates by setting the <code>ddl_pubsub_topic</code> property.</p>
 <li><code>redis_auth</code> - defaults to <strong>null</strong></li>
 <li><code>redis_database</code> - defaults to <strong>0</strong></li>
 <li><code>redis_type</code> - defaults to <strong>pubsub</strong></li>
+<li><code>redis_pub_channel</code> - defaults to <strong>maxwell</strong></li>
 <li><code>redis_list_key</code> - defaults to <strong>maxwell</strong></li>
+<li><code>redis_stream_key</code> - defaults to <strong>maxwell</strong></li>
+<li><code>redis_stream_json_key</code> - defaults to <strong>message</strong></li>
 </ul>
 <h3 id="custom-producer">Custom Producer</h3>
 <hr />
