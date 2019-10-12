@@ -1,5 +1,13 @@
 # Maxwell changelog
 
+### [v1.23.1](https://github.com/zendesk/maxwell/releases/tag/v1.23.1): "the new barrista"
+
+
+- Add option for XADD (redis streams) operation
+- Add configuration flag for tuning transaction buffer memory
+- sectionalize help text
+
+
 ### [v1.23.0](https://github.com/zendesk/maxwell/releases/tag/v1.23.0): "When it breaks If it breaks We will see"
 
 
