@@ -1,5 +1,13 @@
 # Maxwell changelog
 
+### [v1.23.0](https://github.com/zendesk/maxwell/releases/tag/v1.23.0): "When it breaks If it breaks We will see"
+
+
+- Added AWS FIFO support
+- Add retry and batch settings to pubs producer
+- Add support for age SLO metrics
+
+
 ### [v1.22.6](https://github.com/zendesk/maxwell/releases/tag/v1.22.6): "the things that keep your, like, dresses, like"
 
 

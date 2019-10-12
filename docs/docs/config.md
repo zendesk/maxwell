@@ -70,6 +70,16 @@ sqs_queue_uri                  | STRING                              | SQS Queue
 pubsub_topic                   | STRING     | Google Cloud pub-sub topic |
 pubsub_platform_id             | STRING     | Google Cloud platform id associated with topic |
 ddl_pubsub_topic               | STRING     | Google Cloud pub-sub topic to send DDL events to |
+pubsub_request_bytes_threshold | LONG       | Set number of bytes until batch is send | 1
+pubsub_message_count_batch_size| LONG       | Set number of messages until batch is send | 1
+pubsub_publish_delay_threshold | LONG       | Set time passed in millis until batch is send | 1
+pubsub_retry_delay             | LONG       | Controls the delay in millis before sending the first retry message | 100
+pubsub_retry_delay_multiplier  | FLOAT      | Controls the increase in retry delay per retry | 1.3
+pubsub_max_retry_delay         | LONG       | Puts a limit on the value in seconds of the retry delay | 60
+pubsub_initial_rpc_timeout     | LONG       | Controls the timeout in seconds for the initial RPC | 5
+pubsub_rpc_timeout_multiplier  | FLOAT      | Controls the change in RPC timeout | 1.0
+pubsub_max_rpc_timeout         | LONG       | Puts a limit on the value in seconds of the RPC timeout | 600
+pubsub_total_timeout           | LONG       | Puts a limit on the value in seconds of the retry delay, so that the RetryDelayMultiplier can't increase the retry delay higher than this amount | 600
 &nbsp;
 **"rabbitmq" producer options **
 rabbitmq_user                  | STRING     | Username of Rabbitmq connection | guest
@@ -91,8 +101,10 @@ redis_port                     | INT                      | Port of Redis server
 redis_auth                     | STRING                   | Authentication key for a password-protected Redis server
 redis_database                 | INT                      | Database of Redis server | 0
 redis_pub_channel              | STRING                   | Redis Pub/Sub channel | maxwell
+redis_stream_key               | STRING                   | Redis XADD Stream Key | maxwell
+redis_stream_json_key          | STRING                   | Redis XADD Stream Message Field Name | message
 redis_list_key                 | STRING                   | Redis LPUSH List Key | maxwell
-redis_type                     | [ pubsub &#124; lpush ]  | Selects either Redis Pub/Sub or LPUSH. | pubsub
+redis_type                     | [ pubsub &#124; xadd &#124; lpush &#124; rpush ]  | Selects either Redis Pub/Sub, Stream, or List. | pubsub
 &nbsp;
 **formatting**
 output_binlog_position         | BOOLEAN  | records include binlog position     | false
@@ -128,6 +140,7 @@ http_diagnostic          | BOOLEAN                             | enable http dia
 http_diagnostic_timeout  | MILLISECONDS                        | the http diagnostic response timeout| 10000
 metrics_datadog_type     | [udp &#124; http] | when metrics_type includes `datadog` this is the way metrics will be reported, can only be one of [udp &#124; http] | udp
 metrics_datadog_tags     | STRING | datadog tags that should be supplied, e.g. tag1:value1,tag2:value2 |
+metrics_age_slo     | INT | Latency service level objective threshold in seconds (Optional). When set, a `message.publish.age.slo_violation` metric is emitted to Datadog if the latency exceeds the threshold |
 metrics_datadog_interval | INT | the frequency metrics are pushed to datadog, in seconds | 60
 metrics_datadog_apikey   | STRING | the datadog api key to use when metrics_datadog_type = `http` |
 metrics_datadog_host     | STRING | the host to publish metrics to when metrics_datadog_type = `udp` | localhost

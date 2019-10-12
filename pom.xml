@@ -4,7 +4,7 @@
 
   <groupId>com.zendesk</groupId>
   <artifactId>maxwell</artifactId>
-  <version>1.22.6</version>
+  <version>1.23.0</version>
   <packaging>jar</packaging>
 
   <name>maxwell</name>
@@ -247,7 +247,7 @@
     <dependency>
       <groupId>redis.clients</groupId>
       <artifactId>jedis</artifactId>
-      <version>2.9.0</version>
+      <version>3.1.0</version>
     </dependency>
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>

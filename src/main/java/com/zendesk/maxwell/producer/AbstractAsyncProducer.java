@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.producer;
 
 import com.codahale.metrics.Gauge;
+import com.zendesk.maxwell.MaxwellConfig;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.monitoring.Metrics;
 import com.zendesk.maxwell.replication.Position;
@@ -13,6 +14,7 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 	public class CallbackCompleter {
 		private InflightMessageList inflightMessages;
 		private final MaxwellContext context;
+		private final MaxwellConfig config;
 		private final Position position;
 		private final boolean isTXCommit;
 		private final long messageID;
@@ -20,6 +22,7 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 		public CallbackCompleter(InflightMessageList inflightMessages, Position position, boolean isTXCommit, MaxwellContext context, long messageID) {
 			this.inflightMessages = inflightMessages;
 			this.context = context;
+			this.config = context.getConfig();
 			this.position = position;
 			this.isTXCommit = isTXCommit;
 			this.messageID = messageID;
@@ -33,8 +36,14 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 				if (message != null) {
 					context.setPosition(message.position);
 					long currentTime = System.currentTimeMillis();
-					messagePublishTimer.update(currentTime - message.sendTimeMS, TimeUnit.MILLISECONDS);
-					messageLatencyTimer.update(Math.max(0L, currentTime - message.eventTimeMS - 500L), TimeUnit.MILLISECONDS);
+					long age = currentTime - message.sendTimeMS;
+
+					messagePublishTimer.update(age, TimeUnit.MILLISECONDS);
+					messageLatencyTimer.update(Math.max(0L, age - 500L), TimeUnit.MILLISECONDS);
+
+					if (age > config.metricsAgeSlo) {
+						messageLatencySloViolationCount.inc();
+					}
 				}
 			}
 		}

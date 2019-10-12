@@ -5,6 +5,8 @@ import com.codahale.metrics.Meter;
 import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
+import com.google.api.gax.batching.BatchingSettings;
+import com.google.api.gax.retrying.RetrySettings;
 import com.google.cloud.pubsub.v1.Publisher;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
@@ -19,6 +21,7 @@ import com.zendesk.maxwell.util.StoppableTask;
 import com.zendesk.maxwell.util.StoppableTaskState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.threeten.bp.Duration;
 
 import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -97,6 +100,7 @@ public class MaxwellPubsubProducer extends AbstractProducer {
     this.worker = new MaxwellPubsubProducerWorker(context, pubsubProjectId,
                                                   pubsubTopic, ddlPubsubTopic,
                                                   this.queue);
+
     Thread thread = new Thread(this.worker, "maxwell-pubsub-worker");
     thread.setDaemon(true);
     thread.start();
@@ -133,9 +137,29 @@ class MaxwellPubsubProducerWorker
                                      throws IOException {
     super(context);
 
+    // Publish request get triggered based on request size, messages count & time since last publish
+    BatchingSettings batchingSettings =
+    BatchingSettings.newBuilder()
+        .setElementCountThreshold(context.getConfig().pubsubMessageCountBatchSize)
+        .setRequestByteThreshold(context.getConfig().pubsubRequestBytesThreshold)
+        .setDelayThreshold(context.getConfig().pubsubPublishDelayThreshold)
+        .build();
+    
+    // Retry settings control how the publisher handles retryable failures
+    RetrySettings retrySettings =
+        RetrySettings.newBuilder()
+            .setInitialRetryDelay(context.getConfig().pubsubRetryDelay)
+            .setRetryDelayMultiplier(context.getConfig().pubsubRetryDelayMultiplier)
+            .setMaxRetryDelay(context.getConfig().pubsubMaxRetryDelay)
+            .setInitialRpcTimeout(context.getConfig().pubsubInitialRpcTimeout)
+            .setRpcTimeoutMultiplier(context.getConfig().pubsubRpcTimeoutMultiplier)
+            .setMaxRpcTimeout(context.getConfig().pubsubMaxRpcTimeout)
+            .setTotalTimeout(context.getConfig().pubsubTotalTimeout)
+            .build();
+        
     this.projectId = pubsubProjectId;
     this.topic = ProjectTopicName.of(pubsubProjectId, pubsubTopic);
-    this.pubsub = Publisher.newBuilder(this.topic).build();
+    this.pubsub = Publisher.newBuilder(this.topic).setBatchingSettings(batchingSettings).setRetrySettings(retrySettings).build();
 
     if ( context.getConfig().outputConfig.outputDDL == true &&
          ddlPubsubTopic != pubsubTopic ) {

@@ -7,6 +7,8 @@ Have the following installed and setup on your local machine:
 - java 8
 - ruby (The same Ruby version as this poject)
 - bundler
+- [Maven](https://github.com/rajivkanaujia/alphaworks/wiki/Installing-Maven)
+  - `brew install maven`
 - [MKDocs](https://www.mkdocs.org)
 - [gpg](#setup-gpg)
 
@@ -21,7 +23,12 @@ Then generate gpg key:
 gpg --full-generate-key
 ``` 
 
-note: if you set a passphrase for your gpg key then you will need to remember it and out it into the `~/.m2/settings.xml` below.
+note: 
+- if you set a passphrase for your gpg key then you will need to remember it and put it into the `~/.m2/settings.xml` below.
+- when the prompt appears choose the following:
+  - key type: accept Default
+  - key size: accept Default
+  - key expiry: 2 years
 
 ## Setup Credentials
 
@@ -72,7 +79,7 @@ Create Github token and put it into the `~/.netrc` file.
 
 Ensure you have write access to this file:
 ```shell
-chmod 6000 ~/.netrc
+chmod 0600 ~/.netrc
 ```
 
 Example: `~/.netrc file`
@@ -80,6 +87,24 @@ Example: `~/.netrc file`
 machine api.github.com
     login github-username
     password github-token
+```
+
+### Setup GPG
+If you have a passphrase on your gpg keys, put the following into your ~/.profile so that the gpg-agent knows the right tty to use.
+
+```
+export GPG_TTY=$(tty)
+```
+
+Run the following command to list your gpg keys
+```
+gpg --list-keys
+```
+
+run the following to send your public gpg key to the server.
+This will take a little time to replicate, so maybe go grab a snack.
+```
+gpg --send-key <public-gpg-key>
 ```
 
 ## Releasing a version
@@ -94,4 +119,10 @@ Note: this script is not idempotent so if any errors occure, you will need to ru
 
 ```shell
 bundle exec ./release <the-new-version-number> <build | tag | release | changelog | docs | nexus>
+```
+
+Check the Maven Repo to see if it all worked!
+
+```
+https://repo1.maven.org/maven2/com/zendesk/maxwell/<the-new-version-number>/
 ```
