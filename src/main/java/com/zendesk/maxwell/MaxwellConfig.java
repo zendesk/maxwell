@@ -219,7 +219,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "gtid_mode", "(experimental) enable gtid mode" ).withOptionalArg();
 		parser.accepts( "ignore_producer_error", "Maxwell will be terminated on kafka/kinesis errors when false. Otherwise, those producer errors are only logged. Default to true" ).withOptionalArg();
 		parser.accepts( "recapture_schema", "recapture the latest schema" ).withOptionalArg();
-		parser.accepts( "buffer_memory_usage", "Determines how much memory the Maxwell event buffer will use from the jvm max memory. Size of the buffer is: buffer_memory_usage * -Xmx" ).withOptionalArg();
+		parser.accepts( "buffer_memory_usage", "Percentage of JVM memory available for transaction buffer.  Floating point between 0 and 1." ).withOptionalArg();
 		parser.accepts( "max_schemas", "[deprecated]" ).withRequiredArg();
 
 		parser.section( "file_producer" );
