@@ -137,6 +137,8 @@ public class MaxwellConfig extends AbstractConfig {
 	public int redisDatabase;
 	public String redisPubChannel;
 	public String redisListKey;
+	public String redisStreamKey;
+	public String redisStreamJsonKey;
 	public String redisType;
 	public String javascriptFile;
 	public Scripting scripting;
@@ -326,8 +328,10 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "redis_auth", "Authentication key for a password-protected Redis server" ).withRequiredArg();
 		parser.accepts( "redis_database", "Database of Redis server" ).withRequiredArg();
 		parser.accepts( "redis_pub_channel", "Redis Pub/Sub channel for publishing records" ).withRequiredArg();
-		parser.accepts( "redis_list_key", "Redis LPUSH List Key for adding to a queue" ).withRequiredArg();
-		parser.accepts( "redis_type", "[pubsub|lpush] Selects either Redis Pub/Sub or LPUSH. Defaults to 'pubsub'" ).withRequiredArg();
+		parser.accepts( "redis_stream_key", "Redis XADD Stream key for publishing records" ).withRequiredArg();
+		parser.accepts( "redis_stream_json_key", "Redis Stream message field name for JSON message body" ).withRequiredArg();
+		parser.accepts( "redis_list_key", "Redis LPUSH/RPUSH List Key for adding to a queue" ).withRequiredArg();
+		parser.accepts( "redis_type", "[pubsub|xadd|lpush|rpush] Selects either pubsub, xadd, lpush, or rpush. Defaults to 'pubsub'" ).withRequiredArg();
 
 		parser.section("metrics");
 
@@ -449,6 +453,8 @@ public class MaxwellConfig extends AbstractConfig {
 		this.redisDatabase		= Integer.parseInt(fetchOption("redis_database", options, properties, "0"));
 		this.redisPubChannel	= fetchOption("redis_pub_channel", options, properties, "maxwell");
 		this.redisListKey		= fetchOption("redis_list_key", options, properties, "maxwell");
+		this.redisStreamKey		= fetchOption("redis_stream_key", options, properties, "maxwell");
+		this.redisStreamJsonKey	= fetchOption("redis_stream_json_key", options, properties, "message");
 		this.redisType			= fetchOption("redis_type", options, properties, "pubsub");
 
 		String kafkaBootstrapServers = fetchOption("kafka.bootstrap.servers", options, properties, null);
