@@ -187,7 +187,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		rowCounter.inc();
 		rowMeter.mark();
 
-		if ( scripting != null )
+		if ( scripting != null && !isMaxwellRow(row))
 			scripting.invoke(row);
 
 		processRow(row);
