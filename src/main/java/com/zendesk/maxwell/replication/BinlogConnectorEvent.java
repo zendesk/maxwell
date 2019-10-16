@@ -13,6 +13,11 @@ public class BinlogConnectorEvent {
 	public static final String BEGIN = "BEGIN";
 	public static final String COMMIT = "COMMIT";
 	public static final String SAVEPOINT = "SAVEPOINT";
+	public static final String XABEGIN = "XA BEGIN";
+	public static final String XASTART = "XA START";
+	public static final String XAEND = "XA END";
+	public static final String XACOMMIT = "XA COMMIT";
+	public static final String XAROLLBACK = "XA ROLLBACK";
 	private final MaxwellOutputConfig outputConfig;
 	private BinlogPosition position;
 	private BinlogPosition nextPosition;
@@ -95,7 +100,8 @@ public class BinlogConnectorEvent {
 		} else if (eventType == EventType.QUERY) {
 			// MyISAM will output a "COMMIT" QUERY_EVENT instead of a XID_EVENT.
 			// There's no transaction ID but we can still set "commit: true"
-			return COMMIT.equals(queryData().getSql());
+			// fix XA transaction
+			return COMMIT.equals(queryData().getSql()) || queryData().getSql().startsWith(BinlogConnectorEvent.XACOMMIT) || queryData().getSql().startsWith(BinlogConnectorEvent.XAROLLBACK);
 		}
 
 		return false;
