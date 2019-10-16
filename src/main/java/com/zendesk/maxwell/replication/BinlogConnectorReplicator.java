@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -66,6 +67,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private final AbstractProducer producer;
 	private RowMapBuffer rowBuffer;
 	private final float bufferMemoryUsage;
+	private HashMap<String, RowMapBuffer> rowBufferHashMapXA = new HashMap();
 
 	private final Counter rowCounter;
 	private final Meter rowMeter;
@@ -501,6 +503,10 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					String sql = qe.getSql();
 					String upperCaseSql = sql.toUpperCase();
 
+					if (sql.startsWith(BinlogConnectorEvent.XAEND)) {
+						LOGGER.info("XA END");
+						return buffer;
+					}
 					if ( upperCaseSql.startsWith(BinlogConnectorEvent.SAVEPOINT)) {
 						LOGGER.debug("Ignoring SAVEPOINT in transaction: " + qe);
 					} else if ( createTablePattern.matcher(sql).find() ) {
@@ -594,7 +600,25 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 				case QUERY:
 					QueryEventData qe = event.queryData();
 					String sql = qe.getSql();
-					if (BinlogConnectorEvent.BEGIN.equals(sql)) {
+					if (sql.startsWith(BinlogConnectorEvent.XASTART) || sql.startsWith(BinlogConnectorEvent.XABEGIN)) {
+						String xid = getXAid(sql);
+						LOGGER.info(BinlogConnectorEvent.XASTART + " rowBufferHashMapXA.size(): " + rowBufferHashMapXA.size() + " xid " + xid);
+						RowMapBuffer rowMapBufferXA = getTransactionRows(event);
+						rowBufferHashMapXA.put(xid, rowMapBufferXA);
+					} else if (sql.startsWith(BinlogConnectorEvent.XACOMMIT)) {
+						String xid = getXAid(sql);
+						rowBuffer = rowBufferHashMapXA.remove(xid);
+						updateStatus(rowBuffer);
+						LOGGER.info(BinlogConnectorEvent.XACOMMIT + " rowBufferHashMapXA.size(): " + rowBufferHashMapXA.size() + " xid " + xid);
+					} else if (sql.startsWith(BinlogConnectorEvent.XAROLLBACK)) {
+						String xid = getXAid(sql);
+						RowMapBuffer rowMapBuffer = rowBufferHashMapXA.remove(xid);
+						while (!rowMapBuffer.isEmpty()) {
+							RowMap r = rowMapBuffer.removeFirst();
+							LOGGER.warn("XA ROLLBACK RowMap Table Name:" + r.getTable() + ", xid: " + xid + ", Json: " + r.toJSON());
+						}
+						LOGGER.info(BinlogConnectorEvent.XAROLLBACK + "rowBufferHashMapXA.size(): " + rowBufferHashMapXA.size() + " xid " + xid);
+					} else if (BinlogConnectorEvent.BEGIN.equals(sql)) {
 						try {
 							rowBuffer = getTransactionRows(event);
 						} catch ( ClientReconnectedException e ) {
@@ -626,8 +650,23 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		}
 	}
 
+	private String getXAid(String sql) {
+		// XA START X'31302e32372e392e322e746d313536383531353533373035333139393539',X'31302e32372e392e322e746d323134343737',1096044365
+		return sql.split(",")[0].split(" ")[2].replace("X'", "").replace("'", "");
+	}
+
 	protected BinlogConnectorEvent pollEvent() throws InterruptedException {
 		return queue.poll(100, TimeUnit.MILLISECONDS);
+	}
+
+	private void updateStatus(RowMapBuffer buffer){
+		if (buffer.size() == 0) {
+			return;
+		}
+		buffer.getLast().setTXCommit();
+		long timeSpent = buffer.getLast().getTimestampMillis() - buffer.getFirst().getTimestamp();
+		transactionExecutionTime.update(timeSpent);
+		transactionRowCount.update(buffer.size());
 	}
 
 	public Schema getSchema() throws SchemaStoreException {
