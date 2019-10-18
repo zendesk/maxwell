@@ -1,5 +1,12 @@
 # Maxwell changelog
 
+### [v1.23.2](https://github.com/zendesk/maxwell/releases/tag/v1.23.2): "you enjoy it every time"
+
+
+- upgrade jackson
+- stop passing maxwell rows through the JS filter.  too dangerous.
+
+
 ### [v1.23.1](https://github.com/zendesk/maxwell/releases/tag/v1.23.1): "the new barrista"
 
 
