@@ -100,11 +100,9 @@ redis_host                     | STRING                   | Host of Redis server
 redis_port                     | INT                      | Port of Redis server | 6379
 redis_auth                     | STRING                   | Authentication key for a password-protected Redis server
 redis_database                 | INT                      | Database of Redis server | 0
-redis_pub_channel              | STRING                   | Redis Pub/Sub channel | maxwell
-redis_stream_key               | STRING                   | Redis XADD Stream Key | maxwell
-redis_stream_json_key          | STRING                   | Redis XADD Stream Message Field Name | message
-redis_list_key                 | STRING                   | Redis LPUSH List Key | maxwell
 redis_type                     | [ pubsub &#124; xadd &#124; lpush &#124; rpush ]  | Selects either Redis Pub/Sub, Stream, or List. | pubsub
+redis_key                      | STRING                   | Redis channel/key for Pub/Sub, XADD or LPUSH/RPUSH | maxwell
+redis_stream_json_key          | STRING                   | Redis XADD Stream Message Field Name | message
 &nbsp;
 **formatting**
 output_binlog_position         | BOOLEAN  | records include binlog position     | false

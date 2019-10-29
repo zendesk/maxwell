@@ -19,24 +19,16 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 
 	@Deprecated
 	public MaxwellRedisProducer(MaxwellContext context, String redisPubChannel, String redisListKey, String redisType) {
-		this(context, redisType);
+		this(context);
 	}
 
-	public MaxwellRedisProducer(MaxwellContext context, String redisType) {
+	public MaxwellRedisProducer(MaxwellContext context) {
 		super(context);
 
-		if (this.context.getConfig().redisListKey != null) {
-			channel = context.getConfig().redisListKey;
-		}
-		else if (this.context.getConfig().redisStreamKey != null) {
-			channel = context.getConfig().redisStreamKey;
-		}
-		else {
-			channel = this.context.getConfig().redisPubChannel;
-		}
+		this.redisType = this.context.getConfig().redisType;
 
-		this.redisType = redisType;
-
+		this.channel = context.getConfig().redisKey;
+		
 		jedis = new Jedis(context.getConfig().redisHost, context.getConfig().redisPort);
 		jedis.connect();
 
@@ -55,6 +47,9 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 		switch (redisType) {
 			case "lpush":
 				jedis.lpush(this.channel, messageStr);
+				break;
+			case "rpush":
+				jedis.rpush(this.channel, messageStr);
 				break;
 			case "xadd":
 				Map<String, String> message = new HashMap<>();
@@ -86,7 +81,10 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 		if (logger.isDebugEnabled()) {
 			switch (redisType) {
 				case "lpush":
-					logger.debug("->  queue:" + channel + ", msg:" + msg);
+					logger.debug("->  queue (left):" + channel + ", msg:" + msg);
+					break;
+				case "rpush":
+					logger.debug("->  queue (right):" + channel + ", msg:" + msg);
 					break;
 				case "xadd":
 					logger.debug("->  stream:" + channel + ", msg:" + msg);
