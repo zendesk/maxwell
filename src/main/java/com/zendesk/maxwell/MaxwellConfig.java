@@ -263,17 +263,17 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.section( "pubsub" );
 		parser.accepts( "pubsub_project_id", "provide a google cloud platform project id associated with the pubsub topic" ).withRequiredArg();
 		parser.accepts( "pubsub_topic", "optionally provide a pubsub topic to push to. default: maxwell" ).withRequiredArg();
-		parser.accepts( "ddl_pubsub_topic", "optionally provide an alternate pubsub topic to push DDL records to. default: pubsub_topic" ).withRequiredArg();
-		parser.accepts( "pubsub_request_bytes_threshold", "optionally set number of bytes until batch is send. default: 1 byte" ).withRequiredArg();
-		parser.accepts( "pubsub_message_count_batch_size", "optionally set number of messages until batch is send. default: 1 message" ).withRequiredArg();
-		parser.accepts( "pubsub_publish_delay_threshold", "optionally set time passed in millis until batch is send. default: 1 ms" ).withRequiredArg();
-		parser.accepts( "pubsub_retry_delay", "optionally controls the delay in millis before sending the first retry message. default: 100 ms" ).withRequiredArg();
-		parser.accepts( "pubsub_retry_delay_multiplier", "optionally controls the increase in retry delay per retry. default: 1.3" ).withRequiredArg();
-		parser.accepts( "pubsub_max_retry_delay", "optionally puts a limit on the value in seconds of the retry delay. default: 60 seconds" ).withRequiredArg();
-		parser.accepts( "pubsub_initial_rpc_timeout", "optionally controls the timeout in seconds for the initial RPC. default: 5 seconds" ).withRequiredArg();
-		parser.accepts( "pubsub_rpc_timeout_multiplier", "optionally controls the change in RPC timeout. default: 1.0" ).withRequiredArg();
-		parser.accepts( "pubsub_max_rpc_timeout", "optionally puts a limit on the value in seconds of the RPC timeout. default: 600 seconds" ).withRequiredArg();
-		parser.accepts( "pubsub_total_timeout", "optionally puts a limit on the value in seconds of the retry delay, so that the RetryDelayMultiplier can't increase the retry delay higher than this amount. default: 600 seconds" ).withRequiredArg();
+		parser.accepts( "ddl_pubsub_topic", "optionally provide an alternate pubsub topic to push DDL records to. default: pubsub_topic" ).withOptionalArg();
+		parser.accepts( "pubsub_request_bytes_threshold", "optionally set number of bytes until batch is send. default: 1 byte" ).withOptionalArg();
+		parser.accepts( "pubsub_message_count_batch_size", "optionally set number of messages until batch is send. default: 1 message" ).withOptionalArg();
+		parser.accepts( "pubsub_publish_delay_threshold", "optionally set time passed in millis until batch is send. default: 1 ms" ).withOptionalArg();
+		parser.accepts( "pubsub_retry_delay", "optionally controls the delay in millis before sending the first retry message. default: 100 ms" ).withOptionalArg();
+		parser.accepts( "pubsub_retry_delay_multiplier", "optionally controls the increase in retry delay per retry. default: 1.3" ).withOptionalArg();
+		parser.accepts( "pubsub_max_retry_delay", "optionally puts a limit on the value in seconds of the retry delay. default: 60 seconds" ).withOptionalArg();
+		parser.accepts( "pubsub_initial_rpc_timeout", "optionally controls the timeout in seconds for the initial RPC. default: 5 seconds" ).withOptionalArg();
+		parser.accepts( "pubsub_rpc_timeout_multiplier", "optionally controls the change in RPC timeout. default: 1.0" ).withOptionalArg();
+		parser.accepts( "pubsub_max_rpc_timeout", "optionally puts a limit on the value in seconds of the RPC timeout. default: 600 seconds" ).withOptionalArg();
+		parser.accepts( "pubsub_total_timeout", "optionally puts a limit on the value in seconds of the retry delay, so that the RetryDelayMultiplier can't increase the retry delay higher than this amount. default: 600 seconds" ).withOptionalArg();
 
 		parser.section( "output" );
 
@@ -704,14 +704,14 @@ public class MaxwellConfig extends AbstractConfig {
 				usage("--pubsub_publish_delay_threshold must be > 0");
 			if (this.pubsubRetryDelay.isNegative() || this.pubsubRetryDelay.isZero())
 				usage("--pubsub_retry_delay must be > 0");
-			if (this.pubsubRetryDelayMultiplier <= 1.0)
+			if (this.pubsubRetryDelayMultiplier < 1.0)
 				usage("--pubsub_retry_delay_multiplier must be > 1.0");
 			if (this.pubsubMaxRetryDelay.isNegative() || this.pubsubMaxRetryDelay.isZero())
 				usage("--pubsub_max_retry_delay must be > 0");
 			if (this.pubsubInitialRpcTimeout.isNegative() || this.pubsubInitialRpcTimeout.isZero())
 				usage("--pubsub_initial_rpc_timeout must be > 0");
-			if (this.pubsubRpcTimeoutMultiplier <= 1.0)
-				usage("--pubsub_rpc_timeout_multiplier must be > 1.0");
+			if (this.pubsubRpcTimeoutMultiplier < 1.0)
+				usage("--pubsub_rpc_timeout_multiplier must be >= 1.0");
 			if (this.pubsubMaxRpcTimeout.isNegative() || this.pubsubMaxRpcTimeout.isZero())
 				usage("--pubsub_max_rpc_timeout must be > 0");
 			if (this.pubsubTotalTimeout.isNegative() || this.pubsubTotalTimeout.isZero())
