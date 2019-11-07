@@ -704,7 +704,7 @@ public class MaxwellConfig extends AbstractConfig {
 				usage("--pubsub_publish_delay_threshold must be > 0");
 			if (this.pubsubRetryDelay.isNegative() || this.pubsubRetryDelay.isZero())
 				usage("--pubsub_retry_delay must be > 0");
-			if (this.pubsubRetryDelayMultiplier < 1.0)
+			if (this.pubsubRetryDelayMultiplier <= 1.0)
 				usage("--pubsub_retry_delay_multiplier must be > 1.0");
 			if (this.pubsubMaxRetryDelay.isNegative() || this.pubsubMaxRetryDelay.isZero())
 				usage("--pubsub_max_retry_delay must be > 0");
