@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 public class BinlogConnectorReplicator extends AbstractReplicator implements Replicator {
-	private final long MAX_TX_ELEMENTS = 10000;
+	private final long MAX_TX_ELEMENTS = 1000 * 1000;
 	protected SchemaStore schemaStore;
 
 	private final LinkedBlockingDeque<BinlogConnectorEvent> queue = new LinkedBlockingDeque<>(20);
