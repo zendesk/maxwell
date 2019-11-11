@@ -16,6 +16,7 @@ public class BootstrapTask {
 	public boolean complete;
 	public Timestamp startedAt;
 	public Timestamp completedAt;
+	public String comment;
 
 	public volatile boolean abort;
 
@@ -37,6 +38,7 @@ public class BootstrapTask {
 		task.complete = rs.getBoolean("is_complete");
 		task.completedAt = rs.getTimestamp("completed_at");
 		task.startedAt = rs.getTimestamp("started_at");
+		task.comment = rs.getString("comment");
 		return task;
 	}
 
