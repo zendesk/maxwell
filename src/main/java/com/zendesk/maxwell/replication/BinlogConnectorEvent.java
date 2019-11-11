@@ -155,7 +155,7 @@ public class BinlogConnectorEvent {
 			table.getPKList(),
 			position,
 			nextPosition,
-			rowQuery
+			rowQuery, null
 		);
 
 		writeData(table, map, data, includedColumns);

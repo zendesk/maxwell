@@ -29,7 +29,7 @@ public class MaxwellKinesisProducerTest {
 		String kinesisStream = "test-stream";
 		MaxwellKinesisProducer producer = new MaxwellKinesisProducer(context, kinesisStream);
 
-		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, new ArrayList<String>(), POSITION);
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, new ArrayList<String>(), POSITION, null);
 		StringBuilder r = new StringBuilder();
 		for (int i = 0; i < 100_000; i++) {
 			r.append("long string");
