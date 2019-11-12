@@ -21,7 +21,7 @@ public class DDLMap extends RowMap {
 	private final Long schemaId;
 
 	public DDLMap(ResolvedSchemaChange change, Long timestamp, String sql, Position position, Position nextPosition, Long schemaId) {
-		super("ddl", change.databaseName(), change.tableName(), timestamp, new ArrayList<>(0), position, nextPosition, sql);
+		super("ddl", change.databaseName(), change.tableName(), timestamp, new ArrayList<>(0), position, nextPosition, sql, null);
 		this.change = change;
 		this.timestamp = timestamp;
 		this.sql = sql;

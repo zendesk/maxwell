@@ -55,7 +55,7 @@ public class SynchronousBootstrapper {
 		Database database = findDatabase(schema, task.database);
 		Table table = findTable(task.table, database);
 
-		producer.push(bootstrapStartRowMap(table));
+		producer.push(bootstrapStartRowMap(task, table));
 		LOGGER.info(String.format("bootstrapping started for %s.%s", task.database, task.table));
 
 		try ( Connection connection = getMaxwellConnection();
@@ -65,7 +65,7 @@ public class SynchronousBootstrapper {
 			int insertedRows = 0;
 			lastInsertedRowsUpdateTimeMillis = 0; // ensure updateInsertedRowsColumn is called at least once
 			while ( resultSet.next() ) {
-				RowMap row = bootstrapEventRowMap("bootstrap-insert", table.database, table.name, table.getPKList());
+				RowMap row = bootstrapEventRowMap("bootstrap-insert", table.database, table.name, table.getPKList(), task.comment);
 				setRowValues(row, resultSet, table);
 				row.setSchemaId(currentSchemaID);
 
@@ -118,22 +118,23 @@ public class SynchronousBootstrapper {
 		return conn;
 	}
 
-	private RowMap bootstrapStartRowMap(Table table) {
-		return bootstrapEventRowMap("bootstrap-start", table.database, table.name, table.getPKList());
+	private RowMap bootstrapStartRowMap(BootstrapTask task, Table table) {
+		return bootstrapEventRowMap("bootstrap-start", table.database, table.name, table.getPKList(), task.comment);
 	}
 
-	private RowMap bootstrapEventRowMap(String type, String db, String tbl, List<String> pkList) {
+	private RowMap bootstrapEventRowMap(String type, String db, String tbl, List<String> pkList, String comment) {
 		return new RowMap(
 			type,
 			db,
 			tbl,
 			System.currentTimeMillis(),
 			pkList,
-			null);
+			null, 
+			comment);
 	}
 
 	public void completeBootstrap(BootstrapTask task, AbstractProducer producer) throws Exception {
-		producer.push(bootstrapEventRowMap("bootstrap-complete", task.database, task.table, new ArrayList<>()));
+		producer.push(bootstrapEventRowMap("bootstrap-complete", task.database, task.table, new ArrayList<>(), task.comment));
 		LOGGER.info("bootstrapping ended for " + task.logString());
 	}
 
