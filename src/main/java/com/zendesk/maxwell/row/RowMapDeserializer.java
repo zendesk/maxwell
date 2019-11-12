@@ -83,6 +83,7 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 		JsonNode commit = node.get("commit");
 		JsonNode data = node.get("data");
 		JsonNode oldData = node.get("old");
+		JsonNode comment = node.get("comment");
 
 		RowMap rowMap = new RowMap(
 				type.asText(),
@@ -90,6 +91,7 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 				table.asText(),
 				ts.asLong() * 1000,
 				new ArrayList<String>(),
+				null, 
 				null
 		);
 
@@ -109,6 +111,10 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 
 		if (oldData != null) {
 			readDataInto(rowMap, oldData, true);
+		}
+
+		if (comment != null) {
+			rowMap.setComment(comment.asText());
 		}
 
 		return rowMap;

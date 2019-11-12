@@ -4,7 +4,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Consumer;
-
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.filtering.InvalidFilterException;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
@@ -119,6 +120,14 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 
 	protected MaxwellContext buildContext(Position p) throws Exception {
 		return MaxwellTestSupport.buildContext(server.getPort(), p, null);
+	}
+	
+	protected Filter exclude(String... patterns) throws InvalidFilterException {
+		Filter filter = new Filter(
+				Stream.of(patterns)
+				.map(p -> "exclude: " + p)
+				.collect(Collectors.joining(", ", "", "")));
+		return filter;
 	}
 
 	protected Filter excludeTable(String name) throws InvalidFilterException {

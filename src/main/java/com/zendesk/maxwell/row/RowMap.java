@@ -36,6 +36,7 @@ public class RowMap implements Serializable {
 	private String kafkaTopic;
 	private String partitionString;
 	protected boolean suppressed;
+	private String comment;
 
 	private Long xid;
 	private Long xoffset;
@@ -55,7 +56,7 @@ public class RowMap implements Serializable {
 	private long approximateSize;
 
 	public RowMap(String type, String database, String table, Long timestampMillis, List<String> pkColumns,
-			Position position, Position nextPosition, String rowQuery) {
+			Position position, Position nextPosition, String rowQuery, String comment) {
 		this.rowQuery = rowQuery;
 		this.rowType = type;
 		this.database = database;
@@ -68,18 +69,19 @@ public class RowMap implements Serializable {
 		this.position = position;
 		this.nextPosition = nextPosition;
 		this.pkColumns = pkColumns;
+		this.comment = comment;
 		this.suppressed = false;
 		this.approximateSize = 100L; // more or less 100 bytes of overhead
 	}
 
 	public RowMap(String type, String database, String table, Long timestampMillis, List<String> pkColumns,
-				  Position nextPosition, String rowQuery) {
-		this(type, database, table, timestampMillis, pkColumns, nextPosition, nextPosition, rowQuery);
+				  Position nextPosition, String rowQuery, String comment) {
+		this(type, database, table, timestampMillis, pkColumns, nextPosition, nextPosition, rowQuery, comment);
 	}
 
 	public RowMap(String type, String database, String table, Long timestampMillis, List<String> pkColumns,
-				  Position nextPosition) {
-		this(type, database, table, timestampMillis, pkColumns, nextPosition, null);
+				  Position nextPosition, String comment) {
+		this(type, database, table, timestampMillis, pkColumns, nextPosition, null, comment);
 	}
 
 	public RowIdentity getRowIdentity() {
@@ -178,6 +180,10 @@ public class RowMap implements Serializable {
 
 		if ( outputConfig.includesSchemaId && this.schemaId != null ) {
 			g.writeNumberField(FieldNames.SCHEMA_ID, this.schemaId);
+		}
+
+		if ( this.comment != null ) {
+			g.writeStringField(FieldNames.COMMENT, this.comment);
 		}
 
 		for ( Map.Entry<String, Object> entry : this.extraAttributes.entrySet() ) {
@@ -413,4 +419,11 @@ public class RowMap implements Serializable {
 		this.partitionString = partitionString;
 	}
 
+	public String getComment() {
+		return comment;
+	}
+
+	public void setComment(String comment) {
+		this.comment = comment;
+	}
 }

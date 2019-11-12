@@ -13,6 +13,7 @@ option                                        | description
 --table TABLE                                 | mysql table to bootstrap
 --where WHERE_CLAUSE                          | where clause to restrict the rows bootstrapped from the specified table
 --client_id CLIENT_ID                         | specify which maxwell instance should perform the bootstrap operation
+--comment COMMENT                             | arbitrary comment to be added to every bootstrap row record
 
 ### Using the maxwell.bootstrap table
 ***
