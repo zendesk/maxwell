@@ -29,6 +29,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+
+/*
+ * Please Note that these tests are somewhat flaky.  They test the whole world.
+ * Do not despair if they don't pass.
+ * My apologies.
+ *
+ * -osheroff.
+ */
 public class RecoveryTest extends TestWithNameLogging {
 	private static MysqlIsolatedServer masterServer, slaveServer;
 	static final Logger LOGGER = LoggerFactory.getLogger(RecoveryTest.class);
@@ -379,8 +387,7 @@ public class RecoveryTest extends TestWithNameLogging {
 		LOGGER.info("New pos: " + newPosition);
 		MysqlSavedSchema newSavedSchema = MysqlSavedSchema.restore(context, newPosition);
 		LOGGER.info("New schema id: " + newSavedSchema.getSchemaID());
-		// TODO: this is oldSchemaId +3 insteand of +1 to offset for the maxwell.bootstrap schema migrations and does not seem like a viable long term solution
-		assertEquals(new Long(oldSchemaId + 3), newSavedSchema.getSchemaID());
+		assertEquals(new Long(oldSchemaId + 1), newSavedSchema.getSchemaID());
 		assertTrue(newPosition.newerThan(savedSchema.getPosition()));
 
 		MysqlSavedSchema restored = MysqlSavedSchema.restore(context, oldlogPosition);

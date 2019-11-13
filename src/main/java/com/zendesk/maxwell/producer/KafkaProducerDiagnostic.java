@@ -50,7 +50,7 @@ public class KafkaProducerDiagnostic implements MaxwellDiagnostic {
 		DiagnosticCallback callback = new DiagnosticCallback();
 		try {
 			RowMap rowMap = new RowMap("insert", config.databaseName, "dummy", System.currentTimeMillis(),
-					new ArrayList<>(), positionStoreThread.getPosition(), null);
+					new ArrayList<>(), positionStoreThread.getPosition());
 			rowMap.setTXCommit();
 			ProducerRecord<String, String> record = producer.makeProducerRecord(rowMap);
 			producer.sendAsync(record, callback);

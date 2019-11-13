@@ -14,7 +14,7 @@ import java.util.ArrayList;
 public class MaxwellKafkaPartitionerTest {
 	@Test
 	public void testRowMapEqualsDDLPartitioning() {
-		RowMap r = new RowMap("insert", "db", "tbl", 0L, new ArrayList<>(), null, null);
+		RowMap r = new RowMap("insert", "db", "tbl", 0L, new ArrayList<>(), null);
 		ResolvedDatabaseAlter m = new ResolvedDatabaseAlter("db", "utf8");
 		DDLMap d = new DDLMap(m, 0L, "alter-sql", null, null, null);
 

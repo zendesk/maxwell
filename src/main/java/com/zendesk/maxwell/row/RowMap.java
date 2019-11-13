@@ -56,7 +56,7 @@ public class RowMap implements Serializable {
 	private long approximateSize;
 
 	public RowMap(String type, String database, String table, Long timestampMillis, List<String> pkColumns,
-			Position position, Position nextPosition, String rowQuery, String comment) {
+			Position position, Position nextPosition, String rowQuery) {
 		this.rowQuery = rowQuery;
 		this.rowType = type;
 		this.database = database;
@@ -69,19 +69,18 @@ public class RowMap implements Serializable {
 		this.position = position;
 		this.nextPosition = nextPosition;
 		this.pkColumns = pkColumns;
-		this.comment = comment;
 		this.suppressed = false;
 		this.approximateSize = 100L; // more or less 100 bytes of overhead
 	}
 
 	public RowMap(String type, String database, String table, Long timestampMillis, List<String> pkColumns,
-				  Position nextPosition, String rowQuery, String comment) {
-		this(type, database, table, timestampMillis, pkColumns, nextPosition, nextPosition, rowQuery, comment);
+				  Position nextPosition, String rowQuery) {
+		this(type, database, table, timestampMillis, pkColumns, nextPosition, nextPosition, rowQuery);
 	}
 
 	public RowMap(String type, String database, String table, Long timestampMillis, List<String> pkColumns,
-				  Position nextPosition, String comment) {
-		this(type, database, table, timestampMillis, pkColumns, nextPosition, null, comment);
+				  Position nextPosition) {
+		this(type, database, table, timestampMillis, pkColumns, nextPosition, null);
 	}
 
 	public RowIdentity getRowIdentity() {

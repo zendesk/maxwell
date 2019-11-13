@@ -123,14 +123,15 @@ public class SynchronousBootstrapper {
 	}
 
 	private RowMap bootstrapEventRowMap(String type, String db, String tbl, List<String> pkList, String comment) {
-		return new RowMap(
+		RowMap row = new RowMap(
 			type,
 			db,
 			tbl,
 			System.currentTimeMillis(),
 			pkList,
-			null, 
-			comment);
+			null);
+		row.setComment(comment);
+		return row;
 	}
 
 	public void completeBootstrap(BootstrapTask task, AbstractProducer producer) throws Exception {
