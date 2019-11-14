@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.producer;
 
 import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.row.RowIdentity;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.util.StoppableTask;
 import org.slf4j.Logger;
@@ -14,6 +15,7 @@ import java.util.Map;
 public class MaxwellRedisProducer extends AbstractProducer implements StoppableTask {
 	private static final Logger logger = LoggerFactory.getLogger(MaxwellRedisProducer.class);
 	private final String channel;
+	private final boolean interpolateChannel;
 	private final String redisType;
 	private final Jedis jedis;
 
@@ -35,6 +37,7 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 			channel = this.context.getConfig().redisPubChannel;
 		}
 
+		this.interpolateChannel = channel.contains("%{");
 		this.redisType = redisType;
 
 		jedis = new Jedis(context.getConfig().redisHost, context.getConfig().redisPort);
@@ -49,12 +52,22 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 		}
 	}
 
+	private String generateChannel(RowIdentity pk){
+		if (interpolateChannel) {
+			return channel.replaceAll("%\\{database}", pk.getDatabase()).replaceAll("%\\{table}", pk.getTable());
+		}
+
+		return channel;
+	}
+
 	private void sendToRedis(RowMap msg) throws Exception {
 		String messageStr = msg.toJSON(outputConfig);
 
+		String channel = this.generateChannel(msg.getRowIdentity());
+
 		switch (redisType) {
 			case "lpush":
-				jedis.lpush(this.channel, messageStr);
+				jedis.lpush(channel, messageStr);
 				break;
 			case "xadd":
 				Map<String, String> message = new HashMap<>();
@@ -75,11 +88,11 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 				//      	CDC events will natively emit second precision timestamp
 				// TODO configuration option for if we want the msg timestamp to become the message ID
 				//			Requires completion of previous TODO
-				jedis.xadd(this.channel, StreamEntryID.NEW_ENTRY, message);
+				jedis.xadd(channel, StreamEntryID.NEW_ENTRY, message);
 				break;
 			case "pubsub":
 			default:
-				jedis.publish(this.channel, messageStr);
+				jedis.publish(channel, messageStr);
 				break;
 		}
 
