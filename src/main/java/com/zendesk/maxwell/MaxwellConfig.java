@@ -240,7 +240,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.separator();
 
-		parser.accepts( "kafka_version", "kafka client library version: 0.8.2.2|0.9.0.1|0.10.0.1|0.10.2.1|0.11.0.1|1.0.0").withRequiredArg();
+		parser.accepts( "kafka_version", "kafka client library version: 0.8.2.2|0.9.0.1|0.10.0.1|0.10.2.1|0.11.0.1|1.0.0|2.3.0").withRequiredArg();
 		parser.accepts( "kafka_key_format", "how to format the kafka key; array|hash" ).withRequiredArg();
 		parser.accepts( "kafka_partition_hash", "default|murmur3, hash function for partitioning" ).withRequiredArg();
 		parser.accepts( "dead_letter_topic", "the topic to write to when publishing to the initial topic is not possible, for example RecordTooLargeException for kafka" ).withRequiredArg();
