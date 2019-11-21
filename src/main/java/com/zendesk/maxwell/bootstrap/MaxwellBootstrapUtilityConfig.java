@@ -95,6 +95,7 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 			this.mysql.host = "localhost";
 
 		this.schemaDatabaseName = fetchOption("schema_database", options, properties, "maxwell");
+		this.clientID = fetchOption("client_id", options, properties, "maxwell");
 
         if ( options.has("database") )
 			this.databaseName = (String) options.valueOf("database");
@@ -125,9 +126,6 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 
 		if ( options.has("where")  && !StringUtils.isEmpty(((String) options.valueOf("where"))) )
 			this.whereClause = (String) options.valueOf("where");
-
-		if ( options.has("client_id") )
-			this.clientID = (String) options.valueOf("client_id");
 	}
 
 	private Properties parseFile(String filename, boolean abortOnMissing) {
