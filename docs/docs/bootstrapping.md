@@ -14,7 +14,7 @@ option                                        | description
 --where WHERE_CLAUSE                          | where clause to restrict the rows bootstrapped from the specified table
 --client_id CLIENT_ID                         | specify which maxwell instance should perform the bootstrap operation
 
-### Using the maxwell.bootstrap table
+### Starting a table bootstrap
 ***
 You can start a bootstrap using:
 
