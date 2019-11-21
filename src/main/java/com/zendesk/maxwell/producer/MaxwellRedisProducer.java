@@ -27,9 +27,9 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 	public MaxwellRedisProducer(MaxwellContext context) {
 		super(context);
 
-		this.interpolateChannel = channel.contains("%{");
-		this.redisType = redisType;
 		this.channel = context.getConfig().redisKey;
+		this.interpolateChannel = channel.contains("%{");
+		this.redisType = context.getConfig().redisType;
 
 		jedis = new Jedis(context.getConfig().redisHost, context.getConfig().redisPort);
 		jedis.connect();
