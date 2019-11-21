@@ -29,6 +29,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+
+/*
+ * Please Note that these tests are somewhat flaky.  They test the whole world.
+ * Do not despair if they don't pass.
+ * My apologies.
+ *
+ * -osheroff.
+ */
 public class RecoveryTest extends TestWithNameLogging {
 	private static MysqlIsolatedServer masterServer, slaveServer;
 	static final Logger LOGGER = LoggerFactory.getLogger(RecoveryTest.class);

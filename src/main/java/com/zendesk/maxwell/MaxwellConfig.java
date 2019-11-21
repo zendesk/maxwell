@@ -704,8 +704,8 @@ public class MaxwellConfig extends AbstractConfig {
 				usage("--pubsub_max_retry_delay must be > 0");
 			if (this.pubsubInitialRpcTimeout.isNegative() || this.pubsubInitialRpcTimeout.isZero())
 				usage("--pubsub_initial_rpc_timeout must be > 0");
-			if (this.pubsubRpcTimeoutMultiplier <= 1.0)
-				usage("--pubsub_rpc_timeout_multiplier must be > 1.0");
+			if (this.pubsubRpcTimeoutMultiplier < 1.0)
+				usage("--pubsub_rpc_timeout_multiplier must be >= 1.0");
 			if (this.pubsubMaxRpcTimeout.isNegative() || this.pubsubMaxRpcTimeout.isZero())
 				usage("--pubsub_max_rpc_timeout must be > 0");
 			if (this.pubsubTotalTimeout.isNegative() || this.pubsubTotalTimeout.isZero())

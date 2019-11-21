@@ -1,5 +1,14 @@
 # Maxwell changelog
 
+### [v1.23.3](https://github.com/zendesk/maxwell/releases/tag/v1.23.3): "but that's not the way it feels"
+
+
+- pubsubDelayMultiplier may now be 1.0
+- allow %{database} and %{topic} interpolation into redis producer
+- docs updates
+- setup default client_id in maxwell-bootstrap util
+
+
 ### [v1.23.2](https://github.com/zendesk/maxwell/releases/tag/v1.23.2): "you enjoy it every time"
 
 
