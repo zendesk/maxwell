@@ -232,7 +232,10 @@ For more details on these options, you are encouraged to the read official Rabbi
 
 ### Redis
 ***
-Set the output stream in `config.properties` by setting the `redis_type` property to either `pubsub`, `xadd`, `lpush` or `rpsuh`. The `redis_key` is used as channel for `pubsub`, as stream key for `xadd` and as key for `lpush` and `rpush`.
+Set the output stream in `config.properties` by setting the `redis_type`
+property to either `pubsub`, `xadd`, `lpush` or `rpsuh`. The `redis_key` is
+used as a channel for `pubsub`, as stream key for `xadd` and as key for `lpush`
+and `rpush`.
 
 Maxwell writes to a Redis channel named "maxwell" by default. It can be static,
 e.g. 'maxwell', or dynamic, e.g. `namespace_%{database}_%{table}`. In the
