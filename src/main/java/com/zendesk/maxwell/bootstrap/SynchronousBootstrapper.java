@@ -37,7 +37,7 @@ public class SynchronousBootstrapper {
 
 	public void startBootstrap(BootstrapTask task, AbstractProducer producer, Long currentSchemaID) throws Exception {
 		performBootstrap(task, producer, currentSchemaID);
-		completeBootstrap(task, producer);
+		completeBootstrap(task, producer, currentSchemaID);
 	}
 
 	private Schema captureSchemaForBootstrap(BootstrapTask task) throws SQLException {
@@ -55,7 +55,7 @@ public class SynchronousBootstrapper {
 		Database database = findDatabase(schema, task.database);
 		Table table = findTable(task.table, database);
 
-		producer.push(bootstrapStartRowMap(table));
+		producer.push(bootstrapStartRowMap(table, currentSchemaID));
 		LOGGER.info(String.format("bootstrapping started for %s.%s", task.database, task.table));
 
 		try ( Connection connection = getMaxwellConnection();
@@ -118,8 +118,10 @@ public class SynchronousBootstrapper {
 		return conn;
 	}
 
-	private RowMap bootstrapStartRowMap(Table table) {
-		return bootstrapEventRowMap("bootstrap-start", table.database, table.name, table.getPKList());
+	private RowMap bootstrapStartRowMap(Table table, Long currentSchemaID) {
+		RowMap row = bootstrapEventRowMap("bootstrap-start", table.database, table.name, table.getPKList());
+		row.setSchemaId(currentSchemaID);
+		return row;
 	}
 
 	private RowMap bootstrapEventRowMap(String type, String db, String tbl, List<String> pkList) {
@@ -132,8 +134,10 @@ public class SynchronousBootstrapper {
 			null);
 	}
 
-	public void completeBootstrap(BootstrapTask task, AbstractProducer producer) throws Exception {
-		producer.push(bootstrapEventRowMap("bootstrap-complete", task.database, task.table, new ArrayList<>()));
+	public void completeBootstrap(BootstrapTask task, AbstractProducer producer, Long currentSchemaID) throws Exception {
+		RowMap row = bootstrapEventRowMap("bootstrap-complete", task.database, task.table, new ArrayList<>());
+		row.setSchemaId(currentSchemaID);
+		producer.push(row);
 		LOGGER.info("bootstrapping ended for " + task.logString());
 	}
 
