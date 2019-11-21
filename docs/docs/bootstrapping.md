@@ -19,13 +19,13 @@ option                                        | description
 You can start a bootstrap using:
 
 ```
-bin/maxwell-bootstrap --config localhost.properties --database fooDB --table barTable --log_level info
+bin/maxwell-bootstrap --database fooDB --table barTable
 ```
 
 Optionally, you can include a where clause to replay part of the data.
 
 ```
-bin/maxwell-bootstrap --config localhost.properties --database fooDB --table barTable --where "my_date >= '2017-01-07 00:00:00'" --log_level info
+bin/maxwell-bootstrap --database fooDB --table barTable --where "my_date >= '2017-01-07 00:00:00'"
 ```
 
 Alternatively you can insert a row in the `maxwell.bootstrap` table to trigger a bootstrap.
