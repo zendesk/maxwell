@@ -474,6 +474,10 @@ for DDL updates by setting the <code>ddl_pubsub_topic</code> property.</p>
 <h3 id="redis">Redis</h3>
 <hr />
 <p>Set the output stream in <code>config.properties</code> by setting the <code>redis_pub_channel</code> property for redis_type = pubsub, <code>redis_stream_key</code> property for redis_type = xadd, or set the <code>redis_list_key</code> property when using redis_type = lpush.</p>
+<p>Maxwell writes to a Redis channel named "maxwell" by default. It can be static,
+e.g. 'maxwell', or dynamic, e.g. <code>namespace_%{database}_%{table}</code>. In the
+latter case 'database' and 'table' will be replaced with the values for the row
+being processed. This can be changed with the <code>redis_pub_channel</code>, <code>redis_list_key</code> and <code>redis_stream_key</code> option.</p>
 <p>Other configurable properties are:</p>
 <ul>
 <li><code>redis_host</code> - defaults to <strong>localhost</strong></li>
