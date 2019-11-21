@@ -138,6 +138,11 @@ public class MaxwellConfig extends AbstractConfig {
 	public int redisDatabase;
 	public String redisKey;
 	public String redisStreamJsonKey;
+
+	public String redisPubChannel;
+	public String redisListKey;
+	public String redisStreamKey;
+
 	public String redisType;
 	public String javascriptFile;
 	public Scripting scripting;
@@ -330,6 +335,10 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "redis_key", "Redis channel/key for Pub/Sub, XADD or LPUSH/RPUSH" ).withRequiredArg();
 		parser.accepts( "redis_stream_json_key", "Redis Stream message field name for JSON message body" ).withRequiredArg();
 
+		parser.accepts( "redis_pub_channel", "[deprecated]" ).withRequiredArg();
+		parser.accepts( "redis_stream_key", "[deprecated]" ).withRequiredArg();
+		parser.accepts( "redis_list_key", "[deprecated]" ).withRequiredArg();
+
 		parser.section("metrics");
 
 		parser.accepts( "metrics_prefix", "the prefix maxwell will apply to all metrics" ).withRequiredArg();
@@ -448,8 +457,15 @@ public class MaxwellConfig extends AbstractConfig {
 		this.redisPort			= Integer.parseInt(fetchOption("redis_port", options, properties, "6379"));
 		this.redisAuth			= fetchOption("redis_auth", options, properties, null);
 		this.redisDatabase		= Integer.parseInt(fetchOption("redis_database", options, properties, "0"));
+
 		this.redisKey			= fetchOption("redis_key", options, properties, "maxwell");
 		this.redisStreamJsonKey	= fetchOption("redis_stream_json_key", options, properties, "message");
+
+		// deprecated options
+		this.redisPubChannel = fetchOption("redis_pub_channel", options, properties, null);
+		this.redisListKey               = fetchOption("redis_list_key", options, properties, null);
+		this.redisStreamKey             = fetchOption("redis_stream_key", options, properties, null);
+
 		this.redisType			= fetchOption("redis_type", options, properties, "pubsub");
 
 		String kafkaBootstrapServers = fetchOption("kafka.bootstrap.servers", options, properties, null);
@@ -710,6 +726,21 @@ public class MaxwellConfig extends AbstractConfig {
 				usage("--pubsub_max_rpc_timeout must be > 0");
 			if (this.pubsubTotalTimeout.isNegative() || this.pubsubTotalTimeout.isZero())
 				usage("--pubsub_total_timeout must be > 0");
+		} else if (this.producerType.equals("redis")) {
+			if ( this.redisPubChannel != null ) {
+				LOGGER.warn("--redis_pub_channel is deprecated, please use redis_key");
+				this.redisKey = this.redisPubChannel;
+			} else if ( this.redisListKey != null ) {
+				LOGGER.warn("--redis_list_key is deprecated, please use redis_key");
+				this.redisKey = this.redisListKey;
+			} else if ( this.redisStreamKey != null ) {
+				LOGGER.warn("--redis_stream_key is deprecated, please use redis_key");
+				this.redisKey = this.redisStreamKey;
+			}
+
+			if ( this.redisKey == null ) {
+				usage("please specify --redis_key=KEY");
+			}
 		}
 
 		if ( !this.bootstrapperType.equals("async")
