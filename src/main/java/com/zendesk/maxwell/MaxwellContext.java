@@ -348,7 +348,7 @@ public class MaxwellContext {
 				this.producer = new RabbitmqProducer(this);
 				break;
 			case "redis":
-				this.producer = new MaxwellRedisProducer(this, this.config.redisType);
+				this.producer = new MaxwellRedisProducer(this);
 				break;
 			case "none":
 				this.producer = new NoneProducer(this);

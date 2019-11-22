@@ -228,13 +228,17 @@ kafka.acks=1
 #redis_port=6379
 #redis_auth=redis_auth
 #redis_database=0
+
+# name of pubsub/list/whatever key to publish to
+#redis_key=maxwell
+
 # this can be static, e.g. 'maxwell', or dynamic, e.g. namespace_%{database}_%{table}
 #redis_pub_channel=maxwell
 # this can be static, e.g. 'maxwell', or dynamic, e.g. namespace_%{database}_%{table}
 #redis_list_key=maxwell
 # this can be static, e.g. 'maxwell', or dynamic, e.g. namespace_%{database}_%{table}
-#redis_stream_key=maxwell
 # Valid values for redis_type = pubsub|lpush. Defaults to pubsub
+
 #redis_type=pubsub
 
 #           *** custom producer ***

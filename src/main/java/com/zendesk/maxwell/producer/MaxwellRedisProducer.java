@@ -21,24 +21,15 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 
 	@Deprecated
 	public MaxwellRedisProducer(MaxwellContext context, String redisPubChannel, String redisListKey, String redisType) {
-		this(context, redisType);
+		this(context);
 	}
 
-	public MaxwellRedisProducer(MaxwellContext context, String redisType) {
+	public MaxwellRedisProducer(MaxwellContext context) {
 		super(context);
 
-		if (this.context.getConfig().redisListKey != null) {
-			channel = context.getConfig().redisListKey;
-		}
-		else if (this.context.getConfig().redisStreamKey != null) {
-			channel = context.getConfig().redisStreamKey;
-		}
-		else {
-			channel = this.context.getConfig().redisPubChannel;
-		}
-
+		this.channel = context.getConfig().redisKey;
 		this.interpolateChannel = channel.contains("%{");
-		this.redisType = redisType;
+		this.redisType = context.getConfig().redisType;
 
 		jedis = new Jedis(context.getConfig().redisHost, context.getConfig().redisPort);
 		jedis.connect();
@@ -69,11 +60,14 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 			case "lpush":
 				jedis.lpush(channel, messageStr);
 				break;
+			case "rpush":
+				jedis.rpush(this.channel, messageStr);
+				break;
 			case "xadd":
 				Map<String, String> message = new HashMap<>();
 
 				String jsonKey = this.context.getConfig().redisStreamJsonKey;
-				
+
 				if (jsonKey == null) {
 					// TODO dot notated map impl in RowMap.toJson
 					throw new IllegalArgumentException("Stream requires key name for serialized JSON value");
@@ -99,7 +93,10 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 		if (logger.isDebugEnabled()) {
 			switch (redisType) {
 				case "lpush":
-					logger.debug("->  queue:" + channel + ", msg:" + msg);
+					logger.debug("->  queue (left):" + channel + ", msg:" + msg);
+					break;
+				case "rpush":
+					logger.debug("->  queue (right):" + channel + ", msg:" + msg);
 					break;
 				case "xadd":
 					logger.debug("->  stream:" + channel + ", msg:" + msg);
