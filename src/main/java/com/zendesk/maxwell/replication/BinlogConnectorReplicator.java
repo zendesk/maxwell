@@ -184,7 +184,6 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 				case EXT_UPDATE_ROWS:
 				case EXT_DELETE_ROWS:
 					Table table = tableCache.getTable(event.getTableID());
-
 					if ( table != null && shouldOutputEvent(table.getDatabase(), table.getName(), filter, table.getColumnNames()) ) {
 						for ( RowMap r : event.jsonMaps(table, getLastHeartbeatRead(), currentQuery) )
 							if (shouldOutputRowMap(table.getDatabase(), table.getName(), r, filter)) {
