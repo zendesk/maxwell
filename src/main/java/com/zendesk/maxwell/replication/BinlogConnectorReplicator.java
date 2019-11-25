@@ -606,7 +606,6 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 						rowBuffer.setServerId(event.getEvent().getHeader().getServerId());
 						rowBuffer.setThreadId(qe.getThreadId());
 						rowBuffer.setSchemaId(getSchemaId());
-						LOGGER.info("SCHEMA:" + getSchema());
 					} else {
 						processQueryEvent(event);
 					}
