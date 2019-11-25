@@ -212,6 +212,11 @@ public class SynchronousBootstrapper {
 				columnValue == null ? null : columnDefinition.asJSON(columnValue, new MaxwellOutputConfig())
 			);
 
+			row.putDataSchema(
+				columnDefinition.getName(),
+				columnDefinition.getType()
+			);
+			
 			++columnIndex;
 		}
 	}
