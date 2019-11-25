@@ -28,7 +28,7 @@ public class Filter {
 	}
 
 	public boolean isSystemWhitelisted(String database, String table) {
-		return isMaxwellDB(database) && "heartbeats".equals(table);
+		return isMaxwellDB(database) && ("bootstrap".equals(table) || "heartbeats".equals(table));
 	}
 
 	public boolean isMaxwellDB(String database) {
