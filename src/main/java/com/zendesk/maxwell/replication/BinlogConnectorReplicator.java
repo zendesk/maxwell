@@ -187,15 +187,15 @@ public class BinlogConnectorReplicator extends AbstractReplicator implements Rep
 					if ( table != null && shouldOutputEvent(table.getDatabase(), table.getName(), filter, table.getColumnNames()) ) {
 						for ( RowMap r : event.jsonMaps(table, getLastHeartbeatRead(), currentQuery) )
 							if (shouldOutputRowMap(table.getDatabase(), table.getName(), r, filter)) {
-								LOGGER.info("adding to buffer include row level "+table.name);
+								LOGGER.debug("adding to buffer include row level "+table.name);
 								buffer.add(r);
 							} else {
-								LOGGER.info("adding to buffer exclude row level "+table.name);
+								LOGGER.debug("adding to buffer exclude row level "+table.name);
 							}
 					} else if(table !=null){
-						LOGGER.info("adding to buffer exclude event level "+table.name);
+						LOGGER.debug("adding to buffer exclude event level "+table.name);
 					} else {
-						LOGGER.info("adding to buffer blacklist table might be, table not found");
+						LOGGER.debug("adding to buffer blacklist table might be, table not found");
 					}
 					currentQuery = null;
 					break;
