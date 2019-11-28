@@ -6,6 +6,7 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.MessageProperties;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.row.RowMap;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,15 +61,14 @@ public class RabbitmqProducer extends AbstractProducer {
 	}
 
 	private String getRoutingKeyFromTemplate(RowMap r) {
-		String table = r.getTable();
-
-		if ( table == null )
-			table = "";
+		String table = StringUtils.defaultString(r.getTable(), StringUtils.EMPTY);
+		String type = StringUtils.defaultString(r.getRowType(), StringUtils.EMPTY);
 
 		return context
 				.getConfig()
 				.rabbitmqRoutingKeyTemplate
 				.replace("%db%", r.getDatabase())
-				.replace("%table%", table);
+				.replace("%table%", table)
+				.replace("%type%", type);
 	}
 }
