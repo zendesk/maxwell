@@ -237,7 +237,10 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 
 	private String generateTopic(String topic, RowIdentity pk){
 		if ( interpolateTopic )
-			return topic.replaceAll("%\\{database\\}", pk.getDatabase()).replaceAll("%\\{table\\}", pk.getTable());
+			return topic
+				.replaceAll("%\\{database\\}", pk.getDatabase())
+				.replaceAll("%\\{table\\}", pk.getTable())
+				.replaceAll("%\\{type\\}", pk.getRowType());
 		else
 			return topic;
 	}

@@ -45,7 +45,11 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 
 	private String generateChannel(RowIdentity pk){
 		if (interpolateChannel) {
-			return channel.replaceAll("%\\{database}", pk.getDatabase()).replaceAll("%\\{table}", pk.getTable());
+			return channel
+				.replaceAll("%\\{database}", pk.getDatabase())
+				.replaceAll("%\\{table}", pk.getTable())
+				.replaceAll("%\\{type}", pk.getRowType())
+				;
 		}
 
 		return channel;
