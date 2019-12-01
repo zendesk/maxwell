@@ -12,7 +12,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MaxwellRedisProducer extends AbstractProducer implements StoppableTask {
+public class MaxwellRedisProducer extends AbstractProducer implements StoppableTask, DestinationBuilder {
 	private static final Logger logger = LoggerFactory.getLogger(MaxwellRedisProducer.class);
 	private final String channel;
 	private final boolean interpolateChannel;
@@ -44,15 +44,7 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 	}
 
 	private String generateChannel(RowIdentity pk){
-		if (interpolateChannel) {
-			return channel
-				.replaceAll("%\\{database}", pk.getDatabase())
-				.replaceAll("%\\{table}", pk.getTable())
-				.replaceAll("%\\{type}", pk.getRowType())
-				;
-		}
-
-		return channel;
+		return this.buildDestinationString(interpolateChannel, channel, pk);
 	}
 
 	private void sendToRedis(RowMap msg) throws Exception {

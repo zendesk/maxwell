@@ -134,7 +134,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	}
 }
 
-class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnable, StoppableTask {
+class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnable, StoppableTask, DestinationBuilder {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
 
 	private final Producer<String, String> kafka;
@@ -236,13 +236,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	}
 
 	private String generateTopic(String topic, RowIdentity pk){
-		if ( interpolateTopic )
-			return topic
-				.replaceAll("%\\{database\\}", pk.getDatabase())
-				.replaceAll("%\\{table\\}", pk.getTable())
-				.replaceAll("%\\{type\\}", pk.getRowType());
-		else
-			return topic;
+		return this.buildDestinationString(interpolateTopic, topic, pk);
 	}
 
 	@Override
