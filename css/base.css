@@ -2,160 +2,101 @@ body {
     padding-top: 70px;
 }
 
-/* Replacement for `body { background-attachment: fixed; }`, which has
-   performance issues when scrolling on large displays. See #1394. */
-body::before {
-    content: ' ';
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    background-color: #f8f8f8;
-    background: url(../img/grid.png) repeat-x;
-    will-change: transform;
-    z-index: -1;
+h1,h2,h3,h4,h5,h6,body {
+    font-family: "Open Sans","Helvetica Neue","Helvetica","Arial","sans-serif";
+    font-size: 15px;
 }
 
-body > .container {
-    min-height: 400px;
-}
-
-ul.nav .main {
+ul.nav li.main {
     font-weight: bold;
 }
 
-.col-md-3 {
+div.col-md-2 {
     padding-left: 0;
-    z-index: 1;
 }
 
-.col-md-9 {
-    padding-bottom: 100px;
+div.col-md-10 > ul {
+  overflow: hidden;
 }
 
-.source-links {
+div.source-links {
     float: right;
 }
 
-.col-md-9 img {
-    max-width: 100%;
-    display: inline-block;
-    padding: 4px;
-    line-height: 1.428571429;
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    margin: 20px auto 30px auto;
+
+#github-banner { display: none; }
+#home-code { margin: 0px; }
+
+.bs-sidebar {
+  display: none;
 }
 
-/*
- * The code below adds some padding to the top of the current anchor target so
- * that, when navigating to it, the header isn't hidden by the navbar at the
- * top.
- */
-:target::before {
-    content: "";
-    display: block;
-    margin-top: -75px;
-    height: 75px;
-    pointer-events: none;
+#maxwell-header {
+  float: right;
+  margin-left: 30px;
 }
 
-h1 {
-    color: #444;
-    font-weight: 400;
-    font-size: 42px;
+#maxwell-header > h2 {
+  margin-top: 0px;
 }
 
-h2, h3, h4, h5, h6 {
-    color: #444;
-    font-weight: 300;
+#maxwell-daemon-image {
+  display: none;
 }
 
-hr {
-    border-top: 1px solid #aaa;
+.home-code {
+  margin: 0px;
+  margin-bottom: 15px;
 }
 
-pre, .rst-content tt {
-    max-width: 100%;
-    background: #fff;
-    border: solid 1px #e1e4e5;
-    color: #333;
-    overflow-x: auto;
+.container {
+  padding: 0px;
 }
 
-code.code-large, .rst-content tt.code-large {
-    font-size: 90%;
+.navbar-header {
+  padding-left: 15px;
 }
 
-code {
-    padding: 2px 5px;
-    background: #fff;
-    border: solid 1px #e1e4e5;
-    color: #333;
-    white-space: pre-wrap;
-    word-wrap: break-word;
+.navbar-image-container {
+  float: right;
 }
 
-pre code {
-    background: transparent;
-    border: none;
-    white-space: pre;
-    word-wrap: normal;
-    font-family: monospace,serif;
-    font-size: 12px;
+#navbar-image {
+  width: 200px;
+  margin-right: -20px;
+  margin-top: 5px;
 }
 
-kbd {
-    padding: 2px 4px;
-    font-size: 90%;
-    color: #fff;
-    background-color: #333;
-    border-radius: 3px;
-    -webkit-box-shadow: inset 0 -1px 0 rgba(0,0,0,.25);
-    box-shadow: inset 0 -1px 0 rgba(0,0,0,.25);
+.navbar-default {
+  background-image: linear-gradient(to bottom, #9db3e0 0, #b8cdf9 100%);
+  /* background-image: none; */
+  /* background-color: #b8cdf9;  */
 }
 
-a code {
-    color: #2FA4E7;
+.navbar-default .navbar-brand {
+  color: #ffffff;
+  font-size: 220%;
+  font-family: "arial";
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
 }
 
-a:hover code, a:focus code {
-    color: #157AB5;
+.navbar-collapse ul {
+  padding-left: 15px;
 }
-
-footer {
-    margin-top: 30px;
-    margin-bottom: 10px;
-    text-align: center;
-    font-weight: 200;
-}
-
-.modal-dialog {
-    margin-top: 60px;
-}
-
-/*
- * Side navigation
- *
- * Scrollspy and affixed enhanced navigation to highlight sections and secondary
- * sections of docs content.
- */
 
 /* By default it's not affixed in mobile views, so undo that */
-.bs-sidebar.affix { /* csslint allow: adjoining-classes */
+.bs-sidebar.affix {
     position: static;
 }
 
-.bs-sidebar.well { /* csslint allow: adjoining-classes */
+.bs-sidebar.well {
     padding: 0;
-    max-height: 90%;
-    overflow-y: auto;
 }
 
 /* First level of nav */
 .bs-sidenav {
+    margin-top: 30px;
+    margin-bottom: 30px;
     padding-top:    10px;
     padding-bottom: 10px;
     border-radius: 5px;
@@ -165,160 +106,194 @@ footer {
 .bs-sidebar .nav > li > a {
     display: block;
     padding: 5px 20px;
-    z-index: 1;
 }
 .bs-sidebar .nav > li > a:hover,
 .bs-sidebar .nav > li > a:focus {
     text-decoration: none;
-    border-right: 1px solid;
 }
 .bs-sidebar .nav > .active > a,
 .bs-sidebar .nav > .active:hover > a,
 .bs-sidebar .nav > .active:focus > a {
     font-weight: bold;
     background-color: transparent;
-    border-right: 1px solid;
 }
 
 /* Nav: second level (shown on .active) */
 .bs-sidebar .nav .nav {
-    display: none; /* Hide by default, but at >768px, show it */
     margin-bottom: 8px;
 }
 .bs-sidebar .nav .nav > li > a {
     padding-top:    3px;
     padding-bottom: 3px;
     padding-left: 30px;
-    font-size: 90%;
+    font-size: 80%;
 }
 
-/* Show and affix the side nav when space allows it */
+h3 {
+  padding-bottom:2px;
+  margin-bottom: 0px;
+  margin-top: 20px;
+}
+
+/*
+@media (min-width: 768px) {
+  .navbar-toggle {
+    display: none;
+  }
+}
+*/
+
+/* replace top-nav with side-nav */
 @media (min-width: 992px) {
-    /* Workaround a Safari bug when zooming to < 100%
-       https://github.com/mkdocs/mkdocs/issues/1050 */
-    .col-md-9 {
-        box-sizing: border-box;  /* csslint allow: box-sizing */
-        padding-left: 25%;
-        width: 100%;
+  .navbar-header {
+    padding-left: 0px;
+  }
+
+    .nav {
+      font-size: 12px;
     }
+
+    #maxwell-daemon-image {
+      display: inline;
+      height: 240px;;
+      margin-right: 30px;
+    }
+
+    .bs-sidebar {
+      display: block;
+    }
+
+    .navbar-collapse ul {
+      display: none;
+    }
+
+    .container {
+    }
+
     .bs-sidebar .nav > .active > ul {
         display: block;
     }
     /* Widen the fixed sidebar */
-    .bs-sidebar.affix, /* csslint allow: adjoining-classes */
-    .bs-sidebar.affix-bottom { /* csslint allow: adjoining-classes */
-        width: 213px;
+    .bs-sidebar.affix,
+    .bs-sidebar.affix-bottom {
+        width: 160px;
     }
-    .bs-sidebar.affix { /* csslint allow: adjoining-classes */
+
+    .bs-sidebar.affix {
         position: fixed; /* Undo the static from mobile first approach */
-        top: 80px;
+        top: 65px;
     }
-    .bs-sidebar.affix-bottom { /* csslint allow: adjoining-classes */
+    .bs-sidebar.affix-bottom {
         position: absolute; /* Undo the static from mobile first approach */
     }
-    .bs-sidebar.affix-bottom .bs-sidenav, /* csslint allow: adjoining-classes */
-    .bs-sidebar.affix .bs-sidenav { /* csslint allow: adjoining-classes */
+    .bs-sidebar.affix-bottom .bs-sidenav,
+    .bs-sidebar.affix .bs-sidenav {
         margin-top: 0;
         margin-bottom: 0;
     }
-}
-@media (min-width: 1200px) {
-    /* Widen the fixed sidebar again */
-    .bs-sidebar.affix-bottom, /* csslint allow: adjoining-classes */
-    .bs-sidebar.affix { /* csslint allow: adjoining-classes */
-        width: 263px;
+
+    h3 {
+      font-size: 150%;
+      font-family: "times";
+      /*padding: 8px; */
+      width: 80%;
+      padding-bottom:2px;
+      margin-bottom: 0px;
+      margin-top: 20px;
+      margin-left: 30px;
+    }
+
+    pre, table {
+      font-size: 12px;
+      margin-left: 30px;
+      margin-right: 30px;
+    }
+
+    code {
+      background-color: rgba(0,0,0,0.04);
+      color: #333;
+    }
+
+    p {
+      padding-left: 30px;
+      padding-right: 30px;
+      margin-top: 5px;
+    }
+
+    h4 {
+      font-size: 100%;
+      padding-left: 30px;
+      padding-right: 30px;
+      margin-top: 30px;
+      margin-bottom: 0px;
+      font-style: italic;
+      text-decoration: underline;
+    }
+
+    hr + h4 {
+      margin-top: 15px;
+    }
+
+    li.toctree-l3 ul {
+      display: none;
+    }
+
+    li.toctree-l3.active ul {
+      display: block;
+    }
+
+    li .toctree-l4 {
+      list-style-type: none;
+      font-size: 80%;
+      margin-bottom: 3px;
     }
 }
 
-.headerlink {
-    font-family: FontAwesome;
-    font-size: 14px;
-    display: none;
-    padding-left: .5em;
+@media (min-width: 1200px) {
+    /* Widen the fixed sidebar again */
+    .bs-sidebar.affix-bottom,
+    .bs-sidebar.affix {
+        width: 190px;
+    }
 }
 
-h1:hover .headerlink, h2:hover .headerlink, h3:hover .headerlink, h4:hover .headerlink, h5:hover .headerlink, h6:hover .headerlink{
-    display:inline-block;
+hr {
+  margin-top:-4px;
+  margin-bottom: 15px;
+  margin-left: 28px;
+  margin-right: 0px;
+  border-color: #788F96;
+  width: 90%;
 }
 
-
-
-.admonition {
-    padding: 15px;
-    margin-bottom: 20px;
-    border: 1px solid transparent;
-    border-radius: 4px;
-    text-align: left;
+.content-title {
+  font-size: 150%;
 }
 
-.admonition.note { /* csslint allow: adjoining-classes */
-    color: #3a87ad;
-    background-color: #d9edf7;
-    border-color: #bce8f1;
+.jumptarget::before {
+  content:"";
+  display:block;
+  height:55px; /* fixed header height*/
+  margin:-55px 0 0; /* negative fixed header height */
 }
 
-.admonition.warning { /* csslint allow: adjoining-classes */
-    color: #c09853;
-    background-color: #fcf8e3;
-    border-color: #fbeed5;
+h3:before {
+  display: block;
+  content: "";
+  margin-top: -55px;
+  height: 55px;
+  visibility: hidden;
 }
 
-.admonition.danger { /* csslint allow: adjoining-classes */
-    color: #b94a48;
-    background-color: #f2dede;
-    border-color: #eed3d7;
+h4:before {
+  display: block;
+  content: "";
+  margin-top: -50px;
+  height: 50px;
+  visibility: hidden;
 }
 
-.admonition-title {
-    font-weight: bold;
-    text-align: left;
+h3:nth-of-type(1) {
+  margin-top: 0px;
 }
 
-
-.dropdown-submenu {
-    position: relative;
-}
-
-.dropdown-submenu>.dropdown-menu {
-    top: 0;
-    left: 100%;
-    margin-top: -6px;
-    margin-left: -1px;
-    -webkit-border-radius: 0 6px 6px 6px;
-    -moz-border-radius: 0 6px 6px;
-    border-radius: 0 6px 6px 6px;
-}
-
-.dropdown-submenu:hover>.dropdown-menu {
-    display: block;
-}
-
-.dropdown-submenu>a:after {
-    display: block;
-    content: " ";
-    float: right;
-    width: 0;
-    height: 0;
-    border-color: transparent;
-    border-style: solid;
-    border-width: 5px 0 5px 5px;
-    border-left-color: #ccc;
-    margin-top: 5px;
-    margin-right: -10px;
-}
-
-.dropdown-submenu:hover>a:after {
-    border-left-color: #fff;
-}
-
-.dropdown-submenu.pull-left { /* csslint allow: adjoining-classes */
-    float: none;
-}
-
-.dropdown-submenu.pull-left>.dropdown-menu { /* csslint allow: adjoining-classes */
-    left: -100%;
-    margin-left: 10px;
-    -webkit-border-radius: 6px 0 6px 6px;
-    -moz-border-radius: 6px 0 6px 6px;
-    border-radius: 6px 0 6px 6px;
-}

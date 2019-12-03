@@ -7,261 +7,220 @@
         
         
         
-        <link rel="shortcut icon" href="../img/favicon.ico">
+        <link rel="shortcut icon" href="../img/robut.ico">
+
         <title>Changelog - Maxwell's Daemon</title>
-        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
-        <link href="../css/font-awesome.min.css" rel="stylesheet">
+
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/bootstrap-theme.min.css" rel="stylesheet">
+        <link href="../css/font-awesome-4.0.3.css" rel="stylesheet">
+        <link href="../css/prettify-1.0.css" rel="stylesheet">
         <link href="../css/base.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+
         <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
         <!--[if lt IE 9]>
             <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.5.2/respond.min.js"></script>
         <![endif]-->
-
-        <script src="../js/jquery-1.10.2.min.js" defer></script>
-        <script src="../js/bootstrap-3.0.3.min.js" defer></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
-        <script>hljs.initHighlightingOnLoad();</script> 
+        <script src="http://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
     </head>
 
     <body>
 
         <div class="navbar navbar-default navbar-fixed-top" role="navigation">
-            <div class="container">
+    <div class="container">
 
-                <!-- Collapsed navigation -->
-                <div class="navbar-header">
-                    <!-- Expander button -->
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                        <span class="sr-only">Toggle navigation</span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <a class="navbar-brand" href="..">Maxwell's Daemon</a>
-                </div>
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
 
-                <!-- Expanded navigation -->
-                <div class="navbar-collapse collapse">
-                        <!-- Main navigation -->
-                        <ul class="nav navbar-nav">
-                            <li >
-                                <a href="..">Overview</a>
-                            </li>
-                            <li >
-                                <a href="../quickstart/">Quick Start</a>
-                            </li>
-                            <li >
-                                <a href="../config/">Configuration</a>
-                            </li>
-                            <li >
-                                <a href="../producers/">Producers</a>
-                            </li>
-                            <li >
-                                <a href="../filtering/">Filtering</a>
-                            </li>
-                            <li >
-                                <a href="../dataformat/">Data Format</a>
-                            </li>
-                            <li >
-                                <a href="../encryption/">Encryption</a>
-                            </li>
-                            <li >
-                                <a href="../bootstrapping/">Bootstrapping</a>
-                            </li>
-                            <li >
-                                <a href="../monitoring/">Monitoring</a>
-                            </li>
-                            <li >
-                                <a href="../embedding/">Embedding</a>
-                            </li>
-                            <li >
-                                <a href="../schemas/">Schemas</a>
-                            </li>
-                            <li >
-                                <a href="../compat/">Compat / Caveats</a>
-                            </li>
-                            <li class="active">
-                                <a href="./">Changelog</a>
-                            </li>
-                        </ul>
-
-                    <ul class="nav navbar-nav navbar-right">
-                        <li>
-                            <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
-                                <i class="fa fa-search"></i> Search
-                            </a>
-                        </li>
-                            <li >
-                                <a rel="next" href="../compat/">
-                                    <i class="fa fa-arrow-left"></i> Previous
-                                </a>
-                            </li>
-                            <li class="disabled">
-                                <a rel="prev" >
-                                    Next <i class="fa fa-arrow-right"></i>
-                                </a>
-                            </li>
-                    </ul>
-                </div>
-            </div>
+            <!-- Main title -->
+            <a class="navbar-brand" href="..">Maxwell's Daemon</a>
         </div>
 
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+            
+            
+                <li >
+                    <a href="..">Overview</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../quickstart/">Quick Start</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../config/">Configuration</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../producers/">Producers</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../filtering/">Filtering</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../dataformat/">Data Format</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../encryption/">Encryption</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../bootstrapping/">Bootstrapping</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../monitoring/">Monitoring</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../embedding/">Embedding</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../schemas/">Schemas</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../compat/">Compat / Caveats</a>
+                </li>
+            
+            
+            
+                <li class="active">
+                    <a href="./">Changelog</a>
+                </li>
+            
+            
+            </ul>
+
+            <!-- Search, Navigation and Repo links -->
+            <ul class="nav navbar-nav navbar-right">
+                <li >
+                    <a rel="next" href="../compat/">
+                        <i class="fa fa-arrow-left"></i> Previous
+                    </a>
+                </li>
+                <li class="disabled">
+                    <a rel="prev" >
+                        Next <i class="fa fa-arrow-right"></i>
+                    </a>
+                </li>
+                
+            </ul>
+            <div class="navbar-image-container"><img id="navbar-image" src="/img/maxwell_equals_2.png"></div>
+        </div>
+    </div>
+</div>
+
+        <a href="https://github.com/zendesk/maxwell"><img id="github-banner" style="position: absolute; top: 0; right: 0; border: 0; z-index: 1031;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
         <div class="container">
-                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+            <div class="col-md-2">&nbsp;<div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
-        <li class="main active"><a href="#maxwell-changelog">Maxwell changelog</a></li>
-            <li><a href="#v1234-try-to-be-kinder-to-people-who-bore-you-youre-probably-boring-them-too">v1.23.4: "Try to be kinder to people who bore you, You're probably boring them too."</a></li>
-            <li><a href="#v1233-but-thats-not-the-way-it-feels">v1.23.3: "but that's not the way it feels"</a></li>
-            <li><a href="#v1232-you-enjoy-it-every-time">v1.23.2: "you enjoy it every time"</a></li>
-            <li><a href="#v1231-the-new-barrista">v1.23.1: "the new barrista"</a></li>
-            <li><a href="#v1230-when-it-breaks-if-it-breaks-we-will-see">v1.23.0: "When it breaks If it breaks We will see"</a></li>
-            <li><a href="#v1226-the-things-that-keep-your-like-dresses-like">v1.22.6: "the things that keep your, like, dresses, like"</a></li>
-            <li><a href="#v1225-all-of-the-names">v1.22.5: "all of the names"</a></li>
-            <li><a href="#v1224-last-christmans-i-gave-you-my-heart">v1.22.4: "Last Christmans, I gave you my heart"</a></li>
-            <li><a href="#v1223-my-doubt-my-failings">v1.22.3: "my doubt, my failings"</a></li>
-            <li><a href="#v1222-some-girls">v1.22.2: "some girls"</a></li>
-            <li><a href="#v1221-a-snow-covered-field">v1.22.1: "a snow covered field"</a></li>
-            <li><a href="#v1220-through-the-roof-and-underground">v1.22.0: "through the roof, and underground"</a></li>
-            <li><a href="#v1211-ohhhhhh-oh-oh">v1.21.1: "ohhhhhh oh oh"</a></li>
-            <li><a href="#v1210-through-the-roof">v1.21.0: "through the roof"</a></li>
-            <li><a href="#v1200-and-so-you-learn-the-only-way-to-go-is">v1.20.0: "and so you learn the only way to go is"</a></li>
-            <li><a href="#v1197-in-every-corner-of-your-room">v1.19.7: "in every corner of your room"</a></li>
-            <li><a href="#v1196-set-up-for-you">v1.19.6: "set up for you"</a></li>
-            <li><a href="#v1195-when-there-is-trap">v1.19.5: "when there is trap"</a></li>
-            <li><a href="#v1194-and-underground">v1.19.4: "and underground"</a></li>
-            <li><a href="#v1193-through-the-roof">v1.19.3: "through the roof"</a></li>
-            <li><a href="#v1192-the-same-i-wore-last-night">v1.19.2: "the same I wore last night"</a></li>
-            <li><a href="#v1191-the-swoop-here-doesnt-change-things-one-bit">v1.19.1: "the swoop here doesn't change things one bit"</a></li>
-            <li><a href="#v1190-whole-lotta-milka">v1.19.0: "whole lotta milka"</a></li>
-            <li><a href="#v1180-hello-from-the-andes">v1.18.0: "hello from the Andes"</a></li>
-            <li><a href="#v1171-ay-ay-ay">v1.17.1: "ay, ay, ay"</a></li>
-            <li><a href="#v1170-monday-not-sunday-tuesday">v1.17.0: "monday, not sunday tuesday"</a></li>
-            <li><a href="#v1161-the-90-degree-angle-thing">v1.16.1: "the 90 degree angle thing"</a></li>
-            <li><a href="#v1160-kind-of-sort-of-a-reference-to-something">v1.16.0: "kind of sort of a reference to something"</a></li>
-            <li><a href="#v1150-im-sure-im-being-supportive-here">v1.15.0: "I'm sure I'm being supportive here."</a></li>
-            <li><a href="#v1147-casamir-pulaski-day">v1.14.7: "casamir pulaski day"</a></li>
-            <li><a href="#v1146-gimme-one-sec-i-need-to-grab-something">v1.14.6: "gimme one sec, I need to grab something"</a></li>
-            <li><a href="#v1145-he-looks-funny-he-moves-funny">v1.14.5: "he looks funny, he moves funny"</a></li>
-            <li><a href="#v1144-chinese-food">v1.14.4: "chinese food"</a></li>
-            <li><a href="#v1143-whats-for-lunch">v1.14.3: "what's for lunch?"</a></li>
-            <li><a href="#v1142-bork-bork-bork">v1.14.2: "bork bork bork"</a></li>
-            <li><a href="#v1141-half-asleep-in-frog-pajamas">v1.14.1: "half asleep in frog pajamas"</a></li>
-            <li><a href="#v1140-cats-cats-more-cats-sadness-at-lack-of-cats">v1.14.0: "cats, cats, more cats.  sadness at lack of cats."</a></li>
-            <li><a href="#v1135-cyclone-keni-is-real">v1.13.5: "cyclone keni is real"</a></li>
-            <li><a href="#v1134-it-was-just-a-dream">v1.13.4: "it was just a dream"</a></li>
-            <li><a href="#v1133-winner-winner-chicken-dinner">v1.13.3: "winner winner chicken dinner"</a></li>
-            <li><a href="#v1132-i-just-bought-them-to-sleep-in">v1.13.2: "I just bought them to sleep in"</a></li>
-            <li><a href="#v1131-line-up-your-exes-in-song">v1.13.1: "line up your exes in song"</a></li>
-            <li><a href="#v1130-sorry-i-burned-your-clothes">v1.13.0: "sorry, I burned your clothes"</a></li>
-            <li><a href="#v1120-cold-feet-literally-and-metaphorically">v1.12.0: "Cold Feet, literally and metaphorically."</a></li>
-            <li><a href="#v1110-the-latest-the-greatest">v1.11.0: "the latest, the greatest"</a></li>
-            <li><a href="#v1109-no-one-left-behind">v1.10.9: "no one left behind"</a></li>
-            <li><a href="#v1108-what-doesnt-kill-you-makes-you-stronger">v1.10.8: "what doesn't kill you makes you stronger"</a></li>
-            <li><a href="#v1107-its-never-too-l8">v1.10.7: "it's never too l8!"</a></li>
-            <li><a href="#v1106-a-new-starter-is-here">v1.10.6: "a new starter is here"</a></li>
-            <li><a href="#v1105-half-asleep-on-her-couch">v1.10.5: "half asleep on her couch"</a></li>
-            <li><a href="#v1104-shutdown-harder">v1.10.4: "shutdown --harder"</a></li>
-            <li><a href="#v1103-1102-and-a-bit">v1.10.3: "1.10.2-and-a-bit"</a></li>
-            <li><a href="#v1102-just-in-time-for-tomorrow">v1.10.2: "just in time for tomorrow"</a></li>
-            <li><a href="#v1101-forgive-and-forget">v1.10.1: "forgive and forget"</a></li>
-            <li><a href="#v1100-slightly-more-ones-than-zeroes">v1.10.0: "slightly more ones than zeroes"</a></li>
-            <li><a href="#v190-now-with-added-whimsy">v1.9.0: "now with added whimsy"</a></li>
-            <li><a href="#v182-just-as-the-postcards-wept">v1.8.2: "just as the postcards wept"</a></li>
-            <li><a href="#v181-famous-is-faster-dont-have-to-be-talented">v1.8.1: "famous is faster, don't have to be talented"</a></li>
-            <li><a href="#v180-upbeat-honest-contradictory">v1.8.0: "upbeat, honest, contradictory"</a></li>
-            <li><a href="#v172-comparing-self-to-better">v1.7.2: "comparing self to better"</a></li>
-            <li><a href="#v171-blame-it-on-your-seratonin">v1.7.1: "blame it on your seratonin"</a></li>
-            <li><a href="#v170-lucky-me-lucky-mud">v1.7.0: "lucky me, lucky mud"</a></li>
-            <li><a href="#v160-give-me-a-quest">v1.6.0: "give me a quest"</a></li>
-            <li><a href="#v152-french-banana">v1.5.2: "french banana"</a></li>
-            <li><a href="#v151-151-is-just-151">v1.5.1: "1.5.1 is just 1.5.1"</a></li>
-            <li><a href="#v150-someone-somewhere-is-still-smoking-cigarettes-damnit">v1.5.0: "someone, somewhere, is still smoking cigarettes, damnit"</a></li>
-            <li><a href="#v142-drawer-cat-is-back">v1.4.2: "drawer cat is back"</a></li>
-            <li><a href="#v141-cat-snores">v1.4.1: "cat snores"</a></li>
-            <li><a href="#v140-deep-insomniac-character-flaws">v1.4.0: "deep, insomniac character flaws"</a></li>
-            <li><a href="#v130-yogg-saron">v1.3.0: "yogg-saron"</a></li>
-            <li><a href="#v122-bats-wearing-frog-pajamas">v1.2.2: "bats wearing frog pajamas"</a></li>
-            <li><a href="#v121-point-ones-are-a-sad-and-inevitable-fact">v1.2.1: "point-ones are a sad and inevitable fact"</a></li>
-            <li><a href="#v120-just-here-not-to-talk-to-you">v1.2.0: "just here, not to talk to you"</a></li>
-            <li><a href="#v116-pithy">v1.1.6: "pithy"</a></li>
-            <li><a href="#v115-my-brain-is-a-polluted-mess">v1.1.5: "my brain is a polluted mess"</a></li>
-            <li><a href="#v114-george-flunk">v1.1.4: "george flunk"</a></li>
-            <li><a href="#v113-the-button-i-push-to-not-have-to-go-out">v1.1.3: "the button I push to not have to go out"</a></li>
-            <li><a href="#v112-scribbled-notes-on-red-pages">v1.1.2: "scribbled notes on red pages"</a></li>
-            <li><a href="#v111-scribbled-notes-on-blue-pages">v1.1.1: scribbled notes on blue pages</a></li>
-            <li><a href="#v110-sleep-away-the-afternoon">v1.1.0: "sleep away the afternoon"</a></li>
-            <li><a href="#v110-pre4-buck-buck-buck-buck-buck-buck-ah">v1.1.0-pre4: "buck buck buck buck buck buck-AH!"</a></li>
-            <li><a href="#v110-pre3">v1.1.0-pre3:</a></li>
-            <li><a href="#v110-pre2-yawn-yawn">v1.1.0-pre2: "yawn yawn"</a></li>
-            <li><a href="#v101-bag-of-oversized-daisies">v1.0.1: "bag of oversized daisies"</a></li>
-            <li><a href="#v100-maxwell-learns-to-speak">v1.0.0: "Maxwell learns to speak"</a></li>
-            <li><a href="#v100-rc3-cmon-and-take-it">v1.0.0-RC3: "C'mon and take it"</a></li>
-            <li><a href="#v100-rc2-same-thing-just-without-the-v">v1.0.0-RC2: "same thing, just without the v"</a></li>
-            <li><a href="#v100-rc1-richard-buckners-release">v1.0.0-RC1: "Richard Buckner's release"</a></li>
-            <li><a href="#v100-pre2-an-embarassment-of-riches">v1.0.0-PRE2: "an embarassment of riches"</a></li>
-            <li><a href="#v100-pre1-drunk-conversations-with-sober-people">v1.0.0-PRE1: "drunk conversations with sober people"</a></li>
-            <li><a href="#v0170-wrists-of-william">v0.17.0: "wrists of William"</a></li>
-            <li><a href="#v0162-the-best-laid-plans">v0.16.2: "The best laid plans"</a></li>
-            <li><a href="#v0161-me-and-room-service">v0.16.1: "me and room service"</a></li>
-            <li><a href="#v0160-kristian-kaufmanns-version">v0.16.0: "Kristian Kaufmann's version"</a></li>
-            <li><a href="#v0150-the-littlest-little-city">v0.15.0: "the littlest little city"</a></li>
-            <li><a href="#v0150-rc1-its-later-than-you-think">v0.15.0-RC1: "it's later than you think"</a></li>
-            <li><a href="#v0146-its-about-being-american-sort-of">v0.14.6: "It's about being American.  Sort of."</a></li>
-            <li><a href="#v0145-false-is-the-new-true">v0.14.5: "false is the new true"</a></li>
-            <li><a href="#v0144-youd-think-wed-be-at-10-by-now-wouldnt-you">v0.14.4: "You'd think we'd be at 1.0 by now, wouldn't you?"</a></li>
-            <li><a href="#v0143-peanuts-my-girlfriend-thinks-about-peanuts">v0.14.3: "Peanuts.  My girlfriend thinks about peanuts."</a></li>
-            <li><a href="#v0142-maxwell-sandvik-88">v0.14.2: "Maxwell Sandvik 88"</a></li>
-            <li><a href="#v0141-be-liberal-in-what-you-accept-even-if-nonsensical">v0.14.1: "be liberal in what you accept.  Even if nonsensical."</a></li>
-            <li><a href="#v0140-the-slow-but-inevitable-slide">v0.14.0: "the slow but inevitable slide"</a></li>
-            <li><a href="#v0131-well-that-was-somewhat-expected">v0.13.1: "well that was somewhat expected"</a></li>
-            <li><a href="#v0130-malkovich-malkovich-malkovich-sheldon">v0.13.0: "Malkovich Malkovich Malkovich Sheldon?"</a></li>
-            <li><a href="#v0120-what-do-i-call-them-slippers-why-are-you-jealous">v0.12.0: "what do I call them?  Slippers?  Why, are you jealous?"</a></li>
-            <li><a href="#v0114-13-steps">v0.11.4: "13 steps"</a></li>
-            <li><a href="#v0113-and-the-other-half-is-to-take-the-bugs-out">v0.11.3: ".. and the other half is to take the bugs out"</a></li>
-            <li><a href="#v0112-savage-acts-of-unprovoked-violence-are-bad">v0.11.2: "savage acts of unprovoked violence are bad"</a></li>
-            <li><a href="#v0111-dog-snoring-loudly">v0.11.1: "dog snoring loudly"</a></li>
-            <li><a href="#v0110-cat-waving-gently">v0.11.0: "cat waving gently"</a></li>
-            <li><a href="#v0101-all-64-of-your-bases-belong-to-shut-up-internet-parrot">v0.10.1: "all 64 of your bases belong to... shut up, internet parrot."</a></li>
-            <li><a href="#v0110-rc1-goin-faster-than-a-rollercoaster">v0.11.0-RC1: "goin' faster than a rollercoaster"</a></li>
-            <li><a href="#v0100-the-first-word-is-french">v0.10.0: "The first word is French"</a></li>
-            <li><a href="#v0110-pre4-except-for-that-other-thing">v0.11.0-PRE4: "except for that other thing"</a></li>
-            <li><a href="#v0110-pre3-nothing-like-a-good-nights-sleep">v0.11.0-PRE3: "nothing like a good night's sleep"</a></li>
-            <li><a href="#v0110-pre2-you-really-need-to-name-a-pre-release-something-cutesy">v0.11.0-PRE2: "you really need to name a PRE release something cutesy?"</a></li>
-            <li><a href="#v0110-pre1-a-slow-traffic-jam-towards-the-void">v0.11.0-PRE1: "A slow traffic jam towards the void"</a></li>
-            <li><a href="#v0100-rc4-inspiring-confidence">v0.10.0-RC4: "Inspiring confidence"</a></li>
-            <li><a href="#v095-long-story-short-thats-why-im-late">v0.9.5: "Long story short, that's why I'm late"</a></li>
-            <li><a href="#v0100-rc3-except-for-that-one-thing">v0.10.0-RC3: "Except for that one thing"</a></li>
-            <li><a href="#v0100-rc2-rc2-is-always-a-good-sign">v0.10.0-RC2: "RC2 is always a good sign."</a></li>
-            <li><a href="#v0100-rc1-verify-all-the-things">v0.10.0-RC1: "verify all the things"</a></li>
-            <li><a href="#v094-weve-been-here-before">v0.9.4: "we've been here before"</a></li>
-            <li><a href="#v093-some-days-its-just-better-to-stay-in-bed">v0.9.3: "some days it's just better to stay in bed"</a></li>
-            <li><a href="#v092-cats-tongue">v0.9.2: "Cat's tongue"</a></li>
-            <li><a href="#v091-bugs-bugs-bugs-lies-statistics">v0.9.1: "bugs, bugs, bugs, lies, statistics"</a></li>
-            <li><a href="#v090-vanchi-says-eat">v0.9.0: Vanchi says "eat"</a></li>
-            <li><a href="#v081-pascal-says-bonjour">v0.8.1: "Pascal says Bonjour"</a></li>
-            <li><a href="#v080-the-cat-never-shuts-up">v0.8.0: the cat never shuts up</a></li>
-            <li><a href="#v072-all-the-sql-ladies">v0.7.2: "all the sql ladies"</a></li>
-            <li><a href="#v071-not-hoarders">v0.7.1: "not hoarders"</a></li>
-            <li><a href="#v070-070-alameda">v0.7.0: 0.7.0, "alameda"</a></li>
-            <li><a href="#v063-063">v0.6.3: 0.6.3</a></li>
-            <li><a href="#v062-v062">v0.6.2: v0.6.2</a></li>
-            <li><a href="#v061-v061">v0.6.1: v0.6.1</a></li>
-            <li><a href="#v060-kafkakafkakafa">v0.6.0: kafkakafkakafa</a></li>
-            <li><a href="#v050-050-people-who-put-commas-in-column-names-deserve-undefined-behavior">v0.5.0: 0.5.0 -- "People who put commas in column names deserve undefined behavior"</a></li>
-            <li><a href="#v040-040-unboxed-cat">v0.4.0: 0.4.0, "unboxed cat"</a></li>
-            <li><a href="#v030-030">v0.3.0: 0.3.0</a></li>
-            <li><a href="#v022-022">v0.2.2: 0.2.2</a></li>
-            <li><a href="#v021-v021">v0.2.1: v0.2.1</a></li>
-            <li><a href="#v020-020">v0.2.0: 0.2.0</a></li>
-            <li><a href="#v014-014">v0.1.4: 0.1.4</a></li>
-            <li><a href="#v013-013">v0.1.3: 0.1.3</a></li>
-            <li><a href="#v011-011">v0.1.1: 0.1.1</a></li>
-            <li><a href="#v01-01">v0.1: 0.1</a></li>
+        
+          <li >
+              <a href="..">Overview</a>
+              
+          </li>
+        
+          <li >
+              <a href="../quickstart/">Quick Start</a>
+              
+          </li>
+        
+          <li >
+              <a href="../config/">Configuration</a>
+              
+          </li>
+        
+          <li >
+              <a href="../producers/">Producers</a>
+              
+          </li>
+        
+          <li >
+              <a href="../filtering/">Filtering</a>
+              
+          </li>
+        
+          <li >
+              <a href="../dataformat/">Data Format</a>
+              
+          </li>
+        
+          <li >
+              <a href="../encryption/">Encryption</a>
+              
+          </li>
+        
+          <li >
+              <a href="../bootstrapping/">Bootstrapping</a>
+              
+          </li>
+        
+          <li >
+              <a href="../monitoring/">Monitoring</a>
+              
+          </li>
+        
+          <li >
+              <a href="../embedding/">Embedding</a>
+              
+          </li>
+        
+          <li >
+              <a href="../schemas/">Schemas</a>
+              
+          </li>
+        
+          <li >
+              <a href="../compat/">Compat / Caveats</a>
+              
+          </li>
+        
+          <li class="active">
+              <a href="./">Changelog</a>
+              
+          </li>
+        
     </ul>
 </div></div>
-                <div class="col-md-9" role="main">
+            <div class="col-md-10" role="main">
 
 <h1 id="maxwell-changelog">Maxwell changelog</h1>
 <h3 id="v1234-try-to-be-kinder-to-people-who-bore-you-youre-probably-boring-them-too"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.23.4">v1.23.4</a>: "Try to be kinder to people who bore you, You're probably boring them too."</h3>
@@ -1130,80 +1089,25 @@ changed.  Thanks @kristiankaufmann</p>
 <p>This is the first possible release of Maxwell that might work.  It includes some exceedingly basic kafka support, and JSON output of binlog deltas.</p></div>
         </div>
 
-        <footer class="col-md-12">
-            <hr>
-            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
-        </footer>
-        <script>
-            var base_url = "..",
-                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
-        </script>
-        <script src="../js/base.js" defer></script>
-        <script src="../search/main.js" defer></script>
+        
 
-        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                <h4 class="modal-title" id="exampleModalLabel">Search</h4>
-            </div>
-            <div class="modal-body">
-                <p>
-                    From here you can search these documents. Enter
-                    your search terms below.
-                </p>
-                <form role="form">
-                    <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
-                    </div>
-                </form>
-                <div id="mkdocs-search-results"></div>
-            </div>
-            <div class="modal-footer">
-            </div>
-        </div>
-    </div>
-</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="Keyboard Shortcuts Modal" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                <h4 class="modal-title" id="exampleModalLabel">Keyboard Shortcuts</h4>
-            </div>
-            <div class="modal-body">
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th style="width: 20%;">Keys</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td class="help shortcut"><kbd>?</kbd></td>
-                    <td>Open this help</td>
-                  </tr>
-                  <tr>
-                    <td class="next shortcut"><kbd>n</kbd></td>
-                    <td>Next page</td>
-                  </tr>
-                  <tr>
-                    <td class="prev shortcut"><kbd>p</kbd></td>
-                    <td>Previous page</td>
-                  </tr>
-                  <tr>
-                    <td class="search shortcut"><kbd>s</kbd></td>
-                    <td>Search</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="modal-footer">
-            </div>
-        </div>
-    </div>
-</div>
-
+        <script src="../js/bootstrap-3.3.7.min.js"></script>
+        <script src="../js/prettify-1.0.min.js"></script>
+        <script src="../js/base.js"></script>
     </body>
+    <script>
+        jQuery(document).ready(function () {
+            var shiftWindow = function() {
+                scrollBy(0, -50)
+            };
+
+            //if (location.hash) shiftWindow();
+            //window.addEventListener("hashchange", shiftWindow);
+
+            jQuery("table").addClass("table table-condensed table-bordered table-hover");
+            jQuery("#maxwell-header").append(
+                jQuery("<img alt='The Daemon, maybe' src='/img/cyberiad_1.jpg' id='maxwell-daemon-image'>")
+            );
+        });
+    </script>
 </html>
