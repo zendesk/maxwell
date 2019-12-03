@@ -1,5 +1,14 @@
 # Maxwell changelog
 
+### [v1.23.4](https://github.com/zendesk/maxwell/releases/tag/v1.23.4): "Try to be kinder to people who bore you, You're probably boring them too."
+
+
+- Bump and override dependencies to fix security vulnerabilities.
+- Update redis-key config options
+
+ - list changes
+
+
 ### [v1.23.3](https://github.com/zendesk/maxwell/releases/tag/v1.23.3): "but that's not the way it feels"
 
 
