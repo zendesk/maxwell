@@ -1,5 +1,12 @@
 # Maxwell changelog
 
+### [v1.23.5](https://github.com/zendesk/maxwell/releases/tag/v1.23.5): "And I get so stuck in my head - Lost in all the lies, nihilistic backslide"
+
+
+ - Update bootstrap documentation
+ - Bump drop wizard metrics to support Java versions 10+
+
+
 ### [v1.23.4](https://github.com/zendesk/maxwell/releases/tag/v1.23.4): "Try to be kinder to people who bore you, You're probably boring them too."
 
 
