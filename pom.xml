@@ -247,7 +247,7 @@
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
       <artifactId>metrics-core</artifactId>
-      <version>3.1.0</version>
+      <version>4.1.1</version>
     </dependency>
     <dependency>
       <groupId>redis.clients</groupId>
@@ -257,7 +257,12 @@
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
       <artifactId>metrics-servlets</artifactId>
-      <version>3.1.0</version>
+      <version>4.1.1</version>
+    </dependency>
+    <dependency>
+      <groupId>io.dropwizard.metrics</groupId>
+      <artifactId>metrics-jmx</artifactId>
+      <version>4.1.1</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
