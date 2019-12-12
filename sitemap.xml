@@ -1,108 +1,68 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-
-    
     <url>
-     <loc>None/</loc>
-     <lastmod>2019-12-03</lastmod>
+     <loc>None</loc>
+     <lastmod>2019-12-12</lastmod>
      <changefreq>daily</changefreq>
     </url>
-    
-
-    
     <url>
-     <loc>None/quickstart/</loc>
-     <lastmod>2019-12-03</lastmod>
+     <loc>None</loc>
+     <lastmod>2019-12-12</lastmod>
      <changefreq>daily</changefreq>
     </url>
-    
-
-    
     <url>
-     <loc>None/config/</loc>
-     <lastmod>2019-12-03</lastmod>
+     <loc>None</loc>
+     <lastmod>2019-12-12</lastmod>
      <changefreq>daily</changefreq>
     </url>
-    
-
-    
     <url>
-     <loc>None/producers/</loc>
-     <lastmod>2019-12-03</lastmod>
+     <loc>None</loc>
+     <lastmod>2019-12-12</lastmod>
      <changefreq>daily</changefreq>
     </url>
-    
-
-    
     <url>
-     <loc>None/filtering/</loc>
-     <lastmod>2019-12-03</lastmod>
+     <loc>None</loc>
+     <lastmod>2019-12-12</lastmod>
      <changefreq>daily</changefreq>
     </url>
-    
-
-    
     <url>
-     <loc>None/dataformat/</loc>
-     <lastmod>2019-12-03</lastmod>
+     <loc>None</loc>
+     <lastmod>2019-12-12</lastmod>
      <changefreq>daily</changefreq>
     </url>
-    
-
-    
     <url>
-     <loc>None/encryption/</loc>
-     <lastmod>2019-12-03</lastmod>
+     <loc>None</loc>
+     <lastmod>2019-12-12</lastmod>
      <changefreq>daily</changefreq>
     </url>
-    
-
-    
     <url>
-     <loc>None/bootstrapping/</loc>
-     <lastmod>2019-12-03</lastmod>
+     <loc>None</loc>
+     <lastmod>2019-12-12</lastmod>
      <changefreq>daily</changefreq>
     </url>
-    
-
-    
     <url>
-     <loc>None/monitoring/</loc>
-     <lastmod>2019-12-03</lastmod>
+     <loc>None</loc>
+     <lastmod>2019-12-12</lastmod>
      <changefreq>daily</changefreq>
     </url>
-    
-
-    
     <url>
-     <loc>None/embedding/</loc>
-     <lastmod>2019-12-03</lastmod>
+     <loc>None</loc>
+     <lastmod>2019-12-12</lastmod>
      <changefreq>daily</changefreq>
     </url>
-    
-
-    
     <url>
-     <loc>None/schemas/</loc>
-     <lastmod>2019-12-03</lastmod>
+     <loc>None</loc>
+     <lastmod>2019-12-12</lastmod>
      <changefreq>daily</changefreq>
     </url>
-    
-
-    
     <url>
-     <loc>None/compat/</loc>
-     <lastmod>2019-12-03</lastmod>
+     <loc>None</loc>
+     <lastmod>2019-12-12</lastmod>
      <changefreq>daily</changefreq>
     </url>
-    
-
-    
     <url>
-     <loc>None/changelog/</loc>
-     <lastmod>2019-12-03</lastmod>
+     <loc>None</loc>
+     <lastmod>2019-12-12</lastmod>
      <changefreq>daily</changefreq>
     </url>
-    
-
 </urlset>
