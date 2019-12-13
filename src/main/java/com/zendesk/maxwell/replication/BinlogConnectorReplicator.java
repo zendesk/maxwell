@@ -252,7 +252,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	}
 
 	private boolean shouldSkipRow(RowMap row) throws IOException {
-		if ( isMaxwellRow(row) && !isBootstrapInsert(row))
+		if (isMaxwellRow(row))
 			return true;
 
 		/* NOTE: bootstrapper.shouldSkip will block us if
@@ -349,7 +349,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	 * Should we output a batch of rows for the given database and table?
 	 *
 	 * First against a whitelist/blacklist/filter.  The whitelist
-	 * ensures events that maxwell needs (maxwell.bootstrap, maxwell.heartbeats)
+	 * ensures events that maxwell needs (maxwell.heartbeats)
 	 * are always passed along.
 	 *
 	 * The system the blacklist gets rid of the
@@ -399,11 +399,6 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		return row.getDatabase().equals(this.maxwellSchemaDatabaseName);
 	}
 
-	private boolean isBootstrapInsert(RowMap row) {
-		return row.getDatabase().equals(this.maxwellSchemaDatabaseName)
-			&& row.getRowType().equals("insert")
-			&& row.getTable().equals("bootstrap");
-	}
 
 	private void ensureReplicatorThread() throws Exception {
 		checkCommErrors();
