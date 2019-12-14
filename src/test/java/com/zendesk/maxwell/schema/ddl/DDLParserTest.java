@@ -265,7 +265,8 @@ public class DDLParserTest {
 			"CREATE ROLE 'administrator', 'developer'",
 			"SET ROLE 'role1', 'role2'",
 			"SET DEFAULT ROLE administrator, developer TO 'joe'@'10.0.0.1'",
-			"DROP ROLE 'role1'"
+			"DROP ROLE 'role1'",
+			"#comment\ndrop procedure if exists `foo`"
 		};
 
 		for ( String s : testSQL ) {
