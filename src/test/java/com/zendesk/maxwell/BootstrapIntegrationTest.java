@@ -22,6 +22,11 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
+	public void testBootstrapWithComment() throws Exception {
+		runJSON("json/bootstrap-with-comment");
+	}
+
+	@Test
 	public void testMultipleRowBootstrap() throws Exception {
 		runJSON("json/bootstrap-multiple-row");
 	}

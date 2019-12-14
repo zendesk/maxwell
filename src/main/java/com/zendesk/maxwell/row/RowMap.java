@@ -36,6 +36,7 @@ public class RowMap implements Serializable {
 	private String kafkaTopic;
 	private String partitionString;
 	protected boolean suppressed;
+	private String comment;
 
 	private Long xid;
 	private Long xoffset;
@@ -178,6 +179,10 @@ public class RowMap implements Serializable {
 
 		if ( outputConfig.includesSchemaId && this.schemaId != null ) {
 			g.writeNumberField(FieldNames.SCHEMA_ID, this.schemaId);
+		}
+
+		if ( this.comment != null ) {
+			g.writeStringField(FieldNames.COMMENT, this.comment);
 		}
 
 		for ( Map.Entry<String, Object> entry : this.extraAttributes.entrySet() ) {
@@ -413,4 +418,11 @@ public class RowMap implements Serializable {
 		this.partitionString = partitionString;
 	}
 
+	public String getComment() {
+		return comment;
+	}
+
+	public void setComment(String comment) {
+		this.comment = comment;
+	}
 }
