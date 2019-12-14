@@ -129,9 +129,6 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 		if ( options.has("where")  && !StringUtils.isEmpty(((String) options.valueOf("where"))) )
 			this.whereClause = (String) options.valueOf("where");
 
-		if ( options.has("client_id") )
-			this.clientID = (String) options.valueOf("client_id");
-
 		if ( options.has("comment") )
 			this.comment = (String) options.valueOf("comment");
 	}
