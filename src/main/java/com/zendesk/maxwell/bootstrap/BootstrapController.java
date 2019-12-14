@@ -62,7 +62,7 @@ public class BootstrapController extends RunLoopProcess  {
 					activeTask = task;
 				}
 
-				bootstrapper.startBootstrap(task, producer, getCurrentSchemaID());
+				bootstrapper.performBootstrap(task, producer, getCurrentSchemaID());
 
 				synchronized(completionMutex) {
 					pushSkippedRows();

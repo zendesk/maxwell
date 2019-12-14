@@ -11,9 +11,11 @@ import java.util.Set;
 public class FieldNames {
 	public static final String COMMIT = "commit";
 	public static final String DATA = "data";
+	public static final String SCHEMA = "schema";
 	public static final String DATABASE = "database";
 	public static final String GTID = "gtid";
 	public static final String OLD = "old";
+	public static final String SCHEMA_OLD = "schema_old";
 	public static final String POSITION = "position";
 	public static final String QUERY = "query";
 	public static final String SERVER_ID = "server_id";
@@ -29,8 +31,8 @@ public class FieldNames {
 	public static final String PRIMARY_KEY_COLUMNS = "primary_key_columns";
 	public static final String REASON = "reason";
 
-	private static List<String> fieldNamesList = Arrays.asList(COMMIT, DATA, DATABASE,
-	GTID, OLD, POSITION, PRIMARY_KEY, PRIMARY_KEY_COLUMNS, QUERY, SERVER_ID, TABLE, THREAD_ID, TIMESTAMP, TRANSACTION_ID, TYPE, UUID);
+	private static List<String> fieldNamesList = Arrays.asList(COMMIT, DATA, SCHEMA, DATABASE,
+	GTID, OLD, SCHEMA_OLD, POSITION, PRIMARY_KEY, PRIMARY_KEY_COLUMNS, QUERY, SERVER_ID, TABLE, THREAD_ID, TIMESTAMP, TRANSACTION_ID, TYPE, UUID);
 
 	private static final Set<String> fieldNamesSet = new HashSet<>(fieldNamesList);
 

@@ -111,6 +111,7 @@ public class BinlogConnectorEvent {
 					json = cd.asJSON(data[dataIdx], outputConfig);
 				}
 				row.putData(cd.getName(), json);
+				row.putDataSchema(cd.getName(), cd.getType());
 				dataIdx++;
 			}
 			colIdx++;
@@ -135,9 +136,11 @@ public class BinlogConnectorEvent {
 					   In this case we should put what's in the "before" image into the "data" section, not the "old".
 					 */
 					row.putData(cd.getName(), json);
+					row.putDataSchema(cd.getName(), cd.getType());
 				} else {
 					if (!Objects.equals(row.getData(cd.getName()), json)) {
 						row.putOldData(cd.getName(), json);
+						row.putOldDataSchema(cd.getName(), cd.getType());
 					}
 				}
 				dataIdx++;

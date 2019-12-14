@@ -164,6 +164,37 @@ public class RowMapTest {
 				":[\"hiking\",\"programming\"]}}", rowMap.toJSON(outputConfig));
 	}
 
+	@Test
+	public void testToJSONWithSchema() throws Exception {
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS,
+		Arrays.asList("id", "first_name"), POSITION);
+
+		rowMap.setServerId(7653213L);
+		rowMap.setThreadId(6532312L);
+		rowMap.setSchemaId(298L);
+
+		rowMap.putExtraAttribute("int", 1234);
+		rowMap.putExtraAttribute("str", "foo");
+
+		rowMap.putData("id", 9001);
+		rowMap.putData("first_name", "foo");
+		rowMap.putData("last_name", "bar");
+
+		rowMap.putDataSchema("id", "int");
+		rowMap.putDataSchema("first_name", "varchar");
+		rowMap.putDataSchema("last_name", "varchar");
+
+		MaxwellOutputConfig outputConfig = getMaxwellOutputConfig();
+		outputConfig.includesSchema = true;
+
+		Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\",\"type\":\"insert\"," +
+				"\"ts\":1496712943,\"position\":\"binlog-0001:1\",\"gtid\":null,\"server_id\":7653213," +
+				"\"thread_id\":6532312,\"schema_id\":298,\"int\":1234,\"str\":\"foo\",\"primary_key\":[9001,\"foo\"]," +
+				"\"primary_key_columns\":[\"id\",\"first_name\"],\"data\":{\"id\":9001,\"first_name\":\"foo\"," +
+				"\"last_name\":\"bar\"},\"schema\":{\"id\":\"int\",\"first_name\":\"varchar\"," +
+				"\"last_name\":\"varchar\"}}", rowMap.toJSON(outputConfig));
+	}
+
 	private MaxwellOutputConfig getMaxwellOutputConfig(Pattern... patterns) {
 		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
 

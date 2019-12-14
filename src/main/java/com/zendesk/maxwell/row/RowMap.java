@@ -45,7 +45,9 @@ public class RowMap implements Serializable {
 	private Long schemaId;
 
 	private final LinkedHashMap<String, Object> data;
+	private final LinkedHashMap<String, Object> dataSchema;
 	private final LinkedHashMap<String, Object> oldData;
+	private final LinkedHashMap<String, Object> oldDataSchema;
 
 	private final LinkedHashMap<String, Object> extraAttributes;
 
@@ -63,7 +65,9 @@ public class RowMap implements Serializable {
 		this.timestampMillis = timestampMillis;
 		this.timestampSeconds = timestampMillis / 1000;
 		this.data = new LinkedHashMap<>();
+		this.dataSchema = new LinkedHashMap<>();
 		this.oldData = new LinkedHashMap<>();
+		this.oldDataSchema = new LinkedHashMap<>();
 		this.extraAttributes = new LinkedHashMap<>();
 		this.position = position;
 		this.nextPosition = nextPosition;
@@ -215,6 +219,8 @@ public class RowMap implements Serializable {
 					if ( p.matcher(key).matches() ) {
 						this.data.remove(key);
 						this.oldData.remove(key);
+						this.dataSchema.remove(key);
+						this.oldDataSchema.remove(key);
 					}
 				}
 			}
@@ -223,7 +229,16 @@ public class RowMap implements Serializable {
 		writeMapToJSON(FieldNames.DATA, this.data, dataGenerator, outputConfig.includesNulls);
 		if( !this.oldData.isEmpty() ){
 			writeMapToJSON(FieldNames.OLD, this.oldData, dataGenerator, outputConfig.includesNulls);
+
+			if(outputConfig.includesSchema) {
+				writeMapToJSON(FieldNames.SCHEMA_OLD, this.oldDataSchema, dataGenerator, outputConfig.includesNulls);
+			}
 		}
+		
+		if(outputConfig.includesSchema){
+			writeMapToJSON(FieldNames.SCHEMA, this.dataSchema, dataGenerator, outputConfig.includesNulls);
+		}
+
 		dataWriter.end(encryptionContext);
 
 		g.writeEndObject(); // end of row
@@ -232,7 +247,7 @@ public class RowMap implements Serializable {
 			String plaintext = json.consume();
 			json.getEncryptingGenerator().writeEncryptedObject(plaintext, encryptionContext);
 		}
-
+		
 		return json.consume();
 	}
 
@@ -268,6 +283,10 @@ public class RowMap implements Serializable {
 		this.approximateSize += approximateKVSize(key, value);
 	}
 
+	public void putDataSchema(String key, String type) {
+		this.dataSchema.put(key, type);
+	}
+
 	public void putExtraAttribute(String key, Object value) {
 		if (FieldNames.isProtected(key)) {
 			throw new ProtectedAttributeNameException("Extra attribute key name '" + key + "' is " +
@@ -287,6 +306,10 @@ public class RowMap implements Serializable {
 		this.oldData.put(key, value);
 
 		this.approximateSize += approximateKVSize(key, value);
+	}
+
+	public void putOldDataSchema(String key, String type) {
+		this.oldDataSchema.put(key, type);
 	}
 
 	public Position getNextPosition() { return nextPosition; }

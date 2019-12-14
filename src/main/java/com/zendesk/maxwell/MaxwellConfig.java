@@ -288,6 +288,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "output_server_id", "produced records include server_id; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_thread_id", "produced records include thread_id; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_schema_id", "produced records include schema_id; [true|false]. default: false" ).withOptionalArg();
+		parser.accepts( "output_schema", "produced records include schema; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_row_query", "produced records include query, binlog option \"binlog_rows_query_log_events\" must be enabled; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_primary_keys", "produced DML records include list of values that make up a row's primary key; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts( "output_primary_key_columns", "produced DML records include list of columns that make up a row's primary key; [true|false]. default: false" ).withOptionalArg();
@@ -576,6 +577,7 @@ public class MaxwellConfig extends AbstractConfig {
 		outputConfig.includesServerId = fetchBooleanOption("output_server_id", options, properties, false);
 		outputConfig.includesThreadId = fetchBooleanOption("output_thread_id", options, properties, false);
 		outputConfig.includesSchemaId = fetchBooleanOption("output_schema_id", options, properties, false);
+		outputConfig.includesSchema = fetchBooleanOption("output_schema", options, properties, false);
 		outputConfig.includesRowQuery = fetchBooleanOption("output_row_query", options, properties, false);
 		outputConfig.includesPrimaryKeys = fetchBooleanOption("output_primary_keys", options, properties, false);
 		outputConfig.includesPrimaryKeyColumns = fetchBooleanOption("output_primary_key_columns", options, properties, false);

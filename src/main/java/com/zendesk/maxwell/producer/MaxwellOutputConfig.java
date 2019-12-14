@@ -14,6 +14,7 @@ public class MaxwellOutputConfig {
 	public boolean includesServerId;
 	public boolean includesThreadId;
 	public boolean includesSchemaId;
+	public boolean includesSchema;
 	public boolean includesRowQuery;
 	public boolean includesPrimaryKeys;
 	public boolean includesPrimaryKeyColumns;
@@ -31,6 +32,7 @@ public class MaxwellOutputConfig {
 		this.includesServerId = false;
 		this.includesThreadId = false;
 		this.includesSchemaId = false;
+		this.includesSchema = false;
 		this.includesRowQuery = false;
 		this.includesPrimaryKeys = false;
 		this.includesPrimaryKeyColumns = false;

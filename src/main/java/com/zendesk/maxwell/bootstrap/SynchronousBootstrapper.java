@@ -35,11 +35,6 @@ public class SynchronousBootstrapper {
 	}
 
 
-	public void startBootstrap(BootstrapTask task, AbstractProducer producer, Long currentSchemaID) throws Exception {
-		performBootstrap(task, producer, currentSchemaID);
-		completeBootstrap(task, producer);
-	}
-
 	private Schema captureSchemaForBootstrap(BootstrapTask task) throws SQLException {
 		try ( Connection cx = getConnection(task.database) ) {
 			CaseSensitivity s = MaxwellMysqlStatus.captureCaseSensitivity(cx);
@@ -84,6 +79,8 @@ public class SynchronousBootstrapper {
 		} catch ( NoSuchElementException e ) {
 			LOGGER.info("bootstrapping aborted for " + task.logString());
 		}
+
+		completeBootstrap(task, producer, table);
 	}
 
 	private void updateInsertedRowsColumn(int insertedRows, Long id, Connection connection) throws SQLException, NoSuchElementException {
@@ -119,7 +116,9 @@ public class SynchronousBootstrapper {
 	}
 
 	private RowMap bootstrapStartRowMap(Table table) {
-		return bootstrapEventRowMap("bootstrap-start", table.database, table.name, table.getPKList());
+		RowMap row = bootstrapEventRowMap("bootstrap-start", table.database, table.name, table.getPKList());
+		setRowSchema(row, table);
+		return row;
 	}
 
 	private RowMap bootstrapEventRowMap(String type, String db, String tbl, List<String> pkList) {
@@ -132,8 +131,10 @@ public class SynchronousBootstrapper {
 			null);
 	}
 
-	public void completeBootstrap(BootstrapTask task, AbstractProducer producer) throws Exception {
-		producer.push(bootstrapEventRowMap("bootstrap-complete", task.database, task.table, new ArrayList<>()));
+	public void completeBootstrap(BootstrapTask task, AbstractProducer producer, Table table) throws Exception {
+		RowMap row = bootstrapEventRowMap("bootstrap-complete", task.database, task.table, new ArrayList<>());
+		setRowSchema(row, table);
+		producer.push(row);
 		LOGGER.info("bootstrapping ended for " + task.logString());
 	}
 
@@ -212,7 +213,23 @@ public class SynchronousBootstrapper {
 				columnValue == null ? null : columnDefinition.asJSON(columnValue, new MaxwellOutputConfig())
 			);
 
+			row.putDataSchema(
+				columnDefinition.getName(),
+				columnDefinition.getType()
+			);
+			
 			++columnIndex;
+		}
+	}
+
+	private void setRowSchema(RowMap row, Table table) {
+		Iterator<ColumnDef> columnDefinitions = table.getColumnList().iterator();
+		while ( columnDefinitions.hasNext() ) {
+			ColumnDef columnDefinition = columnDefinitions.next();
+			row.putDataSchema(
+				columnDefinition.getName(),
+				columnDefinition.getType()
+			);
 		}
 	}
 
