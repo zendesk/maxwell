@@ -55,10 +55,13 @@ public abstract class SchemaChange {
 		// now strip out comments
 		sql = sql.replaceAll("/\\*.*?\\*/", "");
 		sql = sql.replaceAll("\\-\\-.*", "");
+		sql = sql.replaceAll("^\\s*#.*", "");
 
 		for (Pattern p : SQL_BLACKLIST) {
-			if (p.matcher(sql).find())
+			if (p.matcher(sql).find()) {
+				LOGGER.debug("ignoring sql: " + sql);
 				return true;
+			}
 		}
 
 		if ( DELETE_BLACKLIST.matcher(sql).find() ) {
