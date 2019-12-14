@@ -97,6 +97,7 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 			this.mysql.host = "localhost";
 
 		this.schemaDatabaseName = fetchOption("schema_database", options, properties, "maxwell");
+		this.clientID = fetchOption("client_id", options, properties, "maxwell");
 
         if ( options.has("database") )
 			this.databaseName = (String) options.valueOf("database");
