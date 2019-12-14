@@ -1,5 +1,12 @@
 # Maxwell changelog
 
+### [v1.24.0](https://github.com/zendesk/maxwell/releases/tag/v1.24.0): "la la la la la la low"
+
+
+ - add comments field to bootstrapping, thanks Tom Collins
+ - fix sql bug with #comments style comments
+
+
 ### [v1.23.5](https://github.com/zendesk/maxwell/releases/tag/v1.23.5): "And I get so stuck in my head - Lost in all the lies, nihilistic backslide"
 
 
