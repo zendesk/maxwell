@@ -22,6 +22,7 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 	public String  whereClause;
 	public String  log_level;
 	public String  clientID;
+	public String  comment;
 
 	public Long    abortBootstrapID;
 	public Long    monitorBootstrapID;
@@ -52,6 +53,7 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 		parser.accepts( "user", "mysql username. default: maxwell" ).withRequiredArg();
 		parser.accepts( "password", "mysql password" ).withRequiredArg();
 		parser.accepts( "port", "mysql port. default: 3306" ).withRequiredArg();
+		parser.accepts( "comment", "arbitrary comment to be added to every bootstrap row record" ).withRequiredArg();
 		parser.accepts( "schema_database", "database that contains maxwell schema and state").withRequiredArg();
 		parser.accepts( "help", "display help").forHelp();
 
@@ -126,6 +128,9 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 
 		if ( options.has("where")  && !StringUtils.isEmpty(((String) options.valueOf("where"))) )
 			this.whereClause = (String) options.valueOf("where");
+
+		if ( options.has("comment") )
+			this.comment = (String) options.valueOf("comment");
 	}
 
 	private Properties parseFile(String filename, boolean abortOnMissing) {

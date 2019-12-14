@@ -1,5 +1,28 @@
 # Maxwell changelog
 
+### [v1.24.0](https://github.com/zendesk/maxwell/releases/tag/v1.24.0): "la la la la la la low"
+
+
+ - add comments field to bootstrapping, thanks Tom Collins
+ - fix sql bug with #comments style comments
+
+
+### [v1.23.5](https://github.com/zendesk/maxwell/releases/tag/v1.23.5): "And I get so stuck in my head - Lost in all the lies, nihilistic backslide"
+
+
+ - Update bootstrap documentation
+ - Bump drop wizard metrics to support Java versions 10+
+
+
+### [v1.23.4](https://github.com/zendesk/maxwell/releases/tag/v1.23.4): "Try to be kinder to people who bore you, You're probably boring them too."
+
+
+- Bump and override dependencies to fix security vulnerabilities.
+- Update redis-key config options
+
+ - list changes
+
+
 ### [v1.23.3](https://github.com/zendesk/maxwell/releases/tag/v1.23.3): "but that's not the way it feels"
 
 
