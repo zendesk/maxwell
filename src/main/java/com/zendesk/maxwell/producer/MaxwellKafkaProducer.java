@@ -134,7 +134,7 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	}
 }
 
-class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnable, StoppableTask, DestinationBuilder {
+class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnable, StoppableTask {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellKafkaProducer.class);
 
 	private final Producer<String, String> kafka;
@@ -235,8 +235,12 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		}
 	}
 
-	private String generateTopic(String topic, RowIdentity pk){
-		return this.buildDestinationString(interpolateTopic, topic, pk);
+	private String generateTopic(String topic, RowMap rowMap){
+		if(rowMap == null || !interpolateTopic){
+			return topic;
+		}
+		return rowMap.buildDestinationString(topic, "%\\{database}",
+				"%\\{table}", "%\\{type}");
 	}
 
 	@Override
@@ -270,7 +274,6 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	}
 
 	ProducerRecord<String, String> makeProducerRecord(final RowMap r) throws Exception {
-		RowIdentity pk = r.getRowIdentity();
 		String key = r.pkToJson(keyFormat);
 		String value = r.toJSON(outputConfig);
 		ProducerRecord<String, String> record;
@@ -282,7 +285,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 			// javascript topic override
 			topic = r.getKafkaTopic();
 			if ( topic == null ) {
-				topic = generateTopic(this.topic, pk);
+				topic = generateTopic(this.topic, r);
 			}
 
 			record = new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, getNumPartitions(topic)), key, value);
@@ -293,7 +296,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	ProducerRecord<String, String> makeFallbackRecord(String fallbackTopic, final RowIdentity pk, Exception reason) throws Exception {
 		String key = pk.toKeyJson(keyFormat);
 		String value = pk.toFallbackValueWithReason(reason.getClass().getSimpleName());
-		String topic = generateTopic(fallbackTopic, pk);
+		String topic = generateTopic(fallbackTopic, queue.peek());
 		return new ProducerRecord<>(topic, key, value);
 	}
 

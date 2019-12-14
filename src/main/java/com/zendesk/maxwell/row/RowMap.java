@@ -5,6 +5,7 @@ import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.Position;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -413,4 +414,20 @@ public class RowMap implements Serializable {
 		this.partitionString = partitionString;
 	}
 
+	/**
+	 * Used by Producers to build the destination String (Topic, Channel, RoutingKey)
+	 *
+	 * @param destination The default destination String
+	 * @param databaseRegex database regex to be replaced by the database name
+	 * @param tableRegex The table regex to be replaced by the table name
+	 * @param typeRegex The type regex to be replaced by the type
+	 * @return The destination string with all the regex's replaced by their corresponding types
+	 */
+	public String buildDestinationString(String destination, String databaseRegex, String tableRegex,
+			String typeRegex) {
+		return destination
+				.replaceAll(databaseRegex, StringUtils.defaultString(this.database, StringUtils.EMPTY))
+				.replaceAll(tableRegex, StringUtils.defaultString(this.table, StringUtils.EMPTY))
+				.replaceAll(typeRegex, StringUtils.defaultString(this.rowType, StringUtils.EMPTY));
+	}
 }

@@ -1,7 +1,6 @@
 package com.zendesk.maxwell.producer;
 
 import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.row.RowIdentity;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.util.StoppableTask;
 import org.slf4j.Logger;
@@ -12,7 +11,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MaxwellRedisProducer extends AbstractProducer implements StoppableTask, DestinationBuilder {
+public class MaxwellRedisProducer extends AbstractProducer implements StoppableTask {
 	private static final Logger logger = LoggerFactory.getLogger(MaxwellRedisProducer.class);
 	private final String channel;
 	private final boolean interpolateChannel;
@@ -43,14 +42,17 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 		}
 	}
 
-	private String generateChannel(RowIdentity pk){
-		return this.buildDestinationString(interpolateChannel, channel, pk);
+	private String generateChannel(RowMap rowMap){
+		if(interpolateChannel) {
+			return rowMap.buildDestinationString(channel, "%\\{database}", "%\\{table}", "%\\{type}");
+		}
+		return channel;
 	}
 
 	private void sendToRedis(RowMap msg) throws Exception {
 		String messageStr = msg.toJSON(outputConfig);
 
-		String channel = this.generateChannel(msg.getRowIdentity());
+		String channel = this.generateChannel(msg);
 
 		switch (redisType) {
 			case "lpush":
