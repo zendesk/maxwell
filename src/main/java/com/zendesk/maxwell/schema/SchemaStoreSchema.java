@@ -179,6 +179,14 @@ public class SchemaStoreSchema {
 		if ( !getTableColumns("bootstrap", c).containsKey("client_id") ) {
 			performAlter(c, "alter table `bootstrap` add column `client_id` varchar(255) charset 'latin1' not null default 'maxwell'");
 		}
+
+		if ( !getTableColumns("bootstrap", c).containsKey("comment") ) {
+			performAlter(c, "alter table `bootstrap` add column `comment` varchar(255) charset 'utf8' default null");
+		}
+
+		if ( !getTableColumns("bootstrap", c).get("where_clause").equals("text") ) {
+			performAlter(c, "alter table `bootstrap` modify where_clause text default null");
+		}
 	}
 
 	private static void backfillPositionSHAs(Connection c) throws SQLException {

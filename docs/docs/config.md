@@ -45,7 +45,7 @@ producer_ack_timeout           | [PRODUCER_ACK_TIMEOUT](#ack_timeout) | time in 
 producer_partition_by          | [PARTITION_BY](#partition_by)       | input to kafka/kinesis partition function           | database
 producer_partition_columns     | STRING                              | if partitioning by 'column', a comma separated list of columns |
 producer_partition_by_fallback | [PARTITION_BY_FALLBACK](#partition_by_fallback) | required when producer_partition_by=column.  Used when the column is missing |
-ignore_producer_error          | BOOLEAN              | When false, Maxwell will terminate on kafka/kinesis publish errors (aside from RecordTooLargeException). When true, errors are only logged. See also dead_letter_topic | true
+ignore_producer_error          | BOOLEAN              | When false, Maxwell will terminate on kafka/kinesis/pubsub publish errors (aside from RecordTooLargeException). When true, errors are only logged. See also dead_letter_topic | true
 &nbsp;
 **"file" producer options**
 output_file                    | STRING                              | output file for `file` producer                     |
@@ -100,11 +100,9 @@ redis_host                     | STRING                   | Host of Redis server
 redis_port                     | INT                      | Port of Redis server | 6379
 redis_auth                     | STRING                   | Authentication key for a password-protected Redis server
 redis_database                 | INT                      | Database of Redis server | 0
-redis_pub_channel              | STRING                   | Redis Pub/Sub channel | maxwell
-redis_stream_key               | STRING                   | Redis XADD Stream Key | maxwell
-redis_stream_json_key          | STRING                   | Redis XADD Stream Message Field Name | message
-redis_list_key                 | STRING                   | Redis LPUSH List Key | maxwell
 redis_type                     | [ pubsub &#124; xadd &#124; lpush &#124; rpush ]  | Selects either Redis Pub/Sub, Stream, or List. | pubsub
+redis_key                      | STRING                   | Redis channel/key for Pub/Sub, XADD or LPUSH/RPUSH | maxwell
+redis_stream_json_key          | STRING                   | Redis XADD Stream Message Field Name | message
 &nbsp;
 **formatting**
 output_binlog_position         | BOOLEAN  | records include binlog position     | false
