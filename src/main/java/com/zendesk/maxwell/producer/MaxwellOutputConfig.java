@@ -22,7 +22,8 @@ public class MaxwellOutputConfig {
 	public EncryptionMode encryptionMode;
 	public String secretKey;
 	public boolean zeroDatesAsNull;
-
+	public String namingStrategy; //underscore_to_camelcase
+	
 	public MaxwellOutputConfig() {
 		this.includesBinlogPosition = false;
 		this.includesGtidPosition = false;
