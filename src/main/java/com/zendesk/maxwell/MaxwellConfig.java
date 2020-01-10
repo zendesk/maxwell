@@ -205,6 +205,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "replication_user", "username for replication_host" ).withRequiredArg();
 		parser.accepts( "replication_password", "password for replication_host" ).withRequiredArg();
 		parser.accepts( "replication_port", "port for replication_host" ).withRequiredArg();
+		parser.accepts( "replication_jdbc_options", "additional jdbc connection options" ).withRequiredArg();
 
 		parser.separator();
 
@@ -212,6 +213,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "schema_user", "username for schema_host" ).withRequiredArg();
 		parser.accepts( "schema_password", "password for schema_host" ).withRequiredArg();
 		parser.accepts( "schema_port", "port for schema_host" ).withRequiredArg();
+		parser.accepts( "schema_jdbc_options", "additional jdbc connection options" ).withRequiredArg();
 
 		parser.section("operation");
 
