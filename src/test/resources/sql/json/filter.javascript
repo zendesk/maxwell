@@ -11,4 +11,8 @@ function process_row(rowmap) {
 	}
 
 	rowmap.partition_string = "test_part_string";
+
+	if ( rowmap.position == "foo" ) {
+		rowmap.query = "crashy crash?";
+	}
 }
