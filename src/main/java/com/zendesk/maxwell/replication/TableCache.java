@@ -1,13 +1,16 @@
 package com.zendesk.maxwell.replication;
 
-import java.util.HashMap;
-
 import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.Table;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
 
 public class TableCache {
+	static final Logger LOGGER = LoggerFactory.getLogger(TableCache.class);
 	private final String maxwellDB;
 
 	public TableCache(String maxwellDB) {
@@ -23,12 +26,12 @@ public class TableCache {
 
 			Database db = schema.findDatabase(dbName);
 			if ( db == null )
-				throw new RuntimeException("Couldn't find database " + dbName);
+				LOGGER.warn("Couldn't find database " + dbName);
 			else {
 				Table tbl = db.findTable(tblName);
 
 				if (tbl == null)
-					throw new RuntimeException("Couldn't find table " + tblName + " in database " + dbName);
+					LOGGER.warn("Couldn't find table " + tblName + " in database " + dbName);
 				else
 					tableMapCache.put(tableId, tbl);
 			}
