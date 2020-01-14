@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.scripting;
 
 import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
 
 import java.util.LinkedHashMap;
@@ -40,7 +41,10 @@ public class WrappedRowMap {
 	}
 
 	public String getPosition() {
-		BinlogPosition p = row.getPosition().getBinlogPosition();
+		Position pp = row.getPosition();
+		if ( pp == null ) return null;
+
+		BinlogPosition p = pp.getBinlogPosition();
 
 		if ( p == null )
 			return null;
