@@ -39,7 +39,7 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 					long age = currentTime - message.sendTimeMS;
 
 					messagePublishTimer.update(age, TimeUnit.MILLISECONDS);
-					messageLatencyTimer.update(Math.max(0L, age - 500L), TimeUnit.MILLISECONDS);
+					messageLatencyTimer.update(Math.max(0L, currentTime - message.eventTimeMS - 500L), TimeUnit.MILLISECONDS);
 
 					if (age > config.metricsAgeSlo) {
 						messageLatencySloViolationCount.inc();
