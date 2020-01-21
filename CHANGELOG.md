@@ -1,5 +1,13 @@
 # Maxwell changelog
 
+### [v1.24.1](https://github.com/zendesk/maxwell/releases/tag/v1.24.1): "pixies in my head all damn week"
+
+
+- allow jdbc_options on secondary connections
+- fix a crash in bootstrapping / javascript filters
+- fix a regression in message.publish.age metric
+
+
 ### [v1.24.0](https://github.com/zendesk/maxwell/releases/tag/v1.24.0): "la la la la la la low"
 
 
