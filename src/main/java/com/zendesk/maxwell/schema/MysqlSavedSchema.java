@@ -13,6 +13,7 @@ import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.schema.columndef.*;
 
+import com.zendesk.maxwell.util.ConnectionPool;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.StrTokenizer;
@@ -26,8 +27,6 @@ import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import snaq.db.ConnectionPool;
-
 
 public class MysqlSavedSchema {
 	static int SchemaStoreVersion = 4;

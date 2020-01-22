@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.schema;
 
 import com.zendesk.maxwell.replication.Position;
-import snaq.db.ConnectionPool;
+import com.zendesk.maxwell.util.ConnectionPool;
 
 /**
  * a schema position object that doesn't write its position out.

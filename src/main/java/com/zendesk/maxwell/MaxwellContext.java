@@ -15,7 +15,8 @@ import com.zendesk.maxwell.util.StoppableTask;
 import com.zendesk.maxwell.util.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import snaq.db.ConnectionPool;
+import com.zendesk.maxwell.util.ConnectionPool;
+import com.zendesk.maxwell.util.SnaqConnectionPool;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -59,14 +60,13 @@ public class MaxwellContext {
 		this.taskManager = new TaskManager();
 		this.metrics = new MaxwellMetrics(config);
 
-		this.replicationConnectionPool = new ConnectionPool("ReplicationConnectionPool", 10, 0, 10,
+		this.replicationConnectionPool = new SnaqConnectionPool("ReplicationConnectionPool", 10, 0, 10,
 				config.replicationMysql.getConnectionURI(false), config.replicationMysql.user, config.replicationMysql.password);
-		this.replicationConnectionPool.setCaching(false);
 
 		if (config.schemaMysql.host == null) {
 			this.schemaConnectionPool = null;
 		} else {
-			this.schemaConnectionPool = new ConnectionPool(
+			this.schemaConnectionPool = new SnaqConnectionPool(
 					"SchemaConnectionPool",
 					10,
 					0,
@@ -76,12 +76,11 @@ public class MaxwellContext {
 					config.schemaMysql.password);
 		}
 
-		this.rawMaxwellConnectionPool = new ConnectionPool("RawMaxwellConnectionPool", 1, 2, 100,
+		this.rawMaxwellConnectionPool = new SnaqConnectionPool("RawMaxwellConnectionPool", 1, 2, 100,
 			config.maxwellMysql.getConnectionURI(false), config.maxwellMysql.user, config.maxwellMysql.password);
 
-		this.maxwellConnectionPool = new ConnectionPool("MaxwellConnectionPool", 10, 0, 10,
+		this.maxwellConnectionPool = new SnaqConnectionPool("MaxwellConnectionPool", 10, 0, 10,
 					config.maxwellMysql.getConnectionURI(), config.maxwellMysql.user, config.maxwellMysql.password);
-		this.maxwellConnectionPool.setCaching(false);
 
 		if ( this.config.initPosition != null )
 			this.initialPosition = this.config.initPosition;
