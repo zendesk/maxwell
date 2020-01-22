@@ -11,6 +11,7 @@ import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.MysqlPositionStore;
 import com.zendesk.maxwell.schema.PositionStoreThread;
 import com.zendesk.maxwell.schema.ReadOnlyMysqlPositionStore;
+import com.zendesk.maxwell.util.C3P0ConnectionPool;
 import com.zendesk.maxwell.util.StoppableTask;
 import com.zendesk.maxwell.util.TaskManager;
 import org.slf4j.Logger;
@@ -60,27 +61,33 @@ public class MaxwellContext {
 		this.taskManager = new TaskManager();
 		this.metrics = new MaxwellMetrics(config);
 
-		this.replicationConnectionPool = new SnaqConnectionPool("ReplicationConnectionPool", 10, 0, 10,
-				config.replicationMysql.getConnectionURI(false), config.replicationMysql.user, config.replicationMysql.password);
+		this.replicationConnectionPool = new C3P0ConnectionPool(
+			config.replicationMysql.getConnectionURI(false),
+			config.replicationMysql.user,
+			config.replicationMysql.password
+		);
 
 		if (config.schemaMysql.host == null) {
 			this.schemaConnectionPool = null;
 		} else {
-			this.schemaConnectionPool = new SnaqConnectionPool(
-					"SchemaConnectionPool",
-					10,
-					0,
-					10,
-					config.schemaMysql.getConnectionURI(false),
-					config.schemaMysql.user,
-					config.schemaMysql.password);
+			this.schemaConnectionPool = new C3P0ConnectionPool(
+				config.schemaMysql.getConnectionURI(false),
+				config.schemaMysql.user,
+				config.schemaMysql.password
+			);
 		}
 
-		this.rawMaxwellConnectionPool = new SnaqConnectionPool("RawMaxwellConnectionPool", 1, 2, 100,
-			config.maxwellMysql.getConnectionURI(false), config.maxwellMysql.user, config.maxwellMysql.password);
+		this.rawMaxwellConnectionPool = new C3P0ConnectionPool(
+			config.maxwellMysql.getConnectionURI(false),
+			config.maxwellMysql.user,
+			config.maxwellMysql.password
+		);
 
-		this.maxwellConnectionPool = new SnaqConnectionPool("MaxwellConnectionPool", 10, 0, 10,
-					config.maxwellMysql.getConnectionURI(), config.maxwellMysql.user, config.maxwellMysql.password);
+		this.maxwellConnectionPool = new C3P0ConnectionPool(
+			config.maxwellMysql.getConnectionURI(),
+			config.maxwellMysql.user,
+			config.maxwellMysql.password
+		);
 
 		if ( this.config.initPosition != null )
 			this.initialPosition = this.config.initPosition;
