@@ -1,30 +1,29 @@
 package com.zendesk.maxwell.producer;
 
-import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
+import com.amazonaws.services.kinesis.producer.*;
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Meter;
 import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-
-import com.codahale.metrics.Counter;
-import com.codahale.metrics.Meter;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.producer.partitioners.MaxwellKinesisPartitioner;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
-
-import com.amazonaws.services.kinesis.producer.Attempt;
-import com.amazonaws.services.kinesis.producer.KinesisProducer;
-import com.amazonaws.services.kinesis.producer.KinesisProducerConfiguration;
-import com.amazonaws.services.kinesis.producer.UserRecordFailedException;
-import com.amazonaws.services.kinesis.producer.UserRecordResult;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
+
+import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 
 class KinesisCallback implements FutureCallback<UserRecordResult> {
 	public static final Logger logger = LoggerFactory.getLogger(KinesisCallback.class);
@@ -60,7 +59,7 @@ class KinesisCallback implements FutureCallback<UserRecordResult> {
 		this.failedMessageCount.inc();
 		this.failedMessageMeter.mark();
 
-		if(t instanceof UserRecordFailedException) {
+		if (t instanceof UserRecordFailedException) {
 			Attempt last = Iterables.getLast(((UserRecordFailedException) t).getResult().getAttempts());
 			logger.error(String.format("Record failed to put - %s : %s", last.getErrorCode(), last.getErrorMessage()));
 		}
@@ -72,13 +71,13 @@ class KinesisCallback implements FutureCallback<UserRecordResult> {
 		} else {
 			cc.markCompleted();
 		}
-	};
+	}
 
 	@Override
 	public void onSuccess(UserRecordResult result) {
 		this.succeededMessageCount.inc();
 		this.succeededMessageMeter.mark();
-		if(logger.isDebugEnabled()) {
+		if (logger.isDebugEnabled()) {
 			logger.debug("->  key:" + key + ", shard id:" + result.getShardId() + ", sequence number:" + result.getSequenceNumber());
 			logger.debug("   " + json);
 			logger.debug("   " + position);
@@ -86,7 +85,7 @@ class KinesisCallback implements FutureCallback<UserRecordResult> {
 		}
 
 		cc.markCompleted();
-	};
+	}
 }
 
 public class MaxwellKinesisProducer extends AbstractAsyncProducer {
@@ -107,7 +106,7 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 		this.kinesisStream = kinesisStream;
 
 		Path path = Paths.get("kinesis-producer-library.properties");
-		if(Files.exists(path) && Files.isRegularFile(path)) {
+		if (Files.exists(path) && Files.isRegularFile(path)) {
 			KinesisProducerConfiguration config = KinesisProducerConfiguration.fromPropertiesFile(path.toString());
 			this.kinesisProducer = new KinesisProducer(config);
 		} else {
@@ -120,11 +119,28 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 		String key = this.partitioner.getKinesisKey(r);
 		String value = r.toJSON(outputConfig);
 		int vsize = value.length();
+		final long maxValueSize = context.getConfig().producerMaxValueSize;
+
+		// get rid of largest value recursively to accommodate max_data_length
+		if (vsize > maxValueSize) {
+			logger.warn("{}.{} with key {} has size of {}. Removing largest values", r.getDatabase(), r.getTable(), key, vsize);
+			LinkedHashMap<String, Object> data = r.getData();
+			while (vsize > maxValueSize) {
+				Optional<Map.Entry<String, Object>> maxEntry = data.entrySet().stream().max(Comparator.comparing(e -> e.getValue().toString().length()));
+				if (maxEntry.isPresent()) {
+					data.remove(maxEntry.get().getKey());
+					value = r.toJSON(outputConfig);
+					vsize = value.length();
+				} else
+					break;
+			}
+			logger.info("{}.{} with key {} reduced to size {}", r.getDatabase(), r.getTable(), key, vsize);
+		}
 
 		ByteBuffer encodedValue = ByteBuffer.wrap(value.getBytes("UTF-8"));
 
 		// release the reference to ease memory pressure
-		if(!KinesisCallback.logger.isDebugEnabled()) {
+		if (!KinesisCallback.logger.isDebugEnabled()) {
 			value = null;
 		}
 
@@ -133,10 +149,10 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 
 		try {
 			ListenableFuture<UserRecordResult> future = kinesisProducer.addUserRecord(kinesisStream, key, encodedValue);
-			Futures.addCallback(future, callback);
-		} catch(IllegalArgumentException t) {
+			Futures.addCallback(future, callback, directExecutor());
+		} catch (IllegalArgumentException t) {
 			callback.onFailure(t);
-			logger.error("Database:" + r.getDatabase() + ", Table:" + r.getTable() + ", PK:" + r.getRowIdentity().toConcatString() + ", Size:" + Integer.toString(vsize));
+			logger.error("Database:" + r.getDatabase() + ", Table:" + r.getTable() + ", PK:" + r.getRowIdentity().toConcatString() + ", Size:" + vsize);
 		}
 	}
 
