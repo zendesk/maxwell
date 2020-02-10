@@ -94,6 +94,7 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 	private final MaxwellKinesisPartitioner partitioner;
 	private final KinesisProducer kinesisProducer;
 	private final String kinesisStream;
+	private final boolean kinesisLinebreak;
 
 	public MaxwellKinesisProducer(MaxwellContext context, String kinesisStream) {
 		super(context);
@@ -104,6 +105,7 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 		boolean kinesisMd5Keys = context.getConfig().kinesisMd5Keys;
 		this.partitioner = new MaxwellKinesisPartitioner(partitionKey, partitionColumns, partitionFallback, kinesisMd5Keys);
 		this.kinesisStream = kinesisStream;
+		this.kinesisLinebreak = context.getConfig().kinesisLinebreak;
 
 		Path path = Paths.get("kinesis-producer-library.properties");
 		if (Files.exists(path) && Files.isRegularFile(path)) {
@@ -118,6 +120,9 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 	public void sendAsync(RowMap r, AbstractAsyncProducer.CallbackCompleter cc) throws Exception {
 		String key = this.partitioner.getKinesisKey(r);
 		String value = r.toJSON(outputConfig);
+		if (this.kinesisLinebreak) {
+			value = value + '\n';
+		}
 		int vsize = value.length();
 		final long maxValueSize = context.getConfig().producerMaxValueSize;
 
@@ -130,6 +135,9 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 				if (maxEntry.isPresent()) {
 					data.remove(maxEntry.get().getKey());
 					value = r.toJSON(outputConfig);
+					if (this.kinesisLinebreak) {
+						value = value + '\n';
+					}
 					vsize = value.length();
 				} else
 					break;

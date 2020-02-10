@@ -64,6 +64,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public String producerPartitionFallback;
 
 	public String kinesisStream;
+	public boolean kinesisLinebreak;
 	public boolean kinesisMd5Keys;
 
 	public String sqsQueueUri;
@@ -257,6 +258,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.section("kinesis");
 		parser.accepts("kinesis_stream", "kinesis stream name").withOptionalArg();
+		parser.accepts("kinesis_linebreak", "adds a linebreak between records in Kinesis; [true|false]. default: false" ).withOptionalArg();
 		parser.accepts("sqs_queue_uri", "SQS Queue uri").withRequiredArg();
 		parser.separator();
 		parser.addToSection("producer_partition_by");
@@ -495,6 +497,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.producerPartitionFallback = fetchOption("producer_partition_by_fallback", options, properties, null);
 
 		this.kinesisStream = fetchOption("kinesis_stream", options, properties, null);
+		this.kinesisLinebreak = fetchBooleanOption("kinesis_linebreak", options, properties, false);
 		this.kinesisMd5Keys = fetchBooleanOption("kinesis_md5_keys", options, properties, false);
 
 		this.sqsQueueUri = fetchOption("sqs_queue_uri", options, properties, null);
