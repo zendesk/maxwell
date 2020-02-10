@@ -131,7 +131,7 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 			logger.warn("{}.{} with key {} has size of {}. Removing largest values", r.getDatabase(), r.getTable(), key, vsize);
 			LinkedHashMap<String, Object> data = r.getData();
 			while (vsize > maxValueSize) {
-				Optional<Map.Entry<String, Object>> maxEntry = data.entrySet().stream().max(Comparator.comparing(e -> e.getValue().toString().length()));
+				Optional<Map.Entry<String, Object>> maxEntry = data.entrySet().stream().max(Comparator.comparing(e -> String.valueOf(e.getValue()).length()));
 				if (maxEntry.isPresent()) {
 					data.remove(maxEntry.get().getKey());
 					value = r.toJSON(outputConfig);
