@@ -45,7 +45,7 @@ alter_partition_specification:
     | IMPORT PARTITION partition_names TABLESPACE
     | COALESCE PARTITION INTEGER_LITERAL
     | REORGANIZE PARTITION (partition_names INTO skip_parens)?
-    | EXCHANGE PARTITION IDENT WITH TABLE name ((WITH|WITHOUT) VALIDATION)?
+    | EXCHANGE PARTITION IDENT WITH TABLE table_name ((WITH|WITHOUT) VALIDATION)?
     | ANALYZE PARTITION partition_names
     | CHECK PARTITION partition_names
     | OPTIMIZE PARTITION partition_names
