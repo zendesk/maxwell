@@ -653,3 +653,5 @@ alter table t66 reorganize partition s1 into (partition p0 values less than (tim
 alter table t66 reorganize partition s1 into (partition p0 values less than (weekday('2006-10-14')), partition p1 values less than maxvalue)
 alter table t66 reorganize partition s1 into (partition p0 values less than (year('2005-10-14')-1990), partition p1 values less than maxvalue)
 alter table t66 reorganize partition s1 into (partition p0 values less than (yearweek('2006-10-14')-200600), partition p1 values less than maxvalue)
+alter table tblA EXCHANGE PARTITION part_1 WITH TABLE part_2
+alter table tblA EXCHANGE PARTITION part_1 WITH TABLE tblB.part_2
