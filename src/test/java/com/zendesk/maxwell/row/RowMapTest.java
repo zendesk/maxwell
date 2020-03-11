@@ -5,6 +5,7 @@ import com.zendesk.maxwell.errors.ProtectedAttributeNameException;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.Position;
+import com.zendesk.maxwell.schema.columndef.ColumnDef;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -162,6 +163,37 @@ public class RowMapTest {
 				"\"thread_id\":6532312,\"schema_id\":298,\"int\":1234,\"str\":\"foo\",\"primary_key\":[9001,\"foo\"]," +
 				"\"primary_key_columns\":[\"id\",\"first_name\"],\"data\":{\"id\":9001,\"interests\"" +
 				":[\"hiking\",\"programming\"]}}", rowMap.toJSON(outputConfig));
+	}
+
+	@Test
+	public void testColumnDefinitions() throws Exception {
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS,
+				Arrays.asList("id"), POSITION);
+
+		rowMap.setServerId(7653213L);
+		rowMap.setThreadId(6532312L);
+		rowMap.setSchemaId(298L);
+
+		ColumnDef firstColumn = ColumnDef.build("foo", "utf-8", "varchar", (short) 0, false, null, 100L);
+		ColumnDef lastColumn = ColumnDef.build("foo", "utf-8", "varchar", (short) 1, false, null, 100L);
+
+		rowMap.putData("id", 9001, null);
+		rowMap.putData("first_name", "foo", firstColumn);
+		rowMap.putData("last_name", "bar", lastColumn);
+
+		Assert.assertEquals(firstColumn, rowMap.getDefinition("first_name"));
+		Assert.assertEquals(lastColumn, rowMap.getDefinition("last_name"));
+
+		MaxwellOutputConfig outputConfig = getMaxwellOutputConfig();
+
+
+		String rowMapOutput = rowMap.toJSON(outputConfig);
+
+		Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\",\"type\":\"insert\"," +
+				"\"ts\":1496712943,\"position\":\"binlog-0001:1\",\"gtid\":null,\"server_id\":7653213," +
+				"\"thread_id\":6532312,\"schema_id\":298,\"primary_key\":[9001]," +
+				"\"primary_key_columns\":[\"id\"],\"data\":{\"id\":9001,\"first_name\":\"foo\"," +
+				"\"last_name\":\"bar\"}}", rowMapOutput);
 	}
 
 	private MaxwellOutputConfig getMaxwellOutputConfig(Pattern... patterns) {

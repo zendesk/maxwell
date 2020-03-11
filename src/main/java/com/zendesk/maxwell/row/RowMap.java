@@ -248,7 +248,7 @@ public class RowMap implements Serializable {
 		return this.data.get(key);
 	}
 
-	public Object getDefinition(String key) { return this.definitions.get(key); }
+	public ColumnDef getDefinition(String key) { return this.definitions.get(key); }
 
 	public Object getExtraAttribute(String key) {
 		return this.extraAttributes.get(key);
