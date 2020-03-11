@@ -52,8 +52,8 @@ public class RowMapTest {
 
 		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
 
-		rowMap.putData("id", 9001);
-		rowMap.putData("name", "example");
+		rowMap.putData("id", 9001, null);
+		rowMap.putData("name", "example", null);
 
 		RowIdentity pk = rowMap.getRowIdentity();
 		Assert.assertEquals("9001example", pk.toConcatString());
@@ -69,12 +69,12 @@ public class RowMapTest {
 
 		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
 
-		rowMap.putData("id", 9001);
-		rowMap.putData("first_name", "foo");
-		rowMap.putData("middle_name", "buzz");
-		rowMap.putData("last_name", "bar");
-		rowMap.putData("salary", "4000");
-		rowMap.putData("department", "science");
+		rowMap.putData("id", 9001, null);
+		rowMap.putData("first_name", "foo", null);
+		rowMap.putData("middle_name", "buzz", null);
+		rowMap.putData("last_name", "bar", null);
+		rowMap.putData("salary", "4000", null);
+		rowMap.putData("department", "science", null);
 
 		List<String> partitionColumns = Arrays.asList("id", "first_name", "middle_name", "last_name", "salary", "department");
 
@@ -95,12 +95,12 @@ public class RowMapTest {
 
 		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
 
-		rowMap.putData("id", 9001);
-		rowMap.putData("first_name", "foo");
-		rowMap.putData("middle_name", "buzz");
-		rowMap.putData("last_name", "bar");
-		rowMap.putData("salary", "4000");
-		rowMap.putData("department", "science");
+		rowMap.putData("id", 9001, null);
+		rowMap.putData("first_name", "foo", null);
+		rowMap.putData("middle_name", "buzz", null);
+		rowMap.putData("last_name", "bar", null);
+		rowMap.putData("salary", "4000", null);
+		rowMap.putData("department", "science", null);
 
 		List<String> partitionColumns = new ArrayList<>();
 
@@ -122,10 +122,10 @@ public class RowMapTest {
 		rowMap.putExtraAttribute("int", 1234);
 		rowMap.putExtraAttribute("str", "foo");
 
-		rowMap.putData("id", 9001);
-		rowMap.putData("first_name", "foo");
-		rowMap.putData("last_name", "bar");
-		rowMap.putData("rawJSON", new RawJSONString("{\"UserID\":20}"));
+		rowMap.putData("id", 9001, null);
+		rowMap.putData("first_name", "foo", null);
+		rowMap.putData("last_name", "bar", null);
+		rowMap.putData("rawJSON", new RawJSONString("{\"UserID\":20}"), null);
 
 		MaxwellOutputConfig outputConfig = getMaxwellOutputConfig();
 
@@ -150,10 +150,10 @@ public class RowMapTest {
 		rowMap.putExtraAttribute("int", 1234);
 		rowMap.putExtraAttribute("str", "foo");
 
-		rowMap.putData("id", 9001);
-		rowMap.putData("first_name", "foo");
-		rowMap.putData("last_name", "bar");
-		rowMap.putData("interests", Arrays.asList("hiking", "programming"));
+		rowMap.putData("id", 9001, null);
+		rowMap.putData("first_name", "foo", null);
+		rowMap.putData("last_name", "bar", null);
+		rowMap.putData("interests", Arrays.asList("hiking", "programming"), null);
 
 		MaxwellOutputConfig outputConfig = getMaxwellOutputConfig(Pattern.compile("^.*name.*$"));
 

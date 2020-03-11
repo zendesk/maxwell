@@ -132,9 +132,9 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 				if (value.isValueNode()) {
 					ValueNode valueNode = (ValueNode) value;
 					if(isOld) {
-						dest.putOldData(key, getValue(valueNode));
+						dest.putOldData(key, getValue(valueNode), null);
 					} else {
-						dest.putData(key, getValue(valueNode));
+						dest.putData(key, getValue(valueNode), null);
 					}
 				}
 			}

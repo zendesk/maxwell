@@ -211,7 +211,8 @@ public class SynchronousBootstrapper {
 
 			row.putData(
 				columnDefinition.getName(),
-				columnValue == null ? null : columnDefinition.asJSON(columnValue, new MaxwellOutputConfig())
+				columnValue == null ? null : columnDefinition.asJSON(columnValue, new MaxwellOutputConfig()),
+				columnDefinition
 			);
 
 			++columnIndex;
