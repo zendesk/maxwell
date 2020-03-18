@@ -7,20 +7,36 @@ import java.util.regex.Pattern;
 
 public class FilterPattern {
 	protected final FilterPatternType type;
-	private final Pattern dbPattern, tablePattern;
+	private final Pattern dbPattern, tablePattern, columnPattern;
 
 	public FilterPattern(FilterPatternType type, Pattern dbPattern, Pattern tablePattern) {
+		this(type, dbPattern, tablePattern, null);
+	}
+
+	public FilterPattern(FilterPatternType type, Pattern dbPattern, Pattern tablePattern, Pattern columnPattern) {
 		this.type = type;
 		this.dbPattern = dbPattern;
 		this.tablePattern = tablePattern;
+		this.columnPattern = columnPattern;
 	}
 
 	protected boolean appliesTo(String database, String table) {
 		return (database == null || dbPattern.matcher(database).find())
 			&& (table == null || tablePattern.matcher(table).find());
 	}
+	protected boolean appliesTo(String database, String table, String column) {
+		return (database == null || dbPattern.matcher(database).find())
+				&& (table == null || tablePattern.matcher(table).find())
+				&& (column == null || columnPattern == null || columnPattern.matcher(column).find());
+	}
+
 	public void match(String database, String table, FilterResult match) {
 		if ( appliesTo(database, table) )
+			match.include = (this.type == FilterPatternType.INCLUDE);
+	}
+
+	public void match(String database, String table, String column, FilterResult match) {
+		if ( appliesTo(database, table, column) )
 			match.include = (this.type == FilterPatternType.INCLUDE);
 	}
 

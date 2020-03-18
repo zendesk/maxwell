@@ -54,6 +54,15 @@ public class Filter {
 		return match.include;
 	}
 
+	public boolean includes(String database, String table, String column) {
+		FilterResult match = new FilterResult();
+
+		for ( FilterPattern p : patterns )
+			p.match(database, table, column, match);
+
+		return match.include;
+	}
+
 	public boolean includes(String database, String table, Map<String, Object> values) {
 		FilterResult match = new FilterResult();
 
@@ -113,6 +122,14 @@ public class Filter {
 			return true;
 		} else {
 			return filter.includes(database, table);
+		}
+	}
+
+	public static boolean includes(Filter filter, String database, String table, String column) {
+		if (filter == null) {
+			return true;
+		} else {
+			return filter.includes(database, table, column);
 		}
 	}
 

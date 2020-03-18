@@ -105,11 +105,14 @@ public class FilterParser {
 				throw new IOException("expected column name, got" + tokenizer.nextToken());
 
 			String columnName = tokenizer.sval;
-			tokenizer.nextToken();
-
-			skipToken('=');
-			Pattern valuePattern = parsePattern();
-			ret = new FilterColumnPattern(type, dbPattern, tablePattern, columnName, valuePattern);
+			Pattern columnPattern = parsePattern();
+			if (tokenizer.ttype == TT_EOF) {
+				ret = new FilterPattern(type, dbPattern, tablePattern, columnPattern);
+			} else {
+				skipToken('=');
+				Pattern valuePattern = parsePattern();
+				ret = new FilterColumnPattern(type, dbPattern, tablePattern, columnName, valuePattern);
+			}
 		} else {
 			ret = new FilterPattern(type, dbPattern, tablePattern);
 		}

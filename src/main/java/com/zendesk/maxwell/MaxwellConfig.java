@@ -43,6 +43,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public String includeDatabases, excludeDatabases, includeTables, excludeTables, excludeColumns, blacklistDatabases, blacklistTables, includeColumnValues;
 	public String filterList;
+	public String clsFilterList;
 
 	public ProducerFactory producerFactory; // producerFactory has precedence over producerType
 	public final Properties customProducerProperties;
@@ -309,6 +310,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "blacklist_dbs", "[deprecated]" ).withRequiredArg();
 		parser.accepts( "blacklist_tables", "[deprecated]" ).withRequiredArg();
 		parser.accepts( "filter", "filter specs.  specify like \"include:db.*, exclude:*.tbl, include: foo./.*bar$/, exclude:foo.bar.baz=reject\"").withRequiredArg();
+		parser.accepts( "cls_filter", "columns filter specs.  specify like \"include:db.*, exclude:*.tbl, include: foo./.*bar$/, exclude:foo.bar.baz, exclude:foo.bar.baz=reject\"").withRequiredArg();
 		parser.accepts( "include_column_values", "[deprecated]" ).withRequiredArg();
 		parser.accepts( "javascript", "file containing per-row javascript to execute" ).withRequiredArg();
 
@@ -536,6 +538,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.blacklistDatabases  = fetchOption("blacklist_dbs", options, properties, null);
 		this.blacklistTables     = fetchOption("blacklist_tables", options, properties, null);
 		this.filterList          = fetchOption("filter", options, properties, null);
+		this.clsFilterList       = fetchOption("cls_filter", options, properties, null);
 		this.includeColumnValues = fetchOption("include_column_values", options, properties, null);
 
 		if ( options != null && options.has("init_position")) {
@@ -645,12 +648,10 @@ public class MaxwellConfig extends AbstractConfig {
 
 	}
 
-	private void validateFilter() {
-		if ( this.filter != null )
-			return;
+	private Filter validateFilter(String filterList) {
 		try {
-			if ( this.filterList != null ) {
-				this.filter = new Filter(this.databaseName, filterList);
+			if ( filterList != null ) {
+				return new Filter(this.databaseName, filterList);
 			} else {
 				boolean hasOldStyleFilters =
 					includeDatabases != null ||
@@ -662,7 +663,7 @@ public class MaxwellConfig extends AbstractConfig {
 						includeColumnValues != null;
 
 				if ( hasOldStyleFilters ) {
-					this.filter = Filter.fromOldFormat(
+					return Filter.fromOldFormat(
 						this.databaseName,
 						includeDatabases,
 						excludeDatabases,
@@ -673,17 +674,21 @@ public class MaxwellConfig extends AbstractConfig {
 						includeColumnValues
 					);
 				} else {
-					this.filter = new Filter(this.databaseName, "");
+					return new Filter(this.databaseName, "");
 				}
 			}
 		} catch (InvalidFilterException e) {
 			usageForOptions("Invalid filter options: " + e.getLocalizedMessage(), "filter");
+			return null;
 		}
 	}
 
 	public void validate() {
 		validatePartitionBy();
-		validateFilter();
+		if ( this.filter == null )
+			this.filter = validateFilter(this.filterList);
+		if ( this.outputConfig.clsFilter == null )
+			this.outputConfig.clsFilter = validateFilter(this.clsFilterList);
 
 		if ( this.producerType.equals("kafka") ) {
 			if ( !this.kafkaProperties.containsKey("bootstrap.servers") ) {

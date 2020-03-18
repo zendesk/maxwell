@@ -209,6 +209,7 @@ public class RowMap implements Serializable {
 			MaxwellJson.writeValueToJSON(g, outputConfig.includesNulls, FieldNames.PRIMARY_KEY_COLUMNS, pkColumns);
 		}
 
+		// Deprecated in next version
 		if ( outputConfig.excludeColumns.size() > 0 ) {
 			// NOTE: to avoid concurrent modification.
 			Set<String> keys = new HashSet<>();
@@ -221,6 +222,20 @@ public class RowMap implements Serializable {
 						this.data.remove(key);
 						this.oldData.remove(key);
 					}
+				}
+			}
+		}
+
+		if ( outputConfig.clsFilter != null ) {
+			// NOTE: to avoid concurrent modification.
+			Set<String> keys = new HashSet<>();
+			keys.addAll(this.data.keySet());
+			keys.addAll(this.oldData.keySet());
+
+			for ( String key : keys ) {
+				if ( !outputConfig.clsFilter.includes(this.database, this.table, key) ) {
+					this.data.remove(key);
+					this.oldData.remove(key);
 				}
 			}
 		}
