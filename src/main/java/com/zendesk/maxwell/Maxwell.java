@@ -226,8 +226,6 @@ public class Maxwell implements Runnable {
 	public static void main(String[] args) {
 		try {
 			Logging.setupLogBridging();
-			args = new String[1];
-			args[0] = "--config=/home/lion/config.properties";
 			MaxwellConfig config = new MaxwellConfig(args);
 
 			if ( config.log_level != null )
