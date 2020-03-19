@@ -2,7 +2,7 @@
 
 set -e
 
-base_dir="$(dirname "$0")/.."
+base_dir="$(dirname "$(realpath "$0")")/.."
 lib_dir="$base_dir/lib"
 lib_dir_development="$base_dir/target/lib"
 if [ ! -e "$lib_dir" -a -e "$lib_dir_development" ]; then
