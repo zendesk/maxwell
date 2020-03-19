@@ -189,7 +189,7 @@ public class RowMap implements Serializable {
 		}
 
 		for ( Map.Entry<String, Object> entry : this.extraAttributes.entrySet() ) {
-			g.writeObjectField(entry.getKey(), entry.getValue());
+			MaxwellJson.writeValueToJSON(g, true, entry.getKey(), entry.getValue());
 		}
 
 		EncryptionContext encryptionContext = null;
