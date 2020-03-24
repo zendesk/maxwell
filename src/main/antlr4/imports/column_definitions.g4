@@ -2,13 +2,19 @@ grammar column_definitions;
 import mysql_literal_tokens, mysql_idents;
 import mysql_indices; // for REFERENCES
 
+full_column_name:
+  col_name=name
+  | name '.' col_name=name
+  | name '.' name '.' col_name=name
+  ;
 
-column_definition:
-	( col_name=name |
-	  name '.' col_name=name |
-	  name '.' name '.' col_name=name )
-	data_type
-	;
+column_definition: (
+    col_name=name |
+    name '.' col_name=name |
+    name '.' name '.' col_name=name
+  )
+  data_type
+  ;
 
 col_position: FIRST | (AFTER name);
 
