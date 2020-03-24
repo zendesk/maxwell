@@ -160,7 +160,7 @@ PRODUCER_TYPE: [ stdout &#124; file &#124; kafka &#124; kinesis &#124; pubsub &#
 DEFAULT_JDBC_OPTS: zeroDateTimeBehavior=convertToNull&amp;connectTimeout=5000
 </p>
 <p id="partition_by" class="jumptarget">
-PARTITION_BY: [ database &#124; table &#124; primary_key &#124; transaction_id &#124; column ]
+PARTITION_BY: [ database &#124; table &#124; primary_key &#124; transaction_id &#124; column &#124; random ]
 </p>
 <p id="partition_by_fallback" class="jumptarget">
 PARTITION_BY_FALLBACK: [ database &#124; table &#124; primary_key &#124; transaction_id ]
