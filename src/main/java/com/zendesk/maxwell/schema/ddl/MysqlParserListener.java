@@ -169,7 +169,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 	}
 	@Override
 	public void exitChange_column(mysqlParser.Change_columnContext ctx) {
-		String oldColumnName = unquote(ctx.old_col_name().getText());
+		String oldColumnName = unquote(ctx.full_column_name().col_name.getText());
 
 		ColumnDef c = this.columnDefs.removeFirst();
 		alterStatement().columnMods.add(new ChangeColumnMod(oldColumnName, c, getColumnPosition()));
@@ -189,7 +189,8 @@ public class MysqlParserListener extends mysqlBaseListener {
 
 	@Override
 	public void exitDrop_column(mysqlParser.Drop_columnContext ctx) {
-		alterStatement().columnMods.add(new RemoveColumnMod(unquote(ctx.old_col_name().getText())));
+		String colName = ctx.full_column_name().col_name.getText();
+		alterStatement().columnMods.add(new RemoveColumnMod(unquote(colName)));
 	}
 	@Override
 	public void exitCol_position(mysqlParser.Col_positionContext ctx) {
