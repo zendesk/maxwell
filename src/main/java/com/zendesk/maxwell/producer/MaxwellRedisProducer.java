@@ -61,7 +61,7 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 				jedis.lpush(channel, messageStr);
 				break;
 			case "rpush":
-				jedis.rpush(this.channel, messageStr);
+				jedis.rpush(channel, messageStr);
 				break;
 			case "xadd":
 				Map<String, String> message = new HashMap<>();
