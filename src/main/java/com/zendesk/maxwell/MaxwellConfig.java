@@ -236,7 +236,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell" ).withRequiredArg();
 		parser.separator();
-		parser.accepts( "producer_partition_by", "database|table|primary_key|transaction_id|column, producer will partition by this value").withRequiredArg();
+		parser.accepts( "producer_partition_by", "database|table|primary_key|transaction_id|column|random, producer will partition by this value").withRequiredArg();
 		parser.accepts("producer_partition_columns",
 			"with producer_partition_by=column, partition by the value of these columns.  "
 				+ "comma separated.").withRequiredArg();

@@ -289,11 +289,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 			}
 			LOGGER.debug("context.getConfig().producerPartitionKey = " + context.getConfig().producerPartitionKey);
 
-			if ("random".equals(context.getConfig().producerPartitionKey)) {
-				LOGGER.debug("**********take effect***********");
-				record = new ProducerRecord<>(topic, value);
-			} else
-				record = new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, getNumPartitions(topic)), key, value);
+			record = new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, getNumPartitions(topic)), key, value);
 		}
 		return record;
 	}
