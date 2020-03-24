@@ -6,11 +6,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.zendesk.maxwell.producer.partitioners.PartitionBy.RANDOM;
+
 public abstract class AbstractMaxwellPartitioner {
 	List<String> partitionColumns = new ArrayList<String>();
 	private final PartitionBy partitionBy, partitionByFallback;
 
 	private PartitionBy partitionByForString(String key) {
+
+
 		if ( key == null )
 			return PartitionBy.DATABASE;
 
@@ -25,6 +29,8 @@ public abstract class AbstractMaxwellPartitioner {
 				return PartitionBy.TRANSACTION_ID;
 			case "column":
 				return PartitionBy.COLUMN;
+			case "random":
+				return RANDOM;
 			default:
 				throw new RuntimeException("Unknown partitionBy string: " + key);
 		}
@@ -66,6 +72,8 @@ public abstract class AbstractMaxwellPartitioner {
 					return s;
 				else
 					return getHashString(r, partitionByFallback);
+			case RANDOM:
+				return "";
 		}
 		return null; // thx java
 	}

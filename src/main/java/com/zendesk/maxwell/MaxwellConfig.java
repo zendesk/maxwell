@@ -632,11 +632,11 @@ public class MaxwellConfig extends AbstractConfig {
 			this.producerPartitionFallback = this.kafkaPartitionFallback;
 		}
 
-		String[] validPartitionBy = {"database", "table", "primary_key", "transaction_id", "column"};
+		String[] validPartitionBy = {"database", "table", "primary_key", "transaction_id", "column", "random"};
 		if ( this.producerPartitionKey == null ) {
 			this.producerPartitionKey = "database";
 		} else if ( !ArrayUtils.contains(validPartitionBy, this.producerPartitionKey) ) {
-			usageForOptions("please specify --producer_partition_by=database|table|primary_key|transaction_id|column", "producer_partition_by");
+			usageForOptions("please specify --producer_partition_by=database|table|primary_key|transaction_id|column|random", "producer_partition_by");
 		} else if ( this.producerPartitionKey.equals("column") && StringUtils.isEmpty(this.producerPartitionColumns) ) {
 			usageForOptions("please specify --producer_partition_columns=column1 when using producer_partition_by=column", "producer_partition_columns");
 		} else if ( this.producerPartitionKey.equals("column") && StringUtils.isEmpty(this.producerPartitionFallback) ) {
