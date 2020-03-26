@@ -5,7 +5,6 @@ set -e
 actual_dir=$0
 if [ -n "$(LC_ALL=C type -t realpath)" ];
 then
-  echo "exists"
 	actual_dir=`realpath "$actual_dir"`
 fi
 
