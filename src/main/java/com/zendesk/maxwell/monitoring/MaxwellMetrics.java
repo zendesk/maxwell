@@ -87,10 +87,13 @@ public class MaxwellMetrics implements Metrics {
 		if (config.metricsReportingType.contains(reportingTypeDataDog)) {
 			Transport transport;
 			if (config.metricsDatadogType.contains("http")) {
-				LOGGER.info("Enabling HTTP Datadog reporting");
-				transport = new HttpTransport.Builder()
-						.withApiKey(config.metricsDatadogAPIKey)
-						.build();
+				LOGGER.info("Enabling HTTP Datadog reporting to site " + config.metricsDatadogSite);
+				HttpTransport.Builder builder = new HttpTransport.Builder()
+						.withApiKey(config.metricsDatadogAPIKey);
+				if (config.metricsDatadogSite.contains("eu")) {
+					builder.withEuSite();
+				}
+				transport = builder.build();
 			} else {
 				LOGGER.info("Enabling UDP Datadog reporting with host " + config.metricsDatadogHost
 						+ ", port " + config.metricsDatadogPort);
