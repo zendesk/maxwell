@@ -141,6 +141,7 @@ metrics_datadog_tags     | STRING | datadog tags that should be supplied, e.g. t
 metrics_age_slo     | INT | Latency service level objective threshold in seconds (Optional). When set, a `message.publish.age.slo_violation` metric is emitted to Datadog if the latency exceeds the threshold |
 metrics_datadog_interval | INT | the frequency metrics are pushed to datadog, in seconds | 60
 metrics_datadog_apikey   | STRING | the datadog api key to use when metrics_datadog_type = `http` |
+metrics_datadog_site     | STRING | the site to publish metrics to when metrics_datadog_type = `http` | us
 metrics_datadog_host     | STRING | the host to publish metrics to when metrics_datadog_type = `udp` | localhost
 metrics_datadog_port     | INT | the port to publish metrics to when metrics_datadog_type = `udp` | 8125
 &nbsp;
