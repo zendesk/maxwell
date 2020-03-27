@@ -1,19 +1,19 @@
 package com.zendesk.maxwell.monitoring;
 
-import com.codahale.metrics.jmx.JmxReporter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Slf4jReporter;
 import com.codahale.metrics.health.HealthCheckRegistry;
+import com.codahale.metrics.jmx.JmxReporter;
 import com.codahale.metrics.jvm.*;
+import com.viafoura.metrics.datadog.DatadogReporter;
+import com.viafoura.metrics.datadog.transport.HttpTransport;
+import com.viafoura.metrics.datadog.transport.Transport;
+import com.viafoura.metrics.datadog.transport.UdpTransport;
 import com.zendesk.maxwell.MaxwellConfig;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.dropwizard.DropwizardExports;
 import org.apache.commons.lang.StringUtils;
-import org.coursera.metrics.datadog.DatadogReporter;
-import org.coursera.metrics.datadog.transport.HttpTransport;
-import org.coursera.metrics.datadog.transport.Transport;
-import org.coursera.metrics.datadog.transport.UdpTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
 
-import static org.coursera.metrics.datadog.DatadogReporter.Expansion.*;
+import static com.viafoura.metrics.datadog.DatadogReporter.Expansion.*;
 
 public class MaxwellMetrics implements Metrics {
 
