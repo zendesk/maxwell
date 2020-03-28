@@ -12,10 +12,10 @@ import com.zendesk.maxwell.recovery.RecoveryInfo;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.errors.DuplicateProcessException;
 import com.zendesk.maxwell.replication.Position;
+import com.zendesk.maxwell.util.ConnectionPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import snaq.db.ConnectionPool;
 
 public class MysqlPositionStore {
 	static final Logger LOGGER = LoggerFactory.getLogger(MysqlPositionStore.class);

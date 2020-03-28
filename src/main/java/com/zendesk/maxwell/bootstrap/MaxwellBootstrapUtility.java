@@ -1,9 +1,10 @@
 package com.zendesk.maxwell.bootstrap;
 
+import com.zendesk.maxwell.util.C3P0ConnectionPool;
 import com.zendesk.maxwell.util.Logging;
+import com.zendesk.maxwell.util.ConnectionPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import snaq.db.ConnectionPool;
 
 import java.io.Console;
 import java.sql.Connection;
@@ -131,12 +132,8 @@ public class MaxwellBootstrapUtility {
 	}
 
 	private ConnectionPool getConnectionPool(MaxwellBootstrapUtilityConfig config) {
-		String name = "MaxwellBootstrapConnectionPool";
-		int maxPool = 10;
-		int maxSize = 0;
-		int idleTimeout = 10;
 		String connectionURI = config.getConnectionURI();
-		return new ConnectionPool(name, maxPool, maxSize, idleTimeout, connectionURI, config.mysql.user, config.mysql.password);
+		return new C3P0ConnectionPool(connectionURI, config.mysql.user, config.mysql.password);
 	}
 
 	private Long getTotalRowCount(Connection connection, Long bootstrapRowID) throws SQLException, MissingBootstrapRowException {

@@ -3,10 +3,10 @@ package com.zendesk.maxwell.bootstrap;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMapBuffer;
+import com.zendesk.maxwell.util.ConnectionPool;
 import com.zendesk.maxwell.util.RunLoopProcess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import snaq.db.ConnectionPool;
 
 import java.io.IOException;
 import java.sql.Connection;
