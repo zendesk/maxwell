@@ -10,7 +10,7 @@
       <AppenderRef ref="Console"/>
     </Root>
    <Logger name="com.mchange.v2" level="error" additivity="false">
-      <AppenderRef ref="TestLog"/>
+      <AppenderRef ref="Console"/>
     </Logger>
   </Loggers>
 </Configuration>
