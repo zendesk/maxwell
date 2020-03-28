@@ -2,13 +2,19 @@ grammar column_definitions;
 import mysql_literal_tokens, mysql_idents;
 import mysql_indices; // for REFERENCES
 
+full_column_name:
+  col_name=name
+  | name '.' col_name=name
+  | name '.' name '.' col_name=name
+  ;
 
-column_definition:
-	( col_name=name |
-	  name '.' col_name=name |
-	  name '.' name '.' col_name=name )
-	data_type
-	;
+column_definition: (
+    col_name=name |
+    name '.' col_name=name |
+    name '.' name '.' col_name=name
+  )
+  data_type
+  ;
 
 col_position: FIRST | (AFTER name);
 
@@ -81,7 +87,7 @@ column_options:
 	| AUTO_INCREMENT
 	| BINARY
 	| COMMENT string_literal
-	| COLUMN_FORMAT (FIXED|DYNAMIC|DEFAULT)
+	| COLUMN_FORMAT (FIXED|DYNAMIC|COMPRESSED|DEFAULT)
 	| STORAGE (DISK|MEMORY|DEFAULT)
 	| (VIRTUAL | STORED)
 	| (GENERATED ALWAYS)? AS skip_parens
@@ -98,7 +104,7 @@ charset_def: character_set | ASCII;
 character_set: ((CHARACTER SET) | CHARSET) charset_name;
 
 nullability: (NOT NULL | NULL);
-default_value: DEFAULT (literal_with_weirdo_multistring | CURRENT_TIMESTAMP current_timestamp_length? | now_function | localtime_function);
+default_value: DEFAULT '('? (literal_with_weirdo_multistring | CURRENT_TIMESTAMP current_timestamp_length? | now_function | localtime_function) ')'?;
 length: '(' INTEGER_LITERAL ')';
 int_flags: ( SIGNED | UNSIGNED | ZEROFILL );
 decimal_length: '(' INTEGER_LITERAL ( ',' INTEGER_LITERAL )? ')';
