@@ -275,9 +275,9 @@
       <version>9.4.24.v20191120</version>
     </dependency>
     <dependency>
-      <groupId>org.coursera</groupId>
+      <groupId>com.viafoura</groupId>
       <artifactId>metrics-datadog</artifactId>
-      <version>1.1.10</version>
+      <version>2.0.0-RC2</version>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
