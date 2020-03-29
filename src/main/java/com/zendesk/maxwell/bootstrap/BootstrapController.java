@@ -54,6 +54,15 @@ public class BootstrapController extends RunLoopProcess  {
 
 	@Override
 	protected void work() throws Exception {
+		try {
+			doWork();
+		} catch ( InterruptedException e ) {
+		} catch ( SQLException e ) {
+			LOGGER.error("got SQLException trying to bootstrap", e);
+		}
+	}
+
+	private void doWork() throws Exception {
 		List<BootstrapTask> tasks = getIncompleteTasks();
 		synchronized(bootstrapMutex) {
 			for ( BootstrapTask task : tasks ) {
@@ -70,9 +79,8 @@ public class BootstrapController extends RunLoopProcess  {
 				}
 			}
 		}
-		try {
-			Thread.sleep(1000);
-		} catch ( InterruptedException e ) {}
+
+		Thread.sleep(1000);
 	}
 
 	private synchronized Long getCurrentSchemaID() {
