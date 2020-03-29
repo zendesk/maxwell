@@ -9,7 +9,7 @@ search indexing and inter-service communication.  Maxwell gives you some of the
 benefits of event sourcing without having to re-architect your entire platform.
 
 <b>Download:</b><br>
-[https://github.com/zendesk/maxwell/releases/download/v1.24.2/maxwell-1.24.2.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.24.2/maxwell-1.24.2.tar.gz)
+[https://github.com/zendesk/maxwell/releases/download/v1.25.0/maxwell-1.25.0.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.25.0/maxwell-1.25.0.tar.gz)
 <br/>
 <b>Source:</b><br>
 [https://github.com/zendesk/maxwell](https://github.com/zendesk/maxwell)
