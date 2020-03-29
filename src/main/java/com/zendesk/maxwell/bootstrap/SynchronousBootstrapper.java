@@ -2,6 +2,7 @@ package com.zendesk.maxwell.bootstrap;
 
 import com.zendesk.maxwell.CaseSensitivity;
 import com.zendesk.maxwell.MaxwellMysqlStatus;
+import com.zendesk.maxwell.errors.DuplicateProcessException;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.producer.AbstractProducer;
@@ -22,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 
 public class SynchronousBootstrapper {
 	static final Logger LOGGER = LoggerFactory.getLogger(SynchronousBootstrapper.class);
@@ -58,9 +61,8 @@ public class SynchronousBootstrapper {
 		producer.push(bootstrapStartRowMap(task, table));
 		LOGGER.info(String.format("bootstrapping started for %s.%s", task.database, task.table));
 
-		try ( Connection connection = getMaxwellConnection();
-			  Connection streamingConnection = getStreamingConnection(task.database)) {
-			setBootstrapRowToStarted(task.id, connection);
+		try ( Connection streamingConnection = getStreamingConnection(task.database)) {
+			setBootstrapRowToStarted(task.id);
 			ResultSet resultSet = getAllRows(task.database, task.table, table, task.whereClause, streamingConnection);
 			int insertedRows = 0;
 			lastInsertedRowsUpdateTimeMillis = 0; // ensure updateInsertedRowsColumn is called at least once
@@ -77,27 +79,31 @@ public class SynchronousBootstrapper {
 					LOGGER.debug("bootstrapping row : " + row.toJSON());
 
 				producer.push(row);
+				Thread.sleep(1);
 				++insertedRows;
-				updateInsertedRowsColumn(insertedRows, task.id, connection);
+
+				updateInsertedRowsColumn(insertedRows, task.id);
 			}
-			setBootstrapRowToCompleted(insertedRows, task.id, connection);
+			setBootstrapRowToCompleted(insertedRows, task.id);
 		} catch ( NoSuchElementException e ) {
 			LOGGER.info("bootstrapping aborted for " + task.logString());
 		}
 	}
 
-	private void updateInsertedRowsColumn(int insertedRows, Long id, Connection connection) throws SQLException, NoSuchElementException {
-		long now = System.currentTimeMillis();
-		if ( now - lastInsertedRowsUpdateTimeMillis > INSERTED_ROWS_UPDATE_PERIOD_MILLIS ) {
-			String sql = "update `bootstrap` set inserted_rows = ? where id = ?";
-			PreparedStatement preparedStatement = connection.prepareStatement(sql);
-			preparedStatement.setInt(1, insertedRows);
-			preparedStatement.setLong(2, id);
-			if ( preparedStatement.executeUpdate() == 0 ) {
-				throw new NoSuchElementException();
+	private void updateInsertedRowsColumn(int insertedRows, Long id) throws SQLException, NoSuchElementException, DuplicateProcessException {
+		this.context.getMaxwellConnectionPool().withSQLRetry(1, (connection) -> {
+			long now = System.currentTimeMillis();
+			if (now - lastInsertedRowsUpdateTimeMillis > INSERTED_ROWS_UPDATE_PERIOD_MILLIS) {
+				String sql = "update `bootstrap` set inserted_rows = ? where id = ?";
+				PreparedStatement preparedStatement = connection.prepareStatement(sql);
+				preparedStatement.setInt(1, insertedRows);
+				preparedStatement.setLong(2, id);
+				if (preparedStatement.executeUpdate() == 0) {
+					throw new NoSuchElementException();
+				}
+				lastInsertedRowsUpdateTimeMillis = now;
 			}
-			lastInsertedRowsUpdateTimeMillis = now;
-		}
+		});
 	}
 
 	protected Connection getConnection(String databaseName) throws SQLException {
@@ -109,12 +115,6 @@ public class SynchronousBootstrapper {
 	protected Connection getStreamingConnection(String databaseName) throws SQLException, URISyntaxException {
 		Connection conn = DriverManager.getConnection(context.getConfig().replicationMysql.getConnectionURI(false), context.getConfig().replicationMysql.user, context.getConfig().replicationMysql.password);
 		conn.setCatalog(databaseName);
-		return conn;
-	}
-
-	protected Connection getMaxwellConnection() throws SQLException {
-		Connection conn = context.getMaxwellConnection();
-		conn.setCatalog(context.getConfig().databaseName);
 		return conn;
 	}
 
@@ -178,22 +178,26 @@ public class SynchronousBootstrapper {
 	}
 
 	private final String startBootstrapSQL = "update `bootstrap` set started_at=NOW() where id=?";
-	private void setBootstrapRowToStarted(Long id, Connection connection) throws SQLException, NoSuchElementException {
-		PreparedStatement preparedStatement = connection.prepareStatement(startBootstrapSQL);
-		preparedStatement.setLong(1, id);
-		if ( preparedStatement.executeUpdate() == 0) {
-			throw new NoSuchElementException();
-		}
+	private void setBootstrapRowToStarted(Long id) throws SQLException, NoSuchElementException, DuplicateProcessException {
+		this.context.getMaxwellConnectionPool().withSQLRetry(1, (connection) -> {
+			PreparedStatement preparedStatement = connection.prepareStatement(startBootstrapSQL);
+			preparedStatement.setLong(1, id);
+			if ( preparedStatement.executeUpdate() == 0) {
+				throw new NoSuchElementException();
+			}
+		});
 	}
 
 	private final String completeBootstrapSQL = "update `bootstrap` set is_complete=1, inserted_rows=?, completed_at=NOW() where id=?";
-	private void setBootstrapRowToCompleted(int insertedRows, Long id, Connection connection) throws SQLException, NoSuchElementException {
-		PreparedStatement preparedStatement = connection.prepareStatement(completeBootstrapSQL);
-		preparedStatement.setInt(1, insertedRows);
-		preparedStatement.setLong(2, id);
-		if ( preparedStatement.executeUpdate() == 0) {
-			throw new NoSuchElementException();
-		}
+	private void setBootstrapRowToCompleted(int insertedRows, Long id) throws SQLException, NoSuchElementException, DuplicateProcessException {
+		this.context.getMaxwellConnectionPool().withSQLRetry(1, (connection) -> {
+			PreparedStatement preparedStatement = connection.prepareStatement(completeBootstrapSQL);
+			preparedStatement.setInt(1, insertedRows);
+			preparedStatement.setLong(2, id);
+			if (preparedStatement.executeUpdate() == 0) {
+				throw new NoSuchElementException();
+			}
+		});
 	}
 
 	private void setRowValues(RowMap row, ResultSet resultSet, Table table) throws SQLException {
