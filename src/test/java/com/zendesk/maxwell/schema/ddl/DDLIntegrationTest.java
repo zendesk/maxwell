@@ -591,4 +591,14 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 		testIntegration(sql);
 	}
+
+	@Test
+	public void testImplicitDatabaseInAlter() throws Exception {
+		String [] sql = {
+			"create database ohgod",
+			"USE ohgod",
+			"ALTER DATABASE CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci"
+		};
+		testIntegration(sql);
+	}
 }
