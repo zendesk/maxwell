@@ -116,7 +116,16 @@ public class MysqlParserListener extends mysqlBaseListener {
 
 	@Override
 	public void exitAlter_database(Alter_databaseContext ctx) {
-		String dbName = unquote(ctx.name().getText());
+		String dbName;
+
+		if ( ctx.name() != null ) {
+			dbName = ctx.name().getText();
+		} else {
+			dbName = this.currentDatabase;
+		}
+
+		dbName = unquote(dbName);
+
 		DatabaseAlter alter = new DatabaseAlter(dbName);
 
 		List<Default_character_setContext> charSet = ctx.alter_database_definition().default_character_set();

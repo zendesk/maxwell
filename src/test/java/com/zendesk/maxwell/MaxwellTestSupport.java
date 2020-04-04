@@ -293,8 +293,14 @@ public class MaxwellTestSupport {
 
 		ObjectMapper m = new ObjectMapper();
 
+		String currentDB = "shard_1";
 		for ( String alterSQL : alters) {
-			List<SchemaChange> changes = SchemaChange.parse("shard_1", alterSQL);
+			if ( alterSQL.startsWith("USE ") )  {
+				currentDB = alterSQL.replaceFirst("USE ", "");
+				continue;
+			}
+
+			List<SchemaChange> changes = SchemaChange.parse(currentDB, alterSQL);
 			if ( changes != null ) {
 				for ( SchemaChange change : changes ) {
 					ResolvedSchemaChange resolvedChange = change.resolve(topSchema);
