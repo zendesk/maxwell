@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 
  * @author frankchen
- * @Date Dec 24, 2019 9:08:41 PM
+ * Dec 24, 2019 9:08:41 PM
  */
 public class NamingStrategyFactory {
     

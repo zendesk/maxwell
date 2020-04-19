@@ -3,7 +3,7 @@ package com.zendesk.maxwell.row.naming;
 /**
  * 
  * @author frank chen
- * @Date Dec 24,2019 8:53:17 PM
+ * Dec 24,2019 8:53:17 PM
  */
 public class Underscore2CamelCaseStrategy implements INamingStrategy {
 
