@@ -1,5 +1,16 @@
 package com.zendesk.maxwell;
 
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Properties;
+import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.threeten.bp.Duration;
+
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.github.shyiko.mysql.binlog.network.SSLMode;
@@ -14,18 +25,8 @@ import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.scripting.Scripting;
 import com.zendesk.maxwell.util.AbstractConfig;
 import com.zendesk.maxwell.util.MaxwellOptionParser;
-import joptsimple.BuiltinHelpFormatter;
-import joptsimple.OptionDescriptor;
-import joptsimple.OptionParser;
-import joptsimple.OptionSet;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.threeten.bp.Duration;
 
-import java.util.*;
-import java.util.regex.Pattern;
+import joptsimple.OptionSet;
 
 public class MaxwellConfig extends AbstractConfig {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfig.class);
@@ -586,6 +587,7 @@ public class MaxwellConfig extends AbstractConfig {
 		outputConfig.includesPrimaryKeyColumns = fetchBooleanOption("output_primary_key_columns", options, properties, false);
 		outputConfig.outputDDL	= fetchBooleanOption("output_ddl", options, properties, false);
 		outputConfig.zeroDatesAsNull = fetchBooleanOption("output_null_zerodates", options, properties, false);
+		outputConfig.namingStrategy = fetchOption("output_naming_strategy", options, properties, null);
 		this.excludeColumns     = fetchOption("exclude_columns", options, properties, null);
 
 		String encryptionMode = fetchOption("encrypt", options, properties, "none");
