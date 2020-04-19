@@ -1,8 +1,5 @@
 package com.zendesk.maxwell.row.naming;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
  * 
  * @author frank chen
@@ -10,32 +7,24 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Underscore2CamelCaseStrategy implements INamingStrategy {
 
-    static Underscore2CamelCaseStrategy instance = new Underscore2CamelCaseStrategy();
-    
-    //cache converted names
-    private Map<String, String> caches = new ConcurrentHashMap<>();
-    
     @Override
     public String apply(String oldName) {
-        return caches.computeIfAbsent(oldName, k -> toCamelCase(k));
-    }
-
-    private String toCamelCase(String oldName) {
         StringBuilder builder = new StringBuilder(oldName.length());
         for (int i = 0, len = oldName.length(); i < len; i++) {
             char c = oldName.charAt(i);
             if ( c == '_' && i + 1 < len ) {
+                char n = oldName.charAt(i+1);
                 //
                 //turn the char after underscore to be upper case
+                //but if the underscore is the first char in the string, don't do it
                 //
-                char n = oldName.charAt(i);
-                if ( n >= 'a' && n <= 'z' )
+                if (i > 0 && n >= 'a' && n <= 'z')
                     n = (char)(n - 'a' + 'A');
-                
                 builder.append(n);
                 i++;
             } else {
-                builder.append(c);
+                if ( c != '_')//ignore the underscore
+                    builder.append(c);
             }
         }
         return builder.toString();

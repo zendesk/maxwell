@@ -9,6 +9,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @Date Dec 24, 2019 9:08:41 PM
  */
 public class NamingStrategyFactory {
+    
+    public final static String UNDERSCORE_TO_CAMEL_CASE = "underscore_to_camelcase";
 
     static class CacheStrategy implements INamingStrategy {
         //cache converted names
@@ -36,7 +38,7 @@ public class NamingStrategyFactory {
     private static CacheStrategy cacheStrategy = new CacheStrategy();
     
     public static INamingStrategy create(String name) {
-        if ("underscore_to_camelcase".equals(name)) {
+        if (UNDERSCORE_TO_CAMEL_CASE.equals(name)) {
             cacheStrategy.setStrategy(new Underscore2CamelCaseStrategy());
             return cacheStrategy;
         }
