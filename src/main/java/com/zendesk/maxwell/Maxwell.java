@@ -1,6 +1,7 @@
 package com.zendesk.maxwell;
 
 import com.djdch.log4j.StaticShutdownCallbackRegistry;
+import com.github.shyiko.mysql.binlog.network.ServerException;
 import com.zendesk.maxwell.bootstrap.BootstrapController;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.recovery.Recovery;
@@ -251,6 +252,9 @@ public class Maxwell implements Runnable {
 			LOGGER.error("Syntax issue with URI, check for misconfigured host, port, database, or JDBC options (see RFC 2396)");
 			LOGGER.error("URISyntaxException: " + e.getLocalizedMessage());
 			System.exit(1);
+		} catch ( ServerException e ) {
+			LOGGER.error("Maxwell couldn't find the requested binlog, exiting...");
+			System.exit(2);
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(1);
