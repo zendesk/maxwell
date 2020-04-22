@@ -1,5 +1,13 @@
 # Maxwell changelog
 
+### [v1.25.1](https://github.com/zendesk/maxwell/releases/tag/v1.25.1): "nowhere to put it"
+
+
+- issue #1457, ALTER DATABASE with implicit database name
+- maxwell now runs on JDK 11 in docker
+- exit with status 2 when we can't find binlog files
+
+
 ### [v1.25.0](https://github.com/zendesk/maxwell/releases/tag/v1.25.0): "mah mah mah my corona.  I'm sorry.  I'm sorry."
 
 
