@@ -246,7 +246,6 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	 */
 	private void checkCommErrors() throws ServerException {
 		if (lastCommError != null) {
-			LOGGER.error("Shutting down due to communication errors to Mysql", lastCommError);
 			throw lastCommError;
 		}
 	}
