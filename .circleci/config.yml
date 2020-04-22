@@ -44,7 +44,10 @@ workflows:
   version: 2
   build_and_test:
     jobs:
-      - build
+      - build:
+        filters:
+          branches:
+            ignore: gh-pages
       - test:
           name: "test-5.5"
           mysql: "5.5"
