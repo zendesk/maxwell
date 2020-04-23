@@ -1,7 +1,6 @@
 package com.zendesk.maxwell.producer;
 
 import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.row.RowIdentity;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.util.StoppableTask;
 import org.slf4j.Logger;
@@ -43,18 +42,17 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 		}
 	}
 
-	private String generateChannel(RowIdentity pk){
-		if (interpolateChannel) {
-			return channel.replaceAll("%\\{database}", pk.getDatabase()).replaceAll("%\\{table}", pk.getTable());
+	private String generateChannel(RowMap rowMap){
+		if(interpolateChannel) {
+			return rowMap.buildDestinationString(channel, "%\\{database}", "%\\{table}", "%\\{type}");
 		}
-
 		return channel;
 	}
 
 	private void sendToRedis(RowMap msg) throws Exception {
 		String messageStr = msg.toJSON(outputConfig);
 
-		String channel = this.generateChannel(msg.getRowIdentity());
+		String channel = this.generateChannel(msg);
 
 		switch (redisType) {
 			case "lpush":

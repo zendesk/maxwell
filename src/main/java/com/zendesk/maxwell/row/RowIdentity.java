@@ -28,6 +28,10 @@ public class RowIdentity implements Serializable {
 		return table;
 	}
 
+	public String getRowType() {
+		return rowType;
+	}
+
 	public String toKeyJson(RowMap.KeyFormat keyFormat) throws IOException {
 		MaxwellJson json = MaxwellJson.getInstance();
 		JsonGenerator g = json.reset();
