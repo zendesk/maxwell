@@ -1,16 +1,5 @@
 package com.zendesk.maxwell;
 
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Properties;
-import java.util.regex.Pattern;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.threeten.bp.Duration;
-
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.health.HealthCheckRegistry;
 import com.github.shyiko.mysql.binlog.network.SSLMode;
@@ -25,8 +14,18 @@ import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.scripting.Scripting;
 import com.zendesk.maxwell.util.AbstractConfig;
 import com.zendesk.maxwell.util.MaxwellOptionParser;
-
+import joptsimple.BuiltinHelpFormatter;
+import joptsimple.OptionDescriptor;
+import joptsimple.OptionParser;
 import joptsimple.OptionSet;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.threeten.bp.Duration;
+
+import java.util.*;
+import java.util.regex.Pattern;
 
 public class MaxwellConfig extends AbstractConfig {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfig.class);

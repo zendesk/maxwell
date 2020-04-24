@@ -59,14 +59,8 @@ public class RowMap implements Serializable {
 
 	private INamingStrategy namingStrategy;
 	
-    public RowMap(String type,
-                  String database,
-                  String table,
-                  Long timestampMillis,
-                  List<String> pkColumns,
-                  Position position,
-                  Position nextPosition,
-                  String rowQuery) {
+	public RowMap(String type, String database, String table, Long timestampMillis, List<String> pkColumns,
+			Position position, Position nextPosition, String rowQuery) {
 		this.rowQuery = rowQuery;
 		this.rowType = type;
 		this.database = database;
@@ -133,23 +127,23 @@ public class RowMap implements Serializable {
 		for (String key : data.keySet()) {
 			Object value = data.get(key);
 
-            MaxwellJson.writeValueToJSON(g, includeNullField, applyNamingStrategy(key), value);
+			MaxwellJson.writeValueToJSON(g, includeNullField, applyNamingStrategy(key), value);
 		}
 
 		g.writeEndObject(); // end of 'jsonMapName: { }'
 	}
 
-    private String applyNamingStrategy(String name) {
-        return this.namingStrategy.apply(name);
-    }
+	private String applyNamingStrategy(String name) {
+		return this.namingStrategy.apply(name);
+	}
 
 	public String toJSON() throws Exception {
 		return toJSON(new MaxwellOutputConfig());
 	}
 
 	public String toJSON(MaxwellOutputConfig outputConfig) throws Exception {
-	    this.namingStrategy = NamingStrategyFactory.create(outputConfig.namingStrategy);
-	    
+		this.namingStrategy = NamingStrategyFactory.create(outputConfig.namingStrategy);
+
 		MaxwellJson json = MaxwellJson.getInstance();
 		JsonGenerator g = json.reset();
 
@@ -241,12 +235,12 @@ public class RowMap implements Serializable {
 			}
 		}
 
-        writeMapToJSON(applyNamingStrategy(FieldNames.DATA), this.data, dataGenerator, outputConfig.includesNulls);
+		writeMapToJSON(applyNamingStrategy(FieldNames.DATA), this.data, dataGenerator, outputConfig.includesNulls);
 		if( !this.oldData.isEmpty() ){
-            writeMapToJSON(applyNamingStrategy(FieldNames.OLD),
-                           this.oldData,
-                           dataGenerator,
-                           outputConfig.includesNulls);
+			writeMapToJSON(	applyNamingStrategy(FieldNames.OLD),
+							this.oldData,
+							dataGenerator,
+							outputConfig.includesNulls);
 		}
 		dataWriter.end(encryptionContext);
 

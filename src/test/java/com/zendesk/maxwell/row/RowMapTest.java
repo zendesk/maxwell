@@ -1,20 +1,19 @@
 package com.zendesk.maxwell.row;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.zendesk.maxwell.MaxwellTestJSON;
 import com.zendesk.maxwell.errors.ProtectedAttributeNameException;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.naming.NamingStrategyFactory;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 public class RowMapTest {
 
@@ -166,48 +165,47 @@ public class RowMapTest {
 	}
 	
 	@Test
-    public void testNamingStrategy() throws Exception {
-        RowMap rowMap = new RowMap("insert",
-                                   "MyDatabase",
-                                   "MyTable",
-                                   TIMESTAMP_MILLISECONDS,
-                                   Arrays.asList("id", "first_name"),
-                                   POSITION);
+	public void testNamingStrategy() throws Exception {
+		RowMap rowMap = new RowMap(	"insert",
+									"MyDatabase",
+									"MyTable",
+									TIMESTAMP_MILLISECONDS,
+									Arrays.asList("id", "first_name"),
+									POSITION);
 
-        rowMap.setServerId(7653213L);
-        rowMap.setThreadId(6532312L);
-        rowMap.setSchemaId(298L);
+		rowMap.setServerId(7653213L);
+		rowMap.setThreadId(6532312L);
+		rowMap.setSchemaId(298L);
 
-        rowMap.putExtraAttribute("int", 1234);
-        rowMap.putExtraAttribute("str", "foo");
+		rowMap.putExtraAttribute("int", 1234);
+		rowMap.putExtraAttribute("str", "foo");
 
-        rowMap.putData("id", 9001);
-        rowMap.putData("first_name", "foo");
-        rowMap.putData("last_name", "bar");
-        rowMap.putData("_age_", 12);
-        rowMap.putData("_parent_id", 9000);
-        rowMap.putData("favorite_interests", Arrays.asList("hiking", "programming"));
+		rowMap.putData("id", 9001);
+		rowMap.putData("first_name", "foo");
+		rowMap.putData("last_name", "bar");
+		rowMap.putData("_age_", 12);
+		rowMap.putData("_parent_id", 9000);
+		rowMap.putData("favorite_interests", Arrays.asList("hiking", "programming"));
 
-        MaxwellOutputConfig outputConfig = getMaxwellOutputConfig(Pattern.compile("^.*name.*$"));
-        outputConfig.namingStrategy = NamingStrategyFactory.UNDERSCORE_TO_CAMEL_CASE;
-        {
-            Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\",\"type\":\"insert\"," +
-                                "\"ts\":1496712943,\"position\":\"binlog-0001:1\",\"gtid\":null," +
-                                "\"serverId\":7653213," + //camel case applied
-                                "\"threadId\":6532312," + //camel case applied
-                                "\"schemaId\":298," + //camel case applied
-                                "\"int\":1234,\"str\":\"foo\"," + 
-                                "\"primaryKey\":[9001,\"foo\"]," + //camel case applied
-                                "\"primaryKeyColumns\":[\"id\",\"first_name\"]," + //first_name not converted because it's a value instead of name of a field
-                                "\"data\":{\"id\":9001," +
-                                "\"age\":12," +
-                                "\"parentId\":9000," +
-                                "\"favoriteInterests\":[\"hiking\",\"programming\"]}}", //camel case applied
-                                rowMap.toJSON(outputConfig));
-        }
-        //clear the value for other cases
-        outputConfig.namingStrategy = null;
-    }
+		MaxwellOutputConfig outputConfig = getMaxwellOutputConfig(Pattern.compile("^.*name.*$"));
+		outputConfig.namingStrategy = NamingStrategyFactory.UNDERSCORE_TO_CAMEL_CASE;
+		{
+			Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\",\"type\":\"insert\"," +
+								"\"ts\":1496712943,\"position\":\"binlog-0001:1\",\"gtid\":null," +
+								"\"serverId\":7653213," + // camel case applied
+								"\"threadId\":6532312," + // camel case applied
+								"\"schemaId\":298," + // camel case applied
+								"\"int\":1234,\"str\":\"foo\"," + "\"primaryKey\":[9001,\"foo\"]," + // camel case applied
+								"\"primaryKeyColumns\":[\"id\",\"first_name\"]," + // first_name not converted because
+																					// it's a value instead of name of a
+																					// field
+								"\"data\":{\"id\":9001," + "\"age\":12," + "\"parentId\":9000," +
+								"\"favoriteInterests\":[\"hiking\",\"programming\"]}}", // camel case applied
+								rowMap.toJSON(outputConfig));
+		}
+		// clear the value for other cases
+		outputConfig.namingStrategy = null;
+	}
 
 	private MaxwellOutputConfig getMaxwellOutputConfig(Pattern... patterns) {
 		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
