@@ -5,7 +5,7 @@ import com.zendesk.maxwell.errors.ProtectedAttributeNameException;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.Position;
-import com.zendesk.maxwell.row.naming.NamingStrategyFactory;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -185,10 +185,11 @@ public class RowMapTest {
 		rowMap.putData("last_name", "bar");
 		rowMap.putData("_age_", 12);
 		rowMap.putData("_parent_id", 9000);
+		rowMap.putData("__grand_parent_id", 8000);
 		rowMap.putData("favorite_interests", Arrays.asList("hiking", "programming"));
 
 		MaxwellOutputConfig outputConfig = getMaxwellOutputConfig(Pattern.compile("^.*name.*$"));
-		outputConfig.namingStrategy = NamingStrategyFactory.UNDERSCORE_TO_CAMEL_CASE;
+		outputConfig.namingStrategy = FieldNameStrategy.UNDERSCORE_TO_CAMEL_CASE;
 		{
 			Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\",\"type\":\"insert\"," +
 								"\"ts\":1496712943,\"position\":\"binlog-0001:1\",\"gtid\":null," +
@@ -199,7 +200,7 @@ public class RowMapTest {
 								"\"primaryKeyColumns\":[\"id\",\"first_name\"]," + // first_name not converted because
 																					// it's a value instead of name of a
 																					// field
-								"\"data\":{\"id\":9001," + "\"age\":12," + "\"parentId\":9000," +
+								"\"data\":{\"id\":9001," + "\"age\":12,\"parentId\":9000,\"grandParentId\":8000," +
 								"\"favoriteInterests\":[\"hiking\",\"programming\"]}}", // camel case applied
 								rowMap.toJSON(outputConfig));
 		}

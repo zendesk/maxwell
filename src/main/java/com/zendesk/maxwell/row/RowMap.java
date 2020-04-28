@@ -5,8 +5,7 @@ import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.Position;
-import com.zendesk.maxwell.row.naming.INamingStrategy;
-import com.zendesk.maxwell.row.naming.NamingStrategyFactory;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +56,7 @@ public class RowMap implements Serializable {
 
 	private long approximateSize;
 
-	private INamingStrategy namingStrategy;
+	private FieldNameStrategy fieldNameStrategy;
 	
 	public RowMap(String type, String database, String table, Long timestampMillis, List<String> pkColumns,
 			Position position, Position nextPosition, String rowQuery) {
@@ -134,7 +133,7 @@ public class RowMap implements Serializable {
 	}
 
 	private String applyNamingStrategy(String name) {
-		return this.namingStrategy.apply(name);
+		return this.fieldNameStrategy.apply(name);
 	}
 
 	public String toJSON() throws Exception {
@@ -142,7 +141,7 @@ public class RowMap implements Serializable {
 	}
 
 	public String toJSON(MaxwellOutputConfig outputConfig) throws Exception {
-		this.namingStrategy = NamingStrategyFactory.create(outputConfig.namingStrategy);
+		this.fieldNameStrategy = new FieldNameStrategy(outputConfig.namingStrategy);
 
 		MaxwellJson json = MaxwellJson.getInstance();
 		JsonGenerator g = json.reset();
