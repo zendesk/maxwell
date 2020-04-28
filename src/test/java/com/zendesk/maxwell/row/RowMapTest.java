@@ -186,10 +186,13 @@ public class RowMapTest {
 		rowMap.putData("_age_", 12);
 		rowMap.putData("_parent_id", 9000);
 		rowMap.putData("__grand_parent_id", 8000);
+		rowMap.putData("_invalid_!chars", 8001);
+		rowMap.putData("_____", 8002);
+		rowMap.putData("__123", 8003);
 		rowMap.putData("favorite_interests", Arrays.asList("hiking", "programming"));
 
 		MaxwellOutputConfig outputConfig = getMaxwellOutputConfig(Pattern.compile("^.*name.*$"));
-		outputConfig.namingStrategy = FieldNameStrategy.UNDERSCORE_TO_CAMEL_CASE;
+		outputConfig.namingStrategy = FieldNameStrategy.NAME_UNDERSCORE_TO_CAMEL_CASE;
 		{
 			Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\",\"type\":\"insert\"," +
 								"\"ts\":1496712943,\"position\":\"binlog-0001:1\",\"gtid\":null," +
@@ -200,7 +203,11 @@ public class RowMapTest {
 								"\"primaryKeyColumns\":[\"id\",\"first_name\"]," + // first_name not converted because
 																					// it's a value instead of name of a
 																					// field
-								"\"data\":{\"id\":9001," + "\"age\":12,\"parentId\":9000,\"grandParentId\":8000," +
+								"\"data\":{\"id\":9001," + "\"age\":12,\"parentId\":9000," +
+										"\"grandParentId\":8000," +
+								"\"invalid!chars\":8001," + //non-ascii char after underscore keeps the same
+								"\"_____\":8002," +		//extreme case, leave the old
+								"\"123\":8003," +		//all underscore chars are removed 
 								"\"favoriteInterests\":[\"hiking\",\"programming\"]}}", // camel case applied
 								rowMap.toJSON(outputConfig));
 		}

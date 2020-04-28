@@ -9,19 +9,23 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class FieldNameStrategy {
 
-	public final static String UNDERSCORE_TO_CAMEL_CASE = "underscore_to_camelcase";
+	public final static int TYPE_NONE = 0;
 
+	public final static String NAME_UNDERSCORE_TO_CAMEL_CASE = "underscore_to_camelcase";
+	public final static int TYPE_UNDERSCORE_TO_CAMEL_CASE = 1;
+	
 	// cache converted names
 	private Map<String, String> caches = new ConcurrentHashMap<>();
 
-	private String strategyName;
+	private int strategyType = TYPE_NONE;
 
-	public FieldNameStrategy(String strategy) {
-		this.strategyName = strategy;
+	public FieldNameStrategy(String strategyName) {
+		if ( NAME_UNDERSCORE_TO_CAMEL_CASE.equals(strategyName) )
+			strategyType = TYPE_UNDERSCORE_TO_CAMEL_CASE;
 	}
 	
 	public String apply(String oldName) {
-		if ( UNDERSCORE_TO_CAMEL_CASE.equals(strategyName)) 
+		if ( strategyType == TYPE_UNDERSCORE_TO_CAMEL_CASE ) 
 			return caches.computeIfAbsent(oldName, k -> underscore2Camel(k));
 		
 		return oldName;
@@ -37,6 +41,8 @@ public class FieldNameStrategy {
 				  ) {
 					char afterUnderscore = oldName.charAt(++i);
 					
+					//convert lower case char after underscore to upper one
+					//or leave it whatever it is
 					newName.append(Character.isLowerCase(afterUnderscore)	? (char) (afterUnderscore - 'a' + 'A')
 																			: afterUnderscore);
 				}
@@ -44,6 +50,11 @@ public class FieldNameStrategy {
 				newName.append(c);
 			}
 		}
+		
+		//extreme case, input may be all underscore chars
+		if ( newName.length() == 0 )
+			return oldName;
+		
 		return newName.toString();
 	}
 }
