@@ -98,7 +98,7 @@ public class RowMapTest {
 		rowMap.putData("department", "science");
 
 		List<String> partitionColumns = Arrays.asList("subject_id",  "sharding_value","id");
-		String partitionKey = rowMap.buildPartionPriorityKey(partitionColumns);
+		String partitionKey = rowMap.buildPartitionPriorityKey(partitionColumns);
 
 		Assert.assertEquals("9001", partitionKey);
 	}
