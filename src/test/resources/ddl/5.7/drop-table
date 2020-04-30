@@ -1,0 +1,3 @@
+DROP [TEMPORARY] TABLE [IF EXISTS]
+    tbl_name [, tbl_name] ...
+    [RESTRICT | CASCADE]

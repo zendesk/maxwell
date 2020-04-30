@@ -58,7 +58,13 @@ public class MysqlParserListener extends mysqlBaseListener {
 	}
 
 	private String getTable(Table_nameContext t) {
-		return unquote(t.name().getText());
+		String name;
+		if ( t.name() != null )
+			name = t.name().getText();
+		else
+			name = t.name_all_tokens().getText();
+
+		return unquote(name);
 	}
 
 	private TableAlter alterStatement() {
@@ -110,7 +116,16 @@ public class MysqlParserListener extends mysqlBaseListener {
 
 	@Override
 	public void exitAlter_database(Alter_databaseContext ctx) {
-		String dbName = unquote(ctx.name().getText());
+		String dbName;
+
+		if ( ctx.name() != null ) {
+			dbName = ctx.name().getText();
+		} else {
+			dbName = this.currentDatabase;
+		}
+
+		dbName = unquote(dbName);
+
 		DatabaseAlter alter = new DatabaseAlter(dbName);
 
 		List<Default_character_setContext> charSet = ctx.alter_database_definition().default_character_set();
@@ -163,7 +178,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 	}
 	@Override
 	public void exitChange_column(mysqlParser.Change_columnContext ctx) {
-		String oldColumnName = unquote(ctx.old_col_name().getText());
+		String oldColumnName = unquote(ctx.full_column_name().col_name.getText());
 
 		ColumnDef c = this.columnDefs.removeFirst();
 		alterStatement().columnMods.add(new ChangeColumnMod(oldColumnName, c, getColumnPosition()));
@@ -173,9 +188,18 @@ public class MysqlParserListener extends mysqlBaseListener {
 		ColumnDef c = this.columnDefs.removeFirst();
 		alterStatement().columnMods.add(new ChangeColumnMod(c.getName(), c, getColumnPosition()));
 	}
+
+	@Override
+	public void exitRename_column(Rename_columnContext ctx) {
+		String oldName = unquote(ctx.name(0).getText());
+		String newName = unquote(ctx.name(1).getText());
+		alterStatement().columnMods.add(new RenameColumnMod(oldName, newName));
+	}
+
 	@Override
 	public void exitDrop_column(mysqlParser.Drop_columnContext ctx) {
-		alterStatement().columnMods.add(new RemoveColumnMod(unquote(ctx.old_col_name().getText())));
+		String colName = ctx.full_column_name().col_name.getText();
+		alterStatement().columnMods.add(new RemoveColumnMod(unquote(colName)));
 	}
 	@Override
 	public void exitCol_position(mysqlParser.Col_positionContext ctx) {
@@ -381,7 +405,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 		  name,
 		  colCharset,
 		  colType.toLowerCase(),
-		  -1,
+		  (short) -1,
 		  signed,
 		  enumValues,
 		  columnLength

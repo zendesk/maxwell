@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.scripting;
 
 import com.zendesk.maxwell.replication.BinlogPosition;
+import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
 
 import java.util.LinkedHashMap;
@@ -40,7 +41,10 @@ public class WrappedRowMap {
 	}
 
 	public String getPosition() {
-		BinlogPosition p = row.getPosition().getBinlogPosition();
+		Position pp = row.getPosition();
+		if ( pp == null ) return null;
+
+		BinlogPosition p = pp.getBinlogPosition();
 
 		if ( p == null )
 			return null;
@@ -67,11 +71,23 @@ public class WrappedRowMap {
 		return row.getTimestamp();
 	}
 
+	public String getQuery() {
+		return row.getRowQuery();
+	}
+
+	public void setQuery(String query) {
+		row.setRowQuery(query);
+	}
+
 	public void suppress() {
 		row.suppress();
 	}
 
 	public void setKafka_topic(String topic) {
 		row.setKafkaTopic(topic);
+	}
+
+	public void setPartition_string(String partitionString) {
+		row.setPartitionString(partitionString);
 	}
 }

@@ -1,0 +1,5 @@
+ALTER TABLESPACE tablespace_name
+    {ADD|DROP} DATAFILE 'file_name'
+    [INITIAL_SIZE [=] size]
+    [WAIT]
+    ENGINE [=] engine_name

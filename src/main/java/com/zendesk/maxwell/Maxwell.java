@@ -1,7 +1,8 @@
 package com.zendesk.maxwell;
 
 import com.djdch.log4j.StaticShutdownCallbackRegistry;
-import com.zendesk.maxwell.bootstrap.AbstractBootstrapper;
+import com.github.shyiko.mysql.binlog.network.ServerException;
+import com.zendesk.maxwell.bootstrap.BootstrapController;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.recovery.Recovery;
 import com.zendesk.maxwell.recovery.RecoveryInfo;
@@ -184,13 +185,13 @@ public class Maxwell implements Runnable {
 		}
 
 		AbstractProducer producer = this.context.getProducer();
-		AbstractBootstrapper bootstrapper = this.context.getBootstrapper();
 
 		Position initPosition = getInitialPosition();
 		logBanner(producer, initPosition);
 		this.context.setPosition(initPosition);
 
 		MysqlSchemaStore mysqlSchemaStore = new MysqlSchemaStore(this.context, initPosition);
+		BootstrapController bootstrapController = this.context.getBootstrapController(mysqlSchemaStore.getSchemaID());
 
 		if (config.recaptureSchema) {
 			mysqlSchemaStore.captureAndSaveSchema();
@@ -201,7 +202,7 @@ public class Maxwell implements Runnable {
 		this.replicator = new BinlogConnectorReplicator(
 			mysqlSchemaStore,
 			producer,
-			bootstrapper,
+			bootstrapController,
 			config.replicationMysql,
 			config.replicaServerID,
 			config.databaseName,
@@ -210,12 +211,11 @@ public class Maxwell implements Runnable {
 			false,
 			config.clientID,
 			context.getHeartbeatNotifier(),
-			config.scripting
+			config.scripting,
+			context.getFilter(),
+			config.outputConfig,
+			config.bufferMemoryUsage
 		);
-
-		bootstrapper.resume(producer, replicator);
-
-		replicator.setFilter(context.getFilter());
 
 		context.setReplicator(replicator);
 		this.context.start();
@@ -252,6 +252,9 @@ public class Maxwell implements Runnable {
 			LOGGER.error("Syntax issue with URI, check for misconfigured host, port, database, or JDBC options (see RFC 2396)");
 			LOGGER.error("URISyntaxException: " + e.getLocalizedMessage());
 			System.exit(1);
+		} catch ( ServerException e ) {
+			LOGGER.error("Maxwell couldn't find the requested binlog, exiting...");
+			System.exit(2);
 		} catch ( Exception e ) {
 			e.printStackTrace();
 			System.exit(1);

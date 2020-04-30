@@ -41,6 +41,9 @@ password=maxwell
 # name of the mysql database where maxwell keeps its own state
 #schema_database=maxwell
 
+# whether to use GTID or not for positioning
+#gtid_mode=true
+
 # SSL/TLS options
 # To use VERIFY_CA or VERIFY_IDENTITY, you must set the trust store with Java opts:
 #   -Djavax.net.ssl.trustStore=<truststore> -Djavax.net.ssl.trustStorePassword=<password>
@@ -80,7 +83,7 @@ password=maxwell
 #output_gtid_position=true
 
 # records include fields with null values (default true).  If this is false,
-# fiels where the value is null will be omitted entirely from output.
+# fields where the value is null will be omitted entirely from output.
 #output_nulls=true
 
 # records include server_id (default false)
@@ -89,8 +92,17 @@ password=maxwell
 # records include thread_id (default false)
 #output_thread_id=true
 
+# records include schema_id (default false)
+#output_schema_id=true
+
 # records include row query, binlog option "binlog_rows_query_log_events" must be enabled" (default false)
 #output_row_query=true
+
+# DML records include list of values that make up a row's primary key (default false)
+#output_primary_keys=true
+
+# DML records include list of columns that make up a row's primary key (default false)
+#output_primary_key_columns=true
 
 # records include commit and xid (default true)
 #output_commit_info=true
@@ -137,6 +149,15 @@ kafka.retries=0
 kafka.acks=1
 #kafka.batch.size=16384
 
+
+# kafka+SSL example
+# kafka.security.protocol=SSL
+# kafka.ssl.truststore.location=/var/private/ssl/kafka.client.truststore.jks
+# kafka.ssl.truststore.password=test1234
+# kafka.ssl.keystore.location=/var/private/ssl/kafka.client.keystore.jks
+# kafka.ssl.keystore.password=test1234
+# kafka.ssl.key.password=test1234#
+
 # controls a heuristic check that maxwell may use to detect messages that
 # we never heard back from.  The heuristic check looks for "stuck" messages, and
 # will timeout maxwell after this many milliseconds.
@@ -149,7 +170,7 @@ kafka.acks=1
 #           *** partitioning ***
 
 # What part of the data do we partition by?
-#producer_partition_by=database # [database, table, primary_key, column]
+#producer_partition_by=database # [database, table, primary_key, transaction_id, column]
 
 # specify what fields to partition by when using producer_partition_by=column
 # column separated list.
@@ -207,9 +228,17 @@ kafka.acks=1
 #redis_port=6379
 #redis_auth=redis_auth
 #redis_database=0
+
+# name of pubsub/list/whatever key to publish to
+#redis_key=maxwell
+
+# this can be static, e.g. 'maxwell', or dynamic, e.g. namespace_%{database}_%{table}
 #redis_pub_channel=maxwell
+# this can be static, e.g. 'maxwell', or dynamic, e.g. namespace_%{database}_%{table}
 #redis_list_key=maxwell
+# this can be static, e.g. 'maxwell', or dynamic, e.g. namespace_%{database}_%{table}
 # Valid values for redis_type = pubsub|lpush. Defaults to pubsub
+
 #redis_type=pubsub
 
 #           *** custom producer ***

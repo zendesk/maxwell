@@ -1,5 +1,260 @@
 # Maxwell changelog
 
+### [v1.25.1](https://github.com/zendesk/maxwell/releases/tag/v1.25.1): "nowhere to put it"
+
+
+- issue #1457, ALTER DATABASE with implicit database name
+- maxwell now runs on JDK 11 in docker
+- exit with status 2 when we can't find binlog files
+
+
+### [v1.25.0](https://github.com/zendesk/maxwell/releases/tag/v1.25.0): "mah mah mah my corona.  I'm sorry.  I'm sorry."
+
+
+- swap un-maintained snaq.db with C3P0.
+- support eu datadog metrics
+- protect against lost connections during key queries (bootstrapping,
+      heartbeats, postition setting)
+
+
+### [v1.24.2](https://github.com/zendesk/maxwell/releases/tag/v1.24.2): "#shelterinstyle"
+
+
+- bugfix parsing errors: compressed columns, exchange partitions,
+  parenthesis-enclosed default values, `drop column foo.t`.
+- add partition-by-random feature.
+- update jackson-databind to get security patch
+- fix redis channel interpolation on RPUSH
+
+
+### [v1.24.1](https://github.com/zendesk/maxwell/releases/tag/v1.24.1): "pixies in my head all damn week"
+
+
+- allow jdbc_options on secondary connections
+- fix a crash in bootstrapping / javascript filters
+- fix a regression in message.publish.age metric
+
+
+### [v1.24.0](https://github.com/zendesk/maxwell/releases/tag/v1.24.0): "la la la la la la low"
+
+
+ - add comments field to bootstrapping, thanks Tom Collins
+ - fix sql bug with #comments style comments
+
+
+### [v1.23.5](https://github.com/zendesk/maxwell/releases/tag/v1.23.5): "And I get so stuck in my head - Lost in all the lies, nihilistic backslide"
+
+
+ - Update bootstrap documentation
+ - Bump drop wizard metrics to support Java versions 10+
+
+
+### [v1.23.4](https://github.com/zendesk/maxwell/releases/tag/v1.23.4): "Try to be kinder to people who bore you, You're probably boring them too."
+
+
+- Bump and override dependencies to fix security vulnerabilities.
+- Update redis-key config options
+
+ - list changes
+
+
+### [v1.23.3](https://github.com/zendesk/maxwell/releases/tag/v1.23.3): "but that's not the way it feels"
+
+
+- pubsubDelayMultiplier may now be 1.0
+- allow %{database} and %{topic} interpolation into redis producer
+- docs updates
+- setup default client_id in maxwell-bootstrap util
+
+
+### [v1.23.2](https://github.com/zendesk/maxwell/releases/tag/v1.23.2): "you enjoy it every time"
+
+
+- upgrade jackson
+- stop passing maxwell rows through the JS filter.  too dangerous.
+
+
+### [v1.23.1](https://github.com/zendesk/maxwell/releases/tag/v1.23.1): "the new barrista"
+
+
+- Add option for XADD (redis streams) operation
+- Add configuration flag for tuning transaction buffer memory
+- sectionalize help text
+
+
+### [v1.23.0](https://github.com/zendesk/maxwell/releases/tag/v1.23.0): "When it breaks If it breaks We will see"
+
+
+- Added AWS FIFO support
+- Add retry and batch settings to pubs producer
+- Add support for age SLO metrics
+
+
+### [v1.22.6](https://github.com/zendesk/maxwell/releases/tag/v1.22.6): "the things that keep your, like, dresses, like"
+
+
+- upgrade mysql-connector-java to 8.0.17
+- use a newer docker image as base
+ - list changes
+
+
+### [v1.22.5](https://github.com/zendesk/maxwell/releases/tag/v1.22.5): "all of the names"
+
+
+- bugfix for bootstrapping off a split replica that doesn't contain a
+  "maxwell" database
+- Fix a parser issue with db.table.column style column names
+
+
+### [v1.22.4](https://github.com/zendesk/maxwell/releases/tag/v1.22.4): "Last Christmans, I gave you my heart"
+
+
+ - Add row type to fallback message
+ - Upgrade jackson-databind
+
+
+### [v1.22.3](https://github.com/zendesk/maxwell/releases/tag/v1.22.3): "my doubt, my failings"
+
+
+- fix issue with google pubsub in 1.22.2
+
+
+### [v1.22.2](https://github.com/zendesk/maxwell/releases/tag/v1.22.2): "some girls"
+
+
+- fix an issue with bootstrapping-on-replicas
+- add --output_primary_keys and --output_primary_key_columns
+- fix a very minor memory leak with blacklists
+
+
+### [v1.22.1](https://github.com/zendesk/maxwell/releases/tag/v1.22.1): "a snow covered field"
+
+
+- fix crash in rabbit-mq producer
+- better support for maxwell + azure-mysql
+- remove bogus different-host bootstrap check
+- some security upgrades
+
+
+### [v1.22.0](https://github.com/zendesk/maxwell/releases/tag/v1.22.0): "through the roof, and underground"
+
+
+- Bootstrapping has been reworked and is now available in all setups,
+including those in which the maxwell store is split from the replicator.
+- cleanup and fix a deadlock in the kafka fallback queue logic
+- add .partition_string = to javascript filters
+
+
+### [v1.21.1](https://github.com/zendesk/maxwell/releases/tag/v1.21.1): "ohhhhhh oh oh"
+
+
+- Upgrade binlog connector.  Should fix issues around deserialization
+errors.
+
+
+### [v1.21.0](https://github.com/zendesk/maxwell/releases/tag/v1.21.0): "through the roof"
+
+
+- Bootstrapping output no longer contain binlog positions.  Please update
+  any code that relies on this.
+- Fix 3 parser issues.
+
+
+### [v1.20.0](https://github.com/zendesk/maxwell/releases/tag/v1.20.0): "and so you learn the only way to go is"
+
+
+- add support for partitioning by transaction ID thx @hexene
+- add support for a kafka "fallback" topic to write to
+  when a message fails to write
+- add UJIS charset support
+- parser bug: multiple strings concatenate to make one default string
+- parser bug: deal with bizarre column renames which are then referenced
+  in AFTER column statements
+
+
+### [v1.19.7](https://github.com/zendesk/maxwell/releases/tag/v1.19.7): "in every corner of your room"
+
+
+- fix a parser error with empty sql comments
+- interpret latin-1 as windows-1252, not iso-whatever, thx @borleaandrei
+
+
+### [v1.19.6](https://github.com/zendesk/maxwell/releases/tag/v1.19.6): "set up for you"
+
+
+- Further fixes for GTID-reconnection issues.
+- Crash sanely when GTID-enabled maxwell is connected to clearly the wrong master,
+  thanks @acampoh
+
+
+### [v1.19.5](https://github.com/zendesk/maxwell/releases/tag/v1.19.5): "when there is trap"
+
+
+- Fixes for unreliable connections wrt to GTID events; previously we
+  restart in any old position, now we throw away the current transaction
+  and restart the replicator again at the head of the GTID event.
+
+
+### [v1.19.4](https://github.com/zendesk/maxwell/releases/tag/v1.19.4): "and underground"
+
+
+- Fixes for a maxwell database not making it through the blacklist
+- Add `output_null_zerodates` parameter to control how we treat
+  '0000-00-00'
+
+
+### [v1.19.3](https://github.com/zendesk/maxwell/releases/tag/v1.19.3): "through the roof"
+
+
+- Add a universal backpressure mechanism.  This should help people who
+were running into out-of-memory situations while bootstrapping.
+
+
+### [v1.19.2](https://github.com/zendesk/maxwell/releases/tag/v1.19.2): "the same I wore last night"
+
+
+- Include schema_id in bootstrap events
+- add more logging around binlog connector losing connection
+- add retry logic to redis
+- some aws fixes
+- allow pushing JS hashes/arrays into data from js filters
+
+ - list changes
+
+
+### [v1.19.1](https://github.com/zendesk/maxwell/releases/tag/v1.19.1): "the swoop here doesn't change things one bit"
+
+
+- Handle mysql bit literals in DEFAULT statements
+- blacklist out CREATE ROLE etc
+- upgrade dependencies to pick up security issues
+
+
+### [v1.19.0](https://github.com/zendesk/maxwell/releases/tag/v1.19.0): "whole lotta milka"
+
+
+- mysql 8 support!
+- utf8 enum values are supported now
+- fix #1125, bootstrapping issue for TINYINT(1)
+- fix #1145, nasty bug around SQL blacklist and columns starting with "begin"
+- only resume bootstraps that are targeted at this client_id
+- fixes for blacklists and heartbeats.  Did I ever mention blacklists
+  are a terrible idea?
+
+
+### [v1.18.0](https://github.com/zendesk/maxwell/releases/tag/v1.18.0): "hello from the Andes"
+
+
+- memory optimizations for large schemas (especially shareded schemas with lots of duplicates)
+- add support for an http endpoint to support Prometheus metrics
+- allow javascript filters to access the row query object
+- javascript filters now run in the bootstrap process
+- support for non-latin1 column names
+- add `--output_schema_id` option
+- better handling of packet-too-big errors from Kinesis
+- add message.publish.age metric
+
+
 ### [v1.17.1](https://github.com/zendesk/maxwell/releases/tag/v1.17.1): "ay, ay, ay"
 
 

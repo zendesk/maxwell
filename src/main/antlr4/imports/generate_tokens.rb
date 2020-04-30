@@ -189,6 +189,10 @@ FALSE
 ALGORITHM
 COPY
 INPLACE
+INSTANT
+
+VISIBLE
+INVISIBLE
 
 LOCK
 EXCLUSIVE
@@ -267,27 +271,24 @@ LOCALTIME
 LOCALTIMESTAMP
 )
 
-tokens_allowed_in_names = []
 
 tokens = tokens.select { |t| !t.empty? }.sort.uniq
 
 $connection = Mysql2::Client.new(:database => 'test', :default_file => ENV["HOME"] + '/.my.cnf', :default_group => 'mysql')
 
-def discover_token_availability(tokens, array, sql)
-  tokens.each do |token|
+def discover_token_availability(tokens, sql)
+  tokens.select do |token|
     begin
       $connection.query(sql % token)
-      array.push(token)
+      true
     rescue Mysql2::Error => e
-      if e.message !~ /You have an error in your SQL syntax/
-        array.push(token)
-      end
+      e.message !~ /You have an error in your SQL syntax/
     end
   end
 end
 
 $connection.query("CREATE TABLE if not exists column_test ( id int(11) )")
-discover_token_availability(tokens, tokens_allowed_in_names, "ALTER TABLE column_test add column %s int(11)");
+tokens_allowed_in_names = discover_token_availability(tokens, "ALTER TABLE column_test add column %s int(11)")
 
 
 File.open(File.dirname(__FILE__) + "/mysql_literal_tokens.g4", "w+") do |f|
@@ -295,6 +296,7 @@ File.open(File.dirname(__FILE__) + "/mysql_literal_tokens.g4", "w+") do |f|
   f.puts("grammar mysql_literal_tokens;")
   f.puts
   f.puts("tokens_available_for_names: (%s);" % tokens_allowed_in_names.join(" | "))
+  f.puts("all_tokens: (%s);" % tokens.sort.uniq.join(" | "))
   f.puts
 
   tokens.select { |t| !t.empty? }.sort.uniq.each do |t|

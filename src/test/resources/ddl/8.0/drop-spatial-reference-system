@@ -1,0 +1,5 @@
+DROP SPATIAL REFERENCE SYSTEM
+    [IF EXISTS]
+    srid
+
+srid: 32-bit unsigned integer

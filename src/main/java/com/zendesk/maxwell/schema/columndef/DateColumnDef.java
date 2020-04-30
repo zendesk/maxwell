@@ -1,7 +1,9 @@
 package com.zendesk.maxwell.schema.columndef;
 
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+
 public class DateColumnDef extends ColumnDef {
-	public DateColumnDef(String name, String type, int pos) {
+	public DateColumnDef(String name, String type, short pos) {
 		super(name, type, pos);
 	}
 
@@ -15,9 +17,13 @@ public class DateColumnDef extends ColumnDef {
 	}
 
 	@Override
-	public Object asJSON(Object value) {
-		if ( value instanceof Long && (Long) value == Long.MIN_VALUE )
-			return "0000-00-00";
+	public Object asJSON(Object value, MaxwellOutputConfig config) {
+		if ( value instanceof Long && (Long) value == Long.MIN_VALUE ) {
+			if ( config.zeroDatesAsNull )
+				return null;
+			else
+				return "0000-00-00";
+		}
 
 		return DateFormatter.formatDate(value);
 	}

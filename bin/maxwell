@@ -2,7 +2,13 @@
 
 set -e
 
-base_dir="$(dirname "$0")/.."
+actual_dir=$0
+if [ -n "$(LC_ALL=C type -t realpath)" ];
+then
+	actual_dir=`realpath "$actual_dir"`
+fi
+
+base_dir="$(dirname "$actual_dir")/.."
 lib_dir="$base_dir/lib"
 lib_dir_development="$base_dir/target/lib"
 if [ ! -e "$lib_dir" -a -e "$lib_dir_development" ]; then

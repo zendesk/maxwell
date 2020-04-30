@@ -16,6 +16,7 @@ import com.zendesk.maxwell.MaxwellTestWithIsolatedServer;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -66,6 +67,14 @@ public class SchemaCaptureTest extends MaxwellTestWithIsolatedServer {
 		List<String> nameList = shard1DB.getTableNames();
 
 		assertEquals("ints:mediumints:minimal:sharded", StringUtils.join(nameList.iterator(), ":"));
+	}
+
+	@Test
+	public void testTablefilter() throws Exception {
+		SchemaCapturer sc =
+			new SchemaCapturer(server.getConnection(), CaseSensitivity.CASE_SENSITIVE, "shard_1", "ints");
+		Schema schema = sc.capture();
+		assertEquals(1, schema.getDatabases().get(0).getTableList().size());
 	}
 
 	@Test
@@ -180,5 +189,23 @@ public class SchemaCaptureTest extends MaxwellTestWithIsolatedServer {
 		assertEquals("\\,", result[5]);
 		assertEquals(",'", result[6]);
 		assertEquals("b", result[7]);
+	}
+
+	private long getUsedMem() {
+		Runtime r = Runtime.getRuntime();
+		return r.totalMemory() - r.freeMemory();
+	}
+
+	@Ignore
+	@Test
+	public void testHugeCaptureMemUsage() throws Exception {
+		Runtime.getRuntime().gc();
+		System.out.println("usage before: " + getUsedMem());
+		generateHugeSchema();
+		Schema s = capturer.capture();
+		Runtime.getRuntime().gc();
+		Runtime.getRuntime().gc();
+		System.out.println("usage after: " + getUsedMem());
+		System.out.println(s.getCharset());
 	}
 }

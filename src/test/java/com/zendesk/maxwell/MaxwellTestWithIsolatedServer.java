@@ -54,6 +54,26 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 		});
 	}
 
+	final int HUGE_NUM_DBS = 1000;
+	final int HUGE_NUM_TABLES = 200;
+
+	protected void generateHugeSchema() throws Exception {
+		for ( int i = 0 ; i < HUGE_NUM_DBS; i++ ) {
+			String dbName = "huge_test_" + i;
+			server.execute("create database " + dbName);
+			for ( int j = 0; j < HUGE_NUM_TABLES; j++) {
+				server.executeCached("create table " + dbName + ".huge_tbl_" + j + "("
+					+ "intcol" + j + " int NOT NULL PRIMARY KEY AUTO_INCREMENT, "
+					+ "strcol" + j + " varchar(255), "
+					+ "othercol" + j + " text"
+					+ ")");
+
+			}
+			long nGenerated = (i + 1) * HUGE_NUM_TABLES;
+			System.out.println("generated " + nGenerated + " of " + (HUGE_NUM_DBS * HUGE_NUM_TABLES) + " tables");
+		}
+	}
+
 
 	private class MaxwellTestSupportTXCallback extends MaxwellTestSupportCallback {
 		private final String[] input;
@@ -85,12 +105,12 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 		});
 	}
 
-	protected void runJSON(String filename) throws Exception {
-		MaxwellTestJSON.runJSONTestFile(server, filename, null);
+	protected List<RowMap> runJSON(String filename) throws Exception {
+		return MaxwellTestJSON.runJSONTestFile(server, filename, null);
 	}
 
-	protected void runJSON(String filename, Consumer<MaxwellConfig> configLambda) throws Exception {
-		MaxwellTestJSON.runJSONTestFile(server, filename, configLambda);
+	protected List<RowMap> runJSON(String filename, Consumer<MaxwellConfig> configLambda) throws Exception {
+		return MaxwellTestJSON.runJSONTestFile(server, filename, configLambda);
 	}
 
 	protected MaxwellContext buildContext() throws Exception {
@@ -112,7 +132,10 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 	}
 
 	protected void requireMinimumVersion(MysqlVersion minimum) {
-		// skips this test if running an older MYSQL version
-		assumeTrue(server.getVersion().atLeast(minimum));
+		MaxwellTestSupport.requireMinimumVersion(server, minimum);
+	}
+
+	protected void requireMinimumVersion(int major, int minor) {
+		requireMinimumVersion(new MysqlVersion(major, minor));
 	}
 }

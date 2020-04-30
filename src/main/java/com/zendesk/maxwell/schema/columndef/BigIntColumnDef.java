@@ -1,5 +1,7 @@
 package com.zendesk.maxwell.schema.columndef;
 
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+
 import java.math.BigInteger;
 
 public class BigIntColumnDef extends ColumnDef {
@@ -7,7 +9,7 @@ public class BigIntColumnDef extends ColumnDef {
 
 	protected boolean signed;
 
-	public BigIntColumnDef(String name, String type, int pos, boolean signed) {
+	public BigIntColumnDef(String name, String type, short pos, boolean signed) {
 		super(name, type, pos);
 		this.signed = signed;
 	}
@@ -28,7 +30,7 @@ public class BigIntColumnDef extends ColumnDef {
 	}
 
 	@Override
-	public Object asJSON(Object value) {
+	public Object asJSON(Object value, MaxwellOutputConfig config) {
 		return toNumeric(value);
 	}
 

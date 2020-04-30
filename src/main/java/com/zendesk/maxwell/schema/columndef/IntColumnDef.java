@@ -1,11 +1,13 @@
 package com.zendesk.maxwell.schema.columndef;
 
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+
 public class IntColumnDef extends ColumnDef {
 	public int bits;
 
 	protected boolean signed;
 
-	public IntColumnDef(String name, String type, int pos, boolean signed) {
+	public IntColumnDef(String name, String type, short pos, boolean signed) {
 		super(name, type, pos);
 		this.signed = signed;
 		this.bits = bitsFromType(type);
@@ -44,7 +46,7 @@ public class IntColumnDef extends ColumnDef {
 	}
 
 	@Override
-	public Object asJSON(Object value) {
+	public Object asJSON(Object value, MaxwellOutputConfig config) {
 		return toLong(value);
 	}
 

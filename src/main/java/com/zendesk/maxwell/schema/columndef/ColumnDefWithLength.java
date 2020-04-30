@@ -1,5 +1,7 @@
 package com.zendesk.maxwell.schema.columndef;
 
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+
 public abstract class ColumnDefWithLength extends ColumnDef {
 	protected Long columnLength;
 
@@ -17,7 +19,7 @@ public abstract class ColumnDefWithLength extends ColumnDef {
 		}
 	};
 
-	public ColumnDefWithLength(String name, String type, int pos, Long columnLength) {
+	public ColumnDefWithLength(String name, String type, short pos, Long columnLength) {
 		super(name, type, pos);
 		if ( columnLength == null )
 			this.columnLength = 0L;
@@ -27,12 +29,12 @@ public abstract class ColumnDefWithLength extends ColumnDef {
 
 	@Override
 	public String toSQL(Object value) {
-		return "'" + formatValue(value) + "'";
+		return "'" + formatValue(value, new MaxwellOutputConfig()) + "'";
 	}
 
 	@Override
-	public Object asJSON(Object value) {
-		return formatValue(value);
+	public Object asJSON(Object value, MaxwellOutputConfig config) {
+		return formatValue(value, config);
 	}
 
 	public Long getColumnLength() { return columnLength ; }
@@ -41,7 +43,7 @@ public abstract class ColumnDefWithLength extends ColumnDef {
 		this.columnLength = length;
 	}
 
-	protected abstract String formatValue(Object value);
+	protected abstract String formatValue(Object value, MaxwellOutputConfig config);
 
 	protected static String appendFractionalSeconds(String value, int nanos, Long columnLength) {
 		if ( columnLength == 0L )

@@ -15,6 +15,15 @@ public abstract class AbstractConfig {
 	static final protected String DEFAULT_CONFIG_FILE = "config.properties";
 	protected abstract OptionParser buildOptionParser();
 
+	protected void usage(String banner, MaxwellOptionParser optionParser, String section) {
+		System.err.println(banner);
+		System.err.println();
+		try {
+			optionParser.printHelpOn(System.err, section);
+			System.exit(1);
+		} catch (IOException e) { }
+	}
+
 	protected void usage(String string) {
 		System.err.println(string);
 		System.err.println();

@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.producer.partitioners;
 
 import com.zendesk.maxwell.row.RowMap;
+import org.apache.commons.lang3.RandomStringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,6 +12,8 @@ public abstract class AbstractMaxwellPartitioner {
 	private final PartitionBy partitionBy, partitionByFallback;
 
 	private PartitionBy partitionByForString(String key) {
+
+
 		if ( key == null )
 			return PartitionBy.DATABASE;
 
@@ -21,10 +24,14 @@ public abstract class AbstractMaxwellPartitioner {
 				return PartitionBy.DATABASE;
 			case "primary_key":
 				return PartitionBy.PRIMARY_KEY;
+			case "transaction_id":
+				return PartitionBy.TRANSACTION_ID;
 			case "column":
 				return PartitionBy.COLUMN;
 			case "first_column":
 				return PartitionBy.FIRST_COLUMN;
+			case "random":
+				return PartitionBy.RANDOM;
 			default:
 				throw new RuntimeException("Unknown partitionBy string: " + key);
 		}
@@ -46,10 +53,6 @@ public abstract class AbstractMaxwellPartitioner {
 		return r.getTable();
 	}
 
-	static protected String getPrimaryKey(RowMap r) {
-		return r.pkAsConcatString();
-	}
-
 	public String getHashString(RowMap r, PartitionBy by) {
 		switch ( by ) {
 			case TABLE:
@@ -61,7 +64,9 @@ public abstract class AbstractMaxwellPartitioner {
 			case DATABASE:
 				return r.getDatabase();
 			case PRIMARY_KEY:
-				return r.pkAsConcatString();
+				return r.getRowIdentity().toConcatString();
+			case TRANSACTION_ID:
+				return String.valueOf(r.getXid());
 			case COLUMN:
 				String s = r.buildPartitionKey(partitionColumns);
 				if ( s.length() > 0 )
@@ -69,16 +74,21 @@ public abstract class AbstractMaxwellPartitioner {
 				else
 					return getHashString(r, partitionByFallback);
 			case FIRST_COLUMN:
-				String sp = r.buildPartionPriorityKey(partitionColumns);
+				String sp = r.buildPartitionPriorityKey(partitionColumns);
 				if ( sp.length() > 0 )
 					return sp;
 				else
 					return getHashString(r, partitionByFallback);
+			case RANDOM:
+				return RandomStringUtils.random(10, true, true);
 		}
 		return null; // thx java
 	}
 
 	public String getHashString(RowMap r) {
-		return getHashString(r, partitionBy);
+		if ( r.getPartitionString() != null )
+			return r.getPartitionString();
+		else
+			return getHashString(r, partitionBy);
 	}
 }

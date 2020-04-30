@@ -6,7 +6,7 @@ import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
-import snaq.db.ConnectionPool;
+import com.zendesk.maxwell.util.ConnectionPool;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -19,7 +19,6 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 	private final ConnectionPool maxwellConnectionPool;
 	private final Position initialPosition;
 	private final boolean readOnly;
-	private final Filter filter;
 	private Long serverID;
 
 	private MysqlSavedSchema savedSchema;
@@ -34,7 +33,6 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 							boolean readOnly) {
 		super(replicationConnectionPool, schemaConnectionPool, caseSensitivity, filter);
 		this.serverID = serverID;
-		this.filter = filter;
 		this.maxwellConnectionPool = maxwellConnectionPool;
 		this.initialPosition = initialPosition;
 		this.readOnly = readOnly;
@@ -57,6 +55,11 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 		if ( savedSchema == null )
 			savedSchema = restoreOrCaptureSchema();
 		return savedSchema.getSchema();
+	}
+
+	public Long getSchemaID() throws SchemaStoreException {
+		getSchema();
+		return savedSchema.getSchemaID();
 	}
 
 	private MysqlSavedSchema restoreOrCaptureSchema() throws SchemaStoreException {

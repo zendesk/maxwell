@@ -11,6 +11,12 @@ public class LowerCaseDDLIntegrationTest {
 	protected static MysqlIsolatedServer convertServer;
 	protected static MysqlIsolatedServer caseSensitiveServer;
 
+
+	@BeforeClass
+	public static void checkVersion() throws Exception {
+		org.junit.Assume.assumeTrue(MysqlIsolatedServer.getVersion().lessThan(8,0));
+	}
+
 	@BeforeClass
 	public static void setupServers() throws Exception {
 		convertServer = MaxwellTestSupport.setupServer("--lower-case-table-names=1");

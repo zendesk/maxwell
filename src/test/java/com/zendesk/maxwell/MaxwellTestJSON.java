@@ -55,7 +55,7 @@ public class MaxwellTestJSON {
 		}
 	}
 
-	private static void runJSONTest(MysqlIsolatedServer server, List<String> sql, List<Map<String, Object>> expectedJSON,
+	private static List<RowMap> runJSONTest(MysqlIsolatedServer server, List<String> sql, List<Map<String, Object>> expectedJSON,
 									Consumer<MaxwellConfig> configLambda) throws Exception {
 		List<Map<String, Object>> eventJSON = new ArrayList<>();
 
@@ -86,6 +86,7 @@ public class MaxwellTestJSON {
 		}
 		assertJSON(eventJSON, expectedJSON);
 
+		return rows;
 	}
 
 	public static class SQLAndJSON {
@@ -152,10 +153,10 @@ public class MaxwellTestJSON {
 		return ret;
 	}
 
-	protected static void runJSONTestFile(MysqlIsolatedServer server, String fname, Consumer<MaxwellConfig> configLambda) throws Exception {
+	protected static List<RowMap> runJSONTestFile(MysqlIsolatedServer server, String fname, Consumer<MaxwellConfig> configLambda) throws Exception {
 		String dir = MaxwellTestSupport.getSQLDir();
 		SQLAndJSON testResources = parseJSONTestFile(new File(dir, fname).toString());
 
-		runJSONTest(server, testResources.inputSQL, testResources.jsonAsserts, configLambda);
+		return runJSONTest(server, testResources.inputSQL, testResources.jsonAsserts, configLambda);
 	}
 }

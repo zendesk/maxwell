@@ -8,13 +8,16 @@ import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.Table;
 
 public class TableCache {
+	private final String maxwellDB;
+
+	public TableCache(String maxwellDB) {
+		this.maxwellDB = maxwellDB;
+	}
 	private final HashMap<Long, Table> tableMapCache = new HashMap<>();
-	private final HashMap<Long, String> blacklistedTableCache = new HashMap<>();
 
 	public void processEvent(Schema schema, Filter filter, Long tableId, String dbName, String tblName) {
-		if ( !tableMapCache.containsKey(tableId) ) {
-			if ( Filter.isTableBlacklisted(filter, dbName, tblName) ) {
-				blacklistedTableCache.put(tableId, tblName);
+		if ( !tableMapCache.containsKey(tableId)) {
+			if ( filter.isTableBlacklisted(dbName, tblName) ) {
 				return;
 			}
 
@@ -37,16 +40,7 @@ public class TableCache {
 		return tableMapCache.get(tableId);
 	}
 
-	public boolean isTableBlacklisted(Long tableId) {
-		return blacklistedTableCache.containsKey(tableId);
-	}
-
-	public String getBlacklistedTableName(Long tableId) {
-		return blacklistedTableCache.get(tableId);
-	}
-
 	public void clear() {
 		tableMapCache.clear();
-		blacklistedTableCache.clear();
 	}
 }

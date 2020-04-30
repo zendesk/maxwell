@@ -2,30 +2,49 @@ package com.zendesk.maxwell.schema.columndef;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.util.DynamicEnum;
 
 @JsonSerialize(using=ColumnDefSerializer.class)
 @JsonDeserialize(using=ColumnDefDeserializer.class)
 
-public abstract class ColumnDef {
+public abstract class ColumnDef implements Cloneable {
+	private static DynamicEnum dynamicEnum = new DynamicEnum(Byte.MAX_VALUE);
 	protected String name;
-	protected String type;
-
-	protected int pos;
+	protected byte type;
+	protected short pos;
 
 	public ColumnDef() { }
-	public ColumnDef(String name, String type, int pos) {
+	public ColumnDef(String name, String type, short pos) {
 		this.name = name;
-		this.type = type;
 		this.pos = pos;
+		this.type = (byte) dynamicEnum.get(type);
 	}
 
 	public abstract String toSQL(Object value);
 
+	@Deprecated
 	public Object asJSON(Object value) {
+		return asJSON(value, new MaxwellOutputConfig());
+	}
+
+	public Object asJSON(Object value, MaxwellOutputConfig config) {
 		return value;
 	}
 
-	public static ColumnDef build(String name, String charset, String type, int pos, boolean signed, String enumValues[], Long columnLength) {
+	public ColumnDef clone() {
+		try {
+			return (ColumnDef) super.clone();
+		} catch (CloneNotSupportedException e) {
+			return null;
+		}
+	}
+
+	public static ColumnDef build(String name, String charset, String type, short pos, boolean signed, String enumValues[], Long columnLength) {
+		name = name.intern();
+		if ( charset != null )
+			charset = charset.intern();
+
 		switch(type) {
 		case "tinyint":
 		case "smallint":
@@ -182,14 +201,14 @@ public abstract class ColumnDef {
 	}
 
 	public String getType() {
-		return type;
+		return dynamicEnum.get(type);
 	}
 
 	public int getPos() {
 		return pos;
 	}
 
-	public void setPos(int i) {
+	public void setPos(short i) {
 		this.pos = i;
 	}
 }

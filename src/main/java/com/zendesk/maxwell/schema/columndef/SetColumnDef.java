@@ -3,10 +3,11 @@ package com.zendesk.maxwell.schema.columndef;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import org.apache.commons.lang3.StringUtils;
 
 public class SetColumnDef extends EnumeratedColumnDef {
-	public SetColumnDef(String name, String type, int pos, String[] enumValues) {
+	public SetColumnDef(String name, String type, short pos, String[] enumValues) {
 		super(name, type, pos, enumValues);
 	}
 
@@ -16,7 +17,7 @@ public class SetColumnDef extends EnumeratedColumnDef {
 	}
 
 	@Override
-	public Object asJSON(Object value) {
+	public Object asJSON(Object value, MaxwellOutputConfig config) {
 		return asList(value);
 	}
 

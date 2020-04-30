@@ -2,6 +2,8 @@ package com.zendesk.maxwell.schema;
 
 import com.zendesk.maxwell.CaseSensitivity;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
+import com.zendesk.maxwell.util.Sql;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,10 +24,9 @@ public class SchemaCapturer {
 	);
 
 	private final HashSet<String> includeDatabases;
+	private final HashSet<String> includeTables;
 
 	private final CaseSensitivity sensitivity;
-
-	private PreparedStatement tablePreparedStatement;
 
 	private PreparedStatement columnPreparedStatement;
 
@@ -33,15 +34,9 @@ public class SchemaCapturer {
 
 	public SchemaCapturer(Connection c, CaseSensitivity sensitivity) throws SQLException {
 		this.includeDatabases = new HashSet<>();
+		this.includeTables = new HashSet<>();
 		this.connection = c;
 		this.sensitivity = sensitivity;
-
-		String tblSql = "SELECT TABLES.TABLE_NAME, CCSA.CHARACTER_SET_NAME "
-				+ "FROM INFORMATION_SCHEMA.TABLES "
-				+ "JOIN information_schema.COLLATION_CHARACTER_SET_APPLICABILITY AS CCSA"
-				+ " ON TABLES.TABLE_COLLATION = CCSA.COLLATION_NAME WHERE TABLES.TABLE_SCHEMA = ?";
-
-		tablePreparedStatement = connection.prepareStatement(tblSql);
 
 		String dateTimePrecision = "";
 		if(isMySQLAtLeast56())
@@ -56,12 +51,12 @@ public class SchemaCapturer {
 				"COLUMN_TYPE, " +
 				dateTimePrecision +
 				"COLUMN_KEY " +
-				"FROM `information_schema`.`COLUMNS` WHERE TABLE_SCHEMA = ?";
+				"FROM `information_schema`.`COLUMNS` WHERE TABLE_SCHEMA = ? ORDER BY TABLE_NAME, ORDINAL_POSITION";
 
 		columnPreparedStatement = connection.prepareStatement(columnSql);
 
 		String pkSql = "SELECT TABLE_NAME, COLUMN_NAME, ORDINAL_POSITION FROM information_schema.KEY_COLUMN_USAGE "
-				+ "WHERE CONSTRAINT_NAME = 'PRIMARY' AND TABLE_SCHEMA = ?";
+				+ "WHERE CONSTRAINT_NAME = 'PRIMARY' AND TABLE_SCHEMA = ? ORDER BY TABLE_NAME, ORDINAL_POSITION";
 
 		pkPreparedStatement = connection.prepareStatement(pkSql);
 
@@ -72,19 +67,31 @@ public class SchemaCapturer {
 		this.includeDatabases.add(dbName);
 	}
 
+	public SchemaCapturer(Connection c, CaseSensitivity sensitivity, String dbName, String tblName) throws SQLException {
+		this(c, sensitivity, dbName);
+		this.includeTables.add(tblName);
+	}
+
 	public Schema capture() throws SQLException {
 		LOGGER.debug("Capturing schemas...");
 		ArrayList<Database> databases = new ArrayList<>();
 
-		ResultSet rs = connection.createStatement().executeQuery(
-				"SELECT SCHEMA_NAME, DEFAULT_CHARACTER_SET_NAME FROM INFORMATION_SCHEMA.SCHEMATA"
-		);
+		String dbCaptureQuery =
+			"SELECT SCHEMA_NAME, DEFAULT_CHARACTER_SET_NAME FROM INFORMATION_SCHEMA.SCHEMATA";
+
+		if ( includeDatabases.size() > 0 ) {
+			dbCaptureQuery +=
+				" WHERE SCHEMA_NAME IN " + Sql.inListSQL(includeDatabases.size());
+		}
+		dbCaptureQuery += " ORDER BY SCHEMA_NAME";
+
+		PreparedStatement statement = connection.prepareStatement(dbCaptureQuery);
+		Sql.prepareInList(statement, 1, includeDatabases);
+
+		ResultSet rs = statement.executeQuery();
 		while (rs.next()) {
 			String dbName = rs.getString("SCHEMA_NAME");
 			String charset = rs.getString("DEFAULT_CHARACTER_SET_NAME");
-
-			if (includeDatabases.size() > 0 && !includeDatabases.contains(dbName))
-				continue;
 
 			if (IGNORED_DATABASES.contains(dbName))
 				continue;
@@ -116,8 +123,20 @@ public class SchemaCapturer {
 
 
 	private void captureDatabase(Database db) throws SQLException {
-		tablePreparedStatement.setString(1, db.getName());
-		ResultSet rs = tablePreparedStatement.executeQuery();
+		String tblSql = "SELECT TABLES.TABLE_NAME, CCSA.CHARACTER_SET_NAME "
+			+ "FROM INFORMATION_SCHEMA.TABLES "
+			+ "JOIN information_schema.COLLATION_CHARACTER_SET_APPLICABILITY AS CCSA"
+			+ " ON TABLES.TABLE_COLLATION = CCSA.COLLATION_NAME WHERE TABLES.TABLE_SCHEMA = ?";
+
+		if ( this.includeTables.size() > 0 ) {
+			tblSql += " AND TABLES.TABLE_NAME IN " + Sql.inListSQL(includeTables.size());
+		}
+
+		PreparedStatement tblQuery = connection.prepareStatement(tblSql);
+		tblQuery.setString(1, db.getName());
+		Sql.prepareInList(tblQuery, 2, includeTables);
+
+		ResultSet rs = tblQuery.executeQuery();
 
 		HashMap<String, Table> tables = new HashMap<>();
 		while (rs.next()) {
@@ -161,7 +180,7 @@ public class SchemaCapturer {
 				String colName = r.getString("COLUMN_NAME");
 				String colType = r.getString("DATA_TYPE");
 				String colEnc = r.getString("CHARACTER_SET_NAME");
-				int colPos = r.getInt("ORDINAL_POSITION") - 1;
+				short colPos = (short) (r.getInt("ORDINAL_POSITION") - 1);
 				boolean colSigned = !r.getString("COLUMN_TYPE").matches(".* unsigned$");
 				Long columnLength = null;
 

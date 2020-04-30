@@ -13,21 +13,32 @@ option                                        | description
 --table TABLE                                 | mysql table to bootstrap
 --where WHERE_CLAUSE                          | where clause to restrict the rows bootstrapped from the specified table
 --client_id CLIENT_ID                         | specify which maxwell instance should perform the bootstrap operation
+--comment COMMENT                             | arbitrary comment to be added to every bootstrap row record
 
-### Using the maxwell.bootstrap table
+### Starting a table bootstrap
 ***
+You can start a bootstrap using:
+
+```
+bin/maxwell-bootstrap --database fooDB --table barTable
+```
+
+Optionally, you can include a where clause to replay part of the data.
+
+```
+bin/maxwell-bootstrap --database fooDB --table barTable --where "my_date >= '2017-01-07 00:00:00'"
+```
+
 Alternatively you can insert a row in the `maxwell.bootstrap` table to trigger a bootstrap.
 
 ```
 mysql> insert into maxwell.bootstrap (database_name, table_name) values ('fooDB', 'barTable');
 ```
-Optionally, you can include a where clause to replay part of the data.
 
-bin/maxwell-bootstrap --config localhost.properties --database foobar --table test --log_level info
-
-or
-
-bin/maxwell-bootstrap --config localhost.properties --database foobar --table test --where "my_date >= '2017-01-07 00:00:00'" --log_level info
+Note that if a Maxwell client_id has been set you should specify the client id.
+```
+mysql> insert into maxwell.bootstrap (database_name, table_name, client_id) values ('fooDB', 'barTable', 'custom_maxwell_client_id');
+```
 
 ### Async vs Sync bootstrapping
 ***

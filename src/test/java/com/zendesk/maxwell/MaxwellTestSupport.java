@@ -2,10 +2,11 @@ package com.zendesk.maxwell;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.shyiko.mysql.binlog.network.SSLMode;
+import com.zendesk.maxwell.bootstrap.BootstrapController;
 import com.zendesk.maxwell.filtering.Filter;
-import com.zendesk.maxwell.filtering.InvalidFilterException;
-import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.replication.MysqlVersion;
 import com.zendesk.maxwell.replication.Position;
+import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
@@ -13,23 +14,24 @@ import com.zendesk.maxwell.schema.SchemaStoreSchema;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 import com.zendesk.maxwell.schema.ddl.SchemaChange;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.Function;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assume.assumeTrue;
 
 public class MaxwellTestSupport {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellTestSupport.class);
@@ -132,13 +134,9 @@ public class MaxwellTestSupport {
 		return Position.capture(c, inGtidMode());
 	}
 
-
 	private static void clearSchemaStore(MysqlIsolatedServer mysql) throws Exception {
 		mysql.execute("drop database if exists maxwell");
 	}
-
-	//public static List<RowMap> getRowsWithReplicator(final MysqlIsolatedServer mysql, Filter filter, final String queries[], final String before[]) throws Exception {
-	//}
 
 	public static List<RowMap> getRowsWithReplicator(
 		final MysqlIsolatedServer mysql,
@@ -178,7 +176,7 @@ public class MaxwellTestSupport {
 		config.maxwellMysql.host = "localhost";
 		config.maxwellMysql.port = mysql.getPort();
 		config.maxwellMysql.sslMode = SSLMode.DISABLED;
-		config.replicationMysql = config.maxwellMysql;
+		config.replicationMysql = new MaxwellMysqlConfig(config.maxwellMysql);
 		if ( configLambda != null )
 			configLambda.accept(config);
 
@@ -187,8 +185,10 @@ public class MaxwellTestSupport {
 
 		callback.beforeReplicatorStart(mysql);
 
-		config.initPosition = capture(mysql.getConnection());
-		final String waitObject = new String("");
+		if ( config.initPosition == null )
+			config.initPosition = capture(mysql.getConnection());
+
+		final String waitObject = "";
 		final BufferedMaxwell maxwell = new BufferedMaxwell(config) {
 			@Override
 			protected void onReplicatorStart() {
@@ -219,39 +219,59 @@ public class MaxwellTestSupport {
 		}
 
 		callback.afterReplicatorStart(mysql);
+
 		long finalHeartbeat = maxwell.context.getPositionStore().heartbeat();
 
 		LOGGER.debug("running replicator up to heartbeat: " + finalHeartbeat);
 
-		Long pollTime = 2000L;
+		Long pollTime = 5000L;
 		Position lastPositionRead = null;
 
 		for ( ;; ) {
 			RowMap row = maxwell.poll(pollTime);
-			pollTime = 500L; // after the first row is receive, we go into a tight loop.
+			pollTime = 500L; // after the first row is received, we go into a tight loop.
 
-			if ( row == null ) {
-				LOGGER.debug("timed out waiting for final row.  Last position we saw: " + lastPositionRead);
-				break;
-			}
-
-			lastPositionRead = row.getPosition();
-
-			if ( lastPositionRead.getLastHeartbeatRead() >= finalHeartbeat ) {
-				// consume whatever's left over in the buffer.
-				for ( ;; ) {
-					RowMap r = maxwell.poll(100);
-					if ( r == null )
-						break;
-
-					if ( r.toJSON(config.outputConfig) != null )
-						list.add(r);
+			if ( row != null ) {
+				if ( row.toJSON(config.outputConfig) != null ) {
+					LOGGER.debug("getRowsWithReplicator: saw: " + row.toJSON(config.outputConfig));
+					list.add(row);
 				}
+				lastPositionRead = row.getPosition();
+			}
 
+			boolean replicationComplete = lastPositionRead != null && lastPositionRead.getLastHeartbeatRead() >= finalHeartbeat;
+			boolean bootstrapComplete = getIncompleteBootstrapTaskCount(maxwell, config.clientID) == 0;
+			boolean timedOut = !replicationComplete && row == null;
+
+			if (timedOut) {
+				LOGGER.debug("timed out waiting for final row. Last position we saw: " + lastPositionRead);
 				break;
 			}
-			if ( row.toJSON(config.outputConfig) != null )
-				list.add(row);
+
+			if (bootstrapComplete && replicationComplete) {
+				// For sanity testing, we wait another 2s to verify that no additional changes were pending.
+				// This slows down the test suite, so only enable when debugging.
+				boolean checkHasNoPendingChanges = false;
+
+				if (checkHasNoPendingChanges) {
+
+					long deadline = System.currentTimeMillis() + 2000;
+
+					do {
+						RowMap extraRow = maxwell.poll(100);
+
+						if (extraRow instanceof HeartbeatRowMap) {
+							continue;
+						}
+
+						if (extraRow != null) {
+							maxwell.context.terminate(new RuntimeException("getRowsWithReplicator expected no further rows, saw: " + extraRow.toJSON()));
+						}
+
+					} while(System.currentTimeMillis() <= deadline);
+				}
+				break;
+			}
 		}
 
 		callback.beforeTerminate(mysql);
@@ -273,8 +293,14 @@ public class MaxwellTestSupport {
 
 		ObjectMapper m = new ObjectMapper();
 
+		String currentDB = "shard_1";
 		for ( String alterSQL : alters) {
-			List<SchemaChange> changes = SchemaChange.parse("shard_1", alterSQL);
+			if ( alterSQL.startsWith("USE ") )  {
+				currentDB = alterSQL.replaceFirst("USE ", "");
+				continue;
+			}
+
+			List<SchemaChange> changes = SchemaChange.parse(currentDB, alterSQL);
 			if ( changes != null ) {
 				for ( SchemaChange change : changes ) {
 					ResolvedSchemaChange resolvedChange = change.resolve(topSchema);
@@ -295,5 +321,29 @@ public class MaxwellTestSupport {
 
 		List<String> diff = topSchema.diff(bottomSchema, "followed schema", "recaptured schema");
 		assertThat(StringUtils.join(diff.iterator(), "\n"), diff.size(), is(0));
+	}
+
+	public static void assertMaximumVersion(MysqlIsolatedServer server, MysqlVersion maximum) {
+		assumeTrue(server.getVersion().lessThan(maximum.getMajor(), maximum.getMinor()));
+	}
+
+	public static void requireMinimumVersion(MysqlIsolatedServer server, MysqlVersion minimum) {
+		// skips this test if running an older MYSQL version
+		assumeTrue(server.getVersion().atLeast(minimum));
+	}
+
+	private static int getIncompleteBootstrapTaskCount(Maxwell maxwell, String clientID) throws SQLException {
+		try ( Connection cx = maxwell.context.getMaxwellConnection() ) {
+			PreparedStatement s = cx.prepareStatement("select count(id) from bootstrap where is_complete = 0 and client_id = ?");
+			s.setString(1, clientID);
+
+			ResultSet rs = s.executeQuery();
+
+			if (rs.next()) {
+				return rs.getInt(1);
+			}
+		}
+
+		return 0;
 	}
 }

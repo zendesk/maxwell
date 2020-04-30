@@ -31,6 +31,11 @@ div.source-links {
   display: none;
 }
 
+#maxwell-header {
+  float: right;
+  margin-left: 30px;
+}
+
 #maxwell-header > h2 {
   margin-top: 0px;
 }
@@ -150,9 +155,8 @@ h3 {
 
     #maxwell-daemon-image {
       display: inline;
-      float: left;
-      height: 300px;
-      margin-right: 20px;
+      height: 240px;;
+      margin-right: 30px;
     }
 
     .bs-sidebar {

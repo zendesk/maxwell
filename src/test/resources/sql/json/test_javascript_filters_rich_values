@@ -1,0 +1,12 @@
+use test
+DROP TABLE if exists `test_table_z`
+CREATE TABLE `test_table_z` ( id int auto_increment primary key, a text, b text )
+
+# our javascript filter:
+# 1.  exclude everything that matches "xyzzy"
+# 2.  upper case everything else
+
+insert into test_table_z set a='xyzzy'
+
+->  {"database": "test", "table": "test_table_z", "type": "insert", "data": {"id": 1, "a":  [1,2,3,"b", {"a": "b"}], "b": {"a": "b"}} }
+

@@ -1,14 +1,16 @@
 package com.zendesk.maxwell.schema.columndef;
 
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+
 import java.sql.Time;
 import java.sql.Timestamp;
 
 public class TimeColumnDef extends ColumnDefWithLength {
-	public TimeColumnDef(String name, String type, int pos, Long columnLength) {
+	public TimeColumnDef(String name, String type, short pos, Long columnLength) {
 		super(name, type, pos, columnLength);
 	}
 
-	protected String formatValue(Object value) {
+	protected String formatValue(Object value, MaxwellOutputConfig config) {
 		if ( value instanceof Timestamp ) {
 			Time time = new Time(((Timestamp) value).getTime());
 			String timeAsStr = String.valueOf(time);

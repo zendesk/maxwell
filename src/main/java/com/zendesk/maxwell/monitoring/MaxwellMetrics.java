@@ -1,17 +1,19 @@
 package com.zendesk.maxwell.monitoring;
 
-import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Slf4jReporter;
 import com.codahale.metrics.health.HealthCheckRegistry;
+import com.codahale.metrics.jmx.JmxReporter;
 import com.codahale.metrics.jvm.*;
+import com.viafoura.metrics.datadog.DatadogReporter;
+import com.viafoura.metrics.datadog.transport.HttpTransport;
+import com.viafoura.metrics.datadog.transport.Transport;
+import com.viafoura.metrics.datadog.transport.UdpTransport;
 import com.zendesk.maxwell.MaxwellConfig;
+import io.prometheus.client.CollectorRegistry;
+import io.prometheus.client.dropwizard.DropwizardExports;
 import org.apache.commons.lang.StringUtils;
-import org.coursera.metrics.datadog.DatadogReporter;
-import org.coursera.metrics.datadog.transport.HttpTransport;
-import org.coursera.metrics.datadog.transport.Transport;
-import org.coursera.metrics.datadog.transport.UdpTransport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,7 +21,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
 
-import static org.coursera.metrics.datadog.DatadogReporter.Expansion.*;
+import static com.viafoura.metrics.datadog.DatadogReporter.Expansion.*;
 
 public class MaxwellMetrics implements Metrics {
 
@@ -38,12 +40,12 @@ public class MaxwellMetrics implements Metrics {
 	}
 
 	private void setup(MaxwellConfig config) {
+		metricsPrefix = config.metricsPrefix;
+
 		if (config.metricsReportingType == null) {
 			LOGGER.warn("Metrics will not be exposed: metricsReportingType not configured.");
 			return;
 		}
-
-		metricsPrefix = config.metricsPrefix;
 
 		if (config.metricsJvm) {
 			config.metricRegistry.register(metricName("jvm", "memory_usage"), new MemoryUsageGaugeSet());
@@ -85,10 +87,13 @@ public class MaxwellMetrics implements Metrics {
 		if (config.metricsReportingType.contains(reportingTypeDataDog)) {
 			Transport transport;
 			if (config.metricsDatadogType.contains("http")) {
-				LOGGER.info("Enabling HTTP Datadog reporting");
-				transport = new HttpTransport.Builder()
-						.withApiKey(config.metricsDatadogAPIKey)
-						.build();
+				LOGGER.info("Enabling HTTP Datadog reporting to site " + config.metricsDatadogSite);
+				HttpTransport.Builder builder = new HttpTransport.Builder()
+						.withApiKey(config.metricsDatadogAPIKey);
+				if (config.metricsDatadogSite.contains("eu")) {
+					builder.withEuSite();
+				}
+				transport = builder.build();
 			} else {
 				LOGGER.info("Enabling UDP Datadog reporting with host " + config.metricsDatadogHost
 						+ ", port " + config.metricsDatadogPort);
@@ -106,6 +111,10 @@ public class MaxwellMetrics implements Metrics {
 
 			reporter.start(config.metricsDatadogInterval, TimeUnit.SECONDS);
 			LOGGER.info("Datadog reporting enabled");
+		}
+
+		if (config.metricsReportingType.contains(reportingTypeHttp)) {
+			CollectorRegistry.defaultRegistry.register(new DropwizardExports(config.metricRegistry));
 		}
 	}
 

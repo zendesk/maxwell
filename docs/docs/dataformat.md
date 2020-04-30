@@ -30,6 +30,8 @@ mysql> insert into test.e set m = 4.2341, c = now(3), comment = 'I am a creature
    "position":"master.000006:800911",
    "server_id":23042,
    "thread_id":108,
+   "primary_key": [1, "2016-10-21 05:33:37.523000"],
+   "primary_key_columns": ["id", "c"],
    "data":{
       "id":1,
       "m":4.2341,
@@ -73,6 +75,16 @@ this field and `xid` to do so.  The data will look like:
 - row with `commit=true`, xid=142
 - row with no `commit`, xid=155
 - ...
+
+↳ `"primary_key": [1,"2016-10-21 05:33:37.523000"],`
+
+You only get this with --output_primary_key. List of values that make up the
+primary key for this row.
+
+↳ `"primary_key_columns": ["id","c"],`
+
+You only get this with --output_primary_key_columns. List of columns that make
+make up the primary key for this row.
 
 
 ### UPDATE

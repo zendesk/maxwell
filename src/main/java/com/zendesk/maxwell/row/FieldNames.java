@@ -19,14 +19,19 @@ public class FieldNames {
 	public static final String SERVER_ID = "server_id";
 	public static final String TABLE = "table";
 	public static final String THREAD_ID = "thread_id";
+	public static final String SCHEMA_ID = "schema_id";
 	public static final String TIMESTAMP = "ts";
 	public static final String TRANSACTION_ID = "xid";
 	public static final String TRANSACTION_OFFSET = "xoffset";
 	public static final String TYPE = "type";
 	public static final String UUID = "_uuid";
+	public static final String PRIMARY_KEY = "primary_key";
+	public static final String PRIMARY_KEY_COLUMNS = "primary_key_columns";
+	public static final String REASON = "reason";
+	public static final String COMMENT = "comment";
 
 	private static List<String> fieldNamesList = Arrays.asList(COMMIT, DATA, DATABASE,
-	GTID, OLD, POSITION, QUERY, SERVER_ID, TABLE, THREAD_ID, TIMESTAMP, TRANSACTION_ID, TYPE, UUID);
+	GTID, OLD, POSITION, PRIMARY_KEY, PRIMARY_KEY_COLUMNS, QUERY, SERVER_ID, TABLE, THREAD_ID, TIMESTAMP, TRANSACTION_ID, TYPE, UUID, COMMENT);
 
 	private static final Set<String> fieldNamesSet = new HashSet<>(fieldNamesList);
 

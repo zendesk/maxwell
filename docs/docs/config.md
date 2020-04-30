@@ -45,7 +45,7 @@ producer_ack_timeout           | [PRODUCER_ACK_TIMEOUT](#ack_timeout) | time in 
 producer_partition_by          | [PARTITION_BY](#partition_by)       | input to kafka/kinesis partition function           | database
 producer_partition_columns     | STRING                              | if partitioning by 'column', a comma separated list of columns |
 producer_partition_by_fallback | [PARTITION_BY_FALLBACK](#partition_by_fallback) | required when producer_partition_by=column.  Used when the column is missing |
-ignore_producer_error          | BOOLEAN              | Maxwell will be terminated on kafka/kinesis errors when false. Otherwise, those producer errors are only logged. | true
+ignore_producer_error          | BOOLEAN              | When false, Maxwell will terminate on kafka/kinesis/pubsub publish errors (aside from RecordTooLargeException). When true, errors are only logged. See also dead_letter_topic | true
 &nbsp;
 **"file" producer options**
 output_file                    | STRING                              | output file for `file` producer                     |
@@ -54,6 +54,7 @@ javascript                     | STRING                              | file cont
 **"kafka" producer options **
 kafka.bootstrap.servers        | STRING                              | kafka brokers, given as `HOST:PORT[,HOST:PORT]`     |
 kafka_topic                    | STRING                              | kafka topic to write to.                            | maxwell
+dead_letter_topic              | STRING                              | the topic to write a "skeleton row" (a row where `data` includes only primary key columns) when there's an error publishing a row. When `ignore_producer_error` is `false`, only RecordTooLargeException causes a fallback record to be published, since other errors cause termination. Currently only supported in Kafka publisher |
 kafka_version                  | [KAFKA_VERSION](#kafka_version)     | run maxwell with specified kafka producer version.  Not available in config.properties. | 0.11.0.1
 kafka_partition_hash           | [ default &#124; murmur3 ]          | hash function to use when choosing kafka partition   | default
 kafka_key_format               | [ array &#124; hash ]               | how maxwell outputs kafka keys, either a hash or an array of hashes | hash
@@ -69,6 +70,16 @@ sqs_queue_uri                  | STRING                              | SQS Queue
 pubsub_topic                   | STRING     | Google Cloud pub-sub topic |
 pubsub_platform_id             | STRING     | Google Cloud platform id associated with topic |
 ddl_pubsub_topic               | STRING     | Google Cloud pub-sub topic to send DDL events to |
+pubsub_request_bytes_threshold | LONG       | Set number of bytes until batch is send | 1
+pubsub_message_count_batch_size| LONG       | Set number of messages until batch is send | 1
+pubsub_publish_delay_threshold | LONG       | Set time passed in millis until batch is send | 1
+pubsub_retry_delay             | LONG       | Controls the delay in millis before sending the first retry message | 100
+pubsub_retry_delay_multiplier  | FLOAT      | Controls the increase in retry delay per retry | 1.3
+pubsub_max_retry_delay         | LONG       | Puts a limit on the value in seconds of the retry delay | 60
+pubsub_initial_rpc_timeout     | LONG       | Controls the timeout in seconds for the initial RPC | 5
+pubsub_rpc_timeout_multiplier  | FLOAT      | Controls the change in RPC timeout | 1.0
+pubsub_max_rpc_timeout         | LONG       | Puts a limit on the value in seconds of the RPC timeout | 600
+pubsub_total_timeout           | LONG       | Puts a limit on the value in seconds of the retry delay, so that the RetryDelayMultiplier can't increase the retry delay higher than this amount | 600
 &nbsp;
 **"rabbitmq" producer options **
 rabbitmq_user                  | STRING     | Username of Rabbitmq connection | guest
@@ -89,9 +100,9 @@ redis_host                     | STRING                   | Host of Redis server
 redis_port                     | INT                      | Port of Redis server | 6379
 redis_auth                     | STRING                   | Authentication key for a password-protected Redis server
 redis_database                 | INT                      | Database of Redis server | 0
-redis_pub_channel              | STRING                   | Redis Pub/Sub channel | maxwell
-redis_list_key                 | STRING                   | Redis LPUSH List Key | maxwell
-redis_type                     | [ pubsub &#124; lpush ]  | Selects either Redis Pub/Sub or LPUSH. | pubsub
+redis_type                     | [ pubsub &#124; xadd &#124; lpush &#124; rpush ]  | Selects either Redis Pub/Sub, Stream, or List. | pubsub
+redis_key                      | STRING                   | Redis channel/key for Pub/Sub, XADD or LPUSH/RPUSH | maxwell
+redis_stream_json_key          | STRING                   | Redis XADD Stream Message Field Name | message
 &nbsp;
 **formatting**
 output_binlog_position         | BOOLEAN  | records include binlog position     | false
@@ -101,8 +112,12 @@ output_xoffset                 | BOOLEAN  | records include virtual tx-row offse
 output_nulls                   | BOOLEAN  | records include fields with NULL values    | true
 output_server_id               | BOOLEAN  | records include server_id                  | false
 output_thread_id               | BOOLEAN  | records include thread_id                  | false
+output_schema_id               | BOOLEAN  | records include schema_id, schema_id is the id of the latest schema tracked by maxwell and doesn't relate to any mysql tracked value                  | false
 output_row_query               | BOOLEAN  | records include INSERT/UPDATE/DELETE statement. Mysql option "binlog_rows_query_log_events" must be enabled | false
+output_primary_keys            | BOOLEAN  | DML records include list of values that make up a row's primary key | false
+output_primary_key_columns     | BOOLEAN  | DML records include list of columns that make up a row's primary key | false
 output_ddl                     | BOOLEAN  | output DDL (table-alter, table-create, etc) events  | false
+output_null_zerodates          | BOOLEAN  | should we transform '0000-00-00' to null? | false
 &nbsp;
 **filtering**
 filter                         | STRING            | filter rules, eg `exclude: db.*, include: *.tbl, include: *./bar(bar)?/, exclude: foo.bar.col=val` |
@@ -123,8 +138,10 @@ http_diagnostic          | BOOLEAN                             | enable http dia
 http_diagnostic_timeout  | MILLISECONDS                        | the http diagnostic response timeout| 10000
 metrics_datadog_type     | [udp &#124; http] | when metrics_type includes `datadog` this is the way metrics will be reported, can only be one of [udp &#124; http] | udp
 metrics_datadog_tags     | STRING | datadog tags that should be supplied, e.g. tag1:value1,tag2:value2 |
+metrics_age_slo     | INT | Latency service level objective threshold in seconds (Optional). When set, a `message.publish.age.slo_violation` metric is emitted to Datadog if the latency exceeds the threshold |
 metrics_datadog_interval | INT | the frequency metrics are pushed to datadog, in seconds | 60
 metrics_datadog_apikey   | STRING | the datadog api key to use when metrics_datadog_type = `http` |
+metrics_datadog_site     | STRING | the site to publish metrics to when metrics_datadog_type = `http` | us
 metrics_datadog_host     | STRING | the host to publish metrics to when metrics_datadog_type = `udp` | localhost
 metrics_datadog_port     | INT | the port to publish metrics to when metrics_datadog_type = `udp` | 8125
 &nbsp;
@@ -132,6 +149,7 @@ metrics_datadog_port     | INT | the port to publish metrics to when metrics_dat
 bootstrapper                   | [async &#124; sync &#124; none]                   | bootstrapper type.  See bootstrapping docs.        | async
 init_position                  | FILE:POSITION[:HEARTBEAT]           | ignore the information in maxwell.positions and start at the given binlog position. Not available in config.properties. |
 replay                         | BOOLEAN                             | enable maxwell's read-only "replay" mode: don't store a binlog position or schema changes.  Not available in config.properties. |
+buffer_memory_usage            | FLOAT                               | Determines how much memory the Maxwell event buffer will use from the jvm max memory. Size of the buffer is: buffer_memory_usage * -Xmx" | 0.25
 
 <p id="sslopt" class="jumptarget">
 SSL_OPTION: [ DISABLED &#124; PREFERRED &#124; REQUIRED &#124; VERIFY_CA &#124; VERIFY_IDENTITY ]
@@ -143,10 +161,10 @@ PRODUCER_TYPE: [ stdout &#124; file &#124; kafka &#124; kinesis &#124; pubsub &#
 DEFAULT_JDBC_OPTS: zeroDateTimeBehavior=convertToNull&amp;connectTimeout=5000
 </p>
 <p id="partition_by" class="jumptarget">
-PARTITION_BY: [ database &#124; table &#124; primary_key &#124; column ]
+PARTITION_BY: [ database &#124; table &#124; primary_key &#124; transaction_id &#124; column &#124; random ]
 </p>
 <p id="partition_by_fallback" class="jumptarget">
-PARTITION_BY_FALLBACK: [ database &#124; table &#124; primary_key ]
+PARTITION_BY_FALLBACK: [ database &#124; table &#124; primary_key &#124; transaction_id ]
 </p>
 <p id="kafka_version" class="jumptarget">
 KAFKA_VERSION: [ 0.8.2.2 &#124; 0.9.0.1 &#124; 0.10.0.1 &#124; 0.10.2.1 &#124; 0.11.0.1 ]
@@ -198,7 +216,8 @@ binlog_format=row
 
 #### GTID support
 As of 1.8.0, Maxwell contains support for
-[GTID-based replication](https://dev.mysql.com/doc/refman/5.6/en/replication-gtids.html).  Enable it with the `--gtid_mode` configuration param.
+[GTID-based replication](https://dev.mysql.com/doc/refman/5.6/en/replication-gtids.html).
+Enable it with the `--gtid_mode` configuration param.
 
 Here's how you might configure your mysql server for GTID mode:
 
@@ -218,7 +237,7 @@ When in GTID-mode, Maxwell will transparently pick up a new replication
 position after a master change.  Note that you will still have to re-point
 maxwell to the new master.
 
-GTID support in Maxwell is considered alpha-quality at the moment; notably,
+GTID support in Maxwell is considered beta-quality at the moment; notably,
 Maxwell is unable to transparently upgrade from a traditional-replication
 scenario to a GTID-replication scenario; currently, when you enable gtid mode
 Maxwell will recapture the schema and GTID-position from "wherever the master
@@ -242,11 +261,8 @@ Maxwell uses MySQL for 3 different functions:
 3. A host to capture the schema from (`--schema_host`).
 
 Often, all three hosts are the same.  `host` and `replication_host` should be different
-if mysql is chained off a slave.  `schema_host` should only be used when using the
+if maxwell is chained off a replica.  `schema_host` should only be used when using the
 maxscale replication proxy.
-
-Note that bootstrapping is currently not available when `host` and
-`replication_host` are separate, due to some implementation details.
 
 #### Multiple Maxwell Instances
 

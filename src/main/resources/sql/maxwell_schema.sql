@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS `schemas` (
 CREATE TABLE IF NOT EXISTS `databases` (
   id        int unsigned auto_increment NOT NULL primary key,
   schema_id int unsigned,
-  name      varchar(255),
+  name      varchar(255) charset 'utf8',
   charset   varchar(255),
   index (schema_id)
 );
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS `tables` (
   id          int unsigned auto_increment NOT NULL primary key,
   schema_id   int unsigned,
   database_id int unsigned,
-  name      varchar(255),
+  name      varchar(255) charset 'utf8',
   charset   varchar(255),
   pk        varchar(1024) charset 'utf8',
   index (schema_id),
@@ -37,11 +37,11 @@ CREATE TABLE IF NOT EXISTS `columns` (
   id          int unsigned auto_increment NOT NULL primary key,
   schema_id   int unsigned,
   table_id    int unsigned,
-  name        varchar(255),
+  name        varchar(255) charset 'utf8',
   charset     varchar(255),
   coltype     varchar(255),
   is_signed   tinyint(1) unsigned,
-  enum_values text,
+  enum_values text charset 'utf8',
   column_length tinyint unsigned,
   index (schema_id),
   index (table_id)

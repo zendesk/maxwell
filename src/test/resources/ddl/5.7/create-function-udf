@@ -1,0 +1,3 @@
+CREATE [AGGREGATE] FUNCTION function_name
+    RETURNS {STRING|INTEGER|REAL|DECIMAL}
+    SONAME shared_library_name

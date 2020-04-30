@@ -1,7 +1,7 @@
 ### Requirements:
 ***
 - JRE 7 or above
-- mysql 5.1, 5.5, 5.6, 5.7
+- mysql 5.1, 5.5, 5.6, 5.7, 8
 - kafka 0.8.2 or greater
 
 ### binlog_row_image=MINIMAL

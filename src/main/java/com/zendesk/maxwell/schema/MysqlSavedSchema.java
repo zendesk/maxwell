@@ -6,7 +6,6 @@ import java.util.*;
 import java.io.IOException;
 
 import com.github.shyiko.mysql.binlog.GtidSet;
-import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 
 import com.fasterxml.jackson.databind.JavaType;
 import com.zendesk.maxwell.CaseSensitivity;
@@ -14,6 +13,7 @@ import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.schema.columndef.*;
 
+import com.zendesk.maxwell.util.ConnectionPool;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.text.StrTokenizer;
@@ -27,8 +27,6 @@ import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import snaq.db.ConnectionPool;
-
 
 public class MysqlSavedSchema {
 	static int SchemaStoreVersion = 4;
@@ -117,7 +115,7 @@ public class MysqlSavedSchema {
 			connection.setAutoCommit(false);
 			this.schemaID = saveSchema(connection);
 			connection.commit();
-		} catch ( MySQLIntegrityConstraintViolationException e ) {
+		} catch ( SQLIntegrityConstraintViolationException e ) {
 			connection.rollback();
 
 			connection.setAutoCommit(true);
@@ -330,6 +328,7 @@ public class MysqlSavedSchema {
 		}
 	}
 
+	/* build up a map-of-maps from schema_id -> { col -> val } */
 	private HashMap<Long, HashMap<String, Object>> buildSchemaMap(Connection conn) throws SQLException {
 		HashMap<Long, HashMap<String, Object>> schemas = new HashMap<>();
 
@@ -346,6 +345,12 @@ public class MysqlSavedSchema {
 		rs.close();
 		return schemas;
 	}
+
+	/*
+		builds a linked list of schema_ids in which the head of the list
+		is the fullly-captured inital schema, and the tail is the final
+		delta-schema
+	 */
 
 	private LinkedList<Long> buildSchemaChain(HashMap<Long, HashMap<String, Object>> schemas, Long schema_id) {
 		LinkedList<Long> schemaChain = new LinkedList<>();
@@ -463,7 +468,7 @@ public class MysqlSavedSchema {
 
 		Database currentDatabase = null;
 		Table currentTable = null;
-		int columnIndex = 0;
+		short columnIndex = 0;
 
 		while (rs.next()) {
 			// Database

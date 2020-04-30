@@ -1,13 +1,13 @@
 ### Download
 ***
-- Download binary distro: [https://github.com/zendesk/maxwell/releases/download/v1.17.1/maxwell-1.17.1.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.17.1/maxwell-1.17.1.tar.gz)
+- Download binary distro: [https://github.com/zendesk/maxwell/releases/download/v1.25.1/maxwell-1.25.1.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.25.1/maxwell-1.25.1.tar.gz)
 - Sources and bug tracking is available on github: [https://github.com/zendesk/maxwell](https://github.com/zendesk/maxwell)
 - Obligatory copy/paste to terminal:
 
 ```
-curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.17.1/maxwell-1.17.1.tar.gz \
+curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.25.1/maxwell-1.25.1.tar.gz \
        | tar zxvf -
-cd maxwell-1.17.1
+cd maxwell-1.25.1
 ```
 
 or get the docker image:
@@ -49,14 +49,15 @@ to row-based replication.
 
 *Permissions:* Maxwell needs permissions to store state in the database specified by the `schema_database` option (default `maxwell`).
 ```
-mysql> GRANT ALL on maxwell.* to 'maxwell'@'%' identified by 'XXXXXX';
-mysql> GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE on *.* to 'maxwell'@'%';
+mysql> CREATE USER 'maxwell'@'%' IDENTIFIED BY 'XXXXXX';
+mysql> GRANT ALL ON maxwell.* TO 'maxwell'@'%';
+mysql> GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'maxwell'@'%';
 
 # or for running maxwell locally:
 
-mysql> GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE on *.* to 'maxwell'@'localhost' identified by 'XXXXXX';
-mysql> GRANT ALL on maxwell.* to 'maxwell'@'localhost';
-
+mysql> CREATE USER 'maxwell'@'localhost' IDENTIFIED BY 'XXXXXX';
+mysql> GRANT ALL ON maxwell.* TO 'maxwell'@'localhost';
+mysql> GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'maxwell'@'localhost';
 ```
 
 ### Run Maxwell

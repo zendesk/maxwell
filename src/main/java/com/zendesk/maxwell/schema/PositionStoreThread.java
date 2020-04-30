@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.schema;
 
 import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.errors.DuplicateProcessException;
 import com.zendesk.maxwell.replication.Position;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,12 +48,6 @@ public class PositionStoreThread extends RunLoopProcess implements Runnable {
 	}
 
 	@Override
-	public void requestStop() {
-		super.requestStop();
-		thread.interrupt();
-	}
-
-	@Override
 	protected void beforeStop() {
 		if ( exception == null ) {
 			try {
@@ -63,7 +58,7 @@ public class PositionStoreThread extends RunLoopProcess implements Runnable {
 		}
 	}
 
-	void storeFinalPosition() throws SQLException {
+	void storeFinalPosition() throws SQLException, DuplicateProcessException {
 		if ( position != null && !position.equals(storedPosition) ) {
 			LOGGER.info("Storing final position: " + position);
 			store.set(position);

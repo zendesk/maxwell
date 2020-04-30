@@ -155,12 +155,29 @@ public class DDLParserTest {
 	}
 
 	@Test
+	public void testConstraintWithFullTableName() {
+		parseCreate("CREATE TABLE table_name ( " +
+			"id_agency bigint(18) unsigned NOT NULL DEFAULT '0', " +
+			"CONSTRAINT 112923b397c621505a97cfc4119f9f98abae0fb4a3bdb7a037ad3531712f5614 FOREIGN KEY (id_agency) REFERENCES agencies (id) ON DELETE CASCADE ON UPDATE CASCADE, " +
+			"CONSTRAINT agencies_offer_gift_types.id_type FOREIGN KEY (id_type) REFERENCES insurance_gift_types (id) ON DELETE CASCADE ON UPDATE CASCADE ) "
+		);
+	}
+
+
+	@Test
 	public void testParsingSomeAlters() {
 		String testSQL[] = {
+			"ALTER TABLE uat_sync_test.p add COLUMN uat_sync_test.p.remark VARCHAR(100) after pname",
+			"alter table t add column c varchar(255) default 'string1' 'string2'",
+			"alter table t add column mortgage_item BIT(4) NOT NULL DEFAULT 0b0000",
+			"alter table t add column mortgage_item BIT(4) NOT NULL DEFAULT 'b'01010",
+			"alter table t add column mortgage_item BIT(4) NOT NULL DEFAULT 'B'01010",
 			"alter database d DEFAULT CHARACTER SET = 'utf8'",
 			"alter database d UPGRADE DATA DIRECTORY NAME",
 			"alter schema d COLLATE foo",
 			"alter table t add index `foo` using btree (`a`, `cd`) key_block_size=123",
+			"alter table t add index `foo` using btree (`a`, `cd`) invisible key_block_size=123",
+			"alter table t add index `foo` using btree (`a`, `cd`) comment 'hello' key_block_size=12",
 			"alter table t add key bar (d)",
 			"alter table t add constraint `foo` primary key using btree (id)",
 			"alter table t add primary key (`id`)",
@@ -178,6 +195,8 @@ public class DDLParserTest {
 			"alter table t alter column `foo` SET DEFAULT false",
 			"alter table t alter column `foo` SET DEFAULT -1",
 			"alter table t alter column `foo` drop default",
+			"alter table t alter index `foo` VISIBLE",
+			"alter table t alter index bar INVISIBLE",
 			"alter table t CHARACTER SET latin1 COLLATE = 'utf8'",
 			"ALTER TABLE `test` ENGINE=`InnoDB` CHARACTER SET latin1",
 			"alter table t DROP PRIMARY KEY",
@@ -192,6 +211,7 @@ public class DDLParserTest {
 			"alter table t add column `foo` int, auto_increment = 5 engine=innodb, modify column bar int",
 			"alter table t add column `foo` int,  ALGORITHM=copy",
 			"alter table t add column `foo` int, algorithm copy",
+			"alter table t add column `foo` int, algorithm instant",
 			"alter table t add column `foo` int, algorithm copy, lock shared",
 			"alter table t add column `foo` int, algorithm copy, lock=exclusive",
 			"create table t (id int) engine=memory",
@@ -210,7 +230,13 @@ public class DDLParserTest {
 			"ALTER TABLE foo DROP COLUMN `ducati` CASCADE",
 			"CREATE TABLE account_groups ( visible_to_all CHAR(1) DEFAULT 'N' NOT NULL CHECK (visible_to_all IN ('Y','N')))",
 			"ALTER TABLE \"foo\" drop column a", // ansi-double-quoted tables
-			"create table vc11( id serial, name varchar(10) not null default \"\")"
+			"create table vc11( id serial, name varchar(10) not null default \"\")",
+			"create table foo.order ( i int )",
+			"alter table foo.int add column bar varchar(255)",
+			"alter table something collate = default",
+			"ALTER TABLE t DROP t.foo",
+			"alter table f add column i varchar(255) default ('environment,namespace,table_name')"
+
 
 		};
 
@@ -238,7 +264,12 @@ public class DDLParserTest {
 			"DROP TEMPORARY TABLE IF EXISTS 172898_16841_transmem",
 			"ALTER TEMPORARY TABLE 172898_16841_transmem ADD something VARCHAR(1)",
 			"/* hi bob */ CREATE EVENT FOO",
-			"DELETE FROM `foo`.`bar`"
+			"DELETE FROM `foo`.`bar`",
+			"CREATE ROLE 'administrator', 'developer'",
+			"SET ROLE 'role1', 'role2'",
+			"SET DEFAULT ROLE administrator, developer TO 'joe'@'10.0.0.1'",
+			"DROP ROLE 'role1'",
+			"#comment\ndrop procedure if exists `foo`"
 		};
 
 		for ( String s : testSQL ) {
@@ -410,6 +441,12 @@ public class DDLParserTest {
 	@Test
 	public void testCommentSyntax2() {
 		List<SchemaChange> changes = parse("CREATE DATABASE if not exists `foo` -- inline comment!\n default character # another one\nset='latin1' --one at the end");
+		assertThat(changes.size(), is(1));
+	}
+
+	@Test
+	public void testCommentSyntax3() {
+		List<SchemaChange> changes = parse("/**/ CREATE DATABASE if not exists `foo`");
 		assertThat(changes.size(), is(1));
 	}
 
