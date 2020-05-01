@@ -23,10 +23,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.concurrent.Callable;
-import java.util.function.Consumer;
 
 public class SynchronousBootstrapper {
+	class BootstrapAbortException extends Exception {
+		public BootstrapAbortException(String message) {
+			super(message);
+		}
+	}
+
 	static final Logger LOGGER = LoggerFactory.getLogger(SynchronousBootstrapper.class);
 	private static final long INSERTED_ROWS_UPDATE_PERIOD_MILLIS = 250;
 	private final MaxwellContext context;
@@ -39,7 +43,13 @@ public class SynchronousBootstrapper {
 
 
 	public void startBootstrap(BootstrapTask task, AbstractProducer producer, Long currentSchemaID) throws Exception {
-		performBootstrap(task, producer, currentSchemaID);
+		try {
+			performBootstrap(task, producer, currentSchemaID);
+		} catch ( BootstrapAbortException e ) {
+			LOGGER.error("Bootstrap (id={}) aborted: {}", task.id, e.getMessage());
+			setBootstrapRowToCompleted(0, task.id);
+			return;
+		}
 		completeBootstrap(task, producer);
 	}
 
@@ -51,12 +61,31 @@ public class SynchronousBootstrapper {
 		}
 	}
 
+	private Table getTableForTask(BootstrapTask task) throws BootstrapAbortException {
+		Schema schema;
+		try {
+			schema = captureSchemaForBootstrap(task);
+		} catch ( SQLException e ) {
+			throw new BootstrapAbortException(e.getMessage());
+		}
+
+		Database database = schema.findDatabase(task.database);
+		Table table = database.findTable(task.table);
+
+		if ( table == null ) {
+			String errMsg = String.format(
+				"Couldn't find db/table for %s.%s",
+				task.database, task.table
+			);
+			throw new BootstrapAbortException(errMsg);
+		}
+		return table;
+	}
+
 	public void performBootstrap(BootstrapTask task, AbstractProducer producer, Long currentSchemaID) throws Exception {
 		LOGGER.debug("bootstrapping requested for " + task.logString());
 
-		Schema schema = captureSchemaForBootstrap(task);
-		Database database = findDatabase(schema, task.database);
-		Table table = findTable(task.table, database);
+		Table table = getTableForTask(task);
 
 		producer.push(bootstrapStartRowMap(task, table));
 		LOGGER.info(String.format("bootstrapping started for %s.%s", task.database, task.table));
@@ -137,20 +166,6 @@ public class SynchronousBootstrapper {
 	public void completeBootstrap(BootstrapTask task, AbstractProducer producer) throws Exception {
 		producer.push(bootstrapEventRowMap("bootstrap-complete", task.database, task.table, new ArrayList<>(), task.comment));
 		LOGGER.info("bootstrapping ended for " + task.logString());
-	}
-
-	private Table findTable(String tableName, Database database) {
-		Table table = database.findTable(tableName);
-		if ( table == null )
-			throw new RuntimeException("Couldn't find table " + tableName);
-		return table;
-	}
-
-	private Database findDatabase(Schema schema, String databaseName) {
-		Database database = schema.findDatabase(databaseName);
-		if ( database == null )
-			throw new RuntimeException("Couldn't find database " + databaseName);
-		return database;
 	}
 
 	private ResultSet getAllRows(String databaseName, String tableName, Table table, String whereClause,

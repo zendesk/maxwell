@@ -29,7 +29,6 @@ public class C3P0ConnectionPool implements ConnectionPool {
 		cpds.setUser(user);
 		cpds.setPassword(password);
 
-
 		// the settings below are optional -- c3p0 can work with defaults
 		cpds.setMinPoolSize(1);
 		cpds.setMaxPoolSize(5);
@@ -43,9 +42,8 @@ public class C3P0ConnectionPool implements ConnectionPool {
 			return;
 		} catch (SQLException e) {
 			if ( nTries > 0 ) {
-				LOGGER.error("got SQL Exception: {}, {}, retrying...",
-					e.getLocalizedMessage(),
-					e.getCause().getLocalizedMessage()
+				LOGGER.error("got SQL Exception: {}, retrying...",
+					e.getLocalizedMessage()
 				);
 				withSQLRetry(nTries - 1, inner);
 			} else {
