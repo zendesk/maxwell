@@ -138,8 +138,8 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testConstraintCheck() throws Exception {
 		String sql[] = {
-				"create TABLE `t` (id int, CHECK(NOW() is not null and 'lfjd()))()' is not null), c varchar(255))",
-				"create TABLE `t2` (id int, CHECK(NOW() is not null), c varchar(255))",
+				"create TABLE `t` (id int, CHECK(LENGTH(c) is not null and 'lfjd()))()' is not null), c varchar(255))",
+				"create TABLE `t2` (id int, CHECK(LENGTH(c) is not null), c varchar(255))",
 				"create table t1 (a int, b int, check (a>b))"
 		};
 
