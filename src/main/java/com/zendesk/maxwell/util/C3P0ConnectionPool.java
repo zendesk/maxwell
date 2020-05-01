@@ -28,6 +28,7 @@ public class C3P0ConnectionPool implements ConnectionPool {
 		cpds.setJdbcUrl(url);
 		cpds.setUser(user);
 		cpds.setPassword(password);
+		cpds.setTestConnectionOnCheckout(true);
 
 		// the settings below are optional -- c3p0 can work with defaults
 		cpds.setMinPoolSize(1);
