@@ -195,9 +195,9 @@
       <version>1.7.21</version>
     </dependency>
     <dependency>
-      <groupId>com.github.shyiko</groupId>
+      <groupId>com.zendesk</groupId>
       <artifactId>mysql-binlog-connector-java</artifactId>
-      <version>0.20.0</version>
+      <version>0.22.2</version>
     </dependency>
     <dependency>
       <groupId>net.sf.jopt-simple</groupId>
