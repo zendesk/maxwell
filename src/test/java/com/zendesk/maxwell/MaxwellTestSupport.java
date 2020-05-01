@@ -227,6 +227,7 @@ public class MaxwellTestSupport {
 		Long pollTime = 5000L;
 		Position lastPositionRead = null;
 
+		Connection bootstrapCX = mysql.getConnection("maxwell");
 		for ( ;; ) {
 			RowMap row = maxwell.poll(pollTime);
 			pollTime = 500L; // after the first row is received, we go into a tight loop.
@@ -240,7 +241,7 @@ public class MaxwellTestSupport {
 			}
 
 			boolean replicationComplete = lastPositionRead != null && lastPositionRead.getLastHeartbeatRead() >= finalHeartbeat;
-			boolean bootstrapComplete = getIncompleteBootstrapTaskCount(maxwell, config.clientID) == 0;
+			boolean bootstrapComplete = getIncompleteBootstrapTaskCount(bootstrapCX, config.clientID) == 0;
 			boolean timedOut = !replicationComplete && row == null;
 
 			if (timedOut) {
@@ -332,16 +333,14 @@ public class MaxwellTestSupport {
 		assumeTrue(server.getVersion().atLeast(minimum));
 	}
 
-	private static int getIncompleteBootstrapTaskCount(Maxwell maxwell, String clientID) throws SQLException {
-		try ( Connection cx = maxwell.context.getMaxwellConnection() ) {
-			PreparedStatement s = cx.prepareStatement("select count(id) from bootstrap where is_complete = 0 and client_id = ?");
-			s.setString(1, clientID);
+	private static int getIncompleteBootstrapTaskCount(Connection cx, String clientID) throws SQLException {
+		PreparedStatement s = cx.prepareStatement("select count(id) from bootstrap where is_complete = 0 and client_id = ?");
+		s.setString(1, clientID);
 
-			ResultSet rs = s.executeQuery();
+		ResultSet rs = s.executeQuery();
 
-			if (rs.next()) {
-				return rs.getInt(1);
-			}
+		if (rs.next()) {
+			return rs.getInt(1);
 		}
 
 		return 0;
