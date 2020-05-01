@@ -33,16 +33,14 @@ jobs:
       - restore_cache:
           key: dependency-cache-{{ checksum "pom.xml" }}
       - run:
-          command: echo "testing under mysql $MYSQL_VERSION"
-      - run:
-          name: testit
+          name: Maven Test
           command: mvn test
       - store_artifacts:
           path: test.log
 
 workflows:
   version: 2
-  build_and_test:
+  test:
     jobs:
       - build:
         filters:
@@ -57,7 +55,7 @@ workflows:
           mysql: "5.7"
           requires: [ "build" ]
       - test:
-          name: "test-5.8"
+          name: "test-8.0"
           mysql: "8.0"
           requires: [ "build" ]
 
