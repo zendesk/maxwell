@@ -1,5 +1,18 @@
 # Maxwell changelog
 
+### [v1.25.3](https://github.com/zendesk/maxwell/releases/tag/v1.25.3): "bye, bolinas"
+
+
+- fixes memory leak in mysql-binlog-connector
+- fixes exceptions that occur when a connection passes wait_timeout
+
+
+### [v1.25.2](https://github.com/zendesk/maxwell/releases/tag/v1.25.2): "love potion #9"
+
+
+- Fixes for a long standing JSON bug in 8.0.19+
+
+
 ### [v1.25.1](https://github.com/zendesk/maxwell/releases/tag/v1.25.1): "nowhere to put it"
 
 
