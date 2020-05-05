@@ -141,6 +141,7 @@ metrics_datadog_tags     | STRING | datadog tags that should be supplied, e.g. t
 metrics_age_slo     | INT | Latency service level objective threshold in seconds (Optional). When set, a `message.publish.age.slo_violation` metric is emitted to Datadog if the latency exceeds the threshold |
 metrics_datadog_interval | INT | the frequency metrics are pushed to datadog, in seconds | 60
 metrics_datadog_apikey   | STRING | the datadog api key to use when metrics_datadog_type = `http` |
+metrics_datadog_site     | STRING | the site to publish metrics to when metrics_datadog_type = `http` | us
 metrics_datadog_host     | STRING | the host to publish metrics to when metrics_datadog_type = `udp` | localhost
 metrics_datadog_port     | INT | the port to publish metrics to when metrics_datadog_type = `udp` | 8125
 &nbsp;
@@ -160,7 +161,7 @@ PRODUCER_TYPE: [ stdout &#124; file &#124; kafka &#124; kinesis &#124; pubsub &#
 DEFAULT_JDBC_OPTS: zeroDateTimeBehavior=convertToNull&amp;connectTimeout=5000
 </p>
 <p id="partition_by" class="jumptarget">
-PARTITION_BY: [ database &#124; table &#124; primary_key &#124; transaction_id &#124; column ]
+PARTITION_BY: [ database &#124; table &#124; primary_key &#124; transaction_id &#124; column &#124; random ]
 </p>
 <p id="partition_by_fallback" class="jumptarget">
 PARTITION_BY_FALLBACK: [ database &#124; table &#124; primary_key &#124; transaction_id ]

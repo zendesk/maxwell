@@ -101,6 +101,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public String metricsDatadogType;
 	public String metricsDatadogTags;
 	public String metricsDatadogAPIKey;
+	public String metricsDatadogSite;
 	public String metricsDatadogHost;
 	public int metricsDatadogPort;
 	public Long metricsDatadogInterval;
@@ -236,7 +237,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "kafka.bootstrap.servers", "at least one kafka server, formatted as HOST:PORT[,HOST:PORT]" ).withRequiredArg();
 		parser.accepts( "kafka_topic", "optionally provide a topic name to push to. default: maxwell" ).withRequiredArg();
 		parser.separator();
-		parser.accepts( "producer_partition_by", "database|table|primary_key|transaction_id|column, producer will partition by this value").withRequiredArg();
+		parser.accepts( "producer_partition_by", "database|table|primary_key|transaction_id|column|random, producer will partition by this value").withRequiredArg();
 		parser.accepts("producer_partition_columns",
 			"with producer_partition_by=column, partition by the value of these columns.  "
 				+ "comma separated.").withRequiredArg();
@@ -355,6 +356,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "metrics_datadog_tags", "datadog tags that should be supplied, e.g. tag1:value1,tag2:value2" ).withRequiredArg();
 		parser.accepts( "metrics_datadog_interval", "the frequency metrics are pushed to datadog, in seconds" ).withRequiredArg();
 		parser.accepts( "metrics_datadog_apikey", "the datadog api key to use when metrics_datadog_type = http" ).withRequiredArg();
+		parser.accepts( "metrics_datadog_site", "the site to publish metrics to when metrics_datadog_type = http, one of us|eu, default us" ).withRequiredArg();
 		parser.accepts( "metrics_datadog_host", "the host to publish metrics to when metrics_datadog_type = udp" ).withRequiredArg();
 		parser.accepts( "metrics_datadog_port", "the port to publish metrics to when metrics_datadog_type = udp" ).withRequiredArg();
 		parser.accepts( "http_diagnostic", "enable http diagnostic endpoint: true|false. default: false" ).withOptionalArg();
@@ -519,6 +521,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.metricsDatadogType = fetchOption("metrics_datadog_type", options, properties, "udp");
 		this.metricsDatadogTags = fetchOption("metrics_datadog_tags", options, properties, "");
 		this.metricsDatadogAPIKey = fetchOption("metrics_datadog_apikey", options, properties, "");
+		this.metricsDatadogSite = fetchOption("metrics_datadog_site", options, properties, "us");
 		this.metricsDatadogHost = fetchOption("metrics_datadog_host", options, properties, "localhost");
 		this.metricsDatadogPort = Integer.parseInt(fetchOption("metrics_datadog_port", options, properties, "8125"));
 		this.metricsDatadogInterval = fetchLongOption("metrics_datadog_interval", options, properties, 60L);
@@ -632,11 +635,11 @@ public class MaxwellConfig extends AbstractConfig {
 			this.producerPartitionFallback = this.kafkaPartitionFallback;
 		}
 
-		String[] validPartitionBy = {"database", "table", "primary_key", "transaction_id", "column"};
+		String[] validPartitionBy = {"database", "table", "primary_key", "transaction_id", "column", "random"};
 		if ( this.producerPartitionKey == null ) {
 			this.producerPartitionKey = "database";
 		} else if ( !ArrayUtils.contains(validPartitionBy, this.producerPartitionKey) ) {
-			usageForOptions("please specify --producer_partition_by=database|table|primary_key|transaction_id|column", "producer_partition_by");
+			usageForOptions("please specify --producer_partition_by=database|table|primary_key|transaction_id|column|random", "producer_partition_by");
 		} else if ( this.producerPartitionKey.equals("column") && StringUtils.isEmpty(this.producerPartitionColumns) ) {
 			usageForOptions("please specify --producer_partition_columns=column1 when using producer_partition_by=column", "producer_partition_columns");
 		} else if ( this.producerPartitionKey.equals("column") && StringUtils.isEmpty(this.producerPartitionFallback) ) {

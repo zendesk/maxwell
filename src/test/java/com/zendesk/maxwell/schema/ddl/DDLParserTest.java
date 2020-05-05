@@ -233,7 +233,10 @@ public class DDLParserTest {
 			"create table vc11( id serial, name varchar(10) not null default \"\")",
 			"create table foo.order ( i int )",
 			"alter table foo.int add column bar varchar(255)",
-			"alter table something collate = default"
+			"alter table something collate = default",
+			"ALTER TABLE t DROP t.foo",
+			"alter table f add column i varchar(255) default ('environment,namespace,table_name')"
+
 
 		};
 

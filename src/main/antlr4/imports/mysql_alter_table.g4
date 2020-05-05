@@ -27,9 +27,8 @@ alter_specification:
 // the various alter_table commands available
 add_column: ADD COLUMN? column_definition col_position?;
 add_column_parens: ADD COLUMN? '(' (column_definition|index_definition) (',' (column_definition|index_definition))* ')';
-change_column: CHANGE COLUMN? old_col_name column_definition col_position?;
-drop_column: DROP COLUMN? old_col_name CASCADE?;
-  old_col_name: name;
+change_column: CHANGE COLUMN? full_column_name column_definition col_position?;
+drop_column: DROP COLUMN? full_column_name CASCADE?;
 modify_column: MODIFY COLUMN? column_definition col_position?;
 drop_key: DROP FOREIGN? (INDEX|KEY) name;
 drop_primary_key: DROP PRIMARY KEY;
@@ -45,7 +44,7 @@ alter_partition_specification:
     | IMPORT PARTITION partition_names TABLESPACE
     | COALESCE PARTITION INTEGER_LITERAL
     | REORGANIZE PARTITION (partition_names INTO skip_parens)?
-    | EXCHANGE PARTITION IDENT WITH TABLE name ((WITH|WITHOUT) VALIDATION)?
+    | EXCHANGE PARTITION IDENT WITH TABLE table_name ((WITH|WITHOUT) VALIDATION)?
     | ANALYZE PARTITION partition_names
     | CHECK PARTITION partition_names
     | OPTIMIZE PARTITION partition_names

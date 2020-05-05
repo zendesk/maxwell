@@ -3,10 +3,10 @@ package com.zendesk.maxwell.bootstrap;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMapBuffer;
+import com.zendesk.maxwell.util.ConnectionPool;
 import com.zendesk.maxwell.util.RunLoopProcess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import snaq.db.ConnectionPool;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -54,6 +54,15 @@ public class BootstrapController extends RunLoopProcess  {
 
 	@Override
 	protected void work() throws Exception {
+		try {
+			doWork();
+		} catch ( InterruptedException e ) {
+		} catch ( SQLException e ) {
+			LOGGER.error("got SQLException trying to bootstrap", e);
+		}
+	}
+
+	private void doWork() throws Exception {
 		List<BootstrapTask> tasks = getIncompleteTasks();
 		synchronized(bootstrapMutex) {
 			for ( BootstrapTask task : tasks ) {
@@ -70,9 +79,8 @@ public class BootstrapController extends RunLoopProcess  {
 				}
 			}
 		}
-		try {
-			Thread.sleep(1000);
-		} catch ( InterruptedException e ) {}
+
+		Thread.sleep(1000);
 	}
 
 	private synchronized Long getCurrentSchemaID() {
