@@ -26,7 +26,7 @@ public class MaxwellMysqlConfigTest {
 
 		try {
 			final String uri = config.getConnectionURI();
-			assertThat(uri, is(equalTo("jdbc:mysql://localhost:3306/maxwell?connectTimeout=5000&zeroDateTimeBehavior=convertToNull&initialTimeout=2&autoReconnect=true&maxReconnects=10&useSSL=false&characterEncoding=UTF-8&tinyInt1isBit=false")));
+			assertThat(uri, is(equalTo("jdbc:mysql://localhost:3306/maxwell?allowPublicKeyRetrieval=true&connectTimeout=5000&zeroDateTimeBehavior=convertToNull&initialTimeout=2&autoReconnect=true&maxReconnects=10&useSSL=false&characterEncoding=UTF-8&tinyInt1isBit=false")));
 		}
 		catch (URISyntaxException e) {
 			fail();
