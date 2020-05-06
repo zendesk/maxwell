@@ -1,5 +1,12 @@
 # Maxwell changelog
 
+### [v1.26.0](https://github.com/zendesk/maxwell/releases/tag/v1.26.0): "tip the waitress, feed her cocaine habit"
+
+
+- We now support mysql 8's caching_sha2_password authentication scheme
+- support for converting JSON field names to camelCase
+
+
 ### [v1.25.3](https://github.com/zendesk/maxwell/releases/tag/v1.25.3): "bye, bolinas"
 
 
