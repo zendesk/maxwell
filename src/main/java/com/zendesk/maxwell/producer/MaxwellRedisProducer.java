@@ -43,7 +43,7 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 	}
 
 	private void initRedisConnection() {
-		jedis = new Jedis(context.getConfig().redisHost, context.getConfig().redisPort, 10);
+		jedis = new Jedis(context.getConfig().redisHost, context.getConfig().redisPort);
 		jedis.connect();
 	}
 
