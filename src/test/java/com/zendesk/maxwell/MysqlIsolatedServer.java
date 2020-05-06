@@ -126,11 +126,20 @@ public class MysqlIsolatedServer {
 		if ( !rs.next() )
 			throw new RuntimeException("could not get master status");
 
+		String createUserSQL;
+		if ( getVersion().atLeast(5, 7) ) {
+			createUserSQL = "create user 'maxwell_repl'@'127.0.0.1' identified with 'mysql_native_password by 'maxwell'";
+		} else {
+			createUserSQL = "create user 'maxwell_repl'@'127.0.0.1' identified by 'maxwell'";
+		}
+		master.createStatement().execute(createUserSQL);
+		master.createStatement().execute("grant replication slave, replication client on *.* to 'maxwell_repl'@'127.0.0.1'");
+
 		String file = rs.getString("File");
 		Long position = rs.getLong("Position");
 
 		String changeSQL = String.format(
-			"CHANGE MASTER to master_host = '127.0.0.1', master_user='maxwell', master_password='maxwell', "
+			"CHANGE MASTER to master_host = '127.0.0.1', master_user='maxwell_repl', master_password='maxwell', "
 			+ "master_log_file = '%s', master_log_pos = %d, master_port = %d",
 			file, position, masterPort
 		);
