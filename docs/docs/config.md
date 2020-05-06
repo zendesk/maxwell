@@ -119,6 +119,7 @@ output_primary_key_columns     | BOOLEAN  | DML records include list of columns 
 output_ddl                     | BOOLEAN  | output DDL (table-alter, table-create, etc) events  | false
 output_null_zerodates          | BOOLEAN  | should we transform '0000-00-00' to null? | false
 &nbsp;
+output_naming_strategy         | STRING   | naming strategy of field name of JSON. can be `underscore_to_camelcase` | none
 **filtering**
 filter                         | STRING            | filter rules, eg `exclude: db.*, include: *.tbl, include: *./bar(bar)?/, exclude: foo.bar.col=val` |
 &nbsp;

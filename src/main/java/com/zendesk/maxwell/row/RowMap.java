@@ -5,6 +5,7 @@ import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.Position;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,7 +55,7 @@ public class RowMap implements Serializable {
 	private RowIdentity rowIdentity;
 
 	private long approximateSize;
-
+	
 	public RowMap(String type, String database, String table, Long timestampMillis, List<String> pkColumns,
 			Position position, Position nextPosition, String rowQuery) {
 		this.rowQuery = rowQuery;
@@ -112,18 +113,18 @@ public class RowMap implements Serializable {
 		return partitionKey.toString();
 	}
 
-	private void writeMapToJSON(
+	private void writeMapToJSON(FieldNameStrategy fieldNameStrategy,
 			String jsonMapName,
 			LinkedHashMap<String, Object> data,
 			JsonGenerator g,
 			boolean includeNullField
 	) throws IOException, NoSuchAlgorithmException {
-		g.writeObjectFieldStart(jsonMapName);
+		g.writeObjectFieldStart(fieldNameStrategy.apply(jsonMapName));
 
 		for (String key : data.keySet()) {
 			Object value = data.get(key);
 
-			MaxwellJson.writeValueToJSON(g, includeNullField, key, value);
+			MaxwellJson.writeValueToJSON(g, includeNullField, fieldNameStrategy.apply(key), value);
 		}
 
 		g.writeEndObject(); // end of 'jsonMapName: { }'
@@ -134,55 +135,57 @@ public class RowMap implements Serializable {
 	}
 
 	public String toJSON(MaxwellOutputConfig outputConfig) throws Exception {
+		FieldNameStrategy fieldNameStrategy = new FieldNameStrategy(outputConfig.namingStrategy);
+
 		MaxwellJson json = MaxwellJson.getInstance();
 		JsonGenerator g = json.reset();
 
 		g.writeStartObject(); // start of row {
 
-		g.writeStringField(FieldNames.DATABASE, this.database);
-		g.writeStringField(FieldNames.TABLE, this.table);
+		g.writeStringField(fieldNameStrategy.apply(FieldNames.DATABASE), this.database);
+		g.writeStringField(fieldNameStrategy.apply(FieldNames.TABLE), this.table);
 
 		if ( outputConfig.includesRowQuery && this.rowQuery != null) {
-			g.writeStringField(FieldNames.QUERY, this.rowQuery);
+			g.writeStringField(fieldNameStrategy.apply(FieldNames.QUERY), this.rowQuery);
 		}
 
-		g.writeStringField(FieldNames.TYPE, this.rowType);
-		g.writeNumberField(FieldNames.TIMESTAMP, this.timestampSeconds);
+		g.writeStringField(fieldNameStrategy.apply(FieldNames.TYPE), this.rowType);
+		g.writeNumberField(fieldNameStrategy.apply(FieldNames.TIMESTAMP), this.timestampSeconds);
 
 		if ( outputConfig.includesCommitInfo ) {
 			if ( this.xid != null )
-				g.writeNumberField(FieldNames.TRANSACTION_ID, this.xid);
+				g.writeNumberField(fieldNameStrategy.apply(FieldNames.TRANSACTION_ID), this.xid);
 
 			if ( outputConfig.includesXOffset && this.xoffset != null && !this.txCommit )
-				g.writeNumberField(FieldNames.TRANSACTION_OFFSET, this.xoffset);
+				g.writeNumberField(fieldNameStrategy.apply(FieldNames.TRANSACTION_OFFSET), this.xoffset);
 
 			if ( this.txCommit )
-				g.writeBooleanField(FieldNames.COMMIT, true);
+				g.writeBooleanField(fieldNameStrategy.apply(FieldNames.COMMIT), true);
 		}
 
 		if ( this.position != null ) {
 			BinlogPosition binlogPosition = this.position.getBinlogPosition();
 			if ( outputConfig.includesBinlogPosition )
-				g.writeStringField(FieldNames.POSITION, binlogPosition.getFile() + ":" + binlogPosition.getOffset());
+				g.writeStringField(fieldNameStrategy.apply(FieldNames.POSITION), binlogPosition.getFile() + ":" + binlogPosition.getOffset());
 
 			if ( outputConfig.includesGtidPosition)
-				g.writeStringField(FieldNames.GTID, binlogPosition.getGtid());
+				g.writeStringField(fieldNameStrategy.apply(FieldNames.GTID), binlogPosition.getGtid());
 		}
 
 		if ( outputConfig.includesServerId && this.serverId != null ) {
-			g.writeNumberField(FieldNames.SERVER_ID, this.serverId);
+			g.writeNumberField(fieldNameStrategy.apply(FieldNames.SERVER_ID), this.serverId);
 		}
 
 		if ( outputConfig.includesThreadId && this.threadId != null ) {
-			g.writeNumberField(FieldNames.THREAD_ID, this.threadId);
+			g.writeNumberField(fieldNameStrategy.apply(FieldNames.THREAD_ID), this.threadId);
 		}
 
 		if ( outputConfig.includesSchemaId && this.schemaId != null ) {
-			g.writeNumberField(FieldNames.SCHEMA_ID, this.schemaId);
+			g.writeNumberField(fieldNameStrategy.apply(FieldNames.SCHEMA_ID), this.schemaId);
 		}
 
 		if ( this.comment != null ) {
-			g.writeStringField(FieldNames.COMMENT, this.comment);
+			g.writeStringField((FieldNames.COMMENT), this.comment);
 		}
 
 		for ( Map.Entry<String, Object> entry : this.extraAttributes.entrySet() ) {
@@ -202,11 +205,11 @@ public class RowMap implements Serializable {
 		if ( outputConfig.includesPrimaryKeys ) {
 			List<Object> pkValues = new ArrayList<>();
 			pkColumns.forEach(pkColumn -> pkValues.add(this.data.get(pkColumn)));
-			MaxwellJson.writeValueToJSON(g, outputConfig.includesNulls, FieldNames.PRIMARY_KEY, pkValues);
+			MaxwellJson.writeValueToJSON(g, outputConfig.includesNulls, fieldNameStrategy.apply(FieldNames.PRIMARY_KEY), pkValues);
 		}
 
 		if ( outputConfig.includesPrimaryKeyColumns ) {
-			MaxwellJson.writeValueToJSON(g, outputConfig.includesNulls, FieldNames.PRIMARY_KEY_COLUMNS, pkColumns);
+			MaxwellJson.writeValueToJSON(g, outputConfig.includesNulls, fieldNameStrategy.apply(FieldNames.PRIMARY_KEY_COLUMNS), pkColumns);
 		}
 
 		if ( outputConfig.excludeColumns.size() > 0 ) {
@@ -225,9 +228,17 @@ public class RowMap implements Serializable {
 			}
 		}
 
-		writeMapToJSON(FieldNames.DATA, this.data, dataGenerator, outputConfig.includesNulls);
+		writeMapToJSON(fieldNameStrategy,
+						FieldNames.DATA, 
+						this.data, 
+						dataGenerator, 
+						outputConfig.includesNulls);
 		if( !this.oldData.isEmpty() ){
-			writeMapToJSON(FieldNames.OLD, this.oldData, dataGenerator, outputConfig.includesNulls);
+			writeMapToJSON(	fieldNameStrategy,
+							FieldNames.OLD,
+							this.oldData,
+							dataGenerator,
+							outputConfig.includesNulls);
 		}
 		dataWriter.end(encryptionContext);
 

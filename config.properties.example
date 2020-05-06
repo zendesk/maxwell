@@ -112,6 +112,10 @@ password=maxwell
 # See also: ddl_kafka_topic
 #output_ddl=true
 
+# turns underscore naming style of fields to camel case style in JSON output
+# default is none, which means the field name in JSON is the exact name in MySQL table
+#output_naming_strategy=underscore_to_camelcase
+
 #       *** kafka ***
 
 # list of kafka brokers
