@@ -128,7 +128,7 @@ public class MysqlIsolatedServer {
 
 		String createUserSQL;
 		if ( getVersion().atLeast(5, 7) ) {
-			createUserSQL = "create user 'maxwell_repl'@'127.0.0.1' identified with 'mysql_native_password by 'maxwell'";
+			createUserSQL = "create user 'maxwell_repl'@'127.0.0.1' identified with 'mysql_native_password' by 'maxwell'";
 		} else {
 			createUserSQL = "create user 'maxwell_repl'@'127.0.0.1' identified by 'maxwell'";
 		}
