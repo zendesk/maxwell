@@ -1,5 +1,7 @@
 package com.zendesk.maxwell.row;
 
+import com.github.shyiko.mysql.binlog.event.LRUCache;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -15,7 +17,7 @@ public class FieldNameStrategy {
 	public final static int TYPE_UNDERSCORE_TO_CAMEL_CASE = 1;
 	
 	// cache converted names
-	private Map<String, String> caches = new ConcurrentHashMap<>();
+	private Map<String, String> caches = new LRUCache<>(20, 0.75f, 1000);
 
 	private int strategyType = TYPE_NONE;
 
@@ -39,12 +41,14 @@ public class FieldNameStrategy {
 				if ( newName.length() > 0 //ignore the leading underscore 
 				  && i + 1 < len //this underscore is not the last character 
 				  ) {
-					char afterUnderscore = oldName.charAt(++i);
+					char ch = oldName.charAt(++i);
 					
 					//convert lower case char after underscore to upper one
 					//or leave it whatever it is
-					newName.append(Character.isLowerCase(afterUnderscore)	? (char) (afterUnderscore - 'a' + 'A')
-																			: afterUnderscore);
+					if ( Character.isLowerCase(ch) )
+						ch = Character.toUpperCase(ch);
+
+					newName.append(ch);
 				}
 			} else {
 				newName.append(c);

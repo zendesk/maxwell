@@ -190,6 +190,7 @@ public class RowMapTest {
 		rowMap.putData("_____", 8002);
 		rowMap.putData("__123", 8003);
 		rowMap.putData("favorite_interests", Arrays.asList("hiking", "programming"));
+		rowMap.putData("odd_ҫot_lowercase", 1);
 
 		MaxwellOutputConfig outputConfig = getMaxwellOutputConfig(Pattern.compile("^.*name.*$"));
 		outputConfig.namingStrategy = FieldNameStrategy.NAME_UNDERSCORE_TO_CAMEL_CASE;
@@ -208,7 +209,8 @@ public class RowMapTest {
 								"\"invalid!chars\":8001," + //non-ascii char after underscore keeps the same
 								"\"_____\":8002," +		//extreme case, leave the old
 								"\"123\":8003," +		//all underscore chars are removed 
-								"\"favoriteInterests\":[\"hiking\",\"programming\"]}}", // camel case applied
+								"\"favoriteInterests\":[\"hiking\",\"programming\"]," + // camel case applied
+								"\"oddҪotLowercase\":1}}",
 								rowMap.toJSON(outputConfig));
 		}
 		// clear the value for other cases
