@@ -54,11 +54,6 @@ public class MysqlIsolatedServer {
 		if ( !xtraParams.contains("--server_id") )
 			serverID = "--server_id=" + SERVER_ID;
 
-		String authPlugin = "";
-		if ( this.getVersion().atLeast(8, 0) ) {
-			authPlugin = "--default-authentication-plugin=mysql_native_password";
-		}
-
 		ProcessBuilder pb = new ProcessBuilder(
 			dir + "/src/test/onetimeserver",
 			"--mysql-version=" + this.getVersionString(),
@@ -71,7 +66,6 @@ public class MysqlIsolatedServer {
 			"--sync_binlog=0",
 			"--default-time-zone=+00:00",
 			isRoot ? "--user=root" : "",
-			authPlugin,
 			gtidParams
 		);
 
