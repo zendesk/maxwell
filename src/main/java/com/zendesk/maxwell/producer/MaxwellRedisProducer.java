@@ -17,7 +17,7 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 	private final String channel;
 	private final boolean interpolateChannel;
 	private final String redisType;
-	private final Jedis jedis;
+	private Jedis jedis;
 
 	@Deprecated
 	public MaxwellRedisProducer(MaxwellContext context, String redisPubChannel, String redisListKey, String redisType) {
@@ -31,8 +31,7 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 		this.interpolateChannel = channel.contains("%{");
 		this.redisType = context.getConfig().redisType;
 
-		jedis = new Jedis(context.getConfig().redisHost, context.getConfig().redisPort);
-		jedis.connect();
+		initRedisConnection();
 
 		if (context.getConfig().redisAuth != null) {
 			jedis.auth(context.getConfig().redisAuth);
@@ -41,6 +40,11 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 		if (context.getConfig().redisDatabase > 0) {
 			jedis.select(context.getConfig().redisDatabase);
 		}
+	}
+
+	private void initRedisConnection() {
+		jedis = new Jedis(context.getConfig().redisHost, context.getConfig().redisPort);
+		jedis.connect();
 	}
 
 	private String generateChannel(RowIdentity pk){
@@ -107,9 +111,6 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 					break;
 			}
 		}
-
-		this.succeededMessageCount.inc();
-		this.succeededMessageMeter.mark();
 	}
 
 	@Override
@@ -119,18 +120,20 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 			return;
 		}
 
+		boolean sentToRedis = false;
+
 		for (int cxErrors = 0; cxErrors < 2; cxErrors++) {
 			try {
 				this.sendToRedis(r);
+				sentToRedis = true;
 				break;
 			} catch (Exception e) {
 				if (e instanceof JedisConnectionException) {
-					logger.warn("lost connection to server, trying to reconnect...", e);
+					logger.warn("lost connection to server, recreating redis connection...", e);
 					jedis.disconnect();
-					jedis.connect();
+					initRedisConnection();
 				} else {
-					this.failedMessageCount.inc();
-					this.failedMessageMeter.mark();
+
 					logger.error("Exception during put", e);
 
 					if (!context.getConfig().ignoreProducerError) {
@@ -138,6 +141,14 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 					}
 				}
 			}
+		}
+
+		if (sentToRedis) {
+			this.succeededMessageCount.inc();
+			this.succeededMessageMeter.mark();
+		} else {
+			this.failedMessageCount.inc();
+			this.failedMessageMeter.mark();
 		}
 
 		if (r.isTXCommit()) {
