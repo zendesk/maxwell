@@ -1,5 +1,11 @@
 # Maxwell changelog
 
+### [v1.26.1](https://github.com/zendesk/maxwell/releases/tag/v1.26.1): "maybe we can break your ankle / clean and unsuspiciously"
+
+
+- fixes for redis re-connection login, thanks much @lucastex
+
+
 ### [v1.26.0](https://github.com/zendesk/maxwell/releases/tag/v1.26.0): "tip the waitress, feed her cocaine habit"
 
 
