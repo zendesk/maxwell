@@ -40,6 +40,12 @@ Note that if a Maxwell client_id has been set you should specify the client id.
 mysql> insert into maxwell.bootstrap (database_name, table_name, client_id) values ('fooDB', 'barTable', 'custom_maxwell_client_id');
 ```
 
+You can schedule bootstrap tasks in the future, setting the `started_at` column value to the time you want to run. Every time maxwell will start bootstrap tasks with this value is `NULL` or in the past. 
+```
+mysql> insert into maxwell.bootstrap (database_name, table_name, client_id, started_at) values ('fooDB', 'barTable', 'custom_maxwell_client_id', '2020-05-18 12:30:00');
+```
+
+
 ### Async vs Sync bootstrapping
 ***
 The Maxwell replicator is single threaded; events are captured by one thread from the binlog and replicated to Kafka one message at a time.
