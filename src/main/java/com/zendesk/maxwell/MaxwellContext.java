@@ -52,7 +52,9 @@ public class MaxwellContext {
 
 	private final HeartbeatNotifier heartbeatNotifier;
 	private final MaxwellDiagnosticContext diagnosticContext;
+
 	private BootstrapController bootstrapController;
+	private Thread bootstrapControllerThread;
 
 	public MaxwellContext(MaxwellConfig config) throws SQLException, URISyntaxException {
 		this.config = config;
@@ -377,6 +379,12 @@ public class MaxwellContext {
 		return this.producer;
 	}
 
+	public void runBootstrapNow() {
+		if ( this.bootstrapControllerThread != null ) {
+			this.bootstrapControllerThread.interrupt();
+		}
+	}
+
 	public synchronized BootstrapController getBootstrapController(Long currentSchemaID) throws IOException {
 		if ( this.bootstrapController != null ) {
 			return this.bootstrapController;
@@ -395,13 +403,15 @@ public class MaxwellContext {
 			currentSchemaID
 		);
 
-		new Thread(() -> {
+		this.bootstrapControllerThread = new Thread(() -> {
 			try {
 				this.bootstrapController.runLoop();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-		}, "maxwell-bootstrap-controller").start();
+		}, "maxwell-bootstrap-controller");
+		bootstrapControllerThread.start();
+
 
 		addTask(this.bootstrapController);
 		return this.bootstrapController;
