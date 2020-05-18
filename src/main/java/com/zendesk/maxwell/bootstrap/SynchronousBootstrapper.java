@@ -215,6 +215,15 @@ public class SynchronousBootstrapper {
 		});
 	}
 
+	private Object getTimestamp(ResultSet resultSet, int columnIndex) throws SQLException {
+		try {
+			return resultSet.getTimestamp(columnIndex);
+		} catch (SQLException e) {
+			LOGGER.error("error trying to deserialize column at index: " + columnIndex);
+			LOGGER.error("raw value:" + resultSet.getObject(columnIndex));
+			throw(e);
+		}
+	}
 	private void setRowValues(RowMap row, ResultSet resultSet, Table table) throws SQLException {
 		Iterator<ColumnDef> columnDefinitions = table.getColumnList().iterator();
 		int columnIndex = 1;
@@ -223,8 +232,8 @@ public class SynchronousBootstrapper {
 			Object columnValue;
 
 			// need to explicitly coerce TIME into TIMESTAMP in order to preserve nanoseconds
-			if ( columnDefinition instanceof TimeColumnDef )
-				columnValue = resultSet.getTimestamp(columnIndex);
+			if (columnDefinition instanceof TimeColumnDef)
+				columnValue = getTimestamp(resultSet, columnIndex);
 			else
 				columnValue = resultSet.getObject(columnIndex);
 
