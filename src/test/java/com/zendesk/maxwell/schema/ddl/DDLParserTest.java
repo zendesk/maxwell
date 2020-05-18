@@ -235,9 +235,8 @@ public class DDLParserTest {
 			"alter table foo.int add column bar varchar(255)",
 			"alter table something collate = default",
 			"ALTER TABLE t DROP t.foo",
-			"alter table f add column i varchar(255) default ('environment,namespace,table_name')"
-
-
+			"alter table f add column i varchar(255) default ('environment,namespace,table_name')",
+			"CREATE DATABASE xyz DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT ENCRYPTION='N'"
 		};
 
 		for ( String s : testSQL ) {
