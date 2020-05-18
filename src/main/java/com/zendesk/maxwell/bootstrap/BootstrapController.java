@@ -94,7 +94,7 @@ public class BootstrapController extends RunLoopProcess  {
 	private List<BootstrapTask> getIncompleteTasks() throws SQLException {
 		ArrayList<BootstrapTask> list = new ArrayList<>();
 		try ( Connection cx = maxwellConnectionPool.getConnection() ) {
-			PreparedStatement s = cx.prepareStatement("select * from bootstrap where is_complete = 0 and client_id = ? and (started_at is null or started_at <= now()) order by -started_at desc, id");
+			PreparedStatement s = cx.prepareStatement("select * from bootstrap where is_complete = 0 and client_id = ? and (started_at is null or started_at <= now()) order by isnull(started_at), started_at asc, id asc");
 			s.setString(1, this.clientID);
 
 			ResultSet rs = s.executeQuery();
