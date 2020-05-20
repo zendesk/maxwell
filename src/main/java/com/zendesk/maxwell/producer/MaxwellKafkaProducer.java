@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 class KafkaCallback implements Callback {
@@ -205,10 +206,13 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		while ( true ) {
 			try {
 				drainDeadLetterQueue();
-				RowMap row = queue.take();
+				RowMap row = queue.poll(50, TimeUnit.MILLISECONDS);
 				if (!taskState.isRunning()) {
 					taskState.stopped();
 					return;
+				}
+				if(row==null){
+					continue;
 				}
 				this.push(row);
 			} catch ( Exception e ) {
