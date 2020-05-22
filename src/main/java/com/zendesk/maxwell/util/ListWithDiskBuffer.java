@@ -52,6 +52,10 @@ public class ListWithDiskBuffer<T> {
 		return list.getLast();
 	}
 
+	public T getFirst() {
+		return list.getFirst();
+	}
+
 	public T removeFirst(Class<T> clazz) throws IOException, ClassNotFoundException {
 		if ( elementsInFile > 0 ) {
 			if ( is == null ) {
@@ -97,7 +101,7 @@ public class ListWithDiskBuffer<T> {
 		if ( elementsInFile == 0 ) {
 			LOGGER.info("Overflowed in-memory buffer, spilling over into " + file);
 		}
-		
+
 		T evicted = this.list.removeFirst();
 		os.writeObject(evicted);
 
