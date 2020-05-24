@@ -32,6 +32,11 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 		this.redisType = context.getConfig().redisType;
 
 		initRedisConnection();
+	}
+
+	private void initRedisConnection() {
+		jedis = new Jedis(context.getConfig().redisHost, context.getConfig().redisPort);
+		jedis.connect();
 
 		if (context.getConfig().redisAuth != null) {
 			jedis.auth(context.getConfig().redisAuth);
@@ -40,11 +45,6 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 		if (context.getConfig().redisDatabase > 0) {
 			jedis.select(context.getConfig().redisDatabase);
 		}
-	}
-
-	private void initRedisConnection() {
-		jedis = new Jedis(context.getConfig().redisHost, context.getConfig().redisPort);
-		jedis.connect();
 	}
 
 	private String generateChannel(RowIdentity pk){
