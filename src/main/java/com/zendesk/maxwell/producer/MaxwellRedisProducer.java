@@ -47,6 +47,10 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 		}
 	}
 
+	private Jedis getJedisConnection() {
+		return jedis;
+	}
+
 	private String generateChannel(RowIdentity pk){
 		if (interpolateChannel) {
 			return channel.replaceAll("%\\{database}", pk.getDatabase()).replaceAll("%\\{table}", pk.getTable());
@@ -62,10 +66,10 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 
 		switch (redisType) {
 			case "lpush":
-				jedis.lpush(channel, messageStr);
+				getJedisConnection().lpush(channel, messageStr);
 				break;
 			case "rpush":
-				jedis.rpush(channel, messageStr);
+				getJedisConnection().rpush(channel, messageStr);
 				break;
 			case "xadd":
 				Map<String, String> message = new HashMap<>();
@@ -86,11 +90,11 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 				//      	CDC events will natively emit second precision timestamp
 				// TODO configuration option for if we want the msg timestamp to become the message ID
 				//			Requires completion of previous TODO
-				jedis.xadd(channel, StreamEntryID.NEW_ENTRY, message);
+				getJedisConnection().xadd(channel, StreamEntryID.NEW_ENTRY, message);
 				break;
 			case "pubsub":
 			default:
-				jedis.publish(channel, messageStr);
+				getJedisConnection().publish(channel, messageStr);
 				break;
 		}
 
@@ -130,7 +134,7 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 			} catch (Exception e) {
 				if (e instanceof JedisConnectionException) {
 					logger.warn("lost connection to server, recreating redis connection...", e);
-					jedis.disconnect();
+					getJedisConnection().disconnect();
 					initRedisConnection();
 				} else {
 
@@ -158,7 +162,7 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 
 	@Override
 	public void requestStop() {
-		jedis.close();
+		getJedisConnection().close();
 	}
 
 	@Override
