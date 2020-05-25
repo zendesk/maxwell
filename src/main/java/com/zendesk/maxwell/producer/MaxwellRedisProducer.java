@@ -35,15 +35,13 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 		this.interpolateChannel = channel.contains("%{");
 		this.redisType = context.getConfig().redisType;
 
-		if (jedisPool == null) {
-			jedisPool = new JedisPool(
-				createRedisPoolConfig(), 
-				context.getConfig().redisHost, 
-				context.getConfig().redisPort,
-				Protocol.DEFAULT_TIMEOUT,
-				context.getConfig().redisAuth, //even if not present jedispool will handle a null value 
-				context.getConfig().redisDatabase); //even if not present jedispool will handle a null value 
-		}
+		jedisPool = new JedisPool(
+			createRedisPoolConfig(), 
+			context.getConfig().redisHost, 
+			context.getConfig().redisPort,
+			Protocol.DEFAULT_TIMEOUT,
+			context.getConfig().redisAuth, //even if not present jedispool will handle a null value 
+			context.getConfig().redisDatabase); //even if not present jedispool will handle a null value 
 	}
 
 	private JedisPoolConfig createRedisPoolConfig() {
