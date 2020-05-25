@@ -37,7 +37,7 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 
 		if (jedisPool == null) {
 			jedisPool = new JedisPool(
-				createdRedisPoolConfig(), 
+				createRedisPoolConfig(), 
 				context.getConfig().redisHost, 
 				context.getConfig().redisPort,
 				Protocol.DEFAULT_TIMEOUT,
@@ -46,7 +46,7 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 		}
 	}
 
-	private JedisPoolConfig createdRedisPoolConfig() {
+	private JedisPoolConfig createRedisPoolConfig() {
 		
 		JedisPoolConfig poolConfig = new JedisPoolConfig();
 		//2 is the most we'll need, one for the bootstrap task and another to the main maxwell thread
