@@ -12,6 +12,7 @@ import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
+import com.zendesk.maxwell.schema.columndef.DateColumnDef;
 import com.zendesk.maxwell.schema.columndef.TimeColumnDef;
 import com.zendesk.maxwell.scripting.Scripting;
 import org.slf4j.Logger;
@@ -234,6 +235,8 @@ public class SynchronousBootstrapper {
 			// need to explicitly coerce TIME into TIMESTAMP in order to preserve nanoseconds
 			if (columnDefinition instanceof TimeColumnDef)
 				columnValue = getTimestamp(resultSet, columnIndex);
+			else if ( columnDefinition instanceof DateColumnDef)
+				columnValue = resultSet.getString(columnIndex);
 			else
 				columnValue = resultSet.getObject(columnIndex);
 

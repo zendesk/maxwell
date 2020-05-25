@@ -183,6 +183,11 @@ public class BootstrapIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
+	public void testZeroYearDates() throws Exception {
+		testColumnType("date", "'0000-01-01'", "0000-00-00", "0000-01-01");
+	}
+
+	@Test
 	public void testSubsecondTypes() throws Exception {
 		requireMinimumVersion(server.VERSION_5_6);
 		testColumnType("time(3)", "'01:02:03.123456'","01:02:03.123");
