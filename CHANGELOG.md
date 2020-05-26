@@ -1,5 +1,14 @@
 # Maxwell changelog
 
+### [v1.26.3](https://github.com/zendesk/maxwell/releases/tag/v1.26.3): "the worst song in the goddamn world"
+
+
+- use pooled redis connections, fixes corruption when redis was accessed
+from multiple threads (bootstrap/producer), thanks @lucastex
+- fix date handling of '0000-01-01'
+- fix race condition in binlog reconnect logic
+
+
 ### [v1.26.2](https://github.com/zendesk/maxwell/releases/tag/v1.26.2): "dave the butcher"
 
 
