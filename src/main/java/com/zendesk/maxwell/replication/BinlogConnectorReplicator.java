@@ -198,11 +198,6 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	}
 
 	@Override
-	protected void beforeStart() throws Exception {
-		startReplicator();
-	}
-
-	@Override
 	protected void beforeStop() throws Exception {
 		this.binlogEventListener.stop();
 		this.client.disconnect();
@@ -543,8 +538,10 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		if ( stopOnEOF && hitEOF )
 			return null;
 
-		if ( !replicatorStarted )
-			throw new ReplicatorNotReadyException("replicator not started!");
+		if ( !replicatorStarted ) {
+			LOGGER.warn("replicator was not started, calling startReplicator()...");
+			startReplicator();
+		}
 
 		while (true) {
 			if (rowBuffer != null && !rowBuffer.isEmpty()) {
