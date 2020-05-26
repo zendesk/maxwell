@@ -7,6 +7,9 @@ import com.zendesk.maxwell.util.StoppableTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import java.util.HashMap;
@@ -17,7 +20,8 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 	private final String channel;
 	private final boolean interpolateChannel;
 	private final String redisType;
-	private Jedis jedis;
+
+	private static JedisPool jedisPool;
 
 	@Deprecated
 	public MaxwellRedisProducer(MaxwellContext context, String redisPubChannel, String redisListKey, String redisType) {
@@ -31,20 +35,25 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 		this.interpolateChannel = channel.contains("%{");
 		this.redisType = context.getConfig().redisType;
 
-		initRedisConnection();
-
-		if (context.getConfig().redisAuth != null) {
-			jedis.auth(context.getConfig().redisAuth);
-		}
-
-		if (context.getConfig().redisDatabase > 0) {
-			jedis.select(context.getConfig().redisDatabase);
-		}
+		jedisPool = new JedisPool(
+			createRedisPoolConfig(), 
+			context.getConfig().redisHost, 
+			context.getConfig().redisPort,
+			Protocol.DEFAULT_TIMEOUT,
+			context.getConfig().redisAuth, //even if not present jedispool will handle a null value 
+			context.getConfig().redisDatabase); //even if not present jedispool will handle a null value 
 	}
 
-	private void initRedisConnection() {
-		jedis = new Jedis(context.getConfig().redisHost, context.getConfig().redisPort);
-		jedis.connect();
+	private JedisPoolConfig createRedisPoolConfig() {
+		
+		JedisPoolConfig poolConfig = new JedisPoolConfig();
+		//2 is the most we'll need, one for the bootstrap task and another to the main maxwell thread
+		poolConfig.setMaxTotal(2); 
+		poolConfig.setMaxIdle(2);
+		poolConfig.setMinIdle(0);
+		poolConfig.setTestOnBorrow(true);
+		poolConfig.setBlockWhenExhausted(true);
+		return poolConfig;
 	}
 
 	private String generateChannel(RowIdentity pk){
@@ -56,42 +65,45 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 	}
 
 	private void sendToRedis(RowMap msg) throws Exception {
-		String messageStr = msg.toJSON(outputConfig);
 
+		String messageStr = msg.toJSON(outputConfig);
 		String channel = this.generateChannel(msg.getRowIdentity());
 
-		switch (redisType) {
-			case "lpush":
-				jedis.lpush(channel, messageStr);
-				break;
-			case "rpush":
-				jedis.rpush(channel, messageStr);
-				break;
-			case "xadd":
-				Map<String, String> message = new HashMap<>();
+		try (Jedis jedis = jedisPool.getResource()) {
 
-				String jsonKey = this.context.getConfig().redisStreamJsonKey;
+			switch (redisType) {
+				case "lpush":
+					jedis.lpush(channel, messageStr);
+					break;
+				case "rpush":
+					jedis.rpush(channel, messageStr);
+					break;
+				case "xadd":
+					Map<String, String> message = new HashMap<>();
 
-				if (jsonKey == null) {
-					// TODO dot notated map impl in RowMap.toJson
-					throw new IllegalArgumentException("Stream requires key name for serialized JSON value");
-				}
-				else {
-					message.put(jsonKey, messageStr);
-				}
+					String jsonKey = this.context.getConfig().redisStreamJsonKey;
 
-				// TODO timestamp resolution coercion
-				// 			Seconds or milliseconds, never mixing precision
-				//      	DML events will natively emit millisecond precision timestamps
-				//      	CDC events will natively emit second precision timestamp
-				// TODO configuration option for if we want the msg timestamp to become the message ID
-				//			Requires completion of previous TODO
-				jedis.xadd(channel, StreamEntryID.NEW_ENTRY, message);
-				break;
-			case "pubsub":
-			default:
-				jedis.publish(channel, messageStr);
-				break;
+					if (jsonKey == null) {
+						// TODO dot notated map impl in RowMap.toJson
+						throw new IllegalArgumentException("Stream requires key name for serialized JSON value");
+					}
+					else {
+						message.put(jsonKey, messageStr);
+					}
+
+					// TODO timestamp resolution coercion
+					// 			Seconds or milliseconds, never mixing precision
+					//      	DML events will natively emit millisecond precision timestamps
+					//      	CDC events will natively emit second precision timestamp
+					// TODO configuration option for if we want the msg timestamp to become the message ID
+					//			Requires completion of previous TODO
+					jedis.xadd(channel, StreamEntryID.NEW_ENTRY, message);
+					break;
+				case "pubsub":
+				default:
+					jedis.publish(channel, messageStr);
+					break;
+			}
 		}
 
 		if (logger.isDebugEnabled()) {
@@ -129,9 +141,7 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 				break;
 			} catch (Exception e) {
 				if (e instanceof JedisConnectionException) {
-					logger.warn("lost connection to server, recreating redis connection...", e);
-					jedis.disconnect();
-					initRedisConnection();
+					logger.warn("lost connection to server, will try again with another connection from pool", e);
 				} else {
 
 					logger.error("Exception during put", e);
@@ -158,7 +168,7 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 
 	@Override
 	public void requestStop() {
-		jedis.close();
+		jedisPool.close();
 	}
 
 	@Override
