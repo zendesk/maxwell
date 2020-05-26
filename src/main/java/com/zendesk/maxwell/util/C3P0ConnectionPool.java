@@ -23,7 +23,7 @@ public class C3P0ConnectionPool implements ConnectionPool {
 		cpds.close();
 	}
 
-	public C3P0ConnectionPool(String url, String user, String password) {
+	public C3P0ConnectionPool(String url, String user, String password) throws SQLException {
 		cpds = new ComboPooledDataSource();
 		cpds.setJdbcUrl(url);
 		cpds.setUser(user);
@@ -33,6 +33,24 @@ public class C3P0ConnectionPool implements ConnectionPool {
 		// the settings below are optional -- c3p0 can work with defaults
 		cpds.setMinPoolSize(1);
 		cpds.setMaxPoolSize(5);
+
+		probePool();
+	}
+
+	private void probePool() throws SQLException {
+		cpds.setAcquireRetryAttempts(1);
+		try ( Connection c = getConnection() ) {
+			cpds.setAcquireRetryAttempts(30);
+		} catch ( SQLException e ) {
+			// the sql exception thrown here is worthless, it's just
+			// "coudln't get connection from pool."  dig it out.
+			Throwable t = cpds.getLastAcquisitionFailureDefaultUser();
+			if ( t instanceof SQLException ) {
+				throw((SQLException) t);
+			} else {
+				throw new RuntimeException("couldn't get connection from pool", t);
+			}
+		}
 	}
 
 	@Override
