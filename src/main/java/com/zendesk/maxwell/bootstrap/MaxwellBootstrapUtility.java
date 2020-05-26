@@ -131,7 +131,7 @@ public class MaxwellBootstrapUtility {
 		}
 	}
 
-	private ConnectionPool getConnectionPool(MaxwellBootstrapUtilityConfig config) {
+	private ConnectionPool getConnectionPool(MaxwellBootstrapUtilityConfig config) throws SQLException {
 		String connectionURI = config.getConnectionURI();
 		return new C3P0ConnectionPool(connectionURI, config.mysql.user, config.mysql.password);
 	}
