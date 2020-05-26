@@ -219,6 +219,8 @@ public class Maxwell implements Runnable {
 
 		context.setReplicator(replicator);
 		this.context.start();
+
+		replicator.startReplicator();
 		this.onReplicatorStart();
 
 		replicator.runLoop();
