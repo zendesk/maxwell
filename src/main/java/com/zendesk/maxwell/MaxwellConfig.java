@@ -139,6 +139,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public int redisDatabase;
 	public String redisKey;
 	public String redisStreamJsonKey;
+	public String redisClient;
 
 	public String redisPubChannel;
 	public String redisListKey;
@@ -330,6 +331,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.section( "redis" );
 
+		parser.accepts( "redis_client", "[jedis|redisson] Redis client implementation. Defaults to 'jedis'" ).withRequiredArg();
 		parser.accepts( "redis_host", "Host of Redis server" ).withRequiredArg();
 		parser.accepts( "redis_port", "Port of Redis server" ).withRequiredArg();
 		parser.accepts( "redis_auth", "Authentication key for a password-protected Redis server" ).withRequiredArg();
@@ -457,6 +459,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.rabbitmqMessagePersistent    	= fetchBooleanOption("rabbitmq_message_persistent", options, properties, false);
 		this.rabbitmqDeclareExchange		= fetchBooleanOption("rabbitmq_declare_exchange", options, properties, true);
 
+		this.redisClient		= fetchOption("redis_client", options, properties, "jedis");
 		this.redisHost			= fetchOption("redis_host", options, properties, "localhost");
 		this.redisPort			= Integer.parseInt(fetchOption("redis_port", options, properties, "6379"));
 		this.redisAuth			= fetchOption("redis_auth", options, properties, null);
