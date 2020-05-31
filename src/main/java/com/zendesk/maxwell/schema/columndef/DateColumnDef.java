@@ -18,7 +18,13 @@ public class DateColumnDef extends ColumnDef {
 
 	@Override
 	public Object asJSON(Object value, MaxwellOutputConfig config) {
-		if ( value instanceof Long && (Long) value == Long.MIN_VALUE ) {
+		if ( value instanceof String ) {
+			// bootstrapper just gives up on bothering with date processing
+			if ( config.zeroDatesAsNull && "0000-00-00".equals((String) value) )
+				return null;
+			else
+				return value;
+		} else if ( value instanceof Long && (Long) value == Long.MIN_VALUE ) {
 			if ( config.zeroDatesAsNull )
 				return null;
 			else

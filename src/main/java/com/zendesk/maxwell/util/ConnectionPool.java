@@ -15,6 +15,7 @@ public interface ConnectionPool {
 	Connection getConnection() throws SQLException;
 	void release();
 
+	void probe() throws SQLException;
 	void withSQLRetry(int nTries, RetryableSQLFunction<Connection> inner)
 		throws SQLException, NoSuchElementException, DuplicateProcessException;
 }

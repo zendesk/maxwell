@@ -12,6 +12,7 @@ import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
+import com.zendesk.maxwell.schema.columndef.DateColumnDef;
 import com.zendesk.maxwell.schema.columndef.TimeColumnDef;
 import com.zendesk.maxwell.scripting.Scripting;
 import org.slf4j.Logger;
@@ -215,6 +216,15 @@ public class SynchronousBootstrapper {
 		});
 	}
 
+	private Object getTimestamp(ResultSet resultSet, int columnIndex) throws SQLException {
+		try {
+			return resultSet.getTimestamp(columnIndex);
+		} catch (SQLException e) {
+			LOGGER.error("error trying to deserialize column at index: " + columnIndex);
+			LOGGER.error("raw value:" + resultSet.getObject(columnIndex));
+			throw(e);
+		}
+	}
 	private void setRowValues(RowMap row, ResultSet resultSet, Table table) throws SQLException {
 		Iterator<ColumnDef> columnDefinitions = table.getColumnList().iterator();
 		int columnIndex = 1;
@@ -223,8 +233,10 @@ public class SynchronousBootstrapper {
 			Object columnValue;
 
 			// need to explicitly coerce TIME into TIMESTAMP in order to preserve nanoseconds
-			if ( columnDefinition instanceof TimeColumnDef )
-				columnValue = resultSet.getTimestamp(columnIndex);
+			if (columnDefinition instanceof TimeColumnDef)
+				columnValue = getTimestamp(resultSet, columnIndex);
+			else if ( columnDefinition instanceof DateColumnDef)
+				columnValue = resultSet.getString(columnIndex);
 			else
 				columnValue = resultSet.getObject(columnIndex);
 

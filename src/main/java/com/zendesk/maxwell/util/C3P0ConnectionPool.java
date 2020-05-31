@@ -35,6 +35,22 @@ public class C3P0ConnectionPool implements ConnectionPool {
 		cpds.setMaxPoolSize(5);
 	}
 
+	public void probe() throws SQLException {
+		cpds.setAcquireRetryAttempts(1);
+		try ( Connection c = getConnection() ) {
+			cpds.setAcquireRetryAttempts(30);
+		} catch ( SQLException e ) {
+			// the sql exception thrown here is worthless, it's just
+			// "coudln't get connection from pool."  dig out the goods.
+			Throwable t = cpds.getLastAcquisitionFailureDefaultUser();
+			if ( t instanceof SQLException ) {
+				throw((SQLException) t);
+			} else {
+				throw new RuntimeException("couldn't get connection from pool", t);
+			}
+		}
+	}
+
 	@Override
 	public void withSQLRetry(int nTries, RetryableSQLFunction<Connection> inner)
 		throws SQLException, DuplicateProcessException, NoSuchElementException {

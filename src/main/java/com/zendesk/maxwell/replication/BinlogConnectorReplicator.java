@@ -38,7 +38,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
-public class BinlogConnectorReplicator extends RunLoopProcess implements Replicator {
+public class BinlogConnectorReplicator extends RunLoopProcess implements Replicator, BinaryLogClient.LifecycleListener {
 	static final Logger LOGGER = LoggerFactory.getLogger(BinlogConnectorReplicator.class);
 	private static final long MAX_TX_ELEMENTS = 10000;
 	public static final int BAD_BINLOG_ERROR_CODE = 1236;
@@ -48,7 +48,6 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 	protected final BinaryLogClient client;
 	private BinlogConnectorEventListener binlogEventListener;
-	private BinlogConnectorLifecycleListener binlogLifecycleListener;
 	private final LinkedBlockingDeque<BinlogConnectorEvent> queue = new LinkedBlockingDeque<>(20);
 	private final TableCache tableCache;
 	private final Scripting scripting;
@@ -78,6 +77,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 	private static Pattern createTablePattern =
 		Pattern.compile("^CREATE\\s+TABLE", Pattern.CASE_INSENSITIVE);
+
+	private boolean isConnected = false;
 
 	private class ClientReconnectedException extends Exception {}
 
@@ -124,11 +125,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		transactionRowCount = metrics.getRegistry().histogram(metrics.metricName("transaction", "row_count"));
 		transactionExecutionTime = metrics.getRegistry().histogram(metrics.metricName("transaction", "execution_time"));
 
-		/* setup binlog */
-		this.binlogLifecycleListener = new BinlogConnectorLifecycleListener(this);
-
+		/* setup binlog client */
 		this.client = new BinaryLogClient(mysqlConfig.host, mysqlConfig.port, mysqlConfig.user, mysqlConfig.password);
-
 		this.client.setSSLMode(mysqlConfig.sslMode);
 
 		BinlogPosition startBinlog = start.getBinlogPosition();
@@ -165,7 +163,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		this.binlogEventListener = new BinlogConnectorEventListener(client, queue, metrics, outputConfig);
 		this.client.setBlocking(!stopOnEOF);
 		this.client.registerEventListener(binlogEventListener);
-		this.client.registerLifecycleListener(binlogLifecycleListener);
+		this.client.registerLifecycleListener(this);
 		this.client.setServerId(replicaServerID.intValue());
 	}
 
@@ -200,11 +198,6 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	}
 
 	@Override
-	protected void beforeStart() throws Exception {
-		startReplicator();
-	}
-
-	@Override
 	protected void beforeStop() throws Exception {
 		this.binlogEventListener.stop();
 		this.client.disconnect();
@@ -214,7 +207,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	 * Listener for communication errors so we can stop everything and exit on this case
 	 * @param ex Exception thrown by the BinaryLogClient
 	 */
-	public void onCommunicationFailure(Exception ex) {
+	@Override
+	public void onCommunicationFailure(BinaryLogClient client, Exception ex) {
 
 		// Stopping Maxwell only in case we cannot read binlogs from the current server
 		if (ex instanceof ServerException) {
@@ -406,7 +400,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 	private void ensureReplicatorThread() throws Exception {
 		checkCommErrors();
-		if ( !client.isConnected() && !stopOnEOF ) {
+		if ( !this.isConnected && !stopOnEOF ) {
 			if (this.gtidPositioning) {
 				// When using gtid positioning, reconnecting should take us to the top
 				// of the gtid event.  We throw away any binlog position we have
@@ -544,8 +538,10 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		if ( stopOnEOF && hitEOF )
 			return null;
 
-		if ( !replicatorStarted )
-			throw new ReplicatorNotReadyException("replicator not started!");
+		if ( !replicatorStarted ) {
+			LOGGER.warn("replicator was not started, calling startReplicator()...");
+			startReplicator();
+		}
 
 		while (true) {
 			if (rowBuffer != null && !rowBuffer.isEmpty()) {
@@ -561,7 +557,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 			if (event == null) {
 				if ( stopOnEOF ) {
-					if ( client.isConnected() )
+					if ( this.isConnected )
 						continue;
 					else
 						return null;
@@ -636,5 +632,24 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	public Long getSchemaId() throws SchemaStoreException {
 		return this.schemaStore.getSchemaID();
 	}
+
+	@Override
+	public void onConnect(BinaryLogClient client) {
+		LOGGER.info("Binlog connected.");
+		this.isConnected = true;
+	}
+
+	@Override
+	public void onEventDeserializationFailure(BinaryLogClient client, Exception ex) {
+		LOGGER.warn("Event deserialization failure.", ex);
+		LOGGER.warn("cause: ", ex.getCause());
+	}
+
+	@Override
+	public void onDisconnect(BinaryLogClient client) {
+		LOGGER.info("Binlog disconnected.");
+		this.isConnected = false;
+	}
+
 
 }
