@@ -52,7 +52,9 @@ public class MaxwellContext {
 
 	private final HeartbeatNotifier heartbeatNotifier;
 	private final MaxwellDiagnosticContext diagnosticContext;
+
 	private BootstrapController bootstrapController;
+	private Thread bootstrapControllerThread;
 
 	public MaxwellContext(MaxwellConfig config) throws SQLException, URISyntaxException {
 		this.config = config;
@@ -66,6 +68,8 @@ public class MaxwellContext {
 			config.replicationMysql.password
 		);
 
+		this.replicationConnectionPool.probe();
+
 		if (config.schemaMysql.host == null) {
 			this.schemaConnectionPool = null;
 		} else {
@@ -74,6 +78,7 @@ public class MaxwellContext {
 				config.schemaMysql.user,
 				config.schemaMysql.password
 			);
+			this.schemaConnectionPool.probe();
 		}
 
 		this.rawMaxwellConnectionPool = new C3P0ConnectionPool(
@@ -81,12 +86,14 @@ public class MaxwellContext {
 			config.maxwellMysql.user,
 			config.maxwellMysql.password
 		);
+		this.rawMaxwellConnectionPool.probe();
 
 		this.maxwellConnectionPool = new C3P0ConnectionPool(
 			config.maxwellMysql.getConnectionURI(),
 			config.maxwellMysql.user,
 			config.maxwellMysql.password
 		);
+		// do NOT probe the regular maxwell connection pool; the database might not be created yet.
 
 		if ( this.config.initPosition != null )
 			this.initialPosition = this.config.initPosition;
@@ -382,6 +389,12 @@ public class MaxwellContext {
 		return this.producer;
 	}
 
+	public void runBootstrapNow() {
+		if ( this.bootstrapControllerThread != null ) {
+			this.bootstrapControllerThread.interrupt();
+		}
+	}
+
 	public synchronized BootstrapController getBootstrapController(Long currentSchemaID) throws IOException {
 		if ( this.bootstrapController != null ) {
 			return this.bootstrapController;
@@ -400,13 +413,15 @@ public class MaxwellContext {
 			currentSchemaID
 		);
 
-		new Thread(() -> {
+		this.bootstrapControllerThread = new Thread(() -> {
 			try {
 				this.bootstrapController.runLoop();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-		}, "maxwell-bootstrap-controller").start();
+		}, "maxwell-bootstrap-controller");
+		bootstrapControllerThread.start();
+
 
 		addTask(this.bootstrapController);
 		return this.bootstrapController;
@@ -418,22 +433,6 @@ public class MaxwellContext {
 
 	public boolean getReplayMode() {
 		return this.config.replayMode;
-	}
-
-	private void probePool( ConnectionPool pool, String uri ) throws SQLException {
-		try (Connection c = pool.getConnection()) {
-			c.createStatement().execute("SELECT 1");
-		} catch (SQLException e) {
-			LOGGER.error("Could not connect to " + uri + ": " + e.getLocalizedMessage());
-			throw (e);
-		}
-	}
-
-	public void probeConnections() throws SQLException, URISyntaxException {
-		probePool(this.rawMaxwellConnectionPool, this.config.maxwellMysql.getConnectionURI(false));
-
-		if ( this.maxwellConnectionPool != this.replicationConnectionPool )
-			probePool(this.replicationConnectionPool, this.config.replicationMysql.getConnectionURI());
 	}
 
 	public void setReplicator(Replicator replicator) {

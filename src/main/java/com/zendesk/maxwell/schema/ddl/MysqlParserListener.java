@@ -440,8 +440,11 @@ public class MysqlParserListener extends mysqlBaseListener {
 		String dbName = unquote(ctx.name().getText());
 		boolean ifNotExists = ctx.if_not_exists() != null;
 		String charset = null;
-		if ( ctx.default_character_set().size() > 0 ) {
-			charset = unquote_literal(ctx.default_character_set().get(0).charset_name().getText());
+
+		for ( Create_optionContext option : ctx.create_option() ) {
+			if ( option.default_character_set() != null ) {
+				charset = unquote_literal(option.default_character_set().charset_name().getText());
+			}
 		}
 
 		this.schemaChanges.add(new DatabaseCreate(dbName, ifNotExists, charset));

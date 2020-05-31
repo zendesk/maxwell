@@ -219,6 +219,7 @@ public class MaxwellTestSupport {
 		}
 
 		callback.afterReplicatorStart(mysql);
+		maxwell.context.runBootstrapNow();
 
 		long finalHeartbeat = maxwell.context.getPositionStore().heartbeat();
 

@@ -35,7 +35,6 @@ public class Maxwell implements Runnable {
 	protected Maxwell(MaxwellContext context) throws SQLException, URISyntaxException {
 		this.config = context.getConfig();
 		this.context = context;
-		this.context.probeConnections();
 	}
 
 	public void run() {
@@ -219,6 +218,8 @@ public class Maxwell implements Runnable {
 
 		context.setReplicator(replicator);
 		this.context.start();
+
+		replicator.startReplicator();
 		this.onReplicatorStart();
 
 		replicator.runLoop();

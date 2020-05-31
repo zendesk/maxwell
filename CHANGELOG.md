@@ -1,5 +1,23 @@
 # Maxwell changelog
 
+### [v1.26.3](https://github.com/zendesk/maxwell/releases/tag/v1.26.3): "the worst song in the goddamn world"
+
+
+- use pooled redis connections, fixes corruption when redis was accessed
+from multiple threads (bootstrap/producer), thanks @lucastex
+- fix date handling of '0000-01-01'
+- fix race condition in binlog reconnect logic
+
+
+### [v1.26.2](https://github.com/zendesk/maxwell/releases/tag/v1.26.2): "dave the butcher"
+
+
+- bootstraps can be scheduled in the future by setting the `started_at`
+  column, thanks @lucastex
+- two mysql 8 fixes; one for a `DEFAULT(function())` parse error, one
+  for supporting DEFAULT ENCRYPTION
+
+
 ### [v1.26.1](https://github.com/zendesk/maxwell/releases/tag/v1.26.1): "maybe we can break your ankle / clean and unsuspiciously"
 
 
