@@ -366,6 +366,9 @@ public class MaxwellContext {
 				if (this.config.redisClient.equals("redisson")) {
 					this.producer = new MaxwellRedisRedissonProducer(this);
 				}
+				if (this.config.redisClient.equals("redisson_async")) {
+					this.producer = new MaxwellRedisRedissonAsyncProducer(this);
+				}
 				break;
 			case "none":
 				this.producer = new NoneProducer(this);
