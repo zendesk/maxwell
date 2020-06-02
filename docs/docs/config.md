@@ -31,12 +31,15 @@ replication_password           | STRING               | password on replication 
 replication_port               | INT                  | port on replication server                          | 3306
 replication_user               | STRING               | user on replication server                          |
 replication_ssl                | [SSL_OPT](#sslopt)   | SSL behavior for replication cx cx                  | DISABLED
+replication_jdbc_options       | STRING               | mysql jdbc connection options for replication server| [DEFAULT_JDBC_OPTS](#jdbcopts)
 &nbsp;
 schema_host                    | STRING               | server to capture schema from.  See [split server roles](#split-server-roles) | *schema-store host*
 schema_password                | STRING               | password on schema-capture server                   | (none)
 schema_port                    | INT                  | port on schema-capture server                       | 3306
 schema_user                    | STRING               | user on schema-capture server                       |
 schema_ssl                     | [SSL_OPT](#sslopt)   | SSL behavior for schema-capture server              | DISABLED
+schema_jdbc_options            | STRING               | mysql jdbc connection options for schema server     | [DEFAULT_JDBC_OPTS](#jdbcopts)
+
 &nbsp;
 **producer options**
 producer                       | [PRODUCER_TYPE](#producer_type)     | type of producer to use                             | stdout
