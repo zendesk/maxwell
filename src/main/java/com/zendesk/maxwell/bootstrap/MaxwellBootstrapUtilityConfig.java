@@ -51,7 +51,7 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 		parser.accepts( "log_level", "log level, one of DEBUG|INFO|WARN|ERROR. default: WARN" ).withRequiredArg();
 		parser.accepts( "host", "mysql host. default: localhost").withRequiredArg();
 		parser.accepts( "user", "mysql username. default: maxwell" ).withRequiredArg();
-		parser.accepts( "password", "mysql password" ).withRequiredArg();
+		parser.accepts( "password", "mysql password" ).withOptionalArg();
 		parser.accepts( "port", "mysql port. default: 3306" ).withRequiredArg();
 		parser.accepts( "comment", "arbitrary comment to be added to every bootstrap row record" ).withRequiredArg();
 		parser.accepts( "schema_database", "database that contains maxwell schema and state").withRequiredArg();

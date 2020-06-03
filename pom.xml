@@ -202,7 +202,7 @@
     <dependency>
       <groupId>net.sf.jopt-simple</groupId>
       <artifactId>jopt-simple</artifactId>
-      <version>4.9</version>
+      <version>5.0.4</version>
     </dependency>
     <dependency>
       <groupId>net.snaq</groupId>
