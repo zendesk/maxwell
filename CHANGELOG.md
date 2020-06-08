@@ -1,5 +1,11 @@
 # Maxwell changelog
 
+### [v1.26.4](https://github.com/zendesk/maxwell/releases/tag/v1.26.4): "Now function precision support"
+
+
+ - list changes
+
+
 ### [v1.26.3](https://github.com/zendesk/maxwell/releases/tag/v1.26.3): "the worst song in the goddamn world"
 
 
