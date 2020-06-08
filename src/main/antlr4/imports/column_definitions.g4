@@ -115,6 +115,7 @@ length: '(' INTEGER_LITERAL ')';
 int_flags: ( SIGNED | UNSIGNED | ZEROFILL );
 decimal_length: '(' INTEGER_LITERAL ( ',' INTEGER_LITERAL )? ')';
 
-now_function: NOW '(' ')';
+now_function: NOW now_function_length;
+now_function_length: length | '(' ')';
 current_timestamp_length: length | '(' ')';
 localtime_function: (LOCALTIME | LOCALTIMESTAMP) ('(' ')')?;
