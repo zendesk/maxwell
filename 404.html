@@ -7,15 +7,15 @@
         
         
         
-        <link rel="shortcut icon" href="../img/favicon.ico">
-        <title>Compat / Caveats - Maxwell's Daemon</title>
-        <link href="../css/bootstrap.min.css" rel="stylesheet">
-        <link href="../css/font-awesome.min.css" rel="stylesheet">
-        <link href="../css/base.css" rel="stylesheet">
+        <link rel="shortcut icon" href="/img/favicon.ico">
+        <title>Maxwell's Daemon</title>
+        <link href="/css/bootstrap.min.css" rel="stylesheet">
+        <link href="/css/font-awesome.min.css" rel="stylesheet">
+        <link href="/css/base.css" rel="stylesheet">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
 
-        <script src="../js/jquery-1.10.2.min.js" defer></script>
-        <script src="../js/bootstrap.min.js" defer></script>
+        <script src="/js/jquery-1.10.2.min.js" defer></script>
+        <script src="/js/bootstrap.min.js" defer></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
         <script>hljs.initHighlightingOnLoad();</script> 
     </head>
@@ -23,7 +23,7 @@
     <body>
         <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
             <div class="container">
-                <a class="navbar-brand" href="..">Maxwell's Daemon</a>
+                <a class="navbar-brand" href="/.">Maxwell's Daemon</a>
                 <!-- Expander button -->
                 <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse">
                     <span class="navbar-toggler-icon"></span>
@@ -34,43 +34,43 @@
                         <!-- Main navigation -->
                         <ul class="nav navbar-nav">
                             <li class="navitem">
-                                <a href=".." class="nav-link">Overview</a>
+                                <a href="/." class="nav-link">Overview</a>
                             </li>
                             <li class="navitem">
-                                <a href="../quickstart/" class="nav-link">Quick Start</a>
+                                <a href="/quickstart/" class="nav-link">Quick Start</a>
                             </li>
                             <li class="navitem">
-                                <a href="../config/" class="nav-link">Configuration</a>
+                                <a href="/config/" class="nav-link">Configuration</a>
                             </li>
                             <li class="navitem">
-                                <a href="../producers/" class="nav-link">Producers</a>
+                                <a href="/producers/" class="nav-link">Producers</a>
                             </li>
                             <li class="navitem">
-                                <a href="../filtering/" class="nav-link">Filtering</a>
+                                <a href="/filtering/" class="nav-link">Filtering</a>
                             </li>
                             <li class="navitem">
-                                <a href="../dataformat/" class="nav-link">Data Format</a>
+                                <a href="/dataformat/" class="nav-link">Data Format</a>
                             </li>
                             <li class="navitem">
-                                <a href="../encryption/" class="nav-link">Encryption</a>
+                                <a href="/encryption/" class="nav-link">Encryption</a>
                             </li>
                             <li class="navitem">
-                                <a href="../bootstrapping/" class="nav-link">Bootstrapping</a>
+                                <a href="/bootstrapping/" class="nav-link">Bootstrapping</a>
                             </li>
                             <li class="navitem">
-                                <a href="../monitoring/" class="nav-link">Monitoring</a>
+                                <a href="/monitoring/" class="nav-link">Monitoring</a>
                             </li>
                             <li class="navitem">
-                                <a href="../embedding/" class="nav-link">Embedding</a>
+                                <a href="/embedding/" class="nav-link">Embedding</a>
                             </li>
                             <li class="navitem">
-                                <a href="../schemas/" class="nav-link">Schemas</a>
-                            </li>
-                            <li class="navitem active">
-                                <a href="./" class="nav-link">Compat / Caveats</a>
+                                <a href="/schemas/" class="nav-link">Schemas</a>
                             </li>
                             <li class="navitem">
-                                <a href="../changelog/" class="nav-link">Changelog</a>
+                                <a href="/compat/" class="nav-link">Compat / Caveats</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="/changelog/" class="nav-link">Changelog</a>
                             </li>
                         </ul>
 
@@ -80,16 +80,6 @@
                                 <i class="fa fa-search"></i> Search
                             </a>
                         </li>
-                            <li class="nav-item">
-                                <a rel="prev" href="../schemas/" class="nav-link">
-                                    <i class="fa fa-arrow-left"></i> Previous
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a rel="next" href="../changelog/" class="nav-link">
-                                    Next <i class="fa fa-arrow-right"></i>
-                                </a>
-                            </li>
                     </ul>
                 </div>
             </div>
@@ -97,72 +87,15 @@
 
         <div class="container">
             <div class="row">
-                    <div class="col-md-3"><div class="navbar-light navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
-    <div class="navbar-header">
-        <button type="button" class="navbar-toggler collapsed" data-toggle="collapse" data-target="#toc-collapse" title="Table of Contents">
-            <span class="fa fa-angle-down"></span>
-        </button>
+
+    <div class="row-fluid">
+      <div id="main-content" class="span12">
+        <h1 id="404-page-not-found" style="text-align: center">404</h1>
+        <p style="text-align: center"><strong>Page not found</strong></p>
+      </div>
     </div>
 
-    
-    <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
-        <ul class="nav flex-column">
-            
-            
-            
-            
-        </ul>
-    </div>
-</div></div>
-                    <div class="col-md-9" role="main">
 
-<h3 id="requirements">Requirements:</h3>
-<hr />
-<ul>
-<li>JRE 7 or above</li>
-<li>mysql 5.1, 5.5, 5.6, 5.7, 8</li>
-<li>kafka 0.8.2 or greater</li>
-</ul>
-<h3 id="binlog_row_imageminimal">binlog_row_image=MINIMAL</h3>
-<hr />
-<p>As of 0.16.2, Maxwell supports binlog_row_image=MINIMAL, but it may not be what you want.  It will differ
-from normal Maxwell operation in that:</p>
-<ul>
-<li>INSERT statements will no longer output a column's default value</li>
-<li>UPDATE statements will be incomplete; Maxwell outputs as much of the row as given in the binlogs,
-  but <code>data</code> will only include what is needed to perform the update (generally, id columns and changed columns).
-  The <code>old</code> section may or may not be included, depending on the nature of the update.</li>
-<li>DELETE statements will be incomplete; generally they will only include the primary key.</li>
-</ul>
-<h3 id="master-recovery">Master recovery</h3>
-<hr />
-<p>As of 1.2.0, maxwell includes experimental support for master position recovery.  It works like this:</p>
-<ul>
-<li>maxwell writes heartbeats into the binlogs (via the <code>positions</code> table)</li>
-<li>maxwell reads its own heartbeats, using them as a secondary position guide</li>
-<li>if maxwell boots and can't find its position matching the <code>server_id</code> it's
-  connecting to, it will look for a row in <code>maxwell.positions</code> from a different
-  server_id.</li>
-<li>if it finds that row, it will scan backwards in the binary logs of the new
-  master until it finds that heartbeat.</li>
-</ul>
-<p>Notes:</p>
-<ul>
-<li>master recovery is not compatible with separate schema-store hosts and
-  replication-hosts, due to the heartbeat mechanism.</li>
-<li>this code should be considered alpha-quality.</li>
-<li>on highly active servers, as much as 1 second of data may be duplicated.</li>
-<li>master recovery is not available in GTID-mode.</li>
-</ul>
-<h3 id="mysql-binlog-connector">MySQL binlog connector</h3>
-<hr />
-<p>As of 1.11.0, maxwell uses <a href="https://github.com/shyiko/mysql-binlog-connector-java">shyiko/mysql-binlog-connector-java</a> as its underlying
-replication library (previously it was opt-in via <code>--binlog_connector</code>). This is
-largely compatible with the previous OpenReplicator implementation, but there are some differences:</p>
-<ul>
-<li>TIMESTAMP columns are always treated as UTC, regardless of your timezone. See
-   <a href="https://github.com/zendesk/maxwell/issues/681">issue #681</a> for more details.</li>
-</ul></div>
             </div>
         </div>
 
@@ -171,11 +104,11 @@ largely compatible with the previous OpenReplicator implementation, but there ar
             <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
         </footer>
         <script>
-            var base_url = "..",
+            var base_url = "/",
                 shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
         </script>
-        <script src="../js/base.js" defer></script>
-        <script src="../search/main.js" defer></script>
+        <script src="/js/base.js" defer></script>
+        <script src="/search/main.js" defer></script>
 
         <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
