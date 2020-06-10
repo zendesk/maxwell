@@ -1,6 +1,9 @@
 package com.zendesk.maxwell.schema.columndef;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import java.io.Serializable;
+
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.util.DynamicEnum;
@@ -8,7 +11,7 @@ import com.zendesk.maxwell.util.DynamicEnum;
 @JsonSerialize(using=ColumnDefSerializer.class)
 @JsonDeserialize(using=ColumnDefDeserializer.class)
 
-public abstract class ColumnDef implements Cloneable {
+public abstract class ColumnDef implements Cloneable, Serializable {
 	private static DynamicEnum dynamicEnum = new DynamicEnum(Byte.MAX_VALUE);
 	protected String name;
 	protected byte type;
