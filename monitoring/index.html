@@ -7,114 +7,248 @@
         
         
         
-        <link rel="shortcut icon" href="../img/favicon.ico">
-        <title>Monitoring - Maxwell's Daemon</title>
-        <link href="../css/bootstrap.min.css" rel="stylesheet">
-        <link href="../css/font-awesome.min.css" rel="stylesheet">
-        <link href="../css/base.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+        <link rel="shortcut icon" href="../img/robut.ico">
 
-        <script src="../js/jquery-1.10.2.min.js" defer></script>
-        <script src="../js/bootstrap.min.js" defer></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
-        <script>hljs.initHighlightingOnLoad();</script> 
+        <title>Monitoring - Maxwell's Daemon</title>
+
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/bootstrap-theme.min.css" rel="stylesheet">
+        <link href="../css/font-awesome-4.0.3.css" rel="stylesheet">
+        <link href="../css/prettify-1.0.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.5.2/respond.min.js"></script>
+        <![endif]-->
+        <script src="http://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
     </head>
 
     <body>
-        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
-            <div class="container">
-                <a class="navbar-brand" href="..">Maxwell's Daemon</a>
-                <!-- Expander button -->
-                <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
 
-                <!-- Expanded navigation -->
-                <div id="navbar-collapse" class="navbar-collapse collapse">
-                        <!-- Main navigation -->
-                        <ul class="nav navbar-nav">
-                            <li class="navitem">
-                                <a href=".." class="nav-link">Overview</a>
-                            </li>
-                            <li class="navitem">
-                                <a href="../quickstart/" class="nav-link">Quick Start</a>
-                            </li>
-                            <li class="navitem">
-                                <a href="../config/" class="nav-link">Configuration</a>
-                            </li>
-                            <li class="navitem">
-                                <a href="../producers/" class="nav-link">Producers</a>
-                            </li>
-                            <li class="navitem">
-                                <a href="../filtering/" class="nav-link">Filtering</a>
-                            </li>
-                            <li class="navitem">
-                                <a href="../dataformat/" class="nav-link">Data Format</a>
-                            </li>
-                            <li class="navitem">
-                                <a href="../encryption/" class="nav-link">Encryption</a>
-                            </li>
-                            <li class="navitem">
-                                <a href="../bootstrapping/" class="nav-link">Bootstrapping</a>
-                            </li>
-                            <li class="navitem active">
-                                <a href="./" class="nav-link">Monitoring</a>
-                            </li>
-                            <li class="navitem">
-                                <a href="../embedding/" class="nav-link">Embedding</a>
-                            </li>
-                            <li class="navitem">
-                                <a href="../schemas/" class="nav-link">Schemas</a>
-                            </li>
-                            <li class="navitem">
-                                <a href="../compat/" class="nav-link">Compat / Caveats</a>
-                            </li>
-                            <li class="navitem">
-                                <a href="../changelog/" class="nav-link">Changelog</a>
-                            </li>
-                        </ul>
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
 
-                    <ul class="nav navbar-nav ml-auto">
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" data-toggle="modal" data-target="#mkdocs_search_modal">
-                                <i class="fa fa-search"></i> Search
-                            </a>
-                        </li>
-                            <li class="nav-item">
-                                <a rel="prev" href="../bootstrapping/" class="nav-link">
-                                    <i class="fa fa-arrow-left"></i> Previous
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a rel="next" href="../embedding/" class="nav-link">
-                                    Next <i class="fa fa-arrow-right"></i>
-                                </a>
-                            </li>
-                    </ul>
-                </div>
-            </div>
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+            <!-- Main title -->
+            <a class="navbar-brand" href="..">Maxwell's Daemon</a>
         </div>
 
-        <div class="container">
-            <div class="row">
-                    <div class="col-md-3"><div class="navbar-light navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
-    <div class="navbar-header">
-        <button type="button" class="navbar-toggler collapsed" data-toggle="collapse" data-target="#toc-collapse" title="Table of Contents">
-            <span class="fa fa-angle-down"></span>
-        </button>
-    </div>
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+            
+            
+                <li >
+                    <a href="..">Overview</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../quickstart/">Quick Start</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../config/">Configuration</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../producers/">Producers</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../filtering/">Filtering</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../dataformat/">Data Format</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../encryption/">Encryption</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../bootstrapping/">Bootstrapping</a>
+                </li>
+            
+            
+            
+                <li class="active">
+                    <a href="./">Monitoring</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../embedding/">Embedding</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../schemas/">Schemas</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../compat/">Compat / Caveats</a>
+                </li>
+            
+            
+            
+                <li >
+                    <a href="../changelog/">Changelog</a>
+                </li>
+            
+            
+            </ul>
 
-    
-    <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
-        <ul class="nav flex-column">
-            
-            
-            
-            
-        </ul>
+            <!-- Search, Navigation and Repo links -->
+            <ul class="nav navbar-nav navbar-right">
+                <li >
+                    <a rel="next" href="../bootstrapping/">
+                        <i class="fa fa-arrow-left"></i> Previous
+                    </a>
+                </li>
+                <li >
+                    <a rel="prev" href="../embedding/">
+                        Next <i class="fa fa-arrow-right"></i>
+                    </a>
+                </li>
+                
+            </ul>
+            <div class="navbar-image-container"><img id="navbar-image" src="/img/maxwell_equals_2.png"></div>
+        </div>
     </div>
+</div>
+
+        <a href="https://github.com/zendesk/maxwell"><img id="github-banner" style="position: absolute; top: 0; right: 0; border: 0; z-index: 1031;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
+        <div class="container">
+            <div class="col-md-2">&nbsp;<div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        
+          <li >
+              <a href="..">Overview</a>
+              
+          </li>
+        
+          <li >
+              <a href="../quickstart/">Quick Start</a>
+              
+          </li>
+        
+          <li >
+              <a href="../config/">Configuration</a>
+              
+          </li>
+        
+          <li >
+              <a href="../producers/">Producers</a>
+              
+          </li>
+        
+          <li >
+              <a href="../filtering/">Filtering</a>
+              
+          </li>
+        
+          <li >
+              <a href="../dataformat/">Data Format</a>
+              
+          </li>
+        
+          <li >
+              <a href="../encryption/">Encryption</a>
+              
+          </li>
+        
+          <li >
+              <a href="../bootstrapping/">Bootstrapping</a>
+              
+          </li>
+        
+          <li class="active">
+              <a href="./">Monitoring</a>
+              
+                  <ul class="nav">
+                  
+                      <li class="toctree-l3"><a href="#monitoring">Monitoring</a>
+                      <ul class="toctree-subnav">
+                      
+                      </li>
+                      </uL>
+                  
+                      <li class="toctree-l3"><a href="#metrics">Metrics</a>
+                      <ul class="toctree-subnav">
+                      
+                      </li>
+                      </uL>
+                  
+                      <li class="toctree-l3"><a href="#http-endpoints">HTTP Endpoints</a>
+                      <ul class="toctree-subnav">
+                      
+                      </li>
+                      </uL>
+                  
+                      <li class="toctree-l3"><a href="#jmx-configuration">JMX Configuration</a>
+                      <ul class="toctree-subnav">
+                      
+                      </li>
+                      </uL>
+                  
+                  </ul>
+              
+          </li>
+        
+          <li >
+              <a href="../embedding/">Embedding</a>
+              
+          </li>
+        
+          <li >
+              <a href="../schemas/">Schemas</a>
+              
+          </li>
+        
+          <li >
+              <a href="../compat/">Compat / Caveats</a>
+              
+          </li>
+        
+          <li >
+              <a href="../changelog/">Changelog</a>
+              
+          </li>
+        
+    </ul>
 </div></div>
-                    <div class="col-md-9" role="main">
+            <div class="col-md-10" role="main">
 
 <h3 id="monitoring">Monitoring</h3>
 <hr />
@@ -236,83 +370,27 @@ To make use of this set <code>JAVA_OPTS</code> before starting Maxwell.</p>
 -Dcom.sun.management.jmxremote.ssl=false \
 -Djava.rmi.server.hostname=SERVER_IP_ADDRESS&quot;
 </code></pre></div>
-            </div>
         </div>
 
-        <footer class="col-md-12">
-            <hr>
-            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
-        </footer>
-        <script>
-            var base_url = "..",
-                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
-        </script>
-        <script src="../js/base.js" defer></script>
-        <script src="../search/main.js" defer></script>
+        
 
-        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title" id="searchModalLabel">Search</h4>
-                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-            </div>
-            <div class="modal-body">
-                <p>
-                    From here you can search these documents. Enter
-                    your search terms below.
-                </p>
-                <form>
-                    <div class="form-group">
-                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
-                    </div>
-                </form>
-                <div id="mkdocs-search-results"></div>
-            </div>
-            <div class="modal-footer">
-            </div>
-        </div>
-    </div>
-</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
-                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-            </div>
-            <div class="modal-body">
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th style="width: 20%;">Keys</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td class="help shortcut"><kbd>?</kbd></td>
-                    <td>Open this help</td>
-                  </tr>
-                  <tr>
-                    <td class="next shortcut"><kbd>n</kbd></td>
-                    <td>Next page</td>
-                  </tr>
-                  <tr>
-                    <td class="prev shortcut"><kbd>p</kbd></td>
-                    <td>Previous page</td>
-                  </tr>
-                  <tr>
-                    <td class="search shortcut"><kbd>s</kbd></td>
-                    <td>Search</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <div class="modal-footer">
-            </div>
-        </div>
-    </div>
-</div>
-
+        <script src="../js/bootstrap-3.3.7.min.js"></script>
+        <script src="../js/prettify-1.0.min.js"></script>
+        <script src="../js/base.js"></script>
     </body>
+    <script>
+        jQuery(document).ready(function () {
+            var shiftWindow = function() {
+                scrollBy(0, -50)
+            };
+
+            //if (location.hash) shiftWindow();
+            //window.addEventListener("hashchange", shiftWindow);
+
+            jQuery("table").addClass("table table-condensed table-bordered table-hover");
+            jQuery("#maxwell-header").append(
+                jQuery("<img alt='The Daemon, maybe' src='/img/cyberiad_1.jpg' id='maxwell-daemon-image'>")
+            );
+        });
+    </script>
 </html>

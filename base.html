@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        {% if page_description %}<meta name="description" content="{{ page_description }}">{% endif %}
+        {% if site_author %}<meta name="author" content="{{ site_author }}">{% endif %}
+        {% if canonical_url %}<link rel="canonical" href="{{ canonical_url }}">{% endif %}
+        {% if favicon %}<link rel="shortcut icon" href="{{ favicon }}">
+        {% else %}<link rel="shortcut icon" href="{{ base_url }}/img/robut.ico">{% endif %}
+
+        <title>{% if page_title %}{{ page_title }} - {% endif %}{{ site_name }}</title>
+
+        <link href="{{ base_url }}/css/bootstrap.min.css" rel="stylesheet">
+        <link href="{{ base_url }}/css/bootstrap-theme.min.css" rel="stylesheet">
+        <link href="{{ base_url }}/css/font-awesome-4.0.3.css" rel="stylesheet">
+        <link href="{{ base_url }}/css/prettify-1.0.css" rel="stylesheet">
+        <link href="{{ base_url }}/css/base.css" rel="stylesheet">
+        {%- for path in extra_css %}
+        <link href="{{ path }}" rel="stylesheet">
+        {%- endfor %}
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.5.2/respond.min.js"></script>
+        <![endif]-->
+        <script src="http://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+    </head>
+
+    <body>
+
+        {% include "nav.html" %}
+
+        <a href="https://github.com/zendesk/maxwell"><img id="github-banner" style="position: absolute; top: 0; right: 0; border: 0; z-index: 1031;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
+        <div class="container">
+            <div class="col-md-2">&nbsp;{% include "toc.html" %}</div>
+            <div class="col-md-10" role="main">{% include "content.html" %}</div>
+        </div>
+
+        {% if include_search %}{% include "search.html" %}{% endif %}
+
+        <script src="{{ base_url }}/js/bootstrap-3.3.7.min.js"></script>
+        <script src="{{ base_url }}/js/prettify-1.0.min.js"></script>
+        <script src="{{ base_url }}/js/base.js"></script>
+        {%- for path in extra_javascript %}
+        <script src="{{ path }}"></script>
+        {%- endfor %}
+    </body>
+    <script>
+        jQuery(document).ready(function () {
+            var shiftWindow = function() {
+                scrollBy(0, -50)
+            };
+
+            //if (location.hash) shiftWindow();
+            //window.addEventListener("hashchange", shiftWindow);
+
+            jQuery("table").addClass("table table-condensed table-bordered table-hover");
+            jQuery("#maxwell-header").append(
+                jQuery("<img alt='The Daemon, maybe' src='/img/cyberiad_1.jpg' id='maxwell-daemon-image'>")
+            );
+        });
+    </script>
+</html>
