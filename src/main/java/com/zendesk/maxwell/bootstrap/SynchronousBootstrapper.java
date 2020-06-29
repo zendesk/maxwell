@@ -12,6 +12,7 @@ import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
+import com.zendesk.maxwell.schema.columndef.ColumnDefCastException;
 import com.zendesk.maxwell.schema.columndef.DateColumnDef;
 import com.zendesk.maxwell.schema.columndef.TimeColumnDef;
 import com.zendesk.maxwell.scripting.Scripting;
@@ -225,7 +226,7 @@ public class SynchronousBootstrapper {
 			throw(e);
 		}
 	}
-	private void setRowValues(RowMap row, ResultSet resultSet, Table table) throws SQLException {
+	private void setRowValues(RowMap row, ResultSet resultSet, Table table) throws SQLException, ColumnDefCastException {
 		Iterator<ColumnDef> columnDefinitions = table.getColumnList().iterator();
 		int columnIndex = 1;
 		while ( columnDefinitions.hasNext() ) {

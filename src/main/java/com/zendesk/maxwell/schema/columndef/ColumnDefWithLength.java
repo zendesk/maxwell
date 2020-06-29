@@ -28,12 +28,12 @@ public abstract class ColumnDefWithLength extends ColumnDef {
 	}
 
 	@Override
-	public String toSQL(Object value) {
+	public String toSQL(Object value) throws ColumnDefCastException {
 		return "'" + formatValue(value, new MaxwellOutputConfig()) + "'";
 	}
 
 	@Override
-	public Object asJSON(Object value, MaxwellOutputConfig config) {
+	public Object asJSON(Object value, MaxwellOutputConfig config) throws ColumnDefCastException {
 		return formatValue(value, config);
 	}
 
@@ -43,7 +43,7 @@ public abstract class ColumnDefWithLength extends ColumnDef {
 		this.columnLength = length;
 	}
 
-	protected abstract String formatValue(Object value, MaxwellOutputConfig config);
+	protected abstract String formatValue(Object value, MaxwellOutputConfig config) throws ColumnDefCastException;
 
 	protected static String appendFractionalSeconds(String value, int nanos, Long columnLength) {
 		if ( columnLength == 0L )
