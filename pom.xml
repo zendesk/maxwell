@@ -309,6 +309,17 @@
       <artifactId>simpleclient_servlet</artifactId>
       <version>0.5.0</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.curator</groupId>
+      <artifactId>curator-recipes</artifactId>
+      <version>4.0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.curator</groupId>
+      <artifactId>curator-client</artifactId>
+      <version>4.0.1</version>
+    </dependency>
+
   </dependencies>
 
   <build>
