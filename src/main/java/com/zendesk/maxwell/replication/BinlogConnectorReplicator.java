@@ -476,19 +476,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 						try {
 							rows = event.jsonMaps(table, getLastHeartbeatRead(), currentQuery);
 						} catch ( ColumnDefCastException e ) {
-							String castInfo = String.format(
-									"Unable to cast %s (%s) into column %s.%s.%s (type '%s')",
-									e.givenValue.toString(),
-									e.givenValue.getClass().getName(),
-									table.getDatabase(),
-									table.getName(),
-									e.def.getName(),
-									e.def.getType()
-							);
-							LOGGER.error(castInfo);
-
-							e.database = table.getDatabase();
-							e.table = table.getName();
+							logColumnDefCastException(table, e);
 
 							throw(e);
 						}
@@ -538,6 +526,22 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					break;
 			}
 		}
+	}
+
+	private void logColumnDefCastException(Table table, ColumnDefCastException e) {
+		String castInfo = String.format(
+				"Unable to cast %s (%s) into column %s.%s.%s (type '%s')",
+				e.givenValue.toString(),
+				e.givenValue.getClass().getName(),
+				table.getDatabase(),
+				table.getName(),
+				e.def.getName(),
+				e.def.getType()
+		);
+		LOGGER.error(castInfo);
+
+		e.database = table.getDatabase();
+		e.table = table.getName();
 	}
 
 	/**
