@@ -38,6 +38,12 @@ public class MaxwellConfig extends AbstractConfig {
 	public MaxwellMysqlConfig maxwellMysql;
 	public Filter filter;
 	public Boolean gtidMode;
+	public Boolean haMode;
+	public String zookeeperServer;
+	public int sessionTimeoutMs;
+	public int connectionTimeoutMs;
+	public int maxRetries;
+	public int baseSleepTimeMs;
 
 	public String databaseName;
 
@@ -157,6 +163,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.schemaMysql = new MaxwellMysqlConfig();
 		this.masterRecovery = false;
 		this.gtidMode = false;
+		this.haMode = false;
 		this.bufferedProducerSize = 200;
 		this.metricRegistry = new MetricRegistry();
 		this.healthCheckRegistry = new HealthCheckRegistry();
@@ -175,6 +182,14 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "env_config_prefix", "prefix of env var based config, case insensitive" ).withRequiredArg();
 		parser.accepts( "log_level", "log level, one of DEBUG|INFO|WARN|ERROR" ).withRequiredArg();
 		parser.accepts( "daemon", "run maxwell in the background" ).withOptionalArg();
+		parser.accepts( "ha_mode", "run Maxwell in high availability mode" ).withOptionalArg();
+
+		parser.accepts( "zookeeper_server", "run Maxwell in high availability mode" ).withOptionalArg();
+		parser.accepts( "session_time_out_ms", "session timeout" ).withOptionalArg();
+		parser.accepts( "connection_time_out_ms", "connection timeout" ).withOptionalArg();
+		parser.accepts( "max_retries", "maximum number of retries" ).withOptionalArg();
+		parser.accepts( "base_sleep_time_ms", "The initial sleep time used to calculate the sleep time for each subsequent retry" ).withOptionalArg();
+
 
 		parser.separator();
 
@@ -408,6 +423,19 @@ public class MaxwellConfig extends AbstractConfig {
 		this.replicationMysql   = parseMysqlConfig("replication_", options, properties);
 		this.schemaMysql        = parseMysqlConfig("schema_", options, properties);
 		this.gtidMode           = fetchBooleanOption("gtid_mode", options, properties, System.getenv(GTID_MODE_ENV) != null);
+
+		this.haMode                      = fetchBooleanOption("ha_mode", options, properties, false);
+		this.zookeeperServer             = fetchOption("zookeeper_server", options, properties, null);
+		this.sessionTimeoutMs            = Integer.parseInt(fetchOption("session_time_out_ms", options, properties, "6000"));
+		this.connectionTimeoutMs         = Integer.parseInt(fetchOption("connection_time_out_ms", options, properties, "6000"));
+		this.maxRetries                  = Integer.parseInt(fetchOption("max_retries", options, properties, "3"));
+		this.baseSleepTimeMs             = Integer.parseInt(fetchOption("base_sleep_time_ms", options, properties, "1000"));
+
+		if(haMode){
+			if(null == zookeeperServer){
+				usageForOptions("null is not allowed in high availability mode: " + zookeeperServer, "--zookeeper_server");
+			}
+		}
 
 		this.databaseName       = fetchOption("schema_database", options, properties, "maxwell");
 		this.maxwellMysql.database = this.databaseName;
