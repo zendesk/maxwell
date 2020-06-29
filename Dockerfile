@@ -1,5 +1,5 @@
 FROM maven:3.6-jdk-11
-ENV MAXWELL_VERSION=1.26.4 KAFKA_VERSION=1.0.0
+ENV MAXWELL_VERSION=1.26.5 KAFKA_VERSION=1.0.0
 
 RUN apt-get update \
     && apt-get -y upgrade \
