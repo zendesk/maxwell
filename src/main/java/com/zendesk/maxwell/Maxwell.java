@@ -292,7 +292,6 @@ public class Maxwell implements Runnable {
 
 			}else {
 				try {
-					System.out.println("NOHAmode"+config.haMode);
 					maxwell.start();
 				} catch (SQLException e) {
 					// catch SQLException explicitly because we likely don't care about the stacktrace
