@@ -123,7 +123,7 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>amazon-kinesis-producer</artifactId>
-      <version>0.12.8</version>
+      <version>0.14.0</version>
     </dependency>
     <dependency>
         <groupId>javax.xml.bind</groupId>
