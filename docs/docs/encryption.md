@@ -1,13 +1,13 @@
-### Using encryption
+# Using encryption
 ***
 When encryption is enabled, maxwell will encrypt messages using a AES/CBC/PKCS5PADDING cipher with your own encryption key.
 Values are first encrypted and then base64 encoded, an initialization vector is randomly generated and put into the final message
 
-### Decryption
+# Decryption
 ***
 To decrypt your data you must first decode the string from base64 and then apply the cipher to decrypt. A sample implementation is provided in RowEncrypt.decrypt().
 
-### Examples
+# Examples
 ***
 
 insert into minimal set account_id =1, text_field='hello'

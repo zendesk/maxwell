@@ -1,10 +1,14 @@
-### Requirements:
+# Compability
+
+## Requirements
 ***
 - JRE 7 or above
 - mysql 5.1, 5.5, 5.6, 5.7, 8
 - kafka 0.8.2 or greater
 
-### binlog_row_image=MINIMAL
+## Caveats / Notes
+
+###binlog_row_image=MINIMAL
 ***
 As of 0.16.2, Maxwell supports binlog_row_image=MINIMAL, but it may not be what you want.  It will differ
 from normal Maxwell operation in that:

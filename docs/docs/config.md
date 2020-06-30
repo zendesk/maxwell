@@ -1,18 +1,22 @@
-### Reference
+# Reference
 ***
 
 At the minimum, you will need to specify 'host', 'user', 'password', 'producer'.
 The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requires 'kinesis_stream'.
 
+##general
+
 option                         | argument                            | description                                         | default
 -------------------------------|-------------------------------------| --------------------------------------------------- | -------
-**general options**
 config                         | STRING                              | location of `config.properties` file                | $PWD/config.properties
-log_level                      | [debug &#124; info &#124; warn &#124; error]             | log level                                           | info
+log_level                      | [LOG_LEVEL](#loglevel)              | log level                                           | info
 daemon                         |                                     | running maxwell as a daemon                         |
 env_config_prefix              | STRING                              | env vars matching prefix are treated as config values |
-&nbsp;
-**mysql options**
+
+##mysql
+
+option                         | argument                            | description                                         | default
+-------------------------------|-------------------------------------| --------------------------------------------------- | -------
 host                           | STRING               | mysql host                                          | localhost
 user                           | STRING               | mysql username                                      |
 password                       | STRING               | mysql password                                      | (no password)
@@ -39,9 +43,11 @@ schema_port                    | INT                  | port on schema-capture s
 schema_user                    | STRING               | user on schema-capture server                       |
 schema_ssl                     | [SSL_OPT](#sslopt)   | SSL behavior for schema-capture server              | DISABLED
 schema_jdbc_options            | STRING               | mysql jdbc connection options for schema server     | [DEFAULT_JDBC_OPTS](#jdbcopts)
-
 &nbsp;
-**producer options**
+
+# producer options
+option                         | argument                            | description                                         | default
+-------------------------------|-------------------------------------| --------------------------------------------------- | -------
 producer                       | [PRODUCER_TYPE](#producer_type)     | type of producer to use                             | stdout
 custom_producer.factory        | CLASS_NAME                          | fully qualified custom producer factory class, see [example](https://github.com/zendesk/maxwell/blob/master/src/example/com/zendesk/maxwell/example/producerfactory/CustomProducerFactory.java) |
 producer_ack_timeout           | [PRODUCER_ACK_TIMEOUT](#ack_timeout) | time in milliseconds before async producers consider a message lost |
@@ -49,12 +55,19 @@ producer_partition_by          | [PARTITION_BY](#partition_by)       | input to 
 producer_partition_columns     | STRING                              | if partitioning by 'column', a comma separated list of columns |
 producer_partition_by_fallback | [PARTITION_BY_FALLBACK](#partition_by_fallback) | required when producer_partition_by=column.  Used when the column is missing |
 ignore_producer_error          | BOOLEAN              | When false, Maxwell will terminate on kafka/kinesis/pubsub publish errors (aside from RecordTooLargeException). When true, errors are only logged. See also dead_letter_topic | true
-&nbsp;
-**"file" producer options**
+
+## file producer
+
+option                         | argument                            | description                                         | default
+-------------------------------|-------------------------------------| --------------------------------------------------- | -------
 output_file                    | STRING                              | output file for `file` producer                     |
 javascript                     | STRING                              | file containing javascript filters |
-&nbsp;
-**"kafka" producer options **
+
+
+
+## kafka producer
+option                         | argument                            | description                                         | default
+-------------------------------|-------------------------------------| --------------------------------------------------- | -------
 kafka.bootstrap.servers        | STRING                              | kafka brokers, given as `HOST:PORT[,HOST:PORT]`     |
 kafka_topic                    | STRING                              | kafka topic to write to.                            | maxwell
 dead_letter_topic              | STRING                              | the topic to write a "skeleton row" (a row where `data` includes only primary key columns) when there's an error publishing a row. When `ignore_producer_error` is `false`, only RecordTooLargeException causes a fallback record to be published, since other errors cause termination. Currently only supported in Kafka publisher |
@@ -62,14 +75,23 @@ kafka_version                  | [KAFKA_VERSION](#kafka_version)     | run maxwe
 kafka_partition_hash           | [ default &#124; murmur3 ]          | hash function to use when choosing kafka partition   | default
 kafka_key_format               | [ array &#124; hash ]               | how maxwell outputs kafka keys, either a hash or an array of hashes | hash
 ddl_kafka_topic                | STRING                              | if output_ddl is true, kafka topic to write DDL changes to | *kafka_topic*
-&nbsp;
-**"kinesis" producer options **
+
+
+## kinesis producer
+option                         | argument                            | description                                         | default
+-------------------------------|-------------------------------------| --------------------------------------------------- | -------
 kinesis_stream                 | STRING                              | kinesis stream name |
-&nbsp;
-**"sqs" producer options **
+
+
+## sqs producer
+option                         | argument                            | description                                         | default
+-------------------------------|-------------------------------------| --------------------------------------------------- | -------
 sqs_queue_uri                  | STRING                              | SQS Queue URI |
-&nbsp;
-**"pubsub" producer options **
+
+
+## pubsub producer
+option                         | argument                            | description                                         | default
+-------------------------------|-------------------------------------| --------------------------------------------------- | -------
 pubsub_topic                   | STRING     | Google Cloud pub-sub topic |
 pubsub_platform_id             | STRING     | Google Cloud platform id associated with topic |
 ddl_pubsub_topic               | STRING     | Google Cloud pub-sub topic to send DDL events to |
@@ -83,8 +105,10 @@ pubsub_initial_rpc_timeout     | LONG       | Controls the timeout in seconds fo
 pubsub_rpc_timeout_multiplier  | FLOAT      | Controls the change in RPC timeout | 1.0
 pubsub_max_rpc_timeout         | LONG       | Puts a limit on the value in seconds of the RPC timeout | 600
 pubsub_total_timeout           | LONG       | Puts a limit on the value in seconds of the retry delay, so that the RetryDelayMultiplier can't increase the retry delay higher than this amount | 600
-&nbsp;
-**"rabbitmq" producer options **
+
+## rabbitmq producer
+option                         | argument                            | description                                         | default
+-------------------------------|-------------------------------------| --------------------------------------------------- | -------
 rabbitmq_user                  | STRING     | Username of Rabbitmq connection | guest
 rabbitmq_pass                  | STRING     | Password of Rabbitmq connection | guest
 rabbitmq_host                  | STRING     | Host of Rabbitmq machine
@@ -97,8 +121,10 @@ rabbitmq_exchange_autodelete   | BOOLEAN    | If set, the exchange is deleted wh
 rabbitmq_routing_key_template  | STRING     | A string template for the routing key, `%db%` and `%table%` will be substituted. | `%db%.%table%`.
 rabbitmq_message_persistent    | BOOLEAN    | Eanble message persistence. | false
 rabbitmq_declare_exchange      | BOOLEAN    | Should declare the exchange for rabbitmq publisher | true
-&nbsp;
-**"redis" producer options **
+
+## redis producer
+option                         | argument                            | description                                         | default
+-------------------------------|-------------------------------------| --------------------------------------------------- | -------
 redis_host                     | STRING                   | Host of Redis server | localhost
 redis_port                     | INT                      | Port of Redis server | 6379
 redis_auth                     | STRING                   | Authentication key for a password-protected Redis server
@@ -106,8 +132,11 @@ redis_database                 | INT                      | Database of Redis se
 redis_type                     | [ pubsub &#124; xadd &#124; lpush &#124; rpush ]  | Selects either Redis Pub/Sub, Stream, or List. | pubsub
 redis_key                      | STRING                   | Redis channel/key for Pub/Sub, XADD or LPUSH/RPUSH | maxwell
 redis_stream_json_key          | STRING                   | Redis XADD Stream Message Field Name | message
-&nbsp;
-**formatting**
+
+
+# formatting
+option                         | argument                            | description                                         | default
+-------------------------------|-------------------------------------| --------------------------------------------------- | -------
 output_binlog_position         | BOOLEAN  | records include binlog position     | false
 output_gtid_position           | BOOLEAN  | records include gtid position, if available | false
 output_commit_info             | BOOLEAN  | records include commit and xid      | true
@@ -121,16 +150,22 @@ output_primary_keys            | BOOLEAN  | DML records include list of values t
 output_primary_key_columns     | BOOLEAN  | DML records include list of columns that make up a row's primary key | false
 output_ddl                     | BOOLEAN  | output DDL (table-alter, table-create, etc) events  | false
 output_null_zerodates          | BOOLEAN  | should we transform '0000-00-00' to null? | false
-&nbsp;
 output_naming_strategy         | STRING   | naming strategy of field name of JSON. can be `underscore_to_camelcase` | none
-**filtering**
+
+# filtering
+option                         | argument                            | description                                         | default
+-------------------------------|-------------------------------------| --------------------------------------------------- | -------
 filter                         | STRING            | filter rules, eg `exclude: db.*, include: *.tbl, include: *./bar(bar)?/, exclude: foo.bar.col=val` |
-&nbsp;
-**encryption**
+
+# encryption
+option                         | argument                            | description                                         | default
+-------------------------------|-------------------------------------| --------------------------------------------------- | -------
 encrypt                        | [ none &#124; data &#124; all ]     | encrypt mode: none = no encryption. "data": encrypt the `data` field only. `all`: encrypt entire maxwell message | none
 secret_key                     | STRING                              | specify the encryption key to be used               | null
-&nbsp;
-**monitoring / metrics**
+
+# monitoring / metrics
+option                         | argument                            | description                                         | default
+-------------------------------|-------------------------------------| --------------------------------------------------- | -------
 metrics_prefix           | STRING | the prefix maxwell will apply to all metrics | MaxwellMetrics
 metrics_type             | [slf4j &#124; jmx &#124; http &#124; datadog]      | how maxwell metrics will be reported |
 metrics_jvm              | BOOLEAN                             | enable jvm metrics: memory usage, GC stats, etc.| false
@@ -148,13 +183,19 @@ metrics_datadog_apikey   | STRING | the datadog api key to use when metrics_data
 metrics_datadog_site     | STRING | the site to publish metrics to when metrics_datadog_type = `http` | us
 metrics_datadog_host     | STRING | the host to publish metrics to when metrics_datadog_type = `udp` | localhost
 metrics_datadog_port     | INT | the port to publish metrics to when metrics_datadog_type = `udp` | 8125
-&nbsp;
-**misc**
+
+# misc
+option                         | argument                            | description                                         | default
+-------------------------------|-------------------------------------| --------------------------------------------------- | -------
 bootstrapper                   | [async &#124; sync &#124; none]                   | bootstrapper type.  See bootstrapping docs.        | async
 init_position                  | FILE:POSITION[:HEARTBEAT]           | ignore the information in maxwell.positions and start at the given binlog position. Not available in config.properties. |
 replay                         | BOOLEAN                             | enable maxwell's read-only "replay" mode: don't store a binlog position or schema changes.  Not available in config.properties. |
 buffer_memory_usage            | FLOAT                               | Determines how much memory the Maxwell event buffer will use from the jvm max memory. Size of the buffer is: buffer_memory_usage * -Xmx" | 0.25
 
+
+<p id="loglevel" class="jumptarget">
+LOG_LEVEL: [ debug &#124; info &#124; warn &#124; error ]
+</p>
 <p id="sslopt" class="jumptarget">
 SSL_OPTION: [ DISABLED &#124; PREFERRED &#124; REQUIRED &#124; VERIFY_CA &#124; VERIFY_IDENTITY ]
 </p>
@@ -180,7 +221,7 @@ milliseconds, maxwell will consider an outstanding message lost and fail it.
 </p>
 
 
-### Configuration methods
+# Configuration methods
 ***
 
 Maxwell is configurable via the command-line, a properties file, or the environment.
@@ -190,14 +231,14 @@ The configuration priority is:
 command line options > scoped env vars > properties file > default values
 ```
 
-#### config.properties
+## config.properties
 
 Maxwell can be configured via a java properties file, specified via `--config`
 or named "config.properties" in the current working directory.
 Any command line options (except `init_position`, `replay`, `kafka_version` and
 `daemon`) may be specified as "key=value" pairs.
 
-#### via environment
+## via environment
 If `env_config_prefix` given via command line or in `config.properties`, Maxwell
 will configure itself with all environment variables that match the prefix. The
 environment variable names are case insensitive.  For example, if maxwell is
