@@ -7,303 +7,219 @@
         
         
         
-        <link rel="shortcut icon" href="../img/robut.ico">
-
+        <link rel="shortcut icon" href="../img/favicon.ico">
         <title>Producers - Maxwell's Daemon</title>
-
         <link href="../css/bootstrap.min.css" rel="stylesheet">
-        <link href="../css/bootstrap-theme.min.css" rel="stylesheet">
-        <link href="../css/font-awesome-4.0.3.css" rel="stylesheet">
-        <link href="../css/prettify-1.0.css" rel="stylesheet">
+        <link href="../css/font-awesome.min.css" rel="stylesheet">
         <link href="../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+        <link href="../maxwell.css" rel="stylesheet">
 
-        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-        <!--[if lt IE 9]>
-            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-            <script src="https://oss.maxcdn.com/libs/respond.js/1.5.2/respond.min.js"></script>
-        <![endif]-->
-        <script src="http://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+        <script src="../js/jquery-1.10.2.min.js" defer></script>
+        <script src="../js/bootstrap.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
     </head>
 
     <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="..">Maxwell's Daemon</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
 
-        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
-    <div class="container">
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="navitem">
+                                <a href="../quickstart/" class="nav-link">Quick Start</a>
+                            </li>
+                            <li class="dropdown active">
+                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Configuration <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="./" class="dropdown-item active">Producers</a>
+</li>
+                                    
+<li>
+    <a href="../filtering/" class="dropdown-item">Filtering</a>
+</li>
+                                    
+<li>
+    <a href="../bootstrapping/" class="dropdown-item">Bootstrapping</a>
+</li>
+                                    
+<li>
+    <a href="../dataformat/" class="dropdown-item">Data Format</a>
+</li>
+                                    
+<li>
+    <a href="../encryption/" class="dropdown-item">Encryption</a>
+</li>
+                                    
+<li>
+    <a href="../monitoring/" class="dropdown-item">Monitoring</a>
+</li>
+                                    
+<li>
+    <a href="../embedding/" class="dropdown-item">Embedding</a>
+</li>
+                                    
+<li>
+    <a href="../schemas/" class="dropdown-item">Internals</a>
+</li>
+                                    
+<li>
+    <a href="../compat/" class="dropdown-item">Compatibility</a>
+</li>
+                                </ul>
+                            </li>
+                            <li class="navitem">
+                                <a href="../config/" class="nav-link">Reference</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../changelog/" class="nav-link">Changelog</a>
+                            </li>
+                        </ul>
 
-        <!-- Collapsed navigation -->
-        <div class="navbar-header">
-            <!-- Expander button -->
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-
-            <!-- Main title -->
-            <a class="navbar-brand" href="..">Maxwell's Daemon</a>
+                    <ul class="nav navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li class="nav-item">
+                                <a rel="prev" href="../quickstart/" class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" href="../filtering/" class="nav-link">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
         </div>
 
-        <!-- Expanded navigation -->
-        <div class="navbar-collapse collapse">
-            <!-- Main navigation -->
-            <ul class="nav navbar-nav">
-            
-            
-                <li >
-                    <a href="..">Overview</a>
-                </li>
-            
-            
-            
-                <li >
-                    <a href="../quickstart/">Quick Start</a>
-                </li>
-            
-            
-            
-                <li >
-                    <a href="../config/">Configuration</a>
-                </li>
-            
-            
-            
-                <li class="active">
-                    <a href="./">Producers</a>
-                </li>
-            
-            
-            
-                <li >
-                    <a href="../filtering/">Filtering</a>
-                </li>
-            
-            
-            
-                <li >
-                    <a href="../dataformat/">Data Format</a>
-                </li>
-            
-            
-            
-                <li >
-                    <a href="../encryption/">Encryption</a>
-                </li>
-            
-            
-            
-                <li >
-                    <a href="../bootstrapping/">Bootstrapping</a>
-                </li>
-            
-            
-            
-                <li >
-                    <a href="../monitoring/">Monitoring</a>
-                </li>
-            
-            
-            
-                <li >
-                    <a href="../embedding/">Embedding</a>
-                </li>
-            
-            
-            
-                <li >
-                    <a href="../schemas/">Schemas</a>
-                </li>
-            
-            
-            
-                <li >
-                    <a href="../compat/">Compat / Caveats</a>
-                </li>
-            
-            
-            
-                <li >
-                    <a href="../changelog/">Changelog</a>
-                </li>
-            
-            
-            </ul>
+        <div class="container">
+            <div class="row">
+<div class="col-md-3">
+<div class="navbar-light navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-toggle="collapse" data-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
 
-            <!-- Search, Navigation and Repo links -->
-            <ul class="nav navbar-nav navbar-right">
-                <li >
-                    <a rel="next" href="../config/">
-                        <i class="fa fa-arrow-left"></i> Previous
-                    </a>
-                </li>
-                <li >
-                    <a rel="prev" href="../filtering/">
-                        Next <i class="fa fa-arrow-right"></i>
-                    </a>
-                </li>
-                
-            </ul>
-            <div class="navbar-image-container"><img id="navbar-image" src="/img/maxwell_equals_2.png"></div>
-        </div>
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-level="1"><a href="#kafka" class="nav-link">Kafka</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#topic" class="nav-link">Topic</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#client-version" class="nav-link">Client version</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#passing-options-to-kafka" class="nav-link">Passing options to kafka</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#highest-throughput" class="nav-link">Highest throughput</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#most-reliable" class="nav-link">Most reliable</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#keys" class="nav-link">Keys</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+            
+            <li class="nav-item" data-level="1"><a href="#partitioning" class="nav-link">Partitioning</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#kafka-partitioning" class="nav-link">Kafka partitioning</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+            
+            <li class="nav-item" data-level="1"><a href="#kinesis" class="nav-link">Kinesis</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#aws-credentials" class="nav-link">AWS Credentials</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#options" class="nav-link">Options</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+            
+            <li class="nav-item" data-level="1"><a href="#sqs" class="nav-link">SQS</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#aws-credentials_1" class="nav-link">AWS Credentials</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#options_1" class="nav-link">Options</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+            
+            <li class="nav-item" data-level="1"><a href="#google-cloud-pubsub" class="nav-link">Google Cloud Pub/Sub</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            
+            <li class="nav-item" data-level="1"><a href="#rabbitmq" class="nav-link">RabbitMQ</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            
+            <li class="nav-item" data-level="1"><a href="#redis" class="nav-link">Redis</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            
+            <li class="nav-item" data-level="1"><a href="#custom-producer" class="nav-link">Custom Producer</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+        </ul>
     </div>
 </div>
+</div>
+<div class="col-md-9" role="main">
+    <div id="Producers">
+        
 
-        <a href="https://github.com/zendesk/maxwell"><img id="github-banner" style="position: absolute; top: 0; right: 0; border: 0; z-index: 1031;" src="https://camo.githubusercontent.com/365986a132ccd6a44c23a9169022c0b5c890c387/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f7265645f6161303030302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png"></a>
-        <div class="container">
-            <div class="col-md-2">&nbsp;<div class="bs-sidebar hidden-print affix well" role="complementary">
-    <ul class="nav bs-sidenav">
-        
-          <li >
-              <a href="..">Overview</a>
-              
-          </li>
-        
-          <li >
-              <a href="../quickstart/">Quick Start</a>
-              
-          </li>
-        
-          <li >
-              <a href="../config/">Configuration</a>
-              
-          </li>
-        
-          <li class="active">
-              <a href="./">Producers</a>
-              
-                  <ul class="nav">
-                  
-                      <li class="toctree-l3"><a href="#kafka">Kafka</a>
-                      <ul class="toctree-subnav">
-                      
-                          <li class="toctree-l4" ><a href="#topic">Topic</a></li>
-                      
-                          <li class="toctree-l4" ><a href="#client-version">Client version</a></li>
-                      
-                          <li class="toctree-l4" ><a href="#extended-options">Extended options</a></li>
-                      
-                          <li class="toctree-l4" ><a href="#performant-properties">Performant properties</a></li>
-                      
-                          <li class="toctree-l4" ><a href="#at-least-once-properties">At-least-once properties</a></li>
-                      
-                          <li class="toctree-l4" ><a href="#keys">Keys</a></li>
-                      
-                      </li>
-                      </uL>
-                  
-                      <li class="toctree-l3"><a href="#partitioning">Partitioning</a>
-                      <ul class="toctree-subnav">
-                      
-                          <li class="toctree-l4" ><a href="#kafka-partitioning">Kafka partitioning</a></li>
-                      
-                      </li>
-                      </uL>
-                  
-                      <li class="toctree-l3"><a href="#kinesis">Kinesis</a>
-                      <ul class="toctree-subnav">
-                      
-                          <li class="toctree-l4" ><a href="#aws-credentials">AWS Credentials</a></li>
-                      
-                          <li class="toctree-l4" ><a href="#options">Options</a></li>
-                      
-                      </li>
-                      </uL>
-                  
-                      <li class="toctree-l3"><a href="#sqs">SQS</a>
-                      <ul class="toctree-subnav">
-                      
-                          <li class="toctree-l4" ><a href="#aws-credentials_1">AWS Credentials</a></li>
-                      
-                          <li class="toctree-l4" ><a href="#options_1">Options</a></li>
-                      
-                      </li>
-                      </uL>
-                  
-                      <li class="toctree-l3"><a href="#google-cloud-pubsub">Google Cloud Pub/Sub</a>
-                      <ul class="toctree-subnav">
-                      
-                      </li>
-                      </uL>
-                  
-                      <li class="toctree-l3"><a href="#rabbitmq">RabbitMQ</a>
-                      <ul class="toctree-subnav">
-                      
-                      </li>
-                      </uL>
-                  
-                      <li class="toctree-l3"><a href="#redis">Redis</a>
-                      <ul class="toctree-subnav">
-                      
-                      </li>
-                      </uL>
-                  
-                      <li class="toctree-l3"><a href="#custom-producer">Custom Producer</a>
-                      <ul class="toctree-subnav">
-                      
-                      </li>
-                      </uL>
-                  
-                  </ul>
-              
-          </li>
-        
-          <li >
-              <a href="../filtering/">Filtering</a>
-              
-          </li>
-        
-          <li >
-              <a href="../dataformat/">Data Format</a>
-              
-          </li>
-        
-          <li >
-              <a href="../encryption/">Encryption</a>
-              
-          </li>
-        
-          <li >
-              <a href="../bootstrapping/">Bootstrapping</a>
-              
-          </li>
-        
-          <li >
-              <a href="../monitoring/">Monitoring</a>
-              
-          </li>
-        
-          <li >
-              <a href="../embedding/">Embedding</a>
-              
-          </li>
-        
-          <li >
-              <a href="../schemas/">Schemas</a>
-              
-          </li>
-        
-          <li >
-              <a href="../compat/">Compat / Caveats</a>
-              
-          </li>
-        
-          <li >
-              <a href="../changelog/">Changelog</a>
-              
-          </li>
-        
-    </ul>
-</div></div>
-            <div class="col-md-10" role="main">
-
-<h3 id="kafka">Kafka</h3>
+<h1 id="kafka">Kafka</h1>
 <hr />
-<h4 id="topic">Topic</h4>
-<p>Maxwell writes to a kafka topic named "maxwell" by default. It can be static,
-e.g. 'maxwell', or dynamic, e.g. <code>namespace_%{database}_%{table}</code>. In the
-latter case 'database' and 'table' will be replaced with the values for the row
-being processed. This can be changed with the <code>kafka_topic</code> option.</p>
-<h4 id="client-version">Client version</h4>
+<h2 id="topic">Topic</h2>
+<p>Maxwell writes to a kafka topic named "maxwell" by default. It is configurable
+via <code>--kafka_topic</code>.  The given topic can be a plain string or a dynamic
+string, e.g. <code>namespace_%{database}_%{table}</code>, where the topic will be
+generated from data in the row.</p>
+<h2 id="client-version">Client version</h2>
 <p>By default, maxwell uses the kafka 1.0.0 library. The <code>--kafka_version</code> flag
 lets you choose an alternate library version: 0.8.2.2, 0.9.0.1, 0.10.0.1, 0.10.2.1 or
 0.11.0.1, 1.0.0.  This flag is only available on the command line.</p>
@@ -319,25 +235,25 @@ lets you choose an alternate library version: 0.8.2.2, 0.9.0.1, 0.10.0.1, 0.10.2
 SchemaException: Error reading field 'throttle_time_ms': java.nio.BufferUnderflowException
 </code></pre>
 
-<h4 id="extended-options">Extended options</h4>
+<h2 id="passing-options-to-kafka">Passing options to kafka</h2>
 <p>Any options given to Maxwell that are prefixed with <code>kafka.</code> will be passed directly into the Kafka producer configuration
 (with <code>kafka.</code> stripped off).  We use the "new producer" configuration, as described here:
 <a href="http://kafka.apache.org/documentation.html#newproducerconfigs">http://kafka.apache.org/documentation.html#newproducerconfigs</a></p>
-<h4 id="performant-properties">Performant properties</h4>
+<h2 id="highest-throughput">Highest throughput</h2>
 <p>These properties would give high throughput performance.</p>
 <pre><code>kafka.acks = 1
 kafka.compression.type = snappy
 kafka.retries=0
 </code></pre>
 
-<h4 id="at-least-once-properties">At-least-once properties</h4>
+<h2 id="most-reliable">Most reliable</h2>
 <p>For at-least-once delivery, you will want something more like:</p>
 <pre><code>kafka.acks = all
 kafka.retries = 5 # or some larger number
 </code></pre>
 
 <p>And you will also want to set <code>min.insync.replicas</code> on Maxwell's output topic.</p>
-<h4 id="keys">Keys</h4>
+<h2 id="keys">Keys</h2>
 <p>Maxwell generates keys for its Kafka messages based upon a mysql row's primary key in JSON format:</p>
 <pre><code>{ &quot;database&quot;:&quot;test_tb&quot;,&quot;table&quot;:&quot;test_tbl&quot;,&quot;pk.id&quot;:4,&quot;pk.part2&quot;:&quot;hello&quot;}
 </code></pre>
@@ -345,10 +261,7 @@ kafka.retries = 5 # or some larger number
 <p>This key is designed to co-operate with Kafka's log compaction, which will save the last-known
 value for a key, allowing Maxwell's Kafka stream to retain the last-known value for a row and act
 as a source of truth.</p>
-<p>The JSON-hash based key format is tricky to regenerate in a stable fashion.  If you have an
-application in which you need to parse and re-generate keys, it's advised you enable
-<code>--kafka_key_format=array</code>, which will generate kafka keys that can be parsed and re-output byte-for-byte.</p>
-<h3 id="partitioning">Partitioning</h3>
+<h1 id="partitioning">Partitioning</h1>
 <hr />
 <p>Both Kafka and AWS Kinesis support the notion of partitioned streams.
 Partitioning is controlled by <code>producer_partition_by</code>, which gives you the
@@ -365,7 +278,7 @@ partition scheme possible given serialization constraints.</p>
 </ul>
 <p>When partitioning by column Maxwell will treat the values for the specified
 columns as strings, concatenate them and use that value to partition the data.</p>
-<h4 id="kafka-partitioning">Kafka partitioning</h4>
+<h2 id="kafka-partitioning">Kafka partitioning</h2>
 <p>A binlog event's partition is determined by the selected hash function and hash string as follows</p>
 <pre><code>  HASH_FUNCTION(HASH_STRING) % TOPIC.NUMBER_OF_PARTITIONS
 </code></pre>
@@ -384,9 +297,9 @@ and with at least as many partitions as you have logical databases:</p>
 </code></pre>
 
 <p><a href="http://kafka.apache.org/documentation.html#quickstart">http://kafka.apache.org/documentation.html#quickstart</a></p>
-<h3 id="kinesis">Kinesis</h3>
+<h1 id="kinesis">Kinesis</h1>
 <hr />
-<h4 id="aws-credentials">AWS Credentials</h4>
+<h2 id="aws-credentials">AWS Credentials</h2>
 <p>You will need to obtain an IAM user that has the following permissions for the stream you are planning on producing to:</p>
 <ul>
 <li>"kinesis:PutRecord"</li>
@@ -422,7 +335,7 @@ and with at least as many partitions as you have logical databases:</p>
 <p>See the <a href="http://docs.aws.amazon.com/streams/latest/dev/controlling-access.html#kinesis-using-iam-examples">AWS docs</a> for the latest examples on which permissions are needed.</p>
 <p>The producer uses the <a href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html">DefaultAWSCredentialsProviderChain</a> class to gain aws credentials.
 See the <a href="http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html">AWS docs</a> on how to setup the IAM user with the Default Credential Provider Chain.</p>
-<h4 id="options">Options</h4>
+<h2 id="options">Options</h2>
 <p>Set the output stream in <code>config.properties</code> by setting the <code>kinesis_stream</code> property.</p>
 <p>The producer uses the <a href="http://docs.aws.amazon.com/streams/latest/dev/developing-producers-with-kpl.html">KPL (Kinesis Producer Library)</a> and uses the KPL built in configurations.
 Copy <code>kinesis-producer-library.properties.example</code> to <code>kinesis-producer-library.properties</code> and configure the properties file to your needs.</p>
@@ -439,39 +352,43 @@ Region=$AWS_DEFAULT_REGION
 </code></pre>
 
 <p>Remember: if you disable record aggregation, you will lose the benefit of potentially greater producer throughput.</p>
-<h3 id="sqs">SQS</h3>
+<h1 id="sqs">SQS</h1>
 <hr />
-<h4 id="aws-credentials_1">AWS Credentials</h4>
+<h2 id="aws-credentials_1">AWS Credentials</h2>
 <p>You will need to obtain an IAM user that has the permission to access the SQS service. The SQS producer also uses <a href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html">DefaultAWSCredentialsProviderChain</a> to get AWS credentials.</p>
 <p>See the <a href="http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html">AWS docs</a> on how to setup the IAM user with the Default Credential Provider Chain.</p>
 <p>In case you need to set up a different region also along with credentials then default one, see the <a href="http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html#setup-credentials-setting-region">AWS docs</a>.</p>
-<h4 id="options_1">Options</h4>
+<h2 id="options_1">Options</h2>
 <p>Set the output queue in the <code>config.properties</code> by setting the <code>sqs_queue_uri</code> property to full SQS queue uri from AWS console.</p>
 <p>The producer uses the <a href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sqs/AmazonSQSClient.html">AWS SQS SDK</a>.</p>
-<h3 id="google-cloud-pubsub">Google Cloud Pub/Sub</h3>
+<h1 id="google-cloud-pubsub">Google Cloud Pub/Sub</h1>
 <hr />
 <p>In order to publish to Google Cloud Pub/Sub, you will need to obtain an IAM service account that has been granted the <code>roles/pubsub.publisher</code> role.</p>
 <p>See the Google Cloud Platform docs for the <a href="https://cloud.google.com/pubsub/docs/access_control">latest examples of which permissions are needed</a>, as well as <a href="https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances">how to properly configure service accounts</a>.</p>
 <p>Set the output stream in <code>config.properties</code> by setting the <code>pubsub_project_id</code> and <code>pubsub_topic</code> properties. Optionally configure a dedicated output topic
 for DDL updates by setting the <code>ddl_pubsub_topic</code> property.</p>
 <p>The producer uses the <a href="https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-pubsub">Google Cloud Java Library for Pub/Sub</a> and uses its built-in configurations.</p>
-<h3 id="rabbitmq">RabbitMQ</h3>
+<h1 id="rabbitmq">RabbitMQ</h1>
 <hr />
 <p>To produce messages to RabbitMQ, you will need to specify a host in <code>config.properties</code> with <code>rabbitmq_host</code>. This is the only required property, everything else falls back to a sane default.</p>
-<p>The remaining configurable properties are:
-- <code>rabbitmq_user</code> - defaults to <strong>guest</strong>
-- <code>rabbitmq_pass</code> - defaults to <strong>guest</strong>
-- <code>rabbitmq_virtual_host</code> - defaults to <strong>/</strong>
-- <code>rabbitmq_exchange</code> - defaults to <strong>maxwell</strong>
-- <code>rabbitmq_exchange_type</code> - defaults to <strong>fanout</strong>
-- <code>rabbitmq_exchange_durable</code> - defaults to <strong>false</strong>
-- <code>rabbitmq_exchange_autodelete</code> - defaults to <strong>false</strong>
-- <code>rabbitmq_routing_key_template</code> - defaults to <strong>%db%.%table%</strong>
-    - This config controls the routing key, where <code>%db%</code> and <code>%table%</code> are placeholders that will be substituted at runtime
-- <code>rabbitmq_message_persistent</code> - defaults to <strong>false</strong>
-- <code>rabbitmq_declare_exchange</code> - defaults to <strong>true</strong></p>
-<p>For more details on these options, you are encouraged to the read official RabbitMQ documentation here: https://www.rabbitmq.com/documentation.html</p>
-<h3 id="redis">Redis</h3>
+<p>The remaining configurable properties are:</p>
+<ul>
+<li><code>rabbitmq_user</code> - defaults to <strong>guest</strong></li>
+<li><code>rabbitmq_pass</code> - defaults to <strong>guest</strong></li>
+<li><code>rabbitmq_virtual_host</code> - defaults to <strong>/</strong></li>
+<li><code>rabbitmq_exchange</code> - defaults to <strong>maxwell</strong></li>
+<li><code>rabbitmq_exchange_type</code> - defaults to <strong>fanout</strong></li>
+<li><code>rabbitmq_exchange_durable</code> - defaults to <strong>false</strong></li>
+<li><code>rabbitmq_exchange_autodelete</code> - defaults to <strong>false</strong></li>
+<li><code>rabbitmq_routing_key_template</code> - defaults to <strong>%db%.%table%</strong><ul>
+<li>This config controls the routing key, where <code>%db%</code> and <code>%table%</code> are placeholders that will be substituted at runtime</li>
+</ul>
+</li>
+<li><code>rabbitmq_message_persistent</code> - defaults to <strong>false</strong></li>
+<li><code>rabbitmq_declare_exchange</code> - defaults to <strong>true</strong></li>
+</ul>
+<p>For more details on these options, you are encouraged to the read official RabbitMQ documentation here: <a href="https://www.rabbitmq.com/documentation.html">https://www.rabbitmq.com/documentation.html</a></p>
+<h1 id="redis">Redis</h1>
 <hr />
 <p>Set the output stream in <code>config.properties</code> by setting the <code>redis_type</code>
 property to either <code>pubsub</code>, <code>xadd</code>, <code>lpush</code> or <code>rpsuh</code>. The <code>redis_key</code> is
@@ -491,33 +408,91 @@ being processed. This can be changed with the <code>redis_pub_channel</code>, <c
 <li><code>redis_key</code> - defaults to <strong>maxwell</strong></li>
 <li><code>redis_stream_json_key</code> - defaults to <strong>message</strong></li>
 </ul>
-<h3 id="custom-producer">Custom Producer</h3>
+<h1 id="custom-producer">Custom Producer</h1>
 <hr />
 <p>If none of the producers packaged with Maxwell meet your requirements, a custom producer can be added at runtime. The producer is responsible for processing the raw database rows. Note that your producer may receive DDL and heartbeat rows as well, but your producer can easily filter them out (see example).</p>
 <p>In order to register your custom producer, you must implement the <code>ProducerFactory</code> interface, which is responsible for creating your custom <code>AbstractProducer</code>. Next, set the <code>custom_producer.factory</code> configuration property to your <code>ProducerFactory</code>'s fully qualified class name. Then add the custom <code>ProducerFactory</code> and all its dependencies to the $MAXWELL_HOME/lib directory.</p>
 <p>Your custom producer will likely require configuration properties as well. For that, use the <code>custom_producer.*</code> property namespace. Those properties will be exposed to your producer via <code>MaxwellConfig.customProducerProperties</code>.</p>
-<p>Custom producer factory and producer examples can be found here: <a href="https://github.com/zendesk/maxwell/tree/master/src/example/com/zendesk/maxwell/example/producerfactory">https://github.com/zendesk/maxwell/tree/master/src/example/com/zendesk/maxwell/example/producerfactory</a></p></div>
+<p>Custom producer factory and producer examples can be found here: <a href="https://github.com/zendesk/maxwell/tree/master/src/example/com/zendesk/maxwell/example/producerfactory">https://github.com/zendesk/maxwell/tree/master/src/example/com/zendesk/maxwell/example/producerfactory</a></p>
+    </div>
+</div>
+            </div>
         </div>
 
-        
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../js/base.js" defer></script>
+        <script src="../search/main.js" defer></script>
 
-        <script src="../js/bootstrap-3.3.7.min.js"></script>
-        <script src="../js/prettify-1.0.min.js"></script>
-        <script src="../js/base.js"></script>
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form>
+                    <div class="form-group">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            </div>
+            <div class="modal-body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th style="width: 20%;">Keys</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="help shortcut"><kbd>?</kbd></td>
+                    <td>Open this help</td>
+                  </tr>
+                  <tr>
+                    <td class="next shortcut"><kbd>n</kbd></td>
+                    <td>Next page</td>
+                  </tr>
+                  <tr>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
+                    <td>Search</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
     </body>
-    <script>
-        jQuery(document).ready(function () {
-            var shiftWindow = function() {
-                scrollBy(0, -50)
-            };
-
-            //if (location.hash) shiftWindow();
-            //window.addEventListener("hashchange", shiftWindow);
-
-            jQuery("table").addClass("table table-condensed table-bordered table-hover");
-            jQuery("#maxwell-header").append(
-                jQuery("<img alt='The Daemon, maybe' src='/img/cyberiad_1.jpg' id='maxwell-daemon-image'>")
-            );
-        });
-    </script>
 </html>
