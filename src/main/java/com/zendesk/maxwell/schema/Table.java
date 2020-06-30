@@ -129,6 +129,7 @@ public class Table {
 									  + " vs "
 									  + other.getType()
 									  + " in " + nameB);
+					return;
 				} else if ( column.getPos() != other.getPos() ) {
 					diffs.add(colName + "has a position mismatch, "
 									  + column.getPos()

@@ -9,7 +9,7 @@ public class DateFormatter {
 	private static ThreadLocal<Calendar> calendarUTCThreadLocal = ThreadLocal.withInitial(() -> Calendar.getInstance(UTC_ZONE));
 	private static ThreadLocal<StringBuilder> stringBuilderThreadLocal = ThreadLocal.withInitial(() -> new StringBuilder(32));
 
-	public static Timestamp extractTimestamp(Object value) {
+	public static Timestamp extractTimestamp(Object value) throws IllegalArgumentException {
 		if (value instanceof Long) {
 			Long micros = (Long) value;
 			long millis = floorDiv(micros, 1000L);
@@ -23,7 +23,7 @@ public class DateFormatter {
 			Long time = ((Date) value).getTime();
 			return new Timestamp(time);
 		} else
-			throw new RuntimeException("couldn't extract date/time out of " + value);
+			throw new IllegalArgumentException("couldn't extract date/time out of " + value);
 	}
 
 	/*

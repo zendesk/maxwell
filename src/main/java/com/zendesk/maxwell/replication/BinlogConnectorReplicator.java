@@ -19,10 +19,8 @@ import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMapBuffer;
-import com.zendesk.maxwell.schema.Schema;
-import com.zendesk.maxwell.schema.SchemaStore;
-import com.zendesk.maxwell.schema.SchemaStoreException;
-import com.zendesk.maxwell.schema.Table;
+import com.zendesk.maxwell.schema.*;
+import com.zendesk.maxwell.schema.columndef.ColumnDefCastException;
 import com.zendesk.maxwell.schema.ddl.DDLMap;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 import com.zendesk.maxwell.scripting.Scripting;
@@ -474,7 +472,16 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					Table table = tableCache.getTable(event.getTableID());
 
 					if ( table != null && shouldOutputEvent(table.getDatabase(), table.getName(), filter, table.getColumnNames()) ) {
-						for ( RowMap r : event.jsonMaps(table, getLastHeartbeatRead(), currentQuery) )
+						List<RowMap> rows;
+						try {
+							rows = event.jsonMaps(table, getLastHeartbeatRead(), currentQuery);
+						} catch ( ColumnDefCastException e ) {
+							logColumnDefCastException(table, e);
+
+							throw(e);
+						}
+
+						for ( RowMap r : rows )
 							if (shouldOutputRowMap(table.getDatabase(), table.getName(), r, filter)) {
 								buffer.add(r);
 							}
@@ -519,6 +526,22 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					break;
 			}
 		}
+	}
+
+	private void logColumnDefCastException(Table table, ColumnDefCastException e) {
+		String castInfo = String.format(
+				"Unable to cast %s (%s) into column %s.%s.%s (type '%s')",
+				e.givenValue.toString(),
+				e.givenValue.getClass().getName(),
+				table.getDatabase(),
+				table.getName(),
+				e.def.getName(),
+				e.def.getType()
+		);
+		LOGGER.error(castInfo);
+
+		e.database = table.getDatabase();
+		e.table = table.getName();
 	}
 
 	/**

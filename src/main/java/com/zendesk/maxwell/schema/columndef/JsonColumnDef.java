@@ -14,20 +14,22 @@ public class JsonColumnDef extends ColumnDef {
 	}
 
 	@Override
-	public Object asJSON(Object value, MaxwellOutputConfig config) {
+	public Object asJSON(Object value, MaxwellOutputConfig config) throws ColumnDefCastException {
 		String jsonString;
 
 		if ( value instanceof String ) {
-			jsonString = (String) value;
-		} else {
+			return new RawJSONString((String) value);
+		} else if ( value instanceof byte[] ){
 			try {
 				byte[] bytes = (byte[]) value;
 				jsonString = bytes.length > 0 ? JsonBinary.parseAsString(bytes) : "null";
+				return new RawJSONString(jsonString);
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
+		} else {
+			throw new ColumnDefCastException(this, value);
 		}
-		return new RawJSONString(jsonString);
 	}
 
 	@Override
