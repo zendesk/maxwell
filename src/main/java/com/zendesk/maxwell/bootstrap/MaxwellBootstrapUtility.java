@@ -35,7 +35,9 @@ public class MaxwellBootstrapUtility {
 		}
 
 		ConnectionPool connectionPool = getConnectionPool(config);
-		try ( final Connection connection = connectionPool.getConnection() ) {
+		ConnectionPool replConnectionPool = getReplicationConnectionPool(config);
+		try ( final Connection connection = connectionPool.getConnection();
+				final Connection replicationConnection = replConnectionPool.getConnection() ) {
 			if ( config.abortBootstrapID != null ) {
 				getInsertedRowsCount(connection, config.abortBootstrapID);
 				removeBootstrapRow(connection, config.abortBootstrapID);
@@ -47,7 +49,7 @@ public class MaxwellBootstrapUtility {
 				getInsertedRowsCount(connection, config.monitorBootstrapID);
 				rowId = config.monitorBootstrapID;
 			} else {
-				Long totalRows = calculateRowCount(connection, config.databaseName, config.tableName, config.whereClause);
+				Long totalRows = calculateRowCount(replicationConnection, config.databaseName, config.tableName, config.whereClause);
 				rowId = insertBootstrapStartRow(connection, config.databaseName, config.tableName, config.whereClause, config.clientID, config.comment, totalRows);
 			}
 
@@ -133,7 +135,16 @@ public class MaxwellBootstrapUtility {
 
 	private ConnectionPool getConnectionPool(MaxwellBootstrapUtilityConfig config) throws SQLException {
 		String connectionURI = config.getConnectionURI();
+		System.out.println("connecting to " + connectionURI);
 		return new C3P0ConnectionPool(connectionURI, config.mysql.user, config.mysql.password);
+	}
+
+	private ConnectionPool getReplicationConnectionPool(MaxwellBootstrapUtilityConfig config) throws SQLException {
+		String connectionURI = config.getReplicationConnectionURI();
+		System.out.println("connecting to " + connectionURI);
+		System.out.println("user: " + config.replicationMysql.user + ", passwd: '" + config.replicationMysql.password + "'");
+
+		return new C3P0ConnectionPool(connectionURI, config.replicationMysql.user, config.replicationMysql.password);
 	}
 
 	private Long getTotalRowCount(Connection connection, Long bootstrapRowID) throws SQLException, MissingBootstrapRowException {
