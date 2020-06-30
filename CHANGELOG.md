@@ -1,11 +1,5 @@
 # Maxwell changelog
 
-### [v1.26.5](https://github.com/zendesk/maxwell/releases/tag/v1.26.5): "Producer partitioning by thread id"
-
-
- - Allows Kinesis Producer to partition Kinesis Records by thread id
-
-
 ### [v1.26.4](https://github.com/zendesk/maxwell/releases/tag/v1.26.4): "Now function precision support"
 
 
