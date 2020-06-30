@@ -2,9 +2,11 @@ package com.zendesk.maxwell.bootstrap;
 
 import joptsimple.*;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.utils.URIBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URISyntaxException;
 import java.util.Properties;
 import java.util.Map;
 
@@ -33,8 +35,22 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 		this.setDefaults();
 	}
 
-	public String getConnectionURI( ) {
-		return "jdbc:mysql://" + mysql.host + ":" + mysql.port + "/" + schemaDatabaseName;
+
+	public String getConnectionURI() {
+		URIBuilder uriBuilder = new URIBuilder();
+		uriBuilder.setScheme("jdbc:mysql");
+		uriBuilder.setHost(mysql.host);
+		uriBuilder.setPort(mysql.port);
+		uriBuilder.setPath("/" + schemaDatabaseName);
+		for (Map.Entry<String, String> jdbcOption : mysql.jdbcOptions.entrySet()) {
+			uriBuilder.addParameter(jdbcOption.getKey(), jdbcOption.getValue());
+		}
+		try {
+			return uriBuilder.build().toString();
+		} catch (URISyntaxException e) {
+			LOGGER.error(e.getMessage(), e);
+			throw new RuntimeException("Unable to generate bootstrap's jdbc connection URI", e);
+		}
 	}
 
 	public String getReplicationConnectionURI( ) {
