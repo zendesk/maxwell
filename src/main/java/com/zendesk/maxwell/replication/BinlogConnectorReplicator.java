@@ -40,6 +40,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	static final Logger LOGGER = LoggerFactory.getLogger(BinlogConnectorReplicator.class);
 	private static final long MAX_TX_ELEMENTS = 10000;
 	public static final int BAD_BINLOG_ERROR_CODE = 1236;
+	public static final int ACCESS_DENIED_ERROR_CODE = 1227;
 
 	private final String clientID;
 	private final String maxwellSchemaDatabaseName;
@@ -207,12 +208,19 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	 */
 	@Override
 	public void onCommunicationFailure(BinaryLogClient client, Exception ex) {
+		LOGGER.warn("communications failure in binlog:", ex);
 
 		// Stopping Maxwell only in case we cannot read binlogs from the current server
 		if (ex instanceof ServerException) {
 			ServerException serverEx = (ServerException) ex;
-			if (serverEx.getErrorCode() == BAD_BINLOG_ERROR_CODE) {
-				lastCommError = serverEx;
+			int errCode = serverEx.getErrorCode();
+
+			switch(errCode) {
+				case BAD_BINLOG_ERROR_CODE:
+				case ACCESS_DENIED_ERROR_CODE:
+					lastCommError = serverEx;
+				default:
+					LOGGER.debug("error code: {} from server", errCode);
 			}
 		}
 	}
