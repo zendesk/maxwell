@@ -248,6 +248,8 @@ Other configurable properties are:
 - `redis_type` - defaults to **pubsub**
 - `redis_key` - defaults to **maxwell**
 - `redis_stream_json_key` - defaults to **message**
+- `redis_sentinels` - doesn't have a default value
+- `redis_sentinel_master_name` - doesn't have a default value
 
 # Custom Producer
 ***

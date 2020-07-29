@@ -7,13 +7,18 @@ import com.zendesk.maxwell.util.StoppableTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPoolAbstract;
 import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisSentinelPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 public class MaxwellRedisProducer extends AbstractProducer implements StoppableTask {
 	private static final Logger logger = LoggerFactory.getLogger(MaxwellRedisProducer.class);
@@ -21,7 +26,7 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 	private final boolean interpolateChannel;
 	private final String redisType;
 
-	private static JedisPool jedisPool;
+	private static JedisPoolAbstract jedisPool;
 
 	@Deprecated
 	public MaxwellRedisProducer(MaxwellContext context, String redisPubChannel, String redisListKey, String redisType) {
@@ -35,13 +40,28 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 		this.interpolateChannel = channel.contains("%{");
 		this.redisType = context.getConfig().redisType;
 
-		jedisPool = new JedisPool(
-			createRedisPoolConfig(), 
-			context.getConfig().redisHost, 
-			context.getConfig().redisPort,
-			Protocol.DEFAULT_TIMEOUT,
-			context.getConfig().redisAuth, //even if not present jedispool will handle a null value 
-			context.getConfig().redisDatabase); //even if not present jedispool will handle a null value 
+		String redisSentinelName = context.getConfig().redisSentinelMasterName;
+		if (redisSentinelName != null) {
+			jedisPool = new JedisSentinelPool(
+				context.getConfig().redisSentinelMasterName,
+				getRedisSentinels(context.getConfig().redisSentinels),
+				createRedisPoolConfig(),
+				Protocol.DEFAULT_TIMEOUT,
+				context.getConfig().redisAuth, //even if not present jedispool will handle a null value
+				context.getConfig().redisDatabase); //even if not present jedispool will handle a null value
+		} else {
+			jedisPool = new JedisPool(
+				createRedisPoolConfig(),
+				context.getConfig().redisHost,
+				context.getConfig().redisPort,
+				Protocol.DEFAULT_TIMEOUT,
+				context.getConfig().redisAuth, //even if not present jedispool will handle a null value
+				context.getConfig().redisDatabase); //even if not present jedispool will handle a null value
+		}
+	}
+
+	private Set<String> getRedisSentinels(String redisSentinels) {
+		return new HashSet<>(Arrays.asList(redisSentinels.split(",")));
 	}
 
 	private JedisPoolConfig createRedisPoolConfig() {
@@ -64,12 +84,16 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 		return channel;
 	}
 
+	private Jedis getJedisResource() {
+		return jedisPool.getResource();
+	}
+
 	private void sendToRedis(RowMap msg) throws Exception {
 
 		String messageStr = msg.toJSON(outputConfig);
 		String channel = this.generateChannel(msg.getRowIdentity());
 
-		try (Jedis jedis = jedisPool.getResource()) {
+		try (Jedis jedis = this.getJedisResource()) {
 
 			switch (redisType) {
 				case "lpush":
