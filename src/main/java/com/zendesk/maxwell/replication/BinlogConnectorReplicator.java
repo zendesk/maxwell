@@ -148,9 +148,10 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 			At some point I presume shyko will fix it and we can remove this.
 		 */
 
-		if ( this.gtidPositioning ) {
-			this.client.setKeepAlive(false);
-		}
+		 /*
+		   the logic for this must be applied to all scenarios, as otherwise we will have competing keepalive logic
+		 */
+		this.client.setKeepAlive(false);
 
 		EventDeserializer eventDeserializer = new EventDeserializer();
 		eventDeserializer.setCompatibilityMode(
