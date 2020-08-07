@@ -1,9 +1,30 @@
 # Maxwell changelog
 
-### [v1.26.4](https://github.com/zendesk/maxwell/releases/tag/v1.26.4): "Now function precision support"
+### [v1.27.1](https://github.com/zendesk/maxwell/releases/tag/v1.27.1): "red bag?  red bag"
 
 
- - list changes
+- redis producer gets sentinal support
+- fix a double-reconnect race condition
+- file producer honors javascript row-suppression
+- better error messaging when we lack REPLICATION SLAVE privs
+- miscellaneous dependency bumps
+
+
+### [v1.27.0](https://github.com/zendesk/maxwell/releases/tag/v1.27.0): "running water"
+
+
+- better support for empty/null passwords
+- allow bootstrap utility to query replication_host
+- a few library upgrades, notably pubsub and kinesis library
+- bootstrap connection uses jdbc_options properly
+- add logging for when we hit out of sync schema exceptions
+- allow for partitioning by thread_id, thx @gogov
+- fresh and clean documentation
+
+
+### [v1.26.4](https://github.com/zendesk/maxwell/releases/tag/v1.26.4): "No songs here"
+
+ - support now() function with precision
 
 
 ### [v1.26.3](https://github.com/zendesk/maxwell/releases/tag/v1.26.3): "the worst song in the goddamn world"
