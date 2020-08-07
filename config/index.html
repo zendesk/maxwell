@@ -830,6 +830,18 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 <td>Redis XADD Stream Message Field Name</td>
 <td>message</td>
 </tr>
+<tr>
+<td>redis_sentinels</td>
+<td>STRING</td>
+<td>Redis sentinels list in format host1:port1,host2:port2,host3:port3... Must be only used with redis_sentinel_master_name</td>
+<td></td>
+</tr>
+<tr>
+<td>redis_sentinel_master_name</td>
+<td>STRING</td>
+<td>Redis sentinel master name. Must be only used with redis_sentinels</td>
+<td></td>
+</tr>
 </tbody>
 </table>
 <h1 id="formatting">formatting</h1>

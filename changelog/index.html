@@ -134,9 +134,27 @@
         
 
 <h1 id="maxwell-changelog">Maxwell changelog</h1>
-<h3 id="v1264-now-function-precision-support"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.26.4">v1.26.4</a>: "Now function precision support"</h3>
+<h3 id="v1271-red-bag-red-bag"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.27.1">v1.27.1</a>: "red bag?  red bag"</h3>
 <ul>
-<li>list changes</li>
+<li>redis producer gets sentinal support</li>
+<li>fix a double-reconnect race condition</li>
+<li>file producer honors javascript row-suppression</li>
+<li>better error messaging when we lack REPLICATION SLAVE privs</li>
+<li>miscellaneous dependency bumps</li>
+</ul>
+<h3 id="v1270-running-water"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.27.0">v1.27.0</a>: "running water"</h3>
+<ul>
+<li>better support for empty/null passwords</li>
+<li>allow bootstrap utility to query replication_host</li>
+<li>a few library upgrades, notably pubsub and kinesis library</li>
+<li>bootstrap connection uses jdbc_options properly</li>
+<li>add logging for when we hit out of sync schema exceptions</li>
+<li>allow for partitioning by thread_id, thx @gogov</li>
+<li>fresh and clean documentation</li>
+</ul>
+<h3 id="v1264-no-songs-here"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.26.4">v1.26.4</a>: "No songs here"</h3>
+<ul>
+<li>support now() function with precision</li>
 </ul>
 <h3 id="v1263-the-worst-song-in-the-goddamn-world"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.26.3">v1.26.3</a>: "the worst song in the goddamn world"</h3>
 <ul>
