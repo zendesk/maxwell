@@ -132,6 +132,8 @@ redis_database                 | INT                      | Database of Redis se
 redis_type                     | [ pubsub &#124; xadd &#124; lpush &#124; rpush ]  | Selects either Redis Pub/Sub, Stream, or List. | pubsub
 redis_key                      | STRING                   | Redis channel/key for Pub/Sub, XADD or LPUSH/RPUSH | maxwell
 redis_stream_json_key          | STRING                   | Redis XADD Stream Message Field Name | message
+redis_sentinels                | STRING                   | Redis sentinels list in format host1:port1,host2:port2,host3:port3... Must be only used with redis_sentinel_master_name
+redis_sentinel_master_name     | STRING                   | Redis sentinel master name. Must be only used with redis_sentinels
 
 
 # formatting
