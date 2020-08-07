@@ -29,6 +29,11 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 		server = MaxwellTestSupport.setupServer();
 	}
 
+	@AfterClass
+	public static void shutdownServer() throws Exception { 
+		server.shutDown();
+	}
+
 	@Before
 	public void setupSchema() throws Exception {
 		MaxwellTestSupport.setupSchema(server);
