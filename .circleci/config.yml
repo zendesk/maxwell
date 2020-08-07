@@ -10,6 +10,9 @@ jobs:
     docker:
       - image: cimg/openjdk:11.0
     steps:
+      - run:
+          name: "add libnuma"
+          command: apt-get update && apt-get -y install libnuma1
       - checkout
       - restore_cache:
           key: dependency-cache-{{ checksum "pom.xml" }}
