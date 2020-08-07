@@ -10,9 +10,6 @@ jobs:
     docker:
       - image: cimg/openjdk:11.0
     steps:
-      - run:
-          name: "add libnuma"
-          command: sudo apt-get update && sudo apt-get -y install libnuma1
       - checkout
       - restore_cache:
           key: dependency-cache-{{ checksum "pom.xml" }}
@@ -35,6 +32,9 @@ jobs:
       - checkout
       - restore_cache:
           key: dependency-cache-{{ checksum "pom.xml" }}
+      - run:
+          name: "add libnuma"
+          command: sudo apt-get update && sudo apt-get -y install libnuma1
       - run:
           name: Maven Test
           command: mvn test
