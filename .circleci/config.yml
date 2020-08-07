@@ -33,6 +33,9 @@ jobs:
       - restore_cache:
           key: dependency-cache-{{ checksum "pom.xml" }}
       - run:
+          name: "add libnuma"
+          command: sudo apt-get update && sudo apt-get -y install libnuma1
+      - run:
           name: Maven Test
           command: mvn test
       - store_artifacts:

@@ -10,7 +10,7 @@ public class TimeColumnDef extends ColumnDefWithLength {
 		super(name, type, pos, columnLength);
 	}
 
-	protected String formatValue(Object value, MaxwellOutputConfig config) {
+	protected String formatValue(Object value, MaxwellOutputConfig config) throws ColumnDefCastException {
 		if ( value instanceof Timestamp ) {
 			Time time = new Time(((Timestamp) value).getTime());
 			String timeAsStr = String.valueOf(time);
@@ -22,8 +22,10 @@ public class TimeColumnDef extends ColumnDefWithLength {
 			String timeAsStr = String.valueOf(time);
 
 			return appendFractionalSeconds(timeAsStr, (int) ((Long) value % 1000000) * 1000, this.columnLength);
-		} else {
+		} else if ( value instanceof Time ){
 			return String.valueOf((Time) value);
+		} else {
+			throw new ColumnDefCastException(this, value);
 		}
 	}
 }

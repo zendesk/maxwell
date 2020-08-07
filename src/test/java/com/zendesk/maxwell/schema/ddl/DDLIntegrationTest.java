@@ -434,7 +434,6 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 				"MODIFY User char(16) NOT NULL default '', " +
 				"MODIFY Table_name char(64) NOT NULL default '', " +
 				"MODIFY Column_name char(64) NOT NULL default '', " +
-				"ENGINE=MyISAM, " +
 				"CONVERT TO CHARACTER SET utf8 COLLATE utf8_bin, " +
 				"COMMENT='Column privileges'");
 	}

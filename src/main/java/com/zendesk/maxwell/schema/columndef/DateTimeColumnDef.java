@@ -10,7 +10,7 @@ public class DateTimeColumnDef extends ColumnDefWithLength {
 	}
 
 	final private boolean isTimestamp = getType().equals("timestamp");
-	protected String formatValue(Object value, MaxwellOutputConfig config) {
+	protected String formatValue(Object value, MaxwellOutputConfig config) throws ColumnDefCastException {
 		// special case for those broken mysql dates.
 		if ( value instanceof Long ) {
 			Long v = (Long) value;
@@ -22,8 +22,12 @@ public class DateTimeColumnDef extends ColumnDefWithLength {
 			}
 		}
 
-		Timestamp ts = DateFormatter.extractTimestamp(value);
-		String dateString = DateFormatter.formatDateTime(value, ts);
-		return appendFractionalSeconds(dateString, ts.getNanos(), columnLength);
+		try {
+			Timestamp ts = DateFormatter.extractTimestamp(value);
+			String dateString = DateFormatter.formatDateTime(value, ts);
+			return appendFractionalSeconds(dateString, ts.getNanos(), columnLength);
+		} catch ( IllegalArgumentException e ) {
+			throw new ColumnDefCastException(this, value);
+		}
 	}
 }

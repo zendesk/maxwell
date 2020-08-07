@@ -63,17 +63,19 @@ public class StringColumnDef extends ColumnDef {
 		}
 	}
 	@Override
-	public Object asJSON(Object value, MaxwellOutputConfig config) {
+	public Object asJSON(Object value, MaxwellOutputConfig config) throws ColumnDefCastException {
 
 		if ( value instanceof String ) {
 			return value;
-		}
-
-		byte[] b = (byte[])value;
-		if ( charset.equals("binary") ) {
-			return Base64.encodeBase64String(b);
+		} else if ( value instanceof byte[] ) {
+			byte[] b = (byte[]) value;
+			if (charset.equals("binary")) {
+				return Base64.encodeBase64String(b);
+			} else {
+				return new String(b, charsetForCharset());
+			}
 		} else {
-			return new String(b, charsetForCharset());
+			throw new ColumnDefCastException(this, value);
 		}
 	}
 

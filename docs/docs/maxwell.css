@@ -1,0 +1,28 @@
+#Reference table {
+  width: 100%;
+  font-size: 80%;
+}
+
+#Reference table td:nth-child(1) {
+  font-family: monospace;
+  font-size: 120%;
+}
+#Reference table td:nth-child(2) {
+}
+#Reference table td:nth-child(3) {
+}
+#Reference table td:nth-child(4) {
+}
+
+#Monitoring table {
+  width: 100%;
+  font-size: 80%;
+}
+
+#Monitoring table td:nth-child(1) {
+  width: 25%;
+}
+
+#Changelog h3 {
+  font-size: 1.25rem;
+}

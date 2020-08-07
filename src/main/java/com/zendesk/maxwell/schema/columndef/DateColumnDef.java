@@ -17,7 +17,7 @@ public class DateColumnDef extends ColumnDef {
 	}
 
 	@Override
-	public Object asJSON(Object value, MaxwellOutputConfig config) {
+	public Object asJSON(Object value, MaxwellOutputConfig config) throws ColumnDefCastException {
 		if ( value instanceof String ) {
 			// bootstrapper just gives up on bothering with date processing
 			if ( config.zeroDatesAsNull && "0000-00-00".equals((String) value) )
@@ -31,6 +31,10 @@ public class DateColumnDef extends ColumnDef {
 				return "0000-00-00";
 		}
 
-		return DateFormatter.formatDate(value);
+		try {
+			return DateFormatter.formatDate(value);
+		} catch ( IllegalArgumentException e ) {
+			throw new ColumnDefCastException(this, value);
+		}
 	}
 }

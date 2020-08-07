@@ -139,6 +139,8 @@ public class MaxwellConfig extends AbstractConfig {
 	public int redisDatabase;
 	public String redisKey;
 	public String redisStreamJsonKey;
+	public String redisSentinels;
+	public String redisSentinelMasterName;
 
 	public String redisPubChannel;
 	public String redisListKey;
@@ -337,6 +339,8 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "redis_type", "[pubsub|xadd|lpush|rpush] Selects either pubsub, xadd, lpush, or rpush. Defaults to 'pubsub'" ).withRequiredArg();
 		parser.accepts( "redis_key", "Redis channel/key for Pub/Sub, XADD or LPUSH/RPUSH" ).withRequiredArg();
 		parser.accepts( "redis_stream_json_key", "Redis Stream message field name for JSON message body" ).withRequiredArg();
+		parser.accepts("redis_sentinels", "List of Redis sentinels in format host1:port1,host2:port2,host3:port3. It can be used instead of redis_host and redis_port" ).withOptionalArg();
+		parser.accepts("redis_sentinel_master_name", "Redis sentinel master name. It is used with redis_sentinels" ).withOptionalArg();
 
 		parser.accepts( "redis_pub_channel", "[deprecated]" ).withRequiredArg();
 		parser.accepts( "redis_stream_key", "[deprecated]" ).withRequiredArg();
@@ -464,6 +468,9 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.redisKey			= fetchOption("redis_key", options, properties, "maxwell");
 		this.redisStreamJsonKey	= fetchOption("redis_stream_json_key", options, properties, "message");
+
+		this.redisSentinels = fetchOption("redis_sentinels", options, properties, null);
+		this.redisSentinelMasterName = fetchOption("redis_sentinel_master_name", options, properties, null);
 
 		// deprecated options
 		this.redisPubChannel = fetchOption("redis_pub_channel", options, properties, null);
@@ -636,11 +643,11 @@ public class MaxwellConfig extends AbstractConfig {
 			this.producerPartitionFallback = this.kafkaPartitionFallback;
 		}
 
-		String[] validPartitionBy = {"database", "table", "primary_key", "transaction_id", "column", "random"};
+		String[] validPartitionBy = {"database", "table", "primary_key", "transaction_id", "thread_id", "column", "random"};
 		if ( this.producerPartitionKey == null ) {
 			this.producerPartitionKey = "database";
 		} else if ( !ArrayUtils.contains(validPartitionBy, this.producerPartitionKey) ) {
-			usageForOptions("please specify --producer_partition_by=database|table|primary_key|transaction_id|column|random", "producer_partition_by");
+			usageForOptions("please specify --producer_partition_by=database|table|primary_key|transaction_id|thread_id|column|random", "producer_partition_by");
 		} else if ( this.producerPartitionKey.equals("column") && StringUtils.isEmpty(this.producerPartitionColumns) ) {
 			usageForOptions("please specify --producer_partition_columns=column1 when using producer_partition_by=column", "producer_partition_columns");
 		} else if ( this.producerPartitionKey.equals("column") && StringUtils.isEmpty(this.producerPartitionFallback) ) {
@@ -746,6 +753,10 @@ public class MaxwellConfig extends AbstractConfig {
 
 			if ( this.redisKey == null ) {
 				usage("please specify --redis_key=KEY");
+			}
+
+			if ((this.redisSentinelMasterName != null && this.redisSentinels == null) || (this.redisSentinels != null && this.redisSentinelMasterName == null)) {
+				usageForOptions("please specify both (or none) of redis_sentinel_master_name and redis_sentinels");
 			}
 		}
 

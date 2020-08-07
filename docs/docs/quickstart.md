@@ -1,13 +1,13 @@
-### Download
+# Download
 ***
-- Download binary distro: [https://github.com/zendesk/maxwell/releases/download/v1.26.4/maxwell-1.26.4.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.26.4/maxwell-1.26.4.tar.gz)
+- Download binary distro: [https://github.com/zendesk/maxwell/releases/download/v1.27.0/maxwell-1.27.0.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.27.0/maxwell-1.27.0.tar.gz)
 - Sources and bug tracking is available on github: [https://github.com/zendesk/maxwell](https://github.com/zendesk/maxwell)
 - Obligatory copy/paste to terminal:
 
 ```
-curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.26.4/maxwell-1.26.4.tar.gz \
+curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.27.0/maxwell-1.27.0.tar.gz \
        | tar zxvf -
-cd maxwell-1.26.4
+cd maxwell-1.27.0
 ```
 
 or get the docker image:
@@ -22,7 +22,7 @@ or on Mac OS X with homebrew installed:
 brew install maxwell
 ```
 
-### Configure Mysql
+# Configure Mysql
 ***
 
 *Server Config:* Ensure your server_id is configured, and that row-based replication is turned on.
@@ -60,21 +60,21 @@ mysql> GRANT ALL ON maxwell.* TO 'maxwell'@'localhost';
 mysql> GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'maxwell'@'localhost';
 ```
 
-### Run Maxwell
+# Run Maxwell
 ***
 
-#### Command line
+## Command line
 ```
 bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' --producer=stdout
 ```
 
-#### Docker
+## Docker
 ```
 docker run -it --rm zendesk/maxwell bin/maxwell --user=$MYSQL_USERNAME \
     --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=stdout
 ```
 
-#### Kafka
+## Kafka
 
 Boot kafka as described here:  [http://kafka.apache.org/documentation.html#quickstart](http://kafka.apache.org/documentation.html#quickstart), then:
 
@@ -91,13 +91,13 @@ docker run -it --rm zendesk/maxwell bin/maxwell --user=$MYSQL_USERNAME \
     --kafka.bootstrap.servers=$KAFKA_HOST:$KAFKA_PORT --kafka_topic=maxwell
 ```
 
-#### Kinesis
+## Kinesis
 
 ```
 docker run -it --rm --name maxwell -v `cd && pwd`/.aws:/root/.aws zendesk/maxwell sh -c 'cp /app/kinesis-producer-library.properties.example /app/kinesis-producer-library.properties && echo "Region=$AWS_DEFAULT_REGION" >> /app/kinesis-producer-library.properties && bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kinesis --kinesis_stream=$KINESIS_STREAM'
 ```
 
-#### Google Cloud Pub/Sub
+## Google Cloud Pub/Sub
 
 ```
 bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
@@ -105,14 +105,14 @@ bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
   --pubsub_topic='maxwell'
 ```
 
-#### RabbitMQ
+## RabbitMQ
 
 ```
 bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
     --producer=rabbitmq --rabbitmq_host='rabbitmq.hostname'
 ```
 
-#### Redis
+## Redis
 
 ```
 bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \

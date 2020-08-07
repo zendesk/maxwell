@@ -14,10 +14,13 @@ public class BigIntColumnDef extends ColumnDef {
 		this.signed = signed;
 	}
 
-	private Object toNumeric(Object value) {
+	private Object toNumeric(Object value) throws ColumnDefCastException {
         if ( value instanceof BigInteger ) {
           return value;
-        }
+        } else if ( !(value instanceof Long) ) {
+        	throw new ColumnDefCastException(this, value);
+		}
+
         Long l = (Long)value;
         if ( l < 0 && !signed )
         	return longlong_max.add(BigInteger.valueOf(l));
@@ -25,12 +28,12 @@ public class BigIntColumnDef extends ColumnDef {
             return Long.valueOf(l);
 	}
 	@Override
-	public String toSQL(Object value) {
+	public String toSQL(Object value) throws ColumnDefCastException {
 		return toNumeric(value).toString();
 	}
 
 	@Override
-	public Object asJSON(Object value, MaxwellOutputConfig config) {
+	public Object asJSON(Object value, MaxwellOutputConfig config) throws ColumnDefCastException {
 		return toNumeric(value);
 	}
 

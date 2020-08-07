@@ -36,7 +36,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
-	public void testTinyInt() {
+	public void testTinyInt() throws Exception {
 		ColumnDef d = build("tinyint", true);
 
 		assertThat(d, instanceOf(IntColumnDef.class));
@@ -49,7 +49,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
-	public void testShortInt() {
+	public void testShortInt() throws Exception {
 		ColumnDef d = build("smallint", true);
 
 		assertThat(d, instanceOf(IntColumnDef.class));
@@ -61,7 +61,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
-	public void testMediumInt() {
+	public void testMediumInt() throws Exception {
 		ColumnDef d = build("mediumint", true);
 
 		assertThat(d, instanceOf(IntColumnDef.class));
@@ -74,7 +74,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
-	public void testInt() {
+	public void testInt() throws Exception {
 		ColumnDef d = build("int", true);
 
 		assertThat(d, instanceOf(IntColumnDef.class));
@@ -86,7 +86,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
-	public void testBigInt() {
+	public void testBigInt() throws ColumnDefCastException {
 		ColumnDef d = build("bigint", true);
 
 		assertThat(d, instanceOf(BigIntColumnDef.class));
@@ -98,7 +98,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
-	public void testUTF8String() {
+	public void testUTF8String() throws ColumnDefCastException {
 		ColumnDef d = ColumnDef.build("bar", "utf8", "varchar", (short) 1, false, null, null);
 
 		assertThat(d, instanceOf(StringColumnDef.class));
@@ -107,7 +107,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
-	public void TestUTF8MB4String() {
+	public void TestUTF8MB4String() throws ColumnDefCastException {
 		String utf8_4 = "😁";
 
 		ColumnDef d = ColumnDef.build("bar", "utf8mb4", "varchar", (short) 1, false, null, null);
@@ -116,7 +116,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
-	public void TestAsciiString() {
+	public void TestAsciiString() throws ColumnDefCastException {
 		byte input[] = new byte[] { (byte) 126, (byte) 126, (byte) 126, (byte) 126 };
 
 		ColumnDef d = ColumnDef.build("bar", "ascii", "varchar", (short) 1, false, null, null);
@@ -124,7 +124,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
-	public void TestLatin1String() {
+	public void TestLatin1String() throws ColumnDefCastException {
 		byte input[] = new byte[] { (byte) 128, (byte) 128, (byte) 128, (byte) 128 };
 
 		ColumnDef d = ColumnDef.build("bar", "latin1", "varchar", (short) 1, false, null, null);
@@ -132,7 +132,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
-	public void TestStringAsJSON() {
+	public void TestStringAsJSON() throws ColumnDefCastException {
 		byte input[] = new byte[] { (byte) 169, (byte) 169, (byte) 169, (byte) 169 };
 
 		ColumnDef d = ColumnDef.build("bar", "latin1", "varchar", (short) 1, false, null, null);
@@ -141,7 +141,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
-	public void TestJSON() {
+	public void TestJSON() throws ColumnDefCastException {
 		byte input[] = new byte[] { (byte) 0, (byte) 1, (byte) 0, (byte) 13, (byte) 0, (byte) 11,
 				(byte) 0, (byte) 2, (byte) 0, (byte) 5, (byte) 3, (byte) 0, (byte) 105, (byte) 100 };
 
@@ -152,7 +152,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
-	public void TestEmptyJSON() {
+	public void TestEmptyJSON() throws ColumnDefCastException {
 		byte input[] = new byte[0];
 
 		ColumnDef d = ColumnDef.build("bar", "ascii", "json", (short) 1, false, null, null);
@@ -162,7 +162,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
-	public void TestFloat() {
+	public void TestFloat() throws ColumnDefCastException {
 		ColumnDef d = build("float", true);
 		assertThat(d, instanceOf(FloatColumnDef.class));
 
@@ -170,7 +170,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
-	public void TestDouble() {
+	public void TestDouble() throws ColumnDefCastException {
 		ColumnDef d = build("double", true);
 		assertThat(d, instanceOf(FloatColumnDef.class));
 
@@ -179,7 +179,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
-	public void TestTime() throws ParseException {
+	public void TestTime() throws ParseException, ColumnDefCastException {
 		ColumnDef d = build("time", true);
 		assertThat(d, instanceOf(TimeColumnDef.class));
 
@@ -188,7 +188,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
-	public void TestTimeWithMillisecTimestamp() throws ParseException {
+	public void TestTimeWithMillisecTimestamp() throws ParseException, ColumnDefCastException {
 		ColumnDef d = build("time", true, 3L);
 		assertThat(d, instanceOf(TimeColumnDef.class));
 
@@ -205,7 +205,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
-	public void TestTimeWithMicrosecTimestamp() throws ParseException {
+	public void TestTimeWithMicrosecTimestamp() throws ParseException, ColumnDefCastException {
 		ColumnDef d = build("time", true, 6L);
 		assertThat(d, instanceOf(TimeColumnDef.class));
 
@@ -222,7 +222,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
-	public void TestDate() {
+	public void TestDate() throws ColumnDefCastException {
 		ColumnDef d = build("date", true);
 		assertThat(d, instanceOf(DateColumnDef.class));
 
@@ -231,7 +231,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
-	public void TestDateZeroDates() {
+	public void TestDateZeroDates() throws ColumnDefCastException {
 		ColumnDef d = build("date", true);
 
 		MaxwellOutputConfig config = new MaxwellOutputConfig();
@@ -242,7 +242,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 
 
 	@Test
-	public void TestDateTime() throws ParseException {
+	public void TestDateTime() throws ParseException, ColumnDefCastException {
 		ColumnDef d = build("datetime", true);
 		assertThat(d, instanceOf(DateTimeColumnDef.class));
 
@@ -252,7 +252,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
-	public void TestDateTimeZeroDates() {
+	public void TestDateTimeZeroDates() throws ColumnDefCastException {
 		ColumnDef d = build("datetime", true);
 
 		MaxwellOutputConfig config = new MaxwellOutputConfig();
@@ -262,7 +262,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
-	public void TestDateTimeWithTimestamp() throws ParseException {
+	public void TestDateTimeWithTimestamp() throws ParseException, ColumnDefCastException {
 		ColumnDef d = build("datetime", true);
 		assertThat(d, instanceOf(DateTimeColumnDef.class));
 
@@ -271,7 +271,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
-	public void TestDateTimeWithMillisecprecision() throws ParseException {
+	public void TestDateTimeWithMillisecprecision() throws ParseException, ColumnDefCastException {
 		ColumnDef d = build("datetime", true, 3L);
 		assertThat(d, instanceOf(DateTimeColumnDef.class));
 
@@ -286,7 +286,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
-	public void TestDateTimeWithMicroPrecision() throws ParseException {
+	public void TestDateTimeWithMicroPrecision() throws ParseException, ColumnDefCastException {
 		ColumnDef d = build("datetime", true, 6L);
 		assertThat(d, instanceOf(DateTimeColumnDef.class));
 
@@ -306,7 +306,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
-	public void TestTimestamp() throws ParseException {
+	public void TestTimestamp() throws ParseException, ColumnDefCastException {
 		ColumnDef d = build("timestamp", true);
 		assertThat(d, instanceOf(DateTimeColumnDef.class));
 
@@ -315,7 +315,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
-	public void TestTimestampWithMilliSecPrecision() throws ParseException {
+	public void TestTimestampWithMilliSecPrecision() throws ParseException, ColumnDefCastException {
 		ColumnDef d = build("timestamp", true, 3L);
 		assertThat(d, instanceOf(DateTimeColumnDef.class));
 
@@ -333,7 +333,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
-	public void TestTimestampWithMicroSecPrecision() throws ParseException {
+	public void TestTimestampWithMicroSecPrecision() throws ParseException, ColumnDefCastException {
 		ColumnDef d = build("timestamp", true, 6L);
 		assertThat(d, instanceOf(DateTimeColumnDef.class));
 
@@ -348,7 +348,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
-	public void TestBit() {
+	public void TestBit() throws ColumnDefCastException {
 		ColumnDef d = build("bit", true);
 		assertThat(d, instanceOf(BitColumnDef.class));
 

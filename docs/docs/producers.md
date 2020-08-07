@@ -1,13 +1,13 @@
-### Kafka
+# Kafka
 ***
 
-#### Topic
-Maxwell writes to a kafka topic named "maxwell" by default. It can be static,
-e.g. 'maxwell', or dynamic, e.g. `namespace_%{database}_%{table}`. In the
-latter case 'database' and 'table' will be replaced with the values for the row
-being processed. This can be changed with the `kafka_topic` option.
+## Topic
+Maxwell writes to a kafka topic named "maxwell" by default. It is configurable
+via `--kafka_topic`.  The given topic can be a plain string or a dynamic
+string, e.g. `namespace_%{database}_%{table}`, where the topic will be
+generated from data in the row.
 
-#### Client version
+## Client version
 By default, maxwell uses the kafka 1.0.0 library. The `--kafka_version` flag
 lets you choose an alternate library version: 0.8.2.2, 0.9.0.1, 0.10.0.1, 0.10.2.1 or
 0.11.0.1, 1.0.0.  This flag is only available on the command line.
@@ -26,13 +26,13 @@ SchemaException: Error reading field 'throttle_time_ms': java.nio.BufferUnderflo
 ```
 
 
-#### Extended options
+## Passing options to kafka
 Any options given to Maxwell that are prefixed with `kafka.` will be passed directly into the Kafka producer configuration
 (with `kafka.` stripped off).  We use the "new producer" configuration, as described here:
 [http://kafka.apache.org/documentation.html#newproducerconfigs](http://kafka.apache.org/documentation.html#newproducerconfigs)
 
 
-#### Performant properties
+## Highest throughput
 
 These properties would give high throughput performance.
 
@@ -42,7 +42,7 @@ kafka.compression.type = snappy
 kafka.retries=0
 ```
 
-#### At-least-once properties
+## Most reliable
 
 For at-least-once delivery, you will want something more like:
 
@@ -53,7 +53,7 @@ kafka.retries = 5 # or some larger number
 
 And you will also want to set `min.insync.replicas` on Maxwell's output topic.
 
-#### Keys
+## Keys
 
 Maxwell generates keys for its Kafka messages based upon a mysql row's primary key in JSON format:
 
@@ -65,11 +65,7 @@ This key is designed to co-operate with Kafka's log compaction, which will save 
 value for a key, allowing Maxwell's Kafka stream to retain the last-known value for a row and act
 as a source of truth.
 
-The JSON-hash based key format is tricky to regenerate in a stable fashion.  If you have an
-application in which you need to parse and re-generate keys, it's advised you enable
-`--kafka_key_format=array`, which will generate kafka keys that can be parsed and re-output byte-for-byte.
-
-### Partitioning
+# Partitioning
 ***
 
 Both Kafka and AWS Kinesis support the notion of partitioned streams.
@@ -89,7 +85,7 @@ To partition by column data, you must set both:
 When partitioning by column Maxwell will treat the values for the specified
 columns as strings, concatenate them and use that value to partition the data.
 
-#### Kafka partitioning
+## Kafka partitioning
 
 A binlog event's partition is determined by the selected hash function and hash string as follows
 
@@ -117,9 +113,9 @@ bin/kafka-topics.sh --zookeeper ZK_HOST:2181 --create \
 
 [http://kafka.apache.org/documentation.html#quickstart](http://kafka.apache.org/documentation.html#quickstart)
 
-### Kinesis
+# Kinesis
 ***
-#### AWS Credentials
+## AWS Credentials
 You will need to obtain an IAM user that has the following permissions for the stream you are planning on producing to:
 
 - "kinesis:PutRecord"
@@ -159,7 +155,7 @@ See the [AWS docs](http://docs.aws.amazon.com/streams/latest/dev/controlling-acc
 The producer uses the [DefaultAWSCredentialsProviderChain](http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html) class to gain aws credentials.
 See the [AWS docs](http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html) on how to setup the IAM user with the Default Credential Provider Chain.
 
-#### Options
+## Options
 Set the output stream in `config.properties` by setting the `kinesis_stream` property.
 
 The producer uses the [KPL (Kinesis Producer Library)](http://docs.aws.amazon.com/streams/latest/dev/developing-producers-with-kpl.html) and uses the KPL built in configurations.
@@ -184,23 +180,23 @@ AggregationEnabled=false
 
 Remember: if you disable record aggregation, you will lose the benefit of potentially greater producer throughput.
 
-### SQS
+# SQS
 ***
 
-#### AWS Credentials
+## AWS Credentials
 You will need to obtain an IAM user that has the permission to access the SQS service. The SQS producer also uses [DefaultAWSCredentialsProviderChain](http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html) to get AWS credentials.
 
 See the [AWS docs](http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html) on how to setup the IAM user with the Default Credential Provider Chain.
 
 In case you need to set up a different region also along with credentials then default one, see the [AWS docs](http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html#setup-credentials-setting-region).
 
-#### Options
+## Options
 Set the output queue in the `config.properties` by setting the `sqs_queue_uri` property to full SQS queue uri from AWS console.
 
 The producer uses the [AWS SQS SDK](http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sqs/AmazonSQSClient.html).
 
 
-### Google Cloud Pub/Sub
+# Google Cloud Pub/Sub
 ***
 In order to publish to Google Cloud Pub/Sub, you will need to obtain an IAM service account that has been granted the `roles/pubsub.publisher` role.
 
@@ -211,11 +207,12 @@ for DDL updates by setting the `ddl_pubsub_topic` property.
 
 The producer uses the [Google Cloud Java Library for Pub/Sub](https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-pubsub) and uses its built-in configurations.
 
-### RabbitMQ
+# RabbitMQ
 ***
 To produce messages to RabbitMQ, you will need to specify a host in `config.properties` with `rabbitmq_host`. This is the only required property, everything else falls back to a sane default.
 
 The remaining configurable properties are:
+
 - `rabbitmq_user` - defaults to **guest**
 - `rabbitmq_pass` - defaults to **guest**
 - `rabbitmq_virtual_host` - defaults to **/**
@@ -228,9 +225,9 @@ The remaining configurable properties are:
 - `rabbitmq_message_persistent` - defaults to **false**
 - `rabbitmq_declare_exchange` - defaults to **true**
 
-For more details on these options, you are encouraged to the read official RabbitMQ documentation here: https://www.rabbitmq.com/documentation.html
+For more details on these options, you are encouraged to the read official RabbitMQ documentation here: [https://www.rabbitmq.com/documentation.html](https://www.rabbitmq.com/documentation.html)
 
-### Redis
+# Redis
 ***
 Set the output stream in `config.properties` by setting the `redis_type`
 property to either `pubsub`, `xadd`, `lpush` or `rpsuh`. The `redis_key` is
@@ -251,8 +248,10 @@ Other configurable properties are:
 - `redis_type` - defaults to **pubsub**
 - `redis_key` - defaults to **maxwell**
 - `redis_stream_json_key` - defaults to **message**
+- `redis_sentinels` - doesn't have a default value
+- `redis_sentinel_master_name` - doesn't have a default value
 
-### Custom Producer
+# Custom Producer
 ***
 If none of the producers packaged with Maxwell meet your requirements, a custom producer can be added at runtime. The producer is responsible for processing the raw database rows. Note that your producer may receive DDL and heartbeat rows as well, but your producer can easily filter them out (see example).
 

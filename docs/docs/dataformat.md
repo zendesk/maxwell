@@ -1,4 +1,4 @@
-### So you ran some sql?
+# So you ran some sql?
 
     create table test.e (
       id int(10) not null primary key auto_increment,
@@ -15,7 +15,7 @@
 
 Maxwell will produce some output for that.  Let's look at it.
 
-### INSERT
+# INSERT
 ***
 
 ```
@@ -87,7 +87,7 @@ You only get this with --output_primary_key_columns. List of columns that make
 make up the primary key for this row.
 
 
-### UPDATE
+# UPDATE
 ***
 
 ```
@@ -118,7 +118,7 @@ rows that changed.  So `data` still has a complete copy of the row (just as
 with the insert), but now you can reconstruct what the row *was* by doing
 `data.merge(old)`.
 
-### DELETE
+# DELETE
 ***
 
 ```
@@ -141,7 +141,7 @@ after a DELETE, `data` contains a copy of the row, just before it shuffled off
 this mortal coil.
 
 
-### CREATE TABLE
+# CREATE TABLE
 ***
 
 ```
@@ -197,7 +197,7 @@ exceptions where we will change the column type, you could read about them in th
 [unalias_type](https://github.com/zendesk/maxwell/blob/master/src/main/java/com/zendesk/maxwell/schema/columndef/ColumnDef.java#L109)
 function if you so desired.
 
-### ALTER TABLE
+# ALTER TABLE
 
 ```
 mysql> alter table test.e add column torvalds bigint unsigned after m;
@@ -277,13 +277,13 @@ mysql> alter table test.e add column torvalds bigint unsigned after m;
 As with the CREATE TABLE, we have a complete image of the table before-and-after the alter
 
 
-### blob (+ binary encoded strings)
+# blob (+ binary encoded strings)
 ***
 
 Maxell will base64 encode BLOB, BINARY and VARBINARY columns (as well as varchar/string columns with a BINARY encoding).
 
 
-### datetime
+# datetime
 ***
 Datetime columns are output as "YYYY-MM-DD hh:mm::ss" strings.  Note that mysql
 has no problem storing invalid datetimes like "0000-00-00 00:00:00", and
@@ -300,7 +300,7 @@ mysql>    insert into test_datetime set dtcol='0000-00-00 00:00:00';
 
 As of 1.3.0, Maxwell supports microsecond precision datetime/timestamp/time columns.
 
-### sets
+# sets
 ***
 
 output as JSON arrays.
@@ -312,7 +312,7 @@ mysql>   insert into test_sets set setcol = 'b_val,c_val';
 <maxwell { "table":"test_sets", "type":"insert", "data": { "setcol": ["b_val", "c_val"] } }
 ```
 
-### strings (varchar, text)
+# strings (varchar, text)
 ***
 Maxwell will accept a variety of character encodings, but will always output UTF-8 strings.  The following table
 describes support for mysql's character sets:

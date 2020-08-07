@@ -21,14 +21,14 @@ public abstract class ColumnDef implements Cloneable {
 		this.type = (byte) dynamicEnum.get(type);
 	}
 
-	public abstract String toSQL(Object value);
+	public abstract String toSQL(Object value) throws ColumnDefCastException;
 
 	@Deprecated
-	public Object asJSON(Object value) {
+	public Object asJSON(Object value) throws ColumnDefCastException {
 		return asJSON(value, new MaxwellOutputConfig());
 	}
 
-	public Object asJSON(Object value, MaxwellOutputConfig config) {
+	public Object asJSON(Object value, MaxwellOutputConfig config) throws ColumnDefCastException {
 		return value;
 	}
 

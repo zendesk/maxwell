@@ -16,7 +16,7 @@ public class GeometryColumnDef extends ColumnDef {
 	}
 
 	@Override
-	public Object asJSON(Object value, MaxwellOutputConfig config) {
+	public Object asJSON(Object value, MaxwellOutputConfig config) throws ColumnDefCastException {
 		Geometry geometry = null;
 		if ( value instanceof Geometry ) {
 			geometry = (Geometry) value;
@@ -34,7 +34,7 @@ public class GeometryColumnDef extends ColumnDef {
 			}
 
 		} else {
-			throw new RuntimeException("Could not parse geometry column value: " + value);
+			throw new ColumnDefCastException(this, value);
 		}
 
 		return geometry.toText();

@@ -10,9 +10,8 @@ import com.zendesk.maxwell.replication.BinlogConnectorReplicator;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.replication.Replicator;
 import com.zendesk.maxwell.row.HeartbeatRowMap;
-import com.zendesk.maxwell.schema.MysqlPositionStore;
-import com.zendesk.maxwell.schema.MysqlSchemaStore;
-import com.zendesk.maxwell.schema.SchemaStoreSchema;
+import com.zendesk.maxwell.schema.*;
+import com.zendesk.maxwell.schema.columndef.ColumnDefCastException;
 import com.zendesk.maxwell.util.Logging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +19,8 @@ import org.slf4j.LoggerFactory;
 import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Maxwell implements Runnable {
 	protected MaxwellConfig config;
@@ -93,6 +94,24 @@ public class Maxwell implements Runnable {
 			}
 		}
 		return null;
+	}
+
+	private void logColumnCastError(ColumnDefCastException e) throws SQLException, SchemaStoreException {
+		try ( Connection conn = context.getSchemaConnectionPool().getConnection() ) {
+			LOGGER.error("checking for schema inconsistencies in " + e.database + "." + e.table);
+			SchemaCapturer capturer = new SchemaCapturer(conn, context.getCaseSensitivity(), e.database, e.table);
+			Schema recaptured = capturer.capture();
+			Table t = this.replicator.getSchema().findDatabase(e.database).findTable(e.table);
+			List<String> diffs = new ArrayList<>();
+
+			t.diff(diffs, recaptured.findDatabase(e.database).findTable(e.table), "old", "new");
+			if ( diffs.size() == 0 ) {
+				LOGGER.error("no differences found");
+			} else {
+				for ( String diff : diffs )
+					LOGGER.error(diff);
+			}
+		}
 	}
 
 	protected Position getInitialPosition() throws Exception {
@@ -222,7 +241,11 @@ public class Maxwell implements Runnable {
 		replicator.startReplicator();
 		this.onReplicatorStart();
 
-		replicator.runLoop();
+		try {
+			replicator.runLoop();
+		} catch ( ColumnDefCastException e ) {
+			logColumnCastError(e);
+		}
 	}
 
 	public static void main(String[] args) {

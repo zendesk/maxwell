@@ -21,32 +21,32 @@ public class IntColumnDef extends ColumnDef {
 			return i;
 	}
 
-	private Long toLong(Object value) {
+	private Long toLong(Object value) throws ColumnDefCastException {
 
 		if ( value instanceof Long ) {
 			return ( Long ) value;
-		}
-
-		if ( value instanceof Boolean ) {
+		} else if ( value instanceof Boolean ) {
 			return ( Boolean ) value ? 1l: 0l;
+		} else if ( value instanceof Integer ) {
+			Integer i = (Integer) value;
+
+			if (signed)
+				return Long.valueOf(i);
+
+			long res = castUnsigned(i, 1L << this.bits);
+			return Long.valueOf(res);
+		} else {
+			throw new ColumnDefCastException(this, value);
 		}
-
-		Integer i = (Integer) value;
-
-		if (signed)
-			return Long.valueOf(i);
-
-		long res = castUnsigned(i, 1L << this.bits);
-		return Long.valueOf(res);
 
 	}
 	@Override
-	public String toSQL(Object value) {
+	public String toSQL(Object value) throws ColumnDefCastException {
 		return toLong(value).toString();
 	}
 
 	@Override
-	public Object asJSON(Object value, MaxwellOutputConfig config) {
+	public Object asJSON(Object value, MaxwellOutputConfig config) throws ColumnDefCastException {
 		return toLong(value);
 	}
 

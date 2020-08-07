@@ -1,10 +1,9 @@
-### Monitoring
+# Monitoring
 ***
 Maxwell exposes certain metrics through either its base logging mechanism, JMX, HTTP or by push to Datadog. This is configurable through commandline options
 or the `config.properties` file. These can provide insight into system health.
-At present certain metrics are Kafka-specific - that is, not yet supported other producers.
 
-### Metrics
+# Metrics
 ***
 All metrics are prepended with the configured `metrics_prefix.`
 
@@ -26,7 +25,7 @@ metric                         | description
 `message.publish.age`          | the time between an event occurring on the DB and being published to kafka, in milliseconds. Note: since MySQL timestamps are accurate to the second, this is only accurate to +/- 500ms.
 `replication.queue.time`       | the time it took to enqueue a given binlog event for processing, in milliseconds
 
-### HTTP Endpoints
+# HTTP Endpoints
 ***
 When the HTTP server is enabled the following endpoints are exposed:
 
@@ -38,7 +37,7 @@ When the HTTP server is enabled the following endpoints are exposed:
 | `/ping`        | a simple ping test, responds with `pong`                                       |
 
 
-### JMX Configuration
+# JMX Configuration
 ***
 Standard configuration is either via commandline args or the `config.properties` file. However, when exposing JMX metrics
 additional configuration is required to allow remote access. In this case Maxwell makes use of the `JAVA_OPTS` environment variable.

@@ -5,6 +5,7 @@ public enum PartitionBy {
 	TABLE,
 	PRIMARY_KEY,
 	TRANSACTION_ID,
+	THREAD_ID,
 	COLUMN,
 	RANDOM
 }
