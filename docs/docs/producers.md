@@ -1,6 +1,9 @@
 # Kafka
 ***
 
+The Kafka producer is perhaps the most production hardened of all the producers,
+having run on high traffic instances at WEB scale.
+
 ## Topic
 Maxwell writes to a kafka topic named "maxwell" by default. It is configurable
 via `--kafka_topic`.  The given topic can be a plain string or a dynamic
@@ -27,8 +30,9 @@ SchemaException: Error reading field 'throttle_time_ms': java.nio.BufferUnderflo
 
 
 ## Passing options to kafka
-Any options given to Maxwell that are prefixed with `kafka.` will be passed directly into the Kafka producer configuration
-(with `kafka.` stripped off).  We use the "new producer" configuration, as described here:
+Any options present in `config.properties` that are prefixed with `kafka.` will
+be passed into the Kafka producer library (with `kafka.` stripped off, see below for examples).  We use
+the "new producer" configuration, as described here:
 [http://kafka.apache.org/documentation.html#newproducerconfigs](http://kafka.apache.org/documentation.html#newproducerconfigs)
 
 
@@ -69,17 +73,40 @@ as a source of truth.
 ***
 
 Both Kafka and AWS Kinesis support the notion of partitioned streams.
-Partitioning is controlled by `producer_partition_by`, which gives you the
-option to split your stream by database, table, primary
-key, or column data.  How you choose to partition will influence the consumers
-of the maxwell stream.  A good rule of thumb is to use the finest-grained
-partition scheme possible given serialization constraints.
+Because they like to make our lives hard, Kafka calls its two units "topics"
+and "partitions", and Kinesis calls them "streams" and "shards.  They're the
+same thing, though.  Maxwell is generally configured to write to N
+partitions/shards on one topic/stream, and how it distributes to those N
+partitions/shards can be controlled by `producer_partition_by`.
 
-To partition by column data, you must set both:
+`producer_partition_by` gives you a choice of splitting your stream by database, table,
+primary key, transaction id, column data, or "random".  How you choose
+to partition your stream greatly influences the load and serialization properties
+of your downstream consumers, so choose carefully.  A good rule of thumb is to
+use the finest-grained partition scheme possible given serialization
+constraints.
 
-- `producer_partition_columns`, a comma-separated list of column names, and
-- `producer_partiton_by_fallback`. This may be (_database_, _table_,
-  _primary_key_), and will be used as a default value when the column does not
+
+> *A brief partitioning digression:*
+
+> If I were building, say, a simple search index of a single table, I might
+> choose to partition by primary key; this would give you the best distribution
+> of workload amongst your stream processors while maintaining a strict ordering
+> of updates that happen to a certain row.
+
+> If I were building something that needed better serialization properties --
+let's say I needed to maintain strict ordering between updates that occured on
+different tables -- I would drop back to partitioning by table or database.
+This will reduce my throughput by a *lot* as a single stream consumer node will
+end up will all the load for particular table/database, but I'm guaranteed that
+the updates stay in order.
+
+If you choose to partition by column data (that is, values inside columns in
+your updates), you must set both:
+
+- `producer_partition_columns` - a comma-separated list of column names, and
+- `producer_partiton_by_fallback` - [_database_, _table_,
+  _primary_key_] - this will be used as the partition key when the column does not
   exist.
 
 When partitioning by column Maxwell will treat the values for the specified
@@ -90,28 +117,26 @@ columns as strings, concatenate them and use that value to partition the data.
 A binlog event's partition is determined by the selected hash function and hash string as follows
 
 ```
-  HASH_FUNCTION(HASH_STRING) % TOPIC.NUMBER_OF_PARTITIONS
+  HASH_FUNCTION(producer_partion_value) % TOPIC.NUMBER_OF_PARTITIONS
 ```
 
 The HASH_FUNCTION is either java's _hashCode_ or _murmurhash3_. The default
 HASH_FUNCTION is _hashCode_. Murmurhash3 may be set with the
 `kafka_partition_hash` option. The seed value for the murmurhash function is
-hardcoded to 25342 in the MaxwellKafkaPartitioner class.
+hardcoded to 25342 in the MaxwellKafkaPartitioner class.  We tell you this
+in case you need to reverse engineer where a row will land.
 
-The HASH_STRING may be (_database_, _table_, _primary_key_, _transaction_id_, _column_).  The
-default HASH_STRING is the _database_. The partitioning field can be configured
-using the `producer_partition_by` option.
-
-Maxwell will discover the number of partitions in its kafka topic upon boot.  This means that you should pre-create your kafka topics,
-and with at least as many partitions as you have logical databases:
+Maxwell will discover the number of partitions in its kafka topic upon boot.
+This means that you should pre-create your kafka topics:
 
 ```
 bin/kafka-topics.sh --zookeeper ZK_HOST:2181 --create \
                     --topic maxwell --partitions 20 --replication-factor 2
 ```
 
-
 [http://kafka.apache.org/documentation.html#quickstart](http://kafka.apache.org/documentation.html#quickstart)
+
+
 
 # Kinesis
 ***

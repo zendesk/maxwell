@@ -2,21 +2,21 @@
 ***
 - Download binary distro: [https://github.com/zendesk/maxwell/releases/download/v1.27.1/maxwell-1.27.1.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.27.1/maxwell-1.27.1.tar.gz)
 - Sources and bug tracking is available on github: [https://github.com/zendesk/maxwell](https://github.com/zendesk/maxwell)
-- Obligatory copy/paste to terminal:
 
+**curl**:
 ```
 curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.27.1/maxwell-1.27.1.tar.gz \
        | tar zxvf -
 cd maxwell-1.27.1
 ```
 
-or get the docker image:
+**docker**:
 
 ```
 docker pull zendesk/maxwell
 ```
 
-or on Mac OS X with homebrew installed:
+**homebrew**:
 
 ```
 brew install maxwell
@@ -25,7 +25,7 @@ brew install maxwell
 # Configure Mysql
 ***
 
-*Server Config:* Ensure your server_id is configured, and that row-based replication is turned on.
+*Server Config:* Ensure server_id is set, and that row-based replication is on.
 
 ```
 $ vi my.cnf
@@ -47,7 +47,7 @@ mysql> set global binlog_row_image=FULL;
 note: `binlog_format` is a session-based property.  You will need to shutdown all active connections to fully convert
 to row-based replication.
 
-*Permissions:* Maxwell needs permissions to store state in the database specified by the `schema_database` option (default `maxwell`).
+*Permissions:* Maxwell needs permissions to act as a replica, and to write to the `maxwell` database.
 ```
 mysql> CREATE USER 'maxwell'@'%' IDENTIFIED BY 'XXXXXX';
 mysql> GRANT ALL ON maxwell.* TO 'maxwell'@'%';

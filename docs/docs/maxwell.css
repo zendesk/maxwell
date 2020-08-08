@@ -26,3 +26,18 @@
 #Changelog h3 {
   font-size: 1.25rem;
 }
+
+blockquote {
+  background: #f9f9f9;
+  border-left: 10px solid #ccc;
+  margin: 1.5em 10px;
+  padding: 0.5em 10px;
+}
+
+h1:not(:first-child) {
+  margin-top: 60px;
+}
+
+.bs-sidebar .nav > li > a {
+  padding: 3px 20px;
+}
