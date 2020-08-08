@@ -176,24 +176,24 @@
 <ul>
 <li>Download binary distro: <a href="https://github.com/zendesk/maxwell/releases/download/v1.27.1/maxwell-1.27.1.tar.gz">https://github.com/zendesk/maxwell/releases/download/v1.27.1/maxwell-1.27.1.tar.gz</a></li>
 <li>Sources and bug tracking is available on github: <a href="https://github.com/zendesk/maxwell">https://github.com/zendesk/maxwell</a></li>
-<li>Obligatory copy/paste to terminal:</li>
 </ul>
+<p><strong>curl</strong>:</p>
 <pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.27.1/maxwell-1.27.1.tar.gz \
        | tar zxvf -
 cd maxwell-1.27.1
 </code></pre>
 
-<p>or get the docker image:</p>
+<p><strong>docker</strong>:</p>
 <pre><code>docker pull zendesk/maxwell
 </code></pre>
 
-<p>or on Mac OS X with homebrew installed:</p>
+<p><strong>homebrew</strong>:</p>
 <pre><code>brew install maxwell
 </code></pre>
 
 <h1 id="configure-mysql">Configure Mysql</h1>
 <hr />
-<p><em>Server Config:</em> Ensure your server_id is configured, and that row-based replication is turned on.</p>
+<p><em>Server Config:</em> Ensure server_id is set, and that row-based replication is on.</p>
 <pre><code>$ vi my.cnf
 
 [mysqld]
@@ -209,7 +209,7 @@ mysql&gt; set global binlog_row_image=FULL;
 
 <p>note: <code>binlog_format</code> is a session-based property.  You will need to shutdown all active connections to fully convert
 to row-based replication.</p>
-<p><em>Permissions:</em> Maxwell needs permissions to store state in the database specified by the <code>schema_database</code> option (default <code>maxwell</code>).</p>
+<p><em>Permissions:</em> Maxwell needs permissions to act as a replica, and to write to the <code>maxwell</code> database.</p>
 <pre><code>mysql&gt; CREATE USER 'maxwell'@'%' IDENTIFIED BY 'XXXXXX';
 mysql&gt; GRANT ALL ON maxwell.* TO 'maxwell'@'%';
 mysql&gt; GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'maxwell'@'%';
