@@ -12,7 +12,14 @@ import com.zendesk.maxwell.replication.Replicator;
 import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.schema.*;
 import com.zendesk.maxwell.schema.columndef.ColumnDefCastException;
+import com.zendesk.maxwell.schema.MysqlPositionStore;
+import com.zendesk.maxwell.schema.MysqlSchemaStore;
+import com.zendesk.maxwell.schema.SchemaStoreSchema;
+import com.zendesk.maxwell.util.CuratorUtils;
 import com.zendesk.maxwell.util.Logging;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.curator.framework.recipes.leader.LeaderLatch;
+import org.apache.curator.framework.recipes.leader.LeaderLatchListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -266,22 +273,73 @@ public class Maxwell implements Runnable {
 				}
 			});
 
-			maxwell.start();
-		} catch ( SQLException e ) {
-			// catch SQLException explicitly because we likely don't care about the stacktrace
-			LOGGER.error("SQLException: " + e.getLocalizedMessage());
-			System.exit(1);
-		} catch ( URISyntaxException e ) {
-			// catch URISyntaxException explicitly as well to provide more information to the user
-			LOGGER.error("Syntax issue with URI, check for misconfigured host, port, database, or JDBC options (see RFC 2396)");
-			LOGGER.error("URISyntaxException: " + e.getLocalizedMessage());
-			System.exit(1);
-		} catch ( ServerException e ) {
-			LOGGER.error("Maxwell couldn't find the requested binlog, exiting...");
-			System.exit(2);
-		} catch ( Exception e ) {
-			e.printStackTrace();
-			System.exit(1);
+			if( config.haMode ){
+				CuratorUtils cu = new CuratorUtils();
+				cu.setZookeeperServer(config.zookeeperServer);
+				cu.setSessionTimeoutMs(config.sessionTimeoutMs);
+				cu.setConnectionTimeoutMs(config.connectionTimeoutMs);
+				cu.setMaxRetries(config.maxRetries);
+				cu.setBaseSleepTimeMs(config.baseSleepTimeMs);
+				cu.init();
+				CuratorFramework client = cu.getClient();
+				LeaderLatch leader = new LeaderLatch(client, cu.getElectPath());
+				leader.addListener(new LeaderLatchListener() {
+					@Override
+					public void isLeader() {
+						try {
+							cu.register();
+							maxwell.start();
+						} catch (SQLException e) {
+							// catch SQLException explicitly because we likely don't care about the stacktrace
+							LOGGER.error("SQLException: " + e.getLocalizedMessage());
+							System.exit(1);
+						} catch (URISyntaxException e) {
+							// catch URISyntaxException explicitly as well to provide more information to the user
+							LOGGER.error("Syntax issue with URI, check for misconfigured host, port, database, or JDBC options (see RFC 2396)");
+							LOGGER.error("URISyntaxException: " + e.getLocalizedMessage());
+							System.exit(1);
+						} catch (ServerException e) {
+							LOGGER.error("Maxwell couldn't find the requested binlog, exiting...");
+							System.exit(2);
+						} catch (Exception e) {
+							System.exit(1);
+						}
+
+					}
+
+					@Override
+					public void notLeader() {
+
+					}
+				});
+
+				leader.start();
+				Thread.sleep(Integer.MAX_VALUE);
+
+			}else {
+				try {
+					maxwell.start();
+				} catch (SQLException e) {
+					// catch SQLException explicitly because we likely don't care about the stacktrace
+					LOGGER.error("SQLException: " + e.getLocalizedMessage());
+					System.exit(1);
+				} catch (URISyntaxException e) {
+					// catch URISyntaxException explicitly as well to provide more information to the user
+					LOGGER.error("Syntax issue with URI, check for misconfigured host, port, database, or JDBC options (see RFC 2396)");
+					LOGGER.error("URISyntaxException: " + e.getLocalizedMessage());
+					System.exit(1);
+				} catch (ServerException e) {
+					LOGGER.error("Maxwell couldn't find the requested binlog, exiting...");
+					System.exit(2);
+				} catch (Exception e) {
+					System.exit(1);
+				}
+			}
+
+		} catch (InterruptedException e) {
+			LOGGER.error("InterruptedException.....");
+		} catch (Exception e) {
+			LOGGER.error("The election failed to start",e);
 		}
 	}
 }
