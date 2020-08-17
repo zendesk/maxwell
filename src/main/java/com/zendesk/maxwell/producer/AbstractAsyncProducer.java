@@ -14,7 +14,7 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 	public class CallbackCompleter {
 		private InflightMessageList inflightMessages;
 		private final MaxwellContext context;
-		private final MaxwellConfig config;
+		private final int metricsAgeSloMs;
 		private final Position position;
 		private final boolean isTXCommit;
 		private final long messageID;
@@ -22,7 +22,7 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 		public CallbackCompleter(InflightMessageList inflightMessages, Position position, boolean isTXCommit, MaxwellContext context, long messageID) {
 			this.inflightMessages = inflightMessages;
 			this.context = context;
-			this.config = context.getConfig();
+			this.metricsAgeSloMs = context.getConfig().metricsAgeSlo * 1000;
 			this.position = position;
 			this.isTXCommit = isTXCommit;
 			this.messageID = messageID;
@@ -41,7 +41,7 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 					messagePublishTimer.update(age, TimeUnit.MILLISECONDS);
 					messageLatencyTimer.update(Math.max(0L, currentTime - message.eventTimeMS - 500L), TimeUnit.MILLISECONDS);
 
-					if (age > config.metricsAgeSlo) {
+					if (age > metricsAgeSloMs) {
 						messageLatencySloViolationCount.inc();
 					}
 				}
