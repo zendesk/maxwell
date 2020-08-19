@@ -36,12 +36,12 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 				if (message != null) {
 					context.setPosition(message.position);
 					long currentTime = System.currentTimeMillis();
-					long age = currentTime - message.sendTimeMS;
+					long endToEndLatency = currentTime - message.eventTimeMS;
 
-					messagePublishTimer.update(age, TimeUnit.MILLISECONDS);
-					messageLatencyTimer.update(Math.max(0L, currentTime - message.eventTimeMS - 500L), TimeUnit.MILLISECONDS);
+					messagePublishTimer.update(currentTime - message.sendTimeMS, TimeUnit.MILLISECONDS);
+					messageLatencyTimer.update(Math.max(0L, endToEndLatency - 500L), TimeUnit.MILLISECONDS);
 
-					if (age > metricsAgeSloMs) {
+					if (endToEndLatency > metricsAgeSloMs) {
 						messageLatencySloViolationCount.inc();
 					}
 				}
