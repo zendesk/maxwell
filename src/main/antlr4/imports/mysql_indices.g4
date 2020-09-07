@@ -20,6 +20,7 @@ index_type_4:
 index_type_5:
   index_constraint? FOREIGN KEY index_name? index_column_list reference_definition;
 
+
 index_type_check:
   index_constraint? CHECK skip_parens;
 
@@ -39,7 +40,11 @@ index_options:
 
 index_column_list: '(' index_columns ')';
 index_columns: index_column (',' index_column )*;
-index_column: name index_column_partial_def? index_column_asc_or_desc?;
+
+index_column:
+  name index_column_partial_def? index_column_asc_or_desc?
+  | '(' CAST skip_parens ')';
+
 index_column_partial_def: '(' index_column_partial_length ')';
 index_column_partial_length: INTEGER_LITERAL+;
 index_column_asc_or_desc: ASC | DESC;

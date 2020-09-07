@@ -179,6 +179,7 @@ public class DDLParserTest {
 	@Test
 	public void testParsingSomeAlters() {
 		String testSQL[] = {
+			"CREATE TABLE employees (   data JSON,   INDEX ((CAST(data->>'$.name' AS CHAR(30)))) )",
 			"ALTER TABLE uat_sync_test.p add COLUMN uat_sync_test.p.remark VARCHAR(100) after pname",
 			"alter table t add column c varchar(255) default 'string1' 'string2'",
 			"alter table t add column mortgage_item BIT(4) NOT NULL DEFAULT 0b0000",
