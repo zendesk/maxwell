@@ -103,6 +103,18 @@ public class DDLParserTest {
 	}
 
 	@Test
+	public void testSRID() {
+		TableAlter a = parseAlter("alter table foo add column `location` point NOT NULL SRID 4326");
+
+		AddColumnMod m = (AddColumnMod) a.columnMods.get(0);
+		assertThat(m.name, is("location"));
+
+		GeometryColumnDef b = (GeometryColumnDef) m.definition;
+		assertThat(b.getType(), is("point"));;
+		assertThat(b.getName(), is("location"));
+	}
+
+	@Test
 	public void testText() {
 		TableAlter a = parseAlter("alter table no.no add column mocha TEXT character set 'utf8' collate 'utf8_foo'");
 

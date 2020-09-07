@@ -93,6 +93,7 @@ column_options:
 	| (GENERATED ALWAYS)? AS skip_parens
 	| reference_definition
 	| CHECK skip_parens
+	| SRID INTEGER_LITERAL
 ;
 
 primary_key: PRIMARY KEY;
