@@ -2,7 +2,7 @@ grammar mysql_alter_table;
 
 import mysql_literal_tokens, mysql_idents, column_definitions, mysql_partition;
 
-alter_table: alter_table_preamble alter_specifications alter_partition_specification?;
+alter_table: alter_table_preamble alter_specifications? alter_partition_specification?;
 
 alter_table_preamble: ALTER alter_flags? TABLE table_name;
 alter_flags: (ONLINE | OFFLINE | IGNORE);
