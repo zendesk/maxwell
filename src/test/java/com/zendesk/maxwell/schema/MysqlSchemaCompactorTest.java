@@ -22,6 +22,7 @@ public class MysqlSchemaCompactorTest extends MaxwellTestWithIsolatedServer {
 		MaxwellTestSupport.setupSchema(server, false);
 
 		String input[] = {
+			"drop database if exists foo",
 			"create database foo",
 			"create table foo.bar ( i int )",
 			"alter table foo.bar add column j int",
