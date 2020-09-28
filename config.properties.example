@@ -44,6 +44,10 @@ password=maxwell
 # whether to use GTID or not for positioning
 #gtid_mode=true
 
+# how many "delta" schemas should we keep in `maxwell`.`schemas` before we compress it into
+# materialized schema?  Default: unlimited
+#max_schemas=5000
+
 # SSL/TLS options
 # To use VERIFY_CA or VERIFY_IDENTITY, you must set the trust store with Java opts:
 #   -Djavax.net.ssl.trustStore=<truststore> -Djavax.net.ssl.trustStorePassword=<password>
