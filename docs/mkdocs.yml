@@ -7,6 +7,7 @@ extra_css:
 nav:
   - 'Quick Start': 'quickstart.md'
   - 'Configuration':
+    - 'Reference': 'config.md'
     - 'Producers': 'producers.md'
     - 'Filtering': 'filtering.md'
     - 'Bootstrapping': 'bootstrapping.md'
@@ -16,5 +17,4 @@ nav:
     - 'Embedding': 'embedding.md'
     - 'Internals': 'schemas.md'
     - 'Compatibility': 'compat.md'
-  - 'Reference': 'config.md'
   - 'Changelog': 'changelog.md'
