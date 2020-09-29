@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class MysqlSchemaCompactorTest extends MaxwellTestWithIsolatedServer {
 	static MysqlSchemaCompactor compactor;
@@ -72,5 +73,16 @@ public class MysqlSchemaCompactorTest extends MaxwellTestWithIsolatedServer {
 
 		List<String> diff = a.getSchema().diff(b.getSchema(), "pre-compact", "post-compact");
 		assertEquals(StringUtils.join(diff, "\n"), 0, diff.size());
+	}
+
+	@Test
+	public void testCompactorClearsOutRow() throws Exception {
+		compactor.doWork();
+
+		ResultSet rs = this.server.query("select * from `maxwell`.`schemas`");
+		assert(rs.next());
+
+		assertNull(rs.getObject("base_schema_id"));
+		assertNull(rs.getString("deltas"));
 	}
 }

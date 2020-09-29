@@ -147,7 +147,7 @@ public class MysqlSchemaCompactor extends RunLoopProcess {
 
 			MysqlSavedSchema savedSchema = MysqlSavedSchema.restoreFromSchemaID(schemaID, cx, this.sensitivity);
 			savedSchema.saveFullSchema(cx, schemaID);
-			cx.createStatement().executeUpdate("update `schemas` set `base_schema_id` = null where `id` = " + schemaID);
+			cx.createStatement().executeUpdate("update `schemas` set `base_schema_id` = null, `deltas` = null where `id` = " + schemaID);
 
 			cx.prepareStatement("COMMIT").execute();
 
