@@ -13,6 +13,7 @@ import com.zendesk.maxwell.schema.MysqlSchemaCompactor;
 import com.zendesk.maxwell.schema.PositionStoreThread;
 import com.zendesk.maxwell.schema.ReadOnlyMysqlPositionStore;
 import com.zendesk.maxwell.util.C3P0ConnectionPool;
+import com.zendesk.maxwell.util.RunLoopProcess;
 import com.zendesk.maxwell.util.StoppableTask;
 import com.zendesk.maxwell.util.TaskManager;
 import org.slf4j.Logger;
@@ -239,6 +240,25 @@ public class MaxwellContext {
 		return this.terminationThread;
 	}
 
+	public Thread startTask(RunLoopProcess task, String name) {
+		Thread t = new Thread(() -> {
+			try {
+				task.runLoop();
+			} catch (Exception e) {
+				LOGGER.error("exception in thread: " + name, e);
+				try {
+					this.terminate(e);
+				} catch (Exception exception) {
+					exception.printStackTrace();
+				}
+			}
+		}, name);
+
+		t.start();
+		addTask(task);
+		return t;
+	}
+
 	public Exception getError() {
 		return error;
 	}
@@ -409,17 +429,8 @@ public class MaxwellContext {
 			currentSchemaID
 		);
 
-		this.bootstrapControllerThread = new Thread(() -> {
-			try {
-				this.bootstrapController.runLoop();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}, "maxwell-bootstrap-controller");
-		bootstrapControllerThread.start();
+		this.bootstrapControllerThread = this.startTask(this.bootstrapController, "maxwell-bootstrap-controller");
 
-
-		addTask(this.bootstrapController);
 		return this.bootstrapController;
 	}
 
@@ -435,15 +446,7 @@ public class MaxwellContext {
 				this.getCaseSensitivity()
 		);
 
-		Thread compactorThread = new Thread(() -> {
-			try {
-				compactor.runLoop();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}, "maxwell-schema-compactor");
-		compactorThread.start();
-		this.addTask(compactor);
+		this.startTask(compactor, "maxwell-schema-compactor");
 	}
 
 	public Filter getFilter() {
