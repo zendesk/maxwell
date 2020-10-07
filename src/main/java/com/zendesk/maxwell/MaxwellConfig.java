@@ -219,6 +219,8 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "schema_port", "port for schema_host" ).withRequiredArg();
 		parser.accepts( "schema_jdbc_options", "additional jdbc connection options" ).withRequiredArg();
 
+		parser.separator();
+		parser.accepts( "max_schemas", "Maximum schemas to keep before triggering a compaction operation.  Default: unlimited" ).withRequiredArg();
 		parser.section("operation");
 
 		parser.accepts( "bootstrapper", "bootstrapper type: async|sync|none. default: async" ).withRequiredArg();
@@ -229,7 +231,6 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "ignore_producer_error", "Maxwell will be terminated on kafka/kinesis errors when false. Otherwise, those producer errors are only logged. Default to true" ).withOptionalArg();
 		parser.accepts( "recapture_schema", "recapture the latest schema" ).withOptionalArg();
 		parser.accepts( "buffer_memory_usage", "Percentage of JVM memory available for transaction buffer.  Floating point between 0 and 1." ).withOptionalArg();
-		parser.accepts( "max_schemas", "Maximum schemas to keep before triggering a compaction operation.  Default: unlimited" ).withRequiredArg();
 
 		parser.section( "file_producer" );
 
