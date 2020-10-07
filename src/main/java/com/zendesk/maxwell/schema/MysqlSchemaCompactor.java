@@ -77,6 +77,7 @@ public class MysqlSchemaCompactor extends RunLoopProcess {
 					compact(cx);
 				}
 			} finally {
+				cx.setAutoCommit(true);
 				releaseLock(cx);
 			}
 		}
