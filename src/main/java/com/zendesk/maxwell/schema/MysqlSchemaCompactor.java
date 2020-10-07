@@ -136,24 +136,23 @@ public class MysqlSchemaCompactor extends RunLoopProcess {
 	}
 
 	private void compact(Connection cx) throws SQLException, InvalidSchemaError {
+		if ( !shouldCompact(cx) )
+			return;
 
-		if ( shouldCompact(cx) ) {
+		Long schemaID = chooseCompactedSchemaBase(cx);
+		if ( schemaID == null)
+			return;
 
-			Long schemaID = chooseCompactedSchemaBase(cx);
-			if ( schemaID == null)
-				return;
+		LOGGER.info("compacting schemas before {}", schemaID);
+		cx.prepareStatement("BEGIN").execute();
 
-			LOGGER.info("compacting schemas before {}", schemaID);
-			cx.prepareStatement("BEGIN").execute();
+		MysqlSavedSchema savedSchema = MysqlSavedSchema.restoreFromSchemaID(schemaID, cx, this.sensitivity);
+		savedSchema.saveFullSchema(cx, schemaID);
+		cx.createStatement().executeUpdate("update `schemas` set `base_schema_id` = null, `deltas` = null where `id` = " + schemaID);
 
-			MysqlSavedSchema savedSchema = MysqlSavedSchema.restoreFromSchemaID(schemaID, cx, this.sensitivity);
-			savedSchema.saveFullSchema(cx, schemaID);
-			cx.createStatement().executeUpdate("update `schemas` set `base_schema_id` = null, `deltas` = null where `id` = " + schemaID);
+		cx.prepareStatement("COMMIT").execute();
 
-			cx.prepareStatement("COMMIT").execute();
-
-			slowDeleteSchemas(cx, schemaID);
-		}
+		slowDeleteSchemas(cx, schemaID);
 	}
 
 	private void slowDeleteSchemas(Connection cx, long newBaseSchemaID) throws SQLException {
