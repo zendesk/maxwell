@@ -44,6 +44,12 @@ password=maxwell
 # whether to use GTID or not for positioning
 #gtid_mode=true
 
+# maxwell will capture an initial "base" schema containing all table and column information,
+# and then keep delta-updates on top of that schema.  If you have an inordinate amount of DDL changes,
+# the table containing delta changes will grow unbounded (and possibly too large) over time.  If you
+# enable this option Maxwell will periodically compact its tables.
+#max_schemas=10000
+
 # SSL/TLS options
 # To use VERIFY_CA or VERIFY_IDENTITY, you must set the trust store with Java opts:
 #   -Djavax.net.ssl.trustStore=<truststore> -Djavax.net.ssl.trustStorePassword=<password>
@@ -73,6 +79,7 @@ password=maxwell
 #schema_user=username
 #schema_password=password
 #schema_port=3306
+
 
 #       *** output format ***
 

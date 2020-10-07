@@ -211,6 +211,8 @@ public class Maxwell implements Runnable {
 		MysqlSchemaStore mysqlSchemaStore = new MysqlSchemaStore(this.context, initPosition);
 		BootstrapController bootstrapController = this.context.getBootstrapController(mysqlSchemaStore.getSchemaID());
 
+		this.context.startSchemaCompactor();
+
 		if (config.recaptureSchema) {
 			mysqlSchemaStore.captureAndSaveSchema();
 		}
@@ -247,6 +249,7 @@ public class Maxwell implements Runnable {
 			logColumnCastError(e);
 		}
 	}
+
 
 	public static void main(String[] args) {
 		try {

@@ -156,6 +156,10 @@ public class MysqlPositionStore {
 		if ( !rs.next() )
 			return null;
 
+		return MysqlPositionStore.positionFromResultSet(rs, this.gtidMode);
+	}
+
+	public static Position positionFromResultSet(ResultSet rs, boolean gtidMode) throws SQLException {
 		String gtid = gtidMode ? rs.getString("gtid_set") : null;
 		BinlogPosition pos = new BinlogPosition(
 			gtid,

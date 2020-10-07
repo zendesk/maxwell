@@ -119,6 +119,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public boolean ignoreProducerError;
 	public boolean recaptureSchema;
 	public float bufferMemoryUsage;
+	public Integer maxSchemaDeltas;
 
 	public String rabbitmqUser;
 	public String rabbitmqPass;
@@ -218,6 +219,8 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "schema_port", "port for schema_host" ).withRequiredArg();
 		parser.accepts( "schema_jdbc_options", "additional jdbc connection options" ).withRequiredArg();
 
+		parser.separator();
+		parser.accepts( "max_schemas", "Maximum schemas to keep before triggering a compaction operation.  Default: unlimited" ).withRequiredArg();
 		parser.section("operation");
 
 		parser.accepts( "bootstrapper", "bootstrapper type: async|sync|none. default: async" ).withRequiredArg();
@@ -228,7 +231,6 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "ignore_producer_error", "Maxwell will be terminated on kafka/kinesis errors when false. Otherwise, those producer errors are only logged. Default to true" ).withOptionalArg();
 		parser.accepts( "recapture_schema", "recapture the latest schema" ).withOptionalArg();
 		parser.accepts( "buffer_memory_usage", "Percentage of JVM memory available for transaction buffer.  Floating point between 0 and 1." ).withOptionalArg();
-		parser.accepts( "max_schemas", "[deprecated]" ).withRequiredArg();
 
 		parser.section( "file_producer" );
 
@@ -579,6 +581,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.ignoreProducerError = fetchBooleanOption("ignore_producer_error", options, properties, true);
 		this.recaptureSchema = fetchBooleanOption("recapture_schema", options, null, false);
 		this.bufferMemoryUsage = Float.parseFloat(fetchOption("buffer_memory_usage", options, properties, "0.25"));
+		this.maxSchemaDeltas = fetchIntegerOption("max_schemas", options, properties, null);
 
 		outputConfig.includesBinlogPosition = fetchBooleanOption("output_binlog_position", options, properties, false);
 		outputConfig.includesGtidPosition = fetchBooleanOption("output_gtid_position", options, properties, false);
@@ -850,6 +853,13 @@ public class MaxwellConfig extends AbstractConfig {
 				LOGGER.error("Error setting up javascript: ", e);
 				System.exit(1);
 			}
+		}
+
+		if ( this.maxSchemaDeltas != null ) {
+			if ( this.maxSchemaDeltas <= 1 ) {
+				usageForOptions("--max_schemas must a number between 1 and 2**31", "--max_schemas");
+			}
+
 		}
 	}
 
