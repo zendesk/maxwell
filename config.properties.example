@@ -44,9 +44,11 @@ password=maxwell
 # whether to use GTID or not for positioning
 #gtid_mode=true
 
-# how many "delta" schemas should we keep in `maxwell`.`schemas` before we compress it into
-# materialized schema?  Default: unlimited
-#max_schemas=5000
+# maxwell will capture an initial "base" schema containing all table and column information,
+# and then keep delta-updates on top of that schema.  If you have an inordinate amount of DDL changes,
+# the table containing delta changes will grow unbounded (and possibly too large) over time.  If you
+# enable this option Maxwell will periodically compact its tables.
+#max_schemas=10000
 
 # SSL/TLS options
 # To use VERIFY_CA or VERIFY_IDENTITY, you must set the trust store with Java opts:
@@ -78,12 +80,6 @@ password=maxwell
 #schema_password=password
 #schema_port=3306
 
-
-# maxwell will capture an initial "base" schema containing all table and column information,
-# and then keep delta-updates on top of that schema.  If you have an inordinate amount of DDL changes,
-# the table containing delta changes will grow unbounded (and possibly too large) over time.  If you
-# enable this option Maxwell will periodically compact its tables.
-#max_schemas=10000
 
 #       *** output format ***
 
