@@ -24,14 +24,13 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 	private MysqlSavedSchema savedSchema;
 
 	public MysqlSchemaStore(ConnectionPool maxwellConnectionPool,
-							ConnectionPool replicationConnectionPool,
 							ConnectionPool schemaConnectionPool,
 							Long serverID,
 							Position initialPosition,
 							CaseSensitivity caseSensitivity,
 							Filter filter,
 							boolean readOnly) {
-		super(replicationConnectionPool, schemaConnectionPool, caseSensitivity, filter);
+		super(schemaConnectionPool, caseSensitivity, filter);
 		this.serverID = serverID;
 		this.maxwellConnectionPool = maxwellConnectionPool;
 		this.initialPosition = initialPosition;
@@ -41,7 +40,6 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 	public MysqlSchemaStore(MaxwellContext context, Position initialPosition) throws SQLException {
 		this(
 			context.getMaxwellConnectionPool(),
-			context.getReplicationConnectionPool(),
 			context.getSchemaConnectionPool(),
 			context.getServerID(),
 			initialPosition,

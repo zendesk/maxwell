@@ -18,23 +18,20 @@ import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 
 public abstract class AbstractSchemaStore {
 	static final Logger LOGGER = LoggerFactory.getLogger(AbstractSchemaStore.class);
-	protected final ConnectionPool replicationConnectionPool;
 	protected final ConnectionPool schemaConnectionPool;
 	protected final CaseSensitivity caseSensitivity;
 	private final Filter filter;
 
-	protected AbstractSchemaStore(ConnectionPool replicationConnectionPool,
-								  ConnectionPool schemaConnectionPool,
+	protected AbstractSchemaStore(ConnectionPool schemaConnectionPool,
 								  CaseSensitivity caseSensitivity,
 								  Filter filter) {
-		this.replicationConnectionPool = replicationConnectionPool;
 		this.schemaConnectionPool = schemaConnectionPool;
 		this.caseSensitivity = caseSensitivity;
 		this.filter = filter;
 	}
 
 	protected AbstractSchemaStore(MaxwellContext context) throws SQLException {
-		this(context.getReplicationConnectionPool(), context.getSchemaConnectionPool(), context.getCaseSensitivity(), context.getFilter());
+		this(context.getSchemaConnectionPool(), context.getCaseSensitivity(), context.getFilter());
 	}
 
 	protected Schema captureSchema() throws SQLException {
