@@ -242,7 +242,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-pubsub</artifactId>
-      <version>1.105.1</version>
+      <version>1.106.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
