@@ -8,6 +8,8 @@ import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.UUID;
 
 
@@ -42,8 +44,8 @@ public class ZkService {
 		return isMaster;
 	}
 
-	private void start() {
-		thisServer = UUID.randomUUID().toString();
+	private void start() throws UnknownHostException {
+		thisServer = InetAddress.getLocalHost().getHostAddress();
 		thisServerZkPath = availablePath + "/" + thisServer;
 
 		LOGGER.info("server: " + thisServer);
