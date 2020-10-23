@@ -254,7 +254,8 @@ kafka.acks=1
 
 # custom producer properties can be configured using the custom_producer.* property namespace
 #custom_producer.custom_prop=foo
-
+#zk
+custom_producer.zkServers=test01:2181,test02:2181
 #          *** filtering ***
 
 # filter rows out of Maxwell's output.  Command separated list of filter-rules, evaluated in sequence.
