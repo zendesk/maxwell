@@ -187,12 +187,14 @@ public class Maxwell implements Runnable {
 		Leadership<String> leadership = election.run(atomix.getMembershipService().getLocalMember().id().toString());
 
 		// Check if the current node is the leader
+		System.out.println(leadership.leader());
 		if (leadership.leader().equals(atomix.getMembershipService().getLocalMember().id())) {
 			System.out.println("I am the leader!");
 		}
 
 		// Listen for changes in leadership
 		election.addListener(event -> {
+			System.out.println(leadership.leader());
 			if (event.newLeadership().leader().equals(atomix.getMembershipService().getLocalMember().id())) {
 				System.out.println("I am the leader!");
 			}
