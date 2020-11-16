@@ -151,6 +151,9 @@ public class MaxwellConfig extends AbstractConfig {
 	public String javascriptFile;
 	public Scripting scripting;
 
+	public boolean haMode;
+	public String atomixConf;
+
 	public MaxwellConfig() { // argv is only null in tests
 		this.customProducerProperties = new Properties();
 		this.kafkaProperties = new Properties();
@@ -222,6 +225,9 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.separator();
 		parser.accepts( "max_schemas", "Maximum schemas to keep before triggering a compaction operation.  Default: unlimited" ).withRequiredArg();
 		parser.section("operation");
+
+		parser.accepts( "ha", "enable high-availability mode via Atomix" ).withOptionalArg();
+		parser.accepts( "atomix_config", "location of atomix.conf configuration file" ).withRequiredArg();
 
 		parser.accepts( "bootstrapper", "bootstrapper type: async|sync|none. default: async" ).withRequiredArg();
 		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION[:HEARTBEAT]" ).withRequiredArg();
@@ -619,6 +625,8 @@ public class MaxwellConfig extends AbstractConfig {
 			outputConfig.secretKey = fetchOption("secret_key", options, properties, null);
 		}
 
+		this.haMode = fetchBooleanOption("ha", options, properties, false);
+		this.atomixConf = fetchOption("atomix_config", options, properties, "atomix.conf");
 	}
 
 	private Properties parseFile(String filename, Boolean abortOnMissing) {

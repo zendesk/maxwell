@@ -314,6 +314,16 @@
       <artifactId>simpleclient_servlet</artifactId>
       <version>0.5.0</version>
     </dependency>
+    <dependency>
+      <groupId>io.atomix</groupId>
+      <artifactId>atomix</artifactId>
+      <version>3.0.6</version>
+    </dependency>
+    <dependency>
+      <groupId>io.atomix</groupId>
+      <artifactId>atomix-raft</artifactId>
+      <version>3.0.6</version>
+    </dependency>
   </dependencies>
 
   <build>

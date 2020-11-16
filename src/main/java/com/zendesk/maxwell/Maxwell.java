@@ -13,6 +13,10 @@ import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.schema.*;
 import com.zendesk.maxwell.schema.columndef.ColumnDefCastException;
 import com.zendesk.maxwell.util.Logging;
+import io.atomix.cluster.MemberId;
+import io.atomix.core.Atomix;
+import io.atomix.core.election.LeaderElection;
+import io.atomix.core.election.Leadership;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -170,9 +174,39 @@ public class Maxwell implements Runnable {
 	protected void onReplicatorStart() {}
 	protected void onReplicatorEnd() {}
 
+	private void startHA() throws Exception {
+		// Create an Atomix instance from a HOCON configuration file
+		Atomix atomix = new Atomix(this.config.atomixConf);
+
+		// Start the instance
+		atomix.start().join();
+
+		// Get or create a leader election
+		LeaderElection<MemberId> election = atomix.getLeaderElection(this.config.clientID + "-election");
+
+		Leadership<MemberId> leadership = election.run(atomix.getMembershipService().getLocalMember().id());
+
+		// Check if the current node is the leader
+		if (leadership.leader().equals(atomix.getMembershipService().getLocalMember().id())) {
+			System.out.println("I am the leader!");
+		}
+
+		// Listen for changes in leadership
+		election.addListener(event -> {
+			if (event.newLeadership().leader().equals(atomix.getMembershipService().getLocalMember().id())) {
+				System.out.println("I am the leader!");
+			}
+		});
+		Thread.sleep(Long.MAX_VALUE);
+	}
+
 	private void start() throws Exception {
 		try {
-			startInner();
+			if ( this.config.haMode ) {
+				startHA();
+			} else {
+				startInner();
+			}
 		} catch ( Exception e) {
 			this.context.terminate(e);
 		} finally {
