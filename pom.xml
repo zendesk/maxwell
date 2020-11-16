@@ -317,12 +317,12 @@
     <dependency>
       <groupId>io.atomix</groupId>
       <artifactId>atomix</artifactId>
-      <version>3.0.6</version>
+      <version>3.1.6</version>
     </dependency>
     <dependency>
       <groupId>io.atomix</groupId>
       <artifactId>atomix-raft</artifactId>
-      <version>3.0.6</version>
+      <version>3.1.6</version>
     </dependency>
   </dependencies>
 
