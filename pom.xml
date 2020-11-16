@@ -257,7 +257,7 @@
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
       <artifactId>metrics-core</artifactId>
-      <version>4.1.1</version>
+      <version>4.1.12.1</version>
     </dependency>
     <dependency>
       <groupId>redis.clients</groupId>
