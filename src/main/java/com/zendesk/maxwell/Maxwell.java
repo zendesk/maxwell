@@ -182,9 +182,9 @@ public class Maxwell implements Runnable {
 		atomix.start().join();
 
 		// Get or create a leader election
-		LeaderElection<MemberId> election = atomix.getLeaderElection(this.config.clientID + "-election");
+		LeaderElection<String> election = atomix.getLeaderElection(this.config.clientID + "-election");
 
-		Leadership<MemberId> leadership = election.run(atomix.getMembershipService().getLocalMember().id());
+		Leadership<String> leadership = election.run(atomix.getMembershipService().getLocalMember().id().toString());
 
 		// Check if the current node is the leader
 		if (leadership.leader().equals(atomix.getMembershipService().getLocalMember().id())) {
