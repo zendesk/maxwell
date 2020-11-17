@@ -153,6 +153,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public boolean haMode;
 	public String atomixConf;
+	public String atomixMemberID;
+	public String atomixAddress;
 
 	public MaxwellConfig() { // argv is only null in tests
 		this.customProducerProperties = new Properties();
@@ -228,6 +230,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "ha", "enable high-availability mode via Atomix" ).withOptionalArg();
 		parser.accepts( "atomix_config", "location of atomix.conf configuration file" ).withRequiredArg();
+		parser.accepts( "atomix_member_id", "atomix memberID parameter" ).withRequiredArg();
+		parser.accepts( "atomix_address", "local address to this atomix node, given as x.x.x.x:PORT" ).withRequiredArg();
 
 		parser.accepts( "bootstrapper", "bootstrapper type: async|sync|none. default: async" ).withRequiredArg();
 		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION[:HEARTBEAT]" ).withRequiredArg();
@@ -627,6 +631,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.haMode = fetchBooleanOption("ha", options, properties, false);
 		this.atomixConf = fetchOption("atomix_config", options, properties, "atomix.conf");
+		this.atomixMemberID = fetchOption("atomix_member_id", options, properties, null);
+		this.atomixAddress = fetchOption("atomix_address", options, properties, null);
 	}
 
 	private Properties parseFile(String filename, Boolean abortOnMissing) {

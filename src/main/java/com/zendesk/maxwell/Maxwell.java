@@ -15,6 +15,7 @@ import com.zendesk.maxwell.schema.columndef.ColumnDefCastException;
 import com.zendesk.maxwell.util.Logging;
 import io.atomix.cluster.MemberId;
 import io.atomix.core.Atomix;
+import io.atomix.core.AtomixBuilder;
 import io.atomix.core.election.Leader;
 import io.atomix.core.election.LeaderElection;
 import io.atomix.core.election.Leadership;
@@ -177,7 +178,17 @@ public class Maxwell implements Runnable {
 
 	private void startHA() throws Exception {
 		// Create an Atomix instance from a HOCON configuration file
-		Atomix atomix = new Atomix(this.config.atomixConf);
+		AtomixBuilder builder = Atomix.builder(this.config.atomixConf);
+
+		if ( this.config.atomixMemberID != null ) {
+			builder = builder.withMemberId(this.config.atomixMemberID);
+			System.setProperty("atomix.data", ".data-" + this.config.atomixMemberID);
+		}
+
+		if ( this.config.atomixAddress != null ) {
+			builder = builder.withAddress(this.config.atomixAddress);
+		}
+		Atomix atomix = builder.build();
 
 		// Start the instance
 		atomix.start().join();
@@ -192,7 +203,8 @@ public class Maxwell implements Runnable {
 		String currentLeader = leadership.leader().id();
 		LOGGER.info("current HA leader: " + currentLeader);
 		if (currentLeader.equals(memberID)) {
-			System.out.println("I am the leader!");
+			LOGGER.info("won leader election, starting maxwell");
+			start();
 		}
 
 		// Listen for changes in leadership
@@ -201,7 +213,12 @@ public class Maxwell implements Runnable {
 			String leaderID = leader.id();
 			LOGGER.info("new HA leader: " + leaderID);
 			if (leaderID.equals(memberID)) {
-				System.out.println("I am the leader!");
+				LOGGER.info("won leader election, starting maxwell");
+				try {
+					start();
+				} catch ( Exception e ) {
+					LOGGER.error(e.getMessage(), e);
+				}
 			}
 		});
 		Thread.sleep(Long.MAX_VALUE);
@@ -209,11 +226,7 @@ public class Maxwell implements Runnable {
 
 	private void start() throws Exception {
 		try {
-			if ( this.config.haMode ) {
-				startHA();
-			} else {
-				startInner();
-			}
+			this.startInner();
 		} catch ( Exception e) {
 			this.context.terminate(e);
 		} finally {
@@ -310,7 +323,11 @@ public class Maxwell implements Runnable {
 				}
 			});
 
-			maxwell.start();
+			if ( config.haMode ) {
+				maxwell.startHA();
+			} else {
+				maxwell.start();
+			}
 		} catch ( SQLException e ) {
 			// catch SQLException explicitly because we likely don't care about the stacktrace
 			LOGGER.error("SQLException: " + e.getLocalizedMessage());
