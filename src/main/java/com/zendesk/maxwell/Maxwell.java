@@ -189,8 +189,9 @@ public class Maxwell implements Runnable {
 		Leadership<String> leadership = election.run(memberID);
 
 		// Check if the current node is the leader
-		LOGGER.info("current HA leader: " + leadership.leader());
-		if (leadership.leader().equals(memberID)) {
+		String currentLeader = leadership.leader().id());
+		LOGGER.info("current HA leader: " + currentLeader);
+		if (currentLeader.equals(memberID)) {
 			System.out.println("I am the leader!");
 		}
 
