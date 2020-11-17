@@ -15,6 +15,7 @@ import com.zendesk.maxwell.schema.columndef.ColumnDefCastException;
 import com.zendesk.maxwell.util.Logging;
 import io.atomix.cluster.MemberId;
 import io.atomix.core.Atomix;
+import io.atomix.core.election.Leader;
 import io.atomix.core.election.LeaderElection;
 import io.atomix.core.election.Leadership;
 import org.slf4j.Logger;
@@ -184,18 +185,21 @@ public class Maxwell implements Runnable {
 		// Get or create a leader election
 		LeaderElection<String> election = atomix.getLeaderElection(this.config.clientID + "-election");
 
-		Leadership<String> leadership = election.run(atomix.getMembershipService().getLocalMember().id().toString());
+		String memberID = atomix.getMembershipService().getLocalMember().id().id();
+		Leadership<String> leadership = election.run(memberID);
 
 		// Check if the current node is the leader
-		System.out.println(leadership.leader());
-		if (leadership.leader().equals(atomix.getMembershipService().getLocalMember().id())) {
+		LOGGER.info("current HA leader: " + leadership.leader());
+		if (leadership.leader().equals(memberID)) {
 			System.out.println("I am the leader!");
 		}
 
 		// Listen for changes in leadership
 		election.addListener(event -> {
-			System.out.println(leadership.leader());
-			if (event.newLeadership().leader().equals(atomix.getMembershipService().getLocalMember().id())) {
+			Leader<String> leader = event.newLeadership().leader();
+			String leaderID = leader.id();
+			LOGGER.info("new HA leader: " + leaderID);
+			if (leaderID.equals(memberID)) {
 				System.out.println("I am the leader!");
 			}
 		});
