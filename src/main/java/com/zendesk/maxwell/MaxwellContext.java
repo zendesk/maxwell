@@ -174,7 +174,7 @@ public class MaxwellContext {
 		}
 	}
 
-	private void shutdown(AtomicBoolean complete) {
+	public void shutdown(AtomicBoolean complete) {
 		try {
 			taskManager.stop(this.error);
 			this.replicationConnectionPool.release();

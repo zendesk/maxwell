@@ -314,15 +314,11 @@
       <artifactId>simpleclient_servlet</artifactId>
       <version>0.5.0</version>
     </dependency>
+    <!-- https://mvnrepository.com/artifact/org.jgroups/jgroups-raft -->
     <dependency>
-      <groupId>io.atomix</groupId>
-      <artifactId>atomix</artifactId>
-      <version>3.1.6</version>
-    </dependency>
-    <dependency>
-      <groupId>io.atomix</groupId>
-      <artifactId>atomix-raft</artifactId>
-      <version>3.1.6</version>
+      <groupId>org.jgroups</groupId>
+      <artifactId>jgroups-raft</artifactId>
+      <version>0.5.3-SNAPSHOT</version>
     </dependency>
   </dependencies>
 

@@ -14,9 +14,6 @@ import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.scripting.Scripting;
 import com.zendesk.maxwell.util.AbstractConfig;
 import com.zendesk.maxwell.util.MaxwellOptionParser;
-import joptsimple.BuiltinHelpFormatter;
-import joptsimple.OptionDescriptor;
-import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -152,9 +149,8 @@ public class MaxwellConfig extends AbstractConfig {
 	public Scripting scripting;
 
 	public boolean haMode;
-	public String atomixConf;
-	public String atomixMemberID;
-	public String atomixAddress;
+	public String jgroupsConf;
+	public String raftMemberID;
 
 	public MaxwellConfig() { // argv is only null in tests
 		this.customProducerProperties = new Properties();
@@ -228,10 +224,9 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "max_schemas", "Maximum schemas to keep before triggering a compaction operation.  Default: unlimited" ).withRequiredArg();
 		parser.section("operation");
 
-		parser.accepts( "ha", "enable high-availability mode via Atomix" ).withOptionalArg();
-		parser.accepts( "atomix_config", "location of atomix.conf configuration file" ).withRequiredArg();
-		parser.accepts( "atomix_member_id", "atomix memberID parameter" ).withRequiredArg();
-		parser.accepts( "atomix_address", "local address to this atomix node, given as x.x.x.x:PORT" ).withRequiredArg();
+		parser.accepts( "ha", "enable high-availability mode via jgroups-raft" ).withOptionalArg();
+		parser.accepts( "jgroups_config", "location of jgroups xml configuration file" ).withRequiredArg();
+		parser.accepts( "raft_member_id", "raft memberID" ).withRequiredArg();
 
 		parser.accepts( "bootstrapper", "bootstrapper type: async|sync|none. default: async" ).withRequiredArg();
 		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION[:HEARTBEAT]" ).withRequiredArg();
@@ -630,9 +625,8 @@ public class MaxwellConfig extends AbstractConfig {
 		}
 
 		this.haMode = fetchBooleanOption("ha", options, properties, false);
-		this.atomixConf = fetchOption("atomix_config", options, properties, "atomix.conf");
-		this.atomixMemberID = fetchOption("atomix_member_id", options, properties, null);
-		this.atomixAddress = fetchOption("atomix_address", options, properties, null);
+		this.jgroupsConf = fetchOption("jgroups_config", options, properties, "raft.xml");
+		this.raftMemberID = fetchOption("raft_member_id", options, properties, null);
 	}
 
 	private Properties parseFile(String filename, Boolean abortOnMissing) {
