@@ -42,6 +42,10 @@
                                 <ul class="dropdown-menu">
                                     
 <li>
+    <a href="../config/" class="dropdown-item">Reference</a>
+</li>
+                                    
+<li>
     <a href="../producers/" class="dropdown-item">Producers</a>
 </li>
                                     
@@ -78,9 +82,6 @@
 </li>
                                 </ul>
                             </li>
-                            <li class="navitem">
-                                <a href="../config/" class="nav-link">Reference</a>
-                            </li>
                             <li class="navitem active">
                                 <a href="./" class="nav-link">Changelog</a>
                             </li>
@@ -93,7 +94,7 @@
                             </a>
                         </li>
                             <li class="nav-item">
-                                <a rel="prev" href="../config/" class="nav-link">
+                                <a rel="prev" href="../compat/" class="nav-link">
                                     <i class="fa fa-arrow-left"></i> Previous
                                 </a>
                             </li>
@@ -134,6 +135,16 @@
         
 
 <h1 id="maxwell-changelog">Maxwell changelog</h1>
+<h3 id="v1280-stardew-mania"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.28.0">v1.28.0</a>: "stardew mania"</h3>
+<ul>
+<li>schema compaction!  with the new --max_schemas option, maxwell will
+  periodically roll up the <code>maxwell</code>.<code>schemas</code> table, preventing it from
+  growing infinitely long.</li>
+<li>fix metricsAgeSloMS calculation</li>
+<li>support SRID columns</li>
+<li>fix parsing of complex INDEX(CAST()) statements</li>
+<li>various dependency bumps</li>
+</ul>
 <h3 id="v1271-red-bag-red-bag"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.27.1">v1.27.1</a>: "red bag?  red bag"</h3>
 <ul>
 <li>redis producer gets sentinal support</li>
@@ -1024,9 +1035,11 @@ changed.  Thanks @kristiankaufmann</p>
 <li>fix a nasty bug in which maxwell would store the wrong position after it lost its connection to the master.</li>
 </ul>
 <h3 id="v090-vanchi-says-eat"><a href="https://github.com/zendesk/maxwell/releases/tag/v0.9.0">v0.9.0</a>: Vanchi says "eat"</h3>
-<p>Also, vanchi is so paranoid he's worried immediately about this. 
-- mysql 5.6 support (without checksum support, yet)
-- fix a bunch of miscellaneous bugs @akshayi1 found (REAL, BOOL, BOOLEAN types, TRUNCATE TABLE)</p>
+<p>Also, vanchi is so paranoid he's worried immediately about this. </p>
+<ul>
+<li>mysql 5.6 support (without checksum support, yet)</li>
+<li>fix a bunch of miscellaneous bugs @akshayi1 found (REAL, BOOL, BOOLEAN types, TRUNCATE TABLE)</li>
+</ul>
 <h3 id="v081-pascal-says-bonjour"><a href="https://github.com/zendesk/maxwell/releases/tag/v0.8.1">v0.8.1</a>: "Pascal says Bonjour"</h3>
 <ul>
 <li>minor bugfix release around mysql connections going away.</li>
