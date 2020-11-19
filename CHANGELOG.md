@@ -1,5 +1,17 @@
 # Maxwell changelog
 
+### [v1.28.0](https://github.com/zendesk/maxwell/releases/tag/v1.28.0): "stardew mania"
+
+
+- schema compaction!  with the new --max_schemas option, maxwell will
+  periodically roll up the `maxwell`.`schemas` table, preventing it from
+  growing infinitely long.
+- fix metricsAgeSloMS calculation
+- support SRID columns
+- fix parsing of complex INDEX(CAST()) statements
+- various dependency bumps
+
+
 ### [v1.27.1](https://github.com/zendesk/maxwell/releases/tag/v1.27.1): "red bag?  red bag"
 
 
@@ -1115,6 +1127,7 @@ It also contains a bugfix around server_id handling.
 ### [v0.9.0](https://github.com/zendesk/maxwell/releases/tag/v0.9.0): Vanchi says "eat"
 
 Also, vanchi is so paranoid he's worried immediately about this. 
+
 - mysql 5.6 support (without checksum support, yet)
 - fix a bunch of miscellaneous bugs @akshayi1 found (REAL, BOOL, BOOLEAN types, TRUNCATE TABLE)
 
