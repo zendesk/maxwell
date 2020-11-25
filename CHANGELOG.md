@@ -1,5 +1,11 @@
 # Maxwell changelog
 
+### [v1.28.1](https://github.com/zendesk/maxwell/releases/tag/v1.28.1): "bootras bootras gallliiiii"
+
+
+- fix http server issue in 1.28.0
+
+
 ### [v1.28.0](https://github.com/zendesk/maxwell/releases/tag/v1.28.0): "stardew mania"
 
 
