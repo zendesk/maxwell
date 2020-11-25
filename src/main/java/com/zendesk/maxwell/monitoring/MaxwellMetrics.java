@@ -43,7 +43,8 @@ public class MaxwellMetrics implements Metrics {
 		metricsPrefix = config.metricsPrefix;
 
 		if (config.metricsReportingType == null) {
-			LOGGER.warn("Metrics will not be exposed: metricsReportingType not configured.");
+			if ( hasMetricsConfig(config) )
+				LOGGER.warn("Metrics will not be exposed: --metrics_type not set");
 			return;
 		}
 
@@ -151,5 +152,11 @@ public class MaxwellMetrics implements Metrics {
 			this.metricRegistry = metricRegistry;
 			this.healthCheckRegistry = healthCheckRegistry;
 		}
+	}
+
+	private boolean hasMetricsConfig(MaxwellConfig config) {
+		return config.httpPort != 8080
+				|| !config.httpPathPrefix.equals("/")
+				|| config.httpBindAddress != null;
 	}
 }
