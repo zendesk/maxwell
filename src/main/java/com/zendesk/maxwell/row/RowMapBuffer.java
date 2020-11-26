@@ -55,7 +55,7 @@ public class RowMapBuffer extends ListWithDiskBuffer<RowMap> {
 		this.outputStreamCacheSize += r.getApproximateSize();
 		if ( this.outputStreamCacheSize > FlushOutputStreamBytes ) {
 			resetOutputStreamCaches();
-			LOGGER.info("outputStreamCacheSize: " + this.outputStreamCacheSize + ", memorySize: " + this.memorySize);
+			LOGGER.debug("outputStreamCacheSize: " + this.outputStreamCacheSize + ", memorySize: " + this.memorySize);
 			this.outputStreamCacheSize = 0;
 		}
 
