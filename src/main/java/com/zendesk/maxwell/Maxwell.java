@@ -13,26 +13,14 @@ import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.schema.*;
 import com.zendesk.maxwell.schema.columndef.ColumnDefCastException;
 import com.zendesk.maxwell.util.Logging;
-import org.jgroups.JChannel;
-import org.jgroups.protocols.raft.RaftLeaderException;
-import org.jgroups.protocols.raft.Role;
-import org.jgroups.protocols.raft.Settable;
-import org.jgroups.protocols.raft.StateMachine;
-import org.jgroups.raft.RaftHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.DataInput;
-import java.io.DataOutput;
 import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Maxwell implements Runnable {
 	protected MaxwellConfig config;
@@ -58,13 +46,22 @@ public class Maxwell implements Runnable {
 		}
 	}
 
+	public void restart() {
+		try {
+			this.context = new MaxwellContext(config);
+		} catch ( Exception e ) {
+			throw new RuntimeException(e);
+		}
+
+		run();
+	}
+
 	public void terminate() {
 		Thread terminationThread = this.context.terminate();
 		if (terminationThread != null) {
 			try {
 				terminationThread.join();
 			} catch (InterruptedException e) {
-				// ignore
 			}
 		}
 	}
@@ -182,91 +179,6 @@ public class Maxwell implements Runnable {
 	protected void onReplicatorStart() {}
 	protected void onReplicatorEnd() {}
 
-	private AtomicBoolean isLeader = new AtomicBoolean(false);
-
-	private void startHA() throws Exception {
-		JChannel ch=new JChannel(this.config.jgroupsConf);
-		StateMachine s= new StateMachine() {
-			@Override
-			public byte[] apply(byte[] bytes, int i, int i1) throws Exception {
-				return new byte[0];
-			}
-
-			@Override
-			public void readContentFrom(DataInput dataInput) throws Exception {
-
-			}
-
-			@Override
-			public void writeContentTo(DataOutput dataOutput) throws Exception {
-
-			}
-		};
-
-		RaftHandle handle=new RaftHandle(ch, s);
-		handle.raftId(this.config.raftMemberID);
-
-		handle.addRoleListener(role -> {
-			if(role == Role.Leader) {
-				LOGGER.info("won HA election, starting maxwell");
-				try {
-					isLeader.set(true);
-					this.start();
-				} catch ( Exception e ) {
-				} finally {
-					isLeader.set(false);
-				}
-
-			} else
-				LOGGER.info("lost HA election, current leader: " + handle.leader());
-			// stop singleton services
-		});
-
-		ch.connect(this.config.clientID);
-		LOGGER.info("enter HA group, current leader: " +  handle.leader());
-
-		new Thread(() -> {
-			int exceptionCount = 0;
-			while ( true ) {
-				byte[] b = new byte[] { (byte) 0x1 };
-				try {
-					handle.set(b, 0, 1, 5000, TimeUnit.MILLISECONDS);
-					LOGGER.debug("RAFT-heartbeat successful");
-					exceptionCount = 0;
-					if ( handle.isLeader() && !this.isLeader.get() ) {
-						LOGGER.info("RAFT-consensus available, restarting maxwell...");
-						try {
-							isLeader.set(true);
-							this.start();
-						} catch ( Exception e ) {
-						} finally {
-							isLeader.set(false);
-						}
-					}
-				} catch ( RaftLeaderException e ) {
-					LOGGER.warn("RAFT leader unavailable: " + e.getMessage());
-					exceptionCount++;
-				} catch ( TimeoutException e ) {
-					exceptionCount++;
-					LOGGER.warn("RAFT-heartbeat timed out.  Exception Count:" + exceptionCount);
-				} catch ( Exception e ) {
-					LOGGER.error("unexpected exception in RAFT-heartbeat", e);
-				}
-
-				if ( exceptionCount > 1 && isLeader.get() ) {
-					LOGGER.warn("RAFT consensus unavailable after " + exceptionCount + " tries, stopping maxwell");
-					this.context.shutdown(new AtomicBoolean(false));
-				}
-
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) { }
-			}
-		}).start();
-
-
-		Thread.sleep(Long.MAX_VALUE);
-	}
 
 	private void start() throws Exception {
 		try {
@@ -368,7 +280,7 @@ public class Maxwell implements Runnable {
 			});
 
 			if ( config.haMode ) {
-				maxwell.startHA();
+				new MaxwellHA(maxwell, config.jgroupsConf, config.raftMemberID, config.clientID).startHA();
 			} else {
 				maxwell.start();
 			}

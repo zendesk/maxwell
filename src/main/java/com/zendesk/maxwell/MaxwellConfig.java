@@ -86,9 +86,6 @@ public class MaxwellConfig extends AbstractConfig {
 	public MaxwellOutputConfig outputConfig;
 	public String log_level;
 
-	public MetricRegistry metricRegistry;
-	public HealthCheckRegistry healthCheckRegistry;
-
 	public int httpPort;
 	public String httpBindAddress;
 	public String httpPathPrefix;
@@ -162,8 +159,6 @@ public class MaxwellConfig extends AbstractConfig {
 		this.masterRecovery = false;
 		this.gtidMode = false;
 		this.bufferedProducerSize = 200;
-		this.metricRegistry = new MetricRegistry();
-		this.healthCheckRegistry = new HealthCheckRegistry();
 		this.outputConfig = new MaxwellOutputConfig();
 		setup(null, null); // setup defaults
 	}
@@ -224,9 +219,9 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "max_schemas", "Maximum schemas to keep before triggering a compaction operation.  Default: unlimited" ).withRequiredArg();
 		parser.section("operation");
 
-		parser.accepts( "ha", "enable high-availability mode via jgroups-raft" ).withOptionalArg();
+		parser.accepts( "ha", "enable high-availability mode via jgroups-raft" );
 		parser.accepts( "jgroups_config", "location of jgroups xml configuration file" ).withRequiredArg();
-		parser.accepts( "raft_member_id", "raft memberID" ).withRequiredArg();
+		parser.accepts( "raft_member_id", "raft memberID.  (may also be specified in raft.xml)" ).withRequiredArg();
 
 		parser.accepts( "bootstrapper", "bootstrapper type: async|sync|none. default: async" ).withRequiredArg();
 		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION[:HEARTBEAT]" ).withRequiredArg();
