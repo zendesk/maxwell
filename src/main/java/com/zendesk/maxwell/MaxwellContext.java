@@ -68,7 +68,10 @@ public class MaxwellContext {
 		this.config.validate();
 		this.taskManager = new TaskManager();
 
-		this.metricRegistry = new MetricRegistry();
+		this.metricRegistry = config.metricRegistry;
+		if ( this.metricRegistry == null )
+			this.metricRegistry = new MetricRegistry();
+
 		this.metrics = new MaxwellMetrics(config, this.metricRegistry);
 
 		this.replicationConnectionPool = new C3P0ConnectionPool(
@@ -115,7 +118,9 @@ public class MaxwellContext {
 		List<MaxwellDiagnostic> diagnostics = new ArrayList<>(Collections.singletonList(new BinlogConnectorDiagnostic(this)));
 		this.diagnosticContext = new MaxwellDiagnosticContext(config.diagnosticConfig, diagnostics);
 
-		this.healthCheckRegistry = new HealthCheckRegistry();
+		this.healthCheckRegistry = config.healthCheckRegistry;
+		if ( this.healthCheckRegistry == null )
+			this.healthCheckRegistry = new HealthCheckRegistry();
 	}
 
 	public MaxwellConfig getConfig() {

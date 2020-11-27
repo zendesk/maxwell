@@ -86,6 +86,9 @@ public class MaxwellConfig extends AbstractConfig {
 	public MaxwellOutputConfig outputConfig;
 	public String log_level;
 
+	public MetricRegistry metricRegistry;
+	public HealthCheckRegistry healthCheckRegistry;
+
 	public int httpPort;
 	public String httpBindAddress;
 	public String httpPathPrefix;

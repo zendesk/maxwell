@@ -30,6 +30,8 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 		HealthCheckRegistry healthChecks = new HealthCheckRegistry();
 		final BlockingQueue<RowMap> rowBuffer = new LinkedBlockingQueue<>();
 		config.metricsReportingType = "embedded";
+		config.metricRegistry = metrics;
+		config.healthCheckRegistry = healthChecks;
 		config.metricsPrefix = "prefix";
 		config.producerFactory = new ProducerFactory() {
 			@Override
@@ -45,9 +47,6 @@ public class EmbeddedMaxwellTest extends MaxwellTestWithIsolatedServer {
 				latch.countDown();
 			}
 		};
-		maxwell.context.metricRegistry = metrics;
-		maxwell.context.healthCheckRegistry = healthChecks;
-
 		new Thread(maxwell).start();
 		latch.await();
 
