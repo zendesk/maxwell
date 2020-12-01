@@ -269,6 +269,7 @@ public class Maxwell implements Runnable {
 				}
 			});
 
+			LOGGER.info("Starting Maxwell. maxMemory: " + Runtime.getRuntime().maxMemory() + " bufferMemoryUsage: " + config.bufferMemoryUsage);
 			maxwell.start();
 		} catch ( SQLException e ) {
 			// catch SQLException explicitly because we likely don't care about the stacktrace
