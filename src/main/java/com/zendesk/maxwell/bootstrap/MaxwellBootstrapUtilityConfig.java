@@ -10,7 +10,6 @@ import java.net.URISyntaxException;
 import java.util.Properties;
 import java.util.Map;
 
-import java.io.IOException;
 import com.zendesk.maxwell.util.AbstractConfig;
 import com.zendesk.maxwell.MaxwellMysqlConfig;
 
@@ -135,8 +134,8 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 				replicationMysql.password = mysql.password;
 		}
 
-		this.schemaDatabaseName = fetchOption("schema_database", options, properties, "maxwell");
-		this.clientID = fetchOption("client_id", options, properties, "maxwell");
+		this.schemaDatabaseName = fetchStringOption("schema_database", options, properties, "maxwell");
+		this.clientID = fetchStringOption("client_id", options, properties, "maxwell");
 
         if ( options.has("database") )
 			this.databaseName = (String) options.valueOf("database");

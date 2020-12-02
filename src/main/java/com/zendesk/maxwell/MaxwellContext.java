@@ -386,6 +386,9 @@ public class MaxwellContext {
 			case "none":
 				this.producer = new NoneProducer(this);
 				break;
+			case "custom":
+				// if we're here we missed specifying producer factory
+				throw new RuntimeException("Please specify --custom_producer.factory!");
 			default:
 				throw new RuntimeException("Unknown producer type: " + this.config.producerType);
 			}

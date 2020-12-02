@@ -14,9 +14,6 @@ import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.scripting.Scripting;
 import com.zendesk.maxwell.util.AbstractConfig;
 import com.zendesk.maxwell.util.MaxwellOptionParser;
-import joptsimple.BuiltinHelpFormatter;
-import joptsimple.OptionDescriptor;
-import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -174,41 +171,37 @@ public class MaxwellConfig extends AbstractConfig {
 
 	protected MaxwellOptionParser buildOptionParser() {
 		final MaxwellOptionParser parser = new MaxwellOptionParser();
-		parser.accepts( "config", "location of config file" ).withRequiredArg();
-		parser.accepts( "env_config_prefix", "prefix of env var based config, case insensitive" ).withRequiredArg();
-		parser.accepts( "log_level", "log level, one of DEBUG|INFO|WARN|ERROR" ).withRequiredArg();
-		parser.accepts( "daemon", "run maxwell in the background" ).withOptionalArg();
+		parser.accepts( "config", "location of config.properties file" ).withRequiredArg();
 
 		parser.separator();
 
-		parser.accepts( "host", "mysql host with write access to maxwell database" ).withRequiredArg();
-		parser.accepts( "port", "port for host" ).withRequiredArg();
-		parser.accepts( "user", "username for host" ).withRequiredArg();
-		parser.accepts( "password", "password for host" ).withRequiredArg();
+		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|pubsub|sqs|rabbitmq|redis|custom" ).withRequiredArg();
 		parser.accepts( "client_id", "unique identifier for this maxwell instance, use when running multiple maxwells" ).withRequiredArg();
 
 		parser.separator();
 
-		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|pubsub|sqs|rabbitmq|redis" ).withRequiredArg();
-		parser.accepts( "custom_producer.factory", "fully qualified custom producer factory class" ).withRequiredArg();
+		parser.accepts( "host", "main mysql host (contains `maxwell` database)" ).withRequiredArg();
+		parser.accepts( "port", "port for host" ).withRequiredArg().ofType(Integer.class);
+		parser.accepts( "user", "username for host" ).withRequiredArg();
+		parser.accepts( "password", "password for host" ).withRequiredArg();
 
 		parser.section("mysql");
 
 		parser.accepts( "jdbc_options", "additional jdbc connection options" ).withRequiredArg();
 
-		parser.accepts( "ssl", "enables SSL for all connections: DISABLED|PREFERRED|REQUIRED|VERIFY_CA|VERIFY_IDENTITY. default: DISABLED").withOptionalArg();
-		parser.accepts( "replication_ssl", "overrides SSL setting for binlog connection: DISABLED|PREFERRED|REQUIRED|VERIFY_CA|VERIFY_IDENTITY").withOptionalArg();
-		parser.accepts( "schema_ssl", "overrides SSL setting for schema capture connection: DISABLED|PREFERRED|REQUIRED|VERIFY_CA|VERIFY_IDENTITY").withOptionalArg();
+		parser.accepts( "ssl", "enables SSL for all connections: DISABLED|PREFERRED|REQUIRED|VERIFY_CA|VERIFY_IDENTITY. default: DISABLED").withRequiredArg();
+		parser.accepts( "replication_ssl", "overrides SSL setting for binlog connection: DISABLED|PREFERRED|REQUIRED|VERIFY_CA|VERIFY_IDENTITY").withRequiredArg();
+		parser.accepts( "schema_ssl", "overrides SSL setting for schema capture connection: DISABLED|PREFERRED|REQUIRED|VERIFY_CA|VERIFY_IDENTITY").withRequiredArg();
 
 		parser.accepts( "schema_database", "database name for maxwell state (schema and binlog position)" ).withRequiredArg();
-		parser.accepts( "replica_server_id", "server_id that maxwell reports to the master.  See docs for full explanation. ").withRequiredArg();
+		parser.accepts( "replica_server_id", "server_id that maxwell reports to the master.  See docs for full explanation. ").withRequiredArg().ofType(Long.class);
 
 		parser.separator();
 
 		parser.accepts( "replication_host", "mysql host to replicate from (if using separate schema and replication servers)" ).withRequiredArg();
 		parser.accepts( "replication_user", "username for replication_host" ).withRequiredArg();
 		parser.accepts( "replication_password", "password for replication_host" ).withRequiredArg();
-		parser.accepts( "replication_port", "port for replication_host" ).withRequiredArg();
+		parser.accepts( "replication_port", "port for replication_host" ).withRequiredArg().ofType(Integer.class);
 		parser.accepts( "replication_jdbc_options", "additional jdbc connection options" ).withRequiredArg();
 
 		parser.separator();
@@ -216,21 +209,33 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "schema_host", "overrides replication_host for retrieving schema" ).withRequiredArg();
 		parser.accepts( "schema_user", "username for schema_host" ).withRequiredArg();
 		parser.accepts( "schema_password", "password for schema_host" ).withRequiredArg();
-		parser.accepts( "schema_port", "port for schema_host" ).withRequiredArg();
+		parser.accepts( "schema_port", "port for schema_host" ).withRequiredArg().ofType(Integer.class);
 		parser.accepts( "schema_jdbc_options", "additional jdbc connection options" ).withRequiredArg();
 
 		parser.separator();
 		parser.accepts( "max_schemas", "Maximum schemas to keep before triggering a compaction operation.  Default: unlimited" ).withRequiredArg();
 		parser.section("operation");
 
+		parser.accepts( "daemon", "run maxwell in the background" ).withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "log_level", "one of DEBUG|INFO|WARN|ERROR" ).withRequiredArg();
+		parser.accepts( "env_config_prefix", "prefix of maxwell configuration environment variables, case insensitive" ).withRequiredArg();
+		parser.separator();
+
 		parser.accepts( "bootstrapper", "bootstrapper type: async|sync|none. default: async" ).withRequiredArg();
 		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION[:HEARTBEAT]" ).withRequiredArg();
-		parser.accepts( "replay", "replay mode, don't store any information to the server" ).withOptionalArg();
-		parser.accepts( "master_recovery", "(experimental) enable master position recovery code" ).withOptionalArg();
-		parser.accepts( "gtid_mode", "(experimental) enable gtid mode" ).withOptionalArg();
-		parser.accepts( "ignore_producer_error", "Maxwell will be terminated on kafka/kinesis errors when false. Otherwise, those producer errors are only logged. Default to true" ).withOptionalArg();
-		parser.accepts( "recapture_schema", "recapture the latest schema" ).withOptionalArg();
-		parser.accepts( "buffer_memory_usage", "Percentage of JVM memory available for transaction buffer.  Floating point between 0 and 1." ).withOptionalArg();
+
+		parser.accepts( "replay", "replay mode: don't persist any schema changes or binlog position updates" ).withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "master_recovery", "enable non-GTID master position recovery code" ).withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "gtid_mode", "enable gtid mode" ).withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "ignore_producer_error",
+				"Maxwell will be terminated on kafka/kinesis errors when false. Otherwise, those producer errors are only logged. Default to true" )
+				.withOptionalArg().ofType(Boolean.class);
+
+		parser.accepts( "recapture_schema", "recapture the latest schema" ).withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "buffer_memory_usage", "Percentage of JVM memory available for transaction buffer.  Floating point between 0 and 1." ).withRequiredArg();
+
+		parser.section( "custom_producer" );
+		parser.accepts( "custom_producer.factory", "fully qualified custom producer factory class" ).withRequiredArg();
 
 		parser.section( "file_producer" );
 
@@ -245,8 +250,10 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts("producer_partition_columns",
 			"with producer_partition_by=column, partition by the value of these columns.  "
 				+ "comma separated.").withRequiredArg();
-		parser.accepts( "producer_partition_by_fallback", "database|table|primary_key|transaction_id, fallback to this value when using 'column' partitioning and the columns are not present in the row").withRequiredArg();
-		parser.accepts( "producer_ack_timeout", "producer message acknowledgement timeout" ).withRequiredArg();
+		parser.accepts( "producer_partition_by_fallback",
+				"database|table|primary_key|transaction_id, fallback to this value when using 'column' partitioning and the columns are not present in the row")
+				.withRequiredArg();
+		parser.accepts( "producer_ack_timeout", "producer message acknowledgement timeout" ).withRequiredArg().ofType(Long.class);
 
 		parser.separator();
 
@@ -259,6 +266,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "kafka_partition_columns", "[deprecated]").withRequiredArg();
 		parser.accepts( "kafka_partition_by_fallback", "[deprecated]").withRequiredArg();
 
+		parser.accepts( "ddl_kafka_topic", "optionally provide an alternate topic to push DDL records to. default: kafka_topic" ).withRequiredArg();
 
 		parser.section( "kinesis" );
 		parser.accepts( "kinesis_stream", "kinesis stream name" ).withOptionalArg();
@@ -272,36 +280,35 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.section( "pubsub" );
 		parser.accepts( "pubsub_project_id", "provide a google cloud platform project id associated with the pubsub topic" ).withRequiredArg();
-		parser.accepts( "pubsub_topic", "optionally provide a pubsub topic to push to. default: maxwell" ).withRequiredArg();
-		parser.accepts( "ddl_pubsub_topic", "optionally provide an alternate pubsub topic to push DDL records to. default: pubsub_topic" ).withRequiredArg();
-		parser.accepts( "pubsub_request_bytes_threshold", "optionally set number of bytes until batch is send. default: 1 byte" ).withRequiredArg();
-		parser.accepts( "pubsub_message_count_batch_size", "optionally set number of messages until batch is send. default: 1 message" ).withRequiredArg();
-		parser.accepts( "pubsub_publish_delay_threshold", "optionally set time passed in millis until batch is send. default: 1 ms" ).withRequiredArg();
-		parser.accepts( "pubsub_retry_delay", "optionally controls the delay in millis before sending the first retry message. default: 100 ms" ).withRequiredArg();
-		parser.accepts( "pubsub_retry_delay_multiplier", "optionally controls the increase in retry delay per retry. default: 1.3" ).withRequiredArg();
-		parser.accepts( "pubsub_max_retry_delay", "optionally puts a limit on the value in seconds of the retry delay. default: 60 seconds" ).withRequiredArg();
-		parser.accepts( "pubsub_initial_rpc_timeout", "optionally controls the timeout in seconds for the initial RPC. default: 5 seconds" ).withRequiredArg();
-		parser.accepts( "pubsub_rpc_timeout_multiplier", "optionally controls the change in RPC timeout. default: 1.0" ).withRequiredArg();
-		parser.accepts( "pubsub_max_rpc_timeout", "optionally puts a limit on the value in seconds of the RPC timeout. default: 600 seconds" ).withRequiredArg();
+		parser.accepts( "pubsub_topic", "pubsub topic. default: maxwell" ).withRequiredArg();
+		parser.accepts( "ddl_pubsub_topic", "alternate pubsub topic for DDL events. default: pubsub_topic" ).withRequiredArg();
+		parser.accepts( "pubsub_request_bytes_threshold", "threshold in bytes that triggers a batch to be sent. default: 1 byte" ).withRequiredArg().ofType(Long.class);
+		parser.accepts( "pubsub_message_count_batch_size", "threshold in message count that triggers a batch to be sent. default: 1 message" ).withRequiredArg().ofType(Long.class);
+		parser.accepts( "pubsub_publish_delay_threshold", "threshold in delay time (milliseconds) before batch is sent. default: 1 ms" ).withRequiredArg().ofType(Long.class);
+		parser.accepts( "pubsub_retry_delay", "delay in millis before sending the first retry message. default: 100 ms" ).withRequiredArg().ofType(Long.class);
+		parser.accepts( "pubsub_retry_delay_multiplier", "multiply by this ratio to increase delay time each retry. default: 1.3" ).withRequiredArg();
+		parser.accepts( "pubsub_max_retry_delay", "maximum retry delay time. default: 60 seconds" ).withRequiredArg().ofType(Long.class);
+		parser.accepts( "pubsub_initial_rpc_timeout", "timeout for initial rpc call. default: 5 seconds" ).withRequiredArg();
+		parser.accepts( "pubsub_rpc_timeout_multiplier", "backoff delay ratio for rpc timeout. default: 1.0" ).withRequiredArg().ofType(Long.class);
+		parser.accepts( "pubsub_max_rpc_timeout", "max delay for rpc timeout. default: 600 seconds" ).withRequiredArg().ofType(Long.class);
 		parser.accepts( "pubsub_total_timeout", "optionally puts a limit on the value in seconds of the retry delay, so that the RetryDelayMultiplier can't increase the retry delay higher than this amount. default: 600 seconds" ).withRequiredArg();
 
 		parser.section( "output" );
 
-		parser.accepts( "output_binlog_position", "produced records include binlog position; [true|false]. default: false" ).withOptionalArg();
-		parser.accepts( "output_gtid_position", "produced records include gtid position; [true|false]. default: false" ).withOptionalArg();
-		parser.accepts( "output_commit_info", "produced records include commit and xid; [true|false]. default: true" ).withOptionalArg();
-		parser.accepts( "output_xoffset", "produced records include xoffset, option \"output_commit_info\" must be enabled; [true|false]. default: false" ).withOptionalArg();
-		parser.accepts( "output_nulls", "produced records include fields with NULL values [true|false]. default: true" ).withOptionalArg();
-		parser.accepts( "output_server_id", "produced records include server_id; [true|false]. default: false" ).withOptionalArg();
-		parser.accepts( "output_thread_id", "produced records include thread_id; [true|false]. default: false" ).withOptionalArg();
-		parser.accepts( "output_schema_id", "produced records include schema_id; [true|false]. default: false" ).withOptionalArg();
-		parser.accepts( "output_row_query", "produced records include query, binlog option \"binlog_rows_query_log_events\" must be enabled; [true|false]. default: false" ).withOptionalArg();
-		parser.accepts( "output_primary_keys", "produced DML records include list of values that make up a row's primary key; [true|false]. default: false" ).withOptionalArg();
-		parser.accepts( "output_primary_key_columns", "produced DML records include list of columns that make up a row's primary key; [true|false]. default: false" ).withOptionalArg();
-		parser.accepts( "output_null_zerodates", "convert '0000-00-00' dates/datetimes to null default: false" ).withOptionalArg();
-		parser.accepts( "output_ddl", "produce DDL records to ddl_kafka_topic [true|false]. default: false" ).withOptionalArg();
+		parser.accepts( "output_binlog_position", "produced records include binlog position. default: false" ).withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_gtid_position", "produced records include gtid position. default: false" ).withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_commit_info", "produced records include commit and xid. default: true" ).withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_xoffset", "produced records include xoffset, option \"output_commit_info\" must be enabled. default: false" ).withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_nulls", "produced records include fields with NULL values. default: true" ).withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_server_id", "produced records include server_id. default: false" ).withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_thread_id", "produced records include thread_id. default: false" ).withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_schema_id", "produced records include schema_id. default: false" ).withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_row_query", "produced records include query, binlog option \"binlog_rows_query_log_events\" must be enabled. default: false" ).withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_primary_keys", "produced DML records include list of values that make up a row's primary key. default: false" ).withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_primary_key_columns", "produced DML records include list of columns that make up a row's primary key. default: false" ).withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_null_zerodates", "convert '0000-00-00' dates/datetimes to null default: false" ).withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_ddl", "produce DDL records to ddl_kafka_topic [true|false]. default: false" ).withOptionalArg().ofType(Boolean.class);
 		parser.accepts( "exclude_columns", "suppress these comma-separated columns from output" ).withRequiredArg();
-		parser.accepts( "ddl_kafka_topic", "optionally provide an alternate topic to push DDL records to. default: kafka_topic" ).withRequiredArg();
 		parser.accepts("secret_key", "The secret key for the AES encryption" ).withRequiredArg();
 		parser.accepts("encrypt", "encryption mode: [none|data|all]. default: none" ).withRequiredArg();
 
@@ -387,7 +394,7 @@ public class MaxwellConfig extends AbstractConfig {
 			properties = parseFile(DEFAULT_CONFIG_FILE, false);
 		}
 
-		String envConfigPrefix = fetchOption("env_config_prefix", options, properties, null);
+		String envConfigPrefix = fetchStringOption("env_config_prefix", options, properties, null);
 
 		if (envConfigPrefix != null) {
 			String prefix = envConfigPrefix.toLowerCase();
@@ -408,80 +415,80 @@ public class MaxwellConfig extends AbstractConfig {
 	}
 
 	private void setup(OptionSet options, Properties properties) {
-		this.log_level = fetchOption("log_level", options, properties, null);
+		this.log_level = fetchStringOption("log_level", options, properties, null);
 
 		this.maxwellMysql       = parseMysqlConfig("", options, properties);
 		this.replicationMysql   = parseMysqlConfig("replication_", options, properties);
 		this.schemaMysql        = parseMysqlConfig("schema_", options, properties);
 		this.gtidMode           = fetchBooleanOption("gtid_mode", options, properties, System.getenv(GTID_MODE_ENV) != null);
 
-		this.databaseName       = fetchOption("schema_database", options, properties, "maxwell");
+		this.databaseName       = fetchStringOption("schema_database", options, properties, "maxwell");
 		this.maxwellMysql.database = this.databaseName;
 
 		this.producerFactory    = fetchProducerFactory(options, properties);
-		this.producerType       = fetchOption("producer", options, properties, "stdout");
+		this.producerType       = fetchStringOption("producer", options, properties, "stdout");
 		this.producerAckTimeout = fetchLongOption("producer_ack_timeout", options, properties, 0L);
-		this.bootstrapperType   = fetchOption("bootstrapper", options, properties, "async");
-		this.clientID           = fetchOption("client_id", options, properties, "maxwell");
+		this.bootstrapperType   = fetchStringOption("bootstrapper", options, properties, "async");
+		this.clientID           = fetchStringOption("client_id", options, properties, "maxwell");
 		this.replicaServerID    = fetchLongOption("replica_server_id", options, properties, 6379L);
-		this.javascriptFile         = fetchOption("javascript", options, properties, null);
+		this.javascriptFile         = fetchStringOption("javascript", options, properties, null);
 
-		this.kafkaTopic         	= fetchOption("kafka_topic", options, properties, "maxwell");
-		this.deadLetterTopic        = fetchOption("dead_letter_topic", options, properties, null);
-		this.kafkaKeyFormat     	= fetchOption("kafka_key_format", options, properties, "hash");
-		this.kafkaPartitionKey  	= fetchOption("kafka_partition_by", options, properties, null);
-		this.kafkaPartitionColumns  = fetchOption("kafka_partition_columns", options, properties, null);
-		this.kafkaPartitionFallback = fetchOption("kafka_partition_by_fallback", options, properties, null);
+		this.kafkaTopic         	= fetchStringOption("kafka_topic", options, properties, "maxwell");
+		this.deadLetterTopic        = fetchStringOption("dead_letter_topic", options, properties, null);
+		this.kafkaKeyFormat     	= fetchStringOption("kafka_key_format", options, properties, "hash");
+		this.kafkaPartitionKey  	= fetchStringOption("kafka_partition_by", options, properties, null);
+		this.kafkaPartitionColumns  = fetchStringOption("kafka_partition_columns", options, properties, null);
+		this.kafkaPartitionFallback = fetchStringOption("kafka_partition_by_fallback", options, properties, null);
 
-		this.kafkaPartitionHash 	= fetchOption("kafka_partition_hash", options, properties, "default");
-		this.ddlKafkaTopic 		    = fetchOption("ddl_kafka_topic", options, properties, this.kafkaTopic);
+		this.kafkaPartitionHash 	= fetchStringOption("kafka_partition_hash", options, properties, "default");
+		this.ddlKafkaTopic 		    = fetchStringOption("ddl_kafka_topic", options, properties, this.kafkaTopic);
 
-		this.pubsubProjectId					= fetchOption("pubsub_project_id", options, properties, null);
-		this.pubsubTopic						= fetchOption("pubsub_topic", options, properties, "maxwell");
-		this.ddlPubsubTopic						= fetchOption("ddl_pubsub_topic", options, properties, this.pubsubTopic);
+		this.pubsubProjectId					= fetchStringOption("pubsub_project_id", options, properties, null);
+		this.pubsubTopic						= fetchStringOption("pubsub_topic", options, properties, "maxwell");
+		this.ddlPubsubTopic						= fetchStringOption("ddl_pubsub_topic", options, properties, this.pubsubTopic);
 		this.pubsubRequestBytesThreshold		= fetchLongOption("pubsub_request_bytes_threshold", options, properties, 1L);
 		this.pubsubMessageCountBatchSize		= fetchLongOption("pubsub_message_count_batch_size", options, properties, 1L);
 		this.pubsubPublishDelayThreshold		= Duration.ofMillis(fetchLongOption("pubsub_publish_delay_threshold", options, properties, 1L));
 		this.pubsubRetryDelay 					= Duration.ofMillis(fetchLongOption("pubsub_retry_delay", options, properties, 100L));
-		this.pubsubRetryDelayMultiplier 		= Double.parseDouble(fetchOption("pubsub_retry_delay_multiplier", options, properties, "1.3"));
+		this.pubsubRetryDelayMultiplier 		= Double.parseDouble(fetchStringOption("pubsub_retry_delay_multiplier", options, properties, "1.3"));
 		this.pubsubMaxRetryDelay 		 		= Duration.ofSeconds(fetchLongOption("pubsub_max_retry_delay", options, properties, 60L));
 		this.pubsubInitialRpcTimeout 		 	= Duration.ofSeconds(fetchLongOption("pubsub_initial_rpc_timeout", options, properties, 5L));
-		this.pubsubRpcTimeoutMultiplier 		= Double.parseDouble(fetchOption("pubsub_rpc_timeout_multiplier", options, properties, "1.0"));
+		this.pubsubRpcTimeoutMultiplier 		= Double.parseDouble(fetchStringOption("pubsub_rpc_timeout_multiplier", options, properties, "1.0"));
 		this.pubsubMaxRpcTimeout 		 		= Duration.ofSeconds(fetchLongOption("pubsub_max_rpc_timeout", options, properties, 600L));
 		this.pubsubTotalTimeout 		 		= Duration.ofSeconds(fetchLongOption("pubsub_total_timeout", options, properties, 600L));
 
-		this.rabbitmqHost           		= fetchOption("rabbitmq_host", options, properties, "localhost");
-		this.rabbitmqPort 			= Integer.parseInt(fetchOption("rabbitmq_port", options, properties, "5672"));
-		this.rabbitmqUser 			= fetchOption("rabbitmq_user", options, properties, "guest");
-		this.rabbitmqPass			= fetchOption("rabbitmq_pass", options, properties, "guest");
-		this.rabbitmqVirtualHost    		= fetchOption("rabbitmq_virtual_host", options, properties, "/");
-		this.rabbitmqExchange       		= fetchOption("rabbitmq_exchange", options, properties, "maxwell");
-		this.rabbitmqExchangeType   		= fetchOption("rabbitmq_exchange_type", options, properties, "fanout");
+		this.rabbitmqHost           		= fetchStringOption("rabbitmq_host", options, properties, "localhost");
+		this.rabbitmqPort 			= Integer.parseInt(fetchStringOption("rabbitmq_port", options, properties, "5672"));
+		this.rabbitmqUser 			= fetchStringOption("rabbitmq_user", options, properties, "guest");
+		this.rabbitmqPass			= fetchStringOption("rabbitmq_pass", options, properties, "guest");
+		this.rabbitmqVirtualHost    		= fetchStringOption("rabbitmq_virtual_host", options, properties, "/");
+		this.rabbitmqExchange       		= fetchStringOption("rabbitmq_exchange", options, properties, "maxwell");
+		this.rabbitmqExchangeType   		= fetchStringOption("rabbitmq_exchange_type", options, properties, "fanout");
 		this.rabbitMqExchangeDurable 		= fetchBooleanOption("rabbitmq_exchange_durable", options, properties, false);
 		this.rabbitMqExchangeAutoDelete 	= fetchBooleanOption("rabbitmq_exchange_autodelete", options, properties, false);
-		this.rabbitmqRoutingKeyTemplate   	= fetchOption("rabbitmq_routing_key_template", options, properties, "%db%.%table%");
+		this.rabbitmqRoutingKeyTemplate   	= fetchStringOption("rabbitmq_routing_key_template", options, properties, "%db%.%table%");
 		this.rabbitmqMessagePersistent    	= fetchBooleanOption("rabbitmq_message_persistent", options, properties, false);
 		this.rabbitmqDeclareExchange		= fetchBooleanOption("rabbitmq_declare_exchange", options, properties, true);
 
-		this.redisHost			= fetchOption("redis_host", options, properties, "localhost");
-		this.redisPort			= Integer.parseInt(fetchOption("redis_port", options, properties, "6379"));
-		this.redisAuth			= fetchOption("redis_auth", options, properties, null);
-		this.redisDatabase		= Integer.parseInt(fetchOption("redis_database", options, properties, "0"));
+		this.redisHost			= fetchStringOption("redis_host", options, properties, "localhost");
+		this.redisPort			= Integer.parseInt(fetchStringOption("redis_port", options, properties, "6379"));
+		this.redisAuth			= fetchStringOption("redis_auth", options, properties, null);
+		this.redisDatabase		= Integer.parseInt(fetchStringOption("redis_database", options, properties, "0"));
 
-		this.redisKey			= fetchOption("redis_key", options, properties, "maxwell");
-		this.redisStreamJsonKey	= fetchOption("redis_stream_json_key", options, properties, "message");
+		this.redisKey			= fetchStringOption("redis_key", options, properties, "maxwell");
+		this.redisStreamJsonKey	= fetchStringOption("redis_stream_json_key", options, properties, "message");
 
-		this.redisSentinels = fetchOption("redis_sentinels", options, properties, null);
-		this.redisSentinelMasterName = fetchOption("redis_sentinel_master_name", options, properties, null);
+		this.redisSentinels = fetchStringOption("redis_sentinels", options, properties, null);
+		this.redisSentinelMasterName = fetchStringOption("redis_sentinel_master_name", options, properties, null);
 
 		// deprecated options
-		this.redisPubChannel = fetchOption("redis_pub_channel", options, properties, null);
-		this.redisListKey               = fetchOption("redis_list_key", options, properties, null);
-		this.redisStreamKey             = fetchOption("redis_stream_key", options, properties, null);
+		this.redisPubChannel = fetchStringOption("redis_pub_channel", options, properties, null);
+		this.redisListKey               = fetchStringOption("redis_list_key", options, properties, null);
+		this.redisStreamKey             = fetchStringOption("redis_stream_key", options, properties, null);
 
-		this.redisType			= fetchOption("redis_type", options, properties, "pubsub");
+		this.redisType			= fetchStringOption("redis_type", options, properties, "pubsub");
 
-		String kafkaBootstrapServers = fetchOption("kafka.bootstrap.servers", options, properties, null);
+		String kafkaBootstrapServers = fetchStringOption("kafka.bootstrap.servers", options, properties, null);
 		if ( kafkaBootstrapServers != null )
 			this.kafkaProperties.setProperty("bootstrap.servers", kafkaBootstrapServers);
 
@@ -499,56 +506,56 @@ public class MaxwellConfig extends AbstractConfig {
 			}
 		}
 
-		this.producerPartitionKey = fetchOption("producer_partition_by", options, properties, "database");
-		this.producerPartitionColumns = fetchOption("producer_partition_columns", options, properties, null);
-		this.producerPartitionFallback = fetchOption("producer_partition_by_fallback", options, properties, null);
+		this.producerPartitionKey = fetchStringOption("producer_partition_by", options, properties, "database");
+		this.producerPartitionColumns = fetchStringOption("producer_partition_columns", options, properties, null);
+		this.producerPartitionFallback = fetchStringOption("producer_partition_by_fallback", options, properties, null);
 
-		this.kinesisStream  = fetchOption("kinesis_stream", options, properties, null);
+		this.kinesisStream  = fetchStringOption("kinesis_stream", options, properties, null);
 		this.kinesisMd5Keys = fetchBooleanOption("kinesis_md5_keys", options, properties, false);
 
-		this.sqsQueueUri = fetchOption("sqs_queue_uri", options, properties, null);
+		this.sqsQueueUri = fetchStringOption("sqs_queue_uri", options, properties, null);
 
-		this.outputFile = fetchOption("output_file", options, properties, null);
+		this.outputFile = fetchStringOption("output_file", options, properties, null);
 
-		this.metricsPrefix = fetchOption("metrics_prefix", options, properties, "MaxwellMetrics");
-		this.metricsReportingType = fetchOption("metrics_type", options, properties, null);
+		this.metricsPrefix = fetchStringOption("metrics_prefix", options, properties, "MaxwellMetrics");
+		this.metricsReportingType = fetchStringOption("metrics_type", options, properties, null);
 		this.metricsSlf4jInterval = fetchLongOption("metrics_slf4j_interval", options, properties, 60L);
 		// TODO remove metrics_http_port support once hitting v1.11.x
-		int port = Integer.parseInt(fetchOption("metrics_http_port", options, properties, "8080"));
+		int port = Integer.parseInt(fetchStringOption("metrics_http_port", options, properties, "8080"));
 		if (port != 8080) {
 			LOGGER.warn("metrics_http_port is deprecated, please use http_port");
 			this.httpPort = port;
 		} else {
-			this.httpPort = Integer.parseInt(fetchOption("http_port", options, properties, "8080"));
+			this.httpPort = Integer.parseInt(fetchStringOption("http_port", options, properties, "8080"));
 		}
-		this.httpBindAddress = fetchOption("http_bind_address", options, properties, null);
-		this.httpPathPrefix = fetchOption("http_path_prefix", options, properties, "/");
+		this.httpBindAddress = fetchStringOption("http_bind_address", options, properties, null);
+		this.httpPathPrefix = fetchStringOption("http_path_prefix", options, properties, "/");
 
 		if (!this.httpPathPrefix.startsWith("/")) {
 			this.httpPathPrefix = "/" + this.httpPathPrefix;
 		}
-		this.metricsDatadogType = fetchOption("metrics_datadog_type", options, properties, "udp");
-		this.metricsDatadogTags = fetchOption("metrics_datadog_tags", options, properties, "");
-		this.metricsDatadogAPIKey = fetchOption("metrics_datadog_apikey", options, properties, "");
-		this.metricsDatadogSite = fetchOption("metrics_datadog_site", options, properties, "us");
-		this.metricsDatadogHost = fetchOption("metrics_datadog_host", options, properties, "localhost");
-		this.metricsDatadogPort = Integer.parseInt(fetchOption("metrics_datadog_port", options, properties, "8125"));
+		this.metricsDatadogType = fetchStringOption("metrics_datadog_type", options, properties, "udp");
+		this.metricsDatadogTags = fetchStringOption("metrics_datadog_tags", options, properties, "");
+		this.metricsDatadogAPIKey = fetchStringOption("metrics_datadog_apikey", options, properties, "");
+		this.metricsDatadogSite = fetchStringOption("metrics_datadog_site", options, properties, "us");
+		this.metricsDatadogHost = fetchStringOption("metrics_datadog_host", options, properties, "localhost");
+		this.metricsDatadogPort = Integer.parseInt(fetchStringOption("metrics_datadog_port", options, properties, "8125"));
 		this.metricsDatadogInterval = fetchLongOption("metrics_datadog_interval", options, properties, 60L);
 		this.metricsJvm = fetchBooleanOption("metrics_jvm", options, properties, false);
-		this.metricsAgeSlo = Integer.parseInt(fetchOption("metrics_age_slo", options, properties, Integer.toString(Integer.MAX_VALUE)));
+		this.metricsAgeSlo = Integer.parseInt(fetchStringOption("metrics_age_slo", options, properties, Integer.toString(Integer.MAX_VALUE)));
 
 		this.diagnosticConfig = new MaxwellDiagnosticContext.Config();
 		this.diagnosticConfig.enable = fetchBooleanOption("http_diagnostic", options, properties, false);
 		this.diagnosticConfig.timeout = fetchLongOption("http_diagnostic_timeout", options, properties, 10000L);
 
-		this.includeDatabases    = fetchOption("include_dbs", options, properties, null);
-		this.excludeDatabases    = fetchOption("exclude_dbs", options, properties, null);
-		this.includeTables       = fetchOption("include_tables", options, properties, null);
-		this.excludeTables       = fetchOption("exclude_tables", options, properties, null);
-		this.blacklistDatabases  = fetchOption("blacklist_dbs", options, properties, null);
-		this.blacklistTables     = fetchOption("blacklist_tables", options, properties, null);
-		this.filterList          = fetchOption("filter", options, properties, null);
-		this.includeColumnValues = fetchOption("include_column_values", options, properties, null);
+		this.includeDatabases    = fetchStringOption("include_dbs", options, properties, null);
+		this.excludeDatabases    = fetchStringOption("exclude_dbs", options, properties, null);
+		this.includeTables       = fetchStringOption("include_tables", options, properties, null);
+		this.excludeTables       = fetchStringOption("exclude_tables", options, properties, null);
+		this.blacklistDatabases  = fetchStringOption("blacklist_dbs", options, properties, null);
+		this.blacklistTables     = fetchStringOption("blacklist_tables", options, properties, null);
+		this.filterList          = fetchStringOption("filter", options, properties, null);
+		this.includeColumnValues = fetchStringOption("include_column_values", options, properties, null);
 
 		if ( options != null && options.has("init_position")) {
 			String initPosition = (String) options.valueOf("init_position");
@@ -580,7 +587,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.masterRecovery = fetchBooleanOption("master_recovery", options, properties, false);
 		this.ignoreProducerError = fetchBooleanOption("ignore_producer_error", options, properties, true);
 		this.recaptureSchema = fetchBooleanOption("recapture_schema", options, null, false);
-		this.bufferMemoryUsage = Float.parseFloat(fetchOption("buffer_memory_usage", options, properties, "0.25"));
+		this.bufferMemoryUsage = Float.parseFloat(fetchStringOption("buffer_memory_usage", options, properties, "0.25"));
 		this.maxSchemaDeltas = fetchIntegerOption("max_schemas", options, properties, null);
 
 		outputConfig.includesBinlogPosition = fetchBooleanOption("output_binlog_position", options, properties, false);
@@ -596,10 +603,10 @@ public class MaxwellConfig extends AbstractConfig {
 		outputConfig.includesPrimaryKeyColumns = fetchBooleanOption("output_primary_key_columns", options, properties, false);
 		outputConfig.outputDDL	= fetchBooleanOption("output_ddl", options, properties, false);
 		outputConfig.zeroDatesAsNull = fetchBooleanOption("output_null_zerodates", options, properties, false);
-		outputConfig.namingStrategy = fetchOption("output_naming_strategy", options, properties, null);
-		this.excludeColumns     = fetchOption("exclude_columns", options, properties, null);
+		outputConfig.namingStrategy = fetchStringOption("output_naming_strategy", options, properties, null);
+		this.excludeColumns     = fetchStringOption("exclude_columns", options, properties, null);
 
-		String encryptionMode = fetchOption("encrypt", options, properties, "none");
+		String encryptionMode = fetchStringOption("encrypt", options, properties, "none");
 		switch (encryptionMode) {
 			case "none":
 				outputConfig.encryptionMode = EncryptionMode.ENCRYPT_NONE;
@@ -616,7 +623,7 @@ public class MaxwellConfig extends AbstractConfig {
 		}
 
 		if (outputConfig.encryptionEnabled()) {
-			outputConfig.secretKey = fetchOption("secret_key", options, properties, null);
+			outputConfig.secretKey = fetchStringOption("secret_key", options, properties, null);
 		}
 
 	}
@@ -881,13 +888,13 @@ public class MaxwellConfig extends AbstractConfig {
 
 	protected ProducerFactory fetchProducerFactory(OptionSet options, Properties properties) {
 		String name = "custom_producer.factory";
-		String strOption = fetchOption(name, options, properties, null);
+		String strOption = fetchStringOption(name, options, properties, null);
 		if ( strOption != null ) {
 			try {
 				Class<?> clazz = Class.forName(strOption);
 				return ProducerFactory.class.cast(clazz.newInstance());
 			} catch ( ClassNotFoundException e ) {
-				usageForOptions("Invalid value for " + name + ", class not found", "--" + name);
+				usageForOptions("Invalid value for " + name + ", class '" + strOption + "' not found", "--" + name);
 			} catch ( IllegalAccessException | InstantiationException | ClassCastException e) {
 				usageForOptions("Invalid value for " + name + ", class instantiation error", "--" + name);
 			}
