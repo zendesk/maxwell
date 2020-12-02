@@ -2,4 +2,10 @@ version: 2.1
 
 # Define the jobs we want to run for this project
 jobs:
+  build:
+    steps:
+      - run: echo "foo"
 workflows:
+  no_workflow:
+    jobs:
+      - build
