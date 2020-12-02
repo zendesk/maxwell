@@ -1,5 +1,12 @@
 # Maxwell changelog
 
+### [v1.28.2](https://github.com/zendesk/maxwell/releases/tag/v1.28.2): "fantasy baseball"
+
+
+- fix for encryption parsing error on table creation
+- some logging around memory usage in RowMapBuffer
+
+
 ### [v1.28.1](https://github.com/zendesk/maxwell/releases/tag/v1.28.1): "bootras bootras gallliiiii"
 
 
