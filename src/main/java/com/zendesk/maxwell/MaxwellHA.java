@@ -29,6 +29,20 @@ public class MaxwellHA {
 		this.clientID = clientID;
 	}
 
+	private void run() {
+		try {
+			if (hasRun)
+				maxwell.restart();
+			else
+				maxwell.start();
+
+			hasRun = true;
+		} catch ( Exception e ) {
+			LOGGER.error("Maxwell terminating due to exception:", e);
+			System.exit(1);
+		}
+	}
+
 	public void startHA() throws Exception {
 		JChannel ch=new JChannel(jgroupsConf);
 		RaftHandle handle=new RaftHandle(ch, null);
@@ -42,12 +56,7 @@ public class MaxwellHA {
 				LOGGER.info("won HA election, starting maxwell");
 				isRaftLeader.set(true);
 
-				if ( hasRun )
-					maxwell.restart();
-				else {
-					maxwell.run();
-					hasRun = true;
-				}
+				run();
 
 				isRaftLeader.set(false);
 			} else if ( this.isRaftLeader.get() ) {

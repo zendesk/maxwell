@@ -46,14 +46,9 @@ public class Maxwell implements Runnable {
 		}
 	}
 
-	public void restart() {
-		try {
-			this.context = new MaxwellContext(config);
-		} catch ( Exception e ) {
-			throw new RuntimeException(e);
-		}
-
-		run();
+	public void restart() throws Exception {
+		this.context = new MaxwellContext(config);
+		start();
 	}
 
 	public void terminate() {
@@ -180,7 +175,7 @@ public class Maxwell implements Runnable {
 	protected void onReplicatorEnd() {}
 
 
-	private void start() throws Exception {
+	public void start() throws Exception {
 		try {
 			this.startInner();
 		} catch ( Exception e) {
