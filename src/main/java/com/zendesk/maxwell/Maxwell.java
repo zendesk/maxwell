@@ -274,6 +274,8 @@ public class Maxwell implements Runnable {
 				}
 			});
 
+			LOGGER.info("Starting Maxwell. maxMemory: " + Runtime.getRuntime().maxMemory() + " bufferMemoryUsage: " + config.bufferMemoryUsage);
+
 			if ( config.haMode ) {
 				new MaxwellHA(maxwell, config.jgroupsConf, config.raftMemberID, config.clientID).startHA();
 			} else {

@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.schema.ddl;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -12,12 +12,11 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
-import org.junit.*;
 
 import com.zendesk.maxwell.schema.columndef.*;
+import org.junit.Test;
+import org.junit.Ignore;
 
 public class DDLParserTest {
 	public String getSQLDir() {
@@ -251,7 +250,8 @@ public class DDLParserTest {
 			"alter table f add column i varchar(255) default ('environment,namespace,table_name')",
 			"CREATE DATABASE xyz DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT ENCRYPTION='N'",
 			"CREATE TABLE testTable18 ( command JSON NOT NULL DEFAULT (JSON_QUOTE(\"{'parent':'sched'}\")) )",
-			"CREATE TABLE testTable19 ( pid BIGINT NOT NULL DEFAULT(1) )"
+			"CREATE TABLE testTable19 ( pid BIGINT NOT NULL DEFAULT(1) )",
+			"CREATE TABLE encRTYPE ( i int ) ENCRYPTION='Y'"
 		};
 
 		for ( String s : testSQL ) {
@@ -259,7 +259,7 @@ public class DDLParserTest {
 				SchemaChange parsed = parse(s).get(0);
 				assertThat("Expected " + s + "to parse", parsed, not(nullValue()));
 			} catch ( MaxwellSQLSyntaxError e ) {
-				assertThat("Expected " + s + "to parse, but got: " + e.getMessage(), true, is(false));
+				assertThat("Expected '" + s + "' to parse, but got: " + e.getMessage(), true, is(false));
 			}
 		}
 

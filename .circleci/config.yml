@@ -46,9 +46,9 @@ workflows:
   test:
     jobs:
       - build:
-        filters:
-          branches:
-            ignore: gh-pages
+          filters:
+            branches:
+              ignore: gh-pages
       - test:
           name: "test-5.5"
           mysql: "5.5"
