@@ -164,7 +164,14 @@ filter                         | STRING            | filter rules, eg `exclude: 
 option                         | argument                            | description                                         | default
 -------------------------------|-------------------------------------| --------------------------------------------------- | -------
 encrypt                        | [ none &#124; data &#124; all ]     | encrypt mode: none = no encryption. "data": encrypt the `data` field only. `all`: encrypt entire maxwell message | none
-secret_key                     | STRING                              | specify the encryption key to be used               | null
+secret_key                     | string                              | specify the encryption key to be used               | null
+
+# high availability
+option                         | argument                            | description                                         | default
+-------------------------------|-------------------------------------| --------------------------------------------------- | -------
+ha                             |                                     | enable maxwell client HA                            |
+jgroups_config                 | string                              | location of xml configuration file for jGroups      | $PWD/raft.xml
+raft_member_id                 | string                              | uniquely identify this node within jgroups-raft cluster |
 
 # monitoring / metrics
 option                         | argument                            | description                                         | default

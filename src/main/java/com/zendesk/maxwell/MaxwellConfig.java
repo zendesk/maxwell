@@ -14,9 +14,6 @@ import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.scripting.Scripting;
 import com.zendesk.maxwell.util.AbstractConfig;
 import com.zendesk.maxwell.util.MaxwellOptionParser;
-import joptsimple.BuiltinHelpFormatter;
-import joptsimple.OptionDescriptor;
-import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -151,6 +148,10 @@ public class MaxwellConfig extends AbstractConfig {
 	public String javascriptFile;
 	public Scripting scripting;
 
+	public boolean haMode;
+	public String jgroupsConf;
+	public String raftMemberID;
+
 	public MaxwellConfig() { // argv is only null in tests
 		this.customProducerProperties = new Properties();
 		this.kafkaProperties = new Properties();
@@ -161,8 +162,6 @@ public class MaxwellConfig extends AbstractConfig {
 		this.masterRecovery = false;
 		this.gtidMode = false;
 		this.bufferedProducerSize = 200;
-		this.metricRegistry = new MetricRegistry();
-		this.healthCheckRegistry = new HealthCheckRegistry();
 		this.outputConfig = new MaxwellOutputConfig();
 		setup(null, null); // setup defaults
 	}
@@ -222,6 +221,10 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.separator();
 		parser.accepts( "max_schemas", "Maximum schemas to keep before triggering a compaction operation.  Default: unlimited" ).withRequiredArg();
 		parser.section("operation");
+
+		parser.accepts( "ha", "enable high-availability mode via jgroups-raft" );
+		parser.accepts( "jgroups_config", "location of jgroups xml configuration file" ).withRequiredArg();
+		parser.accepts( "raft_member_id", "raft memberID.  (may also be specified in raft.xml)" ).withRequiredArg();
 
 		parser.accepts( "bootstrapper", "bootstrapper type: async|sync|none. default: async" ).withRequiredArg();
 		parser.accepts( "init_position", "initial binlog position, given as BINLOG_FILE:POSITION[:HEARTBEAT]" ).withRequiredArg();
@@ -619,6 +622,9 @@ public class MaxwellConfig extends AbstractConfig {
 			outputConfig.secretKey = fetchOption("secret_key", options, properties, null);
 		}
 
+		this.haMode = fetchBooleanOption("ha", options, properties, false);
+		this.jgroupsConf = fetchOption("jgroups_config", options, properties, "raft.xml");
+		this.raftMemberID = fetchOption("raft_member_id", options, properties, null);
 	}
 
 	private Properties parseFile(String filename, Boolean abortOnMissing) {

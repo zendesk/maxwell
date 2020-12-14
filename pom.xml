@@ -314,6 +314,12 @@
       <artifactId>simpleclient_servlet</artifactId>
       <version>0.5.0</version>
     </dependency>
+    <!-- https://mvnrepository.com/artifact/org.jgroups/jgroups-raft -->
+    <dependency>
+      <groupId>org.jgroups</groupId>
+      <artifactId>jgroups-raft</artifactId>
+      <version>1.0.0.Final</version>
+    </dependency>
   </dependencies>
 
   <build>

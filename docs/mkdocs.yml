@@ -14,6 +14,7 @@ nav:
     - 'Data Format': 'dataformat.md'
     - 'Encryption': 'encryption.md'
     - 'Monitoring': 'monitoring.md'
+    - 'High Availability': 'high_availability.md'
     - 'Embedding': 'embedding.md'
     - 'Internals': 'schemas.md'
     - 'Compatibility': 'compat.md'

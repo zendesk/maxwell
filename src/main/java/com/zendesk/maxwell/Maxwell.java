@@ -46,13 +46,17 @@ public class Maxwell implements Runnable {
 		}
 	}
 
+	public void restart() throws Exception {
+		this.context = new MaxwellContext(config);
+		start();
+	}
+
 	public void terminate() {
 		Thread terminationThread = this.context.terminate();
 		if (terminationThread != null) {
 			try {
 				terminationThread.join();
 			} catch (InterruptedException e) {
-				// ignore
 			}
 		}
 	}
@@ -170,9 +174,10 @@ public class Maxwell implements Runnable {
 	protected void onReplicatorStart() {}
 	protected void onReplicatorEnd() {}
 
-	private void start() throws Exception {
+
+	public void start() throws Exception {
 		try {
-			startInner();
+			this.startInner();
 		} catch ( Exception e) {
 			this.context.terminate(e);
 		} finally {
@@ -270,7 +275,12 @@ public class Maxwell implements Runnable {
 			});
 
 			LOGGER.info("Starting Maxwell. maxMemory: " + Runtime.getRuntime().maxMemory() + " bufferMemoryUsage: " + config.bufferMemoryUsage);
-			maxwell.start();
+
+			if ( config.haMode ) {
+				new MaxwellHA(maxwell, config.jgroupsConf, config.raftMemberID, config.clientID).startHA();
+			} else {
+				maxwell.start();
+			}
 		} catch ( SQLException e ) {
 			// catch SQLException explicitly because we likely don't care about the stacktrace
 			LOGGER.error("SQLException: " + e.getLocalizedMessage());
