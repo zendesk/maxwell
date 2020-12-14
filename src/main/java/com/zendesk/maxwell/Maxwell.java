@@ -112,8 +112,9 @@ public class Maxwell implements Runnable {
 			if ( diffs.size() == 0 ) {
 				LOGGER.error("no differences found");
 			} else {
-				for ( String diff : diffs )
+				for ( String diff : diffs ) {
 					LOGGER.error(diff);
+				}
 			}
 		}
 	}
@@ -125,8 +126,9 @@ public class Maxwell implements Runnable {
 		if (initial == null) {
 
 			/* second method: are we recovering from a master swap? */
-			if ( config.masterRecovery )
+			if ( config.masterRecovery ) {
 				initial = attemptMasterRecovery();
+			}
 
 			/* third method: is there a previous client_id?
 			   if so we have to start at that position or else
@@ -159,10 +161,11 @@ public class Maxwell implements Runnable {
 
 	public String getMaxwellVersion() {
 		String packageVersion = getClass().getPackage().getImplementationVersion();
-		if ( packageVersion == null )
+		if ( packageVersion == null ) {
 			return "??";
-		else
+		} else {
 			return packageVersion;
+		}
 	}
 
 	static String bootString = "Maxwell v%s is booting (%s), starting at %s";
@@ -261,8 +264,9 @@ public class Maxwell implements Runnable {
 			Logging.setupLogBridging();
 			MaxwellConfig config = new MaxwellConfig(args);
 
-			if ( config.log_level != null )
+			if ( config.log_level != null ) {
 				Logging.setLevel(config.log_level);
+			}
 
 			final Maxwell maxwell = new Maxwell(config);
 
