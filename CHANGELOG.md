@@ -1,5 +1,12 @@
 # Maxwell changelog
 
+### [v1.29.0](https://github.com/zendesk/maxwell/releases/tag/v1.29.0): "i don't know, i don't know, i don't know"
+
+
+- High Availability support via jgroups-raft
+- rework --help text
+
+
 ### [v1.28.2](https://github.com/zendesk/maxwell/releases/tag/v1.28.2): "fantasy baseball"
 
 
