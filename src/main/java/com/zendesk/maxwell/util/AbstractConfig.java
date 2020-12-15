@@ -162,6 +162,21 @@ public abstract class AbstractConfig {
 		return null; // never reached
 	}
 
+	protected Float fetchFloatOption(String name, OptionSet options, Properties properties, Float defaultVal) {
+		try {
+			Object opt = fetchOption(name, options, properties, defaultVal);
+			if ( opt instanceof String)
+				return Float.valueOf((String) opt);
+			else
+				return (Float) opt;
+		} catch ( NumberFormatException|OptionException e ) {
+			usageForOptions("Invalid value for " + name + ", float required", "--" + name);
+		}
+
+		return null; // never reached
+	}
+
+
 	protected MaxwellMysqlConfig parseMysqlConfig(String prefix, OptionSet options, Properties properties) {
 		MaxwellMysqlConfig config = new MaxwellMysqlConfig();
 		config.host     = fetchStringOption(prefix + "host", options, properties, null);

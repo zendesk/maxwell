@@ -36,7 +36,7 @@ public class MaxwellOptionParser extends OptionParser {
 
 	public void section(String section) {
 		// this puts in a separator not in a section.
-		this.accepts("__separator_" + ++separatorIndex);
+		this.accepts("__section_" + section);
 
 		this.currentSection = section;
 		this.sectionNames.add(section);
