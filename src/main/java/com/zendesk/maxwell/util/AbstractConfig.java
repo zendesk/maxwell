@@ -16,19 +16,19 @@ public abstract class AbstractConfig {
 	protected abstract OptionParser buildOptionParser();
 
 	protected void usage(String banner, MaxwellOptionParser optionParser, String section) {
-		System.err.println(banner);
-		System.err.println();
+		System.out.println(banner);
+		System.out.println();
 		try {
-			optionParser.printHelpOn(System.err, section);
+			optionParser.printHelpOn(System.out, section);
 			System.exit(1);
 		} catch (IOException e) { }
 	}
 
 	protected void usage(String string) {
-		System.err.println(string);
-		System.err.println();
+		System.out.println(string);
+		System.out.println();
 		try {
-			buildOptionParser().printHelpOn(System.err);
+			buildOptionParser().printHelpOn(System.out);
 			System.exit(1);
 		} catch (IOException e) { }
 	}
@@ -61,13 +61,13 @@ public abstract class AbstractConfig {
 			}
 		};
 
-		System.err.println(string);
-		System.err.println();
+		System.out.println(string);
+		System.out.println();
 
 		OptionParser p = buildOptionParser();
 		p.formatHelpWith(filteredHelpFormatter);
 		try {
-			p.printHelpOn(System.err);
+			p.printHelpOn(System.out);
 			System.exit(1);
 		} catch (IOException e) { }
 	}
@@ -95,67 +95,97 @@ public abstract class AbstractConfig {
 		return p;
 	}
 
-	protected String fetchOption(String name, OptionSet options, Properties properties, String defaultVal) {
+	protected Object fetchOption(String name, OptionSet options, Properties properties, Object defaultVal) {
 		if ( options != null && options.has(name) )
-			return (String) options.valueOf(name);
+			return options.valueOf(name);
 		else if ( (properties != null) && properties.containsKey(name) )
 			return properties.getProperty(name);
 		else
 			return defaultVal;
 	}
 
+	protected String fetchStringOption(String name, OptionSet options, Properties properties, String defaultVal) {
+		return (String) fetchOption(name, options, properties, defaultVal);
+	}
+
+	private boolean parseBoolean(String name, String value) {
+		if ( !"true".equalsIgnoreCase(value) && !"false".equalsIgnoreCase(value)) {
+			usageForOptions("Invalid value for " + name + ", true|false required", "--" + name);
+			return false;
+		}
+		return Boolean.parseBoolean(value);
+	}
 
 	protected boolean fetchBooleanOption(String name, OptionSet options, Properties properties, boolean defaultVal) {
-		if ( options != null && options.has(name) ) {
-			if ( !options.hasArgument(name) )
+		if (options != null && options.has(name)) {
+			if (!options.hasArgument(name))
 				return true;
-			else
-				return Boolean.valueOf((String) options.valueOf(name));
-		} else if ( (properties != null) && properties.containsKey(name) )
-			return Boolean.valueOf(properties.getProperty(name));
+			else {
+				Object o = options.valueOf(name);
+				if (o instanceof String) {
+					return parseBoolean(name, (String) o);
+				} else {
+					return (boolean) o;
+				}
+			}
+		} else if ((properties != null) && properties.containsKey(name))
+			return parseBoolean(name, properties.getProperty(name));
 		else
 			return defaultVal;
 	}
 
 	protected Long fetchLongOption(String name, OptionSet options, Properties properties, Long defaultVal) {
-		String strOption = fetchOption(name, options, properties, null);
-		if ( strOption == null )
-			return defaultVal;
-		else {
-			try {
-				return Long.valueOf(strOption);
-			} catch ( NumberFormatException e ) {
-				usageForOptions("Invalid value for " + name + ", integer required", "--" + name);
-			}
-			return null; // unreached
+		try {
+			Object opt = fetchOption(name, options, properties, defaultVal);
+			if ( opt instanceof String)
+				return Long.valueOf((String) opt);
+			else
+				return (Long) opt;
+		} catch ( NumberFormatException|OptionException e ) {
+			usageForOptions("Invalid value for " + name + ", number required", "--" + name);
 		}
+
+		return null; // never reached
 	}
 
 	protected Integer fetchIntegerOption(String name, OptionSet options, Properties properties, Integer defaultVal) {
-		String strOption = fetchOption(name, options, properties, null);
-		if ( strOption == null )
-			return defaultVal;
-		else {
-			try {
-				return Integer.valueOf(strOption);
-			} catch ( NumberFormatException e ) {
-				usageForOptions("Invalid value for " + name + ", integer required", "--" + name);
-			}
-			return null; // unreached
+		try {
+			Object opt = fetchOption(name, options, properties, defaultVal);
+			if ( opt instanceof String)
+				return Integer.valueOf((String) opt);
+			else
+				return (Integer) opt;
+		} catch ( NumberFormatException|OptionException e ) {
+			usageForOptions("Invalid value for " + name + ", number required", "--" + name);
 		}
+
+		return null; // never reached
 	}
 
+	protected Float fetchFloatOption(String name, OptionSet options, Properties properties, Float defaultVal) {
+		try {
+			Object opt = fetchOption(name, options, properties, defaultVal);
+			if ( opt instanceof String)
+				return Float.valueOf((String) opt);
+			else
+				return (Float) opt;
+		} catch ( NumberFormatException|OptionException e ) {
+			usageForOptions("Invalid value for " + name + ", float required", "--" + name);
+		}
+
+		return null; // never reached
+	}
 
 
 	protected MaxwellMysqlConfig parseMysqlConfig(String prefix, OptionSet options, Properties properties) {
 		MaxwellMysqlConfig config = new MaxwellMysqlConfig();
-		config.host     = fetchOption(prefix + "host", options, properties, null);
-		config.password = fetchOption(prefix + "password", options, properties, null);
-		config.user     = fetchOption(prefix + "user", options, properties, null);
-		config.port     = Integer.valueOf(fetchOption(prefix + "port", options, properties, "3306"));
-		config.sslMode  = this.getSslModeFromString(fetchOption(prefix + "ssl", options, properties, null));
+		config.host     = fetchStringOption(prefix + "host", options, properties, null);
+		config.password = fetchStringOption(prefix + "password", options, properties, null);
+		config.user     = fetchStringOption(prefix + "user", options, properties, null);
+		config.port     = fetchIntegerOption(prefix + "port", options, properties, 3306);
+		config.sslMode  = this.getSslModeFromString(fetchStringOption(prefix + "ssl", options, properties, null));
 		config.setJDBCOptions(
-		    fetchOption(prefix + "jdbc_options", options, properties, null));
+		    fetchStringOption(prefix + "jdbc_options", options, properties, null));
 		return config;
 	}
 
