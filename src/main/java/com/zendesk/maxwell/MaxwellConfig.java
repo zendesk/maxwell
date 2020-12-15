@@ -250,9 +250,12 @@ public class MaxwellConfig extends AbstractConfig {
 				.withRequiredArg();
 		parser.separator();
 
-		parser.accepts( "ha", "enable high-availability mode via jgroups-raft" );
-		parser.accepts( "jgroups_config", "location of jgroups xml configuration file" ).withRequiredArg();
-		parser.accepts( "raft_member_id", "raft memberID.  (may also be specified in raft.xml)" ).withRequiredArg();
+		parser.accepts( "ha", "enable high-availability mode via jgroups-raft" )
+				.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "jgroups_config", "location of jgroups xml configuration file" )
+				.withRequiredArg();
+		parser.accepts( "raft_member_id", "raft memberID.  (may also be specified in raft.xml)" )
+				.withRequiredArg();
 
 		parser.separator();
 
