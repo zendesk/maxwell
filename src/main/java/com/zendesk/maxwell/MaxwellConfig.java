@@ -148,6 +148,10 @@ public class MaxwellConfig extends AbstractConfig {
 	public String javascriptFile;
 	public Scripting scripting;
 
+	public boolean haMode;
+	public String jgroupsConf;
+	public String raftMemberID;
+
 	public MaxwellConfig() { // argv is only null in tests
 		this.customProducerProperties = new Properties();
 		this.kafkaProperties = new Properties();
@@ -158,8 +162,6 @@ public class MaxwellConfig extends AbstractConfig {
 		this.masterRecovery = false;
 		this.gtidMode = false;
 		this.bufferedProducerSize = 200;
-		this.metricRegistry = new MetricRegistry();
-		this.healthCheckRegistry = new HealthCheckRegistry();
 		this.outputConfig = new MaxwellOutputConfig();
 		setup(null, null); // setup defaults
 	}
@@ -246,6 +248,12 @@ public class MaxwellConfig extends AbstractConfig {
 				.withRequiredArg();
 		parser.accepts( "env_config_prefix", "prefix of maxwell configuration environment variables, case insensitive" )
 				.withRequiredArg();
+		parser.separator();
+
+		parser.accepts( "ha", "enable high-availability mode via jgroups-raft" );
+		parser.accepts( "jgroups_config", "location of jgroups xml configuration file" ).withRequiredArg();
+		parser.accepts( "raft_member_id", "raft memberID.  (may also be specified in raft.xml)" ).withRequiredArg();
+
 		parser.separator();
 
 		parser.accepts( "bootstrapper", "bootstrapper type: async|sync|none. default: async" )
@@ -654,6 +662,9 @@ public class MaxwellConfig extends AbstractConfig {
 
 		setupEncryptionOptions(options, properties);
 
+		this.haMode = fetchBooleanOption("ha", options, properties, false);
+		this.jgroupsConf = fetchStringOption("jgroups_config", options, properties, "raft.xml");
+		this.raftMemberID = fetchStringOption("raft_member_id", options, properties, null);
 	}
 
 	private void setupEncryptionOptions(OptionSet options, Properties properties) {

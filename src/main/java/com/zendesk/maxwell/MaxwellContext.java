@@ -1,5 +1,7 @@
 package com.zendesk.maxwell;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.health.HealthCheckRegistry;
 import com.zendesk.maxwell.bootstrap.BootstrapController;
 import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
 import com.zendesk.maxwell.filtering.Filter;
@@ -33,9 +35,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class MaxwellContext {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellContext.class);
 
-	private final ConnectionPool replicationConnectionPool;
-	private final ConnectionPool maxwellConnectionPool;
-	private final ConnectionPool rawMaxwellConnectionPool;
+	private ConnectionPool replicationConnectionPool;
+	private ConnectionPool maxwellConnectionPool;
+	private ConnectionPool rawMaxwellConnectionPool;
 	private final ConnectionPool schemaConnectionPool;
 	private final MaxwellConfig config;
 	private final MaxwellMetrics metrics;
@@ -58,11 +60,19 @@ public class MaxwellContext {
 	private BootstrapController bootstrapController;
 	private Thread bootstrapControllerThread;
 
+	public MetricRegistry metricRegistry;
+	public HealthCheckRegistry healthCheckRegistry;
+
 	public MaxwellContext(MaxwellConfig config) throws SQLException, URISyntaxException {
 		this.config = config;
 		this.config.validate();
 		this.taskManager = new TaskManager();
-		this.metrics = new MaxwellMetrics(config);
+
+		this.metricRegistry = config.metricRegistry;
+		if ( this.metricRegistry == null )
+			this.metricRegistry = new MetricRegistry();
+
+		this.metrics = new MaxwellMetrics(config, this.metricRegistry);
 
 		this.replicationConnectionPool = new C3P0ConnectionPool(
 			config.replicationMysql.getConnectionURI(false),
@@ -95,8 +105,6 @@ public class MaxwellContext {
 			config.maxwellMysql.user,
 			config.maxwellMysql.password
 		);
-		// do NOT probe the regular maxwell connection pool; the database might not be created yet.
-
 		if ( this.config.initPosition != null )
 			this.initialPosition = this.config.initPosition;
 
@@ -109,6 +117,10 @@ public class MaxwellContext {
 		this.heartbeatNotifier = new HeartbeatNotifier();
 		List<MaxwellDiagnostic> diagnostics = new ArrayList<>(Collections.singletonList(new BinlogConnectorDiagnostic(this)));
 		this.diagnosticContext = new MaxwellDiagnosticContext(config.diagnosticConfig, diagnostics);
+
+		this.healthCheckRegistry = config.healthCheckRegistry;
+		if ( this.healthCheckRegistry == null )
+			this.healthCheckRegistry = new HealthCheckRegistry();
 	}
 
 	public MaxwellConfig getConfig() {
@@ -174,12 +186,20 @@ public class MaxwellContext {
 		}
 	}
 
-	private void shutdown(AtomicBoolean complete) {
+	public void shutdown(AtomicBoolean complete) {
 		try {
 			taskManager.stop(this.error);
+			this.metrics.stop();
+
 			this.replicationConnectionPool.release();
+			this.replicationConnectionPool = null;
+
 			this.maxwellConnectionPool.release();
+			this.maxwellConnectionPool = null;
+
 			this.rawMaxwellConnectionPool.release();
+			this.rawMaxwellConnectionPool = null;
+
 			complete.set(true);
 		} catch (Exception e) {
 			LOGGER.error("Exception occurred during shutdown:", e);
