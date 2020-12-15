@@ -8,7 +8,7 @@
         
         
         <link rel="shortcut icon" href="../img/favicon.ico">
-        <title>Encryption - Maxwell's Daemon</title>
+        <title>High Availability - Maxwell's Daemon</title>
         <link href="../css/bootstrap.min.css" rel="stylesheet">
         <link href="../css/font-awesome.min.css" rel="stylesheet">
         <link href="../css/base.css" rel="stylesheet">
@@ -62,7 +62,7 @@
 </li>
                                     
 <li>
-    <a href="./" class="dropdown-item active">Encryption</a>
+    <a href="../encryption/" class="dropdown-item">Encryption</a>
 </li>
                                     
 <li>
@@ -70,7 +70,7 @@
 </li>
                                     
 <li>
-    <a href="../high_availability/" class="dropdown-item">High Availability</a>
+    <a href="./" class="dropdown-item active">High Availability</a>
 </li>
                                     
 <li>
@@ -98,12 +98,12 @@
                             </a>
                         </li>
                             <li class="nav-item">
-                                <a rel="prev" href="../dataformat/" class="nav-link">
+                                <a rel="prev" href="../monitoring/" class="nav-link">
                                     <i class="fa fa-arrow-left"></i> Previous
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a rel="next" href="../monitoring/" class="nav-link">
+                                <a rel="next" href="../embedding/" class="nav-link">
                                     Next <i class="fa fa-arrow-right"></i>
                                 </a>
                             </li>
@@ -126,18 +126,20 @@
     <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
         <ul class="nav flex-column">
             
-            <li class="nav-item" data-level="1"><a href="#using-encryption" class="nav-link">Using encryption</a>
+            <li class="nav-item" data-level="1"><a href="#high-availabilty" class="nav-link">High Availabilty</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#getting-started" class="nav-link">Getting started</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            
-            <li class="nav-item" data-level="1"><a href="#decryption" class="nav-link">Decryption</a>
+            <li class="nav-item" data-level="2"><a href="#getting-deeper" class="nav-link">Getting deeper</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            
-            <li class="nav-item" data-level="1"><a href="#examples" class="nav-link">Examples</a>
+            <li class="nav-item" data-level="2"><a href="#common-problems" class="nav-link">Common problems</a>
               <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
         </ul>
@@ -145,29 +147,44 @@
 </div>
 </div>
 <div class="col-md-9" role="main">
-    <div id="Encryption">
+    <div id="High Availability">
         
 
-<h1 id="using-encryption">Using encryption</h1>
-<hr />
-<p>When encryption is enabled, maxwell will encrypt messages using a AES/CBC/PKCS5PADDING cipher with your own encryption key.
-Values are first encrypted and then base64 encoded, an initialization vector is randomly generated and put into the final message</p>
-<h1 id="decryption">Decryption</h1>
-<hr />
-<p>To decrypt your data you must first decode the string from base64 and then apply the cipher to decrypt. A sample implementation is provided in RowEncrypt.decrypt().</p>
-<h1 id="examples">Examples</h1>
-<hr />
-<p>insert into minimal set account_id =1, text_field='hello'</p>
-<p><code>encrypt=none</code> (unencrypted):</p>
-<pre><code>{&quot;database&quot;:&quot;shard_1&quot;,&quot;table&quot;:&quot;minimal&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;ts&quot;:1490115785,&quot;xid&quot;:153,&quot;commit&quot;:true,&quot;data&quot;:{&quot;id&quot;:1,&quot;account_id&quot;:1,&quot;text_field&quot;:&quot;hello&quot;}}
+<h1 id="high-availabilty">High Availabilty</h1>
+<p>As v1.29.0, Maxwell contains experiemental (alpha quality) client-side HA.
+Support for performing leader elections is done via
+<a href="https://github.com/belaban/jgroups-raft">jgroups-raft</a>.</p>
+<h2 id="getting-started">Getting started</h2>
+<p>First, copy <code>raft.xml.example</code> to <code>raft.xml</code>.  Edit to your liking, paying attention to:</p>
+<pre><code>    &lt;raft.RAFT members=&quot;A,B,C&quot; raft_id=&quot;${raft_id:undefined}&quot;/&gt;
 </code></pre>
 
-<p><code>encrypt=data</code>:</p>
-<pre><code>{&quot;database&quot;:&quot;shard_1&quot;,&quot;table&quot;:&quot;minimal&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;ts&quot;:1504585129,&quot;xid&quot;:161,&quot;commit&quot;:true,&quot;encrypted&quot;:{&quot;iv&quot;:&quot;lqiXoTdz6jed3XgJPpa7EQ==&quot;,&quot;bytes&quot;:&quot;1soc4leskiIm6yuT2D49VA3AYVKCvN+0wh+8d1iwSZETK7N2pG4HDbqnVpJUUCOaKjpcPlP7Sc7Z3SPhGD5JeA==&quot;}}
+<p>Note that because we are using a RAFT-based leader election, we will have to spin up at least
+3 maxwell client nodes.</p>
+<p>Now start each of your HA maxwell nodes like this:</p>
+<pre><code class="bash">host1: $ bin/maxwell --ha --raft_member_id=A
+host2: $ bin/maxwell --ha --raft_member_id=B
+host3: $ bin/maxwell --ha --raft_member_id=C
 </code></pre>
 
-<p><code>encrypt=all</code>:</p>
-<pre><code>{&quot;encrypted&quot;:{&quot;bytes&quot;:&quot;iZssjWfzS0NlqIj82ddpvoQeKSx4D3GIPSCgjdkpgQlCWzN2p3VVZOn3Oj1x4w+a6dVhoFmllWxBK6aAkdVK9t6Vt1+um6lWwSeXNQIL/RbknW5Q8I9emm5bC1Dd1LftBuX/1Uw0wjbsq8Qt3HErvmmiIMe2S27EIWshvBnmw9MibryjLD0brvIbFFxwDuSQuVA4OFyV9TN32N/ZXiBwIA==&quot;,&quot;iv&quot;:&quot;XXs6AePsXJWAAIrKyLlR0g==&quot;}}
+<p>if all goes well, the 3 nodes will communicate via multicast/UDP, elect one to
+be the cluster leader, and away you will go.  If one node is terminated or
+partitioned, a new election will be held to replace it.</p>
+<h2 id="getting-deeper">Getting deeper</h2>
+<p>More advanced (especially inter-DC) configurations may be implemented by
+editing <code>raft.xml</code>; you'll probably need to get the nodes to communicate with
+each other via TCP instead of UDP, and maybe tunnel through a firewall or two,
+good stuff like that.  It's of course out of scope for this document, so
+<a href="http://www.jgroups.org/manual/html/user-advanced.html">check out the jgroups
+documentation</a>, but if
+you come up with something good drop me a line.</p>
+<h2 id="common-problems">Common problems</h2>
+<p>Something I encountered right out of the gate was this:</p>
+<pre><code>12:37:53,135 WARN  UDP - failed to join /224.0.75.75:7500 on utun0: java.net.SocketException: Can't assign requested address
+</code></pre>
+
+<p>which can be worked around by forcing the JVM onto an ipv4 stack:</p>
+<pre><code>JAVA_OPTS=&quot;-Djava.net.preferIPv4Stack=true&quot; bin/maxwell --ha --raft_member_id=B
 </code></pre>
     </div>
 </div>

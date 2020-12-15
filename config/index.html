@@ -70,6 +70,10 @@
 </li>
                                     
 <li>
+    <a href="../high_availability/" class="dropdown-item">High Availability</a>
+</li>
+                                    
+<li>
     <a href="../embedding/" class="dropdown-item">Embedding</a>
 </li>
                                     
@@ -179,6 +183,11 @@
             </li>
             
             <li class="nav-item" data-level="1"><a href="#encryption" class="nav-link">encryption</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            
+            <li class="nav-item" data-level="1"><a href="#high-availability" class="nav-link">high availability</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -986,9 +995,40 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 </tr>
 <tr>
 <td>secret_key</td>
-<td>STRING</td>
+<td>string</td>
 <td>specify the encryption key to be used</td>
 <td>null</td>
+</tr>
+</tbody>
+</table>
+<h1 id="high-availability">high availability</h1>
+<table>
+<thead>
+<tr>
+<th>option</th>
+<th>argument</th>
+<th>description</th>
+<th>default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ha</td>
+<td></td>
+<td>enable maxwell client HA</td>
+<td></td>
+</tr>
+<tr>
+<td>jgroups_config</td>
+<td>string</td>
+<td>location of xml configuration file for jGroups</td>
+<td>$PWD/raft.xml</td>
+</tr>
+<tr>
+<td>raft_member_id</td>
+<td>string</td>
+<td>uniquely identify this node within jgroups-raft cluster</td>
+<td></td>
 </tr>
 </tbody>
 </table>
