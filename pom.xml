@@ -41,6 +41,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <graalvm.version>20.3.0</graalvm.version>
   </properties>
 
   <profiles>
@@ -320,6 +321,33 @@
       <artifactId>jgroups-raft</artifactId>
       <version>1.0.0.Final</version>
     </dependency>
+    <!-- graaaaaaaaal  from the castle camaaaaaaal -->
+    <dependency>
+      <groupId>org.graalvm.js</groupId>
+      <artifactId>js</artifactId>
+      <version>${graalvm.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.graalvm.js</groupId>
+      <artifactId>js-scriptengine</artifactId>
+      <version>${graalvm.version}</version>
+    </dependency>
+    <!--
+    <dependency>
+      <groupId>org.graalvm.sdk</groupId>
+      <artifactId>graal-sdk</artifactId>
+      <version>${graalvm.version}</version>
+    </dependency>
+      <groupId>org.graalvm.compiler</groupId>
+      <artifactId>compiler</artifactId>
+      <version>${graalvm.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.graalvm.compiler</groupId>
+      <artifactId>compiler-management</artifactId>
+      <version>${graalvm.version}</version>
+    </dependency>
+    -->
   </dependencies>
 
   <build>

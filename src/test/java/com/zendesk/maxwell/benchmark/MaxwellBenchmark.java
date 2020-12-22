@@ -69,11 +69,11 @@ public class MaxwellBenchmark {
 	}
 
 	private static void generate(int nRows) throws Exception {
-		MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--no-clean");
+		MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--no-clean", "5.7");
 		MaxwellTestSupport.setupSchema(server, false);
 
 		// generate 1 row of data before we capture position so that we can use the schema.
-		generateData(server.getConnection(), 1);
+		generateTX(server.getConnection(), 1);
 
 		Position initPosition = Position.capture(server.getConnection(), false);
 		generateData(server.getConnection(), nRows);
@@ -83,7 +83,7 @@ public class MaxwellBenchmark {
 
 	private static void benchmark(String path, long skipRows, String args[]) throws Exception {
 		MaxwellConfig config = new MaxwellConfig(args);
-		MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--no-clean --reuse=" + path);
+		MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--no-clean --reuse=" + path, "5.7");
 
 
 		config.maxwellMysql.host = "127.0.0.1";

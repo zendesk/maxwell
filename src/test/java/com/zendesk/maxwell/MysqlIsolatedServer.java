@@ -31,7 +31,11 @@ public class MysqlIsolatedServer {
 	static final Logger LOGGER = LoggerFactory.getLogger(MysqlIsolatedServer.class);
 	public static final TypeReference<Map<String, Object>> MAP_STRING_OBJECT_REF = new TypeReference<Map<String, Object>>() {};
 
-	public void boot(String xtraParams) throws IOException, SQLException, InterruptedException {
+	public void boot(String xtraParams, String version) throws IOException, SQLException, InterruptedException {
+		if ( version == null ) {
+			version = getVersionString();
+		}
+
         final String dir = System.getProperty("user.dir");
 
 		if ( xtraParams == null )
@@ -56,7 +60,7 @@ public class MysqlIsolatedServer {
 
 		ProcessBuilder pb = new ProcessBuilder(
 			dir + "/src/test/onetimeserver",
-			"--mysql-version=" + this.getVersionString(),
+			"--mysql-version=" + version,
 			"--log-slave-updates",
 			"--log-bin=master",
 			"--binlog_format=row",
@@ -113,13 +117,20 @@ public class MysqlIsolatedServer {
 
 
 		resetConnection();
-		this.connection.createStatement().executeUpdate("CREATE USER 'maxwell'@'127.0.0.1' IDENTIFIED BY 'maxwell'");
+		if ( getVersion(version).atLeast(5, 7) ) {
+			this.connection.createStatement().executeUpdate("CREATE USER if not exists 'maxwell'@'127.0.0.1' IDENTIFIED BY 'maxwell'");
+		} else {
+			this.connection.createStatement().executeUpdate("CREATE USER 'maxwell'@'127.0.0.1' IDENTIFIED BY 'maxwell'");
+		}
 		this.connection.createStatement().executeUpdate("GRANT REPLICATION SLAVE on *.* to 'maxwell'@'127.0.0.1'");
 		this.connection.createStatement().executeUpdate("GRANT ALL on *.* to 'maxwell'@'127.0.0.1'");
 		this.connection.createStatement().executeUpdate("CREATE DATABASE if not exists test");
 		LOGGER.info("booted at port " + this.port + ", outputting to file " + outputFile);
 	}
 
+	public void boot(String xtraParams) throws IOException, SQLException, InterruptedException {
+		boot(xtraParams, null);
+	}
 	public void setupSlave(int masterPort) throws SQLException {
 		Connection master = DriverManager.getConnection("jdbc:mysql://127.0.0.1:" + masterPort + "/mysql?useSSL=false", "root", "");
 		ResultSet rs = master.createStatement().executeQuery("show master status");
@@ -234,10 +245,13 @@ public class MysqlIsolatedServer {
 	}
 
 	public static MysqlVersion getVersion() {
-		String[] parts = getVersionString().split("\\.");
-		return new MysqlVersion(Integer.valueOf(parts[0]), Integer.valueOf(parts[1]));
+		return getVersion(getVersionString());
 	}
 
+	public static MysqlVersion getVersion(String version) {
+		String[] parts = version.split("\\.");
+		return new MysqlVersion(Integer.valueOf(parts[0]), Integer.valueOf(parts[1]));
+	}
 	public boolean supportsZeroDates() {
 		// https://dev.mysql.com/doc/refman/5.7/en/sql-mode.html#sqlmode_no_zero_date
 		return !getVersion().atLeast(VERSION_5_7);

@@ -3,7 +3,6 @@ package com.zendesk.maxwell.row;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.zendesk.maxwell.scripting.Scripting;
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,11 +65,11 @@ public class MaxwellJson {
 		if (value == null && !includeNullField)
 			return;
 
-		if (value instanceof ScriptObjectMirror) {
+		if (false && value instanceof Object) {
 			try {
-				String json = Scripting.stringify((ScriptObjectMirror) value);
+				String json = Scripting.stringify((Object) value);
 				writeValueToJSON(g, includeNullField, key, new RawJSONString(json));
-			} catch (ScriptException e) {
+			} catch (ScriptException|NoSuchMethodException e) {
 				LOGGER.error("error stringifying json object:", e);
 			}
 		} else if (value instanceof List) { // sets come back from .asJSON as lists, and jackson can't deal with lists natively.

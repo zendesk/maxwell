@@ -36,15 +36,18 @@ import static org.junit.Assume.assumeTrue;
 public class MaxwellTestSupport {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellTestSupport.class);
 
-	public static MysqlIsolatedServer setupServer(String extraParams) throws Exception {
+	public static MysqlIsolatedServer setupServer(String extraParams, String version) throws Exception {
 		MysqlIsolatedServer server = new MysqlIsolatedServer();
-		server.boot(extraParams);
+		server.boot(extraParams, version);
 
 		Connection conn = server.getConnection();
 		SchemaStoreSchema.ensureMaxwellSchema(conn, "maxwell");
 		conn.createStatement().executeQuery("use maxwell");
 		SchemaStoreSchema.upgradeSchemaStoreSchema(conn);
 		return server;
+	}
+	public static MysqlIsolatedServer setupServer(String extraParams) throws Exception {
+		return setupServer(extraParams, null);
 	}
 
 	public static MysqlIsolatedServer setupServer() throws Exception {
