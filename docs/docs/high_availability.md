@@ -1,6 +1,6 @@
 # High Availabilty
 
-As v1.29.0, Maxwell contains experiemental (alpha quality) client-side HA.
+As v1.29.1, Maxwell contains experiemental (alpha quality) client-side HA.
 Support for performing leader elections is done via
 [jgroups-raft](https://github.com/belaban/jgroups-raft).
 
