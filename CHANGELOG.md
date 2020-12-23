@@ -1,5 +1,11 @@
 # Maxwell changelog
 
+### [v1.29.1](https://github.com/zendesk/maxwell/releases/tag/v1.29.1): "depluralize"
+
+
+- small bugfix release, fixes binlog event type processing in mysql 8
+
+
 ### [v1.29.0](https://github.com/zendesk/maxwell/releases/tag/v1.29.0): "i don't know, i don't know, i don't know"
 
 
