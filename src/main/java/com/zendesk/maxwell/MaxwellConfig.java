@@ -21,10 +21,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.threeten.bp.Duration;
 
-import java.util.*;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.Properties;
 import java.util.regex.Pattern;
 
-public class MaxwellConfig extends AbstractConfig {
+public class MaxwellConfig extends AbstractConfig
+{
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfig.class);
 
 	public static final String GTID_MODE_ENV = "GTID_MODE";
@@ -130,6 +133,11 @@ public class MaxwellConfig extends AbstractConfig {
 	public String rabbitmqRoutingKeyTemplate;
 	public boolean rabbitmqMessagePersistent;
 	public boolean rabbitmqDeclareExchange;
+
+	public String rocketmqNamesrvAddr;
+	public String rocketmqProducerGroup;
+	public String rocketmqSendTopic;
+	public String rocketmqTags;
 
 	public String redisHost;
 	public int redisPort;
@@ -427,6 +435,14 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "rabbitmq_message_persistent", "Message persistence. Defaults to false" ).withOptionalArg();
 		parser.accepts( "rabbitmq_declare_exchange", "Should declare the exchange for rabbitmq publisher. Defaults to true" ).withOptionalArg();
 
+
+		parser.section( "rocketmq" );
+
+		parser.accepts( "rocketmq_namesrv_addr", "Rocketmq NameServer" ).withRequiredArg();
+		parser.accepts( "rocketmq_producer_group", "Rocketmq ProducerGroup" ).withRequiredArg();
+		parser.accepts( "rocketmq_send_topic", "optionally provide a topic name to push to. default: maxwell" ).withRequiredArg();
+		parser.accepts( "rocketmq_tags", "Rocketmq send messgae tags. default:tags" ).withRequiredArg();
+
 		parser.section( "redis" );
 
 		parser.accepts( "redis_host", "Host of Redis server" ).withRequiredArg();
@@ -556,6 +572,11 @@ public class MaxwellConfig extends AbstractConfig {
 		this.rabbitmqRoutingKeyTemplate   	= fetchStringOption("rabbitmq_routing_key_template", options, properties, "%db%.%table%");
 		this.rabbitmqMessagePersistent    	= fetchBooleanOption("rabbitmq_message_persistent", options, properties, false);
 		this.rabbitmqDeclareExchange		= fetchBooleanOption("rabbitmq_declare_exchange", options, properties, true);
+
+		this.rocketmqNamesrvAddr = fetchStringOption("rocketmq_namesrv_addr", options, properties, "localhost:9876");
+		this.rocketmqProducerGroup = fetchStringOption("rocketmq_producer_group", options, properties, "rocketmq_producer_group");
+		this.rocketmqSendTopic = fetchStringOption("rocketmq_send_topic", options, properties, "maxwell");
+		this.rocketmqTags = fetchStringOption("rocketmq_tags", options, properties, "tags");
 
 		this.redisHost			= fetchStringOption("redis_host", options, properties, "localhost");
 		this.redisPort			= fetchIntegerOption("redis_port", options, properties, 6379);
@@ -966,7 +987,8 @@ public class MaxwellConfig extends AbstractConfig {
 		return this.kafkaProperties;
 	}
 
-	public static Pattern compileStringToPattern(String name) throws InvalidFilterException {
+	public static Pattern compileStringToPattern(String name) throws InvalidFilterException
+	{
 		name = name.trim();
 		if ( name.startsWith("/") ) {
 			if ( !name.endsWith("/") ) {

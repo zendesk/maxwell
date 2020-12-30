@@ -5,22 +5,42 @@ import com.codahale.metrics.health.HealthCheckRegistry;
 import com.zendesk.maxwell.bootstrap.BootstrapController;
 import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
 import com.zendesk.maxwell.filtering.Filter;
-import com.zendesk.maxwell.monitoring.*;
-import com.zendesk.maxwell.producer.*;
+import com.zendesk.maxwell.monitoring.MaxwellDiagnostic;
+import com.zendesk.maxwell.monitoring.MaxwellDiagnosticContext;
+import com.zendesk.maxwell.monitoring.MaxwellHTTPServer;
+import com.zendesk.maxwell.monitoring.MaxwellMetrics;
+import com.zendesk.maxwell.monitoring.Metrics;
+import com.zendesk.maxwell.producer.AbstractProducer;
+import com.zendesk.maxwell.producer.BufferedProducer;
+import com.zendesk.maxwell.producer.FileProducer;
+import com.zendesk.maxwell.producer.MaxwellKafkaProducer;
+import com.zendesk.maxwell.producer.MaxwellKinesisProducer;
+import com.zendesk.maxwell.producer.MaxwellPubsubProducer;
+import com.zendesk.maxwell.producer.MaxwellRedisProducer;
+import com.zendesk.maxwell.producer.MaxwellSQSProducer;
+import com.zendesk.maxwell.producer.NoneProducer;
+import com.zendesk.maxwell.producer.ProfilerProducer;
+import com.zendesk.maxwell.producer.RabbitmqProducer;
+import com.zendesk.maxwell.producer.RocketmqProducer;
+import com.zendesk.maxwell.producer.StdoutProducer;
 import com.zendesk.maxwell.recovery.RecoveryInfo;
-import com.zendesk.maxwell.replication.*;
+import com.zendesk.maxwell.replication.BinlogConnectorDiagnostic;
+import com.zendesk.maxwell.replication.HeartbeatNotifier;
+import com.zendesk.maxwell.replication.MysqlVersion;
+import com.zendesk.maxwell.replication.Position;
+import com.zendesk.maxwell.replication.Replicator;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.MysqlPositionStore;
 import com.zendesk.maxwell.schema.MysqlSchemaCompactor;
 import com.zendesk.maxwell.schema.PositionStoreThread;
 import com.zendesk.maxwell.schema.ReadOnlyMysqlPositionStore;
 import com.zendesk.maxwell.util.C3P0ConnectionPool;
+import com.zendesk.maxwell.util.ConnectionPool;
 import com.zendesk.maxwell.util.RunLoopProcess;
 import com.zendesk.maxwell.util.StoppableTask;
 import com.zendesk.maxwell.util.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.zendesk.maxwell.util.ConnectionPool;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -399,6 +419,9 @@ public class MaxwellContext {
 				break;
 			case "rabbitmq":
 				this.producer = new RabbitmqProducer(this);
+				break;
+			case "rocketmq":
+				this.producer = new RocketmqProducer(this);
 				break;
 			case "redis":
 				this.producer = new MaxwellRedisProducer(this);
