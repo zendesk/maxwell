@@ -110,7 +110,6 @@ public class SynchronousBootstrapper {
 					LOGGER.debug("bootstrapping row : " + row.toJSON());
 
 				producer.push(row);
-				Thread.sleep(1);
 				++insertedRows;
 
 				updateInsertedRowsColumn(insertedRows, task.id);
