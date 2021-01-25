@@ -141,8 +141,6 @@ public class MaxwellBootstrapUtility {
 
 	private ConnectionPool getReplicationConnectionPool(MaxwellBootstrapUtilityConfig config) throws SQLException {
 		String connectionURI = config.getReplicationConnectionURI();
-		System.out.println("connecting to " + connectionURI);
-		System.out.println("user: " + config.replicationMysql.user + ", passwd: '" + config.replicationMysql.password + "'");
 
 		return new C3P0ConnectionPool(connectionURI, config.replicationMysql.user, config.replicationMysql.password);
 	}
