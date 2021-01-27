@@ -56,7 +56,7 @@ public class SynchronousBootstrapper {
 	}
 
 	private Schema captureSchemaForBootstrap(BootstrapTask task) throws SQLException {
-		try ( Connection cx = getConnection(task.database) ) {
+		try ( Connection cx = getSchemaConnection(task.database) ) {
 			CaseSensitivity s = MaxwellMysqlStatus.captureCaseSensitivity(cx);
 			SchemaCapturer c = new SchemaCapturer(cx, s, task.database, task.table);
 			return c.capture();
@@ -139,6 +139,12 @@ public class SynchronousBootstrapper {
 
 	protected Connection getConnection(String databaseName) throws SQLException {
 		Connection conn = context.getReplicationConnection();
+		conn.setCatalog(databaseName);
+		return conn;
+	}
+
+	protected Connection getSchemaConnection(String databaseName) throws SQLException {
+		Connection conn = context.getSchemaConnectionPool().getConnection();
 		conn.setCatalog(databaseName);
 		return conn;
 	}
