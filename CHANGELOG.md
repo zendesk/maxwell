@@ -1,5 +1,11 @@
 # Maxwell changelog
 
+### [v1.29.2](https://github.com/zendesk/maxwell/releases/tag/v1.29.2): "i now know the meaning of shame"
+
+
+- fix for terrible performance regression in bootstrapping
+
+
 ### [v1.29.1](https://github.com/zendesk/maxwell/releases/tag/v1.29.1): "depluralize"
 
 
