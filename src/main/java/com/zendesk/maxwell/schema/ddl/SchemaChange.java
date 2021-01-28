@@ -48,12 +48,14 @@ public abstract class SchemaChange {
 
 	private static final Pattern DELETE_BLACKLIST = Pattern.compile("^\\s*DELETE\\s*FROM", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
+	private static final Pattern CSTYLE_COMMENTS = Pattern.compile("/\\*.*?\\*/", Pattern.DOTALL);
+
 	private static boolean matchesBlacklist(String sql) {
 		// first *include* /*50032 CREATE EVENT */ style sql
 		sql = sql.replaceAll("/\\*!\\d+\\s*(.*)\\*/", "$1");
 
 		// now strip out comments
-		sql = sql.replaceAll("/\\*.*?\\*/", "");
+		sql = CSTYLE_COMMENTS.matcher(sql).replaceAll("");
 		sql = sql.replaceAll("\\-\\-.*", "");
 		sql = sql.replaceAll("^\\s*#.*", "");
 
