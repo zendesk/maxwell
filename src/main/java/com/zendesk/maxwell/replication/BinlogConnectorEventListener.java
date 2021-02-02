@@ -24,6 +24,7 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener {
 	private final BinaryLogClient client;
 	private final MaxwellOutputConfig outputConfig;
 	private long replicationLag;
+	private long lastEventSeenAt;
 	private String gtid;
 
 	public BinlogConnectorEventListener(
@@ -36,6 +37,7 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener {
 		this.queue = q;
 		this.queueTimer =  metrics.getRegistry().timer(metrics.metricName("replication", "queue", "time"));
 		this.outputConfig = outputConfig;
+		this.lastEventSeenAt = System.currentTimeMillis();
 
 		final BinlogConnectorEventListener self = this;
 		metrics.register(metrics.metricName("replication", "lag"), (Gauge<Long>) () -> self.replicationLag);
@@ -45,9 +47,14 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener {
 		mustStop.set(true);
 	}
 
+	public long getLastEventSeenAt() {
+		return this.lastEventSeenAt;
+	}
+
 	@Override
 	public void onEvent(Event event) {
-		long eventSeenAt = 0;
+		long eventSeenAt = System.currentTimeMillis();
+		this.lastEventSeenAt = eventSeenAt;
 		boolean trackMetrics = false;
 
 		if (event.getHeader().getEventType() == EventType.GTID) {
@@ -58,7 +65,6 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener {
 
 		if (ep.isCommitEvent()) {
 			trackMetrics = true;
-			eventSeenAt = System.currentTimeMillis();
 			replicationLag = eventSeenAt - event.getHeader().getTimestamp();
 		}
 

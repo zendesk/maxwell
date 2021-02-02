@@ -41,11 +41,14 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private static final long MAX_TX_ELEMENTS = 10000;
 	public static final int BAD_BINLOG_ERROR_CODE = 1236;
 	public static final int ACCESS_DENIED_ERROR_CODE = 1227;
+	public static final int HEARTBEAT_FAILURE_ERROR_CODE = 1623;
 
 	private final String clientID;
 	private final String maxwellSchemaDatabaseName;
 
 	protected final BinaryLogClient client;
+	private final long heartbeatInterval = 5000L; // TODO configure
+	private final float heartbeatIntervalAllowance = 3.0f; // TODO configure, find a better name?
 	private BinlogConnectorEventListener binlogEventListener;
 	private final LinkedBlockingDeque<BinlogConnectorEvent> queue = new LinkedBlockingDeque<>(20);
 	private final TableCache tableCache;
@@ -147,11 +150,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 			which triggers mysql to jump ahead a binlog.
 			At some point I presume shyko will fix it and we can remove this.
 		 */
-
-		 /*
-		   the logic for this must be applied to all scenarios, as otherwise we will have competing keepalive logic
-		 */
 		this.client.setKeepAlive(false);
+		this.client.setHeartbeatInterval(this.heartbeatInterval);
 
 		EventDeserializer eventDeserializer = new EventDeserializer();
 		eventDeserializer.setCompatibilityMode(
@@ -248,6 +248,16 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private void checkCommErrors() throws ServerException {
 		if (lastCommError != null) {
 			throw lastCommError;
+		}
+		long lastEventSeenAt = this.binlogEventListener.getLastEventSeenAt();
+		long lastEventAge = System.currentTimeMillis() - lastEventSeenAt;
+		long maxAllowedEventAge = Math.round(this.heartbeatInterval * this.heartbeatIntervalAllowance);
+		if (lastEventAge > this.heartbeatInterval * this.heartbeatIntervalAllowance) {
+			throw new ServerException(
+					"Last binlog event seen " + lastEventAge + "ms ago, exceeding " + maxAllowedEventAge + "ms allowance " +
+					"(" + this.heartbeatInterval + " * " + this.heartbeatIntervalAllowance + ")",
+					HEARTBEAT_FAILURE_ERROR_CODE,
+					"HY000");
 		}
 	}
 
