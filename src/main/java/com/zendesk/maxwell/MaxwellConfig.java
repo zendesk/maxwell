@@ -546,7 +546,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.pubsubMaxRpcTimeout 		 		= Duration.ofSeconds(fetchLongOption("pubsub_max_rpc_timeout", options, properties, 600L));
 		this.pubsubTotalTimeout 		 		= Duration.ofSeconds(fetchLongOption("pubsub_total_timeout", options, properties, 600L));
 
-		this.rabbitmqHost           		= fetchStringOption("rabbitmq_host", options, properties, "localhost");
+		this.rabbitmqHost           		= fetchStringOption("rabbitmq_host", options, properties, null);
 		this.rabbitmqPort 			= fetchIntegerOption("rabbitmq_port", options, properties, null);
 		this.rabbitmqUser 			= fetchStringOption("rabbitmq_user", options, properties, "guest");
 		this.rabbitmqPass			= fetchStringOption("rabbitmq_pass", options, properties, "guest");

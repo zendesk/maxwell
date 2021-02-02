@@ -37,6 +37,8 @@ public class RabbitmqProducer extends AbstractProducer {
 
 			if ( config.rabbitmqHost != null ) {
 				factory.setHost(config.rabbitmqHost);
+			} else if ( config.rabbitmqURI == null ) {
+				factory.setHost("localhost");
 			}
 
 			if ( config.rabbitmqPort != null ) {
