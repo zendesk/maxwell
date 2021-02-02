@@ -391,6 +391,8 @@ public class MaxwellConfig extends AbstractConfig {
 				.withOptionalArg().ofType(Boolean.class);
 		parser.accepts( "output_ddl", "produce DDL records. default: false" )
 				.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_push_timestamp", "include a microsecond timestamp representing when Maxwell sent a record. default: false" )
+			.withOptionalArg().ofType(Boolean.class);
 		parser.accepts( "exclude_columns", "suppress these comma-separated columns from output" )
 				.withRequiredArg();
 		parser.accepts("secret_key", "The secret key for the AES encryption" )
@@ -658,6 +660,7 @@ public class MaxwellConfig extends AbstractConfig {
 		outputConfig.includesRowQuery = fetchBooleanOption("output_row_query", options, properties, false);
 		outputConfig.includesPrimaryKeys = fetchBooleanOption("output_primary_keys", options, properties, false);
 		outputConfig.includesPrimaryKeyColumns = fetchBooleanOption("output_primary_key_columns", options, properties, false);
+		outputConfig.includesPushTimestamp = fetchBooleanOption("output_push_timestamp", options, properties, false);
 		outputConfig.outputDDL	= fetchBooleanOption("output_ddl", options, properties, false);
 		outputConfig.zeroDatesAsNull = fetchBooleanOption("output_null_zerodates", options, properties, false);
 		outputConfig.namingStrategy = fetchStringOption("output_naming_strategy", options, properties, null);
