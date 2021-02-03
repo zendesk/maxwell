@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 public class NatsProducer extends AbstractProducer {
 
@@ -23,6 +24,10 @@ public class NatsProducer extends AbstractProducer {
 			final String natsPrefix = context.getConfig().natsSubjectPrefix;
 			this.natsSubjectPrefix = natsPrefix.equals("") ? "": natsPrefix + "." ;
 			this.subjectHierarchiesTemplate = context.getConfig().natsSubjectHierarchies;
+
+			if( !this.subjectHierarchiesTemplate.contains("%db%") || !this.subjectHierarchiesTemplate.contains("%table%") || !this.subjectHierarchiesTemplate.contains("%type%") ) {
+				throw new IllegalArgumentException(String.format("Invalid nats config for subjectHierarchies '%s'", this.subjectHierarchiesTemplate));
+			}
 
 		} catch (IOException | InterruptedException e) {
 			throw new RuntimeException(e);
@@ -41,7 +46,7 @@ public class NatsProducer extends AbstractProducer {
 		String subjectHierarchies = getSubjectHierarchies(r);
 		String natsSubject = natsSubjectPrefix + subjectHierarchies;
 
-		natsConnection.publish(natsSubject, value.getBytes());
+		natsConnection.publish(natsSubject, value.getBytes(StandardCharsets.UTF_8));
 		if ( r.isTXCommit() ) {
 			context.setPosition(r.getNextPosition());
 		}
@@ -50,7 +55,7 @@ public class NatsProducer extends AbstractProducer {
 		}
 	}
 
-	private String getSubjectHierarchies(RowMap r) {
+	String getSubjectHierarchies(RowMap r) {
 		String table = r.getTable();
 
 		if ( table == null )
