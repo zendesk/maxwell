@@ -41,14 +41,13 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private static final long MAX_TX_ELEMENTS = 10000;
 	public static final int BAD_BINLOG_ERROR_CODE = 1236;
 	public static final int ACCESS_DENIED_ERROR_CODE = 1227;
-	public static final int HEARTBEAT_FAILURE_ERROR_CODE = 1623;
 
 	private final String clientID;
 	private final String maxwellSchemaDatabaseName;
 
 	protected final BinaryLogClient client;
-	private final long heartbeatInterval = 5000L; // TODO configure
-	private final float heartbeatIntervalAllowance = 3.0f; // TODO configure, find a better name?
+	private final long binlogHeartbeatInterval = 1000L;
+	private final float binlogHeartbeatIntervalAllowance = 5.0f;
 	private BinlogConnectorEventListener binlogEventListener;
 	private final LinkedBlockingDeque<BinlogConnectorEvent> queue = new LinkedBlockingDeque<>(20);
 	private final TableCache tableCache;
@@ -151,7 +150,9 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 			At some point I presume shyko will fix it and we can remove this.
 		 */
 		this.client.setKeepAlive(false);
-		this.client.setHeartbeatInterval(this.heartbeatInterval);
+		if (mysqlConfig.enableHeartbeat) {
+			this.client.setHeartbeatInterval(this.binlogHeartbeatInterval);
+		}
 
 		EventDeserializer eventDeserializer = new EventDeserializer();
 		eventDeserializer.setCompatibilityMode(
@@ -249,16 +250,30 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		if (lastCommError != null) {
 			throw lastCommError;
 		}
-		long lastEventSeenAt = this.binlogEventListener.getLastEventSeenAt();
-		long lastEventAge = System.currentTimeMillis() - lastEventSeenAt;
-		long maxAllowedEventAge = Math.round(this.heartbeatInterval * this.heartbeatIntervalAllowance);
-		if (lastEventAge > this.heartbeatInterval * this.heartbeatIntervalAllowance) {
-			throw new ServerException(
-					"Last binlog event seen " + lastEventAge + "ms ago, exceeding " + maxAllowedEventAge + "ms allowance " +
-					"(" + this.heartbeatInterval + " * " + this.heartbeatIntervalAllowance + ")",
-					HEARTBEAT_FAILURE_ERROR_CODE,
-					"HY000");
+	}
+
+	/**
+	 * Returns true if connected with a recent event.
+	 * If binlog heartbeats are disabled, just returns
+	 * whether there is a connection.
+	 */
+	private boolean isConnectionAlive() {
+		if (!isConnected) {
+			return false;
 		}
+		boolean isAlive = true;
+		if (client.getHeartbeatInterval() > 0L) {
+			long lastEventSeenAt = binlogEventListener.getLastEventSeenAt();
+			long lastEventAge = System.currentTimeMillis() - lastEventSeenAt;
+			long maxAllowedEventAge = Math.round(binlogHeartbeatInterval * binlogHeartbeatIntervalAllowance);
+			isAlive = lastEventAge <= maxAllowedEventAge;
+			if (!isAlive) {
+				LOGGER.warn(
+					"Last binlog event seen " + lastEventAge + "ms ago, exceeding " + maxAllowedEventAge + "ms allowance " +
+					"(" + binlogHeartbeatInterval + " * " + binlogHeartbeatIntervalAllowance + ")");
+			}
+		}
+		return isAlive;
 	}
 
 	private boolean shouldSkipRow(RowMap row) throws IOException {
@@ -417,7 +432,11 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 	private void ensureReplicatorThread() throws Exception {
 		checkCommErrors();
-		if ( !this.isConnected && !stopOnEOF ) {
+		if (!this.isConnected && stopOnEOF) {
+			// reached EOF, nothing to do
+			return;
+		}
+		if (!this.isConnectionAlive()) {
 			if (this.gtidPositioning) {
 				// When using gtid positioning, reconnecting should take us to the top
 				// of the gtid event.  We throw away any binlog position we have

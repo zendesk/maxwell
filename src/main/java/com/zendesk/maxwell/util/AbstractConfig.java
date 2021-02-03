@@ -183,6 +183,7 @@ public abstract class AbstractConfig {
 		config.password = fetchStringOption(prefix + "password", options, properties, null);
 		config.user     = fetchStringOption(prefix + "user", options, properties, null);
 		config.port     = fetchIntegerOption(prefix + "port", options, properties, 3306);
+		config.enableHeartbeat = fetchBooleanOption(prefix + "heartbeat", options, properties, config.enableHeartbeat);
 		config.sslMode  = this.getSslModeFromString(fetchStringOption(prefix + "ssl", options, properties, null));
 		config.setJDBCOptions(
 		    fetchStringOption(prefix + "jdbc_options", options, properties, null));

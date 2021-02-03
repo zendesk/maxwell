@@ -223,6 +223,9 @@ public class MaxwellConfig extends AbstractConfig {
 				.withRequiredArg().ofType(Integer.class);
 		parser.accepts( "replication_jdbc_options", "additional jdbc connection options: key1=val1&key2=val2" )
 				.withRequiredArg();
+		parser.accepts( "replication_heartbeat", "enable binlog replication heartbeats, default true" )
+				.withRequiredArg().ofType(Boolean.class);
+
 
 		parser.separator();
 
