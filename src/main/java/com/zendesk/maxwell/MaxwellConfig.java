@@ -340,7 +340,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.section( "nats" );
 
-		parser.accepts( "nats_url", "Url Nats connection. Default is localhost" ).withRequiredArg();
+		parser.accepts( "nats_url", "Url Nats connection. Default is localhost:4222" ).withRequiredArg();
 		parser.accepts( "nats_subject_prefix", "Subject of Nats. Default is 'maxwell', if you don't want any use ''" ).withRequiredArg();
 		parser.accepts( "nats_subject_hierarchies", "Subject Hierarchies of Nats. Default is '%db%.%table%.%type%'." ).withRequiredArg();
 
