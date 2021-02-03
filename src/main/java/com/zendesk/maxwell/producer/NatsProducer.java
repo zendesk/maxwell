@@ -12,11 +12,18 @@ import java.io.IOException;
 public class NatsProducer extends AbstractProducer {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(NatsProducer.class);
-	private Connection natsConnection;
+	private final Connection natsConnection;
+	private final String natsSubjectPrefix;
+	private final String subjectHierarchiesTemplate;
+
 	public NatsProducer(MaxwellContext context) {
 		super(context);
 		try {
-			natsConnection = Nats.connect(context.getConfig().natsUrl);
+			this.natsConnection = Nats.connect(context.getConfig().natsUrl);
+			final String natsPrefix = context.getConfig().natsSubjectPrefix;
+			this.natsSubjectPrefix = natsPrefix.equals("") ? "": natsPrefix + "." ;
+			this.subjectHierarchiesTemplate = context.getConfig().natsSubjectHierarchies;
+
 		} catch (IOException | InterruptedException e) {
 			throw new RuntimeException(e);
 		}
@@ -31,9 +38,8 @@ public class NatsProducer extends AbstractProducer {
 		}
 
 		String value = r.toJSON(outputConfig);
-		String subjectPrefix = context.getConfig().natsSubjectPrefix;
 		String subjectHierarchies = getSubjectHierarchies(r);
-		String natsSubject= (subjectPrefix.equals("") ? "" : subjectPrefix + ".") + subjectHierarchies;
+		String natsSubject = natsSubjectPrefix + subjectHierarchies;
 
 		natsConnection.publish(natsSubject, value.getBytes());
 		if ( r.isTXCommit() ) {
@@ -55,9 +61,7 @@ public class NatsProducer extends AbstractProducer {
 		if ( type == null )
 			type = "";
 
-		return context
-				.getConfig()
-				.natsSubjectHierarchies
+		return subjectHierarchiesTemplate
 				.replace("%db%", r.getDatabase())
 				.replace("%table%", table)
 				.replace("%type%", type);
