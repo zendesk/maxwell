@@ -89,6 +89,12 @@ option                         | argument                            | descripti
 -------------------------------|-------------------------------------| --------------------------------------------------- | -------
 sqs_queue_uri                  | STRING                              | SQS Queue URI |
 
+## nats producer
+option                         | argument                            | description                                         | default
+-------------------------------|-------------------------------------| --------------------------------------------------- | -------
+nats_url                       | STRING     | Url of nats connection | localhost:4222
+nats_subject_prefix            | STRING     | Prefix of nats subject | maxwell
+nats_subject_hierarchies       | STRING     | A string template for the subject hierarchies, `%db%` and `%table%` and `%type%` will be substituted. | `%db%.%table%.%type%`.
 
 ## pubsub producer
 option                         | argument                            | description                                         | default

@@ -220,6 +220,16 @@ Set the output queue in the `config.properties` by setting the `sqs_queue_uri` p
 
 The producer uses the [AWS SQS SDK](http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sqs/AmazonSQSClient.html).
 
+# Nats
+***
+To produce messages to Nats, you can have the configuration specify in `config.properties`.
+
+The configurable properties are:
+
+- `nats_url` - defaults to **localhost:4222**
+- `nats_subject_prefix` - defaults to **maxwell**, can be specified as empty '' if you don't want any
+- `nats_subject_hierarchies` - defaults to **%db%.%table%.%type%**
+  - This config controls the routing key, where `%db%` and `%table%` and `%type%`are placeholders that will be substituted at runtime
 
 # Google Cloud Pub/Sub
 ***

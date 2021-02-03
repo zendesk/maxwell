@@ -131,6 +131,10 @@ public class MaxwellConfig extends AbstractConfig {
 	public boolean rabbitmqMessagePersistent;
 	public boolean rabbitmqDeclareExchange;
 
+	public String natsUrl;
+	public String natsSubjectPrefix;
+	public String natsSubjectHierarchies;
+
 	public String redisHost;
 	public int redisPort;
 	public String redisAuth;
@@ -334,6 +338,11 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.addToSection("producer_partition_by_fallback");
 		parser.addToSection("producer_ack_timeout");
 
+		parser.section( "nats" );
+
+		parser.accepts( "nats_url", "Url Nats connection. Default is localhost" ).withRequiredArg();
+		parser.accepts( "nats_subject_prefix", "Subject of Nats. Default is 'maxwell', if you don't want any use ''" ).withRequiredArg();
+		parser.accepts( "nats_subject_hierarchies", "Subject Hierarchies of Nats. Default is '%db%.%table%.%type%'." ).withRequiredArg();
 
 		parser.section( "pubsub" );
 		parser.accepts( "pubsub_project_id", "provide a google cloud platform project id associated with the pubsub topic" )
@@ -556,6 +565,10 @@ public class MaxwellConfig extends AbstractConfig {
 		this.rabbitmqRoutingKeyTemplate   	= fetchStringOption("rabbitmq_routing_key_template", options, properties, "%db%.%table%");
 		this.rabbitmqMessagePersistent    	= fetchBooleanOption("rabbitmq_message_persistent", options, properties, false);
 		this.rabbitmqDeclareExchange		= fetchBooleanOption("rabbitmq_declare_exchange", options, properties, true);
+
+		this.natsUrl			= fetchStringOption("nats_url", options, properties, "localhost:4222");
+		this.natsSubjectPrefix		= fetchStringOption("nats_subject_prefix", options, properties, "maxwell");
+		this.natsSubjectHierarchies	= fetchStringOption("nats_subject_hierarchies", options, properties, "%db%.%table%.%type%");
 
 		this.redisHost			= fetchStringOption("redis_host", options, properties, "localhost");
 		this.redisPort			= fetchIntegerOption("redis_port", options, properties, 6379);
