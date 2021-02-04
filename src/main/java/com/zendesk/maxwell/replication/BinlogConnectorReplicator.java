@@ -46,9 +46,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private final String maxwellSchemaDatabaseName;
 
 	protected final BinaryLogClient client;
-	private final long binlogHeartbeatInterval = 1000L;
-	private final float binlogHeartbeatIntervalAllowance = 5.0f;
 	private BinlogConnectorEventListener binlogEventListener;
+	private BinlogConnectorLivenessMonitor binlogLivenessMonitor;
 	private final LinkedBlockingDeque<BinlogConnectorEvent> queue = new LinkedBlockingDeque<>(20);
 	private final TableCache tableCache;
 	private final Scripting scripting;
@@ -151,7 +150,9 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		 */
 		this.client.setKeepAlive(false);
 		if (mysqlConfig.enableHeartbeat) {
-			this.client.setHeartbeatInterval(this.binlogHeartbeatInterval);
+			this.binlogLivenessMonitor = new BinlogConnectorLivenessMonitor(client);
+			this.client.registerLifecycleListener(this.binlogLivenessMonitor);
+			this.client.registerEventListener(this.binlogLivenessMonitor);
 		}
 
 		EventDeserializer eventDeserializer = new EventDeserializer();
@@ -261,19 +262,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		if (!isConnected) {
 			return false;
 		}
-		boolean isAlive = true;
-		if (client.getHeartbeatInterval() > 0L) {
-			long lastEventSeenAt = binlogEventListener.getLastEventSeenAt();
-			long lastEventAge = System.currentTimeMillis() - lastEventSeenAt;
-			long maxAllowedEventAge = Math.round(binlogHeartbeatInterval * binlogHeartbeatIntervalAllowance);
-			isAlive = lastEventAge <= maxAllowedEventAge;
-			if (!isAlive) {
-				LOGGER.warn(
-					"Last binlog event seen " + lastEventAge + "ms ago, exceeding " + maxAllowedEventAge + "ms allowance " +
-					"(" + binlogHeartbeatInterval + " * " + binlogHeartbeatIntervalAllowance + ")");
-			}
-		}
-		return isAlive;
+		return this.binlogLivenessMonitor == null || binlogLivenessMonitor.isAlive();
 	}
 
 	private boolean shouldSkipRow(RowMap row) throws IOException {
