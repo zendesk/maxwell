@@ -182,7 +182,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.separator();
 
-		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|pubsub|sqs|rabbitmq|redis|custom" )
+		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|nats|pubsub|sqs|rabbitmq|redis|custom" )
 				.withRequiredArg();
 		parser.accepts( "client_id", "unique identifier for this maxwell instance, use when running multiple maxwells" )
 				.withRequiredArg();
@@ -340,7 +340,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.section( "nats" );
 
-		parser.accepts( "nats_url", "Url Nats connection. Default is localhost:4222" ).withRequiredArg();
+		parser.accepts( "nats_url", "Url(s) of Nats connection (comma separated). Default is localhost:4222" ).withRequiredArg();
 		parser.accepts( "nats_subject_prefix", "Subject of Nats. Default is 'maxwell', if you don't want any use ''" ).withRequiredArg();
 		parser.accepts( "nats_subject_hierarchies", "Subject Hierarchies of Nats. Default is '%db%.%table%.%type%'." ).withRequiredArg();
 
