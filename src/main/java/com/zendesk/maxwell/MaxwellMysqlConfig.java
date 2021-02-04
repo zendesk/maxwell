@@ -34,7 +34,7 @@ public class MaxwellMysqlConfig {
 		this.user = null;
 		this.password = null;
 		this.sslMode = null;
-		this.enableHeartbeat = true;
+		this.enableHeartbeat = false;
 
 		this.jdbcOptions = new HashMap<>();
 		this.jdbcOptions.put("zeroDateTimeBehavior", "convertToNull");
