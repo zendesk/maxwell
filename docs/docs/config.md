@@ -30,13 +30,13 @@ master_recovery                | BOOLEAN              | enable experimental mast
 gtid_mode                      | BOOLEAN              | enable GTID-based replication                       | false
 recapture_schema               | BOOLEAN              | recapture the latest schema. Not available in config.properties. | false
 max_schemas                    | LONG                 | how many schema deltas to keep before triggering compaction operation | unlimited
+binlog_heartbeat               | BOOLEAN              | enable binlog heartbeats to detect stale connections | DISABLED
 &nbsp;
 replication_host               | STRING               | server to replicate from.  See [split server roles](#split-server-roles) | *schema-store host*
 replication_password           | STRING               | password on replication server                      | (none)
 replication_port               | INT                  | port on replication server                          | 3306
 replication_user               | STRING               | user on replication server                          |
 replication_ssl                | [SSL_OPT](#sslopt)   | SSL behavior for replication cx cx                  | DISABLED
-replication_heartbeat          | BOOLEAN              | enable replication heartbeats to detect stale connections | DISABLED
 replication_jdbc_options       | STRING               | mysql jdbc connection options for replication server| [DEFAULT_JDBC_OPTS](#jdbcopts)
 &nbsp;
 schema_host                    | STRING               | server to capture schema from.  See [split server roles](#split-server-roles) | *schema-store host*

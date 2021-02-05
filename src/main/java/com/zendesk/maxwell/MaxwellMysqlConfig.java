@@ -43,7 +43,7 @@ public class MaxwellMysqlConfig {
 	}
 
 	public MaxwellMysqlConfig(String host, Integer port, String database, String user, String password,
-			SSLMode sslMode) {
+			SSLMode sslMode, boolean enableHeartbeat) {
 		this();
 		this.host = host;
 		this.port = port;
@@ -51,6 +51,7 @@ public class MaxwellMysqlConfig {
 		this.user = user;
 		this.password = password;
 		this.sslMode = sslMode;
+		this.enableHeartbeat = enableHeartbeat;
 	}
 
 	public MaxwellMysqlConfig(MaxwellMysqlConfig c) {
