@@ -121,8 +121,9 @@ public class MaxwellConfig extends AbstractConfig {
 	public String rabbitmqUser;
 	public String rabbitmqPass;
 	public String rabbitmqHost;
-	public int rabbitmqPort;
+	public Integer rabbitmqPort;
 	public String rabbitmqVirtualHost;
+	public String rabbitmqURI;
 	public String rabbitmqExchange;
 	public String rabbitmqExchangeType;
 	public boolean rabbitMqExchangeDurable;
@@ -422,6 +423,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "rabbitmq_pass", "Password of Rabbitmq connection. Default is guest" ).withRequiredArg();
 		parser.accepts( "rabbitmq_host", "Host of Rabbitmq machine" ).withRequiredArg();
 		parser.accepts( "rabbitmq_port", "Port of Rabbitmq machine" ).withRequiredArg().ofType(Integer.class);
+		parser.accepts( "rabbitmq_uri", "URI to rabbit server, eg amqp://, amqps://.  other rabbitmq options take precendence over uri." ).withRequiredArg();
 		parser.accepts( "rabbitmq_virtual_host", "Virtual Host of Rabbitmq" ).withRequiredArg();
 		parser.accepts( "rabbitmq_exchange", "Name of exchange for rabbitmq publisher" ).withRequiredArg();
 		parser.accepts( "rabbitmq_exchange_type", "Exchange type for rabbitmq" ).withRequiredArg();
@@ -548,11 +550,12 @@ public class MaxwellConfig extends AbstractConfig {
 		this.pubsubMaxRpcTimeout 		 		= Duration.ofSeconds(fetchLongOption("pubsub_max_rpc_timeout", options, properties, 600L));
 		this.pubsubTotalTimeout 		 		= Duration.ofSeconds(fetchLongOption("pubsub_total_timeout", options, properties, 600L));
 
-		this.rabbitmqHost           		= fetchStringOption("rabbitmq_host", options, properties, "localhost");
-		this.rabbitmqPort 			= fetchIntegerOption("rabbitmq_port", options, properties, 5672);
+		this.rabbitmqHost           		= fetchStringOption("rabbitmq_host", options, properties, null);
+		this.rabbitmqPort 			= fetchIntegerOption("rabbitmq_port", options, properties, null);
 		this.rabbitmqUser 			= fetchStringOption("rabbitmq_user", options, properties, "guest");
 		this.rabbitmqPass			= fetchStringOption("rabbitmq_pass", options, properties, "guest");
 		this.rabbitmqVirtualHost    		= fetchStringOption("rabbitmq_virtual_host", options, properties, "/");
+		this.rabbitmqURI 			= fetchStringOption("rabbitmq_uri", options, properties, null);
 		this.rabbitmqExchange       		= fetchStringOption("rabbitmq_exchange", options, properties, "maxwell");
 		this.rabbitmqExchangeType   		= fetchStringOption("rabbitmq_exchange_type", options, properties, "fanout");
 		this.rabbitMqExchangeDurable 		= fetchBooleanOption("rabbitmq_exchange_durable", options, properties, false);
