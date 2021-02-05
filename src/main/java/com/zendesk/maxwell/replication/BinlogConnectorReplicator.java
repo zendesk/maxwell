@@ -426,6 +426,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 			return;
 		}
 		if (!this.isConnectionAlive()) {
+			client.disconnect();
 			if (this.gtidPositioning) {
 				// When using gtid positioning, reconnecting should take us to the top
 				// of the gtid event.  We throw away any binlog position we have
