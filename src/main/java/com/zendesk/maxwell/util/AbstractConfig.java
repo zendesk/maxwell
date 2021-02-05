@@ -186,6 +186,9 @@ public abstract class AbstractConfig {
 		config.sslMode  = this.getSslModeFromString(fetchStringOption(prefix + "ssl", options, properties, null));
 		config.setJDBCOptions(
 		    fetchStringOption(prefix + "jdbc_options", options, properties, null));
+
+		// binlog_heartbeat isn't prefixed, as it only affects replication
+		config.enableHeartbeat = fetchBooleanOption("binlog_heartbeat", options, properties, config.enableHeartbeat);
 		return config;
 	}
 

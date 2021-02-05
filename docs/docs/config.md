@@ -30,6 +30,7 @@ master_recovery                | BOOLEAN              | enable experimental mast
 gtid_mode                      | BOOLEAN              | enable GTID-based replication                       | false
 recapture_schema               | BOOLEAN              | recapture the latest schema. Not available in config.properties. | false
 max_schemas                    | LONG                 | how many schema deltas to keep before triggering compaction operation | unlimited
+binlog_heartbeat               | BOOLEAN              | enable binlog heartbeats to detect stale connections | DISABLED
 &nbsp;
 replication_host               | STRING               | server to replicate from.  See [split server roles](#split-server-roles) | *schema-store host*
 replication_password           | STRING               | password on replication server                      | (none)

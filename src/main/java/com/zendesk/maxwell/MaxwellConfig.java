@@ -193,6 +193,8 @@ public class MaxwellConfig extends AbstractConfig {
 				.withRequiredArg();
 		parser.accepts( "password", "password for host" )
 				.withRequiredArg();
+		parser.accepts( "binlog_heartbeat", "enable binlog replication heartbeats, default false" )
+				.withOptionalArg().ofType(Boolean.class);
 
 		parser.section("mysql");
 
@@ -895,7 +897,8 @@ public class MaxwellConfig extends AbstractConfig {
 				null,
 				this.maxwellMysql.user,
 				this.maxwellMysql.password,
-				this.maxwellMysql.sslMode
+				this.maxwellMysql.sslMode,
+				this.maxwellMysql.enableHeartbeat
 			);
 
 			this.replicationMysql.jdbcOptions = this.maxwellMysql.jdbcOptions;
