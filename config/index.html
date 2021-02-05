@@ -353,6 +353,12 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 <td>unlimited</td>
 </tr>
 <tr>
+<td>binlog_heartbeat</td>
+<td>BOOLEAN</td>
+<td>enable binlog heartbeats to detect stale connections</td>
+<td>DISABLED</td>
+</tr>
+<tr>
 <td>&nbsp;</td>
 <td></td>
 <td></td>
@@ -893,6 +899,12 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 <td>output_xoffset</td>
 <td>BOOLEAN</td>
 <td>records include virtual tx-row offset</td>
+<td>false</td>
+</tr>
+<tr>
+<td>output_push_timestamp</td>
+<td>BOOLEAN</td>
+<td>records are timestamped with a high-precision value before being sent to the producer</td>
 <td>false</td>
 </tr>
 <tr>
