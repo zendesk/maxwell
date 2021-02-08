@@ -1,33 +1,38 @@
 package com.zendesk.maxwell.producer;
 
-import io.nats.client.Connection;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.row.RowMap;
+import com.zendesk.maxwell.util.InterpolatedStringsHandler;
+import io.nats.client.Connection;
 import io.nats.client.Nats;
+import io.nats.client.Options;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 
 public class NatsProducer extends AbstractProducer {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(NatsProducer.class);
+	private final Logger LOGGER = LoggerFactory.getLogger(NatsProducer.class);
 	private final Connection natsConnection;
-	private final String natsSubjectPrefix;
-	private final String subjectHierarchiesTemplate;
+	private final String natsSubjectTemplate;
 
 	public NatsProducer(MaxwellContext context) {
 		super(context);
 		try {
-			this.natsConnection = Nats.connect(context.getConfig().natsUrl);
-			final String natsPrefix = context.getConfig().natsSubjectPrefix;
-			this.natsSubjectPrefix = natsPrefix.equals("") ? "": natsPrefix + "." ;
-			this.subjectHierarchiesTemplate = context.getConfig().natsSubjectHierarchies;
+			List<String> urls = Arrays.asList(context.getConfig().natsUrl.split(","));
 
-			if( !this.subjectHierarchiesTemplate.contains("%db%") || !this.subjectHierarchiesTemplate.contains("%table%") || !this.subjectHierarchiesTemplate.contains("%type%") ) {
-				throw new IllegalArgumentException(String.format("Invalid nats config for subjectHierarchies '%s'", this.subjectHierarchiesTemplate));
-			}
+			Options.Builder optionBuilder = new Options.Builder();
+
+			urls.forEach(optionBuilder::server);
+
+			Options option = optionBuilder.build();
+
+			this.natsConnection = Nats.connect(option);
+			this.natsSubjectTemplate = context.getConfig().natsSubject;
 
 		} catch (IOException | InterruptedException e) {
 			throw new RuntimeException(e);
@@ -36,39 +41,28 @@ public class NatsProducer extends AbstractProducer {
 
 	@Override
 	public void push(RowMap r) throws Exception {
-		if ( !r.shouldOutput(outputConfig) ) {
+		if (!r.shouldOutput(outputConfig)) {
 			context.setPosition(r.getNextPosition());
-
 			return;
 		}
 
 		String value = r.toJSON(outputConfig);
-		String subjectHierarchies = getSubjectHierarchies(r);
-		String natsSubject = natsSubjectPrefix + subjectHierarchies;
+		String natsSubject = new InterpolatedStringsHandler(this.natsSubjectTemplate).generateFromRowMapAndTrimAllWhitesSpaces(r);
 
-		natsConnection.publish(natsSubject, value.getBytes(StandardCharsets.UTF_8));
-		if ( r.isTXCommit() ) {
+		long maxPayloadSize = natsConnection.getMaxPayload();
+		byte[] messageBytes = value.getBytes(StandardCharsets.UTF_8);
+
+		if (messageBytes.length > maxPayloadSize) {
+			LOGGER.error("->  nats message size (" + messageBytes.length + ") > max payload size (" + maxPayloadSize + ")");
+			return;
+		}
+
+		natsConnection.publish(natsSubject, messageBytes);
+		if (r.isTXCommit()) {
 			context.setPosition(r.getNextPosition());
 		}
-		if ( LOGGER.isDebugEnabled()) {
+		if (LOGGER.isDebugEnabled()) {
 			LOGGER.debug("->  nats subject:" + natsSubject + ", message:" + value);
 		}
-	}
-
-	String getSubjectHierarchies(RowMap r) {
-		String table = r.getTable();
-
-		if ( table == null )
-			table = "";
-
-		String type = r.getRowType();
-
-		if ( type == null )
-			type = "";
-
-		return subjectHierarchiesTemplate
-				.replace("%db%", r.getDatabase())
-				.replace("%table%", table)
-				.replace("%type%", type);
 	}
 }

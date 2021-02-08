@@ -3,6 +3,7 @@ package com.zendesk.maxwell.producer;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.row.RowIdentity;
 import com.zendesk.maxwell.row.RowMap;
+import com.zendesk.maxwell.util.InterpolatedStringsHandler;
 import com.zendesk.maxwell.util.StoppableTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,8 +24,8 @@ import java.util.Set;
 public class MaxwellRedisProducer extends AbstractProducer implements StoppableTask {
 	private static final Logger logger = LoggerFactory.getLogger(MaxwellRedisProducer.class);
 	private final String channel;
-	private final boolean interpolateChannel;
 	private final String redisType;
+	private final InterpolatedStringsHandler interpolatedStringsHandler;
 
 	private static JedisPoolAbstract jedisPool;
 
@@ -37,7 +38,7 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 		super(context);
 
 		this.channel = context.getConfig().redisKey;
-		this.interpolateChannel = channel.contains("%{");
+		this.interpolatedStringsHandler = new InterpolatedStringsHandler(channel);
 		this.redisType = context.getConfig().redisType;
 
 		String redisSentinelName = context.getConfig().redisSentinelMasterName;
@@ -65,23 +66,15 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 	}
 
 	private JedisPoolConfig createRedisPoolConfig() {
-		
+
 		JedisPoolConfig poolConfig = new JedisPoolConfig();
 		//2 is the most we'll need, one for the bootstrap task and another to the main maxwell thread
-		poolConfig.setMaxTotal(2); 
+		poolConfig.setMaxTotal(2);
 		poolConfig.setMaxIdle(2);
 		poolConfig.setMinIdle(0);
 		poolConfig.setTestOnBorrow(true);
 		poolConfig.setBlockWhenExhausted(true);
 		return poolConfig;
-	}
-
-	private String generateChannel(RowIdentity pk){
-		if (interpolateChannel) {
-			return channel.replaceAll("%\\{database}", pk.getDatabase()).replaceAll("%\\{table}", pk.getTable());
-		}
-
-		return channel;
 	}
 
 	private Jedis getJedisResource() {
@@ -91,7 +84,7 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 	private void sendToRedis(RowMap msg) throws Exception {
 
 		String messageStr = msg.toJSON(outputConfig);
-		String channel = this.generateChannel(msg.getRowIdentity());
+		String channel = this.interpolatedStringsHandler.generateFromRowMap(msg);
 
 		try (Jedis jedis = this.getJedisResource()) {
 

@@ -132,8 +132,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public boolean rabbitmqDeclareExchange;
 
 	public String natsUrl;
-	public String natsSubjectPrefix;
-	public String natsSubjectHierarchies;
+	public String natsSubject;
 
 	public String redisHost;
 	public int redisPort;
@@ -341,8 +340,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.section( "nats" );
 
 		parser.accepts( "nats_url", "Url(s) of Nats connection (comma separated). Default is localhost:4222" ).withRequiredArg();
-		parser.accepts( "nats_subject_prefix", "Subject of Nats. Default is 'maxwell', if you don't want any use ''" ).withRequiredArg();
-		parser.accepts( "nats_subject_hierarchies", "Subject Hierarchies of Nats. Default is '%db%.%table%.%type%'." ).withRequiredArg();
+		parser.accepts( "nats_subject", "Subject Hierarchies of Nats. Default is '%{database}.%{table}'" ).withRequiredArg();
 
 		parser.section( "pubsub" );
 		parser.accepts( "pubsub_project_id", "provide a google cloud platform project id associated with the pubsub topic" )
@@ -566,9 +564,8 @@ public class MaxwellConfig extends AbstractConfig {
 		this.rabbitmqMessagePersistent    	= fetchBooleanOption("rabbitmq_message_persistent", options, properties, false);
 		this.rabbitmqDeclareExchange		= fetchBooleanOption("rabbitmq_declare_exchange", options, properties, true);
 
-		this.natsUrl			= fetchStringOption("nats_url", options, properties, "localhost:4222");
-		this.natsSubjectPrefix		= fetchStringOption("nats_subject_prefix", options, properties, "maxwell");
-		this.natsSubjectHierarchies	= fetchStringOption("nats_subject_hierarchies", options, properties, "%db%.%table%.%type%");
+		this.natsUrl			= fetchStringOption("nats_url", options, properties, "nats://localhost:4222");
+		this.natsSubject		= fetchStringOption("nats_subject", options, properties, "%{database}.%{table}");
 
 		this.redisHost			= fetchStringOption("redis_host", options, properties, "localhost");
 		this.redisPort			= fetchIntegerOption("redis_port", options, properties, 6379);
