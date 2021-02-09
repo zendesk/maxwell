@@ -194,10 +194,11 @@ public class MaxwellConfig extends AbstractConfig {
 				.withRequiredArg();
 		parser.accepts( "password", "password for host" )
 				.withRequiredArg();
-		parser.accepts( "binlog_heartbeat", "enable binlog replication heartbeats, default false" )
-				.withOptionalArg().ofType(Boolean.class);
 
 		parser.section("mysql");
+
+		parser.accepts( "binlog_heartbeat", "enable binlog replication heartbeats, default false" )
+			.withOptionalArg().ofType(Boolean.class);
 
 		parser.accepts( "jdbc_options", "additional jdbc connection options: key1=val1&key2=val2" )
 				.withRequiredArg();
