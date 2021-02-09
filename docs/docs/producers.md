@@ -226,7 +226,7 @@ To produce messages to Nats, you can have the configuration specify in `config.p
 
 The configurable properties are:
 
-- `nats_url` - defaults to **localhost:4222**
+- `nats_url` - defaults to **nats://localhost:4222**
 - `nats_subject` - defaults to **%{database}.%{table}**
   - This interpolated string config controls the subject hierarchies, where `%{database}` and `%{table}` and `%{type}` are placeholders that will be substituted at runtime. All non alphanumeric characters, all dots, all whitespaces, contained in the database, table or type will be replaced by underscores.
 
