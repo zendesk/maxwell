@@ -228,7 +228,7 @@ The configurable properties are:
 
 - `nats_url` - defaults to **localhost:4222**
 - `nats_subject` - defaults to **%{database}.%{table}**
-  - This interpolated string config controls the subject hierarchies, where `%{database}` and `%{table}` are placeholders that will be substituted at runtime
+  - This interpolated string config controls the subject hierarchies, where `%{database}` and `%{table}` and `%{type}` are placeholders that will be substituted at runtime. All non alphanumeric characters, all dots, all whitespaces, contained in the database, table or type will be replaced by underscores.
 
 # Google Cloud Pub/Sub
 ***

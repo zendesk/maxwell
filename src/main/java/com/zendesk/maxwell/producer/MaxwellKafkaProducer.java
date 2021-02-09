@@ -9,7 +9,7 @@ import com.zendesk.maxwell.row.RowIdentity;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMap.KeyFormat;
 import com.zendesk.maxwell.schema.ddl.DDLMap;
-import com.zendesk.maxwell.util.InterpolatedStringsHandler;
+import com.zendesk.maxwell.util.TopicInterpolator;
 import com.zendesk.maxwell.util.StoppableTask;
 import com.zendesk.maxwell.util.StoppableTaskState;
 import org.apache.commons.lang3.tuple.Pair;
@@ -149,7 +149,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	private StoppableTaskState taskState;
 	private String deadLetterTopic;
 	private final ConcurrentLinkedQueue<Pair<ProducerRecord<String, String>, KafkaCallback>> deadLetterQueue;
-	private final InterpolatedStringsHandler interpolatedStringsHandler;
+	private final TopicInterpolator topicInterpolator;
 
 	public static MaxwellKafkaPartitioner makeDDLPartitioner(String partitionHashFunc, String partitionKey) {
 		if (partitionKey.equals("table")) {
@@ -169,7 +169,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 			this.topic = kafkaTopic;
 		}
 
-		this.interpolatedStringsHandler = new InterpolatedStringsHandler(this.topic);
+		this.topicInterpolator = new TopicInterpolator(this.topic);
 		this.kafka = producer;
 
 		String hash = context.getConfig().kafkaPartitionHash;
@@ -277,7 +277,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 			// javascript topic override
 			topic = r.getKafkaTopic();
 			if (topic == null) {
-				topic = this.interpolatedStringsHandler.generateFromRowMap(r);
+				topic = this.topicInterpolator.generateFromRowMap(r);
 			}
 			LOGGER.debug("context.getConfig().producerPartitionKey = " + context.getConfig().producerPartitionKey);
 
@@ -289,7 +289,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	ProducerRecord<String, String> makeFallbackRecord(String fallbackTopic, final RowIdentity pk, Exception reason) throws Exception {
 		String key = pk.toKeyJson(keyFormat);
 		String value = pk.toFallbackValueWithReason(reason.getClass().getSimpleName());
-		String topic = new InterpolatedStringsHandler(fallbackTopic).generateFromRowIdentity(pk) ;
+		String topic = new TopicInterpolator(fallbackTopic).generateFromRowIdentity(pk) ;
 		return new ProducerRecord<>(topic, key, value);
 	}
 

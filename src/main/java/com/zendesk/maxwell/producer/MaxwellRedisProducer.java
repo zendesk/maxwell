@@ -1,9 +1,8 @@
 package com.zendesk.maxwell.producer;
 
 import com.zendesk.maxwell.MaxwellContext;
-import com.zendesk.maxwell.row.RowIdentity;
 import com.zendesk.maxwell.row.RowMap;
-import com.zendesk.maxwell.util.InterpolatedStringsHandler;
+import com.zendesk.maxwell.util.TopicInterpolator;
 import com.zendesk.maxwell.util.StoppableTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +24,7 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 	private static final Logger logger = LoggerFactory.getLogger(MaxwellRedisProducer.class);
 	private final String channel;
 	private final String redisType;
-	private final InterpolatedStringsHandler interpolatedStringsHandler;
+	private final TopicInterpolator topicInterpolator;
 
 	private static JedisPoolAbstract jedisPool;
 
@@ -38,7 +37,7 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 		super(context);
 
 		this.channel = context.getConfig().redisKey;
-		this.interpolatedStringsHandler = new InterpolatedStringsHandler(channel);
+		this.topicInterpolator = new TopicInterpolator(channel);
 		this.redisType = context.getConfig().redisType;
 
 		String redisSentinelName = context.getConfig().redisSentinelMasterName;
@@ -84,7 +83,7 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 	private void sendToRedis(RowMap msg) throws Exception {
 
 		String messageStr = msg.toJSON(outputConfig);
-		String channel = this.interpolatedStringsHandler.generateFromRowMap(msg);
+		String channel = this.topicInterpolator.generateFromRowMap(msg);
 
 		try (Jedis jedis = this.getJedisResource()) {
 

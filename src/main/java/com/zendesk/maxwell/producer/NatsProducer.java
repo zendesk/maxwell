@@ -2,7 +2,7 @@ package com.zendesk.maxwell.producer;
 
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.row.RowMap;
-import com.zendesk.maxwell.util.InterpolatedStringsHandler;
+import com.zendesk.maxwell.util.TopicInterpolator;
 import io.nats.client.Connection;
 import io.nats.client.Nats;
 import io.nats.client.Options;
@@ -47,7 +47,7 @@ public class NatsProducer extends AbstractProducer {
 		}
 
 		String value = r.toJSON(outputConfig);
-		String natsSubject = new InterpolatedStringsHandler(this.natsSubjectTemplate).generateFromRowMapAndTrimAllWhitesSpaces(r);
+		String natsSubject = new TopicInterpolator(this.natsSubjectTemplate).generateFromRowMapAndTrimAllWhitesSpaces(r);
 
 		long maxPayloadSize = natsConnection.getMaxPayload();
 		byte[] messageBytes = value.getBytes(StandardCharsets.UTF_8);
