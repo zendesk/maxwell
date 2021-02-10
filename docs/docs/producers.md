@@ -294,3 +294,21 @@ In order to register your custom producer, you must implement the `ProducerFacto
 Your custom producer will likely require configuration properties as well. For that, use the `custom_producer.*` property namespace. Those properties will be exposed to your producer via `MaxwellConfig.customProducerProperties`.
 
 Custom producer factory and producer examples can be found here: [https://github.com/zendesk/maxwell/tree/master/src/example/com/zendesk/maxwell/example/producerfactory](https://github.com/zendesk/maxwell/tree/master/src/example/com/zendesk/maxwell/example/producerfactory)
+
+
+# Topic substitution
+
+Some producers may be given a template string from which they dynamically generate a topic (or whatever their equivalent of a kafka topic is).
+Subsitutions are enclosed in by `%{}`.  The following substitutions are available:
+
+- `%{database}`
+- `%{table}`
+- `%{type}` (insert/update/delete)
+
+Topic substituion is available in the following producers:
+
+- Kakfa, for topics
+- Redis, for channels
+- Nats, for subject heirarchies
+
+
