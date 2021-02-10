@@ -22,18 +22,15 @@ public class NatsProducer extends AbstractProducer {
 
 	public NatsProducer(MaxwellContext context) {
 		super(context);
+		List<String> urls = Arrays.asList(context.getConfig().natsUrl.split(","));
+		Options.Builder optionBuilder = new Options.Builder();
+		urls.forEach(optionBuilder::server);
+		Options option = optionBuilder.build();
+
+		this.natsSubjectTemplate = context.getConfig().natsSubject;
+
 		try {
-			List<String> urls = Arrays.asList(context.getConfig().natsUrl.split(","));
-
-			Options.Builder optionBuilder = new Options.Builder();
-
-			urls.forEach(optionBuilder::server);
-
-			Options option = optionBuilder.build();
-
 			this.natsConnection = Nats.connect(option);
-			this.natsSubjectTemplate = context.getConfig().natsSubject;
-
 		} catch (IOException | InterruptedException e) {
 			throw new RuntimeException(e);
 		}
@@ -47,7 +44,7 @@ public class NatsProducer extends AbstractProducer {
 		}
 
 		String value = r.toJSON(outputConfig);
-		String natsSubject = new TopicInterpolator(this.natsSubjectTemplate).generateFromRowMapAndTrimAllWhitesSpaces(r);
+		String natsSubject = new TopicInterpolator(this.natsSubjectTemplate).generateFromRowMapAndCleanUpIllegalCharacters(r);
 
 		long maxPayloadSize = natsConnection.getMaxPayload();
 		byte[] messageBytes = value.getBytes(StandardCharsets.UTF_8);

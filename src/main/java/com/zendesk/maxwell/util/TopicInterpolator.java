@@ -33,7 +33,7 @@ public class TopicInterpolator {
 		String table = pk.getTable();
 
 		if (this.isInterpolated)
-			return interpolate(pk.getDatabase(), table, null);
+			return interpolate(pk.getDatabase(), table, null, false);
 		else
 			return this.inputString;
 	}
@@ -50,20 +50,42 @@ public class TopicInterpolator {
 		String type = r.getRowType();
 
 		if (this.isInterpolated)
-			return interpolate(r.getDatabase(), table, type);
+			return interpolate(r.getDatabase(), table, type, false);
 		else
 			return this.inputString;
 	}
 
-	protected String interpolate(final String database, final String table, final String type) {
+	/**
+	 * Interpolate the input string based on {{{@link RowMap}}} and clean up all non alpha-numeric characters
+	 *
+	 * @param r the rowMap
+	 * @return the interpollated string
+	 */
+	public String generateFromRowMapAndCleanUpIllegalCharacters(RowMap r) {
+		String table = r.getTable();
+		String type = r.getRowType();
+
+		if (this.isInterpolated)
+			return interpolate(r.getDatabase(), table, type, true).replaceAll("\\s+", "");
+		else
+			return this.inputString;
+	}
+
+	protected String interpolate(final String database, final String table, final String type, final Boolean cleanUpIllegalCharacters) {
 		if (this.isInterpolated) {
 			final String typeReplacement = type != null ? type : "";
 
+			if (cleanUpIllegalCharacters)
+				return this.inputString
+						.replaceAll("%\\{database\\}", cleanupIllegalCharacters(emptyStringOnNull(database)))
+						.replaceAll("%\\{table\\}", cleanupIllegalCharacters(emptyStringOnNull(table)))
+						.replaceAll("%\\{type\\}", cleanupIllegalCharacters(emptyStringOnNull(typeReplacement)));
+			else
+				return this.inputString
+						.replaceAll("%\\{database\\}", emptyStringOnNull(database))
+						.replaceAll("%\\{table\\}", emptyStringOnNull(table))
+						.replaceAll("%\\{type\\}", emptyStringOnNull(typeReplacement));
 
-			return this.inputString
-					.replaceAll("%\\{database\\}", cleanupIllegalCharacters(cleanupIllegalCharacters(emptyStringOnNull(database))))
-					.replaceAll("%\\{table\\}", cleanupIllegalCharacters(cleanupIllegalCharacters(emptyStringOnNull(table))))
-					.replaceAll("%\\{type\\}", cleanupIllegalCharacters(cleanupIllegalCharacters(emptyStringOnNull(typeReplacement))));
 		} else {
 			return this.inputString;
 		}
@@ -78,12 +100,6 @@ public class TopicInterpolator {
 	}
 
 	private String cleanupIllegalCharacters(final String value) {
-		return value
-				.replaceAll("([^A-Za-z0-9]+|[\\.\\s]+)", "_");
-
-	}
-
-	public String generateFromRowMapAndTrimAllWhitesSpaces(RowMap r) {
-		return this.generateFromRowMap(r).replaceAll("\\s+", "");
+		return value.replaceAll("([^A-Za-z0-9])", "_");
 	}
 }

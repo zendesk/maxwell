@@ -90,12 +90,12 @@ public class TopicInterpolatorTest {
 	@Test
 	public void generateFromRowMapCorrectlyAndTrimAllWhitesSpaces() {
 		TopicInterpolator dbTable = new TopicInterpolator("  %{database} .  %{table} \n");
-		assertThat(dbTable.generateFromRowMapAndTrimAllWhitesSpaces(newRowMap()), equalTo("testDb.testTable"));
-		assertThat(dbTable.generateFromRowMapAndTrimAllWhitesSpaces(new RowMap(null, "testDb", "testTable", System.currentTimeMillis(), Collections.emptyList(), new Position(new BinlogPosition(3, "mysql.1"), 0L))),
+		assertThat(dbTable.generateFromRowMapAndCleanUpIllegalCharacters(newRowMap()), equalTo("testDb.testTable"));
+		assertThat(dbTable.generateFromRowMapAndCleanUpIllegalCharacters(new RowMap(null, "testDb", "testTable", System.currentTimeMillis(), Collections.emptyList(), new Position(new BinlogPosition(3, "mysql.1"), 0L))),
 				equalTo("testDb.testTable"));
-		assertThat(dbTable.generateFromRowMapAndTrimAllWhitesSpaces(new RowMap("insert", "testDb", null, System.currentTimeMillis(), Collections.emptyList(), new Position(new BinlogPosition(3, "mysql.1"), 0L))),
+		assertThat(dbTable.generateFromRowMapAndCleanUpIllegalCharacters(new RowMap("insert", "testDb", null, System.currentTimeMillis(), Collections.emptyList(), new Position(new BinlogPosition(3, "mysql.1"), 0L))),
 				equalTo("testDb."));
-		assertThat(dbTable.generateFromRowMapAndTrimAllWhitesSpaces(new RowMap(null, "testDb", null, System.currentTimeMillis(), Collections.emptyList(), new Position(new BinlogPosition(3, "mysql.1"), 0L))),
+		assertThat(dbTable.generateFromRowMapAndCleanUpIllegalCharacters(new RowMap(null, "testDb", null, System.currentTimeMillis(), Collections.emptyList(), new Position(new BinlogPosition(3, "mysql.1"), 0L))),
 				equalTo("testDb."));
 
 	}
@@ -105,35 +105,42 @@ public class TopicInterpolatorTest {
 	public void interpolateFullTopic() {
 		TopicInterpolator topicInterpolator = new TopicInterpolator(DATABASE_TABLE_TYPE_TEMPLATE);
 
-		assertThat(topicInterpolator.interpolate("testDb", "testTable", "insert"), equalTo("testDb.testTable.insert"));
+		assertThat(topicInterpolator.interpolate("testDb", "testTable", "insert", true), equalTo("testDb.testTable.insert"));
 	}
 
 	@Test
 	public void interpolateTopicWithoutType() {
 		TopicInterpolator topicInterpolator = new TopicInterpolator(DATABASE_TABLE_TEMPLATE);
 
-		assertThat(topicInterpolator.interpolate("testDb", "testTable", null), equalTo("testDb.testTable"));
+		assertThat(topicInterpolator.interpolate("testDb", "testTable", null, true), equalTo("testDb.testTable"));
 	}
 
 	@Test
 	public void interpolateTopicWithoutDatabase() {
 		TopicInterpolator topicInterpolator = new TopicInterpolator("%{table}.%{type}");
 
-		assertThat(topicInterpolator.interpolate(null, "testTable", "insert"), equalTo("testTable.insert"));
+		assertThat(topicInterpolator.interpolate(null, "testTable", "insert", true), equalTo("testTable.insert"));
 	}
 
 	@Test
 	public void interpolateTopicWithoutTable() {
 		TopicInterpolator topicInterpolator = new TopicInterpolator("%{database}.%{type}");
 
-		assertThat(topicInterpolator.interpolate("testDb", null, "insert"), equalTo("testDb.insert"));
+		assertThat(topicInterpolator.interpolate("testDb", null, "insert", true), equalTo("testDb.insert"));
 	}
 
 	@Test
-	public void replaceAnyNonAlphaNumericCharacterBeforeInterpollation() {
+	public void replaceAnyNonAlphaNumericCharacterBeforeInterpolation() {
 		TopicInterpolator topicInterpolator = new TopicInterpolator(DATABASE_TABLE_TYPE_TEMPLATE);
 
-		assertThat(topicInterpolator.interpolate("&test Db.db!", "&test Table.table!", "&insert t.table!"), equalTo("_test_Db_db_._test_Table_table_._insert_t_table_"));
+		assertThat(topicInterpolator.interpolate("&test Db.db!", "&test Table.table!", "&insert t.table!", true), equalTo("_test_Db_db_._test_Table_table_._insert_t_table_"));
+	}
+
+	@Test
+	public void doNOTReplaceAnyNonAlphaNumericCharacterBeforeInterpolation() {
+		TopicInterpolator topicInterpolator = new TopicInterpolator(DATABASE_TABLE_TYPE_TEMPLATE);
+
+		assertThat(topicInterpolator.interpolate("&test Db.db!", "&test Table.table!", "&insert t.table!", false), equalTo("&test Db.db!.&test Table.table!.&insert t.table!"));
 	}
 
 	private RowIdentity newRowIdentity() {
