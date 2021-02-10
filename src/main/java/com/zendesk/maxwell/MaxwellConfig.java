@@ -132,6 +132,9 @@ public class MaxwellConfig extends AbstractConfig {
 	public boolean rabbitmqMessagePersistent;
 	public boolean rabbitmqDeclareExchange;
 
+	public String natsUrl;
+	public String natsSubject;
+
 	public String redisHost;
 	public int redisPort;
 	public String redisAuth;
@@ -179,7 +182,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.separator();
 
-		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|pubsub|sqs|rabbitmq|redis|custom" )
+		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|nats|pubsub|sqs|rabbitmq|redis|custom" )
 				.withRequiredArg();
 		parser.accepts( "client_id", "unique identifier for this maxwell instance, use when running multiple maxwells" )
 				.withRequiredArg();
@@ -338,6 +341,10 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.addToSection("producer_partition_by_fallback");
 		parser.addToSection("producer_ack_timeout");
 
+		parser.section( "nats" );
+
+		parser.accepts( "nats_url", "Url(s) of Nats connection (comma separated). Default is localhost:4222" ).withRequiredArg();
+		parser.accepts( "nats_subject", "Subject Hierarchies of Nats. Default is '%{database}.%{table}'" ).withRequiredArg();
 
 		parser.section( "pubsub" );
 		parser.accepts( "pubsub_project_id", "provide a google cloud platform project id associated with the pubsub topic" )
@@ -564,6 +571,9 @@ public class MaxwellConfig extends AbstractConfig {
 		this.rabbitmqRoutingKeyTemplate   	= fetchStringOption("rabbitmq_routing_key_template", options, properties, "%db%.%table%");
 		this.rabbitmqMessagePersistent    	= fetchBooleanOption("rabbitmq_message_persistent", options, properties, false);
 		this.rabbitmqDeclareExchange		= fetchBooleanOption("rabbitmq_declare_exchange", options, properties, true);
+
+		this.natsUrl			= fetchStringOption("nats_url", options, properties, "nats://localhost:4222");
+		this.natsSubject		= fetchStringOption("nats_subject", options, properties, "%{database}.%{table}");
 
 		this.redisHost			= fetchStringOption("redis_host", options, properties, "localhost");
 		this.redisPort			= fetchIntegerOption("redis_port", options, properties, 6379);

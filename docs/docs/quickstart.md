@@ -97,6 +97,13 @@ docker run -it --rm zendesk/maxwell bin/maxwell --user=$MYSQL_USERNAME \
 docker run -it --rm --name maxwell -v `cd && pwd`/.aws:/root/.aws zendesk/maxwell sh -c 'cp /app/kinesis-producer-library.properties.example /app/kinesis-producer-library.properties && echo "Region=$AWS_DEFAULT_REGION" >> /app/kinesis-producer-library.properties && bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kinesis --kinesis_stream=$KINESIS_STREAM'
 ```
 
+## Nats
+
+```
+bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
+    --producer=nats --nats_url=='0.0.0.0:4222'
+```
+
 ## Google Cloud Pub/Sub
 
 ```
