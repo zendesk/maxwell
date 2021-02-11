@@ -190,6 +190,11 @@
               </ul>
             </li>
             
+            <li class="nav-item" data-level="1"><a href="#nats" class="nav-link">Nats</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            
             <li class="nav-item" data-level="1"><a href="#google-cloud-pubsub" class="nav-link">Google Cloud Pub/Sub</a>
               <ul class="nav flex-column">
               </ul>
@@ -206,6 +211,11 @@
             </li>
             
             <li class="nav-item" data-level="1"><a href="#custom-producer" class="nav-link">Custom Producer</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            
+            <li class="nav-item" data-level="1"><a href="#topic-substitution" class="nav-link">Topic substitution</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -387,6 +397,15 @@ Region=$AWS_DEFAULT_REGION
 <h2 id="options_1">Options</h2>
 <p>Set the output queue in the <code>config.properties</code> by setting the <code>sqs_queue_uri</code> property to full SQS queue uri from AWS console.</p>
 <p>The producer uses the <a href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sqs/AmazonSQSClient.html">AWS SQS SDK</a>.</p>
+<h1 id="nats">Nats</h1>
+<hr />
+<p>The configurable properties for nats are:</p>
+<ul>
+<li><code>nats_url</code> - defaults to <strong>nats://localhost:4222</strong></li>
+<li><code>nats_subject</code> - defaults to <strong>%{database}.%{table}</strong></li>
+</ul>
+<p><code>nats_subject</code> defines the Nats subject hierarchy to write to.  <a href="/producers#topic-substitution">Topic substitution</a> is available.
+All non-alphanumeric characters in the substitued values will be replaced by underscores.</p>
 <h1 id="google-cloud-pubsub">Google Cloud Pub/Sub</h1>
 <hr />
 <p>In order to publish to Google Cloud Pub/Sub, you will need to obtain an IAM service account that has been granted the <code>roles/pubsub.publisher</code> role.</p>
@@ -442,6 +461,20 @@ being processed. This can be changed with the <code>redis_pub_channel</code>, <c
 <p>In order to register your custom producer, you must implement the <code>ProducerFactory</code> interface, which is responsible for creating your custom <code>AbstractProducer</code>. Next, set the <code>custom_producer.factory</code> configuration property to your <code>ProducerFactory</code>'s fully qualified class name. Then add the custom <code>ProducerFactory</code> and all its dependencies to the $MAXWELL_HOME/lib directory.</p>
 <p>Your custom producer will likely require configuration properties as well. For that, use the <code>custom_producer.*</code> property namespace. Those properties will be exposed to your producer via <code>MaxwellConfig.customProducerProperties</code>.</p>
 <p>Custom producer factory and producer examples can be found here: <a href="https://github.com/zendesk/maxwell/tree/master/src/example/com/zendesk/maxwell/example/producerfactory">https://github.com/zendesk/maxwell/tree/master/src/example/com/zendesk/maxwell/example/producerfactory</a></p>
+<h1 id="topic-substitution">Topic substitution</h1>
+<p>Some producers may be given a template string from which they dynamically generate a topic (or whatever their equivalent of a kafka topic is).
+Subsitutions are enclosed in by <code>%{}</code>.  The following substitutions are available:</p>
+<ul>
+<li><code>%{database}</code></li>
+<li><code>%{table}</code></li>
+<li><code>%{type}</code> (insert/update/delete)</li>
+</ul>
+<p>Topic substituion is available in the following producers:</p>
+<ul>
+<li>Kakfa, for topics</li>
+<li>Redis, for channels</li>
+<li>Nats, for subject heirarchies</li>
+</ul>
     </div>
 </div>
             </div>

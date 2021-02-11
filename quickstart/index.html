@@ -154,6 +154,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="2"><a href="#nats" class="nav-link">Nats</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
             <li class="nav-item" data-level="2"><a href="#google-cloud-pubsub" class="nav-link">Google Cloud Pub/Sub</a>
               <ul class="nav flex-column">
               </ul>
@@ -179,13 +183,13 @@
 <h1 id="download">Download</h1>
 <hr />
 <ul>
-<li>Download binary distro: <a href="https://github.com/zendesk/maxwell/releases/download/v1.30.0/maxwell-1.30.0.tar.gz">https://github.com/zendesk/maxwell/releases/download/v1.30.0/maxwell-1.30.0.tar.gz</a></li>
+<li>Download binary distro: <a href="https://github.com/zendesk/maxwell/releases/download/v1.31.0/maxwell-1.31.0.tar.gz">https://github.com/zendesk/maxwell/releases/download/v1.31.0/maxwell-1.31.0.tar.gz</a></li>
 <li>Sources and bug tracking is available on github: <a href="https://github.com/zendesk/maxwell">https://github.com/zendesk/maxwell</a></li>
 </ul>
 <p><strong>curl</strong>:</p>
-<pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.30.0/maxwell-1.30.0.tar.gz \
+<pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.31.0/maxwell-1.31.0.tar.gz \
        | tar zxvf -
-cd maxwell-1.30.0
+cd maxwell-1.31.0
 </code></pre>
 
 <p><strong>docker</strong>:</p>
@@ -251,6 +255,11 @@ mysql&gt; GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'maxwell
 
 <h2 id="kinesis">Kinesis</h2>
 <pre><code>docker run -it --rm --name maxwell -v `cd &amp;&amp; pwd`/.aws:/root/.aws zendesk/maxwell sh -c 'cp /app/kinesis-producer-library.properties.example /app/kinesis-producer-library.properties &amp;&amp; echo &quot;Region=$AWS_DEFAULT_REGION&quot; &gt;&gt; /app/kinesis-producer-library.properties &amp;&amp; bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kinesis --kinesis_stream=$KINESIS_STREAM'
+</code></pre>
+
+<h2 id="nats">Nats</h2>
+<pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
+    --producer=nats --nats_url=='0.0.0.0:4222'
 </code></pre>
 
 <h2 id="google-cloud-pubsub">Google Cloud Pub/Sub</h2>
