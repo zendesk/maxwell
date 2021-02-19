@@ -49,8 +49,9 @@ public abstract class AbstractConfig {
 					if ( l.contains("--help") || i++ < 2 ) // take the first 3 lines, these are the header
 						showLine = true;
 					for ( String o : filterOptions )  {
-						if ( l.contains(o) )
+						if ( l.contains(o) && !l.startsWith("--__section") )
 							showLine = true;
+
 					}
 
 					if ( showLine )
