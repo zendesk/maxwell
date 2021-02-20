@@ -279,7 +279,7 @@
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
       <artifactId>metrics-servlets</artifactId>
-      <version>4.1.10</version>
+      <version>4.1.14</version>
     </dependency>
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
