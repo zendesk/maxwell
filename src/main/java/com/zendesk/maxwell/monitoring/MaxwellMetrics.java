@@ -12,6 +12,8 @@ import com.zendesk.maxwell.MaxwellConfig;
 import com.zendesk.maxwell.MaxwellContext;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.dropwizard.DropwizardExports;
+import io.opencensus.exporter.stats.stackdriver.StackdriverStatsExporter;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
+import java.util.Collections;
 
 import static com.viafoura.metrics.datadog.DatadogReporter.Expansion.*;
 
@@ -29,6 +32,7 @@ public class MaxwellMetrics implements Metrics {
 	static final String reportingTypeJmx = "jmx";
 	static final String reportingTypeHttp = "http";
 	static final String reportingTypeDataDog = "datadog";
+	static final String reportingTypeStackdriver = "stackdriver";
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellMetrics.class);
 	private final ArrayList<Reporter> reporters = new ArrayList<>();
@@ -116,6 +120,20 @@ public class MaxwellMetrics implements Metrics {
 			reporter.start(config.metricsDatadogInterval, TimeUnit.SECONDS);
 			reporters.add(reporter);
 			LOGGER.info("Datadog reporting enabled");
+		}
+
+		if (config.metricsReportingType.contains(reportingTypeStackdriver)) {
+			io.opencensus.metrics.Metrics.getExportComponent().getMetricProducerManager().add(
+				new io.opencensus.contrib.dropwizard.DropWizardMetrics(
+				  Collections.singletonList(this.registry)));
+
+			try {
+				StackdriverStatsExporter.createAndRegister();
+			} catch (java.io.IOException e) {
+				LOGGER.error("Maxwell encountered an error in creating the stackdriver exporter.", e);
+			}
+
+			LOGGER.info("Stackdriver metrics reporter enabled");
 		}
 
 		if (config.metricsReportingType.contains(reportingTypeHttp)) {
