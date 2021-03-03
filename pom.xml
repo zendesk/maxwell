@@ -42,6 +42,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <mockito.version>3.7.7</mockito.version>
+    <opencensus.version>0.28.3</opencensus.version>
   </properties>
 
   <profiles>
@@ -331,6 +332,28 @@
       <groupId>org.jgroups</groupId>
       <artifactId>jgroups-raft</artifactId>
       <version>1.0.0.Final</version>
+    </dependency>
+    <!-- OpenCensus used for pushing metrics to stackdriver -->
+    <dependency>
+        <groupId>io.opencensus</groupId>
+        <artifactId>opencensus-contrib-dropwizard</artifactId>      
+        <version>${opencensus.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>io.opencensus</groupId>
+        <artifactId>opencensus-api</artifactId>
+        <version>${opencensus.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>io.opencensus</groupId>
+        <artifactId>opencensus-impl</artifactId>
+        <version>${opencensus.version}</version>
+        <scope>runtime</scope>
+    </dependency>
+    <dependency>
+        <groupId>io.opencensus</groupId>
+        <artifactId>opencensus-exporter-stats-stackdriver</artifactId>
+        <version>${opencensus.version}</version>
     </dependency>
   </dependencies>
 
