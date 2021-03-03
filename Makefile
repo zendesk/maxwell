@@ -16,7 +16,7 @@ clean:
 depclean: clean
 	rm -f $(CLASSPATH)
 
-package: depclean kafka-0.8.2.2 kafka-0.9.0.1 kafka-0.10.0.1 kafka-0.10.2.1 kafka-0.11.0.1 kafka-1.0.0
+package: depclean kafka-0.8.2.2 kafka-0.9.0.1 kafka-0.10.0.1 kafka-0.10.2.1 kafka-0.11.0.1 kafka-1.0.0 kafka-2.7.0
 	@# TODO: this is inefficient, we really just want to copy the jars...
 	mvn package -DskipTests=true
 
