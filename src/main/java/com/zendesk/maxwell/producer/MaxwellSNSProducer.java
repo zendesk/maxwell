@@ -39,14 +39,14 @@ public class MaxwellSNSProducer extends AbstractAsyncProducer {
 		Map<String, MessageAttributeValue> messageAttributes = new HashMap<>();
 		if (context.getConfig().snsTableAttribute) {
 			messageAttributes.put(
-					"table",
-					new MessageAttributeValue().withStringValue(r.getTable())
+				"table",
+				new MessageAttributeValue().withStringValue(r.getTable())
 			);
 		}
 		if (this.context.getConfig().snsDatabaseAttribute) {
 			messageAttributes.put(
-					"database",
-					new MessageAttributeValue().withStringValue(r.getDatabase())
+				"database",
+				new MessageAttributeValue().withStringValue(r.getDatabase())
 			);
 		}
 		if ( topic.endsWith(".fifo")) {
