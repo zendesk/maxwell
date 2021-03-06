@@ -57,8 +57,7 @@ public class MaxwellSNSProducerTest {
 	public void publishesRecord() throws Exception {
 		AmazonSNSAsyncClient client = Mockito.mock(AmazonSNSAsyncClient.class);
 		MaxwellContext context = mock(MaxwellContext.class);
-		MaxwellConfig config = new MaxwellConfig();
-		when(context.getConfig()).thenReturn(config);
+		when(context.getConfig()).thenReturn(new MaxwellConfig());
 		when(context.getMetrics()).thenReturn(new NoOpMetrics());
 		MaxwellSNSProducer producer = new MaxwellSNSProducer(context, TOPIC);
 		producer.setClient(client);
@@ -91,5 +90,22 @@ public class MaxwellSNSProducerTest {
 		Assert.assertEquals("MyTable", attributes.get("table").getStringValue());
 		Assert.assertNotNull(attributes.getOrDefault("database", null));
 		Assert.assertEquals("MyDatabase", attributes.get("database").getStringValue());
+	}
+
+	@Test
+	public void ensureMessageGroupIdOnFifo() throws Exception {
+		final String topic = "topic.fifo";
+		AmazonSNSAsyncClient client = Mockito.mock(AmazonSNSAsyncClient.class);
+		MaxwellContext context = mock(MaxwellContext.class);
+		when(context.getConfig()).thenReturn(new MaxwellConfig());
+		when(context.getMetrics()).thenReturn(new NoOpMetrics());
+		MaxwellSNSProducer producer = new MaxwellSNSProducer(context, topic);
+		producer.setClient(client);
+		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
+		when(client.publishAsync(any())).thenReturn(mockedFuture);
+		producer.sendAsync(rowMap, cc);
+		Mockito.verify(client, times(1)).publishAsync(arguments.capture(), any());
+		Map<String, MessageAttributeValue> attributes = arguments.getValue().getMessageAttributes();
+		Assert.assertEquals("MyDatabase", arguments.getValue().getMessageGroupId());
 	}
 }
