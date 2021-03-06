@@ -66,6 +66,10 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public String sqsQueueUri;
 
+	public String snsTopic;
+	public boolean snsTableAttribute;
+	public boolean snsDatabaseAttribute;
+
 	public String pubsubProjectId;
 	public String pubsubTopic;
 	public String ddlPubsubTopic;
@@ -620,6 +624,9 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.sqsQueueUri = fetchStringOption("sqs_queue_uri", options, properties, null);
 
+		this.snsTopic = fetchStringOption("sns_topic", options, properties, null);
+		this.snsDatabaseAttribute = fetchBooleanOption("sns_database_attribute", options, properties, false);
+		this.snsTableAttribute = fetchBooleanOption("sns_table_attribute", options, properties, false);
 		this.outputFile = fetchStringOption("output_file", options, properties, null);
 
 		this.metricsPrefix = fetchStringOption("metrics_prefix", options, properties, "MaxwellMetrics");
