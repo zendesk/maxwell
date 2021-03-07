@@ -94,12 +94,11 @@ public class MaxwellSNSProducerTest {
 
 	@Test
 	public void ensureMessageGroupIdOnFifo() throws Exception {
-		final String topic = "topic.fifo";
 		AmazonSNSAsyncClient client = Mockito.mock(AmazonSNSAsyncClient.class);
 		MaxwellContext context = mock(MaxwellContext.class);
 		when(context.getConfig()).thenReturn(new MaxwellConfig());
 		when(context.getMetrics()).thenReturn(new NoOpMetrics());
-		MaxwellSNSProducer producer = new MaxwellSNSProducer(context, topic);
+		MaxwellSNSProducer producer = new MaxwellSNSProducer(context, FIFO_TOPIC);
 		producer.setClient(client);
 		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
 		when(client.publishAsync(any())).thenReturn(mockedFuture);
