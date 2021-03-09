@@ -233,7 +233,7 @@ In case you need to set up a different region also along with credentials then d
 ## Options
 Set the topic arn in the `config.properties` by setting the `sns_topic` property to the topic name. FIFO topics should have a `.fifo` suffix. 
 
-Optionally, you can enable `sns_table_attribute` and/or `sns_database_attribute` values to have maxwell attach `table` and`database` attributes to the message for subscription filtering
+Optionally, you can enable `sns_table_attribute` and/or `sns_database_attribute` values to have maxwell attach `table` and `database` attributes to the message for subscription filtering
 
 The producer uses the [AWS SNS SDK](http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sns/AmazonSNSClient.html).
 
