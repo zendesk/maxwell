@@ -133,7 +133,7 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-core</artifactId>
-      <version>1.11.955</version>
+      <version>1.11.974</version>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
@@ -318,12 +318,12 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-sqs</artifactId>
-      <version>1.11.955</version>
+      <version>1.11.974</version>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-sts</artifactId>
-      <version>1.11.955</version>
+      <version>1.11.974</version>
     </dependency>
     <dependency>
       <groupId>me.tongfei</groupId>
