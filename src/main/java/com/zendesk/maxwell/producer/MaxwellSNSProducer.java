@@ -26,6 +26,7 @@ public class MaxwellSNSProducer extends AbstractAsyncProducer {
 	public MaxwellSNSProducer(MaxwellContext context, String topic) {
 		super(context);
 		this.topic = topic;
+		System.out.println(topic);
 		this.client = AmazonSNSAsyncClientBuilder.defaultClient();
 	}
 
@@ -45,15 +46,20 @@ public class MaxwellSNSProducer extends AbstractAsyncProducer {
 			for (String element: configuredAttributes.split(",")) {
 				switch (element) {
 					case "database":
-						messageAttributes.put("database", new MessageAttributeValue().withStringValue(r.getDatabase()));
+						messageAttributes.put(
+							"database",
+							new MessageAttributeValue().withDataType("String").withStringValue(r.getDatabase())
+						);
 						break;
 					case "table":
-						messageAttributes.put("table", new MessageAttributeValue().withStringValue(r.getTable()));
+						messageAttributes.put(
+							"table",
+							new MessageAttributeValue().withDataType("String").withStringValue(r.getTable())
+						);
 						break;
 				}
 			}
 		}
-
 
 		if ( topic.endsWith(".fifo")) {
 			publishRequest.setMessageGroupId(r.getDatabase());

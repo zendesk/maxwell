@@ -94,8 +94,7 @@ sqs_queue_uri                  | STRING                              | SQS Queue
 option                         | argument                            | description                                         | default
 -------------------------------|-------------------------------------| --------------------------------------------------- | -------
 sns_topic                      | STRING                              | The SNS topic to publish to. FIFO topics should end with `.fifo` |
-sns_database_attribute         | BOOLEAN                             | Add `database` as an attribute to the SNS message   | false
-sns_table_attribute            | BOOLEAN                             | Add `table` as an attribute to the SNS message      | false
+sns_attrs                      | STRING                              | Properties to set as attributes on the SNS message  |  
 
 ## nats producer
 option                         | argument                            | description                                         | default

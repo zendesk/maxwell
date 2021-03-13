@@ -338,6 +338,10 @@ public class MaxwellConfig extends AbstractConfig {
 				.withOptionalArg();
 		parser.accepts( "sqs_queue_uri", "SQS Queue uri" )
 				.withRequiredArg();
+		parser.accepts("sns_topic", "SNS Topic ARN")
+				.withRequiredArg();
+		parser.accepts("sns_attrs", "Fields to add as message attributes")
+				.withOptionalArg();
 		parser.separator();
 		parser.addToSection("producer_partition_by");
 		parser.addToSection("producer_partition_columns");
@@ -844,6 +848,8 @@ public class MaxwellConfig extends AbstractConfig {
 			usageForOptions("please specify a stream name for kinesis", "kinesis_stream");
 		} else if (this.producerType.equals("sqs") && this.sqsQueueUri == null) {
 			usageForOptions("please specify a queue uri for sqs", "sqs_queue_uri");
+		} else if (this.producerType.equals("sns") && this.snsTopic == null) {
+			usageForOptions("please specify a topic ARN for SNS", "sns_topic");
 		} else if (this.producerType.equals("pubsub")) {
 			if (this.pubsubRequestBytesThreshold <= 0L)
 				usage("--pubsub_request_bytes_threshold must be > 0");
