@@ -67,8 +67,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public String sqsQueueUri;
 
 	public String snsTopic;
-	public boolean snsTableAttribute;
-	public boolean snsDatabaseAttribute;
+	public String snsAttrs;
 
 	public String pubsubProjectId;
 	public String pubsubTopic;
@@ -186,7 +185,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.separator();
 
-		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|nats|pubsub|sqs|rabbitmq|redis|custom" )
+		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|nats|pubsub|sns|sqs|rabbitmq|redis|custom" )
 				.withRequiredArg();
 		parser.accepts( "client_id", "unique identifier for this maxwell instance, use when running multiple maxwells" )
 				.withRequiredArg();
@@ -625,8 +624,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.sqsQueueUri = fetchStringOption("sqs_queue_uri", options, properties, null);
 
 		this.snsTopic = fetchStringOption("sns_topic", options, properties, null);
-		this.snsDatabaseAttribute = fetchBooleanOption("sns_database_attribute", options, properties, false);
-		this.snsTableAttribute = fetchBooleanOption("sns_table_attribute", options, properties, false);
+		this.snsAttrs = fetchStringOption("sns_attrs", options, properties, null);
 		this.outputFile = fetchStringOption("output_file", options, properties, null);
 
 		this.metricsPrefix = fetchStringOption("metrics_prefix", options, properties, "MaxwellMetrics");

@@ -9,6 +9,7 @@ import com.amazonaws.services.sns.model.PublishResult;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
+import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +20,8 @@ public class MaxwellSNSProducer extends AbstractAsyncProducer {
 
 	private AmazonSNSAsync client;
 	private String topic;
+	private String[] stringFelds = {"database", "table"};
+	private String[] numberFields = {"ts", "xid"};
 
 	public MaxwellSNSProducer(MaxwellContext context, String topic) {
 		super(context);
@@ -36,18 +39,22 @@ public class MaxwellSNSProducer extends AbstractAsyncProducer {
 		// Publish a message to an Amazon SNS topic.
 		final PublishRequest publishRequest = new PublishRequest(topic, value);
 		Map<String, MessageAttributeValue> messageAttributes = new HashMap<>();
-		if (context.getConfig().snsTableAttribute) {
-			messageAttributes.put(
-				"table",
-				new MessageAttributeValue().withStringValue(r.getTable())
-			);
+
+		final String configuredAttributes = context.getConfig().snsAttrs;
+		if (configuredAttributes != null) {
+			for (String element: configuredAttributes.split(",")) {
+				switch (element) {
+					case "database":
+						messageAttributes.put("database", new MessageAttributeValue().withStringValue(r.getDatabase()));
+						break;
+					case "table":
+						messageAttributes.put("table", new MessageAttributeValue().withStringValue(r.getTable()));
+						break;
+				}
+			}
 		}
-		if (this.context.getConfig().snsDatabaseAttribute) {
-			messageAttributes.put(
-				"database",
-				new MessageAttributeValue().withStringValue(r.getDatabase())
-			);
-		}
+
+
 		if ( topic.endsWith(".fifo")) {
 			publishRequest.setMessageGroupId(r.getDatabase());
 		}

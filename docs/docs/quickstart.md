@@ -130,5 +130,5 @@ bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
 
 ```
 bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
-    --producer=sns --sns_topic=sns.topic
+    --producer=sns --sns_topic=sns.topic --sns_attrs=database,table
 ```

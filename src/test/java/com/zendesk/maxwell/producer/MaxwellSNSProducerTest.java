@@ -75,8 +75,7 @@ public class MaxwellSNSProducerTest {
 		AmazonSNSAsyncClient client = Mockito.mock(AmazonSNSAsyncClient.class);
 		MaxwellContext context = mock(MaxwellContext.class);
 		MaxwellConfig config = new MaxwellConfig();
-		config.snsTableAttribute = true;
-		config.snsDatabaseAttribute = true;
+		config.snsAttrs = "database,table";
 		when(context.getConfig()).thenReturn(config);
 		when(context.getMetrics()).thenReturn(new NoOpMetrics());
 		MaxwellSNSProducer producer = new MaxwellSNSProducer(context, TOPIC);
