@@ -26,7 +26,6 @@ public class MaxwellSNSProducer extends AbstractAsyncProducer {
 	public MaxwellSNSProducer(MaxwellContext context, String topic) {
 		super(context);
 		this.topic = topic;
-		System.out.println(topic);
 		this.client = AmazonSNSAsyncClientBuilder.defaultClient();
 	}
 
