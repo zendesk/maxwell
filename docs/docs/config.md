@@ -90,6 +90,12 @@ option                         | argument                            | descripti
 -------------------------------|-------------------------------------| --------------------------------------------------- | -------
 sqs_queue_uri                  | STRING                              | SQS Queue URI |
 
+## sns producer 
+option                         | argument                            | description                                         | default
+-------------------------------|-------------------------------------| --------------------------------------------------- | -------
+sns_topic                      | STRING                              | The SNS topic to publish to. FIFO topics should end with `.fifo` |
+sns_attrs                      | STRING                              | Properties to set as attributes on the SNS message  |  
+
 ## nats producer
 option                         | argument                            | description                                         | default
 -------------------------------|-------------------------------------| --------------------------------------------------- | -------

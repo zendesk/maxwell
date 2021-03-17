@@ -66,6 +66,9 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public String sqsQueueUri;
 
+	public String snsTopic;
+	public String snsAttrs;
+
 	public String pubsubProjectId;
 	public String pubsubTopic;
 	public String ddlPubsubTopic;
@@ -182,7 +185,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.separator();
 
-		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|nats|pubsub|sqs|rabbitmq|redis|custom" )
+		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|nats|pubsub|sns|sqs|rabbitmq|redis|custom" )
 				.withRequiredArg();
 		parser.accepts( "client_id", "unique identifier for this maxwell instance, use when running multiple maxwells" )
 				.withRequiredArg();
@@ -335,6 +338,10 @@ public class MaxwellConfig extends AbstractConfig {
 				.withOptionalArg();
 		parser.accepts( "sqs_queue_uri", "SQS Queue uri" )
 				.withRequiredArg();
+		parser.accepts("sns_topic", "SNS Topic ARN")
+				.withRequiredArg();
+		parser.accepts("sns_attrs", "Fields to add as message attributes")
+				.withOptionalArg();
 		parser.separator();
 		parser.addToSection("producer_partition_by");
 		parser.addToSection("producer_partition_columns");
@@ -620,6 +627,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.sqsQueueUri = fetchStringOption("sqs_queue_uri", options, properties, null);
 
+		this.snsTopic = fetchStringOption("sns_topic", options, properties, null);
+		this.snsAttrs = fetchStringOption("sns_attrs", options, properties, null);
 		this.outputFile = fetchStringOption("output_file", options, properties, null);
 
 		this.metricsPrefix = fetchStringOption("metrics_prefix", options, properties, "MaxwellMetrics");
@@ -839,6 +848,8 @@ public class MaxwellConfig extends AbstractConfig {
 			usageForOptions("please specify a stream name for kinesis", "kinesis_stream");
 		} else if (this.producerType.equals("sqs") && this.sqsQueueUri == null) {
 			usageForOptions("please specify a queue uri for sqs", "sqs_queue_uri");
+		} else if (this.producerType.equals("sns") && this.snsTopic == null) {
+			usageForOptions("please specify a topic ARN for SNS", "sns_topic");
 		} else if (this.producerType.equals("pubsub")) {
 			if (this.pubsubRequestBytesThreshold <= 0L)
 				usage("--pubsub_request_bytes_threshold must be > 0");
