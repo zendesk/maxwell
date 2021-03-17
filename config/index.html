@@ -157,6 +157,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="2"><a href="#sns-producer" class="nav-link">sns producer</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
             <li class="nav-item" data-level="2"><a href="#nats-producer" class="nav-link">nats producer</a>
               <ul class="nav flex-column">
               </ul>
@@ -623,6 +627,31 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 <td>sqs_queue_uri</td>
 <td>STRING</td>
 <td>SQS Queue URI</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="sns-producer">sns producer</h2>
+<table>
+<thead>
+<tr>
+<th>option</th>
+<th>argument</th>
+<th>description</th>
+<th>default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>sns_topic</td>
+<td>STRING</td>
+<td>The SNS topic to publish to. FIFO topics should end with <code>.fifo</code></td>
+<td></td>
+</tr>
+<tr>
+<td>sns_attrs</td>
+<td>STRING</td>
+<td>Properties to set as attributes on the SNS message</td>
 <td></td>
 </tr>
 </tbody>

@@ -170,6 +170,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="2"><a href="#sns" class="nav-link">SNS</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
         </ul>
@@ -183,13 +187,13 @@
 <h1 id="download">Download</h1>
 <hr />
 <ul>
-<li>Download binary distro: <a href="https://github.com/zendesk/maxwell/releases/download/v1.31.0/maxwell-1.31.0.tar.gz">https://github.com/zendesk/maxwell/releases/download/v1.31.0/maxwell-1.31.0.tar.gz</a></li>
+<li>Download binary distro: <a href="https://github.com/zendesk/maxwell/releases/download/v1.32.0/maxwell-1.32.0.tar.gz">https://github.com/zendesk/maxwell/releases/download/v1.32.0/maxwell-1.32.0.tar.gz</a></li>
 <li>Sources and bug tracking is available on github: <a href="https://github.com/zendesk/maxwell">https://github.com/zendesk/maxwell</a></li>
 </ul>
 <p><strong>curl</strong>:</p>
-<pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.31.0/maxwell-1.31.0.tar.gz \
+<pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.32.0/maxwell-1.32.0.tar.gz \
        | tar zxvf -
-cd maxwell-1.31.0
+cd maxwell-1.32.0
 </code></pre>
 
 <p><strong>docker</strong>:</p>
@@ -276,6 +280,11 @@ mysql&gt; GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'maxwell
 <h2 id="redis">Redis</h2>
 <pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
     --producer=redis --redis_host=redis.hostname
+</code></pre>
+
+<h2 id="sns">SNS</h2>
+<pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
+    --producer=sns --sns_topic=sns.topic --sns_attrs=database,table
 </code></pre>
     </div>
 </div>

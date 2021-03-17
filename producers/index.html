@@ -190,6 +190,19 @@
               </ul>
             </li>
             
+            <li class="nav-item" data-level="1"><a href="#sns" class="nav-link">SNS</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#aws-credentials_2" class="nav-link">AWS Credentials</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#options_2" class="nav-link">Options</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+            
             <li class="nav-item" data-level="1"><a href="#nats" class="nav-link">Nats</a>
               <ul class="nav flex-column">
               </ul>
@@ -397,6 +410,16 @@ Region=$AWS_DEFAULT_REGION
 <h2 id="options_1">Options</h2>
 <p>Set the output queue in the <code>config.properties</code> by setting the <code>sqs_queue_uri</code> property to full SQS queue uri from AWS console.</p>
 <p>The producer uses the <a href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sqs/AmazonSQSClient.html">AWS SQS SDK</a>.</p>
+<h1 id="sns">SNS</h1>
+<hr />
+<h2 id="aws-credentials_2">AWS Credentials</h2>
+<p>You will need to obtain an IAM user that has the permission to access the SNS topic. The SNS producer also uses <a href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html">DefaultAWSCredentialsProviderChain</a> to get AWS credentials.</p>
+<p>See the <a href="http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html">AWS docs</a> on how to setup the IAM user with the Default Credential Provider Chain.</p>
+<p>In case you need to set up a different region also along with credentials then default one, see the <a href="http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html#setup-credentials-setting-region">AWS docs</a>.</p>
+<h2 id="options_2">Options</h2>
+<p>Set the topic arn in the <code>config.properties</code> by setting the <code>sns_topic</code> property to the topic name. FIFO topics should have a <code>.fifo</code> suffix. </p>
+<p>Optionally, you can enable <code>sns_attrs</code> to have maxwell attach various attributes to the message for subscription filtering. (Only <code>database</code> and <code>table</code> are currently supported)</p>
+<p>The producer uses the <a href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sns/AmazonSNSClient.html">AWS SNS SDK</a>.</p>
 <h1 id="nats">Nats</h1>
 <hr />
 <p>The configurable properties for nats are:</p>
