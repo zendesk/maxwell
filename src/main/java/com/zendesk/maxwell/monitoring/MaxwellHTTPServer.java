@@ -26,7 +26,7 @@ public class MaxwellHTTPServer {
 	public static void startIfRequired(MaxwellContext context) throws IOException {
 		MaxwellMetrics.Registries metricsRegistries = getMetricsRegistries(context);
 		MaxwellDiagnosticContext diagnosticContext = getDiagnosticContext(context);
-		if (metricsRegistries != null || diagnosticContext != null) {
+		if (metricsRegistries != null || diagnosticContext != null || context.getConfig().enableHttpConfig) {
 			LOGGER.info("Maxwell http server starting");
 			int port = context.getConfig().httpPort;
 			String httpBindAddress = context.getConfig().httpBindAddress;
@@ -101,6 +101,9 @@ class MaxwellHTTPServerWorker implements StoppableTask, Runnable {
 			handler.addServlet(new ServletHolder(new io.prometheus.client.exporter.MetricsServlet()), "/prometheus");
 			handler.addServlet(new ServletHolder(new HealthCheckServlet(metricsRegistries.healthCheckRegistry)), "/healthcheck");
 			handler.addServlet(new ServletHolder(new PingServlet()), "/ping");
+		}
+
+		if (this.context.getConfig().enableHttpConfig) {
 			handler.addServlet(new ServletHolder(new MaxwellConfigServlet(this.context)), "/config");
 		}
 
