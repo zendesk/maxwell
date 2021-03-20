@@ -27,6 +27,12 @@ public class Filter {
 		patterns.addAll(new FilterParser(filterString).parse());
 	}
 
+	public void reset(String filterString) throws InvalidFilterException {
+		List<FilterPattern> parsedFilter = new FilterParser(filterString).parse();
+		this.patterns.clear();
+		this.patterns.addAll(parsedFilter);
+	}
+
 	public boolean isSystemWhitelisted(String database, String table) {
 		return isMaxwellDB(database)
 			&& ("bootstrap".equals(table) || "heartbeats".equals(table));

@@ -31,7 +31,7 @@ public class MaxwellHTTPServer {
 			int port = context.getConfig().httpPort;
 			String httpBindAddress = context.getConfig().httpBindAddress;
 			String pathPrefix = context.getConfig().httpPathPrefix;
-			MaxwellHTTPServerWorker maxwellHTTPServerWorker = new MaxwellHTTPServerWorker(httpBindAddress, port, pathPrefix, metricsRegistries, diagnosticContext);
+			MaxwellHTTPServerWorker maxwellHTTPServerWorker = new MaxwellHTTPServerWorker(httpBindAddress, port, pathPrefix, metricsRegistries, diagnosticContext, context);
 			Thread thread = new Thread(maxwellHTTPServerWorker);
 
 			context.addTask(maxwellHTTPServerWorker);
@@ -74,14 +74,16 @@ class MaxwellHTTPServerWorker implements StoppableTask, Runnable {
 	private final String pathPrefix;
 	private final MaxwellMetrics.Registries metricsRegistries;
 	private final MaxwellDiagnosticContext diagnosticContext;
+	private final MaxwellContext context;
 	private Server server;
 
-	public MaxwellHTTPServerWorker(String bindAddress, int port, String pathPrefix, MaxwellMetrics.Registries metricsRegistries, MaxwellDiagnosticContext diagnosticContext) {
+	public MaxwellHTTPServerWorker(String bindAddress, int port, String pathPrefix, MaxwellMetrics.Registries metricsRegistries, MaxwellDiagnosticContext diagnosticContext, MaxwellContext context) {
 		this.bindAddress = bindAddress;
 		this.port = port;
 		this.pathPrefix = pathPrefix;
 		this.metricsRegistries = metricsRegistries;
 		this.diagnosticContext = diagnosticContext;
+		this.context = context;
 	}
 
 	public void startServer() throws Exception {
@@ -99,6 +101,7 @@ class MaxwellHTTPServerWorker implements StoppableTask, Runnable {
 			handler.addServlet(new ServletHolder(new io.prometheus.client.exporter.MetricsServlet()), "/prometheus");
 			handler.addServlet(new ServletHolder(new HealthCheckServlet(metricsRegistries.healthCheckRegistry)), "/healthcheck");
 			handler.addServlet(new ServletHolder(new PingServlet()), "/ping");
+			handler.addServlet(new ServletHolder(new MaxwellConfigServlet(this.context)), "/config");
 		}
 
 		if (diagnosticContext != null) {
