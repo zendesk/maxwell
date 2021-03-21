@@ -12,6 +12,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.filtering.InvalidFilterException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.stream.Collectors;
@@ -23,6 +26,7 @@ import java.util.stream.Collectors;
 public class MaxwellConfigServlet extends HttpServlet {
   private static final java.lang.String CONTENT_TYPE = "application/json";
   private static final ObjectMapper mapper = new ObjectMapper();
+  static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfigServlet.class);
   private final MaxwellContext context;
 
 
@@ -108,6 +112,7 @@ public class MaxwellConfigServlet extends HttpServlet {
   private void applySerializedConfig(SerializedConfig sconfig) throws InvalidFilterException {
     if (sconfig.filter != null) {
       context.getFilter().set(sconfig.filter);
+      LOGGER.info("updated filter: " + sconfig.filter);
     }
   }
 }
