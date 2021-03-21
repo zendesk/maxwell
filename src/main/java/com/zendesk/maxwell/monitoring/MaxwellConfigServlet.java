@@ -18,10 +18,13 @@ import java.util.stream.Collectors;
 
 /**
  * An HTTP servlet which allows for the live reconfiguration of maxwell.
+ * If property provided for update is null, it will be ignored.
  */
 public class MaxwellConfigServlet extends HttpServlet {
+  private static final java.lang.String CONTENT_TYPE = "application/json";
   private static final ObjectMapper mapper = new ObjectMapper();
   private final MaxwellContext context;
+
 
   public MaxwellConfigServlet(MaxwellContext context) {
     super();
@@ -55,6 +58,7 @@ public class MaxwellConfigServlet extends HttpServlet {
       sconfig = mapper.readValue(reqbody, SerializedConfig.class);
     } catch(Exception e) {
       resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      resp.setContentType(CONTENT_TYPE);
       try (PrintWriter writer = resp.getWriter()) {
         writer.println(ErrorResponse.getErrorResponseString(HttpServletResponse.SC_BAD_REQUEST, String.format("error processing body: %s", e.getMessage())));
       }
@@ -65,11 +69,13 @@ public class MaxwellConfigServlet extends HttpServlet {
       applySerializedConfig(sconfig);
 
       resp.setStatus(HttpServletResponse.SC_OK);
+      resp.setContentType(CONTENT_TYPE);
       try (PrintWriter writer = resp.getWriter()) {
         writer.println(getSerializedConfig());
       }
     } catch (InvalidFilterException e) {
       resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+      resp.setContentType(CONTENT_TYPE);
       try (PrintWriter writer = resp.getWriter()) {
         writer.println(ErrorResponse.getErrorResponseString(HttpServletResponse.SC_BAD_REQUEST, String.format("invalid filter: %s", e.getMessage())));
       }
@@ -78,6 +84,7 @@ public class MaxwellConfigServlet extends HttpServlet {
 
   @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     resp.setStatus(HttpServletResponse.SC_OK);
+    resp.setContentType(CONTENT_TYPE);
       try (PrintWriter writer = resp.getWriter()) {
         writer.println(getSerializedConfig());
       }
