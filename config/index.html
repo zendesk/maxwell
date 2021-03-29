@@ -220,6 +220,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="2"><a href="#via-patch-config" class="nav-link">via PATCH: /config</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
         </ul>
@@ -1252,6 +1256,12 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 <td>Determines how much memory the Maxwell event buffer will use from the jvm max memory. Size of the buffer is: buffer_memory_usage * -Xmx"</td>
 <td>0.25</td>
 </tr>
+<tr>
+<td>http_config</td>
+<td>BOOLEAN</td>
+<td>enable http config endpoint for config updates without restart</td>
+<td>false</td>
+</tr>
 </tbody>
 </table>
 <p id="loglevel" class="jumptarget">
@@ -1306,6 +1316,23 @@ will configure itself with all environment variables that match the prefix. The
 environment variable names are case insensitive.  For example, if maxwell is
 started with <code>--env_config_prefix=FOO_</code> and the environment contains <code>FOO_USER=auser</code>,
 this would be equivalent to passing <code>--user=auser</code>.</p>
+<h2 id="via-patch-config">via PATCH: /config</h2>
+<p>If <code>http_config</code> is set to true in config.properties or in the environment,
+the endpoint /config will be exposed. Currently only filter updates are supported,
+and a filter can be updated with a request in the following format</p>
+<p><code>PATCH: /config</code></p>
+<pre><code class="json">{
+    &quot;filter&quot;: &quot;exclude: noisy_db.*&quot;
+}
+</code></pre>
+
+<p>A get request will return the live config state
+<code>GET: /config</code></p>
+<pre><code class="json">{
+    &quot;filter&quot;: &quot;exclude: noisy_db.*&quot;
+}
+</code></pre>
+
 <h3 id="deployment-scenarios">Deployment scenarios</h3>
 <hr />
 <p>At a minimum, Maxwell needs row-level-replication turned on into order to

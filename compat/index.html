@@ -150,14 +150,14 @@
 <h2 id="requirements">Requirements</h2>
 <hr />
 <ul>
-<li>JRE 7 or above</li>
+<li>JRE 11 or above</li>
 <li>mysql 5.1, 5.5, 5.6, 5.7, 8</li>
-<li>kafka 0.8.2 or greater</li>
+<li>kafka 0.8.2 or greater (if using kafka)</li>
 </ul>
 <h2 id="caveats-notes">Caveats / Notes</h2>
 <h3 id="binlog_row_imageminimal">binlog_row_image=MINIMAL</h3>
 <hr />
-<p>As of 0.16.2, Maxwell supports binlog_row_image=MINIMAL, but it may not be what you want.  It will differ
+<p>Maxwell supports binlog_row_image=MINIMAL, but it may not be what you want.  It will differ
 from normal Maxwell operation in that:</p>
 <ul>
 <li>INSERT statements will no longer output a column's default value</li>
@@ -168,7 +168,7 @@ from normal Maxwell operation in that:</p>
 </ul>
 <h3 id="master-recovery">Master recovery</h3>
 <hr />
-<p>As of 1.2.0, maxwell includes experimental support for master position recovery.  It works like this:</p>
+<p>Maxwell includes support for master position recovery (non-GTID).  It works like this:</p>
 <ul>
 <li>maxwell writes heartbeats into the binlogs (via the <code>positions</code> table)</li>
 <li>maxwell reads its own heartbeats, using them as a secondary position guide</li>
@@ -185,15 +185,7 @@ from normal Maxwell operation in that:</p>
 <li>this code should be considered alpha-quality.</li>
 <li>on highly active servers, as much as 1 second of data may be duplicated.</li>
 <li>master recovery is not available in GTID-mode.</li>
-</ul>
-<h3 id="mysql-binlog-connector">MySQL binlog connector</h3>
-<hr />
-<p>As of 1.11.0, maxwell uses <a href="https://github.com/shyiko/mysql-binlog-connector-java">shyiko/mysql-binlog-connector-java</a> as its underlying
-replication library (previously it was opt-in via <code>--binlog_connector</code>). This is
-largely compatible with the previous OpenReplicator implementation, but there are some differences:</p>
-<ul>
-<li>TIMESTAMP columns are always treated as UTC, regardless of your timezone. See
-   <a href="https://github.com/zendesk/maxwell/issues/681">issue #681</a> for more details.</li>
+<li>GTID is generally a preferred method of master failover.</li>
 </ul>
     </div>
 </div>
