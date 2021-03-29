@@ -1,5 +1,19 @@
 # Maxwell changelog
 
+### [v1.33.0](https://github.com/zendesk/maxwell/releases/tag/v1.33.0): "tradegy of birds and windows"
+
+
+- Add HTTP endpoint for runtime reconfiguration
+
+
+### [v1.32.0](https://github.com/zendesk/maxwell/releases/tag/v1.32.0): "cmon cmon no one can see you cry"
+
+
+- Amazon SNS producer added, thanks Rober Wittman
+- kafka 2.7.0 supported
+- stackdriver metrics logging available
+
+
 ### [v1.31.0](https://github.com/zendesk/maxwell/releases/tag/v1.31.0): "84 tent cabin"
 
 
