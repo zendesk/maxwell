@@ -56,7 +56,7 @@ public class MaxwellHttpConfigIntegrationTest extends MaxwellTestWithIsolatedSer
 						// test get
 						HttpResponse<String> cfg = getConfig();
 						Assert.assertEquals(cfg.statusCode(), 200);
-						Assert.assertEquals(cfg.body(), "{\"filter\":\"\"}\n");
+						Assert.assertEquals(cfg.body(), "{\"filter\":null}\n");
 
 						// test valid post
 						updateConfig("PUT", "exclude: *.*, blacklist: bad_db.*");

@@ -120,7 +120,10 @@ public class MaxwellConfigServlet extends HttpServlet {
 
 	private String getSerializedConfig() throws JsonProcessingException {
 		SerializedConfig sconfig = new SerializedConfig();
-		sconfig.filter = this.context.getFilter().toString();
+		String filterstring = this.context.getFilter().toString();
+		if (!filterstring.equals("")) {
+			sconfig.filter = filterstring;
+		}
 		return mapper.writeValueAsString(sconfig);
 	}
 
