@@ -214,6 +214,7 @@ bootstrapper                   | [async &#124; sync &#124; none]                
 init_position                  | FILE:POSITION[:HEARTBEAT]           | ignore the information in maxwell.positions and start at the given binlog position. Not available in config.properties. |
 replay                         | BOOLEAN                             | enable maxwell's read-only "replay" mode: don't store a binlog position or schema changes.  Not available in config.properties. |
 buffer_memory_usage            | FLOAT                               | Determines how much memory the Maxwell event buffer will use from the jvm max memory. Size of the buffer is: buffer_memory_usage * -Xmx" | 0.25
+http_config                    | BOOLEAN                             | enable http config endpoint for config updates without restart | false
 
 
 <p id="loglevel" class="jumptarget">
@@ -268,6 +269,25 @@ environment variable names are case insensitive.  For example, if maxwell is
 started with `--env_config_prefix=FOO_` and the environment contains `FOO_USER=auser`,
 this would be equivalent to passing `--user=auser`.
 
+## via PATCH: /config
+If `http_config` is set to true in config.properties or in the environment,
+the endpoint /config will be exposed. Currently only filter updates are supported,
+and a filter can be updated with a request in the following format
+
+`PATCH: /config`
+```json
+{
+	"filter": "exclude: noisy_db.*"
+}
+```
+
+A get request will return the live config state
+`GET: /config`
+```json
+{
+	"filter": "exclude: noisy_db.*"
+}
+```
 
 ### Deployment scenarios
 ***
