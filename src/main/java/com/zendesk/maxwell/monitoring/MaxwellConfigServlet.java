@@ -53,7 +53,7 @@ public class MaxwellConfigServlet extends HttpServlet {
 		}
 	}
 
-	protected void doPatch(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+	private void handleConfigUpdateRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		SerializedConfig sconfig;
 		try {
 			String reqbody = req.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
@@ -84,6 +84,20 @@ public class MaxwellConfigServlet extends HttpServlet {
 						String.format("invalid filter: %s", e.getMessage())));
 			}
 		}
+	}
+
+	@Override
+	protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		this.handleConfigUpdateRequest(req, resp);
+	}
+
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		this.handleConfigUpdateRequest(req, resp);
+	}
+
+	protected void doPatch(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		this.handleConfigUpdateRequest(req, resp);
 	}
 
 	@Override

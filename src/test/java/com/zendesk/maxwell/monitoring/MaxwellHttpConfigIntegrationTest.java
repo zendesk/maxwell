@@ -1,20 +1,16 @@
 package com.zendesk.maxwell.monitoring;
 
 import com.zendesk.maxwell.*;
-import com.zendesk.maxwell.row.RowMap;
 
-import org.apache.commons.lang.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.http.*;
-import java.util.List;
 
 public class MaxwellHttpConfigIntegrationTest extends MaxwellTestWithIsolatedServer {
 
@@ -26,10 +22,10 @@ public class MaxwellHttpConfigIntegrationTest extends MaxwellTestWithIsolatedSer
 		return client.send(request, HttpResponse.BodyHandlers.ofString());
 	}
 
-	private HttpResponse<String> patchConfig(String filter) throws IOException, InterruptedException {
+	private HttpResponse<String> updateConfig(String method, String filter) throws IOException, InterruptedException {
 		HttpClient client = HttpClient.newHttpClient();
 		HttpRequest request = HttpRequest.newBuilder()
-		.method("PATCH", HttpRequest.BodyPublishers.ofString(String.format("{\"filter\":\"%s\"}", filter)))
+		.method(method, HttpRequest.BodyPublishers.ofString(String.format("{\"filter\":\"%s\"}", filter)))
     .uri(URI.create("http://localhost:22222/config"))
 		.build();
 		return client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -62,21 +58,33 @@ public class MaxwellHttpConfigIntegrationTest extends MaxwellTestWithIsolatedSer
 						Assert.assertEquals(cfg.statusCode(), 200);
 						Assert.assertEquals(cfg.body(), "{\"filter\":\"\"}\n");
 
+						// test valid post
+						updateConfig("PUT", "exclude: *.*, blacklist: bad_db.*");
+						cfg = getConfig();
+						Assert.assertEquals(cfg.statusCode(), 200);
+						Assert.assertEquals(cfg.body(), "{\"filter\":\"exclude: *.*, blacklist: bad_db.*\"}\n");
+
+						// test valid put
+						updateConfig("PUT", "exclude: *.*, blacklist: bad_db.*");
+						cfg = getConfig();
+						Assert.assertEquals(cfg.statusCode(), 200);
+						Assert.assertEquals(cfg.body(), "{\"filter\":\"exclude: *.*, blacklist: bad_db.*\"}\n");
+
 						// test valid patch
-						patchConfig("exclude: *.*, blacklist: bad_db.*");
+						updateConfig("PATCH", "exclude: *.*, blacklist: bad_db.*");
 						cfg = getConfig();
 						Assert.assertEquals(cfg.statusCode(), 200);
 						Assert.assertEquals(cfg.body(), "{\"filter\":\"exclude: *.*, blacklist: bad_db.*\"}\n");
 
 						// test invalid patch
-						cfg = patchConfig("\"{");
+						cfg = updateConfig("PATCH", "\"{");
 						Assert.assertEquals(cfg.statusCode(), 400);
 						Assert.assertEquals(cfg.body(), "{\"error\":{\"code\":400,\"message\":\"error processing body: Unexpected character ('{' (code 123)): was expecting comma to separate Object entries\\n at [Source: (String)\\\"{\\\"filter\\\":\\\"\\\"{\\\"}\\\"; line: 1, column: 14]\"}}\n");
 						cfg = getConfig();
 						Assert.assertEquals(cfg.body(), "{\"filter\":\"exclude: *.*, blacklist: bad_db.*\"}\n");
 
 						// test invalid filter in patch
-						cfg = patchConfig("bl: *.*");
+						cfg = updateConfig("PATCH", "bl: *.*");
 						Assert.assertEquals(cfg.statusCode(), 400);
 						Assert.assertEquals(cfg.body(), "{\"error\":{\"code\":400,\"message\":\"invalid filter: Unknown filter keyword: bl\"}}\n");
 						cfg = getConfig();
