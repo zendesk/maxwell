@@ -110,6 +110,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public MaxwellDiagnosticContext.Config diagnosticConfig;
 
+	public boolean enableHttpConfig;
+
 	public String clientID;
 	public Long replicaServerID;
 
@@ -482,6 +484,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "metrics_datadog_port", "the port to publish metrics to when metrics_datadog_type = udp" ).withRequiredArg().ofType(Integer.class);
 		parser.accepts( "http_diagnostic", "enable http diagnostic endpoint: true|false. default: false" ).withOptionalArg().ofType(Boolean.class);
 		parser.accepts( "http_diagnostic_timeout", "the http diagnostic response timeout in ms when http_diagnostic=true. default: 10000" ).withRequiredArg().ofType(Integer.class);
+		parser.accepts( "http_config", "enable http config update endpoint: true|false. default: false" ).withOptionalArg().ofType(Boolean.class);
 		parser.accepts( "metrics_jvm", "enable jvm metrics: true|false. default: false" ).withRequiredArg().ofType(Boolean.class);
 
 		parser.accepts( "help", "display help" ).withOptionalArg().forHelp();
@@ -655,6 +658,8 @@ public class MaxwellConfig extends AbstractConfig {
 		this.diagnosticConfig = new MaxwellDiagnosticContext.Config();
 		this.diagnosticConfig.enable = fetchBooleanOption("http_diagnostic", options, properties, false);
 		this.diagnosticConfig.timeout = fetchLongOption("http_diagnostic_timeout", options, properties, 10000L);
+
+		this.enableHttpConfig = fetchBooleanOption("http_config", options, properties, false);
 
 		this.includeDatabases    = fetchStringOption("include_dbs", options, properties, null);
 		this.excludeDatabases    = fetchStringOption("exclude_dbs", options, properties, null);

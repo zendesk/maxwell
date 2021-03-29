@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Filter {
 	static final Logger LOGGER = LoggerFactory.getLogger(Filter.class);
@@ -25,6 +26,19 @@ public class Filter {
 		this();
 		this.maxwellDB = maxwellDB;
 		patterns.addAll(new FilterParser(filterString).parse());
+	}
+
+	@Override
+	public String toString() {
+		return patterns.stream()
+			.map(FilterPattern::toString)
+			.collect(Collectors.joining(", "));
+	}
+
+	public void set(String filterString) throws InvalidFilterException {
+		List<FilterPattern> parsedFilter = new FilterParser(filterString).parse();
+		this.patterns.clear();
+		this.patterns.addAll(parsedFilter);
 	}
 
 	public boolean isSystemWhitelisted(String database, String table) {
