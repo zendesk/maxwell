@@ -9,6 +9,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
@@ -133,7 +134,7 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 
 		try {
 			ListenableFuture<UserRecordResult> future = kinesisProducer.addUserRecord(kinesisStream, key, encodedValue);
-			Futures.addCallback(future, callback);
+			Futures.addCallback(future, callback, MoreExecutors.directExecutor());
 		} catch(IllegalArgumentException t) {
 			callback.onFailure(t);
 			logger.error("Database:" + r.getDatabase() + ", Table:" + r.getTable() + ", PK:" + r.getRowIdentity().toConcatString() + ", Size:" + Integer.toString(vsize));
