@@ -139,6 +139,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public String natsUrl;
 	public String natsSubject;
+	public String natsUser;
+	public String natsPassword;
 
 	public String redisHost;
 	public int redisPort;
@@ -587,6 +589,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.natsUrl			= fetchStringOption("nats_url", options, properties, "nats://localhost:4222");
 		this.natsSubject		= fetchStringOption("nats_subject", options, properties, "%{database}.%{table}");
+		this.natsUser = 		fetchStringOption("nats_user", options, properties, null);
+		this.natsPassword = 	fetchStringOption("nats_password", options, properties, null);
 
 		this.redisHost			= fetchStringOption("redis_host", options, properties, "localhost");
 		this.redisPort			= fetchIntegerOption("redis_port", options, properties, 6379);

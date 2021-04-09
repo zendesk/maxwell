@@ -27,6 +27,10 @@ public class NatsProducer extends AbstractProducer {
 		urls.forEach(optionBuilder::server);
 		Options option = optionBuilder.build();
 
+		if (context.getConfig().natsUser != null && context.getConfig().natsPassword != null) {
+			optionBuilder.userInfo(context.getConfig().natsUser.toCharArray(), context.getConfig().natsPassword.toCharArray());
+		}
+
 		this.natsSubjectTemplate = context.getConfig().natsSubject;
 
 		try {
