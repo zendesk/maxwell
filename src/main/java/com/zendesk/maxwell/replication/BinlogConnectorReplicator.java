@@ -585,7 +585,6 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	 */
 	public RowMap getRow() throws Exception {
 		BinlogConnectorEvent event;
-
 		if ( stopOnEOF && hitEOF )
 			return null;
 

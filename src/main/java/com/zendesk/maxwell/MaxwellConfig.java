@@ -356,6 +356,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "nats_url", "Url(s) of Nats connection (comma separated). Default is localhost:4222" ).withRequiredArg();
 		parser.accepts( "nats_subject", "Subject Hierarchies of Nats. Default is '%{database}.%{table}'" ).withRequiredArg();
+		parser.accepts( "nats_user", "Nats username if exist" ).withRequiredArg();
+		parser.accepts( "nats_password", "Nats password if exists. must be co-used with nats_user" ).withRequiredArg();
 
 		parser.section( "pubsub" );
 		parser.accepts( "pubsub_project_id", "provide a google cloud platform project id associated with the pubsub topic" )

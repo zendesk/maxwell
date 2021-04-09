@@ -25,12 +25,11 @@ public class NatsProducer extends AbstractProducer {
 		List<String> urls = Arrays.asList(context.getConfig().natsUrl.split(","));
 		Options.Builder optionBuilder = new Options.Builder();
 		urls.forEach(optionBuilder::server);
-		Options option = optionBuilder.build();
 
 		if (context.getConfig().natsUser != null && context.getConfig().natsPassword != null) {
 			optionBuilder.userInfo(context.getConfig().natsUser.toCharArray(), context.getConfig().natsPassword.toCharArray());
 		}
-
+		Options option = optionBuilder.build();
 		this.natsSubjectTemplate = context.getConfig().natsSubject;
 
 		try {
@@ -46,7 +45,6 @@ public class NatsProducer extends AbstractProducer {
 			context.setPosition(r.getNextPosition());
 			return;
 		}
-
 		String value = r.toJSON(outputConfig);
 		String natsSubject = new TopicInterpolator(this.natsSubjectTemplate).generateFromRowMapAndCleanUpIllegalCharacters(r);
 
