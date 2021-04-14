@@ -1,5 +1,42 @@
 # Maxwell changelog
 
+### [v1.33.0](https://github.com/zendesk/maxwell/releases/tag/v1.33.0): "tradegy of birds and windows"
+
+
+- Add HTTP endpoint for runtime reconfiguration
+
+
+### [v1.32.0](https://github.com/zendesk/maxwell/releases/tag/v1.32.0): "cmon cmon no one can see you cry"
+
+
+- Amazon SNS producer added, thanks Rober Wittman
+- kafka 2.7.0 supported
+- stackdriver metrics logging available
+
+
+### [v1.31.0](https://github.com/zendesk/maxwell/releases/tag/v1.31.0): "84 tent cabin"
+
+
+- Add producer for NATS streaming server
+
+
+### [v1.30.0](https://github.com/zendesk/maxwell/releases/tag/v1.30.0): "all of this has happened before"
+
+
+- support server-sent heartbeating on the binlog connection via --binlog-heartbeat
+- can connect to rabbitmq by URL, supports SSL connections
+- fix parser bug with multiline SQL
+- target JDK 11 -- we have dropped support for JDK 8
+- ability to send a microsecond timestamp via --output_push_timestamp
+- fixes for odd azure mysql connection failures
+
+
+### [v1.29.2](https://github.com/zendesk/maxwell/releases/tag/v1.29.2): "i now know the meaning of shame"
+
+
+- fix for terrible performance regression in bootstrapping
+
+
 ### [v1.29.1](https://github.com/zendesk/maxwell/releases/tag/v1.29.1): "depluralize"
 
 

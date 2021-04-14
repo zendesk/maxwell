@@ -4,12 +4,16 @@ import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.MessageProperties;
+import com.zendesk.maxwell.MaxwellConfig;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.row.RowMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.TimeoutException;
 
 public class RabbitmqProducer extends AbstractProducer {
@@ -24,17 +28,42 @@ public class RabbitmqProducer extends AbstractProducer {
 		props = context.getConfig().rabbitmqMessagePersistent ? MessageProperties.MINIMAL_PERSISTENT_BASIC : null;
 
 		ConnectionFactory factory = new ConnectionFactory();
-		factory.setHost(context.getConfig().rabbitmqHost);
-		factory.setPort(context.getConfig().rabbitmqPort);
-		factory.setUsername(context.getConfig().rabbitmqUser);
-		factory.setPassword(context.getConfig().rabbitmqPass);
-		factory.setVirtualHost(context.getConfig().rabbitmqVirtualHost);
+		MaxwellConfig config = context.getConfig();
+
 		try {
+			if ( config.rabbitmqURI != null ) {
+				factory.setUri(config.rabbitmqURI);
+			}
+
+			if ( config.rabbitmqHost != null ) {
+				factory.setHost(config.rabbitmqHost);
+			} else if ( config.rabbitmqURI == null ) {
+				factory.setHost("localhost");
+			}
+
+			if ( config.rabbitmqPort != null ) {
+				factory.setPort(config.rabbitmqPort);
+			}
+
+			if ( config.rabbitmqUser != null ) {
+				factory.setUsername(config.rabbitmqUser);
+			}
+
+			if ( config.rabbitmqPass != null ) {
+				factory.setPassword(config.rabbitmqPass);
+			}
+
+			if ( config.rabbitmqVirtualHost != null ) {
+				factory.setVirtualHost(config.rabbitmqVirtualHost);
+			}
+
 			this.channel = factory.newConnection().createChannel();
 			if(context.getConfig().rabbitmqDeclareExchange) {
 				this.channel.exchangeDeclare(exchangeName, context.getConfig().rabbitmqExchangeType, context.getConfig().rabbitMqExchangeDurable, context.getConfig().rabbitMqExchangeAutoDelete, null);
 			}
 		} catch (IOException | TimeoutException e) {
+			throw new RuntimeException(e);
+		} catch (NoSuchAlgorithmException | KeyManagementException | URISyntaxException e) {
 			throw new RuntimeException(e);
 		}
 	}

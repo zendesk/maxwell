@@ -49,8 +49,9 @@ public abstract class AbstractConfig {
 					if ( l.contains("--help") || i++ < 2 ) // take the first 3 lines, these are the header
 						showLine = true;
 					for ( String o : filterOptions )  {
-						if ( l.contains(o) )
+						if ( l.contains(o) && !l.startsWith("--__section") )
 							showLine = true;
+
 					}
 
 					if ( showLine )
@@ -186,6 +187,9 @@ public abstract class AbstractConfig {
 		config.sslMode  = this.getSslModeFromString(fetchStringOption(prefix + "ssl", options, properties, null));
 		config.setJDBCOptions(
 		    fetchStringOption(prefix + "jdbc_options", options, properties, null));
+
+		// binlog_heartbeat isn't prefixed, as it only affects replication
+		config.enableHeartbeat = fetchBooleanOption("binlog_heartbeat", options, properties, config.enableHeartbeat);
 		return config;
 	}
 

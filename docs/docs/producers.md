@@ -220,6 +220,32 @@ Set the output queue in the `config.properties` by setting the `sqs_queue_uri` p
 
 The producer uses the [AWS SQS SDK](http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sqs/AmazonSQSClient.html).
 
+# SNS
+***
+
+## AWS Credentials
+You will need to obtain an IAM user that has the permission to access the SNS topic. The SNS producer also uses [DefaultAWSCredentialsProviderChain](http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/auth/DefaultAWSCredentialsProviderChain.html) to get AWS credentials.
+
+See the [AWS docs](http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html) on how to setup the IAM user with the Default Credential Provider Chain.
+
+In case you need to set up a different region also along with credentials then default one, see the [AWS docs](http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html#setup-credentials-setting-region).
+
+## Options
+Set the topic arn in the `config.properties` by setting the `sns_topic` property to the topic name. FIFO topics should have a `.fifo` suffix. 
+
+Optionally, you can enable `sns_attrs` to have maxwell attach various attributes to the message for subscription filtering. (Only `database` and `table` are currently supported)
+
+The producer uses the [AWS SNS SDK](http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sns/AmazonSNSClient.html).
+
+# Nats
+***
+The configurable properties for nats are:
+
+- `nats_url` - defaults to **nats://localhost:4222**
+- `nats_subject` - defaults to **%{database}.%{table}**
+
+`nats_subject` defines the Nats subject hierarchy to write to.  [Topic substitution](/producers#topic-substitution) is available.
+All non-alphanumeric characters in the substitued values will be replaced by underscores.
 
 # Google Cloud Pub/Sub
 ***
@@ -285,3 +311,21 @@ In order to register your custom producer, you must implement the `ProducerFacto
 Your custom producer will likely require configuration properties as well. For that, use the `custom_producer.*` property namespace. Those properties will be exposed to your producer via `MaxwellConfig.customProducerProperties`.
 
 Custom producer factory and producer examples can be found here: [https://github.com/zendesk/maxwell/tree/master/src/example/com/zendesk/maxwell/example/producerfactory](https://github.com/zendesk/maxwell/tree/master/src/example/com/zendesk/maxwell/example/producerfactory)
+
+
+# Topic substitution
+
+Some producers may be given a template string from which they dynamically generate a topic (or whatever their equivalent of a kafka topic is).
+Subsitutions are enclosed in by `%{}`.  The following substitutions are available:
+
+- `%{database}`
+- `%{table}`
+- `%{type}` (insert/update/delete)
+
+Topic substituion is available in the following producers:
+
+- Kakfa, for topics
+- Redis, for channels
+- Nats, for subject heirarchies
+
+

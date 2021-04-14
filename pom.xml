@@ -4,7 +4,7 @@
 
   <groupId>com.zendesk</groupId>
   <artifactId>maxwell</artifactId>
-  <version>1.29.1</version>
+  <version>1.33.0</version>
   <packaging>jar</packaging>
 
   <name>maxwell</name>
@@ -41,6 +41,8 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <mockito.version>3.7.7</mockito.version>
+    <opencensus.version>0.28.3</opencensus.version>
   </properties>
 
   <profiles>
@@ -107,6 +109,19 @@
         </dependency>
       </dependencies>
     </profile>
+    <profile>
+      <id>kafka-2.7.0</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.kafka</groupId>
+          <artifactId>kafka-clients</artifactId>
+          <version>2.7.0</version>
+        </dependency>
+      </dependencies>
+    </profile>
   </profiles>
 
   <dependencies>
@@ -118,7 +133,7 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-core</artifactId>
-      <version>1.11.893</version>
+      <version>1.11.983</version>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
@@ -170,7 +185,13 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>3.3.3</version>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-inline</artifactId>
+      <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -197,7 +218,7 @@
     <dependency>
       <groupId>com.zendesk</groupId>
       <artifactId>mysql-binlog-connector-java</artifactId>
-      <version>0.23.3</version>
+      <version>0.24.0</version>
     </dependency>
     <dependency>
       <groupId>net.sf.jopt-simple</groupId>
@@ -242,12 +263,17 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-pubsub</artifactId>
-      <version>1.106.0</version>
+      <version>1.108.6</version>
+    </dependency>
+    <dependency>
+      <groupId>io.nats</groupId>
+      <artifactId>jnats</artifactId>
+      <version>2.8.0</version>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>24.1.1-jre</version>
+      <version>30.1.1-jre</version>
     </dependency>
     <dependency>
       <groupId>com.google.protobuf</groupId>
@@ -267,7 +293,7 @@
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
       <artifactId>metrics-servlets</artifactId>
-      <version>4.1.10</version>
+      <version>4.1.14</version>
     </dependency>
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
@@ -277,12 +303,12 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-server</artifactId>
-      <version>9.4.35.v20201120</version>
+      <version>9.4.37.v20210219</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
-      <version>9.4.35.v20201120</version>
+      <version>9.4.37.v20210219</version>
     </dependency>
     <dependency>
       <groupId>com.viafoura</groupId>
@@ -291,13 +317,18 @@
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-sns</artifactId>
+      <version>1.11.983</version>
+    </dependency>
+    <dependency>
+      <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-sqs</artifactId>
-      <version>1.11.893</version>
+      <version>1.11.983</version>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-sts</artifactId>
-      <version>1.11.893</version>
+      <version>1.11.983</version>
     </dependency>
     <dependency>
       <groupId>me.tongfei</groupId>
@@ -307,18 +338,40 @@
     <dependency>
       <groupId>io.prometheus</groupId>
       <artifactId>simpleclient_dropwizard</artifactId>
-      <version>0.5.0</version>
+      <version>0.9.0</version>
     </dependency>
     <dependency>
       <groupId>io.prometheus</groupId>
       <artifactId>simpleclient_servlet</artifactId>
-      <version>0.5.0</version>
+      <version>0.9.0</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.jgroups/jgroups-raft -->
     <dependency>
       <groupId>org.jgroups</groupId>
       <artifactId>jgroups-raft</artifactId>
       <version>1.0.0.Final</version>
+    </dependency>
+    <!-- OpenCensus used for pushing metrics to stackdriver -->
+    <dependency>
+        <groupId>io.opencensus</groupId>
+        <artifactId>opencensus-contrib-dropwizard</artifactId>
+        <version>${opencensus.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>io.opencensus</groupId>
+        <artifactId>opencensus-api</artifactId>
+        <version>${opencensus.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>io.opencensus</groupId>
+        <artifactId>opencensus-impl</artifactId>
+        <version>${opencensus.version}</version>
+        <scope>runtime</scope>
+    </dependency>
+    <dependency>
+        <groupId>io.opencensus</groupId>
+        <artifactId>opencensus-exporter-stats-stackdriver</artifactId>
+        <version>${opencensus.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.rocketmq</groupId>
@@ -371,9 +424,9 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.9.1</version>
+        <version>3.2.0</version>
         <configuration>
-            <source>8</source>
+            <source>11</source>
         </configuration>
         <executions>
           <execution>
@@ -387,10 +440,9 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.6.2</version>
+        <version>3.8.1</version>
         <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
+          <release>11</release>
         </configuration>
       </plugin>
       <plugin>

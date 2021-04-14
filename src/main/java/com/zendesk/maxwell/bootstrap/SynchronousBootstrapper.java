@@ -34,7 +34,7 @@ public class SynchronousBootstrapper {
 	}
 
 	static final Logger LOGGER = LoggerFactory.getLogger(SynchronousBootstrapper.class);
-	private static final long INSERTED_ROWS_UPDATE_PERIOD_MILLIS = 250;
+	private static final long INSERTED_ROWS_UPDATE_PERIOD_MILLIS = 1000;
 	private final MaxwellContext context;
 
 	private long lastInsertedRowsUpdateTimeMillis = 0;
@@ -110,7 +110,6 @@ public class SynchronousBootstrapper {
 					LOGGER.debug("bootstrapping row : " + row.toJSON());
 
 				producer.push(row);
-				Thread.sleep(1);
 				++insertedRows;
 
 				updateInsertedRowsColumn(insertedRows, task.id);
@@ -122,9 +121,9 @@ public class SynchronousBootstrapper {
 	}
 
 	private void updateInsertedRowsColumn(int insertedRows, Long id) throws SQLException, NoSuchElementException, DuplicateProcessException {
-		this.context.getMaxwellConnectionPool().withSQLRetry(1, (connection) -> {
-			long now = System.currentTimeMillis();
-			if (now - lastInsertedRowsUpdateTimeMillis > INSERTED_ROWS_UPDATE_PERIOD_MILLIS) {
+		long now = System.currentTimeMillis();
+		if (now - lastInsertedRowsUpdateTimeMillis > INSERTED_ROWS_UPDATE_PERIOD_MILLIS) {
+			this.context.getMaxwellConnectionPool().withSQLRetry(1, (connection) -> {
 				String sql = "update `bootstrap` set inserted_rows = ? where id = ?";
 				PreparedStatement preparedStatement = connection.prepareStatement(sql);
 				preparedStatement.setInt(1, insertedRows);
@@ -133,8 +132,8 @@ public class SynchronousBootstrapper {
 					throw new NoSuchElementException();
 				}
 				lastInsertedRowsUpdateTimeMillis = now;
-			}
-		});
+			});
+		}
 	}
 
 	protected Connection getConnection(String databaseName) throws SQLException {

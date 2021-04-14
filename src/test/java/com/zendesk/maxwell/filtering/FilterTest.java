@@ -129,6 +129,38 @@ public class FilterTest {
 	}
 
 	@Test
+	public void TestSetValidFilter() throws Exception {
+		Filter f = new Filter("exclude: *.*, include: foo.bar.col=null");
+		assertEquals(f.toString(), "exclude: *.*, include: foo.bar.col=null");
+		f.set("blacklist: seria.*");
+		assertEquals(f.toString(), "blacklist: seria.*");
+	}
+
+	@Test
+	public void TestSetInvalidFilter() throws Exception {
+		Filter f = new Filter("exclude: *.*, include: foo.bar.col=null");
+		assertEquals(f.toString(), "exclude: *.*, include: foo.bar.col=null");
+		try {
+			f.set("bl: seria.*");
+		} catch (InvalidFilterException e) {
+			// do nothing
+		}
+		assertEquals(f.toString(), "exclude: *.*, include: foo.bar.col=null");
+	}
+
+	@Test
+	public void TestToString() throws Exception {
+		Filter f = new Filter("exclude: *.*, include: foo.bar.col=null");
+		assertEquals(f.toString(), "exclude: *.*, include: foo.bar.col=null");
+	}
+
+	@Test
+	public void TestEmptyToString() throws Exception {
+		Filter f = new Filter("");
+		assertEquals(f.toString(), "");
+	}
+
+	@Test
 	public void TestOldFiltersExcludeDB() throws Exception {
 		Filter f = Filter.fromOldFormat("maxwell", null, "foo, /bar/", null, null, null, null, null);
 		List<FilterPattern> rules = f.getRules();

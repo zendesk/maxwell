@@ -405,6 +405,12 @@ public class MaxwellContext {
 			case "sqs":
 				this.producer = new MaxwellSQSProducer(this, this.config.sqsQueueUri);
 				break;
+			case "sns":
+				this.producer = new MaxwellSNSProducer(this, this.config.snsTopic);
+				break;
+			case "nats":
+				this.producer = new NatsProducer(this);
+				break;
 			case "pubsub":
 				this.producer = new MaxwellPubsubProducer(this, this.config.pubsubProjectId, this.config.pubsubTopic, this.config.ddlPubsubTopic);
 				break;

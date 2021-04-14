@@ -12,7 +12,10 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -182,6 +185,14 @@ public class RowMap implements Serializable {
 
 		if ( outputConfig.includesSchemaId && this.schemaId != null ) {
 			g.writeNumberField(fieldNameStrategy.apply(FieldNames.SCHEMA_ID), this.schemaId);
+		}
+
+		if ( outputConfig.includesPushTimestamp ) {
+			Instant pushTS = Instant.now().truncatedTo(ChronoUnit.MICROS);
+			BigDecimal bd = BigDecimal.valueOf(pushTS.getEpochSecond());
+
+			bd = bd.add(BigDecimal.valueOf((double) pushTS.getNano() / 1_000_000_000d));
+			g.writeNumberField(fieldNameStrategy.apply(FieldNames.PUSH_TS), bd);
 		}
 
 		if ( this.comment != null ) {

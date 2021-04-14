@@ -47,6 +47,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 	protected final BinaryLogClient client;
 	private BinlogConnectorEventListener binlogEventListener;
+	private BinlogConnectorLivenessMonitor binlogLivenessMonitor;
 	private final LinkedBlockingDeque<BinlogConnectorEvent> queue = new LinkedBlockingDeque<>(20);
 	private final TableCache tableCache;
 	private final Scripting scripting;
@@ -147,11 +148,12 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 			which triggers mysql to jump ahead a binlog.
 			At some point I presume shyko will fix it and we can remove this.
 		 */
-
-		 /*
-		   the logic for this must be applied to all scenarios, as otherwise we will have competing keepalive logic
-		 */
 		this.client.setKeepAlive(false);
+		if (mysqlConfig.enableHeartbeat) {
+			this.binlogLivenessMonitor = new BinlogConnectorLivenessMonitor(client);
+			this.client.registerLifecycleListener(this.binlogLivenessMonitor);
+			this.client.registerEventListener(this.binlogLivenessMonitor);
+		}
 
 		EventDeserializer eventDeserializer = new EventDeserializer();
 		eventDeserializer.setCompatibilityMode(
@@ -249,6 +251,18 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		if (lastCommError != null) {
 			throw lastCommError;
 		}
+	}
+
+	/**
+	 * Returns true if connected with a recent event.
+	 * If binlog heartbeats are disabled, just returns
+	 * whether there is a connection.
+	 */
+	private boolean isConnectionAlive() {
+		if (!isConnected) {
+			return false;
+		}
+		return this.binlogLivenessMonitor == null || binlogLivenessMonitor.isAlive();
 	}
 
 	private boolean shouldSkipRow(RowMap row) throws IOException {
@@ -407,7 +421,12 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 	private void ensureReplicatorThread() throws Exception {
 		checkCommErrors();
-		if ( !this.isConnected && !stopOnEOF ) {
+		if (!this.isConnected && stopOnEOF) {
+			// reached EOF, nothing to do
+			return;
+		}
+		if (!this.isConnectionAlive()) {
+			client.disconnect();
 			if (this.gtidPositioning) {
 				// When using gtid positioning, reconnecting should take us to the top
 				// of the gtid event.  We throw away any binlog position we have

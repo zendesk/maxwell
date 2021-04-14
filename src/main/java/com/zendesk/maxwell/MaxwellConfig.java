@@ -21,13 +21,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.threeten.bp.Duration;
 
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.regex.Pattern;
 
-public class MaxwellConfig extends AbstractConfig
-{
+public class MaxwellConfig extends AbstractConfig {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfig.class);
 
 	public static final String GTID_MODE_ENV = "GTID_MODE";
@@ -139,6 +136,9 @@ public class MaxwellConfig extends AbstractConfig
 	public String rocketmqSendTopic;
 	public String rocketmqTags;
 
+	public String natsUrl;
+	public String natsSubject;
+
 	public String redisHost;
 	public int redisPort;
 	public String redisAuth;
@@ -186,7 +186,7 @@ public class MaxwellConfig extends AbstractConfig
 
 		parser.separator();
 
-		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|pubsub|sqs|rabbitmq|redis|custom" )
+		parser.accepts( "producer", "producer type: stdout|file|kafka|kinesis|nats|pubsub|sns|sqs|rabbitmq|redis|custom" )
 				.withRequiredArg();
 		parser.accepts( "client_id", "unique identifier for this maxwell instance, use when running multiple maxwells" )
 				.withRequiredArg();
@@ -203,6 +203,9 @@ public class MaxwellConfig extends AbstractConfig
 				.withRequiredArg();
 
 		parser.section("mysql");
+
+		parser.accepts( "binlog_heartbeat", "enable binlog replication heartbeats, default false" )
+			.withOptionalArg().ofType(Boolean.class);
 
 		parser.accepts( "jdbc_options", "additional jdbc connection options: key1=val1&key2=val2" )
 				.withRequiredArg();
@@ -336,12 +339,20 @@ public class MaxwellConfig extends AbstractConfig
 				.withOptionalArg();
 		parser.accepts( "sqs_queue_uri", "SQS Queue uri" )
 				.withRequiredArg();
+		parser.accepts("sns_topic", "SNS Topic ARN")
+				.withRequiredArg();
+		parser.accepts("sns_attrs", "Fields to add as message attributes")
+				.withOptionalArg();
 		parser.separator();
 		parser.addToSection("producer_partition_by");
 		parser.addToSection("producer_partition_columns");
 		parser.addToSection("producer_partition_by_fallback");
 		parser.addToSection("producer_ack_timeout");
 
+		parser.section( "nats" );
+
+		parser.accepts( "nats_url", "Url(s) of Nats connection (comma separated). Default is localhost:4222" ).withRequiredArg();
+		parser.accepts( "nats_subject", "Subject Hierarchies of Nats. Default is '%{database}.%{table}'" ).withRequiredArg();
 
 		parser.section( "pubsub" );
 		parser.accepts( "pubsub_project_id", "provide a google cloud platform project id associated with the pubsub topic" )
@@ -399,6 +410,8 @@ public class MaxwellConfig extends AbstractConfig
 				.withOptionalArg().ofType(Boolean.class);
 		parser.accepts( "output_ddl", "produce DDL records. default: false" )
 				.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_push_timestamp", "include a microsecond timestamp representing when Maxwell sent a record. default: false" )
+			.withOptionalArg().ofType(Boolean.class);
 		parser.accepts( "exclude_columns", "suppress these comma-separated columns from output" )
 				.withRequiredArg();
 		parser.accepts("secret_key", "The secret key for the AES encryption" )
@@ -426,6 +439,7 @@ public class MaxwellConfig extends AbstractConfig
 		parser.accepts( "rabbitmq_pass", "Password of Rabbitmq connection. Default is guest" ).withRequiredArg();
 		parser.accepts( "rabbitmq_host", "Host of Rabbitmq machine" ).withRequiredArg();
 		parser.accepts( "rabbitmq_port", "Port of Rabbitmq machine" ).withRequiredArg().ofType(Integer.class);
+		parser.accepts( "rabbitmq_uri", "URI to rabbit server, eg amqp://, amqps://.  other rabbitmq options take precendence over uri." ).withRequiredArg();
 		parser.accepts( "rabbitmq_virtual_host", "Virtual Host of Rabbitmq" ).withRequiredArg();
 		parser.accepts( "rabbitmq_exchange", "Name of exchange for rabbitmq publisher" ).withRequiredArg();
 		parser.accepts( "rabbitmq_exchange_type", "Exchange type for rabbitmq" ).withRequiredArg();
@@ -572,6 +586,9 @@ public class MaxwellConfig extends AbstractConfig
 		this.rabbitmqRoutingKeyTemplate   	= fetchStringOption("rabbitmq_routing_key_template", options, properties, "%db%.%table%");
 		this.rabbitmqMessagePersistent    	= fetchBooleanOption("rabbitmq_message_persistent", options, properties, false);
 		this.rabbitmqDeclareExchange		= fetchBooleanOption("rabbitmq_declare_exchange", options, properties, true);
+
+		this.natsUrl			= fetchStringOption("nats_url", options, properties, "nats://localhost:4222");
+		this.natsSubject		= fetchStringOption("nats_subject", options, properties, "%{database}.%{table}");
 
 		this.rocketmqNamesrvAddr = fetchStringOption("rocketmq_namesrv_addr", options, properties, "localhost:9876");
 		this.rocketmqProducerGroup = fetchStringOption("rocketmq_producer_group", options, properties, "rocketmq_producer_group");
@@ -987,8 +1004,7 @@ public class MaxwellConfig extends AbstractConfig
 		return this.kafkaProperties;
 	}
 
-	public static Pattern compileStringToPattern(String name) throws InvalidFilterException
-	{
+	public static Pattern compileStringToPattern(String name) throws InvalidFilterException {
 		name = name.trim();
 		if ( name.startsWith("/") ) {
 			if ( !name.endsWith("/") ) {

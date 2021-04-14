@@ -30,6 +30,7 @@ master_recovery                | BOOLEAN              | enable experimental mast
 gtid_mode                      | BOOLEAN              | enable GTID-based replication                       | false
 recapture_schema               | BOOLEAN              | recapture the latest schema. Not available in config.properties. | false
 max_schemas                    | LONG                 | how many schema deltas to keep before triggering compaction operation | unlimited
+binlog_heartbeat               | BOOLEAN              | enable binlog heartbeats to detect stale connections | DISABLED
 &nbsp;
 replication_host               | STRING               | server to replicate from.  See [split server roles](#split-server-roles) | *schema-store host*
 replication_password           | STRING               | password on replication server                      | (none)
@@ -89,6 +90,17 @@ option                         | argument                            | descripti
 -------------------------------|-------------------------------------| --------------------------------------------------- | -------
 sqs_queue_uri                  | STRING                              | SQS Queue URI |
 
+## sns producer 
+option                         | argument                            | description                                         | default
+-------------------------------|-------------------------------------| --------------------------------------------------- | -------
+sns_topic                      | STRING                              | The SNS topic to publish to. FIFO topics should end with `.fifo` |
+sns_attrs                      | STRING                              | Properties to set as attributes on the SNS message  |  
+
+## nats producer
+option                         | argument                            | description                                         | default
+-------------------------------|-------------------------------------| --------------------------------------------------- | -------
+nats_url                       | STRING     | Comma separated list of nats urls.  may include [user:password style auth](https://docs.nats.io/developing-with-nats/security/userpass#connecting-with-a-user-password-in-the-url) | nats://localhost:4222
+nats_subject                   | STRING     | Nats subject hierarchy.  [Topic substitution](/producers/#topic-substitution) available. | `%{database}.%{table}`
 
 ## pubsub producer
 option                         | argument                            | description                                         | default
@@ -144,6 +156,7 @@ output_binlog_position         | BOOLEAN  | records include binlog position     
 output_gtid_position           | BOOLEAN  | records include gtid position, if available | false
 output_commit_info             | BOOLEAN  | records include commit and xid      | true
 output_xoffset                 | BOOLEAN  | records include virtual tx-row offset | false
+output_push_timestamp          | BOOLEAN  | records are timestamped with a high-precision value before being sent to the producer | false
 output_nulls                   | BOOLEAN  | records include fields with NULL values    | true
 output_server_id               | BOOLEAN  | records include server_id                  | false
 output_thread_id               | BOOLEAN  | records include thread_id                  | false
@@ -201,6 +214,7 @@ bootstrapper                   | [async &#124; sync &#124; none]                
 init_position                  | FILE:POSITION[:HEARTBEAT]           | ignore the information in maxwell.positions and start at the given binlog position. Not available in config.properties. |
 replay                         | BOOLEAN                             | enable maxwell's read-only "replay" mode: don't store a binlog position or schema changes.  Not available in config.properties. |
 buffer_memory_usage            | FLOAT                               | Determines how much memory the Maxwell event buffer will use from the jvm max memory. Size of the buffer is: buffer_memory_usage * -Xmx" | 0.25
+http_config                    | BOOLEAN                             | enable http config endpoint for config updates without restart | false
 
 
 <p id="loglevel" class="jumptarget">
@@ -255,6 +269,25 @@ environment variable names are case insensitive.  For example, if maxwell is
 started with `--env_config_prefix=FOO_` and the environment contains `FOO_USER=auser`,
 this would be equivalent to passing `--user=auser`.
 
+## via PATCH: /config
+If `http_config` is set to true in config.properties or in the environment,
+the endpoint /config will be exposed. Currently only filter updates are supported,
+and a filter can be updated with a request in the following format
+
+`PATCH: /config`
+```json
+{
+	"filter": "exclude: noisy_db.*"
+}
+```
+
+A get request will return the live config state
+`GET: /config`
+```json
+{
+	"filter": "exclude: noisy_db.*"
+}
+```
 
 ### Deployment scenarios
 ***

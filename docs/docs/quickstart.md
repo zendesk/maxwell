@@ -1,13 +1,13 @@
 # Download
 ***
-- Download binary distro: [https://github.com/zendesk/maxwell/releases/download/v1.29.1/maxwell-1.29.1.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.29.1/maxwell-1.29.1.tar.gz)
+- Download binary distro: [https://github.com/zendesk/maxwell/releases/download/v1.33.0/maxwell-1.33.0.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.33.0/maxwell-1.33.0.tar.gz)
 - Sources and bug tracking is available on github: [https://github.com/zendesk/maxwell](https://github.com/zendesk/maxwell)
 
 **curl**:
 ```
-curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.29.1/maxwell-1.29.1.tar.gz \
+curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.33.0/maxwell-1.33.0.tar.gz \
        | tar zxvf -
-cd maxwell-1.29.1
+cd maxwell-1.33.0
 ```
 
 **docker**:
@@ -97,6 +97,13 @@ docker run -it --rm zendesk/maxwell bin/maxwell --user=$MYSQL_USERNAME \
 docker run -it --rm --name maxwell -v `cd && pwd`/.aws:/root/.aws zendesk/maxwell sh -c 'cp /app/kinesis-producer-library.properties.example /app/kinesis-producer-library.properties && echo "Region=$AWS_DEFAULT_REGION" >> /app/kinesis-producer-library.properties && bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kinesis --kinesis_stream=$KINESIS_STREAM'
 ```
 
+## Nats
+
+```
+bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
+    --producer=nats --nats_url=='0.0.0.0:4222'
+```
+
 ## Google Cloud Pub/Sub
 
 ```
@@ -117,4 +124,11 @@ bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
 ```
 bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
     --producer=redis --redis_host=redis.hostname
+```
+
+## SNS
+
+```
+bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
+    --producer=sns --sns_topic=sns.topic --sns_attrs=database,table
 ```

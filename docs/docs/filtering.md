@@ -72,4 +72,3 @@ function process_row(row) {
 
 There's a longer example here: [https://github.com/zendesk/maxwell/blob/master/src/example/filter.js](https://github.com/zendesk/maxwell/blob/master/src/example/filter.js).
 
-
