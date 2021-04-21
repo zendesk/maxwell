@@ -6,7 +6,6 @@ import java.sql.Time;
 import java.sql.Timestamp;
 
 public class TimeColumnDef extends ColumnDefWithLength {
-
 	public TimeColumnDef(String name, String type, short pos, Long columnLength, boolean nullable) {
 		super(name, type, pos, columnLength, nullable);
 	}

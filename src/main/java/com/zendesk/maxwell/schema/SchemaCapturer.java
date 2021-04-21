@@ -210,6 +210,10 @@ public class SchemaCapturer implements AutoCloseable {
 
 					pkIndexCounters.put(tableName, pkIndexCounters.get(tableName) + 1);
 				}
+
+				t.addColumn(ColumnDef.build(colName, colEnc, colType, colPos, colSigned, enumValues, columnLength, colNullable));
+
+				pkIndexCounters.put(tableName, pkIndexCounters.get(tableName) + 1);
 			}
 		}
 

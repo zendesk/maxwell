@@ -8,7 +8,6 @@ import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import org.apache.commons.lang3.StringUtils;
 
 public class SetColumnDef extends EnumeratedColumnDef {
-
 	public SetColumnDef(String name, String type, short pos, String[] enumValues, boolean nullable) {
 		super(name, type, pos, enumValues, nullable);
 	}

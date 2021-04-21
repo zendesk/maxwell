@@ -15,10 +15,7 @@ import com.zendesk.maxwell.monitoring.NoOpMetrics;
 import com.zendesk.maxwell.producer.BufferedProducer;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.producer.StdoutProducer;
-<<<<<<< HEAD
-=======
 import com.zendesk.maxwell.row.RowMap;
->>>>>>> 7d314125 (added configuration parameter to define client reconnection attemps if connection is dropped)
 import com.zendesk.maxwell.schema.MysqlSchemaStore;
 import org.junit.Test;
 

@@ -21,7 +21,6 @@ public abstract class ColumnDefWithLength extends ColumnDef {
 		}
 	};
 
-
 	public ColumnDefWithLength(String name, String type, short pos, Long columnLength, boolean nullable) {
 		super(name, type, pos, nullable);
 		if ( columnLength == null )

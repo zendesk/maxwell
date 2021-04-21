@@ -7,7 +7,6 @@ import com.zendesk.maxwell.row.RawJSONString;
 import java.io.IOException;
 
 public class JsonColumnDef extends ColumnDef {
-
 	public JsonColumnDef(String name, String type, short pos, boolean nullable) {
 		super(name, type, pos, nullable);
 	}

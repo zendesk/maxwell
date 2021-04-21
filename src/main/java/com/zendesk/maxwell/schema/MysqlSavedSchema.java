@@ -262,6 +262,32 @@ public class MysqlSavedSchema {
 					if ( columnData.size() > 1000 )
 						executeColumnInsert(conn, columnData);
 
+					if ( c instanceof StringColumnDef ) {
+						columnData.add(((StringColumnDef) c).getCharset());
+					} else {
+						columnData.add(null);
+					}
+
+					columnData.add(c.getType());
+
+					if ( c instanceof IntColumnDef ) {
+						columnData.add(((IntColumnDef) c).isSigned() ? 1 : 0);
+					} else if ( c instanceof BigIntColumnDef ) {
+						columnData.add(((BigIntColumnDef) c).isSigned() ? 1 : 0);
+					} else {
+						columnData.add(0);
+					}
+
+					columnData.add(enumValuesSQL);
+
+					if ( c instanceof ColumnDefWithLength ) {
+						Long columnLength = ((ColumnDefWithLength) c).getColumnLength();
+						columnData.add(columnLength);
+					} else {
+						columnData.add(null);
+					}
+					
+					columnData.add(c.isNullable() ? 1 : 0);
 				}
 			}
 			if ( columnData.size() > 0 )
