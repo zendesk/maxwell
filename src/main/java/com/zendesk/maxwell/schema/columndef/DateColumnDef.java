@@ -3,8 +3,8 @@ package com.zendesk.maxwell.schema.columndef;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 
 public class DateColumnDef extends ColumnDef {
-	private DateColumnDef(String name, String type, short pos) {
-		super(name, type, pos);
+	public DateColumnDef(String name, String type, short pos, boolean nullable) {
+		super(name, type, pos, nullable);
 	}
 
 	public static DateColumnDef create(String name, String type, short pos) {

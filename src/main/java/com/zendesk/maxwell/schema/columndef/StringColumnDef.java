@@ -12,8 +12,8 @@ public class StringColumnDef extends ColumnDef {
 	// mutability only allowed after clone and prior to insertion to interner
 	private String charset;
 
-	private StringColumnDef(String name, String type, short pos, String charset) {
-		super(name, type, pos);
+	public StringColumnDef(String name, String type, short pos, String charset, boolean nullable) {
+		super(name, type, pos, nullable);
 		this.charset = charset;
 	}
 

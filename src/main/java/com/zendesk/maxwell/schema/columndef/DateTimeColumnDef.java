@@ -5,11 +5,8 @@ import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import java.sql.Timestamp;
 
 public class DateTimeColumnDef extends ColumnDefWithLength {
-
-	private final boolean isTimestamp = getType().equals("timestamp");
-
-	private DateTimeColumnDef(String name, String type, short pos, Long columnLength) {
-		super(name, type, pos, columnLength);
+	public DateTimeColumnDef(String name, String type, short pos, Long columnLength, boolean nullable) {
+		super(name, type, pos, columnLength, nullable);
 	}
 
 	public static DateTimeColumnDef create(String name, String type, short pos, Long columnLength) {
