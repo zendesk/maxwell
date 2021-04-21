@@ -104,6 +104,22 @@ public class StringColumnDef extends ColumnDef {
 			throw new ColumnDefCastException(this, value);
 		}
 	}
+	
+	@Override
+	public Object asBinary(Object value) throws ColumnDefCastException {
+		if ( value instanceof String ) {
+			return value;
+		} else if ( value instanceof byte[] ) {
+			byte[] b = (byte[]) value;
+			if (charset.equals("binary")) {
+				return value;
+			} else {
+				return new String(b, charsetForCharset());
+			}
+		} else {
+			throw new ColumnDefCastException(this, value);
+		}
+	}
 
 	private String quoteString(String s) {
 		String escaped = s.replaceAll("'", "''");

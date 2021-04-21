@@ -519,7 +519,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					if ( table != null && shouldOutputEvent(table.getDatabase(), table.getName(), filter, table.getColumnNames()) ) {
 						List<RowMap> rows;
 						try {
-							rows = event.jsonMaps(table, getLastHeartbeatRead(), currentQuery);
+							rows = event.binaryMaps(table, getLastHeartbeatRead(), currentQuery);
 						} catch ( ColumnDefCastException e ) {
 							logColumnDefCastException(table, e);
 
