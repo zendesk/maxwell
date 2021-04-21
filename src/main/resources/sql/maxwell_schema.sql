@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS `columns` (
   is_signed   tinyint(1) unsigned,
   enum_values text charset 'utf8',
   column_length tinyint unsigned,
+  is_nullable   tinyint(1) unsigned,
   index (schema_id),
   index (table_id)
 );

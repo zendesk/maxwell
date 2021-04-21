@@ -20,11 +20,11 @@ import org.junit.Test;
 
 public class ColumnDefTest extends TestWithNameLogging {
 	private ColumnDef build(String type, boolean signed) {
-		return ColumnDef.build("bar", "", type, (short) 1, signed, null, null);
+		return ColumnDef.build("bar", "", type, (short) 1, signed, null, null, false);
 	}
 
 	private ColumnDef build(String type, boolean signed, Long columnLength) {
-		return ColumnDef.build("bar", "", type, (short) 1, signed, null, columnLength);
+		return ColumnDef.build("bar", "", type, (short) 1, signed, null, columnLength, false);
 	}
 
 	@Before
@@ -99,7 +99,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 
 	@Test
 	public void testUTF8String() throws ColumnDefCastException {
-		ColumnDef d = ColumnDef.build("bar", "utf8", "varchar", (short) 1, false, null, null);
+		ColumnDef d = ColumnDef.build("bar", "utf8", "varchar", (short) 1, false, null, null, false);
 
 		assertThat(d, instanceOf(StringColumnDef.class));
 		byte input[] = "He∆˚ß∆".getBytes();
@@ -110,7 +110,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	public void TestUTF8MB4String() throws ColumnDefCastException {
 		String utf8_4 = "😁";
 
-		ColumnDef d = ColumnDef.build("bar", "utf8mb4", "varchar", (short) 1, false, null, null);
+		ColumnDef d = ColumnDef.build("bar", "utf8mb4", "varchar", (short) 1, false, null, null, false);
 		byte input[] = utf8_4.getBytes();
 		assertThat(d.toSQL(input), is("'😁'"));
 	}
@@ -119,7 +119,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	public void TestAsciiString() throws ColumnDefCastException {
 		byte input[] = new byte[] { (byte) 126, (byte) 126, (byte) 126, (byte) 126 };
 
-		ColumnDef d = ColumnDef.build("bar", "ascii", "varchar", (short) 1, false, null, null);
+		ColumnDef d = ColumnDef.build("bar", "ascii", "varchar", (short) 1, false, null, null, false);
 		assertThat((String) d.asJSON(input, null), is("~~~~"));
 	}
 
@@ -127,7 +127,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	public void TestLatin1String() throws ColumnDefCastException {
 		byte input[] = new byte[] { (byte) 128, (byte) 128, (byte) 128, (byte) 128 };
 
-		ColumnDef d = ColumnDef.build("bar", "latin1", "varchar", (short) 1, false, null, null);
+		ColumnDef d = ColumnDef.build("bar", "latin1", "varchar", (short) 1, false, null, null, false);
 		assertThat((String) d.asJSON(input, null), is("€€€€"));
 	}
 
@@ -135,7 +135,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	public void TestStringAsJSON() throws ColumnDefCastException {
 		byte input[] = new byte[] { (byte) 169, (byte) 169, (byte) 169, (byte) 169 };
 
-		ColumnDef d = ColumnDef.build("bar", "latin1", "varchar", (short) 1, false, null, null);
+		ColumnDef d = ColumnDef.build("bar", "latin1", "varchar", (short) 1, false, null, null, false);
 
 		assertThat((String) d.asJSON(input, null), is("©©©©"));
 	}
@@ -145,7 +145,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 		byte input[] = new byte[] { (byte) 0, (byte) 1, (byte) 0, (byte) 13, (byte) 0, (byte) 11,
 				(byte) 0, (byte) 2, (byte) 0, (byte) 5, (byte) 3, (byte) 0, (byte) 105, (byte) 100 };
 
-		ColumnDef d = ColumnDef.build("bar", "ascii", "json", (short) 1, false, null, null);
+		ColumnDef d = ColumnDef.build("bar", "ascii", "json", (short) 1, false, null, null, false);
 
 		RawJSONString result = (RawJSONString) d.asJSON(input, null);
 		assertThat(result.json, is("{\"id\":3}"));
@@ -155,7 +155,7 @@ public class ColumnDefTest extends TestWithNameLogging {
 	public void TestEmptyJSON() throws ColumnDefCastException {
 		byte input[] = new byte[0];
 
-		ColumnDef d = ColumnDef.build("bar", "ascii", "json", (short) 1, false, null, null);
+		ColumnDef d = ColumnDef.build("bar", "ascii", "json", (short) 1, false, null, null, false);
 
 		RawJSONString result = (RawJSONString) d.asJSON(input, null);
 		assertThat(result.json, is("null"));

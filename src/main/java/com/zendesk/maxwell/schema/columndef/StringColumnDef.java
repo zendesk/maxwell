@@ -14,8 +14,8 @@ import org.slf4j.LoggerFactory;
 public class StringColumnDef extends ColumnDef {
 	public String charset;
 
-	public StringColumnDef(String name, String type, short pos, String charset) {
-		super(name, type, pos);
+	public StringColumnDef(String name, String type, short pos, String charset, boolean nullable) {
+		super(name, type, pos, nullable);
 		this.charset = charset;
 	}
 
