@@ -33,6 +33,10 @@ public abstract class ColumnDef implements Cloneable {
 	public Object asJSON(Object value, MaxwellOutputConfig config) throws ColumnDefCastException {
 		return value;
 	}
+	
+	public Object asBinary(Object value) throws ColumnDefCastException {
+		return value;
+	}
 
 	public ColumnDef clone() {
 		try {

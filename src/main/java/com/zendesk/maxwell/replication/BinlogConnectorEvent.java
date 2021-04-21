@@ -146,6 +146,51 @@ public class BinlogConnectorEvent {
 			colIdx++;
 		}
 	}
+	
+	private void writeDataBinary(Table table, RowMap row, Serializable[] data, BitSet includedColumns) throws ColumnDefCastException {
+		int dataIdx = 0, colIdx = 0;
+
+		for ( ColumnDef cd : table.getColumnList() ) {
+			if ( includedColumns.get(colIdx) ) {
+				Object json = null;
+				if ( data[dataIdx] != null ) {
+					json = cd.asBinary(data[dataIdx]);
+				}
+				row.putData(cd.getName(), json);
+				dataIdx++;
+			}
+			colIdx++;
+		}
+	}
+
+	private void writeOldDataBinary(Table table, RowMap row, Serializable[] oldData, BitSet oldIncludedColumns) throws ColumnDefCastException {
+		int dataIdx = 0, colIdx = 0;
+
+		for ( ColumnDef cd : table.getColumnList() ) {
+			if ( oldIncludedColumns.get(colIdx) ) {
+				Object json = null;
+				if ( oldData[dataIdx] != null ) {
+					json = cd.asBinary(oldData[dataIdx]);
+				}
+
+				if (!row.hasData(cd.getName())) {
+					/*
+					   If we find a column in the BEFORE image that's *not* present in the AFTER image,
+					   we're running in binlog_row_image = MINIMAL.  In this case, the BEFORE image acts
+					   as a sort of WHERE clause to update rows with the new values (present in the AFTER image),
+					   In this case we should put what's in the "before" image into the "data" section, not the "old".
+					 */
+					row.putData(cd.getName(), json);
+				} else {
+					if (!Objects.equals(row.getData(cd.getName()), json)) {
+						row.putOldData(cd.getName(), json);
+					}
+				}
+				dataIdx++;
+			}
+			colIdx++;
+		}
+	}
 
 	private RowMap buildRowMap(String type, Position position, Position nextPosition, Serializable[] data, Table table, BitSet includedColumns, String rowQuery) throws ColumnDefCastException {
 		RowMap map = new RowMap(
@@ -160,6 +205,22 @@ public class BinlogConnectorEvent {
 		);
 
 		writeData(table, map, data, includedColumns);
+		return map;
+	}
+	
+	private RowMap buildRowMapBinary(String type, Position position, Position nextPosition, Serializable[] data, Table table, BitSet includedColumns, String rowQuery) throws ColumnDefCastException {
+		RowMap map = new RowMap(
+			type,
+			table.getDatabase(),
+			table.getName(),
+			event.getHeader().getTimestamp(),
+			table.getPKList(),
+			position,
+			nextPosition,
+			rowQuery
+		);
+
+		writeDataBinary(table, map, data, includedColumns);
 		return map;
 	}
 
@@ -190,6 +251,41 @@ public class BinlogConnectorEvent {
 
 					RowMap r = buildRowMap("update", position, nextPosition, data, table, updateRowsData().getIncludedColumns(), rowQuery);
 					writeOldData(table, r, oldData, updateRowsData().getIncludedColumnsBeforeUpdate());
+					list.add(r);
+				}
+				break;
+		}
+
+		return list;
+	}
+	
+	public List<RowMap> binaryMaps(Table table, long lastHeartbeatRead, String rowQuery) throws ColumnDefCastException {
+		ArrayList<RowMap> list = new ArrayList<>();
+
+		Position position     = Position.valueOf(this.position, lastHeartbeatRead);
+		Position nextPosition = Position.valueOf(this.nextPosition, lastHeartbeatRead);
+
+		switch ( getType() ) {
+			case WRITE_ROWS:
+			case EXT_WRITE_ROWS:
+				for ( Serializable[] data : writeRowsData().getRows() ) {
+					list.add(buildRowMapBinary("insert", position, nextPosition, data, table, writeRowsData().getIncludedColumns(), rowQuery));
+				}
+				break;
+			case DELETE_ROWS:
+			case EXT_DELETE_ROWS:
+				for ( Serializable[] data : deleteRowsData().getRows() ) {
+					list.add(buildRowMapBinary("delete", position, nextPosition, data, table, deleteRowsData().getIncludedColumns(), rowQuery));
+				}
+				break;
+			case UPDATE_ROWS:
+			case EXT_UPDATE_ROWS:
+				for ( Map.Entry<Serializable[], Serializable[]> e : updateRowsData().getRows() ) {
+					Serializable[] data = e.getValue();
+					Serializable[] oldData = e.getKey();
+
+					RowMap r = buildRowMapBinary("update", position, nextPosition, data, table, updateRowsData().getIncludedColumns(), rowQuery);
+					writeOldDataBinary(table, r, oldData, updateRowsData().getIncludedColumnsBeforeUpdate());
 					list.add(r);
 				}
 				break;
