@@ -24,7 +24,7 @@ public class RowMapTest {
 
 	@Test(expected = ProtectedAttributeNameException.class)
 	public void testFailOnProtectedAttributes() throws Exception {
-		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", 1234567890L, new ArrayList<String>(), null);
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", 1234567890L, new ArrayList<String>(), (Position) null);
 		rowMap.putExtraAttribute("table", "bar");
 	}
 

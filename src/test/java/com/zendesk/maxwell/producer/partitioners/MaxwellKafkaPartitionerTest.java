@@ -1,5 +1,6 @@
 package com.zendesk.maxwell.producer.partitioners;
 
+import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.ddl.DDLMap;
 import com.zendesk.maxwell.schema.ddl.ResolvedDatabaseAlter;
@@ -14,7 +15,7 @@ import java.util.ArrayList;
 public class MaxwellKafkaPartitionerTest {
 	@Test
 	public void testRowMapEqualsDDLPartitioning() {
-		RowMap r = new RowMap("insert", "db", "tbl", 0L, new ArrayList<>(), null);
+		RowMap r = new RowMap("insert", "db", "tbl", 0L, new ArrayList<>(), (Position) null);
 		ResolvedDatabaseAlter m = new ResolvedDatabaseAlter("db", "utf8");
 		DDLMap d = new DDLMap(m, 0L, "alter-sql", null, null, null);
 

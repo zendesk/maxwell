@@ -63,6 +63,7 @@ public class Recovery {
 					this.schemaStore,
 					null,
 					null,
+					null,
 					replicationConfig,
 					0L, // server-id of 0 activates "mysqlbinlog" behavior where the server will stop after each binlog
 					maxwellDatabaseName,
