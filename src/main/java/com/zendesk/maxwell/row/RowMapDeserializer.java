@@ -1,5 +1,9 @@
 package com.zendesk.maxwell.row;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -9,10 +13,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.ValueNode;
 import com.zendesk.maxwell.errors.ParseException;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
+import com.zendesk.maxwell.replication.Position;
 
 public class RowMapDeserializer extends StdDeserializer<RowMap> {
 	private static ObjectMapper mapper;
@@ -91,7 +92,7 @@ public class RowMapDeserializer extends StdDeserializer<RowMap> {
 				table.asText(),
 				ts.asLong() * 1000,
 				new ArrayList<String>(),
-				null
+				(Position) null
 		);
 
 		if (xid != null) {
