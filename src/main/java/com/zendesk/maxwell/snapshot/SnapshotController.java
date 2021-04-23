@@ -22,7 +22,6 @@ import java.util.NoSuchElementException;
 import java.util.TimeZone;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import org.apache.commons.lang3.StringUtils;
 import org.jline.utils.Log;
 import org.slf4j.Logger;
