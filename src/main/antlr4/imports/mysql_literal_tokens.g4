@@ -221,6 +221,7 @@ WITH: W I T H;
 WITHOUT: W I T H O U T;
 YEAR: Y E A R;
 ZEROFILL: Z E R O F I L L;
+START_TRANSACTION: S T A R T ' ' T R A N S A C T I O N;
 fragment A: [Aa];
 fragment B: [Bb];
 fragment C: [Cc];
