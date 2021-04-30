@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.TimeZone;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jline.utils.Log;
@@ -32,6 +33,8 @@ import com.zendesk.maxwell.errors.DuplicateProcessException;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.MysqlSchemaStore;
+import com.zendesk.maxwell.schema.Schema;
+import com.zendesk.maxwell.schema.SchemaChangeListener;
 import com.zendesk.maxwell.schema.SchemaStoreException;
 import com.zendesk.maxwell.schema.SchemaStoreSchema;
 import com.zendesk.maxwell.schema.Table;
@@ -48,7 +51,7 @@ import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
  * @author Ivan
  *
  */
-public class SnapshotController {
+public class SnapshotController implements SchemaChangeListener {
 
 	static private final Logger LOGGER = LoggerFactory.getLogger(SnapshotController.class);
 
@@ -447,8 +450,14 @@ public class SnapshotController {
 			sql += " WHERE " + where;
 		}
 
-		sql += " ORDER BY " + snapshot.getTableSchema().getPKString() + " LIMIT " + snapshot.getChunkSize() + " OFFSET "
-				+ snapshot.getChunkStart();
+		var orderBy = snapshot.getTableSchema().getPKString();
+
+		if (orderBy.isEmpty()) {
+			orderBy = snapshot.getTableSchema().getColumnList().stream().map(c -> c.getName())
+					.collect(Collectors.joining(","));
+		}
+
+		sql += " ORDER BY " + orderBy + " LIMIT " + snapshot.getChunkSize() + " OFFSET " + snapshot.getChunkStart();
 
 		var conn = getStreamingConnection(snapshot.getDb());
 		var stmt = createBatchStatement(conn);
@@ -603,7 +612,8 @@ public class SnapshotController {
 		snapshotTableMap.remove(snapshot.getFullTableName());
 	}
 
-	public void onSchemaChanges(List<ResolvedSchemaChange> changes) {
+	@Override
+	public void onSchemaChange(List<ResolvedSchemaChange> changes, long newSchemaId, Schema newSchema) {
 		// Simply cancel all snapshots for tables with a schema change
 		for (var change : changes) {
 			String tablePath = String.format("%s.%s", change.databaseName(), change.tableName());

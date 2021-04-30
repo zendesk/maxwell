@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.replication;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -31,6 +32,7 @@ import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMapBuffer;
 import com.zendesk.maxwell.schema.Schema;
+import com.zendesk.maxwell.schema.SchemaChangeListener;
 import com.zendesk.maxwell.schema.SchemaStore;
 import com.zendesk.maxwell.schema.SchemaStoreException;
 import com.zendesk.maxwell.schema.Table;
@@ -86,6 +88,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 	private boolean isConnected = false;
 
+	private Set<SchemaChangeListener> schemaChangeListeners;
+
 	private class ClientReconnectedException extends Exception {}
 
 	public BinlogConnectorReplicator(
@@ -120,6 +124,14 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		this.filter = filter;
 		this.lastCommError = null;
 		this.bufferMemoryUsage = bufferMemoryUsage;
+
+		schemaChangeListeners = new HashSet<SchemaChangeListener>();
+
+		schemaChangeListeners.add(snapshoter);
+
+		if (producer instanceof SchemaChangeListener) {
+			schemaChangeListeners.add((SchemaChangeListener) producer);
+		}
 
 		/* setup metrics */
 		rowCounter = metrics.getRegistry().counter(
@@ -351,8 +363,9 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		if ( bootstrapper != null)
 			bootstrapper.setCurrentSchemaID(schemaId);
 		
-		if (snapshoter != null)
-			snapshoter.onSchemaChanges(changes);
+		for (var schemaChangeListener : schemaChangeListeners) {
+			schemaChangeListener.onSchemaChange(changes, schemaId, schemaStore.getSchema());
+		}
 
 		for (ResolvedSchemaChange change : changes) {
 			if (change.shouldOutput(filter)) {
