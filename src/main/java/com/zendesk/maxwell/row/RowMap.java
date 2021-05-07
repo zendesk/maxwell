@@ -18,6 +18,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 
@@ -56,6 +57,8 @@ public class RowMap implements Serializable {
 	private final LinkedHashMap<String, Object> extraAttributes;
 
 	private final List<String> pkColumns;
+	private List<Object> pkValues;
+	private Map<String, Object> pkMap;
 	private RowIdentity rowIdentity;
 
 	private long approximateSize;
@@ -462,5 +465,27 @@ public class RowMap implements Serializable {
 
 	public void setComment(String comment) {
 		this.comment = comment;
+	}
+
+	public List<String> getPrimaryKeyColumns() {
+		return Collections.unmodifiableList(this.pkColumns);
+	}
+
+	public List<Object> getPrimaryKeyValues() {
+		if (this.pkValues == null) {
+			List<Object> values = new ArrayList<>();
+			pkColumns.forEach(pkColumn -> values.add(this.data.get(pkColumn)));
+			this.pkValues = Collections.unmodifiableList(values);
+		}
+		return this.pkValues;
+	}
+
+	public Map<String, Object> getPrimaryKeyMap() {
+		if (this.pkMap == null) {
+			Map<String, Object> pkMap = pkColumns.stream()
+					.collect(Collectors.toMap(k -> k, v -> this.data.get(v)));
+			this.pkMap = Collections.unmodifiableMap(pkMap);
+		}
+		return this.pkMap;
 	}
 }
