@@ -251,7 +251,9 @@ public class DDLParserTest {
 			"CREATE DATABASE xyz DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT ENCRYPTION='N'",
 			"CREATE TABLE testTable18 ( command JSON NOT NULL DEFAULT (JSON_QUOTE(\"{'parent':'sched'}\")) )",
 			"CREATE TABLE testTable19 ( pid BIGINT NOT NULL DEFAULT(1) )",
-			"CREATE TABLE encRTYPE ( i int ) ENCRYPTION='Y'"
+			"CREATE TABLE encRTYPE ( i int ) ENCRYPTION='Y'",
+			"CREATE TABLE testfoo ( i int ) START TRANSACTION",
+
 		};
 
 		for ( String s : testSQL ) {

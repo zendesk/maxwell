@@ -44,7 +44,7 @@ table_creation_option:
 	| creation_tablespace
 	| creation_union
 	| creation_encryption
-	| start_start_transaction
+	| creation_start_transaction
 	| partition_by;
 
 
@@ -73,5 +73,5 @@ creation_storage_option: STORAGE (DISK | MEMORY | DEFAULT);
 creation_tablespace: TABLESPACE string;
 creation_union: UNION '='? '(' name (',' name)* ')';
 creation_encryption: ENCRYPTION '='? string_literal;
-start_start_transaction: START_TRANSACTION;
+creation_start_transaction: START TRANSACTION;
 
