@@ -243,9 +243,13 @@ The configurable properties for nats are:
 
 - `nats_url` - defaults to **nats://localhost:4222**
 - `nats_subject` - defaults to **%{database}.%{table}**
+- `nats_user` - defaults to empty
+- `nats_password` - defaults to empty
 
 `nats_subject` defines the Nats subject hierarchy to write to.  [Topic substitution](/producers#topic-substitution) is available.
 All non-alphanumeric characters in the substitued values will be replaced by underscores.
+
+If either or both of `nats_user` and `nats_password` are not specified, authentication will be ignored.
 
 # Google Cloud Pub/Sub
 ***
