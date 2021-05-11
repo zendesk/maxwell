@@ -133,7 +133,7 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-core</artifactId>
-      <version>1.11.983</version>
+      <version>1.11.1005</version>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
@@ -148,7 +148,7 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.6</version>
+      <version>2.7</version>
     </dependency>
     <dependency>
       <groupId>mysql</groupId>
@@ -288,7 +288,7 @@
     <dependency>
       <groupId>redis.clients</groupId>
       <artifactId>jedis</artifactId>
-      <version>3.1.0</version>
+      <version>3.5.1</version>
     </dependency>
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
@@ -298,7 +298,7 @@
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
       <artifactId>metrics-jmx</artifactId>
-      <version>4.1.12.1</version>
+      <version>4.1.17</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
@@ -318,17 +318,17 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-sns</artifactId>
-      <version>1.11.983</version>
+      <version>1.11.1005</version>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-sqs</artifactId>
-      <version>1.11.983</version>
+      <version>1.11.1005</version>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-sts</artifactId>
-      <version>1.11.983</version>
+      <version>1.11.1005</version>
     </dependency>
     <dependency>
       <groupId>me.tongfei</groupId>
