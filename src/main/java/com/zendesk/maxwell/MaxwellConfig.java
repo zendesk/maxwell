@@ -179,6 +179,11 @@ public class MaxwellConfig extends AbstractConfig {
 		final MaxwellOptionParser parser = new MaxwellOptionParser();
 		parser.accepts( "config", "location of config.properties file" )
 				.withRequiredArg();
+		parser.accepts( "env_config", "json object encoded config in an environment variable, alternative to config option" )
+				.availableUnless("config")
+				.withRequiredArg();
+		parser.accepts( "config_prefix", "prefix of maxwell configuration variables inside of the properties file, case insensitive" )
+				.withRequiredArg();
 
 		parser.separator();
 
@@ -487,12 +492,15 @@ public class MaxwellConfig extends AbstractConfig {
 		MaxwellOptionParser parser = buildOptionParser();
 		OptionSet options = parser.parse(argv);
 
-		Properties properties;
+		final Properties properties;
+		final String configPrefix = options.has("config_prefix") ? (String) options.valueOf("config_prefix") : null;
 
 		if (options.has("config")) {
-			properties = parseFile((String) options.valueOf("config"), true);
+			properties = getPrefixedFilteredProperties(parseFile((String) options.valueOf("config"), true), configPrefix);
+		} else if (options.has("env_config")) {
+			properties = getPrefixedFilteredProperties(readPropertiesEnv((String) options.valueOf("env_config")), configPrefix);
 		} else {
-			properties = parseFile(DEFAULT_CONFIG_FILE, false);
+			properties = getPrefixedFilteredProperties(parseFile(DEFAULT_CONFIG_FILE, false), configPrefix);
 		}
 
 		String envConfigPrefix = fetchStringOption("env_config_prefix", options, properties, null);
