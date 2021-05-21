@@ -6,12 +6,17 @@ import java.io.IOException;
 
 import java.util.*;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.shyiko.mysql.binlog.network.SSLMode;
 import joptsimple.*;
 
 import com.zendesk.maxwell.MaxwellMysqlConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractConfig {
+	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractConfig.class);
 	static final protected String DEFAULT_CONFIG_FILE = "config.properties";
 	protected abstract OptionParser buildOptionParser();
 
@@ -94,6 +99,46 @@ public abstract class AbstractConfig {
 			System.exit(1);
 		}
 		return p;
+	}
+
+	protected Properties readPropertiesEnv(String envConfig) {
+		LOGGER.debug("Attempting to read env_config param: {}", envConfig);
+		String envConfigJsonRaw = System.getenv(envConfig);
+		if (envConfigJsonRaw != null && envConfigJsonRaw.startsWith("{")) {
+			LOGGER.debug("Parsing envConfig");
+			ObjectMapper mapper = new ObjectMapper();
+			try {
+				Map<String, Object> stringMap = mapper.readValue(envConfigJsonRaw, Map.class);
+				Properties properties = new Properties();
+				stringMap.entrySet().stream()
+						.map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(), entry.getValue().toString()))
+						.forEach(entry -> properties.put(entry.getKey(), entry.getValue()));
+				return properties;
+			} catch (JsonProcessingException e) {
+				throw new IllegalArgumentException("Unparseable JSON in env variable " + envConfig, e);
+			}
+		} else {
+			System.err.println("No JSON-encoded environment variable named: " + envConfig);
+			System.exit(1);
+			return null; // unreachable
+		}
+	}
+
+	protected Properties getPrefixedFilteredProperties(Properties properties, String prefix) {
+		if ((prefix == null || prefix.length() == 0) || properties == null) {
+			return properties;
+		}
+		String lowerPrefix = prefix.toLowerCase();
+		Properties filteredProperties = new Properties();
+		properties.entrySet().stream()
+				.filter(entry -> entry.getKey().toString().toLowerCase().startsWith(lowerPrefix))
+				.forEach(entry -> {
+					String rawKey = entry.getKey().toString();
+					String newKey = rawKey.substring(lowerPrefix.length());
+					LOGGER.debug("Reading key {} as {}", rawKey, newKey);
+					filteredProperties.put(newKey, entry.getValue());
+				});
+		return filteredProperties;
 	}
 
 	protected Object fetchOption(String name, OptionSet options, Properties properties, Object defaultVal) {
