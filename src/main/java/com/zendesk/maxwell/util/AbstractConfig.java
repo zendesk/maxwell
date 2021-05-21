@@ -119,25 +119,8 @@ public abstract class AbstractConfig {
 		} else {
 			System.err.println("No JSON-encoded environment variable named: " + envConfig);
 			System.exit(1);
-			return null; // unreachable
+			throw new IllegalArgumentException("No JSON-encoded environment variable named: " + envConfig);
 		}
-	}
-
-	protected Properties getPrefixedFilteredProperties(Properties properties, String prefix) {
-		if ((prefix == null || prefix.length() == 0) || properties == null) {
-			return properties;
-		}
-		String lowerPrefix = prefix.toLowerCase();
-		Properties filteredProperties = new Properties();
-		properties.entrySet().stream()
-				.filter(entry -> entry.getKey().toString().toLowerCase().startsWith(lowerPrefix))
-				.forEach(entry -> {
-					String rawKey = entry.getKey().toString();
-					String newKey = rawKey.substring(lowerPrefix.length());
-					LOGGER.debug("Reading key {} as {}", rawKey, newKey);
-					filteredProperties.put(newKey, entry.getValue());
-				});
-		return filteredProperties;
 	}
 
 	protected Object fetchOption(String name, OptionSet options, Properties properties, Object defaultVal) {

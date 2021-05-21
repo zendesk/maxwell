@@ -63,8 +63,6 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 		parser.accepts( "env_config", "json object encoded config in an environment variable, alternative to config option" )
 				.availableUnless("config")
 				.withRequiredArg();
-		parser.accepts( "config_prefix", "prefix of maxwell configuration variables inside of the properties file, case insensitive" )
-				.withRequiredArg();
 		parser.accepts( "__separator_1", "" );
 		parser.accepts( "database", "database that contains the table to bootstrap").withRequiredArg();
 		parser.accepts( "table", "table to bootstrap").withRequiredArg();
@@ -113,14 +111,13 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 		OptionSet options = buildOptionParser().parse(argv);
 
 		final Properties properties;
-		final String configPrefix = options.has("config_prefix") ? (String) options.valueOf("config_prefix") : null;
 
 		if (options.has("config")) {
-			properties = getPrefixedFilteredProperties(parseFile((String) options.valueOf("config"), true), configPrefix);
+			properties = parseFile((String) options.valueOf("config"), true);
 		} else if (options.has("env_config")) {
-			properties = getPrefixedFilteredProperties(readPropertiesEnv((String) options.valueOf("env_config")), configPrefix);
+			properties = readPropertiesEnv((String) options.valueOf("env_config"));
 		} else {
-			properties = getPrefixedFilteredProperties(parseFile(DEFAULT_CONFIG_FILE, false), configPrefix);
+			properties = parseFile(DEFAULT_CONFIG_FILE, false);
 		}
 
 		if ( options.has("help") )

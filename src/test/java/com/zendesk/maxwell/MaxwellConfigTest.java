@@ -89,17 +89,16 @@ public class MaxwellConfigTest
 	@Test
 	public void testEnvJsonConfig() throws JsonProcessingException {
 		Map<String, String> configMap = ImmutableMap.<String, String>builder()
-				.put("FOO_user", "foo")
-				.put("foo_password", "bar")
-				.put("foo_host", "remotehost")
-				.put("FOO_kafka.retries", "100")
-				.put("user", "mysql")
+				.put("user", "foo")
+				.put("password", "bar")
+				.put("host", "remotehost")
+				.put("kafka.retries", "100")
 				.build();
 		ObjectMapper mapper = new ObjectMapper();
 		String jsonConfig = mapper.writeValueAsString(configMap);
 		environmentVariables.set("MAXWELL_JSON", jsonConfig);
 
-		config = new MaxwellConfig(new String[] { "--env_config=MAXWELL_JSON", "--config_prefix=FOO_" });
+		config = new MaxwellConfig(new String[] { "--env_config=MAXWELL_JSON" });
 		assertEquals("foo", config.maxwellMysql.user);
 		assertEquals("bar", config.maxwellMysql.password);
 		assertEquals("remotehost", config.maxwellMysql.host);
