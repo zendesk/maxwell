@@ -96,7 +96,7 @@ public class MaxwellConfigTest
 				.build();
 		ObjectMapper mapper = new ObjectMapper();
 		String jsonConfig = mapper.writeValueAsString(configMap);
-		environmentVariables.set("MAXWELL_JSON", jsonConfig);
+		environmentVariables.set("MAXWELL_JSON", "    " + jsonConfig);
 
 		config = new MaxwellConfig(new String[] { "--env_config=MAXWELL_JSON" });
 		assertEquals("foo", config.maxwellMysql.user);
