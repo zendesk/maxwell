@@ -94,6 +94,9 @@ public abstract class AbstractConfig {
 			FileReader reader = new FileReader(file);
 			p = new Properties();
 			p.load(reader);
+			for (Object key : p.keySet()) {
+				LOGGER.debug("Got config key: {}", key);
+			}
 		} catch ( IOException e ) {
 			System.err.println("Couldn't read config file: " + e);
 			System.exit(1);
@@ -104,15 +107,15 @@ public abstract class AbstractConfig {
 	protected Properties readPropertiesEnv(String envConfig) {
 		LOGGER.debug("Attempting to read env_config param: {}", envConfig);
 		String envConfigJsonRaw = System.getenv(envConfig);
-		if (envConfigJsonRaw != null && envConfigJsonRaw.startsWith("{")) {
-			LOGGER.debug("Parsing envConfig");
+		if (envConfigJsonRaw != null && envConfigJsonRaw.trim().startsWith("{")) {
 			ObjectMapper mapper = new ObjectMapper();
 			try {
 				Map<String, Object> stringMap = mapper.readValue(envConfigJsonRaw, Map.class);
 				Properties properties = new Properties();
-				stringMap.entrySet().stream()
-						.map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(), entry.getValue().toString()))
-						.forEach(entry -> properties.put(entry.getKey(), entry.getValue()));
+				for (Map.Entry<String, Object> entry : stringMap.entrySet()) {
+					LOGGER.debug("Got env_config key: {}", entry.getKey());
+					properties.put(entry.getKey(), entry.getValue().toString());
+				}
 				return properties;
 			} catch (JsonProcessingException e) {
 				throw new IllegalArgumentException("Unparseable JSON in env variable " + envConfig, e);

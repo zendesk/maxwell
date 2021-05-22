@@ -524,7 +524,15 @@ public class MaxwellConfig extends AbstractConfig {
 			String prefix = envConfigPrefix.toLowerCase();
 			System.getenv().entrySet().stream()
 					.filter(map -> map.getKey().toLowerCase().startsWith(prefix))
-					.forEach(config -> properties.put(config.getKey().toLowerCase().replaceFirst(prefix, ""), config.getValue()));
+					.forEach(config -> {
+						String rawKey = config.getKey();
+						String newKey = rawKey.toLowerCase().replaceFirst(prefix, "");
+						if (properties.put(newKey, config.getValue()) != null) {
+							LOGGER.debug("Got env variable {} and replacing config key {}", rawKey, newKey);
+						} else {
+							LOGGER.debug("Got env variable {} as config key {}", rawKey, newKey);
+						}
+					});
 		}
 
 		if (options.has("help"))
