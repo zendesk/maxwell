@@ -1,0 +1,30 @@
+name: Publish CI package to GitHub Packages
+on:
+  push:
+    branches:
+      - '*'
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download amazon-corretto-11-x64-linux-jdk.tar.gz
+        run: wget -O $RUNNER_TEMP/java_package.tar.gz "https://corretto.aws/downloads/latest/amazon-corretto-11-x64-linux-jdk.tar.gz"
+
+      - uses: actions/setup-java@v2
+        with:
+          distribution: 'jdkfile'
+          jdkFile: ${{ runner.temp }}/java_package.tar.gz
+          java-version: '11'
+          architecture: x64
+
+      - uses: actions/checkout@v2
+
+      - name: Extract maven package version
+        id: mvn-extract-version
+        run: echo "##[set-output name=version;]$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
+
+      - name: Publish CI package (only if it's a SNAPSHOT)
+        if: ${{ contains(steps.mvn-extract-version.outputs.version, 'SNAPSHOT') }}
+        run: mvn --batch-mode deploy -Dmaven.test.skip=true -Dgpg.skip=true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

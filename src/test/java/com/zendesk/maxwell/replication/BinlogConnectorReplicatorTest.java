@@ -89,6 +89,7 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 			new MysqlSchemaStore(context, position),
 			new BufferedProducer(context, 1),
 			null,
+			null,
 			context.getConfig().maxwellMysql,
 			333098L,
 			"maxwell",

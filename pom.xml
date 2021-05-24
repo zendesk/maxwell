@@ -2,13 +2,13 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.zendesk</groupId>
+  <groupId>com.zizoo</groupId>
   <artifactId>maxwell</artifactId>
-  <version>1.33.0</version>
+  <version>1.33.1</version>
   <packaging>jar</packaging>
 
   <name>maxwell</name>
-  <description>Maxwell's daemon.  Watches mysql, outputs to JSON.</description>
+  <description>Maxwell's daemon.  Watches mysql, outputs to JSON or Avro.</description>
   <url>http://maxwells-daemon.io</url>
 
   <licenses>
@@ -20,6 +20,13 @@
   </licenses>
 
   <developers>
+    <developer>
+      <id>imiletic</id>
+      <name>Ivan Miletic</name>
+      <email>ivan@zizooboats.com</email>
+      <organization>Zizoo</organization>
+      <organizationUrl>http://www.zizoo.com</organizationUrl>
+    </developer>
     <developer>
       <id>osheroff</id>
       <name>Ben Osheroff</name>
@@ -34,10 +41,17 @@
   </developers>
 
   <scm>
-    <connection>scm:git:git@github.com:zendesk/maxwell.git</connection>
-    <developerConnection>scm:git:git@github.com:zendesk/maxwell.git</developerConnection>
-    <url>git@github.com:zendesk/maxwell.git</url>
+    <connection>scm:git:git@github.com:zizooboats/maxwell.git</connection>
+    <developerConnection>scm:git:git@github.com:zizooboats/maxwell.git</developerConnection>
+    <url>git@github.com:zizooboats/maxwell.git</url>
   </scm>
+  <distributionManagement>
+	<repository>
+		<id>github</id>
+		<name>GitHub Packages</name>
+		<url>https://maven.pkg.github.com/zizooboats/maxwell</url>
+	</repository>
+  </distributionManagement>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -378,6 +392,7 @@
   <build>
     <plugins>
       <!-- horrible sonatype plugins -->
+      <!--
       <plugin>
         <groupId>org.sonatype.plugins</groupId>
         <artifactId>nexus-staging-maven-plugin</artifactId>
@@ -389,6 +404,7 @@
           <autoReleaseAfterClose>true</autoReleaseAfterClose>
         </configuration>
       </plugin>
+      -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-gpg-plugin</artifactId>

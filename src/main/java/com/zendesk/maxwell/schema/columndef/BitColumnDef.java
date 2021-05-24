@@ -6,8 +6,8 @@ import java.math.BigInteger;
 import java.util.BitSet;
 
 public class BitColumnDef extends ColumnDef {
-	public BitColumnDef(String name, String type, short pos) {
-		super(name, type, pos);
+	public BitColumnDef(String name, String type, short pos, boolean nullable) {
+		super(name, type, pos, nullable);
 	}
 
 	@Override

@@ -50,7 +50,8 @@ public class SchemaCapturer {
 				"ORDINAL_POSITION, " +
 				"COLUMN_TYPE, " +
 				dateTimePrecision +
-				"COLUMN_KEY " +
+				"COLUMN_KEY, " +
+				"IS_NULLABLE " +
 				"FROM `information_schema`.`COLUMNS` WHERE TABLE_SCHEMA = ? ORDER BY TABLE_NAME, ORDINAL_POSITION";
 
 		columnPreparedStatement = connection.prepareStatement(columnSql);
@@ -182,6 +183,7 @@ public class SchemaCapturer {
 				String colEnc = r.getString("CHARACTER_SET_NAME");
 				short colPos = (short) (r.getInt("ORDINAL_POSITION") - 1);
 				boolean colSigned = !r.getString("COLUMN_TYPE").matches(".* unsigned$");
+				boolean colNullable = "YES".equals(r.getString("IS_NULLABLE"));
 				Long columnLength = null;
 
 				if (hasDatetimePrecision)
@@ -196,7 +198,7 @@ public class SchemaCapturer {
 					enumValues = extractEnumValues(expandedType);
 				}
 
-				t.addColumn(ColumnDef.build(colName, colEnc, colType, colPos, colSigned, enumValues, columnLength));
+				t.addColumn(ColumnDef.build(colName, colEnc, colType, colPos, colSigned, enumValues, columnLength, colNullable));
 
 				pkIndexCounters.put(tableName, pkIndexCounters.get(tableName) + 1);
 			}

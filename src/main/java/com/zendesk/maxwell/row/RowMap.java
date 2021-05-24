@@ -41,6 +41,7 @@ public class RowMap implements Serializable {
 	private String partitionString;
 	protected boolean suppressed;
 	private String comment;
+	private String snapshotId;
 
 	private Long xid;
 	private Long xoffset;
@@ -86,6 +87,13 @@ public class RowMap implements Serializable {
 				  Position nextPosition) {
 		this(type, database, table, timestampMillis, pkColumns, nextPosition, null);
 	}
+	
+	public RowMap(String type, String database, String table, Long timestampMillis, List<String> pkColumns,
+			  String snapshotId) {
+	this(type, database, table, timestampMillis, pkColumns, null, null, null);
+	
+	this.snapshotId = snapshotId;
+}
 
 	public RowIdentity getRowIdentity() {
 		if (rowIdentity == null) {
@@ -341,6 +349,14 @@ public class RowMap implements Serializable {
 
 	public boolean isTXCommit() {
 		return this.txCommit;
+	}
+	
+	public String getSnapshotId() {
+		return snapshotId;
+	}
+	
+	public void setSnapshotId(String snapshotId) { 
+		this.snapshotId = snapshotId;
 	}
 
 	public Long getServerId() {

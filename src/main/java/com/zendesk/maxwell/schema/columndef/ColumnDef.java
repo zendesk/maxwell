@@ -13,12 +13,14 @@ public abstract class ColumnDef implements Cloneable {
 	protected String name;
 	protected byte type;
 	protected short pos;
+	protected boolean nullable;
 
 	public ColumnDef() { }
-	public ColumnDef(String name, String type, short pos) {
+	public ColumnDef(String name, String type, short pos, boolean nullable) {
 		this.name = name;
 		this.pos = pos;
 		this.type = (byte) dynamicEnum.get(type);
+		this.nullable = nullable;
 	}
 
 	public abstract String toSQL(Object value) throws ColumnDefCastException;
@@ -31,6 +33,10 @@ public abstract class ColumnDef implements Cloneable {
 	public Object asJSON(Object value, MaxwellOutputConfig config) throws ColumnDefCastException {
 		return value;
 	}
+	
+	public Object asBinary(Object value) throws ColumnDefCastException {
+		return value;
+	}
 
 	public ColumnDef clone() {
 		try {
@@ -40,7 +46,7 @@ public abstract class ColumnDef implements Cloneable {
 		}
 	}
 
-	public static ColumnDef build(String name, String charset, String type, short pos, boolean signed, String enumValues[], Long columnLength) {
+	public static ColumnDef build(String name, String charset, String type, short pos, boolean signed, String enumValues[], Long columnLength, boolean nullable) {
 		name = name.intern();
 		if ( charset != null )
 			charset = charset.intern();
@@ -50,23 +56,23 @@ public abstract class ColumnDef implements Cloneable {
 		case "smallint":
 		case "mediumint":
 		case "int":
-			return new IntColumnDef(name, type, pos, signed);
+			return new IntColumnDef(name, type, pos, signed, nullable);
 		case "bigint":
-			return new BigIntColumnDef(name, type, pos, signed);
+			return new BigIntColumnDef(name, type, pos, signed, nullable);
 		case "tinytext":
 		case "text":
 		case "mediumtext":
 		case "longtext":
 		case "varchar":
 		case "char":
-			return new StringColumnDef(name, type, pos, charset);
+			return new StringColumnDef(name, type, pos, charset, nullable);
 		case "tinyblob":
 		case "blob":
 		case "mediumblob":
 		case "longblob":
 		case "binary":
 		case "varbinary":
-			return new StringColumnDef(name, type, pos, "binary");
+			return new StringColumnDef(name, type, pos, "binary", nullable);
 		case "geometry":
 		case "geometrycollection":
 		case "linestring":
@@ -75,29 +81,29 @@ public abstract class ColumnDef implements Cloneable {
 		case "multipolygon":
 		case "polygon":
 		case "point":
-			return new GeometryColumnDef(name, type, pos);
+			return new GeometryColumnDef(name, type, pos, nullable);
 		case "float":
 		case "double":
-			return new FloatColumnDef(name, type, pos);
+			return new FloatColumnDef(name, type, pos, nullable);
 		case "decimal":
-			return new DecimalColumnDef(name, type, pos);
+			return new DecimalColumnDef(name, type, pos, nullable);
 		case "date":
-			return new DateColumnDef(name, type, pos);
+			return new DateColumnDef(name, type, pos, nullable);
 		case "datetime":
 		case "timestamp":
-			return new DateTimeColumnDef(name, type, pos, columnLength);
+			return new DateTimeColumnDef(name, type, pos, columnLength, nullable);
 		case "time":			
-			return new TimeColumnDef(name, type, pos, columnLength);
+			return new TimeColumnDef(name, type, pos, columnLength, nullable);
 		case "year":
-			return new YearColumnDef(name, type, pos);
+			return new YearColumnDef(name, type, pos, nullable);
 		case "enum":
-			return new EnumColumnDef(name, type, pos, enumValues);
+			return new EnumColumnDef(name, type, pos, enumValues, nullable);
 		case "set":
-			return new SetColumnDef(name, type, pos, enumValues);
+			return new SetColumnDef(name, type, pos, enumValues, nullable);
 		case "bit":
-			return new BitColumnDef(name, type, pos);
+			return new BitColumnDef(name, type, pos, nullable);
 		case "json":
-			return new JsonColumnDef(name, type, pos);
+			return new JsonColumnDef(name, type, pos, nullable);
 
 		default:
 			throw new IllegalArgumentException("unsupported column type " + type);
@@ -210,5 +216,13 @@ public abstract class ColumnDef implements Cloneable {
 
 	public void setPos(short i) {
 		this.pos = i;
+	}
+	
+	public void setNullable(boolean nullable) {
+		this.nullable = nullable;
+	}
+	
+	public boolean isNullable() {
+		return nullable;
 	}
 }

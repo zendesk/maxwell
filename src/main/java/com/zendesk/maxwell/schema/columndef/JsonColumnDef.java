@@ -9,8 +9,8 @@ import java.io.IOException;
 import static com.github.shyiko.mysql.binlog.event.deserialization.ColumnType.*;
 
 public class JsonColumnDef extends ColumnDef {
-	public JsonColumnDef(String name, String type, short pos) {
-		super(name, type, pos);
+	public JsonColumnDef(String name, String type, short pos, boolean nullable) {
+		super(name, type, pos, nullable);
 	}
 
 	@Override

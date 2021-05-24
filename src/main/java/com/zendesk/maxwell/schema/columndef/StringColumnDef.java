@@ -14,8 +14,8 @@ import org.slf4j.LoggerFactory;
 public class StringColumnDef extends ColumnDef {
 	public String charset;
 
-	public StringColumnDef(String name, String type, short pos, String charset) {
-		super(name, type, pos);
+	public StringColumnDef(String name, String type, short pos, String charset, boolean nullable) {
+		super(name, type, pos, nullable);
 		this.charset = charset;
 	}
 
@@ -71,6 +71,22 @@ public class StringColumnDef extends ColumnDef {
 			byte[] b = (byte[]) value;
 			if (charset.equals("binary")) {
 				return Base64.encodeBase64String(b);
+			} else {
+				return new String(b, charsetForCharset());
+			}
+		} else {
+			throw new ColumnDefCastException(this, value);
+		}
+	}
+	
+	@Override
+	public Object asBinary(Object value) throws ColumnDefCastException {
+		if ( value instanceof String ) {
+			return value;
+		} else if ( value instanceof byte[] ) {
+			byte[] b = (byte[]) value;
+			if (charset.equals("binary")) {
+				return value;
 			} else {
 				return new String(b, charsetForCharset());
 			}

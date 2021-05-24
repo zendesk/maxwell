@@ -13,6 +13,7 @@ public class ColumnDefSerializer extends JsonSerializer<ColumnDef> {
 		jgen.writeStartObject();
 		jgen.writeStringField("type", def.getType());
 		jgen.writeStringField("name", def.name);
+		jgen.writeBooleanField("nullable", def.nullable);
 
 		if ( def instanceof StringColumnDef ) {
 			jgen.writeStringField("charset", ((StringColumnDef) def).getCharset());

@@ -7,8 +7,8 @@ public class IntColumnDef extends ColumnDef {
 
 	protected boolean signed;
 
-	public IntColumnDef(String name, String type, short pos, boolean signed) {
-		super(name, type, pos);
+	public IntColumnDef(String name, String type, short pos, boolean signed, boolean nullable) {
+		super(name, type, pos, nullable);
 		this.signed = signed;
 		this.bits = bitsFromType(type);
 	}

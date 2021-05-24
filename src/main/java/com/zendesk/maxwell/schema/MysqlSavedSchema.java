@@ -45,7 +45,7 @@ public class MysqlSavedSchema {
 	static final Logger LOGGER = LoggerFactory.getLogger(MysqlSavedSchema.class);
 
 	private final static String columnInsertSQL =
-		"INSERT INTO `columns` (schema_id, table_id, name, charset, coltype, is_signed, enum_values, column_length) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+		"INSERT INTO `columns` (schema_id, table_id, name, charset, coltype, is_signed, enum_values, column_length, is_nullable) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 	private final CaseSensitivity sensitivity;
 	private final Long serverID;
@@ -258,6 +258,8 @@ public class MysqlSavedSchema {
 					} else {
 						columnData.add(null);
 					}
+					
+					columnData.add(c.isNullable() ? 1 : 0);
 				}
 
 				if ( columnData.size() > 1000 )
@@ -272,8 +274,8 @@ public class MysqlSavedSchema {
 	private void executeColumnInsert(Connection conn, ArrayList<Object> columnData) throws SQLException {
 		String insertColumnSQL = this.columnInsertSQL;
 
-		for (int i=1; i < columnData.size() / 8; i++) {
-			insertColumnSQL = insertColumnSQL + ", (?, ?, ?, ?, ?, ?, ?, ?)";
+		for (int i=1; i < columnData.size() / 9; i++) {
+			insertColumnSQL = insertColumnSQL + ", (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		}
 
 		PreparedStatement columnInsert = conn.prepareStatement(insertColumnSQL);
@@ -457,7 +459,8 @@ public class MysqlSavedSchema {
 						"c.name AS columnName," +
 						"c.charset AS columnCharset," +
 						"c.coltype AS columnColtype," +
-						"c.is_signed AS columnIsSigned " +
+						"c.is_signed AS columnIsSigned," +
+						"c.is_nullable as columnIsNullable " +
 						"FROM `databases` d " +
 						"LEFT JOIN tables t ON d.id = t.database_id " +
 						"LEFT JOIN columns c ON c.table_id=t.id " +
@@ -489,6 +492,7 @@ public class MysqlSavedSchema {
 			String columnCharset = rs.getString("columnCharset");
 			String columnType = rs.getString("columnColtype");
 			int columnIsSigned = rs.getInt("columnIsSigned");
+			int columnIsNullable = rs.getInt("columnIsNullable");
 
 			if (currentDatabase == null || !currentDatabase.getName().equals(dbName)) {
 				currentDatabase = new Database(dbName, dbCharset);
@@ -543,7 +547,8 @@ public class MysqlSavedSchema {
 					columnIndex++,
 					columnIsSigned == 1,
 					enumValues,
-					columnLength
+					columnLength,
+					columnIsNullable == 1
 			);
 			currentTable.addColumn(c);
 
