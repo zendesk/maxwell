@@ -1,0 +1,25 @@
+categories:
+  - title: '🚀 Features'
+    labels:
+      - 'task'
+      - 'story'
+      - 'epic'
+      - 'feature'
+  - title: '🐛 Bug Fixes'
+    labels:
+      - 'bug'
+      - 'bugfix'
+      - 'hotfix'
+      - 'fix'
+      - 'issue'
+  - title: '👆 Updates'
+    labels:
+      - 'update'
+      - 'devops'
+      - 'dependencies'
+version-template: '$MVN_VERSION' # This unfortunatly doesn't work, and the release version must be manually set
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+template: |
+  Thanks to: $CONTRIBUTORS
+  $CHANGES

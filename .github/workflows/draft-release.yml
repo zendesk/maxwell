@@ -1,0 +1,26 @@
+name: New Release
+
+on:
+  push:
+    # branches to consider in the event; optional, defaults to all
+    branches:
+      - master
+
+jobs:
+  update_release_draft:
+    name: Draft Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Branch
+        uses: actions/checkout@v2
+
+      - name: Extract maven package version
+        id: mvn-extract-version
+        run: echo "##[set-output name=version;]$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
+
+      # Drafts your next Release notes as Pull Requests are merged into "master"
+      - uses: release-drafter/release-drafter@v5
+        name: Create Draft Release
+        env:
+          MVN_VERSION: ${{ steps.mvn-extract-version.outputs.version }} # This unfortunatly doesn't work, and the release version must be manually set
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
