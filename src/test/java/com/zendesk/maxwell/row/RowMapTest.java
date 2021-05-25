@@ -100,6 +100,24 @@ public class RowMapTest {
 	}
 
 	@Test
+	public void testGetPrimaryKeyMapWithoutData() {
+		List<String> pKeys = new ArrayList<>();
+
+		pKeys.add("id");
+		pKeys.add("name");
+
+		RowMap rowMap = new RowMap("delete", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
+
+		rowMap.putOldData("id", 9001);
+		rowMap.putOldData("name", "example");
+		rowMap.putOldData("column", "value");
+
+		Map<String, Object> pkMap = rowMap.getPrimaryKeyMap();
+		Assert.assertEquals(null, pkMap.get("id"));
+		Assert.assertEquals(null, pkMap.get("name"));
+	}
+
+	@Test
 	public void testGetRowIdentity() {
 		List<String> pKeys = new ArrayList<>();
 
