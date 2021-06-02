@@ -135,7 +135,7 @@ public class MysqlSavedSchema {
 
 		if ( rs.next() ) {
 			Long id = rs.getLong("id");
-			LOGGER.debug("findSchemaForPositionSHA: found schema_id: " + id + " for sha: " + sha);
+			LOGGER.debug("findSchemaForPositionSHA: found schema_id: {} for sha: {}", id, sha);
 			return id;
 		} else {
 			return null;
@@ -499,7 +499,7 @@ public class MysqlSavedSchema {
 				this.schema.addDatabase(currentDatabase);
 				// make sure two tables named the same in different dbs are picked up.
 				currentTable = null;
-				LOGGER.debug("Restoring database " + dbName + "...");
+				LOGGER.debug("Restoring database {}...", dbName);
 			}
 
 			if (tName == null) {
@@ -559,7 +559,7 @@ public class MysqlSavedSchema {
 
 	private static Long findSchema(Connection connection, Position targetPosition, Long serverID)
 			throws SQLException {
-		LOGGER.debug("looking to restore schema at target position " + targetPosition);
+		LOGGER.debug("looking to restore schema at target position {}", targetPosition);
 		BinlogPosition targetBinlogPosition = targetPosition.getBinlogPosition();
 		if (targetBinlogPosition.getGtidSetStr() != null) {
 			PreparedStatement s = connection.prepareStatement(
@@ -571,11 +571,11 @@ public class MysqlSavedSchema {
 			while (rs.next()) {
 				Long id = rs.getLong("id");
 				String gtid = rs.getString("gtid_set");
-				LOGGER.debug("Retrieving schema at id: " + id + " gtid: " + gtid);
+				LOGGER.debug("Retrieving schema at id: {} gtid: {}", id, gtid);
 				if (gtid != null) {
 					GtidSet gtidSet = new GtidSet(gtid);
 					if (gtidSet.isContainedWithin(targetBinlogPosition.getGtidSet())) {
-						LOGGER.debug("Found contained schema: " + id);
+						LOGGER.debug("Found contained schema: {}", id);
 						return id;
 					}
 				}

@@ -231,8 +231,9 @@ public class MaxwellContext {
 					// ignore
 				}
 
-				LOGGER.debug("Shutdown complete: " + shutdownComplete.get());
-				if (!shutdownComplete.get()) {
+				final boolean isShutdownComplete = shutdownComplete.get();
+				LOGGER.debug("Shutdown complete: {}", isShutdownComplete);
+				if (!isShutdownComplete) {
 					LOGGER.error("Shutdown stalled - forcefully killing maxwell process");
 					if (self.error != null) {
 						LOGGER.error("Termination reason:", self.error);

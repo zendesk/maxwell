@@ -84,7 +84,7 @@ public class RabbitmqProducer extends AbstractProducer {
 			context.setPosition(r.getNextPosition());
 		}
 		if ( LOGGER.isDebugEnabled()) {
-			LOGGER.debug("->  routing key:" + routingKey + ", partition:" + value);
+			LOGGER.debug("->  routing key:{}, partition:{}", routingKey, value);
 		}
 	}
 

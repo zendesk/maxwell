@@ -80,10 +80,10 @@ class KinesisCallback implements FutureCallback<UserRecordResult> {
 		this.succeededMessageCount.inc();
 		this.succeededMessageMeter.mark();
 		if(logger.isDebugEnabled()) {
-			logger.debug("->  key:" + key + ", shard id:" + result.getShardId() + ", sequence number:" + result.getSequenceNumber());
-			logger.debug("   " + json);
-			logger.debug("   " + position);
-			logger.debug("");
+			logger.debug("->  key:{}, shard id:{}, sequence number:{}\n" +
+							"   {}\n" +
+							"   {}\n",
+					key, result.getShardId(), result.getSequenceNumber(), json, position);
 		}
 
 		cc.markCompleted();

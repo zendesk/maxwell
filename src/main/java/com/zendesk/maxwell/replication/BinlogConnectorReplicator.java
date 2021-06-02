@@ -341,7 +341,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 			return row; // plain row -- do not process.
 
 		long lastHeartbeatRead = (Long) row.getData("heartbeat");
-		LOGGER.debug("replicator picked up heartbeat: " + lastHeartbeatRead);
+		LOGGER.debug("replicator picked up heartbeat: {}", lastHeartbeatRead);
 		this.lastHeartbeatPosition = row.getPosition().withHeartbeat(lastHeartbeatRead);
 		heartbeatNotifier.heartbeat(lastHeartbeatRead);
 		return HeartbeatRowMap.valueOf(row.getDatabase(), this.lastHeartbeatPosition, row.getNextPosition().withHeartbeat(lastHeartbeatRead));
@@ -564,7 +564,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					String upperCaseSql = sql.toUpperCase();
 
 					if ( upperCaseSql.startsWith(BinlogConnectorEvent.SAVEPOINT)) {
-						LOGGER.debug("Ignoring SAVEPOINT in transaction: " + qe);
+						LOGGER.debug("Ignoring SAVEPOINT in transaction: {}", qe);
 					} else if ( createTablePattern.matcher(sql).find() ) {
 						// CREATE TABLE `foo` SELECT * FROM `bar` will put a CREATE TABLE
 						// inside a transaction.  Note that this could, in rare cases, lead

@@ -92,7 +92,9 @@ public class SynchronousBootstrapper {
 	}
 
 	public void performBootstrap(BootstrapTask task, AbstractProducer producer, Long currentSchemaID) throws Exception {
-		LOGGER.debug("bootstrapping requested for " + task.logString());
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug("bootstrapping requested for {}", task.logString());
+		}
 
 		Table table = getTableForTask(task);
 
@@ -114,7 +116,7 @@ public class SynchronousBootstrapper {
 					scripting.invoke(row);
 
 				if ( LOGGER.isDebugEnabled() )
-					LOGGER.debug("bootstrapping row : " + row.toJSON());
+					LOGGER.debug("bootstrapping row : {}", row.toJSON());
 
 				producer.push(row);
 				++insertedRows;

@@ -36,7 +36,7 @@ public class ListWithDiskBuffer<T> {
 	}
 
 	protected void resetOutputStreamCaches() throws IOException {
-		LOGGER.debug("Resetting OutputStream caches. elementsInFile: " + elementsInFile);
+		LOGGER.debug("Resetting OutputStream caches. elementsInFile: {}", elementsInFile);
 		os.reset();
 	}
 

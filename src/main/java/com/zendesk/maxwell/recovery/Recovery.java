@@ -58,7 +58,7 @@ public class Recovery {
 			Position position = Position.valueOf(binlogPosition, recoveryInfo.getHeartbeat());
 			Metrics metrics = new NoOpMetrics();
 
-			LOGGER.debug("scanning binlog: " + binlogPosition);
+			LOGGER.debug("scanning binlog: {}", binlogPosition);
 			Replicator replicator = new BinlogConnectorReplicator(
 					this.schemaStore,
 					null,
