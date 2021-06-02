@@ -66,7 +66,9 @@ public class BootstrapController extends RunLoopProcess  {
 		List<BootstrapTask> tasks = getIncompleteTasks();
 		synchronized(bootstrapMutex) {
 			for ( BootstrapTask task : tasks ) {
-				LOGGER.debug("starting bootstrap task: {}", task.logString());
+				if (LOGGER.isDebugEnabled()) {
+					LOGGER.debug("starting bootstrap task: {}", task.logString());
+				}
 				synchronized(completionMutex) {
 					activeTask = task;
 				}

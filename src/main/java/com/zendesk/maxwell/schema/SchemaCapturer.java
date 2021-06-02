@@ -102,14 +102,14 @@ public class SchemaCapturer {
 		rs.close();
 
 		int size = databases.size();
-		LOGGER.debug("Starting schema capture of " + size + " databases...");
+		LOGGER.debug("Starting schema capture of {} databases...", size);
 		int counter = 1;
 		for (Database db : databases) {
-			LOGGER.debug(counter + "/" + size + " Capturing " + db.getName() + "...");
+			LOGGER.debug("{}/{} Capturing {}...", counter, size, db.getName());
 			captureDatabase(db);
 			counter++;
 		}
-		LOGGER.debug(size + " database schemas captured!");
+		LOGGER.debug("{} database schemas captured!", size);
 
 		return new Schema(databases, captureDefaultCharset(), this.sensitivity);
 	}

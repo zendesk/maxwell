@@ -223,7 +223,7 @@ public class MaxwellTestSupport {
 
 		long finalHeartbeat = maxwell.context.getPositionStore().heartbeat();
 
-		LOGGER.debug("running replicator up to heartbeat: " + finalHeartbeat);
+		LOGGER.debug("running replicator up to heartbeat: {}", finalHeartbeat);
 
 		Long pollTime = 5000L;
 		Position lastPositionRead = null;
@@ -234,8 +234,9 @@ public class MaxwellTestSupport {
 			pollTime = 500L; // after the first row is received, we go into a tight loop.
 
 			if ( row != null ) {
-				if ( row.toJSON(config.outputConfig) != null ) {
-					LOGGER.debug("getRowsWithReplicator: saw: " + row.toJSON(config.outputConfig));
+				String outputConfigJson = row.toJSON(config.outputConfig);
+				if ( outputConfigJson != null ) {
+					LOGGER.debug("getRowsWithReplicator: saw: {}", outputConfigJson);
 					list.add(row);
 				}
 				lastPositionRead = row.getPosition();
@@ -246,7 +247,7 @@ public class MaxwellTestSupport {
 			boolean timedOut = !replicationComplete && row == null;
 
 			if (timedOut) {
-				LOGGER.debug("timed out waiting for final row. Last position we saw: " + lastPositionRead);
+				LOGGER.debug("timed out waiting for final row. Last position we saw: {}", lastPositionRead);
 				break;
 			}
 

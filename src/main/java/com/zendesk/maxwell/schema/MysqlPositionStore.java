@@ -58,7 +58,8 @@ public class MysqlPositionStore {
 		connectionPool.withSQLRetry(1, (c) -> {
 			PreparedStatement s = c.prepareStatement(sql);
 
-			LOGGER.debug("Writing binlog position to " + c.getCatalog() + ".positions: " + newPosition + ", last heartbeat read: " + heartbeat);
+			LOGGER.debug("Writing binlog position to {}.positions: {}, last heartbeat read: {}",
+					c.getCatalog(), newPosition, heartbeat);
 			s.setLong(1, serverID);
 			s.setString(2, binlogPosition.getGtidSetStr());
 			s.setString(3, binlogPosition.getFile());
@@ -134,7 +135,7 @@ public class MysqlPositionStore {
 		s.setString(3, clientID);
 		s.setLong(4, lastHeartbeat);
 
-		LOGGER.debug("writing heartbeat: " + thisHeartbeat + " (last heartbeat written: " + lastHeartbeat + ")");
+		LOGGER.debug("writing heartbeat: {} (last heartbeat written: {})", thisHeartbeat, lastHeartbeat);
 		int nRows = s.executeUpdate();
 		if ( nRows != 1 ) {
 			String msg = String.format(

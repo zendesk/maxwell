@@ -103,7 +103,7 @@ class SNSCallback implements AsyncHandler<PublishRequest, PublishResult> {
 	@Override
 	public void onSuccess(PublishRequest request, PublishResult result) {
 		if (logger.isDebugEnabled()) {
-			logger.debug("-> MessageId: " + result.getMessageId());
+			logger.debug("-> MessageId: {}", result.getMessageId());
 		}
 		cc.markCompleted();
 	}
