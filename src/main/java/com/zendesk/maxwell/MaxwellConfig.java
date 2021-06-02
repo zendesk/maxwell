@@ -184,6 +184,8 @@ public class MaxwellConfig extends AbstractConfig {
 		final MaxwellOptionParser parser = new MaxwellOptionParser();
 		parser.accepts( "config", "location of config.properties file" )
 				.withRequiredArg();
+		parser.accepts( "env_config", "json object encoded config in an environment variable" )
+				.withRequiredArg();
 
 		parser.separator();
 
@@ -500,12 +502,22 @@ public class MaxwellConfig extends AbstractConfig {
 		MaxwellOptionParser parser = buildOptionParser();
 		OptionSet options = parser.parse(argv);
 
-		Properties properties;
+		final Properties properties;
 
 		if (options.has("config")) {
 			properties = parseFile((String) options.valueOf("config"), true);
 		} else {
 			properties = parseFile(DEFAULT_CONFIG_FILE, false);
+		}
+
+		if (options.has("env_config")) {
+			Properties envConfigProperties = readPropertiesEnv((String) options.valueOf("env_config"));
+			for (Map.Entry<Object, Object> entry : envConfigProperties.entrySet()) {
+				Object key = entry.getKey();
+				if (properties.put(key, entry.getValue()) != null) {
+					LOGGER.debug("Replaced config key {} with value from env_config", key);
+				}
+			}
 		}
 
 		String envConfigPrefix = fetchStringOption("env_config_prefix", options, properties, null);
@@ -514,7 +526,15 @@ public class MaxwellConfig extends AbstractConfig {
 			String prefix = envConfigPrefix.toLowerCase();
 			System.getenv().entrySet().stream()
 					.filter(map -> map.getKey().toLowerCase().startsWith(prefix))
-					.forEach(config -> properties.put(config.getKey().toLowerCase().replaceFirst(prefix, ""), config.getValue()));
+					.forEach(config -> {
+						String rawKey = config.getKey();
+						String newKey = rawKey.toLowerCase().replaceFirst(prefix, "");
+						if (properties.put(newKey, config.getValue()) != null) {
+							LOGGER.debug("Got env variable {} and replacing config key {}", rawKey, newKey);
+						} else {
+							LOGGER.debug("Got env variable {} as config key {}", rawKey, newKey);
+						}
+					});
 		}
 
 		if (options.has("help"))
