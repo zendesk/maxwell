@@ -125,17 +125,17 @@ public class MaxwellRedisProducer extends AbstractProducer implements StoppableT
 		if (logger.isDebugEnabled()) {
 			switch (redisType) {
 				case "lpush":
-					logger.debug("->  queue (left):" + channel + ", msg:" + msg);
+					logger.debug("->  queue (left):{}, msg:{}", channel, msg);
 					break;
 				case "rpush":
-					logger.debug("->  queue (right):" + channel + ", msg:" + msg);
+					logger.debug("->  queue (right):{}, msg:{}", channel, msg);
 					break;
 				case "xadd":
-					logger.debug("->  stream:" + channel + ", msg:" + msg);
+					logger.debug("->  stream:{}, msg:{}", channel, msg);
 					break;
 				case "pubsub":
 				default:
-					logger.debug("->  channel:" + channel + ", msg:" + msg);
+					logger.debug("->  channel:{}, msg:{}", channel, msg);
 					break;
 			}
 		}
