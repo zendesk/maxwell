@@ -49,7 +49,7 @@ public class SchemaStoreSchema {
 
 		if ( schemaDatabaseName != null ) {
 			connection.createStatement().execute("CREATE DATABASE IF NOT EXISTS `" + schemaDatabaseName + "`");
-			if (!connection.getCatalog().equals(schemaDatabaseName))
+			if (!schemaDatabaseName.equals(connection.getCatalog()))
 				connection.setCatalog(schemaDatabaseName);
 		}
 
