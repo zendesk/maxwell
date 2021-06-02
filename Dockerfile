@@ -1,22 +1,17 @@
-FROM maven:3.6-jdk-11
-ENV MAXWELL_VERSION=1.33.0 KAFKA_VERSION=1.0.0
+#Docker image of MaxWell Can Support Amd64 and Arm64/v8
+FROM openjdk:11-slim
+#FROM openjdk:11
+ENV MAXWELL_VERSION=1.33.0
+ENV MAXWELL_FILE maxwell-1.33.0.tar.gz
+ENV MAXWELL_DOWNLOAD_PATH "https://github.com/zendesk/maxwell/releases/download/v1.33.0/maxwell-1.33.0.tar.gz"
 
-RUN apt-get update \
-    && apt-get -y upgrade \
-    && apt-get install -y make
-
-# prime so we can have a cached image of the maven deps
-COPY pom.xml /tmp
-RUN cd /tmp && mvn dependency:resolve
-
-COPY . /workspace
-RUN cd /workspace \
-    && KAFKA_VERSION=$KAFKA_VERSION make package MAXWELL_VERSION=$MAXWELL_VERSION \
-    && mkdir /app \
-    && mv /workspace/target/maxwell-$MAXWELL_VERSION/maxwell-$MAXWELL_VERSION/* /app/ \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/* /workspace/ /root/.m2/ \
-    && echo "$MAXWELL_VERSION" > /REVISION
+RUN apt-get install wget; \
+    cd /temp; \
+    wget -O $MAXWELL_FILE $MAXWELL_DOWNLOAD_PATH; \
+    mkdir /app; \
+    tar --extract --file $MAXWELL_FILE --directory /app --strip-components 1 --no-same-owner; \
+    apt-get clean;\
+    rm -rf /temp
 
 WORKDIR /app
 
