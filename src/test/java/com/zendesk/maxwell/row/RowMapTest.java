@@ -43,6 +43,81 @@ public class RowMapTest {
 	}
 
 	@Test
+	public void testGetPrimaryKeyArrayValues() {
+		List<String> pKeys = new ArrayList<>();
+
+		pKeys.add("id");
+
+		pKeys.add("name");
+
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
+
+		rowMap.putData("id", 9001);
+		rowMap.putData("name", "example");
+		rowMap.putData("column", "value");
+
+		List<Object> pkValues = rowMap.getPrimaryKeyValues();
+		Assert.assertEquals(9001, pkValues.get(0));
+		Assert.assertEquals("example", pkValues.get(1));
+	}
+
+	@Test
+	public void testGetPrimaryKeyArrayColumns() {
+		List<String> pKeys = new ArrayList<>();
+
+		pKeys.add("id");
+
+		pKeys.add("name");
+
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
+
+		rowMap.putData("id", 9001);
+		rowMap.putData("name", "example");
+		rowMap.putData("column", "value");
+
+		List<String> pkColumns = rowMap.getPrimaryKeyColumns();
+		Assert.assertEquals("id", pkColumns.get(0));
+		Assert.assertEquals("name", pkColumns.get(1));
+	}
+
+	@Test
+	public void testGetPrimaryKeyMap() {
+		List<String> pKeys = new ArrayList<>();
+
+		pKeys.add("id");
+
+		pKeys.add("name");
+
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
+
+		rowMap.putData("id", 9001);
+		rowMap.putData("name", "example");
+		rowMap.putData("column", "value");
+
+		Map<String, Object> pkMap = rowMap.getPrimaryKeyMap();
+		Assert.assertEquals(9001, pkMap.get("id"));
+		Assert.assertEquals("example", pkMap.get("name"));
+	}
+
+	@Test
+	public void testGetPrimaryKeyMapWithoutData() {
+		List<String> pKeys = new ArrayList<>();
+
+		pKeys.add("id");
+		pKeys.add("name");
+
+		RowMap rowMap = new RowMap("delete", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
+
+		rowMap.putOldData("id", 9001);
+		rowMap.putOldData("name", "example");
+		rowMap.putOldData("column", "value");
+
+		Map<String, Object> pkMap = rowMap.getPrimaryKeyMap();
+		Assert.assertEquals(null, pkMap.get("id"));
+		Assert.assertEquals(null, pkMap.get("name"));
+	}
+
+	@Test
 	public void testGetRowIdentity() {
 		List<String> pKeys = new ArrayList<>();
 
