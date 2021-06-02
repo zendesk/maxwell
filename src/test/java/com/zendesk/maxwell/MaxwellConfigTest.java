@@ -112,23 +112,21 @@ public class MaxwellConfigTest
 		config = new MaxwellConfig(new String[] { "--env_config=MAXWELL_JSON", "--host=localhost" });
 	}
 
-	@Test(expected = OptionException.class)
-	public void testFailToUseConfigAndEnvConfig() throws JsonProcessingException {
+	@Test
+	public void testUseConfigAndEnvConfig() throws JsonProcessingException {
 		Map<String, String> configMap = ImmutableMap.<String, String>builder()
-				.put("FOO_user", "foo")
-				.put("foo_password", "bar")
-				.put("foo_host", "remotehost")
-				.put("FOO_kafka.retries", "100")
-				.put("user", "mysql")
+				.put("custom_producer.foo", "foo")
 				.build();
 		ObjectMapper mapper = new ObjectMapper();
 		String jsonConfig = mapper.writeValueAsString(configMap);
 		environmentVariables.set("MAXWELL_JSON", jsonConfig);
 
-		String configPath = getTestConfigDir() + "env-var-config.properties";
+		String configPath = getTestConfigDir() + "producer-factory-config.properties";
 		assertNotNull("Config file not found at: " + configPath, Paths.get(configPath));
 
-		config = new MaxwellConfig(new String[] { "--env_config=MAXWELL_JSON", "--config=" + configPath, "--host=localhost" });
+		config = new MaxwellConfig(new String[] { "--env_config=MAXWELL_JSON", "--config=" + configPath });
+		// foo in env_config overwrites bar in producer-factory-config.properties"
+		assertEquals("foo", config.customProducerProperties.getProperty("foo"));
 	}
 
 
