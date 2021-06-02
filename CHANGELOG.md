@@ -1,5 +1,13 @@
 # Maxwell changelog
 
+### [v1.33.1](https://github.com/zendesk/maxwell/releases/tag/v1.33.1): "la la la la"
+
+
+- properties may now be fetched from a javascript blob in the env
+- RowMap provides access to primary keys
+- fix an odd NPE in mariaDB init
+
+
 ### [v1.33.0](https://github.com/zendesk/maxwell/releases/tag/v1.33.0): "tradegy of birds and windows"
 
 
