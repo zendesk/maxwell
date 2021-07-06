@@ -140,12 +140,12 @@ public class SchemaCaptureTest extends MaxwellTestWithIsolatedServer {
 		assertThat(columns[0], notNullValue());
 		assertThat(columns[0], instanceOf(EnumColumnDef.class));
 		assertThat(columns[0].getName(), is("language"));
-		assertArrayEquals(((EnumColumnDef) columns[0]).getEnumValues(), new String[] {"en-US", "de-DE"});
+		assertEquals(((EnumColumnDef) columns[0]).getEnumValues(), List.of("en-US", "de-DE"));
 
 		assertThat(columns[1], notNullValue());
 		assertThat(columns[1], instanceOf(EnumColumnDef.class));
 		assertThat(columns[1].getName(), is("decimal_separator"));
-		assertArrayEquals(((EnumColumnDef) columns[1]).getEnumValues(), new String[] {",", "."});
+		assertEquals(((EnumColumnDef) columns[1]).getEnumValues(), List.of(",", "."));
 	}
 	
 	@Test

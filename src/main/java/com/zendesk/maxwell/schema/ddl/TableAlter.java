@@ -59,8 +59,9 @@ public class TableAlter extends SchemaChange {
 
 		if ( convertCharset != null ) {
 			for ( StringColumnDef sc : table.getStringColumns() ) {
-				if (sc.getCharset() == null || !sc.getCharset().toLowerCase().equals("binary") )
-					sc.setCharset(convertCharset);
+				if (sc.getCharset() == null || !sc.getCharset().toLowerCase().equals("binary") ) {
+					table.replaceColumn(sc.getPos(), sc.withCharset(convertCharset));
+				}
 			}
 		}
 
