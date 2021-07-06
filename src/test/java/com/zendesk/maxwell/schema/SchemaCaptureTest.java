@@ -74,7 +74,7 @@ public class SchemaCaptureTest extends MaxwellTestWithIsolatedServer {
 		SchemaCapturer sc =
 			new SchemaCapturer(server.getConnection(), CaseSensitivity.CASE_SENSITIVE, "shard_1", "ints");
 		Schema schema = sc.capture();
-		assertEquals(1, schema.getDatabases().get(0).getTableList().size());
+		assertEquals(1, schema.getDatabases().iterator().next().getTableList().size());
 	}
 
 	@Test
