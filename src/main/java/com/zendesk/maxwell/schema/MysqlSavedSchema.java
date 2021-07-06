@@ -679,13 +679,13 @@ public class MysqlSavedSchema {
 		int caseDiffs = 0;
 
 		for ( Pair<ColumnDef, ColumnDef> pair : schema.matchColumns(recaptured) ) {
-			ColumnDef schemaCol = pair.getLeft();
-			ColumnDef recapturedCol = pair.getRight();
+			ColumnDef cA = pair.getLeft();
+			ColumnDef cB = pair.getRight();
 
-			if ( !schemaCol.getName().equals(recapturedCol.getName()) ) {
-				LOGGER.info("correcting column case of `" + schemaCol.getName() + "` to `" + recapturedCol.getName() + "`.  Will save a full schema snapshot after the new DDL update is processed.");
+			if ( !cA.getName().equals(cB.getName()) ) {
+				LOGGER.info("correcting column case of `" + cA.getName() + "` to `" + cB.getName() + "`.  Will save a full schema snapshot after the new DDL update is processed.");
 				caseDiffs++;
-				schemaCol.setName(recapturedCol.getName());
+				cA.setName(cB.getName());
 			}
 		}
 
