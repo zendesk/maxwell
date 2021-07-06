@@ -13,26 +13,26 @@ public class TableColumnList implements Iterable<ColumnDef> {
 	// reduce count of duplicate ArrayLists/Sets for column lists by providing mutability for the class
 	// through references to an internal immutable object that gets interned. This greatly reduces overhead for
 	// table definitions that are duplicated across databases
-	private InternalImmutableTableColumnList internalState;
+	private ImmutableColumnList columnList;
 
 	public TableColumnList(List<ColumnDef> columns) {
-		this.internalState = InternalImmutableTableColumnList.create(columns);
+		this.columnList = ImmutableColumnList.create(columns);
 	}
 
 	public Iterator<ColumnDef> iterator() {
-		return internalState.getColumns().iterator();
+		return columnList.getColumns().iterator();
 	}
 
 	public List<ColumnDef> getList() {
-		return internalState.getColumns();
+		return columnList.getColumns();
 	}
 
 	public synchronized Set<String> columnNames() {
-		return internalState.getColumnNames();
+		return columnList.getColumnNames();
 	}
 
 	public synchronized int indexOf(String name) {
-		return indexOf(internalState.getColumns(), name);
+		return indexOf(columnList.getColumns(), name);
 	}
 
 	private synchronized int indexOf(List<ColumnDef> columns, String name) {
@@ -46,7 +46,7 @@ public class TableColumnList implements Iterable<ColumnDef> {
 	}
 
 	public ColumnDef findByName(String name) {
-		List<ColumnDef> columns = internalState.getColumns();
+		List<ColumnDef> columns = columnList.getColumns();
 		int index = indexOf(columns, name);
 		if ( index == -1 )
 			return null;
@@ -55,45 +55,45 @@ public class TableColumnList implements Iterable<ColumnDef> {
 	}
 
 	public synchronized void add(int index, ColumnDef definition) {
-		List<ColumnDef> columns = internalState.getColumns();
+		List<ColumnDef> columns = columnList.getColumns();
 		ArrayList<ColumnDef> tempList = new ArrayList<>(columns.size() + 1);
 		tempList.addAll(columns);
 		tempList.add(index, definition);
-		internalState = InternalImmutableTableColumnList.create(tempList);
+		columnList = ImmutableColumnList.create(tempList);
 	}
 
 	public synchronized void replace(int index, ColumnDef definition) {
-		List<ColumnDef> columns = internalState.getColumns();
+		List<ColumnDef> columns = columnList.getColumns();
 		ArrayList<ColumnDef> tempList = new ArrayList<>(columns.size());
 		tempList.addAll(columns);
 		tempList.set(index, definition);
-		internalState = InternalImmutableTableColumnList.create(tempList);
+		columnList = ImmutableColumnList.create(tempList);
 	}
 
 	public synchronized ColumnDef remove(int index) {
-		List<ColumnDef> columns = internalState.getColumns();
+		List<ColumnDef> columns = columnList.getColumns();
 		ArrayList<ColumnDef> tempList = new ArrayList<>(columns.size());
 		tempList.addAll(columns);
 		ColumnDef c = tempList.remove(index);
-		internalState = InternalImmutableTableColumnList.create(tempList);
+		columnList = ImmutableColumnList.create(tempList);
 		return c;
 	}
 
 	public synchronized ColumnDef get(int index) {
-		return internalState.getColumns().get(index);
+		return columnList.getColumns().get(index);
 	}
 
 	public int size() {
-		return internalState.getColumns().size();
+		return columnList.getColumns().size();
 	}
 
-	private static final class InternalImmutableTableColumnList {
-		private static final Interner<InternalImmutableTableColumnList> INTERNER = Interners.newWeakInterner();
+	private static final class ImmutableColumnList {
+		private static final Interner<ImmutableColumnList> INTERNER = Interners.newWeakInterner();
 
 		private final List<ColumnDef> columns;
 		private Set<String> columnNames; // not part of equals because it's derived statically
 
-		private InternalImmutableTableColumnList(List<ColumnDef> columns) {
+		private ImmutableColumnList(List<ColumnDef> columns) {
 			ImmutableList.Builder<ColumnDef> builder = ImmutableList.builderWithExpectedSize(columns.size());
 			int i = 0;
 			for (ColumnDef column : columns) {
@@ -102,14 +102,14 @@ public class TableColumnList implements Iterable<ColumnDef> {
 			this.columns = builder.build();
 		}
 
-		public static InternalImmutableTableColumnList create(List<ColumnDef> columns) {
-			return INTERNER.intern(new InternalImmutableTableColumnList(columns));
+		public static ImmutableColumnList create(List<ColumnDef> columns) {
+			return INTERNER.intern(new ImmutableColumnList(columns));
 		}
 
 		@Override
 		public boolean equals(Object o) {
-			if (o instanceof InternalImmutableTableColumnList) {
-				InternalImmutableTableColumnList other = (InternalImmutableTableColumnList) o;
+			if (o instanceof ImmutableColumnList) {
+				ImmutableColumnList other = (ImmutableColumnList) o;
 				return columns.equals(other.columns);
 			}
 			return false;
