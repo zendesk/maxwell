@@ -7,6 +7,11 @@ public class DateColumnDef extends ColumnDef {
 		super(name, type, pos, nullable);
 	}
 
+	public static DateColumnDef create(String name, String type, short pos, boolean nullable) {
+		DateColumnDef temp = new DateColumnDef(name, type, pos, nullable);
+		return (DateColumnDef) INTERNER.intern(temp);
+	}
+
 	@Override
 	public String toSQL(Object value) {
 		String formatted = DateFormatter.formatDate(value);

@@ -7,6 +7,11 @@ public class EnumColumnDef extends EnumeratedColumnDef {
 		super(name, type, pos, enumValues, nullable);
 	}
 
+	public static EnumColumnDef create(String name, String type, short pos, String[] enumValues, boolean nullable) {
+		EnumColumnDef temp = new EnumColumnDef(name, type, pos, enumValues, nullable);
+		return (EnumColumnDef) INTERNER.intern(temp);
+	}
+
 	@Override
 	public String toSQL(Object value) throws ColumnDefCastException {
 		return "'" + asString(value) + "'";
@@ -26,7 +31,7 @@ public class EnumColumnDef extends EnumeratedColumnDef {
 			if (i == 0)
 				return null;
 			else
-				return enumValues[((Integer) value) - 1];
+				return getEnumValues().get(((Integer) value) - 1);
 		} else {
 			throw new ColumnDefCastException(this, value);
 		}
