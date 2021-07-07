@@ -303,12 +303,12 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-server</artifactId>
-      <version>9.4.37.v20210219</version>
+      <version>9.4.39.v20210325</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
-      <version>9.4.37.v20210219</version>
+      <version>9.4.39.v20210325</version>
     </dependency>
     <dependency>
       <groupId>com.viafoura</groupId>
@@ -328,7 +328,7 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-sts</artifactId>
-      <version>1.11.1005</version>
+      <version>1.11.1006</version>
     </dependency>
     <dependency>
       <groupId>me.tongfei</groupId>
