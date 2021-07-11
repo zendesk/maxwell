@@ -101,9 +101,9 @@ public class Maxwell implements Runnable {
 	}
 
 	private void logColumnCastError(ColumnDefCastException e) throws SQLException, SchemaStoreException {
-		try ( Connection conn = context.getSchemaConnectionPool().getConnection() ) {
-			LOGGER.error("checking for schema inconsistencies in " + e.database + "." + e.table);
-			SchemaCapturer capturer = new SchemaCapturer(conn, context.getCaseSensitivity(), e.database, e.table);
+		LOGGER.error("checking for schema inconsistencies in " + e.database + "." + e.table);
+		try ( Connection conn = context.getSchemaConnectionPool().getConnection();
+			  SchemaCapturer capturer = new SchemaCapturer(conn, context.getCaseSensitivity(), e.database, e.table)) {
 			Schema recaptured = capturer.capture();
 			Table t = this.replicator.getSchema().findDatabase(e.database).findTable(e.table);
 			List<String> diffs = new ArrayList<>();

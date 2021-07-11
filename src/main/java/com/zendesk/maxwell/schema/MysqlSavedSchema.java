@@ -305,7 +305,7 @@ public class MysqlSavedSchema {
 			MysqlSavedSchema savedSchema = new MysqlSavedSchema(serverID, caseSensitivity);
 
 			savedSchema.restoreFromSchemaID(conn, schemaID);
-			savedSchema.handleVersionUpgrades(conn);
+			savedSchema.handleVersionUpgrades(pool);
 
 			return savedSchema;
 		}
@@ -721,17 +721,23 @@ public class MysqlSavedSchema {
 		}
 	}
 
-	protected void handleVersionUpgrades(Connection conn) throws SQLException, InvalidSchemaError {
+	protected void handleVersionUpgrades(ConnectionPool pool) throws SQLException, InvalidSchemaError {
 		if ( this.schemaVersion < 3 ) {
-			Schema recaptured = new SchemaCapturer(conn, sensitivity).capture();
+			final Schema recaptured;
+			try (Connection conn = pool.getConnection();
+				 SchemaCapturer sc = new SchemaCapturer(conn, sensitivity)) {
+				recaptured = sc.capture();
+			}
 
 			if ( this.schemaVersion < 1 ) {
 				if ( this.schema != null && this.schema.findDatabase("mysql") == null ) {
 					LOGGER.info("Could not find mysql db, adding it to schema");
-					SchemaCapturer sc = new SchemaCapturer(conn, sensitivity, "mysql");
-					Database db = sc.capture().findDatabase("mysql");
-					this.schema.addDatabase(db);
-					this.shouldSnapshotNextSchema = true;
+					try (Connection conn = pool.getConnection();
+						 SchemaCapturer sc = new SchemaCapturer(conn, sensitivity, "mysql")) {
+						Database db = sc.capture().findDatabase("mysql");
+						this.schema.addDatabase(db);
+						this.shouldSnapshotNextSchema = true;
+					}
 				}
 
 				fixUnsignedColumns(recaptured);
