@@ -3,8 +3,13 @@ package com.zendesk.maxwell.schema.columndef;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 
 public class EnumColumnDef extends EnumeratedColumnDef {
-	public EnumColumnDef(String name, String type, short pos, String[] enumValues) {
+	private EnumColumnDef(String name, String type, short pos, String[] enumValues) {
 		super(name, type, pos, enumValues);
+	}
+
+	public static EnumColumnDef create(String name, String type, short pos, String[] enumValues) {
+		EnumColumnDef temp = new EnumColumnDef(name, type, pos, enumValues);
+		return (EnumColumnDef) INTERNER.intern(temp);
 	}
 
 	@Override
@@ -26,7 +31,7 @@ public class EnumColumnDef extends EnumeratedColumnDef {
 			if (i == 0)
 				return null;
 			else
-				return enumValues[((Integer) value) - 1];
+				return getEnumValues().get(((Integer) value) - 1);
 		} else {
 			throw new ColumnDefCastException(this, value);
 		}
