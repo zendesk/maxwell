@@ -133,7 +133,7 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-core</artifactId>
-      <version>1.11.1005</version>
+      <version>1.11.1006</version>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
@@ -293,7 +293,7 @@
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
       <artifactId>metrics-servlets</artifactId>
-      <version>4.1.14</version>
+      <version>4.1.23</version>
     </dependency>
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
@@ -318,12 +318,12 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-sns</artifactId>
-      <version>1.11.1005</version>
+      <version>1.11.1006</version>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-sqs</artifactId>
-      <version>1.11.1005</version>
+      <version>1.11.1006</version>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
