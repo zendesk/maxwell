@@ -11,6 +11,10 @@ RUN cd /tmp && mvn dependency:resolve
 
 COPY . /workspace
 RUN cd /workspace \
+    && sed -i -e 's/\r$//' bin/maxwell \
+    && sed -i -e 's/\r$//' bin/maxwell-benchmark \
+    && sed -i -e 's/\r$//' bin/maxwell-bootstrap \
+    && sed -i -e 's/\r$//' bin/maxwell-docker \
     && KAFKA_VERSION=$KAFKA_VERSION make package MAXWELL_VERSION=$MAXWELL_VERSION \
     && mkdir /app \
     && mv /workspace/target/maxwell-$MAXWELL_VERSION/maxwell-$MAXWELL_VERSION/* /app/ \
