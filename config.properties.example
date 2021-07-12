@@ -4,6 +4,12 @@ log_level=info
 producer=kafka
 kafka.bootstrap.servers=localhost:9092
 
+producer=rocketmq
+rocketmq_namesrv_addr=localhost:9876
+rocketmq_producer_group=rocketmq_producer_group
+rocketmq_send_topic=maxwell
+rocketmq_tags=*
+
 # mysql login info
 host=localhost
 user=maxwell
