@@ -1,19 +1,12 @@
 package com.zendesk.maxwell.schema.columndef;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.charset.UnsupportedCharsetException;
-import java.util.Objects;
-
-import com.google.common.collect.Interner;
-import com.google.common.collect.Interners;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 public class StringColumnDef extends ColumnDef {
 	// mutability only allowed after clone and prior to insertion to interner
@@ -74,11 +67,6 @@ public class StringColumnDef extends ColumnDef {
 		} else {
 			return "x'" +  Hex.encodeHexString( b ) + "'";
 		}
-	}
-
-	@Override
-	protected Interner<StringColumnDef> getInterner() {
-		return INTERNER;
 	}
 
 	// this could obviously be more complete.
