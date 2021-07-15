@@ -1,6 +1,5 @@
 package com.zendesk.maxwell.schema.columndef;
 
-import com.google.common.collect.Interner;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
@@ -68,11 +67,6 @@ public class StringColumnDef extends ColumnDef {
 		} else {
 			return "x'" +  Hex.encodeHexString( b ) + "'";
 		}
-	}
-
-	@Override
-	protected Interner<StringColumnDef> getInterner() {
-		return INTERNER;
 	}
 
 	// this could obviously be more complete.
