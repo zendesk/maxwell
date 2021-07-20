@@ -1,10 +1,10 @@
 CREATE TABLE IF NOT EXISTS `schemas` (
-  id int unsigned auto_increment NOT NULL primary key,
+  id bigint auto_increment NOT NULL primary key,
   binlog_file varchar(255),
   binlog_position int unsigned,
   last_heartbeat_read bigint null default 0,
   gtid_set varchar(4096),
-  base_schema_id int unsigned NULL default NULL,
+  base_schema_id bigint NULL default NULL,
   deltas mediumtext charset 'utf8' NULL default NULL,
   server_id int unsigned,
   position_sha char(40) CHARACTER SET latin1 DEFAULT NULL,
@@ -15,17 +15,17 @@ CREATE TABLE IF NOT EXISTS `schemas` (
 );
 
 CREATE TABLE IF NOT EXISTS `databases` (
-  id        int unsigned auto_increment NOT NULL primary key,
-  schema_id int unsigned,
+  id        bigint auto_increment NOT NULL primary key,
+  schema_id bigint,
   name      varchar(255) charset 'utf8',
   charset   varchar(255),
   index (schema_id)
 );
 
 CREATE TABLE IF NOT EXISTS `tables` (
-  id          int unsigned auto_increment NOT NULL primary key,
-  schema_id   int unsigned,
-  database_id int unsigned,
+  id          bigint auto_increment NOT NULL primary key,
+  schema_id   bigint,
+  database_id bigint,
   name      varchar(255) charset 'utf8',
   charset   varchar(255),
   pk        varchar(1024) charset 'utf8',
@@ -34,9 +34,9 @@ CREATE TABLE IF NOT EXISTS `tables` (
 );
 
 CREATE TABLE IF NOT EXISTS `columns` (
-  id          int unsigned auto_increment NOT NULL primary key,
-  schema_id   int unsigned,
-  table_id    int unsigned,
+  id          bigint auto_increment NOT NULL primary key,
+  schema_id   bigint,
+  table_id    bigint,
   name        varchar(255) charset 'utf8',
   charset     varchar(255),
   coltype     varchar(255),

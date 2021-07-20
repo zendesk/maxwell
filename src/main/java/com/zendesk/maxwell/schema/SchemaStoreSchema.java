@@ -187,6 +187,48 @@ public class SchemaStoreSchema {
 		if ( !getTableColumns("bootstrap", c).get("where_clause").equals("text") ) {
 			performAlter(c, "alter table `bootstrap` modify where_clause text default null");
 		}
+
+		// bigint conversions
+		HashMap<String, String> columnsColumns = getTableColumns("columns", c);
+		if ( !columnsColumns.get("id").startsWith("bigint")
+				|| !columnsColumns.get("schema_id").startsWith("bigint")
+				|| !columnsColumns.get("table_id").startsWith("bigint")) {
+			performAlter(c, "alter table `columns` " +
+					"modify id bigint NOT NULL AUTO_INCREMENT, " +
+					"modify schema_id bigint, " +
+					"modify table_id bigint");
+		}
+
+		HashMap<String, String> tablesColumns = getTableColumns("tables", c);
+		if ( !tablesColumns.get("id").startsWith("bigint")
+				|| !tablesColumns.get("schema_id").startsWith("bigint")
+				|| !tablesColumns.get("database_id").startsWith("bigint")) {
+			performAlter(c, "alter table `tables` " +
+					"modify id bigint NOT NULL AUTO_INCREMENT, " +
+					"modify schema_id bigint, " +
+					"modify database_id bigint");
+		}
+
+		HashMap<String, String> databasesColumns = getTableColumns("databases", c);
+		if ( !databasesColumns.get("id").startsWith("bigint")
+				|| !databasesColumns.get("schema_id").startsWith("bigint")) {
+			performAlter(c, "alter table `databases` " +
+					"modify id bigint NOT NULL AUTO_INCREMENT, " +
+					"modify schema_id bigint");
+		}
+
+		HashMap<String, String> schemaColumns2 = getTableColumns("schemas", c);
+		if ( !schemaColumns2.get("id").startsWith("bigint")
+				|| !schemaColumns2.get("base_schema_id").startsWith("bigint")) {
+			performAlter(c, "alter table `schemas` " +
+					"modify id bigint NOT NULL AUTO_INCREMENT, " +
+					"modify base_schema_id bigint");
+		}
+
+		if ( !getTableColumns("bootstrap", c).get("id").startsWith("bigint")) {
+			performAlter(c, "alter table `bootstrap` modify id bigint NOT NULL AUTO_INCREMENT");
+		}
+		// end bigint conversions
 	}
 
 	private static void backfillPositionSHAs(Connection c) throws SQLException {

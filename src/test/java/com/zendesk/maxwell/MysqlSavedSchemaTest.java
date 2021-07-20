@@ -145,6 +145,19 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 		c.createStatement().executeUpdate("alter table maxwell.positions drop column client_id");
 		c.createStatement().executeUpdate("alter table maxwell.positions drop column gtid_set");
 		c.createStatement().executeUpdate("alter table maxwell.schemas drop column gtid_set");
+		c.createStatement().executeUpdate("alter table `columns` " +
+				"modify id int unsigned NOT NULL AUTO_INCREMENT, " +
+				"modify schema_id int unsigned, " +
+				"modify table_id int unsigned");
+		c.createStatement().executeUpdate("alter table `tables` " +
+				"modify id int unsigned NOT NULL AUTO_INCREMENT, " +
+				"modify schema_id int unsigned, " +
+				"modify database_id int unsigned");
+		c.createStatement().executeUpdate("alter table `databases` " +
+				"modify id int unsigned NOT NULL AUTO_INCREMENT, " +
+				"modify schema_id int unsigned");
+		c.createStatement().executeUpdate("alter table `schemas` modify id int unsigned NOT NULL AUTO_INCREMENT");
+		c.createStatement().executeUpdate("alter table `bootstrap` modify id int unsigned NOT NULL AUTO_INCREMENT");
 		SchemaStoreSchema.upgradeSchemaStoreSchema(c); // just verify no-crash.
 	}
 
