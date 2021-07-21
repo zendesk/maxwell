@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 public class BinlogPosition implements Serializable {
 	static final Logger LOGGER = LoggerFactory.getLogger(BinlogPosition.class);
@@ -34,16 +35,17 @@ public class BinlogPosition implements Serializable {
 	}
 
 	public static BinlogPosition capture(Connection c, boolean gtidMode) throws SQLException {
-		ResultSet rs;
-		rs = c.createStatement().executeQuery("SHOW MASTER STATUS");
-		rs.next();
-		long l = rs.getInt(POSITION_COLUMN);
-		String file = rs.getString(FILE_COLUMN);
-		String gtidSetStr = null;
-		if (gtidMode) {
-			gtidSetStr = rs.getString(GTID_COLUMN);
+		try ( Statement stmt = c.createStatement();
+		      ResultSet rs = stmt.executeQuery("SHOW MASTER STATUS") ) {
+			rs.next();
+			long l = rs.getInt(POSITION_COLUMN);
+			String file = rs.getString(FILE_COLUMN);
+			String gtidSetStr = null;
+			if (gtidMode) {
+				gtidSetStr = rs.getString(GTID_COLUMN);
+			}
+			return new BinlogPosition(gtidSetStr, null, l, file);
 		}
-		return new BinlogPosition(gtidSetStr, null, l, file);
 	}
 
 	public static BinlogPosition at(BinlogPosition position) {

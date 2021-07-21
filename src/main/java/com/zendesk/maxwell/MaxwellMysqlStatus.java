@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 public class MaxwellMysqlStatus {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellMysqlStatus.class);
@@ -20,20 +21,20 @@ public class MaxwellMysqlStatus {
 	}
 
 	private String getVariableState(String variableName, boolean throwOnMissing) throws SQLException, MaxwellCompatibilityError {
-		ResultSet rs;
-
-		rs = connection.createStatement().executeQuery(sqlStatement(variableName));
-		String status;
-		if(!rs.next()) {
-			if ( throwOnMissing ) {
-				throw new MaxwellCompatibilityError("Could not check state for Mysql variable: " + variableName);
-			} else {
-				return null;
+		try ( Statement stmt = connection.createStatement();
+		      ResultSet rs = stmt.executeQuery(sqlStatement(variableName)) ) {
+			String status;
+			if(!rs.next()) {
+				if ( throwOnMissing ) {
+					throw new MaxwellCompatibilityError("Could not check state for Mysql variable: " + variableName);
+				} else {
+					return null;
+				}
 			}
-		}
 
-		status = rs.getString("Value");
-		return status;
+			status = rs.getString("Value");
+			return status;
+		}
 	}
 
 	private void ensureVariableState(String variable, String state) throws SQLException, MaxwellCompatibilityError
@@ -86,11 +87,14 @@ public class MaxwellMysqlStatus {
 	}
 
 	public static CaseSensitivity captureCaseSensitivity(Connection c) throws SQLException {
-		ResultSet rs = c.createStatement().executeQuery("select @@lower_case_table_names");
-		if ( !rs.next() )
-			throw new RuntimeException("Could not retrieve @@lower_case_table_names!");
+		final int value;
+		try ( Statement stmt = c.createStatement();
+			  ResultSet rs = stmt.executeQuery("select @@lower_case_table_names") ) {
+			if ( !rs.next() )
+				throw new RuntimeException("Could not retrieve @@lower_case_table_names!");
+			value = rs.getInt(1);
+		}
 
-		int value = rs.getInt(1);
 		switch(value) {
 			case 0:
 				return CaseSensitivity.CASE_SENSITIVE;

@@ -88,9 +88,9 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 				} else {
 					// The capture time might be long and the conn connection might be closed already. Consulting the pool
 					// again for a new connection
-					Connection newConn = maxwellConnectionPool.getConnection();
-					savedSchema.save(newConn);
-					newConn.close();
+					try ( Connection newConn = maxwellConnectionPool.getConnection() ) {
+						savedSchema.save(newConn);
+					}
 				}
 			return savedSchema;
 		}
