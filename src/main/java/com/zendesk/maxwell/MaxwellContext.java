@@ -27,6 +27,7 @@ import java.net.URISyntaxException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -334,8 +335,9 @@ public class MaxwellContext {
 		if ( this.serverID != null)
 			return this.serverID;
 
-		try ( Connection c = getReplicationConnection() ) {
-			ResultSet rs = c.createStatement().executeQuery("SELECT @@server_id as server_id");
+		try ( Connection c = getReplicationConnection();
+		      Statement s = c.createStatement();
+		      ResultSet rs = s.executeQuery("SELECT @@server_id as server_id") ) {
 			if ( !rs.next() ) {
 				throw new RuntimeException("Could not retrieve server_id!");
 			}

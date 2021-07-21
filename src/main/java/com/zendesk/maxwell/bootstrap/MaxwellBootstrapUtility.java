@@ -109,27 +109,29 @@ public class MaxwellBootstrapUtility {
 
 	private long getInsertedRowsCount(Connection connection, long rowId) throws SQLException, MissingBootstrapRowException {
 		String sql = "select inserted_rows from `bootstrap` where id = ?";
-		PreparedStatement preparedStatement = connection.prepareStatement(sql);
-		preparedStatement.setLong(1, rowId);
-		ResultSet resultSet = preparedStatement.executeQuery();
-
-		if ( resultSet.next() ) {
-			return resultSet.getLong(1);
-		} else {
-			throw new MissingBootstrapRowException(rowId);
+		try ( PreparedStatement preparedStatement = connection.prepareStatement(sql) ) {
+			preparedStatement.setLong(1, rowId);
+			try ( ResultSet resultSet = preparedStatement.executeQuery() ) {
+				if ( resultSet.next() ) {
+					return resultSet.getLong(1);
+				} else {
+					throw new MissingBootstrapRowException(rowId);
+				}
+			}
 		}
 	}
 
 	private boolean getIsComplete(Connection connection, long rowId) throws SQLException, MissingBootstrapRowException {
 		String sql = "select is_complete from `bootstrap` where id = ?";
-		PreparedStatement preparedStatement = connection.prepareStatement(sql);
-		preparedStatement.setLong(1, rowId);
-		ResultSet resultSet = preparedStatement.executeQuery();
-
-		if ( resultSet.next() )  {
-			return resultSet.getInt(1) == 1;
-		} else {
-			throw new MissingBootstrapRowException(rowId);
+		try ( PreparedStatement preparedStatement = connection.prepareStatement(sql) ) {
+			preparedStatement.setLong(1, rowId);
+			try ( ResultSet resultSet = preparedStatement.executeQuery() ) {
+				if ( resultSet.next() )  {
+					return resultSet.getInt(1) == 1;
+				} else {
+					throw new MissingBootstrapRowException(rowId);
+				}
+			}
 		}
 	}
 
@@ -146,12 +148,13 @@ public class MaxwellBootstrapUtility {
 	}
 
 	private Long getTotalRowCount(Connection connection, Long bootstrapRowID) throws SQLException, MissingBootstrapRowException {
-		ResultSet resultSet =
-			connection.createStatement().executeQuery("select total_rows from `bootstrap` where id = " + bootstrapRowID);
-		if ( resultSet.next() ) {
-			return resultSet.getLong(1);
-		} else {
-			throw new MissingBootstrapRowException(bootstrapRowID);
+		try ( Statement stmt = connection.createStatement();
+		      ResultSet resultSet = stmt.executeQuery("select total_rows from `bootstrap` where id = " + bootstrapRowID) ) {
+			if ( resultSet.next() ) {
+				return resultSet.getLong(1);
+			} else {
+				throw new MissingBootstrapRowException(bootstrapRowID);
+			}
 		}
 	}
 
@@ -161,37 +164,41 @@ public class MaxwellBootstrapUtility {
 		if ( whereClause != null ) {
 			sql += String.format(" where %s", whereClause);
 		}
-		PreparedStatement preparedStatement = connection.prepareStatement(sql);
-		ResultSet resultSet = preparedStatement.executeQuery();
-		resultSet.next();
-		return resultSet.getLong(1);
+		try ( PreparedStatement preparedStatement = connection.prepareStatement(sql);
+			  ResultSet resultSet = preparedStatement.executeQuery() ) {
+			resultSet.next();
+			return resultSet.getLong(1);
+		}
 	}
 
 	private long insertBootstrapStartRow(Connection connection, String db, String table, String whereClause, String clientID, String comment, Long totalRows) throws SQLException {
 		LOGGER.info("inserting bootstrap start row");
 		String sql = "insert into `bootstrap` (database_name, table_name, where_clause, total_rows, client_id, comment) values(?, ?, ?, ?, ?, ?)";
 
-		PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-		preparedStatement.setString(1, db);
-		preparedStatement.setString(2, table);
+		try ( PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS) ) {
+			preparedStatement.setString(1, db);
+			preparedStatement.setString(2, table);
 
-		preparedStatement.setString(3, whereClause);
-		preparedStatement.setLong(4, totalRows);
-		preparedStatement.setString(5, clientID);
-		preparedStatement.setString(6, comment);
+			preparedStatement.setString(3, whereClause);
+			preparedStatement.setLong(4, totalRows);
+			preparedStatement.setString(5, clientID);
+			preparedStatement.setString(6, comment);
 
-		preparedStatement.execute();
-		ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
-		generatedKeys.next();
-		return generatedKeys.getLong(1);
+			preparedStatement.execute();
+			try ( ResultSet generatedKeys = preparedStatement.getGeneratedKeys() ) {
+				generatedKeys.next();
+				return generatedKeys.getLong(1);
+			}
+		}
 	}
 
 	private void removeBootstrapRow(Connection connection, long rowId) throws SQLException {
 		LOGGER.info("deleting bootstrap start row");
 		String sql = "delete from `bootstrap` where id = ?";
-		PreparedStatement preparedStatement = connection.prepareStatement(sql);
-		preparedStatement.setLong(1, rowId);
-		preparedStatement.execute();
+		try ( PreparedStatement preparedStatement = connection.prepareStatement(sql) ) {
+			preparedStatement.setLong(1, rowId);
+			preparedStatement.execute();
+		}
 	}
 
 	private void displayProgress(long total, long count, long initialCount, Long startedTimeMillis) {
