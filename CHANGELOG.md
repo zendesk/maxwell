@@ -1,5 +1,15 @@
 # Maxwell changelog
 
+### [v1.34.0](https://github.com/zendesk/maxwell/releases/tag/v1.34.0): "Gil's song"
+
+
+- intern a bunch of objects in our in-memory representation of schema.
+  Saves gobs of memory in cases where one has N copies of the same
+  database.  Note that this changes the API of Columns, should any
+  embedded Maxwell application be using that.
+- go up to BIGINT for maxwell's auto-increment ids
+
+
 ### [v1.33.1](https://github.com/zendesk/maxwell/releases/tag/v1.33.1): "la la la la"
 
 
