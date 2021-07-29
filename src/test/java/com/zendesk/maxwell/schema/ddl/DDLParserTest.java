@@ -253,6 +253,9 @@ public class DDLParserTest {
 			"CREATE TABLE testTable19 ( pid BIGINT NOT NULL DEFAULT(1) )",
 			"CREATE TABLE encRTYPE ( i int ) ENCRYPTION='Y'",
 			"CREATE TABLE testfoo ( i int ) START TRANSACTION",
+			"ALTER TABLE c add column i int visible",
+			"ALTER TABLE c add column i int invisible",
+			"ALTER TABLE c alter column i set visible",
 
 		};
 

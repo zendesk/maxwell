@@ -81,6 +81,7 @@ column_options:
 	| collation
 	| default_value
 	| primary_key
+	| visibility
 	| ON UPDATE ( CURRENT_TIMESTAMP current_timestamp_length? | now_function )
 	| UNIQUE KEY?
 	| KEY
@@ -103,6 +104,7 @@ enum_value: string_literal;
 
 charset_def: character_set | ASCII;
 character_set: ((CHARACTER SET) | CHARSET) charset_name;
+visibility: VISIBLE | INVISIBLE;
 
 nullability: (NOT NULL | NULL);
 default_value: DEFAULT
