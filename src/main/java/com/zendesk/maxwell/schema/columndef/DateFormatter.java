@@ -4,10 +4,10 @@ import java.sql.Timestamp;
 import java.util.*;
 
 public class DateFormatter {
-	private static TimeZone UTC_ZONE = TimeZone.getTimeZone("UTC");
-	private static ThreadLocal<Calendar> calendarThreadLocal = ThreadLocal.withInitial(() -> Calendar.getInstance());
-	private static ThreadLocal<Calendar> calendarUTCThreadLocal = ThreadLocal.withInitial(() -> Calendar.getInstance(UTC_ZONE));
-	private static ThreadLocal<StringBuilder> stringBuilderThreadLocal = ThreadLocal.withInitial(() -> new StringBuilder(32));
+	private static final TimeZone UTC_ZONE = TimeZone.getTimeZone("UTC");
+	private static final ThreadLocal<Calendar> calendarThreadLocal = ThreadLocal.withInitial(() -> Calendar.getInstance());
+	private static final ThreadLocal<Calendar> calendarUTCThreadLocal = ThreadLocal.withInitial(() -> Calendar.getInstance(UTC_ZONE));
+	private static final ThreadLocal<StringBuilder> stringBuilderThreadLocal = ThreadLocal.withInitial(() -> new StringBuilder(32));
 
 	public static Timestamp extractTimestamp(Object value) throws IllegalArgumentException {
 		if (value instanceof Long) {
