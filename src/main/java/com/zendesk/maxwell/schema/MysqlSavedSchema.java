@@ -428,7 +428,7 @@ public class MysqlSavedSchema {
 			), schemaRS.getLong("last_heartbeat_read")
 		));
 
-		LOGGER.info("Restoring schema id " + schemaRS.getInt("id") + " (last modified at " + this.position + ")");
+		LOGGER.info("Restoring schema id " + schemaRS.getLong("id") + " (last modified at " + this.position + ")");
 
 		this.schemaID = schemaRS.getLong("id");
 		this.baseSchemaID = schemaRS.getLong("base_schema_id");
