@@ -16,7 +16,6 @@ import com.zendesk.maxwell.schema.columndef.*;
 import com.zendesk.maxwell.util.ConnectionPool;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.text.StrTokenizer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -426,7 +425,7 @@ public class MysqlSavedSchema {
 					), schemaRS.getLong("last_heartbeat_read")
 			));
 
-			LOGGER.info("Restoring schema id " + schemaRS.getInt("id") + " (last modified at " + this.position + ")");
+			LOGGER.info("Restoring schema id " + schemaRS.getLong("id") + " (last modified at " + this.position + ")");
 
 			this.schemaID = schemaRS.getLong("id");
 			this.baseSchemaID = schemaRS.getLong("base_schema_id");
@@ -637,27 +636,29 @@ public class MysqlSavedSchema {
 	private void fixUnsignedColumns(Schema recaptured) throws SQLException, InvalidSchemaError {
 		int unsignedDiffs = 0;
 
-		for ( Pair<ColumnDef, ColumnDef> pair : schema.matchColumns(recaptured) ) {
-			ColumnDef cA = pair.getLeft();
-			ColumnDef cB = pair.getRight();
+		for ( Pair<Schema.FullColumnDef, Schema.FullColumnDef> pair : schema.matchColumns(recaptured) ) {
+			Table schemaTable = pair.getLeft().getTable();
+			ColumnDef schemaCol = pair.getLeft().getColumnDef();
+			ColumnDef recapturedCol = pair.getRight().getColumnDef();
 
-			if (cA instanceof IntColumnDef) {
-				if (cB != null && cB instanceof IntColumnDef) {
-					if (((IntColumnDef) cA).isSigned() && !((IntColumnDef) cB).isSigned()) {
-						((IntColumnDef) cA).setSigned(false);
+			if (schemaCol instanceof IntColumnDef) {
+				if (recapturedCol != null && recapturedCol instanceof IntColumnDef) {
+					if (((IntColumnDef) schemaCol).isSigned() && !((IntColumnDef) recapturedCol).isSigned()) {
+						schemaTable.replaceColumn(schemaCol.getPos(), ((IntColumnDef) schemaCol).withSigned(false));
 						unsignedDiffs++;
 					}
 				} else {
-					LOGGER.warn("warning: Couldn't check for unsigned integer bug on column " + cA.getName() +
+					LOGGER.warn("warning: Couldn't check for unsigned integer bug on column " + schemaCol.getName() +
 						".  You may want to recapture your schema");
 				}
-			} else if (cA instanceof BigIntColumnDef) {
-				if (cB != null && cB instanceof BigIntColumnDef) {
-					if (((BigIntColumnDef) cA).isSigned() && !((BigIntColumnDef) cB).isSigned())
-						((BigIntColumnDef) cA).setSigned(false);
+			} else if (schemaCol instanceof BigIntColumnDef) {
+				if (recapturedCol != null && recapturedCol instanceof BigIntColumnDef) {
+					if (((BigIntColumnDef) schemaCol).isSigned() && !((BigIntColumnDef) recapturedCol).isSigned()) {
+						schemaTable.replaceColumn(schemaCol.getPos(), ((BigIntColumnDef) schemaCol).withSigned(false));
+					}
 					unsignedDiffs++;
 				} else {
-					LOGGER.warn("warning: Couldn't check for unsigned integer bug on column " + cA.getName() +
+					LOGGER.warn("warning: Couldn't check for unsigned integer bug on column " + schemaCol.getName() +
 						".  You may want to recapture your schema");
 				}
 			}
@@ -677,43 +678,42 @@ public class MysqlSavedSchema {
 		}
 	}
 
-	private void fixColumnCases(Schema recaptured) throws SQLException {
+	private void fixColumnCases(Schema recaptured) throws InvalidSchemaError {
 		int caseDiffs = 0;
 
-		for ( Pair<ColumnDef, ColumnDef> pair : schema.matchColumns(recaptured) ) {
-			ColumnDef cA = pair.getLeft();
-			ColumnDef cB = pair.getRight();
+		for (Pair<Schema.FullColumnDef, Schema.FullColumnDef> pair : schema.matchColumns(recaptured)) {
+			Table schemaTable = pair.getLeft().getTable();
+			ColumnDef schemaCol = pair.getLeft().getColumnDef();
+			ColumnDef recapturedCol = pair.getRight().getColumnDef();
 
-			if ( !cA.getName().equals(cB.getName()) ) {
-				LOGGER.info("correcting column case of `" + cA.getName() + "` to `" + cB.getName() + "`.  Will save a full schema snapshot after the new DDL update is processed.");
+			if (!schemaCol.getName().equals(recapturedCol.getName())) {
+				LOGGER.info("correcting column case of `" + schemaCol.getName() + "` to `" + recapturedCol.getName() + "`.  Will save a full schema snapshot after the new DDL update is processed.");
 				caseDiffs++;
-				cA.setName(cB.getName());
+				schemaTable.replaceColumn(schemaCol.getPos(), schemaCol.withName(recapturedCol.getName()));
 			}
 		}
-
-		if ( caseDiffs > 0 )
-			this.shouldSnapshotNextSchema = true;
 	}
 
-	private void fixColumnLength(Schema recaptured) throws SQLException {
+	private void fixColumnLength(Schema recaptured) throws InvalidSchemaError {
 		int colLengthDiffs = 0;
 
-		for ( Pair<ColumnDef, ColumnDef> pair : schema.matchColumns(recaptured) ) {
-			ColumnDef cA = pair.getLeft();
-			ColumnDef cB = pair.getRight();
+		for ( Pair<Schema.FullColumnDef, Schema.FullColumnDef> pair : schema.matchColumns(recaptured) ) {
+			Table schemaTable = pair.getLeft().getTable();
+			ColumnDef schemaCol = pair.getLeft().getColumnDef();
+			ColumnDef recapturedCol = pair.getRight().getColumnDef();
 
-			if (cA instanceof ColumnDefWithLength) {
-				if (cB != null && cB instanceof ColumnDefWithLength) {
-					long aColLength = ((ColumnDefWithLength) cA).getColumnLength();
-					long bColLength = ((ColumnDefWithLength) cB).getColumnLength();
+			if (schemaCol instanceof ColumnDefWithLength) {
+				if (recapturedCol != null && recapturedCol instanceof ColumnDefWithLength) {
+					long aColLength = ((ColumnDefWithLength) schemaCol).getColumnLength();
+					long bColLength = ((ColumnDefWithLength) recapturedCol).getColumnLength();
 
 					if ( aColLength != bColLength ) {
 						colLengthDiffs++;
-						LOGGER.info("correcting column length of `" + cA.getName() + "` to " + bColLength + ".  Will save a full schema snapshot after the new DDL update is processed.");
-						((ColumnDefWithLength) cA).setColumnLength(bColLength);
+						LOGGER.info("correcting column length of `" + schemaCol.getName() + "` to " + bColLength + ".  Will save a full schema snapshot after the new DDL update is processed.");
+						schemaTable.replaceColumn(schemaCol.getPos(), ((ColumnDefWithLength) schemaCol).withColumnLength(bColLength));
 					}
 				} else {
-					LOGGER.warn("warning: Couldn't check for column length on column " + cA.getName() +
+					LOGGER.warn("warning: Couldn't check for column length on column " + schemaCol.getName() +
 						".  You may want to recapture your schema");
 				}
 			}

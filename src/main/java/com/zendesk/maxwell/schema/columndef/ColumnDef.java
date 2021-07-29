@@ -1,27 +1,59 @@
 package com.zendesk.maxwell.schema.columndef;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.util.DynamicEnum;
 
+import java.util.Objects;
+import java.util.function.Consumer;
+
+/**
+ * This class is immutable, all subclasses must be immutable and implement equals and hashCode and call this
+ * class's respective methods if the subclass has any member variables. Failure to do so will lead difficult
+ * to debug errors as these class instances are interned. Subclasses may use {@link #cloneSelfAndSet} to
+ * follow clone/modify/intern pattern for maintaining interface immutability.
+ *
+ */
 @JsonSerialize(using=ColumnDefSerializer.class)
 @JsonDeserialize(using=ColumnDefDeserializer.class)
-
 public abstract class ColumnDef implements Cloneable {
-	private static DynamicEnum dynamicEnum = new DynamicEnum(Byte.MAX_VALUE);
-	protected String name;
-	protected byte type;
-	protected short pos;
+	protected static final Interner INTERNER = Interners.newWeakInterner();
+	private static final DynamicEnum dynamicEnum = new DynamicEnum(Byte.MAX_VALUE);
+	private String name;
+	private final byte type;
+	private short pos;
 
-	public ColumnDef() { }
-	public ColumnDef(String name, String type, short pos) {
+	protected ColumnDef(String name, String type, short pos) {
 		this.name = name;
 		this.pos = pos;
 		this.type = (byte) dynamicEnum.get(type);
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (o instanceof ColumnDef && o.getClass() == getClass()) {
+			ColumnDef other = (ColumnDef) o;
+			return Objects.equals(name, other.name)
+					&& Objects.equals(pos, other.pos)
+					&& Objects.equals(type, other.type);
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(name, type, pos);
+	}
+
 	public abstract String toSQL(Object value) throws ColumnDefCastException;
+
+	protected <T extends ColumnDef> Interner<T> getInterner() {
+		// maintain default interner
+		return (Interner<T>) INTERNER;
+	}
 
 	@Deprecated
 	public Object asJSON(Object value) throws ColumnDefCastException {
@@ -50,23 +82,23 @@ public abstract class ColumnDef implements Cloneable {
 		case "smallint":
 		case "mediumint":
 		case "int":
-			return new IntColumnDef(name, type, pos, signed);
+			return IntColumnDef.create(name, type, pos, signed);
 		case "bigint":
-			return new BigIntColumnDef(name, type, pos, signed);
+			return BigIntColumnDef.create(name, type, pos, signed);
 		case "tinytext":
 		case "text":
 		case "mediumtext":
 		case "longtext":
 		case "varchar":
 		case "char":
-			return new StringColumnDef(name, type, pos, charset);
+			return StringColumnDef.create(name, type, pos, charset);
 		case "tinyblob":
 		case "blob":
 		case "mediumblob":
 		case "longblob":
 		case "binary":
 		case "varbinary":
-			return new StringColumnDef(name, type, pos, "binary");
+			return StringColumnDef.create(name, type, pos, "binary");
 		case "geometry":
 		case "geometrycollection":
 		case "linestring":
@@ -75,29 +107,29 @@ public abstract class ColumnDef implements Cloneable {
 		case "multipolygon":
 		case "polygon":
 		case "point":
-			return new GeometryColumnDef(name, type, pos);
+			return GeometryColumnDef.create(name, type, pos);
 		case "float":
 		case "double":
-			return new FloatColumnDef(name, type, pos);
+			return FloatColumnDef.create(name, type, pos);
 		case "decimal":
-			return new DecimalColumnDef(name, type, pos);
+			return DecimalColumnDef.create(name, type, pos);
 		case "date":
-			return new DateColumnDef(name, type, pos);
+			return DateColumnDef.create(name, type, pos);
 		case "datetime":
 		case "timestamp":
-			return new DateTimeColumnDef(name, type, pos, columnLength);
+			return DateTimeColumnDef.create(name, type, pos, columnLength);
 		case "time":			
-			return new TimeColumnDef(name, type, pos, columnLength);
+			return TimeColumnDef.create(name, type, pos, columnLength);
 		case "year":
-			return new YearColumnDef(name, type, pos);
+			return YearColumnDef.create(name, type, pos);
 		case "enum":
-			return new EnumColumnDef(name, type, pos, enumValues);
+			return EnumColumnDef.create(name, type, pos, enumValues);
 		case "set":
-			return new SetColumnDef(name, type, pos, enumValues);
+			return SetColumnDef.create(name, type, pos, enumValues);
 		case "bit":
-			return new BitColumnDef(name, type, pos);
+			return BitColumnDef.create(name, type, pos);
 		case "json":
-			return new JsonColumnDef(name, type, pos);
+			return JsonColumnDef.create(name, type, pos);
 
 		default:
 			throw new IllegalArgumentException("unsupported column type " + type);
@@ -192,8 +224,10 @@ public abstract class ColumnDef implements Cloneable {
 		}
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public ColumnDef withName(String name) {
+		return cloneSelfAndSet(clone -> {
+			clone.name = name;
+		});
 	}
 
 	public String getName() {
@@ -208,7 +242,18 @@ public abstract class ColumnDef implements Cloneable {
 		return pos;
 	}
 
-	public void setPos(short i) {
-		this.pos = i;
+	public ColumnDef withPos(short i) {
+		if (pos == i) {
+			return this;
+		}
+		return cloneSelfAndSet(clone -> {
+			clone.pos = i;
+		});
+	}
+
+	protected <T extends ColumnDef> T cloneSelfAndSet(Consumer<T> mutator) {
+		T clone = (T) clone();
+		mutator.accept(clone);
+		return (T) getInterner().intern(clone);
 	}
 }
