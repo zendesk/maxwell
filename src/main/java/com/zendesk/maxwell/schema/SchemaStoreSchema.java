@@ -33,14 +33,16 @@ public class SchemaStoreSchema {
 	}
 
 	private static boolean storeDatabaseExists(Connection connection, String schemaDatabaseName) throws SQLException {
-		Statement s = connection.createStatement();
-		ResultSet rs = s.executeQuery("show databases like '" + schemaDatabaseName + "'");
+		try ( Statement s = connection.createStatement() ) {
+			try ( ResultSet rs = s.executeQuery("show databases like '" + schemaDatabaseName + "'") ) {
+				if (!rs.next())
+					return false;
+			}
 
-		if (!rs.next())
-			return false;
-
-		rs = s.executeQuery("show tables from `" + schemaDatabaseName + "` like 'schemas'");
-		return rs.next();
+			try (ResultSet rs = s.executeQuery("show tables from `" + schemaDatabaseName + "` like 'schemas'") ) {
+				return rs.next();
+			}
+		}
 	}
 
 	private static void executeSQLInputStream(Connection connection, InputStream schemaSQL, String schemaDatabaseName) throws SQLException, IOException {
@@ -48,7 +50,9 @@ public class SchemaStoreSchema {
 		String sql = "", line;
 
 		if ( schemaDatabaseName != null ) {
-			connection.createStatement().execute("CREATE DATABASE IF NOT EXISTS `" + schemaDatabaseName + "`");
+			try ( Statement stmt = connection.createStatement() ) {
+				stmt.execute("CREATE DATABASE IF NOT EXISTS `" + schemaDatabaseName + "`");
+			}
 			if (!schemaDatabaseName.equals(connection.getCatalog()))
 				connection.setCatalog(schemaDatabaseName);
 		}
@@ -60,7 +64,9 @@ public class SchemaStoreSchema {
 			if (statement.length() == 0)
 				continue;
 
-			connection.createStatement().execute(statement);
+			try ( Statement stmt = connection.createStatement() ) {
+				stmt.execute(statement);
+			}
 		}
 	}
 
@@ -73,9 +79,11 @@ public class SchemaStoreSchema {
 
 	private static HashMap<String, String> getTableColumns(String table, Connection c) throws SQLException {
 		HashMap<String, String> map = new HashMap<>();
-		ResultSet rs = c.createStatement().executeQuery("show columns from `" + table + "`");
-		while (rs.next()) {
-			map.put(rs.getString("Field"), rs.getString("Type"));
+		try ( Statement stmt = c.createStatement();
+		      ResultSet rs = stmt.executeQuery("show columns from `" + table + "`") ) {
+			while (rs.next()) {
+				map.put(rs.getString("Field"), rs.getString("Type"));
+			}
 		}
 		return map;
 	}
@@ -83,16 +91,20 @@ public class SchemaStoreSchema {
 	private static ArrayList<String> getMaxwellTables(Connection c) throws SQLException {
 		ArrayList<String> l = new ArrayList<>();
 
-		ResultSet rs = c.createStatement().executeQuery("show tables");
-		while (rs.next()) {
-			l.add(rs.getString(1));
+		try ( Statement stmt = c.createStatement();
+			  ResultSet rs = stmt.executeQuery("show tables") ) {
+			while (rs.next()) {
+				l.add(rs.getString(1));
+			}
 		}
 		return l;
 	}
 
 	private static void performAlter(Connection c, String sql) throws SQLException {
 		LOGGER.info("Maxwell is upgrading its own schema: '" + sql + "'");
-		c.createStatement().execute(sql);
+		try ( Statement stmt = c.createStatement() ) {
+			stmt.execute(sql);
+		}
 	}
 
 	public static void upgradeSchemaStoreSchema(Connection c) throws SQLException, IOException {
@@ -232,16 +244,19 @@ public class SchemaStoreSchema {
 	}
 
 	private static void backfillPositionSHAs(Connection c) throws SQLException {
-		ResultSet rs = c.createStatement().executeQuery("select * from `schemas`");
-		while (rs.next()) {
-			Long id = rs.getLong("id");
-			Position position = new Position(
-				new BinlogPosition(rs.getLong("binlog_position"), rs.getString("binlog_file")),
-				rs.getLong("last_heartbeat_read")
-			);
-			String sha = MysqlSavedSchema.getSchemaPositionSHA(rs.getLong("server_id"), position);
-			c.createStatement().executeUpdate("update `schemas` set `position_sha` = '" + sha + "' where id = " + id);
+		try ( Statement stmt = c.createStatement();
+		      ResultSet rs = stmt.executeQuery("select * from `schemas`") ) {
+			while (rs.next()) {
+				Long id = rs.getLong("id");
+				Position position = new Position(
+						new BinlogPosition(rs.getLong("binlog_position"), rs.getString("binlog_file")),
+						rs.getLong("last_heartbeat_read")
+				);
+				String sha = MysqlSavedSchema.getSchemaPositionSHA(rs.getLong("server_id"), position);
+				try ( Statement stmtUpdate = c.createStatement() ) { // statements cannot interleave ResultSets, so we need a new statement
+					stmtUpdate.executeUpdate("update `schemas` set `position_sha` = '" + sha + "' where id = " + id);
+				}
+			}
 		}
-		rs.close();
 	}
 }
