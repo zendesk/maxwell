@@ -35,6 +35,8 @@ public class MaxwellConfig extends AbstractConfig {
 	public MaxwellMysqlConfig maxwellMysql;
 	public Filter filter;
 	public Boolean gtidMode;
+	public boolean useVitess;
+
 
 	public String databaseName;
 
@@ -170,6 +172,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.schemaMysql = new MaxwellMysqlConfig();
 		this.masterRecovery = false;
 		this.gtidMode = false;
+		this.useVitess = false;
 		this.bufferedProducerSize = 200;
 		this.outputConfig = new MaxwellOutputConfig();
 		setup(null, null); // setup defaults
@@ -549,12 +552,14 @@ public class MaxwellConfig extends AbstractConfig {
 	}
 
 	private void setup(OptionSet options, Properties properties) {
-		this.log_level = fetchStringOption("log_level", options, properties, null);
+		this.log_level = fetchStringOption("log_level", options, properties, "INFO");
 
 		this.maxwellMysql       = parseMysqlConfig("", options, properties);
 		this.replicationMysql   = parseMysqlConfig("replication_", options, properties);
 		this.schemaMysql        = parseMysqlConfig("schema_", options, properties);
 		this.gtidMode           = fetchBooleanOption("gtid_mode", options, properties, System.getenv(GTID_MODE_ENV) != null);
+		this.useVitess           = fetchBooleanOption("use_vitess", options, properties, false);
+
 
 		this.databaseName       = fetchStringOption("schema_database", options, properties, "maxwell");
 		this.maxwellMysql.database = this.databaseName;

@@ -9,6 +9,7 @@ import com.zendesk.maxwell.recovery.RecoveryInfo;
 import com.zendesk.maxwell.replication.BinlogConnectorReplicator;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.replication.Replicator;
+import com.zendesk.maxwell.replication.VitessConnectorReplicator;
 import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.schema.*;
 import com.zendesk.maxwell.schema.columndef.ColumnDefCastException;
@@ -194,6 +195,7 @@ public class Maxwell implements Runnable {
 		}
 	}
 
+
 	private void startInner() throws Exception {
 		try ( Connection connection = this.context.getReplicationConnection();
 		      Connection rawConnection = this.context.getRawMaxwellConnection() ) {
@@ -227,24 +229,37 @@ public class Maxwell implements Runnable {
 
 		mysqlSchemaStore.getSchema(); // trigger schema to load / capture before we start the replicator.
 
-		this.replicator = new BinlogConnectorReplicator(
-			mysqlSchemaStore,
-			producer,
-			bootstrapController,
-			config.replicationMysql,
-			config.replicaServerID,
-			config.databaseName,
-			context.getMetrics(),
-			initPosition,
-			false,
-			config.clientID,
-			context.getHeartbeatNotifier(),
-			config.scripting,
-			context.getFilter(),
-			config.outputConfig,
-			config.bufferMemoryUsage
-		);
-
+		if (config.useVitess) {
+			this.replicator = new VitessConnectorReplicator(
+					mysqlSchemaStore,
+					config.replicationMysql,
+					producer,
+					config.databaseName,
+					context.getMetrics(),
+					initPosition,
+					config.scripting,
+					config.outputConfig,
+					config.bufferMemoryUsage
+			);
+		} else {
+			this.replicator = new BinlogConnectorReplicator(
+					mysqlSchemaStore,
+					producer,
+					bootstrapController,
+					config.replicationMysql,
+					config.replicaServerID,
+					config.databaseName,
+					context.getMetrics(),
+					initPosition,
+					false,
+					config.clientID,
+					context.getHeartbeatNotifier(),
+					config.scripting,
+					context.getFilter(),
+					config.outputConfig,
+					config.bufferMemoryUsage
+			);
+		}
 		context.setReplicator(replicator);
 		this.context.start();
 
@@ -266,6 +281,7 @@ public class Maxwell implements Runnable {
 
 			if ( config.log_level != null ) {
 				Logging.setLevel(config.log_level);
+
 			}
 
 			final Maxwell maxwell = new Maxwell(config);

@@ -27,6 +27,8 @@ public class DateTimeColumnDef extends ColumnDefWithLength {
 				else
 					return appendFractionalSeconds("0000-00-00 00:00:00", 0, getColumnLength());
 			}
+		} if ( value instanceof String ) {
+			return (String) value;
 		}
 
 		try {

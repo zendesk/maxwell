@@ -58,11 +58,20 @@ public class IntColumnDef extends ColumnDef {
 
 			long res = castUnsigned(i, 1L << this.bits);
 			return Long.valueOf(res);
+		} else if (value instanceof String) {
+			try {
+				if (signed)
+					return Long.parseLong((String) value);
+
+				return Long.parseUnsignedLong((String) value);
+			} catch (NumberFormatException e) {
+				throw new ColumnDefCastException(this, value);
+			}
 		} else {
 			throw new ColumnDefCastException(this, value);
 		}
-
 	}
+
 	@Override
 	public String toSQL(Object value) throws ColumnDefCastException {
 		return toLong(value).toString();
