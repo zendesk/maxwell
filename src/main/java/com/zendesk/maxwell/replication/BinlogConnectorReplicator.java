@@ -649,7 +649,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 				} else {
 					try {
 						ensureReplicatorThread();
-					} catch ( ClientReconnectedException e ) {}
+					} catch ( Exception e ) {}
 					return null;
 				}
 			}
