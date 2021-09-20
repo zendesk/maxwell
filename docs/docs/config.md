@@ -134,6 +134,7 @@ rabbitmq_exchange_autodelete   | BOOLEAN    | If set, the exchange is deleted wh
 rabbitmq_routing_key_template  | STRING     | A string template for the routing key, `%db%` and `%table%` will be substituted. | `%db%.%table%`.
 rabbitmq_message_persistent    | BOOLEAN    | Eanble message persistence. | false
 rabbitmq_declare_exchange      | BOOLEAN    | Should declare the exchange for rabbitmq publisher | true
+rabbitmq_use_ssl               | BOOLEAN    | Use ssl connection | false
 
 ## redis producer
 option                         | argument                            | description                                         | default

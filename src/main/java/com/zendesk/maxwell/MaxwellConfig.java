@@ -136,6 +136,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public String rabbitmqRoutingKeyTemplate;
 	public boolean rabbitmqMessagePersistent;
 	public boolean rabbitmqDeclareExchange;
+	public boolean rabbitmqUseSsl;
 
 	public String natsUrl;
 	public String natsSubject;
@@ -451,6 +452,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "rabbitmq_routing_key_template", "A string template for the routing key, '%db%' and '%table%' will be substituted. Default is '%db%.%table%'." ).withRequiredArg();
 		parser.accepts( "rabbitmq_message_persistent", "Message persistence. Defaults to false" ).withOptionalArg();
 		parser.accepts( "rabbitmq_declare_exchange", "Should declare the exchange for rabbitmq publisher. Defaults to true" ).withOptionalArg();
+		parser.accepts( "rabbitmq_use_ssl", "Use ssl. Defaults to false" ).withOptionalArg();
 
 		parser.section( "redis" );
 
@@ -604,6 +606,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.rabbitmqRoutingKeyTemplate   	= fetchStringOption("rabbitmq_routing_key_template", options, properties, "%db%.%table%");
 		this.rabbitmqMessagePersistent    	= fetchBooleanOption("rabbitmq_message_persistent", options, properties, false);
 		this.rabbitmqDeclareExchange		= fetchBooleanOption("rabbitmq_declare_exchange", options, properties, true);
+		this.rabbitmqUseSsl          		= fetchBooleanOption("rabbitmq_use_ssl", options, properties, false);
 
 		this.natsUrl			= fetchStringOption("nats_url", options, properties, "nats://localhost:4222");
 		this.natsSubject		= fetchStringOption("nats_subject", options, properties, "%{database}.%{table}");
