@@ -86,7 +86,6 @@ if [ -z "$kafka_client_jar" -o "$(echo "$kafka_client_jar" | wc -l)" -gt 1 ]; th
 	ls -1 "$kafka_client_dir" | sed -e 's/^kafka-clients-/ - /' -e 's/\.jar$//'
 	exit 1
 else
-	echo "Using kafka version: $KAFKA_VERSION"
 	CLASSPATH="$CLASSPATH:$kafka_client_jar"
 fi
 
