@@ -398,7 +398,8 @@ public class DDLParserTest {
 				+ ") "
 			  	+ "ENGINE=innodb "
 				+ "CHARACTER SET='latin1' "
-			  	+ "ROW_FORMAT=FIXED"
+			  	+ "ROW_FORMAT=FIXED "
+				+ "COMPRESSION='lz4'"
 		);
 		assertThat(c, not(nullValue()));
 	}
