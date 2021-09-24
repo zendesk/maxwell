@@ -89,7 +89,7 @@ public class BootstrapController extends RunLoopProcess  {
 		return this.currentSchemaID;
 	}
 
-	public synchronized void setCurrentSchemaID(long schemaID) {
+	public synchronized void setCurrentSchemaID(Long schemaID) {
 		this.currentSchemaID = schemaID;
 	}
 
