@@ -18,8 +18,8 @@ jobs:
           set -eu -o pipefail
           echo ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }} | docker login --username=${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
           set -x
-          current_tag=zendesk/temp-ci-test:"${GITHUB_REF##refs/tags/}"
-          latest_tag=zendesk/temp-ci-test:latest
+          current_tag=zendesk/maxwell:"${GITHUB_REF##refs/tags/}"
+          latest_tag=zendesk/maxwell:latest
           docker build --file=Dockerfile --tag="$current_tag" .
           docker push "$current_tag"
           docker tag "$current_tag" "$latest_tag"
