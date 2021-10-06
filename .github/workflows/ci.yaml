@@ -1,10 +1,9 @@
 name: CI to Zendesk Dockerhub
 
 on:
-  create:
+  push:
     tags:
       - v*.*.*
-
 
 jobs:
   build:
