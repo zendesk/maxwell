@@ -160,7 +160,7 @@ public class MaxwellBootstrapUtility {
 
 	private Long calculateRowCount(Connection connection, String db, String table, String whereClause) throws SQLException {
 		LOGGER.info("counting rows");
-		String sql = String.format("select count(*) from `%s`.%s", db, table);
+		String sql = String.format("select count(*) from `%s`.`%s`", db, table);
 		if ( whereClause != null ) {
 			sql += String.format(" where %s", whereClause);
 		}
