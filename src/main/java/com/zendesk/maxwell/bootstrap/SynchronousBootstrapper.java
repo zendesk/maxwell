@@ -176,7 +176,7 @@ public class SynchronousBootstrapper {
 		Statement statement = createBatchStatement(connection);
 		String pk = table.getPKString();
 
-		String sql = String.format("select * from `%s`.%s", databaseName, tableName);
+		String sql = String.format("select * from `%s`.`%s`", databaseName, tableName);
 
 		if ( whereClause != null && !whereClause.equals("") ) {
 			sql += String.format(" where %s", whereClause);
