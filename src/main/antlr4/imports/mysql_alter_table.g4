@@ -37,8 +37,8 @@ convert_to_character_set: CONVERT TO charset_token charset_name collation?;
 rename_column: RENAME COLUMN name TO name;
 
 alter_partition_specification:
-      ADD PARTITION skip_parens
-    | DROP PARTITION partition_names
+      ADD PARTITION if_not_exists? skip_parens
+    | DROP PARTITION if_exists? partition_names
     | TRUNCATE PARTITION partition_names
     | DISCARD PARTITION partition_names TABLESPACE
     | IMPORT PARTITION partition_names TABLESPACE

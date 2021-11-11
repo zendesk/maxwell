@@ -126,6 +126,28 @@ public class MaxwellTestSupport {
 		return new MaxwellContext(config);
 	}
 
+	public static MaxwellContext buildContext(Consumer<MaxwellConfig> maxwellConfigConsumer)
+			throws SQLException, URISyntaxException {
+		MaxwellConfig config = new MaxwellConfig();
+
+		config.replicationMysql.host = "127.0.0.1";
+		config.replicationMysql.user = "maxwell";
+		config.replicationMysql.password = "maxwell";
+		config.replicationMysql.sslMode = SSLMode.DISABLED;
+
+		config.maxwellMysql.host = "127.0.0.1";
+
+		config.maxwellMysql.user = "maxwell";
+		config.maxwellMysql.password = "maxwell";
+		config.maxwellMysql.sslMode = SSLMode.DISABLED;
+
+		config.databaseName = "maxwell";
+
+		maxwellConfigConsumer.accept(config);
+
+		return new MaxwellContext(config);
+	}
+
 	public static boolean inGtidMode() {
 		return System.getenv(MaxwellConfig.GTID_MODE_ENV) != null;
 	}

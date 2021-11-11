@@ -11,7 +11,6 @@ import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.MaxwellTestSupport;
 import com.zendesk.maxwell.MysqlIsolatedServer;
 import com.zendesk.maxwell.TestWithNameLogging;
-import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
 import com.zendesk.maxwell.monitoring.NoOpMetrics;
 import com.zendesk.maxwell.producer.BufferedProducer;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
