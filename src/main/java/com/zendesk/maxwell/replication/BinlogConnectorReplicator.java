@@ -34,6 +34,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 
 public class BinlogConnectorReplicator extends RunLoopProcess implements Replicator, BinaryLogClient.LifecycleListener {
@@ -46,6 +47,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private final String maxwellSchemaDatabaseName;
 
 	protected final BinaryLogClient client;
+	private final int clientMaxReconnectionAttempts;
 	private BinlogConnectorEventListener binlogEventListener;
 	private BinlogConnectorLivenessMonitor binlogLivenessMonitor;
 	private final LinkedBlockingDeque<BinlogConnectorEvent> queue = new LinkedBlockingDeque<>(20);
@@ -97,7 +99,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		Scripting scripting,
 		Filter filter,
 		MaxwellOutputConfig outputConfig,
-		float bufferMemoryUsage
+		float bufferMemoryUsage,
+		int clientMaxReconnectionAttempts
 	) {
 		this.clientID = clientID;
 		this.bootstrapper = bootstrapper;
@@ -128,6 +131,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		/* setup binlog client */
 		this.client = new BinaryLogClient(mysqlConfig.host, mysqlConfig.port, mysqlConfig.user, mysqlConfig.password);
 		this.client.setSSLMode(mysqlConfig.sslMode);
+
 
 		BinlogPosition startBinlog = start.getBinlogPosition();
 		if (startBinlog.getGtidSetStr() != null) {
@@ -167,6 +171,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		this.client.registerEventListener(binlogEventListener);
 		this.client.registerLifecycleListener(this);
 		this.client.setServerId(replicaServerID.intValue());
+
+		this.clientMaxReconnectionAttempts = clientMaxReconnectionAttempts;
 	}
 
 	/**
@@ -445,9 +451,22 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 				// we like, so we don't have to bail out of the middle of an event.
 				LOGGER.warn("replicator stopped at position: {} -- restarting", client.getBinlogFilename() + ":" + client.getBinlogPosition());
 
-				client.connect(5000);
+				tryReconnect();
 			}
 		}
+	}
+
+	private void tryReconnect() throws TimeoutException {
+		int reconnectionAttempts = 0; ;
+		while ((reconnectionAttempts += 1) <= this.clientMaxReconnectionAttempts || this.clientMaxReconnectionAttempts == 0) {
+			try {
+				LOGGER.info(String.format("Reconnection attempt: %s of %s",reconnectionAttempts, clientMaxReconnectionAttempts > 0 ? this.clientMaxReconnectionAttempts : "unlimited"));
+				client.connect(5000);
+				return;
+			} catch (IOException | TimeoutException ignored) {
+			}
+		}
+		throw new TimeoutException("Maximum reconnection attempts reached");
 	}
 
 	/**
@@ -615,7 +634,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 				} else {
 					try {
 						ensureReplicatorThread();
-					} catch ( Exception e ) {}
+					} catch ( ClientReconnectedException e ) {}
 					return null;
 				}
 			}
