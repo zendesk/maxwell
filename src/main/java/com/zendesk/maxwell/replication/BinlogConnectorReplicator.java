@@ -476,31 +476,29 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 				client.setBinlogFilename("");
 				client.setBinlogPosition(4L);
-
-				client.connect(5000);
+				tryReconnect();
 
 				throw new ClientReconnectedException();
 			} else {
 				// standard binlog positioning is a lot easier; we can really reconnect anywhere
 				// we like, so we don't have to bail out of the middle of an event.
 				LOGGER.warn("replicator stopped at position: {} -- restarting", client.getBinlogFilename() + ":" + client.getBinlogPosition());
-
 				tryReconnect();
 			}
 		}
 	}
 
 	private void tryReconnect() throws TimeoutException {
-		int reconnectionAttempts = 0; ;
+		int reconnectionAttempts = 0;
+
 		while ((reconnectionAttempts += 1) <= this.clientMaxReconnectionAttempts || this.clientMaxReconnectionAttempts == 0) {
 			try {
-				LOGGER.info(String.format("Reconnection attempt: %s of %s",reconnectionAttempts, clientMaxReconnectionAttempts > 0 ? this.clientMaxReconnectionAttempts : "unlimited"));
+				LOGGER.info(String.format("Reconnection attempt: %s of %s", reconnectionAttempts, clientMaxReconnectionAttempts > 0 ? this.clientMaxReconnectionAttempts : "unlimited"));
 				client.connect(5000);
 				return;
-			} catch (IOException | TimeoutException ignored) {
-			}
+			} catch (IOException | TimeoutException ignored) { }
 		}
-		throw new TimeoutException("Maximum reconnection attempts reached");
+		throw new TimeoutException("Maximum reconnection attempts reached.");
 	}
 
 	/**
