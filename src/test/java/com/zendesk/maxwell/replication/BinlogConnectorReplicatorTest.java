@@ -25,8 +25,11 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeTrue;
 
 public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
@@ -178,6 +181,121 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 		replicator.startReplicator();
 		server.execute("DROP TABLE IF EXISTS `xxx_tmp`");
 		replicator.getRow();
+
+	}
+
+	@Test
+	public void testClientReconnectionAfterConnectionDropped() throws Exception {
+		assumeTrue(MysqlIsolatedServer.getVersion().atLeast(MysqlIsolatedServer.VERSION_5_6));
+
+		MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--gtid_mode=ON --enforce-gtid-consistency=true");
+		MaxwellTestSupport.setupSchema(server, false);
+
+		server.execute("create table test.t ( i int )");
+		server.execute("create table test.u ( i int )");
+		server.execute("insert into test.t set i = 1");
+		Position position = Position.capture(server.getConnection(), true);
+
+		MaxwellContext context = MaxwellTestSupport.buildContext(config -> {
+			config.replicationMysql.port = server.getPort();
+			config.maxwellMysql.port = server.getPort();
+			config.filter = null;
+			config.initPosition = position;
+			config.replayMode = true;
+			config.producerType = "stdout";
+			config.maxwellMysql.enableHeartbeat = true;
+
+		});
+
+		BinlogConnectorReplicator replicator = new BinlogConnectorReplicator(
+				new MysqlSchemaStore(context, position),
+				new StdoutProducer(context),
+				context.getBootstrapController(null),
+				context.getConfig().maxwellMysql,
+				333098L,
+				"maxwell",
+				new NoOpMetrics(),
+				position,
+				false,
+				"maxwell-client",
+				new HeartbeatNotifier(),
+				null,
+				context.getFilter(),
+				new MaxwellOutputConfig(),
+				context.getConfig().bufferMemoryUsage,
+				0 //0 = unlimited
+		);
+		replicator.startReplicator();
+
+		Thread t2 = new Thread(() -> {
+			RowMap row = null;
+				try {
+
+					while ((row = replicator.getRow()) == null){}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			assertEquals(1L, row.getData().get("i"));
+		});
+		t2.start();
+		//simulates a drop connection
+		server.stop();
+
+		for (long stop = System.nanoTime()+ TimeUnit.SECONDS.toNanos(30); stop>System.nanoTime();) {}
+
+		server.resume();
+		server.execute("insert into test.t set i = 1");
+		t2.join();
+	}
+
+	@Test(expected = TimeoutException.class)
+	public void testMaximumReconnectionAttemptsReached() throws Exception {
+		assumeTrue(MysqlIsolatedServer.getVersion().atLeast(MysqlIsolatedServer.VERSION_5_6));
+
+		MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--gtid_mode=ON --enforce-gtid-consistency=true");
+		MaxwellTestSupport.setupSchema(server, false);
+
+		server.execute("create table test.t ( i int )");
+		server.execute("create table test.u ( i int )");
+		server.execute("insert into test.t set i = 1");
+		Position position = Position.capture(server.getConnection(), true);
+
+		MaxwellContext context = MaxwellTestSupport.buildContext(config -> {
+			config.replicationMysql.port = server.getPort();
+			config.maxwellMysql.port = server.getPort();
+			config.filter = null;
+			config.initPosition = position;
+			config.replayMode = true;
+			config.producerType = "stdout";
+			config.maxwellMysql.enableHeartbeat = true;
+
+		});
+
+		BinlogConnectorReplicator replicator = new BinlogConnectorReplicator(
+				new MysqlSchemaStore(context, position),
+				new StdoutProducer(context),
+				context.getBootstrapController(null),
+				context.getConfig().maxwellMysql,
+				333098L,
+				"maxwell",
+				new NoOpMetrics(),
+				position,
+				false,
+				"maxwell-client",
+				new HeartbeatNotifier(),
+				null,
+				context.getFilter(),
+				new MaxwellOutputConfig(),
+				context.getConfig().bufferMemoryUsage,
+				3
+		);
+		replicator.startReplicator();
+		//simulates a drop connection
+		server.stop();
+
+		RowMap row = null;
+		while ((row = replicator.getRow()) == null) {
+		}
 
 	}
 }
