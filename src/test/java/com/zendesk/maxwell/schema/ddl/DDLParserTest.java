@@ -258,6 +258,7 @@ public class DDLParserTest {
 			"ALTER TABLE c alter column i set visible",
 			"ALTER TABLE broker.table ADD PARTITION IF NOT EXISTS (partition p20210912 VALUES LESS THAN (738411))", // some mariada-fu
 			"ALTER TABLE t1 DROP PARTITION IF EXISTS p3", // some mariada-fu
+			"ALTER TABLE test_table REORGANIZE PARTITION START INTO ( PARTITION PAST VALUES LESS THAN (0) )"
 
 		};
 
