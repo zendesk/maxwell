@@ -208,7 +208,6 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 			config.replayMode = true;
 			config.producerType = "stdout";
 			config.maxwellMysql.enableHeartbeat = true;
-
 		});
 
 		BinlogConnectorReplicator replicator = new BinlogConnectorReplicator(
@@ -233,19 +232,21 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 
 		Thread t2 = new Thread(() -> {
 			RowMap row = null;
-				try {
+			try {
 
-					while ((row = replicator.getRow()) == null){}
-				} catch (Exception e) {
-					e.printStackTrace();
+				while ((row = replicator.getRow()) == null) {
 				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			assertEquals(1L, row.getData().get("i"));
 		});
 		t2.start();
 		//simulates a drop connection
 		server.stop();
 
-		for (long stop = System.nanoTime()+ TimeUnit.SECONDS.toNanos(30); stop>System.nanoTime();) {}
+		//wait 30 seconds
+		for (long stop = System.nanoTime() + TimeUnit.SECONDS.toNanos(30); stop > System.nanoTime(); ) {}
 
 		server.resume();
 		server.execute("insert into test.t set i = 1");
@@ -272,7 +273,6 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 			config.replayMode = true;
 			config.producerType = "stdout";
 			config.maxwellMysql.enableHeartbeat = true;
-
 		});
 
 		BinlogConnectorReplicator replicator = new BinlogConnectorReplicator(
