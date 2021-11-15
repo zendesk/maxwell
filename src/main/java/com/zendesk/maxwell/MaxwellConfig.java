@@ -14,7 +14,6 @@ import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.scripting.Scripting;
 import com.zendesk.maxwell.util.AbstractConfig;
 import com.zendesk.maxwell.util.MaxwellOptionParser;
-import jnr.ffi.annotations.In;
 import joptsimple.OptionSet;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -161,7 +160,7 @@ public class MaxwellConfig extends AbstractConfig {
 	public boolean haMode;
 	public String jgroupsConf;
 	public String raftMemberID;
-	public int clientMaxReconnectionAttempts;
+	public int replicationReconnectionRetries;
 
 	public MaxwellConfig() { // argv is only null in tests
 		this.customProducerProperties = new Properties();
@@ -226,6 +225,8 @@ public class MaxwellConfig extends AbstractConfig {
 				.withRequiredArg();
 		parser.accepts( "replica_server_id", "server_id that maxwell reports to the master.  See docs for full explanation. ")
 				.withRequiredArg().ofType(Long.class);
+		parser.accepts( "replication_reconnection_retries", "define how many time should replicator try reconnect, default 1, 0 = unlimited" )
+				.withOptionalArg().ofType(Integer.class);
 
 		parser.separator();
 
@@ -272,8 +273,6 @@ public class MaxwellConfig extends AbstractConfig {
 				.withRequiredArg();
 		parser.accepts( "raft_member_id", "raft memberID.  (may also be specified in raft.xml)" )
 				.withRequiredArg();
-		parser.accepts( "client_max_reconnection_attempts", "client_max_reconnection_attempts" )
-				.withOptionalArg().ofType(Integer.class);
 
 		parser.separator();
 
@@ -728,7 +727,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.haMode = fetchBooleanOption("ha", options, properties, false);
 		this.jgroupsConf = fetchStringOption("jgroups_config", options, properties, "raft.xml");
 		this.raftMemberID = fetchStringOption("raft_member_id", options, properties, null);
-		this.clientMaxReconnectionAttempts = fetchIntegerOption("client_max_reconnection_attempts", options, properties, 1);
+		this.replicationReconnectionRetries = fetchIntegerOption("replication_reconnection_retries", options, properties, 1);
 	}
 
 	private void setupEncryptionOptions(OptionSet options, Properties properties) {

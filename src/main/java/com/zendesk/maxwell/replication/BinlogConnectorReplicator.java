@@ -47,7 +47,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private final String maxwellSchemaDatabaseName;
 
 	protected final BinaryLogClient client;
-	private final int clientMaxReconnectionAttempts;
+	private final int replicationReconnectionRetries;
 	private BinlogConnectorEventListener binlogEventListener;
 	private BinlogConnectorLivenessMonitor binlogLivenessMonitor;
 	private final LinkedBlockingDeque<BinlogConnectorEvent> queue = new LinkedBlockingDeque<>(20);
@@ -100,7 +100,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		Filter filter,
 		MaxwellOutputConfig outputConfig,
 		float bufferMemoryUsage,
-		int clientMaxReconnectionAttempts
+		int replicationReconnectionRetries
 	) {
 		this.clientID = clientID;
 		this.bootstrapper = bootstrapper;
@@ -172,7 +172,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		this.client.registerLifecycleListener(this);
 		this.client.setServerId(replicaServerID.intValue());
 
-		this.clientMaxReconnectionAttempts = clientMaxReconnectionAttempts;
+		this.replicationReconnectionRetries = replicationReconnectionRetries;
 	}
 
 	/**
@@ -457,9 +457,9 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private void tryReconnect() throws TimeoutException {
 		int reconnectionAttempts = 0;
 
-		while ((reconnectionAttempts += 1) <= this.clientMaxReconnectionAttempts || this.clientMaxReconnectionAttempts == 0) {
+		while ((reconnectionAttempts += 1) <= this.replicationReconnectionRetries || this.replicationReconnectionRetries == 0) {
 			try {
-				LOGGER.info(String.format("Reconnection attempt: %s of %s", reconnectionAttempts, clientMaxReconnectionAttempts > 0 ? this.clientMaxReconnectionAttempts : "unlimited"));
+				LOGGER.info(String.format("Reconnection attempt: %s of %s", reconnectionAttempts, replicationReconnectionRetries > 0 ? this.replicationReconnectionRetries : "unlimited"));
 				client.connect(5000);
 				return;
 			} catch (IOException | TimeoutException ignored) { }
