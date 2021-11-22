@@ -12,6 +12,17 @@ jobs:
       - uses: zendesk/checkout@v2
         with:
           fetch-depth: '1'
+      - name: Set up QEMU
+        id: qemu
+        uses: docker/setup-qemu-action@v1
+        with:
+          image: tonistiigi/binfmt:latest
+          platforms: all
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          install: true
       - name: Docker Build and push
         run: |-
           set -eu -o pipefail
@@ -19,7 +30,4 @@ jobs:
           set -x
           current_tag=zendesk/maxwell:"${GITHUB_REF##refs/tags/}"
           latest_tag=zendesk/maxwell:latest
-          docker build --file=Dockerfile --tag="$current_tag" .
-          docker push "$current_tag"
-          docker tag "$current_tag" "$latest_tag"
-          docker push "$latest_tag"
+          docker buildx build --platform=linux/arm64,linux/amd64 --file=Dockerfile --push --tag="$current_tag" --tag="$latest_tag" .
