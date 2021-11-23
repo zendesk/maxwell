@@ -163,6 +163,18 @@ public class MysqlIsolatedServer {
 		boot(null);
 	}
 
+	public void stop() {
+		try {
+			Runtime.getRuntime().exec("kill -STOP " + this.serverPid);
+		} catch (IOException e) {}
+	}
+
+	public void resume() {
+		try {
+			Runtime.getRuntime().exec("kill -CONT " + this.serverPid);
+		} catch (IOException e) {}
+	}
+
 	public void resetConnection() throws SQLException {
 		this.connection = getNewConnection();
 	}
