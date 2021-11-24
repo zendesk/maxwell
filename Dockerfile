@@ -25,6 +25,7 @@ COPY --from=builder /app /app
 
 WORKDIR /app
 
+RUN useradd -u 1000 maxwell -d /app
 RUN chown 1000:1000 /app && echo "$MAXWELL_VERSION" > /REVISION
 
 USER 1000
