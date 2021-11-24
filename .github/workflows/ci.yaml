@@ -13,14 +13,14 @@ jobs:
         with:
           fetch-depth: '1'
       - name: Set up QEMU
-        id: qemu
-        uses: docker/setup-qemu-action@v1
-        with:
-          image: tonistiigi/binfmt:latest
-          platforms: all
+        run: |-
+          QEMU_IMAGE=tonistiigi/binfmt:latest
+          docker pull $QEMU_IMAGE
+          docker image inspect $QEMU_IMAGE
+          docker run --rm --privileged $QEMU_IMAGE --install all
       - name: Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@v1
+        uses: zendesk/setup-buildx-action@v1.6.0
         with:
           install: true
       - name: Docker Build and push
