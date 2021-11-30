@@ -12,12 +12,12 @@
         <link href="../css/bootstrap.min.css" rel="stylesheet">
         <link href="../css/font-awesome.min.css" rel="stylesheet">
         <link href="../css/base.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css">
         <link href="../maxwell.css" rel="stylesheet">
 
         <script src="../js/jquery-1.10.2.min.js" defer></script>
         <script src="../js/bootstrap.min.js" defer></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
         <script>hljs.initHighlightingOnLoad();</script> 
     </head>
 
@@ -158,15 +158,13 @@ Support for performing leader elections is done via
 <p>First, copy <code>raft.xml.example</code> to <code>raft.xml</code>.  Edit to your liking, paying attention to:</p>
 <pre><code>    &lt;raft.RAFT members=&quot;A,B,C&quot; raft_id=&quot;${raft_id:undefined}&quot;/&gt;
 </code></pre>
-
 <p>Note that because we are using a RAFT-based leader election, we will have to spin up at least
 3 maxwell client nodes.</p>
 <p>Now start each of your HA maxwell nodes like this:</p>
-<pre><code class="bash">host1: $ bin/maxwell --ha --raft_member_id=A
+<pre><code class="language-bash">host1: $ bin/maxwell --ha --raft_member_id=A
 host2: $ bin/maxwell --ha --raft_member_id=B
 host3: $ bin/maxwell --ha --raft_member_id=C
 </code></pre>
-
 <p>if all goes well, the 3 nodes will communicate via multicast/UDP, elect one to
 be the cluster leader, and away you will go.  If one node is terminated or
 partitioned, a new election will be held to replace it.</p>
@@ -182,7 +180,6 @@ you come up with something good drop me a line.</p>
 <p>Something I encountered right out of the gate was this:</p>
 <pre><code>12:37:53,135 WARN  UDP - failed to join /224.0.75.75:7500 on utun0: java.net.SocketException: Can't assign requested address
 </code></pre>
-
 <p>which can be worked around by forcing the JVM onto an ipv4 stack:</p>
 <pre><code>JAVA_OPTS=&quot;-Djava.net.preferIPv4Stack=true&quot; bin/maxwell --ha --raft_member_id=B
 </code></pre>
@@ -210,16 +207,13 @@ you come up with something good drop me a line.</p>
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
             </div>
             <div class="modal-body">
-                <p>
-                    From here you can search these documents. Enter
-                    your search terms below.
-                </p>
+                <p>From here you can search these documents. Enter your search terms below.</p>
                 <form>
                     <div class="form-group">
                         <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
                     </div>
                 </form>
-                <div id="mkdocs-search-results"></div>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
             </div>
             <div class="modal-footer">
             </div>

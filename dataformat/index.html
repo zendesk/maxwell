@@ -12,12 +12,12 @@
         <link href="../css/bootstrap.min.css" rel="stylesheet">
         <link href="../css/font-awesome.min.css" rel="stylesheet">
         <link href="../css/base.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css">
         <link href="../maxwell.css" rel="stylesheet">
 
         <script src="../js/jquery-1.10.2.min.js" defer></script>
         <script src="../js/bootstrap.min.js" defer></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
         <script>hljs.initHighlightingOnLoad();</script> 
     </head>
 
@@ -222,7 +222,6 @@ drop table test.e;
 }
 
 </code></pre>
-
 <p>Most of the fields are self-explanatory, but a couple of them deserve mention:</p>
 <p>↳ <code>"type":"insert",</code></p>
 <p>Most commonly you will see insert/update/delete here.  If you're bootstrapping
@@ -274,7 +273,6 @@ make up the primary key for this row.</p>
 }
 
 </code></pre>
-
 <p>What's important to note here is the <code>old</code> field, which stores old values for
 rows that changed.  So <code>data</code> still has a complete copy of the row (just as
 with the insert), but now you can reconstruct what the row <em>was</em> by doing
@@ -295,7 +293,6 @@ with the insert), but now you can reconstruct what the row <em>was</em> by doing
    }
 }
 </code></pre>
-
 <p>after a DELETE, <code>data</code> contains a copy of the row, just before it shuffled off
 this mortal coil.</p>
 <h1 id="create-table">CREATE TABLE</h1>
@@ -340,7 +337,6 @@ this mortal coil.</p>
 }
 
 </code></pre>
-
 <p>You only get this with <code>--output_ddl</code>.</p>
 <p>↳ <code>"type": "table-create"</code>
 here you have <code>database-create</code>, <code>database-alter</code>, <code>database-drop</code>, <code>table-create</code>, <code>table-alter</code>, <code>table-drop</code>.</p>
@@ -423,7 +419,6 @@ function if you so desired.</p>
    &quot;position&quot;:&quot;master.000006:804398&quot;
 }
 </code></pre>
-
 <p>As with the CREATE TABLE, we have a complete image of the table before-and-after the alter</p>
 <h1 id="blob-binary-encoded-strings">blob (+ binary encoded strings)</h1>
 <hr />
@@ -439,7 +434,6 @@ mysql&gt;    insert into test_datetime set dtcol='0000-00-00 00:00:00';
 
 &lt;maxwell  { &quot;table&quot; : &quot;test_datetime&quot;, &quot;type&quot;: &quot;insert&quot;, &quot;data&quot;: { &quot;dtcol&quot;: &quot;0000-00-00 00:00:00&quot; } }
 </code></pre>
-
 <p>As of 1.3.0, Maxwell supports microsecond precision datetime/timestamp/time columns.</p>
 <h1 id="sets">sets</h1>
 <hr />
@@ -449,7 +443,6 @@ mysql&gt;   insert into test_sets set setcol = 'b_val,c_val';
 
 &lt;maxwell { &quot;table&quot;:&quot;test_sets&quot;, &quot;type&quot;:&quot;insert&quot;, &quot;data&quot;: { &quot;setcol&quot;: [&quot;b_val&quot;, &quot;c_val&quot;] } }
 </code></pre>
-
 <h1 id="strings-varchar-text">strings (varchar, text)</h1>
 <hr />
 <p>Maxwell will accept a variety of character encodings, but will always output UTF-8 strings.  The following table
@@ -644,16 +637,13 @@ describes support for mysql's character sets:</p>
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
             </div>
             <div class="modal-body">
-                <p>
-                    From here you can search these documents. Enter
-                    your search terms below.
-                </p>
+                <p>From here you can search these documents. Enter your search terms below.</p>
                 <form>
                     <div class="form-group">
                         <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
                     </div>
                 </form>
-                <div id="mkdocs-search-results"></div>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
             </div>
             <div class="modal-footer">
             </div>

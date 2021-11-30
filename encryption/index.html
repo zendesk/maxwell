@@ -12,12 +12,12 @@
         <link href="../css/bootstrap.min.css" rel="stylesheet">
         <link href="../css/font-awesome.min.css" rel="stylesheet">
         <link href="../css/base.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css">
         <link href="../maxwell.css" rel="stylesheet">
 
         <script src="../js/jquery-1.10.2.min.js" defer></script>
         <script src="../js/bootstrap.min.js" defer></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
         <script>hljs.initHighlightingOnLoad();</script> 
     </head>
 
@@ -161,11 +161,9 @@ Values are first encrypted and then base64 encoded, an initialization vector is 
 <p><code>encrypt=none</code> (unencrypted):</p>
 <pre><code>{&quot;database&quot;:&quot;shard_1&quot;,&quot;table&quot;:&quot;minimal&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;ts&quot;:1490115785,&quot;xid&quot;:153,&quot;commit&quot;:true,&quot;data&quot;:{&quot;id&quot;:1,&quot;account_id&quot;:1,&quot;text_field&quot;:&quot;hello&quot;}}
 </code></pre>
-
 <p><code>encrypt=data</code>:</p>
 <pre><code>{&quot;database&quot;:&quot;shard_1&quot;,&quot;table&quot;:&quot;minimal&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;ts&quot;:1504585129,&quot;xid&quot;:161,&quot;commit&quot;:true,&quot;encrypted&quot;:{&quot;iv&quot;:&quot;lqiXoTdz6jed3XgJPpa7EQ==&quot;,&quot;bytes&quot;:&quot;1soc4leskiIm6yuT2D49VA3AYVKCvN+0wh+8d1iwSZETK7N2pG4HDbqnVpJUUCOaKjpcPlP7Sc7Z3SPhGD5JeA==&quot;}}
 </code></pre>
-
 <p><code>encrypt=all</code>:</p>
 <pre><code>{&quot;encrypted&quot;:{&quot;bytes&quot;:&quot;iZssjWfzS0NlqIj82ddpvoQeKSx4D3GIPSCgjdkpgQlCWzN2p3VVZOn3Oj1x4w+a6dVhoFmllWxBK6aAkdVK9t6Vt1+um6lWwSeXNQIL/RbknW5Q8I9emm5bC1Dd1LftBuX/1Uw0wjbsq8Qt3HErvmmiIMe2S27EIWshvBnmw9MibryjLD0brvIbFFxwDuSQuVA4OFyV9TN32N/ZXiBwIA==&quot;,&quot;iv&quot;:&quot;XXs6AePsXJWAAIrKyLlR0g==&quot;}}
 </code></pre>
@@ -193,16 +191,13 @@ Values are first encrypted and then base64 encoded, an initialization vector is 
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
             </div>
             <div class="modal-body">
-                <p>
-                    From here you can search these documents. Enter
-                    your search terms below.
-                </p>
+                <p>From here you can search these documents. Enter your search terms below.</p>
                 <form>
                     <div class="form-group">
                         <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
                     </div>
                 </form>
-                <div id="mkdocs-search-results"></div>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
             </div>
             <div class="modal-footer">
             </div>

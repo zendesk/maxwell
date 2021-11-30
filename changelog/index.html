@@ -12,12 +12,12 @@
         <link href="../css/bootstrap.min.css" rel="stylesheet">
         <link href="../css/font-awesome.min.css" rel="stylesheet">
         <link href="../css/base.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css">
         <link href="../maxwell.css" rel="stylesheet">
 
         <script src="../js/jquery-1.10.2.min.js" defer></script>
         <script src="../js/bootstrap.min.js" defer></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
         <script>hljs.initHighlightingOnLoad();</script> 
     </head>
 
@@ -139,6 +139,19 @@
         
 
 <h1 id="maxwell-changelog">Maxwell changelog</h1>
+<h3 id="v1350-two-for-the-price-of-one"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.35.0">v1.35.0</a>: "two for the price of one"</h3>
+<ul>
+<li>couple of parser fixes</li>
+<li>docker builds are now multi-platform</li>
+<li>replication_reconnection_retries configuration option</li>
+<li>quote table names in bootstrapper properly</li>
+</ul>
+<h3 id="v1341-the-mc-at-the-end-of-the-world"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.34.1">v1.34.1</a>: "the MC at the end of the world"</h3>
+<ul>
+<li>support for mysql 8's visible/invisible columns</li>
+<li>support mariadb's if-exists/if-not-exists for partition management</li>
+<li>add an index for the http endpoint</li>
+</ul>
 <h3 id="v1340-gils-song"><a href="https://github.com/zendesk/maxwell/releases/tag/v1.34.0">v1.34.0</a>: "Gil's song"</h3>
 <ul>
 <li>intern a bunch of objects in our in-memory representation of schema.
@@ -1189,16 +1202,13 @@ changed.  Thanks @kristiankaufmann</p>
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
             </div>
             <div class="modal-body">
-                <p>
-                    From here you can search these documents. Enter
-                    your search terms below.
-                </p>
+                <p>From here you can search these documents. Enter your search terms below.</p>
                 <form>
                     <div class="form-group">
                         <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
                     </div>
                 </form>
-                <div id="mkdocs-search-results"></div>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
             </div>
             <div class="modal-footer">
             </div>

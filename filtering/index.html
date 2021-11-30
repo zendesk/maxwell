@@ -12,12 +12,12 @@
         <link href="../css/bootstrap.min.css" rel="stylesheet">
         <link href="../css/font-awesome.min.css" rel="stylesheet">
         <link href="../css/base.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css">
         <link href="../maxwell.css" rel="stylesheet">
 
         <script src="../js/jquery-1.10.2.min.js" defer></script>
         <script src="../js/bootstrap.min.js" defer></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
         <script>hljs.initHighlightingOnLoad();</script> 
     </head>
 
@@ -168,7 +168,6 @@ by the <code>--filter</code> command line flag.</p>
 <h2 id="example-1">Example 1</h2>
 <pre><code>--filter = 'exclude: foodb.*, include: foodb.tbl, include: foodb./table_\d+/'
 </code></pre>
-
 <p>This example tells Maxwell to suppress all updates that happen on <code>foodb</code>, except for updates
 to <code>tbl</code> and any table in foodb matching the regexp <code>/table_\d+/</code>.</p>
 <h2 id="example-2">Example 2</h2>
@@ -176,13 +175,11 @@ to <code>tbl</code> and any table in foodb matching the regexp <code>/table_\d+/
 suppress everything except updates in the <code>db1</code> database.</p>
 <pre><code>--filter = 'exclude: *.*, include: db1.*'
 </code></pre>
-
 <h1 id="column-filters">Column Filters</h1>
 <hr />
 <p>Maxwell can also include/exclude based on column values:</p>
 <pre><code>--filter = 'exclude: db.tbl.col = reject'
 </code></pre>
-
 <p>will reject any row in <code>db.tbl</code> that contains <code>col</code> and where the stringified value of "col" is "reject".
 Column filters are ignored if the specified column is not present, so <code>--filter = 'exclude: *.*.col_a = *'</code>
 will exclude updates to any table that contains <code>col_a</code>, but include every other table.</p>
@@ -192,7 +189,6 @@ will exclude updates to any table that contains <code>col_a</code>, but include 
 table, including schema changes.  In general, don't use this.  If you must use this:</p>
 <pre><code>--filter = 'blacklist: bad_db.*'
 </code></pre>
-
 <p>Note that once Maxwell has been running with a table or database marked as
 blacklisted, you <em>must</em> continue to run Maxwell with that table or database
 blacklisted or else Maxwell will halt. If you want to stop
@@ -214,7 +210,6 @@ object and is free to make filtering and data munging decisions:</p>
     }
 }
 </code></pre>
-
 <p>There's a longer example here: <a href="https://github.com/zendesk/maxwell/blob/master/src/example/filter.js">https://github.com/zendesk/maxwell/blob/master/src/example/filter.js</a>.</p>
     </div>
 </div>
@@ -240,16 +235,13 @@ object and is free to make filtering and data munging decisions:</p>
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
             </div>
             <div class="modal-body">
-                <p>
-                    From here you can search these documents. Enter
-                    your search terms below.
-                </p>
+                <p>From here you can search these documents. Enter your search terms below.</p>
                 <form>
                     <div class="form-group">
                         <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
                     </div>
                 </form>
-                <div id="mkdocs-search-results"></div>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
             </div>
             <div class="modal-footer">
             </div>

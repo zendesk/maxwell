@@ -12,12 +12,12 @@
         <link href="../css/bootstrap.min.css" rel="stylesheet">
         <link href="../css/font-awesome.min.css" rel="stylesheet">
         <link href="../css/base.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css">
         <link href="../maxwell.css" rel="stylesheet">
 
         <script src="../js/jquery-1.10.2.min.js" defer></script>
         <script src="../js/bootstrap.min.js" defer></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
         <script>hljs.initHighlightingOnLoad();</script> 
     </head>
 
@@ -187,23 +187,20 @@
 <h1 id="download">Download</h1>
 <hr />
 <ul>
-<li>Download binary distro: <a href="https://github.com/zendesk/maxwell/releases/download/v1.34.1/maxwell-1.34.1.tar.gz">https://github.com/zendesk/maxwell/releases/download/v1.34.1/maxwell-1.34.1.tar.gz</a></li>
+<li>Download binary distro: <a href="https://github.com/zendesk/maxwell/releases/download/v1.35.0/maxwell-1.35.0.tar.gz">https://github.com/zendesk/maxwell/releases/download/v1.35.0/maxwell-1.35.0.tar.gz</a></li>
 <li>Sources and bug tracking is available on github: <a href="https://github.com/zendesk/maxwell">https://github.com/zendesk/maxwell</a></li>
 </ul>
 <p><strong>curl</strong>:</p>
-<pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.34.1/maxwell-1.34.1.tar.gz \
+<pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.35.0/maxwell-1.35.0.tar.gz \
        | tar zxvf -
-cd maxwell-1.34.1
+cd maxwell-1.35.0
 </code></pre>
-
 <p><strong>docker</strong>:</p>
 <pre><code>docker pull zendesk/maxwell
 </code></pre>
-
 <p><strong>homebrew</strong>:</p>
 <pre><code>brew install maxwell
 </code></pre>
-
 <h1 id="configure-mysql">Configure Mysql</h1>
 <hr />
 <p><em>Server Config:</em> Ensure server_id is set, and that row-based replication is on.</p>
@@ -214,12 +211,10 @@ server_id=1
 log-bin=master
 binlog_format=row
 </code></pre>
-
 <p>Or on a running server:</p>
 <pre><code>mysql&gt; set global binlog_format=ROW;
 mysql&gt; set global binlog_row_image=FULL;
 </code></pre>
-
 <p>note: <code>binlog_format</code> is a session-based property.  You will need to shutdown all active connections to fully convert
 to row-based replication.</p>
 <p><em>Permissions:</em> Maxwell needs permissions to act as a replica, and to write to the <code>maxwell</code> database.</p>
@@ -233,55 +228,45 @@ mysql&gt; CREATE USER 'maxwell'@'localhost' IDENTIFIED BY 'XXXXXX';
 mysql&gt; GRANT ALL ON maxwell.* TO 'maxwell'@'localhost';
 mysql&gt; GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'maxwell'@'localhost';
 </code></pre>
-
 <h1 id="run-maxwell">Run Maxwell</h1>
 <hr />
 <h2 id="command-line">Command line</h2>
 <pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' --producer=stdout
 </code></pre>
-
 <h2 id="docker">Docker</h2>
 <pre><code>docker run -it --rm zendesk/maxwell bin/maxwell --user=$MYSQL_USERNAME \
     --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=stdout
 </code></pre>
-
 <h2 id="kafka">Kafka</h2>
 <p>Boot kafka as described here:  <a href="http://kafka.apache.org/documentation.html#quickstart">http://kafka.apache.org/documentation.html#quickstart</a>, then:</p>
 <pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
    --producer=kafka --kafka.bootstrap.servers=localhost:9092 --kafka_topic=maxwell
 </code></pre>
-
 <p>(or docker):</p>
 <pre><code>docker run -it --rm zendesk/maxwell bin/maxwell --user=$MYSQL_USERNAME \
     --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kafka \
     --kafka.bootstrap.servers=$KAFKA_HOST:$KAFKA_PORT --kafka_topic=maxwell
 </code></pre>
-
 <h2 id="kinesis">Kinesis</h2>
 <pre><code>docker run -it --rm --name maxwell -v `cd &amp;&amp; pwd`/.aws:/root/.aws zendesk/maxwell sh -c 'cp /app/kinesis-producer-library.properties.example /app/kinesis-producer-library.properties &amp;&amp; echo &quot;Region=$AWS_DEFAULT_REGION&quot; &gt;&gt; /app/kinesis-producer-library.properties &amp;&amp; bin/maxwell --user=$MYSQL_USERNAME --password=$MYSQL_PASSWORD --host=$MYSQL_HOST --producer=kinesis --kinesis_stream=$KINESIS_STREAM'
 </code></pre>
-
 <h2 id="nats">Nats</h2>
 <pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
     --producer=nats --nats_url=='0.0.0.0:4222'
 </code></pre>
-
 <h2 id="google-cloud-pubsub">Google Cloud Pub/Sub</h2>
 <pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
   --producer=pubsub --pubsub_project_id='$PUBSUB_PROJECT_ID' \
   --pubsub_topic='maxwell'
 </code></pre>
-
 <h2 id="rabbitmq">RabbitMQ</h2>
 <pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
     --producer=rabbitmq --rabbitmq_host='rabbitmq.hostname'
 </code></pre>
-
 <h2 id="redis">Redis</h2>
 <pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
     --producer=redis --redis_host=redis.hostname
 </code></pre>
-
 <h2 id="sns">SNS</h2>
 <pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
     --producer=sns --sns_topic=sns.topic --sns_attrs=database,table
@@ -310,16 +295,13 @@ mysql&gt; GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'maxwell
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
             </div>
             <div class="modal-body">
-                <p>
-                    From here you can search these documents. Enter
-                    your search terms below.
-                </p>
+                <p>From here you can search these documents. Enter your search terms below.</p>
                 <form>
                     <div class="form-group">
                         <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
                     </div>
                 </form>
-                <div id="mkdocs-search-results"></div>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
             </div>
             <div class="modal-footer">
             </div>

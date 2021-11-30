@@ -12,12 +12,12 @@
         <link href="../css/bootstrap.min.css" rel="stylesheet">
         <link href="../css/font-awesome.min.css" rel="stylesheet">
         <link href="../css/base.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css">
         <link href="../maxwell.css" rel="stylesheet">
 
         <script src="../js/jquery-1.10.2.min.js" defer></script>
         <script src="../js/bootstrap.min.js" defer></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
         <script>hljs.initHighlightingOnLoad();</script> 
     </head>
 
@@ -1267,31 +1267,24 @@ The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requ
 <p id="loglevel" class="jumptarget">
 LOG_LEVEL: [ debug &#124; info &#124; warn &#124; error ]
 </p>
-
 <p id="sslopt" class="jumptarget">
 SSL_OPTION: [ DISABLED &#124; PREFERRED &#124; REQUIRED &#124; VERIFY_CA &#124; VERIFY_IDENTITY ]
 </p>
-
 <p id="producer_type" class="jumptarget">
 PRODUCER_TYPE: [ stdout &#124; file &#124; kafka &#124; kinesis &#124; pubsub &#124; sqs &#124; rabbitmq &#124; redis ]
 </p>
-
 <p id="jdbcopts" class="jumptarget">
 DEFAULT_JDBC_OPTS: zeroDateTimeBehavior=convertToNull&amp;connectTimeout=5000
 </p>
-
 <p id="partition_by" class="jumptarget">
 PARTITION_BY: [ database &#124; table &#124; primary_key &#124; transaction_id &#124; column &#124; random ]
 </p>
-
 <p id="partition_by_fallback" class="jumptarget">
 PARTITION_BY_FALLBACK: [ database &#124; table &#124; primary_key &#124; transaction_id ]
 </p>
-
 <p id="kafka_version" class="jumptarget">
 KAFKA_VERSION: [ 0.8.2.2 &#124; 0.9.0.1 &#124; 0.10.0.1 &#124; 0.10.2.1 &#124; 0.11.0.1 ]
 </p>
-
 <p id="ack_timeout" class="jumptarget">
 PRODUCER_ACK_TIMEOUT: In certain failure modes, async producers (kafka, kinesis, pubsub, sqs) may simply disappear
 a message, never notifying maxwell of success or failure.  This timeout can be set as a heuristic; after this many
@@ -1304,7 +1297,6 @@ milliseconds, maxwell will consider an outstanding message lost and fail it.
 The configuration priority is:</p>
 <pre><code>command line options &gt; scoped env vars &gt; properties file &gt; default values
 </code></pre>
-
 <h2 id="configproperties">config.properties</h2>
 <p>Maxwell can be configured via a java properties file, specified via <code>--config</code>
 or named "config.properties" in the current working directory.
@@ -1321,18 +1313,16 @@ this would be equivalent to passing <code>--user=auser</code>.</p>
 the endpoint /config will be exposed. Currently only filter updates are supported,
 and a filter can be updated with a request in the following format</p>
 <p><code>PATCH: /config</code></p>
-<pre><code class="json">{
+<pre><code class="language-json">{
     &quot;filter&quot;: &quot;exclude: noisy_db.*&quot;
 }
 </code></pre>
-
 <p>A get request will return the live config state
 <code>GET: /config</code></p>
-<pre><code class="json">{
+<pre><code class="language-json">{
     &quot;filter&quot;: &quot;exclude: noisy_db.*&quot;
 }
 </code></pre>
-
 <h3 id="deployment-scenarios">Deployment scenarios</h3>
 <hr />
 <p>At a minimum, Maxwell needs row-level-replication turned on into order to
@@ -1342,7 +1332,6 @@ server_id=1
 log-bin=master
 binlog_format=row
 </code></pre>
-
 <h4 id="gtid-support">GTID support</h4>
 <p>As of 1.8.0, Maxwell contains support for
 <a href="https://dev.mysql.com/doc/refman/5.6/en/replication-gtids.html">GTID-based replication</a>.
@@ -1358,7 +1347,6 @@ gtid-mode=ON
 log-slave-updates=ON
 enforce-gtid-consistency=true
 </code></pre>
-
 <p>When in GTID-mode, Maxwell will transparently pick up a new replication
 position after a master change.  Note that you will still have to re-point
 maxwell to the new master.</p>
@@ -1419,16 +1407,13 @@ should be unique across all mysql and maxwell instances.</p>
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
             </div>
             <div class="modal-body">
-                <p>
-                    From here you can search these documents. Enter
-                    your search terms below.
-                </p>
+                <p>From here you can search these documents. Enter your search terms below.</p>
                 <form>
                     <div class="form-group">
                         <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
                     </div>
                 </form>
-                <div id="mkdocs-search-results"></div>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
             </div>
             <div class="modal-footer">
             </div>

@@ -12,12 +12,12 @@
         <link href="../css/bootstrap.min.css" rel="stylesheet">
         <link href="../css/font-awesome.min.css" rel="stylesheet">
         <link href="../css/base.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css">
         <link href="../maxwell.css" rel="stylesheet">
 
         <script src="../js/jquery-1.10.2.min.js" defer></script>
         <script src="../js/bootstrap.min.js" defer></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
         <script>hljs.initHighlightingOnLoad();</script> 
     </head>
 
@@ -224,23 +224,18 @@ to recreate your entire dataset by playing the stream from the start.</p>
 <p>You can start a bootstrap using:</p>
 <pre><code>bin/maxwell-bootstrap --database fooDB --table barTable
 </code></pre>
-
 <p>Optionally, you can include a where clause to replay part of the data.</p>
 <pre><code>bin/maxwell-bootstrap --database fooDB --table barTable --where &quot;my_date &gt;= '2017-01-07 00:00:00'&quot;
 </code></pre>
-
 <p>Alternatively you can insert a row in the <code>maxwell.bootstrap</code> table to trigger a bootstrap.</p>
 <pre><code>mysql&gt; insert into maxwell.bootstrap (database_name, table_name) values ('fooDB', 'barTable');
 </code></pre>
-
 <p>Note that if a Maxwell client_id has been set you should specify the client id.</p>
 <pre><code>mysql&gt; insert into maxwell.bootstrap (database_name, table_name, client_id) values ('fooDB', 'barTable', 'custom_maxwell_client_id');
 </code></pre>
-
 <p>You can schedule bootstrap tasks to be run in the future by setting the started_at column. Maxwell will wait until this time to start the bootstrap.</p>
 <pre><code>mysql&gt; insert into maxwell.bootstrap (database_name, table_name, client_id, started_at) values ('fooDB', 'barTable', 'custom_maxwell_client_id', '2020-05-18 12:30:00');
 </code></pre>
-
 <h1 id="async-vs-sync-bootstrapping">Async vs Sync bootstrapping</h1>
 <hr />
 <p>The Maxwell replicator is single threaded; events are captured by one thread from the binlog and replicated to Kafka one message at a time.
@@ -260,7 +255,6 @@ In this async mode, non-bootstrapped tables are replicated as normal by the main
 mysql&gt; insert into fooDB.barTable (txt) values (&quot;hello&quot;), (&quot;bootstrap!&quot;);
 mysql&gt; insert into maxwell.bootstrap (database_name, table_name) values (&quot;fooDB&quot;, &quot;barTable&quot;);
 </code></pre>
-
 <p>Corresponding replication stream output of table <code>fooDB.barTable</code>:</p>
 <pre><code>{&quot;database&quot;:&quot;fooDB&quot;,&quot;table&quot;:&quot;barTable&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;ts&quot;:1450557598,&quot;xid&quot;:13,&quot;data&quot;:{&quot;txt&quot;:&quot;hello&quot;}}
 {&quot;database&quot;:&quot;fooDB&quot;,&quot;table&quot;:&quot;barTable&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;ts&quot;:1450557598,&quot;xid&quot;:13,&quot;data&quot;:{&quot;txt&quot;:&quot;bootstrap!&quot;}}
@@ -269,7 +263,6 @@ mysql&gt; insert into maxwell.bootstrap (database_name, table_name) values (&quo
 {&quot;database&quot;:&quot;fooDB&quot;,&quot;table&quot;:&quot;barTable&quot;,&quot;type&quot;:&quot;bootstrap-insert&quot;,&quot;ts&quot;:1450557744,&quot;data&quot;:{&quot;txt&quot;:&quot;bootstrap!&quot;}}
 {&quot;database&quot;:&quot;fooDB&quot;,&quot;table&quot;:&quot;barTable&quot;,&quot;type&quot;:&quot;bootstrap-complete&quot;,&quot;ts&quot;:1450557744,&quot;data&quot;:{}}
 </code></pre>
-
 <h1 id="failure-scenarios">Failure Scenarios</h1>
 <hr />
 <p>If Maxwell crashes during bootstrapping the next time it runs it will rerun the bootstrap in its entirety - regardless of previous progress.
@@ -304,16 +297,13 @@ Specifically, marking the unfinished bootstrap row as 'complete' (<code>is_compl
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
             </div>
             <div class="modal-body">
-                <p>
-                    From here you can search these documents. Enter
-                    your search terms below.
-                </p>
+                <p>From here you can search these documents. Enter your search terms below.</p>
                 <form>
                     <div class="form-group">
                         <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
                     </div>
                 </form>
-                <div id="mkdocs-search-results"></div>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
             </div>
             <div class="modal-footer">
             </div>

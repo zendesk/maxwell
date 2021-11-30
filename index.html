@@ -12,12 +12,12 @@
         <link href="css/bootstrap.min.css" rel="stylesheet">
         <link href="css/font-awesome.min.css" rel="stylesheet">
         <link href="css/base.css" rel="stylesheet">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/styles/github.min.css">
         <link href="maxwell.css" rel="stylesheet">
 
         <script src="js/jquery-1.10.2.min.js" defer></script>
         <script src="js/bootstrap.min.js" defer></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.5.0/highlight.min.js"></script>
         <script>hljs.initHighlightingOnLoad();</script> 
     </head>
 
@@ -123,7 +123,7 @@ Its common use cases include ETL, cache building/expiring, metrics collection,
 search indexing and inter-service communication.  Maxwell gives you some of the
 benefits of event sourcing without having to re-architect your entire platform.</p>
 <p><b>Download:</b><br>
-<a href="https://github.com/zendesk/maxwell/releases/download/v1.34.1/maxwell-1.34.1.tar.gz">https://github.com/zendesk/maxwell/releases/download/v1.34.1/maxwell-1.34.1.tar.gz</a>
+<a href="https://github.com/zendesk/maxwell/releases/download/v1.35.0/maxwell-1.35.0.tar.gz">https://github.com/zendesk/maxwell/releases/download/v1.35.0/maxwell-1.35.0.tar.gz</a>
 <br/>
 <b>Source:</b><br>
 <a href="https://github.com/zendesk/maxwell">https://github.com/zendesk/maxwell</a>
@@ -139,7 +139,6 @@ benefits of event sourcing without having to re-architect your entire platform.<
     &quot;data&quot;: { &quot;id&quot;:1, &quot;daemon&quot;: &quot;Stanislaw Lem&quot; }
   }
 </code></pre>
-
 <pre><code>  mysql&gt; update test.maxwell set daemon = 'firebus!  firebus!' where id = 1;
   maxwell: {
     &quot;database&quot;: &quot;test&quot;,
@@ -176,16 +175,13 @@ benefits of event sourcing without having to re-architect your entire platform.<
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
             </div>
             <div class="modal-body">
-                <p>
-                    From here you can search these documents. Enter
-                    your search terms below.
-                </p>
+                <p>From here you can search these documents. Enter your search terms below.</p>
                 <form>
                     <div class="form-group">
                         <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
                     </div>
                 </form>
-                <div id="mkdocs-search-results"></div>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
             </div>
             <div class="modal-footer">
             </div>
@@ -236,6 +232,6 @@ benefits of event sourcing without having to re-architect your entire platform.<
 </html>
 
 <!--
-MkDocs version : 1.1.2
-Build Date UTC : 2021-09-21 19:12:41.587552+00:00
+MkDocs version : 1.2.3
+Build Date UTC : 2021-11-30 10:17:56.306610+00:00
 -->
