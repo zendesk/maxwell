@@ -1,5 +1,22 @@
 # Maxwell changelog
 
+### [v1.35.0](https://github.com/zendesk/maxwell/releases/tag/v1.35.0): "two for the price of one"
+
+
+- couple of parser fixes
+- docker builds are now multi-platform
+- replication_reconnection_retries configuration option
+- quote table names in bootstrapper properly
+
+
+### [v1.34.1](https://github.com/zendesk/maxwell/releases/tag/v1.34.1): "the MC at the end of the world"
+
+
+- support for mysql 8's visible/invisible columns
+- support mariadb's if-exists/if-not-exists for partition management
+- add an index for the http endpoint
+
+
 ### [v1.34.0](https://github.com/zendesk/maxwell/releases/tag/v1.34.0): "Gil's song"
 
 
