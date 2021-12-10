@@ -1,5 +1,11 @@
 # Maxwell changelog
 
+### [v1.35.1](https://github.com/zendesk/maxwell/releases/tag/v1.35.1): "The holy game of poker"
+
+
+- log4j upgrade to upgrade past the giant security hole
+
+
 ### [v1.35.0](https://github.com/zendesk/maxwell/releases/tag/v1.35.0): "two for the price of one"
 
 
