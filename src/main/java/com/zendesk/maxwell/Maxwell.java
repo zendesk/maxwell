@@ -292,7 +292,7 @@ public class Maxwell implements Runnable {
 			}
 		} catch ( SQLException e ) {
 			// catch SQLException explicitly because we likely don't care about the stacktrace
-			LOGGER.error("SQLException: " + e.getLocalizedMessage());
+			LOGGER.error("SQLException: " + e.getLocalizedMessage(), e);
 			System.exit(1);
 		} catch ( URISyntaxException e ) {
 			// catch URISyntaxException explicitly as well to provide more information to the user
