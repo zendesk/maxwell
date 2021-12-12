@@ -1,5 +1,11 @@
 # Maxwell changelog
 
+### [v1.35.2](https://github.com/zendesk/maxwell/releases/tag/v1.35.2): "used to be on fire"
+
+
+- better logging when we can't connect on startup
+
+
 ### [v1.35.1](https://github.com/zendesk/maxwell/releases/tag/v1.35.1): "The holy game of poker"
 
 
