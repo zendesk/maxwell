@@ -66,9 +66,6 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public String sqsQueueUri;
 
-	public String snsTopic;
-	public String snsAttrs;
-
 	public String pubsubProjectId;
 	public String pubsubTopic;
 	public String ddlPubsubTopic;
@@ -110,8 +107,6 @@ public class MaxwellConfig extends AbstractConfig {
 
 	public MaxwellDiagnosticContext.Config diagnosticConfig;
 
-	public boolean enableHttpConfig;
-
 	public String clientID;
 	public Long replicaServerID;
 
@@ -126,9 +121,8 @@ public class MaxwellConfig extends AbstractConfig {
 	public String rabbitmqUser;
 	public String rabbitmqPass;
 	public String rabbitmqHost;
-	public Integer rabbitmqPort;
+	public int rabbitmqPort;
 	public String rabbitmqVirtualHost;
-	public String rabbitmqURI;
 	public String rabbitmqExchange;
 	public String rabbitmqExchangeType;
 	public boolean rabbitMqExchangeDurable;
@@ -136,6 +130,11 @@ public class MaxwellConfig extends AbstractConfig {
 	public String rabbitmqRoutingKeyTemplate;
 	public boolean rabbitmqMessagePersistent;
 	public boolean rabbitmqDeclareExchange;
+
+	public String rocketmqNamesrvAddr;
+	public String rocketmqProducerGroup;
+	public String rocketmqSendTopic;
+	public String rocketmqTags;
 
 	public String natsUrl;
 	public String natsSubject;
@@ -455,6 +454,14 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "rabbitmq_message_persistent", "Message persistence. Defaults to false" ).withOptionalArg();
 		parser.accepts( "rabbitmq_declare_exchange", "Should declare the exchange for rabbitmq publisher. Defaults to true" ).withOptionalArg();
 
+
+		parser.section( "rocketmq" );
+
+		parser.accepts( "rocketmq_namesrv_addr", "Rocketmq NameServer" ).withRequiredArg();
+		parser.accepts( "rocketmq_producer_group", "Rocketmq ProducerGroup" ).withRequiredArg();
+		parser.accepts( "rocketmq_send_topic", "optionally provide a topic name to push to. default: maxwell" ).withRequiredArg();
+		parser.accepts( "rocketmq_tags", "Rocketmq send messgae tags. default:tags" ).withRequiredArg();
+
 		parser.section( "redis" );
 
 		parser.accepts( "redis_host", "Host of Redis server" ).withRequiredArg();
@@ -474,10 +481,12 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.section("metrics");
 
 		parser.accepts( "metrics_prefix", "the prefix maxwell will apply to all metrics" ).withRequiredArg();
-		parser.accepts( "metrics_type", "how maxwell metrics will be reported, at least one of slf4j|jmx|http|datadog|stackdriver" ).withRequiredArg();
+		parser.accepts( "metrics_type", "how maxwell metrics will be reported, at least one of slf4j|jmx|http|datadog" ).withRequiredArg();
 		parser.accepts( "metrics_slf4j_interval", "the frequency metrics are emitted to the log, in seconds, when slf4j reporting is configured" ).withRequiredArg();
 		parser.accepts( "metrics_age_slo", "the threshold in seconds for message age service level objective" ).withRequiredArg().ofType(Integer.class);
-		parser.accepts( "metrics_jvm", "enable jvm metrics: true|false. default: false" ).withRequiredArg().ofType(Boolean.class);
+		parser.accepts( "http_port", "the port the server will bind to when http reporting is configured" ).withRequiredArg().ofType(Integer.class);
+		parser.accepts( "http_path_prefix", "the http path prefix when metrics_type includes http or diagnostic is enabled, default /" ).withRequiredArg();
+		parser.accepts( "http_bind_address", "the ip address the server will bind to when http reporting is configured" ).withRequiredArg();
 		parser.accepts( "metrics_datadog_type", "when metrics_type includes datadog this is the way metrics will be reported, one of udp|http" ).withRequiredArg();
 		parser.accepts( "metrics_datadog_tags", "datadog tags that should be supplied, e.g. tag1:value1,tag2:value2" ).withRequiredArg();
 		parser.accepts( "metrics_datadog_interval", "the frequency metrics are pushed to datadog, in seconds" ).withRequiredArg().ofType(Long.class);
@@ -485,15 +494,9 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "metrics_datadog_site", "the site to publish metrics to when metrics_datadog_type = http, one of us|eu, default us" ).withRequiredArg();
 		parser.accepts( "metrics_datadog_host", "the host to publish metrics to when metrics_datadog_type = udp" ).withRequiredArg();
 		parser.accepts( "metrics_datadog_port", "the port to publish metrics to when metrics_datadog_type = udp" ).withRequiredArg().ofType(Integer.class);
-
-
-		parser.section("http");
-		parser.accepts( "http_port", "the port the server will bind to when http reporting is configured" ).withRequiredArg().ofType(Integer.class);
-		parser.accepts( "http_path_prefix", "the http path prefix when metrics_type includes http or diagnostic is enabled, default /" ).withRequiredArg();
-		parser.accepts( "http_bind_address", "the ip address the server will bind to when http reporting is configured" ).withRequiredArg();
 		parser.accepts( "http_diagnostic", "enable http diagnostic endpoint: true|false. default: false" ).withOptionalArg().ofType(Boolean.class);
 		parser.accepts( "http_diagnostic_timeout", "the http diagnostic response timeout in ms when http_diagnostic=true. default: 10000" ).withRequiredArg().ofType(Integer.class);
-		parser.accepts( "http_config", "enable http config update endpoint: true|false. default: false" ).withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "metrics_jvm", "enable jvm metrics: true|false. default: false" ).withRequiredArg().ofType(Boolean.class);
 
 		parser.accepts( "help", "display help" ).withOptionalArg().forHelp();
 
@@ -594,12 +597,11 @@ public class MaxwellConfig extends AbstractConfig {
 		this.pubsubMaxRpcTimeout 		 		= Duration.ofSeconds(fetchLongOption("pubsub_max_rpc_timeout", options, properties, 600L));
 		this.pubsubTotalTimeout 		 		= Duration.ofSeconds(fetchLongOption("pubsub_total_timeout", options, properties, 600L));
 
-		this.rabbitmqHost           		= fetchStringOption("rabbitmq_host", options, properties, null);
-		this.rabbitmqPort 			= fetchIntegerOption("rabbitmq_port", options, properties, null);
+		this.rabbitmqHost           		= fetchStringOption("rabbitmq_host", options, properties, "localhost");
+		this.rabbitmqPort 			= fetchIntegerOption("rabbitmq_port", options, properties, 5672);
 		this.rabbitmqUser 			= fetchStringOption("rabbitmq_user", options, properties, "guest");
 		this.rabbitmqPass			= fetchStringOption("rabbitmq_pass", options, properties, "guest");
 		this.rabbitmqVirtualHost    		= fetchStringOption("rabbitmq_virtual_host", options, properties, "/");
-		this.rabbitmqURI 			= fetchStringOption("rabbitmq_uri", options, properties, null);
 		this.rabbitmqExchange       		= fetchStringOption("rabbitmq_exchange", options, properties, "maxwell");
 		this.rabbitmqExchangeType   		= fetchStringOption("rabbitmq_exchange_type", options, properties, "fanout");
 		this.rabbitMqExchangeDurable 		= fetchBooleanOption("rabbitmq_exchange_durable", options, properties, false);
@@ -610,6 +612,11 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.natsUrl			= fetchStringOption("nats_url", options, properties, "nats://localhost:4222");
 		this.natsSubject		= fetchStringOption("nats_subject", options, properties, "%{database}.%{table}");
+
+		this.rocketmqNamesrvAddr = fetchStringOption("rocketmq_namesrv_addr", options, properties, "localhost:9876");
+		this.rocketmqProducerGroup = fetchStringOption("rocketmq_producer_group", options, properties, "rocketmq_producer_group");
+		this.rocketmqSendTopic = fetchStringOption("rocketmq_send_topic", options, properties, "maxwell");
+		this.rocketmqTags = fetchStringOption("rocketmq_tags", options, properties, "tags");
 
 		this.redisHost			= fetchStringOption("redis_host", options, properties, "localhost");
 		this.redisPort			= fetchIntegerOption("redis_port", options, properties, 6379);
@@ -656,8 +663,6 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.sqsQueueUri = fetchStringOption("sqs_queue_uri", options, properties, null);
 
-		this.snsTopic = fetchStringOption("sns_topic", options, properties, null);
-		this.snsAttrs = fetchStringOption("sns_attrs", options, properties, null);
 		this.outputFile = fetchStringOption("output_file", options, properties, null);
 
 		this.metricsPrefix = fetchStringOption("metrics_prefix", options, properties, "MaxwellMetrics");
@@ -684,8 +689,6 @@ public class MaxwellConfig extends AbstractConfig {
 		this.diagnosticConfig = new MaxwellDiagnosticContext.Config();
 		this.diagnosticConfig.enable = fetchBooleanOption("http_diagnostic", options, properties, false);
 		this.diagnosticConfig.timeout = fetchLongOption("http_diagnostic_timeout", options, properties, 10000L);
-
-		this.enableHttpConfig = fetchBooleanOption("http_config", options, properties, false);
 
 		this.includeDatabases    = fetchStringOption("include_dbs", options, properties, null);
 		this.excludeDatabases    = fetchStringOption("exclude_dbs", options, properties, null);
@@ -716,7 +719,6 @@ public class MaxwellConfig extends AbstractConfig {
 		outputConfig.includesRowQuery = fetchBooleanOption("output_row_query", options, properties, false);
 		outputConfig.includesPrimaryKeys = fetchBooleanOption("output_primary_keys", options, properties, false);
 		outputConfig.includesPrimaryKeyColumns = fetchBooleanOption("output_primary_key_columns", options, properties, false);
-		outputConfig.includesPushTimestamp = fetchBooleanOption("output_push_timestamp", options, properties, false);
 		outputConfig.outputDDL	= fetchBooleanOption("output_ddl", options, properties, false);
 		outputConfig.zeroDatesAsNull = fetchBooleanOption("output_null_zerodates", options, properties, false);
 		outputConfig.namingStrategy = fetchStringOption("output_naming_strategy", options, properties, null);
@@ -860,7 +862,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		if ( this.producerType.equals("kafka") ) {
 			if ( !this.kafkaProperties.containsKey("bootstrap.servers") ) {
-				usageForOptions("Please specify kafka.bootstrap.servers", "kafka");
+				usageForOptions("You must specify kafka.bootstrap.servers for the kafka producer!", "kafka");
 			}
 
 			if ( this.kafkaPartitionHash == null ) {
@@ -880,8 +882,6 @@ public class MaxwellConfig extends AbstractConfig {
 			usageForOptions("please specify a stream name for kinesis", "kinesis_stream");
 		} else if (this.producerType.equals("sqs") && this.sqsQueueUri == null) {
 			usageForOptions("please specify a queue uri for sqs", "sqs_queue_uri");
-		} else if (this.producerType.equals("sns") && this.snsTopic == null) {
-			usageForOptions("please specify a topic ARN for SNS", "sns_topic");
 		} else if (this.producerType.equals("pubsub")) {
 			if (this.pubsubRequestBytesThreshold <= 0L)
 				usage("--pubsub_request_bytes_threshold must be > 0");
@@ -954,8 +954,7 @@ public class MaxwellConfig extends AbstractConfig {
 				null,
 				this.maxwellMysql.user,
 				this.maxwellMysql.password,
-				this.maxwellMysql.sslMode,
-				this.maxwellMysql.enableHeartbeat
+				this.maxwellMysql.sslMode
 			);
 
 			this.replicationMysql.jdbcOptions = this.maxwellMysql.jdbcOptions;
