@@ -1,5 +1,11 @@
 # Maxwell changelog
 
+### [v1.35.3](https://github.com/zendesk/maxwell/releases/tag/v1.35.3): "see nothing wrong"
+
+
+- log4j vulnerability #2
+
+
 ### [v1.35.2](https://github.com/zendesk/maxwell/releases/tag/v1.35.2): "used to be on fire"
 
 
