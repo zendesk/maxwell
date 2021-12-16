@@ -124,5 +124,5 @@ bundle exec ./release <the-new-version-number> <build | tag | release | changelo
 Check the Maven Repo to see if it all worked!
 
 ```
-https://repo1.maven.org/maven2/com/zendesk/maxwell/<the-new-version-number>/
+https://repo1.maven.org/maven2/com.zendesk/maxwell/<the-new-version-number>/
 ```
