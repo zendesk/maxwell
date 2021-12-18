@@ -1,5 +1,11 @@
 # Maxwell changelog
 
+### [v1.35.4](https://github.com/zendesk/maxwell/releases/tag/v1.35.4): "pity"
+
+
+- log4j turns 2.17.0, happy birthday
+
+
 ### [v1.35.3](https://github.com/zendesk/maxwell/releases/tag/v1.35.3): "see nothing wrong"
 
 
