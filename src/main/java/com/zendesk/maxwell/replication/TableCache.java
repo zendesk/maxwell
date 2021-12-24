@@ -16,6 +16,16 @@ public class TableCache {
 	private final HashMap<Long, Table> tableMapCache = new HashMap<>();
 
 	public void processEvent(Schema schema, Filter filter, Long tableId, String dbName, String tblName) {
+
+		if( tableMapCache.containsKey(tableId)) {
+			Table cacheTable = tableMapCache.get(tableId);
+			String cacheDatabaseName = cacheTable.getDatabase();
+			String cacheTableName = cacheTable.getName();
+			if( !dbName.equalsIgnoreCase(cacheDatabaseName) || !tblName.equalsIgnoreCase(cacheTableName)) {
+				tableMapCache.remove(tableId);
+			}
+		}
+
 		if ( !tableMapCache.containsKey(tableId)) {
 			if ( filter.isTableBlacklisted(dbName, tblName) ) {
 				return;
