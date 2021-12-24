@@ -387,6 +387,11 @@
         <artifactId>opencensus-exporter-stats-stackdriver</artifactId>
         <version>${opencensus.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.openjdk.nashorn</groupId>
+      <artifactId>nashorn-core</artifactId>
+      <version>15.3</version>
+    </dependency>
   </dependencies>
 
   <build>

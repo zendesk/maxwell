@@ -10,8 +10,7 @@ import java.nio.file.Paths;
 import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.ddl.DDLMap;
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
-import jdk.nashorn.api.scripting.ScriptUtils;
+import org.openjdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
