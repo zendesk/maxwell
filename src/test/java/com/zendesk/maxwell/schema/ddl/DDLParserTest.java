@@ -260,6 +260,7 @@ public class DDLParserTest {
 			"ALTER TABLE t1 DROP PARTITION IF EXISTS p3", // some mariada-fu
 			"ALTER TABLE t1 DROP CONSTRAINT ck",
 			"ALTER TABLE t1 DROP CHECK ck",
+			"create table test ( i float default -1. )"
 		};
 
 		for ( String s : testSQL ) {
