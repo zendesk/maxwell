@@ -263,7 +263,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-pubsub</artifactId>
-      <version>1.111.0-sp.2</version>
+      <version>1.115.1</version>
     </dependency>
     <dependency>
       <groupId>io.nats</groupId>
