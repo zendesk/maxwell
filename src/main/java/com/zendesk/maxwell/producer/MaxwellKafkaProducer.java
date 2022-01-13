@@ -150,6 +150,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	private String deadLetterTopic;
 	private final ConcurrentLinkedQueue<Pair<ProducerRecord<String, String>, KafkaCallback>> deadLetterQueue;
 	private final TopicInterpolator topicInterpolator;
+	private final TopicInterpolator ddlTopicInterpolator;
 
 	public static MaxwellKafkaPartitioner makeDDLPartitioner(String partitionHashFunc, String partitionKey) {
 		if (partitionKey.equals("table")) {
@@ -180,6 +181,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 
 		this.ddlPartitioner = makeDDLPartitioner(hash, partitionKey);
 		this.ddlTopic = context.getConfig().ddlKafkaTopic;
+		this.ddlTopicInterpolator = new TopicInterpolator(this.ddlTopic);
 		this.deadLetterTopic = context.getConfig().deadLetterTopic;
 		this.deadLetterQueue = new ConcurrentLinkedQueue<>();
 
@@ -269,7 +271,8 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		String value = r.toJSON(outputConfig);
 		ProducerRecord<String, String> record;
 		if (r instanceof DDLMap) {
-			record = new ProducerRecord<>(this.ddlTopic, this.ddlPartitioner.kafkaPartition(r, getNumPartitions(this.ddlTopic)), key, value);
+			String topic = this.ddlTopicInterpolator.generateFromRowMap(r);
+			record = new ProducerRecord<>(topic, this.ddlPartitioner.kafkaPartition(r, getNumPartitions(topic)), key, value);
 		} else {
 			String topic;
 
