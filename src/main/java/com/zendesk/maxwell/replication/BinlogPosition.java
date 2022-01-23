@@ -21,6 +21,7 @@ public class BinlogPosition implements Serializable {
 	private final String gtidSetStr;
 	private final String gtid;
 	private final long offset;
+	private final Long fileNumber;
 	private final String file;
 
 	public BinlogPosition(String gtidSetStr, String gtid, long l, String file) {
@@ -28,6 +29,7 @@ public class BinlogPosition implements Serializable {
 		this.gtid = gtid;
 		this.offset = l;
 		this.file = file;
+		this.fileNumber = parseFileNumber(file);
 	}
 
 	public BinlogPosition(long l, String file) {
@@ -94,6 +96,20 @@ public class BinlogPosition implements Serializable {
 		return pos;
 	}
 
+	private Long parseFileNumber(String filename) {
+		String[] split = filename.split("\\.");
+		if ( split.length < 2 ) {
+			return null;
+		} else {
+			return Long.valueOf(split[split.length - 1]);
+		}
+	}
+
+	public Long getFileNumber() {
+		return this.fileNumber;
+	}
+
+
 	public boolean newerThan(BinlogPosition other) {
 		if ( other == null )
 			return true;
@@ -102,7 +118,13 @@ public class BinlogPosition implements Serializable {
 			return !getGtidSet().isContainedWithin(other.getGtidSet());
 		}
 
-		int cmp = this.file.compareTo(other.file);
+		long cmp;
+		if ( this.fileNumber == null || other.getFileNumber() == null ) {
+			cmp = this.file.compareTo(other.file);
+		} else {
+			cmp = this.fileNumber - other.getFileNumber();
+		}
+
 		if ( cmp > 0 ) {
 			return true;
 		} else if ( cmp == 0 ) {
