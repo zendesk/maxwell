@@ -36,7 +36,9 @@ the "new producer" configuration, as described here:
 [http://kafka.apache.org/documentation.html#newproducerconfigs](http://kafka.apache.org/documentation.html#newproducerconfigs)
 
 
-## Highest throughput
+## Example kafka configs
+
+### Highest throughput
 
 These properties would give high throughput performance.
 
@@ -46,7 +48,7 @@ kafka.compression.type = snappy
 kafka.retries=0
 ```
 
-## Most reliable
+### Most reliable
 
 For at-least-once delivery, you will want something more like:
 
@@ -57,7 +59,7 @@ kafka.retries = 5 # or some larger number
 
 And you will also want to set `min.insync.replicas` on Maxwell's output topic.
 
-## Keys
+## Key format
 
 Maxwell generates keys for its Kafka messages based upon a mysql row's primary key in JSON format:
 
@@ -112,7 +114,7 @@ your updates), you must set both:
 When partitioning by column Maxwell will treat the values for the specified
 columns as strings, concatenate them and use that value to partition the data.
 
-## Kafka partitioning
+### Kafka partitioning
 
 A binlog event's partition is determined by the selected hash function and hash string as follows
 
@@ -280,15 +282,11 @@ For more details on these options, you are encouraged to the read official Rabbi
 
 # Redis
 ***
-Set the output stream in `config.properties` by setting the `redis_type`
-property to either `pubsub`, `xadd`, `lpush` or `rpsuh`. The `redis_key` is
-used as a channel for `pubsub`, as stream key for `xadd` and as key for `lpush`
-and `rpush`.
 
-Maxwell writes to a Redis channel named "maxwell" by default. It can be static,
-e.g. 'maxwell', or dynamic, e.g. `namespace_%{database}_%{table}`. In the
-latter case 'database' and 'table' will be replaced with the values for the row
-being processed. This can be changed with the `redis_pub_channel`, `redis_list_key` and `redis_stream_key` option.
+Choose type of redis data structure to create to by setting `redis_type` to one of:
+`pubsub`, `xadd`, `lpush` or `rpush`.  The default is `pubsub`.
+
+`redis_key` defaults to "maxwell" and supports [topic substitution](#topic-substitution)
 
 Other configurable properties are:
 
@@ -304,9 +302,9 @@ Other configurable properties are:
 
 # Custom Producer
 ***
-If none of the producers packaged with Maxwell meet your requirements, a custom producer can be added at runtime. The producer is responsible for processing the raw database rows. Note that your producer may receive DDL and heartbeat rows as well, but your producer can easily filter them out (see example).
+If none of the producers packaged with Maxwell meet your requirements, a custom producer can be added at runtime.  
 
-In order to register your custom producer, you must implement the `ProducerFactory` interface, which is responsible for creating your custom `AbstractProducer`. Next, set the `custom_producer.factory` configuration property to your `ProducerFactory`'s fully qualified class name. Then add the custom `ProducerFactory` and all its dependencies to the $MAXWELL_HOME/lib directory.
+In order to register your custom producer, you must implement the `ProducerFactory` interface, which is responsible for creating your custom `AbstractProducer`. Next, set the `custom_producer.factory` configuration property to your `ProducerFactory`'s fully qualified class name. Then add the custom `ProducerFactory` JAR and all its dependencies to the $MAXWELL_HOME/lib directory.
 
 Your custom producer will likely require configuration properties as well. For that, use the `custom_producer.*` property namespace. Those properties will be exposed to your producer via `MaxwellConfig.customProducerProperties`.
 
