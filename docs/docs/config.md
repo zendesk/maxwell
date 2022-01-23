@@ -78,17 +78,22 @@ kafka_partition_hash           | [ default &#124; murmur3 ]          | hash func
 kafka_key_format               | [ array &#124; hash ]               | how maxwell outputs kafka keys, either a hash or an array of hashes | hash
 ddl_kafka_topic                | STRING                              | if output_ddl is true, kafka topic to write DDL changes to | *kafka_topic*
 
+_See also:_ [Kafka Producer Documentation](/producers#kafka)
+
 
 ## kinesis producer
 option                         | argument                            | description                                         | default
 -------------------------------|-------------------------------------| --------------------------------------------------- | -------
 kinesis_stream                 | STRING                              | kinesis stream name |
 
+_See also:_ [Kinesis Producer Documentation](/producers#kinesis)
 
 ## sqs producer
 option                         | argument                            | description                                         | default
 -------------------------------|-------------------------------------| --------------------------------------------------- | -------
 sqs_queue_uri                  | STRING                              | SQS Queue URI |
+
+_See also:_ [SQS Producer Documentation](/producers#sqs)
 
 ## sns producer 
 option                         | argument                            | description                                         | default
@@ -96,11 +101,15 @@ option                         | argument                            | descripti
 sns_topic                      | STRING                              | The SNS topic to publish to. FIFO topics should end with `.fifo` |
 sns_attrs                      | STRING                              | Properties to set as attributes on the SNS message  |  
 
+_See also:_ [SNS Producer Documentation](/producers#sns)
+
 ## nats producer
 option                         | argument                            | description                                         | default
 -------------------------------|-------------------------------------| --------------------------------------------------- | -------
 nats_url                       | STRING     | Comma separated list of nats urls.  may include [user:password style auth](https://docs.nats.io/developing-with-nats/security/userpass#connecting-with-a-user-password-in-the-url) | nats://localhost:4222
 nats_subject                   | STRING     | Nats subject hierarchy.  [Topic substitution](/producers/#topic-substitution) available. | `%{database}.%{table}`
+
+_See also:_ [Nats Producer Documentation](/producers#nats)
 
 ## pubsub producer
 option                         | argument                            | description                                         | default
@@ -119,6 +128,8 @@ pubsub_rpc_timeout_multiplier  | FLOAT      | Controls the change in RPC timeout
 pubsub_max_rpc_timeout         | LONG       | Puts a limit on the value in seconds of the RPC timeout | 600
 pubsub_total_timeout           | LONG       | Puts a limit on the value in seconds of the retry delay, so that the RetryDelayMultiplier can't increase the retry delay higher than this amount | 600
 
+_See also:_ [PubSub Producer Documentation](/producers#google-cloud-pubsub)
+
 ## rabbitmq producer
 option                         | argument                            | description                                         | default
 -------------------------------|-------------------------------------| --------------------------------------------------- | -------
@@ -135,6 +146,8 @@ rabbitmq_routing_key_template  | STRING     | A string template for the routing 
 rabbitmq_message_persistent    | BOOLEAN    | Eanble message persistence. | false
 rabbitmq_declare_exchange      | BOOLEAN    | Should declare the exchange for rabbitmq publisher | true
 
+_See also:_ [RabbitMQ Producer Documentation](/producers#rabbitmq)
+
 ## redis producer
 option                         | argument                            | description                                         | default
 -------------------------------|-------------------------------------| --------------------------------------------------- | -------
@@ -147,6 +160,8 @@ redis_key                      | STRING                   | Redis channel/key fo
 redis_stream_json_key          | STRING                   | Redis XADD Stream Message Field Name | message
 redis_sentinels                | STRING                   | Redis sentinels list in format host1:port1,host2:port2,host3:port3... Must be only used with redis_sentinel_master_name
 redis_sentinel_master_name     | STRING                   | Redis sentinel master name. Must be only used with redis_sentinels
+
+_See also:_ [Redis Producer Documentation](/producers#redis)
 
 
 # formatting
@@ -173,6 +188,8 @@ option                         | argument                            | descripti
 -------------------------------|-------------------------------------| --------------------------------------------------- | -------
 filter                         | STRING            | filter rules, eg `exclude: db.*, include: *.tbl, include: *./bar(bar)?/, exclude: foo.bar.col=val` |
 
+_See also:_ [filtering](/filtering)
+
 # encryption
 option                         | argument                            | description                                         | default
 -------------------------------|-------------------------------------| --------------------------------------------------- | -------
@@ -185,6 +202,8 @@ option                         | argument                            | descripti
 ha                             |                                     | enable maxwell client HA                            |
 jgroups_config                 | string                              | location of xml configuration file for jGroups      | $PWD/raft.xml
 raft_member_id                 | string                              | uniquely identify this node within jgroups-raft cluster |
+
+_See also:_ [High Availability](/high_availability)
 
 # monitoring / metrics
 option                         | argument                            | description                                         | default
@@ -206,6 +225,8 @@ metrics_datadog_apikey   | STRING | the datadog api key to use when metrics_data
 metrics_datadog_site     | STRING | the site to publish metrics to when metrics_datadog_type = `http` | us
 metrics_datadog_host     | STRING | the host to publish metrics to when metrics_datadog_type = `udp` | localhost
 metrics_datadog_port     | INT | the port to publish metrics to when metrics_datadog_type = `udp` | 8125
+
+_See also:_ [Monitoring](/monitoring)
 
 # misc
 option                         | argument                            | description                                         | default
