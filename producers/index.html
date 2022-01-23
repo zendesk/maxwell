@@ -140,15 +140,11 @@
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#highest-throughput" class="nav-link">Highest throughput</a>
+            <li class="nav-item" data-level="2"><a href="#example-kafka-configs" class="nav-link">Example kafka configs</a>
               <ul class="nav flex-column">
               </ul>
             </li>
-            <li class="nav-item" data-level="2"><a href="#most-reliable" class="nav-link">Most reliable</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
-            <li class="nav-item" data-level="2"><a href="#keys" class="nav-link">Keys</a>
+            <li class="nav-item" data-level="2"><a href="#key-format" class="nav-link">Key format</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -157,10 +153,6 @@
             
             <li class="nav-item" data-level="1"><a href="#partitioning" class="nav-link">Partitioning</a>
               <ul class="nav flex-column">
-            <li class="nav-item" data-level="2"><a href="#kafka-partitioning" class="nav-link">Kafka partitioning</a>
-              <ul class="nav flex-column">
-              </ul>
-            </li>
               </ul>
             </li>
             
@@ -269,19 +261,20 @@ SchemaException: Error reading field 'throttle_time_ms': java.nio.BufferUnderflo
 be passed into the Kafka producer library (with <code>kafka.</code> stripped off, see below for examples).  We use
 the "new producer" configuration, as described here:
 <a href="http://kafka.apache.org/documentation.html#newproducerconfigs">http://kafka.apache.org/documentation.html#newproducerconfigs</a></p>
-<h2 id="highest-throughput">Highest throughput</h2>
+<h2 id="example-kafka-configs">Example kafka configs</h2>
+<h3 id="highest-throughput">Highest throughput</h3>
 <p>These properties would give high throughput performance.</p>
 <pre><code>kafka.acks = 1
 kafka.compression.type = snappy
 kafka.retries=0
 </code></pre>
-<h2 id="most-reliable">Most reliable</h2>
+<h3 id="most-reliable">Most reliable</h3>
 <p>For at-least-once delivery, you will want something more like:</p>
 <pre><code>kafka.acks = all
 kafka.retries = 5 # or some larger number
 </code></pre>
 <p>And you will also want to set <code>min.insync.replicas</code> on Maxwell's output topic.</p>
-<h2 id="keys">Keys</h2>
+<h2 id="key-format">Key format</h2>
 <p>Maxwell generates keys for its Kafka messages based upon a mysql row's primary key in JSON format:</p>
 <pre><code>{ &quot;database&quot;:&quot;test_tb&quot;,&quot;table&quot;:&quot;test_tbl&quot;,&quot;pk.id&quot;:4,&quot;pk.part2&quot;:&quot;hello&quot;}
 </code></pre>
@@ -325,7 +318,7 @@ your updates), you must set both:</p>
 </ul>
 <p>When partitioning by column Maxwell will treat the values for the specified
 columns as strings, concatenate them and use that value to partition the data.</p>
-<h2 id="kafka-partitioning">Kafka partitioning</h2>
+<h3 id="kafka-partitioning">Kafka partitioning</h3>
 <p>A binlog event's partition is determined by the selected hash function and hash string as follows</p>
 <pre><code>  HASH_FUNCTION(producer_partion_value) % TOPIC.NUMBER_OF_PARTITIONS
 </code></pre>
@@ -449,14 +442,9 @@ for DDL updates by setting the <code>ddl_pubsub_topic</code> property.</p>
 <p>For more details on these options, you are encouraged to the read official RabbitMQ documentation here: <a href="https://www.rabbitmq.com/documentation.html">https://www.rabbitmq.com/documentation.html</a></p>
 <h1 id="redis">Redis</h1>
 <hr />
-<p>Set the output stream in <code>config.properties</code> by setting the <code>redis_type</code>
-property to either <code>pubsub</code>, <code>xadd</code>, <code>lpush</code> or <code>rpsuh</code>. The <code>redis_key</code> is
-used as a channel for <code>pubsub</code>, as stream key for <code>xadd</code> and as key for <code>lpush</code>
-and <code>rpush</code>.</p>
-<p>Maxwell writes to a Redis channel named "maxwell" by default. It can be static,
-e.g. 'maxwell', or dynamic, e.g. <code>namespace_%{database}_%{table}</code>. In the
-latter case 'database' and 'table' will be replaced with the values for the row
-being processed. This can be changed with the <code>redis_pub_channel</code>, <code>redis_list_key</code> and <code>redis_stream_key</code> option.</p>
+<p>Choose type of redis data structure to create to by setting <code>redis_type</code> to one of:
+<code>pubsub</code>, <code>xadd</code>, <code>lpush</code> or <code>rpush</code>.  The default is <code>pubsub</code>.</p>
+<p><code>redis_key</code> defaults to "maxwell" and supports <a href="#topic-substitution">topic substitution</a></p>
 <p>Other configurable properties are:</p>
 <ul>
 <li><code>redis_host</code> - defaults to <strong>localhost</strong></li>
@@ -471,8 +459,8 @@ being processed. This can be changed with the <code>redis_pub_channel</code>, <c
 </ul>
 <h1 id="custom-producer">Custom Producer</h1>
 <hr />
-<p>If none of the producers packaged with Maxwell meet your requirements, a custom producer can be added at runtime. The producer is responsible for processing the raw database rows. Note that your producer may receive DDL and heartbeat rows as well, but your producer can easily filter them out (see example).</p>
-<p>In order to register your custom producer, you must implement the <code>ProducerFactory</code> interface, which is responsible for creating your custom <code>AbstractProducer</code>. Next, set the <code>custom_producer.factory</code> configuration property to your <code>ProducerFactory</code>'s fully qualified class name. Then add the custom <code>ProducerFactory</code> and all its dependencies to the $MAXWELL_HOME/lib directory.</p>
+<p>If none of the producers packaged with Maxwell meet your requirements, a custom producer can be added at runtime.  </p>
+<p>In order to register your custom producer, you must implement the <code>ProducerFactory</code> interface, which is responsible for creating your custom <code>AbstractProducer</code>. Next, set the <code>custom_producer.factory</code> configuration property to your <code>ProducerFactory</code>'s fully qualified class name. Then add the custom <code>ProducerFactory</code> JAR and all its dependencies to the $MAXWELL_HOME/lib directory.</p>
 <p>Your custom producer will likely require configuration properties as well. For that, use the <code>custom_producer.*</code> property namespace. Those properties will be exposed to your producer via <code>MaxwellConfig.customProducerProperties</code>.</p>
 <p>Custom producer factory and producer examples can be found here: <a href="https://github.com/zendesk/maxwell/tree/master/src/example/com/zendesk/maxwell/example/producerfactory">https://github.com/zendesk/maxwell/tree/master/src/example/com/zendesk/maxwell/example/producerfactory</a></p>
 <h1 id="topic-substitution">Topic substitution</h1>
