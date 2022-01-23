@@ -9,7 +9,7 @@
 
 
 
-Released _2022-01-23_
+_Released 2022-01-23_
 
 ### [v1.35.5](https://github.com/zendesk/maxwell/releases/tag/v1.35.5): 
 
@@ -17,7 +17,7 @@ Released _2022-01-23_
 
 
 
-Released _2021-12-29_
+_Released 2021-12-29_
 
 ### [v1.35.4](https://github.com/zendesk/maxwell/releases/tag/v1.35.4): 
 
@@ -25,7 +25,7 @@ Released _2021-12-29_
 
 
 
-Released _2021-12-18_
+_Released 2021-12-18_
 
 ### [v1.35.3](https://github.com/zendesk/maxwell/releases/tag/v1.35.3): 
 
@@ -33,7 +33,7 @@ Released _2021-12-18_
 
 
 
-Released _2021-12-15_
+_Released 2021-12-15_
 
 ### [v1.35.2](https://github.com/zendesk/maxwell/releases/tag/v1.35.2): 
 
@@ -41,7 +41,7 @@ Released _2021-12-15_
 
 
 
-Released _2021-12-12_
+_Released 2021-12-12_
 
 ### [v1.35.1](https://github.com/zendesk/maxwell/releases/tag/v1.35.1): 
 
@@ -49,7 +49,7 @@ Released _2021-12-12_
 
 
 
-Released _2021-12-10_
+_Released 2021-12-10_
 
 ### [v1.35.0](https://github.com/zendesk/maxwell/releases/tag/v1.35.0): 
 
@@ -60,7 +60,7 @@ Released _2021-12-10_
 
 
 
-Released _2021-11-30_
+_Released 2021-11-30_
 
 ### [v1.34.1](https://github.com/zendesk/maxwell/releases/tag/v1.34.1): 
 
@@ -70,7 +70,7 @@ Released _2021-11-30_
 
 
 
-Released _2021-09-21_
+_Released 2021-09-21_
 
 ### [v1.34.0](https://github.com/zendesk/maxwell/releases/tag/v1.34.0): 
 
@@ -82,7 +82,7 @@ Released _2021-09-21_
 
 
 
-Released _2021-07-29_
+_Released 2021-07-29_
 
 ### [v1.33.1](https://github.com/zendesk/maxwell/releases/tag/v1.33.1): 
 
@@ -92,7 +92,7 @@ Released _2021-07-29_
 
 
 
-Released _2021-06-02_
+_Released 2021-06-02_
 
 ### [v1.33.0](https://github.com/zendesk/maxwell/releases/tag/v1.33.0): 
 
@@ -100,7 +100,7 @@ Released _2021-06-02_
 
 
 
-Released _2021-03-29_
+_Released 2021-03-29_
 
 ### [v1.32.0](https://github.com/zendesk/maxwell/releases/tag/v1.32.0): 
 
@@ -110,7 +110,7 @@ Released _2021-03-29_
 
 
 
-Released _2021-03-17_
+_Released 2021-03-17_
 
 ### [v1.31.0](https://github.com/zendesk/maxwell/releases/tag/v1.31.0): 
 
@@ -118,7 +118,7 @@ Released _2021-03-17_
 
 
 
-Released _2021-02-11_
+_Released 2021-02-11_
 
 ### [v1.30.0](https://github.com/zendesk/maxwell/releases/tag/v1.30.0): 
 
@@ -131,7 +131,7 @@ Released _2021-02-11_
 
 
 
-Released _2021-02-05_
+_Released 2021-02-05_
 
 ### [v1.29.2](https://github.com/zendesk/maxwell/releases/tag/v1.29.2): 
 
@@ -139,7 +139,7 @@ Released _2021-02-05_
 
 
 
-Released _2021-01-27_
+_Released 2021-01-27_
 
 ### [v1.29.1](https://github.com/zendesk/maxwell/releases/tag/v1.29.1): 
 
@@ -147,7 +147,7 @@ Released _2021-01-27_
 
 
 
-Released _2020-12-23_
+_Released 2020-12-23_
 
 ### [v1.29.0](https://github.com/zendesk/maxwell/releases/tag/v1.29.0): 
 
@@ -156,7 +156,7 @@ Released _2020-12-23_
 
 
 
-Released _2020-12-15_
+_Released 2020-12-15_
 
 ### [v1.28.2](https://github.com/zendesk/maxwell/releases/tag/v1.28.2): 
 
@@ -165,7 +165,7 @@ Released _2020-12-15_
 
 
 
-Released _2020-12-02_
+_Released 2020-12-02_
 
 ### [v1.28.1](https://github.com/zendesk/maxwell/releases/tag/v1.28.1): 
 
@@ -173,7 +173,7 @@ Released _2020-12-02_
 
 
 
-Released _2020-11-25_
+_Released 2020-11-25_
 
 ### [v1.28.0](https://github.com/zendesk/maxwell/releases/tag/v1.28.0): 
 
@@ -187,7 +187,7 @@ Released _2020-11-25_
 
 
 
-Released _2020-11-19_
+_Released 2020-11-19_
 
 ### [v1.27.1](https://github.com/zendesk/maxwell/releases/tag/v1.27.1): 
 
@@ -199,7 +199,7 @@ Released _2020-11-19_
 
 
 
-Released _2020-08-07_
+_Released 2020-08-07_
 
 ### [v1.27.0](https://github.com/zendesk/maxwell/releases/tag/v1.27.0): 
 
@@ -213,7 +213,7 @@ Released _2020-08-07_
 
 
 
-Released _2020-06-30_
+_Released 2020-06-30_
 
 ### [v1.26.4](https://github.com/zendesk/maxwell/releases/tag/v1.26.4): 
 
@@ -221,7 +221,7 @@ Released _2020-06-30_
 
 
 
-Released _2020-06-08_
+_Released 2020-06-08_
 
 ### [v1.26.3](https://github.com/zendesk/maxwell/releases/tag/v1.26.3): 
 
@@ -232,7 +232,7 @@ from multiple threads (bootstrap/producer), thanks @lucastex
 
 
 
-Released _2020-05-26_
+_Released 2020-05-26_
 
 ### [v1.26.2](https://github.com/zendesk/maxwell/releases/tag/v1.26.2): 
 
@@ -243,7 +243,7 @@ Released _2020-05-26_
 
 
 
-Released _2020-05-18_
+_Released 2020-05-18_
 
 ### [v1.26.1](https://github.com/zendesk/maxwell/releases/tag/v1.26.1): 
 
@@ -251,7 +251,7 @@ Released _2020-05-18_
 
 
 
-Released _2020-05-07_
+_Released 2020-05-07_
 
 ### [v1.26.0](https://github.com/zendesk/maxwell/releases/tag/v1.26.0): 
 
@@ -260,7 +260,7 @@ Released _2020-05-07_
 
 
 
-Released _2020-05-06_
+_Released 2020-05-06_
 
 ### [v1.25.3](https://github.com/zendesk/maxwell/releases/tag/v1.25.3): 
 
@@ -269,7 +269,7 @@ Released _2020-05-06_
 
 
 
-Released _2020-05-02_
+_Released 2020-05-02_
 
 ### [v1.25.2](https://github.com/zendesk/maxwell/releases/tag/v1.25.2): 
 
@@ -277,7 +277,7 @@ Released _2020-05-02_
 
 
 
-Released _2020-05-01_
+_Released 2020-05-01_
 
 ### [v1.25.1](https://github.com/zendesk/maxwell/releases/tag/v1.25.1): 
 
@@ -287,7 +287,7 @@ Released _2020-05-01_
 
 
 
-Released _2020-04-22_
+_Released 2020-04-22_
 
 ### [v1.25.0](https://github.com/zendesk/maxwell/releases/tag/v1.25.0): 
 
@@ -298,7 +298,7 @@ Released _2020-04-22_
 
 
 
-Released _2020-03-29_
+_Released 2020-03-29_
 
 ### [v1.24.2](https://github.com/zendesk/maxwell/releases/tag/v1.24.2): 
 
@@ -310,7 +310,7 @@ Released _2020-03-29_
 
 
 
-Released _2020-03-25_
+_Released 2020-03-25_
 
 ### [v1.24.1](https://github.com/zendesk/maxwell/releases/tag/v1.24.1): 
 
@@ -320,7 +320,7 @@ Released _2020-03-25_
 
 
 
-Released _2020-01-21_
+_Released 2020-01-21_
 
 ### [v1.24.0](https://github.com/zendesk/maxwell/releases/tag/v1.24.0): 
 
@@ -329,7 +329,7 @@ Released _2020-01-21_
 
 
 
-Released _2019-12-14_
+_Released 2019-12-14_
 
 ### [v1.23.5](https://github.com/zendesk/maxwell/releases/tag/v1.23.5): 
 
@@ -338,7 +338,7 @@ Released _2019-12-14_
 
 
 
-Released _2019-12-12_
+_Released 2019-12-12_
 
 ### [v1.23.4](https://github.com/zendesk/maxwell/releases/tag/v1.23.4): 
 
@@ -349,7 +349,7 @@ Released _2019-12-12_
 
 
 
-Released _2019-12-03_
+_Released 2019-12-03_
 
 ### [v1.23.3](https://github.com/zendesk/maxwell/releases/tag/v1.23.3): 
 
@@ -360,7 +360,7 @@ Released _2019-12-03_
 
 
 
-Released _2019-11-21_
+_Released 2019-11-21_
 
 ### [v1.23.2](https://github.com/zendesk/maxwell/releases/tag/v1.23.2): 
 
@@ -369,7 +369,7 @@ Released _2019-11-21_
 
 
 
-Released _2019-10-18_
+_Released 2019-10-18_
 
 ### [v1.23.1](https://github.com/zendesk/maxwell/releases/tag/v1.23.1): 
 
@@ -379,7 +379,7 @@ Released _2019-10-18_
 
 
 
-Released _2019-10-12_
+_Released 2019-10-12_
 
 ### [v1.23.0](https://github.com/zendesk/maxwell/releases/tag/v1.23.0): 
 
@@ -389,7 +389,7 @@ Released _2019-10-12_
 
 
 
-Released _2019-10-08_
+_Released 2019-10-08_
 
 ### [v1.22.6](https://github.com/zendesk/maxwell/releases/tag/v1.22.6): 
 
@@ -399,7 +399,7 @@ Released _2019-10-08_
 
 
 
-Released _2019-09-20_
+_Released 2019-09-20_
 
 ### [v1.22.5](https://github.com/zendesk/maxwell/releases/tag/v1.22.5): 
 
@@ -409,7 +409,7 @@ Released _2019-09-20_
 
 
 
-Released _2019-09-06_
+_Released 2019-09-06_
 
 ### [v1.22.4](https://github.com/zendesk/maxwell/releases/tag/v1.22.4): 
 
@@ -418,7 +418,7 @@ Released _2019-09-06_
 
 
 
-Released _2019-08-23_
+_Released 2019-08-23_
 
 ### [v1.22.3](https://github.com/zendesk/maxwell/releases/tag/v1.22.3): 
 
@@ -426,7 +426,7 @@ Released _2019-08-23_
 
 
 
-Released _2019-06-20_
+_Released 2019-06-20_
 
 ### [v1.22.2](https://github.com/zendesk/maxwell/releases/tag/v1.22.2): 
 
@@ -436,7 +436,7 @@ Released _2019-06-20_
 
 
 
-Released _2019-06-18_
+_Released 2019-06-18_
 
 ### [v1.22.1](https://github.com/zendesk/maxwell/releases/tag/v1.22.1): 
 
@@ -447,7 +447,7 @@ Released _2019-06-18_
 
 
 
-Released _2019-05-28_
+_Released 2019-05-28_
 
 ### [v1.22.0](https://github.com/zendesk/maxwell/releases/tag/v1.22.0): 
 
@@ -458,7 +458,7 @@ including those in which the maxwell store is split from the replicator.
 
 
 
-Released _2019-04-16_
+_Released 2019-04-16_
 
 ### [v1.21.1](https://github.com/zendesk/maxwell/releases/tag/v1.21.1): 
 
@@ -467,7 +467,7 @@ errors.
 
 
 
-Released _2019-03-29_
+_Released 2019-03-29_
 
 ### [v1.21.0](https://github.com/zendesk/maxwell/releases/tag/v1.21.0): 
 
@@ -477,7 +477,7 @@ Released _2019-03-29_
 
 
 
-Released _2019-03-23_
+_Released 2019-03-23_
 
 ### [v1.20.0](https://github.com/zendesk/maxwell/releases/tag/v1.20.0): 
 
@@ -491,7 +491,7 @@ Released _2019-03-23_
 
 
 
-Released _2019-02-28_
+_Released 2019-02-28_
 
 ### [v1.19.7](https://github.com/zendesk/maxwell/releases/tag/v1.19.7): 
 
@@ -500,7 +500,7 @@ Released _2019-02-28_
 
 
 
-Released _2019-01-25_
+_Released 2019-01-25_
 
 ### [v1.19.6](https://github.com/zendesk/maxwell/releases/tag/v1.19.6): 
 
@@ -510,7 +510,7 @@ Released _2019-01-25_
 
 
 
-Released _2019-01-20_
+_Released 2019-01-20_
 
 ### [v1.19.5](https://github.com/zendesk/maxwell/releases/tag/v1.19.5): 
 
@@ -520,7 +520,7 @@ Released _2019-01-20_
 
 
 
-Released _2019-01-15_
+_Released 2019-01-15_
 
 ### [v1.19.4](https://github.com/zendesk/maxwell/releases/tag/v1.19.4): 
 
@@ -530,7 +530,7 @@ Released _2019-01-15_
 
 
 
-Released _2019-01-12_
+_Released 2019-01-12_
 
 ### [v1.19.3](https://github.com/zendesk/maxwell/releases/tag/v1.19.3): 
 
@@ -539,7 +539,7 @@ were running into out-of-memory situations while bootstrapping.
 
 
 
-Released _2018-12-19_
+_Released 2018-12-19_
 
 ### [v1.19.2](https://github.com/zendesk/maxwell/releases/tag/v1.19.2): 
 
@@ -553,7 +553,7 @@ Released _2018-12-19_
 
 
 
-Released _2018-12-02_
+_Released 2018-12-02_
 
 ### [v1.19.1](https://github.com/zendesk/maxwell/releases/tag/v1.19.1): 
 
@@ -563,7 +563,7 @@ Released _2018-12-02_
 
 
 
-Released _2018-11-12_
+_Released 2018-11-12_
 
 ### [v1.19.0](https://github.com/zendesk/maxwell/releases/tag/v1.19.0): 
 
@@ -577,7 +577,7 @@ Released _2018-11-12_
 
 
 
-Released _2018-10-27_
+_Released 2018-10-27_
 
 ### [v1.18.0](https://github.com/zendesk/maxwell/releases/tag/v1.18.0): 
 
@@ -592,7 +592,7 @@ Released _2018-10-27_
 
 
 
-Released _2018-09-15_
+_Released 2018-09-15_
 
 ### [v1.17.1](https://github.com/zendesk/maxwell/releases/tag/v1.17.1): 
 
@@ -601,7 +601,7 @@ Released _2018-09-15_
 
 
 
-Released _2018-07-03_
+_Released 2018-07-03_
 
 ### [v1.17.0](https://github.com/zendesk/maxwell/releases/tag/v1.17.0): 
 
@@ -612,7 +612,7 @@ a bit of javascript into maxwell's processing.  Should be useful!  Also:
 
 
 
-Released _2018-06-28_
+_Released 2018-06-28_
 
 ### [v1.16.1](https://github.com/zendesk/maxwell/releases/tag/v1.16.1): 
 
@@ -622,7 +622,7 @@ Released _2018-06-28_
 
 
 
-Released _2018-06-21_
+_Released 2018-06-21_
 
 ### [v1.16.0](https://github.com/zendesk/maxwell/releases/tag/v1.16.0): 
 
@@ -634,7 +634,7 @@ See http://maxwells-daemon.io/config/#filtering for details.
 
 
 
-Released _2018-06-15_
+_Released 2018-06-15_
 
 ### [v1.15.0](https://github.com/zendesk/maxwell/releases/tag/v1.15.0): 
 
@@ -654,7 +654,7 @@ Much thanks to Tim, Likun and others in sorting this mess out.
 
 
 
-Released _2018-06-13_
+_Released 2018-06-13_
 
 ### [v1.14.7](https://github.com/zendesk/maxwell/releases/tag/v1.14.7): 
 
@@ -664,7 +664,7 @@ Released _2018-06-13_
 
 
 
-Released _2018-06-03_
+_Released 2018-06-03_
 
 ### [v1.14.6](https://github.com/zendesk/maxwell/releases/tag/v1.14.6): 
 
@@ -672,7 +672,7 @@ Released _2018-06-03_
 
 
 
-Released _2018-05-15_
+_Released 2018-05-15_
 
 ### [v1.14.5](https://github.com/zendesk/maxwell/releases/tag/v1.14.5): 
 
@@ -683,7 +683,7 @@ Released _2018-05-15_
 
 
 
-Released _2018-05-15_
+_Released 2018-05-15_
 
 ### [v1.14.4](https://github.com/zendesk/maxwell/releases/tag/v1.14.4): 
 
@@ -691,13 +691,13 @@ Released _2018-05-15_
 
 
 
-Released _2018-05-07_
+_Released 2018-05-07_
 
 ### [v1.14.3](https://github.com/zendesk/maxwell/releases/tag/v1.14.3): 
 
 - Enable jvm metrics
 
-Released _2018-05-04_
+_Released 2018-05-04_
 
 ### [v1.14.2](https://github.com/zendesk/maxwell/releases/tag/v1.14.2): 
 
@@ -706,7 +706,7 @@ Released _2018-05-04_
 
 
 
-Released _2018-05-02_
+_Released 2018-05-02_
 
 ### [v1.14.1](https://github.com/zendesk/maxwell/releases/tag/v1.14.1): 
 
@@ -715,7 +715,7 @@ Released _2018-05-02_
 
 
 
-Released _2018-05-01_
+_Released 2018-05-01_
 
 ### [v1.14.0](https://github.com/zendesk/maxwell/releases/tag/v1.14.0): 
 
@@ -726,19 +726,19 @@ Released _2018-05-01_
 
 
 
-Released _2018-04-24_
+_Released 2018-04-24_
 
 ### [v1.13.5](https://github.com/zendesk/maxwell/releases/tag/v1.13.5): 
 
 - Support environment variable based configuration
 
-Released _2018-04-11_
+_Released 2018-04-11_
 
 ### [v1.13.4](https://github.com/zendesk/maxwell/releases/tag/v1.13.4): 
 
 - Added possibility to do not declare the rabbitmq exchange.
 
-Released _2018-04-03_
+_Released 2018-04-03_
 
 ### [v1.13.3](https://github.com/zendesk/maxwell/releases/tag/v1.13.3): 
 
@@ -749,7 +749,7 @@ Released _2018-04-03_
  - Always write null fields in primary key fields
  - Bugfix: fix http_path_prefix command line option issue
 
-Released _2018-04-03_
+_Released 2018-04-03_
 
 ### [v1.13.2](https://github.com/zendesk/maxwell/releases/tag/v1.13.2): 
 
@@ -759,7 +759,7 @@ Released _2018-04-03_
 
 
 
-Released _2018-03-06_
+_Released 2018-03-06_
 
 ### [v1.13.1](https://github.com/zendesk/maxwell/releases/tag/v1.13.1): 
 
@@ -773,7 +773,7 @@ Released _2018-03-06_
 
 
 
-Released _2018-02-20_
+_Released 2018-02-20_
 
 ### [v1.13.0](https://github.com/zendesk/maxwell/releases/tag/v1.13.0): 
 
@@ -785,7 +785,7 @@ Released _2018-02-20_
 
 
 
-Released _2018-02-01_
+_Released 2018-02-01_
 
 ### [v1.12.0](https://github.com/zendesk/maxwell/releases/tag/v1.12.0): 
 
@@ -800,7 +800,7 @@ Released _2018-02-01_
 
 
 
-Released _2018-01-09_
+_Released 2018-01-09_
 
 ### [v1.11.0](https://github.com/zendesk/maxwell/releases/tag/v1.11.0): 
 
@@ -809,7 +809,7 @@ Released _2018-01-09_
 
 
 
-Released _2017-11-22_
+_Released 2017-11-22_
 
 ### [v1.10.9](https://github.com/zendesk/maxwell/releases/tag/v1.10.9): 
 
@@ -821,7 +821,7 @@ We recommend all v1.10.7 and v1.10.8 users upgrade to v1.10.9.
 
 
 
-Released _2017-10-30_
+_Released 2017-10-30_
 
 ### [v1.10.8](https://github.com/zendesk/maxwell/releases/tag/v1.10.8): 
 
@@ -831,7 +831,7 @@ Released _2017-10-30_
 
 
 
-Released _2017-10-12_
+_Released 2017-10-12_
 
 ### [v1.10.7](https://github.com/zendesk/maxwell/releases/tag/v1.10.7): 
 
@@ -841,7 +841,7 @@ Released _2017-10-12_
 - Documentation update: encryption, kinesis producer, schema storage fundamentals, etc.
 
 
-Released _2017-10-11_
+_Released 2017-10-11_
 
 ### [v1.10.6](https://github.com/zendesk/maxwell/releases/tag/v1.10.6): 
 
@@ -851,7 +851,7 @@ Released _2017-10-11_
 
 
 
-Released _2017-08-14_
+_Released 2017-08-14_
 
 ### [v1.10.5](https://github.com/zendesk/maxwell/releases/tag/v1.10.5): 
 
@@ -860,7 +860,7 @@ backend available for maxwell.
 
 
 
-Released _2017-07-25_
+_Released 2017-07-25_
 
 ### [v1.10.4](https://github.com/zendesk/maxwell/releases/tag/v1.10.4): 
 
@@ -880,7 +880,7 @@ Notable changes:
 
 
 
-Released _2017-07-10_
+_Released 2017-07-10_
 
 ### [v1.10.3](https://github.com/zendesk/maxwell/releases/tag/v1.10.3): 
 
@@ -889,7 +889,7 @@ Released _2017-07-10_
 
 
 
-Released _2017-06-06_
+_Released 2017-06-06_
 
 ### [v1.10.2](https://github.com/zendesk/maxwell/releases/tag/v1.10.2): 
 
@@ -899,7 +899,7 @@ Released _2017-06-06_
 
 
 
-Released _2017-06-04_
+_Released 2017-06-04_
 
 ### [v1.10.1](https://github.com/zendesk/maxwell/releases/tag/v1.10.1): 
 
@@ -911,7 +911,7 @@ The observable changes in this minor release are a new configuration for Kafka/K
 - Allow for empty double-quoted string literals for database schema changes   
 - Ignore Kafka/Kinesis producer errors based on new configuration ignore_producer_error
 
-Released _2017-05-26_
+_Released 2017-05-26_
 
 ### [v1.10.0](https://github.com/zendesk/maxwell/releases/tag/v1.10.0): 
 
@@ -933,7 +933,7 @@ Other minor changes:
 
 
 
-Released _2017-05-09_
+_Released 2017-05-09_
 
 ### [v1.9.0](https://github.com/zendesk/maxwell/releases/tag/v1.9.0): 
 
@@ -950,7 +950,7 @@ There's also some bugfixes:
 
 
 
-Released _2017-04-26_
+_Released 2017-04-26_
 
 ### [v1.8.2](https://github.com/zendesk/maxwell/releases/tag/v1.8.2): 
 
@@ -962,7 +962,7 @@ Bugfix release.
 
 
 
-Released _2017-04-11_
+_Released 2017-04-11_
 
 ### [v1.8.1](https://github.com/zendesk/maxwell/releases/tag/v1.8.1): 
 
@@ -972,7 +972,7 @@ Released _2017-04-11_
   Maxscale as a replication proxy), thx Adam Szkoda
 
 
-Released _2017-02-20_
+_Released 2017-02-20_
 
 ### [v1.8.0](https://github.com/zendesk/maxwell/releases/tag/v1.8.0): 
 
@@ -980,7 +980,7 @@ In version 1.8.0 Maxwell gains alpha support for GTID-based positions!
 All praise due to Henry Cai.
 
 
-Released _2017-02-14_
+_Released 2017-02-14_
 
 ### [v1.7.2](https://github.com/zendesk/maxwell/releases/tag/v1.7.2): 
 
@@ -988,7 +988,7 @@ Released _2017-02-14_
   binlog event, leading to crashes or in some cases data mismatches.
 
 
-Released _2017-01-30_
+_Released 2017-01-30_
 
 ### [v1.7.1](https://github.com/zendesk/maxwell/releases/tag/v1.7.1): 
 
@@ -996,7 +996,7 @@ Released _2017-01-30_
 - performance improvements in the kafka producer
 
 
-Released _2017-01-24_
+_Released 2017-01-24_
 
 ### [v1.7.0](https://github.com/zendesk/maxwell/releases/tag/v1.7.0): 
 
@@ -1015,7 +1015,7 @@ There's also some bugfixes:
 - allow CHECK() statements inside column definitions
 
 
-Released _2017-01-07_
+_Released 2017-01-07_
 
 ### [v1.6.0](https://github.com/zendesk/maxwell/releases/tag/v1.6.0): 
 
@@ -1031,7 +1031,7 @@ Other bugfixes:
 - allow pointing maxwell to a pre-existing database
 
 
-Released _2016-12-29_
+_Released 2016-12-29_
 
 ### [v1.5.2](https://github.com/zendesk/maxwell/releases/tag/v1.5.2): 
 
@@ -1042,7 +1042,7 @@ Released _2016-12-29_
   that was part of the primary-key
 
 
-Released _2016-12-07_
+_Released 2016-12-07_
 
 ### [v1.5.1](https://github.com/zendesk/maxwell/releases/tag/v1.5.1): 
 
@@ -1055,7 +1055,7 @@ This is a bugfix release.
 - fix a quoting issue in the bootstrap code, thanks @mylesjao.
 
 
-Released _2016-11-24_
+_Released 2016-11-24_
 
 ### [v1.5.0](https://github.com/zendesk/maxwell/releases/tag/v1.5.0): 
 
@@ -1066,7 +1066,7 @@ Released _2016-11-24_
 - warn on servers with missing server_id
 
 
-Released _2016-11-07_
+_Released 2016-11-07_
 
 ### [v1.4.2](https://github.com/zendesk/maxwell/releases/tag/v1.4.2): 
 
@@ -1074,7 +1074,7 @@ Released _2016-11-07_
   command line option.
 
 
-Released _2016-11-01_
+_Released 2016-11-01_
 
 ### [v1.4.1](https://github.com/zendesk/maxwell/releases/tag/v1.4.1): 
 
@@ -1082,7 +1082,7 @@ Released _2016-11-01_
 - fix a parser issue with DROP COLUMN CASCADE, thanks @smferguson
 
 
-Released _2016-10-27_
+_Released 2016-10-27_
 
 ### [v1.4.0](https://github.com/zendesk/maxwell/releases/tag/v1.4.0): 
 
@@ -1092,7 +1092,7 @@ Released _2016-10-27_
 - As well as a fix around race conditions on shutdown.
 
 
-Released _2016-10-21_
+_Released 2016-10-21_
 
 ### [v1.3.0](https://github.com/zendesk/maxwell/releases/tag/v1.3.0): 
 
@@ -1101,7 +1101,7 @@ Released _2016-10-21_
 - fix a race condition in bootstrap support
 
 
-Released _2016-10-03_
+_Released 2016-10-03_
 
 ### [v1.2.2](https://github.com/zendesk/maxwell/releases/tag/v1.2.2): 
 
@@ -1115,7 +1115,7 @@ Released _2016-10-03_
 - Fix a bug when using CHANGE COLUMN on a primary key
 
 
-Released _2016-09-23_
+_Released 2016-09-23_
 
 ### [v1.2.1](https://github.com/zendesk/maxwell/releases/tag/v1.2.1): 
 
@@ -1125,7 +1125,7 @@ This is a bugfix release.
   library
 
 
-Released _2016-09-15_
+_Released 2016-09-15_
 
 ### [v1.2.0](https://github.com/zendesk/maxwell/releases/tag/v1.2.0): 
 
@@ -1139,7 +1139,7 @@ maxwell with a kafka 0.8 server, you must now pass the `--kafka0.8` flag
 to maxwell.
 
 
-Released _2016-09-12_
+_Released 2016-09-12_
 
 ### [v1.1.6](https://github.com/zendesk/maxwell/releases/tag/v1.1.6): 
 
@@ -1147,7 +1147,7 @@ Released _2016-09-12_
   heartbeats
 
 
-Released _2016-09-07_
+_Released 2016-09-07_
 
 ### [v1.1.5](https://github.com/zendesk/maxwell/releases/tag/v1.1.5): 
 
@@ -1162,7 +1162,7 @@ Released _2016-09-07_
   the positions table that we can co-ordinate around.
 
 
-Released _2016-09-04_
+_Released 2016-09-04_
 
 ### [v1.1.4](https://github.com/zendesk/maxwell/releases/tag/v1.1.4): 
 
@@ -1172,7 +1172,7 @@ Released _2016-09-04_
   Producer, but this was a failure.  Now we log and skip all errors.
 
 
-Released _2016-08-05_
+_Released 2016-08-05_
 
 ### [v1.1.3](https://github.com/zendesk/maxwell/releases/tag/v1.1.3): 
 
@@ -1187,7 +1187,7 @@ This is a bugfix release, which fixes:
   expecting heartbeats to work under 5.1
 
 
-Released _2016-07-14_
+_Released 2016-07-14_
 
 ### [v1.1.2](https://github.com/zendesk/maxwell/releases/tag/v1.1.2): 
 
@@ -1198,7 +1198,7 @@ Released _2016-07-14_
 - kinder, gentler help text when you specify an option incorrectly
 
 
-Released _2016-06-27_
+_Released 2016-06-27_
 
 ### [v1.1.1](https://github.com/zendesk/maxwell/releases/tag/v1.1.1): 
 
@@ -1206,7 +1206,7 @@ Released _2016-06-27_
   maxwell stuck
 
 
-Released _2016-05-23_
+_Released 2016-05-23_
 
 ### [v1.1.0](https://github.com/zendesk/maxwell/releases/tag/v1.1.0): 
 
@@ -1219,7 +1219,7 @@ Released _2016-05-23_
   recapture the schema and attempt to correct the error.
 
 
-Released _2016-05-20_
+_Released 2016-05-20_
 
 ### [v1.1.0-pre4](https://github.com/zendesk/maxwell/releases/tag/v1.1.0-pre4): 
 
@@ -1227,7 +1227,7 @@ Released _2016-05-20_
 - Bugfixes for the patch-up-the-schema code around unsigned ints
 
 
-Released _2016-05-06_
+_Released 2016-05-06_
 
 ### [v1.1.0-pre3](https://github.com/zendesk/maxwell/releases/tag/v1.1.0-pre3): 
 
@@ -1235,7 +1235,7 @@ Released _2016-05-06_
   problems
 
 
-Released _2016-05-05_
+_Released 2016-05-05_
 
 ### [v1.1.0-pre2](https://github.com/zendesk/maxwell/releases/tag/v1.1.0-pre2): 
 
@@ -1243,14 +1243,14 @@ Released _2016-05-05_
 - fix a bug in capturing unsigned integer columns
 
 
-Released _2016-05-04_
+_Released 2016-05-04_
 
 ### [v1.0.1](https://github.com/zendesk/maxwell/releases/tag/v1.0.1): 
 
 - fixes a parsing bug with `CURRENT_TIMESTAMP()`
 
 
-Released _2016-04-12_
+_Released 2016-04-12_
 
 ### [v1.0.0](https://github.com/zendesk/maxwell/releases/tag/v1.0.0): 
 
@@ -1266,7 +1266,7 @@ and I, Osheroff, think the damn thing is stable enough for a 1.0.  So
 there.
 
 
-Released _2016-03-11_
+_Released 2016-03-11_
 
 ### [v1.0.0-RC3](https://github.com/zendesk/maxwell/releases/tag/v1.0.0-RC3): 
 
@@ -1274,7 +1274,7 @@ pull in support for replication heartbeats.  helps in the flakier
 network environs.
 
 
-Released _2016-03-08_
+_Released 2016-03-08_
 
 ### [v1.0.0-RC2](https://github.com/zendesk/maxwell/releases/tag/v1.0.0-RC2): 
 
@@ -1282,7 +1282,7 @@ Released _2016-03-08_
 - adds proper handling of ALTER TABLE CONVERT TO CHARSET
 
 
-Released _2016-02-20_
+_Released 2016-02-20_
 
 ### [v1.0.0-RC1](https://github.com/zendesk/maxwell/releases/tag/v1.0.0-RC1): 
 
@@ -1291,7 +1291,7 @@ Released _2016-02-20_
 - fix a parser bug
 
 
-Released _2016-02-11_
+_Released 2016-02-11_
 
 ### [v1.0.0-PRE2](https://github.com/zendesk/maxwell/releases/tag/v1.0.0-PRE2): 
 
@@ -1305,7 +1305,7 @@ testing out PRE1.  so, hey.
 - bootstrap rows now have 'bootstrap-insert' type
 
 
-Released _2016-01-30_
+_Released 2016-01-30_
 
 ### [v1.0.0-PRE1](https://github.com/zendesk/maxwell/releases/tag/v1.0.0-PRE1): 
 
@@ -1313,7 +1313,7 @@ Released _2016-01-30_
   bootstrapping initial versions of mysql tables.
 
 
-Released _2016-01-09_
+_Released 2016-01-09_
 
 ### [v0.17.0](https://github.com/zendesk/maxwell/releases/tag/v0.17.0): 
 
@@ -1327,7 +1327,7 @@ v0.17 is a large bugfix release with one new feature.
   thousands of lines of SQL produced by mysql-test.
 
 
-Released _2016-01-07_
+_Released 2016-01-07_
 
 ### [v0.16.2](https://github.com/zendesk/maxwell/releases/tag/v0.16.2): 
 
@@ -1340,7 +1340,7 @@ This is a large-ish bugfix release.
 - use ObjectOutputStream.reset to fix memory leaks when buffering to disk
 
 
-Released _2015-12-16_
+_Released 2015-12-16_
 
 ### [v0.16.1](https://github.com/zendesk/maxwell/releases/tag/v0.16.1): 
 
@@ -1352,7 +1352,7 @@ This is a bug-fix-roundup release:
   and output, and we fix a memory leak
 
 
-Released _2015-12-11_
+_Released 2015-12-11_
 
 ### [v0.16.0](https://github.com/zendesk/maxwell/releases/tag/v0.16.0): 
 
@@ -1361,14 +1361,14 @@ show both the new row image and the old values of the fields that
 changed.  Thanks @kristiankaufmann
 
 
-Released _2015-12-10_
+_Released 2015-12-10_
 
 ### [v0.15.0](https://github.com/zendesk/maxwell/releases/tag/v0.15.0): 
 
 - fix a parse problem with indices ordered by ASC/DESC
 
 
-Released _2015-12-07_
+_Released 2015-12-07_
 
 ### [v0.15.0-RC1](https://github.com/zendesk/maxwell/releases/tag/v0.15.0-RC1): 
 
@@ -1376,7 +1376,7 @@ Released _2015-12-07_
 - support ALGORITHM=[algo], LOCK=[lock] for 5.6 alters
 
 
-Released _2015-12-04_
+_Released 2015-12-04_
 
 ### [v0.14.6](https://github.com/zendesk/maxwell/releases/tag/v0.14.6): 
 
@@ -1385,14 +1385,14 @@ Released _2015-12-04_
 - fix CREATE SCHEMA parsing
 
 
-Released _2015-11-27_
+_Released 2015-11-27_
 
 ### [v0.14.5](https://github.com/zendesk/maxwell/releases/tag/v0.14.5): 
 
 - handle BOOLEAN columns with true/false defaults
 
 
-Released _2015-11-25_
+_Released 2015-11-25_
 
 ### [v0.14.4](https://github.com/zendesk/maxwell/releases/tag/v0.14.4): 
 
@@ -1400,35 +1400,35 @@ Released _2015-11-25_
 - More performance improvements, another 10% in a tight loop.
 
 
-Released _2015-11-24_
+_Released 2015-11-24_
 
 ### [v0.14.3](https://github.com/zendesk/maxwell/releases/tag/v0.14.3): 
 
 - fixes a regression in 0.14.2 that creates duplicate copies of the "mysql" database in the schema.
 
 
-Released _2015-11-23_
+_Released 2015-11-23_
 
 ### [v0.14.2](https://github.com/zendesk/maxwell/releases/tag/v0.14.2): 
 
 - capture the mysql database along with the rest of the schema.  Eliding it was a bad premature optimization that led to crashes when tables in the mysql database changed. 
 
 
-Released _2015-11-20_
+_Released 2015-11-20_
 
 ### [v0.14.1](https://github.com/zendesk/maxwell/releases/tag/v0.14.1): 
 
 - fixes a parser bug around named PRIMARY KEYs.
 
 
-Released _2015-11-17_
+_Released 2015-11-17_
 
 ### [v0.14.0](https://github.com/zendesk/maxwell/releases/tag/v0.14.0): 
 
 This release introduces row filters, allowing you to include or exclude tables from maxwell's output based on names or regular expressions.  
 
 
-Released _2015-11-03_
+_Released 2015-11-03_
 
 ### [v0.13.1](https://github.com/zendesk/maxwell/releases/tag/v0.13.1): 
 
@@ -1440,7 +1440,7 @@ v0.13.0 contains:
 - we now include a "scavenger thread" that will lazily clean out old, deleted schemas.
 
 
-Released _2015-10-29_
+_Released 2015-10-29_
 
 ### [v0.13.0](https://github.com/zendesk/maxwell/releases/tag/v0.13.0): 
 
@@ -1452,21 +1452,21 @@ Lucky release number 13 brings some reasonably big changes:
 _This release has a pretty bad bug.  do not use._
 
 
-Released _2015-10-29_
+_Released 2015-10-29_
 
 ### [v0.12.0](https://github.com/zendesk/maxwell/releases/tag/v0.12.0): 
 
 - add support for BIT columns.  
 
 
-Released _2015-10-16_
+_Released 2015-10-16_
 
 ### [v0.11.4](https://github.com/zendesk/maxwell/releases/tag/v0.11.4): 
 
 this is another bugfix release that fixes a problem where the replication thread can die in the middle of processing a transaction event.  I really need to fix this at a lower level, ie the open-replicator level.
 
 
-Released _2015-09-30_
+_Released 2015-09-30_
 
 ### [v0.11.3](https://github.com/zendesk/maxwell/releases/tag/v0.11.3): 
 
@@ -1477,7 +1477,7 @@ this is a bugfix release:
 the test suite should also be way more reliable, not like you care.
 
 
-Released _2015-09-29_
+_Released 2015-09-29_
 
 ### [v0.11.2](https://github.com/zendesk/maxwell/releases/tag/v0.11.2): 
 
@@ -1488,14 +1488,14 @@ This is a bugfix release.  It includes:
 - fix a bug where maxwell could pick up a copy of schema from a different server_id (curse you operator precedence!)
 
 
-Released _2015-09-18_
+_Released 2015-09-18_
 
 ### [v0.11.1](https://github.com/zendesk/maxwell/releases/tag/v0.11.1): 
 
 - maxwell gets a very minimal pass at detecting when a master has changed, in which it will kill off schemas and positions from a server_id that no longer is valid.  this should prevent the worst of cases.
 
 
-Released _2015-09-16_
+_Released 2015-09-16_
 
 ### [v0.11.0](https://github.com/zendesk/maxwell/releases/tag/v0.11.0): 
 
@@ -1504,7 +1504,7 @@ This release of Maxwell preserves transaction information in the kafka stream by
 It also contains a bugfix around server_id handling.
 
 
-Released _2015-09-15_
+_Released 2015-09-15_
 
 ### [v0.10.1](https://github.com/zendesk/maxwell/releases/tag/v0.10.1): 
 
@@ -1513,14 +1513,14 @@ Released _2015-09-15_
 - make table option parsing more lenient
 
 
-Released _2015-09-11_
+_Released 2015-09-11_
 
 ### [v0.11.0-RC1](https://github.com/zendesk/maxwell/releases/tag/v0.11.0-RC1): 
 
 - merge master fixes
 
 
-Released _2015-09-09_
+_Released 2015-09-09_
 
 ### [v0.10.0](https://github.com/zendesk/maxwell/releases/tag/v0.10.0): 
 
@@ -1528,14 +1528,14 @@ Released _2015-09-09_
 - some more bugfixes with the SQL parser 
 
 
-Released _2015-09-09_
+_Released 2015-09-09_
 
 ### [v0.11.0-PRE4](https://github.com/zendesk/maxwell/releases/tag/v0.11.0-PRE4): 
 
 - bugfix on v0.11.0-PRE3
 
 
-Released _2015-09-09_
+_Released 2015-09-09_
 
 ### [v0.11.0-PRE3](https://github.com/zendesk/maxwell/releases/tag/v0.11.0-PRE3): 
 
@@ -1543,14 +1543,14 @@ Released _2015-09-09_
 - downgrade unhandled SQL to a warning
 
 
-Released _2015-09-08_
+_Released 2015-09-08_
 
 ### [v0.11.0-PRE2](https://github.com/zendesk/maxwell/releases/tag/v0.11.0-PRE2): 
 
 - fixes for myISAM "transactions"
 
 
-Released _2015-09-03_
+_Released 2015-09-03_
 
 ### [v0.11.0-PRE1](https://github.com/zendesk/maxwell/releases/tag/v0.11.0-PRE1): 
 
@@ -1558,56 +1558,56 @@ Released _2015-09-03_
 - JSON output now includes transaction IDs
 
 
-Released _2015-09-02_
+_Released 2015-09-02_
 
 ### [v0.10.0-RC4](https://github.com/zendesk/maxwell/releases/tag/v0.10.0-RC4): 
 
 - deal with BINARY flag in string column creation.
 
 
-Released _2015-08-31_
+_Released 2015-08-31_
 
 ### [v0.9.5](https://github.com/zendesk/maxwell/releases/tag/v0.9.5): 
 
 - handle the BINARY flag in column creation
 
 
-Released _2015-08-31_
+_Released 2015-08-31_
 
 ### [v0.10.0-RC3](https://github.com/zendesk/maxwell/releases/tag/v0.10.0-RC3): 
 
 - handle "TRUNCATE [TABLE_NAME]" statements
 
 
-Released _2015-08-27_
+_Released 2015-08-27_
 
 ### [v0.10.0-RC2](https://github.com/zendesk/maxwell/releases/tag/v0.10.0-RC2): 
 
 - fixes a bug with checksum processing.
 
 
-Released _2015-08-26_
+_Released 2015-08-26_
 
 ### [v0.10.0-RC1](https://github.com/zendesk/maxwell/releases/tag/v0.10.0-RC1): 
 
 - upgrade to open-replicator 1.3.0-RC1, which brings binlog checksum (and thus easy 5.6.1) support to maxwell.
 
 
-Released _2015-08-04_
+_Released 2015-08-04_
 
 ### [v0.9.4](https://github.com/zendesk/maxwell/releases/tag/v0.9.4): 
 
 - allow a configurable number (including unlimited) of schemas to be stored
 
 
-Released _2015-07-27_
+_Released 2015-07-27_
 
 ### [v0.9.3](https://github.com/zendesk/maxwell/releases/tag/v0.9.3): 
 
 - bump open-replicator to 1.2.3, which allows processing of single rows greater than 2^24 bytes
 
 
-Released _2015-07-14_
+_Released 2015-07-14_
 
 ### [v0.9.2](https://github.com/zendesk/maxwell/releases/tag/v0.9.2): 
 
@@ -1616,7 +1616,7 @@ Released _2015-07-14_
 - `--output_file` option for file producer
 
 
-Released _2015-07-10_
+_Released 2015-07-10_
 
 ### [v0.9.1](https://github.com/zendesk/maxwell/releases/tag/v0.9.1): 
 
@@ -1624,7 +1624,7 @@ Released _2015-07-10_
 - fix a nasty bug in which maxwell would store the wrong position after it lost its connection to the master.
 
 
-Released _2015-06-22_
+_Released 2015-06-22_
 
 ### [v0.9.0](https://github.com/zendesk/maxwell/releases/tag/v0.9.0): 
 
@@ -1634,14 +1634,14 @@ Also, vanchi is so paranoid he's worried immediately about this.
 - fix a bunch of miscellaneous bugs @akshayi1 found (REAL, BOOL, BOOLEAN types, TRUNCATE TABLE)
 
 
-Released _2015-06-18_
+_Released 2015-06-18_
 
 ### [v0.8.1](https://github.com/zendesk/maxwell/releases/tag/v0.8.1): 
 
 - minor bugfix release around mysql connections going away.
 
 
-Released _2015-06-16_
+_Released 2015-06-16_
 
 ### [v0.8.0](https://github.com/zendesk/maxwell/releases/tag/v0.8.0): 
 
@@ -1650,7 +1650,7 @@ Released _2015-06-16_
 - support int1, int2, int4, int8 columns
 
 
-Released _2015-06-09_
+_Released 2015-06-09_
 
 ### [v0.7.2](https://github.com/zendesk/maxwell/releases/tag/v0.7.2): 
 
@@ -1658,14 +1658,14 @@ Released _2015-06-09_
 - ignore more user management SQL
 
 
-Released _2015-05-29_
+_Released 2015-05-29_
 
 ### [v0.7.1](https://github.com/zendesk/maxwell/releases/tag/v0.7.1): 
 
 - only keep 5 most recent schemas
 
 
-Released _2015-05-15_
+_Released 2015-05-15_
 
 ### [v0.7.0](https://github.com/zendesk/maxwell/releases/tag/v0.7.0): 
 
@@ -1673,35 +1673,35 @@ Released _2015-05-15_
 - better binlog position sync behavior
 
 
-Released _2015-04-28_
+_Released 2015-04-28_
 
 ### [v0.6.3](https://github.com/zendesk/maxwell/releases/tag/v0.6.3): 
 
 - better blacklist for CREATE TRIGGER
 
 
-Released _2015-04-13_
+_Released 2015-04-13_
 
 ### [v0.6.2](https://github.com/zendesk/maxwell/releases/tag/v0.6.2): 
 
 - maxwell now ignores SAVEPOINT statements.
 
 
-Released _2015-04-13_
+_Released 2015-04-13_
 
 ### [v0.6.1](https://github.com/zendesk/maxwell/releases/tag/v0.6.1): 
 
 - fixes a bug with parsing length-limited indexes.
 
 
-Released _2015-04-13_
+_Released 2015-04-13_
 
 ### [v0.6.0](https://github.com/zendesk/maxwell/releases/tag/v0.6.0): 
 
 Version 0.6.0 has Maxwell outputting a JSON kafka key, so that one can use Kafka's neat "store the last copy of a key" retention policy.  It also fixes a couple of bugs in the query parsing path.
 
 
-Released _2015-04-09_
+_Released 2015-04-09_
 
 ### [v0.5.0](https://github.com/zendesk/maxwell/releases/tag/v0.5.0): 
 
@@ -1709,14 +1709,14 @@ Released _2015-04-09_
 - maxwell now outputs to a single topic, hashing the data by database name to keep a database's updates in order.
 
 
-Released _2015-04-06_
+_Released 2015-04-06_
 
 ### [v0.4.0](https://github.com/zendesk/maxwell/releases/tag/v0.4.0): 
 
 v0.4.0 fixes some bugs with long-lived mysql connections by adding connection pooling support.
 
 
-Released _2015-03-25_
+_Released 2015-03-25_
 
 ### [v0.3.0](https://github.com/zendesk/maxwell/releases/tag/v0.3.0): 
 
@@ -1725,54 +1725,54 @@ This version fixes a fairly nasty bug in which the binlog-position flush thread 
 It also enables kafka gzip compression by default.
 
 
-Released _2015-03-24_
+_Released 2015-03-24_
 
 ### [v0.2.2](https://github.com/zendesk/maxwell/releases/tag/v0.2.2): 
 
 Version 0.2.2 sets up the LANG environment variable, which fixes a bug in utf-8 handling. 
 
 
-Released _2015-03-22_
+_Released 2015-03-22_
 
 ### [v0.2.1](https://github.com/zendesk/maxwell/releases/tag/v0.2.1): 
 
 version 0.2.1 makes Maxwell ignore CREATE INDEX ddl statements and others.
 
 
-Released _2015-03-21_
+_Released 2015-03-21_
 
 ### [v0.2.0](https://github.com/zendesk/maxwell/releases/tag/v0.2.0): 
 
 This release gets Maxwell storing the last-written binlog position inside the mysql master itself. 
 
 
-Released _2015-03-18_
+_Released 2015-03-18_
 
 ### [v0.1.4](https://github.com/zendesk/maxwell/releases/tag/v0.1.4): 
 
 support --position_file param
 
 
-Released _2015-03-09_
+_Released 2015-03-09_
 
 ### [v0.1.3](https://github.com/zendesk/maxwell/releases/tag/v0.1.3): 
 
 Adds kafka command line options.
 
 
-Released _2015-03-09_
+_Released 2015-03-09_
 
 ### [v0.1.1](https://github.com/zendesk/maxwell/releases/tag/v0.1.1): 
 
 v0.1.1, a small bugfix release. 
 
 
-Released _2015-03-06_
+_Released 2015-03-06_
 
 ### [v0.1](https://github.com/zendesk/maxwell/releases/tag/v0.1): 
 
 This is the first possible release of Maxwell that might work.  It includes some exceedingly basic kafka support, and JSON output of binlog deltas.
 
 
-Released _2015-03-04_
+_Released 2015-03-04_
 
