@@ -108,7 +108,7 @@ public class MysqlPositionStoreTest extends MaxwellTestWithIsolatedServer {
 		Long newestHeartbeat = 123L;
 		Long intermediateHeartbeat = newestHeartbeat - 10;
 		Long oldestHeartbeat = newestHeartbeat - 20;
-		String binlogFile = "bin.log";
+		String binlogFile = "bin.log.000001";
 
 		buildStore(context, oldestServerID).set(new Position(new BinlogPosition(0L, binlogFile), oldestHeartbeat));
 		buildStore(context, intermediateServerID).set(new Position(new BinlogPosition(0L, binlogFile), intermediateHeartbeat));
@@ -146,7 +146,7 @@ public class MysqlPositionStoreTest extends MaxwellTestWithIsolatedServer {
 		Long oldServerID1 = activeServerID + 1;
 		Long oldServerID2 = activeServerID + 2;
 
-		String binlogFile = "bin.log";
+		String binlogFile = "bin.log.000111";
 		String clientId = "client-123";
 
 		buildStore(context, oldServerID1, clientId).set(new Position(new BinlogPosition(0L, binlogFile), 1L));
