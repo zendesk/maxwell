@@ -20,7 +20,7 @@ while releases.any?
 
 %{body}
 
-Released _%{date}_
+_Released %{date}_
     EOL
 
     r[:body].gsub!(/\r\n/, "\n")
