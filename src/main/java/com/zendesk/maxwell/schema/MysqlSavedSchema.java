@@ -514,14 +514,6 @@ public class MysqlSavedSchema {
 					String columnType = rs.getString("columnColtype");
 					int columnIsSigned = rs.getInt("columnIsSigned");
 
-<<<<<<< HEAD
-					if (currentDatabase == null || !currentDatabase.getName().equals(dbName)) {
-						currentDatabase = new Database(dbName, dbCharset);
-						this.schema.addDatabase(currentDatabase);
-						// make sure two tables named the same in different dbs are picked up.
-						currentTable = null;
-						LOGGER.debug("Restoring database {}...", dbName);
-=======
 			// Column
 			String columnName = rs.getString("columnName");
 			int columnLengthInt = rs.getInt("columnLength");
@@ -571,7 +563,6 @@ public class MysqlSavedSchema {
 						enumValues = mapper.readValue(columnEnumValues, String[].class);
 					} catch (IOException e) {
 						throw new SQLException(e);
->>>>>>> c7eecf8d (LEX-158 Amended Maxwell to track column nullable attribute in schemas)
 					}
 
 					if (tName == null) {
@@ -626,8 +617,6 @@ public class MysqlSavedSchema {
 				}
 				LOGGER.debug("Restored all databases");
 			}
-<<<<<<< HEAD
-=======
 
 			ColumnDef c = ColumnDef.build(
 					columnName,
@@ -641,7 +630,6 @@ public class MysqlSavedSchema {
 			);
 			currentTable.addColumn(c);
 
->>>>>>> c7eecf8d (LEX-158 Amended Maxwell to track column nullable attribute in schemas)
 		}
 	}
 
