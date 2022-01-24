@@ -25,38 +25,26 @@ brew install maxwell
 # Configure Mysql
 ***
 
-*Server Config:* Ensure server_id is set, and that row-based replication is on.
-
 ```
-$ vi my.cnf
+
+# /etc/my.cnf
 
 [mysqld]
-server_id=1
-log-bin=master
+# maxwell needs binlog_format=row
 binlog_format=row
+server_id=1 
+log-bin=master
 ```
 
 
-Or on a running server:
-
-```
-mysql> set global binlog_format=ROW;
-mysql> set global binlog_row_image=FULL;
-```
-
-note: `binlog_format` is a session-based property.  You will need to shutdown all active connections to fully convert
-to row-based replication.
-
-*Permissions:* Maxwell needs permissions to act as a replica, and to write to the `maxwell` database.
 ```
 mysql> CREATE USER 'maxwell'@'%' IDENTIFIED BY 'XXXXXX';
-mysql> GRANT ALL ON maxwell.* TO 'maxwell'@'%';
-mysql> GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'maxwell'@'%';
-
-# or for running maxwell locally:
-
 mysql> CREATE USER 'maxwell'@'localhost' IDENTIFIED BY 'XXXXXX';
+
+mysql> GRANT ALL ON maxwell.* TO 'maxwell'@'%';
 mysql> GRANT ALL ON maxwell.* TO 'maxwell'@'localhost';
+
+mysql> GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'maxwell'@'%';
 mysql> GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'maxwell'@'localhost';
 ```
 
