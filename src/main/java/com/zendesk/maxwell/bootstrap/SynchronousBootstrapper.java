@@ -1,11 +1,27 @@
 package com.zendesk.maxwell.bootstrap;
 
+import java.net.URISyntaxException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.zendesk.maxwell.CaseSensitivity;
+import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.MaxwellMysqlStatus;
 import com.zendesk.maxwell.errors.DuplicateProcessException;
-import com.zendesk.maxwell.producer.MaxwellOutputConfig;
-import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.producer.AbstractProducer;
+import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
@@ -16,15 +32,6 @@ import com.zendesk.maxwell.schema.columndef.ColumnDefCastException;
 import com.zendesk.maxwell.schema.columndef.DateColumnDef;
 import com.zendesk.maxwell.schema.columndef.TimeColumnDef;
 import com.zendesk.maxwell.scripting.Scripting;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.net.URISyntaxException;
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
 
 public class SynchronousBootstrapper {
 	class BootstrapAbortException extends Exception {
@@ -161,7 +168,7 @@ public class SynchronousBootstrapper {
 			tbl,
 			System.currentTimeMillis(),
 			pkList,
-			null);
+			(Position) null);
 		row.setComment(comment);
 		return row;
 	}

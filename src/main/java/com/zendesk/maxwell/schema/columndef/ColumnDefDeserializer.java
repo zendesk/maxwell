@@ -20,6 +20,7 @@ public class ColumnDefDeserializer extends JsonDeserializer<ColumnDef> {
 		String charset = node.path("charset").asText();
 
 		boolean signed = node.path("signed").asBoolean(false);
+		boolean nullable = node.path("nullable").asBoolean(false);
 
 		String[] enumValues = null;
 		JsonNode enumValueNode = node.get("enum-values");
@@ -36,6 +37,6 @@ public class ColumnDefDeserializer extends JsonDeserializer<ColumnDef> {
 		if ( columnLengthNode != null ) {
 			columnLength = columnLengthNode.asLong();
 		}
-		return ColumnDef.build(name, charset, type, (short) 0, signed, enumValues, columnLength);
+		return ColumnDef.build(name, charset, type, (short) 0, signed, enumValues, columnLength, nullable);
 	}
 }

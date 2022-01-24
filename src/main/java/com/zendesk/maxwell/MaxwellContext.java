@@ -494,6 +494,10 @@ public class MaxwellContext {
 		this.replicator = replicator;
 	}
 
+	public Replicator getReplicator() {
+		return replicator;
+	}
+
 	public Metrics getMetrics() {
 		return metrics;
 	}

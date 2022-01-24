@@ -398,6 +398,21 @@ public class MysqlParserListener extends mysqlBaseListener {
 				enumValues[i++] = unquote_literal(v.getText());
 			}
 		}
+		
+		boolean colNullable = false;
+
+		if ( colOptions != null ) {
+			for (Column_optionsContext opt : colOptions) {
+				if (opt.nullability() != null) {
+					colNullable = opt.nullability().NOT() == null;
+				}
+				
+				if (opt.primary_key() != null) {
+					this.pkColumns = new ArrayList<>();
+					this.pkColumns.add(name);
+				}
+			}
+		}
 
 		colType = ColumnDef.unalias_type(colType.toLowerCase(), longStringFlag, columnLength, byteFlagToStringColumn);
 		ColumnDef c;
@@ -408,19 +423,13 @@ public class MysqlParserListener extends mysqlBaseListener {
 		  (short) -1,
 		  signed,
 		  enumValues,
-		  columnLength
+		  columnLength,
+		  colNullable
 		);
 
 		this.columnDefs.add(c);
 
-		if ( colOptions != null ) {
-			for (Column_optionsContext opt : colOptions) {
-				if (opt.primary_key() != null) {
-					this.pkColumns = new ArrayList<>();
-					this.pkColumns.add(name);
-				}
-			}
-		}
+		
 	}
 
 

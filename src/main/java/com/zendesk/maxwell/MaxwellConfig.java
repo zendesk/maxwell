@@ -181,6 +181,11 @@ public class MaxwellConfig extends AbstractConfig {
 		this.parse(argv);
 	}
 
+	public MaxwellConfig(Properties props) {
+		this();
+		setup(null, props);
+	}
+
 	protected MaxwellOptionParser buildOptionParser() {
 		final MaxwellOptionParser parser = new MaxwellOptionParser();
 		parser.accepts( "config", "location of config.properties file" )

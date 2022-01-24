@@ -1,5 +1,17 @@
 package com.zendesk.maxwell.replication;
 
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
@@ -19,23 +31,17 @@ import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMapBuffer;
-import com.zendesk.maxwell.schema.*;
+import com.zendesk.maxwell.schema.Schema;
+import com.zendesk.maxwell.schema.SchemaChangeListener;
+import com.zendesk.maxwell.schema.SchemaStore;
+import com.zendesk.maxwell.schema.SchemaStoreException;
+import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.ColumnDefCastException;
 import com.zendesk.maxwell.schema.ddl.DDLMap;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 import com.zendesk.maxwell.scripting.Scripting;
+import com.zendesk.maxwell.snapshot.SnapshotController;
 import com.zendesk.maxwell.util.RunLoopProcess;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.regex.Pattern;
 
 public class BinlogConnectorReplicator extends RunLoopProcess implements Replicator, BinaryLogClient.LifecycleListener {
 	static final Logger LOGGER = LoggerFactory.getLogger(BinlogConnectorReplicator.class);
@@ -64,6 +70,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private Filter filter;
 
 	private final BootstrapController bootstrapper;
+	private final SnapshotController snapshoter;
 	private final AbstractProducer producer;
 	private RowMapBuffer rowBuffer;
 	private final float bufferMemoryUsage;
@@ -82,12 +89,15 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 	private boolean isConnected = false;
 
+	private Set<SchemaChangeListener> schemaChangeListeners;
+
 	private class ClientReconnectedException extends Exception {}
 
 	public BinlogConnectorReplicator(
 		SchemaStore schemaStore,
 		AbstractProducer producer,
 		BootstrapController bootstrapper,
+		SnapshotController snapshoter,
 		MaxwellMysqlConfig mysqlConfig,
 		Long replicaServerID,
 		String maxwellSchemaDatabaseName,
@@ -104,6 +114,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	) {
 		this.clientID = clientID;
 		this.bootstrapper = bootstrapper;
+		this.snapshoter = snapshoter;
 		this.maxwellSchemaDatabaseName = maxwellSchemaDatabaseName;
 		this.producer = producer;
 		this.lastHeartbeatPosition = start;
@@ -115,6 +126,14 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		this.filter = filter;
 		this.lastCommError = null;
 		this.bufferMemoryUsage = bufferMemoryUsage;
+
+		schemaChangeListeners = new HashSet<SchemaChangeListener>();
+
+		schemaChangeListeners.add(snapshoter);
+
+		if (producer instanceof SchemaChangeListener) {
+			schemaChangeListeners.add((SchemaChangeListener) producer);
+		}
 
 		/* setup metrics */
 		rowCounter = metrics.getRegistry().counter(
@@ -173,6 +192,11 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		this.client.setServerId(replicaServerID.intValue());
 
 		this.replicationReconnectionRetries = replicationReconnectionRetries;
+	}
+
+	@Override
+	protected void beforeStart() throws Exception {
+		snapshoter.initialize();
 	}
 
 	/**
@@ -296,8 +320,13 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					this.taskState.stopped();
 				}
 			}
-		} else if ( !shouldSkipRow(row) )
-			producer.push(row);
+		} else {
+			if (snapshoter != null)
+				snapshoter.processRow(row);
+			
+			if ( !shouldSkipRow(row) )
+				producer.push(row);
+		}
 	}
 
 
@@ -338,6 +367,10 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 		if ( bootstrapper != null)
 			bootstrapper.setCurrentSchemaID(schemaId);
+		
+		for (var schemaChangeListener : schemaChangeListeners) {
+			schemaChangeListener.onSchemaChange(changes, schemaId, schemaStore.getSchema());
+		}
 
 		for (ResolvedSchemaChange change : changes) {
 			if (change.shouldOutput(filter)) {
@@ -519,7 +552,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					if ( table != null && shouldOutputEvent(table.getDatabase(), table.getName(), filter, table.getColumnNames()) ) {
 						List<RowMap> rows;
 						try {
-							rows = event.jsonMaps(table, getLastHeartbeatRead(), currentQuery);
+							rows = event.binaryMaps(table, getLastHeartbeatRead(), currentQuery);
 						} catch ( ColumnDefCastException e ) {
 							logColumnDefCastException(table, e);
 

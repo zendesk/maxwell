@@ -6,8 +6,8 @@ import java.sql.Time;
 import java.sql.Timestamp;
 
 public class TimeColumnDef extends ColumnDefWithLength {
-	private TimeColumnDef(String name, String type, short pos, Long columnLength) {
-		super(name, type, pos, columnLength);
+	public TimeColumnDef(String name, String type, short pos, Long columnLength, boolean nullable) {
+		super(name, type, pos, columnLength, nullable);
 	}
 
 	public static TimeColumnDef create(String name, String type, short pos, Long columnLength) {
