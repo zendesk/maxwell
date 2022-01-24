@@ -488,9 +488,9 @@ public class MysqlSavedSchema {
 						"LEFT JOIN columns c ON c.table_id=t.id " +
 						"WHERE d.schema_id = ? " +
 						"ORDER BY d.id, t.id, c.id";
-		try ( PreparedStatement p = conn.prepareStatement(sql) ) {
+		try (PreparedStatement p = conn.prepareStatement(sql)) {
 			p.setLong(1, this.schemaID);
-			try ( ResultSet rs = p.executeQuery() ) {
+			try (ResultSet rs = p.executeQuery()) {
 
 				Database currentDatabase = null;
 				Table currentTable = null;
@@ -514,55 +514,21 @@ public class MysqlSavedSchema {
 					String columnType = rs.getString("columnColtype");
 					int columnIsSigned = rs.getInt("columnIsSigned");
 
-			// Column
-			String columnName = rs.getString("columnName");
-			int columnLengthInt = rs.getInt("columnLength");
-			String columnEnumValues = rs.getString("columnEnumValues");
-			String columnCharset = rs.getString("columnCharset");
-			String columnType = rs.getString("columnColtype");
-			int columnIsSigned = rs.getInt("columnIsSigned");
-			int columnIsNullable = rs.getInt("columnIsNullable");
+					// Column
+					String columnName = rs.getString("columnName");
+					int columnLengthInt = rs.getInt("columnLength");
+					String columnEnumValues = rs.getString("columnEnumValues");
+					String columnCharset = rs.getString("columnCharset");
+					String columnType = rs.getString("columnColtype");
+					int columnIsSigned = rs.getInt("columnIsSigned");
+					int columnIsNullable = rs.getInt("columnIsNullable");
 
-			if (currentDatabase == null || !currentDatabase.getName().equals(dbName)) {
-				currentDatabase = new Database(dbName, dbCharset);
-				this.schema.addDatabase(currentDatabase);
-				// make sure two tables named the same in different dbs are picked up.
-				currentTable = null;
-				LOGGER.debug("Restoring database " + dbName + "...");
-			}
-
-			if (tName == null) {
-				// if tName is null, there are no tables connected to this database
-				continue;
-			} else if (currentTable == null || !currentTable.getName().equals(tName)) {
-				currentTable = currentDatabase.buildTable(tName, tCharset);
-				if (tPKs != null) {
-					List<String> pkList = Arrays.asList(StringUtils.split(tPKs, ','));
-					currentTable.setPKList(pkList);
-				}
-				columnIndex = 0;
-			}
-
-
-			if (columnName == null) {
-				// If columnName is null, there are no columns connected to this table
-				continue;
-			}
-
-			Long columnLength;
-			if (rs.wasNull()) {
-				columnLength = null;
-			} else {
-				columnLength = Long.valueOf(columnLengthInt);
-			}
-
-			String[] enumValues = null;
-			if (columnEnumValues != null) {
-				if (this.schemaVersion >= 4) {
-					try {
-						enumValues = mapper.readValue(columnEnumValues, String[].class);
-					} catch (IOException e) {
-						throw new SQLException(e);
+					if (currentDatabase == null || !currentDatabase.getName().equals(dbName)) {
+						currentDatabase = new Database(dbName, dbCharset);
+						this.schema.addDatabase(currentDatabase);
+						// make sure two tables named the same in different dbs are picked up.
+						currentTable = null;
+						LOGGER.debug("Restoring database " + dbName + "...");
 					}
 
 					if (tName == null) {
@@ -598,9 +564,58 @@ public class MysqlSavedSchema {
 							} catch (IOException e) {
 								throw new SQLException(e);
 							}
-						} else {
-							enumValues = StringUtils.splitByWholeSeparatorPreserveAllTokens(columnEnumValues, ",");
+
+							if (tName == null) {
+								// if tName is null, there are no tables connected to this database
+								continue;
+							} else if (currentTable == null || !currentTable.getName().equals(tName)) {
+								currentTable = currentDatabase.buildTable(tName, tCharset);
+								if (tPKs != null) {
+									List<String> pkList = Arrays.asList(StringUtils.split(tPKs, ','));
+									currentTable.setPKList(pkList);
+								}
+								columnIndex = 0;
+							}
+
+
+							if (columnName == null) {
+								// If columnName is null, there are no columns connected to this table
+								continue;
+							}
+
+							Long columnLength;
+							if (rs.wasNull()) {
+								columnLength = null;
+							} else {
+								columnLength = Long.valueOf(columnLengthInt);
+							}
+
+							String[] enumValues = null;
+							if (columnEnumValues != null) {
+								if (this.schemaVersion >= 4) {
+									try {
+										enumValues = mapper.readValue(columnEnumValues, String[].class);
+									} catch (IOException e) {
+										throw new SQLException(e);
+									}
+								} else {
+									enumValues = StringUtils.splitByWholeSeparatorPreserveAllTokens(columnEnumValues, ",");
+								}
+							}
+
+							ColumnDef c = ColumnDef.build(
+									columnName,
+									columnCharset,
+									columnType,
+									columnIndex++,
+									columnIsSigned == 1,
+									enumValues,
+									columnLength
+							);
+							currentTable.addColumn(c);
+
 						}
+						LOGGER.debug("Restored all databases");
 					}
 
 					ColumnDef c = ColumnDef.build(
@@ -610,26 +625,12 @@ public class MysqlSavedSchema {
 							columnIndex++,
 							columnIsSigned == 1,
 							enumValues,
-							columnLength
+							columnLength,
+							columnIsNullable == 1
 					);
 					currentTable.addColumn(c);
-
 				}
-				LOGGER.debug("Restored all databases");
 			}
-
-			ColumnDef c = ColumnDef.build(
-					columnName,
-					columnCharset,
-					columnType,
-					columnIndex++,
-					columnIsSigned == 1,
-					enumValues,
-					columnLength,
-					columnIsNullable == 1
-			);
-			currentTable.addColumn(c);
-
 		}
 	}
 
