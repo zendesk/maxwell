@@ -467,7 +467,6 @@ public class MysqlSavedSchema {
 		}
 	}
 
-
 	private void restoreFullSchema(Connection conn, Long schemaID) throws SQLException, InvalidSchemaError {
 		String sql =
 				"SELECT " +
