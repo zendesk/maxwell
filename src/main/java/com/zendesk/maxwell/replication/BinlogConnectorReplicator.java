@@ -591,13 +591,13 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 	/**
 	 * The main entry point into the event reading loop.
-	 *
+	 * <p>
 	 * We maintain a buffer of events in a transaction,
 	 * and each subsequent call to `getRow` can grab one from
 	 * the buffer.  If that buffer is empty, we'll go check
 	 * the open-replicator buffer for rows to process.  If that
 	 * buffer is empty, we return null.
-	 *
+	 * </p>
 	 * @return either a RowMap or null
 	 */
 	public RowMap getRow() throws Exception {
