@@ -40,6 +40,7 @@ import java.util.regex.Pattern;
 public class BinlogConnectorReplicator extends RunLoopProcess implements Replicator, BinaryLogClient.LifecycleListener {
 	static final Logger LOGGER = LoggerFactory.getLogger(BinlogConnectorReplicator.class);
 	private static final long MAX_TX_ELEMENTS = 10000;
+	public static int BINLOG_QUEUE_SIZE = 5000;
 	public static final int BAD_BINLOG_ERROR_CODE = 1236;
 	public static final int ACCESS_DENIED_ERROR_CODE = 1227;
 
@@ -50,7 +51,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private final int replicationReconnectionRetries;
 	private BinlogConnectorEventListener binlogEventListener;
 	private BinlogConnectorLivenessMonitor binlogLivenessMonitor;
-	private final LinkedBlockingDeque<BinlogConnectorEvent> queue = new LinkedBlockingDeque<>(20);
+	private final LinkedBlockingDeque<BinlogConnectorEvent> queue = new LinkedBlockingDeque<>(BINLOG_QUEUE_SIZE);
 	private final TableCache tableCache;
 	private final Scripting scripting;
 	private ServerException lastCommError;
