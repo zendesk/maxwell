@@ -8,7 +8,7 @@
         
         
         <link rel="shortcut icon" href="../img/favicon.ico">
-        <title>Encryption - Maxwell's Daemon</title>
+        <title>Deployment - Maxwell's Daemon</title>
         <link href="../css/bootstrap.min.css" rel="stylesheet">
         <link href="../css/font-awesome.min.css" rel="stylesheet">
         <link href="../css/base.css" rel="stylesheet">
@@ -46,7 +46,7 @@
 </li>
                                     
 <li>
-    <a href="../deployment/" class="dropdown-item">Deployment</a>
+    <a href="./" class="dropdown-item active">Deployment</a>
 </li>
                                     
 <li>
@@ -66,7 +66,7 @@
 </li>
                                     
 <li>
-    <a href="./" class="dropdown-item active">Encryption</a>
+    <a href="../encryption/" class="dropdown-item">Encryption</a>
 </li>
                                     
 <li>
@@ -102,12 +102,12 @@
                             </a>
                         </li>
                             <li class="nav-item">
-                                <a rel="prev" href="../dataformat/" class="nav-link">
+                                <a rel="prev" href="../config/" class="nav-link">
                                     <i class="fa fa-arrow-left"></i> Previous
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a rel="next" href="../monitoring/" class="nav-link">
+                                <a rel="next" href="../producers/" class="nav-link">
                                     Next <i class="fa fa-arrow-right"></i>
                                 </a>
                             </li>
@@ -130,17 +130,27 @@
     <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
         <ul class="nav flex-column">
             
-            <li class="nav-item" data-level="1"><a href="#using-encryption" class="nav-link">Using encryption</a>
+            <li class="nav-item" data-level="1"><a href="#reconfiguring-a-running-mysql-instance" class="nav-link">Reconfiguring a running mysql instance:</a>
               <ul class="nav flex-column">
               </ul>
             </li>
             
-            <li class="nav-item" data-level="1"><a href="#decryption" class="nav-link">Decryption</a>
+            <li class="nav-item" data-level="1"><a href="#gtid-support" class="nav-link">GTID support</a>
               <ul class="nav flex-column">
               </ul>
             </li>
             
-            <li class="nav-item" data-level="1"><a href="#examples" class="nav-link">Examples</a>
+            <li class="nav-item" data-level="1"><a href="#rds" class="nav-link">RDS</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            
+            <li class="nav-item" data-level="1"><a href="#replicating-and-storing-schema-from-different-servers" class="nav-link">Replicating and storing schema from different servers</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            
+            <li class="nav-item" data-level="1"><a href="#multiple-maxwells" class="nav-link">Multiple Maxwells</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -149,28 +159,61 @@
 </div>
 </div>
 <div class="col-md-9" role="main">
-    <div id="Encryption">
+    <div id="Deployment">
         
 
-<h1 id="using-encryption">Using encryption</h1>
-<hr />
-<p>When encryption is enabled, maxwell will encrypt messages using a AES/CBC/PKCS5PADDING cipher with your own encryption key.
-Values are first encrypted and then base64 encoded, an initialization vector is randomly generated and put into the final message</p>
-<h1 id="decryption">Decryption</h1>
-<hr />
-<p>To decrypt your data you must first decode the string from base64 and then apply the cipher to decrypt. A sample implementation is provided in RowEncrypt.decrypt().</p>
-<h1 id="examples">Examples</h1>
-<hr />
-<p>insert into minimal set account_id =1, text_field='hello'</p>
-<p><code>encrypt=none</code> (unencrypted):</p>
-<pre><code>{&quot;database&quot;:&quot;shard_1&quot;,&quot;table&quot;:&quot;minimal&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;ts&quot;:1490115785,&quot;xid&quot;:153,&quot;commit&quot;:true,&quot;data&quot;:{&quot;id&quot;:1,&quot;account_id&quot;:1,&quot;text_field&quot;:&quot;hello&quot;}}
+<h1 id="reconfiguring-a-running-mysql-instance">Reconfiguring a running mysql instance:</h1>
+<pre><code>mysql&gt; set global binlog_format=ROW;
+mysql&gt; set global binlog_row_image=FULL;
 </code></pre>
-<p><code>encrypt=data</code>:</p>
-<pre><code>{&quot;database&quot;:&quot;shard_1&quot;,&quot;table&quot;:&quot;minimal&quot;,&quot;type&quot;:&quot;insert&quot;,&quot;ts&quot;:1504585129,&quot;xid&quot;:161,&quot;commit&quot;:true,&quot;encrypted&quot;:{&quot;iv&quot;:&quot;lqiXoTdz6jed3XgJPpa7EQ==&quot;,&quot;bytes&quot;:&quot;1soc4leskiIm6yuT2D49VA3AYVKCvN+0wh+8d1iwSZETK7N2pG4HDbqnVpJUUCOaKjpcPlP7Sc7Z3SPhGD5JeA==&quot;}}
+<p>note: <code>binlog_format</code> is a session-based property.  You will need to shutdown all active connections to fully convert
+to row-based replication.</p>
+<h1 id="gtid-support">GTID support</h1>
+<p>Maxwell contains support for
+<a href="https://dev.mysql.com/doc/refman/5.6/en/replication-gtids.html">GTID-based replication</a>.
+Enable it with the <code>--gtid_mode</code> configuration param.</p>
+<p>Here's how you might configure your mysql server for GTID mode:</p>
+<pre><code>$ vi my.cnf
+
+[mysqld]
+server_id=1
+log-bin=master
+binlog_format=row
+gtid-mode=ON
+log-slave-updates=ON
+enforce-gtid-consistency=true
 </code></pre>
-<p><code>encrypt=all</code>:</p>
-<pre><code>{&quot;encrypted&quot;:{&quot;bytes&quot;:&quot;iZssjWfzS0NlqIj82ddpvoQeKSx4D3GIPSCgjdkpgQlCWzN2p3VVZOn3Oj1x4w+a6dVhoFmllWxBK6aAkdVK9t6Vt1+um6lWwSeXNQIL/RbknW5Q8I9emm5bC1Dd1LftBuX/1Uw0wjbsq8Qt3HErvmmiIMe2S27EIWshvBnmw9MibryjLD0brvIbFFxwDuSQuVA4OFyV9TN32N/ZXiBwIA==&quot;,&quot;iv&quot;:&quot;XXs6AePsXJWAAIrKyLlR0g==&quot;}}
-</code></pre>
+<p>When in GTID-mode, Maxwell will transparently pick up a new replication
+position after a master change.  Note that you will still have to re-point
+maxwell to the new master (or use a floating VIP)</p>
+<h1 id="rds">RDS</h1>
+<p>To run Maxwell against RDS, (either Aurora or Mysql) you will need to do the following:</p>
+<ul>
+<li>set binlog_format to "ROW".  Do this in the "parameter groups" section.  For a Mysql-RDS instance this parameter will be
+  in a "DB Parameter Group", for Aurora it will be in a "DB Cluster Parameter Group".</li>
+<li>setup RDS binlog retention as described <a href="http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.Concepts.MySQL.html">here</a>.
+  The tl;dr is to execute <code>call mysql.rds_set_configuration('binlog retention hours', 24)</code> on the server.</li>
+</ul>
+<h1 id="replicating-and-storing-schema-from-different-servers">Replicating and storing schema from different servers</h1>
+<p>Maxwell uses MySQL for 3 different functions:</p>
+<ol>
+<li>A host to store the captured schema in (<code>--host</code>).</li>
+<li>A host to replicate binlogs from (<code>--replication_host</code>).</li>
+<li>A host to capture the schema from (<code>--schema_host</code>).</li>
+</ol>
+<p>Often, all three hosts are the same.  <code>host</code> and <code>replication_host</code> should be different
+if maxwell is chained off a replica.  <code>schema_host</code> should only be used when using the
+maxscale replication proxy.</p>
+<h1 id="multiple-maxwells">Multiple Maxwells</h1>
+<p>Maxwell can operate with multiple instances running against a single master, in
+different configurations.  This can be useful if you wish to have producers
+running in different configurations, for example producing different groups of
+tables to different topics.  Each instance of Maxwell must be configured with a
+unique <code>client_id</code>, in order to store unique binlog positions.</p>
+<p>With MySQL 5.5 and below, each replicator (be it mysql, maxwell, whatever) must
+also be configured with a unique <code>replica_server_id</code>.  This is a 32-bit integer
+that corresponds to mysql's <code>server_id</code> parameter.  The value you configure
+should be unique across all mysql and maxwell instances.</p>
     </div>
 </div>
             </div>

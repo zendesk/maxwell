@@ -46,6 +46,10 @@
 </li>
                                     
 <li>
+    <a href="../deployment/" class="dropdown-item">Deployment</a>
+</li>
+                                    
+<li>
     <a href="../producers/" class="dropdown-item">Producers</a>
 </li>
                                     
@@ -187,13 +191,13 @@
 <h1 id="download">Download</h1>
 <hr />
 <ul>
-<li>Download binary distro: <a href="https://github.com/zendesk/maxwell/releases/download/v1.36.0/maxwell-1.36.0.tar.gz">https://github.com/zendesk/maxwell/releases/download/v1.36.0/maxwell-1.36.0.tar.gz</a></li>
+<li>Download binary distro: <a href="https://github.com/zendesk/maxwell/releases/download/v1.37.0/maxwell-1.37.0.tar.gz">https://github.com/zendesk/maxwell/releases/download/v1.37.0/maxwell-1.37.0.tar.gz</a></li>
 <li>Sources and bug tracking is available on github: <a href="https://github.com/zendesk/maxwell">https://github.com/zendesk/maxwell</a></li>
 </ul>
 <p><strong>curl</strong>:</p>
-<pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.36.0/maxwell-1.36.0.tar.gz \
+<pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.37.0/maxwell-1.37.0.tar.gz \
        | tar zxvf -
-cd maxwell-1.36.0
+cd maxwell-1.37.0
 </code></pre>
 <p><strong>docker</strong>:</p>
 <pre><code>docker pull zendesk/maxwell
@@ -203,29 +207,22 @@ cd maxwell-1.36.0
 </code></pre>
 <h1 id="configure-mysql">Configure Mysql</h1>
 <hr />
-<p><em>Server Config:</em> Ensure server_id is set, and that row-based replication is on.</p>
-<pre><code>$ vi my.cnf
+<pre><code>
+# /etc/my.cnf
 
 [mysqld]
-server_id=1
-log-bin=master
+# maxwell needs binlog_format=row
 binlog_format=row
+server_id=1 
+log-bin=master
 </code></pre>
-<p>Or on a running server:</p>
-<pre><code>mysql&gt; set global binlog_format=ROW;
-mysql&gt; set global binlog_row_image=FULL;
-</code></pre>
-<p>note: <code>binlog_format</code> is a session-based property.  You will need to shutdown all active connections to fully convert
-to row-based replication.</p>
-<p><em>Permissions:</em> Maxwell needs permissions to act as a replica, and to write to the <code>maxwell</code> database.</p>
 <pre><code>mysql&gt; CREATE USER 'maxwell'@'%' IDENTIFIED BY 'XXXXXX';
-mysql&gt; GRANT ALL ON maxwell.* TO 'maxwell'@'%';
-mysql&gt; GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'maxwell'@'%';
-
-# or for running maxwell locally:
-
 mysql&gt; CREATE USER 'maxwell'@'localhost' IDENTIFIED BY 'XXXXXX';
+
+mysql&gt; GRANT ALL ON maxwell.* TO 'maxwell'@'%';
 mysql&gt; GRANT ALL ON maxwell.* TO 'maxwell'@'localhost';
+
+mysql&gt; GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'maxwell'@'%';
 mysql&gt; GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'maxwell'@'localhost';
 </code></pre>
 <h1 id="run-maxwell">Run Maxwell</h1>

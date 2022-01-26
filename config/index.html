@@ -46,6 +46,10 @@
 </li>
                                     
 <li>
+    <a href="../deployment/" class="dropdown-item">Deployment</a>
+</li>
+                                    
+<li>
     <a href="../producers/" class="dropdown-item">Producers</a>
 </li>
                                     
@@ -103,7 +107,7 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a rel="next" href="../producers/" class="nav-link">
+                                <a rel="next" href="../deployment/" class="nav-link">
                                     Next <i class="fa fa-arrow-right"></i>
                                 </a>
                             </li>
@@ -236,8 +240,7 @@
 
 <h1 id="reference">Reference</h1>
 <hr />
-<p>At the minimum, you will need to specify 'host', 'user', 'password', 'producer'.
-The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requires 'kinesis_stream'.</p>
+<p>Configuration options are set either via command line or the "config.properties" file. </p>
 <h2 id="general">general</h2>
 <table>
 <thead>
@@ -1334,66 +1337,6 @@ and a filter can be updated with a request in the following format</p>
     &quot;filter&quot;: &quot;exclude: noisy_db.*&quot;
 }
 </code></pre>
-<h3 id="deployment-scenarios">Deployment scenarios</h3>
-<hr />
-<p>At a minimum, Maxwell needs row-level-replication turned on into order to
-operate:</p>
-<pre><code>[mysqld]
-server_id=1
-log-bin=master
-binlog_format=row
-</code></pre>
-<h4 id="gtid-support">GTID support</h4>
-<p>As of 1.8.0, Maxwell contains support for
-<a href="https://dev.mysql.com/doc/refman/5.6/en/replication-gtids.html">GTID-based replication</a>.
-Enable it with the <code>--gtid_mode</code> configuration param.</p>
-<p>Here's how you might configure your mysql server for GTID mode:</p>
-<pre><code>$ vi my.cnf
-
-[mysqld]
-server_id=1
-log-bin=master
-binlog_format=row
-gtid-mode=ON
-log-slave-updates=ON
-enforce-gtid-consistency=true
-</code></pre>
-<p>When in GTID-mode, Maxwell will transparently pick up a new replication
-position after a master change.  Note that you will still have to re-point
-maxwell to the new master.</p>
-<p>GTID support in Maxwell is considered beta-quality at the moment; notably,
-Maxwell is unable to transparently upgrade from a traditional-replication
-scenario to a GTID-replication scenario; currently, when you enable gtid mode
-Maxwell will recapture the schema and GTID-position from "wherever the master
-is at".</p>
-<h4 id="rds-configuration">RDS configuration</h4>
-<p>To run Maxwell against RDS, (either Aurora or Mysql) you will need to do the following:</p>
-<ul>
-<li>set binlog_format to "ROW".  Do this in the "parameter groups" section.  For a Mysql-RDS instance this parameter will be
-  in a "DB Parameter Group", for Aurora it will be in a "DB Cluster Parameter Group".</li>
-<li>setup RDS binlog retention as described <a href="http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.Concepts.MySQL.html">here</a>.
-  The tl;dr is to execute <code>call mysql.rds_set_configuration('binlog retention hours', 24)</code> on the server.</li>
-</ul>
-<h4 id="split-server-roles">Split server roles</h4>
-<p>Maxwell uses MySQL for 3 different functions:</p>
-<ol>
-<li>A host to store the captured schema in (<code>--host</code>).</li>
-<li>A host to replicate from (<code>--replication_host</code>).</li>
-<li>A host to capture the schema from (<code>--schema_host</code>).</li>
-</ol>
-<p>Often, all three hosts are the same.  <code>host</code> and <code>replication_host</code> should be different
-if maxwell is chained off a replica.  <code>schema_host</code> should only be used when using the
-maxscale replication proxy.</p>
-<h4 id="multiple-maxwell-instances">Multiple Maxwell Instances</h4>
-<p>Maxwell can operate with multiple instances running against a single master, in
-different configurations.  This can be useful if you wish to have producers
-running in different configurations, for example producing different groups of
-tables to different topics.  Each instance of Maxwell must be configured with a
-unique <code>client_id</code>, in order to store unique binlog positions.</p>
-<p>With MySQL 5.5 and below, each replicator (be it mysql, maxwell, whatever) must
-also be configured with a unique <code>replica_server_id</code>.  This is a 32-bit integer
-that corresponds to mysql's <code>server_id</code> parameter.  The value you configure
-should be unique across all mysql and maxwell instances.</p>
     </div>
 </div>
             </div>
