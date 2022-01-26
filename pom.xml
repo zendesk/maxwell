@@ -4,7 +4,7 @@
 
   <groupId>com.zizoo</groupId>
   <artifactId>maxwell</artifactId>
-  <version>1.36.1</version>
+  <version>1.36.2</version>
   <packaging>jar</packaging>
 
   <name>maxwell</name>
