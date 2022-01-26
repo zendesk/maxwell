@@ -396,15 +396,15 @@ public class ColumnDefTest extends TestWithNameLogging {
 
 	@Test
 	public void testEquality() throws ColumnDefCastException {
-		ColumnDef a = ColumnDef.build("bar", "utf8", "varchar", (short) 1, false, null, null);
-		ColumnDef b = ColumnDef.build("bar", "utf8", "varchar", (short) 1, false, null, null);
+		ColumnDef a = ColumnDef.build("bar", "utf8", "varchar", (short) 1, false, null, null, false);
+		ColumnDef b = ColumnDef.build("bar", "utf8", "varchar", (short) 1, false, null, null, false);
 		Assert.assertTrue(a == b); // verify auto-interning works
 	}
 
 	@Test
 	public void testWithPos() throws ColumnDefCastException {
-		ColumnDef a = ColumnDef.build("bar", "utf8", "varchar", (short) 1, false, null, null);
-		ColumnDef b = ColumnDef.build("bar", "utf8", "varchar", (short) 2, false, null, null);
+		ColumnDef a = ColumnDef.build("bar", "utf8", "varchar", (short) 1, false, null, null, false);
+		ColumnDef b = ColumnDef.build("bar", "utf8", "varchar", (short) 2, false, null, null, false);
 		ColumnDef aToB = a.withPos((short) 2);
 		ColumnDef bToA = b.withPos((short) 1);
 		Assert.assertTrue(a.getPos() == 1);
@@ -415,8 +415,8 @@ public class ColumnDefTest extends TestWithNameLogging {
 
 	@Test
 	public void testWithName() throws ColumnDefCastException {
-		ColumnDef a = ColumnDef.build("foo", "utf8", "varchar", (short) 1, false, null, null);
-		ColumnDef b = ColumnDef.build("bar", "utf8", "varchar", (short) 1, false, null, null);
+		ColumnDef a = ColumnDef.build("foo", "utf8", "varchar", (short) 1, false, null, null, false);
+		ColumnDef b = ColumnDef.build("bar", "utf8", "varchar", (short) 1, false, null, null, false);
 		ColumnDef aToB = a.withName("bar");
 		ColumnDef bToA = b.withName("foo");
 		Assert.assertEquals("foo", a.getName());

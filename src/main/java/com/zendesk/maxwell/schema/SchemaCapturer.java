@@ -97,11 +97,11 @@ public class SchemaCapturer implements AutoCloseable {
 		ArrayList<Database> databases = new ArrayList<>();
 
 		String dbCaptureQuery =
-			"SELECT SCHEMA_NAME, DEFAULT_CHARACTER_SET_NAME FROM INFORMATION_SCHEMA.SCHEMATA";
+				"SELECT SCHEMA_NAME, DEFAULT_CHARACTER_SET_NAME FROM INFORMATION_SCHEMA.SCHEMATA";
 
 		if ( includeDatabases.size() > 0 ) {
 			dbCaptureQuery +=
-				" WHERE SCHEMA_NAME IN " + Sql.inListSQL(includeDatabases.size());
+					" WHERE SCHEMA_NAME IN " + Sql.inListSQL(includeDatabases.size());
 		}
 		dbCaptureQuery += " ORDER BY SCHEMA_NAME";
 
@@ -210,10 +210,6 @@ public class SchemaCapturer implements AutoCloseable {
 
 					pkIndexCounters.put(tableName, pkIndexCounters.get(tableName) + 1);
 				}
-
-				t.addColumn(ColumnDef.build(colName, colEnc, colType, colPos, colSigned, enumValues, columnLength, colNullable));
-
-				pkIndexCounters.put(tableName, pkIndexCounters.get(tableName) + 1);
 			}
 		}
 

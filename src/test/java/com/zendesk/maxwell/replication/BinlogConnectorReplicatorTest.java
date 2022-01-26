@@ -29,7 +29,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeTrue;
 
 public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
@@ -164,6 +163,7 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 				new MysqlSchemaStore(context, position),
 				new StdoutProducer(context),
 				context.getBootstrapController(null),
+				null,
 				context.getConfig().maxwellMysql,
 				333098L,
 				"maxwell",
@@ -211,6 +211,7 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 				new MysqlSchemaStore(context, position),
 				new StdoutProducer(context),
 				context.getBootstrapController(null),
+				null,
 				context.getConfig().maxwellMysql,
 				333098L,
 				"maxwell",
@@ -276,6 +277,7 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 				new MysqlSchemaStore(context, position),
 				new StdoutProducer(context),
 				context.getBootstrapController(null),
+				null,
 				context.getConfig().maxwellMysql,
 				333098L,
 				"maxwell",

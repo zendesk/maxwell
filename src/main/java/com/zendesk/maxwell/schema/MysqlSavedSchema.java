@@ -1,18 +1,16 @@
 package com.zendesk.maxwell.schema;
 
-import java.sql.*;
-import java.util.*;
-
-import java.io.IOException;
-
-import com.github.shyiko.mysql.binlog.GtidSet;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.shyiko.mysql.binlog.GtidSet;
 import com.zendesk.maxwell.CaseSensitivity;
 import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.schema.columndef.*;
-
+import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
+import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 import com.zendesk.maxwell.util.ConnectionPool;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -20,12 +18,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
-import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import java.io.IOException;
+import java.sql.*;
+import java.util.*;
 
 public class MysqlSavedSchema {
 	static int SchemaStoreVersion = 4;
@@ -44,7 +39,7 @@ public class MysqlSavedSchema {
 	static final Logger LOGGER = LoggerFactory.getLogger(MysqlSavedSchema.class);
 
 	private final static String columnInsertSQL =
-		"INSERT INTO `columns` (schema_id, table_id, name, charset, coltype, is_signed, enum_values, column_length, is_nullable) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+			"INSERT INTO `columns` (schema_id, table_id, name, charset, coltype, is_signed, enum_values, column_length, is_nullable) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 	private final CaseSensitivity sensitivity;
 	private final Long serverID;
@@ -86,7 +81,7 @@ public class MysqlSavedSchema {
 	}
 
 	private static Long executeInsert(PreparedStatement preparedStatement,
-			Object... values) throws SQLException {
+									  Object... values) throws SQLException {
 		for (int i = 0; i < values.length; i++) {
 			preparedStatement.setObject(i + 1, values[i]);
 		}
@@ -146,8 +141,8 @@ public class MysqlSavedSchema {
 	private Long saveDerivedSchema(Connection conn) throws SQLException {
 		try ( PreparedStatement insert = conn.prepareStatement(
 				"INSERT into `schemas` SET base_schema_id = ?, deltas = ?, binlog_file = ?, " +
-				"binlog_position = ?, server_id = ?, charset = ?, version = ?, " +
-				"position_sha = ?, gtid_set = ?, last_heartbeat_read = ?",
+						"binlog_position = ?, server_id = ?, charset = ?, version = ?, " +
+						"position_sha = ?, gtid_set = ?, last_heartbeat_read = ?",
 				Statement.RETURN_GENERATED_KEYS);) {
 
 
@@ -201,8 +196,8 @@ public class MysqlSavedSchema {
 				"INSERT INTO `databases` SET schema_id = ?, name = ?, charset=?",
 				Statement.RETURN_GENERATED_KEYS);
 			  PreparedStatement tableInsert = conn.prepareStatement(
-			    "INSERT INTO `tables` SET schema_id = ?, database_id = ?, name = ?, charset=?, pk=?",
-			    Statement.RETURN_GENERATED_KEYS) ) {
+					  "INSERT INTO `tables` SET schema_id = ?, database_id = ?, name = ?, charset=?, pk=?",
+					  Statement.RETURN_GENERATED_KEYS) ) {
 
 			ArrayList<Object> columnData = new ArrayList<Object>();
 
@@ -255,39 +250,12 @@ public class MysqlSavedSchema {
 						} else {
 							columnData.add(null);
 						}
-
 						columnData.add(c.isNullable() ? 1 : 0);
 					}
 
 					if ( columnData.size() > 1000 )
 						executeColumnInsert(conn, columnData);
 
-					if ( c instanceof StringColumnDef ) {
-						columnData.add(((StringColumnDef) c).getCharset());
-					} else {
-						columnData.add(null);
-					}
-
-					columnData.add(c.getType());
-
-					if ( c instanceof IntColumnDef ) {
-						columnData.add(((IntColumnDef) c).isSigned() ? 1 : 0);
-					} else if ( c instanceof BigIntColumnDef ) {
-						columnData.add(((BigIntColumnDef) c).isSigned() ? 1 : 0);
-					} else {
-						columnData.add(0);
-					}
-
-					columnData.add(enumValuesSQL);
-
-					if ( c instanceof ColumnDefWithLength ) {
-						Long columnLength = ((ColumnDefWithLength) c).getColumnLength();
-						columnData.add(columnLength);
-					} else {
-						columnData.add(null);
-					}
-					
-					columnData.add(c.isNullable() ? 1 : 0);
 				}
 			}
 			if ( columnData.size() > 0 )
@@ -298,7 +266,7 @@ public class MysqlSavedSchema {
 	private void executeColumnInsert(Connection conn, ArrayList<Object> columnData) throws SQLException {
 		String insertColumnSQL = this.columnInsertSQL;
 
-		for (int i=1; i < columnData.size() / 9; i++) {
+		for (int i=1; i < columnData.size() / 8; i++) {
 			insertColumnSQL = insertColumnSQL + ", (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		}
 
@@ -318,10 +286,10 @@ public class MysqlSavedSchema {
 	}
 
 	public static MysqlSavedSchema restore(
-		ConnectionPool pool,
-		Long serverID,
-		CaseSensitivity caseSensitivity,
-		Position targetPosition
+			ConnectionPool pool,
+			Long serverID,
+			CaseSensitivity caseSensitivity,
+			Position targetPosition
 	) throws SQLException, InvalidSchemaError {
 		try ( Connection conn = pool.getConnection() ) {
 			Long schemaID = findSchema(conn, targetPosition, serverID);
@@ -466,6 +434,7 @@ public class MysqlSavedSchema {
 			this.schema = new Schema(new ArrayList<Database>(), schemaRS.getString("charset"), this.sensitivity);
 		}
 	}
+
 
 	private void restoreFullSchema(Connection conn, Long schemaID) throws SQLException, InvalidSchemaError {
 		String sql =
@@ -679,7 +648,7 @@ public class MysqlSavedSchema {
 					}
 				} else {
 					LOGGER.warn("warning: Couldn't check for unsigned integer bug on column " + schemaCol.getName() +
-						".  You may want to recapture your schema");
+							".  You may want to recapture your schema");
 				}
 			} else if (schemaCol instanceof BigIntColumnDef) {
 				if (recapturedCol != null && recapturedCol instanceof BigIntColumnDef) {
@@ -689,7 +658,7 @@ public class MysqlSavedSchema {
 					unsignedDiffs++;
 				} else {
 					LOGGER.warn("warning: Couldn't check for unsigned integer bug on column " + schemaCol.getName() +
-						".  You may want to recapture your schema");
+							".  You may want to recapture your schema");
 				}
 			}
 		}
@@ -744,7 +713,7 @@ public class MysqlSavedSchema {
 					}
 				} else {
 					LOGGER.warn("warning: Couldn't check for column length on column " + schemaCol.getName() +
-						".  You may want to recapture your schema");
+							".  You may want to recapture your schema");
 				}
 			}
 
@@ -792,10 +761,10 @@ public class MysqlSavedSchema {
 	public static String getSchemaPositionSHA(Long serverID, Position position) {
 		BinlogPosition binlogPosition = position.getBinlogPosition();
 		String shaString = String.format("%d/%s/%d/%d",
-			serverID,
-			binlogPosition.getFile(),
-			binlogPosition.getOffset(),
-			position.getLastHeartbeatRead()
+				serverID,
+				binlogPosition.getFile(),
+				binlogPosition.getOffset(),
+				position.getLastHeartbeatRead()
 		);
 		return DigestUtils.shaHex(shaString);
 	}
