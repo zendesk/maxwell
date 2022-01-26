@@ -1,5 +1,13 @@
 # Maxwell changelog
 
+### [v1.37.0](https://github.com/zendesk/maxwell/releases/tag/v1.37.0): 
+
+- Change max size of RowMap buffer to unblock high-efficiency producers
+
+
+
+_Released 2022-01-26_
+
 ### [v1.36.0](https://github.com/zendesk/maxwell/releases/tag/v1.36.0): 
 
 - fix bug where the millionth binlog would kinda sort "overflow" and the

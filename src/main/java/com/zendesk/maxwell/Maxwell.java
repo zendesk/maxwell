@@ -37,7 +37,7 @@ public class Maxwell implements Runnable {
 	/**
 	 * Intialize a top level Maxwell runner
 	 * @param config Maxwell configuration
-	 * @throws SQLException
+	 * @throws SQLException 
 	 * @throws URISyntaxException
 	 */
 	public Maxwell(MaxwellConfig config) throws SQLException, URISyntaxException {
@@ -212,12 +212,16 @@ public class Maxwell implements Runnable {
 	 * but before replication starts.
 	 */
 	protected void onReplicatorStart() {}
+
+	/**
+	 * Hook for subclasses to execute code before termination of the instance
+	 */
 	protected void onReplicatorEnd() {}
 
 
 	/**
 	 * Start maxwell
-	 * @throws Exception
+	 * @throws Exception If maxwell stops due to an Exception
 	 */
 	public void start() throws Exception {
 		try {
@@ -301,6 +305,10 @@ public class Maxwell implements Runnable {
 	}
 
 
+	/**
+	 * The main entry point for Maxwell
+	 * @param args command line arguments
+	 */
 	public static void main(String[] args) {
 		try {
 			Logging.setupLogBridging();
