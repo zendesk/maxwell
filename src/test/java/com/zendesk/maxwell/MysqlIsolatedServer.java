@@ -199,9 +199,9 @@ public class MysqlIsolatedServer {
 	}
 
 	public void execute(String query) throws SQLException {
-		Statement s = getConnection().createStatement();
-		s.executeUpdate(query);
-		s.close();
+		try ( Statement s = getConnection().createStatement()) {
+			s.execute(query);
+		}
 	}
 
 	private Connection cachedCX;
@@ -209,9 +209,9 @@ public class MysqlIsolatedServer {
 		if ( cachedCX == null )
 			cachedCX = getConnection();
 
-		Statement s = cachedCX.createStatement();
-		s.executeUpdate(query);
-		s.close();
+		try ( Statement s = cachedCX.createStatement() ) {
+			s.execute(query);
+		}
 	}
 
 	public void executeList(List<String> queries) throws SQLException {
