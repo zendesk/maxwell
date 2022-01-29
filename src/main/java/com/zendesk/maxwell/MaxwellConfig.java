@@ -15,6 +15,7 @@ import com.zendesk.maxwell.scripting.Scripting;
 import com.zendesk.maxwell.util.AbstractConfig;
 import com.zendesk.maxwell.util.MaxwellOptionParser;
 import joptsimple.OptionSet;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -24,80 +25,297 @@ import org.threeten.bp.Duration;
 import java.util.*;
 import java.util.regex.Pattern;
 
+/**
+ * Configuration object for Maxwell
+ */
 public class MaxwellConfig extends AbstractConfig {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfig.class);
 
 	public static final String GTID_MODE_ENV = "GTID_MODE";
 
+	/**
+	 * If non-null, specify a mysql to replicate from.<br>
+	 * If non, fallback to {@link #maxwellMysql}
+	 */
 	public MaxwellMysqlConfig replicationMysql;
+
+	/**
+	 * If non-null, specify a mysql server to capture schema from
+	 * If non, fallback to {@link #maxwellMysql}
+	 */
 	public MaxwellMysqlConfig schemaMysql;
 
+	/**
+	 * Specify a "root" maxwell server
+	 */
 	public MaxwellMysqlConfig maxwellMysql;
+
+	/**
+	 * Configuration for including/excluding rows
+	 */
 	public Filter filter;
+
+	/**
+	 * Attempt to use Mysql GTIDs to keep track of position
+	 */
 	public Boolean gtidMode;
 
+	/**
+	 * Name of database in which to store maxwell data (default `maxwell`)
+	 */
 	public String databaseName;
 
+	/**
+	 * @deprecated
+	 */
 	public String includeDatabases, excludeDatabases, includeTables, excludeTables, excludeColumns, blacklistDatabases, blacklistTables, includeColumnValues;
+
+	/**
+	 * @deprecated
+	 */
 	public String filterList;
 
+	/**
+	 * If non-null, generate a producer with this factory
+	 */
 	public ProducerFactory producerFactory; // producerFactory has precedence over producerType
+
+	/**
+	 * Available to customer producers for configuration.
+	 * Setup with all properties prefixed `customer_producer.`
+	 */
 	public final Properties customProducerProperties;
+
+	/**
+	 * String describing desired producer type: "kafka", "kinesis", etc.
+	 */
 	public String producerType;
 
+	/**
+	 * Properties object containing all configuration options beginning with "kafka."
+	 */
 	public final Properties kafkaProperties;
+
+	/**
+	 * Main kafka topic to produce to
+	 */
 	public String kafkaTopic;
+
+	/**
+	 * Kafka topic to send undeliverable rows to
+	 */
 	public String deadLetterTopic;
+
+	/**
+	 * Kafka topic to send schema changes (DDL) to
+	 */
 	public String ddlKafkaTopic;
+
+	/**
+	 * "hash" or "array" -- defines format of kafka key
+	 */
 	public String kafkaKeyFormat;
+
+	/**
+	 * "default" or "murmur3", defines partition-choice hash function
+	 */
 	public String kafkaPartitionHash;
+
+	/**
+	 * @deprecated
+	 */
+
 	public String kafkaPartitionKey;
+	/**
+	 * @deprecated
+	 */
+
 	public String kafkaPartitionColumns;
+	/**
+	 * @deprecated
+	 */
 	public String kafkaPartitionFallback;
+
+	/**
+	 * "async" or "sync", describes bootstrapping behavior
+	 */
 	public String bootstrapperType;
+
+	/**
+	 * size of queue for buffered producer
+	 */
 	public int bufferedProducerSize;
 
+	/**
+	 * database|table|primary_key|transaction_id|column|random<br>
+	 * Input for partition choice function
+	 */
 	public String producerPartitionKey;
+
+	/**
+	 * when producerPartitionKey is "column", list of columns to partition by
+	 */
 	public String producerPartitionColumns;
+
+	/**
+	 * when producerPartitionKey is "column", database|table|primary_key to fall back to<br>
+	 * (when column is unavailable)
+	 */
 	public String producerPartitionFallback;
 
+	/**
+	 * Kinesis stream name
+	 */
 	public String kinesisStream;
+
+	/**
+	 * If true, pass key through {@link DigestUtils#md5Hex} before sending to Kinesis.<br>
+	 * Limits the size of the kinesis key, iirc.
+	 */
 	public boolean kinesisMd5Keys;
 
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellSQSProducer} Queue URI
+	 */
 	public String sqsQueueUri;
 
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellSQSProducer} topic
+	 */
 	public String snsTopic;
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellSQSProducer}
+	 * ["table"|"database"] -- if set, interpolate either/or table / database into the message
+	 */
 	public String snsAttrs;
 
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} project id
+	 */
 	public String pubsubProjectId;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} topic
+	 */
 	public String pubsubTopic;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} DDL topic
+	 */
 	public String ddlPubsubTopic;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} bytes request threshold
+	 */
 	public Long pubsubRequestBytesThreshold;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} message count batch size
+	 */
 	public Long pubsubMessageCountBatchSize;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} publish delay threshold
+	 */
 	public Duration pubsubPublishDelayThreshold;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} retry delay
+	 */
 	public Duration pubsubRetryDelay;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} retry delay multiplier
+	 */
 	public Double pubsubRetryDelayMultiplier;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} max retry delay
+	 */
 	public Duration pubsubMaxRetryDelay;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} initial RPC timeout
+	 */
 	public Duration pubsubInitialRpcTimeout;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} RPC timeout multiplier
+	 */
 	public Double pubsubRpcTimeoutMultiplier;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} max RPC timeout
+	 */
 	public Duration pubsubMaxRpcTimeout;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} total timeout
+	 */
 	public Duration pubsubTotalTimeout;
 
+	/**
+	 * Used in all producers deriving from {@link com.zendesk.maxwell.producer.AbstractAsyncProducer}.<br>
+	 * In milliseconds, time a message can spend in the {@link com.zendesk.maxwell.producer.InflightMessageList}
+	 * without server acknowledgement before being considered lost.
+	 */
 	public Long producerAckTimeout;
 
+	/**
+	 * output file path for the {@link com.zendesk.maxwell.producer.FileProducer}
+	 */
 	public String outputFile;
+
+	/**
+	 * Controls output features and formats
+	 */
 	public MaxwellOutputConfig outputConfig;
+
+	/**
+	 * string representation of java log level
+	 */
 	public String log_level;
 
+	/**
+	 * container for maxwell metric collection
+	 */
 	public MetricRegistry metricRegistry;
+
+	/**
+	 * container for maxwell health checks
+	 */
 	public HealthCheckRegistry healthCheckRegistry;
 
+	/**
+	 * http port for metrics/admin server
+	 */
 	public int httpPort;
+
+	/**
+	 * bind adress for metrics/admin server
+	 */
 	public String httpBindAddress;
+
+	/**
+	 * path prefix for metrics/admin server
+	 */
 	public String httpPathPrefix;
+
+	/**
+	 * path prefix for metrics server
+	 */
 	public String metricsPrefix;
+
+	/**
+	 * string describing how to report metrics.
+	 */
 	public String metricsReportingType;
+
+	/**
+	 * for slf4j metrics reporter, how often to report
+	 */
 	public Long metricsSlf4jInterval;
+
 	public String metricsDatadogType;
 	public String metricsDatadogTags;
 	public String metricsDatadogAPIKey;
@@ -343,13 +561,18 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.section( "kinesis" );
 		parser.accepts( "kinesis_stream", "kinesis stream name" )
 				.withOptionalArg();
+
+		parser.section("sqs");
 		parser.accepts( "sqs_queue_uri", "SQS Queue uri" )
 				.withRequiredArg();
+
+		parser.section("sns");
 		parser.accepts("sns_topic", "SNS Topic ARN")
 				.withRequiredArg();
-		parser.accepts("sns_attrs", "Fields to add as message attributes")
+		parser.accepts("sns_attrs", "Comma separated fields to add as message attributes: \"database, table\"")
 				.withOptionalArg();
 		parser.separator();
+
 		parser.addToSection("producer_partition_by");
 		parser.addToSection("producer_partition_columns");
 		parser.addToSection("producer_partition_by_fallback");

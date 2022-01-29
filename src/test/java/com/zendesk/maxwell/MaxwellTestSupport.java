@@ -42,7 +42,7 @@ public class MaxwellTestSupport {
 
 		Connection conn = server.getConnection();
 		SchemaStoreSchema.ensureMaxwellSchema(conn, "maxwell");
-		conn.createStatement().executeQuery("use maxwell");
+		conn.createStatement().execute("use maxwell");
 		SchemaStoreSchema.upgradeSchemaStoreSchema(conn);
 		return server;
 	}
