@@ -37,7 +37,7 @@ jobs:
           command: sudo apt-get update && sudo apt-get -y install libnuma1
       - run:
           name: Maven Test
-          command: mvn test
+          command: mvn test -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
       - store_artifacts:
           path: test.log
 
