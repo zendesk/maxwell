@@ -37,8 +37,8 @@ public class Maxwell implements Runnable {
 	/**
 	 * Intialize a top level Maxwell runner
 	 * @param config Maxwell configuration
-	 * @throws SQLException 
-	 * @throws URISyntaxException
+	 * @throws SQLException If Maxwell can't connect
+	 * @throws URISyntaxException If there's a problem with the database configuration
 	 */
 	public Maxwell(MaxwellConfig config) throws SQLException, URISyntaxException {
 		this(new MaxwellContext(config));
@@ -62,7 +62,7 @@ public class Maxwell implements Runnable {
 
 	/**
 	 * restarts a stopped Maxwell instance.  rebuilds all connections, threads, etc.
-	 * @throws Exception
+	 * @throws Exception If Maxwell can't initialize its context
 	 */
 	public void restart() throws Exception {
 		this.context = new MaxwellContext(config);
