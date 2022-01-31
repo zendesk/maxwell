@@ -22,6 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.threeten.bp.Duration;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -1367,11 +1369,19 @@ public class MaxwellConfig extends AbstractConfig {
 		if ( strOption != null ) {
 			try {
 				Class<?> clazz = Class.forName(strOption);
-				return ProducerFactory.class.cast(clazz.newInstance());
+				Class[] carg = new Class[0];
+				Constructor ct = clazz.getDeclaredConstructor(carg);
+				return (ProducerFactory) ct.newInstance();
 			} catch ( ClassNotFoundException e ) {
 				usageForOptions("Invalid value for " + name + ", class '" + strOption + "' not found", "--" + name);
 			} catch ( IllegalAccessException | InstantiationException | ClassCastException e) {
 				usageForOptions("Invalid value for " + name + ", class instantiation error", "--" + name);
+			} catch (NoSuchMethodException e) {
+				usageForOptions("No valid constructor found for " + strOption, "--" + name);
+			} catch (InvocationTargetException e) {
+				String msg = String.format("Unable to construct customer producer '%s'", strOption);
+				usageForOptions(msg, "--" + name);
+				e.printStackTrace();
 			}
 			return null; // unreached
 		} else {
