@@ -812,16 +812,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.section( "filtering" );
 
-		parser.accepts( "include_dbs", "[deprecated]" ).withRequiredArg();
-		parser.accepts( "exclude_dbs", "[deprecated]" ).withRequiredArg();
-		parser.accepts( "include_tables", "[deprecated]" ).withRequiredArg();
-		parser.accepts( "exclude_tables", "[deprecated]" ).withRequiredArg();
-		parser.accepts( "blacklist_dbs", "[deprecated]" ).withRequiredArg();
-		parser.accepts( "blacklist_tables", "[deprecated]" ).withRequiredArg();
-
 		parser.accepts( "filter", "filter specs.  specify like \"include:db.*, exclude:*.tbl, include: foo./.*bar$/, exclude:foo.bar.baz=reject\"").withRequiredArg();
 
-		parser.accepts( "include_column_values", "[deprecated]" ).withRequiredArg();
 		parser.accepts( "javascript", "file containing per-row javascript to execute" ).withRequiredArg();
 
 		parser.section( "rabbitmq" );
@@ -851,10 +843,6 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "redis_stream_json_key", "Redis Stream message field name for JSON message body" ).withRequiredArg();
 		parser.accepts("redis_sentinels", "List of Redis sentinels in format host1:port1,host2:port2,host3:port3. It can be used instead of redis_host and redis_port" ).withRequiredArg();
 		parser.accepts("redis_sentinel_master_name", "Redis sentinel master name. It is used with redis_sentinels" ).withRequiredArg();
-
-		parser.accepts( "redis_pub_channel", "[deprecated]" ).withRequiredArg();
-		parser.accepts( "redis_stream_key", "[deprecated]" ).withRequiredArg();
-		parser.accepts( "redis_list_key", "[deprecated]" ).withRequiredArg();
 
 		parser.section("metrics");
 
