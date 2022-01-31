@@ -66,12 +66,12 @@ public class MaxwellConfig extends AbstractConfig {
 	public String databaseName;
 
 	/**
-	 * @deprecated
+	 * filter out these columns
 	 */
-	public String includeDatabases, excludeDatabases, includeTables, excludeTables, excludeColumns, blacklistDatabases, blacklistTables, includeColumnValues;
+	public String excludeColumns;
 
 	/**
-	 * @deprecated
+	 * Maxwell filters
 	 */
 	public String filterList;
 
@@ -120,21 +120,6 @@ public class MaxwellConfig extends AbstractConfig {
 	 * "default" or "murmur3", defines partition-choice hash function
 	 */
 	public String kafkaPartitionHash;
-
-	/**
-	 * @deprecated
-	 */
-
-	public String kafkaPartitionKey;
-	/**
-	 * @deprecated
-	 */
-
-	public String kafkaPartitionColumns;
-	/**
-	 * @deprecated
-	 */
-	public String kafkaPartitionFallback;
 
 	/**
 	 * "async" or "sync", describes bootstrapping behavior
@@ -316,62 +301,241 @@ public class MaxwellConfig extends AbstractConfig {
 	 */
 	public Long metricsSlf4jInterval;
 
+	/**
+	 * How to report metrics to datadog, either "udp" or "http"
+	 */
 	public String metricsDatadogType;
+
+	/**
+	 * list of additional tags to send to datadog, as tag:value,tag:value
+	 */
 	public String metricsDatadogTags;
+
+	/**
+	 * datadog apikey used when reporting type is http
+	 */
 	public String metricsDatadogAPIKey;
+
+	/**
+	 * "us" or "eu"
+	 */
 	public String metricsDatadogSite;
+
+	/**
+	 * host to send UDP DD metrics to
+	 */
 	public String metricsDatadogHost;
+
+	/**
+	 * port to send UDP DD metrics to
+	 */
 	public int metricsDatadogPort;
+
+	/**
+	 * time in seconds between datadog metrics pushes
+	 */
 	public Long metricsDatadogInterval;
+
+	/**
+	 * whether to report JVM metrics
+	 */
 	public boolean metricsJvm;
+
+	/**
+	 * time in seconds before incrementing the "slo_violation" metric
+	 */
 	public int metricsAgeSlo;
 
+	/**
+	 * configuration for maxwell http diagnostic endpoint
+	 */
 	public MaxwellDiagnosticContext.Config diagnosticConfig;
 
+	/**
+	 * whether to enable reconfiguration via http endpoint
+	 * <p>
+	 *     For the moment this endpoint only allows changing of filters in runtime
+	 * </p>
+	 */
 	public boolean enableHttpConfig;
 
+	/**
+	 * String that uniquely identifies this instance of maxwell
+	 */
 	public String clientID;
+
+	/**
+	 * integer that maxwell will report to the server as its "server_id".
+	 * <p>
+	 *   Must be unique within the cluster.
+	 * </p>
+	 */
 	public Long replicaServerID;
 
+	/**
+	 * Override Maxwell's stored starting position
+	 */
 	public Position initPosition;
+
+	/**
+	 * If true, Maxwell plays events but otherwise stores no schema changes or position changes
+	 */
 	public boolean replayMode;
+
+	/**
+	 * Enable non-GTID master recovery code
+	 */
 	public boolean masterRecovery;
+
+	/**
+	 * If true, continue on certain producer errors.  Otherwise crash.
+	 */
 	public boolean ignoreProducerError;
+
+	/**
+	 * Force a new schema capture upon startup.  dangerous.
+	 */
 	public boolean recaptureSchema;
+
+	/**
+	 * float between 0 and 1, defines percentage of JVM memory to use buffering rows.
+	 * <p>
+	 *     actual formula is given as bufferMemoryUsage * Runtime.getRuntime().maxMemory().
+	 * </p>
+	 */
 	public float bufferMemoryUsage;
+
+	/**
+	 * How many schema "deltas" are kept live before a schema compaction is triggered.
+	 * @see com.zendesk.maxwell.schema.MysqlSchemaCompactor
+	 */
 	public Integer maxSchemaDeltas;
 
+	/**
+	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} username
+	 */
 	public String rabbitmqUser;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} password
+	 */
 	public String rabbitmqPass;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} host
+	 */
 	public String rabbitmqHost;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} port
+	 */
 	public Integer rabbitmqPort;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} virtual host
+	 */
 	public String rabbitmqVirtualHost;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} url (alternative to other configuration settings)
+	 */
 	public String rabbitmqURI;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} exchange
+	 */
 	public String rabbitmqExchange;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} exchange type
+	 */
 	public String rabbitmqExchangeType;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} exchange durability
+	 */
 	public boolean rabbitMqExchangeDurable;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} exchange audo deletion
+	 */
 	public boolean rabbitMqExchangeAutoDelete;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} routing key template
+	 */
 	public String rabbitmqRoutingKeyTemplate;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} message persistence
+	 */
 	public boolean rabbitmqMessagePersistent;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} declare exchange
+	 */
 	public boolean rabbitmqDeclareExchange;
 
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.NatsProducer} URL
+	 */
 	public String natsUrl;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.NatsProducer} Message Subject
+	 */
 	public String natsSubject;
 
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellRedisProducer} host
+	 */
 	public String redisHost;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellRedisProducer} port
+	 */
 	public int redisPort;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellRedisProducer} password
+	 */
 	public String redisAuth;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellRedisProducer} database
+	 */
 	public int redisDatabase;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellRedisProducer} key
+	 */
 	public String redisKey;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellRedisProducer} JSON key for XADD
+	 * <p>
+	 *     when XADD is used, the event is embedded as a JSON string
+	 *     inside a field named this.  defaults to 'message'
+	 * </p>
+	 */
 	public String redisStreamJsonKey;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellRedisProducer} comma seperated list of redis sentials
+	 */
 	public String redisSentinels;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellRedisProducer} name of master redis sentinel
+	 */
 	public String redisSentinelMasterName;
 
-	public String redisPubChannel;
-	public String redisListKey;
-	public String redisStreamKey;
-
+	/**
+	 * type of redis operation to perform: XADD, LPUSH, RPUSH, PUBSUB
+	 */
 	public String redisType;
+
 	public String javascriptFile;
 	public Scripting scripting;
 
@@ -550,10 +714,6 @@ public class MaxwellConfig extends AbstractConfig {
 				.withRequiredArg();
 		parser.accepts( "dead_letter_topic", "write to this topic when unable to publish a row for known reasons (eg message is too big)" )
 				.withRequiredArg();
-
-		parser.accepts( "kafka_partition_by", "[deprecated]").withRequiredArg();
-		parser.accepts( "kafka_partition_columns", "[deprecated]").withRequiredArg();
-		parser.accepts( "kafka_partition_by_fallback", "[deprecated]").withRequiredArg();
 
 		parser.accepts( "ddl_kafka_topic", "public DDL (schema change) events to this topic. default: kafka_topic ( see also --output_ddl )" )
 				.withRequiredArg();
@@ -796,9 +956,6 @@ public class MaxwellConfig extends AbstractConfig {
 		this.kafkaTopic         	= fetchStringOption("kafka_topic", options, properties, "maxwell");
 		this.deadLetterTopic        = fetchStringOption("dead_letter_topic", options, properties, null);
 		this.kafkaKeyFormat     	= fetchStringOption("kafka_key_format", options, properties, "hash");
-		this.kafkaPartitionKey  	= fetchStringOption("kafka_partition_by", options, properties, null);
-		this.kafkaPartitionColumns  = fetchStringOption("kafka_partition_columns", options, properties, null);
-		this.kafkaPartitionFallback = fetchStringOption("kafka_partition_by_fallback", options, properties, null);
 
 		this.kafkaPartitionHash 	= fetchStringOption("kafka_partition_hash", options, properties, "default");
 		this.ddlKafkaTopic 		    = fetchStringOption("ddl_kafka_topic", options, properties, this.kafkaTopic);
@@ -844,11 +1001,6 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.redisSentinels = fetchStringOption("redis_sentinels", options, properties, null);
 		this.redisSentinelMasterName = fetchStringOption("redis_sentinel_master_name", options, properties, null);
-
-		// deprecated options
-		this.redisPubChannel = fetchStringOption("redis_pub_channel", options, properties, null);
-		this.redisListKey               = fetchStringOption("redis_list_key", options, properties, null);
-		this.redisStreamKey             = fetchStringOption("redis_stream_key", options, properties, null);
 
 		this.redisType			= fetchStringOption("redis_type", options, properties, "pubsub");
 
@@ -910,14 +1062,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.enableHttpConfig = fetchBooleanOption("http_config", options, properties, false);
 
-		this.includeDatabases    = fetchStringOption("include_dbs", options, properties, null);
-		this.excludeDatabases    = fetchStringOption("exclude_dbs", options, properties, null);
-		this.includeTables       = fetchStringOption("include_tables", options, properties, null);
-		this.excludeTables       = fetchStringOption("exclude_tables", options, properties, null);
-		this.blacklistDatabases  = fetchStringOption("blacklist_dbs", options, properties, null);
-		this.blacklistTables     = fetchStringOption("blacklist_tables", options, properties, null);
 		this.filterList          = fetchStringOption("filter", options, properties, null);
-		this.includeColumnValues = fetchStringOption("include_column_values", options, properties, null);
 
 		setupInitPosition(options);
 
@@ -1013,21 +1158,6 @@ public class MaxwellConfig extends AbstractConfig {
 	}
 
 	private void validatePartitionBy() {
-		if ( this.producerPartitionKey == null && this.kafkaPartitionKey != null ) {
-			LOGGER.warn("kafka_partition_by is deprecated, please use producer_partition_by");
-			this.producerPartitionKey = this.kafkaPartitionKey;
-		}
-
-		if ( this.producerPartitionColumns == null && this.kafkaPartitionColumns != null) {
-			LOGGER.warn("kafka_partition_columns is deprecated, please use producer_partition_columns");
-			this.producerPartitionColumns = this.kafkaPartitionColumns;
-		}
-
-		if ( this.producerPartitionFallback == null && this.kafkaPartitionFallback != null ) {
-			LOGGER.warn("kafka_partition_by_fallback is deprecated, please use producer_partition_by_fallback");
-			this.producerPartitionFallback = this.kafkaPartitionFallback;
-		}
-
 		String[] validPartitionBy = {"database", "table", "primary_key", "transaction_id", "thread_id", "column", "random"};
 		if ( this.producerPartitionKey == null ) {
 			this.producerPartitionKey = "database";
@@ -1048,29 +1178,7 @@ public class MaxwellConfig extends AbstractConfig {
 			if ( this.filterList != null ) {
 				this.filter = new Filter(this.databaseName, filterList);
 			} else {
-				boolean hasOldStyleFilters =
-					includeDatabases != null ||
-						excludeDatabases != null ||
-						includeTables != null ||
-						excludeTables != null ||
-						blacklistDatabases != null ||
-						blacklistTables != null ||
-						includeColumnValues != null;
-
-				if ( hasOldStyleFilters ) {
-					this.filter = Filter.fromOldFormat(
-						this.databaseName,
-						includeDatabases,
-						excludeDatabases,
-						includeTables,
-						excludeTables,
-						blacklistDatabases,
-						blacklistTables,
-						includeColumnValues
-					);
-				} else {
-					this.filter = new Filter(this.databaseName, "");
-				}
+				this.filter = new Filter(this.databaseName, "");
 			}
 		} catch (InvalidFilterException e) {
 			usageForOptions("Invalid filter options: " + e.getLocalizedMessage(), "filter");
@@ -1127,17 +1235,6 @@ public class MaxwellConfig extends AbstractConfig {
 			if (this.pubsubTotalTimeout.isNegative() || this.pubsubTotalTimeout.isZero())
 				usage("--pubsub_total_timeout must be > 0");
 		} else if (this.producerType.equals("redis")) {
-			if ( this.redisPubChannel != null ) {
-				LOGGER.warn("--redis_pub_channel is deprecated, please use redis_key");
-				this.redisKey = this.redisPubChannel;
-			} else if ( this.redisListKey != null ) {
-				LOGGER.warn("--redis_list_key is deprecated, please use redis_key");
-				this.redisKey = this.redisListKey;
-			} else if ( this.redisStreamKey != null ) {
-				LOGGER.warn("--redis_stream_key is deprecated, please use redis_key");
-				this.redisKey = this.redisStreamKey;
-			}
-
 			if ( this.redisKey == null ) {
 				usage("please specify --redis_key=KEY");
 			}
