@@ -97,7 +97,7 @@ class KafkaCallback implements Callback {
 		// with no fallback topic to avoid infinite loops
 		KafkaCallback cb = new KafkaCallback(cc, position, key, json,
 				succeededMessageCount, failedMessageCount, succeededMessageMeter,
-				failedMessageMeter, topic, null, context, producer);
+				failedMessageMeter, fallbackTopic, null, context, producer);
 		producer.enqueueFallbackRow(fallbackTopic, key, cb, md, e);
 	}
 
