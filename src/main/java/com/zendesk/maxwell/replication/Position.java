@@ -24,8 +24,11 @@ public class Position implements Serializable {
 	}
 
 	public static Position capture(Connection c, boolean gtidMode) throws SQLException {
-		//query for heartbeats table, fallback to 0
-		return new Position(BinlogPosition.capture(c, gtidMode), 0L);
+		return capture(c, 0L, gtidMode);
+	}
+
+	public static Position capture(Connection c, long lastHeartbeatRead, boolean gtidMode) throws SQLException {
+		return new Position(BinlogPosition.capture(c, gtidMode), lastHeartbeatRead);
 	}
 
 	public long getLastHeartbeatRead() {

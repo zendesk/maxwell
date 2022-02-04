@@ -156,6 +156,10 @@ public class MaxwellContext {
 		getPositionStoreThread(); // boot up thread explicitly.
 	}
 
+	public long getLastHeartbeat() throws Exception {
+		return this.positionStore.getHeartbeat();
+	}
+
 	public long heartbeat() throws Exception {
 		return this.positionStore.heartbeat();
 	}

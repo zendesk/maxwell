@@ -177,7 +177,8 @@ public class Maxwell implements Runnable {
 			/* fourth method: capture the current master position. */
 			if ( initial == null ) {
 				try ( Connection c = context.getReplicationConnection() ) {
-					initial = Position.capture(c, config.gtidMode);
+					long lastHeartbeatRead = context.getLastHeartbeat();
+					initial = Position.capture(c, lastHeartbeatRead, config.gtidMode);
 				}
 			}
 
