@@ -266,7 +266,7 @@ public class Maxwell implements Runnable {
 
 		this.context.startSchemaCompactor();
 
-		if (config.recaptureSchema) {
+		if (config.recaptureSchema || initPosition.getLastHeartbeatRead() <= 0) {
 			mysqlSchemaStore.captureAndSaveSchema();
 		}
 

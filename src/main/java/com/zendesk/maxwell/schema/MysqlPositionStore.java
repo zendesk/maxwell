@@ -16,10 +16,9 @@ import com.zendesk.maxwell.util.ConnectionPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class MysqlPositionStore {
 	static final Logger LOGGER = LoggerFactory.getLogger(MysqlPositionStore.class);
-	private static final Long DEFAULT_GTID_SERVER_ID = new Long(0);
+	private static final Long DEFAULT_GTID_SERVER_ID = 0L;
 	private final Long serverID;
 	private String clientID;
 	private final boolean gtidMode;
@@ -41,7 +40,7 @@ public class MysqlPositionStore {
 		if ( newPosition == null )
 			return;
 
-		Long heartbeat = newPosition.getLastHeartbeatRead();
+		long heartbeat = newPosition.getLastHeartbeatRead();
 
 		String sql = "INSERT INTO `positions` set "
 				+ "server_id = ?, "
@@ -97,7 +96,6 @@ public class MysqlPositionStore {
 
 	private Long insertHeartbeat(Connection c, Long thisHeartbeat) throws SQLException, DuplicateProcessException {
 		String heartbeatInsert = "insert into `heartbeats` set `heartbeat` = ?, `server_id` = ?, `client_id` = ?";
-
 
 		try ( PreparedStatement s = c.prepareStatement(heartbeatInsert) ) {
 			s.setLong(1, thisHeartbeat);
