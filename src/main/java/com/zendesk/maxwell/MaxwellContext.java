@@ -33,6 +33,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Class containing runtime state
+ */
 public class MaxwellContext {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellContext.class);
 
@@ -61,9 +64,22 @@ public class MaxwellContext {
 	private BootstrapController bootstrapController;
 	private Thread bootstrapControllerThread;
 
+	/**
+	 * Contains various Maxwell metrics
+	 */
 	public MetricRegistry metricRegistry;
+
+	/**
+	 * Contains Maxwell health checks
+	 */
 	public HealthCheckRegistry healthCheckRegistry;
 
+	/**
+	 * Create a runtime context from a configuration object
+	 * @param config Maxwell configuration
+	 * @throws SQLException if there's issues connecting to the database
+	 * @throws URISyntaxException if there's issues building database URIs
+	 */
 	public MaxwellContext(MaxwellConfig config) throws SQLException, URISyntaxException {
 		this.config = config;
 		this.config.validate();
@@ -124,17 +140,34 @@ public class MaxwellContext {
 			this.healthCheckRegistry = new HealthCheckRegistry();
 	}
 
+	/**
+	 * @return the Maxwell configuration
+	 */
 	public MaxwellConfig getConfig() {
 		return this.config;
 	}
 
+	/**
+	 * @return a connection to the replication pool
+	 * @throws SQLException if we can't connect
+	 */
 	public Connection getReplicationConnection() throws SQLException {
 		return this.replicationConnectionPool.getConnection();
 	}
 
+	/**
+	 * @return the replication (connection to replicate from) connection pool
+	 */
 	public ConnectionPool getReplicationConnectionPool() { return replicationConnectionPool; }
+
+	/**
+	 * @return the maxwell (connection to store metadata in) connection pool
+	 */
 	public ConnectionPool getMaxwellConnectionPool() { return maxwellConnectionPool; }
 
+	/**
+	 * @return the schema (connection to capture from) connection pool
+	 */
 	public ConnectionPool getSchemaConnectionPool() {
 		if (this.schemaConnectionPool != null) {
 			return schemaConnectionPool;
@@ -143,30 +176,81 @@ public class MaxwellContext {
 		return replicationConnectionPool;
 	}
 
+	/**
+	 * @return a connection from the maxwell pool
+	 * @throws SQLException if we can't connect
+	 */
 	public Connection getMaxwellConnection() throws SQLException {
 		return this.maxwellConnectionPool.getConnection();
 	}
 
+	/**
+	 * @return a connection to the maxwell pool, without a database name specific
+	 * @throws SQLException if we can't connect
+	 */
 	public Connection getRawMaxwellConnection() throws SQLException {
 		return rawMaxwellConnectionPool.getConnection();
 	}
 
+	/**
+	 * Start the HTTP server and position store thread
+	 * @throws IOException if the HTTP server can't be started
+	 */
 	public void start() throws IOException {
 		MaxwellHTTPServer.startIfRequired(this);
-		getPositionStoreThread(); // boot up thread explicitly.
+		getPositionStoreThread();
 	}
 
+	/**
+	 * @return Send a heartbeat (updates maxwell.positions)
+	 * @throws Exception If we can't send a heartbeat
+	 */
 	public long heartbeat() throws Exception {
 		return this.positionStore.heartbeat();
 	}
 
+	/**
+	 * Add a task (usually a thread) that will be stopped upon shutdown
+	 * @param task The task
+	 */
 	public void addTask(StoppableTask task) {
 		this.taskManager.add(task);
 	}
 
+	/**
+	 * Begin the maxwell shutdown process.
+	 * <ul>
+	 *    <li>Shuts down the {@link #replicator}</li>
+	 *    <li>Calls {@link TaskManager#stop}</li>
+	 *    <li>Stops metrics collection</li>
+	 *    <li>Destroys all database pools</li>
+	 * </ul>
+	 * @return A thread that will complete shutdown.
+	 */
 	public Thread terminate() {
 		return terminate(null);
 	}
+
+	/**
+	 * Begin the Maxwell shutdown process
+	 * @param error An exception that caused the shutdown, or null
+	 * @return A thread that will complete shutdown.
+	 * @see #terminate()
+	 */
+	public Thread terminate(Exception error) {
+		if (this.error == null) {
+			this.error = error;
+		}
+
+		if (taskManager.requestStop()) {
+			if (this.error == null && this.replicator != null) {
+				sendFinalHeartbeat();
+			}
+			this.terminationThread = spawnTerminateThread();
+		}
+		return this.terminationThread;
+	}
+
 
 	private void sendFinalHeartbeat() {
 		long heartbeat = System.currentTimeMillis();
@@ -187,7 +271,7 @@ public class MaxwellContext {
 		}
 	}
 
-	public void shutdown(AtomicBoolean complete) {
+	private void shutdown(AtomicBoolean complete) {
 		try {
 			taskManager.stop(this.error);
 			this.metrics.stop();
@@ -248,21 +332,7 @@ public class MaxwellContext {
 		return thread;
 	}
 
-	public Thread terminate(Exception error) {
-		if (this.error == null) {
-			this.error = error;
-		}
-
-		if (taskManager.requestStop()) {
-			if (this.error == null && this.replicator != null) {
-				sendFinalHeartbeat();
-			}
-			this.terminationThread = spawnTerminateThread();
-		}
-		return this.terminationThread;
-	}
-
-	public Thread startTask(RunLoopProcess task, String name) {
+	private Thread startTask(RunLoopProcess task, String name) {
 		Thread t = new Thread(() -> {
 			try {
 				task.runLoop();
@@ -281,10 +351,18 @@ public class MaxwellContext {
 		return t;
 	}
 
+	/**
+	 * Get the error that trigger shutdown
+	 * @return An error that caused maxwell to shutdown
+	 */
 	public Exception getError() {
 		return error;
 	}
 
+	/**
+	 * Get or spawn a thread that persists the current position into the metadata database.
+	 * @return Position store thread
+	 */
 	public PositionStoreThread getPositionStoreThread() {
 		if ( this.positionStoreThread == null ) {
 			this.positionStoreThread = new PositionStoreThread(this.positionStore, this);
@@ -295,6 +373,11 @@ public class MaxwellContext {
 	}
 
 
+	/**
+	 * Retrieve Maxwell's starting position from the metadata database
+	 * @return The initial binlog position
+	 * @throws SQLException If the position can't be retrieved from the database
+	 */
 	public Position getInitialPosition() throws SQLException {
 		if ( this.initialPosition != null )
 			return this.initialPosition;
@@ -303,19 +386,37 @@ public class MaxwellContext {
 		return this.initialPosition;
 	}
 
+	/**
+	 * @return A binlog position or NULL
+	 * @throws SQLException If an error is encountered fetching the position
+	 * @see MysqlPositionStore#getLatestFromAnyClient()
+	 */
 	public Position getOtherClientPosition() throws SQLException {
 		return this.positionStore.getLatestFromAnyClient();
 	}
 
+	/**
+	 * @return Information used to recover a master position, or NULL
+	 * @throws SQLException If we have database issues
+	 * @see MysqlPositionStore#getRecoveryInfo(MaxwellConfig)
+	 */
 	public RecoveryInfo getRecoveryInfo() throws SQLException {
 		return this.positionStore.getRecoveryInfo(config);
 	}
 
+	/**
+	 * If the passed {@link RowMap} is a transaction-commit, update maxwell's position
+	 * @param r A processed Rowmap
+	 */
 	public void setPosition(RowMap r) {
 		if ( r.isTXCommit() )
 			this.setPosition(r.getNextPosition());
 	}
 
+	/**
+	 * Set Maxwell's next binlog position
+	 * @param position The new position
+	 */
 	public void setPosition(Position position) {
 		if ( position == null )
 			return;
@@ -323,14 +424,26 @@ public class MaxwellContext {
 		this.getPositionStoreThread().setPosition(position);
 	}
 
+	/**
+	 * @return The last binlog position set
+	 * @throws SQLException If we have database issues
+	 */
 	public Position getPosition() throws SQLException {
 		return this.getPositionStoreThread().getPosition();
 	}
 
+	/**
+	 * @return The mysql position store
+	 */
 	public MysqlPositionStore getPositionStore() {
 		return this.positionStore;
 	}
 
+	/**
+	 * Get the replication connection's server id
+	 * @return a server id
+	 * @throws SQLException if we have connection issues
+	 */
 	public Long getServerID() throws SQLException {
 		if ( this.serverID != null)
 			return this.serverID;
@@ -346,6 +459,11 @@ public class MaxwellContext {
 		}
 	}
 
+	/**
+	 * Get the replication connection's mysql version
+	 * @return The mysql version
+	 * @throws SQLException if we have connection issues
+	 */
 	public MysqlVersion getMysqlVersion() throws SQLException {
 		if ( mysqlVersion == null ) {
 			try ( Connection c = getReplicationConnection() ) {
@@ -355,10 +473,11 @@ public class MaxwellContext {
 		return mysqlVersion;
 	}
 
-	public boolean shouldHeartbeat() throws SQLException {
-		return getMysqlVersion().atLeast(5,5);
-	}
-
+	/**
+	 * Get the replication connection's case sensitivity settings
+	 * @return case sensitivity settings
+	 * @throws SQLException if we have connection issues
+	 */
 	public CaseSensitivity getCaseSensitivity() throws SQLException {
 		if ( this.caseSensitivity == null ) {
 			try (Connection c = getReplicationConnection()) {
@@ -368,6 +487,11 @@ public class MaxwellContext {
 		return this.caseSensitivity;
 	}
 
+	/**
+	 * get or build an {@link AbstractProducer} based on settings in {@link #config}
+	 * @return A producer
+	 * @throws IOException if there's trouble instantiating the producer
+	 */
 	public AbstractProducer getProducer() throws IOException {
 		if ( this.producer != null )
 			return this.producer;
@@ -437,12 +561,21 @@ public class MaxwellContext {
 		return this.producer;
 	}
 
+	/**
+	 * only used in test code.  interrupt the bootstrap thread to quicken tests.
+	 */
 	public void runBootstrapNow() {
 		if ( this.bootstrapControllerThread != null ) {
 			this.bootstrapControllerThread.interrupt();
 		}
 	}
 
+	/**
+	 * get or start a {@link BootstrapController}
+	 * @param currentSchemaID the currently active mysql schema
+	 * @return a bootstrap controller
+	 * @throws IOException if the bootstrap thread can't be started
+	 */
 	public synchronized BootstrapController getBootstrapController(Long currentSchemaID) throws IOException {
 		if ( this.bootstrapController != null ) {
 			return this.bootstrapController;
@@ -466,6 +599,10 @@ public class MaxwellContext {
 		return this.bootstrapController;
 	}
 
+	/**
+	 * get or start a {@link MysqlSchemaCompactor}
+	 * @throws SQLException if we have connection issues
+	 */
 	public void startSchemaCompactor() throws SQLException {
 		if ( this.config.maxSchemaDeltas == null )
 			return;
@@ -481,27 +618,50 @@ public class MaxwellContext {
 		this.startTask(compactor, "maxwell-schema-compactor");
 	}
 
+	/**
+	 * get the current active filter
+	 * @return the currently active Filter
+	 */
 	public Filter getFilter() {
 		return config.filter;
 	}
 
+	/**
+	 * @return whether we are in "replay mode" (--replay)
+	 */
 	public boolean getReplayMode() {
 		return this.config.replayMode;
 	}
 
+	/**
+	 * Set the current binlog replicator
+	 * @param replicator the replicator
+	 */
 	public void setReplicator(Replicator replicator) {
 		this.addTask(replicator);
 		this.replicator = replicator;
 	}
 
+	/**
+	 * Get the current metrics registry
+	 * @return the current metrics registry
+	 */
 	public Metrics getMetrics() {
 		return metrics;
 	}
 
+	/**
+	 * Get the heartbeat notifier object, which can be asked to broadcast heartbeats
+	 * @return a heartbeat notifier
+	 */
 	public HeartbeatNotifier getHeartbeatNotifier() {
 		return heartbeatNotifier;
 	}
 
+	/**
+	 * Get the context for maxwell diagnostics
+	 * @return the maxwell diagnostic context
+	 */
 	public MaxwellDiagnosticContext getDiagnosticContext() {
 		return this.diagnosticContext;
 	}

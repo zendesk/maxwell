@@ -33,6 +33,12 @@ import java.util.regex.Pattern;
 public class MaxwellConfig extends AbstractConfig {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfig.class);
 
+	/**
+	 * String that describes an environment key that, if set, will enable Maxwell's GTID mode
+	 * <p>
+	 *     Primarily used for test environment setup.
+	 * </p>
+	 */
 	public static final String GTID_MODE_ENV = "GTID_MODE";
 
 	/**
@@ -40,6 +46,11 @@ public class MaxwellConfig extends AbstractConfig {
 	 * If non, fallback to {@link #maxwellMysql}
 	 */
 	public MaxwellMysqlConfig replicationMysql;
+
+	/**
+	 * Number of times to attempt connecting the replicator before giving up
+	 */
+	public int replicationReconnectionRetries;
 
 	/**
 	 * If non-null, specify a mysql server to capture schema from
@@ -538,14 +549,34 @@ public class MaxwellConfig extends AbstractConfig {
 	 */
 	public String redisType;
 
+	/**
+	 * path to file containing javascript filtering functions
+	 */
 	public String javascriptFile;
+
+	/**
+	 * Instantiated by {@link #validate()}.  Should be moved to MaxwellContext.
+	 */
 	public Scripting scripting;
 
+	/**
+	 * Enable high available support (via jgroups-raft)
+	 */
 	public boolean haMode;
-	public String jgroupsConf;
-	public String raftMemberID;
-	public int replicationReconnectionRetries;
 
+	/**
+	 * Path to raft.xml file that configures high availability support
+	 */
+	public String jgroupsConf;
+
+	/**
+	 * Defines membership within a HA cluster
+	 */
+	public String raftMemberID;
+
+	/**
+	 * Build a default configuration object.
+	 */
 	public MaxwellConfig() { // argv is only null in tests
 		this.customProducerProperties = new Properties();
 		this.kafkaProperties = new Properties();
@@ -560,6 +591,10 @@ public class MaxwellConfig extends AbstractConfig {
 		setup(null, null); // setup defaults
 	}
 
+	/**
+	 * build a configuration instance from command line arguments
+	 * @param argv command line arguments
+	 */
 	public MaxwellConfig(String argv[]) {
 		this();
 		this.parse(argv);
@@ -1175,6 +1210,9 @@ public class MaxwellConfig extends AbstractConfig {
 		}
 	}
 
+	/**
+	 * Validate the maxwell configuration, exiting with an error message if invalid.
+	 */
 	public void validate() {
 		validatePartitionBy();
 		validateFilter();
@@ -1335,11 +1373,15 @@ public class MaxwellConfig extends AbstractConfig {
 		}
 	}
 
+	/**
+	 * return a filtered list of properties for the Kafka producer
+	 * @return Properties object containing all kafka properties found in config.properties
+	 */
 	public Properties getKafkaProperties() {
 		return this.kafkaProperties;
 	}
 
-	public static Pattern compileStringToPattern(String name) throws InvalidFilterException {
+	private static Pattern compileStringToPattern(String name) throws InvalidFilterException {
 		name = name.trim();
 		if ( name.startsWith("/") ) {
 			if ( !name.endsWith("/") ) {
@@ -1351,6 +1393,12 @@ public class MaxwellConfig extends AbstractConfig {
 		}
 	}
 
+	/**
+	 * If present in the configuration, build an instance of a custom producer factor
+	 * @param options command line arguments
+	 * @param properties properties from config.properties
+	 * @return NULL or ProducerFactory instance
+	 */
 	protected ProducerFactory fetchProducerFactory(OptionSet options, Properties properties) {
 		String name = "custom_producer.factory";
 		String strOption = fetchStringOption(name, options, properties, null);
