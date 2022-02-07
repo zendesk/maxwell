@@ -87,7 +87,9 @@ public class MysqlPositionStore {
 	}
 
 	public long getHeartbeat() throws SQLException {
-		return getHeartbeat(connectionPool.getConnection());
+		try (Connection connection = connectionPool.getConnection()) {
+			return getHeartbeat(connection);
+		}
 	}
 
 	/*
