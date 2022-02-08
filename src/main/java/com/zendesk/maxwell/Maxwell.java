@@ -177,7 +177,8 @@ public class Maxwell implements Runnable {
 			/* fourth method: capture the current master position. */
 			if ( initial == null ) {
 				try ( Connection c = context.getReplicationConnection() ) {
-					initial = Position.capture(c, config.gtidMode);
+					long lastHeartbeatRead = context.getLastHeartbeat();
+					initial = Position.capture(c, config.gtidMode, lastHeartbeatRead);
 				}
 			}
 
@@ -266,7 +267,7 @@ public class Maxwell implements Runnable {
 
 		this.context.startSchemaCompactor();
 
-		if (config.recaptureSchema || initPosition.getLastHeartbeatRead() <= 0) {
+		if (config.recaptureSchema) {
 			mysqlSchemaStore.captureAndSaveSchema();
 		}
 

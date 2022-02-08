@@ -86,6 +86,12 @@ public class MysqlPositionStore {
 		});
 	}
 
+	public long getHeartbeat() throws SQLException {
+		try (Connection connection = connectionPool.getConnection()) {
+			return getHeartbeat(connection);
+		}
+	}
+
 	/*
 	 * the heartbeat system performs two functions:
 	 * 1 - it leaves pointers in the binlog in order to facilitate master recovery
@@ -94,7 +100,22 @@ public class MysqlPositionStore {
 
 	private Long lastHeartbeat = null;
 
-	private Long insertHeartbeat(Connection c, Long thisHeartbeat) throws SQLException, DuplicateProcessException {
+	private long getHeartbeat(Connection c) throws SQLException {
+		try ( PreparedStatement s = c.prepareStatement("SELECT `heartbeat` from `heartbeats` where server_id = ? and client_id = ?") ) {
+			s.setLong(1, serverID);
+			s.setString(2, clientID);
+
+			try ( ResultSet rs = s.executeQuery() ) {
+				if ( !rs.next() ) {
+					return 0L;
+				} else {
+					return rs.getLong("heartbeat");
+				}
+			}
+		}
+	}
+
+	private void insertHeartbeat(Connection c, Long thisHeartbeat) throws SQLException, DuplicateProcessException {
 		String heartbeatInsert = "insert into `heartbeats` set `heartbeat` = ?, `server_id` = ?, `client_id` = ?";
 
 		try ( PreparedStatement s = c.prepareStatement(heartbeatInsert) ) {
@@ -103,7 +124,6 @@ public class MysqlPositionStore {
 			s.setString(3, clientID);
 
 			s.execute();
-			return thisHeartbeat;
 		} catch ( SQLIntegrityConstraintViolationException e ) {
 			throw new DuplicateProcessException("Found heartbeat row for client,position while trying to insert.  Is another maxwell running?");
 		}
@@ -111,19 +131,14 @@ public class MysqlPositionStore {
 
 	private void heartbeat(Connection c, long thisHeartbeat) throws SQLException, DuplicateProcessException {
 		if ( lastHeartbeat == null ) {
-			try ( PreparedStatement s = c.prepareStatement("SELECT `heartbeat` from `heartbeats` where server_id = ? and client_id = ?") ) {
-				s.setLong(1, serverID);
-				s.setString(2, clientID);
+			long storedHeartbeat = getHeartbeat(c);
 
-				try ( ResultSet rs = s.executeQuery() ) {
-					if ( !rs.next() ) {
-						insertHeartbeat(c, thisHeartbeat);
-						lastHeartbeat = thisHeartbeat;
-						return;
-					} else {
-						lastHeartbeat = rs.getLong("heartbeat");
-					}
-				}
+			if (storedHeartbeat > 0) {
+				lastHeartbeat = storedHeartbeat;
+			} else {
+				insertHeartbeat(c, thisHeartbeat);
+				lastHeartbeat = thisHeartbeat;
+				return;
 			}
 		}
 
