@@ -1,0 +1,15 @@
+com.zendesk.maxwell
+com.zendesk.maxwell.bootstrap
+com.zendesk.maxwell.errors
+com.zendesk.maxwell.filtering
+com.zendesk.maxwell.monitoring
+com.zendesk.maxwell.producer
+com.zendesk.maxwell.producer.partitioners
+com.zendesk.maxwell.recovery
+com.zendesk.maxwell.replication
+com.zendesk.maxwell.row
+com.zendesk.maxwell.schema
+com.zendesk.maxwell.schema.columndef
+com.zendesk.maxwell.schema.ddl
+com.zendesk.maxwell.scripting
+com.zendesk.maxwell.util
