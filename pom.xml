@@ -428,6 +428,7 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>3.3.1</version>
         <configuration>
+            <additionalOptions>--no-module-directories</additionalOptions>
             <source>11</source>
         </configuration>
         <executions>
