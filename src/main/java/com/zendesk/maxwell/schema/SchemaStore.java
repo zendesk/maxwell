@@ -13,6 +13,7 @@ public interface SchemaStore {
 	 * If no Stored schema is found, this method should capture and save a snapshot
 	 * of the current mysql schema.
 	 * @return The schema, either retrieved from storage or captured.
+	 * @throws SchemaStoreException if we have issues gettng the schema
 	 */
 	Schema getSchema() throws SchemaStoreException;
 
@@ -25,6 +26,8 @@ public interface SchemaStore {
 	 * @param currentDatabase The "contextual database" of the DDL statement
 	 * @param position The position of the DDL statement
 	 * @return A list of the schema changes parsed from the SQL.
+	 * @throws SchemaStoreException if we have trouble processing or storing the schema change
+	 * @throws InvalidSchemaError if we find the schema to be in a bad state
 	 */
 	List<ResolvedSchemaChange> processSQL(String sql, String currentDatabase, Position position) throws SchemaStoreException, InvalidSchemaError;
 
@@ -34,6 +37,7 @@ public interface SchemaStore {
 	 * Schema id should be an always increasing integer, not current intended for use
 	 * to refernce the schema, simply as a schema generation indicator.
 	 * @return The current schema id
+	 * @throws SchemaStoreException if we have trouble getting the schema id
 	 */
 	Long getSchemaID() throws SchemaStoreException;
 }

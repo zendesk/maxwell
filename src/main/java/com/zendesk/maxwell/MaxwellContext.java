@@ -141,6 +141,7 @@ public class MaxwellContext {
 	}
 
 	/**
+	 * Get Maxwell configuration used in this context
 	 * @return the Maxwell configuration
 	 */
 	public MaxwellConfig getConfig() {
@@ -148,6 +149,7 @@ public class MaxwellContext {
 	}
 
 	/**
+	 * Get the a connection from the replication pool
 	 * @return a connection to the replication pool
 	 * @throws SQLException if we can't connect
 	 */
@@ -156,16 +158,19 @@ public class MaxwellContext {
 	}
 
 	/**
+	 * Get the replication pool
 	 * @return the replication (connection to replicate from) connection pool
 	 */
 	public ConnectionPool getReplicationConnectionPool() { return replicationConnectionPool; }
 
 	/**
+	 * Get a connection from the maxwell (metadata) pool
 	 * @return the maxwell (connection to store metadata in) connection pool
 	 */
 	public ConnectionPool getMaxwellConnectionPool() { return maxwellConnectionPool; }
 
 	/**
+	 * Get a connection from the schema pool
 	 * @return the schema (connection to capture from) connection pool
 	 */
 	public ConnectionPool getSchemaConnectionPool() {
@@ -177,6 +182,7 @@ public class MaxwellContext {
 	}
 
 	/**
+	 * get a connection from the maxwell pool
 	 * @return a connection from the maxwell pool
 	 * @throws SQLException if we can't connect
 	 */
@@ -185,6 +191,9 @@ public class MaxwellContext {
 	}
 
 	/**
+	 * get a database-less connection from the maxwell pool
+	 *
+	 * Used to create the maxwell schema.
 	 * @return a connection to the maxwell pool, without a database name specific
 	 * @throws SQLException if we can't connect
 	 */
@@ -202,7 +211,8 @@ public class MaxwellContext {
 	}
 
 	/**
-	 * @return Send a heartbeat (updates maxwell.positions)
+	 * Manually trigger a heartbeat to be sent
+	 * @return Timestamp of the heartbeeat
 	 * @throws Exception If we can't send a heartbeat
 	 */
 	public long heartbeat() throws Exception {
@@ -352,7 +362,7 @@ public class MaxwellContext {
 	}
 
 	/**
-	 * Get the error that trigger shutdown
+	 * Get the Exception that triggered shutdown
 	 * @return An error that caused maxwell to shutdown
 	 */
 	public Exception getError() {
@@ -387,6 +397,7 @@ public class MaxwellContext {
 	}
 
 	/**
+	 * Finds the most recent position any client has reached on the server
 	 * @return A binlog position or NULL
 	 * @throws SQLException If an error is encountered fetching the position
 	 * @see MysqlPositionStore#getLatestFromAnyClient()
@@ -396,6 +407,7 @@ public class MaxwellContext {
 	}
 
 	/**
+	 * Build a {@link RecoveryInfo} object, used in non-GTID master failover
 	 * @return Information used to recover a master position, or NULL
 	 * @throws SQLException If we have database issues
 	 * @see MysqlPositionStore#getRecoveryInfo(MaxwellConfig)
@@ -425,6 +437,7 @@ public class MaxwellContext {
 	}
 
 	/**
+	 * Get the last stored binlog position
 	 * @return The last binlog position set
 	 * @throws SQLException If we have database issues
 	 */
@@ -433,6 +446,7 @@ public class MaxwellContext {
 	}
 
 	/**
+	 * Get the position store service object
 	 * @return The mysql position store
 	 */
 	public MysqlPositionStore getPositionStore() {
@@ -627,6 +641,7 @@ public class MaxwellContext {
 	}
 
 	/**
+	 * Get the replayMode flag
 	 * @return whether we are in "replay mode" (--replay)
 	 */
 	public boolean getReplayMode() {

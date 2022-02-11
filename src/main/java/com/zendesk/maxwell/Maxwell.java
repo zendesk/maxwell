@@ -142,7 +142,6 @@ public class Maxwell implements Runnable {
 
 	/**
 	 * Determines initial replication position
-	 * <p>
 	 * <ol>
 	 *     <li>Retrieve stored position from `maxwell`.`positons`</li>
 	 *     <li>Attempt master recovery</li>
