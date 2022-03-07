@@ -1,5 +1,13 @@
 # Maxwell changelog
 
+### [v1.37.1](https://github.com/zendesk/maxwell/releases/tag/v1.37.1): 
+
+ - list changes
+
+
+
+_Released 2022-03-07_
+
 ### [v1.37.0](https://github.com/zendesk/maxwell/releases/tag/v1.37.0): 
 
 - Change max size of RowMap buffer to unblock high-efficiency producers
@@ -1530,17 +1538,17 @@ _Released 2015-09-11_
 
 _Released 2015-09-09_
 
-### [v0.10.0](https://github.com/zendesk/maxwell/releases/tag/v0.10.0): 
+### [v0.11.0-PRE4](https://github.com/zendesk/maxwell/releases/tag/v0.11.0-PRE4): 
 
-- Mysql 5.6 checksum support!
-- some more bugfixes with the SQL parser 
+- bugfix on v0.11.0-PRE3
 
 
 _Released 2015-09-09_
 
-### [v0.11.0-PRE4](https://github.com/zendesk/maxwell/releases/tag/v0.11.0-PRE4): 
+### [v0.10.0](https://github.com/zendesk/maxwell/releases/tag/v0.10.0): 
 
-- bugfix on v0.11.0-PRE3
+- Mysql 5.6 checksum support!
+- some more bugfixes with the SQL parser 
 
 
 _Released 2015-09-09_
