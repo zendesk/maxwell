@@ -9,6 +9,7 @@ import com.zendesk.maxwell.monitoring.MaxwellDiagnosticContext;
 import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.producer.ProducerFactory;
+import com.zendesk.maxwell.replication.BinlogConnectorReplicator;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.scripting.Scripting;
@@ -575,6 +576,12 @@ public class MaxwellConfig extends AbstractConfig {
 	public String raftMemberID;
 
 	/**
+	 * The size for the queue used to buffer events parsed off binlog in
+	 * {@link com.zendesk.maxwell.replication.BinlogConnectorReplicator}
+	 */
+	public int binlogEventQueueSize;
+
+	/**
 	 * Build a default configuration object.
 	 */
 	public MaxwellConfig() { // argv is only null in tests
@@ -714,6 +721,8 @@ public class MaxwellConfig extends AbstractConfig {
 				.withOptionalArg().ofType(Boolean.class);
 		parser.accepts( "buffer_memory_usage", "Percentage of JVM memory available for transaction buffer.  Floating point between 0 and 1." )
 				.withRequiredArg().ofType(Float.class);
+		parser.accepts("binlog_event_queue_size", "Size of queue to buffer events parsed from binlog.")
+				.withOptionalArg().ofType(Integer.class);
 
 		parser.section( "custom_producer" );
 		parser.accepts( "custom_producer.factory", "fully qualified custom producer factory class" )
@@ -1121,6 +1130,8 @@ public class MaxwellConfig extends AbstractConfig {
 		this.jgroupsConf = fetchStringOption("jgroups_config", options, properties, "raft.xml");
 		this.raftMemberID = fetchStringOption("raft_member_id", options, properties, null);
 		this.replicationReconnectionRetries = fetchIntegerOption("replication_reconnection_retries", options, properties, 1);
+
+		this.binlogEventQueueSize = fetchIntegerOption("binlog_event_queue_size", options, properties, BinlogConnectorReplicator.BINLOG_QUEUE_SIZE);
 	}
 
 	private void setupEncryptionOptions(OptionSet options, Properties properties) {
