@@ -287,7 +287,8 @@ public class Maxwell implements Runnable {
 			context.getFilter(),
 			config.outputConfig,
 			config.bufferMemoryUsage,
-			config.replicationReconnectionRetries
+			config.replicationReconnectionRetries,
+			config.binlogEventQueueSize
 		);
 
 		context.setReplicator(replicator);

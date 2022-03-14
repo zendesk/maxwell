@@ -235,6 +235,7 @@ init_position                  | FILE:POSITION[:HEARTBEAT]           | ignore th
 replay                         | BOOLEAN                             | enable maxwell's read-only "replay" mode: don't store a binlog position or schema changes.  Not available in config.properties. |
 buffer_memory_usage            | FLOAT                               | Determines how much memory the Maxwell event buffer will use from the jvm max memory. Size of the buffer is: buffer_memory_usage * -Xmx" | 0.25
 http_config                    | BOOLEAN                             | enable http config endpoint for config updates without restart | false
+binlog_event_queue_size        | INT                                 | Size of queue to buffer events parsed from binlog   | 5000
 
 
 <p id="loglevel" class="jumptarget">

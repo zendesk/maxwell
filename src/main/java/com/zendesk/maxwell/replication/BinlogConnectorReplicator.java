@@ -51,7 +51,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private final int replicationReconnectionRetries;
 	private BinlogConnectorEventListener binlogEventListener;
 	private BinlogConnectorLivenessMonitor binlogLivenessMonitor;
-	private final LinkedBlockingDeque<BinlogConnectorEvent> queue = new LinkedBlockingDeque<>(BINLOG_QUEUE_SIZE);
+	private final LinkedBlockingDeque<BinlogConnectorEvent> queue;
 	private final TableCache tableCache;
 	private final Scripting scripting;
 	private ServerException lastCommError;
@@ -86,6 +86,45 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private class ClientReconnectedException extends Exception {}
 
 	public BinlogConnectorReplicator(
+			SchemaStore schemaStore,
+			AbstractProducer producer,
+			BootstrapController bootstrapper,
+			MaxwellMysqlConfig mysqlConfig,
+			Long replicaServerID,
+			String maxwellSchemaDatabaseName,
+			Metrics metrics,
+			Position start,
+			boolean stopOnEOF,
+			String clientID,
+			HeartbeatNotifier heartbeatNotifier,
+			Scripting scripting,
+			Filter filter,
+			MaxwellOutputConfig outputConfig,
+			float bufferMemoryUsage,
+			int replicationReconnectionRetries
+	) {
+		this(
+				schemaStore,
+				producer,
+				bootstrapper,
+				mysqlConfig,
+				replicaServerID,
+				maxwellSchemaDatabaseName,
+				metrics,
+				start,
+				stopOnEOF,
+				clientID,
+				heartbeatNotifier,
+				scripting,
+				filter,
+				outputConfig,
+				bufferMemoryUsage,
+				replicationReconnectionRetries,
+				BINLOG_QUEUE_SIZE
+		);
+	}
+
+	public BinlogConnectorReplicator(
 		SchemaStore schemaStore,
 		AbstractProducer producer,
 		BootstrapController bootstrapper,
@@ -101,7 +140,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		Filter filter,
 		MaxwellOutputConfig outputConfig,
 		float bufferMemoryUsage,
-		int replicationReconnectionRetries
+		int replicationReconnectionRetries,
+		int binlogEventQueueSize
 	) {
 		this.clientID = clientID;
 		this.bootstrapper = bootstrapper;
@@ -116,6 +156,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		this.filter = filter;
 		this.lastCommError = null;
 		this.bufferMemoryUsage = bufferMemoryUsage;
+		this.queue = new LinkedBlockingDeque<>(binlogEventQueueSize);
 
 		/* setup metrics */
 		rowCounter = metrics.getRegistry().counter(
