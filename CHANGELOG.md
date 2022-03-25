@@ -1,5 +1,13 @@
 # Maxwell changelog
 
+### [v1.37.3](https://github.com/zendesk/maxwell/releases/tag/v1.37.3): 
+
+- fixes for mariadb
+
+
+
+_Released 2022-03-25_
+
 ### [v1.37.2](https://github.com/zendesk/maxwell/releases/tag/v1.37.2): 
 
 - configurable binlog event queue size
