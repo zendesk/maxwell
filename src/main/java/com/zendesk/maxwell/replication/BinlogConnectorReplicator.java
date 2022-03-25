@@ -607,6 +607,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 						// We don't need to process them, just ignore
 					} else if (upperCaseSql.startsWith("DROP TEMPORARY TABLE")) {
 						// Ignore temporary table drop statements inside transactions
+					} else if ( upperCaseSql.startsWith("# DUMMY EVENT")) {
+						// MariaDB injected event
 					} else {
 						LOGGER.warn("Unhandled QueryEvent @ {} inside transaction: {}", event.getPosition().fullPosition(), qe);
 					}
