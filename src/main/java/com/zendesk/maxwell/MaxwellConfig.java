@@ -1047,6 +1047,8 @@ public class MaxwellConfig extends AbstractConfig {
 				String k = (String) e.nextElement();
 				if (k.startsWith("custom_producer.")) {
 					this.customProducerProperties.setProperty(k.replace("custom_producer.", ""), properties.getProperty(k));
+				} else if (k.startsWith("custom_producer_")) {
+					this.customProducerProperties.setProperty(k.replace("custom_producer_", ""), properties.getProperty(k));
 				} else if (k.startsWith("kafka.")) {
 					if (k.equals("kafka.bootstrap.servers") && kafkaBootstrapServers != null)
 						continue; // don't override command line bootstrap servers with config files'
