@@ -133,7 +133,7 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-core</artifactId>
-      <version>1.12.191</version>
+      <version>1.12.193</version>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
@@ -293,7 +293,7 @@
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
       <artifactId>metrics-servlets</artifactId>
-      <version>4.1.14</version>
+      <version>4.2.7</version>
     </dependency>
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
