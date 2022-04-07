@@ -145,7 +145,6 @@ public class MysqlSavedSchema {
 						"position_sha = ?, gtid_set = ?, last_heartbeat_read = ?",
 				Statement.RETURN_GENERATED_KEYS);) {
 
-
 			String deltaString;
 
 			try {
@@ -256,7 +255,32 @@ public class MysqlSavedSchema {
 					if ( columnData.size() > 1000 )
 						executeColumnInsert(conn, columnData);
 
-				}
+				if ( c instanceof StringColumnDef ) {
+						columnData.add(((StringColumnDef) c).getCharset());
+					} else {
+						columnData.add(null);
+					}
+
+					columnData.add(c.getType());
+
+					if ( c instanceof IntColumnDef ) {
+						columnData.add(((IntColumnDef) c).isSigned() ? 1 : 0);
+					} else if ( c instanceof BigIntColumnDef ) {
+						columnData.add(((BigIntColumnDef) c).isSigned() ? 1 : 0);
+					} else {
+						columnData.add(0);
+					}
+
+					columnData.add(enumValuesSQL);
+
+					if ( c instanceof ColumnDefWithLength ) {
+						Long columnLength = ((ColumnDefWithLength) c).getColumnLength();
+						columnData.add(columnLength);
+					} else {
+						columnData.add(null);
+					}
+
+					columnData.add(c.isNullable() ? 1 : 0);}
 			}
 			if ( columnData.size() > 0 )
 				executeColumnInsert(conn, columnData);
@@ -266,7 +290,7 @@ public class MysqlSavedSchema {
 	private void executeColumnInsert(Connection conn, ArrayList<Object> columnData) throws SQLException {
 		String insertColumnSQL = this.columnInsertSQL;
 
-		for (int i=1; i < columnData.size() / 8; i++) {
+		for (int i=1; i < columnData.size() / 9; i++) {
 			insertColumnSQL = insertColumnSQL + ", (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		}
 
@@ -485,7 +509,14 @@ public class MysqlSavedSchema {
 					int columnIsSigned = rs.getInt("columnIsSigned");
 					int columnIsNullable = rs.getInt("columnIsNullable");
 
-					if (currentDatabase == null || !currentDatabase.getName().equals(dbName)) {
+					// Column
+					String columnName = rs.getString("columnName");
+					int columnLengthInt = rs.getInt("columnLength");
+					String columnEnumValues = rs.getString("columnEnumValues");
+					String columnCharset = rs.getString("columnCharset");
+					String columnType = rs.getString("columnColtype");
+					int columnIsSigned = rs.getInt("columnIsSigned");
+					int columnIsNullable = rs.getInt("columnIsNullable");if (currentDatabase == null || !currentDatabase.getName().equals(dbName)) {
 						currentDatabase = new Database(dbName, dbCharset);
 						this.schema.addDatabase(currentDatabase);
 						// make sure two tables named the same in different dbs are picked up.
@@ -526,6 +557,38 @@ public class MysqlSavedSchema {
 							} catch (IOException e) {
 								throw new SQLException(e);
 							}
+
+							if (tName == null) {
+								// if tName is null, there are no tables connected to this database
+								continue;
+							} else if (currentTable == null || !currentTable.getName().equals(tName)) {
+								currentTable = currentDatabase.buildTable(tName, tCharset);
+								if (tPKs != null) {
+									List<String> pkList = Arrays.asList(StringUtils.split(tPKs, ','));
+									currentTable.setPKList(pkList);
+								}
+								columnIndex = 0;
+							}
+
+
+							if (columnName == null) {
+								// If columnName is null, there are no columns connected to this table
+								continue;
+							}
+
+							Long columnLength;
+							if (rs.wasNull()) {
+								columnLength = null;
+							} else {
+								columnLength = Long.valueOf(columnLengthInt);
+							}String[] enumValues = null;
+					if (columnEnumValues != null) {
+						if (this.schemaVersion >= 4) {
+							try {
+								enumValues = mapper.readValue(columnEnumValues, String[].class);
+							} catch (IOException e) {
+								throw new SQLException(e);
+							}
 						} else {
 							enumValues = StringUtils.splitByWholeSeparatorPreserveAllTokens(columnEnumValues, ",");
 						}
@@ -545,6 +608,22 @@ public class MysqlSavedSchema {
 
 				}
 				LOGGER.debug("Restored all databases");
+			}
+		}
+	}
+
+					ColumnDef c = ColumnDef.build(
+							columnName,
+							columnCharset,
+							columnType,
+							columnIndex++,
+							columnIsSigned == 1,
+							enumValues,
+							columnLength,
+							columnIsNullable == 1
+					);
+					currentTable.addColumn(c);
+				}
 			}
 		}
 	}

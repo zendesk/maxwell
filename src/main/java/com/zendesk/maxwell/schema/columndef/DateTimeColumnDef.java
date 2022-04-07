@@ -11,6 +11,11 @@ public class DateTimeColumnDef extends ColumnDefWithLength {
 		super(name, type, pos, columnLength, nullable);
 	}
 
+	public static DateTimeColumnDef create(String name, String type, short pos, Long columnLength) {
+		DateTimeColumnDef temp = new DateTimeColumnDef(name, type, pos, columnLength);
+		return (DateTimeColumnDef) INTERNER.intern(temp);
+	}
+
 	public static DateTimeColumnDef create(String name, String type, short pos, Long columnLength, boolean nullable) {
 		DateTimeColumnDef temp = new DateTimeColumnDef(name, type, pos, columnLength, nullable);
 		return (DateTimeColumnDef) INTERNER.intern(temp);
