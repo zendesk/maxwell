@@ -306,7 +306,7 @@ If none of the producers packaged with Maxwell meet your requirements, a custom 
 
 In order to register your custom producer, you must implement the `ProducerFactory` interface, which is responsible for creating your custom `AbstractProducer`. Next, set the `custom_producer.factory` configuration property to your `ProducerFactory`'s fully qualified class name. Then add the custom `ProducerFactory` JAR and all its dependencies to the $MAXWELL_HOME/lib directory.
 
-Your custom producer will likely require configuration properties as well. For that, use the `custom_producer.*` property namespace. Those properties will be exposed to your producer via `MaxwellConfig.customProducerProperties`.
+Your custom producer will likely require configuration properties as well. For that, use the `custom_producer.*` (or `CUSTOM_PRODUCER_*` if using env-variable configuration) property namespace. Those properties will be available to your producer via `MaxwellConfig.customProducerProperties`.
 
 Custom producer factory and producer examples can be found here: [https://github.com/zendesk/maxwell/tree/master/src/example/com/zendesk/maxwell/example/producerfactory](https://github.com/zendesk/maxwell/tree/master/src/example/com/zendesk/maxwell/example/producerfactory)
 
