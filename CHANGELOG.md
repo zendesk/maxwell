@@ -1,5 +1,14 @@
 # Maxwell changelog
 
+### [v1.37.4](https://github.com/zendesk/maxwell/releases/tag/v1.37.4): 
+
+- configure custom producer via environment
+- sns and sqs producers take output config properly
+
+
+
+_Released 2022-04-08_
+
 ### [v1.37.3](https://github.com/zendesk/maxwell/releases/tag/v1.37.3): 
 
 - fixes for mariadb
