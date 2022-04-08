@@ -465,7 +465,7 @@ for DDL updates by setting the <code>ddl_pubsub_topic</code> property.</p>
 <hr />
 <p>If none of the producers packaged with Maxwell meet your requirements, a custom producer can be added at runtime.  </p>
 <p>In order to register your custom producer, you must implement the <code>ProducerFactory</code> interface, which is responsible for creating your custom <code>AbstractProducer</code>. Next, set the <code>custom_producer.factory</code> configuration property to your <code>ProducerFactory</code>'s fully qualified class name. Then add the custom <code>ProducerFactory</code> JAR and all its dependencies to the $MAXWELL_HOME/lib directory.</p>
-<p>Your custom producer will likely require configuration properties as well. For that, use the <code>custom_producer.*</code> property namespace. Those properties will be exposed to your producer via <code>MaxwellConfig.customProducerProperties</code>.</p>
+<p>Your custom producer will likely require configuration properties as well. For that, use the <code>custom_producer.*</code> (or <code>CUSTOM_PRODUCER_*</code> if using env-variable configuration) property namespace. Those properties will be available to your producer via <code>MaxwellConfig.customProducerProperties</code>.</p>
 <p>Custom producer factory and producer examples can be found here: <a href="https://github.com/zendesk/maxwell/tree/master/src/example/com/zendesk/maxwell/example/producerfactory">https://github.com/zendesk/maxwell/tree/master/src/example/com/zendesk/maxwell/example/producerfactory</a></p>
 <h1 id="topic-substitution">Topic substitution</h1>
 <p>Some producers may be given a template string from which they dynamically generate a topic (or whatever their equivalent of a kafka topic is).
