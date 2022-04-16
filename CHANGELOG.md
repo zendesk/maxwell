@@ -1,5 +1,13 @@
 # Maxwell changelog
 
+### [v1.37.5](https://github.com/zendesk/maxwell/releases/tag/v1.37.5): 
+
+- Upgrade binlog-replicator.  pulls in some minor fixes.
+
+
+
+_Released 2022-04-16_
+
 ### [v1.37.4](https://github.com/zendesk/maxwell/releases/tag/v1.37.4): 
 
 - configure custom producer via environment
