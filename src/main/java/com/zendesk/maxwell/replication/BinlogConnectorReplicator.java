@@ -491,7 +491,13 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 				// standard binlog positioning is a lot easier; we can really reconnect anywhere
 				// we like, so we don't have to bail out of the middle of an event.
 				LOGGER.warn("replicator stopped at position: {} -- restarting", client.getBinlogFilename() + ":" + client.getBinlogPosition());
+
+				Long oldMasterId = client.getMasterServerId();
 				tryReconnect();
+				if (client.getMasterServerId() != oldMasterId) {
+					throw new Exception("Master id changed from " + oldMasterId + " to " + client.getMasterServerId()
+								+ " while using binlog coordinate positioning. Cannot continue with the info that we have");
+				}
 			}
 		}
 	}
