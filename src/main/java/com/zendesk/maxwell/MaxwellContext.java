@@ -524,7 +524,7 @@ public class MaxwellContext {
 				this.producer = new MaxwellKinesisProducer(this, this.config.kinesisStream);
 				break;
 			case "sqs":
-				this.producer = new MaxwellSQSProducer(this, this.config.sqsQueueUri);
+				this.producer = new MaxwellSQSProducer(this, this.config.sqsQueueUri, this.config.sqsServiceEndpoint, this.config.sqsSigningRegion);
 				break;
 			case "sns":
 				this.producer = new MaxwellSNSProducer(this, this.config.snsTopic);
