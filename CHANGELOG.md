@@ -1,6 +1,6 @@
 # Maxwell changelog
 
-### [v1.37.6](https://github.com/zendesk/maxwell/releases/tag/v1.37.6): 
+### [v1.37.6](https://github.com/zendesk/maxwell/releases/tag/v1.37.6)
 
 - In non-GTID mode, Verify that the master's server hasn't changed out
   from underneath us.  thanks Tamin Khan
@@ -9,7 +9,7 @@
 
 _Released 2022-05-12_
 
-### [v1.37.5](https://github.com/zendesk/maxwell/releases/tag/v1.37.5): 
+### [v1.37.5](https://github.com/zendesk/maxwell/releases/tag/v1.37.5)
 
 - Upgrade binlog-replicator.  pulls in some minor fixes.
 
@@ -17,7 +17,7 @@ _Released 2022-05-12_
 
 _Released 2022-04-16_
 
-### [v1.37.4](https://github.com/zendesk/maxwell/releases/tag/v1.37.4): 
+### [v1.37.4](https://github.com/zendesk/maxwell/releases/tag/v1.37.4)
 
 - configure custom producer via environment
 - sns and sqs producers take output config properly
@@ -26,7 +26,7 @@ _Released 2022-04-16_
 
 _Released 2022-04-08_
 
-### [v1.37.3](https://github.com/zendesk/maxwell/releases/tag/v1.37.3): 
+### [v1.37.3](https://github.com/zendesk/maxwell/releases/tag/v1.37.3)
 
 - fixes for mariadb
 
@@ -34,7 +34,7 @@ _Released 2022-04-08_
 
 _Released 2022-03-25_
 
-### [v1.37.2](https://github.com/zendesk/maxwell/releases/tag/v1.37.2): 
+### [v1.37.2](https://github.com/zendesk/maxwell/releases/tag/v1.37.2)
 
 - configurable binlog event queue size
 
@@ -42,7 +42,7 @@ _Released 2022-03-25_
 
 _Released 2022-03-14_
 
-### [v1.37.1](https://github.com/zendesk/maxwell/releases/tag/v1.37.1): 
+### [v1.37.1](https://github.com/zendesk/maxwell/releases/tag/v1.37.1)
 
  - list changes
 
@@ -50,7 +50,7 @@ _Released 2022-03-14_
 
 _Released 2022-03-07_
 
-### [v1.37.0](https://github.com/zendesk/maxwell/releases/tag/v1.37.0): 
+### [v1.37.0](https://github.com/zendesk/maxwell/releases/tag/v1.37.0)
 
 - Change max size of RowMap buffer to unblock high-efficiency producers
 
@@ -58,7 +58,7 @@ _Released 2022-03-07_
 
 _Released 2022-01-26_
 
-### [v1.36.0](https://github.com/zendesk/maxwell/releases/tag/v1.36.0): 
+### [v1.36.0](https://github.com/zendesk/maxwell/releases/tag/v1.36.0)
 
 - fix bug where the millionth binlog would kinda sort "overflow" and the
   binlog positions would stop moving.
@@ -69,7 +69,7 @@ _Released 2022-01-26_
 
 _Released 2022-01-23_
 
-### [v1.35.5](https://github.com/zendesk/maxwell/releases/tag/v1.35.5): 
+### [v1.35.5](https://github.com/zendesk/maxwell/releases/tag/v1.35.5)
 
 - log4j, again and agian.
 
@@ -77,7 +77,7 @@ _Released 2022-01-23_
 
 _Released 2021-12-29_
 
-### [v1.35.4](https://github.com/zendesk/maxwell/releases/tag/v1.35.4): 
+### [v1.35.4](https://github.com/zendesk/maxwell/releases/tag/v1.35.4)
 
 - log4j turns 2.17.0, happy birthday
 
@@ -85,7 +85,7 @@ _Released 2021-12-29_
 
 _Released 2021-12-18_
 
-### [v1.35.3](https://github.com/zendesk/maxwell/releases/tag/v1.35.3): 
+### [v1.35.3](https://github.com/zendesk/maxwell/releases/tag/v1.35.3)
 
 - log4j vulnerability #2
 
@@ -93,7 +93,7 @@ _Released 2021-12-18_
 
 _Released 2021-12-15_
 
-### [v1.35.2](https://github.com/zendesk/maxwell/releases/tag/v1.35.2): 
+### [v1.35.2](https://github.com/zendesk/maxwell/releases/tag/v1.35.2)
 
 - better logging when we can't connect on startup
 
@@ -101,7 +101,7 @@ _Released 2021-12-15_
 
 _Released 2021-12-12_
 
-### [v1.35.1](https://github.com/zendesk/maxwell/releases/tag/v1.35.1): 
+### [v1.35.1](https://github.com/zendesk/maxwell/releases/tag/v1.35.1)
 
 - log4j upgrade to upgrade past the giant security hole
 
@@ -109,7 +109,7 @@ _Released 2021-12-12_
 
 _Released 2021-12-10_
 
-### [v1.35.0](https://github.com/zendesk/maxwell/releases/tag/v1.35.0): 
+### [v1.35.0](https://github.com/zendesk/maxwell/releases/tag/v1.35.0)
 
 - couple of parser fixes
 - docker builds are now multi-platform
@@ -120,7 +120,7 @@ _Released 2021-12-10_
 
 _Released 2021-11-30_
 
-### [v1.34.1](https://github.com/zendesk/maxwell/releases/tag/v1.34.1): 
+### [v1.34.1](https://github.com/zendesk/maxwell/releases/tag/v1.34.1)
 
 - support for mysql 8's visible/invisible columns
 - support mariadb's if-exists/if-not-exists for partition management
@@ -130,7 +130,7 @@ _Released 2021-11-30_
 
 _Released 2021-09-21_
 
-### [v1.34.0](https://github.com/zendesk/maxwell/releases/tag/v1.34.0): 
+### [v1.34.0](https://github.com/zendesk/maxwell/releases/tag/v1.34.0)
 
 - intern a bunch of objects in our in-memory representation of schema.
   Saves gobs of memory in cases where one has N copies of the same
@@ -142,7 +142,7 @@ _Released 2021-09-21_
 
 _Released 2021-07-29_
 
-### [v1.33.1](https://github.com/zendesk/maxwell/releases/tag/v1.33.1): 
+### [v1.33.1](https://github.com/zendesk/maxwell/releases/tag/v1.33.1)
 
 - properties may now be fetched from a javascript blob in the env
 - RowMap provides access to primary keys
@@ -152,7 +152,7 @@ _Released 2021-07-29_
 
 _Released 2021-06-02_
 
-### [v1.33.0](https://github.com/zendesk/maxwell/releases/tag/v1.33.0): 
+### [v1.33.0](https://github.com/zendesk/maxwell/releases/tag/v1.33.0)
 
 - Add HTTP endpoint for runtime reconfiguration
 
@@ -160,7 +160,7 @@ _Released 2021-06-02_
 
 _Released 2021-03-29_
 
-### [v1.32.0](https://github.com/zendesk/maxwell/releases/tag/v1.32.0): 
+### [v1.32.0](https://github.com/zendesk/maxwell/releases/tag/v1.32.0)
 
 - Amazon SNS producer added, thanks Rober Wittman
 - kafka 2.7.0 supported
@@ -170,7 +170,7 @@ _Released 2021-03-29_
 
 _Released 2021-03-17_
 
-### [v1.31.0](https://github.com/zendesk/maxwell/releases/tag/v1.31.0): 
+### [v1.31.0](https://github.com/zendesk/maxwell/releases/tag/v1.31.0)
 
 - Add producer for NATS streaming server
 
@@ -178,7 +178,7 @@ _Released 2021-03-17_
 
 _Released 2021-02-11_
 
-### [v1.30.0](https://github.com/zendesk/maxwell/releases/tag/v1.30.0): 
+### [v1.30.0](https://github.com/zendesk/maxwell/releases/tag/v1.30.0)
 
 - support server-sent heartbeating on the binlog connection via --binlog-heartbeat
 - can connect to rabbitmq by URL, supports SSL connections
@@ -191,7 +191,7 @@ _Released 2021-02-11_
 
 _Released 2021-02-05_
 
-### [v1.29.2](https://github.com/zendesk/maxwell/releases/tag/v1.29.2): 
+### [v1.29.2](https://github.com/zendesk/maxwell/releases/tag/v1.29.2)
 
 - fix for terrible performance regression in bootstrapping
 
@@ -199,7 +199,7 @@ _Released 2021-02-05_
 
 _Released 2021-01-27_
 
-### [v1.29.1](https://github.com/zendesk/maxwell/releases/tag/v1.29.1): 
+### [v1.29.1](https://github.com/zendesk/maxwell/releases/tag/v1.29.1)
 
 - small bugfix release, fixes binlog event type processing in mysql 8
 
@@ -207,7 +207,7 @@ _Released 2021-01-27_
 
 _Released 2020-12-23_
 
-### [v1.29.0](https://github.com/zendesk/maxwell/releases/tag/v1.29.0): 
+### [v1.29.0](https://github.com/zendesk/maxwell/releases/tag/v1.29.0)
 
 - High Availability support via jgroups-raft
 - rework --help text
@@ -216,7 +216,7 @@ _Released 2020-12-23_
 
 _Released 2020-12-15_
 
-### [v1.28.2](https://github.com/zendesk/maxwell/releases/tag/v1.28.2): 
+### [v1.28.2](https://github.com/zendesk/maxwell/releases/tag/v1.28.2)
 
 - fix for encryption parsing error on table creation
 - some logging around memory usage in RowMapBuffer
@@ -225,7 +225,7 @@ _Released 2020-12-15_
 
 _Released 2020-12-02_
 
-### [v1.28.1](https://github.com/zendesk/maxwell/releases/tag/v1.28.1): 
+### [v1.28.1](https://github.com/zendesk/maxwell/releases/tag/v1.28.1)
 
 - fix http server issue in 1.28.0
 
@@ -233,7 +233,7 @@ _Released 2020-12-02_
 
 _Released 2020-11-25_
 
-### [v1.28.0](https://github.com/zendesk/maxwell/releases/tag/v1.28.0): 
+### [v1.28.0](https://github.com/zendesk/maxwell/releases/tag/v1.28.0)
 
 - schema compaction!  with the new --max_schemas option, maxwell will
   periodically roll up the `maxwell`.`schemas` table, preventing it from
@@ -247,7 +247,7 @@ _Released 2020-11-25_
 
 _Released 2020-11-19_
 
-### [v1.27.1](https://github.com/zendesk/maxwell/releases/tag/v1.27.1): 
+### [v1.27.1](https://github.com/zendesk/maxwell/releases/tag/v1.27.1)
 
 - redis producer gets sentinal support
 - fix a double-reconnect race condition
@@ -259,7 +259,7 @@ _Released 2020-11-19_
 
 _Released 2020-08-07_
 
-### [v1.27.0](https://github.com/zendesk/maxwell/releases/tag/v1.27.0): 
+### [v1.27.0](https://github.com/zendesk/maxwell/releases/tag/v1.27.0)
 
 - better support for empty/null passwords
 - allow bootstrap utility to query replication_host
@@ -273,7 +273,7 @@ _Released 2020-08-07_
 
 _Released 2020-06-30_
 
-### [v1.26.4](https://github.com/zendesk/maxwell/releases/tag/v1.26.4): 
+### [v1.26.4](https://github.com/zendesk/maxwell/releases/tag/v1.26.4)
 
  - support now() function with precision
 
@@ -281,7 +281,7 @@ _Released 2020-06-30_
 
 _Released 2020-06-08_
 
-### [v1.26.3](https://github.com/zendesk/maxwell/releases/tag/v1.26.3): 
+### [v1.26.3](https://github.com/zendesk/maxwell/releases/tag/v1.26.3)
 
 - use pooled redis connections, fixes corruption when redis was accessed
 from multiple threads (bootstrap/producer), thanks @lucastex
@@ -292,7 +292,7 @@ from multiple threads (bootstrap/producer), thanks @lucastex
 
 _Released 2020-05-26_
 
-### [v1.26.2](https://github.com/zendesk/maxwell/releases/tag/v1.26.2): 
+### [v1.26.2](https://github.com/zendesk/maxwell/releases/tag/v1.26.2)
 
 - bootstraps can be scheduled in the future by setting the `started_at`
   column, thanks @lucastex
@@ -303,7 +303,7 @@ _Released 2020-05-26_
 
 _Released 2020-05-18_
 
-### [v1.26.1](https://github.com/zendesk/maxwell/releases/tag/v1.26.1): 
+### [v1.26.1](https://github.com/zendesk/maxwell/releases/tag/v1.26.1)
 
 - fixes for redis re-connection login, thanks much @lucastex
 
@@ -311,7 +311,7 @@ _Released 2020-05-18_
 
 _Released 2020-05-07_
 
-### [v1.26.0](https://github.com/zendesk/maxwell/releases/tag/v1.26.0): 
+### [v1.26.0](https://github.com/zendesk/maxwell/releases/tag/v1.26.0)
 
 - We now support mysql 8's caching_sha2_password authentication scheme
 - support for converting JSON field names to camelCase
@@ -320,7 +320,7 @@ _Released 2020-05-07_
 
 _Released 2020-05-06_
 
-### [v1.25.3](https://github.com/zendesk/maxwell/releases/tag/v1.25.3): 
+### [v1.25.3](https://github.com/zendesk/maxwell/releases/tag/v1.25.3)
 
 - fixes memory leak in mysql-binlog-connector
 - fixes exceptions that occur when a connection passes wait_timeout
@@ -329,7 +329,7 @@ _Released 2020-05-06_
 
 _Released 2020-05-02_
 
-### [v1.25.2](https://github.com/zendesk/maxwell/releases/tag/v1.25.2): 
+### [v1.25.2](https://github.com/zendesk/maxwell/releases/tag/v1.25.2)
 
 - Fixes for a long standing JSON bug in 8.0.19+
 
@@ -337,7 +337,7 @@ _Released 2020-05-02_
 
 _Released 2020-05-01_
 
-### [v1.25.1](https://github.com/zendesk/maxwell/releases/tag/v1.25.1): 
+### [v1.25.1](https://github.com/zendesk/maxwell/releases/tag/v1.25.1)
 
 - issue #1457, ALTER DATABASE with implicit database name
 - maxwell now runs on JDK 11 in docker
@@ -347,7 +347,7 @@ _Released 2020-05-01_
 
 _Released 2020-04-22_
 
-### [v1.25.0](https://github.com/zendesk/maxwell/releases/tag/v1.25.0): 
+### [v1.25.0](https://github.com/zendesk/maxwell/releases/tag/v1.25.0)
 
 - swap un-maintained snaq.db with C3P0.
 - support eu datadog metrics
@@ -358,7 +358,7 @@ _Released 2020-04-22_
 
 _Released 2020-03-29_
 
-### [v1.24.2](https://github.com/zendesk/maxwell/releases/tag/v1.24.2): 
+### [v1.24.2](https://github.com/zendesk/maxwell/releases/tag/v1.24.2)
 
 - bugfix parsing errors: compressed columns, exchange partitions,
   parenthesis-enclosed default values, `drop column foo.t`.
@@ -370,7 +370,7 @@ _Released 2020-03-29_
 
 _Released 2020-03-25_
 
-### [v1.24.1](https://github.com/zendesk/maxwell/releases/tag/v1.24.1): 
+### [v1.24.1](https://github.com/zendesk/maxwell/releases/tag/v1.24.1)
 
 - allow jdbc_options on secondary connections
 - fix a crash in bootstrapping / javascript filters
@@ -380,7 +380,7 @@ _Released 2020-03-25_
 
 _Released 2020-01-21_
 
-### [v1.24.0](https://github.com/zendesk/maxwell/releases/tag/v1.24.0): 
+### [v1.24.0](https://github.com/zendesk/maxwell/releases/tag/v1.24.0)
 
  - add comments field to bootstrapping, thanks Tom Collins
  - fix sql bug with #comments style comments
@@ -389,7 +389,7 @@ _Released 2020-01-21_
 
 _Released 2019-12-14_
 
-### [v1.23.5](https://github.com/zendesk/maxwell/releases/tag/v1.23.5): 
+### [v1.23.5](https://github.com/zendesk/maxwell/releases/tag/v1.23.5)
 
  - Update bootstrap documentation
  - Bump drop wizard metrics to support Java versions 10+
@@ -398,7 +398,7 @@ _Released 2019-12-14_
 
 _Released 2019-12-12_
 
-### [v1.23.4](https://github.com/zendesk/maxwell/releases/tag/v1.23.4): 
+### [v1.23.4](https://github.com/zendesk/maxwell/releases/tag/v1.23.4)
 
 - Bump and override dependencies to fix security vulnerabilities.
 - Update redis-key config options
@@ -409,7 +409,7 @@ _Released 2019-12-12_
 
 _Released 2019-12-03_
 
-### [v1.23.3](https://github.com/zendesk/maxwell/releases/tag/v1.23.3): 
+### [v1.23.3](https://github.com/zendesk/maxwell/releases/tag/v1.23.3)
 
 - pubsubDelayMultiplier may now be 1.0
 - allow %{database} and %{topic} interpolation into redis producer
@@ -420,7 +420,7 @@ _Released 2019-12-03_
 
 _Released 2019-11-21_
 
-### [v1.23.2](https://github.com/zendesk/maxwell/releases/tag/v1.23.2): 
+### [v1.23.2](https://github.com/zendesk/maxwell/releases/tag/v1.23.2)
 
 - upgrade jackson
 - stop passing maxwell rows through the JS filter.  too dangerous.
@@ -429,7 +429,7 @@ _Released 2019-11-21_
 
 _Released 2019-10-18_
 
-### [v1.23.1](https://github.com/zendesk/maxwell/releases/tag/v1.23.1): 
+### [v1.23.1](https://github.com/zendesk/maxwell/releases/tag/v1.23.1)
 
 - Add option for XADD (redis streams) operation
 - Add configuration flag for tuning transaction buffer memory
@@ -439,7 +439,7 @@ _Released 2019-10-18_
 
 _Released 2019-10-12_
 
-### [v1.23.0](https://github.com/zendesk/maxwell/releases/tag/v1.23.0): 
+### [v1.23.0](https://github.com/zendesk/maxwell/releases/tag/v1.23.0)
 
 - Added AWS FIFO support
 - Add retry and batch settings to pubs producer
@@ -449,7 +449,7 @@ _Released 2019-10-12_
 
 _Released 2019-10-08_
 
-### [v1.22.6](https://github.com/zendesk/maxwell/releases/tag/v1.22.6): 
+### [v1.22.6](https://github.com/zendesk/maxwell/releases/tag/v1.22.6)
 
 - upgrade mysql-connector-java to 8.0.17
 - use a newer docker image as base
@@ -459,7 +459,7 @@ _Released 2019-10-08_
 
 _Released 2019-09-20_
 
-### [v1.22.5](https://github.com/zendesk/maxwell/releases/tag/v1.22.5): 
+### [v1.22.5](https://github.com/zendesk/maxwell/releases/tag/v1.22.5)
 
 - bugfix for bootstrapping off a split replica that doesn't contain a
   "maxwell" database
@@ -469,7 +469,7 @@ _Released 2019-09-20_
 
 _Released 2019-09-06_
 
-### [v1.22.4](https://github.com/zendesk/maxwell/releases/tag/v1.22.4): 
+### [v1.22.4](https://github.com/zendesk/maxwell/releases/tag/v1.22.4)
 
  - Add row type to fallback message
  - Upgrade jackson-databind
@@ -478,7 +478,7 @@ _Released 2019-09-06_
 
 _Released 2019-08-23_
 
-### [v1.22.3](https://github.com/zendesk/maxwell/releases/tag/v1.22.3): 
+### [v1.22.3](https://github.com/zendesk/maxwell/releases/tag/v1.22.3)
 
 - fix issue with google pubsub in 1.22.2
 
@@ -486,7 +486,7 @@ _Released 2019-08-23_
 
 _Released 2019-06-20_
 
-### [v1.22.2](https://github.com/zendesk/maxwell/releases/tag/v1.22.2): 
+### [v1.22.2](https://github.com/zendesk/maxwell/releases/tag/v1.22.2)
 
 - fix an issue with bootstrapping-on-replicas
 - add --output_primary_keys and --output_primary_key_columns
@@ -496,7 +496,7 @@ _Released 2019-06-20_
 
 _Released 2019-06-18_
 
-### [v1.22.1](https://github.com/zendesk/maxwell/releases/tag/v1.22.1): 
+### [v1.22.1](https://github.com/zendesk/maxwell/releases/tag/v1.22.1)
 
 - fix crash in rabbit-mq producer
 - better support for maxwell + azure-mysql
@@ -507,7 +507,7 @@ _Released 2019-06-18_
 
 _Released 2019-05-28_
 
-### [v1.22.0](https://github.com/zendesk/maxwell/releases/tag/v1.22.0): 
+### [v1.22.0](https://github.com/zendesk/maxwell/releases/tag/v1.22.0)
 
 - Bootstrapping has been reworked and is now available in all setups,
 including those in which the maxwell store is split from the replicator.
@@ -518,7 +518,7 @@ including those in which the maxwell store is split from the replicator.
 
 _Released 2019-04-16_
 
-### [v1.21.1](https://github.com/zendesk/maxwell/releases/tag/v1.21.1): 
+### [v1.21.1](https://github.com/zendesk/maxwell/releases/tag/v1.21.1)
 
 - Upgrade binlog connector.  Should fix issues around deserialization
 errors.
@@ -527,7 +527,7 @@ errors.
 
 _Released 2019-03-29_
 
-### [v1.21.0](https://github.com/zendesk/maxwell/releases/tag/v1.21.0): 
+### [v1.21.0](https://github.com/zendesk/maxwell/releases/tag/v1.21.0)
 
 - Bootstrapping output no longer contain binlog positions.  Please update
   any code that relies on this.
@@ -537,7 +537,7 @@ _Released 2019-03-29_
 
 _Released 2019-03-23_
 
-### [v1.20.0](https://github.com/zendesk/maxwell/releases/tag/v1.20.0): 
+### [v1.20.0](https://github.com/zendesk/maxwell/releases/tag/v1.20.0)
 
 - add support for partitioning by transaction ID thx @hexene
 - add support for a kafka "fallback" topic to write to
@@ -551,7 +551,7 @@ _Released 2019-03-23_
 
 _Released 2019-02-28_
 
-### [v1.19.7](https://github.com/zendesk/maxwell/releases/tag/v1.19.7): 
+### [v1.19.7](https://github.com/zendesk/maxwell/releases/tag/v1.19.7)
 
 - fix a parser error with empty sql comments
 - interpret latin-1 as windows-1252, not iso-whatever, thx @borleaandrei
@@ -560,7 +560,7 @@ _Released 2019-02-28_
 
 _Released 2019-01-25_
 
-### [v1.19.6](https://github.com/zendesk/maxwell/releases/tag/v1.19.6): 
+### [v1.19.6](https://github.com/zendesk/maxwell/releases/tag/v1.19.6)
 
 - Further fixes for GTID-reconnection issues.
 - Crash sanely when GTID-enabled maxwell is connected to clearly the wrong master,
@@ -570,7 +570,7 @@ _Released 2019-01-25_
 
 _Released 2019-01-20_
 
-### [v1.19.5](https://github.com/zendesk/maxwell/releases/tag/v1.19.5): 
+### [v1.19.5](https://github.com/zendesk/maxwell/releases/tag/v1.19.5)
 
 - Fixes for unreliable connections wrt to GTID events; previously we
   restart in any old position, now we throw away the current transaction
@@ -580,7 +580,7 @@ _Released 2019-01-20_
 
 _Released 2019-01-15_
 
-### [v1.19.4](https://github.com/zendesk/maxwell/releases/tag/v1.19.4): 
+### [v1.19.4](https://github.com/zendesk/maxwell/releases/tag/v1.19.4)
 
 - Fixes for a maxwell database not making it through the blacklist
 - Add `output_null_zerodates` parameter to control how we treat
@@ -590,7 +590,7 @@ _Released 2019-01-15_
 
 _Released 2019-01-12_
 
-### [v1.19.3](https://github.com/zendesk/maxwell/releases/tag/v1.19.3): 
+### [v1.19.3](https://github.com/zendesk/maxwell/releases/tag/v1.19.3)
 
 - Add a universal backpressure mechanism.  This should help people who
 were running into out-of-memory situations while bootstrapping.
@@ -599,7 +599,7 @@ were running into out-of-memory situations while bootstrapping.
 
 _Released 2018-12-19_
 
-### [v1.19.2](https://github.com/zendesk/maxwell/releases/tag/v1.19.2): 
+### [v1.19.2](https://github.com/zendesk/maxwell/releases/tag/v1.19.2)
 
 - Include schema_id in bootstrap events
 - add more logging around binlog connector losing connection
@@ -613,7 +613,7 @@ _Released 2018-12-19_
 
 _Released 2018-12-02_
 
-### [v1.19.1](https://github.com/zendesk/maxwell/releases/tag/v1.19.1): 
+### [v1.19.1](https://github.com/zendesk/maxwell/releases/tag/v1.19.1)
 
 - Handle mysql bit literals in DEFAULT statements
 - blacklist out CREATE ROLE etc
@@ -623,7 +623,7 @@ _Released 2018-12-02_
 
 _Released 2018-11-12_
 
-### [v1.19.0](https://github.com/zendesk/maxwell/releases/tag/v1.19.0): 
+### [v1.19.0](https://github.com/zendesk/maxwell/releases/tag/v1.19.0)
 
 - mysql 8 support!
 - utf8 enum values are supported now
@@ -637,7 +637,7 @@ _Released 2018-11-12_
 
 _Released 2018-10-27_
 
-### [v1.18.0](https://github.com/zendesk/maxwell/releases/tag/v1.18.0): 
+### [v1.18.0](https://github.com/zendesk/maxwell/releases/tag/v1.18.0)
 
 - memory optimizations for large schemas (especially shareded schemas with lots of duplicates)
 - add support for an http endpoint to support Prometheus metrics
@@ -652,7 +652,7 @@ _Released 2018-10-27_
 
 _Released 2018-09-15_
 
-### [v1.17.1](https://github.com/zendesk/maxwell/releases/tag/v1.17.1): 
+### [v1.17.1](https://github.com/zendesk/maxwell/releases/tag/v1.17.1)
 
 - fix a regression around filters + bootstrapping
 - fix a regression around filters + database-only-ddl
@@ -661,7 +661,7 @@ _Released 2018-09-15_
 
 _Released 2018-07-03_
 
-### [v1.17.0](https://github.com/zendesk/maxwell/releases/tag/v1.17.0): 
+### [v1.17.0](https://github.com/zendesk/maxwell/releases/tag/v1.17.0)
 
 v1.17.0 brings a new level of configurability by allowing you to inject
 a bit of javascript into maxwell's processing.  Should be useful!  Also:
@@ -672,7 +672,7 @@ a bit of javascript into maxwell's processing.  Should be useful!  Also:
 
 _Released 2018-06-28_
 
-### [v1.16.1](https://github.com/zendesk/maxwell/releases/tag/v1.16.1): 
+### [v1.16.1](https://github.com/zendesk/maxwell/releases/tag/v1.16.1)
 
 - Fix Bootstrapping for JSON columns
 - add --recapture_schema flag for when ya wanna start over
@@ -682,7 +682,7 @@ _Released 2018-06-28_
 
 _Released 2018-06-21_
 
-### [v1.16.0](https://github.com/zendesk/maxwell/releases/tag/v1.16.0): 
+### [v1.16.0](https://github.com/zendesk/maxwell/releases/tag/v1.16.0)
 
 v1.16.0 brings a rewrite of Maxwell's filtering system, giving it a
 concise list of rules that are executed in sequence.  It's now possible
@@ -694,7 +694,7 @@ See http://maxwells-daemon.io/config/#filtering for details.
 
 _Released 2018-06-15_
 
-### [v1.15.0](https://github.com/zendesk/maxwell/releases/tag/v1.15.0): 
+### [v1.15.0](https://github.com/zendesk/maxwell/releases/tag/v1.15.0)
 
 This is a bug-fix release, but it's big enough I'm giving it a minor
 version.
@@ -714,7 +714,7 @@ Much thanks to Tim, Likun and others in sorting this mess out.
 
 _Released 2018-06-13_
 
-### [v1.14.7](https://github.com/zendesk/maxwell/releases/tag/v1.14.7): 
+### [v1.14.7](https://github.com/zendesk/maxwell/releases/tag/v1.14.7)
 
 - add RowMap#getRowQuery, thx @saimon7
 - revert alpine-linux docker image fiasco
@@ -724,7 +724,7 @@ _Released 2018-06-13_
 
 _Released 2018-06-03_
 
-### [v1.14.6](https://github.com/zendesk/maxwell/releases/tag/v1.14.6): 
+### [v1.14.6](https://github.com/zendesk/maxwell/releases/tag/v1.14.6)
 
 - Fix docker image
 
@@ -732,7 +732,7 @@ _Released 2018-06-03_
 
 _Released 2018-05-15_
 
-### [v1.14.5](https://github.com/zendesk/maxwell/releases/tag/v1.14.5): 
+### [v1.14.5](https://github.com/zendesk/maxwell/releases/tag/v1.14.5)
 
 - reduce docker image footprint
 - add benchmarking framework
@@ -743,7 +743,7 @@ _Released 2018-05-15_
 
 _Released 2018-05-15_
 
-### [v1.14.4](https://github.com/zendesk/maxwell/releases/tag/v1.14.4): 
+### [v1.14.4](https://github.com/zendesk/maxwell/releases/tag/v1.14.4)
 
  - Fix race condition in SchemaCapturer
 
@@ -751,13 +751,13 @@ _Released 2018-05-15_
 
 _Released 2018-05-07_
 
-### [v1.14.3](https://github.com/zendesk/maxwell/releases/tag/v1.14.3): 
+### [v1.14.3](https://github.com/zendesk/maxwell/releases/tag/v1.14.3)
 
 - Enable jvm metrics
 
 _Released 2018-05-04_
 
-### [v1.14.2](https://github.com/zendesk/maxwell/releases/tag/v1.14.2): 
+### [v1.14.2](https://github.com/zendesk/maxwell/releases/tag/v1.14.2)
 
 - fix regression in 1.14.1 around bootstrapping host detection
 - fix heartbeating code around table includes
@@ -766,7 +766,7 @@ _Released 2018-05-04_
 
 _Released 2018-05-02_
 
-### [v1.14.1](https://github.com/zendesk/maxwell/releases/tag/v1.14.1): 
+### [v1.14.1](https://github.com/zendesk/maxwell/releases/tag/v1.14.1)
 
 - bootstraps can now take a client_id
 - improved config validation for embedded mode
@@ -775,7 +775,7 @@ _Released 2018-05-02_
 
 _Released 2018-05-01_
 
-### [v1.14.0](https://github.com/zendesk/maxwell/releases/tag/v1.14.0): 
+### [v1.14.0](https://github.com/zendesk/maxwell/releases/tag/v1.14.0)
 
 - new feature `--output_xoffset` to uniquely identify rows within transactions,
   thx Jens Gyti
@@ -786,19 +786,19 @@ _Released 2018-05-01_
 
 _Released 2018-04-24_
 
-### [v1.13.5](https://github.com/zendesk/maxwell/releases/tag/v1.13.5): 
+### [v1.13.5](https://github.com/zendesk/maxwell/releases/tag/v1.13.5)
 
 - Support environment variable based configuration
 
 _Released 2018-04-11_
 
-### [v1.13.4](https://github.com/zendesk/maxwell/releases/tag/v1.13.4): 
+### [v1.13.4](https://github.com/zendesk/maxwell/releases/tag/v1.13.4)
 
 - Added possibility to do not declare the rabbitmq exchange.
 
 _Released 2018-04-03_
 
-### [v1.13.3](https://github.com/zendesk/maxwell/releases/tag/v1.13.3): 
+### [v1.13.3](https://github.com/zendesk/maxwell/releases/tag/v1.13.3)
 
 
  - Add logging for binlog errors
@@ -809,7 +809,7 @@ _Released 2018-04-03_
 
 _Released 2018-04-03_
 
-### [v1.13.2](https://github.com/zendesk/maxwell/releases/tag/v1.13.2): 
+### [v1.13.2](https://github.com/zendesk/maxwell/releases/tag/v1.13.2)
 
 - fix a bug with CHARACTER SET = DEFAULT
 - maxwell now eclipse-friendly.
@@ -819,7 +819,7 @@ _Released 2018-04-03_
 
 _Released 2018-03-06_
 
-### [v1.13.1](https://github.com/zendesk/maxwell/releases/tag/v1.13.1): 
+### [v1.13.1](https://github.com/zendesk/maxwell/releases/tag/v1.13.1)
 
 - redis producer now supports LPUSH, thx @m-denton
 - RowMap can now contain artbitrary attributes for embedded maxwell, thx @jkgeyti
@@ -833,7 +833,7 @@ _Released 2018-03-06_
 
 _Released 2018-02-20_
 
-### [v1.13.0](https://github.com/zendesk/maxwell/releases/tag/v1.13.0): 
+### [v1.13.0](https://github.com/zendesk/maxwell/releases/tag/v1.13.0)
 
 - proper SSL connection support, thanks @cadams5
 - support for including original SQL in insert/update/deletes, thanks @saimon7
@@ -845,7 +845,7 @@ _Released 2018-02-20_
 
 _Released 2018-02-01_
 
-### [v1.12.0](https://github.com/zendesk/maxwell/releases/tag/v1.12.0): 
+### [v1.12.0](https://github.com/zendesk/maxwell/releases/tag/v1.12.0)
 
 - Support for injecting a custom producer, thanks @tomcollinsproject
 - New producer for Amazon SQS, thanks @vikrant2mahajan
@@ -860,7 +860,7 @@ _Released 2018-02-01_
 
 _Released 2018-01-09_
 
-### [v1.11.0](https://github.com/zendesk/maxwell/releases/tag/v1.11.0): 
+### [v1.11.0](https://github.com/zendesk/maxwell/releases/tag/v1.11.0)
 
      - default kafka client upgrades to 0.11.0.1
      - fix the encryption issue (https://github.com/zendesk/maxwell/issues/803)
@@ -869,7 +869,7 @@ _Released 2018-01-09_
 
 _Released 2017-11-22_
 
-### [v1.10.9](https://github.com/zendesk/maxwell/releases/tag/v1.10.9): 
+### [v1.10.9](https://github.com/zendesk/maxwell/releases/tag/v1.10.9)
 
 We recommend all v1.10.7 and v1.10.8 users upgrade to v1.10.9.
 
@@ -881,7 +881,7 @@ We recommend all v1.10.7 and v1.10.8 users upgrade to v1.10.9.
 
 _Released 2017-10-30_
 
-### [v1.10.8](https://github.com/zendesk/maxwell/releases/tag/v1.10.8): 
+### [v1.10.8](https://github.com/zendesk/maxwell/releases/tag/v1.10.8)
 
  - Fix docker builds
  - Add Google Cloud Pub/Sub producer
@@ -891,7 +891,7 @@ _Released 2017-10-30_
 
 _Released 2017-10-12_
 
-### [v1.10.7](https://github.com/zendesk/maxwell/releases/tag/v1.10.7): 
+### [v1.10.7](https://github.com/zendesk/maxwell/releases/tag/v1.10.7)
 
 - Java 8 upgrade
 - Diagnostic health check endpoint
@@ -901,7 +901,7 @@ _Released 2017-10-12_
 
 _Released 2017-10-11_
 
-### [v1.10.6](https://github.com/zendesk/maxwell/releases/tag/v1.10.6): 
+### [v1.10.6](https://github.com/zendesk/maxwell/releases/tag/v1.10.6)
 
  - Binlog-connector upgrade
  - Bug-fix: when using literal string for an option that accepts Regex, Regex characters are no longer special
@@ -911,7 +911,7 @@ _Released 2017-10-11_
 
 _Released 2017-08-14_
 
-### [v1.10.5](https://github.com/zendesk/maxwell/releases/tag/v1.10.5): 
+### [v1.10.5](https://github.com/zendesk/maxwell/releases/tag/v1.10.5)
 
 - Shyko's binlog-connector is now the default and only replication
 backend available for maxwell.
@@ -920,7 +920,7 @@ backend available for maxwell.
 
 _Released 2017-07-25_
 
-### [v1.10.4](https://github.com/zendesk/maxwell/releases/tag/v1.10.4): 
+### [v1.10.4](https://github.com/zendesk/maxwell/releases/tag/v1.10.4)
 
 Notable changes:
 
@@ -940,7 +940,7 @@ Notable changes:
 
 _Released 2017-07-10_
 
-### [v1.10.3](https://github.com/zendesk/maxwell/releases/tag/v1.10.3): 
+### [v1.10.3](https://github.com/zendesk/maxwell/releases/tag/v1.10.3)
 
  - tiny release to fix a units error in the `replication.lag` metric
    (subtracting seconds from milliseconds)
@@ -949,7 +949,7 @@ _Released 2017-07-10_
 
 _Released 2017-06-06_
 
-### [v1.10.2](https://github.com/zendesk/maxwell/releases/tag/v1.10.2): 
+### [v1.10.2](https://github.com/zendesk/maxwell/releases/tag/v1.10.2)
 
 - added metrics: "replication.queue.time" and "inflightmessages.count"
 - renamed "time.overall" metric to "message.publish.time"
@@ -959,7 +959,7 @@ _Released 2017-06-06_
 
 _Released 2017-06-04_
 
-### [v1.10.1](https://github.com/zendesk/maxwell/releases/tag/v1.10.1): 
+### [v1.10.1](https://github.com/zendesk/maxwell/releases/tag/v1.10.1)
 
 The observable changes in this minor release are a new configuration for Kafka/Kinesis producer to abort processing on publish errors, and support of Kafka 0.10.2. Also a bunch of good refactoring has been done for heartbeat processing. List of changes:   
 
@@ -971,7 +971,7 @@ The observable changes in this minor release are a new configuration for Kafka/K
 
 _Released 2017-05-26_
 
-### [v1.10.0](https://github.com/zendesk/maxwell/releases/tag/v1.10.0): 
+### [v1.10.0](https://github.com/zendesk/maxwell/releases/tag/v1.10.0)
 
 This is a small release, primarily around a change to how schemas are
 stored. Maxwell now stores the `last_heartbeat_read` with each entry
@@ -993,7 +993,7 @@ Other minor changes:
 
 _Released 2017-05-09_
 
-### [v1.9.0](https://github.com/zendesk/maxwell/releases/tag/v1.9.0): 
+### [v1.9.0](https://github.com/zendesk/maxwell/releases/tag/v1.9.0)
 
 Maxwell 1.9 adds one main feature: monitoring support, contributed by
 Scott Ferguson. Multiple backends can be configured, read the updated
@@ -1010,7 +1010,7 @@ There's also some bugfixes:
 
 _Released 2017-04-26_
 
-### [v1.8.2](https://github.com/zendesk/maxwell/releases/tag/v1.8.2): 
+### [v1.8.2](https://github.com/zendesk/maxwell/releases/tag/v1.8.2)
 
 Bugfix release.
 
@@ -1022,7 +1022,7 @@ Bugfix release.
 
 _Released 2017-04-11_
 
-### [v1.8.1](https://github.com/zendesk/maxwell/releases/tag/v1.8.1): 
+### [v1.8.1](https://github.com/zendesk/maxwell/releases/tag/v1.8.1)
 
 - performance improves in capturing and restoring schema, thx Joren
   Minnaert
@@ -1032,7 +1032,7 @@ _Released 2017-04-11_
 
 _Released 2017-02-20_
 
-### [v1.8.0](https://github.com/zendesk/maxwell/releases/tag/v1.8.0): 
+### [v1.8.0](https://github.com/zendesk/maxwell/releases/tag/v1.8.0)
 
 In version 1.8.0 Maxwell gains alpha support for GTID-based positions!
 All praise due to Henry Cai.
@@ -1040,7 +1040,7 @@ All praise due to Henry Cai.
 
 _Released 2017-02-14_
 
-### [v1.7.2](https://github.com/zendesk/maxwell/releases/tag/v1.7.2): 
+### [v1.7.2](https://github.com/zendesk/maxwell/releases/tag/v1.7.2)
 
 - Fix a bug found where maxwell could cache the wrong TABLE_MAP_ID for a
   binlog event, leading to crashes or in some cases data mismatches.
@@ -1048,7 +1048,7 @@ _Released 2017-02-14_
 
 _Released 2017-01-30_
 
-### [v1.7.1](https://github.com/zendesk/maxwell/releases/tag/v1.7.1): 
+### [v1.7.1](https://github.com/zendesk/maxwell/releases/tag/v1.7.1)
 
 - bootstrapping now can take a `--where` clause
 - performance improvements in the kafka producer
@@ -1056,7 +1056,7 @@ _Released 2017-01-30_
 
 _Released 2017-01-24_
 
-### [v1.7.0](https://github.com/zendesk/maxwell/releases/tag/v1.7.0): 
+### [v1.7.0](https://github.com/zendesk/maxwell/releases/tag/v1.7.0)
 
 Maxwell 1.7 brings 2 major new, alpha features.  The first is Mysql 5.7
 support, including JSON column type support and handling of 5.7 SQL, but
@@ -1075,7 +1075,7 @@ There's also some bugfixes:
 
 _Released 2017-01-07_
 
-### [v1.6.0](https://github.com/zendesk/maxwell/releases/tag/v1.6.0): 
+### [v1.6.0](https://github.com/zendesk/maxwell/releases/tag/v1.6.0)
 
 This is mostly a bugfix release, but it gets a minor version bump due to
 a single change of behavior: dates and timestamps which mysql may
@@ -1091,7 +1091,7 @@ Other bugfixes:
 
 _Released 2016-12-29_
 
-### [v1.5.2](https://github.com/zendesk/maxwell/releases/tag/v1.5.2): 
+### [v1.5.2](https://github.com/zendesk/maxwell/releases/tag/v1.5.2)
 
 - add support for kafka 0.10.1 @ smferguson
 - master recovery: cleanup positions from previous master; prevent
@@ -1102,7 +1102,7 @@ _Released 2016-12-29_
 
 _Released 2016-12-07_
 
-### [v1.5.1](https://github.com/zendesk/maxwell/releases/tag/v1.5.1): 
+### [v1.5.1](https://github.com/zendesk/maxwell/releases/tag/v1.5.1)
 
 This is a bugfix release.
 - fixes for bootstrapping with an alternative maxwell-schema name and an
@@ -1115,7 +1115,7 @@ This is a bugfix release.
 
 _Released 2016-11-24_
 
-### [v1.5.0](https://github.com/zendesk/maxwell/releases/tag/v1.5.0): 
+### [v1.5.0](https://github.com/zendesk/maxwell/releases/tag/v1.5.0)
 
 - CHANGE: Kafka producer no longer ships with hard-coded defaults.
   Please ensure you have "compression.type", "metadata.fetch.timeout.ms", and "retries"
@@ -1126,7 +1126,7 @@ _Released 2016-11-24_
 
 _Released 2016-11-07_
 
-### [v1.4.2](https://github.com/zendesk/maxwell/releases/tag/v1.4.2): 
+### [v1.4.2](https://github.com/zendesk/maxwell/releases/tag/v1.4.2)
 
 - kafka 0.10.0 support, as well as a re-working of the --kafka_version
   command line option.
@@ -1134,7 +1134,7 @@ _Released 2016-11-07_
 
 _Released 2016-11-01_
 
-### [v1.4.1](https://github.com/zendesk/maxwell/releases/tag/v1.4.1): 
+### [v1.4.1](https://github.com/zendesk/maxwell/releases/tag/v1.4.1)
 
 - support per-table topics, Thanks @smferguson and @sschatts.
 - fix a parser issue with DROP COLUMN CASCADE, thanks @smferguson
@@ -1142,7 +1142,7 @@ _Released 2016-11-01_
 
 _Released 2016-10-27_
 
-### [v1.4.0](https://github.com/zendesk/maxwell/releases/tag/v1.4.0): 
+### [v1.4.0](https://github.com/zendesk/maxwell/releases/tag/v1.4.0)
 
 1.4.0 brings us two nice new features:
 - partition-by-column: see --kafka_partition_columns.  Thanks @smferguson
@@ -1152,7 +1152,7 @@ _Released 2016-10-27_
 
 _Released 2016-10-21_
 
-### [v1.3.0](https://github.com/zendesk/maxwell/releases/tag/v1.3.0): 
+### [v1.3.0](https://github.com/zendesk/maxwell/releases/tag/v1.3.0)
 
 - support for fractional DATETIME, TIME, TIMESTAMP columns, thanks @Dagnan
 - support for outputting server_id & thread_id, thanks @sagiba
@@ -1161,7 +1161,7 @@ _Released 2016-10-21_
 
 _Released 2016-10-03_
 
-### [v1.2.2](https://github.com/zendesk/maxwell/releases/tag/v1.2.2): 
+### [v1.2.2](https://github.com/zendesk/maxwell/releases/tag/v1.2.2)
 
 - Maxwell will now include by default fields with NULL values (as null
   fields).  To disable this and restore the old functionality where fields
@@ -1175,7 +1175,7 @@ _Released 2016-10-03_
 
 _Released 2016-09-23_
 
-### [v1.2.1](https://github.com/zendesk/maxwell/releases/tag/v1.2.1): 
+### [v1.2.1](https://github.com/zendesk/maxwell/releases/tag/v1.2.1)
 
 This is a bugfix release.
 - fix a parser bug around ALTER TABLE CHARACTER SET
@@ -1185,7 +1185,7 @@ This is a bugfix release.
 
 _Released 2016-09-15_
 
-### [v1.2.0](https://github.com/zendesk/maxwell/releases/tag/v1.2.0): 
+### [v1.2.0](https://github.com/zendesk/maxwell/releases/tag/v1.2.0)
 
 1.2.0 is a major release of Maxwell that introduces master recovery
 features; when a slave is promoted to master, Maxwell is now capable of
@@ -1199,7 +1199,7 @@ to maxwell.
 
 _Released 2016-09-12_
 
-### [v1.1.6](https://github.com/zendesk/maxwell/releases/tag/v1.1.6): 
+### [v1.1.6](https://github.com/zendesk/maxwell/releases/tag/v1.1.6)
 
 - minor bugfix in which maxwell with --replay mode was trying to write
   heartbeats
@@ -1207,7 +1207,7 @@ _Released 2016-09-12_
 
 _Released 2016-09-07_
 
-### [v1.1.5](https://github.com/zendesk/maxwell/releases/tag/v1.1.5): 
+### [v1.1.5](https://github.com/zendesk/maxwell/releases/tag/v1.1.5)
 
 - @dadah89 adds --output_binlog_position to optionally output the
   position with the row
@@ -1222,7 +1222,7 @@ _Released 2016-09-07_
 
 _Released 2016-09-04_
 
-### [v1.1.4](https://github.com/zendesk/maxwell/releases/tag/v1.1.4): 
+### [v1.1.4](https://github.com/zendesk/maxwell/releases/tag/v1.1.4)
 
 - add support for a bunch more charsets (gbk, big5, notably)
 - fix Maxwell's handling of kafka errors - previously we were trying to
@@ -1232,7 +1232,7 @@ _Released 2016-09-04_
 
 _Released 2016-08-05_
 
-### [v1.1.3](https://github.com/zendesk/maxwell/releases/tag/v1.1.3): 
+### [v1.1.3](https://github.com/zendesk/maxwell/releases/tag/v1.1.3)
 
 This is a bugfix release, which fixes:
 - https://github.com/zendesk/maxwell/issues/376, a problem parsing
@@ -1247,7 +1247,7 @@ This is a bugfix release, which fixes:
 
 _Released 2016-07-14_
 
-### [v1.1.2](https://github.com/zendesk/maxwell/releases/tag/v1.1.2): 
+### [v1.1.2](https://github.com/zendesk/maxwell/releases/tag/v1.1.2)
 
 - pick up latest mysql-connector-j, fixes #369
 - fix an issue where maxwell could skip ahead positions if a leader failed.
@@ -1258,7 +1258,7 @@ _Released 2016-07-14_
 
 _Released 2016-06-27_
 
-### [v1.1.1](https://github.com/zendesk/maxwell/releases/tag/v1.1.1): 
+### [v1.1.1](https://github.com/zendesk/maxwell/releases/tag/v1.1.1)
 
 - fixes a race condition setting the binlog position that would get
   maxwell stuck
@@ -1266,7 +1266,7 @@ _Released 2016-06-27_
 
 _Released 2016-05-23_
 
-### [v1.1.0](https://github.com/zendesk/maxwell/releases/tag/v1.1.0): 
+### [v1.1.0](https://github.com/zendesk/maxwell/releases/tag/v1.1.0)
 
 - much more efficient processing of schema updates storage, especially when dealing with large schemas.
 - @lileeyao added --exclude-columns and the --jdbc_options features
@@ -1279,7 +1279,7 @@ _Released 2016-05-23_
 
 _Released 2016-05-20_
 
-### [v1.1.0-pre4](https://github.com/zendesk/maxwell/releases/tag/v1.1.0-pre4): 
+### [v1.1.0-pre4](https://github.com/zendesk/maxwell/releases/tag/v1.1.0-pre4)
 
 - Eddie McLean gives some helpful patches around bootstrapping
 - Bugfixes for the patch-up-the-schema code around unsigned ints
@@ -1287,7 +1287,7 @@ _Released 2016-05-20_
 
 _Released 2016-05-06_
 
-### [v1.1.0-pre3](https://github.com/zendesk/maxwell/releases/tag/v1.1.0-pre3): 
+### [v1.1.0-pre3](https://github.com/zendesk/maxwell/releases/tag/v1.1.0-pre3)
 
 - forgot to include some updates that back-patch unsigned column
   problems
@@ -1295,7 +1295,7 @@ _Released 2016-05-06_
 
 _Released 2016-05-05_
 
-### [v1.1.0-pre2](https://github.com/zendesk/maxwell/releases/tag/v1.1.0-pre2): 
+### [v1.1.0-pre2](https://github.com/zendesk/maxwell/releases/tag/v1.1.0-pre2)
 
 - fix performance issues when capturing schema in AWS Aurora
 - fix a bug in capturing unsigned integer columns
@@ -1303,14 +1303,14 @@ _Released 2016-05-05_
 
 _Released 2016-05-04_
 
-### [v1.0.1](https://github.com/zendesk/maxwell/releases/tag/v1.0.1): 
+### [v1.0.1](https://github.com/zendesk/maxwell/releases/tag/v1.0.1)
 
 - fixes a parsing bug with `CURRENT_TIMESTAMP()`
 
 
 _Released 2016-04-12_
 
-### [v1.0.0](https://github.com/zendesk/maxwell/releases/tag/v1.0.0): 
+### [v1.0.0](https://github.com/zendesk/maxwell/releases/tag/v1.0.0)
 
 Since v0.17.0, Maxwell has gotten:
 - bootstrapping support
@@ -1326,7 +1326,7 @@ there.
 
 _Released 2016-03-11_
 
-### [v1.0.0-RC3](https://github.com/zendesk/maxwell/releases/tag/v1.0.0-RC3): 
+### [v1.0.0-RC3](https://github.com/zendesk/maxwell/releases/tag/v1.0.0-RC3)
 
 pull in support for replication heartbeats.  helps in the flakier
 network environs.
@@ -1334,7 +1334,7 @@ network environs.
 
 _Released 2016-03-08_
 
-### [v1.0.0-RC2](https://github.com/zendesk/maxwell/releases/tag/v1.0.0-RC2): 
+### [v1.0.0-RC2](https://github.com/zendesk/maxwell/releases/tag/v1.0.0-RC2)
 
 - fixes the way ALTER DATABASE charset= was handled
 - adds proper handling of ALTER TABLE CONVERT TO CHARSET
@@ -1342,7 +1342,7 @@ _Released 2016-03-08_
 
 _Released 2016-02-20_
 
-### [v1.0.0-RC1](https://github.com/zendesk/maxwell/releases/tag/v1.0.0-RC1): 
+### [v1.0.0-RC1](https://github.com/zendesk/maxwell/releases/tag/v1.0.0-RC1)
 
 - modifications to the way the bootstrap utility works
 - fix a race condition crash bug in bootstrapping
@@ -1351,7 +1351,7 @@ _Released 2016-02-20_
 
 _Released 2016-02-11_
 
-### [v1.0.0-PRE2](https://github.com/zendesk/maxwell/releases/tag/v1.0.0-PRE2): 
+### [v1.0.0-PRE2](https://github.com/zendesk/maxwell/releases/tag/v1.0.0-PRE2)
 
 1.0.0-PRE2 brings in a lot of changes that got merged while we were
 testing out PRE1.  so, hey.
@@ -1365,7 +1365,7 @@ testing out PRE1.  so, hey.
 
 _Released 2016-01-30_
 
-### [v1.0.0-PRE1](https://github.com/zendesk/maxwell/releases/tag/v1.0.0-PRE1): 
+### [v1.0.0-PRE1](https://github.com/zendesk/maxwell/releases/tag/v1.0.0-PRE1)
 
 - Here we have the preview release of @nmaquet's excellent work around
   bootstrapping initial versions of mysql tables.
@@ -1373,7 +1373,7 @@ _Released 2016-01-30_
 
 _Released 2016-01-09_
 
-### [v0.17.0](https://github.com/zendesk/maxwell/releases/tag/v0.17.0): 
+### [v0.17.0](https://github.com/zendesk/maxwell/releases/tag/v0.17.0)
 
 v0.17 is a large bugfix release with one new feature.
 - FEATURE: allow specifying an alternative mysql schema-storage server and
@@ -1387,7 +1387,7 @@ v0.17 is a large bugfix release with one new feature.
 
 _Released 2016-01-07_
 
-### [v0.16.2](https://github.com/zendesk/maxwell/releases/tag/v0.16.2): 
+### [v0.16.2](https://github.com/zendesk/maxwell/releases/tag/v0.16.2)
 
 This is a large-ish bugfix release.
 - Support, with reservations, binlog_row_image=MINIMAL
@@ -1400,7 +1400,7 @@ This is a large-ish bugfix release.
 
 _Released 2015-12-16_
 
-### [v0.16.1](https://github.com/zendesk/maxwell/releases/tag/v0.16.1): 
+### [v0.16.1](https://github.com/zendesk/maxwell/releases/tag/v0.16.1)
 
 This is a bug-fix-roundup release:
 - support ALTER DATABASE
@@ -1412,7 +1412,7 @@ This is a bug-fix-roundup release:
 
 _Released 2015-12-11_
 
-### [v0.16.0](https://github.com/zendesk/maxwell/releases/tag/v0.16.0): 
+### [v0.16.0](https://github.com/zendesk/maxwell/releases/tag/v0.16.0)
 
 Version 0.16.0 introduces a feature where UPDATE statements will now
 show both the new row image and the old values of the fields that
@@ -1421,14 +1421,14 @@ changed.  Thanks @kristiankaufmann
 
 _Released 2015-12-10_
 
-### [v0.15.0](https://github.com/zendesk/maxwell/releases/tag/v0.15.0): 
+### [v0.15.0](https://github.com/zendesk/maxwell/releases/tag/v0.15.0)
 
 - fix a parse problem with indices ordered by ASC/DESC
 
 
 _Released 2015-12-07_
 
-### [v0.15.0-RC1](https://github.com/zendesk/maxwell/releases/tag/v0.15.0-RC1): 
+### [v0.15.0-RC1](https://github.com/zendesk/maxwell/releases/tag/v0.15.0-RC1)
 
 - large transactions now buffer to disk instead of crushing maxwell.
 - support ALGORITHM=[algo], LOCK=[lock] for 5.6 alters
@@ -1436,7 +1436,7 @@ _Released 2015-12-07_
 
 _Released 2015-12-04_
 
-### [v0.14.6](https://github.com/zendesk/maxwell/releases/tag/v0.14.6): 
+### [v0.14.6](https://github.com/zendesk/maxwell/releases/tag/v0.14.6)
 
 - fix TIME column support
 - fix parsing on millisecond precision column defintions
@@ -1445,14 +1445,14 @@ _Released 2015-12-04_
 
 _Released 2015-11-27_
 
-### [v0.14.5](https://github.com/zendesk/maxwell/releases/tag/v0.14.5): 
+### [v0.14.5](https://github.com/zendesk/maxwell/releases/tag/v0.14.5)
 
 - handle BOOLEAN columns with true/false defaults
 
 
 _Released 2015-11-25_
 
-### [v0.14.4](https://github.com/zendesk/maxwell/releases/tag/v0.14.4): 
+### [v0.14.4](https://github.com/zendesk/maxwell/releases/tag/v0.14.4)
 
 - fixes parsing of "mysql comments" (`/*! .. */`)
 - More performance improvements, another 10% in a tight loop.
@@ -1460,35 +1460,35 @@ _Released 2015-11-25_
 
 _Released 2015-11-24_
 
-### [v0.14.3](https://github.com/zendesk/maxwell/releases/tag/v0.14.3): 
+### [v0.14.3](https://github.com/zendesk/maxwell/releases/tag/v0.14.3)
 
 - fixes a regression in 0.14.2 that creates duplicate copies of the "mysql" database in the schema.
 
 
 _Released 2015-11-23_
 
-### [v0.14.2](https://github.com/zendesk/maxwell/releases/tag/v0.14.2): 
+### [v0.14.2](https://github.com/zendesk/maxwell/releases/tag/v0.14.2)
 
 - capture the mysql database along with the rest of the schema.  Eliding it was a bad premature optimization that led to crashes when tables in the mysql database changed. 
 
 
 _Released 2015-11-20_
 
-### [v0.14.1](https://github.com/zendesk/maxwell/releases/tag/v0.14.1): 
+### [v0.14.1](https://github.com/zendesk/maxwell/releases/tag/v0.14.1)
 
 - fixes a parser bug around named PRIMARY KEYs.
 
 
 _Released 2015-11-17_
 
-### [v0.14.0](https://github.com/zendesk/maxwell/releases/tag/v0.14.0): 
+### [v0.14.0](https://github.com/zendesk/maxwell/releases/tag/v0.14.0)
 
 This release introduces row filters, allowing you to include or exclude tables from maxwell's output based on names or regular expressions.  
 
 
 _Released 2015-11-03_
 
-### [v0.13.1](https://github.com/zendesk/maxwell/releases/tag/v0.13.1): 
+### [v0.13.1](https://github.com/zendesk/maxwell/releases/tag/v0.13.1)
 
 v0.13.1 is a bug fix of v0.13.0 -- fixes a bug where long rows were truncated. 
 
@@ -1500,7 +1500,7 @@ v0.13.0 contains:
 
 _Released 2015-10-29_
 
-### [v0.13.0](https://github.com/zendesk/maxwell/releases/tag/v0.13.0): 
+### [v0.13.0](https://github.com/zendesk/maxwell/releases/tag/v0.13.0)
 
 Lucky release number 13 brings some reasonably big changes:
 - Big performance boost for maxwell: 75% faster in some benchmarks
@@ -1512,21 +1512,21 @@ _This release has a pretty bad bug.  do not use._
 
 _Released 2015-10-29_
 
-### [v0.12.0](https://github.com/zendesk/maxwell/releases/tag/v0.12.0): 
+### [v0.12.0](https://github.com/zendesk/maxwell/releases/tag/v0.12.0)
 
 - add support for BIT columns.  
 
 
 _Released 2015-10-16_
 
-### [v0.11.4](https://github.com/zendesk/maxwell/releases/tag/v0.11.4): 
+### [v0.11.4](https://github.com/zendesk/maxwell/releases/tag/v0.11.4)
 
 this is another bugfix release that fixes a problem where the replication thread can die in the middle of processing a transaction event.  I really need to fix this at a lower level, ie the open-replicator level.
 
 
 _Released 2015-09-30_
 
-### [v0.11.3](https://github.com/zendesk/maxwell/releases/tag/v0.11.3): 
+### [v0.11.3](https://github.com/zendesk/maxwell/releases/tag/v0.11.3)
 
 this is a bugfix release:
 - fix problems with table creation options inside alter statements ( `ALTER TABLE foo auto_increment=10` )
@@ -1537,7 +1537,7 @@ the test suite should also be way more reliable, not like you care.
 
 _Released 2015-09-29_
 
-### [v0.11.2](https://github.com/zendesk/maxwell/releases/tag/v0.11.2): 
+### [v0.11.2](https://github.com/zendesk/maxwell/releases/tag/v0.11.2)
 
 This is a bugfix release.  It includes:
 - soft deletions of maxwell.schemas to fix A->B->A master swapping without creating intense replication delay
@@ -1548,14 +1548,14 @@ This is a bugfix release.  It includes:
 
 _Released 2015-09-18_
 
-### [v0.11.1](https://github.com/zendesk/maxwell/releases/tag/v0.11.1): 
+### [v0.11.1](https://github.com/zendesk/maxwell/releases/tag/v0.11.1)
 
 - maxwell gets a very minimal pass at detecting when a master has changed, in which it will kill off schemas and positions from a server_id that no longer is valid.  this should prevent the worst of cases.
 
 
 _Released 2015-09-16_
 
-### [v0.11.0](https://github.com/zendesk/maxwell/releases/tag/v0.11.0): 
+### [v0.11.0](https://github.com/zendesk/maxwell/releases/tag/v0.11.0)
 
 This release of Maxwell preserves transaction information in the kafka stream by adding a `xid` key in the JSON object, as well as a `commit` key for the final row inside the transaction.
 
@@ -1564,7 +1564,7 @@ It also contains a bugfix around server_id handling.
 
 _Released 2015-09-15_
 
-### [v0.10.1](https://github.com/zendesk/maxwell/releases/tag/v0.10.1): 
+### [v0.10.1](https://github.com/zendesk/maxwell/releases/tag/v0.10.1)
 
 - proper support for BLOB, BINARY, VARBINARY columns (base 64 encoded)
 - fix a problem with the SQL parser where specifying encoding or collation in a string column in the wrong order would crash
@@ -1573,21 +1573,21 @@ _Released 2015-09-15_
 
 _Released 2015-09-11_
 
-### [v0.11.0-RC1](https://github.com/zendesk/maxwell/releases/tag/v0.11.0-RC1): 
+### [v0.11.0-RC1](https://github.com/zendesk/maxwell/releases/tag/v0.11.0-RC1)
 
 - merge master fixes
 
 
 _Released 2015-09-09_
 
-### [v0.11.0-PRE4](https://github.com/zendesk/maxwell/releases/tag/v0.11.0-PRE4): 
+### [v0.11.0-PRE4](https://github.com/zendesk/maxwell/releases/tag/v0.11.0-PRE4)
 
 - bugfix on v0.11.0-PRE3
 
 
 _Released 2015-09-09_
 
-### [v0.10.0](https://github.com/zendesk/maxwell/releases/tag/v0.10.0): 
+### [v0.10.0](https://github.com/zendesk/maxwell/releases/tag/v0.10.0)
 
 - Mysql 5.6 checksum support!
 - some more bugfixes with the SQL parser 
@@ -1595,7 +1595,7 @@ _Released 2015-09-09_
 
 _Released 2015-09-09_
 
-### [v0.11.0-PRE3](https://github.com/zendesk/maxwell/releases/tag/v0.11.0-PRE3): 
+### [v0.11.0-PRE3](https://github.com/zendesk/maxwell/releases/tag/v0.11.0-PRE3)
 
 - handle SAVEPOINT within transactions
 - downgrade unhandled SQL to a warning
@@ -1603,14 +1603,14 @@ _Released 2015-09-09_
 
 _Released 2015-09-08_
 
-### [v0.11.0-PRE2](https://github.com/zendesk/maxwell/releases/tag/v0.11.0-PRE2): 
+### [v0.11.0-PRE2](https://github.com/zendesk/maxwell/releases/tag/v0.11.0-PRE2)
 
 - fixes for myISAM "transactions"
 
 
 _Released 2015-09-03_
 
-### [v0.11.0-PRE1](https://github.com/zendesk/maxwell/releases/tag/v0.11.0-PRE1): 
+### [v0.11.0-PRE1](https://github.com/zendesk/maxwell/releases/tag/v0.11.0-PRE1)
 
 - fix a server_id bug (was always 1 in maxwell.schemas)
 - JSON output now includes transaction IDs
@@ -1618,56 +1618,56 @@ _Released 2015-09-03_
 
 _Released 2015-09-02_
 
-### [v0.10.0-RC4](https://github.com/zendesk/maxwell/releases/tag/v0.10.0-RC4): 
+### [v0.10.0-RC4](https://github.com/zendesk/maxwell/releases/tag/v0.10.0-RC4)
 
 - deal with BINARY flag in string column creation.
 
 
 _Released 2015-08-31_
 
-### [v0.9.5](https://github.com/zendesk/maxwell/releases/tag/v0.9.5): 
+### [v0.9.5](https://github.com/zendesk/maxwell/releases/tag/v0.9.5)
 
 - handle the BINARY flag in column creation
 
 
 _Released 2015-08-31_
 
-### [v0.10.0-RC3](https://github.com/zendesk/maxwell/releases/tag/v0.10.0-RC3): 
+### [v0.10.0-RC3](https://github.com/zendesk/maxwell/releases/tag/v0.10.0-RC3)
 
 - handle "TRUNCATE [TABLE_NAME]" statements
 
 
 _Released 2015-08-27_
 
-### [v0.10.0-RC2](https://github.com/zendesk/maxwell/releases/tag/v0.10.0-RC2): 
+### [v0.10.0-RC2](https://github.com/zendesk/maxwell/releases/tag/v0.10.0-RC2)
 
 - fixes a bug with checksum processing.
 
 
 _Released 2015-08-26_
 
-### [v0.10.0-RC1](https://github.com/zendesk/maxwell/releases/tag/v0.10.0-RC1): 
+### [v0.10.0-RC1](https://github.com/zendesk/maxwell/releases/tag/v0.10.0-RC1)
 
 - upgrade to open-replicator 1.3.0-RC1, which brings binlog checksum (and thus easy 5.6.1) support to maxwell.
 
 
 _Released 2015-08-04_
 
-### [v0.9.4](https://github.com/zendesk/maxwell/releases/tag/v0.9.4): 
+### [v0.9.4](https://github.com/zendesk/maxwell/releases/tag/v0.9.4)
 
 - allow a configurable number (including unlimited) of schemas to be stored
 
 
 _Released 2015-07-27_
 
-### [v0.9.3](https://github.com/zendesk/maxwell/releases/tag/v0.9.3): 
+### [v0.9.3](https://github.com/zendesk/maxwell/releases/tag/v0.9.3)
 
 - bump open-replicator to 1.2.3, which allows processing of single rows greater than 2^24 bytes
 
 
 _Released 2015-07-14_
 
-### [v0.9.2](https://github.com/zendesk/maxwell/releases/tag/v0.9.2): 
+### [v0.9.2](https://github.com/zendesk/maxwell/releases/tag/v0.9.2)
 
 - bump open-replicator buffer to 50mb by default
 - log to STDERR, not STDOUT 
@@ -1676,7 +1676,7 @@ _Released 2015-07-14_
 
 _Released 2015-07-10_
 
-### [v0.9.1](https://github.com/zendesk/maxwell/releases/tag/v0.9.1): 
+### [v0.9.1](https://github.com/zendesk/maxwell/releases/tag/v0.9.1)
 
 - Maxwell is now aware that column names are case-insenstive
 - fix a nasty bug in which maxwell would store the wrong position after it lost its connection to the master.
@@ -1684,7 +1684,7 @@ _Released 2015-07-10_
 
 _Released 2015-06-22_
 
-### [v0.9.0](https://github.com/zendesk/maxwell/releases/tag/v0.9.0): 
+### [v0.9.0](https://github.com/zendesk/maxwell/releases/tag/v0.9.0)
 
 Also, vanchi is so paranoid he's worried immediately about this. 
 
@@ -1694,14 +1694,14 @@ Also, vanchi is so paranoid he's worried immediately about this.
 
 _Released 2015-06-18_
 
-### [v0.8.1](https://github.com/zendesk/maxwell/releases/tag/v0.8.1): 
+### [v0.8.1](https://github.com/zendesk/maxwell/releases/tag/v0.8.1)
 
 - minor bugfix release around mysql connections going away.
 
 
 _Released 2015-06-16_
 
-### [v0.8.0](https://github.com/zendesk/maxwell/releases/tag/v0.8.0): 
+### [v0.8.0](https://github.com/zendesk/maxwell/releases/tag/v0.8.0)
 
 - add "ts" field to row output
 - add --config option for passing a different config file
@@ -1710,7 +1710,7 @@ _Released 2015-06-16_
 
 _Released 2015-06-09_
 
-### [v0.7.2](https://github.com/zendesk/maxwell/releases/tag/v0.7.2): 
+### [v0.7.2](https://github.com/zendesk/maxwell/releases/tag/v0.7.2)
 
 - handle inline sql comments
 - ignore more user management SQL
@@ -1718,14 +1718,14 @@ _Released 2015-06-09_
 
 _Released 2015-05-29_
 
-### [v0.7.1](https://github.com/zendesk/maxwell/releases/tag/v0.7.1): 
+### [v0.7.1](https://github.com/zendesk/maxwell/releases/tag/v0.7.1)
 
 - only keep 5 most recent schemas
 
 
 _Released 2015-05-15_
 
-### [v0.7.0](https://github.com/zendesk/maxwell/releases/tag/v0.7.0): 
+### [v0.7.0](https://github.com/zendesk/maxwell/releases/tag/v0.7.0)
 
 - handle CURRENT_TIMESTAMP parsing properly
 - better binlog position sync behavior
@@ -1733,35 +1733,35 @@ _Released 2015-05-15_
 
 _Released 2015-04-28_
 
-### [v0.6.3](https://github.com/zendesk/maxwell/releases/tag/v0.6.3): 
+### [v0.6.3](https://github.com/zendesk/maxwell/releases/tag/v0.6.3)
 
 - better blacklist for CREATE TRIGGER
 
 
 _Released 2015-04-13_
 
-### [v0.6.2](https://github.com/zendesk/maxwell/releases/tag/v0.6.2): 
+### [v0.6.2](https://github.com/zendesk/maxwell/releases/tag/v0.6.2)
 
 - maxwell now ignores SAVEPOINT statements.
 
 
 _Released 2015-04-13_
 
-### [v0.6.1](https://github.com/zendesk/maxwell/releases/tag/v0.6.1): 
+### [v0.6.1](https://github.com/zendesk/maxwell/releases/tag/v0.6.1)
 
 - fixes a bug with parsing length-limited indexes.
 
 
 _Released 2015-04-13_
 
-### [v0.6.0](https://github.com/zendesk/maxwell/releases/tag/v0.6.0): 
+### [v0.6.0](https://github.com/zendesk/maxwell/releases/tag/v0.6.0)
 
 Version 0.6.0 has Maxwell outputting a JSON kafka key, so that one can use Kafka's neat "store the last copy of a key" retention policy.  It also fixes a couple of bugs in the query parsing path.
 
 
 _Released 2015-04-09_
 
-### [v0.5.0](https://github.com/zendesk/maxwell/releases/tag/v0.5.0): 
+### [v0.5.0](https://github.com/zendesk/maxwell/releases/tag/v0.5.0)
 
 - maxwell now captures primary keys on tables.  We'll use this to form kafka key names later.
 - maxwell now outputs to a single topic, hashing the data by database name to keep a database's updates in order.
@@ -1769,14 +1769,14 @@ _Released 2015-04-09_
 
 _Released 2015-04-06_
 
-### [v0.4.0](https://github.com/zendesk/maxwell/releases/tag/v0.4.0): 
+### [v0.4.0](https://github.com/zendesk/maxwell/releases/tag/v0.4.0)
 
 v0.4.0 fixes some bugs with long-lived mysql connections by adding connection pooling support.
 
 
 _Released 2015-03-25_
 
-### [v0.3.0](https://github.com/zendesk/maxwell/releases/tag/v0.3.0): 
+### [v0.3.0](https://github.com/zendesk/maxwell/releases/tag/v0.3.0)
 
 This version fixes a fairly nasty bug in which the binlog-position flush thread was sharing a connection with the rest of the system, leading to crashes. 
 
@@ -1785,49 +1785,49 @@ It also enables kafka gzip compression by default.
 
 _Released 2015-03-24_
 
-### [v0.2.2](https://github.com/zendesk/maxwell/releases/tag/v0.2.2): 
+### [v0.2.2](https://github.com/zendesk/maxwell/releases/tag/v0.2.2)
 
 Version 0.2.2 sets up the LANG environment variable, which fixes a bug in utf-8 handling. 
 
 
 _Released 2015-03-22_
 
-### [v0.2.1](https://github.com/zendesk/maxwell/releases/tag/v0.2.1): 
+### [v0.2.1](https://github.com/zendesk/maxwell/releases/tag/v0.2.1)
 
 version 0.2.1 makes Maxwell ignore CREATE INDEX ddl statements and others.
 
 
 _Released 2015-03-21_
 
-### [v0.2.0](https://github.com/zendesk/maxwell/releases/tag/v0.2.0): 
+### [v0.2.0](https://github.com/zendesk/maxwell/releases/tag/v0.2.0)
 
 This release gets Maxwell storing the last-written binlog position inside the mysql master itself. 
 
 
 _Released 2015-03-18_
 
-### [v0.1.4](https://github.com/zendesk/maxwell/releases/tag/v0.1.4): 
+### [v0.1.4](https://github.com/zendesk/maxwell/releases/tag/v0.1.4)
 
 support --position_file param
 
 
 _Released 2015-03-09_
 
-### [v0.1.3](https://github.com/zendesk/maxwell/releases/tag/v0.1.3): 
+### [v0.1.3](https://github.com/zendesk/maxwell/releases/tag/v0.1.3)
 
 Adds kafka command line options.
 
 
 _Released 2015-03-09_
 
-### [v0.1.1](https://github.com/zendesk/maxwell/releases/tag/v0.1.1): 
+### [v0.1.1](https://github.com/zendesk/maxwell/releases/tag/v0.1.1)
 
 v0.1.1, a small bugfix release. 
 
 
 _Released 2015-03-06_
 
-### [v0.1](https://github.com/zendesk/maxwell/releases/tag/v0.1): 
+### [v0.1](https://github.com/zendesk/maxwell/releases/tag/v0.1)
 
 This is the first possible release of Maxwell that might work.  It includes some exceedingly basic kafka support, and JSON output of binlog deltas.
 
