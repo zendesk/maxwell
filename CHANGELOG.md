@@ -1,5 +1,14 @@
 # Maxwell changelog
 
+### [v1.37.6](https://github.com/zendesk/maxwell/releases/tag/v1.37.6): 
+
+- In non-GTID mode, Verify that the master's server hasn't changed out
+  from underneath us.  thanks Tamin Khan
+
+
+
+_Released 2022-05-12_
+
 ### [v1.37.5](https://github.com/zendesk/maxwell/releases/tag/v1.37.5): 
 
 - Upgrade binlog-replicator.  pulls in some minor fixes.
