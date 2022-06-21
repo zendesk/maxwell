@@ -1,5 +1,13 @@
 # Maxwell changelog
 
+### [v1.37.7](https://github.com/zendesk/maxwell/releases/tag/v1.37.7)
+
+ - Bump viafoura/metrics-datadog 2.0.0-RC3
+
+
+
+_Released 2022-06-21_
+
 ### [v1.37.6](https://github.com/zendesk/maxwell/releases/tag/v1.37.6)
 
 - In non-GTID mode, Verify that the master's server hasn't changed out
