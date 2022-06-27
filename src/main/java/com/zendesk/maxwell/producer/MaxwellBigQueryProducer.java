@@ -255,7 +255,7 @@ class MaxwellBigQueryProducerWorker extends AbstractAsyncProducer implements Run
     record.put("primary_key", primary_key);
 
     jsonArr.put(record);
-    AppendContext appendContext = new AppendContext(jsonArr, 3, r);
+    AppendContext appendContext = new AppendContext(jsonArr, 0, r);
 
     ApiFuture<AppendRowsResponse> future = streamWriter.append(appendContext.data);
     ApiFutures.addCallback(
