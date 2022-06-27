@@ -248,7 +248,7 @@ class MaxwellBigQueryProducerWorker extends AbstractAsyncProducer implements Run
     LOGGER.debug("maxwell incoming log -> " + r.toJSON(outputConfig));
     //stringfy columns in order to adapt noon cdc log table schema
     String data = record.getJSONObject("data").toString();
-    String old = record.getJSONObject("data").toString();
+    String old = record.getJSONObject("old").toString();
     String primary_key = record.get("primary_key").toString();
     record.put("data", data);
     record.put("old", old);
