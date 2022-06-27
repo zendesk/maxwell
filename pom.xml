@@ -4,7 +4,7 @@
 
   <groupId>com.zendesk</groupId>
   <artifactId>maxwell</artifactId>
-  <version>1.37.3</version>
+  <version>1.37.7</version>
   <packaging>jar</packaging>
 
   <name>maxwell</name>
@@ -123,8 +123,17 @@
       </dependencies>
     </profile>
   </profiles>
-
   <dependencies>
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-bigquerystorage</artifactId>
+      <version>2.14.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-bigquery</artifactId>
+      <version>2.13.3</version>
+    </dependency>
     <dependency>
       <groupId>com.mchange</groupId>
       <artifactId>c3p0</artifactId>
@@ -133,7 +142,7 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-core</artifactId>
-      <version>1.12.137</version>
+      <version>1.12.217</version>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
@@ -218,7 +227,7 @@
     <dependency>
       <groupId>com.zendesk</groupId>
       <artifactId>mysql-binlog-connector-java</artifactId>
-      <version>0.25.3</version>
+      <version>0.25.6</version>
     </dependency>
     <dependency>
       <groupId>net.sf.jopt-simple</groupId>
@@ -313,12 +322,12 @@
     <dependency>
       <groupId>com.viafoura</groupId>
       <artifactId>metrics-datadog</artifactId>
-      <version>2.0.0-RC2</version>
+      <version>2.0.0-RC3</version>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-sns</artifactId>
-      <version>1.12.137</version>
+      <version>1.12.191</version>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>

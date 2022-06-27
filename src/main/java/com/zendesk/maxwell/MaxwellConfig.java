@@ -204,6 +204,21 @@ public class MaxwellConfig extends AbstractConfig {
 	public String ddlPubsubTopic;
 
 	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellBigQueryProducer} project id
+	 */
+	public String bigQueryProjectId;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellBigQueryProducer} dataset
+	 */
+	public String bigQueryDataset;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellBigQueryProducer} table
+	 */
+	public String bigQueryTable;
+
+	/**
 	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} bytes request threshold
 	 */
 	public Long pubsubRequestBytesThreshold;
@@ -789,6 +804,14 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "nats_url", "Url(s) of Nats connection (comma separated). Default is localhost:4222" ).withRequiredArg();
 		parser.accepts( "nats_subject", "Subject Hierarchies of Nats. Default is '%{database}.%{table}'" ).withRequiredArg();
 
+		parser.section( "bigquery" );
+		parser.accepts( "bigquery_project_id", "provide a google cloud platform project id associated with the bigquery table" )
+				.withRequiredArg();
+		parser.accepts( "bigquery_dataset", "provide a google cloud platform dataset id associated with the bigquery table" )
+				.withRequiredArg();
+		parser.accepts( "bigquery_table", "provide a google cloud platform table id associated with the bigquery table" )
+				.withRequiredArg();
+
 		parser.section( "pubsub" );
 		parser.accepts( "pubsub_project_id", "provide a google cloud platform project id associated with the pubsub topic" )
 				.withRequiredArg();
@@ -993,6 +1016,10 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.kafkaPartitionHash 	= fetchStringOption("kafka_partition_hash", options, properties, "default");
 		this.ddlKafkaTopic 		    = fetchStringOption("ddl_kafka_topic", options, properties, this.kafkaTopic);
+
+		this.bigQueryProjectId		= fetchStringOption("bigquery_project_id", options, properties, null);
+		this.bigQueryDataset		= fetchStringOption("bigquery_dataset", options, properties, null);
+		this.bigQueryTable			= fetchStringOption("bigquery_table", options, properties, null);
 
 		this.pubsubProjectId					= fetchStringOption("pubsub_project_id", options, properties, null);
 		this.pubsubTopic						= fetchStringOption("pubsub_topic", options, properties, "maxwell");
