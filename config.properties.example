@@ -220,9 +220,9 @@ kafka.acks=1
 
 #            *** bigquery ***
 
-#bigquery_project_id=maxwell
-#bigquery_dataset=maxwell
-#bigquery_table=maxwell_ddl
+#bigquery_project_id=myproject
+#bigquery_dataset=mydataset
+#bigquery_table=mytable
 
 #            *** rabbit-mq ***
 
