@@ -260,6 +260,34 @@ for DDL updates by setting the `ddl_pubsub_topic` property.
 
 The producer uses the [Google Cloud Java Library for Pub/Sub](https://github.com/GoogleCloudPlatform/google-cloud-java/tree/master/google-cloud-pubsub) and uses its built-in configurations.
 
+# Google Cloud BigQuery
+***
+To stream data into Google Cloud Bigquery, first there must be a table created on bigquery in order to stream the data
+into defined as `bigquery_project_id.bigquery_dataset.bigquery_table`. The schema of the table must match the outputConfig. The column types should be defined as below
+
+- database: string 
+- table: string                                                                                                    
+- type: string                                                                                                     
+- ts: integer                                                                                                      
+- xid: integer                                                                                                     
+- xoffset: integer                                                                                                 
+- commit: boolean                                                                                                  
+- position: string                                                                                                 
+- gtid: string                                                                                                     
+- server_id: integer                                                                                               
+- primary_key: string                                                                                              
+- data: string                                                                                                     
+- old: string
+
+See the Google Cloud Platform docs for the [latest examples of which permissions are needed](https://cloud.google.com/bigquery/docs/access-control), as well as [how to properly configure service accounts](https://cloud.google.com/compute/docs/access/create-enable-service-accounts-for-instances).
+
+Set the output stream in `config.properties` by setting the `bigquery_project_id`, `bigquery_dataset` and `bigquery_table` properties.
+
+The producer uses the [Google Cloud Java Bigquery Storage Library for Bigquery](https://github.com/googleapis/java-bigquerystorage) [Bigquery Storage Write API documenatation](https://cloud.google.com/bigquery/docs/write-api).
+To use the Storage Write API, you must have `bigquery.tables.updateData` permissions.
+
+This producer is using the Default Stream with at-least once semantics for greater data resiliency and fewer scaling restrictions
+
 # RabbitMQ
 ***
 To produce messages to RabbitMQ, you will need to specify a host in `config.properties` with `rabbitmq_host`. This is the only required property, everything else falls back to a sane default.

@@ -550,6 +550,9 @@ public class MaxwellContext {
 			case "redis":
 				this.producer = new MaxwellRedisProducer(this);
 				break;
+			case "bigquery":
+				this.producer = new MaxwellBigQueryProducer(this, this.config.bigQueryProjectId, this.config.bigQueryDataset, this.config.bigQueryTable);
+				break;
 			case "none":
 				this.producer = new NoneProducer(this);
 				break;
