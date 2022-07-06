@@ -107,7 +107,6 @@ class BigQueryCallback implements ApiFutureCallback<AppendRowsResponse> {
       appendContext.retryCount++;
       try {
         this.parent.sendAsync(appendContext.r, this.cc);
-        cc.markCompleted();
         return;
       } catch (Exception e) {
         System.out.format("Failed to retry append: %s\n", e);
@@ -118,6 +117,8 @@ class BigQueryCallback implements ApiFutureCallback<AppendRowsResponse> {
       if (this.parent.getError() == null && !this.context.getConfig().ignoreProducerError) {
         StorageException storageException = Exceptions.toStorageException(t);
         this.parent.setError((storageException != null) ? storageException : new RuntimeException(t));
+        context.terminate();
+        return;
       }
     }
     cc.markCompleted();
