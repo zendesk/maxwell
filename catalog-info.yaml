@@ -1,0 +1,408 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  annotations:
+    github.com/project-slug: vend/maxwell
+  description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
+  links:
+  - icon: opensearch
+    title: Opensearch - Logs
+    url: https://opensearch.service.us-west-2.lifesupport.vendhq.com/_dashboards/app/discover#/?_a=(columns:!(_source),filters:!(),index:'logstash-*',interval:auto,query:(language:kuery,query:'source.service%20:%20maxwell'),sort:!())
+  - icon: terraform
+    title: Jump to infrastructure definition inside vend/terraform-services
+    url: https://github.com/vend/terraform-services/tree/master/env/production/us-west-2/infrastructure/services/maxwell-billing
+  name: maxwell-billing
+  tags:
+  - about-yml
+  - java
+spec:
+  lifecycle: production
+  owner: sre
+  system: maxwell
+  type: service
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  annotations:
+    github.com/project-slug: vend/maxwell
+  description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
+  links:
+  - icon: opensearch
+    title: Opensearch - Logs
+    url: https://opensearch.service.us-west-2.lifesupport.vendhq.com/_dashboards/app/discover#/?_a=(columns:!(_source),filters:!(),index:'logstash-*',interval:auto,query:(language:kuery,query:'source.service%20:%20maxwell'),sort:!())
+  - icon: terraform
+    title: Jump to infrastructure definition inside vend/terraform-services
+    url: https://github.com/vend/terraform-services/tree/master/env/production/us-west-2/infrastructure/services/maxwell-capital
+  name: maxwell-capital
+  tags:
+  - about-yml
+  - java
+spec:
+  lifecycle: production
+  owner: sre
+  system: maxwell
+  type: service
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  annotations:
+    github.com/project-slug: vend/maxwell
+  description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
+  links:
+  - icon: opensearch
+    title: Opensearch - Logs
+    url: https://opensearch.service.us-west-2.lifesupport.vendhq.com/_dashboards/app/discover#/?_a=(columns:!(_source),filters:!(),index:'logstash-*',interval:auto,query:(language:kuery,query:'source.service%20:%20maxwell'),sort:!())
+  - icon: terraform
+    title: Jump to infrastructure definition inside vend/terraform-services
+    url: https://github.com/vend/terraform-services/tree/master/env/production/us-west-2/infrastructure/services/maxwell-cardinal
+  name: maxwell-cardinal
+  tags:
+  - about-yml
+  - java
+spec:
+  lifecycle: production
+  owner: sre
+  system: maxwell
+  type: service
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  annotations:
+    github.com/project-slug: vend/maxwell
+  description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
+  links:
+  - icon: opensearch
+    title: Opensearch - Logs
+    url: https://opensearch.service.us-west-2.lifesupport.vendhq.com/_dashboards/app/discover#/?_a=(columns:!(_source),filters:!(),index:'logstash-*',interval:auto,query:(language:kuery,query:'source.service%20:%20maxwell'),sort:!())
+  - icon: terraform
+    title: Jump to infrastructure definition inside vend/terraform-services
+    url: https://github.com/vend/terraform-services/tree/master/env/production/us-west-2/infrastructure/services/maxwell-developer
+  name: maxwell-developer
+  tags:
+  - about-yml
+  - java
+spec:
+  lifecycle: production
+  owner: sre
+  system: maxwell
+  type: service
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  annotations:
+    github.com/project-slug: vend/maxwell
+  description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
+  links:
+  - icon: opensearch
+    title: Opensearch - Logs
+    url: https://opensearch.service.us-west-2.lifesupport.vendhq.com/_dashboards/app/discover#/?_a=(columns:!(_source),filters:!(),index:'logstash-*',interval:auto,query:(language:kuery,query:'source.service%20:%20maxwell'),sort:!())
+  - icon: terraform
+    title: Jump to infrastructure definition inside vend/terraform-services
+    url: https://github.com/vend/terraform-services/tree/master/env/production/us-west-2/infrastructure/services/maxwell-onboarding
+  name: maxwell-onboarding
+  tags:
+  - about-yml
+  - java
+spec:
+  lifecycle: production
+  owner: sre
+  system: maxwell
+  type: service
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  annotations:
+    github.com/project-slug: vend/maxwell
+  description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
+  links:
+  - icon: opensearch
+    title: Opensearch - Logs
+    url: https://opensearch.service.us-west-2.lifesupport.vendhq.com/_dashboards/app/discover#/?_a=(columns:!(_source),filters:!(),index:'logstash-*',interval:auto,query:(language:kuery,query:'source.service%20:%20maxwell'),sort:!())
+  - icon: terraform
+    title: Jump to infrastructure definition inside vend/terraform-services
+    url: https://github.com/vend/terraform-services/tree/master/env/production/us-west-2/infrastructure/services/maxwell-permissions
+  name: maxwell-permissions
+  tags:
+  - about-yml
+  - java
+spec:
+  lifecycle: production
+  owner: sre
+  system: maxwell
+  type: service
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  annotations:
+    github.com/project-slug: vend/maxwell
+  description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
+  links:
+  - icon: opensearch
+    title: Opensearch - Logs
+    url: https://opensearch.service.us-west-2.lifesupport.vendhq.com/_dashboards/app/discover#/?_a=(columns:!(_source),filters:!(),index:'logstash-*',interval:auto,query:(language:kuery,query:'source.service%20:%20maxwell'),sort:!())
+  - icon: terraform
+    title: Jump to infrastructure definition inside vend/terraform-services
+    url: https://github.com/vend/terraform-services/tree/master/env/production/us-west-2/infrastructure/services/maxwell-sre-tools
+  name: maxwell-sre-tools
+  tags:
+  - about-yml
+  - java
+spec:
+  lifecycle: production
+  owner: sre
+  system: maxwell
+  type: service
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  annotations:
+    github.com/project-slug: vend/maxwell
+  description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
+  links:
+  - icon: opensearch
+    title: Opensearch - Logs
+    url: https://opensearch.service.us-west-2.lifesupport.vendhq.com/_dashboards/app/discover#/?_a=(columns:!(_source),filters:!(),index:'logstash-*',interval:auto,query:(language:kuery,query:'source.service%20:%20maxwell'),sort:!())
+  - icon: terraform
+    title: Jump to infrastructure definition inside vend/terraform-services
+    url: https://github.com/vend/terraform-services/tree/master/env/production/us-west-2/infrastructure/services/maxwell-swiper
+  name: maxwell-swiper
+  tags:
+  - about-yml
+  - java
+spec:
+  lifecycle: production
+  owner: sre
+  system: maxwell
+  type: service
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  annotations:
+    github.com/project-slug: vend/maxwell
+  description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
+  links:
+  - icon: opensearch
+    title: Opensearch - Logs
+    url: https://opensearch.service.us-west-2.lifesupport.vendhq.com/_dashboards/app/discover#/?_a=(columns:!(_source),filters:!(),index:'logstash-*',interval:auto,query:(language:kuery,query:'source.service%20:%20maxwell'),sort:!())
+  - icon: terraform
+    title: Jump to infrastructure definition inside vend/terraform-services
+    url: https://github.com/vend/terraform-services/tree/master/env/production/us-west-2/infrastructure/services/maxwell-vend-group06
+  name: maxwell-vend-group06
+  tags:
+  - about-yml
+  - java
+spec:
+  lifecycle: production
+  owner: sre
+  system: maxwell
+  type: service
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  annotations:
+    github.com/project-slug: vend/maxwell
+  description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
+  links:
+  - icon: opensearch
+    title: Opensearch - Logs
+    url: https://opensearch.service.us-west-2.lifesupport.vendhq.com/_dashboards/app/discover#/?_a=(columns:!(_source),filters:!(),index:'logstash-*',interval:auto,query:(language:kuery,query:'source.service%20:%20maxwell'),sort:!())
+  - icon: terraform
+    title: Jump to infrastructure definition inside vend/terraform-services
+    url: https://github.com/vend/terraform-services/tree/master/env/production/us-west-2/infrastructure/services/maxwell-workflows
+  name: maxwell-workflows
+  tags:
+  - about-yml
+  - java
+spec:
+  lifecycle: production
+  owner: sre
+  system: maxwell
+  type: service
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  annotations:
+    github.com/project-slug: vend/maxwell
+  description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
+  links:
+  - icon: opensearch
+    title: Opensearch - Logs
+    url: https://opensearch.service.us-west-2.lifesupport.vendhq.com/_dashboards/app/discover#/?_a=(columns:!(_source),filters:!(),index:'logstash-*',interval:auto,query:(language:kuery,query:'source.service%20:%20maxwell'),sort:!())
+  - icon: terraform
+    title: Jump to infrastructure definition inside vend/infrastructure
+    url: https://github.com/vend/infrastructure/blob/master/production/us-west-2/vend/maxwell.tf
+  name: maxwell-vend-group01
+  tags:
+  - about-yml
+  - java
+spec:
+  lifecycle: production
+  owner: sre
+  system: maxwell
+  type: service
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  annotations:
+    github.com/project-slug: vend/maxwell
+  description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
+  links:
+  - icon: opensearch
+    title: Opensearch - Logs
+    url: https://opensearch.service.us-west-2.lifesupport.vendhq.com/_dashboards/app/discover#/?_a=(columns:!(_source),filters:!(),index:'logstash-*',interval:auto,query:(language:kuery,query:'source.service%20:%20maxwell'),sort:!())
+  - icon: terraform
+    title: Jump to infrastructure definition inside vend/infrastructure
+    url: https://github.com/vend/infrastructure/blob/master/production/us-west-2/vend/maxwell.tf
+  name: maxwell-vend-group02
+  tags:
+  - about-yml
+  - java
+spec:
+  lifecycle: production
+  owner: sre
+  system: maxwell
+  type: service
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  annotations:
+    github.com/project-slug: vend/maxwell
+  description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
+  links:
+  - icon: opensearch
+    title: Opensearch - Logs
+    url: https://opensearch.service.us-west-2.lifesupport.vendhq.com/_dashboards/app/discover#/?_a=(columns:!(_source),filters:!(),index:'logstash-*',interval:auto,query:(language:kuery,query:'source.service%20:%20maxwell'),sort:!())
+  - icon: terraform
+    title: Jump to infrastructure definition inside vend/infrastructure
+    url: https://github.com/vend/infrastructure/blob/master/production/us-west-2/vend/maxwell.tf
+  name: maxwell-vend-group03
+  tags:
+  - about-yml
+  - java
+spec:
+  lifecycle: production
+  owner: sre
+  system: maxwell
+  type: service
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  annotations:
+    github.com/project-slug: vend/maxwell
+  description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
+  links:
+  - icon: opensearch
+    title: Opensearch - Logs
+    url: https://opensearch.service.us-west-2.lifesupport.vendhq.com/_dashboards/app/discover#/?_a=(columns:!(_source),filters:!(),index:'logstash-*',interval:auto,query:(language:kuery,query:'source.service%20:%20maxwell'),sort:!())
+  - icon: terraform
+    title: Jump to infrastructure definition inside vend/infrastructure
+    url: https://github.com/vend/infrastructure/blob/master/production/us-west-2/vend/maxwell.tf
+  name: maxwell-vend-group04
+  tags:
+  - about-yml
+  - java
+spec:
+  lifecycle: production
+  owner: sre
+  system: maxwell
+  type: service
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  annotations:
+    github.com/project-slug: vend/maxwell
+  description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
+  links:
+  - icon: opensearch
+    title: Opensearch - Logs
+    url: https://opensearch.service.us-west-2.lifesupport.vendhq.com/_dashboards/app/discover#/?_a=(columns:!(_source),filters:!(),index:'logstash-*',interval:auto,query:(language:kuery,query:'source.service%20:%20maxwell'),sort:!())
+  - icon: terraform
+    title: Jump to infrastructure definition inside vend/infrastructure
+    url: https://github.com/vend/infrastructure/blob/master/production/us-west-2/vend/maxwell.tf
+  name: maxwell-vend-group05
+  tags:
+  - about-yml
+  - java
+spec:
+  lifecycle: production
+  owner: sre
+  system: maxwell
+  type: service
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  annotations:
+    github.com/project-slug: vend/maxwell
+  description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
+  links:
+  - icon: opensearch
+    title: Opensearch - Logs
+    url: https://opensearch.service.us-west-2.lifesupport.vendhq.com/_dashboards/app/discover#/?_a=(columns:!(_source),filters:!(),index:'logstash-*',interval:auto,query:(language:kuery,query:'source.service%20:%20maxwell'),sort:!())
+  - icon: terraform
+    title: Jump to infrastructure definition inside vend/infrastructure
+    url: https://github.com/vend/infrastructure/blob/master/production/us-west-2/vend/maxwell.tf
+  name: maxwell-inventory
+  tags:
+  - about-yml
+  - java
+spec:
+  lifecycle: production
+  owner: sre
+  system: maxwell
+  type: service
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  annotations:
+    github.com/project-slug: vend/maxwell
+  description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
+  links:
+  - icon: opensearch
+    title: Opensearch - Logs
+    url: https://opensearch.service.us-west-2.lifesupport.vendhq.com/_dashboards/app/discover#/?_a=(columns:!(_source),filters:!(),index:'logstash-*',interval:auto,query:(language:kuery,query:'source.service%20:%20maxwell'),sort:!())
+  - icon: terraform
+    title: Jump to infrastructure definition inside vend/infrastructure
+    url: https://github.com/vend/infrastructure/blob/master/production/us-west-2/vend/maxwell.tf
+  name: maxwell-balances
+  tags:
+  - about-yml
+  - java
+spec:
+  lifecycle: production
+  owner: sre
+  system: maxwell
+  type: service
+---
+apiVersion: backstage.io/v1beta1
+kind: System
+metadata:
+  annotations:
+    github.com/project-slug: vend/maxwell
+    travis-ci.com/repo-slug: vend/maxwell
+  description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
+  links:
+  - icon: opensearch
+    title: Opensearch - Logs
+    url: https://opensearch.service.us-west-2.lifesupport.vendhq.com/_dashboards/app/discover#/?_a=(columns:!(_source),filters:!(),index:'logstash-*',interval:auto,query:(language:kuery,query:'source.service%20:%20maxwell'),sort:!())
+  name: maxwell
+  tags:
+  - about-yml
+  - java
+spec:
+  owner: sre
