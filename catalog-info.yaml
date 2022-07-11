@@ -3,6 +3,7 @@ kind: Component
 metadata:
   annotations:
     github.com/project-slug: vend/maxwell
+    travis-ci.com/repo-slug: vend/maxwell
   description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
   links:
   - icon: opensearch
@@ -26,6 +27,7 @@ kind: Component
 metadata:
   annotations:
     github.com/project-slug: vend/maxwell
+    travis-ci.com/repo-slug: vend/maxwell
   description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
   links:
   - icon: opensearch
@@ -49,6 +51,7 @@ kind: Component
 metadata:
   annotations:
     github.com/project-slug: vend/maxwell
+    travis-ci.com/repo-slug: vend/maxwell
   description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
   links:
   - icon: opensearch
@@ -72,6 +75,7 @@ kind: Component
 metadata:
   annotations:
     github.com/project-slug: vend/maxwell
+    travis-ci.com/repo-slug: vend/maxwell
   description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
   links:
   - icon: opensearch
@@ -95,6 +99,7 @@ kind: Component
 metadata:
   annotations:
     github.com/project-slug: vend/maxwell
+    travis-ci.com/repo-slug: vend/maxwell
   description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
   links:
   - icon: opensearch
@@ -118,6 +123,7 @@ kind: Component
 metadata:
   annotations:
     github.com/project-slug: vend/maxwell
+    travis-ci.com/repo-slug: vend/maxwell
   description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
   links:
   - icon: opensearch
@@ -141,6 +147,7 @@ kind: Component
 metadata:
   annotations:
     github.com/project-slug: vend/maxwell
+    travis-ci.com/repo-slug: vend/maxwell
   description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
   links:
   - icon: opensearch
@@ -164,6 +171,7 @@ kind: Component
 metadata:
   annotations:
     github.com/project-slug: vend/maxwell
+    travis-ci.com/repo-slug: vend/maxwell
   description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
   links:
   - icon: opensearch
@@ -187,6 +195,7 @@ kind: Component
 metadata:
   annotations:
     github.com/project-slug: vend/maxwell
+    travis-ci.com/repo-slug: vend/maxwell
   description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
   links:
   - icon: opensearch
@@ -210,6 +219,7 @@ kind: Component
 metadata:
   annotations:
     github.com/project-slug: vend/maxwell
+    travis-ci.com/repo-slug: vend/maxwell
   description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
   links:
   - icon: opensearch
@@ -233,6 +243,7 @@ kind: Component
 metadata:
   annotations:
     github.com/project-slug: vend/maxwell
+    travis-ci.com/repo-slug: vend/maxwell
   description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
   links:
   - icon: opensearch
@@ -256,6 +267,7 @@ kind: Component
 metadata:
   annotations:
     github.com/project-slug: vend/maxwell
+    travis-ci.com/repo-slug: vend/maxwell
   description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
   links:
   - icon: opensearch
@@ -279,6 +291,7 @@ kind: Component
 metadata:
   annotations:
     github.com/project-slug: vend/maxwell
+    travis-ci.com/repo-slug: vend/maxwell
   description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
   links:
   - icon: opensearch
@@ -302,6 +315,7 @@ kind: Component
 metadata:
   annotations:
     github.com/project-slug: vend/maxwell
+    travis-ci.com/repo-slug: vend/maxwell
   description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
   links:
   - icon: opensearch
@@ -325,6 +339,7 @@ kind: Component
 metadata:
   annotations:
     github.com/project-slug: vend/maxwell
+    travis-ci.com/repo-slug: vend/maxwell
   description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
   links:
   - icon: opensearch
@@ -348,6 +363,7 @@ kind: Component
 metadata:
   annotations:
     github.com/project-slug: vend/maxwell
+    travis-ci.com/repo-slug: vend/maxwell
   description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
   links:
   - icon: opensearch
@@ -371,6 +387,7 @@ kind: Component
 metadata:
   annotations:
     github.com/project-slug: vend/maxwell
+    travis-ci.com/repo-slug: vend/maxwell
   description: "\U0001F528\U0001F608 Maxwell's daemon, a mysql-to-json kafka producer"
   links:
   - icon: opensearch
