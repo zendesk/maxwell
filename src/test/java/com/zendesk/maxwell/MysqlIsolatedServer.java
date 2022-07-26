@@ -113,7 +113,12 @@ public class MysqlIsolatedServer {
 
 
 		resetConnection();
-		this.connection.createStatement().executeUpdate("CREATE USER 'maxwell'@'127.0.0.1' IDENTIFIED BY 'maxwell'");
+
+		try {
+			this.connection.createStatement().executeUpdate("CREATE USER 'maxwell'@'127.0.0.1' IDENTIFIED BY 'maxwell'");
+		} catch ( SQLException e ) {
+			LOGGER.warn("Couldn't create maxwell user: " + e.getMessage());
+		}
 		this.connection.createStatement().executeUpdate("GRANT REPLICATION SLAVE on *.* to 'maxwell'@'127.0.0.1'");
 		this.connection.createStatement().executeUpdate("GRANT ALL on *.* to 'maxwell'@'127.0.0.1'");
 		this.connection.createStatement().executeUpdate("CREATE DATABASE if not exists test");
@@ -194,9 +199,9 @@ public class MysqlIsolatedServer {
 	}
 
 	public void execute(String query) throws SQLException {
-		Statement s = getConnection().createStatement();
-		s.executeUpdate(query);
-		s.close();
+		try ( Statement s = getConnection().createStatement()) {
+			s.execute(query);
+		}
 	}
 
 	private Connection cachedCX;
@@ -204,9 +209,9 @@ public class MysqlIsolatedServer {
 		if ( cachedCX == null )
 			cachedCX = getConnection();
 
-		Statement s = cachedCX.createStatement();
-		s.executeUpdate(query);
-		s.close();
+		try ( Statement s = cachedCX.createStatement() ) {
+			s.execute(query);
+		}
 	}
 
 	public void executeList(List<String> queries) throws SQLException {

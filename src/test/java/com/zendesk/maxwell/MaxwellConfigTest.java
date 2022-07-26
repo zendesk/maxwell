@@ -39,7 +39,7 @@ public class MaxwellConfigTest
 		assertNotNull(config.producerFactory);
 		assertTrue(config.producerFactory instanceof TestProducerFactory);
 	}
-	
+
 	@Test(expected = OptionException.class)
 	public void testCustomProperties() {
 		// custom properties are not supported on the command line just like 'kafka.*' properties

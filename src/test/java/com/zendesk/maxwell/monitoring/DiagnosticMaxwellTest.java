@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zendesk.maxwell.Maxwell;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.MaxwellTestWithIsolatedServer;
-import com.zendesk.maxwell.MaxwellWithContext;
 import com.zendesk.maxwell.replication.BinlogConnectorDiagnostic;
 import org.junit.After;
 import org.junit.Before;
@@ -17,6 +16,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URISyntaxException;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
 
@@ -27,6 +28,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class DiagnosticMaxwellTest extends MaxwellTestWithIsolatedServer {
+
+	private class MaxwellWithContext extends Maxwell {
+
+		public MaxwellWithContext(MaxwellContext context) throws SQLException, URISyntaxException {
+			super(context);
+		}
+
+	}
 
 	private ByteArrayOutputStream outputStream;
 	private PrintWriter writer;

@@ -16,13 +16,15 @@ while releases.any?
     prerelease = !!(r[:tag_name] =~ /-\w+$/)
     next if prerelease && r[:body].strip.empty?
     out = <<-EOL
-### [%{tag_name}](%{html_url}): %{munged_name}
+### [%{tag_name}](%{html_url})
 
 %{body}
+
+_Released %{date}_
     EOL
 
     r[:body].gsub!(/\r\n/, "\n")
-    r[:munged_name] = r[:name].gsub(/^(\S+)\s+(.*)/, '\2')
+    r[:date] = r[:created_at].to_s.split(' ').first
     puts out.strip % r
     puts
   end

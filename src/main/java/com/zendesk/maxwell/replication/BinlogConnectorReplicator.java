@@ -40,6 +40,7 @@ import java.util.regex.Pattern;
 public class BinlogConnectorReplicator extends RunLoopProcess implements Replicator, BinaryLogClient.LifecycleListener {
 	static final Logger LOGGER = LoggerFactory.getLogger(BinlogConnectorReplicator.class);
 	private static final long MAX_TX_ELEMENTS = 10000;
+	public static int BINLOG_QUEUE_SIZE = 5000;
 	public static final int BAD_BINLOG_ERROR_CODE = 1236;
 	public static final int ACCESS_DENIED_ERROR_CODE = 1227;
 
@@ -50,7 +51,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private final int replicationReconnectionRetries;
 	private BinlogConnectorEventListener binlogEventListener;
 	private BinlogConnectorLivenessMonitor binlogLivenessMonitor;
-	private final LinkedBlockingDeque<BinlogConnectorEvent> queue = new LinkedBlockingDeque<>(20);
+	private final LinkedBlockingDeque<BinlogConnectorEvent> queue;
 	private final TableCache tableCache;
 	private final Scripting scripting;
 	private ServerException lastCommError;
@@ -85,6 +86,45 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private class ClientReconnectedException extends Exception {}
 
 	public BinlogConnectorReplicator(
+			SchemaStore schemaStore,
+			AbstractProducer producer,
+			BootstrapController bootstrapper,
+			MaxwellMysqlConfig mysqlConfig,
+			Long replicaServerID,
+			String maxwellSchemaDatabaseName,
+			Metrics metrics,
+			Position start,
+			boolean stopOnEOF,
+			String clientID,
+			HeartbeatNotifier heartbeatNotifier,
+			Scripting scripting,
+			Filter filter,
+			MaxwellOutputConfig outputConfig,
+			float bufferMemoryUsage,
+			int replicationReconnectionRetries
+	) {
+		this(
+				schemaStore,
+				producer,
+				bootstrapper,
+				mysqlConfig,
+				replicaServerID,
+				maxwellSchemaDatabaseName,
+				metrics,
+				start,
+				stopOnEOF,
+				clientID,
+				heartbeatNotifier,
+				scripting,
+				filter,
+				outputConfig,
+				bufferMemoryUsage,
+				replicationReconnectionRetries,
+				BINLOG_QUEUE_SIZE
+		);
+	}
+
+	public BinlogConnectorReplicator(
 		SchemaStore schemaStore,
 		AbstractProducer producer,
 		BootstrapController bootstrapper,
@@ -100,7 +140,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		Filter filter,
 		MaxwellOutputConfig outputConfig,
 		float bufferMemoryUsage,
-		int replicationReconnectionRetries
+		int replicationReconnectionRetries,
+		int binlogEventQueueSize
 	) {
 		this.clientID = clientID;
 		this.bootstrapper = bootstrapper;
@@ -115,6 +156,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		this.filter = filter;
 		this.lastCommError = null;
 		this.bufferMemoryUsage = bufferMemoryUsage;
+		this.queue = new LinkedBlockingDeque<>(binlogEventQueueSize);
 
 		/* setup metrics */
 		rowCounter = metrics.getRegistry().counter(
@@ -449,7 +491,13 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 				// standard binlog positioning is a lot easier; we can really reconnect anywhere
 				// we like, so we don't have to bail out of the middle of an event.
 				LOGGER.warn("replicator stopped at position: {} -- restarting", client.getBinlogFilename() + ":" + client.getBinlogPosition());
+
+				Long oldMasterId = client.getMasterServerId();
 				tryReconnect();
+				if (client.getMasterServerId() != oldMasterId) {
+					throw new Exception("Master id changed from " + oldMasterId + " to " + client.getMasterServerId()
+								+ " while using binlog coordinate positioning. Cannot continue with the info that we have");
+				}
 			}
 		}
 	}
@@ -565,6 +613,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 						// We don't need to process them, just ignore
 					} else if (upperCaseSql.startsWith("DROP TEMPORARY TABLE")) {
 						// Ignore temporary table drop statements inside transactions
+					} else if ( upperCaseSql.startsWith("# DUMMY EVENT")) {
+						// MariaDB injected event
 					} else {
 						LOGGER.warn("Unhandled QueryEvent @ {} inside transaction: {}", event.getPosition().fullPosition(), qe);
 					}
@@ -591,13 +641,13 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 	/**
 	 * The main entry point into the event reading loop.
-	 *
+	 * <p>
 	 * We maintain a buffer of events in a transaction,
 	 * and each subsequent call to `getRow` can grab one from
 	 * the buffer.  If that buffer is empty, we'll go check
 	 * the open-replicator buffer for rows to process.  If that
 	 * buffer is empty, we return null.
-	 *
+	 * </p>
 	 * @return either a RowMap or null
 	 */
 	public RowMap getRow() throws Exception {

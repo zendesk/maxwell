@@ -22,3 +22,7 @@ package: depclean kafka-0.8.2.2 kafka-0.9.0.1 kafka-0.10.0.1 kafka-0.10.2.1 kafk
 
 kafka-%:
 	mvn compile -P kafka-$(*)
+
+FORCE:
+docs: FORCE
+	mvn javadoc:javadoc

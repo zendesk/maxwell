@@ -22,6 +22,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The main Maxwell class.  Instantiate and call `.run` or `.start` to start Maxwell.
+ * @see #run()
+ * @see #start()
+ */
 public class Maxwell implements Runnable {
 	protected MaxwellConfig config;
 	protected MaxwellContext context;
@@ -29,6 +34,12 @@ public class Maxwell implements Runnable {
 
 	static final Logger LOGGER = LoggerFactory.getLogger(Maxwell.class);
 
+	/**
+	 * Intialize a top level Maxwell runner
+	 * @param config Maxwell configuration
+	 * @throws SQLException If Maxwell can't connect
+	 * @throws URISyntaxException If there's a problem with the database configuration
+	 */
 	public Maxwell(MaxwellConfig config) throws SQLException, URISyntaxException {
 		this(new MaxwellContext(config));
 	}
@@ -38,6 +49,9 @@ public class Maxwell implements Runnable {
 		this.context = context;
 	}
 
+	/**
+	 * run Maxwell, catching all Exceptions.
+	 */
 	public void run() {
 		try {
 			start();
@@ -46,11 +60,18 @@ public class Maxwell implements Runnable {
 		}
 	}
 
+	/**
+	 * restarts a stopped Maxwell instance.  rebuilds all connections, threads, etc.
+	 * @throws Exception If Maxwell can't initialize its context
+	 */
 	public void restart() throws Exception {
 		this.context = new MaxwellContext(config);
 		start();
 	}
 
+	/**
+	 * Stop the currently running Maxwell
+	 */
 	public void terminate() {
 		Thread terminationThread = this.context.terminate();
 		if (terminationThread != null) {
@@ -119,6 +140,17 @@ public class Maxwell implements Runnable {
 		}
 	}
 
+	/**
+	 * Determines initial replication position
+	 * <ol>
+	 *     <li>Retrieve stored position from `maxwell`.`positons`</li>
+	 *     <li>Attempt master recovery</li>
+	 *     <li>Use previous client_id's position.  See https://github.com/zendesk/maxwell/issues/782</li>
+	 *     <li>Capture the current master position</li>
+	 * </ol>
+	 * @return Binlog position to start replicating at
+	 * @throws Exception Various SQL and IO exceptions
+	 */
 	protected Position getInitialPosition() throws Exception {
 		/* first method:  do we have a stored position for this server? */
 		Position initial = this.context.getInitialPosition();
@@ -174,10 +206,22 @@ public class Maxwell implements Runnable {
 		LOGGER.info(String.format(bootString, getMaxwellVersion(), producerName, initialPosition.toString()));
 	}
 
+	/**
+	 * Hook for subclasses to execute code after all initialization is complete,
+	 * but before replication starts.
+	 */
 	protected void onReplicatorStart() {}
+
+	/**
+	 * Hook for subclasses to execute code before termination of the instance
+	 */
 	protected void onReplicatorEnd() {}
 
 
+	/**
+	 * Start maxwell
+	 * @throws Exception If maxwell stops due to an Exception
+	 */
 	public void start() throws Exception {
 		try {
 			this.startInner();
@@ -243,7 +287,8 @@ public class Maxwell implements Runnable {
 			context.getFilter(),
 			config.outputConfig,
 			config.bufferMemoryUsage,
-			config.replicationReconnectionRetries
+			config.replicationReconnectionRetries,
+			config.binlogEventQueueSize
 		);
 
 		context.setReplicator(replicator);
@@ -260,6 +305,10 @@ public class Maxwell implements Runnable {
 	}
 
 
+	/**
+	 * The main entry point for Maxwell
+	 * @param args command line arguments
+	 */
 	public static void main(String[] args) {
 		try {
 			Logging.setupLogBridging();

@@ -8,6 +8,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+/**
+ * Class with some utility functions for querying mysql server state
+ */
 public class MaxwellMysqlStatus {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellMysqlStatus.class);
 	private Connection connection;
@@ -63,6 +66,19 @@ public class MaxwellMysqlStatus {
 		}
 	}
 
+	/**
+	 * Verify that replication is in the expected state:
+	 *
+	 * <ol>
+	 *     <li>Check that a serverID is set</li>
+	 *     <li>check that binary logging is on</li>
+	 *     <li>Check that the binlog_format is "ROW"</li>
+	 *     <li>Warn if binlog_row_image is MINIMAL</li>
+	 * </ol>
+	 * @param c a JDBC connection
+	 * @throws SQLException if the database has issues
+	 * @throws MaxwellCompatibilityError if we are not in the expected state
+	 */
 	public static void ensureReplicationMysqlState(Connection c) throws SQLException, MaxwellCompatibilityError {
 		MaxwellMysqlStatus m = new MaxwellMysqlStatus(c);
 
@@ -72,12 +88,24 @@ public class MaxwellMysqlStatus {
 		m.ensureRowImageFormat();
 	}
 
+	/**
+	 * Verify that the maxwell database is in the expected state
+	 * @param c a JDBC connection
+	 * @throws SQLException if we have database issues
+	 * @throws MaxwellCompatibilityError if we're not in the expected state
+	 */
 	public static void ensureMaxwellMysqlState(Connection c) throws SQLException, MaxwellCompatibilityError {
 		MaxwellMysqlStatus m = new MaxwellMysqlStatus(c);
 
 		m.ensureVariableState("read_only", "OFF");
 	}
 
+	/**
+	 * Verify that we can safely turn on maxwell GTID mode
+	 * @param c a JDBC connection
+	 * @throws SQLException if we have db troubles
+	 * @throws MaxwellCompatibilityError if we're not in the expected state
+	 */
 	public static void ensureGtidMysqlState(Connection c) throws SQLException, MaxwellCompatibilityError {
 		MaxwellMysqlStatus m = new MaxwellMysqlStatus(c);
 
@@ -86,6 +114,12 @@ public class MaxwellMysqlStatus {
 		m.ensureVariableState("enforce_gtid_consistency", "ON");
 	}
 
+	/**
+	 * Return an enum representing the current case sensitivity of the server
+	 * @param c a JDBC connection
+	 * @return case sensitivity
+	 * @throws SQLException if we have db troubles
+	 */
 	public static CaseSensitivity captureCaseSensitivity(Connection c) throws SQLException {
 		final int value;
 		try ( Statement stmt = c.createStatement();

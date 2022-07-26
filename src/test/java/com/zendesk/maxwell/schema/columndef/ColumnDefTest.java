@@ -469,7 +469,6 @@ public class ColumnDefTest extends TestWithNameLogging {
 
 					final boolean isFinal = Modifier.isFinal(modifiers);
 					final boolean isPrivate = Modifier.isPrivate(modifiers);
-					System.out.println("Checking " + className + "." + field.getName() + " " + isPrivate);
 
 					// check field immutability
 					if (!isFinal && !isPrivate) {

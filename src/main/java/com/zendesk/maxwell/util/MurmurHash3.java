@@ -30,7 +30,7 @@ package com.zendesk.maxwell.util;
  */
 public final class MurmurHash3 {
 
-	/** 128 bits of state */
+	/* 128 bits of state */
 	public static final class LongPair {
 		public long val1;
 		public long val2;
@@ -54,7 +54,7 @@ public final class MurmurHash3 {
 		return k;
 	}
 
-	/** Gets a long from a byte buffer in little endian byte order. */
+	/* Gets a long from a byte buffer in little endian byte order. */
 	public static final long getLongLittleEndian(byte[] buf, int offset) {
 		return     ((long)buf[offset+7]    << 56)   // no mask needed
 				| ((buf[offset+6] & 0xffL) << 48)
@@ -67,7 +67,7 @@ public final class MurmurHash3 {
 	}
 
 
-	/** Returns the MurmurHash3_x86_32 hash. */
+	/* Returns the MurmurHash3_x86_32 hash. */
 	public static int murmurhash3_x86_32(byte[] data, int offset, int len, int seed) {
 
 		final int c1 = 0xcc9e2d51;
@@ -120,7 +120,7 @@ public final class MurmurHash3 {
 	}
 
 
-	/** Returns the MurmurHash3_x86_32 hash of the UTF-8 bytes of the String without actually encoding
+	/* Returns the MurmurHash3_x86_32 hash of the UTF-8 bytes of the String without actually encoding
 	 * the string to a temporary buffer.  This is more than 2x faster than hashing the result
 	 * of String.getBytes().
 	 */
@@ -243,7 +243,7 @@ public final class MurmurHash3 {
 	}
 
 
-	/** Returns the MurmurHash3_x64_128 hash, placing the result in "out". */
+	/* Returns the MurmurHash3_x64_128 hash, placing the result in "out". */
 	public static void murmurhash3_x64_128(byte[] key, int offset, int len, int seed, LongPair out) {
 		// The original algorithm does have a 32 bit unsigned seed.
 		// We have to mask to match the behavior of the unsigned types and prevent sign extension.

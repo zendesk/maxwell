@@ -8,6 +8,7 @@ nav:
   - 'Quick Start': 'quickstart.md'
   - 'Configuration':
     - 'Reference': 'config.md'
+    - 'Deployment': 'deployment.md'
     - 'Producers': 'producers.md'
     - 'Filtering': 'filtering.md'
     - 'Bootstrapping': 'bootstrapping.md'

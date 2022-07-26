@@ -1,8 +1,7 @@
 # Reference
 ***
 
-At the minimum, you will need to specify 'host', 'user', 'password', 'producer'.
-The kafka producer requires 'kafka.bootstrap.servers', the kinesis producer requires 'kinesis_stream'.
+Configuration options are set either via command line or the "config.properties" file. 
 
 ##general
 
@@ -78,17 +77,22 @@ kafka_partition_hash           | [ default &#124; murmur3 ]          | hash func
 kafka_key_format               | [ array &#124; hash ]               | how maxwell outputs kafka keys, either a hash or an array of hashes | hash
 ddl_kafka_topic                | STRING                              | if output_ddl is true, kafka topic to write DDL changes to | *kafka_topic*
 
+_See also:_ [Kafka Producer Documentation](/producers#kafka)
+
 
 ## kinesis producer
 option                         | argument                            | description                                         | default
 -------------------------------|-------------------------------------| --------------------------------------------------- | -------
 kinesis_stream                 | STRING                              | kinesis stream name |
 
+_See also:_ [Kinesis Producer Documentation](/producers#kinesis)
 
 ## sqs producer
 option                         | argument                            | description                                         | default
 -------------------------------|-------------------------------------| --------------------------------------------------- | -------
 sqs_queue_uri                  | STRING                              | SQS Queue URI |
+
+_See also:_ [SQS Producer Documentation](/producers#sqs)
 
 ## sns producer 
 option                         | argument                            | description                                         | default
@@ -96,11 +100,15 @@ option                         | argument                            | descripti
 sns_topic                      | STRING                              | The SNS topic to publish to. FIFO topics should end with `.fifo` |
 sns_attrs                      | STRING                              | Properties to set as attributes on the SNS message  |  
 
+_See also:_ [SNS Producer Documentation](/producers#sns)
+
 ## nats producer
 option                         | argument                            | description                                         | default
 -------------------------------|-------------------------------------| --------------------------------------------------- | -------
 nats_url                       | STRING     | Comma separated list of nats urls.  may include [user:password style auth](https://docs.nats.io/developing-with-nats/security/userpass#connecting-with-a-user-password-in-the-url) | nats://localhost:4222
 nats_subject                   | STRING     | Nats subject hierarchy.  [Topic substitution](/producers/#topic-substitution) available. | `%{database}.%{table}`
+
+_See also:_ [Nats Producer Documentation](/producers#nats)
 
 ## pubsub producer
 option                         | argument                            | description                                         | default
@@ -119,6 +127,8 @@ pubsub_rpc_timeout_multiplier  | FLOAT      | Controls the change in RPC timeout
 pubsub_max_rpc_timeout         | LONG       | Puts a limit on the value in seconds of the RPC timeout | 600
 pubsub_total_timeout           | LONG       | Puts a limit on the value in seconds of the retry delay, so that the RetryDelayMultiplier can't increase the retry delay higher than this amount | 600
 
+_See also:_ [PubSub Producer Documentation](/producers#google-cloud-pubsub)
+
 ## rabbitmq producer
 option                         | argument                            | description                                         | default
 -------------------------------|-------------------------------------| --------------------------------------------------- | -------
@@ -135,6 +145,8 @@ rabbitmq_routing_key_template  | STRING     | A string template for the routing 
 rabbitmq_message_persistent    | BOOLEAN    | Eanble message persistence. | false
 rabbitmq_declare_exchange      | BOOLEAN    | Should declare the exchange for rabbitmq publisher | true
 
+_See also:_ [RabbitMQ Producer Documentation](/producers#rabbitmq)
+
 ## redis producer
 option                         | argument                            | description                                         | default
 -------------------------------|-------------------------------------| --------------------------------------------------- | -------
@@ -147,6 +159,8 @@ redis_key                      | STRING                   | Redis channel/key fo
 redis_stream_json_key          | STRING                   | Redis XADD Stream Message Field Name | message
 redis_sentinels                | STRING                   | Redis sentinels list in format host1:port1,host2:port2,host3:port3... Must be only used with redis_sentinel_master_name
 redis_sentinel_master_name     | STRING                   | Redis sentinel master name. Must be only used with redis_sentinels
+
+_See also:_ [Redis Producer Documentation](/producers#redis)
 
 
 # formatting
@@ -173,6 +187,8 @@ option                         | argument                            | descripti
 -------------------------------|-------------------------------------| --------------------------------------------------- | -------
 filter                         | STRING            | filter rules, eg `exclude: db.*, include: *.tbl, include: *./bar(bar)?/, exclude: foo.bar.col=val` |
 
+_See also:_ [filtering](/filtering)
+
 # encryption
 option                         | argument                            | description                                         | default
 -------------------------------|-------------------------------------| --------------------------------------------------- | -------
@@ -185,6 +201,8 @@ option                         | argument                            | descripti
 ha                             |                                     | enable maxwell client HA                            |
 jgroups_config                 | string                              | location of xml configuration file for jGroups      | $PWD/raft.xml
 raft_member_id                 | string                              | uniquely identify this node within jgroups-raft cluster |
+
+_See also:_ [High Availability](/high_availability)
 
 # monitoring / metrics
 option                         | argument                            | description                                         | default
@@ -207,14 +225,17 @@ metrics_datadog_site     | STRING | the site to publish metrics to when metrics_
 metrics_datadog_host     | STRING | the host to publish metrics to when metrics_datadog_type = `udp` | localhost
 metrics_datadog_port     | INT | the port to publish metrics to when metrics_datadog_type = `udp` | 8125
 
+_See also:_ [Monitoring](/monitoring)
+
 # misc
 option                         | argument                            | description                                         | default
 -------------------------------|-------------------------------------| --------------------------------------------------- | -------
-bootstrapper                   | [async &#124; sync &#124; none]                   | bootstrapper type.  See bootstrapping docs.        | async
+bootstrapper                   | [async &#124; sync &#124; none]                   | bootstrapper type.  See [bootstrapping docs](/bootstrapping).        | async
 init_position                  | FILE:POSITION[:HEARTBEAT]           | ignore the information in maxwell.positions and start at the given binlog position. Not available in config.properties. |
 replay                         | BOOLEAN                             | enable maxwell's read-only "replay" mode: don't store a binlog position or schema changes.  Not available in config.properties. |
 buffer_memory_usage            | FLOAT                               | Determines how much memory the Maxwell event buffer will use from the jvm max memory. Size of the buffer is: buffer_memory_usage * -Xmx" | 0.25
 http_config                    | BOOLEAN                             | enable http config endpoint for config updates without restart | false
+binlog_event_queue_size        | INT                                 | Size of queue to buffer events parsed from binlog   | 5000
 
 
 <p id="loglevel" class="jumptarget">
@@ -289,79 +310,4 @@ A get request will return the live config state
 }
 ```
 
-### Deployment scenarios
-***
-
-At a minimum, Maxwell needs row-level-replication turned on into order to
-operate:
-
-```
-[mysqld]
-server_id=1
-log-bin=master
-binlog_format=row
-```
-
-#### GTID support
-As of 1.8.0, Maxwell contains support for
-[GTID-based replication](https://dev.mysql.com/doc/refman/5.6/en/replication-gtids.html).
-Enable it with the `--gtid_mode` configuration param.
-
-Here's how you might configure your mysql server for GTID mode:
-
-```
-$ vi my.cnf
-
-[mysqld]
-server_id=1
-log-bin=master
-binlog_format=row
-gtid-mode=ON
-log-slave-updates=ON
-enforce-gtid-consistency=true
-```
-
-When in GTID-mode, Maxwell will transparently pick up a new replication
-position after a master change.  Note that you will still have to re-point
-maxwell to the new master.
-
-GTID support in Maxwell is considered beta-quality at the moment; notably,
-Maxwell is unable to transparently upgrade from a traditional-replication
-scenario to a GTID-replication scenario; currently, when you enable gtid mode
-Maxwell will recapture the schema and GTID-position from "wherever the master
-is at".
-
-
-#### RDS configuration
-To run Maxwell against RDS, (either Aurora or Mysql) you will need to do the following:
-
-- set binlog_format to "ROW".  Do this in the "parameter groups" section.  For a Mysql-RDS instance this parameter will be
-  in a "DB Parameter Group", for Aurora it will be in a "DB Cluster Parameter Group".
-- setup RDS binlog retention as described [here](http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.Concepts.MySQL.html).
-  The tl;dr is to execute `call mysql.rds_set_configuration('binlog retention hours', 24)` on the server.
-
-#### Split server roles
-
-Maxwell uses MySQL for 3 different functions:
-
-1. A host to store the captured schema in (`--host`).
-2. A host to replicate from (`--replication_host`).
-3. A host to capture the schema from (`--schema_host`).
-
-Often, all three hosts are the same.  `host` and `replication_host` should be different
-if maxwell is chained off a replica.  `schema_host` should only be used when using the
-maxscale replication proxy.
-
-#### Multiple Maxwell Instances
-
-Maxwell can operate with multiple instances running against a single master, in
-different configurations.  This can be useful if you wish to have producers
-running in different configurations, for example producing different groups of
-tables to different topics.  Each instance of Maxwell must be configured with a
-unique `client_id`, in order to store unique binlog positions.
-
-With MySQL 5.5 and below, each replicator (be it mysql, maxwell, whatever) must
-also be configured with a unique `replica_server_id`.  This is a 32-bit integer
-that corresponds to mysql's `server_id` parameter.  The value you configure
-should be unique across all mysql and maxwell instances.
 

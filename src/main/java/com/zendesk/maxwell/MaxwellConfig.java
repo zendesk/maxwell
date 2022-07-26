@@ -9,159 +9,581 @@ import com.zendesk.maxwell.monitoring.MaxwellDiagnosticContext;
 import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.producer.ProducerFactory;
+import com.zendesk.maxwell.replication.BinlogConnectorReplicator;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.scripting.Scripting;
 import com.zendesk.maxwell.util.AbstractConfig;
 import com.zendesk.maxwell.util.MaxwellOptionParser;
 import joptsimple.OptionSet;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.threeten.bp.Duration;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.regex.Pattern;
 
+/**
+ * Configuration object for Maxwell
+ */
 public class MaxwellConfig extends AbstractConfig {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellConfig.class);
 
+	/**
+	 * String that describes an environment key that, if set, will enable Maxwell's GTID mode
+	 * <p>
+	 *     Primarily used for test environment setup.
+	 * </p>
+	 */
 	public static final String GTID_MODE_ENV = "GTID_MODE";
 
+	/**
+	 * If non-null, specify a mysql to replicate from.<br>
+	 * If non, fallback to {@link #maxwellMysql}
+	 */
 	public MaxwellMysqlConfig replicationMysql;
-	public MaxwellMysqlConfig schemaMysql;
 
-	public MaxwellMysqlConfig maxwellMysql;
-	public Filter filter;
-	public Boolean gtidMode;
-
-	public String databaseName;
-
-	public String includeDatabases, excludeDatabases, includeTables, excludeTables, excludeColumns, blacklistDatabases, blacklistTables, includeColumnValues;
-	public String filterList;
-
-	public ProducerFactory producerFactory; // producerFactory has precedence over producerType
-	public final Properties customProducerProperties;
-	public String producerType;
-
-	public final Properties kafkaProperties;
-	public String kafkaTopic;
-	public String deadLetterTopic;
-	public String ddlKafkaTopic;
-	public String kafkaKeyFormat;
-	public String kafkaPartitionHash;
-	public String kafkaPartitionKey;
-	public String kafkaPartitionColumns;
-	public String kafkaPartitionFallback;
-	public String bootstrapperType;
-	public int bufferedProducerSize;
-
-	public String producerPartitionKey;
-	public String producerPartitionColumns;
-	public String producerPartitionFallback;
-
-	public String kinesisStream;
-	public boolean kinesisMd5Keys;
-
-	public String sqsQueueUri;
-
-	public String snsTopic;
-	public String snsAttrs;
-
-	public String pubsubProjectId;
-	public String pubsubTopic;
-	public String ddlPubsubTopic;
-	public Long pubsubRequestBytesThreshold;
-	public Long pubsubMessageCountBatchSize;
-	public Duration pubsubPublishDelayThreshold;
-	public Duration pubsubRetryDelay;
-	public Double pubsubRetryDelayMultiplier;
-	public Duration pubsubMaxRetryDelay;
-	public Duration pubsubInitialRpcTimeout;
-	public Double pubsubRpcTimeoutMultiplier;
-	public Duration pubsubMaxRpcTimeout;
-	public Duration pubsubTotalTimeout;
-
-	public Long producerAckTimeout;
-
-	public String outputFile;
-	public MaxwellOutputConfig outputConfig;
-	public String log_level;
-
-	public MetricRegistry metricRegistry;
-	public HealthCheckRegistry healthCheckRegistry;
-
-	public int httpPort;
-	public String httpBindAddress;
-	public String httpPathPrefix;
-	public String metricsPrefix;
-	public String metricsReportingType;
-	public Long metricsSlf4jInterval;
-	public String metricsDatadogType;
-	public String metricsDatadogTags;
-	public String metricsDatadogAPIKey;
-	public String metricsDatadogSite;
-	public String metricsDatadogHost;
-	public int metricsDatadogPort;
-	public Long metricsDatadogInterval;
-	public boolean metricsJvm;
-	public int metricsAgeSlo;
-
-	public MaxwellDiagnosticContext.Config diagnosticConfig;
-
-	public boolean enableHttpConfig;
-
-	public String clientID;
-	public Long replicaServerID;
-
-	public Position initPosition;
-	public boolean replayMode;
-	public boolean masterRecovery;
-	public boolean ignoreProducerError;
-	public boolean recaptureSchema;
-	public float bufferMemoryUsage;
-	public Integer maxSchemaDeltas;
-
-	public String rabbitmqUser;
-	public String rabbitmqPass;
-	public String rabbitmqHost;
-	public Integer rabbitmqPort;
-	public String rabbitmqVirtualHost;
-	public String rabbitmqURI;
-	public String rabbitmqExchange;
-	public String rabbitmqExchangeType;
-	public boolean rabbitMqExchangeDurable;
-	public boolean rabbitMqExchangeAutoDelete;
-	public String rabbitmqRoutingKeyTemplate;
-	public boolean rabbitmqMessagePersistent;
-	public boolean rabbitmqDeclareExchange;
-
-	public String natsUrl;
-	public String natsSubject;
-
-	public String redisHost;
-	public int redisPort;
-	public String redisAuth;
-	public int redisDatabase;
-	public String redisKey;
-	public String redisStreamJsonKey;
-	public String redisSentinels;
-	public String redisSentinelMasterName;
-
-	public String redisPubChannel;
-	public String redisListKey;
-	public String redisStreamKey;
-
-	public String redisType;
-	public String javascriptFile;
-	public Scripting scripting;
-
-	public boolean haMode;
-	public String jgroupsConf;
-	public String raftMemberID;
+	/**
+	 * Number of times to attempt connecting the replicator before giving up
+	 */
 	public int replicationReconnectionRetries;
 
+	/**
+	 * If non-null, specify a mysql server to capture schema from
+	 * If non, fallback to {@link #maxwellMysql}
+	 */
+	public MaxwellMysqlConfig schemaMysql;
+
+	/**
+	 * Specify a "root" maxwell server
+	 */
+	public MaxwellMysqlConfig maxwellMysql;
+
+	/**
+	 * Configuration for including/excluding rows
+	 */
+	public Filter filter;
+
+	/**
+	 * Attempt to use Mysql GTIDs to keep track of position
+	 */
+	public Boolean gtidMode;
+
+	/**
+	 * Name of database in which to store maxwell data (default `maxwell`)
+	 */
+	public String databaseName;
+
+	/**
+	 * filter out these columns
+	 */
+	public String excludeColumns;
+
+	/**
+	 * Maxwell filters
+	 */
+	public String filterList;
+
+	/**
+	 * If non-null, generate a producer with this factory
+	 */
+	public ProducerFactory producerFactory; // producerFactory has precedence over producerType
+
+	/**
+	 * Available to customer producers for configuration.
+	 * Setup with all properties prefixed `customer_producer.`
+	 */
+	public final Properties customProducerProperties;
+
+	/**
+	 * String describing desired producer type: "kafka", "kinesis", etc.
+	 */
+	public String producerType;
+
+	/**
+	 * Properties object containing all configuration options beginning with "kafka."
+	 */
+	public final Properties kafkaProperties;
+
+	/**
+	 * Main kafka topic to produce to
+	 */
+	public String kafkaTopic;
+
+	/**
+	 * Kafka topic to send undeliverable rows to
+	 */
+	public String deadLetterTopic;
+
+	/**
+	 * Kafka topic to send schema changes (DDL) to
+	 */
+	public String ddlKafkaTopic;
+
+	/**
+	 * "hash" or "array" -- defines format of kafka key
+	 */
+	public String kafkaKeyFormat;
+
+	/**
+	 * "default" or "murmur3", defines partition-choice hash function
+	 */
+	public String kafkaPartitionHash;
+
+	/**
+	 * "async" or "sync", describes bootstrapping behavior
+	 */
+	public String bootstrapperType;
+
+	/**
+	 * size of queue for buffered producer
+	 */
+	public int bufferedProducerSize;
+
+	/**
+	 * database|table|primary_key|transaction_id|column|random<br>
+	 * Input for partition choice function
+	 */
+	public String producerPartitionKey;
+
+	/**
+	 * when producerPartitionKey is "column", list of columns to partition by
+	 */
+	public String producerPartitionColumns;
+
+	/**
+	 * when producerPartitionKey is "column", database|table|primary_key to fall back to<br>
+	 * (when column is unavailable)
+	 */
+	public String producerPartitionFallback;
+
+	/**
+	 * Kinesis stream name
+	 */
+	public String kinesisStream;
+
+	/**
+	 * If true, pass key through {@link DigestUtils#md5Hex} before sending to Kinesis.<br>
+	 * Limits the size of the kinesis key, iirc.
+	 */
+	public boolean kinesisMd5Keys;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellSQSProducer} Queue URI
+	 */
+	public String sqsQueueUri;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellSQSProducer} topic
+	 */
+	public String snsTopic;
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellSQSProducer}
+	 * ["table"|"database"] -- if set, interpolate either/or table / database into the message
+	 */
+	public String snsAttrs;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} project id
+	 */
+	public String pubsubProjectId;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} topic
+	 */
+	public String pubsubTopic;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} DDL topic
+	 */
+	public String ddlPubsubTopic;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} bytes request threshold
+	 */
+	public Long pubsubRequestBytesThreshold;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} message count batch size
+	 */
+	public Long pubsubMessageCountBatchSize;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} publish delay threshold
+	 */
+	public Duration pubsubPublishDelayThreshold;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} retry delay
+	 */
+	public Duration pubsubRetryDelay;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} retry delay multiplier
+	 */
+	public Double pubsubRetryDelayMultiplier;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} max retry delay
+	 */
+	public Duration pubsubMaxRetryDelay;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} initial RPC timeout
+	 */
+	public Duration pubsubInitialRpcTimeout;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} RPC timeout multiplier
+	 */
+	public Double pubsubRpcTimeoutMultiplier;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} max RPC timeout
+	 */
+	public Duration pubsubMaxRpcTimeout;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} total timeout
+	 */
+	public Duration pubsubTotalTimeout;
+
+	/**
+	 * Used in all producers deriving from {@link com.zendesk.maxwell.producer.AbstractAsyncProducer}.<br>
+	 * In milliseconds, time a message can spend in the {@link com.zendesk.maxwell.producer.InflightMessageList}
+	 * without server acknowledgement before being considered lost.
+	 */
+	public Long producerAckTimeout;
+
+	/**
+	 * output file path for the {@link com.zendesk.maxwell.producer.FileProducer}
+	 */
+	public String outputFile;
+
+	/**
+	 * Controls output features and formats
+	 */
+	public MaxwellOutputConfig outputConfig;
+
+	/**
+	 * string representation of java log level
+	 */
+	public String log_level;
+
+	/**
+	 * container for maxwell metric collection
+	 */
+	public MetricRegistry metricRegistry;
+
+	/**
+	 * container for maxwell health checks
+	 */
+	public HealthCheckRegistry healthCheckRegistry;
+
+	/**
+	 * http port for metrics/admin server
+	 */
+	public int httpPort;
+
+	/**
+	 * bind adress for metrics/admin server
+	 */
+	public String httpBindAddress;
+
+	/**
+	 * path prefix for metrics/admin server
+	 */
+	public String httpPathPrefix;
+
+	/**
+	 * path prefix for metrics server
+	 */
+	public String metricsPrefix;
+
+	/**
+	 * string describing how to report metrics.
+	 */
+	public String metricsReportingType;
+
+	/**
+	 * for slf4j metrics reporter, how often to report
+	 */
+	public Long metricsSlf4jInterval;
+
+	/**
+	 * How to report metrics to datadog, either "udp" or "http"
+	 */
+	public String metricsDatadogType;
+
+	/**
+	 * list of additional tags to send to datadog, as tag:value,tag:value
+	 */
+	public String metricsDatadogTags;
+
+	/**
+	 * datadog apikey used when reporting type is http
+	 */
+	public String metricsDatadogAPIKey;
+
+	/**
+	 * "us" or "eu"
+	 */
+	public String metricsDatadogSite;
+
+	/**
+	 * host to send UDP DD metrics to
+	 */
+	public String metricsDatadogHost;
+
+	/**
+	 * port to send UDP DD metrics to
+	 */
+	public int metricsDatadogPort;
+
+	/**
+	 * time in seconds between datadog metrics pushes
+	 */
+	public Long metricsDatadogInterval;
+
+	/**
+	 * whether to report JVM metrics
+	 */
+	public boolean metricsJvm;
+
+	/**
+	 * time in seconds before incrementing the "slo_violation" metric
+	 */
+	public int metricsAgeSlo;
+
+	/**
+	 * configuration for maxwell http diagnostic endpoint
+	 */
+	public MaxwellDiagnosticContext.Config diagnosticConfig;
+
+	/**
+	 * whether to enable reconfiguration via http endpoint
+	 * <p>
+	 *     For the moment this endpoint only allows changing of filters in runtime
+	 * </p>
+	 */
+	public boolean enableHttpConfig;
+
+	/**
+	 * String that uniquely identifies this instance of maxwell
+	 */
+	public String clientID;
+
+	/**
+	 * integer that maxwell will report to the server as its "server_id".
+	 * <p>
+	 *   Must be unique within the cluster.
+	 * </p>
+	 */
+	public Long replicaServerID;
+
+	/**
+	 * Override Maxwell's stored starting position
+	 */
+	public Position initPosition;
+
+	/**
+	 * If true, Maxwell plays events but otherwise stores no schema changes or position changes
+	 */
+	public boolean replayMode;
+
+	/**
+	 * Enable non-GTID master recovery code
+	 */
+	public boolean masterRecovery;
+
+	/**
+	 * If true, continue on certain producer errors.  Otherwise crash.
+	 */
+	public boolean ignoreProducerError;
+
+	/**
+	 * Force a new schema capture upon startup.  dangerous.
+	 */
+	public boolean recaptureSchema;
+
+	/**
+	 * float between 0 and 1, defines percentage of JVM memory to use buffering rows.
+	 * <p>
+	 *     actual formula is given as bufferMemoryUsage * Runtime.getRuntime().maxMemory().
+	 * </p>
+	 */
+	public float bufferMemoryUsage;
+
+	/**
+	 * How many schema "deltas" are kept live before a schema compaction is triggered.
+	 * @see com.zendesk.maxwell.schema.MysqlSchemaCompactor
+	 */
+	public Integer maxSchemaDeltas;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} username
+	 */
+	public String rabbitmqUser;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} password
+	 */
+	public String rabbitmqPass;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} host
+	 */
+	public String rabbitmqHost;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} port
+	 */
+	public Integer rabbitmqPort;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} virtual host
+	 */
+	public String rabbitmqVirtualHost;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} url (alternative to other configuration settings)
+	 */
+	public String rabbitmqURI;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} exchange
+	 */
+	public String rabbitmqExchange;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} exchange type
+	 */
+	public String rabbitmqExchangeType;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} exchange durability
+	 */
+	public boolean rabbitMqExchangeDurable;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} exchange audo deletion
+	 */
+	public boolean rabbitMqExchangeAutoDelete;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} routing key template
+	 */
+	public String rabbitmqRoutingKeyTemplate;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} message persistence
+	 */
+	public boolean rabbitmqMessagePersistent;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} declare exchange
+	 */
+	public boolean rabbitmqDeclareExchange;
+
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.NatsProducer} URL
+	 */
+	public String natsUrl;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.NatsProducer} Message Subject
+	 */
+	public String natsSubject;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellRedisProducer} host
+	 */
+	public String redisHost;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellRedisProducer} port
+	 */
+	public int redisPort;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellRedisProducer} password
+	 */
+	public String redisAuth;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellRedisProducer} database
+	 */
+	public int redisDatabase;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellRedisProducer} key
+	 */
+	public String redisKey;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellRedisProducer} JSON key for XADD
+	 * <p>
+	 *     when XADD is used, the event is embedded as a JSON string
+	 *     inside a field named this.  defaults to 'message'
+	 * </p>
+	 */
+	public String redisStreamJsonKey;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellRedisProducer} comma seperated list of redis sentials
+	 */
+	public String redisSentinels;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellRedisProducer} name of master redis sentinel
+	 */
+	public String redisSentinelMasterName;
+
+	/**
+	 * type of redis operation to perform: XADD, LPUSH, RPUSH, PUBSUB
+	 */
+	public String redisType;
+
+	/**
+	 * path to file containing javascript filtering functions
+	 */
+	public String javascriptFile;
+
+	/**
+	 * Instantiated by {@link #validate()}.  Should be moved to MaxwellContext.
+	 */
+	public Scripting scripting;
+
+	/**
+	 * Enable high available support (via jgroups-raft)
+	 */
+	public boolean haMode;
+
+	/**
+	 * Path to raft.xml file that configures high availability support
+	 */
+	public String jgroupsConf;
+
+	/**
+	 * Defines membership within a HA cluster
+	 */
+	public String raftMemberID;
+
+	/**
+	 * The size for the queue used to buffer events parsed off binlog in
+	 * {@link com.zendesk.maxwell.replication.BinlogConnectorReplicator}
+	 */
+	public int binlogEventQueueSize;
+
+	/**
+	 * Build a default configuration object.
+	 */
 	public MaxwellConfig() { // argv is only null in tests
 		this.customProducerProperties = new Properties();
 		this.kafkaProperties = new Properties();
@@ -176,6 +598,10 @@ public class MaxwellConfig extends AbstractConfig {
 		setup(null, null); // setup defaults
 	}
 
+	/**
+	 * build a configuration instance from command line arguments
+	 * @param argv command line arguments
+	 */
 	public MaxwellConfig(String argv[]) {
 		this();
 		this.parse(argv);
@@ -295,6 +721,8 @@ public class MaxwellConfig extends AbstractConfig {
 				.withOptionalArg().ofType(Boolean.class);
 		parser.accepts( "buffer_memory_usage", "Percentage of JVM memory available for transaction buffer.  Floating point between 0 and 1." )
 				.withRequiredArg().ofType(Float.class);
+		parser.accepts("binlog_event_queue_size", "Size of queue to buffer events parsed from binlog.")
+				.withOptionalArg().ofType(Integer.class);
 
 		parser.section( "custom_producer" );
 		parser.accepts( "custom_producer.factory", "fully qualified custom producer factory class" )
@@ -333,23 +761,24 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "dead_letter_topic", "write to this topic when unable to publish a row for known reasons (eg message is too big)" )
 				.withRequiredArg();
 
-		parser.accepts( "kafka_partition_by", "[deprecated]").withRequiredArg();
-		parser.accepts( "kafka_partition_columns", "[deprecated]").withRequiredArg();
-		parser.accepts( "kafka_partition_by_fallback", "[deprecated]").withRequiredArg();
-
 		parser.accepts( "ddl_kafka_topic", "public DDL (schema change) events to this topic. default: kafka_topic ( see also --output_ddl )" )
 				.withRequiredArg();
 
 		parser.section( "kinesis" );
 		parser.accepts( "kinesis_stream", "kinesis stream name" )
 				.withOptionalArg();
+
+		parser.section("sqs");
 		parser.accepts( "sqs_queue_uri", "SQS Queue uri" )
 				.withRequiredArg();
+
+		parser.section("sns");
 		parser.accepts("sns_topic", "SNS Topic ARN")
 				.withRequiredArg();
-		parser.accepts("sns_attrs", "Fields to add as message attributes")
+		parser.accepts("sns_attrs", "Comma separated fields to add as message attributes: \"database, table\"")
 				.withOptionalArg();
 		parser.separator();
+
 		parser.addToSection("producer_partition_by");
 		parser.addToSection("producer_partition_columns");
 		parser.addToSection("producer_partition_by_fallback");
@@ -427,16 +856,8 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.section( "filtering" );
 
-		parser.accepts( "include_dbs", "[deprecated]" ).withRequiredArg();
-		parser.accepts( "exclude_dbs", "[deprecated]" ).withRequiredArg();
-		parser.accepts( "include_tables", "[deprecated]" ).withRequiredArg();
-		parser.accepts( "exclude_tables", "[deprecated]" ).withRequiredArg();
-		parser.accepts( "blacklist_dbs", "[deprecated]" ).withRequiredArg();
-		parser.accepts( "blacklist_tables", "[deprecated]" ).withRequiredArg();
-
 		parser.accepts( "filter", "filter specs.  specify like \"include:db.*, exclude:*.tbl, include: foo./.*bar$/, exclude:foo.bar.baz=reject\"").withRequiredArg();
 
-		parser.accepts( "include_column_values", "[deprecated]" ).withRequiredArg();
 		parser.accepts( "javascript", "file containing per-row javascript to execute" ).withRequiredArg();
 
 		parser.section( "rabbitmq" );
@@ -466,10 +887,6 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "redis_stream_json_key", "Redis Stream message field name for JSON message body" ).withRequiredArg();
 		parser.accepts("redis_sentinels", "List of Redis sentinels in format host1:port1,host2:port2,host3:port3. It can be used instead of redis_host and redis_port" ).withRequiredArg();
 		parser.accepts("redis_sentinel_master_name", "Redis sentinel master name. It is used with redis_sentinels" ).withRequiredArg();
-
-		parser.accepts( "redis_pub_channel", "[deprecated]" ).withRequiredArg();
-		parser.accepts( "redis_stream_key", "[deprecated]" ).withRequiredArg();
-		parser.accepts( "redis_list_key", "[deprecated]" ).withRequiredArg();
 
 		parser.section("metrics");
 
@@ -573,9 +990,6 @@ public class MaxwellConfig extends AbstractConfig {
 		this.kafkaTopic         	= fetchStringOption("kafka_topic", options, properties, "maxwell");
 		this.deadLetterTopic        = fetchStringOption("dead_letter_topic", options, properties, null);
 		this.kafkaKeyFormat     	= fetchStringOption("kafka_key_format", options, properties, "hash");
-		this.kafkaPartitionKey  	= fetchStringOption("kafka_partition_by", options, properties, null);
-		this.kafkaPartitionColumns  = fetchStringOption("kafka_partition_columns", options, properties, null);
-		this.kafkaPartitionFallback = fetchStringOption("kafka_partition_by_fallback", options, properties, null);
 
 		this.kafkaPartitionHash 	= fetchStringOption("kafka_partition_hash", options, properties, "default");
 		this.ddlKafkaTopic 		    = fetchStringOption("ddl_kafka_topic", options, properties, this.kafkaTopic);
@@ -622,11 +1036,6 @@ public class MaxwellConfig extends AbstractConfig {
 		this.redisSentinels = fetchStringOption("redis_sentinels", options, properties, null);
 		this.redisSentinelMasterName = fetchStringOption("redis_sentinel_master_name", options, properties, null);
 
-		// deprecated options
-		this.redisPubChannel = fetchStringOption("redis_pub_channel", options, properties, null);
-		this.redisListKey               = fetchStringOption("redis_list_key", options, properties, null);
-		this.redisStreamKey             = fetchStringOption("redis_stream_key", options, properties, null);
-
 		this.redisType			= fetchStringOption("redis_type", options, properties, "pubsub");
 
 		String kafkaBootstrapServers = fetchStringOption("kafka.bootstrap.servers", options, properties, null);
@@ -638,6 +1047,8 @@ public class MaxwellConfig extends AbstractConfig {
 				String k = (String) e.nextElement();
 				if (k.startsWith("custom_producer.")) {
 					this.customProducerProperties.setProperty(k.replace("custom_producer.", ""), properties.getProperty(k));
+				} else if (k.startsWith("custom_producer_")) {
+					this.customProducerProperties.setProperty(k.replace("custom_producer_", ""), properties.getProperty(k));
 				} else if (k.startsWith("kafka.")) {
 					if (k.equals("kafka.bootstrap.servers") && kafkaBootstrapServers != null)
 						continue; // don't override command line bootstrap servers with config files'
@@ -687,14 +1098,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.enableHttpConfig = fetchBooleanOption("http_config", options, properties, false);
 
-		this.includeDatabases    = fetchStringOption("include_dbs", options, properties, null);
-		this.excludeDatabases    = fetchStringOption("exclude_dbs", options, properties, null);
-		this.includeTables       = fetchStringOption("include_tables", options, properties, null);
-		this.excludeTables       = fetchStringOption("exclude_tables", options, properties, null);
-		this.blacklistDatabases  = fetchStringOption("blacklist_dbs", options, properties, null);
-		this.blacklistTables     = fetchStringOption("blacklist_tables", options, properties, null);
 		this.filterList          = fetchStringOption("filter", options, properties, null);
-		this.includeColumnValues = fetchStringOption("include_column_values", options, properties, null);
 
 		setupInitPosition(options);
 
@@ -728,6 +1132,8 @@ public class MaxwellConfig extends AbstractConfig {
 		this.jgroupsConf = fetchStringOption("jgroups_config", options, properties, "raft.xml");
 		this.raftMemberID = fetchStringOption("raft_member_id", options, properties, null);
 		this.replicationReconnectionRetries = fetchIntegerOption("replication_reconnection_retries", options, properties, 1);
+
+		this.binlogEventQueueSize = fetchIntegerOption("binlog_event_queue_size", options, properties, BinlogConnectorReplicator.BINLOG_QUEUE_SIZE);
 	}
 
 	private void setupEncryptionOptions(OptionSet options, Properties properties) {
@@ -790,21 +1196,6 @@ public class MaxwellConfig extends AbstractConfig {
 	}
 
 	private void validatePartitionBy() {
-		if ( this.producerPartitionKey == null && this.kafkaPartitionKey != null ) {
-			LOGGER.warn("kafka_partition_by is deprecated, please use producer_partition_by");
-			this.producerPartitionKey = this.kafkaPartitionKey;
-		}
-
-		if ( this.producerPartitionColumns == null && this.kafkaPartitionColumns != null) {
-			LOGGER.warn("kafka_partition_columns is deprecated, please use producer_partition_columns");
-			this.producerPartitionColumns = this.kafkaPartitionColumns;
-		}
-
-		if ( this.producerPartitionFallback == null && this.kafkaPartitionFallback != null ) {
-			LOGGER.warn("kafka_partition_by_fallback is deprecated, please use producer_partition_by_fallback");
-			this.producerPartitionFallback = this.kafkaPartitionFallback;
-		}
-
 		String[] validPartitionBy = {"database", "table", "primary_key", "transaction_id", "thread_id", "column", "random"};
 		if ( this.producerPartitionKey == null ) {
 			this.producerPartitionKey = "database";
@@ -825,35 +1216,16 @@ public class MaxwellConfig extends AbstractConfig {
 			if ( this.filterList != null ) {
 				this.filter = new Filter(this.databaseName, filterList);
 			} else {
-				boolean hasOldStyleFilters =
-					includeDatabases != null ||
-						excludeDatabases != null ||
-						includeTables != null ||
-						excludeTables != null ||
-						blacklistDatabases != null ||
-						blacklistTables != null ||
-						includeColumnValues != null;
-
-				if ( hasOldStyleFilters ) {
-					this.filter = Filter.fromOldFormat(
-						this.databaseName,
-						includeDatabases,
-						excludeDatabases,
-						includeTables,
-						excludeTables,
-						blacklistDatabases,
-						blacklistTables,
-						includeColumnValues
-					);
-				} else {
-					this.filter = new Filter(this.databaseName, "");
-				}
+				this.filter = new Filter(this.databaseName, "");
 			}
 		} catch (InvalidFilterException e) {
 			usageForOptions("Invalid filter options: " + e.getLocalizedMessage(), "filter");
 		}
 	}
 
+	/**
+	 * Validate the maxwell configuration, exiting with an error message if invalid.
+	 */
 	public void validate() {
 		validatePartitionBy();
 		validateFilter();
@@ -904,17 +1276,6 @@ public class MaxwellConfig extends AbstractConfig {
 			if (this.pubsubTotalTimeout.isNegative() || this.pubsubTotalTimeout.isZero())
 				usage("--pubsub_total_timeout must be > 0");
 		} else if (this.producerType.equals("redis")) {
-			if ( this.redisPubChannel != null ) {
-				LOGGER.warn("--redis_pub_channel is deprecated, please use redis_key");
-				this.redisKey = this.redisPubChannel;
-			} else if ( this.redisListKey != null ) {
-				LOGGER.warn("--redis_list_key is deprecated, please use redis_key");
-				this.redisKey = this.redisListKey;
-			} else if ( this.redisStreamKey != null ) {
-				LOGGER.warn("--redis_stream_key is deprecated, please use redis_key");
-				this.redisKey = this.redisStreamKey;
-			}
-
 			if ( this.redisKey == null ) {
 				usage("please specify --redis_key=KEY");
 			}
@@ -1025,11 +1386,15 @@ public class MaxwellConfig extends AbstractConfig {
 		}
 	}
 
+	/**
+	 * return a filtered list of properties for the Kafka producer
+	 * @return Properties object containing all kafka properties found in config.properties
+	 */
 	public Properties getKafkaProperties() {
 		return this.kafkaProperties;
 	}
 
-	public static Pattern compileStringToPattern(String name) throws InvalidFilterException {
+	private static Pattern compileStringToPattern(String name) throws InvalidFilterException {
 		name = name.trim();
 		if ( name.startsWith("/") ) {
 			if ( !name.endsWith("/") ) {
@@ -1041,17 +1406,31 @@ public class MaxwellConfig extends AbstractConfig {
 		}
 	}
 
+	/**
+	 * If present in the configuration, build an instance of a custom producer factor
+	 * @param options command line arguments
+	 * @param properties properties from config.properties
+	 * @return NULL or ProducerFactory instance
+	 */
 	protected ProducerFactory fetchProducerFactory(OptionSet options, Properties properties) {
 		String name = "custom_producer.factory";
 		String strOption = fetchStringOption(name, options, properties, null);
 		if ( strOption != null ) {
 			try {
 				Class<?> clazz = Class.forName(strOption);
-				return ProducerFactory.class.cast(clazz.newInstance());
+				Class[] carg = new Class[0];
+				Constructor ct = clazz.getDeclaredConstructor(carg);
+				return (ProducerFactory) ct.newInstance();
 			} catch ( ClassNotFoundException e ) {
 				usageForOptions("Invalid value for " + name + ", class '" + strOption + "' not found", "--" + name);
 			} catch ( IllegalAccessException | InstantiationException | ClassCastException e) {
 				usageForOptions("Invalid value for " + name + ", class instantiation error", "--" + name);
+			} catch (NoSuchMethodException e) {
+				usageForOptions("No valid constructor found for " + strOption, "--" + name);
+			} catch (InvocationTargetException e) {
+				String msg = String.format("Unable to construct customer producer '%s'", strOption);
+				usageForOptions(msg, "--" + name);
+				e.printStackTrace();
 			}
 			return null; // unreached
 		} else {

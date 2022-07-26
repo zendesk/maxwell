@@ -296,6 +296,61 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 		RowMap row = null;
 		while ((row = replicator.getRow()) == null) {
 		}
+	}
 
+	public void testClientReconnectionToDifferentServerAfterConnectionDroppedThrows() throws Exception {
+		assumeTrue(MysqlIsolatedServer.getVersion().atLeast(MysqlIsolatedServer.VERSION_5_6));
+
+		MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--server_id=123");
+		MaxwellTestSupport.setupSchema(server, false);
+
+		server.execute("create table test.t ( i int )");
+		server.execute("create table test.u ( i int )");
+		server.execute("insert into test.t set i = 1");
+		Position position = Position.capture(server.getConnection(), false);
+
+		MaxwellContext context = MaxwellTestSupport.buildContext(config -> {
+			config.replicationMysql.port = server.getPort();
+			config.maxwellMysql.port = server.getPort();
+			config.filter = null;
+			config.initPosition = position;
+			config.replayMode = true;
+			config.producerType = "stdout";
+			config.maxwellMysql.enableHeartbeat = true;
+		});
+
+		BinlogConnectorReplicator replicator = new BinlogConnectorReplicator(
+				new MysqlSchemaStore(context, position),
+				new StdoutProducer(context),
+				context.getBootstrapController(null),
+				context.getConfig().maxwellMysql,
+				333098L,
+				"maxwell",
+				new NoOpMetrics(),
+				position,
+				false,
+				"maxwell-client",
+				new HeartbeatNotifier(),
+				null,
+				context.getFilter(),
+				new MaxwellOutputConfig(),
+				context.getConfig().bufferMemoryUsage,
+				3);
+		replicator.startReplicator();
+		replicator.getRow();
+
+		//simulates a drop connection and connection to new server
+		server.shutDown();
+		server.boot("--server_id=456");
+
+		try {
+			replicator.getRow();
+
+			throw new Exception("Did not get excepted exception on server id change");
+		} catch (Exception e) {
+			if (!e.getMessage().startsWith("Master id changed")) {
+				throw new Exception("Got unexpected exception", e);
+			}
+		}
 	}
 }
