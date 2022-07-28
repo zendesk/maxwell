@@ -5,7 +5,7 @@ import com.zendesk.maxwell.schema.*;
 
 public class TableDrop extends SchemaChange {
 	public String database;
-	final String table;
+	public final String table;
 	final boolean ifExists;
 
 	public TableDrop(String database, String table, boolean ifExists) {

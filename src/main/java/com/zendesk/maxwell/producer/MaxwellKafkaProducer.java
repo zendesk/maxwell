@@ -125,6 +125,15 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	}
 
 	@Override
+	public boolean isDone() {
+		if (this.queue.isEmpty()) {
+			worker.close();
+			return true;
+		}
+		return false;
+	}
+
+	@Override
 	public StoppableTask getStoppableTask() {
 		return this.worker;
 	}

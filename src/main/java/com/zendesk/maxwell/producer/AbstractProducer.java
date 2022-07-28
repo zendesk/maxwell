@@ -39,6 +39,10 @@ public abstract class AbstractProducer {
 
 	abstract public void push(RowMap r) throws Exception;
 
+	public boolean isDone() {
+		return true;
+	}
+
 	public StoppableTask getStoppableTask() {
 		return null;
 	}
