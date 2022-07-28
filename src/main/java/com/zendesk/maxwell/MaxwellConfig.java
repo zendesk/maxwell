@@ -456,6 +456,11 @@ public class MaxwellConfig extends AbstractConfig {
 	public String rabbitmqURI;
 
 	/**
+	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} handshake timeout
+	 */
+	public Integer rabbitmqHandshakeTimeout;
+
+	/**
 	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} exchange
 	 */
 	public String rabbitmqExchange;
@@ -1014,6 +1019,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.rabbitmqPass			= fetchStringOption("rabbitmq_pass", options, properties, "guest");
 		this.rabbitmqVirtualHost    		= fetchStringOption("rabbitmq_virtual_host", options, properties, "/");
 		this.rabbitmqURI 			= fetchStringOption("rabbitmq_uri", options, properties, null);
+		this.rabbitmqHandshakeTimeout       = fetchIntegerOption("rabbitmq_handshake_timeout", options, properties, null);
 		this.rabbitmqExchange       		= fetchStringOption("rabbitmq_exchange", options, properties, "maxwell");
 		this.rabbitmqExchangeType   		= fetchStringOption("rabbitmq_exchange_type", options, properties, "fanout");
 		this.rabbitMqExchangeDurable 		= fetchBooleanOption("rabbitmq_exchange_durable", options, properties, false);
