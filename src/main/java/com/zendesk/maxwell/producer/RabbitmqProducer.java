@@ -57,6 +57,10 @@ public class RabbitmqProducer extends AbstractProducer {
 				factory.setVirtualHost(config.rabbitmqVirtualHost);
 			}
 
+			if ( config.rabbitmqHandshakeTimeout != null ) {
+				factory.setHandshakeTimeout(config.rabbitmqHandshakeTimeout);
+			}
+
 			this.channel = factory.newConnection().createChannel();
 			if(context.getConfig().rabbitmqDeclareExchange) {
 				this.channel.exchangeDeclare(exchangeName, context.getConfig().rabbitmqExchangeType, context.getConfig().rabbitMqExchangeDurable, context.getConfig().rabbitMqExchangeAutoDelete, null);
