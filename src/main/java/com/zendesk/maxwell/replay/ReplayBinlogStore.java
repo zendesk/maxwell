@@ -13,18 +13,20 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author udyr@shlaji.com
  */
 public class ReplayBinlogStore extends AbstractSchemaStore implements SchemaStore {
-	private static final Logger LOGGER = LoggerFactory.getLogger(com.zendesk.maxwell.replay.ReplayBinlogStore.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ReplayBinlogStore.class);
 
 	private final ConnectionPool schemaConnectionPool;
 	private final CaseSensitivity caseSensitivity;
 	private final Filter filter;
+	private final ReplayConfig config;
 	private Schema maxwellOnlySchema;
-	private ReplayConfig config;
 
 	public ReplayBinlogStore(ConnectionPool schemaConnectionPool, CaseSensitivity caseSensitivity, ReplayConfig config) {
 		super(schemaConnectionPool, schemaConnectionPool, caseSensitivity, config.filter);
@@ -40,7 +42,7 @@ public class ReplayBinlogStore extends AbstractSchemaStore implements SchemaStor
 			return maxwellOnlySchema;
 		}
 
-		synchronized (com.zendesk.maxwell.replay.ReplayBinlogStore.class) {
+		synchronized (ReplayBinlogStore.class) {
 			if (maxwellOnlySchema != null) {
 				return maxwellOnlySchema;
 			}
@@ -52,7 +54,6 @@ public class ReplayBinlogStore extends AbstractSchemaStore implements SchemaStor
 				throw new SchemaStoreException(e);
 			}
 		}
-
 		return maxwellOnlySchema;
 	}
 
@@ -71,19 +72,10 @@ public class ReplayBinlogStore extends AbstractSchemaStore implements SchemaStor
 	@Override
 	protected List<ResolvedSchemaChange> resolveSQL(Schema schema, String sql, String currentDatabase) {
 		List<SchemaChange> changes = SchemaChange.parse(currentDatabase, sql);
-
 		if (changes == null || changes.size() == 0) {
 			return new ArrayList<>();
 		}
-
-		ArrayList<ResolvedSchemaChange> resolvedSchemaChanges = new ArrayList<>();
-		for (SchemaChange change : changes) {
-			ResolvedSchemaChange resolvedSchemaChange = resolvedSchemaChange(change, schema);
-			if (resolvedSchemaChange != null) {
-				resolvedSchemaChanges.add(resolvedSchemaChange);
-			}
-		}
-		return resolvedSchemaChanges;
+		return changes.stream().map(sc -> resolvedSchemaChange(sc, schema)).filter(Objects::nonNull).collect(Collectors.toList());
 	}
 
 	private ResolvedSchemaChange resolvedSchemaChange(SchemaChange schemaChange, Schema schema) {
@@ -106,29 +98,41 @@ public class ReplayBinlogStore extends AbstractSchemaStore implements SchemaStor
 		return null;
 	}
 
+	/**
+	 * 1. Check blacklist
+	 * 2. Check to exclude
+	 * 3. Is it maxwell db
+	 *
+	 * @param schemaChange change
+	 * @return whether the data should be output
+	 */
 	private boolean shouldOutput(SchemaChange schemaChange) {
 		if (schemaChange.isBlacklisted(filter)) {
 			return false;
 		} else if (schemaChange instanceof DatabaseAlter) {
 			String database = ((DatabaseAlter) schemaChange).database;
-			return !config.databaseName.equals(database) && Filter.includes(filter, database, "");
+			return !isMaxwellDB(database) && Filter.includes(filter, database, "");
 		} else if (schemaChange instanceof DatabaseCreate) {
 			String database = ((DatabaseCreate) schemaChange).database;
-			return !config.databaseName.equals(database) && Filter.includes(filter, database, "");
+			return !isMaxwellDB(database) && Filter.includes(filter, database, "");
 		} else if (schemaChange instanceof DatabaseDrop) {
 			String database = ((DatabaseDrop) schemaChange).database;
-			return !config.databaseName.equals(database) && Filter.includes(filter, database, "");
+			return !isMaxwellDB(database) && Filter.includes(filter, database, "");
 		} else if (schemaChange instanceof TableAlter) {
 			String database = ((TableAlter) schemaChange).database;
-			return !config.databaseName.equals(database) && Filter.includes(filter, database, ((TableAlter) schemaChange).table);
+			return !isMaxwellDB(database) && Filter.includes(filter, database, ((TableAlter) schemaChange).table);
 		} else if (schemaChange instanceof TableCreate) {
 			String database = ((TableCreate) schemaChange).database;
-			return !config.databaseName.equals(database) && Filter.includes(filter, database, ((TableCreate) schemaChange).table);
+			return !isMaxwellDB(database) && Filter.includes(filter, database, ((TableCreate) schemaChange).table);
 		} else if (schemaChange instanceof TableDrop) {
 			String database = ((TableDrop) schemaChange).database;
-			return !config.databaseName.equals(database) && Filter.includes(filter, database, ((TableDrop) schemaChange).table);
+			return !isMaxwellDB(database) && Filter.includes(filter, database, ((TableDrop) schemaChange).table);
 		}
 		return false;
+	}
+
+	private boolean isMaxwellDB(String database) {
+		return config.databaseName.equals(database);
 	}
 
 	@Override

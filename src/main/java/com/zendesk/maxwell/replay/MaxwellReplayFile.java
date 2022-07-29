@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
  * @author udyr@shlaji.com
  */
 public class MaxwellReplayFile {
-	private static final Logger LOGGER = LoggerFactory.getLogger(com.zendesk.maxwell.replay.MaxwellReplayFile.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellReplayFile.class);
 
 	private static final long MAX_TX_ELEMENTS = 10000;
 	private static final Pattern CREATE_TABLE_PATTERN = Pattern.compile("^CREATE\\s+TABLE", Pattern.CASE_INSENSITIVE);
@@ -50,7 +50,7 @@ public class MaxwellReplayFile {
 	private long rowCount;
 
 	public static void main(String[] args) {
-		new com.zendesk.maxwell.replay.MaxwellReplayFile().start(args);
+		new MaxwellReplayFile().start(args);
 	}
 
 	public void start(String[] args) {
@@ -83,7 +83,7 @@ public class MaxwellReplayFile {
 	 * Wait producer for replay
 	 */
 	private void daemon() {
-		while (!producer.isDone()) {
+		while (!producer.flushAndClose()) {
 			LOGGER.debug("waiting produce...");
 			LockSupport.parkNanos(1000_000_000L);
 		}

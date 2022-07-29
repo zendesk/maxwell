@@ -79,20 +79,19 @@ public abstract class AbstractConfig {
 	}
 
 	protected Properties readPropertiesFile(String filename, Boolean abortOnMissing) {
-		Properties p = null;
+		Properties p = new Properties();
 		File file = new File(filename);
 		if ( !file.exists() ) {
 			if ( abortOnMissing ) {
 				System.err.println("Couldn't find config file: " + filename);
 				System.exit(1);
 			} else {
-				return null;
+				return p;
 			}
 		}
 
 		try {
 			FileReader reader = new FileReader(file);
-			p = new Properties();
 			p.load(reader);
 			for (Object key : p.keySet()) {
 				LOGGER.debug("Got config key: {}", key);

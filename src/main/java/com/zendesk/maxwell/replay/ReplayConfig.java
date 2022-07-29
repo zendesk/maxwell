@@ -24,6 +24,8 @@ public class ReplayConfig extends MaxwellConfig {
 	public ReplayConfig(String[] args) {
 		super(args);
 		this.parse(args);
+
+		// No heartbeat, No schema
 		replayMode = true;
 	}
 
@@ -71,17 +73,15 @@ public class ReplayConfig extends MaxwellConfig {
 			usage("Please specify a replay_binlog: ", parser, "replay");
 		}
 		this.binlogFiles.addAll(validateReplayFiles(replayBinlog, parser));
-
 	}
 
 	private List<ReplayFilePattern> validateReplayFiles(String replayBinlog, MaxwellOptionParser parser) {
 		List<ReplayFilePattern> filePatterns = FilePathParser.parse(replayBinlog);
 		for (ReplayFilePattern filePattern : filePatterns) {
 			List<File> files = filePattern.getExistFiles();
-			for (File file : files) {
-				if (!file.exists()) {
-					usage("file not exist: " + file.getAbsolutePath(), parser, "replay");
-				}
+			if (files.isEmpty()) {
+				String filePath = String.format("%s%s", filePattern.getBasePath(), filePattern.getFilePattern() == null ? "" : filePattern.getFilePattern().pattern());
+				usage("No files were found available through your configuration, check: " + filePath, parser, "replay");
 			}
 		}
 		return filePatterns;

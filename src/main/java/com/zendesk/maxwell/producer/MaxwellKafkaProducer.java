@@ -125,9 +125,14 @@ public class MaxwellKafkaProducer extends AbstractProducer {
 	}
 
 	@Override
-	public boolean isDone() {
+	public boolean flushAndClose() {
 		if (this.queue.isEmpty()) {
-			worker.close();
+			try {
+				// This method blocks until all previously sent requests complete
+				worker.close();
+			} catch (Exception e) {
+				throw new RuntimeException("Error stopping kafka, Data waiting to be written to kafka may not be completed. error: " + e.getMessage(), e);
+			}
 			return true;
 		}
 		return false;

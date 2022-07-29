@@ -1187,12 +1187,7 @@ public class MaxwellConfig extends AbstractConfig {
 	}
 
 	private Properties parseFile(String filename, Boolean abortOnMissing) {
-		Properties p = readPropertiesFile(filename, abortOnMissing);
-
-		if ( p == null )
-			p = new Properties();
-
-		return p;
+		return readPropertiesFile(filename, abortOnMissing);
 	}
 
 	private void validatePartitionBy() {

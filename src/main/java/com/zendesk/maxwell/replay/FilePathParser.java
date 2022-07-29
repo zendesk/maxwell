@@ -46,7 +46,6 @@ public class FilePathParser {
 		tokenizer.whitespaceChars(',', ',');
 
 		tokenizer.ordinaryChars('^', '^');
-//		tokenizer.ordinaryChars('$', '$');
 
 		tokenizer.quoteChar('`');
 		tokenizer.quoteChar('\'');
@@ -55,35 +54,41 @@ public class FilePathParser {
 
 		List<ReplayFilePattern> patterns = new ArrayList<>();
 		StringBuilder basePath = new StringBuilder();
-		tokenizer.nextToken();
 		while (true) {
-			Pattern pattern = null;
+			tokenizer.nextToken();
 			if (tokenizer.ttype == TT_EOF) {
 				if (basePath.length() > 0) {
-					patterns.add(new ReplayFilePattern(basePath.toString(), pattern));
+					patterns.add(new ReplayFilePattern(basePath.toString(), null));
 				}
 				break;
 			}
 			if (tokenizer.ttype == '^') {
-				pattern = Pattern.compile(parseRegexp(inputStream));
+				patterns.add(new ReplayFilePattern(basePath.length() == 0 ? "." : basePath.toString(), parseRegexp(inputStream)));
 				tokenizer.nextToken();
-			}
-
-			if (tokenizer.ttype != TT_WORD) {
-				throw new IOException("Wrong file path " + (tokenizer.ttype > 0 ? String.valueOf(tokenizer.ttype) : tokenizer.sval));
-			}
-
-			if (basePath.length() > 0) {
-				patterns.add(new ReplayFilePattern(basePath.toString(), pattern));
+				if (tokenizer.ttype == TT_EOF) {
+					break;
+				}
 				basePath = new StringBuilder();
 			}
-			basePath.append(tokenizer.sval);
-			tokenizer.nextToken();
+			if (tokenizer.ttype == TT_WORD) {
+				if (basePath.length() > 0) {
+					patterns.add(new ReplayFilePattern(basePath.toString(), null));
+					basePath = new StringBuilder();
+				}
+				basePath.append(tokenizer.sval);
+			}
 		}
 		return patterns;
 	}
 
-	private String parseRegexp(InputStreamReader inputStream) throws IOException {
+	/**
+	 * Read a regular expression, it should start with '^' and end with '$'
+	 *
+	 * @param inputStream file path stream
+	 * @return regexp
+	 * @throws IOException read file stream exception
+	 */
+	private Pattern parseRegexp(InputStreamReader inputStream) throws IOException {
 		char ch;
 		StringBuilder s = new StringBuilder("^");
 		while (true) {
@@ -98,6 +103,6 @@ public class FilePathParser {
 			s.append(ch);
 		}
 		s.append("$");
-		return s.toString();
+		return Pattern.compile(s.toString());
 	}
 }
