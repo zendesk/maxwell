@@ -1,13 +1,13 @@
 # Download
 ***
-- Download binary distro: [https://github.com/zendesk/maxwell/releases/download/v1.37.5/maxwell-1.37.5.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.37.5/maxwell-1.37.5.tar.gz)
+- Download binary distro: [https://github.com/zendesk/maxwell/releases/download/v1.37.7/maxwell-1.37.7.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.37.7/maxwell-1.37.7.tar.gz)
 - Sources and bug tracking is available on github: [https://github.com/zendesk/maxwell](https://github.com/zendesk/maxwell)
 
 **curl**:
 ```
-curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.37.5/maxwell-1.37.5.tar.gz \
+curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.37.7/maxwell-1.37.7.tar.gz \
        | tar zxvf -
-cd maxwell-1.37.5
+cd maxwell-1.37.7
 ```
 
 **docker**:
@@ -98,6 +98,15 @@ bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
 bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
   --producer=pubsub --pubsub_project_id='$PUBSUB_PROJECT_ID' \
   --pubsub_topic='maxwell'
+```
+
+## Google Cloud Bigquery
+
+```
+bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
+  --producer=bigquery --bigquery_project_id='$BIGQUERY_PROJECT_ID' \
+  --bigquery_dataset='$BIGQUERY_DATASET' \
+  --bigquery_table='$BIGQUERY_TABLE'
 ```
 
 ## RabbitMQ

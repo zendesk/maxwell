@@ -16,7 +16,7 @@ while releases.any?
     prerelease = !!(r[:tag_name] =~ /-\w+$/)
     next if prerelease && r[:body].strip.empty?
     out = <<-EOL
-### [%{tag_name}](%{html_url}): 
+### [%{tag_name}](%{html_url})
 
 %{body}
 
