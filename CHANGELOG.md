@@ -1,5 +1,20 @@
 # Maxwell changelog
 
+### [v1.38.0](https://github.com/zendesk/maxwell/releases/tag/v1.38.0)
+
+- Maxwell gets the ability to talk to bigtable!  I have no idea how well
+  it'll work.  I hope it works for you!
+- upgrade protobuf to fix a rabbitmq issue with booleans, I think.
+- rabbitMQ timeouts on connection
+- other fixes.
+- I can't imagine the security department cares about my naming what
+  with what's going on inside 1019.  I guess we'll see.
+-
+
+
+
+_Released 2022-07-29_
+
 ### [v1.37.7](https://github.com/zendesk/maxwell/releases/tag/v1.37.7)
 
  - Bump viafoura/metrics-datadog 2.0.0-RC3
