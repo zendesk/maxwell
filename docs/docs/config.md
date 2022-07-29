@@ -129,6 +129,15 @@ pubsub_total_timeout           | LONG       | Puts a limit on the value in secon
 
 _See also:_ [PubSub Producer Documentation](/producers#google-cloud-pubsub)
 
+## bigquery producer
+option                         | argument                            | description                                         | default
+-------------------------------|-------------------------------------| --------------------------------------------------- | -------
+bigquery_project_id            | STRING     | Google Cloud bigquery project id |
+bigquery_dataset               | STRING     | Google Cloud bigquery dataset id |
+bigquery_table                 | STRING     | Google Cloud bigquery table id |
+
+_See also:_ [PubSub Producer Documentation](/producers#google-cloud-bigquery)
+
 ## rabbitmq producer
 option                         | argument                            | description                                         | default
 -------------------------------|-------------------------------------| --------------------------------------------------- | -------
