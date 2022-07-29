@@ -166,6 +166,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-level="2"><a href="#google-cloud-bigquery" class="nav-link">Google Cloud Bigquery</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
             <li class="nav-item" data-level="2"><a href="#rabbitmq" class="nav-link">RabbitMQ</a>
               <ul class="nav flex-column">
               </ul>
@@ -191,13 +195,13 @@
 <h1 id="download">Download</h1>
 <hr />
 <ul>
-<li>Download binary distro: <a href="https://github.com/zendesk/maxwell/releases/download/v1.37.6/maxwell-1.37.6.tar.gz">https://github.com/zendesk/maxwell/releases/download/v1.37.6/maxwell-1.37.6.tar.gz</a></li>
+<li>Download binary distro: <a href="https://github.com/zendesk/maxwell/releases/download/v1.38.0/maxwell-1.38.0.tar.gz">https://github.com/zendesk/maxwell/releases/download/v1.38.0/maxwell-1.38.0.tar.gz</a></li>
 <li>Sources and bug tracking is available on github: <a href="https://github.com/zendesk/maxwell">https://github.com/zendesk/maxwell</a></li>
 </ul>
 <p><strong>curl</strong>:</p>
-<pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.37.6/maxwell-1.37.6.tar.gz \
+<pre><code>curl -sLo - https://github.com/zendesk/maxwell/releases/download/v1.38.0/maxwell-1.38.0.tar.gz \
        | tar zxvf -
-cd maxwell-1.37.6
+cd maxwell-1.38.0
 </code></pre>
 <p><strong>docker</strong>:</p>
 <pre><code>docker pull zendesk/maxwell
@@ -255,6 +259,12 @@ mysql&gt; GRANT SELECT, REPLICATION CLIENT, REPLICATION SLAVE ON *.* TO 'maxwell
 <pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
   --producer=pubsub --pubsub_project_id='$PUBSUB_PROJECT_ID' \
   --pubsub_topic='maxwell'
+</code></pre>
+<h2 id="google-cloud-bigquery">Google Cloud Bigquery</h2>
+<pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
+  --producer=bigquery --bigquery_project_id='$BIGQUERY_PROJECT_ID' \
+  --bigquery_dataset='$BIGQUERY_DATASET' \
+  --bigquery_table='$BIGQUERY_TABLE'
 </code></pre>
 <h2 id="rabbitmq">RabbitMQ</h2>
 <pre><code>bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
