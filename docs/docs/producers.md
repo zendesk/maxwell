@@ -297,6 +297,7 @@ The remaining configurable properties are:
 - `rabbitmq_user` - defaults to **guest**
 - `rabbitmq_pass` - defaults to **guest**
 - `rabbitmq_virtual_host` - defaults to **/**
+- `rabbitmq_handshake_timeout` - defaults to **10000**
 - `rabbitmq_exchange` - defaults to **maxwell**
 - `rabbitmq_exchange_type` - defaults to **fanout**
 - `rabbitmq_exchange_durable` - defaults to **false**

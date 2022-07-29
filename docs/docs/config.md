@@ -146,6 +146,7 @@ rabbitmq_pass                  | STRING     | Password of Rabbitmq connection | 
 rabbitmq_host                  | STRING     | Host of Rabbitmq machine
 rabbitmq_port                  | INT        | Port of Rabbitmq machine |
 rabbitmq_virtual_host          | STRING     | Virtual Host of Rabbitmq |
+rabbitmq_handshake_timeout     | STRING     | Handshake timeout of Rabbitmq connection in milliseconds |
 rabbitmq_exchange              | STRING     | Name of exchange for rabbitmq publisher |
 rabbitmq_exchange_type         | STRING     | Exchange type for rabbitmq |
 rabbitmq_exchange_durable      | BOOLEAN    | Exchange durability. | false
