@@ -1,11 +1,11 @@
 package com.zendesk.maxwell.producer;
 
+import com.amazonaws.client.builder.AwsClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.amazonaws.handlers.AsyncHandler;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
-import com.amazonaws.services.sqs.AmazonSQSAsyncClient;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.amazonaws.services.sqs.model.SendMessageResult;
@@ -18,10 +18,12 @@ public class MaxwellSQSProducer extends AbstractAsyncProducer {
 	private AmazonSQSAsync client;
 	private String queueUri;
 
-	public MaxwellSQSProducer(MaxwellContext context, String queueUri) {
+	public MaxwellSQSProducer(MaxwellContext context, String queueUri, String serviceEndpoint, String signingRegion) {
 		super(context);
 		this.queueUri = queueUri;
-		this.client = AmazonSQSAsyncClientBuilder.defaultClient();
+		this.client = AmazonSQSAsyncClientBuilder.standard()
+				.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(serviceEndpoint, signingRegion))
+				.build();
 	}
 
 	@Override

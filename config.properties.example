@@ -11,7 +11,7 @@ password=maxwell
 
 
 #     *** general ***
-# choose where to produce data to. stdout|file|kafka|kinesis|pubsub|sqs|rabbitmq|redis
+# choose where to produce data to. stdout|file|kafka|kinesis|pubsub|sqs|rabbitmq|redis|bigquery
 #producer=kafka
 
 # set the log level.  note that you can configure things further in log4j2.xml
@@ -217,6 +217,12 @@ kafka.acks=1
 #pubsub_project_id=maxwell
 #pubsub_topic=maxwell
 #ddl_pubsub_topic=maxwell_ddl
+
+#            *** bigquery ***
+
+#bigquery_project_id=myproject
+#bigquery_dataset=mydataset
+#bigquery_table=mytable
 
 #            *** rabbit-mq ***
 

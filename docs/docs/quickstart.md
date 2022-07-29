@@ -100,6 +100,15 @@ bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
   --pubsub_topic='maxwell'
 ```
 
+## Google Cloud Bigquery
+
+```
+bin/maxwell --user='maxwell' --password='XXXXXX' --host='127.0.0.1' \
+  --producer=bigquery --bigquery_project_id='$BIGQUERY_PROJECT_ID' \
+  --bigquery_dataset='$BIGQUERY_DATASET' \
+  --bigquery_table='$BIGQUERY_TABLE'
+```
+
 ## RabbitMQ
 
 ```

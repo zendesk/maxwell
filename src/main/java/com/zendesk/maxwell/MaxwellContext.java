@@ -524,7 +524,7 @@ public class MaxwellContext {
 				this.producer = new MaxwellKinesisProducer(this, this.config.kinesisStream);
 				break;
 			case "sqs":
-				this.producer = new MaxwellSQSProducer(this, this.config.sqsQueueUri);
+				this.producer = new MaxwellSQSProducer(this, this.config.sqsQueueUri, this.config.sqsServiceEndpoint, this.config.sqsSigningRegion);
 				break;
 			case "sns":
 				this.producer = new MaxwellSNSProducer(this, this.config.snsTopic);
@@ -549,6 +549,9 @@ public class MaxwellContext {
 				break;
 			case "redis":
 				this.producer = new MaxwellRedisProducer(this);
+				break;
+			case "bigquery":
+				this.producer = new MaxwellBigQueryProducer(this, this.config.bigQueryProjectId, this.config.bigQueryDataset, this.config.bigQueryTable);
 				break;
 			case "none":
 				this.producer = new NoneProducer(this);
