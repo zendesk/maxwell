@@ -26,15 +26,16 @@ public class ReplayBinlogStoreTest {
 		ReplayConfig config = new ReplayConfig(new String[]{
 				"--host=127.0.0.1",
 				"--replay_binlog=/data/binlog/binlog.000001",
-				"--filter=blacklist:test.*"
+				"--filter=blacklist:test.*,blacklist:bac_schema.tmp_01,exclude:bac_schema.bac_history"
 		});
 		config.validate();
 		ReplayBinlogStore schemaStore = new ReplayBinlogStore(mockConnectionPool(), CaseSensitivity.CONVERT_ON_COMPARE, config);
 		Schema schema = schemaStore.getSchema();
 		Long schemaID = schemaStore.getSchemaID();
 		Assert.assertNotNull(schema);
-		Assert.assertNotNull(schema.findDatabase("test"));
 		Assert.assertNotNull(schema.findDatabase("maxwell"));
+		Assert.assertNotNull(schema.findDatabase("test"));
+		Assert.assertNotNull(schema.findDatabase("bac_schema"));
 		Assert.assertNotNull(schemaID);
 
 		Position position = mock(Position.class);
@@ -42,11 +43,26 @@ public class ReplayBinlogStoreTest {
 		List<ResolvedSchemaChange> dropTable = schemaStore.processSQL("drop table position", "maxwell", position);
 		Assert.assertFalse(dropTable.isEmpty());
 
+		dropTable = schemaStore.processSQL("drop table position", "maxwell", position);
+		Assert.assertTrue(dropTable.isEmpty());
+
 		List<ResolvedSchemaChange> dropSchema = schemaStore.processSQL("drop schema maxwell", "maxwell", position);
 		Assert.assertFalse(dropSchema.isEmpty());
 
-		List<ResolvedSchemaChange> nullSchema = schemaStore.processSQL("drop table tmp_01", "test", position);
-		Assert.assertTrue(nullSchema.isEmpty());
+		dropSchema = schemaStore.processSQL("drop schema maxwell", "maxwell", position);
+		Assert.assertTrue(dropSchema.isEmpty());
+
+		// Test database blacklist
+		List<ResolvedSchemaChange> blackSchema = schemaStore.processSQL("drop schema test", "test", position);
+		Assert.assertTrue(blackSchema.isEmpty());
+
+		// Test table blacklist
+		blackSchema = schemaStore.processSQL("drop table tmp_01", "bac_schema", position);
+		Assert.assertTrue(blackSchema.isEmpty());
+
+		// Test table rename
+		List<ResolvedSchemaChange> renameTableSchema = schemaStore.processSQL("alter table history rename bac_history", "bac_schema", position);
+		Assert.assertTrue(renameTableSchema.isEmpty());
 	}
 
 
@@ -62,8 +78,9 @@ public class ReplayBinlogStoreTest {
 		when(metaData.getDatabaseMinorVersion()).thenReturn(8);
 
 		ResultSet resultSet = mock(ResultSet.class);
-		when(resultSet.next()).thenReturn(true, true, false, true, false);
-		when(resultSet.getString(Mockito.anyString())).thenReturn("maxwell", "utf8mb4", "test", "utf8mb4", "position", "utf8mb4", null);
+		when(resultSet.next()).thenReturn(true, true, true, false, true, false);
+		when(resultSet.getString(Mockito.anyString())).thenReturn("maxwell", "utf8mb4", "test", "utf8mb4", "bac_schema", "utf8mb4",
+				"position", "utf8mb4", "history", "utf8mb4", null);
 
 		PreparedStatement statement = mock(PreparedStatement.class);
 		when(statement.executeQuery(Mockito.anyString())).thenReturn(resultSet);
