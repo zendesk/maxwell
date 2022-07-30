@@ -119,8 +119,13 @@ public class ReplayBinlogStore extends AbstractSchemaStore implements SchemaStor
 			String database = ((DatabaseDrop) schemaChange).database;
 			return !isMaxwellDB(database) && Filter.includes(filter, database, "");
 		} else if (schemaChange instanceof TableAlter) {
-			String database = ((TableAlter) schemaChange).database;
-			return !isMaxwellDB(database) && Filter.includes(filter, database, ((TableAlter) schemaChange).table);
+			TableAlter tableAlter = (TableAlter) schemaChange;
+			String database = tableAlter.database;
+			boolean output = !isMaxwellDB(database) && Filter.includes(filter, database, tableAlter.table);
+			if (output && tableAlter.newTableName != null) {
+				output = Filter.includes(filter, database, tableAlter.newTableName);
+			}
+			return output;
 		} else if (schemaChange instanceof TableCreate) {
 			String database = ((TableCreate) schemaChange).database;
 			return !isMaxwellDB(database) && Filter.includes(filter, database, ((TableCreate) schemaChange).table);
