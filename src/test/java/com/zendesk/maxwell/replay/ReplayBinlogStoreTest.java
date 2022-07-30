@@ -25,7 +25,7 @@ public class ReplayBinlogStoreTest {
 	public void testProcessSQL() throws SchemaStoreException, SQLException {
 		ReplayConfig config = new ReplayConfig(new String[]{
 				"--host=127.0.0.1",
-				"--replay_binlog=pom.xml",
+				"--replay_binlog=/data/binlog/binlog.000001",
 				"--filter=blacklist:test.*"
 		});
 		config.validate();

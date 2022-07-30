@@ -8,10 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author udyr@shlaji.com
@@ -19,7 +17,7 @@ import java.util.Properties;
 public class ReplayConfig extends MaxwellConfig {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellReplayFile.class);
 
-	List<ReplayFilePattern> binlogFiles = new ArrayList<>();
+	List<File> binlogFiles = new ArrayList<>();
 
 	public ReplayConfig(String[] args) {
 		super(args);
@@ -75,16 +73,15 @@ public class ReplayConfig extends MaxwellConfig {
 		this.binlogFiles.addAll(validateReplayFiles(replayBinlog, parser));
 	}
 
-	private List<ReplayFilePattern> validateReplayFiles(String replayBinlog, MaxwellOptionParser parser) {
-		List<ReplayFilePattern> filePatterns = FilePathParser.parse(replayBinlog);
-		for (ReplayFilePattern filePattern : filePatterns) {
-			List<File> files = filePattern.getExistFiles();
-			if (files.isEmpty()) {
-				String filePath = String.format("%s%s", filePattern.getBasePath(), filePattern.getFilePattern() == null ? "" : filePattern.getFilePattern().pattern());
-				usage("No files were found available through your configuration, check: " + filePath, parser, "replay");
+	private List<File> validateReplayFiles(String replayBinlog, MaxwellOptionParser parser) {
+		return Arrays.stream(replayBinlog.split(",")).map(File::new).filter(file -> {
+			if (file.exists() && file.isFile()) {
+				return true;
+			} else {
+				usage("No files were found available through your configuration, check: " + file.getPath(), parser, "replay");
+				return false;
 			}
-		}
-		return filePatterns;
+		}).collect(Collectors.toList());
 	}
 
 	private Properties parseFile(String filename, boolean abortOnMissing) {

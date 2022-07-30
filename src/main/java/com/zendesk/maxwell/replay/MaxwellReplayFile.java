@@ -66,11 +66,9 @@ public class MaxwellReplayFile {
 			this.schemaStore = new ReplayBinlogStore(context.getSchemaConnectionPool(), CaseSensitivity.CONVERT_ON_COMPARE, config);
 			this.schema = schemaStore.getSchema();
 
-			for (ReplayFilePattern filePattern : config.binlogFiles) {
-				List<File> files = filePattern.getExistFiles();
-				for (File file : files) {
-					replayBinlog(file);
-				}
+			List<File> files = config.binlogFiles;
+			for (File file : files) {
+				replayBinlog(file);
 			}
 		} catch (Exception e) {
 			LOGGER.error(e.getMessage(), e);

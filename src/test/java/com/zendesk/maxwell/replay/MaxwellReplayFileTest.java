@@ -26,7 +26,7 @@ public class MaxwellReplayFileTest {
 				"--output_primary_key_columns=false",
 				"--output_push_timestamp=true",
 				"--filter=exclude:test.*",
-				"--replay_binlog=/data/binlog/master.000001"
+				"--replay_binlog=/data/binlog/binlog.000001"
 		};
 		replayFile.start(args);
 	}

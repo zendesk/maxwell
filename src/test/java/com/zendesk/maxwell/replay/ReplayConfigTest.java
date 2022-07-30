@@ -16,29 +16,26 @@ public class ReplayConfigTest {
 	public final EnvironmentVariables environmentVariables = new EnvironmentVariables();
 
 	@Test
-	public void testReplayConfig() {
-		environmentVariables.set("MAXWELL_USER", "foo");
-		environmentVariables.set("maxwell_password", "bar");
-		environmentVariables.set("maxwell_host", "remotehost");
-		environmentVariables.set("MAXWELL_KAFKA.RETRIES", "100");
-		environmentVariables.set("USER", "mysql");
-		ReplayConfig config = new ReplayConfig(new String[]{"--env_config_prefix=MAXWELL_", "--host=localhost"});
-		assertEquals("foo", config.maxwellMysql.user);
-		assertEquals("bar", config.maxwellMysql.password);
-		assertEquals("localhost", config.maxwellMysql.host);
-		assertEquals("100", config.kafkaProperties.getProperty("retries"));
-	}
-
-	@Test
 	public void testBinlogFiles() {
 		environmentVariables.set("MAXWELL_USER", "foo");
 		environmentVariables.set("maxwell_password", "bar");
 		environmentVariables.set("maxwell_host", "remotehost");
 		environmentVariables.set("MAXWELL_KAFKA.RETRIES", "100");
 		environmentVariables.set("USER", "mysql");
-		environmentVariables.set("MAXWELL_replay_binlog", "^*$");
+		environmentVariables.set("MAXWELL_replay_binlog", "/data/binlog/binlog.000001");
 		ReplayConfig config = new ReplayConfig(new String[]{"--env_config_prefix=MAXWELL_", "--host=localhost"});
 		config.validate();
+
 		assertFalse(config.binlogFiles.isEmpty());
+
+		assertEquals("foo", config.replicationMysql.user);
+		assertEquals("bar", config.replicationMysql.password);
+		assertEquals("localhost", config.replicationMysql.host);
+
+		assertEquals("foo", config.maxwellMysql.user);
+		assertEquals("bar", config.maxwellMysql.password);
+		assertEquals("localhost", config.maxwellMysql.host);
+
+		assertEquals("100", config.kafkaProperties.getProperty("retries"));
 	}
 }
