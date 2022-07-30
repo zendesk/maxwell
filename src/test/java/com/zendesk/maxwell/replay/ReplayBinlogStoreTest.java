@@ -52,11 +52,11 @@ public class ReplayBinlogStoreTest {
 		dropSchema = schemaStore.processSQL("drop schema maxwell", "maxwell", position);
 		Assert.assertTrue(dropSchema.isEmpty());
 
-		// Test database blacklist
+		// Test database blocklist
 		List<ResolvedSchemaChange> blackSchema = schemaStore.processSQL("drop schema test", "test", position);
 		Assert.assertTrue(blackSchema.isEmpty());
 
-		// Test table blacklist
+		// Test table blocklist
 		blackSchema = schemaStore.processSQL("drop table tmp_01", "bac_schema", position);
 		Assert.assertTrue(blackSchema.isEmpty());
 

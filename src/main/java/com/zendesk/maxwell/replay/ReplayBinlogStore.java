@@ -81,7 +81,7 @@ public class ReplayBinlogStore extends AbstractSchemaStore implements SchemaStor
 	private ResolvedSchemaChange resolvedSchemaChange(SchemaChange schemaChange, Schema schema) {
 		try {
 			if (schemaChange.isBlacklisted(this.filter)) {
-				LOGGER.debug("ignoring blacklisted schema change");
+				LOGGER.debug("ignoring blocklist schema change");
 				return null;
 			}
 			ResolvedSchemaChange resolved = schemaChange.resolve(schema);
@@ -99,7 +99,7 @@ public class ReplayBinlogStore extends AbstractSchemaStore implements SchemaStor
 	}
 
 	/**
-	 * 1. Check blacklist
+	 * 1. Check blocklist
 	 * 2. Check to exclude
 	 * 3. Is it maxwell db
 	 *
