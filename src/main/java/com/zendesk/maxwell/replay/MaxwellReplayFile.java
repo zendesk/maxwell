@@ -15,16 +15,19 @@ import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMapBuffer;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaStore;
+import com.zendesk.maxwell.schema.SchemaStoreException;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.ColumnDefCastException;
 import com.zendesk.maxwell.schema.ddl.DDLMap;
-import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
+import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.util.Logging;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -37,44 +40,56 @@ import java.util.regex.Pattern;
 public class MaxwellReplayFile {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellReplayFile.class);
 
-	private static final long MAX_TX_ELEMENTS = 10000;
+	public static final String HEARTBEATS = "heartbeats";
+	public static final String DEFAULT_LOG_LEVEL = "info";
+
 	private static final Pattern CREATE_TABLE_PATTERN = Pattern.compile("^CREATE\\s+TABLE", Pattern.CASE_INSENSITIVE);
-	private TableCache tableCache;
-	private RowMapBuffer rowBuffer;
+
+	private static final long MAX_TX_ELEMENTS = 10000;
+	private final RowMapBuffer rowBuffer = new RowMapBuffer(MAX_TX_ELEMENTS);
+
+	private final ReplayConfig config;
+
+	private final AbstractProducer producer;
+
+	private final TableCache tableCache;
+
+	private final SchemaStore schemaStore;
+	private final Schema schema;
+
 	private Position lastHeartbeatPosition;
-	private SchemaStore schemaStore;
-	private ReplayConfig config;
-	private Schema schema;
-	private AbstractProducer producer;
-	private MaxwellContext context;
+
 	private long rowCount;
 
+
 	public static void main(String[] args) {
-		new MaxwellReplayFile().start(args);
-	}
-
-	public void start(String[] args) {
 		try {
-			config = new ReplayConfig(args);
-			context = new MaxwellContext(config);
-
-			Logging.setLevel(config.log_level == null ? "info" : config.log_level);
-
-			producer = context.getProducer();
-			tableCache = new TableCache(config.databaseName);
-
-			this.schemaStore = new ReplayBinlogStore(context.getSchemaConnectionPool(), CaseSensitivity.CONVERT_ON_COMPARE, config);
-			this.schema = schemaStore.getSchema();
-
-			List<File> files = config.binlogFiles;
-			for (File file : files) {
-				replayBinlog(file);
-			}
+			new MaxwellReplayFile(args).start();
 		} catch (Exception e) {
 			LOGGER.error(e.getMessage(), e);
 		}
+	}
 
-		daemon();
+	private MaxwellReplayFile(String[] args) throws SQLException, URISyntaxException, IOException, SchemaStoreException {
+		this.config = new ReplayConfig(args);
+		MaxwellContext context = new MaxwellContext(config);
+
+		Logging.setLevel(config.log_level == null ? DEFAULT_LOG_LEVEL : config.log_level);
+
+		this.producer = context.getProducer();
+		this.tableCache = new TableCache(config.databaseName);
+		this.schemaStore = new ReplayBinlogStore(context.getSchemaConnectionPool(), CaseSensitivity.CONVERT_ON_COMPARE, config);
+		this.schema = schemaStore.getSchema();
+	}
+
+	public void start() {
+		try {
+			config.binlogFiles.forEach(this::replayBinlog);
+		} catch (Exception e) {
+			LOGGER.error(e.getMessage(), e);
+		} finally {
+			daemon();
+		}
 	}
 
 	/**
@@ -88,11 +103,18 @@ public class MaxwellReplayFile {
 		LOGGER.info("complete replay: {}", rowCount);
 	}
 
+	/**
+	 * Replay the binlog, if an error is encountered, the replay will be terminated,
+	 * and you need to confirm whether to skip the position to continue execution
+	 *
+	 * @param binlogFile binlog file
+	 */
 	private void replayBinlog(File binlogFile) {
 		if (!binlogFile.exists()) {
 			LOGGER.warn("File does not exist, {}", binlogFile.getAbsoluteFile());
 			return;
 		}
+
 		LOGGER.info("Start replay binlog file: {}", binlogFile.getAbsoluteFile());
 		EventDeserializer eventDeserializer = new EventDeserializer();
 		eventDeserializer.setCompatibilityMode(
@@ -101,20 +123,21 @@ public class MaxwellReplayFile {
 				EventDeserializer.CompatibilityMode.INVALID_DATE_AND_TIME_AS_MIN_VALUE
 		);
 
+		String position = null;
 		try (BinaryLogFileReader reader = new BinaryLogFileReader(binlogFile, eventDeserializer)) {
-			RowMap row;
-			while (true) {
-				row = getRow(reader, binlogFile.getName());
-				if (row == null) {
-					break;
-				}
-				if (shouldOutputRowMap(row.getDatabase(), row.getTable(), row, config.filter)) {
+			RowMap row = getRow(reader, binlogFile.getName());
+			while (row != null) {
+				if (shouldOutputRowMap(row)) {
 					producer.push(row);
 					rowCount++;
 				}
+				position = row.getPosition().getBinlogPosition().fullPosition();
+
+				// continue to get next
+				row = getRow(reader, binlogFile.getName());
 			}
 		} catch (Exception e) {
-			LOGGER.error(e.getMessage(), e);
+			throw new RuntimeException("Replay failed, Check from: " + position + ", error: " + e.getMessage(), e);
 		} finally {
 			LOGGER.info("End replay binlog file: {}", binlogFile.getAbsoluteFile());
 		}
@@ -122,24 +145,12 @@ public class MaxwellReplayFile {
 
 	private RowMap getRow(BinaryLogFileReader reader, String binlogName) throws Exception {
 		BinlogConnectorEvent event;
-		while (true) {
-			if (Objects.nonNull(rowBuffer) && !rowBuffer.isEmpty()) {
-				RowMap row = rowBuffer.removeFirst();
-				if (row != null && isMaxwellRow(row) && "heartbeats".equals(row.getTable())) {
-					return processHeartbeats(row);
-				}
-				return row;
-			}
-			Event binlogEvent = reader.readEvent();
-			if (binlogEvent == null) {
+		while (rowBuffer.isEmpty()) {
+			event = wrapEvent(reader.readEvent(), binlogName);
+			if (event == null) {
 				return null;
 			}
-			String gtid = null;
-			String gtidSet = null;
-			if (binlogEvent.getHeader().getEventType() == EventType.GTID) {
-				gtid = ((GtidEventData) binlogEvent.getData()).getGtid();
-			}
-			event = new BinlogConnectorEvent(binlogEvent, binlogName, gtidSet, gtid, config.outputConfig);
+
 			switch (event.getType()) {
 				case WRITE_ROWS:
 				case EXT_WRITE_ROWS:
@@ -150,21 +161,16 @@ public class MaxwellReplayFile {
 					LOGGER.warn("Started replication stream inside a transaction.  This shouldn't normally happen.");
 					LOGGER.warn("Assuming new transaction at unexpected event:" + event);
 
-					rowBuffer = getTransactionRows(event, reader, binlogName);
+					writeRows(event, reader, binlogName);
 					break;
 				case TABLE_MAP:
-					TableMapEventData data = event.tableMapData();
-					if (Filter.isSystemBlacklisted(data.getDatabase(), data.getTable()) || !Filter.includes(config.filter, data.getDatabase(), data.getTable())) {
-						// No need for caching
-						break;
-					}
-					tableCache.processEvent(schema, config.filter, data.getTableId(), data.getDatabase(), data.getTable());
+					cacheTable(event.tableMapData());
 					break;
 				case QUERY:
 					QueryEventData qe = event.queryData();
 					String sql = qe.getSql();
 					if (BinlogConnectorEvent.BEGIN.equals(sql)) {
-						rowBuffer = getTransactionRows(event, reader, binlogName);
+						writeRows(event, reader, binlogName);
 
 						rowBuffer.setServerId(event.getEvent().getHeader().getServerId());
 						rowBuffer.setThreadId(qe.getThreadId());
@@ -180,42 +186,58 @@ public class MaxwellReplayFile {
 					break;
 			}
 		}
+
+		RowMap row = rowBuffer.removeFirst();
+		if (row != null && isMaxwellRow(row) && HEARTBEATS.equals(row.getTable())) {
+			return processHeartbeats(row);
+		}
+		return row;
 	}
 
+	private BinlogConnectorEvent wrapEvent(Event event, String filename) {
+		if (event == null) {
+			return null;
+		}
+		String gtid = null;
+		if (event.getHeader().getEventType() == EventType.GTID) {
+			gtid = ((GtidEventData) event.getData()).getGtid();
+		}
+		return new BinlogConnectorEvent(event, filename, null, gtid, config.outputConfig);
+	}
 
-	private RowMapBuffer getTransactionRows(BinlogConnectorEvent beginEvent, BinaryLogFileReader reader, String binlogName) throws Exception {
+	/**
+	 * Write data to rowBuffer
+	 *
+	 * @param beginEvent binlog event
+	 * @param reader     binlog reader
+	 * @param binlogName binlog name
+	 * @throws Exception
+	 */
+	private void writeRows(BinlogConnectorEvent beginEvent, BinaryLogFileReader reader, String binlogName) throws IOException, ColumnDefCastException, InvalidSchemaError, SchemaStoreException {
 		BinlogConnectorEvent event;
-		final RowMapBuffer buffer = new RowMapBuffer(MAX_TX_ELEMENTS);
 		String currentQuery = null;
 
 		if (!Objects.equals(beginEvent.getType(), EventType.QUERY)) {
 			// data stack header
-			extractData(beginEvent, buffer, null);
+			writeRow(beginEvent, null);
 		}
 
 		while (true) {
-			Event binlogEvent = reader.readEvent();
-			if (binlogEvent == null) {
-				LOGGER.warn("event end, binlog: {}", binlogName);
-				return buffer;
+			event = wrapEvent(reader.readEvent(), binlogName);
+			if (event == null) {
+				LOGGER.warn("Transaction commit not read but event terminated, binlog: {}", binlogName);
+				return;
 			}
-
-			String gtid = null;
-			String gtidSet = null;
-			if (binlogEvent.getHeader().getEventType() == EventType.GTID) {
-				gtid = ((GtidEventData) binlogEvent.getData()).getGtid();
-			}
-			event = new BinlogConnectorEvent(binlogEvent, binlogName, gtidSet, gtid, config.outputConfig);
 
 			EventType eventType = event.getEvent().getHeader().getEventType();
 			if (event.isCommitEvent()) {
-				if (!buffer.isEmpty()) {
-					buffer.getLast().setTXCommit();
+				if (!rowBuffer.isEmpty()) {
+					rowBuffer.getLast().setTXCommit();
 				}
 				if (eventType == EventType.XID) {
-					buffer.setXid(event.xidData().getXid());
+					rowBuffer.setXid(event.xidData().getXid());
 				}
-				return buffer;
+				return;
 			}
 
 			switch (eventType) {
@@ -225,20 +247,15 @@ public class MaxwellReplayFile {
 				case EXT_WRITE_ROWS:
 				case EXT_UPDATE_ROWS:
 				case EXT_DELETE_ROWS:
-					extractData(event, buffer, currentQuery);
+					writeRow(event, currentQuery);
 //					currentQuery = null;
 					break;
 				case TABLE_MAP:
-					TableMapEventData data = event.tableMapData();
-					if (Filter.isSystemBlacklisted(data.getDatabase(), data.getTable()) || !Filter.includes(config.filter, data.getDatabase(), data.getTable())) {
-						// No need for caching
-						break;
-					}
-					tableCache.processEvent(schema, config.filter, data.getTableId(), data.getDatabase(), data.getTable());
+					cacheTable(event.tableMapData());
 					break;
 				case ROWS_QUERY:
-					RowsQueryEventData rqed = event.getEvent().getData();
-					currentQuery = rqed.getQuery();
+					RowsQueryEventData queryEventData = event.getEvent().getData();
+					currentQuery = queryEventData.getQuery();
 					break;
 				case QUERY:
 					QueryEventData qe = event.queryData();
@@ -264,7 +281,22 @@ public class MaxwellReplayFile {
 		}
 	}
 
-	private void extractData(BinlogConnectorEvent event, RowMapBuffer buffer, String query) throws ColumnDefCastException {
+	private void cacheTable(TableMapEventData data) {
+		if (Filter.isSystemBlacklisted(data.getDatabase(), data.getTable()) || !Filter.includes(config.filter, data.getDatabase(), data.getTable())) {
+			// No need for caching
+			return;
+		}
+		tableCache.processEvent(schema, config.filter, data.getTableId(), data.getDatabase(), data.getTable());
+	}
+
+	/**
+	 * Writes an event's data to the RowBuffer
+	 *
+	 * @param event binlog event
+	 * @param query sql
+	 * @throws ColumnDefCastException event conversion RowMap exception
+	 */
+	private void writeRow(BinlogConnectorEvent event, String query) throws ColumnDefCastException {
 		Table table = tableCache.getTable(event.getTableID());
 		if (table == null || !shouldOutputEvent(table.getDatabase(), table.getName(), config.filter, table.getColumnNames())) {
 			return;
@@ -272,20 +304,19 @@ public class MaxwellReplayFile {
 
 		try {
 			List<RowMap> rows = event.jsonMaps(table, getLastHeartbeatRead(), query);
-			rows.stream().filter(r -> shouldOutputRowMap(table.getDatabase(), table.getName(), r, config.filter)).forEach(r -> {
+			rows.stream().filter(this::shouldOutputRowMap).forEach(r -> {
 				try {
-					buffer.add(r);
+					rowBuffer.add(r);
 				} catch (IOException e) {
 					throw new RuntimeException(e);
 				}
 			});
 		} catch (ColumnDefCastException e) {
-			logColumnDefCastException(table, e);
 			throw e;
 		}
 	}
 
-	private void processQueryEvent(BinlogConnectorEvent event) throws Exception {
+	private void processQueryEvent(BinlogConnectorEvent event) throws InvalidSchemaError, SchemaStoreException {
 		QueryEventData data = event.queryData();
 		processQueryEvent(
 				data.getDatabase(),
@@ -297,33 +328,18 @@ public class MaxwellReplayFile {
 		);
 	}
 
-	private void processQueryEvent(String dbName, String sql, SchemaStore schemaStore, Position position, Position nextPosition, Long timestamp) throws Exception {
-		List<ResolvedSchemaChange> changes = schemaStore.processSQL(sql, dbName, position);
+	private void processQueryEvent(String dbName, String sql, SchemaStore schemaStore, Position position, Position nextPosition, Long timestamp) throws InvalidSchemaError, SchemaStoreException {
 		Long schemaId = this.schemaStore.getSchemaID();
-		for (ResolvedSchemaChange change : changes) {
-			if (change.shouldOutput(config.filter)) {
-				DDLMap ddl = new DDLMap(change, timestamp, sql, position, nextPosition, schemaId);
+		schemaStore.processSQL(sql, dbName, position).stream().filter(change -> change.shouldOutput(config.filter)).forEach(change -> {
+			DDLMap ddl = new DDLMap(change, timestamp, sql, position, nextPosition, schemaId);
+			try {
 				producer.push(ddl);
 				rowCount++;
+			} catch (Exception e) {
+				throw new RuntimeException(e.getMessage(), e);
 			}
-		}
+		});
 		tableCache.clear();
-	}
-
-	private void logColumnDefCastException(Table table, ColumnDefCastException e) {
-		String castInfo = String.format(
-				"Unable to cast %s (%s) into column %s.%s.%s (type '%s')",
-				e.givenValue.toString(),
-				e.givenValue.getClass().getName(),
-				table.getDatabase(),
-				table.getName(),
-				e.def.getName(),
-				e.def.getType()
-		);
-		LOGGER.error(castInfo);
-
-		e.database = table.getDatabase();
-		e.table = table.getName();
 	}
 
 	private Long getLastHeartbeatRead() {
@@ -354,7 +370,9 @@ public class MaxwellReplayFile {
 		return row.getDatabase().equals(config.databaseName);
 	}
 
-	private boolean shouldOutputRowMap(String database, String table, RowMap rowMap, Filter filter) {
-		return filter.isSystemWhitelisted(database, table) || filter.includes(database, table, rowMap.getData());
+	private boolean shouldOutputRowMap(RowMap row) {
+		String database = row.getDatabase();
+		String table = row.getTable();
+		return config.filter.isSystemWhitelisted(database, table) || config.filter.includes(database, table, row.getData());
 	}
 }

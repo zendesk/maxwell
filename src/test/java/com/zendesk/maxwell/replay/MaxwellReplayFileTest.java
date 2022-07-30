@@ -9,7 +9,6 @@ public class MaxwellReplayFileTest {
 
 	@Test
 	public void testReplay() {
-		MaxwellReplayFile replayFile = new MaxwellReplayFile();
 		String[] args = new String[]{
 				"--host=127.0.0.1",
 				"--port=3306",
@@ -28,6 +27,6 @@ public class MaxwellReplayFileTest {
 				"--filter=exclude:test.*",
 				"--replay_binlog=/data/binlog/binlog.000001"
 		};
-		replayFile.start(args);
+		MaxwellReplayFile.main(args);
 	}
 }
