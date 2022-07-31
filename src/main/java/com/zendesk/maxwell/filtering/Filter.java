@@ -1,14 +1,11 @@
 package com.zendesk.maxwell.filtering;
 
 import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class Filter {
-	static final Logger LOGGER = LoggerFactory.getLogger(Filter.class);
 
 	private final List<FilterPattern> patterns;
 	private String maxwellDB;
@@ -41,7 +38,7 @@ public class Filter {
 		this.patterns.addAll(parsedFilter);
 	}
 
-	public boolean isSystemWhitelisted(String database, String table) {
+	public boolean isSystemAllowlist(String database, String table) {
 		return isMaxwellDB(database)
 			&& ("bootstrap".equals(table) || "heartbeats".equals(table));
 	}
@@ -86,8 +83,8 @@ public class Filter {
 	}
 
 
-	public boolean isTableBlacklisted(String database, String table) {
-		if ( isSystemBlacklisted(database, table) )
+	public boolean isTableBlocklisted(String database, String table) {
+		if ( isSystemBlocklisted(database, table) )
 			return true;
 
 		if ( isMaxwellDB(database) )
@@ -103,7 +100,7 @@ public class Filter {
 		return !match.include;
 	}
 
-	public boolean isDatabaseBlacklisted(String database) {
+	public boolean isDatabaseBlocklisted(String database) {
 		if ( isMaxwellDB(database) )
 			return false;
 
@@ -117,7 +114,7 @@ public class Filter {
 		return false;
 	}
 
-	public static boolean isSystemBlacklisted(String databaseName, String tableName) {
+	public static boolean isSystemBlocklisted(String databaseName, String tableName) {
 		return "mysql".equals(databaseName) &&
 			("ha_health_check".equals(tableName) || StringUtils.startsWith(tableName, "rds_heartbeat"));
 	}

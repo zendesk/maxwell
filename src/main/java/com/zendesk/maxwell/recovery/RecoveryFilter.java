@@ -14,7 +14,7 @@ public class RecoveryFilter extends Filter {
 	}
 
 	@Override
-	public boolean isTableBlacklisted(String databaseName, String tableName) {
+	public boolean isTableBlocklisted(String databaseName, String tableName) {
 		return !(databaseName.equals(maxwellDatabaseName) && tableName.equals("heartbeats"));
 	}
 }

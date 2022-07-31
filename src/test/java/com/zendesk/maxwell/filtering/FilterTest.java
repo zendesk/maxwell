@@ -2,7 +2,6 @@ package com.zendesk.maxwell.filtering;
 
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,8 +83,8 @@ public class FilterTest {
 		Filter f = new Filter("blacklist: seria.*");
 		assertTrue(f.includes("foo", "bar"));
 		assertFalse(f.includes("seria", "var"));
-		assertTrue(f.isDatabaseBlacklisted("seria"));
-		assertTrue(f.isTableBlacklisted("seria", "anything"));
+		assertTrue(f.isDatabaseBlocklisted("seria"));
+		assertTrue(f.isTableBlocklisted("seria", "anything"));
 	}
 
 	@Test

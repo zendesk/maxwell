@@ -1,28 +1,24 @@
 package com.zendesk.maxwell.replication;
 
-import java.util.HashMap;
-
 import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.Table;
 
-public class TableCache {
-	private final String maxwellDB;
+import java.util.HashMap;
 
-	public TableCache(String maxwellDB) {
-		this.maxwellDB = maxwellDB;
-	}
+public class TableCache {
+
 	private final HashMap<Long, Table> tableMapCache = new HashMap<>();
 
 	public void processEvent(Schema schema, Filter filter, Long tableId, String dbName, String tblName) {
 		if ( !tableMapCache.containsKey(tableId)) {
-			if ( filter.isTableBlacklisted(dbName, tblName) ) {
+			if (filter.isTableBlocklisted(dbName, tblName)) {
 				return;
 			}
 
 			Database db = schema.findDatabase(dbName);
-			if ( db == null )
+			if (db == null)
 				throw new RuntimeException("Couldn't find database " + dbName);
 			else {
 				Table tbl = db.findTable(tblName);

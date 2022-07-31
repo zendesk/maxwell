@@ -1,18 +1,18 @@
 package com.zendesk.maxwell.scripting;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
 import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.ddl.DDLMap;
 import org.openjdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class Scripting {
 	static final Logger LOGGER = LoggerFactory.getLogger(Scripting.class);
@@ -50,9 +50,9 @@ public class Scripting {
 	public void invoke(RowMap row) {
 		if ( row instanceof HeartbeatRowMap && processHeartbeatFunc != null )
 			processHeartbeatFunc.call(null, new WrappedHeartbeatMap((HeartbeatRowMap) row));
-		else if ( row instanceof DDLMap && processDDLFunc != null )
+		else if (row instanceof DDLMap && processDDLFunc != null)
 			processDDLFunc.call(null, new WrappedDDLMap((DDLMap) row));
-		else if ( row instanceof RowMap && processRowFunc != null )
+		else if (row != null && processRowFunc != null)
 			processRowFunc.call(null, new WrappedRowMap(row));
 	}
 

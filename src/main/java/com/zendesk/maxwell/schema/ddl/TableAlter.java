@@ -1,13 +1,14 @@
 package com.zendesk.maxwell.schema.ddl;
 
-import java.util.*;
-
+import com.zendesk.maxwell.CaseSensitivity;
 import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.schema.Database;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.StringColumnDef;
-import com.zendesk.maxwell.CaseSensitivity;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TableAlter extends SchemaChange {
 	public String database;
@@ -82,7 +83,7 @@ public class TableAlter extends SchemaChange {
 		if ( filter == null ) {
 			return false;
 		} else {
-			return filter.isTableBlacklisted(this.database, this.table);
+			return filter.isTableBlocklisted(this.database, this.table);
 		}
 	}
 }

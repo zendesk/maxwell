@@ -1,7 +1,8 @@
 package com.zendesk.maxwell.schema.ddl;
 
 import com.zendesk.maxwell.filtering.Filter;
-import com.zendesk.maxwell.schema.*;
+import com.zendesk.maxwell.schema.Database;
+import com.zendesk.maxwell.schema.Schema;
 
 public class TableDrop extends SchemaChange {
 	public String database;
@@ -30,7 +31,7 @@ public class TableDrop extends SchemaChange {
 		if ( filter == null ) {
 			return false;
 		} else {
-			return filter.isTableBlacklisted(this.database, this.table);
+			return filter.isTableBlocklisted(this.database, this.table);
 		}
 	}
 

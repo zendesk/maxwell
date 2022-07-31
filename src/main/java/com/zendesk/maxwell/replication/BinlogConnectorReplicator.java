@@ -7,7 +7,6 @@ import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import com.github.shyiko.mysql.binlog.event.EventType;
 import com.github.shyiko.mysql.binlog.event.QueryEventData;
 import com.github.shyiko.mysql.binlog.event.RowsQueryEventData;
-import com.github.shyiko.mysql.binlog.event.TableMapEventData;
 import com.github.shyiko.mysql.binlog.event.deserialization.EventDeserializer;
 import com.github.shyiko.mysql.binlog.network.ServerException;
 import com.zendesk.maxwell.MaxwellMysqlConfig;
@@ -19,23 +18,20 @@ import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMapBuffer;
-import com.zendesk.maxwell.schema.*;
-import com.zendesk.maxwell.schema.columndef.ColumnDefCastException;
-import com.zendesk.maxwell.schema.ddl.DDLMap;
-import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
+import com.zendesk.maxwell.schema.Schema;
+import com.zendesk.maxwell.schema.SchemaStore;
+import com.zendesk.maxwell.schema.SchemaStoreException;
 import com.zendesk.maxwell.scripting.Scripting;
 import com.zendesk.maxwell.util.RunLoopProcess;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.regex.Pattern;
+
+import static com.zendesk.maxwell.replication.BinlogConnectorEventProcessor.CREATE_TABLE_PATTERN;
 
 public class BinlogConnectorReplicator extends RunLoopProcess implements Replicator, BinaryLogClient.LifecycleListener {
 	static final Logger LOGGER = LoggerFactory.getLogger(BinlogConnectorReplicator.class);
@@ -49,10 +45,10 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 	protected final BinaryLogClient client;
 	private final int replicationReconnectionRetries;
-	private BinlogConnectorEventListener binlogEventListener;
+	private final BinlogConnectorEventListener binlogEventListener;
 	private BinlogConnectorLivenessMonitor binlogLivenessMonitor;
 	private final LinkedBlockingDeque<BinlogConnectorEvent> queue;
-	private final TableCache tableCache;
+	private final BinlogConnectorEventProcessor processor;
 	private final Scripting scripting;
 	private ServerException lastCommError;
 
@@ -60,9 +56,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private boolean hitEOF = false;
 
 	private Position lastHeartbeatPosition;
-	private final HeartbeatNotifier heartbeatNotifier;
 	private Long stopAtHeartbeat;
-	private Filter filter;
 
 	private final BootstrapController bootstrapper;
 	private final AbstractProducer producer;
@@ -72,18 +66,15 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private final Counter rowCounter;
 	private final Meter rowMeter;
 
-	private SchemaStore schemaStore;
-	private Histogram transactionRowCount;
-	private Histogram transactionExecutionTime;
+	private final SchemaStore schemaStore;
+	private final Histogram transactionRowCount;
+	private final Histogram transactionExecutionTime;
 
 	private final Boolean gtidPositioning;
 
-	private static Pattern createTablePattern =
-		Pattern.compile("^CREATE\\s+TABLE", Pattern.CASE_INSENSITIVE);
-
 	private boolean isConnected = false;
 
-	private class ClientReconnectedException extends Exception {}
+	private static class ClientReconnectedException extends Exception {}
 
 	public BinlogConnectorReplicator(
 			SchemaStore schemaStore,
@@ -148,12 +139,10 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		this.maxwellSchemaDatabaseName = maxwellSchemaDatabaseName;
 		this.producer = producer;
 		this.lastHeartbeatPosition = start;
-		this.heartbeatNotifier = heartbeatNotifier;
 		this.stopOnEOF = stopOnEOF;
 		this.scripting = scripting;
 		this.schemaStore = schemaStore;
-		this.tableCache = new TableCache(maxwellSchemaDatabaseName);
-		this.filter = filter;
+		this.processor = new BinlogConnectorEventProcessor(new TableCache(), schemaStore, start, outputConfig, filter, scripting, heartbeatNotifier);
 		this.lastCommError = null;
 		this.bufferMemoryUsage = bufferMemoryUsage;
 		this.queue = new LinkedBlockingDeque<>(binlogEventQueueSize);
@@ -342,112 +331,6 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 			producer.push(row);
 	}
 
-
-
-	/**
-	 * If the input RowMap is one of the heartbeat pulses we sent out,
-	 * process it.  If it's one of our heartbeats, we build a `HeartbeatRowMap`,
-	 * which will be handled specially in producers (namely, it causes the binlog position to advance).
-	 * It is isn't, we leave the row as a RowMap and the rest of the chain will ignore it.
-	 *
-	 * @return either a RowMap or a HeartbeatRowMap
-	 */
-
-	private RowMap processHeartbeats(RowMap row) {
-		String hbClientID = (String) row.getData("client_id");
-		if ( !Objects.equals(hbClientID, this.clientID) )
-			return row; // plain row -- do not process.
-
-		long lastHeartbeatRead = (Long) row.getData("heartbeat");
-		LOGGER.debug("replicator picked up heartbeat: {}", lastHeartbeatRead);
-		this.lastHeartbeatPosition = row.getPosition().withHeartbeat(lastHeartbeatRead);
-		heartbeatNotifier.heartbeat(lastHeartbeatRead);
-		return HeartbeatRowMap.valueOf(row.getDatabase(), this.lastHeartbeatPosition, row.getNextPosition().withHeartbeat(lastHeartbeatRead));
-	}
-
-	/**
-	 * Parse a DDL statement and output the results to the producer
-	 *
-	 * @param dbName The database "context" under which the SQL is to be processed.  think "use db; alter table foo ..."
-	 * @param sql The DDL SQL to be processed
-	 * @param schemaStore A SchemaStore object to which we delegate the parsing of the sql
-	 * @param position The position that the SQL happened at
-	 * @param timestamp The timestamp of the SQL binlog event
-	 */
-	private void processQueryEvent(String dbName, String sql, SchemaStore schemaStore, Position position, Position nextPosition, Long timestamp) throws Exception {
-		List<ResolvedSchemaChange> changes = schemaStore.processSQL(sql, dbName, position);
-		Long schemaId = getSchemaId();
-
-		if ( bootstrapper != null)
-			bootstrapper.setCurrentSchemaID(schemaId);
-
-		for (ResolvedSchemaChange change : changes) {
-			if (change.shouldOutput(filter)) {
-				DDLMap ddl = new DDLMap(change, timestamp, sql, position, nextPosition, schemaId);
-
-				if ( scripting != null )
-					scripting.invoke(ddl);
-
-				producer.push(ddl);
-			}
-		}
-
-		tableCache.clear();
-	}
-
-	private void processQueryEvent(BinlogConnectorEvent event) throws Exception {
-		QueryEventData data = event.queryData();
-		processQueryEvent(
-			data.getDatabase(),
-			data.getSql(),
-			this.schemaStore,
-			Position.valueOf(event.getPosition(), getLastHeartbeatRead()),
-			Position.valueOf(event.getNextPosition(), getLastHeartbeatRead()),
-			event.getEvent().getHeader().getTimestamp()
-		);
-	}
-
-	/**
-	 * Should we output a batch of rows for the given database and table?
-	 *
-	 * First against a whitelist/blacklist/filter.  The whitelist
-	 * ensures events that maxwell needs (maxwell.bootstrap, maxwell.heartbeats)
-	 * are always passed along.
-	 *
-	 * The system the blacklist gets rid of the
-	 * `ha_health_check` and `rds_heartbeat` tables which are weird
-	 * replication-control mechanism events in Alibaba RDS (and maybe amazon?)
-	 *
-	 * Then we check the configured filters.
-	 *
-	 * Finally, if we decide to exclude a table we check the filter to
-	 * see if it's possible that a column-value filter could reverse this decision
-	 *
-	 * @param database The database of the DML
-	 * @param table The table of the DML
-	 * @param filter A table-filter, or null
-	 * @param columnNames Names of the columns this table contains
-	 * @return Whether we should write the event to the producer
-	 */
-	private boolean shouldOutputEvent(String database, String table, Filter filter, Set<String> columnNames) {
-		if ( Filter.isSystemBlacklisted(database, table) )
-			return false;
-		else if ( filter.isSystemWhitelisted(database, table) )
-			return true;
-		else {
-			if ( Filter.includes(filter, database, table) )
-				return true;
-			else
-				return Filter.couldIncludeFromColumnFilters(filter, database, table, columnNames);
-		}
-	}
-
-
-	private boolean shouldOutputRowMap(String database, String table, RowMap rowMap, Filter filter) {
-		return filter.isSystemWhitelisted(database, table) ||
-			filter.includes(database, table, rowMap.getData());
-	}
-
 	/**
 	 * Is this RowMap an update to one of maxwell's own tables?
 	 *
@@ -562,28 +445,11 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 				case EXT_WRITE_ROWS:
 				case EXT_UPDATE_ROWS:
 				case EXT_DELETE_ROWS:
-					Table table = tableCache.getTable(event.getTableID());
-
-					if ( table != null && shouldOutputEvent(table.getDatabase(), table.getName(), filter, table.getColumnNames()) ) {
-						List<RowMap> rows;
-						try {
-							rows = event.jsonMaps(table, getLastHeartbeatRead(), currentQuery);
-						} catch ( ColumnDefCastException e ) {
-							logColumnDefCastException(table, e);
-
-							throw(e);
-						}
-
-						for ( RowMap r : rows )
-							if (shouldOutputRowMap(table.getDatabase(), table.getName(), r, filter)) {
-								buffer.add(r);
-							}
-					}
+					processor.writeRow(event, buffer, currentQuery);
 					currentQuery = null;
 					break;
 				case TABLE_MAP:
-					TableMapEventData data = event.tableMapData();
-					tableCache.processEvent(getSchema(), this.filter, data.getTableId(), data.getDatabase(), data.getTable());
+					processor.cacheTable(event.tableMapData());
 					break;
 				case ROWS_QUERY:
 					RowsQueryEventData rqed = event.getEvent().getData();
@@ -594,14 +460,16 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					String sql = qe.getSql();
 					String upperCaseSql = sql.toUpperCase();
 
-					if ( upperCaseSql.startsWith(BinlogConnectorEvent.SAVEPOINT)) {
+					if (upperCaseSql.startsWith(BinlogConnectorEvent.SAVEPOINT)) {
 						LOGGER.debug("Ignoring SAVEPOINT in transaction: {}", qe);
-					} else if ( createTablePattern.matcher(sql).find() ) {
+					} else if (CREATE_TABLE_PATTERN.matcher(sql).find()) {
 						// CREATE TABLE `foo` SELECT * FROM `bar` will put a CREATE TABLE
 						// inside a transaction.  Note that this could, in rare cases, lead
 						// to us starting on a WRITE_ROWS event -- we sync the schema position somewhere
 						// kinda unsafe.
-						processQueryEvent(event);
+						if (bootstrapper != null)
+							bootstrapper.setCurrentSchemaID(processor.getSchemaId());
+						processor.processQueryEvent(event, producer);
 					} else if (upperCaseSql.startsWith("INSERT INTO MYSQL.RDS_") || upperCaseSql.startsWith("DELETE FROM MYSQL.RDS_")) {
 						// RDS heartbeat events take the following form:
 						// INSERT INTO mysql.rds_heartbeat2(id, value) values (1,1483041015005) ON DUPLICATE KEY UPDATE value = 1483041015005
@@ -623,21 +491,6 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		}
 	}
 
-	private void logColumnDefCastException(Table table, ColumnDefCastException e) {
-		String castInfo = String.format(
-				"Unable to cast %s (%s) into column %s.%s.%s (type '%s')",
-				e.givenValue.toString(),
-				e.givenValue.getClass().getName(),
-				table.getDatabase(),
-				table.getName(),
-				e.def.getName(),
-				e.def.getType()
-		);
-		LOGGER.error(castInfo);
-
-		e.database = table.getDatabase();
-		e.table = table.getName();
-	}
 
 	/**
 	 * The main entry point into the event reading loop.
@@ -665,8 +518,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 			if (rowBuffer != null && !rowBuffer.isEmpty()) {
 				RowMap row = rowBuffer.removeFirst();
 
-				if ( row != null && isMaxwellRow(row) && row.getTable().equals("heartbeats") )
-					return processHeartbeats(row);
+				if (row != null && isMaxwellRow(row) && row.getTable().equals("heartbeats"))
+					return processor.processHeartbeats(row, clientID);
 				else
 					return row;
 			}
@@ -682,7 +535,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 				} else {
 					try {
 						ensureReplicatorThread();
-					} catch ( ClientReconnectedException e ) {}
+					} catch (ClientReconnectedException ignored) {
+					}
 					return null;
 				}
 			}
@@ -701,8 +555,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					rowBuffer = getTransactionRows(event);
 					break;
 				case TABLE_MAP:
-					TableMapEventData data = event.tableMapData();
-					tableCache.processEvent(getSchema(), this.filter, data.getTableId(), data.getDatabase(), data.getTable());
+					processor.cacheTable(event.tableMapData());
 					break;
 				case QUERY:
 					QueryEventData qe = event.queryData();
@@ -710,7 +563,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					if (BinlogConnectorEvent.BEGIN.equals(sql)) {
 						try {
 							rowBuffer = getTransactionRows(event);
-						} catch ( ClientReconnectedException e ) {
+						} catch (ClientReconnectedException e) {
 							// rowBuffer should already be empty by the time we get to this switch
 							// statement, but we null it for clarity
 							rowBuffer = null;
@@ -720,12 +573,12 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 						rowBuffer.setThreadId(qe.getThreadId());
 						rowBuffer.setSchemaId(getSchemaId());
 					} else {
-						processQueryEvent(event);
+						processor.processQueryEvent(event, producer);
 					}
 					break;
 				case ROTATE:
-					tableCache.clear();
-					if ( stopOnEOF && event.getPosition().getOffset() > 0 ) {
+					processor.clearTableCache();
+					if (stopOnEOF && event.getPosition().getOffset() > 0) {
 						this.binlogEventListener.mustStop.set(true);
 						this.client.disconnect();
 						this.hitEOF = true;

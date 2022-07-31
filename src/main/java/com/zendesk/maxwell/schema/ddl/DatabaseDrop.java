@@ -25,7 +25,7 @@ public class DatabaseDrop extends SchemaChange {
 		if ( filter == null ) {
 			return false;
 		} else {
-			return filter.isDatabaseBlacklisted(database);
+			return filter.isDatabaseBlocklisted(database);
 		}
 	}
 
