@@ -6,9 +6,7 @@ import com.zendesk.maxwell.bootstrap.BootstrapController;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.recovery.Recovery;
 import com.zendesk.maxwell.recovery.RecoveryInfo;
-import com.zendesk.maxwell.replication.BinlogConnectorReplicator;
-import com.zendesk.maxwell.replication.Position;
-import com.zendesk.maxwell.replication.Replicator;
+import com.zendesk.maxwell.replication.*;
 import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.schema.*;
 import com.zendesk.maxwell.schema.columndef.ColumnDefCastException;
@@ -271,8 +269,8 @@ public class Maxwell implements Runnable {
 
 		mysqlSchemaStore.getSchema(); // trigger schema to load / capture before we start the replicator.
 
+		BinlogConnectorEventProcessor processor = new BinlogConnectorEventProcessor(new TableCache(), mysqlSchemaStore, initPosition, config.outputConfig, context.getFilter(), config.scripting, context.getHeartbeatNotifier(), config.replayMode);
 		this.replicator = new BinlogConnectorReplicator(
-			mysqlSchemaStore,
 			producer,
 			bootstrapController,
 			config.replicationMysql,
@@ -282,10 +280,9 @@ public class Maxwell implements Runnable {
 			initPosition,
 			false,
 			config.clientID,
-			context.getHeartbeatNotifier(),
 			config.scripting,
-			context.getFilter(),
 			config.outputConfig,
+			processor,
 			config.bufferMemoryUsage,
 			config.replicationReconnectionRetries,
 			config.binlogEventQueueSize

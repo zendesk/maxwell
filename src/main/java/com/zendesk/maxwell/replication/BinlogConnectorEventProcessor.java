@@ -7,6 +7,7 @@ import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMapBuffer;
+import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaStore;
 import com.zendesk.maxwell.schema.SchemaStoreException;
 import com.zendesk.maxwell.schema.Table;
@@ -37,10 +38,11 @@ public class BinlogConnectorEventProcessor {
 	private final SchemaStore schemaStore;
 	private final Scripting scripting;
 	private final HeartbeatNotifier heartbeatNotifier;
+	private final boolean replay;
 
 	private Position lastHeartbeatPosition;
 
-	public BinlogConnectorEventProcessor(TableCache tableCache, SchemaStore schemaStore, Position start, MaxwellOutputConfig outputConfig, Filter filter, Scripting scripting, HeartbeatNotifier heartbeatNotifier) {
+	public BinlogConnectorEventProcessor(TableCache tableCache, SchemaStore schemaStore, Position start, MaxwellOutputConfig outputConfig, Filter filter, Scripting scripting, HeartbeatNotifier heartbeatNotifier, boolean replay) {
 		this.tableCache = tableCache;
 		this.outputConfig = outputConfig;
 		this.filter = filter;
@@ -48,10 +50,15 @@ public class BinlogConnectorEventProcessor {
 		this.scripting = scripting;
 		this.schemaStore = schemaStore;
 		this.heartbeatNotifier = heartbeatNotifier;
+		this.replay = replay;
 	}
 
 	public Long getSchemaId() throws SchemaStoreException {
 		return this.schemaStore.getSchemaID();
+	}
+
+	public Schema getSchema() throws SchemaStoreException {
+		return this.schemaStore.getSchema();
 	}
 
 	public BinlogConnectorEvent wrapEvent(Event event, String filename) {
@@ -74,7 +81,7 @@ public class BinlogConnectorEventProcessor {
 	 */
 	public void writeRow(BinlogConnectorEvent event, RowMapBuffer rowBuffer, String query) throws ColumnDefCastException {
 		Table table = tableCache.getTable(event.getTableID());
-		if (table == null || !shouldOutputEvent(table.getDatabase(), table.getName(), table.getColumnNames())) {
+		if (table == null || disableOutputEvent(table.getDatabase(), table.getName(), table.getColumnNames())) {
 			return;
 		}
 
@@ -109,12 +116,12 @@ public class BinlogConnectorEventProcessor {
 		e.table = table.getName();
 	}
 
-	private Long getLastHeartbeatRead() {
+	public Long getLastHeartbeatRead() {
 		return lastHeartbeatPosition == null ? System.currentTimeMillis() : lastHeartbeatPosition.getLastHeartbeatRead();
 	}
 
 	public void cacheTable(TableMapEventData data) throws SchemaStoreException {
-		if (!shouldOutputEvent(data.getDatabase(), data.getTable(), null)) {
+		if (replay && disableOutputEvent(data.getDatabase(), data.getTable(), null)) {
 			// There is no need to cache table
 			return;
 		}
@@ -132,7 +139,7 @@ public class BinlogConnectorEventProcessor {
 	}
 
 	/**
-	 * Should we output a batch of rows for the given database and table?
+	 * Disable output of a batch of rows for a given database and table?
 	 * <p>
 	 * First against a allowlist/blocklist/filter.  The allowlist
 	 * ensures events that maxwell needs (maxwell.bootstrap, maxwell.heartbeats)
@@ -152,20 +159,20 @@ public class BinlogConnectorEventProcessor {
 	 * @param columnNames Names of the columns this table contains
 	 * @return Whether we should write the event to the producer
 	 */
-	private boolean shouldOutputEvent(String database, String table, Set<String> columnNames) {
+	private boolean disableOutputEvent(String database, String table, Set<String> columnNames) {
 		if (Filter.isSystemBlocklisted(database, table)) {
-			return false;
+			return true;
 		}
 		if (filter.isSystemAllowlist(database, table)) {
-			return true;
+			return false;
 		}
 		if (Filter.includes(filter, database, table)) {
-			return true;
+			return false;
 		}
 		if (Objects.isNull(columnNames)) {
-			return true;
+			return false;
 		}
-		return Filter.couldIncludeFromColumnFilters(filter, database, table, columnNames);
+		return !Filter.couldIncludeFromColumnFilters(filter, database, table, columnNames);
 	}
 
 

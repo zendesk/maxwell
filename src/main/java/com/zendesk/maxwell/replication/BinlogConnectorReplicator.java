@@ -11,7 +11,6 @@ import com.github.shyiko.mysql.binlog.event.deserialization.EventDeserializer;
 import com.github.shyiko.mysql.binlog.network.ServerException;
 import com.zendesk.maxwell.MaxwellMysqlConfig;
 import com.zendesk.maxwell.bootstrap.BootstrapController;
-import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.monitoring.Metrics;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
@@ -19,7 +18,6 @@ import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMapBuffer;
 import com.zendesk.maxwell.schema.Schema;
-import com.zendesk.maxwell.schema.SchemaStore;
 import com.zendesk.maxwell.schema.SchemaStoreException;
 import com.zendesk.maxwell.scripting.Scripting;
 import com.zendesk.maxwell.util.RunLoopProcess;
@@ -55,7 +53,6 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private final boolean stopOnEOF;
 	private boolean hitEOF = false;
 
-	private Position lastHeartbeatPosition;
 	private Long stopAtHeartbeat;
 
 	private final BootstrapController bootstrapper;
@@ -66,7 +63,6 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private final Counter rowCounter;
 	private final Meter rowMeter;
 
-	private final SchemaStore schemaStore;
 	private final Histogram transactionRowCount;
 	private final Histogram transactionExecutionTime;
 
@@ -77,46 +73,6 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private static class ClientReconnectedException extends Exception {}
 
 	public BinlogConnectorReplicator(
-			SchemaStore schemaStore,
-			AbstractProducer producer,
-			BootstrapController bootstrapper,
-			MaxwellMysqlConfig mysqlConfig,
-			Long replicaServerID,
-			String maxwellSchemaDatabaseName,
-			Metrics metrics,
-			Position start,
-			boolean stopOnEOF,
-			String clientID,
-			HeartbeatNotifier heartbeatNotifier,
-			Scripting scripting,
-			Filter filter,
-			MaxwellOutputConfig outputConfig,
-			float bufferMemoryUsage,
-			int replicationReconnectionRetries
-	) {
-		this(
-				schemaStore,
-				producer,
-				bootstrapper,
-				mysqlConfig,
-				replicaServerID,
-				maxwellSchemaDatabaseName,
-				metrics,
-				start,
-				stopOnEOF,
-				clientID,
-				heartbeatNotifier,
-				scripting,
-				filter,
-				outputConfig,
-				bufferMemoryUsage,
-				replicationReconnectionRetries,
-				BINLOG_QUEUE_SIZE
-		);
-	}
-
-	public BinlogConnectorReplicator(
-		SchemaStore schemaStore,
 		AbstractProducer producer,
 		BootstrapController bootstrapper,
 		MaxwellMysqlConfig mysqlConfig,
@@ -126,10 +82,9 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		Position start,
 		boolean stopOnEOF,
 		String clientID,
-		HeartbeatNotifier heartbeatNotifier,
 		Scripting scripting,
-		Filter filter,
 		MaxwellOutputConfig outputConfig,
+		BinlogConnectorEventProcessor processor,
 		float bufferMemoryUsage,
 		int replicationReconnectionRetries,
 		int binlogEventQueueSize
@@ -138,14 +93,13 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		this.bootstrapper = bootstrapper;
 		this.maxwellSchemaDatabaseName = maxwellSchemaDatabaseName;
 		this.producer = producer;
-		this.lastHeartbeatPosition = start;
 		this.stopOnEOF = stopOnEOF;
 		this.scripting = scripting;
-		this.schemaStore = schemaStore;
-		this.processor = new BinlogConnectorEventProcessor(new TableCache(), schemaStore, start, outputConfig, filter, scripting, heartbeatNotifier);
+
 		this.lastCommError = null;
 		this.bufferMemoryUsage = bufferMemoryUsage;
 		this.queue = new LinkedBlockingDeque<>(binlogEventQueueSize);
+		this.processor = processor;
 
 		/* setup metrics */
 		rowCounter = metrics.getRegistry().counter(
@@ -215,8 +169,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		RowMap row = null;
 		try {
 			row = getRow();
-		} catch ( InterruptedException e ) {
-		}
+		} catch (InterruptedException ignored) {}
 
 		if ( row == null )
 			return;
@@ -273,7 +226,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	 */
 
 	public Long getLastHeartbeatRead() {
-		return lastHeartbeatPosition.getLastHeartbeatRead();
+		return processor.getLastHeartbeatRead();
 	}
 
 	public void stopAtHeartbeat(long heartbeat) {
@@ -310,10 +263,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		   we're in synchronous bootstrapping mode.  It also
 		   has the side affect of taking the row into a queue if
 		   we're in async bootstrapping mode */
-		if ( bootstrapper != null && bootstrapper.shouldSkip(row) )
-			return true;
-
-		return false;
+		return bootstrapper != null && bootstrapper.shouldSkip(row);
 	}
 
 	protected void processRow(RowMap row) throws Exception {
@@ -375,7 +325,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 				// we like, so we don't have to bail out of the middle of an event.
 				LOGGER.warn("replicator stopped at position: {} -- restarting", client.getBinlogFilename() + ":" + client.getBinlogPosition());
 
-				Long oldMasterId = client.getMasterServerId();
+				long oldMasterId = client.getMasterServerId();
 				tryReconnect();
 				if (client.getMasterServerId() != oldMasterId) {
 					throw new Exception("Master id changed from " + oldMasterId + " to " + client.getMasterServerId()
@@ -597,11 +547,11 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	}
 
 	public Schema getSchema() throws SchemaStoreException {
-		return this.schemaStore.getSchema();
+		return this.processor.getSchema();
 	}
 
 	public Long getSchemaId() throws SchemaStoreException {
-		return this.schemaStore.getSchemaID();
+		return this.processor.getSchemaId();
 	}
 
 	@Override

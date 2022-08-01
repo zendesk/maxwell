@@ -5,11 +5,7 @@ import com.zendesk.maxwell.MaxwellMysqlConfig;
 import com.zendesk.maxwell.monitoring.Metrics;
 import com.zendesk.maxwell.monitoring.NoOpMetrics;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
-import com.zendesk.maxwell.replication.BinlogConnectorReplicator;
-import com.zendesk.maxwell.replication.BinlogPosition;
-import com.zendesk.maxwell.replication.HeartbeatNotifier;
-import com.zendesk.maxwell.replication.Position;
-import com.zendesk.maxwell.replication.Replicator;
+import com.zendesk.maxwell.replication.*;
 import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.util.ConnectionPool;
@@ -22,6 +18,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.zendesk.maxwell.replication.BinlogConnectorReplicator.BINLOG_QUEUE_SIZE;
 
 public class Recovery {
 	static final Logger LOGGER = LoggerFactory.getLogger(Recovery.class);
@@ -58,10 +56,11 @@ public class Recovery {
 			BinlogPosition binlogPosition = list.get(i);
 			Position position = Position.valueOf(binlogPosition, recoveryInfo.getHeartbeat());
 			Metrics metrics = new NoOpMetrics();
+			MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
+			BinlogConnectorEventProcessor processor = new BinlogConnectorEventProcessor(new TableCache(), schemaStore, position, outputConfig, new RecoveryFilter(this.maxwellDatabaseName), null, new HeartbeatNotifier(), true);
 
 			LOGGER.debug("scanning binlog: {}", binlogPosition);
 			Replicator replicator = new BinlogConnectorReplicator(
-					this.schemaStore,
 					null,
 					null,
 					replicationConfig,
@@ -71,12 +70,12 @@ public class Recovery {
 					position,
 					true,
 					recoveryInfo.clientID,
-					new HeartbeatNotifier(),
 					null,
-					new RecoveryFilter(this.maxwellDatabaseName),
-					new MaxwellOutputConfig(),
+					outputConfig,
+					processor,
 					0.25f, // Default memory usage size, not used
-					1
+					1,
+					BINLOG_QUEUE_SIZE
 			);
 
 			HeartbeatRowMap h = findHeartbeat(replicator);

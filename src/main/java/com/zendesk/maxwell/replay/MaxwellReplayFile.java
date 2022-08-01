@@ -68,7 +68,7 @@ public class MaxwellReplayFile {
 
 		this.producer = context.getProducer();
 		ReplayBinlogStore schemaStore = new ReplayBinlogStore(context.getSchemaConnectionPool(), CaseSensitivity.CONVERT_ON_COMPARE, config);
-		this.processor = new BinlogConnectorEventProcessor(new TableCache(), schemaStore, null, config.outputConfig, config.filter, config.scripting, new HeartbeatNotifier());
+		this.processor = new BinlogConnectorEventProcessor(new TableCache(), schemaStore, null, config.outputConfig, config.filter, config.scripting, new HeartbeatNotifier(), config.replayMode);
 	}
 
 	public void start() {

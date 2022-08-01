@@ -28,8 +28,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import static com.zendesk.maxwell.replication.BinlogConnectorReplicator.BINLOG_QUEUE_SIZE;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
 import static org.junit.Assume.assumeTrue;
 
 public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
@@ -88,8 +88,9 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 		Position position = Position.capture(server.getConnection(), true);
 		MaxwellContext context = MaxwellTestSupport.buildContext(server.getPort(), position, null);
 
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
+		BinlogConnectorEventProcessor processor = new BinlogConnectorEventProcessor(new TableCache(), new MysqlSchemaStore(context, position), position, outputConfig, context.getFilter(), null, context.getHeartbeatNotifier(), context.getConfig().replayMode);
 		BinlogConnectorReplicator replicator = new BinlogConnectorReplicator(
-			new MysqlSchemaStore(context, position),
 			new BufferedProducer(context, 1),
 			null,
 			context.getConfig().maxwellMysql,
@@ -99,12 +100,12 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 			position,
 			false,
 			"maxwell-client",
-			new HeartbeatNotifier(),
 			null,
-			context.getFilter(),
-			new MaxwellOutputConfig(),
+			outputConfig,
+			processor,
 			context.getConfig().bufferMemoryUsage,
-			1
+			1,
+			BINLOG_QUEUE_SIZE
 		);
 
 		EventDeserializer eventDeserializer = new EventDeserializer();
@@ -159,8 +160,9 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 
 		});
 
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
+		BinlogConnectorEventProcessor processor = new BinlogConnectorEventProcessor(new TableCache(), new MysqlSchemaStore(context, position), position, outputConfig, context.getFilter(), null, context.getHeartbeatNotifier(), context.getConfig().replayMode);
 		BinlogConnectorReplicator replicator = new BinlogConnectorReplicator(
-				new MysqlSchemaStore(context, position),
 				new StdoutProducer(context),
 				context.getBootstrapController(null),
 				context.getConfig().maxwellMysql,
@@ -170,12 +172,12 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 				position,
 				false,
 				"maxwell-client",
-				new HeartbeatNotifier(),
 				null,
-				context.getFilter(),
-				new MaxwellOutputConfig(),
+				outputConfig,
+				processor,
 				context.getConfig().bufferMemoryUsage,
-				1
+				1,
+				BINLOG_QUEUE_SIZE
 		);
 
 		replicator.startReplicator();
@@ -206,8 +208,9 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 			config.maxwellMysql.enableHeartbeat = true;
 		});
 
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
+		BinlogConnectorEventProcessor processor = new BinlogConnectorEventProcessor(new TableCache(), new MysqlSchemaStore(context, position), position, outputConfig, context.getFilter(), null, context.getHeartbeatNotifier(), context.getConfig().replayMode);
 		BinlogConnectorReplicator replicator = new BinlogConnectorReplicator(
-				new MysqlSchemaStore(context, position),
 				new StdoutProducer(context),
 				context.getBootstrapController(null),
 				context.getConfig().maxwellMysql,
@@ -217,12 +220,12 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 				position,
 				false,
 				"maxwell-client",
-				new HeartbeatNotifier(),
 				null,
-				context.getFilter(),
-				new MaxwellOutputConfig(),
+				outputConfig,
+				processor,
 				context.getConfig().bufferMemoryUsage,
-				0 //0 = unlimited
+				0, //0 = unlimited
+				BINLOG_QUEUE_SIZE
 		);
 		replicator.startReplicator();
 
@@ -271,8 +274,9 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 			config.maxwellMysql.enableHeartbeat = true;
 		});
 
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
+		BinlogConnectorEventProcessor processor = new BinlogConnectorEventProcessor(new TableCache(), new MysqlSchemaStore(context, position), position, outputConfig, context.getFilter(), null, context.getHeartbeatNotifier(), context.getConfig().replayMode);
 		BinlogConnectorReplicator replicator = new BinlogConnectorReplicator(
-				new MysqlSchemaStore(context, position),
 				new StdoutProducer(context),
 				context.getBootstrapController(null),
 				context.getConfig().maxwellMysql,
@@ -282,12 +286,12 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 				position,
 				false,
 				"maxwell-client",
-				new HeartbeatNotifier(),
 				null,
-				context.getFilter(),
-				new MaxwellOutputConfig(),
+				outputConfig,
+				processor,
 				context.getConfig().bufferMemoryUsage,
-				3
+				3,
+				BINLOG_QUEUE_SIZE
 		);
 		replicator.startReplicator();
 		//simulates a drop connection
@@ -319,8 +323,9 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 			config.maxwellMysql.enableHeartbeat = true;
 		});
 
+		MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
+		BinlogConnectorEventProcessor processor = new BinlogConnectorEventProcessor(new TableCache(), new MysqlSchemaStore(context, position), position, outputConfig, context.getFilter(), null, context.getHeartbeatNotifier(), context.getConfig().replayMode);
 		BinlogConnectorReplicator replicator = new BinlogConnectorReplicator(
-				new MysqlSchemaStore(context, position),
 				new StdoutProducer(context),
 				context.getBootstrapController(null),
 				context.getConfig().maxwellMysql,
@@ -330,12 +335,13 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 				position,
 				false,
 				"maxwell-client",
-				new HeartbeatNotifier(),
 				null,
-				context.getFilter(),
-				new MaxwellOutputConfig(),
+				outputConfig,
+				processor,
 				context.getConfig().bufferMemoryUsage,
-				3);
+				3,
+				BINLOG_QUEUE_SIZE
+		);
 		replicator.startReplicator();
 		replicator.getRow();
 
