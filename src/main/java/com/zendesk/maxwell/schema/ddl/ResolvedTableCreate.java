@@ -22,7 +22,7 @@ public class ResolvedTableCreate extends ResolvedSchemaChange {
 		Database d = schema.findDatabaseOrThrow(this.database);
 
 		if ( d.hasTable(this.table) )
-			throw new InvalidSchemaError("Unexpectedly asked to create existing table " + this.table);
+			throw new InvalidSchemaError("Unexpectedly asked to create existing table " + this.database + "." + this.table);
 
 		d.addTable(this.def);
 	}

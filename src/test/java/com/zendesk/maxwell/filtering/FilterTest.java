@@ -79,6 +79,13 @@ public class FilterTest {
 	}
 
 	@Test
+	public void TestExcludeTable() throws Exception {
+		Filter f = new Filter("exclude: *.*, include: foo.bar");
+		assertFalse(f.excludes("foo", "bar"));
+		assertTrue(f.excludes("anything", "else"));
+	}
+
+	@Test
 	public void TestBlacklist() throws Exception {
 		Filter f = new Filter("blacklist: seria.*");
 		assertTrue(f.includes("foo", "bar"));
@@ -125,6 +132,18 @@ public class FilterTest {
 		map.remove("col");
 		assertFalse(f.includes("foo", "bar", map));
 
+	}
+
+	@Test
+	public void TestIncludeFromColumn() throws Exception {
+		Map<String, Object> map = new HashMap<>();
+		map.put("col", null);
+		Filter f = new Filter("exclude: *.*, include: foo.bar.col=null");
+		assertTrue(Filter.couldIncludeFromColumnFilters(f, "foo", "bar", map.keySet()));
+
+		map.remove("col");
+		map.put("other", null);
+		assertFalse(Filter.couldIncludeFromColumnFilters(f, "foo", "bar", map.keySet()));
 	}
 
 	@Test

@@ -1,5 +1,6 @@
 package com.zendesk.maxwell.replay;
 
+import com.zendesk.maxwell.MaxwellTestSupport;
 import org.junit.Test;
 
 /**
@@ -9,6 +10,7 @@ public class MaxwellReplayFileTest {
 
 	@Test
 	public void testReplay() {
+		String binlogPath = MaxwellTestSupport.getSQLDir() + "replay/binlog.000004";
 		String[] args = new String[]{
 				"--host=127.0.0.1",
 				"--port=3306",
@@ -25,7 +27,7 @@ public class MaxwellReplayFileTest {
 				"--output_primary_key_columns=false",
 				"--output_push_timestamp=true",
 				"--filter=exclude:test.*",
-				"--replay_binlog=/data/binlog/binlog.000001"
+				"--replay_binlog=" + binlogPath
 		};
 		MaxwellReplayFile.main(args);
 	}

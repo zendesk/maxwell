@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.replay;
 
 import com.zendesk.maxwell.CaseSensitivity;
+import com.zendesk.maxwell.MaxwellTestSupport;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaStoreException;
@@ -23,9 +24,10 @@ public class ReplayBinlogStoreTest {
 
 	@Test
 	public void testProcessSQL() throws SchemaStoreException, SQLException {
+		String binlogPath = MaxwellTestSupport.getSQLDir() + "replay/binlog.000004";
 		ReplayConfig config = new ReplayConfig(new String[]{
 				"--host=127.0.0.1",
-				"--replay_binlog=/data/binlog/binlog.000001",
+				"--replay_binlog=" + binlogPath,
 				"--filter=blacklist:test.*,blacklist:bac_schema.tmp_01,exclude:bac_schema.bac_history"
 		});
 		config.validate();

@@ -1,5 +1,6 @@
 package com.zendesk.maxwell.replay;
 
+import com.zendesk.maxwell.MaxwellTestSupport;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
@@ -17,12 +18,13 @@ public class ReplayConfigTest {
 
 	@Test
 	public void testBinlogFiles() {
+		String binlogPath = MaxwellTestSupport.getSQLDir() + "replay/binlog.000004";
 		environmentVariables.set("MAXWELL_USER", "foo");
 		environmentVariables.set("maxwell_password", "bar");
 		environmentVariables.set("maxwell_host", "remotehost");
 		environmentVariables.set("MAXWELL_KAFKA.RETRIES", "100");
 		environmentVariables.set("USER", "mysql");
-		environmentVariables.set("MAXWELL_replay_binlog", "/data/binlog/binlog.000001");
+		environmentVariables.set("MAXWELL_replay_binlog", binlogPath);
 		ReplayConfig config = new ReplayConfig(new String[]{"--env_config_prefix=MAXWELL_", "--host=localhost"});
 		config.validate();
 

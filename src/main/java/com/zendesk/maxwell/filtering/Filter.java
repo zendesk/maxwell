@@ -2,7 +2,10 @@ package com.zendesk.maxwell.filtering;
 
 import org.apache.commons.lang.StringUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Filter {
@@ -74,12 +77,13 @@ public class Filter {
 		return match.include;
 	}
 
-	public boolean couldIncludeFromColumnFilters(String database, String table, Set<String> columns) {
-		for ( FilterPattern p : patterns ) {
-			if ( p.couldIncludeColumn(database, table, columns) )
-				return true;
-		}
-		return false;
+	public boolean excludes(String database, String table) {
+		FilterResult match = new FilterResult();
+
+		for ( FilterPattern p : patterns )
+			p.match(database, table, match);
+
+		return match.exclude;
 	}
 
 
@@ -135,11 +139,19 @@ public class Filter {
 		}
 	}
 
+	public static boolean excludes(Filter filter, String database, String table) {
+		if (filter == null) {
+			return false;
+		} else {
+			return filter.excludes(database, table);
+		}
+	}
+
 	public static boolean couldIncludeFromColumnFilters(Filter filter, String database, String table, Set<String> columnNames) {
 		if (filter == null) {
 			return false;
 		} else {
-			return filter.couldIncludeFromColumnFilters(database, table, columnNames);
+			return filter.patterns.stream().anyMatch(p -> p.couldIncludeColumn(database, table, columnNames));
 		}
 	}
 }

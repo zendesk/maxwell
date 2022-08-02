@@ -81,7 +81,7 @@ public class BinlogConnectorEventProcessor {
 	 */
 	public void writeRow(BinlogConnectorEvent event, RowMapBuffer rowBuffer, String query) throws ColumnDefCastException {
 		Table table = tableCache.getTable(event.getTableID());
-		if (table == null || disableOutputEvent(table.getDatabase(), table.getName(), table.getColumnNames())) {
+		if (table == null || !shouldOutputEvent(table.getDatabase(), table.getName(), table.getColumnNames())) {
 			return;
 		}
 
@@ -121,7 +121,7 @@ public class BinlogConnectorEventProcessor {
 	}
 
 	public void cacheTable(TableMapEventData data) throws SchemaStoreException {
-		if (replay && disableOutputEvent(data.getDatabase(), data.getTable(), null)) {
+		if (replay && disableOutputEvent(data.getDatabase(), data.getTable())) {
 			// There is no need to cache table
 			return;
 		}
@@ -159,22 +159,27 @@ public class BinlogConnectorEventProcessor {
 	 * @param columnNames Names of the columns this table contains
 	 * @return Whether we should write the event to the producer
 	 */
-	private boolean disableOutputEvent(String database, String table, Set<String> columnNames) {
-		if (Filter.isSystemBlocklisted(database, table)) {
+	private boolean shouldOutputEvent(String database, String table, Set<String> columnNames) {
+		if (Filter.isSystemBlocklisted(database, table))
+			return false;
+		else if (filter.isSystemAllowlist(database, table))
 			return true;
+		else {
+			if (Filter.includes(filter, database, table))
+				return true;
+			else {
+				if (Objects.isNull(columnNames)) {
+					return !Filter.excludes(filter, database, table);
+				} else {
+					return Filter.couldIncludeFromColumnFilters(filter, database, table, columnNames);
+				}
+			}
 		}
-		if (filter.isSystemAllowlist(database, table)) {
-			return false;
-		}
-		if (Filter.includes(filter, database, table)) {
-			return false;
-		}
-		if (Objects.isNull(columnNames)) {
-			return false;
-		}
-		return !Filter.couldIncludeFromColumnFilters(filter, database, table, columnNames);
 	}
 
+	private boolean disableOutputEvent(String database, String table) {
+		return !shouldOutputEvent(database, table, null);
+	}
 
 	/**
 	 * Parse a DDL statement and output the results to the producer

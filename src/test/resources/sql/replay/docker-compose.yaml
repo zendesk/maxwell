@@ -1,0 +1,42 @@
+version: "3.9"
+services:
+  replay:
+    image: mysql:8.0.29
+    container_name: replay
+    environment:
+      - MYSQL_PASSWORD=root
+      - MYSQL_ROOT_PASSWORD=root
+    healthcheck:
+      test: [ "CMD-SHELL", "mysqladmin ping -proot" ]
+      interval: 5s
+      timeout: 1m30s
+      retries: 20
+      start_period: 10s
+    security_opt:
+      - seccomp:unconfined
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql8:/var/lib/mysql
+    command: bash -c
+      "
+      echo server_id=1 >> /etc/mysql/my.cnf &&
+      echo log-bin=binlog >> /etc/mysql/my.cnf &&
+      echo binlog_format=row >> /etc/mysql/my.cnf &&
+      echo binlog_row_image=full >> /etc/mysql/my.cnf &&
+      echo read_only=off >> /etc/mysql/my.cnf &&
+      echo gtid_mode=on >> /etc/mysql/my.cnf &&
+      echo log_slave_updates=on >> /etc/mysql/my.cnf &&
+      echo enforce_gtid_consistency=on >> /etc/mysql/my.cnf &&
+      echo sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION >> /etc/mysql/my.cnf &&
+      /entrypoint.sh mysqld
+      --defaults-file=/etc/mysql/my.cnf
+      --explicit_defaults_for_timestamp
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      "
+networks:
+  default:
+    driver: bridge
+    name: replay
