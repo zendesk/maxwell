@@ -179,6 +179,16 @@ public class MaxwellConfig extends AbstractConfig {
 	public String sqsQueueUri;
 
 	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellSQSProducer} Queue Service Endpoint URL
+	 */
+	public String sqsServiceEndpoint;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellSQSProducer} Queue Signing region
+	 */
+	public String sqsSigningRegion;
+
+	/**
 	 * {@link com.zendesk.maxwell.producer.MaxwellSQSProducer} topic
 	 */
 	public String snsTopic;
@@ -252,6 +262,22 @@ public class MaxwellConfig extends AbstractConfig {
 	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} total timeout
 	 */
 	public Duration pubsubTotalTimeout;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellBigQueryProducer} project id
+	 */
+	public String bigQueryProjectId;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellBigQueryProducer} dataset
+	 */
+	public String bigQueryDataset;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellBigQueryProducer} table
+	 */
+	public String bigQueryTable;
+
 
 	/**
 	 * Used in all producers deriving from {@link com.zendesk.maxwell.producer.AbstractAsyncProducer}.<br>
@@ -454,6 +480,11 @@ public class MaxwellConfig extends AbstractConfig {
 	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} url (alternative to other configuration settings)
 	 */
 	public String rabbitmqURI;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} handshake timeout
+	 */
+	public Integer rabbitmqHandshakeTimeout;
 
 	/**
 	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} exchange
@@ -771,6 +802,10 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.section("sqs");
 		parser.accepts( "sqs_queue_uri", "SQS Queue uri" )
 				.withRequiredArg();
+		parser.accepts( "sqs_service_endpoint", "SQS Service Endpoint" )
+				.withRequiredArg();
+		parser.accepts( "sqs_signing_region", "SQS Signing region" )
+				.withRequiredArg();
 
 		parser.section("sns");
 		parser.accepts("sns_topic", "SNS Topic ARN")
@@ -788,6 +823,14 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "nats_url", "Url(s) of Nats connection (comma separated). Default is localhost:4222" ).withRequiredArg();
 		parser.accepts( "nats_subject", "Subject Hierarchies of Nats. Default is '%{database}.%{table}'" ).withRequiredArg();
+
+		parser.section( "bigquery" );
+		parser.accepts( "bigquery_project_id", "provide a google cloud platform project id associated with the bigquery table" )
+				.withRequiredArg();
+		parser.accepts( "bigquery_dataset", "provide a google cloud platform dataset id associated with the bigquery table" )
+				.withRequiredArg();
+		parser.accepts( "bigquery_table", "provide a google cloud platform table id associated with the bigquery table" )
+				.withRequiredArg();
 
 		parser.section( "pubsub" );
 		parser.accepts( "pubsub_project_id", "provide a google cloud platform project id associated with the pubsub topic" )
@@ -867,6 +910,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "rabbitmq_host", "Host of Rabbitmq machine" ).withRequiredArg();
 		parser.accepts( "rabbitmq_port", "Port of Rabbitmq machine" ).withRequiredArg().ofType(Integer.class);
 		parser.accepts( "rabbitmq_uri", "URI to rabbit server, eg amqp://, amqps://.  other rabbitmq options take precendence over uri." ).withRequiredArg();
+		parser.accepts( "rabbitmq_handshake_timeout", "Handshake timeout of Rabbitmq connection in milliseconds" ).withOptionalArg().ofType(Integer.class);;
 		parser.accepts( "rabbitmq_virtual_host", "Virtual Host of Rabbitmq" ).withRequiredArg();
 		parser.accepts( "rabbitmq_exchange", "Name of exchange for rabbitmq publisher" ).withRequiredArg();
 		parser.accepts( "rabbitmq_exchange_type", "Exchange type for rabbitmq" ).withRequiredArg();
@@ -994,6 +1038,10 @@ public class MaxwellConfig extends AbstractConfig {
 		this.kafkaPartitionHash 	= fetchStringOption("kafka_partition_hash", options, properties, "default");
 		this.ddlKafkaTopic 		    = fetchStringOption("ddl_kafka_topic", options, properties, this.kafkaTopic);
 
+		this.bigQueryProjectId		= fetchStringOption("bigquery_project_id", options, properties, null);
+		this.bigQueryDataset		= fetchStringOption("bigquery_dataset", options, properties, null);
+		this.bigQueryTable			= fetchStringOption("bigquery_table", options, properties, null);
+
 		this.pubsubProjectId					= fetchStringOption("pubsub_project_id", options, properties, null);
 		this.pubsubTopic						= fetchStringOption("pubsub_topic", options, properties, "maxwell");
 		this.ddlPubsubTopic						= fetchStringOption("ddl_pubsub_topic", options, properties, this.pubsubTopic);
@@ -1014,6 +1062,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.rabbitmqPass			= fetchStringOption("rabbitmq_pass", options, properties, "guest");
 		this.rabbitmqVirtualHost    		= fetchStringOption("rabbitmq_virtual_host", options, properties, "/");
 		this.rabbitmqURI 			= fetchStringOption("rabbitmq_uri", options, properties, null);
+		this.rabbitmqHandshakeTimeout       = fetchIntegerOption("rabbitmq_handshake_timeout", options, properties, null);
 		this.rabbitmqExchange       		= fetchStringOption("rabbitmq_exchange", options, properties, "maxwell");
 		this.rabbitmqExchangeType   		= fetchStringOption("rabbitmq_exchange_type", options, properties, "fanout");
 		this.rabbitMqExchangeDurable 		= fetchBooleanOption("rabbitmq_exchange_durable", options, properties, false);
@@ -1066,6 +1115,8 @@ public class MaxwellConfig extends AbstractConfig {
 		this.kinesisMd5Keys = fetchBooleanOption("kinesis_md5_keys", options, properties, false);
 
 		this.sqsQueueUri = fetchStringOption("sqs_queue_uri", options, properties, null);
+		this.sqsServiceEndpoint = fetchStringOption("sqs_service_endpoint", options, properties, null);
+		this.sqsSigningRegion = fetchStringOption("sqs_signing_region", options, properties, null);
 
 		this.snsTopic = fetchStringOption("sns_topic", options, properties, null);
 		this.snsAttrs = fetchStringOption("sns_attrs", options, properties, null);
@@ -1247,6 +1298,10 @@ public class MaxwellConfig extends AbstractConfig {
 			usageForOptions("please specify a stream name for kinesis", "kinesis_stream");
 		} else if (this.producerType.equals("sqs") && this.sqsQueueUri == null) {
 			usageForOptions("please specify a queue uri for sqs", "sqs_queue_uri");
+		} else if (this.producerType.equals("sqs") && this.sqsServiceEndpoint == null) {
+			usageForOptions("please specify a service endpoint for sqs", "sqs_service_endpoint");
+		} else if (this.producerType.equals("sqs") && this.sqsSigningRegion == null) {
+			usageForOptions("please specify a signing region for sqs", "sqs_signing_region");
 		} else if (this.producerType.equals("sns") && this.snsTopic == null) {
 			usageForOptions("please specify a topic ARN for SNS", "sns_topic");
 		} else if (this.producerType.equals("pubsub")) {

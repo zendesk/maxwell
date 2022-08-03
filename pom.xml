@@ -4,7 +4,7 @@
 
   <groupId>com.zendesk</groupId>
   <artifactId>maxwell</artifactId>
-  <version>1.37.7</version>
+  <version>1.38.0</version>
   <packaging>jar</packaging>
 
   <name>maxwell</name>
@@ -126,6 +126,16 @@
 
   <dependencies>
     <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-bigquerystorage</artifactId>
+      <version>2.14.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.cloud</groupId>
+      <artifactId>google-cloud-bigquery</artifactId>
+      <version>2.13.3</version>
+    </dependency>
+    <dependency>
       <groupId>com.mchange</groupId>
       <artifactId>c3p0</artifactId>
       <version>0.9.5.5</version>
@@ -133,7 +143,7 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-core</artifactId>
-      <version>1.12.217</version>
+      <version>1.12.220</version>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
@@ -278,7 +288,7 @@
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
-      <version>3.16.1</version>
+      <version>3.21.4</version>
     </dependency>
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
@@ -318,12 +328,12 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-sns</artifactId>
-      <version>1.12.191</version>
+      <version>1.12.215</version>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-sqs</artifactId>
-      <version>1.12.137</version>
+      <version>1.12.213</version>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>

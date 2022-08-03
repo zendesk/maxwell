@@ -129,6 +129,15 @@ pubsub_total_timeout           | LONG       | Puts a limit on the value in secon
 
 _See also:_ [PubSub Producer Documentation](/producers#google-cloud-pubsub)
 
+## bigquery producer
+option                         | argument                            | description                                         | default
+-------------------------------|-------------------------------------| --------------------------------------------------- | -------
+bigquery_project_id            | STRING     | Google Cloud bigquery project id |
+bigquery_dataset               | STRING     | Google Cloud bigquery dataset id |
+bigquery_table                 | STRING     | Google Cloud bigquery table id |
+
+_See also:_ [PubSub Producer Documentation](/producers#google-cloud-bigquery)
+
 ## rabbitmq producer
 option                         | argument                            | description                                         | default
 -------------------------------|-------------------------------------| --------------------------------------------------- | -------
@@ -137,6 +146,7 @@ rabbitmq_pass                  | STRING     | Password of Rabbitmq connection | 
 rabbitmq_host                  | STRING     | Host of Rabbitmq machine
 rabbitmq_port                  | INT        | Port of Rabbitmq machine |
 rabbitmq_virtual_host          | STRING     | Virtual Host of Rabbitmq |
+rabbitmq_handshake_timeout     | STRING     | Handshake timeout of Rabbitmq connection in milliseconds |
 rabbitmq_exchange              | STRING     | Name of exchange for rabbitmq publisher |
 rabbitmq_exchange_type         | STRING     | Exchange type for rabbitmq |
 rabbitmq_exchange_durable      | BOOLEAN    | Exchange durability. | false
