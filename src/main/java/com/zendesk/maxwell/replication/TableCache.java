@@ -21,8 +21,7 @@ public class TableCache {
 				return;
 			}
 
-			//If you create a new database, you have the permission of this database,
-			// and you cannot pull the tableNames corresponding to this database.
+			//If others created a new database, you have no permission of this database,and you cannot pull the tableNames on  this database
 			//Modified to determine whether to include, if not, end the method
 			if ( !filter.includes(dbName, tblName) ) {
 				return;
