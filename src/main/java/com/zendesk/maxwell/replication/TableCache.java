@@ -21,6 +21,13 @@ public class TableCache {
 				return;
 			}
 
+			//If you create a new database, you have the permission of this database,
+			// and you cannot pull the tableNames corresponding to this database.
+			//Modified to determine whether to include, if not, end the method
+			if ( !filter.includes(dbName, tblName) ) {
+				return;
+			}
+
 			Database db = schema.findDatabase(dbName);
 			if ( db == null )
 				throw new RuntimeException("Couldn't find database " + dbName);
