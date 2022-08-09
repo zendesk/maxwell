@@ -286,7 +286,7 @@ kafka.acks=1
 
 
 #Ignore database and table schema add  not configured in filter-configuration.  Default false
-#ignore_missing_schema = true
+#ignore_missing_schema = false
 
 # javascript filter
 # maxwell can run a bit of javascript for each row if you need very custom filtering/data munging.
