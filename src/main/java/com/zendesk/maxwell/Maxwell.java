@@ -285,6 +285,7 @@ public class Maxwell implements Runnable {
 			context.getHeartbeatNotifier(),
 			config.scripting,
 			context.getFilter(),
+			context.getConfig().getIgnoreMissingSchema(),
 			config.outputConfig,
 			config.bufferMemoryUsage,
 			config.replicationReconnectionRetries,

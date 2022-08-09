@@ -12,6 +12,6 @@ public class TableCacheTest extends MaxwellTestWithIsolatedServer {
 		Schema schema = new SchemaCapturer(server.getConnection(), buildContext().getCaseSensitivity()).capture();
 		TableCache cache = new TableCache("maxwell");
 		// ensure we don't crash on not-really-existant alibaba tables
-		cache.processEvent(schema, new Filter(), 1L, "mysql", "ha_health_check");
+		cache.processEvent(schema, new Filter(), false,1L, "mysql", "ha_health_check");
 	}
 }

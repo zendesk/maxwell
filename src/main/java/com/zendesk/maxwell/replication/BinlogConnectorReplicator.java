@@ -63,6 +63,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private final HeartbeatNotifier heartbeatNotifier;
 	private Long stopAtHeartbeat;
 	private Filter filter;
+	private Boolean ignoreMissingSchema;
 
 	private final BootstrapController bootstrapper;
 	private final AbstractProducer producer;
@@ -117,6 +118,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 				heartbeatNotifier,
 				scripting,
 				filter,
+				false,
 				outputConfig,
 				bufferMemoryUsage,
 				replicationReconnectionRetries,
@@ -138,6 +140,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		HeartbeatNotifier heartbeatNotifier,
 		Scripting scripting,
 		Filter filter,
+		boolean ignoreMissingSchema,
 		MaxwellOutputConfig outputConfig,
 		float bufferMemoryUsage,
 		int replicationReconnectionRetries,
@@ -154,6 +157,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		this.schemaStore = schemaStore;
 		this.tableCache = new TableCache(maxwellSchemaDatabaseName);
 		this.filter = filter;
+		this.ignoreMissingSchema = ignoreMissingSchema;
 		this.lastCommError = null;
 		this.bufferMemoryUsage = bufferMemoryUsage;
 		this.queue = new LinkedBlockingDeque<>(binlogEventQueueSize);
@@ -583,7 +587,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					break;
 				case TABLE_MAP:
 					TableMapEventData data = event.tableMapData();
-					tableCache.processEvent(getSchema(), this.filter, data.getTableId(), data.getDatabase(), data.getTable());
+					tableCache.processEvent(getSchema(), this.filter, this.ignoreMissingSchema, data.getTableId(), data.getDatabase(), data.getTable());
 					break;
 				case ROWS_QUERY:
 					RowsQueryEventData rqed = event.getEvent().getData();
@@ -702,7 +706,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					break;
 				case TABLE_MAP:
 					TableMapEventData data = event.tableMapData();
-					tableCache.processEvent(getSchema(), this.filter, data.getTableId(), data.getDatabase(), data.getTable());
+					tableCache.processEvent(getSchema(), this.filter,this.ignoreMissingSchema, data.getTableId(), data.getDatabase(), data.getTable());
 					break;
 				case QUERY:
 					QueryEventData qe = event.queryData();

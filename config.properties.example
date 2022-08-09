@@ -284,6 +284,10 @@ kafka.acks=1
 #
 #filter= exclude: *.*, include: foo.*, include: bar.baz, include: foo.bar.col_eg = "value_to_match"
 
+
+#Ignore database and table schema add  not configured in filter-configuration.  Default false
+#ignore_missing_schema = true
+
 # javascript filter
 # maxwell can run a bit of javascript for each row if you need very custom filtering/data munging.
 # See http://maxwells-daemon.io/filtering/#javascript_filters for more details
