@@ -6,8 +6,14 @@ import com.google.api.core.ApiFuture;
 import com.google.api.core.ApiFutureCallback;
 import com.google.api.core.ApiFutures;
 import com.google.api.gax.batching.BatchingSettings;
+import com.google.api.gax.core.CredentialsProvider;
+import com.google.api.gax.core.NoCredentialsProvider;
+import com.google.api.gax.grpc.GrpcTransportChannel;
 import com.google.api.gax.retrying.RetrySettings;
+import com.google.api.gax.rpc.FixedTransportChannelProvider;
+import com.google.api.gax.rpc.TransportChannelProvider;
 import com.google.cloud.pubsub.v1.Publisher;
+import com.google.cloud.pubsub.v1.Publisher.Builder;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.ProjectTopicName;
@@ -19,6 +25,10 @@ import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.ddl.DDLMap;
 import com.zendesk.maxwell.util.StoppableTask;
 import com.zendesk.maxwell.util.StoppableTaskState;
+
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,12 +102,12 @@ public class MaxwellPubsubProducer extends AbstractProducer {
   private final MaxwellPubsubProducerWorker worker;
 
   public MaxwellPubsubProducer(MaxwellContext context, String pubsubProjectId,
-                               String pubsubTopic, String ddlPubsubTopic)
+                               String pubsubTopic, String ddlPubsubTopic, String pubsubEmulator)
                                throws IOException {
     super(context);
     this.queue = new ArrayBlockingQueue<>(100);
     this.worker = new MaxwellPubsubProducerWorker(context, pubsubProjectId,
-                                                  pubsubTopic, ddlPubsubTopic,
+                                                  pubsubTopic, ddlPubsubTopic, pubsubEmulator,
                                                   this.queue);
 
     Thread thread = new Thread(this.worker, "maxwell-pubsub-worker");
@@ -132,6 +142,7 @@ class MaxwellPubsubProducerWorker
   public MaxwellPubsubProducerWorker(MaxwellContext context,
                                      String pubsubProjectId, String pubsubTopic,
                                      String ddlPubsubTopic,
+                                     String pubsubEmulator,
                                      ArrayBlockingQueue<RowMap> queue)
                                      throws IOException {
     super(context);
@@ -158,8 +169,19 @@ class MaxwellPubsubProducerWorker
         
     this.projectId = pubsubProjectId;
     this.topic = ProjectTopicName.of(pubsubProjectId, pubsubTopic);
-    this.pubsub = Publisher.newBuilder(this.topic).setBatchingSettings(batchingSettings).setRetrySettings(retrySettings).build();
+    Builder pubsubBuilder = Publisher.newBuilder(this.topic).setBatchingSettings(batchingSettings).setRetrySettings(retrySettings);
 
+    if (pubsubEmulator != null) {
+      ManagedChannel channel = ManagedChannelBuilder.forTarget(pubsubEmulator).usePlaintext().build();
+      TransportChannelProvider channelProvider = FixedTransportChannelProvider.create(GrpcTransportChannel.create(channel));
+      CredentialsProvider credentialsProvider = NoCredentialsProvider.create();
+      pubsubBuilder
+        .setCredentialsProvider(credentialsProvider)
+        .setChannelProvider(channelProvider);
+    }
+
+    this.pubsub = pubsubBuilder.build();
+    
     if ( context.getConfig().outputConfig.outputDDL == true &&
          ddlPubsubTopic != pubsubTopic ) {
       this.ddlTopic = ProjectTopicName.of(pubsubProjectId, ddlPubsubTopic);

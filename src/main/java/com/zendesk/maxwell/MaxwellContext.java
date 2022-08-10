@@ -533,7 +533,7 @@ public class MaxwellContext {
 				this.producer = new NatsProducer(this);
 				break;
 			case "pubsub":
-				this.producer = new MaxwellPubsubProducer(this, this.config.pubsubProjectId, this.config.pubsubTopic, this.config.ddlPubsubTopic);
+				this.producer = new MaxwellPubsubProducer(this, this.config.pubsubProjectId, this.config.pubsubTopic, this.config.ddlPubsubTopic, this.config.pubsubEmulator);
 				break;
 			case "profiler":
 				this.producer = new ProfilerProducer(this);

@@ -264,6 +264,11 @@ public class MaxwellConfig extends AbstractConfig {
 	public Duration pubsubTotalTimeout;
 
 	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} emulator host to use, if specified
+	 */
+	public String pubsubEmulator;
+
+	/**
 	 * {@link com.zendesk.maxwell.producer.MaxwellBigQueryProducer} project id
 	 */
 	public String bigQueryProjectId;
@@ -859,6 +864,8 @@ public class MaxwellConfig extends AbstractConfig {
 				.withRequiredArg().ofType(Long.class);
 		parser.accepts( "pubsub_total_timeout", "maximum timeout in seconds (clamps exponential backoff)" )
 				.withRequiredArg().ofType(Long.class);
+		parser.accepts( "pubsub_emulator", "pubsub emulator host to use. default: null" )
+				.withOptionalArg();
 
 		parser.section( "output" );
 
@@ -1055,6 +1062,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.pubsubRpcTimeoutMultiplier 		= Double.parseDouble(fetchStringOption("pubsub_rpc_timeout_multiplier", options, properties, "1.0"));
 		this.pubsubMaxRpcTimeout 		 		= Duration.ofSeconds(fetchLongOption("pubsub_max_rpc_timeout", options, properties, 600L));
 		this.pubsubTotalTimeout 		 		= Duration.ofSeconds(fetchLongOption("pubsub_total_timeout", options, properties, 600L));
+		this.pubsubEmulator						= fetchStringOption("pubsub_emulator", options, properties, null);
 
 		this.rabbitmqHost           		= fetchStringOption("rabbitmq_host", options, properties, null);
 		this.rabbitmqPort 			= fetchIntegerOption("rabbitmq_port", options, properties, null);
