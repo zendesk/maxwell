@@ -241,7 +241,7 @@ _See also:_ [Monitoring](/monitoring)
 option                         | argument                            | description                                         | default
 -------------------------------|-------------------------------------| --------------------------------------------------- | -------
 bootstrapper                   | [async &#124; sync &#124; none]                   | bootstrapper type.  See [bootstrapping docs](/bootstrapping).        | async
-init_position                  | FILE:POSITION[:HEARTBEAT]           | ignore the information in maxwell.positions and start at the given binlog position. Not available in config.properties. |
+init_position                  | FILE:POSITION[:HEARTBEAT]           | ignore the information in maxwell.positions and start at the given binlog position. Not available in config.properties. [see note](/deployment#-init_position)|
 replay                         | BOOLEAN                             | enable maxwell's read-only "replay" mode: don't store a binlog position or schema changes.  Not available in config.properties. |
 buffer_memory_usage            | FLOAT                               | Determines how much memory the Maxwell event buffer will use from the jvm max memory. Size of the buffer is: buffer_memory_usage * -Xmx" | 0.25
 http_config                    | BOOLEAN                             | enable http config endpoint for config updates without restart | false
