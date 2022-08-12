@@ -66,3 +66,10 @@ also be configured with a unique `replica_server_id`.  This is a 32-bit integer
 that corresponds to mysql's `server_id` parameter.  The value you configure
 should be unique across all mysql and maxwell instances.
 
+# `--init_position`
+
+This is a dangerous option that you really shouldn't use unless you know what
+you're doing.  It allows you to "rewind" history and go back to a certain point
+in the binlog.  This can work, but you should be aware that Maxwell must have
+already "visited" that binlog position; simply specifying an arbitrary position
+in the binlog will lead to Maxwell crashing. 
