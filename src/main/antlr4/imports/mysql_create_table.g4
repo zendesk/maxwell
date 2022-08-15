@@ -72,7 +72,7 @@ creation_stats_auto_recalc: STATS_AUTO_RECALC '='? (DEFAULT | INTEGER_LITERAL);
 creation_stats_persistent: STATS_PERSISTENT '='? (DEFAULT | INTEGER_LITERAL);
 creation_stats_sample_pages: STATS_SAMPLE_PAGES '='? INTEGER_LITERAL;
 creation_storage_option: STORAGE (DISK | MEMORY | DEFAULT);
-creation_tablespace: TABLESPACE string;
+creation_tablespace: TABLESPACE '='? string;
 creation_union: UNION '='? '(' name (',' name)* ')';
 creation_encryption: ENCRYPTION '='? string_literal;
 creation_start_transaction: START TRANSACTION;
