@@ -66,3 +66,10 @@ also be configured with a unique `replica_server_id`.  This is a 32-bit integer
 that corresponds to mysql's `server_id` parameter.  The value you configure
 should be unique across all mysql and maxwell instances.
 
+# ignore_missing_schema  default false
+
+This ignore_missing_schema configuration defaults false.Under normal circumstances, 
+you do not need to set this configuration.
+When a new database is added to the database, maxwell does not have permission and blackList 
+is not configured in the filter, an error will be reported: "Couldn't find table xxxx in database xxxx"
+ and the program will stop.If new databases are often created, config ignore_missing_schema=true is necessary.
