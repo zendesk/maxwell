@@ -73,6 +73,8 @@ you're doing.  It allows you to "rewind" history and go back to a certain point
 in the binlog.  This can work, but you should be aware that Maxwell must have
 already "visited" that binlog position; simply specifying an arbitrary position
 in the binlog will lead to Maxwell crashing. 
+
+
 # ignore_missing_schema  default false
 
 This ignore_missing_schema configuration defaults false.Under normal circumstances, 
