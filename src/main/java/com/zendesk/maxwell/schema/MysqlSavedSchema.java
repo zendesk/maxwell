@@ -565,7 +565,7 @@ public class MysqlSavedSchema {
 						String gtid = rs.getString("gtid_set");
 						LOGGER.debug("Retrieving schema at id: {} gtid: {}", id, gtid);
 						if (gtid != null) {
-							GtidSet gtidSet = new GtidSet(gtid);
+							GtidSet gtidSet = GtidSet.parse(gtid);
 							if (gtidSet.isContainedWithin(targetBinlogPosition.getGtidSet())) {
 								LOGGER.debug("Found contained schema: {}", id);
 								return id;

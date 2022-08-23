@@ -5,6 +5,7 @@ import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import com.github.shyiko.mysql.binlog.event.EventType;
+import com.github.shyiko.mysql.binlog.event.MariadbGtidEventData;
 import com.github.shyiko.mysql.binlog.event.QueryEventData;
 import com.github.shyiko.mysql.binlog.event.RowsQueryEventData;
 import com.github.shyiko.mysql.binlog.event.TableMapEventData;
@@ -722,6 +723,20 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					} else {
 						processQueryEvent(event);
 					}
+					break;
+				case MARIADB_GTID:
+					// in mariaDB the GTID event supplants the normal BEGIN
+					MariadbGtidEventData g = event.mariaGtidData();
+					try {
+						rowBuffer = getTransactionRows(event);
+					} catch ( ClientReconnectedException e ) {
+						// rowBuffer should already be empty by the time we get to this switch
+						// statement, but we null it for clarity
+						rowBuffer = null;
+						break;
+					}
+					rowBuffer.setServerId(event.getEvent().getHeader().getServerId());
+					rowBuffer.setSchemaId(getSchemaId());
 					break;
 				case ROTATE:
 					tableCache.clear();

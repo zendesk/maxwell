@@ -228,7 +228,7 @@
     <dependency>
       <groupId>com.zendesk</groupId>
       <artifactId>mysql-binlog-connector-java</artifactId>
-      <version>0.25.6</version>
+      <version>0.27.0-PRE3</version>
     </dependency>
     <dependency>
       <groupId>net.sf.jopt-simple</groupId>

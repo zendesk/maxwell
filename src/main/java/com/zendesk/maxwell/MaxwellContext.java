@@ -64,6 +64,8 @@ public class MaxwellContext {
 	private BootstrapController bootstrapController;
 	private Thread bootstrapControllerThread;
 
+	private Boolean isMariaDB;
+
 	/**
 	 * Contains various Maxwell metrics
 	 */
@@ -682,5 +684,21 @@ public class MaxwellContext {
 	 */
 	public MaxwellDiagnosticContext getDiagnosticContext() {
 		return this.diagnosticContext;
+	}
+
+	/**
+	 * Is the replication host running MariaDB?
+	 * @return mariadbornot
+	 */
+	public boolean isMariaDB() {
+		if ( this.isMariaDB == null ) {
+			try ( Connection c = this.getReplicationConnection() ) {
+				this.isMariaDB = MaxwellMysqlStatus.isMaria(c);
+			} catch ( SQLException e ) {
+				return false;
+			}
+		}
+
+		return this.isMariaDB;
 	}
 }

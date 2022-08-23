@@ -4,9 +4,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Locale;
+import java.util.Properties;
 
 /**
  * Class with some utility functions for querying mysql server state
@@ -22,8 +25,16 @@ public class MaxwellMysqlStatus {
 	private String sqlStatement(String variableName) {
 		return "SHOW VARIABLES LIKE '" + variableName + "'";
 	}
+	public boolean isMaria() {
+		try {
+			DatabaseMetaData md = connection.getMetaData();
+			return md.getDatabaseProductVersion().toLowerCase().contains("mariadb");
+		} catch ( SQLException e ) {
+			return false;
+		}
+	}
 
-	private String getVariableState(String variableName, boolean throwOnMissing) throws SQLException, MaxwellCompatibilityError {
+	public String getVariableState(String variableName, boolean throwOnMissing) throws SQLException, MaxwellCompatibilityError {
 		try ( Statement stmt = connection.createStatement();
 		      ResultSet rs = stmt.executeQuery(sqlStatement(variableName)) ) {
 			String status;
@@ -37,6 +48,13 @@ public class MaxwellMysqlStatus {
 
 			status = rs.getString("Value");
 			return status;
+		}
+	}
+	public String getVariableState(String variableName) throws SQLException {
+		try {
+			return getVariableState(variableName, false);
+		} catch ( MaxwellCompatibilityError e ) {
+			return null;
 		}
 	}
 
@@ -109,9 +127,17 @@ public class MaxwellMysqlStatus {
 	public static void ensureGtidMysqlState(Connection c) throws SQLException, MaxwellCompatibilityError {
 		MaxwellMysqlStatus m = new MaxwellMysqlStatus(c);
 
+		if ( m.isMaria() )
+			return;
+
 		m.ensureVariableState("gtid_mode", "ON");
 		m.ensureVariableState("log_slave_updates", "ON");
 		m.ensureVariableState("enforce_gtid_consistency", "ON");
+	}
+
+	public static boolean isMaria(Connection c) {
+		MaxwellMysqlStatus m = new MaxwellMysqlStatus(c);
+		return m.isMaria();
 	}
 
 	/**
