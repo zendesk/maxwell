@@ -727,16 +727,18 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 				case MARIADB_GTID:
 					// in mariaDB the GTID event supplants the normal BEGIN
 					MariadbGtidEventData g = event.mariaGtidData();
-					try {
-						rowBuffer = getTransactionRows(event);
-					} catch ( ClientReconnectedException e ) {
-						// rowBuffer should already be empty by the time we get to this switch
-						// statement, but we null it for clarity
-						rowBuffer = null;
-						break;
+					if ( (g.getFlags() & MariadbGtidEventData.FL_STANDALONE) == 0 ) {
+						try {
+							rowBuffer = getTransactionRows(event);
+						} catch ( ClientReconnectedException e ) {
+							// rowBuffer should already be empty by the time we get to this switch
+							// statement, but we null it for clarity
+							rowBuffer = null;
+							break;
+						}
+						rowBuffer.setServerId(event.getEvent().getHeader().getServerId());
+						rowBuffer.setSchemaId(getSchemaId());
 					}
-					rowBuffer.setServerId(event.getEvent().getHeader().getServerId());
-					rowBuffer.setSchemaId(getSchemaId());
 					break;
 				case ROTATE:
 					tableCache.clear();
