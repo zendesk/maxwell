@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 /**
@@ -160,21 +161,19 @@ public class BinlogConnectorEventProcessor {
 	 * @return Whether we should write the event to the producer
 	 */
 	private boolean shouldOutputEvent(String database, String table, Set<String> columnNames) {
-		if (Filter.isSystemBlocklisted(database, table))
+		if (Filter.isSystemBlocklisted(database, table)) {
 			return false;
-		else if (filter.isSystemAllowlist(database, table))
-			return true;
-		else {
-			if (Filter.includes(filter, database, table))
-				return true;
-			else {
-				if (Objects.isNull(columnNames)) {
-					return !Filter.excludes(filter, database, table);
-				} else {
-					return Filter.couldIncludeFromColumnFilters(filter, database, table, columnNames);
-				}
-			}
 		}
+		if (filter.isSystemAllowlist(database, table)) {
+			return true;
+		}
+		if (Filter.includes(filter, database, table)) {
+			return true;
+		}
+		if (Objects.isNull(columnNames)) {
+			return false;
+		}
+		return Filter.couldIncludeFromColumnFilters(filter, database, table, columnNames);
 	}
 
 	private boolean disableOutputEvent(String database, String table) {
@@ -184,14 +183,14 @@ public class BinlogConnectorEventProcessor {
 	/**
 	 * Parse a DDL statement and output the results to the producer
 	 */
-	public void processQueryEvent(BinlogConnectorEvent event, AbstractProducer producer) throws InvalidSchemaError, SchemaStoreException {
+	public int processQueryEvent(BinlogConnectorEvent event, AbstractProducer producer) throws InvalidSchemaError, SchemaStoreException {
 		QueryEventData data = event.queryData();
 		String sql = data.getSql();
 		Long timestamp = event.getEvent().getHeader().getTimestamp();
 		Long lastHeartbeatRead = getLastHeartbeatRead();
 		Position position = Position.valueOf(event.getPosition(), lastHeartbeatRead);
 		Position nextPosition = Position.valueOf(event.getNextPosition(), lastHeartbeatRead);
-		processQueryEvent(data.getDatabase(), sql, position, nextPosition, timestamp, producer);
+		return processQueryEvent(data.getDatabase(), sql, position, nextPosition, timestamp, producer);
 	}
 
 	/**
@@ -203,8 +202,9 @@ public class BinlogConnectorEventProcessor {
 	 * @param nextPosition The next position that the SQL happened at
 	 * @param timestamp    The timestamp of the SQL binlog event
 	 */
-	private void processQueryEvent(String dbName, String sql, Position position, Position nextPosition, Long timestamp, AbstractProducer producer) throws InvalidSchemaError, SchemaStoreException {
+	private int processQueryEvent(String dbName, String sql, Position position, Position nextPosition, Long timestamp, AbstractProducer producer) throws InvalidSchemaError, SchemaStoreException {
 		final Long schemaId = this.schemaStore.getSchemaID();
+		AtomicInteger count= new AtomicInteger();
 		schemaStore.processSQL(sql, dbName, position).stream()
 				.filter(change -> change.shouldOutput(filter))
 				.forEach(change -> {
@@ -213,11 +213,13 @@ public class BinlogConnectorEventProcessor {
 						if (scripting != null)
 							scripting.invoke(ddl);
 						producer.push(ddl);
+						count.getAndIncrement();
 					} catch (Exception e) {
 						throw new RuntimeException(e.getMessage(), e);
 					}
 				});
 		tableCache.clear();
+		return count.get();
 	}
 
 	/**

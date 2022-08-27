@@ -22,11 +22,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.sql.SQLException;
 import java.util.Objects;
 import java.util.concurrent.locks.LockSupport;
+import java.util.zip.GZIPInputStream;
 
 import static com.zendesk.maxwell.replication.BinlogConnectorEventProcessor.CREATE_TABLE_PATTERN;
 
@@ -36,6 +39,7 @@ import static com.zendesk.maxwell.replication.BinlogConnectorEventProcessor.CREA
 public class MaxwellReplayFile {
 	private static final Logger LOGGER = LoggerFactory.getLogger(MaxwellReplayFile.class);
 
+	public static final String GZIP_SUFFIX = ".gz";
 	public static final String HEARTBEATS = "heartbeats";
 	public static final String DEFAULT_LOG_LEVEL = "info";
 
@@ -113,7 +117,8 @@ public class MaxwellReplayFile {
 		);
 
 		String position = null;
-		try (BinaryLogFileReader reader = new BinaryLogFileReader(binlogFile, eventDeserializer)) {
+		try (InputStream is = new FileInputStream(binlogFile.getAbsoluteFile());
+			 BinaryLogFileReader reader = new BinaryLogFileReader(binlogFile.getName().endsWith(GZIP_SUFFIX) ? new GZIPInputStream(is) : is, eventDeserializer)) {
 			RowMap row = getRow(reader, binlogFile.getName());
 			while (row != null) {
 				producer.push(row);
@@ -163,8 +168,7 @@ public class MaxwellReplayFile {
 						rowBuffer.setThreadId(qe.getThreadId());
 						rowBuffer.setSchemaId(processor.getSchemaId());
 					} else {
-						processor.processQueryEvent(event, producer);
-						rowCount++;
+						rowCount += processor.processQueryEvent(event, producer);
 					}
 					break;
 				case ROTATE:
@@ -242,8 +246,7 @@ public class MaxwellReplayFile {
 						// inside a transaction.  Note that this could, in rare cases, lead
 						// to us starting on a WRITE_ROWS event -- we sync the schema position somewhere
 						// kinda unsafe.
-						processor.processQueryEvent(event, producer);
-						rowCount++;
+						rowCount = +processor.processQueryEvent(event, producer);
 					}
 					break;
 				default:

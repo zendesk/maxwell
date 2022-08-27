@@ -78,12 +78,6 @@ public class FilterTest {
 		assertFalse(f.includes("anything", "else"));
 	}
 
-	@Test
-	public void TestExcludeTable() throws Exception {
-		Filter f = new Filter("exclude: *.*, include: foo.bar");
-		assertFalse(f.excludes("foo", "bar"));
-		assertTrue(f.excludes("anything", "else"));
-	}
 
 	@Test
 	public void TestBlacklist() throws Exception {

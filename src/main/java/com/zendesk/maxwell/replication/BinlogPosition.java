@@ -1,7 +1,6 @@
 package com.zendesk.maxwell.replication;
 
 import com.github.shyiko.mysql.binlog.GtidSet;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,6 +9,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import static com.zendesk.maxwell.replay.MaxwellReplayFile.GZIP_SUFFIX;
 
 public class BinlogPosition implements Serializable {
 	static final Logger LOGGER = LoggerFactory.getLogger(BinlogPosition.class);
@@ -97,8 +98,9 @@ public class BinlogPosition implements Serializable {
 	}
 
 	private Long parseFileNumber(String filename) {
+		filename = filename.endsWith(GZIP_SUFFIX) ? filename.substring(0,filename.length()-3) : filename;
 		String[] split = filename.split("\\.");
-		if ( split.length < 2 ) {
+		if (split.length < 2) {
 			return null;
 		} else {
 			return Long.valueOf(split[split.length - 1]);

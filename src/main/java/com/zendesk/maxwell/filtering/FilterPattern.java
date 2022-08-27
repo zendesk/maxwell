@@ -22,7 +22,6 @@ public class FilterPattern {
 	public void match(String database, String table, FilterResult match) {
 		if (appliesTo(database, table)) {
 			match.include = (this.type == FilterPatternType.INCLUDE);
-			match.exclude = (this.type == FilterPatternType.EXCLUDE);
 		}
 	}
 
@@ -66,6 +65,8 @@ public class FilterPattern {
 				break;
 			case BLACKLIST:
 				s += "blacklist: ";
+				break;
+			default:
 				break;
 		}
 

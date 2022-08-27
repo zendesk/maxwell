@@ -1,16 +1,90 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="WARN">
-  <Appenders>
-    <File name="TestLog" fileName="test.log">
-      <PatternLayout pattern="[%T] %d{HH:mm:ss,SSS} %-5level %logger{1} - %msg%n"/>
-    </File>
-  </Appenders>
-  <Loggers>
-    <Root level="debug">
-      <AppenderRef ref="TestLog"/>
-    </Root>
-   <Logger name="com.mchange.v2" level="error" additivity="false">
-      <AppenderRef ref="TestLog"/>
-    </Logger>
-  </Loggers>
+    <Properties>
+        <Property name="APP_NAME">maxwell</Property>
+        <Property name="LOG_DATEFORMAT_PATTERN">yyyy-MM-dd HH:mm:ss.SSS</Property>
+        <Property name="FILE_LOG_PATTERN">%d{${LOG_DATEFORMAT_PATTERN}} %5p %pid --- [%t] %-30.30c{1.} - %m%n</Property>
+    </Properties>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_ERR">
+            <PatternLayout pattern="${sys:FILE_LOG_PATTERN}"/>
+            <!--
+                        <PatternLayout pattern="%d{HH:mm:ss,SSS} %-5level %logger{1} - %msg%n"/>
+            -->
+        </Console>
+        <RollingFile name="maxwell_log" immediateFlush="true" fileName="logs/${APP_NAME}.log"
+                     filePattern="logs/archive/${APP_NAME}-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="${FILE_LOG_PATTERN}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="200MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="30"/>
+        </RollingFile>
+        <RollingFile name="debug_file" immediateFlush="true" fileName="logs/${APP_NAME}_debug.log"
+                     filePattern="logs/archive/${APP_NAME}-%d{yyyy-MM-dd}-debug-%i.log.gz">
+            <PatternLayout pattern="${FILE_LOG_PATTERN}"/>
+            <Filters>
+                <ThresholdFilter level="DEBUG"/>
+                <ThresholdFilter level="INFO" onMatch="DENY" onMismatch="NEUTRAL"/>
+            </Filters>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="200MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="30"/>
+        </RollingFile>
+        <RollingFile name="info_file" immediateFlush="true" fileName="logs/${APP_NAME}_info.log"
+                     filePattern="logs/archive/${APP_NAME}-%d{yyyy-MM-dd}-info-%i.log.gz">
+            <PatternLayout pattern="${FILE_LOG_PATTERN}"/>
+            <Filters>
+                <ThresholdFilter level="INFO"/>
+                <ThresholdFilter level="WARN" onMatch="DENY" onMismatch="NEUTRAL"/>
+            </Filters>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="200MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="30"/>
+        </RollingFile>
+        <RollingFile name="warn_file" immediateFlush="true" fileName="logs/${APP_NAME}_warn.log"
+                     filePattern="logs/archive/${APP_NAME}-%d{yyyy-MM-dd}-warn-%i.log.gz">
+            <PatternLayout pattern="${FILE_LOG_PATTERN}"/>
+            <Filters>
+                <ThresholdFilter level="WARN"/>
+                <ThresholdFilter level="ERROR" onMatch="DENY" onMismatch="NEUTRAL"/>
+            </Filters>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="200MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="30"/>
+        </RollingFile>
+        <RollingFile name="error_file" immediateFlush="true" fileName="logs/${APP_NAME}_error.log"
+                     filePattern="logs/archive/${APP_NAME}-%d{yyyy-MM-dd}-error-%i.log.gz">
+            <PatternLayout pattern="${FILE_LOG_PATTERN}"/>
+            <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="200MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="30"/>
+        </RollingFile>
+
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="debug_file"/>
+            <AppenderRef ref="info_file"/>
+            <AppenderRef ref="warn_file"/>
+            <AppenderRef ref="error_file"/>
+            <AppenderRef ref="maxwell_log"/>
+            <AppenderRef ref="Console"/>
+        </Root>
+        <Logger name="com.mchange.v2" level="error" additivity="false">
+            <AppenderRef ref="error_file"/>
+            <AppenderRef ref="maxwell_log"/>
+            <AppenderRef ref="Console"/>
+        </Logger>
+    </Loggers>
 </Configuration>

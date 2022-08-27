@@ -77,16 +77,6 @@ public class Filter {
 		return match.include;
 	}
 
-	public boolean excludes(String database, String table) {
-		FilterResult match = new FilterResult();
-
-		for ( FilterPattern p : patterns )
-			p.match(database, table, match);
-
-		return match.exclude;
-	}
-
-
 	public boolean isTableBlocklisted(String database, String table) {
 		if ( isSystemBlocklisted(database, table) )
 			return true;
@@ -136,14 +126,6 @@ public class Filter {
 			return true;
 		} else {
 			return filter.includes(database, table, data);
-		}
-	}
-
-	public static boolean excludes(Filter filter, String database, String table) {
-		if (filter == null) {
-			return false;
-		} else {
-			return filter.excludes(database, table);
 		}
 	}
 
