@@ -441,7 +441,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	@Category(Mysql57Tests.class)
 	public void testGeneratedColumns() throws Exception {
-		requireMinimumVersion(server.VERSION_5_7);
+		requireMinimumVersion(server.VERSION_5_7, false);
 		testIntegration("create table t ("
 			+ "a INT GENERATED ALWAYS AS (0) VIRTUAL UNIQUE NOT NULL, "
 			+ "b int AS (a + 0) STORED PRIMARY KEY"

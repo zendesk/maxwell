@@ -132,7 +132,7 @@ public class MysqlIsolatedServer {
 			throw new RuntimeException("could not get master status");
 
 		String createUserSQL;
-		if ( getVersion().atLeast(5, 7) ) {
+		if ( getVersion().atLeast(5, 7) && !getVersion().isMariaDB ) {
 			createUserSQL = "create user 'maxwell_repl'@'127.0.0.1' identified with 'mysql_native_password' by 'maxwell'";
 		} else {
 			createUserSQL = "create user 'maxwell_repl'@'127.0.0.1' identified by 'maxwell'";
@@ -251,6 +251,11 @@ public class MysqlIsolatedServer {
 	}
 
 	public static MysqlVersion getVersion() {
+		if ( getVersionString().equals("mariadb") ) {
+			MysqlVersion v = new MysqlVersion(10, 10);
+			v.isMariaDB = true;
+			return v;
+		}
 		String[] parts = getVersionString().split("\\.");
 		return new MysqlVersion(Integer.valueOf(parts[0]), Integer.valueOf(parts[1]));
 	}

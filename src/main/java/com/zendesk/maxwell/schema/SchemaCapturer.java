@@ -163,6 +163,9 @@ public class SchemaCapturer implements AutoCloseable {
 
 	private boolean isMySQLAtLeast56() throws SQLException {
 		java.sql.DatabaseMetaData meta = connection.getMetaData();
+		if ( meta.getDatabaseProductVersion().toLowerCase().contains("maria")) {
+			return true;
+		}
 		int major = meta.getDatabaseMajorVersion();
 		int minor = meta.getDatabaseMinorVersion();
 		return ((major == 5 && minor >= 6) || major > 5);

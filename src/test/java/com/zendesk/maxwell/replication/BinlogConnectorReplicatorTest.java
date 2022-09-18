@@ -30,6 +30,7 @@ import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
 public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
@@ -76,6 +77,7 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 	@Test
 	public void testGTIDReconnects() throws Exception {
 		assumeTrue(MysqlIsolatedServer.getVersion().atLeast(MysqlIsolatedServer.VERSION_5_6));
+		assumeFalse(MysqlIsolatedServer.getVersion().isMariaDB);
 
 		MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--gtid_mode=ON --enforce-gtid-consistency=true");
 		MaxwellTestSupport.setupSchema(server, false);
@@ -140,6 +142,7 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 	@Test
 	public void testSetNullSchemaIdInProcessQueryEvent() throws Exception {
 		assumeTrue(MysqlIsolatedServer.getVersion().atLeast(MysqlIsolatedServer.VERSION_5_6));
+		assumeFalse(MysqlIsolatedServer.getVersion().isMariaDB);
 
 		MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--gtid_mode=ON --enforce-gtid-consistency=true");
 		MaxwellTestSupport.setupSchema(server, false);
@@ -187,6 +190,8 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 	@Test
 	public void testClientReconnectionAfterConnectionDropped() throws Exception {
 		assumeTrue(MysqlIsolatedServer.getVersion().atLeast(MysqlIsolatedServer.VERSION_5_6));
+		assumeFalse(MysqlIsolatedServer.getVersion().isMariaDB);
+
 
 		MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--gtid_mode=ON --enforce-gtid-consistency=true");
 		MaxwellTestSupport.setupSchema(server, false);
@@ -252,6 +257,7 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 	@Test(expected = TimeoutException.class)
 	public void testMaximumReconnectionAttemptsReached() throws Exception {
 		assumeTrue(MysqlIsolatedServer.getVersion().atLeast(MysqlIsolatedServer.VERSION_5_6));
+		assumeFalse(MysqlIsolatedServer.getVersion().isMariaDB);
 
 		MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--gtid_mode=ON --enforce-gtid-consistency=true");
 		MaxwellTestSupport.setupSchema(server, false);
@@ -300,6 +306,7 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 
 	public void testClientReconnectionToDifferentServerAfterConnectionDroppedThrows() throws Exception {
 		assumeTrue(MysqlIsolatedServer.getVersion().atLeast(MysqlIsolatedServer.VERSION_5_6));
+		assumeFalse(MysqlIsolatedServer.getVersion().isMariaDB);
 
 		MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--server_id=123");
 		MaxwellTestSupport.setupSchema(server, false);

@@ -7,6 +7,7 @@ import java.sql.SQLException;
 public class MysqlVersion {
 	private final int major;
 	private final int minor;
+	public boolean isMariaDB = false;
 
 	public MysqlVersion(int major, int minor) {
 		this.major = major;
@@ -37,4 +38,5 @@ public class MysqlVersion {
 	public int getMinor() {
 		return this.minor;
 	}
+
 }

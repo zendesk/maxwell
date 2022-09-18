@@ -115,6 +115,8 @@ public class PositionStoreThread extends RunLoopProcess implements Runnable {
 			BinlogPosition bp = p.getBinlogPosition();
 			if ( bp.getGtid() != null ) {
 				position = position.addGtid(bp.getGtid());
+			} else {
+				position = p;
 			}
 		} else if ( position == null || p.newerThan(position) ) {
 			position = p;
