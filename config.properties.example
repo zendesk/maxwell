@@ -285,7 +285,9 @@ kafka.acks=1
 #filter= exclude: *.*, include: foo.*, include: bar.baz, include: foo.bar.col_eg = "value_to_match"
 
 
-#Ignore database and table schema add  not configured in filter-configuration.  Default false
+# If you are running maxwell without permissions to view certain parts of your schema, 
+# you may encounter "Coulndn't find database XXX" errors.  In *only* those situations, 
+# turn this option on and use filters to only include what you need.
 #ignore_missing_schema = false
 
 # javascript filter

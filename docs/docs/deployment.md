@@ -75,10 +75,11 @@ already "visited" that binlog position; simply specifying an arbitrary position
 in the binlog will lead to Maxwell crashing. 
 
 
-# ignore_missing_schema  default false
+# Running with limited permissions
 
-This ignore_missing_schema configuration defaults false.Under normal circumstances, 
-you do not need to set this configuration.
-When a new database is added to the database, maxwell does not have permission and blackList 
-is not configured in the filter, an error will be reported: "Couldn't find table xxxx in database xxxx"
- and the program will stop.If new databases are often created, config ignore_missing_schema=true is necessary.
+If the user you're running maxwell as can't view part of the database because of limited
+permissions, Maxwell may be unable to capture information on part of the schem a and 
+the replication stream can break with "Can't find table: XXX" errors.  In this case
+you can enable the `ignore_missing_schema` flag *and* configure a filter that will exclude
+any databases/tables you don't have permission to view. 
+

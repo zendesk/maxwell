@@ -70,7 +70,9 @@ public class MaxwellConfig extends AbstractConfig {
 	public Filter filter;
 
 	/**
-	 * Ignore database and table schema add  not configured in filter-configuration.  Default false
+	 * Ignore any missing database / table schemas, unless they're
+	 * included as part of filters. Default false.  Don't use unless
+	 * you really really need to.
 	 */
 	public Boolean ignoreMissingSchema;
 
@@ -906,7 +908,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "filter", "filter specs.  specify like \"include:db.*, exclude:*.tbl, include: foo./.*bar$/, exclude:foo.bar.baz=reject\"").withRequiredArg();
 
-		parser.accepts( "ignore_missing_schema", "Ignore database and table schema add  not configured in filter-configuration. default: false" )
+		parser.accepts( "ignore_missing_schema", "Ignore missing database and table schemas.  Only use running with limited permissions." )
 				.withOptionalArg().ofType(Boolean.class);
 
 		parser.accepts( "javascript", "file containing per-row javascript to execute" ).withRequiredArg();
