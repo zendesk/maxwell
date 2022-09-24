@@ -126,6 +126,7 @@ pubsub_initial_rpc_timeout     | LONG       | Controls the timeout in seconds fo
 pubsub_rpc_timeout_multiplier  | FLOAT      | Controls the change in RPC timeout | 1.0
 pubsub_max_rpc_timeout         | LONG       | Puts a limit on the value in seconds of the RPC timeout | 600
 pubsub_total_timeout           | LONG       | Puts a limit on the value in seconds of the retry delay, so that the RetryDelayMultiplier can't increase the retry delay higher than this amount | 600
+pubsub_emulator                | STRING     | Google Cloud pub-sub emulator host to send events to |
 
 _See also:_ [PubSub Producer Documentation](/producers#google-cloud-pubsub)
 
