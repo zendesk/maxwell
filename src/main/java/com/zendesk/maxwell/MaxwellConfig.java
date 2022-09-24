@@ -70,6 +70,13 @@ public class MaxwellConfig extends AbstractConfig {
 	public Filter filter;
 
 	/**
+	 * Ignore any missing database / table schemas, unless they're
+	 * included as part of filters. Default false.  Don't use unless
+	 * you really really need to.
+	 */
+	public Boolean ignoreMissingSchema;
+
+	/**
 	 * Attempt to use Mysql GTIDs to keep track of position
 	 */
 	public Boolean gtidMode;
@@ -671,7 +678,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.section("mysql");
 
 		parser.accepts( "binlog_heartbeat", "enable binlog replication heartbeats, default false" )
-			.withOptionalArg().ofType(Boolean.class);
+				.withOptionalArg().ofType(Boolean.class);
 
 		parser.accepts( "jdbc_options", "additional jdbc connection options: key1=val1&key2=val2" )
 				.withRequiredArg();
@@ -896,7 +903,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "output_ddl", "produce DDL records. default: false" )
 				.withOptionalArg().ofType(Boolean.class);
 		parser.accepts( "output_push_timestamp", "include a microsecond timestamp representing when Maxwell sent a record. default: false" )
-			.withOptionalArg().ofType(Boolean.class);
+				.withOptionalArg().ofType(Boolean.class);
 		parser.accepts( "exclude_columns", "suppress these comma-separated columns from output" )
 				.withRequiredArg();
 		parser.accepts("secret_key", "The secret key for the AES encryption" )
@@ -907,6 +914,9 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.section( "filtering" );
 
 		parser.accepts( "filter", "filter specs.  specify like \"include:db.*, exclude:*.tbl, include: foo./.*bar$/, exclude:foo.bar.baz=reject\"").withRequiredArg();
+
+		parser.accepts( "ignore_missing_schema", "Ignore missing database and table schemas.  Only use running with limited permissions." )
+				.withOptionalArg().ofType(Boolean.class);
 
 		parser.accepts( "javascript", "file containing per-row javascript to execute" ).withRequiredArg();
 
@@ -1158,6 +1168,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.enableHttpConfig = fetchBooleanOption("http_config", options, properties, false);
 
 		this.filterList          = fetchStringOption("filter", options, properties, null);
+		this.ignoreMissingSchema          =  fetchBooleanOption("ignore_missing_schema", options, properties, false);
 
 		setupInitPosition(options);
 
@@ -1499,5 +1510,14 @@ public class MaxwellConfig extends AbstractConfig {
 		} else {
 			return null;
 		}
+	}
+
+
+	public Boolean getIgnoreMissingSchema() {
+		return ignoreMissingSchema;
+	}
+
+	public void setIgnoreMissingSchema(Boolean ignoreMissingSchema) {
+		this.ignoreMissingSchema = ignoreMissingSchema;
 	}
 }

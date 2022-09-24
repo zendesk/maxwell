@@ -284,6 +284,12 @@ kafka.acks=1
 #
 #filter= exclude: *.*, include: foo.*, include: bar.baz, include: foo.bar.col_eg = "value_to_match"
 
+
+# If you are running maxwell without permissions to view certain parts of your schema, 
+# you may encounter "Coulndn't find database XXX" errors.  In *only* those situations, 
+# turn this option on and use filters to only include what you need.
+#ignore_missing_schema = false
+
 # javascript filter
 # maxwell can run a bit of javascript for each row if you need very custom filtering/data munging.
 # See http://maxwells-daemon.io/filtering/#javascript_filters for more details
