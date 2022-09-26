@@ -1,4 +1,3 @@
-SET binlog_rows_query_log_events=true;
 CREATE DATABASE `test_row_query`;
 CREATE TABLE `test_row_query`.`row_query` ( id int );
 

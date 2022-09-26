@@ -4,6 +4,7 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
+import com.github.shyiko.mysql.binlog.event.AnnotateRowsEventData;
 import com.github.shyiko.mysql.binlog.event.EventType;
 import com.github.shyiko.mysql.binlog.event.MariadbGtidEventData;
 import com.github.shyiko.mysql.binlog.event.QueryEventData;
@@ -174,6 +175,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		/* setup binlog client */
 		this.client = new BinaryLogClient(mysqlConfig.host, mysqlConfig.port, mysqlConfig.user, mysqlConfig.password);
 		this.client.setSSLMode(mysqlConfig.sslMode);
+		this.client.setUseSendAnnotateRowsEvent(true);
 
 
 		BinlogPosition startBinlog = start.getBinlogPosition();
@@ -590,6 +592,10 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					RowsQueryEventData rqed = event.getEvent().getData();
 					currentQuery = rqed.getQuery();
 					break;
+				case ANNOTATE_ROWS:
+					AnnotateRowsEventData ared = event.getEvent().getData();
+					currentQuery = ared.getRowsQuery();
+					break;
 				case QUERY:
 					QueryEventData qe = event.queryData();
 					String sql = qe.getSql();
@@ -619,6 +625,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					} else {
 						LOGGER.warn("Unhandled QueryEvent @ {} inside transaction: {}", event.getPosition().fullPosition(), qe);
 					}
+					break;
+				default:
 					break;
 			}
 		}

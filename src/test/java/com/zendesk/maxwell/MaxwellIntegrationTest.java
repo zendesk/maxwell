@@ -27,6 +27,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
 
@@ -178,6 +179,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testThreadId() throws Exception {
+		assumeFalse(MysqlIsolatedServer.getVersion().isMariaDB);
 		ResultSet resultSet = server.getConnection().createStatement().executeQuery("SELECT CONNECTION_ID()");
 		resultSet.next();
 		final long actualThreadId = resultSet.getLong(1);
@@ -391,7 +393,7 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	String testAlterSQL[] = {
 			"insert into minimal set account_id = 1, text_field='hello'",
-			"ALTER table minimal drop column text_field",
+			"ALTER table minimal drop primary key, drop column text_field, add primary key(id)",
 			"insert into minimal set account_id = 2",
 			"ALTER table minimal add column new_text_field varchar(255)",
 			"insert into minimal set account_id = 2, new_text_field='hihihi'",
@@ -607,6 +609,10 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		requireMinimumVersion(server.VERSION_5_6);
 
 		String dir = MaxwellTestSupport.getSQLDir();
+
+		if ( !MysqlIsolatedServer.getVersion().isMariaDB ) {
+			server.execute("SET binlog_rows_query_log_events=true");
+		}
 		List<RowMap> rows = runJSON("/json/test_javascript_filters", (c) -> {
 			c.javascriptFile = dir + "/json/filter.javascript";
 			c.outputConfig.includesRowQuery = true;
@@ -717,6 +723,10 @@ public class MaxwellIntegrationTest extends MaxwellTestWithIsolatedServer {
 		requireMinimumVersion(server.VERSION_5_6);
 		final MaxwellOutputConfig outputConfig = new MaxwellOutputConfig();
 		outputConfig.includesRowQuery = true;
+
+		if ( !MysqlIsolatedServer.getVersion().isMariaDB ) {
+			server.execute("SET binlog_rows_query_log_events=true");
+		}
 
 		runJSON("/json/test_row_query_log_is_on", (c) -> c.outputConfig = outputConfig);
 	}
