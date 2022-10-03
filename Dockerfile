@@ -22,11 +22,12 @@ RUN cd /workspace \
 FROM openjdk:11-jdk-slim
 
 COPY --from=builder /app /app
+COPY --from=builder /REVISION /REVISION
 
 WORKDIR /app
 
 RUN useradd -u 1000 maxwell -d /app
-RUN chown 1000:1000 /app && echo "$MAXWELL_VERSION" > /REVISION
+RUN chown 1000:1000 /app
 
 USER 1000
 
