@@ -239,9 +239,9 @@ class MaxwellPubsubProducerWorker
     if (this.messageOrderingKeyInterpolator != null) {
       String orderingKey = this.messageOrderingKeyInterpolator.generateFromRowMapAndCleanUpIllegalCharacters(r);
       pubsubMessageBuilder = pubsubMessageBuilder.setOrderingKey(orderingKey);
-			LOGGER.debug("using message ordering key {}",  orderingKey);
+      LOGGER.debug("using message ordering key {}",  orderingKey);
     } else {
-			LOGGER.debug("using no message ordering key");
+      LOGGER.debug("using no message ordering key");
     }
     PubsubMessage pubsubMessage = pubsubMessageBuilder.build();
 
