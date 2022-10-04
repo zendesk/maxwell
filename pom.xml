@@ -288,7 +288,7 @@
     <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
-      <version>3.21.4</version>
+      <version>3.21.7</version>
     </dependency>
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
