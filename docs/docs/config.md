@@ -118,6 +118,7 @@ pubsub_platform_id             | STRING     | Google Cloud platform id associate
 ddl_pubsub_topic               | STRING     | Google Cloud pub-sub topic to send DDL events to |
 pubsub_request_bytes_threshold | LONG       | Set number of bytes until batch is send | 1
 pubsub_message_count_batch_size| LONG       | Set number of messages until batch is send | 1
+pubsub_message_ordering_key    | STRING     | Google Cloud pub-sub ordering key template (also enables message ordering when set) |
 pubsub_publish_delay_threshold | LONG       | Set time passed in millis until batch is send | 1
 pubsub_retry_delay             | LONG       | Controls the delay in millis before sending the first retry message | 100
 pubsub_retry_delay_multiplier  | FLOAT      | Controls the increase in retry delay per retry | 1.3

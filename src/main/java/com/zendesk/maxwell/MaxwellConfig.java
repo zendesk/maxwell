@@ -231,6 +231,11 @@ public class MaxwellConfig extends AbstractConfig {
 	public Long pubsubMessageCountBatchSize;
 
 	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} message ordering key template (will enable message ordering if specified)
+	 */
+	public String pubsubMessageOrderingKey;
+
+	/**
 	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} publish delay threshold
 	 */
 	public Duration pubsubPublishDelayThreshold;
@@ -855,6 +860,8 @@ public class MaxwellConfig extends AbstractConfig {
 				.withRequiredArg().ofType(Long.class);
 		parser.accepts( "pubsub_message_count_batch_size", "threshold in message count that triggers a batch to be sent. default: 1 message" )
 				.withRequiredArg().ofType(Long.class);
+		parser.accepts( "pubsub_message_ordering_key", "message ordering key template (will enable message ordering if specified). default: null" )
+				.withOptionalArg();
 		parser.accepts( "pubsub_publish_delay_threshold", "threshold in delay time (milliseconds) before batch is sent. default: 1 ms" )
 				.withRequiredArg().ofType(Long.class);
 		parser.accepts( "pubsub_retry_delay", "delay in millis before sending the first retry message. default: 100 ms" )
@@ -1064,6 +1071,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.ddlPubsubTopic						= fetchStringOption("ddl_pubsub_topic", options, properties, this.pubsubTopic);
 		this.pubsubRequestBytesThreshold		= fetchLongOption("pubsub_request_bytes_threshold", options, properties, 1L);
 		this.pubsubMessageCountBatchSize		= fetchLongOption("pubsub_message_count_batch_size", options, properties, 1L);
+		this.pubsubMessageOrderingKey			= fetchStringOption("pubsub_message_ordering_key", options, properties, null);
 		this.pubsubPublishDelayThreshold		= Duration.ofMillis(fetchLongOption("pubsub_publish_delay_threshold", options, properties, 1L));
 		this.pubsubRetryDelay 					= Duration.ofMillis(fetchLongOption("pubsub_retry_delay", options, properties, 100L));
 		this.pubsubRetryDelayMultiplier 		= Double.parseDouble(fetchStringOption("pubsub_retry_delay_multiplier", options, properties, "1.3"));
