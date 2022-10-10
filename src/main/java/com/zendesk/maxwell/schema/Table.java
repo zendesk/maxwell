@@ -80,12 +80,17 @@ public class Table {
 		return this.name;
 	}
 
-	public int findColumnIndex(String name) {
-		return columns.indexOf(name);
+	public short findColumnIndex(String name) {
+		return (short) columns.indexOf(name);
 	}
+
 
 	public ColumnDef findColumn(String name) {
 		return columns.findByName(name);
+	}
+
+	public ColumnDef findColumn(int index) {
+		return columns.get(index);
 	}
 
 	@JsonIgnore
