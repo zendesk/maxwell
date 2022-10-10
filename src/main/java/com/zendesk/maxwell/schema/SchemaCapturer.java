@@ -137,7 +137,8 @@ public class SchemaCapturer implements AutoCloseable {
 
 		Schema s = new Schema(databases, captureDefaultCharset(), this.sensitivity);
 		try {
-			detectMariaDBJSON(s);
+			if ( isMariaDB() )
+				detectMariaDBJSON(s);
 		} catch ( InvalidSchemaError e ) {
 			e.printStackTrace();
 		}
