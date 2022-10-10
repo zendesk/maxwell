@@ -5,6 +5,7 @@ import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.MysqlVersion;
 import com.zendesk.maxwell.row.RowMap;
 import org.junit.Test;
+import static org.junit.Assume.assumeFalse;
 
 import org.junit.experimental.categories.Category;
 
@@ -92,6 +93,8 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testJSON() throws Exception {
 		requireMinimumVersion(server.VERSION_5_7);
+		assumeFalse(MysqlIsolatedServer.getVersion().isMariaDB);
+
 		String sql[] = {
 			"create table shard_1.testJSON ( j json )",
 		};

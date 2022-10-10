@@ -72,6 +72,23 @@ public class Schema {
 		this.dbMap.remove(getNormalizedDbName(d.getName()));
 	}
 
+	public static boolean charsetEquals(String thisCharset, String thatCharset) {
+		if ( thisCharset == null || thatCharset == null ) {
+			return thisCharset == thatCharset;
+		}
+
+		thisCharset = thisCharset.toLowerCase();
+		thatCharset = thatCharset.toLowerCase();
+
+		if ( thisCharset.equals("utf8mb3") )
+			thisCharset = "utf8";
+
+		if ( thatCharset.equals("utf8mb3") )
+			thatCharset = "utf8";
+
+		return thisCharset.equals(thatCharset);
+	}
+
 	private void diffDBList(List<String> diff, Schema a, Schema b, String nameA, String nameB, boolean recurse) {
 		for ( Database d : a.dbMap.values() ) {
 			Database matchingDB = b.findDatabase(d.getName());
