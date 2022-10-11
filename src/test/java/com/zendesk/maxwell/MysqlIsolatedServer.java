@@ -278,8 +278,9 @@ public class MysqlIsolatedServer {
 			if ( rs.getString("Relay_Master_Log_File").equals(masterFile) &&
 				rs.getLong("Exec_Master_Log_Pos") >= masterPos )
 				return;
-
-			Thread.sleep(200);
+			LOGGER.info("waiting for slave to be current: {}, {}", masterFile, masterPos);
+			LOGGER.info("{}, {}", rs.getString("Relay_Master_Log_File"), rs.getLong("Exec_Master_Log_Pos"));
+			Thread.sleep(2000);
 		}
 	}
 }
