@@ -73,3 +73,13 @@ you're doing.  It allows you to "rewind" history and go back to a certain point
 in the binlog.  This can work, but you should be aware that Maxwell must have
 already "visited" that binlog position; simply specifying an arbitrary position
 in the binlog will lead to Maxwell crashing. 
+
+
+# Running with limited permissions
+
+If the user you're running maxwell as can't view part of the database because of limited
+permissions, Maxwell may be unable to capture information on part of the schem a and 
+the replication stream can break with "Can't find table: XXX" errors.  In this case
+you can enable the `ignore_missing_schema` flag *and* configure a filter that will exclude
+any databases/tables you don't have permission to view. 
+

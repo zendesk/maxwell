@@ -70,6 +70,13 @@ public class MaxwellConfig extends AbstractConfig {
 	public Filter filter;
 
 	/**
+	 * Ignore any missing database / table schemas, unless they're
+	 * included as part of filters. Default false.  Don't use unless
+	 * you really really need to.
+	 */
+	public Boolean ignoreMissingSchema;
+
+	/**
 	 * Attempt to use Mysql GTIDs to keep track of position
 	 */
 	public Boolean gtidMode;
@@ -224,6 +231,11 @@ public class MaxwellConfig extends AbstractConfig {
 	public Long pubsubMessageCountBatchSize;
 
 	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} message ordering key template (will enable message ordering if specified)
+	 */
+	public String pubsubMessageOrderingKey;
+
+	/**
 	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} publish delay threshold
 	 */
 	public Duration pubsubPublishDelayThreshold;
@@ -262,6 +274,11 @@ public class MaxwellConfig extends AbstractConfig {
 	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} total timeout
 	 */
 	public Duration pubsubTotalTimeout;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} emulator host to use, if specified
+	 */
+	public String pubsubEmulator;
 
 	/**
 	 * {@link com.zendesk.maxwell.producer.MaxwellBigQueryProducer} project id
@@ -666,7 +683,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.section("mysql");
 
 		parser.accepts( "binlog_heartbeat", "enable binlog replication heartbeats, default false" )
-			.withOptionalArg().ofType(Boolean.class);
+				.withOptionalArg().ofType(Boolean.class);
 
 		parser.accepts( "jdbc_options", "additional jdbc connection options: key1=val1&key2=val2" )
 				.withRequiredArg();
@@ -843,6 +860,8 @@ public class MaxwellConfig extends AbstractConfig {
 				.withRequiredArg().ofType(Long.class);
 		parser.accepts( "pubsub_message_count_batch_size", "threshold in message count that triggers a batch to be sent. default: 1 message" )
 				.withRequiredArg().ofType(Long.class);
+		parser.accepts( "pubsub_message_ordering_key", "message ordering key template (will enable message ordering if specified). default: null" )
+				.withOptionalArg();
 		parser.accepts( "pubsub_publish_delay_threshold", "threshold in delay time (milliseconds) before batch is sent. default: 1 ms" )
 				.withRequiredArg().ofType(Long.class);
 		parser.accepts( "pubsub_retry_delay", "delay in millis before sending the first retry message. default: 100 ms" )
@@ -859,6 +878,8 @@ public class MaxwellConfig extends AbstractConfig {
 				.withRequiredArg().ofType(Long.class);
 		parser.accepts( "pubsub_total_timeout", "maximum timeout in seconds (clamps exponential backoff)" )
 				.withRequiredArg().ofType(Long.class);
+		parser.accepts( "pubsub_emulator", "pubsub emulator host to use. default: null" )
+				.withOptionalArg();
 
 		parser.section( "output" );
 
@@ -889,7 +910,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "output_ddl", "produce DDL records. default: false" )
 				.withOptionalArg().ofType(Boolean.class);
 		parser.accepts( "output_push_timestamp", "include a microsecond timestamp representing when Maxwell sent a record. default: false" )
-			.withOptionalArg().ofType(Boolean.class);
+				.withOptionalArg().ofType(Boolean.class);
 		parser.accepts( "exclude_columns", "suppress these comma-separated columns from output" )
 				.withRequiredArg();
 		parser.accepts("secret_key", "The secret key for the AES encryption" )
@@ -900,6 +921,9 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.section( "filtering" );
 
 		parser.accepts( "filter", "filter specs.  specify like \"include:db.*, exclude:*.tbl, include: foo./.*bar$/, exclude:foo.bar.baz=reject\"").withRequiredArg();
+
+		parser.accepts( "ignore_missing_schema", "Ignore missing database and table schemas.  Only use running with limited permissions." )
+				.withOptionalArg().ofType(Boolean.class);
 
 		parser.accepts( "javascript", "file containing per-row javascript to execute" ).withRequiredArg();
 
@@ -1047,6 +1071,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.ddlPubsubTopic						= fetchStringOption("ddl_pubsub_topic", options, properties, this.pubsubTopic);
 		this.pubsubRequestBytesThreshold		= fetchLongOption("pubsub_request_bytes_threshold", options, properties, 1L);
 		this.pubsubMessageCountBatchSize		= fetchLongOption("pubsub_message_count_batch_size", options, properties, 1L);
+		this.pubsubMessageOrderingKey			= fetchStringOption("pubsub_message_ordering_key", options, properties, null);
 		this.pubsubPublishDelayThreshold		= Duration.ofMillis(fetchLongOption("pubsub_publish_delay_threshold", options, properties, 1L));
 		this.pubsubRetryDelay 					= Duration.ofMillis(fetchLongOption("pubsub_retry_delay", options, properties, 100L));
 		this.pubsubRetryDelayMultiplier 		= Double.parseDouble(fetchStringOption("pubsub_retry_delay_multiplier", options, properties, "1.3"));
@@ -1055,6 +1080,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.pubsubRpcTimeoutMultiplier 		= Double.parseDouble(fetchStringOption("pubsub_rpc_timeout_multiplier", options, properties, "1.0"));
 		this.pubsubMaxRpcTimeout 		 		= Duration.ofSeconds(fetchLongOption("pubsub_max_rpc_timeout", options, properties, 600L));
 		this.pubsubTotalTimeout 		 		= Duration.ofSeconds(fetchLongOption("pubsub_total_timeout", options, properties, 600L));
+		this.pubsubEmulator						= fetchStringOption("pubsub_emulator", options, properties, null);
 
 		this.rabbitmqHost           		= fetchStringOption("rabbitmq_host", options, properties, null);
 		this.rabbitmqPort 			= fetchIntegerOption("rabbitmq_port", options, properties, null);
@@ -1150,6 +1176,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.enableHttpConfig = fetchBooleanOption("http_config", options, properties, false);
 
 		this.filterList          = fetchStringOption("filter", options, properties, null);
+		this.ignoreMissingSchema          =  fetchBooleanOption("ignore_missing_schema", options, properties, false);
 
 		setupInitPosition(options);
 
@@ -1491,5 +1518,14 @@ public class MaxwellConfig extends AbstractConfig {
 		} else {
 			return null;
 		}
+	}
+
+
+	public Boolean getIgnoreMissingSchema() {
+		return ignoreMissingSchema;
+	}
+
+	public void setIgnoreMissingSchema(Boolean ignoreMissingSchema) {
+		this.ignoreMissingSchema = ignoreMissingSchema;
 	}
 }
