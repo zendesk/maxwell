@@ -545,14 +545,15 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		List<RowMap> rows = getRowsForDDLTransaction(sql, excludeDb("TestDatabaseCreate2"));
 		assertEquals(0, rows.size());
 	}
-	
+
+	/*
 	@Test
 	public void testNonLatinDatabaseFilter() throws Exception {
 		String[] sql = {"create database 測試資料庫二"};
 		List<RowMap> rows = getRowsForDDLTransaction(sql, excludeDb("測試資料庫二"));
 		assertEquals(0, rows.size());
 	}
-	
+	*/
 
 	@Test
 	public void testDatabaseChangeWithTableFilter() throws Exception {
