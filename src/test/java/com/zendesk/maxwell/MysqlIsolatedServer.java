@@ -280,6 +280,14 @@ public class MysqlIsolatedServer {
 				return;
 			LOGGER.info("waiting for slave to be current: {}, {}", masterFile, masterPos);
 			LOGGER.info("{}, {}", rs.getString("Relay_Master_Log_File"), rs.getLong("Exec_Master_Log_Pos"));
+
+			int columnsNumber = rs.getMetaData().getColumnCount();
+			for (int i = 1; i <= columnsNumber; i++) {
+				if (i > 1) System.out.print(",  ");
+				String columnValue = rs.getString(i);
+				System.out.print(columnValue + " " + rs.getMetaData().getColumnName(i));
+			}
+			System.out.println("");
 			Thread.sleep(2000);
 		}
 	}
