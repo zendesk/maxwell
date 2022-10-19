@@ -2,6 +2,9 @@ package com.zendesk.maxwell.schema;
 
 import com.zendesk.maxwell.CaseSensitivity;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
+import com.zendesk.maxwell.schema.columndef.JsonColumnDef;
+import com.zendesk.maxwell.schema.columndef.StringColumnDef;
+import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.util.Sql;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,7 +134,15 @@ public class SchemaCapturer implements AutoCloseable {
 		}
 		LOGGER.debug("{} database schemas captured!", size);
 
-		return new Schema(databases, captureDefaultCharset(), this.sensitivity);
+
+		Schema s = new Schema(databases, captureDefaultCharset(), this.sensitivity);
+		try {
+			if ( isMariaDB() )
+				detectMariaDBJSON(s);
+		} catch ( InvalidSchemaError e ) {
+			e.printStackTrace();
+		}
+		return s;
 	}
 
 	private String captureDefaultCharset() throws SQLException {
@@ -162,12 +173,19 @@ public class SchemaCapturer implements AutoCloseable {
 
 
 	private boolean isMySQLAtLeast56() throws SQLException {
+		if ( isMariaDB() )
+			return true;
+
 		java.sql.DatabaseMetaData meta = connection.getMetaData();
 		int major = meta.getDatabaseMajorVersion();
 		int minor = meta.getDatabaseMinorVersion();
 		return ((major == 5 && minor >= 6) || major > 5);
 	}
 
+	private boolean isMariaDB() throws SQLException {
+		java.sql.DatabaseMetaData meta = connection.getMetaData();
+		return meta.getDatabaseProductVersion().toLowerCase().contains("maria");
+	}
 
 	private void captureTables(Database db, HashMap<String, Table> tables) throws SQLException {
 		columnPreparedStatement.setString(1, db.getName());
@@ -276,6 +294,40 @@ public class SchemaCapturer implements AutoCloseable {
 			 PreparedStatement p3 = pkPreparedStatement) {
 			// auto-close shared prepared statements
 		}
+	}
+
+	private void detectMariaDBJSON(Schema schema) throws SQLException, InvalidSchemaError {
+		String checkConstraintSQL = "SELECT CONSTRAINT_SCHEMA, TABLE_NAME, CONSTRAINT_NAME, CHECK_CLAUSE " +
+			"from INFORMATION_SCHEMA.CHECK_CONSTRAINTS " +
+			"where LEVEL='column' and CHECK_CLAUSE LIKE 'json_valid(%)'";
+
+		String regex = "json_valid\\(`(.*)`\\)";
+		Pattern pattern = Pattern.compile(regex);
+
+		try (
+			PreparedStatement statement = connection.prepareStatement(checkConstraintSQL);
+			ResultSet rs = statement.executeQuery()
+		) {
+			while ( rs.next() ) {
+				String checkClause = rs.getString("CHECK_CLAUSE");
+				Matcher m = pattern.matcher(checkClause);
+				if ( m.find() ) {
+					String column = m.group(1);
+					Database d = schema.findDatabase(rs.getString("CONSTRAINT_SCHEMA"));
+					if ( d == null ) continue;
+					Table t = d.findTable(rs.getString("TABLE_NAME"));
+					if ( t == null ) continue;
+					short i = t.findColumnIndex(column);
+					if ( i < 0 ) continue;
+
+					ColumnDef cd = t.findColumn(i);
+					if ( cd instanceof StringColumnDef ) {
+						t.replaceColumn(i, JsonColumnDef.create(cd.getName(), "json", i));
+					}
+				}
+			}
+		}
+
 	}
 
 }

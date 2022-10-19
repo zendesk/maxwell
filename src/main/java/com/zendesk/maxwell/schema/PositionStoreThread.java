@@ -110,7 +110,15 @@ public class PositionStoreThread extends RunLoopProcess implements Runnable {
 	}
 
 	public synchronized void setPosition(Position p) {
-		if ( position == null || p.newerThan(position) ) {
+		/* in order to keep full, comparable gtid sets maria makes us jump through some hoops. */
+		if ( context.isMariaDB() && position != null ) {
+			BinlogPosition bp = p.getBinlogPosition();
+			if ( bp.getGtid() != null ) {
+				position = position.addGtid(bp.getGtid());
+			} else {
+				position = p;
+			}
+		} else if ( position == null || p.newerThan(position) ) {
 			position = p;
 			if (storedPosition == null) {
 				storedPosition = p;

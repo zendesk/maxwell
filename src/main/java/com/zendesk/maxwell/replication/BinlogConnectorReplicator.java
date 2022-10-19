@@ -4,7 +4,9 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
+import com.github.shyiko.mysql.binlog.event.AnnotateRowsEventData;
 import com.github.shyiko.mysql.binlog.event.EventType;
+import com.github.shyiko.mysql.binlog.event.MariadbGtidEventData;
 import com.github.shyiko.mysql.binlog.event.QueryEventData;
 import com.github.shyiko.mysql.binlog.event.RowsQueryEventData;
 import com.github.shyiko.mysql.binlog.event.TableMapEventData;
@@ -177,6 +179,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		/* setup binlog client */
 		this.client = new BinaryLogClient(mysqlConfig.host, mysqlConfig.port, mysqlConfig.user, mysqlConfig.password);
 		this.client.setSSLMode(mysqlConfig.sslMode);
+		this.client.setUseSendAnnotateRowsEvent(true);
 
 
 		BinlogPosition startBinlog = start.getBinlogPosition();
@@ -593,6 +596,10 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					RowsQueryEventData rqed = event.getEvent().getData();
 					currentQuery = rqed.getQuery();
 					break;
+				case ANNOTATE_ROWS:
+					AnnotateRowsEventData ared = event.getEvent().getData();
+					currentQuery = ared.getRowsQuery();
+					break;
 				case QUERY:
 					QueryEventData qe = event.queryData();
 					String sql = qe.getSql();
@@ -622,6 +629,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					} else {
 						LOGGER.warn("Unhandled QueryEvent @ {} inside transaction: {}", event.getPosition().fullPosition(), qe);
 					}
+					break;
+				default:
 					break;
 			}
 		}
@@ -725,6 +734,22 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 						rowBuffer.setSchemaId(getSchemaId());
 					} else {
 						processQueryEvent(event);
+					}
+					break;
+				case MARIADB_GTID:
+					// in mariaDB the GTID event supplants the normal BEGIN
+					MariadbGtidEventData g = event.mariaGtidData();
+					if ( (g.getFlags() & MariadbGtidEventData.FL_STANDALONE) == 0 ) {
+						try {
+							rowBuffer = getTransactionRows(event);
+						} catch ( ClientReconnectedException e ) {
+							// rowBuffer should already be empty by the time we get to this switch
+							// statement, but we null it for clarity
+							rowBuffer = null;
+							break;
+						}
+						rowBuffer.setServerId(event.getEvent().getHeader().getServerId());
+						rowBuffer.setSchemaId(getSchemaId());
 					}
 					break;
 				case ROTATE:
