@@ -13,6 +13,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	private MaxwellOutputConfig ddlOutputConfig() {
@@ -517,6 +518,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	
 	@Test
 	public void testNonLatinDatabaseCreate() throws Exception {
+		assumeFalse(MysqlIsolatedServer.getVersion().getMajor() == 8);
 		String[] sql = {
 			"create database 測試資料庫一",
 			"alter database 測試資料庫一 character set latin2"
