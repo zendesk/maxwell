@@ -2,6 +2,9 @@ package com.zendesk.maxwell.replication;
 
 import com.github.shyiko.mysql.binlog.GtidSet;
 
+import com.github.shyiko.mysql.binlog.MariadbGtidSet;
+import com.zendesk.maxwell.MaxwellCompatibilityError;
+import com.zendesk.maxwell.MaxwellMysqlStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +40,8 @@ public class BinlogPosition implements Serializable {
 	}
 
 	public static BinlogPosition capture(Connection c, boolean gtidMode) throws SQLException {
+		MaxwellMysqlStatus m = new MaxwellMysqlStatus(c);
+
 		try ( Statement stmt = c.createStatement();
 		      ResultSet rs = stmt.executeQuery("SHOW MASTER STATUS") ) {
 			rs.next();
@@ -44,7 +49,11 @@ public class BinlogPosition implements Serializable {
 			String file = rs.getString(FILE_COLUMN);
 			String gtidSetStr = null;
 			if (gtidMode) {
-				gtidSetStr = rs.getString(GTID_COLUMN);
+				if ( m.isMaria() ) {
+					gtidSetStr = m.getVariableState("gtid_binlog_state");
+				} else {
+					gtidSetStr = rs.getString(GTID_COLUMN);
+				}
 			}
 			return new BinlogPosition(gtidSetStr, null, l, file);
 		}
@@ -78,8 +87,17 @@ public class BinlogPosition implements Serializable {
 		return gtidSetStr;
 	}
 
+	public BinlogPosition addGtid(String gtid) {
+		GtidSet set = this.getGtidSet();
+		set.add(gtid);
+		return new BinlogPosition(set.toSeenString(), gtid, this.offset, this.file);
+	}
+
 	public GtidSet getGtidSet() {
-		return new GtidSet(gtidSetStr);
+		if ( MariadbGtidSet.isMariaGtidSet(gtidSetStr) )
+			return new MariadbGtidSet((gtidSetStr));
+		else
+			return new GtidSet(gtidSetStr);
 	}
 
 	@Override

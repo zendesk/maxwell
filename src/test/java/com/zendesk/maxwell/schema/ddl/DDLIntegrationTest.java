@@ -5,6 +5,7 @@ import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.MysqlVersion;
 import com.zendesk.maxwell.row.RowMap;
 import org.junit.Test;
+import static org.junit.Assume.assumeFalse;
 
 import org.junit.experimental.categories.Category;
 
@@ -92,6 +93,8 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testJSON() throws Exception {
 		requireMinimumVersion(server.VERSION_5_7);
+		assumeFalse(MysqlIsolatedServer.getVersion().isMariaDB);
+
 		String sql[] = {
 			"create table shard_1.testJSON ( j json )",
 		};
@@ -427,21 +430,9 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
-	public void testDatabaseAlterMySqlTableCharset() throws Exception {
-		testIntegration("ALTER TABLE mysql.columns_priv " +
-				"MODIFY Host char(60) NOT NULL default '', " +
-				"MODIFY Db char(64) NOT NULL default '', " +
-				"MODIFY User char(16) NOT NULL default '', " +
-				"MODIFY Table_name char(64) NOT NULL default '', " +
-				"MODIFY Column_name char(64) NOT NULL default '', " +
-				"CONVERT TO CHARACTER SET utf8 COLLATE utf8_bin, " +
-				"COMMENT='Column privileges'");
-	}
-
-	@Test
 	@Category(Mysql57Tests.class)
 	public void testGeneratedColumns() throws Exception {
-		requireMinimumVersion(server.VERSION_5_7);
+		requireMinimumVersion(server.VERSION_5_7, false);
 		testIntegration("create table t ("
 			+ "a INT GENERATED ALWAYS AS (0) VIRTUAL UNIQUE NOT NULL, "
 			+ "b int AS (a + 0) STORED PRIMARY KEY"
@@ -542,14 +533,13 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		List<RowMap> rows = getRowsForDDLTransaction(sql, excludeDb("TestDatabaseCreate2"));
 		assertEquals(0, rows.size());
 	}
-	
+
 	@Test
 	public void testNonLatinDatabaseFilter() throws Exception {
 		String[] sql = {"create database 測試資料庫二"};
 		List<RowMap> rows = getRowsForDDLTransaction(sql, excludeDb("測試資料庫二"));
 		assertEquals(0, rows.size());
 	}
-	
 
 	@Test
 	public void testDatabaseChangeWithTableFilter() throws Exception {

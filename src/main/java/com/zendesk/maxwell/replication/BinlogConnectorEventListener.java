@@ -6,6 +6,7 @@ import com.github.shyiko.mysql.binlog.BinaryLogClient;
 import com.github.shyiko.mysql.binlog.event.Event;
 import com.github.shyiko.mysql.binlog.event.EventType;
 import com.github.shyiko.mysql.binlog.event.GtidEventData;
+import com.github.shyiko.mysql.binlog.event.MariadbGtidEventData;
 import com.zendesk.maxwell.monitoring.Metrics;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import org.slf4j.Logger;
@@ -50,8 +51,12 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener {
 		long eventSeenAt = 0;
 		boolean trackMetrics = false;
 
-		if (event.getHeader().getEventType() == EventType.GTID) {
+		EventType eventType = event.getHeader().getEventType();
+
+		if ( eventType == EventType.GTID) {
 			gtid = ((GtidEventData)event.getData()).getGtid();
+		} else if ( eventType == EventType.MARIADB_GTID) {
+			gtid = ((MariadbGtidEventData)event.getData()).toString();
 		}
 
 		BinlogConnectorEvent ep = new BinlogConnectorEvent(event, client.getBinlogFilename(), client.getGtidSet(), gtid, outputConfig);

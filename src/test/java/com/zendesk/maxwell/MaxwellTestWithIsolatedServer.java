@@ -140,6 +140,12 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 		MaxwellTestSupport.requireMinimumVersion(server, minimum);
 	}
 
+	protected void requireMinimumVersion(MysqlVersion minimum, boolean isMariaDB) {
+		MaxwellTestSupport.requireMinimumVersion(server, minimum);
+		assumeTrue(server.getVersion().isMariaDB == isMariaDB);
+
+	}
+
 	protected void requireMinimumVersion(int major, int minor) {
 		requireMinimumVersion(new MysqlVersion(major, minor));
 	}

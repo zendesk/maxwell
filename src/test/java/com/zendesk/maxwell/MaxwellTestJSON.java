@@ -132,7 +132,7 @@ public class MaxwellTestJSON {
 
 			if ( buffer == null ) {
 				if ( line.matches(JSON_PATTERN) ) {
-					line = line.replaceAll("^\\s*\\->\\s*", "");
+					line = line.replaceAll("^\\s*->\\s*", "");
 					bufferIsJSON = true;
 				} else {
 					bufferIsJSON = false;

@@ -142,7 +142,7 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 		Connection c = context.getMaxwellConnection();
 		c.createStatement().executeUpdate("alter table `maxwell`.`schemas` drop column deleted, " +
 				"drop column base_schema_id, drop column deltas, drop column version, drop column position_sha");
-		c.createStatement().executeUpdate("alter table maxwell.positions drop column client_id");
+		c.createStatement().executeUpdate("alter table maxwell.positions drop primary key, drop column client_id, add primary key (server_id)");
 		c.createStatement().executeUpdate("alter table maxwell.positions drop column gtid_set");
 		c.createStatement().executeUpdate("alter table maxwell.schemas drop column gtid_set");
 		c.createStatement().executeUpdate("alter table `columns` " +
