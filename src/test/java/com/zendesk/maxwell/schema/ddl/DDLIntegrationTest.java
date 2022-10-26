@@ -506,6 +506,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testDatabaseCreate() throws Exception {
+		assumeFalse(MysqlIsolatedServer.getVersion().getMajor() == 8);
 		String[] sql = {
 			"create database TestDatabaseCreate1",
 			"alter database TestDatabaseCreate1 character set latin2"
