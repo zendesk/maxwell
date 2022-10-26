@@ -43,6 +43,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <mockito.version>3.7.7</mockito.version>
     <opencensus.version>0.28.3</opencensus.version>
+    <aws-java.version>1.12.327</aws-java.version>
   </properties>
 
   <profiles>
@@ -143,7 +144,22 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-core</artifactId>
-      <version>1.12.220</version>
+      <version>${aws-java.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-sns</artifactId>
+      <version>${aws-java.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-sqs</artifactId>
+      <version>${aws-java.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-sts</artifactId>
+      <version>${aws-java.version}</version>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
@@ -324,21 +340,6 @@
       <groupId>com.viafoura</groupId>
       <artifactId>metrics-datadog</artifactId>
       <version>2.0.0-RC3</version>
-    </dependency>
-    <dependency>
-      <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-sns</artifactId>
-      <version>1.12.215</version>
-    </dependency>
-    <dependency>
-      <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-sqs</artifactId>
-      <version>1.12.213</version>
-    </dependency>
-    <dependency>
-      <groupId>com.amazonaws</groupId>
-      <artifactId>aws-java-sdk-sts</artifactId>
-      <version>1.12.166</version>
     </dependency>
     <dependency>
       <groupId>me.tongfei</groupId>
