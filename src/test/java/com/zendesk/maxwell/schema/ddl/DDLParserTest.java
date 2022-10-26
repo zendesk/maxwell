@@ -602,4 +602,16 @@ public class DDLParserTest {
 		}
 		System.out.println(nFixed + " fixed, " + nErr + " remain.");
 	}
+
+	@Test
+	public void testPolardbXCreateIndexSQL(){
+
+		List<SchemaChange> changes = parse(
+				"# POLARX_ORIGIN_SQL=CREATE INDEX device_id_idx ON event_tracking_info_extra (event, create_time)\n" +
+				"# POLARX_TSO=698905756181096044815201227773638819850000000000000000\n" +
+				"CREATE INDEX device_id_idx ON event_tracking_info_extra (event, create_time)");
+
+		assertThat(changes,is(nullValue()));
+
+	}
 }
