@@ -1,5 +1,21 @@
 # Maxwell changelog
 
+### [v1.39.0](https://github.com/zendesk/maxwell/releases/tag/v1.39.0)
+
+This is a faily major release, including lots of MariaDB support fixes
+and a few months worth of patches.
+
+- GTID support for MariaDB
+- Improved JSON column handling for MariaDB
+- add `--pubsub_message_ordering_key`, thanks Billy Braga
+- add `--pubsub_emulator`, thanks Billy Braga
+- add `--ignore_missing_schema` for otherwise untenable schema situations.
+- handle TABLESPACE related DDL
+
+
+
+_Released 2022-10-26_
+
 ### [v1.38.0](https://github.com/zendesk/maxwell/releases/tag/v1.38.0)
 
 - Maxwell gets the ability to talk to bigtable!  I have no idea how well
@@ -67,9 +83,7 @@ _Released 2022-03-14_
 
 ### [v1.37.1](https://github.com/zendesk/maxwell/releases/tag/v1.37.1)
 
- - list changes
-
-
+ - upgrade mysql-connector-j 
 
 _Released 2022-03-07_
 
