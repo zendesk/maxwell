@@ -401,7 +401,12 @@ Region=$AWS_DEFAULT_REGION
 <p>See the <a href="http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html">AWS docs</a> on how to setup the IAM user with the Default Credential Provider Chain.</p>
 <p>In case you need to set up a different region also along with credentials then default one, see the <a href="http://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/setup-credentials.html#setup-credentials-setting-region">AWS docs</a>.</p>
 <h2 id="options_1">Options</h2>
-<p>Set the output queue in the <code>config.properties</code> by setting the <code>sqs_queue_uri</code> property to full SQS queue uri from AWS console.</p>
+<p>Set the output queue in the <code>config.properties</code> by setting the following properites</p>
+<ul>
+<li><strong>sqs_signing_region</strong>: the region to use for SigV4 signing of requests. e.g. <code>us-east-1</code></li>
+<li><strong>sqs_service_endpoint</strong>: the service endpoint either with or without the protocol (e.g. <code>https://sns.us-west-1.amazonaws.com</code> or <code>sns.us-west-1.amazonaws.com</code>)</li>
+<li><strong>sqs_queue_uri</strong>: the full SQS queue uri from AWS console. e.g. <code>https://sqs.us-east-1.amazonaws.com/xxxxxxxxxxxx/maxwell</code></li>
+</ul>
 <p>The producer uses the <a href="http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/services/sqs/AmazonSQSClient.html">AWS SQS SDK</a>.</p>
 <h1 id="sns">SNS</h1>
 <hr />
@@ -461,6 +466,7 @@ To use the Storage Write API, you must have <code>bigquery.tables.updateData</co
 <li><code>rabbitmq_user</code> - defaults to <strong>guest</strong></li>
 <li><code>rabbitmq_pass</code> - defaults to <strong>guest</strong></li>
 <li><code>rabbitmq_virtual_host</code> - defaults to <strong>/</strong></li>
+<li><code>rabbitmq_handshake_timeout</code> - defaults to <strong>10000</strong></li>
 <li><code>rabbitmq_exchange</code> - defaults to <strong>maxwell</strong></li>
 <li><code>rabbitmq_exchange_type</code> - defaults to <strong>fanout</strong></li>
 <li><code>rabbitmq_exchange_durable</code> - defaults to <strong>false</strong></li>

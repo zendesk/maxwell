@@ -154,6 +154,16 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            
+            <li class="nav-item" data-level="1"><a href="#-init_position" class="nav-link">--init_position</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            
+            <li class="nav-item" data-level="1"><a href="#running-with-limited-permissions" class="nav-link">Running with limited permissions</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
         </ul>
     </div>
 </div>
@@ -214,6 +224,18 @@ unique <code>client_id</code>, in order to store unique binlog positions.</p>
 also be configured with a unique <code>replica_server_id</code>.  This is a 32-bit integer
 that corresponds to mysql's <code>server_id</code> parameter.  The value you configure
 should be unique across all mysql and maxwell instances.</p>
+<h1 id="-init_position"><code>--init_position</code></h1>
+<p>This is a dangerous option that you really shouldn't use unless you know what
+you're doing.  It allows you to "rewind" history and go back to a certain point
+in the binlog.  This can work, but you should be aware that Maxwell must have
+already "visited" that binlog position; simply specifying an arbitrary position
+in the binlog will lead to Maxwell crashing. </p>
+<h1 id="running-with-limited-permissions">Running with limited permissions</h1>
+<p>If the user you're running maxwell as can't view part of the database because of limited
+permissions, Maxwell may be unable to capture information on part of the schem a and 
+the replication stream can break with "Can't find table: XXX" errors.  In this case
+you can enable the <code>ignore_missing_schema</code> flag <em>and</em> configure a filter that will exclude
+any databases/tables you don't have permission to view. </p>
     </div>
 </div>
             </div>

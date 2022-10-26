@@ -739,6 +739,12 @@
 <td>1</td>
 </tr>
 <tr>
+<td>pubsub_message_ordering_key</td>
+<td>STRING</td>
+<td>Google Cloud pub-sub ordering key template (also enables message ordering when set)</td>
+<td></td>
+</tr>
+<tr>
 <td>pubsub_publish_delay_threshold</td>
 <td>LONG</td>
 <td>Set time passed in millis until batch is send</td>
@@ -785,6 +791,12 @@
 <td>LONG</td>
 <td>Puts a limit on the value in seconds of the retry delay, so that the RetryDelayMultiplier can't increase the retry delay higher than this amount</td>
 <td>600</td>
+</tr>
+<tr>
+<td>pubsub_emulator</td>
+<td>STRING</td>
+<td>Google Cloud pub-sub emulator host to send events to</td>
+<td></td>
 </tr>
 </tbody>
 </table>
@@ -860,6 +872,12 @@
 <td>rabbitmq_virtual_host</td>
 <td>STRING</td>
 <td>Virtual Host of Rabbitmq</td>
+<td></td>
+</tr>
+<tr>
+<td>rabbitmq_handshake_timeout</td>
+<td>STRING</td>
+<td>Handshake timeout of Rabbitmq connection in milliseconds</td>
 <td></td>
 </tr>
 <tr>
@@ -1291,7 +1309,7 @@
 <tr>
 <td>init_position</td>
 <td>FILE:POSITION[:HEARTBEAT]</td>
-<td>ignore the information in maxwell.positions and start at the given binlog position. Not available in config.properties.</td>
+<td>ignore the information in maxwell.positions and start at the given binlog position. Not available in config.properties. <a href="/deployment#-init_position">see note</a></td>
 <td></td>
 </tr>
 <tr>
