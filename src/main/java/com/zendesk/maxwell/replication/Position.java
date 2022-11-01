@@ -35,8 +35,8 @@ public class Position implements Serializable {
 		return binlogPosition;
 	}
 
-	public Position addGtid(String gtid) {
-		return new Position(binlogPosition.addGtid(gtid), lastHeartbeatRead);
+	public Position addGtid(String gtid, long offset, String file) {
+		return new Position(binlogPosition.addGtid(gtid, offset, file), lastHeartbeatRead);
 	}
 
 	@Override

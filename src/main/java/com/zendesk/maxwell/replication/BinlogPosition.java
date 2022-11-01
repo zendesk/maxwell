@@ -87,13 +87,19 @@ public class BinlogPosition implements Serializable {
 		return gtidSetStr;
 	}
 
-	public BinlogPosition addGtid(String gtid) {
+	public BinlogPosition addGtid(String gtid, long offset, String file) {
 		GtidSet set = this.getGtidSet();
+		if ( set == null )
+			return new BinlogPosition(offset, file);
+
 		set.add(gtid);
-		return new BinlogPosition(set.toSeenString(), gtid, this.offset, this.file);
+		return new BinlogPosition(set.toSeenString(), gtid, offset, file);
 	}
 
 	public GtidSet getGtidSet() {
+		if ( gtidSetStr == null )
+			return null;
+
 		if ( MariadbGtidSet.isMariaGtidSet(gtidSetStr) )
 			return new MariadbGtidSet((gtidSetStr));
 		else
