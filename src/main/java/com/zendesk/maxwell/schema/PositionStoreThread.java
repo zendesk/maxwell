@@ -78,7 +78,7 @@ public class PositionStoreThread extends RunLoopProcess implements Runnable {
 		BinlogPosition currentBinlog = currentPosition.getBinlogPosition();
 		if ( !lastHeartbeatSentFrom.getFile().equals(currentBinlog.getFile()) )
 			return true;
-		if ( currentBinlog.getOffset() - lastHeartbeatSentFrom.getOffset() > 1000 ) {
+		if ( currentBinlog.getOffset() - lastHeartbeatSentFrom.getOffset() > 3000 ) {
 			return true;
 		}
 
