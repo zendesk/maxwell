@@ -179,7 +179,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		/* setup binlog client */
 		this.client = new BinaryLogClient(mysqlConfig.host, mysqlConfig.port, mysqlConfig.user, mysqlConfig.password);
 		this.client.setSSLMode(mysqlConfig.sslMode);
-		this.client.setUseSendAnnotateRowsEvent(false);
+		this.client.setUseSendAnnotateRowsEvent(true);
 
 
 		BinlogPosition startBinlog = start.getBinlogPosition();
