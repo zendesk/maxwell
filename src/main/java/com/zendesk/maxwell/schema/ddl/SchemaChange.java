@@ -53,7 +53,7 @@ public abstract class SchemaChange {
 
 	private static boolean matchesBlacklist(String sql) {
 		// first *include* /*50032 CREATE EVENT */ style sql
-		sql = sql.replaceAll("/\\*!\\d+\\s*(.*)\\*/", "$1");
+		sql = sql.replaceAll("/\\*M?!\\d+\\s*(.*)\\*/", "$1");
 
 		// now strip out comments
 		sql = CSTYLE_COMMENTS.matcher(sql).replaceAll("");
