@@ -297,7 +297,8 @@ public class DDLParserTest {
 			"SET DEFAULT ROLE administrator, developer TO 'joe'@'10.0.0.1'",
 			"DROP ROLE 'role1'",
 			"#comment\ndrop procedure if exists `foo`",
-			"/* some \n mulitline\n comment */ drop procedure if exists foo"
+			"/* some \n mulitline\n comment */ drop procedure if exists foo",
+			"SET STATEMENT max_statement_time = 60 FOR flush table"
 		};
 
 		for ( String s : testSQL ) {
