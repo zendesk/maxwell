@@ -298,7 +298,10 @@ public class DDLParserTest {
 			"DROP ROLE 'role1'",
 			"#comment\ndrop procedure if exists `foo`",
 			"/* some \n mulitline\n comment */ drop procedure if exists foo",
-			"SET STATEMENT max_statement_time = 60 FOR flush table"
+			"SET STATEMENT max_statement_time = 60 FOR flush table",
+			"SET STATEMENT max=1, min_var=3,v=9 FOR FLUSH",
+			"SET STATEMENT max='1', min=RRRR,v=9 FOR FLUSH",
+			"SET statement max=\"1\", min='3',v=RRR, long_long_ago=4 FOR FLUSH",
 		};
 
 		for ( String s : testSQL ) {
