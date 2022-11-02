@@ -8,9 +8,10 @@ import mysql_literal_tokens,
        mysql_create_table,
        mysql_drop,
        mysql_rename,
-       mysql_view;
+       mysql_view, 
+       mysql_set_statement_for;
 
-parse: statement?
+parse: set_statement_for? statement?
        EOF;
 
 statement:
