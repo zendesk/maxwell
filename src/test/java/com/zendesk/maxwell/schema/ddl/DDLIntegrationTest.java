@@ -593,4 +593,15 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		};
 		testIntegration(sql);
 	}
+
+	@Test
+	public void testAlterIgnoreMaria() throws Exception {
+		assumeTrue(MysqlIsolatedServer.getVersion().isMariaDB);
+
+		String [] sql = {
+			"create table foo ( colA int, colB int)",
+			"ALTER IGNORE TABLE foo ADD CONSTRAINT table_name_pk PRIMARY KEY IF NOT EXISTS (colA, colB)"
+		};
+		testIntegration(sql);
+	}
 }
