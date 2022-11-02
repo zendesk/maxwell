@@ -329,12 +329,12 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-server</artifactId>
-      <version>10.0.10</version>
+      <version>10.0.12</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
-      <version>9.4.41.v20210516</version>
+      <version>10.0.12</version>
     </dependency>
     <dependency>
       <groupId>com.viafoura</groupId>
