@@ -21,6 +21,8 @@ public abstract class SchemaChange {
 
 	private static final Set<Pattern> SQL_BLACKLIST = new HashSet<Pattern>();
 
+	private static final Pattern SET_STATEMENT = Pattern.compile("SET\\s+STATEMENT\\s+(\\w+\\s*=\\s*((?<quote>['\"]).*?\\k<quote>|\\w+),?\\s*)+FOR\\s+", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+
 	static {
 		SQL_BLACKLIST.add(Pattern.compile("\\A\\s*BEGIN", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
 		SQL_BLACKLIST.add(Pattern.compile("\\A\\s*COMMIT", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
@@ -41,7 +43,6 @@ public abstract class SchemaChange {
 		SQL_BLACKLIST.add(Pattern.compile("\\A\\s*(ALTER|CREATE|DROP)\\s+TEMPORARY\\s+TABLE", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
 		SQL_BLACKLIST.add(Pattern.compile("\\A\\s*(ALTER|CREATE|DROP)\\s+TABLESPACE", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
 		SQL_BLACKLIST.add(Pattern.compile("\\A\\s*(SET|DROP|CREATE)\\s+(DEFAULT\\s+)?ROLE", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
-		SQL_BLACKLIST.add(Pattern.compile("\\A\\s*SET\\s+STATEMENT", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
 		SQL_BLACKLIST.add(Pattern.compile("\\A\\s*TRUNCATE\\s+", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
 		SQL_BLACKLIST.add(Pattern.compile("\\A\\s*OPTIMIZE\\s+", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
 
@@ -60,6 +61,9 @@ public abstract class SchemaChange {
 		sql = CSTYLE_COMMENTS.matcher(sql).replaceAll("");
 		sql = sql.replaceAll("\\-\\-.*", "");
 		sql = sql.replaceAll("^\\s*#.*", "");
+
+		// SET STATEMENT .. FOR syntax can be applied to BLACKLIST element, just omit for tesing purposes
+		sql = SET_STATEMENT.matcher(sql).replaceAll("");
 
 		for (Pattern p : SQL_BLACKLIST) {
 			if (p.matcher(sql).find()) {
