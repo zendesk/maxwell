@@ -60,7 +60,7 @@ public abstract class SchemaChange {
 		// now strip out comments
 		sql = CSTYLE_COMMENTS.matcher(sql).replaceAll("");
 		sql = sql.replaceAll("\\-\\-.*", "");
-		sql = sql.replaceAll("^\\s*#.*", "");
+		sql = Pattern.compile("^\\s*#.*", Pattern.MULTILINE).matcher(sql).replaceAll("");
 
 		// SET STATEMENT .. FOR syntax can be applied to BLACKLIST element, just omit for tesing purposes
 		sql = SET_STATEMENT.matcher(sql).replaceAll("");
