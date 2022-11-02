@@ -1,5 +1,14 @@
 # Maxwell changelog
 
+### [v1.39.2](https://github.com/zendesk/maxwell/releases/tag/v1.39.2)
+
+this is a bug-fix release.  some upgrades broke maxwell's http interface and there's
+a bunch of SQL parser fixes in here.
+
+
+
+_Released 2022-11-02_
+
 ### [v1.39.1](https://github.com/zendesk/maxwell/releases/tag/v1.39.1)
 
 This is a faily major release, including lots of MariaDB support fixes
