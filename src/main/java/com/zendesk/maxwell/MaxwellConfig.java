@@ -248,7 +248,7 @@ public class MaxwellConfig extends AbstractConfig {
 	/**
 	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} retry delay multiplier
 	 */
-	public Double pubsubRetryDelayMultiplier;
+	public Float pubsubRetryDelayMultiplier;
 
 	/**
 	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} max retry delay
@@ -263,7 +263,7 @@ public class MaxwellConfig extends AbstractConfig {
 	/**
 	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} RPC timeout multiplier
 	 */
-	public Double pubsubRpcTimeoutMultiplier;
+	public Float pubsubRpcTimeoutMultiplier;
 
 	/**
 	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} max RPC timeout
@@ -867,13 +867,13 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "pubsub_retry_delay", "delay in millis before sending the first retry message. default: 100 ms" )
 				.withRequiredArg().ofType(Long.class);
 		parser.accepts( "pubsub_retry_delay_multiplier", "multiply by this ratio to increase delay time each retry. default: 1.3" )
-				.withRequiredArg();
+				.withRequiredArg().ofType(Float.class);
 		parser.accepts( "pubsub_max_retry_delay", "maximum retry delay time in seconds. default: 60 seconds" )
 				.withRequiredArg().ofType(Long.class);
 		parser.accepts( "pubsub_initial_rpc_timeout", "timeout for initial rpc call. default: 5 seconds" )
 				.withRequiredArg();
 		parser.accepts( "pubsub_rpc_timeout_multiplier", "backoff delay ratio for rpc timeout. default: 1.0" )
-				.withRequiredArg().ofType(Long.class);
+				.withRequiredArg().ofType(Float.class);
 		parser.accepts( "pubsub_max_rpc_timeout", "max delay in seconds for rpc timeout. default: 600 seconds" )
 				.withRequiredArg().ofType(Long.class);
 		parser.accepts( "pubsub_total_timeout", "maximum timeout in seconds (clamps exponential backoff)" )
@@ -1074,10 +1074,10 @@ public class MaxwellConfig extends AbstractConfig {
 		this.pubsubMessageOrderingKey			= fetchStringOption("pubsub_message_ordering_key", options, properties, null);
 		this.pubsubPublishDelayThreshold		= Duration.ofMillis(fetchLongOption("pubsub_publish_delay_threshold", options, properties, 1L));
 		this.pubsubRetryDelay 					= Duration.ofMillis(fetchLongOption("pubsub_retry_delay", options, properties, 100L));
-		this.pubsubRetryDelayMultiplier 		= Double.parseDouble(fetchStringOption("pubsub_retry_delay_multiplier", options, properties, "1.3"));
+		this.pubsubRetryDelayMultiplier 		= fetchFloatOption("pubsub_retry_delay_multiplier", options, properties, 1.0f);
 		this.pubsubMaxRetryDelay 		 		= Duration.ofSeconds(fetchLongOption("pubsub_max_retry_delay", options, properties, 60L));
 		this.pubsubInitialRpcTimeout 		 	= Duration.ofSeconds(fetchLongOption("pubsub_initial_rpc_timeout", options, properties, 5L));
-		this.pubsubRpcTimeoutMultiplier 		= Double.parseDouble(fetchStringOption("pubsub_rpc_timeout_multiplier", options, properties, "1.0"));
+		this.pubsubRpcTimeoutMultiplier 		= fetchFloatOption("pubsub_rpc_timeout_multiplier", options, properties, 1.0f);
 		this.pubsubMaxRpcTimeout 		 		= Duration.ofSeconds(fetchLongOption("pubsub_max_rpc_timeout", options, properties, 600L));
 		this.pubsubTotalTimeout 		 		= Duration.ofSeconds(fetchLongOption("pubsub_total_timeout", options, properties, 600L));
 		this.pubsubEmulator						= fetchStringOption("pubsub_emulator", options, properties, null);

@@ -129,6 +129,18 @@ public class MaxwellConfigTest
 		assertEquals("foo", config.customProducerProperties.getProperty("foo"));
 	}
 
+	@Test
+	public void testPubsubConfigNonDefault() {
+		config = new MaxwellConfig(new String[] { "--pubsub_rpc_timeout_multiplier=1.5" });
+		assertEquals(config.pubsubRpcTimeoutMultiplier, 1.5f, 0.0f);
+	}
+
+	@Test
+	public void testPubsubConfigDefault() {
+		config = new MaxwellConfig();
+		assertEquals(config.pubsubRpcTimeoutMultiplier, 1.0f, 0.0f);
+	}
+
 
 	private String getTestConfigDir() {
 		return System.getProperty("user.dir") + "/src/test/resources/config/";
