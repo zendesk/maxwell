@@ -1337,6 +1337,9 @@ public class MaxwellConfig extends AbstractConfig {
 		} else if (this.producerType.equals("sns") && this.snsTopic == null) {
 			usageForOptions("please specify a topic ARN for SNS", "sns_topic");
 		} else if (this.producerType.equals("pubsub")) {
+			if (this.pubsubProjectId == null)
+				usageForOptions("please specify --pubsub_project_id.", "--pubsub_project_id");
+
 			if (this.pubsubRequestBytesThreshold <= 0L)
 				usage("--pubsub_request_bytes_threshold must be > 0");
 			if (this.pubsubMessageCountBatchSize <= 0L)
