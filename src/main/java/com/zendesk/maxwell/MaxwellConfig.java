@@ -1074,7 +1074,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.pubsubMessageOrderingKey			= fetchStringOption("pubsub_message_ordering_key", options, properties, null);
 		this.pubsubPublishDelayThreshold		= Duration.ofMillis(fetchLongOption("pubsub_publish_delay_threshold", options, properties, 1L));
 		this.pubsubRetryDelay 					= Duration.ofMillis(fetchLongOption("pubsub_retry_delay", options, properties, 100L));
-		this.pubsubRetryDelayMultiplier 		= fetchFloatOption("pubsub_retry_delay_multiplier", options, properties, 1.0f);
+		this.pubsubRetryDelayMultiplier 		= fetchFloatOption("pubsub_retry_delay_multiplier", options, properties, 1.3f);
 		this.pubsubMaxRetryDelay 		 		= Duration.ofSeconds(fetchLongOption("pubsub_max_retry_delay", options, properties, 60L));
 		this.pubsubInitialRpcTimeout 		 	= Duration.ofSeconds(fetchLongOption("pubsub_initial_rpc_timeout", options, properties, 5L));
 		this.pubsubRpcTimeoutMultiplier 		= fetchFloatOption("pubsub_rpc_timeout_multiplier", options, properties, 1.0f);
@@ -1345,13 +1345,13 @@ public class MaxwellConfig extends AbstractConfig {
 				usage("--pubsub_publish_delay_threshold must be > 0");
 			if (this.pubsubRetryDelay.isNegative() || this.pubsubRetryDelay.isZero())
 				usage("--pubsub_retry_delay must be > 0");
-			if (this.pubsubRetryDelayMultiplier <= 1.0)
-				usage("--pubsub_retry_delay_multiplier must be > 1.0");
+			if (this.pubsubRetryDelayMultiplier < 1.0f)
+				usage("--pubsub_retry_delay_multiplier must be >= 1.0");
 			if (this.pubsubMaxRetryDelay.isNegative() || this.pubsubMaxRetryDelay.isZero())
 				usage("--pubsub_max_retry_delay must be > 0");
 			if (this.pubsubInitialRpcTimeout.isNegative() || this.pubsubInitialRpcTimeout.isZero())
 				usage("--pubsub_initial_rpc_timeout must be > 0");
-			if (this.pubsubRpcTimeoutMultiplier < 1.0)
+			if (this.pubsubRpcTimeoutMultiplier < 1.0f)
 				usage("--pubsub_rpc_timeout_multiplier must be >= 1.0");
 			if (this.pubsubMaxRpcTimeout.isNegative() || this.pubsubMaxRpcTimeout.isZero())
 				usage("--pubsub_max_rpc_timeout must be > 0");

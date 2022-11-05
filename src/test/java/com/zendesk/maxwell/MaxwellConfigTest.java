@@ -133,12 +133,19 @@ public class MaxwellConfigTest
 	public void testPubsubConfigNonDefault() {
 		config = new MaxwellConfig(new String[] { "--pubsub_rpc_timeout_multiplier=1.5" });
 		assertEquals(config.pubsubRpcTimeoutMultiplier, 1.5f, 0.0f);
+
+		config = new MaxwellConfig(new String[] { "--pubsub_retry_delay_multiplier=1.5" });
+		assertEquals(config.pubsubRetryDelayMultiplier, 1.5f, 0.0f);
 	}
 
 	@Test
 	public void testPubsubConfigDefault() {
 		config = new MaxwellConfig();
 		assertEquals(config.pubsubRpcTimeoutMultiplier, 1.0f, 0.0f);
+		assertTrue(config.pubsubRpcTimeoutMultiplier >= 1.0f);
+
+		assertEquals(config.pubsubRetryDelayMultiplier, 1.3f, 0.0f);
+		assertTrue(config.pubsubRetryDelayMultiplier >= 1.0f);
 	}
 
 
