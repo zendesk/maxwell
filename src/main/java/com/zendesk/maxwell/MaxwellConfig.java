@@ -82,6 +82,16 @@ public class MaxwellConfig extends AbstractConfig {
 	public Boolean gtidMode;
 
 	/**
+	 * If Maxwell is running against a vitess cluster.
+	 */
+	public Boolean vitessEnabled;
+
+	/**
+	 * Vitess (vtgate) connection config
+	 */
+  public MaxwellVitessConfig vitessConfig;
+
+	/**
 	 * Name of database in which to store maxwell data (default `maxwell`)
 	 */
 	public String databaseName;
@@ -641,6 +651,10 @@ public class MaxwellConfig extends AbstractConfig {
 		this.schemaMysql = new MaxwellMysqlConfig();
 		this.masterRecovery = false;
 		this.gtidMode = false;
+
+    this.vitessEnabled = false;
+    this.vitessConfig = new MaxwellVitessConfig();
+
 		this.bufferedProducerSize = 200;
 		this.outputConfig = new MaxwellOutputConfig();
 		setup(null, null); // setup defaults
@@ -1043,9 +1057,11 @@ public class MaxwellConfig extends AbstractConfig {
 		this.replicationMysql   = parseMysqlConfig("replication_", options, properties);
 		this.schemaMysql        = parseMysqlConfig("schema_", options, properties);
 		this.gtidMode           = fetchBooleanOption("gtid_mode", options, properties, System.getenv(GTID_MODE_ENV) != null);
-
 		this.databaseName       = fetchStringOption("schema_database", options, properties, "maxwell");
 		this.maxwellMysql.database = this.databaseName;
+
+    this.vitessEnabled      = fetchBooleanOption("vitess", options, properties, false);
+    this.vitessConfig       = parseVitessConfig(options, properties);
 
 		this.producerFactory    = fetchProducerFactory(options, properties);
 		this.producerType       = fetchStringOption("producer", options, properties, "stdout");

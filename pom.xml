@@ -173,6 +173,12 @@
       <version>15.3</version>
     </dependency>
 
+    <dependency>
+      <groupId>io.vitess</groupId>
+      <artifactId>vitess-grpc-client</artifactId>
+      <version>14.0.1</version>
+    </dependency>
+
     <!-- utils and support libs -->
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
@@ -261,8 +267,9 @@
       <artifactId>simpleclient_servlet</artifactId>
       <version>0.9.0</version>
     </dependency>
+
     <!-- OpenCensus used for pushing metrics to stackdriver -->
-    <dependency>
+    <!-- <dependency>
         <groupId>io.opencensus</groupId>
         <artifactId>opencensus-contrib-dropwizard</artifactId>
         <version>${opencensus.version}</version>
@@ -282,7 +289,7 @@
         <groupId>io.opencensus</groupId>
         <artifactId>opencensus-exporter-stats-stackdriver</artifactId>
         <version>${opencensus.version}</version>
-    </dependency>
+    </dependency> -->
 
     <!-- producer libs -->
     <dependency>

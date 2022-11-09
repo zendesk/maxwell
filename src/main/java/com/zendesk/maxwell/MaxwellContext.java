@@ -14,6 +14,7 @@ import com.zendesk.maxwell.schema.MysqlPositionStore;
 import com.zendesk.maxwell.schema.MysqlSchemaCompactor;
 import com.zendesk.maxwell.schema.PositionStoreThread;
 import com.zendesk.maxwell.schema.ReadOnlyMysqlPositionStore;
+import com.zendesk.maxwell.schema.VitessPositionStore;
 import com.zendesk.maxwell.util.C3P0ConnectionPool;
 import com.zendesk.maxwell.util.RunLoopProcess;
 import com.zendesk.maxwell.util.StoppableTask;
@@ -129,7 +130,9 @@ public class MaxwellContext {
 
 		if ( this.config.replayMode ) {
 			this.positionStore = new ReadOnlyMysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.clientID, config.gtidMode);
-		} else {
+		} else if (this.config.vitessEnabled) {
+      this.positionStore = new VitessPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.clientID, config.gtidMode);
+    } else {
 			this.positionStore = new MysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.clientID, config.gtidMode);
 		}
 
