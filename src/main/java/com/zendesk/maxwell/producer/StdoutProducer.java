@@ -3,6 +3,8 @@ package com.zendesk.maxwell.producer;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.row.RowMap;
 
+import java.util.concurrent.TimeUnit;
+
 public class StdoutProducer extends AbstractProducer {
 	public StdoutProducer(MaxwellContext context) {
 		super(context);
@@ -15,6 +17,10 @@ public class StdoutProducer extends AbstractProducer {
 		if ( output != null && r.shouldOutput(outputConfig) )
 			System.out.println(output);
 
+		this.messageLatencyTimer.update(
+			System.currentTimeMillis() - r.getTimestampMillis(),
+			TimeUnit.MILLISECONDS
+		);
 		this.context.setPosition(r);
 	}
 }
