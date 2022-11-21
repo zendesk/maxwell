@@ -129,11 +129,23 @@ public class MaxwellContext {
 			this.initialPosition = this.config.initPosition;
 
 		if ( this.config.replayMode ) {
-			this.positionStore = new ReadOnlyMysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.clientID, config.gtidMode);
+			this.positionStore = new ReadOnlyMysqlPositionStore(
+					this.getMaxwellConnectionPool(),
+					this.getServerID(),
+					this.config.clientID,
+					config.gtidMode);
 		} else if (this.config.vitessEnabled) {
-      this.positionStore = new VitessPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.clientID, config.gtidMode);
-    } else {
-			this.positionStore = new MysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.clientID, config.gtidMode);
+			this.positionStore = new VitessPositionStore(
+					this.getMaxwellConnectionPool(),
+					this.getServerID(),
+					this.config.clientID,
+					config.gtidMode);
+		} else {
+			this.positionStore = new MysqlPositionStore(
+					this.getMaxwellConnectionPool(),
+					this.getServerID(),
+					this.config.clientID,
+					config.gtidMode);
 		}
 
 		this.heartbeatNotifier = new HeartbeatNotifier();
@@ -468,8 +480,8 @@ public class MaxwellContext {
 			return this.serverID;
 
 		try ( Connection c = getReplicationConnection();
-		      Statement s = c.createStatement();
-		      ResultSet rs = s.executeQuery("SELECT @@server_id as server_id") ) {
+				Statement s = c.createStatement();
+				ResultSet rs = s.executeQuery("SELECT @@server_id as server_id")) {
 			if ( !rs.next() ) {
 				throw new RuntimeException("Could not retrieve server_id!");
 			}

@@ -252,60 +252,59 @@ public class Maxwell implements Runnable {
 
 		AbstractProducer producer = this.context.getProducer();
 
-    if (config.vitessEnabled) {
-      this.replicator = new VStreamReplicator(
-        config.vitessConfig,
-        producer,
-        context.getMetrics(),
-        context.getFilter(),
-        config.bufferMemoryUsage,
-        config.binlogEventQueueSize
-      );
-    } else {
-      try(Connection connection = context.getReplicationConnection()) {
-        MaxwellMysqlStatus.ensureReplicationMysqlState(connection);
+		if (config.vitessEnabled) {
+			this.replicator = new VStreamReplicator(
+					config.vitessConfig,
+					producer,
+					context.getMetrics(),
+					context.getFilter(),
+					config.bufferMemoryUsage,
+					config.binlogEventQueueSize);
+		} else {
+			try (Connection connection = context.getReplicationConnection()) {
+				MaxwellMysqlStatus.ensureReplicationMysqlState(connection);
 
-        if (config.gtidMode) {
-          MaxwellMysqlStatus.ensureGtidMysqlState(connection);
-        }
-      }
+				if (config.gtidMode) {
+					MaxwellMysqlStatus.ensureGtidMysqlState(connection);
+				}
+			}
 
-      Position initPosition = getInitialPosition();
-      logBanner(producer, initPosition);
-      this.context.setPosition(initPosition);
+			Position initPosition = getInitialPosition();
+			logBanner(producer, initPosition);
+			this.context.setPosition(initPosition);
 
-      MysqlSchemaStore mysqlSchemaStore = new MysqlSchemaStore(this.context, initPosition);
-      BootstrapController bootstrapController = this.context.getBootstrapController(mysqlSchemaStore.getSchemaID());
+			MysqlSchemaStore mysqlSchemaStore = new MysqlSchemaStore(this.context, initPosition);
+			BootstrapController bootstrapController = this.context
+					.getBootstrapController(mysqlSchemaStore.getSchemaID());
 
-      this.context.startSchemaCompactor();
+	this.context.startSchemaCompactor();
 
-      if (config.recaptureSchema) {
-        mysqlSchemaStore.captureAndSaveSchema();
-      }
+		if (config.recaptureSchema) {
+			mysqlSchemaStore.captureAndSaveSchema();
+		}
 
-      mysqlSchemaStore.getSchema(); // trigger schema to load / capture before we start the replicator.
+		mysqlSchemaStore.getSchema(); // trigger schema to load / capture before we start the replicator.
 
-      this.replicator = new BinlogConnectorReplicator(
-        mysqlSchemaStore,
-        producer,
-        bootstrapController,
-        config.replicationMysql,
-        config.replicaServerID,
-        config.databaseName,
-        context.getMetrics(),
-        initPosition,
-        false,
-        config.clientID,
-        context.getHeartbeatNotifier(),
-        config.scripting,
-        context.getFilter(),
-        context.getConfig().getIgnoreMissingSchema(),
-        config.outputConfig,
-        config.bufferMemoryUsage,
-        config.replicationReconnectionRetries,
-        config.binlogEventQueueSize
-      );
-    }
+		this.replicator = new BinlogConnectorReplicator(
+				mysqlSchemaStore,
+				producer,
+				bootstrapController,
+				config.replicationMysql,
+				config.replicaServerID,
+				config.databaseName,
+				context.getMetrics(),
+				initPosition,
+				false,
+				config.clientID,
+				context.getHeartbeatNotifier(),
+				config.scripting,
+				context.getFilter(),
+				context.getConfig().getIgnoreMissingSchema(),
+				config.outputConfig,
+				config.bufferMemoryUsage,
+				config.replicationReconnectionRetries,
+				config.binlogEventQueueSize);
+	}
 
 		context.setReplicator(replicator);
 		this.context.start();

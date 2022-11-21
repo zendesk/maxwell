@@ -89,7 +89,7 @@ public class MaxwellConfig extends AbstractConfig {
 	/**
 	 * Vitess (vtgate) connection config
 	 */
-  public MaxwellVitessConfig vitessConfig;
+	public MaxwellVitessConfig vitessConfig;
 
 	/**
 	 * Name of database in which to store maxwell data (default `maxwell`)

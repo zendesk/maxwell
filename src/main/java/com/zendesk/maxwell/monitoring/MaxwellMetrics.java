@@ -126,7 +126,7 @@ public class MaxwellMetrics implements Metrics {
 		}
 
 		if (config.metricsReportingType.contains(reportingTypeStackdriver)) {
-      throw new RuntimeException("Stackdriver metrics reporting is not supported for now");
+			throw new RuntimeException("Stackdriver metrics reporting is not supported for now");
 			// io.opencensus.metrics.Metrics.getExportComponent().getMetricProducerManager().add(
 			// 	new io.opencensus.contrib.dropwizard.DropWizardMetrics(
 			// 	  Collections.singletonList(this.registry)));
