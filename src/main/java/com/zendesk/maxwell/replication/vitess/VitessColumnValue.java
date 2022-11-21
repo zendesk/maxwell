@@ -15,62 +15,62 @@ import org.slf4j.LoggerFactory;
  * value.
  */
 public class VitessColumnValue {
-  private static final Logger LOGGER = LoggerFactory.getLogger(VitessColumnValue.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(VitessColumnValue.class);
 
-  private final byte[] value;
+	private final byte[] value;
 
-  public VitessColumnValue(byte[] value) {
-    this.value = value;
-  }
+	public VitessColumnValue(byte[] value) {
+		this.value = value;
+	}
 
-  public byte[] getRawValue() {
-    return value;
-  }
+	public byte[] getRawValue() {
+		return value;
+	}
 
-  public boolean isNull() {
-    return value == null;
-  }
+	public boolean isNull() {
+		return value == null;
+	}
 
-  public byte[] asBytes() {
-    return value;
-  }
+	public byte[] asBytes() {
+		return value;
+	}
 
-  /**
-   * Convert raw bytes value to string using UTF-8 encoding.
-   *
-   * This is *enforced* for VARCHAR and CHAR types, and is *required* for other
-   * non-bytes types (numeric,
-   * timestamp, etc.). For bytes (BLOB, BINARY, etc.) types, the asBytes() should
-   * be used.
-   *
-   * @return the UTF-8 string
-   */
-  public String asString() {
-    return new String(value, StandardCharsets.UTF_8);
-  }
+	/**
+	 * Convert raw bytes value to string using UTF-8 encoding.
+	 *
+	 * This is *enforced* for VARCHAR and CHAR types, and is *required* for other
+	 * non-bytes types (numeric,
+	 * timestamp, etc.). For bytes (BLOB, BINARY, etc.) types, the asBytes() should
+	 * be used.
+	 *
+	 * @return the UTF-8 string
+	 */
+	public String asString() {
+		return new String(value, StandardCharsets.UTF_8);
+	}
 
-  public Integer asInteger() {
-    return Integer.valueOf(asString());
-  }
+	public Integer asInteger() {
+		return Integer.valueOf(asString());
+	}
 
-  public Short asShort() {
-    return Short.valueOf(asString());
-  }
+	public Short asShort() {
+		return Short.valueOf(asString());
+	}
 
-  public Long asLong() {
-    return Long.valueOf(asString());
-  }
+	public Long asLong() {
+		return Long.valueOf(asString());
+	}
 
-  public Float asFloat() {
-    return Float.valueOf(asString());
-  }
+	public Float asFloat() {
+		return Float.valueOf(asString());
+	}
 
-  public Double asDouble() {
-    return Double.valueOf(asString());
-  }
+	public Double asDouble() {
+		return Double.valueOf(asString());
+	}
 
-  public Object asDefault(VitessType vitessType) {
-    LOGGER.warn("processing unknown column type {} as string", vitessType);
-    return asString();
-  }
+	public Object asDefault(VitessType vitessType) {
+		LOGGER.warn("processing unknown column type {} as string", vitessType);
+		return asString();
+	}
 }

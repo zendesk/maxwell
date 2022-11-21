@@ -1,23 +1,23 @@
 package com.zendesk.maxwell;
 
 public class MaxwellVitessConfig {
-  public String vtgateHost;
-  public int vtgatePort;
+	public String vtgateHost;
+	public int vtgatePort;
 
-  public String user;
-  public String password;
+	public String user;
+	public String password;
 
-  public String keyspace;
-  public String shard;
+	public String keyspace;
+	public String shard;
 
-  public MaxwellVitessConfig() {
-    this.vtgateHost = "localhost";
-    this.vtgatePort = 15991;
+	public MaxwellVitessConfig() {
+		this.vtgateHost = "localhost";
+		this.vtgatePort = 15991;
 
-    this.user = null;
-    this.password = null;
+		this.user = null;
+		this.password = null;
 
-    this.keyspace = null;
-    this.shard = "";
-  }
+		this.keyspace = null;
+		this.shard = "";
+	}
 }

@@ -18,52 +18,52 @@ import io.vitess.proto.Vtgate;
 // then passes them to the VStreamReplicator via a queue for processing.
 //
 public class VStreamObserver implements StreamObserver<Vtgate.VStreamResponse> {
-  private static final Logger LOGGER = LoggerFactory.getLogger(VStreamObserver.class);
-  private final AtomicBoolean mustStop = new AtomicBoolean(false);
-  private final LinkedBlockingDeque<VEvent> queue;
+	private static final Logger LOGGER = LoggerFactory.getLogger(VStreamObserver.class);
+	private final AtomicBoolean mustStop = new AtomicBoolean(false);
+	private final LinkedBlockingDeque<VEvent> queue;
 
-  public VStreamObserver(LinkedBlockingDeque<VEvent> queue) {
-    this.queue = queue;
-  }
+	public VStreamObserver(LinkedBlockingDeque<VEvent> queue) {
+		this.queue = queue;
+	}
 
-  // Shuts down the observer
-  public void stop() {
-    mustStop.set(true);
-  }
+	// Shuts down the observer
+	public void stop() {
+		mustStop.set(true);
+	}
 
-  @Override
-  public void onNext(Vtgate.VStreamResponse response) {
-    LOGGER.debug("Received {} VEvents in the VStreamResponse:", response.getEventsCount());
+	@Override
+	public void onNext(Vtgate.VStreamResponse response) {
+		LOGGER.debug("Received {} VEvents in the VStreamResponse:", response.getEventsCount());
 
-    List<VEvent> messageEvents = response.getEventsList();
-    for (VEvent event : messageEvents) {
-      LOGGER.debug("VEvent: {}", event);
-      enqueueEvent(event);
-    }
-  }
+		List<VEvent> messageEvents = response.getEventsList();
+		for (VEvent event : messageEvents) {
+			LOGGER.debug("VEvent: {}", event);
+			enqueueEvent(event);
+		}
+	}
 
-  @Override
-  public void onError(Throwable t) {
-    LOGGER.error("VStream streaming onError. Status: " + Status.fromThrowable(t), t);
-    stop();
-  }
+	@Override
+	public void onError(Throwable t) {
+		LOGGER.error("VStream streaming onError. Status: " + Status.fromThrowable(t), t);
+		stop();
+	}
 
-  @Override
-  public void onCompleted() {
-    LOGGER.info("VStream streaming completed.");
-    stop();
-  }
+	@Override
+	public void onCompleted() {
+		LOGGER.info("VStream streaming completed.");
+		stop();
+	}
 
-  // Pushes an event to the queue for VStreamReplicator to process.
-  private void enqueueEvent(VEvent event) {
-    while (mustStop.get() != true) {
-      try {
-        if (queue.offer(event, 100, TimeUnit.MILLISECONDS)) {
-          break;
-        }
-      } catch (InterruptedException e) {
-        return;
-      }
-    }
-  }
+	// Pushes an event to the queue for VStreamReplicator to process.
+	private void enqueueEvent(VEvent event) {
+		while (mustStop.get() != true) {
+			try {
+				if (queue.offer(event, 100, TimeUnit.MILLISECONDS)) {
+					break;
+				}
+			} catch (InterruptedException e) {
+				return;
+			}
+		}
+	}
 }

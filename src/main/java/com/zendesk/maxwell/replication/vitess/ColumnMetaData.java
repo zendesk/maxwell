@@ -11,31 +11,31 @@ package com.zendesk.maxwell.replication.vitess;
  * a {@link VitessTable}.
  */
 public class ColumnMetaData {
-  private final String columnName;
-  private final VitessType vitessType;
-  private final boolean optional;
-  private final KeyMetaData keyMetaData;
+	private final String columnName;
+	private final VitessType vitessType;
+	private final boolean optional;
+	private final KeyMetaData keyMetaData;
 
-  public ColumnMetaData(String columnName, VitessType vitessType, boolean optional, KeyMetaData keyMetaData) {
-    this.columnName = columnName;
-    this.vitessType = vitessType;
-    this.keyMetaData = keyMetaData;
-    this.optional = optional;
-  }
+	public ColumnMetaData(String columnName, VitessType vitessType, boolean optional, KeyMetaData keyMetaData) {
+		this.columnName = columnName;
+		this.vitessType = vitessType;
+		this.keyMetaData = keyMetaData;
+		this.optional = optional;
+	}
 
-  public String getColumnName() {
-    return columnName;
-  }
+	public String getColumnName() {
+		return columnName;
+	}
 
-  public VitessType getVitessType() {
-    return vitessType;
-  }
+	public VitessType getVitessType() {
+		return vitessType;
+	}
 
-  public boolean isOptional() {
-    return optional;
-  }
+	public boolean isOptional() {
+		return optional;
+	}
 
-  public KeyMetaData getKeyMetaData() {
-    return keyMetaData;
-  }
+	public KeyMetaData getKeyMetaData() {
+		return keyMetaData;
+	}
 }

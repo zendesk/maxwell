@@ -652,8 +652,8 @@ public class MaxwellConfig extends AbstractConfig {
 		this.masterRecovery = false;
 		this.gtidMode = false;
 
-    this.vitessEnabled = false;
-    this.vitessConfig = new MaxwellVitessConfig();
+		this.vitessEnabled = false;
+		this.vitessConfig = new MaxwellVitessConfig();
 
 		this.bufferedProducerSize = 200;
 		this.outputConfig = new MaxwellOutputConfig();
@@ -1060,8 +1060,8 @@ public class MaxwellConfig extends AbstractConfig {
 		this.databaseName       = fetchStringOption("schema_database", options, properties, "maxwell");
 		this.maxwellMysql.database = this.databaseName;
 
-    this.vitessEnabled      = fetchBooleanOption("vitess", options, properties, false);
-    this.vitessConfig       = parseVitessConfig(options, properties);
+		this.vitessEnabled = fetchBooleanOption("vitess", options, properties, false);
+		this.vitessConfig = parseVitessConfig(options, properties);
 
 		this.producerFactory    = fetchProducerFactory(options, properties);
 		this.producerType       = fetchStringOption("producer", options, properties, "stdout");
