@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import com.zendesk.maxwell.errors.DuplicateProcessException;
 import com.zendesk.maxwell.replication.Position;
+import com.zendesk.maxwell.replication.VitessPosition;
 import com.zendesk.maxwell.replication.vitess.Vgtid;
 import com.zendesk.maxwell.util.ConnectionPool;
 
@@ -26,7 +27,8 @@ public class VitessPositionStore extends MysqlPositionStore {
 			return;
 		}
 
-		Vgtid vgtid = p.getVgtid();
+		VitessPosition vp = (VitessPosition) p;
+		Vgtid vgtid = vp.getVgtid();
 		if (vgtid == null) {
 			throw new RuntimeException("Vitess position store called with a mysql position");
 		}
@@ -66,6 +68,6 @@ public class VitessPositionStore extends MysqlPositionStore {
 		String vgtidString = rs.getString("vgtid");
 		Vgtid vgtid = Vgtid.of(vgtidString);
 
-		return new Position(vgtid);
+		return new VitessPosition(vgtid);
 	}
 }

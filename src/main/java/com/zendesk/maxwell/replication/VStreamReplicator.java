@@ -59,7 +59,7 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 
 	private final MaxwellVitessConfig vitessConfig;
 	private final AbstractProducer producer;
-	private final Position initPosition;
+	private final VitessPosition initPosition;
 	private final VitessPositionStore positionStore;
 	private RowMapBuffer rowBuffer;
 	private final float bufferMemoryUsage;
@@ -88,7 +88,7 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 			int binlogEventQueueSize) {
 		this.vitessConfig = vitessConfig;
 		this.producer = producer;
-		this.initPosition = initPosition;
+		this.initPosition = (VitessPosition) initPosition;
 		this.positionStore = (VitessPositionStore) positionStore;
 		this.queue = new LinkedBlockingDeque<>(binlogEventQueueSize);
 		this.filter = filter;
@@ -221,9 +221,9 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 		vitessSchema.processFieldEvent(fieldEvent);
 	}
 
-	private Vgtid processVGtidEvent(VEvent event) {
+	private VitessPosition processVGtidEvent(VEvent event) {
 		LOGGER.debug("Received GTID event: {}", event);
-		return Vgtid.of(event.getVgtid());
+		return new VitessPosition(Vgtid.of(event.getVgtid()));
 	}
 
 	/**
@@ -250,7 +250,7 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 
 		// Since specific VStream events do not provide the VGTID, we capture it from
 		// VGTID events present in each transaction.
-		Vgtid vgtid = null;
+		VitessPosition latestPosition = null;
 
 		while (true) {
 			final VEvent event = pollEvent();
@@ -261,7 +261,7 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 			final VEventType eventType = event.getType();
 
 			if (eventType == VEventType.VGTID) {
-				vgtid = processVGtidEvent(event);
+				latestPosition = processVGtidEvent(event);
 				continue;
 			}
 
@@ -270,8 +270,8 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 				if (!buffer.isEmpty()) {
 					// Set TX flag and the position on the last row in the transaction
 					RowMap lastEvent = buffer.getLast();
-					if (vgtid != null) {
-						lastEvent.setNextPosition(new Position(vgtid));
+					if (latestPosition != null) {
+						lastEvent.setNextPosition(latestPosition);
 					} else {
 						throw new RuntimeException("VGTID is null for transaction");
 					}
@@ -313,8 +313,8 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 				// Use an initial VGTID event received after connecting to vtgate as for setting
 				// the initial position of the stream.
 				if (initPosition == null) {
-					Position position = new Position(processVGtidEvent(event));
-					LOGGER.info("Current VGTID event received, using it for initial positioning at {}", event);
+					VitessPosition position = processVGtidEvent(event);
+					LOGGER.info("Current VGTID event received, using it for initial positioning at {}", position);
 					positionStore.set(position);
 				} else {
 					LOGGER.warn("Ignoring a standalone VGTID event, we already have an initial position: {}", event);

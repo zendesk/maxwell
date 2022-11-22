@@ -338,7 +338,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		if ( row instanceof HeartbeatRowMap) {
 			producer.push(row);
 			if (stopAtHeartbeat != null) {
-				long thisHeartbeat = row.getPosition().getLastHeartbeatRead();
+				Position p = (Position) row.getPosition();
+				long thisHeartbeat = p.getLastHeartbeatRead();
 				if (thisHeartbeat >= stopAtHeartbeat) {
 					LOGGER.info("received final heartbeat " + thisHeartbeat + "; stopping replicator");
 					// terminate runLoop
