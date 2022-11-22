@@ -246,7 +246,7 @@ public class Maxwell implements Runnable {
 
 			SchemaStoreSchema.ensureMaxwellSchema(rawConnection, this.config.databaseName);
 
-			try (Connection schemaConnection = this.context.getMaxwellConnection()) {
+			try ( Connection schemaConnection = this.context.getMaxwellConnection() ) {
 				SchemaStoreSchema.upgradeSchemaStoreSchema(schemaConnection);
 			}
 		}
