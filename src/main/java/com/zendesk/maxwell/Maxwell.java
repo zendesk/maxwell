@@ -175,7 +175,7 @@ public class Maxwell implements Runnable {
 			}
 
 			/* fourth method: capture the current master position. */
-			if (initial == null && !config.vitessEnabled) {
+			if ( initial == null && !config.vitessEnabled ) {
 				try ( Connection c = context.getReplicationConnection() ) {
 					initial = Position.capture(c, config.gtidMode);
 				}
@@ -269,14 +269,15 @@ public class Maxwell implements Runnable {
 
 		if (config.vitessEnabled) {
 			this.replicator = new VStreamReplicator(
-					config.vitessConfig,
-					producer,
-					context.getPositionStore(),
-					initPosition,
-					context.getMetrics(),
-					context.getFilter(),
-					config.bufferMemoryUsage,
-					config.binlogEventQueueSize);
+				config.vitessConfig,
+				producer,
+				context.getPositionStore(),
+				initPosition,
+				context.getMetrics(),
+				context.getFilter(),
+				config.bufferMemoryUsage,
+				config.binlogEventQueueSize
+			);
 		} else {
 			MysqlSchemaStore mysqlSchemaStore = new MysqlSchemaStore(this.context, initPosition);
 			BootstrapController bootstrapController = this.context
@@ -291,24 +292,25 @@ public class Maxwell implements Runnable {
 			mysqlSchemaStore.getSchema(); // trigger schema to load / capture before we start the replicator.
 
 			this.replicator = new BinlogConnectorReplicator(
-					mysqlSchemaStore,
-					producer,
-					bootstrapController,
-					config.replicationMysql,
-					config.replicaServerID,
-					config.databaseName,
-					context.getMetrics(),
-					initPosition,
-					false,
-					config.clientID,
-					context.getHeartbeatNotifier(),
-					config.scripting,
-					context.getFilter(),
-					context.getConfig().getIgnoreMissingSchema(),
-					config.outputConfig,
-					config.bufferMemoryUsage,
-					config.replicationReconnectionRetries,
-					config.binlogEventQueueSize);
+				mysqlSchemaStore,
+				producer,
+				bootstrapController,
+				config.replicationMysql,
+				config.replicaServerID,
+				config.databaseName,
+				context.getMetrics(),
+				initPosition,
+				false,
+				config.clientID,
+				context.getHeartbeatNotifier(),
+				config.scripting,
+				context.getFilter(),
+				context.getConfig().getIgnoreMissingSchema(),
+				config.outputConfig,
+				config.bufferMemoryUsage,
+				config.replicationReconnectionRetries,
+				config.binlogEventQueueSize
+			);
 		}
 
 		context.setReplicator(replicator);

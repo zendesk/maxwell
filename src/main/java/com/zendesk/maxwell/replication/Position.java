@@ -46,7 +46,7 @@ public class Position implements Serializable {
 
 	public String toCommandline() {
 		String gtid = binlogPosition.getGtidSetStr();
-		if (gtid != null)
+		if ( gtid != null )
 			return gtid;
 		else
 			return binlogPosition.getFile() + ":" + binlogPosition.getOffset();
