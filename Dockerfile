@@ -21,6 +21,9 @@ RUN cd /workspace \
 # Build clean image with non-root priveledge
 FROM openjdk:11-jdk-slim
 
+RUN apt-get update \
+    && apt-get -y upgrade
+
 COPY --from=builder /app /app
 COPY --from=builder /REVISION /REVISION
 
