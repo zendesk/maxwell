@@ -469,9 +469,8 @@ public class MaxwellContext {
 			return this.serverID;
 
 		try ( Connection c = getReplicationConnection();
-			  Statement s = c.createStatement();
-			  ResultSet rs = s.executeQuery("SELECT @@server_id as server_id") )
-		{
+		      Statement s = c.createStatement();
+		      ResultSet rs = s.executeQuery("SELECT @@server_id as server_id") ) {
 			if ( !rs.next() ) {
 				throw new RuntimeException("Could not retrieve server_id!");
 			}
