@@ -277,34 +277,34 @@ public class Maxwell implements Runnable {
 			BootstrapController bootstrapController = this.context
 					.getBootstrapController(mysqlSchemaStore.getSchemaID());
 
-	this.context.startSchemaCompactor();
+			this.context.startSchemaCompactor();
 
-		if (config.recaptureSchema) {
-			mysqlSchemaStore.captureAndSaveSchema();
+			if (config.recaptureSchema) {
+				mysqlSchemaStore.captureAndSaveSchema();
+			}
+
+			mysqlSchemaStore.getSchema(); // trigger schema to load / capture before we start the replicator.
+
+			this.replicator = new BinlogConnectorReplicator(
+					mysqlSchemaStore,
+					producer,
+					bootstrapController,
+					config.replicationMysql,
+					config.replicaServerID,
+					config.databaseName,
+					context.getMetrics(),
+					initPosition,
+					false,
+					config.clientID,
+					context.getHeartbeatNotifier(),
+					config.scripting,
+					context.getFilter(),
+					context.getConfig().getIgnoreMissingSchema(),
+					config.outputConfig,
+					config.bufferMemoryUsage,
+					config.replicationReconnectionRetries,
+					config.binlogEventQueueSize);
 		}
-
-		mysqlSchemaStore.getSchema(); // trigger schema to load / capture before we start the replicator.
-
-		this.replicator = new BinlogConnectorReplicator(
-				mysqlSchemaStore,
-				producer,
-				bootstrapController,
-				config.replicationMysql,
-				config.replicaServerID,
-				config.databaseName,
-				context.getMetrics(),
-				initPosition,
-				false,
-				config.clientID,
-				context.getHeartbeatNotifier(),
-				config.scripting,
-				context.getFilter(),
-				context.getConfig().getIgnoreMissingSchema(),
-				config.outputConfig,
-				config.bufferMemoryUsage,
-				config.replicationReconnectionRetries,
-				config.binlogEventQueueSize);
-	}
 
 		context.setReplicator(replicator);
 		this.context.start();
