@@ -318,6 +318,11 @@ public class RowMap implements Serializable {
 	}
 
 	public Position getNextPosition() { return nextPosition; }
+
+	public void setNextPosition(Position p) {
+		this.nextPosition = p;
+	}
+
 	public Position getPosition() { return position; }
 
 	public Long getXid() {

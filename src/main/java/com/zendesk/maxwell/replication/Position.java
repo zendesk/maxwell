@@ -4,19 +4,35 @@ import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import com.zendesk.maxwell.replication.vitess.Vgtid;
+
 public class Position implements Serializable {
 	// LastHeartbeat is the most recent heartbeat seen prior to this position.
 	// For a HeartbeatRow, it is the exact (new) heartbeat value for this position.
 	private final long lastHeartbeatRead;
 	private final BinlogPosition binlogPosition;
+	private final Vgtid vgtid;
 
 	public Position(BinlogPosition binlogPosition, long lastHeartbeatRead) {
 		this.binlogPosition = binlogPosition;
 		this.lastHeartbeatRead = lastHeartbeatRead;
+		this.vgtid = null;
+	}
+
+	// Vitess-related constructor
+	// FIXME: We may want to introduce a separate position class for Vitess
+	public Position(Vgtid vgtid) {
+		this.binlogPosition = null;
+		this.lastHeartbeatRead = 0L;
+		this.vgtid = vgtid;
 	}
 
 	public static Position valueOf(BinlogPosition binlogPosition, Long lastHeartbeatRead) {
 		return new Position(binlogPosition, lastHeartbeatRead);
+	}
+
+	public static Position valueOf(Vgtid vgtid) {
+		return new Position(vgtid);
 	}
 
 	public Position withHeartbeat(long lastHeartbeatRead) {
@@ -35,19 +51,29 @@ public class Position implements Serializable {
 		return binlogPosition;
 	}
 
+	public Vgtid getVgtid() {
+		return vgtid;
+	}
+
 	public Position addGtid(String gtid, long offset, String file) {
 		return new Position(binlogPosition.addGtid(gtid, offset, file), lastHeartbeatRead);
 	}
 
 	@Override
 	public String toString() {
-		return "Position[" + binlogPosition + ", lastHeartbeat=" + lastHeartbeatRead + "]";
+		if (vgtid == null) {
+			return "Position[" + binlogPosition + ", lastHeartbeat=" + lastHeartbeatRead + "]";
+		} else {
+			return "Position[" + vgtid + "]";
+		}
 	}
 
 	public String toCommandline() {
 		String gtid = binlogPosition.getGtidSetStr();
 		if ( gtid != null )
 			return gtid;
+		else if (vgtid != null)
+			return vgtid.toString();
 		else
 			return binlogPosition.getFile() + ":" + binlogPosition.getOffset();
 	}
@@ -59,18 +85,32 @@ public class Position implements Serializable {
 		}
 		Position other = (Position) o;
 
-		return lastHeartbeatRead == other.lastHeartbeatRead
-			&& binlogPosition.equals(other.binlogPosition);
+		if (vgtid != null) {
+			return vgtid.equals(other.vgtid);
+		} else {
+			return lastHeartbeatRead == other.lastHeartbeatRead && binlogPosition.equals(other.binlogPosition);
+		}
 	}
 
 	@Override
 	public int hashCode() {
-		return binlogPosition.hashCode();
+		if (vgtid != null) {
+			return vgtid.hashCode();
+		} else {
+			return binlogPosition.hashCode();
+		}
 	}
 
 	public boolean newerThan(Position other) {
 		if ( other == null )
 			return true;
-		return this.getBinlogPosition().newerThan(other.getBinlogPosition());
+
+		if (vgtid != null) {
+			// FIXME: Implement actual newerThan comparison for Vgtid values, for now just
+			// check if it is different to avoid persisting the same position over and over
+			return !vgtid.equals(other.vgtid);
+		} else {
+			return this.getBinlogPosition().newerThan(other.getBinlogPosition());
+		}
 	}
 }

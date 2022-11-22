@@ -137,9 +137,7 @@ public class MaxwellContext {
 		} else if (this.config.vitessEnabled) {
 			this.positionStore = new VitessPositionStore(
 					this.getMaxwellConnectionPool(),
-					this.getServerID(),
-					this.config.clientID,
-					config.gtidMode);
+					this.config.clientID);
 		} else {
 			this.positionStore = new MysqlPositionStore(
 					this.getMaxwellConnectionPool(),
@@ -270,7 +268,7 @@ public class MaxwellContext {
 		}
 
 		if (taskManager.requestStop()) {
-			if (this.error == null && this.replicator != null) {
+			if (this.error == null && this.replicator != null && !config.vitessEnabled) {
 				sendFinalHeartbeat();
 			}
 			this.terminationThread = spawnTerminateThread();

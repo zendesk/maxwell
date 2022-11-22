@@ -175,7 +175,7 @@ public class Maxwell implements Runnable {
 			}
 
 			/* fourth method: capture the current master position. */
-			if ( initial == null ) {
+			if (initial == null && !config.vitessEnabled) {
 				try ( Connection c = context.getReplicationConnection() ) {
 					initial = Position.capture(c, config.gtidMode);
 				}
@@ -204,7 +204,8 @@ public class Maxwell implements Runnable {
 	static String bootString = "Maxwell v%s is booting (%s), starting at %s";
 	private void logBanner(AbstractProducer producer, Position initialPosition) {
 		String producerName = producer.getClass().getSimpleName();
-		LOGGER.info(String.format(bootString, getMaxwellVersion(), producerName, initialPosition.toString()));
+		String position = initialPosition != null ? initialPosition.toString() : "the latest position";
+		LOGGER.info(String.format(bootString, getMaxwellVersion(), producerName, position));
 	}
 
 	/**
@@ -252,15 +253,7 @@ public class Maxwell implements Runnable {
 
 		AbstractProducer producer = this.context.getProducer();
 
-		if (config.vitessEnabled) {
-			this.replicator = new VStreamReplicator(
-					config.vitessConfig,
-					producer,
-					context.getMetrics(),
-					context.getFilter(),
-					config.bufferMemoryUsage,
-					config.binlogEventQueueSize);
-		} else {
+		if (!config.vitessEnabled) {
 			try (Connection connection = context.getReplicationConnection()) {
 				MaxwellMysqlStatus.ensureReplicationMysqlState(connection);
 
@@ -268,11 +261,23 @@ public class Maxwell implements Runnable {
 					MaxwellMysqlStatus.ensureGtidMysqlState(connection);
 				}
 			}
+		}
 
-			Position initPosition = getInitialPosition();
-			logBanner(producer, initPosition);
-			this.context.setPosition(initPosition);
+		Position initPosition = getInitialPosition();
+		logBanner(producer, initPosition);
+		this.context.setPosition(initPosition);
 
+		if (config.vitessEnabled) {
+			this.replicator = new VStreamReplicator(
+					config.vitessConfig,
+					producer,
+					context.getPositionStore(),
+					initPosition,
+					context.getMetrics(),
+					context.getFilter(),
+					config.bufferMemoryUsage,
+					config.binlogEventQueueSize);
+		} else {
 			MysqlSchemaStore mysqlSchemaStore = new MysqlSchemaStore(this.context, initPosition);
 			BootstrapController bootstrapController = this.context
 					.getBootstrapController(mysqlSchemaStore.getSchemaID());

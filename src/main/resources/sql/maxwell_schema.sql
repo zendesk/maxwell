@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS `positions` (
   binlog_file varchar(255),
   binlog_position int unsigned,
   gtid_set varchar(4096),
+  vgtid text charset latin1,
   client_id varchar(255) charset latin1 not null default 'maxwell',
   heartbeat_at bigint null default null,
   last_heartbeat_read bigint null default null,

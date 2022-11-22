@@ -1,5 +1,6 @@
 package com.zendesk.maxwell.replication;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -13,6 +14,7 @@ import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.zendesk.maxwell.MaxwellVitessConfig;
+import com.zendesk.maxwell.errors.DuplicateProcessException;
 import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.monitoring.Metrics;
 import com.zendesk.maxwell.producer.AbstractProducer;
@@ -22,8 +24,10 @@ import com.zendesk.maxwell.replication.vitess.VitessSchema;
 import com.zendesk.maxwell.replication.vitess.VitessTable;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMapBuffer;
+import com.zendesk.maxwell.schema.MysqlPositionStore;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaStoreException;
+import com.zendesk.maxwell.schema.VitessPositionStore;
 import com.zendesk.maxwell.util.RunLoopProcess;
 
 import binlogdata.Binlogdata.FieldEvent;
@@ -31,6 +35,7 @@ import binlogdata.Binlogdata.RowChange;
 import binlogdata.Binlogdata.RowEvent;
 import binlogdata.Binlogdata.VEvent;
 import binlogdata.Binlogdata.VEventType;
+import binlogdata.Binlogdata.VGtid;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
@@ -54,7 +59,8 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 
 	private final MaxwellVitessConfig vitessConfig;
 	private final AbstractProducer producer;
-	private final Vgtid initialVgtid;
+	private final Position initPosition;
+	private final VitessPositionStore positionStore;
 	private RowMapBuffer rowBuffer;
 	private final float bufferMemoryUsage;
 
@@ -74,12 +80,16 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 	public VStreamReplicator(
 			MaxwellVitessConfig vitessConfig,
 			AbstractProducer producer,
+			MysqlPositionStore positionStore,
+			Position initPosition,
 			Metrics metrics,
 			Filter filter,
 			Float bufferMemoryUsage,
 			int binlogEventQueueSize) {
 		this.vitessConfig = vitessConfig;
 		this.producer = producer;
+		this.initPosition = initPosition;
+		this.positionStore = (VitessPositionStore) positionStore;
 		this.queue = new LinkedBlockingDeque<>(binlogEventQueueSize);
 		this.filter = filter;
 		this.bufferMemoryUsage = bufferMemoryUsage;
@@ -90,15 +100,6 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 		rowMeter = mr.meter(metrics.metricName("row", "meter"));
 		transactionRowCount = mr.histogram(metrics.metricName("transaction", "row_count"));
 		transactionExecutionTime = mr.histogram(metrics.metricName("transaction", "execution_time"));
-
-		// Providing a vgtid MySQL56/19eb2657-abc2-11ea-8ffc-0242ac11000a:1-61 here will
-		// make VStream to
-		// start receiving row-changes from
-		// MySQL56/19eb2657-abc2-11ea-8ffc-0242ac11000a:1-62
-		// TODO: Need to load the latest vgtid from a persistent store.
-		initialVgtid = Vgtid.of(
-				List.of(
-						new Vgtid.ShardGtid(vitessConfig.keyspace, vitessConfig.shard, "current")));
 	}
 
 	public void startReplicator() throws Exception {
@@ -118,7 +119,7 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 				.build();
 
 		VStreamRequest vstreamRequest = VStreamRequest.newBuilder()
-				.setVgtid(initialVgtid.getRawVgtid())
+				.setVgtid(initialVgtid())
 				.setTabletType(Topodata.TabletType.MASTER)
 				.setFlags(vStreamFlags)
 				.build();
@@ -180,7 +181,7 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 				return rowBuffer.removeFirst();
 			}
 
-			final VEvent event = pollEvent();
+			VEvent event = pollEvent();
 			if (event == null) {
 				return null;
 			}
@@ -193,6 +194,19 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 		}
 	}
 
+	private VGtid initialVgtid() {
+		Vgtid initialVgtid;
+		if (initPosition != null) {
+			initialVgtid = initPosition.getVgtid();
+		} else {
+			Vgtid.ShardGtid shardGtid = new Vgtid.ShardGtid(vitessConfig.keyspace, vitessConfig.shard, "current");
+			initialVgtid = Vgtid.of(List.of(shardGtid));
+		}
+
+		LOGGER.debug("Setting the initial vgtid for the stream to {}", initialVgtid);
+		return initialVgtid.getRawVgtid();
+	}
+
 	private void processRow(RowMap row) throws Exception {
 		producer.push(row);
 	}
@@ -203,12 +217,13 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 
 	private void processFieldEvent(VEvent event) {
 		FieldEvent fieldEvent = event.getFieldEvent();
-		LOGGER.info("Received field event: " + fieldEvent);
+		LOGGER.debug("Received field event: {}", fieldEvent);
 		vitessSchema.processFieldEvent(fieldEvent);
 	}
 
-	private void processVGtidEvent(VEvent event) {
-		LOGGER.info("Received GTID event: " + event);
+	private Vgtid processVGtidEvent(VEvent event) {
+		LOGGER.debug("Received GTID event: {}", event);
+		return Vgtid.of(event.getVgtid());
 	}
 
 	/**
@@ -233,6 +248,10 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 		LOGGER.debug("Generated transaction id: {}", xid);
 		buffer.setXid(xid);
 
+		// Since specific VStream events do not provide the VGTID, we capture it from
+		// VGTID events present in each transaction.
+		Vgtid vgtid = null;
+
 		while (true) {
 			final VEvent event = pollEvent();
 			if (event == null) {
@@ -241,10 +260,23 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 
 			final VEventType eventType = event.getType();
 
+			if (eventType == VEventType.VGTID) {
+				vgtid = processVGtidEvent(event);
+				continue;
+			}
+
 			if (eventType == VEventType.COMMIT) {
 				LOGGER.debug("Received COMMIT event");
 				if (!buffer.isEmpty()) {
-					buffer.getLast().setTXCommit();
+					// Set TX flag and the position on the last row in the transaction
+					RowMap lastEvent = buffer.getLast();
+					if (vgtid != null) {
+						lastEvent.setNextPosition(new Position(vgtid));
+					} else {
+						throw new RuntimeException("VGTID is null for transaction");
+					}
+					lastEvent.setTXCommit();
+
 					long timeSpent = buffer.getLast().getTimestampMillis() - beginEvent.getTimestamp();
 					transactionExecutionTime.update(timeSpent);
 					transactionRowCount.update(buffer.size());
@@ -266,7 +298,7 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 		}
 	}
 
-	private void processServiceEvent(VEvent event) {
+	private void processServiceEvent(VEvent event) throws SQLException, DuplicateProcessException {
 		final VEventType eventType = event.getType();
 		switch (eventType) {
 			case FIELD:
@@ -278,7 +310,15 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 				break;
 
 			case VGTID:
-				processVGtidEvent(event);
+				// Use an initial VGTID event received after connecting to vtgate as for setting
+				// the initial position of the stream.
+				if (initPosition == null) {
+					Position position = new Position(processVGtidEvent(event));
+					LOGGER.info("Current VGTID event received, using it for initial positioning at {}", event);
+					positionStore.set(position);
+				} else {
+					LOGGER.warn("Ignoring a standalone VGTID event, we already have an initial position: {}", event);
+				}
 				break;
 
 			case ROW:
