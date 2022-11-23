@@ -34,8 +34,8 @@ public class VitessPositionStore extends MysqlPositionStore {
 		}
 
 		String sql = "INSERT INTO `positions` "
-				+ "SET server_id = ?, client_id = ?, vgtid = ? "
-				+ "ON DUPLICATE KEY UPDATE client_id = ?, vgtid = ?";
+				+ "SET server_id = ?, client_id = ?, vitess_gtid = ? "
+				+ "ON DUPLICATE KEY UPDATE client_id = ?, vitess_gtid = ?";
 
 		connectionPool.withSQLRetry(1, (c) -> {
 			try (PreparedStatement s = c.prepareStatement(sql)) {
@@ -65,7 +65,7 @@ public class VitessPositionStore extends MysqlPositionStore {
 			return null;
 		}
 
-		String vgtidString = rs.getString("vgtid");
+		String vgtidString = rs.getString("vitess_gtid");
 		Vgtid vgtid = Vgtid.of(vgtidString);
 
 		return new VitessPosition(vgtid);
