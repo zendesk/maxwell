@@ -360,12 +360,15 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 			List<ReplicationMessageColumn> columns = table.resolveColumns(rowChange);
 
 			RowMap rowMap = new RowMap(
-					changeType,
-					table.getSchemaName(),
-					table.getTableName(),
-					timestampMillis,
-					table.getPkColumns(),
-					null, null, null);
+				changeType,
+				table.getSchemaName(),
+				table.getTableName(),
+				timestampMillis,
+				table.getPkColumns(),
+				null,
+				null,
+				null
+			);
 
 			rowMap.setXid(xid);
 
@@ -403,26 +406,24 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 
 	@Override
 	public Long getLastHeartbeatRead() {
-		// TODO Auto-generated method stub
-		return null;
+		throw new RuntimeException("Heartbeat support is not available in Vitess replicator");
+	}
+
+	@Override
+	public void stopAtHeartbeat(long heartbeat) {
+		throw new RuntimeException("Heartbeat support is not available in Vitess replicator");
 	}
 
 	@Override
 	public Schema getSchema() throws SchemaStoreException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Long getSchemaId() throws SchemaStoreException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
-	public void stopAtHeartbeat(long heartbeat) {
-		// TODO Auto-generated method stub
-	}
 
 	private static ManagedChannel newChannel(String vtgateHost, int vtgatePort, int maxInboundMessageSize) {
 		return ManagedChannelBuilder
