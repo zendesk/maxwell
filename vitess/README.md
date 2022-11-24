@@ -15,7 +15,7 @@ For developing Maxwell support for Vitess, you can run run vttestserver using th
 provided script:
 
 ```
-$ ./vitess/01-start-vitess.sh
+$ vitess/01-start-vitess.sh
 ```
 
 The script will use Docker or Podman to start vttestserver and expose its gRPC and MySQL ports
@@ -26,7 +26,7 @@ so that Maxwell can connect to those.
 To start Maxwell against the provided vttestserver cluster, you can use the provided script:
 
 ```
-$ ./vitess/02-start-maxwell.sh
+$ vitess/02-start-maxwell.sh
 ```
 The script will build Maxwell and then start it with the provided properties file
 (`vitess/config.properties`). The properties file configures the following:
@@ -61,3 +61,12 @@ grpcurl -plaintext -d '{"vgtid":{"shard_gtids":[{"keyspace":"app_shard", "gtid":
 ```
 
 This will run the VStream API and send all events to console as a JSON stream.
+
+## Cleaning up after testing
+
+When you're done working with the vttestserver cluster, you may want to run the script provided to
+clean up any remaining Docker containers:
+
+```
+$ vitess/03-cleanup-vitess.sh
+```

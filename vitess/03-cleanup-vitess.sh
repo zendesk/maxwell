@@ -18,6 +18,3 @@ fi
 
 # Stop and remove any existing containers
 $COMPOSE_COMMAND -f vitess/docker-compose.yml down
-
-# Start the Vitess cluster
-$COMPOSE_COMMAND -f vitess/docker-compose.yml up
