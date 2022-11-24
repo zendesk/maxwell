@@ -158,6 +158,7 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 		}
 
 		if (row == null) {
+			checkIfVstreamIsAlive();
 			return;
 		}
 
@@ -168,6 +169,16 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 		// scripting.invoke(row);
 
 		processRow(row);
+	}
+
+	private void checkIfVstreamIsAlive() {
+		if (!replicatorStarted) return;
+
+		Exception lastException = responseObserver.getLastException();
+		if (lastException != null) {
+			LOGGER.error("VStream is dead, stopping...");
+			throw new RuntimeException(lastException);
+		}
 	}
 
 	public RowMap getRow() throws Exception {

@@ -21,6 +21,7 @@ public class VStreamObserver implements StreamObserver<Vtgate.VStreamResponse> {
 	private static final Logger LOGGER = LoggerFactory.getLogger(VStreamObserver.class);
 	private final AtomicBoolean mustStop = new AtomicBoolean(false);
 	private final LinkedBlockingDeque<VEvent> queue;
+	private Exception lastException = null;
 
 	public VStreamObserver(LinkedBlockingDeque<VEvent> queue) {
 		this.queue = queue;
@@ -44,7 +45,8 @@ public class VStreamObserver implements StreamObserver<Vtgate.VStreamResponse> {
 
 	@Override
 	public void onError(Throwable t) {
-		LOGGER.error("VStream streaming onError. Status: " + Status.fromThrowable(t), t);
+		this.lastException = Status.fromThrowable(t).asException();
+		LOGGER.error("VStream streaming onError. Status: {}", lastException);
 		stop();
 	}
 
@@ -52,6 +54,10 @@ public class VStreamObserver implements StreamObserver<Vtgate.VStreamResponse> {
 	public void onCompleted() {
 		LOGGER.info("VStream streaming completed.");
 		stop();
+	}
+
+	public Exception getLastException() {
+		return lastException;
 	}
 
 	// Pushes an event to the queue for VStreamReplicator to process.
