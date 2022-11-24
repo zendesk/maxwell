@@ -339,10 +339,9 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 				break;
 
 			default:
-				LOGGER.warn("Unexpected service event: {}", event);
+				LOGGER.debug("Unsupported service event: {}", event);
 				break;
 		}
-
 	}
 
 	private List<RowMap> rowEventToMaps(VEvent event, long xid) {
