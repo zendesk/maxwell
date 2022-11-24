@@ -10,12 +10,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import com.google.common.collect.ImmutableList;
 
 import io.vitess.proto.Query.Field;
 
 /** The Vitess table column type */
 public class VitessType {
-
 	// name of the column type
 	private final String name;
 	// enum of column jdbc type
@@ -28,9 +28,14 @@ public class VitessType {
 	}
 
 	public VitessType(String name, int jdbcId, List<String> enumValues) {
-		this.name = name;
+		this.name = name.intern();
 		this.jdbcId = jdbcId;
-		this.enumValues = Collections.unmodifiableList(enumValues);
+
+		ImmutableList.Builder<String> builder = ImmutableList.builderWithExpectedSize(enumValues.size());
+		for (String enumValue : enumValues) {
+			builder.add(enumValue.intern());
+		}
+		this.enumValues = builder.build();
 	}
 
 	public String getName() {

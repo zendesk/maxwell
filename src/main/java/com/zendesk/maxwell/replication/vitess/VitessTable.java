@@ -15,8 +15,8 @@ public class VitessTable {
 	private final List<String> pkColumns;
 
 	public VitessTable(String schemaName, String tableName, List<VitessColumn> columns, List<String> pkColumns) {
-		this.schemaName = schemaName;
-		this.tableName = tableName;
+		this.schemaName = schemaName.intern();
+		this.tableName = tableName.intern();
 		this.columns = columns;
 		this.pkColumns = pkColumns;
 	}

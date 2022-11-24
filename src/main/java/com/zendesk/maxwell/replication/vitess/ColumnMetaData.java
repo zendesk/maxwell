@@ -17,7 +17,7 @@ public class ColumnMetaData {
 	private final KeyMetaData keyMetaData;
 
 	public ColumnMetaData(String columnName, VitessType vitessType, boolean optional, KeyMetaData keyMetaData) {
-		this.columnName = columnName;
+		this.columnName = columnName.intern();
 		this.vitessType = vitessType;
 		this.keyMetaData = keyMetaData;
 		this.optional = optional;

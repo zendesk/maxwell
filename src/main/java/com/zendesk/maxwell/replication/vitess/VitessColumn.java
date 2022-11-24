@@ -5,7 +5,7 @@ public class VitessColumn {
 	private final VitessType type;
 
 	public VitessColumn(String name, VitessType type) {
-		this.name = name;
+		this.name = name.intern();
 		this.type = type;
 	}
 

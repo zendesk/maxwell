@@ -25,7 +25,7 @@ public class VitessSchema {
 	private final Map<String, VitessTable> tables = new HashMap<>();
 
 	public void addTable(VitessTable table) {
-		String tableName = table.getQualifiedTableName();
+		String tableName = table.getQualifiedTableName().intern();
 		if (tables.containsKey(tableName)) {
 			LOGGER.info("Schema change detected for: {}", table);
 		} else {

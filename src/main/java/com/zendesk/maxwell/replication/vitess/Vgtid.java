@@ -43,19 +43,19 @@ public class Vgtid {
 		Binlogdata.VGtid.Builder builder = Binlogdata.VGtid.newBuilder();
 		for (ShardGtid shardGtid : shardGtids) {
 			builder.addShardGtids(
-					Binlogdata.ShardGtid.newBuilder()
-							.setKeyspace(shardGtid.getKeyspace())
-							.setShard(shardGtid.getShard())
-							.setGtid(shardGtid.getGtid())
-							.build());
+				Binlogdata.ShardGtid.newBuilder()
+					.setKeyspace(shardGtid.getKeyspace())
+					.setShard(shardGtid.getShard())
+					.setGtid(shardGtid.getGtid())
+					.build()
+			);
 		}
 		this.rawVgtid = builder.build();
 	}
 
 	public static Vgtid of(String shardGtidsInJson) {
 		try {
-			List<ShardGtid> shardGtids = MAPPER.readValue(shardGtidsInJson, new TypeReference<List<ShardGtid>>() {
-			});
+			List<ShardGtid> shardGtids = MAPPER.readValue(shardGtidsInJson, new TypeReference<List<ShardGtid>>() { });
 			return of(shardGtids);
 		} catch (JsonProcessingException e) {
 			throw new IllegalStateException(e);
@@ -116,9 +116,12 @@ public class Vgtid {
 		private final String gtid;
 
 		@JsonCreator
-		public ShardGtid(@JsonProperty(KEYSPACE_KEY) String keyspace, @JsonProperty(SHARD_KEY) String shard,
-				@JsonProperty(GTID_KEY) String gtid) {
-			this.keyspace = keyspace;
+		public ShardGtid(
+			@JsonProperty(KEYSPACE_KEY) String keyspace,
+			@JsonProperty(SHARD_KEY) String shard,
+			@JsonProperty(GTID_KEY) String gtid
+		) {
+			this.keyspace = keyspace.intern();
 			this.shard = shard;
 			this.gtid = gtid;
 		}

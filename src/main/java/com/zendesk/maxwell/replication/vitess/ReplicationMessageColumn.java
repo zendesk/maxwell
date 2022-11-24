@@ -15,7 +15,7 @@ public class ReplicationMessageColumn {
 	private final byte[] rawValue;
 
 	public ReplicationMessageColumn(String columnName, VitessType type, byte[] rawValue) {
-		this.columnName = columnName;
+		this.columnName = columnName.intern();
 		this.type = type;
 		this.rawValue = rawValue;
 	}
