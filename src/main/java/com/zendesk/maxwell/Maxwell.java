@@ -242,7 +242,7 @@ public class Maxwell implements Runnable {
 
 	private void startInner() throws Exception {
 		try (Connection rawConnection = this.context.getRawMaxwellConnection()) {
-			MaxwellMysqlStatus.ensureMaxwellMysqlState(rawConnection);
+			MaxwellMysqlStatus.ensureMaxwellMysqlState(rawConnection, config.vitessEnabled);
 
 			SchemaStoreSchema.ensureMaxwellSchema(rawConnection, this.config.databaseName);
 
