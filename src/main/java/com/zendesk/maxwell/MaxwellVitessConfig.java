@@ -10,9 +10,16 @@ public class MaxwellVitessConfig {
 	public String keyspace;
 	public String shard;
 
+	public boolean usePlaintext;
+	public String tlsCA;
+	public String tlsServerName;
+
 	public MaxwellVitessConfig() {
 		this.vtgateHost = "localhost";
 		this.vtgatePort = 15991;
+		this.usePlaintext = true;
+		this.tlsCA = null;
+		this.tlsServerName = null;
 
 		this.user = null;
 		this.password = null;

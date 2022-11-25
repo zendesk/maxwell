@@ -1,5 +1,7 @@
 package com.zendesk.maxwell.replication;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,9 +38,12 @@ import binlogdata.Binlogdata.RowEvent;
 import binlogdata.Binlogdata.VEvent;
 import binlogdata.Binlogdata.VEventType;
 import binlogdata.Binlogdata.VGtid;
+import io.grpc.ChannelCredentials;
+import io.grpc.Grpc;
+import io.grpc.InsecureChannelCredentials;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-
+import io.grpc.TlsChannelCredentials;
 import io.vitess.proto.Vtgate.VStreamFlags;
 import io.vitess.proto.Vtgate.VStreamRequest;
 import io.vitess.proto.grpc.VitessGrpc;
@@ -56,6 +61,8 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 	private static final String INSERT_TYPE = "INSERT";
 	private static final String UPDATE_TYPE = "UPDATE";
 	private static final String DELETE_TYPE = "DELETE";
+
+	private static final String MAXWELL_USER_AGENT = "Maxwell's Daemon";
 
 	private final MaxwellVitessConfig vitessConfig;
 	private final AbstractProducer producer;
@@ -103,14 +110,11 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 	}
 
 	public void startReplicator() throws Exception {
-		LOGGER.info(
-				"Starting VStreamReplicator, connecting to Vtgate at {}:{}",
+		LOGGER.info("Starting VStreamReplicator, connecting to Vtgate at {}:{}",
 				vitessConfig.vtgateHost, vitessConfig.vtgatePort);
 
-		this.channel = newChannel(
-				vitessConfig.vtgateHost,
-				vitessConfig.vtgatePort,
-				GRPC_MAX_INBOUND_MESSAGE_SIZE);
+		this.channel = newChannel(vitessConfig, GRPC_MAX_INBOUND_MESSAGE_SIZE);
+
 		VitessGrpc.VitessStub stub = VitessGrpc.newStub(channel);
 
 		VStreamFlags vStreamFlags = VStreamFlags.newBuilder()
@@ -125,12 +129,10 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 				.build();
 
 		this.responseObserver = new VStreamObserver(queue);
-
 		stub.vStream(vstreamRequest, responseObserver);
 
-		LOGGER.info("Started VStream");
-
 		this.replicatorStarted = true;
+		LOGGER.info("Started VStream");
 	}
 
 	@Override
@@ -425,12 +427,39 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 	}
 
 
-	private static ManagedChannel newChannel(String vtgateHost, int vtgatePort, int maxInboundMessageSize) {
-		return ManagedChannelBuilder
-				.forAddress(vtgateHost, vtgatePort)
-				.usePlaintext()
-				.maxInboundMessageSize(maxInboundMessageSize)
-				.keepAliveTime(KEEPALIVE_INTERVAL_SECONDS, TimeUnit.SECONDS)
-				.build();
+	private static ManagedChannel newChannel(MaxwellVitessConfig config, int maxInboundMessageSize) throws IOException {
+		ChannelCredentials channelCredentials = InsecureChannelCredentials.create();
+
+		if (!config.usePlaintext) {
+			TlsChannelCredentials.Builder tlsCredentialsBuilder = TlsChannelCredentials.newBuilder();
+
+			if (config.tlsCA != null) {
+				LOGGER.info("Using a custom TLS CA: {}", config.tlsCA);
+				tlsCredentialsBuilder.trustManager(new File(config.tlsCA));
+			}
+
+			// if (config.tlsCert != null && config.tlsKey != null) {
+			// 	tlsCredentialsBuilder.keyManager(new File(config.tlsCert), new File(config.tlsKey));
+			// }
+
+			channelCredentials = tlsCredentialsBuilder.build();
+		}
+
+		ManagedChannelBuilder<?> builder = Grpc.newChannelBuilderForAddress(config.vtgateHost, config.vtgatePort, channelCredentials)
+			.maxInboundMessageSize(maxInboundMessageSize)
+			.keepAliveTime(KEEPALIVE_INTERVAL_SECONDS, TimeUnit.SECONDS)
+			.userAgent(MAXWELL_USER_AGENT);
+
+		if (config.usePlaintext) {
+			LOGGER.warn("Using plaintext connection to vtgate");
+			builder.usePlaintext();
+		}
+
+		if (config.tlsServerName != null) {
+			LOGGER.info("Using TLS server name override: {}", config.tlsServerName);
+			builder.overrideAuthority(config.tlsServerName);
+		}
+
+		return builder.build();
 	}
 }

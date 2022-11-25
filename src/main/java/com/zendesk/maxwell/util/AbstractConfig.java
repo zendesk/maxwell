@@ -230,9 +230,15 @@ public abstract class AbstractConfig {
     MaxwellVitessConfig config = new MaxwellVitessConfig();
     config.vtgateHost = fetchStringOption("vitess_host", options, properties, "localhost");
     config.vtgatePort = fetchIntegerOption("vitess_port", options, properties, 15991);
-    config.user = fetchStringOption("vitess_user", options, properties, null);
+
+	config.usePlaintext = fetchBooleanOption("vitess_plaintext", options, properties, true);
+	config.tlsCA = fetchStringOption("vitess_tls_ca", options, properties, null);
+	config.tlsServerName = fetchStringOption("vitess_tls_server_name", options, properties, null);
+
+	config.user = fetchStringOption("vitess_user", options, properties, null);
     config.password = fetchStringOption("vitess_password", options, properties, null);
-    config.keyspace = fetchStringOption("vitess_keyspace", options, properties, null);
+
+	config.keyspace = fetchStringOption("vitess_keyspace", options, properties, null);
     config.shard = fetchStringOption("vitess_shard", options, properties, "");
     return config;
   }
