@@ -438,9 +438,10 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 				tlsCredentialsBuilder.trustManager(new File(config.tlsCA));
 			}
 
-			// if (config.tlsCert != null && config.tlsKey != null) {
-			// 	tlsCredentialsBuilder.keyManager(new File(config.tlsCert), new File(config.tlsKey));
-			// }
+			if (config.tlsCert != null && config.tlsKey != null) {
+				LOGGER.info("TLS client credentials: cert={}, key={}", config.tlsCert, config.tlsKey);
+				tlsCredentialsBuilder.keyManager(new File(config.tlsCert), new File(config.tlsKey));
+			}
 
 			channelCredentials = tlsCredentialsBuilder.build();
 		}

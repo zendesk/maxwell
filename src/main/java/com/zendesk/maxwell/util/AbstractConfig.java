@@ -233,6 +233,8 @@ public abstract class AbstractConfig {
 
 	config.usePlaintext = fetchBooleanOption("vitess_plaintext", options, properties, true);
 	config.tlsCA = fetchStringOption("vitess_tls_ca", options, properties, null);
+	config.tlsCert = fetchStringOption("vitess_tls_cert", options, properties, null);
+	config.tlsKey = fetchStringOption("vitess_tls_key", options, properties, null);
 	config.tlsServerName = fetchStringOption("vitess_tls_server_name", options, properties, null);
 
 	config.user = fetchStringOption("vitess_user", options, properties, null);
