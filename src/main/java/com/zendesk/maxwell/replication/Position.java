@@ -54,11 +54,13 @@ public class Position implements Serializable {
 
 	@Override
 	public boolean equals(Object o) {
-		if (o instanceof Position) {
-			Position other = (Position) o;
-			return lastHeartbeatRead == other.lastHeartbeatRead && binlogPosition.equals(other.binlogPosition);
+		if ( !(o instanceof Position) ) {
+			return false;
 		}
-		return false;
+		Position other = (Position) o;
+
+		return lastHeartbeatRead == other.lastHeartbeatRead
+			&& binlogPosition.equals(other.binlogPosition);
 	}
 
 	@Override
@@ -67,10 +69,8 @@ public class Position implements Serializable {
 	}
 
 	public boolean newerThan(Position other) {
-		if (other instanceof Position) {
-			Position mOther = (Position) other;
-			return binlogPosition.newerThan(mOther.binlogPosition);
-		}
-		return true;
+		if ( other == null )
+			return true;
+		return this.getBinlogPosition().newerThan(other.getBinlogPosition());
 	}
 }
