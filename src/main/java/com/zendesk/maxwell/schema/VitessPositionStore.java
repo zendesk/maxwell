@@ -66,6 +66,12 @@ public class VitessPositionStore extends MysqlPositionStore {
 		}
 
 		String vgtidString = rs.getString("vitess_gtid");
+		if (vgtidString == null) {
+			LOGGER.warn("Read a null VTGID value from the positions table, assuming we need to start from the current position");
+			return null;
+		}
+
+		LOGGER.debug("Read VGTID from positions: {}", vgtidString);
 		Vgtid vgtid = Vgtid.of(vgtidString);
 
 		return new VitessPosition(vgtid);
