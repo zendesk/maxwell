@@ -458,7 +458,6 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 
 		if (config.usePlaintext) {
 			LOGGER.warn("Using plaintext connection to vtgate");
-			builder.usePlaintext();
 		}
 
 		if (config.tlsServerName != null) {
