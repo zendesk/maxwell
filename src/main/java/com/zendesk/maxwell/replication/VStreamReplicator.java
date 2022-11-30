@@ -2,6 +2,10 @@ package com.zendesk.maxwell.replication;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -440,6 +444,7 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 
 			if (config.tlsCert != null && config.tlsKey != null) {
 				LOGGER.info("TLS client credentials: cert={}, key={}", config.tlsCert, config.tlsKey);
+				ensurePkcs8(config.tlsKey);
 				tlsCredentialsBuilder.keyManager(new File(config.tlsCert), new File(config.tlsKey));
 			}
 
@@ -462,5 +467,19 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 		}
 
 		return builder.build();
+	}
+
+	// Makes sure the given private key file is in PKCS#8 format.
+	private static void ensurePkcs8(String keyFile) {
+		try {
+			Path path = Paths.get(keyFile);
+			String keyContent = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+			if (!keyContent.contains("BEGIN PRIVATE KEY")) {
+				LOGGER.error("Private key file {} is not in PKCS#8 format, please convert it", keyFile);
+				throw new RuntimeException("Private key file is not in PKCS#8 format");
+			}
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to read private key file: " + keyFile, e);
+		}
 	}
 }
