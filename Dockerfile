@@ -1,4 +1,4 @@
-FROM maven:3.6-jdk-11 as builder
+FROM maven:3.8-jdk-11 as builder
 ENV MAXWELL_VERSION=1.39.2 KAFKA_VERSION=1.0.0
 
 RUN apt-get update \
@@ -20,6 +20,9 @@ RUN cd /workspace \
 
 # Build clean image with non-root priveledge
 FROM openjdk:11-jdk-slim
+
+RUN apt-get update \
+    && apt-get -y upgrade
 
 COPY --from=builder /app /app
 COPY --from=builder /REVISION /REVISION

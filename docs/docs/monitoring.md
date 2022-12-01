@@ -18,12 +18,12 @@ metric                         | description
 `messages.failed.meter`        | a measure of the rate at which messages failed to send Kafka
 `row.meter`                    | a measure of the rate at which rows arrive to Maxwell from the binlog connector
 **Gauges**
-`replication.lag`              | the time elapsed between the database transaction commit and the time it was processed by Maxwell, in milliseconds
+`replication.lag`              | the time elapsed between the database transaction commit and the time it was processed by Maxwell
 `inflightmessages.count`       | the number of messages that are currently in-flight (awaiting acknowledgement from the destination, or ahead of messages which are)
 **Timers**
-`message.publish.time`         | the time it took to send a given record to Kafka, in milliseconds
-`message.publish.age`          | the time between an event occurring on the DB and being published to kafka, in milliseconds. Note: since MySQL timestamps are accurate to the second, this is only accurate to +/- 500ms.
-`replication.queue.time`       | the time it took to enqueue a given binlog event for processing, in milliseconds
+`message.publish.time`         | the time it took to send a given record to Kafka
+`message.publish.age`          | the time between an event occurring on the DB and being published to kafka. Note: since MySQL timestamps are accurate to the second, this is only accurate to +/- 500ms.
+`replication.queue.time`       | the time it took to enqueue a given binlog event for processing
 
 # HTTP Endpoints
 ***
