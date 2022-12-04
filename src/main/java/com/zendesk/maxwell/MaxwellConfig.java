@@ -1074,7 +1074,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.pubsubMessageOrderingKey			= fetchStringOption("pubsub_message_ordering_key", options, properties, null);
 		this.pubsubPublishDelayThreshold		= Duration.ofMillis(fetchLongOption("pubsub_publish_delay_threshold", options, properties, 1L));
 		this.pubsubRetryDelay 					= Duration.ofMillis(fetchLongOption("pubsub_retry_delay", options, properties, 100L));
-		this.pubsubRetryDelayMultiplier 		= fetchFloatOption("pubsub_retry_delay_multiplier", options, properties, 1.0f);
+		this.pubsubRetryDelayMultiplier 		= fetchFloatOption("pubsub_retry_delay_multiplier", options, properties, 1.3f);
 		this.pubsubMaxRetryDelay 		 		= Duration.ofSeconds(fetchLongOption("pubsub_max_retry_delay", options, properties, 60L));
 		this.pubsubInitialRpcTimeout 		 	= Duration.ofSeconds(fetchLongOption("pubsub_initial_rpc_timeout", options, properties, 5L));
 		this.pubsubRpcTimeoutMultiplier 		= fetchFloatOption("pubsub_rpc_timeout_multiplier", options, properties, 1.0f);
@@ -1337,6 +1337,9 @@ public class MaxwellConfig extends AbstractConfig {
 		} else if (this.producerType.equals("sns") && this.snsTopic == null) {
 			usageForOptions("please specify a topic ARN for SNS", "sns_topic");
 		} else if (this.producerType.equals("pubsub")) {
+			if (this.pubsubProjectId == null)
+				usageForOptions("please specify --pubsub_project_id.", "--pubsub_project_id");
+
 			if (this.pubsubRequestBytesThreshold <= 0L)
 				usage("--pubsub_request_bytes_threshold must be > 0");
 			if (this.pubsubMessageCountBatchSize <= 0L)
