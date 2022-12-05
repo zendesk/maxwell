@@ -51,6 +51,7 @@ import io.grpc.TlsChannelCredentials;
 import io.vitess.proto.Vtgate.VStreamFlags;
 import io.vitess.proto.Vtgate.VStreamRequest;
 import io.vitess.proto.grpc.VitessGrpc;
+import io.vitess.client.grpc.StaticAuthCredentials;
 import io.vitess.proto.Topodata;
 
 public class VStreamReplicator extends RunLoopProcess implements Replicator {
@@ -120,6 +121,12 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 		this.channel = newChannel(vitessConfig, GRPC_MAX_INBOUND_MESSAGE_SIZE);
 
 		VitessGrpc.VitessStub stub = VitessGrpc.newStub(channel);
+		if (vitessConfig.user != null && vitessConfig.password != null) {
+			LOGGER.info("Using provided credentials for Vtgate grpc calls");
+			stub = stub.withCallCredentials(
+				new StaticAuthCredentials(vitessConfig.user, vitessConfig.password)
+			);
+		}
 
 		VStreamFlags vStreamFlags = VStreamFlags.newBuilder()
 				.setStopOnReshard(true)
