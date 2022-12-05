@@ -210,7 +210,7 @@ or the <code>config.properties</code> file. These can provide insight into syste
 </tr>
 <tr>
 <td><code>replication.lag</code></td>
-<td>the time elapsed between the database transaction commit and the time it was processed by Maxwell, in milliseconds</td>
+<td>the time elapsed between the database transaction commit and the time it was processed by Maxwell</td>
 </tr>
 <tr>
 <td><code>inflightmessages.count</code></td>
@@ -222,15 +222,15 @@ or the <code>config.properties</code> file. These can provide insight into syste
 </tr>
 <tr>
 <td><code>message.publish.time</code></td>
-<td>the time it took to send a given record to Kafka, in milliseconds</td>
+<td>the time it took to send a given record to Kafka</td>
 </tr>
 <tr>
 <td><code>message.publish.age</code></td>
-<td>the time between an event occurring on the DB and being published to kafka, in milliseconds. Note: since MySQL timestamps are accurate to the second, this is only accurate to +/- 500ms.</td>
+<td>the time between an event occurring on the DB and being published to kafka. Note: since MySQL timestamps are accurate to the second, this is only accurate to +/- 500ms.</td>
 </tr>
 <tr>
 <td><code>replication.queue.time</code></td>
-<td>the time it took to enqueue a given binlog event for processing, in milliseconds</td>
+<td>the time it took to enqueue a given binlog event for processing</td>
 </tr>
 </tbody>
 </table>
