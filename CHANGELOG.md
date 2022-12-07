@@ -1,5 +1,22 @@
 # Maxwell changelog
 
+### [v1.39.4](https://github.com/zendesk/maxwell/releases/tag/v1.39.4)
+
+- Fix bugs with older versions of mariadb (<10.4)
+
+
+
+_Released 2022-12-07_
+
+### [v1.39.3](https://github.com/zendesk/maxwell/releases/tag/v1.39.3)
+
+- some bugfixes for 1.39.2 and google pubsub
+- couple of security upgrades, including in the docker image
+
+
+
+_Released 2022-12-04_
+
 ### [v1.39.2](https://github.com/zendesk/maxwell/releases/tag/v1.39.2)
 
 this is a bug-fix release.  some upgrades broke maxwell's http interface and there's
