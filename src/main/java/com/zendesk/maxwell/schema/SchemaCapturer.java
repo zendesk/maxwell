@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -137,8 +138,9 @@ public class SchemaCapturer implements AutoCloseable {
 
 		Schema s = new Schema(databases, captureDefaultCharset(), this.sensitivity);
 		try {
-			if ( isMariaDB() )
+			if ( isMariaDB() && mariaSupportsJSON()) {
 				detectMariaDBJSON(s);
+			}
 		} catch ( InvalidSchemaError e ) {
 			e.printStackTrace();
 		}
@@ -176,15 +178,32 @@ public class SchemaCapturer implements AutoCloseable {
 		if ( isMariaDB() )
 			return true;
 
-		java.sql.DatabaseMetaData meta = connection.getMetaData();
+		DatabaseMetaData meta = connection.getMetaData();
 		int major = meta.getDatabaseMajorVersion();
 		int minor = meta.getDatabaseMinorVersion();
 		return ((major == 5 && minor >= 6) || major > 5);
 	}
 
 	private boolean isMariaDB() throws SQLException {
-		java.sql.DatabaseMetaData meta = connection.getMetaData();
+		DatabaseMetaData meta = connection.getMetaData();
 		return meta.getDatabaseProductVersion().toLowerCase().contains("maria");
+	}
+
+	static final String MARIA_VERSION_REGEX = "[\\d\\.]+-(\\d+)\\.(\\d+)";
+	private boolean mariaSupportsJSON() throws SQLException {
+		DatabaseMetaData meta = connection.getMetaData();
+		String versionString = meta.getDatabaseProductVersion();
+		Pattern pattern = Pattern.compile(MARIA_VERSION_REGEX);
+		Matcher m = pattern.matcher(versionString);
+
+		if ( m.find() ) {
+			int major = Integer.parseInt(m.group(1));
+			int minor = Integer.parseInt(m.group(2));
+
+			return major >= 10 && minor > 1;
+		} else { // shrugging purple lady
+			return false;
+		}
 	}
 
 	private void captureTables(Database db, HashMap<String, Table> tables) throws SQLException {
@@ -299,7 +318,7 @@ public class SchemaCapturer implements AutoCloseable {
 	private void detectMariaDBJSON(Schema schema) throws SQLException, InvalidSchemaError {
 		String checkConstraintSQL = "SELECT CONSTRAINT_SCHEMA, TABLE_NAME, CONSTRAINT_NAME, CHECK_CLAUSE " +
 			"from INFORMATION_SCHEMA.CHECK_CONSTRAINTS " +
-			"where LEVEL='column' and CHECK_CLAUSE LIKE 'json_valid(%)'";
+			"where CHECK_CLAUSE LIKE 'json_valid(%)'";
 
 		String regex = "json_valid\\(`(.*)`\\)";
 		Pattern pattern = Pattern.compile(regex);
