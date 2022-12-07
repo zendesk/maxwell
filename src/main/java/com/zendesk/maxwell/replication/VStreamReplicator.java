@@ -149,6 +149,7 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 	@Override
 	protected void beforeStop() throws Exception {
 		responseObserver.stop();
+		responseObserver.onCompleted();
 
 		channel.shutdown();
 		channel.awaitTermination(500, TimeUnit.MILLISECONDS);
