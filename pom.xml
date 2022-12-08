@@ -297,7 +297,6 @@
       <artifactId>jedis</artifactId>
       <version>3.5.1</version>
     </dependency>
-
     <!-- metrics -->
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
