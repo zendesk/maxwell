@@ -297,7 +297,7 @@
       <artifactId>jedis</artifactId>
       <version>3.5.1</version>
     </dependency>
-    
+
     <!-- metrics -->
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
@@ -339,9 +339,8 @@
       <artifactId>simpleclient_servlet</artifactId>
       <version>0.9.0</version>
     </dependency>
-
     <!-- OpenCensus used for pushing metrics to stackdriver -->
-    <!-- <dependency>
+    <dependency>
         <groupId>io.opencensus</groupId>
         <artifactId>opencensus-contrib-dropwizard</artifactId>
         <version>${opencensus.version}</version>
@@ -361,7 +360,7 @@
         <groupId>io.opencensus</groupId>
         <artifactId>opencensus-exporter-stats-stackdriver</artifactId>
         <version>${opencensus.version}</version>
-    </dependency> -->
+    </dependency>
 
     <!-- test -->
     <dependency>

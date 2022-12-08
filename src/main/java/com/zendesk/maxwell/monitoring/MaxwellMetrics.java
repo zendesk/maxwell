@@ -12,7 +12,7 @@ import com.zendesk.maxwell.MaxwellConfig;
 import com.zendesk.maxwell.MaxwellContext;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.dropwizard.DropwizardExports;
-// import io.opencensus.exporter.stats.stackdriver.StackdriverStatsExporter;
+import io.opencensus.exporter.stats.stackdriver.StackdriverStatsExporter;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -126,18 +126,17 @@ public class MaxwellMetrics implements Metrics {
 		}
 
 		if (config.metricsReportingType.contains(reportingTypeStackdriver)) {
-			throw new RuntimeException("Stackdriver metrics reporting is not supported for now");
-			// io.opencensus.metrics.Metrics.getExportComponent().getMetricProducerManager().add(
-			// 	new io.opencensus.contrib.dropwizard.DropWizardMetrics(
-			// 	  Collections.singletonList(this.registry)));
+			io.opencensus.metrics.Metrics.getExportComponent().getMetricProducerManager().add(
+				new io.opencensus.contrib.dropwizard.DropWizardMetrics(
+				  Collections.singletonList(this.registry)));
 
-			// try {
-			// 	StackdriverStatsExporter.createAndRegister();
-			// } catch (java.io.IOException e) {
-			// 	LOGGER.error("Maxwell encountered an error in creating the stackdriver exporter.", e);
-			// }
+			try {
+				StackdriverStatsExporter.createAndRegister();
+			} catch (java.io.IOException e) {
+				LOGGER.error("Maxwell encountered an error in creating the stackdriver exporter.", e);
+			}
 
-			// LOGGER.info("Stackdriver metrics reporter enabled");
+			LOGGER.info("Stackdriver metrics reporter enabled");
 		}
 
 		if (config.metricsReportingType.contains(reportingTypeHttp)) {
