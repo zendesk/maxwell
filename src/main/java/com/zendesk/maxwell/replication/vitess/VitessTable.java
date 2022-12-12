@@ -50,11 +50,10 @@ public class VitessTable {
 	}
 
 	/**
-	 * Resolve the vEvent data to a list of replication message columns (with
-	 * values).
+	 * Resolve a specific row from vEvent data to a list of replication message
+	 * columns (with values).
 	 */
-	public List<ReplicationMessageColumn> resolveColumns(RowChange rowChange) {
-		Row row = rowChange.hasAfter() ? rowChange.getAfter() : rowChange.getBefore();
+	public List<ReplicationMessageColumn> resolveColumnsFromRow(Row row) {
 		int changedColumnsCnt = row.getLengthsCount();
 		if (columns.size() != changedColumnsCnt) {
 			throw new IllegalStateException(
@@ -86,4 +85,6 @@ public class VitessTable {
 		}
 		return eventColumns;
 	}
+
+
 }

@@ -53,6 +53,7 @@ import io.vitess.proto.Vtgate.VStreamRequest;
 import io.vitess.proto.grpc.VitessGrpc;
 import io.vitess.client.grpc.StaticAuthCredentials;
 import io.vitess.proto.Topodata;
+import io.vitess.proto.Query.Row;
 
 public class VStreamReplicator extends RunLoopProcess implements Replicator {
 	private static final Logger LOGGER = LoggerFactory.getLogger(VStreamReplicator.class);
@@ -371,7 +372,6 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 				LOGGER.debug("Filtering out event for table {}.{}", table.getSchemaName(), table.getTableName());
 				continue;
 			}
-			List<ReplicationMessageColumn> columns = table.resolveColumns(rowChange);
 
 			RowMap rowMap = new RowMap(
 				changeType,
@@ -386,8 +386,21 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 
 			rowMap.setXid(xid);
 
-			for (ReplicationMessageColumn column : columns) {
+			// Copy column values to the row map, use the new values when available, otherwise use the old ones
+
+			Row row = rowChange.hasAfter() ? rowChange.getAfter() : rowChange.getBefore();
+			List<ReplicationMessageColumn> afterColumns = table.resolveColumnsFromRow(row);
+			for (ReplicationMessageColumn column : afterColumns) {
 				rowMap.putData(column.getName(), column.getValue());
+			}
+
+			// Copy old values to the row map for cases when we have both the old and the new values
+			if (changeType.equals(UPDATE_TYPE)) {
+				Row beforeRow = rowChange.getBefore();
+				List<ReplicationMessageColumn> beforeColumns = table.resolveColumnsFromRow(beforeRow);
+				for (ReplicationMessageColumn column : beforeColumns) {
+					rowMap.putOldData(column.getName(), column.getValue());
+				}
 			}
 
 			rowMaps.add(rowMap);
