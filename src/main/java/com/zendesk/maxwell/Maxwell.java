@@ -343,13 +343,14 @@ public class Maxwell implements Runnable {
 		} catch ( URISyntaxException e ) {
 			// catch URISyntaxException explicitly as well to provide more information to the user
 			LOGGER.error("Syntax issue with URI, check for misconfigured host, port, database, or JDBC options (see RFC 2396)");
-			LOGGER.error("URISyntaxException: " + e.getLocalizedMessage());
+			LOGGER.error("URISyntaxException: " + e.getLocalizedMessage(), e);
 			System.exit(1);
 		} catch ( ServerException e ) {
-			LOGGER.error("Maxwell couldn't find the requested binlog, exiting...");
+			LOGGER.error("Maxwell couldn't find the requested binlog, exiting...", e);
 			System.exit(2);
 		} catch ( Exception e ) {
 			e.printStackTrace();
+			LOGGER.error("Maxwell saw an exception and is exiting...", e);
 			System.exit(1);
 		}
 	}
