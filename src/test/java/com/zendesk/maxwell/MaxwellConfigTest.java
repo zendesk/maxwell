@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -88,12 +89,14 @@ public class MaxwellConfigTest
 
 	@Test
 	public void testEnvJsonConfig() throws JsonProcessingException {
-		Map<String, String> configMap = ImmutableMap.<String, String>builder()
+		Map<String, String> nonNullconfigMap = ImmutableMap.<String, String>builder()
 				.put("user", "foo")
 				.put("password", "bar")
 				.put("host", "remotehost")
 				.put("kafka.retries", "100")
 				.build();
+		HashMap<String, String> configMap = new HashMap<>(nonNullconfigMap);
+		configMap.put("ignore.me", null);
 		ObjectMapper mapper = new ObjectMapper();
 		String jsonConfig = mapper.writeValueAsString(configMap);
 		environmentVariables.set("MAXWELL_JSON", "    " + jsonConfig);
