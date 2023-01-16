@@ -261,7 +261,8 @@ public class DDLParserTest {
 			"ALTER TABLE t1 DROP CONSTRAINT ck",
 			"ALTER TABLE t1 DROP CHECK ck",
 			"create table test ( i float default -1. )",
-			"alter database d ENCRYPTION='Y'"
+			"alter database d ENCRYPTION='Y'",
+			"ALTER TABLE t1 ADD COLUMN IF NOT EXISTS c1 TINYINT"
 		};
 
 		for ( String s : testSQL ) {
