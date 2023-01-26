@@ -34,7 +34,7 @@ public class MaxwellKinesisProducerTest {
 		for (int i = 0; i < 100_000; i++) {
 			r.append("long string");
 		}
-		rowMap.putData("content", r.toString());
+		rowMap.putData("content", r.toString(), null);
 
 		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
 		producer.sendAsync(rowMap, cc);

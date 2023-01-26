@@ -5,6 +5,7 @@ import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.Position;
+import com.zendesk.maxwell.schema.columndef.ColumnDef;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +48,7 @@ public class RowMap implements Serializable {
 
 	private final LinkedHashMap<String, Object> data;
 	private final LinkedHashMap<String, Object> oldData;
+	private final LinkedHashMap<String, ColumnDef> definitions;
 
 	private final LinkedHashMap<String, Object> extraAttributes;
 
@@ -65,6 +67,7 @@ public class RowMap implements Serializable {
 		this.timestampSeconds = timestampMillis / 1000;
 		this.data = new LinkedHashMap<>();
 		this.oldData = new LinkedHashMap<>();
+		this.definitions = new LinkedHashMap<>();
 		this.extraAttributes = new LinkedHashMap<>();
 		this.position = position;
 		this.nextPosition = nextPosition;
@@ -186,7 +189,7 @@ public class RowMap implements Serializable {
 		}
 
 		for ( Map.Entry<String, Object> entry : this.extraAttributes.entrySet() ) {
-			g.writeObjectField(entry.getKey(), entry.getValue());
+			MaxwellJson.writeValueToJSON(g, true, entry.getKey(), entry.getValue());
 		}
 
 		EncryptionContext encryptionContext = null;
@@ -245,6 +248,8 @@ public class RowMap implements Serializable {
 		return this.data.get(key);
 	}
 
+	public ColumnDef getDefinition(String key) { return this.definitions.get(key); }
+
 	public Object getExtraAttribute(String key) {
 		return this.extraAttributes.get(key);
 	}
@@ -267,8 +272,9 @@ public class RowMap implements Serializable {
 		return length;
 	}
 
-	public void putData(String key, Object value) {
+	public void putData(String key, Object value, ColumnDef definition) {
 		this.data.put(key, value);
+		this.definitions.put(key, definition);
 
 		this.approximateSize += approximateKVSize(key, value);
 	}
@@ -288,8 +294,9 @@ public class RowMap implements Serializable {
 		return this.oldData.get(key);
 	}
 
-	public void putOldData(String key, Object value) {
+	public void putOldData(String key, Object value, ColumnDef definition) {
 		this.oldData.put(key, value);
+		this.definitions.put(key, definition);
 
 		this.approximateSize += approximateKVSize(key, value);
 	}

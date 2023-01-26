@@ -56,7 +56,7 @@ public class RowMapBufferTest extends TestWithNameLogging {
 		RowMapBuffer buffer = new RowMapBuffer(2, 250); // allow about 250 bytes of memory to be used
 
 		RowMap r = new RowMap("insert", "foo", "bar", 1000L, new ArrayList<String>(), new Position(new BinlogPosition(3, "mysql.1"), 0L));
-		r.putData("json", new RawJSONString("1"));
+		r.putData("json", new RawJSONString("1"), null);
 		buffer.add(r);
 		buffer.add(new RowMap("insert", "foo", "bar", 2000L, new ArrayList<String>(), new Position(new BinlogPosition(3, "mysql.1"), 0L)));
 		buffer.add(new RowMap("insert", "foo", "bar", 3000L, new ArrayList<String>(), new Position(new BinlogPosition(3, "mysql.1"), 0L)));
