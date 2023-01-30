@@ -609,9 +609,9 @@ public class MaxwellConfig extends AbstractConfig {
 	public Scripting scripting;
 
 	/**
-	 * Enable high available support (via jgroups-raft)
+	 * Enable high available support (via jgroups-raft or zookeeper)
 	 */
-	public boolean haMode;
+	public String haMode;
 
 	/**
 	 * Path to raft.xml file that configures high availability support
@@ -628,6 +628,32 @@ public class MaxwellConfig extends AbstractConfig {
 	 * {@link com.zendesk.maxwell.replication.BinlogConnectorReplicator}
 	 */
 	public int binlogEventQueueSize;
+
+	/**
+	 * HA zookeeper address
+	 */
+	public String zookeeperServer;
+
+	/**
+	 * session time
+	 */
+	public int zookeeperSessionTimeoutMs;
+
+	/**
+	 * connection time
+	 */
+	public int zookeeperConnectionTimeoutMs;
+
+	/**
+	 * maxRetries
+	 */
+	public int zookeeperMaxRetries;
+
+	/**
+	 * retryWaitMs
+	 */
+	public int zookeeperRetryWaitMs;
+
 
 	/**
 	 * Build a default configuration object.
@@ -741,12 +767,22 @@ public class MaxwellConfig extends AbstractConfig {
 				.withRequiredArg();
 		parser.separator();
 
-		parser.accepts( "ha", "enable high-availability mode via jgroups-raft" )
-				.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "ha", "enable high-availability mode via jgroups-raft or zookeeper" )
+				.withOptionalArg();
 		parser.accepts( "jgroups_config", "location of jgroups xml configuration file" )
 				.withRequiredArg();
 		parser.accepts( "raft_member_id", "raft memberID.  (may also be specified in raft.xml)" )
 				.withRequiredArg();
+		parser.accepts("zookeeper_server","enable maxwell High Availability using zookeeper")
+				.withRequiredArg();
+		parser.accepts("zookeeper_session_timeout_ms","session timeout duration (maxwellHA on zk)")
+				.withRequiredArg().ofType(Integer.class);
+		parser.accepts("zookeeper_connection_timeout_ms","connection timeout duration (maxwellHA on zk)")
+				.withRequiredArg().ofType(Integer.class);
+		parser.accepts("zookeeper_max_retries","maximum retry (maxwellHA on zk)")
+				.withRequiredArg().ofType(Integer.class);
+		parser.accepts("zookeeper_retry_wait_ms","initial retry wait time (maxwellHA on zk)")
+				.withRequiredArg().ofType(Integer.class);
 
 		parser.separator();
 
@@ -1206,10 +1242,16 @@ public class MaxwellConfig extends AbstractConfig {
 
 		setupEncryptionOptions(options, properties);
 
-		this.haMode = fetchBooleanOption("ha", options, properties, false);
+		this.haMode = fetchStringOption("ha", options, properties, null);
 		this.jgroupsConf = fetchStringOption("jgroups_config", options, properties, "raft.xml");
 		this.raftMemberID = fetchStringOption("raft_member_id", options, properties, null);
 		this.replicationReconnectionRetries = fetchIntegerOption("replication_reconnection_retries", options, properties, 1);
+
+		this.zookeeperServer = fetchStringOption("zookeeper_server", options, properties, null);
+		this.zookeeperSessionTimeoutMs = fetchIntegerOption("zookeeper_session_timeout_ms", options, properties, 6000);
+		this.zookeeperConnectionTimeoutMs = fetchIntegerOption("zookeeper_connection_timeout_ms", options, properties, 6000);
+		this.zookeeperMaxRetries = fetchIntegerOption("zookeeper_max_retries", options, properties, 3);
+		this.zookeeperRetryWaitMs = fetchIntegerOption("zookeeper_retry_wait_ms", options, properties, 1000);
 
 		this.binlogEventQueueSize = fetchIntegerOption("binlog_event_queue_size", options, properties, BinlogConnectorReplicator.BINLOG_QUEUE_SIZE);
 	}
