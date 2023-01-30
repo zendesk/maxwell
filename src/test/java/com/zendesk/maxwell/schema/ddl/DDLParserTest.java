@@ -620,4 +620,18 @@ public class DDLParserTest {
 		assertThat(changes,is(nullValue()));
 
 	}
+
+	@Test
+	public void testServerInstanceOperations(){
+
+		List<SchemaChange> parse = parse("ALTER INSTANCE ROTATE INNODB MASTER KEY");
+		List<SchemaChange> parse1 = parse("ALTER INSTANCE ROTATE BINLOG MASTER KEY");
+		List<SchemaChange> parse2 = parse("ALTER INSTANCE RELOAD TLS");
+		List<SchemaChange> parse3 = parse("ALTER INSTANCE RELOAD TLS NO ROLLBACK ON ERROR");
+
+		assertThat(parse,is(nullValue()));
+		assertThat(parse1,is(nullValue()));
+		assertThat(parse2,is(nullValue()));
+		assertThat(parse3,is(nullValue()));
+	}
 }
