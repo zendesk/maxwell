@@ -25,8 +25,8 @@ alter_specification:
   ;
 
 // the various alter_table commands available
-add_column: ADD COLUMN? column_definition col_position?;
-add_column_parens: ADD COLUMN? '(' (column_definition|index_definition) (',' (column_definition|index_definition))* ')';
+add_column: ADD COLUMN? if_not_exists? column_definition col_position?;
+add_column_parens: ADD COLUMN? if_not_exists? '(' (column_definition|index_definition) (',' (column_definition|index_definition))* ')';
 change_column: CHANGE COLUMN? full_column_name column_definition col_position?;
 drop_column: DROP COLUMN? full_column_name CASCADE?;
 modify_column: MODIFY COLUMN? column_definition col_position?;
