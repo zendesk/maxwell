@@ -54,6 +54,12 @@ public class VitessPositionStore extends MysqlPositionStore {
 	}
 
 	@Override
+	public Position getLatestFromAnyClient() throws SQLException {
+		return null; // Never recover from a different client on Vitess
+	}
+
+
+	@Override
 	public long heartbeat() throws Exception {
 		// Heartbeats are not supported in Vitess.
 		return System.currentTimeMillis();
