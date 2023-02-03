@@ -5,12 +5,17 @@ import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.leader.LeaderLatch;
 import org.apache.curator.framework.recipes.leader.LeaderLatchListener;
 import org.jgroups.JChannel;
+import org.jgroups.protocols.raft.Log;
 import org.jgroups.protocols.raft.Role;
 import org.jgroups.raft.RaftHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.net.InetAddress;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Class that joins a jgroups-raft cluster of servers or zookeeper
@@ -115,6 +120,10 @@ public class MaxwellHA {
 	 * @throws Exception
 	 */
 	public void startHAZookeeper() throws Exception {
+
+		Lock lock = new ReentrantLock();
+		String hostAddress = InetAddress.getLocalHost().getHostAddress();
+
 		String electPath = "/" + clientID + "/services";
 		String masterPath = "/" + clientID + "/leader";
 		CuratorUtils cu = new CuratorUtils();
@@ -128,28 +137,48 @@ public class MaxwellHA {
 		cu.setMasterPath(masterPath);
 		cu.init();
 		CuratorFramework client = cu.getClient();
-		LeaderLatch leader = new LeaderLatch(client, cu.getElectPath());
+		LeaderLatch leader = new LeaderLatch(client, cu.getElectPath(),hostAddress,LeaderLatch.CloseMode.NOTIFY_LEADER);
 		leader.start();
-		LOGGER.info("this node is participating in the election of the leader ....");
+		LOGGER.info("this node:" + hostAddress + " is participating in the election of the leader ....");
 		leader.addListener(new LeaderLatchListener() {
 			@Override
 			public void isLeader() {
 				try {
+					lock.lock();
 					cu.register();
 				} catch (Exception e) {
 					e.printStackTrace();
 					LOGGER.error("The node registration is abnormal, check whether the maxwell host communicates properly with the zookeeper network");
 					cu.stop();
 					System.exit(1);
+				}finally {
+					lock.unlock();
 				}
-				LOGGER.info("node is current leader, starting Maxwell....");
+				LOGGER.info("node:" + hostAddress + " is current leader, starting Maxwell....");
+				LOGGER.info("hasLeadership = " + leader.hasLeadership());
+
 				run();
+
+				try {
+					leader.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 				cu.stop();
 			}
 
 			@Override
 			public void notLeader() {
-				//LeaderLatch.CloseMode.SILENT mode will not invoke this method
+				try {
+					lock.lock();
+					LOGGER.warn("node:" + hostAddress + " lost leader");
+					LOGGER.warn("master-slave switchover......");
+					LOGGER.warn("The leadership went from " + hostAddress + " to " + leader.getLeader());
+				}catch (Exception e){
+					e.printStackTrace();
+				}finally {
+					lock.unlock();
+				}
 			}
 		});
 
