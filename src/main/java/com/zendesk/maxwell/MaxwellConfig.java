@@ -775,6 +775,8 @@ public class MaxwellConfig extends AbstractConfig {
 			.withRequiredArg();
 		parser.accepts("encrypt", "encryption mode: [none|data|all]. default: none" )
 			.withRequiredArg();
+		parser.accepts( "row_query_max_length", "truncates the 'query' field if it is above this length. default: false" )
+			.withOptionalArg().ofType(Boolean.class);
 
 		parser.section( "filtering" );
 
@@ -1204,6 +1206,7 @@ public class MaxwellConfig extends AbstractConfig {
 		outputConfig.includesThreadId = fetchBooleanOption("output_thread_id", options, properties, false);
 		outputConfig.includesSchemaId = fetchBooleanOption("output_schema_id", options, properties, false);
 		outputConfig.includesRowQuery = fetchBooleanOption("output_row_query", options, properties, false);
+		outputConfig.rowQueryMaxLength = fetchIntegerOption("row_query_max_length", options, properties, 0);
 		outputConfig.includesPrimaryKeys = fetchBooleanOption("output_primary_keys", options, properties, false);
 		outputConfig.includesPrimaryKeyColumns = fetchBooleanOption("output_primary_key_columns", options, properties, false);
 		outputConfig.includesPushTimestamp = fetchBooleanOption("output_push_timestamp", options, properties, false);
