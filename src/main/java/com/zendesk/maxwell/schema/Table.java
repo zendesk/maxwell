@@ -250,6 +250,9 @@ public class Table {
 	}
 
 	public void renameColumn(int idx, String name) throws InvalidSchemaError {
+		ColumnDef oldColumn = columns.get(idx);
+		renamePKColumn(oldColumn.getName(), name);
+
 		ColumnDef column = columns.get(idx).withName(name);
 		columns.replace(idx, column);
 	}
