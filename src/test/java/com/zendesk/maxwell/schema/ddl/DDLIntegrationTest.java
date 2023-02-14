@@ -200,16 +200,14 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testPKs() throws Exception {
 		String sql[] = {
-			"create TABLE `test_pks` ( id int(11) unsigned primary KEY, str varchar(255) )",
-			"create TABLE `test_pks_2` ( id int(11) unsigned, str varchar(255), primary key(id, str) )",
-			"create TABLE `test_pks_3` ( id int(11) unsigned primary KEY, str varchar(255) )",
-			"create TABLE `test_pks_4` ( id int(11) unsigned primary KEY, str varchar(255) )",
-			"create TABLE `test_pks_5` ( id int(11) unsigned primary KEY, str varchar(255) )",
-			"alter TABLE `test_pks_3` drop primary key, add primary key(str)",
-			"alter TABLE `test_pks_4` drop primary key",
-			"alter TABLE `test_pks` change id renamed_id int(11) unsigned",
-			"alter TABLE `test_pks` drop column renamed_id",
-			"alter TABLE `test_pks_5` rename column id to new_id"
+		   "create TABLE `test_pks` ( id int(11) unsigned primary KEY, str varchar(255) )",
+		   "create TABLE `test_pks_2` ( id int(11) unsigned, str varchar(255), primary key(id, str) )",
+		   "create TABLE `test_pks_3` ( id int(11) unsigned primary KEY, str varchar(255) )",
+		   "create TABLE `test_pks_4` ( id int(11) unsigned primary KEY, str varchar(255) )",
+		   "alter TABLE `test_pks_3` drop primary key, add primary key(str)",
+		   "alter TABLE `test_pks_4` drop primary key",
+		   "alter TABLE `test_pks` change id renamed_id int(11) unsigned",
+		   "alter TABLE `test_pks` drop column renamed_id"
 		};
 
 		testIntegration(sql);
@@ -448,10 +446,13 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		requireMinimumVersion(8,0);
 		String sql[] = {
 			"CREATE TABLE foo ( i int )",
-			"ALTER TABLE foo rename column i to j"
+			"ALTER TABLE foo rename column i to j",
+			"CREATE TABLE foo_pk ( id int(11) unsigned primary KEY )",
+			"ALTER TABLE foo_pk rename column id to new_id"
 		};
 		testIntegration(sql);
 	}
+
 
 	@Test
 	public void testTableCreate() throws Exception {
