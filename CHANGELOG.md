@@ -1,5 +1,13 @@
 # Maxwell changelog
 
+### [v1.39.5](https://github.com/zendesk/maxwell/releases/tag/v1.39.5)
+
+- a few parser fixes
+
+
+
+_Released 2023-02-08_
+
 ### [v1.39.4](https://github.com/zendesk/maxwell/releases/tag/v1.39.4)
 
 - Fix bugs with older versions of mariadb (<10.4)

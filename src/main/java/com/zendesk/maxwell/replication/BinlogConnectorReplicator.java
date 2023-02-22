@@ -586,7 +586,6 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 								buffer.add(r);
 							}
 					}
-					currentQuery = null;
 					break;
 				case TABLE_MAP:
 					TableMapEventData data = event.tableMapData();
