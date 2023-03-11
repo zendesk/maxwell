@@ -247,11 +247,11 @@ or the <code>config.properties</code> file. These can provide insight into syste
 <tbody>
 <tr>
 <td align="left"><code>/metrics</code></td>
-<td align="left">return all metrics as JSON</td>
+<td align="left">GET all metrics as JSON</td>
 </tr>
 <tr>
 <td align="left"><code>/prometheus</code></td>
-<td align="left">return all metrics as Prometheus format</td>
+<td align="left">GET all metrics as Prometheus format</td>
 </tr>
 <tr>
 <td align="left"><code>/healthcheck</code></td>
@@ -260,6 +260,10 @@ or the <code>config.properties</code> file. These can provide insight into syste
 <tr>
 <td align="left"><code>/ping</code></td>
 <td align="left">a simple ping test, responds with <code>pong</code></td>
+</tr>
+<tr>
+<td align="left"><code>/diagnostics</code></td>
+<td align="left">for kafka, send a fake message that measures the client to server latency</td>
 </tr>
 </tbody>
 </table>

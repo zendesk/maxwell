@@ -117,21 +117,23 @@
     <div id="Home">
         
 
-<div id="maxwell-header">
-</div>
+<p>This is Maxwell's daemon, a <a href="https://www.confluent.io/blog/how-change-data-capture-works-patterns-solutions-implementation/">change data capture</a> application 
+that reads MySQL binlogs and writes data changes as JSON to Kafka, Kinesis, and other streaming platforms.</p>
+<p><a href="https://github.com/zendesk/maxwell/releases/download/v1.39.6/maxwell-1.39.6.tar.gz">↓ Download</a> |
+<a href="https://github.com/zendesk/maxwell">⚝ Source / Community</a> |
+<a href="/quickstart">☝ Getting Started</a> |
+<a href="/config">☷ Reference</a></p>
+<p><b>What's it for?</b></p>
+<ul>
+<li>ETL of all sorts</li>
+<li>maintaining an audit log of all changes to your database</li>
+<li>cache building/expiring</li>
+<li>search indexing </li>
+<li>inter-service communication</li>
+</ul>
+<div>
 
-<p>This is Maxwell's daemon, an application that reads MySQL binlogs and writes
-row updates as JSON to Kafka, Kinesis, or other streaming platforms.  Maxwell has
-low operational overhead, requiring nothing but mysql and a place to write to.
-Its common use cases include ETL, cache building/expiring, metrics collection,
-search indexing and inter-service communication.  Maxwell gives you some of the
-benefits of event sourcing without having to re-architect your entire platform.</p>
-<p><b>Download:</b><br>
-<a href="https://github.com/zendesk/maxwell/releases/download/v1.39.5/maxwell-1.39.5.tar.gz">https://github.com/zendesk/maxwell/releases/download/v1.39.5/maxwell-1.39.5.tar.gz</a>
-<br/>
-<b>Source:</b><br>
-<a href="https://github.com/zendesk/maxwell">https://github.com/zendesk/maxwell</a>
-<br clear="all"></p>
+
 <pre><code>  mysql&gt; insert into `test`.`maxwell` set id = 1, daemon = 'Stanislaw Lem';
   maxwell: {
     &quot;database&quot;: &quot;test&quot;,
@@ -143,18 +145,9 @@ benefits of event sourcing without having to re-architect your entire platform.<
     &quot;data&quot;: { &quot;id&quot;:1, &quot;daemon&quot;: &quot;Stanislaw Lem&quot; }
   }
 </code></pre>
-<pre><code>  mysql&gt; update test.maxwell set daemon = 'firebus!  firebus!' where id = 1;
-  maxwell: {
-    &quot;database&quot;: &quot;test&quot;,
-    &quot;table&quot;: &quot;maxwell&quot;,
-    &quot;type&quot;: &quot;update&quot;,
-    &quot;ts&quot;: 1449786341,
-    &quot;xid&quot;: 940786,
-    &quot;commit&quot;: true,
-    &quot;data&quot;: {&quot;id&quot;:1, &quot;daemon&quot;: &quot;Firebus!  Firebus!&quot;},
-    &quot;old&quot;:  {&quot;daemon&quot;: &quot;Stanislaw Lem&quot;}
-  }
-</code></pre>
+
+
+</div>
     </div>
 </div>
             </div>
@@ -237,5 +230,5 @@ benefits of event sourcing without having to re-architect your entire platform.<
 
 <!--
 MkDocs version : 1.2.3
-Build Date UTC : 2023-02-08 08:01:25.837407+00:00
+Build Date UTC : 2023-03-11 16:59:17.236628+00:00
 -->
