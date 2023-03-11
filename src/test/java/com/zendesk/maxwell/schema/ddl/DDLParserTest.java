@@ -262,7 +262,10 @@ public class DDLParserTest {
 			"ALTER TABLE t1 DROP CHECK ck",
 			"create table test ( i float default -1. )",
 			"alter database d ENCRYPTION='Y'",
-			"ALTER TABLE t1 ADD COLUMN IF NOT EXISTS c1 TINYINT"
+			"ALTER TABLE t1 ADD COLUMN IF NOT EXISTS c1 TINYINT",
+			"ALTER TABLE tournaments ADD INDEX idx_team_name (('$.teams.name'))",
+			"ALTER TABLE tournaments ADD INDEX idx_team_name ((ABS(col)))",
+			"ALTER TABLE tournaments ADD INDEX idx_team_name ((col1 * 40) DESC)"
 		};
 
 		for ( String s : testSQL ) {

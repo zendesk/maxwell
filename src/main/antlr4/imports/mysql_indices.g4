@@ -46,7 +46,8 @@ index_columns: index_column (',' index_column )*;
 
 index_column:
   name index_column_partial_def? index_column_asc_or_desc?
-  | '(' CAST skip_parens ')';
+  | skip_parens index_column_asc_or_desc?;
+
 
 index_column_partial_def: '(' index_column_partial_length ')';
 index_column_partial_length: INTEGER_LITERAL+;
