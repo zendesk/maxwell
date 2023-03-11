@@ -1,20 +1,23 @@
-<div id="maxwell-header">
-</div>
+This is Maxwell's daemon, a [change data capture](https://www.confluent.io/blog/how-change-data-capture-works-patterns-solutions-implementation/) application 
+that reads MySQL binlogs and writes data changes as JSON to Kafka, Kinesis, and other streaming platforms.
 
-This is Maxwell's daemon, an application that reads MySQL binlogs and writes
-row updates as JSON to Kafka, Kinesis, or other streaming platforms.  Maxwell has
-low operational overhead, requiring nothing but mysql and a place to write to.
-Its common use cases include ETL, cache building/expiring, metrics collection,
-search indexing and inter-service communication.  Maxwell gives you some of the
-benefits of event sourcing without having to re-architect your entire platform.
 
-<b>Download:</b><br>
-[https://github.com/zendesk/maxwell/releases/download/v1.39.5/maxwell-1.39.5.tar.gz](https://github.com/zendesk/maxwell/releases/download/v1.39.5/maxwell-1.39.5.tar.gz)
-<br/>
-<b>Source:</b><br>
-[https://github.com/zendesk/maxwell](https://github.com/zendesk/maxwell)
-<br clear="all">
 
+[↓ Download](https://github.com/zendesk/maxwell/releases/download/v1.39.5/maxwell-1.39.5.tar.gz) \|
+[⚝ Source / Community](https://github.com/zendesk/maxwell) \|
+[☝ Getting Started](/quickstart) \|
+[☷ Reference](/config)
+
+<b>What's it for?</b>
+
+- ETL of all sorts
+- maintaining an audit log of all changes to your database
+- cache building/expiring
+- search indexing 
+- inter-service communication
+
+
+<div>
 
 ```
   mysql> insert into `test`.`maxwell` set id = 1, daemon = 'Stanislaw Lem';
@@ -29,16 +32,4 @@ benefits of event sourcing without having to re-architect your entire platform.
   }
 ```
 
-```
-  mysql> update test.maxwell set daemon = 'firebus!  firebus!' where id = 1;
-  maxwell: {
-    "database": "test",
-    "table": "maxwell",
-    "type": "update",
-    "ts": 1449786341,
-    "xid": 940786,
-    "commit": true,
-    "data": {"id":1, "daemon": "Firebus!  Firebus!"},
-    "old":  {"daemon": "Stanislaw Lem"}
-  }
-```
+</div>
