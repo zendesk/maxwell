@@ -21,7 +21,7 @@ that reads MySQL binlogs and writes data changes as JSON to Kafka, Kinesis, and 
 
 ```
   mysql> insert into `test`.`maxwell` set id = 1, daemon = 'Stanislaw Lem';
-  maxwell: {
+  maxwell> {
     "database": "test",
     "table": "maxwell",
     "type": "insert",
