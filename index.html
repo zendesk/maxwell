@@ -108,22 +108,22 @@
 
         <div class="container">
             <div class="row">
-<div class="col-md-3">
+<div class="col-md-4">
 <div>
     <img alt='The Daemon, maybe' src='/img/cyberiad_1.jpg' id='maxwell-daemon-image' style="width: 100%">
 </div>
 </div>
-<div class="col-md-9" role="main">
+<div class="col-md-8" role="main">
     <div id="Home">
         
 
-<p>This is Maxwell's daemon, a <a href="https://www.confluent.io/blog/how-change-data-capture-works-patterns-solutions-implementation/">change data capture</a> application 
+<p>This is <strong>Maxwell's daemon</strong>, a <a href="https://www.confluent.io/blog/how-change-data-capture-works-patterns-solutions-implementation/">change data capture</a> application 
 that reads MySQL binlogs and writes data changes as JSON to Kafka, Kinesis, and other streaming platforms.</p>
 <p><a href="https://github.com/zendesk/maxwell/releases/download/v1.39.6/maxwell-1.39.6.tar.gz">↓ Download</a> |
 <a href="https://github.com/zendesk/maxwell">⚝ Source / Community</a> |
 <a href="/quickstart">☝ Getting Started</a> |
 <a href="/config">☷ Reference</a></p>
-<p><b>What's it for?</b></p>
+<p><strong>What's it for?</strong></p>
 <ul>
 <li>ETL of all sorts</li>
 <li>maintaining an audit log of all changes to your database</li>
@@ -131,23 +131,18 @@ that reads MySQL binlogs and writes data changes as JSON to Kafka, Kinesis, and 
 <li>search indexing </li>
 <li>inter-service communication</li>
 </ul>
-<div>
-
-
-<pre><code>  mysql&gt; insert into `test`.`maxwell` set id = 1, daemon = 'Stanislaw Lem';
-  maxwell: {
+<p><strong>It goes like this:</strong></p>
+<pre><code>  mysql&gt; update `test`.`maxwell` set mycol = 55, daemon = 'Stanislaw Lem';
+  maxwell -&gt; kafka: 
+  {
     &quot;database&quot;: &quot;test&quot;,
     &quot;table&quot;: &quot;maxwell&quot;,
     &quot;type&quot;: &quot;insert&quot;,
     &quot;ts&quot;: 1449786310,
-    &quot;xid&quot;: 940752,
-    &quot;commit&quot;: true,
-    &quot;data&quot;: { &quot;id&quot;:1, &quot;daemon&quot;: &quot;Stanislaw Lem&quot; }
+    &quot;data&quot;: { &quot;id&quot;:1, &quot;daemon&quot;: &quot;Stanislaw Lem&quot;, &quot;mycol&quot;: 55 },
+    &quot;old&quot;: { &quot;mycol&quot;:, 23, &quot;daemon&quot;: &quot;what once was&quot; }
   }
 </code></pre>
-
-
-</div>
     </div>
 </div>
             </div>
@@ -229,6 +224,6 @@ that reads MySQL binlogs and writes data changes as JSON to Kafka, Kinesis, and 
 </html>
 
 <!--
-MkDocs version : 1.2.3
-Build Date UTC : 2023-03-11 16:59:17.236628+00:00
+MkDocs version : 1.4.2
+Build Date UTC : 2023-03-12 14:46:56.168206+00:00
 -->
