@@ -1,4 +1,4 @@
-This is Maxwell's daemon, a [change data capture](https://www.confluent.io/blog/how-change-data-capture-works-patterns-solutions-implementation/) application 
+This is __Maxwell's daemon__, a [change data capture](https://www.confluent.io/blog/how-change-data-capture-works-patterns-solutions-implementation/) application 
 that reads MySQL binlogs and writes data changes as JSON to Kafka, Kinesis, and other streaming platforms.
 
 
@@ -8,7 +8,7 @@ that reads MySQL binlogs and writes data changes as JSON to Kafka, Kinesis, and 
 [☝ Getting Started](/quickstart) \|
 [☷ Reference](/config)
 
-<b>What's it for?</b>
+__What's it for?__
 
 - ETL of all sorts
 - maintaining an audit log of all changes to your database
@@ -17,19 +17,17 @@ that reads MySQL binlogs and writes data changes as JSON to Kafka, Kinesis, and 
 - inter-service communication
 
 
-<div>
+__It goes like this:__
 
 ```
-  mysql> insert into `test`.`maxwell` set id = 1, daemon = 'Stanislaw Lem';
-  maxwell: {
+  mysql> update `test`.`maxwell` set mycol = 55, daemon = 'Stanislaw Lem';
+  maxwell -> kafka: 
+  {
     "database": "test",
     "table": "maxwell",
     "type": "insert",
     "ts": 1449786310,
-    "xid": 940752,
-    "commit": true,
-    "data": { "id":1, "daemon": "Stanislaw Lem" }
+    "data": { "id":1, "daemon": "Stanislaw Lem", "mycol": 55 },
+    "old": { "mycol":, 23, "daemon": "what once was" }
   }
 ```
-
-</div>
