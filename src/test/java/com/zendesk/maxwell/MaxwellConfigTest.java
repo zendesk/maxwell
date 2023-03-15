@@ -3,6 +3,8 @@ package com.zendesk.maxwell;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
+import com.zendesk.maxwell.monitoring.MaxwellHealthCheck;
+import com.zendesk.maxwell.monitoring.MaxwellHealthCheckFactory;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.producer.ProducerFactory;
 import com.zendesk.maxwell.producer.StdoutProducer;
@@ -39,6 +41,13 @@ public class MaxwellConfigTest
 		config = new MaxwellConfig(new String[] { "--config=" + configPath });
 		assertNotNull(config.producerFactory);
 		assertTrue(config.producerFactory instanceof TestProducerFactory);
+	}
+
+	@Test
+	public void testFetchHealthCheckFactoryFromArgs() {
+		config = new MaxwellConfig(new String[] { "--custom_health.factory=" + TestHealthCheckFactory.class.getName() });
+		assertNotNull(config.customHealthFactory);
+		assertTrue(config.customHealthFactory instanceof TestHealthCheckFactory);
 	}
 
 	@Test(expected = OptionException.class)
@@ -152,6 +161,25 @@ public class MaxwellConfigTest
 	public static class TestProducerFactory implements ProducerFactory {
 		public AbstractProducer createProducer(MaxwellContext context) {
 			return new StdoutProducer(context);
+		}
+	}
+
+	public static class TestHealthCheck extends MaxwellHealthCheck {
+		public TestHealthCheck(AbstractProducer producer) {
+			super(producer);
+		}
+
+		@Override
+		protected Result check() throws Exception {
+			return Result.unhealthy("I am always unhealthy");
+		}
+	}
+
+	public static class TestHealthCheckFactory implements MaxwellHealthCheckFactory {
+		@Override
+		public MaxwellHealthCheck createHealthCheck(AbstractProducer producer)
+		{
+			return new TestHealthCheck(producer);
 		}
 	}
 }
