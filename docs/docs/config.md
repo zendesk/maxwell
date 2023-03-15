@@ -236,6 +236,7 @@ metrics_datadog_apikey   | STRING | the datadog api key to use when metrics_data
 metrics_datadog_site     | STRING | the site to publish metrics to when metrics_datadog_type = `http` | us
 metrics_datadog_host     | STRING | the host to publish metrics to when metrics_datadog_type = `udp` | localhost
 metrics_datadog_port     | INT | the port to publish metrics to when metrics_datadog_type = `udp` | 8125
+custom_health.factory	| CLASS_NAME                          | fully qualified maxwell health check factory class, see [example](https://github.com/zendesk/maxwell/blob/master/src/example/com/zendesk/maxwell/example/maxwellhealthcheckfactory/CustomMaxwellHealthCheckFactory.java) |
 
 _See also:_ [Monitoring](/monitoring)
 
