@@ -169,7 +169,9 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 		try {
 			row = getRow();
 		} catch (InterruptedException e) {
-			LOGGER.debug("Interrupted while waiting for row");
+			if (LOGGER.isTraceEnabled()) {
+				LOGGER.trace("Interrupted while waiting for row");
+			}
 		}
 
 		if (row == null) {
@@ -271,7 +273,7 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 
 		// Since transactions in VStream do not have an XID value, we generate one
 		long xid = System.currentTimeMillis() * 1000 + Math.abs(beginEvent.hashCode()) % 1000;
-		LOGGER.debug("Generated transaction id: {}", xid);
+		LOGGER.trace("Generated transaction id: {}", xid);
 		buffer.setXid(xid);
 
 		// Since specific VStream events do not provide the VGTID, we capture it from
@@ -292,7 +294,7 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 			}
 
 			if (eventType == VEventType.COMMIT) {
-				LOGGER.debug("Received COMMIT event");
+				LOGGER.trace("Received COMMIT event");
 				if (!buffer.isEmpty()) {
 					// Set TX flag and the position on the last row in the transaction
 					RowMap lastEvent = buffer.getLast();
@@ -369,7 +371,10 @@ public class VStreamReplicator extends RunLoopProcess implements Replicator {
 			String changeType = rowChangeToMaxwellType(rowChange);
 			final VitessTable table = resolveTable(qualifiedTableName);
 			if (!filter.includes(table.getSchemaName(), table.getTableName())) {
-				LOGGER.debug("Filtering out event for table {}.{}", table.getSchemaName(), table.getTableName());
+				if (LOGGER.isTraceEnabled()) {
+					LOGGER.trace("Filtering out event for table {}.{}",
+						table.getSchemaName(), table.getTableName());
+				}
 				continue;
 			}
 

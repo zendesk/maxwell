@@ -38,7 +38,7 @@ public class VStreamObserver implements StreamObserver<Vtgate.VStreamResponse> {
 
 		List<VEvent> messageEvents = response.getEventsList();
 		for (VEvent event : messageEvents) {
-			LOGGER.debug("VEvent: {}", event);
+			LOGGER.trace("VEvent: {}", event);
 			enqueueEvent(event);
 		}
 	}
