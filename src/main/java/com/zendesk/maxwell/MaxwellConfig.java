@@ -6,6 +6,7 @@ import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.filtering.InvalidFilterException;
 import com.zendesk.maxwell.monitoring.MaxwellDiagnosticContext;
+import com.zendesk.maxwell.monitoring.MaxwellHealthCheckFactory;
 import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.producer.ProducerFactory;
@@ -106,6 +107,12 @@ public class MaxwellConfig extends AbstractConfig {
 	 * Setup with all properties prefixed `customer_producer.`
 	 */
 	public final Properties customProducerProperties;
+
+	/**
+	 * Available to customer producers for configuration.
+	 * Setup with all properties prefixed `customer_producer.`
+	 */
+	public MaxwellHealthCheckFactory customHealthFactory;
 
 	/**
 	 * String describing desired producer type: "kafka", "kinesis", etc.
@@ -972,6 +979,9 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "metrics_datadog_port", "the port to publish metrics to when metrics_datadog_type = udp" ).withRequiredArg().ofType(Integer.class);
 
 
+		parser.section( "custom_health" );
+		parser.accepts( "custom_health.factory", "fully qualified custom maxwell health check").withRequiredArg();
+
 		parser.section("http");
 		parser.accepts( "http_port", "the port the server will bind to when http reporting is configured" ).withRequiredArg().ofType(Integer.class);
 		parser.accepts( "http_path_prefix", "the http path prefix when metrics_type includes http or diagnostic is enabled, default /" ).withRequiredArg();
@@ -1152,6 +1162,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.metricsReportingType = fetchStringOption("metrics_type", options, properties, null);
 		this.metricsSlf4jInterval = fetchLongOption("metrics_slf4j_interval", options, properties, 60L);
 
+        this.customHealthFactory = fetchHealthCheckFactory(options, properties);
 		this.httpPort = fetchIntegerOption("http_port", options, properties, 8080);
 		this.httpBindAddress = fetchStringOption("http_bind_address", options, properties, null);
 		this.httpPathPrefix = fetchStringOption("http_path_prefix", options, properties, "/");
@@ -1514,6 +1525,39 @@ public class MaxwellConfig extends AbstractConfig {
 				usageForOptions("No valid constructor found for " + strOption, "--" + name);
 			} catch (InvocationTargetException e) {
 				String msg = String.format("Unable to construct customer producer '%s'", strOption);
+				usageForOptions(msg, "--" + name);
+				e.printStackTrace();
+			}
+			return null; // unreached
+		} else {
+			return null;
+		}
+	}
+
+
+	/**
+	 * If present in the configuration, build an instance of a custom health factory
+	 * @param options command line arguments
+	 * @param properties properties from config.properties
+	 * @return NULL or MaxwellHealthCheckFactory instance
+	 */
+	protected MaxwellHealthCheckFactory fetchHealthCheckFactory(OptionSet options, Properties properties) {
+		String name = "custom_health.factory";
+		String strOption = fetchStringOption(name, options, properties, null);
+		if ( strOption != null ) {
+			try {
+				Class<?> clazz = Class.forName(strOption);
+				Class[] carg = new Class[0];
+				Constructor ct = clazz.getDeclaredConstructor(carg);
+				return (MaxwellHealthCheckFactory) ct.newInstance();
+			} catch ( ClassNotFoundException e ) {
+				usageForOptions("Invalid value for " + name + ", class '" + strOption + "' not found", "--" + name);
+			} catch ( IllegalAccessException | InstantiationException | ClassCastException e) {
+				usageForOptions("Invalid value for " + name + ", class instantiation error", "--" + name);
+			} catch (NoSuchMethodException e) {
+				usageForOptions("No valid constructor found for " + strOption, "--" + name);
+			} catch (InvocationTargetException e) {
+				String msg = String.format("Unable to construct customer health '%s'", strOption);
 				usageForOptions(msg, "--" + name);
 				e.printStackTrace();
 			}
