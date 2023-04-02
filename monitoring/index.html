@@ -142,6 +142,10 @@
             
             <li class="nav-item" data-level="1"><a href="#http-endpoints" class="nav-link">HTTP Endpoints</a>
               <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#custom-health-check" class="nav-link">Custom Health Check</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
             
@@ -267,6 +271,10 @@ or the <code>config.properties</code> file. These can provide insight into syste
 </tr>
 </tbody>
 </table>
+<h2 id="custom-health-check">Custom Health Check</h2>
+<p>Similar to the custom producer, developers can provide their own implementation of a health check.</p>
+<p>In order to register your custom health check, you must implement the <code>MaxwellHealthCheckFactory</code> interface, which is responsible for creating your custom <code>MaxwellHealthCheck</code>. Next, set the <code>custom_health.factory</code> configuration property to your <code>MaxwellHealthCheckFactory</code>'s fully qualified class name. Then add the custom <code>MaxwellHealthCheckFactory</code> JAR and all its dependencies to the $MAXWELL_HOME/lib directory.</p>
+<p>Custom health check factory and health check examples can be found here: <a href="https://github.com/zendesk/maxwell/tree/master/src/example/com/zendesk/maxwell/example/maxwellhealthcheckfactory">https://github.com/zendesk/maxwell/tree/master/src/example/com/zendesk/maxwell/example/maxwellhealthcheckfactory</a></p>
 <h1 id="jmx-configuration">JMX Configuration</h1>
 <hr />
 <p>Standard configuration is either via commandline args or the <code>config.properties</code> file. However, when exposing JMX metrics
