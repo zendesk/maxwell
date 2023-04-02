@@ -1,5 +1,15 @@
 # Maxwell changelog
 
+### [v1.40.0](https://github.com/zendesk/maxwell/releases/tag/v1.40.0)
+
+- add kafka 3.4.0
+- kafka 2.7.0 is now the default kafka library
+- add custom health-check factory jar thing
+
+
+
+_Released 2023-04-02_
+
 ### [v1.39.6](https://github.com/zendesk/maxwell/releases/tag/v1.39.6)
 
 - Bugfix issue where SQL query would go missing (#1973)
