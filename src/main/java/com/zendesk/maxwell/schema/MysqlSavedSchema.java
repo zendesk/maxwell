@@ -156,7 +156,7 @@ public class MysqlSavedSchema {
 			try {
 				deltaString = mapper.writerFor(listOfResolvedSchemaChangeType).writeValueAsString(deltas);
 			} catch ( JsonProcessingException e ) {
-				throw new RuntimeException("Couldn't serialize " + deltas + " to JSON.");
+				throw new RuntimeException("Couldn't serialize " + deltas + " to JSON.", e);
 			}
 			BinlogPosition binlogPosition = position.getBinlogPosition();
 

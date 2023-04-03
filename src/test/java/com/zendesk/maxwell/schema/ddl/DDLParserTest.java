@@ -262,7 +262,11 @@ public class DDLParserTest {
 			"ALTER TABLE t1 DROP CHECK ck",
 			"create table test ( i float default -1. )",
 			"alter database d ENCRYPTION='Y'",
-			"ALTER TABLE t1 ADD COLUMN IF NOT EXISTS c1 TINYINT"
+			"ALTER TABLE t1 ADD COLUMN IF NOT EXISTS c1 TINYINT",
+			"ALTER TABLE tournaments ADD INDEX idx_team_name (('$.teams.name'))",
+			"ALTER TABLE tournaments ADD INDEX idx_team_name ((ABS(col)))",
+			"ALTER TABLE tournaments ADD INDEX idx_team_name ((col1 * 40) DESC)",
+			"CREATE TABLE employees (data JSON, INDEX idx ((CAST(data->>'$.name' AS CHAR(30)) COLLATE utf8mb4_bin)))"
 		};
 
 		for ( String s : testSQL ) {
@@ -620,5 +624,19 @@ public class DDLParserTest {
 
 		assertThat(changes,is(nullValue()));
 
+	}
+
+	@Test
+	public void testServerInstanceOperations(){
+
+		List<SchemaChange> parse = parse("ALTER INSTANCE ROTATE INNODB MASTER KEY");
+		List<SchemaChange> parse1 = parse("ALTER INSTANCE ROTATE BINLOG MASTER KEY");
+		List<SchemaChange> parse2 = parse("ALTER INSTANCE RELOAD TLS");
+		List<SchemaChange> parse3 = parse("ALTER INSTANCE RELOAD TLS NO ROLLBACK ON ERROR");
+
+		assertThat(parse,is(nullValue()));
+		assertThat(parse1,is(nullValue()));
+		assertThat(parse2,is(nullValue()));
+		assertThat(parse3,is(nullValue()));
 	}
 }

@@ -6,6 +6,7 @@ import com.github.shyiko.mysql.binlog.network.SSLMode;
 import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.filtering.InvalidFilterException;
 import com.zendesk.maxwell.monitoring.MaxwellDiagnosticContext;
+import com.zendesk.maxwell.monitoring.MaxwellHealthCheckFactory;
 import com.zendesk.maxwell.producer.EncryptionMode;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.producer.ProducerFactory;
@@ -106,6 +107,12 @@ public class MaxwellConfig extends AbstractConfig {
 	 * Setup with all properties prefixed `customer_producer.`
 	 */
 	public final Properties customProducerProperties;
+
+	/**
+	 * Available to customer producers for configuration.
+	 * Setup with all properties prefixed `customer_producer.`
+	 */
+	public MaxwellHealthCheckFactory customHealthFactory;
 
 	/**
 	 * String describing desired producer type: "kafka", "kinesis", etc.
@@ -731,6 +738,53 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.separator();
 		parser.accepts( "max_schemas", "Maximum schema-updates to keep before triggering a compaction operation.  Default: unlimited" )
 				.withRequiredArg();
+
+		parser.section( "output" );
+
+		parser.accepts( "output_binlog_position", "include 'position' (binlog position) field. default: false" )
+			.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_gtid_position", "include 'gtid' (gtid position) field. default: false" )
+			.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_commit_info", "include 'commit' and 'xid' field. default: true" )
+			.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_xoffset", "include 'xoffset' (row offset inside transaction) field.  depends on '--output_commit_info'. default: false" )
+			.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_nulls", "include data fields with NULL values. default: true" )
+			.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_server_id", "include 'server_id' field. default: false" )
+			.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_thread_id", "include 'thread_id' (client thread_id) field. default: false" )
+			.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_schema_id", "include 'schema_id' (unique ID for this DDL). default: false" )
+			.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_row_query", "include 'query' field (original SQL DML query).  depends on server option 'binlog_rows_query_log_events'. default: false" )
+			.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_primary_keys", "include 'primary_key' field (array of PK values). default: false" )
+			.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_primary_key_columns", "include 'primary_key_columns' field (array of PK column names). default: false" )
+			.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_null_zerodates", "convert '0000-00-00' dates/datetimes to null default: false" )
+			.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_ddl", "produce DDL records. default: false" )
+			.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_push_timestamp", "include a microsecond timestamp representing when Maxwell sent a record. default: false" )
+			.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "exclude_columns", "suppress these comma-separated columns from output" )
+			.withRequiredArg();
+		parser.accepts("secret_key", "The secret key for the AES encryption" )
+			.withRequiredArg();
+		parser.accepts("encrypt", "encryption mode: [none|data|all]. default: none" )
+			.withRequiredArg();
+
+		parser.section( "filtering" );
+
+		parser.accepts( "filter", "filter specs.  specify like \"include:db.*, exclude:*.tbl, include: foo./.*bar$/, exclude:foo.bar.baz=reject\"").withRequiredArg();
+
+		parser.accepts( "ignore_missing_schema", "Ignore missing database and table schemas.  Only use running with limited permissions." )
+			.withOptionalArg().ofType(Boolean.class);
+
+		parser.accepts( "javascript", "file containing per-row javascript to execute" ).withRequiredArg();
+
 		parser.section("operation");
 
 		parser.accepts( "daemon", "run maxwell in the background" )
@@ -881,52 +935,6 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "pubsub_emulator", "pubsub emulator host to use. default: null" )
 				.withOptionalArg();
 
-		parser.section( "output" );
-
-		parser.accepts( "output_binlog_position", "include 'position' (binlog position) field. default: false" )
-				.withOptionalArg().ofType(Boolean.class);
-		parser.accepts( "output_gtid_position", "include 'gtid' (gtid position) field. default: false" )
-				.withOptionalArg().ofType(Boolean.class);
-		parser.accepts( "output_commit_info", "include 'commit' and 'xid' field. default: true" )
-				.withOptionalArg().ofType(Boolean.class);
-		parser.accepts( "output_xoffset", "include 'xoffset' (row offset inside transaction) field.  depends on '--output_commit_info'. default: false" )
-				.withOptionalArg().ofType(Boolean.class);
-		parser.accepts( "output_nulls", "include data fields with NULL values. default: true" )
-				.withOptionalArg().ofType(Boolean.class);
-		parser.accepts( "output_server_id", "include 'server_id' field. default: false" )
-				.withOptionalArg().ofType(Boolean.class);
-		parser.accepts( "output_thread_id", "include 'thread_id' (client thread_id) field. default: false" )
-				.withOptionalArg().ofType(Boolean.class);
-		parser.accepts( "output_schema_id", "include 'schema_id' (unique ID for this DDL). default: false" )
-				.withOptionalArg().ofType(Boolean.class);
-		parser.accepts( "output_row_query", "include 'query' field (original SQL DML query).  depends on server option 'binlog_rows_query_log_events'. default: false" )
-				.withOptionalArg().ofType(Boolean.class);
-		parser.accepts( "output_primary_keys", "include 'primary_key' field (array of PK values). default: false" )
-				.withOptionalArg().ofType(Boolean.class);
-		parser.accepts( "output_primary_key_columns", "include 'primary_key_columns' field (array of PK column names). default: false" )
-				.withOptionalArg().ofType(Boolean.class);
-		parser.accepts( "output_null_zerodates", "convert '0000-00-00' dates/datetimes to null default: false" )
-				.withOptionalArg().ofType(Boolean.class);
-		parser.accepts( "output_ddl", "produce DDL records. default: false" )
-				.withOptionalArg().ofType(Boolean.class);
-		parser.accepts( "output_push_timestamp", "include a microsecond timestamp representing when Maxwell sent a record. default: false" )
-				.withOptionalArg().ofType(Boolean.class);
-		parser.accepts( "exclude_columns", "suppress these comma-separated columns from output" )
-				.withRequiredArg();
-		parser.accepts("secret_key", "The secret key for the AES encryption" )
-				.withRequiredArg();
-		parser.accepts("encrypt", "encryption mode: [none|data|all]. default: none" )
-				.withRequiredArg();
-
-		parser.section( "filtering" );
-
-		parser.accepts( "filter", "filter specs.  specify like \"include:db.*, exclude:*.tbl, include: foo./.*bar$/, exclude:foo.bar.baz=reject\"").withRequiredArg();
-
-		parser.accepts( "ignore_missing_schema", "Ignore missing database and table schemas.  Only use running with limited permissions." )
-				.withOptionalArg().ofType(Boolean.class);
-
-		parser.accepts( "javascript", "file containing per-row javascript to execute" ).withRequiredArg();
-
 		parser.section( "rabbitmq" );
 
 		parser.accepts( "rabbitmq_user", "Username of Rabbitmq connection. Default is guest" ).withRequiredArg();
@@ -956,7 +964,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts("redis_sentinels", "List of Redis sentinels in format host1:port1,host2:port2,host3:port3. It can be used instead of redis_host and redis_port" ).withRequiredArg();
 		parser.accepts("redis_sentinel_master_name", "Redis sentinel master name. It is used with redis_sentinels" ).withRequiredArg();
 
-		parser.section("metrics");
+		parser.section("monitoring");
 
 		parser.accepts( "metrics_prefix", "the prefix maxwell will apply to all metrics" ).withRequiredArg();
 		parser.accepts( "metrics_type", "how maxwell metrics will be reported, at least one of slf4j|jmx|http|datadog|stackdriver" ).withRequiredArg();
@@ -970,9 +978,8 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "metrics_datadog_site", "the site to publish metrics to when metrics_datadog_type = http, one of us|eu, default us" ).withRequiredArg();
 		parser.accepts( "metrics_datadog_host", "the host to publish metrics to when metrics_datadog_type = udp" ).withRequiredArg();
 		parser.accepts( "metrics_datadog_port", "the port to publish metrics to when metrics_datadog_type = udp" ).withRequiredArg().ofType(Integer.class);
+		parser.accepts( "custom_health.factory", "fully qualified custom maxwell health check").withRequiredArg();
 
-
-		parser.section("http");
 		parser.accepts( "http_port", "the port the server will bind to when http reporting is configured" ).withRequiredArg().ofType(Integer.class);
 		parser.accepts( "http_path_prefix", "the http path prefix when metrics_type includes http or diagnostic is enabled, default /" ).withRequiredArg();
 		parser.accepts( "http_bind_address", "the ip address the server will bind to when http reporting is configured" ).withRequiredArg();
@@ -1152,6 +1159,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.metricsReportingType = fetchStringOption("metrics_type", options, properties, null);
 		this.metricsSlf4jInterval = fetchLongOption("metrics_slf4j_interval", options, properties, 60L);
 
+		this.customHealthFactory = fetchHealthCheckFactory(options, properties);
 		this.httpPort = fetchIntegerOption("http_port", options, properties, 8080);
 		this.httpBindAddress = fetchStringOption("http_bind_address", options, properties, null);
 		this.httpPathPrefix = fetchStringOption("http_path_prefix", options, properties, "/");
@@ -1491,21 +1499,14 @@ public class MaxwellConfig extends AbstractConfig {
 		}
 	}
 
-	/**
-	 * If present in the configuration, build an instance of a custom producer factor
-	 * @param options command line arguments
-	 * @param properties properties from config.properties
-	 * @return NULL or ProducerFactory instance
-	 */
-	protected ProducerFactory fetchProducerFactory(OptionSet options, Properties properties) {
-		String name = "custom_producer.factory";
+	private <T> T fetchFactory(OptionSet options, Properties properties, String name) {
 		String strOption = fetchStringOption(name, options, properties, null);
 		if ( strOption != null ) {
 			try {
 				Class<?> clazz = Class.forName(strOption);
 				Class[] carg = new Class[0];
 				Constructor ct = clazz.getDeclaredConstructor(carg);
-				return (ProducerFactory) ct.newInstance();
+				return (T) ct.newInstance();
 			} catch ( ClassNotFoundException e ) {
 				usageForOptions("Invalid value for " + name + ", class '" + strOption + "' not found", "--" + name);
 			} catch ( IllegalAccessException | InstantiationException | ClassCastException e) {
@@ -1521,6 +1522,27 @@ public class MaxwellConfig extends AbstractConfig {
 		} else {
 			return null;
 		}
+
+	}
+	/**
+	 * If present in the configuration, build an instance of a custom producer factor
+	 * @param options command line arguments
+	 * @param properties properties from config.properties
+	 * @return NULL or ProducerFactory instance
+	 */
+	protected ProducerFactory fetchProducerFactory(OptionSet options, Properties properties) {
+		return fetchFactory(options, properties, "custom_producer.factory");
+	}
+
+
+	/**
+	 * If present in the configuration, build an instance of a custom health factory
+	 * @param options command line arguments
+	 * @param properties properties from config.properties
+	 * @return NULL or MaxwellHealthCheckFactory instance
+	 */
+	protected MaxwellHealthCheckFactory fetchHealthCheckFactory(OptionSet options, Properties properties) {
+		return fetchFactory(options, properties, "custom_health.factory");
 	}
 
 

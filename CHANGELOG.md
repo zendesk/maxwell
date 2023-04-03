@@ -1,5 +1,25 @@
 # Maxwell changelog
 
+### [v1.40.0](https://github.com/zendesk/maxwell/releases/tag/v1.40.0)
+
+- add kafka 3.4.0
+- kafka 2.7.0 is now the default kafka library
+- add custom health-check factory jar thing
+
+
+
+_Released 2023-04-02_
+
+### [v1.39.6](https://github.com/zendesk/maxwell/releases/tag/v1.39.6)
+
+- Bugfix issue where SQL query would go missing (#1973)
+- Various parser bugfixes (#1970, #1982, #1987)
+- Fix issue with renaming a primary key column (#1977)
+
+
+
+_Released 2023-03-11_
+
 ### [v1.39.5](https://github.com/zendesk/maxwell/releases/tag/v1.39.5)
 
 - a few parser fixes

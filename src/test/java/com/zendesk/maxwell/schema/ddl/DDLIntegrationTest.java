@@ -446,10 +446,13 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		requireMinimumVersion(8,0);
 		String sql[] = {
 			"CREATE TABLE foo ( i int )",
-			"ALTER TABLE foo rename column i to j"
+			"ALTER TABLE foo rename column i to j",
+			"CREATE TABLE foo_pk ( id int(11) unsigned primary KEY )",
+			"ALTER TABLE foo_pk rename column id to new_id"
 		};
 		testIntegration(sql);
 	}
+
 
 	@Test
 	public void testTableCreate() throws Exception {

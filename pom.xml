@@ -4,7 +4,7 @@
 
   <groupId>com.zendesk</groupId>
   <artifactId>maxwell</artifactId>
-  <version>1.39.5</version>
+  <version>1.40.0</version>
   <packaging>jar</packaging>
 
   <name>maxwell</name>
@@ -120,6 +120,19 @@
           <groupId>org.apache.kafka</groupId>
           <artifactId>kafka-clients</artifactId>
           <version>2.7.0</version>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>kafka-3.4.0</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.kafka</groupId>
+          <artifactId>kafka-clients</artifactId>
+          <version>3.4.0</version>
         </dependency>
       </dependencies>
     </profile>

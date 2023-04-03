@@ -31,11 +31,18 @@ When the HTTP server is enabled the following endpoints are exposed:
 
 | endpoint       | description                                                                    |
 |:---------------|:-------------------------------------------------------------------------------|
-| `/metrics`     | return all metrics as JSON                                                     |
-| `/prometheus`  | return all metrics as Prometheus format                                        |
+| `/metrics`     | GET all metrics as JSON                                                        |
+| `/prometheus`  | GET all metrics as Prometheus format                                           |
 | `/healthcheck` | run Maxwell's healthchecks.  Considered unhealthy if &gt;0 messages have failed in the last 15 minutes. |
 | `/ping`        | a simple ping test, responds with `pong`                                       |
+| `/diagnostics` | for kafka, send a fake message that measures the client to server latency      |
 
+## Custom Health Check
+Similar to the custom producer, developers can provide their own implementation of a health check.
+
+In order to register your custom health check, you must implement the `MaxwellHealthCheckFactory` interface, which is responsible for creating your custom `MaxwellHealthCheck`. Next, set the `custom_health.factory` configuration property to your `MaxwellHealthCheckFactory`'s fully qualified class name. Then add the custom `MaxwellHealthCheckFactory` JAR and all its dependencies to the $MAXWELL_HOME/lib directory.
+
+Custom health check factory and health check examples can be found here: [https://github.com/zendesk/maxwell/tree/master/src/example/com/zendesk/maxwell/example/maxwellhealthcheckfactory](https://github.com/zendesk/maxwell/tree/master/src/example/com/zendesk/maxwell/example/maxwellhealthcheckfactory)
 
 # JMX Configuration
 ***
