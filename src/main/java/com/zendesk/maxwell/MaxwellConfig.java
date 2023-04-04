@@ -935,6 +935,54 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "pubsub_emulator", "pubsub emulator host to use. default: null" )
 				.withOptionalArg();
 
+		parser.section( "output" );
+
+		parser.accepts( "output_binlog_position", "include 'position' (binlog position) field. default: false" )
+				.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_gtid_position", "include 'gtid' (gtid position) field. default: false" )
+				.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_commit_info", "include 'commit' and 'xid' field. default: true" )
+				.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_xoffset", "include 'xoffset' (row offset inside transaction) field.  depends on '--output_commit_info'. default: false" )
+				.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_nulls", "include data fields with NULL values. default: true" )
+				.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_server_id", "include 'server_id' field. default: false" )
+				.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_thread_id", "include 'thread_id' (client thread_id) field. default: false" )
+				.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_schema_id", "include 'schema_id' (unique ID for this DDL). default: false" )
+				.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_row_query", "include 'query' field (original SQL DML query).  depends on server option 'binlog_rows_query_log_events'. default: false" )
+				.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_primary_keys", "include 'primary_key' field (array of PK values). default: false" )
+				.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_primary_key_columns", "include 'primary_key_columns' field (array of PK column names). default: false" )
+				.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_null_zerodates", "convert '0000-00-00' dates/datetimes to null default: false" )
+				.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_ddl", "produce DDL records. default: false" )
+				.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_push_timestamp", "include a microsecond timestamp representing when Maxwell sent a record. default: false" )
+				.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "exclude_columns", "suppress these comma-separated columns from output" )
+				.withRequiredArg();
+		parser.accepts("secret_key", "The secret key for the AES encryption" )
+				.withRequiredArg();
+		parser.accepts("encrypt", "encryption mode: [none|data|all]. default: none" )
+				.withRequiredArg();
+		parser.accepts( "row_query_max_length", "truncates the 'query' field if it is above this length. default: false" )
+				.withOptionalArg().ofType(Boolean.class);
+
+		parser.section( "filtering" );
+
+		parser.accepts( "filter", "filter specs.  specify like \"include:db.*, exclude:*.tbl, include: foo./.*bar$/, exclude:foo.bar.baz=reject\"").withRequiredArg();
+
+		parser.accepts( "ignore_missing_schema", "Ignore missing database and table schemas.  Only use running with limited permissions." )
+				.withOptionalArg().ofType(Boolean.class);
+
+		parser.accepts( "javascript", "file containing per-row javascript to execute" ).withRequiredArg();
+
 		parser.section( "rabbitmq" );
 
 		parser.accepts( "rabbitmq_user", "Username of Rabbitmq connection. Default is guest" ).withRequiredArg();
@@ -1204,6 +1252,7 @@ public class MaxwellConfig extends AbstractConfig {
 		outputConfig.includesThreadId = fetchBooleanOption("output_thread_id", options, properties, false);
 		outputConfig.includesSchemaId = fetchBooleanOption("output_schema_id", options, properties, false);
 		outputConfig.includesRowQuery = fetchBooleanOption("output_row_query", options, properties, false);
+		outputConfig.rowQueryMaxLength = fetchIntegerOption("row_query_max_length", options, properties, 0);
 		outputConfig.includesPrimaryKeys = fetchBooleanOption("output_primary_keys", options, properties, false);
 		outputConfig.includesPrimaryKeyColumns = fetchBooleanOption("output_primary_key_columns", options, properties, false);
 		outputConfig.includesPushTimestamp = fetchBooleanOption("output_push_timestamp", options, properties, false);
