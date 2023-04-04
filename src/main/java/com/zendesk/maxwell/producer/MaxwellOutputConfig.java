@@ -24,7 +24,6 @@ public class MaxwellOutputConfig {
 	public String secretKey;
 	public boolean zeroDatesAsNull;
 	public String namingStrategy;
-	public int rowQueryMaxLength;
 	
 	public MaxwellOutputConfig() {
 		this.includesBinlogPosition = false;
@@ -44,7 +43,6 @@ public class MaxwellOutputConfig {
 		this.encryptionMode = EncryptionMode.ENCRYPT_NONE;
 		this.secretKey = null;
 		this.namingStrategy = null;
-		this.rowQueryMaxLength = 0;
 	}
 
 	public boolean encryptionEnabled() {
