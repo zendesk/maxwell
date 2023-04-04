@@ -150,13 +150,7 @@ public class RowMap implements Serializable {
 		g.writeStringField(fieldNameStrategy.apply(FieldNames.TABLE), this.table);
 
 		if ( outputConfig.includesRowQuery && this.rowQuery != null) {
-			String outputQuery;
-			if(outputConfig.rowQueryMaxLength > 0 && this.rowQuery.length() > outputConfig.rowQueryMaxLength){
-				outputQuery = this.rowQuery.substring(0,outputConfig.rowQueryMaxLength);
-			}else{
-				outputQuery = this.rowQuery;
-			}
-			g.writeStringField(fieldNameStrategy.apply(FieldNames.QUERY), outputQuery);
+			g.writeStringField(fieldNameStrategy.apply(FieldNames.QUERY), this.rowQuery);
 		}
 
 		g.writeStringField(fieldNameStrategy.apply(FieldNames.TYPE), this.rowType);
