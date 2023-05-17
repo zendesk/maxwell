@@ -59,7 +59,7 @@ public class MaxwellSNSProducerTest {
 		MaxwellContext context = mock(MaxwellContext.class);
 		when(context.getConfig()).thenReturn(new MaxwellConfig());
 		when(context.getMetrics()).thenReturn(new NoOpMetrics());
-		MaxwellSNSProducer producer = new MaxwellSNSProducer(context, TOPIC);
+		MaxwellSNSProducer producer = new MaxwellSNSProducer(context, TOPIC, "", "");
 		producer.setClient(client);
 		String payload = rowMap.toJSON();
 		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
@@ -78,7 +78,7 @@ public class MaxwellSNSProducerTest {
 		config.snsAttrs = "database,table";
 		when(context.getConfig()).thenReturn(config);
 		when(context.getMetrics()).thenReturn(new NoOpMetrics());
-		MaxwellSNSProducer producer = new MaxwellSNSProducer(context, TOPIC);
+		MaxwellSNSProducer producer = new MaxwellSNSProducer(context, TOPIC, "", "");
 		producer.setClient(client);
 		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
 		when(client.publishAsync(any())).thenReturn(mockedFuture);
@@ -97,7 +97,7 @@ public class MaxwellSNSProducerTest {
 		MaxwellContext context = mock(MaxwellContext.class);
 		when(context.getConfig()).thenReturn(new MaxwellConfig());
 		when(context.getMetrics()).thenReturn(new NoOpMetrics());
-		MaxwellSNSProducer producer = new MaxwellSNSProducer(context, FIFO_TOPIC);
+		MaxwellSNSProducer producer = new MaxwellSNSProducer(context, FIFO_TOPIC, "", "");
 		producer.setClient(client);
 		AbstractAsyncProducer.CallbackCompleter cc = mock(AbstractAsyncProducer.CallbackCompleter.class);
 		when(client.publishAsync(any())).thenReturn(mockedFuture);

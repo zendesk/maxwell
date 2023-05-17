@@ -1,5 +1,8 @@
 package com.zendesk.maxwell.producer;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.handlers.AsyncHandler;
 import com.amazonaws.services.sns.AmazonSNSAsync;
 import com.amazonaws.services.sns.AmazonSNSAsyncClientBuilder;
@@ -23,10 +26,13 @@ public class MaxwellSNSProducer extends AbstractAsyncProducer {
 	private String[] stringFelds = {"database", "table"};
 	private String[] numberFields = {"ts", "xid"};
 
-	public MaxwellSNSProducer(MaxwellContext context, String topic) {
+	public MaxwellSNSProducer(MaxwellContext context, String topic, String serviceEndpoint, String signingRegion) {
 		super(context);
 		this.topic = topic;
-		this.client = AmazonSNSAsyncClientBuilder.defaultClient();
+
+		this.client = AmazonSNSAsyncClientBuilder.standard()
+				.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(serviceEndpoint, signingRegion))
+				.build();
 	}
 
 	public void setClient(AmazonSNSAsync client) {
