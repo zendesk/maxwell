@@ -1,6 +1,6 @@
 FROM maven:3.8-jdk-11 as builder
 ENV MAXWELL_VERSION=1.40.0 KAFKA_VERSION=1.0.0
-RUN sed -i '/jessie-updates/d' /etc/apt/sources.list  # Now archived
+
 RUN apt-get update \
     && apt-get -y upgrade \
     && apt-get install -y make
