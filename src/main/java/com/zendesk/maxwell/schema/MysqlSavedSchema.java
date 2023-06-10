@@ -490,6 +490,11 @@ public class MysqlSavedSchema {
 					int columnIsSigned = rs.getInt("columnIsSigned");
 
 					if (currentDatabase == null || !currentDatabase.getName().equals(dbName)) {
+						if ( currentTable != null ) {
+							currentTable.addColumns(columns);
+							columns.clear();
+						}
+
 						currentDatabase = new Database(dbName, dbCharset);
 						this.schema.addDatabase(currentDatabase);
 						// make sure two tables named the same in different dbs are picked up.
@@ -501,6 +506,11 @@ public class MysqlSavedSchema {
 						// if tName is null, there are no tables connected to this database
 						continue;
 					} else if (currentTable == null || !currentTable.getName().equals(tName)) {
+						if ( currentTable != null ) {
+							currentTable.addColumns(columns);
+							columns.clear();
+						}
+
 						currentTable = currentDatabase.buildTable(tName, tCharset);
 						if (tPKs != null) {
 							List<String> pkList = Arrays.asList(StringUtils.split(tPKs, ','));
@@ -547,7 +557,8 @@ public class MysqlSavedSchema {
 					columns.add(c);
 
 				}
-				currentTable.addColumns(columns);
+				if ( currentTable != null )
+					currentTable.addColumns(columns);
 				LOGGER.debug("Restored all databases");
 			}
 		}
