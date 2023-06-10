@@ -243,6 +243,10 @@ public class Table {
 		columns.add(columns.size(), definition);
 	}
 
+	public void addColumns(List<ColumnDef> definitions) {
+		columns.addAll(definitions);
+	}
+
 	public void removeColumn(int idx) {
 		ColumnDef toRemove = columns.get(idx);
 		removePKColumn(toRemove.getName());

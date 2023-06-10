@@ -8,6 +8,7 @@ import java.io.IOException;
 import com.github.shyiko.mysql.binlog.GtidSet;
 
 import com.fasterxml.jackson.databind.JavaType;
+import com.mysql.cj.xdevapi.Column;
 import com.zendesk.maxwell.CaseSensitivity;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.replication.Position;
@@ -468,6 +469,7 @@ public class MysqlSavedSchema {
 				Database currentDatabase = null;
 				Table currentTable = null;
 				short columnIndex = 0;
+				ArrayList<ColumnDef> columns = new ArrayList<>();
 
 				while (rs.next()) {
 					// Database
@@ -517,7 +519,7 @@ public class MysqlSavedSchema {
 					if (rs.wasNull()) {
 						columnLength = null;
 					} else {
-						columnLength = Long.valueOf(columnLengthInt);
+						columnLength = (long) columnLengthInt;
 					}
 
 					String[] enumValues = null;
@@ -542,9 +544,10 @@ public class MysqlSavedSchema {
 							enumValues,
 							columnLength
 					);
-					currentTable.addColumn(c);
+					columns.add(c);
 
 				}
+				currentTable.addColumns(columns);
 				LOGGER.debug("Restored all databases");
 			}
 		}
