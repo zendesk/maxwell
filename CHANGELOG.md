@@ -1,5 +1,14 @@
 # Maxwell changelog
 
+### [v1.40.1](https://github.com/zendesk/maxwell/releases/tag/v1.40.1)
+
+- row query gets a max length
+- schema capture speed improvement
+
+
+
+_Released 2023-06-10_
+
 ### [v1.40.0](https://github.com/zendesk/maxwell/releases/tag/v1.40.0)
 
 - add kafka 3.4.0
