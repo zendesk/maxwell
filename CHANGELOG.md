@@ -1,13 +1,12 @@
 # Maxwell changelog
 
-### [v1.40.1](https://github.com/zendesk/maxwell/releases/tag/v1.40.1)
+### [v1.40.2](https://github.com/zendesk/maxwell/releases/tag/v1.40.2)
 
-- row query gets a max length
-- schema capture speed improvement
-
+- fix dumb bug in last release
 
 
-_Released 2023-06-10_
+
+_Released 2023-06-11_
 
 ### [v1.40.0](https://github.com/zendesk/maxwell/releases/tag/v1.40.0)
 
