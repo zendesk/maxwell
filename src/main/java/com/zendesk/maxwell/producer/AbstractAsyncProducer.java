@@ -30,20 +30,18 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 
 		public void markCompleted() {
 			inflightMessages.freeSlot(messageID);
-			if(isTXCommit) {
-				InflightMessageList.InflightMessage message = inflightMessages.completeMessage(position);
+			InflightMessageList.InflightMessage message = inflightMessages.completeMessage(position);
 
-				if (message != null) {
-					context.setPosition(message.position);
-					long currentTime = System.currentTimeMillis();
-					long endToEndLatency = currentTime - message.eventTimeMS;
+			if (message != null && this.isTXCommit) {
+				context.setPosition(message.position);
+				long currentTime = System.currentTimeMillis();
+				long endToEndLatency = currentTime - message.eventTimeMS;
 
-					messagePublishTimer.update(currentTime - message.sendTimeMS, TimeUnit.MILLISECONDS);
-					messageLatencyTimer.update(Math.max(0L, endToEndLatency - 500L), TimeUnit.MILLISECONDS);
+				messagePublishTimer.update(currentTime - message.sendTimeMS, TimeUnit.MILLISECONDS);
+				messageLatencyTimer.update(Math.max(0L, endToEndLatency - 500L), TimeUnit.MILLISECONDS);
 
-					if (endToEndLatency > metricsAgeSloMs) {
-						messageLatencySloViolationCount.inc();
-					}
+				if (endToEndLatency > metricsAgeSloMs) {
+					messageLatencySloViolationCount.inc();
 				}
 			}
 		}
@@ -84,9 +82,7 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 
 		long messageID = inflightMessages.waitForSlot();
 
-		if(r.isTXCommit()) {
-			inflightMessages.addMessage(position, r.getTimestampMillis(), messageID);
-		}
+		inflightMessages.addMessage(position, r.getTimestampMillis(), messageID);
 
 		CallbackCompleter cc = new CallbackCompleter(inflightMessages, position, r.isTXCommit(), context, messageID);
 
