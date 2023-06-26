@@ -520,6 +520,9 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 						// We don't need to process them, just ignore
 					} else if (upperCaseSql.startsWith("DROP TEMPORARY TABLE")) {
 						// Ignore temporary table drop statements inside transactions
+					} else if ( upperCaseSql.equals("ROLLBACK") ) {
+						LOGGER.debug("rolling back transaction inside binlog.");
+						return new RowMapBuffer(0);
 					} else {
 						LOGGER.warn("Unhandled QueryEvent @ {} inside transaction: {}", event.getPosition().fullPosition(), qe);
 					}
