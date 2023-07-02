@@ -202,7 +202,7 @@ public class NatsProducerTest {
 	}
 
 	private RowMap newRowMap() {
-		return new RowMap("insert", "testDb", "testTable", System.currentTimeMillis(), Collections.emptyList(), new Position(new BinlogPosition(3, "mysql.1"), 0L));
+		return new RowMap("insert", "testDb", "testTable", System.currentTimeMillis(), Collections.emptyList(), new Position(new BinlogPosition(3, "mysql.1"), 0L, 0L));
 	}
 
 }

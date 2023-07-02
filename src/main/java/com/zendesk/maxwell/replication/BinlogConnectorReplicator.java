@@ -63,6 +63,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 	private Position lastHeartbeatPosition;
 	private final HeartbeatNotifier heartbeatNotifier;
+	private Position startPosition;
 	private Long stopAtHeartbeat;
 	private Filter filter;
 	private Boolean ignoreMissingSchema;
@@ -85,6 +86,11 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		Pattern.compile("^CREATE\\s+TABLE", Pattern.CASE_INSENSITIVE);
 
 	private boolean isConnected = false;
+
+	@Override
+	public StopPriority getStopPriority() {
+		return StopPriority.BINLOG;
+	}
 
 	private class ClientReconnectedException extends Exception {}
 
@@ -182,6 +188,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		this.client.setUseSendAnnotateRowsEvent(true);
 
 
+		this.startPosition = start;
 		BinlogPosition startBinlog = start.getBinlogPosition();
 		if (startBinlog.getGtidSetStr() != null) {
 			String gtidStr = startBinlog.getGtidSetStr();
@@ -408,8 +415,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 			data.getDatabase(),
 			data.getSql(),
 			this.schemaStore,
-			Position.valueOf(event.getPosition(), getLastHeartbeatRead()),
-			Position.valueOf(event.getNextPosition(), getLastHeartbeatRead()),
+			Position.valueOf(event.getPosition(), getLastHeartbeatRead(), 0L),
+			Position.valueOf(event.getNextPosition(), getLastHeartbeatRead(), 0L),
 			event.getEvent().getHeader().getTimestamp()
 		);
 	}
@@ -522,6 +529,14 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		throw new TimeoutException("Maximum reconnection attempts reached.");
 	}
 
+	private long getTXOffset(BinlogConnectorEvent event) {
+		if ( event.getPosition() == startPosition.getBinlogPosition() ) {
+			return startPosition.getTXOffset();
+		} else {
+			return 0;
+		}
+	}
+
 	/**
 	 * Get a batch of rows for the current transaction.
 	 *
@@ -534,11 +549,13 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	 * @return A RowMapBuffer of rows; either in-memory or on disk.
 	 */
 
-	private RowMapBuffer getTransactionRows(BinlogConnectorEvent beginEvent) throws Exception {
+	private RowMapBuffer getTransactionRows(BinlogConnectorEvent beginEvent, long startTXOffset) throws Exception {
 		BinlogConnectorEvent event;
+		BinlogPosition lastTableMapPosition = null;
 		RowMapBuffer buffer = new RowMapBuffer(MAX_TX_ELEMENTS, this.bufferMemoryUsage);
 
 		String currentQuery = null;
+		long txOffset = 0;
 
 		while ( true ) {
 			event = pollEvent();
@@ -551,7 +568,9 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 			EventType eventType = event.getEvent().getHeader().getEventType();
 			if (event.isCommitEvent()) {
 				if (!buffer.isEmpty()) {
-					buffer.getLast().setTXCommit();
+					RowMap lastRow = buffer.getLast();
+					lastRow.setTXCommit();
+					lastRow.updateNextPosition(event.getNextPosition());
 					long timeSpent = buffer.getLast().getTimestampMillis() - beginEvent.getEvent().getHeader().getTimestamp();
 					transactionExecutionTime.update(timeSpent);
 					transactionRowCount.update(buffer.size());
@@ -574,22 +593,27 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					if ( table != null && shouldOutputEvent(table.getDatabase(), table.getName(), filter, table.getColumnNames()) ) {
 						List<RowMap> rows;
 						try {
-							rows = event.jsonMaps(table, getLastHeartbeatRead(), currentQuery);
+							rows = event.jsonMaps(table, getLastHeartbeatRead(), currentQuery, lastTableMapPosition);
 						} catch ( ColumnDefCastException e ) {
 							logColumnDefCastException(table, e);
 
 							throw(e);
 						}
 
-						for ( RowMap r : rows )
-							if (shouldOutputRowMap(table.getDatabase(), table.getName(), r, filter)) {
-								buffer.add(r);
+						for ( RowMap r : rows ) {
+							r.setXoffset(txOffset++);
+							if ( shouldOutputRowMap(table.getDatabase(), table.getName(), r, filter) ) {
+								if ( startTXOffset <= r.getXoffset() ) {
+									buffer.add(r);
+								}
 							}
+						}
 					}
 					break;
 				case TABLE_MAP:
 					TableMapEventData data = event.tableMapData();
 					tableCache.processEvent(getSchema(), this.filter, this.ignoreMissingSchema, data.getTableId(), data.getDatabase(), data.getTable());
+					lastTableMapPosition = event.getPosition();
 					break;
 				case ROWS_QUERY:
 					RowsQueryEventData rqed = event.getEvent().getData();
@@ -699,6 +723,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 				}
 			}
 
+
 			switch (event.getType()) {
 				case WRITE_ROWS:
 				case EXT_WRITE_ROWS:
@@ -706,22 +731,29 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 				case EXT_UPDATE_ROWS:
 				case DELETE_ROWS:
 				case EXT_DELETE_ROWS:
-					LOGGER.warn("Started replication stream inside a transaction.  This shouldn't normally happen.");
-					LOGGER.warn("Assuming new transaction at unexpected event:" + event);
+					LOGGER.warn("Started replication stream inside a transaction, probably recovering from stopping inside transaction.");
 
 					queue.offerFirst(event);
-					rowBuffer = getTransactionRows(event);
+					rowBuffer = getTransactionRows(event, getTXOffset(event));
 					break;
 				case TABLE_MAP:
 					TableMapEventData data = event.tableMapData();
 					tableCache.processEvent(getSchema(), this.filter,this.ignoreMissingSchema, data.getTableId(), data.getDatabase(), data.getTable());
+
+					/* starting inside a transaction, should be pointing at a table map event. */
+					if ( startPosition != null && startPosition.getTXOffset() > 0 ) {
+						queue.offerFirst(event);
+						rowBuffer = getTransactionRows(event, startPosition.getTXOffset());
+					}
+
+					startPosition = null;
 					break;
 				case QUERY:
 					QueryEventData qe = event.queryData();
 					String sql = qe.getSql();
 					if (BinlogConnectorEvent.BEGIN.equals(sql)) {
 						try {
-							rowBuffer = getTransactionRows(event);
+							rowBuffer = getTransactionRows(event, getTXOffset(event));
 						} catch ( ClientReconnectedException e ) {
 							// rowBuffer should already be empty by the time we get to this switch
 							// statement, but we null it for clarity
@@ -740,7 +772,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					MariadbGtidEventData g = event.mariaGtidData();
 					if ( (g.getFlags() & MariadbGtidEventData.FL_STANDALONE) == 0 ) {
 						try {
-							rowBuffer = getTransactionRows(event);
+							rowBuffer = getTransactionRows(event, getTXOffset(event));
 						} catch ( ClientReconnectedException e ) {
 							// rowBuffer should already be empty by the time we get to this switch
 							// statement, but we null it for clarity

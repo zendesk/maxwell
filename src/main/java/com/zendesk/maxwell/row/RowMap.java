@@ -340,10 +340,15 @@ public class RowMap implements Serializable {
 
 	public void setXoffset(Long xoffset) {
 		this.xoffset = xoffset;
+		nextPosition = nextPosition.withTXOffset(xoffset + 1);
 	}
 
 	public void setTXCommit() {
 		this.txCommit = true;
+	}
+
+	public void updateNextPosition(BinlogPosition newPosition) {
+		nextPosition = Position.valueOf(newPosition, nextPosition.getLastHeartbeatRead(), 0L);
 	}
 
 	public boolean isTXCommit() {

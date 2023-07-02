@@ -203,4 +203,9 @@ public class MysqlSchemaCompactor extends RunLoopProcess {
 			}
 		} catch ( InterruptedException e ) {}
 	}
+
+	@Override
+	public StopPriority getStopPriority() {
+		return StopPriority.SUPPORT;
+	}
 }

@@ -167,11 +167,19 @@ public class BinlogConnectorEvent {
 		return map;
 	}
 
-	public List<RowMap> jsonMaps(Table table, long lastHeartbeatRead, String rowQuery) throws ColumnDefCastException {
+	public List<RowMap> jsonMaps(Table table, long lastHeartbeatRead, String rowQuery, BinlogPosition lastTableMapPosition) throws ColumnDefCastException {
 		ArrayList<RowMap> list = new ArrayList<>();
 
-		Position position     = Position.valueOf(this.position, lastHeartbeatRead);
-		Position nextPosition = Position.valueOf(this.nextPosition, lastHeartbeatRead);
+		Position position     = Position.valueOf(this.position, lastHeartbeatRead, 0L);
+		/*
+			at creation time we don't know if we're a row event that wants to "commit" --
+			ie advance the binlog position pointer.  If we're not in a "commit this row"
+
+			is the current position (with a skip-row offset in txOffset).
+			After we process the commit event we'll make the last row in the event bump the
+			binlog pointer.
+		 */
+		Position nextPosition = Position.valueOf(lastTableMapPosition, lastHeartbeatRead, 0L);
 
 		switch ( getType() ) {
 			case WRITE_ROWS:
