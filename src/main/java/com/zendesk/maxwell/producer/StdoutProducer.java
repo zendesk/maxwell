@@ -23,6 +23,5 @@ public class StdoutProducer extends AbstractProducer {
 		);
 
 		this.context.setPosition(r);
-		Thread.sleep(1);
 	}
 }
