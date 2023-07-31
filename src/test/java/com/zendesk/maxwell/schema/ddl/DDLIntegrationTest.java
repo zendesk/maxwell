@@ -39,6 +39,8 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 			"alter table shard_1.testAlter add column thiswillbeutf16 text, engine=`innodb` CHARACTER SET utf16",
 			"alter table shard_1.testAlter rename to shard_1.`freedonia`",
 			"rename table shard_1.`freedonia` to shard_1.ducksoup, shard_1.ducksoup to shard_1.`nananana`",
+			"rename tables shard_1.`nananana` to shard_1.ducksoup, shard_1.ducksoup to shard_1.`freedonia`",
+			"rename tables shard_1.`freedonia` to shard_1.ducksoup, shard_1.ducksoup to shard_1.`nananana`",
 			"alter table shard_1.nananana drop column barbar",
 
 			"create table shard_2.weird_rename ( str mediumtext )",
