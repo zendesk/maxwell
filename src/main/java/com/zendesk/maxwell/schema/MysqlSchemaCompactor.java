@@ -97,7 +97,7 @@ public class MysqlSchemaCompactor extends RunLoopProcess {
 			return null;
 		}
 
-		String schemaSql = "select id, binlog_file, binlog_position, gtid_set, 0 as last_heartbeat_read "
+		String schemaSql = "select id, binlog_file, binlog_position, gtid_set, 0 as last_heartbeat_read, tx_offset "
 				+ " from `schemas` where `server_id` = " + this.serverID
 				+ " order by id desc limit 1";
 		final Long schemaID;
