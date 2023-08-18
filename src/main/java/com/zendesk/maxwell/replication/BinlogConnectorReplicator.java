@@ -529,14 +529,6 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		throw new TimeoutException("Maximum reconnection attempts reached.");
 	}
 
-	private long getTXOffset(BinlogConnectorEvent event) {
-		if ( event.getPosition() == startPosition.getBinlogPosition() ) {
-			return startPosition.getTXOffset();
-		} else {
-			return 0;
-		}
-	}
-
 	/**
 	 * Get a batch of rows for the current transaction.
 	 *
@@ -687,6 +679,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	 * @return either a RowMap or null
 	 */
 	public RowMap getRow() throws Exception {
+		long txOffset;
 		BinlogConnectorEvent event;
 
 		if ( stopOnEOF && hitEOF )
@@ -734,26 +727,35 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					LOGGER.warn("Started replication stream inside a transaction, probably recovering from stopping inside transaction.");
 
 					queue.offerFirst(event);
-					rowBuffer = getTransactionRows(event, getTXOffset(event));
+					rowBuffer = getTransactionRows(event, 0);
 					break;
 				case TABLE_MAP:
 					TableMapEventData data = event.tableMapData();
 					tableCache.processEvent(getSchema(), this.filter,this.ignoreMissingSchema, data.getTableId(), data.getDatabase(), data.getTable());
 
-					/* starting inside a transaction, should be pointing at a table map event. */
 					if ( startPosition != null && startPosition.getTXOffset() > 0 ) {
-						queue.offerFirst(event);
+						LOGGER.info("Restarting maxwell inside transaction: {}", startPosition);
+						queue.offerFirst(event); // put table map back on top of queue
 						rowBuffer = getTransactionRows(event, startPosition.getTXOffset());
 					}
 
 					startPosition = null;
 					break;
 				case QUERY:
+					txOffset = 0;
 					QueryEventData qe = event.queryData();
 					String sql = qe.getSql();
+
+					if ( startPosition != null && startPosition.getTXOffset() > 0 ) {
+						LOGGER.info("Restarting maxwell inside transaction: {}", startPosition);
+						txOffset = startPosition.getTXOffset();;
+					}
+
+					startPosition = null;
+
 					if (BinlogConnectorEvent.BEGIN.equals(sql)) {
 						try {
-							rowBuffer = getTransactionRows(event, getTXOffset(event));
+							rowBuffer = getTransactionRows(event, txOffset);
 						} catch ( ClientReconnectedException e ) {
 							// rowBuffer should already be empty by the time we get to this switch
 							// statement, but we null it for clarity
@@ -771,8 +773,17 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					// in mariaDB the GTID event supplants the normal BEGIN
 					MariadbGtidEventData g = event.mariaGtidData();
 					if ( (g.getFlags() & MariadbGtidEventData.FL_STANDALONE) == 0 ) {
+						txOffset = 0;
+
+						if ( startPosition != null && startPosition.getTXOffset() > 0 ) {
+							LOGGER.info("Restarting maxwell inside transaction: {}", startPosition);
+							txOffset = startPosition.getTXOffset();;
+						}
+
+						startPosition = null;
+
 						try {
-							rowBuffer = getTransactionRows(event, getTXOffset(event));
+							rowBuffer = getTransactionRows(event, txOffset);
 						} catch ( ClientReconnectedException e ) {
 							// rowBuffer should already be empty by the time we get to this switch
 							// statement, but we null it for clarity
