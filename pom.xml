@@ -43,7 +43,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <mockito.version>3.12.4</mockito.version>
     <opencensus.version>0.28.3</opencensus.version>
-    <aws-java.version>1.12.327</aws-java.version>
+    <aws-java.version>1.12.537</aws-java.version>
   </properties>
 
   <profiles>
@@ -272,7 +272,7 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>amazon-kinesis-producer</artifactId>
-      <version>0.14.0</version>
+      <version>0.15.7</version>
     </dependency>
     <dependency>
       <groupId>javax.xml.bind</groupId>
