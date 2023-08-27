@@ -1,4 +1,7 @@
-# Reconfiguring a running mysql instance:
+# Runtime reconfiguration
+
+If you've already got binlogs enabled and don't want to restart your mysql to
+configure maxwell, try this:
 
 ```
 mysql> set global binlog_format=ROW;
