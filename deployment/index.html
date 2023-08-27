@@ -38,7 +38,7 @@
                                 <a href="../quickstart/" class="nav-link">Quick Start</a>
                             </li>
                             <li class="dropdown active">
-                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Configuration <b class="caret"></b></a>
+                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Documentation <b class="caret"></b></a>
                                 <ul class="dropdown-menu">
                                     
 <li>
@@ -130,7 +130,7 @@
     <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
         <ul class="nav flex-column">
             
-            <li class="nav-item" data-level="1"><a href="#reconfiguring-a-running-mysql-instance" class="nav-link">Reconfiguring a running mysql instance:</a>
+            <li class="nav-item" data-level="1"><a href="#runtime-reconfiguration" class="nav-link">Runtime reconfiguration</a>
               <ul class="nav flex-column">
               </ul>
             </li>
@@ -172,7 +172,9 @@
     <div id="Deployment">
         
 
-<h1 id="reconfiguring-a-running-mysql-instance">Reconfiguring a running mysql instance:</h1>
+<h1 id="runtime-reconfiguration">Runtime reconfiguration</h1>
+<p>If you've already got binlogs enabled and don't want to restart your mysql to
+configure maxwell, try this:</p>
 <pre><code>mysql&gt; set global binlog_format=ROW;
 mysql&gt; set global binlog_row_image=FULL;
 </code></pre>
