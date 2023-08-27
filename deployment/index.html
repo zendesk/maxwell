@@ -220,10 +220,10 @@ different configurations.  This can be useful if you wish to have producers
 running in different configurations, for example producing different groups of
 tables to different topics.  Each instance of Maxwell must be configured with a
 unique <code>client_id</code>, in order to store unique binlog positions.</p>
-<p>With MySQL 5.5 and below, each replicator (be it mysql, maxwell, whatever) must
-also be configured with a unique <code>replica_server_id</code>.  This is a 32-bit integer
-that corresponds to mysql's <code>server_id</code> parameter.  The value you configure
-should be unique across all mysql and maxwell instances.</p>
+<p>Each version of Maxwell must also be configured with a unique
+<code>replica_server_id</code>.  This is a 32-bit integer that corresponds to mysql's
+<code>server_id</code> parameter.  The value should be unique across all maxwell instances
+and also be unique from any mysql <code>server_id</code> values.</p>
 <h1 id="-init_position"><code>--init_position</code></h1>
 <p>This is a dangerous option that you really shouldn't use unless you know what
 you're doing.  It allows you to "rewind" history and go back to a certain point
