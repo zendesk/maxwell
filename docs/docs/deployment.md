@@ -61,10 +61,10 @@ running in different configurations, for example producing different groups of
 tables to different topics.  Each instance of Maxwell must be configured with a
 unique `client_id`, in order to store unique binlog positions.
 
-With MySQL 5.5 and below, each replicator (be it mysql, maxwell, whatever) must
-also be configured with a unique `replica_server_id`.  This is a 32-bit integer
-that corresponds to mysql's `server_id` parameter.  The value you configure
-should be unique across all mysql and maxwell instances.
+Each version of Maxwell must also be configured with a unique
+`replica_server_id`.  This is a 32-bit integer that corresponds to mysql's
+`server_id` parameter.  The value should be unique across all maxwell instances
+and also be unique from any mysql `server_id` values.
 
 # `--init_position`
 
