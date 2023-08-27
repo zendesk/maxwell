@@ -1,5 +1,15 @@
 # Maxwell changelog
 
+### [v1.40.3](https://github.com/zendesk/maxwell/releases/tag/v1.40.3)
+
+- bugfix for "rename tables"
+- bugfix for temporary tables that rollback inside transactions
+- sns+localstack support
+
+
+
+_Released 2023-08-27_
+
 ### [v1.40.2](https://github.com/zendesk/maxwell/releases/tag/v1.40.2)
 
 - fix dumb bug in last release
