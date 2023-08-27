@@ -1,9 +1,6 @@
 # Kafka
 ***
 
-The Kafka producer is perhaps the most production hardened of all the producers,
-having run on high traffic instances at WEB scale.
-
 ## Topic
 Maxwell writes to a kafka topic named "maxwell" by default. It is configurable
 via `--kafka_topic`.  The given topic can be a plain string or a dynamic
