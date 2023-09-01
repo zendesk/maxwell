@@ -1,5 +1,13 @@
 # Maxwell changelog
 
+### [v1.40.4](https://github.com/zendesk/maxwell/releases/tag/v1.40.4)
+
+- add support for mariadb's DROP COLUMN IF EXISTS
+
+
+
+_Released 2023-09-01_
+
 ### [v1.40.3](https://github.com/zendesk/maxwell/releases/tag/v1.40.3)
 
 - bugfix for "rename tables"
