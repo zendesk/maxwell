@@ -186,6 +186,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testDropColumnIfExists() throws Exception {
+		assumeTrue(MysqlIsolatedServer.getVersion().isMariaDB);
 		String sql[] = {
 			"CREATE TABLE t ( a varchar(255), b int)",
 			"ALTER TABLE t drop column if exists aa",
