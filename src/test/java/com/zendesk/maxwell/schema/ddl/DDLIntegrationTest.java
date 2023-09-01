@@ -185,6 +185,17 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
+	public void testDropColumnIfExists() throws Exception {
+		String sql[] = {
+			"CREATE TABLE t ( a varchar(255), b int)",
+			"ALTER TABLE t drop column if exists aa",
+			"ALTER TABLE t drop column if exists b, drop column if exists nothere"
+		};
+		testIntegration(sql);
+
+	}
+
+	@Test
 	public void testAddQualifiedColumn() throws Exception {
 		MaxwellTestSupport.assertMaximumVersion(server, new MysqlVersion(8, 0));
 
