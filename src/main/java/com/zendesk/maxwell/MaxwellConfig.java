@@ -856,7 +856,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.separator();
 
-		parser.accepts( "kafka_version", "kafka client library version: 0.8.2.2|0.9.0.1|0.10.0.1|0.10.2.1|0.11.0.1|1.0.0")
+		parser.accepts( "kafka_version", "kafka client library version: 0.8.2.2|0.9.0.1|0.10.0.1|0.10.2.1|0.11.0.1|1.0.0|2.7.0|3.4.0")
 				.withRequiredArg();
 		parser.accepts( "kafka_key_format", "how to format the kafka key; array|hash" )
 				.withRequiredArg();
