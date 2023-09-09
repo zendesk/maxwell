@@ -1,5 +1,13 @@
 # Maxwell changelog
 
+### [v1.40.5](https://github.com/zendesk/maxwell/releases/tag/v1.40.5)
+
+- Fix a bug introduced in v1.40.2 in the kafka producer.
+
+
+
+_Released 2023-09-09_
+
 ### [v1.40.4](https://github.com/zendesk/maxwell/releases/tag/v1.40.4)
 
 - add support for mariadb's DROP COLUMN IF EXISTS
