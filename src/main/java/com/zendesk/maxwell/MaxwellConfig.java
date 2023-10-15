@@ -769,6 +769,8 @@ public class MaxwellConfig extends AbstractConfig {
 			.withOptionalArg().ofType(Boolean.class);
 		parser.accepts( "output_push_timestamp", "include a microsecond timestamp representing when Maxwell sent a record. default: false" )
 			.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_naming_strategy", "optionally use an alternate name for fields: underscore_to_camelcase" )
+			.withOptionalArg().ofType(String.class);
 		parser.accepts( "exclude_columns", "suppress these comma-separated columns from output" )
 			.withRequiredArg();
 		parser.accepts("secret_key", "The secret key for the AES encryption" )
