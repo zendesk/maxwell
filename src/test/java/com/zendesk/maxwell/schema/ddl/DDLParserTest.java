@@ -268,7 +268,8 @@ public class DDLParserTest {
 			"ALTER TABLE tournaments ADD INDEX idx_team_name ((col1 * 40) DESC)",
 			"CREATE TABLE employees (data JSON, INDEX idx ((CAST(data->>'$.name' AS CHAR(30)) COLLATE utf8mb4_bin)))",
 			"ALTER TABLE tasks DROP COLUMN IF EXISTS snoozed_until",
-			"ALTER TABLE outgoing_notifications_log ADD INDEX idx_campaign_updated (campaign, last_updated_at) ALGORITHM=NOCOPY,LOCK=NONE"
+			"ALTER TABLE outgoing_notifications_log ADD INDEX idx_campaign_updated (campaign, last_updated_at) ALGORITHM=NOCOPY,LOCK=NONE",
+			"alter table test.c ALGORITHM=COPY, STATS_SAMPLE_PAGES=DEFAULT"
 		};
 
 		for ( String s : testSQL ) {

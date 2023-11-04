@@ -49,7 +49,6 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 			"create table shard_1.testDrop ( id int(11) )",
 			"drop table shard_1.testDrop",
 			"create table test.c ( v varchar(255) charset ascii )",
-			"alter table test.c ALGORITHM=COPY, STATS_SAMPLE_PAGES=DEFAULT"
 		};
 		testIntegration(sql);
 	}
