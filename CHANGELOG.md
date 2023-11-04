@@ -1,5 +1,14 @@
 # Maxwell changelog
 
+### [v1.40.6](https://github.com/zendesk/maxwell/releases/tag/v1.40.6)
+
+- fix 2 parser bugs
+- upgrade jackson for security
+
+
+
+_Released 2023-11-04_
+
 ### [v1.40.5](https://github.com/zendesk/maxwell/releases/tag/v1.40.5)
 
 - Fix a bug introduced in v1.40.2 in the kafka producer.
