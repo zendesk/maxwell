@@ -4,6 +4,8 @@ import org.junit.Test;
 
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
+import com.zendesk.maxwell.schema.ddl.DDLMap;
+import com.zendesk.maxwell.schema.ddl.ResolvedTableAlter;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -26,7 +28,7 @@ public class ScriptingTest {
 	@Test
 	public void TestScripting() throws Exception {
 		// Write a simple scripting file
-		Scripting scripting = new Scripting("src/test/resources/scripting/test.js");
+		Scripting scripting = new Scripting("src/test/resources/scripting/test-set-state.js");
 
 		// String type, String database, String table, Long timestampMillis, List<String> pkColumns, Position position, Position nextPosition, String rowQuery
 		RowMap row = new RowMap(
@@ -49,9 +51,36 @@ public class ScriptingTest {
 	}
 
 	@Test
+	public void TestScriptingDDL() throws Exception {
+		// Write a simple scripting file
+		Scripting scripting = new Scripting("src/test/resources/scripting/test-set-state.js");
+
+		// String type, String database, String table, Long timestampMillis, List<String> pkColumns, Position position, Position nextPosition, String rowQuery
+		RowMap row = new DDLMap(
+			new ResolvedTableAlter(),
+			123L,
+			"INSERT INTO mytable VALUES (1, 2, 3)",
+			new Position(null, 0),
+			new Position(null, 0),
+			13L
+		);
+
+			
+		// Access the private globalJavascriptState field
+		LinkedHashMap<String, Object> globalJavascriptState = 
+			getPrivateFieldOrFail(scripting, "globalJavascriptState");
+
+		globalJavascriptState.put("number", "1");
+
+		scripting.invoke(row);
+
+		assertEquals(globalJavascriptState.get("number"), "2");
+	}
+
+	@Test
 	public void DontFailIfScriptHasNoStateParameter() throws Exception {
 		// Write a simple scripting file
-		Scripting scripting = new Scripting("src/test/resources/scripting/test-no-state.js");
+		Scripting scripting = new Scripting("src/test/resources/scripting/test-no-state-suppress-row.js");
 
 		// String type, String database, String table, Long timestampMillis, List<String> pkColumns, Position position, Position nextPosition, String rowQuery
 		RowMap row = new RowMap(
