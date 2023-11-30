@@ -1,5 +1,14 @@
 # Maxwell changelog
 
+### [v1.41.0](https://github.com/zendesk/maxwell/releases/tag/v1.41.0)
+
+- javascript filters are now passed a second, optional dicionary
+  argument which persists between filter invocations.
+
+
+
+_Released 2023-11-30_
+
 ### [v1.40.6](https://github.com/zendesk/maxwell/releases/tag/v1.40.6)
 
 - fix 2 parser bugs
