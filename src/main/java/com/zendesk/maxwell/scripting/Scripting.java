@@ -54,9 +54,9 @@ public class Scripting {
 
 	public void invoke(RowMap row) {
 		if ( row instanceof HeartbeatRowMap && processHeartbeatFunc != null )
-			processHeartbeatFunc.call(null, new WrappedHeartbeatMap((HeartbeatRowMap) row));
+			processHeartbeatFunc.call(null, new WrappedHeartbeatMap((HeartbeatRowMap) row), globalJavascriptState);
 		else if ( row instanceof DDLMap && processDDLFunc != null )
-			processDDLFunc.call(null, new WrappedDDLMap((DDLMap) row));
+			processDDLFunc.call(null, new WrappedDDLMap((DDLMap) row), globalJavascriptState);
 		else if ( row instanceof RowMap && processRowFunc != null )
 			processRowFunc.call(null, new WrappedRowMap(row), globalJavascriptState);
 	}
