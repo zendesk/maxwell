@@ -1,6 +1,12 @@
-### Using the maxwell-bootstrap utility
+# Bootstrapping
+
+Maxwell allows you to "bootstrap" data into your stream.  This will perform a
+`select * from table` and output the results into your stream, allowing you
+to recreate your entire dataset by playing the stream from the start.
+
+# Using the maxwell-bootstrap utility
 ***
-You can use the `maxwell-bootstrap` utility to bootstrap tables from the command-line.
+You can use the `maxwell-bootstrap` utility to begin boostrap operations from the command-line.
 
 option                                        | description
 --------------------------------------------- | -----------
@@ -15,7 +21,7 @@ option                                        | description
 --client_id CLIENT_ID                         | specify which maxwell instance should perform the bootstrap operation
 --comment COMMENT                             | arbitrary comment to be added to every bootstrap row record
 
-### Starting a table bootstrap
+## Starting a table bootstrap
 ***
 You can start a bootstrap using:
 
@@ -40,14 +46,21 @@ Note that if a Maxwell client_id has been set you should specify the client id.
 mysql> insert into maxwell.bootstrap (database_name, table_name, client_id) values ('fooDB', 'barTable', 'custom_maxwell_client_id');
 ```
 
-### Async vs Sync bootstrapping
+You can schedule bootstrap tasks to be run in the future by setting the started_at column. Maxwell will wait until this time to start the bootstrap.
+
+```
+mysql> insert into maxwell.bootstrap (database_name, table_name, client_id, started_at) values ('fooDB', 'barTable', 'custom_maxwell_client_id', '2020-05-18 12:30:00');
+```
+
+
+# Async vs Sync bootstrapping
 ***
 The Maxwell replicator is single threaded; events are captured by one thread from the binlog and replicated to Kafka one message at a time.
 When running Maxwell with `--bootstrapper=sync`, the same thread is used to do bootstrapping, meaning that all binlog events are blocked until bootstrapping is complete.
 Running Maxwell with `--bootstrapper=async` however, will make Maxwell spawn a separate thread for bootstrapping.
 In this async mode, non-bootstrapped tables are replicated as normal by the main thread, while the binlog events for bootstrapped tables are queued and sent to the replication stream at the end of the bootstrap process.
 
-### Bootstrapping Data Format
+# Bootstrapping Data Format
 ***
 
 * a bootstrap starts with an event of `type = "bootstrap-start"`
@@ -71,7 +84,7 @@ Corresponding replication stream output of table `fooDB.barTable`:
 {"database":"fooDB","table":"barTable","type":"bootstrap-complete","ts":1450557744,"data":{}}
 ```
 
-### Failure Scenarios
+# Failure Scenarios
 ***
 If Maxwell crashes during bootstrapping the next time it runs it will rerun the bootstrap in its entirety - regardless of previous progress.
 If this behavior is not desired, manual updates to the `bootstrap` table are required.

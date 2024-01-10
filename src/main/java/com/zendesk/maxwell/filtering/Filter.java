@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Filter {
 	static final Logger LOGGER = LoggerFactory.getLogger(Filter.class);
@@ -25,6 +26,19 @@ public class Filter {
 		this();
 		this.maxwellDB = maxwellDB;
 		patterns.addAll(new FilterParser(filterString).parse());
+	}
+
+	@Override
+	public String toString() {
+		return patterns.stream()
+			.map(FilterPattern::toString)
+			.collect(Collectors.joining(", "));
+	}
+
+	public void set(String filterString) throws InvalidFilterException {
+		List<FilterPattern> parsedFilter = new FilterParser(filterString).parse();
+		this.patterns.clear();
+		this.patterns.addAll(parsedFilter);
 	}
 
 	public boolean isSystemWhitelisted(String database, String table) {
@@ -130,68 +144,5 @@ public class Filter {
 		} else {
 			return filter.couldIncludeFromColumnFilters(database, table, columnNames);
 		}
-	}
-
-	public static Filter fromOldFormat(
-		String maxwellDB,
-		String includeDatabases,
-		String excludeDatabases,
-		String includeTables,
-		String excludeTables,
-		String blacklistDatabases,
-		String blacklistTables,
-		String includeValues
-	) throws InvalidFilterException {
-		ArrayList<String> filterRules = new ArrayList<>();
-
-		if ( blacklistDatabases != null ) {
-			for ( String s : blacklistDatabases.split(",") )
-				filterRules.add("blacklist: " + s + ".*");
-		}
-
-		if ( blacklistTables != null ) {
-			for (String s : blacklistTables.split(","))
-				filterRules.add("blacklist: *." + s);
-		}
-
-		/* any include in old-filters is actually exclude *.* */
-		if ( includeDatabases != null || includeTables != null ) {
-			filterRules.add("exclude: *.*");
-		}
-
-		if ( includeDatabases != null ) {
-			for ( String s : includeDatabases.split(",") )
-				filterRules.add("include: " + s + ".*");
-
-		}
-
-		if ( excludeDatabases != null ) {
-			for (String s : excludeDatabases.split(","))
-				filterRules.add("exclude: " + s + ".*");
-		}
-
-		if ( includeTables != null ) {
-			for ( String s : includeTables.split(",") )
-				filterRules.add("include: *." + s);
-		}
-
-		if ( excludeTables != null ) {
-			for ( String s : excludeTables.split(",") )
-				filterRules.add("exclude: *." + s);
-		}
-
-		if (includeValues != null && !"".equals(includeValues)) {
-			for (String s : includeValues.split(",")) {
-				String[] columnAndValue = s.split("=");
-				filterRules.add("exclude: *.*." + columnAndValue[0] + "=*");
-				filterRules.add("include: *.*." + columnAndValue[0] + "=" + columnAndValue[1]);
-			}
-		}
-
-		String filterRulesAsString = String.join(", ", filterRules);
-		LOGGER.warn("using exclude/include/includeColumns is deprecated.  Please update your configuration to use: ");
-		LOGGER.warn("filter = \"" + filterRulesAsString + "\"");
-
-		return new Filter(maxwellDB, filterRulesAsString);
 	}
 }

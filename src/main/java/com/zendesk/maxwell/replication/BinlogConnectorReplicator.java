@@ -4,7 +4,9 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
+import com.github.shyiko.mysql.binlog.event.AnnotateRowsEventData;
 import com.github.shyiko.mysql.binlog.event.EventType;
+import com.github.shyiko.mysql.binlog.event.MariadbGtidEventData;
 import com.github.shyiko.mysql.binlog.event.QueryEventData;
 import com.github.shyiko.mysql.binlog.event.RowsQueryEventData;
 import com.github.shyiko.mysql.binlog.event.TableMapEventData;
@@ -19,10 +21,8 @@ import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMapBuffer;
-import com.zendesk.maxwell.schema.Schema;
-import com.zendesk.maxwell.schema.SchemaStore;
-import com.zendesk.maxwell.schema.SchemaStoreException;
-import com.zendesk.maxwell.schema.Table;
+import com.zendesk.maxwell.schema.*;
+import com.zendesk.maxwell.schema.columndef.ColumnDefCastException;
 import com.zendesk.maxwell.schema.ddl.DDLMap;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 import com.zendesk.maxwell.scripting.Scripting;
@@ -36,20 +36,24 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 
-public class BinlogConnectorReplicator extends RunLoopProcess implements Replicator {
+public class BinlogConnectorReplicator extends RunLoopProcess implements Replicator, BinaryLogClient.LifecycleListener {
 	static final Logger LOGGER = LoggerFactory.getLogger(BinlogConnectorReplicator.class);
 	private static final long MAX_TX_ELEMENTS = 10000;
+	public static int BINLOG_QUEUE_SIZE = 5000;
 	public static final int BAD_BINLOG_ERROR_CODE = 1236;
+	public static final int ACCESS_DENIED_ERROR_CODE = 1227;
 
 	private final String clientID;
 	private final String maxwellSchemaDatabaseName;
 
 	protected final BinaryLogClient client;
+	private final int replicationReconnectionRetries;
 	private BinlogConnectorEventListener binlogEventListener;
-	private BinlogConnectorLifecycleListener binlogLifecycleListener;
-	private final LinkedBlockingDeque<BinlogConnectorEvent> queue = new LinkedBlockingDeque<>(20);
+	private BinlogConnectorLivenessMonitor binlogLivenessMonitor;
+	private final LinkedBlockingDeque<BinlogConnectorEvent> queue;
 	private final TableCache tableCache;
 	private final Scripting scripting;
 	private ServerException lastCommError;
@@ -61,6 +65,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private final HeartbeatNotifier heartbeatNotifier;
 	private Long stopAtHeartbeat;
 	private Filter filter;
+	private Boolean ignoreMissingSchema;
 
 	private final BootstrapController bootstrapper;
 	private final AbstractProducer producer;
@@ -79,7 +84,49 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private static Pattern createTablePattern =
 		Pattern.compile("^CREATE\\s+TABLE", Pattern.CASE_INSENSITIVE);
 
+	private boolean isConnected = false;
+
 	private class ClientReconnectedException extends Exception {}
+
+	public BinlogConnectorReplicator(
+			SchemaStore schemaStore,
+			AbstractProducer producer,
+			BootstrapController bootstrapper,
+			MaxwellMysqlConfig mysqlConfig,
+			Long replicaServerID,
+			String maxwellSchemaDatabaseName,
+			Metrics metrics,
+			Position start,
+			boolean stopOnEOF,
+			String clientID,
+			HeartbeatNotifier heartbeatNotifier,
+			Scripting scripting,
+			Filter filter,
+			MaxwellOutputConfig outputConfig,
+			float bufferMemoryUsage,
+			int replicationReconnectionRetries
+	) {
+		this(
+				schemaStore,
+				producer,
+				bootstrapper,
+				mysqlConfig,
+				replicaServerID,
+				maxwellSchemaDatabaseName,
+				metrics,
+				start,
+				stopOnEOF,
+				clientID,
+				heartbeatNotifier,
+				scripting,
+				filter,
+				false,
+				outputConfig,
+				bufferMemoryUsage,
+				replicationReconnectionRetries,
+				BINLOG_QUEUE_SIZE
+		);
+	}
 
 	public BinlogConnectorReplicator(
 		SchemaStore schemaStore,
@@ -95,8 +142,11 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		HeartbeatNotifier heartbeatNotifier,
 		Scripting scripting,
 		Filter filter,
+		boolean ignoreMissingSchema,
 		MaxwellOutputConfig outputConfig,
-		float bufferMemoryUsage
+		float bufferMemoryUsage,
+		int replicationReconnectionRetries,
+		int binlogEventQueueSize
 	) {
 		this.clientID = clientID;
 		this.bootstrapper = bootstrapper;
@@ -109,8 +159,10 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		this.schemaStore = schemaStore;
 		this.tableCache = new TableCache(maxwellSchemaDatabaseName);
 		this.filter = filter;
+		this.ignoreMissingSchema = ignoreMissingSchema;
 		this.lastCommError = null;
 		this.bufferMemoryUsage = bufferMemoryUsage;
+		this.queue = new LinkedBlockingDeque<>(binlogEventQueueSize);
 
 		/* setup metrics */
 		rowCounter = metrics.getRegistry().counter(
@@ -124,12 +176,11 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		transactionRowCount = metrics.getRegistry().histogram(metrics.metricName("transaction", "row_count"));
 		transactionExecutionTime = metrics.getRegistry().histogram(metrics.metricName("transaction", "execution_time"));
 
-		/* setup binlog */
-		this.binlogLifecycleListener = new BinlogConnectorLifecycleListener(this);
-
+		/* setup binlog client */
 		this.client = new BinaryLogClient(mysqlConfig.host, mysqlConfig.port, mysqlConfig.user, mysqlConfig.password);
-
 		this.client.setSSLMode(mysqlConfig.sslMode);
+		this.client.setUseSendAnnotateRowsEvent(true);
+
 
 		BinlogPosition startBinlog = start.getBinlogPosition();
 		if (startBinlog.getGtidSetStr() != null) {
@@ -150,9 +201,11 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 			which triggers mysql to jump ahead a binlog.
 			At some point I presume shyko will fix it and we can remove this.
 		 */
-
-		if ( this.gtidPositioning ) {
-			this.client.setKeepAlive(false);
+		this.client.setKeepAlive(false);
+		if (mysqlConfig.enableHeartbeat) {
+			this.binlogLivenessMonitor = new BinlogConnectorLivenessMonitor(client);
+			this.client.registerLifecycleListener(this.binlogLivenessMonitor);
+			this.client.registerEventListener(this.binlogLivenessMonitor);
 		}
 
 		EventDeserializer eventDeserializer = new EventDeserializer();
@@ -165,8 +218,10 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		this.binlogEventListener = new BinlogConnectorEventListener(client, queue, metrics, outputConfig);
 		this.client.setBlocking(!stopOnEOF);
 		this.client.registerEventListener(binlogEventListener);
-		this.client.registerLifecycleListener(binlogLifecycleListener);
+		this.client.registerLifecycleListener(this);
 		this.client.setServerId(replicaServerID.intValue());
+
+		this.replicationReconnectionRetries = replicationReconnectionRetries;
 	}
 
 	/**
@@ -200,11 +255,6 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	}
 
 	@Override
-	protected void beforeStart() throws Exception {
-		startReplicator();
-	}
-
-	@Override
 	protected void beforeStop() throws Exception {
 		this.binlogEventListener.stop();
 		this.client.disconnect();
@@ -214,13 +264,21 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	 * Listener for communication errors so we can stop everything and exit on this case
 	 * @param ex Exception thrown by the BinaryLogClient
 	 */
-	public void onCommunicationFailure(Exception ex) {
+	@Override
+	public void onCommunicationFailure(BinaryLogClient client, Exception ex) {
+		LOGGER.warn("communications failure in binlog:", ex);
 
 		// Stopping Maxwell only in case we cannot read binlogs from the current server
 		if (ex instanceof ServerException) {
 			ServerException serverEx = (ServerException) ex;
-			if (serverEx.getErrorCode() == BAD_BINLOG_ERROR_CODE) {
-				lastCommError = serverEx;
+			int errCode = serverEx.getErrorCode();
+
+			switch(errCode) {
+				case BAD_BINLOG_ERROR_CODE:
+				case ACCESS_DENIED_ERROR_CODE:
+					lastCommError = serverEx;
+				default:
+					LOGGER.debug("error code: {} from server", errCode);
 			}
 		}
 	}
@@ -246,9 +304,20 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	 */
 	private void checkCommErrors() throws ServerException {
 		if (lastCommError != null) {
-			LOGGER.error("Shutting down due to communication errors to Mysql", lastCommError);
 			throw lastCommError;
 		}
+	}
+
+	/**
+	 * Returns true if connected with a recent event.
+	 * If binlog heartbeats are disabled, just returns
+	 * whether there is a connection.
+	 */
+	private boolean isConnectionAlive() {
+		if (!isConnected) {
+			return false;
+		}
+		return this.binlogLivenessMonitor == null || binlogLivenessMonitor.isAlive();
 	}
 
 	private boolean shouldSkipRow(RowMap row) throws IOException {
@@ -297,7 +366,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 			return row; // plain row -- do not process.
 
 		long lastHeartbeatRead = (Long) row.getData("heartbeat");
-		LOGGER.debug("replicator picked up heartbeat: " + lastHeartbeatRead);
+		LOGGER.debug("replicator picked up heartbeat: {}", lastHeartbeatRead);
 		this.lastHeartbeatPosition = row.getPosition().withHeartbeat(lastHeartbeatRead);
 		heartbeatNotifier.heartbeat(lastHeartbeatRead);
 		return HeartbeatRowMap.valueOf(row.getDatabase(), this.lastHeartbeatPosition, row.getNextPosition().withHeartbeat(lastHeartbeatRead));
@@ -407,7 +476,12 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 	private void ensureReplicatorThread() throws Exception {
 		checkCommErrors();
-		if ( !client.isConnected() && !stopOnEOF ) {
+		if (!this.isConnected && stopOnEOF) {
+			// reached EOF, nothing to do
+			return;
+		}
+		if (!this.isConnectionAlive()) {
+			client.disconnect();
 			if (this.gtidPositioning) {
 				// When using gtid positioning, reconnecting should take us to the top
 				// of the gtid event.  We throw away any binlog position we have
@@ -417,8 +491,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 				client.setBinlogFilename("");
 				client.setBinlogPosition(4L);
-
-				client.connect(5000);
+				tryReconnect();
 
 				throw new ClientReconnectedException();
 			} else {
@@ -426,9 +499,27 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 				// we like, so we don't have to bail out of the middle of an event.
 				LOGGER.warn("replicator stopped at position: {} -- restarting", client.getBinlogFilename() + ":" + client.getBinlogPosition());
 
-				client.connect(5000);
+				Long oldMasterId = client.getMasterServerId();
+				tryReconnect();
+				if (client.getMasterServerId() != oldMasterId) {
+					throw new Exception("Master id changed from " + oldMasterId + " to " + client.getMasterServerId()
+								+ " while using binlog coordinate positioning. Cannot continue with the info that we have");
+				}
 			}
 		}
+	}
+
+	private void tryReconnect() throws TimeoutException {
+		int reconnectionAttempts = 0;
+
+		while ((reconnectionAttempts += 1) <= this.replicationReconnectionRetries || this.replicationReconnectionRetries == 0) {
+			try {
+				LOGGER.info(String.format("Reconnection attempt: %s of %s", reconnectionAttempts, replicationReconnectionRetries > 0 ? this.replicationReconnectionRetries : "unlimited"));
+				client.connect(5000);
+				return;
+			} catch (IOException | TimeoutException ignored) { }
+		}
+		throw new TimeoutException("Maximum reconnection attempts reached.");
 	}
 
 	/**
@@ -481,20 +572,32 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					Table table = tableCache.getTable(event.getTableID());
 
 					if ( table != null && shouldOutputEvent(table.getDatabase(), table.getName(), filter, table.getColumnNames()) ) {
-						for ( RowMap r : event.jsonMaps(table, getLastHeartbeatRead(), currentQuery) )
+						List<RowMap> rows;
+						try {
+							rows = event.jsonMaps(table, getLastHeartbeatRead(), currentQuery);
+						} catch ( ColumnDefCastException e ) {
+							logColumnDefCastException(table, e);
+
+							throw(e);
+						}
+
+						for ( RowMap r : rows )
 							if (shouldOutputRowMap(table.getDatabase(), table.getName(), r, filter)) {
 								buffer.add(r);
 							}
 					}
-					currentQuery = null;
 					break;
 				case TABLE_MAP:
 					TableMapEventData data = event.tableMapData();
-					tableCache.processEvent(getSchema(), this.filter, data.getTableId(), data.getDatabase(), data.getTable());
+					tableCache.processEvent(getSchema(), this.filter, this.ignoreMissingSchema, data.getTableId(), data.getDatabase(), data.getTable());
 					break;
 				case ROWS_QUERY:
 					RowsQueryEventData rqed = event.getEvent().getData();
 					currentQuery = rqed.getQuery();
+					break;
+				case ANNOTATE_ROWS:
+					AnnotateRowsEventData ared = event.getEvent().getData();
+					currentQuery = ared.getRowsQuery();
 					break;
 				case QUERY:
 					QueryEventData qe = event.queryData();
@@ -502,7 +605,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					String upperCaseSql = sql.toUpperCase();
 
 					if ( upperCaseSql.startsWith(BinlogConnectorEvent.SAVEPOINT)) {
-						LOGGER.debug("Ignoring SAVEPOINT in transaction: " + qe);
+						LOGGER.debug("Ignoring SAVEPOINT in transaction: {}", qe);
 					} else if ( createTablePattern.matcher(sql).find() ) {
 						// CREATE TABLE `foo` SELECT * FROM `bar` will put a CREATE TABLE
 						// inside a transaction.  Note that this could, in rare cases, lead
@@ -520,6 +623,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 						// We don't need to process them, just ignore
 					} else if (upperCaseSql.startsWith("DROP TEMPORARY TABLE")) {
 						// Ignore temporary table drop statements inside transactions
+					} else if ( upperCaseSql.startsWith("# DUMMY EVENT")) {
+						// MariaDB injected event
 					} else if ( upperCaseSql.equals("ROLLBACK") ) {
 						LOGGER.debug("rolling back transaction inside binlog.");
 						return new RowMapBuffer(0);
@@ -527,19 +632,37 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 						LOGGER.warn("Unhandled QueryEvent @ {} inside transaction: {}", event.getPosition().fullPosition(), qe);
 					}
 					break;
+				default:
+					break;
 			}
 		}
 	}
 
+	private void logColumnDefCastException(Table table, ColumnDefCastException e) {
+		String castInfo = String.format(
+				"Unable to cast %s (%s) into column %s.%s.%s (type '%s')",
+				e.givenValue.toString(),
+				e.givenValue.getClass().getName(),
+				table.getDatabase(),
+				table.getName(),
+				e.def.getName(),
+				e.def.getType()
+		);
+		LOGGER.error(castInfo);
+
+		e.database = table.getDatabase();
+		e.table = table.getName();
+	}
+
 	/**
 	 * The main entry point into the event reading loop.
-	 *
+	 * <p>
 	 * We maintain a buffer of events in a transaction,
 	 * and each subsequent call to `getRow` can grab one from
 	 * the buffer.  If that buffer is empty, we'll go check
 	 * the open-replicator buffer for rows to process.  If that
 	 * buffer is empty, we return null.
-	 *
+	 * </p>
 	 * @return either a RowMap or null
 	 */
 	public RowMap getRow() throws Exception {
@@ -548,8 +671,10 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		if ( stopOnEOF && hitEOF )
 			return null;
 
-		if ( !replicatorStarted )
-			throw new ReplicatorNotReadyException("replicator not started!");
+		if ( !replicatorStarted ) {
+			LOGGER.warn("replicator was not started, calling startReplicator()...");
+			startReplicator();
+		}
 
 		while (true) {
 			if (rowBuffer != null && !rowBuffer.isEmpty()) {
@@ -565,7 +690,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 			if (event == null) {
 				if ( stopOnEOF ) {
-					if ( client.isConnected() )
+					if ( this.isConnected )
 						continue;
 					else
 						return null;
@@ -592,7 +717,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					break;
 				case TABLE_MAP:
 					TableMapEventData data = event.tableMapData();
-					tableCache.processEvent(getSchema(), this.filter, data.getTableId(), data.getDatabase(), data.getTable());
+					tableCache.processEvent(getSchema(), this.filter,this.ignoreMissingSchema, data.getTableId(), data.getDatabase(), data.getTable());
 					break;
 				case QUERY:
 					QueryEventData qe = event.queryData();
@@ -611,6 +736,22 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 						rowBuffer.setSchemaId(getSchemaId());
 					} else {
 						processQueryEvent(event);
+					}
+					break;
+				case MARIADB_GTID:
+					// in mariaDB the GTID event supplants the normal BEGIN
+					MariadbGtidEventData g = event.mariaGtidData();
+					if ( (g.getFlags() & MariadbGtidEventData.FL_STANDALONE) == 0 ) {
+						try {
+							rowBuffer = getTransactionRows(event);
+						} catch ( ClientReconnectedException e ) {
+							// rowBuffer should already be empty by the time we get to this switch
+							// statement, but we null it for clarity
+							rowBuffer = null;
+							break;
+						}
+						rowBuffer.setServerId(event.getEvent().getHeader().getServerId());
+						rowBuffer.setSchemaId(getSchemaId());
 					}
 					break;
 				case ROTATE:
@@ -640,5 +781,24 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	public Long getSchemaId() throws SchemaStoreException {
 		return this.schemaStore.getSchemaID();
 	}
+
+	@Override
+	public void onConnect(BinaryLogClient client) {
+		LOGGER.info("Binlog connected.");
+		this.isConnected = true;
+	}
+
+	@Override
+	public void onEventDeserializationFailure(BinaryLogClient client, Exception ex) {
+		LOGGER.warn("Event deserialization failure.", ex);
+		LOGGER.warn("cause: ", ex.getCause());
+	}
+
+	@Override
+	public void onDisconnect(BinaryLogClient client) {
+		LOGGER.info("Binlog disconnected.");
+		this.isConnected = false;
+	}
+
 
 }

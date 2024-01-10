@@ -1,7 +1,7 @@
 package com.zendesk.maxwell.schema.ddl;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -12,12 +12,11 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
-import org.junit.*;
 
 import com.zendesk.maxwell.schema.columndef.*;
+import org.junit.Test;
+import org.junit.Ignore;
 
 public class DDLParserTest {
 	public String getSQLDir() {
@@ -103,6 +102,18 @@ public class DDLParserTest {
 	}
 
 	@Test
+	public void testSRID() {
+		TableAlter a = parseAlter("alter table foo add column `location` point NOT NULL SRID 4326");
+
+		AddColumnMod m = (AddColumnMod) a.columnMods.get(0);
+		assertThat(m.name, is("location"));
+
+		GeometryColumnDef b = (GeometryColumnDef) m.definition;
+		assertThat(b.getType(), is("point"));;
+		assertThat(b.getName(), is("location"));
+	}
+
+	@Test
 	public void testText() {
 		TableAlter a = parseAlter("alter table no.no add column mocha TEXT character set 'utf8' collate 'utf8_foo'");
 
@@ -167,6 +178,7 @@ public class DDLParserTest {
 	@Test
 	public void testParsingSomeAlters() {
 		String testSQL[] = {
+			"CREATE TABLE employees (   data JSON,   INDEX ((CAST(data->>'$.name' AS CHAR(30)))) )",
 			"ALTER TABLE uat_sync_test.p add COLUMN uat_sync_test.p.remark VARCHAR(100) after pname",
 			"alter table t add column c varchar(255) default 'string1' 'string2'",
 			"alter table t add column mortgage_item BIT(4) NOT NULL DEFAULT 0b0000",
@@ -233,13 +245,40 @@ public class DDLParserTest {
 			"create table vc11( id serial, name varchar(10) not null default \"\")",
 			"create table foo.order ( i int )",
 			"alter table foo.int add column bar varchar(255)",
-			"alter table something collate = default"
-
+			"alter table something collate = default",
+			"ALTER TABLE t DROP t.foo",
+			"alter table f add column i varchar(255) default ('environment,namespace,table_name')",
+			"CREATE DATABASE xyz DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT ENCRYPTION='N'",
+			"CREATE TABLE testTable18 ( command JSON NOT NULL DEFAULT (JSON_QUOTE(\"{'parent':'sched'}\")) )",
+			"CREATE TABLE testTable19 ( pid BIGINT NOT NULL DEFAULT(1) )",
+			"CREATE TABLE encRTYPE ( i int ) ENCRYPTION='Y'",
+			"CREATE TABLE testfoo ( i int ) START TRANSACTION",
+			"ALTER TABLE c add column i int visible",
+			"ALTER TABLE c add column i int invisible",
+			"ALTER TABLE c alter column i set visible",
+			"ALTER TABLE broker.table ADD PARTITION IF NOT EXISTS (partition p20210912 VALUES LESS THAN (738411))", // some mariada-fu
+			"ALTER TABLE t1 DROP PARTITION IF EXISTS p3", // some mariada-fu
+			"ALTER TABLE t1 DROP CONSTRAINT ck",
+			"ALTER TABLE t1 DROP CHECK ck",
+			"create table test ( i float default -1. )",
+			"alter database d ENCRYPTION='Y'",
+			"ALTER TABLE t1 ADD COLUMN IF NOT EXISTS c1 TINYINT",
+			"ALTER TABLE tournaments ADD INDEX idx_team_name (('$.teams.name'))",
+			"ALTER TABLE tournaments ADD INDEX idx_team_name ((ABS(col)))",
+			"ALTER TABLE tournaments ADD INDEX idx_team_name ((col1 * 40) DESC)",
+			"CREATE TABLE employees (data JSON, INDEX idx ((CAST(data->>'$.name' AS CHAR(30)) COLLATE utf8mb4_bin)))",
+			"ALTER TABLE tasks DROP COLUMN IF EXISTS snoozed_until",
+			"ALTER TABLE outgoing_notifications_log ADD INDEX idx_campaign_updated (campaign, last_updated_at) ALGORITHM=NOCOPY,LOCK=NONE",
+			"alter table test.c ALGORITHM=COPY, STATS_SAMPLE_PAGES=DEFAULT"
 		};
 
 		for ( String s : testSQL ) {
-			SchemaChange parsed = parse(s).get(0);
-			assertThat("Expected " + s + "to parse", parsed, not(nullValue()));
+			try {
+				SchemaChange parsed = parse(s).get(0);
+				assertThat("Expected " + s + "to parse", parsed, not(nullValue()));
+			} catch ( MaxwellSQLSyntaxError e ) {
+				assertThat("Expected '" + s + "' to parse, but got: " + e.getMessage(), true, is(false));
+			}
 		}
 
 	}
@@ -266,7 +305,13 @@ public class DDLParserTest {
 			"SET ROLE 'role1', 'role2'",
 			"SET DEFAULT ROLE administrator, developer TO 'joe'@'10.0.0.1'",
 			"DROP ROLE 'role1'",
-			"#comment\ndrop procedure if exists `foo`"
+			"CREATE /*M! OR REPLACE */ ROLE 'role1'",
+			"#comment\ndrop procedure if exists `foo`",
+			"/* some \n mulitline\n comment */ drop procedure if exists foo",
+			"SET STATEMENT max_statement_time = 60 FOR flush table",
+			"SET STATEMENT max=1, min_var=3,v=9 FOR FLUSH",
+			"SET STATEMENT max='1', min=RRRR,v=9 FOR FLUSH",
+			"SET statement max=\"1\", min='3',v=RRR, long_long_ago=4 FOR FLUSH",
 		};
 
 		for ( String s : testSQL ) {
@@ -369,7 +414,8 @@ public class DDLParserTest {
 				+ ") "
 			  	+ "ENGINE=innodb "
 				+ "CHARACTER SET='latin1' "
-			  	+ "ROW_FORMAT=FIXED"
+			  	+ "ROW_FORMAT=FIXED "
+				+ "COMPRESSION='lz4'"
 		);
 		assertThat(c, not(nullValue()));
 	}
@@ -569,5 +615,31 @@ public class DDLParserTest {
 			}
 		}
 		System.out.println(nFixed + " fixed, " + nErr + " remain.");
+	}
+
+	@Test
+	public void testPolardbXCreateIndexSQL(){
+
+		List<SchemaChange> changes = parse(
+				"# POLARX_ORIGIN_SQL=CREATE INDEX device_id_idx ON event_tracking_info_extra (event, create_time)\n" +
+				"# POLARX_TSO=698905756181096044815201227773638819850000000000000000\n" +
+				"CREATE INDEX device_id_idx ON event_tracking_info_extra (event, create_time)");
+
+		assertThat(changes,is(nullValue()));
+
+	}
+
+	@Test
+	public void testServerInstanceOperations(){
+
+		List<SchemaChange> parse = parse("ALTER INSTANCE ROTATE INNODB MASTER KEY");
+		List<SchemaChange> parse1 = parse("ALTER INSTANCE ROTATE BINLOG MASTER KEY");
+		List<SchemaChange> parse2 = parse("ALTER INSTANCE RELOAD TLS");
+		List<SchemaChange> parse3 = parse("ALTER INSTANCE RELOAD TLS NO ROLLBACK ON ERROR");
+
+		assertThat(parse,is(nullValue()));
+		assertThat(parse1,is(nullValue()));
+		assertThat(parse2,is(nullValue()));
+		assertThat(parse3,is(nullValue()));
 	}
 }

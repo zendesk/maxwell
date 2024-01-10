@@ -1,0 +1,33 @@
+name: CI to Zendesk Dockerhub
+
+on:
+  push:
+    tags:
+      - v*.*.*
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: zendesk/checkout@v2
+        with:
+          fetch-depth: '1'
+      - name: Set up QEMU
+        run: |-
+          QEMU_IMAGE=tonistiigi/binfmt:latest
+          docker pull $QEMU_IMAGE
+          docker image inspect $QEMU_IMAGE
+          docker run --rm --privileged $QEMU_IMAGE --install all
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: zendesk/setup-buildx-action@v1.6.0
+        with:
+          install: true
+      - name: Docker Build and push
+        run: |-
+          set -eu -o pipefail
+          echo ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }} | docker login --username=${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+          set -x
+          current_tag=zendesk/maxwell:"${GITHUB_REF##refs/tags/}"
+          latest_tag=zendesk/maxwell:latest
+          docker buildx build --platform=linux/arm64,linux/amd64 --file=Dockerfile --push --tag="$current_tag" --tag="$latest_tag" .

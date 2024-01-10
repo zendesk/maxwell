@@ -11,12 +11,17 @@ import java.util.Arrays;
  * Created by ben on 12/30/15.
  */
 public class GeometryColumnDef extends ColumnDef {
-	public GeometryColumnDef(String name, String type, short pos) {
+	private GeometryColumnDef(String name, String type, short pos) {
 		super(name, type, pos);
 	}
 
+	public static GeometryColumnDef create(String name, String type, short pos) {
+		GeometryColumnDef temp = new GeometryColumnDef(name, type, pos);
+		return (GeometryColumnDef) INTERNER.intern(temp);
+	}
+
 	@Override
-	public Object asJSON(Object value, MaxwellOutputConfig config) {
+	public Object asJSON(Object value, MaxwellOutputConfig config) throws ColumnDefCastException {
 		Geometry geometry = null;
 		if ( value instanceof Geometry ) {
 			geometry = (Geometry) value;
@@ -34,7 +39,7 @@ public class GeometryColumnDef extends ColumnDef {
 			}
 
 		} else {
-			throw new RuntimeException("Could not parse geometry column value: " + value);
+			throw new ColumnDefCastException(this, value);
 		}
 
 		return geometry.toText();

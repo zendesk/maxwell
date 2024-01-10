@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.producer.partitioners;
 
 import com.zendesk.maxwell.row.RowMap;
+import org.apache.commons.lang3.RandomStringUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,6 +12,8 @@ public abstract class AbstractMaxwellPartitioner {
 	private final PartitionBy partitionBy, partitionByFallback;
 
 	private PartitionBy partitionByForString(String key) {
+
+
 		if ( key == null )
 			return PartitionBy.DATABASE;
 
@@ -23,8 +26,12 @@ public abstract class AbstractMaxwellPartitioner {
 				return PartitionBy.PRIMARY_KEY;
 			case "transaction_id":
 				return PartitionBy.TRANSACTION_ID;
+			case "thread_id":
+				return PartitionBy.THREAD_ID;
 			case "column":
 				return PartitionBy.COLUMN;
+			case "random":
+				return PartitionBy.RANDOM;
 			default:
 				throw new RuntimeException("Unknown partitionBy string: " + key);
 		}
@@ -60,12 +67,16 @@ public abstract class AbstractMaxwellPartitioner {
 				return r.getRowIdentity().toConcatString();
 			case TRANSACTION_ID:
 				return String.valueOf(r.getXid());
+			case THREAD_ID:
+				return String.valueOf(r.getThreadId());
 			case COLUMN:
 				String s = r.buildPartitionKey(partitionColumns);
 				if ( s.length() > 0 )
 					return s;
 				else
 					return getHashString(r, partitionByFallback);
+			case RANDOM:
+				return RandomStringUtils.random(10, true, true);
 		}
 		return null; // thx java
 	}

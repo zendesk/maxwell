@@ -9,6 +9,7 @@ import com.zendesk.maxwell.row.RowIdentity;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.row.RowMap.KeyFormat;
 import com.zendesk.maxwell.schema.ddl.DDLMap;
+import com.zendesk.maxwell.util.TopicInterpolator;
 import com.zendesk.maxwell.util.StoppableTask;
 import com.zendesk.maxwell.util.StoppableTaskState;
 import org.apache.commons.lang3.tuple.Pair;
@@ -41,9 +42,9 @@ class KafkaCallback implements Callback {
 	private Meter failedMessageMeter;
 
 	public KafkaCallback(AbstractAsyncProducer.CallbackCompleter cc, Position position, RowIdentity key, String json,
-	                     Counter producedMessageCount, Counter failedMessageCount, Meter producedMessageMeter,
-	                     Meter failedMessageMeter, String topic, String fallbackTopic, MaxwellContext context,
-	                     MaxwellKafkaProducerWorker producer) {
+						 Counter producedMessageCount, Counter failedMessageCount, Meter producedMessageMeter,
+						 Meter failedMessageMeter, String topic, String fallbackTopic, MaxwellContext context,
+						 MaxwellKafkaProducerWorker producer) {
 		this.cc = cc;
 		this.position = position;
 		this.key = key;
@@ -60,7 +61,7 @@ class KafkaCallback implements Callback {
 
 	@Override
 	public void onCompletion(RecordMetadata md, Exception e) {
-		if ( e != null ) {
+		if (e != null) {
 			this.failedMessageCount.inc();
 			this.failedMessageMeter.mark();
 
@@ -82,10 +83,10 @@ class KafkaCallback implements Callback {
 			this.succeededMessageMeter.mark();
 
 			if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug("->  key:" + key + ", partition:" + md.partition() + ", offset:" + md.offset());
-				LOGGER.debug("   " + this.json);
-				LOGGER.debug("   " + position);
-				LOGGER.debug("");
+				LOGGER.debug("->  key:{}, partition:{}, offset:{}\n" +
+								"   {}\n" +
+								"   {}\n",
+						key, md.partition(), md.offset(), this.json, position);
 			}
 			cc.markCompleted();
 		}
@@ -95,8 +96,8 @@ class KafkaCallback implements Callback {
 		// When publishing a fallback record, make a callback
 		// with no fallback topic to avoid infinite loops
 		KafkaCallback cb = new KafkaCallback(cc, position, key, json,
-			succeededMessageCount, failedMessageCount, succeededMessageMeter,
-			failedMessageMeter, topic, null, context, producer);
+				succeededMessageCount, failedMessageCount, succeededMessageMeter,
+				failedMessageMeter, topic, null, context, producer);
 		producer.enqueueFallbackRow(fallbackTopic, key, cb, md, e);
 	}
 
@@ -143,15 +144,15 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	private final MaxwellKafkaPartitioner partitioner;
 	private final MaxwellKafkaPartitioner ddlPartitioner;
 	private final KeyFormat keyFormat;
-	private final boolean interpolateTopic;
 	private final ArrayBlockingQueue<RowMap> queue;
 	private Thread thread;
 	private StoppableTaskState taskState;
 	private String deadLetterTopic;
-	private final ConcurrentLinkedQueue<Pair<ProducerRecord<String,String>, KafkaCallback>> deadLetterQueue;
+	private final ConcurrentLinkedQueue<Pair<ProducerRecord<String, String>, KafkaCallback>> deadLetterQueue;
+	private final TopicInterpolator topicInterpolator;
 
 	public static MaxwellKafkaPartitioner makeDDLPartitioner(String partitionHashFunc, String partitionKey) {
-		if ( partitionKey.equals("table") ) {
+		if (partitionKey.equals("table")) {
 			return new MaxwellKafkaPartitioner(partitionHashFunc, "table", null, "database");
 		} else {
 			return new MaxwellKafkaPartitioner(partitionHashFunc, "database", null, null);
@@ -159,17 +160,16 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	}
 
 	public MaxwellKafkaProducerWorker(MaxwellContext context, String kafkaTopic, ArrayBlockingQueue<RowMap> queue,
-		Producer<String,String> producer)
-	{
+									  Producer<String, String> producer) {
 		super(context);
 
-		if ( kafkaTopic == null ) {
+		if (kafkaTopic == null) {
 			this.topic = "maxwell";
 		} else {
 			this.topic = kafkaTopic;
 		}
 
-		this.interpolateTopic = this.topic.contains("%{");
+		this.topicInterpolator = new TopicInterpolator(this.topic);
 		this.kafka = producer;
 
 		String hash = context.getConfig().kafkaPartitionHash;
@@ -179,11 +179,11 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 		this.partitioner = new MaxwellKafkaPartitioner(hash, partitionKey, partitionColumns, partitionFallback);
 
 		this.ddlPartitioner = makeDDLPartitioner(hash, partitionKey);
-		this.ddlTopic =  context.getConfig().ddlKafkaTopic;
+		this.ddlTopic = context.getConfig().ddlKafkaTopic;
 		this.deadLetterTopic = context.getConfig().deadLetterTopic;
 		this.deadLetterQueue = new ConcurrentLinkedQueue<>();
 
-		if ( context.getConfig().kafkaKeyFormat.equals("hash") )
+		if (context.getConfig().kafkaKeyFormat.equals("hash"))
 			keyFormat = KeyFormat.HASH;
 		else
 			keyFormat = KeyFormat.ARRAY;
@@ -193,16 +193,15 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	}
 
 	public MaxwellKafkaProducerWorker(MaxwellContext context, Properties kafkaProperties, String kafkaTopic,
-		ArrayBlockingQueue<RowMap> queue)
-	{
+									  ArrayBlockingQueue<RowMap> queue) {
 		this(context, kafkaTopic, queue,
-			new KafkaProducer<String,String>(kafkaProperties, new StringSerializer(), new StringSerializer()));
+				new KafkaProducer<String, String>(kafkaProperties, new StringSerializer(), new StringSerializer()));
 	}
 
 	@Override
 	public void run() {
 		this.thread = Thread.currentThread();
-		while ( true ) {
+		while (true) {
 			try {
 				drainDeadLetterQueue();
 				RowMap row = queue.take();
@@ -211,7 +210,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 					return;
 				}
 				this.push(row);
-			} catch ( Exception e ) {
+			} catch (Exception e) {
 				taskState.stopped();
 				context.terminate(e);
 				return;
@@ -233,13 +232,6 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 			LOGGER.error("Topic '" + topic + "' name does not exist. Exception: " + e.getLocalizedMessage());
 			throw e;
 		}
-	}
-
-	private String generateTopic(String topic, RowIdentity pk){
-		if ( interpolateTopic )
-			return topic.replaceAll("%\\{database\\}", pk.getDatabase()).replaceAll("%\\{table\\}", pk.getTable());
-		else
-			return topic;
 	}
 
 	@Override
@@ -273,7 +265,6 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	}
 
 	ProducerRecord<String, String> makeProducerRecord(final RowMap r) throws Exception {
-		RowIdentity pk = r.getRowIdentity();
 		String key = r.pkToJson(keyFormat);
 		String value = r.toJSON(outputConfig);
 		ProducerRecord<String, String> record;
@@ -284,9 +275,10 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 
 			// javascript topic override
 			topic = r.getKafkaTopic();
-			if ( topic == null ) {
-				topic = generateTopic(this.topic, pk);
+			if (topic == null) {
+				topic = this.topicInterpolator.generateFromRowMap(r);
 			}
+			LOGGER.debug("context.getConfig().producerPartitionKey = {}",  context.getConfig().producerPartitionKey);
 
 			record = new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, getNumPartitions(topic)), key, value);
 		}
@@ -296,7 +288,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	ProducerRecord<String, String> makeFallbackRecord(String fallbackTopic, final RowIdentity pk, Exception reason) throws Exception {
 		String key = pk.toKeyJson(keyFormat);
 		String value = pk.toFallbackValueWithReason(reason.getClass().getSimpleName());
-		String topic = generateTopic(fallbackTopic, pk);
+		String topic = new TopicInterpolator(fallbackTopic).generateFromRowIdentity(pk) ;
 		return new ProducerRecord<>(topic, key, value);
 	}
 

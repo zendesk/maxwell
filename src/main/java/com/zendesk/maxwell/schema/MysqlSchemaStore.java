@@ -6,7 +6,7 @@ import com.zendesk.maxwell.filtering.Filter;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
-import snaq.db.ConnectionPool;
+import com.zendesk.maxwell.util.ConnectionPool;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -88,9 +88,9 @@ public class MysqlSchemaStore extends AbstractSchemaStore implements SchemaStore
 				} else {
 					// The capture time might be long and the conn connection might be closed already. Consulting the pool
 					// again for a new connection
-					Connection newConn = maxwellConnectionPool.getConnection();
-					savedSchema.save(newConn);
-					newConn.close();
+					try ( Connection newConn = maxwellConnectionPool.getConnection() ) {
+						savedSchema.save(newConn);
+					}
 				}
 			return savedSchema;
 		}

@@ -11,7 +11,6 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -41,6 +40,81 @@ public class RowMapTest {
 
 		int ts = (int) output.get("ts");
 		Assert.assertEquals(ts, timestampSeconds);
+	}
+
+	@Test
+	public void testGetPrimaryKeyArrayValues() {
+		List<String> pKeys = new ArrayList<>();
+
+		pKeys.add("id");
+
+		pKeys.add("name");
+
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
+
+		rowMap.putData("id", 9001, null);
+		rowMap.putData("name", "example", null);
+		rowMap.putData("column", "value", null);
+
+		List<Object> pkValues = rowMap.getPrimaryKeyValues();
+		Assert.assertEquals(9001, pkValues.get(0));
+		Assert.assertEquals("example", pkValues.get(1));
+	}
+
+	@Test
+	public void testGetPrimaryKeyArrayColumns() {
+		List<String> pKeys = new ArrayList<>();
+
+		pKeys.add("id");
+
+		pKeys.add("name");
+
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
+
+		rowMap.putData("id", 9001, null);
+		rowMap.putData("name", "example", null);
+		rowMap.putData("column", "value", null);
+
+		List<String> pkColumns = rowMap.getPrimaryKeyColumns();
+		Assert.assertEquals("id", pkColumns.get(0));
+		Assert.assertEquals("name", pkColumns.get(1));
+	}
+
+	@Test
+	public void testGetPrimaryKeyMap() {
+		List<String> pKeys = new ArrayList<>();
+
+		pKeys.add("id");
+
+		pKeys.add("name");
+
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
+
+		rowMap.putData("id", 9001, null);
+		rowMap.putData("name", "example", null);
+		rowMap.putData("column", "value", null);
+
+		Map<String, Object> pkMap = rowMap.getPrimaryKeyMap();
+		Assert.assertEquals(9001, pkMap.get("id"));
+		Assert.assertEquals("example", pkMap.get("name"));
+	}
+
+	@Test
+	public void testGetPrimaryKeyMapWithoutData() {
+		List<String> pKeys = new ArrayList<>();
+
+		pKeys.add("id");
+		pKeys.add("name");
+
+		RowMap rowMap = new RowMap("delete", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
+
+		rowMap.putOldData("id", 9001, null);
+		rowMap.putOldData("name", "example", null);
+		rowMap.putOldData("column", "value", null);
+
+		Map<String, Object> pkMap = rowMap.getPrimaryKeyMap();
+		Assert.assertEquals(null, pkMap.get("id"));
+		Assert.assertEquals(null, pkMap.get("name"));
 	}
 
 	@Test
@@ -140,6 +214,71 @@ public class RowMapTest {
 	}
 
 	@Test
+	public void testToJSONWithQuery() throws Exception {
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS,
+				Arrays.asList("id", "first_name"), POSITION);
+
+		rowMap.setServerId(7653213L);
+		rowMap.setThreadId(6532312L);
+		rowMap.setSchemaId(298L);
+
+		rowMap.putExtraAttribute("int", 1234);
+		rowMap.putExtraAttribute("str", "foo");
+
+		rowMap.putData("id", 9001, null);
+		rowMap.putData("first_name", "foo", null);
+		rowMap.putData("last_name", "bar", null);
+		rowMap.putData("rawJSON", new RawJSONString("{\"UserID\":20}"), null);
+
+		rowMap.setRowQuery("INSERT INTO MyTable VALUES ('foo','bar')");
+
+		MaxwellOutputConfig outputConfig = getMaxwellOutputConfig();
+		outputConfig.includesRowQuery = true;
+
+		Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\"," +
+				"\"query\":\"INSERT INTO MyTable VALUES ('foo','bar')\",\"type\":\"insert\"," +
+				"\"ts\":1496712943,\"position\":\"binlog-0001:1\",\"gtid\":null,\"server_id\":7653213," +
+				"\"thread_id\":6532312,\"schema_id\":298,\"int\":1234,\"str\":\"foo\",\"primary_key\":[9001,\"foo\"]," +
+				"\"primary_key_columns\":[\"id\",\"first_name\"],\"data\":" + "{\"id\":9001,\"first_name\":\"foo\"," +
+				"\"last_name\":\"bar\",\"rawJSON\":{\"UserID\":20}}}",
+				rowMap.toJSON(outputConfig));
+
+	}
+
+	@Test
+	public void testToJSONWithQueryOverMaxLength() throws Exception {
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS,
+				Arrays.asList("id", "first_name"), POSITION);
+
+		rowMap.setServerId(7653213L);
+		rowMap.setThreadId(6532312L);
+		rowMap.setSchemaId(298L);
+
+		rowMap.putExtraAttribute("int", 1234);
+		rowMap.putExtraAttribute("str", "foo");
+
+		rowMap.putData("id", 9001, null);
+		rowMap.putData("first_name", "foo", null);
+		rowMap.putData("last_name", "bar", null);
+		rowMap.putData("rawJSON", new RawJSONString("{\"UserID\":20}"), null);
+
+		rowMap.setRowQuery("INSERT INTO MyTable VALUES ('foo','bar')");
+
+		MaxwellOutputConfig outputConfig = getMaxwellOutputConfig();
+		outputConfig.includesRowQuery = true;
+		outputConfig.rowQueryMaxLength = 10;
+
+		Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\"," +
+				"\"query\":\"INSERT INT\",\"type\":\"insert\"," +
+				"\"ts\":1496712943,\"position\":\"binlog-0001:1\",\"gtid\":null,\"server_id\":7653213," +
+				"\"thread_id\":6532312,\"schema_id\":298,\"int\":1234,\"str\":\"foo\",\"primary_key\":[9001,\"foo\"]," +
+				"\"primary_key_columns\":[\"id\",\"first_name\"],\"data\":" + "{\"id\":9001,\"first_name\":\"foo\"," +
+				"\"last_name\":\"bar\",\"rawJSON\":{\"UserID\":20}}}",
+				rowMap.toJSON(outputConfig));
+
+	}
+
+	@Test
 	public void testToJSONWithListData() throws Exception {
 		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS,
 				Arrays.asList("id", "first_name"), POSITION);
@@ -194,6 +333,59 @@ public class RowMapTest {
 				"\"thread_id\":6532312,\"schema_id\":298,\"primary_key\":[9001]," +
 				"\"primary_key_columns\":[\"id\"],\"data\":{\"id\":9001,\"first_name\":\"foo\"," +
 				"\"last_name\":\"bar\"}}", rowMapOutput);
+	}
+	
+	@Test
+	public void testNamingStrategy() throws Exception {
+		RowMap rowMap = new RowMap(	"insert",
+									"MyDatabase",
+									"MyTable",
+									TIMESTAMP_MILLISECONDS,
+									Arrays.asList("id", "first_name"),
+									POSITION);
+
+		rowMap.setServerId(7653213L);
+		rowMap.setThreadId(6532312L);
+		rowMap.setSchemaId(298L);
+
+		rowMap.putExtraAttribute("int", 1234);
+		rowMap.putExtraAttribute("str", "foo");
+
+		rowMap.putData("id", 9001, null);
+		rowMap.putData("first_name", "foo", null);
+		rowMap.putData("last_name", "bar", null);
+		rowMap.putData("_age_", 12, null);
+		rowMap.putData("_parent_id", 9000, null);
+		rowMap.putData("__grand_parent_id", 8000, null);
+		rowMap.putData("_invalid_!chars", 8001, null);
+		rowMap.putData("_____", 8002, null);
+		rowMap.putData("__123", 8003, null);
+		rowMap.putData("favorite_interests", Arrays.asList("hiking", "programming"), null);
+		rowMap.putData("odd_ҫot_lowercase", 1, null);
+
+		MaxwellOutputConfig outputConfig = getMaxwellOutputConfig(Pattern.compile("^.*name.*$"));
+		outputConfig.namingStrategy = FieldNameStrategy.NAME_UNDERSCORE_TO_CAMEL_CASE;
+		{
+			Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\",\"type\":\"insert\"," +
+								"\"ts\":1496712943,\"position\":\"binlog-0001:1\",\"gtid\":null," +
+								"\"serverId\":7653213," + // camel case applied
+								"\"threadId\":6532312," + // camel case applied
+								"\"schemaId\":298," + // camel case applied
+								"\"int\":1234,\"str\":\"foo\"," + "\"primaryKey\":[9001,\"foo\"]," + // camel case applied
+								"\"primaryKeyColumns\":[\"id\",\"first_name\"]," + // first_name not converted because
+																					// it's a value instead of name of a
+																					// field
+								"\"data\":{\"id\":9001," + "\"age\":12,\"parentId\":9000," +
+										"\"grandParentId\":8000," +
+								"\"invalid!chars\":8001," + //non-ascii char after underscore keeps the same
+								"\"_____\":8002," +		//extreme case, leave the old
+								"\"123\":8003," +		//all underscore chars are removed 
+								"\"favoriteInterests\":[\"hiking\",\"programming\"]," + // camel case applied
+								"\"oddҪotLowercase\":1}}",
+								rowMap.toJSON(outputConfig));
+		}
+		// clear the value for other cases
+		outputConfig.namingStrategy = null;
 	}
 
 	private MaxwellOutputConfig getMaxwellOutputConfig(Pattern... patterns) {

@@ -1,10 +1,13 @@
 package com.zendesk.maxwell.row;
 
 import com.zendesk.maxwell.util.ListWithDiskBuffer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
 public class RowMapBuffer extends ListWithDiskBuffer<RowMap> {
+	static final Logger LOGGER = LoggerFactory.getLogger(RowMapBuffer.class);
 	private static long FlushOutputStreamBytes = 10000000;
 	private Long xid;
 	private Long xoffset = 0L;
@@ -52,6 +55,7 @@ public class RowMapBuffer extends ListWithDiskBuffer<RowMap> {
 		this.outputStreamCacheSize += r.getApproximateSize();
 		if ( this.outputStreamCacheSize > FlushOutputStreamBytes ) {
 			resetOutputStreamCaches();
+			LOGGER.debug("outputStreamCacheSize: {}, memorySize: {}", this.outputStreamCacheSize, this.memorySize);
 			this.outputStreamCacheSize = 0;
 		}
 

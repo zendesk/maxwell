@@ -9,6 +9,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
@@ -79,10 +80,10 @@ class KinesisCallback implements FutureCallback<UserRecordResult> {
 		this.succeededMessageCount.inc();
 		this.succeededMessageMeter.mark();
 		if(logger.isDebugEnabled()) {
-			logger.debug("->  key:" + key + ", shard id:" + result.getShardId() + ", sequence number:" + result.getSequenceNumber());
-			logger.debug("   " + json);
-			logger.debug("   " + position);
-			logger.debug("");
+			logger.debug("->  key:{}, shard id:{}, sequence number:{}\n" +
+							"   {}\n" +
+							"   {}\n",
+					key, result.getShardId(), result.getSequenceNumber(), json, position);
 		}
 
 		cc.markCompleted();
@@ -133,7 +134,7 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 
 		try {
 			ListenableFuture<UserRecordResult> future = kinesisProducer.addUserRecord(kinesisStream, key, encodedValue);
-			Futures.addCallback(future, callback);
+			Futures.addCallback(future, callback, MoreExecutors.directExecutor());
 		} catch(IllegalArgumentException t) {
 			callback.onFailure(t);
 			logger.error("Database:" + r.getDatabase() + ", Table:" + r.getTable() + ", PK:" + r.getRowIdentity().toConcatString() + ", Size:" + Integer.toString(vsize));

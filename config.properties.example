@@ -11,7 +11,7 @@ password=maxwell
 
 
 #     *** general ***
-# choose where to produce data to. stdout|file|kafka|kinesis|pubsub|sqs|rabbitmq|redis
+# choose where to produce data to. stdout|file|kafka|kinesis|pubsub|sqs|rabbitmq|redis|bigquery
 #producer=kafka
 
 # set the log level.  note that you can configure things further in log4j2.xml
@@ -44,6 +44,12 @@ password=maxwell
 # whether to use GTID or not for positioning
 #gtid_mode=true
 
+# maxwell will capture an initial "base" schema containing all table and column information,
+# and then keep delta-updates on top of that schema.  If you have an inordinate amount of DDL changes,
+# the table containing delta changes will grow unbounded (and possibly too large) over time.  If you
+# enable this option Maxwell will periodically compact its tables.
+#max_schemas=10000
+
 # SSL/TLS options
 # To use VERIFY_CA or VERIFY_IDENTITY, you must set the trust store with Java opts:
 #   -Djavax.net.ssl.trustStore=<truststore> -Djavax.net.ssl.trustStorePassword=<password>
@@ -73,6 +79,7 @@ password=maxwell
 #schema_user=username
 #schema_password=password
 #schema_port=3306
+
 
 #       *** output format ***
 
@@ -111,6 +118,10 @@ password=maxwell
 # DDL (ALTER/CREATE TABLE/ETC) infromation. (default: false)
 # See also: ddl_kafka_topic
 #output_ddl=true
+
+# turns underscore naming style of fields to camel case style in JSON output
+# default is none, which means the field name in JSON is the exact name in MySQL table
+#output_naming_strategy=underscore_to_camelcase
 
 #       *** kafka ***
 
@@ -170,7 +181,7 @@ kafka.acks=1
 #           *** partitioning ***
 
 # What part of the data do we partition by?
-#producer_partition_by=database # [database, table, primary_key, transaction_id, column]
+#producer_partition_by=database # [database, table, primary_key, transaction_id, thread_id, column]
 
 # specify what fields to partition by when using producer_partition_by=column
 # column separated list.
@@ -207,6 +218,12 @@ kafka.acks=1
 #pubsub_topic=maxwell
 #ddl_pubsub_topic=maxwell_ddl
 
+#            *** bigquery ***
+
+#bigquery_project_id=myproject
+#bigquery_dataset=mydataset
+#bigquery_table=mytable
+
 #            *** rabbit-mq ***
 
 #rabbitmq_host=rabbitmq_hostname
@@ -214,6 +231,7 @@ kafka.acks=1
 #rabbitmq_user=guest
 #rabbitmq_pass=guest
 #rabbitmq_virtual_host=/
+#rabbitmq_handshake_timeout=20000
 #rabbitmq_exchange=maxwell
 #rabbitmq_exchange_type=fanout
 #rabbitmq_exchange_durable=false
@@ -265,6 +283,12 @@ kafka.acks=1
 # See http://maxwells-daemon.io/filtering for more details
 #
 #filter= exclude: *.*, include: foo.*, include: bar.baz, include: foo.bar.col_eg = "value_to_match"
+
+
+# If you are running maxwell without permissions to view certain parts of your schema, 
+# you may encounter "Coulndn't find database XXX" errors.  In *only* those situations, 
+# turn this option on and use filters to only include what you need.
+#ignore_missing_schema = false
 
 # javascript filter
 # maxwell can run a bit of javascript for each row if you need very custom filtering/data munging.

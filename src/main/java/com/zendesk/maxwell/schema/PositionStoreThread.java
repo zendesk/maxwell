@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.schema;
 
 import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.errors.DuplicateProcessException;
 import com.zendesk.maxwell.replication.Position;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +58,7 @@ public class PositionStoreThread extends RunLoopProcess implements Runnable {
 		}
 	}
 
-	void storeFinalPosition() throws SQLException {
+	void storeFinalPosition() throws SQLException, DuplicateProcessException {
 		if ( position != null && !position.equals(storedPosition) ) {
 			LOGGER.info("Storing final position: " + position);
 			store.set(position);
@@ -77,7 +78,7 @@ public class PositionStoreThread extends RunLoopProcess implements Runnable {
 		BinlogPosition currentBinlog = currentPosition.getBinlogPosition();
 		if ( !lastHeartbeatSentFrom.getFile().equals(currentBinlog.getFile()) )
 			return true;
-		if ( currentBinlog.getOffset() - lastHeartbeatSentFrom.getOffset() > 1000 ) {
+		if ( currentBinlog.getOffset() - lastHeartbeatSentFrom.getOffset() > 3000 ) {
 			return true;
 		}
 
@@ -109,7 +110,14 @@ public class PositionStoreThread extends RunLoopProcess implements Runnable {
 	}
 
 	public synchronized void setPosition(Position p) {
-		if ( position == null || p.newerThan(position) ) {
+		/* in order to keep full, comparable gtid sets maria makes us jump through some hoops. */
+		if ( context.isMariaDB() && position != null ) {
+			BinlogPosition bp = p.getBinlogPosition();
+			if ( bp.getGtid() != null ) {
+				bp.mergeGtids(position.getBinlogPosition().getGtidSet());
+			}
+			position = p;
+		} else if ( position == null || p.newerThan(position) ) {
 			position = p;
 			if (storedPosition == null) {
 				storedPosition = p;

@@ -54,11 +54,6 @@ public class MysqlIsolatedServer {
 		if ( !xtraParams.contains("--server_id") )
 			serverID = "--server_id=" + SERVER_ID;
 
-		String authPlugin = "";
-		if ( this.getVersion().atLeast(8, 0) ) {
-			authPlugin = "--default-authentication-plugin=mysql_native_password";
-		}
-
 		ProcessBuilder pb = new ProcessBuilder(
 			dir + "/src/test/onetimeserver",
 			"--mysql-version=" + this.getVersionString(),
@@ -71,7 +66,6 @@ public class MysqlIsolatedServer {
 			"--sync_binlog=0",
 			"--default-time-zone=+00:00",
 			isRoot ? "--user=root" : "",
-			authPlugin,
 			gtidParams
 		);
 
@@ -119,7 +113,12 @@ public class MysqlIsolatedServer {
 
 
 		resetConnection();
-		this.connection.createStatement().executeUpdate("CREATE USER 'maxwell'@'127.0.0.1' IDENTIFIED BY 'maxwell'");
+
+		try {
+			this.connection.createStatement().executeUpdate("CREATE USER 'maxwell'@'127.0.0.1' IDENTIFIED BY 'maxwell'");
+		} catch ( SQLException e ) {
+			LOGGER.warn("Couldn't create maxwell user: " + e.getMessage());
+		}
 		this.connection.createStatement().executeUpdate("GRANT REPLICATION SLAVE on *.* to 'maxwell'@'127.0.0.1'");
 		this.connection.createStatement().executeUpdate("GRANT ALL on *.* to 'maxwell'@'127.0.0.1'");
 		this.connection.createStatement().executeUpdate("CREATE DATABASE if not exists test");
@@ -132,11 +131,20 @@ public class MysqlIsolatedServer {
 		if ( !rs.next() )
 			throw new RuntimeException("could not get master status");
 
+		String createUserSQL;
+		if ( getVersion().atLeast(5, 7) && !getVersion().isMariaDB ) {
+			createUserSQL = "create user 'maxwell_repl'@'127.0.0.1' identified with 'mysql_native_password' by 'maxwell'";
+		} else {
+			createUserSQL = "create user 'maxwell_repl'@'127.0.0.1' identified by 'maxwell'";
+		}
+		master.createStatement().execute(createUserSQL);
+		master.createStatement().execute("grant replication slave, replication client on *.* to 'maxwell_repl'@'127.0.0.1'");
+
 		String file = rs.getString("File");
 		Long position = rs.getLong("Position");
 
 		String changeSQL = String.format(
-			"CHANGE MASTER to master_host = '127.0.0.1', master_user='maxwell', master_password='maxwell', "
+			"CHANGE MASTER to master_host = '127.0.0.1', master_user='maxwell_repl', master_password='maxwell', "
 			+ "master_log_file = '%s', master_log_pos = %d, master_port = %d",
 			file, position, masterPort
 		);
@@ -160,6 +168,18 @@ public class MysqlIsolatedServer {
 		boot(null);
 	}
 
+	public void stop() {
+		try {
+			Runtime.getRuntime().exec("kill -STOP " + this.serverPid);
+		} catch (IOException e) {}
+	}
+
+	public void resume() {
+		try {
+			Runtime.getRuntime().exec("kill -CONT " + this.serverPid);
+		} catch (IOException e) {}
+	}
+
 	public void resetConnection() throws SQLException {
 		this.connection = getNewConnection();
 	}
@@ -179,9 +199,9 @@ public class MysqlIsolatedServer {
 	}
 
 	public void execute(String query) throws SQLException {
-		Statement s = getConnection().createStatement();
-		s.executeUpdate(query);
-		s.close();
+		try ( Statement s = getConnection().createStatement()) {
+			s.execute(query);
+		}
 	}
 
 	private Connection cachedCX;
@@ -189,9 +209,9 @@ public class MysqlIsolatedServer {
 		if ( cachedCX == null )
 			cachedCX = getConnection();
 
-		Statement s = cachedCX.createStatement();
-		s.executeUpdate(query);
-		s.close();
+		try ( Statement s = cachedCX.createStatement() ) {
+			s.execute(query);
+		}
 	}
 
 	public void executeList(List<String> queries) throws SQLException {
@@ -231,6 +251,11 @@ public class MysqlIsolatedServer {
 	}
 
 	public static MysqlVersion getVersion() {
+		if ( getVersionString().equals("mariadb") ) {
+			MysqlVersion v = new MysqlVersion(10, 10);
+			v.isMariaDB = true;
+			return v;
+		}
 		String[] parts = getVersionString().split("\\.");
 		return new MysqlVersion(Integer.valueOf(parts[0]), Integer.valueOf(parts[1]));
 	}
@@ -253,8 +278,17 @@ public class MysqlIsolatedServer {
 			if ( rs.getString("Relay_Master_Log_File").equals(masterFile) &&
 				rs.getLong("Exec_Master_Log_Pos") >= masterPos )
 				return;
+			LOGGER.info("waiting for slave to be current: {}, {}", masterFile, masterPos);
+			LOGGER.info("{}, {}", rs.getString("Relay_Master_Log_File"), rs.getLong("Exec_Master_Log_Pos"));
 
-			Thread.sleep(200);
+			int columnsNumber = rs.getMetaData().getColumnCount();
+			for (int i = 1; i <= columnsNumber; i++) {
+				if (i > 1) System.out.print(",  ");
+				String columnValue = rs.getString(i);
+				System.out.print(columnValue + " " + rs.getMetaData().getColumnName(i));
+			}
+			System.out.println("");
+			Thread.sleep(2000);
 		}
 	}
 }
