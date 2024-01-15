@@ -9,5 +9,5 @@ metadata:
 spec:
   type: service
   lifecycle: production
-  owner: sre
+  owner: platform
   system: maxwell
