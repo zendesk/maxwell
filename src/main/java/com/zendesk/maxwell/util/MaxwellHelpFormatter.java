@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MaxwellHelpFormatter extends BuiltinHelpFormatter {
@@ -52,6 +53,17 @@ public class MaxwellHelpFormatter extends BuiltinHelpFormatter {
 		String output = this.formattedHelpOutput();
 		output = output.replaceAll("--__separator_.*", "");
 
+		Matcher matcher = Pattern.compile("--__section_(\\w+)\\s*").matcher(output);
+		StringBuffer result = new StringBuffer();
+
+		while (matcher.find()) {
+			String sectionName = matcher.group(1);
+			matcher.appendReplacement(result, "\n" + matcher.group(1) + " options:\n");
+			result.append(StringUtils.repeat('-', matcher.group(1).length() + " options:".length()) + "\n");
+		}
+		matcher.appendTail(result);
+
+		output = result.toString();
 		output = output + "\n--help [ all, "
 			+ StringUtils.join(sectionNames, ", ") +  " ]\n";
 

@@ -43,7 +43,7 @@ do
     --no-clean)
       NO_CLEAN="-no-clean"
       ;;
-    -d|--debug)
+    -d|--debug|-debug)
       DEBUG="-debug"
       ;;
     -h|--help)

@@ -15,6 +15,7 @@ public class FieldNames {
 	public static final String GTID = "gtid";
 	public static final String OLD = "old";
 	public static final String POSITION = "position";
+	public static final String PUSH_TS = "push_ts";
 	public static final String QUERY = "query";
 	public static final String SERVER_ID = "server_id";
 	public static final String TABLE = "table";

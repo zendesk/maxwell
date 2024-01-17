@@ -1,9 +1,10 @@
 package com.zendesk.maxwell.bootstrap;
 
+import com.zendesk.maxwell.util.C3P0ConnectionPool;
 import com.zendesk.maxwell.util.Logging;
+import com.zendesk.maxwell.util.ConnectionPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import snaq.db.ConnectionPool;
 
 import java.io.Console;
 import java.sql.Connection;
@@ -12,6 +13,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+/**
+ * MaxwellBootstrapUtility is a command line utility that launches and monitors the progress of bootstrapping.
+ * The actual work of bootstrapping is done in the main maxwell server process.
+ */
 public class MaxwellBootstrapUtility {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellBootstrapUtility.class);
 	protected class MissingBootstrapRowException extends Exception {
@@ -34,7 +39,9 @@ public class MaxwellBootstrapUtility {
 		}
 
 		ConnectionPool connectionPool = getConnectionPool(config);
-		try ( final Connection connection = connectionPool.getConnection() ) {
+		ConnectionPool replConnectionPool = getReplicationConnectionPool(config);
+		try ( final Connection connection = connectionPool.getConnection();
+				final Connection replicationConnection = replConnectionPool.getConnection() ) {
 			if ( config.abortBootstrapID != null ) {
 				getInsertedRowsCount(connection, config.abortBootstrapID);
 				removeBootstrapRow(connection, config.abortBootstrapID);
@@ -46,7 +53,7 @@ public class MaxwellBootstrapUtility {
 				getInsertedRowsCount(connection, config.monitorBootstrapID);
 				rowId = config.monitorBootstrapID;
 			} else {
-				Long totalRows = calculateRowCount(connection, config.databaseName, config.tableName, config.whereClause);
+				Long totalRows = calculateRowCount(replicationConnection, config.databaseName, config.tableName, config.whereClause);
 				rowId = insertBootstrapStartRow(connection, config.databaseName, config.tableName, config.whereClause, config.clientID, config.comment, totalRows);
 			}
 
@@ -106,86 +113,96 @@ public class MaxwellBootstrapUtility {
 
 	private long getInsertedRowsCount(Connection connection, long rowId) throws SQLException, MissingBootstrapRowException {
 		String sql = "select inserted_rows from `bootstrap` where id = ?";
-		PreparedStatement preparedStatement = connection.prepareStatement(sql);
-		preparedStatement.setLong(1, rowId);
-		ResultSet resultSet = preparedStatement.executeQuery();
-
-		if ( resultSet.next() ) {
-			return resultSet.getLong(1);
-		} else {
-			throw new MissingBootstrapRowException(rowId);
+		try ( PreparedStatement preparedStatement = connection.prepareStatement(sql) ) {
+			preparedStatement.setLong(1, rowId);
+			try ( ResultSet resultSet = preparedStatement.executeQuery() ) {
+				if ( resultSet.next() ) {
+					return resultSet.getLong(1);
+				} else {
+					throw new MissingBootstrapRowException(rowId);
+				}
+			}
 		}
 	}
 
 	private boolean getIsComplete(Connection connection, long rowId) throws SQLException, MissingBootstrapRowException {
 		String sql = "select is_complete from `bootstrap` where id = ?";
-		PreparedStatement preparedStatement = connection.prepareStatement(sql);
-		preparedStatement.setLong(1, rowId);
-		ResultSet resultSet = preparedStatement.executeQuery();
-
-		if ( resultSet.next() )  {
-			return resultSet.getInt(1) == 1;
-		} else {
-			throw new MissingBootstrapRowException(rowId);
+		try ( PreparedStatement preparedStatement = connection.prepareStatement(sql) ) {
+			preparedStatement.setLong(1, rowId);
+			try ( ResultSet resultSet = preparedStatement.executeQuery() ) {
+				if ( resultSet.next() )  {
+					return resultSet.getInt(1) == 1;
+				} else {
+					throw new MissingBootstrapRowException(rowId);
+				}
+			}
 		}
 	}
 
-	private ConnectionPool getConnectionPool(MaxwellBootstrapUtilityConfig config) {
-		String name = "MaxwellBootstrapConnectionPool";
-		int maxPool = 10;
-		int maxSize = 0;
-		int idleTimeout = 10;
+	private ConnectionPool getConnectionPool(MaxwellBootstrapUtilityConfig config) throws SQLException {
 		String connectionURI = config.getConnectionURI();
-		return new ConnectionPool(name, maxPool, maxSize, idleTimeout, connectionURI, config.mysql.user, config.mysql.password);
+		System.out.println("connecting to " + connectionURI);
+		return new C3P0ConnectionPool(connectionURI, config.mysql.user, config.mysql.password);
+	}
+
+	private ConnectionPool getReplicationConnectionPool(MaxwellBootstrapUtilityConfig config) throws SQLException {
+		String connectionURI = config.getReplicationConnectionURI();
+
+		return new C3P0ConnectionPool(connectionURI, config.replicationMysql.user, config.replicationMysql.password);
 	}
 
 	private Long getTotalRowCount(Connection connection, Long bootstrapRowID) throws SQLException, MissingBootstrapRowException {
-		ResultSet resultSet =
-			connection.createStatement().executeQuery("select total_rows from `bootstrap` where id = " + bootstrapRowID);
-		if ( resultSet.next() ) {
-			return resultSet.getLong(1);
-		} else {
-			throw new MissingBootstrapRowException(bootstrapRowID);
+		try ( Statement stmt = connection.createStatement();
+		      ResultSet resultSet = stmt.executeQuery("select total_rows from `bootstrap` where id = " + bootstrapRowID) ) {
+			if ( resultSet.next() ) {
+				return resultSet.getLong(1);
+			} else {
+				throw new MissingBootstrapRowException(bootstrapRowID);
+			}
 		}
 	}
 
 	private Long calculateRowCount(Connection connection, String db, String table, String whereClause) throws SQLException {
 		LOGGER.info("counting rows");
-		String sql = String.format("select count(*) from `%s`.%s", db, table);
+		String sql = String.format("select count(*) from `%s`.`%s`", db, table);
 		if ( whereClause != null ) {
 			sql += String.format(" where %s", whereClause);
 		}
-		PreparedStatement preparedStatement = connection.prepareStatement(sql);
-		ResultSet resultSet = preparedStatement.executeQuery();
-		resultSet.next();
-		return resultSet.getLong(1);
+		try ( PreparedStatement preparedStatement = connection.prepareStatement(sql);
+			  ResultSet resultSet = preparedStatement.executeQuery() ) {
+			resultSet.next();
+			return resultSet.getLong(1);
+		}
 	}
 
 	private long insertBootstrapStartRow(Connection connection, String db, String table, String whereClause, String clientID, String comment, Long totalRows) throws SQLException {
 		LOGGER.info("inserting bootstrap start row");
 		String sql = "insert into `bootstrap` (database_name, table_name, where_clause, total_rows, client_id, comment) values(?, ?, ?, ?, ?, ?)";
 
-		PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-		preparedStatement.setString(1, db);
-		preparedStatement.setString(2, table);
+		try ( PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS) ) {
+			preparedStatement.setString(1, db);
+			preparedStatement.setString(2, table);
 
-		preparedStatement.setString(3, whereClause);
-		preparedStatement.setLong(4, totalRows);
-		preparedStatement.setString(5, clientID);
-		preparedStatement.setString(6, comment);
+			preparedStatement.setString(3, whereClause);
+			preparedStatement.setLong(4, totalRows);
+			preparedStatement.setString(5, clientID);
+			preparedStatement.setString(6, comment);
 
-		preparedStatement.execute();
-		ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
-		generatedKeys.next();
-		return generatedKeys.getLong(1);
+			preparedStatement.execute();
+			try ( ResultSet generatedKeys = preparedStatement.getGeneratedKeys() ) {
+				generatedKeys.next();
+				return generatedKeys.getLong(1);
+			}
+		}
 	}
 
 	private void removeBootstrapRow(Connection connection, long rowId) throws SQLException {
 		LOGGER.info("deleting bootstrap start row");
 		String sql = "delete from `bootstrap` where id = ?";
-		PreparedStatement preparedStatement = connection.prepareStatement(sql);
-		preparedStatement.setLong(1, rowId);
-		preparedStatement.execute();
+		try ( PreparedStatement preparedStatement = connection.prepareStatement(sql) ) {
+			preparedStatement.setLong(1, rowId);
+			preparedStatement.execute();
+		}
 	}
 
 	private void displayProgress(long total, long count, long initialCount, Long startedTimeMillis) {

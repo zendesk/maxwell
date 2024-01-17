@@ -19,6 +19,11 @@ public class FileProducer extends AbstractProducer {
 
 	@Override
 	public void push(RowMap r) throws Exception {
+		if ( !r.shouldOutput(outputConfig) ) {
+			context.setPosition(r);
+			return;
+		}
+
 		String output = r.toJSON(outputConfig);
 
 		if ( output != null ) {

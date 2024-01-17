@@ -7,6 +7,7 @@ import java.util.ArrayList;
 
 import com.zendesk.maxwell.CaseSensitivity;
 import com.zendesk.maxwell.filtering.Filter;
+import com.zendesk.maxwell.util.ConnectionPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +15,6 @@ import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.schema.ddl.SchemaChange;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
-import snaq.db.ConnectionPool;
 
 public abstract class AbstractSchemaStore {
 	static final Logger LOGGER = LoggerFactory.getLogger(AbstractSchemaStore.class);
@@ -38,9 +38,9 @@ public abstract class AbstractSchemaStore {
 	}
 
 	protected Schema captureSchema() throws SQLException {
-		try(Connection connection = schemaConnectionPool.getConnection()) {
-			LOGGER.info("Maxwell is capturing initial schema");
-			SchemaCapturer capturer = new SchemaCapturer(connection, caseSensitivity);
+		LOGGER.info("Maxwell is capturing initial schema");
+		try(Connection connection = schemaConnectionPool.getConnection();
+			SchemaCapturer capturer = new SchemaCapturer(connection, caseSensitivity)) {
 			return capturer.capture();
 		}
 	}

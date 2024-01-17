@@ -29,6 +29,11 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 		server = MaxwellTestSupport.setupServer();
 	}
 
+	@AfterClass
+	public static void shutdownServer() throws Exception { 
+		server.shutDown();
+	}
+
 	@Before
 	public void setupSchema() throws Exception {
 		MaxwellTestSupport.setupSchema(server);
@@ -133,6 +138,12 @@ public class MaxwellTestWithIsolatedServer extends TestWithNameLogging {
 
 	protected void requireMinimumVersion(MysqlVersion minimum) {
 		MaxwellTestSupport.requireMinimumVersion(server, minimum);
+	}
+
+	protected void requireMinimumVersion(MysqlVersion minimum, boolean isMariaDB) {
+		MaxwellTestSupport.requireMinimumVersion(server, minimum);
+		assumeTrue(server.getVersion().isMariaDB == isMariaDB);
+
 	}
 
 	protected void requireMinimumVersion(int major, int minor) {

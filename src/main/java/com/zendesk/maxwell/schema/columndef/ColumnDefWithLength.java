@@ -2,8 +2,10 @@ package com.zendesk.maxwell.schema.columndef;
 
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 
+import java.util.Objects;
+
 public abstract class ColumnDefWithLength extends ColumnDef {
-	protected Long columnLength;
+	private Long columnLength;
 
 	protected static ThreadLocal<StringBuilder> threadLocalBuilder = new ThreadLocal<StringBuilder>() {
 		@Override
@@ -19,7 +21,7 @@ public abstract class ColumnDefWithLength extends ColumnDef {
 		}
 	};
 
-	public ColumnDefWithLength(String name, String type, short pos, Long columnLength) {
+	protected ColumnDefWithLength(String name, String type, short pos, Long columnLength) {
 		super(name, type, pos);
 		if ( columnLength == null )
 			this.columnLength = 0L;
@@ -28,22 +30,40 @@ public abstract class ColumnDefWithLength extends ColumnDef {
 	}
 
 	@Override
-	public String toSQL(Object value) {
+	public boolean equals(Object o) {
+		if (o.getClass() == getClass()) {
+			ColumnDefWithLength other = (ColumnDefWithLength)o;
+			return super.equals(o)
+					&& Objects.equals(columnLength, other.columnLength);
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		int hash = super.hashCode();
+		return 31 * hash + Objects.hash(columnLength);
+	}
+
+	@Override
+	public String toSQL(Object value) throws ColumnDefCastException {
 		return "'" + formatValue(value, new MaxwellOutputConfig()) + "'";
 	}
 
 	@Override
-	public Object asJSON(Object value, MaxwellOutputConfig config) {
+	public Object asJSON(Object value, MaxwellOutputConfig config) throws ColumnDefCastException {
 		return formatValue(value, config);
 	}
 
 	public Long getColumnLength() { return columnLength ; }
 
-	public void setColumnLength(long length) {
-		this.columnLength = length;
+	public ColumnDefWithLength withColumnLength(long length) {
+		return cloneSelfAndSet(clone -> {
+			clone.columnLength = length;
+		});
 	}
 
-	protected abstract String formatValue(Object value, MaxwellOutputConfig config);
+	protected abstract String formatValue(Object value, MaxwellOutputConfig config) throws ColumnDefCastException;
 
 	protected static String appendFractionalSeconds(String value, int nanos, Long columnLength) {
 		if ( columnLength == 0L )

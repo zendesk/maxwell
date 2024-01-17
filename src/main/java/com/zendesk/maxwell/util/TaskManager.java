@@ -1,5 +1,6 @@
 package com.zendesk.maxwell.util;
 
+import com.zendesk.maxwell.bootstrap.BootstrapController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +16,7 @@ public class TaskManager {
 		this.tasks = new ArrayList<>();
 		this.state = RunState.RUNNING;
 	}
+
 
 	// Can be invoked multiple times, will only return `true`
 	// for the first invocation.
@@ -49,7 +51,7 @@ public class TaskManager {
 		// then wait for everything to stop
 		Long timeout = 1000L;
 		for (StoppableTask task: this.tasks) {
-			LOGGER.debug("Awaiting stop of: " + task);
+			LOGGER.debug("Awaiting stop of: {}", task);
 			task.awaitStop(timeout);
 		}
 
@@ -62,4 +64,5 @@ public class TaskManager {
 			tasks.add(task);
 		}
 	}
+
 }

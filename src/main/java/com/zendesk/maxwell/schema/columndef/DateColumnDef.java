@@ -3,8 +3,13 @@ package com.zendesk.maxwell.schema.columndef;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 
 public class DateColumnDef extends ColumnDef {
-	public DateColumnDef(String name, String type, short pos) {
+	private DateColumnDef(String name, String type, short pos) {
 		super(name, type, pos);
+	}
+
+	public static DateColumnDef create(String name, String type, short pos) {
+		DateColumnDef temp = new DateColumnDef(name, type, pos);
+		return (DateColumnDef) INTERNER.intern(temp);
 	}
 
 	@Override
@@ -17,14 +22,24 @@ public class DateColumnDef extends ColumnDef {
 	}
 
 	@Override
-	public Object asJSON(Object value, MaxwellOutputConfig config) {
-		if ( value instanceof Long && (Long) value == Long.MIN_VALUE ) {
+	public Object asJSON(Object value, MaxwellOutputConfig config) throws ColumnDefCastException {
+		if ( value instanceof String ) {
+			// bootstrapper just gives up on bothering with date processing
+			if ( config.zeroDatesAsNull && "0000-00-00".equals((String) value) )
+				return null;
+			else
+				return value;
+		} else if ( value instanceof Long && (Long) value == Long.MIN_VALUE ) {
 			if ( config.zeroDatesAsNull )
 				return null;
 			else
 				return "0000-00-00";
 		}
 
-		return DateFormatter.formatDate(value);
+		try {
+			return DateFormatter.formatDate(value);
+		} catch ( IllegalArgumentException e ) {
+			throw new ColumnDefCastException(this, value);
+		}
 	}
 }

@@ -5,7 +5,7 @@ import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.schema.*;
 import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.schema.ddl.ResolvedSchemaChange;
-import snaq.db.ConnectionPool;
+import com.zendesk.maxwell.util.ConnectionPool;
 
 import java.sql.Connection;
 import java.sql.SQLException;

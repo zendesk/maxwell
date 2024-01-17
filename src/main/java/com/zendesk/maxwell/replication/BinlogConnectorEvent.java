@@ -5,6 +5,7 @@ import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
+import com.zendesk.maxwell.schema.columndef.ColumnDefCastException;
 
 import java.io.Serializable;
 import java.util.*;
@@ -58,6 +59,10 @@ public class BinlogConnectorEvent {
 		return (TableMapEventData) event.getData();
 	}
 
+	public MariadbGtidEventData mariaGtidData() {
+		return (MariadbGtidEventData) event.getData();
+	}
+
 	public BinlogPosition getPosition() {
 		return position;
 	}
@@ -101,7 +106,7 @@ public class BinlogConnectorEvent {
 		return false;
 	}
 
-	private void writeData(Table table, RowMap row, Serializable[] data, BitSet includedColumns) {
+	private void writeData(Table table, RowMap row, Serializable[] data, BitSet includedColumns) throws ColumnDefCastException {
 		int dataIdx = 0, colIdx = 0;
 
 		for ( ColumnDef cd : table.getColumnList() ) {
@@ -117,7 +122,7 @@ public class BinlogConnectorEvent {
 		}
 	}
 
-	private void writeOldData(Table table, RowMap row, Serializable[] oldData, BitSet oldIncludedColumns) {
+	private void writeOldData(Table table, RowMap row, Serializable[] oldData, BitSet oldIncludedColumns) throws ColumnDefCastException {
 		int dataIdx = 0, colIdx = 0;
 
 		for ( ColumnDef cd : table.getColumnList() ) {
@@ -146,7 +151,7 @@ public class BinlogConnectorEvent {
 		}
 	}
 
-	private RowMap buildRowMap(String type, Position position, Position nextPosition, Serializable[] data, Table table, BitSet includedColumns, String rowQuery) {
+	private RowMap buildRowMap(String type, Position position, Position nextPosition, Serializable[] data, Table table, BitSet includedColumns, String rowQuery) throws ColumnDefCastException {
 		RowMap map = new RowMap(
 			type,
 			table.getDatabase(),
@@ -162,7 +167,7 @@ public class BinlogConnectorEvent {
 		return map;
 	}
 
-	public List<RowMap> jsonMaps(Table table, long lastHeartbeatRead, String rowQuery) {
+	public List<RowMap> jsonMaps(Table table, long lastHeartbeatRead, String rowQuery) throws ColumnDefCastException {
 		ArrayList<RowMap> list = new ArrayList<>();
 
 		Position position     = Position.valueOf(this.position, lastHeartbeatRead);

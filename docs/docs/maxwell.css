@@ -1,0 +1,43 @@
+#Reference table {
+  width: 100%;
+  font-size: 80%;
+}
+
+#Reference table td:nth-child(1) {
+  font-family: monospace;
+  font-size: 120%;
+}
+#Reference table td:nth-child(2) {
+}
+#Reference table td:nth-child(3) {
+}
+#Reference table td:nth-child(4) {
+}
+
+#Monitoring table {
+  width: 100%;
+  font-size: 80%;
+}
+
+#Monitoring table td:nth-child(1) {
+  width: 25%;
+}
+
+#Changelog h3 {
+  font-size: 1.25rem;
+}
+
+blockquote {
+  background: #f9f9f9;
+  border-left: 10px solid #ccc;
+  margin: 1.5em 10px;
+  padding: 0.5em 10px;
+}
+
+h1:not(:first-child) {
+  margin-top: 60px;
+}
+
+.bs-sidebar .nav > li > a {
+  padding: 3px 20px;
+}

@@ -10,6 +10,7 @@ import com.zendesk.maxwell.schema.MysqlSavedSchema;
 import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
 import com.zendesk.maxwell.schema.SchemaStoreSchema;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -226,8 +227,9 @@ public class RecoveryTest extends TestWithNameLogging {
 		new Thread(maxwell).start();
 		drainReplication(maxwell, rows);
 
+		String joined = StringUtils.join(",", rows.stream().map((rm) -> rm.getData("id")));
 		for ( long i = 0 ; i < DATA_SIZE + NEW_DATA_SIZE; i++ ) {
-			assertEquals(i + 1, rows.get((int) i).getData("id"));
+			assertEquals(joined, i + 1, rows.get((int) i).getData("id"));
 		}
 
 		// assert that we created a schema that matches up with the matched position.

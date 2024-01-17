@@ -1,15 +1,16 @@
 package com.zendesk.maxwell.schema.columndef;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.*;
 
 public class DateFormatter {
-	private static TimeZone UTC_ZONE = TimeZone.getTimeZone("UTC");
-	private static ThreadLocal<Calendar> calendarThreadLocal = ThreadLocal.withInitial(() -> Calendar.getInstance());
-	private static ThreadLocal<Calendar> calendarUTCThreadLocal = ThreadLocal.withInitial(() -> Calendar.getInstance(UTC_ZONE));
-	private static ThreadLocal<StringBuilder> stringBuilderThreadLocal = ThreadLocal.withInitial(() -> new StringBuilder(32));
+	private static final TimeZone UTC_ZONE = TimeZone.getTimeZone("UTC");
+	private static final ThreadLocal<Calendar> calendarThreadLocal = ThreadLocal.withInitial(() -> Calendar.getInstance());
+	private static final ThreadLocal<Calendar> calendarUTCThreadLocal = ThreadLocal.withInitial(() -> Calendar.getInstance(UTC_ZONE));
+	private static final ThreadLocal<StringBuilder> stringBuilderThreadLocal = ThreadLocal.withInitial(() -> new StringBuilder(32));
 
-	public static Timestamp extractTimestamp(Object value) {
+	public static Timestamp extractTimestamp(Object value) throws IllegalArgumentException {
 		if (value instanceof Long) {
 			Long micros = (Long) value;
 			long millis = floorDiv(micros, 1000L);
@@ -22,8 +23,10 @@ public class DateFormatter {
 		} else if ( value instanceof Date ) {
 			Long time = ((Date) value).getTime();
 			return new Timestamp(time);
+		}  else if ( value instanceof LocalDateTime) {
+			return Timestamp.valueOf((LocalDateTime) value);
 		} else
-			throw new RuntimeException("couldn't extract date/time out of " + value);
+			throw new IllegalArgumentException("couldn't extract date/time out of " + value);
 	}
 
 	/*

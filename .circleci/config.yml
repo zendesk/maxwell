@@ -1,0 +1,64 @@
+version: 2.1
+
+executors:
+  jdk11:
+    docker:
+
+
+jobs:
+  build:
+    docker:
+      - image: cimg/openjdk:11.0
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "pom.xml" }}
+      - run:
+          name: Cache m2 artifacts
+          command: mvn dependency:go-offline
+      - save_cache:
+          key: dependency-cache-{{ checksum "pom.xml" }}
+          paths: [ "~/.m2" ]
+  test:
+    docker:
+      - image: cimg/openjdk:11.0
+    parameters:
+      mysql:
+        type: string
+    environment:
+      MYSQL_VERSION: "<< parameters.mysql >>"
+      JAVA_TOOL_OPTIONS: "-Xmx250m"
+    steps:
+      - checkout
+      - restore_cache:
+          key: dependency-cache-{{ checksum "pom.xml" }}
+      - run:
+          name: "add libnuma"
+          command: sudo apt-get update && sudo apt-get -y install libnuma1
+      - run:
+          name: Maven Test
+          command: mvn test -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+      - store_artifacts:
+          path: test.log
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - build:
+          filters:
+            branches:
+              ignore: gh-pages
+      - test:
+          name: "test-5.5"
+          mysql: "5.5"
+          requires: [ "build" ]
+      - test:
+          name: "test-5.7"
+          mysql: "5.7"
+          requires: [ "build" ]
+      - test:
+          name: "test-mariadb"
+          mysql: "mariadb"
+          requires: [ "build" ]
+
