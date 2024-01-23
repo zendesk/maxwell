@@ -231,11 +231,6 @@
       <version>1.13</version>
     </dependency>
     <dependency>
-      <groupId>net.jpountz.lz4</groupId>
-      <artifactId>lz4</artifactId>
-      <version>1.3.0</version>
-    </dependency>
-    <dependency>
       <groupId>me.tongfei</groupId>
       <artifactId>progressbar</artifactId>
       <version>0.6.0</version>
