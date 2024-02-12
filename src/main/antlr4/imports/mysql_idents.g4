@@ -40,6 +40,8 @@ default_collation: DEFAULT? collation;
 charset_token: (CHARSET | (CHARACTER SET) | (CHAR SET));
 collation: COLLATE '='? (IDENT | string_literal | QUOTED_IDENT | DEFAULT);
 
+tablespace: TABLESPACE '='? (id | string_literal);
+
 if_not_exists: IF NOT EXISTS;
 
 
