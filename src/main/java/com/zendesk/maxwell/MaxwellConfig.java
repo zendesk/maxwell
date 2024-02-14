@@ -777,8 +777,8 @@ public class MaxwellConfig extends AbstractConfig {
 			.withRequiredArg();
 		parser.accepts("encrypt", "encryption mode: [none|data|all]. default: none" )
 			.withRequiredArg();
-		parser.accepts( "row_query_max_length", "truncates the 'query' field if it is above this length. default: false" )
-			.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "row_query_max_length", "truncates the 'query' field if it is above this length. default: 0 (disabled)" )
+			.withOptionalArg().ofType(Integer.class);
 
 		parser.section( "filtering" );
 
