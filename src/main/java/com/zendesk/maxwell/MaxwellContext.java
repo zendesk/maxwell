@@ -14,6 +14,7 @@ import com.zendesk.maxwell.schema.MysqlPositionStore;
 import com.zendesk.maxwell.schema.MysqlSchemaCompactor;
 import com.zendesk.maxwell.schema.PositionStoreThread;
 import com.zendesk.maxwell.schema.ReadOnlyMysqlPositionStore;
+import com.zendesk.maxwell.schema.VitessPositionStore;
 import com.zendesk.maxwell.util.C3P0ConnectionPool;
 import com.zendesk.maxwell.util.RunLoopProcess;
 import com.zendesk.maxwell.util.StoppableTask;
@@ -127,10 +128,13 @@ public class MaxwellContext {
 		if ( this.config.initPosition != null )
 			this.initialPosition = this.config.initPosition;
 
-		if ( this.config.replayMode ) {
-			this.positionStore = new ReadOnlyMysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.clientID, config.gtidMode);
+		ConnectionPool cp = getMaxwellConnectionPool();
+		if (this.config.replayMode) {
+			this.positionStore = new ReadOnlyMysqlPositionStore(cp, getServerID(), config.clientID, config.gtidMode);
+		} else if (config.vitessEnabled) {
+			this.positionStore = new VitessPositionStore(cp, config.clientID);
 		} else {
-			this.positionStore = new MysqlPositionStore(this.getMaxwellConnectionPool(), this.getServerID(), this.config.clientID, config.gtidMode);
+			this.positionStore = new MysqlPositionStore(cp, getServerID(), config.clientID, config.gtidMode);
 		}
 
 		this.heartbeatNotifier = new HeartbeatNotifier();
@@ -255,7 +259,7 @@ public class MaxwellContext {
 		}
 
 		if (taskManager.requestStop()) {
-			if (this.error == null && this.replicator != null) {
+			if (this.error == null && this.replicator != null && !config.vitessEnabled) {
 				sendFinalHeartbeat();
 			}
 			this.terminationThread = spawnTerminateThread();
