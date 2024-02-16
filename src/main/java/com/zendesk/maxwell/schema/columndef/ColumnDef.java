@@ -116,6 +116,7 @@ public abstract class ColumnDef implements Cloneable {
 		case "date":
 			return DateColumnDef.create(name, type, pos);
 		case "datetime":
+			return StringColumnDef.create(name, type, pos, charset);
 		case "timestamp":
 			return DateTimeColumnDef.create(name, type, pos, columnLength);
 		case "time":			
