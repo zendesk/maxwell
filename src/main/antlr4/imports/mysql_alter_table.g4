@@ -59,7 +59,7 @@ ignored_alter_specifications:
     ADD index_definition
     | ALTER INDEX name (VISIBLE | INVISIBLE)
     | ALTER COLUMN? name ((SET DEFAULT literal) | (DROP DEFAULT) | (SET (VISIBLE | INVISIBLE)))
-    | DROP INDEX index_name
+    | DROP INDEX if_exists? index_name
     | DISABLE KEYS
     | ENABLE KEYS
     | ORDER BY alter_ordering (',' alter_ordering)*
