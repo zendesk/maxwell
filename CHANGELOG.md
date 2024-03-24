@@ -1,5 +1,14 @@
 # Maxwell changelog
 
+### [v1.41.1](https://github.com/zendesk/maxwell/releases/tag/v1.41.1)
+
+- fix 2 parser issues, one mariadb and one "tablespace" specific
+- upgrade lz4 dep for security
+
+
+
+_Released 2024-03-24_
+
 ### [v1.41.0](https://github.com/zendesk/maxwell/releases/tag/v1.41.0)
 
 - javascript filters are now passed a second, optional dicionary
