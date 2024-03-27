@@ -5,8 +5,8 @@ that reads MySQL binlogs and writes data changes as JSON to Kafka, Kinesis, and 
 
 [↓ Download](https://github.com/zendesk/maxwell/releases/download/v1.41.1/maxwell-1.41.1.tar.gz) \|
 [⚝ Source / Community](https://github.com/zendesk/maxwell) \|
-[☝ Getting Started](/quickstart) \|
-[☷ Reference](/config)
+[☝ Getting Started](https://maxwells-daemon.io/quickstart/) \|
+[☷ Reference](https://maxwells-daemon.io/config/)
 
 __What's it for?__
 
