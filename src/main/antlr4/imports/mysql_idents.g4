@@ -21,7 +21,7 @@ id: ( IDENT | QUOTED_IDENT );
 literal: (float_literal | broken_float_literal | integer_literal | string_literal | byte_literal | NULL | TRUE | FALSE);
 literal_with_weirdo_multistring: (float_literal | broken_float_literal | integer_literal | string_literal+ | byte_literal | NULL | TRUE | FALSE);
 
-float_literal: ('+'|'-')? INTEGER_LITERAL? '.' INTEGER_LITERAL;
+float_literal: ('+'|'-')? INTEGER_LITERAL? '.' ( INTEGER_LITERAL | INTEGER_SCIENTIFIC );
 broken_float_literal: ('+'|'-')? INTEGER_LITERAL '.';
 integer_literal: ('+'|'-')? INTEGER_LITERAL;
 string_literal: (STRING_LITERAL | DBL_STRING_LITERAL);
@@ -65,6 +65,8 @@ SQL_LINE_COMMENT: ('#' | '--') (~'\n')* ('\n' | EOF) -> skip;
 STRING_LITERAL: [bnxBNX]? TICK (('\\' . ) | '\'\'' | ~('\\' | '\''))* TICK;
 DBL_STRING_LITERAL: DBL (('\\' .) | '""' | ~('\\' | '"'))* DBL;
 INTEGER_LITERAL: DIGIT+;
+INTEGER_SCIENTIFIC: DIGIT+ SCIENTIFIC_PART;
+SCIENTIFIC_PART: ('e'|'E') ('+'|'-')? DIGIT+;
 
 fragment TICK: '\'';
 fragment DBL: '"';
