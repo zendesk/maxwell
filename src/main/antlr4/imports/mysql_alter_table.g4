@@ -4,8 +4,11 @@ import mysql_literal_tokens, mysql_idents, column_definitions, mysql_partition;
 
 alter_table: alter_table_preamble alter_specifications? alter_partition_specification? alter_post_flags?;
 
-alter_table_preamble: ALTER alter_flags? TABLE table_name;
+alter_table_preamble: ALTER alter_flags? TABLE table_name wait_flag?;
 alter_flags: (ONLINE | OFFLINE | IGNORE);
+wait_flag:
+   (WAIT integer | NOWAIT);
+
 
 alter_specifications: alter_specification (',' alter_specification)*;
 alter_specification:
@@ -31,7 +34,7 @@ change_column: CHANGE COLUMN? full_column_name column_definition col_position?;
 if_exists: IF EXISTS;
 drop_column: DROP COLUMN? if_exists? full_column_name CASCADE?;
 modify_column: MODIFY COLUMN? column_definition col_position?;
-drop_key: DROP FOREIGN? (INDEX|KEY) name;
+drop_key: DROP FOREIGN? (INDEX|KEY) if_exists? name;
 drop_primary_key: DROP PRIMARY KEY;
 alter_rename_table: RENAME (TO | AS)? table_name;
 convert_to_character_set: CONVERT TO charset_token charset_name collation?;
