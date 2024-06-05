@@ -1,5 +1,13 @@
 # Maxwell changelog
 
+### [v1.41.2](https://github.com/zendesk/maxwell/releases/tag/v1.41.2)
+
+- Owen Derby is the Nick Clarke of Maxwell parser bugs
+
+
+
+_Released 2024-06-05_
+
 ### [v1.41.1](https://github.com/zendesk/maxwell/releases/tag/v1.41.1)
 
 - fix 2 parser issues, one mariadb and one "tablespace" specific
