@@ -272,7 +272,10 @@ public class DDLParserTest {
 			"alter table test.c ALGORITHM=COPY, STATS_SAMPLE_PAGES=DEFAULT",
 			"ALTER TABLE vehicles " +
 				"DROP INDEX IF EXISTS uq_vehicles_oem_id_oem_vin," +
-				"ALGORITHM=NOCOPY, LOCK=NONE"
+				"ALGORITHM=NOCOPY, LOCK=NONE",
+			"ALTER TABLE foo drop foreign key if exists foobar",
+			"ALTER TABLE table_foo WAIT 30 ADD COLUMN my_column INTEGER, ALGORITHM=INSTANT, LOCK=NONE"
+
 
 		};
 
