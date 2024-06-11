@@ -109,13 +109,18 @@ public class MaxwellMysqlStatus {
 	/**
 	 * Verify that the maxwell database is in the expected state
 	 * @param c a JDBC connection
+	 * @param vitessEnabled whether or not we are running in a vitess environment
 	 * @throws SQLException if we have database issues
 	 * @throws MaxwellCompatibilityError if we're not in the expected state
 	 */
-	public static void ensureMaxwellMysqlState(Connection c) throws SQLException, MaxwellCompatibilityError {
+	public static void ensureMaxwellMysqlState(Connection c, boolean vitessEnabled) throws SQLException, MaxwellCompatibilityError {
 		MaxwellMysqlStatus m = new MaxwellMysqlStatus(c);
 
-		m.ensureVariableState("read_only", "OFF");
+		// Vitess reports read_only=ON while running in a vttestserver and sometimes even
+		// in production. We need to ignore this setting when running against Vitess.
+		if (!vitessEnabled) {
+			m.ensureVariableState("read_only", "OFF");
+		}
 	}
 
 	/**
