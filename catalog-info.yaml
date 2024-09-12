@@ -50,3 +50,16 @@ spec:
   lifecycle: production
   owner: platform
   system: maxwell
+---
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: maxwell-permissions-shard04
+  annotations:
+    datadoghq.com/service-name: maxwell-permissions-shard04
+    github.com/project-slug: vend/maxwell
+spec:
+  type: service
+  lifecycle: production
+  owner: platform
+  system: maxwell
