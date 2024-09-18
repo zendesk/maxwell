@@ -34,6 +34,21 @@ public class MaxwellMysqlStatus {
 		}
 	}
 
+	public String getShowBinlogSQL() {
+		try {
+			DatabaseMetaData md = connection.getMetaData();
+			if ( md.getDatabaseMajorVersion() >= 8 ) {
+				return "SHOW BINARY LOG STATUS";
+			}
+		} catch ( SQLException e ) {
+		}
+
+		return "SHOW MASTER STATUS";
+	}
+
+
+
+
 	public String getVariableState(String variableName, boolean throwOnMissing) throws SQLException, MaxwellCompatibilityError {
 		try ( Statement stmt = connection.createStatement();
 		      ResultSet rs = stmt.executeQuery(sqlStatement(variableName)) ) {

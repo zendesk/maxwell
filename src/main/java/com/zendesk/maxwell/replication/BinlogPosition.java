@@ -42,8 +42,11 @@ public class BinlogPosition implements Serializable {
 	public static BinlogPosition capture(Connection c, boolean gtidMode) throws SQLException {
 		MaxwellMysqlStatus m = new MaxwellMysqlStatus(c);
 
+
+
+
 		try ( Statement stmt = c.createStatement();
-		      ResultSet rs = stmt.executeQuery("SHOW MASTER STATUS") ) {
+		      ResultSet rs = stmt.executeQuery(m.getShowBinlogSQL())) {
 			rs.next();
 			long l = rs.getInt(POSITION_COLUMN);
 			String file = rs.getString(FILE_COLUMN);
