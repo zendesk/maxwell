@@ -25,7 +25,7 @@ __It goes like this:__
   {
     "database": "test",
     "table": "maxwell",
-    "type": "insert",
+    "type": "update",
     "ts": 1449786310,
     "data": { "id":1, "daemon": "Stanislaw Lem", "mycol": 55 },
     "old": { "mycol":, 23, "daemon": "what once was" }
