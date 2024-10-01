@@ -245,12 +245,12 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-bigquerystorage</artifactId>
-      <version>2.14.2</version>
+      <version>3.9.2</version>
     </dependency>
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-bigquery</artifactId>
-      <version>2.13.3</version>
+      <version>2.42.4</version>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
