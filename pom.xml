@@ -186,7 +186,7 @@
     <dependency>
       <groupId>org.jgroups</groupId>
       <artifactId>jgroups-raft</artifactId>
-      <version>1.0.0.Final</version>
+      <version>1.0.10.Final</version>
     </dependency>
     <dependency>
       <groupId>org.openjdk.nashorn</groupId>
