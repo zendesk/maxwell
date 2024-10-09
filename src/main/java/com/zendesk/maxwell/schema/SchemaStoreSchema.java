@@ -168,6 +168,10 @@ public class SchemaStoreSchema {
 			performAlter(c, "alter table `positions` add column `last_heartbeat_read` bigint null default null");
 		}
 
+		if ( !getTableColumns("positions", c).containsKey("tx_offset") ) {
+			performAlter(c, "alter table `positions` add column `tx_offset` int not null default 0");
+		}
+
 		if ( !getTableColumns("columns", c).containsKey("column_length") ) {
 			performAlter(c, "alter table `columns` add column `column_length` tinyint unsigned");
 		}
@@ -250,7 +254,8 @@ public class SchemaStoreSchema {
 				Long id = rs.getLong("id");
 				Position position = new Position(
 						new BinlogPosition(rs.getLong("binlog_position"), rs.getString("binlog_file")),
-						rs.getLong("last_heartbeat_read")
+						rs.getLong("last_heartbeat_read"),
+						0L
 				);
 				String sha = MysqlSavedSchema.getSchemaPositionSHA(rs.getLong("server_id"), position);
 				try ( Statement stmtUpdate = c.createStatement() ) { // statements cannot interleave ResultSets, so we need a new statement
