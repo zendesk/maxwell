@@ -275,7 +275,7 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>amazon-kinesis-producer</artifactId>
-      <version>0.15.7</version>
+      <version>0.15.12</version>
     </dependency>
     <dependency>
       <groupId>javax.xml.bind</groupId>
@@ -327,12 +327,12 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-server</artifactId>
-      <version>10.0.14</version>
+      <version>12.0.12</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
-      <version>10.0.12</version>
+      <version>10.0.24</version>
     </dependency>
     <dependency>
       <groupId>com.viafoura</groupId>
