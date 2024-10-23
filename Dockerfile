@@ -24,6 +24,9 @@ FROM openjdk:11-jdk-slim
 RUN apt-get update \
     && apt-get -y upgrade
 
+# Add curl, required to add an healthcheck as a docker command
+RUN apt-get -y install --no-install-recommends curl jq
+
 COPY --from=builder /app /app
 COPY --from=builder /REVISION /REVISION
 
