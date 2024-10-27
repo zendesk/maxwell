@@ -13,6 +13,7 @@ import com.zendesk.maxwell.row.HeartbeatRowMap;
 import com.zendesk.maxwell.schema.*;
 import com.zendesk.maxwell.schema.columndef.ColumnDefCastException;
 import com.zendesk.maxwell.util.Logging;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -331,9 +332,18 @@ public class Maxwell implements Runnable {
 
 			LOGGER.info("Starting Maxwell. maxMemory: " + Runtime.getRuntime().maxMemory() + " bufferMemoryUsage: " + config.bufferMemoryUsage);
 
-			if ( config.haMode ) {
-				new MaxwellHA(maxwell, config.jgroupsConf, config.raftMemberID, config.clientID).startHA();
-			} else {
+			if ( null != config.haMode){
+				if ( "jgroups-raft".equals(config.haMode)){
+					new MaxwellHA(maxwell, config.jgroupsConf, config.raftMemberID, config.clientID).startHAJGroups();
+				} else if ( "zookeeper".equals(config.haMode)){
+					if( StringUtils.isBlank(config.zookeeperServer)){
+						throw new Exception("In high availability mode 'zookeeperServer' does not allow Null. --zookeeper_server = " + config.zookeeperServer);
+					}
+					new MaxwellHA(maxwell, config.zookeeperServer, config.zookeeperSessionTimeoutMs, config.zookeeperConnectionTimeoutMs, config.zookeeperMaxRetries, config.zookeeperRetryWaitMs, config.clientID).startHAZookeeper();
+				} else {
+					throw new Exception("The value of ha is not in (jgroups-raft,zookeeper). ha = " + config.haMode);
+				}
+			} else{
 				maxwell.start();
 			}
 		} catch ( SQLException e ) {
