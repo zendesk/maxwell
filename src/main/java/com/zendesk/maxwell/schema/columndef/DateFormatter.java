@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.schema.columndef;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -23,6 +24,9 @@ public class DateFormatter {
 		} else if ( value instanceof Date ) {
 			Long time = ((Date) value).getTime();
 			return new Timestamp(time);
+		} else if ( value instanceof LocalDate ) {
+			LocalDateTime startOfDay = ((LocalDate) value).atStartOfDay();
+			return Timestamp.valueOf(startOfDay);
 		}  else if ( value instanceof LocalDateTime) {
 			return Timestamp.valueOf((LocalDateTime) value);
 		} else

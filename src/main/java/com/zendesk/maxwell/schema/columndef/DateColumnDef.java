@@ -1,8 +1,14 @@
 package com.zendesk.maxwell.schema.columndef;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 
 public class DateColumnDef extends ColumnDef {
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
 	private DateColumnDef(String name, String type, short pos) {
 		super(name, type, pos);
 	}
@@ -24,11 +30,18 @@ public class DateColumnDef extends ColumnDef {
 	@Override
 	public Object asJSON(Object value, MaxwellOutputConfig config) throws ColumnDefCastException {
 		if ( value instanceof String ) {
-			// bootstrapper just gives up on bothering with date processing
-			if ( config.zeroDatesAsNull && "0000-00-00".equals((String) value) )
+			String dateString = (String) value;
+
+			if ( config.zeroDatesAsNull && "0000-00-00".equals(dateString) )
 				return null;
-			else
-				return value;
+
+			if ( !DateValidator.isValidDateTime(dateString) )
+				return null;
+
+			value = parseDate(dateString);
+			if (value == null) {
+				return null;
+			}
 		} else if ( value instanceof Long && (Long) value == Long.MIN_VALUE ) {
 			if ( config.zeroDatesAsNull )
 				return null;
@@ -40,6 +53,14 @@ public class DateColumnDef extends ColumnDef {
 			return DateFormatter.formatDate(value);
 		} catch ( IllegalArgumentException e ) {
 			throw new ColumnDefCastException(this, value);
+		}
+	}
+
+	private Object parseDate(String dateString) {
+		try {
+			return LocalDate.parse(dateString, DATE_FORMATTER);
+		} catch (DateTimeParseException e) {
+			return null;
 		}
 	}
 }

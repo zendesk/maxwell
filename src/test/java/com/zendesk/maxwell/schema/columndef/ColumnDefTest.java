@@ -291,6 +291,46 @@ public class ColumnDefTest extends TestWithNameLogging {
 	}
 
 	@Test
+	public void TestDateBadMonth() throws ColumnDefCastException {
+		ColumnDef d = build("date", true);
+
+		MaxwellOutputConfig config = new MaxwellOutputConfig();
+		config.zeroDatesAsNull = true;
+
+		assertEquals(null, d.asJSON("2020-00-01", config));
+	}
+
+	@Test
+	public void TestDateBadDay() throws ColumnDefCastException {
+		ColumnDef d = build("date", true);
+
+		MaxwellOutputConfig config = new MaxwellOutputConfig();
+		config.zeroDatesAsNull = true;
+
+		assertEquals(null, d.asJSON("2020-01-00", config));
+	}
+
+	@Test
+	public void TestDatetimeBadDay() throws ColumnDefCastException {
+		ColumnDef d = build("datetime", true);
+
+		MaxwellOutputConfig config = new MaxwellOutputConfig();
+		config.zeroDatesAsNull = true;
+
+		assertEquals(null, d.asJSON("2020-01-00 00:00:00", config));
+	}
+
+	@Test
+	public void TestDatetimeBadMonth() throws ColumnDefCastException {
+		ColumnDef d = build("datetime", true);
+
+		MaxwellOutputConfig config = new MaxwellOutputConfig();
+		config.zeroDatesAsNull = true;
+
+		assertEquals(null, d.asJSON("2020-00-01 00:00:00", config));
+	}
+
+	@Test
 	public void TestDateTimeWithTimestamp() throws ParseException, ColumnDefCastException {
 		ColumnDef d = build("datetime", true);
 		assertThat(d, instanceOf(DateTimeColumnDef.class));
