@@ -32,15 +32,19 @@ public class DateColumnDef extends ColumnDef {
 		if ( value instanceof String ) {
 			String dateString = (String) value;
 
-			if ( config.zeroDatesAsNull && "0000-00-00".equals(dateString) )
-				return null;
+			if ("0000-00-00".equals(dateString)) {
+				if ( config.zeroDatesAsNull  )
+					return null;
+				else
+					return "0000-00-00";
+			} else {
+				if ( !DateValidator.isValidDateTime(dateString) )
+					return null;
 
-			if ( !DateValidator.isValidDateTime(dateString) )
-				return null;
-
-			value = parseDate(dateString);
-			if (value == null) {
-				return null;
+				value = parseDate(dateString);
+				if (value == null) {
+					return null;
+				}
 			}
 		} else if ( value instanceof Long && (Long) value == Long.MIN_VALUE ) {
 			if ( config.zeroDatesAsNull )

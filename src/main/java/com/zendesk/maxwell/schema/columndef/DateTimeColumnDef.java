@@ -26,15 +26,19 @@ public class DateTimeColumnDef extends ColumnDefWithLength {
 		if ( value instanceof String) {
 			String dateString = (String) value;
 
-			if ( config.zeroDatesAsNull && "0000-00-00 00:00:00".equals(dateString) )
-				return null;
+			if ( "0000-00-00 00:00:00".equals(dateString) ) {
+				if ( config.zeroDatesAsNull )
+					return null;
+				else 
+					return appendFractionalSeconds("0000-00-00 00:00:00", 0, getColumnLength());
+			} else {
+				if ( !DateValidator.isValidDateTime(dateString) )
+					return null;
 
-			if ( !DateValidator.isValidDateTime(dateString) )
-				return null;
-
-			value = parseDateTime(dateString);
-			if (value == null) {
-				return null;
+				value = parseDateTime(dateString);
+				if (value == null) {
+					return null;
+				}
 			}
 		} else if ( value instanceof Long ) {
 			Long v = (Long) value;
