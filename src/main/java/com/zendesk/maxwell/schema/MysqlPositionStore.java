@@ -20,10 +20,10 @@ import org.slf4j.LoggerFactory;
 public class MysqlPositionStore {
 	static final Logger LOGGER = LoggerFactory.getLogger(MysqlPositionStore.class);
 	private static final Long DEFAULT_GTID_SERVER_ID = new Long(0);
-	private final Long serverID;
-	private String clientID;
+	protected final Long serverID;
+	protected String clientID;
 	private final boolean gtidMode;
-	private final ConnectionPool connectionPool;
+	protected final ConnectionPool connectionPool;
 
 	public MysqlPositionStore(ConnectionPool pool, Long serverID, String clientID, boolean gtidMode) {
 		this.connectionPool = pool;
@@ -157,7 +157,7 @@ public class MysqlPositionStore {
 		return lastHeartbeat;
 	}
 
-	private Position positionFromResultSet(ResultSet rs) throws SQLException {
+	protected Position positionFromResultSet(ResultSet rs) throws SQLException {
 		if ( !rs.next() )
 			return null;
 

@@ -12,6 +12,8 @@ import com.github.shyiko.mysql.binlog.network.SSLMode;
 import joptsimple.*;
 
 import com.zendesk.maxwell.MaxwellMysqlConfig;
+import com.zendesk.maxwell.MaxwellVitessConfig;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -225,6 +227,25 @@ public abstract class AbstractConfig {
 		config.enableHeartbeat = fetchBooleanOption("binlog_heartbeat", options, properties, config.enableHeartbeat);
 		return config;
 	}
+
+  protected MaxwellVitessConfig parseVitessConfig(OptionSet options, Properties properties) {
+    MaxwellVitessConfig config = new MaxwellVitessConfig();
+    config.vtgateHost = fetchStringOption("vitess_host", options, properties, "localhost");
+    config.vtgatePort = fetchIntegerOption("vitess_port", options, properties, 15991);
+
+	config.usePlaintext = fetchBooleanOption("vitess_plaintext", options, properties, true);
+	config.tlsCA = fetchStringOption("vitess_tls_ca", options, properties, null);
+	config.tlsCert = fetchStringOption("vitess_tls_cert", options, properties, null);
+	config.tlsKey = fetchStringOption("vitess_tls_key", options, properties, null);
+	config.tlsServerName = fetchStringOption("vitess_tls_server_name", options, properties, null);
+
+	config.user = fetchStringOption("vitess_user", options, properties, null);
+    config.password = fetchStringOption("vitess_password", options, properties, null);
+
+	config.keyspace = fetchStringOption("vitess_keyspace", options, properties, null);
+    config.shard = fetchStringOption("vitess_shard", options, properties, "");
+    return config;
+  }
 
 	private SSLMode getSslModeFromString(String sslMode) {
 		if (sslMode != null) {

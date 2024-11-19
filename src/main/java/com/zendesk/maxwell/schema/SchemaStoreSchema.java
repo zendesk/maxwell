@@ -109,6 +109,10 @@ public class SchemaStoreSchema {
 
 	public static void upgradeSchemaStoreSchema(Connection c) throws SQLException, IOException {
 		ArrayList<String> maxwellTables = getMaxwellTables(c);
+		if ( !getTableColumns("positions", c).containsKey("vitess_gtid") ) {
+			performAlter(c, "alter table `positions` add column vitess_gtid text charset latin1");
+		}
+
 		if ( !getTableColumns("schemas", c).containsKey("deleted") ) {
 			performAlter(c, "alter table `schemas` add column deleted tinyint(1) not null default 0");
 		}

@@ -1,0 +1,19 @@
+version: "3.9"
+services:
+  vttestserver:
+    image: vitess/vttestserver:mysql57
+    ports:
+      - "43575:33575" # gRPC (VTGate, etc)
+      - "43577:33577" # MySQL
+    environment:
+      - PORT=33574
+      - PLANNER_VERSION=gen4fallback
+      - KEYSPACES=maxwell,app_master,app_shard,sharded_tests
+      - NUM_SHARDS=1,1,1,2
+      - MYSQL_MAX_CONNECTIONS=70000
+      - MYSQL_BIND_HOST=0.0.0.0
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h127.0.0.1", "-P43577"]
+      interval: 5s
+      timeout: 2s
+      retries: 5
