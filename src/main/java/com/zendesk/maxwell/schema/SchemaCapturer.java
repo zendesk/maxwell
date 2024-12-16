@@ -139,7 +139,9 @@ public class SchemaCapturer implements AutoCloseable {
 		Schema s = new Schema(databases, captureDefaultCharset(), this.sensitivity);
 		try {
 			if ( isMariaDB() && mariaSupportsJSON()) {
-				detectMariaDBJSON(s);
+				for (String dbName : s.getDatabaseNames()) {
+					detectMariaDBJSON(s, dbName);
+				}
 			}
 		} catch ( InvalidSchemaError e ) {
 			e.printStackTrace();
@@ -315,38 +317,40 @@ public class SchemaCapturer implements AutoCloseable {
 		}
 	}
 
-	private void detectMariaDBJSON(Schema schema) throws SQLException, InvalidSchemaError {
+	private void detectMariaDBJSON(Schema schema, String dbName) throws SQLException, InvalidSchemaError {
 		String checkConstraintSQL = "SELECT CONSTRAINT_SCHEMA, TABLE_NAME, CONSTRAINT_NAME, CHECK_CLAUSE " +
 			"from INFORMATION_SCHEMA.CHECK_CONSTRAINTS " +
-			"where CHECK_CLAUSE LIKE 'json_valid(%)'";
+			"where CONSTRAINT_SCHEMA = ? AND CHECK_CLAUSE LIKE 'json_valid(%)'";
 
 		String regex = "json_valid\\(`(.*)`\\)";
 		Pattern pattern = Pattern.compile(regex);
 
 		try (
-			PreparedStatement statement = connection.prepareStatement(checkConstraintSQL);
-			ResultSet rs = statement.executeQuery()
-		) {
-			while ( rs.next() ) {
-				String checkClause = rs.getString("CHECK_CLAUSE");
-				Matcher m = pattern.matcher(checkClause);
-				if ( m.find() ) {
-					String column = m.group(1);
-					Database d = schema.findDatabase(rs.getString("CONSTRAINT_SCHEMA"));
-					if ( d == null ) continue;
-					Table t = d.findTable(rs.getString("TABLE_NAME"));
-					if ( t == null ) continue;
-					short i = t.findColumnIndex(column);
-					if ( i < 0 ) continue;
+			PreparedStatement statement = connection.prepareStatement(checkConstraintSQL)) {
+			statement.setString(1, dbName);
 
-					ColumnDef cd = t.findColumn(i);
-					if ( cd instanceof StringColumnDef ) {
-						t.replaceColumn(i, JsonColumnDef.create(cd.getName(), "json", i));
+			try (
+				ResultSet rs = statement.executeQuery()) {
+				while ( rs.next() ) {
+					String checkClause = rs.getString("CHECK_CLAUSE");
+					Matcher m = pattern.matcher(checkClause);
+					if ( m.find() ) {
+						String column = m.group(1);
+						Database d = schema.findDatabase(rs.getString("CONSTRAINT_SCHEMA"));
+						if ( d == null ) continue;
+						Table t = d.findTable(rs.getString("TABLE_NAME"));
+						if ( t == null ) continue;
+						short i = t.findColumnIndex(column);
+						if ( i < 0 ) continue;
+
+						ColumnDef cd = t.findColumn(i);
+						if ( cd instanceof StringColumnDef ) {
+							t.replaceColumn(i, JsonColumnDef.create(cd.getName(), "json", i));
+						}
 					}
 				}
 			}
 		}
-
 	}
 
 }
