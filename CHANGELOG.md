@@ -1,5 +1,15 @@
 # Maxwell changelog
 
+### [v1.42.0](https://github.com/zendesk/maxwell/releases/tag/v1.42.0)
+
+- initial support for mysql 8.4
+- support partitioning for sns and sqs
+- bugfix for maria
+
+
+
+_Released 2024-12-17_
+
 ### [v1.41.2](https://github.com/zendesk/maxwell/releases/tag/v1.41.2)
 
 - Owen Derby is the Nick Clarke of Maxwell parser bugs
