@@ -7,6 +7,7 @@ import com.amazonaws.services.sns.model.MessageAttributeValue;
 import com.amazonaws.services.sns.model.PublishRequest;
 import com.amazonaws.services.sns.model.PublishResult;
 import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.producer.partitioners.MaxwellSNSPartitioner;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
 import org.apache.commons.lang3.ArrayUtils;
@@ -22,11 +23,16 @@ public class MaxwellSNSProducer extends AbstractAsyncProducer {
 	private String topic;
 	private String[] stringFelds = {"database", "table"};
 	private String[] numberFields = {"ts", "xid"};
+	private MaxwellSNSPartitioner partitioner;
 
 	public MaxwellSNSProducer(MaxwellContext context, String topic) {
 		super(context);
 		this.topic = topic;
 		this.client = AmazonSNSAsyncClientBuilder.defaultClient();
+		String partitionKey = context.getConfig().producerPartitionKey;
+		String partitionColumns = context.getConfig().producerPartitionColumns;
+		String partitionFallback = context.getConfig().producerPartitionFallback;
+		this.partitioner = new MaxwellSNSPartitioner(partitionKey, partitionColumns, partitionFallback);
 	}
 
 	public void setClient(AmazonSNSAsync client) {
@@ -61,7 +67,8 @@ public class MaxwellSNSProducer extends AbstractAsyncProducer {
 		}
 
 		if ( topic.endsWith(".fifo")) {
-			publishRequest.setMessageGroupId(r.getDatabase());
+			String key = this.partitioner.getSNSKey(r);
+			publishRequest.setMessageGroupId(key);
 		}
 		publishRequest.setMessageAttributes(messageAttributes);
 
