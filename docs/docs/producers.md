@@ -71,10 +71,10 @@ as a source of truth.
 # Partitioning
 ***
 
-Both Kafka and AWS Kinesis support the notion of partitioned streams.
+Kafka, AWS Kinesis/SNS/SQS support the notion of partitioned streams.
 Because they like to make our lives hard, Kafka calls its two units "topics"
-and "partitions", and Kinesis calls them "streams" and "shards.  They're the
-same thing, though.  Maxwell is generally configured to write to N
+and "partitions", Kinesis calls them "streams" and "shards", and SNS/SQS calls them "group id". 
+They're the same thing, though.  Maxwell is generally configured to write to N
 partitions/shards on one topic/stream, and how it distributes to those N
 partitions/shards can be controlled by `producer_partition_by`.
 
