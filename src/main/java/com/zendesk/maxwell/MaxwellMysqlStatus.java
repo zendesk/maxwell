@@ -37,10 +37,11 @@ public class MaxwellMysqlStatus {
 	public String getShowBinlogSQL() {
 		try {
 			DatabaseMetaData md = connection.getMetaData();
-			if ( md.getDatabaseMajorVersion() >= 8 ) {
+			if ( md.getDatabaseMajorVersion() >= 8 && md.getDatabaseMinorVersion() >= 4 ) {
 				return "SHOW BINARY LOG STATUS";
 			}
 		} catch ( SQLException e ) {
+			return "SHOW MASTER STATUS";
 		}
 
 		return "SHOW MASTER STATUS";
