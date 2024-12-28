@@ -70,6 +70,7 @@ public class MaxwellMysqlStatus {
 				return "SHOW BINLOG STATUS";
 			}
 		} catch ( SQLException e ) {
+			return "SHOW MASTER STATUS";
 		}
 
 		return "SHOW MASTER STATUS";
