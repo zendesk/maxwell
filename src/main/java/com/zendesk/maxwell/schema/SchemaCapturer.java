@@ -55,7 +55,7 @@ public class SchemaCapturer implements AutoCloseable {
 
 		String tblSql = "SELECT TABLES.TABLE_NAME, CCSA.CHARACTER_SET_NAME "
 				+ "FROM INFORMATION_SCHEMA.TABLES "
-				+ "JOIN information_schema.COLLATION_CHARACTER_SET_APPLICABILITY AS CCSA"
+				+ "LEFT JOIN information_schema.COLLATION_CHARACTER_SET_APPLICABILITY AS CCSA"
 				+ " ON TABLES.TABLE_COLLATION = CCSA.COLLATION_NAME WHERE TABLES.TABLE_SCHEMA = ? ";
 
 		if (!includeTables.isEmpty()) {
