@@ -58,6 +58,10 @@ workflows:
           mysql: "5.7"
           requires: [ "build" ]
       - test:
+          name: "test-8.4"
+          mysql: "8.4"
+          requires: [ "build" ]
+      - test:
           name: "test-mariadb"
           mysql: "mariadb"
           requires: [ "build" ]
