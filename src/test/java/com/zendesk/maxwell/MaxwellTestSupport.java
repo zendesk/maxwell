@@ -86,8 +86,13 @@ public class MaxwellTestSupport {
 			queries.add(s);
 		}
 
-		if ( resetBinlogs )
-			queries.add("RESET MASTER");
+		if ( resetBinlogs ) {
+			if ( server.is84() ) {
+				queries.add("RESET BINARY LOGS AND GTIDS");
+			} else {
+				queries.add("RESET MASTER");
+			}
+		}
 
 		server.executeList(queries);
 	}
