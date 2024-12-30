@@ -11,6 +11,7 @@ import com.zendesk.maxwell.schema.Schema;
 import com.zendesk.maxwell.schema.SchemaCapturer;
 import com.zendesk.maxwell.schema.SchemaStoreSchema;
 import org.apache.commons.lang3.StringUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
@@ -53,6 +54,12 @@ public class RecoveryTest extends TestWithNameLogging {
 		slaveServer = MaxwellTestSupport.setupServer("--server_id=12345 --max_binlog_size=100000 --log_bin=slave");
 		slaveServer.setupSlave(masterServer.getPort());
 		MaxwellTestSupport.setupSchema(masterServer, false);
+	}
+
+	@After
+	public void teardownServers() throws Exception {
+		masterServer.shutDown();
+		slaveServer.shutDown();
 	}
 
 	private MaxwellConfig getConfig(int port, boolean masterRecovery) {
