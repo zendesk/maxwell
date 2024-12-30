@@ -131,7 +131,7 @@ public class MysqlIsolatedServer {
 	}
 
 	public boolean is84() {
-		return getVersion().atLeast(VERSION_8_4);
+		return getVersion().atLeast(VERSION_8_4) && !getVersion().isMariaDB;
 	}
 
 	private ResultSet showBinlogStatus(Connection c) throws SQLException {
