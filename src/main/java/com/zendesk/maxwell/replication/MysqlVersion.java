@@ -42,6 +42,13 @@ public class MysqlVersion {
 	}
 
 	public static MysqlVersion parse(String versionString) {
+		if ( versionString.equals("mariadb") ) {
+			MysqlVersion v = new MysqlVersion(0, 0);
+			v.isMariaDB = true;
+			return v;
+		}
+
+
 		String[] split = versionString.split("\\.");
 		if ( split.length < 2 ) {
 			throw new IllegalArgumentException("Invalid version string: " + versionString + ". Expected at least major and minor versions separated by a dot.");
