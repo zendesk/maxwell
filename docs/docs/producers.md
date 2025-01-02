@@ -247,9 +247,13 @@ The configurable properties for nats are:
 
 - `nats_url` - defaults to **nats://localhost:4222**
 - `nats_subject` - defaults to **%{database}.%{table}**
+- `nats_creds` - defaults to null
 
 `nats_subject` defines the Nats subject hierarchy to write to.  [Topic substitution](/producers#topic-substitution) is available.
 All non-alphanumeric characters in the substitued values will be replaced by underscores.
+
+`nats_creds` is the path to a [NATS .creds file](https://docs.nats.io/using-nats/developer/connecting/creds), which can be generated using the `nsc` tool. 
+It is a text file containing the NATS user JWT and NKEY for use with Decentralized Auth.
 
 # Google Cloud Pub/Sub
 ***
