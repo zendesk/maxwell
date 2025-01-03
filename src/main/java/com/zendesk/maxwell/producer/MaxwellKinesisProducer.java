@@ -112,7 +112,12 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 			KinesisProducerConfiguration config = KinesisProducerConfiguration.fromPropertiesFile(path.toString());
 			this.kinesisProducer = new KinesisProducer(config);
 		} else {
-			this.kinesisProducer = new KinesisProducer();
+			// The default 30 second record Ttl is too aggressive and prevents our own back-pressure
+			// logic from backing as needed off before the producer fails. Setting it to 1 hour
+			// instead.
+			KinesisProducerConfiguration config = new KinesisProducerConfiguration();
+			config.setRecordTtl(3600000);
+			this.kinesisProducer = new KinesisProducer(config);
 		}
 	}
 
