@@ -275,7 +275,12 @@ class MaxwellPubsubProducerWorker
     taskState.awaitStop(thread, timeout);
   }
 
-  @Override
+	@Override
+	public StopPriority getStopPriority() {
+		return StopPriority.PRODUCER;
+	}
+
+	@Override
   public StoppableTask getStoppableTask() {
     return this;
   }
