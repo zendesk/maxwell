@@ -46,7 +46,7 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 
 	public String getReplicationConnectionURI( ) {
 		try {
-			return getConfigtReplicationConnectionURI(replicationMysql);
+			return getConfigReplicationConnectionURI(replicationMysql);
 		} catch (URISyntaxException e) {
 			LOGGER.error(e.getMessage(), e);
 			throw new RuntimeException("Unable to generate bootstrap's replication jdbc connection URI", e);
@@ -65,7 +65,7 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 		return uriBuilder.build().toString();
 	}
 
-	private String getConfigtReplicationConnectionURI(MaxwellMysqlConfig config) throws URISyntaxException {
+	private String getConfigReplicationConnectionURI(MaxwellMysqlConfig config) throws URISyntaxException {
 		URIBuilder uriBuilder = new URIBuilder();
 		uriBuilder.setScheme("jdbc:mysql");
 		uriBuilder.setHost(config.host);
