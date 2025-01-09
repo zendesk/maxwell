@@ -1,5 +1,18 @@
 # Maxwell changelog
 
+### [v1.42.2](https://github.com/zendesk/maxwell/releases/tag/v1.42.2)
+
+- update jdk on docker image
+- support rabbitmq + SSL
+- small fixes for latest maria
+- get tests running under mysql 8.4
+- remove Kinesis internal TTL, see #2147 for details
+- support bootstrapping from a replica that doesn't contain the maxwell database
+
+
+
+_Released 2025-01-09_
+
 ### [v1.42.1](https://github.com/zendesk/maxwell/releases/tag/v1.42.1)
 
 - bugfix for 1.42.0, mysql 8.0.x and "SHOW BINARY LOG STATUS"
