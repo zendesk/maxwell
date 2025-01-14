@@ -52,7 +52,7 @@ option                         | argument                            | descripti
 producer                       | [PRODUCER_TYPE](#producer_type)     | type of producer to use                             | stdout
 custom_producer.factory        | CLASS_NAME                          | fully qualified custom producer factory class, see [example](https://github.com/zendesk/maxwell/blob/master/src/example/com/zendesk/maxwell/example/producerfactory/CustomProducerFactory.java) |
 producer_ack_timeout           | [PRODUCER_ACK_TIMEOUT](#ack_timeout) | time in milliseconds before async producers consider a message lost |
-producer_partition_by          | [PARTITION_BY](#partition_by)       | input to kafka/kinesis partition function           | database
+producer_partition_by          | [PARTITION_BY](#partition_by)       | input to kafka/kinesis/sns/sqs partition function           | database
 producer_partition_columns     | STRING                              | if partitioning by 'column', a comma separated list of columns |
 producer_partition_by_fallback | [PARTITION_BY_FALLBACK](#partition_by_fallback) | required when producer_partition_by=column.  Used when the column is missing |
 ignore_producer_error          | BOOLEAN              | When false, Maxwell will terminate on kafka/kinesis/pubsub publish errors (aside from RecordTooLargeException). When true, errors are only logged. See also dead_letter_topic | true
@@ -156,6 +156,7 @@ rabbitmq_exchange_autodelete   | BOOLEAN    | If set, the exchange is deleted wh
 rabbitmq_routing_key_template  | STRING     | A string template for the routing key, `%db%` and `%table%` will be substituted. | `%db%.%table%`.
 rabbitmq_message_persistent    | BOOLEAN    | Eanble message persistence. | false
 rabbitmq_declare_exchange      | BOOLEAN    | Should declare the exchange for rabbitmq publisher | true
+rabbitmq_use_ssl               | BOOLEAN    | If true, will connect to the server using SSL. | false
 
 _See also:_ [RabbitMQ Producer Documentation](/producers#rabbitmq)
 

@@ -22,6 +22,7 @@ public class MysqlIsolatedServer {
 	public static final MysqlVersion VERSION_5_5 = new MysqlVersion(5, 5);
 	public static final MysqlVersion VERSION_5_6 = new MysqlVersion(5, 6);
 	public static final MysqlVersion VERSION_5_7 = new MysqlVersion(5, 7);
+	public static final MysqlVersion VERSION_8_4 = new MysqlVersion(8, 4);
 
 	private Connection connection;
 	private int port;
@@ -54,6 +55,9 @@ public class MysqlIsolatedServer {
 		if ( !xtraParams.contains("--server_id") )
 			serverID = "--server_id=" + SERVER_ID;
 
+
+		MysqlVersion parsedVersion = MysqlVersion.parse(this.getVersionString());
+
 		ProcessBuilder pb = new ProcessBuilder(
 			dir + "/src/test/onetimeserver",
 			"--mysql-version=" + this.getVersionString(),
@@ -66,6 +70,7 @@ public class MysqlIsolatedServer {
 			"--sync_binlog=0",
 			"--default-time-zone=+00:00",
 			isRoot ? "--user=root" : "",
+			parsedVersion.atLeast(8, 4) ? "--mysql-native-password=ON" : "",
 			gtidParams
 		);
 
@@ -125,9 +130,51 @@ public class MysqlIsolatedServer {
 		LOGGER.info("booted at port " + this.port + ", outputting to file " + outputFile);
 	}
 
+	public boolean is84() {
+		return getVersion().atLeast(VERSION_8_4) && !getVersion().isMariaDB;
+	}
+
+	private ResultSet showBinlogStatus(Connection c) throws SQLException {
+		if ( this.is84() ) {
+			return c.createStatement().executeQuery("show binary log status");
+		} else {
+			return c.createStatement().executeQuery("show master status");
+		}
+	}
+
+	class ReplicaStatus {
+		private String file;
+		private long position;
+
+		public ReplicaStatus(String file, long position) {
+			this.file = file;
+			this.position = position;
+		}
+	}
+
+	private ReplicaStatus showReplicaStatus(Connection c) throws SQLException {
+		if ( this.is84() ) {
+			ResultSet rs = c.createStatement().executeQuery("show replica status");
+			rs.next();
+			return new ReplicaStatus(
+				rs.getString("Source_Log_File"),
+				rs.getLong("Read_Source_log_Pos")
+			);
+		} else {
+			ResultSet rs = c.createStatement().executeQuery("show slave status");
+			rs.next();
+			return new ReplicaStatus(
+				rs.getString("Relay_Master_Log_File"),
+				rs.getLong("Exec_Master_Log_Pos")
+			);
+
+		}
+	}
+
 	public void setupSlave(int masterPort) throws SQLException {
 		Connection master = DriverManager.getConnection("jdbc:mysql://127.0.0.1:" + masterPort + "/mysql?useSSL=false", "root", "");
-		ResultSet rs = master.createStatement().executeQuery("show master status");
+		ResultSet rs = showBinlogStatus(master);
+
 		if ( !rs.next() )
 			throw new RuntimeException("could not get master status");
 
@@ -143,14 +190,29 @@ public class MysqlIsolatedServer {
 		String file = rs.getString("File");
 		Long position = rs.getLong("Position");
 
-		String changeSQL = String.format(
-			"CHANGE MASTER to master_host = '127.0.0.1', master_user='maxwell_repl', master_password='maxwell', "
-			+ "master_log_file = '%s', master_log_pos = %d, master_port = %d",
-			file, position, masterPort
-		);
+		String changeSQL;
+
+
+		if ( is84() ) {
+			changeSQL = String.format(
+				"CHANGE REPLICATION SOURCE to source_host = '127.0.0.1', source_user='maxwell_repl', source_password='maxwell', "
+					+ "source_log_file = '%s', source_log_pos = %d, source_port = %d",
+				file, position, masterPort
+			);
+		} else {
+			changeSQL = String.format(
+				"CHANGE MASTER to master_host = '127.0.0.1', master_user='maxwell_repl', master_password='maxwell', "
+					+ "master_log_file = '%s', master_log_pos = %d, master_port = %d",
+				file, position, masterPort
+			);
+		}
 		LOGGER.info("starting up slave: " + changeSQL);
 		getConnection().createStatement().execute(changeSQL);
-		getConnection().createStatement().execute("START SLAVE");
+		if ( is84() ) {
+			getConnection().createStatement().execute("START REPLICA");
+		} else {
+			getConnection().createStatement().execute("START SLAVE");
+		}
 
 		rs.close();
 	}
@@ -265,29 +327,23 @@ public class MysqlIsolatedServer {
 		return !getVersion().atLeast(VERSION_5_7);
 	}
 
+
 	public void waitForSlaveToBeCurrent(MysqlIsolatedServer master) throws Exception {
-		ResultSet ms = master.query("show master status");
+		ResultSet ms = showBinlogStatus(master.getConnection());
 		ms.next();
 		String masterFile = ms.getString("File");
 		Long masterPos = ms.getLong("Position");
 		ms.close();
 
 		while ( true ) {
-			ResultSet rs = query("show slave status");
-			rs.next();
-			if ( rs.getString("Relay_Master_Log_File").equals(masterFile) &&
-				rs.getLong("Exec_Master_Log_Pos") >= masterPos )
-				return;
-			LOGGER.info("waiting for slave to be current: {}, {}", masterFile, masterPos);
-			LOGGER.info("{}, {}", rs.getString("Relay_Master_Log_File"), rs.getLong("Exec_Master_Log_Pos"));
+			ReplicaStatus rs = showReplicaStatus(getConnection());
 
-			int columnsNumber = rs.getMetaData().getColumnCount();
-			for (int i = 1; i <= columnsNumber; i++) {
-				if (i > 1) System.out.print(",  ");
-				String columnValue = rs.getString(i);
-				System.out.print(columnValue + " " + rs.getMetaData().getColumnName(i));
-			}
-			System.out.println("");
+			if ( rs.file.equals(masterFile) && rs.position >= masterPos )
+				return;
+
+			LOGGER.info("waiting for slave to be current: {}, {}", masterFile, masterPos);
+			LOGGER.info("{}, {}", rs.file, rs.position);
+
 			Thread.sleep(2000);
 		}
 	}

@@ -4,7 +4,7 @@
 
   <groupId>com.zendesk</groupId>
   <artifactId>maxwell</artifactId>
-  <version>1.41.2</version>
+  <version>1.42.2</version>
   <packaging>jar</packaging>
 
   <name>maxwell</name>
@@ -307,7 +307,7 @@
       <artifactId>jedis</artifactId>
       <version>3.5.1</version>
     </dependency>
-    
+
     <!-- metrics -->
     <dependency>
       <groupId>io.dropwizard.metrics</groupId>
@@ -462,7 +462,6 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>3.3.1</version>
         <configuration>
-            <additionalOptions>--no-module-directories</additionalOptions>
             <source>11</source>
         </configuration>
         <executions>

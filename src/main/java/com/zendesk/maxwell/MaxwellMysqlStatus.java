@@ -34,13 +34,43 @@ public class MaxwellMysqlStatus {
 		}
 	}
 
+       /**
+       * Generates the appropriate SQL command to retrieve binary log status based on
+       * the database type and version.
+       *
+       * This method checks the database product name and version to determine
+       * the most suitable SQL command for retrieving binary log status information.
+       * It supports MySQL and MariaDB, with compatibility for recent version
+       * requirements:
+       * <ul>
+       * <li>MySQL 8.2 and above: uses "SHOW BINARY LOG STATUS"</li>
+       * <li>MariaDB 10.5 and above: uses "SHOW BINLOG STATUS"</li>
+       * <li>All other versions default to "SHOW MASTER STATUS"</li>
+       * </ul>
+       * If an error occurs during metadata retrieval, the method defaults to "SHOW
+       * MASTER STATUS".
+       *
+       * @return a SQL command string to check binary log status
+       */
 	public String getShowBinlogSQL() {
 		try {
 			DatabaseMetaData md = connection.getMetaData();
-			if ( md.getDatabaseMajorVersion() >= 8 ) {
+
+			String productName = md.getDatabaseProductVersion();
+
+			int majorVersion = md.getDatabaseMajorVersion();
+			int minorVersion = md.getDatabaseMinorVersion();
+
+			boolean isMariaDB = productName.toLowerCase().contains("mariadb");
+			boolean isMySQL = !isMariaDB;
+
+			if (isMySQL && (majorVersion > 8 || (majorVersion == 8 && minorVersion >= 2))) {
 				return "SHOW BINARY LOG STATUS";
+			} else if (isMariaDB && (majorVersion > 10 || (majorVersion == 10 && minorVersion >= 5))) {
+				return "SHOW BINLOG STATUS";
 			}
 		} catch ( SQLException e ) {
+			return "SHOW MASTER STATUS";
 		}
 
 		return "SHOW MASTER STATUS";

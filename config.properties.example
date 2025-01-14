@@ -239,6 +239,7 @@ kafka.acks=1
 #rabbitmq_routing_key_template=%db%.%table%
 #rabbitmq_message_persistent=false
 #rabbitmq_declare_exchange=true
+#rabbitmq_use_ssl=false
 
 #           *** redis ***
 

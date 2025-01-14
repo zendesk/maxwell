@@ -10,6 +10,7 @@ import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.amazonaws.services.sqs.model.SendMessageResult;
 import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.producer.partitioners.MaxwellSQSPartitioner;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
 
@@ -17,6 +18,7 @@ public class MaxwellSQSProducer extends AbstractAsyncProducer {
 
 	private AmazonSQSAsync client;
 	private String queueUri;
+	private MaxwellSQSPartitioner partitioner;
 
 	public MaxwellSQSProducer(MaxwellContext context, String queueUri, String serviceEndpoint, String signingRegion) {
 		super(context);
@@ -24,6 +26,10 @@ public class MaxwellSQSProducer extends AbstractAsyncProducer {
 		this.client = AmazonSQSAsyncClientBuilder.standard()
 				.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(serviceEndpoint, signingRegion))
 				.build();
+		String partitionKey = context.getConfig().producerPartitionKey;
+		String partitionColumns = context.getConfig().producerPartitionColumns;
+		String partitionFallback = context.getConfig().producerPartitionFallback;
+		this.partitioner = new MaxwellSQSPartitioner(partitionKey, partitionColumns, partitionFallback);
 	}
 
 	@Override
@@ -31,7 +37,8 @@ public class MaxwellSQSProducer extends AbstractAsyncProducer {
 		String value = r.toJSON(outputConfig);
 		SendMessageRequest messageRequest = new SendMessageRequest(queueUri, value);
 		if ( queueUri.endsWith(".fifo")) {
-			messageRequest.setMessageGroupId(r.getDatabase());
+			String key = this.partitioner.getSQSKey(r);
+			messageRequest.setMessageGroupId(key);
 		}
 		SQSCallback callback = new SQSCallback(cc, r.getNextPosition(), value, context);
 		client.sendMessageAsync(messageRequest, callback);
