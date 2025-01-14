@@ -81,6 +81,23 @@ public class MaxwellBenchmark {
 		System.out.println("bin/maxwell-benchmark --input=" +  server.path + " --init_position=" + initPosition.toCommandline());
 	}
 
+	private static void benchmarkBootstrap(String path, long skipRows, String args[]) throws Exception {
+		MaxwellConfig config = new MaxwellConfig(args);
+		MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--no-clean --reuse=" + path);
+		server.execute("insert into maxwell.bootstrap set database_name='shard_1', table_name='sharded', created_at=now()");
+
+		config.maxwellMysql.host = "127.0.0.1";
+		config.maxwellMysql.port = server.getPort();
+		config.maxwellMysql.user = "root";
+		config.maxwellMysql.password = "";
+		config.replicationMysql = config.schemaMysql = config.maxwellMysql;
+		config.producerFactory = new BenchmarkProducerFactory(skipRows);
+
+		Maxwell m = new Maxwell(config);
+		m.run();
+	}
+
+
 	private static void benchmark(String path, long skipRows, String args[]) throws Exception {
 		MaxwellConfig config = new MaxwellConfig(args);
 		MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--no-clean --reuse=" + path);
@@ -99,9 +116,10 @@ public class MaxwellBenchmark {
 
 	private static OptionParser buildOptionParser() {
 		final OptionParser parser = new OptionParser();
-		parser.accepts("generate", "generate this many rows of benchmark data").withRequiredArg();
+		parser.accepts("generate", "generate this many rows of benchmark data").withRequiredArg().ofType(Integer.class);
 		parser.accepts("input", "run benchmark using this mysql data-path").withRequiredArg();
 		parser.accepts("skip", "warm-up by processing this many rows before profiling").withRequiredArg();
+		parser.accepts("bootstrap", "run bootstrapper");
 		parser.allowsUnrecognizedOptions();
 		parser.formatHelpWith(new BuiltinHelpFormatter(120, 5));
 		return parser;
@@ -114,7 +132,7 @@ public class MaxwellBenchmark {
 		OptionSet options = p.parse(args);
 
 		if ( options.has("generate") ) {
-			generate(Integer.parseInt((String) options.valueOf("generate")));
+			generate((Integer) options.valueOf("generate"));
 		} else if ( options.has("input") ) {
 			String maxwellArgs[] = new String[options.nonOptionArguments().size()];
 			int i = 0;
@@ -126,7 +144,10 @@ public class MaxwellBenchmark {
 			if ( options.has("skip") )
 				skipNRows = Long.parseLong((String) options.valueOf("skip"));
 
-			benchmark((String) options.valueOf("input"), skipNRows, maxwellArgs);
+			if ( options.has("bootstrap") )
+				benchmarkBootstrap((String) options.valueOf("input"), skipNRows, maxwellArgs);
+			else
+				benchmark((String) options.valueOf("input"), skipNRows, maxwellArgs);
 		} else {
 			p.printHelpOn(System.out);
 			System.exit(1);
