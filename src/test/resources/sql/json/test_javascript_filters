@@ -9,9 +9,8 @@ CREATE TABLE `test_table` ( id int auto_increment primary key, a text, b text )
 insert into test_table set a='xyzzy'
 insert into test_table set a='big big words', b='bvalue2'
 
-->  {"database": "test", "table": "test_table", "type": "insert", "data": {"id": 2, "a": "BIG BIG WORDS", "b": "bvalue2"} }
+->  {"database": "test", "table": "test_table", "type": "insert", "query": "insert into test_table set a='big big words', b='bvalue2'", "data": {"id": 2, "a": "BIG BIG WORDS", "b": "bvalue2"} }
 
-SET binlog_rows_query_log_events=true
 insert into test_table set a='mangle'
 
 ->  {"database": "test", "table": "test_table", "type": "insert", "query": "mangled", "data": {"id": 3, "a": "MANGLE", "b": null} }

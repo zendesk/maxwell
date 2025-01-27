@@ -114,7 +114,9 @@ public abstract class AbstractConfig {
 				Properties properties = new Properties();
 				for (Map.Entry<String, Object> entry : stringMap.entrySet()) {
 					LOGGER.debug("Got env_config key: {}", entry.getKey());
-					properties.put(entry.getKey(), entry.getValue().toString());
+					if (entry.getKey() != null && entry.getValue() != null) {
+						properties.put(entry.getKey(), entry.getValue().toString());
+					}
 				}
 				return properties;
 			} catch (JsonProcessingException e) {

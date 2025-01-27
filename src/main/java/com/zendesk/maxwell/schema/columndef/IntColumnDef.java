@@ -2,17 +2,40 @@ package com.zendesk.maxwell.schema.columndef;
 
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 
+import java.util.Objects;
+
 public class IntColumnDef extends ColumnDef {
-	public int bits;
+	private final int bits;
 
-	protected boolean signed;
+	private boolean signed;
 
-	public IntColumnDef(String name, String type, short pos, boolean signed) {
+	private IntColumnDef(String name, String type, short pos, boolean signed) {
 		super(name, type, pos);
 		this.signed = signed;
 		this.bits = bitsFromType(type);
 	}
 
+	public static IntColumnDef create(String name, String type, short pos, boolean signed) {
+		IntColumnDef temp = new IntColumnDef(name, type, pos, signed);
+		return (IntColumnDef) INTERNER.intern(temp);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (o.getClass() == getClass()) {
+			IntColumnDef other = (IntColumnDef)o;
+			return super.equals(o)
+					&& bits == other.bits
+					&& signed == other.signed;
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		int hash = super.hashCode();
+		return 31 * hash + Objects.hash(bits, signed);
+	}
 
 	private long castUnsigned(Integer i, long max_value) {
 		if ( i < 0 )
@@ -69,7 +92,9 @@ public class IntColumnDef extends ColumnDef {
 		return signed;
 	}
 
-	public void setSigned(boolean signed) {
-		this.signed = signed;
+	public IntColumnDef withSigned(boolean signed) {
+		return cloneSelfAndSet(clone -> {
+			clone.signed = signed;
+		});
 	}
 }

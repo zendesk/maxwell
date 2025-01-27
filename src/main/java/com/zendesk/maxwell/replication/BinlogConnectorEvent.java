@@ -59,6 +59,10 @@ public class BinlogConnectorEvent {
 		return (TableMapEventData) event.getData();
 	}
 
+	public MariadbGtidEventData mariaGtidData() {
+		return (MariadbGtidEventData) event.getData();
+	}
+
 	public BinlogPosition getPosition() {
 		return position;
 	}

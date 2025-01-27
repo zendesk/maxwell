@@ -18,10 +18,11 @@ user_token: (IDENT | QUOTED_IDENT | string_literal);
 name: ( id | tokens_available_for_names | INTEGER_LITERAL | DBL_STRING_LITERAL );
 name_all_tokens: ( id | all_tokens | INTEGER_LITERAL | DBL_STRING_LITERAL );
 id: ( IDENT | QUOTED_IDENT );
-literal: (float_literal | integer_literal | string_literal | byte_literal | NULL | TRUE | FALSE);
-literal_with_weirdo_multistring: (float_literal | integer_literal | string_literal+ | byte_literal | NULL | TRUE | FALSE);
+literal: (float_literal | broken_float_literal | integer_literal | string_literal | byte_literal | NULL | TRUE | FALSE);
+literal_with_weirdo_multistring: (float_literal | broken_float_literal | integer_literal | string_literal+ | byte_literal | NULL | TRUE | FALSE);
 
 float_literal: ('+'|'-')? INTEGER_LITERAL? '.' INTEGER_LITERAL;
+broken_float_literal: ('+'|'-')? INTEGER_LITERAL '.';
 integer_literal: ('+'|'-')? INTEGER_LITERAL;
 string_literal: (STRING_LITERAL | DBL_STRING_LITERAL);
 byte_literal:
@@ -38,6 +39,8 @@ default_collation: DEFAULT? collation;
 // it's not documented, but either "charset 'utf8'" or "character set 'utf8'" is valid.
 charset_token: (CHARSET | (CHARACTER SET) | (CHAR SET));
 collation: COLLATE '='? (IDENT | string_literal | QUOTED_IDENT | DEFAULT);
+
+tablespace: TABLESPACE '='? (id | string_literal);
 
 if_not_exists: IF NOT EXISTS;
 
