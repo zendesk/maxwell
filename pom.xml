@@ -156,7 +156,7 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-core</artifactId>
-      <version>1.11.1024</version>
+      <version>1.12.1</version>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
@@ -377,17 +377,17 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-sns</artifactId>
-      <version>1.11.1024</version>
+      <version>1.12.1</version>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-sqs</artifactId>
-      <version>1.11.1024</version>
+      <version>1.12.1</version>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-sts</artifactId>
-      <version>1.11.1024</version>
+      <version>1.12.1</version>
     </dependency>
     <dependency>
       <groupId>me.tongfei</groupId>
