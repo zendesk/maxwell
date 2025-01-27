@@ -6,11 +6,14 @@ import com.zendesk.maxwell.row.RawJSONString;
 
 import java.io.IOException;
 
-import static com.github.shyiko.mysql.binlog.event.deserialization.ColumnType.*;
-
 public class JsonColumnDef extends ColumnDef {
-	public JsonColumnDef(String name, String type, short pos) {
+	private JsonColumnDef(String name, String type, short pos) {
 		super(name, type, pos);
+	}
+
+	public static JsonColumnDef create(String name, String type, short pos) {
+		JsonColumnDef temp = new JsonColumnDef(name, type, pos);
+		return (JsonColumnDef) INTERNER.intern(temp);
 	}
 
 	@Override

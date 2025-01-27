@@ -253,6 +253,29 @@ public class DDLParserTest {
 			"CREATE TABLE testTable19 ( pid BIGINT NOT NULL DEFAULT(1) )",
 			"CREATE TABLE encRTYPE ( i int ) ENCRYPTION='Y'",
 			"CREATE TABLE testfoo ( i int ) START TRANSACTION",
+			"ALTER TABLE c add column i int visible",
+			"ALTER TABLE c add column i int invisible",
+			"ALTER TABLE c alter column i set visible",
+			"ALTER TABLE broker.table ADD PARTITION IF NOT EXISTS (partition p20210912 VALUES LESS THAN (738411))", // some mariada-fu
+			"ALTER TABLE t1 DROP PARTITION IF EXISTS p3", // some mariada-fu
+			"ALTER TABLE t1 DROP CONSTRAINT ck",
+			"ALTER TABLE t1 DROP CHECK ck",
+			"create table test ( i float default -1. )",
+			"alter database d ENCRYPTION='Y'",
+			"ALTER TABLE t1 ADD COLUMN IF NOT EXISTS c1 TINYINT",
+			"ALTER TABLE tournaments ADD INDEX idx_team_name (('$.teams.name'))",
+			"ALTER TABLE tournaments ADD INDEX idx_team_name ((ABS(col)))",
+			"ALTER TABLE tournaments ADD INDEX idx_team_name ((col1 * 40) DESC)",
+			"CREATE TABLE employees (data JSON, INDEX idx ((CAST(data->>'$.name' AS CHAR(30)) COLLATE utf8mb4_bin)))",
+			"ALTER TABLE tasks DROP COLUMN IF EXISTS snoozed_until",
+			"ALTER TABLE outgoing_notifications_log ADD INDEX idx_campaign_updated (campaign, last_updated_at) ALGORITHM=NOCOPY,LOCK=NONE",
+			"alter table test.c ALGORITHM=COPY, STATS_SAMPLE_PAGES=DEFAULT",
+			"ALTER TABLE vehicles " +
+				"DROP INDEX IF EXISTS uq_vehicles_oem_id_oem_vin," +
+				"ALGORITHM=NOCOPY, LOCK=NONE",
+			"ALTER TABLE foo drop foreign key if exists foobar",
+			"ALTER TABLE table_foo WAIT 30 ADD COLUMN my_column INTEGER, ALGORITHM=INSTANT, LOCK=NONE"
+
 
 		};
 
@@ -289,8 +312,13 @@ public class DDLParserTest {
 			"SET ROLE 'role1', 'role2'",
 			"SET DEFAULT ROLE administrator, developer TO 'joe'@'10.0.0.1'",
 			"DROP ROLE 'role1'",
+			"CREATE /*M! OR REPLACE */ ROLE 'role1'",
 			"#comment\ndrop procedure if exists `foo`",
-			"/* some \n mulitline\n comment */ drop procedure if exists foo"
+			"/* some \n mulitline\n comment */ drop procedure if exists foo",
+			"SET STATEMENT max_statement_time = 60 FOR flush table",
+			"SET STATEMENT max=1, min_var=3,v=9 FOR FLUSH",
+			"SET STATEMENT max='1', min=RRRR,v=9 FOR FLUSH",
+			"SET statement max=\"1\", min='3',v=RRR, long_long_ago=4 FOR FLUSH",
 		};
 
 		for ( String s : testSQL ) {
@@ -393,7 +421,8 @@ public class DDLParserTest {
 				+ ") "
 			  	+ "ENGINE=innodb "
 				+ "CHARACTER SET='latin1' "
-			  	+ "ROW_FORMAT=FIXED"
+			  	+ "ROW_FORMAT=FIXED "
+				+ "COMPRESSION='lz4'"
 		);
 		assertThat(c, not(nullValue()));
 	}
@@ -593,5 +622,31 @@ public class DDLParserTest {
 			}
 		}
 		System.out.println(nFixed + " fixed, " + nErr + " remain.");
+	}
+
+	@Test
+	public void testPolardbXCreateIndexSQL(){
+
+		List<SchemaChange> changes = parse(
+				"# POLARX_ORIGIN_SQL=CREATE INDEX device_id_idx ON event_tracking_info_extra (event, create_time)\n" +
+				"# POLARX_TSO=698905756181096044815201227773638819850000000000000000\n" +
+				"CREATE INDEX device_id_idx ON event_tracking_info_extra (event, create_time)");
+
+		assertThat(changes,is(nullValue()));
+
+	}
+
+	@Test
+	public void testServerInstanceOperations(){
+
+		List<SchemaChange> parse = parse("ALTER INSTANCE ROTATE INNODB MASTER KEY");
+		List<SchemaChange> parse1 = parse("ALTER INSTANCE ROTATE BINLOG MASTER KEY");
+		List<SchemaChange> parse2 = parse("ALTER INSTANCE RELOAD TLS");
+		List<SchemaChange> parse3 = parse("ALTER INSTANCE RELOAD TLS NO ROLLBACK ON ERROR");
+
+		assertThat(parse,is(nullValue()));
+		assertThat(parse1,is(nullValue()));
+		assertThat(parse2,is(nullValue()));
+		assertThat(parse3,is(nullValue()));
 	}
 }

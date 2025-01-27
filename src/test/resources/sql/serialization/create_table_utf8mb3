@@ -1,0 +1,74 @@
+CREATE database `ser1`;
+-> { type: "database-create", database: "ser1", charset: "utf8" }
+CREATE table `ser1`.`tbl1` ( id mediumint, `a` varchar(255) character set latin1, `b` mediumtext, `c` enum('a','b'), primary KEY(id) );
+-> {
+     type: "table-create",
+     database: "ser1",
+     table: "tbl1",
+     def: {
+       database: "ser1",
+       table: "tbl1",
+       columns: [
+               { name: "id", type: "mediumint", signed: true },
+               { name: "a",  type: "varchar", charset: "latin1" },
+               { name: "b",  type: "mediumtext", charset: "utf8mb3" },
+               { name: "c",  type: "enum", enum-values: ["a", "b"] }
+       ],
+       primary-key: [ "id" ],
+       charset: "utf8mb3"
+     }
+   }
+
+CREATE table `ser1`.`tbl2` ( id int unsigned, `a` BIT, primary key (id, a));
+->{
+    type: "table-create",
+    database: "ser1",
+    table: "tbl2",
+    def: {
+      database: "ser1",
+      table: "tbl2",
+      columns: [
+        { name: "id", type: "int", signed: false },
+        { name: "a", type: "bit" }
+      ],
+      primary-key: [ "id", "a" ],
+      charset: "utf8mb3"
+    }
+  }
+
+CREATE table `ser1`.`tbl3` ( id int, `dt` datetime(6), `ts` timestamp(3), `t` time(6), primary key (id));
+->{
+    type: "table-create",
+    database: "ser1",
+    table: "tbl3",
+    def: {
+      database: "ser1",
+      table: "tbl3",
+      columns: [
+        { name: "id", type: "int", signed: true },
+        { name: "dt", type: "datetime", column-length: 6 },
+        { name: "ts", type: "timestamp", column-length: 3 },
+        { name: "t", type: "time", column-length: 6 }
+      ],
+      primary-key: [ "id" ],
+      charset: "utf8mb3"
+    }
+  }
+
+CREATE database `ser1like`;
+CREATE table `ser1like`.`tbllike` LIKE `ser1`.`tbl2`;
+->{
+    type: "table-create",
+    database: "ser1like",
+    table: "tbllike",
+    def: {
+      database: "ser1like",
+      table: "tbllike",
+      columns: [
+        { name: "id", type: "int", signed: false },
+        { name: "a", type: "bit" }
+      ],
+      primary-key: [ "id", "a" ],
+      charset: "utf8mb3"
+    }
+  }

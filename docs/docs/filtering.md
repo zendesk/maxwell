@@ -56,10 +56,26 @@ Also note that this is the feature I most regret writing.
 If you need more flexibility than the native filters provide, you can write a small chunk of
 javascript for Maxwell to pass each row through with `--javascript FILE`.  This file should contain
 at least a javascript function named `process_row`.  This function will be passed a [`WrappedRowMap`]()
-object and is free to make filtering and data munging decisions:
+object that represents the current row and a [`LinkedHashMap<String, Object>`]() which represents a global state and is free to make filtering and data munging decisions:
 
 ```
-function process_row(row) {
+function process_row(row, state) {
+	// Updating the state object
+	if ( row.database == "test" && row.table == "lock") {
+		var haslock = row.data.get("haslock");
+		if ( haslock == "false" ) {
+			state.put("haslock", "false");
+		} else if( haslock == "true" ) {
+			state.put("haslock", "true");
+		}
+	}
+
+	// Suppressing rows based on state
+	if(state.get("haslock") == "true") {
+		row.suppress();
+	}
+
+	// Filter and Change based on actual data
 	if ( row.database == "test" && row.table == "bar" ) {
 		var username = row.data.get("username");
 		if ( username == "osheroff" )

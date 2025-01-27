@@ -258,7 +258,7 @@ RecordMaxBufferedTime = 100
 # Default: 30000
 # Minimum: 100
 # Maximum (inclusive): 9223372036854775807
-RecordTtl = 30000
+RecordTtl = 3600000
 
 # Which region to send records to.
 #

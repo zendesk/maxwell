@@ -86,7 +86,7 @@ public class Database {
 	}
 
 	public void diff(List<String> diffs, Database other, String nameA, String nameB) {
-		if ( !this.charset.toLowerCase().equals(other.getCharset().toLowerCase()) ) {
+		if ( !Schema.charsetEquals(this.charset, other.getCharset()) ) {
 			diffs.add("-- Database " + this.getName() + " had different charset: "
 					+ this.getCharset() + " in " + nameA + ", "
 					+ other.getCharset() + " in " + nameB);

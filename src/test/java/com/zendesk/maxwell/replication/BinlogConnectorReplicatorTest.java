@@ -11,10 +11,10 @@ import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.MaxwellTestSupport;
 import com.zendesk.maxwell.MysqlIsolatedServer;
 import com.zendesk.maxwell.TestWithNameLogging;
-import com.zendesk.maxwell.bootstrap.SynchronousBootstrapper;
 import com.zendesk.maxwell.monitoring.NoOpMetrics;
 import com.zendesk.maxwell.producer.BufferedProducer;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
+import com.zendesk.maxwell.producer.StdoutProducer;
 import com.zendesk.maxwell.row.RowMap;
 import com.zendesk.maxwell.schema.MysqlSchemaStore;
 import org.junit.Test;
@@ -25,8 +25,12 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
 public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
@@ -73,6 +77,7 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 	@Test
 	public void testGTIDReconnects() throws Exception {
 		assumeTrue(MysqlIsolatedServer.getVersion().atLeast(MysqlIsolatedServer.VERSION_5_6));
+		assumeFalse(MysqlIsolatedServer.getVersion().isMariaDB);
 
 		MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--gtid_mode=ON --enforce-gtid-consistency=true");
 		MaxwellTestSupport.setupSchema(server, false);
@@ -100,7 +105,8 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 			null,
 			context.getFilter(),
 			new MaxwellOutputConfig(),
-			context.getConfig().bufferMemoryUsage
+			context.getConfig().bufferMemoryUsage,
+			1
 		);
 
 		EventDeserializer eventDeserializer = new EventDeserializer();
@@ -131,5 +137,227 @@ public class BinlogConnectorReplicatorTest extends TestWithNameLogging {
 		assertEquals(222L, replicator.getRow().getData().get("i"));
 		assertEquals(333L, replicator.getRow().getData().get("i"));
 		assertEquals(null, replicator.getRow());
+	}
+
+	@Test
+	public void testSetNullSchemaIdInProcessQueryEvent() throws Exception {
+		assumeTrue(MysqlIsolatedServer.getVersion().atLeast(MysqlIsolatedServer.VERSION_5_6));
+		assumeFalse(MysqlIsolatedServer.getVersion().isMariaDB);
+
+		MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--gtid_mode=ON --enforce-gtid-consistency=true");
+		MaxwellTestSupport.setupSchema(server, false);
+
+		server.execute("create table test.t ( i int )");
+		server.execute("create table test.u ( i int )");
+
+		Position position = Position.capture(server.getConnection(), true);
+
+		MaxwellContext context = MaxwellTestSupport.buildContext(config -> {
+			config.replicationMysql.port = server.getPort();
+			config.maxwellMysql.port = server.getPort();
+			config.filter = null;
+			config.initPosition = position;
+			config.replayMode = true;
+			config.producerType = "stdout";
+
+		});
+
+		BinlogConnectorReplicator replicator = new BinlogConnectorReplicator(
+				new MysqlSchemaStore(context, position),
+				new StdoutProducer(context),
+				context.getBootstrapController(null),
+				context.getConfig().maxwellMysql,
+				333098L,
+				"maxwell",
+				new NoOpMetrics(),
+				position,
+				false,
+				"maxwell-client",
+				new HeartbeatNotifier(),
+				null,
+				context.getFilter(),
+				new MaxwellOutputConfig(),
+				context.getConfig().bufferMemoryUsage,
+				1
+		);
+
+		replicator.startReplicator();
+		server.execute("DROP TABLE IF EXISTS `xxx_tmp`");
+		replicator.getRow();
+
+	}
+
+	@Test
+	public void testClientReconnectionAfterConnectionDropped() throws Exception {
+		assumeTrue(MysqlIsolatedServer.getVersion().atLeast(MysqlIsolatedServer.VERSION_5_6));
+		assumeFalse(MysqlIsolatedServer.getVersion().isMariaDB);
+
+
+		MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--gtid_mode=ON --enforce-gtid-consistency=true");
+		MaxwellTestSupport.setupSchema(server, false);
+
+		server.execute("create table test.t ( i int )");
+		server.execute("create table test.u ( i int )");
+		server.execute("insert into test.t set i = 1");
+		Position position = Position.capture(server.getConnection(), true);
+
+		MaxwellContext context = MaxwellTestSupport.buildContext(config -> {
+			config.replicationMysql.port = server.getPort();
+			config.maxwellMysql.port = server.getPort();
+			config.filter = null;
+			config.initPosition = position;
+			config.replayMode = true;
+			config.producerType = "stdout";
+			config.maxwellMysql.enableHeartbeat = true;
+		});
+
+		BinlogConnectorReplicator replicator = new BinlogConnectorReplicator(
+				new MysqlSchemaStore(context, position),
+				new StdoutProducer(context),
+				context.getBootstrapController(null),
+				context.getConfig().maxwellMysql,
+				333098L,
+				"maxwell",
+				new NoOpMetrics(),
+				position,
+				false,
+				"maxwell-client",
+				new HeartbeatNotifier(),
+				null,
+				context.getFilter(),
+				new MaxwellOutputConfig(),
+				context.getConfig().bufferMemoryUsage,
+				0 //0 = unlimited
+		);
+		replicator.startReplicator();
+
+		Thread t2 = new Thread(() -> {
+			RowMap row = null;
+			try {
+
+				while ((row = replicator.getRow()) == null) {
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			assertEquals(1L, row.getData().get("i"));
+		});
+		t2.start();
+		//simulates a drop connection
+		server.stop();
+
+		//wait 30 seconds
+		for (long stop = System.nanoTime() + TimeUnit.SECONDS.toNanos(30); stop > System.nanoTime(); ) {}
+
+		server.resume();
+		server.execute("insert into test.t set i = 1");
+		t2.join();
+	}
+
+	@Test(expected = TimeoutException.class)
+	public void testMaximumReconnectionAttemptsReached() throws Exception {
+		assumeTrue(MysqlIsolatedServer.getVersion().atLeast(MysqlIsolatedServer.VERSION_5_6));
+		assumeFalse(MysqlIsolatedServer.getVersion().isMariaDB);
+
+		MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--gtid_mode=ON --enforce-gtid-consistency=true");
+		MaxwellTestSupport.setupSchema(server, false);
+
+		server.execute("create table test.t ( i int )");
+		server.execute("create table test.u ( i int )");
+		server.execute("insert into test.t set i = 1");
+		Position position = Position.capture(server.getConnection(), true);
+
+		MaxwellContext context = MaxwellTestSupport.buildContext(config -> {
+			config.replicationMysql.port = server.getPort();
+			config.maxwellMysql.port = server.getPort();
+			config.filter = null;
+			config.initPosition = position;
+			config.replayMode = true;
+			config.producerType = "stdout";
+			config.maxwellMysql.enableHeartbeat = true;
+		});
+
+		BinlogConnectorReplicator replicator = new BinlogConnectorReplicator(
+				new MysqlSchemaStore(context, position),
+				new StdoutProducer(context),
+				context.getBootstrapController(null),
+				context.getConfig().maxwellMysql,
+				333098L,
+				"maxwell",
+				new NoOpMetrics(),
+				position,
+				false,
+				"maxwell-client",
+				new HeartbeatNotifier(),
+				null,
+				context.getFilter(),
+				new MaxwellOutputConfig(),
+				context.getConfig().bufferMemoryUsage,
+				3
+		);
+		replicator.startReplicator();
+		//simulates a drop connection
+		server.stop();
+
+		RowMap row = null;
+		while ((row = replicator.getRow()) == null) {
+		}
+	}
+
+	public void testClientReconnectionToDifferentServerAfterConnectionDroppedThrows() throws Exception {
+		assumeTrue(MysqlIsolatedServer.getVersion().atLeast(MysqlIsolatedServer.VERSION_5_6));
+		assumeFalse(MysqlIsolatedServer.getVersion().isMariaDB);
+
+		MysqlIsolatedServer server = MaxwellTestSupport.setupServer("--server_id=123");
+		MaxwellTestSupport.setupSchema(server, false);
+
+		server.execute("create table test.t ( i int )");
+		server.execute("create table test.u ( i int )");
+		server.execute("insert into test.t set i = 1");
+		Position position = Position.capture(server.getConnection(), false);
+
+		MaxwellContext context = MaxwellTestSupport.buildContext(config -> {
+			config.replicationMysql.port = server.getPort();
+			config.maxwellMysql.port = server.getPort();
+			config.filter = null;
+			config.initPosition = position;
+			config.replayMode = true;
+			config.producerType = "stdout";
+			config.maxwellMysql.enableHeartbeat = true;
+		});
+
+		BinlogConnectorReplicator replicator = new BinlogConnectorReplicator(
+				new MysqlSchemaStore(context, position),
+				new StdoutProducer(context),
+				context.getBootstrapController(null),
+				context.getConfig().maxwellMysql,
+				333098L,
+				"maxwell",
+				new NoOpMetrics(),
+				position,
+				false,
+				"maxwell-client",
+				new HeartbeatNotifier(),
+				null,
+				context.getFilter(),
+				new MaxwellOutputConfig(),
+				context.getConfig().bufferMemoryUsage,
+				3);
+		replicator.startReplicator();
+		replicator.getRow();
+
+		//simulates a drop connection and connection to new server
+		server.shutDown();
+		server.boot("--server_id=456");
+
+		try {
+			replicator.getRow();
+
+			throw new Exception("Did not get excepted exception on server id change");
+		} catch (Exception e) {
+			if (!e.getMessage().startsWith("Master id changed")) {
+				throw new Exception("Got unexpected exception", e);
+			}
+		}
 	}
 }
