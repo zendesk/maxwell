@@ -20,7 +20,7 @@ public class StoppableTaskState {
 	}
 
 	public synchronized void requestStop() {
-		LOGGER.debug(description + " requestStop() called (in state: " + state + ")");
+		LOGGER.debug("{} requestStop() called (in state: {})", description, state);
 		if (isRunning()) {
 			this.state = RunState.REQUEST_STOP;
 		}

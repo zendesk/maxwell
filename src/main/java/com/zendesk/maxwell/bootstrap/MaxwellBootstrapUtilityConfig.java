@@ -36,16 +36,8 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 
 
 	public String getConnectionURI() {
-		URIBuilder uriBuilder = new URIBuilder();
-		uriBuilder.setScheme("jdbc:mysql");
-		uriBuilder.setHost(mysql.host);
-		uriBuilder.setPort(mysql.port);
-		uriBuilder.setPath("/" + schemaDatabaseName);
-		for (Map.Entry<String, String> jdbcOption : mysql.jdbcOptions.entrySet()) {
-			uriBuilder.addParameter(jdbcOption.getKey(), jdbcOption.getValue());
-		}
 		try {
-			return uriBuilder.build().toString();
+			return getConfigConnectionURI(mysql);
 		} catch (URISyntaxException e) {
 			LOGGER.error(e.getMessage(), e);
 			throw new RuntimeException("Unable to generate bootstrap's jdbc connection URI", e);
@@ -53,12 +45,44 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 	}
 
 	public String getReplicationConnectionURI( ) {
-		return "jdbc:mysql://" + replicationMysql.host + ":" + replicationMysql.port;
+		try {
+			return getConfigReplicationConnectionURI(replicationMysql);
+		} catch (URISyntaxException e) {
+			LOGGER.error(e.getMessage(), e);
+			throw new RuntimeException("Unable to generate bootstrap's replication jdbc connection URI", e);
+		}
+	}
+
+	private String getConfigConnectionURI(MaxwellMysqlConfig config) throws URISyntaxException {
+		URIBuilder uriBuilder = new URIBuilder();
+		uriBuilder.setScheme("jdbc:mysql");
+		uriBuilder.setHost(config.host);
+		uriBuilder.setPort(config.port);
+		uriBuilder.setPath("/" + schemaDatabaseName);
+		for (Map.Entry<String, String> jdbcOption : config.jdbcOptions.entrySet()) {
+			uriBuilder.addParameter(jdbcOption.getKey(), jdbcOption.getValue());
+		}
+		return uriBuilder.build().toString();
+	}
+
+	private String getConfigReplicationConnectionURI(MaxwellMysqlConfig config) throws URISyntaxException {
+		URIBuilder uriBuilder = new URIBuilder();
+		uriBuilder.setScheme("jdbc:mysql");
+		uriBuilder.setHost(config.host);
+		uriBuilder.setPort(config.port);
+		uriBuilder.setPath("/" + databaseName);
+		for (Map.Entry<String, String> jdbcOption : config.jdbcOptions.entrySet()) {
+			uriBuilder.addParameter(jdbcOption.getKey(), jdbcOption.getValue());
+		}
+		return uriBuilder.build().toString();
 	}
 
 	protected OptionParser buildOptionParser() {
 		OptionParser parser = new OptionParser();
-		parser.accepts( "config", "location of config file" ).withRequiredArg();
+		parser.accepts( "config", "location of config.properties file" )
+				.withRequiredArg();
+		parser.accepts( "env_config", "json object encoded config in an environment variable" )
+				.withRequiredArg();
 		parser.accepts( "__separator_1", "" );
 		parser.accepts( "database", "database that contains the table to bootstrap").withRequiredArg();
 		parser.accepts( "table", "table to bootstrap").withRequiredArg();
@@ -105,14 +129,24 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 
 	private void parse(String [] argv) {
 		OptionSet options = buildOptionParser().parse(argv);
-		Properties properties;
 
-		if ( options.has("config") ) {
+		final Properties properties;
+
+		if (options.has("config")) {
 			properties = parseFile((String) options.valueOf("config"), true);
 		} else {
 			properties = parseFile(DEFAULT_CONFIG_FILE, false);
 		}
 
+		if (options.has("env_config")) {
+			Properties envConfigProperties = readPropertiesEnv((String) options.valueOf("env_config"));
+			for (Map.Entry<Object, Object> entry : envConfigProperties.entrySet()) {
+				Object key = entry.getKey();
+				if (properties.put(key, entry.getValue()) != null) {
+					LOGGER.debug("Replaced config key {} with value from env_config", key);
+				}
+			}
+		}
 		if ( options.has("help") )
 			usage("Help for Maxwell Bootstrap Utility:\n\nPlease provide one of:\n--database AND --table, --abort ID, or --monitor ID");
 

@@ -53,20 +53,19 @@ public class MysqlSchemaCompactor extends RunLoopProcess {
 	}
 
 	private boolean getLock(Connection cx) throws SQLException {
-		PreparedStatement s = cx.prepareStatement(
-			"SELECT GET_LOCK(?, 0)"
-		);
-		s.setString(1, this.lockName());
-		ResultSet rs = s.executeQuery();
-		return rs.next() && rs.getBoolean(1);
+		try ( PreparedStatement s = cx.prepareStatement("SELECT GET_LOCK(?, 0)") ) {
+			s.setString(1, this.lockName());
+			try ( ResultSet rs = s.executeQuery() ) {
+				return rs.next() && rs.getBoolean(1);
+			}
+		}
 	}
 
 	private void releaseLock(Connection cx) throws SQLException {
-		PreparedStatement s = cx.prepareStatement(
-			"SELECT RELEASE_LOCK(?)"
-		);
-		s.setString(1, this.lockName());
-		s.execute();
+		try ( PreparedStatement s = cx.prepareStatement("SELECT RELEASE_LOCK(?)") ) {
+			s.setString(1, this.lockName());
+			s.execute();
+		}
 	}
 
 	public void doWork() throws Exception {
@@ -84,10 +83,11 @@ public class MysqlSchemaCompactor extends RunLoopProcess {
 	}
 
 	private boolean shouldCompact(Connection cx) throws SQLException {
-		ResultSet rs = cx.prepareStatement(
-			"select count(*) as count from `schemas` where `server_id` = " + this.serverID
-		).executeQuery();
-		return rs.next() && rs.getInt("count") >= this.maxDeltas;
+		String sql = "select count(*) as count from `schemas` where `server_id` = " + this.serverID;
+		try ( PreparedStatement ps = cx.prepareStatement(sql);
+			  ResultSet rs = ps.executeQuery() ) {
+			return rs.next() && rs.getInt("count") >= this.maxDeltas;
+		}
 	}
 
 	Long lastWarnedSchemaID = null;
@@ -97,38 +97,39 @@ public class MysqlSchemaCompactor extends RunLoopProcess {
 			return null;
 		}
 
-		ResultSet rs = cx.prepareStatement(
-			"select id, binlog_file, binlog_position, gtid_set, 0 as last_heartbeat_read "
-			+ " from `schemas` where `server_id` = " + this.serverID
-			+ " order by id desc limit 1"
-		).executeQuery();
+		String schemaSql = "select id, binlog_file, binlog_position, gtid_set, 0 as last_heartbeat_read "
+				+ " from `schemas` where `server_id` = " + this.serverID
+				+ " order by id desc limit 1";
+		final Long schemaID;
+		final Position schemaPosition;
+		try ( PreparedStatement ps = cx.prepareStatement(schemaSql);
+			  ResultSet rs = ps.executeQuery() ) {
+			if ( !rs.next() )
+				return null;
 
-		if ( !rs.next() )
-			return null;
-
-
-		Long schemaID = rs.getLong("id");
-		Position schemaPosition = MysqlPositionStore.positionFromResultSet(rs, serverID == 0);
+			schemaID = rs.getLong("id");
+			schemaPosition = MysqlPositionStore.positionFromResultSet(rs, serverID == 0);
+		}
 
 		LOGGER.debug("trying to compact schema {} @ {}", schemaID, schemaPosition);
 
-		ResultSet positionsRS = cx.prepareStatement(
-			"select * from `positions` where server_id = " + serverID
-		).executeQuery();
+		try ( PreparedStatement ps = cx.prepareStatement("select * from `positions` where server_id = " + serverID);
+			  ResultSet positionsRS = ps.executeQuery() ) {
 
-		while ( positionsRS.next() ) {
-			Position clientPosition = MysqlPositionStore.positionFromResultSet(positionsRS, serverID == 0);
-			if ( clientPosition.newerThan(schemaPosition) ) {
-				LOGGER.debug("found a client @ {}, that's fine...", clientPosition);
-			} else {
-				if ( !schemaID.equals(lastWarnedSchemaID) ) {
-					LOGGER.warn("Not compacting schema {}, client '{}' @ {} has not reached that position yet",
-						schemaID,
-						positionsRS.getString("client_id"),
-						clientPosition);
-					lastWarnedSchemaID = schemaID;
+			while ( positionsRS.next() ) {
+				Position clientPosition = MysqlPositionStore.positionFromResultSet(positionsRS, serverID == 0);
+				if ( clientPosition.newerThan(schemaPosition) ) {
+					LOGGER.debug("found a client @ {}, that's fine...", clientPosition);
+				} else {
+					if ( !schemaID.equals(lastWarnedSchemaID) ) {
+						LOGGER.warn("Not compacting schema {}, client '{}' @ {} has not reached that position yet",
+								schemaID,
+								positionsRS.getString("client_id"),
+								clientPosition);
+						lastWarnedSchemaID = schemaID;
+					}
+					return null;
 				}
-				return null;
 			}
 		}
 
@@ -144,29 +145,36 @@ public class MysqlSchemaCompactor extends RunLoopProcess {
 			return;
 
 		LOGGER.info("compacting schemas before {}", schemaID);
-		cx.prepareStatement("BEGIN").execute();
+		try ( Statement begin = cx.createStatement();
+		      Statement update = cx.createStatement();
+		      Statement commit = cx.createStatement() ) {
+			begin.execute("BEGIN");
 
-		MysqlSavedSchema savedSchema = MysqlSavedSchema.restoreFromSchemaID(schemaID, cx, this.sensitivity);
-		savedSchema.saveFullSchema(cx, schemaID);
-		cx.createStatement().executeUpdate("update `schemas` set `base_schema_id` = null, `deltas` = null where `id` = " + schemaID);
+			MysqlSavedSchema savedSchema = MysqlSavedSchema.restoreFromSchemaID(schemaID, cx, this.sensitivity);
+			savedSchema.saveFullSchema(cx, schemaID);
+			update.executeUpdate("update `schemas` set `base_schema_id` = null, `deltas` = null where `id` = " + schemaID);
 
-		cx.prepareStatement("COMMIT").execute();
+			commit.execute("COMMIT");
+			LOGGER.info("Committed schema compaction for {}", schemaID);
+		}
 
 		slowDeleteSchemas(cx, schemaID);
+		LOGGER.info("Finished deleting old schemas prior to {}", schemaID);
 	}
 
 	private void slowDeleteSchemas(Connection cx, long newBaseSchemaID) throws SQLException {
 		cx.setAutoCommit(true);
 
-		PreparedStatement ps = cx.prepareStatement(
-			"select * from `schemas` where id < ? and server_id = ?"
-		);
-		ps.setLong(1, newBaseSchemaID);
-		ps.setLong(2, serverID);
+		String sql = "select * from `schemas` where id < ? and server_id = ?";
+		try ( PreparedStatement ps = cx.prepareStatement(sql) ) {
+			ps.setLong(1, newBaseSchemaID);
+			ps.setLong(2, serverID);
 
-		ResultSet rs = ps.executeQuery();
-		while ( rs.next() ) {
-			slowDeleteSchema(cx, rs.getLong("id"));
+			try ( ResultSet rs = ps.executeQuery() ) {
+				while ( rs.next() ) {
+					slowDeleteSchema(cx, rs.getLong("id"));
+				}
+			}
 		}
 	}
 
@@ -175,16 +183,17 @@ public class MysqlSchemaCompactor extends RunLoopProcess {
 		slowDeleteFrom("columns", cx, schemaID);
 		slowDeleteFrom("tables", cx, schemaID);
 		slowDeleteFrom("databases", cx, schemaID);
-		cx.createStatement().executeUpdate("delete from `schemas` where id = " + schemaID);
+		try ( Statement s = cx.createStatement() ) {
+			s.executeUpdate("delete from `schemas` where id = " + schemaID);
+		}
 	}
 
 	private static final int DELETE_SLEEP_MS = 200;
 	private static final int DELETE_LIMIT = 500;
 
 	private void slowDeleteFrom(String table, Connection cx, long schemaID) throws SQLException {
-		try {
+		try ( Statement s = cx.createStatement() ) {
 			while ( true ) {
-				Statement s = cx.createStatement();
 				int deleted = s.executeUpdate("DELETE from `" + table + "` where schema_id = " + schemaID + " LIMIT " + DELETE_LIMIT);
 
 				if ( deleted == 0 )

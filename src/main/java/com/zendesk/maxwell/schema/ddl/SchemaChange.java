@@ -21,6 +21,8 @@ public abstract class SchemaChange {
 
 	private static final Set<Pattern> SQL_BLACKLIST = new HashSet<Pattern>();
 
+	private static final Pattern SET_STATEMENT = Pattern.compile("SET\\s+STATEMENT\\s+(\\w+\\s*=\\s*((?<quote>['\"]).*?\\k<quote>|\\w+),?\\s*)+FOR\\s+", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+
 	static {
 		SQL_BLACKLIST.add(Pattern.compile("\\A\\s*BEGIN", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
 		SQL_BLACKLIST.add(Pattern.compile("\\A\\s*COMMIT", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
@@ -37,8 +39,10 @@ public abstract class SchemaChange {
 		SQL_BLACKLIST.add(Pattern.compile("\\A\\s*ANALYZE\\s+TABLE", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
 		SQL_BLACKLIST.add(Pattern.compile("\\A\\s*SET\\s+PASSWORD", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
 		SQL_BLACKLIST.add(Pattern.compile("\\A\\s*(ALTER|CREATE|DROP|RENAME)\\s+USER", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
+		SQL_BLACKLIST.add(Pattern.compile("\\A\\s*ALTER\\s+INSTANCE.*", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
 
 		SQL_BLACKLIST.add(Pattern.compile("\\A\\s*(ALTER|CREATE|DROP)\\s+TEMPORARY\\s+TABLE", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
+		SQL_BLACKLIST.add(Pattern.compile("\\A\\s*(ALTER|CREATE|DROP)\\s+TABLESPACE", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
 		SQL_BLACKLIST.add(Pattern.compile("\\A\\s*(SET|DROP|CREATE)\\s+(DEFAULT\\s+)?ROLE", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
 		SQL_BLACKLIST.add(Pattern.compile("\\A\\s*TRUNCATE\\s+", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
 		SQL_BLACKLIST.add(Pattern.compile("\\A\\s*OPTIMIZE\\s+", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
@@ -52,16 +56,19 @@ public abstract class SchemaChange {
 
 	private static boolean matchesBlacklist(String sql) {
 		// first *include* /*50032 CREATE EVENT */ style sql
-		sql = sql.replaceAll("/\\*!\\d+\\s*(.*)\\*/", "$1");
+		sql = sql.replaceAll("/\\*M?!\\d+\\s*(.*)\\*/", "$1");
 
 		// now strip out comments
 		sql = CSTYLE_COMMENTS.matcher(sql).replaceAll("");
 		sql = sql.replaceAll("\\-\\-.*", "");
-		sql = sql.replaceAll("^\\s*#.*", "");
+		sql = Pattern.compile("^\\s*#.*", Pattern.MULTILINE).matcher(sql).replaceAll("");
+
+		// SET STATEMENT .. FOR syntax can be applied to BLACKLIST element, just omit for tesing purposes
+		sql = SET_STATEMENT.matcher(sql).replaceAll("");
 
 		for (Pattern p : SQL_BLACKLIST) {
 			if (p.matcher(sql).find()) {
-				LOGGER.debug("ignoring sql: " + sql);
+				LOGGER.debug("ignoring sql: {}", sql);
 				return true;
 			}
 		}
@@ -83,7 +90,7 @@ public abstract class SchemaChange {
 
 		TokenStream tokens = new CommonTokenStream(lexer);
 
-		LOGGER.debug("SQL_PARSE <- \"" + sql + "\"");
+		LOGGER.debug("SQL_PARSE <- \"{}\"", sql);
 		mysqlParser parser = new mysqlParser(tokens);
 		parser.removeErrorListeners();
 
@@ -92,7 +99,9 @@ public abstract class SchemaChange {
 		ParseTree tree = parser.parse();
 
 		ParseTreeWalker.DEFAULT.walk(listener, tree);
-		LOGGER.debug("SQL_PARSE ->   " + tree.toStringTree(parser));
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug("SQL_PARSE ->   {}", tree.toStringTree(parser));
+		}
 		return listener.getSchemaChanges();
 	}
 
@@ -106,13 +115,17 @@ public abstract class SchemaChange {
 				return parseSQL(currentDB, sql);
 			} catch ( ReparseSQLException e ) {
 				sql = e.getSQL();
-				LOGGER.debug("rewrote SQL to " + sql);
+				LOGGER.debug("rewrote SQL to {}", sql);
 				// re-enter loop
 			} catch ( ParseCancellationException e ) {
-				LOGGER.debug("Parse cancelled: " + e);
+				if (LOGGER.isDebugEnabled()) {
+					// we are debug logging the toString message, slf4j will log the stacktrace of a throwable
+					String msg = e.toString();
+					LOGGER.debug("Parse cancelled: {}", msg);
+				}
 				return null;
 			} catch ( MaxwellSQLSyntaxError e) {
-				LOGGER.error("Error parsing SQL: '" + sql + "'");
+				LOGGER.error("Error parsing SQL: '{}'", sql);
 				throw (e);
 			}
 		}

@@ -51,7 +51,7 @@ public class TaskManager {
 		// then wait for everything to stop
 		Long timeout = 1000L;
 		for (StoppableTask task: this.tasks) {
-			LOGGER.debug("Awaiting stop of: " + task);
+			LOGGER.debug("Awaiting stop of: {}", task);
 			task.awaitStop(timeout);
 		}
 

@@ -18,6 +18,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 
@@ -149,7 +150,13 @@ public class RowMap implements Serializable {
 		g.writeStringField(fieldNameStrategy.apply(FieldNames.TABLE), this.table);
 
 		if ( outputConfig.includesRowQuery && this.rowQuery != null) {
-			g.writeStringField(fieldNameStrategy.apply(FieldNames.QUERY), this.rowQuery);
+			String outputQuery;
+			if(outputConfig.rowQueryMaxLength > 0 && this.rowQuery.length() > outputConfig.rowQueryMaxLength){
+				outputQuery = this.rowQuery.substring(0,outputConfig.rowQueryMaxLength);
+			}else{
+				outputQuery = this.rowQuery;
+			}
+			g.writeStringField(fieldNameStrategy.apply(FieldNames.QUERY), outputQuery);
 		}
 
 		g.writeStringField(fieldNameStrategy.apply(FieldNames.TYPE), this.rowType);
@@ -446,5 +453,21 @@ public class RowMap implements Serializable {
 
 	public void setComment(String comment) {
 		this.comment = comment;
+	}
+
+	public List<String> getPrimaryKeyColumns() {
+		return Collections.unmodifiableList(this.pkColumns);
+	}
+
+	public List<Object> getPrimaryKeyValues() {
+		List<Object> values = new ArrayList<>();
+		pkColumns.forEach(pkColumn -> values.add(this.data.get(pkColumn)));
+		return Collections.unmodifiableList(values);
+	}
+
+	public Map<String, Object> getPrimaryKeyMap() {
+		return pkColumns.stream()
+				.filter(v -> this.data.get(v) != null)
+				.collect(Collectors.toMap(k -> k, v -> this.data.get(v)));
 	}
 }
