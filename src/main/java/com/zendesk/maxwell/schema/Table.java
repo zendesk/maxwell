@@ -80,12 +80,17 @@ public class Table {
 		return this.name;
 	}
 
-	public int findColumnIndex(String name) {
-		return columns.indexOf(name);
+	public short findColumnIndex(String name) {
+		return (short) columns.indexOf(name);
 	}
+
 
 	public ColumnDef findColumn(String name) {
 		return columns.findByName(name);
+	}
+
+	public ColumnDef findColumn(int index) {
+		return columns.get(index);
 	}
 
 	@JsonIgnore
@@ -142,7 +147,7 @@ public class Table {
 					EnumeratedColumnDef enumA, enumB;
 					enumA = (EnumeratedColumnDef) column;
 					enumB = (EnumeratedColumnDef) other;
-					if ( !Arrays.deepEquals(enumA.getEnumValues(), enumB.getEnumValues()) ) {
+					if ( !enumA.getEnumValues().equals(enumB.getEnumValues()) ) {
 						diffs.add(colName + "has an enum value mismatch, "
 								+ StringUtils.join(enumA.getEnumValues(), ",")
 								+ " vs "
@@ -156,7 +161,7 @@ public class Table {
 					stringA = (StringColumnDef) column;
 					stringB = (StringColumnDef) other;
 
-					if ( !Objects.equals(stringA.getCharset(), stringB.getCharset()) ) {
+					if ( !Schema.charsetEquals(stringA.getCharset(), stringB.getCharset()) ) {
 						diffs.add(colName + "has an charset mismatch, "
 								+ "'" + stringA.getCharset() + "'"
 								+ " vs "
@@ -200,7 +205,7 @@ public class Table {
 	}
 
 	public void diff(List<String> diffs, Table other, String nameA, String nameB) {
-		if ( !this.getCharset().equals(other.getCharset()) ) {
+		if ( !Schema.charsetEquals(this.charset, other.getCharset()) ) {
 			diffs.add(this.fullName() + " differs in charset: "
 					  + nameA + " is " + this.getCharset() + " but "
 					  + nameB + " is " + other.getCharset());
@@ -223,8 +228,10 @@ public class Table {
 	}
 
 	public void setDefaultColumnCharsets() {
+		String newCharset = this.getCharset();
 		for ( StringColumnDef c : getStringColumns() ) {
-			c.setDefaultCharset(this.getCharset());
+			int index = c.getPos();
+			columns.replace(index, c.withDefaultCharset(newCharset));
 		}
 	}
 
@@ -236,6 +243,10 @@ public class Table {
 		columns.add(columns.size(), definition);
 	}
 
+	public void addColumns(List<ColumnDef> definitions) {
+		columns.addAll(definitions);
+	}
+
 	public void removeColumn(int idx) {
 		ColumnDef toRemove = columns.get(idx);
 		removePKColumn(toRemove.getName());
@@ -243,10 +254,15 @@ public class Table {
 	}
 
 	public void renameColumn(int idx, String name) throws InvalidSchemaError {
-		ColumnDef column = columns.get(idx).clone();
-		column.setName(name);
-		columns.remove(idx);
-		columns.add(idx, column);
+		ColumnDef oldColumn = columns.get(idx);
+		renamePKColumn(oldColumn.getName(), name);
+
+		ColumnDef column = columns.get(idx).withName(name);
+		columns.replace(idx, column);
+	}
+
+	public void replaceColumn(int idx, ColumnDef definition) throws InvalidSchemaError {
+		columns.replace(idx, definition);
 	}
 
 	public void changeColumn(int idx, ColumnPosition position, ColumnDef definition, List<DeferredPositionUpdate> deferred) throws InvalidSchemaError {

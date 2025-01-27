@@ -4,7 +4,9 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.Meter;
 import com.github.shyiko.mysql.binlog.BinaryLogClient;
+import com.github.shyiko.mysql.binlog.event.AnnotateRowsEventData;
 import com.github.shyiko.mysql.binlog.event.EventType;
+import com.github.shyiko.mysql.binlog.event.MariadbGtidEventData;
 import com.github.shyiko.mysql.binlog.event.QueryEventData;
 import com.github.shyiko.mysql.binlog.event.RowsQueryEventData;
 import com.github.shyiko.mysql.binlog.event.TableMapEventData;
@@ -34,11 +36,13 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Pattern;
 
 public class BinlogConnectorReplicator extends RunLoopProcess implements Replicator, BinaryLogClient.LifecycleListener {
 	static final Logger LOGGER = LoggerFactory.getLogger(BinlogConnectorReplicator.class);
 	private static final long MAX_TX_ELEMENTS = 10000;
+	public static int BINLOG_QUEUE_SIZE = 5000;
 	public static final int BAD_BINLOG_ERROR_CODE = 1236;
 	public static final int ACCESS_DENIED_ERROR_CODE = 1227;
 
@@ -46,9 +50,10 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private final String maxwellSchemaDatabaseName;
 
 	protected final BinaryLogClient client;
+	private final int replicationReconnectionRetries;
 	private BinlogConnectorEventListener binlogEventListener;
 	private BinlogConnectorLivenessMonitor binlogLivenessMonitor;
-	private final LinkedBlockingDeque<BinlogConnectorEvent> queue = new LinkedBlockingDeque<>(20);
+	private final LinkedBlockingDeque<BinlogConnectorEvent> queue;
 	private final TableCache tableCache;
 	private final Scripting scripting;
 	private ServerException lastCommError;
@@ -60,6 +65,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private final HeartbeatNotifier heartbeatNotifier;
 	private Long stopAtHeartbeat;
 	private Filter filter;
+	private Boolean ignoreMissingSchema;
 
 	private final BootstrapController bootstrapper;
 	private final AbstractProducer producer;
@@ -83,6 +89,46 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private class ClientReconnectedException extends Exception {}
 
 	public BinlogConnectorReplicator(
+			SchemaStore schemaStore,
+			AbstractProducer producer,
+			BootstrapController bootstrapper,
+			MaxwellMysqlConfig mysqlConfig,
+			Long replicaServerID,
+			String maxwellSchemaDatabaseName,
+			Metrics metrics,
+			Position start,
+			boolean stopOnEOF,
+			String clientID,
+			HeartbeatNotifier heartbeatNotifier,
+			Scripting scripting,
+			Filter filter,
+			MaxwellOutputConfig outputConfig,
+			float bufferMemoryUsage,
+			int replicationReconnectionRetries
+	) {
+		this(
+				schemaStore,
+				producer,
+				bootstrapper,
+				mysqlConfig,
+				replicaServerID,
+				maxwellSchemaDatabaseName,
+				metrics,
+				start,
+				stopOnEOF,
+				clientID,
+				heartbeatNotifier,
+				scripting,
+				filter,
+				false,
+				outputConfig,
+				bufferMemoryUsage,
+				replicationReconnectionRetries,
+				BINLOG_QUEUE_SIZE
+		);
+	}
+
+	public BinlogConnectorReplicator(
 		SchemaStore schemaStore,
 		AbstractProducer producer,
 		BootstrapController bootstrapper,
@@ -96,8 +142,11 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		HeartbeatNotifier heartbeatNotifier,
 		Scripting scripting,
 		Filter filter,
+		boolean ignoreMissingSchema,
 		MaxwellOutputConfig outputConfig,
-		float bufferMemoryUsage
+		float bufferMemoryUsage,
+		int replicationReconnectionRetries,
+		int binlogEventQueueSize
 	) {
 		this.clientID = clientID;
 		this.bootstrapper = bootstrapper;
@@ -110,8 +159,10 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		this.schemaStore = schemaStore;
 		this.tableCache = new TableCache(maxwellSchemaDatabaseName);
 		this.filter = filter;
+		this.ignoreMissingSchema = ignoreMissingSchema;
 		this.lastCommError = null;
 		this.bufferMemoryUsage = bufferMemoryUsage;
+		this.queue = new LinkedBlockingDeque<>(binlogEventQueueSize);
 
 		/* setup metrics */
 		rowCounter = metrics.getRegistry().counter(
@@ -128,6 +179,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		/* setup binlog client */
 		this.client = new BinaryLogClient(mysqlConfig.host, mysqlConfig.port, mysqlConfig.user, mysqlConfig.password);
 		this.client.setSSLMode(mysqlConfig.sslMode);
+		this.client.setUseSendAnnotateRowsEvent(true);
+
 
 		BinlogPosition startBinlog = start.getBinlogPosition();
 		if (startBinlog.getGtidSetStr() != null) {
@@ -167,6 +220,8 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		this.client.registerEventListener(binlogEventListener);
 		this.client.registerLifecycleListener(this);
 		this.client.setServerId(replicaServerID.intValue());
+
+		this.replicationReconnectionRetries = replicationReconnectionRetries;
 	}
 
 	/**
@@ -436,8 +491,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 				client.setBinlogFilename("");
 				client.setBinlogPosition(4L);
-
-				client.connect(5000);
+				tryReconnect();
 
 				throw new ClientReconnectedException();
 			} else {
@@ -445,9 +499,27 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 				// we like, so we don't have to bail out of the middle of an event.
 				LOGGER.warn("replicator stopped at position: {} -- restarting", client.getBinlogFilename() + ":" + client.getBinlogPosition());
 
-				client.connect(5000);
+				Long oldMasterId = client.getMasterServerId();
+				tryReconnect();
+				if (client.getMasterServerId() != oldMasterId) {
+					throw new Exception("Master id changed from " + oldMasterId + " to " + client.getMasterServerId()
+								+ " while using binlog coordinate positioning. Cannot continue with the info that we have");
+				}
 			}
 		}
+	}
+
+	private void tryReconnect() throws TimeoutException {
+		int reconnectionAttempts = 0;
+
+		while ((reconnectionAttempts += 1) <= this.replicationReconnectionRetries || this.replicationReconnectionRetries == 0) {
+			try {
+				LOGGER.info(String.format("Reconnection attempt: %s of %s", reconnectionAttempts, replicationReconnectionRetries > 0 ? this.replicationReconnectionRetries : "unlimited"));
+				client.connect(5000);
+				return;
+			} catch (IOException | TimeoutException ignored) { }
+		}
+		throw new TimeoutException("Maximum reconnection attempts reached.");
 	}
 
 	/**
@@ -514,15 +586,18 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 								buffer.add(r);
 							}
 					}
-					currentQuery = null;
 					break;
 				case TABLE_MAP:
 					TableMapEventData data = event.tableMapData();
-					tableCache.processEvent(getSchema(), this.filter, data.getTableId(), data.getDatabase(), data.getTable());
+					tableCache.processEvent(getSchema(), this.filter, this.ignoreMissingSchema, data.getTableId(), data.getDatabase(), data.getTable());
 					break;
 				case ROWS_QUERY:
 					RowsQueryEventData rqed = event.getEvent().getData();
 					currentQuery = rqed.getQuery();
+					break;
+				case ANNOTATE_ROWS:
+					AnnotateRowsEventData ared = event.getEvent().getData();
+					currentQuery = ared.getRowsQuery();
 					break;
 				case QUERY:
 					QueryEventData qe = event.queryData();
@@ -548,9 +623,16 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 						// We don't need to process them, just ignore
 					} else if (upperCaseSql.startsWith("DROP TEMPORARY TABLE")) {
 						// Ignore temporary table drop statements inside transactions
+					} else if ( upperCaseSql.startsWith("# DUMMY EVENT")) {
+						// MariaDB injected event
+					} else if ( upperCaseSql.equals("ROLLBACK") ) {
+						LOGGER.debug("rolling back transaction inside binlog.");
+						return new RowMapBuffer(0);
 					} else {
 						LOGGER.warn("Unhandled QueryEvent @ {} inside transaction: {}", event.getPosition().fullPosition(), qe);
 					}
+					break;
+				default:
 					break;
 			}
 		}
@@ -574,13 +656,13 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 
 	/**
 	 * The main entry point into the event reading loop.
-	 *
+	 * <p>
 	 * We maintain a buffer of events in a transaction,
 	 * and each subsequent call to `getRow` can grab one from
 	 * the buffer.  If that buffer is empty, we'll go check
 	 * the open-replicator buffer for rows to process.  If that
 	 * buffer is empty, we return null.
-	 *
+	 * </p>
 	 * @return either a RowMap or null
 	 */
 	public RowMap getRow() throws Exception {
@@ -635,7 +717,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 					break;
 				case TABLE_MAP:
 					TableMapEventData data = event.tableMapData();
-					tableCache.processEvent(getSchema(), this.filter, data.getTableId(), data.getDatabase(), data.getTable());
+					tableCache.processEvent(getSchema(), this.filter,this.ignoreMissingSchema, data.getTableId(), data.getDatabase(), data.getTable());
 					break;
 				case QUERY:
 					QueryEventData qe = event.queryData();
@@ -654,6 +736,22 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 						rowBuffer.setSchemaId(getSchemaId());
 					} else {
 						processQueryEvent(event);
+					}
+					break;
+				case MARIADB_GTID:
+					// in mariaDB the GTID event supplants the normal BEGIN
+					MariadbGtidEventData g = event.mariaGtidData();
+					if ( (g.getFlags() & MariadbGtidEventData.FL_STANDALONE) == 0 ) {
+						try {
+							rowBuffer = getTransactionRows(event);
+						} catch ( ClientReconnectedException e ) {
+							// rowBuffer should already be empty by the time we get to this switch
+							// statement, but we null it for clarity
+							rowBuffer = null;
+							break;
+						}
+						rowBuffer.setServerId(event.getEvent().getHeader().getServerId());
+						rowBuffer.setSchemaId(getSchemaId());
 					}
 					break;
 				case ROTATE:

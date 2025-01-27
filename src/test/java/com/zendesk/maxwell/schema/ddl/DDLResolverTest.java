@@ -91,7 +91,8 @@ public class DDLResolverTest extends MaxwellTestWithIsolatedServer {
 		ResolvedTableCreate rc = c.resolve(getSchema());
 		assertThat(rc.def.getColumnList().size(), is(2));
 		assertThat(rc.def.getPKList().get(0), is("ii"));
-		assertThat(((StringColumnDef) rc.def.getColumnList().get(1)).getCharset(), is("utf8"));
+		String charset = ((StringColumnDef) rc.def.getColumnList().get(1)).getCharset();
+		assertTrue(charset.startsWith("utf8"));
 	}
 
 	@Test

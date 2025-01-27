@@ -6,6 +6,7 @@ import com.codahale.metrics.servlets.PingServlet;
 import com.zendesk.maxwell.MaxwellConfig;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.util.StoppableTask;
+import jnr.ffi.annotations.In;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -50,7 +51,11 @@ public class MaxwellHTTPServer {
 		MaxwellConfig config = context.getConfig();
 		String reportingType = config.metricsReportingType;
 		if (reportingType != null && reportingType.contains(reportingTypeHttp)) {
-			context.healthCheckRegistry.register("MaxwellHealth", new MaxwellHealthCheck(context.getProducer()));
+			if (config.customHealthFactory != null) {
+				context.healthCheckRegistry.register("MaxwellHealth", config.customHealthFactory.createHealthCheck(context.getProducer()));
+			} else {
+				context.healthCheckRegistry.register("MaxwellHealth", new MaxwellHealthCheck(context.getProducer()));
+			}
 			return new MaxwellMetrics.Registries(context.metricRegistry, context.healthCheckRegistry);
 		} else {
 			return null;
@@ -87,6 +92,8 @@ class MaxwellHTTPServerWorker implements StoppableTask, Runnable {
 	}
 
 	public void startServer() throws Exception {
+		IndexListServlet indexList = new IndexListServlet();
+
 		if (this.bindAddress != null) {
 			this.server = new Server(new InetSocketAddress(InetAddress.getByName(this.bindAddress), port));
 		}
@@ -95,20 +102,29 @@ class MaxwellHTTPServerWorker implements StoppableTask, Runnable {
 		}
 		ServletContextHandler handler = new ServletContextHandler(this.server, pathPrefix);
 
+		handler.addServlet(new ServletHolder(indexList), "/");
+
 		if (metricsRegistries != null) {
 			// TODO: there is a way to wire these up automagically via the AdminServlet, but it escapes me right now
 			handler.addServlet(new ServletHolder(new MetricsServlet(metricsRegistries.metricRegistry)), "/metrics");
 			handler.addServlet(new ServletHolder(new io.prometheus.client.exporter.MetricsServlet()), "/prometheus");
 			handler.addServlet(new ServletHolder(new HealthCheckServlet(metricsRegistries.healthCheckRegistry)), "/healthcheck");
 			handler.addServlet(new ServletHolder(new PingServlet()), "/ping");
+
+			indexList.addLink("/metrics", "codahale metrics");
+			indexList.addLink("/prometheus", "prometheus metrics");
+			indexList.addLink("/healthcheck", "healthcheck endpoint");
+			indexList.addLink("/ping", "ping me");
 		}
 
 		if (this.context.getConfig().enableHttpConfig) {
 			handler.addServlet(new ServletHolder(new MaxwellConfigServlet(this.context)), "/config");
+			indexList.addLink("/config", "POST endpoing to update maxwell config.");
 		}
 
 		if (diagnosticContext != null) {
 			handler.addServlet(new ServletHolder(new DiagnosticHealthCheck(diagnosticContext)), "/diagnostic");
+			indexList.addLink("/diagnostic", "deeper diagnostic health checks");
 		}
 
 		this.server.start();

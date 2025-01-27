@@ -66,8 +66,7 @@ public abstract class AbstractAsyncProducer extends AbstractProducer {
 	@Override
 	public final void push(RowMap r) throws Exception {
 		Position position = r.getNextPosition();
-		// Rows that do not get sent to a target will be automatically marked as complete.
-		// We will attempt to commit a checkpoint up to the current row.
+		// Rows that do not get sent to the prodcuer will be automatically marked as complete.
 		if(!r.shouldOutput(outputConfig)) {
 			if ( position != null ) {
 				inflightMessages.addMessage(position, r.getTimestampMillis(), 0L);

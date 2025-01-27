@@ -265,7 +265,6 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	}
 
 	ProducerRecord<String, String> makeProducerRecord(final RowMap r) throws Exception {
-		RowIdentity pk = r.getRowIdentity();
 		String key = r.pkToJson(keyFormat);
 		String value = r.toJSON(outputConfig);
 		ProducerRecord<String, String> record;
