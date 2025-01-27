@@ -75,7 +75,8 @@ public class Recovery {
 					null,
 					new RecoveryFilter(this.maxwellDatabaseName),
 					new MaxwellOutputConfig(),
-					0.25f // Default memory usage size, not used 
+					0.25f, // Default memory usage size, not used
+					1
 			);
 
 			HeartbeatRowMap h = findHeartbeat(replicator);

@@ -62,6 +62,10 @@ public class TableColumnList implements Iterable<ColumnDef> {
 		columnList = ImmutableColumnList.create(tempList);
 	}
 
+	public synchronized void addAll(List<ColumnDef> columnDefs) {
+		columnList = ImmutableColumnList.create(columnDefs);
+	}
+
 	public synchronized void replace(int index, ColumnDef definition) {
 		List<ColumnDef> columns = columnList.getColumns();
 		ArrayList<ColumnDef> tempList = new ArrayList<>(columns.size());

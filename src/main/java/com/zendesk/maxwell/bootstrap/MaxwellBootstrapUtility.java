@@ -13,6 +13,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+/**
+ * MaxwellBootstrapUtility is a command line utility that launches and monitors the progress of bootstrapping.
+ * The actual work of bootstrapping is done in the main maxwell server process.
+ */
 public class MaxwellBootstrapUtility {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellBootstrapUtility.class);
 	protected class MissingBootstrapRowException extends Exception {
@@ -160,7 +164,7 @@ public class MaxwellBootstrapUtility {
 
 	private Long calculateRowCount(Connection connection, String db, String table, String whereClause) throws SQLException {
 		LOGGER.info("counting rows");
-		String sql = String.format("select count(*) from `%s`.%s", db, table);
+		String sql = String.format("select count(*) from `%s`.`%s`", db, table);
 		if ( whereClause != null ) {
 			sql += String.format(" where %s", whereClause);
 		}

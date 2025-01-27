@@ -46,7 +46,7 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 
 	public String getReplicationConnectionURI( ) {
 		try {
-			return getConfigConnectionURI(replicationMysql);
+			return getConfigReplicationConnectionURI(replicationMysql);
 		} catch (URISyntaxException e) {
 			LOGGER.error(e.getMessage(), e);
 			throw new RuntimeException("Unable to generate bootstrap's replication jdbc connection URI", e);
@@ -59,6 +59,18 @@ public class MaxwellBootstrapUtilityConfig extends AbstractConfig {
 		uriBuilder.setHost(config.host);
 		uriBuilder.setPort(config.port);
 		uriBuilder.setPath("/" + schemaDatabaseName);
+		for (Map.Entry<String, String> jdbcOption : config.jdbcOptions.entrySet()) {
+			uriBuilder.addParameter(jdbcOption.getKey(), jdbcOption.getValue());
+		}
+		return uriBuilder.build().toString();
+	}
+
+	private String getConfigReplicationConnectionURI(MaxwellMysqlConfig config) throws URISyntaxException {
+		URIBuilder uriBuilder = new URIBuilder();
+		uriBuilder.setScheme("jdbc:mysql");
+		uriBuilder.setHost(config.host);
+		uriBuilder.setPort(config.port);
+		uriBuilder.setPath("/" + databaseName);
 		for (Map.Entry<String, String> jdbcOption : config.jdbcOptions.entrySet()) {
 			uriBuilder.addParameter(jdbcOption.getKey(), jdbcOption.getValue());
 		}

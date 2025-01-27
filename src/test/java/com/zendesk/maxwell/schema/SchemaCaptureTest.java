@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import com.zendesk.maxwell.CaseSensitivity;
@@ -65,6 +66,7 @@ public class SchemaCaptureTest extends MaxwellTestWithIsolatedServer {
 		assert(shard1DB != null);
 
 		List<String> nameList = shard1DB.getTableNames();
+		nameList.sort(String::compareTo);
 
 		assertEquals("ints:mediumints:minimal:sharded", StringUtils.join(nameList.iterator(), ":"));
 	}

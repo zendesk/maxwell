@@ -72,7 +72,7 @@ public class StringColumnDef extends ColumnDef {
 	// this could obviously be more complete.
 	private Charset charsetForCharset() {
 		switch(charset.toLowerCase()) {
-		case "utf8": case "utf8mb4":
+		case "utf8": case "utf8mb3": case "utf8mb4":
 			return StandardCharsets.UTF_8;
 		case "latin1": case "ascii":
 			return Charset.forName("Windows-1252");

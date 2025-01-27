@@ -2,10 +2,13 @@ grammar mysql_alter_table;
 
 import mysql_literal_tokens, mysql_idents, column_definitions, mysql_partition;
 
-alter_table: alter_table_preamble alter_specifications? alter_partition_specification?;
+alter_table: alter_table_preamble alter_specifications? alter_partition_specification? alter_post_flags?;
 
-alter_table_preamble: ALTER alter_flags? TABLE table_name;
+alter_table_preamble: ALTER alter_flags? TABLE table_name wait_flag?;
 alter_flags: (ONLINE | OFFLINE | IGNORE);
+wait_flag:
+   (WAIT integer | NOWAIT);
+
 
 alter_specifications: alter_specification (',' alter_specification)*;
 alter_specification:
@@ -25,12 +28,13 @@ alter_specification:
   ;
 
 // the various alter_table commands available
-add_column: ADD COLUMN? column_definition col_position?;
-add_column_parens: ADD COLUMN? '(' (column_definition|index_definition) (',' (column_definition|index_definition))* ')';
+add_column: ADD COLUMN? if_not_exists? column_definition col_position?;
+add_column_parens: ADD COLUMN? if_not_exists? '(' (column_definition|index_definition) (',' (column_definition|index_definition))* ')';
 change_column: CHANGE COLUMN? full_column_name column_definition col_position?;
-drop_column: DROP COLUMN? full_column_name CASCADE?;
+if_exists: IF EXISTS;
+drop_column: DROP COLUMN? if_exists? full_column_name CASCADE?;
 modify_column: MODIFY COLUMN? column_definition col_position?;
-drop_key: DROP FOREIGN? (INDEX|KEY) name;
+drop_key: DROP FOREIGN? (INDEX|KEY) if_exists? name;
 drop_primary_key: DROP PRIMARY KEY;
 alter_rename_table: RENAME (TO | AS)? table_name;
 convert_to_character_set: CONVERT TO charset_token charset_name collation?;
@@ -58,19 +62,28 @@ ignored_alter_specifications:
     ADD index_definition
     | ALTER INDEX name (VISIBLE | INVISIBLE)
     | ALTER COLUMN? name ((SET DEFAULT literal) | (DROP DEFAULT) | (SET (VISIBLE | INVISIBLE)))
-    | DROP INDEX index_name
+    | DROP INDEX if_exists? index_name
     | DISABLE KEYS
     | ENABLE KEYS
     | ORDER BY alter_ordering (',' alter_ordering)*
     | FORCE
     | DISCARD TABLESPACE
     | IMPORT TABLESPACE
-    | ALGORITHM '='? algorithm_type
-    | LOCK '='? lock_type
     | RENAME (INDEX|KEY) name TO name
+    | DROP CHECK name
+    | DROP CONSTRAINT name
+    | alter_post_flag
     ;
-  algorithm_type: DEFAULT | INPLACE | COPY | INSTANT;
-  lock_type: DEFAULT | NONE | SHARED | EXCLUSIVE;
+
+alter_post_flags:
+  alter_post_flag (',' alter_post_flag)*;
+
+alter_post_flag:
+  ALGORITHM '='? algorithm_type
+  | LOCK '='? lock_type;
+ 
+algorithm_type: DEFAULT | INPLACE | COPY | INSTANT | NOCOPY;
+lock_type: DEFAULT | NONE | SHARED | EXCLUSIVE;
 
 partition_names: id (',' id)*;
 alter_ordering: alter_ordering_column (ASC|DESC)?;

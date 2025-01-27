@@ -199,10 +199,6 @@ public class MysqlPositionStore {
 		}
 	}
 
-	/**
-	 * grabs a position from a different server_id
-	 */
-
 	public RecoveryInfo getRecoveryInfo(MaxwellConfig config) throws SQLException {
 		try ( Connection c = connectionPool.getConnection() ) {
 			return getRecoveryInfo(config, c);

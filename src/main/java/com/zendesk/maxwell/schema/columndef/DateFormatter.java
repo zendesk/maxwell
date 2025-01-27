@@ -1,6 +1,7 @@
 package com.zendesk.maxwell.schema.columndef;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.*;
 
 public class DateFormatter {
@@ -22,6 +23,8 @@ public class DateFormatter {
 		} else if ( value instanceof Date ) {
 			Long time = ((Date) value).getTime();
 			return new Timestamp(time);
+		}  else if ( value instanceof LocalDateTime) {
+			return Timestamp.valueOf((LocalDateTime) value);
 		} else
 			throw new IllegalArgumentException("couldn't extract date/time out of " + value);
 	}

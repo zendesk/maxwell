@@ -51,7 +51,11 @@ public class MaxwellHTTPServer {
 		MaxwellConfig config = context.getConfig();
 		String reportingType = config.metricsReportingType;
 		if (reportingType != null && reportingType.contains(reportingTypeHttp)) {
-			context.healthCheckRegistry.register("MaxwellHealth", new MaxwellHealthCheck(context.getProducer()));
+			if (config.customHealthFactory != null) {
+				context.healthCheckRegistry.register("MaxwellHealth", config.customHealthFactory.createHealthCheck(context.getProducer()));
+			} else {
+				context.healthCheckRegistry.register("MaxwellHealth", new MaxwellHealthCheck(context.getProducer()));
+			}
 			return new MaxwellMetrics.Registries(context.metricRegistry, context.healthCheckRegistry);
 		} else {
 			return null;

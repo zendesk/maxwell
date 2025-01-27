@@ -80,12 +80,17 @@ public class Table {
 		return this.name;
 	}
 
-	public int findColumnIndex(String name) {
-		return columns.indexOf(name);
+	public short findColumnIndex(String name) {
+		return (short) columns.indexOf(name);
 	}
+
 
 	public ColumnDef findColumn(String name) {
 		return columns.findByName(name);
+	}
+
+	public ColumnDef findColumn(int index) {
+		return columns.get(index);
 	}
 
 	@JsonIgnore
@@ -156,7 +161,7 @@ public class Table {
 					stringA = (StringColumnDef) column;
 					stringB = (StringColumnDef) other;
 
-					if ( !Objects.equals(stringA.getCharset(), stringB.getCharset()) ) {
+					if ( !Schema.charsetEquals(stringA.getCharset(), stringB.getCharset()) ) {
 						diffs.add(colName + "has an charset mismatch, "
 								+ "'" + stringA.getCharset() + "'"
 								+ " vs "
@@ -200,7 +205,7 @@ public class Table {
 	}
 
 	public void diff(List<String> diffs, Table other, String nameA, String nameB) {
-		if ( !this.getCharset().equals(other.getCharset()) ) {
+		if ( !Schema.charsetEquals(this.charset, other.getCharset()) ) {
 			diffs.add(this.fullName() + " differs in charset: "
 					  + nameA + " is " + this.getCharset() + " but "
 					  + nameB + " is " + other.getCharset());
@@ -238,6 +243,10 @@ public class Table {
 		columns.add(columns.size(), definition);
 	}
 
+	public void addColumns(List<ColumnDef> definitions) {
+		columns.addAll(definitions);
+	}
+
 	public void removeColumn(int idx) {
 		ColumnDef toRemove = columns.get(idx);
 		removePKColumn(toRemove.getName());
@@ -245,6 +254,9 @@ public class Table {
 	}
 
 	public void renameColumn(int idx, String name) throws InvalidSchemaError {
+		ColumnDef oldColumn = columns.get(idx);
+		renamePKColumn(oldColumn.getName(), name);
+
 		ColumnDef column = columns.get(idx).withName(name);
 		columns.replace(idx, column);
 	}

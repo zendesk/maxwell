@@ -5,6 +5,7 @@ import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.replication.MysqlVersion;
 import com.zendesk.maxwell.row.RowMap;
 import org.junit.Test;
+import static org.junit.Assume.assumeFalse;
 
 import org.junit.experimental.categories.Category;
 
@@ -12,6 +13,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	private MaxwellOutputConfig ddlOutputConfig() {
@@ -37,6 +39,8 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 			"alter table shard_1.testAlter add column thiswillbeutf16 text, engine=`innodb` CHARACTER SET utf16",
 			"alter table shard_1.testAlter rename to shard_1.`freedonia`",
 			"rename table shard_1.`freedonia` to shard_1.ducksoup, shard_1.ducksoup to shard_1.`nananana`",
+			"rename tables shard_1.`nananana` to shard_1.ducksoup, shard_1.ducksoup to shard_1.`freedonia`",
+			"rename tables shard_1.`freedonia` to shard_1.ducksoup, shard_1.ducksoup to shard_1.`nananana`",
 			"alter table shard_1.nananana drop column barbar",
 
 			"create table shard_2.weird_rename ( str mediumtext )",
@@ -92,6 +96,8 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	@Test
 	public void testJSON() throws Exception {
 		requireMinimumVersion(server.VERSION_5_7);
+		assumeFalse(MysqlIsolatedServer.getVersion().isMariaDB);
+
 		String sql[] = {
 			"create table shard_1.testJSON ( j json )",
 		};
@@ -173,6 +179,18 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String sql[] = {
 			"CREATE TABLE t ( a varchar(255), b int)",
 			"ALTER TABLE t modify column a varchar(255) after b"
+		};
+		testIntegration(sql);
+
+	}
+
+	@Test
+	public void testDropColumnIfExists() throws Exception {
+		assumeTrue(MysqlIsolatedServer.getVersion().isMariaDB);
+		String sql[] = {
+			"CREATE TABLE t ( a varchar(255), b int)",
+			"ALTER TABLE t drop column if exists aa",
+			"ALTER TABLE t drop column if exists b, drop column if exists nothere"
 		};
 		testIntegration(sql);
 
@@ -427,21 +445,9 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	}
 
 	@Test
-	public void testDatabaseAlterMySqlTableCharset() throws Exception {
-		testIntegration("ALTER TABLE mysql.columns_priv " +
-				"MODIFY Host char(60) NOT NULL default '', " +
-				"MODIFY Db char(64) NOT NULL default '', " +
-				"MODIFY User char(16) NOT NULL default '', " +
-				"MODIFY Table_name char(64) NOT NULL default '', " +
-				"MODIFY Column_name char(64) NOT NULL default '', " +
-				"CONVERT TO CHARACTER SET utf8 COLLATE utf8_bin, " +
-				"COMMENT='Column privileges'");
-	}
-
-	@Test
 	@Category(Mysql57Tests.class)
 	public void testGeneratedColumns() throws Exception {
-		requireMinimumVersion(server.VERSION_5_7);
+		requireMinimumVersion(server.VERSION_5_7, false);
 		testIntegration("create table t ("
 			+ "a INT GENERATED ALWAYS AS (0) VIRTUAL UNIQUE NOT NULL, "
 			+ "b int AS (a + 0) STORED PRIMARY KEY"
@@ -454,10 +460,13 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		requireMinimumVersion(8,0);
 		String sql[] = {
 			"CREATE TABLE foo ( i int )",
-			"ALTER TABLE foo rename column i to j"
+			"ALTER TABLE foo rename column i to j",
+			"CREATE TABLE foo_pk ( id int(11) unsigned primary KEY )",
+			"ALTER TABLE foo_pk rename column id to new_id"
 		};
 		testIntegration(sql);
 	}
+
 
 	@Test
 	public void testTableCreate() throws Exception {
@@ -514,6 +523,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 
 	@Test
 	public void testDatabaseCreate() throws Exception {
+		assumeFalse(MysqlIsolatedServer.getVersion().getMajor() == 8);
 		String[] sql = {
 			"create database TestDatabaseCreate1",
 			"alter database TestDatabaseCreate1 character set latin2"
@@ -526,6 +536,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 	
 	@Test
 	public void testNonLatinDatabaseCreate() throws Exception {
+		assumeFalse(MysqlIsolatedServer.getVersion().getMajor() == 8);
 		String[] sql = {
 			"create database 測試資料庫一",
 			"alter database 測試資料庫一 character set latin2"
@@ -542,14 +553,13 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		List<RowMap> rows = getRowsForDDLTransaction(sql, excludeDb("TestDatabaseCreate2"));
 		assertEquals(0, rows.size());
 	}
-	
+
 	@Test
 	public void testNonLatinDatabaseFilter() throws Exception {
 		String[] sql = {"create database 測試資料庫二"};
 		List<RowMap> rows = getRowsForDDLTransaction(sql, excludeDb("測試資料庫二"));
 		assertEquals(0, rows.size());
 	}
-	
 
 	@Test
 	public void testDatabaseChangeWithTableFilter() throws Exception {
@@ -597,6 +607,17 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 			"create database ohgod",
 			"USE ohgod",
 			"ALTER DATABASE CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci"
+		};
+		testIntegration(sql);
+	}
+
+	@Test
+	public void testAlterIgnoreMaria() throws Exception {
+		assumeTrue(MysqlIsolatedServer.getVersion().isMariaDB);
+
+		String [] sql = {
+			"create table foo ( colA int, colB int)",
+			"ALTER IGNORE TABLE foo ADD CONSTRAINT table_name_pk PRIMARY KEY IF NOT EXISTS (colA, colB)"
 		};
 		testIntegration(sql);
 	}

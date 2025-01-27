@@ -155,9 +155,11 @@ public class MysqlSchemaCompactor extends RunLoopProcess {
 			update.executeUpdate("update `schemas` set `base_schema_id` = null, `deltas` = null where `id` = " + schemaID);
 
 			commit.execute("COMMIT");
+			LOGGER.info("Committed schema compaction for {}", schemaID);
 		}
 
 		slowDeleteSchemas(cx, schemaID);
+		LOGGER.info("Finished deleting old schemas prior to {}", schemaID);
 	}
 
 	private void slowDeleteSchemas(Connection cx, long newBaseSchemaID) throws SQLException {

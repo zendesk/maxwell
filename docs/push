@@ -1,7 +1,10 @@
 #!/bin/bash
 
 set -eux
+make docs
+
 cd $(dirname $0)
 ./build
+cp -a ../target/site/apidocs site/
 (cd site && git add . && git commit -m 'update docs' && git push origin HEAD:gh-pages)
 ./clean

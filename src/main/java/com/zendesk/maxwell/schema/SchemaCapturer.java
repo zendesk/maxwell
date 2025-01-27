@@ -2,11 +2,15 @@ package com.zendesk.maxwell.schema;
 
 import com.zendesk.maxwell.CaseSensitivity;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
+import com.zendesk.maxwell.schema.columndef.JsonColumnDef;
+import com.zendesk.maxwell.schema.columndef.StringColumnDef;
+import com.zendesk.maxwell.schema.ddl.InvalidSchemaError;
 import com.zendesk.maxwell.util.Sql;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -51,7 +55,7 @@ public class SchemaCapturer implements AutoCloseable {
 
 		String tblSql = "SELECT TABLES.TABLE_NAME, CCSA.CHARACTER_SET_NAME "
 				+ "FROM INFORMATION_SCHEMA.TABLES "
-				+ "JOIN information_schema.COLLATION_CHARACTER_SET_APPLICABILITY AS CCSA"
+				+ "LEFT JOIN information_schema.COLLATION_CHARACTER_SET_APPLICABILITY AS CCSA"
 				+ " ON TABLES.TABLE_COLLATION = CCSA.COLLATION_NAME WHERE TABLES.TABLE_SCHEMA = ? ";
 
 		if (!includeTables.isEmpty()) {
@@ -131,7 +135,16 @@ public class SchemaCapturer implements AutoCloseable {
 		}
 		LOGGER.debug("{} database schemas captured!", size);
 
-		return new Schema(databases, captureDefaultCharset(), this.sensitivity);
+
+		Schema s = new Schema(databases, captureDefaultCharset(), this.sensitivity);
+		try {
+			if ( isMariaDB() && mariaSupportsJSON()) {
+				detectMariaDBJSON(s);
+			}
+		} catch ( InvalidSchemaError e ) {
+			e.printStackTrace();
+		}
+		return s;
 	}
 
 	private String captureDefaultCharset() throws SQLException {
@@ -162,12 +175,36 @@ public class SchemaCapturer implements AutoCloseable {
 
 
 	private boolean isMySQLAtLeast56() throws SQLException {
-		java.sql.DatabaseMetaData meta = connection.getMetaData();
+		if ( isMariaDB() )
+			return true;
+
+		DatabaseMetaData meta = connection.getMetaData();
 		int major = meta.getDatabaseMajorVersion();
 		int minor = meta.getDatabaseMinorVersion();
 		return ((major == 5 && minor >= 6) || major > 5);
 	}
 
+	private boolean isMariaDB() throws SQLException {
+		DatabaseMetaData meta = connection.getMetaData();
+		return meta.getDatabaseProductVersion().toLowerCase().contains("maria");
+	}
+
+	static final String MARIA_VERSION_REGEX = "[\\d\\.]+-(\\d+)\\.(\\d+)";
+	private boolean mariaSupportsJSON() throws SQLException {
+		DatabaseMetaData meta = connection.getMetaData();
+		String versionString = meta.getDatabaseProductVersion();
+		Pattern pattern = Pattern.compile(MARIA_VERSION_REGEX);
+		Matcher m = pattern.matcher(versionString);
+
+		if ( m.find() ) {
+			int major = Integer.parseInt(m.group(1));
+			int minor = Integer.parseInt(m.group(2));
+
+			return major >= 10 && minor > 1;
+		} else { // shrugging purple lady
+			return false;
+		}
+	}
 
 	private void captureTables(Database db, HashMap<String, Table> tables) throws SQLException {
 		columnPreparedStatement.setString(1, db.getName());
@@ -276,6 +313,40 @@ public class SchemaCapturer implements AutoCloseable {
 			 PreparedStatement p3 = pkPreparedStatement) {
 			// auto-close shared prepared statements
 		}
+	}
+
+	private void detectMariaDBJSON(Schema schema) throws SQLException, InvalidSchemaError {
+		String checkConstraintSQL = "SELECT CONSTRAINT_SCHEMA, TABLE_NAME, CONSTRAINT_NAME, CHECK_CLAUSE " +
+			"from INFORMATION_SCHEMA.CHECK_CONSTRAINTS " +
+			"where CHECK_CLAUSE LIKE 'json_valid(%)'";
+
+		String regex = "json_valid\\(`(.*)`\\)";
+		Pattern pattern = Pattern.compile(regex);
+
+		try (
+			PreparedStatement statement = connection.prepareStatement(checkConstraintSQL);
+			ResultSet rs = statement.executeQuery()
+		) {
+			while ( rs.next() ) {
+				String checkClause = rs.getString("CHECK_CLAUSE");
+				Matcher m = pattern.matcher(checkClause);
+				if ( m.find() ) {
+					String column = m.group(1);
+					Database d = schema.findDatabase(rs.getString("CONSTRAINT_SCHEMA"));
+					if ( d == null ) continue;
+					Table t = d.findTable(rs.getString("TABLE_NAME"));
+					if ( t == null ) continue;
+					short i = t.findColumnIndex(column);
+					if ( i < 0 ) continue;
+
+					ColumnDef cd = t.findColumn(i);
+					if ( cd instanceof StringColumnDef ) {
+						t.replaceColumn(i, JsonColumnDef.create(cd.getName(), "json", i));
+					}
+				}
+			}
+		}
+
 	}
 
 }
