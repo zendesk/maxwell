@@ -7,6 +7,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
+/**
+ * The BootstrapTask class represents a task for bootstrapping a database table and provides methods for creating,
+ * manipulating, and matching tasks.
+ */
 public class BootstrapTask {
 	public String database;
 	public String table;

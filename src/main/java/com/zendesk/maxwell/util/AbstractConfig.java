@@ -6,12 +6,17 @@ import java.io.IOException;
 
 import java.util.*;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.shyiko.mysql.binlog.network.SSLMode;
 import joptsimple.*;
 
 import com.zendesk.maxwell.MaxwellMysqlConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class AbstractConfig {
+	private static final Logger LOGGER = LoggerFactory.getLogger(AbstractConfig.class);
 	static final protected String DEFAULT_CONFIG_FILE = "config.properties";
 	protected abstract OptionParser buildOptionParser();
 
@@ -89,11 +94,39 @@ public abstract class AbstractConfig {
 			FileReader reader = new FileReader(file);
 			p = new Properties();
 			p.load(reader);
+			for (Object key : p.keySet()) {
+				LOGGER.debug("Got config key: {}", key);
+			}
 		} catch ( IOException e ) {
 			System.err.println("Couldn't read config file: " + e);
 			System.exit(1);
 		}
 		return p;
+	}
+
+	protected Properties readPropertiesEnv(String envConfig) {
+		LOGGER.debug("Attempting to read env_config param: {}", envConfig);
+		String envConfigJsonRaw = System.getenv(envConfig);
+		if (envConfigJsonRaw != null && envConfigJsonRaw.trim().startsWith("{")) {
+			ObjectMapper mapper = new ObjectMapper();
+			try {
+				Map<String, Object> stringMap = mapper.readValue(envConfigJsonRaw, Map.class);
+				Properties properties = new Properties();
+				for (Map.Entry<String, Object> entry : stringMap.entrySet()) {
+					LOGGER.debug("Got env_config key: {}", entry.getKey());
+					if (entry.getKey() != null && entry.getValue() != null) {
+						properties.put(entry.getKey(), entry.getValue().toString());
+					}
+				}
+				return properties;
+			} catch (JsonProcessingException e) {
+				throw new IllegalArgumentException("Unparseable JSON in env variable " + envConfig, e);
+			}
+		} else {
+			System.err.println("No JSON-encoded environment variable named: " + envConfig);
+			System.exit(1);
+			throw new IllegalArgumentException("No JSON-encoded environment variable named: " + envConfig);
+		}
 	}
 
 	protected Object fetchOption(String name, OptionSet options, Properties properties, Object defaultVal) {

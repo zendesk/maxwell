@@ -1,19 +1,16 @@
 package com.zendesk.maxwell;
 
 import org.jgroups.JChannel;
-import org.jgroups.protocols.raft.RaftLeaderException;
 import org.jgroups.protocols.raft.Role;
-import org.jgroups.protocols.raft.StateMachine;
 import org.jgroups.raft.RaftHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Class that joins a jgroups-raft cluster of servers
+ */
 public class MaxwellHA {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellHA.class);
 
@@ -22,6 +19,13 @@ public class MaxwellHA {
 	private boolean hasRun = false;
 	private AtomicBoolean isRaftLeader = new AtomicBoolean(false);
 
+	/**
+	 * Build a MaxwellHA object
+	 * @param maxwell The Maxwell instance that will be run when an election is won
+	 * @param jgroupsConf Path to an xml file that will configure the RAFT cluster
+	 * @param raftMemberID unique ID identifying the raft member in the cluster
+	 * @param clientID The maxwell clientID.  Used to create a unique "channel" for the election
+	 */
 	public MaxwellHA(Maxwell maxwell, String jgroupsConf, String raftMemberID, String clientID) {
 		this.maxwell = maxwell;
 		this.jgroupsConf = jgroupsConf;
@@ -43,6 +47,12 @@ public class MaxwellHA {
 		}
 	}
 
+	/**
+	 * Join the raft cluster, starting and stopping Maxwell on elections.
+	 *
+	 * Does not return.
+	 * @throws Exception if there's any issues
+	 */
 	public void startHA() throws Exception {
 		JChannel ch=new JChannel(jgroupsConf);
 		RaftHandle handle=new RaftHandle(ch, null);

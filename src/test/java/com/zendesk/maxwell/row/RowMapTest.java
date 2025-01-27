@@ -43,6 +43,81 @@ public class RowMapTest {
 	}
 
 	@Test
+	public void testGetPrimaryKeyArrayValues() {
+		List<String> pKeys = new ArrayList<>();
+
+		pKeys.add("id");
+
+		pKeys.add("name");
+
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
+
+		rowMap.putData("id", 9001);
+		rowMap.putData("name", "example");
+		rowMap.putData("column", "value");
+
+		List<Object> pkValues = rowMap.getPrimaryKeyValues();
+		Assert.assertEquals(9001, pkValues.get(0));
+		Assert.assertEquals("example", pkValues.get(1));
+	}
+
+	@Test
+	public void testGetPrimaryKeyArrayColumns() {
+		List<String> pKeys = new ArrayList<>();
+
+		pKeys.add("id");
+
+		pKeys.add("name");
+
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
+
+		rowMap.putData("id", 9001);
+		rowMap.putData("name", "example");
+		rowMap.putData("column", "value");
+
+		List<String> pkColumns = rowMap.getPrimaryKeyColumns();
+		Assert.assertEquals("id", pkColumns.get(0));
+		Assert.assertEquals("name", pkColumns.get(1));
+	}
+
+	@Test
+	public void testGetPrimaryKeyMap() {
+		List<String> pKeys = new ArrayList<>();
+
+		pKeys.add("id");
+
+		pKeys.add("name");
+
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
+
+		rowMap.putData("id", 9001);
+		rowMap.putData("name", "example");
+		rowMap.putData("column", "value");
+
+		Map<String, Object> pkMap = rowMap.getPrimaryKeyMap();
+		Assert.assertEquals(9001, pkMap.get("id"));
+		Assert.assertEquals("example", pkMap.get("name"));
+	}
+
+	@Test
+	public void testGetPrimaryKeyMapWithoutData() {
+		List<String> pKeys = new ArrayList<>();
+
+		pKeys.add("id");
+		pKeys.add("name");
+
+		RowMap rowMap = new RowMap("delete", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS, pKeys, POSITION);
+
+		rowMap.putOldData("id", 9001);
+		rowMap.putOldData("name", "example");
+		rowMap.putOldData("column", "value");
+
+		Map<String, Object> pkMap = rowMap.getPrimaryKeyMap();
+		Assert.assertEquals(null, pkMap.get("id"));
+		Assert.assertEquals(null, pkMap.get("name"));
+	}
+
+	@Test
 	public void testGetRowIdentity() {
 		List<String> pKeys = new ArrayList<>();
 
@@ -130,6 +205,71 @@ public class RowMapTest {
 		MaxwellOutputConfig outputConfig = getMaxwellOutputConfig();
 
 		Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\",\"type\":\"insert\"," +
+				"\"ts\":1496712943,\"position\":\"binlog-0001:1\",\"gtid\":null,\"server_id\":7653213," +
+				"\"thread_id\":6532312,\"schema_id\":298,\"int\":1234,\"str\":\"foo\",\"primary_key\":[9001,\"foo\"]," +
+				"\"primary_key_columns\":[\"id\",\"first_name\"],\"data\":" + "{\"id\":9001,\"first_name\":\"foo\"," +
+				"\"last_name\":\"bar\",\"rawJSON\":{\"UserID\":20}}}",
+				rowMap.toJSON(outputConfig));
+
+	}
+
+	@Test
+	public void testToJSONWithQuery() throws Exception {
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS,
+				Arrays.asList("id", "first_name"), POSITION);
+
+		rowMap.setServerId(7653213L);
+		rowMap.setThreadId(6532312L);
+		rowMap.setSchemaId(298L);
+
+		rowMap.putExtraAttribute("int", 1234);
+		rowMap.putExtraAttribute("str", "foo");
+
+		rowMap.putData("id", 9001);
+		rowMap.putData("first_name", "foo");
+		rowMap.putData("last_name", "bar");
+		rowMap.putData("rawJSON", new RawJSONString("{\"UserID\":20}"));
+
+		rowMap.setRowQuery("INSERT INTO MyTable VALUES ('foo','bar')");
+
+		MaxwellOutputConfig outputConfig = getMaxwellOutputConfig();
+		outputConfig.includesRowQuery = true;
+
+		Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\"," +
+				"\"query\":\"INSERT INTO MyTable VALUES ('foo','bar')\",\"type\":\"insert\"," +
+				"\"ts\":1496712943,\"position\":\"binlog-0001:1\",\"gtid\":null,\"server_id\":7653213," +
+				"\"thread_id\":6532312,\"schema_id\":298,\"int\":1234,\"str\":\"foo\",\"primary_key\":[9001,\"foo\"]," +
+				"\"primary_key_columns\":[\"id\",\"first_name\"],\"data\":" + "{\"id\":9001,\"first_name\":\"foo\"," +
+				"\"last_name\":\"bar\",\"rawJSON\":{\"UserID\":20}}}",
+				rowMap.toJSON(outputConfig));
+
+	}
+
+	@Test
+	public void testToJSONWithQueryOverMaxLength() throws Exception {
+		RowMap rowMap = new RowMap("insert", "MyDatabase", "MyTable", TIMESTAMP_MILLISECONDS,
+				Arrays.asList("id", "first_name"), POSITION);
+
+		rowMap.setServerId(7653213L);
+		rowMap.setThreadId(6532312L);
+		rowMap.setSchemaId(298L);
+
+		rowMap.putExtraAttribute("int", 1234);
+		rowMap.putExtraAttribute("str", "foo");
+
+		rowMap.putData("id", 9001);
+		rowMap.putData("first_name", "foo");
+		rowMap.putData("last_name", "bar");
+		rowMap.putData("rawJSON", new RawJSONString("{\"UserID\":20}"));
+
+		rowMap.setRowQuery("INSERT INTO MyTable VALUES ('foo','bar')");
+
+		MaxwellOutputConfig outputConfig = getMaxwellOutputConfig();
+		outputConfig.includesRowQuery = true;
+		outputConfig.rowQueryMaxLength = 10;
+
+		Assert.assertEquals("{\"database\":\"MyDatabase\",\"table\":\"MyTable\"," +
+				"\"query\":\"INSERT INT\",\"type\":\"insert\"," +
 				"\"ts\":1496712943,\"position\":\"binlog-0001:1\",\"gtid\":null,\"server_id\":7653213," +
 				"\"thread_id\":6532312,\"schema_id\":298,\"int\":1234,\"str\":\"foo\",\"primary_key\":[9001,\"foo\"]," +
 				"\"primary_key_columns\":[\"id\",\"first_name\"],\"data\":" + "{\"id\":9001,\"first_name\":\"foo\"," +

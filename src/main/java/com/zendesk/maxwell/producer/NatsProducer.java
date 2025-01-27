@@ -59,7 +59,7 @@ public class NatsProducer extends AbstractProducer {
 			context.setPosition(r.getNextPosition());
 		}
 		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("->  nats subject:" + natsSubject + ", message:" + value);
+			LOGGER.debug("->  nats subject:{}, message:{}", natsSubject, value);
 		}
 	}
 }

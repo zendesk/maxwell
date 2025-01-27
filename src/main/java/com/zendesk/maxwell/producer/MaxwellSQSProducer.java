@@ -1,15 +1,16 @@
 package com.zendesk.maxwell.producer;
 
+import com.amazonaws.client.builder.AwsClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.amazonaws.handlers.AsyncHandler;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
-import com.amazonaws.services.sqs.AmazonSQSAsyncClient;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.amazonaws.services.sqs.model.SendMessageResult;
 import com.zendesk.maxwell.MaxwellContext;
+import com.zendesk.maxwell.producer.partitioners.MaxwellSQSPartitioner;
 import com.zendesk.maxwell.replication.Position;
 import com.zendesk.maxwell.row.RowMap;
 
@@ -17,19 +18,27 @@ public class MaxwellSQSProducer extends AbstractAsyncProducer {
 
 	private AmazonSQSAsync client;
 	private String queueUri;
+	private MaxwellSQSPartitioner partitioner;
 
-	public MaxwellSQSProducer(MaxwellContext context, String queueUri) {
+	public MaxwellSQSProducer(MaxwellContext context, String queueUri, String serviceEndpoint, String signingRegion) {
 		super(context);
 		this.queueUri = queueUri;
-		this.client = AmazonSQSAsyncClientBuilder.defaultClient();
+		this.client = AmazonSQSAsyncClientBuilder.standard()
+				.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(serviceEndpoint, signingRegion))
+				.build();
+		String partitionKey = context.getConfig().producerPartitionKey;
+		String partitionColumns = context.getConfig().producerPartitionColumns;
+		String partitionFallback = context.getConfig().producerPartitionFallback;
+		this.partitioner = new MaxwellSQSPartitioner(partitionKey, partitionColumns, partitionFallback);
 	}
 
 	@Override
 	public void sendAsync(RowMap r, CallbackCompleter cc) throws Exception {
-		String value = r.toJSON();
+		String value = r.toJSON(outputConfig);
 		SendMessageRequest messageRequest = new SendMessageRequest(queueUri, value);
 		if ( queueUri.endsWith(".fifo")) {
-			messageRequest.setMessageGroupId(r.getDatabase());
+			String key = this.partitioner.getSQSKey(r);
+			messageRequest.setMessageGroupId(key);
 		}
 		SQSCallback callback = new SQSCallback(cc, r.getNextPosition(), value, context);
 		client.sendMessageAsync(messageRequest, callback);
@@ -69,7 +78,8 @@ class SQSCallback implements AsyncHandler<SendMessageRequest, SendMessageResult>
 	@Override
 	public void onSuccess(SendMessageRequest request, SendMessageResult result) {
 		if (logger.isDebugEnabled()) {
-			logger.debug("-> Message id:" + result.getMessageId() + ", sequence number:" + result.getSequenceNumber()+"  "+json+"  "+position);
+			logger.debug("-> Message id:{}, sequence number:{}  {}  {}",
+					result.getMessageId(), result.getSequenceNumber(), json, position);
 		}
 		cc.markCompleted();
 	}

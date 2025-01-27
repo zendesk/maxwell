@@ -80,10 +80,10 @@ class KinesisCallback implements FutureCallback<UserRecordResult> {
 		this.succeededMessageCount.inc();
 		this.succeededMessageMeter.mark();
 		if(logger.isDebugEnabled()) {
-			logger.debug("->  key:" + key + ", shard id:" + result.getShardId() + ", sequence number:" + result.getSequenceNumber());
-			logger.debug("   " + json);
-			logger.debug("   " + position);
-			logger.debug("");
+			logger.debug("->  key:{}, shard id:{}, sequence number:{}\n" +
+							"   {}\n" +
+							"   {}\n",
+					key, result.getShardId(), result.getSequenceNumber(), json, position);
 		}
 
 		cc.markCompleted();
@@ -112,7 +112,12 @@ public class MaxwellKinesisProducer extends AbstractAsyncProducer {
 			KinesisProducerConfiguration config = KinesisProducerConfiguration.fromPropertiesFile(path.toString());
 			this.kinesisProducer = new KinesisProducer(config);
 		} else {
-			this.kinesisProducer = new KinesisProducer();
+			// The default 30 second record Ttl is too aggressive and prevents our own back-pressure
+			// logic from backing as needed off before the producer fails. Setting it to 1 hour
+			// instead.
+			KinesisProducerConfiguration config = new KinesisProducerConfiguration();
+			config.setRecordTtl(3600000);
+			this.kinesisProducer = new KinesisProducer(config);
 		}
 	}
 

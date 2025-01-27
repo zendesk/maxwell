@@ -83,10 +83,10 @@ class KafkaCallback implements Callback {
 			this.succeededMessageMeter.mark();
 
 			if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug("->  key:" + key + ", partition:" + md.partition() + ", offset:" + md.offset());
-				LOGGER.debug("   " + this.json);
-				LOGGER.debug("   " + position);
-				LOGGER.debug("");
+				LOGGER.debug("->  key:{}, partition:{}, offset:{}\n" +
+								"   {}\n" +
+								"   {}\n",
+						key, md.partition(), md.offset(), this.json, position);
 			}
 			cc.markCompleted();
 		}
@@ -265,7 +265,6 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 	}
 
 	ProducerRecord<String, String> makeProducerRecord(final RowMap r) throws Exception {
-		RowIdentity pk = r.getRowIdentity();
 		String key = r.pkToJson(keyFormat);
 		String value = r.toJSON(outputConfig);
 		ProducerRecord<String, String> record;
@@ -279,7 +278,7 @@ class MaxwellKafkaProducerWorker extends AbstractAsyncProducer implements Runnab
 			if (topic == null) {
 				topic = this.topicInterpolator.generateFromRowMap(r);
 			}
-			LOGGER.debug("context.getConfig().producerPartitionKey = " + context.getConfig().producerPartitionKey);
+			LOGGER.debug("context.getConfig().producerPartitionKey = {}",  context.getConfig().producerPartitionKey);
 
 			record = new ProducerRecord<>(topic, this.partitioner.kafkaPartition(r, getNumPartitions(topic)), key, value);
 		}
