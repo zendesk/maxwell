@@ -1,5 +1,6 @@
-FROM maven:3.6-jdk-11
-ENV MAXWELL_VERSION=1.31.0 KAFKA_VERSION=1.0.0
+FROM maven:3.9.9-eclipse-temurin-23 AS builder
+ENV MAXWELL_VERSION=1.42.3 KAFKA_VERSION=1.0.0
+
 
 RUN apt-get update \
     && apt-get -y upgrade \
@@ -18,6 +19,20 @@ RUN cd /workspace \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/* /workspace/ /root/.m2/ \
     && echo "$MAXWELL_VERSION" > /REVISION
 
+# Build clean image with non-root priveledge
+FROM openjdk:23-jdk-slim
+
+RUN apt-get update \
+    && apt-get -y upgrade
+
+COPY --from=builder /app /app
+COPY --from=builder /REVISION /REVISION
+
 WORKDIR /app
+
+RUN useradd -u 1000 maxwell -d /app
+RUN chown 1000:1000 /app
+
+USER 1000
 
 CMD [ "/bin/bash", "-c", "bin/maxwell-docker" ]

@@ -26,6 +26,7 @@ table_creation_option:
 	| creation_checksum
 	| creation_collation
 	| creation_comment
+	| creation_compression
 	| creation_connection
 	| creation_data_directory
 	| creation_delay_key_write
@@ -44,6 +45,7 @@ table_creation_option:
 	| creation_tablespace
 	| creation_union
 	| creation_encryption
+	| creation_start_transaction
 	| partition_by;
 
 
@@ -64,12 +66,14 @@ creation_max_rows: MAX_ROWS '='? integer;
 creation_min_rows: MIN_ROWS '='? integer;
 creation_pack_keys: PACK_KEYS '='? (integer | DEFAULT);
 creation_password: PASSWORD '='? string_literal;
+creation_compression: COMPRESSION '='? string_literal;
 creation_row_format: ROW_FORMAT '='? (DEFAULT | DEFAULT | DYNAMIC | FIXED | COMPRESSED | REDUNDANT | COMPACT);
 creation_stats_auto_recalc: STATS_AUTO_RECALC '='? (DEFAULT | INTEGER_LITERAL);
 creation_stats_persistent: STATS_PERSISTENT '='? (DEFAULT | INTEGER_LITERAL);
-creation_stats_sample_pages: STATS_SAMPLE_PAGES '='? INTEGER_LITERAL;
+creation_stats_sample_pages: STATS_SAMPLE_PAGES '='? (DEFAULT | INTEGER_LITERAL);
 creation_storage_option: STORAGE (DISK | MEMORY | DEFAULT);
-creation_tablespace: TABLESPACE string;
+creation_tablespace: tablespace;
 creation_union: UNION '='? '(' name (',' name)* ')';
 creation_encryption: ENCRYPTION '='? string_literal;
+creation_start_transaction: START TRANSACTION;
 

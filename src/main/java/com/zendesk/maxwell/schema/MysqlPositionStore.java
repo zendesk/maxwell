@@ -56,21 +56,22 @@ public class MysqlPositionStore {
 
 		BinlogPosition binlogPosition = newPosition.getBinlogPosition();
 		connectionPool.withSQLRetry(1, (c) -> {
-			PreparedStatement s = c.prepareStatement(sql);
+			try ( PreparedStatement s = c.prepareStatement(sql) ) {
+				LOGGER.debug("Writing binlog position to {}.positions: {}, last heartbeat read: {}",
+						c.getCatalog(), newPosition, heartbeat);
+				s.setLong(1, serverID);
+				s.setString(2, binlogPosition.getGtidSetStr());
+				s.setString(3, binlogPosition.getFile());
+				s.setLong(4, binlogPosition.getOffset());
+				s.setLong(5, heartbeat);
+				s.setString(6, clientID);
+				s.setLong(7, heartbeat);
+				s.setString(8, binlogPosition.getGtidSetStr());
+				s.setString(9, binlogPosition.getFile());
+				s.setLong(10, binlogPosition.getOffset());
 
-			LOGGER.debug("Writing binlog position to " + c.getCatalog() + ".positions: " + newPosition + ", last heartbeat read: " + heartbeat);
-			s.setLong(1, serverID);
-			s.setString(2, binlogPosition.getGtidSetStr());
-			s.setString(3, binlogPosition.getFile());
-			s.setLong(4, binlogPosition.getOffset());
-			s.setLong(5, heartbeat);
-			s.setString(6, clientID);
-			s.setLong(7, heartbeat);
-			s.setString(8, binlogPosition.getGtidSetStr());
-			s.setString(9, binlogPosition.getFile());
-			s.setLong(10, binlogPosition.getOffset());
-
-			s.execute();
+				s.execute();
+			}
 		});
 	}
 
@@ -97,12 +98,12 @@ public class MysqlPositionStore {
 	private Long insertHeartbeat(Connection c, Long thisHeartbeat) throws SQLException, DuplicateProcessException {
 		String heartbeatInsert = "insert into `heartbeats` set `heartbeat` = ?, `server_id` = ?, `client_id` = ?";
 
-		PreparedStatement s = c.prepareStatement(heartbeatInsert);
-		s.setLong(1, thisHeartbeat);
-		s.setLong(2, serverID);
-		s.setString(3, clientID);
 
-		try {
+		try ( PreparedStatement s = c.prepareStatement(heartbeatInsert) ) {
+			s.setLong(1, thisHeartbeat);
+			s.setLong(2, serverID);
+			s.setString(3, clientID);
+
 			s.execute();
 			return thisHeartbeat;
 		} catch ( SQLIntegrityConstraintViolationException e ) {
@@ -112,30 +113,34 @@ public class MysqlPositionStore {
 
 	private void heartbeat(Connection c, long thisHeartbeat) throws SQLException, DuplicateProcessException {
 		if ( lastHeartbeat == null ) {
-			PreparedStatement s = c.prepareStatement("SELECT `heartbeat` from `heartbeats` where server_id = ? and client_id = ?");
-			s.setLong(1, serverID);
-			s.setString(2, clientID);
+			try ( PreparedStatement s = c.prepareStatement("SELECT `heartbeat` from `heartbeats` where server_id = ? and client_id = ?") ) {
+				s.setLong(1, serverID);
+				s.setString(2, clientID);
 
-			ResultSet rs = s.executeQuery();
-			if ( !rs.next() ) {
-				insertHeartbeat(c, thisHeartbeat);
-				lastHeartbeat = thisHeartbeat;
-				return;
-			} else {
-				lastHeartbeat = rs.getLong("heartbeat");
+				try ( ResultSet rs = s.executeQuery() ) {
+					if ( !rs.next() ) {
+						insertHeartbeat(c, thisHeartbeat);
+						lastHeartbeat = thisHeartbeat;
+						return;
+					} else {
+						lastHeartbeat = rs.getLong("heartbeat");
+					}
+				}
 			}
 		}
 
 		String heartbeatUpdate = "update `heartbeats` set `heartbeat` = ? where `server_id` = ? and `client_id` = ? and `heartbeat` = ?";
 
-		PreparedStatement s = c.prepareStatement(heartbeatUpdate);
-		s.setLong(1, thisHeartbeat);
-		s.setLong(2, serverID);
-		s.setString(3, clientID);
-		s.setLong(4, lastHeartbeat);
+		final int nRows;
+		try ( PreparedStatement s = c.prepareStatement(heartbeatUpdate) ) {
+			s.setLong(1, thisHeartbeat);
+			s.setLong(2, serverID);
+			s.setString(3, clientID);
+			s.setLong(4, lastHeartbeat);
 
-		LOGGER.debug("writing heartbeat: " + thisHeartbeat + " (last heartbeat written: " + lastHeartbeat + ")");
-		int nRows = s.executeUpdate();
+			LOGGER.debug("writing heartbeat: {} (last heartbeat written: {})", thisHeartbeat, lastHeartbeat);
+			nRows = s.executeUpdate();
+		}
 		if ( nRows != 1 ) {
 			String msg = String.format(
 				"Expected a heartbeat value of %d but didn't find it.  Is another Maxwell process running with the same client_id?",
@@ -172,27 +177,27 @@ public class MysqlPositionStore {
 	}
 
 	public Position getLatestFromAnyClient() throws SQLException {
-		try ( Connection c = connectionPool.getConnection() ) {
-			PreparedStatement s = c.prepareStatement("SELECT * from `positions` where server_id = ? ORDER BY last_heartbeat_read desc limit 1");
+		try ( Connection c = connectionPool.getConnection();
+			  PreparedStatement s = c.prepareStatement("SELECT * from `positions` where server_id = ? ORDER BY last_heartbeat_read desc limit 1") ) {
 			s.setLong(1, serverID);
 
-			return positionFromResultSet(s.executeQuery());
+			try ( ResultSet rs = s.executeQuery() ) {
+				return positionFromResultSet(rs);
+			}
 		}
 	}
 
 	public Position get() throws SQLException {
-		try ( Connection c = connectionPool.getConnection() ) {
-			PreparedStatement s = c.prepareStatement("SELECT * from `positions` where server_id = ? and client_id = ?");
+		try ( Connection c = connectionPool.getConnection();
+			  PreparedStatement s = c.prepareStatement("SELECT * from `positions` where server_id = ? and client_id = ?") ) {
 			s.setLong(1, serverID);
 			s.setString(2, clientID);
 
-			return positionFromResultSet(s.executeQuery());
+			try ( ResultSet rs = s.executeQuery() ) {
+				return positionFromResultSet(rs);
+			}
 		}
 	}
-
-	/**
-	 * grabs a position from a different server_id
-	 */
 
 	public RecoveryInfo getRecoveryInfo(MaxwellConfig config) throws SQLException {
 		try ( Connection c = connectionPool.getConnection() ) {
@@ -219,28 +224,29 @@ public class MysqlPositionStore {
 	}
 
 	protected List<RecoveryInfo> getAllRecoveryInfos(Connection c) throws SQLException {
-		PreparedStatement s = c.prepareStatement("SELECT * from `positions` where client_id = ? order by last_heartbeat_read DESC");
-		s.setString(1, clientID);
-		ResultSet rs = s.executeQuery();
+		try ( PreparedStatement s = c.prepareStatement("SELECT * from `positions` where client_id = ? order by last_heartbeat_read DESC") ) {
+			s.setString(1, clientID);
+			try ( ResultSet rs = s.executeQuery() ) {
+				ArrayList<RecoveryInfo> recoveries = new ArrayList<>();
 
-		ArrayList<RecoveryInfo> recoveries = new ArrayList<>();
+				while ( rs.next() ) {
+					Long server_id = rs.getLong("server_id");
+					String gtid = gtidMode ? rs.getString("gtid_set") : null;
+					Position position = new Position(
+							BinlogPosition.at(gtid,
+									rs.getLong("binlog_position"),
+									rs.getString("binlog_file")
+							), rs.getLong("last_heartbeat_read"));
 
-		while ( rs.next() ) {
-			Long server_id = rs.getLong("server_id");
-			String gtid = gtidMode ? rs.getString("gtid_set") : null;
-			Position position = new Position(
-				BinlogPosition.at(gtid,
-					rs.getLong("binlog_position"),
-					rs.getString("binlog_file")
-				), rs.getLong("last_heartbeat_read"));
-
-			if ( rs.wasNull() ) {
-				LOGGER.warn("master recovery is ignoring position with NULL heartbeat");
-			} else {
-				recoveries.add(new RecoveryInfo(position, server_id, clientID));
+					if ( rs.wasNull() ) {
+						LOGGER.warn("master recovery is ignoring position with NULL heartbeat");
+					} else {
+						recoveries.add(new RecoveryInfo(position, server_id, clientID));
+					}
+				}
+				return recoveries;
 			}
 		}
-		return recoveries;
 	}
 
 	protected List<String> formatRecoveryFailure(MaxwellConfig config, List<RecoveryInfo> recoveries) {
@@ -269,10 +275,9 @@ public class MysqlPositionStore {
 		if (allRecoveryInfos.size() > 1) {
 			LOGGER.warn("Multiple recovery infos found: " + allRecoveryInfos);
 			LOGGER.info("Removing entries where server_id != " + serverID);
-			try (Connection c = connectionPool.getConnection()) {
-				PreparedStatement s = c.prepareStatement(
-					"DELETE FROM `positions` WHERE server_id <> ? AND client_id = ?"
-				);
+			try ( Connection c = connectionPool.getConnection();
+				  PreparedStatement s = c.prepareStatement(
+				    "DELETE FROM `positions` WHERE server_id <> ? AND client_id = ?") ) {
 				s.setLong(1, serverID);
 				s.setString(2, clientID);
 				s.execute();

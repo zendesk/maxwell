@@ -1,5 +1,10 @@
 package com.zendesk.maxwell;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableMap;
+import com.zendesk.maxwell.monitoring.MaxwellHealthCheck;
+import com.zendesk.maxwell.monitoring.MaxwellHealthCheckFactory;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.producer.ProducerFactory;
 import com.zendesk.maxwell.producer.StdoutProducer;
@@ -9,6 +14,8 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -35,7 +42,14 @@ public class MaxwellConfigTest
 		assertNotNull(config.producerFactory);
 		assertTrue(config.producerFactory instanceof TestProducerFactory);
 	}
-	
+
+	@Test
+	public void testFetchHealthCheckFactoryFromArgs() {
+		config = new MaxwellConfig(new String[] { "--custom_health.factory=" + TestHealthCheckFactory.class.getName() });
+		assertNotNull(config.customHealthFactory);
+		assertTrue(config.customHealthFactory instanceof TestHealthCheckFactory);
+	}
+
 	@Test(expected = OptionException.class)
 	public void testCustomProperties() {
 		// custom properties are not supported on the command line just like 'kafka.*' properties
@@ -81,7 +95,65 @@ public class MaxwellConfigTest
 		assertEquals("localhost", config.maxwellMysql.host);
 		assertEquals("100", config.kafkaProperties.getProperty("retries"));
 	}
-	
+
+	@Test
+	public void testEnvJsonConfig() throws JsonProcessingException {
+		Map<String, String> nonNullconfigMap = ImmutableMap.<String, String>builder()
+				.put("user", "foo")
+				.put("password", "bar")
+				.put("host", "remotehost")
+				.put("kafka.retries", "100")
+				.build();
+		HashMap<String, String> configMap = new HashMap<>(nonNullconfigMap);
+		configMap.put("ignore.me", null);
+		ObjectMapper mapper = new ObjectMapper();
+		String jsonConfig = mapper.writeValueAsString(configMap);
+		environmentVariables.set("MAXWELL_JSON", "    " + jsonConfig);
+
+		config = new MaxwellConfig(new String[] { "--env_config=MAXWELL_JSON" });
+		assertEquals("foo", config.maxwellMysql.user);
+		assertEquals("bar", config.maxwellMysql.password);
+		assertEquals("remotehost", config.maxwellMysql.host);
+		assertEquals("100", config.kafkaProperties.getProperty("retries"));
+	}
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testEnvJsonConfigNotJson() {
+		environmentVariables.set("MAXWELL_JSON", "{banana sundae}");
+
+		config = new MaxwellConfig(new String[] { "--env_config=MAXWELL_JSON", "--host=localhost" });
+	}
+
+	@Test
+	public void testUseConfigAndEnvConfig() throws JsonProcessingException {
+		Map<String, String> configMap = ImmutableMap.<String, String>builder()
+				.put("custom_producer.foo", "foo")
+				.build();
+		ObjectMapper mapper = new ObjectMapper();
+		String jsonConfig = mapper.writeValueAsString(configMap);
+		environmentVariables.set("MAXWELL_JSON", jsonConfig);
+
+		String configPath = getTestConfigDir() + "producer-factory-config.properties";
+		assertNotNull("Config file not found at: " + configPath, Paths.get(configPath));
+
+		config = new MaxwellConfig(new String[] { "--env_config=MAXWELL_JSON", "--config=" + configPath });
+		// foo in env_config overwrites bar in producer-factory-config.properties"
+		assertEquals("foo", config.customProducerProperties.getProperty("foo"));
+	}
+
+	@Test
+	public void testPubsubConfigNonDefault() {
+		config = new MaxwellConfig(new String[] { "--pubsub_rpc_timeout_multiplier=1.5" });
+		assertEquals(config.pubsubRpcTimeoutMultiplier, 1.5f, 0.0f);
+	}
+
+	@Test
+	public void testPubsubConfigDefault() {
+		config = new MaxwellConfig();
+		assertEquals(config.pubsubRpcTimeoutMultiplier, 1.0f, 0.0f);
+	}
+
+
 	private String getTestConfigDir() {
 		return System.getProperty("user.dir") + "/src/test/resources/config/";
 	}
@@ -89,6 +161,25 @@ public class MaxwellConfigTest
 	public static class TestProducerFactory implements ProducerFactory {
 		public AbstractProducer createProducer(MaxwellContext context) {
 			return new StdoutProducer(context);
+		}
+	}
+
+	public static class TestHealthCheck extends MaxwellHealthCheck {
+		public TestHealthCheck(AbstractProducer producer) {
+			super(producer);
+		}
+
+		@Override
+		protected Result check() throws Exception {
+			return Result.unhealthy("I am always unhealthy");
+		}
+	}
+
+	public static class TestHealthCheckFactory implements MaxwellHealthCheckFactory {
+		@Override
+		public MaxwellHealthCheck createHealthCheck(AbstractProducer producer)
+		{
+			return new TestHealthCheck(producer);
 		}
 	}
 }

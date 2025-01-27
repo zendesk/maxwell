@@ -12,7 +12,7 @@ public class ColumnDefSerializer extends JsonSerializer<ColumnDef> {
 	public void serialize(ColumnDef def, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonProcessingException {
 		jgen.writeStartObject();
 		jgen.writeStringField("type", def.getType());
-		jgen.writeStringField("name", def.name);
+		jgen.writeStringField("name", def.getName());
 
 		if ( def instanceof StringColumnDef ) {
 			jgen.writeStringField("charset", ((StringColumnDef) def).getCharset());
