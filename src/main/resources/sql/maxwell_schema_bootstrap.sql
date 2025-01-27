@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS `bootstrap` (
-  id              int unsigned auto_increment NOT NULL primary key,
+  id              bigint auto_increment NOT NULL primary key,
   database_name   varchar(255) charset 'utf8' NOT NULL,
   table_name      varchar(255) charset 'utf8' NOT NULL,
   where_clause    text default NULL,

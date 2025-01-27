@@ -13,5 +13,6 @@ config/*.yml
 .classpath
 .project
 .settings/
+.vscode/
 .factorypath
 .sts4-cache/

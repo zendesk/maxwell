@@ -10,6 +10,7 @@ import com.zendesk.maxwell.row.RowMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.security.KeyManagementException;
@@ -57,6 +58,14 @@ public class RabbitmqProducer extends AbstractProducer {
 				factory.setVirtualHost(config.rabbitmqVirtualHost);
 			}
 
+			if ( config.rabbitmqHandshakeTimeout != null ) {
+				factory.setHandshakeTimeout(config.rabbitmqHandshakeTimeout);
+			}
+
+			if ( config.rabbitmqUseSSL ) {
+				factory.useSslProtocol(SSLContext.getDefault());
+			}
+
 			this.channel = factory.newConnection().createChannel();
 			if(context.getConfig().rabbitmqDeclareExchange) {
 				this.channel.exchangeDeclare(exchangeName, context.getConfig().rabbitmqExchangeType, context.getConfig().rabbitMqExchangeDurable, context.getConfig().rabbitMqExchangeAutoDelete, null);
@@ -84,7 +93,7 @@ public class RabbitmqProducer extends AbstractProducer {
 			context.setPosition(r.getNextPosition());
 		}
 		if ( LOGGER.isDebugEnabled()) {
-			LOGGER.debug("->  routing key:" + routingKey + ", partition:" + value);
+			LOGGER.debug("->  routing key:{}, partition:{}", routingKey, value);
 		}
 	}
 
