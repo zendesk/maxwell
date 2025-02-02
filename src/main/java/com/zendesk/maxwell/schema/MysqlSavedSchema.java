@@ -423,7 +423,7 @@ public class MysqlSavedSchema {
 							null,
 							schemaRS.getInt("binlog_position"),
 							schemaRS.getString("binlog_file")
-					), schemaRS.getLong("last_heartbeat_read")
+					), schemaRS.getLong("last_heartbeat_read"), 0L
 			));
 
 			LOGGER.info("Restoring schema id " + schemaRS.getLong("id") + " (last modified at " + this.position + ")");
