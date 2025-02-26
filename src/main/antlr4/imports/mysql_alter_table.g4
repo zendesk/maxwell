@@ -33,7 +33,7 @@ add_column_parens: ADD COLUMN? if_not_exists? '(' (column_definition|index_defin
 change_column: CHANGE COLUMN? full_column_name column_definition col_position?;
 if_exists: IF EXISTS;
 drop_column: DROP COLUMN? if_exists? full_column_name CASCADE?;
-modify_column: MODIFY COLUMN? column_definition col_position?;
+modify_column: MODIFY COLUMN? if_exists? column_definition col_position?;
 drop_key: DROP FOREIGN? (INDEX|KEY) if_exists? name;
 drop_primary_key: DROP PRIMARY KEY;
 alter_rename_table: RENAME (TO | AS)? table_name;
