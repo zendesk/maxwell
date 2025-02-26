@@ -1,5 +1,23 @@
 # Maxwell changelog
 
+### [v1.43.0](https://github.com/zendesk/maxwell/releases/tag/v1.43.0)
+
+- large number of snyk upgrades merged.
+- fix mariadb parse error
+
+
+
+_Released 2025-02-26_
+
+### [v1.42.3](https://github.com/zendesk/maxwell/releases/tag/v1.42.3)
+
+- Pull in an updated binlog-connector-java, notably fixing a major
+  problem with mariadb GTIDs
+
+
+
+_Released 2025-01-18_
+
 ### [v1.42.2](https://github.com/zendesk/maxwell/releases/tag/v1.42.2)
 
 - update jdk on docker image
