@@ -1,13 +1,12 @@
 # Maxwell changelog
 
-### [v1.43.0](https://github.com/zendesk/maxwell/releases/tag/v1.43.0)
+### [v1.43.1](https://github.com/zendesk/maxwell/releases/tag/v1.43.1)
 
-- large number of snyk upgrades merged.
-- fix mariadb parse error
-
+- fix kafka breakage
 
 
-_Released 2025-02-26_
+
+_Released 2025-03-05_
 
 ### [v1.42.3](https://github.com/zendesk/maxwell/releases/tag/v1.42.3)
 
