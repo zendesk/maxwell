@@ -561,6 +561,11 @@ public class MaxwellConfig extends AbstractConfig {
 	public String natsSubject;
 
 	/**
+	 * {@link com.zendesk.maxwell.producer.NatsProducer} Credential file
+	 */
+	public String natsCreds;
+
+	/**
 	 * {@link com.zendesk.maxwell.producer.MaxwellRedisProducer} host
 	 */
 	public String redisHost;
@@ -902,6 +907,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.accepts( "nats_url", "Url(s) of Nats connection (comma separated). Default is localhost:4222" ).withRequiredArg();
 		parser.accepts( "nats_subject", "Subject Hierarchies of Nats. Default is '%{database}.%{table}'" ).withRequiredArg();
+		parser.accepts( "nats_creds", "Nats creds file path for JWT + NKey auth. Default is null which disables JWT based auth" ).withRequiredArg();
 
 		parser.section( "bigquery" );
 		parser.accepts( "bigquery_project_id", "provide a google cloud platform project id associated with the bigquery table" )
@@ -1116,6 +1122,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.natsUrl			= fetchStringOption("nats_url", options, properties, "nats://localhost:4222");
 		this.natsSubject		= fetchStringOption("nats_subject", options, properties, "%{database}.%{table}");
+		this.natsCreds			= fetchStringOption("nats_creds", options, properties, null);
 
 		this.redisHost			= fetchStringOption("redis_host", options, properties, "localhost");
 		this.redisPort			= fetchIntegerOption("redis_port", options, properties, 6379);

@@ -106,7 +106,8 @@ _See also:_ [SNS Producer Documentation](/producers#sns)
 option                         | argument                            | description                                         | default
 -------------------------------|-------------------------------------| --------------------------------------------------- | -------
 nats_url                       | STRING     | Comma separated list of nats urls.  may include [user:password style auth](https://docs.nats.io/developing-with-nats/security/userpass#connecting-with-a-user-password-in-the-url) | nats://localhost:4222
-nats_subject                   | STRING     | Nats subject hierarchy.  [Topic substitution](/producers/#topic-substitution) available. | `%{database}.%{table}`
+nats_subject                   | STRING     | Nats subject hierarchy.  [Topic substitution](/producers/#topic-substitution) available.| `%{database}.%{table}`
+nats_creds                     | STRING     | [Nats creds file path](https://docs.nats.io/using-nats/developer/connecting/creds) for JWT + NKey auth.| null
 
 _See also:_ [Nats Producer Documentation](/producers#nats)
 
