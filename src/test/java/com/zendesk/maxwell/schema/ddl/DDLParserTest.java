@@ -275,7 +275,8 @@ public class DDLParserTest {
 				"ALGORITHM=NOCOPY, LOCK=NONE",
 			"ALTER TABLE foo drop foreign key if exists foobar",
 			"ALTER TABLE table_foo WAIT 30 ADD COLUMN my_column INTEGER, ALGORITHM=INSTANT, LOCK=NONE",
-			"ALTER TABLE dialog360_conversations MODIFY COLUMN IF EXISTS phone_number varchar(20) DEFAULT ‘’"
+			"ALTER TABLE dialog360_conversations MODIFY COLUMN IF EXISTS phone_number varchar(20) DEFAULT ‘’",
+			"ALTER TABLE test_table MODIFY COLUMN notes text NOT SECONDARY"
 		};
 
 		for ( String s : testSQL ) {

@@ -95,6 +95,7 @@ column_options:
 	| reference_definition
 	| CHECK skip_parens
 	| SRID INTEGER_LITERAL
+	| NOT SECONDARY
 ;
 
 primary_key: PRIMARY KEY;
