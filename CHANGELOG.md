@@ -1,5 +1,14 @@
 # Maxwell changelog
 
+### [v1.43.2](https://github.com/zendesk/maxwell/releases/tag/v1.43.2)
+
+- fix more dependency issues in 1.43.1
+- fix parsing error for mysql heatwave
+
+
+
+_Released 2025-03-12_
+
 ### [v1.43.1](https://github.com/zendesk/maxwell/releases/tag/v1.43.1)
 
 - fix kafka breakage
