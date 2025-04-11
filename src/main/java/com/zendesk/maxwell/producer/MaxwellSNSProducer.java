@@ -111,7 +111,6 @@ class SNSCallback implements AsyncHandler<PublishRequest, PublishResult> {
 		logger.error(t.getLocalizedMessage());
 		logger.error("Exception during put", t);
 
-
 		if (!context.getConfig().ignoreProducerError) {
 			context.terminate(new RuntimeException(t));
 		} else {
