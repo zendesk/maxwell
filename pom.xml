@@ -43,7 +43,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <mockito.version>3.12.4</mockito.version>
     <opencensus.version>0.28.3</opencensus.version>
-    <aws-java.version>1.12.537</aws-java.version>
+    <aws-java.version>1.12.782</aws-java.version>
     <jackson.version>2.15.2</jackson.version>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
