@@ -7,6 +7,7 @@ import com.rabbitmq.client.MessageProperties;
 import com.zendesk.maxwell.MaxwellConfig;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.row.RowMap;
+import com.zendesk.maxwell.util.TopicInterpolator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,8 +24,12 @@ public class RabbitmqProducer extends AbstractProducer {
 	private static String exchangeName;
 	private static BasicProperties props;
 	private Channel channel;
+	private final TopicInterpolator topicInterpolator;
+
 	public RabbitmqProducer(MaxwellContext context) {
 		super(context);
+		String routingKeyTemplate = context.getConfig().rabbitmqRoutingKeyTemplate;
+		this.topicInterpolator = new TopicInterpolator(routingKeyTemplate);
 		exchangeName = context.getConfig().rabbitmqExchange;
 		props = context.getConfig().rabbitmqMessagePersistent ? MessageProperties.MINIMAL_PERSISTENT_BASIC : null;
 
@@ -86,7 +91,7 @@ public class RabbitmqProducer extends AbstractProducer {
 		}
 
 		String value = r.toJSON(outputConfig);
-		String routingKey = getRoutingKeyFromTemplate(r);
+		String routingKey = this.topicInterpolator.generateFromRowMap(r);
 
 		channel.basicPublish(exchangeName, routingKey, props, value.getBytes());
 		if ( r.isTXCommit() ) {
@@ -95,18 +100,5 @@ public class RabbitmqProducer extends AbstractProducer {
 		if ( LOGGER.isDebugEnabled()) {
 			LOGGER.debug("->  routing key:{}, partition:{}", routingKey, value);
 		}
-	}
-
-	private String getRoutingKeyFromTemplate(RowMap r) {
-		String table = r.getTable();
-
-		if ( table == null )
-			table = "";
-
-		return context
-				.getConfig()
-				.rabbitmqRoutingKeyTemplate
-				.replace("%db%", r.getDatabase())
-				.replace("%table%", table);
 	}
 }
