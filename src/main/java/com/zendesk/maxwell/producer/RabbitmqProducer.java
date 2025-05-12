@@ -92,6 +92,7 @@ public class RabbitmqProducer extends AbstractProducer {
 
 		String value = r.toJSON(outputConfig);
 		String routingKey = this.topicInterpolator.generateFromRowMap(r);
+		routingKey = generateForOldTemplate(routingKey, r);
 
 		channel.basicPublish(exchangeName, routingKey, props, value.getBytes());
 		if ( r.isTXCommit() ) {
@@ -100,5 +101,19 @@ public class RabbitmqProducer extends AbstractProducer {
 		if ( LOGGER.isDebugEnabled()) {
 			LOGGER.debug("->  routing key:{}, partition:{}", routingKey, value);
 		}
+	}
+
+	private String generateForOldTemplate(String routingKey, RowMap r) {
+		if ( !routingKey.contains("%") ) {
+			return routingKey;
+		}
+		String table = r.getTable();
+
+		if ( table == null )
+			table = "";
+
+		return routingKey
+				.replace("%db%", r.getDatabase())
+				.replace("%table%", table);
 	}
 }
