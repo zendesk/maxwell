@@ -751,7 +751,7 @@ public class MaxwellConfig extends AbstractConfig {
 			.withOptionalArg().ofType(Boolean.class);
 		parser.accepts( "output_commit_info", "include 'commit' and 'xid' field. default: true" )
 			.withOptionalArg().ofType(Boolean.class);
-		parser.accepts( "output_xoffset", "include 'xoffset' (row offset inside transaction) field.  depends on '--output_commit_info'. default: false" )
+		parser.accepts( "output_xoffset", "include 'xoffset' (row offset inside transaction) field.  depends on '--output_commit_info'. default: true" )
 			.withOptionalArg().ofType(Boolean.class);
 		parser.accepts( "output_nulls", "include data fields with NULL values. default: true" )
 			.withOptionalArg().ofType(Boolean.class);
