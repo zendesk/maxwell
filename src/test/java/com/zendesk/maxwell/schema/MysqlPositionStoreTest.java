@@ -10,7 +10,7 @@ import com.zendesk.maxwell.recovery.RecoveryInfo;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.errors.DuplicateProcessException;
 import com.zendesk.maxwell.replication.Position;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
 public class MysqlPositionStoreTest extends MaxwellTestWithIsolatedServer {
