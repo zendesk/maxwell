@@ -275,7 +275,7 @@
     <dependency>
       <groupId>com.google.cloud</groupId>
       <artifactId>google-cloud-bigquerystorage</artifactId>
-      <version>2.14.2</version>
+      <version>3.14.1</version>
     </dependency>
     <dependency>
       <groupId>com.google.cloud</groupId>
@@ -326,11 +326,6 @@
       <groupId>io.nats</groupId>
       <artifactId>jnats</artifactId>
       <version>2.20.6</version>
-    </dependency>
-    <dependency>
-      <groupId>org.json</groupId>
-      <artifactId>json</artifactId>
-      <version>20231013</version>
     </dependency>
     <dependency>
       <groupId>com.google.protobuf</groupId>
