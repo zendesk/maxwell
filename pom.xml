@@ -328,6 +328,12 @@
       <version>2.20.6</version>
     </dependency>
     <dependency>
+      <groupId>com.charleskorn.kaml</groupId>
+      <artifactId>kaml</artifactId>
+      <version>0.63.0</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
       <groupId>com.google.protobuf</groupId>
       <artifactId>protobuf-java</artifactId>
       <version>3.25.5</version>
