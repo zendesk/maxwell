@@ -3,7 +3,6 @@ package com.zendesk.maxwell.bootstrap;
 import com.zendesk.maxwell.CaseSensitivity;
 import com.zendesk.maxwell.MaxwellMysqlStatus;
 import com.zendesk.maxwell.errors.DuplicateProcessException;
-import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.producer.AbstractProducer;
 import com.zendesk.maxwell.row.RowMap;
@@ -14,13 +13,16 @@ import com.zendesk.maxwell.schema.Table;
 import com.zendesk.maxwell.schema.columndef.ColumnDef;
 import com.zendesk.maxwell.schema.columndef.ColumnDefCastException;
 import com.zendesk.maxwell.schema.columndef.DateColumnDef;
+import com.zendesk.maxwell.schema.columndef.DateTimeColumnDef;
 import com.zendesk.maxwell.schema.columndef.TimeColumnDef;
 import com.zendesk.maxwell.scripting.Scripting;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URISyntaxException;
 import java.sql.*;
+import java.time.DateTimeException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -265,14 +267,23 @@ public class SynchronousBootstrapper {
 			// need to explicitly coerce TIME into TIMESTAMP in order to preserve nanoseconds
 			if (columnDefinition instanceof TimeColumnDef)
 				columnValue = getTimestamp(resultSet, columnIndex);
-			else if ( columnDefinition instanceof DateColumnDef)
+			else if (columnDefinition instanceof DateColumnDef)
 				columnValue = resultSet.getString(columnIndex);
+			else if (columnDefinition instanceof DateTimeColumnDef)
+				try {
+					columnValue = resultSet.getString(columnIndex);
+				} catch (SQLException e) {
+					columnValue = null;
+				} catch (DateTimeException e){
+					columnValue = null;
+				}
+					
 			else
 				columnValue = resultSet.getObject(columnIndex);
 
 			row.putData(
 				columnDefinition.getName(),
-				columnValue == null ? null : columnDefinition.asJSON(columnValue, new MaxwellOutputConfig())
+				columnValue == null ? null : columnDefinition.asJSON(columnValue, context.getConfig().outputConfig)
 			);
 
 			++columnIndex;

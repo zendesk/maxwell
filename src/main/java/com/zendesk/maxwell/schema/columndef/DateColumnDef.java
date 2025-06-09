@@ -24,11 +24,16 @@ public class DateColumnDef extends ColumnDef {
 	@Override
 	public Object asJSON(Object value, MaxwellOutputConfig config) throws ColumnDefCastException {
 		if ( value instanceof String ) {
+			String dateStr = (String) value;
 			// bootstrapper just gives up on bothering with date processing
-			if ( config.zeroDatesAsNull && "0000-00-00".equals((String) value) )
+			if ( config.zeroDatesAsNull && dateStr.length() == 10 &&
+			((dateStr.charAt(0) == '0' && dateStr.charAt(1) == '0' && dateStr.charAt(2) == '0' && dateStr.charAt(3) == '0') ||
+            (dateStr.charAt(5) == '0' && dateStr.charAt(6) == '0') ||
+            (dateStr.charAt(8) == '0' && dateStr.charAt(9) == '0'))) {
 				return null;
-			else
+			} else {
 				return value;
+			}
 		} else if ( value instanceof Long && (Long) value == Long.MIN_VALUE ) {
 			if ( config.zeroDatesAsNull )
 				return null;

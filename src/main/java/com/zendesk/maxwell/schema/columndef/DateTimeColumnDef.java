@@ -19,7 +19,18 @@ public class DateTimeColumnDef extends ColumnDefWithLength {
 
 	protected String formatValue(Object value, MaxwellOutputConfig config) throws ColumnDefCastException {
 		// special case for those broken mysql dates.
-		if ( value instanceof Long ) {
+		if ( value instanceof String ) {
+			String dateStr = (String) value;
+			// bootstrapper just gives up on bothering with date processing
+			if ( config.zeroDatesAsNull && dateStr.length() == 19 && 
+			((dateStr.charAt(0) == '0' && dateStr.charAt(1) == '0' && dateStr.charAt(2) == '0' && dateStr.charAt(3) == '0') ||
+            (dateStr.charAt(5) == '0' && dateStr.charAt(6) == '0') ||
+            (dateStr.charAt(8) == '0' && dateStr.charAt(9) == '0'))) {
+				return null;
+			} else {
+				return appendFractionalSeconds(dateStr, 0, getColumnLength());
+			}
+		} else if ( value instanceof Long ) {
 			Long v = (Long) value;
 			if ( v == Long.MIN_VALUE || (v == 0L && isTimestamp) ) {
 				if ( config.zeroDatesAsNull )
