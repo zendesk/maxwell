@@ -139,6 +139,19 @@
         </dependency>
       </dependencies>
     </profile>
+    <profile>
+      <id>kafka-3.7.1</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.kafka</groupId>
+          <artifactId>kafka-clients</artifactId>
+          <version>3.7.1</version>
+        </dependency>
+      </dependencies>
+    </profile>
   </profiles>
 
   <dependencies>
