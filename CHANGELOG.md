@@ -1,5 +1,13 @@
 # Maxwell changelog
 
+### [v1.44.0](https://github.com/zendesk/maxwell/releases/tag/v1.44.0)
+
+- Quite a few dependency upgrades
+
+
+
+_Released 2025-06-25_
+
 ### [v1.43.2](https://github.com/zendesk/maxwell/releases/tag/v1.43.2)
 
 - fix more dependency issues in 1.43.1
