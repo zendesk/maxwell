@@ -475,7 +475,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		assertEquals(1, rows.size());
 		assertTrue(rows.get(0).toJSON(ddlOutputConfig()).contains("\"type\":\"table-create\",\"database\":\"mysql\",\"table\":\"TestTableCreate1\""));
 	}
-	
+
 	@Test
 	public void testNonLatinTableCreate() throws Exception {
 		String[] sql = {"create table 測試表格 ( 測試欄位一 int, 測試欄位二 text )"};
@@ -490,7 +490,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		List<RowMap> rows = getRowsForDDLTransaction(sql, excludeTable("TestTableCreate2"));
 		assertEquals(0, rows.size());
 	}
-	
+
 	@Test
 	public void testNonLatinTableCreateFilter() throws Exception {
 		String[] sql = {"create table 測試表格二 ( 測試欄位一 int, 測試欄位二 text )"};
@@ -508,7 +508,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		assertEquals(1, rows.size());
 		assertTrue(rows.get(0).toJSON(ddlOutputConfig()).contains("\"type\":\"table-create\",\"database\":\"mysql\",\"table\":\"TestTableCreate3\""));
 	}
-	
+
 	@Test
 	public void testNonLatinTableRenameFilter() throws Exception {
 		String[] sql = {
@@ -519,7 +519,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		assertEquals(1, rows.size());
 		assertTrue(rows.get(0).toJSON(ddlOutputConfig()).contains("\"type\":\"table-create\",\"database\":\"mysql\",\"table\":\"測試表格三\""));
 	}
-	
+
 
 	@Test
 	public void testDatabaseCreate() throws Exception {
@@ -533,7 +533,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		assertTrue(rows.get(0).toJSON(ddlOutputConfig()).contains("\"type\":\"database-create\",\"database\":\"TestDatabaseCreate1\""));
 		assertTrue(rows.get(1).toJSON(ddlOutputConfig()).contains("\"type\":\"database-alter\",\"database\":\"TestDatabaseCreate1\""));
 	}
-	
+
 	@Test
 	public void testNonLatinDatabaseCreate() throws Exception {
 		assumeFalse(MysqlIsolatedServer.getVersion().getMajor() == 8);
@@ -573,7 +573,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		assertTrue(rows.get(0).toJSON(ddlOutputConfig()).contains("\"type\":\"database-create\",\"database\":\"TestDatabaseCreate3\""));
 		assertTrue(rows.get(1).toJSON(ddlOutputConfig()).contains("\"type\":\"table-create\",\"database\":\"TestDatabaseCreate3\",\"table\":\"burger\""));
 	}
-	
+
 	@Test
 	public void testNonLatinDatabaseChangeWithTableFilter() throws Exception {
 		String[] sql = {
@@ -618,6 +618,52 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		String [] sql = {
 			"create table foo ( colA int, colB int)",
 			"ALTER IGNORE TABLE foo ADD CONSTRAINT table_name_pk PRIMARY KEY IF NOT EXISTS (colA, colB)"
+		};
+		testIntegration(sql);
+	}
+
+	@Test
+	public void testAlterTableIfExists() throws Exception {
+		assumeTrue(MysqlIsolatedServer.getVersion().isMariaDB);
+		String sql[] = {
+			"CREATE TABLE test_table (id INT, name VARCHAR(50))",
+			"ALTER TABLE test_table IF EXISTS ADD COLUMN email VARCHAR(100)",
+			"ALTER TABLE nonexistent_table IF EXISTS ADD COLUMN email VARCHAR(100)",
+			"ALTER TABLE test_table IF EXISTS DROP COLUMN name",
+			"ALTER TABLE test_table IF EXISTS MODIFY COLUMN id BIGINT"
+		};
+		testIntegration(sql);
+	}
+
+	@Test
+	public void testConstraintIfExists() throws Exception {
+		assumeTrue(MysqlIsolatedServer.getVersion().isMariaDB);
+		String sql[] = {
+			"CREATE TABLE test_constraints (id INT, email VARCHAR(100))",
+			"ALTER TABLE test_constraints ADD CONSTRAINT IF NOT EXISTS uk_email UNIQUE (email)",
+			"ALTER TABLE test_constraints DROP CONSTRAINT IF EXISTS uk_nonexistent",
+			"ALTER TABLE test_constraints ADD CONSTRAINT IF NOT EXISTS pk_id PRIMARY KEY (id)"
+		};
+		testIntegration(sql);
+	}
+
+	@Test
+	public void testComplexAlterIfExists() throws Exception {
+		assumeTrue(MysqlIsolatedServer.getVersion().isMariaDB);
+		String sql[] = {
+			"CREATE TABLE multi_test (id INT, old_col VARCHAR(50))",
+			"ALTER TABLE multi_test IF EXISTS ADD COLUMN IF NOT EXISTS new_col INT, DROP COLUMN IF EXISTS old_col, ADD INDEX IF NOT EXISTS idx_new (new_col)"
+		};
+		testIntegration(sql);
+	}
+
+	@Test
+	public void testIndexIfExists() throws Exception {
+		assumeTrue(MysqlIsolatedServer.getVersion().isMariaDB);
+		String sql[] = {
+			"CREATE TABLE index_test (id INT, name VARCHAR(50), email VARCHAR(100))",
+			"ALTER TABLE index_test ADD INDEX IF NOT EXISTS idx_email (email)",
+			"ALTER TABLE index_test DROP INDEX IF EXISTS idx_nonexistent"
 		};
 		testIntegration(sql);
 	}

@@ -275,13 +275,24 @@ public class DDLParserTest {
 				"ALGORITHM=NOCOPY, LOCK=NONE",
 			"ALTER TABLE foo drop foreign key if exists foobar",
 			"ALTER TABLE table_foo WAIT 30 ADD COLUMN my_column INTEGER, ALGORITHM=INSTANT, LOCK=NONE",
-			"ALTER TABLE dialog360_conversations MODIFY COLUMN IF EXISTS phone_number varchar(20) DEFAULT ‘’",
-			"ALTER TABLE test_table MODIFY COLUMN notes text NOT SECONDARY"
+			"ALTER TABLE dialog360_conversations MODIFY COLUMN IF EXISTS phone_number varchar(20) DEFAULT ''",
+			"ALTER TABLE test_table MODIFY COLUMN notes text NOT SECONDARY",
+			// New MariaDB IF EXISTS/IF NOT EXISTS syntax tests
+			"ALTER TABLE test_table IF EXISTS ADD COLUMN new_col INT",
+			"ALTER TABLE test_table IF EXISTS DROP COLUMN old_col",
+			"ALTER TABLE test_table IF EXISTS MODIFY COLUMN id BIGINT",
+			"ALTER TABLE test_table ADD INDEX IF NOT EXISTS idx_name (name)",
+			"ALTER TABLE test_table DROP INDEX IF EXISTS idx_nonexistent",
+			"ALTER TABLE test_table ADD CONSTRAINT IF NOT EXISTS uk_email UNIQUE (email)",
+			"ALTER TABLE test_table DROP CONSTRAINT IF EXISTS uk_nonexistent"
 		};
 
 		for ( String s : testSQL ) {
 			try {
-				SchemaChange parsed = parse(s).get(0);
+				List<SchemaChange> changes = parse(s);
+				assertThat("Expected '" + s + "' to return non-null changes", changes, not(nullValue()));
+				assertThat("Expected '" + s + "' to return at least one change", changes.size(), is(not(0)));
+				SchemaChange parsed = changes.get(0);
 				assertThat("Expected " + s + "to parse", parsed, not(nullValue()));
 			} catch ( MaxwellSQLSyntaxError e ) {
 				assertThat("Expected '" + s + "' to parse, but got: " + e.getMessage(), true, is(false));
