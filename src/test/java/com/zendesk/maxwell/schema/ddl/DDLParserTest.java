@@ -277,7 +277,6 @@ public class DDLParserTest {
 			"ALTER TABLE table_foo WAIT 30 ADD COLUMN my_column INTEGER, ALGORITHM=INSTANT, LOCK=NONE",
 			"ALTER TABLE dialog360_conversations MODIFY COLUMN IF EXISTS phone_number varchar(20) DEFAULT ''",
 			"ALTER TABLE test_table MODIFY COLUMN notes text NOT SECONDARY",
-			// New MariaDB IF EXISTS/IF NOT EXISTS syntax tests
 			"ALTER TABLE test_table IF EXISTS ADD COLUMN new_col INT",
 			"ALTER TABLE test_table IF EXISTS DROP COLUMN old_col",
 			"ALTER TABLE test_table IF EXISTS MODIFY COLUMN id BIGINT",
