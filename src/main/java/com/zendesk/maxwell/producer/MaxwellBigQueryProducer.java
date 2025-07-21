@@ -303,9 +303,20 @@ class MaxwellBigQueryProducerWorker extends AbstractAsyncProducer implements Run
     }
   }
 
-
   @Override
   public void sendAsync(RowMap r, CallbackCompleter cc) throws Exception {
+
+    JSONObject record = new JSONObject(r.toJSON(outputConfig));
+    covertJSONObjectFieldsToString(record);
+
+    int recordSize = AppendContext.getJsonByteSize(record);
+    if (recordSize >= 9 * 1024 * 1024) {
+        LOGGER.error("Worker {} skipping oversized record: {} bytes for table {}.{}, position {}",
+            this.workerId, recordSize, r.getDatabase(), r.getTable(), r.getNextPosition());
+        cc.markCompleted();
+        return;
+    }
+
     synchronized (this.lock) {
       if (this.error != null) {
         throw this.error;
@@ -317,8 +328,6 @@ class MaxwellBigQueryProducerWorker extends AbstractAsyncProducer implements Run
       }
     }
 
-    JSONObject record = new JSONObject(r.toJSON(outputConfig));
-    covertJSONObjectFieldsToString(record);
     this.appendContext.addRow(r, record, cc);
 
     if(this.appendContext.callbacks.size() >= BATCH_SIZE
@@ -387,7 +396,7 @@ class AppendContext {
     }
   }
 
-  private static int getJsonByteSize(Object json) {
+  public static int getJsonByteSize(Object json) {
     // Estimate byte size. UTF-8 encoding is assumed, which is standard for JSON.
     // This is an approximation; actual gRPC message size might differ slightly.
     return json.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
@@ -398,4 +407,3 @@ class AppendContext {
   }
 
 }
-
