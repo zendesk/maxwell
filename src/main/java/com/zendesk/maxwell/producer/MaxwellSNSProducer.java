@@ -30,9 +30,16 @@ public class MaxwellSNSProducer extends AbstractAsyncProducer {
 		super(context);
 		this.topic = topic;
 
-		this.client = AmazonSNSAsyncClientBuilder.standard()
-				.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(serviceEndpoint, signingRegion))
-				.build();
+		// Only configure custom endpoint if both serviceEndpoint and signingRegion are provided
+		if (serviceEndpoint != null && !serviceEndpoint.trim().isEmpty() && 
+			signingRegion != null && !signingRegion.trim().isEmpty()) {
+			this.client = AmazonSNSAsyncClientBuilder.standard()
+					.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(serviceEndpoint, signingRegion))
+					.build();
+		} else {
+			// Use default client configuration when endpoint parameters are not provided
+			this.client = AmazonSNSAsyncClientBuilder.defaultClient();
+		}
 	}
 
 	public void setClient(AmazonSNSAsync client) {
