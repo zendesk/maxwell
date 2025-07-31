@@ -1,5 +1,139 @@
 # Maxwell changelog
 
+### [v1.44.0](https://github.com/zendesk/maxwell/releases/tag/v1.44.0)
+
+- Quite a few dependency upgrades
+
+
+
+_Released 2025-06-25_
+
+### [v1.43.2](https://github.com/zendesk/maxwell/releases/tag/v1.43.2)
+
+- fix more dependency issues in 1.43.1
+- fix parsing error for mysql heatwave
+
+
+
+_Released 2025-03-12_
+
+### [v1.43.1](https://github.com/zendesk/maxwell/releases/tag/v1.43.1)
+
+- fix kafka breakage
+
+
+
+_Released 2025-03-05_
+
+### [v1.42.3](https://github.com/zendesk/maxwell/releases/tag/v1.42.3)
+
+- Pull in an updated binlog-connector-java, notably fixing a major
+  problem with mariadb GTIDs
+
+
+
+_Released 2025-01-18_
+
+### [v1.42.2](https://github.com/zendesk/maxwell/releases/tag/v1.42.2)
+
+- update jdk on docker image
+- support rabbitmq + SSL
+- small fixes for latest maria
+- get tests running under mysql 8.4
+- remove Kinesis internal TTL, see #2147 for details
+- support bootstrapping from a replica that doesn't contain the maxwell database
+
+
+
+_Released 2025-01-09_
+
+### [v1.42.1](https://github.com/zendesk/maxwell/releases/tag/v1.42.1)
+
+- bugfix for 1.42.0, mysql 8.0.x and "SHOW BINARY LOG STATUS"
+
+
+
+_Released 2024-12-21_
+
+### [v1.42.0](https://github.com/zendesk/maxwell/releases/tag/v1.42.0)
+
+- initial support for mysql 8.4
+- support partitioning for sns and sqs
+- bugfix for maria
+
+
+
+_Released 2024-12-17_
+
+### [v1.41.2](https://github.com/zendesk/maxwell/releases/tag/v1.41.2)
+
+- Owen Derby is the Nick Clarke of Maxwell parser bugs
+
+
+
+_Released 2024-06-05_
+
+### [v1.41.1](https://github.com/zendesk/maxwell/releases/tag/v1.41.1)
+
+- fix 2 parser issues, one mariadb and one "tablespace" specific
+- upgrade lz4 dep for security
+
+
+
+_Released 2024-03-24_
+
+### [v1.41.0](https://github.com/zendesk/maxwell/releases/tag/v1.41.0)
+
+- javascript filters are now passed a second, optional dicionary
+  argument which persists between filter invocations.
+
+
+
+_Released 2023-11-30_
+
+### [v1.40.6](https://github.com/zendesk/maxwell/releases/tag/v1.40.6)
+
+- fix 2 parser bugs
+- upgrade jackson for security
+
+
+
+_Released 2023-11-04_
+
+### [v1.40.5](https://github.com/zendesk/maxwell/releases/tag/v1.40.5)
+
+- Fix a bug introduced in v1.40.2 in the kafka producer.
+
+
+
+_Released 2023-09-09_
+
+### [v1.40.4](https://github.com/zendesk/maxwell/releases/tag/v1.40.4)
+
+- add support for mariadb's DROP COLUMN IF EXISTS
+
+
+
+_Released 2023-09-01_
+
+### [v1.40.3](https://github.com/zendesk/maxwell/releases/tag/v1.40.3)
+
+- bugfix for "rename tables"
+- bugfix for temporary tables that rollback inside transactions
+- sns+localstack support
+
+
+
+_Released 2023-08-27_
+
+### [v1.40.2](https://github.com/zendesk/maxwell/releases/tag/v1.40.2)
+
+- fix dumb bug in last release
+
+
+
+_Released 2023-06-11_
+
 ### [v1.40.0](https://github.com/zendesk/maxwell/releases/tag/v1.40.0)
 
 - add kafka 3.4.0

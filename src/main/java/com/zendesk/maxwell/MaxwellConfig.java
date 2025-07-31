@@ -555,6 +555,10 @@ public class MaxwellConfig extends AbstractConfig {
 	 */
 	public boolean rabbitmqDeclareExchange;
 
+	/**
+	 * {@link com.zendesk.maxwell.producer.RabbitmqProducer} use SSL
+	 */
+	public boolean rabbitmqUseSSL;
 
 	/**
 	 * {@link com.zendesk.maxwell.producer.NatsProducer} URL
@@ -779,14 +783,16 @@ public class MaxwellConfig extends AbstractConfig {
 			.withOptionalArg().ofType(Boolean.class);
 		parser.accepts( "output_push_timestamp", "include a microsecond timestamp representing when Maxwell sent a record. default: false" )
 			.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "output_naming_strategy", "optionally use an alternate name for fields: underscore_to_camelcase" )
+			.withOptionalArg().ofType(String.class);
 		parser.accepts( "exclude_columns", "suppress these comma-separated columns from output" )
 			.withRequiredArg();
 		parser.accepts("secret_key", "The secret key for the AES encryption" )
 			.withRequiredArg();
 		parser.accepts("encrypt", "encryption mode: [none|data|all]. default: none" )
 			.withRequiredArg();
-		parser.accepts( "row_query_max_length", "truncates the 'query' field if it is above this length. default: false" )
-			.withOptionalArg().ofType(Boolean.class);
+		parser.accepts( "row_query_max_length", "truncates the 'query' field if it is above this length. default: 0 (disabled)" )
+			.withOptionalArg().ofType(Integer.class);
 
 		parser.section( "filtering" );
 
@@ -866,7 +872,7 @@ public class MaxwellConfig extends AbstractConfig {
 
 		parser.separator();
 
-		parser.accepts( "kafka_version", "kafka client library version: 0.8.2.2|0.9.0.1|0.10.0.1|0.10.2.1|0.11.0.1|1.0.0")
+		parser.accepts( "kafka_version", "kafka client library version: 0.8.2.2|0.9.0.1|0.10.0.1|0.10.2.1|0.11.0.1|1.0.0|2.7.0|3.4.0|3.7.1")
 				.withRequiredArg();
 		parser.accepts( "kafka_key_format", "how to format the kafka key; array|hash" )
 				.withRequiredArg();
@@ -968,6 +974,7 @@ public class MaxwellConfig extends AbstractConfig {
 		parser.accepts( "rabbitmq_routing_key_template", "A string template for the routing key, '%db%' and '%table%' will be substituted. Default is '%db%.%table%'." ).withRequiredArg();
 		parser.accepts( "rabbitmq_message_persistent", "Message persistence. Defaults to false" ).withOptionalArg();
 		parser.accepts( "rabbitmq_declare_exchange", "Should declare the exchange for rabbitmq publisher. Defaults to true" ).withOptionalArg();
+		parser.accepts( "rabbitmq_use_ssl", "If true, will connect to the server using SSL. Defaults to false" ).withOptionalArg();
 
 		parser.section( "redis" );
 
@@ -1120,6 +1127,7 @@ public class MaxwellConfig extends AbstractConfig {
 		this.rabbitmqRoutingKeyTemplate   	= fetchStringOption("rabbitmq_routing_key_template", options, properties, "%db%.%table%");
 		this.rabbitmqMessagePersistent    	= fetchBooleanOption("rabbitmq_message_persistent", options, properties, false);
 		this.rabbitmqDeclareExchange		= fetchBooleanOption("rabbitmq_declare_exchange", options, properties, true);
+		this.rabbitmqUseSSL			= fetchBooleanOption("rabbitmq_use_ssl", options, properties, false);
 
 		this.natsUrl			= fetchStringOption("nats_url", options, properties, "nats://localhost:4222");
 		this.natsSubject		= fetchStringOption("nats_subject", options, properties, "%{database}.%{table}");

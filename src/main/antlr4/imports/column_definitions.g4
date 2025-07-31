@@ -90,11 +90,12 @@ column_options:
 	| COMMENT string_literal
 	| COLUMN_FORMAT (FIXED|DYNAMIC|COMPRESSED|DEFAULT)
 	| STORAGE (DISK|MEMORY|DEFAULT)
-	| (VIRTUAL | STORED)
+	| (VIRTUAL | PERSISTENT | STORED)
 	| (GENERATED ALWAYS)? AS skip_parens
 	| reference_definition
 	| CHECK skip_parens
 	| SRID INTEGER_LITERAL
+	| NOT SECONDARY
 ;
 
 primary_key: PRIMARY KEY;

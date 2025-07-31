@@ -1,9 +1,6 @@
 # Kafka
 ***
 
-The Kafka producer is perhaps the most production hardened of all the producers,
-having run on high traffic instances at WEB scale.
-
 ## Topic
 Maxwell writes to a kafka topic named "maxwell" by default. It is configurable
 via `--kafka_topic`.  The given topic can be a plain string or a dynamic
@@ -74,10 +71,10 @@ as a source of truth.
 # Partitioning
 ***
 
-Both Kafka and AWS Kinesis support the notion of partitioned streams.
+Kafka, AWS Kinesis/SNS/SQS support the notion of partitioned streams.
 Because they like to make our lives hard, Kafka calls its two units "topics"
-and "partitions", and Kinesis calls them "streams" and "shards.  They're the
-same thing, though.  Maxwell is generally configured to write to N
+and "partitions", Kinesis calls them "streams" and "shards", and SNS/SQS calls them "group id". 
+They're the same thing, though.  Maxwell is generally configured to write to N
 partitions/shards on one topic/stream, and how it distributes to those N
 partitions/shards can be controlled by `producer_partition_by`.
 
@@ -311,6 +308,7 @@ The remaining configurable properties are:
     - This config controls the routing key, where `%db%` and `%table%` are placeholders that will be substituted at runtime
 - `rabbitmq_message_persistent` - defaults to **false**
 - `rabbitmq_declare_exchange` - defaults to **true**
+- `rabbitmq_use_ssl` - defaults to **false**
 
 For more details on these options, you are encouraged to the read official RabbitMQ documentation here: [https://www.rabbitmq.com/documentation.html](https://www.rabbitmq.com/documentation.html)
 

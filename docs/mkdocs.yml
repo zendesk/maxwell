@@ -6,7 +6,7 @@ extra_css:
   - maxwell.css
 nav:
   - 'Quick Start': 'quickstart.md'
-  - 'Configuration':
+  - 'Documentation':
     - 'Reference': 'config.md'
     - 'Deployment': 'deployment.md'
     - 'Producers': 'producers.md'

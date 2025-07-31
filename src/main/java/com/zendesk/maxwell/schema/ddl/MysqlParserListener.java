@@ -199,7 +199,7 @@ public class MysqlParserListener extends mysqlBaseListener {
 	@Override
 	public void exitDrop_column(mysqlParser.Drop_columnContext ctx) {
 		String colName = ctx.full_column_name().col_name.getText();
-		alterStatement().columnMods.add(new RemoveColumnMod(unquote(colName)));
+		alterStatement().columnMods.add(new RemoveColumnMod(unquote(colName), ctx.if_exists() != null));
 	}
 	@Override
 	public void exitCol_position(mysqlParser.Col_positionContext ctx) {

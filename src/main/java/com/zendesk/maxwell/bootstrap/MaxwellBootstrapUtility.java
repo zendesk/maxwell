@@ -13,6 +13,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+/**
+ * MaxwellBootstrapUtility is a command line utility that launches and monitors the progress of bootstrapping.
+ * The actual work of bootstrapping is done in the main maxwell server process.
+ */
 public class MaxwellBootstrapUtility {
 	static final Logger LOGGER = LoggerFactory.getLogger(MaxwellBootstrapUtility.class);
 	protected class MissingBootstrapRowException extends Exception {

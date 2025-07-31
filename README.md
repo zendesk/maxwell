@@ -3,7 +3,7 @@ that reads MySQL binlogs and writes data changes as JSON to Kafka, Kinesis, and 
 
 
 
-[↓ Download](https://github.com/zendesk/maxwell/releases/download/v1.40.0/maxwell-1.40.0.tar.gz) \|
+[↓ Download](https://github.com/zendesk/maxwell/releases/download/v1.44.0/maxwell-1.44.0.tar.gz) \|
 [⚝ Source / Community](https://github.com/zendesk/maxwell) \|
 [☝ Getting Started](/quickstart) \|
 [☷ Reference](/config)
@@ -25,7 +25,7 @@ __It goes like this:__
   {
     "database": "test",
     "table": "maxwell",
-    "type": "insert",
+    "type": "update",
     "ts": 1449786310,
     "data": { "id":1, "daemon": "Stanislaw Lem", "mycol": 55 },
     "old": { "mycol":, 23, "daemon": "what once was" }

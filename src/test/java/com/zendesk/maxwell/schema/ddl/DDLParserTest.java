@@ -266,7 +266,17 @@ public class DDLParserTest {
 			"ALTER TABLE tournaments ADD INDEX idx_team_name (('$.teams.name'))",
 			"ALTER TABLE tournaments ADD INDEX idx_team_name ((ABS(col)))",
 			"ALTER TABLE tournaments ADD INDEX idx_team_name ((col1 * 40) DESC)",
-			"CREATE TABLE employees (data JSON, INDEX idx ((CAST(data->>'$.name' AS CHAR(30)) COLLATE utf8mb4_bin)))"
+			"CREATE TABLE employees (data JSON, INDEX idx ((CAST(data->>'$.name' AS CHAR(30)) COLLATE utf8mb4_bin)))",
+			"ALTER TABLE tasks DROP COLUMN IF EXISTS snoozed_until",
+			"ALTER TABLE outgoing_notifications_log ADD INDEX idx_campaign_updated (campaign, last_updated_at) ALGORITHM=NOCOPY,LOCK=NONE",
+			"alter table test.c ALGORITHM=COPY, STATS_SAMPLE_PAGES=DEFAULT",
+			"ALTER TABLE vehicles " +
+				"DROP INDEX IF EXISTS uq_vehicles_oem_id_oem_vin," +
+				"ALGORITHM=NOCOPY, LOCK=NONE",
+			"ALTER TABLE foo drop foreign key if exists foobar",
+			"ALTER TABLE table_foo WAIT 30 ADD COLUMN my_column INTEGER, ALGORITHM=INSTANT, LOCK=NONE",
+			"ALTER TABLE dialog360_conversations MODIFY COLUMN IF EXISTS phone_number varchar(20) DEFAULT ‘’",
+			"ALTER TABLE test_table MODIFY COLUMN notes text NOT SECONDARY"
 		};
 
 		for ( String s : testSQL ) {
