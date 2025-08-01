@@ -46,11 +46,6 @@ jobs:
           restore-keys: |
             dependency-cache-
 
-      - name: Install libnuma1
-        run: |
-          apt-get update
-          apt-get install -y libnuma1
-
       - name: Run Maven tests
         run: mvn test -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
 
