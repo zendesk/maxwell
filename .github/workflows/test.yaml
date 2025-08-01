@@ -2,13 +2,13 @@ name: CI
 
 on:
   push:
-    branches-ignore: [gh-pages]
+    branches: [master]
   pull_request:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: cimg/openjdk:21.0
+    container: cimg/openjdk:22.0
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
