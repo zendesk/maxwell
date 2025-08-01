@@ -26,7 +26,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    container: cimg/openjdk:21.0
+    container: cimg/openjdk:22.0
     needs: build
     strategy:
       matrix:
