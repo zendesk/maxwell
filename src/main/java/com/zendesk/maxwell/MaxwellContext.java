@@ -529,7 +529,7 @@ public class MaxwellContext {
 				this.producer = new MaxwellSQSProducer(this, this.config.sqsQueueUri, this.config.sqsServiceEndpoint, this.config.sqsSigningRegion);
 				break;
 			case "sns":
-				this.producer = new MaxwellSNSProducer(this, this.config.snsTopic);
+				this.producer = new MaxwellSNSProducer(this, this.config.snsTopic, this.config.snsServiceEndpoint, this.config.snsSigningRegion);
 				break;
 			case "nats":
 				this.producer = new NatsProducer(this);

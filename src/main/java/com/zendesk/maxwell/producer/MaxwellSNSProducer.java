@@ -1,5 +1,8 @@
 package com.zendesk.maxwell.producer;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.handlers.AsyncHandler;
 import com.amazonaws.services.sns.AmazonSNSAsync;
 import com.amazonaws.services.sns.AmazonSNSAsyncClientBuilder;
@@ -25,10 +28,20 @@ public class MaxwellSNSProducer extends AbstractAsyncProducer {
 	private String[] numberFields = {"ts", "xid"};
 	private MaxwellSNSPartitioner partitioner;
 
-	public MaxwellSNSProducer(MaxwellContext context, String topic) {
+	public MaxwellSNSProducer(MaxwellContext context, String topic, String serviceEndpoint, String signingRegion) {
 		super(context);
 		this.topic = topic;
-		this.client = AmazonSNSAsyncClientBuilder.defaultClient();
+
+		// Only configure custom endpoint if both serviceEndpoint and signingRegion are provided
+		if (serviceEndpoint != null && !serviceEndpoint.trim().isEmpty() &&
+			signingRegion != null && !signingRegion.trim().isEmpty()) {
+			this.client = AmazonSNSAsyncClientBuilder.standard()
+					.withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(serviceEndpoint, signingRegion))
+					.build();
+		} else {
+			// Use default client configuration when endpoint parameters are not provided
+			this.client = AmazonSNSAsyncClientBuilder.defaultClient();
+		}
 		String partitionKey = context.getConfig().producerPartitionKey;
 		String partitionColumns = context.getConfig().producerPartitionColumns;
 		String partitionFallback = context.getConfig().producerPartitionFallback;

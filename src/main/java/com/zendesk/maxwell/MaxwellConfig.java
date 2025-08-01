@@ -213,6 +213,16 @@ public class MaxwellConfig extends AbstractConfig {
 	public String snsAttrs;
 
 	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellSQSProducer} Queue Service Endpoint URL
+	 */
+	public String snsServiceEndpoint;
+
+	/**
+	 * {@link com.zendesk.maxwell.producer.MaxwellSQSProducer} Queue Signing region
+	 */
+	public String snsSigningRegion;
+
+	/**
 	 * {@link com.zendesk.maxwell.producer.MaxwellPubsubProducer} project id
 	 */
 	public String pubsubProjectId;
@@ -893,6 +903,11 @@ public class MaxwellConfig extends AbstractConfig {
 				.withOptionalArg();
 		parser.separator();
 
+		parser.accepts( "sns_service_endpoint", "SNS Service Endpoint" )
+				.withRequiredArg();
+		parser.accepts( "sns_signing_region", "SNS Signing region" )
+				.withRequiredArg();
+
 		parser.addToSection("producer_partition_by");
 		parser.addToSection("producer_partition_columns");
 		parser.addToSection("producer_partition_by_fallback");
@@ -1163,6 +1178,10 @@ public class MaxwellConfig extends AbstractConfig {
 
 		this.snsTopic = fetchStringOption("sns_topic", options, properties, null);
 		this.snsAttrs = fetchStringOption("sns_attrs", options, properties, null);
+
+		this.snsServiceEndpoint = fetchStringOption("sns_service_endpoint", options, properties, null);
+		this.snsSigningRegion = fetchStringOption("sns_signing_region", options, properties, null);
+
 		this.outputFile = fetchStringOption("output_file", options, properties, null);
 
 		this.metricsPrefix = fetchStringOption("metrics_prefix", options, properties, "MaxwellMetrics");
