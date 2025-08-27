@@ -2,12 +2,12 @@ package com.zendesk.maxwell.producer;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
-import com.amazonaws.services.kinesis.producer.IrrecoverableError;
 import com.zendesk.maxwell.MaxwellConfig;
 import com.zendesk.maxwell.MaxwellContext;
 import com.zendesk.maxwell.replication.BinlogPosition;
 import com.zendesk.maxwell.replication.Position;
 import org.junit.Test;
+import software.amazon.kinesis.producer.IrrecoverableError;
 
 import static org.mockito.Mockito.*;
 
