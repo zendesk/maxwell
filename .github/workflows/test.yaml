@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: cimg/openjdk:22.0
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Restore Maven cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: dependency-cache-${{ hashFiles('pom.xml') }}
+          restore-keys: |
+            dependency-cache-
+
+      - name: Download Maven dependencies
+        run: mvn dependency:go-offline
+
+  test:
+    runs-on: ubuntu-latest
+    container: cimg/openjdk:22.0
+    needs: build
+    strategy:
+      matrix:
+        mysql-version: [5.5, 5.7, 8.4, mariadb]
+    env:
+      JAVA_TOOL_OPTIONS: -Xmx250m
+      MYSQL_VERSION: ${{ matrix.mysql-version }}
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Restore Maven cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: dependency-cache-${{ hashFiles('pom.xml') }}
+          restore-keys: |
+            dependency-cache-
+
+      - name: Run Maven tests
+        run: mvn test -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn
+
+      - name: Upload test log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-log-${{ matrix.mysql-version }}
+          path: test.log

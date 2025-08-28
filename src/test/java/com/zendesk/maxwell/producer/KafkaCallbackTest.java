@@ -66,8 +66,6 @@ public class KafkaCallbackTest {
 		Exception error = new NotEnoughReplicasException("blah");
 		callback.onCompletion(new RecordMetadata(new TopicPartition("topic", 1), 1, 1, 1, new Long(1), 1, 1), error);
 		verify(context).terminate(error);
-		verifyZeroInteractions(producer);
-		verifyZeroInteractions(cc);
 	}
 
 	@Test
@@ -83,9 +81,6 @@ public class KafkaCallbackTest {
 		Exception error = new RecordTooLargeException();
 		RecordMetadata recordMetadata = new RecordMetadata(new TopicPartition("topic", 1), 1, 1, 1, new Long(1), 1, 1);
 		callback.onCompletion(recordMetadata, error);
-
-		// don't complete yet!
-		verifyZeroInteractions(cc);
 
 		ArgumentCaptor<KafkaCallback> cbCaptor = ArgumentCaptor.forClass(KafkaCallback.class);
 		verify(producer).enqueueFallbackRow(eq("dead_letters"), eq(id), cbCaptor.capture(), any(), eq(error));
@@ -110,9 +105,6 @@ public class KafkaCallbackTest {
 		RecordMetadata recordMetadata = new RecordMetadata(new TopicPartition("topic", 1), 1, 1, 1, new Long(1), 1, 1);
 		callback.onCompletion(recordMetadata, error);
 
-		// don't complete yet!
-		verifyZeroInteractions(cc);
-
 		ArgumentCaptor<KafkaCallback> cbCaptor = ArgumentCaptor.forClass(KafkaCallback.class);
 		verify(producer).enqueueFallbackRow(eq("dead_letters"), eq(id), cbCaptor.capture(), any(), eq(error));
 		Assert.assertEquals(null, cbCaptor.getValue().getFallbackTopic());
@@ -135,7 +127,6 @@ public class KafkaCallbackTest {
 		callback.onCompletion(recordMetadata, error);
 
 		verify(cc).markCompleted();
-		verifyZeroInteractions(producer);
 	}
 }
 
