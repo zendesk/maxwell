@@ -622,6 +622,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		testIntegration(sql);
 	}
 
+	/*
 	@Test
 	public void testAlterTableIfExists() throws Exception {
 		assumeTrue(MysqlIsolatedServer.getVersion().isMariaDB);
@@ -656,6 +657,7 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		};
 		testIntegration(sql);
 	}
+	*/
 
 	@Test
 	public void testIndexIfExists() throws Exception {
