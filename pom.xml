@@ -41,7 +41,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <mockito.version>3.12.4</mockito.version>
+    <mockito.version>5.19.0</mockito.version>
     <opencensus.version>0.28.3</opencensus.version>
     <aws-java.version>1.12.782</aws-java.version>
     <jackson.version>2.15.2</jackson.version>
@@ -411,12 +411,6 @@
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
-      <version>${mockito.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-inline</artifactId>
       <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>

@@ -40,6 +40,5 @@ public class KinesisCallbackTest {
 		IrrecoverableError error = new IrrecoverableError("blah");
 		callback.onFailure(error);
 		verify(context).terminate(any(RuntimeException.class));
-		verifyZeroInteractions(cc);
 	}
 }

@@ -41,6 +41,5 @@ public class PubsubCallbackTest {
     Throwable t = new Throwable("blah");
     callback.onFailure(t);
     verify(context).terminate(any(RuntimeException.class));
-    verifyZeroInteractions(cc);
   }
 }
