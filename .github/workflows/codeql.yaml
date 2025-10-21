@@ -1,0 +1,19 @@
+name: "CodeQL public repository scanning"
+
+on:
+  push:
+  schedule:
+    - cron: "0 0 * * *"
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+  packages: read
+
+jobs:
+  trigger-codeql:
+    uses: zendesk/prodsec-code-scanning/.github/workflows/codeql_advanced_shared.yml@production
