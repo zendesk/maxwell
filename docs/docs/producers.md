@@ -294,6 +294,8 @@ This producer is using the Default Stream with at-least once semantics for great
 ***
 To produce messages to RabbitMQ, you will need to specify a host in `config.properties` with `rabbitmq_host`. This is the only required property, everything else falls back to a sane default.
 
+`rabbitmq_routing_key_template` defaults to "%{database}.%{table}" and supports [topic substitution](#topic-substitution)
+
 The remaining configurable properties are:
 
 - `rabbitmq_user` - defaults to **guest**
@@ -304,8 +306,7 @@ The remaining configurable properties are:
 - `rabbitmq_exchange_type` - defaults to **fanout**
 - `rabbitmq_exchange_durable` - defaults to **false**
 - `rabbitmq_exchange_autodelete` - defaults to **false**
-- `rabbitmq_routing_key_template` - defaults to **%db%.%table%**
-    - This config controls the routing key, where `%db%` and `%table%` are placeholders that will be substituted at runtime
+- `rabbitmq_routing_key_template` - defaults to **%{database}.%{table}**
 - `rabbitmq_message_persistent` - defaults to **false**
 - `rabbitmq_declare_exchange` - defaults to **true**
 - `rabbitmq_use_ssl` - defaults to **false**
@@ -357,5 +358,6 @@ Topic substituion is available in the following producers:
 - Kakfa, for topics
 - Redis, for channels
 - Nats, for subject heirarchies
+- Rabbitmq, for routing key
 
 
