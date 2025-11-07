@@ -2,6 +2,9 @@ name: "CodeQL public repository scanning"
 
 on:
   push:
+    branches:
+      - main
+      - master
   schedule:
     - cron: "0 0 * * *"
   pull_request_target:
