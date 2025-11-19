@@ -31,8 +31,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.net.SocketException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
@@ -179,6 +186,10 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		/* setup binlog client */
 		this.client = new BinaryLogClient(mysqlConfig.host, mysqlConfig.port, mysqlConfig.user, mysqlConfig.password);
 		this.client.setSSLMode(mysqlConfig.sslMode);
+
+		// Configure Cloud SQL socket factory if specified
+		configureCloudSQLSocketFactory(this.client, mysqlConfig);
+
 		this.client.setUseSendAnnotateRowsEvent(true);
 
 
@@ -800,5 +811,248 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		this.isConnected = false;
 	}
 
+	/**
+	 * Configure Cloud SQL socket factory for binlog replication if Cloud SQL is being used.
+	 * This allows binlog connections to use the same Cloud SQL connector as JDBC connections.
+	 */
+	private void configureCloudSQLSocketFactory(BinaryLogClient client, MaxwellMysqlConfig mysqlConfig) {
+		if (mysqlConfig.jdbcOptions == null) {
+			return;
+		}
+
+		String socketFactoryClass = mysqlConfig.jdbcOptions.get("socketFactory");
+		String cloudSqlInstance = mysqlConfig.jdbcOptions.get("cloudSqlInstance");
+		String enableIamAuth = mysqlConfig.jdbcOptions.get("enableIamAuth");
+
+		if (socketFactoryClass != null && socketFactoryClass.contains("cloud.sql") && cloudSqlInstance != null) {
+			LOGGER.info("Configuring Cloud SQL socket factory for binlog replication: " + cloudSqlInstance);
+			try {
+				// Create a custom socket factory that wraps the Cloud SQL socket factory
+				com.github.shyiko.mysql.binlog.network.SocketFactory cloudSqlSocketFactory = new com.github.shyiko.mysql.binlog.network.SocketFactory() {
+					private final com.google.cloud.sql.mysql.SocketFactory delegate = new com.google.cloud.sql.mysql.SocketFactory();
+
+					@Override
+					public Socket createSocket() throws SocketException {
+						// Set Cloud SQL connection properties and use the delegate to create the socket
+						Properties props = new Properties();
+						props.setProperty("cloudSqlInstance", cloudSqlInstance);
+						if ("true".equals(enableIamAuth)) {
+							props.setProperty("enableIamAuth", "true");
+						}
+						// Call the delegate's JDBC connect method which returns a Socket
+						try {
+							Socket connectedSocket = delegate.connect("unused", 3306, props, 10000);
+						// Wrap the already-connected socket to handle BinaryLogClient's connect() calls
+						return new ConnectedSocketWrapper(connectedSocket);
+						} catch (IOException e) {
+							throw new SocketException("Failed to create Cloud SQL socket: " + e.getMessage());
+						} catch (InterruptedException e) {
+							Thread.currentThread().interrupt();
+							throw new SocketException("Interrupted while creating Cloud SQL socket: " + e.getMessage());
+						}
+					}
+				};
+
+				client.setSocketFactory(cloudSqlSocketFactory);
+				LOGGER.info("Cloud SQL socket factory configured successfully for binlog replication");
+			} catch (Exception e) {
+				LOGGER.error("Failed to configure Cloud SQL socket factory for binlog replication", e);
+				throw new RuntimeException("Failed to configure Cloud SQL socket factory", e);
+			}
+		}
+	}
+
+	/**
+	 * Wrapper for an already-connected socket that ignores connect() calls.
+	 * The Cloud SQL socket factory returns already-connected sockets, but BinaryLogClient
+	 * expects to call connect() on the socket itself. This wrapper makes connect() a no-op.
+	 */
+	private static class ConnectedSocketWrapper extends Socket {
+		private final Socket delegate;
+
+		ConnectedSocketWrapper(Socket connectedSocket) {
+			this.delegate = connectedSocket;
+		}
+
+		@Override
+		public void connect(SocketAddress endpoint) throws IOException {
+			// No-op: socket is already connected
+		}
+
+		@Override
+		public void connect(SocketAddress endpoint, int timeout) throws IOException {
+			// No-op: socket is already connected
+		}
+
+		@Override
+		public void bind(SocketAddress bindpoint) throws IOException {
+			// No-op: socket is already bound
+		}
+
+		@Override
+		public InetAddress getInetAddress() {
+			return delegate.getInetAddress();
+		}
+
+		@Override
+		public InetAddress getLocalAddress() {
+			return delegate.getLocalAddress();
+		}
+
+		@Override
+		public int getPort() {
+			return delegate.getPort();
+		}
+
+		@Override
+		public int getLocalPort() {
+			return delegate.getLocalPort();
+		}
+
+		@Override
+		public SocketAddress getRemoteSocketAddress() {
+			return delegate.getRemoteSocketAddress();
+		}
+
+		@Override
+		public SocketAddress getLocalSocketAddress() {
+			return delegate.getLocalSocketAddress();
+		}
+
+		@Override
+		public InputStream getInputStream() throws IOException {
+			return delegate.getInputStream();
+		}
+
+		@Override
+		public OutputStream getOutputStream() throws IOException {
+			return delegate.getOutputStream();
+		}
+
+		@Override
+		public void setTcpNoDelay(boolean on) throws SocketException {
+			delegate.setTcpNoDelay(on);
+		}
+
+		@Override
+		public boolean getTcpNoDelay() throws SocketException {
+			return delegate.getTcpNoDelay();
+		}
+
+		@Override
+		public void setSoLinger(boolean on, int linger) throws SocketException {
+			delegate.setSoLinger(on, linger);
+		}
+
+		@Override
+		public int getSoLinger() throws SocketException {
+			return delegate.getSoLinger();
+		}
+
+		@Override
+		public void setSoTimeout(int timeout) throws SocketException {
+			delegate.setSoTimeout(timeout);
+		}
+
+		@Override
+		public int getSoTimeout() throws SocketException {
+			return delegate.getSoTimeout();
+		}
+
+		@Override
+		public void setSendBufferSize(int size) throws SocketException {
+			delegate.setSendBufferSize(size);
+		}
+
+		@Override
+		public int getSendBufferSize() throws SocketException {
+			return delegate.getSendBufferSize();
+		}
+
+		@Override
+		public void setReceiveBufferSize(int size) throws SocketException {
+			delegate.setReceiveBufferSize(size);
+		}
+
+		@Override
+		public int getReceiveBufferSize() throws SocketException {
+			return delegate.getReceiveBufferSize();
+		}
+
+		@Override
+		public void setKeepAlive(boolean on) throws SocketException {
+			delegate.setKeepAlive(on);
+		}
+
+		@Override
+		public boolean getKeepAlive() throws SocketException {
+			return delegate.getKeepAlive();
+		}
+
+		@Override
+		public void setTrafficClass(int tc) throws SocketException {
+			delegate.setTrafficClass(tc);
+		}
+
+		@Override
+		public int getTrafficClass() throws SocketException {
+			return delegate.getTrafficClass();
+		}
+
+		@Override
+		public void setReuseAddress(boolean on) throws SocketException {
+			delegate.setReuseAddress(on);
+		}
+
+		@Override
+		public boolean getReuseAddress() throws SocketException {
+			return delegate.getReuseAddress();
+		}
+
+		@Override
+		public void close() throws IOException {
+			delegate.close();
+		}
+
+		@Override
+		public void shutdownInput() throws IOException {
+			delegate.shutdownInput();
+		}
+
+		@Override
+		public void shutdownOutput() throws IOException {
+			delegate.shutdownOutput();
+		}
+
+		@Override
+		public boolean isConnected() {
+			return delegate.isConnected();
+		}
+
+		@Override
+		public boolean isBound() {
+			return delegate.isBound();
+		}
+
+		@Override
+		public boolean isClosed() {
+			return delegate.isClosed();
+		}
+
+		@Override
+		public boolean isInputShutdown() {
+			return delegate.isInputShutdown();
+		}
+
+		@Override
+		public boolean isOutputShutdown() {
+			return delegate.isOutputShutdown();
+		}
+
+		@Override
+		public void setPerformancePreferences(int connectionTime, int latency, int bandwidth) {
+			delegate.setPerformancePreferences(connectionTime, latency, bandwidth);
+		}
+	}
 
 }
