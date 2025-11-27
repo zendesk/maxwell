@@ -49,10 +49,11 @@ public class MysqlPositionStore {
 				+ "binlog_file = ?, "
 				+ "binlog_position = ?, "
 				+ "last_heartbeat_read = ?, "
-				+ "client_id = ? "
+				+ "client_id = ?, "
+				+ "tx_offset = ? "
 				+ "ON DUPLICATE KEY UPDATE "
 				+ "last_heartbeat_read = ?, "
-				+ "gtid_set = ?, binlog_file = ?, binlog_position=?";
+				+ "gtid_set = ?, binlog_file = ?, binlog_position = ?, tx_offset = ?";
 
 		BinlogPosition binlogPosition = newPosition.getBinlogPosition();
 		connectionPool.withSQLRetry(1, (c) -> {
@@ -65,10 +66,12 @@ public class MysqlPositionStore {
 				s.setLong(4, binlogPosition.getOffset());
 				s.setLong(5, heartbeat);
 				s.setString(6, clientID);
-				s.setLong(7, heartbeat);
-				s.setString(8, binlogPosition.getGtidSetStr());
-				s.setString(9, binlogPosition.getFile());
-				s.setLong(10, binlogPosition.getOffset());
+				s.setLong(7, newPosition.getTXOffset());
+				s.setLong(8, heartbeat);
+				s.setString(9, binlogPosition.getGtidSetStr());
+				s.setString(10, binlogPosition.getFile());
+				s.setLong(11, binlogPosition.getOffset());
+				s.setLong(12, newPosition.getTXOffset());
 
 				s.execute();
 			}
@@ -173,7 +176,7 @@ public class MysqlPositionStore {
 			rs.getString("binlog_file")
 		);
 
-		return new Position(pos, rs.getLong("last_heartbeat_read"));
+		return new Position(pos, rs.getLong("last_heartbeat_read"), rs.getLong("tx_offset"));
 	}
 
 	public Position getLatestFromAnyClient() throws SQLException {
@@ -236,7 +239,7 @@ public class MysqlPositionStore {
 							BinlogPosition.at(gtid,
 									rs.getLong("binlog_position"),
 									rs.getString("binlog_file")
-							), rs.getLong("last_heartbeat_read"));
+							), rs.getLong("last_heartbeat_read"), 0L);
 
 					if ( rs.wasNull() ) {
 						LOGGER.warn("master recovery is ignoring position with NULL heartbeat");

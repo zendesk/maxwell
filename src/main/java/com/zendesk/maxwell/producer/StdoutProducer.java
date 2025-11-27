@@ -21,6 +21,7 @@ public class StdoutProducer extends AbstractProducer {
 			System.currentTimeMillis() - r.getTimestampMillis(),
 			TimeUnit.MILLISECONDS
 		);
+
 		this.context.setPosition(r);
 	}
 }

@@ -24,10 +24,10 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class InflightMessageListTest {
 	private static int capacity = 3;
-	private static Position p1 = new Position(BinlogPosition.at(1, "f"), 0L);
-	private static Position p2 = new Position(BinlogPosition.at(2, "f"), 0L);
-	private static Position p3 = new Position(BinlogPosition.at(3, "f"), 0L);
-	private static Position p4 = new Position(BinlogPosition.at(4, "f"), 0L);
+	private static Position p1 = new Position(BinlogPosition.at(1, "f"), 0L, 0L);
+	private static Position p2 = new Position(BinlogPosition.at(2, "f"), 0L, 0L);
+	private static Position p3 = new Position(BinlogPosition.at(3, "f"), 0L, 0L);
+	private static Position p4 = new Position(BinlogPosition.at(4, "f"), 0L, 0L);
 	private InflightMessageList list;
 	private MaxwellContext context;
 	@Captor

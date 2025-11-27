@@ -59,7 +59,7 @@ public class PositionStoreThread extends RunLoopProcess implements Runnable {
 	}
 
 	void storeFinalPosition() throws SQLException, DuplicateProcessException {
-		if ( position != null && !position.equals(storedPosition) ) {
+		if ( position != null && position.newerThan(storedPosition) ) {
 			LOGGER.info("Storing final position: " + position);
 			store.set(position);
 		}
@@ -94,6 +94,7 @@ public class PositionStoreThread extends RunLoopProcess implements Runnable {
 	public void work() throws Exception {
 		Position newPosition = position;
 
+		LOGGER.info("new: {}, old: {}", newPosition, storedPosition);
 		if ( newPosition != null && newPosition.newerThan(storedPosition) ) {
 			store.set(newPosition);
 			storedPosition = newPosition;
@@ -132,6 +133,11 @@ public class PositionStoreThread extends RunLoopProcess implements Runnable {
 		position = store.get();
 
 		return position;
+	}
+
+	@Override
+	public StopPriority getStopPriority() {
+		return StopPriority.SUPPORT; // position store stops late to flush final rows
 	}
 }
 

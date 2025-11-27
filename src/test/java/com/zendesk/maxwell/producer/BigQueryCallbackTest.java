@@ -45,7 +45,7 @@ public class BigQueryCallbackTest {
         ArrayBlockingQueue<RowMap> queue =  new ArrayBlockingQueue<RowMap>(100);
         MaxwellBigQueryProducerWorker producerWorker = new MaxwellBigQueryProducerWorker(context, queue,"myproject", "mydataset", "mytable");
         BigQueryCallback callback = new BigQueryCallback(producerWorker, appendContext, cc,
-                new Position(new BinlogPosition(1, "binlog-1"), 0L),
+                new Position(new BinlogPosition(1, "binlog-1"), 0L, 0L),
                 new Counter(), new Counter(), new Meter(), new Meter(), context);
         Throwable t = new Throwable("error");
         callback.onFailure(t);

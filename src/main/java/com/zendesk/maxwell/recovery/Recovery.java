@@ -56,7 +56,7 @@ public class Recovery {
 		List<BinlogPosition> list = getBinlogInfo();
 		for ( int i = list.size() - 1; i >= 0 ; i-- ) {
 			BinlogPosition binlogPosition = list.get(i);
-			Position position = Position.valueOf(binlogPosition, recoveryInfo.getHeartbeat());
+			Position position = Position.valueOf(binlogPosition, recoveryInfo.getHeartbeat(), 0L);
 			Metrics metrics = new NoOpMetrics();
 
 			LOGGER.debug("scanning binlog: {}", binlogPosition);
