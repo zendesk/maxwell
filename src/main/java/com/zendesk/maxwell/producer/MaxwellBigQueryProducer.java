@@ -28,6 +28,8 @@ import com.zendesk.maxwell.util.StoppableTaskState;
 import io.grpc.Status;
 import io.grpc.Status.Code;
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Phaser;
 import java.util.concurrent.TimeoutException;
@@ -219,7 +221,12 @@ class MaxwellBigQueryProducerWorker extends AbstractAsyncProducer implements Run
     BigQuery bigquery = BigQueryOptions.newBuilder().setProjectId(tName.getProject()).build().getService();
     Table table = bigquery.getTable(tName.getDataset(), tName.getTable());
     Schema schema = table.getDefinition().getSchema();
-    TableSchema tableSchema = BqToBqStorageSchemaConverter.convertTableSchema(schema);
+    // Filter out bq_inserted_at column from the schema
+    List<com.google.cloud.bigquery.Field> filteredFields = schema.getFields().stream()
+        .filter(field -> !"bq_inserted_at".equals(field.getName()))
+        .collect(Collectors.toList());
+    Schema filteredSchema = Schema.of(filteredFields);
+    TableSchema tableSchema = BqToBqStorageSchemaConverter.convertTableSchema(filteredSchema);
     streamWriter = JsonStreamWriter.newBuilder(tName.toString(), tableSchema).build();
   }
 
