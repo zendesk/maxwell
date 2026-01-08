@@ -40,6 +40,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Meter;
@@ -192,7 +193,12 @@ public class MaxwellBigQueryProducer extends AbstractProducer {
     BigQuery bigquery = BigQueryOptions.newBuilder().setProjectId(tName.getProject()).build().getService();
     Table table = bigquery.getTable(tName.getDataset(), tName.getTable());
     Schema schema = table.getDefinition().getSchema();
-    TableSchema tableSchema = BqToBqStorageSchemaConverter.convertTableSchema(schema);
+    // Filter out bq_inserted_at column from the schema
+    List<com.google.cloud.bigquery.Field> filteredFields = schema.getFields().stream()
+      .filter(field -> !"bq_inserted_at".equals(field.getName()))
+      .collect(Collectors.toList());
+    Schema filteredSchema = Schema.of(filteredFields);
+    TableSchema tableSchema = BqToBqStorageSchemaConverter.convertTableSchema(filteredSchema);
     return tableSchema;
   }
 
