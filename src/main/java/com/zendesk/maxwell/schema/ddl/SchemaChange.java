@@ -110,6 +110,9 @@ public abstract class SchemaChange {
 			return null;
 		}
 
+		// Strip SET STATEMENT ... FOR wrapper before parsing
+		sql = SET_STATEMENT.matcher(sql).replaceAll("");
+
 		while ( true ) {
 			try {
 				return parseSQL(currentDB, sql);

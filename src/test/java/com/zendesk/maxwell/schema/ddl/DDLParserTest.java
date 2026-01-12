@@ -327,6 +327,19 @@ public class DDLParserTest {
 	}
 
 	@Test
+	public void testSetStatementWithAlterTable() {
+		// Test that SET STATEMENT wrapper is properly stripped before parsing ALTER TABLE
+		String sql = "SET STATEMENT foreign_key_checks=0 FOR ALTER TABLE transaction " +
+			"ADD CONSTRAINT `fk_source_transaction_id` FOREIGN KEY (source_transaction_id) " +
+			"REFERENCES transaction (id)";
+		
+		List<SchemaChange> changes = SchemaChange.parse("test_db", sql);
+		assertThat(changes, is(notNullValue()));
+		assertThat(changes.size(), is(1));
+		assertThat(changes.get(0), instanceOf(TableAlter.class));
+	}
+
+	@Test
 	public void testChangeColumn() {
 		TableAlter a = parseAlter("alter table c CHANGE column `foo` bar int(20) unsigned default 'foo' not null");
 
