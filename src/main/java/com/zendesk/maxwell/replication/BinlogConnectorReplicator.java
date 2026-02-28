@@ -31,6 +31,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -80,6 +85,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 	private Histogram transactionExecutionTime;
 
 	private final Boolean gtidPositioning;
+	private final MaxwellMysqlConfig mysqlConfig;
 
 	private static Pattern createTablePattern =
 		Pattern.compile("^CREATE\\s+TABLE", Pattern.CASE_INSENSITIVE);
@@ -222,6 +228,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		this.client.setServerId(replicaServerID.intValue());
 
 		this.replicationReconnectionRetries = replicationReconnectionRetries;
+		this.mysqlConfig = mysqlConfig;
 	}
 
 	/**
@@ -499,6 +506,26 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 				// we like, so we don't have to bail out of the middle of an event.
 				LOGGER.warn("replicator stopped at position: {} -- restarting", client.getBinlogFilename() + ":" + client.getBinlogPosition());
 
+				// Check if the requested binlog file is still available before reconnecting
+				String currentBinlogFile = client.getBinlogFilename();
+				if (currentBinlogFile != null && !currentBinlogFile.isEmpty()) {
+					try {
+						if (!isBinlogFileAvailable(currentBinlogFile)) {
+							LOGGER.warn("Requested binlog file '{}' is not available. Attempting recovery.", currentBinlogFile);
+							if (attemptRecoverFromAvailableBinlogs()) {
+								LOGGER.info("Successfully recovered from available binlogs.");
+								throw new ClientReconnectedException();
+							} else {
+								LOGGER.error("Failed to recover from available binlogs.");
+								throw new Exception("Cannot recover: requested binlog file has been purged and no suitable replacement found.");
+							}
+						}
+					} catch (SQLException e) {
+						LOGGER.error("Error checking binlog file availability: {}", e.getMessage());
+						// Continue with normal reconnection attempt
+					}
+				}
+
 				Long oldMasterId = client.getMasterServerId();
 				tryReconnect();
 				if (client.getMasterServerId() != oldMasterId) {
@@ -509,7 +536,7 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		}
 	}
 
-	private void tryReconnect() throws TimeoutException {
+	private void tryReconnect() throws TimeoutException, Exception {
 		int reconnectionAttempts = 0;
 
 		while ((reconnectionAttempts += 1) <= this.replicationReconnectionRetries || this.replicationReconnectionRetries == 0) {
@@ -517,9 +544,106 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 				LOGGER.info(String.format("Reconnection attempt: %s of %s", reconnectionAttempts, replicationReconnectionRetries > 0 ? this.replicationReconnectionRetries : "unlimited"));
 				client.connect(5000);
 				return;
-			} catch (IOException | TimeoutException ignored) { }
+			} catch (IOException | TimeoutException e) {
+				// Check if this is a binlog file not found error (1236)
+				if (lastCommError != null && lastCommError.getErrorCode() == BAD_BINLOG_ERROR_CODE) {
+					LOGGER.warn("Detected binlog file not found error (1236). Attempting to recover from available binlogs.");
+					if (attemptRecoverFromAvailableBinlogs()) {
+						LOGGER.info("Successfully recovered from available binlogs.");
+						return;
+					} else {
+						LOGGER.error("Failed to recover from available binlogs.");
+						throw new Exception("Cannot recover: requested binlog file has been purged and no suitable replacement found.");
+					}
+				}
+			}
 		}
 		throw new TimeoutException("Maximum reconnection attempts reached.");
+	}
+
+	/**
+	 * Check if a binlog file is available on the server
+	 * @param binlogFile the binlog file name to check
+	 * @return true if the file exists, false otherwise
+	 * @throws SQLException if there's an error querying the server
+	 */
+	private boolean isBinlogFileAvailable(String binlogFile) throws SQLException {
+		try (Connection c = getReplicationConnection();
+		     Statement s = c.createStatement();
+		     ResultSet rs = s.executeQuery("SHOW BINARY LOGS")) {
+			while (rs.next()) {
+				if (rs.getString("Log_name").equals(binlogFile)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Get a list of available binlog files on the server
+	 * @return list of binlog file names, ordered from oldest to newest
+	 * @throws SQLException if there's an error querying the server
+	 */
+	private List<String> getAvailableBinlogFiles() throws SQLException {
+		List<String> binlogFiles = new ArrayList<>();
+		try (Connection c = getReplicationConnection();
+		     Statement s = c.createStatement();
+		     ResultSet rs = s.executeQuery("SHOW BINARY LOGS")) {
+			while (rs.next()) {
+				binlogFiles.add(rs.getString("Log_name"));
+			}
+		}
+		return binlogFiles;
+	}
+
+	/**
+	 * Attempt to recover from available binlog files when the requested binlog has been purged
+	 * @return true if recovery was successful, false otherwise
+	 * @throws Exception if there's an error during recovery
+	 */
+	private boolean attemptRecoverFromAvailableBinlogs() throws Exception {
+		String currentBinlogFile = client.getBinlogFilename();
+		LOGGER.warn("Requested binlog file '{}' is not available. Attempting recovery.", currentBinlogFile);
+
+		List<String> availableBinlogs = getAvailableBinlogFiles();
+
+		if (availableBinlogs.isEmpty()) {
+			LOGGER.error("No binlog files available on the server.");
+			return false;
+		}
+
+		// Get the oldest available binlog file
+		String oldestBinlog = availableBinlogs.get(0);
+		LOGGER.info("Oldest available binlog file: {}", oldestBinlog);
+
+		// Try to connect starting from the oldest available binlog
+		LOGGER.warn("Resetting position to oldest available binlog: {} at position 4", oldestBinlog);
+		client.setBinlogFilename(oldestBinlog);
+		client.setBinlogPosition(4L);
+
+		try {
+			client.connect(5000);
+			LOGGER.info("Successfully connected to binlog: {}", oldestBinlog);
+			lastCommError = null; // Clear the error
+			return true;
+		} catch (IOException | TimeoutException e) {
+			LOGGER.error("Failed to connect to binlog {}: {}", oldestBinlog, e.getMessage());
+			return false;
+		}
+	}
+
+	/**
+	 * Get a replication connection for querying binlog information
+	 * @return a connection to the replication server
+	 * @throws SQLException if connection fails
+	 */
+	private Connection getReplicationConnection() throws SQLException {
+		return java.sql.DriverManager.getConnection(
+			"jdbc:mysql://" + mysqlConfig.host + ":" + mysqlConfig.port + "/",
+			mysqlConfig.user,
+			mysqlConfig.password
+		);
 	}
 
 	/**
