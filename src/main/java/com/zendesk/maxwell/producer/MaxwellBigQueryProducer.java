@@ -220,11 +220,13 @@ class MaxwellBigQueryProducerWorker extends AbstractAsyncProducer implements Run
   private static final List<String> CLEARED_COLUMNS;
 
   static {
-    CLEARED_COLUMNS = List.of(
-      "dp_test.test_index_created.created_at",
-      "dp_test.test_index_created.updated_at",
-      "dp_test.test_index_both.created_at"
-    );
+    String envValue = System.getenv("cleared_columns");
+    if (envValue != null && !envValue.isEmpty()) {
+      String cleaned = envValue.replaceAll("\\s+", "");
+      CLEARED_COLUMNS = List.of(cleaned.split(","));
+    } else {
+      CLEARED_COLUMNS = List.of();
+    }
 
     Map<String, Map<String, Map<String, String>>> actions = new HashMap<>();
     // Format: database.table.column
