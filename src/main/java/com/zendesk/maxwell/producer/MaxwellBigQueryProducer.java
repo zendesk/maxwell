@@ -30,7 +30,10 @@ import io.grpc.Status;
 import io.grpc.Status.Code;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -213,6 +216,33 @@ class MaxwellBigQueryProducerWorker extends AbstractAsyncProducer implements Run
   // checked approximately, leave a buffer
   public static final long MAX_MESSAGE_SIZE_BYTES = 5_000_000;
 
+  private static final Map<String, Map<String, Map<String, String>>> COLUMN_ACTIONS;
+  private static final List<String> CLEARED_COLUMNS;
+
+  static {
+    CLEARED_COLUMNS = List.of(
+      "dp_test.test_index_created.created_at",
+      "dp_test.test_index_created.updated_at",
+      "dp_test.test_index_both.created_at"
+    );
+
+    Map<String, Map<String, Map<String, String>>> actions = new HashMap<>();
+    // Format: database.table.column
+    for (String columnPath : CLEARED_COLUMNS) {
+      String[] parts = columnPath.split("\\.", 3);
+      if (parts.length != 3) {
+        LOGGER.warn("Skipping invalid cleared column entry: {}", columnPath);
+        continue;
+      }
+      actions
+        .computeIfAbsent(parts[0], db -> new HashMap<>())
+        .computeIfAbsent(parts[1], table -> new HashMap<>())
+        .put(parts[2], "clear");
+    }
+
+    COLUMN_ACTIONS = Collections.unmodifiableMap(actions);
+  }
+
 
 
   private final ArrayBlockingQueue<RowMap> queue;
@@ -313,6 +343,7 @@ class MaxwellBigQueryProducerWorker extends AbstractAsyncProducer implements Run
   public void sendAsync(RowMap r, CallbackCompleter cc) throws Exception {
 
     JSONObject record = new JSONObject(r.toJSON(outputConfig));
+    applyColumnActions(r, record);
     covertJSONObjectFieldsToString(record);
 
     int recordSize = AppendContext.getJsonByteSize(record);
@@ -372,6 +403,38 @@ class MaxwellBigQueryProducerWorker extends AbstractAsyncProducer implements Run
         e.printStackTrace();
       }
     }, 1, TimeUnit.MINUTES); // 1 minute delay
+  }
+
+  private void applyColumnActions(RowMap row, JSONObject record) {
+    if (COLUMN_ACTIONS.isEmpty()) {
+      return;
+    }
+
+    Map<String, Map<String, String>> databaseConfig = COLUMN_ACTIONS.get(row.getDatabase());
+    if (databaseConfig == null) {
+      return;
+    }
+
+    Map<String, String> tableConfig = databaseConfig.get(row.getTable());
+    if (tableConfig == null || tableConfig.isEmpty()) {
+      return;
+    }
+
+    applyColumnActionsToObject(record.opt("data"), tableConfig);
+    applyColumnActionsToObject(record.opt("old"), tableConfig);
+  }
+
+  private void applyColumnActionsToObject(Object obj, Map<String, String> tableConfig) {
+    if (!(obj instanceof JSONObject)) {
+      return;
+    }
+
+    JSONObject target = (JSONObject) obj;
+    for (Map.Entry<String, String> entry : tableConfig.entrySet()) {
+      if ("clear".equalsIgnoreCase(entry.getValue()) && target.has(entry.getKey())) {
+        target.put(entry.getKey(), JSONObject.NULL);
+      }
+    }
   }
 }
 
