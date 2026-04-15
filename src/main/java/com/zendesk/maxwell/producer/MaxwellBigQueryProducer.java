@@ -590,7 +590,7 @@ class MaxwellBigQueryProducerWorker extends AbstractAsyncProducer implements Run
 
     int keepFirst = Integer.parseInt(params[0].trim());
     int keepLast = Integer.parseInt(params[1].trim());
-    String value = originalValue.toString();
+    String value = (String) originalValue;
 
     if (keepFirst + keepLast >= value.length()) {
       return originalValue;
