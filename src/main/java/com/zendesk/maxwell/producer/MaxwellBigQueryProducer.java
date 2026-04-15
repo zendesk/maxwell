@@ -216,33 +216,108 @@ class MaxwellBigQueryProducerWorker extends AbstractAsyncProducer implements Run
   // checked approximately, leave a buffer
   public static final long MAX_MESSAGE_SIZE_BYTES = 5_000_000;
 
-  private static final Map<String, Map<String, Map<String, String>>> COLUMN_ACTIONS;
-  private static final List<String> CLEARED_COLUMNS;
+  private static final class ColumnTransformation {
+    final String jsonPath;
+    final String transform;
+
+    ColumnTransformation(String jsonPath, String transform) {
+      this.jsonPath = jsonPath;
+      this.transform = transform;
+    }
+  }
+
+  private static final Map<String, Map<String, Map<String, List<ColumnTransformation>>>> COLUMN_TRANSFORMATIONS;
 
   static {
-    String envValue = System.getenv("cleared_columns");
-    if (envValue != null && !envValue.isEmpty()) {
-      String cleaned = envValue.replaceAll("\\s+", "");
-      CLEARED_COLUMNS = List.of(cleaned.split(","));
-    } else {
-      CLEARED_COLUMNS = List.of();
+    String envValue = System.getenv("column_transformations");
+    COLUMN_TRANSFORMATIONS = parseColumnTransformations(envValue);
+    if (!COLUMN_TRANSFORMATIONS.isEmpty()) {
+      LOGGER.info("Loaded column transformations: {}", envValue);
+    }
+  }
+
+  private static Map<String, Map<String, Map<String, List<ColumnTransformation>>>> parseColumnTransformations(String envValue) {
+    if (envValue == null || envValue.isEmpty()) {
+      return Collections.emptyMap();
     }
 
-    Map<String, Map<String, Map<String, String>>> actions = new HashMap<>();
-    // Format: database.table.column
-    for (String columnPath : CLEARED_COLUMNS) {
-      String[] parts = columnPath.split("\\.", 3);
-      if (parts.length != 3) {
-        LOGGER.warn("Skipping invalid cleared column entry: {}", columnPath);
+    String cleaned = envValue.replaceAll("\\s+", "");
+    String[] entries = cleaned.split(",");
+    Map<String, Map<String, Map<String, List<ColumnTransformation>>>> transformations = new HashMap<>();
+    java.util.Set<String> seen = new java.util.HashSet<>();
+
+    for (String entry : entries) {
+      if (entry.isEmpty()) {
         continue;
       }
-      actions
-        .computeIfAbsent(parts[0], db -> new HashMap<>())
-        .computeIfAbsent(parts[1], table -> new HashMap<>())
-        .put(parts[2], "clear");
+
+      int ampIdx = entry.indexOf('&');
+      if (ampIdx < 1 || ampIdx == entry.length() - 1) {
+        throw new IllegalArgumentException(
+          "Invalid column_transformations entry (missing '&' or empty transform/target): '" + entry + "'");
+      }
+
+      String transform = entry.substring(0, ampIdx);
+      String target = entry.substring(ampIdx + 1);
+
+      String[] dbTableCol = target.split("\\.", 3);
+      if (dbTableCol.length != 3) {
+        throw new IllegalArgumentException(
+          "Invalid column_transformations target (expected database.table.column[:jsonpath]): '" + target + "'");
+      }
+
+      String database = dbTableCol[0];
+      String table = dbTableCol[1];
+      String columnPart = dbTableCol[2];
+
+      if (!database.matches("[a-zA-Z0-9_]+") || !table.matches("[a-zA-Z0-9_]+")) {
+        throw new IllegalArgumentException(
+          "Invalid database or table name (alphanumeric and underscores only): '" + target + "'");
+      }
+
+      String columnName;
+      String jsonPath = null;
+      int colonIdx = columnPart.indexOf(':');
+      if (colonIdx >= 0) {
+        columnName = columnPart.substring(0, colonIdx);
+        jsonPath = columnPart.substring(colonIdx + 1);
+        if (jsonPath.isEmpty() || !jsonPath.startsWith("$")) {
+          throw new IllegalArgumentException(
+            "Invalid json path (must start with '$'): '" + jsonPath + "' in entry '" + entry + "'");
+        }
+      } else {
+        columnName = columnPart;
+      }
+
+      if (!columnName.matches("[a-zA-Z0-9_]+")) {
+        throw new IllegalArgumentException(
+          "Invalid column name (alphanumeric and underscores only): '" + columnName + "' in entry '" + entry + "'");
+      }
+
+      String fullKey = database + "." + table + "." + columnName + (jsonPath != null ? ":" + jsonPath : "");
+      if (!seen.add(fullKey)) {
+        throw new IllegalArgumentException(
+          "Duplicate column_transformations entry for: '" + fullKey + "'");
+      }
+
+      List<ColumnTransformation> columnTransformations = transformations
+        .computeIfAbsent(database, db -> new HashMap<>())
+        .computeIfAbsent(table, t -> new HashMap<>())
+        .computeIfAbsent(columnName, c -> new ArrayList<>());
+
+      if (jsonPath == null && !columnTransformations.isEmpty()) {
+        throw new IllegalArgumentException(
+          "Cannot mix whole-column and json-path transformations for: '" + database + "." + table + "." + columnName + "'");
+      }
+      if (!columnTransformations.isEmpty() && columnTransformations.get(0).jsonPath == null) {
+        throw new IllegalArgumentException(
+          "Cannot mix whole-column and json-path transformations for: '" + database + "." + table + "." + columnName + "'");
+      }
+
+      columnTransformations.add(new ColumnTransformation(jsonPath, transform));
     }
 
-    COLUMN_ACTIONS = Collections.unmodifiableMap(actions);
+    return Collections.unmodifiableMap(transformations);
   }
 
 
@@ -345,7 +420,7 @@ class MaxwellBigQueryProducerWorker extends AbstractAsyncProducer implements Run
   public void sendAsync(RowMap r, CallbackCompleter cc) throws Exception {
 
     JSONObject record = new JSONObject(r.toJSON(outputConfig));
-    applyColumnActions(r, record);
+    applyColumnTransformations(r, record);
     covertJSONObjectFieldsToString(record);
 
     int recordSize = AppendContext.getJsonByteSize(record);
@@ -407,36 +482,124 @@ class MaxwellBigQueryProducerWorker extends AbstractAsyncProducer implements Run
     }, 1, TimeUnit.MINUTES); // 1 minute delay
   }
 
-  private void applyColumnActions(RowMap row, JSONObject record) {
-    if (COLUMN_ACTIONS.isEmpty()) {
+  private void applyColumnTransformations(RowMap row, JSONObject record) {
+    if (COLUMN_TRANSFORMATIONS.isEmpty()) {
       return;
     }
 
-    Map<String, Map<String, String>> databaseConfig = COLUMN_ACTIONS.get(row.getDatabase());
+    Map<String, Map<String, List<ColumnTransformation>>> databaseConfig = COLUMN_TRANSFORMATIONS.get(row.getDatabase());
     if (databaseConfig == null) {
       return;
     }
 
-    Map<String, String> tableConfig = databaseConfig.get(row.getTable());
+    Map<String, List<ColumnTransformation>> tableConfig = databaseConfig.get(row.getTable());
     if (tableConfig == null || tableConfig.isEmpty()) {
       return;
     }
 
-    applyColumnActionsToObject(record.opt("data"), tableConfig);
-    applyColumnActionsToObject(record.opt("old"), tableConfig);
+    applyTransformations(record.opt("data"), tableConfig);
+    applyTransformations(record.opt("old"), tableConfig);
   }
 
-  private void applyColumnActionsToObject(Object obj, Map<String, String> tableConfig) {
+  private void applyTransformations(Object obj, Map<String, List<ColumnTransformation>> tableConfig) {
     if (!(obj instanceof JSONObject)) {
       return;
     }
 
     JSONObject target = (JSONObject) obj;
-    for (Map.Entry<String, String> entry : tableConfig.entrySet()) {
-      if ("clear".equalsIgnoreCase(entry.getValue()) && target.has(entry.getKey())) {
-        target.put(entry.getKey(), JSONObject.NULL);
+    for (Map.Entry<String, List<ColumnTransformation>> entry : tableConfig.entrySet()) {
+      String columnName = entry.getKey();
+      if (!target.has(columnName)) {
+        continue;
+      }
+
+      for (ColumnTransformation t : entry.getValue()) {
+        if (t.jsonPath == null) {
+          target.put(columnName, transformValue(t.transform, target.get(columnName)));
+        } else {
+          Object columnValue = target.get(columnName);
+          if (columnValue instanceof JSONObject) {
+            applyJsonPathTransform((JSONObject) columnValue, t.jsonPath, t.transform);
+          }
+        }
       }
     }
+  }
+
+  private void applyJsonPathTransform(JSONObject root, String jsonPath, String transform) {
+    String[] keys = jsonPath.split("\\.");
+    if (keys.length < 2 || !"$".equals(keys[0])) {
+      LOGGER.warn("Invalid json path: {}", jsonPath);
+      return;
+    }
+
+    JSONObject current = root;
+    for (int i = 1; i < keys.length - 1; i++) {
+      Object next = current.opt(keys[i]);
+      if (!(next instanceof JSONObject)) {
+        return;
+      }
+      current = (JSONObject) next;
+    }
+
+    String leafKey = keys[keys.length - 1];
+    if (current.has(leafKey)) {
+      current.put(leafKey, transformValue(transform, current.get(leafKey)));
+    }
+  }
+
+  private Object transformValue(String transformType, Object originalValue) {
+    try {
+      if (transformType == null) {
+        return originalValue;
+      }
+
+      String[] parts = transformType.split(":", 2);
+      String type = parts[0].trim().toLowerCase();
+      String info = parts.length > 1 ? parts[1].trim() : null;
+
+      switch (type) {
+        case "clear":
+          return transformClear(originalValue, info);
+        case "mask":
+          return transformMask(originalValue, info);
+        default:
+          LOGGER.warn("Unknown column transformation type: {}", transformType);
+          return originalValue;
+      }
+    } catch (Exception e) {
+      LOGGER.error("Error transforming value with transform '{}': {}", transformType, e.getMessage());
+      return originalValue;
+    }
+  }
+
+  private Object transformClear(Object originalValue, String info) {
+    return JSONObject.NULL;
+  }
+
+  private Object transformMask(Object originalValue, String info) {
+    if (originalValue == null || originalValue == JSONObject.NULL || info == null || !(originalValue instanceof String)) {
+      return originalValue;
+    }
+
+    String[] params = info.split(":", 2);
+    if (params.length != 2) {
+      LOGGER.warn("mask requires two parameters X and Y, got: {}", info);
+      return originalValue;
+    }
+
+    int keepFirst = Integer.parseInt(params[0].trim());
+    int keepLast = Integer.parseInt(params[1].trim());
+    String value = originalValue.toString();
+
+    if (keepFirst + keepLast >= value.length()) {
+      return originalValue;
+    }
+
+    int maskLength = value.length() - keepFirst - keepLast;
+    return value.substring(0, keepFirst)
+      + "*".repeat(maskLength)
+      + value.substring(value.length() - keepLast);
   }
 }
 
