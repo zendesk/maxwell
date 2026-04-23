@@ -669,4 +669,14 @@ public class DDLIntegrationTest extends MaxwellTestWithIsolatedServer {
 		};
 		testIntegration(sql);
 	}
+
+	@Test
+	public void testUniqueKeyIfNotExists() throws Exception {
+		assumeTrue(MysqlIsolatedServer.getVersion().isMariaDB);
+		String sql[] = {
+			"CREATE TABLE unique_test (id INT, email VARCHAR(100))",
+			"ALTER TABLE unique_test ADD UNIQUE KEY IF NOT EXISTS uk_email (email)"
+		};
+		testIntegration(sql);
+	}
 }
