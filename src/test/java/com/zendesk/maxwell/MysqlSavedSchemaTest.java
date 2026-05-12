@@ -220,6 +220,55 @@ public class MysqlSavedSchemaTest extends MaxwellTestWithIsolatedServer {
 	}
 
 
+	/**
+	 * Regression test for https://github.com/zendesk/maxwell/issues/2251.
+	 *
+	 * Binlog file numbers are variable-length on Aurora/RDS. String (lexicographic)
+	 * comparison of file names produces wrong ordering when numbers cross a digit-count
+	 * boundary: e.g. "mysql-bin-changelog.122046" sorts AFTER "mysql-bin-changelog.1215501"
+	 * as a string even though 122046 < 1215501 numerically. This causes findSchema to pick
+	 * a stale snapshot, skipping all deltas recorded at those incorrectly-ordered files.
+	 */
+	@Test
+	public void testFindSchemaUsesNumericFileOrdering() throws Exception {
+		if (context.getConfig().gtidMode) {
+			return;
+		}
+
+		Connection c = context.getMaxwellConnection();
+		long serverId = 200;
+		long heartbeat = 0L;
+
+		// Target position: 7-digit file number
+		Position targetPosition = makePosition(500L, "mysql-bin-changelog.1215501", heartbeat + 1);
+
+		// This schema is at a 6-digit file that sorts AFTER the target under string comparison
+		// ("122046" > "1215501" lexicographically) but is numerically BEFORE it.
+		// It must be excluded from the result.
+		new MysqlSavedSchema(serverId, caseSensitivity, buildSchema(),
+				makePosition(100L, "mysql-bin-changelog.122046", heartbeat)
+		).saveSchema(c);
+
+		// This schema is at a 7-digit file numerically closest to the target and before it.
+		// It should be selected.
+		MysqlSavedSchema expectedSchema = new MysqlSavedSchema(serverId, caseSensitivity, buildSchema(),
+				makePosition(200L, "mysql-bin-changelog.1203422", heartbeat)
+		);
+		expectedSchema.save(c);
+
+		// This schema is at a 6-digit file that is also numerically before the target but
+		// older than expectedSchema — it must not be preferred over expectedSchema.
+		new MysqlSavedSchema(serverId, caseSensitivity, buildSchema(),
+				makePosition(300L, "mysql-bin-changelog.121345", heartbeat)
+		).saveSchema(c);
+
+		MysqlSavedSchema foundSchema = MysqlSavedSchema.restore(
+				context.getMaxwellConnectionPool(), serverId, caseSensitivity, targetPosition);
+
+		assertThat(foundSchema.getBinlogPosition(), equalTo(expectedSchema.getBinlogPosition()));
+		assertThat(foundSchema.getSchemaID(), equalTo(expectedSchema.getSchemaID()));
+	}
+
 	private Schema buildSchema() {
 		String charset = Charset.defaultCharset().toString();
 		List<Database> databases = new ArrayList<>();
