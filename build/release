@@ -54,7 +54,20 @@ EOL
   commit_template.close
 
   do_system("git commit -av -t #{commit_template.path}")
-  do_system("git push origin HEAD:master")
+
+  release_branch = "release-#{$version}"
+  do_system("git push origin HEAD:#{release_branch}")
+
+  client = Octokit::Client.new(netrc: true)
+  commit_msg = `git show -s HEAD --format='%s'`.strip
+  commit_body = `git show -s HEAD --format='%b'`.strip
+  pr = client.create_pull_request(REPO, "master", release_branch, commit_msg, commit_body)
+  puts "PR opened: #{pr.html_url}"
+  puts "Merge the PR, then press Enter to continue..."
+  $stdin.gets
+
+  do_system("git fetch origin")
+  do_system("git reset --hard origin/master")
 end
 
 def tag
@@ -98,9 +111,9 @@ if $command
 else
   bump unless prerelease?
   build
-  tag
   release
   sleep 2
+  tag
   changelog
   docs
   nexus
