@@ -592,29 +592,65 @@ public class MysqlSavedSchema {
 		} else {
 			// Only consider binlog positions before the target position on the current server.
 			// Within those, sort for the latest binlog file, then the latest binlog position.
-			String sql = "SELECT id from `schemas` "
-					+ "WHERE deleted = 0 "
-					+ "AND last_heartbeat_read <= ? AND ("
-					+ "(binlog_file < ?) OR "
-					+ "(binlog_file = ? and binlog_position < ? and base_schema_id is not null) OR "
-					+ "(binlog_file = ? and binlog_position <= ? and base_schema_id is null) "
-					+ ") AND server_id = ? "
-					+ "ORDER BY last_heartbeat_read DESC, binlog_file DESC, binlog_position DESC limit 1";
-			try ( PreparedStatement s = connection.prepareStatement(sql) ) {
+			//
+			// Binlog file names contain a numeric suffix (e.g. "mysql-bin-changelog.1215501").
+			// When that suffix is parseable, we compare and sort numerically via CAST to avoid
+			// lexicographic ordering bugs where a shorter number string like "122046" compares
+			// greater than a longer one like "1215501". If the suffix cannot be parsed we fall
+			// back to string comparison so that non-standard formats still work.
+			Long targetFileNumber = targetBinlogPosition.getFileNumber();
+			if ( targetFileNumber != null ) {
+				String sql = "SELECT id from `schemas` "
+						+ "WHERE deleted = 0 "
+						+ "AND last_heartbeat_read <= ? AND ("
+						+ "(CAST(SUBSTRING_INDEX(binlog_file, '.', -1) AS UNSIGNED) < ?) OR "
+						+ "(binlog_file = ? and binlog_position < ? and base_schema_id is not null) OR "
+						+ "(binlog_file = ? and binlog_position <= ? and base_schema_id is null) "
+						+ ") AND server_id = ? "
+						+ "ORDER BY last_heartbeat_read DESC, "
+						+ "CAST(SUBSTRING_INDEX(binlog_file, '.', -1) AS UNSIGNED) DESC, "
+						+ "binlog_position DESC limit 1";
+				try ( PreparedStatement s = connection.prepareStatement(sql) ) {
+					s.setLong(1, targetPosition.getLastHeartbeatRead());
+					s.setLong(2, targetFileNumber);
+					s.setString(3, targetBinlogPosition.getFile());
+					s.setLong(4, targetBinlogPosition.getOffset());
+					s.setString(5, targetBinlogPosition.getFile());
+					s.setLong(6, targetBinlogPosition.getOffset());
+					s.setLong(7, serverID);
 
-				s.setLong(1, targetPosition.getLastHeartbeatRead());
-				s.setString(2, targetBinlogPosition.getFile());
-				s.setString(3, targetBinlogPosition.getFile());
-				s.setLong(4, targetBinlogPosition.getOffset());
-				s.setString(5, targetBinlogPosition.getFile());
-				s.setLong(6, targetBinlogPosition.getOffset());
-				s.setLong(7, serverID);
+					try ( ResultSet rs = s.executeQuery() ) {
+						if (rs.next()) {
+							return rs.getLong("id");
+						} else
+							return null;
+					}
+				}
+			} else {
+				// Fallback: file name has no parseable numeric suffix; use string comparison.
+				String sql = "SELECT id from `schemas` "
+						+ "WHERE deleted = 0 "
+						+ "AND last_heartbeat_read <= ? AND ("
+						+ "(binlog_file < ?) OR "
+						+ "(binlog_file = ? and binlog_position < ? and base_schema_id is not null) OR "
+						+ "(binlog_file = ? and binlog_position <= ? and base_schema_id is null) "
+						+ ") AND server_id = ? "
+						+ "ORDER BY last_heartbeat_read DESC, binlog_file DESC, binlog_position DESC limit 1";
+				try ( PreparedStatement s = connection.prepareStatement(sql) ) {
+					s.setLong(1, targetPosition.getLastHeartbeatRead());
+					s.setString(2, targetBinlogPosition.getFile());
+					s.setString(3, targetBinlogPosition.getFile());
+					s.setLong(4, targetBinlogPosition.getOffset());
+					s.setString(5, targetBinlogPosition.getFile());
+					s.setLong(6, targetBinlogPosition.getOffset());
+					s.setLong(7, serverID);
 
-				try ( ResultSet rs = s.executeQuery() ) {
-					if (rs.next()) {
-						return rs.getLong("id");
-					} else
-						return null;
+					try ( ResultSet rs = s.executeQuery() ) {
+						if (rs.next()) {
+							return rs.getLong("id");
+						} else
+							return null;
+					}
 				}
 			}
 		}
