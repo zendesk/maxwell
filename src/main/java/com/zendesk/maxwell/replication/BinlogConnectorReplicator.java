@@ -214,6 +214,18 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 			EventDeserializer.CompatibilityMode.CHAR_AND_BINARY_AS_BYTE_ARRAY,
 			EventDeserializer.CompatibilityMode.INVALID_DATE_AND_TIME_AS_MIN_VALUE
 		);
+		// binlog_transaction_compression=ON wraps a transaction's events in a single zstd
+		// TRANSACTION_PAYLOAD event. The stock deserializer would parse the inner events without
+		// the compatibility modes above; register one that applies them so compressed and
+		// uncompressed transactions produce identical rows. (Unwrapped by BinlogConnectorEventListener.)
+		eventDeserializer.setEventDataDeserializer(
+			EventType.TRANSACTION_PAYLOAD,
+			new MaxwellTransactionPayloadDeserializer(
+				EventDeserializer.CompatibilityMode.DATE_AND_TIME_AS_LONG_MICRO,
+				EventDeserializer.CompatibilityMode.CHAR_AND_BINARY_AS_BYTE_ARRAY,
+				EventDeserializer.CompatibilityMode.INVALID_DATE_AND_TIME_AS_MIN_VALUE
+			)
+		);
 		this.client.setEventDeserializer(eventDeserializer);
 		this.binlogEventListener = new BinlogConnectorEventListener(client, queue, metrics, outputConfig);
 		this.client.setBlocking(!stopOnEOF);
