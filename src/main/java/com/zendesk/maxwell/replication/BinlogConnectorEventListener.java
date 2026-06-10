@@ -8,12 +8,12 @@ import com.github.shyiko.mysql.binlog.event.EventHeaderV4;
 import com.github.shyiko.mysql.binlog.event.EventType;
 import com.github.shyiko.mysql.binlog.event.GtidEventData;
 import com.github.shyiko.mysql.binlog.event.MariadbGtidEventData;
-import com.github.shyiko.mysql.binlog.event.TransactionPayloadEventData;
 import com.zendesk.maxwell.monitoring.Metrics;
 import com.zendesk.maxwell.producer.MaxwellOutputConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -57,15 +57,31 @@ class BinlogConnectorEventListener implements BinaryLogClient.EventListener {
 
 		// binlog_transaction_compression=ON delivers a transaction's events compressed inside a
 		// single TRANSACTION_PAYLOAD event. The binlog client never unwraps it, so surface each
-		// inner event (TABLE_MAP / rows / XID ...) through the normal path here. Inner events carry
-		// positions relative to the in-memory decompressed buffer, not real binlog offsets; re-stamp
-		// each with the payload event's on-disk position so downstream position tracking stays correct
+		// inner event (TABLE_MAP / rows / XID ...) through the normal path here, parsing lazily so
+		// only one un-queued inner event is in memory at a time. Inner events carry positions
+		// relative to the in-memory decompressed buffer, not real binlog offsets; re-stamp each
+		// with the payload event's on-disk position so downstream position tracking stays correct
 		// (getPosition() is derived as nextPosition - eventLength, so we set both fields to the
 		// payload's values, giving every inner event the payload's position and nextPosition).
 		if ( eventType == EventType.TRANSACTION_PAYLOAD ) {
 			EventHeaderV4 payloadHeader = event.getHeader();
-			TransactionPayloadEventData payloadData = event.getData();
-			for ( Event innerEvent : payloadData.getUncompressedEvents() ) {
+			MaxwellTransactionPayloadEventData payloadData = event.getData();
+			while ( true ) {
+				Event innerEvent;
+				try {
+					innerEvent = payloadData.nextInnerEvent();
+				} catch ( IOException | RuntimeException e ) {
+					// Same outcome as the binlog client's own handling of an undeserializable
+					// event (log it, continue at the next one), but visible in Maxwell's logs:
+					// inner events already surfaced stay surfaced, the rest of this transaction
+					// is skipped.
+					LOGGER.error("Failed to parse compressed transaction payload at {}:{}, skipping the rest of the transaction",
+						client.getBinlogFilename(), payloadHeader.getPosition(), e);
+					break;
+				}
+				if ( innerEvent == null )
+					break;
+
 				EventHeaderV4 innerHeader = innerEvent.getHeader();
 				innerHeader.setEventLength(payloadHeader.getEventLength());
 				innerHeader.setNextPosition(payloadHeader.getNextPosition());

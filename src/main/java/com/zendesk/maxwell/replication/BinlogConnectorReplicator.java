@@ -176,8 +176,9 @@ public class BinlogConnectorReplicator extends RunLoopProcess implements Replica
 		transactionRowCount = metrics.getRegistry().histogram(metrics.metricName("transaction", "row_count"));
 		transactionExecutionTime = metrics.getRegistry().histogram(metrics.metricName("transaction", "execution_time"));
 
-		/* setup binlog client */
-		this.client = new BinaryLogClient(mysqlConfig.host, mysqlConfig.port, mysqlConfig.user, mysqlConfig.password);
+		/* setup binlog client; the Maxwell subclass keeps gtid tracking working with
+		   binlog_transaction_compression=ON (see MaxwellBinaryLogClient) */
+		this.client = new MaxwellBinaryLogClient(mysqlConfig.host, mysqlConfig.port, mysqlConfig.user, mysqlConfig.password);
 		this.client.setSSLMode(mysqlConfig.sslMode);
 		this.client.setUseSendAnnotateRowsEvent(true);
 
