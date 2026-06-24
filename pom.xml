@@ -44,9 +44,9 @@
     <mockito.version>5.19.0</mockito.version>
     <opencensus.version>0.28.3</opencensus.version>
     <aws-java.version>1.12.782</aws-java.version>
-    <jackson.version>2.15.2</jackson.version>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
+    <jackson.version>2.18.8</jackson.version>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
   </properties>
 
   <profiles>
@@ -154,6 +154,24 @@
     </profile>
   </profiles>
 
+  <dependencyManagement>
+    <dependencies>
+      <!-- Security: pin vulnerable transitive deps to their fixed versions (osv-scanner) -->
+      <dependency><groupId>io.netty</groupId><artifactId>netty-bom</artifactId><version>4.1.135.Final</version><type>pom</type><scope>import</scope></dependency>
+      <dependency><groupId>org.apache.avro</groupId><artifactId>avro</artifactId><version>1.11.4</version></dependency>
+      <dependency><groupId>com.mchange</groupId><artifactId>c3p0</artifactId><version>0.12.0</version></dependency>
+      <dependency><groupId>com.mchange</groupId><artifactId>mchange-commons-java</artifactId><version>0.4.0</version></dependency>
+      <dependency><groupId>io.grpc</groupId><artifactId>grpc-netty-shaded</artifactId><version>1.75.0</version></dependency>
+      <dependency><groupId>org.json</groupId><artifactId>json</artifactId><version>20231013</version></dependency>
+      <dependency><groupId>org.xerial.snappy</groupId><artifactId>snappy-java</artifactId><version>1.1.10.4</version></dependency>
+      <dependency><groupId>org.apache.commons</groupId><artifactId>commons-compress</artifactId><version>1.26.0</version></dependency>
+      <dependency><groupId>org.apache.commons</groupId><artifactId>commons-lang3</artifactId><version>3.18.0</version></dependency>
+      <dependency><groupId>com.fasterxml.jackson.core</groupId><artifactId>jackson-databind</artifactId><version>2.18.8</version></dependency>
+      <dependency><groupId>com.fasterxml.jackson.core</groupId><artifactId>jackson-core</artifactId><version>2.18.8</version></dependency>
+      <dependency><groupId>com.fasterxml.jackson.core</groupId><artifactId>jackson-annotations</artifactId><version>2.18.8</version></dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
     <!-- very important deps -->
     <dependency>
@@ -164,7 +182,7 @@
     <dependency>
       <groupId>com.mchange</groupId>
       <artifactId>c3p0</artifactId>
-      <version>0.9.5.5</version>
+      <version>0.12.0</version>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
@@ -350,12 +368,12 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-server</artifactId>
-      <version>10.0.24</version>
+      <version>12.0.33</version>
     </dependency>
     <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-servlet</artifactId>
-      <version>10.0.12</version>
+      <groupId>org.eclipse.jetty.ee8</groupId>
+      <artifactId>jetty-ee8-servlet</artifactId>
+      <version>12.0.33</version>
     </dependency>
     <dependency>
       <groupId>com.viafoura</groupId>
@@ -479,7 +497,7 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>3.3.1</version>
         <configuration>
-            <source>11</source>
+            <source>17</source>
         </configuration>
         <executions>
           <execution>
@@ -495,7 +513,7 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.8.1</version>
         <configuration>
-          <release>11</release>
+          <release>17</release>
         </configuration>
       </plugin>
       <plugin>
