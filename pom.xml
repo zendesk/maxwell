@@ -156,19 +156,18 @@
 
   <dependencyManagement>
     <dependencies>
-      <!-- Security: pin vulnerable transitive deps to their fixed versions (osv-scanner) -->
+      <!-- Overrides for vulnerable TRANSITIVE deps only; none are reachable by bumping a direct
+           dependency (verified against the resolved graph). Each line names the advisories it clears. -->
+      <!-- netty arrives via amazon-kinesis-producer; 4.1.100/119 carry CVE-2024-29025, CVE-2025-24970 -->
       <dependency><groupId>io.netty</groupId><artifactId>netty-bom</artifactId><version>4.1.135.Final</version><type>pom</type><scope>import</scope></dependency>
+      <!-- avro 1.11.3 (via schema-registry-serde) carries CVE-2024-47561, the scan's only critical -->
       <dependency><groupId>org.apache.avro</groupId><artifactId>avro</artifactId><version>1.11.4</version></dependency>
-      <dependency><groupId>com.mchange</groupId><artifactId>c3p0</artifactId><version>0.12.0</version></dependency>
-      <dependency><groupId>com.mchange</groupId><artifactId>mchange-commons-java</artifactId><version>0.4.0</version></dependency>
+      <!-- grpc-netty-shaded bundles its own netty copy, so only a grpc bump can fix its netty CVEs -->
       <dependency><groupId>io.grpc</groupId><artifactId>grpc-netty-shaded</artifactId><version>1.75.0</version></dependency>
+      <!-- org.json 20230618 (via schema-registry) carries CVE-2023-5072 -->
       <dependency><groupId>org.json</groupId><artifactId>json</artifactId><version>20231013</version></dependency>
-      <dependency><groupId>org.xerial.snappy</groupId><artifactId>snappy-java</artifactId><version>1.1.10.4</version></dependency>
+      <!-- commons-compress 1.21 (via schema-registry-common) carries CVE-2024-25710, CVE-2024-26308 -->
       <dependency><groupId>org.apache.commons</groupId><artifactId>commons-compress</artifactId><version>1.26.0</version></dependency>
-      <dependency><groupId>org.apache.commons</groupId><artifactId>commons-lang3</artifactId><version>3.18.0</version></dependency>
-      <dependency><groupId>com.fasterxml.jackson.core</groupId><artifactId>jackson-databind</artifactId><version>2.18.8</version></dependency>
-      <dependency><groupId>com.fasterxml.jackson.core</groupId><artifactId>jackson-core</artifactId><version>2.18.8</version></dependency>
-      <dependency><groupId>com.fasterxml.jackson.core</groupId><artifactId>jackson-annotations</artifactId><version>2.18.8</version></dependency>
     </dependencies>
   </dependencyManagement>
 
