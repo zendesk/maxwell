@@ -1,5 +1,21 @@
 # Maxwell changelog
 
+### [v1.45.0](https://github.com/zendesk/maxwell/releases/tag/v1.45.0)
+
+- transparently decompress binlogs from mysql 8.4
+- fixes for maraidb grammar ordering
+
+
+
+_Released 2026-07-04_
+
+### [v1.44.1](https://github.com/zendesk/maxwell/releases/tag/v1.44.1)
+
+Fix schema restore selecting stale snapshot due to lexicographic binlog file ordering
+
+
+_Released 2026-05-16_
+
 ### [v1.44.0](https://github.com/zendesk/maxwell/releases/tag/v1.44.0)
 
 - Quite a few dependency upgrades
