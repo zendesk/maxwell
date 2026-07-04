@@ -1,5 +1,5 @@
 FROM maven:3.9.9-eclipse-temurin-23 AS builder
-ENV MAXWELL_VERSION=1.44.1 KAFKA_VERSION=1.0.0
+ENV MAXWELL_VERSION=1.45.0 KAFKA_VERSION=1.0.0
 
 
 RUN apt-get update \
