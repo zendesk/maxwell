@@ -244,9 +244,9 @@
       <version>1.1.0</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-      <version>3.11</version>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>2.12.1</version>
     </dependency>
     <dependency>
       <groupId>com.vividsolutions</groupId>
